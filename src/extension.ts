@@ -53,6 +53,7 @@ export interface ShellTestApi {
     view(): ShellView;
     lastHelloAt(): number | undefined;
     panelCount(): number;
+    closePanel(): void;
     probe(url: string): Promise<ProbeOutcome>;
     asWebviewUri(uri: vscode.Uri): string | undefined;
     inspect(): StudioPanelInspection | undefined;
@@ -275,6 +276,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             view: () => service.view(),
             lastHelloAt: () => panel.lastHelloAt(),
             panelCount: () => panel.panelCount(),
+            closePanel: () => panel.closePanel(),
             probe: (url) => panel.probe(url),
             asWebviewUri: (uri) => panel.asWebviewUri(uri),
             inspect: () => panel.inspect(),

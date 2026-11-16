@@ -24,9 +24,25 @@ function studioTabs(): vscode.Tab[] {
         .filter((tab) => tab.input instanceof vscode.TabInputWebview && tab.input.viewType.endsWith(VIEW_TYPE));
 }
 
+const CLOSE_FALLBACK_MS = 5_000;
+
 async function closeStudio(api: StudioApi): Promise<void> {
-    await Promise.all(studioTabs().map((tab) => vscode.window.tabGroups.close(tab)));
-    await waitFor('the Studio panel to close', () => panelState(api), (state) => state.panels === 0, { timeoutMs: WAIT_MS });
+    const started = Date.now();
+    await waitFor(
+        'the Studio panel to close',
+        () => {
+            const state = panelState(api);
+            if (state.panels > 0 || state.tabs > 0) {
+                if (Date.now() - started >= CLOSE_FALLBACK_MS) {
+                    api.shell().closePanel();
+                }
+                void Promise.all(studioTabs().map((tab) => vscode.window.tabGroups.close(tab))).catch(() => undefined);
+            }
+            return state;
+        },
+        (state) => state.panels === 0 && state.tabs === 0,
+        { timeoutMs: WAIT_MS },
+    );
 }
 
 suite('FeatherSpec Studio shell smoke', function () {

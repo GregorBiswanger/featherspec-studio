@@ -48,6 +48,7 @@ export interface StudioPanel extends vscode.Disposable {
     show(): void;
     reload(): void;
     panelCount(): number;
+    closePanel(): void;
     lastHelloAt(): number | undefined;
     probe(url: string): Promise<ProbeOutcome>;
     showMoveResult(result: MoveResult): boolean;
@@ -182,6 +183,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
             }
         },
         panelCount: () => (panel === undefined ? 0 : 1),
+        closePanel: () => panel?.dispose(),
         lastHelloAt: () => helloAt,
         probe(url) {
             if (!deps.testMode) {
