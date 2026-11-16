@@ -1,6 +1,6 @@
 # Spec Repository & Parser
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0002-spec-repository-parser.plan.md](0002-spec-repository-parser.plan.md)
 
 ## 1. Summary

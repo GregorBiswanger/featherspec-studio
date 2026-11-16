@@ -1,9 +1,9 @@
 # Plan — Spec Repository & Parser
 
 **Spec:** [0002-spec-repository-parser.md](0002-spec-repository-parser.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-001
+**Current step:** T-002 ‖ T-004 (stage 2, other agents)
 
 ## Approach
 
@@ -40,10 +40,9 @@ Decisions this plan makes (spec §8 left them to the plan):
   `src/core/discovery/*` (`DiscoveredFolder.root` = URI string, `.version` = raw or
   `unknown`), `rerunScheduler.ts` (debounce, reusable), adapters `src/adapters/{node,vscode}`,
   composition `src/extension.ts` (`StudioApi { snapshot, whenIdle }`). The discovery
-  controller has **no change event**: it calls `statusBar.show/hide` at the end of every
-  `apply`, after `active` is set. Plan: a core `activeProjectFeed` decorates `StatusBarPort`
-  and reads `controller.snapshot().active` — no 0001 file changes; proven in a unit test with
-  the real 0001 controller on its fakes (T-008). Open decision below.
+  controller now has `onDidChangeActiveProject(listener)` (0001 AC-023, implemented 2026-11-16; first
+  result always, later only on change, no replay: a late subscriber reads `snapshot().active`). T-008
+  subscribes to it; no decorator, no 0001 file changes (Gregor, 2026-11-16).
 - Survey: `snapshotTree` (0001 testing helper) records size + mtime per file — reused for
   AC-013. `.vscode-test.mjs` already copies `fs110-de-active-review` into the host workspace;
   the new host test reuses it, the config stays unchanged.
@@ -97,8 +96,8 @@ the slices are small.
   from the port, absent when stat fails; symlink case on a temp dir (skipped where the OS
   refuses to create one).
 - **Verify:** `npm run test:unit -- src/core/specs/files.test.ts` (red, then green) + per-step gates
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-16 · `npm run test:unit -- src/core/specs/files.test.ts`: red first, 15 of 15 failing with `Not implemented` → green 15 of 15; negative controls: symlink branch off → 2 symlink tests red, non-fatal decoder → fs-broken and AC-023 tests red, both restored. Gates: `npx eslint src --max-warnings 0`, `npx tsc --noEmit`, `npm run test:unit` (137 tests, was 122) green.
+- **Notes:** Beyond `Do:`: shared building blocks for stage 2 and 3 live in `src/core/specs/fieldValue.ts` (`FieldValue`, AC-019) and `src/core/specs/text.ts` (`decodeText`, `normalizeText`); `src/core/specs/diagnostics.ts` holds `Diagnostic`. Parsers receive already-normalised LF text. Symlinked `.specs`, lifecycle, archive or `.memory-bank` folders are not listed: `unreadable-file` diagnostic scoped to the folder. A file entry whose content is unreadable stays in `files` (AC-001) with `content: { state: 'unreadable', reason }`. `modifiedMs`/`size` are `number | undefined` (undefined = the port reported none). Fixture `fs-broken` holds three specs, one invalid UTF-8; T-006 extends it (duplicate, orphan) if needed. Symlink test with real links skips where the OS refuses them.
 
 ### T-002 — Parse spec header lines and sections
 
@@ -193,7 +192,7 @@ the slices are small.
   `src/adapters/vscode/fileWatch.ts` (one watcher per project, `RelativePattern(root,
   '{.specs/**/*.md,.memory-bank/activeContext.*.md}')`); pure `src/core/specs/eventPath.ts`
   (event URI → key, case rule by platform) with unit test; `src/core/specs/activeProjectFeed.ts`
-  (decorated `StatusBarPort` → `repository.open(active)` on every 0001 report) with a unit test
+  (reads `controller.snapshot().active`, subscribes `onDidChangeActiveProject` → `repository.open(active)`) with a unit test
   driving the real 0001 controller on its fakes; `src/extension.ts` wires it and adds
   `specs()` to `StudioApi` (additive). Host test `src/test/specRepository.smoke.test.ts`:
   fixture spec in the model; a file written into the temp copy appears through the real
@@ -213,7 +212,7 @@ the slices are small.
   spec-source adapters for unit tests'`. `src/adapters/vscode` and `test/fixtures` entries
   stay as they are (their wording already covers the new files).
   `systemPatterns.md`: own port beside `ReadOnlyFileSystem` (why), field presence + diagnostic
-  identifiers, StatusBar-decorator feed. `techContext.md`: new fixtures, AC-018 perf test.
+  identifiers, feed through `onDidChangeActiveProject`. `techContext.md`: new fixtures, AC-018 perf test.
   README: model availability line if README lists features. `activeContext.md` refresh.
 - **Verify:** `npx eslint src --max-warnings 0` && `npx tsc --noEmit` && `npm run test:unit` && `npm run compile`; pre-done `npm test` on CI
 - [ ] **Verified (T-009):** —
@@ -223,8 +222,8 @@ the slices are small.
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001 | — | — | open |
-| AC-002 | T-001 | — | — | open |
+| AC-001 | T-001 | `src/core/specs/files.ts:readProjectFiles` | `files.test.ts` (AC-001 cases) | verified |
+| AC-002 | T-001 | `src/core/specs/files.ts:readProjectFiles` | `files.test.ts` (AC-002 move case) | verified |
 | AC-003 | T-002, T-003 | — | — | open |
 | AC-004 | T-003 | — | — | open |
 | AC-005 | T-003 | — | — | open |
@@ -233,7 +232,7 @@ the slices are small.
 | AC-008 | T-004 | — | — | open |
 | AC-009 | T-002, T-005 | — | — | open |
 | AC-010 | T-006 | — | — | open |
-| AC-011 | T-001 | — | — | open |
+| AC-011 | T-001 | `src/core/specs/files.ts:readOne` (file-level; parse errors: T-006) | `files.test.ts` (AC-011, fs-broken) | built |
 | AC-012 | T-007, T-008 | — | — | open |
 | AC-013 | T-007 | — | — | open |
 | AC-014 | T-002, T-005 | — | — | open |
@@ -242,16 +241,15 @@ the slices are small.
 | AC-017 | T-006 | — | — | open |
 | AC-018 | T-007 | — | — | open |
 | AC-019 | T-002 | — | — | open |
-| AC-020 | T-001 | — | — | open |
-| AC-021 | T-001, T-006 | — | — | open |
+| AC-020 | T-001 | `src/core/specs/text.ts:decodeText` | `files.test.ts` (AC-020 cases) | verified |
+| AC-021 | T-001, T-006 | `src/core/specs/files.ts:isFollowable` (links not followed; link targets: T-006) | `files.test.ts` (A-006 / AC-021) | built |
 | AC-022 | T-007, T-008 | — | — | open |
-| AC-023 | T-001 | — | — | open |
+| AC-023 | T-001 | `src/core/specs/files.ts:readOne` | `files.test.ts` (AC-023 cases) | verified |
 
 ## Session handoff
 
-- **Done so far:** plan written; spec revised for PD-043 (AC-023) and A-006.
-- **Next action:** Gregor reviews the plan; then T-001 on an explicit start signal (moves the pair to `active/`).
-- **Open decisions:** (1) 0001 feed via `StatusBarPort` decorator vs. an additive
-  `onDidReport` event on 0001's controller after its compile; (2) A-006 / OP-005 symbolic links.
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
-- **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); runs on CI.
+- **Done so far:** plan approved by Gregor; spec and plan moved to `active/`; stage 1 (T-001) built, verified and committed. Decisions answered: 0001 feed via `onDidChangeActiveProject` (T-008 text adjusted); symbolic links not followed (A-006).
+- **Next action:** stage 2, T-002 ‖ T-004 with **other agents** (Gregor's answer; stages 3 likewise). Main session printed the start lines; it waits for Gregor's word that the workers are back, then integrates per `.claude/rules/parallel-work.md` (union of the steps' `Files:` plus return notes `activeContext.0002-T-002.md`, `activeContext.0002-T-004.md`; re-run each `Verify:`, then the gates; tick; delete the notes).
+- **Open decisions:** none.
+- **Baseline:** 9bb1c18 (HEAD before T-001). Stage 2 base: the T-001 commit (see `git log`).
+- **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); runs on CI. A worktree holds committed files only: `npm install` is Ask-first there.
