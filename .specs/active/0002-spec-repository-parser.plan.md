@@ -3,7 +3,7 @@
 **Spec:** [0002-spec-repository-parser.md](0002-spec-repository-parser.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-007
+**Current step:** T-008
 
 ## Approach
 
@@ -182,8 +182,8 @@ the slices are small.
   (`testing/generateProject.ts`, 200 specs + plans in a temp dir), Node adapter, real clock:
   full read < 2 s, update < 1 s after the injected event; AC-012 final state equals a fresh read.
 - **Verify:** `npm run test:unit -- src/core/specs/specRepository.test.ts` (red, then green) + per-step gates
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** 2026-11-16 · `npm run test:unit -- src/core/specs/specRepository.test.ts`: red first, 19 of 19 failing with `Not implemented` → green 19 of 19 (AC-018: full read of 200 specs + 200 plans + 10 notes and one update, whole test 467 ms); negative controls: forced re-read off → 2 red, mtime reuse off → 1 red, restored. Gates eslint, tsc, `npm run test:unit` (346 tests) green.
+- **Notes:** Beyond `Do:`: `src/core/ports/fileWatch.ts` (`FileWatchPort.watch(root, listener(relativePath))`), `testing/fakeFileWatch.ts`; `files.ts` gained an optional `reuse` callback and `readProject.ts` splits out `buildProject` (the repository reads files incrementally, then builds); the incremental pass re-lists and re-stats everything and re-reads only files named in events, changed in mtime/size or new, so folder-level events and missed events are covered. `caseInsensitiveEvents` option for the platform rule (T-008 sets it). `open` of the same project reads fresh (no cache) and always notifies with cause `project`; `open(undefined)` notifies the old references with `untied: true`. The model is rebuilt completely each time (parsing is not cached): 200 specs take well under the 2 s limit.
 
 ### T-008 — VS Code adapters, 0001 feed, composition, host smoke test
 
@@ -233,23 +233,23 @@ the slices are small.
 | AC-009 | T-002, T-005 | `src/core/specs/parseSpec.ts` (plan history), `planSteps.ts`, `parsePlan.ts` (traceability) | `parseSpec.test.ts`, `planSteps.test.ts`, `parsePlan.test.ts` | verified |
 | AC-010 | T-006 | `src/core/specs/readProject.ts:readProject`, `returnNote.ts:parseReturnNote` | `readProject.test.ts`, `returnNote.test.ts` (AC-010) | verified |
 | AC-011 | T-001, T-006 | `src/core/specs/files.ts:readOne`, `readProject.ts:parseFile` | `files.test.ts`, `readProject.test.ts` (AC-011) | verified |
-| AC-012 | T-007, T-008 | — | — | open |
-| AC-013 | T-007 | — | — | open |
+| AC-012 | T-007, T-008 | `src/core/specs/specRepository.ts:createSpecRepository` (watcher wiring: T-008) | `specRepository.test.ts` (AC-012) | built |
+| AC-013 | T-007 | `src/core/specs/specRepository.ts`, `src/core/ports/specSource.ts` (no write method) | `specRepository.test.ts` (AC-013, `snapshotTree`) | verified |
 | AC-014 | T-002, T-005 | `src/core/specs/parseSpec.ts`, `planSteps.ts`, `parsePlan.ts` | `parseSpec.test.ts`, `planSteps.test.ts`, `parsePlan.test.ts` | verified |
 | AC-015 | T-003, T-004, T-006 | `src/core/specs/readProject.ts:readProject`, `leadingIds.ts`, `planSteps.ts` | `readProject.test.ts`, `leadingIds.test.ts`, `planSteps.test.ts` (AC-015) | verified |
 | AC-016 | T-006 | `src/core/specs/version.ts:checkVersion` | `version.test.ts`, `readProject.test.ts` (AC-016) | verified |
 | AC-017 | T-006 | `src/core/specs/readProject.ts:isDangling` | `readProject.test.ts` (AC-017) | verified |
-| AC-018 | T-007 | — | — | open |
+| AC-018 | T-007 | `src/core/specs/specRepository.ts`, `testing/generateProject.ts` | `specRepository.test.ts` (AC-018) | verified |
 | AC-019 | T-002 | `src/core/specs/parseSpec.ts`, `fieldValue.ts` | `parseSpec.test.ts` (AC-019) | verified |
 | AC-020 | T-001 | `src/core/specs/text.ts:decodeText` | `files.test.ts` (AC-020 cases) | verified |
 | AC-021 | T-001, T-006 | `src/core/specs/files.ts:isFollowable`, `readProject.ts:resolveInRoot` | `files.test.ts`, `readProject.test.ts` (AC-021) | verified |
-| AC-022 | T-007, T-008 | — | — | open |
+| AC-022 | T-007, T-008 | `src/core/specs/specRepository.ts:open/rescan` (0001 feed: T-008) | `specRepository.test.ts` (AC-022) | built |
 | AC-023 | T-001 | `src/core/specs/files.ts:readOne` | `files.test.ts` (AC-023 cases) | verified |
 
 ## Session handoff
 
-- **Done so far:** stages 1-4 first half: T-001 … T-006 built and verified (327 unit tests). Workers shared this checkout.
-- **Next action:** T-007 (live repository), then T-008, T-009 without stopping (Gregor, 2026-11-16).
+- **Done so far:** T-001 … T-007 built and verified (346 unit tests).
+- **Next action:** T-008 (VS Code adapters, 0001 feed, composition, host smoke test), then T-009 without stopping (Gregor, 2026-11-16).
 - **Open decisions:** none.
 - **Baseline:** 9bb1c18 (HEAD before T-001).
 - **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); runs on CI.

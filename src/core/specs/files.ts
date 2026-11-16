@@ -1,4 +1,4 @@
-import type { SourceEntryKind, SpecSourcePort } from '../ports/specSource';
+import type { SourceEntryKind, SourceStat, SpecSourcePort } from '../ports/specSource';
 import type { Diagnostic } from './diagnostics';
 import { decodeText, InvalidEncodingError } from './text';
 
@@ -27,6 +27,8 @@ export type ProjectFile = FileFacts &
           }
         | { kind: 'return-note'; number: string; stepId: string }
     );
+
+export type ReuseFile = (key: string, stats: SourceStat | undefined) => ProjectFile | undefined;
 
 export interface ProjectFiles {
     files: ProjectFile[];
@@ -83,18 +85,32 @@ function classifyNoteName(name: string): Identity | undefined {
     return match === null ? undefined : { kind: 'return-note', number: match[1], stepId: match[2] };
 }
 
-async function readOne(source: SpecSourcePort, root: string, candidate: Candidate, diagnostics: Diagnostic[]): Promise<ProjectFile> {
+async function readOne(
+    source: SpecSourcePort,
+    root: string,
+    candidate: Candidate,
+    diagnostics: Diagnostic[],
+    reuse: ReuseFile | undefined,
+): Promise<ProjectFile> {
     let modifiedMs: number | undefined;
     let size: number | undefined;
     let kind: SourceEntryKind | undefined;
+    let stats: SourceStat | undefined;
     try {
-        const stats = await source.stat(root, candidate.key);
+        stats = await source.stat(root, candidate.key);
         modifiedMs = stats?.mtimeMs;
         size = stats?.size;
         kind = stats?.kind;
     } catch {
         modifiedMs = undefined;
         size = undefined;
+    }
+    const reused = reuse?.(candidate.key, stats);
+    if (reused !== undefined) {
+        if (reused.content.state === 'unreadable') {
+            diagnostics.push({ kind: 'unreadable-file', scope: { file: candidate.key }, reason: reused.content.reason });
+        }
+        return reused;
     }
     let content: FileContent;
     if (kind === 'symlink') {
@@ -161,7 +177,7 @@ async function isFollowable(source: SpecSourcePort, root: string, folderKey: str
     }
 }
 
-export async function readProjectFiles(source: SpecSourcePort, root: string): Promise<ProjectFiles> {
+export async function readProjectFiles(source: SpecSourcePort, root: string, reuse?: ReuseFile): Promise<ProjectFiles> {
     const diagnostics: Diagnostic[] = [];
     const candidates: Candidate[] = [];
     if (await isFollowable(source, root, '.specs', diagnostics)) {
@@ -180,6 +196,6 @@ export async function readProjectFiles(source: SpecSourcePort, root: string): Pr
     }
     candidates.sort((left, right) => (left.key < right.key ? -1 : left.key > right.key ? 1 : 0));
     const fileDiagnostics: Diagnostic[][] = candidates.map(() => []);
-    const files = await Promise.all(candidates.map((candidate, index) => readOne(source, root, candidate, fileDiagnostics[index])));
+    const files = await Promise.all(candidates.map((candidate, index) => readOne(source, root, candidate, fileDiagnostics[index], reuse)));
     return { files, diagnostics: [...diagnostics, ...fileDiagnostics.flat()] };
 }

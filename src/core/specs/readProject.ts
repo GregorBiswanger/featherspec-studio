@@ -2,7 +2,7 @@ import * as path from 'path';
 import type { SpecSourcePort } from '../ports/specSource';
 import type { Diagnostic } from './diagnostics';
 import { readProjectFiles } from './files';
-import type { LifecycleFolder, ProjectFile } from './files';
+import type { LifecycleFolder, ProjectFile, ProjectFiles } from './files';
 import { parsePlan } from './parsePlan';
 import type { ParsedPlan } from './parsePlan';
 import { parseSpec } from './parseSpec';
@@ -141,7 +141,16 @@ export async function readProject(
     version: string,
     parsers: Parsers = DEFAULT_PARSERS,
 ): Promise<ProjectRead> {
-    const read = await readProjectFiles(source, root);
+    return buildProject(source, root, version, await readProjectFiles(source, root), parsers);
+}
+
+export async function buildProject(
+    source: SpecSourcePort,
+    root: string,
+    version: string,
+    read: ProjectFiles,
+    parsers: Parsers = DEFAULT_PARSERS,
+): Promise<ProjectRead> {
     const diagnostics: Diagnostic[] = [];
     const versionDiagnostic = checkVersion(version);
     if (versionDiagnostic !== undefined) {
