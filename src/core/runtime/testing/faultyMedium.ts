@@ -9,11 +9,14 @@ export interface Faults {
 }
 
 export function createFaults(): { faults: Faults; state: FaultState } {
-    const state: FaultState = { failures: [], hang: false, openFailure: undefined, removeFailure: undefined, attempts: 0 };
+    const state: FaultState = { failures: [], hang: false, release: [], openFailure: undefined, removeFailure: undefined, attempts: 0 };
     const faults: Faults = {
         failNext: (match) => void state.failures.push(match),
         hangWrites: (on) => {
             state.hang = on;
+            if (!on) {
+                state.release.splice(0).forEach((release) => release());
+            }
         },
         failOpen: (reason) => {
             state.openFailure = reason;
@@ -29,6 +32,7 @@ export function createFaults(): { faults: Faults; state: FaultState } {
 export interface FaultState {
     failures: (string | undefined)[];
     hang: boolean;
+    release: (() => void)[];
     openFailure: string | undefined;
     removeFailure: string | undefined;
     attempts: number;
@@ -38,7 +42,7 @@ export function createFaultyMedium(inner: RuntimeMedium, state: FaultState): Run
     async function guardWrite(name: string): Promise<void> {
         state.attempts += 1;
         if (state.hang) {
-            await new Promise<never>(() => undefined);
+            await new Promise<void>((resolve) => state.release.push(resolve));
         }
         const index = state.failures.findIndex((match) => match === undefined || name.includes(match));
         if (index >= 0) {

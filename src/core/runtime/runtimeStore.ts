@@ -7,6 +7,8 @@ import type {
     RuntimeNoticePort,
 } from '../ports/runtimeMedium';
 import { createMasker } from './masking';
+import { EXTENSION_HOST_RESTARTED, READER_REASON, storageUnreachableNotice } from './notices';
+import { createWriterLock } from './writerLock';
 import {
     encodeLine,
     parseEventRecord,
@@ -20,12 +22,14 @@ import {
 } from './records';
 import {
     FORMAT_VERSION,
+    HEARTBEAT_INTERVAL_MS,
     MAX_EVENTS_PER_RUN,
     MAX_PAGE_SIZE,
     NOT_AVAILABLE,
     RuntimeRefusal,
     isEndStatus,
     isRunStatus,
+    normalizeMaxAgeDays,
     type RunStatus,
     type AppendOutcome,
     ClearResult,
@@ -260,17 +264,166 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
         return outcome;
     }
 
-    await medium.open();
-    const names = (await medium.list('runs')).filter((name) => name.endsWith(RUN_FILE_SUFFIX));
-    const loaded: RunEntry[] = [];
-    for (const name of names) {
-        const runId = name.slice('runs/'.length, name.length - RUN_FILE_SUFFIX.length);
-        loaded.push((await replayRun(runId, medium)).entry);
+    let readBlock: string | undefined;
+    let writer = false;
+    let disposed = false;
+    let timer: Disposable | undefined;
+    const ownerId = deps.ids.newId();
+    const lock = createWriterLock(medium, clock, ownerId);
+    const STORE_FILE = 'store.json';
+    const HISTORY_FILE = 'spec-status-history.jsonl';
+
+    function setState(next: StoreState): void {
+        if (next.kind === currentState.kind && next.reason === currentState.reason) {
+            return;
+        }
+        currentState = next;
+        [...stateListeners].forEach((listener) => listener(next));
     }
-    loaded.sort((a, b) => a.view.created.localeCompare(b.view.created) || a.view.runId.localeCompare(b.view.runId));
-    for (const entry of loaded) {
-        entry.order = orderCounter++;
-        runs.set(entry.view.runId, entry);
+
+    function assertWritable(): void {
+        if (currentState.kind === 'writable') {
+            return;
+        }
+        throw new RuntimeRefusal(currentState.kind === 'unavailable' ? 'unavailable' : 'read-only', currentState.reason ?? '');
+    }
+
+    function blocked(): { available: false; reason: string } | undefined {
+        return readBlock === undefined ? undefined : { available: false, reason: readBlock };
+    }
+
+    async function loadRuns(): Promise<void> {
+        const names = (await medium.list('runs')).filter((name) => name.endsWith(RUN_FILE_SUFFIX));
+        const loaded: RunEntry[] = [];
+        for (const name of names) {
+            const runId = name.slice('runs/'.length, name.length - RUN_FILE_SUFFIX.length);
+            loaded.push((await replayRun(runId, medium)).entry);
+        }
+        loaded.sort((a, b) => a.view.created.localeCompare(b.view.created) || a.view.runId.localeCompare(b.view.runId));
+        runs.clear();
+        for (const entry of loaded) {
+            entry.order = orderCounter++;
+            runs.set(entry.view.runId, entry);
+        }
+    }
+
+    async function commitStatus(entry: RunEntry, record: StatusRecord): Promise<void> {
+        applyStatus(entry.view, record);
+        const name = runFileName(entry.view.runId);
+        await enqueue(name, () => medium.append(name, encodeLine(record)));
+    }
+
+    async function classifyOpenRuns(): Promise<void> {
+        const at = iso();
+        for (const entry of runs.values()) {
+            if (!entry.view.historyUnreadable && !isEndStatus(entry.view.status)) {
+                await commitStatus(entry, { v: FORMAT_VERSION, k: 'status', status: 'Interrupted', at, cause: EXTENSION_HOST_RESTARTED });
+            }
+        }
+    }
+
+    async function removeRunFiles(runId: string): Promise<boolean> {
+        const events = eventFileName(runId);
+        const log = runFileName(runId);
+        if ((await enqueue(events, () => medium.remove(events))) !== undefined) {
+            return false;
+        }
+        return (await enqueue(log, () => medium.remove(log))) === undefined;
+    }
+
+    async function rewriteHistory(keep: (record: HistoryRecord) => boolean): Promise<void> {
+        const lines: { text: string; terminated: boolean }[] = [];
+        for await (const line of medium.lines(HISTORY_FILE)) {
+            lines.push(line);
+        }
+        let removed = false;
+        const kept = lines.filter((line) => {
+            const parsed = parseHistoryRecord(line.text);
+            const keepIt = parsed.kind !== 'record' || keep(parsed.record);
+            removed ||= !keepIt;
+            return keepIt;
+        });
+        if (removed) {
+            const text = kept.map((line) => (line.terminated ? `${line.text}\n` : line.text)).join('');
+            await enqueue(HISTORY_FILE, () => medium.replace(HISTORY_FILE, text));
+        }
+    }
+
+    async function applyAgeCap(): Promise<void> {
+        const cutoff = clock.epochMs() - normalizeMaxAgeDays(deps.maxAgeDays()) * 86_400_000;
+        const cutoffIso = new Date(cutoff).toISOString();
+        for (const entry of [...runs.values()]) {
+            const ended = entry.view.ended;
+            if (!entry.view.historyUnreadable && ended !== undefined && Date.parse(ended) < cutoff) {
+                if (await removeRunFiles(entry.view.runId)) {
+                    runs.delete(entry.view.runId);
+                }
+            }
+        }
+        await rewriteHistory((record) => record.observedAt >= cutoffIso);
+    }
+
+    async function ensureStoreDescriptor(): Promise<void> {
+        if ((await medium.read(STORE_FILE)) === undefined) {
+            const content = JSON.stringify({ storeVersion: FORMAT_VERSION, projectRoot: deps.projectRoot });
+            await enqueue(STORE_FILE, () => medium.replace(STORE_FILE, content));
+        }
+    }
+
+    async function becomeWriter(): Promise<void> {
+        writer = true;
+        await loadRuns();
+        await ensureStoreDescriptor();
+        await classifyOpenRuns();
+        await applyAgeCap();
+        setState({ kind: 'writable', reason: undefined });
+    }
+
+    function startTimer(): void {
+        timer?.dispose();
+        timer = clock.setTimeout(() => void tick(), HEARTBEAT_INTERVAL_MS);
+    }
+
+    async function tick(): Promise<void> {
+        if (disposed) {
+            return;
+        }
+        try {
+            if (writer) {
+                if (!(await lock.heartbeat())) {
+                    writer = false;
+                    setState({ kind: 'read-only', reason: READER_REASON });
+                }
+            } else if (readBlock === undefined) {
+                await loadRuns();
+                const peek = await lock.peek();
+                if ((peek.kind === 'free' || peek.kind === 'stale') && (await lock.tryAcquire())) {
+                    await becomeWriter();
+                }
+            }
+        } catch {
+            // a failed heartbeat or poll is retried at the next interval
+        }
+        if (!disposed) {
+            startTimer();
+        }
+    }
+
+    try {
+        await medium.open();
+    } catch (error) {
+        readBlock = describeError(error);
+        setState({ kind: 'unavailable', reason: readBlock });
+        deps.notices.show(storageUnreachableNotice(readBlock));
+    }
+    if (readBlock === undefined) {
+        if (await lock.tryAcquire()) {
+            await becomeWriter();
+        } else {
+            await loadRuns();
+            setState({ kind: 'read-only', reason: READER_REASON });
+        }
+        startTimer();
     }
 
     function requireRun(runId: string): RunEntry {
@@ -282,7 +435,6 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
     }
 
     const masker = createMasker(deps.credentials);
-    const HISTORY_FILE = 'spec-status-history.jsonl';
     const eventCap = deps.maxEventsPerRun ?? MAX_EVENTS_PER_RUN;
 
     async function loadEventState(entry: RunEntry): Promise<EventState> {
@@ -345,6 +497,7 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             return { dispose: () => void stateListeners.delete(listener) };
         },
         async createRun(input) {
+            assertWritable();
             const runId = deps.ids.newId();
             if (!SAFE_ID.test(runId)) {
                 throw new RuntimeRefusal('storage-failed', `Run ID ${runId} is not a safe file name.`);
@@ -379,6 +532,7 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             return copyView(entry.view);
         },
         async reportStatus(runId, status, report = {}) {
+            assertWritable();
             const entry = requireRun(runId);
             if (!isRunStatus(status)) {
                 throw new RuntimeRefusal('invalid-status', `Status ${status} is not in the closed list of run statuses.`);
@@ -402,21 +556,29 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             if (report.result !== undefined) {
                 record.result = masker.json(report.result);
             }
-            applyStatus(entry.view, record);
-            await enqueue(runFileName(runId), () => medium.append(runFileName(runId), encodeLine(record)));
+            await commitStatus(entry, record);
             return copyView(entry.view);
         },
         async listRuns(query = {}) {
+            const stopped = blocked();
+            if (stopped !== undefined) {
+                return stopped;
+            }
             const selected = [...runs.values()]
                 .filter((entry) => query.stem === undefined || entry.view.spec.stem === query.stem)
                 .sort((a, b) => b.view.created.localeCompare(a.view.created) || b.order - a.order);
             return { available: true, value: selected.map((entry) => copyView(entry.view)) };
         },
         async getRun(runId) {
+            const stopped = blocked();
+            if (stopped !== undefined) {
+                return stopped;
+            }
             const entry = runs.get(runId);
             return { available: true, value: entry === undefined ? undefined : copyView(entry.view) };
         },
         async appendEvent(runId, input) {
+            assertWritable();
             const entry = requireRun(runId);
             const state = await ensureEventState(entry);
             if (input.providerEventId !== undefined && state.ids.has(input.providerEventId)) {
@@ -459,6 +621,10 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             return { outcome: 'stored', seq: record.seq };
         },
         async readEvents(runId, fromSeq, size) {
+            const stopped = blocked();
+            if (stopped !== undefined) {
+                return stopped;
+            }
             const entry = runs.get(runId);
             const limit = Math.min(Math.floor(size), MAX_PAGE_SIZE);
             if (entry === undefined || !(limit >= 1)) {
@@ -484,6 +650,7 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             return { available: true, value: page.map(toStoredEvent) };
         },
         async appendSpecStatusEntry(stem, entry) {
+            assertWritable();
             const record: HistoryRecord = { v: FORMAT_VERSION, stem, observedAt: iso(), entry };
             const failure = await enqueue(HISTORY_FILE, () => medium.append(HISTORY_FILE, encodeLine(record)));
             if (failure !== undefined) {
@@ -491,6 +658,10 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             }
         },
         async readSpecStatusHistory(stem) {
+            const stopped = blocked();
+            if (stopped !== undefined) {
+                return stopped;
+            }
             const records: SpecStatusRecord[] = [];
             for await (const line of medium.lines(HISTORY_FILE)) {
                 const parsed = parseHistoryRecord(line.text);
@@ -500,8 +671,26 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             }
             return { available: true, value: records };
         },
-        clear: async () => notImplemented(),
+        clear: async () => {
+            assertWritable();
+            return notImplemented();
+        },
         async dispose() {
+            if (disposed) {
+                return;
+            }
+            disposed = true;
+            timer?.dispose();
+            let bound: Disposable | undefined;
+            const gaveUp = new Promise<void>((resolve) => {
+                bound = clock.setTimeout(resolve, 3000);
+            });
+            await Promise.race([Promise.all([...queues.values()]), gaveUp]);
+            bound?.dispose();
+            if (writer) {
+                writer = false;
+                await lock.release().catch(() => undefined);
+            }
             stateListeners.clear();
         },
     };

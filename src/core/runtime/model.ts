@@ -130,3 +130,7 @@ export class RuntimeRefusal extends Error {
         this.name = 'RuntimeRefusal';
     }
 }
+
+export function normalizeMaxAgeDays(value: unknown): number {
+    return typeof value === 'number' && Number.isInteger(value) && value >= 1 ? value : DEFAULT_MAX_AGE_DAYS;
+}

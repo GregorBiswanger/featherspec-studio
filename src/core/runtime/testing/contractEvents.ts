@@ -140,6 +140,7 @@ export function registerEventsContract(context: ContractContext): void {
             ]);
             const done = await store.reportStatus(run.runId, 'Completed');
             expect(done.status).toBe('Completed');
+            await store.dispose();
             const reopened = await rig.open({ maxEventsPerRun: 5 });
             expect(await reopened.appendEvent(run.runId, { type: 'message', payload: 8 })).toEqual({ outcome: 'dropped' });
             const again = await reopened.readEvents(run.runId, 1, 50);
@@ -180,6 +181,7 @@ export function registerEventsContract(context: ContractContext): void {
             const page = await store.readEvents(run.runId, 1, 100);
             expect(page.available && seqs(page.value)).toEqual(Array.from({ length: 100 }, (_, offset) => offset + 1));
             expect(rig.faults.writeAttempts()).toBeGreaterThan(0);
+            rig.faults.hangWrites(false);
         });
 
         it('AC-029: negative control, without the hang the same events reach the medium', async () => {

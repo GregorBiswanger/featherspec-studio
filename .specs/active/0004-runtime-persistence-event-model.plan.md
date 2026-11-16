@@ -163,8 +163,8 @@ T-007 need the complete medium contract.
   "not available" with reason, N-5 once per activation through a `RuntimeNoticePort`. Two "windows" in
   tests share one in-memory medium; controllable clock.
 - **Verify:** `npm run test:unit` (contract cases red first, then green) plus the per-step gates
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-16 — red: `npx vitest run src/core/runtime` 13 of the 16 new contract cases failed (no lock, no classification, no cap, no state); AC-010 restore case was already green (restore existed since T-001), given a negative control (the stored run must exist before the comparison); green: 48 of 48 in `src/core/runtime`, `npm run test:unit` all green, `npx eslint src --max-warnings 0` and `npx tsc --noEmit` clean.
+- **Notes:** Tests: `testing/contractWriter.ts`. Three earlier cases were adapted because the writer now classifies at open (AC-008 reopen uses a Completed run; AC-027 reopen disposes the first window). Lock owner IDs come from `IdSource`; `dispose` waits for queued writes but gives up after 3 s of clock time. `clear()` guards the writer state and stays `Not implemented` until T-005.
 
 ### T-005 — Save failures, unreadable and newer data, clearing
 

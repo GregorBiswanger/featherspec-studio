@@ -105,11 +105,11 @@ export function registerRunsContract(context: ContractContext): void {
             const rig = await context.newRig();
             const first = await rig.open();
             const run = await first.createRun({ providerId: 'fake', spec: SPEC });
-            await first.reportStatus(run.runId, 'Running');
+            await first.reportStatus(run.runId, 'Completed');
             await first.dispose();
             const second = await rig.open();
             const list = await second.listRuns();
-            expect(list.available && list.value.map((entry) => [entry.runId, entry.status])).toEqual([[run.runId, 'Running']]);
+            expect(list.available && list.value.map((entry) => [entry.runId, entry.status])).toEqual([[run.runId, 'Completed']]);
         });
 
         it('AC-009: a project opened under another root URI returns no run', async () => {
