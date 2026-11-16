@@ -5,6 +5,7 @@ import type { Disposable, WorkspaceFoldersPort } from '../ports/host';
 import type { ShellActionsPort, ShellModel, ShellModelSource, TrustPort, UiMemoryPort } from '../ports/shell';
 import type { SpecRepository } from '../specs/specRepository';
 import type { RequestHandlers } from './messageRouter';
+import type { ShellRequestType } from '../../shared/protocol/messages';
 import { derivePanelState, listingFailure } from './panelState';
 import { findSpec, numberOfStem, reconcileSelection } from './selection';
 import { buildSpecRows } from './specRows';
@@ -29,7 +30,7 @@ export interface ShellService {
     runAction(action: ActionId): Promise<void>;
     rescan(): Promise<void>;
     open(request: OpenRequest): void;
-    handlers: RequestHandlers;
+    handlers: Pick<RequestHandlers, ShellRequestType>;
     dispose(): void;
 }
 

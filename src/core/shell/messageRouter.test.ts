@@ -12,6 +12,12 @@ function setup(overrides: Partial<RequestHandlers> = {}) {
         select: async (payload) => void calls.push(`select:${payload.stem}`),
         runAction: async (payload) => void calls.push(`runAction:${payload.action}`),
         dismissNotice: async () => void calls.push('dismissNotice'),
+        boardSetFilter: async () => void calls.push('boardSetFilter'),
+        boardSetSort: async (payload) => void calls.push(`boardSetSort:${payload.sort}`),
+        boardClearFilters: async () => void calls.push('boardClearFilters'),
+        boardFocus: async () => void calls.push('boardFocus'),
+        moveRequest: async (payload) => void calls.push(`moveRequest:${payload.target}`),
+        openFile: async () => void calls.push('openFile'),
         ...overrides,
     };
     const router = createMessageRouter({

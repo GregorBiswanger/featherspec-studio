@@ -1,3 +1,5 @@
+import type { BoardState } from './boardFilter';
+import type { CardRun, Progress, SortKey } from './board';
 import type { ActionId, PanelState } from './messages';
 
 export function ignoredMessageLine(type: string, reason: string): string {
@@ -104,4 +106,117 @@ export const DISMISS_LABEL = 'Dismiss';
 
 export function noticeText(number: string): string {
     return `Spec ${number} is no longer in the project`;
+}
+
+export const COLUMN_HINTS: Record<BoardState, string> = {
+    Backlog: 'No spec in the backlog.',
+    Ready: 'No spec is ready.',
+    Active: 'No spec is being implemented.',
+    Review: 'No spec awaits review.',
+    Done: 'No spec is done yet.',
+    Blocked: 'No spec is blocked.',
+};
+
+export function hiddenByFilterText(count: number): string {
+    return `${count} hidden by filter`;
+}
+
+export const BOARD_LABEL = 'Spec board';
+export const STATE_FILTER_LABEL = 'State';
+export const PROVIDER_FILTER_LABEL = 'Provider';
+export const NO_RUN_LABEL = 'No run';
+export const CLEAR_FILTERS_LABEL = 'Clear filters';
+export const SORT_LABEL = 'Sort';
+export const SPEC_SET_LABEL = 'Named set';
+
+export const SORT_LABELS: Record<SortKey, string> = {
+    number: 'Number',
+    title: 'Title A–Z',
+    lastChange: 'Last change (newest first)',
+};
+
+export const NO_SPECS_BOARD_TEXT = 'No specs yet. Run /sdd-specify to write the first one.';
+
+export const NO_SUMMARY_TEXT = 'No summary';
+
+export function tasksText(tasks: Progress | undefined): string {
+    return tasks === undefined ? 'Tasks: not available' : `Tasks: ${tasks.done} of ${tasks.total}`;
+}
+
+export function criteriaText(criteria: Progress | undefined): string {
+    return criteria === undefined ? 'Criteria: not available' : `Criteria: ${criteria.done} of ${criteria.total} verified`;
+}
+
+function two(value: number): string {
+    return String(value).padStart(2, '0');
+}
+
+export function formatLastChange(ms: number): string {
+    const date = new Date(ms);
+    return `${date.getFullYear()}-${two(date.getMonth() + 1)}-${two(date.getDate())} ${two(date.getHours())}:${two(date.getMinutes())}`;
+}
+
+export function lastChangeText(ms: number | undefined): string {
+    return ms === undefined ? 'Last change: not available' : `Last change: ${formatLastChange(ms)}`;
+}
+
+export function cardRunText(run: CardRun): string {
+    switch (run.kind) {
+        case 'none':
+            return 'No run';
+        case 'unavailable':
+            return 'Runs: not available';
+        case 'run':
+            return `${run.provider} · ${run.status}`;
+        case 'unreadable':
+            return `${run.provider} · history unreadable`;
+    }
+}
+
+export const DEPRECATED_MARKER = 'Deprecated';
+export const UNCERTAIN_FLAG = 'uncertain';
+export const STRUCK_FLAG = 'struck';
+export const HISTORY_INCOMPLETE_FLAG = 'history incomplete';
+export const HISTORY_UNREADABLE_FLAG = 'history unreadable';
+
+export function diagnosticsBadgeText(count: number): string {
+    return count === 1 ? '1 diagnostic' : `${count} diagnostics`;
+}
+
+export const BANNER_HEADING = 'Project diagnostics';
+
+export const AGENT_START_UNAVAILABLE_TEXT = 'Agent start is not available yet';
+
+export function handedOffText(number: string): string {
+    return `Spec ${number} was handed to the agent start.`;
+}
+
+export const MOVE_MENU_LABEL = 'Move to…';
+export const MOVE_COMMAND_TITLE = 'FeatherSpec: Move Spec to…';
+export const PICK_SPEC_PLACEHOLDER = 'Select a spec to move';
+
+export function pickTargetPlaceholder(number: string): string {
+    return `Move spec ${number} to…`;
+}
+
+export const NO_DETAIL_SELECTION_TEXT = 'Select a spec in the list to see its details.';
+export const NO_REQUIREMENTS_TEXT = 'No FR- requirements found';
+export const NO_PLAN_TEXT = 'No plan yet';
+export const PRIORITY_TEXT = 'Priority: not available';
+export const OPEN_FILE_LABEL = 'Open file';
+export const HISTORY_NOT_AVAILABLE_TEXT = 'Status history: not available';
+
+export function fileNotFoundText(path: string): string {
+    return `File not found: ${path}`;
+}
+
+export function successorText(successor: { kind: 'link'; text: string } | { kind: 'none' } | { kind: 'not-available' }): string {
+    switch (successor.kind) {
+        case 'link':
+            return `Successor: ${successor.text}`;
+        case 'none':
+            return 'Successor: none — behaviour removed';
+        case 'not-available':
+            return 'Successor: not available';
+    }
 }

@@ -1,5 +1,7 @@
 import { isAreaId, type AreaId } from './areas';
-import { isJsonValue, isRecord, type JsonValue } from './envelope';
+import { isBoardView, isMoveResult, isSortKey, type BoardView, type MoveResult, type SortKey } from './board';
+import { isBoardFilter, isBoardState, type BoardFilter, type BoardState } from './boardFilter';
+import { isRecord } from './envelope';
 
 export const ACTION_IDS = [
     'openFolder',
@@ -16,7 +18,7 @@ export type ActionId = (typeof ACTION_IDS)[number];
 export type NavigationTarget =
     | { kind: 'spec'; stem: string; path?: string }
     | { kind: 'run'; id: string }
-    | { kind: 'boardFilter'; filter: JsonValue };
+    | { kind: 'boardFilter'; filter: BoardFilter };
 
 export interface NavigationRequest {
     area: AreaId;
@@ -84,7 +86,29 @@ export interface RunActionPayload {
     action: ActionId;
 }
 
-export interface RequestPayloads {
+export interface BoardSetFilterPayload {
+    filter: BoardFilter;
+}
+
+export interface BoardSetSortPayload {
+    sort: SortKey;
+}
+
+export interface BoardFocusPayload {
+    key: string | null;
+}
+
+export interface MoveRequestPayload {
+    key: string;
+    target: BoardState;
+}
+
+export interface OpenFilePayload {
+    key: string;
+    line?: number;
+}
+
+export interface ShellRequestPayloads {
     hello: HelloPayload;
     navigate: NavigationRequest;
     select: SelectPayload;
@@ -92,7 +116,28 @@ export interface RequestPayloads {
     dismissNotice: Record<string, never>;
 }
 
+export interface BoardRequestPayloads {
+    boardSetFilter: BoardSetFilterPayload;
+    boardSetSort: BoardSetSortPayload;
+    boardClearFilters: Record<string, never>;
+    boardFocus: BoardFocusPayload;
+    moveRequest: MoveRequestPayload;
+    openFile: OpenFilePayload;
+}
+
+export type RequestPayloads = ShellRequestPayloads & BoardRequestPayloads;
+
 export type RequestType = keyof RequestPayloads;
+export type ShellRequestType = keyof ShellRequestPayloads;
+export type BoardRequestType = keyof BoardRequestPayloads;
+
+export interface BoardEventPayload {
+    view: BoardView;
+}
+
+export interface MoveResultEventPayload {
+    result: MoveResult;
+}
 
 export interface ShellEventPayload {
     view: ShellView;
@@ -122,7 +167,7 @@ export function isNavigationTarget(value: unknown): value is NavigationTarget {
         return isString(value.id) && value.id.length > 0;
     }
     if (value.kind === 'boardFilter') {
-        return isJsonValue(value.filter);
+        return isBoardFilter(value.filter);
     }
     return false;
 }
@@ -147,12 +192,51 @@ export function isEmptyPayload(value: unknown): value is Record<string, never> {
     return value === undefined || (isRecord(value) && Object.keys(value).length === 0);
 }
 
+export function isBoardSetFilterPayload(value: unknown): value is BoardSetFilterPayload {
+    return isRecord(value) && isBoardFilter(value.filter);
+}
+
+export function isBoardSetSortPayload(value: unknown): value is BoardSetSortPayload {
+    return isRecord(value) && isSortKey(value.sort);
+}
+
+export function isBoardFocusPayload(value: unknown): value is BoardFocusPayload {
+    return isRecord(value) && (value.key === null || (isString(value.key) && value.key.length > 0));
+}
+
+export function isMoveRequestPayload(value: unknown): value is MoveRequestPayload {
+    return isRecord(value) && isString(value.key) && value.key.length > 0 && isBoardState(value.target);
+}
+
+export function isOpenFilePayload(value: unknown): value is OpenFilePayload {
+    return (
+        isRecord(value) &&
+        isString(value.key) &&
+        value.key.length > 0 &&
+        (value.line === undefined || (typeof value.line === 'number' && Number.isInteger(value.line) && value.line >= 1))
+    );
+}
+
+export function isBoardEventPayload(value: unknown): value is BoardEventPayload {
+    return isRecord(value) && isBoardView(value.view);
+}
+
+export function isMoveResultEventPayload(value: unknown): value is MoveResultEventPayload {
+    return isRecord(value) && isMoveResult(value.result);
+}
+
 export const REQUEST_GUARDS: { [Type in RequestType]: (value: unknown) => value is RequestPayloads[Type] } = {
     hello: isHelloPayload,
     navigate: isNavigationRequest,
     select: isSelectPayload,
     runAction: isRunActionPayload,
     dismissNotice: isEmptyPayload,
+    boardSetFilter: isBoardSetFilterPayload,
+    boardSetSort: isBoardSetSortPayload,
+    boardClearFilters: isEmptyPayload,
+    boardFocus: isBoardFocusPayload,
+    moveRequest: isMoveRequestPayload,
+    openFile: isOpenFilePayload,
 };
 
 export function isRequestType(value: string): value is RequestType {

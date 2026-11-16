@@ -3,7 +3,7 @@
 **Spec:** [0007-spec-board-spec-detail.md](0007-spec-board-spec-detail.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** 0003 T-010 (before T-001)
+**Current step:** T-002
 
 ## Approach
 
@@ -219,8 +219,8 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
       - AC-005: the sort keys hold no priority.
     - A core test asserts that `BOARD_STATES` equals 0003's `LIFECYCLE_STATES`.
 - **Verify:** `npm run test:unit -- src/shared src/core/board` plus the per-step gates
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-16 · red: `npx vitest run --project node src/shared src/core/board` 15 of 15 filter and sort cases failed with `Not implemented` (stub `arrangeBoard`); the guard and contract tests were written together with their types and passed at once, with the rejection cases as their negative controls; green: 61 of 61; gates: eslint 0 warnings, both `tsc --noEmit` clean, `npm run test:unit` 922 tests passed.
+- **Notes:** Deviations: the filter encoding is in its own file `src/shared/protocol/boardFilter.ts` (0006's plan names that file), `board.ts` holds `CardView`, `BoardView`, `SortKey`, `MoveResult` and their guards; `DetailView` and the `detail` event come in T-006 (nothing consumes them earlier). `RequestType` is split (`ShellRequestType`, `BoardRequestType`); the `boardFilter` navigation target is guarded by `isBoardFilter`, so a bad filter drops the whole request (X-14 line). `studioPanel` takes optional `board` handlers (ignored until T-010). All B-texts are in `texts.ts`. Tests: `boardFilter.test.ts`, `src/core/board/filters.test.ts`.
 
 ### T-002 — Cards: content, markers, diagnostics
 
@@ -531,15 +531,15 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 | AC-002 | T-002 | — | — | open |
 | AC-003 | T-002 | — | — | open |
 | AC-004 | T-002, T-007 | — | — + manual: Gregor, two-line limit | open |
-| AC-005 | T-001, T-006 | — | — | open |
+| AC-005 | T-001, T-006 | `src/shared/protocol/board.ts:SORT_KEYS` | `src/core/board/filters.test.ts` (AC-005) | open |
 | AC-006 | T-003, T-006 | — | — | open |
 | AC-007 | T-003 | — | — | open |
 | AC-008 | T-007, T-010 | — | — | open |
 | AC-009 | T-006, T-009 | — | — | open |
 | AC-010 | T-005, T-006, T-009, T-010 | — | — | open |
-| AC-011 | T-001, T-004 | — | — | open |
-| AC-012 | T-001, T-007 | — | — | open |
-| AC-013 | T-001 | — | — | open |
+| AC-011 | T-001, T-004 | `src/core/board/filters.ts:arrangeBoard` | `filters.test.ts` (AC-011, T-001 part) | open |
+| AC-012 | T-001, T-007 | `src/core/board/filters.ts:arrangeBoard` | `filters.test.ts` (AC-012) | open |
+| AC-013 | T-001 | `src/core/board/filters.ts:arrangeBoard` | `filters.test.ts` (AC-013) | verified |
 | AC-014 | T-005, T-008, T-010 | — | — | open |
 | AC-015 | T-005 | — | — | open |
 | AC-016 | T-005, T-010 | — | — | open |
@@ -548,7 +548,7 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 | AC-019 | T-004, T-007, T-008 | — | — | open |
 | AC-020 | T-002 | — | — | open |
 | AC-021 | T-007 | — | — | open |
-| AC-022 | T-001, T-004 | — | — | open |
+| AC-022 | T-001, T-004 | `src/shared/protocol/boardFilter.ts`, `filters.ts` | `boardFilter.test.ts`, `filters.test.ts` (AC-022) | open |
 | AC-023 | T-004 | — | — | open |
 | AC-024 | T-002, T-006 | — | — | open |
 | AC-025 | T-003 | — | — | open |

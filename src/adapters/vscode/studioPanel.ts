@@ -1,18 +1,27 @@
 import { randomBytes } from 'node:crypto';
 import * as vscode from 'vscode';
 import type { OutputPort } from '../../core/ports/host';
-import { createMessageRouter } from '../../core/shell/messageRouter';
+import { createMessageRouter, type RequestHandlers } from '../../core/shell/messageRouter';
 import type { ShellService } from '../../core/shell/shellService';
 import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../../shared/protocol/envelope';
-import { isProbeResultPayload, type ProbeOutcome } from '../../shared/protocol/messages';
+import { isProbeResultPayload, type BoardRequestType, type ProbeOutcome } from '../../shared/protocol/messages';
 import { buildWebviewHtml } from './webviewHtml';
 
 export const VIEW_TYPE = 'featherspecStudio.main';
 const PROBE_TIMEOUT_MS = 5000;
+const IGNORED_BOARD_REQUESTS: Pick<RequestHandlers, BoardRequestType> = {
+    boardSetFilter: async () => undefined,
+    boardSetSort: async () => undefined,
+    boardClearFilters: async () => undefined,
+    boardFocus: async () => undefined,
+    moveRequest: async () => undefined,
+    openFile: async () => undefined,
+};
 
 export interface StudioPanelDeps {
     extensionUri: vscode.Uri;
     service: ShellService;
+    board?: Pick<RequestHandlers, BoardRequestType>;
     output: OutputPort;
     testMode: boolean;
 }
@@ -70,6 +79,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
 
     const router = createMessageRouter({
         handlers: {
+            ...(deps.board ?? IGNORED_BOARD_REQUESTS),
             ...deps.service.handlers,
             hello: async (payload) => {
                 helloAt = Date.now();

@@ -1,0 +1,53 @@
+import type { BoardColumn, CardView, SortKey } from '../../shared/protocol/board';
+import { BOARD_STATES, type BoardFilter } from '../../shared/protocol/boardFilter';
+
+function matches(card: CardView, filter: BoardFilter): boolean {
+    if (filter.states !== undefined && !filter.states.includes(card.state)) {
+        return false;
+    }
+    if (filter.providers !== undefined) {
+        const provider = card.run.kind === 'run' || card.run.kind === 'unreadable' ? card.run.provider : card.run.kind === 'none' ? null : undefined;
+        if (provider === undefined || !filter.providers.includes(provider)) {
+            return false;
+        }
+    }
+    return filter.set === undefined || filter.set.stems.includes(card.stem);
+}
+
+function compareText(left: string, right: string): number {
+    return left < right ? -1 : left > right ? 1 : 0;
+}
+
+function tieBreak(left: CardView, right: CardView): number {
+    return compareText(left.stem, right.stem) || compareText(left.key, right.key);
+}
+
+function compareBy(sort: SortKey): (left: CardView, right: CardView) => number {
+    switch (sort) {
+        case 'number':
+            return (left, right) => Number(left.number) - Number(right.number) || compareText(left.number, right.number) || tieBreak(left, right);
+        case 'title':
+            return (left, right) => {
+                if (left.titleIsStem !== right.titleIsStem) {
+                    return left.titleIsStem ? 1 : -1;
+                }
+                return left.title.localeCompare(right.title, 'en', { sensitivity: 'base' }) || tieBreak(left, right);
+            };
+        case 'lastChange':
+            return (left, right) => {
+                if (left.lastChangeMs === undefined || right.lastChangeMs === undefined) {
+                    return left.lastChangeMs === right.lastChangeMs ? tieBreak(left, right) : left.lastChangeMs === undefined ? 1 : -1;
+                }
+                return right.lastChangeMs - left.lastChangeMs || tieBreak(left, right);
+            };
+    }
+}
+
+export function arrangeBoard(cards: readonly CardView[], filter: BoardFilter, sort: SortKey): BoardColumn[] {
+    const compare = compareBy(sort);
+    return BOARD_STATES.map((state) => {
+        const own = cards.filter((card) => card.state === state);
+        const shown = own.filter((card) => matches(card, filter)).sort(compare);
+        return { state, cards: shown, hidden: own.length - shown.length, emptyBeforeFilter: own.length === 0 };
+    });
+}
