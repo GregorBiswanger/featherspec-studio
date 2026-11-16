@@ -3,7 +3,7 @@
 **Spec:** [0001-workspace-discovery-project-recognition.md](0001-workspace-discovery-project-recognition.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-001
+**Current step:** T-003
 
 ## Approach
 
@@ -272,34 +272,34 @@ T-005…T-007 define, and T-008 documents the result.
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001 | — | — | open |
-| AC-002 | T-001 | — | — | open |
-| AC-003 | T-001, T-004, T-006 | — | — | open |
-| AC-004 | T-001 | — | — | open |
-| AC-006 | T-001 | — | — | open |
+| AC-001 | T-001 | src/core/discovery/classifyFolder.ts:classifyFolder | classifyFolder.test.ts, discoverWorkspace.test.ts | verified |
+| AC-002 | T-001 | src/core/discovery/classifyFolder.ts:classifyFolder | classifyFolder.test.ts (AC-002 cases) | verified |
+| AC-003 | T-001, T-004, T-006 | src/core/discovery/classifyFolder.ts (missingMarkers) | classifyFolder.test.ts (AC-003); report and select list open (T-004, T-006) | built |
+| AC-004 | T-001 | src/core/discovery/classifyFolder.ts, discoverWorkspace.ts (legacy diagnostic) | classifyFolder.test.ts, discoverWorkspace.test.ts (AC-004) | verified |
+| AC-006 | T-001 | src/core/discovery/classifyFolder.ts:classifyFolder | classifyFolder.test.ts (AC-006 incl. control) | verified |
 | AC-007 | T-003, T-005 | — | — | open |
 | AC-008 | T-003, T-004, T-006 | — | — | open |
 | AC-009 | T-003, T-006 | — | manual: Gregor reloads (planned) | open |
 | AC-010 | T-003, T-006 | — | — | open |
-| AC-011 | T-002, T-006 | — | — | open |
-| AC-012 | T-002, T-007 | — | — | open |
+| AC-011 | T-002, T-006 | src/core/ports/readOnlyFileSystem.ts (no write members), discoverWorkspace.ts | discoverWorkspace.test.ts (AC-011 tree snapshot); refresh and select open (T-006) | built |
+| AC-012 | T-002, T-007 | src/core/discovery/discoverWorkspace.ts:discoverWorkspace | discoverWorkspace.test.ts (AC-012); select list, Output block, reruns open (T-004, T-007) | built |
 | AC-013 | T-007 | — | — | open |
 | AC-014 | T-003, T-005 | — | — | open |
 | AC-015 | T-004, T-006 | — | — | open |
 | AC-016 | T-004, T-005 | — | — | open |
-| AC-017 | T-002, T-004 | — | — | open |
-| AC-018 | T-002 | — | — | open |
+| AC-017 | T-002, T-004 | src/core/discovery/discoverWorkspace.ts:discoverFolder | discoverWorkspace.test.ts (AC-017); Output line open (T-004) | built |
+| AC-018 | T-002 | src/core/discovery/discoverWorkspace.ts:discoverWorkspace | discoverWorkspace.test.ts (AC-018, 5 fixtures < 2 s) | verified |
 | AC-019 | T-005, T-009 | — | — | open |
 | AC-020 | T-003, T-005 | — | — | open |
-| AC-021 | T-002 | — | — | open |
+| AC-021 | T-002 | src/core/discovery/versionLine.ts:readVersionLine | versionLine.test.ts, discoverWorkspace.test.ts (AC-021) | verified |
 | AC-022 | T-009 | — | manual: Gregor in Restricted Mode (planned) | open |
 
 Pre-done (before `/sdd-lifecycle` → done): `npm test` smoke suite green on CI or Gregor's Windows machine, plus the two manual checks above.
 
 ## Session handoff
 
-- **Done so far:** plan written and re-cut (stage 3 core-only, T-009 appended); spec revised for OP-005; plan approved by Gregor (2026-11-16).
-- **Next action:** T-001.
+- **Done so far:** T-001, T-002 (stage 1: marker verdicts, version line, one discovery run; 33 unit tests green); lifecycle move done, plan In Progress.
+- **Next action:** T-003, then stages 2–5 as planned.
 - **Open decisions:** OP-004, OP-006…OP-012 (spec §17), none blocking.
 - **Baseline:** `2083696` (HEAD before the first step commit; lifecycle move 2026-11-16).
 - **Environment:** `npm test` cannot run here (VS Code download blocked); it runs on CI and on Gregor's Windows machine.
