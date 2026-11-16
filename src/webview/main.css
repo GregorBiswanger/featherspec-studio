@@ -424,3 +424,23 @@ main {
 .mc-reason {
     color: var(--vscode-editorWarning-foreground, var(--vscode-foreground));
 }
+
+.mc-drill {
+    padding: 0;
+    color: var(--vscode-textLink-foreground);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+}
+
+.mc-drill:hover {
+    color: var(--vscode-textLink-activeForeground);
+    text-decoration: underline;
+}
+
+.mc-attention h2,
+.mc-attention h2 .mc-drill {
+    font-size: inherit;
+}

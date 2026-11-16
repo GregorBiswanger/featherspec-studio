@@ -64,4 +64,13 @@ describe('AC-026: colours come from the theme', () => {
     it('AC-031 control: no rule falls back to a colour literal for the contrast variables', () => {
         expect(css).not.toMatch(/--vscode-contrast(?:Active)?Border,\s*#/);
     });
+
+    it('0006 AC-022: a Mission Control drill-down button sets no outline of its own, so the generic focus indicator of every button applies', () => {
+        const drill = rulesFor(css, '.mc-drill');
+        expect(drill.length).toBeGreaterThan(0);
+        for (const rule of drill) {
+            expect(rule.body).not.toContain('outline');
+        }
+        expect(rulesFor(css, 'button:focus-visible').some((rule) => rule.body.includes('outline: 2px solid'))).toBe(true);
+    });
 });

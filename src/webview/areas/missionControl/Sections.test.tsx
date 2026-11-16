@@ -126,7 +126,8 @@ describe('AC-010, AC-011: recent activity', () => {
         expect(rows[0]).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} · 0001 A · Backlog → Ready$/);
         expect(rows[1]).toMatch(/· 0009-gone — spec not found · Done → no longer observed$/);
         expect(rows[2]).toMatch(/· 0001 A · Run: Waiting for input$/);
-        expect(activity.querySelectorAll('button')).toHaveLength(0);
+        expect([...activity.querySelectorAll('button')].filter((button) => !button.hasAttribute('data-drill'))).toHaveLength(0);
+        expect(activity.querySelectorAll('button')).toHaveLength(rows.length);
         expect(activity.textContent).not.toMatch(/\bmore\b/i);
     });
 

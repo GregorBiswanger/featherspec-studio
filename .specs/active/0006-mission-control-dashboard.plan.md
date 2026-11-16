@@ -3,7 +3,7 @@
 **Spec:** [0006-mission-control-dashboard.md](0006-mission-control-dashboard.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-005
+**Current step:** T-008
 
 ## Approach
 
@@ -413,7 +413,7 @@ small, so the recommendation is to run them in sequence.
     - AC-026: the DOM text holds no field beyond the contract (a view fixture with the T-003
       `SECRET-1` run).
 - **Verify:** `npx vitest run src/webview` plus the per-step gates
-- [x] **Verified (T-006):** 2026-11-16 — red: `npx vitest run src/webview/areas/missionControl/Sections.test.tsx` 16 failed (no run, attention or activity section in the DOM); and the bundle test extended with the run section, attention and activity assertions; green: 182/182 in `src/webview` plus the bundle test after `RunSection.tsx`, `Attention.tsx`, `Activity.tsx` landed. Covers AC-005, AC-007, AC-008, AC-010, AC-011 (no control that shows more), AC-018 (reason shown, never Running 0, rows plus the line), AC-021 (every marker is non-empty text), AC-026 (a poisoned view is refused, the text is nowhere), AC-027, AC-028, AC-024 (full 200-spec content < 1000 ms). Gates: eslint 0, `tsc --noEmit` 0, `tsc --noEmit -p src/webview` 0, `npm run test:unit` 85 files, 1220 passed.
+- [x] **Verified (T-006):** 2026-11-16 — red: `npx vitest run src/webview/areas/missionControl/Sections.test.tsx` 16 failed (no run, attention or activity section in the DOM); and the bundle test extended with the run section, attention and activity assertions; green: 182/182 in `src/webview` plus the bundle test after `RunSection.tsx`, `Attention.tsx`, `Activity.tsx` landed. Covers AC-005, AC-007, AC-008, AC-010, AC-011 (no control that shows more), AC-018 (reason shown, never Running 0, rows plus the line), AC-021 (every marker is non-empty text), AC-026 (a poisoned view is refused, the text is nowhere), AC-027, AC-028, AC-024 (full 200-spec content < 1000 ms). Gates: eslint 0, `tsc --noEmit` 0, `tsc --noEmit -p src/webview` 0, `npm run test:unit` 85 files, 1222 passed.
 - **Notes:** A highlighted run of a vanished stem reads `<stem> — spec not found — <status>` (the status stays text, AC-021). With zero specs the attention list is not rendered at all (AC-028). Colour classes (`mc-status-*`, `mc-reason`) add colour only; every word is a text node.
 
 
@@ -446,8 +446,9 @@ small, so the recommendation is to run them in sequence.
       DOM order; Enter and Space per *Research*;
     - a 0 count still sends its request, a "not available" value has no control (AC-029).
 - **Verify:** `npx vitest run src/webview src/shared` plus the per-step gates
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** 2026-11-16 — red: `npx vitest run src/webview/areas/missionControl/Drilldown.test.tsx` 17 failed (no drill-down element in the DOM); green: 17/17 after `requests.ts`, `Drill.tsx` and the wiring landed (4 tests of mine first clicked twice in one mount although a click leaves the area; fixed with a helper that answers the navigate response). Covers AC-012 (total, state, a state with 0, Needs attention with exactly the listed stems, a duplicated stem once), AC-013 (highlighted run also for a vanished stem, Running with one run as target, with two runs and with 0 without), AC-014 (row, duplicated stem with path, activity entry, vanished stem: no request, notice 'Spec 0009 is no longer in the project', Dismiss), AC-017 (Diagnostics set, no runAction, count 0 still a button), AC-022 (native enabled buttons in layout order, Enter and Space), AC-029 (a not-available value has no control), every payload passes `isNavigationRequest`. CSS guard: drill buttons set no outline. Gates: eslint 0, `tsc --noEmit` 0, `tsc --noEmit -p src/webview` 0, `npm run test:unit` 86 files, 1240 passed.
+- **Notes:** Deviations from *Do:* the request shapes follow 0007's filter (`{ states }`, `{ set }`), not this plan's first encoding; the diagnostics count sends the named set 'Diagnostics' (Gregor's OP-4 answer), not `showOutput`; `boardFilter.ts` was not added. The vanished-stem notice is the area's own `data-mc-notice` line (role status, Dismiss) with the shell's `noticeText`. Enter and Space are checked through the `pressKey` helper of 0005, which emulates native button activation (jsdom fires none); the real keys stay in Gregor's hands-on run. A click changes the area at once (the client's local navigation), so tests answer the navigate response to come back. `Sections.test.tsx` (AC-010 'no control that shows more') now allows the entry buttons.
+
 
 ### T-008 — Host wiring, host smoke; docs sync and final gates
 
@@ -502,29 +503,29 @@ small, so the recommendation is to run them in sequence.
 | AC-009 | T-003 | attention.ts:carriesDiagnostic | attention.test.ts (AC-009) | verified |
 | AC-010 | T-004, T-006 | Activity.tsx | activity.test.ts (AC-010), Sections.test.tsx (AC-010) | verified |
 | AC-011 | T-004 | activity.ts | activity.test.ts (AC-011), missionControlService.test.ts (AC-011, real store) | verified |
-| AC-012 | T-007 | — | — | open |
-| AC-013 | T-007 | — | — | open |
-| AC-014 | T-007 | — | — | open |
+| AC-012 | T-007 | src/webview/areas/missionControl/requests.ts, SpecFigures.tsx, Attention.tsx | Drilldown.test.tsx (AC-012) | verified |
+| AC-013 | T-007 | requests.ts, RunSection.tsx | Drilldown.test.tsx (AC-013) | verified |
+| AC-014 | T-007 | requests.ts, Activity.tsx, MissionControl.tsx (notice) | Drilldown.test.tsx (AC-014) | verified |
 | AC-015 | T-001, T-004, T-008 | src/core/missionControl/runSource.ts, missionControlService.ts | runSource.test.ts, missionControlService.test.ts (AC-015); host smoke on CI in T-008 | built |
 | AC-016 | T-005 | src/webview/areas/missionControl/MissionControl.tsx, src/webview/client.ts | MissionControl.test.tsx (AC-016) | verified |
-| AC-017 | T-002, T-005, T-007 | Header.tsx (T-005); request in T-007 | MissionControl.test.tsx (AC-017); request test in T-007 | built |
+| AC-017 | T-002, T-005, T-007 | Header.tsx, requests.ts:diagnosticsRequest | MissionControl.test.tsx, Drilldown.test.tsx (AC-017) | verified |
 | AC-018 | T-001, T-003, T-004, T-006 | RunSection.tsx, Attention.tsx, Activity.tsx | missionControlService.test.ts, Sections.test.tsx (AC-018) | verified |
 | AC-019 | T-002, T-005 | src/core/missionControl/specFigures.ts, Header.tsx | specFigures.test.ts, MissionControl.test.tsx (unknown version) | built |
 | AC-020 | T-002, T-005 | specFigures.ts (empty form) | specFigures.test.ts (AC-020); rendering in T-005 | built |
 | AC-021 | T-006 | RunSection.tsx, Attention.tsx, SpecFigures.tsx (text nodes) | Sections.test.tsx (AC-021); manual: Gregor, High Contrast | built |
-| AC-022 | T-007 | — | + manual: Gregor, focus, Enter and Space | open |
+| AC-022 | T-007 | src/webview/areas/missionControl/Drill.tsx (native buttons), main.css | Drilldown.test.tsx (AC-022), webviewCss.test.ts; manual: Gregor, focus with Enter and Space | built |
 | AC-023 | T-004, T-008 | missionControlService.ts (read-only Picks) | missionControlService.test.ts (AC-023); host smoke snapshotTree in T-008 | built |
 | AC-024 | T-004, T-005 | missionControlService.ts, MissionControl.tsx | missionControlService.test.ts, MissionControl.test.tsx, Sections.test.tsx (AC-024); Gregor re-measures on a real project (OP-12) | verified |
 | AC-025 | T-002, T-005 | specFigures.ts (derivedRule) | specFigures.test.ts (AC-025) | built |
 | AC-026 | T-002, T-003, T-006 | no field in the contract; guard refuses extra keys | missionControl.test.ts, runFigures.test.ts, Sections.test.tsx (AC-026) | verified |
 | AC-027 | T-003, T-006 | RunSection.tsx, runFigures.ts | runFigures.test.ts, Sections.test.tsx (AC-027) | verified |
 | AC-028 | T-005 | MissionControl.tsx | MissionControl.test.tsx, Sections.test.tsx (AC-028) | verified |
-| AC-029 | T-007 | — | — | open |
+| AC-029 | T-007 | RunSection.tsx, Drilldown.test.tsx | Drilldown.test.tsx (AC-029, OP-9) | verified |
 
 ## Session handoff
 
-- **Done so far:** Stages 1 and 2 ticked: T-001 run source, T-002 view contract and spec figures, T-003 run figures and attention, T-004 activity and the dashboard service; 1191 unit tests green.
-- **Next action:** Stage 3: T-005 (webview transport, header, spec figures, area registration), T-006 (runs, attention, activity), T-007 (drill-down requests); then T-008 (host wiring, smoke, docs).
+- **Done so far:** Stage 3 ticked: T-005 area, header and spec figures, T-006 run section, attention and activity, T-007 drill-down requests; the bundle test mounts the area with a fixture snapshot; 1240 unit tests green.
+- **Next action:** T-008: host wiring (`extension.ts`, `studioPanel.ts`, `StudioApi.missionControl()`), host smoke `src/test/missionControl.smoke.test.ts` (CI only), docs sync, final gates.
 - **Open decisions:** none blocking. Gregor's manual checks (spec §14): AC-021 in a High Contrast theme, AC-022 focus with Enter and Space, the §9 layout in the hands-on run.
 - **Baseline:** `1ba50ff` (HEAD before the first step commit of this plan).
 - **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); CI runs it. `node_modules` is installed; no dependency is added.
