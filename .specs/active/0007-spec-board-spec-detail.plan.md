@@ -3,7 +3,7 @@
 **Spec:** [0007-spec-board-spec-detail.md](0007-spec-board-spec-detail.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-011 (after `/sdd-compile`)
+**Current step:** T-012 (after `/sdd-compile`)
 
 ## Approach
 
@@ -533,6 +533,17 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 - [x] **Verified (T-011):** 2026-11-16 · red: `npx vitest run src/webview/board/Keyboard.test.tsx` 3 failed (the button was not a tab stop, did not follow the tab stop, and its blur sent no `null`; the replaced "not a tab stop" test was dropped); green: `npx vitest run src/webview` 195 of 195; gates: eslint 0 warnings, both `tsc --noEmit` clean, `npm run test:unit` 86 files, 1246 tests passed, `npm run compile` green.
 - **Notes:** jsdom has no Tab key, so the tests read `tabIndex` and the DOM order; Gregor's keyboard-only pass (AC-017, manual) still decides the real Tab walk.
 
+### T-012 — Timing test for the detail view (after `/sdd-compile`)
+
+- **Covers:** AC-019 (the detail half; PD-047)
+- **Do:**
+  - `boardService.test.ts`, on the 200-spec project with one spec selected: a model notification and a run notification each reach the detail (`onDidChangeDetail`) in under 200 ms. Same split as the board's (*Research*: core 200 ms, webview 300 ms).
+  - `SpecDetail.test.tsx`: a `detail` event with 120 requirements, 200 criteria, 150 steps and 100 runs is in the DOM in under 300 ms.
+  - No production code changes: the criterion was already met, only its proof was missing.
+- **Verify:** `npm run test:unit -- src/core/board src/webview/detail` plus the per-step gates
+- [x] **Verified (T-012):** 2026-11-16 · no red run is possible (no code was missing); negative control instead: with both limits set to 0 the two new tests failed (2 failed, 37 passed), restored: `npx vitest run src/core/board/boardService.test.ts src/webview/detail` 39 of 39; gates: eslint 0 warnings, both `tsc --noEmit` clean, `npm run test:unit` 86 files, 1248 tests passed.
+- **Notes:** The in-process `postMessage` hop is still not measured (see *Research*, the 500 ms split).
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -555,7 +566,7 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 | AC-016 | T-005, T-010 | `src/core/board/moves.ts`, `openFile.ts` | `noWrite.test.ts` (AC-016); `src/test/board.smoke.test.ts` (CI) | built |
 | AC-017 | T-008, T-009, T-011 | src/webview/board/focusModel.ts; src/webview/board/MoveMenu.tsx (tabStop); src/webview/detail/DetailSection.tsx:OpenButton | — + manual: Gregor, keyboard-only pass; focusModel.test.ts; Keyboard.test.tsx (AC-017); SpecDetail.test.tsx (keyboard-operable) | built |
 | AC-018 | T-007, T-008 | src/webview/board/Announcer.tsx | — + manual: Gregor, screen reader; Keyboard.test.tsx (AC-018) | built |
-| AC-019 | T-004, T-007, T-008 | src/webview/board/focusModel.ts:fallbackFocus | Keyboard.test.tsx (AC-019) | built |
+| AC-019 | T-004, T-007, T-008, T-012 | src/webview/board/focusModel.ts:fallbackFocus | Keyboard.test.tsx (AC-019); `boardService.test.ts` (detail freshness); SpecDetail.test.tsx (AC-019) | built |
 | AC-020 | T-002 | `src/core/board/cards.ts:buildCards, buildBanner` | `cards.test.ts` (AC-020) | built |
 | AC-021 | T-007 | src/webview/areas/SpecBoard.tsx; src/webview/board/Column.tsx | SpecBoard.test.tsx (AC-021); `boardService.test.ts` (AC-021) | built |
 | AC-022 | T-001, T-004 | `src/shared/protocol/boardFilter.ts`, `filters.ts`; `extension.ts` (navigation to `applyNavigationFilter`) | `boardFilter.test.ts`, `filters.test.ts` (AC-022); `boardService.test.ts` (AC-022); SpecBoard.test.tsx (AC-022) | built |

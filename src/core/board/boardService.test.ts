@@ -7,6 +7,7 @@ import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
 import { specText } from '../lifecycle/testing/projects';
 import { readProject } from '../specs/readProject';
 import { generateProject } from '../specs/testing/generateProject';
+import type { DetailView } from '../../shared/protocol/detail';
 import type { BoardService } from './boardService';
 import { createBoardWorld, createFakeStore, modelOf, run, type BoardWorld } from './testing/boardWorld';
 
@@ -195,6 +196,61 @@ describe('board service: freshness on 200 specs (AC-019, core part)', () => {
         await w.service.whenIdle();
         const elapsed = performance.now() - start;
         expect(w.service.view()!.providers).toEqual(['copilot']);
+        expect(elapsed).toBeLessThan(200);
+    });
+});
+
+describe('board service: detail freshness on 200 specs (AC-019, core part for the detail view)', () => {
+    let temp: string | undefined;
+    afterEach(async () => {
+        if (temp !== undefined) {
+            await fs.rm(temp, { recursive: true, force: true });
+        }
+    });
+
+    it('a model notification and a run notification reach the detail of the selected spec in under 200 ms each', async () => {
+        temp = await fs.mkdtemp(path.join(os.tmpdir(), 'detail-perf-'));
+        await generateProject(temp, 200);
+        const project = await readProject(createNodeSpecSource(), temp, '1.10.0');
+        const model = { project, lifecycle: deriveLifecycle(project) };
+        const w = createBoardWorld(model);
+        disposables.push(w.service);
+        const target = project.specs[0]!;
+        w.selection.set({ stem: model.lifecycle.entries.find((entry) => entry.key === target.key)!.stem });
+        await w.service.whenIdle();
+        const seen: DetailView[] = [];
+        w.service.onDidChangeDetail((view) => seen.push(view));
+        const shownCriteria = () => {
+            const view = w.service.detail();
+            return view.kind === 'spec' ? view.sections.criteria.items.length : -1;
+        };
+        const before = shownCriteria();
+        expect(before).toBeGreaterThanOrEqual(0);
+
+        const extended = {
+            ...project,
+            specs: project.specs.map((spec) =>
+                spec.key === target.key && spec.parsed !== undefined
+                    ? { ...spec, parsed: { ...spec.parsed, criteria: [...spec.parsed.criteria, { id: 'AC-999', text: '**AC-999** added', illustration: undefined, line: 1, uncertain: false, struck: false }] } }
+                    : spec,
+            ),
+        };
+        let start = performance.now();
+        w.source.set({ project: extended, lifecycle: deriveLifecycle(extended) });
+        await w.service.whenIdle();
+        expect(performance.now() - start).toBeLessThan(200);
+        expect(shownCriteria()).toBe(before + 1);
+        expect(seen).toHaveLength(1);
+
+        const stem = w.service.detail().kind === 'spec' ? (w.service.detail() as { stem: string }).stem : '';
+        w.store.setRuns([run('r-detail', stem)]);
+        start = performance.now();
+        w.store.notify();
+        await w.service.whenIdle();
+        const elapsed = performance.now() - start;
+        const detail = w.service.detail();
+        expect(detail.kind === 'spec' ? detail.sections.history.runs?.map((item) => item.runId) : undefined).toEqual(['r-detail']);
+        expect(seen).toHaveLength(2);
         expect(elapsed).toBeLessThan(200);
     });
 });

@@ -248,3 +248,35 @@ describe('AC-028: the selection', () => {
         expect(section(container, 'Overview').textContent).toContain('Done');
     });
 });
+
+describe('AC-019: the detail is in the DOM within 300 ms of the event (a large spec)', () => {
+    it('renders the update fast enough: 120 requirements, 200 criteria, 150 steps, 100 runs', async () => {
+        const base = sections();
+        const container = await open();
+        const large = detailView(
+            sections({
+                requirements: { open: base.requirements.open, items: Array.from({ length: 120 }, (_, index) => ({ id: `FR-${index + 1}`, text: `Requirement ${index + 1}`, open: { key: SPEC_KEY, line: index + 1 } })) },
+                criteria: {
+                    open: base.criteria.open,
+                    items: Array.from({ length: 200 }, (_, index) => ({ id: `AC-${index + 1}`, text: `Criterion ${index + 1}`, illustration: 'Given x, when y, then z', uncertain: index % 7 === 0, struck: index % 11 === 0, open: { key: SPEC_KEY, line: index + 1 } })),
+                },
+                plan: {
+                    open: { key: PLAN_KEY },
+                    stages: ['1. T-001'],
+                    steps: Array.from({ length: 150 }, (_, index) => ({ id: `T-${index + 1}`, title: `Step ${index + 1}`, ticked: index % 2 === 0, struck: false, verified: index % 2 === 0 ? 'green' : undefined })),
+                },
+                history: {
+                    runs: Array.from({ length: 100 }, (_, index) => ({ runId: `r${index}`, provider: 'claude', status: 'Completed', created: '2026-11-16T10:00:00Z', started: undefined, ended: undefined, historyIncomplete: false, historyUnreadable: false })),
+                    statusHistory: [],
+                    label: base.history.label,
+                },
+            }),
+        );
+        const before = performance.now();
+        await send(detailEvent(large));
+        const elapsed = performance.now() - before;
+        expect(container.querySelectorAll('.detail-runs li')).toHaveLength(100);
+        expect(container.querySelectorAll('.detail-steps li')).toHaveLength(150);
+        expect(elapsed).toBeLessThan(300);
+    });
+});
