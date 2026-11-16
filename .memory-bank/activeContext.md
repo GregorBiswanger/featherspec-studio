@@ -1,31 +1,31 @@
 # Active Context
 
-Last updated: TBD
-Current branch: TBD
-Current phase: TBD
+Last updated: 2026-11-16
+Current branch: main
+Current phase: idle
 
 ## Now
-TBD
+Setup finished; the next work track is the first spec from the handoff backlog.
 
 ## Active Spec
-- Spec: TBD
-- Plan: TBD
-- Current task: TBD
-- Acceptance criteria in focus: TBD
+- Spec: none yet
+- Plan: none
+- Current task: —
+- Acceptance criteria in focus: —
 
 ## Changed Recently
-- TBD
+- `/sdd-setup`: Memory Bank seeded, architecture snapshot and preferences written in `AGENTS.md`.
 
 ## Decisions in Flight
-- TBD
+- Open product decisions PD-001…PD-012 ([handoff §19](../docs/product/po-handoff.md)).
 
 ## Blockers / Questions
-- TBD
+- None.
 
 ## Next
-1. TBD
+1. In a new session: `/sdd-specify` for the first foundation spec (FS-001…FS-004, handoff §9–10),
+   checked against the real FeatherSpec format (SPIKE-001).
+2. The first plan introduces `npm run test:unit` (plain-Node unit tests) — see `techContext.md`.
 
 ## Validation
-- Done: TBD
-- Pending: TBD
-- Known issues: TBD
+- Done: nothing implemented yet. Pending: `test:unit` script. Known issues: none.

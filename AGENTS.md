@@ -78,6 +78,13 @@ invariants allow none.
 
 - **Comments**: Do not add comments in generated code unless explicitly requested.
 - **Formatting**: Follow the project's formatter / linter configuration when present.
+- **Quality gate (code)**: after every completed implementation step run the per-step gates in
+  `.memory-bank/techContext.md` (*Quality gates*); loop until zero warnings and errors.
+  Implementation steps only — never specify/clarify/plan or doc-only edits. `npm test` is the pre-done gate, not per step.
+- **TDD**: new behaviour test-first, red via a `Not implemented` stub; no stop per test — the user
+  reviews tests once per stage with the plan's test list; immediately-green tests get a cheap negative control.
+- **TypeScript**: strict; no `any`; no default exports; identifiers in English.
+- **Core purity**: domain/application code never imports `vscode`; prefer small pure functions there.
 
 ## Architecture & Design Snapshot (MUST SYNC)
 
@@ -89,15 +96,16 @@ run the `/sdd-architecture-update` workflow yourself, in the same change set, ex
 the user had typed it (its body lives in `.claude/commands/sdd-architecture-update.md`).
 
 ```yaml
-# last reconciled: never · last deep scan: never
+# last reconciled: 2026-11-16 · last deep scan: never
 architecture:
-  style: 'TBD'
+  style: 'Hexagonal (ports & adapters): framework-free core (domain + application) behind ports; adapters for VS Code host, storage, file system, agent providers; webview as a separate UI bundle'
   entrypoints:
-    - 'TBD'
-  modules: []
+    - 'src/extension.ts — extension activation, bundled by esbuild to dist/extension.js'
+  modules: [] # none in code yet (generator scaffold only); target layout: systemPatterns.md
   shared: []
   boundaries:
-    - 'TBD'
+    - 'Domain and application code never import vscode or provider SDKs; they reach the outside only through ports'
+    - 'Webview and extension host communicate only through typed messages; the webview has no file-system or Node.js access'
 ```
 
 ## Memory Bank (SDD Working Set)
