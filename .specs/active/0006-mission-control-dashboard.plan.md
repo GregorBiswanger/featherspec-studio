@@ -413,8 +413,9 @@ small, so the recommendation is to run them in sequence.
     - AC-026: the DOM text holds no field beyond the contract (a view fixture with the T-003
       `SECRET-1` run).
 - **Verify:** `npx vitest run src/webview` plus the per-step gates
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-16 — red: `npx vitest run src/webview/areas/missionControl/Sections.test.tsx` 16 failed (no run, attention or activity section in the DOM); and the bundle test extended with the run section, attention and activity assertions; green: 182/182 in `src/webview` plus the bundle test after `RunSection.tsx`, `Attention.tsx`, `Activity.tsx` landed. Covers AC-005, AC-007, AC-008, AC-010, AC-011 (no control that shows more), AC-018 (reason shown, never Running 0, rows plus the line), AC-021 (every marker is non-empty text), AC-026 (a poisoned view is refused, the text is nowhere), AC-027, AC-028, AC-024 (full 200-spec content < 1000 ms). Gates: eslint 0, `tsc --noEmit` 0, `tsc --noEmit -p src/webview` 0, `npm run test:unit` 85 files, 1220 passed.
+- **Notes:** A highlighted run of a vanished stem reads `<stem> — spec not found — <status>` (the status stays text, AC-021). With zero specs the attention list is not rendered at all (AC-028). Colour classes (`mc-status-*`, `mc-reason`) add colour only; every word is a text node.
+
 
 ### T-007 — Drill-down by navigation request
 
@@ -494,12 +495,12 @@ small, so the recommendation is to run them in sequence.
 | AC-002 | T-002 | specFigures.ts:projectSpecFigures | specFigures.test.ts (AC-002) | verified |
 | AC-003 | T-002 | specFigures.ts:projectSpecFigures | specFigures.test.ts (AC-003, rounding, PD-021) | verified |
 | AC-004 | T-002 | specFigures.ts:projectSpecFigures | specFigures.test.ts (AC-004) | verified |
-| AC-005 | T-003, T-006 | src/core/missionControl/runFigures.ts:projectRuns | runFigures.test.ts (AC-005); rendering in T-006 | built |
+| AC-005 | T-003, T-006 | src/webview/areas/missionControl/RunSection.tsx | runFigures.test.ts (AC-005), Sections.test.tsx (AC-005) | verified |
 | AC-006 | T-001, T-004 | src/core/missionControl/missionControlService.ts | missionControlService.test.ts (AC-006) | verified |
-| AC-007 | T-003, T-006 | runFigures.ts:projectRuns | runFigures.test.ts (AC-007, OP-10); rendering in T-006 | built |
-| AC-008 | T-003, T-006 | src/core/missionControl/attention.ts:projectAttention | attention.test.ts (AC-008); rendering in T-006 | built |
+| AC-007 | T-003, T-006 | RunSection.tsx | runFigures.test.ts (AC-007), Sections.test.tsx (AC-007) | verified |
+| AC-008 | T-003, T-006 | Attention.tsx | attention.test.ts (AC-008), Sections.test.tsx (AC-008) | verified |
 | AC-009 | T-003 | attention.ts:carriesDiagnostic | attention.test.ts (AC-009) | verified |
-| AC-010 | T-004, T-006 | src/core/missionControl/activity.ts:projectActivity | activity.test.ts (AC-010, A-005); rendering in T-006 | built |
+| AC-010 | T-004, T-006 | Activity.tsx | activity.test.ts (AC-010), Sections.test.tsx (AC-010) | verified |
 | AC-011 | T-004 | activity.ts | activity.test.ts (AC-011), missionControlService.test.ts (AC-011, real store) | verified |
 | AC-012 | T-007 | — | — | open |
 | AC-013 | T-007 | — | — | open |
@@ -507,17 +508,17 @@ small, so the recommendation is to run them in sequence.
 | AC-015 | T-001, T-004, T-008 | src/core/missionControl/runSource.ts, missionControlService.ts | runSource.test.ts, missionControlService.test.ts (AC-015); host smoke on CI in T-008 | built |
 | AC-016 | T-005 | src/webview/areas/missionControl/MissionControl.tsx, src/webview/client.ts | MissionControl.test.tsx (AC-016) | verified |
 | AC-017 | T-002, T-005, T-007 | Header.tsx (T-005); request in T-007 | MissionControl.test.tsx (AC-017); request test in T-007 | built |
-| AC-018 | T-001, T-003, T-004, T-006 | runSource.ts, runFigures.ts, attention.ts, activity.ts | runSource.test.ts, missionControlService.test.ts, attention.test.ts (AC-018); rendering in T-006 | built |
+| AC-018 | T-001, T-003, T-004, T-006 | RunSection.tsx, Attention.tsx, Activity.tsx | missionControlService.test.ts, Sections.test.tsx (AC-018) | verified |
 | AC-019 | T-002, T-005 | src/core/missionControl/specFigures.ts, Header.tsx | specFigures.test.ts, MissionControl.test.tsx (unknown version) | built |
 | AC-020 | T-002, T-005 | specFigures.ts (empty form) | specFigures.test.ts (AC-020); rendering in T-005 | built |
-| AC-021 | T-006 | — | + manual: Gregor, High Contrast | open |
+| AC-021 | T-006 | RunSection.tsx, Attention.tsx, SpecFigures.tsx (text nodes) | Sections.test.tsx (AC-021); manual: Gregor, High Contrast | built |
 | AC-022 | T-007 | — | + manual: Gregor, focus, Enter and Space | open |
 | AC-023 | T-004, T-008 | missionControlService.ts (read-only Picks) | missionControlService.test.ts (AC-023); host smoke snapshotTree in T-008 | built |
-| AC-024 | T-004, T-005 | missionControlService.ts, MissionControl.tsx | missionControlService.test.ts (projection), MissionControl.test.tsx (render, header and figures) | built |
+| AC-024 | T-004, T-005 | missionControlService.ts, MissionControl.tsx | missionControlService.test.ts, MissionControl.test.tsx, Sections.test.tsx (AC-024); Gregor re-measures on a real project (OP-12) | verified |
 | AC-025 | T-002, T-005 | specFigures.ts (derivedRule) | specFigures.test.ts (AC-025) | built |
-| AC-026 | T-002, T-003, T-006 | src/shared/protocol/missionControl.ts (no such field), runFigures.ts | missionControl.test.ts (AC-026), runFigures.test.ts (AC-026); DOM in T-006 | built |
-| AC-027 | T-003, T-006 | runFigures.ts:projectRuns (unreadable) | runFigures.test.ts (AC-027); rendering in T-006 | built |
-| AC-028 | T-005 | MissionControl.tsx | MissionControl.test.tsx (AC-028); run section and activity remain in T-006 | built |
+| AC-026 | T-002, T-003, T-006 | no field in the contract; guard refuses extra keys | missionControl.test.ts, runFigures.test.ts, Sections.test.tsx (AC-026) | verified |
+| AC-027 | T-003, T-006 | RunSection.tsx, runFigures.ts | runFigures.test.ts, Sections.test.tsx (AC-027) | verified |
+| AC-028 | T-005 | MissionControl.tsx | MissionControl.test.tsx, Sections.test.tsx (AC-028) | verified |
 | AC-029 | T-007 | — | — | open |
 
 ## Session handoff

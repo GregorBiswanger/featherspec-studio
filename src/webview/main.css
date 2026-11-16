@@ -396,3 +396,31 @@ main {
 .mc-deprecated {
     margin-left: 6px;
 }
+
+.mc-list {
+    margin: 4px 0;
+    padding-left: 0;
+    list-style: none;
+}
+
+.mc-list li {
+    padding: 2px 0;
+}
+
+.mc-time {
+    font-family: var(--vscode-editor-font-family);
+}
+
+.mc-status {
+    padding: 0 6px;
+    border: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
+}
+
+.mc-status-failed {
+    color: var(--vscode-errorForeground);
+}
+
+.mc-status-interrupted,
+.mc-reason {
+    color: var(--vscode-editorWarning-foreground, var(--vscode-foreground));
+}
