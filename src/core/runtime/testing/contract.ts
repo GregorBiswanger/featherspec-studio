@@ -2,6 +2,7 @@ import { afterEach, describe } from 'vitest';
 import type { RuntimeMedium } from '../../ports/runtimeMedium';
 import { openRuntimeStore, type RuntimeStore } from '../runtimeStore';
 import { registerEventsContract } from './contractEvents';
+import { registerFaultsContract } from './contractFaults';
 import { registerMaskingContract } from './contractMasking';
 import { registerWriterContract } from './contractWriter';
 import { registerRunsContract } from './contractRuns';
@@ -13,6 +14,7 @@ import {
     createSequentialIds,
     type FakeCredentials,
     type FakeNotices,
+    settle,
     type FakeRuntimeClock,
 } from './fakes';
 
@@ -66,6 +68,7 @@ export function createContractRig(harness: MediumHarness): ContractRig {
             });
         },
         async rawBytes(project = 'project-A') {
+            await settle();
             const parts: string[] = [];
             for (const name of await harness.listRaw(project)) {
                 parts.push((await harness.readRaw(project, name)) ?? '');
@@ -105,6 +108,7 @@ export function describeRuntimeStoreContract(label: string, makeHarness: () => P
         registerEventsContract(context);
         registerMaskingContract(context);
         registerWriterContract(context);
+        registerFaultsContract(context);
     });
 }
 

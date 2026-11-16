@@ -3,7 +3,7 @@
 **Spec:** [0004-runtime-persistence-event-model.md](0004-runtime-persistence-event-model.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-001
+**Current step:** T-006
 
 ## Approach
 
@@ -163,7 +163,7 @@ T-007 need the complete medium contract.
   "not available" with reason, N-5 once per activation through a `RuntimeNoticePort`. Two "windows" in
   tests share one in-memory medium; controllable clock.
 - **Verify:** `npm run test:unit` (contract cases red first, then green) plus the per-step gates
-- [x] **Verified (T-004):** 2026-11-16 — red: `npx vitest run src/core/runtime` 13 of the 16 new contract cases failed (no lock, no classification, no cap, no state); AC-010 restore case was already green (restore existed since T-001), given a negative control (the stored run must exist before the comparison); green: 48 of 48 in `src/core/runtime`, `npm run test:unit` all green, `npx eslint src --max-warnings 0` and `npx tsc --noEmit` clean.
+- [x] **Verified (T-004):** 2026-11-16 — red: `npx vitest run src/core/runtime` 13 of the 17 new contract cases failed (no lock, no classification, no cap, no state); AC-010 restore case was already green (restore existed since T-001), given a negative control (the stored run must exist before the comparison); green: 48 of 48 in `src/core/runtime`, `npm run test:unit` all green, `npx eslint src --max-warnings 0` and `npx tsc --noEmit` clean.
 - **Notes:** Tests: `testing/contractWriter.ts`. Three earlier cases were adapted because the writer now classifies at open (AC-008 reopen uses a Completed run; AC-027 reopen disposes the first window). Lock owner IDs come from `IdSource`; `dispose` waits for queued writes but gives up after 3 s of clock time. `clear()` guards the writer state and stays `Not implemented` until T-005.
 
 ### T-005 — Save failures, unreadable and newer data, clearing
@@ -179,8 +179,8 @@ T-007 need the complete medium contract.
   corrupt-run, truncate-last-record, corrupt-index; every fault case asserts the run's raw bytes are
   unchanged.
 - **Verify:** `npm run test:unit` (contract cases red first, then green) plus the per-step gates
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-16 — red: `npx vitest run src/core/runtime` 12 of 15 new contract cases failed (AC-014 x3, AC-015 x2, AC-021 x2, AC-022, AC-017 x2, AC-019 x2); the 3 green ones are negative controls and OP-006/AC-023 behaviour that already held; green: 63 of 63 in `src/core/runtime`, `npm run test:unit` all green, `npx eslint src --max-warnings 0` and `npx tsc --noEmit` clean. Every fault case compares the run's raw bytes before and after.
+- **Notes:** Tests: `testing/contractFaults.ts`. Limitations kept on purpose: (1) a later append to a file whose last record was incomplete starts on a new line, so that run reads as unreadable at the next activation (open runs with a half-written run log); (2) an unreadable event line is found when the events are read up to it, not at activation; (3) `index.json` lists run ID, stem and creation time: it supplies the stem of unreadable runs; the writer rewrites it at activation, at Clear and at close, and at most every 2 s after run creation (a rewrite per creation made 10,000 creations quadratic); the run list itself always comes from the run logs.
 
 ### T-006 — Node-fs medium under the same contract suite
 
@@ -231,39 +231,39 @@ T-007 need the complete medium contract.
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001, T-006 | — | — | open |
-| AC-002 | T-001 | — | — | open |
-| AC-003 | T-001 | — | — | open |
-| AC-004 | T-001 | — | — | open |
-| AC-005 | T-002 | — | — | open |
-| AC-006 | T-002 | — | — | open |
-| AC-007 | T-002 | — | — | open |
-| AC-008 | T-001 | — | — | open |
-| AC-009 | T-001 | — | — | open |
-| AC-010 | T-004 | — | — | open |
-| AC-011 | T-004 | — | — | open |
-| AC-013 | T-003, T-006 | — | — | open |
-| AC-014 | T-005 | — | — | open |
-| AC-015 | T-005 | — | — | open |
+| AC-001 | T-001, T-006 | eslint.config.mjs; src/core/ports/runtimeMedium.ts | src/core/runtime/importScan.test.ts; src/core/runtime/runtimeStore.test.ts | built |
+| AC-002 | T-001 | src/adapters/node/randomIds.ts | src/adapters/node/randomIds.test.ts | verified |
+| AC-003 | T-001 | src/core/runtime/runtimeStore.ts:createRun | src/core/runtime/testing/contractRuns.ts (AC-003) | verified |
+| AC-004 | T-001 | src/core/runtime/runtimeStore.ts:reportStatus | src/core/runtime/testing/contractRuns.ts (AC-004) | verified |
+| AC-005 | T-002 | src/core/runtime/runtimeStore.ts:appendEvent | src/core/runtime/testing/contractEvents.ts (AC-005) | verified |
+| AC-006 | T-002 | src/core/runtime/runtimeStore.ts:readEvents | src/core/runtime/testing/contractEvents.ts (AC-006) | verified |
+| AC-007 | T-002 | src/core/runtime/runtimeStore.ts:appendEvent | src/core/runtime/testing/contractEvents.ts (AC-007) | verified |
+| AC-008 | T-001 | src/core/runtime/runtimeStore.ts:listRuns | src/core/runtime/testing/contractRuns.ts (AC-008) | verified |
+| AC-009 | T-001 | src/core/runtime/runtimeStore.ts:openRuntimeStore | src/core/runtime/testing/contractRuns.ts (AC-009) | verified |
+| AC-010 | T-004 | src/core/runtime/runtimeStore.ts:loadRuns | src/core/runtime/testing/contractWriter.ts (AC-010) | verified |
+| AC-011 | T-004 | src/core/runtime/runtimeStore.ts:classifyOpenRuns | src/core/runtime/testing/contractWriter.ts (AC-011) | verified |
+| AC-013 | T-003, T-006 | src/core/runtime/masking.ts; docs/security/secret-patterns.md | src/core/runtime/masking.test.ts; src/core/runtime/testing/contractMasking.ts (AC-013) | built |
+| AC-014 | T-005 | src/core/runtime/runtimeStore.ts:settleWrite | src/core/runtime/testing/contractFaults.ts (AC-014) | verified |
+| AC-015 | T-005 | src/core/runtime/runtimeStore.ts:reportProblems | src/core/runtime/testing/contractFaults.ts (AC-015) | verified |
 | AC-016 | T-006 | — | — | open |
-| AC-017 | T-005 | — | — | open |
-| AC-018 | T-004, T-007 | — | — | open |
-| AC-019 | T-005, T-007 | — | — | open |
+| AC-017 | T-005 | src/core/runtime/runtimeStore.ts:openRuntimeStore | src/core/runtime/testing/contractFaults.ts (AC-017) | verified |
+| AC-018 | T-004, T-007 | src/core/runtime/runtimeStore.ts:applyAgeCap | src/core/runtime/testing/contractWriter.ts (AC-018) | built |
+| AC-019 | T-005, T-007 | src/core/runtime/runtimeStore.ts:clear | src/core/runtime/testing/contractFaults.ts (AC-019) | built |
 | AC-020 | T-008 | — | — | open |
-| AC-021 | T-005, T-006 | — | — | open |
-| AC-022 | T-005, T-006 | — | — | open |
-| AC-023 | T-004 | — | — | open |
-| AC-024 | T-004, T-006 | — | — | open |
-| AC-025 | T-004, T-007 | — | — | open |
-| AC-026 | T-003 | — | — | open |
-| AC-027 | T-002 | — | — | open |
-| AC-028 | T-001, T-002 | — | — | open |
-| AC-029 | T-002 | — | — | open |
+| AC-021 | T-005, T-006 | src/core/runtime/runtimeStore.ts:reportIncompleteOnce | src/core/runtime/testing/contractFaults.ts (AC-021) | built |
+| AC-022 | T-005, T-006 | src/core/runtime/runtimeStore.ts:loadRuns | src/core/runtime/testing/contractFaults.ts (AC-022) | built |
+| AC-023 | T-004 | src/core/runtime/writerLock.ts; src/core/runtime/runtimeStore.ts:assertWritable | src/core/runtime/testing/contractWriter.ts (AC-023) | verified |
+| AC-024 | T-004, T-006 | src/core/runtime/writerLock.ts | src/core/runtime/testing/contractWriter.ts (AC-024) | built |
+| AC-025 | T-004, T-007 | src/core/runtime/runtimeStore.ts:setState | src/core/runtime/testing/contractWriter.ts (AC-025) | built |
+| AC-026 | T-003 | src/core/runtime/runtimeStore.ts:appendSpecStatusEntry | src/core/runtime/testing/contractMasking.ts (AC-026) | verified |
+| AC-027 | T-002 | src/core/runtime/runtimeStore.ts:appendEvent | src/core/runtime/testing/contractEvents.ts (AC-027) | verified |
+| AC-028 | T-001, T-002 | src/core/runtime/runtimeStore.ts:requireRun | src/core/runtime/testing/contractRuns.ts, contractEvents.ts (AC-028) | verified |
+| AC-029 | T-002 | src/core/runtime/runtimeStore.ts:persistEvents | src/core/runtime/testing/contractEvents.ts (AC-029) | verified |
 
 ## Session handoff
 
-- **Done so far:** plan written (`/sdd-plan`, session S03-plan-0004, 2026-11-16); spec §15 OP-015 records the adopted recommendations.
-- **Next action:** T-001 (start signal and plan approval given 2026-11-16; pair moved to `active/`).
+- **Done so far:** T-001…T-005 ticked (stages 1 and 2 end); store core, masking, writer lock, retention, faults and clearing built on the in-memory medium. `npm run test:unit`: 187 tests green.
+- **Next action:** T-006 (Node-fs medium under the same contract suite); then T-007, T-008.
 - **Open decisions:** AC-020 document acceptance (T-008).
 - **Baseline:** 767ac42 (HEAD before the first step commit)
-- **Environment:** `npm test` cannot run here (VS Code download blocked); worktree `/home/claude/wt-0004`, branch `spec-0004`.
+- **Environment:** `npm test` cannot run here (VS Code download blocked); worktree `/home/claude/wt-0004`, branch `spec-0004`. Tests added per stage — stage 1: `src/core/runtime/testing/{contract,contractRuns,contractEvents}.ts`, `src/core/runtime/runtimeStore.test.ts`, `src/core/runtime/importScan.test.ts`, `src/adapters/node/randomIds.test.ts`; stage 2: `src/core/runtime/testing/{contractMasking,contractWriter,contractFaults}.ts`, `src/core/runtime/masking.test.ts`.

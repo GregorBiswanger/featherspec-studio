@@ -7,7 +7,17 @@ import type {
     RuntimeNoticePort,
 } from '../ports/runtimeMedium';
 import { createMasker } from './masking';
-import { EXTENSION_HOST_RESTARTED, READER_REASON, storageUnreachableNotice } from './notices';
+import {
+    EXTENSION_HOST_RESTARTED,
+    NEWER_VERSION_REASON,
+    READER_REASON,
+    incompleteRecordNotice,
+    newerVersionNotice,
+    saveFailedNotice,
+    storageUnreachableNotice,
+    unreadableRunsNotice,
+    type RunRef,
+} from './notices';
 import { createWriterLock } from './writerLock';
 import {
     encodeLine,
@@ -73,6 +83,8 @@ export interface RuntimeStore {
 
 const RUN_FILE_SUFFIX = '.run.jsonl';
 const SAFE_ID = /^[A-Za-z0-9_-]+$/;
+const INDEX_DELAY_MS = 2000;
+const UNREADABLE_REASON = 'history unreadable';
 
 interface EventState {
     nextSeq: number;
@@ -87,6 +99,9 @@ interface RunEntry {
     view: MutableRun;
     order: number;
     tailUnterminated: boolean;
+    incompleteTail: boolean;
+    flagStored: boolean;
+    flagWriting: boolean;
     events: EventState | undefined;
     eventsLoading: Promise<EventState> | undefined;
 }
@@ -201,6 +216,7 @@ async function replayRun(runId: string, medium: RuntimeMedium): Promise<{ entry:
     }
     let view: MutableRun | undefined;
     let tailUnterminated = false;
+    let incompleteTail = false;
     let broken = false;
     let newer = false;
     for (let index = 0; index < lines.length; index += 1) {
@@ -214,6 +230,7 @@ async function replayRun(runId: string, medium: RuntimeMedium): Promise<{ entry:
         if (parsed.kind === 'broken') {
             if (isLast && !line.terminated) {
                 tailUnterminated = true;
+                incompleteTail = true;
                 break;
             }
             broken = true;
@@ -239,9 +256,31 @@ async function replayRun(runId: string, medium: RuntimeMedium): Promise<{ entry:
         }
     }
     if (newer || broken || view === undefined) {
-        return { entry: { view: unreadableView(runId, newer), order: 0, tailUnterminated: false, events: undefined, eventsLoading: undefined } };
+        return {
+            entry: {
+                view: unreadableView(runId, newer),
+                order: 0,
+                tailUnterminated: false,
+                incompleteTail: false,
+                flagStored: false,
+                flagWriting: false,
+                events: undefined,
+                eventsLoading: undefined,
+            },
+        };
     }
-    return { entry: { view, order: 0, tailUnterminated, events: undefined, eventsLoading: undefined } };
+    return {
+        entry: {
+            view,
+            order: 0,
+            tailUnterminated,
+            incompleteTail,
+            flagStored: view.historyIncomplete,
+            flagWriting: false,
+            events: undefined,
+            eventsLoading: undefined,
+        },
+    };
 }
 
 export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeStore> {
@@ -271,6 +310,7 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
     const ownerId = deps.ids.newId();
     const lock = createWriterLock(medium, clock, ownerId);
     const STORE_FILE = 'store.json';
+    const INDEX_FILE = 'index.json';
     const HISTORY_FILE = 'spec-status-history.jsonl';
 
     function setState(next: StoreState): void {
@@ -292,6 +332,119 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
         return readBlock === undefined ? undefined : { available: false, reason: readBlock };
     }
 
+    const reported = new Set<string>();
+    let newerShown = false;
+
+    function runRef(entry: RunEntry): RunRef {
+        return { runId: entry.view.runId, stem: entry.view.spec.stem === '' ? 'unknown spec' : entry.view.spec.stem };
+    }
+
+    function reportProblems(): void {
+        const all = [...runs.values()];
+        const unreadable = all.filter((entry) => entry.view.historyUnreadable && !entry.view.newerVersion && !reported.has(`u:${entry.view.runId}`));
+        unreadable.forEach((entry) => reported.add(`u:${entry.view.runId}`));
+        if (unreadable.length > 0) {
+            deps.notices.show(unreadableRunsNotice(unreadable.map(runRef)));
+        }
+        const incomplete = all.filter((entry) => entry.incompleteTail && !reported.has(`i:${entry.view.runId}`));
+        incomplete.forEach((entry) => reported.add(`i:${entry.view.runId}`));
+        if (incomplete.length > 0) {
+            deps.notices.show(incompleteRecordNotice(incomplete.map(runRef)));
+        }
+        if (!newerShown && all.some((entry) => entry.view.newerVersion)) {
+            newerShown = true;
+            deps.notices.show(newerVersionNotice());
+        }
+    }
+
+    function markUnreadable(entry: RunEntry): void {
+        entry.view.historyUnreadable = true;
+        reportProblems();
+    }
+
+    function reportIncompleteOnce(entry: RunEntry): void {
+        entry.incompleteTail = true;
+        reportProblems();
+    }
+
+    async function readIndexStems(): Promise<Map<string, string>> {
+        const stems = new Map<string, string>();
+        try {
+            const parsed: unknown = JSON.parse((await medium.read(INDEX_FILE)) ?? '');
+            const listed = (parsed as { runs?: unknown }).runs;
+            if (Array.isArray(listed)) {
+                for (const item of listed as { runId?: unknown; stem?: unknown }[]) {
+                    if (typeof item.runId === 'string' && typeof item.stem === 'string') {
+                        stems.set(item.runId, item.stem);
+                    }
+                }
+            }
+        } catch {
+            // a missing or unreadable list is rebuilt from the run logs
+        }
+        return stems;
+    }
+
+    let indexTimer: Disposable | undefined;
+    let indexDirty = false;
+
+    function writeIndex(): Promise<string | undefined> {
+        indexTimer?.dispose();
+        indexTimer = undefined;
+        if (!writer || !indexDirty) {
+            return Promise.resolve(undefined);
+        }
+        indexDirty = false;
+        return enqueue(INDEX_FILE, async () => {
+            const listed = [...runs.values()]
+                .sort((a, b) => a.order - b.order)
+                .map((entry) => ({ runId: entry.view.runId, stem: entry.view.spec.stem, created: entry.view.created }));
+            await medium.replace(INDEX_FILE, JSON.stringify({ v: FORMAT_VERSION, runs: listed }));
+        });
+    }
+
+    function scheduleIndex(): void {
+        indexDirty = true;
+        indexTimer ??= clock.setTimeout(() => void writeIndex(), INDEX_DELAY_MS);
+    }
+
+    function tailPrefix(entry: RunEntry): string {
+        if (!entry.tailUnterminated) {
+            return '';
+        }
+        entry.tailUnterminated = false;
+        return '\n';
+    }
+
+    function noteFailure(entry: RunEntry): void {
+        if (!entry.view.historyIncomplete) {
+            entry.view.historyIncomplete = true;
+            deps.notices.show(saveFailedNotice(runRef(entry)));
+        }
+    }
+
+    async function storeFlag(entry: RunEntry): Promise<void> {
+        if (!entry.view.historyIncomplete || entry.flagStored || entry.flagWriting) {
+            return;
+        }
+        entry.flagWriting = true;
+        const name = runFileName(entry.view.runId);
+        const text = tailPrefix(entry) + encodeLine({ v: FORMAT_VERSION, k: 'flag', at: iso() });
+        const failure = await enqueue(name, () => medium.append(name, text));
+        entry.flagWriting = false;
+        if (failure === undefined) {
+            entry.flagStored = true;
+        }
+    }
+
+    async function settleWrite(entry: RunEntry, failure: string | undefined): Promise<void> {
+        if (failure !== undefined) {
+            noteFailure(entry);
+        } else {
+            await storeFlag(entry);
+        }
+    }
+
     async function loadRuns(): Promise<void> {
         const names = (await medium.list('runs')).filter((name) => name.endsWith(RUN_FILE_SUFFIX));
         const loaded: RunEntry[] = [];
@@ -300,17 +453,23 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             loaded.push((await replayRun(runId, medium)).entry);
         }
         loaded.sort((a, b) => a.view.created.localeCompare(b.view.created) || a.view.runId.localeCompare(b.view.runId));
+        const stems = await readIndexStems();
         runs.clear();
         for (const entry of loaded) {
             entry.order = orderCounter++;
+            if (entry.view.historyUnreadable) {
+                entry.view.spec.stem = stems.get(entry.view.runId) ?? '';
+            }
             runs.set(entry.view.runId, entry);
         }
+        reportProblems();
     }
 
     async function commitStatus(entry: RunEntry, record: StatusRecord): Promise<void> {
         applyStatus(entry.view, record);
         const name = runFileName(entry.view.runId);
-        await enqueue(name, () => medium.append(name, encodeLine(record)));
+        const text = tailPrefix(entry) + encodeLine(record);
+        await settleWrite(entry, await enqueue(name, () => medium.append(name, text)));
     }
 
     async function classifyOpenRuns(): Promise<void> {
@@ -370,12 +529,27 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
         }
     }
 
+    async function readDescriptor(): Promise<number | undefined | 'broken'> {
+        const text = await medium.read(STORE_FILE);
+        if (text === undefined) {
+            return undefined;
+        }
+        try {
+            const parsed = JSON.parse(text) as { storeVersion?: unknown };
+            return typeof parsed.storeVersion === 'number' ? parsed.storeVersion : 'broken';
+        } catch {
+            return 'broken';
+        }
+    }
+
     async function becomeWriter(): Promise<void> {
         writer = true;
         await loadRuns();
         await ensureStoreDescriptor();
         await classifyOpenRuns();
         await applyAgeCap();
+        indexDirty = true;
+        await writeIndex();
         setState({ kind: 'writable', reason: undefined });
     }
 
@@ -417,6 +591,19 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
         deps.notices.show(storageUnreachableNotice(readBlock));
     }
     if (readBlock === undefined) {
+        const descriptor = await readDescriptor();
+        if (descriptor === 'broken') {
+            readBlock = 'the description of the run history store cannot be read';
+            setState({ kind: 'unavailable', reason: readBlock });
+            deps.notices.show(storageUnreachableNotice(readBlock));
+        } else if (descriptor !== undefined && descriptor > FORMAT_VERSION) {
+            readBlock = NEWER_VERSION_REASON;
+            setState({ kind: 'read-only', reason: NEWER_VERSION_REASON });
+            deps.notices.show(newerVersionNotice());
+            newerShown = true;
+        }
+    }
+    if (readBlock === undefined) {
         if (await lock.tryAcquire()) {
             await becomeWriter();
         } else {
@@ -444,6 +631,7 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             if (parsed.kind !== 'record') {
                 if (!line.terminated) {
                     state.tailUnterminated = true;
+                    reportIncompleteOnce(entry);
                 }
                 continue;
             }
@@ -479,15 +667,12 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
         state.tailUnterminated = false;
         const text = prefix + records.map((record) => encodeLine(record)).join('');
         const name = eventFileName(entry.view.runId);
-        void enqueue(name, () => medium.append(name, text)).then((failure) => {
+        void enqueue(name, () => medium.append(name, text)).then(async (failure) => {
             if (failure === undefined) {
                 state.pending = state.pending.filter((record) => !records.includes(record));
             }
+            await settleWrite(entry, failure);
         });
-    }
-
-    function notImplemented(): never {
-        throw new Error('Not implemented');
     }
 
     return {
@@ -520,6 +705,9 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
                 view: newView(record),
                 order: orderCounter++,
                 tailUnterminated: false,
+                incompleteTail: false,
+                flagStored: false,
+                flagWriting: false,
                 events: emptyEventState(),
                 eventsLoading: undefined,
             };
@@ -529,6 +717,7 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
                 runs.delete(runId);
                 throw new RuntimeRefusal('storage-failed', `The run could not be stored: ${failure}`);
             }
+            scheduleIndex();
             return copyView(entry.view);
         },
         async reportStatus(runId, status, report = {}) {
@@ -630,11 +819,27 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             if (entry === undefined || !(limit >= 1)) {
                 return { available: true, value: [] };
             }
+            if (entry.view.historyUnreadable) {
+                return { available: false, reason: entry.view.newerVersion ? NEWER_VERSION_REASON : UNREADABLE_REASON };
+            }
             const overlay = [...(entry.events?.pending ?? [])];
             const found = new Map<number, EventRecord>();
             for await (const line of medium.lines(eventFileName(runId))) {
                 const parsed = parseEventRecord(line.text);
-                if (parsed.kind === 'record' && parsed.record.seq >= fromSeq) {
+                if (parsed.kind === 'newer') {
+                    entry.view.newerVersion = true;
+                    markUnreadable(entry);
+                    return { available: false, reason: NEWER_VERSION_REASON };
+                }
+                if (parsed.kind === 'broken') {
+                    if (!line.terminated) {
+                        reportIncompleteOnce(entry);
+                        continue;
+                    }
+                    markUnreadable(entry);
+                    return { available: false, reason: UNREADABLE_REASON };
+                }
+                if (parsed.record.seq >= fromSeq) {
                     found.set(parsed.record.seq, parsed.record);
                     if (found.size >= limit) {
                         break;
@@ -671,9 +876,26 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             }
             return { available: true, value: records };
         },
-        clear: async () => {
+        async clear() {
             assertWritable();
-            return notImplemented();
+            let removed = 0;
+            let failed = 0;
+            for (const entry of [...runs.values()]) {
+                const view = entry.view;
+                if (view.newerVersion || !(view.historyUnreadable || isEndStatus(view.status))) {
+                    continue;
+                }
+                if (await removeRunFiles(view.runId)) {
+                    runs.delete(view.runId);
+                    removed += 1;
+                } else {
+                    failed += 1;
+                }
+            }
+            await rewriteHistory(() => false);
+            indexDirty = true;
+            await writeIndex();
+            return { removed, failed };
         },
         async dispose() {
             if (disposed) {
@@ -681,11 +903,12 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             }
             disposed = true;
             timer?.dispose();
+            const flushed = writeIndex();
             let bound: Disposable | undefined;
             const gaveUp = new Promise<void>((resolve) => {
                 bound = clock.setTimeout(resolve, 3000);
             });
-            await Promise.race([Promise.all([...queues.values()]), gaveUp]);
+            await Promise.race([Promise.all([flushed, ...queues.values()]), gaveUp]);
             bound?.dispose();
             if (writer) {
                 writer = false;
