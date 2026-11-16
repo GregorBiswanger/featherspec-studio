@@ -212,4 +212,20 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
         expect(rulesFor(css, '.studio').some((rule) => /display:\s*flex/.test(rule.body) && /flex-direction:\s*column/.test(rule.body) && /height:\s*100vh/.test(rule.body))).toBe(true);
         expect(rulesFor(css, 'main').some((rule) => /flex:\s*1/.test(rule.body) && /min-height:\s*0/.test(rule.body) && /overflow:\s*auto/.test(rule.body))).toBe(true);
     });
+
+    it('AC-008: no height on a board column, sticky column headers, a scrolling card list, 240 px minimum and a horizontally scrolling board', () => {
+        for (const rule of rulesFor(css, '.column')) {
+            expect(rule.body).not.toMatch(/(?:^|[\s;])(?:max-)?height\s*:/);
+        }
+        expect(rulesFor(css, '.column-heading').some((rule) => /position:\s*sticky/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.column-cards').some((rule) => /overflow-y:\s*auto/.test(rule.body))).toBe(true);
+        const columns = rulesFor(css, '.columns');
+        expect(columns.some((rule) => /minmax\(240px/.test(rule.body))).toBe(true);
+        expect(columns.some((rule) => /overflow-x:\s*auto/.test(rule.body))).toBe(true);
+    });
+
+    it('AC-011: the dragged card is lifted and the column under the pointer carries a target style from theme variables', () => {
+        expect(rulesFor(css, '.card[data-dragging="true"]').some((rule) => /box-shadow:[^;]*var\(--vscode-widget-shadow\)/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.column[data-drop-target="true"]').some((rule) => /var\(--vscode-list-dropBackground/.test(rule.body))).toBe(true);
+    });
 });

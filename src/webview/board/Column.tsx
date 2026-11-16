@@ -13,6 +13,8 @@ export function Column(props: {
     onDragEnd?(): void;
     onDragOver?(event: DragEvent<HTMLElement>, column: BoardColumn): void;
     onDrop?(event: DragEvent<HTMLElement>, column: BoardColumn): void;
+    onDragLeave?(event: DragEvent<HTMLElement>, column: BoardColumn): void;
+    dropTarget?: boolean;
     menuOf?(card: CardView): ReactNode;
 }) {
     const { column } = props;
@@ -21,11 +23,14 @@ export function Column(props: {
             className="column"
             data-column={column.state}
             aria-label={column.state}
+            data-board-state={column.state}
+            data-drop-target={props.dropTarget === true ? 'true' : undefined}
             onDragOver={(event) => props.onDragOver?.(event, column)}
+            onDragLeave={(event) => props.onDragLeave?.(event, column)}
             onDrop={(event) => props.onDrop?.(event, column)}
         >
             <h2 className="column-heading">
-                <StateIcon state={column.state} /> {column.state} <span className="column-count">{column.cards.length}</span>
+                <StateIcon state={column.state} /> <span className="column-name">{column.state}</span> <span className="column-count">{column.cards.length}</span>
             </h2>
             {column.hidden > 0 ? <p className="column-hidden">{hiddenByFilterText(column.hidden)}</p> : null}
             {column.emptyBeforeFilter ? <p className="column-hint">{COLUMN_HINTS[column.state]}</p> : null}

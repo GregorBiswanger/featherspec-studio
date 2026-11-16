@@ -52,12 +52,16 @@ async function press(element: Element, pressed: string, shiftKey = false): Promi
     });
 }
 
-async function drag(type: 'dragstart' | 'dragover' | 'drop' | 'dragend', element: Element): Promise<boolean> {
+async function drag(type: 'dragstart' | 'dragover' | 'drop' | 'dragend' | 'dragleave', element: Element, relatedTarget: Element | null = null): Promise<boolean> {
     let notPrevented = true;
     await act(async () => {
-        notPrevented = element.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true }));
+        notPrevented = element.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, relatedTarget }));
     });
     return notPrevented;
+}
+
+function marked(container: HTMLElement): string[] {
+    return [...container.querySelectorAll('[data-drop-target="true"]')].map((column) => column.getAttribute('data-column') ?? '');
 }
 
 beforeEach(() => {
@@ -242,6 +246,48 @@ describe('AC-014: move by drag and drop (MouseEvents, jsdom has no DragEvent)', 
     it('without a drag in progress nothing is a drop target', async () => {
         const container = await open();
         expect(await drag('dragover', container.querySelector('[data-column="Done"]')!)).toBe(true);
+    });
+});
+
+describe('0013 AC-011: drag marks (MouseEvents, no verdict before the drop)', () => {
+    it('AC-011: while a card is dragged, the card and the column under the pointer are marked; the drop removes both marks', async () => {
+        const container = await open();
+        await drag('dragstart', cardOf(container, '0003'));
+        expect(cardOf(container, '0003').getAttribute('data-dragging')).toBe('true');
+        expect(marked(container)).toEqual([]);
+        await drag('dragover', container.querySelector('[data-column="Done"]')!);
+        expect(marked(container)).toEqual(['Done']);
+        await drag('dragover', container.querySelector('[data-column="Ready"]')!);
+        expect(marked(container)).toEqual(['Ready']);
+        await drag('drop', container.querySelector('[data-column="Ready"]')!);
+        expect(marked(container)).toEqual([]);
+        expect(container.querySelector('[data-dragging="true"]')).toBeNull();
+    });
+
+    it('AC-011: dragend without a drop removes both marks', async () => {
+        const container = await open();
+        await drag('dragstart', cardOf(container, '0003'));
+        await drag('dragover', container.querySelector('[data-column="Done"]')!);
+        await drag('dragend', cardOf(container, '0003'));
+        expect(marked(container)).toEqual([]);
+        expect(container.querySelector('[data-dragging="true"]')).toBeNull();
+    });
+
+    it('AC-011: leaving the column to outside removes its mark; moving onto a child of the column keeps it', async () => {
+        const container = await open();
+        await drag('dragstart', cardOf(container, '0003'));
+        const done = container.querySelector('[data-column="Done"]')!;
+        await drag('dragover', done);
+        await drag('dragleave', done, done.querySelector('h2'));
+        expect(marked(container)).toEqual(['Done']);
+        await drag('dragleave', done, container.querySelector('.board-status'));
+        expect(marked(container)).toEqual([]);
+    });
+
+    it('control: without a drag in progress dragover marks nothing', async () => {
+        const container = await open();
+        await drag('dragover', container.querySelector('[data-column="Done"]')!);
+        expect(marked(container)).toEqual([]);
     });
 });
 

@@ -3,7 +3,7 @@
 **Spec:** [0013-studio-visual-design.md](0013-studio-visual-design.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-005
+**Current step:** T-006
 
 ## Approach
 
@@ -156,8 +156,8 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
   `data-dragging`. Tests in `Keyboard.test.tsx` (MouseEvents, per systemPatterns) and the CSS guard
   (no height/max-height on `.column`, sticky header, scrolling list, 240 px minimum).
 - **Verify:** quality gates; manual: `02-spec-board-{dark,light,hc}` — no cut-off card, columns full height.
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-16 — red: 4 tests (2 CSS guard tests in `webviewCss.test.ts`: `max-height` on `.column`, no sticky header/`minmax(240px`/drag styles; 2 drag-mark tests in `Keyboard.test.tsx`: no `data-drop-target`); the dragend and no-drag tests were green before (controls); green: eslint, both `tsc`, `npm run test:unit` 89 files / 1302 tests, `npm run compile`. Looked at `02-spec-board-{dark,light,hc}` and `02-spec-board-drag-{dark,light}`: columns fill the height and scroll inside, no card cut at a page edge, count badges in the headers, filter bar on one row; drag shows the lifted card and the Ready column in the drop colour.
+- **Notes:** at 1400 px six 240 px columns (1480 px with gaps) do not fit: the Blocked column is partly behind the horizontal scroll — A-004's "fit 1400 px" does not hold with AC-008's 240 px; for Gregor. `color-scheme` per theme class so native checkboxes, select and scrollbars follow the theme. Harness: drag shot added (outside the repo).
 
 ### T-006 — Spec Board: card layout with progress bars and corner "Move to…"
 

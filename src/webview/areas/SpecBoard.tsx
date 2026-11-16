@@ -35,6 +35,7 @@ export function SpecBoard() {
     const [focusedKey, setFocusedKey] = useState<string | undefined>(undefined);
     const [menuKey, setMenuKey] = useState<string | undefined>(undefined);
     const [draggingKey, setDraggingKey] = useState<string | undefined>(undefined);
+    const [overState, setOverState] = useState<BoardState | undefined>(undefined);
     const hasFocus = useRef(false);
     const previousGrid = useRef<Grid>([]);
     useEffect(() => () => dismissMove(), [dismissMove]);
@@ -127,15 +128,36 @@ export function SpecBoard() {
         return allCards.find((entry) => entry.key === draggingKey && entry.state !== state);
     }
 
+    function endDrag(): void {
+        setDraggingKey(undefined);
+        setOverState(undefined);
+    }
+
     function onDragOver(event: DragEvent<HTMLElement>, column: BoardColumn): void {
+        if (draggingKey === undefined) {
+            return;
+        }
+        if (overState !== column.state) {
+            setOverState(column.state);
+        }
         if (draggedFrom(column.state) !== undefined) {
             event.preventDefault();
         }
     }
 
+    function onDragLeave(event: DragEvent<HTMLElement>, column: BoardColumn): void {
+        const next = event.relatedTarget;
+        if (next instanceof Node && event.currentTarget.contains(next)) {
+            return;
+        }
+        if (overState === column.state) {
+            setOverState(undefined);
+        }
+    }
+
     function onDrop(event: DragEvent<HTMLElement>, column: BoardColumn): void {
         const dragged = draggedFrom(column.state);
-        setDraggingKey(undefined);
+        endDrag();
         if (dragged !== undefined) {
             event.preventDefault();
             requestMove(dragged.key, column.state);
@@ -160,9 +182,11 @@ export function SpecBoard() {
                         tabIndexOf={(card) => (card.key === tabbable ? 0 : -1)}
                         draggingKey={draggingKey}
                         onDragStart={onDragStart}
-                        onDragEnd={() => setDraggingKey(undefined)}
+                        onDragEnd={endDrag}
                         onDragOver={onDragOver}
+                        onDragLeave={onDragLeave}
                         onDrop={onDrop}
+                        dropTarget={draggingKey !== undefined && overState === column.state}
                         menuOf={(card) => (
                             <MoveMenu
                                 card={card}
