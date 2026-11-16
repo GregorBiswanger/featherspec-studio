@@ -225,8 +225,9 @@ small, so the recommendation is to run them in sequence.
       read-only store stays available;
     - a throwing listener does not stop a second one.
 - **Verify:** `npx vitest run src/core/missionControl` plus the per-step gates
-- [ ] **Verified (T-001):** —
-- **Notes:** Replaces the original T-001 (a store and session change); see *Code reality*.
+- [x] **Verified (T-001):** 2026-11-16 — red: `npx vitest run src/core/missionControl` 10 failed (`createRunSource` stub threw `Not implemented`); green: 1 file, 10/10 after the run source landed (includes the negative controls: listener disposed, old store after a switch, read-only store available). Gates: eslint 0, `tsc --noEmit` 0, `tsc --noEmit -p src/webview` 0, `npm run test:unit` 77 files, 1129 passed.
+- **Notes:** Replaces the original T-001 (a store and session change); see *Code reality*. Added `testing/runtimeWorld.ts` (memory store, fake session). The source subscribes upstream only while it has a listener (reading p6) and re-follows the store on every read, as the board does.
+
 
 ### T-002 — View contract, header and spec figures
 
