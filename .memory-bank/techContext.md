@@ -26,6 +26,9 @@
 - `npm test` — extension-host smoke suite (`src/test/discovery.smoke.test.ts`, `src/test/specRepository.smoke.test.ts`); `pretest` compiles and lints
   first; downloads and launches VS Code, so it is slow and needs network and a display. It cannot run
   in the agent sandbox (download blocked): CI and the Windows machine run it.
+- Runtime store (spec 0004): every store criterion is one contract suite (`src/core/runtime/testing/contract*.ts`)
+  that runs against the in-memory medium and the Node-fs medium (`src/adapters/node/fileRuntimeMedium.test.ts`); no new
+  tool or dependency. Host smoke: `src/test/runtime.smoke.test.ts` (CI only).
 - Manual checks nothing automates: window reload keeps the active project (AC-009), Restricted Mode (AC-022).
 
 ## Quality gates

@@ -5,37 +5,34 @@ Current branch: main
 Current phase: act
 
 ## Now
-Spec 0002 (spec repository & parser): all nine steps built (T-001…T-009), waiting for `/sdd-compile` in a fresh session. Spec 0001 (workspace discovery): the delta after the first `/sdd-compile` (NOT READY, unverified) is implemented (T-010…T-012). Waiting for the open evidence (host suite, AC-009, AC-022), then `/sdd-compile` again.
+Specs 0001 (workspace discovery), 0002 (spec repository & parser) and 0004 (runtime persistence & event model) are implemented, their plans are Done. They await the host suite (`npm test`) on CI and `/sdd-compile` in a fresh session. Spec 0003 is next.
 
 ## Active Spec
-- Spec: [0001-workspace-discovery-project-recognition.md](../.specs/active/0001-workspace-discovery-project-recognition.md) (In Progress, active)
-- Plan: [0001-workspace-discovery-project-recognition.plan.md](../.specs/active/0001-workspace-discovery-project-recognition.plan.md) (Done, 12 of 12 steps ticked; T-010…T-012 appended 2026-11-16)
+- Spec 0001: [spec](../.specs/active/0001-workspace-discovery-project-recognition.md) / [plan](../.specs/active/0001-workspace-discovery-project-recognition.plan.md) (Done, 12 of 12 steps; open evidence AC-009, AC-022 in the plan).
+- Spec 0002: [spec](../.specs/active/0002-spec-repository-parser.md) / [plan](../.specs/active/0002-spec-repository-parser.plan.md) (Done, 9 of 9 steps).
+- Spec 0004: [spec](../.specs/active/0004-runtime-persistence-event-model.md) / [plan](../.specs/active/0004-runtime-persistence-event-model.plan.md) (Done, T-001...T-009 ticked; AC-020 accepted 2026-11-16).
 - Current task: none; all steps ticked.
-- Spec: [0002-spec-repository-parser.md](../.specs/active/0002-spec-repository-parser.md) (In Progress, active)
-- Plan: [0002-spec-repository-parser.plan.md](../.specs/active/0002-spec-repository-parser.plan.md) (Done, 9 of 9 steps ticked)
-- Current task: none; `/sdd-compile` next.
-- Acceptance criteria in focus: AC-009, AC-013, AC-019, AC-022 (built, open evidence in the plan's *Open evidence* section).
+- Acceptance criteria in focus: AC-009, AC-013, AC-019, AC-022 (0001, open evidence in its plan).
 
 ## Changed Recently
-- Spec 0001 changed after `/sdd-compile` (Gregor): AC-016/AC-017 revised (hint only for folders without a marker; read error names the path that failed; OP-004 resolved), version line must start the line (spec §15, named by tests), new AC-023 + A-006 (`onDidChangeActiveProject` on the discovery controller, for 0002 and 0004). Plan extended T-010…T-012. 122 unit tests.
-- Spec 0002 built (Gregor approved the plan 2026-11-16): moved to `active/`; T-001 done: `src/core/ports/specSource.ts`, `src/adapters/node/nodeSpecSource.ts`, `src/core/specs/{files,text,diagnostics,fieldValue}.ts`, fixtures `fs180-*`, `fs170-brownfield-mixed`, `fs-broken`; parsers, joins, live repository, VS Code adapters and feed (T-002…T-008), docs synced (T-009); 358 unit tests green, `npm run compile` green, host smoke test written, not run here. Plan T-008 text adjusted to `onDidChangeActiveProject`.
-- Spec 0001 implemented (T-001…T-009): core in `src/core/{ports,discovery}`, adapters in `src/adapters/{node,vscode}`, composition in `src/extension.ts`, fixtures in `test/fixtures/`, `.github/workflows/ci.yml`, README, `architecture:` snapshot.
-- Checks: `npx eslint src --max-warnings 0`, `npx tsc --noEmit`, `npm run test:unit` (106 tests), `npm run compile` green; `npm test` not run here (VS Code download blocked).
-- `/sdd-plan` 0001: spec revised for OP-005 (activation by `workspaceContains:AGENTS.md` + `.specs`, no `onStartupFinished`; Gregor 2026-11-16).
-- `/sdd-setup`: Memory Bank seeded, architecture snapshot and preferences written in `AGENTS.md`.
+- Merged `spec-0004` into `main`: `src/extension.ts` wires both the spec repository (0002) and the runtime session (0004), each fed by spec 0001's `onDidChangeActiveProject`; `architecture:` snapshot in `AGENTS.md` holds both modules.
+- Spec 0004 built: `src/core/runtime`, `src/adapters/node/fileRuntimeMedium.ts`, `docs/runtime-data.md`; T-009 after `/sdd-compile`: append-only after a kill, writes to unreadable or newer data refused.
+- Spec 0002 built: `src/core/specs`, `src/adapters/vscode` spec source and file watch, active-project feed (T-001...T-009).
+- Spec 0001 changed after `/sdd-compile` (Gregor): AC-016/AC-017 revised, new AC-023 (`onDidChangeActiveProject`), plan extended T-010...T-012.
 
 ## Decisions in Flight
-- 0002: feed via `onDidChangeActiveProject` (answered, plan adapted); symbolic links not followed (A-006 confirmed); parallel stages run with other agents.
-- Spec 0001 open points OP-006…OP-012 (non-blocking); OP-004 resolved.
-- `AGENTS.md` is 214 lines (target 200): one eviction proposal is due at the next natural edit.
+- 0002: symbolic links not followed (A-006 confirmed).
+- Spec 0001 open points OP-006...OP-012 (non-blocking).
+- `AGENTS.md` is over its 200-line target: one eviction proposal is due at the next natural edit.
 
 ## Blockers / Questions
 - None.
 
 ## Next
-1. Gregor/CI (open evidence in the 0001 plan): `npm test` smoke suite (also proves the `workspaceContains:.specs` directory assumption); manual checks AC-009 (reload) and AC-022 (Restricted Mode).
-2. `/sdd-compile` in a fresh session (another model family), then `/sdd-lifecycle` → done.
-3. 0002: `/sdd-compile` in a fresh session (another model family); CI `npm test`; Gregor re-measures AC-018 on a real project (OP-001).
+1. Gregor/CI: `npm test` host suite (0001, 0002, 0004 smoke tests); manual checks AC-009 (reload) and AC-022 (Restricted Mode).
+2. `/sdd-compile` for 0001, 0002 and 0004 in a fresh session (another model family), then `/sdd-lifecycle` to done.
+3. `/sdd-plan` for spec 0003 (spec lifecycle & readiness model).
+4. Gregor re-measures AC-018 on a real project (OP-001).
 
 ## Validation
-- Done: eslint, tsc, `test:unit` (358 tests) and `compile` green. Pending: `npm test` on CI or Windows, manual AC-009 and AC-022. Known issues: none.
+- Done on the merged tree: eslint, tsc, `test:unit` (516 tests), `compile` green. Pending: `npm test` on CI or Windows, manual AC-009 and AC-022. Known issues: none.

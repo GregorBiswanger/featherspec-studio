@@ -1,10 +1,15 @@
 import * as vscode from 'vscode';
+import { createFileRuntimeMedium, projectStoreDirectory } from './adapters/node/fileRuntimeMedium';
+import { createRandomIds } from './adapters/node/randomIds';
 import { createSystemClock } from './adapters/node/systemClock';
+import { createSystemRuntimeClock } from './adapters/node/systemRuntimeClock';
 import { createMarkerWatch } from './adapters/vscode/markerWatch';
 import { createOutputChannel } from './adapters/vscode/outputChannel';
 import { sameRootFor } from './adapters/vscode/sameRoot';
 import { createStatusBar } from './adapters/vscode/statusBar';
 import { createFileWatch } from './adapters/vscode/fileWatch';
+import { createRuntimeUi } from './adapters/vscode/runtimeUi';
+import { createMaxAgeDaysSetting } from './adapters/vscode/runtimeSettings';
 import { createUi } from './adapters/vscode/ui';
 import { createVscodeSpecSource } from './adapters/vscode/vscodeSpecSource';
 import { createVscodeFileSystem } from './adapters/vscode/vscodeFileSystem';
@@ -14,12 +19,20 @@ import { createDiscoveryController, type DiscoverySnapshot } from './core/discov
 import { connectActiveProject } from './core/specs/activeProjectFeed';
 import { isCaseInsensitivePlatform } from './core/specs/eventPath';
 import { createSpecRepository, type SpecRepository } from './core/specs/specRepository';
+import type { StoreState } from './core/runtime/model';
+import { createRuntimeSession, type RuntimeSession } from './core/runtime/runtimeSession';
+import { openRuntimeStore, type RuntimeStore } from './core/runtime/runtimeStore';
+import { createUnavailableMedium } from './core/runtime/unavailableMedium';
 
 export interface StudioApi {
     snapshot(): DiscoverySnapshot;
     whenIdle(): Promise<void>;
     specs(): SpecRepository;
+    runtimeState(): StoreState;
+    runtimeStore(): RuntimeStore | undefined;
 }
+
+let runtimeSession: RuntimeSession | undefined;
 
 export async function activate(context: vscode.ExtensionContext): Promise<StudioApi> {
     const statusBar = createStatusBar();
@@ -43,6 +56,31 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         caseInsensitiveEvents: isCaseInsensitivePlatform(process.platform),
     });
     const feed = connectActiveProject(controller, repository);
+    const runtimeUi = createRuntimeUi();
+    const storage = context.globalStorageUri;
+    const clock = createSystemRuntimeClock();
+    const ids = createRandomIds();
+    const maxAgeDays = createMaxAgeDaysSetting();
+    const session = createRuntimeSession({
+        discovery: controller,
+        ui: runtimeUi,
+        openStore: (projectRoot) =>
+            openRuntimeStore({
+                medium:
+                    storage.scheme === 'file'
+                        ? createFileRuntimeMedium(
+                              projectStoreDirectory(storage.fsPath, process.platform === 'win32' ? projectRoot.toLowerCase() : projectRoot),
+                          )
+                        : createUnavailableMedium('storage location is not on the local file system'),
+                ids,
+                clock,
+                notices: { show: (message) => runtimeUi.warn(message) },
+                credentials: { values: () => [] },
+                projectRoot,
+                maxAgeDays,
+            }),
+    });
+    runtimeSession = session;
 
     context.subscriptions.push(
         statusBar,
@@ -52,17 +90,27 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         { dispose: () => repository.dispose() },
         vscode.commands.registerCommand('featherspec-studio.selectProject', () => controller.selectProject()),
         vscode.commands.registerCommand('featherspec-studio.refreshDiscovery', () => controller.refresh()),
+        vscode.commands.registerCommand('featherspec-studio.clearRunHistory', () => session.clearRunHistory()),
     );
 
+    await session.start();
     await controller.start();
+    await session.whenIdle();
     return {
         snapshot: () => controller.snapshot(),
         whenIdle: async () => {
             await controller.whenIdle();
             await repository.whenIdle();
+            await session.whenIdle();
         },
         specs: () => repository,
+        runtimeState: () => session.state(),
+        runtimeStore: () => session.current(),
     };
 }
 
-export function deactivate(): void {}
+export async function deactivate(): Promise<void> {
+    const closing = runtimeSession;
+    runtimeSession = undefined;
+    await closing?.dispose();
+}
