@@ -19,7 +19,7 @@ export const AREAS: readonly AreaInfo[] = [
         id: 'specBoard',
         title: 'Spec Board',
         purpose: 'See every spec as a card in the column of its board state.',
-        placeholder: true,
+        placeholder: false,
     },
     {
         id: 'specExplorer',

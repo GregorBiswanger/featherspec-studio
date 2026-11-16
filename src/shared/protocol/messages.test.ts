@@ -140,9 +140,9 @@ describe('host messages: guards accept and reject', () => {
 });
 
 describe('areas', () => {
-    it('lists the four areas in order; Spec Explorer is the only one with content in this version', () => {
+    it('lists the four areas in order; Spec Board and Spec Explorer are the ones with content in this version', () => {
         expect(AREAS.map((area) => area.title)).toEqual(['Mission Control', 'Spec Board', 'Spec Explorer', 'Agent Center']);
-        expect(AREAS.filter((area) => !area.placeholder).map((area) => area.id)).toEqual(['specExplorer']);
+        expect(AREAS.filter((area) => !area.placeholder).map((area) => area.id)).toEqual(['specBoard', 'specExplorer']);
         expect(AREA_IDS.every(isAreaId)).toBe(true);
         expect(isAreaId('settings')).toBe(false);
     });

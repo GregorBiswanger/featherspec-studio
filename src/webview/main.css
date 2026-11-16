@@ -142,3 +142,152 @@ main {
 .spec-path {
     color: var(--vscode-descriptionForeground);
 }
+
+.board {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.banner {
+    padding: 8px 12px;
+    border: 1px solid var(--vscode-inputValidation-warningBorder);
+    background: var(--vscode-inputValidation-warningBackground);
+}
+
+.banner ul {
+    margin: 4px 0 0;
+    padding-left: 20px;
+}
+
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.filter-bar fieldset {
+    margin: 0;
+    padding: 2px 8px;
+    border: 1px solid var(--vscode-panel-border);
+}
+
+.filter-bar label {
+    margin-right: 8px;
+    white-space: nowrap;
+}
+
+.filter-bar select,
+.filter-bar button {
+    color: var(--vscode-input-foreground);
+    background: var(--vscode-input-background);
+    border: 1px solid var(--vscode-input-border, var(--vscode-panel-border));
+    font: inherit;
+    padding: 2px 6px;
+}
+
+.filter-bar button {
+    color: var(--vscode-button-foreground);
+    background: var(--vscode-button-background);
+    cursor: pointer;
+}
+
+.set-chip {
+    padding: 2px 8px;
+    border: 1px solid var(--vscode-focusBorder);
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(180px, 1fr));
+    gap: 8px;
+    align-items: start;
+    overflow-x: auto;
+}
+
+.column {
+    border: 1px solid var(--vscode-panel-border);
+    padding: 4px 8px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.column-heading {
+    font-size: 1em;
+    margin: 4px 0;
+}
+
+.column-count,
+.column-hint,
+.column-hidden,
+.card-path,
+.card-figures,
+.card-run,
+.card-readiness {
+    color: var(--vscode-descriptionForeground);
+}
+
+.column-cards {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.card {
+    margin: 6px 0;
+    padding: 6px 8px;
+    border: 1px solid var(--vscode-panel-border);
+    background: var(--vscode-editorWidget-background, var(--vscode-editor-background));
+    cursor: pointer;
+}
+
+.card:hover {
+    background: var(--vscode-list-hoverBackground);
+}
+
+.card:focus-visible,
+.card[data-focused="true"] {
+    outline: 2px solid var(--vscode-focusBorder);
+    outline-offset: 1px;
+}
+
+.card-number {
+    font-family: var(--vscode-editor-font-family);
+}
+
+.card-title {
+    font-weight: bold;
+}
+
+.card-markers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 4px 0;
+}
+
+.marker {
+    padding: 0 6px;
+    border: 1px solid var(--vscode-panel-border);
+}
+
+.icon {
+    vertical-align: text-bottom;
+}
+
+.card-summary {
+    margin: 4px 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.card-blocked {
+    color: var(--vscode-errorForeground);
+}
+
+.card-figures span {
+    margin-right: 8px;
+}

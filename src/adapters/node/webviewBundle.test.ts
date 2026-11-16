@@ -3,6 +3,12 @@ import { readFileSync, existsSync } from 'node:fs';
 import * as path from 'node:path';
 import { JSDOM, VirtualConsole } from 'jsdom';
 import { beforeAll, describe, expect, it } from 'vitest';
+import { fixturePath } from '../../core/discovery/testing/fixtures';
+import { arrangeBoard } from '../../core/board/filters';
+import { buildBanner, buildCards } from '../../core/board/cards';
+import { deriveLifecycle } from '../../core/lifecycle/deriveLifecycle';
+import { readProject } from '../../core/specs/readProject';
+import { createNodeSpecSource } from './nodeSpecSource';
 
 const root = path.resolve(__dirname, '..', '..', '..');
 const bundlePath = path.join(root, 'dist', 'webview', 'main.js');
@@ -83,6 +89,27 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         await settle();
         expect(dom.window.document.body.textContent).not.toContain('Loading project…');
         expect(dom.window.document.querySelector('h1')?.textContent).toBe('Spec Board');
+        expect(errors).toEqual([]);
+    });
+
+    it('mounts the Spec Board with a snapshot of a fixture project: six columns, the cards, no start-up error', async () => {
+        const project = await readProject(createNodeSpecSource(), fixturePath('fs110-ready-synthetic'), '1.10.0');
+        const lifecycle = deriveLifecycle(project);
+        const cards = buildCards(project, lifecycle);
+        const board = { columns: arrangeBoard(cards, {}, 'number'), banner: buildBanner(project, lifecycle), filter: {}, sort: 'number', providers: [], noSpecs: false };
+        const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
+        await settle();
+        const view = { state: undefined, restricted: false, projectName: 'demo', area: 'specBoard', target: undefined, selection: undefined, notice: undefined, rows: [] };
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', type: 'board', payload: { view: board } } }));
+        await settle();
+        const document = dom.window.document;
+        expect(document.querySelector('h1')?.textContent).toBe('Spec Board');
+        expect([...document.querySelectorAll('[data-column]')].map((column) => column.getAttribute('data-column'))).toEqual(['Backlog', 'Ready', 'Active', 'Review', 'Done', 'Blocked']);
+        expect(document.querySelectorAll('[data-card]')).toHaveLength(cards.length);
+        expect(cards.length).toBeGreaterThan(0);
+        expect(document.querySelector('[data-column="Ready"] [data-card]')?.textContent).toContain('Derived (rule S-READY)');
+        expect(document.querySelector('[data-placeholder]')).toBeNull();
         expect(errors).toEqual([]);
     });
 

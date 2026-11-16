@@ -54,7 +54,6 @@ afterEach(() => {
 
 describe('AC-006: placeholders', () => {
     it.each([
-        ['specBoard', 'Spec Board', 'See every spec as a card in the column of its board state.'],
         ['missionControl', 'Mission Control', 'See the project at a glance: spec counts, agent activity and what needs attention.'],
         ['agentCenter', 'Agent Center', 'Follow agent runs, their live events and the approvals they wait for.'],
     ] as const)('%s shows its name, its purpose and "Not available in this version of FeatherSpec Studio", and no rows', async (area, title, purpose) => {
@@ -74,8 +73,8 @@ describe('AC-006: placeholders', () => {
         expect(container.textContent).not.toContain('r-1');
     });
 
-    it('control: Spec Explorer is no placeholder', async () => {
-        const container = await open(baseView({ area: 'specExplorer', rows: THREE }));
+    it.each(['specExplorer', 'specBoard'] as const)('control: %s is no placeholder', async (area) => {
+        const container = await open(baseView({ area, rows: THREE }));
         expect(container.querySelector('[data-placeholder]')).toBeNull();
     });
 });

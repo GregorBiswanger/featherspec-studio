@@ -14,7 +14,7 @@ export interface Shell {
     dismissNotice(): void;
 }
 
-const ClientContext = createContext<ShellClient | undefined>(undefined);
+export const ClientContext = createContext<ShellClient | undefined>(undefined);
 
 export function ShellProvider(props: { client: ShellClient; children: ReactNode }) {
     return <ClientContext.Provider value={props.client}>{props.children}</ClientContext.Provider>;

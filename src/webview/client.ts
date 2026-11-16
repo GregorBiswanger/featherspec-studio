@@ -1,7 +1,13 @@
 import type { Probe } from './probe';
 import { DEFAULT_AREA, type AreaId } from '../shared/protocol/areas';
 import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../shared/protocol/envelope';
+import type { BoardView, MoveResult, SortKey } from '../shared/protocol/board';
+import type { BoardFilter, BoardState } from '../shared/protocol/boardFilter';
+import { isOpenFileResultPayload, type DetailView } from '../shared/protocol/detail';
 import {
+    isBoardEventPayload,
+    isDetailEventPayload,
+    isMoveResultEventPayload,
     isProbePayload,
     isResponsePayload,
     isShellEventPayload,
@@ -17,6 +23,10 @@ export interface ClientSnapshot {
     view: ShellView | undefined;
     state: PanelState | undefined;
     area: AreaId;
+    board: BoardView | undefined;
+    detail: DetailView | undefined;
+    move: MoveResult;
+    fileResult: { key: string; text: string } | undefined;
 }
 
 export interface SpecReference {
@@ -32,6 +42,13 @@ export interface ShellClient {
     select(reference: SpecReference): void;
     runAction(action: ActionId): void;
     dismissNotice(): void;
+    setBoardFilter(filter: BoardFilter): void;
+    setBoardSort(sort: SortKey): void;
+    clearBoardFilters(): void;
+    focusCard(key: string | null): void;
+    requestMove(key: string, target: BoardState): void;
+    openFile(key: string, line?: number): void;
+    dismissMove(): void;
     subscribe(listener: () => void): () => void;
     getSnapshot(): ClientSnapshot;
 }
@@ -51,7 +68,11 @@ export function createClient(deps: ClientDeps): ShellClient {
     let lastSeq = 0;
     let nextId = 0;
     let localArea: { area: AreaId; id: string } | undefined;
-    let snapshot: ClientSnapshot = { view: undefined, state: { id: 'S4' }, area: DEFAULT_AREA };
+    let board: BoardView | undefined;
+    let detail: DetailView | undefined;
+    let move: MoveResult = { kind: 'none' };
+    let fileResult: { key: string; text: string } | undefined;
+    let snapshot: ClientSnapshot = { view: undefined, state: { id: 'S4' }, area: DEFAULT_AREA, board: undefined, detail: undefined, move, fileResult: undefined };
     let unlisten: (() => void) | undefined;
     let mismatch = false;
     let protocolFailure = false;
@@ -70,10 +91,18 @@ export function createClient(deps: ClientDeps): ShellClient {
     function refresh(): void {
         const area = localArea?.area ?? view?.area ?? DEFAULT_AREA;
         const state = effectiveState();
-        if (snapshot.view === view && snapshot.area === area && JSON.stringify(snapshot.state) === JSON.stringify(state)) {
+        if (
+            snapshot.view === view &&
+            snapshot.area === area &&
+            snapshot.board === board &&
+            snapshot.detail === detail &&
+            snapshot.move === move &&
+            snapshot.fileResult === fileResult &&
+            JSON.stringify(snapshot.state) === JSON.stringify(state)
+        ) {
             return;
         }
-        snapshot = { view, state, area };
+        snapshot = { view, state, area, board, detail, move, fileResult };
         listeners.forEach((listener) => listener());
     }
 
@@ -163,6 +192,27 @@ export function createClient(deps: ClientDeps): ShellClient {
                 onProbe(envelope);
             } else if (envelope.kind === 'evt' && envelope.type === 'shell') {
                 onShellEvent(envelope);
+            } else if (envelope.kind === 'evt' && envelope.type === 'board') {
+                if (isBoardEventPayload(envelope.payload)) {
+                    board = envelope.payload.view;
+                    refresh();
+                }
+            } else if (envelope.kind === 'evt' && envelope.type === 'detail') {
+                if (isDetailEventPayload(envelope.payload)) {
+                    detail = envelope.payload.view;
+                    fileResult = undefined;
+                    refresh();
+                }
+            } else if (envelope.kind === 'evt' && envelope.type === 'moveResult') {
+                if (isMoveResultEventPayload(envelope.payload)) {
+                    move = envelope.payload.result;
+                    refresh();
+                }
+            } else if (envelope.kind === 'evt' && envelope.type === 'openFileResult') {
+                if (isOpenFileResultPayload(envelope.payload)) {
+                    fileResult = envelope.payload;
+                    refresh();
+                }
             } else if (envelope.kind === 'res') {
                 onResponse(envelope);
             }
@@ -180,6 +230,28 @@ export function createClient(deps: ClientDeps): ShellClient {
         },
         dismissNotice() {
             send('dismissNotice', {});
+        },
+        setBoardFilter(filter) {
+            send('boardSetFilter', { filter });
+        },
+        setBoardSort(sort) {
+            send('boardSetSort', { sort });
+        },
+        clearBoardFilters() {
+            send('boardClearFilters', {});
+        },
+        focusCard(key) {
+            send('boardFocus', { key });
+        },
+        requestMove(key, target) {
+            send('moveRequest', { key, target });
+        },
+        openFile(key, line) {
+            send('openFile', line === undefined ? { key } : { key, line });
+        },
+        dismissMove() {
+            move = { kind: 'none' };
+            refresh();
         },
         subscribe(listener) {
             listeners.add(listener);
