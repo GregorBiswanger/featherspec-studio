@@ -1,9 +1,9 @@
 # Plan — Spec Repository & Parser
 
 **Spec:** [0002-spec-repository-parser.md](0002-spec-repository-parser.md)
-**Status:** Done
+**Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** none (all steps ticked)
+**Current step:** T-011
 
 ## Approach
 
@@ -73,6 +73,7 @@ Decisions this plan makes (spec §8 left them to the plan):
 3. T-003 ‖ T-005 — criteria/FR locator and plan structure: separate modules and tests
 4. T-006 → T-007 — joined project read, then the live repository
 5. T-008 → T-009 — VS Code adapters and composition, then docs sync and final gates
+6. T-010 → T-011 — spec changed 2026-11-16 (`/sdd-compile` follow-up): three-dot `Covers:` range named by a test (AC-008), same-project re-report and `AGENTS.md` edit named by tests (AC-022)
 
 Parallel: stages 2 and 3 (spec parser files vs. plan parser files, each with its own test
 file; shared types and the text normaliser exist from T-001). Recommended: in sequence —
@@ -218,6 +219,15 @@ the slices are small.
 - [x] **Verified (T-009):** 2026-11-16 · `npx eslint src --max-warnings 0` · `npx tsc --noEmit` · `npm run test:unit` (358 tests, 20 files) · `npm run compile`: all green, zero warnings. Pre-done `npm test` (host suite incl. `specRepository.smoke.test.ts`) not run here: CI.
 - **Notes:** `AGENTS.md` snapshot changed exactly as planned (now 214 lines, the cap-eviction proposal from `activeContext.md` stays due). README gained a short *Spec model* section. `systemPatterns.md`: three entries (own port, model conventions, live repository + feed). `techContext.md`: fixtures, AC-018 test, second smoke file.
 
+### T-010 — Three-dot `Covers:` range named by a test
+
+- **Covers:** AC-008
+- **Added:** 2026-11-16, spec changed after this plan was Done (the plan still sits beside the spec, so it is extended in place; no ID renumbered). Gregor's decision after `/sdd-compile`: a `Covers:` range is written with `…` or with three plain dots `...`; both are ranges. AC-008 and §12 of the spec say so now; the code already did.
+- **Do:** `src/core/specs/planSteps.test.ts`: one test that names both spellings and shows they give the same IDs, inside a longer list; a negative control that two plain dots are no range. No code change.
+- **Verify:** `npx vitest run src/core/specs/planSteps` + per-step gates
+- [x] **Verified (T-010):** 2026-11-16 · preservation test, green at once by design (code unchanged); control: removing `\.\.\.` from the `RANGE` pattern in `planSteps.ts` turned the new test and the older three-dot test red (2 failed, 27 passed), restored. Green: 29 of 29 in `planSteps.test.ts`.
+- **Notes:** no code change; the test is `AC-008: a range written with the ellipsis character … and one written with three plain dots ... are both ranges, with the same result`.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -229,7 +239,7 @@ the slices are small.
 | AC-005 | T-003 | `src/core/specs/leadingIds.ts:locateLeadingIds` | `leadingIds.test.ts` | verified |
 | AC-006 | T-006 | `src/core/specs/readProject.ts:readProject` | `readProject.test.ts` (AC-006) | verified |
 | AC-007 | T-004, T-005 | `src/core/specs/planSteps.ts:parsePlanSteps`, `parsePlan.ts:parsePlan` | `planSteps.test.ts`, `parsePlan.test.ts` | verified |
-| AC-008 | T-004 | `src/core/specs/planSteps.ts:expandCovers` | `planSteps.test.ts` (AC-008) | verified |
+| AC-008 | T-004, T-010 | `src/core/specs/planSteps.ts:expandCovers` | `planSteps.test.ts` (AC-008, incl. the three-dot range) | verified |
 | AC-009 | T-002, T-005 | `src/core/specs/parseSpec.ts` (plan history), `planSteps.ts`, `parsePlan.ts` (traceability) | `parseSpec.test.ts`, `planSteps.test.ts`, `parsePlan.test.ts` | verified |
 | AC-010 | T-006 | `src/core/specs/readProject.ts:readProject`, `returnNote.ts:parseReturnNote` | `readProject.test.ts`, `returnNote.test.ts` (AC-010) | verified |
 | AC-011 | T-001, T-006 | `src/core/specs/files.ts:readOne`, `readProject.ts:parseFile` | `files.test.ts`, `readProject.test.ts` (AC-011) | verified |

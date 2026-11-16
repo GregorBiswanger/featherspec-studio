@@ -22,6 +22,18 @@ describe('expandCovers', () => {
         expect(expandCovers('AC-001…AC-002')).toEqual(['AC-001', 'AC-002']);
     });
 
+    it('AC-008: a range written with the ellipsis character … and one written with three plain dots ... are both ranges, with the same result', () => {
+        const ellipsis = expandCovers('AC-010 … AC-013');
+        const dots = expandCovers('AC-010 ... AC-013');
+        expect(ellipsis).toEqual(['AC-010', 'AC-011', 'AC-012', 'AC-013']);
+        expect(dots).toEqual(ellipsis);
+        expect(expandCovers('AC-001, AC-003 ... AC-005')).toEqual(['AC-001', 'AC-003', 'AC-004', 'AC-005']);
+    });
+
+    it('AC-008: two plain dots are no range (negative control)', () => {
+        expect(expandCovers('AC-010 .. AC-013')).toEqual(['AC-010', 'AC-013']);
+    });
+
     it('AC-008: a one-element range returns that ID once', () => {
         expect(expandCovers('AC-004 … AC-004')).toEqual(['AC-004']);
     });
