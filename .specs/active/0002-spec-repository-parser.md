@@ -174,8 +174,11 @@ file rather than its content: key and modification time (PD-043).
 ## 9. Interfaces and integrations
 
 - **Input from 0001:** the active project (root folder, version as written or "unknown").
-  Without an active project this layer does not run. When 0001 reports the project again
-  (PD-033: root `AGENTS.md` or root `.specs/` changed), another project, or none, AC-022 applies.
+  Without an active project this layer does not run. When 0001 reports another project (a
+  different root or another version) or none, AC-022 applies. A re-report of the same project
+  (same root, same version) triggers no re-read: changes under `.specs/` are covered by this
+  layer's own watcher and by `rescan()`, and an `AGENTS.md` edit that keeps the version does
+  not affect the spec model.
 - **Output to 0003, 0006, 0007:** the model as a complete snapshot (a consumer never reads a
   half-updated model), including each file's modification time (0007's "Last change",
   PD-043), plus a change notification that names the references of the affected
@@ -219,7 +222,7 @@ file rather than its content: key and modification time (PD-043).
 | Unknown `**Status:**` value (spec, plan, return note) or traceability state | Value as written, unknown-value diagnostic (AC-014) |
 | Criterion carrying `[Uncertain]` | Flagged *uncertain*, wherever it stands (AC-005) |
 | Struck-through step or criterion | Returned with its *struck* state; shape UNVERIFIED (AC-004, AC-007) |
-| `Covers:` with a range `AC-003 … AC-006`, another delimiter, a reversed range or prose | `AC-a … AC-b` with a ≤ b expanded; otherwise only the IDs written; raw text kept (AC-008) |
+| `Covers:` with a range `AC-003 … AC-006` or `AC-003 ... AC-006`, another delimiter, a reversed range or prose | `AC-a … AC-b` and `AC-a ... AC-b` with a ≤ b expanded; otherwise only the IDs written; raw text kept (AC-008) |
 | Step with no checkbox, or one on both lines | Dialect and ticked state undetermined, diagnostic (AC-007) |
 | Unknown plan section, header line or step field; traceability table whose columns differ from format §4.5 | Kept as unsupported content with diagnostic (AC-014) |
 | Return note whose number matches no spec | Returned unlinked, with diagnostic (AC-010) |
@@ -229,7 +232,8 @@ file rather than its content: key and modification time (PD-043).
 | Series of saves; file read while half-written | An intermediate state may be published; the final state matches the files (AC-012) |
 | Lifecycle folder or `.memory-bank/` missing or removed | Its entries are absent or removed; no diagnostic (format §1.1) |
 | Change events missed (watcher exclusions, folder-level events) | A full re-read on request restores the model (AC-022; ADR-001 §9) |
-| 0001 reports the project again, another project, or none | Fresh full read, or the model is discarded (AC-022) |
+| 0001 reports another project (another root or another version), or none | Fresh full read, or the model is discarded (AC-022) |
+| 0001 reports the same project again (same root, same version) | No re-read; the watcher and `rescan()` cover changes under `.specs/` (AC-022) |
 | `.md` file in a watched folder that matches no pattern | No entry (AC-001). Diagnostic: OP-003 |
 
 ## 13. Acceptance criteria
@@ -267,8 +271,9 @@ Handoff references in brackets (PD-017).
   (1.10.0) and on the `Covers:` line (≤ 1.9). If a step carries no checkbox, or one on both
   lines, then the system shall return its dialect and ticked state as undetermined, with a
   diagnostic. [FR-002.5]
-- **AC-008** When a `Covers:` value contains a range written `AC-a … AC-b` with a ≤ b, the
-  system shall return every AC ID from a to b. For any other `Covers:` text it shall return
+- **AC-008** When a `Covers:` value contains a range written `AC-a … AC-b` (the ellipsis
+  character) or `AC-a ... AC-b` (three plain dots) with a ≤ b, the system shall return every
+  AC ID from a to b. For any other `Covers:` text it shall return
   exactly the AC IDs written in it. In both cases it shall keep the raw `Covers:` text.
   [FR-002.5]
 - **AC-009** The system shall return the verification information found in the files: per step
@@ -330,10 +335,14 @@ Handoff references in brackets (PD-017).
 - **AC-021** The system shall read no file outside the active project root. If a `**Plan:**`
   or `**Spec:**` link resolves to a location outside the root, then the system shall not read
   the target. [handoff §13 Security]
-- **AC-022** When a consumer requests a full re-read, or 0001 reports the active project
-  again, the system shall replace the model with the result of a fresh full read and notify
-  consumers. When 0001 reports no active project, the system shall stop watching and discard
-  the model. [ADR-001 §9; PD-033]
+- **AC-022** When a consumer requests a full re-read, or 0001 reports an active project whose
+  root or version differs from the one the system last read, the system shall replace the
+  model with the result of a fresh full read and notify consumers. When 0001 reports the same
+  root and the same version again, the system shall not re-read; changes under `.specs/`
+  reach the model through the system's own file watcher and through a full re-read on
+  request. An edit of `AGENTS.md` that keeps the version shall not change the model. When
+  0001 reports no active project, the system shall stop watching and discard the model.
+  [ADR-001 §9; PD-033]
 - **AC-023** The system shall return for every spec, plan and return note the modification
   time the file system reported for that file when it was read, unchanged, as a file fact
   beside its content. If a file cannot be read (AC-011), then the system shall return its
@@ -388,6 +397,11 @@ Resolved:
   uses them: Q1 return notes are read, the rest of the Memory Bank is not; Q2 versions outside
   1.7.0–1.10.0 are read with a diagnostic; Q3 duplicates are kept and flagged (now PD-019);
   Q4 the working thresholds (now PD-035). Q1 and Q2 are recorded nowhere else: OP-007.
+- **R-004** `/sdd-compile` follow-up 2026-11-16, decided by Gregor: AC-022 and §9 revised —
+  a re-report of the same project (same root, same version) triggers no re-read, `.specs/`
+  changes are covered by the watcher and `rescan()`, an `AGENTS.md` edit that keeps the version
+  does not affect the model; the code stays. AC-008 and §12 revised — a `Covers:` range is
+  written with `…` or with three plain dots `...`, both are ranges; the code already did this.
 - **R-003** `/sdd-plan` 2026-11-16: PD-043 is newer than this spec and asks this layer for
   every file's modification time as a file fact. Applied: BR-01, §8 (term *file facts*, the
   spec, plan and return-note items), §9, FR-03 and the new AC-023.
