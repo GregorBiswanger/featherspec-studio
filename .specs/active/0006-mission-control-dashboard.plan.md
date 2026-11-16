@@ -3,7 +3,7 @@
 **Spec:** [0006-mission-control-dashboard.md](0006-mission-control-dashboard.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-001
+**Current step:** T-003
 
 ## Approach
 
@@ -274,8 +274,9 @@ small, so the recommendation is to run them in sequence.
       diagnostic is not (A-012);
     - the guard accepts a built view and rejects one with an extra key or a wrong type.
 - **Verify:** `npx vitest run src/core/missionControl` plus the per-step gates
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-16 — red: `npx vitest run src/core/missionControl/specFigures.test.ts src/shared/protocol/missionControl.test.ts` 14 failed (`projectSpecFigures`, `projectHeader` and `isMissionControlView` stubs threw `Not implemented`); green: 2 files, 14/14 (one test fixture of mine put the unknown header line after a blank line, so no unknown-content diagnostic arose; fixed in the helper). Gates: eslint 0, `tsc --noEmit` 0, `tsc --noEmit -p src/webview` 0, `npm run test:unit` 79 files, 1143 passed.
+- **Notes:** Deviations: the project-level count is `buildBanner(project, lifecycle).length` of the board (same rule, one source); `projectHeader(active, model, updatedAt)` takes no separate `project`. The spec reference builder and the title-`null` test move to T-003, where references are first built. The sample view for later tests is `src/shared/protocol/testing/missionControlSample.ts`; spec fixtures are `src/core/missionControl/testing/projects.ts`.
+
 
 ### T-003 — Run figures, highlighted runs and the attention list
 
@@ -486,10 +487,10 @@ small, so the recommendation is to run them in sequence.
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-002 | — | — | open |
-| AC-002 | T-002 | — | — | open |
-| AC-003 | T-002 | — | — | open |
-| AC-004 | T-002 | — | — | open |
+| AC-001 | T-002 | src/core/missionControl/specFigures.ts:projectSpecFigures | specFigures.test.ts (AC-001) | verified |
+| AC-002 | T-002 | specFigures.ts:projectSpecFigures | specFigures.test.ts (AC-002) | verified |
+| AC-003 | T-002 | specFigures.ts:projectSpecFigures | specFigures.test.ts (AC-003, rounding, PD-021) | verified |
+| AC-004 | T-002 | specFigures.ts:projectSpecFigures | specFigures.test.ts (AC-004) | verified |
 | AC-005 | T-003, T-006 | — | — | open |
 | AC-006 | T-001, T-004 | — | — | open |
 | AC-007 | T-003, T-006 | — | — | open |
@@ -505,12 +506,12 @@ small, so the recommendation is to run them in sequence.
 | AC-017 | T-002, T-005, T-007 | — | — | open |
 | AC-018 | T-001, T-003, T-004, T-006 | — | — | open |
 | AC-019 | T-002, T-005 | — | — | open |
-| AC-020 | T-002, T-005 | — | — | open |
+| AC-020 | T-002, T-005 | specFigures.ts (empty form) | specFigures.test.ts (AC-020); rendering in T-005 | built |
 | AC-021 | T-006 | — | + manual: Gregor, High Contrast | open |
 | AC-022 | T-007 | — | + manual: Gregor, focus, Enter and Space | open |
 | AC-023 | T-004, T-008 | — | — | open |
 | AC-024 | T-004, T-005 | — | — | open |
-| AC-025 | T-002, T-005 | — | — | open |
+| AC-025 | T-002, T-005 | specFigures.ts (derivedRule) | specFigures.test.ts (AC-025) | built |
 | AC-026 | T-002, T-003, T-006 | — | — | open |
 | AC-027 | T-003, T-006 | — | — | open |
 | AC-028 | T-005 | — | — | open |
@@ -518,18 +519,8 @@ small, so the recommendation is to run them in sequence.
 
 ## Session handoff
 
-- **Done so far:** plan written (8 steps, 4 stages); approved and answered by Gregor 2026-11-16, spec revised, lifecycle move to `active/` done; no code changed yet.
-- **Next action:**
-  1. Gregor reviews the plan, the *Texts* table, the open-point rule and readings p1 to p6.
-  2. The accepted answers go into the spec (revise mode).
-  3. Main (0005) is merged into `spec-0006`, then `npm ci`.
-  4. On the start signal: `/sdd-lifecycle` backlog → active, then T-001.
-- **Open decisions:**
-  - the 0004 addition `onDidChangeRuns` (T-001);
-  - OP-4: Output channel as written, or a Spec Board request;
-  - OP-6, OP-8, OP-9, OP-10 and OP-12 as planned;
-  - readings p1 to p6;
-  - the board filter encoding shared with 0007's plan.
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
-- **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); CI runs
-  it. The worktree needs `npm ci` first.
+- **Done so far:** T-001 (run source) and T-002 (view contract, spec figures, header) ticked; 1143 unit tests green.
+- **Next action:** T-003: run figures, highlighted runs, attention list (`src/core/missionControl`), then T-004, stage 3 (webview) and T-008.
+- **Open decisions:** none blocking. Gregor's manual checks (spec §14): AC-021 in a High Contrast theme, AC-022 focus with Enter and Space, the §9 layout in the hands-on run.
+- **Baseline:** `1ba50ff` (HEAD before the first step commit of this plan).
+- **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); CI runs it. `node_modules` is installed; no dependency is added.
