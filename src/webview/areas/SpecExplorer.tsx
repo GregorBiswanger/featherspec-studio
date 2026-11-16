@@ -1,4 +1,5 @@
 import type { KeyboardEvent } from "react";
+import { isBoardState } from "../../shared/protocol/boardFilter";
 import type { SpecRow } from "../../shared/protocol/messages";
 import {
   NO_SPECS_TEXT,
@@ -8,6 +9,7 @@ import {
 import { useBoard } from "../board/boardStore";
 import { SpecDetail } from "../detail/SpecDetail";
 import { useShell } from "../shell";
+import { StateChip } from "../ui/StateChip";
 
 export function SpecExplorer() {
   const shell = useShell();
@@ -51,13 +53,21 @@ export function SpecExplorer() {
             <span className="spec-title">
               {row.title ?? TITLE_NOT_AVAILABLE}
             </span>{" "}
-            <span className="spec-state">{row.state}</span>
-            {row.derivedLabel === undefined ? null : (
-              <span className="spec-derived"> {row.derivedLabel}</span>
-            )}
-            {row.showPath ? (
-              <span className="spec-path"> {row.path}</span>
-            ) : null}
+            <span className="spec-meta">
+              <span className="spec-state">
+                {isBoardState(row.state) ? (
+                  <StateChip state={row.state} />
+                ) : (
+                  row.state
+                )}
+              </span>
+              {row.derivedLabel === undefined ? null : (
+                <span className="spec-derived"> {row.derivedLabel}</span>
+              )}
+              {row.showPath ? (
+                <span className="spec-path"> {row.path}</span>
+              ) : null}
+            </span>
           </li>
         ))}
       </ul>

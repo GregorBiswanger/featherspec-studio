@@ -1,7 +1,7 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { rulesFor } from '../../webview/testing/css';
+import { declarations, rulesFor } from '../../webview/testing/css';
 
 describe('AC-026: colours come from the theme', () => {
     const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
@@ -79,5 +79,137 @@ describe('AC-026: colours come from the theme', () => {
             expect(rule.body).not.toContain('outline');
         }
         expect(rulesFor(css, 'button:focus-visible').some((rule) => rule.body.includes('outline: 2px solid'))).toBe(true);
+    });
+});
+
+const COLOUR_PROPERTIES = /^(?:color|background(?:-color)?|border(?:-(?:top|right|bottom|left|block|inline)(?:-(?:start|end))?)?(?:-color)?|outline(?:-color)?|fill|stroke|box-shadow|text-decoration(?:-color)?|caret-color|accent-color|column-rule(?:-color)?|scrollbar-color|text-shadow)$/;
+const NEUTRAL_WORDS = new Set(['currentcolor', 'transparent', 'inherit', 'none', 'solid', 'dashed', 'dotted', 'double', 'inset', 'underline', 'auto', 'initial', 'unset']);
+
+function residue(value: string): string[] {
+    let rest = value;
+    let previous = '';
+    while (previous !== rest) {
+        previous = rest;
+        rest = rest.replace(/var\(--(?:vscode|fs)-[\w-]+\)/g, ' ');
+        rest = rest.replace(/var\(--(?:vscode|fs)-[\w-]+,\s*([^()]*)\)/g, ' $1 ');
+    }
+    return rest
+        .split(/[\s,/]+/)
+        .map((word) => word.trim().toLowerCase())
+        .filter((word) => word !== '' && !NEUTRAL_WORDS.has(word) && !/^-?\d*\.?\d+(?:px|em|rem|%|ms|s)?$/.test(word));
+}
+
+function isVscodeChain(value: string): boolean {
+    const match = /^var\(--vscode-[\w-]+(?:,\s*(.+))?\)$/.exec(value.trim());
+    if (match === null) {
+        return false;
+    }
+    return match[1] === undefined || isVscodeChain(match[1]);
+}
+
+function tsxFiles(dir: string): string[] {
+    return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+            return tsxFiles(full);
+        }
+        return /\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name) ? [full] : [];
+    });
+}
+
+describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the theme', () => {
+    const webviewDir = path.resolve(__dirname, '..', '..', 'webview');
+    const css = readFileSync(path.join(webviewDir, 'main.css'), 'utf8');
+    const all = declarations(css);
+
+    it('AC-001: every colour-bearing declaration resolves only to --vscode-* variables, currentColor, transparent or inherit', () => {
+        const offenders = all.filter((entry) => COLOUR_PROPERTIES.test(entry.property) && residue(entry.value).length > 0).map((entry) => `${entry.selectors.join(',')} { ${entry.property}: ${entry.value} }`);
+        expect(offenders).toEqual([]);
+    });
+
+    it('AC-001 control: the residue check flags a named colour, a hex value and a foreign variable', () => {
+        expect(residue('1px solid red')).toEqual(['red']);
+        expect(residue('#fff')).toEqual(['#fff']);
+        expect(residue('var(--brand)')).not.toEqual([]);
+        expect(residue('1px solid var(--vscode-contrastBorder, var(--vscode-panel-border))')).toEqual([]);
+    });
+
+    it('AC-001: every --fs-* alias is defined only as a chain of --vscode-* variables, and every alias used is defined', () => {
+        const definitions = all.filter((entry) => entry.property.startsWith('--'));
+        expect(definitions.length).toBeGreaterThan(0);
+        for (const entry of definitions) {
+            expect(entry.property, entry.property).toMatch(/^--fs-[\w-]+$/);
+            expect(isVscodeChain(entry.value), `${entry.property}: ${entry.value}`).toBe(true);
+        }
+        const defined = new Set(definitions.map((entry) => entry.property));
+        const used = [...css.matchAll(/var\((--fs-[\w-]+)/g)].map((match) => match[1]);
+        for (const name of used) {
+            expect(defined.has(name ?? ''), name).toBe(true);
+        }
+        expect([...css.matchAll(/var\((--[\w-]+)/g)].every((match) => /^--(?:vscode|fs)-/.test(match[1] ?? ''))).toBe(true);
+    });
+
+    it('AC-001 control: the chain check rejects a literal fallback', () => {
+        expect(isVscodeChain('var(--vscode-charts-blue)')).toBe(true);
+        expect(isVscodeChain('var(--vscode-contrastBorder, var(--vscode-panel-border))')).toBe(true);
+        expect(isVscodeChain('var(--vscode-charts-blue, #0000ff)')).toBe(false);
+        expect(isVscodeChain('blue')).toBe(false);
+    });
+
+    it('AC-001: font families come only from the two VS Code font variables; no @font-face and no @import', () => {
+        for (const entry of all.filter((item) => item.property === 'font-family')) {
+            expect(entry.value).toMatch(/^(?:var\(--vscode-(?:editor-)?font-family\)|inherit)$/);
+        }
+        for (const entry of all.filter((item) => item.property === 'font')) {
+            expect(entry.value).toBe('inherit');
+        }
+        expect(css).not.toMatch(/@font-face|@import/);
+    });
+
+    it('AC-001: no inline style in src/webview carries a colour', () => {
+        const offenders: string[] = [];
+        for (const file of tsxFiles(webviewDir)) {
+            const text = readFileSync(file, 'utf8');
+            for (const match of text.matchAll(/style=\{\{([^}]*)\}\}/g)) {
+                if (/(?:color|background|border|fill|stroke|outline|shadow)\s*:/i.test(match[1] ?? '')) {
+                    offenders.push(`${path.relative(webviewDir, file)}: ${match[0]}`);
+                }
+            }
+        }
+        expect(offenders).toEqual([]);
+    });
+
+    it('AC-003: no rule removes an outline or makes it transparent', () => {
+        for (const entry of all.filter((item) => item.property.startsWith('outline'))) {
+            expect(entry.value, entry.selectors.join(',')).not.toMatch(/^(?:none|0)\b/);
+        }
+    });
+
+    it('§3.1: one state-colour mapping, each state tinting through --fs-tint from its theme variable', () => {
+        const expected: Record<string, string> = {
+            Backlog: 'var(--vscode-descriptionForeground)',
+            Ready: 'var(--vscode-charts-blue)',
+            Active: 'var(--vscode-charts-purple)',
+            Review: 'var(--vscode-charts-yellow)',
+            Done: 'var(--vscode-charts-green)',
+            Blocked: 'var(--vscode-charts-red)',
+        };
+        for (const [state, variable] of Object.entries(expected)) {
+            const rules = rulesFor(css, `[data-board-state="${state}"]`);
+            expect(rules.some((rule) => rule.body.includes(`--fs-tint: ${variable}`)), state).toBe(true);
+        }
+    });
+
+    it('§3.1: a state chip keeps its text in the foreground colour, tints only icon and border, and falls back to the contrast border', () => {
+        const chip = rulesFor(css, '.state-chip');
+        expect(chip.some((rule) => /border[^;]*var\(--fs-tint\)/.test(rule.body))).toBe(true);
+        expect(chip.some((rule) => /color:\s*var\(--vscode-foreground\)/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.state-chip .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.vscode-high-contrast .state-chip').some((rule) => /border-color:\s*var\(--vscode-contrastBorder\)/.test(rule.body))).toBe(true);
+    });
+
+    it('full-height frame: the studio is a flex column of the viewport height and main scrolls on its own', () => {
+        expect(rulesFor(css, '.studio').some((rule) => /display:\s*flex/.test(rule.body) && /flex-direction:\s*column/.test(rule.body) && /height:\s*100vh/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, 'main').some((rule) => /flex:\s*1/.test(rule.body) && /min-height:\s*0/.test(rule.body) && /overflow:\s*auto/.test(rule.body))).toBe(true);
     });
 });

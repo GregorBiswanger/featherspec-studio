@@ -3,7 +3,7 @@
 **Spec:** [0013-studio-visual-design.md](0013-studio-visual-design.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-001
+**Current step:** T-002
 
 ## Approach
 
@@ -102,8 +102,8 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
   (icon `aria-hidden`, text, colour hook). Use StateChip in the Explorer list rows.
 - **Verify:** quality gates; manual beside them: preview, `03-spec-explorer-list-{dark,light}` — chips
   readable, no layout break in any area.
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-16 — red: `webviewCss.test.ts` 4 failing (no `--fs-*` definitions, no state mapping, no chip rules, no full-height frame), `StateChip.test.tsx` 7 failing (`Not implemented`); green: eslint, both `tsc`, `npm run test:unit` 88 files / 1285 tests, `npm run compile`. Looked at `03-spec-explorer-list-{dark,light,hc}`: two-line rows, number and title on one baseline, chips readable in all three, HC tabs boxed; MC and board unchanged, no break.
+- **Notes:** `--fs-*` holds colour aliases only (Gregor 2026-11-16: every alias resolves only to `--vscode-*`), so spacing and radius stay plain lengths, no tokens. Area `h1` kept in the DOM, visually hidden (the nav already names the area, D-13). The AC-001 colour check was green on the old stylesheet too; its negative control is the residue/chain control test.
 
 ### T-002 — Rule sentences: reshape derived rule and readiness, show sentence + ID
 

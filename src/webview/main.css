@@ -1,3 +1,41 @@
+html,
+body,
+#root {
+    height: 100%;
+}
+
+:root {
+    --fs-border: var(--vscode-contrastBorder, var(--vscode-widget-border, var(--vscode-panel-border)));
+    --fs-lane: var(--vscode-sideBar-background, var(--vscode-editor-background));
+    --fs-surface: var(--vscode-editor-background);
+    --fs-muted: var(--vscode-descriptionForeground);
+    --fs-focus: var(--vscode-contrastActiveBorder, var(--vscode-focusBorder));
+}
+
+[data-board-state="Backlog"] {
+    --fs-tint: var(--vscode-descriptionForeground);
+}
+
+[data-board-state="Ready"] {
+    --fs-tint: var(--vscode-charts-blue);
+}
+
+[data-board-state="Active"] {
+    --fs-tint: var(--vscode-charts-purple);
+}
+
+[data-board-state="Review"] {
+    --fs-tint: var(--vscode-charts-yellow);
+}
+
+[data-board-state="Done"] {
+    --fs-tint: var(--vscode-charts-green);
+}
+
+[data-board-state="Blocked"] {
+    --fs-tint: var(--vscode-charts-red);
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -5,27 +43,42 @@ body {
     background: var(--vscode-editor-background);
     font-family: var(--vscode-font-family);
     font-size: var(--vscode-font-size);
+    line-height: 1.4;
+}
+
+.studio {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
 }
 
 .studio-header {
+    flex: none;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: space-between;
-    padding: 8px 16px;
-    border-bottom: 1px solid var(--vscode-panel-border);
+    gap: 16px;
+    min-height: 35px;
+    padding: 0 12px;
+    border-bottom: 1px solid var(--fs-border);
+}
+
+.navigation,
+.navigation ul {
+    display: flex;
 }
 
 .navigation ul {
-    display: flex;
-    gap: 4px;
+    gap: 2px;
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
 .nav-item {
-    padding: 4px 10px;
-    color: var(--vscode-foreground);
+    height: 100%;
+    padding: 0 10px;
+    color: var(--vscode-panelTitle-inactiveForeground, var(--fs-muted));
     background: transparent;
     border: 1px solid var(--vscode-contrastBorder, transparent);
     cursor: pointer;
@@ -33,18 +86,21 @@ body {
 }
 
 .nav-item:hover {
-    background: var(--vscode-toolbar-hoverBackground);
+    color: var(--vscode-panelTitle-activeForeground, var(--vscode-foreground));
 }
 
 .nav-item.current {
-    font-weight: bold;
-    border-bottom: 2px solid var(--vscode-focusBorder);
+    color: var(--vscode-panelTitle-activeForeground, var(--vscode-foreground));
+    border-bottom: 2px solid var(--vscode-panelTitle-activeBorder, var(--vscode-focusBorder));
     outline: 1px solid var(--vscode-contrastActiveBorder, transparent);
     outline-offset: -1px;
 }
 
 .nav-item [data-marker] {
-    margin-right: 4px;
+    display: inline-block;
+    width: 10px;
+    margin-right: 2px;
+    font-size: 0.8em;
 }
 
 button:focus-visible,
@@ -54,11 +110,65 @@ button:focus-visible,
 }
 
 .project-name {
-    color: var(--vscode-descriptionForeground);
+    align-self: center;
+    overflow: hidden;
+    color: var(--fs-muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 main {
-    padding: 8px 16px;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 16px;
+}
+
+main > h1 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.mission-control,
+.board,
+.explorer {
+    flex: 1;
+    min-height: 0;
+}
+
+.icon {
+    flex: none;
+    vertical-align: text-bottom;
+}
+
+.state-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 6px;
+    border: 1px solid var(--fs-tint);
+    border-radius: 3px;
+    color: var(--vscode-foreground);
+    font-size: 11px;
+    line-height: 16px;
+    white-space: nowrap;
+}
+
+.state-chip .icon {
+    width: 12px;
+    height: 12px;
+    color: var(--fs-tint);
+}
+
+.vscode-high-contrast .state-chip {
+    border-color: var(--vscode-contrastBorder);
 }
 
 .panel-state,
@@ -112,7 +222,12 @@ main {
 }
 
 .spec-row {
-    padding: 4px 8px;
+    display: grid;
+    grid-template-columns: 10px max-content minmax(0, 1fr);
+    column-gap: 6px;
+    row-gap: 3px;
+    align-items: baseline;
+    padding: 5px 10px 6px 6px;
     border-bottom: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
     cursor: pointer;
 }
@@ -122,7 +237,6 @@ main {
 }
 
 .spec-row.selected {
-    font-weight: bold;
     background: var(--vscode-list-activeSelectionBackground);
     color: var(--vscode-list-activeSelectionForeground);
     outline: 1px solid var(--vscode-contrastActiveBorder, transparent);
@@ -130,21 +244,52 @@ main {
 }
 
 .spec-row [data-marker] {
-    margin-right: 4px;
+    grid-column: 1;
+    grid-row: 1;
+    font-size: 0.8em;
 }
 
 .spec-number {
+    grid-column: 2;
+    grid-row: 1;
+    color: var(--fs-muted);
     font-family: var(--vscode-editor-font-family);
+    font-size: 0.92em;
+}
+
+.spec-title {
+    grid-column: 3;
+    grid-row: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.spec-meta {
+    grid-column: 2 / 4;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    font-size: 0.92em;
+}
+
+.spec-row.selected .spec-number,
+.spec-row.selected .state-chip {
+    color: inherit;
 }
 
 .spec-state {
-    border: 1px solid var(--vscode-panel-border);
-    padding: 0 6px;
+    flex: none;
 }
 
 .spec-derived,
 .spec-path {
+    overflow: hidden;
     color: var(--vscode-descriptionForeground);
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .spec-row.selected .spec-derived,
@@ -279,10 +424,6 @@ main {
 .marker {
     padding: 0 6px;
     border: 1px solid var(--vscode-panel-border);
-}
-
-.icon {
-    vertical-align: text-bottom;
 }
 
 .card-summary {
