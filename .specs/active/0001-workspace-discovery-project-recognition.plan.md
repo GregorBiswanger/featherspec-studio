@@ -132,8 +132,8 @@ T-005…T-007 define, and T-008 documents the result.
   - AC-018 timing: 5 fixture folders through the Node adapter, under 2 s
   - AC-011: fixture tree (paths, sizes, mtimes) unchanged after discovery
 - **Verify:** `npx vitest run src/core/discovery` (red first, then green) + per-step gates
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-16 — red: `npx vitest run src/core/discovery` 17 failed with `Not implemented` (stubs for versionLine and discoverWorkspace), 15 passed (T-001 tests + the AC-011 negative control, which is a control by design); green: 33/33 passed after the last test addition. Gates: eslint 0 findings, `tsc --noEmit` 0 errors, `npm run test:unit` 3 files, 33 passed.
+- **Notes:** Version diagnostics are also written for `incomplete` folders that have a stamped AGENTS.md (AC-021 says 'the folder'); `not-a-project` folders have no version line. A read error of any kind during classification (not only AGENTS.md) makes the folder `not-a-project` with the reason (AC-017). Memory FS and fixture helper already came with T-001.
 
 ### T-003 — Active-project state and status bar model
 
