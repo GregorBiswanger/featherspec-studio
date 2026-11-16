@@ -43,6 +43,15 @@ describe('readVersionLine', () => {
         expect(readVersionLine('FeatherSpecVersion: 2.0.0-rc.1+build.5\n').diagnostics).toEqual([]);
     });
 
+    it('AC-021, BR-07: the version line must start the line (PD-032 reading); FeatherSpecVersion: in the middle of a line is no version line', () => {
+        expect(readVersionLine('Set FeatherSpecVersion: 1.10.0 in the file\n')).toEqual({ version: 'unknown', diagnostics: [] });
+        expect(readVersionLine('# FeatherSpecVersion: 1.10.0\n')).toEqual({ version: 'unknown', diagnostics: [] });
+    });
+
+    it('AC-021, BR-07: negative control, leading blanks still start the line', () => {
+        expect(readVersionLine('\t  FeatherSpecVersion: 1.10.0\n')).toEqual({ version: '1.10.0', diagnostics: [] });
+    });
+
     it('AC-021: no version line gives "unknown" without a diagnostic', () => {
         expect(readVersionLine('# Constitution\nmentions FeatherSpecVersion: in prose\n')).toEqual({
             version: 'unknown',

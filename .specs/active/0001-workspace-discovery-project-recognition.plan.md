@@ -1,9 +1,9 @@
 # Plan — Workspace Discovery & Project Recognition
 
 **Spec:** [0001-workspace-discovery-project-recognition.md](0001-workspace-discovery-project-recognition.md)
-**Status:** Done
+**Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** none (all steps ticked)
+**Current step:** T-011
 
 ## Approach
 
@@ -85,9 +85,11 @@ joined T-008. No ID was renumbered.
 3. T-005 → T-006 → T-007 — discovery controller against fake host ports: activation and display, commands, live re-detection (core)
 4. T-009 — VS Code adapters, manifest, composition root, host smoke suite (written, not run here)
 5. T-008 — docs sync, CI workflow, final gates
+6. T-010 → T-011 — spec changed 2026-11-16 (`/sdd-compile` follow-up): read errors name the failing path, version-line rule pinned by a test, 'active project changed' notification (core)
+7. T-012 — docs sync and final gates for the delta
 
-No parallel stage: stages 1–3 all live in `src/core/discovery` (one module), T-009 implements the ports
-T-005…T-007 define, and T-008 documents the result.
+No parallel stage: stages 1–3 and 6 all live in `src/core/discovery` (one module), T-009 implements the ports
+T-005…T-007 define, T-008 and T-012 document the result.
 
 ## Steps
 
@@ -268,6 +270,39 @@ T-005…T-007 define, and T-008 documents the result.
 - [x] **Verified (T-008):** 2026-11-16 — `npx eslint src --max-warnings 0` 0 findings; `npx tsc --noEmit` 0 errors; `npm run test:unit` 10 files, 106 passed; `npm run compile` ok (bundle built). `npm test` NOT run (VS Code download blocked here; pre-done gate on CI or Gregor's Windows machine).
 - **Notes:** AGENTS.md is now 213 lines (cap target 200, was 208): the plan-fixed snapshot entries added five lines; per `.claude/rules/constitution.md` this is one eviction proposal for the next natural edit, not done here. The snapshot was written without a separate confirmation question because the approved plan names exactly these entries. README replaced (it was the generator scaffold); Remote/WSL/Container is documented as 'expected, not tried' because no limitation could be observed here. CI workflow is untested until the repo is on GitHub.
 
+### T-010 — Read errors name the failing path; version-line start rule named by a test
+
+- **Covers:** AC-016, AC-017, AC-021
+- **Added:** 2026-11-16, spec changed after this plan was Done (Mode C, plan still beside the spec, so extended in place; no ID renumbered). Gregor's decisions 1–3 after `/sdd-compile`: AC-016/AC-017 revised (hint only for no-marker folders; OP-004 resolved), BR-07 start-of-line reading moved from this plan's T-001 note into spec §15.
+- **Do:** `classifyFolder.ts` wraps each marker-path read (`AGENTS.md` stat and read, `.specs` stat, `.claude/commands` listing) so a failure carries the path that failed (a small `FolderReadError` with `path` and `reason`); `discoverWorkspace.ts` writes `Cannot read <path>: <reason>` from that path instead of the fixed `AGENTS.md`; `readError` keeps the plain reason. `testing/memoryFileSystem.ts` gets a way to make a directory listing fail. Tests, written first:
+  - `discoverWorkspace.test.ts`: AC-017 unreadable `AGENTS.md` beside `.specs/` → not a project, diagnostic names `AGENTS.md`; AC-017 failing `.claude/commands` listing → diagnostic names `.claude/commands` and not `AGENTS.md` (the case that was wrong)
+  - `report.test.ts`: AC-016/AC-017 through `discoverWorkspace` + `formatOutputBlock`: the unreadable-`AGENTS.md` folder carries path, failed path and reason and no hint; a folder with no marker still carries the hint
+  - `versionLine.test.ts`, `classifyFolder.test.ts`: AC-021 / BR-07 "the version line must start the line": mid-sentence `FeatherSpecVersion:` is no version line and no M1; indented line is (negative control)
+- **Verify:** `npx vitest run src/core/discovery` (red first for the path tests, then green) + per-step gates
+- [x] **Verified (T-010):** 2026-11-16 — red: `npx vitest run src/core/discovery` 1 failed (assertion: diagnostic read `Cannot read AGENTS.md: EIO: i/o error`, expected `Cannot read .claude/commands: …`), 104 passed (the AC-017 AGENTS.md case, the report case and the start-of-line tests are preservation tests, green by design); control: a temporary un-anchoring of both version regexes turned the two new start-of-line tests red, then restored. Green: 105/105 in `src/core/discovery`. Gates: eslint 0 findings, `tsc --noEmit` 0 errors, `npm run test:unit` 10 files, 113 passed.
+- **Notes:** the start-of-line tests are preservation tests of existing behaviour: immediately green by design, decided by the indented-line control. The relative path is named (`AGENTS.md`, `.claude/commands`, `.specs`); the folder path stands in the entry line above it. An error that is not a `FolderReadError` reads `Cannot read the folder`. `FolderReadError` lives in `classifyFolder.ts`.
+
+### T-011 — Active-project changed notification in the controller
+
+- **Covers:** AC-023
+- **Added:** 2026-11-16, same cause. Needed by specs 0002 and 0004; stays in this controller, no workaround in other modules.
+- **Do:** `src/core/discovery/discoveryController.ts` gets `onDidChangeActiveProject(listener): Disposable` (listener receives the `DiscoveredFolder` or `undefined`), in the style of the existing ports (`onDidChange`). Fires after the status bar is updated in `apply`: always for the first result, then only when root, version or legacy of the active project differ from the last notified value (spec A-006). A throwing subscriber is isolated: the others are still notified, the run goes on. A disposed subscription gets nothing. Tests, written first, in `activeProjectChanged.test.ts` with the fake host and fixtures:
+  - first result with one project → one notification with it; first result without a project → one notification with none (AC-023)
+  - refresh with no change → none (control); user selection of another project → that project; remembered project loses a marker → none; returns → project
+  - ordering: the status bar already shows the result when the listener runs; `snapshot().active` equals the value
+  - failing subscriber does not stop the second one nor the status bar update; disposed subscriber gets nothing
+- **Verify:** `npx vitest run src/core/discovery/activeProjectChanged.test.ts` (red via `Not implemented` stub, then green) + `npx vitest run src/core/discovery` + per-step gates
+- [ ] **Verified (T-011):** —
+- **Notes:** —
+
+### T-012 — Docs sync and gates for the spec delta
+
+- **Covers:** AC-016, AC-017, AC-021, AC-023 (re-proven by the full unit gate run)
+- **Do:** Memory Bank (`activeContext.md`, `systemPatterns.md` entry for the notification contract), README only if the behaviour list names the hint or errors, `architecture:` snapshot check (no new module: `src/core/discovery` entry text lists the controller already; confirm unchanged). Traceability and handoff of this plan level with the code; open evidence recorded below.
+- **Verify:** `npx eslint src --max-warnings 0` · `npx tsc --noEmit` · `npm run test:unit` · `npm run compile`. `npm test` stays the pre-done gate (CI or Gregor's Windows), not this step's Verify.
+- [ ] **Verified (T-012):** —
+- **Notes:** —
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -286,15 +321,24 @@ T-005…T-007 define, and T-008 documents the result.
 | AC-013 | T-007 | src/core/discovery/rerunScheduler.ts, discoveryController.ts:syncWatches, src/adapters/vscode/markerWatch.ts | rerunScheduler.test.ts, liveDetection.test.ts (AC-013); src/test/discovery.smoke.test.ts (real watcher, pre-done gate, not run here) | built |
 | AC-014 | T-003, T-005 | src/core/discovery/activeProject.ts (statusBar), discoveryController.ts | activeProject.test.ts, discoveryController.test.ts (AC-014) | verified |
 | AC-015 | T-004, T-006 | src/core/discovery/report.ts:buildNoProjectNotification, discoveryController.ts:selectProject | report.test.ts, discoveryController.test.ts (AC-015) | verified |
-| AC-016 | T-004, T-005 | src/core/discovery/report.ts:formatOutputBlock, discoveryController.ts | report.test.ts, discoveryController.test.ts (AC-016) | verified |
-| AC-017 | T-002, T-004 | src/core/discovery/discoverWorkspace.ts:discoverFolder, report.ts:formatOutputBlock | discoverWorkspace.test.ts, report.test.ts (AC-017) | verified |
+| AC-016 | T-004, T-005, T-010 | src/core/discovery/report.ts:formatOutputBlock, discoveryController.ts | report.test.ts, discoveryController.test.ts (AC-016) | built |
+| AC-017 | T-002, T-004, T-010 | src/core/discovery/discoverWorkspace.ts:discoverFolder, report.ts:formatOutputBlock | discoverWorkspace.test.ts, report.test.ts (AC-017) | built |
 | AC-018 | T-002 | src/core/discovery/discoverWorkspace.ts:discoverWorkspace | discoverWorkspace.test.ts (AC-018, 5 fixtures < 2 s) | verified |
 | AC-019 | T-005, T-009 | src/core/discovery/discoveryController.ts:start, package.json (activationEvents), src/extension.ts:activate | discoveryController.test.ts, src/adapters/vscode/manifest.test.ts (AC-019); src/test/discovery.smoke.test.ts (pre-done gate, not run here) | built |
 | AC-020 | T-003, T-005 | src/core/discovery/activeProject.ts, discoveryController.ts | activeProject.test.ts, discoveryController.test.ts (AC-020) | verified |
-| AC-021 | T-002 | src/core/discovery/versionLine.ts:readVersionLine | versionLine.test.ts, discoverWorkspace.test.ts (AC-021) | verified |
+| AC-021 | T-002, T-010 | src/core/discovery/versionLine.ts:readVersionLine | versionLine.test.ts, discoverWorkspace.test.ts (AC-021) | built |
 | AC-022 | T-009 | package.json (capabilities.untrustedWorkspaces, no trust guard in src/extension.ts) | src/adapters/vscode/manifest.test.ts (AC-022); manual: Gregor in Restricted Mode (planned) | built |
+| AC-023 | T-011 | — | — | open |
 
 Pre-done (before `/sdd-lifecycle` → done): `npm test` smoke suite green on CI or Gregor's Windows machine, plus the two manual checks above.
+
+## Open evidence
+
+Not yet proven; the next `/sdd-compile` must find these three and must not read them as done (added 2026-11-16 at Gregor's request after the first `/sdd-compile` returned NOT READY — unverified):
+
+- [ ] **Host suite not run:** `npm test` (`src/test/discovery.smoke.test.ts`, 3 fixtures in a temp multi-root workspace) has never run: the VS Code download is blocked in the agent environment. Runs on CI (`.github/workflows/ci.yml`) or Gregor's Windows machine. It also proves the assumption that `workspaceContains:.specs` matches a directory. Affects AC-013, AC-019 and the host wiring of AC-007…AC-016.
+- [ ] **Manual check AC-009 (window reload):** Gregor reloads the VS Code window with a selected project and sees it active again without being asked. Pending, Gregor's machine.
+- [ ] **Manual check AC-022 (Restricted Mode):** Gregor opens a FeatherSpec project in Restricted Mode and sees status bar entry, select command and Output channel as in a trusted workspace. Pending, Gregor's machine; no host test can do it (`--disable-workspace-trust`).
 
 ## Session handoff
 

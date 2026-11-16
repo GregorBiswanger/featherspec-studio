@@ -105,6 +105,30 @@ describe('discoverWorkspace', () => {
         expect(result.folders[1]).toMatchObject({ verdict: 'project', version: '1.10.0' });
     });
 
+    it('AC-017: the read-error diagnostic names AGENTS.md when AGENTS.md failed, even beside .specs/', async () => {
+        const fileSystem = createMemoryFileSystem();
+        fileSystem.setUnreadable('bad', 'AGENTS.md', 'EACCES: permission denied');
+        fileSystem.setDirectory('bad', '.specs');
+        const result = await discoverWorkspace(fileSystem, [{ root: 'bad', name: 'bad' }], caseSensitive);
+        expect(result.folders[0]).toMatchObject({
+            verdict: 'not-a-project',
+            diagnostics: ['Cannot read AGENTS.md: EACCES: permission denied'],
+        });
+    });
+
+    it('AC-017: a failure on another marker path names that path, not AGENTS.md', async () => {
+        const fileSystem = createMemoryFileSystem();
+        fileSystem.setFile('bad', 'AGENTS.md', '# no version line\n');
+        fileSystem.setDirectory('bad', '.specs');
+        fileSystem.setUnlistable('bad', '.claude/commands', 'EIO: i/o error');
+        const result = await discoverWorkspace(fileSystem, [{ root: 'bad', name: 'bad' }], caseSensitive);
+        expect(result.folders[0]).toMatchObject({
+            verdict: 'not-a-project',
+            readError: 'EIO: i/o error',
+            diagnostics: ['Cannot read .claude/commands: EIO: i/o error'],
+        });
+    });
+
     it('AC-018: one run over five fixture folders finishes within 2 seconds', async () => {
         const names = [
             'fs110-de-active-review',

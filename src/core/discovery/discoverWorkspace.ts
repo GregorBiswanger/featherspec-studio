@@ -1,6 +1,6 @@
 import type { WorkspaceFolderInfo } from '../ports/host';
 import type { ReadOnlyFileSystem } from '../ports/readOnlyFileSystem';
-import { classifyFolder, type FolderVerdict } from './classifyFolder';
+import { classifyFolder, FolderReadError, type FolderVerdict } from './classifyFolder';
 import { readVersionLine } from './versionLine';
 
 export interface DiscoveredFolder {
@@ -53,7 +53,8 @@ async function discoverFolder(fileSystem: ReadOnlyFileSystem, folder: WorkspaceF
             readError: undefined,
         };
     } catch (error) {
-        const reason = describeError(error);
+        const failedPath = error instanceof FolderReadError ? error.path : 'the folder';
+        const reason = error instanceof FolderReadError ? error.reason : describeError(error);
         return {
             root: folder.root,
             name: folder.name,
@@ -62,7 +63,7 @@ async function discoverFolder(fileSystem: ReadOnlyFileSystem, folder: WorkspaceF
             legacy: false,
             version: 'unknown',
             missingMarkers: [],
-            diagnostics: [`Cannot read AGENTS.md: ${reason}`],
+            diagnostics: [`Cannot read ${failedPath}: ${reason}`],
             readError: reason,
         };
     }
