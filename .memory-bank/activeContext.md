@@ -16,11 +16,11 @@ All seven active specs (0001...0007) are implemented: every plan is Done with ev
 - Spec 0006: [spec](../.specs/active/0006-mission-control-dashboard.md) / [plan](../.specs/active/0006-mission-control-dashboard.plan.md) (Done, 9 of 9; T-009 header time, A-013).
 - Spec 0007: [spec](../.specs/active/0007-spec-board-spec-detail.md) / [plan](../.specs/active/0007-spec-board-spec-detail.plan.md) (Done, 14 of 14; T-004, T-006, T-007 ticked late with re-run results; T-011...T-014 after `/sdd-compile` and the first visual check).
 - Spec 0013: [spec](../.specs/active/0013-studio-visual-design.md) / [plan](../.specs/active/0013-studio-visual-design.plan.md) (In Progress, started 2026-11-16).
-- Current task: 0013 T-001.
+- Current task: 0013 T-003 (stage 1 of 5 done: tokens, state chip, rule sentences).
 - Acceptance criteria in focus: manual 0007 AC-017 (Tab onto Move to), AC-018, AC-026; 0006 AC-021, AC-022.
 
 ## Changed Recently
-- Spec 0013 (Studio visual design): plan approved by Gregor 2026-11-16, pair moved backlog → active, status In Progress.
+- Spec 0013 (Studio visual design): plan approved by Gregor 2026-11-16, pair moved backlog → active; T-001, T-002 done (`--fs-*` colour aliases, `src/webview/ui/StateChip.tsx`, `RuleText.tsx`; `derivedLabel` → `derivedRule`, readiness → `{ id, reason }`).
 - 0007 T-011...T-014: the Move to button is a Tab stop of the board's current card (AC-017, spec revised); timing test for the detail view (AC-019); each ID once in requirements, criteria and stages (AC-009, spec revised, `src/core/board/idText.ts`); Overview header lines on one row (three CSS rules). Looks beyond that stay with backlog spec 0013.
 - 0007 T-004, T-006, T-007 were unticked although Done; ticked 2026-11-16 with re-run results (no red run recorded, none claimed).
 - 0006 T-009: the header time is the last model update, not the panel-open time (`SpecRepository.readAt()`, `ShellModelSource.updatedAt()`, A-013); `npm run compile` joined the quality gates for wiring steps.
@@ -43,4 +43,4 @@ All seven active specs (0001...0007) are implemented: every plan is Done with ev
 4. Gregor re-measures 0001 AC-018 (OP-001) and 0006 AC-016, AC-024 (OP-12) on a real project.
 
 ## Validation
-- Done: eslint, both `tsc`, `npm run test:unit` (87 files, 1268 tests), `npm run compile` green. Pending: `npm test` on CI or Windows, the manual checks above. Known issues: none.
+- Done: eslint, both `tsc`, `npm run test:unit` (89 files, 1287 tests), `npm run compile` green. Pending: `npm test` on CI or Windows, the manual checks above. Known issues: none.
