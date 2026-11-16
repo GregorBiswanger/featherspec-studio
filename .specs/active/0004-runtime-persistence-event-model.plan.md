@@ -1,9 +1,9 @@
 # Plan — Runtime Persistence & Event Model
 
 **Spec:** [0004-runtime-persistence-event-model.md](0004-runtime-persistence-event-model.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-16
-**Current step:** T-008
+**Current step:** none; all steps ticked
 
 ## Approach
 
@@ -88,7 +88,7 @@ Sources:
 | N-1 | AC-014 | `FeatherSpec Studio could not save the history of run <runId> (spec <stem>). The agent keeps working; this run's history is incomplete.` |
 | N-2 | AC-015 | `FeatherSpec Studio cannot read the stored history of <n> run(s): <stem> (<runId>), …. The data was left unchanged.` |
 | N-3 | AC-017 | `The run history of this project was written by a newer version of FeatherSpec Studio. It is left unchanged and is not shown; update FeatherSpec Studio to see it.` |
-| N-4 | AC-021 | `FeatherSpec Studio skipped an incomplete last record in the history of <n> run(s): <stem> (<runId>), …. The other records are shown.` |
+| N-4 | AC-021 | `FeatherSpec Studio skipped an incomplete record in the history of <n> run(s): <stem> (<runId>), …. The other records are shown.` |
 | N-5 | AC-025 | `FeatherSpec Studio cannot reach its run history storage (<reason>). Run history is not available in this window.` |
 | R-1 | AC-023 | reason: `Another VS Code window holds the write lock for this project's run history.` |
 | C-1 | AC-019 | modal: `Clear the run history of <project>? All ended runs, their events and the spec status history are removed. Runs still open are kept.` — button `Clear Run History` |
@@ -100,6 +100,7 @@ Sources:
 2. T-003 → T-004 → T-005 — masking and spec status history, writer lifecycle and retention, faults and clearing
 3. T-006 → T-007 — the Node-fs medium under the same contract suite, then the VS Code wiring
 4. T-008 — data-access document, ADR-002 amendment, docs sync and final gates
+5. T-009 — after `/sdd-compile` (NOT READY): append-only after a kill, writes to unreadable or newer data refused
 
 No parallel stage: every slice extends the one `RuntimeStore` and its shared contract suite; T-006 and
 T-007 need the complete medium contract.
@@ -224,8 +225,16 @@ T-007 need the complete medium contract.
   file-system adapter, Node-fs runtime medium, random IDs'` (replaces the current `src/adapters/node`
   line); `src/core/ports` line gains "runtime medium port". Gregor accepts the document (AC-020).
 - **Verify:** `npx eslint src --max-warnings 0` · `npx tsc --noEmit` · `npm run test:unit` · `npm run compile`, all green; `manual: Gregor reads docs/runtime-data.md` — acceptance of wording, no command can settle it
-- [ ] **Verified (T-008):** 2026-11-16 — automatic part green: `npx eslint src --max-warnings 0`, `npx tsc --noEmit`, `npm run test:unit` (258 passed, 17 files), `npm run compile` clean. **Open:** `manual: Gregor reads docs/runtime-data.md` (AC-020); the box stays unticked until he accepts the wording.
+- [x] **Verified (T-008):** 2026-11-16 — automatic part green: `npx eslint src --max-warnings 0`, `npx tsc --noEmit`, `npm run test:unit` (258 passed, 17 files), `npm run compile` clean. Manual part: `docs/runtime-data.md` accepted by Gregor's proxy, 2026-11-16, after the correction of 'Nothing is rewritten' (T-009); AC-020 closed.
 - **Notes:** Written: `docs/runtime-data.md`, ADR-002 *Amendments (plan 0004)*, README (command, setting, link), `techContext.md`, `systemPatterns.md` (three dated decisions), `activeContext.md` (one line each in Active Spec, Changed Recently, Next; the oldest Changed Recently bullet was evicted), `AGENTS.md` architecture snapshot (the three entries of the plan). The architecture update ran as part of this step without the interactive confirmation; Gregor sees the exact entries in the diff.
+
+### T-009 — Append-only after a kill; refuse writes to unreadable or newer data
+
+- **Covers:** AC-010, AC-015, AC-017, AC-021 (spec revised 2026-11-16 after `/sdd-compile`: BR-007, AC-015, AC-017, AC-021 reworded, Gregor; AC-020 document corrected, T-008 accepted)
+- **Do:** `src/core/runtime/truncatedJson.ts` (a text is an incomplete record when it is a strict prefix of a JSON object) and a new parse result `incomplete` in `records.ts`; `runtimeStore.ts`: an incomplete record is skipped wherever it stands (run log replay, event load, event read), reported once per run and activation; the run's tail state is only "last line unterminated", so every append starts on a fresh line — also for `spec-status-history.jsonl` (shape inspected before the first append); `refuseUnreadable` refuses `reportStatus` and `appendEvent` for a run marked unreadable or newer, `appendSpecStatusEntry` for a history file with a newer record (refusal codes `unreadable-run`, `newer-version`); the two comments in `runtimeStore.ts` removed; `docs/runtime-data.md` and ADR-002 line corrected; N-4 says "an incomplete record".
+- **Verify:** `npm run test:unit` (contract cases `a kill during a write` and `writes to data that cannot be read or is newer` on both media, `truncatedJson.test.ts`), plus the per-step gates and `npm run compile`
+- [x] **Verified (T-009):** 2026-11-16 — red: `npx vitest run src/core/runtime src/adapters/node/fileRuntimeMedium.test.ts` 16 of 16 new contract cases failed (8 per medium: after kill and two restarts the run read 'Starting'/history unreadable, events 'unavailable', the second history entry lost, 5 writes accepted that must be refused), `truncatedJson` module missing; the 4 negative controls (damaged line still unreadable, readable run accepts writes) were green; green: `npm run test:unit` 280 passed (18 files), `npx eslint src --max-warnings 0`, `npx tsc --noEmit`, `npm run compile` clean. Kill scenario compares every `.jsonl` file after each activation: the bytes before it are a prefix.
+- **Notes:** Tests: `testing/contractFaults.ts` (new describes), `truncatedJson.test.ts`. Replaces the T-005 limitations (1) and (2): after a kill the run no longer reads as unreadable at the second activation. An unreadable or newer line in an events file is found when the events are loaded for an append (the run is then marked unreadable and the append refused) or when they are read. A run whose only record is an incomplete `created` record stays "history unreadable". `docs/product/product-decisions.md` PD-028 still says "last record"; the PD register is Gregor's, not edited here.
 
 ## Traceability
 
@@ -240,17 +249,17 @@ T-007 need the complete medium contract.
 | AC-007 | T-002 | src/core/runtime/runtimeStore.ts:appendEvent | src/core/runtime/testing/contractEvents.ts (AC-007) | verified |
 | AC-008 | T-001 | src/core/runtime/runtimeStore.ts:listRuns | src/core/runtime/testing/contractRuns.ts (AC-008) | verified |
 | AC-009 | T-001 | src/core/runtime/runtimeStore.ts:openRuntimeStore | src/core/runtime/testing/contractRuns.ts (AC-009) | verified |
-| AC-010 | T-004 | src/core/runtime/runtimeStore.ts:loadRuns | src/core/runtime/testing/contractWriter.ts (AC-010) | verified |
+| AC-010 | T-004, T-009 | src/core/runtime/runtimeStore.ts:loadRuns, replayRun | src/core/runtime/testing/contractWriter.ts (AC-010); contractFaults.ts (kill, restart, restart) | verified |
 | AC-011 | T-004 | src/core/runtime/runtimeStore.ts:classifyOpenRuns | src/core/runtime/testing/contractWriter.ts (AC-011) | verified |
 | AC-013 | T-003, T-006 | src/core/runtime/masking.ts; docs/security/secret-patterns.md | src/core/runtime/masking.test.ts; src/core/runtime/testing/contractMasking.ts (AC-013); src/adapters/node/fileRuntimeMedium.test.ts (raw bytes) | verified |
 | AC-014 | T-005 | src/core/runtime/runtimeStore.ts:settleWrite | src/core/runtime/testing/contractFaults.ts (AC-014) | verified |
-| AC-015 | T-005 | src/core/runtime/runtimeStore.ts:reportProblems | src/core/runtime/testing/contractFaults.ts (AC-015) | verified |
+| AC-015 | T-005, T-009 | src/core/runtime/runtimeStore.ts:reportProblems, refuseUnreadable | src/core/runtime/testing/contractFaults.ts (AC-015, refusals) | verified |
 | AC-016 | T-006 | src/adapters/node/fileRuntimeMedium.ts | src/adapters/node/fileRuntimeMedium.test.ts (AC-016 snapshotTree); src/test/runtime.smoke.test.ts (CI) | verified |
-| AC-017 | T-005 | src/core/runtime/runtimeStore.ts:openRuntimeStore | src/core/runtime/testing/contractFaults.ts (AC-017) | verified |
+| AC-017 | T-005, T-009 | src/core/runtime/runtimeStore.ts:openRuntimeStore, refuseUnreadable, appendSpecStatusEntry | src/core/runtime/testing/contractFaults.ts (AC-017, refusals) | verified |
 | AC-018 | T-004, T-007 | src/core/runtime/runtimeStore.ts:applyAgeCap; package.json (setting); src/adapters/vscode/runtimeSettings.ts | src/core/runtime/testing/contractWriter.ts (AC-018); src/adapters/vscode/manifest.test.ts | verified |
 | AC-019 | T-005, T-007 | src/core/runtime/runtimeStore.ts:clear; src/core/runtime/runtimeSession.ts; src/adapters/vscode/runtimeUi.ts; package.json | src/core/runtime/testing/contractFaults.ts (AC-019); src/core/runtime/runtimeSession.test.ts | verified |
-| AC-020 | T-008 | docs/runtime-data.md | manual: Gregor reads the document | built |
-| AC-021 | T-005, T-006 | src/core/runtime/runtimeStore.ts:reportIncompleteOnce | src/core/runtime/testing/contractFaults.ts (AC-021); src/adapters/node/fileRuntimeMedium.test.ts | verified |
+| AC-020 | T-008 | docs/runtime-data.md | manual: accepted by Gregor's proxy, 2026-11-16 | verified |
+| AC-021 | T-005, T-006, T-009 | src/core/runtime/runtimeStore.ts:replayRun, loadEventState, reportIncompleteOnce; src/core/runtime/truncatedJson.ts | src/core/runtime/testing/contractFaults.ts (AC-021, kill during a write); src/core/runtime/truncatedJson.test.ts; src/adapters/node/fileRuntimeMedium.test.ts | verified |
 | AC-022 | T-005, T-006 | src/core/runtime/runtimeStore.ts:loadRuns, writeIndex | src/core/runtime/testing/contractFaults.ts (AC-022); src/adapters/node/fileRuntimeMedium.test.ts | verified |
 | AC-023 | T-004 | src/core/runtime/writerLock.ts; src/core/runtime/runtimeStore.ts:assertWritable | src/core/runtime/testing/contractWriter.ts (AC-023) | verified |
 | AC-024 | T-004, T-006 | src/core/runtime/writerLock.ts | src/core/runtime/testing/contractWriter.ts (AC-024); src/adapters/node/fileRuntimeMedium.test.ts | verified |
@@ -262,8 +271,8 @@ T-007 need the complete medium contract.
 
 ## Session handoff
 
-- **Done so far:** T-001…T-007 ticked; T-008 built and its automatic gates green, unticked because the manual acceptance of `docs/runtime-data.md` (AC-020) is Gregor's. `npm run test:unit`: 258 tests green.
-- **Next action:** Gregor reads `docs/runtime-data.md` and accepts or corrects it, then T-008 is ticked and the plan set to `Done`; `npm test` on CI/Windows (also runs `src/test/runtime.smoke.test.ts`); then `/sdd-compile` in a fresh session (another model family). Do not run `/sdd-compile` or the move to `done/` from the implementing session.
-- **Open decisions:** AC-020 document acceptance (T-008).
+- **Done so far:** T-001…T-009 ticked. `/sdd-compile` found 'Interrupted run reads as unreadable at the second activation' and writes to unreadable or newer data accepted; both fixed test-first on both media (T-009), spec wording adjusted, `docs/runtime-data.md` accepted (AC-020, T-008). `npm run test:unit`: 280 tests green.
+- **Next action:** `npm test` on CI/Windows (the host suite, incl. `src/test/runtime.smoke.test.ts`); then `/sdd-compile` again in a fresh session (another model family). Do not move the spec to `done/` before that.
+- **Open decisions:** PD-028 in `docs/product/product-decisions.md` still reads "incomplete last record" (Gregor's register).
 - **Baseline:** 767ac42 (HEAD before the first step commit)
-- **Environment:** `npm test` cannot run here (VS Code download blocked); worktree `/home/claude/wt-0004`, branch `spec-0004`. Tests added — stage 1: `src/core/runtime/testing/{contract,contractRuns,contractEvents}.ts`, `src/core/runtime/runtimeStore.test.ts`, `src/core/runtime/importScan.test.ts`, `src/adapters/node/randomIds.test.ts`; stage 2: `src/core/runtime/testing/{contractMasking,contractWriter,contractFaults}.ts`, `src/core/runtime/masking.test.ts`; stage 3: `src/adapters/node/fileRuntimeMedium.test.ts`, `src/core/runtime/runtimeSession.test.ts`, `src/adapters/vscode/manifest.test.ts` (changed), `src/test/runtime.smoke.test.ts` (CI only).
+- **Environment:** `npm test` cannot run here (VS Code download blocked); worktree `/home/claude/wt-0004`, branch `spec-0004`. Tests added — stage 1: `src/core/runtime/testing/{contract,contractRuns,contractEvents}.ts`, `src/core/runtime/runtimeStore.test.ts`, `src/core/runtime/importScan.test.ts`, `src/adapters/node/randomIds.test.ts`; stage 2: `src/core/runtime/testing/{contractMasking,contractWriter,contractFaults}.ts`, `src/core/runtime/masking.test.ts`; stage 3: `src/adapters/node/fileRuntimeMedium.test.ts`, `src/core/runtime/runtimeSession.test.ts`, `src/adapters/vscode/manifest.test.ts` (changed), `src/test/runtime.smoke.test.ts` (CI only); stage 5: `src/core/runtime/testing/contractFaults.ts` (new describes), `src/core/runtime/truncatedJson.test.ts`.

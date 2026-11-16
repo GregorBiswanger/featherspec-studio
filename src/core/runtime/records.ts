@@ -1,3 +1,4 @@
+import { isTruncatedJson } from './truncatedJson';
 import { FORMAT_VERSION, isRunStatus, type JsonValue, type RunStatus, type SpecReference } from './model';
 
 export interface CreatedRecord {
@@ -50,7 +51,11 @@ export interface HistoryRecord {
     entry: JsonValue;
 }
 
-export type ParsedLine<T> = { kind: 'record'; record: T } | { kind: 'newer' } | { kind: 'broken' };
+export type ParsedLine<T> = { kind: 'record'; record: T } | { kind: 'newer' } | { kind: 'incomplete' } | { kind: 'broken' };
+
+function unparsable(text: string): ParsedLine<never> {
+    return isTruncatedJson(text) ? { kind: 'incomplete' } : { kind: 'broken' };
+}
 
 function parseObject(text: string): Record<string, unknown> | undefined {
     try {
@@ -71,7 +76,10 @@ function optionalString(value: unknown): boolean {
 
 export function parseRunRecord(text: string): ParsedLine<RunRecord> {
     const object = parseObject(text);
-    if (object === undefined || typeof object['v'] !== 'number') {
+    if (object === undefined) {
+        return unparsable(text);
+    }
+    if (typeof object['v'] !== 'number') {
         return { kind: 'broken' };
     }
     if (object['v'] !== FORMAT_VERSION) {
@@ -110,7 +118,10 @@ export function parseRunRecord(text: string): ParsedLine<RunRecord> {
 
 export function parseEventRecord(text: string): ParsedLine<EventRecord> {
     const object = parseObject(text);
-    if (object === undefined || typeof object['v'] !== 'number') {
+    if (object === undefined) {
+        return unparsable(text);
+    }
+    if (typeof object['v'] !== 'number') {
         return { kind: 'broken' };
     }
     if (object['v'] !== FORMAT_VERSION) {
@@ -129,7 +140,10 @@ export function parseEventRecord(text: string): ParsedLine<EventRecord> {
 
 export function parseHistoryRecord(text: string): ParsedLine<HistoryRecord> {
     const object = parseObject(text);
-    if (object === undefined || typeof object['v'] !== 'number') {
+    if (object === undefined) {
+        return unparsable(text);
+    }
+    if (typeof object['v'] !== 'number') {
         return { kind: 'broken' };
     }
     if (object['v'] !== FORMAT_VERSION) {

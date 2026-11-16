@@ -215,31 +215,25 @@ async function replayRun(runId: string, medium: RuntimeMedium): Promise<{ entry:
         lines.push(line);
     }
     let view: MutableRun | undefined;
-    let tailUnterminated = false;
+    const tailUnterminated = lines.length > 0 && !lines[lines.length - 1]!.terminated;
     let incompleteTail = false;
     let broken = false;
     let newer = false;
-    for (let index = 0; index < lines.length; index += 1) {
-        const line = lines[index]!;
+    for (const line of lines) {
         const parsed = parseRunRecord(line.text);
-        const isLast = index === lines.length - 1;
         if (parsed.kind === 'newer') {
             newer = true;
             break;
         }
+        if (parsed.kind === 'incomplete') {
+            incompleteTail = true;
+            continue;
+        }
         if (parsed.kind === 'broken') {
-            if (isLast && !line.terminated) {
-                tailUnterminated = true;
-                incompleteTail = true;
-                break;
-            }
             broken = true;
             break;
         }
         const record: RunRecord = parsed.record;
-        if (!line.terminated) {
-            tailUnterminated = true;
-        }
         if (record.k === 'created') {
             if (view !== undefined || record.runId !== runId) {
                 broken = true;
@@ -380,7 +374,7 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
                 }
             }
         } catch {
-            // a missing or unreadable list is rebuilt from the run logs
+            stems.clear();
         }
         return stems;
     }
@@ -490,6 +484,22 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
         return (await enqueue(log, () => medium.remove(log))) === undefined;
     }
 
+    interface HistoryShape {
+        newer: boolean;
+        tailUnterminated: boolean;
+    }
+
+    let historyShape: HistoryShape | undefined;
+
+    async function inspectHistory(): Promise<HistoryShape> {
+        const shape: HistoryShape = { newer: false, tailUnterminated: false };
+        for await (const line of medium.lines(HISTORY_FILE)) {
+            shape.tailUnterminated = !line.terminated;
+            shape.newer ||= parseHistoryRecord(line.text).kind === 'newer';
+        }
+        return shape;
+    }
+
     async function rewriteHistory(keep: (record: HistoryRecord) => boolean): Promise<void> {
         const lines: { text: string; terminated: boolean }[] = [];
         for await (const line of medium.lines(HISTORY_FILE)) {
@@ -504,6 +514,7 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
         });
         if (removed) {
             const text = kept.map((line) => (line.terminated ? `${line.text}\n` : line.text)).join('');
+            historyShape = undefined;
             await enqueue(HISTORY_FILE, () => medium.replace(HISTORY_FILE, text));
         }
     }
@@ -558,26 +569,26 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
         timer = clock.setTimeout(() => void tick(), HEARTBEAT_INTERVAL_MS);
     }
 
+    async function pollOrBeat(): Promise<void> {
+        if (writer) {
+            if (!(await lock.heartbeat())) {
+                writer = false;
+                setState({ kind: 'read-only', reason: READER_REASON });
+            }
+        } else if (readBlock === undefined) {
+            await loadRuns();
+            const peek = await lock.peek();
+            if ((peek.kind === 'free' || peek.kind === 'stale') && (await lock.tryAcquire())) {
+                await becomeWriter();
+            }
+        }
+    }
+
     async function tick(): Promise<void> {
         if (disposed) {
             return;
         }
-        try {
-            if (writer) {
-                if (!(await lock.heartbeat())) {
-                    writer = false;
-                    setState({ kind: 'read-only', reason: READER_REASON });
-                }
-            } else if (readBlock === undefined) {
-                await loadRuns();
-                const peek = await lock.peek();
-                if ((peek.kind === 'free' || peek.kind === 'stale') && (await lock.tryAcquire())) {
-                    await becomeWriter();
-                }
-            }
-        } catch {
-            // a failed heartbeat or poll is retried at the next interval
-        }
+        await pollOrBeat().catch(() => undefined);
         if (!disposed) {
             startTimer();
         }
@@ -621,6 +632,17 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
         return entry;
     }
 
+    function refuseUnreadable(entry: RunEntry): void {
+        if (!entry.view.historyUnreadable) {
+            return;
+        }
+        const runId = entry.view.runId;
+        if (entry.view.newerVersion) {
+            throw new RuntimeRefusal('newer-version', `Run ${runId} was written by a newer version of FeatherSpec Studio (${NEWER_VERSION_REASON}); nothing is written to it.`);
+        }
+        throw new RuntimeRefusal('unreadable-run', `The stored history of run ${runId} cannot be read (${UNREADABLE_REASON}); nothing is written to it.`);
+    }
+
     const masker = createMasker(deps.credentials);
     const eventCap = deps.maxEventsPerRun ?? MAX_EVENTS_PER_RUN;
 
@@ -628,11 +650,18 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
         const state = emptyEventState();
         for await (const line of medium.lines(eventFileName(entry.view.runId))) {
             const parsed = parseEventRecord(line.text);
-            if (parsed.kind !== 'record') {
-                if (!line.terminated) {
-                    state.tailUnterminated = true;
-                    reportIncompleteOnce(entry);
-                }
+            state.tailUnterminated = !line.terminated;
+            if (parsed.kind === 'incomplete') {
+                reportIncompleteOnce(entry);
+                continue;
+            }
+            if (parsed.kind === 'newer') {
+                entry.view.newerVersion = true;
+                markUnreadable(entry);
+                continue;
+            }
+            if (parsed.kind === 'broken') {
+                markUnreadable(entry);
                 continue;
             }
             const record = parsed.record;
@@ -643,9 +672,6 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             }
             if (record.type === 'truncated') {
                 state.truncated = true;
-            }
-            if (!line.terminated) {
-                state.tailUnterminated = true;
             }
         }
         return state;
@@ -723,6 +749,7 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
         async reportStatus(runId, status, report = {}) {
             assertWritable();
             const entry = requireRun(runId);
+            refuseUnreadable(entry);
             if (!isRunStatus(status)) {
                 throw new RuntimeRefusal('invalid-status', `Status ${status} is not in the closed list of run statuses.`);
             }
@@ -769,7 +796,9 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
         async appendEvent(runId, input) {
             assertWritable();
             const entry = requireRun(runId);
+            refuseUnreadable(entry);
             const state = await ensureEventState(entry);
+            refuseUnreadable(entry);
             if (input.providerEventId !== undefined && state.ids.has(input.providerEventId)) {
                 return { outcome: 'duplicate' };
             }
@@ -831,11 +860,11 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
                     markUnreadable(entry);
                     return { available: false, reason: NEWER_VERSION_REASON };
                 }
+                if (parsed.kind === 'incomplete') {
+                    reportIncompleteOnce(entry);
+                    continue;
+                }
                 if (parsed.kind === 'broken') {
-                    if (!line.terminated) {
-                        reportIncompleteOnce(entry);
-                        continue;
-                    }
                     markUnreadable(entry);
                     return { available: false, reason: UNREADABLE_REASON };
                 }
@@ -857,7 +886,19 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
         async appendSpecStatusEntry(stem, entry) {
             assertWritable();
             const record: HistoryRecord = { v: FORMAT_VERSION, stem, observedAt: iso(), entry };
-            const failure = await enqueue(HISTORY_FILE, () => medium.append(HISTORY_FILE, encodeLine(record)));
+            let refusal: RuntimeRefusal | undefined;
+            const failure = await enqueue(HISTORY_FILE, async () => {
+                const shape = (historyShape ??= await inspectHistory());
+                if (shape.newer) {
+                    refusal = new RuntimeRefusal('newer-version', `The spec status history was written by a newer version of FeatherSpec Studio (${NEWER_VERSION_REASON}); nothing is written to it.`);
+                    return;
+                }
+                await medium.append(HISTORY_FILE, (shape.tailUnterminated ? '\n' : '') + encodeLine(record));
+                historyShape = { newer: false, tailUnterminated: false };
+            });
+            if (refusal !== undefined) {
+                throw refusal;
+            }
             if (failure !== undefined) {
                 throw new RuntimeRefusal('storage-failed', `The spec status entry could not be stored: ${failure}`);
             }

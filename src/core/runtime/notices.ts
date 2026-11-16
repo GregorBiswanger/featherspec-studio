@@ -25,7 +25,7 @@ export function newerVersionNotice(): string {
 }
 
 export function incompleteRecordNotice(runs: readonly RunRef[]): string {
-    return `FeatherSpec Studio skipped an incomplete last record in the history of ${runs.length} run(s): ${listRuns(runs)}. The other records are shown.`;
+    return `FeatherSpec Studio skipped an incomplete record in the history of ${runs.length} run(s): ${listRuns(runs)}. The other records are shown.`;
 }
 
 export function storageUnreachableNotice(reason: string): string {

@@ -37,8 +37,8 @@ Only one VS Code window writes a project's history. A second window with the sam
 ## When storing goes wrong
 
 - **A write fails during a run:** the agent keeps working. The run is flagged "history incomplete", you get one warning per run that names the spec and the run ID, and the lost records are not written later. A run whose final status could not be saved shows as `Interrupted` after a restart.
-- **A stored run cannot be read:** that run is shown as "history unreadable" and a notice names it. Other runs are not affected and the data is left as it is; `Clear Run History` removes it.
-- **The last record was cut off** (VS Code was killed mid-write): that record is skipped, the rest is shown, and a notice says so once. Nothing is rewritten.
+- **A stored run cannot be read:** that run is shown as "history unreadable" and a notice names it. Other runs are not affected and the data is left as it is; Studio refuses to write to that run, and `Clear Run History` removes it.
+- **A record was cut off** (VS Code was killed mid-write): that record is skipped wherever it stands in the file, the rest is shown, and a notice says so once per run and start. Studio never changes bytes that are already stored in a run's files; it only appends to them or removes them as a whole. Every new record starts on a fresh line, so records written after a cut-off record stay readable, and a run that was open shows as `Interrupted` after the next start.
 - **The storage location cannot be reached:** the run history is "not available" in this window, with a notice and the reason; no run can be started.
 - **Data from a newer Studio version:** it is left unchanged, not shown, and no run can be started until you update Studio.
 - **Too many events in one run:** after 20,000 events Studio stores one `truncated` event and no further events for that run; status changes are still stored.

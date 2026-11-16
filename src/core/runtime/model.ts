@@ -119,6 +119,8 @@ export type RefusalCode =
     | 'invalid-status'
     | 'read-only'
     | 'unavailable'
+    | 'unreadable-run'
+    | 'newer-version'
     | 'storage-failed';
 
 export class RuntimeRefusal extends Error {

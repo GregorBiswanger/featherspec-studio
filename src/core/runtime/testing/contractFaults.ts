@@ -223,6 +223,198 @@ export function registerFaultsContract(context: ContractContext): void {
         });
     });
 
+    describe('a kill during a write (PD-028, AC-021, AC-010)', () => {
+        const PARTIAL_STATUS = '{"v":1,"k":"stat';
+        const PARTIAL_EVENT = '{"v":1,"seq":3,"runId":"x","rec';
+
+        function appendOnly(before: Map<string, string>, after: Map<string, string>): void {
+            for (const [name, text] of before) {
+                if (name.endsWith('.jsonl')) {
+                    expect(after.get(name)?.startsWith(text), name).toBe(true);
+                }
+            }
+        }
+
+        async function seedKilledRun(rig: ContractRig): Promise<string> {
+            const seed = await rig.open();
+            const run = await seed.createRun({ providerId: 'fake', spec: SPEC });
+            await seed.reportStatus(run.runId, 'Running');
+            await seed.appendEvent(run.runId, { type: 'message', payload: 'one' });
+            await seed.appendEvent(run.runId, { type: 'message', payload: 'two' });
+            await settle();
+            await seed.dispose();
+            await rig.harness.writeRaw(PROJECT, runFile(run.runId), (await raw(rig, runFile(run.runId))) + PARTIAL_STATUS);
+            await rig.harness.writeRaw(PROJECT, eventsFile(run.runId), (await raw(rig, eventsFile(run.runId))) + PARTIAL_EVENT);
+            return run.runId;
+        }
+
+        async function payloads(store: Awaited<ReturnType<ContractRig['open']>>, runId: string): Promise<unknown[]> {
+            const page = await store.readEvents(runId, 1, 10);
+            return page.available ? page.value.map((event) => event.payload) : ['unavailable'];
+        }
+
+        it('AC-021, AC-010: after a kill, restart and restart again list the run as Interrupted with its readable events; earlier bytes stay a prefix', async () => {
+            const rig = await context.newRig();
+            const runId = await seedKilledRun(rig);
+            const killed = await snapshot(rig);
+            rig.notices.messages.length = 0;
+            const first = await rig.open();
+            await settle();
+            await first.dispose();
+            const afterFirst = await snapshot(rig);
+            appendOnly(killed, afterFirst);
+            expect(rig.notices.messages).toEqual([incompleteRecordNotice([{ runId, stem: SPEC.stem }])]);
+            rig.notices.messages.length = 0;
+            const second = await rig.open();
+            const run = await second.getRun(runId);
+            expect(run.available && run.value?.status).toBe('Interrupted');
+            expect(run.available && run.value?.historyUnreadable).toBe(false);
+            expect(run.available && run.value?.statusHistory.map((entry) => entry.status)).toEqual(['Starting', 'Running', 'Interrupted']);
+            expect(await payloads(second, runId)).toEqual(['one', 'two']);
+            const list = await second.listRuns();
+            expect(list.available && list.value.map((entry) => entry.status)).toEqual(['Interrupted']);
+            expect(rig.notices.messages).toEqual([incompleteRecordNotice([{ runId, stem: SPEC.stem }])]);
+            await second.dispose();
+            appendOnly(afterFirst, await snapshot(rig));
+        });
+
+        it('AC-021: an event appended after an incomplete record starts on a fresh line and stays readable across restarts', async () => {
+            const rig = await context.newRig();
+            const runId = await seedKilledRun(rig);
+            const first = await rig.open();
+            await first.appendEvent(runId, { type: 'message', payload: 'three' });
+            await settle();
+            await first.dispose();
+            const afterFirst = await snapshot(rig);
+            const second = await rig.open();
+            expect(await payloads(second, runId)).toEqual(['one', 'two', 'three']);
+            await second.dispose();
+            const third = await rig.open();
+            expect(await payloads(third, runId)).toEqual(['one', 'two', 'three']);
+            const run = await third.getRun(runId);
+            expect(run.available && run.value?.historyUnreadable).toBe(false);
+            appendOnly(afterFirst, await snapshot(rig));
+        });
+
+        it('AC-021: a spec status entry appended after an incomplete history record stays readable', async () => {
+            const rig = await context.newRig();
+            const seed = await rig.open();
+            await seed.appendSpecStatusEntry('0011-orchestrator', { to: 'a' });
+            await seed.dispose();
+            const file = 'spec-status-history.jsonl';
+            await rig.harness.writeRaw(PROJECT, file, (await raw(rig, file)) + '{"v":1,"stem":"0011-orchestrator","obse');
+            const killed = await snapshot(rig);
+            const first = await rig.open();
+            await first.appendSpecStatusEntry('0011-orchestrator', { to: 'b' });
+            await first.dispose();
+            const second = await rig.open();
+            const history = await second.readSpecStatusHistory();
+            expect(history.available && history.value.map((record) => record.entry)).toEqual([{ to: 'a' }, { to: 'b' }]);
+            appendOnly(killed, await snapshot(rig));
+        });
+
+        it('AC-015: negative control, a damaged line that is not an incomplete record still makes the run unreadable', async () => {
+            const rig = await context.newRig();
+            const runId = await seedKilledRun(rig);
+            await rig.harness.writeRaw(PROJECT, runFile(runId), `{{ not json\n${await raw(rig, runFile(runId))}`);
+            const store = await rig.open();
+            const run = await store.getRun(runId);
+            expect(run.available && run.value?.historyUnreadable).toBe(true);
+        });
+    });
+
+    describe('writes to data that cannot be read or is newer (AC-015, AC-017)', () => {
+        async function seedOne(rig: ContractRig): Promise<string> {
+            const seed = await rig.open();
+            const run = await seed.createRun({ providerId: 'fake', spec: SPEC });
+            await seed.appendEvent(run.runId, { type: 'message', payload: 'one' });
+            await seed.reportStatus(run.runId, 'Completed');
+            await settle();
+            await seed.dispose();
+            return run.runId;
+        }
+
+        async function append(rig: ContractRig, name: string, text: string): Promise<void> {
+            await rig.harness.writeRaw(PROJECT, name, (await raw(rig, name)) + text);
+        }
+
+        it('AC-015: a status change or an event for a run marked unreadable is refused with the reason; its bytes stay identical', async () => {
+            const rig = await context.newRig();
+            const runId = await seedOne(rig);
+            await append(rig, runFile(runId), '{{ not json\n{"v":1,"k":"flag","at":"x"}\n');
+            const before = await snapshot(rig);
+            const store = await rig.open();
+            await expect(store.reportStatus(runId, 'Running')).rejects.toMatchObject({ code: 'unreadable-run', message: expect.stringContaining(runId) });
+            await expect(store.appendEvent(runId, { type: 'message', payload: 'x' })).rejects.toMatchObject({ code: 'unreadable-run', message: expect.stringContaining(runId) });
+            await settle();
+            await store.dispose();
+            for (const name of [runFile(runId), eventsFile(runId)]) {
+                expect(await raw(rig, name), name).toBe(before.get(name));
+            }
+        });
+
+        it('AC-015: an event for a run whose events file holds an unreadable line is refused and nothing is appended', async () => {
+            const rig = await context.newRig();
+            const runId = await seedOne(rig);
+            await append(rig, eventsFile(runId), 'not json at all\n');
+            const before = await raw(rig, eventsFile(runId));
+            const store = await rig.open();
+            await expect(store.appendEvent(runId, { type: 'message', payload: 'x' })).rejects.toMatchObject({ code: 'unreadable-run' });
+            await settle();
+            await store.dispose();
+            expect(await raw(rig, eventsFile(runId))).toBe(before);
+        });
+
+        it('AC-017: a status change or an event for a run of a newer format is refused with the reason; its bytes stay identical', async () => {
+            const rig = await context.newRig();
+            const runId = await seedOne(rig);
+            await append(rig, runFile(runId), '{"v":2,"k":"hologram"}\n');
+            const before = await snapshot(rig);
+            const store = await rig.open();
+            await expect(store.reportStatus(runId, 'Running')).rejects.toMatchObject({ code: 'newer-version', message: expect.stringContaining(NEWER_VERSION_REASON) });
+            await expect(store.appendEvent(runId, { type: 'message', payload: 'x' })).rejects.toMatchObject({ code: 'newer-version' });
+            await settle();
+            await store.dispose();
+            for (const name of [runFile(runId), eventsFile(runId)]) {
+                expect(await raw(rig, name), name).toBe(before.get(name));
+            }
+        });
+
+        it('AC-017: an event for a run whose events file holds a newer record is refused and nothing is appended', async () => {
+            const rig = await context.newRig();
+            const runId = await seedOne(rig);
+            await append(rig, eventsFile(runId), '{"v":2,"seq":9}\n');
+            const before = await raw(rig, eventsFile(runId));
+            const store = await rig.open();
+            await expect(store.appendEvent(runId, { type: 'message', payload: 'x' })).rejects.toMatchObject({ code: 'newer-version' });
+            await settle();
+            await store.dispose();
+            expect(await raw(rig, eventsFile(runId))).toBe(before);
+        });
+
+        it('AC-017: a spec status entry for a history file with a newer record is refused and nothing is appended', async () => {
+            const rig = await context.newRig();
+            const seed = await rig.open();
+            await seed.appendSpecStatusEntry('0011-orchestrator', { to: 'a' });
+            await seed.dispose();
+            const file = 'spec-status-history.jsonl';
+            await append(rig, file, '{"v":2,"stem":"x","entry":1}\n');
+            const before = await raw(rig, file);
+            const store = await rig.open();
+            await expect(store.appendSpecStatusEntry('0011-orchestrator', { to: 'b' })).rejects.toMatchObject({ code: 'newer-version' });
+            await store.dispose();
+            expect(await raw(rig, file)).toBe(before);
+        });
+
+        it('AC-015: negative control, a readable run accepts a status change and an event', async () => {
+            const rig = await context.newRig();
+            const runId = await seedOne(rig);
+            const store = await rig.open();
+            await store.reportStatus(runId, 'Failed');
+            expect(await store.appendEvent(runId, { type: 'message', payload: 'x' })).toMatchObject({ outcome: 'stored' });
+        });
+    });
+
     describe('newer versions', () => {
         it('AC-017: a store written by a newer version is left byte-identical, not shown, not written, one notice', async () => {
             const rig = await context.newRig();

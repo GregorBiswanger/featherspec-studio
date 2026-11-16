@@ -115,10 +115,13 @@ Rules:
 - **BR-006** If saving fails during a run, the agent keeps working; the run is flagged
   "history incomplete" and the developer is warned once per run (Gregor, interview 2026-11-16).
   The flag means: at least one status change or event of this run was not stored.
-- **BR-007** Unreadable stored data (PD-028): the granularity is the run. An incomplete last record
-  (process killed mid-write) is skipped on read and reported once. Any other unreadable part makes
-  that one run "history unreadable"; other runs are unaffected. Stored data of a run is only ever
-  appended to or removed as a whole — never rewritten, never deleted silently.
+- **BR-007** Unreadable stored data (PD-028): the granularity is the run. An incomplete record
+  (it can only come from a process killed mid-write) is skipped on read wherever it stands in the
+  file and reported once; every append starts on a fresh line, so records written after it stay
+  readable. Any other unreadable part makes that one run "history unreadable"; other runs are
+  unaffected. Existing bytes of a run's stored data are never changed: the data is only ever
+  appended to or removed as a whole — never rewritten, never deleted silently. Writes to a run
+  marked "history unreadable", and to data of a newer format version, are refused with the reason.
 - **BR-008** Retention (PD-027): runs whose end time is older than the age cap — 90 days by
   default, configurable — are removed on activation; "FeatherSpec Studio: Clear Run History"
   removes all ended runs and all runs reported as "history unreadable" of the active project,
@@ -195,7 +198,7 @@ file does not rewrite it (the PD-011 diagnostic belongs to 0002/0011).
 
 - Disk full or write error mid-run → BR-006 (AC-014).
 - VS Code killed during a run → `Interrupted` on the next writer activation (AC-011); a
-  half-written last record is skipped (AC-021).
+  half-written record is skipped, also after later appends (AC-021).
 - One run's stored data unreadable → that run only (AC-015). Run list unreadable → rebuilt (AC-022).
 - Store location not reachable → store state *unavailable* with the reason (AC-025).
 - Stored data written by a newer Studio version → left unmodified (AC-017; the rest is OP-005).
@@ -282,14 +285,16 @@ English (PD-016) and is fixed in `/sdd-plan`.
   run that names the run by spec stem and run ID.
 - **AC-015** If the stored data of a run cannot be read, for another reason than AC-021, then the
   system shall report that run as "history unreadable", leave its stored data byte-identical,
-  return every other run unchanged, and show at activation a notice that names the affected runs.
+  return every other run unchanged, show at activation a notice that names the affected runs, and
+  refuse every status change and event for that run with a reason that names the run.
 - **AC-016** The system shall never create, change or delete a file or folder inside any workspace
   folder when storing, restoring, clearing or failing. A test with the persistent adapter decides
   it: paths and file contents of the workspace fixture are equal before and after every scenario
   of AC-003…AC-029.
 - **AC-017** If stored data carries a format version this Studio version does not know, then the
-  system shall leave it byte-identical — the age cap and the Clear command included — and show a
-  notice that says the data comes from a newer version.
+  system shall leave it byte-identical — the age cap and the Clear command included — refuse every
+  write to it with a reason that says the data comes from a newer version, and show a notice that
+  says the same.
 - **AC-018** When the system activates for a project as the writer, it shall remove every run, with
   its events, whose end time lies further back than the age cap, and every spec status history
   entry observed further back than the age cap. The cap is 90 days; where the developer has set
@@ -306,9 +311,11 @@ English (PD-016) and is fixed in `/sdd-plan`.
   hand, how storage errors behave, that masking is best effort (BR-005), and that a different
   project at the same path inherits the history (BR-003). Gregor accepts it before the spec moves
   to done.
-- **AC-021** If the last record of a run's stored data is incomplete, then the system shall skip
-  that record on read, return the run's other records, report the skip once (OP-011) and leave the
-  stored data byte-identical.
+- **AC-021** If a record of a run's stored data is incomplete, wherever it stands in the file, then
+  the system shall skip that record on read, return the run's other records, report the skip once
+  (OP-011), never change an existing byte of the stored data — it only appends, each append
+  starting on a fresh line — and list a run that was open as `Interrupted` with its readable events
+  after any number of further restarts.
 - **AC-022** If the store's list of runs cannot be read while the per-run data can, then the system
   shall rebuild the list from the per-run data and return the same runs as before.
 - **AC-023** While a window is a reader of a project store, the system shall answer reads from the
@@ -448,7 +455,7 @@ Open, none blocks planning (clarify finding in brackets; a recommendation each):
   measuring with the fake provider and the first real provider (ADR-002 *Gaps*).
 - OP-010 [29]: Maximum page size and what a larger request gets (AC-006). Recommendation: the page
   is cut to the maximum; the value is a named constant fixed in `/sdd-plan`.
-- OP-011 [4]: "Reported once" for an incomplete last record (PD-028, AC-021) — once per activation
+- OP-011 [4]: "Reported once" for an incomplete record (PD-028, AC-021) — once per activation
   or once ever? Recommendation: once per run and activation; nothing has to be stored for it.
 - OP-012 [9]: Lock heartbeat interval and staleness threshold (AC-024). Technical; recommendation:
   named constants fixed in `/sdd-plan`.
@@ -469,7 +476,7 @@ Open, none blocks planning (clarify finding in brackets; a recommendation each):
       (`npm run test:unit`, `npm test` before done).
 - [ ] No out-of-scope behaviour added; no file written inside a workspace folder (AC-016).
 - [ ] `docs/security/secret-patterns.md` and the data-access document present; the latter accepted
-      by Gregor (AC-013, AC-020).
+      by Gregor (AC-013, AC-020; document accepted by Gregor's proxy, 2026-11-16).
 - [ ] Architecture snapshot and Memory Bank updated for the new ports and adapters.
 
 ## 18. Recommended next steps

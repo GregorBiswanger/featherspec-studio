@@ -119,7 +119,7 @@ The product decision register wins where it differs from the text above:
 - **Retention:** 90-day age cap, configurable, plus "Clear Run History" (PD-027) — replaces "last 50 runs or 30 days". The per-run size cap with a "truncated" marker stays.
 - **Restart:** every open run becomes `Interrupted` at activation; there is no "recovery pending" state (PD-024).
 - **Keying:** one store per project root folder URI, not per VS Code workspace (PD-026).
-- **Unreadable data:** granularity is the run; an incomplete last record is skipped on read and never rewritten (PD-028).
+- **Unreadable data:** granularity is the run; an incomplete record is skipped on read wherever it stands, every append starts on a fresh line, existing bytes are never rewritten (PD-028).
 - **Second window:** one writer per project store, lock with heartbeat (PD-030).
 
 ## Amendments (2026-11-16, plan 0004)
