@@ -1,7 +1,7 @@
 # Plan — Mission Control Dashboard
 
 **Spec:** [0006-mission-control-dashboard.md](0006-mission-control-dashboard.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-16
 **Current step:** T-001
 
@@ -17,14 +17,20 @@ on fakes. The webview tests prove rendering, freshness (AC-016), timing (AC-024)
 sent (AC-012 to AC-014).
 
 Order:
-- First the one missing source contract: 0004 has no run-change notification (T-001, additive).
-  In parallel, the view contract and the spec figures (T-002).
+- First the run source (T-001): 0004's run-change notification already exists
+  (`RuntimeStore.onDidChangeRuns`, added with the board), so T-001 only wraps it. Then, in sequence,
+  the view contract and the spec figures (T-002).
 - Then the rest of the core (T-003, T-004).
 - Then the webview (T-005 to T-007).
 - Last the host wiring, which depends most on 0005's real code (T-008).
 
 No new dependency. Memory Bank files touched in T-008: `systemPatterns.md`, `techContext.md`,
 and `activeContext.md` once this branch is the main session's.
+
+**Approved 2026-11-16 (Gregor):** the plan; OP-4 (the diagnostics count opens the Spec Board with the
+named set "Diagnostics"), OP-6, OP-8, OP-9, OP-10, OP-12 as recommended, readings p1 to p6; all are in the
+spec (A-006 to A-012, BR-05, BR-08, AC-027 to AC-029). Work starts from the real code of 0005 and 0007;
+deviations from what this plan assumed are in the steps' `Notes:`.
 
 **Quality gates:** `npx eslint src --max-warnings 0` · `npx tsc --noEmit` ·
 `npx tsc --noEmit -p src/webview` (from 0005 T-002) · `npm run test:unit` · `npm run compile`
@@ -121,6 +127,38 @@ plus Gregor's manual checks (T-008).
     - `src/core/discovery/testing/fakeHost.ts`, `snapshotTree.ts`.
   - **Environment.** The worktree has no `node_modules`. Before T-001, `npm ci` installs from
     the lock file; nothing new is added.
+- **Code reality (2026-11-16, HEAD `88963b8`; supersedes the survey where they differ):**
+  - **Run notification exists.** `RuntimeStore.onDidChangeRuns(listener)` (0004 AC-030,
+    `src/core/runtime/runtimeStore.ts`, contract `testing/contractRunChanges.ts`) fires for created
+    runs, reported statuses, `clear` with removals and a writer takeover. `RuntimeSession` has no such
+    member; the board follows `session.current()?.onDidChangeRuns` itself (`boardService.ts`, `follow`).
+    T-001 is adjusted: no change in `src/core/runtime`; the dashboard gets a small run source.
+  - **Model source.** `ShellModelSource` (`src/core/ports/shell.ts`: `current(): { project, lifecycle }`,
+    `onDidChange`) is the model input, as for the board. The service takes
+    `{ source, discovery, session, history, clock }`, not repository and lifecycle service. `history` is
+    `{ read(): Promise<HistoryView>; onDidChange }` as in `BoardServiceDeps`. Name and version come from
+    `DiscoveryController.snapshot().active` (`DiscoveredFolder.name`, `.version`, "unknown" for legacy).
+    The project-level diagnostic count is `buildBanner(project, lifecycle).length` of the board
+    (`src/core/board/cards.ts`): the same rule as the plan's own-file rule, one source.
+  - **Board filter is 0007's.** `src/shared/protocol/boardFilter.ts`: `BoardFilter = { states?, providers?,
+    set?: { label, stems } }`, guard `isBoardFilter`, `BOARD_STATES`. A state count sends
+    `{ kind: 'boardFilter', filter: { states: [state] } }`; Needs attention and Diagnostics send
+    `{ set: { label, stems } }`. T-007 adds no `boardFilter.ts`; this plan's `kind: 'state' | 'specSet'`
+    encoding is dropped.
+  - **Event transport.** Board, detail and move result travel as `evt` without `seq`
+    (`studioPanel.ts`, `client.ts`); only `shell` is seq-ordered. The dashboard view follows the board's
+    pattern: `evt missionControl`, pushed on `hello` and on change, held in the client snapshot, guarded in
+    `messages.ts`; the view guard is in `src/shared/protocol/missionControl.ts`.
+  - **Registry and frame.** `src/webview/areas/registry.tsx` holds `specBoard` and `specExplorer`;
+    `AREAS` in `areas.ts` still flags `missionControl` as `placeholder: true` and 0005's tests pin it. T-005
+    flips the flag and adjusts those tests. `App.tsx` already shows the `<h1>` and the project name.
+  - **Notice for a vanished stem.** `noticeText(number)` in `src/shared/protocol/texts.ts`; the shell's
+    `NoticeBar` is host-driven, so the dashboard shows its own dismissable `role="status"` line (0005 reading h).
+  - **Host.** `createStudioPanel` takes a `board: PanelBoard` dep; the dashboard gets a sibling dep
+    `missionControl: { view(); onDidChangeView }`. `extension.ts` composes with `modelSource`, `session`,
+    `lifecycle.history()`; `StudioApi.missionControl()` is added for host tests.
+  - **Test helpers reused.** `src/core/board/testing/boardWorld.ts` (`createFakeSource`, `createFakeStore`,
+    `run`, `createFakeHistory`, `modelOf`).
 - [WAI-ARIA APG — Button pattern](https://www.w3.org/WAI/ARIA/apg/patterns/button/) — a focused
   button is activated by both Enter and Space. So every drill-down element is a native
   `<button type="button">` and AC-022 rests on native activation — retrieved 2026-11-16
@@ -151,53 +189,56 @@ plus Gregor's manual checks (T-008).
 
 ## Stages
 
-1. T-001 ‖ T-002 — the source notification for runs, and the view contract with the spec figures
+1. T-001 ‖ T-002 — the run source (wrapping the existing run-change notification), and the view contract with the spec figures
 2. T-003 → T-004 — the rest of the core: run figures, attention, activity, dashboard service
 3. T-005 → T-006 → T-007 — the webview area: transport and header, the other sections, drill-down
 4. T-008 — host wiring, host smoke, docs sync and final gates
 
-Parallel: stage 1 (T-001 changes `src/core/runtime` only; T-002 adds new files in
-`src/core/missionControl` and `src/shared/protocol` only; each has its own test file). Stages 2
+Parallel: stage 1 (T-001 and T-002 add new files in `src/core/missionControl` and, for T-002,
+`src/shared/protocol` only; each has its own test file). Stages 2
 and 3 share only T-002's contract and could run side by side in two worktrees. All slices are
 small, so the recommendation is to run them in sequence.
 
 ## Steps
 
-### T-001 — Run-change notification in the runtime store and session
+### T-001 — Run source: the run-change notification of 0004, followed by the dashboard
 
-- **Covers:** AC-015, AC-006
-- **Files:** `src/core/runtime/runtimeStore.ts`, `src/core/runtime/runtimeSession.ts`,
-  `src/core/runtime/runChanges.test.ts`
+- **Covers:** AC-015, AC-006, AC-018
+- **Files:** `src/core/missionControl/runSource.ts`, `src/core/missionControl/runSource.test.ts`
 - **Do:**
-  - `RuntimeStore.onDidChangeRuns(listener: () => void): Disposable` fires after each of these
-    succeeds:
-    - `createRun`;
-    - `reportStatus`;
-    - `clear` with at least one removal;
-    - a writer takeover that re-classified runs or removed runs by age.
-
-    A throwing listener is isolated. The store fires no notification for events, for
-    spec-history appends or for refused writes.
-  - `RuntimeSession.onDidChangeRuns` follows the current store, re-subscribes on a store
-    switch and drops the old subscription.
-  - Tests (named with AC-015):
-    - each of the four triggers fires once;
-    - `appendEvent`, `appendSpecStatusEntry` and a refused `reportStatus` fire nothing;
-    - after a project switch only the new store's changes arrive;
+  - Adjusted 2026-11-16 (Gregor: the notification was added meanwhile by the board work): nothing is
+    added to `src/core/runtime`. `RuntimeStore.onDidChangeRuns` is used as it is.
+  - `createRunSource({ session })` with `session` a `Pick<RuntimeSession, 'state' | 'onDidChangeState'>`
+    plus `current(): Pick<RuntimeStore, 'listRuns' | 'onDidChangeRuns' | 'state'> | undefined`:
+    - `read(): Promise<RunsRead>`, `RunsRead = { available: true; runs: RunView[] } | { available: false; reason: string }`;
+      no store gives the session state's reason or `no store`; a store state `unavailable` or an
+      unavailable `listRuns` is `available: false` with its reason; a read-only store counts as available
+      (reading p1); a throwing `listRuns` is `available: false`;
+    - `onDidChange(listener)`: fires on the current store's `onDidChangeRuns` and on
+      `session.onDidChangeState`; it re-follows the store on every read and drops the old subscription when
+      the store object changed; a throwing listener is isolated.
+  - Tests (named with AC IDs):
+    - AC-015: a created run and a status change fire once each and the next `read()` shows them (real memory
+      store of the 0004 harness, provider ID `fake`);
+    - a store switch moves the subscription, the old store's changes arrive no more (negative control);
+    - AC-018: unavailable store, no store and a throwing `listRuns` give `available: false` with a reason; a
+      read-only store stays available;
     - a throwing listener does not stop a second one.
-- **Verify:** `npm run test:unit -- src/core/runtime` plus the per-step gates
+- **Verify:** `npx vitest run src/core/missionControl` plus the per-step gates
 - [ ] **Verified (T-001):** —
-- **Notes:** —
+- **Notes:** Replaces the original T-001 (a store and session change); see *Code reality*.
 
 ### T-002 — View contract, header and spec figures
 
 - **Covers:** AC-001, AC-002, AC-003, AC-004, AC-017, AC-019, AC-020, AC-025
-- **Files:** `src/shared/protocol/missionControl.ts`, `src/core/missionControl/specFigures.ts`,
-  `src/core/missionControl/specFigures.test.ts`, `src/core/missionControl/testing/world.ts`
+- **Files:** `src/shared/protocol/missionControl.ts`, `src/shared/protocol/missionControl.test.ts`,
+  `src/core/missionControl/specFigures.ts`, `src/core/missionControl/specFigures.test.ts`,
+  `src/core/missionControl/testing/world.ts`
 - **Do:**
   - `missionControl.ts` defines the whole `MissionControlView`, so stages 2 and 3 share one
     contract:
-    - `header`: name, version, updatedAt, projectDiagnostics;
+    - `header`: name, version, updatedAt, projectDiagnostics, `diagnosticStems` (the stems of the specs
+      that carry a diagnostic, for the Diagnostics request, A-012);
     - `specs`: `{ kind: 'empty' }` or the counts per state with rule ID where derived,
       deprecated, total, and `progress` as a value or `'not available'`;
     - `runs`: `{ available: false, reason }` or running, `singleRunId?`, highlighted rows,
@@ -206,19 +247,19 @@ small, so the recommendation is to run them in sequence.
     - `activity`: `{ available: false, reason }` or entries;
     - a spec reference `{ stem, number, title: string | null, path?, found }`.
 
-    It has no field for error text, prompt or payload (AC-026 by construction). `BOARD_STATES`
-    sits in the same file.
+    It has no field for error text, prompt or payload (AC-026 by construction). It uses `BoardState` of
+    0007's `boardFilter.ts` and defines no filter encoding. Its guard `isMissionControlView` is
+    hand-written and strict: an unknown key is refused, so no extra field can reach the DOM.
   - `specFigures.ts`:
     - `projectSpecFigures(project, model)` counts each entry in its state. Done carries the
       Deprecated count. Ready, Review and Blocked carry their rule IDs.
     - Progress follows BR-04: ⌊100 × done ÷ divisor⌋ with both numbers, or `'not available'`
       when the divisor is 0.
     - Zero entries → `empty`.
-    - `projectHeader(active, project, model, updatedAt)`: the version as 0001 reports it. The
-      project-level count is the diagnostics scoped `'project'`, plus file diagnostics on no
-      entry's own files.
+    - `projectHeader(active, model, updatedAt)`: the version as 0001 reports it. The project-level count
+      is `buildBanner(project, lifecycle).length` of the board.
     - The title is `null` unless `parsed.title` has a value.
-  - `testing/world.ts` builds `ProjectRead` and `LifecycleModel` from `readMemory`.
+  - `testing/world.ts` builds a `ShellModel` (`modelOf` of 0007's `boardWorld`) and run and history builders.
   - Tests, named with AC IDs:
     - the AC-001 fixture (9 specs, Done 3 of which Deprecated 1) and the AC-003 fixture
       (25 %, 2 of 8);
@@ -228,14 +269,16 @@ small, so the recommendation is to run them in sequence.
     - legacy version "unknown";
     - an orphan plan diagnostic counts as project-level;
     - a missing title → `null`;
-    - `BOARD_STATES` equals `LIFECYCLE_STATES`.
-- **Verify:** `npm run test:unit -- src/core/missionControl` plus the per-step gates
+    - `diagnosticStems`: an entry with an `unknown-content` diagnostic is in it, one without any
+      diagnostic is not (A-012);
+    - the guard accepts a built view and rejects one with an extra key or a wrong type.
+- **Verify:** `npx vitest run src/core/missionControl` plus the per-step gates
 - [ ] **Verified (T-002):** —
 - **Notes:** —
 
 ### T-003 — Run figures, highlighted runs and the attention list
 
-- **Covers:** AC-005, AC-007, AC-008, AC-009, AC-018, AC-026
+- **Covers:** AC-005, AC-007, AC-008, AC-009, AC-018, AC-026, AC-027
 - **Do:**
   - `src/core/missionControl/runFigures.ts`: `projectRuns(runs | unavailable, model, project)`.
     - Unreadable runs are left out and counted (OP-6).
@@ -271,7 +314,7 @@ small, so the recommendation is to run them in sequence.
     - an unreadable run is not counted;
     - AC-026: a run with `errorMessage` `SECRET-1` and a `result` payload → `JSON.stringify(view)`
       contains neither.
-- **Verify:** `npm run test:unit -- src/core/missionControl` plus the per-step gates
+- **Verify:** `npx vitest run src/core/missionControl` plus the per-step gates
 - [ ] **Verified (T-003):** —
 - **Notes:** —
 
@@ -288,13 +331,14 @@ small, so the recommendation is to run them in sequence.
     - The stem is resolved to number and title (reading p2), or `found: false`.
     - Reading p1 decides when the list is not available.
   - `missionControlService.ts`:
-    - `createMissionControlService({ discovery, repository, lifecycle, session, clock })` with
-      `view()`, `onDidChangeView`, `whenIdle()` and `dispose()`.
+    - `createMissionControlService({ source, discovery, session, history, clock })` (the deps of
+      `BoardServiceDeps`, plus `discovery: Pick<DiscoveryController, 'snapshot' | 'onDidUpdate'>` and
+      `clock: ClockPort`) with `view()`, `onDidChangeView`, `whenIdle()` and `dispose()`.
     - Its deps are read-only `Pick`s (no write method reachable, AC-023) and it takes no trust
       input (same content in Restricted Mode).
-    - It subscribes to the sources only while it has a listener (reading p6), then recomputes
-      on `lifecycle.onDidChange` (and stamps `updatedAt`), `session.onDidChangeState` and
-      `session.onDidChangeRuns`. Notifications that arrive during a recompute are coalesced into
+    - It subscribes to the sources only while it has a listener (reading p6), then recomputes on
+      `source.onDidChange` (and stamps `updatedAt`), `history.onDidChange`, `discovery.onDidUpdate` and
+      the run source. Notifications that arrive during a recompute are coalesced into
       one more recompute.
     - It assembles the view from T-002 and T-003.
   - Tests:
@@ -310,18 +354,21 @@ small, so the recommendation is to run them in sequence.
       - no source reads while there is no listener;
     - AC-024 guard: `generateProject` with 200 specs plus 1,000 runs and 1,000 history entries →
       the projection takes < 1000 ms.
-- **Verify:** `npm run test:unit -- src/core/missionControl` plus the per-step gates
+- **Verify:** `npx vitest run src/core/missionControl` plus the per-step gates
 - [ ] **Verified (T-004):** —
 - **Notes:** —
 
 ### T-005 — Webview area: transport, header and spec figures
 
-- **Covers:** AC-016, AC-017, AC-019, AC-020, AC-024, AC-025
+- **Covers:** AC-016, AC-017, AC-019, AC-020, AC-024, AC-025, AC-028
 - **Do:**
-  - `src/shared/protocol/messages.ts`: a host event `missionControl { view }` in 0005's
-    seq-ordered stream, and `missionControlGuard.ts` (hand-written, one guard).
-  - 0005's `client.ts`: hand a valid `missionControl` event to `useMissionControl()`. An invalid
-    one is ignored, and the view stays as it was.
+  - `src/shared/protocol/messages.ts`: a host event `missionControl { view }` (no `seq`, like `board`;
+    see *Code reality*) with `isMissionControlEventPayload`; the view guard is T-002's.
+  - `src/webview/client.ts`: a valid `missionControl` event is held in the snapshot; `useMissionControl()`
+    in `src/webview/areas/missionControl/store.ts` reads it, as `useBoard` does. An invalid one is
+    ignored, and the view stays as it was.
+  - `src/shared/protocol/areas.ts`: `missionControl` is no placeholder any more; 0005's tests that pin it
+    are adjusted.
   - `src/webview/areas/missionControl/`:
     - `MissionControl.tsx`, registered in `areas/registry.tsx`;
     - `texts.ts` (M-01 to M-08);
@@ -338,7 +385,7 @@ small, so the recommendation is to run them in sequence.
     - AC-016: a new event is in the DOM within 500 ms of the message event;
     - AC-024: a generated 200-spec view (5 runs per spec, 1,000 history entries, helper
       `testing/bigView.ts`) renders within 1000 ms of the message event.
-- **Verify:** `npm run test:unit -- src/webview src/shared` plus the per-step gates
+- **Verify:** `npx vitest run src/webview src/shared` plus the per-step gates
 - [ ] **Verified (T-005):** —
 - **Notes:** —
 
@@ -360,50 +407,52 @@ small, so the recommendation is to run them in sequence.
     - the activity list shows exactly the entries of the view and no "more" control;
     - AC-026: the DOM text holds no field beyond the contract (a view fixture with the T-003
       `SECRET-1` run).
-- **Verify:** `npm run test:unit -- src/webview` plus the per-step gates
+- **Verify:** `npx vitest run src/webview` plus the per-step gates
 - [ ] **Verified (T-006):** —
 - **Notes:** —
 
 ### T-007 — Drill-down by navigation request
 
-- **Covers:** AC-012, AC-013, AC-014, AC-017, AC-022
+- **Covers:** AC-012, AC-013, AC-014, AC-017, AC-022, AC-029
 - **Do:**
-  - `src/shared/protocol/boardFilter.ts`: the encoding and guard from *Research*.
-  - `src/webview/areas/missionControl/requests.ts`, pure: element → `NavigationRequest`.
+  - `src/webview/areas/missionControl/requests.ts`, pure: element → `NavigationRequest`, with 0007's
+    filter shape unchanged (`src/shared/protocol/boardFilter.ts`).
     - Total → Spec Board.
-    - A state → `boardFilter { kind: 'state' }`.
-    - Attention heading or count → `specSet { label: 'Needs attention', stems }`, with the
-      stems of exactly the listed rows.
+    - A state → `{ kind: 'boardFilter', filter: { states: [state] } }`.
+    - Attention heading or count → `{ kind: 'boardFilter', filter: { set: { label: 'Needs attention', stems } } }`,
+      with the stems of exactly the listed rows.
+    - The diagnostics count → `{ kind: 'boardFilter', filter: { set: { label: 'Diagnostics', stems: header.diagnosticStems } } }`
+      (Gregor's OP-4 answer; replaces `runAction showOutput`).
     - An attention row → Spec Explorer `{ stem, path? }`, with the path while the stem is
       duplicated.
     - *Running* → Agent Center, with `singleRunId` as the target while set.
     - A highlighted run → its ID.
     - An activity entry → Spec Explorer, or for `found: false` no request and X-10 shown in the
       area (`role="status"`, dismissable).
-    - The diagnostics count → `runAction showOutput`.
     - Each element is a native `<button type="button">` that calls `useShell().navigate`. A
       value of 0 is still a button; a "not available" value is plain text (OP-9).
   - Tests:
     - one request per element, with the exact payload (AC-012 to AC-014);
     - a vanished stem sends nothing and shows the notice;
-    - the diagnostics count sends `showOutput`;
+    - the diagnostics count sends the Diagnostics set and no `runAction`;
+    - every request payload passes `isNavigationRequest` (the shared guard of 0005);
     - AC-022: every drill-down element is a `button`, not disabled, without `tabindex="-1"`, in
       DOM order; Enter and Space per *Research*;
-    - the `boardFilter` guard accepts and rejects.
-- **Verify:** `npm run test:unit -- src/webview src/shared` plus the per-step gates
+    - a 0 count still sends its request, a "not available" value has no control (AC-029).
+- **Verify:** `npx vitest run src/webview src/shared` plus the per-step gates
 - [ ] **Verified (T-007):** —
 - **Notes:** —
 
 ### T-008 — Host wiring, host smoke; docs sync and final gates
 
-- **Covers:** AC-015, AC-023; AC-001 … AC-026 re-proven by the full gate run
+- **Covers:** AC-015, AC-023; AC-001 … AC-029 re-proven by the full gate run
 - **Do:**
-  - `src/extension.ts`: compose `createMissionControlService` from controller, repository,
-    lifecycle, session and clock. Add `StudioApi.missionControl()` (view and change listener)
-    for host tests.
-  - 0005's panel host (expected `src/adapters/vscode/studioPanel.ts`): on `hello`, send the
-    current view after the shell snapshot. On `onDidChangeView`, send `evt missionControl` with
-    the next `seq`. Subscribe while the panel exists.
+  - `src/extension.ts`: compose `createMissionControlService` from `modelSource`, controller, session,
+    `lifecycle.history()` and the clock. Add `StudioApi.missionControl()` (view and change listener) for
+    host tests.
+  - `src/adapters/vscode/studioPanel.ts`: a dep `missionControl: { view(); onDidChangeView(listener) }`;
+    on `hello`, send the current view after the board view; on change, send `evt missionControl` (no
+    `seq`). Subscribe while the panel exists, so the service computes only while the panel is open (p6).
   - Host smoke `src/test/missionControl.smoke.test.ts` (CI):
     - AC-015: the fixture project's view matches its files; writing a spec file into the temp
       workspace, then `runtimeStore().createRun({ providerId: 'fake', … })`, then
@@ -411,18 +460,17 @@ small, so the recommendation is to run them in sequence.
     - AC-023: `snapshotTree` of the workspace equals its state before plus only the test's own
       writes.
   - Docs sync:
-    - `architecture:` in `AGENTS.md`, exactly these entries (wording of the 0005 lines as
-      merged):
-      - runtime module → `'src/core/runtime — runtime store: runs, events, masking, writer lock, retention, store state, run-change notification (spec 0004; notification 0006)'`;
-      - new `'src/core/missionControl — Mission Control projection: header, spec figures, progress, run figures, attention list, recent activity, dashboard service (spec 0006)'`;
-      - the 0005 `src/webview` line + `, Mission Control area (spec 0006)`;
-      - the 0005 `src/shared/protocol` line + `, Mission Control view and board filter encoding (spec 0006)`.
+    - `architecture:` in `AGENTS.md`, these entries only (the runtime line already names the run-change
+      notification):
+      - new `'src/core/missionControl — Mission Control projection: header, spec figures, progress, run source, run figures, attention list, recent activity, dashboard service (spec 0006)'`;
+      - the `src/webview` line + `, Mission Control area (spec 0006)`;
+      - the `src/shared/protocol` line + `, Mission Control view (spec 0006)`.
     - `systemPatterns.md`:
       - the host computes the dashboard as one serialisable view, and the webview only renders
         it;
       - the service computes only while it is listened to;
       - `onDidChangeRuns` is the run-change source for every area;
-      - the board filter encoding;
+      - the attention and diagnostics drill-downs reuse 0007's named-set filter;
       - area texts in one file per area.
     - `techContext.md`:
       - tests: `src/core/missionControl`, the webview area, the new smoke file;
@@ -454,7 +502,7 @@ small, so the recommendation is to run them in sequence.
 | AC-015 | T-001, T-004, T-008 | — | deciding: host smoke on CI | open |
 | AC-016 | T-005 | — | — | open |
 | AC-017 | T-002, T-005, T-007 | — | — | open |
-| AC-018 | T-003, T-004, T-006 | — | — | open |
+| AC-018 | T-001, T-003, T-004, T-006 | — | — | open |
 | AC-019 | T-002, T-005 | — | — | open |
 | AC-020 | T-002, T-005 | — | — | open |
 | AC-021 | T-006 | — | + manual: Gregor, High Contrast | open |
@@ -463,10 +511,13 @@ small, so the recommendation is to run them in sequence.
 | AC-024 | T-004, T-005 | — | — | open |
 | AC-025 | T-002, T-005 | — | — | open |
 | AC-026 | T-002, T-003, T-006 | — | — | open |
+| AC-027 | T-003, T-006 | — | — | open |
+| AC-028 | T-005 | — | — | open |
+| AC-029 | T-007 | — | — | open |
 
 ## Session handoff
 
-- **Done so far:** plan written (8 steps, 4 stages); no code changed.
+- **Done so far:** plan written (8 steps, 4 stages); approved and answered by Gregor 2026-11-16, spec revised, lifecycle move to `active/` done; no code changed yet.
 - **Next action:**
   1. Gregor reviews the plan, the *Texts* table, the open-point rule and readings p1 to p6.
   2. The accepted answers go into the spec (revise mode).
