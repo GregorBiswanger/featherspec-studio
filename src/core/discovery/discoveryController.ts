@@ -31,12 +31,17 @@ export interface DiscoveryControllerDeps {
 export interface DiscoverySnapshot {
     result: DiscoveryResult | undefined;
     active: DiscoveredFolder | undefined;
+    remembered: string | undefined;
+    failure: string | undefined;
 }
+
+export type UpdateListener = () => void;
 
 export type ActiveProjectListener = (active: DiscoveredFolder | undefined) => void;
 
 export interface DiscoveryController {
     onDidChangeActiveProject(listener: ActiveProjectListener): Disposable;
+    onDidUpdate(listener: UpdateListener): Disposable;
     start(): Promise<void>;
     refresh(): Promise<void>;
     selectProject(): Promise<void>;
@@ -99,13 +104,34 @@ export function createDiscoveryController(deps: DiscoveryControllerDeps): Discov
         notifyActiveChanged();
     }
 
+    const updateListeners = new Set<UpdateListener>();
+    let failure: string | undefined;
+
+    function notifyUpdate(): void {
+        for (const listener of [...updateListeners]) {
+            try {
+                listener();
+            } catch {
+                continue;
+            }
+        }
+    }
+
     let queue: Promise<unknown> = Promise.resolve();
 
     function runOnce(): Promise<DiscoveryResult> {
         const next = queue.then(async () => {
-            const discovered = await discover();
-            await apply(discovered, undefined);
-            return discovered;
+            try {
+                const discovered = await discover();
+                failure = undefined;
+                await apply(discovered, undefined);
+                return discovered;
+            } catch (error) {
+                failure = error instanceof Error ? error.message : String(error);
+                throw error;
+            } finally {
+                notifyUpdate();
+            }
         });
         queue = next.catch(() => undefined);
         return next;
@@ -138,6 +164,10 @@ export function createDiscoveryController(deps: DiscoveryControllerDeps): Discov
     }
 
     return {
+        onDidUpdate(listener) {
+            updateListeners.add(listener);
+            return { dispose: () => void updateListeners.delete(listener) };
+        },
         onDidChangeActiveProject(listener) {
             activeListeners.add(listener);
             return { dispose: () => void activeListeners.delete(listener) };
@@ -183,6 +213,6 @@ export function createDiscoveryController(deps: DiscoveryControllerDeps): Discov
             folderSubscription = undefined;
             watches.splice(0).forEach((watched) => watched.subscription.dispose());
         },
-        snapshot: () => ({ result, active }),
+        snapshot: () => ({ result, active, remembered: deps.state.get(), failure }),
     };
 }

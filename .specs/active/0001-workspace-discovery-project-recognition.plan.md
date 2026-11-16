@@ -1,9 +1,9 @@
 # Plan — Workspace Discovery & Project Recognition
 
 **Spec:** [0001-workspace-discovery-project-recognition.md](0001-workspace-discovery-project-recognition.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-16
-**Current step:** T-013
+**Current step:** none (all steps ticked)
 
 ## Approach
 
@@ -315,7 +315,7 @@ T-005…T-007 define, T-008 and T-012 document the result.
   - ordering: the status bar and the active-project listener ran before the update listener
   - failing and disposed subscribers
 - **Verify:** `npx vitest run src/core/discovery/discoveryUpdate.test.ts` (red via `Not implemented` stub, then green) + `npx vitest run src/core/discovery` + per-step gates
-- [ ] **Verified (T-013):** —
+- [x] **Verified (T-013):** 2026-11-16 — red: `npx vitest run src/core/discovery/discoveryUpdate.test.ts` 8/8 failed (`onDidUpdate` stub threw `Not implemented`); the no-failure and nothing-stored cases are the negative controls. Green: 8/8; `npx vitest run src/core/discovery` 122/122. Gates: eslint 0 findings, `tsc --noEmit` 0 errors, `npm run test:unit` all green (see 0005 plan for the total).
 - **Notes:** —
 
 ## Traceability
@@ -344,7 +344,7 @@ T-005…T-007 define, T-008 and T-012 document the result.
 | AC-021 | T-002, T-010 | src/core/discovery/versionLine.ts:readVersionLine, classifyFolder.ts:VERSION_LINE_PATTERN | versionLine.test.ts, classifyFolder.test.ts (AC-021, BR-07 start of line), discoverWorkspace.test.ts (AC-021) | verified |
 | AC-022 | T-009 | package.json (capabilities.untrustedWorkspaces, no trust guard in src/extension.ts) | src/adapters/vscode/manifest.test.ts (AC-022); manual: Gregor in Restricted Mode (planned) | built |
 | AC-023 | T-011 | src/core/discovery/discoveryController.ts:onDidChangeActiveProject | activeProjectChanged.test.ts (AC-023, 9 cases incl. no-change control) | verified |
-| AC-024 | T-013 | — | — | open |
+| AC-024 | T-013 | src/core/discovery/discoveryController.ts:onDidUpdate, snapshot (remembered, failure) | discoveryUpdate.test.ts (AC-024, 8 cases incl. controls) | verified |
 
 Pre-done (before `/sdd-lifecycle` → done): `npm test` smoke suite green on CI or Gregor's Windows machine, plus the two manual checks above.
 
@@ -358,7 +358,7 @@ Not yet proven; the next `/sdd-compile` must find these three and must not read 
 
 ## Session handoff
 
-- **Done so far:** T-001…T-012 ticked with recorded runs (122 unit tests, eslint, tsc, compile green). T-010…T-012 (appended 2026-11-16) cover the spec delta after `/sdd-compile`: read errors name the failing path, version-line start rule named by tests, AC-023 notification. Docs, Memory Bank and snapshot level.
+- **Done so far:** T-013 (AC-024, spec delta for 0005) ticked 2026-11-16; T-001…T-012 ticked with recorded runs (122 unit tests, eslint, tsc, compile green). T-010…T-012 (appended 2026-11-16) cover the spec delta after `/sdd-compile`: read errors name the failing path, version-line start rule named by tests, AC-023 notification. Docs, Memory Bank and snapshot level.
 - **Next action:** close the three items under *Open evidence* (host suite on CI or Gregor's Windows, manual AC-009, manual AC-022), then `/sdd-compile` again in a fresh session (another model family), then `/sdd-lifecycle` → done. Spec stays `In Progress`.
 - **Open decisions:** OP-006…OP-012 (spec §17), none blocking. OP-004 resolved 2026-11-16.
 - **Baseline:** `2083696` (HEAD before the first step commit; lifecycle move 2026-11-16). Delta commits: T-010 `6de03cd`, T-011 `c0a202e`.
