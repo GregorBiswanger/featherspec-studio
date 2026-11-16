@@ -3,7 +3,7 @@
 **Spec:** [0013-studio-visual-design.md](0013-studio-visual-design.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-008
+**Current step:** T-009
 
 ## Approach
 
@@ -188,7 +188,7 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
   `test/fixtures/studio-0002/` (copy of this repo's spec 0002 + plan + minimal `AGENTS.md`) built with
   `buildDetail` and mounted in `webviewBundle.test.ts`: no `**AC-`, no `` ` ``, no `> `, each ID once.
 - **Verify:** quality gates; manual: `04-spec-explorer-detail-0002-{dark,light}` — no raw Markdown.
-- [x] **Verified (T-007):** 2026-11-16 — red: `inlineFormat.test.ts` and `InlineText.test.tsx` 16 failing on `Not implemented`, the fixture test in `webviewBundle.test.ts` failing on raw `**`; the innerHTML scan was green at once, negative control: a temporary file with `innerHTML` turned it red, removed; green: eslint, both `tsc`, `npm run test:unit` 92 files / 1318+ tests, `npm run compile`. Looked at `09-tall-detail-0002-dark` and `04-*-{dark,light,hc}`: code as chips, bold, Given/When/Then as a quote block, requirement cells as muted secondary text, each ID once, step tick icons; Open file buttons still per item (T-008).
+- [x] **Verified (T-007):** 2026-11-16 — red: `inlineFormat.test.ts` and `InlineText.test.tsx` 16 failing on `Not implemented`, the fixture test in `webviewBundle.test.ts` failing on raw `**`; the innerHTML scan was green at once, negative control: a temporary file with `innerHTML` turned it red, removed; green: eslint, both `tsc`, `npm run test:unit` 92 files / 1326 tests, `npm run compile`. Looked at `09-tall-detail-0002-dark` and `04-*-{dark,light,hc}`: code as chips, bold, Given/When/Then as a quote block, requirement cells as muted secondary text, each ID once, step tick icons; Open file buttons still per item (T-008).
 - **Notes:** the pure module is `src/webview/ui/inlineFormat.ts` (not `inlineText.ts`): beside `InlineText.tsx` the two names collide on case-insensitive file systems (esbuild already resolved the wrong one). The innerHTML scan lives in the Node test `webviewCss.test.ts` (the webview tsconfig has no Node types). The fixture check ignores `<code>` content, which may hold markers literally (`` `**Plan:**` ``). Stages are not re-tidied in the webview: the core already drops their list marker (`idText.ts`), and 0007's stage assertion keeps its literal "1. ". Plan link shows text plus target as AC-015 says; for `[x](x)` both are the same file name — visible duplicate, for Gregor.
 
 ### T-008 — Detail sections: collapse, one Open file per section, header, two panes
@@ -203,8 +203,8 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
   (named in *Research*); new tests: toggle + `aria-expanded`, state survives another selection, counts per
   AC-013, no line sent.
 - **Verify:** quality gates; manual: `04-spec-explorer-detail-0002-*` — short, calm, sections foldable.
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** 2026-11-16 — red: `SpecDetail.test.tsx` all 28 (stub `resetSectionMemory` throws in `afterEach`; then the six new tests and the two delta-3 assertions on the old buttons); green: eslint, both `tsc`, `npm run test:unit` 92 files / 1332 tests, `npm run compile`. Looked at `04-spec-explorer-detail-0002-{dark,light,hc}`, `04b-*-criteria-collapsed-*` and `08-narrow-detail-0002-*`: two panes with own scroll, chevron toggles, one Open file per heading row, Overview as one aligned grid with chip and sentence, no per-item buttons; dropped the bullets of plan steps (tick icon carries the state).
+- **Notes:** the detail header's Open file opens the spec (as the Overview one does). `OpenButton` no longer passes a line (A-006). The Overview keeps `dl.detail-header` (0007 test) inside a `.detail-grid` wrapper with `display: contents`, so header lines and the new State row share one label column. `STATE_LABEL` text added. `h2` keeps the number for assistive technology (`.sr-number`), the visible number is the chip.
 
 ### T-009 — Empty, placeholder and panel-level states; motion
 
@@ -247,20 +247,20 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
 | AC-007 | T-004 | `Attention.tsx`, `RunSection.tsx`, `Activity.tsx`, `SpecLabel.tsx`, `board/icons.tsx:Glyph` | `Sections.test.tsx` (0013 AC-007) | verified |
 | AC-008 | T-005 | `src/webview/main.css` (`.columns`, `.column`, `.column-heading`, `.column-cards`) | `webviewCss.test.ts` (AC-008) | verified |
 | AC-009 | T-006 | `src/webview/board/Card.tsx`, `src/webview/ui/ProgressBar.tsx` | `SpecBoard.test.tsx` (0013 AC-009), `ProgressBar.test.tsx` | verified |
-| AC-010 | T-002, T-006, T-008 | `src/webview/ui/RuleText.tsx`, `src/shared/protocol/texts.ts:DERIVED_SENTENCES`, `src/core/board/cards.ts`, `src/core/shell/specRows.ts` | `src/webview/ui/RuleText.test.tsx`, `src/webview/areas/areas.test.tsx` (AC-007 row) | built |
+| AC-010 | T-002, T-006, T-008 | `src/webview/ui/RuleText.tsx`, `src/shared/protocol/texts.ts:DERIVED_SENTENCES`, `src/core/board/cards.ts`, `src/core/shell/specRows.ts`, `board/Card.tsx`, `detail/SpecDetail.tsx` | `RuleText.test.tsx`, `areas.test.tsx` (AC-007 row), `SpecBoard.test.tsx` (0013 AC-010), `SpecDetail.test.tsx` (0013 AC-010) | verified |
 | AC-011 | T-005 | `src/webview/areas/SpecBoard.tsx` (`overState`, `onDragLeave`), `board/Column.tsx` | `Keyboard.test.tsx` (0013 AC-011), `webviewCss.test.ts` (AC-011) | verified |
-| AC-012 | T-008 | — | — | open |
-| AC-013 | T-008 | — | — | open |
-| AC-014 | T-007 | — | — | open |
-| AC-015 | T-007 | — | — | open |
+| AC-012 | T-008 | `src/webview/detail/DetailSection.tsx`, `sectionMemory.ts` | `SpecDetail.test.tsx` (0013 AC-012) | verified |
+| AC-013 | T-008 | `DetailSection.tsx:OpenButton`, `SpecDetail.tsx` (related links) | `SpecDetail.test.tsx` (AC-010 Open file block, 0013 AC-013) | verified |
+| AC-014 | T-007 | `src/webview/ui/inlineFormat.ts:tokenize`, `InlineText.tsx` | `inlineFormat.test.ts`, `InlineText.test.tsx`, `webviewCss.test.ts` (innerHTML scan), `webviewBundle.test.ts` (studio-0002) | verified |
+| AC-015 | T-007 | `inlineFormat.ts:tidy`, `splitCells`, `SpecDetail.tsx`, `test/fixtures/studio-0002/` | `inlineFormat.test.ts`, `webviewBundle.test.ts` (studio-0002) | verified |
 | AC-016 | T-002, T-004, T-008, T-010 | delta-4 assertions (T-002 Verified) | `npm run test:unit` | built |
 | AC-017 | T-010 | — | manual: Gregor, screenshots | open |
 | AC-018 | T-010 (listed) | — | manual: Gregor, real VS Code | open |
 
 ## Session handoff
 
-- **Done so far:** plan approved by Gregor 2026-11-16 (whole plan; `--fs-*` aliases accepted under AC-001 if every alias resolves only to `--vscode-*`); pair moved to `active/`. Stages 1–3 done (T-001…T-006).
-- **Next action:** T-007 (safe inline Markdown in the detail view).
+- **Done so far:** plan approved by Gregor 2026-11-16 (whole plan; `--fs-*` aliases accepted under AC-001 if every alias resolves only to `--vscode-*`); pair moved to `active/`. Stages 1–4 done (T-001…T-008).
+- **Next action:** T-009 (empty, placeholder and panel states; motion).
 - **Open decisions:** AC-001's `--fs-*` alias interpretation (see *Research*); harness extension for
   900 px, collapsed detail and HC of every area (outside the repo) before T-010.
 - **Baseline:** e78fa54

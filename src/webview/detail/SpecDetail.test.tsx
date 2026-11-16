@@ -4,6 +4,7 @@ import { fileNotFoundText, HISTORY_NOT_AVAILABLE_TEXT, NO_DETAIL_SELECTION_TEXT,
 import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
 import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
+import { resetSectionMemory } from './sectionMemory';
 import { detailEvent, detailView, openFileResultEvent, PLAN_KEY, sections, SPEC_KEY } from './testing/views';
 
 let posted: Envelope[];
@@ -38,6 +39,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+    resetSectionMemory();
     clients.splice(0).forEach((client) => client.stop());
     mounted?.unmount();
     mounted = undefined;
@@ -149,12 +151,13 @@ describe('AC-009: criteria and requirements as delivered', () => {
 describe('AC-010: Open file exactly where a file is named', () => {
     it('is offered for the spec, the plan, related artifacts, items and diagnostics', async () => {
         const container = await open();
-        expect(openButtons(section(container, 'Overview'))).toHaveLength(2);
-        expect(openButtons(section(container, 'Requirements'))).toHaveLength(2);
-        expect(openButtons(section(container, 'Acceptance criteria'))).toHaveLength(3);
+        expect(openButtons(section(container, 'Overview'))).toHaveLength(1);
+        expect(openButtons(section(container, 'Requirements'))).toHaveLength(1);
+        expect(openButtons(section(container, 'Acceptance criteria'))).toHaveLength(1);
         expect(openButtons(section(container, 'Plan & tasks'))).toHaveLength(1);
         expect(openButtons(section(container, 'Verification'))).toHaveLength(1);
-        expect(openButtons(section(container, 'Related artifacts'))).toHaveLength(1);
+        expect(openButtons(section(container, 'Related artifacts'))).toHaveLength(0);
+        expect([...section(container, 'Related artifacts').querySelectorAll('button.related-link')].map((button) => button.textContent)).toEqual(['0007-thing.plan.md']);
     });
 
     it('is never offered for runs, status history or No plan yet', async () => {
@@ -169,11 +172,12 @@ describe('AC-010: Open file exactly where a file is named', () => {
         expect(openButtons(section(container, 'Agent history'))).toHaveLength(0);
     });
 
-    it('sends openFile with the key, and with the line where the item has one', async () => {
+    it('0013 AC-013: sends openFile with the key of the section\'s file and no line', async () => {
         const container = await open();
         await click(openButtons(section(container, 'Overview'))[0]!);
-        await click(openButtons(section(container, 'Acceptance criteria'))[1]!);
-        expect(requests('openFile')).toEqual([{ key: SPEC_KEY }, { key: SPEC_KEY, line: 40 }]);
+        await click(openButtons(section(container, 'Acceptance criteria'))[0]!);
+        await click(section(container, 'Related artifacts').querySelector('button.related-link')!);
+        expect(requests('openFile')).toEqual([{ key: SPEC_KEY }, { key: SPEC_KEY }, { key: PLAN_KEY }]);
     });
 
     it('the buttons are keyboard-operable', async () => {
@@ -289,3 +293,88 @@ describe('AC-010: the Overview header lines', () => {
         expect(rows.map((row) => row.textContent)).toEqual(['Status In Progress', 'Plan 0007-thing.plan.md']);
     });
 });
+
+describe('0013 AC-012, AC-013, AC-010: collapsible sections, detail header, Overview rules', () => {
+    function toggle(container: HTMLElement, title: string): HTMLButtonElement {
+        return section(container, title).querySelector<HTMLButtonElement>('h3 > button')!;
+    }
+
+    it('AC-012: the heading holds one toggle button; activating it hides the body and sets aria-expanded; again shows it', async () => {
+        const container = await open();
+        const button = toggle(container, 'Acceptance criteria');
+        expect(button.parentElement?.children).toHaveLength(1);
+        expect(button.getAttribute('aria-expanded')).toBe('true');
+        const body = container.querySelector<HTMLElement>(`#${button.getAttribute('aria-controls')!}`)!;
+        expect(body.hidden).toBe(false);
+        expect(body.textContent).toContain('The board shall render.');
+        await click(button);
+        expect(button.getAttribute('aria-expanded')).toBe('false');
+        expect(body.hidden).toBe(true);
+        await pressKey(button, 'Enter');
+        expect(button.getAttribute('aria-expanded')).toBe('true');
+        expect(body.hidden).toBe(false);
+    });
+
+    it('AC-012: all sections start expanded; a collapsed section stays collapsed after another spec is selected', async () => {
+        const container = await open();
+        for (const title of ['Overview', 'Requirements', 'Acceptance criteria', 'Plan & tasks', 'Verification', 'Related artifacts', 'Agent history']) {
+            expect(toggle(container, title).getAttribute('aria-expanded'), title).toBe('true');
+        }
+        await click(toggle(container, 'Acceptance criteria'));
+        const other = detailView();
+        if (other.kind === 'spec') {
+            other.key = '.specs/active/0008-other.md';
+            other.stem = '0008-other';
+            other.number = '0008';
+            other.title = 'Other 0008';
+        }
+        await send(detailEvent(other));
+        expect(container.querySelector('h2')?.textContent).toContain('Other 0008');
+        expect(toggle(container, 'Acceptance criteria').getAttribute('aria-expanded')).toBe('false');
+        expect(toggle(container, 'Requirements').getAttribute('aria-expanded')).toBe('true');
+    });
+
+    it('AC-013: no Open file per requirement, criterion or diagnostic; the Open file of a section sits in its heading row', async () => {
+        const container = await open();
+        for (const title of ['Overview', 'Requirements', 'Acceptance criteria']) {
+            const root = section(container, title);
+            expect(root.querySelectorAll('li button')).toHaveLength(0);
+            expect(openButtons(root)[0]?.closest('.section-head')).not.toBeNull();
+        }
+    });
+
+    it('AC-003: toggles, section Open file buttons and related links are native buttons in the Tab order', async () => {
+        const container = await open();
+        const controls = [...container.querySelectorAll<HTMLButtonElement>('h3 > button, .section-head .open-file, button.related-link')];
+        expect(controls.length).toBe(7 + 5 + 1);
+        controls.forEach((control) => {
+            expect(control.tagName).toBe('BUTTON');
+            expect(isKeyboardReachable(control)).toBe(true);
+        });
+    });
+
+    it('detail header: number chip, title, state chip and one Open file for the spec', async () => {
+        const container = await open();
+        const header = container.querySelector('.detail-title')!;
+        expect(header.querySelector('.detail-number')?.textContent).toBe('0007');
+        expect(header.querySelector('h2')?.textContent).toContain('Thing 0007');
+        expect(header.querySelector('.state-chip')?.textContent?.trim()).toBe('Active');
+        expect(openButtons(header)).toHaveLength(1);
+        await click(openButtons(header)[0]!);
+        expect(requests('openFile')).toEqual([{ key: SPEC_KEY }]);
+    });
+
+    it('AC-010: the Overview shows a derived state with its sentence and rule ID, and a failing readiness check with reason and check ID', async () => {
+        const base = sections().overview;
+        const container = await open(
+            detailView({ overview: { ...base, state: 'Review', rule: 'S-REVIEW', persistence: 'derived', readiness: [{ id: 'R-3', result: 'fail', reason: 'No sibling plan.' }] } }),
+        );
+        const overview = section(container, 'Overview');
+        const sentences = [...overview.querySelectorAll('.rule-text')].map((rule) => [rule.querySelector('.rule-sentence')?.textContent, rule.querySelector('.rule-id')?.textContent]);
+        expect(sentences).toEqual([
+            ['Derived: plan is Done, waiting for review', 'S-REVIEW'],
+            ['No sibling plan.', 'R-3'],
+        ]);
+    });
+});
+

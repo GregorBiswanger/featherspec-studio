@@ -16,11 +16,11 @@ All seven active specs (0001...0007) are implemented: every plan is Done with ev
 - Spec 0006: [spec](../.specs/active/0006-mission-control-dashboard.md) / [plan](../.specs/active/0006-mission-control-dashboard.plan.md) (Done, 9 of 9; T-009 header time, A-013).
 - Spec 0007: [spec](../.specs/active/0007-spec-board-spec-detail.md) / [plan](../.specs/active/0007-spec-board-spec-detail.plan.md) (Done, 14 of 14; T-004, T-006, T-007 ticked late with re-run results; T-011...T-014 after `/sdd-compile` and the first visual check).
 - Spec 0013: [spec](../.specs/active/0013-studio-visual-design.md) / [plan](../.specs/active/0013-studio-visual-design.plan.md) (In Progress, started 2026-11-16).
-- Current task: 0013 T-007 (stages 1–3 of 5 done: tokens, chips, rule sentences, Mission Control, Spec Board).
+- Current task: 0013 T-009 (stages 1–4 of 5 done: tokens, chips, rule sentences, Mission Control, Spec Board, Spec Explorer detail).
 - Acceptance criteria in focus: manual 0007 AC-017 (Tab onto Move to), AC-018, AC-026; 0006 AC-021, AC-022.
 
 ## Changed Recently
-- Spec 0013 (Studio visual design): plan approved by Gregor 2026-11-16, pair moved backlog → active; T-001, T-002 done (`--fs-*` colour aliases, `src/webview/ui/StateChip.tsx`, `RuleText.tsx`; `derivedLabel` → `derivedRule`, readiness → `{ id, reason }`); T-003, T-004 Mission Control tiles, distribution bar, header wording, attention rows, side-by-side panels (layout-order test updated, see plan T-004 Notes); T-005, T-006 board full height, drag marks, card layout with progress bars.
+- Spec 0013 (Studio visual design): plan approved by Gregor 2026-11-16, pair moved backlog → active; T-001, T-002 done (`--fs-*` colour aliases, `src/webview/ui/StateChip.tsx`, `RuleText.tsx`; `derivedLabel` → `derivedRule`, readiness → `{ id, reason }`); T-003, T-004 Mission Control tiles, distribution bar, header wording, attention rows, side-by-side panels (layout-order test updated, see plan T-004 Notes); T-005, T-006 board full height, drag marks, card layout with progress bars; T-007, T-008 safe inline Markdown (`src/webview/ui/inlineFormat.ts`), collapsible sections, one Open file per section.
 - 0007 T-011...T-014: the Move to button is a Tab stop of the board's current card (AC-017, spec revised); timing test for the detail view (AC-019); each ID once in requirements, criteria and stages (AC-009, spec revised, `src/core/board/idText.ts`); Overview header lines on one row (three CSS rules). Looks beyond that stay with backlog spec 0013.
 - 0007 T-004, T-006, T-007 were unticked although Done; ticked 2026-11-16 with re-run results (no red run recorded, none claimed).
 - 0006 T-009: the header time is the last model update, not the panel-open time (`SpecRepository.readAt()`, `ShellModelSource.updatedAt()`, A-013); `npm run compile` joined the quality gates for wiring steps.
@@ -43,4 +43,4 @@ All seven active specs (0001...0007) are implemented: every plan is Done with ev
 4. Gregor re-measures 0001 AC-018 (OP-001) and 0006 AC-016, AC-024 (OP-12) on a real project.
 
 ## Validation
-- Done: eslint, both `tsc`, `npm run test:unit` (90 files, 1308 tests), `npm run compile` green. Pending: `npm test` on CI or Windows, the manual checks above. Known issues: none.
+- Done: eslint, both `tsc`, `npm run test:unit` (92 files, 1332 tests), `npm run compile` green. Pending: `npm test` on CI or Windows, the manual checks above. Known issues: none.

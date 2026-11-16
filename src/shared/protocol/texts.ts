@@ -218,6 +218,7 @@ export const NO_REQUIREMENTS_TEXT = 'No FR- requirements found';
 export const NO_PLAN_TEXT = 'No plan yet';
 export const PRIORITY_TEXT = 'Priority: not available';
 export const OPEN_FILE_LABEL = 'Open file';
+export const STATE_LABEL = 'State';
 export const HISTORY_NOT_AVAILABLE_TEXT = 'Status history: not available';
 
 export function fileNotFoundText(path: string): string {

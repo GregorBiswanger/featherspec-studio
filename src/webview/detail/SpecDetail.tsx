@@ -3,6 +3,7 @@ import {
     cardRunText,
     criteriaText,
     DEPRECATED_MARKER,
+    DERIVED_SENTENCES,
     DETAIL_LABEL,
     HISTORY_INCOMPLETE_FLAG,
     HISTORY_NOT_AVAILABLE_TEXT,
@@ -12,17 +13,23 @@ import {
     NO_REQUIREMENTS_TEXT,
     NO_RELATED_TEXT,
     NO_RUN_LABEL,
+    OPEN_FILE_LABEL,
     PRIORITY_TEXT,
     SECTION_TITLES,
+    STATE_LABEL,
     STRUCK_FLAG,
     UNCERTAIN_FLAG,
 } from '../../shared/protocol/texts';
 import { Glyph } from '../board/icons';
 import { InlineText } from '../ui/InlineText';
 import { splitCells, tidy } from '../ui/inlineFormat';
+import { isBoardState } from '../../shared/protocol/boardFilter';
+import { isDerivedRule } from '../../shared/protocol/missionControl';
+import { RuleText } from '../ui/RuleText';
+import { StateChip } from '../ui/StateChip';
 import { DetailSection, OpenButton } from './DetailSection';
 
-type OpenFile = (key: string, line?: number) => void;
+type OpenFile = (key: string) => void;
 
 function tickText(ticked: boolean | 'undetermined'): string {
     if (ticked === 'undetermined') {
@@ -58,6 +65,7 @@ function Sections(props: { sections: DetailSections; fileResult: { key: string; 
     return (
         <>
             <DetailSection title={SECTION_TITLES.overview} open={overview.open} keys={keysOf(overview.diagnostics.map((line) => line.open))} fileResult={fileResult} onOpen={onOpen}>
+                <div className="detail-grid">
                 <dl className="detail-header">
                     {overview.headerLines.map((line) => (
                         <div key={line.label}>
@@ -67,19 +75,37 @@ function Sections(props: { sections: DetailSections; fileResult: { key: string; 
                         </div>
                     ))}
                 </dl>
-                <p>
-                    {overview.state} · {overview.rule} · {overview.persistence}
-                    {overview.deprecated ? ` · ${DEPRECATED_MARKER}` : ''}
-                </p>
+                <dl className="detail-facts">
+                    <div>
+                        <dt>{STATE_LABEL}</dt>{' '}
+                        <dd className="detail-state">
+                            {isBoardState(overview.state) ? <StateChip state={overview.state} /> : overview.state}{' '}
+                            {overview.persistence === 'derived' && isDerivedRule(overview.rule) ? (
+                                <RuleText text={DERIVED_SENTENCES[overview.rule]} id={overview.rule} />
+                            ) : (
+                                <span className="detail-rule">
+                                    {overview.rule} · {overview.persistence}
+                                </span>
+                            )}
+                            {overview.deprecated ? <span className="detail-flag"> · {DEPRECATED_MARKER}</span> : null}
+                        </dd>
+                    </div>
+                </dl>
+                </div>
                 {overview.successor === undefined ? null : <p>{overview.successor}</p>}
-                <p>{PRIORITY_TEXT}</p>
+                <p className="detail-muted">{PRIORITY_TEXT}</p>
                 {overview.readiness === undefined ? null : (
-                    <ul className="detail-readiness">
+                    <ul className="detail-checks">
                         {overview.readiness.map((check) => (
-                            <li key={check.id}>
-                                {check.id}: {check.result}
-                                {check.reason === undefined ? '' : ' — '}
-                                {check.reason === undefined ? null : <InlineText text={check.reason} />}
+                            <li key={check.id} data-result={check.result}>
+                                <Glyph kind={check.result === 'pass' ? 'Done' : check.result === 'fail' ? 'failed' : 'undetermined'} />
+                                {check.reason === undefined ? (
+                                    <span>
+                                        {check.id}: {check.result}
+                                    </span>
+                                ) : (
+                                    <RuleText text={check.reason} id={check.id} />
+                                )}
                             </li>
                         ))}
                     </ul>
@@ -88,7 +114,10 @@ function Sections(props: { sections: DetailSections; fileResult: { key: string; 
                     <ul className="detail-diagnostics">
                         {overview.diagnostics.map((line, index) => (
                             <li key={`${index}|${line.reason}`}>
-                                <InlineText text={line.reason} /> {line.open === undefined ? null : <OpenButton target={line.open} onOpen={onOpen} label={line.reason} />}
+                                <Glyph kind="diagnostic" />
+                                <span>
+                                    <InlineText text={line.reason} />
+                                </span>
                             </li>
                         ))}
                     </ul>
@@ -109,8 +138,7 @@ function Sections(props: { sections: DetailSections; fileResult: { key: string; 
                                         {' '}
                                         <InlineText text={cells.secondary} />
                                     </span>
-                                )}{' '}
-                                <OpenButton target={item.open} onOpen={onOpen} label={item.id} />
+                                )}
                             </li>
                             );
                         })}
@@ -124,7 +152,7 @@ function Sections(props: { sections: DetailSections; fileResult: { key: string; 
                             <strong className="item-id">{item.id}</strong> <InlineText text={tidy(item.text, { id: item.id, listItem: true }).text} />
                             {item.uncertain ? <span className="flag"> {UNCERTAIN_FLAG}</span> : null}
                             {item.struck ? <span className="flag"> {STRUCK_FLAG}</span> : null}
-                            {item.illustration === undefined ? null : <Quote text={item.illustration} />} <OpenButton target={item.open} onOpen={onOpen} label={item.id} />
+                            {item.illustration === undefined ? null : <Quote text={item.illustration} />}
                         </li>
                     ))}
                 </ul>
@@ -185,7 +213,9 @@ function Sections(props: { sections: DetailSections; fileResult: { key: string; 
                     <ul>
                         {related.map((item) => (
                             <li key={item.open.key}>
-                                {item.label} <OpenButton target={item.open} onOpen={onOpen} label={item.label} />
+                                <button type="button" className="related-link" aria-label={`${OPEN_FILE_LABEL}: ${item.label}`} onClick={() => onOpen(item.open.key)}>
+                                    {item.label}
+                                </button>
                             </li>
                         ))}
                     </ul>
@@ -239,9 +269,15 @@ export function SpecDetail(props: { detail: DetailView | undefined; fileResult: 
     }
     return (
         <section className="spec-detail" aria-label={DETAIL_LABEL}>
-            <h2>
-                {detail.number} {detail.title}
-            </h2>
+            <div className="detail-title">
+                <span className="detail-number">{detail.number}</span>
+                <h2>
+                    <span className="sr-number">{detail.number} </span>
+                    {detail.title}
+                </h2>
+                {isBoardState(detail.sections.overview.state) ? <StateChip state={detail.sections.overview.state} /> : null}
+                <OpenButton target={detail.sections.overview.open} onOpen={props.onOpen} label={detail.number} />
+            </div>
             <Sections sections={detail.sections} fileResult={props.fileResult} onOpen={props.onOpen} />
         </section>
     );

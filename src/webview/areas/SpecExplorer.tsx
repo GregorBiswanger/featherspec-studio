@@ -81,7 +81,7 @@ export function SpecExplorer() {
     );
   return (
     <div className="explorer">
-      {list}
+      <div className="explorer-list">{list}</div>
       <SpecDetail detail={detail} fileResult={fileResult} onOpen={openFile} />
     </div>
   );
