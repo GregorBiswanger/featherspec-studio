@@ -3,7 +3,7 @@
 **Spec:** [0005-studio-shell-navigation.md](0005-studio-shell-navigation.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-0 (0001 T-013), then T-001
+**Current step:** T-002
 
 ## Approach
 
@@ -492,12 +492,12 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 | AC-013 | T-005, T-009 | — | — | open |
 | AC-014 | T-002, T-006 | — | — | open |
 | AC-015 | T-003, T-006, T-009 | — | — | open |
-| AC-016 | T-001, T-003 | — | — | open |
+| AC-016 | T-001, T-003 | src/core/shell/messageRouter.ts (versionMismatch); webview S6 follows in T-003 | messageRouter.test.ts (AC-016 mismatch and control) | built |
 | AC-017 | T-003, T-006, T-009 | — | — | open |
 | AC-018 | T-003, T-005 | — | — | open |
 | AC-019 | T-009 | — | manual: Gregor, Light/Dark/both HC + live switch | open |
 | AC-020 | T-008 | — | — | open |
-| AC-021 | T-001 | — | — | open |
+| AC-021 | T-001 | src/core/shell/messageRouter.ts:createMessageRouter, src/shared/protocol/messages.ts (guards) | messageRouter.test.ts (AC-021, incl. no-content and next-valid cases), messages.test.ts | verified |
 | AC-022 | T-002, T-003, T-004 | — | — | open |
 | AC-023 | T-002, T-003, T-004 | — | — | open |
 | AC-024 | T-008 | — | — | open |
@@ -509,15 +509,8 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 
 ## Session handoff
 
-- **Done so far:** plan written (9 steps, 4 stages); no code changed.
-- **Next action:** Gregor reviews the plan, the *Texts* table and the open-point rule in
-  *Research*. The accepted open-point answers go into the spec (revise mode). Main is merged
-  into `spec-0005` (brings 0003). On the start signal: `/sdd-lifecycle` backlog → active, then T-001.
-- **Open decisions:**
-  - OP-004, OP-005 purposes, OP-007 and OP-008 as planned (Gregor confirms);
-  - OP-006 S7 text;
-  - OP-009 Rescan command (not planned);
-  - the five new devDependencies (Ask-first at T-002);
-  - the 0001 controller addition in T-005.
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Done so far:** spec 0005 active; answers applied to the spec; 0001 T-013 (AC-024) done; T-001 done (protocol contract, router). Stage 1 ends here.
+- **Next action:** T-002 (webview toolchain; the five devDependencies are approved by Gregor, 2026-11-16).
+- **Open decisions:** OP-010…OP-013 (spec §17), none blocking.
+- **Baseline:** `2cf3cc8` (HEAD before the lifecycle move and the first commit of this work).
 - **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); CI runs it.
