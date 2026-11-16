@@ -1,6 +1,6 @@
 # Agent Provider Abstraction
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0009-agent-provider-abstraction.plan.md](0009-agent-provider-abstraction.plan.md)
 
 Handoff reference: FS-009 ([po-handoff.md](../../docs/product/po-handoff.md) §2.1, §8.3, §10 FS-009,

@@ -1,7 +1,7 @@
 # Plan — Agent Provider Abstraction
 
 **Spec:** [0009-agent-provider-abstraction.md](0009-agent-provider-abstraction.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-16
 **Current step:** T-001
 
@@ -356,5 +356,5 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
 - **Next action:** Gregor reads the plan; on the start signal `/sdd-lifecycle` backlog → active, then T-001.
 - **Open decisions:** none. Nine steps (one over the aim): the surface step carries the document,
   and the service and the fake are each two slices so they can run in parallel.
-- **Baseline:** _(set when work starts)_
+- **Baseline:** 2026-11-16, eslint, both tsc runs and `npm run test:unit` green: 1350 tests.
 - **Environment:** `npm test` cannot run here (VS Code download blocked); the host smoke runs on CI.
