@@ -32,6 +32,7 @@ import { createRuntimeSession, type RuntimeSession } from './core/runtime/runtim
 import { openRuntimeStore, type RuntimeStore } from './core/runtime/runtimeStore';
 import { createUnavailableMedium } from './core/runtime/unavailableMedium';
 import { createBoardService } from './core/board/boardService';
+import { createMissionControlService } from './core/missionControl/missionControlService';
 import { createBoardRequests } from './core/board/boardRequests';
 import { createMoves } from './core/board/moves';
 import { createOpenFile } from './core/board/openFile';
@@ -43,6 +44,7 @@ import { AREA_IDS } from './shared/protocol/areas';
 import type { BoardView, MoveResult } from './shared/protocol/board';
 import type { BoardFilter, BoardState } from './shared/protocol/boardFilter';
 import type { DetailView } from './shared/protocol/detail';
+import type { MissionControlView } from './shared/protocol/missionControl';
 import { isRunActionPayload, type ProbeOutcome, type ShellView } from './shared/protocol/messages';
 import type { TreeModel } from './core/shell/treeModel';
 
@@ -67,6 +69,12 @@ export interface BoardTestApi {
     openFile(key: string, line?: number): Promise<'opened' | 'refused' | 'not-found'>;
 }
 
+export interface MissionControlTestApi {
+    view(): MissionControlView | undefined;
+    whenIdle(): Promise<void>;
+    listen(listener: (view: MissionControlView | undefined) => void): vscode.Disposable;
+}
+
 export interface StudioApi {
     snapshot(): DiscoverySnapshot;
     whenIdle(): Promise<void>;
@@ -76,6 +84,7 @@ export interface StudioApi {
     lifecycle(): LifecycleService;
     shell(): ShellTestApi;
     board(): BoardTestApi;
+    missionControl(): MissionControlTestApi;
 }
 
 let runtimeSession: RuntimeSession | undefined;
@@ -149,6 +158,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         selection,
         history: { read: () => lifecycle.history(), onDidChange: (listener) => lifecycle.onDidChange(() => listener()) },
     });
+    const missionControl = createMissionControlService({
+        source: modelSource,
+        discovery: controller,
+        session,
+        history: { read: () => lifecycle.history(), onDidChange: (listener) => lifecycle.onDidChange(() => listener()) },
+        clock: createSystemClock(),
+    });
     const moves = createMoves({
         source: modelSource,
         start: undefined,
@@ -167,6 +183,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     const panel = createStudioPanel({
         extensionUri: context.extensionUri,
         service,
+        missionControl: {
+            view: () => missionControl.view(),
+            onDidChangeView: (listener) => missionControl.onDidChangeView(listener),
+        },
         board: {
             handlers: requests.handlers,
             view: () => board.view(),
@@ -192,6 +212,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         { dispose: () => service.dispose() },
         navigation,
         { dispose: () => board.dispose() },
+        { dispose: () => missionControl.dispose() },
         tree,
         panel,
         vscode.window.registerWebviewPanelSerializer(VIEW_TYPE, panel.serializer),
@@ -224,6 +245,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             await session.whenIdle();
             await lifecycle.whenIdle();
             await board.whenIdle();
+            await missionControl.whenIdle();
         },
         specs: () => repository,
         runtimeState: () => session.state(),
@@ -238,6 +260,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             openFile: async (key, line) => {
                 const result = await (line === undefined ? openFile.open(key) : openFile.open(key, line));
                 return result.kind === 'opened' ? 'opened' : result.kind;
+            },
+        }),
+        missionControl: () => ({
+            view: () => missionControl.view(),
+            whenIdle: () => missionControl.whenIdle(),
+            listen: (listener) => {
+                const subscription = missionControl.onDidChangeView(listener);
+                return new vscode.Disposable(() => subscription.dispose());
             },
         }),
         shell: () => ({

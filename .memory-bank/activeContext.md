@@ -14,8 +14,8 @@ Spec 0007 (Spec Board and spec detail) is built (plan Done, T-001...T-010; 0003 
 - Spec 0003: [spec](../.specs/active/0003-spec-lifecycle-readiness-model.md) / [plan](../.specs/active/0003-spec-lifecycle-readiness-model.plan.md) (Done, 10 of 10 steps; T-010 blocking conditions and plan in use for 0007; T-009 after `/sdd-compile`: no history entry for a gap at the first derivation, PD-023).
 - Spec 0007: [spec](../.specs/active/0007-spec-board-spec-detail.md) / [plan](../.specs/active/0007-spec-board-spec-detail.plan.md) (Done, T-001...T-010 ticked; spec `In Progress` until `/sdd-compile`).
 - Spec 0005: [spec](../.specs/active/0005-studio-shell-navigation.md) / [plan](../.specs/active/0005-studio-shell-navigation.plan.md) (Done, T-001...T-009 ticked; spec `In Progress` until `/sdd-compile`).
-- Spec 0006: [spec](../.specs/active/0006-mission-control-dashboard.md) / [plan](../.specs/active/0006-mission-control-dashboard.plan.md) (In Progress, T-001...T-008; approved by Gregor 2026-11-16).
-- Current task: 0006 T-008; 0001...0005 and 0007 all steps ticked.
+- Spec 0006: [spec](../.specs/active/0006-mission-control-dashboard.md) / [plan](../.specs/active/0006-mission-control-dashboard.plan.md) (Done, T-001...T-008 ticked; approved by Gregor 2026-11-16).
+- Current task: 0006 none (all steps ticked); 0001...0005 and 0007 all steps ticked.
 - Acceptance criteria in focus: 0007 AC-001...AC-028 (manual: AC-017, AC-018, AC-026).
 
 ## Changed Recently

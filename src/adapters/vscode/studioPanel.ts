@@ -5,6 +5,7 @@ import { createMessageRouter, type RequestHandlers } from '../../core/shell/mess
 import type { ShellService } from '../../core/shell/shellService';
 import type { BoardView, MoveResult } from '../../shared/protocol/board';
 import type { DetailView, OpenFileResultPayload } from '../../shared/protocol/detail';
+import type { MissionControlView } from '../../shared/protocol/missionControl';
 import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../../shared/protocol/envelope';
 import { isProbeResultPayload, type BoardRequestType, type ProbeOutcome } from '../../shared/protocol/messages';
 import { buildWebviewHtml } from './webviewHtml';
@@ -23,10 +24,16 @@ export interface PanelBoard {
     panelClosed(): void;
 }
 
+export interface PanelMissionControl {
+    view(): MissionControlView | undefined;
+    onDidChangeView(listener: (view: MissionControlView | undefined) => void): vscode.Disposable;
+}
+
 export interface StudioPanelDeps {
     extensionUri: vscode.Uri;
     service: ShellService;
     board: PanelBoard;
+    missionControl: PanelMissionControl;
     output: OutputPort;
     testMode: boolean;
 }
@@ -90,6 +97,12 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
         }
     }
 
+    function pushMissionControl(view: MissionControlView | undefined): void {
+        if (view !== undefined) {
+            post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'missionControl', payload: { view } });
+        }
+    }
+
     function pushDetail(view: DetailView): void {
         post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'detail', payload: { view } });
     }
@@ -107,6 +120,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
                 helloAt = Date.now();
                 pushView(payload.lastSeq);
                 pushBoard(deps.board.view());
+                pushMissionControl(deps.missionControl.view());
                 pushDetail(deps.board.detail());
                 if (lastMove !== undefined) {
                     pushMove(lastMove);
@@ -136,6 +150,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
             target.webview.onDidReceiveMessage(handle),
             deps.service.onDidChangeView(() => pushView()),
             deps.board.onDidChangeView(pushBoard),
+            deps.missionControl.onDidChangeView(pushMissionControl),
             deps.board.onDidChangeDetail(pushDetail),
             deps.board.onDidMoveResult(pushMove),
             deps.board.onDidOpenFileResult((payload) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'openFileResult', payload })),

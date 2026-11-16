@@ -1,6 +1,6 @@
 # FeatherSpec Studio
 
-Visual command center for spec-driven development with [FeatherSpec](https://github.com/GregorBiswanger/featherspec), as a VS Code extension. This is an early build: project discovery, the spec model, the Studio shell, the Spec Board and the spec detail exist; Mission Control and Agent Center follow.
+Visual command center for spec-driven development with [FeatherSpec](https://github.com/GregorBiswanger/featherspec), as a VS Code extension. This is an early build: project discovery, the spec model, the Studio shell, Mission Control, the Spec Board and the spec detail exist; Agent Center follows.
 
 ## Project discovery
 
@@ -20,13 +20,17 @@ Older projects without the version line still count (shown as version "unknown",
 
 ## Spec model
 
-For the active project Studio reads every spec, plan, archived plan and parallel-worker return note into one model, keeps it current while the files change, and reports what it cannot read or recognise (unreadable file, unknown content, duplicate, orphan, dangling link, unverified version). It reads files only and follows no symbolic links. Spec Explorer in the Studio lists it; the board and dashboard that use it come next.
+For the active project Studio reads every spec, plan, archived plan and parallel-worker return note into one model, keeps it current while the files change, and reports what it cannot read or recognise (unreadable file, unknown content, duplicate, orphan, dangling link, unverified version). It reads files only and follows no symbolic links. Spec Explorer, the Spec Board and Mission Control in the Studio use it.
 
 ## Studio
 
-Open it from the **FeatherSpec Studio** icon in the Activity Bar (a tree with the project name, "Open Studio" and the four areas) or with `FeatherSpec Studio: Open`. The Studio is one panel in the editor area with four areas: Mission Control, Spec Board, Spec Explorer and Agent Center. Spec Explorer lists the specs of the active project (number, title, board state); select one and it stays selected while you switch areas, close and reopen the panel, or reload the window. Mission Control and Agent Center say that they are not available in this version. The panel follows the VS Code theme, works with the keyboard and changes no file.
+Open it from the **FeatherSpec Studio** icon in the Activity Bar (a tree with the project name, "Open Studio" and the four areas) or with `FeatherSpec Studio: Open`. The Studio is one panel in the editor area with four areas: Mission Control, Spec Board, Spec Explorer and Agent Center. Spec Explorer lists the specs of the active project (number, title, board state); select one and it stays selected while you switch areas, close and reopen the panel, or reload the window. Agent Center says that it is not available in this version. The panel follows the VS Code theme, works with the keyboard and changes no file.
 
 When there is nothing to show yet, the panel and the tree say why and offer the next action: no folder open, no project found, several projects, a remembered project that was not found, an incomplete project, loading, a load error ("Show output", "Retry") and Restricted Mode (a note; agent actions are unavailable).
+
+## Mission Control
+
+Mission Control is the first area. It shows the folder name, the FeatherSpec version, the time of the last project update and the number of project diagnostics; the number of specs in total and per state with one progress figure (done specs with status Implemented or Baseline ÷ all specs without Deprecated); the open agent runs and the failed or interrupted ones; the specs that need attention with their reasons (blocked, failed or interrupted run, waiting for you, diagnostic, review pending); and the ten latest activities. A figure the sources cannot deliver reads "not available". Every count, row and entry is a button: it opens the Spec Board (filtered), Spec Explorer or the Agent Center. The dashboard follows file and run changes while the panel is open and changes no file.
 
 ## Spec Board and spec detail
 

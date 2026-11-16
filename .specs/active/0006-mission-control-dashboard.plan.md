@@ -1,9 +1,9 @@
 # Plan — Mission Control Dashboard
 
 **Spec:** [0006-mission-control-dashboard.md](0006-mission-control-dashboard.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-16
-**Current step:** T-008
+**Current step:** none (all steps ticked)
 
 ## Approach
 
@@ -485,8 +485,9 @@ small, so the recommendation is to run them in sequence.
     - `README.md`: one Mission Control line.
     - `activeContext.md`.
 - **Verify:** `npx eslint src --max-warnings 0` · `npx tsc --noEmit` · `npx tsc --noEmit -p src/webview` · `npm run test:unit` · `npm run compile`
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** 2026-11-16 — no unit test can run the panel host or the composition, so the deciding test is the host smoke `src/test/missionControl.smoke.test.ts` (AC-015 spec file, created run and Failed status each update the view without a reopen; AC-023 only the test's own file is added; AC-006 six states): written and type-checked (`tsc -p . --outDir` 0 errors), NOT run here (VS Code download blocked): runs on CI. Gates: `npx eslint src --max-warnings 0` 0, `npx tsc --noEmit` 0, `npx tsc --noEmit -p src/webview` 0, `npm run test:unit` 86 files, 1240 passed (incl. the bundle test with the Mission Control snapshot), `npm run compile` ok. Docs: `architecture:` snapshot in `AGENTS.md` (the three entries named by this step, confirmed by Gregor's plan approval), `systemPatterns.md`, `techContext.md`, `README.md`, `activeContext.md`.
+- **Notes:** Deviations: the panel host takes a `missionControl` dep beside `board` (no `seq`, see *Code reality*); `StudioApi.missionControl()` offers `view()`, `whenIdle()` and `listen()` because the service computes only while listened to. `AGENTS.md` is 224 lines, over its 200-line cap since 0005; the one eviction proposal stays open (see `activeContext.md`).
+
 
 ## Traceability
 
@@ -497,7 +498,7 @@ small, so the recommendation is to run them in sequence.
 | AC-003 | T-002 | specFigures.ts:projectSpecFigures | specFigures.test.ts (AC-003, rounding, PD-021) | verified |
 | AC-004 | T-002 | specFigures.ts:projectSpecFigures | specFigures.test.ts (AC-004) | verified |
 | AC-005 | T-003, T-006 | src/webview/areas/missionControl/RunSection.tsx | runFigures.test.ts (AC-005), Sections.test.tsx (AC-005) | verified |
-| AC-006 | T-001, T-004 | src/core/missionControl/missionControlService.ts | missionControlService.test.ts (AC-006) | verified |
+| AC-006 | T-001, T-004 | src/core/missionControl/missionControlService.ts | missionControlService.test.ts (AC-006); src/test/missionControl.smoke.test.ts | verified |
 | AC-007 | T-003, T-006 | RunSection.tsx | runFigures.test.ts (AC-007), Sections.test.tsx (AC-007) | verified |
 | AC-008 | T-003, T-006 | Attention.tsx | attention.test.ts (AC-008), Sections.test.tsx (AC-008) | verified |
 | AC-009 | T-003 | attention.ts:carriesDiagnostic | attention.test.ts (AC-009) | verified |
@@ -506,7 +507,7 @@ small, so the recommendation is to run them in sequence.
 | AC-012 | T-007 | src/webview/areas/missionControl/requests.ts, SpecFigures.tsx, Attention.tsx | Drilldown.test.tsx (AC-012) | verified |
 | AC-013 | T-007 | requests.ts, RunSection.tsx | Drilldown.test.tsx (AC-013) | verified |
 | AC-014 | T-007 | requests.ts, Activity.tsx, MissionControl.tsx (notice) | Drilldown.test.tsx (AC-014) | verified |
-| AC-015 | T-001, T-004, T-008 | src/core/missionControl/runSource.ts, missionControlService.ts | runSource.test.ts, missionControlService.test.ts (AC-015); host smoke on CI in T-008 | built |
+| AC-015 | T-001, T-004, T-008 | src/core/missionControl/runSource.ts, missionControlService.ts, src/adapters/vscode/studioPanel.ts, src/extension.ts | runSource.test.ts, missionControlService.test.ts (AC-015); deciding: src/test/missionControl.smoke.test.ts (CI only) | built |
 | AC-016 | T-005 | src/webview/areas/missionControl/MissionControl.tsx, src/webview/client.ts | MissionControl.test.tsx (AC-016) | verified |
 | AC-017 | T-002, T-005, T-007 | Header.tsx, requests.ts:diagnosticsRequest | MissionControl.test.tsx, Drilldown.test.tsx (AC-017) | verified |
 | AC-018 | T-001, T-003, T-004, T-006 | RunSection.tsx, Attention.tsx, Activity.tsx | missionControlService.test.ts, Sections.test.tsx (AC-018) | verified |
@@ -514,7 +515,7 @@ small, so the recommendation is to run them in sequence.
 | AC-020 | T-002, T-005 | specFigures.ts (empty form) | specFigures.test.ts (AC-020); rendering in T-005 | built |
 | AC-021 | T-006 | RunSection.tsx, Attention.tsx, SpecFigures.tsx (text nodes) | Sections.test.tsx (AC-021); manual: Gregor, High Contrast | built |
 | AC-022 | T-007 | src/webview/areas/missionControl/Drill.tsx (native buttons), main.css | Drilldown.test.tsx (AC-022), webviewCss.test.ts; manual: Gregor, focus with Enter and Space | built |
-| AC-023 | T-004, T-008 | missionControlService.ts (read-only Picks) | missionControlService.test.ts (AC-023); host smoke snapshotTree in T-008 | built |
+| AC-023 | T-004, T-008 | src/core/missionControl (read-only Picks; no write call), studioPanel.ts | missionControlService.test.ts (AC-023); src/test/missionControl.smoke.test.ts (snapshotTree; CI only) | built |
 | AC-024 | T-004, T-005 | missionControlService.ts, MissionControl.tsx | missionControlService.test.ts, MissionControl.test.tsx, Sections.test.tsx (AC-024); Gregor re-measures on a real project (OP-12) | verified |
 | AC-025 | T-002, T-005 | specFigures.ts (derivedRule) | specFigures.test.ts (AC-025) | built |
 | AC-026 | T-002, T-003, T-006 | no field in the contract; guard refuses extra keys | missionControl.test.ts, runFigures.test.ts, Sections.test.tsx (AC-026) | verified |
@@ -524,8 +525,8 @@ small, so the recommendation is to run them in sequence.
 
 ## Session handoff
 
-- **Done so far:** Stage 3 ticked: T-005 area, header and spec figures, T-006 run section, attention and activity, T-007 drill-down requests; the bundle test mounts the area with a fixture snapshot; 1240 unit tests green.
-- **Next action:** T-008: host wiring (`extension.ts`, `studioPanel.ts`, `StudioApi.missionControl()`), host smoke `src/test/missionControl.smoke.test.ts` (CI only), docs sync, final gates.
+- **Done so far:** all eight steps ticked (T-001...T-008); 1240 unit tests, eslint, both tsc and `npm run compile` green. `npm test` (host smoke `src/test/missionControl.smoke.test.ts` and the older ones) was not run: VS Code download blocked.
+- **Next action:** Gregor/CI: `npm test` on CI or Windows; manual checks AC-021 in a High Contrast theme, AC-022 focus with Enter and Space, the §9 layout in the hands-on run, AC-016 and AC-024 on a real project (OP-12). Then `/sdd-compile` for 0006 in a fresh session (another model family), then `/sdd-lifecycle`.
 - **Open decisions:** none blocking. Gregor's manual checks (spec §14): AC-021 in a High Contrast theme, AC-022 focus with Enter and Space, the §9 layout in the hands-on run.
 - **Baseline:** `1ba50ff` (HEAD before the first step commit of this plan).
 - **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); CI runs it. `node_modules` is installed; no dependency is added.

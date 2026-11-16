@@ -82,6 +82,13 @@ holds the *why*: decisions and patterns.
 - Drag tests dispatch `MouseEvent`s named `dragstart`, `dragover`, `drop` and `dragend`, because jsdom has no `DragEvent`; the drag handlers must not rely on `dataTransfer` · 2026-11-16 · plan 0007 T-008
 - Board filter encoding v1 is `{states?, providers? (string or null for "No run"), set?: {label, stems}}` in `src/shared/protocol/boardFilter.ts`: AND across kinds, OR within a kind, an unknown stem matches
   nothing; the dashboard (spec 0006) uses this shape for its navigation requests · 2026-11-16 · plan 0007 T-001, Gregor
+- Mission Control: the host computes the dashboard as one serialisable `MissionControlView` (`src/core/missionControl`, contract and strict guard in `src/shared/protocol/missionControl.ts`) and the webview only renders
+  it; the `missionControl` event has no `seq` (like the board) and is re-sent on `hello`; an unknown key anywhere refuses the whole view, so no run error text can reach the DOM · 2026-11-16 · plan 0006 T-002, T-005
+- The dashboard service computes only while someone listens (the panel is open): no store read and no subscription otherwise; bursts are coalesced into one more recompute; `updatedAt` is the time the model object last changed ·
+  2026-11-16 · plan 0006 T-004, readings p6 and c
+- The run-change source for every area is `RuntimeStore.onDidChangeRuns` (0004 AC-030); the dashboard wraps it in `runSource.ts` (follows the current store, falls back to the session reason), the board follows it inline · 2026-11-16 · plan 0006 T-001, Gregor
+- Dashboard drill-downs reuse the board filter of 0007: a state count sends `{states:[state]}`, "Needs attention" and "Diagnostics" send a named set of stems; the diagnostics count does not open the Output channel · 2026-11-16 · spec 0006 BR-08, Gregor (OP-4)
+- Area texts sit in one file per area (`src/webview/areas/missionControl/texts.ts`); the area shows no loading text of its own before its first view (the shell owns S4) · 2026-11-16 · plan 0006 T-005
 - Limitation: a second window (a reader that did not open the run) sees new runs only at its next refresh, since the run-change notification is in process only · 2026-11-16 · spec 0007 §10, Gregor
 
 ## Patterns
