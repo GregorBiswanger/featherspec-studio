@@ -5,21 +5,24 @@
 
 Handoff reference: FS-006 ([po-handoff.md](../../docs/product/po-handoff.md) §4.1, §10 FS-006,
 §13, §18). Depends on: 0002 (spec entries, diagnostics), 0003 (states, readiness, status
-history), 0004 (runs, run status history), 0005 (shell, navigation, theme). Drill-down targets:
-0007 (filtered board, spec detail), 0012 (run detail in the Agent Center). Run statuses: 0011.
+history), 0004 (runs, run statuses, store state), 0005 (shell, panel-level states, navigation
+request, theme). Drill-down targets: 0007 (board with a filter, spec detail in Spec Explorer),
+0012 (run in the Agent Center). Decisions:
+[product-decisions.md](../../docs/product/product-decisions.md), above all PD-024, PD-036,
+PD-040, PD-041, PD-046 and PD-047.
 
 ## 1. Summary
 
-Mission Control is the first view of FeatherSpec Studio. It shows the state of the active
-project at a glance:
+Mission Control is the area the Studio panel shows on its first open. It shows the state of the
+active project at a glance:
 - how many specs exist and how they spread over the six lifecycle states;
 - one documented progress figure;
-- the agent runs, counted apart from the specs;
+- the open agent runs, counted apart from the specs, and the failed or interrupted latest runs;
 - the specs that need the developer's attention, with the reason;
 - the last ten relevant activities.
 
-Every figure leads to a filtered detail view. The dashboard is read-only and shows missing
-data as "not available", never as an estimate.
+Each count, row and entry named in BR-08 leads to a detail view. The dashboard is read-only and
+shows missing data as "not available", never as an estimate.
 
 ## 2. Goal and problem
 
@@ -40,17 +43,17 @@ of scope here.
 
 ### In scope
 
-- A project header with the folder name, FeatherSpec version, last refresh time and the count
-  of project-level diagnostics.
+- A project header with the folder name, FeatherSpec version, the time of the last project
+  model update and the count of project-level diagnostics.
 - Spec counts: the total and one count per state (Backlog, Ready, Active, Review, Done,
-  Blocked), with Deprecated shown inside Done.
+  Blocked), with Deprecated shown inside Done and the derived states labelled (BR-02).
 - One progress figure with its formula shown (BR-04).
-- Run figures: Running, Recovery pending, and highlighted Failed or Interrupted latest runs.
+- Run section: the *Running* figure (BR-05) and the list of highlighted runs (BR-06).
 - The *Needs attention* list, with the reasons per spec (BR-01).
 - *Recent activity*: the last 10 entries (BR-07).
-- Drill-down from every figure and entry (BR-08).
+- Drill-down from the elements of BR-08.
 - Live updates on file and run changes.
-- Empty, loading and error states.
+- The in-area states: zero specs, runtime data not available (PD-036).
 
 ### Out of scope
 
@@ -65,159 +68,238 @@ of scope here.
 - Totals across several projects — because the MVP has one active project (0001).
 - Configurable or rearrangeable widgets — because they are not needed for the first feedback
   loop.
-- Readiness failures of plain Backlog specs as attention items — because almost every new spec
-  would show up (Gregor, Q1). The board shows readiness per card (0007).
+- Readiness failures of Backlog specs as attention items — because almost every new spec would
+  show up (Gregor, Q1). This narrows the handoff's "missing prerequisites" (FR-006.5); the
+  board shows readiness per card (0007).
 - Single tool, message or file events in *Recent activity* — because they belong to live
   monitoring (0012).
 - Writing any file in the repository — because Studio is read-only for FeatherSpec artifacts
   (PD-013).
+- Panel-level states and their texts (no folder, no project, project not found, incomplete
+  project, several projects, loading, load error, reload needed, the Restricted Mode note) —
+  because the shell owns them (0005, PD-036).
+- A "recovery pending" figure — because no such run state exists (PD-024).
+- What the board, Spec Explorer and the Agent Center show after a drill-down — because 0007
+  and 0012 prove that; this spec proves the request it sends (PD-046).
 
 ## 5. Functional flow
 
-1. The developer opens Studio. Mission Control is the start view (0005).
-2. While the project is being read, the dashboard shows "Reading specs…" and no figures.
-3. The dashboard shows the header, spec counts, progress, run figures, *Needs attention* and
+1. The developer opens Studio. On the first open in a workspace the panel shows Mission
+   Control; later it shows the area shown last (0005 BR-02).
+2. While a panel-level state applies (loading, no project, load error, …), the shell shows it
+   and the dashboard is not shown (PD-036).
+3. The dashboard shows the header, spec counts, progress, run section, *Needs attention* and
    *Recent activity* of the active project.
-4. The developer clicks a figure or entry. Studio opens the matching filtered view (BR-08).
-5. A spec file changes, or a run event arrives. The affected figures update in place without a
-   reload.
+4. The developer activates a count, row or entry. The dashboard sends the shell one navigation
+   request (BR-08).
+5. A spec, plan or return note changes on disk, or a run is created, changes status or is
+   removed. The dashboard content updates in place; the developer reloads nothing.
 
 ## 6. Business rules
+
+Decisions marked "(Gregor, Qn)" come from the specify interview of 2026-11-16 (OP-11).
+
+Terms used below:
+
+- **Spec / entry:** one spec file (PD-018). Counts count entries. A run and a status-history
+  entry name their spec by its **stem** `NNNN-slug`; "its spec" is the current entry with that
+  stem. While a stem is duplicated (PD-019) they belong to every entry with that stem.
+- **State counts:** the total and the six per-state counts. **Figures:** the state counts,
+  progress and the *Running* figure. **Dashboard content:** the figures, the header values, the
+  highlighted runs, the attention list and the activity list.
+- ***Running* figure:** a count on the dashboard (BR-05). `Running`, written as code, is one of
+  the eight run statuses of 0004 BR-001 (PD-025): open states `Starting`, `Running`,
+  `WaitingForApproval`, `WaitingForInput`; end states `Completed`, `Failed`, `Cancelled`,
+  `Interrupted`.
+- **Latest run of a spec:** among the runs the store returns for that stem, the one with the
+  newest created timestamp (0004 §8).
+- **Store:** the runtime store of 0004. It is *unavailable* when 0004 reports that state
+  (0004 AC-025); *writable* and *read-only* both count as available.
+- **Project-level diagnostic:** a diagnostic of 0002 or 0003 that is attached to no spec entry
+  — its scope is the project, or a file linked to no spec, such as an orphan plan (0002 §8,
+  0007 §13).
+
+Rules:
 
 - **BR-01 Needs attention** (Gregor, Q1). A spec needs attention when at least one reason
   applies. Each spec is listed once, with every reason that applies:
   - (a) **Blocked**: its state is Blocked (0003 S-BLOCKED).
-  - (b) **Run failed / Run interrupted**: its latest run is `Failed` or `Interrupted` (BR-06).
+  - (b) **Run failed / Run interrupted**: its latest run is highlighted by BR-06.
   - (c) **Waiting for you**: one of its runs is in `WaitingForApproval` or `WaitingForInput`.
-  - (d) **Diagnostic**: it carries a contradiction or unreadable-file diagnostic (0003 §6.3,
-    AC-019). Unknown but harmless content (0002 unknown-content kind) does not count.
+  - (d) **Diagnostic**: it carries a lifecycle-contradiction diagnostic (0003 §6.3) or an
+    unreadable-file diagnostic on the spec file (0002 §8, 0003 AC-019). No other diagnostic
+    kind counts (the kind *unknown content or value* in particular; the other kinds: OP-5).
   - (e) **Review pending**: its state is Review.
 
-  A plain Backlog spec, whose readiness fails only for missing preconditions, does not need
-  attention. This covers the handoff's "pending reviews and missing prerequisites" (FR-006.5)
-  by reasons (a), (d) and (e).
+  A Backlog spec to which none of (a) to (e) applies is not listed, whatever its readiness
+  result. The handoff's "pending reviews" (FR-006.5) is reason (e).
+  Rows exist only for current entries: a run whose stem matches no current entry never creates
+  a row (PD-046).
 - **BR-02 Spec counts.** Every spec entry delivered by 0003 is counted in exactly the one state
-  0003 assigns. The state counts add up to the total. Deprecated specs count as Done, and the
-  Done figure shows "of which Deprecated: n".
-- **BR-03 Separate dimensions.** Run figures come from runtime data (0004) only and never
-  change a spec count. Spec counts never change because of runs (0003 AC-006).
+  0003 assigns. The state counts add up to the total. An entry with 0003's *Deprecated* marker
+  (0003 AC-013) counts as Done, and the Done figure shows "of which Deprecated: n". The Ready,
+  Review and Blocked counts carry the label "derived" and their rule ID (PD-004).
+- **BR-03 Separate dimensions.** Run data comes from the store (0004) only and never changes a
+  state count. A spec state change never changes the *Running* figure (0003 AC-006). The
+  attention count and the highlighted runs are not state counts; they follow BR-01 and BR-06.
 - **BR-04 Progress** (Gregor, Q2). Progress = number of Done specs with status `Implemented` or
-  `Baseline` ÷ (total specs − Deprecated specs), shown as a whole percentage, rounded down,
-  together with both numbers and the formula text. When the divisor is 0, progress is "not
-  available".
-- **BR-05 Running** (Gregor, Q3). Running counts the runs of the active project in `Starting`,
-  `Running`, `WaitingForApproval` or `WaitingForInput`. Runs marked "recovery pending" (0004
-  BR-004) are counted only under *Recovery pending*, never as Running.
-- **BR-06 Failed / Interrupted highlight** (Gregor, Q3). A run is highlighted while it is
-  `Failed` or `Interrupted` and is the latest run of its spec (latest = most recent created
-  timestamp). The highlight ends when a newer run of the same spec is created, or when the spec
-  is Done. `Cancelled` runs are never highlighted.
-- **BR-07 Recent activity** (Gregor, Q4). The 10 newest entries, newest first, merged from:
-  - spec state changes in the status history (0003 §6.5);
-  - run status changes to `Starting`, `WaitingForApproval`, `WaitingForInput`, `Completed`,
-    `Failed`, `Cancelled` or `Interrupted` (0004 status history).
+  `Baseline` ÷ (total specs − specs with the *Deprecated* marker), shown as a whole percentage,
+  rounded down, together with both numbers and the formula text. A `done/` entry with any other
+  status (a contradiction, PD-021) counts in the divisor only. When the divisor is 0, progress
+  is "not available".
+- **BR-05 Running** (Gregor, Q3). The *Running* figure counts the runs of the active project
+  whose current status is an open state. There is no "recovery pending" figure (PD-024): a run
+  left open by an earlier session arrives as `Interrupted` (0004 BR-004) and falls under BR-06.
+  A run whose stem matches no current entry is counted like any other (PD-046).
+- **BR-06 Highlighted runs** (Gregor, Q3). A run is highlighted while its current status is
+  `Failed` or `Interrupted` and it is the latest run of its spec. The highlight ends when a
+  newer run of the same stem is created, when the spec is Done, or when the run is removed from
+  the store (0004 BR-008). `Cancelled` runs are never highlighted. The highlighted runs are
+  listed in the run section, one row each: spec number and title, and the status as text. A
+  highlighted run whose stem matches no current entry is listed with its recorded stem and
+  "spec not found" (PD-046).
+- **BR-07 Recent activity** (Gregor, Q4; PD-046). The 10 newest entries, newest first, merged
+  from:
+  - spec status history entries (0003 §6.5) that have an old and a new state — changes observed
+    while Studio was running, and *changed while Studio was not running* — and entries with the
+    cause *no longer observed*. Entries with the cause *first observed* are never shown.
+  - run status history entries (0004) with the status `Starting`, `WaitingForApproval`,
+    `WaitingForInput`, `Completed`, `Failed`, `Cancelled` or `Interrupted`. A change to
+    `Running` is not shown.
 
-  Each entry shows its time, spec number and title, and the change in words.
-- **BR-08 Drill-down** (Gregor, Q5).
+  The order uses the observed time of a spec entry and the status timestamp of a run entry.
+  Entries with the same time: spec entries before run entries, then ascending spec number
+  (A-005). Each entry shows its time, spec number and title, and the change: old and new state,
+  "no longer observed", or the new run status; *changed while Studio was not running* is named.
+  An entry whose stem matches no current entry shows the recorded stem and "spec not found" in
+  place of number and title. The list has no paging.
+- **BR-08 Drill-down** (Gregor, Q5; PD-040). Activating an element sends the shell one
+  navigation request: an area plus an optional target. The dashboard opens no area itself.
 
-  | Element | Target |
+  | Element | Request |
   | --- | --- |
-  | Total | board, no filter |
-  | A state count | board filtered to that state |
-  | *Needs attention* heading or count | board filtered to exactly the specs of BR-01 |
-  | An attention row | spec detail of that spec |
-  | Running, Recovery pending, or a highlighted run | that run in the Agent Center; for a count, the Agent Center filtered to those runs |
-  | An activity entry | spec detail of its spec |
-  | Diagnostics count in the header | the Output channel "FeatherSpec Studio" |
+  | Total | Spec Board, no target |
+  | A state count | Spec Board, filter: that state |
+  | *Needs attention* heading or count | Spec Board, filter: the named spec set "Needs attention" with the stems of exactly the listed specs (PD-041) |
+  | An attention row | Spec Explorer, that spec (PD-039, PD-042) |
+  | The *Running* figure | Agent Center — with the run as target while exactly one run is counted (PD-005), without a target otherwise |
+  | A highlighted run | Agent Center, that run (ID) |
+  | An activity entry | Spec Explorer, its spec. If its stem matches no current entry: no request, and the notice "Spec <number> is no longer in the project" (PD-039) |
+  | Diagnostics count in the header | no request; opens the Output channel "FeatherSpec Studio" (OP-4) |
 
-  The filter is visible on the target view and can be cleared with one action (0007, 0012).
-- **BR-09 Honest status** (P8). A figure whose source is not available shows "not available"
-  and the reason. It never shows 0 or an estimate in its place.
+  Progress, the Deprecated sub-count and the other header values have no drill-down. What the
+  target area shows, the visible and clearable filter included, belongs to 0007 and 0012
+  (PD-041, PD-046). Until a target area exists the request ends on its placeholder (PD-040).
+- **BR-09 Honest status** (P8). A value whose source does not deliver it is shown as below,
+  never as 0, an empty list, an estimate, a default or a value from another source.
+
+  | Value | Missing when | Shown |
+  | --- | --- | --- |
+  | Progress | the divisor is 0 | "not available" |
+  | *Running* figure, highlighted runs, attention reasons (b) and (c), *Recent activity* | the store is unavailable, or 0003 reports the status history as not available (0003 AC-024) | "not available" with the reason the source gives (PD-046) |
+  | Spec title | the spec has no title (0002 AC-019) | "not available" |
+  | FeatherSpec version | legacy project or empty value | "unknown", as 0001 reports it (PD-031, PD-032) |
+
+  While attention reasons (b) and (c) are not available, the list still shows the specs with
+  reasons (a), (d) and (e), plus one line saying that run-based reasons are not available.
 
 ## 7. Functional requirements
 
 | ID | Requirement | Criteria |
 | --- | --- | --- |
-| FR-001 (FR-006.1) | Total and per-state spec counts | AC-001, AC-002 |
+| FR-001 (FR-006.1) | Total and per-state spec counts | AC-001, AC-002, AC-025 |
 | FR-002 (FR-006.2) | Progress only by the documented rule | AC-003, AC-004 |
-| FR-003 (FR-006.3) | Running runs, counted apart from specs | AC-005, AC-006 |
-| FR-004 (FR-006.4) | Highlight failed, interrupted and blocked items | AC-007, AC-008, AC-009 |
-| FR-005 (FR-006.5) | Pending reviews and missing prerequisites as attention reasons | AC-008 |
+| FR-003 (FR-006.3) | Open runs, counted apart from specs | AC-005, AC-006 |
+| FR-004 (FR-006.4) | Make failed and interrupted runs and blocked specs stand out | AC-007, AC-008, AC-009 |
+| FR-005 (FR-006.5) | Pending reviews as an attention reason; "missing prerequisites" narrowed by BR-01 | AC-008 |
 | FR-006 (FR-006.6) | Recent activity | AC-010, AC-011 |
-| FR-007 (FR-006.7) | Drill-down to filtered views | AC-012, AC-013, AC-014 |
-| FR-008 (FR-006.8) | Live update on file and run events | AC-015, AC-016 |
+| FR-007 (FR-006.7) | Drill-down by navigation request | AC-012, AC-013, AC-014 |
+| FR-008 (FR-006.8) | Live update on file and run changes | AC-015, AC-016 |
 | FR-009 (§4.1) | Visible project context | AC-017 |
-| FR-010 (§13) | Empty, loading, error states; honest missing data | AC-018, AC-019, AC-020 |
-| FR-011 (§13) | Accessibility and read-only | AC-021, AC-022, AC-023 |
-| FR-012 (§13) | Responsiveness | AC-024 |
+| FR-010 (§13) | Zero-spec state; honest missing data | AC-018, AC-019, AC-020 |
+| FR-011 (§13) | Accessibility, read-only, no sensitive run data | AC-021, AC-022, AC-023, AC-026 |
+| FR-012 (§13) | Display time | AC-024 |
 
 ## 8. Data requirements
 
 All inputs are read and none are stored by this feature:
-- spec entries and diagnostics (0002);
-- states, rule IDs, Deprecated marker and status history (0003);
-- runs with spec reference, status, timestamps and "recovery pending" marker, plus the run
-  status history (0004);
-- the active project's folder name and version (0001).
+- spec entries with stem, number and title, and diagnostics with scope and kind (0002);
+- states, rule IDs, *Deprecated* marker and status history (0003);
+- runs with stem, status, timestamps and status history, and the store state with its reason
+  (0004);
+- the active project's folder name and version (0001, delivered with 0002's project read).
 
-The dashboard figures are a projection computed from these inputs. They are never persisted.
-No sensitive fields: run error messages are not shown on the dashboard (only the status and
-the spec).
+The dashboard content is a projection computed from these inputs. It is never persisted. No
+sensitive fields: run error messages, prompts and provider payloads are not shown (AC-026).
 
 ## 9. UI/UX requirements
 
-- Layout (top to bottom):
+- Layout, top to bottom (guidance; Gregor checks it in the hands-on run):
   - header;
   - spec counts and progress;
-  - run figures;
+  - run section: *Running* figure, highlighted runs;
   - *Needs attention*;
   - *Recent activity*.
-
-  Mission Control is the start view of the shell (0005).
-- Every state, reason and highlight carries a text label. Colour is never the only carrier.
-- Every clickable element is reachable with Tab and activated with Enter or Space.
-- Theme, empty-state and error-state styling follow the shell (0005, ADR-001 §3).
-- Times are shown in the developer's local time.
-- States:
+- Every state, reason and highlighted-run status carries a text label. Colour is never the only
+  carrier.
+- Every drill-down element is reachable with Tab, shows a visible focus and is activated with
+  Enter or Space.
+- Theme and panel-level states follow the shell (0005, ADR-001 §3, PD-036).
+- Times are shown as date and time in the developer's local time zone. The format is set in
+  the plan.
+- In-area states (PD-036). An empty list keeps its heading and says that it is empty; the
+  wording (English, PD-016) is set in the plan.
 
   | Condition | Shown |
   | --- | --- |
-  | no active project | the messages of 0001 (AC-008, AC-010, AC-015) |
-  | project being read | "Reading specs…", no figures |
-  | zero specs | "No specs yet", with a pointer to `/sdd-specify` |
-  | runtime data unreadable | spec part as usual; run part "not available" with the reason (0004 BR-007) |
-  | no runs yet | run figures 0, *Recent activity* from spec history only |
-  | Restricted Mode | full dashboard (no actions exist) |
+  | zero specs | "No specs yet", with a pointer to `/sdd-specify` (what else: OP-8) |
+  | store unavailable | BR-09 |
+  | no runs stored | *Running* 0, no highlighted runs, *Recent activity* from the spec status history only |
+  | Restricted Mode | the same dashboard content as in a trusted workspace; the note is the shell's (0005 S7) |
 
 ## 10. Interfaces and integrations
 
-Studio-internal only. The dashboard asks the shell's navigation (0005) to open the targets of
-BR-08. No provider, network or external system is involved.
+Studio-internal only. The dashboard sends the shell (0005) the navigation requests of BR-08
+(PD-040) and opens the Output channel that 0001 provides. No provider, network or external
+system is involved.
 
 ## 11. Security, permissions and privacy
 
 The dashboard is read-only. It creates, changes or deletes no file (PD-013). It shows no run
-error text, prompts or provider payloads. It sends no telemetry (handoff §13 Privacy).
+error text, prompts or provider payloads (AC-026). It sends no telemetry (handoff §13 Privacy).
 
 ## 12. Non-functional requirements
 
-- Display: Gregor, Q7 (AC-024).
-- Updates must not block the UI while events stream in (handoff §13 Performance). Covered by
-  AC-016's time bound.
+- Display time: the whole dashboard content of a 200-spec project within 1 second (Gregor, Q7;
+  a working threshold like PD-035) — AC-024, OP-12.
+- Update time: 500 ms after the dashboard receives a notification (PD-047) — AC-016. The
+  model's own budget is 0002's (PD-035).
+- Events that are not run status changes cause no dashboard update (AC-011), so an event stream
+  cannot hold it up (handoff §13 Performance). Several file changes arrive as one model
+  notification (0002 AC-012); the dashboard updates once per notification.
+- The time from opening Studio to the dashboard is the sum of the shell's frame budget (0005
+  AC-024), the project read (0002 AC-018) and AC-024. No criterion bounds the sum (OP-2).
 
 ## 13. Error cases and edge cases
 
-- A spec file can't be read: the spec counts in its folder's state with a diagnostic and gets
+- A spec file can't be read: the spec counts in the state 0003 gives it, with a diagnostic and
   attention reason (d) (0003 AC-019).
-- A run's spec reference matches no current spec (renamed or deleted, PD-011): the run is still
-  counted. Its row and its activity entry show the recorded reference with "spec not found",
-  and a click shows that message instead of navigating.
-- A run event arrives twice: it is stored once (0004 AC-007), so figures do not change twice.
-- Two activity entries have the same time: run entries follow spec entries, then they are
-  ordered by spec number.
-- More than 10 activities: only the newest 10 are shown, with no paging (drill-down covers the
-  rest).
+- A run's stem matches no current entry (renamed or deleted, PD-011): the run counts in the
+  *Running* figure, and is listed among the highlighted runs and in *Recent activity* with its
+  recorded stem and "spec not found". It never becomes an attention row (PD-046).
+- The store is unavailable: BR-09 (PD-046). The spec figures are unaffected.
+- A second window on the same project (reader, PD-030): the dashboard shows what the store
+  returns there; it has no actions that could be refused. Live updates there: OP-7.
+- A run or history entries are removed (age cap, "Clear Run History"; 0004 BR-008): the
+  dashboard shows what the store still holds; a removed run is no longer highlighted.
+- The store holds the same status change twice: it appears twice. Which changes are allowed is
+  0011's rule (PD-025); provider events are de-duplicated by 0004 and never shown here.
+- The active project changes: the dashboard shows the new project's content. A project that
+  disappears or fails to load is a panel-level state of the shell (PD-036 to PD-038).
+- Two activity entries have the same time: BR-07.
+- More than 10 activities: only the newest 10 are shown, with no paging.
 - A spec is both Blocked and has a failed latest run: one attention row, both reasons.
+- One run reported "history unreadable" by 0004: OP-6.
 
 ## 14. Acceptance criteria
 
@@ -235,72 +317,99 @@ error text, prompts or provider payloads. It sends no telemetry (handoff §13 Pr
   > with the formula.
 - **AC-004** If total − Deprecated is 0, then the system shall show progress as "not
   available" and no percentage.
-- **AC-005** The system shall count as Running the runs of the active project in `Starting`,
-  `Running`, `WaitingForApproval` or `WaitingForInput`. It shall count runs marked "recovery
-  pending" only under *Recovery pending*. *(FR-006.3)*
-- **AC-006** The system shall derive run figures from runtime data only. Adding, ending or
-  removing a run shall change no spec count, and a spec state change shall change no run
-  count. *(AC-006.2)*
-- **AC-007** While a spec's latest run is `Failed` or `Interrupted` and the spec is not Done,
-  the system shall highlight that run with its status as text. When a newer run of the same
-  spec is created, or the spec becomes Done, the system shall remove the highlight. The
-  system shall never highlight a `Cancelled` run. *(AC-006.3)*
-- **AC-008** The system shall list in *Needs attention* each spec that meets at least one
-  reason (a)–(e) of BR-01, exactly once, with every applying reason as text. It shall not list
-  a Backlog spec that meets none of them. *(AC-006.3, FR-006.5)*
+- **AC-005** The system shall show as the *Running* figure the number of runs of the active
+  project whose current status is `Starting`, `Running`, `WaitingForApproval` or
+  `WaitingForInput`, runs whose stem matches no current spec included. *(FR-006.3, PD-024,
+  PD-046)*
+  > **Given** stored runs in `WaitingForInput`, `Interrupted` and `Completed` **When** the
+  > dashboard is shown **Then** *Running* reads 1.
+- **AC-006** When a run is created, changes status or is removed, the system shall leave the
+  total and every state count unchanged. When a spec's state changes, the system shall leave
+  the *Running* figure unchanged. *(AC-006.2)*
+- **AC-007** While a run's current status is `Failed` or `Interrupted`, it is the latest run of
+  its spec and that spec is not Done, the system shall list it among the highlighted runs with
+  the spec's number and title and its status as text. When a newer run of the same stem is
+  created, the spec becomes Done or the run is removed from the store, the system shall remove
+  it from that list. If the run's stem matches no current spec, then the system shall list it
+  with the recorded stem and "spec not found". The system shall never list a `Cancelled` run
+  there. *(AC-006.3, PD-046)*
+- **AC-008** The system shall list in *Needs attention* exactly the specs of the active project
+  that meet at least one reason (a) to (e) of BR-01, each once, with every applying reason as
+  text. It shall create no row for a run whose stem matches no current spec. *(AC-006.3,
+  FR-006.5, PD-046)*
   > **Given** a Backlog spec without a plan and a Review spec **When** the dashboard is shown
   > **Then** only the Review spec is listed, with the reason "Review pending".
-- **AC-009** The system shall not count a parser diagnostic of the unknown-content kind (0002)
-  as attention reason (d).
-- **AC-010** The system shall show in *Recent activity* at most 10 entries, newest first,
-  taken only from spec state changes in the status history and from run status changes to
-  `Starting`, `WaitingForApproval`, `WaitingForInput`, `Completed`, `Failed`, `Cancelled` or
-  `Interrupted`. Each entry shall show its time, spec number, spec title and the change. *(FR-006.6)*
-- **AC-011** The system shall not show tool, message, file-change or usage events in *Recent
-  activity*.
+- **AC-009** The system shall not count a diagnostic of the kind *unknown content or value*
+  (0002 §8) as attention reason (d).
+- **AC-010** The system shall show in *Recent activity* the 10 newest entries of BR-07 — all of
+  them while fewer than 10 exist — newest first, with ties in the order of BR-07. It shall take
+  them only from the spec status history and the run status history as BR-07 selects them, and
+  shall show no entry with the cause *first observed*. Each entry shall show its time, spec
+  number, spec title and the change. The system shall offer no control that shows more
+  entries. *(FR-006.6, PD-046)*
+- **AC-011** The system shall not show tool, message, file-change or usage events, nor any
+  other event that is not a run status change, in *Recent activity*.
 - **AC-012** When the developer activates the total, a state count or the *Needs attention*
-  count, the system shall open the board with the filter of BR-08 applied, and the board shall
-  show exactly the specs counted in that figure. *(AC-006.4)*
-- **AC-013** When the developer activates Running, Recovery pending or a highlighted run, the
-  system shall open the Agent Center showing that run, or the runs counted in that figure.
-  *(AC-006.4)*
-- **AC-014** When the developer activates an attention row or an activity entry, the system
-  shall open the spec detail of its spec. If that spec no longer exists, then the system shall
-  show "spec not found" with the recorded reference and stay on the dashboard.
-- **AC-015** When the spec repository reports a change, or the runtime store records a run
-  status change or a new event for a run of the active project, the system shall update the
-  affected figures, attention rows and activity entries without reloading the view. *(AC-006.5)*
-- **AC-016** When a change of AC-015 has been processed by the host, the system shall show the
-  updated figures within 1 second. Checked by an automated timing test with the fake provider.
-- **AC-017** While a project is active, the system shall show its folder name, FeatherSpec
-  version ("unknown" for legacy projects, 0001), the time of the last model update and the
-  number of project-level diagnostics. Activating that number shall open the Output channel
-  "FeatherSpec Studio".
-- **AC-018** If runtime data cannot be read, then the system shall show all spec figures as
-  usual and show every run figure as "not available" with the reason, never as 0. *(AC-006.6)*
-- **AC-019** The system shall show every value its source does not deliver as "not
-  available", and shall not replace it with an estimate, a default or a value from another
-  source. *(AC-006.6)*
-- **AC-020** While the project model is being read, the system shall show "Reading specs…" and
-  no figures. If the active project has zero specs, then it shall show "No specs yet" with a
-  pointer to `/sdd-specify`. While no project is active, it shall show the messages of 0001.
-- **AC-021** The system shall show every state, attention reason and highlight as text, with
-  colour only in addition. Checked by a component test, and by Gregor in a high-contrast theme.
-- **AC-022** The system shall make every drill-down element reachable with the Tab key and
-  activatable with Enter or Space.
+  heading or count, the system shall send the shell one navigation request for the Spec Board:
+  without a target for the total; with that state as filter for a state count; with the named
+  spec set "Needs attention", holding the stems of exactly the listed specs, for *Needs
+  attention*. *(AC-006.4, PD-040, PD-041, PD-046)*
+- **AC-013** When the developer activates a highlighted run, the system shall send the shell
+  one navigation request for the Agent Center with that run's ID as target. When the developer
+  activates the *Running* figure, the system shall send one request for the Agent Center, with
+  the run's ID as target while exactly one run is counted and without a target otherwise.
+  *(AC-006.4, PD-040)*
+- **AC-014** When the developer activates an attention row, or an activity entry whose stem
+  matches a current spec, the system shall send the shell one navigation request for Spec
+  Explorer with that spec as target. If the stem of an activated activity entry matches no
+  current spec, then the system shall send no request and show the notice "Spec <number> is no
+  longer in the project". *(PD-039, PD-042)*
+- **AC-015** When a spec, plan or return note of the active project changes on disk, when a run
+  of the active project is created, changes status or is removed, or when the store's state
+  changes, the system shall show the resulting figures, highlighted runs, attention rows and
+  activity entries without the developer reloading or reopening the panel. *(AC-006.5)*
+- **AC-016** When the dashboard receives a model-changed or run-change notification, the system
+  shall show the updated dashboard content within 500 ms. *(PD-047)*
+- **AC-017** While the dashboard is shown, the system shall show the active project's folder
+  name, its FeatherSpec version as 0001 reports it ("unknown" included), the time of the last
+  project model update and the number of project-level diagnostics. When the developer
+  activates that number, the system shall open the Output channel "FeatherSpec Studio".
+- **AC-018** If the store is unavailable, then the system shall show the *Running* figure, the
+  highlighted runs, the attention reasons (b) and (c) and *Recent activity* as "not available"
+  with the store's reason, never as 0 or as an empty list. It shall show the total, the state
+  counts, progress and the attention reasons (a), (d) and (e) exactly as it does with an
+  available store. *(AC-006.6, PD-046)*
+- **AC-019** If the source of a value named in the BR-09 table does not deliver it, then the
+  system shall show that value as the table says, and shall not replace it with an estimate, a
+  default or a value from another source. *(AC-006.6)*
+- **AC-020** If the active project has zero specs, then the system shall show "No specs yet"
+  with a pointer to `/sdd-specify`. *(PD-036; the panel-level states are 0005's)*
+- **AC-021** The system shall show every state, attention reason and highlighted-run status as
+  text, with colour only in addition.
+- **AC-022** The system shall make every drill-down element of BR-08 reachable with the Tab
+  key, show a visible focus on it, and activate it with Enter or Space. *(0005 AC-022)*
 - **AC-023** The system shall create, modify, move or delete no file in the workspace while
-  showing or updating the dashboard. In Restricted Mode it shall show the full dashboard.
-- **AC-024** While the project holds up to 200 specs and their runs, the system shall show all
-  figures within 1 second of the moment the host holds the project model. Checked by an
-  automated timing test on a 200-spec fixture.
+  showing or updating the dashboard. While the workspace is in Restricted Mode, it shall show
+  the same dashboard content as in a trusted workspace.
+- **AC-024** While the project holds up to 200 specs, the system shall show the whole dashboard
+  content within 1 second after the dashboard receives the project model. *(Working threshold,
+  OP-12)*
+- **AC-025** The system shall show the label "derived" and the rule ID (S-READY, S-REVIEW,
+  S-BLOCKED) with the Ready, Review and Blocked counts. *(PD-004)*
+- **AC-026** The system shall show no run error message, prompt or provider payload anywhere on
+  the dashboard.
 
-Who decides: AC-001 to AC-020 and AC-022 to AC-024 are decided by automated tests:
-- unit tests over the dashboard projection, using fixture snapshots and fake-provider runs;
-- component tests in jsdom;
-- one host integration test for AC-015 and AC-016.
+Who decides: automated tests decide AC-001 to AC-020 and AC-022 to AC-026; AC-021 is decided
+by an automated test and by Gregor. The test level per criterion is set in `/sdd-plan`, with
+three fixed points:
+- AC-012 to AC-014 are decided by the navigation request the dashboard sends (PD-046);
+- AC-016 is decided by a component test (PD-047), AC-024 by a timing test on a generated
+  200-spec fixture;
+- AC-015 is decided by one integration test in the extension.
 
 Gregor accepts the whole dashboard by hand in the hands-on run against a fixture project
-(Q9), including the AC-021 high-contrast check.
+(Q9), including AC-021 in a high-contrast theme and the §9 layout. Until 0007 and 0012 exist,
+a drill-down ends on the target area's placeholder; that is accepted (PD-040, PD-046).
 
 ## 15. Technical notes for developers or AI agents
 
@@ -308,33 +417,104 @@ Gregor accepts the whole dashboard by hand in the hands-on run against a fixture
   Nothing to reuse.
 - Suggested shape (decided in `/sdd-plan`):
   - a pure projection in `src/core/` (no `vscode` import) computes the dashboard view model
-    from 0003 states and history, 0004 runs and 0001 project data;
+    from 0003 states and history, 0004 runs and store state, and 0001 project data;
   - the host pushes it through the typed protocol: snapshot, then `evt` with `seq`
     (ADR-001 §6);
   - the webview only renders it and sends navigation requests;
-  - no `retainContextWhenHidden`: after a reload the host rebuilds the model (ADR-001 §7).
-- Drill-down filters are route parameters of the in-app routing (ADR-001 §2). Their encoding is
-  shared with 0007 and 0012.
-- Tests: Vitest for core and webview, Mocha only for the host integration test (ADR-001 §12).
-  Use AC IDs in test names.
+  - no `retainContextWhenHidden`: after a panel reload the host rebuilds the model
+    (ADR-001 §7).
+- The navigation request (area plus optional target: spec stem, run ID, or board filter by
+  state or named spec set) is the shell's, PD-040 and PD-041. Its encoding lives in the shared
+  protocol and is shared with 0005, 0007 and 0012.
+- Clocks: AC-016 starts when the webview receives the `evt`, AC-024 when it receives the
+  snapshot; both end when the content is rendered.
+- Tests: Vitest for core and webview (component tests in jsdom), Mocha only for the host
+  integration test (ADR-001 §12). Runs for tests are written through the 0004 store port with
+  the provider ID `fake`; no provider adapter is needed. Use AC IDs in test names.
 - Quality gates: `.memory-bank/techContext.md`.
 
 ## 16. Assumptions
 
 | ID | What we assume | Why we believe it | What breaks if it is wrong |
 | --- | --- | --- | --- |
-| A-001 | The 1 s display budget (AC-024) starts when the host holds the project model; parsing time belongs to 0002 AC-018 | 0002 owns parsing performance; the "Reading specs…" state covers it | AC-024 would need a larger budget that includes parsing |
-| A-002 | 0006 is built before 0007 and 0012 (handoff §11.2). Until they exist, AC-012 to AC-014 are decided by the navigation request the dashboard emits (route and filter), and the board's and Agent Center's own display of the filter is decided in 0007 and 0012 | The build order is the handoff's; the shell (0005) routes to placeholder views | The drill-down ACs cannot be proven end-to-end until 0007 and 0012 exist; acceptance of AC-012 to AC-014 moves with them |
-| A-003 | "Latest run of a spec" means the run with the most recent created timestamp for that spec reference | 0004 stores a created timestamp per run, and PD-005 allows one active run per spec | Highlights could stick to an older run |
-| A-004 | Run figures stay at 0 in Phase 1 until 0011 creates runs; tests use fake-provider runs written through the 0004 store | Handoff §16 phases; 0004 is provider-independent | The run part could not be tested before 0011 |
-| A-005 | Activity entries with equal timestamps are ordered spec entries first, then by spec number | A deterministic order is needed for tests; no product preference is known | Only the order of simultaneous entries would change |
+| A-001 | *Withdrawn 2026-11-16:* the clock start is now part of AC-024 (OP-3 reading f) | — | — |
+| A-002 | *Withdrawn 2026-11-16:* decided by PD-046 — the drill-down criteria are proven by the request sent | — | — |
+| A-003 | *Withdrawn 2026-11-16:* "latest run" is a defined term in §6, based on 0004 §8 (created timestamp) | — | — |
+| A-004 | The *Running* figure stays at 0 and no run is highlighted in Phase 1, until 0011 creates runs; tests write runs through the 0004 store | Handoff §16 phases; 0004 stores a run with any provider ID (0004 AC-003) | The run section could not be tested before 0011 |
+| A-005 | Activity entries with equal timestamps are ordered spec entries first, then by ascending spec number | A deterministic order is needed for tests; no product preference is known | Only the order of simultaneous entries would change |
 
 ## 17. Open points
 
-- OP-1: The filter encoding shared by the dashboard, board (0007) and Agent Center (0012) must
-  be agreed when the first of those is planned.
+Closed:
+
+- OP-1 (2026-11-16): closed by PD-040 and PD-041 — the shell's navigation request and the
+  board's filters are decided; the encoding is a planning matter (§15).
+- OP-3 (2026-11-16): `/sdd-clarify` listed 71 findings, 7 blocking (full list:
+  `orch/clarify/0006-findings.md`, kept by the run orchestrator outside this repository; numbers
+  in brackets). Gregor decided the
+  blocking ones in the PD register and delegated the rest; the walkthrough ran in bulk at his
+  request. Resolved 61:
+  - PD-024, PD-046: no "recovery pending" [1.1, 3.1] → §4, BR-05, AC-005.
+  - PD-046: runs without a current spec [1.2, 3.8] → BR-01, BR-05 to BR-07, AC-007, AC-008,
+    AC-014; store unavailable [1.5, 2.10, 3.13] → BR-09, AC-018; activity sources [2.1, 3.5] →
+    BR-07, AC-010; drill-down proven by the request [6.1, 3.6, 3.7] → AC-012 to AC-014, A-002.
+  - PD-036 to PD-038: panel-level states are the shell's [1.3, 3.15, 5.5] → §4, §9, AC-020.
+  - PD-040 to PD-042, PD-039: navigation request, named spec set, Spec Explorer [1.4, 2.15,
+    6.8] → BR-08, OP-1.
+  - PD-047, PD-035: update time [3.10, 4.1] → AC-016.
+  - PD-004: derived label [1.14] → BR-02, AC-025. PD-025: status owner [1.12]. PD-031: version
+    "unknown" [1.9].
+  - Neighbour specs: start view, 0005 BR-02 [1.6]; Deprecated and Done, 0003 [2.9]; removal and
+    repeated status changes, 0004 [5.4, 5.7]; bursts, 0002 AC-012 [3.11, 5.9]; test runs, 0004
+    AC-003 [6.5]; latest run, 0004 §8 [6.3]; end-to-end time [6.2].
+  - Wording and testability, one reading each: [1.7, 1.8, 1.10, 1.11, 1.15, 2.2 to 2.8, 2.11,
+    2.12, 2.14, 3.2 to 3.4, 3.9, 3.12, 3.14, 3.16 to 3.18, 4.2 to 4.4, 5.8, 6.4].
+  - Readings made while applying the decisions; say so if one is wrong: (a) the *Running*
+    figure opens the Agent Center on the one counted run, else without a target — PD-040 has no
+    run-set target and PD-005 allows one open run; (b) reason (b) holds exactly while the run
+    is highlighted, so not for a Done spec; (c) one header time, the last project model update;
+    run changes do not move it; (d) project-level = attached to no spec entry; (e) for a
+    duplicated stem, runs and history belong to every entry with it; (f) AC-024's clock starts
+    when the dashboard receives the model; (g) times are absolute; (h) a missing title shows
+    "not available", and an activity entry of a vanished stem shows "spec not found" and
+    answers a click with PD-039's notice; (i) with the store unavailable the attention list
+    keeps reasons (a), (d), (e) and adds one line; (j) a removed run is no longer highlighted;
+    (k) ties: ascending spec number; (l) AC-022's visible focus follows 0005 AC-022; (m) AC-025
+    and AC-026 are new, for PD-004 and the §8/§11 rule that had no criterion; (n) an empty
+    list keeps its heading and says that it is empty.
+
+Open, none blocks planning (clarify finding in brackets; a recommendation each):
+
 - OP-2: Whether the §18 KPI *Time to Project Overview* is later measured from this dashboard
   needs a decision after the MVP. It is not part of this spec.
+- OP-4 [1.13, 4.5]: The diagnostics count opens the Output channel, but 0002 and 0003 write no
+  diagnostics there (only 0001's discovery does). Recommendation: send a navigation request for
+  the Spec Board, whose banner shows project-level diagnostics (0007 §13).
+- OP-5 [2.13]: Do duplicate, unreadable-sibling-plan, dangling-link, orphan or
+  unverified-version diagnostics raise reason (d)? Recommendation: the set that fails 0003 R-6
+  — contradiction, unreadable spec or sibling plan, duplicate; the others do not.
+- OP-6 [5.1]: A run that 0004 reports as "history unreadable". Recommendation: it is not
+  counted, never the latest run, and the run section says "1 run unreadable"; needs 0004 to say
+  whether such a run still has a status.
+- OP-7 [5.2]: Does a reader window (PD-030) see the writer's run changes live? Recommendation:
+  no promise in the MVP; it refreshes when the panel is opened. Needs 0004.
+- OP-8 [5.3]: With zero specs, what is shown beside "No specs yet"? Recommendation: the header,
+  the run section and *Recent activity* stay; spec counts, progress and *Needs attention* are
+  replaced by the message.
+- OP-9 [5.6]: Activating a figure that reads 0 or "not available". Recommendation: a 0 sends
+  its request like any other count (the board says "hidden by filter"); "not available" cannot
+  be activated.
+- OP-10 [5.10]: Order and size of the attention list and the highlighted runs.
+  Recommendation: attention rows by ascending spec number, reasons in the order (a) to (e),
+  highlighted runs newest first, no cap.
+- OP-11 [6.6, 1.10]: The interview decisions Q1 to Q5, Q7 and Q9 are stored nowhere but in
+  this spec, and Q1 narrows handoff FR-006.5. Recommendation: one PD entry for them.
+- OP-12 [6.7, 3.17]: AC-024's 1 second and AC-016's 500 ms are working thresholds (PD-035,
+  PD-047); Gregor re-measures them on a real project, a failed re-measurement reopens this
+  spec. The fixture's number of runs and history entries is open. Recommendation: 5 runs per
+  spec and 1,000 history entries.
+- OP-13 (cross-spec, main session): 0005 and 0007 must carry PD-040 and PD-041 as this spec
+  uses them; 0004 OP-013's note on "recovery pending" in 0006 is settled.
 
 ## 18. Definition of Ready
 
@@ -343,18 +523,20 @@ Gregor accepts the whole dashboard by hand in the hands-on run against a fixture
 - [ ] Rules BR-01 to BR-09 are testable.
 - [ ] The happy path and edge cases are described (§5, §13).
 - [ ] The acceptance criteria are measurable (§14).
-- [ ] Dependencies 0002 to 0005 are specified, and A-002 has been accepted.
+- [ ] Dependencies 0002 to 0005 are specified.
+- [x] Blocking `/sdd-clarify` findings decided (PD-024, PD-036, PD-040, PD-041, PD-046, PD-047).
+- [ ] The readings in OP-3 and the recommendations in OP-4 to OP-12 seen by Gregor.
 - [ ] Open points are visible (§17).
 
 ## 19. Definition of Done
 
-- [ ] All FR are built and AC-001 to AC-024 pass with evidence; tests were added and run
-  green.
+- [ ] All FR are built and AC-001 to AC-026 pass with evidence; AC-012 to AC-014 by the request
+  sent (PD-046); tests were added and run green.
 - [ ] No out-of-scope functionality was added, and no file is written (AC-023).
 - [ ] Docs and the architecture snapshot are updated where new modules appear.
 - [ ] Gregor accepted the dashboard in the hands-on run.
 
 ## 20. Recommended next steps
 
-1. Run `/sdd-clarify` on this spec in a fresh session (it carries assumptions A-001 to A-005).
+1. Gregor reads the readings in OP-3 and the recommendations in OP-4 to OP-12.
 2. Run `/sdd-plan` after 0002 to 0005 are planned, so the projection inputs are fixed.
