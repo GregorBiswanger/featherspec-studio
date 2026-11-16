@@ -1,6 +1,7 @@
 export interface WorkspaceFolderInfo {
     root: string;
     name: string;
+    displayPath?: string;
 }
 
 export interface Disposable {

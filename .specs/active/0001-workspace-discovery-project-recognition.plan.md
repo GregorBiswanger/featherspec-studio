@@ -3,7 +3,7 @@
 **Spec:** [0001-workspace-discovery-project-recognition.md](0001-workspace-discovery-project-recognition.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-009
+**Current step:** T-008
 
 ## Approach
 
@@ -243,8 +243,8 @@ T-005…T-007 define, and T-008 documents the result.
 
   Manual for Gregor: Restricted Mode (AC-022), window reload (AC-009).
 - **Verify:** `npx vitest run src/adapters/vscode/manifest.test.ts` (red, then green) + `npm run compile` + `npm run compile-tests` (smoke suite type-checks) + per-step gates
-- [ ] **Verified (T-009):** —
-- **Notes:** appended 2026-11-16 in the re-cut; runs before T-008.
+- [x] **Verified (T-009):** 2026-11-16 — red: `npx vitest run src/adapters/vscode/manifest.test.ts` 4 failed (assertions on the scaffold manifest: activation events, capabilities, commands) and 1 passed (the no-eager-activation control, true for `[]`); green after the manifest edit: 5/5. `report.test.ts` display-path cases: 2 red (assertion), then green. Adapters, `src/extension.ts` and `src/test/discovery.smoke.test.ts` written. Gates: eslint 0 findings, `tsc --noEmit` 0 errors, `npm run test:unit` 10 files, 106 passed, `npm run compile` ok (bundle built), `npm run compile-tests` ok (smoke suite type-checks, `out/test/discovery.smoke.test.js` emitted). NOT run: `npm test` (VS Code download blocked here), so the smoke suite and the `workspaceContains:.specs` directory assumption are unproven until CI or Gregor's Windows machine.
+- **Notes:** (1) `displayPath?` was added to `WorkspaceFolderInfo`/`DiscoveredFolder`: the folder identity is the URI string (BR-05), the Output block and the select list show the readable path instead (core change, two tests). (2) `sameRoot` is a tiny adapter file with its own unit test (`sameRoot.test.ts`). (3) `src/adapters/node/systemClock.ts` implements `ClockPort`. (4) `activate` is async, returns `StudioApi` (`snapshot`, `whenIdle`) and awaits the first discovery; the commands are registered before it. (5) `.vscode-test.mjs` copies three fixtures (`fs110-de-active-review`, `incomplete-agents-only`, `not-fs-speckit`) into a temp dir and opens them as a multi-root `.code-workspace`; the watcher test creates `.specs/` in the temp copy of `incomplete-agents-only`. The scaffold `src/test/extension.test.ts` was removed. (6) Marker watch adapter: `AGENTS.md` create/change/delete, `.specs` create/delete only, non-recursive patterns.
 
 ### T-008 — Docs sync and final gates
 
@@ -279,27 +279,27 @@ T-005…T-007 define, and T-008 documents the result.
 | AC-006 | T-001 | src/core/discovery/classifyFolder.ts:classifyFolder | classifyFolder.test.ts (AC-006 incl. control) | verified |
 | AC-007 | T-003, T-005 | src/core/discovery/activeProject.ts, discoveryController.ts:start | activeProject.test.ts, discoveryController.test.ts (AC-007) | verified |
 | AC-008 | T-003, T-004, T-006 | src/core/discovery/activeProject.ts, report.ts:buildSelectItems, discoveryController.ts:selectProject | activeProject.test.ts, report.test.ts, discoveryController.test.ts (AC-008) | verified |
-| AC-009 | T-003, T-006 | src/core/discovery/activeProject.ts, discoveryController.ts:selectProject | discoveryController.test.ts (AC-009: new controller on same state); manual: Gregor reloads (planned) | built |
+| AC-009 | T-003, T-006 | src/core/discovery/activeProject.ts, discoveryController.ts, src/adapters/vscode/workspaceState.ts | discoveryController.test.ts (AC-009: new controller on same state); manual: Gregor reloads (planned) | built |
 | AC-010 | T-003, T-006 | src/core/discovery/activeProject.ts, discoveryController.ts:refresh | discoveryController.test.ts (AC-010, incl. control) | verified |
 | AC-011 | T-002, T-006 | src/core/ports/readOnlyFileSystem.ts (no write members), discoveryController.ts | discoverWorkspace.test.ts, discoveryController.test.ts (AC-011 tree snapshot) | verified |
 | AC-012 | T-002, T-007 | src/core/discovery/discoverWorkspace.ts, report.ts, discoveryController.ts | discoverWorkspace.test.ts, report.test.ts, liveDetection.test.ts (AC-012) | verified |
-| AC-013 | T-007 | src/core/discovery/rerunScheduler.ts, discoveryController.ts:syncWatches | rerunScheduler.test.ts, liveDetection.test.ts (AC-013); real watcher wiring open (T-009 smoke) | built |
+| AC-013 | T-007 | src/core/discovery/rerunScheduler.ts, discoveryController.ts:syncWatches, src/adapters/vscode/markerWatch.ts | rerunScheduler.test.ts, liveDetection.test.ts (AC-013); src/test/discovery.smoke.test.ts (real watcher, pre-done gate, not run here) | built |
 | AC-014 | T-003, T-005 | src/core/discovery/activeProject.ts (statusBar), discoveryController.ts | activeProject.test.ts, discoveryController.test.ts (AC-014) | verified |
 | AC-015 | T-004, T-006 | src/core/discovery/report.ts:buildNoProjectNotification, discoveryController.ts:selectProject | report.test.ts, discoveryController.test.ts (AC-015) | verified |
 | AC-016 | T-004, T-005 | src/core/discovery/report.ts:formatOutputBlock, discoveryController.ts | report.test.ts, discoveryController.test.ts (AC-016) | verified |
 | AC-017 | T-002, T-004 | src/core/discovery/discoverWorkspace.ts:discoverFolder, report.ts:formatOutputBlock | discoverWorkspace.test.ts, report.test.ts (AC-017) | verified |
 | AC-018 | T-002 | src/core/discovery/discoverWorkspace.ts:discoverWorkspace | discoverWorkspace.test.ts (AC-018, 5 fixtures < 2 s) | verified |
-| AC-019 | T-005, T-009 | src/core/discovery/discoveryController.ts:start | discoveryController.test.ts (AC-019 core); host wiring open (T-009) | built |
+| AC-019 | T-005, T-009 | src/core/discovery/discoveryController.ts:start, package.json (activationEvents), src/extension.ts:activate | discoveryController.test.ts, src/adapters/vscode/manifest.test.ts (AC-019); src/test/discovery.smoke.test.ts (pre-done gate, not run here) | built |
 | AC-020 | T-003, T-005 | src/core/discovery/activeProject.ts, discoveryController.ts | activeProject.test.ts, discoveryController.test.ts (AC-020) | verified |
 | AC-021 | T-002 | src/core/discovery/versionLine.ts:readVersionLine | versionLine.test.ts, discoverWorkspace.test.ts (AC-021) | verified |
-| AC-022 | T-009 | — | manual: Gregor in Restricted Mode (planned) | open |
+| AC-022 | T-009 | package.json (capabilities.untrustedWorkspaces, no trust guard in src/extension.ts) | src/adapters/vscode/manifest.test.ts (AC-022); manual: Gregor in Restricted Mode (planned) | built |
 
 Pre-done (before `/sdd-lifecycle` → done): `npm test` smoke suite green on CI or Gregor's Windows machine, plus the two manual checks above.
 
 ## Session handoff
 
-- **Done so far:** T-001…T-007 (stages 1–3: the whole framework-free core, controller against fake host ports; 96 unit tests green).
-- **Next action:** T-009 (stage 4: VS Code adapters, manifest, composition root, smoke suite), then T-008.
+- **Done so far:** T-001…T-007 and T-009 (stages 1–4: core, adapters, manifest, composition root, smoke suite written; 106 unit tests green; `npm test` not runnable here).
+- **Next action:** T-008 (stage 5: CI workflow, README, Memory Bank, architecture snapshot, final gates).
 - **Open decisions:** OP-004, OP-006…OP-012 (spec §17), none blocking.
 - **Baseline:** `2083696` (HEAD before the first step commit; lifecycle move 2026-11-16).
 - **Environment:** `npm test` cannot run here (VS Code download blocked); it runs on CI and on Gregor's Windows machine.

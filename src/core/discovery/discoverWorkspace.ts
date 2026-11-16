@@ -6,6 +6,7 @@ import { readVersionLine } from './versionLine';
 export interface DiscoveredFolder {
     root: string;
     name: string;
+    displayPath?: string;
     verdict: FolderVerdict;
     legacy: boolean;
     version: string;
@@ -43,6 +44,7 @@ async function discoverFolder(fileSystem: ReadOnlyFileSystem, folder: WorkspaceF
         return {
             root: folder.root,
             name: folder.name,
+            ...(folder.displayPath === undefined ? {} : { displayPath: folder.displayPath }),
             verdict: classification.verdict,
             legacy: classification.legacy,
             version: reading.version,
@@ -55,6 +57,7 @@ async function discoverFolder(fileSystem: ReadOnlyFileSystem, folder: WorkspaceF
         return {
             root: folder.root,
             name: folder.name,
+            ...(folder.displayPath === undefined ? {} : { displayPath: folder.displayPath }),
             verdict: 'not-a-project',
             legacy: false,
             version: 'unknown',

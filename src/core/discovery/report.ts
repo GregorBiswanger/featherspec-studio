@@ -17,7 +17,7 @@ export function formatOutputBlock(result: DiscoveryResult, label: string): strin
         return lines;
     }
     for (const folder of result.folders) {
-        lines.push(folder.root);
+        lines.push(folder.displayPath ?? folder.root);
         lines.push(`  verdict: ${verdictText(folder)}`);
         lines.push(`  version: ${folder.version}`);
         for (const marker of folder.missingMarkers) {
@@ -36,7 +36,7 @@ export function formatOutputBlock(result: DiscoveryResult, label: string): strin
 export function buildSelectItems(result: DiscoveryResult): SelectItem[] {
     return result.folders
         .filter((folder) => folder.verdict === 'project')
-        .map((folder) => ({ label: folder.name, description: folder.version, detail: folder.root, root: folder.root }));
+        .map((folder) => ({ label: folder.name, description: folder.version, detail: folder.displayPath ?? folder.root, root: folder.root }));
 }
 
 export function buildNoProjectNotification(folderCount: number): NotificationModel {

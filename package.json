@@ -9,13 +9,30 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "extensionKind": [
+    "workspace"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "FeatherSpec Studio only reads files in Restricted Mode: it detects FeatherSpec projects and shows their status, and it never runs workspace code or changes a file."
+    },
+    "virtualWorkspaces": false
+  },
+  "activationEvents": [
+    "workspaceContains:AGENTS.md",
+    "workspaceContains:.specs"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "featherspec-studio.helloWorld",
-        "title": "Hello World"
+        "command": "featherspec-studio.selectProject",
+        "title": "FeatherSpec Studio: Select Project"
+      },
+      {
+        "command": "featherspec-studio.refreshDiscovery",
+        "title": "FeatherSpec Studio: Refresh Project Discovery"
       }
     ]
   },

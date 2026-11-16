@@ -66,6 +66,12 @@ describe('formatOutputBlock', () => {
         expect(text).not.toContain('open the project folder itself');
     });
 
+    it('AC-016: shows the display path instead of the root identity when the host supplies one', () => {
+        const lines = formatOutputBlock({ folders: [entry('app', { root: 'file:///c%3A/app', displayPath: 'c:\\app' })] }, 'run 1');
+        expect(lines).toContain('c:\\app');
+        expect(lines).not.toContain('file:///c%3A/app');
+    });
+
     it('AC-016: one entry per folder with the run label as header', () => {
         const lines = formatOutputBlock({ folders: [entry('a'), entry('b')] }, 'run 7');
         expect(lines[0]).toContain('run 7');
@@ -91,6 +97,11 @@ describe('buildSelectItems', () => {
             folders: [entry('a'), entry('half', { verdict: 'incomplete' }), entry('plain', { verdict: 'not-a-project' })],
         });
         expect(items.map((item) => item.label)).toEqual(['a']);
+    });
+
+    it('AC-008: the select list shows the display path as detail and keeps the root identity', () => {
+        const items = buildSelectItems({ folders: [entry('app', { root: 'file:///c%3A/app', displayPath: 'c:\\app' })] });
+        expect(items[0]).toMatchObject({ detail: 'c:\\app', root: 'file:///c%3A/app' });
     });
 
     it('AC-012: a legacy project is listed once with version unknown', () => {

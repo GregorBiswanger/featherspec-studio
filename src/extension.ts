@@ -1,26 +1,45 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { createSystemClock } from './adapters/node/systemClock';
+import { createMarkerWatch } from './adapters/vscode/markerWatch';
+import { createOutputChannel } from './adapters/vscode/outputChannel';
+import { sameRootFor } from './adapters/vscode/sameRoot';
+import { createStatusBar } from './adapters/vscode/statusBar';
+import { createUi } from './adapters/vscode/ui';
+import { createVscodeFileSystem } from './adapters/vscode/vscodeFileSystem';
+import { createWorkspaceFolders } from './adapters/vscode/workspaceFolders';
+import { createWorkspaceState } from './adapters/vscode/workspaceState';
+import { createDiscoveryController, type DiscoverySnapshot } from './core/discovery/discoveryController';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "featherspec-studio" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('featherspec-studio.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from FeatherSpec Studio!');
-	});
-
-	context.subscriptions.push(disposable);
+export interface StudioApi {
+    snapshot(): DiscoverySnapshot;
+    whenIdle(): Promise<void>;
 }
 
-// This method is called when your extension is deactivated
-export function deactivate() {}
+export async function activate(context: vscode.ExtensionContext): Promise<StudioApi> {
+    const statusBar = createStatusBar();
+    const output = createOutputChannel();
+    const controller = createDiscoveryController({
+        fileSystem: createVscodeFileSystem(),
+        statusBar,
+        output,
+        state: createWorkspaceState(context.workspaceState),
+        folders: createWorkspaceFolders(),
+        clock: createSystemClock(),
+        ui: createUi(),
+        watch: createMarkerWatch(),
+        sameRoot: sameRootFor(process.platform),
+    });
+
+    context.subscriptions.push(
+        statusBar,
+        output,
+        { dispose: () => controller.dispose() },
+        vscode.commands.registerCommand('featherspec-studio.selectProject', () => controller.selectProject()),
+        vscode.commands.registerCommand('featherspec-studio.refreshDiscovery', () => controller.refresh()),
+    );
+
+    await controller.start();
+    return { snapshot: () => controller.snapshot(), whenIdle: () => controller.whenIdle() };
+}
+
+export function deactivate(): void {}
