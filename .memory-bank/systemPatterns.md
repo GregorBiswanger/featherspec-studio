@@ -89,6 +89,9 @@ holds the *why*: decisions and patterns.
 - The run-change source for every area is `RuntimeStore.onDidChangeRuns` (0004 AC-030); the dashboard wraps it in `runSource.ts` (follows the current store, falls back to the session reason), the board follows it inline · 2026-11-16 · plan 0006 T-001, Gregor
 - Dashboard drill-downs reuse the board filter of 0007: a state count sends `{states:[state]}`, "Needs attention" and "Diagnostics" send a named set of stems; the diagnostics count does not open the Output channel · 2026-11-16 · spec 0006 BR-08, Gregor (OP-4)
 - Area texts sit in one file per area (`src/webview/areas/missionControl/texts.ts`); the area shows no loading text of its own before its first view (the shell owns S4) · 2026-11-16 · plan 0006 T-005
+- Studio colours: the stylesheet uses only `--vscode-*` variables; own `--fs-*` custom properties are allowed as aliases whose every definition is a `var(--vscode-*)` chain (no literal, no spacing tokens); one state-colour mapping via `[data-board-state]` → `--fs-tint`, tint on icon, edge and bar only, text stays foreground · 2026-11-16 · plan 0013 T-001, Gregor
+- Inline Markdown of spec files is tokenised by a pure formatter (`src/webview/ui/inlineFormat.ts`) into tokens rendered as React elements; no HTML is ever parsed or injected (`innerHTML` banned under `src/webview`, guarded by a test) · 2026-11-16 · plan 0013 T-007
+- Drag feedback marks only the dragged card and the column under the pointer, no valid/invalid verdict before the drop; refusals show after the drop · 2026-11-16 · spec 0013 OP-1 (a), Gregor
 - Limitation: a second window (a reader that did not open the run) sees new runs only at its next refresh, since the run-change notification is in process only · 2026-11-16 · spec 0007 §10, Gregor
 
 ## Patterns

@@ -111,13 +111,13 @@ architecture:
     - 'src/core/shell — Studio shell: panel states and precedence, selection, remembered area, navigation request, spec rows, tree model, message router, shell service (spec 0005)'
     - 'src/core/board — Spec Board and spec detail view models: cards, progress, latest run, filters and sorting, board UI state, move requests, open-file guard, detail sections, board service (spec 0007)'
     - 'src/core/missionControl — Mission Control projection: header, spec figures, progress, run source, run figures, attention list, recent activity, dashboard service (spec 0006)'
-    - 'src/webview — Studio panel UI: protocol client, navigation, panel states, area registry with placeholders, Spec Explorer list, Spec Board, spec detail, Mission Control area (specs 0005, 0007, 0006)'
+    - 'src/webview — Studio panel UI: protocol client, navigation, panel states, area registry with placeholders, Spec Explorer list, Spec Board, spec detail, Mission Control area; shared UI primitives in src/webview/ui (state chip, rule text, progress bar, inline text formatter) (specs 0005, 0007, 0006, 0013)'
     - 'src/adapters/node — Node file-system and spec-source adapters, Node-fs runtime medium, random IDs'
     - 'src/adapters/vscode — thin implementations of the host ports with the VS Code API; no logic'
     - 'test/fixtures — FeatherSpec fixture projects shared by unit and host tests'
     - 'media — packaged static assets (Activity Bar icon)'
   shared:
-    - 'src/shared/protocol — versioned message protocol, areas, board view and filter contract, Mission Control view, UI texts; imported by extension and webview, imports nothing (specs 0005, 0007, 0006)'
+    - 'src/shared/protocol — versioned message protocol, areas, board view and filter contract, Mission Control view, UI texts; imported by extension and webview, imports nothing (specs 0005, 0007, 0006, 0013)'
   boundaries:
     - 'Domain and application code never import vscode or provider SDKs; they reach the outside only through ports'
     - 'Webview and extension host communicate only through typed messages; the webview has no file-system or Node.js access'

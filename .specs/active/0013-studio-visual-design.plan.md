@@ -3,7 +3,7 @@
 **Spec:** [0013-studio-visual-design.md](0013-studio-visual-design.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-010
+**Current step:** T-010 (awaiting Gregor's AC-017 verdict)
 
 ## Approach
 
@@ -231,8 +231,8 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
   full AC-017 shot list to Gregor; record his verdict below.
 - **Verify:** quality gates; manual: AC-017 — Gregor's verdict on the full screenshot set (no command can
   judge looks).
-- [ ] **Verified (T-010):** —
-- **Notes:** —
+- [ ] **Verified (T-010):** — (gates done 2026-11-16: eslint `--max-warnings 0`, `tsc --noEmit` both, `npm run test:unit` 93 files / 1340 tests, `npm run compile` green; `git diff e78fa54 -- package.json package-lock.json` empty. Open: Gregor's AC-017 verdict on the shot set below — no command can judge looks.)
+- **Notes:** docs synced (README §Mission Control and §Spec Board, `AGENTS.md` snapshot: exactly the two entries of `Do:`, `systemPatterns.md` three records, `techContext.md` 0013 test line and manual checks). Shot set for AC-017 in `/mnt/user-data/outputs/screens/` (33 files): `01-mission-control-*`, `02-spec-board-*`, `02-spec-board-drag-{dark,light}`, `03-spec-explorer-list-*`, `04-spec-explorer-detail-0002-*`, `04b-*-criteria-collapsed-*`, `05-agent-center-*`, `06-panel-state-no-folder-*`, `07-panel-state-not-a-project-*` (each dark, light, hc at 1400×900), `08-narrow-{mission-control,spec-board,detail-0002}-{dark,light}` (900 px), `09-tall-detail-0002-dark`. Known weak points for the verdict: at 1400 px the sixth board column sits partly behind the horizontal scroll (AC-008's 240 px vs A-004); the Plan line shows `[x](x)` as the same file name twice (AC-015 literal); cards are tall (about 230 px) at 240 px width.
 
 ## Traceability
 
@@ -253,15 +253,14 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
 | AC-013 | T-008 | `DetailSection.tsx:OpenButton`, `SpecDetail.tsx` (related links) | `SpecDetail.test.tsx` (AC-010 Open file block, 0013 AC-013) | verified |
 | AC-014 | T-007 | `src/webview/ui/inlineFormat.ts:tokenize`, `InlineText.tsx` | `inlineFormat.test.ts`, `InlineText.test.tsx`, `webviewCss.test.ts` (innerHTML scan), `webviewBundle.test.ts` (studio-0002) | verified |
 | AC-015 | T-007 | `inlineFormat.ts:tidy`, `splitCells`, `SpecDetail.tsx`, `test/fixtures/studio-0002/` | `inlineFormat.test.ts`, `webviewBundle.test.ts` (studio-0002) | verified |
-| AC-016 | T-002, T-004, T-008, T-010 | delta-4 assertions (T-002 Verified) | `npm run test:unit` | built |
+| AC-016 | T-002, T-004, T-008, T-010 | updated assertions named in T-002, T-004 (incl. the layout-order deviation), T-008 Verified/Notes | `npm run test:unit` (93 files, 1340 tests) | verified |
 | AC-017 | T-010 | — | manual: Gregor, screenshots | open |
 | AC-018 | T-010 (listed) | — | manual: Gregor, real VS Code | open |
 
 ## Session handoff
 
-- **Done so far:** plan approved by Gregor 2026-11-16 (whole plan; `--fs-*` aliases accepted under AC-001 if every alias resolves only to `--vscode-*`); pair moved to `active/`. Stages 1–4 done (T-001…T-008).
-- **Next action:** T-009 (empty, placeholder and panel states; motion).
-- **Open decisions:** AC-001's `--fs-*` alias interpretation (see *Research*); harness extension for
-  900 px, collapsed detail and HC of every area (outside the repo) before T-010.
+- **Done so far:** plan approved by Gregor 2026-11-16 (whole plan; `--fs-*` aliases accepted under AC-001 if every alias resolves only to `--vscode-*`); pair moved to `active/`. T-001…T-009 ticked; T-010 gates and docs done, its tick waits for Gregor's AC-017 verdict.
+- **Next action:** Gregor looks at the shot set (T-010 Notes) and gives the AC-017 verdict; record it in T-010 `Verified:`, tick, set `Status: Done`; then `/sdd-compile` in a fresh session. AC-018 (real VS Code, live theme switch) is the pre-done manual check.
+- **Open decisions:** for Gregor: the 0006 layout-order assertion changed per §3.2 (T-004 Notes); the 1400 px board overflow (T-005 Notes); the duplicated Plan link target (T-007 Notes). The harness now covers 900 px, collapsed detail, drag and HC of every area (outside the repo).
 - **Baseline:** e78fa54
 - **Environment:** `npm test` cannot run here (VS Code download blocked); CI runs it.
