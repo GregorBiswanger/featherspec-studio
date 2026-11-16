@@ -1,27 +1,32 @@
 import type { McActivity, ActivityEntry } from '../../../shared/protocol/missionControl';
+import { Glyph } from '../../board/icons';
 import { Drill } from './Drill';
 import { formatTime } from './format';
-import { MC_ACTIVITY_HEADING, MC_NO_ACTIVITY, mcActivityUnavailable, mcChange, mcSpecLabel } from './texts';
+import { SpecLabel } from './SpecLabel';
+import { MC_ACTIVITY_HEADING, MC_NO_ACTIVITY, mcActivityUnavailable, mcChange } from './texts';
 
 export function Activity(props: { activity: McActivity; onActivate: (entry: ActivityEntry) => void }) {
     const { activity, onActivate } = props;
     return (
-        <section data-activity className="mc-activity">
+        <section data-activity className="mc-activity mc-panel">
             <h2>{MC_ACTIVITY_HEADING}</h2>
             {!activity.available ? (
-                <p>{mcActivityUnavailable(activity.reason)}</p>
+                <p className="mc-note">{mcActivityUnavailable(activity.reason)}</p>
             ) : activity.entries.length === 0 ? (
-                <p>{MC_NO_ACTIVITY}</p>
+                <p className="mc-empty">
+                    <Glyph kind="empty" />
+                    {MC_NO_ACTIVITY}
+                </p>
             ) : (
                 <ul className="mc-list">
                     {activity.entries.map((entry, index) => (
                         <li key={`${entry.at}|${index}`} data-activity-entry>
-                            <Drill id={`activity:${index}`} onActivate={() => onActivate(entry)}>
+                            <Drill id={`activity:${index}`} className="mc-row" onActivate={() => onActivate(entry)}>
                                 <span className="mc-time">{formatTime(entry.at)}</span>
-                                {' · '}
-                                <span>{mcSpecLabel(entry.spec)}</span>
-                                {' · '}
-                                <span>{mcChange(entry.change)}</span>
+                                <span className="mc-sep">{' · '}</span>
+                                <SpecLabel spec={entry.spec} />
+                                <span className="mc-sep">{' · '}</span>
+                                <span className="mc-change">{mcChange(entry.change)}</span>
                             </Drill>
                         </li>
                     ))}

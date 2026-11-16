@@ -13,7 +13,7 @@ export function Header(props: { header: McHeader; navigate: (request: Navigation
             <span className="mc-version">{mcVersion(header.version)}</span>
             <span className="mc-updated">{mcUpdated(formatTime(header.updatedAt))}</span>
             <Drill id="diagnostics" onActivate={() => navigate(diagnosticsRequest(header))}>
-                {mcDiagnostics(header.projectDiagnostics)}
+                {mcDiagnostics(header.projectDiagnostics, header.diagnosticStems.length)}
             </Drill>
         </section>
     );

@@ -670,32 +670,180 @@ main > h1 {
     }
 }
 
+.mc-header {
+    gap: 0;
+    padding-bottom: 10px;
+}
+
+.mc-header > * + *::before {
+    content: "·";
+    margin: 0 8px;
+    color: var(--fs-muted);
+}
+
+.mc-header > .mc-drill::before {
+    display: inline-block;
+}
+
+.mc-panels {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    align-items: stretch;
+}
+
+.mc-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    padding: 10px 12px;
+    background: var(--fs-lane);
+    border: 1px solid var(--fs-border);
+    border-radius: 4px;
+}
+
+.mc-panel p {
+    margin: 0;
+}
+
+.mission-control h2 .mc-drill {
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+}
+
 .mc-list {
-    margin: 4px 0;
-    padding-left: 0;
+    margin: 0 -12px;
+    padding: 0;
     list-style: none;
 }
 
-.mc-list li {
-    padding: 2px 0;
+.mc-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    padding: 5px 12px;
+    color: var(--vscode-foreground);
+    background: transparent;
+    border: none;
+    border-top: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
 }
 
-.mc-time {
+.mc-row:hover {
+    background: var(--vscode-list-hoverBackground);
+}
+
+.mc-spec {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    min-width: 0;
+}
+
+.mc-number {
+    flex: none;
+    color: var(--fs-muted);
     font-family: var(--vscode-editor-font-family);
+    font-size: 0.92em;
+}
+
+.mc-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mc-sep {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.mc-reasons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px 12px;
+    margin-left: auto;
+}
+
+.mc-reason,
+.mc-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--vscode-foreground);
+    white-space: nowrap;
+}
+
+.mc-reason .icon,
+.mc-status .icon,
+.mc-empty .icon {
+    width: 12px;
+    height: 12px;
 }
 
 .mc-status {
-    padding: 0 6px;
-    border: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
+    margin-left: auto;
 }
 
+[data-reason-kind="Blocked"],
+[data-reason-kind="Run failed"],
 .mc-status-failed {
-    color: var(--vscode-errorForeground);
+    --fs-tint: var(--vscode-charts-red);
 }
 
-.mc-status-interrupted,
-.mc-reason {
-    color: var(--vscode-editorWarning-foreground, var(--vscode-foreground));
+[data-reason-kind="Run interrupted"],
+[data-reason-kind="Diagnostic"],
+.mc-status-interrupted {
+    --fs-tint: var(--vscode-charts-orange);
+}
+
+[data-reason-kind="Waiting for you"] {
+    --fs-tint: var(--vscode-charts-blue);
+}
+
+[data-reason-kind="Review pending"] {
+    --fs-tint: var(--vscode-charts-yellow);
+}
+
+.mc-reason .icon,
+.mc-status .icon {
+    color: var(--fs-tint);
+}
+
+.mc-time {
+    flex: none;
+    color: var(--fs-muted);
+    font-family: var(--vscode-editor-font-family);
+    font-size: 0.92em;
+}
+
+.mc-change {
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+.mc-empty {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--fs-muted);
+}
+
+.mc-note {
+    color: var(--fs-muted);
 }
 
 .mc-drill {
@@ -713,9 +861,10 @@ main > h1 {
     text-decoration: underline;
 }
 
-.mc-attention h2,
-.mc-attention h2 .mc-drill {
-    font-size: inherit;
+@media (max-width: 720px) {
+    .mc-panels {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
 .rule-id {

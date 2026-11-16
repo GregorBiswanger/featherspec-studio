@@ -43,9 +43,11 @@ export function MissionControl() {
             )}
             <Header header={view.header} navigate={navigate} />
             {view.specs.kind === 'empty' ? <p data-zero-specs>{MC_ZERO_SPECS}</p> : <SpecFigures specs={view.specs} navigate={navigate} />}
-            <RunSection runs={view.runs} navigate={navigate} />
             {view.specs.kind === 'empty' ? null : <Attention attention={view.attention} navigate={navigate} />}
-            <Activity activity={view.activity} onActivate={openActivity} />
+            <div className="mc-panels">
+                <RunSection runs={view.runs} navigate={navigate} />
+                <Activity activity={view.activity} onActivate={openActivity} />
+            </div>
         </div>
     );
 }

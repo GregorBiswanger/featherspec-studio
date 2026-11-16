@@ -29,8 +29,10 @@ export function mcUpdated(time: string): string {
     return `Model updated ${time}`;
 }
 
-export function mcDiagnostics(count: number): string {
-    return count === 1 ? '1 project diagnostic' : `${count} project diagnostics`;
+export function mcDiagnostics(project: number, specs: number): string {
+    const projectPart = project === 1 ? '1 project-level diagnostic' : `${project} project-level diagnostics`;
+    const specPart = specs === 1 ? '1 spec with diagnostics' : `${specs} specs with diagnostics`;
+    return `${projectPart} · ${specPart}`;
 }
 
 export function mcTotal(count: number): string {

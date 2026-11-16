@@ -216,3 +216,41 @@ describe('AC-024: the whole content of a 200-spec project', () => {
         expect(performance.now() - started).toBeLessThan(1000);
     });
 });
+
+describe('0013 AC-007: attention rows and empty panels', () => {
+    it('AC-007: each attention row shows a number chip, the title and every reason as text with an icon', async () => {
+        const view = sampleView();
+        view.attention = {
+            rows: [{ spec: { stem: '0002-y', number: '0002', title: 'Beta', found: true }, reasons: ['Review pending', 'Diagnostic'] }],
+            runReasons: { available: true },
+        };
+        const row = section(await open(view), 'attention').querySelector('[data-attention-row]')!;
+        expect(row.querySelector('.mc-number')?.textContent).toBe('0002');
+        expect(row.querySelector('.mc-title')?.textContent).toBe('Beta');
+        const reasons = [...row.querySelectorAll('[data-reason]')];
+        expect(reasons.map((reason) => reason.textContent)).toEqual(['Review pending', 'Diagnostic']);
+        for (const reason of reasons) {
+            expect(reason.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+        }
+    });
+
+    it('AC-007: the empty Agent runs and Recent activity panels each show an icon and 0006\'s sentence', async () => {
+        const view = sampleView();
+        view.runs = { available: true, running: 0, highlighted: [], unreadable: 0 };
+        view.activity = { available: true, entries: [] };
+        const container = await open(view);
+        for (const [name, sentence] of [['runs', 'No failed or interrupted runs.'], ['activity', 'No recent activity.']] as const) {
+            const empty = section(container, name).querySelector('.mc-empty');
+            expect(empty?.textContent).toBe(sentence);
+            expect(empty?.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+        }
+    });
+
+    it('§3.2: Agent runs and Recent activity sit side by side in one panel row below the attention list', async () => {
+        const container = await open(sampleView());
+        const panels = container.querySelector('.mc-panels');
+        expect([...(panels?.children ?? [])].map((child) => child.hasAttribute('data-runs') ? 'runs' : child.hasAttribute('data-activity') ? 'activity' : 'other')).toEqual(['runs', 'activity']);
+        const attention = section(container, 'attention');
+        expect(attention.compareDocumentPosition(panels!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+});

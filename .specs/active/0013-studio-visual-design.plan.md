@@ -3,7 +3,7 @@
 **Spec:** [0013-studio-visual-design.md](0013-studio-visual-design.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-004
+**Current step:** T-005
 
 ## Approach
 
@@ -142,8 +142,8 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
   grid under the attention list, stacked by `@media (max-width: 720px)`; empty states with icon + 0006's
   sentence. Update `MissionControl.test.tsx` l.61–79 (named in *Research*).
 - **Verify:** quality gates; manual: `01-mission-control-{dark,light}` and HC — header and cards agree.
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-16 — red: 6 tests (the two updated header assertions, the new AC-006 one, three AC-007/§3.2 tests in `Sections.test.tsx`), then the layout-order test in `Drilldown.test.tsx` once attention moved above runs; green: eslint, both `tsc`, `npm run test:unit` 89 files / 1296 tests, `npm run compile`. Looked at `01-mission-control-{dark,light,hc}` and `08-narrow-mission-control-dark`: header one line with `·` separators, "0 project-level diagnostics · 8 specs with diagnostics" agrees with the cards; attention rows with number, title, tinted icon + reason right-aligned; runs and activity side by side, equal height; fixed reason/title vertical misalignment.
+- **Notes:** **deviation, for Gregor:** the 0006 layout-order assertion in `webview/areas/missionControl/Drilldown.test.tsx` ("in the order of the layout", AC-022) was not named in *Research*; §3.2 moves Agent runs below Needs attention ("This order replaces 0006 §9's layout guidance"), so only the position of `running`/`run:*` in the expected list moved; DOM order still equals visual order. Separators ` — `, `, `, ` · ` stay in the DOM (0006 texts) but are visually hidden (`.mc-sep`). New `SpecLabel.tsx`; `icons.tsx` gained `Glyph` (failed, interrupted, waiting, empty).
 
 ### T-005 — Spec Board: full-height columns, sticky headers, drag marks
 
@@ -241,10 +241,10 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
 | AC-001 | T-001, T-010 | `src/webview/main.css` (`--fs-*`, `[data-board-state]`), `src/webview/testing/css.ts:declarations` | `src/adapters/node/webviewCss.test.ts` (0013 AC-001 block) | verified |
 | AC-002 | T-009 | — | — | open |
 | AC-003 | T-001, T-003, T-004, T-006, T-008, T-009 | — | — | open |
-| AC-004 | T-003 | — | — | open |
-| AC-005 | T-003 | — | — | open |
-| AC-006 | T-004 | — | — | open |
-| AC-007 | T-004 | — | — | open |
+| AC-004 | T-003 | `src/webview/areas/missionControl/SpecFigures.tsx`, `Drill.tsx` | `MissionControl.test.tsx` (0013 AC-004 tests) | verified |
+| AC-005 | T-003 | `SpecFigures.tsx` (`.mc-distribution`, `[data-progress]`), `missionControl/texts.ts:mcSegment` | `MissionControl.test.tsx` (0013 AC-005 tests) | verified |
+| AC-006 | T-004 | `missionControl/texts.ts:mcDiagnostics`, `Header.tsx` | `MissionControl.test.tsx` (0013 AC-006) | verified |
+| AC-007 | T-004 | `Attention.tsx`, `RunSection.tsx`, `Activity.tsx`, `SpecLabel.tsx`, `board/icons.tsx:Glyph` | `Sections.test.tsx` (0013 AC-007) | verified |
 | AC-008 | T-005 | — | — | open |
 | AC-009 | T-006 | — | — | open |
 | AC-010 | T-002, T-006, T-008 | `src/webview/ui/RuleText.tsx`, `src/shared/protocol/texts.ts:DERIVED_SENTENCES`, `src/core/board/cards.ts`, `src/core/shell/specRows.ts` | `src/webview/ui/RuleText.test.tsx`, `src/webview/areas/areas.test.tsx` (AC-007 row) | built |
@@ -259,8 +259,8 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
 
 ## Session handoff
 
-- **Done so far:** plan approved by Gregor 2026-11-16 (whole plan; `--fs-*` aliases accepted under AC-001 if every alias resolves only to `--vscode-*`); pair moved to `active/`. Stage 1 done (T-001, T-002).
-- **Next action:** T-003 (Mission Control tiles, bar, progress).
+- **Done so far:** plan approved by Gregor 2026-11-16 (whole plan; `--fs-*` aliases accepted under AC-001 if every alias resolves only to `--vscode-*`); pair moved to `active/`. Stages 1–2 done (T-001…T-004).
+- **Next action:** T-005 (board full-height columns, sticky headers, drag marks).
 - **Open decisions:** AC-001's `--fs-*` alias interpretation (see *Research*); harness extension for
   900 px, collapsed detail and HC of every area (outside the repo) before T-010.
 - **Baseline:** e78fa54
