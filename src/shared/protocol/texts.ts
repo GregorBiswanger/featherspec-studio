@@ -91,3 +91,17 @@ export function panelStateActions(state: PanelState): ActionId[] {
             return ['openSetupGuide', 'refresh'];
     }
 }
+
+export const PLACEHOLDER_TEXT = 'Not available in this version of FeatherSpec Studio';
+
+export const NO_SPECS_TEXT = 'This project has no specs yet.';
+
+export const TITLE_NOT_AVAILABLE = 'not available';
+
+export const SPEC_LIST_LABEL = 'Specs';
+
+export const DISMISS_LABEL = 'Dismiss';
+
+export function noticeText(number: string): string {
+    return `Spec ${number} is no longer in the project`;
+}

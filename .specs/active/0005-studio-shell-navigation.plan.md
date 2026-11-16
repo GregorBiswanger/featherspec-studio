@@ -3,7 +3,7 @@
 **Spec:** [0005-studio-shell-navigation.md](0005-studio-shell-navigation.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-002
+**Current step:** T-005
 
 ## Approach
 
@@ -293,8 +293,8 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
     - the notice shows and can be dismissed;
     - rows can be reached by keyboard.
 - **Verify:** `npm run test:unit -- src/webview` plus the per-step gates
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-16 — red: `npx vitest run src/webview` 46 failed, 9 passed (`NoticeBar`, `Placeholder`, `SpecExplorer` stubs threw `Not implemented`); green: 4 files, 55/55 (three placeholders read name, purpose, 'Not available in this version of FeatherSpec Studio' and show no rows, a run target is ignored by a placeholder; rows render number, title or 'not available', state, derived label, path of a duplicated stem; zero specs; a changed snapshot is in the DOM well inside 500 ms; click, Enter, Space select; aria-selected plus marker; selection survives a round trip; notice with Dismiss). Controls: Spec Explorer is no placeholder; the notice is gone when the host reports none. Gates: eslint 0, `tsc --noEmit` 0, `tsc --noEmit -p src/webview` 0, `npm run test:unit` 48 files, 740 passed, `npm run compile` ok.
+- **Notes:** The placeholder reads `Not available in this version of FeatherSpec Studio` (spec revised with OP-005, no spec number shown). The host marks `selected` per row and sends the order; the panel UI does not sort. `registry.tsx` exports `AREA_COMPONENTS` (extension point for 0006, 0007, 0012) and `App.tsx` falls back to `Placeholder`. The notice shows even while a panel state is shown.
 
 ### T-005 — Panel-state derivation, tree model, discovery update notification
 
@@ -480,26 +480,26 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 | AC-001 | T-008 | — | — | open |
 | AC-002 | T-008 | — | — | open |
 | AC-003 | T-005, T-009 | — | — | open |
-| AC-004 | T-002 | — | — | open |
+| AC-004 | T-002 | src/webview/Navigation.tsx, App.tsx, client.ts | src/webview/App.test.tsx (AC-004) | verified |
 | AC-005 | T-007, T-008 | — | — | open |
-| AC-006 | T-004 | — | — | open |
-| AC-007 | T-004, T-007 | — | — | open |
-| AC-008 | T-004, T-007 | — | — | open |
+| AC-006 | T-004 | src/webview/areas/Placeholder.tsx, registry.tsx | src/webview/areas/areas.test.tsx (AC-006, three areas, no rows) | verified |
+| AC-007 | T-004, T-007 | src/webview/areas/SpecExplorer.tsx; rows from T-007 | areas.test.tsx (AC-007, 500 ms) | built |
+| AC-008 | T-004, T-007 | src/webview/areas/SpecExplorer.tsx; host selection T-007 | areas.test.tsx (AC-008 round trip) | built |
 | AC-009 | T-007, T-008 | — | — | open |
-| AC-010 | T-004, T-007 | — | — | open |
+| AC-010 | T-004, T-007 | src/webview/NoticeBar.tsx; host reconciliation T-007 | areas.test.tsx (AC-010 notice) | built |
 | AC-011 | T-005, T-009 | — | — | open |
 | AC-012 | T-005 | — | — | open |
 | AC-013 | T-005, T-009 | — | — | open |
-| AC-014 | T-002, T-006 | — | — | open |
-| AC-015 | T-003, T-006, T-009 | — | — | open |
-| AC-016 | T-001, T-003 | src/core/shell/messageRouter.ts (versionMismatch); webview S6 follows in T-003 | messageRouter.test.ts (AC-016 mismatch and control) | built |
-| AC-017 | T-003, T-006, T-009 | — | — | open |
-| AC-018 | T-003, T-005 | — | — | open |
+| AC-014 | T-002, T-006 | src/webview/client.ts, PanelStateView.tsx (S4); host side in T-006 | src/webview/App.test.tsx (AC-014 loading), PanelStateView.test.tsx (S4) | built |
+| AC-015 | T-003, T-006, T-009 | src/webview/client.ts (protocol cause), PanelStateView.tsx; host causes in T-006 | client.test.ts (AC-015 timeout, invalid snapshot), PanelStateView.test.tsx (S5 texts) | built |
+| AC-016 | T-001, T-003 | src/core/shell/messageRouter.ts, src/webview/client.ts (S6, S5 after reload), PanelStateView.tsx | messageRouter.test.ts, client.test.ts (AC-016), PanelStateView.test.tsx (S6) | verified |
+| AC-017 | T-003, T-006, T-009 | src/webview/RestrictedNote.tsx; host flag in T-006 | PanelStateView.test.tsx (AC-017) | built |
+| AC-018 | T-003, T-005 | src/webview/client.ts (S6 first, state in place of the area); host precedence in T-005 | PanelStateView.test.tsx (AC-018 S6 over host state) | built |
 | AC-019 | T-009 | — | manual: Gregor, Light/Dark/both HC + live switch | open |
 | AC-020 | T-008 | — | — | open |
 | AC-021 | T-001 | src/core/shell/messageRouter.ts:createMessageRouter, src/shared/protocol/messages.ts (guards) | messageRouter.test.ts (AC-021, incl. no-content and next-valid cases), messages.test.ts | verified |
-| AC-022 | T-002, T-003, T-004 | — | — | open |
-| AC-023 | T-002, T-003, T-004 | — | — | open |
+| AC-022 | T-002, T-003, T-004 | src/webview/Navigation.tsx, PanelStateView.tsx, RestrictedNote.tsx, areas/SpecExplorer.tsx, NoticeBar.tsx | App.test.tsx, PanelStateView.test.tsx, areas.test.tsx (keyboard); manual: focus indicator, Gregor | built |
+| AC-023 | T-002, T-003, T-004 | src/webview (aria-current, aria-label, role=status, aria-selected, markers) | App.test.tsx, PanelStateView.test.tsx, areas.test.tsx (AC-023); manual: High Contrast, Gregor | built |
 | AC-024 | T-008 | — | — | open |
 | AC-025 | T-009 | — | — | open |
 | AC-026 | T-005 | — | — | open |
@@ -509,8 +509,8 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 
 ## Session handoff
 
-- **Done so far:** spec 0005 active; answers applied to the spec; 0001 T-013 (AC-024) done; T-001 done (protocol contract, router). Stage 1 ends here.
-- **Next action:** T-002 (webview toolchain; the five devDependencies are approved by Gregor, 2026-11-16).
+- **Done so far:** spec 0005 active; answers applied; 0001 T-013 done; T-001 (protocol, router), T-002 (webview toolchain, frame, bundle-in-jsdom test), T-003 (panel states), T-004 (areas, Spec Explorer list, notice). Stage 2 ends here; the webview is complete against fakes.
+- **Next action:** T-005 (panel-state derivation and tree model in `src/core/shell`; the discovery update notification exists from 0001 T-013).
 - **Open decisions:** OP-010…OP-013 (spec §17), none blocking.
 - **Baseline:** `2cf3cc8` (HEAD before the lifecycle move and the first commit of this work).
 - **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); CI runs it.

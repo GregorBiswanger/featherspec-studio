@@ -58,3 +58,87 @@ button:focus-visible,
 main {
     padding: 8px 16px;
 }
+
+.panel-state,
+.restricted-note,
+.notice,
+.placeholder {
+    margin: 8px 0;
+    padding: 8px 12px;
+    border: 1px solid var(--vscode-panel-border);
+}
+
+.restricted-note {
+    background: var(--vscode-inputValidation-warningBackground);
+    border-color: var(--vscode-inputValidation-warningBorder);
+}
+
+.notice {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: var(--vscode-inputValidation-infoBackground);
+    border-color: var(--vscode-inputValidation-infoBorder);
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.panel-state button,
+.restricted-note button,
+.notice button {
+    padding: 4px 12px;
+    color: var(--vscode-button-foreground);
+    background: var(--vscode-button-background);
+    border: 1px solid var(--vscode-button-border, transparent);
+    cursor: pointer;
+    font: inherit;
+}
+
+.placeholder-note {
+    color: var(--vscode-descriptionForeground);
+    font-style: italic;
+}
+
+.spec-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.spec-row {
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--vscode-panel-border);
+    cursor: pointer;
+}
+
+.spec-row:hover {
+    background: var(--vscode-list-hoverBackground);
+}
+
+.spec-row.selected {
+    font-weight: bold;
+    background: var(--vscode-list-activeSelectionBackground);
+    color: var(--vscode-list-activeSelectionForeground);
+}
+
+.spec-row [data-marker] {
+    margin-right: 4px;
+}
+
+.spec-number {
+    font-family: var(--vscode-editor-font-family);
+}
+
+.spec-state {
+    border: 1px solid var(--vscode-panel-border);
+    padding: 0 6px;
+}
+
+.spec-derived,
+.spec-path {
+    color: var(--vscode-descriptionForeground);
+}

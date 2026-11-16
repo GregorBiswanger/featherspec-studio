@@ -1,0 +1,183 @@
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import type { Envelope } from '../../shared/protocol/envelope';
+import type { ShellView, SpecRow } from '../../shared/protocol/messages';
+import { App } from '../App';
+import { createClient, type ShellClient } from '../client';
+import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
+
+let posted: Envelope[];
+let mounted: Mounted | undefined;
+const clients: ShellClient[] = [];
+
+function row(number: string, overrides: Partial<SpecRow> = {}): SpecRow {
+    return {
+        stem: `${number}-thing`,
+        path: `.specs/active/${number}-thing.md`,
+        number,
+        title: `Thing ${number}`,
+        state: 'Active',
+        derivedLabel: undefined,
+        showPath: false,
+        selected: false,
+        ...overrides,
+    };
+}
+
+const THREE = [row('0001'), row('0002', { state: 'Backlog' }), row('0003', { state: 'Review', derivedLabel: 'Derived (rule S-REVIEW)' })];
+
+async function open(view: ShellView): Promise<HTMLElement> {
+    const client = createClient({ post: (message) => void posted.push(message) });
+    clients.push(client);
+    client.start();
+    mounted = await mount(<App client={client} />);
+    await send(shellEvent(view, 1));
+    return mounted.container;
+}
+
+function nav(container: HTMLElement, title: string): HTMLButtonElement {
+    return [...container.querySelectorAll<HTMLButtonElement>('nav button')].find((button) => button.textContent?.includes(title))!;
+}
+
+function optionRows(container: HTMLElement): HTMLElement[] {
+    return [...container.querySelectorAll<HTMLElement>('[role="option"]')];
+}
+
+beforeEach(() => {
+    posted = [];
+});
+
+afterEach(() => {
+    clients.splice(0).forEach((client) => client.stop());
+    mounted?.unmount();
+    mounted = undefined;
+});
+
+describe('AC-006: placeholders', () => {
+    it.each([
+        ['specBoard', 'Spec Board', 'See every spec as a card in the column of its board state.'],
+        ['missionControl', 'Mission Control', 'See the project at a glance: spec counts, agent activity and what needs attention.'],
+        ['agentCenter', 'Agent Center', 'Follow agent runs, their live events and the approvals they wait for.'],
+    ] as const)('%s shows its name, its purpose and "Not available in this version of FeatherSpec Studio", and no rows', async (area, title, purpose) => {
+        const container = await open(baseView({ area, rows: THREE }));
+        expect(container.querySelector('h1')?.textContent).toBe(title);
+        const placeholder = container.querySelector('[data-placeholder]');
+        expect(placeholder?.textContent).toContain(purpose);
+        expect(placeholder?.textContent).toContain('Not available in this version of FeatherSpec Studio');
+        expect(container.textContent).not.toContain('Arrives with spec');
+        expect(container.querySelectorAll('[role="option"], [role="listbox"]')).toHaveLength(0);
+        expect(container.textContent).not.toContain('Thing 0001');
+    });
+
+    it('a request target handed to a placeholder area is ignored and the placeholder shows (AC-028)', async () => {
+        const container = await open(baseView({ area: 'agentCenter', target: { kind: 'run', id: 'r-1' }, rows: THREE }));
+        expect(container.querySelector('[data-placeholder]')).not.toBeNull();
+        expect(container.textContent).not.toContain('r-1');
+    });
+
+    it('control: Spec Explorer is no placeholder', async () => {
+        const container = await open(baseView({ area: 'specExplorer', rows: THREE }));
+        expect(container.querySelector('[data-placeholder]')).toBeNull();
+    });
+});
+
+describe('AC-007: the Spec Explorer list', () => {
+    it('renders every field: number, title or "not available", the state word, the derived label and the path of a duplicated stem', async () => {
+        const rows = [
+            row('0001'),
+            row('0003', { title: undefined, state: 'Review', derivedLabel: 'Derived (rule S-REVIEW)' }),
+            row('0004', { showPath: true, path: '.specs/backlog/0004-thing.md' }),
+            row('0004', { showPath: true, path: '.specs/active/0004-thing.md', state: 'Active' }),
+        ];
+        const container = await open(baseView({ area: 'specExplorer', rows }));
+        const listed = optionRows(container);
+        expect(listed).toHaveLength(4);
+        expect(listed[0]?.textContent).toContain('0001');
+        expect(listed[0]?.textContent).toContain('Thing 0001');
+        expect(listed[0]?.textContent).toContain('Active');
+        expect(listed[0]?.textContent).not.toContain('.specs/');
+        expect(listed[1]?.textContent).toContain('not available');
+        expect(listed[1]?.textContent).toContain('Review');
+        expect(listed[1]?.textContent).toContain('Derived (rule S-REVIEW)');
+        expect(listed[2]?.textContent).toContain('.specs/backlog/0004-thing.md');
+        expect(listed[3]?.textContent).toContain('.specs/active/0004-thing.md');
+        expect(container.querySelector('[role="listbox"]')?.getAttribute('aria-label')).toBe('Specs');
+    });
+
+    it('keeps the order the host sent', async () => {
+        const container = await open(baseView({ area: 'specExplorer', rows: [row('0002'), row('0010'), row('0011')] }));
+        expect(optionRows(container).map((item) => item.textContent?.slice(0, 5))).toEqual(['0002 ', '0010 ', '0011 '].map((text) => text.slice(0, 5)));
+    });
+
+    it('with zero specs it shows "This project has no specs yet." and no list', async () => {
+        const container = await open(baseView({ area: 'specExplorer', rows: [] }));
+        expect(container.textContent).toContain('This project has no specs yet.');
+        expect(container.querySelector('[role="listbox"]')).toBeNull();
+    });
+
+    it('a new shell event with changed rows is in the DOM within 500 ms of the message event (PD-047)', async () => {
+        const container = await open(baseView({ area: 'specExplorer', rows: [row('0001')] }));
+        const before = performance.now();
+        await send(shellEvent(baseView({ area: 'specExplorer', rows: [row('0001'), row('0002', { title: 'Brand new' })] }), 2));
+        const elapsed = performance.now() - before;
+        expect(container.textContent).toContain('Brand new');
+        expect(elapsed).toBeLessThan(500);
+    });
+});
+
+describe('AC-008: selection in the panel UI', () => {
+    it('a click, Enter and Space on a row send select with the stem; rows are reachable by keyboard', async () => {
+        const container = await open(baseView({ area: 'specExplorer', rows: THREE }));
+        const rows = optionRows(container);
+        rows.forEach((item) => expect(isKeyboardReachable(item)).toBe(true));
+        await click(rows[0]!);
+        await pressKey(rows[1]!, 'Enter');
+        await pressKey(rows[2]!, ' ');
+        const selects = posted.filter((message) => message.type === 'select').map((message) => message.payload);
+        expect(selects).toEqual([{ stem: '0001-thing' }, { stem: '0002-thing' }, { stem: '0003-thing' }]);
+    });
+
+    it('a row of a duplicated stem sends select with its path', async () => {
+        const rows = [row('0004', { showPath: true, path: 'a/0004-x.md', stem: '0004-x' }), row('0004', { showPath: true, path: 'b/0004-x.md', stem: '0004-x' })];
+        const container = await open(baseView({ area: 'specExplorer', rows }));
+        await click(optionRows(container)[1]!);
+        expect(posted.find((message) => message.type === 'select')?.payload).toEqual({ stem: '0004-x', path: 'b/0004-x.md' });
+    });
+
+    it('AC-023: the selected row carries aria-selected and a visible marker, and no other row does', async () => {
+        const rows = [row('0001'), row('0002', { selected: true }), row('0003')];
+        const container = await open(baseView({ area: 'specExplorer', rows, selection: { stem: '0002-thing', number: '0002' } }));
+        const listed = optionRows(container);
+        expect(listed.map((item) => item.getAttribute('aria-selected'))).toEqual(['false', 'true', 'false']);
+        expect(listed[1]?.querySelector('[data-marker]')?.textContent).toBe('▸');
+        expect(listed[0]?.querySelector('[data-marker]')).toBeNull();
+    });
+
+    it('the selected row stays marked after a round trip to another area and back', async () => {
+        const rows = [row('0001'), row('0002', { selected: true })];
+        const container = await open(baseView({ area: 'specExplorer', rows, selection: { stem: '0002-thing', number: '0002' } }));
+        await click(nav(container, 'Spec Board'));
+        expect(container.querySelector('h1')?.textContent).toBe('Spec Board');
+        await click(nav(container, 'Spec Explorer'));
+        expect(optionRows(container)[1]?.getAttribute('aria-selected')).toBe('true');
+    });
+});
+
+describe('AC-010: the notice', () => {
+    it('shows "Spec <number> is no longer in the project" above the area with a Dismiss action that sends dismissNotice', async () => {
+        const container = await open(baseView({ area: 'specExplorer', rows: THREE, notice: { number: '0003' } }));
+        const notice = container.querySelector('[data-notice]');
+        expect(notice?.textContent).toContain('Spec 0003 is no longer in the project');
+        expect(notice?.getAttribute('role')).toBe('status');
+        const dismiss = notice?.querySelector('button');
+        expect(dismiss?.textContent).toBe('Dismiss');
+        expect(isKeyboardReachable(dismiss!)).toBe(true);
+        await pressKey(dismiss!, 'Enter');
+        expect(posted.filter((message) => message.type === 'dismissNotice')).toHaveLength(1);
+    });
+
+    it('is gone when the host reports no notice any more (control)', async () => {
+        const container = await open(baseView({ area: 'specExplorer', rows: THREE, notice: { number: '0003' } }));
+        await send(shellEvent(baseView({ area: 'specExplorer', rows: THREE }), 2));
+        expect(container.querySelector('[data-notice]')).toBeNull();
+    });
+});
