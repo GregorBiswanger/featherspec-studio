@@ -1,7 +1,7 @@
 # Plan — Workspace Discovery & Project Recognition
 
 **Spec:** [0001-workspace-discovery-project-recognition.md](0001-workspace-discovery-project-recognition.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-16
 **Current step:** T-001
 
@@ -299,7 +299,7 @@ Pre-done (before `/sdd-lifecycle` → done): `npm test` smoke suite green on CI 
 ## Session handoff
 
 - **Done so far:** plan written and re-cut (stage 3 core-only, T-009 appended); spec revised for OP-005; plan approved by Gregor (2026-11-16).
-- **Next action:** Gregor reviews the plan; on the start signal, backlog → active, then T-001.
+- **Next action:** T-001.
 - **Open decisions:** OP-004, OP-006…OP-012 (spec §17), none blocking.
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** `2083696` (HEAD before the first step commit; lifecycle move 2026-11-16).
 - **Environment:** `npm test` cannot run here (VS Code download blocked); it runs on CI and on Gregor's Windows machine.

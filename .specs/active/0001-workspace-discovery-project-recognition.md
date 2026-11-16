@@ -1,6 +1,6 @@
 # Workspace Discovery & Project Recognition
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0001-workspace-discovery-project-recognition.plan.md](0001-workspace-discovery-project-recognition.plan.md)
 
 ## 1. Summary

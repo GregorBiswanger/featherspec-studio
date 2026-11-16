@@ -2,15 +2,15 @@
 
 Last updated: 2026-11-16
 Current branch: main
-Current phase: plan
+Current phase: act
 
 ## Now
-Plan for spec 0001 (workspace discovery) is written and awaits Gregor's review.
+Implementing spec 0001 (workspace discovery), whole plan, stage by stage.
 
 ## Active Spec
-- Spec: [0001-workspace-discovery-project-recognition.md](../.specs/backlog/0001-workspace-discovery-project-recognition.md) (Draft, backlog)
-- Plan: [0001-workspace-discovery-project-recognition.plan.md](../.specs/backlog/0001-workspace-discovery-project-recognition.plan.md) (Not started, 9 steps, 5 stages; approved 2026-11-16)
-- Current task: T-001 (after the start signal)
+- Spec: [0001-workspace-discovery-project-recognition.md](../.specs/active/0001-workspace-discovery-project-recognition.md) (In Progress, active)
+- Plan: [0001-workspace-discovery-project-recognition.plan.md](../.specs/active/0001-workspace-discovery-project-recognition.plan.md) (In Progress, 9 steps, 5 stages; approved 2026-11-16)
+- Current task: T-001
 - Acceptance criteria in focus: AC-001…AC-004, AC-006
 
 ## Changed Recently
@@ -25,7 +25,7 @@ Plan for spec 0001 (workspace discovery) is written and awaits Gregor's review.
 - None.
 
 ## Next
-1. Gregor reviews the plan; on the start signal: backlog → active (`/sdd-lifecycle`), then T-001.
+1. T-001, then through the plan (start signal given 2026-11-16: backlog → active done).
 2. T-001 introduces `npm run test:unit` (see the plan).
 
 ## Validation
