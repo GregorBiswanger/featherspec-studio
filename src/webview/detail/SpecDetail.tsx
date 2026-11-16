@@ -25,6 +25,7 @@ import { InlineText } from '../ui/InlineText';
 import { splitCells, tidy } from '../ui/inlineFormat';
 import { isBoardState } from '../../shared/protocol/boardFilter';
 import { isDerivedRule } from '../../shared/protocol/missionControl';
+import { EmptyState } from '../ui/EmptyState';
 import { RuleText } from '../ui/RuleText';
 import { StateChip } from '../ui/StateChip';
 import { DetailSection, OpenButton } from './DetailSection';
@@ -263,7 +264,7 @@ export function SpecDetail(props: { detail: DetailView | undefined; fileResult: 
     if (detail === undefined || detail.kind === 'none') {
         return (
             <section className="spec-detail" aria-label={DETAIL_LABEL}>
-                <p>{NO_DETAIL_SELECTION_TEXT}</p>
+                <EmptyState icon="info">{NO_DETAIL_SELECTION_TEXT}</EmptyState>
             </section>
         );
     }

@@ -3,7 +3,7 @@
 **Spec:** [0013-studio-visual-design.md](0013-studio-visual-design.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-009
+**Current step:** T-010
 
 ## Approach
 
@@ -215,8 +215,8 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
   block setting transitions to none. CSS guard for AC-002; one test walking every AC-003 control with
   Tab and checking it is reachable and that the focus rule reaches it.
 - **Verify:** quality gates; manual: `05-agent-center-dark`, `06-*`, `07-*`.
-- [ ] **Verified (T-009):** —
-- **Notes:** —
+- [x] **Verified (T-009):** 2026-11-16 — red: `src/webview/states.test.tsx` 6 failing (no icon in panel states, placeholder, empty board/MC/Explorer) and the AC-002 guard (no transition, no reduced-motion block); the AC-003 guard was green at once, negative control: a temporary `.mc-tile:focus { outline }` turned it red, removed; then 0005's AC-030 test went red (its "last matching rule" met the `*` reduced-motion rule) — fixed by placing that block first with `!important`, test unchanged; green: eslint, both `tsc`, `npm run test:unit` 93 files / 1340 tests, `npm run compile`. Looked at `05-agent-center-*`, `06-*`, `07-*` in Dark, Light and HC: centred card, icon, sentence, primary plus secondary action.
+- **Notes:** new `src/webview/ui/EmptyState.tsx`; `icons.tsx` gained `folder`, `info`. The second panel-state action is styled as a secondary button. Transitions 120 ms on hover colours and the section chevron.
 
 ### T-010 — Final gates, docs sync, screenshots for Gregor
 
@@ -239,8 +239,8 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
 | AC-001 | T-001, T-010 | `src/webview/main.css` (`--fs-*`, `[data-board-state]`), `src/webview/testing/css.ts:declarations` | `src/adapters/node/webviewCss.test.ts` (0013 AC-001 block) | verified |
-| AC-002 | T-009 | — | — | open |
-| AC-003 | T-001, T-003, T-004, T-006, T-008, T-009 | — | — | open |
+| AC-002 | T-009 | `src/webview/main.css` (transitions, reduced-motion block) | `webviewCss.test.ts` (AC-002) | verified |
+| AC-003 | T-001, T-003, T-004, T-006, T-008, T-009 | `main.css` (`button:focus-visible`), controls as native buttons | `webviewCss.test.ts` (AC-003), `MissionControl.test.tsx` (AC-003), `SpecDetail.test.tsx` (AC-003), `Keyboard.test.tsx` (0007 AC-017) | verified |
 | AC-004 | T-003 | `src/webview/areas/missionControl/SpecFigures.tsx`, `Drill.tsx` | `MissionControl.test.tsx` (0013 AC-004 tests) | verified |
 | AC-005 | T-003 | `SpecFigures.tsx` (`.mc-distribution`, `[data-progress]`), `missionControl/texts.ts:mcSegment` | `MissionControl.test.tsx` (0013 AC-005 tests) | verified |
 | AC-006 | T-004 | `missionControl/texts.ts:mcDiagnostics`, `Header.tsx` | `MissionControl.test.tsx` (0013 AC-006) | verified |

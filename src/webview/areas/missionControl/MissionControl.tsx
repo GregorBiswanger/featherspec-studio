@@ -10,6 +10,7 @@ import { activityRequest } from './requests';
 import { RunSection } from './RunSection';
 import { SpecFigures } from './SpecFigures';
 import { useMissionControl } from './store';
+import { EmptyState } from '../../ui/EmptyState';
 import { MC_ZERO_SPECS } from './texts';
 
 export function MissionControl() {
@@ -42,7 +43,11 @@ export function MissionControl() {
                 </div>
             )}
             <Header header={view.header} navigate={navigate} />
-            {view.specs.kind === 'empty' ? <p data-zero-specs>{MC_ZERO_SPECS}</p> : <SpecFigures specs={view.specs} navigate={navigate} />}
+            {view.specs.kind === 'empty' ? (
+                <EmptyState icon="Backlog" data-zero-specs>
+                    {MC_ZERO_SPECS}
+                </EmptyState>
+            ) : <SpecFigures specs={view.specs} navigate={navigate} />}
             {view.specs.kind === 'empty' ? null : <Attention attention={view.attention} navigate={navigate} />}
             <div className="mc-panels">
                 <RunSection runs={view.runs} navigate={navigate} />

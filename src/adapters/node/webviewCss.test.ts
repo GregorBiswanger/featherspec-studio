@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { declarations, rulesFor } from '../../webview/testing/css';
+import { declarations, parseRules, rulesFor } from '../../webview/testing/css';
 
 describe('AC-026: colours come from the theme', () => {
     const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
@@ -238,4 +238,29 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
         const offenders = files.filter((file) => /dangerouslySetInnerHTML|innerHTML/.test(readFileSync(file, 'utf8')));
         expect(offenders).toEqual([]);
     });
+
+    it('AC-002: every transition lasts at most 150 ms and a prefers-reduced-motion block sets all transitions to none', () => {
+        const transitions = all.filter((entry) => entry.property === 'transition' && entry.media === undefined);
+        expect(transitions.length).toBeGreaterThan(0);
+        for (const entry of transitions) {
+            for (const match of entry.value.matchAll(/(\d*\.?\d+)(ms|s)\b/g)) {
+                const ms = match[2] === 's' ? Number(match[1]) * 1000 : Number(match[1]);
+                expect(ms, entry.selectors.join(',')).toBeLessThanOrEqual(150);
+            }
+        }
+        const reduced = parseRules(css).filter((rule) => /prefers-reduced-motion:\s*reduce/.test(rule.media ?? ''));
+        expect(reduced.some((rule) => rule.selectors.includes('*') && /transition:\s*none/.test(rule.body))).toBe(true);
+    });
+
+    it('AC-003: every control this spec adds or restyles sets no outline of its own, so the shared focus rule with contrastActiveBorder or focusBorder applies', () => {
+        for (const selector of ['.mc-tile', '.mc-drill', '.mc-row', '.section-toggle', '.open-file', '.move-button', '.related-link']) {
+            const rules = parseRules(css).filter((rule) => rule.selectors.some((candidate) => candidate.startsWith(selector)));
+            expect(rules.length, selector).toBeGreaterThan(0);
+            for (const rule of rules) {
+                expect(rule.body, selector).not.toMatch(/outline/);
+            }
+        }
+        expect(rulesFor(css, 'button:focus-visible').some((rule) => /outline:\s*2px solid var\(--vscode-contrastActiveBorder, var\(--vscode-focusBorder\)\)/.test(rule.body))).toBe(true);
+    });
 });
+

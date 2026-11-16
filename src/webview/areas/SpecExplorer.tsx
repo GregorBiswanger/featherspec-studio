@@ -10,6 +10,7 @@ import {
 import { useBoard } from "../board/boardStore";
 import { SpecDetail } from "../detail/SpecDetail";
 import { useShell } from "../shell";
+import { EmptyState } from "../ui/EmptyState";
 import { RuleText } from "../ui/RuleText";
 import { StateChip } from "../ui/StateChip";
 
@@ -33,7 +34,7 @@ export function SpecExplorer() {
 
   const list =
     rows.length === 0 ? (
-      <p>{NO_SPECS_TEXT}</p>
+      <EmptyState icon="Backlog">{NO_SPECS_TEXT}</EmptyState>
     ) : (
       <ul role="listbox" aria-label={SPEC_LIST_LABEL} className="spec-list">
         {rows.map((row) => (

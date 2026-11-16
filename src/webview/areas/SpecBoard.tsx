@@ -10,6 +10,7 @@ import { Column } from '../board/Column';
 import { FilterBar } from '../board/FilterBar';
 import { fallbackFocus, moveFocus, type Direction, type Grid } from '../board/focusModel';
 import { MoveMenu } from '../board/MoveMenu';
+import { EmptyState } from '../ui/EmptyState';
 
 const ARROWS: Readonly<Record<string, Direction>> = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
 
@@ -170,7 +171,11 @@ export function SpecBoard() {
     return (
         <div className="board" aria-label={BOARD_LABEL}>
             <Banner lines={board.banner} />
-            {board.noSpecs ? <p className="board-empty">{NO_SPECS_BOARD_TEXT}</p> : null}
+            {board.noSpecs ? (
+                <EmptyState icon="Backlog" className="board-empty">
+                    {NO_SPECS_BOARD_TEXT}
+                </EmptyState>
+            ) : null}
             <FilterBar board={board} setFilter={api.setFilter} setSort={api.setSort} clearFilters={api.clearFilters} />
             <Announcer move={api.move} onDismiss={dismissMove} />
             <div className="columns" ref={columnsRef} tabIndex={-1} onFocus={onFocus} onBlur={onBlur} onKeyDown={onKeyDown}>

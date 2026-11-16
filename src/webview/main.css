@@ -36,6 +36,12 @@ body,
     --fs-tint: var(--vscode-charts-red);
 }
 
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+    }
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -178,6 +184,53 @@ main > h1 {
     margin: 8px 0;
     padding: 8px 12px;
     border: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
+    border-radius: 4px;
+}
+
+.panel-state,
+.placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    align-self: center;
+    width: min(100%, 440px);
+    margin: auto 0;
+    padding: 28px 24px;
+    background: var(--fs-lane);
+    text-align: center;
+}
+
+.panel-state p,
+.placeholder p {
+    margin: 0;
+}
+
+.panel-state-icon .icon {
+    width: 28px;
+    height: 28px;
+    margin-bottom: 4px;
+    color: var(--fs-muted);
+}
+
+.panel-state .actions {
+    justify-content: center;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin: auto;
+    padding: 32px 16px;
+    color: var(--fs-muted);
+    text-align: center;
+}
+
+.empty-state .icon {
+    width: 24px;
+    height: 24px;
 }
 
 .restricted-note {
@@ -212,7 +265,6 @@ main > h1 {
 
 .placeholder-note {
     color: var(--vscode-descriptionForeground);
-    font-style: italic;
 }
 
 .spec-list {
@@ -1428,4 +1480,24 @@ blockquote.illustration {
 
 .detail-steps li {
     margin: 6px 0;
+}
+
+.spec-row,
+.mc-tile,
+.mc-row,
+.card,
+.nav-item,
+.related-link,
+.open-file,
+.move-button {
+    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.section-toggle .icon {
+    transition: transform 120ms ease;
+}
+
+.panel-state .actions button + button {
+    color: var(--vscode-button-secondaryForeground, var(--vscode-button-foreground));
+    background: var(--vscode-button-secondaryBackground, var(--vscode-button-background));
 }
