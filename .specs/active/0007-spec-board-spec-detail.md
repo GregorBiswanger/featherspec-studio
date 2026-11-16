@@ -232,7 +232,9 @@ select one.
 
 - Tab reaches the board. Up and Down move to the previous and next card of the column. Left and
   Right move to the nearest column in that direction that shows a card. Enter opens the detail
-  view. The card's "Move to…" menu opens from the keyboard.
+  view. The card's "Move to…" button is the next tab stop after the card it belongs to, on
+  every platform; Enter or Space on it opens the menu. Shift+F10 and the context-menu key open
+  the same menu from the card as extra ways.
 - The filters, the sort control, "Clear filters" and every "Open file" link are reachable and
   operable by keyboard.
 - Board state, run status, verification summary, every marker, every refusal and every "not
@@ -443,8 +445,8 @@ refuse the request with "Agent start is not available yet". *(PD-045)*
 
 **AC-017** A developer using only the keyboard shall be able to reach every card, move to the
 previous and next card of a column with Up and Down, move to the nearest column that shows a
-card with Left and Right, open the detail view with Enter, open the card's "Move to…" menu and
-choose a target in it, and reach and operate every filter, the sort control, "Clear filters"
+card with Left and Right, open the detail view with Enter, reach the card's "Move to…" button with Tab, open
+its menu from that button and choose a target in it, and reach and operate every filter, the sort control, "Clear filters"
 and every "Open file" link. *(AC-007.8)*
 
 **AC-018** The board and the detail view shall show every board state, run status,
@@ -519,7 +521,10 @@ that §9 leaves to the plan are asserted by kind, not by wording.
 - ADR-001 §11 names `@dnd-kit/react` 0.5.3 with native HTML5 DnD as fallback, plus the mandatory
   "Move to…" alternative. Decided (Gregor, 2026-11-16): native HTML5 DnD, no new dependency.
 - Keys for the "Move to…" menu: the context-menu key or Shift+F10 where the platform has them,
-  and a menu button on the card that works on every platform (macOS has neither key).
+  and a menu button on the card that works on every platform (macOS has neither key). The button
+  is reachable with Tab on every platform (decided 2026-11-16, `/sdd-compile`): it is a tab stop
+  of the card that is the board's current tab stop, so the board stays one card stop plus one
+  button stop and not one stop per card.
 - ADR-001 rejects `retainContextWhenHidden`. Decided (Gregor, 2026-11-16): filter and sort live in
   extension memory, per panel, not in webview state; they survive hiding and a rebuild of the
   content (§6.5), and a restart or a closed panel ends them, so no restore flag is needed.

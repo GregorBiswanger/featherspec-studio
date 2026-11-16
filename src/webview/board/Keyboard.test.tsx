@@ -169,9 +169,40 @@ describe('AC-014: move without a mouse', () => {
         expect(requests('navigate')).toEqual([]);
     });
 
-    it('the Move to button is not a tab stop of its own', async () => {
+    it('AC-017: Tab reaches the Move to button of the card that is the board tab stop, right after that card, and no other card button', async () => {
         const container = await open();
-        expect(cardOf(container, '0003').querySelector<HTMLElement>('button')!.tabIndex).toBe(-1);
+        const stops = [...container.querySelectorAll<HTMLElement>('[data-card], button[aria-haspopup="menu"]')].filter((element) => element.tabIndex === 0);
+        expect(stops.map((element) => element.getAttribute('data-card') ?? `button of ${element.closest('[data-card]')?.getAttribute('data-card')}`)).toEqual([key('0001'), `button of ${key('0001')}`]);
+    });
+
+    it('AC-017: the button tab stop follows the focused card', async () => {
+        const container = await open();
+        await focus(cardOf(container, '0004'));
+        const buttonOf = (number: string) => cardOf(container, number).querySelector<HTMLElement>('button[aria-haspopup="menu"]')!;
+        expect(buttonOf('0004').tabIndex).toBe(0);
+        expect(buttonOf('0001').tabIndex).toBe(-1);
+    });
+
+    it('AC-017: focus on the Move to button keeps the card focused for the host, Enter opens the menu and Escape closes it', async () => {
+        const container = await open();
+        await focus(cardOf(container, '0003'));
+        const button = cardOf(container, '0003').querySelector<HTMLElement>('button[aria-haspopup="menu"]')!;
+        await focus(button);
+        expect(requests('boardFocus').every((payload) => (payload as { key: string | null }).key === key('0003'))).toBe(true);
+        await pressKey(button, 'Enter');
+        expect(container.querySelector('[role="menu"]')).not.toBeNull();
+        await press(document.activeElement!, 'Escape');
+        expect(container.querySelector('[role="menu"]')).toBeNull();
+        expect(requests('moveRequest')).toEqual([]);
+    });
+
+    it('AC-017: leaving the board from the Move to button sends the null focus', async () => {
+        const container = await open();
+        await focus(cardOf(container, '0003'));
+        const button = cardOf(container, '0003').querySelector<HTMLElement>('button[aria-haspopup="menu"]')!;
+        await focus(button);
+        await act(async () => button.blur());
+        expect(requests('boardFocus').at(-1)).toEqual({ key: null });
     });
 });
 

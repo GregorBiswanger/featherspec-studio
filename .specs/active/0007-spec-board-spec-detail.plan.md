@@ -1,9 +1,9 @@
 # Plan — Spec Board & Spec Detail
 
 **Spec:** [0007-spec-board-spec-detail.md](0007-spec-board-spec-detail.md)
-**Status:** Done
+**Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-010 done; all steps ticked, awaiting host suite on CI and `/sdd-compile`
+**Current step:** T-011 (after `/sdd-compile`)
 
 ## Approach
 
@@ -523,6 +523,16 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 - [x] **Verified (T-010):** eslint, tsc (both), test:unit: 76 files, 1111 tests passed; `npm run compile` green; onDidNavigate tests red first (Not implemented stub, 3 failed), manifest test red first (1 failed); boardRequests and shellSelection tests code-first with mutation controls (not-found guard, boardFocus key).
 - **Notes:** Host smoke `src/test/board.smoke.test.ts` is written but not run here (CI). It uses the active fixture `fs110-de-active-review` (0001-tip-splitter in Review): the Ready to Active hand-off check on `fs110-ready-synthetic` was not written because adding that folder to `.vscode-test.mjs` would change the folder lists of the other smoke tests; the refusal text is compared with `judgeTransition`, and the hand-off text is covered in `moves.test.ts`. The not-found answer for a file gone from disk is covered in `openFile.test.ts` only. New in core beyond the plan: `boardRequests.ts` (the six board handlers and the move/open-file result events) and `shellSelection.ts` (the shell selection as `SelectionSource`). One `createModelSource` instance is shared by the shell service and the board. `StudioApi.board()` is test only. The sink for the Move command posts to the panel when it is visible on the Spec Board and shows a VS Code message otherwise. `start` is `undefined` in the composition: every Ready to Active move is answered with "Agent start is not available yet". 0006's plan must adopt the filter shape of `src/shared/protocol/boardFilter.ts` (`states`, `providers`, `set`).
 
+### T-011 — The "Move to…" button is reachable with Tab (after `/sdd-compile`)
+
+- **Covers:** AC-017 (revised 2026-11-16; supersedes the `tabIndex={-1}` note of T-008)
+- **Do:**
+  - Tests first in `src/webview/board/Keyboard.test.tsx`: the button of the card that is the board's tab stop has `tabIndex` 0 and is the only button that does; the stop follows the focused card; focus on the button keeps the card focused for the host (`boardFocus` with that key, no `null`); Enter opens the menu, Escape closes it; leaving the board from the button sends the `null` focus.
+  - `MoveMenu.tsx`: a `tabStop` prop sets `tabIndex` to 0 or -1. `SpecBoard.tsx`: passes `card.key === tabbable`; the focus helper reads the card of a focused button through `closest('[data-card]')`, ignoring the menu items.
+- **Verify:** `npm run test:unit -- src/webview` plus the per-step gates
+- [x] **Verified (T-011):** 2026-11-16 · red: `npx vitest run src/webview/board/Keyboard.test.tsx` 3 failed (the button was not a tab stop, did not follow the tab stop, and its blur sent no `null`; the replaced "not a tab stop" test was dropped); green: `npx vitest run src/webview` 195 of 195; gates: eslint 0 warnings, both `tsc --noEmit` clean, `npm run test:unit` 86 files, 1246 tests passed, `npm run compile` green.
+- **Notes:** jsdom has no Tab key, so the tests read `tabIndex` and the DOM order; Gregor's keyboard-only pass (AC-017, manual) still decides the real Tab walk.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -543,7 +553,7 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 | AC-014 | T-005, T-008, T-010 | `src/core/board/moves.ts:createMoves`; src/webview/board/MoveMenu.tsx; SpecBoard.tsx | `moves.test.ts` (AC-014); Keyboard.test.tsx (AC-014); `manifest.test.ts`; `src/test/board.smoke.test.ts` (CI) | built |
 | AC-015 | T-005 | `src/core/board/moves.ts:requestMove` | `moves.test.ts` (AC-015) | verified |
 | AC-016 | T-005, T-010 | `src/core/board/moves.ts`, `openFile.ts` | `noWrite.test.ts` (AC-016); `src/test/board.smoke.test.ts` (CI) | built |
-| AC-017 | T-008, T-009 | src/webview/board/focusModel.ts; src/webview/detail/DetailSection.tsx:OpenButton | — + manual: Gregor, keyboard-only pass; focusModel.test.ts; Keyboard.test.tsx (AC-017); SpecDetail.test.tsx (keyboard-operable) | built |
+| AC-017 | T-008, T-009, T-011 | src/webview/board/focusModel.ts; src/webview/board/MoveMenu.tsx (tabStop); src/webview/detail/DetailSection.tsx:OpenButton | — + manual: Gregor, keyboard-only pass; focusModel.test.ts; Keyboard.test.tsx (AC-017); SpecDetail.test.tsx (keyboard-operable) | built |
 | AC-018 | T-007, T-008 | src/webview/board/Announcer.tsx | — + manual: Gregor, screen reader; Keyboard.test.tsx (AC-018) | built |
 | AC-019 | T-004, T-007, T-008 | src/webview/board/focusModel.ts:fallbackFocus | Keyboard.test.tsx (AC-019) | built |
 | AC-020 | T-002 | `src/core/board/cards.ts:buildCards, buildBanner` | `cards.test.ts` (AC-020) | built |

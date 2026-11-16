@@ -3,7 +3,7 @@ import type { CardView } from '../../shared/protocol/board';
 import { BOARD_STATES, type BoardState } from '../../shared/protocol/boardFilter';
 import { MOVE_MENU_LABEL, moveMenuAriaLabel } from '../../shared/protocol/texts';
 
-export function MoveMenu(props: { card: CardView; open: boolean; onToggle(): void; onChoose(target: BoardState): void; onClose(): void }) {
+export function MoveMenu(props: { card: CardView; tabStop: boolean; open: boolean; onToggle(): void; onChoose(target: BoardState): void; onClose(): void }) {
     const { card } = props;
     const items = useRef<(HTMLButtonElement | null)[]>([]);
     const targets = BOARD_STATES.filter((state) => state !== card.state);
@@ -40,7 +40,7 @@ export function MoveMenu(props: { card: CardView; open: boolean; onToggle(): voi
 
     return (
         <div className="move-menu" onClick={(event) => event.stopPropagation()} onKeyDown={onKeyDown}>
-            <button type="button" className="move-button" tabIndex={-1} aria-haspopup="menu" aria-expanded={props.open} aria-label={moveMenuAriaLabel(card.number)} onClick={props.onToggle}>
+            <button type="button" className="move-button" tabIndex={props.tabStop ? 0 : -1} aria-haspopup="menu" aria-expanded={props.open} aria-label={moveMenuAriaLabel(card.number)} onClick={props.onToggle}>
                 {MOVE_MENU_LABEL}
             </button>
             {props.open ? (

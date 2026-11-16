@@ -21,10 +21,10 @@ function cardElement(root: HTMLElement | null, key: string): HTMLElement | null 
 }
 
 function keyOfTarget(target: EventTarget): string | undefined {
-    if (!(target instanceof HTMLElement) || !target.hasAttribute('data-card')) {
+    if (!(target instanceof HTMLElement) || target.closest('[role="menu"]') !== null) {
         return undefined;
     }
-    return target.getAttribute('data-card') ?? undefined;
+    return target.closest('[data-card]')?.getAttribute('data-card') ?? undefined;
 }
 
 export function SpecBoard() {
@@ -166,6 +166,7 @@ export function SpecBoard() {
                         menuOf={(card) => (
                             <MoveMenu
                                 card={card}
+                                tabStop={card.key === tabbable}
                                 open={menuKey === card.key}
                                 onToggle={() => setMenuKey(menuKey === card.key ? undefined : card.key)}
                                 onChoose={(target) => {
