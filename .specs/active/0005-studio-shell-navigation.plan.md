@@ -317,8 +317,8 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
       that test the precedence; S8 with and without another project; S9 with two folders;
     - `src/core/shell/treeModel.test.ts`.
 - **Verify:** `npm run test:unit -- src/core/shell` plus the per-step gates
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-16 — red: `npx vitest run src/core/shell/panelState.test.ts src/core/shell/treeModel.test.ts` 36/36 failed (`Not implemented` stubs); green: 45/45 in `src/core/shell` (each of S1, S2, S3, S4, S5 discovery and listing, S8 with and without another project, S9 with two folders alone; precedence pairs S1/S8, S8/S9, S8/S3, S8/S5, S9/S5, S3/S5, S5/S4; tree model with and without a project; `listingFailure` for the four folders plus controls: a single unreadable file, plan-archive, memory-bank, a symbolic link and another kind give none). Gates: eslint 0, `tsc --noEmit` 0 (after typing the test's optional access), `tsc --noEmit -p src/webview` 0, `npm run test:unit` 50 files, 776 passed.
+- **Notes:** The discovery update notification is 0001 T-013 (done earlier), so this step only consumes it. `listingFailure` counts only diagnostics whose reason starts with `could not be listed: ` (0002 `files.ts`); the symbolic-link reason (A-006) is deliberately no S5. S9 names each folder by its `name` and takes its `missingMarkers` from 0001's result. `TreeInput` is `{ projectActive, projectName, state }` and the tree keeps its entries for an active project while S4 or S5 apply; S6 and no state give an empty tree.
 
 ### T-006 — Shell service: loading, load error, Retry, Restricted Mode
 
@@ -479,7 +479,7 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 | --- | --- | --- | --- | --- |
 | AC-001 | T-008 | — | — | open |
 | AC-002 | T-008 | — | — | open |
-| AC-003 | T-005, T-009 | — | — | open |
+| AC-003 | T-005, T-009 | src/core/shell/treeModel.ts:buildTreeModel; the TreeView in T-009 | treeModel.test.ts (AC-003) | built |
 | AC-004 | T-002 | src/webview/Navigation.tsx, App.tsx, client.ts | src/webview/App.test.tsx (AC-004) | verified |
 | AC-005 | T-007, T-008 | — | — | open |
 | AC-006 | T-004 | src/webview/areas/Placeholder.tsx, registry.tsx | src/webview/areas/areas.test.tsx (AC-006, three areas, no rows) | verified |
@@ -487,14 +487,14 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 | AC-008 | T-004, T-007 | src/webview/areas/SpecExplorer.tsx; host selection T-007 | areas.test.tsx (AC-008 round trip) | built |
 | AC-009 | T-007, T-008 | — | — | open |
 | AC-010 | T-004, T-007 | src/webview/NoticeBar.tsx; host reconciliation T-007 | areas.test.tsx (AC-010 notice) | built |
-| AC-011 | T-005, T-009 | — | — | open |
-| AC-012 | T-005 | — | — | open |
-| AC-013 | T-005, T-009 | — | — | open |
+| AC-011 | T-005, T-009 | src/core/shell/panelState.ts:derivePanelState (S1), treeModel.ts; Open Folder action in T-009 | panelState.test.ts (AC-011), treeModel.test.ts (S1) | built |
+| AC-012 | T-005 | src/core/shell/panelState.ts (S2) | panelState.test.ts (AC-012), treeModel.test.ts | verified |
+| AC-013 | T-005, T-009 | src/core/shell/panelState.ts (S3); the Select project action runs in T-009 | panelState.test.ts (AC-013), treeModel.test.ts | built |
 | AC-014 | T-002, T-006 | src/webview/client.ts, PanelStateView.tsx (S4); host side in T-006 | src/webview/App.test.tsx (AC-014 loading), PanelStateView.test.tsx (S4) | built |
 | AC-015 | T-003, T-006, T-009 | src/webview/client.ts (protocol cause), PanelStateView.tsx; host causes in T-006 | client.test.ts (AC-015 timeout, invalid snapshot), PanelStateView.test.tsx (S5 texts) | built |
 | AC-016 | T-001, T-003 | src/core/shell/messageRouter.ts, src/webview/client.ts (S6, S5 after reload), PanelStateView.tsx | messageRouter.test.ts, client.test.ts (AC-016), PanelStateView.test.tsx (S6) | verified |
 | AC-017 | T-003, T-006, T-009 | src/webview/RestrictedNote.tsx; host flag in T-006 | PanelStateView.test.tsx (AC-017) | built |
-| AC-018 | T-003, T-005 | src/webview/client.ts (S6 first, state in place of the area); host precedence in T-005 | PanelStateView.test.tsx (AC-018 S6 over host state) | built |
+| AC-018 | T-003, T-005 | src/core/shell/panelState.ts (precedence), src/webview/client.ts (S6 first) | panelState.test.ts (AC-018 pairs), PanelStateView.test.tsx (S6 over a host state) | verified |
 | AC-019 | T-009 | — | manual: Gregor, Light/Dark/both HC + live switch | open |
 | AC-020 | T-008 | — | — | open |
 | AC-021 | T-001 | src/core/shell/messageRouter.ts:createMessageRouter, src/shared/protocol/messages.ts (guards) | messageRouter.test.ts (AC-021, incl. no-content and next-valid cases), messages.test.ts | verified |
@@ -502,8 +502,8 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 | AC-023 | T-002, T-003, T-004 | src/webview (aria-current, aria-label, role=status, aria-selected, markers) | App.test.tsx, PanelStateView.test.tsx, areas.test.tsx (AC-023); manual: High Contrast, Gregor | built |
 | AC-024 | T-008 | — | — | open |
 | AC-025 | T-009 | — | — | open |
-| AC-026 | T-005 | — | — | open |
-| AC-027 | T-005 | — | — | open |
+| AC-026 | T-005 | src/core/shell/panelState.ts (S8) | panelState.test.ts (AC-026, with and without another project), treeModel.test.ts | verified |
+| AC-027 | T-005 | src/core/shell/panelState.ts (S9) | panelState.test.ts (AC-027), treeModel.test.ts | verified |
 | AC-028 | T-007 | — | — | open |
 | AC-029 | T-006, T-009 | — | — | open |
 
