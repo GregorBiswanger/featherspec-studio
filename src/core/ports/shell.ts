@@ -27,5 +27,6 @@ export interface ShellModel {
 
 export interface ShellModelSource {
     current(): ShellModel | undefined;
+    updatedAt(): string;
     onDidChange(listener: () => void): Disposable;
 }

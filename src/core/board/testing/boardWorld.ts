@@ -13,20 +13,29 @@ export async function modelOf(files: Record<string, string>): Promise<ShellModel
 }
 
 export interface FakeSource extends ShellModelSource {
-    set(model: ShellModel | undefined): void;
+    set(model: ShellModel | undefined, stamp?: string): void;
+    stamp(value: string): void;
 }
 
 export function createFakeSource(initial?: ShellModel): FakeSource {
     let model = initial;
+    let at = '2026-11-16T10:00:00.000Z';
     const listeners = new Set<() => void>();
     return {
         current: () => model,
+        updatedAt: () => at,
+        stamp(value) {
+            at = value;
+        },
         onDidChange(listener): Disposable {
             listeners.add(listener);
             return { dispose: () => void listeners.delete(listener) };
         },
-        set(next) {
+        set(next, stamp) {
             model = next;
+            if (stamp !== undefined) {
+                at = stamp;
+            }
             [...listeners].forEach((listener) => listener());
         },
     };

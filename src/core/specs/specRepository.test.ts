@@ -57,6 +57,30 @@ describe('specRepository', () => {
         expect(watch.watched()).toEqual([ROOT]);
     });
 
+    it('AC-017 of 0006: readAt is the clock time of the read behind the snapshot; it holds while nothing is read and moves with a file change and a rescan', async () => {
+        const source = createMemorySpecSource();
+        const watch = createFakeFileWatch();
+        const host = createFakeHost([]);
+        let stamp = '2026-11-16T10:00:00.000Z';
+        const repository = createSpecRepository({ source, watch, clock: { now: () => stamp, setTimeout: host.clock.setTimeout } });
+        source.setFile(ROOT, '.specs/active/0001-a.md', spec());
+        expect(repository.readAt()).toBeUndefined();
+        await repository.open({ root: ROOT, version: VERSION });
+        expect(repository.readAt()).toBe('2026-11-16T10:00:00.000Z');
+        stamp = '2026-11-16T11:00:00.000Z';
+        expect(repository.readAt()).toBe('2026-11-16T10:00:00.000Z');
+        source.setFile(ROOT, '.specs/active/0001-a.md', `${spec()}\nmore\n`);
+        watch.fire(ROOT, '.specs/active/0001-a.md');
+        host.clock.advance(DEBOUNCE);
+        await repository.whenIdle();
+        expect(repository.readAt()).toBe('2026-11-16T11:00:00.000Z');
+        stamp = '2026-11-16T12:00:00.000Z';
+        await repository.rescan();
+        expect(repository.readAt()).toBe('2026-11-16T12:00:00.000Z');
+        await repository.open(undefined);
+        expect(repository.readAt()).toBeUndefined();
+    });
+
     it('AC-012: a changed spec file is re-read and its reference is notified, after the debounce', async () => {
         const { source, watch, repository, changes, clock, settle } = setup();
         source.setFile(ROOT, '.specs/active/0001-a.md', spec());

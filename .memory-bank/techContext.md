@@ -47,6 +47,7 @@ Per implementation step (Definition of Green), in order — zero warnings, zero 
 2. `npx tsc --noEmit`
 3. `npx tsc --noEmit -p src/webview`
 4. `npm run test:unit`
+5. `npm run compile` — only for steps that touch wiring, adapters, `src/extension.ts`, `package.json` or the bundle (it adds the esbuild bundle to the type check and lint).
 
 Pre-done gate (not per step): `npm test` (extension-host tests) runs in CI and on the
 developer's machine before a spec moves to `done/`, plus the two manual checks above.

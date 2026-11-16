@@ -3,7 +3,7 @@
 **Spec:** [0006-mission-control-dashboard.md](0006-mission-control-dashboard.md)
 **Status:** Done
 **Last updated:** 2026-11-16
-**Current step:** none (all steps ticked)
+**Current step:** none (all steps ticked; T-009 added after `/sdd-compile`)
 
 ## Approach
 
@@ -489,6 +489,19 @@ small, so the recommendation is to run them in sequence.
 - **Notes:** Deviations: the panel host takes a `missionControl` dep beside `board` (no `seq`, see *Code reality*); `StudioApi.missionControl()` offers `view()`, `whenIdle()` and `listen()` because the service computes only while listened to. `AGENTS.md` is 224 lines, over its 200-line cap since 0005; the one eviction proposal stays open (see `activeContext.md`).
 
 
+### T-009 — Header time is the last model update, not the panel-open time (after `/sdd-compile`)
+
+- **Covers:** AC-017 (revised 2026-11-16, A-013)
+- **Do:**
+  - Tests first. `specRepository.test.ts`: the repository reports the time of its last read (open, file change, rescan) and keeps it while nobody listens. `missionControlService.test.ts`: the repro (model read at 10:00, panel opened at 11:00 gives 10:00); a spec read while open moves it; a run change processed while open moves it (reading (c) was the other way round before, that test is rewritten); a close and reopen without a change keeps it.
+  - `src/core/specs/specRepository.ts`: `readAt()` returns the clock time of the read that produced the current snapshot.
+  - `src/core/ports/shell.ts`, `src/core/shell/modelSource.ts`: `ShellModelSource.updatedAt()` forwards it. The board fake source gets a settable stamp.
+  - `missionControlService.ts`: `updatedAt` is the later of `source.updatedAt()` and the clock time of the last processed run change; nothing is stamped when the panel opens.
+  - `techContext.md`: `npm run compile` joins *Quality gates* as the extra gate of wiring and adapter steps (this plan's T-008 and 0007's T-010 rely on it).
+- **Verify:** `npm run test:unit -- src/core/specs src/core/missionControl src/core/shell` plus the per-step gates
+- [x] **Verified (T-009):** 2026-11-16 · red: `npx vitest run src/core/missionControl/missionControlService.test.ts src/core/specs/specRepository.test.ts` 3 failed (the repro showed 11:00 instead of 10:00; the stamp tests failed on `Not implemented` and on the missing run-change stamp), the negative control (a history change leaves the time alone) was green at once; green: same files 34 of 34; gates: eslint 0 warnings, both `tsc --noEmit` clean, `npm run test:unit` 86 files, 1243 tests passed, `npm run compile` green.
+- **Notes:** The time comes from the repository (`readAt()`, stamped in `read()`), through `ShellModelSource.updatedAt()`; the service no longer stamps anything when it starts listening. Run changes processed while open move it (A-013); those that happen while the panel is closed do not. Tests: `missionControlService.test.ts` (reading (c) test replaced by three AC-017 tests), `specRepository.test.ts`.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -509,7 +522,7 @@ small, so the recommendation is to run them in sequence.
 | AC-014 | T-007 | requests.ts, Activity.tsx, MissionControl.tsx (notice) | Drilldown.test.tsx (AC-014) | verified |
 | AC-015 | T-001, T-004, T-008 | src/core/missionControl/runSource.ts, missionControlService.ts, src/adapters/vscode/studioPanel.ts, src/extension.ts | runSource.test.ts, missionControlService.test.ts (AC-015); deciding: src/test/missionControl.smoke.test.ts (CI only) | built |
 | AC-016 | T-005 | src/webview/areas/missionControl/MissionControl.tsx, src/webview/client.ts | MissionControl.test.tsx (AC-016) | verified |
-| AC-017 | T-002, T-005, T-007 | Header.tsx, requests.ts:diagnosticsRequest | MissionControl.test.tsx, Drilldown.test.tsx (AC-017) | verified |
+| AC-017 | T-002, T-005, T-007, T-009 | Header.tsx, requests.ts:diagnosticsRequest | MissionControl.test.tsx, Drilldown.test.tsx (AC-017); `missionControlService.test.ts` (AC-017), `specRepository.test.ts` (readAt) | verified |
 | AC-018 | T-001, T-003, T-004, T-006 | RunSection.tsx, Attention.tsx, Activity.tsx | missionControlService.test.ts, Sections.test.tsx (AC-018) | verified |
 | AC-019 | T-002, T-005 | src/core/missionControl/specFigures.ts, Header.tsx | specFigures.test.ts, MissionControl.test.tsx (unknown version) | built |
 | AC-020 | T-002, T-005 | specFigures.ts (empty form) | specFigures.test.ts (AC-020); rendering in T-005 | built |
@@ -525,7 +538,7 @@ small, so the recommendation is to run them in sequence.
 
 ## Session handoff
 
-- **Done so far:** all eight steps ticked (T-001...T-008); 1240 unit tests, eslint, both tsc and `npm run compile` green. `npm test` (host smoke `src/test/missionControl.smoke.test.ts` and the older ones) was not run: VS Code download blocked.
+- **Done so far:** all nine steps ticked (T-001...T-009; T-009 fixed the header time after `/sdd-compile`, A-013); 1243 unit tests, eslint, both tsc and `npm run compile` green. `npm test` (host smoke `src/test/missionControl.smoke.test.ts` and the older ones) was not run: VS Code download blocked.
 - **Next action:** Gregor/CI: `npm test` on CI or Windows; manual checks AC-021 in a High Contrast theme, AC-022 focus with Enter and Space, the §9 layout in the hands-on run, AC-016 and AC-024 on a real project (OP-12). Then `/sdd-compile` for 0006 in a fresh session (another model family), then `/sdd-lifecycle`.
 - **Open decisions:** none blocking. Gregor's manual checks (spec §14): AC-021 in a High Contrast theme, AC-022 focus with Enter and Space, the §9 layout in the hands-on run.
 - **Baseline:** `1ba50ff` (HEAD before the first step commit of this plan).

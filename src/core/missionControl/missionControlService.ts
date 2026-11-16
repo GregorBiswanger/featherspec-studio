@@ -29,8 +29,7 @@ export function createMissionControlService(deps: MissionControlServiceDeps): Mi
     let subscriptions: Disposable[] = [];
     let current: MissionControlView | undefined;
     let last = 'undefined';
-    let lastModel: ShellModel | undefined;
-    let updatedAt = '';
+    let runChangedAt = '';
     let running = false;
     let again = false;
     let idle: Promise<void> = Promise.resolve();
@@ -64,18 +63,16 @@ export function createMissionControlService(deps: MissionControlServiceDeps): Mi
         const model = deps.source.current();
         const active = deps.discovery.snapshot().active;
         if (model === undefined || active === undefined) {
-            lastModel = undefined;
+            runChangedAt = '';
             setView(undefined);
             return;
-        }
-        if (model !== lastModel) {
-            lastModel = model;
-            updatedAt = deps.clock.now();
         }
         const [runs, history] = await Promise.all([runSource.read(), readHistory()]);
         if (disposed || listeners.size === 0) {
             return;
         }
+        const modelReadAt = deps.source.updatedAt();
+        const updatedAt = runChangedAt > modelReadAt ? runChangedAt : modelReadAt;
         setView(buildMissionControlView({ model, active: { name: active.name, version: active.version }, updatedAt, runs, history }));
     }
 
@@ -109,7 +106,10 @@ export function createMissionControlService(deps: MissionControlServiceDeps): Mi
             deps.source.onDidChange(schedule),
             deps.history.onDidChange(schedule),
             deps.discovery.onDidUpdate(schedule),
-            runSource.onDidChange(schedule),
+            runSource.onDidChange(() => {
+                runChangedAt = deps.clock.now();
+                schedule();
+            }),
         ];
     }
 
@@ -118,7 +118,6 @@ export function createMissionControlService(deps: MissionControlServiceDeps): Mi
         subscriptions = [];
         current = undefined;
         last = 'undefined';
-        lastModel = undefined;
     }
 
     return {

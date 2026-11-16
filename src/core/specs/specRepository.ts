@@ -22,6 +22,7 @@ export interface SpecRepository {
     open(project: RepositoryProject | undefined): Promise<void>;
     rescan(): Promise<void>;
     snapshot(): ProjectRead | undefined;
+    readAt(): string | undefined;
     onDidChange(listener: (change: SpecChange) => void): Disposable;
     whenIdle(): Promise<void>;
     dispose(): void;
@@ -39,6 +40,7 @@ interface State {
     project: RepositoryProject;
     files: ProjectFile[];
     model: ProjectRead;
+    readAt: string;
 }
 
 const DEFAULT_DEBOUNCE_MS = 200;
@@ -165,7 +167,7 @@ export function createSpecRepository(options: SpecRepositoryOptions): SpecReposi
             return known;
         });
         const model = await buildProject(options.source, project.root, project.version, files);
-        return { project, files: files.files, model };
+        return { project, files: files.files, model, readAt: options.clock.now() };
     }
 
     function stopWatching(): void {
@@ -249,6 +251,7 @@ export function createSpecRepository(options: SpecRepositoryOptions): SpecReposi
             });
         },
         snapshot: () => state?.model,
+        readAt: () => state?.readAt,
         onDidChange(listener) {
             listeners.add(listener);
             return { dispose: () => void listeners.delete(listener) };

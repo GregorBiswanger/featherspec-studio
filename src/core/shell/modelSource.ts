@@ -2,7 +2,7 @@ import type { ShellModel, ShellModelSource } from '../ports/shell';
 import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
 import type { SpecRepository } from '../specs/specRepository';
 
-export function createModelSource(repository: Pick<SpecRepository, 'snapshot' | 'onDidChange'>): ShellModelSource {
+export function createModelSource(repository: Pick<SpecRepository, 'snapshot' | 'readAt' | 'onDidChange'>): ShellModelSource {
     let cached: ShellModel | undefined;
     return {
         current() {
@@ -16,6 +16,7 @@ export function createModelSource(repository: Pick<SpecRepository, 'snapshot' | 
             }
             return cached;
         },
+        updatedAt: () => repository.readAt() ?? '',
         onDidChange(listener) {
             return repository.onDidChange(() => listener());
         },

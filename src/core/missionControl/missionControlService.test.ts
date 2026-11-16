@@ -139,19 +139,43 @@ describe('dashboard service', () => {
         expect(world.store.listCalls() - before).toBeLessThanOrEqual(2);
     });
 
-    it('reading (c): the update time is the last project model update; a run change does not move it', async () => {
+    it('AC-017: a model read at 10:00 shows 10:00 in a panel opened at 11:00, and reopening keeps it', async () => {
+        const world = createServiceWorld(await modelFor(AC001_FIXTURE));
+        world.source.stamp('2026-11-16T10:00:00.000Z');
+        world.clock.set('2026-11-16T11:00:00.000Z');
+        const first = world.listen();
+        await world.service.whenIdle();
+        expect(current(world).header.updatedAt).toBe('2026-11-16T10:00:00.000Z');
+        first.dispose();
+        world.clock.set('2026-11-16T13:00:00.000Z');
+        world.listen();
+        await world.service.whenIdle();
+        expect(current(world).header.updatedAt).toBe('2026-11-16T10:00:00.000Z');
+    });
+
+    it('AC-017 (A-013): a spec read while open moves the time to the read; a processed run change moves it to the clock time of that change', async () => {
         const world = createServiceWorld(await modelFor(AC001_FIXTURE));
         world.listen();
         await world.service.whenIdle();
         expect(current(world).header.updatedAt).toBe('2026-11-16T10:00:00.000Z');
+        world.source.set(await modelFor(AC001_FIXTURE), '2026-11-16T10:30:00.000Z');
+        await world.service.whenIdle();
+        expect(current(world).header.updatedAt).toBe('2026-11-16T10:30:00.000Z');
         world.clock.set('2026-11-16T11:00:00.000Z');
         world.store.setRuns([makeRun({ id: 'r1', stem: '0001-thing', status: 'Running' })]);
         world.store.notify();
         await world.service.whenIdle();
-        expect(current(world).header.updatedAt).toBe('2026-11-16T10:00:00.000Z');
-        world.source.set(await modelFor(AC001_FIXTURE));
-        await world.service.whenIdle();
         expect(current(world).header.updatedAt).toBe('2026-11-16T11:00:00.000Z');
+    });
+
+    it('AC-017 (negative control): a change the dashboard did not process leaves the time alone', async () => {
+        const world = createServiceWorld(await modelFor(AC001_FIXTURE));
+        world.listen();
+        await world.service.whenIdle();
+        world.clock.set('2026-11-16T12:00:00.000Z');
+        world.history.fire();
+        await world.service.whenIdle();
+        expect(current(world).header.updatedAt).toBe('2026-11-16T10:00:00.000Z');
     });
 
     it('without a model or an active project there is no view; the project coming back gives one', async () => {

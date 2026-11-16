@@ -43,8 +43,8 @@ of scope here.
 
 ### In scope
 
-- A project header with the folder name, FeatherSpec version, the time of the last project
-  model update and the count of project-level diagnostics (it opens the Spec Board, BR-08).
+- A project header with the folder name, FeatherSpec version, the time of the last model
+  update (spec read or run change, AC-017) and the count of project-level diagnostics (it opens the Spec Board, BR-08).
 - Spec counts: the total and one count per state (Backlog, Ready, Active, Review, Done,
   Blocked), with Deprecated shown inside Done and the derived states labelled (BR-02).
 - One progress figure with its formula shown (BR-04).
@@ -378,7 +378,10 @@ error text, prompts or provider payloads (AC-026). It sends no telemetry (handof
   shall show the updated dashboard content within 500 ms. *(PD-047)*
 - **AC-017** While the dashboard is shown, the system shall show the active project's folder
   name, its FeatherSpec version as 0001 reports it ("unknown" included), the time of the last
-  project model update and the number of project-level diagnostics. When the developer
+  update of what the dashboard shows and the number of project-level diagnostics. That time
+  is the later of the last spec read and the last run change the dashboard processed; opening
+  the panel does not change it, so a model read at 10:00 shows 10:00 in a panel opened at
+  11:00. When the developer
   activates that number, the system shall send the shell one navigation request for the Spec
   Board with the named spec set "Diagnostics", holding the stems of the specs that carry at
   least one diagnostic.
@@ -472,6 +475,7 @@ a drill-down ends on the target area's placeholder; that is accepted (PD-040, PD
 | A-010 | (p5) Times are shown local as `YYYY-MM-DD HH:mm` | §9 leaves the format to the plan | Only the display format would change |
 | A-011 | (p6) The dashboard service computes only while someone listens (the panel is open), so a closed panel causes no store reads | ADR-001 §7, no retained context | The first view after opening would be computed on demand |
 | A-012 | (p7, new with Gregor's answer to OP-4) "Specs that carry a diagnostic" are the entries whose lifecycle entry holds at least one diagnostic of any kind (own files, contradictions); the header number counts project-level diagnostics only (AC-017), so the set can be empty while the number is above 0 — the board's banner then shows the project-level ones | The header number and the set answer two questions; the banner shows the rest (0007 §13) | The board could open with no card although the number reads above 0 |
+| A-013 | (2026-11-16, after `/sdd-compile`) The header time is the later of two stamps: the repository's own time of its last spec read, and the clock time at which the dashboard processed its last run change. A run change that happens while the panel is closed is not processed, so it does not move the time | The dashboard listens only while the panel is open (A-011); the run store keeps no change time | After a closed panel the time can be older than the newest run, which the run section shows anyway |
 
 ## 17. Open points
 
@@ -502,8 +506,9 @@ Closed:
   - Readings made while applying the decisions; say so if one is wrong: (a) the *Running*
     figure opens the Agent Center on the one counted run, else without a target — PD-040 has no
     run-set target and PD-005 allows one open run; (b) reason (b) holds exactly while the run
-    is highlighted, so not for a Done spec; (c) one header time, the last project model update;
-    run changes do not move it; (d) project-level = attached to no spec entry; (e) for a
+    is highlighted, so not for a Done spec; (c) one header time, the last model update: a spec read or a run change the dashboard
+    processed (revised 2026-11-16 after `/sdd-compile`: the first reading excluded run changes
+    and stamped the panel-open time); (d) project-level = attached to no spec entry; (e) for a
     duplicated stem, runs and history belong to every entry with it; (f) AC-024's clock starts
     when the dashboard receives the model; (g) times are absolute; (h) a missing title shows
     "not available", and an activity entry of a vanished stem shows "spec not found" and
