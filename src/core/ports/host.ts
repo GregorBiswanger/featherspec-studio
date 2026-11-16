@@ -28,6 +28,11 @@ export interface WorkspaceFoldersPort {
 
 export interface ClockPort {
     now(): string;
+    setTimeout(callback: () => void, milliseconds: number): Disposable;
+}
+
+export interface MarkerWatchPort {
+    watch(root: string, listener: () => void): Disposable;
 }
 
 export type NotificationAction = 'Open setup guide' | 'Refresh';

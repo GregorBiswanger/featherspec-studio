@@ -1,6 +1,7 @@
 import type {
     ClockPort,
     Disposable,
+    MarkerWatchPort,
     NotificationAction,
     NotificationModel,
     OutputPort,
@@ -40,13 +41,24 @@ export interface FakeUi extends UiPort {
     callCount(): number;
 }
 
+export interface FakeClock extends ClockPort {
+    advance(milliseconds: number): void;
+    pendingTimers(): number;
+}
+
+export interface FakeMarkerWatch extends MarkerWatchPort {
+    watched(): string[];
+    fire(root: string): void;
+}
+
 export interface FakeHost {
     ui: FakeUi;
+    watch: FakeMarkerWatch;
     statusBar: FakeStatusBar;
     output: FakeOutput;
     state: FakeState;
     folders: FakeFolders;
-    clock: ClockPort;
+    clock: FakeClock;
 }
 
 export function createFakeState(initial?: string): FakeState {
@@ -114,6 +126,42 @@ export function createFakeHost(folders: WorkspaceFolderInfo[], state: FakeState 
         },
     };
     let tick = 0;
-    const clock: ClockPort = { now: () => `t${++tick}` };
-    return { statusBar, output, state, folders: folderPort, clock, ui };
+    let time = 0;
+    const timers = new Map<number, { due: number; callback: () => void }>();
+    let nextTimer = 0;
+    const clock: FakeClock = {
+        now: () => `t${++tick}`,
+        setTimeout(callback, milliseconds) {
+            const id = nextTimer++;
+            timers.set(id, { due: time + milliseconds, callback });
+            return { dispose: () => timers.delete(id) };
+        },
+        advance(milliseconds) {
+            const target = time + milliseconds;
+            for (;;) {
+                const next = [...timers.entries()].filter(([, timer]) => timer.due <= target).sort((a, b) => a[1].due - b[1].due)[0];
+                if (next === undefined) {
+                    break;
+                }
+                timers.delete(next[0]);
+                time = Math.max(time, next[1].due);
+                next[1].callback();
+            }
+            time = target;
+        },
+        pendingTimers: () => timers.size,
+    };
+    const watchers: { root: string; listener: () => void }[] = [];
+    const watch: FakeMarkerWatch = {
+        watch(root, listener) {
+            const registration = { root, listener };
+            watchers.push(registration);
+            return { dispose: () => void watchers.splice(watchers.indexOf(registration), 1) };
+        },
+        watched: () => watchers.map((registration) => registration.root),
+        fire(root) {
+            watchers.filter((registration) => registration.root === root).forEach((registration) => registration.listener());
+        },
+    };
+    return { statusBar, output, state, folders: folderPort, clock, ui, watch };
 }

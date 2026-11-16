@@ -3,7 +3,7 @@
 **Spec:** [0001-workspace-discovery-project-recognition.md](0001-workspace-discovery-project-recognition.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-005
+**Current step:** T-009
 
 ## Approach
 
@@ -216,8 +216,8 @@ T-005…T-007 define, and T-008 documents the result.
   - one entry per folder
   - no `.specs/` content event exists in the port (inside changes cannot trigger)
 - **Verify:** `npx vitest run src/core/discovery` (red, then green) + per-step gates
-- [ ] **Verified (T-007):** —
-- **Notes:** re-cut 2026-11-16 (was: watchers verified by `npm test`).
+- [x] **Verified (T-007):** 2026-11-16 — red: `npx vitest run src/core/discovery/rerunScheduler.test.ts` 5/5 failed with `Not implemented`; `npx vitest run src/core/discovery/liveDetection.test.ts` 8/8 failed (`whenIdle`/`dispose` stubs threw `Not implemented`); green: 5/5 and 8/8 passed. Gates: eslint 0 findings, `tsc --noEmit` 0 errors, `npm run test:unit` 8 files, 96 passed.
+- **Notes:** `ClockPort` gained `setTimeout`; `MarkerWatchPort.watch(root, listener)` is one watch per folder root (the adapter in T-009 narrows it to root `AGENTS.md` and `.specs` itself). Controller runs are serialised through a promise queue (commands and scheduler never overlap); `whenIdle()` and `dispose()` were added to the controller for the smoke suite and shutdown. The 'no .specs/ content event' test can only show that the core registers roots and ignores unknown sources; the adapter pattern is checked in T-009. Live-detection tests sit in `liveDetection.test.ts` (not `discoveryController.test.ts`).
 
 ### T-009 — VS Code adapters, manifest, composition root, smoke suite
 
@@ -274,23 +274,23 @@ T-005…T-007 define, and T-008 documents the result.
 | --- | --- | --- | --- | --- |
 | AC-001 | T-001 | src/core/discovery/classifyFolder.ts:classifyFolder | classifyFolder.test.ts, discoverWorkspace.test.ts | verified |
 | AC-002 | T-001 | src/core/discovery/classifyFolder.ts:classifyFolder | classifyFolder.test.ts (AC-002 cases) | verified |
-| AC-003 | T-001, T-004, T-006 | src/core/discovery/classifyFolder.ts, report.ts:formatOutputBlock, buildSelectItems | classifyFolder.test.ts, report.test.ts (AC-003); controller wiring open (T-006) | built |
+| AC-003 | T-001, T-004, T-006 | src/core/discovery/classifyFolder.ts, report.ts, discoveryController.ts:selectProject | classifyFolder.test.ts, report.test.ts, discoveryController.test.ts (AC-003) | verified |
 | AC-004 | T-001 | src/core/discovery/classifyFolder.ts, discoverWorkspace.ts (legacy diagnostic) | classifyFolder.test.ts, discoverWorkspace.test.ts (AC-004) | verified |
 | AC-006 | T-001 | src/core/discovery/classifyFolder.ts:classifyFolder | classifyFolder.test.ts (AC-006 incl. control) | verified |
-| AC-007 | T-003, T-005 | src/core/discovery/activeProject.ts:resolveActiveProject | activeProject.test.ts (AC-007); controller open (T-005) | built |
-| AC-008 | T-003, T-004, T-006 | src/core/discovery/activeProject.ts, report.ts:buildSelectItems | activeProject.test.ts, report.test.ts (AC-008); command open (T-006) | built |
-| AC-009 | T-003, T-006 | src/core/discovery/activeProject.ts:resolveActiveProject | activeProject.test.ts (AC-009); controller restore open (T-006); manual: Gregor reloads (planned) | built |
-| AC-010 | T-003, T-006 | src/core/discovery/activeProject.ts:resolveActiveProject | activeProject.test.ts (AC-010); controller open (T-006) | built |
-| AC-011 | T-002, T-006 | src/core/ports/readOnlyFileSystem.ts (no write members), discoverWorkspace.ts | discoverWorkspace.test.ts (AC-011 tree snapshot); refresh and select open (T-006) | built |
-| AC-012 | T-002, T-007 | src/core/discovery/discoverWorkspace.ts:discoverWorkspace | discoverWorkspace.test.ts (AC-012); select list, Output block, reruns open (T-004, T-007) | built |
-| AC-013 | T-007 | — | — | open |
-| AC-014 | T-003, T-005 | src/core/discovery/activeProject.ts (statusBar) | activeProject.test.ts (AC-014); controller open (T-005) | built |
-| AC-015 | T-004, T-006 | src/core/discovery/report.ts:buildNoProjectNotification | report.test.ts (AC-015); command open (T-006) | built |
-| AC-016 | T-004, T-005 | src/core/discovery/report.ts:formatOutputBlock | report.test.ts (AC-016); controller write open (T-005) | built |
+| AC-007 | T-003, T-005 | src/core/discovery/activeProject.ts, discoveryController.ts:start | activeProject.test.ts, discoveryController.test.ts (AC-007) | verified |
+| AC-008 | T-003, T-004, T-006 | src/core/discovery/activeProject.ts, report.ts:buildSelectItems, discoveryController.ts:selectProject | activeProject.test.ts, report.test.ts, discoveryController.test.ts (AC-008) | verified |
+| AC-009 | T-003, T-006 | src/core/discovery/activeProject.ts, discoveryController.ts:selectProject | discoveryController.test.ts (AC-009: new controller on same state); manual: Gregor reloads (planned) | built |
+| AC-010 | T-003, T-006 | src/core/discovery/activeProject.ts, discoveryController.ts:refresh | discoveryController.test.ts (AC-010, incl. control) | verified |
+| AC-011 | T-002, T-006 | src/core/ports/readOnlyFileSystem.ts (no write members), discoveryController.ts | discoverWorkspace.test.ts, discoveryController.test.ts (AC-011 tree snapshot) | verified |
+| AC-012 | T-002, T-007 | src/core/discovery/discoverWorkspace.ts, report.ts, discoveryController.ts | discoverWorkspace.test.ts, report.test.ts, liveDetection.test.ts (AC-012) | verified |
+| AC-013 | T-007 | src/core/discovery/rerunScheduler.ts, discoveryController.ts:syncWatches | rerunScheduler.test.ts, liveDetection.test.ts (AC-013); real watcher wiring open (T-009 smoke) | built |
+| AC-014 | T-003, T-005 | src/core/discovery/activeProject.ts (statusBar), discoveryController.ts | activeProject.test.ts, discoveryController.test.ts (AC-014) | verified |
+| AC-015 | T-004, T-006 | src/core/discovery/report.ts:buildNoProjectNotification, discoveryController.ts:selectProject | report.test.ts, discoveryController.test.ts (AC-015) | verified |
+| AC-016 | T-004, T-005 | src/core/discovery/report.ts:formatOutputBlock, discoveryController.ts | report.test.ts, discoveryController.test.ts (AC-016) | verified |
 | AC-017 | T-002, T-004 | src/core/discovery/discoverWorkspace.ts:discoverFolder, report.ts:formatOutputBlock | discoverWorkspace.test.ts, report.test.ts (AC-017) | verified |
 | AC-018 | T-002 | src/core/discovery/discoverWorkspace.ts:discoverWorkspace | discoverWorkspace.test.ts (AC-018, 5 fixtures < 2 s) | verified |
-| AC-019 | T-005, T-009 | — | — | open |
-| AC-020 | T-003, T-005 | src/core/discovery/activeProject.ts (statusBar) | activeProject.test.ts (AC-020); controller open (T-005) | built |
+| AC-019 | T-005, T-009 | src/core/discovery/discoveryController.ts:start | discoveryController.test.ts (AC-019 core); host wiring open (T-009) | built |
+| AC-020 | T-003, T-005 | src/core/discovery/activeProject.ts, discoveryController.ts | activeProject.test.ts, discoveryController.test.ts (AC-020) | verified |
 | AC-021 | T-002 | src/core/discovery/versionLine.ts:readVersionLine | versionLine.test.ts, discoverWorkspace.test.ts (AC-021) | verified |
 | AC-022 | T-009 | — | manual: Gregor in Restricted Mode (planned) | open |
 
@@ -298,8 +298,8 @@ Pre-done (before `/sdd-lifecycle` → done): `npm test` smoke suite green on CI 
 
 ## Session handoff
 
-- **Done so far:** T-001…T-004 (stages 1–2: verdicts, version line, discovery run, active-project state, report model; 62 unit tests green).
-- **Next action:** T-005 (stage 3, controller against fake host ports).
+- **Done so far:** T-001…T-007 (stages 1–3: the whole framework-free core, controller against fake host ports; 96 unit tests green).
+- **Next action:** T-009 (stage 4: VS Code adapters, manifest, composition root, smoke suite), then T-008.
 - **Open decisions:** OP-004, OP-006…OP-012 (spec §17), none blocking.
 - **Baseline:** `2083696` (HEAD before the first step commit; lifecycle move 2026-11-16).
 - **Environment:** `npm test` cannot run here (VS Code download blocked); it runs on CI and on Gregor's Windows machine.

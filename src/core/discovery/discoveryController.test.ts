@@ -21,6 +21,7 @@ function depsOf(host: ReturnType<typeof createFakeHost>) {
         folders: host.folders,
         clock: host.clock,
         ui: host.ui,
+        watch: host.watch,
     };
 }
 
@@ -34,6 +35,7 @@ function setup(names: string[], remembered?: string) {
         folders: host.folders,
         clock: host.clock,
         ui: host.ui,
+        watch: host.watch,
         sameRoot,
     });
     return { host, controller };
