@@ -1,9 +1,9 @@
 # Plan — Workspace Discovery & Project Recognition
 
 **Spec:** [0001-workspace-discovery-project-recognition.md](0001-workspace-discovery-project-recognition.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-16
-**Current step:** T-012
+**Current step:** none (all steps ticked)
 
 ## Approach
 
@@ -300,7 +300,7 @@ T-005…T-007 define, T-008 and T-012 document the result.
 - **Covers:** AC-016, AC-017, AC-021, AC-023 (re-proven by the full unit gate run)
 - **Do:** Memory Bank (`activeContext.md`, `systemPatterns.md` entry for the notification contract), README only if the behaviour list names the hint or errors, `architecture:` snapshot check (no new module: `src/core/discovery` entry text lists the controller already; confirm unchanged). Traceability and handoff of this plan level with the code; open evidence recorded below.
 - **Verify:** `npx eslint src --max-warnings 0` · `npx tsc --noEmit` · `npm run test:unit` · `npm run compile`. `npm test` stays the pre-done gate (CI or Gregor's Windows), not this step's Verify.
-- [ ] **Verified (T-012):** —
+- [x] **Verified (T-012):** 2026-11-16 — `npx eslint src --max-warnings 0` 0 findings; `npx tsc --noEmit` 0 errors; `npm run test:unit` 11 files, 122 passed; `npm run compile` ok. `npm test` NOT run (VS Code download blocked here): listed under *Open evidence*. `architecture:` snapshot unchanged (no module added; the `src/core/discovery` entry already names the controller). README unchanged (it names the location hint only for folders without markers, which stays true).
 - **Notes:** —
 
 ## Traceability
@@ -321,14 +321,14 @@ T-005…T-007 define, T-008 and T-012 document the result.
 | AC-013 | T-007 | src/core/discovery/rerunScheduler.ts, discoveryController.ts:syncWatches, src/adapters/vscode/markerWatch.ts | rerunScheduler.test.ts, liveDetection.test.ts (AC-013); src/test/discovery.smoke.test.ts (real watcher, pre-done gate, not run here) | built |
 | AC-014 | T-003, T-005 | src/core/discovery/activeProject.ts (statusBar), discoveryController.ts | activeProject.test.ts, discoveryController.test.ts (AC-014) | verified |
 | AC-015 | T-004, T-006 | src/core/discovery/report.ts:buildNoProjectNotification, discoveryController.ts:selectProject | report.test.ts, discoveryController.test.ts (AC-015) | verified |
-| AC-016 | T-004, T-005, T-010 | src/core/discovery/report.ts:formatOutputBlock, discoveryController.ts | report.test.ts, discoveryController.test.ts (AC-016) | built |
-| AC-017 | T-002, T-004, T-010 | src/core/discovery/discoverWorkspace.ts:discoverFolder, report.ts:formatOutputBlock | discoverWorkspace.test.ts, report.test.ts (AC-017) | built |
+| AC-016 | T-004, T-005, T-010 | src/core/discovery/report.ts:formatOutputBlock, discoveryController.ts | report.test.ts (AC-016, incl. unreadable AGENTS.md beside .specs/ without hint), discoveryController.test.ts (AC-016) | verified |
+| AC-017 | T-002, T-004, T-010 | src/core/discovery/classifyFolder.ts:FolderReadError, discoverWorkspace.ts:discoverFolder, report.ts:formatOutputBlock | discoverWorkspace.test.ts (AC-017, names AGENTS.md / .claude/commands), report.test.ts (AC-017) | verified |
 | AC-018 | T-002 | src/core/discovery/discoverWorkspace.ts:discoverWorkspace | discoverWorkspace.test.ts (AC-018, 5 fixtures < 2 s) | verified |
 | AC-019 | T-005, T-009 | src/core/discovery/discoveryController.ts:start, package.json (activationEvents), src/extension.ts:activate | discoveryController.test.ts, src/adapters/vscode/manifest.test.ts (AC-019); src/test/discovery.smoke.test.ts (pre-done gate, not run here) | built |
 | AC-020 | T-003, T-005 | src/core/discovery/activeProject.ts, discoveryController.ts | activeProject.test.ts, discoveryController.test.ts (AC-020) | verified |
-| AC-021 | T-002, T-010 | src/core/discovery/versionLine.ts:readVersionLine | versionLine.test.ts, discoverWorkspace.test.ts (AC-021) | built |
+| AC-021 | T-002, T-010 | src/core/discovery/versionLine.ts:readVersionLine, classifyFolder.ts:VERSION_LINE_PATTERN | versionLine.test.ts, classifyFolder.test.ts (AC-021, BR-07 start of line), discoverWorkspace.test.ts (AC-021) | verified |
 | AC-022 | T-009 | package.json (capabilities.untrustedWorkspaces, no trust guard in src/extension.ts) | src/adapters/vscode/manifest.test.ts (AC-022); manual: Gregor in Restricted Mode (planned) | built |
-| AC-023 | T-011 | — | — | open |
+| AC-023 | T-011 | src/core/discovery/discoveryController.ts:onDidChangeActiveProject | activeProjectChanged.test.ts (AC-023, 9 cases incl. no-change control) | verified |
 
 Pre-done (before `/sdd-lifecycle` → done): `npm test` smoke suite green on CI or Gregor's Windows machine, plus the two manual checks above.
 
@@ -342,8 +342,8 @@ Not yet proven; the next `/sdd-compile` must find these three and must not read 
 
 ## Session handoff
 
-- **Done so far:** T-001…T-009 and T-008, all ticked with recorded runs (106 unit tests, eslint, tsc, compile green); docs, CI workflow, architecture snapshot and Memory Bank synced.
-- **Next action:** Pre-done gates by Gregor/CI: `npm test` smoke suite (also proves the `workspaceContains:.specs` directory assumption), manual AC-009 (reload) and AC-022 (Restricted Mode). Then `/sdd-compile` in a fresh session, best with a model of another family; then `/sdd-lifecycle` → done.
-- **Open decisions:** OP-004, OP-006…OP-012 (spec §17), none blocking.
-- **Baseline:** `2083696` (HEAD before the first step commit; lifecycle move 2026-11-16).
+- **Done so far:** T-001…T-012 ticked with recorded runs (122 unit tests, eslint, tsc, compile green). T-010…T-012 (appended 2026-11-16) cover the spec delta after `/sdd-compile`: read errors name the failing path, version-line start rule named by tests, AC-023 notification. Docs, Memory Bank and snapshot level.
+- **Next action:** close the three items under *Open evidence* (host suite on CI or Gregor's Windows, manual AC-009, manual AC-022), then `/sdd-compile` again in a fresh session (another model family), then `/sdd-lifecycle` → done. Spec stays `In Progress`.
+- **Open decisions:** OP-006…OP-012 (spec §17), none blocking. OP-004 resolved 2026-11-16.
+- **Baseline:** `2083696` (HEAD before the first step commit; lifecycle move 2026-11-16). Delta commits: T-010 `6de03cd`, T-011 `c0a202e`.
 - **Environment:** `npm test` cannot run here (VS Code download blocked); it runs on CI and on Gregor's Windows machine.
