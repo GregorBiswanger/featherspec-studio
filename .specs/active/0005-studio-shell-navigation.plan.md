@@ -350,8 +350,8 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
     - trust granted → the note is gone without a reopen;
     - `rescan()` with an active project calls the repository once (AC-029); with none it calls nothing.
 - **Verify:** `npm run test:unit -- src/core/shell` plus the per-step gates
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-16 — red: `npx vitest run src/core/shell/shellService.test.ts` 20/20 failed (`createShellService` stub threw `Not implemented`); green 20/20 on the real discovery controller with the fake host, a real spec repository over the memory source, fake trust, actions and UI memory (S4 before the first model and while the model is missing, S4 absent on a re-read of the same project, navigate answered while loading, S5 for a discovery failure and for a lifecycle folder that cannot be listed, one unreadable spec is no S5, Retry passes through S4 and rescans once, a second Retry or Refresh during the first starts nothing, Refresh does not rescan, trust granted removes the note, S1 and S2, Select project runs 0001's selection, `rescan()` calls the repository once with a project and never without). Gates: eslint 0, `tsc --noEmit` 0, `tsc --noEmit -p src/webview` 0, `npm run test:unit` 51 files, 796 passed.
+- **Notes:** `ShellModelSource` (ports/shell.ts) is implemented by `createModelSource(repository)`: it derives the 0003 model with `deriveLifecycle(snapshot)` and caches it per snapshot, so rows and project never disagree (the lifecycle service refreshes asynchronously; this source is self-consistent and the same pure function feeds both). `ShellActionsPort` gained `reloadPanel()` for the Reload action. The fault injected in tests is `output.appendBlock` throwing (an unexpected run failure); making `folders.list` throw would break the service's own S1 check. `hello` is a no-op handler here; the panel host (T-008) wraps it to push the view. `navigate` only sets area and target here; BR-07 follows in T-007. `src/core/shell/testing/world.ts` is the shared test world for T-006 and T-007.
 
 ### T-007 — Selection, remembered area, Spec Explorer rows, navigation request
 
@@ -490,10 +490,10 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 | AC-011 | T-005, T-009 | src/core/shell/panelState.ts:derivePanelState (S1), treeModel.ts; Open Folder action in T-009 | panelState.test.ts (AC-011), treeModel.test.ts (S1) | built |
 | AC-012 | T-005 | src/core/shell/panelState.ts (S2) | panelState.test.ts (AC-012), treeModel.test.ts | verified |
 | AC-013 | T-005, T-009 | src/core/shell/panelState.ts (S3); the Select project action runs in T-009 | panelState.test.ts (AC-013), treeModel.test.ts | built |
-| AC-014 | T-002, T-006 | src/webview/client.ts, PanelStateView.tsx (S4); host side in T-006 | src/webview/App.test.tsx (AC-014 loading), PanelStateView.test.tsx (S4) | built |
-| AC-015 | T-003, T-006, T-009 | src/webview/client.ts (protocol cause), PanelStateView.tsx; host causes in T-006 | client.test.ts (AC-015 timeout, invalid snapshot), PanelStateView.test.tsx (S5 texts) | built |
+| AC-014 | T-002, T-006 | src/core/shell/shellService.ts (loading), panelState.ts, src/webview/client.ts | shellService.test.ts (AC-014), App.test.tsx, PanelStateView.test.tsx | verified |
+| AC-015 | T-003, T-006, T-009 | src/core/shell/shellService.ts, panelState.ts:listingFailure, src/webview/client.ts (protocol) | shellService.test.ts (AC-015: discovery, listing, single file, Retry), client.test.ts, PanelStateView.test.tsx | verified |
 | AC-016 | T-001, T-003 | src/core/shell/messageRouter.ts, src/webview/client.ts (S6, S5 after reload), PanelStateView.tsx | messageRouter.test.ts, client.test.ts (AC-016), PanelStateView.test.tsx (S6) | verified |
-| AC-017 | T-003, T-006, T-009 | src/webview/RestrictedNote.tsx; host flag in T-006 | PanelStateView.test.tsx (AC-017) | built |
+| AC-017 | T-003, T-006, T-009 | src/core/shell/shellService.ts (restricted flag), src/webview/RestrictedNote.tsx | shellService.test.ts (AC-017), PanelStateView.test.tsx (AC-017) | verified |
 | AC-018 | T-003, T-005 | src/core/shell/panelState.ts (precedence), src/webview/client.ts (S6 first) | panelState.test.ts (AC-018 pairs), PanelStateView.test.tsx (S6 over a host state) | verified |
 | AC-019 | T-009 | — | manual: Gregor, Light/Dark/both HC + live switch | open |
 | AC-020 | T-008 | — | — | open |
