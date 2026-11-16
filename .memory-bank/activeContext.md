@@ -2,19 +2,21 @@
 
 Last updated: 2026-11-16
 Current branch: main
-Current phase: act
+Current phase: plan
 
 ## Now
-Specs 0001 (workspace discovery), 0002 (spec repository & parser) and 0004 (runtime persistence & event model) are implemented, their plans are Done. They await the host suite (`npm test`) on CI and `/sdd-compile` in a fresh session. Spec 0003 is next.
+Specs 0001 (workspace discovery), 0002 (spec repository & parser) and 0004 (runtime persistence & event model) are implemented, their plans are Done. They await the host suite (`npm test`) on CI and `/sdd-compile` in a fresh session. Spec 0003 is planned and awaits Gregor's plan review.
 
 ## Active Spec
 - Spec 0001: [spec](../.specs/active/0001-workspace-discovery-project-recognition.md) / [plan](../.specs/active/0001-workspace-discovery-project-recognition.plan.md) (Done, 12 of 12 steps; open evidence AC-009, AC-022 in the plan).
 - Spec 0002: [spec](../.specs/active/0002-spec-repository-parser.md) / [plan](../.specs/active/0002-spec-repository-parser.plan.md) (Done, 9 of 9 steps).
 - Spec 0004: [spec](../.specs/active/0004-runtime-persistence-event-model.md) / [plan](../.specs/active/0004-runtime-persistence-event-model.plan.md) (Done, T-001...T-009 ticked; AC-020 accepted 2026-11-16).
-- Current task: none; all steps ticked.
+- Spec 0003: [spec](../.specs/backlog/0003-spec-lifecycle-readiness-model.md) / [plan](../.specs/backlog/0003-spec-lifecycle-readiness-model.plan.md) (Not started, 8 steps, 4 stages; stage 2 `‖`).
+- Current task: plan review for 0003; 0001/0002/0004 all steps ticked.
 - Acceptance criteria in focus: AC-009, AC-013, AC-019, AC-022 (0001, open evidence in its plan).
 
 ## Changed Recently
+- Spec 0003 revised (OP-005 flow marker on collapsed jumps, OP-006 reactivated Baseline, OP-007 duplicated-stem history, new AC-026; Gregor) and planned: `.specs/backlog/0003-spec-lifecycle-readiness-model.plan.md`.
 - Merged `spec-0004` into `main`: `src/extension.ts` wires both the spec repository (0002) and the runtime session (0004), each fed by spec 0001's `onDidChangeActiveProject`; `architecture:` snapshot in `AGENTS.md` holds both modules.
 - Spec 0004 built: `src/core/runtime`, `src/adapters/node/fileRuntimeMedium.ts`, `docs/runtime-data.md`; T-009 after `/sdd-compile`: append-only after a kill, writes to unreadable or newer data refused.
 - Spec 0002 built: `src/core/specs`, `src/adapters/vscode` spec source and file watch, active-project feed (T-001...T-009).
@@ -31,7 +33,7 @@ Specs 0001 (workspace discovery), 0002 (spec repository & parser) and 0004 (runt
 ## Next
 1. Gregor/CI: `npm test` host suite (0001, 0002, 0004 smoke tests); manual checks AC-009 (reload) and AC-022 (Restricted Mode).
 2. `/sdd-compile` for 0001, 0002 and 0004 in a fresh session (another model family), then `/sdd-lifecycle` to done.
-3. `/sdd-plan` for spec 0003 (spec lifecycle & readiness model).
+3. Gregor reviews the 0003 plan; on the start signal `/sdd-lifecycle` backlog → active, then T-001.
 4. Gregor re-measures AC-018 on a real project (OP-001).
 
 ## Validation

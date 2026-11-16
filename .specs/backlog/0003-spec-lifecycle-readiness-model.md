@@ -1,7 +1,7 @@
 # Spec Lifecycle & Readiness Model
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0003-spec-lifecycle-readiness-model.plan.md](0003-spec-lifecycle-readiness-model.plan.md)
 
 Handoff reference: FS-003 ([po-handoff.md](../../docs/product/po-handoff.md) §6, §10). Format
 basis: [featherspec-format.md](../../docs/discovery/featherspec-format.md) §5–§7 (SPIKE-001).
@@ -150,8 +150,9 @@ the contradiction and is never Ready or Review (PD-021). The list is closed (OP-
   with a status other than `Draft`; `done/` with a status other than `Implemented`, `Baseline`
   or `Deprecated`. A missing or unknown status counts as "other".
 - `active/` without a sibling plan, unless `**Plan:**` links a `plan-archive/` path
-  (reactivation before the fresh plan exists — valid, no diagnostic). Reactivated Baselines:
-  OP-006.
+  (reactivation before the fresh plan exists — valid, no diagnostic), and unless the spec
+  carries an `**Origin:**` line and `**Plan:**` is `_none_` (reactivated Baseline before its
+  first plan — valid, no diagnostic; OP-006).
 - `done/` + `Implemented` without an archive link in `**Plan:**`. A legacy sibling plan beside
   a `done/` spec (≤ 1.4 layout) is valid and gets no diagnostic.
 
@@ -184,7 +185,10 @@ recorded. A change not in this list is recorded with the marker *outside the Fea
 (A-002): Backlog ↔ Ready · Backlog/Ready → Active · Active ↔ Review · Review → Done ·
 Active → Done · Done → Active (reactivation) · any non-Done state ↔ Blocked · Blocked → Done.
 The check compares the old and the new state of one history entry, whatever happened in
-between (collapsed jumps: OP-005).
+between. A change with the changed file paths as cause is *in flow* when a sequence of the
+steps above leads from the old to the new state without passing through Blocked as an
+intermediate state (collapsed jumps, e.g. Backlog → Review in one `git pull`; same reasoning as
+A-003). An entry with cause *changed while Studio was not running* is *not checked* (OP-005).
 
 ### 6.5 Status history
 
@@ -205,7 +209,7 @@ between (collapsed jumps: OP-005).
   - *changed while Studio was not running* — at the first derivation after activation the
     derived state differs from the last recorded state. One entry, observed at that
     derivation; no intermediate states, no times taken from git or file timestamps;
-    flow-checked like any other change (OP-005).
+    flow marker *not checked* (OP-005).
   - *no longer observed* — a stem with a last recorded state is absent from the snapshot, also
     at the first derivation after activation. No new state; *not checked*.
 - A stem change is *no longer observed* for the old stem plus *first observed* for the new
@@ -217,7 +221,11 @@ between (collapsed jumps: OP-005).
   derives states and reads the history (PD-030).
 - A `**Status:**` change that leaves the state unchanged creates no entry (OP-008).
 - Stored in Studio's runtime data (0004, A-009), never in the repository. Kept per PD-012 and
-  PD-027. History of a duplicated stem: OP-007.
+  PD-027.
+- **Duplicated stem** (two or more entries share the stem, PD-019): no entry is appended for
+  that stem while it is duplicated. When exactly one entry with the stem remains, its state is
+  compared with the stem's last recorded state like a live change (cause: the changed file
+  paths), or recorded as *first observed* when the stem has none (OP-007).
 
 ### 6.6 Verification status (separate dimension)
 
@@ -241,7 +249,7 @@ between (collapsed jumps: OP-005).
 | FR-04 | Validate transitions by defined rules | FR-003.4 | AC-008, AC-009 |
 | FR-05 | Determine readiness by explicit preconditions | FR-003.5 | AC-003, AC-004, AC-005 |
 | FR-06 | Detect external file changes and the resulting state changes | FR-003.6 | AC-014 |
-| FR-07 | Make state changes traceable with time and cause | FR-003.7 | AC-014, AC-015, AC-016, AC-017, AC-023, AC-024 |
+| FR-07 | Make state changes traceable with time and cause | FR-003.7 | AC-014, AC-015, AC-016, AC-017, AC-023, AC-024, AC-026 |
 | FR-08 | Keep spec lifecycle, agent run and verification status apart | FR-003.8 | AC-006, AC-007, AC-018 |
 | FR-09 | Reproducible, documented derivation; never change FeatherSpec conventions | no FR; handoff AC-003.7, AC-003.8 | AC-002, AC-010, AC-011 |
 | FR-10 | Keep working when individual files are broken or the history store is unavailable | no FR; follows 0002's isolation rule (handoff AC-002.5) and PD-023 | AC-019, AC-024 |
@@ -289,7 +297,8 @@ history scope statement (§6.5). UI language English (PD-016).
 - Spec file deleted: history entry *no longer observed*; no card.
 - Stem changed (number or slug): *no longer observed* for the old stem plus *first observed*
   for the new one. A move between lifecycle folders keeps the stem (PD-018).
-- Duplicates: every file keeps its own card and state; none is Ready (PD-019).
+- Duplicates: every file keeps its own card and state; none is Ready (PD-019). A duplicated
+  stem gets no history entries until the duplication ends (§6.5).
 - A spec reappears after *no longer observed* (branch switch): *first observed* again (§6.5).
 - Several changes arriving in one notification: one entry per spec, last recorded → final state.
 - History store unavailable, or this window without the write lock: states are still derived
@@ -339,9 +348,12 @@ the spec repository. It shall refuse every other request with the reason kind of
 matching §6.4 row and that row's parameters. An accepted request shall change no state.
 *(AC-003.6, PD-013, PD-014)*
 
-**AC-009** If an observed state change is not in the in-flow list of §6.4, then the model
-shall show the new state as the files define it. It shall record the change in the history
-with the marker *outside the FeatherSpec flow*.
+**AC-009** If an observed state change with the changed file paths as cause cannot be reached
+from its old state by a sequence of in-flow steps of §6.4 that passes through no intermediate
+Blocked state, then the model shall show the new state as the files define it and record the
+change in the history with the marker *outside the FeatherSpec flow*; a change that can be
+reached so shall carry *in flow*. An entry with cause *changed while Studio was not running*
+shall carry the marker *not checked*. *(OP-005, Gregor 2026-11-16)*
 
 **AC-010** For identical snapshots — the same files at the same paths with the same contents —
 the model shall produce identical states, rule IDs,
@@ -373,7 +385,7 @@ derivation as observed time. It shall not record intermediate states or times ta
 or file timestamps.
 
 **AC-016** The model shall append history entries only on the occasions named in AC-014,
-AC-015 and AC-017. The history data shall carry, once, the label "Observed by Studio while it
+AC-015, AC-017 and AC-026. The history data shall carry, once, the label "Observed by Studio while it
 was running — not a reconstruction" for display.
 
 **AC-017** When a spec appears whose stem has no last recorded state (§6.5), the model shall
@@ -418,7 +430,14 @@ unavailable. If the history cannot be read, the model shall report it as *not av
 
 **AC-025** The model shall attach no contradiction diagnostic to an `active/` spec without a
 sibling plan whose `**Plan:**` line links a `plan-archive/` path, nor to a `done/` spec that
-has a legacy sibling plan beside it.
+has a legacy sibling plan beside it, nor to an `active/` spec without a sibling plan that
+carries an `**Origin:**` line and `**Plan:** _none_` (reactivated Baseline, OP-006).
+
+**AC-026** While two or more spec entries share a stem, the model shall append no history
+entry for that stem. When exactly one entry with that stem remains, the model shall compare
+its state with the stem's last recorded state and append an entry as AC-014 defines it, or a
+*first observed* entry as AC-017 defines it when the stem has no last recorded state.
+*(OP-007, Gregor 2026-11-16)*
 
 Who decides: automated tests over fixture snapshots (fixture set in featherspec-format §11,
 including the synthetic `fs110-ready-synthetic` and `fs110-parallel-synthetic`); the test level
@@ -430,8 +449,8 @@ supplies; showing it is 0007's criterion.
 
 ## 14. Technical notes for developers or AI agents
 
-- Brownfield check: no source module exists yet (`architecture: modules: []`); nothing to
-  reuse. The model lives in the framework-free domain layer and must not import `vscode`
+- Brownfield check (updated by `/sdd-plan`, 2026-11-16): builds on `src/core/specs` (input
+  model, 0002) and `src/core/runtime` (history store, 0004). The model lives in the framework-free domain layer and must not import `vscode`
   (AGENTS.md snapshot, Core purity).
 - Shape to aim for (decided in `/sdd-plan`): a pure function `snapshot → per-spec result`
   makes AC-010 testable directly. History appending is an application service behind the
@@ -467,19 +486,6 @@ Open — Gregor decides; the recommendation is not applied:
 - OP-003: The proxy decisions PD-002, PD-013, PD-014, PD-015, PD-016 (A-008) await Gregor's
   confirmation. Recommendation: confirm as written; they follow the handoff. A change means
   revising §6.4 and §9.
-- OP-005: Flow marker on collapsed jumps. A legitimate Backlog → Review or Backlog → Done that
-  Studio sees as one change (offline, or one `git pull`) is marked *outside the FeatherSpec
-  flow*, because only single steps are in the §6.4 list. As written, AC-009 applies to these
-  entries too. Recommendation: mark entries with cause *changed while Studio was not running*
-  as *not checked*, and treat a live jump as in flow when in-flow steps lead from the old to
-  the new state (same reasoning as A-003).
-- OP-006: A reactivated `Baseline` sits in `active/` with `**Plan:** _none_` and no plan until
-  `/sdd-plan` writes its first one (`/sdd-lifecycle`, *Reactivating*). §6.3 gives it a
-  contradiction diagnostic. Recommendation: no diagnostic where the spec carries an
-  `**Origin:**` line; weak spot: some Baselines lack that line (featherspec-format §10 #10).
-- OP-007: History of a duplicated stem. PD-023 keys the history by stem, PD-019 keeps two
-  entries with one stem. Recommendation: append no entries for a stem while it is duplicated
-  (best effort, PD-023). To be answered at the `/sdd-plan` checkpoint at the latest.
 - OP-008: `Implemented` → `Deprecated` leaves the state Done, so the history gets no entry.
   Recommendation: keep it that way in the MVP; handoff FR-003.7 asks for state changes, and
   the card shows the marker.
@@ -487,8 +493,8 @@ Open — Gregor decides; the recommendation is not applied:
   spec, a `backlog/` spec whose plan is `In Progress` or `Done`, a sibling plan with a dated
   twin in the archive outside a reactivation (featherspec-format §5.2). Recommendation: keep
   the list closed in the MVP; R-3 or R-4 already keeps such specs from being Ready.
-- OP-010 (cross-spec, main session): 0004 names no storage for this spec's state history
-  (A-009). 0007 §12 still cites the withdrawn A-001 ("one card").
+- OP-010 (cross-spec, main session): 0007 §12 still cites the withdrawn A-001 ("one card").
+  The 0004 part is resolved (below).
 
 Verification still owed:
 
@@ -517,6 +523,16 @@ Resolved:
     A-007, the custom-states scope entry and the FR-09/FR-10 sources corrected.
 
   Parked 4: OP-003, OP-005, OP-006, OP-008.
+- OP-005 (2026-11-16, Gregor at the `/sdd-plan` checkpoint): recommendation applied — §6.4,
+  §6.5 and AC-009. Refinement written by `/sdd-plan`: a chain may not pass through Blocked as
+  an intermediate state; otherwise every state reaches every other via Blocked and the marker
+  could never appear.
+- OP-006 (2026-11-16, Gregor): recommendation applied — §6.3 and AC-025.
+- OP-007 (2026-11-16, Gregor): recommendation applied — §6.5, §12 and new AC-026; when the
+  duplication ends the remaining entry is compared like a live change.
+- OP-010, 0004 part (2026-11-16, `/sdd-plan` survey): 0004 is built with
+  `RuntimeStore.appendSpecStatusEntry` / `readSpecStatusHistory` (`src/core/runtime/runtimeStore.ts`),
+  refusing writes when read-only or unavailable; A-009 holds.
 
 ## 17. Definition of Ready
 
@@ -527,7 +543,7 @@ points are visible.
 
 ## 18. Definition of Done
 
-All must-requirements are built and AC-001 to AC-025 pass in automated tests over the fixture
+All must-requirements are built and AC-001 to AC-026 pass in automated tests over the fixture
 set.
 No out-of-scope behaviour was added, in particular no file writes. Assumptions are verified or
 documented. The architecture snapshot is updated for the new domain module. Gregor accepted
@@ -535,6 +551,6 @@ the result.
 
 ## 19. Recommended next steps
 
-1. Gregor: OP-003 and OP-005 to OP-009. OP-007 is the one the plan cannot leave open.
-2. `/sdd-plan` once 0002's revision under PD-018–PD-020 is in place, since it defines this
-   spec's input. The main session aligns 0004 and 0007 (OP-010).
+1. Gregor: OP-003, OP-008, OP-009 (the plan follows the spec as written).
+2. Gregor reads the plan [0003-spec-lifecycle-readiness-model.plan.md](0003-spec-lifecycle-readiness-model.plan.md);
+   the main session aligns 0007 §12 (OP-010).
