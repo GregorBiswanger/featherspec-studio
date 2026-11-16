@@ -3,7 +3,7 @@
 **Spec:** [0013-studio-visual-design.md](0013-studio-visual-design.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-006
+**Current step:** T-007
 
 ## Approach
 
@@ -170,8 +170,8 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
   Tests in `SpecBoard.test.tsx` (order, exactly one state chip, progressbar values, not available) — the
   0007 content assertions stay green.
 - **Verify:** quality gates; manual: `02-spec-board-{dark,light,hc}` — cards dense, state readable.
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-16 — red: 5 tests (`ProgressBar.test.tsx` 2 on `Not implemented`; 3 card-layout tests in `SpecBoard.test.tsx`: no `.state-chip`/progressbar/`.card-state`); the "not available" test was green before (control); 0007 content assertions stayed green; green: eslint, both `tsc`, `npm run test:unit` 90 files / 1308 tests, `npm run compile`. Looked at `02-spec-board-{dark,light,hc}`: one chip per card, sentence and readiness as small secondary text, two progress rows, footer with diagnostics/run/last change; fixed a 2-line title clamp that cut titles (float spacer keeps the first line clear of "Move to…") and an invisible progress track in Light.
+- **Notes:** `ProgressBar` landed here as planned; texts `TASKS_PROGRESS_LABEL`/`CRITERIA_PROGRESS_LABEL` (accessible names) added to `shared/protocol/texts.ts`. Blocked lines got a red Blocked icon, text stays foreground.
 
 ### T-007 — Safe inline Markdown and tidying in the detail view
 
@@ -245,10 +245,10 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
 | AC-005 | T-003 | `SpecFigures.tsx` (`.mc-distribution`, `[data-progress]`), `missionControl/texts.ts:mcSegment` | `MissionControl.test.tsx` (0013 AC-005 tests) | verified |
 | AC-006 | T-004 | `missionControl/texts.ts:mcDiagnostics`, `Header.tsx` | `MissionControl.test.tsx` (0013 AC-006) | verified |
 | AC-007 | T-004 | `Attention.tsx`, `RunSection.tsx`, `Activity.tsx`, `SpecLabel.tsx`, `board/icons.tsx:Glyph` | `Sections.test.tsx` (0013 AC-007) | verified |
-| AC-008 | T-005 | — | — | open |
-| AC-009 | T-006 | — | — | open |
+| AC-008 | T-005 | `src/webview/main.css` (`.columns`, `.column`, `.column-heading`, `.column-cards`) | `webviewCss.test.ts` (AC-008) | verified |
+| AC-009 | T-006 | `src/webview/board/Card.tsx`, `src/webview/ui/ProgressBar.tsx` | `SpecBoard.test.tsx` (0013 AC-009), `ProgressBar.test.tsx` | verified |
 | AC-010 | T-002, T-006, T-008 | `src/webview/ui/RuleText.tsx`, `src/shared/protocol/texts.ts:DERIVED_SENTENCES`, `src/core/board/cards.ts`, `src/core/shell/specRows.ts` | `src/webview/ui/RuleText.test.tsx`, `src/webview/areas/areas.test.tsx` (AC-007 row) | built |
-| AC-011 | T-005 | — | — | open |
+| AC-011 | T-005 | `src/webview/areas/SpecBoard.tsx` (`overState`, `onDragLeave`), `board/Column.tsx` | `Keyboard.test.tsx` (0013 AC-011), `webviewCss.test.ts` (AC-011) | verified |
 | AC-012 | T-008 | — | — | open |
 | AC-013 | T-008 | — | — | open |
 | AC-014 | T-007 | — | — | open |
@@ -259,8 +259,8 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
 
 ## Session handoff
 
-- **Done so far:** plan approved by Gregor 2026-11-16 (whole plan; `--fs-*` aliases accepted under AC-001 if every alias resolves only to `--vscode-*`); pair moved to `active/`. Stages 1–2 done (T-001…T-004).
-- **Next action:** T-005 (board full-height columns, sticky headers, drag marks).
+- **Done so far:** plan approved by Gregor 2026-11-16 (whole plan; `--fs-*` aliases accepted under AC-001 if every alias resolves only to `--vscode-*`); pair moved to `active/`. Stages 1–3 done (T-001…T-006).
+- **Next action:** T-007 (safe inline Markdown in the detail view).
 - **Open decisions:** AC-001's `--fs-*` alias interpretation (see *Research*); harness extension for
   900 px, collapsed detail and HC of every area (outside the repo) before T-010.
 - **Baseline:** e78fa54

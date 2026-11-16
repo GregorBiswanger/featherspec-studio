@@ -150,6 +150,9 @@ export function tasksText(tasks: Progress | undefined): string {
     return tasks === undefined ? 'Tasks: not available' : `Tasks: ${tasks.done} of ${tasks.total}`;
 }
 
+export const TASKS_PROGRESS_LABEL = 'Tasks';
+export const CRITERIA_PROGRESS_LABEL = 'Criteria verified';
+
 export function criteriaText(criteria: Progress | undefined): string {
     return criteria === undefined ? 'Criteria: not available' : `Criteria: ${criteria.done} of ${criteria.total} verified`;
 }

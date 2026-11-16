@@ -234,3 +234,59 @@ describe('AC-019: the board is in the DOM within 300 ms of the event (200 cards,
         expect(elapsed).toBeLessThan(300);
     });
 });
+
+describe('0013 AC-009, AC-010: card layout', () => {
+    function follows(first: Element | null, second: Element | null): boolean {
+        return first !== null && second !== null && (first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+    }
+
+    it('AC-009: number and title, one state chip, summary, the tasks and criteria progressbars and Move to… follow in DOM order', async () => {
+        const entry = (await open(boardView([card('0007', { state: 'Review', derivedRule: 'S-REVIEW' })]))).querySelector('[data-card]')!;
+        const head = entry.querySelector('.card-head');
+        const chips = entry.querySelectorAll('.state-chip');
+        const summary = entry.querySelector('.card-summary');
+        const bars = [...entry.querySelectorAll('[role="progressbar"]')];
+        const move = entry.querySelector('.move-button');
+        expect(head?.textContent).toContain('0007');
+        expect(head?.textContent).toContain('Thing 0007');
+        expect(chips).toHaveLength(1);
+        expect(chips[0]?.textContent?.trim()).toBe('Review');
+        expect(chips[0]?.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+        expect(bars.map((bar) => bar.getAttribute('aria-label'))).toEqual(['Tasks', 'Criteria verified']);
+        expect(follows(head, chips[0] ?? null)).toBe(true);
+        expect(follows(chips[0] ?? null, summary)).toBe(true);
+        expect(follows(summary, bars[0] ?? null)).toBe(true);
+        expect(follows(bars[0] ?? null, bars[1] ?? null)).toBe(true);
+        expect(follows(bars[1] ?? null, move)).toBe(true);
+    });
+
+    it('AC-009: the progressbars carry value, maximum and the figure text', async () => {
+        const entry = (await open(boardView([card('0007')]))).querySelector('[data-card]')!;
+        const [tasks, criteria] = [...entry.querySelectorAll('[role="progressbar"]')];
+        expect([tasks?.getAttribute('aria-valuenow'), tasks?.getAttribute('aria-valuemax')]).toEqual(['3', '7']);
+        expect([criteria?.getAttribute('aria-valuenow'), criteria?.getAttribute('aria-valuemax')]).toEqual(['1', '4']);
+        expect(entry.textContent).toContain('Tasks: 3 of 7');
+        expect(entry.textContent).toContain('Criteria: 1 of 4 verified');
+    });
+
+    it('AC-009: where 0007 delivers no figure only "not available" shows, no progressbar', async () => {
+        const entry = (await open(boardView([card('0001', { tasks: undefined, criteria: undefined })]))).querySelector('[data-card]')!;
+        expect(entry.querySelectorAll('[role="progressbar"]')).toHaveLength(0);
+        expect(entry.textContent).toContain('Tasks: not available');
+        expect(entry.textContent).toContain('Criteria: not available');
+    });
+
+    it('AC-010: the derived sentence and the readiness reason are primary text, rule and check ID secondary; the Deprecated marker sits beside the chip', async () => {
+        const entry = (
+            await open(boardView([card('0001', { state: 'Backlog', derivedRule: undefined, deprecated: true, readiness: { id: 'R-3', reason: 'No sibling plan.' } }), card('0002', { state: 'Review', derivedRule: 'S-REVIEW' })]))
+        ).querySelectorAll('[data-card]');
+        const readiness = entry[0]!.querySelector('.card-readiness')!;
+        expect(readiness.querySelector('.rule-sentence')?.textContent).toBe('No sibling plan.');
+        expect(readiness.querySelector('.rule-id')?.textContent).toBe('R-3');
+        expect(entry[0]!.querySelector('.card-state [data-marker="deprecated"]')?.textContent?.trim()).toBe('Deprecated');
+        const derived = entry[1]!.querySelector('.card-state [data-marker="derived"]')!;
+        expect(derived.querySelector('.rule-sentence')?.textContent).toBe('Derived: plan is Done, waiting for review');
+        expect(derived.querySelector('.rule-id')?.textContent).toBe('S-REVIEW');
+    });
+});
+
