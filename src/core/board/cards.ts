@@ -2,6 +2,8 @@ import type { BannerLine, CardView } from '../../shared/protocol/board';
 import type { LifecycleEntry, LifecycleModel } from '../lifecycle/model';
 import type { ProjectRead, SpecEntry } from '../specs/readProject';
 import { describeSpec } from './description';
+import { criteriaProgress, lastChange, taskProgress } from './progress';
+import { cardRun, type RunIndex } from './runs';
 
 function titleOf(entry: SpecEntry): string | undefined {
     const value = entry.parsed?.title.value;
@@ -27,13 +29,15 @@ function readinessLine(entry: LifecycleEntry): string | undefined {
     return lowest === undefined || check === undefined || check.result === 'pass' ? undefined : `${lowest}: ${check.reason}`;
 }
 
-export function buildCards(project: ProjectRead, lifecycle: LifecycleModel): CardView[] {
+export function buildCards(project: ProjectRead, lifecycle: LifecycleModel, runs: RunIndex = { available: true, latest: new Map() }): CardView[] {
+    const plans = new Map(project.plans.map((plan) => [plan.key, plan]));
     const entries = new Map(project.specs.map((spec) => [spec.key, spec]));
     const stems = new Map<string, number>();
     lifecycle.entries.forEach((entry) => stems.set(entry.stem, (stems.get(entry.stem) ?? 0) + 1));
     return lifecycle.entries.map((entry) => {
         const spec = entries.get(entry.key);
         const title = spec === undefined ? undefined : titleOf(spec);
+        const plan = entry.plan === undefined ? undefined : plans.get(entry.plan);
         return {
             key: entry.key,
             stem: entry.stem,
@@ -48,10 +52,10 @@ export function buildCards(project: ProjectRead, lifecycle: LifecycleModel): Car
             blocked: blockedLines(entry),
             readiness: readinessLine(entry),
             summary: spec?.parsed === undefined ? undefined : describeSpec(spec.parsed.sections),
-            tasks: undefined,
-            criteria: undefined,
-            lastChangeMs: undefined,
-            run: { kind: 'none' },
+            tasks: taskProgress(plan),
+            criteria: criteriaProgress(entry.verification),
+            lastChangeMs: lastChange(spec?.modifiedMs, plan?.modifiedMs),
+            run: cardRun(runs, entry.stem),
         };
     });
 }

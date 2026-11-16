@@ -3,7 +3,7 @@
 **Spec:** [0007-spec-board-spec-detail.md](0007-spec-board-spec-detail.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-003
+**Current step:** T-004
 
 ## Approach
 
@@ -285,8 +285,8 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
     - mtime from the plan when it is newer;
     - "No run", unavailable, unreadable, and the newest of three runs.
 - **Verify:** `npm run test:unit -- src/core/board src/core/lifecycle` plus the per-step gates
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-16 · red: `npx vitest run --project node src/core/board/progress src/core/board/runs` 13 of 13 failed with `Not implemented` (stubs `taskProgress`, `criteriaProgress`, `lastChange`, `indexRuns`, `cardRun`); green: `npx vitest run --project node src/core/board` 43 of 43; gates: eslint 0 warnings, both `tsc --noEmit` clean, `npm run test:unit` 62 files, 949 tests passed.
+- **Notes:** 0003's plan key is the `plan` field of 0003 T-010 (AC-028). `buildCards` takes an optional `RunIndex` (default: no run). The latest run of a stem is the one with the greatest `created`; the store's own order breaks ties. Tests: `progress.test.ts`, `runs.test.ts`.
 
 ### T-004 — Board service: UI state, navigation filter, live update
 
@@ -532,8 +532,8 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 | AC-003 | T-002 | `src/core/board/cards.ts:buildCards` | `cards.test.ts` (AC-003) | verified |
 | AC-004 | T-002, T-007 | `src/core/board/description.ts:describeSpec` | — + manual: Gregor, two-line limit; `description.test.ts`, `cards.test.ts` (AC-004) | built |
 | AC-005 | T-001, T-006 | `src/shared/protocol/board.ts:SORT_KEYS` | `src/core/board/filters.test.ts` (AC-005) | open |
-| AC-006 | T-003, T-006 | — | — | open |
-| AC-007 | T-003 | — | — | open |
+| AC-006 | T-003, T-006 | `src/core/board/progress.ts` | `progress.test.ts` (AC-006) | built |
+| AC-007 | T-003 | `src/core/board/runs.ts:indexRuns, cardRun` | `runs.test.ts` (AC-007) | built |
 | AC-008 | T-007, T-010 | — | — | open |
 | AC-009 | T-006, T-009 | — | — | open |
 | AC-010 | T-005, T-006, T-009, T-010 | — | — | open |
@@ -551,7 +551,7 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 | AC-022 | T-001, T-004 | `src/shared/protocol/boardFilter.ts`, `filters.ts` | `boardFilter.test.ts`, `filters.test.ts` (AC-022) | open |
 | AC-023 | T-004 | — | — | open |
 | AC-024 | T-002, T-006 | `src/core/board/cards.ts:blockedLines, readinessLine` | `cards.test.ts` (AC-024) | built |
-| AC-025 | T-003 | — | — | open |
+| AC-025 | T-003 | `src/core/board/progress.ts:lastChange`, `cards.ts` | `progress.test.ts` (AC-025) | verified |
 | AC-026 | T-007 | — | manual: Gregor, light/dark/High Contrast | open |
 | AC-027 | T-006, T-009 | — | — | open |
 | AC-028 | T-006, T-009 | — | — | open |
