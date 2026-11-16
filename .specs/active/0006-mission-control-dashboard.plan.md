@@ -317,8 +317,9 @@ small, so the recommendation is to run them in sequence.
     - AC-026: a run with `errorMessage` `SECRET-1` and a `result` payload → `JSON.stringify(view)`
       contains neither.
 - **Verify:** `npx vitest run src/core/missionControl` plus the per-step gates
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-16 — red: `npx vitest run src/core/missionControl/runFigures.test.ts` 14 failed (`projectRuns` and `projectAttention` stubs threw `Not implemented`); green: 2 new files, 24/24 (one expectation of mine ordered two simultaneous runs wrongly; the tie rule is the higher run ID, test fixed). Covers AC-005 G/W/T, AC-007 (newer run, Done, removed, Cancelled, vanished stem), AC-008 G/W/T, Blocked plus failed one row, AC-009, AC-018, AC-026 (`SECRET-1`), AC-027, A-008, A-009, OP-10 order. Gates: eslint 0, `tsc --noEmit` 0, `tsc --noEmit -p src/webview` 0, `npm run test:unit` 81 files, 1167 passed.
+- **Notes:** Added `specRefs.ts` (`createSpecResolver`: spec references with number, title or `null`, `path` while a stem is duplicated, `found: false` for a vanished stem, number from the stem's leading digits) and `testing/runs.ts`, `testing/projects.ts`. Reason (b) is not given to a Done entry of a duplicated stem. The 'missing title is null' check is through `SpecRef.title` in the highlighted-run test (`0003` has no heading).
+
 
 ### T-004 — Recent activity and the dashboard service
 
@@ -491,11 +492,11 @@ small, so the recommendation is to run them in sequence.
 | AC-002 | T-002 | specFigures.ts:projectSpecFigures | specFigures.test.ts (AC-002) | verified |
 | AC-003 | T-002 | specFigures.ts:projectSpecFigures | specFigures.test.ts (AC-003, rounding, PD-021) | verified |
 | AC-004 | T-002 | specFigures.ts:projectSpecFigures | specFigures.test.ts (AC-004) | verified |
-| AC-005 | T-003, T-006 | — | — | open |
+| AC-005 | T-003, T-006 | src/core/missionControl/runFigures.ts:projectRuns | runFigures.test.ts (AC-005); rendering in T-006 | built |
 | AC-006 | T-001, T-004 | — | — | open |
-| AC-007 | T-003, T-006 | — | — | open |
-| AC-008 | T-003, T-006 | — | — | open |
-| AC-009 | T-003 | — | — | open |
+| AC-007 | T-003, T-006 | runFigures.ts:projectRuns | runFigures.test.ts (AC-007, OP-10); rendering in T-006 | built |
+| AC-008 | T-003, T-006 | src/core/missionControl/attention.ts:projectAttention | attention.test.ts (AC-008); rendering in T-006 | built |
+| AC-009 | T-003 | attention.ts:carriesDiagnostic | attention.test.ts (AC-009) | verified |
 | AC-010 | T-004, T-006 | — | — | open |
 | AC-011 | T-004 | — | — | open |
 | AC-012 | T-007 | — | — | open |
@@ -512,8 +513,8 @@ small, so the recommendation is to run them in sequence.
 | AC-023 | T-004, T-008 | — | — | open |
 | AC-024 | T-004, T-005 | — | — | open |
 | AC-025 | T-002, T-005 | specFigures.ts (derivedRule) | specFigures.test.ts (AC-025) | built |
-| AC-026 | T-002, T-003, T-006 | — | — | open |
-| AC-027 | T-003, T-006 | — | — | open |
+| AC-026 | T-002, T-003, T-006 | src/shared/protocol/missionControl.ts (no such field), runFigures.ts | missionControl.test.ts (AC-026), runFigures.test.ts (AC-026); DOM in T-006 | built |
+| AC-027 | T-003, T-006 | runFigures.ts:projectRuns (unreadable) | runFigures.test.ts (AC-027); rendering in T-006 | built |
 | AC-028 | T-005 | — | — | open |
 | AC-029 | T-007 | — | — | open |
 
