@@ -6,9 +6,12 @@ import type {
     RuntimeMedium,
     RuntimeNoticePort,
 } from '../ports/runtimeMedium';
+import { createMasker } from './masking';
 import {
     encodeLine,
     parseEventRecord,
+    parseHistoryRecord,
+    type HistoryRecord,
     parseRunRecord,
     type CreatedRecord,
     type EventRecord,
@@ -278,6 +281,8 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
         return entry;
     }
 
+    const masker = createMasker(deps.credentials);
+    const HISTORY_FILE = 'spec-status-history.jsonl';
     const eventCap = deps.maxEventsPerRun ?? MAX_EVENTS_PER_RUN;
 
     async function loadEventState(entry: RunEntry): Promise<EventState> {
@@ -380,7 +385,7 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             }
             const record: StatusRecord = { v: FORMAT_VERSION, k: 'status', status, at: iso() };
             if (report.cause !== undefined) {
-                record.cause = report.cause;
+                record.cause = masker.text(report.cause);
             }
             if (report.model !== undefined) {
                 record.model = report.model;
@@ -389,13 +394,13 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
                 record.sessionRef = report.sessionRef;
             }
             if (report.errorClass !== undefined) {
-                record.errorClass = report.errorClass;
+                record.errorClass = masker.text(report.errorClass);
             }
             if (report.errorMessage !== undefined) {
-                record.errorMessage = report.errorMessage;
+                record.errorMessage = masker.text(report.errorMessage);
             }
             if (report.result !== undefined) {
-                record.result = report.result;
+                record.result = masker.json(report.result);
             }
             applyStatus(entry.view, record);
             await enqueue(runFileName(runId), () => medium.append(runFileName(runId), encodeLine(record)));
@@ -426,7 +431,7 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
                 runId,
                 receivedAt: iso(),
                 type: input.type,
-                payload: input.payload,
+                payload: masker.json(input.payload),
             };
             if (input.occurredAt !== undefined) {
                 record.occurredAt = input.occurredAt;
@@ -478,8 +483,23 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             const page = [...found.values()].sort((a, b) => a.seq - b.seq).slice(0, limit);
             return { available: true, value: page.map(toStoredEvent) };
         },
-        appendSpecStatusEntry: async () => notImplemented(),
-        readSpecStatusHistory: async () => notImplemented(),
+        async appendSpecStatusEntry(stem, entry) {
+            const record: HistoryRecord = { v: FORMAT_VERSION, stem, observedAt: iso(), entry };
+            const failure = await enqueue(HISTORY_FILE, () => medium.append(HISTORY_FILE, encodeLine(record)));
+            if (failure !== undefined) {
+                throw new RuntimeRefusal('storage-failed', `The spec status entry could not be stored: ${failure}`);
+            }
+        },
+        async readSpecStatusHistory(stem) {
+            const records: SpecStatusRecord[] = [];
+            for await (const line of medium.lines(HISTORY_FILE)) {
+                const parsed = parseHistoryRecord(line.text);
+                if (parsed.kind === 'record' && (stem === undefined || parsed.record.stem === stem)) {
+                    records.push({ stem: parsed.record.stem, observedAt: parsed.record.observedAt, entry: parsed.record.entry });
+                }
+            }
+            return { available: true, value: records };
+        },
         clear: async () => notImplemented(),
         async dispose() {
             stateListeners.clear();

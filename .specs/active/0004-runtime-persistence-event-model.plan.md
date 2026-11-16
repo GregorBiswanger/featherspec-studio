@@ -147,8 +147,8 @@ T-007 need the complete medium contract.
   unchanged (BR-010). Contract cases: neither sample nor credential in what the port returns or in the
   harness's raw bytes; history order survives a re-open.
 - **Verify:** `npm run test:unit` (masking, doc-sync and AC-026 contract cases red first, then green) plus the per-step gates
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-16 — red: masking module missing (`Cannot find module './masking'`), then 3 contract cases failed (token samples reached the port, history `Not implemented`); green: `npx vitest run src/core/runtime` 31 of 31 (doc/code pattern sync, one sample per pattern masked, negative controls, AC-013 contract case on port and raw bytes, AC-026 order across a restart); `npm run test:unit` 155 passed; `npx eslint src --max-warnings 0` and `npx tsc --noEmit` clean.
+- **Notes:** Tests: `src/core/runtime/masking.test.ts`, `testing/contractMasking.ts`. Doc table columns: name, category, pattern, flags, sample (the test parses it). Spec status history records carry `observedAt` (store clock) beside the unchanged entry.
 
 ### T-004 — Writer lock, restore, `Interrupted`, retention, store state
 

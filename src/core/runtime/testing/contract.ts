@@ -2,6 +2,7 @@ import { afterEach, describe } from 'vitest';
 import type { RuntimeMedium } from '../../ports/runtimeMedium';
 import { openRuntimeStore, type RuntimeStore } from '../runtimeStore';
 import { registerEventsContract } from './contractEvents';
+import { registerMaskingContract } from './contractMasking';
 import { registerRunsContract } from './contractRuns';
 import { createFaults, createFaultyMedium, type Faults } from './faultyMedium';
 import {
@@ -101,6 +102,7 @@ export function describeRuntimeStoreContract(label: string, makeHarness: () => P
         };
         registerRunsContract(context);
         registerEventsContract(context);
+        registerMaskingContract(context);
     });
 }
 
