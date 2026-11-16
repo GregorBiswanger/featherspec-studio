@@ -3,7 +3,7 @@
 **Spec:** [0001-workspace-discovery-project-recognition.md](0001-workspace-discovery-project-recognition.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-011
+**Current step:** T-012
 
 ## Approach
 
@@ -292,8 +292,8 @@ T-005…T-007 define, T-008 and T-012 document the result.
   - ordering: the status bar already shows the result when the listener runs; `snapshot().active` equals the value
   - failing subscriber does not stop the second one nor the status bar update; disposed subscriber gets nothing
 - **Verify:** `npx vitest run src/core/discovery/activeProjectChanged.test.ts` (red via `Not implemented` stub, then green) + `npx vitest run src/core/discovery` + per-step gates
-- [ ] **Verified (T-011):** —
-- **Notes:** —
+- [x] **Verified (T-011):** 2026-11-16 — red: `npx vitest run src/core/discovery/activeProjectChanged.test.ts` 9/9 failed (`onDidChangeActiveProject` stub threw `Not implemented`); the no-change refresh test is the negative control. Green: 9/9; `npx vitest run src/core/discovery` 114/114. Gates: eslint 0 findings, `tsc --noEmit` 0 errors, `npm run test:unit` 11 files, 122 passed.
+- **Notes:** a throwing subscriber is caught and dropped without a log line: a separate Output block would break AC-013 ('newest block matches the disk state'); a consumer that needs its failures visible logs them itself. Late subscribers get no replay (spec A-006): they read `snapshot().active`. 'Changed' compares root (via `sameRoot`), version and legacy only.
 
 ### T-012 — Docs sync and gates for the spec delta
 
