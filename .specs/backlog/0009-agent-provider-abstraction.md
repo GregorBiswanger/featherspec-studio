@@ -1,7 +1,7 @@
 # Agent Provider Abstraction
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0009-agent-provider-abstraction.plan.md](0009-agent-provider-abstraction.plan.md)
 
 Handoff reference: FS-009 ([po-handoff.md](../../docs/product/po-handoff.md) §2.1, §8.3, §10 FS-009,
 §14 *Provider Contract Tests*). Depends on: 0004 (event envelope, credential port for masking).
@@ -91,7 +91,8 @@ A **hint** is adapter-owned text beside a generic one (0010: remedy text; 0012: 
   BR-008). No operation throws at its caller or reports an empty success.
 - **BR-004 Availability.** One check covers installation, sign-in and policy. Results:
   *available*, *not installed*, *not signed in*, *blocked by policy*, *unknown* (the check
-  failed) — all but the first with a one-line reason (A-005). It runs only for a user action —
+  failed, or gave no answer within the check timeout fixed in `/sdd-plan`, OP-009) — all but the
+  first with a one-line reason (A-005). It runs only for a user action —
   0008's precondition check (0008 P-4) or a check command (OP-004) — never at activation, at
   registration or in the background (Q7). 0009 owns the generic reason texts; an adapter may add
   a hint.
@@ -183,7 +184,7 @@ Kinds (ADR-003 §4), the capability each needs (BR-002), and the payload:
 | `approval.requested` · `approval.resolved` | `approvals` | request ID (unique in the run), kind of action (open string), summary — the path, command or URL as delivered —, *outside project* flag (0010 AC-013); decision on resolution |
 | `input.requested` · `input.resolved` | `userInput` | request ID, question; resolution carries no answer text (OP-008) |
 | `plan.updated` | `planUpdates` | list of items with done flag |
-| `usage` | `usage` | token counts as delivered (OP-007) |
+| `usage` | `usage` | running token totals of the run, as delivered (OP-007) |
 | `warning` · `retry` | — | text |
 | `auth.status` | — | an availability result the provider reports itself — not a check (BR-004) |
 | `run.completed` | — | final message if delivered |
@@ -348,33 +349,28 @@ as default provider (OP-005).
 | --- | --- | --- | --- |
 | A-001 | *Withdrawn 2026-11-16:* 0010 BR-01 owns Copilot's capability values | — | — |
 | A-002 | *Approve once* and *reject* map onto every provider with `approvals` ≠ `none` | Copilot `approve-once`/`reject`, Claude allow/deny (ADR-003 §2) | An adapter would need a third answer; BR-005 is revisited |
-| A-003 | In the extension: profile full, scenario by setting, default *happy path* | Simplest without new UI; not asked (OP-010) | Gregor needs another way to choose in the walkthrough |
+| A-003 | In the extension: profile full, scenario by setting, default *happy path* | Simplest without new UI; confirmed by Gregor 2026-11-16 (OP-010) | Gregor needs another way to choose in the walkthrough |
 | A-004 | The port need not refuse a second start during an adapter's run | 0011 BR-002 refuses it first (PD-005) | Parallel runs later; operations already name the run ID |
-| A-005 | Five availability results suffice | ADR-003 §5: installation, sign-in, policy; not asked (OP-010) | An adapter needs a sixth |
+| A-005 | Five availability results suffice | ADR-003 §5: installation, sign-in, policy; confirmed by Gregor 2026-11-16 (OP-010) | An adapter needs a sixth |
 
 ## 14. Open points
 
-Open, none blocks planning; each with a recommendation (finding in brackets):
+Open, none blocks planning:
 
 - OP-001: ADR-003 is Proposed; PD-001 binds only after the PoC (ADR-003 §7).
-- OP-004 [F-19, F-20]: A "Check Provider" command and a provider overview have no owner.
-  Recommendation: 0008 owns the command and shows one notification; no overview in the MVP.
-- OP-005 [F-21, F-22]: Nobody owns the automated run of handoff §21; its steps 13–15 need the test
-  to move fixture files (Q3). Recommendation: 0012 owns it and the manual walkthrough.
-- OP-006 [F-83] (0011): `endSession` is what 0011's interview asked for, yet 0011 OP-004 and
-  OP-001 still plan with cancel only. Recommendation: 0011 calls it after its timeouts and when
-  VS Code closes.
-- OP-007 [F-30]: `usage` per event or as running totals? Recommendation: running totals.
-- OP-008 [F-90]: `input.resolved` without answer text was never asked. Recommendation: keep.
-- OP-009 [F-75]: A check that never returns (0008 OP-006). Recommendation: *unknown* after a
-  timeout fixed in `/sdd-plan`.
-- OP-010 [F-49, F-88, F-91]: A-003 and A-005 were never asked. Recommendation: keep both.
-- OP-011 (main session): 0008 OP-010, 0010 OP-006 a, 0011 OP-002 b and 0012 OP-14 are answered
-  here. To align: 0011 OP-004 (OP-006); 0011 BR-008's "refused port call" with a category — a
-  failed start or resume is a `run.failed` here.
+- OP-011 (main session, for 0011's planning): 0008 OP-010, 0010 OP-006 a, 0011 OP-002 b and 0012
+  OP-14 are answered here. To align in 0011: its OP-004 (see OP-006 below); its BR-008's "refused
+  port call" with a category — a failed start or resume is a `run.failed` here.
 
 Resolved:
 
+- 2026-11-16 (Gregor, at `/sdd-plan`: every recommendation approved as written):
+  OP-004 — 0008 owns a "Check Provider" command that shows one notification; no provider
+  overview in the MVP. OP-005 — 0012 owns the automated run of handoff §21 and the manual
+  walkthrough. OP-006 — 0011 calls `endSession` after its timeouts and when VS Code closes.
+  OP-007 — `usage` carries running totals. OP-008 — `input.resolved` carries no answer text.
+  OP-009 — a check without an answer returns *unknown* after a timeout fixed in `/sdd-plan`.
+  OP-010 — A-003 and A-005 kept.
 - 2026-11-16 (Gregor, all as suggested): Q1 split with 0010 · Q2 fake behind a setting · Q3 fake
   never writes files · Q4 scenarios and two profiles · Q5 approve once or reject only · Q6 unknown
   events without values · Q7 checks only on user action · Q8 nine categories, owners · Q9 ADR-003
@@ -399,4 +395,4 @@ snapshot lists the new modules. The §21 walkthrough is OP-005.
 
 ## 17. Recommended next steps
 
-`/sdd-plan`, once Gregor has seen OP-004…OP-010 and the readings in OP-012.
+`/sdd-plan` (OP-004…OP-010 resolved 2026-11-16); then `/sdd-lifecycle` on the start signal.

@@ -93,6 +93,7 @@ holds the *why*: decisions and patterns.
 - Inline Markdown of spec files is tokenised by a pure formatter (`src/webview/ui/inlineFormat.ts`) into tokens rendered as React elements; no HTML is ever parsed or injected (`innerHTML` banned under `src/webview`, guarded by a test) · 2026-11-16 · plan 0013 T-007
 - Drag feedback marks only the dragged card and the column under the pointer, no valid/invalid verdict before the drop; refusals show after the drop · 2026-11-16 · spec 0013 OP-1 (a), Gregor
 - Limitation: a second window (a reader that did not open the run) sees new runs only at its next refresh, since the run-change notification is in process only · 2026-11-16 · spec 0007 §10, Gregor
+- Provider surface (spec 0009, planned, not yet in code): adapters implement `AgentProviderPort` (`src/core/ports/agentProvider.ts`) and deliver events through a per-run callback sink (`emit`, `close`, `fail`); a core provider service in front stamps run IDs, rewrites unknown kinds, adds the generic texts and enforces end of run and open requests; the fake provider in `src/adapters/providers/fake/` is the single test double for 0008, 0010, 0011 and 0012. Names, payloads, results and constants: *Surface* in [plan 0009](../.specs/backlog/0009-agent-provider-abstraction.plan.md) · 2026-11-16 · plan 0009 *Approach*, spec 0009 §12
 
 ## Patterns
 - Provider independence: each agent provider is an adapter that declares its capabilities;
