@@ -10,14 +10,14 @@ that came up while specifying. Each entry: decision · date · basis.
 
 | ID | Question | Decision | Basis |
 | --- | --- | --- | --- |
-| PD-001 | First productive provider | See [ADR-003](../decisions/ADR-003-first-agent-provider.md) once the spike is in; until then specs stay provider-neutral and are exercised with the fake provider | handoff §2.1, SPIKE-002 |
+| PD-001 | First productive provider | GitHub Copilot SDK, runner-up Claude Agent SDK — per [ADR-003](../decisions/ADR-003-first-agent-provider.md). Binding only after the authenticated PoC on Gregor's machine (ADR-003 §7); until then everything is exercised with the fake provider **(proxy)** | handoff §2.1, SPIKE-002 |
 | PD-002 | Does drag & drop to Active start an agent? | Yes — after a passed readiness check **and one explicit confirmation** that names spec, provider, model (if known) and the permission mode. No silent start, no "don't ask again" in the MVP **(proxy)** | handoff §6.5, P4 |
-| PD-003 | Where do runtime data live? | Behind a storage port; technology per [ADR-002](../decisions/ADR-002-runtime-storage.md). Never inside the user's repository | handoff §8.5, SPIKE-004 |
+| PD-003 | Where do runtime data live? | Behind a storage port: JSON snapshot plus append-only JSONL event log per run under the extension's `storageUri` — per [ADR-002](../decisions/ADR-002-runtime-storage.md). Never inside the user's repository | handoff §8.5, SPIKE-004 |
 | PD-004 | How are Ready / Review / Blocked persisted? | Not persisted. They are derived by the documented rules in [featherspec-format.md](../discovery/featherspec-format.md) §5.2; every derived state is labelled as derived in the UI and shows its rule | handoff §6.3, SPIKE-001 |
 | PD-005 | Runs per spec | One active run per spec, and in the MVP one active run per project (no parallel agents) | handoff §2.3 |
 | PD-006 | Tool permissions | Provider-conformant. Studio never widens permissions; approval requests are shown and answered by the human; nothing is auto-approved **(proxy)** | handoff P4 |
 | PD-007 | Which sessions can be resumed? | Only where the provider adapter declares the capability; otherwise the run is `Interrupted` after a restart | handoff §19 |
-| PD-008 | Is React set? | See [ADR-001](../decisions/ADR-001-extension-architecture.md) | SPIKE-003 |
+| PD-008 | Is React set? | Yes — React in one editor webview panel, opened from a native Activity Bar view; details in [ADR-001](../decisions/ADR-001-extension-architecture.md) | SPIKE-003 |
 | PD-009 | MCP in the MVP? | No | handoff §8.6 |
 | PD-010 | Adopt foreign running sessions? | No — only runs Studio started | handoff §19 |
 | PD-011 | External file changes during a run | Files are the truth: the watcher re-reads, the run continues. If the run's spec file disappears or changes its number, the run is flagged with a diagnostic; Studio never rewrites the file **(proxy)** | handoff §5.4 |
