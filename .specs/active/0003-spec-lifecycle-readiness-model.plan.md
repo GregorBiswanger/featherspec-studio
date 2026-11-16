@@ -3,7 +3,7 @@
 **Spec:** [0003-spec-lifecycle-readiness-model.md](0003-spec-lifecycle-readiness-model.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-004
+**Current step:** T-005
 
 ## Approach
 
@@ -136,7 +136,7 @@ exists after T-002 and writes its own files.
   entry. Tests: every row `verified` on an `active/` Review spec stays Review (AC-007); deriving
   the same fixture twice, and from a fresh read, gives deep-equal models (AC-010).
 - **Verify:** `npm run test:unit -- src/core/lifecycle/verification src/core/lifecycle/deriveLifecycle` plus the per-step gates
-- [x] **Verified (T-003):** 2026-11-16 · red: `npm run test:unit -- src/core/lifecycle/verification src/core/lifecycle/deriveLifecycle` 10 of 24 failed (entries had no `verification`; stub `Not implemented`); green: 56 of 56 in `src/core/lifecycle`; gates: eslint 0 warnings, `tsc --noEmit` clean, `npm run test:unit` 34 files, 569 tests passed. Negative controls: active/ never Done, changed file content changes the model.
+- [x] **Verified (T-003):** 2026-11-16 · red: `npm run test:unit -- src/core/lifecycle/verification src/core/lifecycle/deriveLifecycle` 10 of 24 failed (entries had no `verification`; stub `Not implemented`); green: 56 of 56 in `src/core/lifecycle`; gates: eslint 0 warnings, `tsc --noEmit` clean, `npm run test:unit` 34 files, 572 tests passed. Negative controls: active/ never Done, changed file content changes the model.
 - **Notes:** `VerificationStatus.source` is the plan path whose rows were counted (`undefined` when summary is *not available*). AC-010 holds without a clock input because the model carries no timestamps; the test compares two reads with different mtimes.
 
 ### T-004 — Transition check and flow marker
@@ -150,8 +150,8 @@ exists after T-002 and writes its own files.
   parameters, not the wording, and cover reachability: Backlog → Review in flow; Active →
   Backlog, Done → Ready outside the flow.
 - **Verify:** `npm run test:unit -- src/core/lifecycle/transitions src/core/lifecycle/flow` plus the per-step gates
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-16 · red: `npm run test:unit -- src/core/lifecycle/transitions src/core/lifecycle/flow` 27 of 27 failed with `Not implemented` (stubs `classifyFlow`, `judgeTransition`); green: 83 of 83 in `src/core/lifecycle`; gates: eslint 0 warnings, `tsc --noEmit` clean, `npm run test:unit` 36 files, 599 tests passed.
+- **Notes:** X-4 joins the readiness reasons without their closing full stop (`R-3 <reason>; R-4 <reason>.`). `judgeTransition` returns `{ accepted, refusal, text }`; the tests assert `refusal` (kind and parameters) except one text test for X-1…X-5. `classifyFlow` returns only *in flow* or *outside the FeatherSpec flow*; *not checked* is set by the history (T-006). A Done → Blocked jump counts as in flow (Done → Active → Blocked, Blocked only at the end).
 
 ### T-005 — History of live changes
 
@@ -220,10 +220,10 @@ exists after T-002 and writes its own files.
 | AC-004 | T-001 | `src/core/lifecycle/readiness.ts:evaluateReadiness` | `readiness.test.ts` (AC-004) | verified |
 | AC-005 | T-001 | `src/core/lifecycle/readiness.ts:READINESS_REASONS` | `readiness.test.ts` (AC-005) | verified |
 | AC-006 | T-007 | — | — | open |
-| AC-007 | T-003 | — | — | open |
-| AC-008 | T-004 | — | — | open |
-| AC-009 | T-004, T-005 | — | — | open |
-| AC-010 | T-003 | — | — | open |
+| AC-007 | T-003 | `src/core/lifecycle/deriveLifecycle.ts:decide` | `verification.test.ts` (AC-007) | verified |
+| AC-008 | T-004 | `src/core/lifecycle/transitions.ts:judgeTransition` | `transitions.test.ts` (AC-008) | verified |
+| AC-009 | T-004, T-005 | `src/core/lifecycle/flow.ts:classifyFlow` | `flow.test.ts` (AC-009, reachability); history marker in T-005 | built |
+| AC-010 | T-003 | `src/core/lifecycle/deriveLifecycle.ts:deriveLifecycle` (pure, no clock input) | `deriveLifecycle.test.ts` (AC-010) | verified |
 | AC-011 | T-007 | — | — | open |
 | AC-012 | T-002 | `src/core/lifecycle/entryContext.ts:findContradictions` | `deriveLifecycle.rules.test.ts` (AC-012) | verified |
 | AC-013 | T-002 | `src/core/lifecycle/successor.ts:readSuccessor` | `successor.test.ts` (AC-013) | verified |
@@ -231,7 +231,7 @@ exists after T-002 and writes its own files.
 | AC-015 | T-006 | — | — | open |
 | AC-016 | T-005 | — | — | open |
 | AC-017 | T-006 | — | — | open |
-| AC-018 | T-003 | — | — | open |
+| AC-018 | T-003 | `src/core/lifecycle/verification.ts:readVerification` | `verification.test.ts` (AC-018) | verified |
 | AC-019 | T-002 | `src/core/lifecycle/readiness.ts:hasProblem`, `deriveLifecycle.ts:decide` | `deriveLifecycle.rules.test.ts` (AC-019) | verified |
 | AC-020 | T-002 | `src/core/lifecycle/entryContext.ts:buildContexts` | `deriveLifecycle.rules.test.ts` (AC-020) | verified |
 | AC-021 | T-001 | `src/core/lifecycle/deriveLifecycle.ts:decide` | `deriveLifecycle.test.ts` (AC-021) | verified |
@@ -243,8 +243,8 @@ exists after T-002 and writes its own files.
 
 ## Session handoff
 
-- **Done so far:** stage 1 (T-001, T-002): `src/core/lifecycle` derives states, readiness, contradictions, Blocked, duplicates and the Deprecated marker; 42 tests green. Spec and plan moved to `active/` on Gregor's start signal.
-- **Next action:** stage 2, in sequence (the `‖` question is answered: in sequence): T-003 then T-004, then the stage-end sync.
+- **Done so far:** stages 1 and 2 (T-001...T-004): derivation, readiness, contradictions, Blocked, duplicates, Deprecated, verification status, `judgeTransition`, `classifyFlow`; 83 tests in `src/core/lifecycle`, 599 in the unit suite.
+- **Next action:** stage 3: T-005 (`statusHistory.ts`, live changes), then T-006 (baseline, identity, outage).
 - **Open decisions:** none blocking; `_none yet_` + `**Origin:**` is not an exception in AC-025 (see T-002 Notes).
 - **Baseline:** 0e0380a (HEAD before the first step commit).
 - **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); CI runs it.
