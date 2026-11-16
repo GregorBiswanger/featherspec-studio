@@ -1,6 +1,7 @@
 import { readFileSync } from 'fs';
 import * as path from 'path';
 import { describe, expect, it } from 'vitest';
+import { MOVE_COMMAND_TITLE } from '../../shared/protocol/texts';
 
 interface Manifest {
     activationEvents?: string[];
@@ -97,5 +98,13 @@ describe('extension manifest', () => {
         expect(commands['featherspec-studio.rescan']).toBe('FeatherSpec Studio: Rescan Project');
         expect(commands['featherspec-studio.shellAction']).toBeDefined();
         expect(manifest.contributes?.menus?.commandPalette).toEqual([{ command: 'featherspec-studio.shellAction', when: 'false' }]);
+    });
+
+    it('0007 AC-014: contributes the Move Spec command with the spec title, and it is not hidden from the palette', () => {
+        const commands = manifest.contributes?.commands ?? [];
+        expect(commands).toContainEqual({ command: 'featherspec-studio.moveSpec', title: MOVE_COMMAND_TITLE });
+        const hidden = (manifest.contributes?.menus?.commandPalette ?? []).filter((entry) => entry.when === 'false').map((entry) => entry.command);
+        expect(hidden).not.toContain('featherspec-studio.moveSpec');
+        expect(hidden).toContain('featherspec-studio.shellAction');
     });
 });

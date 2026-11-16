@@ -73,6 +73,17 @@ holds the *why*: decisions and patterns.
 - The shell model source derives the 0003 model from the repository snapshot itself (`deriveLifecycle`, cached per snapshot) instead of reading the lifecycle
   service, which refreshes asynchronously and could pair a project with a model of another snapshot · 2026-11-16 · plan 0005 T-006
 
+- Board filter, sort and focus live in extension memory (`boardUiState`), not in the webview: they survive a panel reload, a second reader gets one truth, and the filter is cleared when the project root changes;
+  closing the panel resets all three · 2026-11-16 · plan 0007 *Research*, Gregor
+- Board and detail logic live in `src/core/board` (cards, progress, runs, filters, moves, open-file guard, detail sections, board service); the webview only renders the `board`, `detail`, `moveResult` and
+  `openFileResult` snapshots, which carry no `seq` (each replaces the last) and are re-sent on `hello` · 2026-11-16 · plan 0007 *Approach*, T-010
+- Native HTML5 drag and drop instead of `@dnd-kit/react` (ADR-001 §11 named it as the primary, native as the fallback): no new dependency, the "Move to…" menu and the command stay the mandatory non-drag alternative ·
+  2026-11-16 · plan 0007 *Research*, Gregor; amendment in ADR-001 §11
+- Drag tests dispatch `MouseEvent`s named `dragstart`, `dragover`, `drop` and `dragend`, because jsdom has no `DragEvent`; the drag handlers must not rely on `dataTransfer` · 2026-11-16 · plan 0007 T-008
+- Board filter encoding v1 is `{states?, providers? (string or null for "No run"), set?: {label, stems}}` in `src/shared/protocol/boardFilter.ts`: AND across kinds, OR within a kind, an unknown stem matches
+  nothing; the dashboard (spec 0006) uses this shape for its navigation requests · 2026-11-16 · plan 0007 T-001, Gregor
+- Limitation: a second window (a reader that did not open the run) sees new runs only at its next refresh, since the run-change notification is in process only · 2026-11-16 · spec 0007 §10, Gregor
+
 ## Patterns
 - Provider independence: each agent provider is an adapter that declares its capabilities;
   provider events are normalised into an internal model (handoff §2.1, §8.3).

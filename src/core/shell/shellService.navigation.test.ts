@@ -218,3 +218,33 @@ describe('AC-028: the navigation request (BR-07)', () => {
         expect(current.service.view().target).toBeUndefined();
     });
 });
+
+describe('0007 AC-012: onDidNavigate tells a consumer about every accepted navigation', () => {
+    it('is called with the request after the view has changed', async () => {
+        const current = await ready();
+        const seen: unknown[] = [];
+        current.service.onDidNavigate((request) => seen.push([request, current.service.view().area]));
+        await current.service.handlers.navigate({ area: 'specBoard', target: { kind: 'boardFilter', filter: { states: ['Active'] } } });
+        expect(seen).toEqual([[{ area: 'specBoard', target: { kind: 'boardFilter', filter: { states: ['Active'] } } }, 'specBoard']]);
+    });
+
+    it('is not called for a spec target that does not exist, and not after dispose of the listener', async () => {
+        const current = await ready();
+        const seen: unknown[] = [];
+        const subscription = current.service.onDidNavigate((request) => seen.push(request));
+        await current.service.handlers.navigate({ area: 'specExplorer', target: { kind: 'spec', stem: '0099-none' } });
+        expect(seen).toEqual([]);
+        subscription.dispose();
+        await current.service.handlers.navigate({ area: 'agentCenter' });
+        expect(seen).toEqual([]);
+    });
+
+    it('a throwing listener does not break the navigation', async () => {
+        const current = await ready();
+        current.service.onDidNavigate(() => {
+            throw new Error('boom');
+        });
+        await current.service.handlers.navigate({ area: 'agentCenter' });
+        expect(current.service.view().area).toBe('agentCenter');
+    });
+});

@@ -7,7 +7,7 @@ import { createMarkerWatch } from './adapters/vscode/markerWatch';
 import { createOutputChannel } from './adapters/vscode/outputChannel';
 import { createShellActions } from './adapters/vscode/shellActions';
 import { createStudioPanel, VIEW_TYPE, type StudioPanel, type StudioPanelInspection } from './adapters/vscode/studioPanel';
-import { AREA_COMMANDS, OPEN_COMMAND, RESCAN_COMMAND, SHELL_ACTION_COMMAND } from './adapters/vscode/commands';
+import { AREA_COMMANDS, MOVE_COMMAND, OPEN_COMMAND, RESCAN_COMMAND, SHELL_ACTION_COMMAND } from './adapters/vscode/commands';
 import { createStudioTree } from './adapters/vscode/studioTree';
 import { createTrust } from './adapters/vscode/trust';
 import { createUiMemory } from './adapters/vscode/uiMemory';
@@ -16,6 +16,8 @@ import { createStatusBar } from './adapters/vscode/statusBar';
 import { createFileWatch } from './adapters/vscode/fileWatch';
 import { createRuntimeUi } from './adapters/vscode/runtimeUi';
 import { createMaxAgeDaysSetting } from './adapters/vscode/runtimeSettings';
+import { createEditor } from './adapters/vscode/editor';
+import { createMovePicks, createMoveResultSink } from './adapters/vscode/boardPicks';
 import { createUi } from './adapters/vscode/ui';
 import { createVscodeSpecSource } from './adapters/vscode/vscodeSpecSource';
 import { createVscodeFileSystem } from './adapters/vscode/vscodeFileSystem';
@@ -29,10 +31,18 @@ import type { StoreState } from './core/runtime/model';
 import { createRuntimeSession, type RuntimeSession } from './core/runtime/runtimeSession';
 import { openRuntimeStore, type RuntimeStore } from './core/runtime/runtimeStore';
 import { createUnavailableMedium } from './core/runtime/unavailableMedium';
+import { createBoardService } from './core/board/boardService';
+import { createBoardRequests } from './core/board/boardRequests';
+import { createMoves } from './core/board/moves';
+import { createOpenFile } from './core/board/openFile';
+import { createShellSelection } from './core/board/shellSelection';
 import { createLifecycleService, type LifecycleService } from './core/lifecycle/lifecycleService';
 import { createModelSource } from './core/shell/modelSource';
 import { createShellService, type OpenRequest } from './core/shell/shellService';
 import { AREA_IDS } from './shared/protocol/areas';
+import type { BoardView, MoveResult } from './shared/protocol/board';
+import type { BoardFilter, BoardState } from './shared/protocol/boardFilter';
+import type { DetailView } from './shared/protocol/detail';
 import { isRunActionPayload, type ProbeOutcome, type ShellView } from './shared/protocol/messages';
 import type { TreeModel } from './core/shell/treeModel';
 
@@ -48,6 +58,15 @@ export interface ShellTestApi {
     tree(): TreeModel;
 }
 
+export interface BoardTestApi {
+    view(): BoardView | undefined;
+    detail(): DetailView;
+    whenIdle(): Promise<void>;
+    setFilter(filter: BoardFilter): void;
+    requestMove(key: string, target: BoardState): Promise<MoveResult>;
+    openFile(key: string, line?: number): Promise<'opened' | 'refused' | 'not-found'>;
+}
+
 export interface StudioApi {
     snapshot(): DiscoverySnapshot;
     whenIdle(): Promise<void>;
@@ -56,6 +75,7 @@ export interface StudioApi {
     runtimeStore(): RuntimeStore | undefined;
     lifecycle(): LifecycleService;
     shell(): ShellTestApi;
+    board(): BoardTestApi;
 }
 
 let runtimeSession: RuntimeSession | undefined;
@@ -111,19 +131,52 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
 
     const sameRoot = sameRootFor(process.platform);
     let studio: StudioPanel | undefined;
+    const modelSource = createModelSource(repository);
     const service = createShellService({
         discovery: controller,
         repository,
-        source: createModelSource(repository),
+        source: modelSource,
         folders: createWorkspaceFolders(),
         trust: createTrust(),
         memory: createUiMemory(context.workspaceState),
         actions: createShellActions({ showOutput: () => output.show(), reloadPanel: () => studio?.reload() }),
         sameRoot,
     });
+    const selection = createShellSelection(service);
+    const board = createBoardService({
+        source: modelSource,
+        session,
+        selection,
+        history: { read: () => lifecycle.history(), onDidChange: (listener) => lifecycle.onDidChange(() => listener()) },
+    });
+    const moves = createMoves({
+        source: modelSource,
+        start: undefined,
+        picks: createMovePicks(),
+        sink: createMoveResultSink((result) => studio?.showMoveResult(result) ?? false),
+        selection,
+        focused: () => board.focused(),
+    });
+    const openFile = createOpenFile({ source: modelSource, editor: createEditor() });
+    const requests = createBoardRequests({ board, moves, openFile });
+    const navigation = service.onDidNavigate((request) => {
+        if (request.target?.kind === 'boardFilter') {
+            board.applyNavigationFilter(request.target.filter);
+        }
+    });
     const panel = createStudioPanel({
         extensionUri: context.extensionUri,
         service,
+        board: {
+            handlers: requests.handlers,
+            view: () => board.view(),
+            detail: () => board.detail(),
+            onDidChangeView: (listener) => board.onDidChangeView(listener),
+            onDidChangeDetail: (listener) => board.onDidChangeDetail(listener),
+            onDidMoveResult: (listener) => requests.onDidMoveResult(listener),
+            onDidOpenFileResult: (listener) => requests.onDidOpenFileResult(listener),
+            panelClosed: () => board.panelClosed(),
+        },
         output,
         testMode: context.extensionMode === vscode.ExtensionMode.Test,
     });
@@ -137,6 +190,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     context.subscriptions.push(
         statusBar,
         { dispose: () => service.dispose() },
+        navigation,
+        { dispose: () => board.dispose() },
         tree,
         panel,
         vscode.window.registerWebviewPanelSerializer(VIEW_TYPE, panel.serializer),
@@ -152,6 +207,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         feed,
         { dispose: () => repository.dispose() },
         { dispose: () => lifecycle.dispose() },
+        vscode.commands.registerCommand(MOVE_COMMAND, () => moves.runMoveCommand()),
         vscode.commands.registerCommand('featherspec-studio.selectProject', () => controller.selectProject()),
         vscode.commands.registerCommand('featherspec-studio.refreshDiscovery', () => controller.refresh()),
         vscode.commands.registerCommand('featherspec-studio.clearRunHistory', () => session.clearRunHistory()),
@@ -167,11 +223,23 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             await repository.whenIdle();
             await session.whenIdle();
             await lifecycle.whenIdle();
+            await board.whenIdle();
         },
         specs: () => repository,
         runtimeState: () => session.state(),
         runtimeStore: () => session.current(),
         lifecycle: () => lifecycle,
+        board: () => ({
+            view: () => board.view(),
+            detail: () => board.detail(),
+            whenIdle: () => board.whenIdle(),
+            setFilter: (filter) => board.setFilter(filter),
+            requestMove: (key, target) => moves.requestMove(key, target),
+            openFile: async (key, line) => {
+                const result = await (line === undefined ? openFile.open(key) : openFile.open(key, line));
+                return result.kind === 'opened' ? 'opened' : result.kind;
+            },
+        }),
         shell: () => ({
             view: () => service.view(),
             lastHelloAt: () => panel.lastHelloAt(),

@@ -1,6 +1,6 @@
 # FeatherSpec Studio
 
-Visual command center for spec-driven development with [FeatherSpec](https://github.com/GregorBiswanger/featherspec), as a VS Code extension. This is an early build: project discovery, the spec model and the Studio shell exist; the Mission Control, Spec Board and Agent Center areas follow.
+Visual command center for spec-driven development with [FeatherSpec](https://github.com/GregorBiswanger/featherspec), as a VS Code extension. This is an early build: project discovery, the spec model, the Studio shell, the Spec Board and the spec detail exist; Mission Control and Agent Center follow.
 
 ## Project discovery
 
@@ -24,13 +24,22 @@ For the active project Studio reads every spec, plan, archived plan and parallel
 
 ## Studio
 
-Open it from the **FeatherSpec Studio** icon in the Activity Bar (a tree with the project name, "Open Studio" and the four areas) or with `FeatherSpec Studio: Open`. The Studio is one panel in the editor area with four areas: Mission Control, Spec Board, Spec Explorer and Agent Center. Spec Explorer lists the specs of the active project (number, title, board state); select one and it stays selected while you switch areas, close and reopen the panel, or reload the window. Mission Control, Spec Board and Agent Center say that they are not available in this version. The panel follows the VS Code theme, works with the keyboard and changes no file.
+Open it from the **FeatherSpec Studio** icon in the Activity Bar (a tree with the project name, "Open Studio" and the four areas) or with `FeatherSpec Studio: Open`. The Studio is one panel in the editor area with four areas: Mission Control, Spec Board, Spec Explorer and Agent Center. Spec Explorer lists the specs of the active project (number, title, board state); select one and it stays selected while you switch areas, close and reopen the panel, or reload the window. Mission Control and Agent Center say that they are not available in this version. The panel follows the VS Code theme, works with the keyboard and changes no file.
 
 When there is nothing to show yet, the panel and the tree say why and offer the next action: no folder open, no project found, several projects, a remembered project that was not found, an incomplete project, loading, a load error ("Show output", "Retry") and Restricted Mode (a note; agent actions are unavailable).
+
+## Spec Board and spec detail
+
+The Spec Board shows every spec as a card in six columns: Backlog, Ready, Active, Review, Done and Blocked. A card shows number, title, state, description, task and criteria progress, last change and the latest agent run. Filter by state, provider or a named set of specs, and sort by number, title or last change; filters stay while Studio is open. Project problems appear in a banner above the columns. Select a card to open it in Spec Explorer.
+
+Spec Explorer shows the detail of the selected spec beside the list: overview, requirements, acceptance criteria, plan and tasks, verification, related artifacts and agent history. "Open file" opens the spec, the plan or a return note in the editor at the right line. Studio only reads: it changes no file.
+
+Move a card by dragging it to another column, with the "Move to…" button on the card (Shift+F10 or the context-menu key opens it from the keyboard), or with the command `FeatherSpec: Move Spec to…`. A move never writes a file: Studio checks the transition and, where an agent has to start, says so. Agent start is not available yet. Arrow keys move between cards; the board is one tab stop.
 
 ## Commands
 
 - `FeatherSpec Studio: Open`: open the Studio panel (or bring it to the front) on the area last shown; `FeatherSpec Studio: Open Mission Control`, `… Open Spec Board`, `… Open Spec Explorer` and `… Open Agent Center` open it on that area.
+- `FeatherSpec: Move Spec to…`: pick a spec and a target column; a refusal or hand-off is announced on the board or as a message.
 - `FeatherSpec Studio: Rescan Project`: read the specs of the active project again.
 
 - `FeatherSpec Studio: Select Project`: choose the active project (also opens from the status bar entry). With no project it offers the setup guide and a refresh.

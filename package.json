@@ -48,6 +48,10 @@
         "title": "FeatherSpec Studio: Open Agent Center"
       },
       {
+        "command": "featherspec-studio.moveSpec",
+        "title": "FeatherSpec: Move Spec to…"
+      },
+      {
         "command": "featherspec-studio.rescan",
         "title": "FeatherSpec Studio: Rescan Project"
       },

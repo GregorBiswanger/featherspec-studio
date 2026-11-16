@@ -27,6 +27,7 @@ export type OpenRequest = { via: 'start' } | { via: 'area'; area: AreaId };
 export interface ShellService {
     view(): ShellView;
     onDidChangeView(listener: (view: ShellView) => void): Disposable;
+    onDidNavigate(listener: (request: NavigationRequest) => void): Disposable;
     runAction(action: ActionId): Promise<void>;
     rescan(): Promise<void>;
     open(request: OpenRequest): void;
@@ -36,6 +37,7 @@ export interface ShellService {
 
 export function createShellService(deps: ShellServiceDeps): ShellService {
     const listeners = new Set<(view: ShellView) => void>();
+    const navigationListeners = new Set<(request: NavigationRequest) => void>();
     let busy = false;
     const remembered = parseUiMemory(deps.memory.get());
     let area: AreaId = remembered?.area ?? DEFAULT_AREA;
@@ -206,6 +208,13 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
         target = request.target;
         persist();
         recompute();
+        [...navigationListeners].forEach((listener) => {
+            try {
+                listener(request);
+            } catch {
+                return;
+            }
+        });
     }
 
     function select(stem: string, path: string | undefined): void {
@@ -229,6 +238,10 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
             listeners.add(listener);
             return { dispose: () => void listeners.delete(listener) };
         },
+        onDidNavigate(listener) {
+            navigationListeners.add(listener);
+            return { dispose: () => void navigationListeners.delete(listener) };
+        },
         runAction,
         async rescan() {
             if (deps.discovery.snapshot().active === undefined) {
@@ -249,6 +262,7 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
         dispose() {
             subscriptions.forEach((subscription) => subscription.dispose());
             listeners.clear();
+            navigationListeners.clear();
         },
     };
 }

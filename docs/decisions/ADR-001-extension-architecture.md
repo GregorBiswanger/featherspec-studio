@@ -48,6 +48,7 @@
 11. **Board drag and drop.**
     - `@dnd-kit/react` 0.5.3 (React 19 peer, keyboard sensor, live-region announcements). The fallback is native HTML5 DnD with our own announcements.
     - A mandatory non-drag alternative on every card: a "Move to…" menu, also available as the command `FeatherSpec: Move Spec to…` (WCAG 2.2 SC 2.5.7, NFR "board actions by keyboard").
+    - Amendment 2026-11-16 (spec 0007 plan): drag and drop is native HTML5, not `@dnd-kit/react`; no dependency is added, announcements and keyboard handling are our own, and the "Move to…" menu and command stay the non-drag alternative.
     - Ready→Active never starts an agent silently. It always shows a readiness and permission confirmation, whatever the input method (po-handoff 6.5).
 12. **Tests.**
     - **Vitest 5.1.0** for `core/` (plain Node, fake provider, fixture projects) and `webview/` (jsdom 31 plus `@testing-library/react` 16.3.3, with `acquireVsCodeApi` mocked).

@@ -3,25 +3,30 @@ import * as vscode from 'vscode';
 import type { OutputPort } from '../../core/ports/host';
 import { createMessageRouter, type RequestHandlers } from '../../core/shell/messageRouter';
 import type { ShellService } from '../../core/shell/shellService';
+import type { BoardView, MoveResult } from '../../shared/protocol/board';
+import type { DetailView, OpenFileResultPayload } from '../../shared/protocol/detail';
 import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../../shared/protocol/envelope';
 import { isProbeResultPayload, type BoardRequestType, type ProbeOutcome } from '../../shared/protocol/messages';
 import { buildWebviewHtml } from './webviewHtml';
 
 export const VIEW_TYPE = 'featherspecStudio.main';
 const PROBE_TIMEOUT_MS = 5000;
-const IGNORED_BOARD_REQUESTS: Pick<RequestHandlers, BoardRequestType> = {
-    boardSetFilter: async () => undefined,
-    boardSetSort: async () => undefined,
-    boardClearFilters: async () => undefined,
-    boardFocus: async () => undefined,
-    moveRequest: async () => undefined,
-    openFile: async () => undefined,
-};
+
+export interface PanelBoard {
+    handlers: Pick<RequestHandlers, BoardRequestType>;
+    view(): BoardView | undefined;
+    detail(): DetailView;
+    onDidChangeView(listener: (view: BoardView | undefined) => void): vscode.Disposable;
+    onDidChangeDetail(listener: (view: DetailView) => void): vscode.Disposable;
+    onDidMoveResult(listener: (result: MoveResult) => void): vscode.Disposable;
+    onDidOpenFileResult(listener: (result: OpenFileResultPayload) => void): vscode.Disposable;
+    panelClosed(): void;
+}
 
 export interface StudioPanelDeps {
     extensionUri: vscode.Uri;
     service: ShellService;
-    board?: Pick<RequestHandlers, BoardRequestType>;
+    board: PanelBoard;
     output: OutputPort;
     testMode: boolean;
 }
@@ -38,6 +43,7 @@ export interface StudioPanel extends vscode.Disposable {
     panelCount(): number;
     lastHelloAt(): number | undefined;
     probe(url: string): Promise<ProbeOutcome>;
+    showMoveResult(result: MoveResult): boolean;
     asWebviewUri(uri: vscode.Uri): string | undefined;
     inspect(): StudioPanelInspection | undefined;
     serializer: vscode.WebviewPanelSerializer;
@@ -49,6 +55,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
     let seq = 0;
     let reloaded = false;
     let helloAt: number | undefined;
+    let lastMove: MoveResult | undefined;
     let pendingProbe: ((outcome: ProbeOutcome) => void) | undefined;
     const assets = vscode.Uri.joinPath(deps.extensionUri, 'dist', 'webview');
 
@@ -77,13 +84,33 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
         post({ v: PROTOCOL_VERSION, kind: 'evt', seq, type: 'shell', payload: { view: deps.service.view() } });
     }
 
+    function pushBoard(view: BoardView | undefined): void {
+        if (view !== undefined) {
+            post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'board', payload: { view } });
+        }
+    }
+
+    function pushDetail(view: DetailView): void {
+        post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'detail', payload: { view } });
+    }
+
+    function pushMove(result: MoveResult): void {
+        lastMove = result.kind === 'none' ? undefined : result;
+        post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'moveResult', payload: { result } });
+    }
+
     const router = createMessageRouter({
         handlers: {
-            ...(deps.board ?? IGNORED_BOARD_REQUESTS),
+            ...deps.board.handlers,
             ...deps.service.handlers,
             hello: async (payload) => {
                 helloAt = Date.now();
                 pushView(payload.lastSeq);
+                pushBoard(deps.board.view());
+                pushDetail(deps.board.detail());
+                if (lastMove !== undefined) {
+                    pushMove(lastMove);
+                }
             },
         },
         output: deps.output,
@@ -108,10 +135,16 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
         subscriptions = [
             target.webview.onDidReceiveMessage(handle),
             deps.service.onDidChangeView(() => pushView()),
+            deps.board.onDidChangeView(pushBoard),
+            deps.board.onDidChangeDetail(pushDetail),
+            deps.board.onDidMoveResult(pushMove),
+            deps.board.onDidOpenFileResult((payload) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'openFileResult', payload })),
             target.onDidDispose(() => {
                 subscriptions.forEach((subscription) => subscription.dispose());
                 subscriptions = [];
                 panel = undefined;
+                lastMove = undefined;
+                deps.board.panelClosed();
             }),
         ];
     }
@@ -154,6 +187,13 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
                 post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'probe', payload: { url } });
             });
         },
+        showMoveResult(result) {
+            if (panel === undefined || !panel.visible || deps.service.view().area !== 'specBoard') {
+                return false;
+            }
+            pushMove(result);
+            return true;
+        },
         asWebviewUri: (uri) => panel?.webview.asWebviewUri(uri).toString(),
         inspect: () => (panel === undefined ? undefined : { options: panel.webview.options, panelOptions: panel.options, html: panel.webview.html }),
         serializer: {
@@ -172,6 +212,8 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
             subscriptions = [];
             panel?.dispose();
             panel = undefined;
+            lastMove = undefined;
+            deps.board.panelClosed();
         },
     };
 }
