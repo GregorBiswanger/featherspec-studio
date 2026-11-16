@@ -201,7 +201,7 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
   `src/core/providers/testing/adapters.ts` (`declaredAdapter(id, overrides)`). Tests
   `registry.test.ts`, including a declaration using all three values and the marker.
 - **Verify:** `npx vitest run src/core/providers/registry` then the per-step gates
-- [ ] **Verified (T-002):** —
+- [x] **Verified (T-002):** 2026-11-16. Red: `npx vitest run src/core/providers/registry` 11 tests failed on the `Not implemented` stub of createProviderRegistry. Green after the implementation: `npx vitest run src/core/providers` 4 files, 20 tests passed (registry.test.ts 11, payloadTypes.test.ts 1: every payload type is assignable to JsonValue, checked by tsc). Gates: eslint --max-warnings 0, tsc, tsc -p src/webview clean; `npm run test:unit` 100 files, 1370 passed.
 - **Notes:** —
 
 ### T-003 — Provider service: routing, normalisation, end of run
