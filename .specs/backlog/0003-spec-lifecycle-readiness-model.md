@@ -5,15 +5,17 @@
 
 Handoff reference: FS-003 ([po-handoff.md](../../docs/product/po-handoff.md) §6, §10). Format
 basis: [featherspec-format.md](../../docs/discovery/featherspec-format.md) §5–§7 (SPIKE-001).
+Decisions: [product-decisions.md](../../docs/product/product-decisions.md) PD-018–PD-023, PD-030.
 
 ## 1. Summary
 
-A framework-free domain model that assigns every FeatherSpec spec exactly one board state
-(Backlog, Ready, Active, Review, Done, Blocked). The state comes from the spec and plan files
-alone, using documented rules. The model checks readiness against named preconditions,
-accepts or refuses board transitions with a reason, and keeps three status dimensions apart:
-spec lifecycle, agent run, verification. It records a history of the state changes Studio
-observes while it is running. It never writes a FeatherSpec file.
+A framework-free domain model that assigns every FeatherSpec spec entry (one file, PD-018)
+exactly one board state (Backlog, Ready, Active, Review, Done, Blocked). The state comes from
+the spec files, plan files and return notes alone, using documented rules. The model checks
+readiness against named preconditions, accepts or refuses board transitions with a reason,
+and keeps three status dimensions apart: spec lifecycle, agent run, verification. It records
+a history of the state changes Studio observes while it is running. It never writes a
+FeatherSpec file.
 
 ## 2. Goal and problem
 
@@ -39,7 +41,8 @@ it is in, which rule put it there, why it is or is not Ready, and why a drop was
 - Mapping folders and header lines to the six board states (rules §6.1).
 - Marking each state as persisted or derived, with the rule that produced it.
 - Readiness check of the spec-side preconditions (§6.2).
-- Diagnostics for contradictory or unreadable specs (§6.3).
+- Lifecycle-contradiction diagnostics (§6.3): this model alone judges them (PD-020). File and
+  parse diagnostics come from 0002 and are passed on unchanged.
 - Validating board-requested transitions (§6.4) and marking observed transitions that leave
   the FeatherSpec flow.
 - Re-deriving states after file changes, and the observed status history (§6.5).
@@ -59,42 +62,62 @@ it is in, which rule put it there, why it is or is not Ready, and why a drop was
   defined as what Studio observed (Gregor, 2026-11-16).
 - Persisting the `/sdd-compile` verdict — because FeatherSpec does not persist it. Not now;
   revisit if Review→Done needs Studio-side evidence.
-- User-configurable workflow engines or custom states — not ever in the MVP (handoff FS-003
-  *Out of Scope*).
+- User-configurable workflow engines or custom states — because the model mirrors the one
+  documented FeatherSpec process, and configurable rules would break the traceable derivation
+  (handoff FS-003 *Problem* and *Out of Scope*, PD-004). Not in the MVP.
+- Detecting unreadable files, unknown values, duplicates, orphan plans, dangling links and
+  unverified versions — because 0002 reports these file facts (PD-020).
 - Parsing files (0002), storage technology (0004), board rendering, priority and sorting
   (0007, PD-015), agent run states (0011) — because each has its own spec.
 
 ## 5. Functional flow
 
-1. The spec repository (0002) delivers a snapshot: per spec its folder, header lines, plan
-   link, plan status, acceptance-criterion definitions, traceability rows, return notes and
-   parser diagnostics.
-2. The model derives one state per spec (§6.1), its rule ID, the persisted/derived marker,
+1. The spec repository (0002) delivers a snapshot: per spec entry its key, stem, folder, header
+   lines, body sections, linked plans with their status, acceptance-criterion definitions,
+   traceability rows, linked return notes and diagnostics.
+2. The model derives one state per entry (§6.1), its rule ID, the persisted/derived marker,
    the readiness result (§6.2), the diagnostics (§6.3) and the verification status (§6.6).
 3. The model compares each state with the last recorded one and appends history entries (§6.5).
 4. On a change notification from 0002, the affected specs go through steps 2–3 again.
 5. When the board requests a transition, the model accepts it or refuses it with a reason (§6.4).
-   The only accepted request is Ready → Active. 0008 then runs its own start checks and the
-   start confirmation.
+   The only accepted request is Ready → Active. Acceptance is a verdict for the caller and
+   changes no state. 0008 then runs its own start checks and the start confirmation.
 
 ## 6. Business rules
 
-### 6.1 State derivation (first match wins, evaluated top-down)
+Terms used below:
+
+- **Entry:** one spec file, keyed by its project-relative path. Its **stem** `NNNN-slug` joins
+  it to plans and names it in the history. The number alone is a display ID (PD-018).
+- **State:** one of the six board states, capitalised. Folders are written `backlog/`,
+  `active/`, `done/`. **Status** always means a header value: the `**Status:**` of a spec, a
+  plan or a return note.
+- **Sibling plan:** `<stem>.plan.md` in the entry's own folder.
+- **Persisted state:** readable from the entry's folder and `**Status:**` line alone (Backlog,
+  Active, Done). **Derived state:** needs anything else — plan status, plan link, return notes
+  or the readiness check (Ready, Review, Blocked; PD-004).
+
+### 6.1 State derivation (first match wins, evaluated top-down; PD-021)
 
 | Rule | State | Persisted? | Condition |
 | --- | --- | --- | --- |
-| S-DONE | Done | persisted | spec in `done/` with `**Status:**` `Implemented`, `Baseline` or `Deprecated` |
-| S-BLOCKED | Blocked | derived | not in `done/`, and (plan `**Status:** Blocked`, or an unintegrated return note `activeContext.<NNNN>-<step>.md` for this spec with `**Status:** BLOCKED`) |
+| S-DONE | Done | persisted | entry in `done/`, whatever its status |
+| S-BLOCKED | Blocked | derived | not in `done/`, and (sibling plan `**Status:** Blocked`, or a linked return note `activeContext.<NNNN>-<step>.md` with `**Status:** BLOCKED` exists). Applies to contradictory and unreadable specs too |
+| S-FOLDER | Backlog (`backlog/`) or Active (`active/`) | persisted | spec carries a lifecycle contradiction (§6.3) or cannot be read |
 | S-REVIEW | Review | derived | `active/`, `In Progress`, sibling plan `Done` |
 | S-ACTIVE | Active | persisted | `active/` and none of the above |
 | S-READY | Ready | derived | `backlog/` and readiness check passes (§6.2) |
 | S-BACKLOG | Backlog | persisted | `backlog/` and none of the above |
 
-- `Deprecated` is Done with a *Deprecated* marker and the spec's successor link, or its
-  `successor: none — behaviour removed` text (Gregor, 2026-11-16).
+- A `done/` entry whose status is not `Implemented`, `Baseline` or `Deprecated` is Done and
+  carries a contradiction diagnostic (§6.3).
+- `Deprecated` is Done with a *Deprecated* marker and the successor read from the spec: the
+  documented link, or the text `successor: none — behaviour removed`. Where the spec carries
+  neither, the model reports *successor: not available* (PD-022).
 - `Baseline` is Done. It needs no plan and no `**Clarified:**` line to be Done.
 - Blocked is never derived from `activeContext.md` *Blockers* prose or from `## Blocker`
-  sections in plans (featherspec-format §5.2).
+  sections in plans (featherspec-format §5.2). A return note blocks only while it exists, is
+  linked to the entry by 0002 and its status is literally `BLOCKED`.
 - Spec states never change because of agent run states or the verification status.
 
 ### 6.2 Readiness preconditions (spec side)
@@ -103,67 +126,107 @@ it is in, which rule put it there, why it is or is not Ready, and why a drop was
 | --- | --- | --- |
 | R-1 | Spec is in `backlog/` with `**Status:** Draft` | other folder or status |
 | R-2 | At least one acceptance-criterion definition (`AC-NNN`) is present | none parsed |
-| R-3 | Sibling plan `<spec stem>.plan.md` exists and the spec's `**Plan:**` line links it | plan missing or not linked |
-| R-4 | Plan `**Status:** Not started` | any other plan status |
+| R-3 | Sibling plan exists and the spec's `**Plan:**` line links it | plan missing or not linked |
+| R-4 | Sibling plan `**Status:** Not started` | no sibling plan, or any other plan status |
 | R-5 | Spec is not Blocked (S-BLOCKED condition) | blocked |
-| R-6 | No contradiction or unreadable-file diagnostic on spec or plan (§6.3, §13) | such a diagnostic exists |
+| R-6 | No lifecycle contradiction (§6.3), no unreadable-file diagnostic on the spec or its sibling plan, no duplicate diagnostic on the spec (PD-019) | such a diagnostic exists |
 | R-7 | Inter-spec dependencies | always *not available*; informational, never fails |
 
+- Each precondition is evaluated on its own, so several can fail at once. R-1 to R-6 are
+  *pass* or *fail*; only R-7 is *not available*.
 - Plan approval is not persisted by FeatherSpec. The explicit start confirmation in 0008
   (PD-002) **is** the plan approval; Ready does not wait for any other approval mark
   (Gregor, 2026-11-16).
-- Parser diagnostics for unknown but harmless content (0002, unknown-content kind) do not
-  fail R-6.
+- The other diagnostic kinds of 0002 (unknown content or value, dangling link, unverified
+  version, orphan) do not fail R-6. Where they matter for readiness, R-1, R-3 or R-4 fails.
 
-### 6.3 Contradictions (diagnostics, not states)
+### 6.3 Lifecycle contradictions (diagnostics, not states)
 
-The card stays in the column its folder points to (`backlog/` → Backlog rules, `active/` →
-Active/Review rules, `done/` → Done). It carries a diagnostic naming the contradiction and is
-never Ready (Gregor, 2026-11-16):
+A contradictory entry gets its state from §6.1: Done in `done/`, Blocked where S-BLOCKED
+applies, otherwise Backlog or Active by its folder (S-FOLDER). It carries a diagnostic naming
+the contradiction and is never Ready or Review (PD-021). The list is closed (OP-009):
 
-- `active/` with a status other than `In Progress`; `backlog/` with a status other than `Draft`;
-  `done/` with `Draft` or `In Progress`.
+- Folder against spec status: `active/` with a status other than `In Progress`; `backlog/`
+  with a status other than `Draft`; `done/` with a status other than `Implemented`, `Baseline`
+  or `Deprecated`. A missing or unknown status counts as "other".
 - `active/` without a sibling plan, unless `**Plan:**` links a `plan-archive/` path
-  (reactivation before the fresh plan exists — valid, no diagnostic).
+  (reactivation before the fresh plan exists — valid, no diagnostic). Reactivated Baselines:
+  OP-006.
 - `done/` + `Implemented` without an archive link in `**Plan:**`. A legacy sibling plan beside
   a `done/` spec (≤ 1.4 layout) is valid and gets no diagnostic.
-- The same spec stem or number in more than one lifecycle folder (placement: A-001).
-- A plan file without a spec: no card, one project-level diagnostic.
+
+Not in this list, because 0002 reports them (PD-020): duplicates, orphan plans, dangling
+links, unreadable files, unknown values. A duplicated entry — the same stem in two folders, or
+one number with two slugs — stays its own entry with its own state and its own card. It is
+never Ready (R-6), and nothing picks a canonical copy (PD-019).
 
 ### 6.4 Transitions
 
-**Requested by the board:** only Ready → Active is accepted, and only while the readiness check
-passes at the moment of the request. Every other request is refused with a reason (PD-014):
+**Requested by the board:** a request names an entry and a target state. The model judges it
+against the entry's state in the latest snapshot delivered by 0002. Only a request to Active
+for a Ready entry is accepted. Acceptance is a verdict returned to the caller (0008): it
+changes no state, and the entry stays Ready until the files change (PD-013). Every other
+request is refused with a reason (PD-014). The first matching row applies:
 
-| Request | Reason given |
-| --- | --- |
-| to Ready, Review or Blocked | the target state is derived from the files; name its rule |
-| to Done | Done needs `/sdd-compile` evidence and the `/sdd-lifecycle` move |
-| Backlog → Active (spec not Ready) | the failing readiness preconditions, by ID |
-| any other | Studio does not move specs; lifecycle moves belong to `/sdd-lifecycle` (PD-013) |
+| Reason kind | Request | Reason given |
+| --- | --- | --- |
+| not observed | the entry is not in the latest snapshot | the spec is no longer observed |
+| derived target | to Ready, Review or Blocked | the target state is derived from the files; names its rule ID |
+| needs evidence | to Done | Done needs `/sdd-compile` evidence and the `/sdd-lifecycle` move |
+| not ready | to Active, entry in state Backlog | the failing readiness preconditions, by ID |
+| lifecycle move | any other | Studio does not move specs; lifecycle moves belong to `/sdd-lifecycle` (PD-013) |
+
+Tests assert the reason kind and its parameters (rule ID, precondition IDs), not the wording.
+The English texts (PD-016) are written in the plan.
 
 **Observed from the files:** the files are the truth. Every observed change is shown and
 recorded. A change not in this list is recorded with the marker *outside the FeatherSpec flow*
 (A-002): Backlog ↔ Ready · Backlog/Ready → Active · Active ↔ Review · Review → Done ·
 Active → Done · Done → Active (reactivation) · any non-Done state ↔ Blocked · Blocked → Done.
+The check compares the old and the new state of one history entry, whatever happened in
+between (collapsed jumps: OP-005).
 
 ### 6.5 Status history
 
 - **Scope statement (binding):** the history contains only state changes Studio observed while
   it was running. It is not a reconstruction of the spec's past. The history view carries
-  this statement as a label (Gregor, 2026-11-16).
-- Entry: observed time, spec number, old state, new state, rule ID, cause, flow marker.
-- Causes: the changed file paths; *first observed*; *changed while Studio was not running*
-  (one entry at start-up when the derived state differs from the last recorded one — no
-  intermediate states, no times guessed from git or file timestamps); *no longer observed*.
-- Stored in Studio's runtime data (0004), never in the repository. Kept per PD-012.
+  this statement as a label (Gregor, 2026-11-16). It is a best-effort observation log (PD-023).
+- "Studio is running" means: from the model's first derivation after the extension's
+  activation for the project until its deactivation.
+- Entry: observed time, spec stem, old state, new state, rule ID, cause, flow marker. The flow
+  marker is *in flow*, *outside the FeatherSpec flow* or *not checked*.
+- **Last recorded state** of a stem: the new state of its newest entry. A stem has none when
+  the history holds no entry for it (first run, pruned, cleared, unreadable store) or when its
+  newest entry is *no longer observed* (PD-023).
+- Causes:
+  - the changed file paths — a state change while Studio is running; flow-checked.
+  - *first observed* — an entry appears whose stem has no last recorded state. No old state;
+    *not checked*.
+  - *changed while Studio was not running* — at the first derivation after activation the
+    derived state differs from the last recorded state. One entry, observed at that
+    derivation; no intermediate states, no times taken from git or file timestamps;
+    flow-checked like any other change (OP-005).
+  - *no longer observed* — a stem with a last recorded state is absent from the snapshot, also
+    at the first derivation after activation. No new state; *not checked*.
+- A stem change is *no longer observed* for the old stem plus *first observed* for the new
+  one. A move between lifecycle folders keeps the stem and is an ordinary state change
+  (PD-018).
+- State changes that happen while the history store is unavailable are not recorded later
+  (PD-023).
+- Only the window that holds the project store's write lock appends entries. Another window
+  derives states and reads the history (PD-030).
+- A `**Status:**` change that leaves the state unchanged creates no entry (OP-008).
+- Stored in Studio's runtime data (0004, A-009), never in the repository. Kept per PD-012 and
+  PD-027. History of a duplicated stem: OP-007.
 
 ### 6.6 Verification status (separate dimension)
 
-- Source: the traceability table of the spec's current plan. That is the sibling plan in
-  `backlog/` or `active/`, or the archived plan linked from `**Plan:**` for `done/` specs.
-- Shown: count of rows per `State` value (`open`, `built`, `verified`), and the summary
-  *not available* (no plan or no table) · *pending* (any row not `verified`) · *all verified*.
+- Source: one traceability table. For an entry in `backlog/` or `active/` it is the sibling
+  plan's. For an entry in `done/` it is that of the archived plan linked from `**Plan:**`, or
+  of a legacy sibling plan where there is no archive link.
+- Shown: count of rows per `State` value (`open`, `built`, `verified`; any other value counts
+  as *other*), and the summary *not available* (no such plan, linked plan file missing, no
+  table, or a table without rows) · *pending* (any row not `verified`) · *all verified*.
 - The `/sdd-compile` verdict is shown as *not available*: FeatherSpec does not persist it
   (Gregor, 2026-11-16).
 - Spec DoR/DoD checkboxes are never counted (featherspec-format §6).
@@ -173,24 +236,26 @@ Active → Done · Done → Active (reactivation) · any non-Done state ↔ Bloc
 | ID | Requirement | Handoff | Criteria |
 | --- | --- | --- | --- |
 | FR-01 | Support the six board states | FR-003.1 | AC-001 |
-| FR-02 | Map folders and header lines to the model | FR-003.2 | AC-001, AC-012, AC-013, AC-020, AC-021 |
+| FR-02 | Map folders and header lines to the model | FR-003.2 | AC-001, AC-012, AC-013, AC-020, AC-021, AC-022, AC-025 |
 | FR-03 | Distinguish persisted and derived states | FR-003.3 | AC-002 |
 | FR-04 | Validate transitions by defined rules | FR-003.4 | AC-008, AC-009 |
 | FR-05 | Determine readiness by explicit preconditions | FR-003.5 | AC-003, AC-004, AC-005 |
 | FR-06 | Detect external file changes and the resulting state changes | FR-003.6 | AC-014 |
-| FR-07 | Make state changes traceable with time and cause | FR-003.7 | AC-014, AC-015, AC-016, AC-017 |
+| FR-07 | Make state changes traceable with time and cause | FR-003.7 | AC-014, AC-015, AC-016, AC-017, AC-023, AC-024 |
 | FR-08 | Keep spec lifecycle, agent run and verification status apart | FR-003.8 | AC-006, AC-007, AC-018 |
-| FR-09 | Reproducible, documented derivation; never change FeatherSpec conventions | AC-003.7, AC-003.8 | AC-002, AC-010, AC-011 |
-| FR-10 | Keep working when individual files are broken | — | AC-019 |
+| FR-09 | Reproducible, documented derivation; never change FeatherSpec conventions | no FR; handoff AC-003.7, AC-003.8 | AC-002, AC-010, AC-011 |
+| FR-10 | Keep working when individual files are broken or the history store is unavailable | no FR; follows 0002's isolation rule (handoff AC-002.5) and PD-023 | AC-019, AC-024 |
 
 ## 8. Data requirements
 
-- **Input** (from 0002, read-only): folder, `**Status:**`, `**Plan:**` target, plan
-  `**Status:**`, AC definitions, traceability rows, return notes with status, diagnostics.
-- **Output per spec:** state, rule ID, persisted/derived marker, readiness result (R-1…R-7, each
-  *pass / fail / not available* with reason), diagnostics, verification status, Deprecated
+- **Input** (from 0002, read-only; contract PD-018–PD-020, PD-034): per entry its key
+  (project-relative path), stem, number, folder, `**Status:**`, classified `**Plan:**` value,
+  body sections as raw text, AC definitions; the plans linked by stem with `**Status:**` and
+  traceability rows; the linked return notes with status; diagnostics with scope and kind.
+- **Output per entry:** state, rule ID, persisted/derived marker, readiness result (R-1…R-7,
+  §6.2), diagnostics (0002's passed on, plus contradictions), verification status, Deprecated
   marker with successor.
-- **History entry** (persisted via 0004): fields in §6.5. Contains no file contents and no
+- **History entry** (stored via 0004): fields in §6.5. Contains no file contents and no
   secrets.
 
 ## 9. UI/UX requirements
@@ -201,8 +266,10 @@ history scope statement (§6.5). UI language English (PD-016).
 
 ## 10. Interfaces and integrations
 
-- **0002 Spec repository & parser:** snapshot and change notifications (input).
-- **0004 Runtime persistence:** stores and loads the status history.
+- **0002 Spec repository & parser:** snapshot and change notifications (input). It reports
+  file facts and parse diagnostics; this model judges lifecycle contradictions (PD-020).
+- **0004 Runtime persistence:** stores and loads the status history, keyed by stem, and tells
+  whether the store is available and writable in this window (A-009, PD-030).
 - **0007 Board / detail, 0006 Mission Control:** read states, reasons, history.
 - **0008 Activation:** calls the transition check for Ready → Active and adds the run-start
   preconditions.
@@ -215,21 +282,27 @@ history scope statement (§6.5). UI language English (PD-016).
 
 ## 12. Error cases and edge cases
 
-- Unreadable or unparseable spec or plan: the other specs keep their states. The affected spec
-  is placed by its folder, carries the diagnostic and is never Ready.
+- Unreadable or unparseable spec: the other specs keep their states. The affected spec gets
+  its state from §6.1 (Done, Blocked, or by folder), carries the diagnostic and is never Ready
+  or Review.
+- Unreadable or unparseable sibling plan: its spec is neither Ready nor Review.
 - Spec file deleted: history entry *no longer observed*; no card.
-- Spec renumbered or renamed: treated as *no longer observed* plus *first observed* (identity
-  is the spec number, 0002).
-- Several changes arriving in one notification: one entry per spec, old → final state.
-- History storage unavailable: states are still derived and shown; the history view reports
-  *not available*.
+- Stem changed (number or slug): *no longer observed* for the old stem plus *first observed*
+  for the new one. A move between lifecycle folders keeps the stem (PD-018).
+- Duplicates: every file keeps its own card and state; none is Ready (PD-019).
+- A spec reappears after *no longer observed* (branch switch): *first observed* again (§6.5).
+- Several changes arriving in one notification: one entry per spec, last recorded → final state.
+- History store unavailable, or this window without the write lock: states are still derived
+  and shown; no entry is appended. Where the history cannot be read, it is reported as
+  *not available* (PD-023, PD-030).
+- Request for an entry that is not in the latest snapshot: refused (§6.4).
 
 ## 13. Acceptance criteria
 
-**AC-001** The lifecycle model shall assign every spec delivered by the spec repository exactly
-one state out of Backlog, Ready, Active, Review, Done and Blocked, using the rules of §6.1 in
-the order S-DONE, S-BLOCKED, S-REVIEW, S-ACTIVE, S-READY, S-BACKLOG, first match wins.
-*(handoff AC-003.1)*
+**AC-001** The lifecycle model shall assign every spec entry delivered by the spec repository
+exactly one state out of Backlog, Ready, Active, Review, Done and Blocked, using the rules of
+§6.1 in the order S-DONE, S-BLOCKED, S-FOLDER, S-REVIEW, S-ACTIVE, S-READY, S-BACKLOG, first
+match wins. *(handoff AC-003.1, PD-021)*
 
 > **Given** a fixture with one spec each in `backlog/` (with a not-started linked plan),
 > `active/` (plan `In Progress`), `active/` (plan `Done`) and `done/` (`Implemented`)
@@ -244,77 +317,116 @@ R-1 to R-6. *(AC-003.2)*
 
 **AC-004** If a `backlog/` spec has no sibling plan, or its `**Plan:**` line does not link the
 sibling plan, or the plan status is not `Not started`, then the model shall not report it as
-Ready. The readiness result shall name the failing precondition by ID. *(AC-003.3)*
+Ready. The readiness result shall name every failing precondition by ID; without a sibling
+plan these are R-3 and R-4. *(AC-003.3)*
 
-**AC-005** The readiness check shall return, for each precondition R-1 to R-7, one of *pass*,
-*fail* or *not available*, with a reason. R-7 shall always be *not available* and shall never
-make the check fail.
+**AC-005** The readiness check shall return a result for each precondition R-1 to R-7: *pass*
+or *fail* for R-1 to R-6, *not available* for R-7. Every *fail* and every *not available*
+result shall carry a reason. R-7 shall never make the check fail.
 
-**AC-006** When an agent run of a spec enters any run state, including Completed, the model
-shall leave that spec's state unchanged. *(AC-003.4, FR-003.8)*
+**AC-006** While the files of a spec are unchanged, the model shall report the same state for
+it whatever run state an agent run of that spec enters, including Completed.
+*(AC-003.4, FR-003.8)*
 
 **AC-007** The model shall report Review only for an `active/` spec with status `In Progress`
-whose sibling plan is `Done`, and Done only for a spec in `done/`. A run state or verification
-status shall never move a spec between Review and Done. *(AC-003.5)*
+whose sibling plan is `Done`, and Done only for a spec in `done/`. It shall report such an
+`active/` spec as Review, not Done, also when every traceability row is `verified` or a run of
+it is Completed. *(AC-003.5)*
 
-**AC-008** When the board requests a transition, the model shall accept only Ready → Active,
-and only if the readiness check passes at that moment. It shall refuse every other request
-with the reason defined in §6.4. *(AC-003.6, PD-014)*
+**AC-008** When the board requests a transition (entry and target state), the model shall
+accept only a request to Active for an entry that is Ready in the latest snapshot delivered by
+the spec repository. It shall refuse every other request with the reason kind of the first
+matching §6.4 row and that row's parameters. An accepted request shall change no state.
+*(AC-003.6, PD-013, PD-014)*
 
 **AC-009** If an observed state change is not in the in-flow list of §6.4, then the model
 shall show the new state as the files define it. It shall record the change in the history
 with the marker *outside the FeatherSpec flow*.
 
-**AC-010** For identical file contents, the model shall produce identical states, rule IDs,
+**AC-010** For identical snapshots — the same files at the same paths with the same contents —
+the model shall produce identical states, rule IDs,
 readiness results, diagnostics and verification statuses, regardless of the clock, the status
 history and agent runs. *(AC-003.7)*
 
 **AC-011** The model shall not create, modify, move, rename or delete any file under
 `.specs/`, `.memory-bank/` or `AGENTS.md`. *(AC-003.8, PD-013)*
 
-**AC-012** If a spec shows a contradiction listed in §6.3, then the model shall place it by its
-folder, attach a diagnostic naming the contradiction, and not report it as Ready.
+**AC-012** If a spec shows a contradiction listed in §6.3, then the model shall derive its
+state by §6.1 (Done in `done/`, Blocked where S-BLOCKED applies, otherwise Backlog or Active by
+its folder), attach a diagnostic naming the contradiction, and report it neither as Ready nor
+as Review. *(PD-021)*
 
 **AC-013** Where a `done/` spec has status `Deprecated`, the model shall report Done with a
-*Deprecated* marker and the successor link or successor text from the spec.
+*Deprecated* marker and one of: the successor link from the spec, the text
+`successor: none — behaviour removed` from the spec, or *successor: not available* where the
+spec carries neither. *(PD-022)*
 
 **AC-014** When the spec repository reports a change to a spec, plan or return note, the model
 shall re-derive the affected specs. For each spec whose state changed, it shall append one
-history entry with observed time, spec number, old state, new state, rule ID, flow marker and
+history entry with observed time, spec stem, old state, new state, rule ID, flow marker and
 the changed file paths as cause. *(FR-003.6, FR-003.7)*
 
-**AC-015** When Studio starts and a spec's derived state differs from the last state recorded
-in its history, the model shall append exactly one entry with cause *changed while Studio was
-not running* and the start time as observed time. It shall not record intermediate states or
-times taken from git or file timestamps.
+**AC-015** When the model derives states for the first time after Studio's activation and a
+spec's derived state differs from its last recorded state (§6.5), the model shall append
+exactly one entry with cause *changed while Studio was not running* and the time of that
+derivation as observed time. It shall not record intermediate states or times taken from git
+or file timestamps.
 
-**AC-016** The status history shall contain only entries the model recorded itself. Its data
-shall carry the label "Observed by Studio while it was running — not a reconstruction" for
-display.
+**AC-016** The model shall append history entries only on the occasions named in AC-014,
+AC-015 and AC-017. The history data shall carry, once, the label "Observed by Studio while it
+was running — not a reconstruction" for display.
 
-**AC-017** When the model sees a spec number for the first time, it shall append one entry
-with cause *first observed* and no flow check. When a spec disappears, it shall append one
-entry with cause *no longer observed*.
+**AC-017** When a spec appears whose stem has no last recorded state (§6.5), the model shall
+append one entry with cause *first observed*, no old state and the flow marker *not checked*.
+When a stem with a last recorded state is absent from the snapshot, the model shall append one
+entry with cause *no longer observed*, no new state and the flow marker *not checked*. A stem
+change shall produce both entries; a move between lifecycle folders shall produce neither.
+*(PD-018, PD-023)*
 
 **AC-018** The model shall provide, per spec, a verification status separate from spec state
-and run state. It shall consist of the counts of traceability rows per `State` value in the
-spec's current plan (§6.6) and the summary *not available*, *pending* or *all verified*. The
-`/sdd-compile` verdict shall be reported as *not available*.
+and run state. It shall consist of the counts of traceability rows per `State` value from the
+source named in §6.6 (`open`, `built`, `verified`, and *other* for any other value) and the
+summary *not available*, *pending* or *all verified* as §6.6 defines them. The model shall
+report the `/sdd-compile` verdict as *not available*.
 
-**AC-019** If a spec or plan file cannot be read or parsed, then the model shall keep deriving
-the states of all other specs, and shall place the affected spec by its folder with the
-diagnostic, never as Ready.
+**AC-019** If a spec file cannot be read or parsed, then the model shall keep deriving the
+states of all other specs, and shall derive the affected spec's state by §6.1 (S-DONE,
+S-BLOCKED or S-FOLDER) with the diagnostic, never as Ready or Review. If a sibling plan cannot
+be read or parsed, the model shall report its spec neither as Ready nor as Review.
 
-**AC-020** While a spec outside `done/` has a plan with status `Blocked`, or an existing return
-note for it with status `BLOCKED`, the model shall report Blocked. The model shall not derive
-Blocked from `activeContext.md` text or from `## Blocker` sections.
+**AC-020** While a spec outside `done/` has a sibling plan with status `Blocked`, or a linked
+return note with status `BLOCKED` exists, the model shall report Blocked, also when the spec
+carries a contradiction or cannot be read. The model shall not derive Blocked from
+`activeContext.md` text, from `## Blocker` sections or from a return note with any other
+status. *(PD-021)*
 
 **AC-021** The model shall report a `done/` spec with status `Baseline` as Done, without
 requiring a plan or a `**Clarified:**` line.
 
-Who decides: all criteria are decided by unit tests over fixture snapshots (fixture set in
-featherspec-format §11, including the synthetic `fs110-ready-synthetic` and
-`fs110-parallel-synthetic`). AC-016's label in the UI is checked by Gregor in 0007.
+**AC-022** If the spec repository reports a duplicate diagnostic for a spec entry (the same
+stem in two folders, or one number with two slugs), then the model shall give every such entry
+its own state by §6.1, pass the diagnostic on, and report none of them as Ready. *(PD-019)*
+
+**AC-023** When one change notification covers several changes to a spec, the model shall
+append one history entry for that spec, from its last recorded state to its final state.
+
+**AC-024** If the history store cannot be read or written, or this window does not hold the
+project store's write lock, then the model shall keep deriving and reporting states and shall
+append no entry. It shall not record later a state change that happened while the store was
+unavailable. If the history cannot be read, the model shall report it as *not available*.
+*(PD-023, PD-030)*
+
+**AC-025** The model shall attach no contradiction diagnostic to an `active/` spec without a
+sibling plan whose `**Plan:**` line links a `plan-archive/` path, nor to a `done/` spec that
+has a legacy sibling plan beside it.
+
+Who decides: automated tests over fixture snapshots (fixture set in featherspec-format §11,
+including the synthetic `fs110-ready-synthetic` and `fs110-parallel-synthetic`); the test level
+per criterion is set in `/sdd-plan`. The Ready shape, `Blocked` plans, return notes and
+Deprecated with successor exist only as synthetic fixtures and are flagged UNVERIFIED (OP-002,
+PD-022). AC-011 is decided by comparing the fixture tree before and after a derivation, a
+transition request and a history append. AC-016 is decided here on the label the model
+supplies; showing it is 0007's criterion.
 
 ## 14. Technical notes for developers or AI agents
 
@@ -338,23 +450,73 @@ featherspec-format §11, including the synthetic `fs110-ready-synthetic` and
 
 | ID | Assumption | Why we believe it | What breaks if wrong |
 | --- | --- | --- | --- |
-| A-001 | A duplicated spec number gives one card, placed by the copy in the furthest folder (`done/` > `active/` > `backlog/`), with a diagnostic naming all copies | `/sdd-lifecycle` resolves duplicates only with a human, so Studio must not pick a "canonical" copy; one card keeps 0007 AC "exactly one column" | Card lands in a column the user does not expect; rule change only |
+| A-001 | *Withdrawn 2026-11-16.* Replaced by PD-019: every duplicate keeps its own card (§6.3, AC-022) | — | — |
 | A-002 | The in-flow transition list of §6.4 matches FeatherSpec's flow | Derived from the AGENTS.md *Flow* line, `/sdd-lifecycle` reactivation and the evidence gate (featherspec-format §7) | Legitimate moves get the *outside the flow* marker; marker only, no refusal |
 | A-003 | Active → Done in one observation is in-flow | The final step tick and the `done/` move can land in one change notification | Spurious *outside the flow* markers |
 | A-004 | `**Clarified:**` is not required for Ready | By rule it appears only on Baselines (`.claude/rules/specs.md`) | Ready shown before `/sdd-clarify` ran |
-| A-005 | 0002 delivers every input field of §8 plus change notifications | handoff FS-002 FR-002.2–002.8 | This spec needs a re-plan once 0002 is written |
+| A-005 | 0002 delivers every input of §8 plus change notifications that name the affected stems | The contract is fixed by PD-018–PD-020 and PD-034; 0002 is revised under the same decisions | This spec's plan is realigned (`/sdd-plan` Mode C) |
 | A-006 | A return note counts as blocking only while the file exists | `parallel-work.md`: notes are deleted once integrated | A stale Blocked state, or a missed one |
-| A-007 | Non-binding criteria count as `open` in the verification counts | They are marked only in prose (featherspec-format §6) | *all verified* never shown for such plans; acceptable |
-| A-008 | Proxy decisions PD-002, PD-012, PD-013, PD-014 hold | PD register, awaiting Gregor's confirmation | Transition and history rules change (§6.4, §6.5) |
+| A-007 | Non-binding criteria count as `open` in the verification counts | They are marked only in prose and are not machine-readable (featherspec-format §6), so Studio cannot tell them apart without guessing | *all verified* is never shown for such plans; unavoidable until FeatherSpec marks them |
+| A-008 | Proxy decisions PD-002, PD-013, PD-014, PD-015, PD-016 hold | The PD register records them as proxy decisions that follow the handoff's own proposals (P2, §6.3, §6.5); PD-012 is confirmed by PD-027 | Transition rules and UI texts change (§6.4, §9); see OP-003 |
+| A-009 | 0004 stores and returns the history entries of §6.5, keyed by stem, and tells whether the store is available and writable in this window | PD-023 (store, keyed by stem), PD-025 (open event type), PD-030 (one writer) | 0004 as written names only run data (OP-010); the history then needs its own storage decision |
 
 ## 16. Open points
 
-- OP-001: Confirm A-001 (duplicate placement) in `/sdd-clarify`.
-- OP-002: The Ready rule is **UNVERIFIED** against a real sample (featherspec-format §5.2). It
-  is verified by the synthetic fixture only.
-- OP-003: The proxy PDs (A-008) await Gregor's confirmation. A change means revising this spec.
-- OP-004 (resolved): interview questions 2–6 were asked in one message at Gregor's explicit
-  request, a one-off exception to `/sdd-specify`'s one-question rule (2026-11-16).
+Open — Gregor decides; the recommendation is not applied:
+
+- OP-003: The proxy decisions PD-002, PD-013, PD-014, PD-015, PD-016 (A-008) await Gregor's
+  confirmation. Recommendation: confirm as written; they follow the handoff. A change means
+  revising §6.4 and §9.
+- OP-005: Flow marker on collapsed jumps. A legitimate Backlog → Review or Backlog → Done that
+  Studio sees as one change (offline, or one `git pull`) is marked *outside the FeatherSpec
+  flow*, because only single steps are in the §6.4 list. As written, AC-009 applies to these
+  entries too. Recommendation: mark entries with cause *changed while Studio was not running*
+  as *not checked*, and treat a live jump as in flow when in-flow steps lead from the old to
+  the new state (same reasoning as A-003).
+- OP-006: A reactivated `Baseline` sits in `active/` with `**Plan:** _none_` and no plan until
+  `/sdd-plan` writes its first one (`/sdd-lifecycle`, *Reactivating*). §6.3 gives it a
+  contradiction diagnostic. Recommendation: no diagnostic where the spec carries an
+  `**Origin:**` line; weak spot: some Baselines lack that line (featherspec-format §10 #10).
+- OP-007: History of a duplicated stem. PD-023 keys the history by stem, PD-019 keeps two
+  entries with one stem. Recommendation: append no entries for a stem while it is duplicated
+  (best effort, PD-023). To be answered at the `/sdd-plan` checkpoint at the latest.
+- OP-008: `Implemented` → `Deprecated` leaves the state Done, so the history gets no entry.
+  Recommendation: keep it that way in the MVP; handoff FR-003.7 asks for state changes, and
+  the card shows the marker.
+- OP-009: Candidates outside the closed §6.3 list: a plan in another lifecycle folder than its
+  spec, a `backlog/` spec whose plan is `In Progress` or `Done`, a sibling plan with a dated
+  twin in the archive outside a reactivation (featherspec-format §5.2). Recommendation: keep
+  the list closed in the MVP; R-3 or R-4 already keeps such specs from being Ready.
+- OP-010 (cross-spec, main session): 0004 names no storage for this spec's state history
+  (A-009). 0007 §12 still cites the withdrawn A-001 ("one card").
+
+Verification still owed:
+
+- OP-002: No real sample shows the Ready shape. Its basis is the `/sdd-plan` command text: the
+  plan is written with `**Status:** Not started`, linked from `**Plan:**`, and the pair stays
+  in `backlog/` until the start signal. The synthetic fixture stays flagged UNVERIFIED. The
+  same holds for the Deprecated successor (PD-022); recommendation for its fixture: a line
+  that starts with `successor:`, followed by a link or `none — behaviour removed`.
+
+Resolved:
+
+- OP-001 (2026-11-16): A-001 withdrawn; duplicates per PD-019.
+- OP-004 (2026-11-16): interview questions 2–6 were asked in one message at Gregor's explicit
+  request, a one-off exception to `/sdd-specify`'s one-question rule.
+- OP-011 (2026-11-16): `/sdd-clarify` listed 42 findings, 8 blocking. Gregor decided the
+  blocking ones in the PD register and delegated the rest; the walkthrough ran in bulk at his
+  explicit request, a one-off exception to the one-finding-per-message rule. Resolved 38:
+  - PD-021: Blocked wins over placement by folder; `done/` is always Done; a missing or
+    unknown status is a contradiction.
+  - PD-018: identity is the entry, history keyed by stem, stem change = removed + new.
+  - PD-019: duplicates, also one number with two slugs.
+  - PD-020: diagnostics ownership; orphan plans and dangling links are 0002's; kinds failing R-6.
+  - PD-022: Deprecated successor. PD-023, PD-030: history baseline, store outage, second window.
+  - One reading each: terms defined (§6, §6.4); AC-004 to AC-008, AC-010, AC-016, AC-018 made
+    decidable; AC-023 to AC-025 added for rules without a criterion; "Who decides", A-005,
+    A-007, the custom-states scope entry and the FR-09/FR-10 sources corrected.
+
+  Parked 4: OP-003, OP-005, OP-006, OP-008.
 
 ## 17. Definition of Ready
 
@@ -365,12 +527,14 @@ points are visible.
 
 ## 18. Definition of Done
 
-All must-requirements are built and AC-001 to AC-021 pass in unit tests over the fixture set.
+All must-requirements are built and AC-001 to AC-025 pass in automated tests over the fixture
+set.
 No out-of-scope behaviour was added, in particular no file writes. Assumptions are verified or
 documented. The architecture snapshot is updated for the new domain module. Gregor accepted
 the result.
 
 ## 19. Recommended next steps
 
-1. `/sdd-clarify` on this spec in a fresh session (assumptions A-001–A-003, OP-001).
-2. `/sdd-plan` after 0002's model is specified, since it defines this spec's input.
+1. Gregor: OP-003 and OP-005 to OP-009. OP-007 is the one the plan cannot leave open.
+2. `/sdd-plan` once 0002's revision under PD-018–PD-020 is in place, since it defines this
+   spec's input. The main session aligns 0004 and 0007 (OP-010).
