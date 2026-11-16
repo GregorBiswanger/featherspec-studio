@@ -100,8 +100,13 @@ the user had typed it (its body lives in `.claude/commands/sdd-architecture-upda
 architecture:
   style: 'Hexagonal (ports & adapters): framework-free core (domain + application) behind ports; adapters for VS Code host, storage, file system, agent providers; webview as a separate UI bundle'
   entrypoints:
-    - 'src/extension.ts — extension activation, bundled by esbuild to dist/extension.js'
-  modules: [] # none in code yet (generator scaffold only); target layout: systemPatterns.md
+    - 'src/extension.ts — composition root; activates on workspaceContains:AGENTS.md, workspaceContains:.specs and Studio commands; bundled by esbuild to dist/extension.js'
+  modules:
+    - 'src/core/ports — read-only file-system port and small host ports (status bar, output, state, UI, folders, marker watch, clock)'
+    - 'src/core/discovery — project verdicts, version line, active-project state, report model, discovery controller, rerun scheduler (spec 0001)'
+    - 'src/adapters/node — Node file-system adapter for unit tests'
+    - 'src/adapters/vscode — thin implementations of the host ports with the VS Code API; no logic'
+    - 'test/fixtures — FeatherSpec fixture projects shared by unit and host tests'
   shared: []
   boundaries:
     - 'Domain and application code never import vscode or provider SDKs; they reach the outside only through ports'

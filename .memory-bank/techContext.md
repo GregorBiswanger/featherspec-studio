@@ -5,8 +5,10 @@
   (`engines.vscode ^1.146.0`), npm.
 - Bundling: esbuild (`esbuild.js`) → `dist/extension.js`.
 - Lint: ESLint 10 + typescript-eslint (`eslint.config.mjs`; rules at `warn` level).
-- Tests: Mocha via `@vscode/test-cli` / `@vscode/test-electron` (`.vscode-test.mjs`, runs
-  `out/test/**/*.test.js` inside a downloaded VS Code).
+- Unit tests: Vitest 5.1 + vite 8.3 (`vitest.config.mjs`, `src/**/*.test.ts`, co-located; plain Node).
+- Host tests: Mocha via `@vscode/test-cli` / `@vscode/test-electron` (`.vscode-test.mjs` copies
+  `test/fixtures/` into a temp multi-root workspace; runs `out/test/**/*.test.js` inside a downloaded VS Code).
+- CI: `.github/workflows/ci.yml` (Ubuntu + Windows: `npm ci`, eslint, tsc, `test:unit`, `compile`, `npm test`; Linux via `xvfb-run -a`).
 - Webview UI technology is open (React recommended, decided by SPIKE-003 / PD-008).
 
 ## Build / Run
@@ -16,19 +18,21 @@
 - Run/debug: F5 in VS Code (`.vscode/launch.json`).
 
 ## Test
-- `npm run test:unit` — fast unit tests in plain Node, no VS Code. **Does not exist yet; the
-  first plan introduces it.**
-- `npm test` — extension-host tests; `pretest` compiles and lints first; downloads and launches
-  VS Code, so it is slow and needs network and a display.
+- `npm run test:unit` — fast unit tests in plain Node, no VS Code. Fixtures: `test/fixtures/`
+  (every `.specs/` holds a `README.md`, git drops empty folders).
+- `npm test` — extension-host smoke suite (`src/test/discovery.smoke.test.ts`); `pretest` compiles and lints
+  first; downloads and launches VS Code, so it is slow and needs network and a display. It cannot run
+  in the agent sandbox (download blocked): CI and the Windows machine run it.
+- Manual checks nothing automates: window reload keeps the active project (AC-009), Restricted Mode (AC-022).
 
 ## Quality gates
 Per implementation step (Definition of Green), in order — zero warnings, zero errors:
 1. `npx eslint src --max-warnings 0`
 2. `npx tsc --noEmit`
-3. `npm run test:unit` — until that script exists, the gate is 1 + 2.
+3. `npm run test:unit`
 
 Pre-done gate (not per step): `npm test` (extension-host tests) runs in CI and on the
-developer's machine before a spec moves to `done/`.
+developer's machine before a spec moves to `done/`, plus the two manual checks above.
 
 ## Constraints
 - Core (domain + application) must not depend on `vscode` or provider SDKs.

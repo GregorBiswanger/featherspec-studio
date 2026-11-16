@@ -17,6 +17,17 @@ holds the *why*: decisions and patterns.
 - Existing FeatherSpec artifacts are the spec source of truth; the Studio must not create a
   parallel spec store or restructure files for board columns · 2026-11-16 ·
   [docs/product/po-handoff.md](../docs/product/po-handoff.md) §3 P2, §6.3
+- Activation: `workspaceContains:AGENTS.md` and `workspaceContains:.specs` plus Studio's own commands;
+  no `onStartupFinished` (ADR-001 §8 stays). Live re-detection holds once Studio is active · 2026-11-16 ·
+  [spec 0001](../.specs/active/0001-workspace-discovery-project-recognition.md) §15 (OP-005, Gregor)
+- Unit tests sit next to the code and the Vitest config is `.mjs`, because `tsconfig.json` has
+  `rootDir: src` and no `include`; `skipLibCheck` is on because vitest's `index.d.cts` fails
+  `tsc` under Node16 · 2026-11-16 · [plan 0001](../.specs/active/0001-workspace-discovery-project-recognition.plan.md) T-001
+- Core reaches the host through small ports (`src/core/ports/host.ts`); the discovery controller is
+  proven on fakes, the VS Code adapters hold no logic; the `vscode` import in `src/core/**` is
+  banned by ESLint · 2026-11-16 · plan 0001 *Approach*
+- Folder identity is the root URI string; `displayPath` is only for text shown to the user (BR-05) ·
+  2026-11-16 · plan 0001 T-009
 
 ## Patterns
 - Provider independence: each agent provider is an adapter that declares its capabilities;

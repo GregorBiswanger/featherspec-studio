@@ -1,9 +1,9 @@
 # Plan — Workspace Discovery & Project Recognition
 
 **Spec:** [0001-workspace-discovery-project-recognition.md](0001-workspace-discovery-project-recognition.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-16
-**Current step:** T-008
+**Current step:** none (all steps ticked)
 
 ## Approach
 
@@ -265,8 +265,8 @@ T-005…T-007 define, and T-008 documents the result.
       - `'test/fixtures — FeatherSpec fixture projects shared by unit and host tests'`
     - no module entry for `.github/workflows/ci.yml`: it is a build pipeline, recorded in `techContext.md`
 - **Verify:** `npx eslint src --max-warnings 0` · `npx tsc --noEmit` · `npm run test:unit` · `npm run compile`. `npm test` is the pre-done gate (CI or Gregor's Windows), not this step's Verify.
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** 2026-11-16 — `npx eslint src --max-warnings 0` 0 findings; `npx tsc --noEmit` 0 errors; `npm run test:unit` 10 files, 106 passed; `npm run compile` ok (bundle built). `npm test` NOT run (VS Code download blocked here; pre-done gate on CI or Gregor's Windows machine).
+- **Notes:** AGENTS.md is now 213 lines (cap target 200, was 208): the plan-fixed snapshot entries added five lines; per `.claude/rules/constitution.md` this is one eviction proposal for the next natural edit, not done here. The snapshot was written without a separate confirmation question because the approved plan names exactly these entries. README replaced (it was the generator scaffold); Remote/WSL/Container is documented as 'expected, not tried' because no limitation could be observed here. CI workflow is untested until the repo is on GitHub.
 
 ## Traceability
 
@@ -298,8 +298,8 @@ Pre-done (before `/sdd-lifecycle` → done): `npm test` smoke suite green on CI 
 
 ## Session handoff
 
-- **Done so far:** T-001…T-007 and T-009 (stages 1–4: core, adapters, manifest, composition root, smoke suite written; 106 unit tests green; `npm test` not runnable here).
-- **Next action:** T-008 (stage 5: CI workflow, README, Memory Bank, architecture snapshot, final gates).
+- **Done so far:** T-001…T-009 and T-008, all ticked with recorded runs (106 unit tests, eslint, tsc, compile green); docs, CI workflow, architecture snapshot and Memory Bank synced.
+- **Next action:** Pre-done gates by Gregor/CI: `npm test` smoke suite (also proves the `workspaceContains:.specs` directory assumption), manual AC-009 (reload) and AC-022 (Restricted Mode). Then `/sdd-compile` in a fresh session, best with a model of another family; then `/sdd-lifecycle` → done.
 - **Open decisions:** OP-004, OP-006…OP-012 (spec §17), none blocking.
 - **Baseline:** `2083696` (HEAD before the first step commit; lifecycle move 2026-11-16).
 - **Environment:** `npm test` cannot run here (VS Code download blocked); it runs on CI and on Gregor's Windows machine.

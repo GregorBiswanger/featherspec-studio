@@ -1,71 +1,39 @@
-# featherspec-studio README
+# FeatherSpec Studio
 
-This is the README for your extension "featherspec-studio". After writing up a brief description, we recommend including the following sections.
+Visual command center for spec-driven development with [FeatherSpec](https://github.com/GregorBiswanger/featherspec), as a VS Code extension. This is an early build: the first slice, project discovery, exists; the Studio views follow.
 
-## Features
+## Project discovery
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+When a workspace opens, Studio checks the root of every workspace folder and names the active FeatherSpec project in the status bar. It reads files and never changes them.
 
-For example if there is an image subfolder under your extension project workspace:
+A folder is a **project** when its root has both:
 
-\!\[feature X\]\(images/feature-x.png\)
+- an `AGENTS.md` with a `FeatherSpecVersion:` line, and
+- a `.specs/` directory.
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+Older projects without the version line still count (shown as version "unknown", with a hint to run `/sdd-featherspec-update`) when they also have a `.claude/commands/sdd-*.md` file. A folder with only one of the two markers is **incomplete**: the Output channel names what is missing, and the folder cannot become the active project. Anything else is not a project. Projects in subfolders are not detected: open the project folder itself.
 
-## Requirements
+- One project becomes active on its own. With several, the status bar reads "Select FeatherSpec project"; your choice is remembered per workspace.
+- The status bar shows nothing in workspaces without a FeatherSpec project.
+- Discovery details (path, verdict, version, diagnostics per folder) go to the Output channel "FeatherSpec Studio".
+- Discovery runs again by itself when a folder is added or removed, or a root `AGENTS.md` or `.specs/` appears, changes or disappears.
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+## Commands
 
-## Extension Settings
+- `FeatherSpec Studio: Select Project`: choose the active project (also opens from the status bar entry). With no project it offers the setup guide and a refresh.
+- `FeatherSpec Studio: Refresh Project Discovery`: run discovery again.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+## Activation
 
-For example:
+Studio activates when the workspace root contains `AGENTS.md` or `.specs`, or when you run one of its commands. In a workspace without either, run a Studio command once to start it.
 
-This extension contributes the following settings:
+## Restricted Mode, Remote and virtual workspaces
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+Discovery works in Restricted Mode (it only reads files). Virtual workspaces such as vscode.dev are not supported. Remote, WSL and Dev Container workspaces should work because the extension runs where the files live; this has not been tried yet.
 
-## Known Issues
+## Development
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+- `npm run test:unit`: fast unit tests (Vitest).
+- `npm run compile`: type check, lint and bundle.
+- `npm test`: extension-host tests; they download VS Code and need a display (CI runs them).
+- Specs, plans and project context live in `.specs/` and `.memory-bank/`; `AGENTS.md` is the constitution.
