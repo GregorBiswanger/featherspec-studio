@@ -3,7 +3,7 @@
 **Spec:** [0003-spec-lifecycle-readiness-model.md](0003-spec-lifecycle-readiness-model.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-007
+**Current step:** T-008
 
 ## Approach
 
@@ -194,8 +194,8 @@ exists after T-002 and writes its own files.
   request and a history append, `snapshotTree` is unchanged. Host smoke
   `src/test/lifecycle.smoke.test.ts` (CI only).
 - **Verify:** per-step gates plus `npm run compile`
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** 2026-11-16 · red: `npm run test:unit -- src/core/lifecycle/lifecycleService` 8 of 8 failed with `Not implemented` (stub `createLifecycleService`); green: 8 of 8; gates: eslint 0 warnings, `tsc --noEmit` clean, `npm run test:unit` 40 files, 639 tests passed, `npm run compile` green (esbuild bundle built). Host smoke `src/test/lifecycle.smoke.test.ts` compiles; it runs on CI only.
+- **Notes:** the service re-derives the whole model on every notification (pure and cheap), not only the affected specs; the history still appends per changed stem. It makes a new recorder, and so a new baseline, whenever the store object or the project root changes. AC-011 proof: fixture copy in a temp dir, `createNodeSpecSource` and a real `createSpecRepository`, store on `createFileRuntimeMedium` in another temp dir; a stale stored entry makes the baseline append, `snapshotTree` of the project is equal before and after.
 
 ### T-008 — Docs sync and final gates
 

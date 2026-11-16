@@ -23,6 +23,7 @@ import type { StoreState } from './core/runtime/model';
 import { createRuntimeSession, type RuntimeSession } from './core/runtime/runtimeSession';
 import { openRuntimeStore, type RuntimeStore } from './core/runtime/runtimeStore';
 import { createUnavailableMedium } from './core/runtime/unavailableMedium';
+import { createLifecycleService, type LifecycleService } from './core/lifecycle/lifecycleService';
 
 export interface StudioApi {
     snapshot(): DiscoverySnapshot;
@@ -30,6 +31,7 @@ export interface StudioApi {
     specs(): SpecRepository;
     runtimeState(): StoreState;
     runtimeStore(): RuntimeStore | undefined;
+    lifecycle(): LifecycleService;
 }
 
 let runtimeSession: RuntimeSession | undefined;
@@ -81,6 +83,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             }),
     });
     runtimeSession = session;
+    const lifecycle = createLifecycleService({ repository, session, clock: createSystemClock() });
 
     context.subscriptions.push(
         statusBar,
@@ -88,6 +91,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         { dispose: () => controller.dispose() },
         feed,
         { dispose: () => repository.dispose() },
+        { dispose: () => lifecycle.dispose() },
         vscode.commands.registerCommand('featherspec-studio.selectProject', () => controller.selectProject()),
         vscode.commands.registerCommand('featherspec-studio.refreshDiscovery', () => controller.refresh()),
         vscode.commands.registerCommand('featherspec-studio.clearRunHistory', () => session.clearRunHistory()),
@@ -102,10 +106,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             await controller.whenIdle();
             await repository.whenIdle();
             await session.whenIdle();
+            await lifecycle.whenIdle();
         },
         specs: () => repository,
         runtimeState: () => session.state(),
         runtimeStore: () => session.current(),
+        lifecycle: () => lifecycle,
     };
 }
 
