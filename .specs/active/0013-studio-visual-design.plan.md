@@ -1,0 +1,267 @@
+# Plan — Studio Visual Design
+
+**Spec:** [0013-studio-visual-design.md](0013-studio-visual-design.md)
+**Status:** In Progress
+**Last updated:** 2026-11-16
+**Current step:** T-001
+
+## Approach
+
+Presentation only, in the existing webview: one `main.css` with a small token layer, a few shared
+UI primitives (`src/webview/ui/`: state chip, rule text, progress bar, inline-text formatter) and
+area-by-area restyling, each area judged by Gregor on screenshots before the next starts. The one
+contract change is a reshape (no new data): `derivedLabel` → rule ID and the readiness string →
+`{ id, reason }`, so every area can show the §3.5 sentence with the ID as secondary text. Order:
+tokens and shared primitives first (every area builds on them), then Mission Control, Spec
+Board, Spec Explorer detail, and states plus motion last. Memory Bank touched at the end:
+`systemPatterns.md`, `techContext.md`, `activeContext.md`; `AGENTS.md` snapshot entries named in T-010.
+
+**Quality gates:** `npx eslint src --max-warnings 0` · `npx tsc --noEmit` · `npx tsc --noEmit -p src/webview` ·
+`npm run test:unit` · `npm run compile` (every step here: each one changes the bundle, and
+`webviewBundle.test.ts` runs `node esbuild.js`). Pre-done, not here: `npm test` on CI, AC-017, AC-018.
+
+**Visual check (manual, beside the gates, never instead):** `npm run compile`, then
+`/home/claude/orch/preview/run.sh`; look at `/mnt/user-data/outputs/screens/<file>`. The harness lives
+outside the repository and stays there.
+
+## Research
+
+- **Survey (2026-11-16).** UI: `src/webview` (React 19.3.1, plain CSS `src/webview/main.css`, 461 lines),
+  data from `src/core/{shell,board,missionControl}` through `src/shared/protocol`. CSS guard:
+  `src/adapters/node/webviewCss.test.ts` with `src/webview/testing/css.ts` (`parseRules` does not see
+  `@media` context — T-001 extends it). Bundle end-to-end: `src/adapters/node/webviewBundle.test.ts` mounts
+  `dist/webview/main.js` in jsdom with core-built snapshots of `test/fixtures/*`.
+- **Already in the code (spec technical note corrected):** the core drops repeated leading IDs and list
+  markers of requirements, criteria and stages (`src/core/board/idText.ts`, 0007 T-013). Mission Control
+  already carries `derivedRule` (`StateCount`), a Total control and the diagnostics request. Section-level
+  `open` targets exist (`DetailSections.*.open`).
+- **Reshape (T-002), callers:** `CardView.derivedLabel`, `CardView.readiness` (`src/shared/protocol/board.ts`
+  guard l.107/112), `SpecRow.derivedLabel` (`messages.ts` l.56/312), built in `src/core/board/cards.ts`
+  and `src/core/shell/specRows.ts`. The 0003 lifecycle model keeps its own `derivedLabel` untouched
+  (host smoke `src/test/lifecycle.smoke.test.ts` l.30 asserts it).
+- **AC-016 — existing assertions this plan changes, all from §2's deltas:**
+  delta 4 (sentences): `core/board/cards.test.ts` l.37–38, l.74; `core/shell/specRows.test.ts` l.46;
+  `shared/protocol/messages.test.ts` l.27; `webview/board/SpecBoard.test.tsx` l.48–53, l.83–91, l.98;
+  `webview/areas/areas.test.tsx` l.28, 87, 100, 158–159; `adapters/node/webviewBundle.test.ts` l.112;
+  `webview/areas/missionControl/MissionControl.test.tsx` l.88–116 (derived label text).
+  Delta 5 (header): `MissionControl.test.tsx` l.61–79. Delta 3 (Open file): `webview/detail/SpecDetail.test.tsx`
+  l.150–158 (counts per section) and l.172–177 (the line of an item). Delta 1/2: none expected beyond these;
+  any other red existing test is a stop, not an update.
+- **Kept on purpose:** 0005 AC-023's visible marker `▸` on the selected row stays (not one of the five
+  deltas); D-12 is fixed by fixed-width marker and no bold shift. `data-state` is taken by panel states
+  (S1…S9) — state colour hooks use `data-board-state`.
+- **AC-001 interpretation (assumption, Gregor may object):** own custom properties (`--fs-*`) are allowed
+  only as aliases whose every definition is a `var(--vscode-*)` chain; the guard checks both the uses and
+  the definitions. Inline `style` in TSX may carry only width/size, never a colour.
+- **OP-1 (a)** decided by Gregor 2026-11-16, recorded in the spec: mark dragged card and the column under
+  the pointer only; no verdict before the drop.
+- **`/sdd-clarify` waived** by Gregor for this spec (presentation only, judged by screenshots) — one-off,
+  recorded in the spec's §8.
+- **Not in the harness yet (needed for AC-017):** shots at 900 px width, detail with Acceptance criteria
+  collapsed, High Contrast for every area. Extending the harness is outside the repository (orchestrator).
+- [Theme Color reference](https://code.visualstudio.com/api/references/theme-color) — `charts.red/blue/yellow/green/purple`,
+  `contrastBorder`, `contrastActiveBorder`, `focusBorder`, `badge.*`, `progressBar.background`,
+  `textCodeBlock.background`, `textBlockQuote.*`, `textPreformat.*` all exist; retrieved 2026-11-16.
+- [Webview API — theming](https://code.visualstudio.com/api/extension-guides/webview) — colours exposed as
+  `--vscode-<id with dashes>`, body classes `vscode-light|dark|high-contrast`, `--vscode-editor-font-family`;
+  test in all three kinds; retrieved 2026-11-16.
+- [WAI-ARIA APG Accordion](https://www.w3.org/WAI/ARIA/apg/patterns/accordion) — header is a `button` as
+  the only child of a heading, `aria-expanded`, `aria-controls` to the panel, Enter/Space toggle, Tab
+  order unchanged (AC-012); retrieved 2026-11-16.
+- [MDN dragleave](https://developer.mozilla.org/docs/Web/Events/dragleave) — fires when the drag leaves a
+  drop target; it also fires when entering a child, so the column mark is set on `dragover` of the column
+  and cleared on `drop`/`dragend` and on `dragleave` only when `relatedTarget` is outside the column
+  (AC-011); retrieved 2026-11-16.
+- [Accessible progressbar name](https://frontendchecklist.io/rules/accessibility/aria-progressbar-name) —
+  `role="progressbar"` needs an accessible name plus `aria-valuemin/max/now` (AC-005, AC-009); retrieved 2026-11-16.
+
+## Stages
+
+1. T-001 → T-002 — base: tokens, full-height frame, state chip, rule sentences (look: 03 explorer list, nav)
+2. T-003 → T-004 — Mission Control (look: 01-mission-control-*)
+3. T-005 → T-006 — Spec Board (look: 02-spec-board-*)
+4. T-007 → T-008 — Spec Explorer detail incl. safe inline Markdown (look: 04-spec-explorer-detail-0002-*)
+5. T-009 → T-010 — states, Agent Center placeholder, motion; final gates and docs sync (look: all, 05–07)
+
+No parallel stage: every stage edits `main.css` and its guard, and each area stage ends at Gregor's
+screenshot verdict, which may adjust the shared tokens the next area uses.
+
+## Steps
+
+### T-001 — Token layer, full-height frame, state chip and the stylesheet guard
+
+- **Covers:** AC-001, AC-003 (stylesheet half)
+- **Do:** `main.css`: `--fs-*` aliases (state colours of §3.1, spacing, radius) defined only from `--vscode-*`;
+  `.studio` as a full-height flex column, `main` with its own scroll, so an area can fill the height; HC
+  border fallbacks on chips/tiles/cards/sections. `src/webview/ui/StateChip.tsx` (icon from
+  `board/icons.tsx` + state name, `data-board-state`, tint on icon and border only). Extend
+  `src/webview/testing/css.ts` to keep `@media` context; extend `webviewCss.test.ts`: every colour-bearing
+  declaration resolves to `--vscode-*`/`currentColor`/`transparent`/`inherit`, every `--fs-*` definition is a
+  `--vscode-*` chain, fonts only the two variables, no `@font-face`/`@import`, no outline removal; a Node
+  test scans `src/webview/**/*.tsx` inline `style` for colour keys. Component test for StateChip
+  (icon `aria-hidden`, text, colour hook). Use StateChip in the Explorer list rows.
+- **Verify:** quality gates; manual beside them: preview, `03-spec-explorer-list-{dark,light}` — chips
+  readable, no layout break in any area.
+- [ ] **Verified (T-001):** —
+- **Notes:** —
+
+### T-002 — Rule sentences: reshape derived rule and readiness, show sentence + ID
+
+- **Covers:** AC-010 (list rows, cards' marker text, Mission Control tiles' text source), AC-016 (delta-4 updates)
+- **Do:** `CardView.derivedLabel` → `derivedRule: DerivedRule | undefined`, `CardView.readiness` →
+  `{ id, reason } | undefined`, `SpecRow.derivedLabel` → `derivedRule` (guards in `board.ts`, `messages.ts`;
+  builders `core/board/cards.ts`, `core/shell/specRows.ts` from the lifecycle entry's rule). Sentences of
+  §3.5 in `src/shared/protocol/texts.ts` (`DERIVED_SENTENCES`); `mcDerived` uses them.
+  `src/webview/ui/RuleText.tsx`: sentence primary, ID in `.rule-id` secondary. Used in list rows and on
+  cards (marker line) now; tiles and Overview use it in T-003/T-008. Update the assertions listed in
+  *Research* (delta 4), each in the same change set.
+- **Verify:** quality gates (new RuleText test red first; the updated assertions red on the old shape, then green).
+- [ ] **Verified (T-002):** —
+- **Notes:** —
+
+### T-003 — Mission Control: stat tiles, distribution bar, progress
+
+- **Covers:** AC-004, AC-005, AC-003 (tiles, Total)
+- **Do:** `SpecFigures.tsx` → six tile buttons in board order (count, state name, StateChip icon, RuleText
+  for Ready/Review/Blocked when the view carries the rule, Deprecated sub-count on Done) sending today's
+  `stateRequest`; Total control kept; a segmented distribution bar
+  (a labelled group of segments, each `aria-label="<state>: <count> of <total>"`, width = count ÷ total via
+  inline `width` only); progress figure with `MC_FORMULA` as secondary line and `title`. CSS for tiles/bar.
+  Tests in `MissionControl.test.tsx`: tile order and request, segment shares within 1 pp and names (the
+  5/7 example), no segment for 0, formula visible and as tooltip, tiles are Tab stops.
+- **Verify:** quality gates; manual: `01-mission-control-{dark,light}` — tiles and bar scan at a glance.
+- [ ] **Verified (T-003):** —
+- **Notes:** —
+
+### T-004 — Mission Control: header line, attention rows, side-by-side panels
+
+- **Covers:** AC-006, AC-007, AC-003 (attention rows), AC-016 (delta 5)
+- **Do:** `texts.ts` `mcDiagnostics(n, m)` → "`<n> project-level diagnostics · <m> specs with diagnostics`"
+  (singular for 1); `Header.tsx` one quiet line. `Attention.tsx` rows: number chip, title, each reason as
+  text with an icon (tint on icon only — fixes D-6). `RunSection.tsx` and `Activity.tsx` in a two-column
+  grid under the attention list, stacked by `@media (max-width: 720px)`; empty states with icon + 0006's
+  sentence. Update `MissionControl.test.tsx` l.61–79 (named in *Research*).
+- **Verify:** quality gates; manual: `01-mission-control-{dark,light}` and HC — header and cards agree.
+- [ ] **Verified (T-004):** —
+- **Notes:** —
+
+### T-005 — Spec Board: full-height columns, sticky headers, drag marks
+
+- **Covers:** AC-008, AC-011
+- **Do:** `main.css`: drop `max-height: 70vh`; board fills the area (`.board` flex column, `.columns`
+  `flex: 1; min-height: 0`, `grid-auto-flow: column`, `minmax(240px, 1fr)`, `overflow-x: auto`); column
+  header `position: sticky` with StateChip icon, name, count badge (`--vscode-badge-*`); card list
+  `overflow-y: auto`. `Column.tsx`/`SpecBoard.tsx`: `overKey` state set on the column's `dragover`, cleared on
+  `drop`, `dragend` and on `dragleave` to outside; `data-drop-target="true"` on that column, lifted style on
+  `data-dragging`. Tests in `Keyboard.test.tsx` (MouseEvents, per systemPatterns) and the CSS guard
+  (no height/max-height on `.column`, sticky header, scrolling list, 240 px minimum).
+- **Verify:** quality gates; manual: `02-spec-board-{dark,light,hc}` — no cut-off card, columns full height.
+- [ ] **Verified (T-005):** —
+- **Notes:** —
+
+### T-006 — Spec Board: card layout with progress bars and corner "Move to…"
+
+- **Covers:** AC-009, AC-010 (card), AC-003 (Move to…)
+- **Do:** `Card.tsx` in AC-009's DOM order: number chip + title; one StateChip, then RuleText or
+  Deprecated marker as secondary text; summary (two lines); blocked lines and readiness (reason primary,
+  `R-n` secondary); `src/webview/ui/ProgressBar.tsx` (`role="progressbar"`, name, min/max/now, figure text)
+  for tasks and criteria, or the "not available" text alone; diagnostics badge, run status, last change at
+  the bottom; `MoveMenu` button small in the top-right corner, tab stop rule of 0007 AC-017 unchanged.
+  Tests in `SpecBoard.test.tsx` (order, exactly one state chip, progressbar values, not available) — the
+  0007 content assertions stay green.
+- **Verify:** quality gates; manual: `02-spec-board-{dark,light,hc}` — cards dense, state readable.
+- [ ] **Verified (T-006):** —
+- **Notes:** —
+
+### T-007 — Safe inline Markdown and tidying in the detail view
+
+- **Covers:** AC-014, AC-015
+- **Do:** `src/webview/ui/inlineText.ts`: pure tokenizer for `**b**`, `__b__`, `*i*`, `_i_`, `` `code` ``,
+  `[text](target)` → tokens; everything else literal text; `tidy`: drop `> ` (as quote), a list marker
+  where the item is a list item, a repeated leading own ID; requirement cells split on ` | ` → first
+  primary, rest secondary joined by ` · `. `InlineText.tsx` renders tokens as React elements only.
+  Applied to every file text in `SpecDetail.tsx` (header values incl. the Plan link, requirements,
+  criteria + Given/When/Then as a quote, stages, step titles, Verified text with a ticked/unticked/
+  undetermined icon + label). Tests: `inlineText.test.ts` (each form, nesting limits, unmatched markers
+  literal, `<img src=x onerror=alert(1)>` and `<b>` literal, no element created); a Node test that no file
+  under `src/webview` contains `dangerouslySetInnerHTML` or `innerHTML`; fixture
+  `test/fixtures/studio-0002/` (copy of this repo's spec 0002 + plan + minimal `AGENTS.md`) built with
+  `buildDetail` and mounted in `webviewBundle.test.ts`: no `**AC-`, no `` ` ``, no `> `, each ID once.
+- **Verify:** quality gates; manual: `04-spec-explorer-detail-0002-{dark,light}` — no raw Markdown.
+- [ ] **Verified (T-007):** —
+- **Notes:** —
+
+### T-008 — Detail sections: collapse, one Open file per section, header, two panes
+
+- **Covers:** AC-012, AC-013, AC-010 (Overview), AC-003 (toggles, Open file, related links), AC-016 (delta 3)
+- **Do:** `DetailSection.tsx`: heading holds a toggle button (`aria-expanded`, `aria-controls`), "Open
+  file" in the heading row (target without line); memory per section name in
+  `src/webview/detail/sectionMemory.ts` (module state, panel lifetime, all start expanded). Remove per-item
+  and per-diagnostic buttons; Related artifacts: the file name is the button. Detail header: number chip,
+  title, StateChip, Open file. Overview: aligned grid, derived rule and readiness via RuleText. Explorer: two
+  panes with own scroll, stacked under 640 px. Update `SpecDetail.test.tsx` l.150–158 and l.172–177
+  (named in *Research*); new tests: toggle + `aria-expanded`, state survives another selection, counts per
+  AC-013, no line sent.
+- **Verify:** quality gates; manual: `04-spec-explorer-detail-0002-*` — short, calm, sections foldable.
+- [ ] **Verified (T-008):** —
+- **Notes:** —
+
+### T-009 — Empty, placeholder and panel-level states; motion
+
+- **Covers:** AC-002, AC-003 (whole list), §3.6
+- **Do:** `PanelStateView.tsx`, `Placeholder.tsx`, area empty states (board, Mission Control, Explorer):
+  centred, icon, one sentence, action where one exists; texts unchanged (0005/0006/0007 own them).
+  Transitions ≤ 150 ms for hover, selection, collapse; one `@media (prefers-reduced-motion: reduce)`
+  block setting transitions to none. CSS guard for AC-002; one test walking every AC-003 control with
+  Tab and checking it is reachable and that the focus rule reaches it.
+- **Verify:** quality gates; manual: `05-agent-center-dark`, `06-*`, `07-*`.
+- [ ] **Verified (T-009):** —
+- **Notes:** —
+
+### T-010 — Final gates, docs sync, screenshots for Gregor
+
+- **Covers:** AC-001…AC-016 (re-proved by the gates), AC-017 (verdict recorded here), AC-018 (listed as pre-done manual)
+- **Do:** run every gate; dependencies unchanged (`git diff package.json package-lock.json` empty). Docs:
+  README §Mission Control and §Spec Board (look, collapsible detail, one Open file per section);
+  `AGENTS.md` snapshot — exactly two entries change: `src/webview` gains "shared UI primitives in
+  src/webview/ui (state chip, rule text, progress bar, inline text formatter)" and "(specs 0005, 0007, 0006,
+  0013)"; `src/shared/protocol` gains "0013" in its spec list. `systemPatterns.md`: `--fs-*` alias rule,
+  inline formatter (tokens to React elements, no HTML), drag marks without verdict (OP-1 (a)).
+  `techContext.md`: manual checks AC-017, AC-018 and the preview harness note. `activeContext.md`. Hand the
+  full AC-017 shot list to Gregor; record his verdict below.
+- **Verify:** quality gates; manual: AC-017 — Gregor's verdict on the full screenshot set (no command can
+  judge looks).
+- [ ] **Verified (T-010):** —
+- **Notes:** —
+
+## Traceability
+
+| Acceptance criterion | Steps | Code / files | Test | State |
+| --- | --- | --- | --- | --- |
+| AC-001 | T-001, T-010 | — | — | open |
+| AC-002 | T-009 | — | — | open |
+| AC-003 | T-001, T-003, T-004, T-006, T-008, T-009 | — | — | open |
+| AC-004 | T-003 | — | — | open |
+| AC-005 | T-003 | — | — | open |
+| AC-006 | T-004 | — | — | open |
+| AC-007 | T-004 | — | — | open |
+| AC-008 | T-005 | — | — | open |
+| AC-009 | T-006 | — | — | open |
+| AC-010 | T-002, T-006, T-008 | — | — | open |
+| AC-011 | T-005 | — | — | open |
+| AC-012 | T-008 | — | — | open |
+| AC-013 | T-008 | — | — | open |
+| AC-014 | T-007 | — | — | open |
+| AC-015 | T-007 | — | — | open |
+| AC-016 | T-002, T-004, T-008, T-010 | — | — | open |
+| AC-017 | T-010 | — | manual: Gregor, screenshots | open |
+| AC-018 | T-010 (listed) | — | manual: Gregor, real VS Code | open |
+
+## Session handoff
+
+- **Done so far:** plan approved by Gregor 2026-11-16 (whole plan; `--fs-*` aliases accepted under AC-001 if every alias resolves only to `--vscode-*`); pair moved to `active/`.
+- **Next action:** T-001.
+- **Open decisions:** AC-001's `--fs-*` alias interpretation (see *Research*); harness extension for
+  900 px, collapsed detail and HC of every area (outside the repo) before T-010.
+- **Baseline:** e78fa54
+- **Environment:** `npm test` cannot run here (VS Code download blocked); CI runs it.

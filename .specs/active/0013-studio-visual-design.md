@@ -1,7 +1,7 @@
 # Studio Visual Design
 
-**Status:** Draft
-**Plan:** _none yet_
+**Status:** In Progress
+**Plan:** [0013-studio-visual-design.plan.md](0013-studio-visual-design.plan.md)
 
 Depends on: 0005, 0006, 0007. Input: [design-brief.md](../../docs/product/design-brief.md), Gregor's interview answers
 for this spec. `D-n` = defect n of the UI preview report of 2026-11-16.
@@ -71,7 +71,7 @@ Marketplace listing. Users: the developer in the Studio panel; Gregor accepts th
   secondary text; Blocked conditions and readiness sit below the summary; diagnostics badge, run
   status and last change at the bottom; "Move to…" small, top-right corner.
 - **Drag feedback**: the dragged card is visibly lifted; the column under the pointer is marked
-  as target. Valid/invalid marking before the drop is OP-1.
+  as target. No valid/invalid marking before the drop; a refusal shows after the drop as today (OP-1 (a)).
 
 ### 3.4 Spec Explorer
 
@@ -188,8 +188,10 @@ theme plus one live theme switch: colours, borders and focus match the screensho
 
 - `src/webview/main.css` (70vh rule ~l.221); extend the guard `src/adapters/node/webviewCss.test.ts`
   for AC-001…003, AC-008; add icons to `src/webview/board/icons.tsx` as inline SVG.
-- Detail text arrives raw (PD-034, `src/shared/protocol/detail.ts`); subset, tidying and ID
-  de-duplication go into one pure, tested formatter in `src/webview`; the core keeps raw text.
+- Detail text arrives raw (PD-034, `src/shared/protocol/detail.ts`), except that the core already drops a
+  repeated leading ID and list marker of requirements, criteria and stages (`src/core/board/idText.ts`, 0007
+  T-013) — that stays; the inline subset and the remaining tidying go into one pure, tested formatter in
+  `src/webview`.
   Section-level `open` targets already exist in the detail protocol.
 - `CardView.readiness` (`"R-3: <reason>"`) and `derivedLabel` may split into ID + text — a reshape,
   not new data; sentences live in `src/shared/protocol/texts.ts` and Mission Control's `texts.ts`.
@@ -209,11 +211,12 @@ theme plus one live theme switch: colours, borders and focus match the screensho
 
 ## 7. Open points
 
-- **OP-1** (needs Gregor) Valid/invalid drop marking: the webview lacks 0003's verdict before a
-  drop. (a) mark card and hovered column only, refusal after drop as today *(recommended, AC-011)*;
-  (b) per-card accepted targets from 0003 — new data; (c) webview predicts PD-014 — restated rule.
+- ~~**OP-1** Valid/invalid drop marking~~ — resolved 2026-11-16 by Gregor (`/sdd-plan`): (a) mark only the
+  dragged card and the column under the pointer; a refusal shows after the drop as today (AC-011). (b) and (c)
+  are not done.
 
 ## 8. Definition of Ready / Done
 
-Ready: OP-1 decided, 0006/0007 fixes landed, `/sdd-clarify` passed. Done: AC-001…AC-016 green,
+Ready: OP-1 decided, 0006/0007 fixes landed, `/sdd-clarify` passed — waived by Gregor on 2026-11-16
+(presentation only, judged by screenshots). Done: AC-001…AC-016 green,
 dependencies unchanged, AC-017/AC-018 accepted by Gregor, `techContext.md` manual checks updated.

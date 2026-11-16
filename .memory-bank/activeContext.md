@@ -15,10 +15,12 @@ All seven active specs (0001...0007) are implemented: every plan is Done with ev
 - Spec 0005: [spec](../.specs/active/0005-studio-shell-navigation.md) / [plan](../.specs/active/0005-studio-shell-navigation.plan.md) (Done, 10 of 10; T-010 selection foreground and High Contrast borders).
 - Spec 0006: [spec](../.specs/active/0006-mission-control-dashboard.md) / [plan](../.specs/active/0006-mission-control-dashboard.plan.md) (Done, 9 of 9; T-009 header time, A-013).
 - Spec 0007: [spec](../.specs/active/0007-spec-board-spec-detail.md) / [plan](../.specs/active/0007-spec-board-spec-detail.plan.md) (Done, 14 of 14; T-004, T-006, T-007 ticked late with re-run results; T-011...T-014 after `/sdd-compile` and the first visual check).
-- Current task: none (every step of every plan is ticked).
+- Spec 0013: [spec](../.specs/active/0013-studio-visual-design.md) / [plan](../.specs/active/0013-studio-visual-design.plan.md) (In Progress, started 2026-11-16).
+- Current task: 0013 T-001.
 - Acceptance criteria in focus: manual 0007 AC-017 (Tab onto Move to), AC-018, AC-026; 0006 AC-021, AC-022.
 
 ## Changed Recently
+- Spec 0013 (Studio visual design): plan approved by Gregor 2026-11-16, pair moved backlog → active, status In Progress.
 - 0007 T-011...T-014: the Move to button is a Tab stop of the board's current card (AC-017, spec revised); timing test for the detail view (AC-019); each ID once in requirements, criteria and stages (AC-009, spec revised, `src/core/board/idText.ts`); Overview header lines on one row (three CSS rules). Looks beyond that stay with backlog spec 0013.
 - 0007 T-004, T-006, T-007 were unticked although Done; ticked 2026-11-16 with re-run results (no red run recorded, none claimed).
 - 0006 T-009: the header time is the last model update, not the panel-open time (`SpecRepository.readAt()`, `ShellModelSource.updatedAt()`, A-013); `npm run compile` joined the quality gates for wiring steps.
@@ -34,6 +36,7 @@ All seven active specs (0001...0007) are implemented: every plan is Done with ev
 - None.
 
 ## Next
+0. Implement 0013 T-001...T-010 (whole plan approved).
 1. Gregor/CI: `npm test` host suite (smoke tests of 0001...0007; 0002 AC-022 is decided there).
 2. Gregor, manual: 0007 AC-017 (keyboard-only, Tab onto Move to), AC-018 (screen reader), AC-026 and AC-004's two-line limit in Light, Dark and High Contrast; 0006 AC-021, AC-022, the layout; 0001 AC-009 (reload), AC-022 (Restricted Mode); 0005 AC-019, AC-022, AC-023, AC-024, AC-009; one look at the 0007 Overview header.
 3. A second `/sdd-compile` for 0001...0007 in a fresh session (another model family), then `/sdd-lifecycle` to done.
