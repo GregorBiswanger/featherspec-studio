@@ -111,3 +111,13 @@ Why not `node:sqlite` now:
 - npm registry (`npm view`, run in /tmp): better-sqlite3 13.2.0 (engines node ≥ 22, node-addon-api), sql.js 1.16.0
 
 Gaps: no official doc states the physical location of `storageUri` in Remote, or whether it is cleaned on uninstall. The event-volume figures are estimates and must be measured with the SPIKE-002 provider.
+
+## Amendments (2026-11-16, after `/sdd-clarify` on spec 0004)
+
+The product decision register wins where it differs from the text above:
+
+- **Retention:** 90-day age cap, configurable, plus "Clear Run History" (PD-027) — replaces "last 50 runs or 30 days". The per-run size cap with a "truncated" marker stays.
+- **Restart:** every open run becomes `Interrupted` at activation; there is no "recovery pending" state (PD-024).
+- **Keying:** one store per project root folder URI, not per VS Code workspace (PD-026).
+- **Unreadable data:** granularity is the run; an incomplete last record is skipped on read and never rewritten (PD-028).
+- **Second window:** one writer per project store, lock with heartbeat (PD-030).
