@@ -3,7 +3,7 @@
 **Spec:** [0009-agent-provider-abstraction.md](0009-agent-provider-abstraction.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-001
+**Current step:** T-003 (stage 2, run in sequence with T-004)
 
 ## Approach
 
@@ -327,11 +327,11 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001 | — | — | open |
-| AC-002 | T-001 | — | — | open |
-| AC-003 | T-002 | — | — | open |
-| AC-004 | T-002 | — | — | open |
-| AC-005 | T-002 | — | — | open |
+| AC-001 | T-001 | src/core/providers/vocabulary.ts, docs/agent-provider-port.md | portDocument.test.ts | verified |
+| AC-002 | T-001 | eslint.config.mjs, src/core/providers/testing/scan.ts | importScan.test.ts | verified |
+| AC-003 | T-002 | src/core/providers/registry.ts | registry.test.ts (AC-003) | verified |
+| AC-004 | T-002 | src/core/providers/registry.ts:declarationDefect | registry.test.ts (AC-004) | verified |
+| AC-005 | T-002 | src/core/providers/registry.ts:copyDeclaration | registry.test.ts (AC-005) | verified |
 | AC-006 | T-003 | — | — | open |
 | AC-007 | T-003 | — | — | open |
 | AC-008 | T-004 | — | — | open |
@@ -352,8 +352,8 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
 
 ## Session handoff
 
-- **Done so far:** plan written; spec open points OP-004…OP-010 resolved in the spec (2026-11-16).
-- **Next action:** Gregor reads the plan; on the start signal `/sdd-lifecycle` backlog → active, then T-001.
+- **Done so far:** start signal given 2026-11-16, pair moved backlog → active; stage 1 (T-001, T-002) done and committed; parallel stages run in sequence (standing approval).
+- **Next action:** T-003 service core (test first), then T-004 fake scenarios; stage 2 ends after T-004.
 - **Open decisions:** none. Nine steps (one over the aim): the surface step carries the document,
   and the service and the fake are each two slices so they can run in parallel.
 - **Baseline:** 2026-11-16, eslint, both tsc runs and `npm run test:unit` green: 1350 tests.
