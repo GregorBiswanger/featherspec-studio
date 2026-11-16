@@ -314,7 +314,7 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
     - `boardService.perf.test.ts` on `generateProject` (200 specs): lifecycle notification to
       view < 200 ms, and run notification to view < 200 ms.
 - **Verify:** `npm run test:unit -- src/core/board src/core/runtime` plus the per-step gates
-- [ ] **Verified (T-004):** —
+- [x] **Verified (T-004):** 2026-11-16 · re-run after `/sdd-compile` found the step unticked (code and tests were committed earlier; the original red run was not recorded, so no red is claimed): `npm run test:unit -- src/core/board src/core/runtime` 17 files, 200 tests passed; gates: eslint 0 warnings, both `tsc --noEmit` clean, `npm run test:unit` 86 files, 1240 tests passed.
 - **Notes:** —
 
 ### T-005 — Move requests, the move command flow, open file, no writes
@@ -382,7 +382,7 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
     - AC-028: a `backlog/` → `active/` move on a memory source keeps the detail;
     - store unavailable.
 - **Verify:** `npm run test:unit -- src/core/board` plus the per-step gates
-- [ ] **Verified (T-006):** —
+- [x] **Verified (T-006):** 2026-11-16 · re-run after `/sdd-compile` (original red run not recorded, none claimed): `npm run test:unit -- src/core/board` 12 files, 111 tests passed; gates: eslint 0 warnings, both `tsc --noEmit` clean, `npm run test:unit` 86 files, 1240 tests passed.
 - **Notes:** AC-005 and AC-006 each by one assertion here; their main proof is T-001 and T-003.
 
 ### T-007 — Spec Board area: columns, cards, filter bar, states
@@ -413,7 +413,7 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
     - a test that `main.css` uses no colour literal;
     - render update < 300 ms after the message event, for 200 cards with 180 in one column.
 - **Verify:** `npm run test:unit -- src/webview/board` plus the per-step gates
-- [ ] **Verified (T-007):** —
+- [x] **Verified (T-007):** 2026-11-16 · re-run after `/sdd-compile` (original red run not recorded, none claimed): `npm run test:unit -- src/webview/board` 3 files, 66 tests passed; gates: eslint 0 warnings, both `tsc --noEmit` clean, `npm run test:unit` 86 files, 1240 tests passed.
 - **Notes:** —
 
 ### T-008 — Keyboard, "Move to…", drag & drop, announcements
