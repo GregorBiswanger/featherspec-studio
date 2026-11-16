@@ -5,17 +5,18 @@ Current branch: main
 Current phase: act
 
 ## Now
-Specs 0001 (workspace discovery), 0002 (spec repository & parser) and 0004 (runtime persistence & event model) are implemented, their plans are Done. They await the host suite (`npm test`) on CI and `/sdd-compile` in a fresh session. Spec 0003 is planned and awaits Gregor's plan review.
+Specs 0001 (workspace discovery), 0002 (spec repository & parser) and 0004 (runtime persistence & event model) are implemented, their plans are Done. They await the host suite (`npm test`) on CI and `/sdd-compile` in a fresh session. Spec 0003 is in progress (plan approved by Gregor; stage 1 of 4 done, T-001/T-002).
 
 ## Active Spec
 - Spec 0001: [spec](../.specs/active/0001-workspace-discovery-project-recognition.md) / [plan](../.specs/active/0001-workspace-discovery-project-recognition.plan.md) (Done, 12 of 12 steps; open evidence AC-009, AC-022 in the plan).
 - Spec 0002: [spec](../.specs/active/0002-spec-repository-parser.md) / [plan](../.specs/active/0002-spec-repository-parser.plan.md) (Done, 9 of 9 steps).
 - Spec 0004: [spec](../.specs/active/0004-runtime-persistence-event-model.md) / [plan](../.specs/active/0004-runtime-persistence-event-model.plan.md) (Done, T-001...T-009 ticked; AC-020 accepted 2026-11-16).
 - Spec 0003: [spec](../.specs/active/0003-spec-lifecycle-readiness-model.md) / [plan](../.specs/active/0003-spec-lifecycle-readiness-model.plan.md) (In Progress, 8 steps, 4 stages; stage 2 `‖`).
-- Current task: 0003 T-001; 0001/0002/0004 all steps ticked.
-- Acceptance criteria in focus: AC-009, AC-013, AC-019, AC-022 (0001, open evidence in its plan).
+- Current task: 0003 T-003 (stage 2 runs in sequence); 0001/0002/0004 all steps ticked.
+- Acceptance criteria in focus: AC-018, AC-010, AC-007 (0003 T-003); AC-009, AC-022 (0001, open evidence in its plan).
 
 ## Changed Recently
+- Spec 0003 started (backlog → active): T-001/T-002 built `src/core/lifecycle` (states, readiness, contradictions, Blocked, duplicates, Deprecated); 558 unit tests green.
 - Spec 0003 revised (OP-005 flow marker on collapsed jumps, OP-006 reactivated Baseline, OP-007 duplicated-stem history, new AC-026; Gregor) and planned: `.specs/active/0003-spec-lifecycle-readiness-model.plan.md`.
 - Merged `spec-0004` into `main`: `src/extension.ts` wires both the spec repository (0002) and the runtime session (0004), each fed by spec 0001's `onDidChangeActiveProject`; `architecture:` snapshot in `AGENTS.md` holds both modules.
 - Spec 0004 built: `src/core/runtime`, `src/adapters/node/fileRuntimeMedium.ts`, `docs/runtime-data.md`; T-009 after `/sdd-compile`: append-only after a kill, writes to unreadable or newer data refused.

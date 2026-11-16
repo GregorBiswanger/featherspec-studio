@@ -214,37 +214,37 @@ exists after T-002 and writes its own files.
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001, T-008 | — | — | open |
-| AC-002 | T-001 | — | — | open |
-| AC-003 | T-001 | — | — | open |
-| AC-004 | T-001 | — | — | open |
-| AC-005 | T-001 | — | — | open |
+| AC-001 | T-001, T-008 | `src/core/lifecycle/deriveLifecycle.ts:decide` | `deriveLifecycle.test.ts` (AC-001 cases) | verified |
+| AC-002 | T-001 | `src/core/lifecycle/deriveLifecycle.ts:derivedLabel`, `model.ts` | `deriveLifecycle.test.ts` (AC-002) | verified |
+| AC-003 | T-001 | `src/core/lifecycle/readiness.ts:evaluateReadiness` | `readiness.test.ts` (AC-003) | verified |
+| AC-004 | T-001 | `src/core/lifecycle/readiness.ts:evaluateReadiness` | `readiness.test.ts` (AC-004) | verified |
+| AC-005 | T-001 | `src/core/lifecycle/readiness.ts:READINESS_REASONS` | `readiness.test.ts` (AC-005) | verified |
 | AC-006 | T-007 | — | — | open |
 | AC-007 | T-003 | — | — | open |
 | AC-008 | T-004 | — | — | open |
 | AC-009 | T-004, T-005 | — | — | open |
 | AC-010 | T-003 | — | — | open |
 | AC-011 | T-007 | — | — | open |
-| AC-012 | T-002 | — | — | open |
-| AC-013 | T-002 | — | — | open |
+| AC-012 | T-002 | `src/core/lifecycle/entryContext.ts:findContradictions` | `deriveLifecycle.rules.test.ts` (AC-012) | verified |
+| AC-013 | T-002 | `src/core/lifecycle/successor.ts:readSuccessor` | `successor.test.ts` (AC-013) | verified |
 | AC-014 | T-005, T-007 | — | — | open |
 | AC-015 | T-006 | — | — | open |
 | AC-016 | T-005 | — | — | open |
 | AC-017 | T-006 | — | — | open |
 | AC-018 | T-003 | — | — | open |
-| AC-019 | T-002 | — | — | open |
-| AC-020 | T-002 | — | — | open |
-| AC-021 | T-001 | — | — | open |
-| AC-022 | T-002 | — | — | open |
+| AC-019 | T-002 | `src/core/lifecycle/readiness.ts:hasProblem`, `deriveLifecycle.ts:decide` | `deriveLifecycle.rules.test.ts` (AC-019) | verified |
+| AC-020 | T-002 | `src/core/lifecycle/entryContext.ts:buildContexts` | `deriveLifecycle.rules.test.ts` (AC-020) | verified |
+| AC-021 | T-001 | `src/core/lifecycle/deriveLifecycle.ts:decide` | `deriveLifecycle.test.ts` (AC-021) | verified |
+| AC-022 | T-002 | `src/core/lifecycle/readiness.ts:hasProblem` | `deriveLifecycle.rules.test.ts` (AC-022) | verified |
 | AC-023 | T-005 | — | — | open |
 | AC-024 | T-006 | — | — | open |
-| AC-025 | T-002 | — | — | open |
+| AC-025 | T-002 | `src/core/lifecycle/entryContext.ts:findContradictions` | `deriveLifecycle.rules.test.ts` (AC-025) | verified |
 | AC-026 | T-006 | — | — | open |
 
 ## Session handoff
 
-- **Done so far:** plan written; spec revised for OP-005, OP-006 and OP-007 (Gregor, 2026-11-16).
-- **Next action:** Gregor reviews the plan. Then `/sdd-lifecycle` backlog → active on the start signal, then T-001.
-- **Open decisions:** OP-003, OP-008 and OP-009 are planned as the spec is written.
+- **Done so far:** stage 1 (T-001, T-002): `src/core/lifecycle` derives states, readiness, contradictions, Blocked, duplicates and the Deprecated marker; 42 tests green. Spec and plan moved to `active/` on Gregor's start signal.
+- **Next action:** stage 2, in sequence (the `‖` question is answered: in sequence): T-003 then T-004, then the stage-end sync.
+- **Open decisions:** none blocking; `_none yet_` + `**Origin:**` is not an exception in AC-025 (see T-002 Notes).
 - **Baseline:** 0e0380a (HEAD before the first step commit).
 - **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); CI runs it.
