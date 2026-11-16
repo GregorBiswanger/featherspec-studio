@@ -51,6 +51,15 @@ holds the *why*: decisions and patterns.
 - Run data is append-only logs per run (`*.run.jsonl`, `*.events.jsonl`), never rewritten; a run is removed only as
   a whole; unknown format versions are left untouched (read-only store) · 2026-11-16 · spec 0004 BR-007, plan 0004 T-005
 
+- Lifecycle model is one pure function over 0002's `ProjectRead` (`deriveLifecycle`): no clock, no run input, so equal
+  files give equal states (AC-006, AC-010); the status history is a separate recorder behind the 0004 store port ·
+  2026-11-16 · plan 0003 Approach
+- History baseline: the first derivation per project and opened store whose history can be read compares with the stored
+  last state; a read-only or unavailable store only keeps the in-memory state current, so a gap is never recorded later
+  (PD-023) · 2026-11-16 · plan 0003 Research (a), T-006
+- Flow marker: a state change is *in flow* when a chain of documented steps leads from the old to the new state; Blocked
+  may be the old or the new state, never an intermediate one · 2026-11-16 · spec 0003 §6.4, plan 0003 Research
+
 ## Patterns
 - Provider independence: each agent provider is an adapter that declares its capabilities;
   provider events are normalised into an internal model (handoff §2.1, §8.3).

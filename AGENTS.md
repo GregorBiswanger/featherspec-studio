@@ -106,6 +106,7 @@ architecture:
     - 'src/core/discovery — project verdicts, version line, active-project state, report model, discovery controller, rerun scheduler (spec 0001)'
     - 'src/core/specs — spec repository: file listing, spec and plan parsers, joins, diagnostics, live repository (spec 0002)'
     - 'src/core/runtime — runtime store: runs, events, masking, writer lock, retention, store state (spec 0004)'
+    - 'src/core/lifecycle — lifecycle model: state derivation, readiness, contradictions, verification status, transition check, flow marker, status history, lifecycle service (spec 0003)'
     - 'src/adapters/node — Node file-system and spec-source adapters, Node-fs runtime medium, random IDs'
     - 'src/adapters/vscode — thin implementations of the host ports with the VS Code API; no logic'
     - 'test/fixtures — FeatherSpec fixture projects shared by unit and host tests'

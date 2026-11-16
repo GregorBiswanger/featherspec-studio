@@ -23,12 +23,15 @@
   `fs180-de-baselines`, `fs170-brownfield-mixed` (copies of the owner's samples), hand-made `fs-broken` (invalid UTF-8, `-text` in its
   `.gitattributes`), `fs110-parallel-synthetic`, `fs110-ready-synthetic` (shapes seen in no sample: UNVERIFIED). The AC-018 performance test
   generates 200 specs in a temp dir (`src/core/specs/testing/generateProject.ts`; full read < 2 s, update < 1 s).
-- `npm test` — extension-host smoke suite (`src/test/discovery.smoke.test.ts`, `src/test/specRepository.smoke.test.ts`); `pretest` compiles and lints
+- `npm test` — extension-host smoke suite (`src/test/discovery.smoke.test.ts`, `src/test/specRepository.smoke.test.ts`, `src/test/runtime.smoke.test.ts`, `src/test/lifecycle.smoke.test.ts`); `pretest` compiles and lints
   first; downloads and launches VS Code, so it is slow and needs network and a display. It cannot run
   in the agent sandbox (download blocked): CI and the Windows machine run it.
 - Runtime store (spec 0004): every store criterion is one contract suite (`src/core/runtime/testing/contract*.ts`)
   that runs against the in-memory medium and the Node-fs medium (`src/adapters/node/fileRuntimeMedium.test.ts`); no new
   tool or dependency. Host smoke: `src/test/runtime.smoke.test.ts` (CI only).
+- Lifecycle model (spec 0003): `src/core/lifecycle/*.test.ts` run on memory sources and the fixtures `fs110-ready-synthetic`,
+  `fs110-parallel-synthetic`, `fs-broken`, `fs170-brownfield-mixed`, `fs110-de-active-review`, `fs180-*`; history tests use a fake
+  store (`testing/fakeHistoryStore.ts`); the no-write proof (AC-011) uses temp copies. Host smoke: `src/test/lifecycle.smoke.test.ts` (CI only).
 - Manual checks nothing automates: window reload keeps the active project (AC-009), Restricted Mode (AC-022).
 
 ## Quality gates

@@ -1,9 +1,9 @@
 # Plan — Spec Lifecycle & Readiness Model
 
 **Spec:** [0003-spec-lifecycle-readiness-model.md](0003-spec-lifecycle-readiness-model.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-16
-**Current step:** T-008
+**Current step:** — (all steps ticked)
 
 ## Approach
 
@@ -207,8 +207,8 @@ exists after T-002 and writes its own files.
   lifecycle tests and the smoke file. `activeContext.md`: Changed Recently, Next, Validation.
   No README change (no user-visible command).
 - **Verify:** `npx eslint src --max-warnings 0` · `npx tsc --noEmit` · `npm run test:unit` · `npm run compile`
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** 2026-11-16 · `npx eslint src --max-warnings 0` 0 warnings · `npx tsc --noEmit` clean · `npm run test:unit` 40 files, 639 tests passed · `npm run compile` green. `AGENTS.md` got the one `src/core/lifecycle` modules entry; `systemPatterns.md` three decisions; `techContext.md` test notes. `npm test` (host) did not run here: CI.
+- **Notes:** `AGENTS.md` is 215 lines, over its 200-line target since before this spec; the eviction proposal stays open for Gregor (not made here, it needs his decision).
 
 ## Traceability
 
@@ -219,15 +219,15 @@ exists after T-002 and writes its own files.
 | AC-003 | T-001 | `src/core/lifecycle/readiness.ts:evaluateReadiness` | `readiness.test.ts` (AC-003) | verified |
 | AC-004 | T-001 | `src/core/lifecycle/readiness.ts:evaluateReadiness` | `readiness.test.ts` (AC-004) | verified |
 | AC-005 | T-001 | `src/core/lifecycle/readiness.ts:READINESS_REASONS` | `readiness.test.ts` (AC-005) | verified |
-| AC-006 | T-007 | — | — | open |
+| AC-006 | T-007 | `src/core/lifecycle/lifecycleService.ts:createLifecycleService` (no run input) | `lifecycleService.test.ts` (AC-006) | verified |
 | AC-007 | T-003 | `src/core/lifecycle/deriveLifecycle.ts:decide` | `verification.test.ts` (AC-007) | verified |
 | AC-008 | T-004 | `src/core/lifecycle/transitions.ts:judgeTransition` | `transitions.test.ts` (AC-008) | verified |
 | AC-009 | T-004, T-005 | `src/core/lifecycle/flow.ts:classifyFlow`, `statusHistory.ts:observe` | `flow.test.ts`, `statusHistory.test.ts` (AC-009) | verified |
 | AC-010 | T-003 | `src/core/lifecycle/deriveLifecycle.ts:deriveLifecycle` (pure, no clock input) | `deriveLifecycle.test.ts` (AC-010) | verified |
-| AC-011 | T-007 | — | — | open |
+| AC-011 | T-007 | `src/core/lifecycle/lifecycleService.ts` (read-only ports only) | `lifecycleService.test.ts` (AC-011) | verified |
 | AC-012 | T-002 | `src/core/lifecycle/entryContext.ts:findContradictions` | `deriveLifecycle.rules.test.ts` (AC-012) | verified |
 | AC-013 | T-002 | `src/core/lifecycle/successor.ts:readSuccessor` | `successor.test.ts` (AC-013) | verified |
-| AC-014 | T-005, T-007 | `src/core/lifecycle/statusHistory.ts:observe`, `changedPaths.ts` | `statusHistory.test.ts` (AC-014); service re-derivation in T-007 | built |
+| AC-014 | T-005, T-007 | `src/core/lifecycle/statusHistory.ts:observe`, `changedPaths.ts`, `lifecycleService.ts:refresh` | `statusHistory.test.ts`, `lifecycleService.test.ts` (AC-014); `src/test/lifecycle.smoke.test.ts` (CI) | verified |
 | AC-015 | T-006 | `src/core/lifecycle/statusHistory.ts:baseline` | `statusHistory.baseline.test.ts` (AC-015) | verified |
 | AC-016 | T-005 | `src/core/lifecycle/statusHistory.ts:HISTORY_LABEL`, `observe` | `statusHistory.test.ts` (AC-016) | verified |
 | AC-017 | T-006 | `src/core/lifecycle/statusHistory.ts:baseline`, `observe` | `statusHistory.baseline.test.ts` (AC-017) | verified |
@@ -243,8 +243,8 @@ exists after T-002 and writes its own files.
 
 ## Session handoff
 
-- **Done so far:** stages 1 to 3 (T-001...T-006): everything in `src/core/lifecycle` except the service; the history recorder (`statusHistory.ts`) covers live changes, baseline, identity, duplicates and store outage; 115 tests in `src/core/lifecycle`, 631 in the unit suite.
-- **Next action:** stage 4: T-007 (`lifecycleService.ts`, `src/extension.ts` wiring, `StudioApi.lifecycle()`, AC-006 and AC-011 tests, host smoke file), then T-008 (docs sync, final gates).
-- **Open decisions:** none blocking; `_none yet_` + `**Origin:**` is not an exception in AC-025 (see T-002 Notes).
+- **Done so far:** all eight steps (T-001...T-008) ticked with recorded runs; `src/core/lifecycle` is complete and wired (`StudioApi.lifecycle()`); eslint, tsc, `test:unit` (639 tests) and `compile` green; docs synced.
+- **Next action:** `npm test` (host smoke incl. `src/test/lifecycle.smoke.test.ts`) on CI or Windows; then `/sdd-compile` in a fresh session with a model from another family; then `/sdd-lifecycle` active → done.
+- **Open decisions:** `_none yet_` + `**Origin:**` is not an exception in AC-025 (see T-002 Notes); `AGENTS.md` over its line target (T-008 Notes).
 - **Baseline:** 0e0380a (HEAD before the first step commit).
 - **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); CI runs it.
