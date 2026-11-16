@@ -3,7 +3,7 @@
 **Spec:** [0001-workspace-discovery-project-recognition.md](0001-workspace-discovery-project-recognition.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-003
+**Current step:** T-005
 
 ## Approach
 
@@ -161,8 +161,8 @@ T-005…T-007 define, and T-008 documents the result.
 
   `report.test.ts`.
 - **Verify:** `npx vitest run src/core/discovery/report.test.ts` (red, then green) + per-step gates
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-16 — red: `npx vitest run src/core/discovery/report.test.ts` 13 failed with `Not implemented`, 1 passed (the literal check of the A-005 URL constant, no behaviour); green: 14/14 passed. Gates: eslint 0 findings, `tsc --noEmit` 0 errors, `npm run test:unit` 5 files, 62 passed.
+- **Notes:** Output block header is `FeatherSpec Studio discovery - <label>`; the label (timestamp) comes from the caller. A read-error folder gets no 'open the project folder itself' hint (the cause is not its location).
 
 ### T-005 — Discovery controller: activation run, status bar, Output channel
 
@@ -274,23 +274,23 @@ T-005…T-007 define, and T-008 documents the result.
 | --- | --- | --- | --- | --- |
 | AC-001 | T-001 | src/core/discovery/classifyFolder.ts:classifyFolder | classifyFolder.test.ts, discoverWorkspace.test.ts | verified |
 | AC-002 | T-001 | src/core/discovery/classifyFolder.ts:classifyFolder | classifyFolder.test.ts (AC-002 cases) | verified |
-| AC-003 | T-001, T-004, T-006 | src/core/discovery/classifyFolder.ts (missingMarkers) | classifyFolder.test.ts (AC-003); report and select list open (T-004, T-006) | built |
+| AC-003 | T-001, T-004, T-006 | src/core/discovery/classifyFolder.ts, report.ts:formatOutputBlock, buildSelectItems | classifyFolder.test.ts, report.test.ts (AC-003); controller wiring open (T-006) | built |
 | AC-004 | T-001 | src/core/discovery/classifyFolder.ts, discoverWorkspace.ts (legacy diagnostic) | classifyFolder.test.ts, discoverWorkspace.test.ts (AC-004) | verified |
 | AC-006 | T-001 | src/core/discovery/classifyFolder.ts:classifyFolder | classifyFolder.test.ts (AC-006 incl. control) | verified |
-| AC-007 | T-003, T-005 | — | — | open |
-| AC-008 | T-003, T-004, T-006 | — | — | open |
-| AC-009 | T-003, T-006 | — | manual: Gregor reloads (planned) | open |
-| AC-010 | T-003, T-006 | — | — | open |
+| AC-007 | T-003, T-005 | src/core/discovery/activeProject.ts:resolveActiveProject | activeProject.test.ts (AC-007); controller open (T-005) | built |
+| AC-008 | T-003, T-004, T-006 | src/core/discovery/activeProject.ts, report.ts:buildSelectItems | activeProject.test.ts, report.test.ts (AC-008); command open (T-006) | built |
+| AC-009 | T-003, T-006 | src/core/discovery/activeProject.ts:resolveActiveProject | activeProject.test.ts (AC-009); controller restore open (T-006); manual: Gregor reloads (planned) | built |
+| AC-010 | T-003, T-006 | src/core/discovery/activeProject.ts:resolveActiveProject | activeProject.test.ts (AC-010); controller open (T-006) | built |
 | AC-011 | T-002, T-006 | src/core/ports/readOnlyFileSystem.ts (no write members), discoverWorkspace.ts | discoverWorkspace.test.ts (AC-011 tree snapshot); refresh and select open (T-006) | built |
 | AC-012 | T-002, T-007 | src/core/discovery/discoverWorkspace.ts:discoverWorkspace | discoverWorkspace.test.ts (AC-012); select list, Output block, reruns open (T-004, T-007) | built |
 | AC-013 | T-007 | — | — | open |
-| AC-014 | T-003, T-005 | — | — | open |
-| AC-015 | T-004, T-006 | — | — | open |
-| AC-016 | T-004, T-005 | — | — | open |
-| AC-017 | T-002, T-004 | src/core/discovery/discoverWorkspace.ts:discoverFolder | discoverWorkspace.test.ts (AC-017); Output line open (T-004) | built |
+| AC-014 | T-003, T-005 | src/core/discovery/activeProject.ts (statusBar) | activeProject.test.ts (AC-014); controller open (T-005) | built |
+| AC-015 | T-004, T-006 | src/core/discovery/report.ts:buildNoProjectNotification | report.test.ts (AC-015); command open (T-006) | built |
+| AC-016 | T-004, T-005 | src/core/discovery/report.ts:formatOutputBlock | report.test.ts (AC-016); controller write open (T-005) | built |
+| AC-017 | T-002, T-004 | src/core/discovery/discoverWorkspace.ts:discoverFolder, report.ts:formatOutputBlock | discoverWorkspace.test.ts, report.test.ts (AC-017) | verified |
 | AC-018 | T-002 | src/core/discovery/discoverWorkspace.ts:discoverWorkspace | discoverWorkspace.test.ts (AC-018, 5 fixtures < 2 s) | verified |
 | AC-019 | T-005, T-009 | — | — | open |
-| AC-020 | T-003, T-005 | — | — | open |
+| AC-020 | T-003, T-005 | src/core/discovery/activeProject.ts (statusBar) | activeProject.test.ts (AC-020); controller open (T-005) | built |
 | AC-021 | T-002 | src/core/discovery/versionLine.ts:readVersionLine | versionLine.test.ts, discoverWorkspace.test.ts (AC-021) | verified |
 | AC-022 | T-009 | — | manual: Gregor in Restricted Mode (planned) | open |
 
@@ -298,8 +298,8 @@ Pre-done (before `/sdd-lifecycle` → done): `npm test` smoke suite green on CI 
 
 ## Session handoff
 
-- **Done so far:** T-001, T-002 (stage 1: marker verdicts, version line, one discovery run; 33 unit tests green); lifecycle move done, plan In Progress.
-- **Next action:** T-003, then stages 2–5 as planned.
+- **Done so far:** T-001…T-004 (stages 1–2: verdicts, version line, discovery run, active-project state, report model; 62 unit tests green).
+- **Next action:** T-005 (stage 3, controller against fake host ports).
 - **Open decisions:** OP-004, OP-006…OP-012 (spec §17), none blocking.
 - **Baseline:** `2083696` (HEAD before the first step commit; lifecycle move 2026-11-16).
 - **Environment:** `npm test` cannot run here (VS Code download blocked); it runs on CI and on Gregor's Windows machine.
