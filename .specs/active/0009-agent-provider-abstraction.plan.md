@@ -186,7 +186,7 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
   `@anthropic-ai/claude-agent-sdk`, `@openai/codex-sdk`, subpaths included), with a negative control;
   the same ban as an ESLint pattern in the core production block.
 - **Verify:** `npx vitest run src/core/providers` then the per-step gates
-- [ ] **Verified (T-001):** —
+- [x] **Verified (T-001):** 2026-11-16. Red: `npx vitest run src/core/providers` failed, portDocument.test.ts could not load the missing module `./vocabulary` (import scan test green at once; its negative control proves every SDK, subpath and adapter path is caught). Green after vocabulary.ts and docs/agent-provider-port.md: 2 files, 8 tests passed. Negative controls: a document missing one name per table, or listing an extra one, fails. ESLint pattern checked on a probe file (adapter import and SDK subpath both errors, probe removed). Gates: eslint --max-warnings 0, tsc, tsc -p src/webview clean; `npm run test:unit` 1358 passed.
 - **Notes:** —
 
 ### T-002 — Port types and registry
