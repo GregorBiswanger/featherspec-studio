@@ -536,6 +536,10 @@ small, so the recommendation is to run them in sequence.
 | AC-028 | T-005 | MissionControl.tsx | MissionControl.test.tsx, Sections.test.tsx (AC-028) | verified |
 | AC-029 | T-007 | RunSection.tsx, Drilldown.test.tsx | Drilldown.test.tsx (AC-029, OP-9) | verified |
 
+## Open evidence
+
+- 2026-11-16 — First host-suite run (Gregor, Windows 11, Node 26, VS Code 1.146): `missionControl.smoke` AC-015/AC-023 failed in `createRun` with `RuntimeRefusal: storage location is not on the local file system`. Cause is the product wiring of the runtime store (see 0004, `resolveStorageLocation`), not the dashboard. Test changes in `src/test/missionControl.smoke.test.ts`: it waits for a writable store first, and counts running runs relative to the number it sees before creating its run (the host profile persists run history between invocations, so an earlier left-over `Running` run would have broken the absolute `1` and `0`); waits report the last observed figures. Assertions otherwise unchanged. AC-006 passed.
+
 ## Session handoff
 
 - **Done so far:** all nine steps ticked (T-001...T-009; T-009 fixed the header time after `/sdd-compile`, A-013); 1243 unit tests, eslint, both tsc and `npm run compile` green. `npm test` (host smoke `src/test/missionControl.smoke.test.ts` and the older ones) was not run: VS Code download blocked.
