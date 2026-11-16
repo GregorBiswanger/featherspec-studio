@@ -1,49 +1,25 @@
 import { describe, expect, it } from 'vitest';
-import type { ClockPort } from '../ports/host';
-import { createMemorySpecSource } from '../specs/testing/memorySpecSource';
-import { readProject } from '../specs/readProject';
-import type { ProjectRead } from '../specs/readProject';
-import { deriveLifecycle } from './deriveLifecycle';
 import { createStatusHistory, HISTORY_LABEL } from './statusHistory';
-import { appended, createFakeHistoryStore } from './testing/fakeHistoryStore';
-import { noteText, planText, ROOT, specText, VERSION } from './testing/projects';
+import { appended } from './testing/fakeHistoryStore';
+import { createHistoryWorld } from './testing/historyWorld';
+import { noteText, planText, specText } from './testing/projects';
 
 const LINKED = '[0001-a.plan.md](0001-a.plan.md)';
 
-function setup() {
-    const source = createMemorySpecSource();
-    const store = createFakeHistoryStore();
-    let tick = 0;
-    const clock: ClockPort = { now: () => `2026-11-16T09:00:0${++tick}Z`, setTimeout: () => ({ dispose: () => undefined }) };
-    const history = createStatusHistory({ store, clock });
-    let previous: ProjectRead | undefined;
-    return {
-        source,
-        store,
-        history,
-        set: (path: string, content: string) => source.setFile(ROOT, path, content),
-        remove: (path: string) => source.remove(ROOT, path),
-        async observe(): Promise<void> {
-            const current = await readProject(source, ROOT, VERSION);
-            await history.observe(previous, current, deriveLifecycle(current));
-            previous = current;
-        },
-    };
-}
+const setup = (): ReturnType<typeof createHistoryWorld> => createHistoryWorld();
 
 describe('status history: live changes', () => {
     it('AC-014: a plan going from In Progress to Done appends one Active -> Review entry with the plan path as cause', async () => {
         const w = setup();
         w.set('.specs/active/0001-a.md', specText({ status: 'In Progress', plan: LINKED }));
         w.set('.specs/active/0001-a.plan.md', planText({ status: 'In Progress' }));
-        await w.observe();
-        expect(w.store.records).toEqual([]);
+        await w.baseline();
         w.set('.specs/active/0001-a.plan.md', planText({ status: 'Done' }));
         await w.observe();
         expect(w.store.records.map((record) => record.stem)).toEqual(['0001-a']);
         expect(appended(w.store)).toEqual([
             {
-                observedAt: '2026-11-16T09:00:01Z',
+                observedAt: '2026-11-16T09:00:02Z',
                 stem: '0001-a',
                 old: 'Active',
                 new: 'Review',
@@ -57,7 +33,7 @@ describe('status history: live changes', () => {
     it('AC-009: a change outside the FeatherSpec flow is recorded with that marker; the new state is the one the files define', async () => {
         const w = setup();
         w.set('.specs/active/0001-a.md', specText({ status: 'In Progress', plan: '_none_', origin: 'Reverse — Brownfield' }));
-        await w.observe();
+        await w.baseline();
         w.remove('.specs/active/0001-a.md');
         w.set('.specs/backlog/0001-a.md', specText({ status: 'Draft', plan: '_none yet_' }));
         await w.observe();
@@ -70,7 +46,7 @@ describe('status history: live changes', () => {
         const w = setup();
         w.set('.specs/active/0001-a.md', specText({ status: 'In Progress', plan: LINKED }));
         w.set('.specs/active/0001-a.plan.md', planText({ status: 'In Progress' }));
-        await w.observe();
+        await w.baseline();
         w.set('.memory-bank/activeContext.0001-T-002.md', noteText('BLOCKED'));
         await w.observe();
         w.remove('.memory-bank/activeContext.0001-T-002.md');
@@ -87,7 +63,7 @@ describe('status history: live changes', () => {
         const w = setup();
         w.set('.specs/active/0001-a.md', specText({ status: 'In Progress', plan: LINKED }));
         w.set('.specs/active/0001-a.plan.md', planText({ status: 'Not started' }));
-        await w.observe();
+        await w.baseline();
         w.set('.specs/active/0001-a.plan.md', planText({ status: 'In Progress' }));
         await w.observe();
         expect(w.store.records).toEqual([]);
@@ -97,7 +73,7 @@ describe('status history: live changes', () => {
         const w = setup();
         w.set('.specs/backlog/0001-a.md', specText({ plan: LINKED }));
         w.set('.specs/backlog/0001-a.plan.md', planText());
-        await w.observe();
+        await w.baseline();
         w.remove('.specs/backlog/0001-a.md');
         w.remove('.specs/backlog/0001-a.plan.md');
         w.set('.specs/active/0001-a.md', specText({ status: 'In Progress', plan: LINKED }));
@@ -113,10 +89,11 @@ describe('status history: live changes', () => {
         const w = setup();
         w.set('.specs/active/0001-a.md', specText({ status: 'In Progress', plan: LINKED }));
         w.set('.specs/active/0001-a.plan.md', planText({ status: 'In Progress' }));
+        await w.baseline();
+        const attempts = w.store.appendAttempts();
         await w.observe();
         await w.observe();
-        await w.observe();
-        expect(w.store.appendAttempts()).toBe(0);
+        expect(w.store.appendAttempts()).toBe(attempts);
         expect(w.history.label).toBe(HISTORY_LABEL);
         expect(HISTORY_LABEL).toBe('Observed by Studio while it was running — not a reconstruction');
         const view = await w.history.read();
@@ -128,7 +105,7 @@ describe('status history: live changes', () => {
         const w = setup();
         w.set('.specs/active/0001-a.md', specText({ status: 'In Progress', plan: LINKED }));
         w.set('.specs/active/0001-a.plan.md', planText({ status: 'In Progress' }));
-        await w.observe();
+        await w.baseline();
         w.set('.specs/active/0001-a.plan.md', planText({ status: 'Done' }));
         await w.observe();
         expect(JSON.stringify(w.store.records)).not.toContain('The system shall work');
@@ -139,7 +116,7 @@ describe('status history: live changes', () => {
         const w = setup();
         w.set('.specs/active/0001-a.md', specText({ status: 'In Progress', plan: LINKED }));
         w.set('.specs/active/0001-a.plan.md', planText({ status: 'In Progress' }));
-        await w.observe();
+        await w.baseline();
         w.set('.specs/active/0001-a.plan.md', planText({ status: 'Done' }));
         await w.observe();
         const view = await w.history.read();

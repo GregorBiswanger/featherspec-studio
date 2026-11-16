@@ -63,64 +63,137 @@ function isHistoryEntry(value: unknown): value is StatusHistoryEntry {
     );
 }
 
+function message(error: unknown): string {
+    return error instanceof Error ? error.message : String(error);
+}
+
+interface Verdict {
+    state: LifecycleState;
+    rule: RuleId;
+}
+
 export function createStatusHistory(deps: StatusHistoryDeps): StatusHistory {
     const { store, clock } = deps;
     const last = new Map<string, LifecycleState>();
     let baselined = false;
 
-    function singleStates(model: LifecycleModel): Map<string, { state: LifecycleState; rule: RuleId }> {
+    function verdicts(model: LifecycleModel): { singles: Map<string, Verdict>; present: Set<string> } {
         const counts = new Map<string, number>();
         model.entries.forEach((entry) => counts.set(entry.stem, (counts.get(entry.stem) ?? 0) + 1));
-        return new Map(
-            model.entries.filter((entry) => counts.get(entry.stem) === 1).map((entry) => [entry.stem, { state: entry.state, rule: entry.rule }]),
+        const singles = new Map(
+            model.entries
+                .filter((entry) => counts.get(entry.stem) === 1)
+                .map((entry): [string, Verdict] => [entry.stem, { state: entry.state, rule: entry.rule }]),
         );
+        return { singles, present: new Set(counts.keys()) };
+    }
+
+    async function readStored(): Promise<{ ok: true; recorded: Map<string, LifecycleState>; entries: StatusHistoryEntry[] } | { ok: false; reason: string }> {
+        let result;
+        try {
+            result = await store.readSpecStatusHistory();
+        } catch (error) {
+            return { ok: false, reason: message(error) };
+        }
+        if (!result.available) {
+            return { ok: false, reason: result.reason };
+        }
+        const recorded = new Map<string, LifecycleState>();
+        const entries: StatusHistoryEntry[] = [];
+        for (const record of result.value) {
+            const candidate: unknown = record.entry;
+            if (isHistoryEntry(candidate)) {
+                entries.push(candidate);
+                if (candidate.new === null) {
+                    recorded.delete(record.stem);
+                } else {
+                    recorded.set(record.stem, candidate.new);
+                }
+            }
+        }
+        return { ok: true, recorded, entries };
+    }
+
+    function entryFor(stem: string, old: LifecycleState | null, verdict: Verdict | undefined, cause: HistoryCause, flow: FlowMarker): StatusHistoryEntry {
+        return { observedAt: clock.now(), stem, old, new: verdict?.state ?? null, rule: verdict?.rule ?? null, cause, flow };
+    }
+
+    async function append(entries: StatusHistoryEntry[]): Promise<void> {
+        if (store.state().kind !== 'writable') {
+            return;
+        }
+        for (const entry of entries) {
+            try {
+                await store.appendSpecStatusEntry(entry.stem, entry as unknown as JsonValue);
+            } catch {
+                return;
+            }
+        }
+    }
+
+    async function baseline(model: LifecycleModel): Promise<void> {
+        const stored = await readStored();
+        if (!stored.ok) {
+            return;
+        }
+        baselined = true;
+        const { singles, present } = verdicts(model);
+        const pending: StatusHistoryEntry[] = [];
+        for (const stem of [...new Set([...singles.keys(), ...stored.recorded.keys()])].sort()) {
+            const verdict = singles.get(stem);
+            const recorded = stored.recorded.get(stem);
+            if (verdict !== undefined) {
+                last.set(stem, verdict.state);
+                if (recorded === undefined) {
+                    pending.push(entryFor(stem, null, verdict, { kind: 'first-observed' }, 'not checked'));
+                } else if (recorded !== verdict.state) {
+                    pending.push(entryFor(stem, recorded, verdict, { kind: 'changed-while-not-running' }, 'not checked'));
+                }
+            } else if (recorded !== undefined) {
+                if (present.has(stem)) {
+                    last.set(stem, recorded);
+                } else {
+                    pending.push(entryFor(stem, recorded, undefined, { kind: 'no-longer-observed' }, 'not checked'));
+                }
+            }
+        }
+        await append(pending);
     }
 
     return {
         label: HISTORY_LABEL,
         async observe(previous, current, model) {
-            const states = singleStates(model);
             if (!baselined) {
-                baselined = true;
-                states.forEach((verdict, stem) => last.set(stem, verdict.state));
+                await baseline(model);
                 return;
             }
+            const { singles, present } = verdicts(model);
             const pending: StatusHistoryEntry[] = [];
-            for (const stem of [...states.keys()].sort()) {
-                const verdict = states.get(stem);
+            for (const stem of [...new Set([...singles.keys(), ...last.keys()])].sort()) {
+                const verdict = singles.get(stem);
                 const old = last.get(stem);
-                if (verdict !== undefined && old !== undefined && old !== verdict.state) {
-                    pending.push({
-                        observedAt: clock.now(),
-                        stem,
-                        old,
-                        new: verdict.state,
-                        rule: verdict.rule,
-                        cause: { kind: 'files', paths: changedPaths(stem, previous, current) },
-                        flow: classifyFlow(old, verdict.state),
-                    });
-                }
                 if (verdict !== undefined) {
+                    if (old === undefined) {
+                        pending.push(entryFor(stem, null, verdict, { kind: 'first-observed' }, 'not checked'));
+                    } else if (old !== verdict.state) {
+                        pending.push(
+                            entryFor(stem, old, verdict, { kind: 'files', paths: changedPaths(stem, previous, current) }, classifyFlow(old, verdict.state)),
+                        );
+                    }
                     last.set(stem, verdict.state);
+                } else if (!present.has(stem) && old !== undefined) {
+                    pending.push(entryFor(stem, old, undefined, { kind: 'no-longer-observed' }, 'not checked'));
+                    last.delete(stem);
                 }
             }
-            for (const entry of pending) {
-                await store.appendSpecStatusEntry(entry.stem, entry as unknown as JsonValue);
-            }
+            await append(pending);
         },
         async read() {
-            const result = await store.readSpecStatusHistory();
-            if (!result.available) {
-                return { available: false, text: `Status history not available: ${result.reason}` };
+            const stored = await readStored();
+            if (!stored.ok) {
+                return { available: false, text: `Status history not available: ${stored.reason}` };
             }
-            const entries: StatusHistoryEntry[] = [];
-            for (const record of result.value) {
-                const candidate: unknown = record.entry;
-                if (isHistoryEntry(candidate)) {
-                    entries.push(candidate);
-                }
-            }
-            return { available: true, label: HISTORY_LABEL, entries };
+            return { available: true, label: HISTORY_LABEL, entries: stored.entries };
         },
     };
 }

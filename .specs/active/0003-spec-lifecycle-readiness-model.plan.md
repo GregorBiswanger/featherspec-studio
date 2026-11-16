@@ -3,7 +3,7 @@
 **Spec:** [0003-spec-lifecycle-readiness-model.md](0003-spec-lifecycle-readiness-model.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-006
+**Current step:** T-007
 
 ## Approach
 
@@ -179,8 +179,8 @@ exists after T-002 and writes its own files.
   available* with the reason. Tests on the fake store, including a `RuntimeRefusal` thrown on
   append.
 - **Verify:** `npm run test:unit -- src/core/lifecycle/statusHistory` plus the per-step gates
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-16 · red: `npm run test:unit -- src/core/lifecycle/statusHistory` 12 of 21 new tests failed (assertions: no baseline, no first observed or no longer observed entries, outage not handled; the T-005 recorder only seeded states); green: 115 of 115 in `src/core/lifecycle`; gates: eslint 0 warnings, `tsc --noEmit` clean, `npm run test:unit` 39 files, 631 tests passed.
+- **Notes:** the first derivation with a readable history is the baseline: with an empty history every stem is *first observed* (the spec's "first run"); the T-005 tests therefore seed through `baseline()` in `testing/historyWorld.ts`. A store that is read-only or unavailable keeps `last` current without appending, so a gap is never recorded later; a failing append stops the batch and is not retried; `read()` is *not available* only when the history cannot be read. Tests: `statusHistory.baseline.test.ts`.
 
 ### T-007 — Lifecycle service, extension wiring and the no-write proof
 
@@ -222,29 +222,29 @@ exists after T-002 and writes its own files.
 | AC-006 | T-007 | — | — | open |
 | AC-007 | T-003 | `src/core/lifecycle/deriveLifecycle.ts:decide` | `verification.test.ts` (AC-007) | verified |
 | AC-008 | T-004 | `src/core/lifecycle/transitions.ts:judgeTransition` | `transitions.test.ts` (AC-008) | verified |
-| AC-009 | T-004, T-005 | `src/core/lifecycle/flow.ts:classifyFlow` | `flow.test.ts` (AC-009, reachability); history marker in T-005 | built |
+| AC-009 | T-004, T-005 | `src/core/lifecycle/flow.ts:classifyFlow`, `statusHistory.ts:observe` | `flow.test.ts`, `statusHistory.test.ts` (AC-009) | verified |
 | AC-010 | T-003 | `src/core/lifecycle/deriveLifecycle.ts:deriveLifecycle` (pure, no clock input) | `deriveLifecycle.test.ts` (AC-010) | verified |
 | AC-011 | T-007 | — | — | open |
 | AC-012 | T-002 | `src/core/lifecycle/entryContext.ts:findContradictions` | `deriveLifecycle.rules.test.ts` (AC-012) | verified |
 | AC-013 | T-002 | `src/core/lifecycle/successor.ts:readSuccessor` | `successor.test.ts` (AC-013) | verified |
-| AC-014 | T-005, T-007 | — | — | open |
-| AC-015 | T-006 | — | — | open |
-| AC-016 | T-005 | — | — | open |
-| AC-017 | T-006 | — | — | open |
+| AC-014 | T-005, T-007 | `src/core/lifecycle/statusHistory.ts:observe`, `changedPaths.ts` | `statusHistory.test.ts` (AC-014); service re-derivation in T-007 | built |
+| AC-015 | T-006 | `src/core/lifecycle/statusHistory.ts:baseline` | `statusHistory.baseline.test.ts` (AC-015) | verified |
+| AC-016 | T-005 | `src/core/lifecycle/statusHistory.ts:HISTORY_LABEL`, `observe` | `statusHistory.test.ts` (AC-016) | verified |
+| AC-017 | T-006 | `src/core/lifecycle/statusHistory.ts:baseline`, `observe` | `statusHistory.baseline.test.ts` (AC-017) | verified |
 | AC-018 | T-003 | `src/core/lifecycle/verification.ts:readVerification` | `verification.test.ts` (AC-018) | verified |
 | AC-019 | T-002 | `src/core/lifecycle/readiness.ts:hasProblem`, `deriveLifecycle.ts:decide` | `deriveLifecycle.rules.test.ts` (AC-019) | verified |
 | AC-020 | T-002 | `src/core/lifecycle/entryContext.ts:buildContexts` | `deriveLifecycle.rules.test.ts` (AC-020) | verified |
 | AC-021 | T-001 | `src/core/lifecycle/deriveLifecycle.ts:decide` | `deriveLifecycle.test.ts` (AC-021) | verified |
 | AC-022 | T-002 | `src/core/lifecycle/readiness.ts:hasProblem` | `deriveLifecycle.rules.test.ts` (AC-022) | verified |
-| AC-023 | T-005 | — | — | open |
-| AC-024 | T-006 | — | — | open |
+| AC-023 | T-005 | `src/core/lifecycle/statusHistory.ts:observe` | `statusHistory.test.ts` (AC-023) | verified |
+| AC-024 | T-006 | `src/core/lifecycle/statusHistory.ts:append`, `readStored` | `statusHistory.baseline.test.ts` (AC-024) | verified |
 | AC-025 | T-002 | `src/core/lifecycle/entryContext.ts:findContradictions` | `deriveLifecycle.rules.test.ts` (AC-025) | verified |
-| AC-026 | T-006 | — | — | open |
+| AC-026 | T-006 | `src/core/lifecycle/statusHistory.ts:verdicts`, `observe` | `statusHistory.baseline.test.ts` (AC-026) | verified |
 
 ## Session handoff
 
-- **Done so far:** stages 1 and 2 (T-001...T-004): derivation, readiness, contradictions, Blocked, duplicates, Deprecated, verification status, `judgeTransition`, `classifyFlow`; 83 tests in `src/core/lifecycle`, 599 in the unit suite.
-- **Next action:** stage 3: T-005 (`statusHistory.ts`, live changes), then T-006 (baseline, identity, outage).
+- **Done so far:** stages 1 to 3 (T-001...T-006): everything in `src/core/lifecycle` except the service; the history recorder (`statusHistory.ts`) covers live changes, baseline, identity, duplicates and store outage; 115 tests in `src/core/lifecycle`, 631 in the unit suite.
+- **Next action:** stage 4: T-007 (`lifecycleService.ts`, `src/extension.ts` wiring, `StudioApi.lifecycle()`, AC-006 and AC-011 tests, host smoke file), then T-008 (docs sync, final gates).
 - **Open decisions:** none blocking; `_none yet_` + `**Origin:**` is not an exception in AC-025 (see T-002 Notes).
 - **Baseline:** 0e0380a (HEAD before the first step commit).
 - **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); CI runs it.
