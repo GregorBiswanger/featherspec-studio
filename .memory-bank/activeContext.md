@@ -5,31 +5,25 @@ Current branch: main
 Current phase: act
 
 ## Now
-Spec 0007 (Spec Board and spec detail) is built (plan Done, T-001...T-010; 0003 T-009 and T-010, 0004 T-010 added for it). It awaits the host suite on CI, Gregor's manual checks and `/sdd-compile` in a fresh session. Specs 0001...0005 are built too and wait for the same.
+All seven active specs (0001...0007) are implemented: every plan is Done with every step ticked and a recorded `Verified:` result. They await the host suite on CI, Gregor's manual checks and a second `/sdd-compile` in a fresh session. No spec is `Implemented` yet; all stay `In Progress` until that compile and `/sdd-lifecycle`.
 
 ## Active Spec
-- Spec 0001: [spec](../.specs/active/0001-workspace-discovery-project-recognition.md) / [plan](../.specs/active/0001-workspace-discovery-project-recognition.plan.md) (Done, 12 of 12 steps; open evidence AC-009, AC-022 in the plan).
-- Spec 0002: [spec](../.specs/active/0002-spec-repository-parser.md) / [plan](../.specs/active/0002-spec-repository-parser.plan.md) (Done, T-001...T-011 ticked; spec revised 2026-11-16 after `/sdd-compile`; AC-022 `built`, `verified` after the host suite).
-- Spec 0004: [spec](../.specs/active/0004-runtime-persistence-event-model.md) / [plan](../.specs/active/0004-runtime-persistence-event-model.plan.md) (Done, T-001...T-010 ticked; T-010 run-change notification for 0007; AC-020 accepted 2026-11-16).
-- Spec 0003: [spec](../.specs/active/0003-spec-lifecycle-readiness-model.md) / [plan](../.specs/active/0003-spec-lifecycle-readiness-model.plan.md) (Done, 10 of 10 steps; T-010 blocking conditions and plan in use for 0007; T-009 after `/sdd-compile`: no history entry for a gap at the first derivation, PD-023).
-- Spec 0007: [spec](../.specs/active/0007-spec-board-spec-detail.md) / [plan](../.specs/active/0007-spec-board-spec-detail.plan.md) (Done, T-001...T-010 ticked; spec `In Progress` until `/sdd-compile`).
-- Spec 0005: [spec](../.specs/active/0005-studio-shell-navigation.md) / [plan](../.specs/active/0005-studio-shell-navigation.plan.md) (Done, T-001...T-009 ticked; spec `In Progress` until `/sdd-compile`).
-- Spec 0006: [spec](../.specs/active/0006-mission-control-dashboard.md) / [plan](../.specs/active/0006-mission-control-dashboard.plan.md) (Done, T-001...T-008 ticked; approved by Gregor 2026-11-16).
-- Current task: 0006 none (all steps ticked); 0001...0005 and 0007 all steps ticked.
-- Acceptance criteria in focus: 0007 AC-001...AC-028 (manual: AC-017, AC-018, AC-026).
+- Spec 0001: [spec](../.specs/active/0001-workspace-discovery-project-recognition.md) / [plan](../.specs/active/0001-workspace-discovery-project-recognition.plan.md) (Done, 13 of 13 steps; open evidence AC-009, AC-022 in the plan).
+- Spec 0002: [spec](../.specs/active/0002-spec-repository-parser.md) / [plan](../.specs/active/0002-spec-repository-parser.plan.md) (Done, 11 of 11; AC-022 `built`, `verified` after the host suite).
+- Spec 0003: [spec](../.specs/active/0003-spec-lifecycle-readiness-model.md) / [plan](../.specs/active/0003-spec-lifecycle-readiness-model.plan.md) (Done, 10 of 10; T-009: no history entry for a gap, PD-023).
+- Spec 0004: [spec](../.specs/active/0004-runtime-persistence-event-model.md) / [plan](../.specs/active/0004-runtime-persistence-event-model.plan.md) (Done, 10 of 10; AC-020 accepted 2026-11-16).
+- Spec 0005: [spec](../.specs/active/0005-studio-shell-navigation.md) / [plan](../.specs/active/0005-studio-shell-navigation.plan.md) (Done, 10 of 10; T-010 selection foreground and High Contrast borders).
+- Spec 0006: [spec](../.specs/active/0006-mission-control-dashboard.md) / [plan](../.specs/active/0006-mission-control-dashboard.plan.md) (Done, 9 of 9; T-009 header time, A-013).
+- Spec 0007: [spec](../.specs/active/0007-spec-board-spec-detail.md) / [plan](../.specs/active/0007-spec-board-spec-detail.plan.md) (Done, 14 of 14; T-004, T-006, T-007 ticked late with re-run results; T-011...T-014 after `/sdd-compile` and the first visual check).
+- Current task: none (every step of every plan is ticked).
+- Acceptance criteria in focus: manual 0007 AC-017 (Tab onto Move to), AC-018, AC-026; 0006 AC-021, AC-022.
 
 ## Changed Recently
-- Spec 0006 stage 3 (T-005...T-007): Mission Control area in `src/webview/areas/missionControl` (header, spec figures, run section, attention, activity, drill-down as native buttons with 0007's filter shape); bundle test mounts it with a fixture snapshot; 1240 unit tests green.
-- Spec 0006 stage 2 (T-003, T-004): run figures, highlighted runs, attention list, recent activity, dashboard service (listens only while the panel is open); 1191 unit tests green.
-- Spec 0006 stage 1 (T-001, T-002): `src/core/missionControl` run source, spec figures and header; `src/shared/protocol/missionControl.ts` view contract and guard; plan adjusted to the real code, spec revised (OP-4, OP-6, OP-8...OP-12 answered); 1143 unit tests green.
-- Spec 0005 T-010 (after `/sdd-compile`): AC-030 selected-row text uses the selection foreground, AC-031 High Contrast borders in `main.css`; style and DOM tests; 1119 unit tests green.
-- Spec 0007 (T-001...T-010): `src/core/board`, `src/shared/protocol/{boardFilter,board,detail}.ts`, Spec Board area, keyboard, Move to menu, native drag and drop, spec detail in Spec Explorer, `onDidNavigate`, `featherspec-studio.moveSpec`, host smoke `src/test/board.smoke.test.ts` (not run here); 0003 T-009/T-010, 0004 T-010; 1111 unit tests green.
-- Spec 0005 stage 4 (T-008, T-009): panel host with CSP, serializer, commands, test-mode probe, Activity Bar tree, Rescan command, host smoke `src/test/shell.smoke.test.ts` (not run here); architecture snapshot, Memory Bank and README synced; 860 unit tests green.
-- Spec 0005 stage 3 (T-005...T-007): `src/core/shell` (panel-state derivation, tree model, shell service with selection, memory, rows, navigation request, Retry, Rescan); 846 unit tests green.
-- Spec 0005 stage 2 (T-002...T-004): React 19 webview in `src/webview` (client, navigation, panel states, areas, Spec Explorer, notice), second esbuild target, webview vitest project, bundle-in-jsdom test; 740 unit tests green.
-- Spec 0005 stage 1 (T-001): `src/shared/protocol` (envelope, messages, areas, texts) and `src/core/shell/messageRouter.ts`; 0001 T-013 (AC-024 `onDidUpdate`, `remembered`, `failure`); 681 unit tests green.
-- Spec 0005 started and revised (Gregor): OP-002, OP-004...OP-009 resolved in the spec (placeholder wording, S7, S8/S9 texts, notice, Reload, Rescan command AC-029); spec 0001 revised (AC-024 `onDidUpdate`, `remembered`, `failure`; plan step T-013).
-- Spec 0002 revised after `/sdd-compile` (Gregor): AC-022 same-project re-report triggers no re-read, AC-008 three-dot range; plan extended T-010/T-011 (tests only, code unchanged); AC-022 row back to `built` until `npm test` ran.
+- 0007 T-011...T-014: the Move to button is a Tab stop of the board's current card (AC-017, spec revised); timing test for the detail view (AC-019); each ID once in requirements, criteria and stages (AC-009, spec revised, `src/core/board/idText.ts`); Overview header lines on one row (three CSS rules). Looks beyond that stay with backlog spec 0013.
+- 0007 T-004, T-006, T-007 were unticked although Done; ticked 2026-11-16 with re-run results (no red run recorded, none claimed).
+- 0006 T-009: the header time is the last model update, not the panel-open time (`SpecRepository.readAt()`, `ShellModelSource.updatedAt()`, A-013); `npm run compile` joined the quality gates for wiring steps.
+- 0005 T-010, 0003 T-009, 0002 T-010/T-011 after earlier `/sdd-compile` runs (selection colours, gap baseline PD-023, AC-022 and AC-008 wording).
+- 0007 T-001...T-010 and 0006 T-001...T-008: board, detail, Mission Control; `AGENTS.md` snapshot, `systemPatterns.md`, `techContext.md` and README synced.
 
 ## Decisions in Flight
 - 0002: symbolic links not followed (A-006 confirmed).
@@ -40,9 +34,10 @@ Spec 0007 (Spec Board and spec detail) is built (plan Done, T-001...T-010; 0003 
 - None.
 
 ## Next
-1. Gregor/CI: `npm test` host suite (0001...0005 and 0007 smoke tests); manual 0007 AC-017, AC-018, AC-026 (keyboard, screen reader, themes); 0006's plan adopts the filter shape of `boardFilter.ts`; manual checks 0001 AC-009 (reload), AC-022 (Restricted Mode); 0005 AC-019 (themes), AC-022 (focus), AC-023 (High Contrast), AC-024, AC-009.
-2. `/sdd-compile` for 0001, 0002 (again), 0003, 0004, 0005 and 0007 in a fresh session (another model family), then `/sdd-lifecycle` to done.
-3. Gregor re-measures AC-018 on a real project (OP-001).
+1. Gregor/CI: `npm test` host suite (smoke tests of 0001...0007; 0002 AC-022 is decided there).
+2. Gregor, manual: 0007 AC-017 (keyboard-only, Tab onto Move to), AC-018 (screen reader), AC-026 and AC-004's two-line limit in Light, Dark and High Contrast; 0006 AC-021, AC-022, the layout; 0001 AC-009 (reload), AC-022 (Restricted Mode); 0005 AC-019, AC-022, AC-023, AC-024, AC-009; one look at the 0007 Overview header.
+3. A second `/sdd-compile` for 0001...0007 in a fresh session (another model family), then `/sdd-lifecycle` to done.
+4. Gregor re-measures 0001 AC-018 (OP-001) and 0006 AC-016, AC-024 (OP-12) on a real project.
 
 ## Validation
-- Done: eslint, both tsc, `test:unit` (1111 tests), `compile` green. 0002 AC-022: `built`, decided by the host smoke on CI. Pending: `npm test` on CI or Windows, manual AC-009 and AC-022. Known issues: none.
+- Done: eslint, both `tsc`, `npm run test:unit` (87 files, 1268 tests), `npm run compile` green. Pending: `npm test` on CI or Windows, the manual checks above. Known issues: none.
