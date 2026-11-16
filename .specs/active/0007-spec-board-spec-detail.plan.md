@@ -597,6 +597,10 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 | AC-027 | T-006, T-009 | src/webview/detail/SpecDetail.tsx | SpecDetail.test.tsx (AC-027) | built |
 | AC-028 | T-006, T-009 | src/webview/detail/SpecDetail.tsx | SpecDetail.test.tsx (AC-028) | built |
 
+## Open evidence
+
+- 2026-11-16 — First host-suite run (Gregor, Windows 11, Node 26, VS Code 1.146): `board.smoke` AC-010/AC-016 expected `opened`, got `not-found`. Cause is a product bug: `project.root` is a workspace folder URI string (`file:///c%3A/...`), and `src/adapters/vscode/editor.ts` built the target with `vscode.Uri.file(root)`, so the path never existed (every other adapter uses `Uri.parse(root)`). Fix: `Uri.parse(root)`; Vitest `src/adapters/vscode/editor.test.ts` (mocked `vscode`) was red on the old line first. Wait helper in `src/test/board.smoke.test.ts` now reports the columns seen. Not yet seen green on the host.
+
 ## Session handoff
 
 - **Done so far:** T-001 to T-014 are ticked and committed. T-004, T-006 and T-007 were found unticked by `/sdd-compile` and ticked on 2026-11-16 with re-run results. T-011 (Move to button is a Tab stop), T-012 (detail timing test), T-013 (each ID once) and T-014 (header lines on one row) followed from `/sdd-compile` and Gregor's first visual check. 1268 unit tests, both `tsc`, eslint and `npm run compile` are green.

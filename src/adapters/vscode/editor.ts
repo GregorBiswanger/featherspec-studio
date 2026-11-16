@@ -4,7 +4,7 @@ import type { EditorPort } from '../../core/ports/board';
 export function createEditor(): EditorPort {
     return {
         async open(root, key, line) {
-            const uri = vscode.Uri.joinPath(vscode.Uri.file(root), ...key.split('/'));
+            const uri = vscode.Uri.joinPath(vscode.Uri.parse(root), ...key.split('/'));
             try {
                 await vscode.workspace.fs.stat(uri);
             } catch {

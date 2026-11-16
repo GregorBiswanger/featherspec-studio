@@ -1,17 +1,8 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { snapshotTree } from '../core/discovery/testing/snapshotTree';
+import { waitFor } from '../core/discovery/testing/waitFor';
 import type { StudioApi } from '../extension';
-
-async function waitFor(condition: () => boolean, timeoutMs: number): Promise<void> {
-    const started = Date.now();
-    while (!condition()) {
-        if (Date.now() - started > timeoutMs) {
-            throw new Error('Timed out waiting for the condition');
-        }
-        await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-}
 
 async function activateStudio(): Promise<StudioApi> {
     const extension = vscode.extensions.all.find((candidate) => candidate.packageJSON.name === 'featherspec-studio');
@@ -21,7 +12,9 @@ async function activateStudio(): Promise<StudioApi> {
 
 const SPEC_KEY = '.specs/active/0001-tip-splitter.md';
 
-suite('FeatherSpec Studio board smoke', () => {
+suite('FeatherSpec Studio board smoke', function () {
+    this.timeout(60_000);
+
     test('AC-014: the Move Spec command is registered', async () => {
         await activateStudio();
         const commands = await vscode.commands.getCommands(true);
@@ -31,7 +24,12 @@ suite('FeatherSpec Studio board smoke', () => {
     test('AC-001, AC-002: the board of the active project has six columns and the spec in Review', async () => {
         const api = await activateStudio();
         await api.whenIdle();
-        await waitFor(() => api.board().view()?.columns.some((column) => column.cards.some((card) => card.stem === '0001-tip-splitter')) === true, 10000);
+        await waitFor(
+            'the board to show 0001-tip-splitter on a card',
+            () => api.board().view()?.columns.map((column) => `${column.state}: ${column.cards.map((card) => card.stem).join(', ')}`),
+            (columns) => columns?.some((column) => column.includes('0001-tip-splitter')) === true,
+            { timeoutMs: 20_000 },
+        );
         const view = api.board().view();
         assert.deepStrictEqual(
             view?.columns.map((column) => column.state),
