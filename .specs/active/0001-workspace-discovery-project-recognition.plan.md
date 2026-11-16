@@ -148,8 +148,8 @@ T-005…T-007 define, and T-008 documents the result.
   - name + version, "unknown" for legacy
   - nothing reported → hidden
 - **Verify:** `npx vitest run src/core/discovery/activeProject.test.ts` (red, then green) + per-step gates
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-16 — red: `npx vitest run src/core/discovery/activeProject.test.ts` 15/15 failed with `Not implemented`; green: 15/15 passed. Gates: eslint 0 findings, `tsc --noEmit` 0 errors, `npm run test:unit` 4 files, 48 passed.
+- **Notes:** Reading: a user selection of a folder that is not a project is ignored (falls back to remembered or default). `remember: undefined` means nothing is written; the status bar text is `FeatherSpec: <name> (<version>)`.
 
 ### T-004 — Output block, select list and notification model
 
