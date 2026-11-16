@@ -1,4 +1,4 @@
-import type { KeyboardEvent } from 'react';
+import type { DragEvent, ReactNode } from 'react';
 import type { BoardColumn, CardView } from '../../shared/protocol/board';
 import { COLUMN_HINTS, hiddenByFilterText } from '../../shared/protocol/texts';
 import { Card } from './Card';
@@ -8,13 +8,22 @@ export function Column(props: {
     column: BoardColumn;
     onOpen(card: CardView): void;
     tabIndexOf?(card: CardView): number;
-    onKeyDown?(event: KeyboardEvent<HTMLElement>, card: CardView): void;
-    onFocus?(card: CardView): void;
-    onBlur?(card: CardView): void;
+    draggingKey?: string | undefined;
+    onDragStart?(event: DragEvent<HTMLElement>, card: CardView): void;
+    onDragEnd?(): void;
+    onDragOver?(event: DragEvent<HTMLElement>, column: BoardColumn): void;
+    onDrop?(event: DragEvent<HTMLElement>, column: BoardColumn): void;
+    menuOf?(card: CardView): ReactNode;
 }) {
     const { column } = props;
     return (
-        <section className="column" data-column={column.state} aria-label={column.state}>
+        <section
+            className="column"
+            data-column={column.state}
+            aria-label={column.state}
+            onDragOver={(event) => props.onDragOver?.(event, column)}
+            onDrop={(event) => props.onDrop?.(event, column)}
+        >
             <h2 className="column-heading">
                 <StateIcon state={column.state} /> {column.state} <span className="column-count">{column.cards.length}</span>
             </h2>
@@ -26,10 +35,11 @@ export function Column(props: {
                         key={card.key}
                         card={card}
                         onOpen={props.onOpen}
+                        dragging={props.draggingKey === card.key}
                         {...(props.tabIndexOf === undefined ? {} : { tabIndex: props.tabIndexOf(card) })}
-                        {...(props.onKeyDown === undefined ? {} : { onKeyDown: props.onKeyDown })}
-                        {...(props.onFocus === undefined ? {} : { onFocus: props.onFocus })}
-                        {...(props.onBlur === undefined ? {} : { onBlur: props.onBlur })}
+                        {...(props.onDragStart === undefined ? {} : { onDragStart: props.onDragStart })}
+                        {...(props.onDragEnd === undefined ? {} : { onDragEnd: props.onDragEnd })}
+                        {...(props.menuOf === undefined ? {} : { menu: props.menuOf(card) })}
                     />
                 ))}
             </ul>

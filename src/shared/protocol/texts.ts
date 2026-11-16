@@ -193,6 +193,10 @@ export function handedOffText(number: string): string {
 
 export const MOVE_MENU_LABEL = 'Move to…';
 export const MOVE_COMMAND_TITLE = 'FeatherSpec: Move Spec to…';
+export function moveMenuAriaLabel(number: string): string {
+    return `${MOVE_MENU_LABEL} (spec ${number})`;
+}
+
 export const PICK_SPEC_PLACEHOLDER = 'Select a spec to move';
 
 export function pickTargetPlaceholder(number: string): string {

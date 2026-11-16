@@ -3,7 +3,7 @@
 **Spec:** [0007-spec-board-spec-detail.md](0007-spec-board-spec-detail.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-006
+**Current step:** T-009
 
 ## Approach
 
@@ -445,8 +445,8 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
     - refusal and hand-off are announced;
     - focus kept after a reorder and moved by the fallback when the card is gone.
 - **Verify:** `npm run test:unit -- src/webview/board` plus the per-step gates
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** eslint, tsc (both), test:unit: 73 files, 1080 tests passed; focusModel 20 table cases red first (Not implemented stub), Keyboard.test.tsx written after the code (24 tests), negative controls by mutation: own-column drop, focus steal, no fallback, blur flag each fail a test.
+- **Notes:** Drag and drop is wired in SpecBoard.tsx and Column.tsx (dragDrop.ts not split out, the state is three handlers). Focus, blur and arrow handling sit on the .columns container (bubbled focus events), so Card and Column lost the planned onKeyDown/onFocus/onBlur props. The Move to button is tabIndex -1 (one tab stop on the board); it is reached by Shift+F10, the ContextMenu key or the mouse. The status region is a single role=status, aria-live=polite element holding the text and Dismiss. Falls back to the .columns container when no card is left.
 
 ### T-009 — Spec detail in Spec Explorer
 
@@ -540,12 +540,12 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 | AC-011 | T-001, T-004 | `src/core/board/filters.ts:arrangeBoard` | `filters.test.ts` (AC-011, T-001 part) | open |
 | AC-012 | T-001, T-007 | `src/core/board/filters.ts:arrangeBoard` | `filters.test.ts` (AC-012) | open |
 | AC-013 | T-001 | `src/core/board/filters.ts:arrangeBoard` | `filters.test.ts` (AC-013) | verified |
-| AC-014 | T-005, T-008, T-010 | `src/core/board/moves.ts:createMoves` | `moves.test.ts` (AC-014) | built |
+| AC-014 | T-005, T-008, T-010 | `src/core/board/moves.ts:createMoves`; src/webview/board/MoveMenu.tsx; SpecBoard.tsx | `moves.test.ts` (AC-014); Keyboard.test.tsx (AC-014) | built |
 | AC-015 | T-005 | `src/core/board/moves.ts:requestMove` | `moves.test.ts` (AC-015) | verified |
 | AC-016 | T-005, T-010 | `src/core/board/moves.ts`, `openFile.ts` | `noWrite.test.ts` (AC-016) | built |
-| AC-017 | T-008, T-009 | — | — + manual: Gregor, keyboard-only pass | open |
-| AC-018 | T-007, T-008 | — | — + manual: Gregor, screen reader | open |
-| AC-019 | T-004, T-007, T-008 | — | — | open |
+| AC-017 | T-008, T-009 | src/webview/board/focusModel.ts | — + manual: Gregor, keyboard-only pass; focusModel.test.ts; Keyboard.test.tsx (AC-017) | built |
+| AC-018 | T-007, T-008 | src/webview/board/Announcer.tsx | — + manual: Gregor, screen reader; Keyboard.test.tsx (AC-018) | built |
+| AC-019 | T-004, T-007, T-008 | src/webview/board/focusModel.ts:fallbackFocus | Keyboard.test.tsx (AC-019) | built |
 | AC-020 | T-002 | `src/core/board/cards.ts:buildCards, buildBanner` | `cards.test.ts` (AC-020) | built |
 | AC-021 | T-007 | — | — | open |
 | AC-022 | T-001, T-004 | `src/shared/protocol/boardFilter.ts`, `filters.ts` | `boardFilter.test.ts`, `filters.test.ts` (AC-022) | open |

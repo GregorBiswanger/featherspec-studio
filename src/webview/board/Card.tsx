@@ -1,25 +1,34 @@
-import type { KeyboardEvent } from 'react';
+import type { DragEvent, ReactNode } from 'react';
 import type { CardView } from '../../shared/protocol/board';
 import { cardRunText, criteriaText, DEPRECATED_MARKER, diagnosticsBadgeText, lastChangeText, NO_SUMMARY_TEXT, tasksText } from '../../shared/protocol/texts';
 import { BadgeIcon, StateIcon } from './icons';
 
-export function Card(props: { card: CardView; onOpen(card: CardView): void; tabIndex?: number; onKeyDown?(event: KeyboardEvent<HTMLElement>, card: CardView): void; onFocus?(card: CardView): void; onBlur?(card: CardView): void }) {
+export function Card(props: {
+    card: CardView;
+    onOpen(card: CardView): void;
+    tabIndex?: number;
+    dragging?: boolean;
+    onDragStart?(event: DragEvent<HTMLElement>, card: CardView): void;
+    onDragEnd?(): void;
+    menu?: ReactNode;
+}) {
     const { card } = props;
     return (
         <li
             className="card"
             data-card={card.key}
             tabIndex={props.tabIndex ?? 0}
+            draggable={props.onDragStart !== undefined}
+            data-dragging={props.dragging === true ? 'true' : undefined}
+            onDragStart={(event) => props.onDragStart?.(event, card)}
+            onDragEnd={() => props.onDragEnd?.()}
             onClick={() => props.onOpen(card)}
             onKeyDown={(event) => {
-                props.onKeyDown?.(event, card);
                 if (!event.defaultPrevented && event.key === 'Enter' && event.target === event.currentTarget) {
                     event.preventDefault();
                     props.onOpen(card);
                 }
             }}
-            onFocus={() => props.onFocus?.(card)}
-            onBlur={() => props.onBlur?.(card)}
         >
             <div className="card-head">
                 <span className="card-number">{card.number}</span> <span className="card-title">{card.title}</span>
@@ -56,6 +65,7 @@ export function Card(props: { card: CardView; onOpen(card: CardView): void; tabI
                 <span>{tasksText(card.tasks)}</span> <span>{criteriaText(card.criteria)}</span> <span>{lastChangeText(card.lastChangeMs)}</span>
             </div>
             <div className="card-run">{cardRunText(card.run)}</div>
+            {props.menu}
         </li>
     );
 }

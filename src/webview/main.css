@@ -291,3 +291,29 @@ main {
 .card-figures span {
     margin-right: 8px;
 }
+
+.board-status {
+    min-height: 1.5em;
+    padding: 2px 0;
+}
+
+.card[data-dragging="true"] {
+    opacity: 0.6;
+}
+
+.move-menu {
+    margin-top: 4px;
+    position: relative;
+}
+
+.move-items {
+    display: flex;
+    flex-direction: column;
+    background: var(--vscode-menu-background);
+    color: var(--vscode-menu-foreground);
+    border: 1px solid var(--vscode-focusBorder);
+}
+
+.move-items button {
+    text-align: left;
+}
