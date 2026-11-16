@@ -192,8 +192,8 @@ T-007 need the complete medium contract.
   directory with a file harness (faults by editing bytes, e.g. a half-written last line), plus AC-016:
   `snapshotTree` of a copied workspace fixture is equal before and after all scenarios.
 - **Verify:** `npm run test:unit` (file-medium suite red on the missing adapter, then green) plus the per-step gates and `npm run compile`
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-16 — red: with the adapter file moved away `npx vitest run src/adapters/node/fileRuntimeMedium.test.ts` fails (`Cannot find module './fileRuntimeMedium'`); the first run with the adapter written failed 3 of 61 (a synchronous throw instead of a rejection, and a `settle()` too short for real file I/O); green: 61 of 61, three repeat runs green; `npm run test:unit` 248 passed, `npx eslint src --max-warnings 0`, `npx tsc --noEmit`, `npm run compile` clean.
+- **Notes:** Tests: `src/adapters/node/fileRuntimeMedium.test.ts` (full contract suite on a temp directory, path-guard, exclusive create, lines with a half-written tail, AC-013 raw bytes, AC-016 `snapshotTree` of a copied fixture before/after store, restore, clear and an unreachable store). `settle()` in `testing/fakes.ts` now also waits 40 ms of real time so file I/O can finish. Windows `EPERM`/`EBUSY` retry is in the adapter but cannot be exercised here; CI on Windows runs the same suite.
 
 ### T-007 — VS Code wiring: active project, Clear command, notices, setting
 

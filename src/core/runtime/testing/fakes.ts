@@ -75,4 +75,5 @@ export async function settle(): Promise<void> {
     for (let turn = 0; turn < 5; turn += 1) {
         await new Promise<void>((resolve) => setImmediate(resolve));
     }
+    await new Promise<void>((resolve) => setTimeout(resolve, 40));
 }
