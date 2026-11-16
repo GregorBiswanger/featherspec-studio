@@ -3,7 +3,7 @@
 **Spec:** [0002-spec-repository-parser.md](0002-spec-repository-parser.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-006
+**Current step:** T-007
 
 ## Approach
 
@@ -166,8 +166,8 @@ the slices are small.
   outside the root never touched; `src/core/specs/version.ts` semver precedence check.
   Tests `readProject.test.ts` on all fixtures + memory cases.
 - **Verify:** `npm run test:unit -- src/core/specs/readProject.test.ts` (red, then green) + per-step gates
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-16 · `npm run test:unit -- src/core/specs/readProject.test.ts` (with `version.test.ts`, `returnNote.test.ts`): red first, 55 of 55 failing with `Not implemented` → green 55 of 55; negative controls (archived-plan exemption off, outside-root rule off) each 1 red, restored. Gates eslint, tsc, `npm run test:unit` (327 tests) green.
+- **Notes:** Beyond `Files:`-less `Do:`: `src/core/specs/returnNote.ts` (`parseReturnNote`, status DONE/BLOCKED, other value kept + `unknown-content`), tests `version.test.ts`, `returnNote.test.ts`; `readProject(source, root, version, parsers?)` takes the parsers as an optional argument so the AC-011 parse-error case is testable; `testing/memorySpecSource.ts` gained `touched()`. A dangling check applies to any relative link in `**Plan:**` (not only sibling/archive classification); existing files are found in the listing first, else one `stat`. Diagnostic reasons: `plan matches no spec (<ref>)`, `return note matches no spec (number NNNN)`, `reference X also exists in …`, `number N also used by …`, `plan link T points to a missing file`, `spec link T points to a missing file`, `version not verified`, `newer than known`. Entries: `SpecEntry`, `PlanEntry`, `ReturnNoteEntry` in `readProject.ts`.
 
 ### T-007 — Live repository: snapshot, watch, rescan, notify
 
@@ -227,29 +227,29 @@ the slices are small.
 | AC-003 | T-002, T-003 | `src/core/specs/parseSpec.ts:parseSpec`, `leadingIds.ts:locateLeadingIds` | `parseSpec.test.ts`, `leadingIds.test.ts` | verified |
 | AC-004 | T-003 | `src/core/specs/leadingIds.ts:locateLeadingIds` | `leadingIds.test.ts` | verified |
 | AC-005 | T-003 | `src/core/specs/leadingIds.ts:locateLeadingIds` | `leadingIds.test.ts` | verified |
-| AC-006 | T-006 | — | — | open |
+| AC-006 | T-006 | `src/core/specs/readProject.ts:readProject` | `readProject.test.ts` (AC-006) | verified |
 | AC-007 | T-004, T-005 | `src/core/specs/planSteps.ts:parsePlanSteps`, `parsePlan.ts:parsePlan` | `planSteps.test.ts`, `parsePlan.test.ts` | verified |
 | AC-008 | T-004 | `src/core/specs/planSteps.ts:expandCovers` | `planSteps.test.ts` (AC-008) | verified |
 | AC-009 | T-002, T-005 | `src/core/specs/parseSpec.ts` (plan history), `planSteps.ts`, `parsePlan.ts` (traceability) | `parseSpec.test.ts`, `planSteps.test.ts`, `parsePlan.test.ts` | verified |
-| AC-010 | T-006 | — | — | open |
-| AC-011 | T-001 | `src/core/specs/files.ts:readOne` (file-level; parse errors: T-006) | `files.test.ts` (AC-011, fs-broken) | built |
+| AC-010 | T-006 | `src/core/specs/readProject.ts:readProject`, `returnNote.ts:parseReturnNote` | `readProject.test.ts`, `returnNote.test.ts` (AC-010) | verified |
+| AC-011 | T-001, T-006 | `src/core/specs/files.ts:readOne`, `readProject.ts:parseFile` | `files.test.ts`, `readProject.test.ts` (AC-011) | verified |
 | AC-012 | T-007, T-008 | — | — | open |
 | AC-013 | T-007 | — | — | open |
 | AC-014 | T-002, T-005 | `src/core/specs/parseSpec.ts`, `planSteps.ts`, `parsePlan.ts` | `parseSpec.test.ts`, `planSteps.test.ts`, `parsePlan.test.ts` | verified |
-| AC-015 | T-003, T-004, T-006 | — | — | open |
-| AC-016 | T-006 | — | — | open |
-| AC-017 | T-006 | — | — | open |
+| AC-015 | T-003, T-004, T-006 | `src/core/specs/readProject.ts:readProject`, `leadingIds.ts`, `planSteps.ts` | `readProject.test.ts`, `leadingIds.test.ts`, `planSteps.test.ts` (AC-015) | verified |
+| AC-016 | T-006 | `src/core/specs/version.ts:checkVersion` | `version.test.ts`, `readProject.test.ts` (AC-016) | verified |
+| AC-017 | T-006 | `src/core/specs/readProject.ts:isDangling` | `readProject.test.ts` (AC-017) | verified |
 | AC-018 | T-007 | — | — | open |
 | AC-019 | T-002 | `src/core/specs/parseSpec.ts`, `fieldValue.ts` | `parseSpec.test.ts` (AC-019) | verified |
 | AC-020 | T-001 | `src/core/specs/text.ts:decodeText` | `files.test.ts` (AC-020 cases) | verified |
-| AC-021 | T-001, T-006 | `src/core/specs/files.ts:isFollowable` (links not followed; link targets: T-006) | `files.test.ts` (A-006 / AC-021) | built |
+| AC-021 | T-001, T-006 | `src/core/specs/files.ts:isFollowable`, `readProject.ts:resolveInRoot` | `files.test.ts`, `readProject.test.ts` (AC-021) | verified |
 | AC-022 | T-007, T-008 | — | — | open |
 | AC-023 | T-001 | `src/core/specs/files.ts:readOne` | `files.test.ts` (AC-023 cases) | verified |
 
 ## Session handoff
 
-- **Done so far:** stages 1-3 (T-001 … T-005) built, integrated and verified (272 unit tests). Workers shared this checkout.
-- **Next action:** T-006 (join plans and return notes, project diagnostics), then T-007 … T-009 without stopping (Gregor, 2026-11-16).
+- **Done so far:** stages 1-4 first half: T-001 … T-006 built and verified (327 unit tests). Workers shared this checkout.
+- **Next action:** T-007 (live repository), then T-008, T-009 without stopping (Gregor, 2026-11-16).
 - **Open decisions:** none.
 - **Baseline:** 9bb1c18 (HEAD before T-001).
 - **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); runs on CI.

@@ -19,11 +19,13 @@ export interface MemorySpecSource extends SpecSourcePort {
     remove(root: string, relativePath: string): void;
     move(root: string, from: string, to: string): void;
     reads(): string[];
+    touched(): string[];
 }
 
 export function createMemorySpecSource(): MemorySpecSource {
     const entries = new Map<string, Entry>();
     const readLog: string[] = [];
+    const touchLog: string[] = [];
     let clock = 1_000;
 
     function ensureParents(root: string, relativePath: string): void {
@@ -93,6 +95,9 @@ export function createMemorySpecSource(): MemorySpecSource {
         reads() {
             return [...readLog];
         },
+        touched() {
+            return [...touchLog];
+        },
         async list(root, relativePath): Promise<readonly SourceEntry[] | undefined> {
             const base = key(root, relativePath);
             const directory = entries.get(base);
@@ -111,6 +116,7 @@ export function createMemorySpecSource(): MemorySpecSource {
             return result;
         },
         async stat(root, relativePath): Promise<SourceStat | undefined> {
+            touchLog.push(relativePath);
             const entry = entries.get(key(root, relativePath));
             if (entry === undefined) {
                 return undefined;
@@ -128,6 +134,7 @@ export function createMemorySpecSource(): MemorySpecSource {
         },
         async readBytes(root, relativePath) {
             readLog.push(relativePath);
+            touchLog.push(relativePath);
             const entry = entries.get(key(root, relativePath));
             if (entry?.kind !== 'file') {
                 throw new Error(`ENOENT: ${relativePath}`);
