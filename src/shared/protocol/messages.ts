@@ -239,3 +239,21 @@ export function isShellEventPayload(value: unknown): value is ShellEventPayload 
 export function isResponsePayload(value: unknown): value is ResponsePayload {
     return isRecord(value) && typeof value.ok === 'boolean' && isOptionalString(value.error);
 }
+
+export type ProbeOutcome = 'failed' | 'loaded';
+
+export interface ProbePayload {
+    url: string;
+}
+
+export interface ProbeResultPayload {
+    outcome: ProbeOutcome;
+}
+
+export function isProbePayload(value: unknown): value is ProbePayload {
+    return isRecord(value) && isString(value.url) && value.url.length > 0;
+}
+
+export function isProbeResultPayload(value: unknown): value is ProbeResultPayload {
+    return isRecord(value) && (value.outcome === 'failed' || value.outcome === 'loaded');
+}

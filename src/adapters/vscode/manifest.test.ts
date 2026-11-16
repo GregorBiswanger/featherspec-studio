@@ -18,8 +18,8 @@ interface Manifest {
 const manifest = JSON.parse(readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8')) as Manifest;
 
 describe('extension manifest', () => {
-    it('AC-019: activates when the workspace holds a root AGENTS.md or .specs, and never on startup', () => {
-        expect(manifest.activationEvents).toEqual(['workspaceContains:AGENTS.md', 'workspaceContains:.specs']);
+    it('AC-019 (0001) and AC-009 (0005): activates when the workspace holds a root AGENTS.md or .specs, and when VS Code restores the Studio panel, never on startup', () => {
+        expect(manifest.activationEvents).toEqual(['workspaceContains:AGENTS.md', 'workspaceContains:.specs', 'onWebviewPanel:featherspecStudio.main']);
     });
 
     it('AC-019: negative control, no eager activation event is declared', () => {
@@ -41,11 +41,13 @@ describe('extension manifest', () => {
 
     it('AC-015, AC-016, 0004 AC-019: contributes the select, refresh and clear-history commands and no scaffold command', () => {
         const commands = manifest.contributes?.commands ?? [];
-        expect(commands).toEqual([
-            { command: 'featherspec-studio.selectProject', title: 'FeatherSpec Studio: Select Project' },
-            { command: 'featherspec-studio.refreshDiscovery', title: 'FeatherSpec Studio: Refresh Project Discovery' },
-            { command: 'featherspec-studio.clearRunHistory', title: 'FeatherSpec Studio: Clear Run History' },
-        ]);
+        expect(commands).toEqual(
+            expect.arrayContaining([
+                { command: 'featherspec-studio.selectProject', title: 'FeatherSpec Studio: Select Project' },
+                { command: 'featherspec-studio.refreshDiscovery', title: 'FeatherSpec Studio: Refresh Project Discovery' },
+                { command: 'featherspec-studio.clearRunHistory', title: 'FeatherSpec Studio: Clear Run History' },
+            ]),
+        );
         expect(commands.map((entry) => entry.command)).not.toContain('featherspec-studio.helloWorld');
     });
 
@@ -61,5 +63,16 @@ describe('extension manifest', () => {
     it('0004 AC-018: negative control, the manifest declares no other run-history setting', () => {
         const names = Object.keys(manifest.contributes?.configuration?.properties ?? {});
         expect(names).toEqual(['featherspec-studio.runHistory.maxAgeDays']);
+    });
+
+    it('AC-001, AC-005 (0005): contributes the Open command and one command per area with their titles', () => {
+        const commands = Object.fromEntries((manifest.contributes?.commands ?? []).map((command) => [command.command, command.title]));
+        expect(commands).toMatchObject({
+            'featherspec-studio.open': 'FeatherSpec Studio: Open',
+            'featherspec-studio.openMissionControl': 'FeatherSpec Studio: Open Mission Control',
+            'featherspec-studio.openSpecBoard': 'FeatherSpec Studio: Open Spec Board',
+            'featherspec-studio.openSpecExplorer': 'FeatherSpec Studio: Open Spec Explorer',
+            'featherspec-studio.openAgentCenter': 'FeatherSpec Studio: Open Agent Center',
+        });
     });
 });

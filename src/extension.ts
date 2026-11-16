@@ -5,6 +5,10 @@ import { createSystemClock } from './adapters/node/systemClock';
 import { createSystemRuntimeClock } from './adapters/node/systemRuntimeClock';
 import { createMarkerWatch } from './adapters/vscode/markerWatch';
 import { createOutputChannel } from './adapters/vscode/outputChannel';
+import { createShellActions } from './adapters/vscode/shellActions';
+import { createStudioPanel, VIEW_TYPE, type StudioPanel, type StudioPanelInspection } from './adapters/vscode/studioPanel';
+import { createTrust } from './adapters/vscode/trust';
+import { createUiMemory } from './adapters/vscode/uiMemory';
 import { sameRootFor } from './adapters/vscode/sameRoot';
 import { createStatusBar } from './adapters/vscode/statusBar';
 import { createFileWatch } from './adapters/vscode/fileWatch';
@@ -24,6 +28,21 @@ import { createRuntimeSession, type RuntimeSession } from './core/runtime/runtim
 import { openRuntimeStore, type RuntimeStore } from './core/runtime/runtimeStore';
 import { createUnavailableMedium } from './core/runtime/unavailableMedium';
 import { createLifecycleService, type LifecycleService } from './core/lifecycle/lifecycleService';
+import { createModelSource } from './core/shell/modelSource';
+import { createShellService, type OpenRequest } from './core/shell/shellService';
+import type { AreaId } from './shared/protocol/areas';
+import type { ProbeOutcome, ShellView } from './shared/protocol/messages';
+
+export interface ShellTestApi {
+    view(): ShellView;
+    lastHelloAt(): number | undefined;
+    panelCount(): number;
+    probe(url: string): Promise<ProbeOutcome>;
+    asWebviewUri(uri: vscode.Uri): string | undefined;
+    inspect(): StudioPanelInspection | undefined;
+    restore(restored: vscode.WebviewPanel): Promise<void>;
+    select(stem: string): Promise<void>;
+}
 
 export interface StudioApi {
     snapshot(): DiscoverySnapshot;
@@ -32,6 +51,7 @@ export interface StudioApi {
     runtimeState(): StoreState;
     runtimeStore(): RuntimeStore | undefined;
     lifecycle(): LifecycleService;
+    shell(): ShellTestApi;
 }
 
 let runtimeSession: RuntimeSession | undefined;
@@ -85,8 +105,43 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     runtimeSession = session;
     const lifecycle = createLifecycleService({ repository, session, clock: createSystemClock() });
 
+    const sameRoot = sameRootFor(process.platform);
+    let studio: StudioPanel | undefined;
+    const service = createShellService({
+        discovery: controller,
+        repository,
+        source: createModelSource(repository),
+        folders: createWorkspaceFolders(),
+        trust: createTrust(),
+        memory: createUiMemory(context.workspaceState),
+        actions: createShellActions({ showOutput: () => output.show(), reloadPanel: () => studio?.reload() }),
+        sameRoot,
+    });
+    const panel = createStudioPanel({
+        extensionUri: context.extensionUri,
+        service,
+        output,
+        testMode: context.extensionMode === vscode.ExtensionMode.Test,
+    });
+    studio = panel;
+    const openStudio = (request: OpenRequest) => () => {
+        service.open(request);
+        panel.show();
+    };
+    const areaCommands: [string, AreaId][] = [
+        ['featherspec-studio.openMissionControl', 'missionControl'],
+        ['featherspec-studio.openSpecBoard', 'specBoard'],
+        ['featherspec-studio.openSpecExplorer', 'specExplorer'],
+        ['featherspec-studio.openAgentCenter', 'agentCenter'],
+    ];
+
     context.subscriptions.push(
         statusBar,
+        { dispose: () => service.dispose() },
+        panel,
+        vscode.window.registerWebviewPanelSerializer(VIEW_TYPE, panel.serializer),
+        vscode.commands.registerCommand('featherspec-studio.open', openStudio({ via: 'start' })),
+        ...areaCommands.map(([command, area]) => vscode.commands.registerCommand(command, openStudio({ via: 'area', area }))),
         output,
         { dispose: () => controller.dispose() },
         feed,
@@ -112,6 +167,18 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         runtimeState: () => session.state(),
         runtimeStore: () => session.current(),
         lifecycle: () => lifecycle,
+        shell: () => ({
+            view: () => service.view(),
+            lastHelloAt: () => panel.lastHelloAt(),
+            panelCount: () => panel.panelCount(),
+            probe: (url) => panel.probe(url),
+            asWebviewUri: (uri) => panel.asWebviewUri(uri),
+            inspect: () => panel.inspect(),
+            select: (stem) => service.handlers.select({ stem }),
+            restore: async (restored) => {
+                await panel.serializer.deserializeWebviewPanel(restored, undefined);
+            },
+        }),
     };
 }
 

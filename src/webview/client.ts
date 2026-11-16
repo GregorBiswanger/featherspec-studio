@@ -1,6 +1,8 @@
+import type { Probe } from './probe';
 import { DEFAULT_AREA, type AreaId } from '../shared/protocol/areas';
 import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../shared/protocol/envelope';
 import {
+    isProbePayload,
     isResponsePayload,
     isShellEventPayload,
     type ActionId,
@@ -38,6 +40,7 @@ export const HELLO_TIMEOUT_MS = 5000;
 
 export interface ClientDeps {
     post: (message: Envelope) => void;
+    probe?: Probe;
     reloaded?: boolean;
     helloTimeoutMs?: number;
 }
@@ -109,6 +112,16 @@ export function createClient(deps: ClientDeps): ShellClient {
         }
     }
 
+    function onProbe(envelope: Envelope): void {
+        if (deps.probe === undefined || !isProbePayload(envelope.payload)) {
+            return;
+        }
+        void deps.probe(envelope.payload.url).then((outcome) => {
+            nextId += 1;
+            deps.post({ v: PROTOCOL_VERSION, kind: 'req', id: `q${nextId}`, type: 'probeResult', payload: { outcome } });
+        });
+    }
+
     function onResponse(envelope: Envelope): void {
         if (isResponsePayload(envelope.payload) && localArea !== undefined && envelope.id === localArea.id) {
             localArea = undefined;
@@ -146,7 +159,9 @@ export function createClient(deps: ClientDeps): ShellClient {
                 refresh();
                 return;
             }
-            if (envelope.kind === 'evt' && envelope.type === 'shell') {
+            if (envelope.kind === 'evt' && envelope.type === 'probe') {
+                onProbe(envelope);
+            } else if (envelope.kind === 'evt' && envelope.type === 'shell') {
                 onShellEvent(envelope);
             } else if (envelope.kind === 'res') {
                 onResponse(envelope);

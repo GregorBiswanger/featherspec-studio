@@ -418,8 +418,8 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
       - AC-020: options exactly as above, and the probe fetch of the fixture's `AGENTS.md` URI fails;
       - AC-024: command → `hello` < 1000 ms.
 - **Verify:** per-step gates plus `npm run compile` (the host smoke runs on CI)
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** 2026-11-16 — red: `npx vitest run src/webview/probe.test.ts src/adapters/vscode/webviewHtml.test.ts` 7 failed, 3 passed (`buildWebviewHtml` stub threw `Not implemented`; the client did not answer a probe event; the 3 passes are the fetch-wrapper cases, which are paired failed/loaded assertions, and the two no-probe controls); green: 2 files, 10/10 after the HTML builder and the client probe landed (one regex of mine in the HTML test matched `content=`, fixed to `\son[a-z]+=`). The manifest test now names the third activation event and the five commands (the old exact command list became `arrayContaining`). Gates: eslint 0, `tsc --noEmit` 0, `tsc --noEmit -p src/webview` 0, `npm run test:unit` 57 files, 857 passed, `npm run compile` ok, `tsc -p . --outDir` (compile-tests) 0 errors. Host smoke `src/test/shell.smoke.test.ts` (AC-001, AC-002, AC-005, AC-009 serializer, AC-020 options + CSP + probe, AC-024 < 1000 ms) is written and type-checked; NOT run here (VS Code download blocked): runs on CI.
+- **Notes:** Deviations: `trust.ts`, `shellActions.ts` and `outputChannel.show()` were built here, not in T-009, because `extension.ts` cannot create the shell service without them; T-009 keeps the tree, the Rescan command, the smoke extension and the docs. Test-API additions beyond the plan: `asWebviewUri`, `inspect`, `restore`, `select` (the host test cannot reach the serializer or the panel options otherwise). The hello reply uses `seq = max(hostSeq, lastSeq) + 1` so a reloaded webview does not see a gap. `manifest.test.ts` of spec 0001 (AC-019) was widened by the third activation event `onWebviewPanel:featherspecStudio.main` (no startup event). The probe handler exists only when the HTML carries `data-test`, which only `ExtensionMode.Test` sets; in normal mode `probeResult` is an unknown type for the router.
 
 ### T-009 — Activity Bar tree, actions, trust; docs sync and final gates
 
@@ -477,15 +477,15 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-008 | — | — | open |
-| AC-002 | T-008 | — | — | open |
+| AC-001 | T-008 | package.json (command), src/extension.ts, src/adapters/vscode/studioPanel.ts | src/test/shell.smoke.test.ts (AC-001; CI only), manifest.test.ts | built |
+| AC-002 | T-008 | src/adapters/vscode/studioPanel.ts:show (reveal) | src/test/shell.smoke.test.ts (AC-002; CI only) | built |
 | AC-003 | T-005, T-009 | src/core/shell/treeModel.ts:buildTreeModel; the TreeView in T-009 | treeModel.test.ts (AC-003) | built |
 | AC-004 | T-002 | src/webview/Navigation.tsx, App.tsx, client.ts | src/webview/App.test.tsx (AC-004) | verified |
-| AC-005 | T-007, T-008 | src/core/shell/shellService.ts:open (per-area); the commands in T-008 | shellService.navigation.test.ts (per-area open) | built |
+| AC-005 | T-007, T-008 | src/extension.ts (per-area commands), shellService.ts:open | shellService.navigation.test.ts, manifest.test.ts, src/test/shell.smoke.test.ts (AC-005; CI only) | built |
 | AC-006 | T-004 | src/webview/areas/Placeholder.tsx, registry.tsx | src/webview/areas/areas.test.tsx (AC-006, three areas, no rows) | verified |
 | AC-007 | T-004, T-007 | src/core/shell/specRows.ts, shellService.ts (rows), src/webview/areas/SpecExplorer.tsx | specRows.test.ts, shellService.navigation.test.ts (rows follow), areas.test.tsx (AC-007, 500 ms) | verified |
 | AC-008 | T-004, T-007 | src/core/shell/shellService.ts (select), specRows.ts, SpecExplorer.tsx | shellService.navigation.test.ts (AC-008), areas.test.tsx (round trip) | verified |
-| AC-009 | T-007, T-008 | src/core/shell/uiMemory.ts, shellService.ts (open, persist); serializer in T-008 | uiMemory.test.ts, shellService.navigation.test.ts (AC-009 memory); host smoke (serializer) in T-008; manual: real reload (Gregor) | built |
+| AC-009 | T-007, T-008 | src/core/shell/uiMemory.ts, shellService.ts, src/adapters/vscode/uiMemory.ts, studioPanel.ts:serializer | uiMemory.test.ts, shellService.navigation.test.ts, src/test/shell.smoke.test.ts (AC-009 serializer; CI only); manual: real reload (Gregor) | built |
 | AC-010 | T-004, T-007 | src/core/shell/selection.ts:reconcileSelection, shellService.ts, NoticeBar.tsx | selection.test.ts, shellService.navigation.test.ts (AC-010 G/W/T), areas.test.tsx (notice) | verified |
 | AC-011 | T-005, T-009 | src/core/shell/panelState.ts:derivePanelState (S1), treeModel.ts; Open Folder action in T-009 | panelState.test.ts (AC-011), treeModel.test.ts (S1) | built |
 | AC-012 | T-005 | src/core/shell/panelState.ts (S2) | panelState.test.ts (AC-012), treeModel.test.ts | verified |
@@ -496,11 +496,11 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 | AC-017 | T-003, T-006, T-009 | src/core/shell/shellService.ts (restricted flag), src/webview/RestrictedNote.tsx | shellService.test.ts (AC-017), PanelStateView.test.tsx (AC-017) | verified |
 | AC-018 | T-003, T-005 | src/core/shell/panelState.ts (precedence), src/webview/client.ts (S6 first) | panelState.test.ts (AC-018 pairs), PanelStateView.test.tsx (S6 over a host state) | verified |
 | AC-019 | T-009 | — | manual: Gregor, Light/Dark/both HC + live switch | open |
-| AC-020 | T-008 | — | — | open |
-| AC-021 | T-001 | src/core/shell/messageRouter.ts:createMessageRouter, src/shared/protocol/messages.ts (guards) | messageRouter.test.ts (AC-021, incl. no-content and next-valid cases), messages.test.ts | verified |
+| AC-020 | T-008 | src/adapters/vscode/webviewHtml.ts, studioPanel.ts (options), src/webview/probe.ts | webviewHtml.test.ts, probe.test.ts, src/test/shell.smoke.test.ts (AC-020; CI only) | built |
+| AC-021 | T-001 | src/core/shell/messageRouter.ts, src/shared/protocol/messages.ts | messageRouter.test.ts, messages.test.ts; wired in studioPanel.ts | verified |
 | AC-022 | T-002, T-003, T-004 | src/webview/Navigation.tsx, PanelStateView.tsx, RestrictedNote.tsx, areas/SpecExplorer.tsx, NoticeBar.tsx | App.test.tsx, PanelStateView.test.tsx, areas.test.tsx (keyboard); manual: focus indicator, Gregor | built |
 | AC-023 | T-002, T-003, T-004 | src/webview (aria-current, aria-label, role=status, aria-selected, markers) | App.test.tsx, PanelStateView.test.tsx, areas.test.tsx (AC-023); manual: High Contrast, Gregor | built |
-| AC-024 | T-008 | — | — | open |
+| AC-024 | T-008 | src/adapters/vscode/studioPanel.ts (hello time), src/webview/main.tsx | src/test/shell.smoke.test.ts (AC-024 < 1000 ms; CI only); manual: Gregor | built |
 | AC-025 | T-009 | — | — | open |
 | AC-026 | T-005 | src/core/shell/panelState.ts (S8) | panelState.test.ts (AC-026, with and without another project), treeModel.test.ts | verified |
 | AC-027 | T-005 | src/core/shell/panelState.ts (S9) | panelState.test.ts (AC-027), treeModel.test.ts | verified |

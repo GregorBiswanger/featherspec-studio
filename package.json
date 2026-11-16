@@ -21,11 +21,32 @@
   },
   "activationEvents": [
     "workspaceContains:AGENTS.md",
-    "workspaceContains:.specs"
+    "workspaceContains:.specs",
+    "onWebviewPanel:featherspecStudio.main"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
+      {
+        "command": "featherspec-studio.open",
+        "title": "FeatherSpec Studio: Open"
+      },
+      {
+        "command": "featherspec-studio.openMissionControl",
+        "title": "FeatherSpec Studio: Open Mission Control"
+      },
+      {
+        "command": "featherspec-studio.openSpecBoard",
+        "title": "FeatherSpec Studio: Open Spec Board"
+      },
+      {
+        "command": "featherspec-studio.openSpecExplorer",
+        "title": "FeatherSpec Studio: Open Spec Explorer"
+      },
+      {
+        "command": "featherspec-studio.openAgentCenter",
+        "title": "FeatherSpec Studio: Open Agent Center"
+      },
       {
         "command": "featherspec-studio.selectProject",
         "title": "FeatherSpec Studio: Select Project"
