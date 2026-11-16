@@ -5,6 +5,7 @@ import { createNodeFileSystem } from '../../adapters/node/nodeFileSystem';
 import { discoverWorkspace } from './discoverWorkspace';
 import { createMemoryFileSystem } from './testing/memoryFileSystem';
 import { fixturePath } from './testing/fixtures';
+import { snapshotTree } from './testing/snapshotTree';
 
 const nodeFileSystem = createNodeFileSystem();
 const caseSensitive = { sameRoot: (first: string, second: string) => first === second };
@@ -12,22 +13,6 @@ const caseInsensitive = { sameRoot: (first: string, second: string) => first.toL
 
 function folder(name: string) {
     return { root: fixturePath(name), name };
-}
-
-async function snapshotTree(root: string): Promise<string[]> {
-    const lines: string[] = [];
-    async function walk(directory: string): Promise<void> {
-        for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
-            const full = path.join(directory, entry.name);
-            const stats = await fs.stat(full);
-            lines.push(`${path.relative(root, full)}|${stats.size}|${stats.mtimeMs}`);
-            if (entry.isDirectory()) {
-                await walk(full);
-            }
-        }
-    }
-    await walk(root);
-    return lines.sort();
 }
 
 describe('discoverWorkspace', () => {

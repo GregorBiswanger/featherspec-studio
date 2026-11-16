@@ -1,8 +1,15 @@
-import type { ClockPort, OutputPort, StatusBarPort, WorkspaceFoldersPort, WorkspaceStatePort } from '../ports/host';
+import type {
+    ClockPort,
+    OutputPort,
+    StatusBarPort,
+    UiPort,
+    WorkspaceFoldersPort,
+    WorkspaceStatePort,
+} from '../ports/host';
 import type { ReadOnlyFileSystem } from '../ports/readOnlyFileSystem';
 import { resolveActiveProject } from './activeProject';
 import { discoverWorkspace, type DiscoveredFolder, type DiscoveryResult } from './discoverWorkspace';
-import { formatOutputBlock } from './report';
+import { buildNoProjectNotification, buildSelectItems, formatOutputBlock, SETUP_GUIDE_URL } from './report';
 
 export interface DiscoveryControllerDeps {
     fileSystem: ReadOnlyFileSystem;
@@ -11,6 +18,7 @@ export interface DiscoveryControllerDeps {
     state: WorkspaceStatePort;
     folders: WorkspaceFoldersPort;
     clock: ClockPort;
+    ui: UiPort;
     sameRoot: (first: string, second: string) => boolean;
 }
 
@@ -21,6 +29,8 @@ export interface DiscoverySnapshot {
 
 export interface DiscoveryController {
     start(): Promise<void>;
+    refresh(): Promise<void>;
+    selectProject(): Promise<void>;
     snapshot(): DiscoverySnapshot;
 }
 
@@ -53,9 +63,36 @@ export function createDiscoveryController(deps: DiscoveryControllerDeps): Discov
         }
     }
 
+    async function runOnce(): Promise<DiscoveryResult> {
+        const discovered = await discover();
+        await apply(discovered, undefined);
+        return discovered;
+    }
+
     return {
         async start() {
-            await apply(await discover(), undefined);
+            await runOnce();
+        },
+        async refresh() {
+            await runOnce();
+        },
+        async selectProject() {
+            const current = result ?? (await runOnce());
+            const items = buildSelectItems(current);
+            if (items.length === 0) {
+                const model = buildNoProjectNotification(current.folders.length);
+                const action = await deps.ui.showNotification(model);
+                if (action === 'Open setup guide') {
+                    await deps.ui.openExternal(SETUP_GUIDE_URL);
+                } else if (action === 'Refresh') {
+                    await runOnce();
+                }
+                return;
+            }
+            const picked = await deps.ui.showQuickPick(items);
+            if (picked !== undefined) {
+                await apply(current, picked.root);
+            }
         },
         snapshot: () => ({ result, active }),
     };

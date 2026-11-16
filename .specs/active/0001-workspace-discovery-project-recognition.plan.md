@@ -201,8 +201,8 @@ T-005…T-007 define, and T-008 documents the result.
   - AC-010: remembered project lost and back
   - AC-011: fixture tree unchanged after `start`/`refresh`/`selectProject` through the Node adapter
 - **Verify:** `npx vitest run src/core/discovery/discoveryController.test.ts` (red, then green) + per-step gates
-- [ ] **Verified (T-006):** —
-- **Notes:** re-cut 2026-11-16 (was: host commands verified by `npm test`).
+- [x] **Verified (T-006):** 2026-11-16 — red: `npx vitest run src/core/discovery/discoveryController.test.ts` 13 failed with `Not implemented` (`refresh`/`selectProject` stubs), 8 passed (T-005 tests plus the AC-009 fresh-state control); green: 21/21 passed. Gates: eslint 0 findings, `tsc --noEmit` 0 errors, `npm run test:unit` 6 files, 83 passed.
+- **Notes:** `UiPort`, `NotificationModel`, `NotificationAction`, `SelectItem` live in `src/core/ports/host.ts` (report.ts imports them). The status bar click has no separate controller method: its action `'select'` is bound to the select command in T-009. `snapshotTree` moved to `testing/snapshotTree.ts` and is shared by two tests. The fake UI (`testing/fakeHost.ts`) records quick-pick and notification calls.
 
 ### T-007 — Live re-detection in the controller
 

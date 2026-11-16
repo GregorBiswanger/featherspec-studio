@@ -1,8 +1,12 @@
 import type {
     ClockPort,
     Disposable,
+    NotificationAction,
+    NotificationModel,
     OutputPort,
+    SelectItem,
     StatusBarPort,
+    UiPort,
     WorkspaceFolderInfo,
     WorkspaceFoldersPort,
     WorkspaceStatePort,
@@ -27,7 +31,17 @@ export interface FakeFolders extends WorkspaceFoldersPort {
     change(next: WorkspaceFolderInfo[]): void;
 }
 
+export interface FakeUi extends UiPort {
+    pickCalls: SelectItem[][];
+    notifications: NotificationModel[];
+    opened: string[];
+    pickAnswer: (items: readonly SelectItem[]) => string | undefined;
+    notificationAnswer: NotificationAction | undefined;
+    callCount(): number;
+}
+
 export interface FakeHost {
+    ui: FakeUi;
     statusBar: FakeStatusBar;
     output: FakeOutput;
     state: FakeState;
@@ -79,7 +93,27 @@ export function createFakeHost(folders: WorkspaceFolderInfo[], state: FakeState 
             listeners.forEach((listener) => listener());
         },
     };
+    const ui: FakeUi = {
+        pickCalls: [],
+        notifications: [],
+        opened: [],
+        pickAnswer: () => undefined,
+        notificationAnswer: undefined,
+        callCount: () => ui.pickCalls.length + ui.notifications.length + ui.opened.length,
+        async showQuickPick(items) {
+            ui.pickCalls.push([...items]);
+            const root = ui.pickAnswer(items);
+            return items.find((item) => item.root === root);
+        },
+        async showNotification(model) {
+            ui.notifications.push(model);
+            return ui.notificationAnswer;
+        },
+        async openExternal(url) {
+            ui.opened.push(url);
+        },
+    };
     let tick = 0;
     const clock: ClockPort = { now: () => `t${++tick}` };
-    return { statusBar, output, state, folders: folderPort, clock };
+    return { statusBar, output, state, folders: folderPort, clock, ui };
 }

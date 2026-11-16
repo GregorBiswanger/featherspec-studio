@@ -29,3 +29,23 @@ export interface WorkspaceFoldersPort {
 export interface ClockPort {
     now(): string;
 }
+
+export type NotificationAction = 'Open setup guide' | 'Refresh';
+
+export interface NotificationModel {
+    message: string;
+    actions: readonly NotificationAction[];
+}
+
+export interface SelectItem {
+    label: string;
+    description: string;
+    detail: string;
+    root: string;
+}
+
+export interface UiPort {
+    showQuickPick(items: readonly SelectItem[]): Promise<SelectItem | undefined>;
+    showNotification(model: NotificationModel): Promise<NotificationAction | undefined>;
+    openExternal(url: string): Promise<void>;
+}

@@ -1,20 +1,7 @@
+import type { NotificationModel, SelectItem } from '../ports/host';
 import type { DiscoveredFolder, DiscoveryResult } from './discoverWorkspace';
 
 export const SETUP_GUIDE_URL = 'https://github.com/GregorBiswanger/featherspec/wiki';
-
-export type NotificationAction = 'Open setup guide' | 'Refresh';
-
-export interface NotificationModel {
-    message: string;
-    actions: readonly NotificationAction[];
-}
-
-export interface SelectItem {
-    label: string;
-    description: string;
-    detail: string;
-    root: string;
-}
 
 function verdictText(folder: DiscoveredFolder): string {
     if (folder.verdict === 'project') {
