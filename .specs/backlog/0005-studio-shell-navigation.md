@@ -1,7 +1,7 @@
 # Studio Shell & Navigation
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0005-studio-shell-navigation.plan.md](0005-studio-shell-navigation.plan.md)
 
 Handoff reference: FS-005 ([po-handoff.md](../../docs/product/po-handoff.md) §4, §10 FS-005,
 §11.1, §13 Usability). Architecture basis: [ADR-001](../../docs/decisions/ADR-001-extension-architecture.md)

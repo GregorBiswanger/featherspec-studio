@@ -12,10 +12,12 @@ Specs 0001 (workspace discovery), 0002 (spec repository & parser) and 0004 (runt
 - Spec 0002: [spec](../.specs/active/0002-spec-repository-parser.md) / [plan](../.specs/active/0002-spec-repository-parser.plan.md) (Done, 9 of 9 steps).
 - Spec 0004: [spec](../.specs/active/0004-runtime-persistence-event-model.md) / [plan](../.specs/active/0004-runtime-persistence-event-model.plan.md) (Done, T-001...T-009 ticked; AC-020 accepted 2026-11-16).
 - Spec 0003: [spec](../.specs/backlog/0003-spec-lifecycle-readiness-model.md) / [plan](../.specs/backlog/0003-spec-lifecycle-readiness-model.plan.md) (Not started, 8 steps, 4 stages; stage 2 `‖`).
-- Current task: plan review for 0003; 0001/0002/0004 all steps ticked.
+- Spec 0005: [spec](../.specs/backlog/0005-studio-shell-navigation.md) / [plan](../.specs/backlog/0005-studio-shell-navigation.plan.md) (Not started, 9 steps, 4 stages; branch `spec-0005`).
+- Current task: plan review for 0003 and 0005; 0001/0002/0004 all steps ticked.
 - Acceptance criteria in focus: AC-009, AC-013, AC-019, AC-022 (0001, open evidence in its plan).
 
 ## Changed Recently
+- Spec 0005 planned on branch `spec-0005`: `.specs/backlog/0005-studio-shell-navigation.plan.md` (webview toolchain, 5 new devDependencies Ask-first at T-002).
 - Spec 0003 revised (OP-005 flow marker on collapsed jumps, OP-006 reactivated Baseline, OP-007 duplicated-stem history, new AC-026; Gregor) and planned: `.specs/backlog/0003-spec-lifecycle-readiness-model.plan.md`.
 - Merged `spec-0004` into `main`: `src/extension.ts` wires both the spec repository (0002) and the runtime session (0004), each fed by spec 0001's `onDidChangeActiveProject`; `architecture:` snapshot in `AGENTS.md` holds both modules.
 - Spec 0004 built: `src/core/runtime`, `src/adapters/node/fileRuntimeMedium.ts`, `docs/runtime-data.md`; T-009 after `/sdd-compile`: append-only after a kill, writes to unreadable or newer data refused.
