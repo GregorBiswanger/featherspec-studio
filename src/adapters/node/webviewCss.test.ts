@@ -228,4 +228,14 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
         expect(rulesFor(css, '.card[data-dragging="true"]').some((rule) => /box-shadow:[^;]*var\(--vscode-widget-shadow\)/.test(rule.body))).toBe(true);
         expect(rulesFor(css, '.column[data-drop-target="true"]').some((rule) => /var\(--vscode-list-dropBackground/.test(rule.body))).toBe(true);
     });
+
+    it('AC-014: no code under src/webview uses dangerouslySetInnerHTML or innerHTML', () => {
+        const root = webviewDir;
+        const files = (function walk(dir: string): string[] {
+            return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => (entry.isDirectory() ? walk(path.join(dir, entry.name)) : /\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name) ? [path.join(dir, entry.name)] : []));
+        })(root);
+        expect(files.length).toBeGreaterThan(20);
+        const offenders = files.filter((file) => /dangerouslySetInnerHTML|innerHTML/.test(readFileSync(file, 'utf8')));
+        expect(offenders).toEqual([]);
+    });
 });

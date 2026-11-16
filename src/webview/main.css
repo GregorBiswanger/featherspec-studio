@@ -1125,3 +1125,61 @@ main > h1 {
 .spec-row.selected .rule-id {
     color: inherit;
 }
+
+.spec-detail code {
+    padding: 0 3px;
+    border-radius: 3px;
+    color: var(--vscode-textPreformat-foreground);
+    background: var(--vscode-textPreformat-background, var(--vscode-textCodeBlock-background));
+    font-family: var(--vscode-editor-font-family);
+    font-size: 0.9em;
+}
+
+.inline-link-target {
+    color: var(--fs-muted);
+    font-family: var(--vscode-editor-font-family);
+    font-size: 0.85em;
+}
+
+blockquote.illustration {
+    margin: 4px 0 0;
+    padding: 2px 10px;
+    border-left: 2px solid var(--vscode-textBlockQuote-border, var(--fs-border));
+    background: var(--vscode-textBlockQuote-background, transparent);
+}
+
+.item-id {
+    font-family: var(--vscode-editor-font-family);
+    font-size: 0.92em;
+    font-weight: 600;
+}
+
+.item-secondary {
+    color: var(--fs-muted);
+    font-size: 0.92em;
+}
+
+.step-tick {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--fs-muted);
+    font-size: 11px;
+}
+
+.step-tick .icon {
+    width: 12px;
+    height: 12px;
+}
+
+.step-tick[data-ticked="true"] .icon {
+    color: var(--vscode-charts-green);
+}
+
+.step-tick[data-ticked="undetermined"] .icon {
+    color: var(--vscode-charts-yellow);
+}
+
+.step-verified {
+    color: var(--fs-muted);
+}

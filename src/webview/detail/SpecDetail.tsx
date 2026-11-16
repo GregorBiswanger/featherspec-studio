@@ -17,6 +17,9 @@ import {
     STRUCK_FLAG,
     UNCERTAIN_FLAG,
 } from '../../shared/protocol/texts';
+import { Glyph } from '../board/icons';
+import { InlineText } from '../ui/InlineText';
+import { splitCells, tidy } from '../ui/inlineFormat';
 import { DetailSection, OpenButton } from './DetailSection';
 
 type OpenFile = (key: string, line?: number) => void;
@@ -26,6 +29,23 @@ function tickText(ticked: boolean | 'undetermined'): string {
         return 'undetermined';
     }
     return ticked ? 'done' : 'open';
+}
+
+function TickIcon(props: { ticked: boolean | 'undetermined' }) {
+    return <Glyph kind={props.ticked === 'undetermined' ? 'undetermined' : props.ticked ? 'ticked' : 'unticked'} />;
+}
+
+function Quote(props: { text: string }) {
+    const tidied = tidy(props.text);
+    return tidied.quote ? (
+        <blockquote className="illustration">
+            <InlineText text={tidied.text} />
+        </blockquote>
+    ) : (
+        <div className="illustration">
+            <InlineText text={tidied.text} />
+        </div>
+    );
 }
 
 function keysOf(targets: (OpenTarget | undefined)[]): string[] {
@@ -41,7 +61,9 @@ function Sections(props: { sections: DetailSections; fileResult: { key: string; 
                 <dl className="detail-header">
                     {overview.headerLines.map((line) => (
                         <div key={line.label}>
-                            <dt>{line.label}</dt> <dd>{line.value}</dd>
+                            <dt>{line.label}</dt> <dd>
+                                <InlineText text={line.value} />
+                            </dd>
                         </div>
                     ))}
                 </dl>
@@ -56,7 +78,8 @@ function Sections(props: { sections: DetailSections; fileResult: { key: string; 
                         {overview.readiness.map((check) => (
                             <li key={check.id}>
                                 {check.id}: {check.result}
-                                {check.reason === undefined ? '' : ` — ${check.reason}`}
+                                {check.reason === undefined ? '' : ' — '}
+                                {check.reason === undefined ? null : <InlineText text={check.reason} />}
                             </li>
                         ))}
                     </ul>
@@ -65,7 +88,7 @@ function Sections(props: { sections: DetailSections; fileResult: { key: string; 
                     <ul className="detail-diagnostics">
                         {overview.diagnostics.map((line, index) => (
                             <li key={`${index}|${line.reason}`}>
-                                {line.reason} {line.open === undefined ? null : <OpenButton target={line.open} onOpen={onOpen} label={line.reason} />}
+                                <InlineText text={line.reason} /> {line.open === undefined ? null : <OpenButton target={line.open} onOpen={onOpen} label={line.reason} />}
                             </li>
                         ))}
                     </ul>
@@ -76,11 +99,21 @@ function Sections(props: { sections: DetailSections; fileResult: { key: string; 
                     <p>{NO_REQUIREMENTS_TEXT}</p>
                 ) : (
                     <ul>
-                        {requirements.items.map((item) => (
+                        {requirements.items.map((item) => {
+                            const cells = splitCells(tidy(item.text, { id: item.id, listItem: true }).text);
+                            return (
                             <li key={item.id}>
-                                <strong>{item.id}</strong> {item.text} <OpenButton target={item.open} onOpen={onOpen} label={item.id} />
+                                <strong className="item-id">{item.id}</strong> <InlineText text={cells.primary} />
+                                {cells.secondary === undefined ? null : (
+                                    <span className="item-secondary">
+                                        {' '}
+                                        <InlineText text={cells.secondary} />
+                                    </span>
+                                )}{' '}
+                                <OpenButton target={item.open} onOpen={onOpen} label={item.id} />
                             </li>
-                        ))}
+                            );
+                        })}
                     </ul>
                 )}
             </DetailSection>
@@ -88,10 +121,10 @@ function Sections(props: { sections: DetailSections; fileResult: { key: string; 
                 <ul>
                     {criteria.items.map((item) => (
                         <li key={item.id}>
-                            <strong>{item.id}</strong> {item.text}
+                            <strong className="item-id">{item.id}</strong> <InlineText text={tidy(item.text, { id: item.id, listItem: true }).text} />
                             {item.uncertain ? <span className="flag"> {UNCERTAIN_FLAG}</span> : null}
                             {item.struck ? <span className="flag"> {STRUCK_FLAG}</span> : null}
-                            {item.illustration === undefined ? null : <pre className="illustration">{item.illustration}</pre>} <OpenButton target={item.open} onOpen={onOpen} label={item.id} />
+                            {item.illustration === undefined ? null : <Quote text={item.illustration} />} <OpenButton target={item.open} onOpen={onOpen} label={item.id} />
                         </li>
                     ))}
                 </ul>
@@ -104,16 +137,29 @@ function Sections(props: { sections: DetailSections; fileResult: { key: string; 
                         {plan.stages.length === 0 ? null : (
                             <ol className="detail-stages">
                                 {plan.stages.map((stage) => (
-                                    <li key={stage}>{stage}</li>
+                                    <li key={stage}>
+                                        <InlineText text={stage} />
+                                    </li>
                                 ))}
                             </ol>
                         )}
                         <ul className="detail-steps">
                             {plan.steps.map((step) => (
                                 <li key={step.id}>
-                                    <strong>{step.id}</strong> {step.title} · {tickText(step.ticked)}
-                                    {step.struck ? ` · ${STRUCK_FLAG}` : ''}
-                                    {step.verified === undefined ? null : <span> · {step.verified}</span>}
+                                    <span className="step-head">
+                                        <span className="step-tick" data-ticked={String(step.ticked)}>
+                                            <TickIcon ticked={step.ticked} />
+                                            <span className="step-tick-label">{tickText(step.ticked)}</span>
+                                        </span>{' '}
+                                        <strong className="item-id">{step.id}</strong> <InlineText text={tidy(step.title, { id: step.id }).text} />
+                                        {step.struck ? ` · ${STRUCK_FLAG}` : ''}
+                                    </span>
+                                    {step.verified === undefined ? null : (
+                                        <span className="step-verified">
+                                            {' · '}
+                                            <InlineText text={step.verified} />
+                                        </span>
+                                    )}
                                 </li>
                             ))}
                         </ul>
@@ -121,12 +167,16 @@ function Sections(props: { sections: DetailSections; fileResult: { key: string; 
                 )}
             </DetailSection>
             <DetailSection title={SECTION_TITLES.verification} open={verification.open} keys={[]} fileResult={fileResult} onOpen={onOpen}>
-                <p>{verification.summary}</p>
+                <p>
+                    <InlineText text={verification.summary} />
+                </p>
                 <p>
                     open {verification.openRows} · built {verification.built} · verified {verification.verified} · other {verification.other}
                 </p>
                 <p>{criteriaText(verification.criteria)}</p>
-                <p>{verification.compileVerdict}</p>
+                <p>
+                    <InlineText text={verification.compileVerdict} />
+                </p>
             </DetailSection>
             <DetailSection title={SECTION_TITLES.related} keys={keysOf(related.map((item) => item.open))} fileResult={fileResult} onOpen={onOpen}>
                 {related.length === 0 ? (

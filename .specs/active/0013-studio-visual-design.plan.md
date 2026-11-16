@@ -3,7 +3,7 @@
 **Spec:** [0013-studio-visual-design.md](0013-studio-visual-design.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-007
+**Current step:** T-008
 
 ## Approach
 
@@ -188,8 +188,8 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
   `test/fixtures/studio-0002/` (copy of this repo's spec 0002 + plan + minimal `AGENTS.md`) built with
   `buildDetail` and mounted in `webviewBundle.test.ts`: no `**AC-`, no `` ` ``, no `> `, each ID once.
 - **Verify:** quality gates; manual: `04-spec-explorer-detail-0002-{dark,light}` — no raw Markdown.
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** 2026-11-16 — red: `inlineFormat.test.ts` and `InlineText.test.tsx` 16 failing on `Not implemented`, the fixture test in `webviewBundle.test.ts` failing on raw `**`; the innerHTML scan was green at once, negative control: a temporary file with `innerHTML` turned it red, removed; green: eslint, both `tsc`, `npm run test:unit` 92 files / 1318+ tests, `npm run compile`. Looked at `09-tall-detail-0002-dark` and `04-*-{dark,light,hc}`: code as chips, bold, Given/When/Then as a quote block, requirement cells as muted secondary text, each ID once, step tick icons; Open file buttons still per item (T-008).
+- **Notes:** the pure module is `src/webview/ui/inlineFormat.ts` (not `inlineText.ts`): beside `InlineText.tsx` the two names collide on case-insensitive file systems (esbuild already resolved the wrong one). The innerHTML scan lives in the Node test `webviewCss.test.ts` (the webview tsconfig has no Node types). The fixture check ignores `<code>` content, which may hold markers literally (`` `**Plan:**` ``). Stages are not re-tidied in the webview: the core already drops their list marker (`idText.ts`), and 0007's stage assertion keeps its literal "1. ". Plan link shows text plus target as AC-015 says; for `[x](x)` both are the same file name — visible duplicate, for Gregor.
 
 ### T-008 — Detail sections: collapse, one Open file per section, header, two panes
 

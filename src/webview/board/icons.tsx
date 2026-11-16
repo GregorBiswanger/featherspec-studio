@@ -13,10 +13,13 @@ const PATHS: Record<string, string> = {
     failed: 'M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm2.8 4.6L9.4 8l1.4 1.4-1.4 1.4L8 9.4l-1.4 1.4-1.4-1.4L6.6 8 5.2 6.6l1.4-1.4L8 6.6l1.4-1.4z',
     interrupted: 'M4 2h3v12H4zM9 2h3v12H9z',
     waiting: 'M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 1.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11zM7.25 4v4.6l3.3 2 .8-1.3-2.6-1.5V4z',
+    ticked: 'M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm4 9.4l5-5-1.1-1.1L7 9.2 5.1 7.3 4 8.4z',
+    unticked: 'M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm.5 1.5v9h9v-9z',
+    undetermined: 'M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm.5 1.5v9h9v-9zM5 7.25h6v1.5H5z',
     empty: 'M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 1.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11zM5 7.25h6v1.5H5z',
 };
 
-export type GlyphKind = 'diagnostic' | 'derived' | 'deprecated' | 'failed' | 'interrupted' | 'waiting' | 'empty' | BoardState;
+export type GlyphKind = 'diagnostic' | 'derived' | 'deprecated' | 'failed' | 'interrupted' | 'waiting' | 'empty' | 'ticked' | 'unticked' | 'undetermined' | BoardState;
 
 export function Glyph(props: { kind: GlyphKind }) {
     return (

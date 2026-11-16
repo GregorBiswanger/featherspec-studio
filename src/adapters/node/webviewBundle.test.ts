@@ -6,6 +6,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { fixturePath } from '../../core/discovery/testing/fixtures';
 import { arrangeBoard } from '../../core/board/filters';
 import { buildBanner, buildCards } from '../../core/board/cards';
+import { buildDetail } from '../../core/board/detail';
 import { deriveLifecycle } from '../../core/lifecycle/deriveLifecycle';
 import { buildMissionControlView } from '../../core/missionControl/missionControlView';
 import { readProject } from '../../core/specs/readProject';
@@ -39,6 +40,12 @@ function boot(script: string): Booted {
         errors.push(error instanceof Error ? error.message : String(error));
     }
     return { dom, posted, errors };
+}
+
+interface QueryRoot {
+    textContent: string | null;
+    querySelector(selector: string): QueryRoot | null;
+    querySelectorAll(selector: string): Iterable<QueryRoot>;
 }
 
 async function settle(): Promise<void> {
@@ -155,6 +162,43 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         await settle();
         expect(dom.window.document.querySelector('[data-mission-control]')).toBeNull();
         expect(dom.window.document.querySelector('[data-mission-control-empty]')).not.toBeNull();
+        expect(errors).toEqual([]);
+    });
+
+    it('0013 AC-014, AC-015: the detail of this repo\'s spec 0002 (fixture studio-0002) shows no raw Markdown and each ID once', async () => {
+        const project = await readProject(createNodeSpecSource(), fixturePath('studio-0002'), '1.10.0');
+        const lifecycle = deriveLifecycle(project);
+        const detail = buildDetail({
+            selection: { stem: '0002-spec-repository-parser' },
+            model: { project, lifecycle },
+            runs: { available: true, value: [] },
+            history: { available: true, label: 'Observed', entries: [] },
+        });
+        expect(detail.kind).toBe('spec');
+        const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
+        await settle();
+        const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'specExplorer', target: undefined, selection: undefined, notice: undefined, rows: [] };
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', type: 'detail', payload: { view: detail } } }));
+        await settle();
+        const section = dom.window.document.querySelector('.spec-detail') as unknown as QueryRoot | null;
+        let text = section?.textContent ?? '';
+        expect(text).toContain('AC-001');
+        const codes = [...(section?.querySelectorAll('code') ?? [])];
+        expect(codes.length).toBeGreaterThan(0);
+        for (const code of codes) {
+            text = text.replace(code.textContent ?? '', ' ');
+        }
+        expect(text).not.toContain('**');
+        expect(text).not.toContain('`');
+        expect(text).not.toMatch(/(?:^|\n)\s*> /);
+        expect(text).not.toContain('](');
+        for (const id of ['AC-001', 'AC-012', 'FR-01', 'T-001']) {
+            const items = [...(section?.querySelectorAll('li') ?? [])].filter((item) => (item.querySelector('.item-id')?.textContent ?? '') === id);
+            expect(items, id).toHaveLength(1);
+            expect((items[0]?.textContent ?? '').split(id).length - 1, id).toBe(1);
+        }
+        expect(section?.querySelector('.inline-link-target')?.textContent).toBe('0002-spec-repository-parser.plan.md');
         expect(errors).toEqual([]);
     });
 
