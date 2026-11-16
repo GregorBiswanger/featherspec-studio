@@ -5,7 +5,7 @@ import { describeSpec } from './description';
 import { criteriaProgress, lastChange, taskProgress } from './progress';
 import { cardRun, type RunIndex } from './runs';
 
-function titleOf(entry: SpecEntry): string | undefined {
+export function titleOf(entry: SpecEntry): string | undefined {
     const value = entry.parsed?.title.value;
     return value !== undefined && value.state === 'value' ? value.raw : undefined;
 }

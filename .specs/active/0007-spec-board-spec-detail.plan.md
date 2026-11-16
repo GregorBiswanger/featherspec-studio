@@ -3,7 +3,7 @@
 **Spec:** [0007-spec-board-spec-detail.md](0007-spec-board-spec-detail.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-004
+**Current step:** T-006
 
 ## Approach
 
@@ -348,8 +348,8 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
       every action is run (filters, sorts, every move, the command, open file with a fake
       editor). `snapshotTree` is unchanged (AC-016).
 - **Verify:** `npm run test:unit -- src/core/board` plus the per-step gates
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-16 · red: `npx vitest run --project node src/core/board/moves src/core/board/openFile` 29 of 29 failed with `Not implemented` (stubs `createMoves`, `createOpenFile`); green: `npx vitest run --project node src/core/board` 87 of 87 (incl. `noWrite.test.ts`: every action on a temp copy of `fs110-ready-synthetic`, `snapshotTree` equal); gates: eslint 0 warnings, both `tsc --noEmit` clean, `npm run test:unit` 68 files, 993 tests passed.
+- **Notes:** Ports are in `src/core/ports/board.ts`: `StartWorkflowPort`, `EditorPort`, `MovePickPort`, `MoveResultSink` and `SelectionSource` (the selection feed the plan's T-006 named). `createMoves` takes the `ShellModelSource` and judges with the pure `judgeTransition` on that model. The command's focused key comes from the board service (`focused()`); a focused or selected key the model no longer holds falls through to the next source. Tests: `moves.test.ts`, `openFile.test.ts`, `noWrite.test.ts`.
 
 ### T-006 — Spec detail model
 
@@ -536,13 +536,13 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 | AC-007 | T-003 | `src/core/board/runs.ts:indexRuns, cardRun` | `runs.test.ts` (AC-007) | built |
 | AC-008 | T-007, T-010 | — | — | open |
 | AC-009 | T-006, T-009 | — | — | open |
-| AC-010 | T-005, T-006, T-009, T-010 | — | — | open |
+| AC-010 | T-005, T-006, T-009, T-010 | `src/core/board/openFile.ts:createOpenFile` | `openFile.test.ts` (AC-010) | built |
 | AC-011 | T-001, T-004 | `src/core/board/filters.ts:arrangeBoard` | `filters.test.ts` (AC-011, T-001 part) | open |
 | AC-012 | T-001, T-007 | `src/core/board/filters.ts:arrangeBoard` | `filters.test.ts` (AC-012) | open |
 | AC-013 | T-001 | `src/core/board/filters.ts:arrangeBoard` | `filters.test.ts` (AC-013) | verified |
-| AC-014 | T-005, T-008, T-010 | — | — | open |
-| AC-015 | T-005 | — | — | open |
-| AC-016 | T-005, T-010 | — | — | open |
+| AC-014 | T-005, T-008, T-010 | `src/core/board/moves.ts:createMoves` | `moves.test.ts` (AC-014) | built |
+| AC-015 | T-005 | `src/core/board/moves.ts:requestMove` | `moves.test.ts` (AC-015) | verified |
+| AC-016 | T-005, T-010 | `src/core/board/moves.ts`, `openFile.ts` | `noWrite.test.ts` (AC-016) | built |
 | AC-017 | T-008, T-009 | — | — + manual: Gregor, keyboard-only pass | open |
 | AC-018 | T-007, T-008 | — | — + manual: Gregor, screen reader | open |
 | AC-019 | T-004, T-007, T-008 | — | — | open |
