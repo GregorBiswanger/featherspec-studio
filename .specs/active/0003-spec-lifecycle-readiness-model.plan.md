@@ -3,7 +3,7 @@
 **Spec:** [0003-spec-lifecycle-readiness-model.md](0003-spec-lifecycle-readiness-model.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-002
+**Current step:** T-003 ‖ T-004 (in sequence)
 
 ## Approach
 
@@ -123,8 +123,8 @@ exists after T-002 and writes its own files.
   breach), memory cases for each contradiction, AC-025's exceptions and the three successor
   outcomes.
 - **Verify:** `npm run test:unit -- src/core/lifecycle` plus the per-step gates
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-16 · red: `npm run test:unit -- src/core/lifecycle` 18 of 25 new tests failed (assertions on Blocked, contradictions and `Not implemented` from the `readSuccessor` stub; the negative-control tests were green at once); green: 42 of 42 in `src/core/lifecycle`; gates: eslint 0 warnings, `tsc --noEmit` clean, `npm run test:unit` 33 files, 558 tests passed.
+- **Notes:** the reactivated-Baseline exception (§6.3, OP-006) accepts `**Plan:** _none_` only, as the spec words it; `_none yet_` with an `**Origin:**` line still gets `active-without-plan` (featherspec-format risk #10 names both placeholders for Baselines — Gregor may widen the spec). Contradiction diagnostics are not raised for an unreadable spec (it has no status to judge); its `unreadable-file` diagnostic from 0002 is passed on. Entries are ordered by key, so `active/` precedes `backlog/`. Tests: `deriveLifecycle.rules.test.ts`, `successor.test.ts`.
 
 ### T-003 — Verification status and determinism
 

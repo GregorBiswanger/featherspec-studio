@@ -3,6 +3,7 @@ import { buildContexts } from './entryContext';
 import type { EntryContext } from './entryContext';
 import type { LifecycleEntry, LifecycleModel, LifecycleState, Persistence, ReadinessResult, RuleId } from './model';
 import { evaluateReadiness } from './readiness';
+import { readSuccessor } from './successor';
 
 interface Verdict {
     state: LifecycleState;
@@ -50,7 +51,10 @@ export function deriveLifecycle(project: ProjectRead): LifecycleModel {
             derivedLabel: derivedLabel(verdict),
             readiness,
             diagnostics: [...context.diagnostics, ...context.contradictions],
-            deprecated: undefined,
+            deprecated:
+                context.entry.folder === 'done' && context.status === 'Deprecated' && context.entry.parsed !== undefined
+                    ? { successor: readSuccessor(context.entry.parsed) }
+                    : undefined,
         };
     });
     return { entries, projectDiagnostics: project.diagnostics.filter((diagnostic) => diagnostic.scope === 'project') };
