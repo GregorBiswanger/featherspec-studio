@@ -1,9 +1,9 @@
 # Plan — Spec Lifecycle & Readiness Model
 
 **Spec:** [0003-spec-lifecycle-readiness-model.md](0003-spec-lifecycle-readiness-model.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-001
+**Current step:** T-002
 
 ## Approach
 
@@ -108,8 +108,8 @@ exists after T-002 and writes its own files.
   `fs110-de-active-review`, `fs180-en-done-archived`, `fs180-de-baselines`, and memory-source
   cases (no sibling plan → R-3 and R-4 fail, plan unlinked, plan `In Progress`).
 - **Verify:** `npm run test:unit -- src/core/lifecycle` plus the per-step gates
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-16 · red: `npm run test:unit -- src/core/lifecycle` 17 of 17 failed with `Not implemented` (stub `deriveLifecycle`); green: 17 of 17 passed after the implementation; gates: eslint 0 warnings, `tsc --noEmit` clean, `npm run test:unit` 31 files, 533 tests passed.
+- **Notes:** the shared test helpers are `src/core/lifecycle/testing/projects.ts` (memory and fixture readers, spec and plan text builders). `entryContext.ts` holds the per-entry facts; `blocked` and `contradictions` stay inert (`false`, empty) until T-002 fills them — `decide()` already carries their branches in the §6.1 order.
 
 ### T-002 — Contradictions, unreadable files, Blocked, duplicates, Deprecated
 
@@ -246,5 +246,5 @@ exists after T-002 and writes its own files.
 - **Done so far:** plan written; spec revised for OP-005, OP-006 and OP-007 (Gregor, 2026-11-16).
 - **Next action:** Gregor reviews the plan. Then `/sdd-lifecycle` backlog → active on the start signal, then T-001.
 - **Open decisions:** OP-003, OP-008 and OP-009 are planned as the spec is written.
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** 0e0380a (HEAD before the first step commit).
 - **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); CI runs it.

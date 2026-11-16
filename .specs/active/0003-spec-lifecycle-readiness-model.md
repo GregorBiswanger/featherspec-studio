@@ -1,6 +1,6 @@
 # Spec Lifecycle & Readiness Model
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0003-spec-lifecycle-readiness-model.plan.md](0003-spec-lifecycle-readiness-model.plan.md)
 
 Handoff reference: FS-003 ([po-handoff.md](../../docs/product/po-handoff.md) §6, §10). Format
