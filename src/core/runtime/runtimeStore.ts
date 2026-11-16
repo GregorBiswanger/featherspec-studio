@@ -6,9 +6,19 @@ import type {
     RuntimeMedium,
     RuntimeNoticePort,
 } from '../ports/runtimeMedium';
-import { encodeLine, parseRunRecord, type CreatedRecord, type RunRecord, type StatusRecord } from './records';
+import {
+    encodeLine,
+    parseEventRecord,
+    parseRunRecord,
+    type CreatedRecord,
+    type EventRecord,
+    type RunRecord,
+    type StatusRecord,
+} from './records';
 import {
     FORMAT_VERSION,
+    MAX_EVENTS_PER_RUN,
+    MAX_PAGE_SIZE,
     NOT_AVAILABLE,
     RuntimeRefusal,
     isEndStatus,
@@ -57,10 +67,41 @@ export interface RuntimeStore {
 const RUN_FILE_SUFFIX = '.run.jsonl';
 const SAFE_ID = /^[A-Za-z0-9_-]+$/;
 
+interface EventState {
+    nextSeq: number;
+    count: number;
+    ids: Set<string>;
+    truncated: boolean;
+    pending: EventRecord[];
+    tailUnterminated: boolean;
+}
+
 interface RunEntry {
     view: MutableRun;
     order: number;
     tailUnterminated: boolean;
+    events: EventState | undefined;
+    eventsLoading: Promise<EventState> | undefined;
+}
+
+function emptyEventState(): EventState {
+    return { nextSeq: 1, count: 0, ids: new Set(), truncated: false, pending: [], tailUnterminated: false };
+}
+
+function eventFileName(runId: string): string {
+    return `runs/${runId}.events.jsonl`;
+}
+
+function toStoredEvent(record: EventRecord): StoredEvent {
+    return {
+        runId: record.runId,
+        seq: record.seq,
+        occurredAt: record.occurredAt,
+        receivedAt: record.receivedAt,
+        type: record.type,
+        payload: record.payload,
+        providerEventId: record.providerEventId,
+    };
 }
 
 type MutableRun = {
@@ -191,9 +232,9 @@ async function replayRun(runId: string, medium: RuntimeMedium): Promise<{ entry:
         }
     }
     if (newer || broken || view === undefined) {
-        return { entry: { view: unreadableView(runId, newer), order: 0, tailUnterminated: false } };
+        return { entry: { view: unreadableView(runId, newer), order: 0, tailUnterminated: false, events: undefined, eventsLoading: undefined } };
     }
-    return { entry: { view, order: 0, tailUnterminated } };
+    return { entry: { view, order: 0, tailUnterminated, events: undefined, eventsLoading: undefined } };
 }
 
 export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeStore> {
@@ -237,6 +278,57 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
         return entry;
     }
 
+    const eventCap = deps.maxEventsPerRun ?? MAX_EVENTS_PER_RUN;
+
+    async function loadEventState(entry: RunEntry): Promise<EventState> {
+        const state = emptyEventState();
+        for await (const line of medium.lines(eventFileName(entry.view.runId))) {
+            const parsed = parseEventRecord(line.text);
+            if (parsed.kind !== 'record') {
+                if (!line.terminated) {
+                    state.tailUnterminated = true;
+                }
+                continue;
+            }
+            const record = parsed.record;
+            state.nextSeq = Math.max(state.nextSeq, record.seq + 1);
+            state.count += 1;
+            if (record.providerEventId !== undefined) {
+                state.ids.add(record.providerEventId);
+            }
+            if (record.type === 'truncated') {
+                state.truncated = true;
+            }
+            if (!line.terminated) {
+                state.tailUnterminated = true;
+            }
+        }
+        return state;
+    }
+
+    async function ensureEventState(entry: RunEntry): Promise<EventState> {
+        if (entry.events !== undefined) {
+            return entry.events;
+        }
+        entry.eventsLoading ??= loadEventState(entry).then((state) => {
+            entry.events = state;
+            return state;
+        });
+        return entry.eventsLoading;
+    }
+
+    function persistEvents(entry: RunEntry, state: EventState, records: EventRecord[]): void {
+        const prefix = state.tailUnterminated ? '\n' : '';
+        state.tailUnterminated = false;
+        const text = prefix + records.map((record) => encodeLine(record)).join('');
+        const name = eventFileName(entry.view.runId);
+        void enqueue(name, () => medium.append(name, text)).then((failure) => {
+            if (failure === undefined) {
+                state.pending = state.pending.filter((record) => !records.includes(record));
+            }
+        });
+    }
+
     function notImplemented(): never {
         throw new Error('Not implemented');
     }
@@ -266,7 +358,13 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             if (input.sessionRef !== undefined) {
                 record.sessionRef = input.sessionRef;
             }
-            const entry: RunEntry = { view: newView(record), order: orderCounter++, tailUnterminated: false };
+            const entry: RunEntry = {
+                view: newView(record),
+                order: orderCounter++,
+                tailUnterminated: false,
+                events: emptyEventState(),
+                eventsLoading: undefined,
+            };
             runs.set(runId, entry);
             const failure = await enqueue(runFileName(runId), () => medium.append(runFileName(runId), encodeLine(record)));
             if (failure !== undefined) {
@@ -313,8 +411,73 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             const entry = runs.get(runId);
             return { available: true, value: entry === undefined ? undefined : copyView(entry.view) };
         },
-        appendEvent: async () => notImplemented(),
-        readEvents: async () => notImplemented(),
+        async appendEvent(runId, input) {
+            const entry = requireRun(runId);
+            const state = await ensureEventState(entry);
+            if (input.providerEventId !== undefined && state.ids.has(input.providerEventId)) {
+                return { outcome: 'duplicate' };
+            }
+            if (state.truncated) {
+                return { outcome: 'dropped' };
+            }
+            const record: EventRecord = {
+                v: FORMAT_VERSION,
+                seq: state.nextSeq++,
+                runId,
+                receivedAt: iso(),
+                type: input.type,
+                payload: input.payload,
+            };
+            if (input.occurredAt !== undefined) {
+                record.occurredAt = input.occurredAt;
+            }
+            if (input.providerEventId !== undefined) {
+                record.providerEventId = input.providerEventId;
+                state.ids.add(input.providerEventId);
+            }
+            state.count += 1;
+            const records = [record];
+            if (state.count >= eventCap) {
+                records.push({
+                    v: FORMAT_VERSION,
+                    seq: state.nextSeq++,
+                    runId,
+                    receivedAt: record.receivedAt,
+                    type: 'truncated',
+                    payload: { limit: eventCap },
+                });
+                state.truncated = true;
+                state.count += 1;
+            }
+            state.pending.push(...records);
+            persistEvents(entry, state, records);
+            return { outcome: 'stored', seq: record.seq };
+        },
+        async readEvents(runId, fromSeq, size) {
+            const entry = runs.get(runId);
+            const limit = Math.min(Math.floor(size), MAX_PAGE_SIZE);
+            if (entry === undefined || !(limit >= 1)) {
+                return { available: true, value: [] };
+            }
+            const overlay = [...(entry.events?.pending ?? [])];
+            const found = new Map<number, EventRecord>();
+            for await (const line of medium.lines(eventFileName(runId))) {
+                const parsed = parseEventRecord(line.text);
+                if (parsed.kind === 'record' && parsed.record.seq >= fromSeq) {
+                    found.set(parsed.record.seq, parsed.record);
+                    if (found.size >= limit) {
+                        break;
+                    }
+                }
+            }
+            for (const record of overlay) {
+                if (record.seq >= fromSeq) {
+                    found.set(record.seq, record);
+                }
+            }
+            const page = [...found.values()].sort((a, b) => a.seq - b.seq).slice(0, limit);
+            return { available: true, value: page.map(toStoredEvent) };
+        },
         appendSpecStatusEntry: async () => notImplemented(),
         readSpecStatusHistory: async () => notImplemented(),
         clear: async () => notImplemented(),

@@ -132,8 +132,8 @@ T-007 need the complete medium contract.
   confirmed by the medium so reads never wait on a write (AC-029). In-memory harness gains
   "writes never complete". Contract cases for each criterion, incl. the 10,000-event page example.
 - **Verify:** `npm run test:unit` (new contract cases red first, then green) plus the per-step gates
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-16 — red: `npx vitest run src/core/runtime` 12 new contract cases failed (`Not implemented`), 11 earlier passed; green: 23 of 23 (AC-005, AC-006 incl. the 10,000-event page, AC-007, AC-027, AC-028 event part, AC-029 with writes that never complete, negative control for AC-029); `npm run test:unit` all green, `npx eslint src --max-warnings 0` and `npx tsc --noEmit` clean.
+- **Notes:** Tests: `src/core/runtime/testing/contractEvents.ts`. The truncated marker is written as event CAP+1 as soon as event CAP is stored (payload `{limit}`). Failed event writes stay in the per-run overlay (kept for T-005's flag and notice).
 
 ### T-003 — Masking and the spec status history
 
