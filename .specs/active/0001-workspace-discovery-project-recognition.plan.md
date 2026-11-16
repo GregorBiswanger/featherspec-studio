@@ -182,8 +182,8 @@ T-005…T-007 define, and T-008 documents the result.
   - no project or incomplete → status bar hidden, nothing written to the UI port
   - Output block per folder
 - **Verify:** `npx vitest run src/core/discovery/discoveryController.test.ts` (red, then green) + per-step gates
-- [ ] **Verified (T-005):** —
-- **Notes:** re-cut 2026-11-16 (was: host wiring verified by `npm test`).
+- [x] **Verified (T-005):** 2026-11-16 — red: `npx vitest run src/core/discovery/discoveryController.test.ts` 7/7 failed with `Not implemented`; green: 7/7 passed. Gates: eslint 0 findings, `tsc --noEmit` 0 errors, `npm run test:unit` 6 files, 69 passed. The 'nothing written to the UI port' check moves to T-006, where the UI port arrives.
+- **Notes:** `WorkspaceFolderInfo` moved to `src/core/ports/host.ts` (discoverWorkspace imports it). `StatusBarPort.show(text, action: 'select')`: the core names the action, the adapter maps it to a command id. Output is written on every run, also when no folder is a project (AC-016); only status bar and notification stay silent (AC-020).
 
 ### T-006 — Controller commands: select, refresh, notification, remembering
 

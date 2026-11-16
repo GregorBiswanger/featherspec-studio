@@ -1,11 +1,7 @@
+import type { WorkspaceFolderInfo } from '../ports/host';
 import type { ReadOnlyFileSystem } from '../ports/readOnlyFileSystem';
 import { classifyFolder, type FolderVerdict } from './classifyFolder';
 import { readVersionLine } from './versionLine';
-
-export interface WorkspaceFolderInfo {
-    root: string;
-    name: string;
-}
 
 export interface DiscoveredFolder {
     root: string;
