@@ -133,11 +133,12 @@ export function createStatusHistory(deps: StatusHistoryDeps): StatusHistory {
 
     async function baseline(model: LifecycleModel): Promise<void> {
         const stored = await readStored();
-        if (!stored.ok) {
-            return;
-        }
         baselined = true;
         const { singles, present } = verdicts(model);
+        if (!stored.ok) {
+            singles.forEach((verdict, stem) => last.set(stem, verdict.state));
+            return;
+        }
         const pending: StatusHistoryEntry[] = [];
         for (const stem of [...new Set([...singles.keys(), ...stored.recorded.keys()])].sort()) {
             const verdict = singles.get(stem);

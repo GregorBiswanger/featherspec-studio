@@ -216,7 +216,10 @@ A-003). An entry with cause *changed while Studio was not running* is *not check
   one. A move between lifecycle folders keeps the stem and is an ordinary state change
   (PD-018).
 - State changes that happen while the history store is unavailable are not recorded later
-  (PD-023).
+  (PD-023). This holds at the first derivation too: when the history cannot be read at that
+  moment, the model takes the derived states as its baseline and writes no entry for the gap;
+  the stored entries, which may be older, never produce an entry once the store returns
+  (revised 2026-11-16 after `/sdd-compile`).
 - Only the window that holds the project store's write lock appends entries. Another window
   derives states and reads the history (PD-030).
 - A `**Status:**` change that leaves the state unchanged creates no entry (OP-008).
@@ -382,7 +385,7 @@ the changed file paths as cause. *(FR-003.6, FR-003.7)*
 spec's derived state differs from its last recorded state (§6.5), the model shall append
 exactly one entry with cause *changed while Studio was not running* and the time of that
 derivation as observed time. It shall not record intermediate states or times taken from git
-or file timestamps.
+or file timestamps. This applies only when the history can be read at that derivation (AC-024).
 
 **AC-016** The model shall append history entries only on the occasions named in AC-014,
 AC-015, AC-017 and AC-026. The history data shall carry, once, the label "Observed by Studio while it
@@ -425,7 +428,9 @@ append one history entry for that spec, from its last recorded state to its fina
 **AC-024** If the history store cannot be read or written, or this window does not hold the
 project store's write lock, then the model shall keep deriving and reporting states and shall
 append no entry. It shall not record later a state change that happened while the store was
-unavailable. If the history cannot be read, the model shall report it as *not available*.
+unavailable: if the store cannot be read at the first derivation after activation, the model
+shall take the derived states as its new baseline and append no entry for the gap when the
+store returns. If the history cannot be read, the model shall report it as *not available*.
 *(PD-023, PD-030)*
 
 **AC-025** The model shall attach no contradiction diagnostic to an `active/` spec without a

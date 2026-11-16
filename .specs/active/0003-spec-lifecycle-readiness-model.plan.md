@@ -91,6 +91,7 @@ Memory Bank files touched at the end: `activeContext.md`, `systemPatterns.md`, `
 2. T-003 ‖ T-004 — independent: verification status vs. transition check and flow marker (separate files and tests)
 3. T-005 → T-006 — the status history: live changes, then baseline, identity and store outage
 4. T-007 → T-008 — service wiring with the no-write proof, then docs sync and final gates
+5. T-009 — revision after `/sdd-compile` (2026-11-16): the first derivation with an unreadable history
 
 Parallel: stage 2. T-003 extends `deriveLifecycle.ts`, while T-004 only reads the model type that
 exists after T-002 and writes its own files.
@@ -210,6 +211,15 @@ exists after T-002 and writes its own files.
 - [x] **Verified (T-008):** 2026-11-16 · `npx eslint src --max-warnings 0` 0 warnings · `npx tsc --noEmit` clean · `npm run test:unit` 40 files, 639 tests passed · `npm run compile` green. `AGENTS.md` got the one `src/core/lifecycle` modules entry; `systemPatterns.md` three decisions; `techContext.md` test notes. `npm test` (host) did not run here: CI.
 - **Notes:** `AGENTS.md` is 215 lines, over its 200-line target since before this spec; the eviction proposal stays open for Gregor (not made here, it needs his decision).
 
+### T-009 — Revision after `/sdd-compile`: no entry for a gap at the first derivation
+
+- **Covers:** AC-024, AC-015
+- **Files:** `src/core/lifecycle/statusHistory.ts`, `src/core/lifecycle/statusHistory.baseline.test.ts`
+- **Do:** test first. The test that expected *changed while Studio was not running* after an unavailable first derivation is wrong under PD-023 and is replaced: history holds Backlog, the store is unavailable at the first derivation, the spec is Ready, the store returns, no entry is appended (the compile session's repro); a second case: after that, a real change is recorded with the baseline as old state. Red, then `baseline()` takes the derived states as `last` and sets `baselined` also when the history cannot be read; the history still reports *not available* while it cannot be read. Supersedes *Research* (a): the first derivation is the first one, readable or not.
+- **Verify:** `npm run test:unit -- src/core/lifecycle/statusHistory` plus the per-step gates
+- [x] **Verified (T-009):** 2026-11-16 · red: `npx vitest run --project node src/core/lifecycle/statusHistory` 2 of 30 failed (an entry *changed while Studio was not running* appeared after the gap; the real change had `Backlog` as old state); green: 124 of 124 in `src/core/lifecycle`; gates: eslint 0 warnings, `tsc --noEmit` and `-p src/webview` clean, `npm run test:unit` 57 files, 861 tests passed.
+- **Notes:** the old test that expected the gap entry encoded the bug and was replaced. The baseline is taken at the first derivation whether or not the history can be read.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -228,7 +238,7 @@ exists after T-002 and writes its own files.
 | AC-012 | T-002 | `src/core/lifecycle/entryContext.ts:findContradictions` | `deriveLifecycle.rules.test.ts` (AC-012) | verified |
 | AC-013 | T-002 | `src/core/lifecycle/successor.ts:readSuccessor` | `successor.test.ts` (AC-013) | verified |
 | AC-014 | T-005, T-007 | `src/core/lifecycle/statusHistory.ts:observe`, `changedPaths.ts`, `lifecycleService.ts:refresh` | `statusHistory.test.ts`, `lifecycleService.test.ts` (AC-014); `src/test/lifecycle.smoke.test.ts` (CI) | verified |
-| AC-015 | T-006 | `src/core/lifecycle/statusHistory.ts:baseline` | `statusHistory.baseline.test.ts` (AC-015) | verified |
+| AC-015 | T-006, T-009 | `src/core/lifecycle/statusHistory.ts:baseline` | `statusHistory.baseline.test.ts` (AC-015) | verified |
 | AC-016 | T-005 | `src/core/lifecycle/statusHistory.ts:HISTORY_LABEL`, `observe` | `statusHistory.test.ts` (AC-016) | verified |
 | AC-017 | T-006 | `src/core/lifecycle/statusHistory.ts:baseline`, `observe` | `statusHistory.baseline.test.ts` (AC-017) | verified |
 | AC-018 | T-003 | `src/core/lifecycle/verification.ts:readVerification` | `verification.test.ts` (AC-018) | verified |
@@ -237,13 +247,13 @@ exists after T-002 and writes its own files.
 | AC-021 | T-001 | `src/core/lifecycle/deriveLifecycle.ts:decide` | `deriveLifecycle.test.ts` (AC-021) | verified |
 | AC-022 | T-002 | `src/core/lifecycle/readiness.ts:hasProblem` | `deriveLifecycle.rules.test.ts` (AC-022) | verified |
 | AC-023 | T-005 | `src/core/lifecycle/statusHistory.ts:observe` | `statusHistory.test.ts` (AC-023) | verified |
-| AC-024 | T-006 | `src/core/lifecycle/statusHistory.ts:append`, `readStored` | `statusHistory.baseline.test.ts` (AC-024) | verified |
+| AC-024 | T-006, T-009 | `src/core/lifecycle/statusHistory.ts:append`, `readStored`, `baseline` | `statusHistory.baseline.test.ts` (AC-024, incl. T-009 gap cases) | verified |
 | AC-025 | T-002 | `src/core/lifecycle/entryContext.ts:findContradictions` | `deriveLifecycle.rules.test.ts` (AC-025) | verified |
 | AC-026 | T-006 | `src/core/lifecycle/statusHistory.ts:verdicts`, `observe` | `statusHistory.baseline.test.ts` (AC-026) | verified |
 
 ## Session handoff
 
-- **Done so far:** all eight steps (T-001...T-008) ticked with recorded runs; `src/core/lifecycle` is complete and wired (`StudioApi.lifecycle()`); eslint, tsc, `test:unit` (639 tests) and `compile` green; docs synced.
+- **Done so far:** all nine steps (T-001...T-009) ticked with recorded runs; `src/core/lifecycle` is complete and wired (`StudioApi.lifecycle()`); eslint, tsc, `test:unit` (639 tests) and `compile` green; docs synced.
 - **Next action:** `npm test` (host smoke incl. `src/test/lifecycle.smoke.test.ts`) on CI or Windows; then `/sdd-compile` in a fresh session with a model from another family; then `/sdd-lifecycle` active → done.
 - **Open decisions:** `_none yet_` + `**Origin:**` is not an exception in AC-025 (see T-002 Notes); `AGENTS.md` over its line target (T-008 Notes).
 - **Baseline:** 0e0380a (HEAD before the first step commit).

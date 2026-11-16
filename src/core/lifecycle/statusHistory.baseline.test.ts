@@ -211,7 +211,7 @@ describe('status history: store outage', () => {
         expect(await w.history.read()).toEqual({ available: false, text: 'Status history not available: history unreadable' });
     });
 
-    it('AC-024: an unavailable store keeps deriving: the baseline is taken from the first readable derivation, with no entry for the gap', async () => {
+    it('AC-024: a store unavailable at the first derivation gives no entry for the gap when it returns', async () => {
         const w = createHistoryWorld([record('0001-a', 'Backlog')]);
         w.store.setState('unavailable', 'no storage');
         activeSpec(w);
@@ -219,7 +219,18 @@ describe('status history: store outage', () => {
         expect(w.store.records).toHaveLength(1);
         w.store.setState('writable');
         await w.observe();
-        expect(w.added().map((entry) => (entry.cause as { kind: string }).kind)).toEqual(['changed-while-not-running']);
+        expect(w.store.records).toHaveLength(1);
+    });
+
+    it('AC-024: after such a gap a real change is recorded against the baseline taken during the gap', async () => {
+        const w = createHistoryWorld([record('0001-a', 'Backlog')]);
+        w.store.setState('unavailable', 'no storage');
+        activeSpec(w);
+        await w.observe();
+        w.store.setState('writable');
+        w.set('.specs/active/0001-a.plan.md', planText({ status: 'Done' }));
+        await w.observe();
+        expect(w.added().map((entry) => [entry.old, entry.new])).toEqual([['Active', 'Review']]);
     });
 
     it('AC-024: a read-only store at the first derivation seeds the states; later writable appends only new changes', async () => {
