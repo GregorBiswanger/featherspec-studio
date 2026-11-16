@@ -1,9 +1,9 @@
 # Plan — Spec Repository & Parser
 
 **Spec:** [0002-spec-repository-parser.md](0002-spec-repository-parser.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-16
-**Current step:** T-011
+**Current step:** none (all steps ticked)
 
 ## Approach
 
@@ -228,6 +228,15 @@ the slices are small.
 - [x] **Verified (T-010):** 2026-11-16 · preservation test, green at once by design (code unchanged); control: removing `\.\.\.` from the `RANGE` pattern in `planSteps.ts` turned the new test and the older three-dot test red (2 failed, 27 passed), restored. Green: 29 of 29 in `planSteps.test.ts`.
 - **Notes:** no code change; the test is `AC-008: a range written with the ellipsis character … and one written with three plain dots ... are both ranges, with the same result`.
 
+### T-011 — Same-project re-report and `AGENTS.md` edit named by tests
+
+- **Covers:** AC-022
+- **Added:** 2026-11-16, same spec change. Gregor's decision after `/sdd-compile`: a re-report of the same project (same root, same version) triggers no re-read; changes under `.specs/` are covered by the repository's own watcher and `rescan()`; an `AGENTS.md` edit that keeps the version does not affect the spec model. AC-022, §9 and §12 of the spec say so now; the code stays.
+- **Do:** `src/core/specs/activeProjectFeed.test.ts`, three tests on the real 0001 controller and the repository: (1) `controller.refresh()` with nothing changed: no new source reads, no notification, the same snapshot object; (2) an `AGENTS.md` edit that keeps the version: the same; (3) a file added with a watcher event arrives through the watcher, one added without an event arrives through `rescan()`. No code change.
+- **Verify:** `npx vitest run src/core/specs/activeProjectFeed` + per-step gates
+- [x] **Verified (T-011):** 2026-11-16 · preservation tests, green at once by design; control: switching off both `sameActive` in `discoveryController.ts` and the same-project guard in `activeProjectFeed.ts` turned tests (1) and (2) red (2 failed, 7 passed), restored. Green: 9 of 9 in `activeProjectFeed.test.ts`. Gates: eslint 0 warnings, `tsc --noEmit` clean, `npm run test:unit` 40 files, 644 tests passed.
+- **Notes:** the traceability row of AC-022 goes back to `built`: its deciding evidence for the live watcher is the host smoke suite (`src/test/specRepository.smoke.test.ts`), which has not run yet (CI). It becomes `verified` after that run.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -253,13 +262,13 @@ the slices are small.
 | AC-019 | T-002 | `src/core/specs/parseSpec.ts`, `fieldValue.ts` | `parseSpec.test.ts` (AC-019) | verified |
 | AC-020 | T-001 | `src/core/specs/text.ts:decodeText` | `files.test.ts` (AC-020 cases) | verified |
 | AC-021 | T-001, T-006 | `src/core/specs/files.ts:isFollowable`, `readProject.ts:resolveInRoot` | `files.test.ts`, `readProject.test.ts` (AC-021) | verified |
-| AC-022 | T-007, T-008 | `src/core/specs/specRepository.ts:open/rescan`, `activeProjectFeed.ts:connectActiveProject` | `specRepository.test.ts`, `activeProjectFeed.test.ts` (AC-022), host smoke (CI) | verified |
+| AC-022 | T-007, T-008, T-011 | `src/core/specs/specRepository.ts:open/rescan`, `activeProjectFeed.ts:connectActiveProject` | `specRepository.test.ts`, `activeProjectFeed.test.ts` (AC-022, incl. same-project re-report), host smoke (CI, not run yet) | built |
 | AC-023 | T-001 | `src/core/specs/files.ts:readOne` | `files.test.ts` (AC-023 cases) | verified |
 
 ## Session handoff
 
-- **Done so far:** T-001 … T-009 built and verified; 358 unit tests; stage 2 and 3 workers integrated. Docs synced (AGENTS.md snapshot, README, Memory Bank).
-- **Next action:** `/sdd-compile` for spec 0002 in a fresh session, best with a strong model of another family than the implementer. Open evidence: `npm test` host suite on CI (`src/test/specRepository.smoke.test.ts`); Gregor's re-measurement of the AC-018 thresholds on a real project (spec OP-001). Then `/sdd-lifecycle` to `done/`. Not done here: compile and the move.
-- **Open decisions:** none. Findings for Gregor: 0001 notifies only on changed root/version, so an unchanged re-report of the project does not trigger a re-read (watcher and `rescan()` cover it); no Rescan command exists yet (OP-008, 0005).
+- **Done so far:** T-001 … T-011 built and verified; 644 unit tests. T-010 and T-011 (appended 2026-11-16) are the delta after `/sdd-compile`: the spec was revised (AC-022 same-project re-report, AC-008 three-dot range), code unchanged, tests name both. Docs synced (AGENTS.md snapshot, README, Memory Bank).
+- **Next action:** `npm test` host suite on CI (`src/test/specRepository.smoke.test.ts`) decides AC-022: its traceability row stays `built` until then; Gregor's re-measurement of the AC-018 thresholds (spec OP-001); then `/sdd-compile` again in a fresh session and `/sdd-lifecycle` to `done/`.
+- **Open decisions:** none. Findings for Gregor: no Rescan command exists yet (OP-008, 0005).
 - **Baseline:** 9bb1c18 (HEAD before T-001).
 - **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); runs on CI.

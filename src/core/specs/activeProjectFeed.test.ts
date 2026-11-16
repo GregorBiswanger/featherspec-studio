@@ -82,6 +82,57 @@ describe('connectActiveProject', () => {
         expect(watch.watched()).toEqual([]);
     });
 
+    it('AC-022: 0001 reporting the same root and the same version again triggers no re-read and no notification', async () => {
+        const { controller, repository, source } = setup(['a']);
+        const changes: unknown[] = [];
+        repository.onDidChange((change) => changes.push(change));
+        connectActiveProject(controller, repository);
+        await controller.start();
+        await repository.whenIdle();
+        const model = repository.snapshot();
+        const reads = source.reads().length;
+        changes.length = 0;
+        await controller.refresh();
+        await repository.whenIdle();
+        expect(source.reads()).toHaveLength(reads);
+        expect(changes).toEqual([]);
+        expect(repository.snapshot()).toBe(model);
+    });
+
+    it('AC-022: an AGENTS.md edit that keeps the version does not change the model', async () => {
+        const { controller, repository, fileSystem, source } = setup(['a']);
+        const changes: unknown[] = [];
+        repository.onDidChange((change) => changes.push(change));
+        connectActiveProject(controller, repository);
+        await controller.start();
+        await repository.whenIdle();
+        const model = repository.snapshot();
+        const reads = source.reads().length;
+        changes.length = 0;
+        fileSystem.setFile('a', 'AGENTS.md', 'FeatherSpecVersion: 1.10.0\n\n# edited, version kept\n');
+        await controller.refresh();
+        await repository.whenIdle();
+        expect(source.reads()).toHaveLength(reads);
+        expect(changes).toEqual([]);
+        expect(repository.snapshot()).toBe(model);
+    });
+
+    it('AC-022: a change under .specs/ reaches the model through the watcher, and a missed one through rescan()', async () => {
+        const { controller, repository, source, watch, host } = setup(['a']);
+        connectActiveProject(controller, repository);
+        await controller.start();
+        await repository.whenIdle();
+        source.setFile('a', '.specs/backlog/0002-watched.md', spec());
+        watch.fire('a', '.specs/backlog/0002-watched.md');
+        host.clock.advance(200);
+        await repository.whenIdle();
+        expect(repository.snapshot()?.specs.map((entry) => entry.reference)).toEqual(['0001-in-a', '0002-watched']);
+        source.setFile('a', '.specs/backlog/0003-missed.md', spec());
+        expect(repository.snapshot()?.specs.map((entry) => entry.reference)).not.toContain('0003-missed');
+        await repository.rescan();
+        expect(repository.snapshot()?.specs.map((entry) => entry.reference)).toContain('0003-missed');
+    });
+
     it('AC-022: no active project from the start never touches the repository', async () => {
         const { controller, repository, watch } = setup([]);
         const changes: unknown[] = [];
