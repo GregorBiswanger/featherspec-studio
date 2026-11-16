@@ -1,7 +1,7 @@
 # Plan — Runtime Persistence & Event Model
 
 **Spec:** [0004-runtime-persistence-event-model.md](0004-runtime-persistence-event-model.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-16
 **Current step:** T-001
 
@@ -49,9 +49,9 @@ Survey (2026-11-16, branch `spec-0004`, after spec 0001):
 - `ClockPort.now()` returns an ISO string and the fake returns `t1, t2…` — unusable for age arithmetic.
   The runtime module gets its own `RuntimeClock` (`epochMs()` + `setTimeout`) instead of changing
   `ClockPort`, so 0002/0003 work on main does not conflict.
-- `DiscoveryController` exposes `snapshot()` but no event when the active project changes; T-007 adds an
-  additive `onDidChangeActive(listener)` with a test. This is the one edit to 0001 code besides
-  `src/extension.ts`, `package.json` and `eslint.config.mjs` — likely merge points with 0002/0003.
+- `DiscoveryController.onDidChangeActiveProject(listener)` (0001 AC-023, merged into this branch, Gregor
+  2026-11-16) is the active-project notification; T-007 uses it and adds none. Edits to 0001 files are
+  `src/extension.ts`, `package.json` and `eslint.config.mjs` only — likely merge points with 0002/0003.
 - Core test helpers already import `fs` (`src/core/discovery/testing/snapshotTree.ts`,
   `discoverWorkspace.test.ts`), so AC-001's import scan and ESLint ban cover production core files only
   (`src/core/**/*.ts` minus `*.test.ts` and `**/testing/**`).
@@ -65,7 +65,7 @@ Survey (2026-11-16, branch `spec-0004`, after spec 0001):
   20_000`; OP-010 `MAX_PAGE_SIZE = 500`, larger requests are cut; OP-011 incomplete-record notice once
   per run and activation; OP-012 `HEARTBEAT_INTERVAL_MS = 10_000`, `LOCK_STALE_MS = 60_000`, a reader
   checks the lock at the heartbeat interval.
-- The five readings of spec OP-014 (a)–(e) are built as written; Gregor has not ticked them in the DoR.
+- The five readings of spec OP-014 (a)–(e) are built as written; Gregor confirmed them and the OP-015 values on 2026-11-16 (DoR ticked).
 - Assumption: in a remote window `globalStorageUri` is a `file:` URI on the extension host's machine. If
   its scheme is not `file`, the store is *unavailable* with the reason "storage location is not on the
   local file system" (AC-025) — honest, not silent. The T-007 smoke suite proves the desktop case.
@@ -119,8 +119,8 @@ T-007 need the complete medium contract.
   `sqlite`, `node:sqlite` on production core files, plus `src/core/runtime/importScan.test.ts` that scans
   them for those modules and `vscode`.
 - **Verify:** `npm run test:unit` (contract cases AC-002…AC-004, AC-008, AC-009, AC-028; import scan) plus the per-step gates
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-16 — red: `npx vitest run src/core/runtime` 9 of 9 contract cases failed (`Not implemented` stub), `randomIds` test failed on the missing module; green: `npm run test:unit` 135 passed (9 contract cases AC-003/004/008/009/028, AC-002 10,000 IDs, import scan with negative control); ESLint ban verified by a throwaway `node:fs` import (error); `npx eslint src --max-warnings 0` and `npx tsc --noEmit` clean.
+- **Notes:** Tests: contract cases in `src/core/runtime/testing/contractRuns.ts`, run by `runtimeStore.test.ts`; the in-memory harness injects faults through `testing/faultyMedium.ts`. Medium port also carries `RuntimeClock`, `IdSource`, `CredentialValuesPort`, `RuntimeNoticePort` (`src/core/ports/runtimeMedium.ts`). Import scan and ESLint ban cover production core files only (`*.test.ts` and `testing/` excluded).
 
 ### T-002 — Events: sequence, paging, duplicates, cap, non-blocking append
 
@@ -198,8 +198,8 @@ T-007 need the complete medium contract.
 ### T-007 — VS Code wiring: active project, Clear command, notices, setting
 
 - **Covers:** AC-019, AC-025, AC-018 (setting)
-- **Do:** `DiscoveryController.onDidChangeActive` (additive, with a core test); `src/core/runtime/
-  runtimeSession.ts` opens and disposes a store when the active project changes and runs the Clear flow
+- **Do:** `src/core/runtime/runtimeSession.ts` subscribes to `DiscoveryController.onDidChangeActiveProject`
+  (0001 AC-023; no new controller API) and opens and disposes a store when the active project changes and runs the Clear flow
   (C-1/C-2; declined, no project and reader cases) against `UiPort`-style ports — proven with fakes;
   `src/adapters/vscode/{runtimeUi.ts,runtimeSettings.ts}` (modal confirm, warnings, `maxAgeDays`);
   `src/extension.ts` composes with `globalStorageUri` (non-`file` scheme → *unavailable*) and exposes
@@ -263,7 +263,7 @@ T-007 need the complete medium contract.
 ## Session handoff
 
 - **Done so far:** plan written (`/sdd-plan`, session S03-plan-0004, 2026-11-16); spec §15 OP-015 records the adopted recommendations.
-- **Next action:** Gregor reviews the plan and OP-015; on the start signal move the pair to `active/` and start T-001.
-- **Open decisions:** OP-015 values; the five readings of OP-014; AC-020 document acceptance (T-008).
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Next action:** T-001 (start signal and plan approval given 2026-11-16; pair moved to `active/`).
+- **Open decisions:** AC-020 document acceptance (T-008).
+- **Baseline:** 767ac42 (HEAD before the first step commit)
 - **Environment:** `npm test` cannot run here (VS Code download blocked); worktree `/home/claude/wt-0004`, branch `spec-0004`.

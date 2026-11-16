@@ -1,6 +1,6 @@
 # Runtime Persistence & Event Model
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0004-runtime-persistence-event-model.plan.md](0004-runtime-persistence-event-model.plan.md)
 
 Handoff reference: FS-004 ([po-handoff.md](../../docs/product/po-handoff.md) §7, §8.5, §10 FS-004, §13).
@@ -460,8 +460,8 @@ Open, none blocks planning (clarify finding in brackets; a recommendation each):
 
 - [x] ADR-002 written (Proposed; adopted by PD-003).
 - [x] Blocking `/sdd-clarify` findings decided (PD-024…PD-030).
-- [ ] The five readings in OP-014 seen by Gregor.
-- [ ] OP-005…OP-012: answered, or the recommendation accepted, before the step that needs it.
+- [x] The five readings in OP-014 seen by Gregor (confirmed 2026-11-16).
+- [x] OP-005…OP-012: recommendations accepted with the OP-015 values (Gregor, 2026-11-16: page size 500, size cap 20,000, heartbeat 10 s / stale 60 s, `runHistory.maxAgeDays` min 1 default 90, store under `globalStorageUri` keyed by project root).
 
 ## 17. Definition of Done
 
