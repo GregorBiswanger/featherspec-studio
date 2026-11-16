@@ -1,6 +1,7 @@
 import { deriveLifecycle } from '../../lifecycle/deriveLifecycle';
 import { readMemory } from '../../lifecycle/testing/projects';
 import type { Disposable } from '../../ports/host';
+import type { HistoryView } from '../../lifecycle/statusHistory';
 import type { ShellModel, ShellModelSource } from '../../ports/shell';
 import type { ReadResult, RunView } from '../../runtime/model';
 import type { RuntimeStore } from '../../runtime/runtimeStore';
@@ -81,7 +82,45 @@ export function run(runId: string, stem: string, overrides: Partial<RunView> = {
     };
 }
 
+export interface FakeSelection {
+    source: { selection(): { stem: string; path?: string } | undefined; onDidChange(listener: () => void): Disposable };
+    set(selection: { stem: string; path?: string } | undefined): void;
+}
+
+export function createFakeSelection(): FakeSelection {
+    let selection: { stem: string; path?: string } | undefined;
+    const listeners = new Set<() => void>();
+    return {
+        source: {
+            selection: () => selection,
+            onDidChange(listener): Disposable {
+                listeners.add(listener);
+                return { dispose: () => void listeners.delete(listener) };
+            },
+        },
+        set(next) {
+            selection = next;
+            [...listeners].forEach((listener) => listener());
+        },
+    };
+}
+
+export interface FakeHistory {
+    port: { read(): Promise<HistoryView>; onDidChange(listener: () => void): Disposable };
+    view: HistoryView;
+}
+
+export function createFakeHistory(): FakeHistory {
+    const fake: FakeHistory = {
+        view: { available: true, label: 'Observed by Studio while it was running — not a reconstruction', entries: [] },
+        port: { read: async () => fake.view, onDidChange: () => ({ dispose: () => undefined }) },
+    };
+    return fake;
+}
+
 export interface BoardWorld {
+    selection: FakeSelection;
+    history: FakeHistory;
     source: FakeSource;
     store: FakeStore;
     service: BoardService;
@@ -93,10 +132,14 @@ export function createBoardWorld(model: ShellModel | undefined): BoardWorld {
     const source = createFakeSource(model);
     const store = createFakeStore();
     let current: FakeStore | undefined = store;
-    const service = createBoardService({ source, session: { current: () => current?.store } });
+    const selection = createFakeSelection();
+    const history = createFakeHistory();
+    const service = createBoardService({ source, session: { current: () => current?.store }, selection: selection.source, history: history.port });
     const views: string[] = [];
     service.onDidChangeView((view) => views.push(JSON.stringify(view)));
     return {
+        selection,
+        history,
         source,
         store,
         service,

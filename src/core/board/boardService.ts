@@ -1,8 +1,13 @@
 import type { BoardView, CardView, SortKey } from '../../shared/protocol/board';
 import type { BoardFilter } from '../../shared/protocol/boardFilter';
+import type { DetailView } from '../../shared/protocol/detail';
+import type { HistoryView } from '../lifecycle/statusHistory';
+import type { SelectionSource } from '../ports/board';
 import type { Disposable } from '../ports/host';
 import type { ShellModel, ShellModelSource } from '../ports/shell';
+import type { ReadResult, RunView } from '../runtime/model';
 import type { RuntimeStore } from '../runtime/runtimeStore';
+import { buildDetail } from './detail';
 import { createBoardUiState } from './boardUiState';
 import { buildBanner, buildCards } from './cards';
 import { arrangeBoard } from './filters';
@@ -11,11 +16,15 @@ import { indexRuns, type RunIndex } from './runs';
 export interface BoardServiceDeps {
     source: ShellModelSource;
     session: { current(): Pick<RuntimeStore, 'listRuns' | 'onDidChangeRuns'> | undefined };
+    selection: SelectionSource;
+    history: { read(): Promise<HistoryView>; onDidChange(listener: () => void): Disposable };
 }
 
 export interface BoardService {
     view(): BoardView | undefined;
     onDidChangeView(listener: (view: BoardView | undefined) => void): Disposable;
+    detail(): DetailView;
+    onDidChangeDetail(listener: (view: DetailView) => void): Disposable;
     setFilter(filter: BoardFilter): void;
     setSort(sort: SortKey): void;
     clearFilters(): void;
@@ -38,6 +47,10 @@ interface Built {
 export function createBoardService(deps: BoardServiceDeps): BoardService {
     const ui = createBoardUiState();
     const listeners = new Set<(view: BoardView | undefined) => void>();
+    const detailListeners = new Set<(view: DetailView) => void>();
+    let rawRuns: ReadResult<RunView[]> = { available: false, reason: 'no store' };
+    let history: HistoryView = { available: false, text: 'Status history not available: no store' };
+    let lastDetail = '';
     let runs: RunIndex = { available: false };
     let built: Built | undefined;
     let subscribedStore: unknown;
@@ -76,7 +89,28 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
         };
     }
 
+    function detail(): DetailView {
+        return buildDetail({ selection: deps.selection.selection(), model: deps.source.current(), runs: rawRuns, history });
+    }
+
+    function emitDetail(): void {
+        const next = detail();
+        const serialized = JSON.stringify(next);
+        if (serialized === lastDetail) {
+            return;
+        }
+        lastDetail = serialized;
+        [...detailListeners].forEach((listener) => {
+            try {
+                listener(next);
+            } catch {
+                return;
+            }
+        });
+    }
+
     function emit(): void {
+        emitDetail();
         const next = view();
         const serialized = JSON.stringify(next);
         if (serialized === last) {
@@ -109,17 +143,28 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
         const store = deps.session.current();
         follow(store);
         let index: RunIndex = { available: false };
+        let list: ReadResult<RunView[]> = { available: false, reason: 'no store' };
         if (store !== undefined) {
             try {
-                index = indexRuns(await store.listRuns());
+                list = await store.listRuns();
+                index = indexRuns(list);
             } catch {
                 index = { available: false };
+                list = { available: false, reason: 'runs could not be read' };
             }
+        }
+        let nextHistory: HistoryView;
+        try {
+            nextHistory = await deps.history.read();
+        } catch {
+            nextHistory = { available: false, text: 'Status history not available' };
         }
         if (token !== sequence || disposed) {
             return;
         }
         runs = index;
+        rawRuns = list;
+        history = nextHistory;
         ui.projectChanged(deps.source.current()?.project.root);
         emit();
     }
@@ -128,7 +173,7 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
         chain = chain.then(refresh, refresh);
     }
 
-    const subscription = deps.source.onDidChange(schedule);
+    const subscriptions = [deps.source.onDidChange(schedule), deps.selection.onDidChange(schedule), deps.history.onDidChange(schedule)];
     ui.projectChanged(deps.source.current()?.project.root);
     schedule();
 
@@ -143,6 +188,11 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
             listeners.add(listener);
             return { dispose: () => void listeners.delete(listener) };
         },
+        detail,
+        onDidChangeDetail(listener) {
+            detailListeners.add(listener);
+            return { dispose: () => void detailListeners.delete(listener) };
+        },
         setFilter: (filter) => changed(() => ui.setFilter(filter)),
         setSort: (sort) => changed(() => ui.setSort(sort)),
         clearFilters: () => changed(() => ui.clearFilters()),
@@ -153,9 +203,10 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
         whenIdle: () => chain,
         dispose() {
             disposed = true;
-            subscription.dispose();
+            subscriptions.forEach((subscription) => subscription.dispose());
             storeSubscription?.dispose();
             listeners.clear();
+            detailListeners.clear();
         },
     };
 }

@@ -198,3 +198,44 @@ describe('board service: freshness on 200 specs (AC-019, core part)', () => {
         expect(elapsed).toBeLessThan(200);
     });
 });
+
+describe('board service: spec detail', () => {
+    it('AC-008, AC-028: the detail follows the selection, and no selection gives no content', async () => {
+        const w = await world();
+        expect(w.service.detail()).toEqual({ kind: 'none' });
+        const seen: string[] = [];
+        w.service.onDidChangeDetail((view) => seen.push(view.kind === 'spec' ? view.stem : view.kind));
+        w.selection.set({ stem: '0010-act' });
+        await w.service.whenIdle();
+        expect(w.service.detail().kind).toBe('spec');
+        expect(seen).toEqual(['0010-act']);
+        w.selection.set(undefined);
+        await w.service.whenIdle();
+        expect(seen).toEqual(['0010-act', 'none']);
+    });
+
+    it('AC-028: a folder move keeps the detail of the selected stem', async () => {
+        const w = await world({ '.specs/backlog/0001-a.md': specText() });
+        w.selection.set({ stem: '0001-a' });
+        await w.service.whenIdle();
+        w.source.set(await modelOf({ '.specs/active/0001-a.md': specText({ status: 'In Progress' }) }));
+        await w.service.whenIdle();
+        const view = w.service.detail();
+        expect(view.kind === 'spec' && view.sections.overview.state).toBe('Active');
+    });
+
+    it('AC-027: a run notification updates the detail history; an unavailable store shows not available', async () => {
+        const w = await world();
+        w.selection.set({ stem: '0010-act' });
+        w.store.setRuns([run('r1', '0010-act')]);
+        w.store.notify();
+        await w.service.whenIdle();
+        let view = w.service.detail();
+        expect(view.kind === 'spec' && view.sections.history.runs?.map((item) => item.runId)).toEqual(['r1']);
+        w.store.setRuns(undefined);
+        w.store.notify();
+        await w.service.whenIdle();
+        view = w.service.detail();
+        expect(view.kind === 'spec' && view.sections.history.runs).toBeUndefined();
+    });
+});

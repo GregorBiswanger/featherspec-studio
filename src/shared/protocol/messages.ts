@@ -1,5 +1,6 @@
 import { isAreaId, type AreaId } from './areas';
 import { isBoardView, isMoveResult, isSortKey, type BoardView, type MoveResult, type SortKey } from './board';
+import { isDetailView, type DetailView } from './detail';
 import { isBoardFilter, isBoardState, type BoardFilter, type BoardState } from './boardFilter';
 import { isRecord } from './envelope';
 
@@ -135,6 +136,10 @@ export interface BoardEventPayload {
     view: BoardView;
 }
 
+export interface DetailEventPayload {
+    view: DetailView;
+}
+
 export interface MoveResultEventPayload {
     result: MoveResult;
 }
@@ -219,6 +224,10 @@ export function isOpenFilePayload(value: unknown): value is OpenFilePayload {
 
 export function isBoardEventPayload(value: unknown): value is BoardEventPayload {
     return isRecord(value) && isBoardView(value.view);
+}
+
+export function isDetailEventPayload(value: unknown): value is DetailEventPayload {
+    return isRecord(value) && isDetailView(value.view);
 }
 
 export function isMoveResultEventPayload(value: unknown): value is MoveResultEventPayload {
