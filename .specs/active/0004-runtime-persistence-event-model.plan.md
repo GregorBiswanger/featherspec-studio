@@ -3,7 +3,7 @@
 **Spec:** [0004-runtime-persistence-event-model.md](0004-runtime-persistence-event-model.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-006
+**Current step:** T-008
 
 ## Approach
 
@@ -224,14 +224,14 @@ T-007 need the complete medium contract.
   file-system adapter, Node-fs runtime medium, random IDs'` (replaces the current `src/adapters/node`
   line); `src/core/ports` line gains "runtime medium port". Gregor accepts the document (AC-020).
 - **Verify:** `npx eslint src --max-warnings 0` · `npx tsc --noEmit` · `npm run test:unit` · `npm run compile`, all green; `manual: Gregor reads docs/runtime-data.md` — acceptance of wording, no command can settle it
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [ ] **Verified (T-008):** 2026-11-16 — automatic part green: `npx eslint src --max-warnings 0`, `npx tsc --noEmit`, `npm run test:unit` (258 passed, 17 files), `npm run compile` clean. **Open:** `manual: Gregor reads docs/runtime-data.md` (AC-020); the box stays unticked until he accepts the wording.
+- **Notes:** Written: `docs/runtime-data.md`, ADR-002 *Amendments (plan 0004)*, README (command, setting, link), `techContext.md`, `systemPatterns.md` (three dated decisions), `activeContext.md` (one line each in Active Spec, Changed Recently, Next; the oldest Changed Recently bullet was evicted), `AGENTS.md` architecture snapshot (the three entries of the plan). The architecture update ran as part of this step without the interactive confirmation; Gregor sees the exact entries in the diff.
 
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001, T-006 | eslint.config.mjs; src/core/ports/runtimeMedium.ts | src/core/runtime/importScan.test.ts; src/core/runtime/runtimeStore.test.ts | built |
+| AC-001 | T-001, T-006 | eslint.config.mjs; src/core/ports/runtimeMedium.ts; src/adapters/node/fileRuntimeMedium.ts | src/core/runtime/importScan.test.ts; src/core/runtime/runtimeStore.test.ts and src/adapters/node/fileRuntimeMedium.test.ts (same contract suite) | verified |
 | AC-002 | T-001 | src/adapters/node/randomIds.ts | src/adapters/node/randomIds.test.ts | verified |
 | AC-003 | T-001 | src/core/runtime/runtimeStore.ts:createRun | src/core/runtime/testing/contractRuns.ts (AC-003) | verified |
 | AC-004 | T-001 | src/core/runtime/runtimeStore.ts:reportStatus | src/core/runtime/testing/contractRuns.ts (AC-004) | verified |
@@ -242,19 +242,19 @@ T-007 need the complete medium contract.
 | AC-009 | T-001 | src/core/runtime/runtimeStore.ts:openRuntimeStore | src/core/runtime/testing/contractRuns.ts (AC-009) | verified |
 | AC-010 | T-004 | src/core/runtime/runtimeStore.ts:loadRuns | src/core/runtime/testing/contractWriter.ts (AC-010) | verified |
 | AC-011 | T-004 | src/core/runtime/runtimeStore.ts:classifyOpenRuns | src/core/runtime/testing/contractWriter.ts (AC-011) | verified |
-| AC-013 | T-003, T-006 | src/core/runtime/masking.ts; docs/security/secret-patterns.md | src/core/runtime/masking.test.ts; src/core/runtime/testing/contractMasking.ts (AC-013) | built |
+| AC-013 | T-003, T-006 | src/core/runtime/masking.ts; docs/security/secret-patterns.md | src/core/runtime/masking.test.ts; src/core/runtime/testing/contractMasking.ts (AC-013); src/adapters/node/fileRuntimeMedium.test.ts (raw bytes) | verified |
 | AC-014 | T-005 | src/core/runtime/runtimeStore.ts:settleWrite | src/core/runtime/testing/contractFaults.ts (AC-014) | verified |
 | AC-015 | T-005 | src/core/runtime/runtimeStore.ts:reportProblems | src/core/runtime/testing/contractFaults.ts (AC-015) | verified |
-| AC-016 | T-006 | — | — | open |
+| AC-016 | T-006 | src/adapters/node/fileRuntimeMedium.ts | src/adapters/node/fileRuntimeMedium.test.ts (AC-016 snapshotTree); src/test/runtime.smoke.test.ts (CI) | verified |
 | AC-017 | T-005 | src/core/runtime/runtimeStore.ts:openRuntimeStore | src/core/runtime/testing/contractFaults.ts (AC-017) | verified |
-| AC-018 | T-004, T-007 | src/core/runtime/runtimeStore.ts:applyAgeCap | src/core/runtime/testing/contractWriter.ts (AC-018) | built |
-| AC-019 | T-005, T-007 | src/core/runtime/runtimeStore.ts:clear | src/core/runtime/testing/contractFaults.ts (AC-019) | built |
-| AC-020 | T-008 | — | — | open |
-| AC-021 | T-005, T-006 | src/core/runtime/runtimeStore.ts:reportIncompleteOnce | src/core/runtime/testing/contractFaults.ts (AC-021) | built |
-| AC-022 | T-005, T-006 | src/core/runtime/runtimeStore.ts:loadRuns | src/core/runtime/testing/contractFaults.ts (AC-022) | built |
+| AC-018 | T-004, T-007 | src/core/runtime/runtimeStore.ts:applyAgeCap; package.json (setting); src/adapters/vscode/runtimeSettings.ts | src/core/runtime/testing/contractWriter.ts (AC-018); src/adapters/vscode/manifest.test.ts | verified |
+| AC-019 | T-005, T-007 | src/core/runtime/runtimeStore.ts:clear; src/core/runtime/runtimeSession.ts; src/adapters/vscode/runtimeUi.ts; package.json | src/core/runtime/testing/contractFaults.ts (AC-019); src/core/runtime/runtimeSession.test.ts | verified |
+| AC-020 | T-008 | docs/runtime-data.md | manual: Gregor reads the document | built |
+| AC-021 | T-005, T-006 | src/core/runtime/runtimeStore.ts:reportIncompleteOnce | src/core/runtime/testing/contractFaults.ts (AC-021); src/adapters/node/fileRuntimeMedium.test.ts | verified |
+| AC-022 | T-005, T-006 | src/core/runtime/runtimeStore.ts:loadRuns, writeIndex | src/core/runtime/testing/contractFaults.ts (AC-022); src/adapters/node/fileRuntimeMedium.test.ts | verified |
 | AC-023 | T-004 | src/core/runtime/writerLock.ts; src/core/runtime/runtimeStore.ts:assertWritable | src/core/runtime/testing/contractWriter.ts (AC-023) | verified |
-| AC-024 | T-004, T-006 | src/core/runtime/writerLock.ts | src/core/runtime/testing/contractWriter.ts (AC-024) | built |
-| AC-025 | T-004, T-007 | src/core/runtime/runtimeStore.ts:setState | src/core/runtime/testing/contractWriter.ts (AC-025) | built |
+| AC-024 | T-004, T-006 | src/core/runtime/writerLock.ts | src/core/runtime/testing/contractWriter.ts (AC-024); src/adapters/node/fileRuntimeMedium.test.ts | verified |
+| AC-025 | T-004, T-007 | src/core/runtime/runtimeStore.ts:setState; src/core/runtime/runtimeSession.ts; src/extension.ts | src/core/runtime/testing/contractWriter.ts (AC-025); src/core/runtime/runtimeSession.test.ts; src/test/runtime.smoke.test.ts (CI) | verified |
 | AC-026 | T-003 | src/core/runtime/runtimeStore.ts:appendSpecStatusEntry | src/core/runtime/testing/contractMasking.ts (AC-026) | verified |
 | AC-027 | T-002 | src/core/runtime/runtimeStore.ts:appendEvent | src/core/runtime/testing/contractEvents.ts (AC-027) | verified |
 | AC-028 | T-001, T-002 | src/core/runtime/runtimeStore.ts:requireRun | src/core/runtime/testing/contractRuns.ts, contractEvents.ts (AC-028) | verified |
@@ -262,8 +262,8 @@ T-007 need the complete medium contract.
 
 ## Session handoff
 
-- **Done so far:** T-001…T-005 ticked (stages 1 and 2 end); store core, masking, writer lock, retention, faults and clearing built on the in-memory medium. `npm run test:unit`: 187 tests green.
-- **Next action:** T-006 (Node-fs medium under the same contract suite); then T-007, T-008.
+- **Done so far:** T-001…T-007 ticked; T-008 built and its automatic gates green, unticked because the manual acceptance of `docs/runtime-data.md` (AC-020) is Gregor's. `npm run test:unit`: 258 tests green.
+- **Next action:** Gregor reads `docs/runtime-data.md` and accepts or corrects it, then T-008 is ticked and the plan set to `Done`; `npm test` on CI/Windows (also runs `src/test/runtime.smoke.test.ts`); then `/sdd-compile` in a fresh session (another model family). Do not run `/sdd-compile` or the move to `done/` from the implementing session.
 - **Open decisions:** AC-020 document acceptance (T-008).
 - **Baseline:** 767ac42 (HEAD before the first step commit)
-- **Environment:** `npm test` cannot run here (VS Code download blocked); worktree `/home/claude/wt-0004`, branch `spec-0004`. Tests added per stage — stage 1: `src/core/runtime/testing/{contract,contractRuns,contractEvents}.ts`, `src/core/runtime/runtimeStore.test.ts`, `src/core/runtime/importScan.test.ts`, `src/adapters/node/randomIds.test.ts`; stage 2: `src/core/runtime/testing/{contractMasking,contractWriter,contractFaults}.ts`, `src/core/runtime/masking.test.ts`.
+- **Environment:** `npm test` cannot run here (VS Code download blocked); worktree `/home/claude/wt-0004`, branch `spec-0004`. Tests added — stage 1: `src/core/runtime/testing/{contract,contractRuns,contractEvents}.ts`, `src/core/runtime/runtimeStore.test.ts`, `src/core/runtime/importScan.test.ts`, `src/adapters/node/randomIds.test.ts`; stage 2: `src/core/runtime/testing/{contractMasking,contractWriter,contractFaults}.ts`, `src/core/runtime/masking.test.ts`; stage 3: `src/adapters/node/fileRuntimeMedium.test.ts`, `src/core/runtime/runtimeSession.test.ts`, `src/adapters/vscode/manifest.test.ts` (changed), `src/test/runtime.smoke.test.ts` (CI only).

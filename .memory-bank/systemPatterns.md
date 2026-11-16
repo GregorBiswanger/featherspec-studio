@@ -32,6 +32,13 @@ holds the *why*: decisions and patterns.
   no workaround in other modules · 2026-11-16 · spec 0001 AC-023, A-006 (Gregor, after `/sdd-compile`)
 - Folder identity is the root URI string; `displayPath` is only for text shown to the user (BR-05) ·
   2026-11-16 · plan 0001 T-009
+- Runtime store location: one directory per project root under the extension's `globalStorageUri`
+  (`featherspec-studio/projects/<sha256(root URI)[0:16]>/`), not the per-workspace `storageUri` — the only
+  location all windows share (PD-026, PD-030) · 2026-11-16 · [plan 0004](../.specs/active/0004-runtime-persistence-event-model.plan.md) *Approach*, ADR-002 amendment
+- Runtime store reaches the disk only through the `RuntimeMedium` port; one contract suite runs against an
+  in-memory and the Node-fs medium (that is AC-001's "unchanged core code") · 2026-11-16 · plan 0004
+- Run data is append-only logs per run (`*.run.jsonl`, `*.events.jsonl`), never rewritten; a run is removed only as
+  a whole; unknown format versions are left untouched (read-only store) · 2026-11-16 · spec 0004 BR-007, plan 0004 T-005
 
 ## Patterns
 - Provider independence: each agent provider is an adapter that declares its capabilities;

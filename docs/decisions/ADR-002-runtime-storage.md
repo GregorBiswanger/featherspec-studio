@@ -121,3 +121,13 @@ The product decision register wins where it differs from the text above:
 - **Keying:** one store per project root folder URI, not per VS Code workspace (PD-026).
 - **Unreadable data:** granularity is the run; an incomplete last record is skipped on read and never rewritten (PD-028).
 - **Second window:** one writer per project store, lock with heartbeat (PD-030).
+
+## Amendments (2026-11-16, plan 0004)
+
+The implementation of spec 0004 settles the location and the file layout:
+
+- **Location:** `<globalStorageUri>/featherspec-studio/projects/<sha256(project root URI).slice(0,16)>/`, not the per-workspace `storageUri`. `globalStorageUri` is the only VS Code storage location that every window and workspace of the extension shares, which PD-026 (one store per project root) and PD-030 (one writer across windows) need. The root URI is lower-cased on Windows, like 0001's same-root rule. A `globalStorageUri` that is not a `file:` URI makes the store *unavailable* with a reason.
+- **Layout:** append-only `runs/<runId>.run.jsonl` (created, status and flag records) replaces the rewritten JSON snapshot per run; `runs/<runId>.events.jsonl` stays; `index.json` (rebuildable), `spec-status-history.jsonl`, `lock.json` and `store.json` (`storeVersion`) sit beside them. A run's data is only appended to or removed as a whole (spec 0004 BR-007).
+- **Medium port:** the store reaches the disk only through `RuntimeMedium` (`src/core/ports/runtimeMedium.ts`); an in-memory and a Node-`fs` medium run the same contract suite (`src/core/runtime/testing/`).
+- **Limits:** page size at most 500 events, 20,000 events per run, lock heartbeat 10 s and stale after 60 s, age cap setting `featherspec-studio.runHistory.maxAgeDays` (default 90, minimum 1).
+- **Newer data:** an unknown `storeVersion` or record version is never rewritten; the store is *read-only* with the reason "history from a newer version" (OP-005).

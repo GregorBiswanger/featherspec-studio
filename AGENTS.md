@@ -102,9 +102,10 @@ architecture:
   entrypoints:
     - 'src/extension.ts — composition root; activates on workspaceContains:AGENTS.md, workspaceContains:.specs and Studio commands; bundled by esbuild to dist/extension.js'
   modules:
-    - 'src/core/ports — read-only file-system port and small host ports (status bar, output, state, UI, folders, marker watch, clock)'
+    - 'src/core/ports — read-only file-system port and small host ports (status bar, output, state, UI, folders, marker watch, clock), runtime medium port'
     - 'src/core/discovery — project verdicts, version line, active-project state, report model, discovery controller, rerun scheduler (spec 0001)'
-    - 'src/adapters/node — Node file-system adapter for unit tests'
+    - 'src/core/runtime — runtime store: runs, events, masking, writer lock, retention, store state (spec 0004)'
+    - 'src/adapters/node — Node file-system adapter, Node-fs runtime medium, random IDs'
     - 'src/adapters/vscode — thin implementations of the host ports with the VS Code API; no logic'
     - 'test/fixtures — FeatherSpec fixture projects shared by unit and host tests'
   shared: []
