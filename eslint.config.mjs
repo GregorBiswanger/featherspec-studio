@@ -1,3 +1,4 @@
+import { builtinModules } from "node:module";
 import typescriptEslint from "typescript-eslint";
 
 export default [{
@@ -23,6 +24,20 @@ export default [{
                 })),
             ],
             patterns: [{ group: ["vscode/*"], message: "Core code never imports vscode." }],
+        }],
+    },
+}, {
+    files: ["src/shared/**/*.ts"],
+    rules: {
+        "no-restricted-imports": ["error", {
+            paths: [
+                { name: "vscode", message: "Shared protocol code never imports vscode." },
+                ...builtinModules.map((name) => ({ name, message: "Shared protocol code never imports Node.js built-ins." })),
+            ],
+            patterns: [
+                { group: ["vscode/*", "node:*"], message: "Shared protocol code imports neither vscode nor Node.js." },
+                { group: ["**/core/**", "**/adapters/**", "**/webview/**"], message: "Shared protocol code imports only itself." },
+            ],
         }],
     },
 }, {

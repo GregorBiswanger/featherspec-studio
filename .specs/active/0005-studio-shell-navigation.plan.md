@@ -202,8 +202,8 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
     every guard accepts and rejects; the log line never contains payload text; the next valid
     message is answered; a version mismatch is answered with `versionMismatch`.
 - **Verify:** `npm run test:unit -- src/shared src/core/shell` plus the per-step gates
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-16 — red: `npx vitest run src/shared src/core/shell` 27 failed, 2 passed (guards, `readEnvelope` and the router `receive` stubbed with `Not implemented`; the 2 passes test unstubbed code: the area list and `isRequestType`, with the `__proto__`/`toString` negative cases); green: 2 files, 29/29. Gates: eslint 0 findings (negative control: a temporary `import 'fs'` in `src/shared` fails `no-restricted-imports`), `tsc --noEmit` 0 errors, `npm run test:unit` 43 files, 681 passed.
+- **Notes:** `src/shared/protocol/texts.ts` is created here (X-14 only) because the router writes the line; T-002 adds X-04 and X-13. `areas.ts` carries a `placeholder` flag per area (Spec Explorer false) and a Spec Explorer purpose sentence, not shown anywhere yet. Hello payload is `{ lastSeq }`; responses are `res` with `{ ok, error? }` (a failing handler never leaks its message). Stubs for the red run were applied to the guards, `readEnvelope`, `isJsonValue` and the router, then the real files restored.
 
 ### T-002 — Webview toolchain and the navigation frame
 
