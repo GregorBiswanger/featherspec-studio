@@ -1,6 +1,6 @@
 # Studio Shell & Navigation
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0005-studio-shell-navigation.plan.md](0005-studio-shell-navigation.plan.md)
 
 Handoff reference: FS-005 ([po-handoff.md](../../docs/product/po-handoff.md) §4, §10 FS-005,
@@ -39,9 +39,9 @@ and reloads, and understand every panel state, in a Light, a Dark and a High Con
 
 - Ways in: an Activity Bar view with a tree, the command "FeatherSpec Studio: Open", and one
   command per area (FR-005.1).
+- The command "FeatherSpec Studio: Rescan Project", which re-reads the active project's specs (OP-009).
 - One Studio panel in the editor area with navigation to the four areas (FR-005.2, FR-005.3).
-- A placeholder in Mission Control, Spec Board and Agent Center that names the spec that
-  delivers the area.
+- A placeholder in Mission Control, Spec Board and Agent Center that says the area is not available in this version.
 - A minimal spec list in Spec Explorer (number, title, board state) to make selection possible.
 - A selection context that is kept across areas, panel close and reopen, and a window reload
   (FR-005.4, PD-039).
@@ -111,14 +111,15 @@ remembered for this workspace.
   or stem changed: PD-018 "removed + new"). While no model is loaded, the remembered selection
   is kept and not checked, so a project that is lost and returns (0001 AC-010) keeps it.
 - **BR-04 Placeholder:** an area whose content a later spec delivers shows its name, one
-  sentence on its purpose, and "Arrives with spec <NNNN>". It never shows sample or invented data
-  (handoff P8). Wording: OP-005.
+  sentence on its purpose, and "Not available in this version of FeatherSpec Studio". It never
+  shows sample or invented data (handoff P8). The three purpose sentences are in AC-006.
 - **BR-05 State precedence:** the conditions are in §13. When several apply, the panel shows
-  exactly one, in this order: S1 no folder > S8 remembered project not found > S2 no project >
-  S9 incomplete project > S3 several projects > S6 reload needed > S5 load error > S4 loading.
+  exactly one, in this order: S6 reload needed > S1 no folder > S8 remembered project not found > S2 no project >
+  S9 incomplete project > S3 several projects > S5 load error > S4 loading.
   S8 comes before S2, S9 and S3 because PD-033 keeps "not found" until the user selects another
   project or the project returns. S7 (Restricted Mode) is a note shown in addition, never in
-  place of a state or of the area. Position of S6: OP-008.
+  place of a state or of the area. S6 ranks first because a panel UI that cannot read the
+  extension's messages cannot know any other state (OP-008).
 - **BR-06 Read-only:** the Studio changes no file in the workspace (PD-013).
 - **BR-07 Navigation request (PD-040):** the shell offers one request: an area, plus at most
   one target — a spec (stem), a run (ID) or a board filter (its kinds are 0007's, PD-041). Areas ask the shell; they never open
@@ -145,6 +146,7 @@ remembered for this workspace.
 | FR-09 | Offer one navigation request to the areas | PD-040 | AC-028 |
 | FR-10 | Show the frame within the time budget | §13 Performance | AC-024 |
 | FR-11 | Change no file in the workspace | PD-013 | AC-025 |
+| FR-12 | Offer a manual rescan of the project | ADR-001 §9, 0002 OP-008 | AC-029 |
 
 ## 8. Data requirements
 
@@ -166,7 +168,7 @@ UI text is in English (PD-016).
   is active, the view shows, in place of the entries, the text and actions of the panel state
   that applies among S1–S5, S8 and S9. S6 and S7 appear in the panel only.
 - **Commands:** "FeatherSpec Studio: Open", "FeatherSpec Studio: Open Mission Control",
-  "… Open Spec Board", "… Open Spec Explorer", "… Open Agent Center".
+  "… Open Spec Board", "… Open Spec Explorer", "… Open Agent Center", and "FeatherSpec Studio: Rescan Project" (OP-009).
 - **Panel:** titled "FeatherSpec Studio". It has a navigation with the four areas, marks the
   current area in text and for screen readers (not by colour alone), and shows the active
   project's name. A panel state takes the place of the area's content; the navigation stays.
@@ -177,7 +179,7 @@ UI text is in English (PD-016).
   project-relative path. Selecting a row makes it the selected spec, which is marked as
   selected in the list. The list follows changes of the model without reopening (PD-047). The
   name stays "Spec Explorer"; 0007 adds the detail beside the list (PD-042).
-- **Placeholders:** BR-04. Mission Control → 0006, Spec Board → 0007, Agent Center → 0012.
+- **Placeholders:** BR-04, AC-006.
 - **Theme:** colours, fonts and focus outlines come from the current VS Code theme. A theme
   switch takes effect without reopening the panel.
 - **States:** §13.
@@ -186,7 +188,7 @@ UI text is in English (PD-016).
 
 - VS Code: Activity Bar view, commands, editor panel, a per-workspace memory for UI state
   (mechanism: §15), Workspace Trust, theme. The Output channel "FeatherSpec Studio" comes from 0001.
-- Studio-internal: reads the results of 0001, 0002 and 0003. The panel UI gets them only as
+- Studio-internal: reads the results of 0001 (including its update notification, the remembered project and a run failure: 0001 AC-024), 0002 and 0003. The panel UI gets them only as
   messages from the extension. Areas of later specs read the selected spec from the shell and
   send it the navigation request (BR-07).
 - No network service.
@@ -219,15 +221,16 @@ The panel states (precedence: BR-05). "Remembered", "project" and "incomplete" a
 | S4 | Loading (§6) | "Loading project…", with a visible progress indicator | — |
 | S5 | A project-level failure (PD-038): discovery fails unexpectedly; the lifecycle folders of `.specs/` cannot be listed; or the panel UI and the extension cannot agree on the message protocol (no valid project snapshot reaches the panel UI) | "The project could not be loaded: <reason>." The reason says which of the three happened | Show output · Retry |
 | S6 | The panel UI and the extension speak different versions of the message protocol | "FeatherSpec Studio was updated. Reload to continue." | Reload |
-| S7 | Restricted Mode | Note: "This workspace is in Restricted Mode. Views are read-only; agent actions are unavailable." (OP-006) | Manage Workspace Trust |
-| S8 | The remembered project is not reported as a project (0001 AC-010) | Names the missing project (PD-037). Sentence: OP-004 | Select project (only while another project is reported) · Refresh |
-| S9 | No remembered project; no folder is a project; at least one is incomplete | Names, per incomplete folder, the missing marker from 0001's diagnostics (PD-037). Sentence: OP-004 | Open setup guide · Refresh |
+| S7 | Restricted Mode | Note: "This workspace is in Restricted Mode. Agent actions are unavailable." (OP-006) | Manage Workspace Trust |
+| S8 | The remembered project is not reported as a project (0001 AC-010) | Names the missing project (PD-037): "FeatherSpec project <name> was not found." | Select project (only while another project is reported) · Refresh |
+| S9 | No remembered project; no folder is a project; at least one is incomplete | Names, per incomplete folder, the missing marker from 0001's diagnostics (PD-037): one line "FeatherSpec project incomplete: <folder> has no <marker>." per folder | Open setup guide · Refresh |
 
 Actions: *Open Folder* opens VS Code's own folder dialog. *Open setup guide* opens the link of
 0001 A-005. *Refresh* runs 0001's "Refresh Project Discovery". *Select project* runs 0001's
 "Select Project". *Show output* opens the Output channel "FeatherSpec Studio". *Retry* reruns
 discovery and a full re-read (PD-038). *Manage Workspace Trust* opens VS Code's own trust
-dialog. *Reload*: OP-008.
+dialog. *Reload* reloads the panel UI, not the VS Code window (OP-008). A second version
+mismatch right after that reload shows S5 with the protocol reason.
 
 Edge cases:
 
@@ -263,10 +266,13 @@ in AC-022 and the High Contrast part of AC-023. Everything else is decided by au
 - **AC-005** When the user runs one of the four per-area commands, the system shall show the panel
   on that area, opening the panel first if it is closed.
 - **AC-006** In this slice the system shall show, for Mission Control, Spec Board and Agent
-  Center, the area's name, one sentence on its purpose (OP-005), and "Arrives with spec <NNNN>"
-  (0006, 0007, 0012), and shall show no sample data (BR-04). The criterion ends for an area
-  when the named spec delivers it.
-  > **Given** a project with three specs **When** the user opens Spec Board **Then** the area reads "Arrives with spec 0007" and shows no cards.
+  Center, the area's name, one sentence on its purpose, and "Not available in this version of
+  FeatherSpec Studio", and shall show no sample data (BR-04). The purpose sentences are: Mission
+  Control "See the project at a glance: spec counts, agent activity and what needs attention.";
+  Spec Board "See every spec as a card in the column of its board state."; Agent Center "Follow
+  agent runs, their live events and the approvals they wait for." The criterion ends for an area
+  when a later spec delivers it.
+  > **Given** a project with three specs **When** the user opens Spec Board **Then** the area shows its name, its purpose sentence and "Not available in this version of FeatherSpec Studio", and shows no cards.
 - **AC-007** The system shall list every spec entry of the active project in Spec Explorer,
   ordered by number and then by path. Each row shall show the number, the title or "not
   available", and the board state as text; for a derived state it shall also show the *derived*
@@ -284,7 +290,9 @@ in AC-022 and the High Contrast part of AC-023. Everything else is decided by au
 - **AC-010** When another project becomes active, the system shall clear the selection without
   a notice. If a loaded model of the active project does not contain the selected spec's stem,
   then the system shall clear the selection and show "Spec <number> is no longer in the
-  project" (PD-039; place and duration: OP-007). When the selected spec moves to another
+  project" (PD-039) as a line in the panel above the area, with a "Dismiss" action; the line stays
+  until it is dismissed or the next spec is selected, and if the panel is not shown it appears at
+  the panel's next showing; no VS Code notification (OP-007). When the selected spec moves to another
   lifecycle folder, the system shall keep it selected.
   > **Given** spec 0003 is selected **When** its file is deleted outside VS Code **Then** no spec is selected and the notice names 0003.
   > **Given** spec 0003 in `backlog/` is selected **When** its file moves to `active/` **Then** 0003 is still selected.
@@ -302,8 +310,8 @@ in AC-022 and the High Contrast part of AC-023. Everything else is decided by au
   that is broken or cannot be read shall not cause S5 (PD-038). "Retry" shall rerun discovery
   and a full re-read, and "Show output" shall open the "FeatherSpec Studio" Output channel. [AC-005.5]
 - **AC-016** If the panel UI and the extension speak different versions of the message
-  protocol, then the system shall show state S6. "Reload" shall bring the panel up to date
-  (how, and what follows if it does not: OP-008).
+  protocol, then the system shall show state S6. "Reload" shall reload the panel UI, not the VS Code window. If
+  the versions still differ right after that reload, then the system shall show S5 with the protocol reason (OP-008).
 - **AC-017** While the workspace is in Restricted Mode, the system shall show the S7 note in
   the panel in addition to whatever the panel shows otherwise. When trust is granted, the note
   shall disappear without the panel being reopened by the user.
@@ -332,7 +340,8 @@ in AC-022 and the High Contrast part of AC-023. Everything else is decided by au
   in a High Contrast theme.
 - **AC-024** When the user runs "FeatherSpec Studio: Open", the system shall show the panel's frame
   (navigation plus the current area or state) within 1 second, without waiting for project data.
-  Checked by Gregor on his machine. (Threshold and measuring: OP-002.)
+  Checked by Gregor on his machine, and by an automated host test that measures from the command
+  to the panel UI's first message to the extension, with the extension already active (OP-002; the 1 second is a working threshold like PD-035).
 - **AC-025** The system shall create, modify, rename or delete no file inside any workspace
   folder while the panel or the Activity Bar view is opened, shown, navigated or restored (BR-06).
 - **AC-026** While the workspace has a remembered project that 0001 does not report as a
@@ -348,11 +357,16 @@ in AC-022 and the High Contrast part of AC-023. Everything else is decided by au
   the request carries a run or board-filter target for an area that is still a placeholder,
   the system shall show the placeholder (PD-040).
   > **Given** Mission Control is shown and spec `0003-x` exists **When** the request "Spec Explorer, spec `0003-x`" arrives **Then** Spec Explorer is shown and 0003 is selected.
+- **AC-029** When the user runs "FeatherSpec Studio: Rescan Project" while a project is active,
+  the system shall re-read that project's specs through the `rescan()` of the spec repository
+  (0002). The panel shall keep its content until the new model arrives (0002 AC-022). While no
+  project is active, the system shall change nothing and write no file (OP-009).
+  > **Given** a project is active **When** the user runs the command **Then** the spec repository's `rescan()` runs once.
 
 ## 15. Technical notes for developers or AI agents
 
-- As-is: `src/extension.ts` is the generator scaffold (`helloWorld`), `package.json` contributes
-  no views. Nothing of the shell exists. 0001 is being implemented; 0002–0004 are Drafts.
+- As-is (2026-11-16): 0001 to 0004 are built; `src/extension.ts` composes them. No view, webview or
+  `src/shared` exists before this spec.
 - Where the PD register and an ADR disagree, the PD register wins (Gregor, 2026-11-16).
 - ADR-001 sets the shape (constraints, not criteria): one singleton editor panel with in-app
   routing and a serializer for restore (§2, §7); one native TreeView plus `viewsWelcome` (§2);
@@ -368,7 +382,7 @@ in AC-022 and the High Contrast part of AC-023. Everything else is decided by au
 - For `/sdd-plan` to decide: where the remembered UI state lives. ADR-001 §7 names the
   webview's `getState`/`setState`; that alone does not outlive a closed panel, which AC-009
   requires. Also: how AC-020 is tested in the extension-host tests.
-- New dependencies (React, the webview test setup) are Ask-first (AGENTS.md).
+- New dependencies (React, the webview test setup) are Ask-first (AGENTS.md); Gregor approved five devDependencies on 2026-11-16 (named in the plan).
 
 ## 16. Assumptions
 
@@ -388,16 +402,11 @@ Resolved:
   - Blocking: selection identity → PD-039 (BR-03, AC-010); load error → PD-038 (S5, AC-015); missing states → PD-037 (S8, S9, AC-026, AC-027).
   - Also by decision: PD-036 (state ownership, BR-08), PD-040 (BR-07, AC-028), PD-042 (detail in Spec Explorer), PD-004 (*derived* label), PD-047 (list follows changes). Kept as product surface (PD-008, handoff FR-005.7): the tree, its welcome text and the protocol criteria AC-016, AC-020, AC-021.
   - Readings made while applying; say so if one is wrong: (a) S8 comes before S2, S9, S3 (PD-033), and those three exclude each other by their conditions; (b) different protocol versions give S6, while "cannot agree on the protocol" (PD-038) with equal versions gives S5; (c) the remembered selection is checked only against a loaded model, so a project that is lost and returns keeps it; (d) a re-read of the same project is not "loading"; (e) the Activity Bar view is in every window (PD-008), PD-033's silence covers the status bar and notifications; (f) S6 and S7 appear in the panel only; (g) list order by number then path, a missing title reads "not available", duplicated stems show their path; (h) a spec target that is not in the project keeps area and selection and gets the notice (0006 AC-014 sends no request in that case).
+- OP-002, OP-004…OP-009: resolved 2026-11-16 by Gregor at the plan approval, as the spec recommended: OP-002 working threshold 1 s, measured from the command to the panel UI's first message (AC-024); OP-004 S8 and S9 sentences (§13); OP-005 placeholder wording and purpose sentences (BR-04, AC-006), no Studio spec number shown to users; OP-006 S7 text (§13); OP-007 notice as a line above the area (AC-010); OP-008 "Reload" reloads the panel UI, S6 ranks first, a second mismatch gives S5 (BR-05, AC-016); OP-009 the command "FeatherSpec Studio: Rescan Project" belongs to this spec and calls the `rescan()` of 0002 (AC-029).
+- OP-014: 0001 revised 2026-11-16 at Gregor's request (0001 AC-024: `onDidUpdate`, `remembered`, `failure`) so that the shell sees S2, S3, S5, S8 and S9.
 
-Open, none blocks planning (clarify finding in brackets):
+Open, none blocks the work (clarify finding in brackets):
 
-- OP-002 [3.16, 6.1]: the 1 second of AC-024 has no measurement, no start and stop point and no reference machine. Recommendation: a working threshold like PD-035, measured by an automated host test from the command to the frame's first message with the extension already active, plus Gregor's check.
-- OP-004 [5.1]: the sentences of S8 and S9; PD-037 fixes their content only. Recommendation: S8 "FeatherSpec project <name> was not found."; S9 "FeatherSpec project incomplete: <folder> has no <marker>." (one line per folder).
-- OP-005 [2.11, 3.2]: placeholder wording. "Arrives with spec <NNNN>" shows Studio's own spec numbers to users whose project has its own 0006, and the three purpose sentences are not written. Recommendation: "Not available in this version of FeatherSpec Studio" plus one purpose sentence per area, confirmed by Gregor.
-- OP-006 [2.12]: S7 says "Views are read-only", but Studio is read-only in every mode (BR-06). Recommendation: "This workspace is in Restricted Mode. Agent actions are unavailable."
-- OP-007 [2.14, 3.5, 5.7]: where the notice "Spec <number> is no longer in the project" appears and how long. Recommendation: a line in the panel above the area, until dismissed or until the next selection; if the panel is not shown, at its next showing; no VS Code notification.
-- OP-008 [2.6, 3.9, 5.10]: S6. What "Reload" does (panel UI or window), what follows if the versions still differ, and its rank: a panel UI that cannot read the extension's messages cannot know S1–S3, S8, S9. Recommendation: "Reload" reloads the panel UI; S6 ranks first; a second mismatch right after a reload shows S5.
-- OP-009 [5.13]: ADR-001 §9 wants a manual "Rescan" command and 0002 OP-008 recommends this spec as owner. Recommendation: 0005 owns "FeatherSpec Studio: Rescan Project" = what "Retry" does.
 - OP-010 [6.7]: per-state counts in the tree (ADR-001 §2 "compact status of specs and runs") have no owner; 0006 does not contain them. Recommendation: out of the MVP until a spec claims them.
 - OP-011 [5.9]: AC-021 writes one line per malformed message, without a limit. Recommendation: repeat lines of one message type are collapsed into a count.
 - OP-012 [2.16]: AC-019 names one High Contrast theme; VS Code has a dark and a light one. Recommendation: Gregor checks both.
@@ -408,17 +417,15 @@ Open, none blocks planning (clarify finding in brackets):
 Goal, user, scope and out-of-scope are documented. The happy path, nine panel states and edge
 cases are described. Every criterion is decidable by a test or by Gregor's manual check.
 Constraints come from ADR-001 and are marked as such. Clarified on 2026-11-16; the open points
-OP-002 and OP-004…OP-013 do not block planning.
+OP-010…OP-013 do not block the work (OP-002, OP-004…OP-009 resolved).
 
 ## 19. Definition of Done
 
-All FR-01…FR-11 are built. AC-001…AC-028 pass: automated tests for navigation, selection, states,
+All FR-01…FR-12 are built. AC-001…AC-029 pass: automated tests for navigation, selection, states,
 protocol and file isolation, plus Gregor's manual checks (§14). No out-of-scope content was
 added. The architecture snapshot and the Memory Bank are updated. Gregor accepts the result.
 
 ## 20. Recommended next steps
 
-1. `/sdd-plan` after 0002 and 0003 have plans, because they deliver the data shown here. It
-   reads OP-004, OP-007 and OP-008 first: they shape tests for S8, S9, the notice and S6.
-2. Gregor answers OP-002 and OP-004…OP-013 when convenient; `/sdd-specify` (revise mode)
-   applies the answers.
+1. Planned and started 2026-11-16 (plan beside this spec).
+2. Gregor answers OP-010…OP-013 when convenient; `/sdd-specify` (revise mode) applies the answers.

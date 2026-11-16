@@ -36,6 +36,7 @@ differences.
 - A status bar entry, a "Select FeatherSpec project" command and a no-project notification (FR-001.6).
 - Read-only behaviour (FR-001.7).
 - An "active project changed" notification for in-process consumers (AC-023).
+- A "discovery updated" notification, with the remembered project and a failure in the snapshot, for consumers that show every discovery state (AC-024; revised 2026-11-16 for spec 0005).
 
 ### Out of scope
 
@@ -98,6 +99,7 @@ differences.
 | — | Show the active project | AC-014 |
 | — | Detect within the time budget | AC-018 |
 | — | Notify consumers when the active project changes | AC-023 |
+| — | Notify consumers after every discovery run and expose the remembered project and a run failure | AC-024 |
 | — | Work in Restricted Mode (ADR-001 §14) | AC-022 |
 
 ## 8. Data requirements
@@ -194,6 +196,8 @@ hand-made ones are listed in §15.
   > **Given** an `AGENTS.md` with the line `FeatherSpecVersion: 1.10.0 # managed by /sdd-featherspec-update` **When** discovery runs **Then** the version is `1.10.0` and no diagnostic is written.
 - **AC-023** When discovery has produced a result, the system shall notify every subscriber of the discovery controller with the active project (or with none) if this is the first result since Studio started, or if the active project's root, version or legacy attribute differs from the one last notified; it shall not notify when none of these differs. The system shall notify after the status bar entry shows the result, and a failing subscriber shall not stop the notification of the others or any other step of the run. A subscriber that was disposed shall receive no further notification.
   > **Given** a controller with a subscriber **When** the first discovery finds one project **Then** the subscriber receives that project once. **When** a refresh finds nothing changed **Then** it receives nothing. **When** the user selects another project **Then** it receives that project. **When** the remembered project loses a marker **Then** it receives none.
+- **AC-024** When a discovery run ends, whether it succeeded or failed unexpectedly, the system shall notify every subscriber of `onDidUpdate` once, after the status bar entry shows the result and after the notification of AC-023. From then on `snapshot()` shall report `remembered`, the root remembered for this workspace or none, and `failure`, the message of the unexpected failure of the run that just ended, or none after a successful run. A failing subscriber shall not stop the notification of the others or any other step of the run. A subscriber that was disposed shall receive no further notification. `onDidChangeActiveProject` and every existing criterion shall behave as before.
+  > **Given** a controller with an update subscriber **When** a refresh finds nothing changed **Then** the subscriber is notified once. **When** a run fails unexpectedly **Then** it is notified once and the snapshot reports the failure; **When** the next run succeeds **Then** the failure is gone. **When** the remembered project loses a marker **Then** the snapshot still reports its root as remembered and no active project.
 - **AC-022** While the workspace is not trusted (VS Code Restricted Mode), the system shall run discovery and show the status bar entry, the select command and the Output channel as in a trusted workspace.
 
 ## 15. Technical notes for developers or AI agents
@@ -206,6 +210,9 @@ hand-made ones are listed in §15.
   returning a `Disposable`, in the style of the existing ports (`onDidChange` on the folder port). A
   subscriber added after a result gets no replay; it reads the current value from the controller
   snapshot (A-006). Consumers never read the status bar or the Output channel.
+- Update subscription (AC-024, 2026-11-16, Gregor's decision for spec 0005): `onDidUpdate(listener): Disposable` beside
+  `onDidChangeActiveProject`; the controller itself reports the run failure that the rerun scheduler would swallow.
+  S2, S3, S8 and S9 of the Studio shell change without the active project changing, so AC-023 alone does not serve it.
 - As-is: `src/extension.ts` is the generator scaffold (a `helloWorld` command); `package.json` has
   `activationEvents: []`. Nothing for discovery exists yet. The first plan introduces
   `npm run test:unit` (`techContext.md`).
@@ -260,6 +267,7 @@ Resolved:
 - OP-005: resolved 2026-11-16 by Gregor during `/sdd-plan`. AC-013 holds once Studio is active; no `onStartupFinished`, ADR-001 §8 stays (§15).
 
 - OP-004: resolved 2026-11-16 by Gregor during `/sdd-compile` follow-up. An unreadable `AGENTS.md` beside `.specs/` is *not a project*, with the read-error reason and without the location hint (AC-016, AC-017). The hint is for folders that have no marker at their root.
+- OP-013: resolved 2026-11-16 by Gregor for spec 0005. The shell needs every discovery state: AC-024 adds `onDidUpdate`, `remembered` and `failure`.
 
 Open, none blocks planning (clarify finding in brackets):
 

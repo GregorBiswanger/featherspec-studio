@@ -1,9 +1,9 @@
 # Plan — Studio Shell & Navigation
 
 **Spec:** [0005-studio-shell-navigation.md](0005-studio-shell-navigation.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-001
+**Current step:** T-0 (0001 T-013), then T-001
 
 ## Approach
 
@@ -43,12 +43,12 @@ Memory Bank files touched: `techContext.md` (T-002 gate line, T-009), `systemPat
     `connectActiveProject`) and the runtime session (0004). There is no view, no webview and no
     `src/shared`. The As-is line in spec §15 ("generator scaffold") is out of date; this survey
     supersedes it. No spec criterion is contradicted by it.
-  - **0001 gap (additive change, T-005).** `DiscoveryController` notifies only active-project
+  - **0001 gap (additive change; moved before this plan's T-001 on 2026-11-16: spec 0001 revised as AC-024, step T-013 in 0001's plan, tests first).** `DiscoveryController` notifies only active-project
     changes (`onDidChangeActiveProject`). Its `snapshot()` holds neither the remembered root
     (`WorkspaceStatePort.get()`, key `featherspec-studio.activeProject`) nor an unexpected run
     failure, because the rerun scheduler swallows rejections. S2, S3, S8 and S9 change without
     the active project changing (for example, a second project appears), and S5 needs the
-    failure. T-005 adds `onDidUpdate(listener)` after every run (success or failure), plus
+    failure. 0001 T-013 adds `onDidUpdate(listener)` after every run (success or failure), plus
     `remembered` and `failure` in the snapshot. 0001's existing tests stay green. This is not a
     workaround beside `onDidChangeActiveProject` (systemPatterns): the controller gains one more
     notification.
@@ -58,7 +58,10 @@ Memory Bank files touched: `techContext.md` (T-002 gate line, T-009), `systemPat
     0002 is not changed. A single unreadable file has a file key and never matches (PD-038).
   - **Missing markers for S9.** `DiscoveredFolder.missingMarkers` holds
     `AGENTS.md with a FeatherSpecVersion: line` or `.specs/ directory` (`classifyFolder.ts`).
-  - **0003 (not in this checkout).** The plan
+  - **0003 (merged in, 2026-11-16).** The notes below were written before the merge; the code is in
+    `src/core/lifecycle` (`LifecycleService.model(): LifecycleModel` with `entries[]` carrying `stem`, `number`,
+    `state`, `rule`, `persistence`, `derivedLabel`), and `ShellModelSource` is cut to it.
+  - **0003 (as planned).** The plan
     `.specs/backlog/0003-spec-lifecycle-readiness-model.plan.md` gives a `LifecycleModel` per
     spec entry (state, rule ID, persisted or derived), a `lifecycleService` with `model()` and
     `onDidChange`, and `StudioApi.lifecycle()` (its T-007). The label text is
@@ -89,11 +92,12 @@ Memory Bank files touched: `techContext.md` (T-002 gate line, T-009), `systemPat
   - **Open points: planning rule.** Where the spec has text, the plan follows the spec. Where the
     spec leaves a point open, the plan takes the spec's own recommendation as a working
     assumption: OP-002, OP-004, OP-007 and OP-008 (S6 ranks first; "Reload" reloads the panel UI;
-    a second mismatch right after a reload shows S5). Not planned: OP-009 (Rescan command, one
-    command line in T-009 if Gregor wants it), OP-010 (out of the MVP), OP-011 (AC-021 as written:
-    one line per message). OP-005 and OP-006 keep the spec text. OP-012 and OP-013 are Gregor's
-    manual or review items. **On plan approval, the accepted answers go into the spec
-    (`/sdd-specify` revise mode) before T-001.**
+    a second mismatch right after a reload shows S5). **Resolved 2026-11-16 (Gregor approved the plan and
+    answered): OP-002, OP-004…OP-009 are in the spec.** OP-005 placeholder wording is now "Not available in this
+    version of FeatherSpec Studio" plus the purpose sentence; OP-006 S7 reads "…Agent actions are unavailable.";
+    OP-009 the command "FeatherSpec Studio: Rescan Project" is this spec's (AC-029, `rescan()` of 0002; planned in
+    T-006 and T-009). Still open: OP-010 (out of the MVP), OP-011 (AC-021 as written: one line per message), OP-012
+    and OP-013 (Gregor's manual or review items).
   - **PD check.** PD-036 to PD-047 are cited by the spec and consistent with it. No PD is newer
     than the spec's revision. No `done/` spec is invalidated (`done/` is empty).
   - **Fakes available.** `src/core/discovery/testing/fakeHost.ts`,
@@ -149,17 +153,18 @@ Memory Bank files touched: `techContext.md` (T-002 gate line, T-009), `systemPat
 | X-04 | S4 | `Loading project…` with a progress indicator (`role="progressbar"`, no value) | spec §13 |
 | X-05 | S5 | `The project could not be loaded: <reason>.` · `Show output` · `Retry`. Reasons: `project discovery failed (<message>)` · `the lifecycle folders of .specs/ could not be listed (<folder>: <reason>)` · `the Studio panel and the extension could not exchange data` | spec §13 |
 | X-06 | S6 | `FeatherSpec Studio was updated. Reload to continue.` · `Reload` | spec §13, OP-008 |
-| X-07 | S7 | `This workspace is in Restricted Mode. Views are read-only; agent actions are unavailable.` · `Manage Workspace Trust` | spec §13 (OP-006 open) |
-| X-08 | S8 | `FeatherSpec project <name> was not found.` · `Select project` (only while another project is reported) · `Refresh` | OP-004 recommendation |
-| X-09 | S9 | one line per folder: `FeatherSpec project incomplete: <folder> has no <marker>.` · `Open setup guide` · `Refresh` | OP-004 recommendation |
-| X-10 | notice | `Spec <number> is no longer in the project` · `Dismiss`; a line above the area until dismissed or the next selection; shown at the next showing if the panel is hidden; no VS Code notification | OP-007 recommendation |
-| X-11 | placeholders | name · purpose · `Arrives with spec <NNNN>`. Purposes: Mission Control `See the project at a glance: spec counts, agent activity and what needs attention.` · Spec Board `See every spec as a card in the column of its board state.` · Agent Center `Follow agent runs, their live events and the approvals they wait for.` | spec BR-04; OP-005: Gregor confirms |
+| X-07 | S7 | `This workspace is in Restricted Mode. Agent actions are unavailable.` · `Manage Workspace Trust` | spec §13, OP-006 |
+| X-08 | S8 | `FeatherSpec project <name> was not found.` · `Select project` (only while another project is reported) · `Refresh` | spec §13, OP-004 |
+| X-09 | S9 | one line per folder: `FeatherSpec project incomplete: <folder> has no <marker>.` · `Open setup guide` · `Refresh` | spec §13, OP-004 |
+| X-10 | notice | `Spec <number> is no longer in the project` · `Dismiss`; a line above the area until dismissed or the next selection; shown at the next showing if the panel is hidden; no VS Code notification | spec AC-010, OP-007 |
+| X-11 | placeholders | name · purpose · `Not available in this version of FeatherSpec Studio`. Purposes: Mission Control `See the project at a glance: spec counts, agent activity and what needs attention.` · Spec Board `See every spec as a card in the column of its board state.` · Agent Center `Follow agent runs, their live events and the approvals they wait for.` | spec BR-04, AC-006, OP-005 |
 | X-12 | Spec Explorer | zero specs `This project has no specs yet.` · missing title `not available` · derived `Derived (rule <rule ID>)` | spec §9, 0003 X-8 |
 | X-13 | tree | project name · `Open Studio` · `Mission Control` · `Spec Board` · `Spec Explorer` · `Agent Center` | spec §9 |
 | X-14 | Output (AC-021) | `Ignored a message from the Studio panel: type <type>, <reason>.` | AC-021 |
 
 ## Stages
 
+0. 0001 T-013 (in the plan of spec 0001) — the discovery update notification, tests first; prerequisite of T-005 and T-006
 1. T-001 — the protocol contract and the host message router (no new dependency)
 2. T-002 → T-003 → T-004 — the webview: toolchain and frame, panel states, areas (starts with the Ask-first dependency install)
 3. T-005 → T-006 → T-007 — the core shell: panel-state derivation, shell service, selection and navigation
@@ -271,7 +276,7 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
   - `src/webview/areas/registry.tsx` maps an `AreaId` to a component; with no entry, the
     placeholder shows. This is the extension point for 0006, 0007 and 0012.
   - `src/webview/shell.tsx`: `useShell()` returns `{ view, target, navigate(request), select(ref) }`.
-  - `Placeholder.tsx` (X-11) shows name, purpose and `Arrives with spec <NNNN>`, and no data.
+  - `Placeholder.tsx` (X-11) shows name, purpose and `Not available in this version of FeatherSpec Studio`, and no data.
     A target handed to a placeholder area is ignored.
   - `areas/SpecExplorer.tsx`: a `listbox` of `option` rows in host order. Each row shows the
     number, the title or `not available`, the state word, `Derived (rule …)` where derived, and
@@ -279,7 +284,7 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
     non-colour marker. Click, Enter and Space send `select`. With zero specs, X-12.
   - `NoticeBar.tsx` shows X-10 with `Dismiss` → `dismissNotice`.
   - Tests: `src/webview/areas/*.test.tsx`:
-    - the Spec Board placeholder for a three-spec view reads `Arrives with spec 0007` and shows
+    - the Spec Board placeholder for a three-spec view reads the not-available line and shows
       no rows (AC-006 G/W/T); the same for 0006 and 0012;
     - rows render every field;
     - a new `shell` event with changed rows is in the DOM within 500 ms of the message event
@@ -295,10 +300,8 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 
 - **Covers:** AC-003, AC-011, AC-012, AC-013, AC-018, AC-026, AC-027
 - **Do:**
-  - `src/core/discovery/discoveryController.ts`, additive: `onDidUpdate(listener)` after every
-    run, success or failure (an isolated listener, as `onDidChangeActiveProject` has).
-    `snapshot()` gains `remembered` (from `WorkspaceStatePort`) and `failure` (the message of an
-    unexpected run failure, cleared by the next successful run).
+  - The discovery update notification (`onDidUpdate`, `remembered`, `failure`) is built before this
+    step, as step T-013 of spec 0001's plan (spec 0001 AC-024). This step only consumes it.
   - `src/core/shell/panelState.ts`: `derivePanelState(input)`, precedence
     S1 > S8 > S2 > S9 > S3 > S5 > S4. S6 is the webview's and ranks first.
     - S8 names the project: the folder's name from the result, otherwise the last URI segment.
@@ -310,18 +313,16 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
     - otherwise: `message` = the state text plus one action item each, for S1 to S5, S8 and S9
       (never S6 or S7).
   - Tests:
-    - `src/core/discovery/discoveryUpdate.test.ts`: the event fires on success and on failure;
-      `remembered` and `failure` are reported;
     - `src/core/shell/panelState.test.ts`, table-driven: each condition alone, then the pairs
       that test the precedence; S8 with and without another project; S9 with two folders;
     - `src/core/shell/treeModel.test.ts`.
-- **Verify:** `npm run test:unit -- src/core/shell src/core/discovery` plus the per-step gates
+- **Verify:** `npm run test:unit -- src/core/shell` plus the per-step gates
 - [ ] **Verified (T-005):** —
 - **Notes:** —
 
 ### T-006 — Shell service: loading, load error, Retry, Restricted Mode
 
-- **Covers:** AC-014, AC-015, AC-017
+- **Covers:** AC-014, AC-015, AC-017, AC-029
 - **Do:**
   - `src/core/ports/shell.ts`:
     - `TrustPort { isTrusted(); onDidGrant(listener) }`;
@@ -333,6 +334,8 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
     `onDidChangeView`, `runAction(action)` and `handlers` for the router.
     - Loading follows §6: there is no discovery result, or the active root has no model of that
       root yet. A re-read of the same root keeps the content.
+    - `rescan()` (AC-029, the command "FeatherSpec Studio: Rescan Project") calls `repository.rescan()` once
+      while a project is active and does nothing otherwise.
     - `Retry` = `discovery.refresh()`, then `repository.rescan()`. `Refresh` =
       `discovery.refresh()`. Both show S4 while they run and never run twice at once.
     - The S7 flag follows `onDidGrant`.
@@ -344,7 +347,8 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
       unreadable spec does not;
     - `Retry` reruns both and passes through S4;
     - a second `Retry` during the first starts nothing;
-    - trust granted → the note is gone without a reopen.
+    - trust granted → the note is gone without a reopen;
+    - `rescan()` with an active project calls the repository once (AC-029); with none it calls nothing.
 - **Verify:** `npm run test:unit -- src/core/shell` plus the per-step gates
 - [ ] **Verified (T-006):** —
 - **Notes:** —
@@ -421,7 +425,8 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 
 - **Covers:** AC-003, AC-011, AC-013, AC-015, AC-017, AC-025; AC-001 … AC-028 re-proven by the full gate run
 - **Do:**
-  - `package.json`: `viewsContainers.activitybar` `featherspec-studio`, icon `media/studio.svg`
+  - `package.json`: command `featherspec-studio.rescan` ("FeatherSpec Studio: Rescan Project", AC-029) wired to `shellService.rescan()`;
+    `viewsContainers.activitybar` `featherspec-studio`, icon `media/studio.svg`
     (new top-level folder; monochrome SVG); view `featherspec-studio.navigator`
     "FeatherSpec Studio".
   - `src/adapters/vscode/studioTree.ts`: a `TreeDataProvider` over `buildTreeModel`; it sets
@@ -500,6 +505,7 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 | AC-026 | T-005 | — | — | open |
 | AC-027 | T-005 | — | — | open |
 | AC-028 | T-007 | — | — | open |
+| AC-029 | T-006, T-009 | — | — | open |
 
 ## Session handoff
 

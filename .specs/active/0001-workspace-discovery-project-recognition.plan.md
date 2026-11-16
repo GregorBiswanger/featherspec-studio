@@ -1,9 +1,9 @@
 # Plan — Workspace Discovery & Project Recognition
 
 **Spec:** [0001-workspace-discovery-project-recognition.md](0001-workspace-discovery-project-recognition.md)
-**Status:** Done
+**Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** none (all steps ticked)
+**Current step:** T-013
 
 ## Approach
 
@@ -87,6 +87,7 @@ joined T-008. No ID was renumbered.
 5. T-008 — docs sync, CI workflow, final gates
 6. T-010 → T-011 — spec changed 2026-11-16 (`/sdd-compile` follow-up): read errors name the failing path, version-line rule pinned by a test, 'active project changed' notification (core)
 7. T-012 — docs sync and final gates for the delta
+8. T-013 — update notification, remembered project and run failure in the controller (spec revised 2026-11-16 for spec 0005)
 
 No parallel stage: stages 1–3 and 6 all live in `src/core/discovery` (one module), T-009 implements the ports
 T-005…T-007 define, T-008 and T-012 document the result.
@@ -303,6 +304,20 @@ T-005…T-007 define, T-008 and T-012 document the result.
 - [x] **Verified (T-012):** 2026-11-16 — `npx eslint src --max-warnings 0` 0 findings; `npx tsc --noEmit` 0 errors; `npm run test:unit` 11 files, 122 passed; `npm run compile` ok. `npm test` NOT run (VS Code download blocked here): listed under *Open evidence*. `architecture:` snapshot unchanged (no module added; the `src/core/discovery` entry already names the controller). README unchanged (it names the location hint only for folders without markers, which stays true).
 - **Notes:** —
 
+### T-013 — Discovery update notification, remembered project, run failure
+
+- **Covers:** AC-024
+- **Added:** 2026-11-16, spec 0001 revised at Gregor's request (OP-013): the Studio shell (0005) must see S2, S3, S8, S9 and a failed run, which `onDidChangeActiveProject` does not report. Additive; no existing criterion changes.
+- **Do:** `src/core/discovery/discoveryController.ts` gets `onDidUpdate(listener): Disposable`, `snapshot()` gains `remembered: string | undefined` (from `WorkspaceStatePort.get()`) and `failure: string | undefined`. Every run notifies once at its end, after the status bar and after `onDidChangeActiveProject` (also after an unexpected failure; the failure is still rethrown to `start`/`refresh` callers). The next successful run clears `failure`. Listeners are isolated and a disposed one gets nothing. Tests, written first, in `src/core/discovery/discoveryUpdate.test.ts` with the fake host:
+  - a refresh with nothing changed still notifies once (control for AC-023's silence)
+  - a failing run (folder list throws) notifies once, `snapshot().failure` holds the message, the next successful run clears it
+  - `remembered` reports the stored root, also while no project is active (remembered project lost a marker)
+  - ordering: the status bar and the active-project listener ran before the update listener
+  - failing and disposed subscribers
+- **Verify:** `npx vitest run src/core/discovery/discoveryUpdate.test.ts` (red via `Not implemented` stub, then green) + `npx vitest run src/core/discovery` + per-step gates
+- [ ] **Verified (T-013):** —
+- **Notes:** —
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -329,6 +344,7 @@ T-005…T-007 define, T-008 and T-012 document the result.
 | AC-021 | T-002, T-010 | src/core/discovery/versionLine.ts:readVersionLine, classifyFolder.ts:VERSION_LINE_PATTERN | versionLine.test.ts, classifyFolder.test.ts (AC-021, BR-07 start of line), discoverWorkspace.test.ts (AC-021) | verified |
 | AC-022 | T-009 | package.json (capabilities.untrustedWorkspaces, no trust guard in src/extension.ts) | src/adapters/vscode/manifest.test.ts (AC-022); manual: Gregor in Restricted Mode (planned) | built |
 | AC-023 | T-011 | src/core/discovery/discoveryController.ts:onDidChangeActiveProject | activeProjectChanged.test.ts (AC-023, 9 cases incl. no-change control) | verified |
+| AC-024 | T-013 | — | — | open |
 
 Pre-done (before `/sdd-lifecycle` → done): `npm test` smoke suite green on CI or Gregor's Windows machine, plus the two manual checks above.
 
