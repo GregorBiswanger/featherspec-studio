@@ -1,6 +1,6 @@
 import type { EntryKind, ReadOnlyFileSystem } from '../../ports/readOnlyFileSystem';
 
-type Entry = { kind: 'file'; text: string; readError?: string } | { kind: 'directory' };
+type Entry = { kind: 'file'; text: string; readError?: string } | { kind: 'directory'; listError?: string };
 
 function key(root: string, relativePath: string): string {
     return `${root}\u0000${relativePath.split('/').filter((part) => part.length > 0).join('/')}`;
@@ -10,6 +10,7 @@ export interface MemoryFileSystem extends ReadOnlyFileSystem {
     setFile(root: string, relativePath: string, text: string): void;
     setDirectory(root: string, relativePath: string): void;
     setUnreadable(root: string, relativePath: string, reason: string): void;
+    setUnlistable(root: string, relativePath: string, reason: string): void;
     remove(root: string, relativePath: string): void;
 }
 
@@ -39,6 +40,10 @@ export function createMemoryFileSystem(): MemoryFileSystem {
             ensureParents(root, relativePath);
             entries.set(key(root, relativePath), { kind: 'file', text: '', readError: reason });
         },
+        setUnlistable(root, relativePath, reason) {
+            ensureParents(root, relativePath);
+            entries.set(key(root, relativePath), { kind: 'directory', listError: reason });
+        },
         remove(root, relativePath) {
             const prefix = key(root, relativePath);
             for (const existing of [...entries.keys()]) {
@@ -62,8 +67,12 @@ export function createMemoryFileSystem(): MemoryFileSystem {
         },
         async readDirectory(root, relativePath) {
             const base = key(root, relativePath);
-            if (entries.get(base)?.kind !== 'directory') {
+            const directory = entries.get(base);
+            if (directory?.kind !== 'directory') {
                 return undefined;
+            }
+            if (directory.listError !== undefined) {
+                throw new Error(directory.listError);
             }
             const names: string[] = [];
             for (const existing of entries.keys()) {

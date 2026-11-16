@@ -1,7 +1,7 @@
 # Spec Repository & Parser
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0002-spec-repository-parser.plan.md](0002-spec-repository-parser.plan.md)
 
 ## 1. Summary
 
@@ -12,7 +12,7 @@ changes to the files. Studio's lifecycle, dashboard and board (0003, 0006, 0007)
 this model and never read Markdown themselves.
 Source: handoff FS-002 (`docs/product/po-handoff.md` §10), with §5.4, §7, §13, §14; format:
 `docs/discovery/featherspec-format.md` (SPIKE-001); decisions PD-018, PD-019, PD-020, PD-034,
-PD-035 in `docs/product/product-decisions.md`.
+PD-035, PD-043 in `docs/product/product-decisions.md`.
 
 ## 2. Goal and problem
 
@@ -85,7 +85,8 @@ the files reaches the model without a manual reload.
 - **BR-01 Files are the truth.** The model reflects the files as they are. It invents no value
   and fills no defaults (handoff §7). Values the layer derives (AC IDs expanded from `Covers`,
   the `**Plan:**` classification, flags) stand beside the raw text they come from, never in
-  its place.
+  its place. File facts (key, modification time) are passed on as the file system reports
+  them (PD-043).
 - **BR-02 Read-only.** Reading and watching never create, change, rename or delete a file
   (handoff AC-002.7; PD-013).
 - **BR-03 Identity (PD-018).** A spec entry is one file; its key is its project-relative path.
@@ -120,7 +121,7 @@ the files reaches the model without a manual reload.
 | --- | --- | --- | --- |
 | FR-01 | Find all specs, plans, archived plans and return notes of the project by the audited structure | FR-002.1 | AC-001, AC-010, AC-021 |
 | FR-02 | Parse spec metadata and content | FR-002.2 | AC-003, AC-004, AC-005, AC-020 |
-| FR-03 | Provide one normalised model with stable references and source paths | FR-002.3 | AC-002, AC-019 |
+| FR-03 | Provide one normalised model with stable references and source paths | FR-002.3 | AC-002, AC-019, AC-023 |
 | FR-04 | Detect plans and link them to specs | FR-002.4 | AC-006 |
 | FR-05 | Extract steps and acceptance criteria where present | FR-002.5 | AC-004, AC-007, AC-008 |
 | FR-06 | Detect existing verification information | FR-002.6 | AC-009 |
@@ -137,11 +138,12 @@ Terms: **key** = project-relative path; **reference** = file stem (BR-03). **Pla
 plan or archived plan. **Absent** = not in the file; **empty** = present without a value;
 **placeholder** = present as `_none yet_`, `_none_` or `—`. **Affected spec** = an entry whose
 own file, linked plan or linked return note was created, changed or removed, including an
-entry that gains or loses a link.
+entry that gains or loses a link. **File facts** = what the file system reports about a
+file rather than its content: key and modification time (PD-043).
 
 - **Project read:** project root, version as reported by 0001, list of specs, plans, return
   notes and diagnostics.
-- **Spec:** key, reference, number `NNNN`, slug, lifecycle folder, title (H1), header lines as
+- **Spec:** key, modification time, reference, number `NNNN`, slug, lifecycle folder, title (H1), header lines as
   found (`Status`, `Plan`, `Ticket`, `Origin`, `Validated by`, `Clarified`; other bold header
   lines as unsupported content), the `**Plan:**` value classified as placeholder, sibling
   link, archive link or other, the body as ordered sections split at level-2 headings
@@ -151,7 +153,7 @@ entry that gains or loses a link.
   (e.g. `(nicht verbindliches Ziel)`), a directly following blockquote as its Given/When/Then
   illustration, its source location, an *uncertain* flag and a *struck* flag.
 - **`FR-` requirement:** ID, the raw text of its list item, paragraph or table row, location.
-- **Plan:** path, sibling or archived (with archive date and collision suffix), the references
+- **Plan:** path, modification time, sibling or archived (with archive date and collision suffix), the references
   of the linked specs or orphan, header lines (`Spec`, `Status`, `Last updated`, `Current step`
   as raw text), stages (sequential or parallel, raw line, closing line), steps, traceability
   rows, session-handoff fields as raw text, other sections and header lines as unsupported
@@ -161,7 +163,7 @@ entry that gains or loses a link.
   it, `Files`, `Do`, `Verify`, `Verified` text (flagged placeholder when it is only `—`), `Notes`.
 - **Traceability row:** criterion, steps, code/files, test cell (with a `manual:` flag), state
   as written (`open` / `built` / `verified` are the known values).
-- **Return note:** path, spec number, step ID, `Status` as written (`DONE` / `BLOCKED` are the
+- **Return note:** path, modification time, spec number, step ID, `Status` as written (`DONE` / `BLOCKED` are the
   known values), the references of the linked specs or none.
 - **Diagnostic:** scope (a file with its path and the line where known, or the project), kind,
   and a reason in English (PD-016) that names what was found. Kinds (PD-020): unreadable file ·
@@ -175,7 +177,8 @@ entry that gains or loses a link.
   Without an active project this layer does not run. When 0001 reports the project again
   (PD-033: root `AGENTS.md` or root `.specs/` changed), another project, or none, AC-022 applies.
 - **Output to 0003, 0006, 0007:** the model as a complete snapshot (a consumer never reads a
-  half-updated model), plus a change notification that names the references of the affected
+  half-updated model), including each file's modification time (0007's "Last change",
+  PD-043), plus a change notification that names the references of the affected
   specs and says when content tied to no spec changed (orphan plan, unlinked return note,
   project diagnostic).
 - **File system:** reached only through a port (listing, reading, change events). The adapters
@@ -331,12 +334,18 @@ Handoff references in brackets (PD-017).
   again, the system shall replace the model with the result of a fresh full read and notify
   consumers. When 0001 reports no active project, the system shall stop watching and discard
   the model. [ADR-001 §9; PD-033]
+- **AC-023** The system shall return for every spec, plan and return note the modification
+  time the file system reported for that file when it was read, unchanged, as a file fact
+  beside its content. If a file cannot be read (AC-011), then the system shall return its
+  modification time when the file system reported one, and shall mark it absent otherwise
+  (AC-019). [PD-043]
 
 ## 14. Technical notes for developers or AI agents
 
-- **As-is:** no domain code exists yet (`src/extension.ts` is the generator scaffold). The
-  target layout is in `.memory-bank/systemPatterns.md`. If the unit-test script named in
-  `techContext.md` still does not exist when this spec is planned, this plan introduces it.
+- **As-is (2026-11-16, `/sdd-plan`):** spec 0001 is built (`src/core/{ports,discovery}`,
+  `src/adapters/{node,vscode}`, Vitest `npm run test:unit`). Its `ReadOnlyFileSystem` port
+  decodes text without a UTF-8 check and reports neither modification time nor symbolic
+  links, so this layer gets its own port; 0001's code stays unchanged.
 - **Architecture:** parsing is pure core code (no `vscode` import, `AGENTS.md` *Core purity*).
   File listing, reading and change events sit behind a port. ADR-001 §9 decides the watching:
   events debounced and coalesced (about 200 ms), only the affected file re-parsed, a delete
@@ -368,6 +377,7 @@ Handoff references in brackets (PD-017).
 | A-003 | Return notes are the only Memory Bank files this layer reads | Gregor in the specify interview (R-001); PD-021 needs `BLOCKED` notes for 0003 | 0006 would need a second reader for `activeContext.md` |
 | A-004 | Requirements are structured only where an `FR-` ID leads an item or table row; all other requirement text stays section content | PD-034; no template ID scheme for requirements (format §3.4) | Views expecting structured requirements get section text instead |
 | A-005 | The four samples named in format §0 can be copied as fixtures | Confirmed by Gregor 2026-11-16: the samples are his and may be copied in | Fixtures must be hand-made, weakening AC-001 to AC-004 |
+| A-006 | Until OP-005 is decided, a symbolic link in a read folder is not followed and is reported as an unreadable file (the OP-005 recommendation) | AC-021 forbids reading outside the root; not following any link is the only rule that needs no target check | If Gregor wants in-root links followed, the listing and AC-011/AC-021 tests change |
 
 ## 16. Open points
 
@@ -378,6 +388,9 @@ Resolved:
   uses them: Q1 return notes are read, the rest of the Memory Bank is not; Q2 versions outside
   1.7.0–1.10.0 are read with a diagnostic; Q3 duplicates are kept and flagged (now PD-019);
   Q4 the working thresholds (now PD-035). Q1 and Q2 are recorded nowhere else: OP-007.
+- **R-003** `/sdd-plan` 2026-11-16: PD-043 is newer than this spec and asks this layer for
+  every file's modification time as a file fact. Applied: BR-01, §8 (term *file facts*, the
+  spec, plan and return-note items), §9, FR-03 and the new AC-023.
 - **OP-002** Resolved 2026-11-16: Gregor owns the sample projects and allows copying them
   into the repository as test fixtures; `/sdd-plan` decides the folder.
 - **R-002** `/sdd-clarify` 2026-11-16, 58 findings (F-01 … F-58). Gregor decided the six
@@ -422,7 +435,8 @@ Open, none blocks planning (clarify finding in brackets):
   reactivation and a stray copy after a completed move; only the lifecycle state tells them
   apart. Recommendation: 0003 flags the stray copy (PD-020); this layer links both.
 - **OP-005** [F-51] Symbolic links under `.specs/` that resolve outside the project root.
-  Recommendation: do not follow any symbolic link; report it as an unreadable file.
+  Recommendation: do not follow any symbolic link; report it as an unreadable file. Until
+  decided the plan builds the recommendation (A-006).
 - **OP-006** [F-52] A `Covers:` value or traceability row naming an AC or step that is defined
   nowhere. Until decided: returned as written, no diagnostic. Recommendation: keep it so here;
   0003 may flag it when it reads traceability.
@@ -444,7 +458,7 @@ are visible, none blocking.
 
 ## 18. Definition of Done
 
-All FR-01 to FR-10 are built, and AC-001 to AC-022 pass with automated tests (fixture tests
+All FR-01 to FR-10 are built, and AC-001 to AC-023 pass with automated tests (fixture tests
 for the parser, one extension-host test for the watcher adapter; commands in
 `techContext.md`). No out-of-scope behaviour was added (no file writes). Assumptions are
 verified or documented. The architecture snapshot and Memory Bank are updated for the new

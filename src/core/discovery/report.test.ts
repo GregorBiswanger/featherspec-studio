@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { DiscoveredFolder } from './discoverWorkspace';
+import { discoverWorkspace, type DiscoveredFolder } from './discoverWorkspace';
+import { createMemoryFileSystem } from './testing/memoryFileSystem';
 import { buildNoProjectNotification, buildSelectItems, formatOutputBlock, SETUP_GUIDE_URL } from './report';
 
 function entry(name: string, overrides: Partial<DiscoveredFolder> = {}): DiscoveredFolder {
@@ -64,6 +65,28 @@ describe('formatOutputBlock', () => {
         expect(text).toContain('/work/bad');
         expect(text).toContain('EACCES: permission denied');
         expect(text).not.toContain('open the project folder itself');
+    });
+
+    it('AC-016, AC-017: an unreadable AGENTS.md beside .specs/ shows path, failed path and reason and no hint; a folder without marker keeps the hint', async () => {
+        const fileSystem = createMemoryFileSystem();
+        fileSystem.setUnreadable('bad', 'AGENTS.md', 'EACCES: permission denied');
+        fileSystem.setDirectory('bad', '.specs');
+        fileSystem.setFile('plain', 'README.md', 'x');
+        const result = await discoverWorkspace(
+            fileSystem,
+            [
+                { root: 'bad', name: 'bad' },
+                { root: 'plain', name: 'plain' },
+            ],
+            { sameRoot: (first, second) => first === second },
+        );
+        const lines = formatOutputBlock(result, 'run 1');
+        const badEntry = lines.slice(lines.indexOf('bad'), lines.indexOf('plain'));
+        const plainEntry = lines.slice(lines.indexOf('plain'));
+        expect(badEntry).toContain('  verdict: not a project');
+        expect(badEntry).toContain('  diagnostic: Cannot read AGENTS.md: EACCES: permission denied');
+        expect(badEntry).not.toContain('  hint: open the project folder itself');
+        expect(plainEntry).toContain('  hint: open the project folder itself');
     });
 
     it('AC-016: shows the display path instead of the root identity when the host supplies one', () => {

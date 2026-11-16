@@ -35,6 +35,7 @@ differences.
 - Automatic re-detection while VS Code is open, plus a manual Refresh command.
 - A status bar entry, a "Select FeatherSpec project" command and a no-project notification (FR-001.6).
 - Read-only behaviour (FR-001.7).
+- An "active project changed" notification for in-process consumers (AC-023).
 
 ### Out of scope
 
@@ -52,7 +53,7 @@ differences.
 1. The developer opens a workspace in VS Code.
 2. Studio checks the root of every workspace folder for the markers M1 and M2.
 3. Each folder gets one verdict: *project*, *incomplete* or *not a project*. A project may carry the attribute *legacy*.
-4. Exactly one project → it becomes active and is remembered. Several → the user picks one (remembered). None → no active project.
+4. Exactly one project → it becomes active and is remembered. Several → the user picks one (remembered). None → no active project. Every change of the active project, and the first result, is passed on to subscribers (AC-023).
 5. The status bar entry shows the active project. The Output channel lists what was checked for each folder.
 6. When a folder is added or removed, or a root `AGENTS.md` or root `.specs/` appears, changes or disappears, steps 2–5 run again without a reload.
 
@@ -96,6 +97,7 @@ differences.
 | — | Re-detect without a reload | AC-013 |
 | — | Show the active project | AC-014 |
 | — | Detect within the time budget | AC-018 |
+| — | Notify consumers when the active project changes | AC-023 |
 | — | Work in Restricted Mode (ADR-001 §14) | AC-022 |
 
 ## 8. Data requirements
@@ -104,7 +106,7 @@ differences.
   `FeatherSpecVersion:` line.
 - Discovery result per folder: root-folder URI, display name, verdict, legacy attribute, version
   (value as written, or "unknown"), diagnostics. Consumers: spec 0002 (project root for its
-  project-relative paths, PD-018; version), spec 0004 (store key, PD-026), spec 0005.
+  project-relative paths, PD-018; version), spec 0004 (store key, PD-026), spec 0005. Specs 0002 and 0004 receive the active project through the notification of AC-023.
 - Persisted: only the remembered project per workspace, stored outside every workspace folder
   (PD-013). Nothing sensitive is read or stored.
 
@@ -118,13 +120,17 @@ differences.
 - **Output channel "FeatherSpec Studio":** one block per discovery run. It lists every folder
   with path, verdict, version and diagnostics. A *diagnostic* is one line in the entry of the folder
   it concerns; a *missing prerequisite* is the diagnostic that names an absent marker. A folder
-  reported as *not a project* gets only the hint "open the project folder itself".
+  reported as *not a project* because no marker exists at its root gets only the hint "open the
+  project folder itself". A folder reported as *not a project* because a read failed gets the path
+  that failed and the reason, and no hint (the cause is not its location).
 - **No-project notification:** a VS Code notification "No FeatherSpec project found in this
   workspace" with the actions "Open setup guide" (link: A-005) and "Refresh". It appears when the
   user asks (AC-015). Spec 0005 shows the same texts inside the Studio views.
 
 ## 10. Interfaces and integrations
 
+- In-process: the discovery controller offers a subscription for the active project (AC-023); the
+  consumers are later Studio modules, never an external service.
 - VS Code workspace (folders, folder-change events, file-change events, workspace state, status
   bar, commands, Output channel, notifications). Studio never contacts a network service. "Open
   setup guide" hands a link to the user's browser.
@@ -145,7 +151,7 @@ differences.
 ## 13. Error cases and edge cases
 
 - No folder is open → "Open a folder to use FeatherSpec Studio" (AC-015).
-- `AGENTS.md` cannot be read (permissions, locked) → AC-017.
+- `AGENTS.md` (or another marker path) cannot be read (permissions, locked) → AC-017.
 - `FeatherSpecVersion:` with a value that is not a semantic version, an empty value, or a second
   version line → AC-021.
 - The remembered project loses a marker (for example `AGENTS.md` deleted during an edit) and comes
@@ -178,17 +184,28 @@ hand-made ones are listed in §15.
 - **AC-013** While Studio is active (activated at open by AC-019, or later by one of its commands), when a workspace folder is added or removed, or the root `AGENTS.md` of a workspace folder appears, changes or disappears, or its root `.specs/` directory appears or disappears, the system shall rerun discovery and update the status bar entry and the Output channel without a reload. A change inside `.specs/` shall not trigger a rerun. After the last change, the status bar entry and the newest Output channel block shall match the state on disk.
 - **AC-014** While a project is active, the status bar entry shall show its folder name and version ("unknown" for a legacy project or an empty value), and clicking the entry shall open the select command.
 - **AC-015** When the user runs the select command or clicks the status bar entry and no project is reported, the system shall show the notification "No FeatherSpec project found in this workspace" with the actions "Open setup guide" and "Refresh". "Open setup guide" shall open the link of A-005. With no folder open, the system shall show "Open a folder to use FeatherSpec Studio" instead.
-- **AC-016** When a discovery run finishes, the system shall write to the Output channel "FeatherSpec Studio", for each workspace folder: path, verdict, version and its diagnostics. For a folder reported as *not a project* the entry shall contain the hint "open the project folder itself". The system shall create no entry in the Problems panel.
-- **AC-017** If `AGENTS.md` cannot be read, then the system shall write the folder path and the reason to the Output channel, report that folder as *not a project*, and finish discovery for the remaining folders. (Verdict under review: OP-004.)
+- **AC-016** When a discovery run finishes, the system shall write to the Output channel "FeatherSpec Studio", for each workspace folder: path, verdict, version and its diagnostics. For a folder reported as *not a project* because no marker exists at its root, the entry shall contain the hint "open the project folder itself". For a folder reported as *not a project* because a read failed (AC-017), the entry shall not contain that hint. The system shall create no entry in the Problems panel.
+- **AC-017** If reading a marker path of a folder fails (for example `AGENTS.md` without permission), then the system shall write the folder path, the path that failed and the reason to the Output channel, report that folder as *not a project* even when `.specs/` exists beside it (OP-004), and finish discovery for the remaining folders.
+  > **Given** an `AGENTS.md` that cannot be read beside a `.specs/` directory **When** discovery runs **Then** the folder is reported as *not a project*, the entry names `AGENTS.md` and the reason, and carries no location hint. **Given** a failure on another marker path (for example the `.claude/commands` listing) **Then** the entry names that path, not `AGENTS.md`.
 - **AC-018** The system shall finish one discovery run within 2 seconds for a workspace of up to 5 folders on a local file system, measured from the start of the run until the discovery result (§8) for all folders exists. This criterion sets no budget beyond 5 folders. An automated timing test on the fixture set checks it.
 - **AC-019** When VS Code opens a workspace in which at least one folder is a *project* or *incomplete*, the system shall run discovery and show its result without any user action. [AC-001.1]
 - **AC-020** While no workspace folder is reported as *project* or *incomplete* and the workspace has no remembered project, the system shall show no status bar entry and, during automatic discovery, no notification (PD-033).
 - **AC-021** The system shall take the version from the first `FeatherSpecVersion:` line of `AGENTS.md`: the first token of the value, without a trailing `# comment` (BR-07). If the value is empty, then the system shall report the version "unknown" and write a diagnostic. If a second such line exists, then the system shall use the first and write a diagnostic. If the value is not a semantic version, then the system shall report the folder with the value as written and write a diagnostic naming the value.
   > **Given** an `AGENTS.md` with the line `FeatherSpecVersion: 1.10.0 # managed by /sdd-featherspec-update` **When** discovery runs **Then** the version is `1.10.0` and no diagnostic is written.
+- **AC-023** When discovery has produced a result, the system shall notify every subscriber of the discovery controller with the active project (or with none) if this is the first result since Studio started, or if the active project's root, version or legacy attribute differs from the one last notified; it shall not notify when none of these differs. The system shall notify after the status bar entry shows the result, and a failing subscriber shall not stop the notification of the others or any other step of the run. A subscriber that was disposed shall receive no further notification.
+  > **Given** a controller with a subscriber **When** the first discovery finds one project **Then** the subscriber receives that project once. **When** a refresh finds nothing changed **Then** it receives nothing. **When** the user selects another project **Then** it receives that project. **When** the remembered project loses a marker **Then** it receives none.
 - **AC-022** While the workspace is not trusted (VS Code Restricted Mode), the system shall run discovery and show the status bar entry, the select command and the Output channel as in a trusted workspace.
 
 ## 15. Technical notes for developers or AI agents
 
+- Version line position (PD-032 reading, 2026-11-16): the line must start the line, leading blanks
+  allowed. `FeatherSpecVersion:` in the middle of a sentence is no version line and is no marker M1.
+  "Wherever it stands in the file" (BR-07) means any line number, not any column. The tests
+  `versionLine.test.ts` and `classifyFolder.test.ts` name it with AC-021 and BR-07.
+- Active-project subscription (AC-023): the core controller exposes `onDidChangeActiveProject(listener)`
+  returning a `Disposable`, in the style of the existing ports (`onDidChange` on the folder port). A
+  subscriber added after a result gets no replay; it reads the current value from the controller
+  snapshot (A-006). Consumers never read the status bar or the Output channel.
 - As-is: `src/extension.ts` is the generator scaffold (a `helloWorld` command); `package.json` has
   `activationEvents: []`. Nothing for discovery exists yet. The first plan introduces
   `npm run test:unit` (`techContext.md`).
@@ -224,6 +241,7 @@ hand-made ones are listed in §15.
 | A-003 | Remote and container workspaces work through VS Code's file API without extra behaviour | ADR-001 §14: `extensionKind: workspace`, the extension runs where the files live. Not yet tried on a remote setup | Detection fails in remote setups and the limitation must be documented (§19) |
 | A-004 | Studio stays silent (no status bar entry, no notification) in workspaces where no folder is a project or incomplete | Confirmed by Gregor 2026-11-16 (PD-033). Noise in unrelated repositories hurts DevEx | Users of non-FeatherSpec workspaces get no hint that Studio exists |
 | A-005 | The setup guide link targets the FeatherSpec wiki home (`https://github.com/GregorBiswanger/featherspec/wiki`) | Gregor confirmed the "GitHub wiki"; no specific page was named (OP-011) | The link lands on a less helpful page |
+| A-006 | "The active project changed" (AC-023) means a different root, version or legacy attribute; a changed display name cannot occur without a changed root. Subscribers added late get no replay | Chosen 2026-11-16 while adding AC-023 on Gregor's request; the consumers 0002 and 0004 need the root and the version | A consumer that also needs other fields (diagnostics) must read the snapshot or the criterion must widen |
 
 ## 17. Open points
 
@@ -241,9 +259,10 @@ Resolved:
 
 - OP-005: resolved 2026-11-16 by Gregor during `/sdd-plan`. AC-013 holds once Studio is active; no `onStartupFinished`, ADR-001 §8 stays (§15).
 
+- OP-004: resolved 2026-11-16 by Gregor during `/sdd-compile` follow-up. An unreadable `AGENTS.md` beside `.specs/` is *not a project*, with the read-error reason and without the location hint (AC-016, AC-017). The hint is for folders that have no marker at their root.
+
 Open, none blocks planning (clarify finding in brackets):
 
-- OP-004 [1.3]: an unreadable `AGENTS.md` beside `.specs/` is *not a project* by AC-017, while the markers alone would say *incomplete*. Recommendation: *incomplete* plus the read-error diagnostic, so the status bar shows it (§2: no silent failure). Until decided, AC-017 stands.
 - OP-006 [3.2]: AC-013 has no deadline. Recommendation: status bar and Output channel updated within 2 seconds after the change event reaches Studio (the AC-018 budget).
 - OP-007 [3.3, 6.8]: the 2 seconds and 5 folders of AC-018 have no source, and no reference machine is named. Recommendation: treat them as working thresholds like PD-035 and re-measure on Gregor's sample projects.
 - OP-008 [3.8]: "does not block the editor" (§12) has no observation that could prove it false. Recommendation: drop it as a requirement and keep a design note in §15 (file access is asynchronous).
@@ -257,7 +276,7 @@ Open, none blocks planning (clarify finding in brackets):
 Goal, user, scope and out-of-scope are documented. The business rules (BR-01…BR-07) are testable.
 The happy path and edge cases are described. Every criterion is decidable by a test or by
 Gregor's manual check. Assumptions and open points are visible. Clarified on 2026-11-16; the open
-points OP-004 and OP-006…OP-012 do not block planning.
+points OP-006…OP-012 do not block planning.
 
 ## 19. Definition of Done
 
@@ -271,4 +290,4 @@ manual check on his sample projects.
 ## 20. Recommended next steps
 
 1. Gregor reads the plan [0001-workspace-discovery-project-recognition.plan.md](0001-workspace-discovery-project-recognition.plan.md).
-2. Gregor answers OP-004 and OP-006…OP-012 when convenient; `/sdd-specify` (revise mode) applies the answers.
+2. Gregor answers OP-006…OP-012 when convenient; `/sdd-specify` (revise mode) applies the answers.

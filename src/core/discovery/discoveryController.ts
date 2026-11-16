@@ -33,7 +33,10 @@ export interface DiscoverySnapshot {
     active: DiscoveredFolder | undefined;
 }
 
+export type ActiveProjectListener = (active: DiscoveredFolder | undefined) => void;
+
 export interface DiscoveryController {
+    onDidChangeActiveProject(listener: ActiveProjectListener): Disposable;
     start(): Promise<void>;
     refresh(): Promise<void>;
     selectProject(): Promise<void>;
@@ -53,6 +56,30 @@ export function createDiscoveryController(deps: DiscoveryControllerDeps): Discov
         return discovered;
     }
 
+    const activeListeners = new Set<ActiveProjectListener>();
+    let notified: { active: DiscoveredFolder | undefined } | undefined;
+
+    function sameActive(previous: DiscoveredFolder | undefined, next: DiscoveredFolder | undefined): boolean {
+        if (previous === undefined || next === undefined) {
+            return previous === next;
+        }
+        return deps.sameRoot(previous.root, next.root) && previous.version === next.version && previous.legacy === next.legacy;
+    }
+
+    function notifyActiveChanged(): void {
+        if (notified !== undefined && sameActive(notified.active, active)) {
+            return;
+        }
+        notified = { active };
+        for (const listener of [...activeListeners]) {
+            try {
+                listener(active);
+            } catch {
+                continue;
+            }
+        }
+    }
+
     async function apply(discovered: DiscoveryResult, selection: string | undefined): Promise<void> {
         const outcome = resolveActiveProject({
             result: discovered,
@@ -69,6 +96,7 @@ export function createDiscoveryController(deps: DiscoveryControllerDeps): Discov
         } else {
             deps.statusBar.hide();
         }
+        notifyActiveChanged();
     }
 
     let queue: Promise<unknown> = Promise.resolve();
@@ -110,6 +138,10 @@ export function createDiscoveryController(deps: DiscoveryControllerDeps): Discov
     }
 
     return {
+        onDidChangeActiveProject(listener) {
+            activeListeners.add(listener);
+            return { dispose: () => void activeListeners.delete(listener) };
+        },
         async start() {
             if (folderSubscription === undefined) {
                 folderSubscription = deps.folders.onDidChange(() => {

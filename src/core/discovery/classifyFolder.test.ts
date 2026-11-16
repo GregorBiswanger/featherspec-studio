@@ -79,6 +79,20 @@ describe('classifyFolder', () => {
         expect(result.verdict).toBe('project');
     });
 
+    it('AC-021, BR-07: M1 needs the version line to start the line; FeatherSpecVersion: mid-line leaves the folder incomplete', async () => {
+        const fileSystem = createMemoryFileSystem();
+        fileSystem.setFile('r', 'AGENTS.md', 'Set FeatherSpecVersion: 1.10.0 in the file\n');
+        fileSystem.setDirectory('r', '.specs');
+        expect((await classifyFolder(fileSystem, 'r')).verdict).toBe('incomplete');
+    });
+
+    it('AC-021, BR-07: negative control, an indented version line is M1', async () => {
+        const fileSystem = createMemoryFileSystem();
+        fileSystem.setFile('r', 'AGENTS.md', '  FeatherSpecVersion: 1.10.0\n');
+        fileSystem.setDirectory('r', '.specs');
+        expect((await classifyFolder(fileSystem, 'r')).verdict).toBe('project');
+    });
+
     it('AC-001: a .specs file instead of a directory does not count as M2', async () => {
         const fileSystem = createMemoryFileSystem();
         fileSystem.setFile('r', 'AGENTS.md', 'FeatherSpecVersion: 1.10.0\n');

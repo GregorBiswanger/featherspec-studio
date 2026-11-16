@@ -26,6 +26,10 @@ holds the *why*: decisions and patterns.
 - Core reaches the host through small ports (`src/core/ports/host.ts`); the discovery controller is
   proven on fakes, the VS Code adapters hold no logic; the `vscode` import in `src/core/**` is
   banned by ESLint · 2026-11-16 · plan 0001 *Approach*
+- Active-project notification: the discovery controller offers `onDidChangeActiveProject(listener)` (returns a
+  `Disposable`); first result always, later only when root, version or legacy differ; no replay for late
+  subscribers (they read `snapshot().active`); a throwing subscriber is isolated. Specs 0002 and 0004 consume it;
+  no workaround in other modules · 2026-11-16 · spec 0001 AC-023, A-006 (Gregor, after `/sdd-compile`)
 - Folder identity is the root URI string; `displayPath` is only for text shown to the user (BR-05) ·
   2026-11-16 · plan 0001 T-009
 
