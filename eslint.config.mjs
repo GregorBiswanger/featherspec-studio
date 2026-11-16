@@ -2,7 +2,7 @@ import { builtinModules } from "node:module";
 import typescriptEslint from "typescript-eslint";
 
 export default [{
-    files: ["**/*.ts"],
+    files: ["**/*.ts", "**/*.tsx"],
 }, {
     files: ["src/core/**/*.ts"],
     rules: {
@@ -37,6 +37,20 @@ export default [{
             patterns: [
                 { group: ["vscode/*", "node:*"], message: "Shared protocol code imports neither vscode nor Node.js." },
                 { group: ["**/core/**", "**/adapters/**", "**/webview/**"], message: "Shared protocol code imports only itself." },
+            ],
+        }],
+    },
+}, {
+    files: ["src/webview/**/*.ts", "src/webview/**/*.tsx"],
+    rules: {
+        "no-restricted-imports": ["error", {
+            paths: [
+                { name: "vscode", message: "The panel UI never imports vscode." },
+                ...builtinModules.map((name) => ({ name, message: "The panel UI never imports Node.js built-ins." })),
+            ],
+            patterns: [
+                { group: ["vscode/*", "node:*"], message: "The panel UI imports neither vscode nor Node.js." },
+                { group: ["**/core/**", "**/adapters/**"], message: "The panel UI imports only src/shared and its own files." },
             ],
         }],
     },

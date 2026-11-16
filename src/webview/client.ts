@@ -1,0 +1,129 @@
+import { DEFAULT_AREA, type AreaId } from '../shared/protocol/areas';
+import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../shared/protocol/envelope';
+import {
+    isResponsePayload,
+    isShellEventPayload,
+    type ActionId,
+    type NavigationRequest,
+    type RequestPayloads,
+    type RequestType,
+    type ShellView,
+} from '../shared/protocol/messages';
+
+export interface ClientSnapshot {
+    view: ShellView | undefined;
+    area: AreaId;
+}
+
+export interface SpecReference {
+    stem: string;
+    path?: string;
+}
+
+export interface ShellClient {
+    start(): void;
+    stop(): void;
+    receive(raw: unknown): void;
+    navigate(request: NavigationRequest): void;
+    select(reference: SpecReference): void;
+    runAction(action: ActionId): void;
+    dismissNotice(): void;
+    subscribe(listener: () => void): () => void;
+    getSnapshot(): ClientSnapshot;
+}
+
+export interface ClientDeps {
+    post: (message: Envelope) => void;
+}
+
+export function createClient(deps: ClientDeps): ShellClient {
+    const listeners = new Set<() => void>();
+    let view: ShellView | undefined;
+    let lastSeq = 0;
+    let nextId = 0;
+    let localArea: { area: AreaId; id: string } | undefined;
+    let snapshot: ClientSnapshot = { view: undefined, area: DEFAULT_AREA };
+    let unlisten: (() => void) | undefined;
+
+    function refresh(): void {
+        const area = localArea?.area ?? view?.area ?? DEFAULT_AREA;
+        if (snapshot.view === view && snapshot.area === area) {
+            return;
+        }
+        snapshot = { view, area };
+        listeners.forEach((listener) => listener());
+    }
+
+    function send<Type extends RequestType>(type: Type, payload: RequestPayloads[Type]): string {
+        nextId += 1;
+        const id = `q${nextId}`;
+        deps.post({ v: PROTOCOL_VERSION, kind: 'req', id, type, payload });
+        return id;
+    }
+
+    function onShellEvent(envelope: Envelope): void {
+        if (!isShellEventPayload(envelope.payload) || envelope.seq === undefined || envelope.seq <= lastSeq) {
+            return;
+        }
+        const gap = envelope.seq > lastSeq + 1;
+        const previous = lastSeq;
+        lastSeq = envelope.seq;
+        view = envelope.payload.view;
+        refresh();
+        if (gap) {
+            send('hello', { lastSeq: previous });
+        }
+    }
+
+    function onResponse(envelope: Envelope): void {
+        if (isResponsePayload(envelope.payload) && localArea !== undefined && envelope.id === localArea.id) {
+            localArea = undefined;
+            refresh();
+        }
+    }
+
+    const api: ShellClient = {
+        start() {
+            const handler = (event: MessageEvent) => api.receive(event.data);
+            window.addEventListener('message', handler);
+            unlisten = () => window.removeEventListener('message', handler);
+            send('hello', { lastSeq });
+        },
+        stop() {
+            unlisten?.();
+            unlisten = undefined;
+        },
+        receive(raw) {
+            const read = readEnvelope(raw);
+            if (!read.ok) {
+                return;
+            }
+            const { envelope } = read;
+            if (envelope.kind === 'evt' && envelope.type === 'shell') {
+                onShellEvent(envelope);
+            } else if (envelope.kind === 'res') {
+                onResponse(envelope);
+            }
+        },
+        navigate(request) {
+            const id = send('navigate', request);
+            localArea = { area: request.area, id };
+            refresh();
+        },
+        select(reference) {
+            send('select', reference);
+        },
+        runAction(action) {
+            send('runAction', { action });
+        },
+        dismissNotice() {
+            send('dismissNotice', {});
+        },
+        subscribe(listener) {
+            listeners.add(listener);
+            return () => void listeners.delete(listener);
+        },
+        getSnapshot: () => snapshot,
+    };
+    return api;
+}

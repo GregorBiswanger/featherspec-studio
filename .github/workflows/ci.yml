@@ -21,6 +21,7 @@ jobs:
       - run: npm ci
       - run: npx eslint src --max-warnings 0
       - run: npx tsc --noEmit
+      - run: npx tsc --noEmit -p src/webview
       - run: npm run test:unit
       - run: npm run compile
       - name: Extension-host tests (Linux)

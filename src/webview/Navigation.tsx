@@ -1,0 +1,29 @@
+import { AREAS } from '../shared/protocol/areas';
+import { NAVIGATION_LABEL } from '../shared/protocol/texts';
+import { useShell } from './shell';
+
+export function Navigation() {
+    const shell = useShell();
+    return (
+        <nav aria-label={NAVIGATION_LABEL} className="navigation">
+            <ul>
+                {AREAS.map((area) => {
+                    const current = area.id === shell.area;
+                    return (
+                        <li key={area.id}>
+                            <button
+                                type="button"
+                                className={current ? 'nav-item current' : 'nav-item'}
+                                aria-current={current ? 'page' : undefined}
+                                onClick={() => shell.navigate({ area: area.id })}
+                            >
+                                {current ? <span data-marker aria-hidden="true">▸</span> : null}
+                                {area.title}
+                            </button>
+                        </li>
+                    );
+                })}
+            </ul>
+        </nav>
+    );
+}

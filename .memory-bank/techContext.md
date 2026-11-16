@@ -38,7 +38,8 @@
 Per implementation step (Definition of Green), in order — zero warnings, zero errors:
 1. `npx eslint src --max-warnings 0`
 2. `npx tsc --noEmit`
-3. `npm run test:unit`
+3. `npx tsc --noEmit -p src/webview` (from spec 0005 T-002 on)
+4. `npm run test:unit`
 
 Pre-done gate (not per step): `npm test` (extension-host tests) runs in CI and on the
 developer's machine before a spec moves to `done/`, plus the two manual checks above.

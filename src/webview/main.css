@@ -1,0 +1,60 @@
+body {
+    margin: 0;
+    padding: 0;
+    color: var(--vscode-foreground);
+    background: var(--vscode-editor-background);
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+}
+
+.studio-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+.navigation ul {
+    display: flex;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.nav-item {
+    padding: 4px 10px;
+    color: var(--vscode-foreground);
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font: inherit;
+}
+
+.nav-item:hover {
+    background: var(--vscode-toolbar-hoverBackground);
+}
+
+.nav-item.current {
+    font-weight: bold;
+    border-bottom: 2px solid var(--vscode-focusBorder);
+}
+
+.nav-item [data-marker] {
+    margin-right: 4px;
+}
+
+button:focus-visible,
+[role="option"]:focus-visible {
+    outline: 2px solid var(--vscode-focusBorder);
+    outline-offset: 1px;
+}
+
+.project-name {
+    color: var(--vscode-descriptionForeground);
+}
+
+main {
+    padding: 8px 16px;
+}
