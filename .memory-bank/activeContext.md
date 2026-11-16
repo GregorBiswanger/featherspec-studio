@@ -14,6 +14,7 @@ Spec 0001 (workspace discovery) is fully implemented; waiting for the pre-done g
 - Acceptance criteria in focus: AC-009, AC-013, AC-019, AC-022 (built, decided at the pre-done gate).
 
 ## Changed Recently
+- Branch `spec-0004`: `/sdd-plan` 0004 wrote [0004 plan](../.specs/backlog/0004-runtime-persistence-event-model.plan.md) (8 steps, not started; awaits Gregor's review incl. spec OP-015).
 - Spec 0001 implemented (T-001…T-009): core in `src/core/{ports,discovery}`, adapters in `src/adapters/{node,vscode}`, composition in `src/extension.ts`, fixtures in `test/fixtures/`, `.github/workflows/ci.yml`, README, `architecture:` snapshot.
 - Checks: `npx eslint src --max-warnings 0`, `npx tsc --noEmit`, `npm run test:unit` (106 tests), `npm run compile` green; `npm test` not run here (VS Code download blocked).
 - `/sdd-plan` 0001: spec revised for OP-005 (activation by `workspaceContains:AGENTS.md` + `.specs`, no `onStartupFinished`; Gregor 2026-11-16).

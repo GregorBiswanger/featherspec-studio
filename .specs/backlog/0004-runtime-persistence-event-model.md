@@ -1,7 +1,7 @@
 # Runtime Persistence & Event Model
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0004-runtime-persistence-event-model.plan.md](0004-runtime-persistence-event-model.plan.md)
 
 Handoff reference: FS-004 ([po-handoff.md](../../docs/product/po-handoff.md) §7, §8.5, §10 FS-004, §13).
 Depends on: 0001 only (project root as store key, PD-025, PD-026). Consumers: 0003 (spec status
@@ -417,6 +417,17 @@ Resolved:
     (BR-011), so its 90 days start then; (d) the age cap and "Clear Run History" also cover 0003's
     spec status history (PD-023 "pruned, cleared"); (e) after the size cap events are dropped but
     status changes are still stored (AC-027).
+
+Adopted by `/sdd-plan` (2026-11-16), pending Gregor's review of the plan — he confirms or changes
+them there; until then OP-005…OP-012 stay listed below:
+
+- OP-015: the plan adopts the recommendation of each of OP-005…OP-012, with these values: page
+  size at most 500 events (OP-010); per-run size cap 20,000 events, a named constant to re-measure
+  (OP-009); lock heartbeat every 10 s, lock stale after 60 s (OP-012); setting
+  `featherspec-studio.runHistory.maxAgeDays`, whole days, minimum 1, default 90, user settings
+  only (OP-008). Store location (§13): one directory per project root under the extension's
+  `globalStorageUri`, not the per-workspace `storageUri` — the only VS Code storage location that
+  all windows and workspaces share, which AC-008 and PD-030 need; ADR-002 gets an amendment.
 
 Open, none blocks planning (clarify finding in brackets; a recommendation each):
 
