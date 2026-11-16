@@ -136,7 +136,7 @@ The model covers the following. Field names and shapes are decided in `/sdd-plan
 
 Terms: **key** = project-relative path; **reference** = file stem (BR-03). **Plan** = sibling
 plan or archived plan. **Absent** = not in the file; **empty** = present without a value;
-**placeholder** = present as `_none yet_`, `_none_` or `—`. **Affected spec** = an entry whose
+**placeholder** = present as `_none yet_`, `_none_`, `—` or, in a plan's session handoff, an italic skeleton text in parentheses such as `_(commit hash …)_` (format §10 #14; Gregor 2026-11-16). **Affected spec** = an entry whose
 own file, linked plan or linked return note was created, changed or removed, including an
 entry that gains or loses a link. **File facts** = what the file system reports about a
 file rather than its content: key and modification time (PD-043).

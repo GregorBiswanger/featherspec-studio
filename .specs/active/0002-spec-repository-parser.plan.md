@@ -3,7 +3,7 @@
 **Spec:** [0002-spec-repository-parser.md](0002-spec-repository-parser.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-003 ‖ T-005 (stage 3, other agents)
+**Current step:** T-006
 
 ## Approach
 
@@ -124,8 +124,8 @@ the slices are small.
   all kept + `duplicate`. Hooked into `parseSpec`. Every rendering of format §3.4 as a case;
   struck shape marked UNVERIFIED in the test name.
 - **Verify:** `npm run test:unit -- src/core/specs/leadingIds.test.ts src/core/specs/parseSpec.test.ts` (red, then green) + per-step gates
-- [ ] **Verified (T-003):** —
-- **Notes:** — _(touches `parseSpec.ts` after T-002; parallel only with T-005)_
+- [x] **Verified (T-003):** 2026-11-16 · `npm run test:unit -- src/core/specs/leadingIds.test.ts src/core/specs/parseSpec.test.ts`: red first (30 of 30 `Not implemented`) → green 69 of 69 after the main session extended the key list in the T-002 test; worker's negative controls (paragraph start, uncertain flag, blockquote break) red then restored. Integrated: gates eslint, tsc, `npm run test:unit` (272 tests) green. Test review: accepted by Gregor 2026-11-16.
+- **Notes:** API `locateLeadingIds(lines, fenced, key)`; `fencedLines` moved into `leadingIds.ts`; `ParsedSpec` gains `criteria` and `requirements`; `text`/`illustration` are raw source lines; `[Uncertain]` counts only before the ID; struck = `~~` before the ID (UNVERIFIED); FR duplicates not flagged. Main session added `criteria`/`requirements` to the exact key list in `parseSpec.test.ts` (AC-009 test, file outside this step's `Files:`).
 
 ### T-004 — Parse plan steps in both dialects
 
@@ -152,8 +152,8 @@ the slices are small.
   value + diagnostic; uses `planSteps`. Synthetic fixtures carry `‖`, `Files:`, `Blocked`,
   return notes DONE + BLOCKED, `**Ticket:**`, `Deprecated`, `-2` archive (UNVERIFIED).
 - **Verify:** `npm run test:unit -- src/core/specs/parsePlan.test.ts` (red, then green) + per-step gates
-- [ ] **Verified (T-005):** —
-- **Notes:** — _(imports `planSteps.ts` after T-004; parallel only with T-003)_
+- [x] **Verified (T-005):** 2026-11-16 · `npm run test:unit -- src/core/specs/parsePlan.test.ts`: red first (39 of 39 `Not implemented`) → green 39 of 39; worker's negative controls (column check, `manual:` flag, stage-head split, section cut, repeated-field rule) red then restored; main session's control for the skeleton placeholder (rule off → 1 red). Integrated: gates green (272 tests). Test review: accepted by Gregor 2026-11-16.
+- **Notes:** API `parsePlan(text, fileKey): ParsedPlan` (header, stages, steps via `parsePlanSteps`, traceability, handoff, `unsupported`, `diagnostics`). Gregor 2026-11-16: (a) a traceability table is supported only with the five format columns exactly, otherwise unsupported + diagnostic; (b) skeleton text `_(…)_` in the handoff is a placeholder (spec §8 placeholder set extended; `SKELETON_PLACEHOLDER` in `parsePlan.ts`, test renamed AC-019); (c) fixture directories in `Files:` are fine. Fixtures `fs110-parallel-synthetic`, `fs110-ready-synthetic` added.
 
 ### T-006 — Join plans and return notes; project diagnostics
 
@@ -224,18 +224,18 @@ the slices are small.
 | --- | --- | --- | --- | --- |
 | AC-001 | T-001 | `src/core/specs/files.ts:readProjectFiles` | `files.test.ts` (AC-001 cases) | verified |
 | AC-002 | T-001 | `src/core/specs/files.ts:readProjectFiles` | `files.test.ts` (AC-002 move case) | verified |
-| AC-003 | T-002, T-003 | `src/core/specs/parseSpec.ts:parseSpec` (FR part: T-003) | `parseSpec.test.ts` | open |
-| AC-004 | T-003 | — | — | open |
-| AC-005 | T-003 | — | — | open |
+| AC-003 | T-002, T-003 | `src/core/specs/parseSpec.ts:parseSpec`, `leadingIds.ts:locateLeadingIds` | `parseSpec.test.ts`, `leadingIds.test.ts` | verified |
+| AC-004 | T-003 | `src/core/specs/leadingIds.ts:locateLeadingIds` | `leadingIds.test.ts` | verified |
+| AC-005 | T-003 | `src/core/specs/leadingIds.ts:locateLeadingIds` | `leadingIds.test.ts` | verified |
 | AC-006 | T-006 | — | — | open |
-| AC-007 | T-004, T-005 | `src/core/specs/planSteps.ts:parsePlanSteps` (plan header, traceability: T-005) | `planSteps.test.ts` | open |
+| AC-007 | T-004, T-005 | `src/core/specs/planSteps.ts:parsePlanSteps`, `parsePlan.ts:parsePlan` | `planSteps.test.ts`, `parsePlan.test.ts` | verified |
 | AC-008 | T-004 | `src/core/specs/planSteps.ts:expandCovers` | `planSteps.test.ts` (AC-008) | verified |
-| AC-009 | T-002, T-005 | `src/core/specs/parseSpec.ts` (plan history), `planSteps.ts` (steps); traceability: T-005 | `parseSpec.test.ts`, `planSteps.test.ts` | open |
+| AC-009 | T-002, T-005 | `src/core/specs/parseSpec.ts` (plan history), `planSteps.ts`, `parsePlan.ts` (traceability) | `parseSpec.test.ts`, `planSteps.test.ts`, `parsePlan.test.ts` | verified |
 | AC-010 | T-006 | — | — | open |
 | AC-011 | T-001 | `src/core/specs/files.ts:readOne` (file-level; parse errors: T-006) | `files.test.ts` (AC-011, fs-broken) | built |
 | AC-012 | T-007, T-008 | — | — | open |
 | AC-013 | T-007 | — | — | open |
-| AC-014 | T-002, T-005 | `src/core/specs/parseSpec.ts`, `planSteps.ts` (plan parts: T-005) | `parseSpec.test.ts`, `planSteps.test.ts` | open |
+| AC-014 | T-002, T-005 | `src/core/specs/parseSpec.ts`, `planSteps.ts`, `parsePlan.ts` | `parseSpec.test.ts`, `planSteps.test.ts`, `parsePlan.test.ts` | verified |
 | AC-015 | T-003, T-004, T-006 | — | — | open |
 | AC-016 | T-006 | — | — | open |
 | AC-017 | T-006 | — | — | open |
@@ -248,8 +248,8 @@ the slices are small.
 
 ## Session handoff
 
-- **Done so far:** stage 1 (T-001) and stage 2 (T-002, T-004) built, integrated and verified (202 unit tests). Workers shared this checkout, no worktree.
-- **Next action:** stage 3, T-003 ‖ T-005 with **other agents**: T-003 edits `parseSpec.ts` (+ new `leadingIds.*`), T-005 adds `parsePlan.*` and two synthetic fixtures; they share no file. Main session waits for Gregor, then integrates per `.claude/rules/parallel-work.md` (return notes `activeContext.0002-T-003.md`, `activeContext.0002-T-005.md`), then T-006.
+- **Done so far:** stages 1-3 (T-001 … T-005) built, integrated and verified (272 unit tests). Workers shared this checkout.
+- **Next action:** T-006 (join plans and return notes, project diagnostics), then T-007 … T-009 without stopping (Gregor, 2026-11-16).
 - **Open decisions:** none.
-- **Baseline:** 9bb1c18 (HEAD before T-001). Stage 3 base: the stage 2 integration commit (see `git log`).
+- **Baseline:** 9bb1c18 (HEAD before T-001).
 - **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); runs on CI.

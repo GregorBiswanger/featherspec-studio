@@ -1,5 +1,7 @@
 import type { Diagnostic } from './diagnostics';
 import type { FieldValue } from './fieldValue';
+import { fencedLines, locateLeadingIds } from './leadingIds';
+import type { AcceptanceCriterion, Requirement } from './leadingIds';
 
 export interface HeaderField {
     value: FieldValue;
@@ -43,6 +45,8 @@ export interface ParsedSpec {
     unsupportedHeaderLines: UnsupportedHeaderLine[];
     sections: SpecSection[];
     planHistory: PlanHistoryLine[];
+    criteria: AcceptanceCriterion[];
+    requirements: Requirement[];
     diagnostics: Diagnostic[];
 }
 
@@ -51,7 +55,6 @@ const PLACEHOLDERS = new Set(['_none yet_', '_none_', '—']);
 const HEADER_LINE = /^\*\*([^*:\n]+):\*\*[ \t]*(.*?)[ \t]*$/;
 const H1 = /^#(?:[ \t]+(.*?))?[ \t]*$/;
 const H2 = /^##(?:[ \t]+(.*?))?[ \t]*$/;
-const FENCE = /^ {0,3}(`{3,}|~{3,})/;
 const MARKDOWN_LINK = /^\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)$/;
 const EXTERNAL_TARGET = /^(?:[a-z][a-z0-9+.-]*:|\/)/i;
 const PLAN_HISTORY_HEADING = 'Plan history';
@@ -64,26 +67,6 @@ function fieldValue(raw: string): FieldValue {
         return { state: 'empty', raw };
     }
     return { state: PLACEHOLDERS.has(raw) ? 'placeholder' : 'value', raw };
-}
-
-function fencedLines(lines: readonly string[]): boolean[] {
-    const fenced: boolean[] = [];
-    let marker: string | undefined;
-    for (const line of lines) {
-        const match = FENCE.exec(line);
-        if (marker === undefined) {
-            fenced.push(match !== null);
-            if (match !== null) {
-                marker = match[1][0];
-            }
-        } else {
-            fenced.push(true);
-            if (match !== null && match[1][0] === marker && line.trim() === match[1]) {
-                marker = undefined;
-            }
-        }
-    }
-    return fenced;
 }
 
 function trimBlankEdges(text: string): string {
@@ -209,6 +192,9 @@ export function parseSpec(text: string, key: string): ParsedSpec {
         }
     });
 
+    const located = locateLeadingIds(lines, fenced, key);
+    diagnostics.push(...located.diagnostics);
+
     const field = (label: KnownLabel): HeaderField => fields.get(label) ?? { value: { state: 'absent' } };
     const plan = field('Plan');
     return {
@@ -223,6 +209,8 @@ export function parseSpec(text: string, key: string): ParsedSpec {
         unsupportedHeaderLines,
         sections,
         planHistory,
+        criteria: located.criteria,
+        requirements: located.requirements,
         diagnostics,
     };
 }

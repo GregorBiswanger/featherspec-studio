@@ -279,11 +279,13 @@ describe('parseSpec sections and plan history', () => {
         expect(Object.keys(spec).sort()).toEqual(
             [
                 'clarified',
+                'criteria',
                 'diagnostics',
                 'origin',
                 'plan',
                 'planClassification',
                 'planHistory',
+                'requirements',
                 'sections',
                 'status',
                 'ticket',
