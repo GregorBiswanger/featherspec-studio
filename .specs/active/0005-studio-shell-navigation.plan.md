@@ -3,7 +3,7 @@
 **Spec:** [0005-studio-shell-navigation.md](0005-studio-shell-navigation.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-005
+**Current step:** T-008
 
 ## Approach
 
@@ -383,8 +383,8 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
     - a damaged value → defaults;
     - a per-area open shows the named area.
 - **Verify:** `npm run test:unit -- src/core/shell` plus the per-step gates
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** 2026-11-16 — red: `npx vitest run src/core/shell` 29 failed in the three pure modules (`uiMemory`, `selection`, `specRows` stubs threw `Not implemented`) and 15 more failed in `shellService.navigation.test.ts` against the T-006 service (no `open`, no selection, rows or notice): 44 failed in all; green: 8 files, 115/115 (one test expectation of mine was wrong and was corrected: a model of another root counts as 'not loaded', so the selection is kept). Covers: AC-028 G/W/T, AC-010 G/W/T for delete and for the move backlog to active, selection kept across hand-made area changes, kept when a project is lost and returns, cleared silently for another project, notice found at the next load, a damaged memory value gives Mission Control and no selection, first open gives Mission Control, a restart restores the remembered area and selection, per-area open, rows follow a model change and are ordered, a spec target that is not in the project keeps area and selection and shows the notice, run and board-filter targets reach the view. Controls: a known stem gives no notice; no-target request clears the old target. Gates: eslint 0, `tsc --noEmit` 0, `tsc --noEmit -p src/webview` 0, `npm run test:unit` 55 files, 846 passed.
+- **Notes:** A `select` request for a stem that is not in a loaded model gets the same notice as a navigation target (spec BR-07). With no model loaded, a selection or spec target is accepted unchecked (BR-03 'kept and not checked'). `numberOfStem` takes the leading digits of the stem for the notice and the view, so a deleted spec still names its number. `open({ via: 'start' | 'area' })` is the service entry for the commands (T-008, T-009).
 
 ### T-008 — Studio panel host, commands and restore
 
@@ -481,12 +481,12 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 | AC-002 | T-008 | — | — | open |
 | AC-003 | T-005, T-009 | src/core/shell/treeModel.ts:buildTreeModel; the TreeView in T-009 | treeModel.test.ts (AC-003) | built |
 | AC-004 | T-002 | src/webview/Navigation.tsx, App.tsx, client.ts | src/webview/App.test.tsx (AC-004) | verified |
-| AC-005 | T-007, T-008 | — | — | open |
+| AC-005 | T-007, T-008 | src/core/shell/shellService.ts:open (per-area); the commands in T-008 | shellService.navigation.test.ts (per-area open) | built |
 | AC-006 | T-004 | src/webview/areas/Placeholder.tsx, registry.tsx | src/webview/areas/areas.test.tsx (AC-006, three areas, no rows) | verified |
-| AC-007 | T-004, T-007 | src/webview/areas/SpecExplorer.tsx; rows from T-007 | areas.test.tsx (AC-007, 500 ms) | built |
-| AC-008 | T-004, T-007 | src/webview/areas/SpecExplorer.tsx; host selection T-007 | areas.test.tsx (AC-008 round trip) | built |
-| AC-009 | T-007, T-008 | — | — | open |
-| AC-010 | T-004, T-007 | src/webview/NoticeBar.tsx; host reconciliation T-007 | areas.test.tsx (AC-010 notice) | built |
+| AC-007 | T-004, T-007 | src/core/shell/specRows.ts, shellService.ts (rows), src/webview/areas/SpecExplorer.tsx | specRows.test.ts, shellService.navigation.test.ts (rows follow), areas.test.tsx (AC-007, 500 ms) | verified |
+| AC-008 | T-004, T-007 | src/core/shell/shellService.ts (select), specRows.ts, SpecExplorer.tsx | shellService.navigation.test.ts (AC-008), areas.test.tsx (round trip) | verified |
+| AC-009 | T-007, T-008 | src/core/shell/uiMemory.ts, shellService.ts (open, persist); serializer in T-008 | uiMemory.test.ts, shellService.navigation.test.ts (AC-009 memory); host smoke (serializer) in T-008; manual: real reload (Gregor) | built |
+| AC-010 | T-004, T-007 | src/core/shell/selection.ts:reconcileSelection, shellService.ts, NoticeBar.tsx | selection.test.ts, shellService.navigation.test.ts (AC-010 G/W/T), areas.test.tsx (notice) | verified |
 | AC-011 | T-005, T-009 | src/core/shell/panelState.ts:derivePanelState (S1), treeModel.ts; Open Folder action in T-009 | panelState.test.ts (AC-011), treeModel.test.ts (S1) | built |
 | AC-012 | T-005 | src/core/shell/panelState.ts (S2) | panelState.test.ts (AC-012), treeModel.test.ts | verified |
 | AC-013 | T-005, T-009 | src/core/shell/panelState.ts (S3); the Select project action runs in T-009 | panelState.test.ts (AC-013), treeModel.test.ts | built |
@@ -504,13 +504,13 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 | AC-025 | T-009 | — | — | open |
 | AC-026 | T-005 | src/core/shell/panelState.ts (S8) | panelState.test.ts (AC-026, with and without another project), treeModel.test.ts | verified |
 | AC-027 | T-005 | src/core/shell/panelState.ts (S9) | panelState.test.ts (AC-027), treeModel.test.ts | verified |
-| AC-028 | T-007 | — | — | open |
-| AC-029 | T-006, T-009 | — | — | open |
+| AC-028 | T-007 | src/core/shell/shellService.ts:navigate, selection.ts:findSpec | shellService.navigation.test.ts (AC-028 G/W/T, notice, run and filter targets), areas.test.tsx (target to placeholder) | verified |
+| AC-029 | T-006, T-009 | src/core/shell/shellService.ts:rescan; the command in T-009 | shellService.test.ts (AC-029) | built |
 
 ## Session handoff
 
-- **Done so far:** spec 0005 active; answers applied; 0001 T-013 done; T-001 (protocol, router), T-002 (webview toolchain, frame, bundle-in-jsdom test), T-003 (panel states), T-004 (areas, Spec Explorer list, notice). Stage 2 ends here; the webview is complete against fakes.
-- **Next action:** T-005 (panel-state derivation and tree model in `src/core/shell`; the discovery update notification exists from 0001 T-013).
+- **Done so far:** spec 0005 active; answers applied; 0001 T-013 done; T-001...T-004 (protocol, router, webview), T-005 (panel states, tree model), T-006 (shell service: loading, errors, Retry, trust, Rescan), T-007 (selection, memory, rows, navigation request). Stage 3 ends here: the whole shell works against fakes (846 unit tests).
+- **Next action:** T-008 (panel host with CSP, commands, serializer, UI memory adapter, `StudioApi.shell()`, test-mode probe, host smoke `src/test/shell.smoke.test.ts`).
 - **Open decisions:** OP-010…OP-013 (spec §17), none blocking.
 - **Baseline:** `2cf3cc8` (HEAD before the lifecycle move and the first commit of this work).
 - **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); CI runs it.

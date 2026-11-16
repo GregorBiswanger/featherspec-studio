@@ -1,0 +1,220 @@
+import { afterEach, describe, expect, it } from 'vitest';
+import { addProject, createShellWorld, SPEC_HEADER, type ShellWorld } from './testing/world';
+
+let world: ShellWorld | undefined;
+
+afterEach(() => {
+    world?.dispose();
+    world = undefined;
+});
+
+const FILES = {
+    '.specs/backlog/0003-x.md': SPEC_HEADER('Draft', 'Spec three'),
+    '.specs/active/0002-b.md': SPEC_HEADER('In Progress', 'Spec two'),
+};
+
+async function ready(options: Parameters<typeof createShellWorld>[0] = {}, files: Record<string, string> = FILES): Promise<ShellWorld> {
+    world = createShellWorld(options);
+    addProject(world, 'proj', files);
+    await world.controller.start();
+    await world.settle();
+    return world;
+}
+
+describe('BR-02, AC-009: start area and memory', () => {
+    it('the first open in a workspace shows Mission Control', async () => {
+        const current = await ready();
+        current.service.open({ via: 'start' });
+        expect(current.service.view().area).toBe('missionControl');
+    });
+
+    it('every change of area is remembered; a restart with that memory starts on the remembered area', async () => {
+        const current = await ready();
+        await current.service.handlers.navigate({ area: 'specBoard' });
+        expect(current.memory.value).toEqual({ v: 1, area: 'specBoard' });
+        const second = current.restart();
+        second.open({ via: 'start' });
+        expect(second.view().area).toBe('specBoard');
+    });
+
+    it('Open and Open Studio (start) show the remembered area, a per-area open shows the named area and remembers it', async () => {
+        const current = await ready({ memory: { v: 1, area: 'agentCenter' } });
+        current.service.open({ via: 'start' });
+        expect(current.service.view().area).toBe('agentCenter');
+        current.service.open({ via: 'area', area: 'specExplorer' });
+        expect(current.service.view().area).toBe('specExplorer');
+        expect((current.memory.value as { area: string }).area).toBe('specExplorer');
+    });
+
+    it.each([
+        ['an unknown area', { v: 1, area: 'settings' }],
+        ['another version', { v: 9, area: 'specBoard' }],
+        ['garbage', 'specBoard'],
+        ['a damaged selection', { v: 1, area: 'specBoard', selection: { stem: 4 } }],
+    ])('a damaged remembered value (%s) gives Mission Control and no selection', async (_name, memory) => {
+        const current = await ready({ memory });
+        current.service.open({ via: 'start' });
+        expect(current.service.view().area).toBe('missionControl');
+        expect(current.service.view().selection).toBeUndefined();
+    });
+});
+
+describe('AC-008, AC-009: selection', () => {
+    it('selecting a spec marks it, and changing areas by hand never changes it', async () => {
+        const current = await ready();
+        await current.service.handlers.select({ stem: '0003-x' });
+        expect(current.service.view().selection).toEqual({ stem: '0003-x', number: '0003' });
+        expect(current.service.view().rows.find((row) => row.selected)?.stem).toBe('0003-x');
+        await current.service.handlers.navigate({ area: 'agentCenter' });
+        await current.service.handlers.navigate({ area: 'specExplorer' });
+        expect(current.service.view().selection?.stem).toBe('0003-x');
+        expect(current.service.view().rows.find((row) => row.selected)?.stem).toBe('0003-x');
+    });
+
+    it('the selection is remembered with the project root and survives a restart with the same project', async () => {
+        const current = await ready();
+        await current.service.handlers.select({ stem: '0003-x' });
+        expect(current.memory.value).toMatchObject({ v: 1, selection: { projectRoot: 'proj', stem: '0003-x' } });
+        const second = current.restart();
+        expect(second.view().selection?.stem).toBe('0003-x');
+    });
+
+    it('rows follow a model change without reopening and are ordered by number (AC-007)', async () => {
+        const current = await ready();
+        expect(current.service.view().rows.map((row) => row.number)).toEqual(['0002', '0003']);
+        current.views.length = 0;
+        current.specs.setFile('proj', '.specs/backlog/0001-a.md', SPEC_HEADER('Draft', 'Spec one'));
+        await current.repository.rescan();
+        expect(current.service.view().rows.map((row) => row.number)).toEqual(['0001', '0002', '0003']);
+        expect(current.views.length).toBeGreaterThan(0);
+    });
+
+    it('selecting a stem that is not in the project keeps the selection and shows the notice (control: a known stem has none)', async () => {
+        const current = await ready();
+        await current.service.handlers.select({ stem: '0002-b' });
+        await current.service.handlers.select({ stem: '0009-nope' });
+        expect(current.service.view().selection?.stem).toBe('0002-b');
+        expect(current.service.view().notice).toEqual({ number: '0009' });
+        await current.service.handlers.select({ stem: '0003-x' });
+        expect(current.service.view().notice).toBeUndefined();
+    });
+});
+
+describe('AC-010: clearing', () => {
+    it('Given spec 0003 is selected When its file is deleted outside VS Code Then no spec is selected and the notice names 0003', async () => {
+        const current = await ready();
+        await current.service.handlers.select({ stem: '0003-x' });
+        current.specs.remove('proj', '.specs/backlog/0003-x.md');
+        await current.repository.rescan();
+        expect(current.service.view().selection).toBeUndefined();
+        expect(current.service.view().notice).toEqual({ number: '0003' });
+        expect(current.memory.value).toEqual({ v: 1, area: 'missionControl' });
+    });
+
+    it('Given spec 0003 in backlog is selected When its file moves to active Then 0003 is still selected', async () => {
+        const current = await ready();
+        await current.service.handlers.select({ stem: '0003-x' });
+        current.specs.move('proj', '.specs/backlog/0003-x.md', '.specs/active/0003-x.md');
+        await current.repository.rescan();
+        expect(current.service.view().selection?.stem).toBe('0003-x');
+        expect(current.service.view().notice).toBeUndefined();
+        expect(current.service.view().rows.find((row) => row.selected)?.path).toBe('.specs/active/0003-x.md');
+    });
+
+    it('the notice stays until dismissed, and Dismiss clears it', async () => {
+        const current = await ready();
+        await current.service.handlers.select({ stem: '0003-x' });
+        current.specs.remove('proj', '.specs/backlog/0003-x.md');
+        await current.repository.rescan();
+        await current.controller.refresh();
+        await current.settle();
+        expect(current.service.view().notice).toEqual({ number: '0003' });
+        await current.service.handlers.dismissNotice({});
+        expect(current.service.view().notice).toBeUndefined();
+    });
+
+    it('a stale selection found at the next load is cleared with the notice (the file went away while closed)', async () => {
+        const current = await ready();
+        await current.service.handlers.select({ stem: '0003-x' });
+        current.dispose();
+        const files = { '.specs/active/0002-b.md': SPEC_HEADER('In Progress', 'Spec two') };
+        const next = createShellWorld({ memory: current.memory.value });
+        world = next;
+        addProject(next, 'proj', files);
+        await next.controller.start();
+        await next.settle();
+        expect(next.service.view().selection).toBeUndefined();
+        expect(next.service.view().notice).toEqual({ number: '0003' });
+    });
+
+    it('another project becoming active clears the selection without a notice, and the area stays', async () => {
+        world = createShellWorld({ roots: ['a', 'b'] });
+        addProject(world, 'a', { '.specs/active/0002-b.md': SPEC_HEADER('In Progress') });
+        addProject(world, 'b', { '.specs/active/0002-b.md': SPEC_HEADER('In Progress') });
+        world.host.ui.pickAnswer = () => 'a';
+        await world.controller.start();
+        await world.service.runAction('selectProject');
+        await world.settle();
+        await world.service.handlers.navigate({ area: 'specExplorer' });
+        await world.service.handlers.select({ stem: '0002-b' });
+        expect(world.service.view().selection?.stem).toBe('0002-b');
+        world.host.ui.pickAnswer = () => 'b';
+        await world.service.runAction('selectProject');
+        await world.settle();
+        expect(world.service.view().selection).toBeUndefined();
+        expect(world.service.view().notice).toBeUndefined();
+        expect(world.service.view().area).toBe('specExplorer');
+    });
+
+    it('a project that is lost and returns keeps its selection (no model is loaded in between)', async () => {
+        const current = await ready();
+        await current.service.handlers.select({ stem: '0003-x' });
+        current.discoveryFs.remove('proj', 'AGENTS.md');
+        await current.controller.refresh();
+        await current.settle();
+        expect(current.controller.snapshot().active).toBeUndefined();
+        expect(current.service.view().notice).toBeUndefined();
+        current.discoveryFs.setFile('proj', 'AGENTS.md', 'FeatherSpecVersion: 1.10.0\n');
+        await current.controller.refresh();
+        await current.settle();
+        expect(current.service.view().selection?.stem).toBe('0003-x');
+        expect(current.service.view().notice).toBeUndefined();
+    });
+});
+
+describe('AC-028: the navigation request (BR-07)', () => {
+    it('Given Mission Control is shown and spec 0003-x exists When the request "Spec Explorer, spec 0003-x" arrives Then Spec Explorer is shown and 0003 is selected', async () => {
+        const current = await ready();
+        expect(current.service.view().area).toBe('missionControl');
+        await current.service.handlers.navigate({ area: 'specExplorer', target: { kind: 'spec', stem: '0003-x' } });
+        expect(current.service.view().area).toBe('specExplorer');
+        expect(current.service.view().selection?.stem).toBe('0003-x');
+        expect(current.service.view().target).toEqual({ kind: 'spec', stem: '0003-x' });
+    });
+
+    it('a spec target whose stem is not in the project keeps area and selection and shows the notice', async () => {
+        const current = await ready();
+        await current.service.handlers.select({ stem: '0002-b' });
+        await current.service.handlers.navigate({ area: 'specBoard', target: { kind: 'spec', stem: '0099-ghost' } });
+        expect(current.service.view().area).toBe('missionControl');
+        expect(current.service.view().selection?.stem).toBe('0002-b');
+        expect(current.service.view().notice).toEqual({ number: '0099' });
+    });
+
+    it('a run or board-filter target shows the area with the target in the view and changes no selection', async () => {
+        const current = await ready();
+        await current.service.handlers.select({ stem: '0002-b' });
+        await current.service.handlers.navigate({ area: 'agentCenter', target: { kind: 'run', id: 'r-1' } });
+        expect(current.service.view()).toMatchObject({ area: 'agentCenter', target: { kind: 'run', id: 'r-1' } });
+        await current.service.handlers.navigate({ area: 'specBoard', target: { kind: 'boardFilter', filter: { states: ['Active'] } } });
+        expect(current.service.view().target).toEqual({ kind: 'boardFilter', filter: { states: ['Active'] } });
+        expect(current.service.view().selection?.stem).toBe('0002-b');
+    });
+
+    it('a request without a target clears an earlier target', async () => {
+        const current = await ready();
+        await current.service.handlers.navigate({ area: 'agentCenter', target: { kind: 'run', id: 'r-1' } });
+        await current.service.handlers.navigate({ area: 'specBoard' });
+        expect(current.service.view().target).toBeUndefined();
+    });
+});

@@ -1,11 +1,14 @@
 import { DEFAULT_AREA, type AreaId } from '../../shared/protocol/areas';
-import type { ActionId, NavigationRequest, NavigationTarget, PanelState, ShellView } from '../../shared/protocol/messages';
+import type { ActionId, NavigationRequest, NavigationTarget, PanelState, SelectedSpec, ShellView } from '../../shared/protocol/messages';
 import type { DiscoveryController } from '../discovery/discoveryController';
 import type { Disposable, WorkspaceFoldersPort } from '../ports/host';
-import type { ShellActionsPort, ShellModelSource, TrustPort, UiMemoryPort } from '../ports/shell';
+import type { ShellActionsPort, ShellModel, ShellModelSource, TrustPort, UiMemoryPort } from '../ports/shell';
 import type { SpecRepository } from '../specs/specRepository';
 import type { RequestHandlers } from './messageRouter';
 import { derivePanelState, listingFailure } from './panelState';
+import { findSpec, numberOfStem, reconcileSelection } from './selection';
+import { buildSpecRows } from './specRows';
+import { parseUiMemory, serializeUiMemory, type RememberedSelection } from './uiMemory';
 
 export interface ShellServiceDeps {
     discovery: Pick<DiscoveryController, 'snapshot' | 'onDidUpdate' | 'refresh' | 'selectProject'>;
@@ -18,11 +21,14 @@ export interface ShellServiceDeps {
     sameRoot: (first: string, second: string) => boolean;
 }
 
+export type OpenRequest = { via: 'start' } | { via: 'area'; area: AreaId };
+
 export interface ShellService {
     view(): ShellView;
     onDidChangeView(listener: (view: ShellView) => void): Disposable;
     runAction(action: ActionId): Promise<void>;
     rescan(): Promise<void>;
+    open(request: OpenRequest): void;
     handlers: RequestHandlers;
     dispose(): void;
 }
@@ -30,16 +36,60 @@ export interface ShellService {
 export function createShellService(deps: ShellServiceDeps): ShellService {
     const listeners = new Set<(view: ShellView) => void>();
     let busy = false;
-    let area: AreaId = DEFAULT_AREA;
+    const remembered = parseUiMemory(deps.memory.get());
+    let area: AreaId = remembered?.area ?? DEFAULT_AREA;
+    let selection: RememberedSelection | undefined = remembered?.selection;
+    let notice: { number: string } | undefined;
     let target: NavigationTarget | undefined;
     let lastNotified = '';
+    let lastPersisted = JSON.stringify(remembered === undefined ? null : serializeUiMemory(remembered));
+
+    function loadedModel(): ShellModel | undefined {
+        const activeRoot = deps.discovery.snapshot().active?.root;
+        const model = deps.source.current();
+        return activeRoot !== undefined && model !== undefined && deps.sameRoot(model.project.root, activeRoot) ? model : undefined;
+    }
+
+    function persist(): void {
+        const memory = selection === undefined ? { v: 1 as const, area } : { v: 1 as const, area, selection };
+        const serialized = JSON.stringify(serializeUiMemory(memory));
+        if (serialized !== lastPersisted) {
+            lastPersisted = serialized;
+            void deps.memory.set(serializeUiMemory(memory)).catch(() => undefined);
+        }
+    }
+
+    function reconcile(): void {
+        const reconciled = reconcileSelection({
+            selection,
+            activeRoot: deps.discovery.snapshot().active?.root,
+            model: loadedModel(),
+            sameRoot: deps.sameRoot,
+        });
+        if (JSON.stringify(reconciled.selection) !== JSON.stringify(selection)) {
+            selection = reconciled.selection;
+            persist();
+        }
+        if (reconciled.notice !== undefined) {
+            notice = reconciled.notice;
+        }
+    }
+
+    function selectedSpec(model: ShellModel | undefined): SelectedSpec | undefined {
+        if (selection === undefined) {
+            return undefined;
+        }
+        const entry = model?.lifecycle.entries.find((candidate) => candidate.stem === selection?.stem);
+        const number = entry?.number ?? numberOfStem(selection.stem);
+        return selection.path === undefined ? { stem: selection.stem, number } : { stem: selection.stem, path: selection.path, number };
+    }
 
     function compute(): ShellView {
+        reconcile();
         const discovery = deps.discovery.snapshot();
-        const model = deps.source.current();
-        const activeRoot = discovery.active?.root;
-        const modelLoaded = activeRoot !== undefined && model !== undefined && deps.sameRoot(model.project.root, activeRoot);
-        const listing = modelLoaded && model !== undefined ? listingFailure(model.project) : undefined;
+        const model = loadedModel();
+        const modelLoaded = model !== undefined;
+        const listing = model !== undefined ? listingFailure(model.project) : undefined;
         const derived = derivePanelState({
             folderCount: deps.folders.list().length,
             discovery,
@@ -54,9 +104,9 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
             projectName: discovery.active?.name,
             area,
             target,
-            selection: undefined,
-            notice: undefined,
-            rows: [],
+            selection: selectedSpec(model),
+            notice,
+            rows: buildSpecRows(model, selection),
         };
     }
 
@@ -130,13 +180,49 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
         }
     }
 
+    function chooseSpec(stem: string, path: string | undefined): boolean {
+        const activeRoot = deps.discovery.snapshot().active?.root;
+        const model = loadedModel();
+        if (model !== undefined && findSpec(model, stem, path) === undefined) {
+            notice = { number: numberOfStem(stem) };
+            return false;
+        }
+        if (activeRoot !== undefined) {
+            selection = path === undefined ? { projectRoot: activeRoot, stem } : { projectRoot: activeRoot, stem, path };
+            notice = undefined;
+        }
+        return true;
+    }
+
     function navigate(request: NavigationRequest): void {
+        reconcile();
+        const spec = request.target?.kind === 'spec' ? request.target : undefined;
+        if (spec !== undefined && !chooseSpec(spec.stem, spec.path)) {
+            recompute();
+            return;
+        }
         area = request.area;
         target = request.target;
+        persist();
+        recompute();
+    }
+
+    function select(stem: string, path: string | undefined): void {
+        reconcile();
+        chooseSpec(stem, path);
+        persist();
+        recompute();
+    }
+
+    function open(request: OpenRequest): void {
+        area = request.via === 'area' ? request.area : (parseUiMemory(deps.memory.get())?.area ?? DEFAULT_AREA);
+        target = undefined;
+        persist();
         recompute();
     }
 
     return {
+        open,
         view: compute,
         onDidChangeView(listener) {
             listeners.add(listener);
@@ -152,9 +238,12 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
         handlers: {
             hello: async () => undefined,
             navigate: async (request) => navigate(request),
-            select: async () => undefined,
+            select: async (payload) => select(payload.stem, payload.path),
             runAction: async (payload) => runAction(payload.action),
-            dismissNotice: async () => undefined,
+            dismissNotice: async () => {
+                notice = undefined;
+                recompute();
+            },
         },
         dispose() {
             subscriptions.forEach((subscription) => subscription.dispose());

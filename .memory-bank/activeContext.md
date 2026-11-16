@@ -14,16 +14,16 @@ Specs 0001 (workspace discovery), 0002 (spec repository & parser) and 0004 (runt
 - Spec 0004: [spec](../.specs/active/0004-runtime-persistence-event-model.md) / [plan](../.specs/active/0004-runtime-persistence-event-model.plan.md) (Done, T-001...T-009 ticked; AC-020 accepted 2026-11-16).
 - Spec 0003: [spec](../.specs/active/0003-spec-lifecycle-readiness-model.md) / [plan](../.specs/active/0003-spec-lifecycle-readiness-model.plan.md) (Done, 8 of 8 steps).
 - Spec 0005: [spec](../.specs/active/0005-studio-shell-navigation.md) / [plan](../.specs/active/0005-studio-shell-navigation.plan.md) (In Progress, T-001...T-009 open).
-- Current task: 0005 T-005 (panel-state derivation, tree model).
+- Current task: 0005 T-008 (panel host, commands, restore).
 - Acceptance criteria in focus: 0001 AC-024; 0005 AC-001...AC-029.
 
 ## Changed Recently
+- Spec 0005 stage 3 (T-005...T-007): `src/core/shell` (panel-state derivation, tree model, shell service with selection, memory, rows, navigation request, Retry, Rescan); 846 unit tests green.
 - Spec 0005 stage 2 (T-002...T-004): React 19 webview in `src/webview` (client, navigation, panel states, areas, Spec Explorer, notice), second esbuild target, webview vitest project, bundle-in-jsdom test; 740 unit tests green.
 - Spec 0005 stage 1 (T-001): `src/shared/protocol` (envelope, messages, areas, texts) and `src/core/shell/messageRouter.ts`; 0001 T-013 (AC-024 `onDidUpdate`, `remembered`, `failure`); 681 unit tests green.
 - Spec 0005 started and revised (Gregor): OP-002, OP-004...OP-009 resolved in the spec (placeholder wording, S7, S8/S9 texts, notice, Reload, Rescan command AC-029); spec 0001 revised (AC-024 `onDidUpdate`, `remembered`, `failure`; plan step T-013).
 - Spec 0002 revised after `/sdd-compile` (Gregor): AC-022 same-project re-report triggers no re-read, AC-008 three-dot range; plan extended T-010/T-011 (tests only, code unchanged); AC-022 row back to `built` until `npm test` ran.
 - Spec 0003 started (backlog → active): built `src/core/lifecycle` (T-001...T-008): derivation, readiness, contradictions, Blocked, duplicates, Deprecated, verification, transition check, flow marker, status history, service; wired as `StudioApi.lifecycle()`; 639 unit tests green.
-- Spec 0003 revised (OP-005 flow marker on collapsed jumps, OP-006 reactivated Baseline, OP-007 duplicated-stem history, new AC-026; Gregor) and planned: `.specs/active/0003-spec-lifecycle-readiness-model.plan.md`.
 
 ## Decisions in Flight
 - 0002: symbolic links not followed (A-006 confirmed).
