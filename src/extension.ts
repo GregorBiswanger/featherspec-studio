@@ -7,6 +7,8 @@ import { createMarkerWatch } from './adapters/vscode/markerWatch';
 import { createOutputChannel } from './adapters/vscode/outputChannel';
 import { createShellActions } from './adapters/vscode/shellActions';
 import { createStudioPanel, VIEW_TYPE, type StudioPanel, type StudioPanelInspection } from './adapters/vscode/studioPanel';
+import { AREA_COMMANDS, OPEN_COMMAND, RESCAN_COMMAND, SHELL_ACTION_COMMAND } from './adapters/vscode/commands';
+import { createStudioTree } from './adapters/vscode/studioTree';
 import { createTrust } from './adapters/vscode/trust';
 import { createUiMemory } from './adapters/vscode/uiMemory';
 import { sameRootFor } from './adapters/vscode/sameRoot';
@@ -30,8 +32,9 @@ import { createUnavailableMedium } from './core/runtime/unavailableMedium';
 import { createLifecycleService, type LifecycleService } from './core/lifecycle/lifecycleService';
 import { createModelSource } from './core/shell/modelSource';
 import { createShellService, type OpenRequest } from './core/shell/shellService';
-import type { AreaId } from './shared/protocol/areas';
-import type { ProbeOutcome, ShellView } from './shared/protocol/messages';
+import { AREA_IDS } from './shared/protocol/areas';
+import { isRunActionPayload, type ProbeOutcome, type ShellView } from './shared/protocol/messages';
+import type { TreeModel } from './core/shell/treeModel';
 
 export interface ShellTestApi {
     view(): ShellView;
@@ -42,6 +45,7 @@ export interface ShellTestApi {
     inspect(): StudioPanelInspection | undefined;
     restore(restored: vscode.WebviewPanel): Promise<void>;
     select(stem: string): Promise<void>;
+    tree(): TreeModel;
 }
 
 export interface StudioApi {
@@ -128,20 +132,21 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         service.open(request);
         panel.show();
     };
-    const areaCommands: [string, AreaId][] = [
-        ['featherspec-studio.openMissionControl', 'missionControl'],
-        ['featherspec-studio.openSpecBoard', 'specBoard'],
-        ['featherspec-studio.openSpecExplorer', 'specExplorer'],
-        ['featherspec-studio.openAgentCenter', 'agentCenter'],
-    ];
+    const tree = createStudioTree(service);
 
     context.subscriptions.push(
         statusBar,
         { dispose: () => service.dispose() },
+        tree,
         panel,
         vscode.window.registerWebviewPanelSerializer(VIEW_TYPE, panel.serializer),
-        vscode.commands.registerCommand('featherspec-studio.open', openStudio({ via: 'start' })),
-        ...areaCommands.map(([command, area]) => vscode.commands.registerCommand(command, openStudio({ via: 'area', area }))),
+        vscode.commands.registerCommand(OPEN_COMMAND, openStudio({ via: 'start' })),
+        ...AREA_IDS.map((area) => vscode.commands.registerCommand(AREA_COMMANDS[area], openStudio({ via: 'area', area }))),
+        vscode.commands.registerCommand(RESCAN_COMMAND, () => service.rescan()),
+        vscode.commands.registerCommand(SHELL_ACTION_COMMAND, (action: unknown) => {
+            const payload = { action };
+            return isRunActionPayload(payload) ? service.runAction(payload.action) : undefined;
+        }),
         output,
         { dispose: () => controller.dispose() },
         feed,
@@ -175,6 +180,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             asWebviewUri: (uri) => panel.asWebviewUri(uri),
             inspect: () => panel.inspect(),
             select: (stem) => service.handlers.select({ stem }),
+            tree: () => tree.model(),
             restore: async (restored) => {
                 await panel.serializer.deserializeWebviewPanel(restored, undefined);
             },

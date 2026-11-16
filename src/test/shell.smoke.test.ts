@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
+import { snapshotTree } from '../core/discovery/testing/snapshotTree';
 import type { StudioApi } from '../extension';
 
 const VIEW_TYPE = 'featherspecStudio.main';
@@ -113,5 +114,63 @@ suite('FeatherSpec Studio shell smoke', () => {
         await waitFor(() => (api.shell().lastHelloAt() ?? 0) >= started, 10000);
         const elapsed = (api.shell().lastHelloAt() ?? Date.now()) - started;
         assert.ok(elapsed < 1000, `the first message arrived after ${elapsed} ms`);
+    });
+
+    test('AC-003, AC-029: the tree shows the project name and the six entries; every shell command is registered', async () => {
+        const api = await activateStudio();
+        await api.whenIdle();
+        await waitFor(() => api.shell().tree().items.length === 6, 10000);
+        assert.deepStrictEqual(
+            api.shell().tree().items.map((item) => item.label),
+            ['fs110-de-active-review', 'Open Studio', 'Mission Control', 'Spec Board', 'Spec Explorer', 'Agent Center'],
+        );
+        const registered = await vscode.commands.getCommands(true);
+        for (const command of [
+            'featherspec-studio.open',
+            'featherspec-studio.openMissionControl',
+            'featherspec-studio.openSpecBoard',
+            'featherspec-studio.openSpecExplorer',
+            'featherspec-studio.openAgentCenter',
+            'featherspec-studio.rescan',
+            'featherspec-studio.shellAction',
+            'featherspec-studio.selectProject',
+            'featherspec-studio.refreshDiscovery',
+            'workbench.trust.manage',
+            'vscode.openFolder',
+        ]) {
+            assert.ok(registered.includes(command), `${command} is registered`);
+        }
+    });
+
+    test('AC-029: the Rescan command runs while a project is active and changes no file', async () => {
+        const api = await activateStudio();
+        await api.whenIdle();
+        const folder = vscode.workspace.workspaceFolders?.[0];
+        assert.ok(folder);
+        const before = await snapshotTree(folder.uri.fsPath);
+        await vscode.commands.executeCommand('featherspec-studio.rescan');
+        assert.deepStrictEqual(await snapshotTree(folder.uri.fsPath), before);
+    });
+
+    test('AC-025: no file in any workspace folder changes while the Studio is opened, navigated, closed, reopened and restored', async () => {
+        const api = await activateStudio();
+        await api.whenIdle();
+        const folders = vscode.workspace.workspaceFolders ?? [];
+        assert.ok(folders.length > 0);
+        const before = await Promise.all(folders.map((folder) => snapshotTree(folder.uri.fsPath)));
+        await vscode.commands.executeCommand('featherspec-studio.open');
+        await waitFor(() => api.shell().lastHelloAt() !== undefined && studioTabs().length === 1, 10000);
+        await vscode.commands.executeCommand('featherspec-studio.openSpecBoard');
+        await vscode.commands.executeCommand('featherspec-studio.openSpecExplorer');
+        await closeStudio(api);
+        await vscode.commands.executeCommand('featherspec-studio.open');
+        await waitFor(() => studioTabs().length === 1, 10000);
+        await closeStudio(api);
+        const restored = vscode.window.createWebviewPanel(VIEW_TYPE, 'FeatherSpec Studio', vscode.ViewColumn.Active, { enableScripts: true });
+        await api.shell().restore(restored);
+        await waitFor(() => api.shell().panelCount() === 1, 10000);
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const after = await Promise.all(folders.map((folder) => snapshotTree(folder.uri.fsPath)));
+        assert.deepStrictEqual(after, before);
     });
 });

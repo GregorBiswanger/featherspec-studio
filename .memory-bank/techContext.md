@@ -3,13 +3,13 @@
 ## Stack
 - TypeScript (`strict`, target ES2022, module Node16), VS Code Desktop extension
   (`engines.vscode ^1.146.0`), npm.
-- Bundling: esbuild (`esbuild.js`) → `dist/extension.js`.
+- Bundling: esbuild (`esbuild.js`), two targets: `src/extension.ts` → `dist/extension.js` (node, cjs) and `src/webview/main.tsx` → `dist/webview/main.js` + `main.css` (browser, iife, JSX automatic).
+- Webview: React 19.3.1 and react-dom 19.3.1 (devDependencies, bundled), jsdom 31.0.1 for tests; two tsconfigs (`tsconfig.json` excludes `src/webview`; `src/webview/tsconfig.json` has DOM lib and `jsx: react-jsx`).
 - Lint: ESLint 10 + typescript-eslint (`eslint.config.mjs`; rules at `warn` level).
-- Unit tests: Vitest 5.1 + vite 8.3 (`vitest.config.mjs`, `src/**/*.test.ts`, co-located; plain Node).
+- Unit tests: Vitest 5.1 + vite 8.3 (`vitest.config.mjs`, co-located), two projects: `node` (`src/**/*.test.ts` outside `src/webview`) and `webview` (jsdom, `src/webview/**/*.test.{ts,tsx}`, setup `src/webview/testing/setup.ts`).
 - Host tests: Mocha via `@vscode/test-cli` / `@vscode/test-electron` (`.vscode-test.mjs` copies
   `test/fixtures/` into a temp multi-root workspace; runs `out/test/**/*.test.js` inside a downloaded VS Code).
 - CI: `.github/workflows/ci.yml` (Ubuntu + Windows: `npm ci`, eslint, tsc, `test:unit`, `compile`, `npm test`; Linux via `xvfb-run -a`).
-- Webview UI technology is open (React recommended, decided by SPIKE-003 / PD-008).
 
 ## Build / Run
 - `npm run compile` — type check + lint + esbuild bundle.
@@ -23,7 +23,7 @@
   `fs180-de-baselines`, `fs170-brownfield-mixed` (copies of the owner's samples), hand-made `fs-broken` (invalid UTF-8, `-text` in its
   `.gitattributes`), `fs110-parallel-synthetic`, `fs110-ready-synthetic` (shapes seen in no sample: UNVERIFIED). The AC-018 performance test
   generates 200 specs in a temp dir (`src/core/specs/testing/generateProject.ts`; full read < 2 s, update < 1 s).
-- `npm test` — extension-host smoke suite (`src/test/discovery.smoke.test.ts`, `src/test/specRepository.smoke.test.ts`, `src/test/runtime.smoke.test.ts`, `src/test/lifecycle.smoke.test.ts`); `pretest` compiles and lints
+- `npm test` — extension-host smoke suite (`src/test/discovery.smoke.test.ts`, `src/test/specRepository.smoke.test.ts`, `src/test/runtime.smoke.test.ts`, `src/test/lifecycle.smoke.test.ts`, `src/test/shell.smoke.test.ts`); `pretest` compiles and lints
   first; downloads and launches VS Code, so it is slow and needs network and a display. It cannot run
   in the agent sandbox (download blocked): CI and the Windows machine run it.
 - Runtime store (spec 0004): every store criterion is one contract suite (`src/core/runtime/testing/contract*.ts`)
@@ -32,13 +32,14 @@
 - Lifecycle model (spec 0003): `src/core/lifecycle/*.test.ts` run on memory sources and the fixtures `fs110-ready-synthetic`,
   `fs110-parallel-synthetic`, `fs-broken`, `fs170-brownfield-mixed`, `fs110-de-active-review`, `fs180-*`; history tests use a fake
   store (`testing/fakeHistoryStore.ts`); the no-write proof (AC-011) uses temp copies. Host smoke: `src/test/lifecycle.smoke.test.ts` (CI only).
-- Manual checks nothing automates: window reload keeps the active project (AC-009), Restricted Mode (AC-022).
+- Studio shell (spec 0005): core tests in `src/core/shell` on a shared world (`testing/world.ts`: real discovery controller and spec repository over memory sources, fake trust, actions and UI memory); component tests in `src/webview` with `act` + `createRoot` (no Testing Library); the built bundle runs in jsdom in `src/adapters/node/webviewBundle.test.ts`; host smoke `src/test/shell.smoke.test.ts` (CI only).
+- Manual checks nothing automates: window reload keeps the active project (0001 AC-009), Restricted Mode (0001 AC-022); spec 0005: AC-019 in a Light, a Dark and both High Contrast themes plus one live switch (OP-012), the AC-022 focus indicator, AC-023 in High Contrast, AC-024 on Gregor's machine, a real window reload with the panel open for AC-009.
 
 ## Quality gates
 Per implementation step (Definition of Green), in order — zero warnings, zero errors:
 1. `npx eslint src --max-warnings 0`
 2. `npx tsc --noEmit`
-3. `npx tsc --noEmit -p src/webview` (from spec 0005 T-002 on)
+3. `npx tsc --noEmit -p src/webview`
 4. `npm run test:unit`
 
 Pre-done gate (not per step): `npm test` (extension-host tests) runs in CI and on the

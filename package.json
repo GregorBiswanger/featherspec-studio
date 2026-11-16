@@ -48,6 +48,14 @@
         "title": "FeatherSpec Studio: Open Agent Center"
       },
       {
+        "command": "featherspec-studio.rescan",
+        "title": "FeatherSpec Studio: Rescan Project"
+      },
+      {
+        "command": "featherspec-studio.shellAction",
+        "title": "FeatherSpec Studio: Run Panel Action"
+      },
+      {
         "command": "featherspec-studio.selectProject",
         "title": "FeatherSpec Studio: Select Project"
       },
@@ -60,6 +68,31 @@
         "title": "FeatherSpec Studio: Clear Run History"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "featherspec-studio",
+          "title": "FeatherSpec Studio",
+          "icon": "media/studio.svg"
+        }
+      ]
+    },
+    "views": {
+      "featherspec-studio": [
+        {
+          "id": "featherspec-studio.navigator",
+          "name": "FeatherSpec Studio"
+        }
+      ]
+    },
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "featherspec-studio.shellAction",
+          "when": "false"
+        }
+      ]
+    },
     "configuration": {
       "title": "FeatherSpec Studio",
       "properties": {

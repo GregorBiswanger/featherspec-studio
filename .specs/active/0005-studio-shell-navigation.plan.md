@@ -1,9 +1,9 @@
 # Plan — Studio Shell & Navigation
 
 **Spec:** [0005-studio-shell-navigation.md](0005-studio-shell-navigation.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-16
-**Current step:** T-008
+**Current step:** none (all steps ticked)
 
 ## Approach
 
@@ -470,16 +470,16 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
     - `README.md`: a Studio section and the five commands.
     - `activeContext.md`.
 - **Verify:** `npx eslint src --max-warnings 0` · `npx tsc --noEmit` · `npx tsc --noEmit -p src/webview` · `npm run test:unit` · `npm run compile`
-- [ ] **Verified (T-009):** —
-- **Notes:** —
+- [x] **Verified (T-009):** 2026-11-16 — red: `npx vitest run src/adapters/vscode/manifest.test.ts` 3 failed (views container, icon file, Rescan command and hidden action command missing), then green 11/11 once `package.json`, `media/studio.svg` and the commands landed. Gates: `npx eslint src --max-warnings 0` 0 findings, `npx tsc --noEmit` 0, `npx tsc --noEmit -p src/webview` 0, `npm run test:unit` 57 files, 860 passed, `npm run compile` ok (`dist/webview/main.js`, `main.css`), compile-tests `tsc -p . --outDir` 0 errors. Host smoke extended (tree with the project name and six entries, every command registered including `workbench.trust.manage`, Rescan changes no file, AC-025 `snapshotTree` of every workspace folder unchanged over open, navigate, close, reopen, restore): written and type-checked, NOT run here (VS Code download blocked); CI runs it. `workbench.trust.manage` stays UNVERIFIED until that run. Docs: `architecture:` snapshot in `AGENTS.md` (entries exactly as the plan named them), `systemPatterns.md`, `techContext.md`, `README.md`, `activeContext.md` updated.
+- **Notes:** `trust.ts`, `shellActions.ts` and `outputChannel.show()` landed in T-008 (see its Notes). The tree is `createStudioTree` over `buildTreeModel`; its action items run the hidden command `featherspec-studio.shellAction`. The Rescan command is `featherspec-studio.rescan`. `AGENTS.md` is now 222 lines, over its 200-line cap; the one eviction proposal is open (see `activeContext.md`). The README gained a Studio section and the command list.
 
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-008 | package.json (command), src/extension.ts, src/adapters/vscode/studioPanel.ts | src/test/shell.smoke.test.ts (AC-001; CI only), manifest.test.ts | built |
+| AC-001 | T-008 | package.json, src/extension.ts, src/adapters/vscode/studioPanel.ts | manifest.test.ts, src/test/shell.smoke.test.ts (AC-001; CI only) | built |
 | AC-002 | T-008 | src/adapters/vscode/studioPanel.ts:show (reveal) | src/test/shell.smoke.test.ts (AC-002; CI only) | built |
-| AC-003 | T-005, T-009 | src/core/shell/treeModel.ts:buildTreeModel; the TreeView in T-009 | treeModel.test.ts (AC-003) | built |
+| AC-003 | T-005, T-009 | src/core/shell/treeModel.ts, src/adapters/vscode/studioTree.ts, package.json (viewsContainers, views), media/studio.svg | treeModel.test.ts (AC-003), manifest.test.ts (AC-003), src/test/shell.smoke.test.ts (tree; CI only) | built |
 | AC-004 | T-002 | src/webview/Navigation.tsx, App.tsx, client.ts | src/webview/App.test.tsx (AC-004) | verified |
 | AC-005 | T-007, T-008 | src/extension.ts (per-area commands), shellService.ts:open | shellService.navigation.test.ts, manifest.test.ts, src/test/shell.smoke.test.ts (AC-005; CI only) | built |
 | AC-006 | T-004 | src/webview/areas/Placeholder.tsx, registry.tsx | src/webview/areas/areas.test.tsx (AC-006, three areas, no rows) | verified |
@@ -487,30 +487,30 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 | AC-008 | T-004, T-007 | src/core/shell/shellService.ts (select), specRows.ts, SpecExplorer.tsx | shellService.navigation.test.ts (AC-008), areas.test.tsx (round trip) | verified |
 | AC-009 | T-007, T-008 | src/core/shell/uiMemory.ts, shellService.ts, src/adapters/vscode/uiMemory.ts, studioPanel.ts:serializer | uiMemory.test.ts, shellService.navigation.test.ts, src/test/shell.smoke.test.ts (AC-009 serializer; CI only); manual: real reload (Gregor) | built |
 | AC-010 | T-004, T-007 | src/core/shell/selection.ts:reconcileSelection, shellService.ts, NoticeBar.tsx | selection.test.ts, shellService.navigation.test.ts (AC-010 G/W/T), areas.test.tsx (notice) | verified |
-| AC-011 | T-005, T-009 | src/core/shell/panelState.ts:derivePanelState (S1), treeModel.ts; Open Folder action in T-009 | panelState.test.ts (AC-011), treeModel.test.ts (S1) | built |
+| AC-011 | T-005, T-009 | src/core/shell/panelState.ts (S1), treeModel.ts, src/adapters/vscode/shellActions.ts (vscode.openFolder) | panelState.test.ts, treeModel.test.ts, shellService.test.ts (S1), PanelStateView.test.tsx; smoke: command registered (CI only) | built |
 | AC-012 | T-005 | src/core/shell/panelState.ts (S2) | panelState.test.ts (AC-012), treeModel.test.ts | verified |
-| AC-013 | T-005, T-009 | src/core/shell/panelState.ts (S3); the Select project action runs in T-009 | panelState.test.ts (AC-013), treeModel.test.ts | built |
+| AC-013 | T-005, T-009 | src/core/shell/panelState.ts (S3), shellService.ts:runAction (selectProject) | panelState.test.ts, shellService.test.ts (AC-013 Select project runs 0001's selection), treeModel.test.ts | verified |
 | AC-014 | T-002, T-006 | src/core/shell/shellService.ts (loading), panelState.ts, src/webview/client.ts | shellService.test.ts (AC-014), App.test.tsx, PanelStateView.test.tsx | verified |
 | AC-015 | T-003, T-006, T-009 | src/core/shell/shellService.ts, panelState.ts:listingFailure, src/webview/client.ts (protocol) | shellService.test.ts (AC-015: discovery, listing, single file, Retry), client.test.ts, PanelStateView.test.tsx | verified |
 | AC-016 | T-001, T-003 | src/core/shell/messageRouter.ts, src/webview/client.ts (S6, S5 after reload), PanelStateView.tsx | messageRouter.test.ts, client.test.ts (AC-016), PanelStateView.test.tsx (S6) | verified |
 | AC-017 | T-003, T-006, T-009 | src/core/shell/shellService.ts (restricted flag), src/webview/RestrictedNote.tsx | shellService.test.ts (AC-017), PanelStateView.test.tsx (AC-017) | verified |
 | AC-018 | T-003, T-005 | src/core/shell/panelState.ts (precedence), src/webview/client.ts (S6 first) | panelState.test.ts (AC-018 pairs), PanelStateView.test.tsx (S6 over a host state) | verified |
-| AC-019 | T-009 | — | manual: Gregor, Light/Dark/both HC + live switch | open |
+| AC-019 | T-009 | src/webview/main.css (only --vscode-* variables) | manual: Gregor, Light/Dark/both HC + live switch | built |
 | AC-020 | T-008 | src/adapters/vscode/webviewHtml.ts, studioPanel.ts (options), src/webview/probe.ts | webviewHtml.test.ts, probe.test.ts, src/test/shell.smoke.test.ts (AC-020; CI only) | built |
 | AC-021 | T-001 | src/core/shell/messageRouter.ts, src/shared/protocol/messages.ts | messageRouter.test.ts, messages.test.ts; wired in studioPanel.ts | verified |
 | AC-022 | T-002, T-003, T-004 | src/webview/Navigation.tsx, PanelStateView.tsx, RestrictedNote.tsx, areas/SpecExplorer.tsx, NoticeBar.tsx | App.test.tsx, PanelStateView.test.tsx, areas.test.tsx (keyboard); manual: focus indicator, Gregor | built |
 | AC-023 | T-002, T-003, T-004 | src/webview (aria-current, aria-label, role=status, aria-selected, markers) | App.test.tsx, PanelStateView.test.tsx, areas.test.tsx (AC-023); manual: High Contrast, Gregor | built |
 | AC-024 | T-008 | src/adapters/vscode/studioPanel.ts (hello time), src/webview/main.tsx | src/test/shell.smoke.test.ts (AC-024 < 1000 ms; CI only); manual: Gregor | built |
-| AC-025 | T-009 | — | — | open |
+| AC-025 | T-009 | src/core/ports/readOnlyFileSystem.ts-style read-only ports; no write call in src/core/shell, src/adapters/vscode/studio*.ts | src/test/shell.smoke.test.ts (AC-025 snapshotTree; CI only) | built |
 | AC-026 | T-005 | src/core/shell/panelState.ts (S8) | panelState.test.ts (AC-026, with and without another project), treeModel.test.ts | verified |
 | AC-027 | T-005 | src/core/shell/panelState.ts (S9) | panelState.test.ts (AC-027), treeModel.test.ts | verified |
 | AC-028 | T-007 | src/core/shell/shellService.ts:navigate, selection.ts:findSpec | shellService.navigation.test.ts (AC-028 G/W/T, notice, run and filter targets), areas.test.tsx (target to placeholder) | verified |
-| AC-029 | T-006, T-009 | src/core/shell/shellService.ts:rescan; the command in T-009 | shellService.test.ts (AC-029) | built |
+| AC-029 | T-006, T-009 | src/core/shell/shellService.ts:rescan, src/extension.ts (featherspec-studio.rescan), package.json | shellService.test.ts (AC-029), manifest.test.ts (AC-029), src/test/shell.smoke.test.ts (CI only) | built |
 
 ## Session handoff
 
-- **Done so far:** spec 0005 active; answers applied; 0001 T-013 done; T-001...T-004 (protocol, router, webview), T-005 (panel states, tree model), T-006 (shell service: loading, errors, Retry, trust, Rescan), T-007 (selection, memory, rows, navigation request). Stage 3 ends here: the whole shell works against fakes (846 unit tests).
-- **Next action:** T-008 (panel host with CSP, commands, serializer, UI memory adapter, `StudioApi.shell()`, test-mode probe, host smoke `src/test/shell.smoke.test.ts`).
+- **Done so far:** all nine steps ticked (T-001...T-009) plus 0001 T-013 (AC-024). 860 unit tests, eslint, both tsc and `npm run compile` green. `npm test` (host smoke `src/test/shell.smoke.test.ts` and the older ones) was not run: VS Code download blocked.
+- **Next action:** Gregor/CI: `npm test` on CI or Windows; manual checks AC-019 (Light, Dark, both High Contrast, one live switch), the AC-022 focus indicator, AC-023 in High Contrast, AC-024 on his machine, AC-009 with a real window reload. Then `/sdd-compile` for 0005 and 0001 (again) in a fresh session (another model family), then `/sdd-lifecycle`.
 - **Open decisions:** OP-010…OP-013 (spec §17), none blocking.
 - **Baseline:** `2cf3cc8` (HEAD before the lifecycle move and the first commit of this work).
 - **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); CI runs it.

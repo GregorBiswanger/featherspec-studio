@@ -11,6 +11,9 @@ interface Manifest {
     };
     contributes?: {
         commands?: { command: string; title: string }[];
+        viewsContainers?: { activitybar?: { id: string; title: string; icon: string }[] };
+        views?: Record<string, { id: string; name: string }[]>;
+        menus?: { commandPalette?: { command: string; when: string }[] };
         configuration?: { properties?: Record<string, { type?: string; default?: unknown; minimum?: number; scope?: string; description?: string }> };
     };
 }
@@ -74,5 +77,25 @@ describe('extension manifest', () => {
             'featherspec-studio.openSpecExplorer': 'FeatherSpec Studio: Open Spec Explorer',
             'featherspec-studio.openAgentCenter': 'FeatherSpec Studio: Open Agent Center',
         });
+    });
+
+    it('AC-003 (0005): contributes the Activity Bar container with its icon and the view "FeatherSpec Studio"', () => {
+        const container = manifest.contributes?.viewsContainers?.activitybar?.[0];
+        expect(container).toMatchObject({ id: 'featherspec-studio', title: 'FeatherSpec Studio', icon: 'media/studio.svg' });
+        expect(manifest.contributes?.views?.['featherspec-studio']).toEqual([{ id: 'featherspec-studio.navigator', name: 'FeatherSpec Studio' }]);
+    });
+
+    it('AC-003 (0005): the icon file ships as a monochrome SVG', () => {
+        const svg = readFileSync(path.resolve(process.cwd(), 'media', 'studio.svg'), 'utf8');
+        expect(svg).toContain('<svg');
+        expect(svg).toContain('currentColor');
+        expect(svg).not.toMatch(/#[0-9a-fA-F]{3,6}/);
+    });
+
+    it('AC-029 (0005): contributes "FeatherSpec Studio: Rescan Project"; the internal action command stays out of the palette', () => {
+        const commands = Object.fromEntries((manifest.contributes?.commands ?? []).map((command) => [command.command, command.title]));
+        expect(commands['featherspec-studio.rescan']).toBe('FeatherSpec Studio: Rescan Project');
+        expect(commands['featherspec-studio.shellAction']).toBeDefined();
+        expect(manifest.contributes?.menus?.commandPalette).toEqual([{ command: 'featherspec-studio.shellAction', when: 'false' }]);
     });
 });

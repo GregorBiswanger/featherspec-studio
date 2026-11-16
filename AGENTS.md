@@ -100,20 +100,26 @@ the user had typed it (its body lives in `.claude/commands/sdd-architecture-upda
 architecture:
   style: 'Hexagonal (ports & adapters): framework-free core (domain + application) behind ports; adapters for VS Code host, storage, file system, agent providers; webview as a separate UI bundle'
   entrypoints:
-    - 'src/extension.ts — composition root; activates on workspaceContains:AGENTS.md, workspaceContains:.specs and Studio commands; bundled by esbuild to dist/extension.js'
+    - 'src/extension.ts — composition root; activates on workspaceContains:AGENTS.md, workspaceContains:.specs, onWebviewPanel:featherspecStudio.main and Studio commands and views; bundled by esbuild to dist/extension.js'
+    - 'src/webview/main.tsx — Studio panel UI (React 19); bundled by esbuild to dist/webview/main.js and main.css; no Node.js or file access'
   modules:
-    - 'src/core/ports — read-only file-system port, spec source and file watch ports, and small host ports (status bar, output, state, UI, folders, marker watch, clock), runtime medium port'
+    - 'src/core/ports — read-only file-system port, spec source and file watch ports, and small host ports (status bar, output, state, UI, folders, marker watch, clock), runtime medium port, shell ports (trust, UI memory, shell actions, shell model source)'
     - 'src/core/discovery — project verdicts, version line, active-project state, report model, discovery controller, rerun scheduler (spec 0001)'
     - 'src/core/specs — spec repository: file listing, spec and plan parsers, joins, diagnostics, live repository (spec 0002)'
     - 'src/core/runtime — runtime store: runs, events, masking, writer lock, retention, store state (spec 0004)'
     - 'src/core/lifecycle — lifecycle model: state derivation, readiness, contradictions, verification status, transition check, flow marker, status history, lifecycle service (spec 0003)'
+    - 'src/core/shell — Studio shell: panel states and precedence, selection, remembered area, navigation request, spec rows, tree model, message router, shell service (spec 0005)'
+    - 'src/webview — Studio panel UI: protocol client, navigation, panel states, area registry with placeholders, Spec Explorer list (spec 0005)'
     - 'src/adapters/node — Node file-system and spec-source adapters, Node-fs runtime medium, random IDs'
     - 'src/adapters/vscode — thin implementations of the host ports with the VS Code API; no logic'
     - 'test/fixtures — FeatherSpec fixture projects shared by unit and host tests'
-  shared: []
+    - 'media — packaged static assets (Activity Bar icon)'
+  shared:
+    - 'src/shared/protocol — versioned message protocol, areas and UI texts; imported by extension and webview, imports nothing (spec 0005)'
   boundaries:
     - 'Domain and application code never import vscode or provider SDKs; they reach the outside only through ports'
     - 'Webview and extension host communicate only through typed messages; the webview has no file-system or Node.js access'
+    - 'src/shared imports neither vscode nor Node.js; src/webview imports only src/shared and its own files'
 ```
 
 ## Memory Bank (SDD Working Set)

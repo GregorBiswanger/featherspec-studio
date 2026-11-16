@@ -8,16 +8,15 @@ holds the *why*: decisions and patterns.
 ## Key decisions
 - Hexagonal architecture: a framework-free core (domain + application, no `vscode` import)
   behind ports; adapters for the VS Code host, storage, file system and agent providers; the
-  webview is a separate UI bundle that talks to the host only through typed messages — not yet
-  in code · 2026-11-16 · [docs/product/po-handoff.md](../docs/product/po-handoff.md) §8 ·
-  provenance: human (sdd-setup)
+  webview is a separate UI bundle that talks to the host only through typed messages (in code since spec 0005) · 2026-11-16 ·
+  [docs/product/po-handoff.md](../docs/product/po-handoff.md) §8 · provenance: human (sdd-setup)
 - Two test gates: fast plain-Node unit tests after every implementation step; extension-host
   tests (`npm test`) only in CI and before done, because they launch a downloaded VS Code and
   cannot run everywhere · 2026-11-16 · provenance: human (sdd-setup)
 - Existing FeatherSpec artifacts are the spec source of truth; the Studio must not create a
   parallel spec store or restructure files for board columns · 2026-11-16 ·
   [docs/product/po-handoff.md](../docs/product/po-handoff.md) §3 P2, §6.3
-- Activation: `workspaceContains:AGENTS.md` and `workspaceContains:.specs` plus Studio's own commands;
+- Activation: `workspaceContains:AGENTS.md`, `workspaceContains:.specs` and `onWebviewPanel:featherspecStudio.main` (panel restore) plus Studio's own commands and views;
   no `onStartupFinished` (ADR-001 §8 stays). Live re-detection holds once Studio is active · 2026-11-16 ·
   [spec 0001](../.specs/active/0001-workspace-discovery-project-recognition.md) §15 (OP-005, Gregor)
 - Unit tests sit next to the code and the Vitest config is `.mjs`, because `tsconfig.json` has
@@ -59,6 +58,20 @@ holds the *why*: decisions and patterns.
   (PD-023) · 2026-11-16 · plan 0003 Research (a), T-006
 - Flow marker: a state change is *in flow* when a chain of documented steps leads from the old to the new state; Blocked
   may be the old or the new state, never an intermediate one · 2026-11-16 · spec 0003 §6.4, plan 0003 Research
+
+- Studio shell UI memory (area, selection with project root) lives in `context.workspaceState` (`featherspec-studio.shell`, versioned, validated on read), not
+  in the webview's `getState`/`setState`: that state dies with the panel and cannot carry reopen or reload · 2026-11-16 · [plan 0005](../.specs/active/0005-studio-shell-navigation.plan.md) *Research*
+- The host derives every panel state except two: the webview decides S6 (any inbound message of another protocol version, ranks first) and S5's protocol cause
+  (no valid snapshot within 5 s of `hello`, an invalid snapshot, or a second mismatch right after a reload) · 2026-11-16 · spec 0005 BR-05, OP-008, plan 0005 *Research*
+- All UI texts the shell owns sit in one shared file (`src/shared/protocol/texts.ts`), used by the panel UI and the host tree · 2026-11-16 · plan 0005 *Approach*
+- Areas never open each other: they send one navigation request (`navigate`: area plus optional spec, run or board-filter target) through the host, which
+  persists and answers it; the panel UI registers an area in `src/webview/areas/registry.tsx`, otherwise the placeholder shows · 2026-11-16 · spec 0005 BR-07, PD-040
+- AC-020 test hook: in `ExtensionMode.Test` only, the HTML carries `data-test`, the host sends a `probe` event with a webview URI of a workspace file and the panel UI
+  answers `failed` or `loaded`, never content; in normal mode `probeResult` is an unknown message type · 2026-11-16 · plan 0005 T-008
+- Webview tests use `act` from `react` plus `createRoot` in jsdom, without Testing Library; the built `dist/webview/main.js` is loaded in jsdom by
+  `src/adapters/node/webviewBundle.test.ts` (it runs `node esbuild.js`), so a broken bundle or a start-up error turns a unit test red · 2026-11-16 · plan 0005 T-002 (Gregor's extra check)
+- The shell model source derives the 0003 model from the repository snapshot itself (`deriveLifecycle`, cached per snapshot) instead of reading the lifecycle
+  service, which refreshes asynchronously and could pair a project with a model of another snapshot · 2026-11-16 · plan 0005 T-006
 
 ## Patterns
 - Provider independence: each agent provider is an adapter that declares its capabilities;
