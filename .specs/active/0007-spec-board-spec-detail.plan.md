@@ -3,7 +3,7 @@
 **Spec:** [0007-spec-board-spec-detail.md](0007-spec-board-spec-detail.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-002
+**Current step:** T-003
 
 ## Approach
 
@@ -257,8 +257,8 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
     - a broken plan badges only its spec;
     - an orphan plan goes to the banner.
 - **Verify:** `npm run test:unit -- src/core/board src/core/lifecycle` plus the per-step gates
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-16 · no red run: the card and description code was written beside its tests (a slip against test-first); in place of red, a negative control: with the description paragraph check, the title fallback and the diagnostic count broken on purpose, 4 of 30 tests failed, restored, 30 of 30 green (`npx vitest run --project node src/core/board`); gates: eslint 0 warnings, both `tsc --noEmit` clean, `npm run test:unit` 62 files, 936 tests passed.
+- **Notes:** The 0003 part of this step (blocking conditions) was done first as 0003 T-010 (AC-027). `buildCards` leaves tasks, criteria, last change and run at their empty values until T-003. Tests: `cards.test.ts`, `description.test.ts`.
 
 ### T-003 — Progress, last change, latest run
 
@@ -527,10 +527,10 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-002 | — | — | open |
-| AC-002 | T-002 | — | — | open |
-| AC-003 | T-002 | — | — | open |
-| AC-004 | T-002, T-007 | — | — + manual: Gregor, two-line limit | open |
+| AC-001 | T-002 | `src/core/board/cards.ts:buildCards` | `cards.test.ts` (AC-001) | verified |
+| AC-002 | T-002 | `src/core/board/cards.ts:buildCards` | `cards.test.ts` (AC-002) | verified |
+| AC-003 | T-002 | `src/core/board/cards.ts:buildCards` | `cards.test.ts` (AC-003) | verified |
+| AC-004 | T-002, T-007 | `src/core/board/description.ts:describeSpec` | — + manual: Gregor, two-line limit; `description.test.ts`, `cards.test.ts` (AC-004) | built |
 | AC-005 | T-001, T-006 | `src/shared/protocol/board.ts:SORT_KEYS` | `src/core/board/filters.test.ts` (AC-005) | open |
 | AC-006 | T-003, T-006 | — | — | open |
 | AC-007 | T-003 | — | — | open |
@@ -546,11 +546,11 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 | AC-017 | T-008, T-009 | — | — + manual: Gregor, keyboard-only pass | open |
 | AC-018 | T-007, T-008 | — | — + manual: Gregor, screen reader | open |
 | AC-019 | T-004, T-007, T-008 | — | — | open |
-| AC-020 | T-002 | — | — | open |
+| AC-020 | T-002 | `src/core/board/cards.ts:buildCards, buildBanner` | `cards.test.ts` (AC-020) | built |
 | AC-021 | T-007 | — | — | open |
 | AC-022 | T-001, T-004 | `src/shared/protocol/boardFilter.ts`, `filters.ts` | `boardFilter.test.ts`, `filters.test.ts` (AC-022) | open |
 | AC-023 | T-004 | — | — | open |
-| AC-024 | T-002, T-006 | — | — | open |
+| AC-024 | T-002, T-006 | `src/core/board/cards.ts:blockedLines, readinessLine` | `cards.test.ts` (AC-024) | built |
 | AC-025 | T-003 | — | — | open |
 | AC-026 | T-007 | — | manual: Gregor, light/dark/High Contrast | open |
 | AC-027 | T-006, T-009 | — | — | open |
