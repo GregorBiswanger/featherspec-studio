@@ -1,9 +1,9 @@
 # Plan — Spec Board & Spec Detail
 
 **Spec:** [0007-spec-board-spec-detail.md](0007-spec-board-spec-detail.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-16
-**Current step:** T-013 (after the first visual check)
+**Current step:** none (T-001...T-014 ticked; T-011...T-014 added after `/sdd-compile` and the first visual check)
 
 ## Approach
 
@@ -554,6 +554,16 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 - [x] **Verified (T-013):** 2026-11-16 · red: `npx vitest run src/core/board/idText.test.ts src/core/board/detail.test.ts` 18 failed (stubs threw `Not implemented`; the new `detail.test.ts` case failed on the doubled IDs), the negative control (a text not starting with the ID) was green at once; green: `npx vitest run src/core/board` 130 of 130; gates: eslint 0 warnings, both `tsc --noEmit` clean, `npm run test:unit` 87 files, 1266 tests passed.
 - **Notes:** —
 
+### T-014 — Overview header lines on one row (first visual check)
+
+- **Covers:** AC-010 (layout only; the spec needs no revision)
+- **Do:**
+  - Tests first: `src/adapters/node/webviewCss.test.ts` (`.detail-header` is a `max-content 1fr` grid, its row wrappers are `display: contents`, `dd` has no margin) and a `SpecDetail.test.tsx` case on the DOM (each line is one wrapper with its `dt` and `dd`).
+  - `src/webview/main.css`: three rules for `.detail-header`. Nothing else is restyled; Markdown is not rendered (design spec 0013 owns looks).
+- **Verify:** `npm run test:unit -- src/adapters/node/webviewCss src/webview/detail` plus the per-step gates and `npm run compile`
+- [x] **Verified (T-014):** 2026-11-16 · red: the CSS guard failed without the three rules (negative control by stashing `main.css`: 1 failed, 10 passed), green with them 11 of 11; the DOM case passed at once (the structure was already right); gates: eslint 0 warnings, both `tsc --noEmit` clean, `npm run test:unit` 87 files, 1268 tests passed, `npm run compile` green. Manual: Gregor looks at the Overview once in the panel; jsdom has no layout.
+- **Notes:** The cause was the browser default of `dl`, `dt` and `dd` (block elements, `dd` indented by 40 px), not the markup.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -567,7 +577,7 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 | AC-007 | T-003 | `src/core/board/runs.ts:indexRuns, cardRun` | `runs.test.ts` (AC-007) | built |
 | AC-008 | T-007, T-010 | src/webview/areas/SpecBoard.tsx; `src/core/shell/shellService.ts:onDidNavigate` | SpecBoard.test.tsx (AC-008); `boardService.test.ts` (AC-008); `webviewBundle.test.ts`; `src/test/board.smoke.test.ts` (CI) | built |
 | AC-009 | T-006, T-009, T-013 | src/webview/detail/SpecDetail.tsx; `src/core/board/idText.ts`, `detail.ts` | SpecDetail.test.tsx (AC-009); `idText.test.ts`, `detail.test.ts` (AC-009, IDs once) | built |
-| AC-010 | T-005, T-006, T-009, T-010 | `src/core/board/openFile.ts:createOpenFile`; src/webview/detail/{SpecDetail,DetailSection}.tsx | `openFile.test.ts` (AC-010); SpecDetail.test.tsx (AC-010) | built |
+| AC-010 | T-005, T-006, T-009, T-010, T-014 | `src/core/board/openFile.ts:createOpenFile`; src/webview/detail/{SpecDetail,DetailSection}.tsx | `openFile.test.ts` (AC-010); SpecDetail.test.tsx (AC-010); `webviewCss.test.ts` (header grid) | built |
 | AC-011 | T-001, T-004 | `src/core/board/filters.ts:arrangeBoard`; `boardRequests.ts` | `filters.test.ts` (AC-011); `boardService.test.ts` (AC-011); `boardRequests.test.ts` | built |
 | AC-012 | T-001, T-007 | `src/core/board/filters.ts:arrangeBoard`; src/webview/board/FilterBar.tsx | `filters.test.ts` (AC-012); SpecBoard.test.tsx (AC-012); `shellService.navigation.test.ts` (onDidNavigate) | built |
 | AC-013 | T-001 | `src/core/board/filters.ts:arrangeBoard` | `filters.test.ts` (AC-013) | verified |
@@ -589,12 +599,11 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 
 ## Session handoff
 
-- **Done so far:** T-001 to T-010 are ticked and committed (baseline 0ecc7a7 plus 0003 T-009/T-010 and 0004 T-010, which this plan needed). The board, the detail, the Move to menu and command, native drag and drop, Open file, the panel wiring and the docs sync are in place. 1111 unit tests, both `tsc`, eslint and `npm run compile` are green.
+- **Done so far:** T-001 to T-014 are ticked and committed. T-004, T-006 and T-007 were found unticked by `/sdd-compile` and ticked on 2026-11-16 with re-run results. T-011 (Move to button is a Tab stop), T-012 (detail timing test), T-013 (each ID once) and T-014 (header lines on one row) followed from `/sdd-compile` and Gregor's first visual check. 1268 unit tests, both `tsc`, eslint and `npm run compile` are green.
 - **Next action:**
   1. CI or Gregor: `npm test` (host suite, including `src/test/board.smoke.test.ts`).
-  2. Gregor, manual: AC-017 keyboard-only pass, AC-018 screen reader, AC-026 and the two-line limit of AC-004 in a Light, a Dark and a High Contrast theme.
-  3. A fresh session: `/sdd-compile` for 0007; the spec stays `In Progress` until then.
-  4. 0006's plan adopts the filter shape of `boardFilter.ts`.
-- **Open decisions:** none. Accepted limitation (spec): a second window sees new runs only at its next refresh. The ADR-001 §11 amendment (native drag and drop) is written.
+  2. Gregor, manual: AC-017 keyboard-only pass (now with Tab onto the Move to button), AC-018 screen reader, AC-026 and the two-line limit of AC-004 in a Light, a Dark and a High Contrast theme, one look at the Overview header lines.
+  3. A fresh session: a second `/sdd-compile` for 0007; the spec stays `In Progress` until then.
+- **Open decisions:** none. Accepted limitation (spec): a second window sees new runs only at its next refresh. Looks (Markdown rendering, styling) belong to design spec 0013, not here.
 - **Baseline:** 0ecc7a7 (HEAD before the first 0007 commit)
-- **Environment:** this worktree needs `npm ci` first; `npm test` cannot run in the sandbox (CI runs it).
+- **Environment:** `npm test` cannot run in the sandbox (CI runs it).

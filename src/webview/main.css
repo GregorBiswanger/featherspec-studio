@@ -347,6 +347,21 @@ main {
     color: var(--vscode-errorForeground);
 }
 
+.detail-header {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: 12px;
+    margin: 0;
+}
+
+.detail-header > div {
+    display: contents;
+}
+
+.detail-header dd {
+    margin: 0;
+}
+
 .illustration {
     white-space: pre-wrap;
     margin: 2px 0;

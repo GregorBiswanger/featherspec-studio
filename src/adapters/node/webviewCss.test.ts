@@ -21,6 +21,13 @@ describe('AC-026: colours come from the theme', () => {
         expect(css).toMatch(/-webkit-line-clamp:\s*2/);
     });
 
+    it('AC-010: the Overview header lines are a two-column grid, label and value on one row, values without the default indent', () => {
+        const list = rulesFor(css, '.detail-header');
+        expect(list.some((rule) => /display:\s*grid/.test(rule.body) && /grid-template-columns:\s*max-content\s+1fr/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.detail-header > div').some((rule) => /display:\s*contents/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.detail-header dd').some((rule) => /margin:\s*0/.test(rule.body))).toBe(true);
+    });
+
     it('AC-030: secondary text inside a selected row uses the selection foreground, not the description colour', () => {
         const rules = rulesFor(css, '.spec-row.selected .spec-derived');
         const pathRules = rulesFor(css, '.spec-row.selected .spec-path');

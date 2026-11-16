@@ -280,3 +280,12 @@ describe('AC-019: the detail is in the DOM within 300 ms of the event (a large s
         expect(elapsed).toBeLessThan(300);
     });
 });
+
+describe('AC-010: the Overview header lines', () => {
+    it('each header line is one wrapper holding its label and its value, so a row can lay them side by side', async () => {
+        const container = await open();
+        const rows = [...container.querySelector('dl.detail-header')!.children];
+        expect(rows.map((row) => [...row.children].map((child) => child.tagName))).toEqual([['DT', 'DD'], ['DT', 'DD']]);
+        expect(rows.map((row) => row.textContent)).toEqual(['Status In Progress', 'Plan 0007-thing.plan.md']);
+    });
+});
