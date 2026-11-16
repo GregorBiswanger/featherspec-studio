@@ -3,6 +3,14 @@ import typescriptEslint from "typescript-eslint";
 export default [{
     files: ["**/*.ts"],
 }, {
+    files: ["src/core/**/*.ts"],
+    rules: {
+        "no-restricted-imports": ["error", {
+            paths: [{ name: "vscode", message: "Core code never imports vscode; reach the host through ports." }],
+            patterns: [{ group: ["vscode/*"], message: "Core code never imports vscode." }],
+        }],
+    },
+}, {
     plugins: {
         "@typescript-eslint": typescriptEslint.plugin,
     },

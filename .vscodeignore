@@ -21,3 +21,5 @@ vsc-extension-quickstart.md
 docs/**
 AGENTS.md
 CLAUDE.md
+test/**
+vitest.config.mjs

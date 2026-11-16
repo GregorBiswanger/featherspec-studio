@@ -115,8 +115,8 @@ T-005…T-007 define, and T-008 documents the result.
 
   Every `.specs/` gets a `README.md`, because git drops empty folders.
 - **Verify:** `npx vitest run src/core/discovery/classifyFolder.test.ts` (red via `Not implemented` stub, then green) + per-step gates
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-16 — red: `npx vitest run src/core/discovery/classifyFolder.test.ts` 14/14 failed with `Not implemented` (stub); green: 14/14 passed. Gates: `npx eslint src --max-warnings 0` 0 findings, `npx tsc --noEmit` 0 errors, `npm run test:unit` 14 passed. Negative control: a temporary `import 'vscode'` in `src/core/ports` made eslint fail (`no-restricted-imports`), then removed.
+- **Notes:** `tsconfig.json` got `skipLibCheck: true`: vitest's `index.d.cts` otherwise fails `tsc` with TS1479 under Node16. `testing/memoryFileSystem.ts` and `testing/fixtures.ts` were added here (not T-002) because the negative controls need them; the port also has `readDirectory` (BR-02 needs the `.claude/commands` listing). Reading of BR-07/M1 (assumption): the version line must start the line (leading blanks allowed); `FeatherSpecVersion:` mid-sentence does not count. `vitest.config.mjs` also gets `environment: 'node'`.
 
 ### T-002 — Version line, unreadable files, one run over all folders
 
