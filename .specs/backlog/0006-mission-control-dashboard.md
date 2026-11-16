@@ -1,7 +1,7 @@
 # Mission Control Dashboard
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0006-mission-control-dashboard.plan.md](0006-mission-control-dashboard.plan.md)
 
 Handoff reference: FS-006 ([po-handoff.md](../../docs/product/po-handoff.md) §4.1, §10 FS-006,
 §13, §18). Depends on: 0002 (spec entries, diagnostics), 0003 (states, readiness, status
