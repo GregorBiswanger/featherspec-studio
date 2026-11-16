@@ -1,7 +1,8 @@
 import { areaInfo } from '../shared/protocol/areas';
-import { LOADING_TEXT } from '../shared/protocol/texts';
 import type { ShellClient } from './client';
 import { Navigation } from './Navigation';
+import { PanelStateView } from './PanelStateView';
+import { RestrictedNote } from './RestrictedNote';
 import { ShellProvider, useShell } from './shell';
 
 function Frame() {
@@ -15,11 +16,8 @@ function Frame() {
             </header>
             <main>
                 <h1>{info.title}</h1>
-                {shell.view === undefined ? (
-                    <div role="progressbar" aria-label={LOADING_TEXT} className="loading">
-                        {LOADING_TEXT}
-                    </div>
-                ) : null}
+                <RestrictedNote />
+                {shell.state === undefined ? null : <PanelStateView state={shell.state} />}
             </main>
         </div>
     );

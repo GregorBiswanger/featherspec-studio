@@ -5,6 +5,7 @@ import {
     isShellEventPayload,
     type ActionId,
     type NavigationRequest,
+    type PanelState,
     type RequestPayloads,
     type RequestType,
     type ShellView,
@@ -12,6 +13,7 @@ import {
 
 export interface ClientSnapshot {
     view: ShellView | undefined;
+    state: PanelState | undefined;
     area: AreaId;
 }
 
@@ -32,8 +34,12 @@ export interface ShellClient {
     getSnapshot(): ClientSnapshot;
 }
 
+export const HELLO_TIMEOUT_MS = 5000;
+
 export interface ClientDeps {
     post: (message: Envelope) => void;
+    reloaded?: boolean;
+    helloTimeoutMs?: number;
 }
 
 export function createClient(deps: ClientDeps): ShellClient {
@@ -42,15 +48,29 @@ export function createClient(deps: ClientDeps): ShellClient {
     let lastSeq = 0;
     let nextId = 0;
     let localArea: { area: AreaId; id: string } | undefined;
-    let snapshot: ClientSnapshot = { view: undefined, area: DEFAULT_AREA };
+    let snapshot: ClientSnapshot = { view: undefined, state: { id: 'S4' }, area: DEFAULT_AREA };
     let unlisten: (() => void) | undefined;
+    let mismatch = false;
+    let protocolFailure = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    function effectiveState(): PanelState | undefined {
+        if (mismatch) {
+            return deps.reloaded === true ? { id: 'S5', reason: { cause: 'protocol' } } : { id: 'S6' };
+        }
+        if (protocolFailure) {
+            return { id: 'S5', reason: { cause: 'protocol' } };
+        }
+        return view === undefined ? { id: 'S4' } : view.state;
+    }
 
     function refresh(): void {
         const area = localArea?.area ?? view?.area ?? DEFAULT_AREA;
-        if (snapshot.view === view && snapshot.area === area) {
+        const state = effectiveState();
+        if (snapshot.view === view && snapshot.area === area && JSON.stringify(snapshot.state) === JSON.stringify(state)) {
             return;
         }
-        snapshot = { view, area };
+        snapshot = { view, state, area };
         listeners.forEach((listener) => listener());
     }
 
@@ -62,9 +82,16 @@ export function createClient(deps: ClientDeps): ShellClient {
     }
 
     function onShellEvent(envelope: Envelope): void {
-        if (!isShellEventPayload(envelope.payload) || envelope.seq === undefined || envelope.seq <= lastSeq) {
+        if (!isShellEventPayload(envelope.payload) || envelope.seq === undefined) {
+            protocolFailure = true;
+            refresh();
             return;
         }
+        if (envelope.seq <= lastSeq) {
+            return;
+        }
+        protocolFailure = false;
+        clearTimer();
         const gap = envelope.seq > lastSeq + 1;
         const previous = lastSeq;
         lastSeq = envelope.seq;
@@ -72,6 +99,13 @@ export function createClient(deps: ClientDeps): ShellClient {
         refresh();
         if (gap) {
             send('hello', { lastSeq: previous });
+        }
+    }
+
+    function clearTimer(): void {
+        if (timer !== undefined) {
+            clearTimeout(timer);
+            timer = undefined;
         }
     }
 
@@ -88,8 +122,16 @@ export function createClient(deps: ClientDeps): ShellClient {
             window.addEventListener('message', handler);
             unlisten = () => window.removeEventListener('message', handler);
             send('hello', { lastSeq });
+            timer = setTimeout(() => {
+                timer = undefined;
+                if (view === undefined) {
+                    protocolFailure = true;
+                    refresh();
+                }
+            }, deps.helloTimeoutMs ?? HELLO_TIMEOUT_MS);
         },
         stop() {
+            clearTimer();
             unlisten?.();
             unlisten = undefined;
         },
@@ -99,6 +141,11 @@ export function createClient(deps: ClientDeps): ShellClient {
                 return;
             }
             const { envelope } = read;
+            if (envelope.v !== PROTOCOL_VERSION || (envelope.kind === 'evt' && envelope.type === 'versionMismatch')) {
+                mismatch = true;
+                refresh();
+                return;
+            }
             if (envelope.kind === 'evt' && envelope.type === 'shell') {
                 onShellEvent(envelope);
             } else if (envelope.kind === 'res') {

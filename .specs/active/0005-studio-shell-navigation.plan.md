@@ -266,8 +266,8 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
     - the note shows beside S2 and beside an area, and disappears without a reload;
     - every state's actions can be reached and activated by keyboard.
 - **Verify:** `npm run test:unit -- src/webview` plus the per-step gates
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-16 — red: `npx vitest run src/webview` 23 failed, 17 passed (the T-002 client and a throwing `panelStateLines`/`panelStateActions` stub stood in: no S6/S5 logic, no state text); green: 3 files, 40/40 (S1…S9, S6 over a host state, second mismatch after a reload gives S5, 5 s timeout, invalid snapshot gives S5 and recovers, note beside S2 and above an area and gone without a reload, keyboard on every action; controls: current-version messages never give S6, a timely snapshot cancels the timer). Gates: eslint 0, `tsc --noEmit` 0, `tsc --noEmit -p src/webview` 0, `npm run test:unit` 47 files, 725 passed.
+- **Notes:** State texts, action labels, state labels and S5 reasons live in `src/shared/protocol/texts.ts` (`panelStateLines`, `panelStateActions`) so the host tree (T-005) reuses them. The client computes the effective state (`snapshot.state`: S6, S5 protocol, S4 while no snapshot, else the host state); `App` renders `PanelStateView` in place of the area content, the h1 and the navigation stay. `main.tsx` reads `document.body.dataset.reloaded`; the host sets it in T-008. S4 can also come from the host (`view.state`).
 
 ### T-004 — Areas: registry, placeholders, Spec Explorer list, notice
 
