@@ -105,7 +105,7 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         await settle();
         const document = dom.window.document;
         expect(document.querySelector('h1')?.textContent).toBe('Spec Board');
-        expect([...document.querySelectorAll('[data-column]')].map((column) => column.getAttribute('data-column'))).toEqual(['Backlog', 'Ready', 'Active', 'Review', 'Done', 'Blocked']);
+        expect([...document.querySelectorAll('[data-column]')].map((column) => (column as unknown as { getAttribute(name: string): string | null }).getAttribute('data-column'))).toEqual(['Backlog', 'Ready', 'Active', 'Review', 'Done', 'Blocked']);
         expect(document.querySelectorAll('[data-card]')).toHaveLength(cards.length);
         expect(cards.length).toBeGreaterThan(0);
         expect(document.querySelector('[data-column="Ready"] [data-card]')?.textContent).toContain('Derived (rule S-READY)');
