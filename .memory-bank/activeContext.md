@@ -18,6 +18,7 @@ Spec 0007 (Spec Board and spec detail) is built (plan Done, T-001...T-010; 0003 
 - Acceptance criteria in focus: 0007 AC-001...AC-028 (manual: AC-017, AC-018, AC-026).
 
 ## Changed Recently
+- Spec 0005 T-010 (after `/sdd-compile`): AC-030 selected-row text uses the selection foreground, AC-031 High Contrast borders in `main.css`; style and DOM tests; 1119 unit tests green.
 - Spec 0007 (T-001...T-010): `src/core/board`, `src/shared/protocol/{boardFilter,board,detail}.ts`, Spec Board area, keyboard, Move to menu, native drag and drop, spec detail in Spec Explorer, `onDidNavigate`, `featherspec-studio.moveSpec`, host smoke `src/test/board.smoke.test.ts` (not run here); 0003 T-009/T-010, 0004 T-010; 1111 unit tests green.
 - Spec 0005 stage 4 (T-008, T-009): panel host with CSP, serializer, commands, test-mode probe, Activity Bar tree, Rescan command, host smoke `src/test/shell.smoke.test.ts` (not run here); architecture snapshot, Memory Bank and README synced; 860 unit tests green.
 - Spec 0005 stage 3 (T-005...T-007): `src/core/shell` (panel-state derivation, tree model, shell service with selection, memory, rows, navigation request, Retry, Rescan); 846 unit tests green.

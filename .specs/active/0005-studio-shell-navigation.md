@@ -140,7 +140,7 @@ remembered for this workspace.
 | FR-03 | Show the Studio inside VS Code | FR-005.3 | AC-001 |
 | FR-04 | Keep the selection context between areas | FR-005.4 | AC-007, AC-008, AC-009, AC-010 |
 | FR-05 | Provide empty, loading and error states | FR-005.5 | AC-011 … AC-018, AC-026, AC-027 |
-| FR-06 | Follow the VS Code light, dark and high-contrast themes | FR-005.6 | AC-019 |
+| FR-06 | Follow the VS Code light, dark and high-contrast themes | FR-005.6 | AC-019, AC-030, AC-031 |
 | FR-07 | Route all panel UI communication through the extension | FR-005.7 | AC-020, AC-021 |
 | FR-08 | Keyboard operation and no colour-only meaning | §13 Usability | AC-022, AC-023 |
 | FR-09 | Offer one navigation request to the areas | PD-040 | AC-028 |
@@ -362,6 +362,18 @@ in AC-022 and the High Contrast part of AC-023. Everything else is decided by au
   (0002). The panel shall keep its content until the new model arrives (0002 AC-022). While no
   project is active, the system shall change nothing and write no file (OP-009).
   > **Given** a project is active **When** the user runs the command **Then** the spec repository's `rescan()` runs once.
+- **AC-030** (added after `/sdd-compile`, 2026-11-16) The system shall draw every secondary text
+  inside the selected spec row (derived label, path) in the theme's list selection foreground
+  colour, not in the description colour, so that it stays readable on the selection background
+  in a Light theme. Decided by a component test and a style test on the variables used; the
+  readability itself stays in Gregor's AC-019 check.
+- **AC-031** (added after `/sdd-compile`, 2026-11-16) Where a theme defines the High Contrast
+  border colours, the system shall draw the selected spec row and the current navigation item with
+  the theme's active contrast border, shall draw the focus indicator of every focusable element
+  in that colour, and shall draw the borders of navigation items, rows and state boxes in the
+  theme's contrast border. Where the theme defines none, the system shall keep the previous
+  look (focus border, panel border). Decided by a component test and a style test on the
+  variables used; Gregor's High Contrast check (AC-023) stays.
 
 ## 15. Technical notes for developers or AI agents
 
@@ -421,7 +433,7 @@ OP-010…OP-013 do not block the work (OP-002, OP-004…OP-009 resolved).
 
 ## 19. Definition of Done
 
-All FR-01…FR-12 are built. AC-001…AC-029 pass: automated tests for navigation, selection, states,
+All FR-01…FR-12 are built. AC-001…AC-031 pass: automated tests for navigation, selection, states,
 protocol and file isolation, plus Gregor's manual checks (§14). No out-of-scope content was
 added. The architecture snapshot and the Memory Bank are updated. Gregor accepts the result.
 

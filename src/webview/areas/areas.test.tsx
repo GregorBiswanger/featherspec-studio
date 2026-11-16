@@ -3,6 +3,8 @@ import type { Envelope } from '../../shared/protocol/envelope';
 import type { ShellView, SpecRow } from '../../shared/protocol/messages';
 import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
+import mainCss from '../main.css?raw';
+import { rulesMatching } from '../testing/css';
 import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
 
 let posted: Envelope[];
@@ -149,6 +151,33 @@ describe('AC-008: selection in the panel UI', () => {
         expect(listed.map((item) => item.getAttribute('aria-selected'))).toEqual(['false', 'true', 'false']);
         expect(listed[1]?.querySelector('[data-marker]')?.textContent).toBe('▸');
         expect(listed[0]?.querySelector('[data-marker]')).toBeNull();
+    });
+
+    it('AC-030: in the real DOM the secondary text of a selected row is reached by a rule with the selection foreground, that of another row is not', async () => {
+        const css = mainCss as string;
+        const rows = [
+            row('0001', { derivedLabel: 'Derived (rule S-REVIEW)', showPath: true }),
+            row('0002', { selected: true, derivedLabel: 'Derived (rule S-REVIEW)', showPath: true }),
+        ];
+        const container = await open(baseView({ area: 'specExplorer', rows, selection: { stem: '0002-thing', number: '0002' } }));
+        const [other, selected] = optionRows(container);
+        for (const cls of ['.spec-derived', '.spec-path']) {
+            const inSelected = rulesMatching(css, selected!.querySelector(cls)!);
+            const last = inSelected[inSelected.length - 1]!;
+            expect(last.body).toContain('var(--vscode-list-activeSelectionForeground)');
+            const inOther = rulesMatching(css, other!.querySelector(cls)!);
+            expect(inOther.some((rule) => rule.body.includes('activeSelectionForeground'))).toBe(false);
+            expect(inOther.some((rule) => rule.body.includes('var(--vscode-descriptionForeground)'))).toBe(true);
+        }
+    });
+
+    it('AC-031: the selected row and the current navigation item are reached by a rule with the contrast active border', async () => {
+        const css = mainCss as string;
+        const container = await open(baseView({ area: 'specExplorer', rows: [row('0002', { selected: true })], selection: { stem: '0002-thing', number: '0002' } }));
+        const selected = optionRows(container)[0]!;
+        const current = container.querySelector('nav [aria-current]')!;
+        expect(rulesMatching(css, selected).some((rule) => rule.body.includes('--vscode-contrastActiveBorder'))).toBe(true);
+        expect(rulesMatching(css, current).some((rule) => rule.body.includes('--vscode-contrastActiveBorder'))).toBe(true);
     });
 
     it('the selected row stays marked after a round trip to another area and back', async () => {

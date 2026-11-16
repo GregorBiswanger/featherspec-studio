@@ -3,7 +3,7 @@
 **Spec:** [0005-studio-shell-navigation.md](0005-studio-shell-navigation.md)
 **Status:** Done
 **Last updated:** 2026-11-16
-**Current step:** none (all steps ticked)
+**Current step:** none (all steps ticked, T-010 appended 2026-11-16)
 
 ## Approach
 
@@ -169,6 +169,7 @@ Memory Bank files touched: `techContext.md` (T-002 gate line, T-009), `systemPat
 2. T-002 → T-003 → T-004 — the webview: toolchain and frame, panel states, areas (starts with the Ask-first dependency install)
 3. T-005 → T-006 → T-007 — the core shell: panel-state derivation, shell service, selection and navigation
 4. T-008 → T-009 — VS Code adapters and the host smoke, then docs sync and final gates
+5. T-010 — after `/sdd-compile` (2026-11-16): two rendering risks (AC-030, AC-031), appended
 
 No parallel stage: inside every stage each step builds on the one before it, in one module.
 Stages 2 and 3 share only `src/shared/protocol` and could run side by side after T-001, in two
@@ -473,6 +474,19 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 - [x] **Verified (T-009):** 2026-11-16 — red: `npx vitest run src/adapters/vscode/manifest.test.ts` 3 failed (views container, icon file, Rescan command and hidden action command missing), then green 11/11 once `package.json`, `media/studio.svg` and the commands landed. Gates: `npx eslint src --max-warnings 0` 0 findings, `npx tsc --noEmit` 0, `npx tsc --noEmit -p src/webview` 0, `npm run test:unit` 57 files, 860 passed, `npm run compile` ok (`dist/webview/main.js`, `main.css`), compile-tests `tsc -p . --outDir` 0 errors. Host smoke extended (tree with the project name and six entries, every command registered including `workbench.trust.manage`, Rescan changes no file, AC-025 `snapshotTree` of every workspace folder unchanged over open, navigate, close, reopen, restore): written and type-checked, NOT run here (VS Code download blocked); CI runs it. `workbench.trust.manage` stays UNVERIFIED until that run. Docs: `architecture:` snapshot in `AGENTS.md` (entries exactly as the plan named them), `systemPatterns.md`, `techContext.md`, `README.md`, `activeContext.md` updated.
 - **Notes:** `trust.ts`, `shellActions.ts` and `outputChannel.show()` landed in T-008 (see its Notes). The tree is `createStudioTree` over `buildTreeModel`; its action items run the hidden command `featherspec-studio.shellAction`. The Rescan command is `featherspec-studio.rescan`. `AGENTS.md` is now 222 lines, over its 200-line cap; the one eviction proposal is open (see `activeContext.md`). The README gained a Studio section and the command list.
 
+### T-010 — Selected-row text and High Contrast borders (after `/sdd-compile`)
+
+- **Covers:** AC-030, AC-031
+- **Do:**
+  - Tests first (red on the unchanged `main.css`):
+    - `src/adapters/node/webviewCss.test.ts`: the rules `.spec-row.selected .spec-derived` and `.spec-path` use `--vscode-list-activeSelectionForeground` (control: outside a selected row the description colour stays); selected row and current navigation item carry `--vscode-contrastActiveBorder`; focus outlines use `--vscode-contrastActiveBorder` with `--vscode-focusBorder` as fallback; navigation item, row and state box borders use `--vscode-contrastBorder`; no colour literal as fallback;
+    - `src/webview/areas/areas.test.tsx`: in the rendered DOM the secondary text of the selected row is matched by the selection-foreground rule and that of another row is not; the selected row and the current navigation item are matched by a contrast-active-border rule;
+    - helper `src/webview/testing/css.ts` (rule parser, `element.matches` per selector); `vitest.config.mjs` lets the webview project load `main.css` (`css.include`) so the test reads it through `?raw`.
+  - `src/webview/main.css` only: the rules above; no change to a component.
+- **Verify:** `npx vitest run src/adapters/node/webviewCss.test.ts src/webview/areas` plus the per-step gates and `npm run compile`
+- [x] **Verified (T-010):** 2026-11-16 — red: `npx vitest run src/webview/areas src/adapters/node/webviewCss.test.ts` 6 failed (4 style assertions and 2 DOM assertions on the unchanged CSS), the 2 controls passed; green after the CSS change: the same files 26/26. Gates: `npx eslint src --max-warnings 0` 0, `npx tsc --noEmit` 0, `npx tsc --noEmit -p src/webview` 0, `npm run test:unit` 76 files, 1119 passed, `npm run compile` ok. The fallback of the contrast variables is `transparent` (borders and outlines) or the previous variable, so the Light and Dark look is unchanged where a theme defines no contrast colour.
+- **Notes:** Appended after the plan was Done (Gregor's decision on the `/sdd-compile` findings); AC-030 and AC-031 appended to the spec. The card focus rule of the board (spec 0007) keeps `--vscode-focusBorder` and is not part of this step. The real readability stays in Gregor's manual AC-019 and AC-023 checks.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -505,11 +519,13 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 | AC-026 | T-005 | src/core/shell/panelState.ts (S8) | panelState.test.ts (AC-026, with and without another project), treeModel.test.ts | verified |
 | AC-027 | T-005 | src/core/shell/panelState.ts (S9) | panelState.test.ts (AC-027), treeModel.test.ts | verified |
 | AC-028 | T-007 | src/core/shell/shellService.ts:navigate, selection.ts:findSpec | shellService.navigation.test.ts (AC-028 G/W/T, notice, run and filter targets), areas.test.tsx (target to placeholder) | verified |
+| AC-030 | T-010 | src/webview/main.css (.spec-row.selected .spec-derived, .spec-path) | webviewCss.test.ts (AC-030), areas.test.tsx (AC-030); manual: AC-019 Light, Gregor | built |
+| AC-031 | T-010 | src/webview/main.css (contrast borders, focus outline) | webviewCss.test.ts (AC-031), areas.test.tsx (AC-031); manual: High Contrast, Gregor | built |
 | AC-029 | T-006, T-009 | src/core/shell/shellService.ts:rescan, src/extension.ts (featherspec-studio.rescan), package.json | shellService.test.ts (AC-029), manifest.test.ts (AC-029), src/test/shell.smoke.test.ts (CI only) | built |
 
 ## Session handoff
 
-- **Done so far:** all nine steps ticked (T-001...T-009) plus 0001 T-013 (AC-024). 860 unit tests, eslint, both tsc and `npm run compile` green. `npm test` (host smoke `src/test/shell.smoke.test.ts` and the older ones) was not run: VS Code download blocked.
+- **Done so far:** all ten steps ticked (T-001...T-010; T-010 after `/sdd-compile`: AC-030, AC-031) plus 0001 T-013 (AC-024). 860 unit tests, eslint, both tsc and `npm run compile` green. `npm test` (host smoke `src/test/shell.smoke.test.ts` and the older ones) was not run: VS Code download blocked.
 - **Next action:** Gregor/CI: `npm test` on CI or Windows; manual checks AC-019 (Light, Dark, both High Contrast, one live switch), the AC-022 focus indicator, AC-023 in High Contrast, AC-024 on his machine, AC-009 with a real window reload. Then `/sdd-compile` for 0005 and 0001 (again) in a fresh session (another model family), then `/sdd-lifecycle`.
 - **Open decisions:** OP-010…OP-013 (spec §17), none blocking.
 - **Baseline:** `2cf3cc8` (HEAD before the lifecycle move and the first commit of this work).

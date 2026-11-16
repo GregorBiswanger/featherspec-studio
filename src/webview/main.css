@@ -27,7 +27,7 @@ body {
     padding: 4px 10px;
     color: var(--vscode-foreground);
     background: transparent;
-    border: 1px solid transparent;
+    border: 1px solid var(--vscode-contrastBorder, transparent);
     cursor: pointer;
     font: inherit;
 }
@@ -39,6 +39,8 @@ body {
 .nav-item.current {
     font-weight: bold;
     border-bottom: 2px solid var(--vscode-focusBorder);
+    outline: 1px solid var(--vscode-contrastActiveBorder, transparent);
+    outline-offset: -1px;
 }
 
 .nav-item [data-marker] {
@@ -47,7 +49,7 @@ body {
 
 button:focus-visible,
 [role="option"]:focus-visible {
-    outline: 2px solid var(--vscode-focusBorder);
+    outline: 2px solid var(--vscode-contrastActiveBorder, var(--vscode-focusBorder));
     outline-offset: 1px;
 }
 
@@ -65,7 +67,7 @@ main {
 .placeholder {
     margin: 8px 0;
     padding: 8px 12px;
-    border: 1px solid var(--vscode-panel-border);
+    border: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
 }
 
 .restricted-note {
@@ -111,7 +113,7 @@ main {
 
 .spec-row {
     padding: 4px 8px;
-    border-bottom: 1px solid var(--vscode-panel-border);
+    border-bottom: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
     cursor: pointer;
 }
 
@@ -123,6 +125,8 @@ main {
     font-weight: bold;
     background: var(--vscode-list-activeSelectionBackground);
     color: var(--vscode-list-activeSelectionForeground);
+    outline: 1px solid var(--vscode-contrastActiveBorder, transparent);
+    outline-offset: -1px;
 }
 
 .spec-row [data-marker] {
@@ -141,6 +145,11 @@ main {
 .spec-derived,
 .spec-path {
     color: var(--vscode-descriptionForeground);
+}
+
+.spec-row.selected .spec-derived,
+.spec-row.selected .spec-path {
+    color: var(--vscode-list-activeSelectionForeground);
 }
 
 .board {
