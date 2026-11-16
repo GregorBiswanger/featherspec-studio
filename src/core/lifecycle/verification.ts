@@ -4,7 +4,7 @@ import type { VerificationCounts, VerificationStatus } from './model';
 
 export const COMPILE_VERDICT_TEXT = '/sdd-compile verdict: not available — FeatherSpec does not persist it.';
 
-function sourcePlan(entry: SpecEntry, siblingPlan: PlanEntry | undefined, plans: readonly PlanEntry[]): PlanEntry | undefined {
+export function planInUse(entry: SpecEntry, siblingPlan: PlanEntry | undefined, plans: readonly PlanEntry[]): PlanEntry | undefined {
     if (entry.folder !== 'done') {
         return siblingPlan;
     }
@@ -17,7 +17,7 @@ function sourcePlan(entry: SpecEntry, siblingPlan: PlanEntry | undefined, plans:
 }
 
 export function readVerification(entry: SpecEntry, siblingPlan: PlanEntry | undefined, plans: readonly PlanEntry[]): VerificationStatus {
-    const plan = sourcePlan(entry, siblingPlan, plans);
+    const plan = planInUse(entry, siblingPlan, plans);
     const counts: VerificationCounts = { open: 0, built: 0, verified: 0, other: 0 };
     const rows = plan?.parsed?.traceability ?? [];
     for (const row of rows) {

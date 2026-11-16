@@ -4,7 +4,7 @@ import type { EntryContext } from './entryContext';
 import type { LifecycleEntry, LifecycleModel, LifecycleState, Persistence, ReadinessResult, RuleId } from './model';
 import { evaluateReadiness } from './readiness';
 import { readSuccessor } from './successor';
-import { readVerification } from './verification';
+import { planInUse, readVerification } from './verification';
 
 interface Verdict {
     state: LifecycleState;
@@ -52,6 +52,8 @@ export function deriveLifecycle(project: ProjectRead): LifecycleModel {
             derivedLabel: derivedLabel(verdict),
             readiness,
             verification: readVerification(context.entry, context.siblingPlan, project.plans),
+            plan: planInUse(context.entry, context.siblingPlan, project.plans)?.key,
+            blockedBy: verdict.state === 'Blocked' ? { plan: context.planStatus === 'Blocked', returnNotes: context.blockedNotes } : undefined,
             diagnostics: [...context.diagnostics, ...context.contradictions],
             deprecated:
                 context.entry.folder === 'done' && context.status === 'Deprecated' && context.entry.parsed !== undefined

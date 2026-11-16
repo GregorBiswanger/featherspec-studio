@@ -256,6 +256,7 @@ A-003). An entry with cause *changed while Studio was not running* is *not check
 | FR-08 | Keep spec lifecycle, agent run and verification status apart | FR-003.8 | AC-006, AC-007, AC-018 |
 | FR-09 | Reproducible, documented derivation; never change FeatherSpec conventions | no FR; handoff AC-003.7, AC-003.8 | AC-002, AC-010, AC-011 |
 | FR-10 | Keep working when individual files are broken or the history store is unavailable | no FR; follows 0002's isolation rule (handoff AC-002.5) and PD-023 | AC-019, AC-024 |
+| FR-11 | Name the blocking conditions and the plan in use, so a consumer can show why | handoff §4.2 (reason on the card); needed by 0007 | AC-027, AC-028 |
 
 ## 8. Data requirements
 
@@ -265,7 +266,9 @@ A-003). An entry with cause *changed while Studio was not running* is *not check
   traceability rows; the linked return notes with status; diagnostics with scope and kind.
 - **Output per entry:** state, rule ID, persisted/derived marker, readiness result (R-1…R-7,
   §6.2), diagnostics (0002's passed on, plus contradictions), verification status, Deprecated
-  marker with successor.
+  marker with successor, the blocking conditions that hold for a Blocked entry (which of plan
+  status `Blocked` and `BLOCKED` return notes, the notes by file name) and the plan §6.6 uses
+  (revised 2026-11-16 for 0007, Gregor).
 - **History entry** (stored via 0004): fields in §6.5. Contains no file contents and no
   secrets.
 
@@ -444,6 +447,19 @@ its state with the stem's last recorded state and append an entry as AC-014 defi
 *first observed* entry as AC-017 defines it when the stem has no last recorded state.
 *(OP-007, Gregor 2026-11-16)*
 
+**AC-027** For an entry in state Blocked, the model shall report which S-BLOCKED conditions
+hold: the sibling plan's status `Blocked`, and each linked return note with status `BLOCKED`,
+the notes by file name. For an entry in any other state it shall report none. *(0007 AC-024)*
+
+> **Given** an `active/` spec whose sibling plan has status `Blocked` and that has a linked
+> return note with status `BLOCKED` **When** the model derives it **Then** it reports both
+> conditions, the note by its file name.
+
+**AC-028** For every entry the model shall report the key of the plan that §6.6 uses for its
+verification status — the sibling plan, the archived plan its `**Plan:**` line links, or the
+legacy sibling plan — also where that plan has no traceability rows, and none where there is no
+such plan. *(0007 AC-006)*
+
 Who decides: automated tests over fixture snapshots (fixture set in featherspec-format §11,
 including the synthetic `fs110-ready-synthetic` and `fs110-parallel-synthetic`); the test level
 per criterion is set in `/sdd-plan`. The Ready shape, `Blocked` plans, return notes and
@@ -548,7 +564,7 @@ points are visible.
 
 ## 18. Definition of Done
 
-All must-requirements are built and AC-001 to AC-026 pass in automated tests over the fixture
+All must-requirements are built and AC-001 to AC-028 pass in automated tests over the fixture
 set.
 No out-of-scope behaviour was added, in particular no file writes. Assumptions are verified or
 documented. The architecture snapshot is updated for the new domain module. Gregor accepted

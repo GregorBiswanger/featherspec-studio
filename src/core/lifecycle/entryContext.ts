@@ -11,6 +11,7 @@ export interface EntryContext {
     siblingPlanReadable: boolean;
     planStatus: string | undefined;
     blocked: boolean;
+    blockedNotes: string[];
     diagnostics: Diagnostic[];
     contradictions: ContradictionDiagnostic[];
 }
@@ -63,7 +64,7 @@ export function buildContexts(project: ProjectRead): EntryContext[] {
         const siblingPlan = plans.get(siblingPlanKey(entry.key));
         const own = new Set([entry.key, ...entry.planKeys, ...entry.returnNoteKeys]);
         const planStatus = headerValue(siblingPlan?.parsed?.status);
-        const noteBlocks = entry.returnNoteKeys.some((key) => headerValue(notes.get(key)?.parsed?.status) === 'BLOCKED');
+        const blockedNotes = entry.returnNoteKeys.filter((key) => headerValue(notes.get(key)?.parsed?.status) === 'BLOCKED');
         const base = {
             entry,
             status: headerValue(entry.parsed?.status),
@@ -71,7 +72,8 @@ export function buildContexts(project: ProjectRead): EntryContext[] {
             siblingPlan,
             siblingPlanReadable: siblingPlan !== undefined && siblingPlan.readable && siblingPlan.parsed !== undefined,
             planStatus,
-            blocked: entry.folder !== 'done' && (planStatus === 'Blocked' || noteBlocks),
+            blocked: entry.folder !== 'done' && (planStatus === 'Blocked' || blockedNotes.length > 0),
+            blockedNotes: blockedNotes.map((key) => key.slice(key.lastIndexOf('/') + 1)),
             diagnostics: project.diagnostics.filter((diagnostic) => diagnostic.scope !== 'project' && own.has(diagnostic.scope.file)),
         };
         return { ...base, contradictions: findContradictions(base) };

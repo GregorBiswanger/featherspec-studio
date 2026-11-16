@@ -92,6 +92,7 @@ Memory Bank files touched at the end: `activeContext.md`, `systemPatterns.md`, `
 3. T-005 → T-006 — the status history: live changes, then baseline, identity and store outage
 4. T-007 → T-008 — service wiring with the no-write proof, then docs sync and final gates
 5. T-009 — revision after `/sdd-compile` (2026-11-16): the first derivation with an unreadable history
+6. T-010 — additive output for 0007 (2026-11-16): blocking conditions and the plan in use
 
 Parallel: stage 2. T-003 extends `deriveLifecycle.ts`, while T-004 only reads the model type that
 exists after T-002 and writes its own files.
@@ -220,6 +221,15 @@ exists after T-002 and writes its own files.
 - [x] **Verified (T-009):** 2026-11-16 · red: `npx vitest run --project node src/core/lifecycle/statusHistory` 2 of 30 failed (an entry *changed while Studio was not running* appeared after the gap; the real change had `Backlog` as old state); green: 124 of 124 in `src/core/lifecycle`; gates: eslint 0 warnings, `tsc --noEmit` and `-p src/webview` clean, `npm run test:unit` 57 files, 861 tests passed.
 - **Notes:** the old test that expected the gap entry encoded the bug and was replaced. The baseline is taken at the first derivation whether or not the history can be read.
 
+### T-010 — Blocking conditions and the plan in use (for 0007)
+
+- **Covers:** AC-027, AC-028
+- **Files:** `src/core/lifecycle/model.ts`, `src/core/lifecycle/entryContext.ts`, `src/core/lifecycle/verification.ts`, `src/core/lifecycle/deriveLifecycle.ts`, `src/core/lifecycle/blockedBy.test.ts`
+- **Do:** test first. `LifecycleEntry.blockedBy` is `{ plan: boolean; returnNotes: string[] }` (file names) for a Blocked entry, `undefined` otherwise; `LifecycleEntry.plan` is the key of the §6.6 plan, set even where it has no rows. Additive: no existing test changes. Tests: both conditions, only the plan, only a note (name), a non-Blocked entry, a `done/` spec with a Blocked plan; `plan` for a sibling plan without rows, an archived plan, a legacy sibling and no plan.
+- **Verify:** `npm run test:unit -- src/core/lifecycle` plus the per-step gates
+- [x] **Verified (T-010):** 2026-11-16 · red: `npx vitest run --project node src/core/lifecycle/blockedBy` 5 of 8 failed (`blockedBy` and `plan` undefined on every entry; the 3 negative controls — non-Blocked entry, other note status, no plan — were green at once); green: 132 of 132 in `src/core/lifecycle`; gates: eslint 0 warnings, both `tsc --noEmit` clean, `npm run test:unit` 58 files, 869 tests passed.
+- **Notes:** additive; `verification.ts` exports `planInUse` (the former private `sourcePlan`); `entryContext.ts` carries `blockedNotes` (file names). `blockedBy` is set exactly when the state is Blocked.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -250,10 +260,12 @@ exists after T-002 and writes its own files.
 | AC-024 | T-006, T-009 | `src/core/lifecycle/statusHistory.ts:append`, `readStored`, `baseline` | `statusHistory.baseline.test.ts` (AC-024, incl. T-009 gap cases) | verified |
 | AC-025 | T-002 | `src/core/lifecycle/entryContext.ts:findContradictions` | `deriveLifecycle.rules.test.ts` (AC-025) | verified |
 | AC-026 | T-006 | `src/core/lifecycle/statusHistory.ts:verdicts`, `observe` | `statusHistory.baseline.test.ts` (AC-026) | verified |
+| AC-027 | T-010 | `src/core/lifecycle/deriveLifecycle.ts:deriveLifecycle`, `entryContext.ts:buildContexts` | `blockedBy.test.ts` (AC-027) | verified |
+| AC-028 | T-010 | `src/core/lifecycle/verification.ts:planInUse`, `deriveLifecycle.ts` | `blockedBy.test.ts` (AC-028) | verified |
 
 ## Session handoff
 
-- **Done so far:** all nine steps (T-001...T-009) ticked with recorded runs; `src/core/lifecycle` is complete and wired (`StudioApi.lifecycle()`); eslint, tsc, `test:unit` (639 tests) and `compile` green; docs synced.
+- **Done so far:** all ten steps (T-001...T-010) ticked with recorded runs; `src/core/lifecycle` is complete and wired (`StudioApi.lifecycle()`); eslint, tsc, `test:unit` (639 tests) and `compile` green; docs synced.
 - **Next action:** `npm test` (host smoke incl. `src/test/lifecycle.smoke.test.ts`) on CI or Windows; then `/sdd-compile` in a fresh session with a model from another family; then `/sdd-lifecycle` active → done.
 - **Open decisions:** `_none yet_` + `**Origin:**` is not an exception in AC-025 (see T-002 Notes); `AGENTS.md` over its line target (T-008 Notes).
 - **Baseline:** 0e0380a (HEAD before the first step commit).

@@ -60,6 +60,11 @@ export interface VerificationStatus {
     compileVerdictText: string;
 }
 
+export interface BlockedBy {
+    plan: boolean;
+    returnNotes: string[];
+}
+
 export interface LifecycleEntry {
     key: string;
     stem: string;
@@ -71,6 +76,8 @@ export interface LifecycleEntry {
     derivedLabel: string | undefined;
     readiness: ReadinessResult;
     verification: VerificationStatus;
+    plan: string | undefined;
+    blockedBy: BlockedBy | undefined;
     diagnostics: LifecycleDiagnostic[];
     deprecated: DeprecatedMarker | undefined;
 }
