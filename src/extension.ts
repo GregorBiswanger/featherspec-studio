@@ -4,6 +4,7 @@ import { createRandomIds } from './adapters/node/randomIds';
 import { createSystemClock } from './adapters/node/systemClock';
 import { createSystemRuntimeClock } from './adapters/node/systemRuntimeClock';
 import { createMarkerWatch } from './adapters/vscode/markerWatch';
+import { resolveStorageLocation } from './adapters/vscode/storageLocation';
 import { createOutputChannel } from './adapters/vscode/outputChannel';
 import { createShellActions } from './adapters/vscode/shellActions';
 import { createStudioPanel, VIEW_TYPE, type StudioPanel, type StudioPanelInspection } from './adapters/vscode/studioPanel';
@@ -112,7 +113,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     });
     const feed = connectActiveProject(controller, repository);
     const runtimeUi = createRuntimeUi();
-    const storage = context.globalStorageUri;
+    const storage = resolveStorageLocation(context.globalStorageUri, context.globalStoragePath);
     const clock = createSystemRuntimeClock();
     const ids = createRandomIds();
     const maxAgeDays = createMaxAgeDaysSetting();
@@ -122,11 +123,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         openStore: (projectRoot) =>
             openRuntimeStore({
                 medium:
-                    storage.scheme === 'file'
+                    storage.kind === 'directory'
                         ? createFileRuntimeMedium(
-                              projectStoreDirectory(storage.fsPath, process.platform === 'win32' ? projectRoot.toLowerCase() : projectRoot),
+                              projectStoreDirectory(storage.path, process.platform === 'win32' ? projectRoot.toLowerCase() : projectRoot),
                           )
-                        : createUnavailableMedium('storage location is not on the local file system'),
+                        : createUnavailableMedium(storage.reason),
                 ids,
                 clock,
                 notices: { show: (message) => runtimeUi.warn(message) },

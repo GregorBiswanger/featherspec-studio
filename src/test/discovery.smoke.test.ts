@@ -2,17 +2,8 @@ import * as assert from 'assert';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { waitFor } from '../core/discovery/testing/waitFor';
 import type { StudioApi } from '../extension';
-
-async function waitFor(condition: () => boolean, timeoutMs: number): Promise<void> {
-    const started = Date.now();
-    while (!condition()) {
-        if (Date.now() - started > timeoutMs) {
-            throw new Error('Timed out waiting for the condition');
-        }
-        await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-}
 
 async function activateStudio(): Promise<StudioApi> {
     const extension = vscode.extensions.all.find((candidate) => candidate.packageJSON.name === 'featherspec-studio');
@@ -20,7 +11,10 @@ async function activateStudio(): Promise<StudioApi> {
     return (await extension.activate()) as StudioApi;
 }
 
-suite('FeatherSpec Studio discovery smoke', () => {
+suite('FeatherSpec Studio discovery smoke', function () {
+    this.timeout(60_000);
+
+
     test('AC-019: activates on the fixture workspace and reports its folders without any command', async () => {
         const api = await activateStudio();
         await api.whenIdle();
@@ -47,10 +41,10 @@ suite('FeatherSpec Studio discovery smoke', () => {
         await fs.mkdir(path.join(folder.uri.fsPath, '.specs'));
         await fs.writeFile(path.join(folder.uri.fsPath, '.specs', 'README.md'), '# Specs\n');
         await waitFor(
-            () =>
-                (api.snapshot().result?.folders ?? []).find((entry) => entry.name === 'incomplete-agents-only')?.verdict ===
-                'project',
-            10000,
+            'incomplete-agents-only to be recognised as a project',
+            () => (api.snapshot().result?.folders ?? []).map((entry) => `${entry.name}: ${entry.verdict}`),
+            (folders) => folders.includes('incomplete-agents-only: project'),
+            { timeoutMs: 20_000 },
         );
         await api.whenIdle();
         assert.strictEqual(api.snapshot().active?.name, 'fs110-de-active-review');

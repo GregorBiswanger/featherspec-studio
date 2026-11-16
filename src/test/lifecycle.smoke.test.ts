@@ -1,16 +1,7 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
+import { waitFor } from '../core/discovery/testing/waitFor';
 import type { StudioApi } from '../extension';
-
-async function waitFor(condition: () => boolean, timeoutMs: number): Promise<void> {
-    const started = Date.now();
-    while (!condition()) {
-        if (Date.now() - started > timeoutMs) {
-            throw new Error('Timed out waiting for the condition');
-        }
-        await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-}
 
 async function activateStudio(): Promise<StudioApi> {
     const extension = vscode.extensions.all.find((candidate) => candidate.packageJSON.name === 'featherspec-studio');
@@ -18,12 +9,15 @@ async function activateStudio(): Promise<StudioApi> {
     return (await extension.activate()) as StudioApi;
 }
 
-suite('FeatherSpec Studio lifecycle smoke', () => {
+suite('FeatherSpec Studio lifecycle smoke', function () {
+    this.timeout(60_000);
+
+
     test('AC-001, AC-014: the active project gets a state per spec and a Ready spec is accepted for Active', async () => {
         const api = await activateStudio();
         await api.whenIdle();
         const lifecycle = api.lifecycle();
-        await waitFor(() => lifecycle.model()?.entries.some((entry) => entry.stem === '0001-tip-splitter') === true, 10000);
+        await waitFor('the lifecycle model to list 0001-tip-splitter', () => lifecycle.model()?.entries.map((entry) => entry.stem), (stems) => stems?.includes('0001-tip-splitter') === true, { timeoutMs: 20_000 });
         const entry = lifecycle.model()?.entries.find((candidate) => candidate.stem === '0001-tip-splitter');
         assert.ok(entry);
         assert.strictEqual(entry.state, 'Review');

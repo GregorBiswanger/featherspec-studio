@@ -280,6 +280,10 @@ T-007 need the complete medium contract.
 | AC-029 | T-002 | src/core/runtime/runtimeStore.ts:persistEvents | src/core/runtime/testing/contractEvents.ts (AC-029) | verified |
 | AC-030 | T-010 | `src/core/runtime/runtimeStore.ts:notifyRuns, onDidChangeRuns` | `src/core/runtime/testing/contractRunChanges.ts` (AC-030, both media) | verified |
 
+## Open evidence
+
+- 2026-11-16 — First host-suite run (Gregor, Windows 11, Node 26, VS Code 1.146): `runtime.smoke` AC-025 and AC-016 timed out waiting for `writable` (70 s each); the Mission Control smoke (0006) then showed the store reason `storage location is not on the local file system`, so `context.globalStorageUri.scheme` was not `file` in that window. The log does not say which scheme it was. Fix: `src/adapters/vscode/storageLocation.ts:resolveStorageLocation` (Vitest `storageLocation.test.ts`, red first) keeps `file` URIs on `fsPath`, falls back to the absolute `context.globalStoragePath` for a non-file scheme, and otherwise reports the unavailable reason with the scheme named. `src/extension.ts` uses it. Tests: new `src/core/discovery/testing/waitFor.ts` (Vitest-covered) names what is awaited and the last observed state on a timeout; wait is 30 s, suite 60 s. Not yet seen green on the host; if the next run still reports `unavailable`, the reason now names the scheme.
+
 ## Session handoff
 
 - **Done so far:** T-001…T-010 ticked (T-010: run-change notification for 0007). `/sdd-compile` found 'Interrupted run reads as unreadable at the second activation' and writes to unreadable or newer data accepted; both fixed test-first on both media (T-009), spec wording adjusted, `docs/runtime-data.md` accepted (AC-020, T-008). `npm run test:unit`: 280 tests green.
