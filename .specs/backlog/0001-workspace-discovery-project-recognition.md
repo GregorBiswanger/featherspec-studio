@@ -1,7 +1,7 @@
 # Workspace Discovery & Project Recognition
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0001-workspace-discovery-project-recognition.plan.md](0001-workspace-discovery-project-recognition.plan.md)
 
 ## 1. Summary
 
@@ -175,7 +175,7 @@ hand-made ones are listed in §15.
 - **AC-011** The system shall create, modify, rename or delete no file or folder inside any workspace folder during discovery, selection or refresh. [AC-001.5]
   > **Given** a fixture tree with recorded paths, sizes and modification times **When** discovery, refresh and selection run **Then** the recorded tree is unchanged.
 - **AC-012** When discovery runs again (refresh, re-detection or reload), the system shall report exactly one entry per workspace folder (BR-05) in the discovery result, in the list of the select command and within each Output channel block. [AC-001.6]
-- **AC-013** When a workspace folder is added or removed, or the root `AGENTS.md` of a workspace folder appears, changes or disappears, or its root `.specs/` directory appears or disappears, the system shall rerun discovery and update the status bar entry and the Output channel without a reload. A change inside `.specs/` shall not trigger a rerun. After the last change, the status bar entry and the newest Output channel block shall match the state on disk.
+- **AC-013** While Studio is active (activated at open by AC-019, or later by one of its commands), when a workspace folder is added or removed, or the root `AGENTS.md` of a workspace folder appears, changes or disappears, or its root `.specs/` directory appears or disappears, the system shall rerun discovery and update the status bar entry and the Output channel without a reload. A change inside `.specs/` shall not trigger a rerun. After the last change, the status bar entry and the newest Output channel block shall match the state on disk.
 - **AC-014** While a project is active, the status bar entry shall show its folder name and version ("unknown" for a legacy project or an empty value), and clicking the entry shall open the select command.
 - **AC-015** When the user runs the select command or clicks the status bar entry and no project is reported, the system shall show the notification "No FeatherSpec project found in this workspace" with the actions "Open setup guide" and "Refresh". "Open setup guide" shall open the link of A-005. With no folder open, the system shall show "Open a folder to use FeatherSpec Studio" instead.
 - **AC-016** When a discovery run finishes, the system shall write to the Output channel "FeatherSpec Studio", for each workspace folder: path, verdict, version and its diagnostics. For a folder reported as *not a project* the entry shall contain the hint "open the project folder itself". The system shall create no entry in the Problems panel.
@@ -205,8 +205,14 @@ hand-made ones are listed in §15.
   events are debounced and coalesced (ADR-001 §9); `capabilities.untrustedWorkspaces: limited` and
   `extensionKind: workspace` (ADR-001 §14). Where the PD register and an ADR disagree, the PD
   register wins (Gregor, 2026-11-16).
-- For `/sdd-plan` to decide: the activation events. They must satisfy AC-013, AC-019 and AC-020.
-  ADR-001 §8's provisional `workspaceContains` markers predate PD-031/PD-033 (see OP-005).
+- Activation events (decided 2026-11-16 by Gregor, OP-005): `workspaceContains:AGENTS.md` and
+  `workspaceContains:.specs`, plus the implicit activation by Studio's own commands; no
+  `onStartupFinished`, ADR-001 §8 stays. A workspace without a marker at open activates Studio only
+  when the user runs a Studio command (later also the Studio view, 0005); live re-detection
+  (AC-013) holds from then on.
+- AC-022 cannot run in an extension-host test: `@vscode/test-electron` always launches with
+  `--disable-workspace-trust`. It is decided by a manifest unit test plus Gregor's manual check in
+  Restricted Mode (Gregor, 2026-11-16).
 - Restatement of the read-only rule (source: PD-013): Studio never writes FeatherSpec artifacts.
 
 ## 16. Assumptions
@@ -233,10 +239,11 @@ Resolved:
   - Wording and testability: log content (1.4), hint for *not a project* (1.5), empty state vs notification (2.7), diagnostic vs missing prerequisite (2.8), AC-010 text (3.4), AC-006 (3.5), AC-012 (3.6), AC-009 actor (3.9). Partly: AC-019 trigger (3.1), AC-013 final state (3.2), AC-018 measuring point (3.3); their rest is OP-005…OP-007.
   - Three readings made while applying the decisions; say so if one is wrong: (a) an empty-value version line still counts as M1 (PD-031 wording); (b) the status bar reads "FeatherSpec project not found" when only *incomplete* folders exist (the only fitting text in §9); (c) the "not found" entry of a missing remembered project also stays when no folder is a project or incomplete, because PD-033 ends it only by a selection or the return.
 
+- OP-005: resolved 2026-11-16 by Gregor during `/sdd-plan`. AC-013 holds once Studio is active; no `onStartupFinished`, ADR-001 §8 stays (§15).
+
 Open, none blocks planning (clarify finding in brackets):
 
 - OP-004 [1.3]: an unreadable `AGENTS.md` beside `.specs/` is *not a project* by AC-017, while the markers alone would say *incomplete*. Recommendation: *incomplete* plus the read-error diagnostic, so the status bar shows it (§2: no silent failure). Until decided, AC-017 stands.
-- OP-005 [3.1]: must AC-013 also hold in a workspace that had neither marker when it was opened? That needs Studio running silently in every workspace, and ADR-001 §8 rules out `onStartupFinished`. PD-033 names no limit, so AC-013 is written without one and the plan follows it. Recommendation: confirm and amend ADR-001 §8. Alternative: limit AC-013 to workspaces where a folder held `AGENTS.md` or `.specs/` at open.
 - OP-006 [3.2]: AC-013 has no deadline. Recommendation: status bar and Output channel updated within 2 seconds after the change event reaches Studio (the AC-018 budget).
 - OP-007 [3.3, 6.8]: the 2 seconds and 5 folders of AC-018 have no source, and no reference machine is named. Recommendation: treat them as working thresholds like PD-035 and re-measure on Gregor's sample projects.
 - OP-008 [3.8]: "does not block the editor" (§12) has no observation that could prove it false. Recommendation: drop it as a requirement and keep a design note in §15 (file access is asynchronous).
@@ -250,7 +257,7 @@ Open, none blocks planning (clarify finding in brackets):
 Goal, user, scope and out-of-scope are documented. The business rules (BR-01…BR-07) are testable.
 The happy path and edge cases are described. Every criterion is decidable by a test or by
 Gregor's manual check. Assumptions and open points are visible. Clarified on 2026-11-16; the open
-points OP-004…OP-012 do not block planning.
+points OP-004 and OP-006…OP-012 do not block planning.
 
 ## 19. Definition of Done
 
@@ -263,5 +270,5 @@ manual check on his sample projects.
 
 ## 20. Recommended next steps
 
-1. `/sdd-plan`: it introduces `npm run test:unit` and the fixture set. It reads OP-005 first.
-2. Gregor answers OP-004…OP-012 when convenient; `/sdd-specify` (revise mode) applies the answers.
+1. Gregor reads the plan [0001-workspace-discovery-project-recognition.plan.md](0001-workspace-discovery-project-recognition.plan.md).
+2. Gregor answers OP-004 and OP-006…OP-012 when convenient; `/sdd-specify` (revise mode) applies the answers.
