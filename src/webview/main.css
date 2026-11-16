@@ -511,7 +511,16 @@ main > h1 {
 .mission-control {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 20px;
+}
+
+.mission-control h2 {
+    margin: 0;
+    color: var(--fs-muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 .mc-header {
@@ -535,22 +544,130 @@ main > h1 {
     color: var(--vscode-descriptionForeground);
 }
 
-.mc-states {
+.mc-specs {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px 16px;
-    margin: 4px 0;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.mc-section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.mc-total {
+    margin: 0;
+}
+
+.mc-tiles {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
     padding: 0;
     list-style: none;
 }
 
-.mc-state-count {
-    font-weight: bold;
+.mc-tile {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "name icon"
+        "count count"
+        "sub sub";
+    align-content: start;
+    row-gap: 2px;
+    width: 100%;
+    height: 100%;
+    min-height: 92px;
+    padding: 10px 12px;
+    color: var(--vscode-foreground);
+    background: var(--fs-lane);
+    border: 1px solid var(--fs-border);
+    border-top: 2px solid var(--fs-tint);
+    border-radius: 4px;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
 }
 
-.mc-derived,
-.mc-deprecated {
-    margin-left: 6px;
+.mc-tile:hover {
+    background: var(--vscode-list-hoverBackground);
+}
+
+.mc-tile-name {
+    grid-area: name;
+    color: var(--fs-muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.mc-tile .icon {
+    grid-area: icon;
+    color: var(--fs-tint);
+}
+
+.mc-tile-count {
+    grid-area: count;
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+}
+
+.mc-tile-zero .mc-tile-count {
+    color: var(--fs-muted);
+    font-weight: normal;
+}
+
+.mc-tile-sub {
+    grid-area: sub;
+    color: var(--fs-muted);
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.mc-distribution {
+    display: flex;
+    gap: 2px;
+    height: 6px;
+    overflow: hidden;
+    border-radius: 3px;
+}
+
+.mc-segment {
+    min-width: 4px;
+    background: var(--fs-tint);
+}
+
+.vscode-high-contrast .mc-segment {
+    outline: 1px solid var(--vscode-contrastBorder);
+    outline-offset: -1px;
+}
+
+.mc-progress {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    margin: 0;
+}
+
+.mc-progress-figure {
+    font-weight: 600;
+}
+
+.mc-formula {
+    font-size: 0.92em;
+}
+
+@media (max-width: 720px) {
+    .mc-tiles {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
 }
 
 .mc-list {

@@ -11,6 +11,12 @@ export const MC_FORMULA = 'Done specs with status Implemented or Baseline ÷ (al
 
 export const MC_PROGRESS_UNAVAILABLE = 'Progress: not available';
 
+export const MC_DISTRIBUTION_LABEL = 'Specs by state';
+
+export function mcSegment(state: string, count: number, total: number): string {
+    return `${state}: ${count} of ${total}`;
+}
+
 export function mcFolder(name: string): string {
     return name;
 }

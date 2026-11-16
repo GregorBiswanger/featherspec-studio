@@ -4,7 +4,7 @@ import type { MissionControlView } from '../../../shared/protocol/missionControl
 import { bigView, sampleView } from '../../../shared/protocol/testing/missionControlSample';
 import { App } from '../../App';
 import { createClient, type ShellClient } from '../../client';
-import { baseView, missionControlEvent, mount, send, shellEvent, type Mounted } from '../../testing/dom';
+import { baseView, click, isKeyboardReachable, missionControlEvent, mount, send, shellEvent, type Mounted } from '../../testing/dom';
 import { formatTime } from './format';
 
 let posted: Envelope[];
@@ -165,5 +165,83 @@ describe('AC-016, AC-024: timing', () => {
         await send(missionControlEvent(bigView(200, 5)));
         expect(area(container).textContent).toContain('Total 200');
         expect(performance.now() - started).toBeLessThan(1000);
+    });
+});
+
+describe('0013 AC-004, AC-005: stat tiles, distribution bar and progress', () => {
+    function countsView(states: { state: 'Backlog' | 'Ready' | 'Active' | 'Review' | 'Done' | 'Blocked'; count: number }[]): MissionControlView {
+        const view = sampleView();
+        const total = states.reduce((sum, entry) => sum + entry.count, 0);
+        view.specs = {
+            kind: 'counts',
+            total,
+            states: states.map((entry) =>
+                entry.state === 'Ready' ? { ...entry, derivedRule: 'S-READY' as const } : entry.state === 'Review' ? { ...entry, derivedRule: 'S-REVIEW' as const } : entry.state === 'Blocked' ? { ...entry, derivedRule: 'S-BLOCKED' as const } : entry.state === 'Done' ? { ...entry, deprecated: 0 } : entry,
+            ),
+            progress: { kind: 'value', percent: 0, done: 0, divisor: total },
+        };
+        return view;
+    }
+    const FIVE_SEVEN = countsView([
+        { state: 'Backlog', count: 5 },
+        { state: 'Ready', count: 0 },
+        { state: 'Active', count: 0 },
+        { state: 'Review', count: 7 },
+        { state: 'Done', count: 0 },
+        { state: 'Blocked', count: 0 },
+    ]);
+
+    it('AC-004: six tiles in board order, each one native button with count, state name and state icon; Ready, Review and Blocked carry the sentence with the rule ID', async () => {
+        const tiles = [...area(await open(FIVE_SEVEN)).querySelectorAll<HTMLButtonElement>('.mc-tile')];
+        expect(tiles.map((tile) => tile.getAttribute('data-board-state'))).toEqual(['Backlog', 'Ready', 'Active', 'Review', 'Done', 'Blocked']);
+        for (const tile of tiles) {
+            const state = tile.getAttribute('data-board-state')!;
+            expect(tile.tagName).toBe('BUTTON');
+            expect(tile.tabIndex).toBe(0);
+            expect(tile.querySelector('.mc-tile-name')?.textContent).toBe(state);
+            expect(tile.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+            expect(tile.querySelector('.mc-tile-count')?.textContent).toMatch(/^\d+$/);
+            const rule = tile.querySelector('.rule-id')?.textContent;
+            expect(rule).toBe(state === 'Ready' ? 'S-READY' : state === 'Review' ? 'S-REVIEW' : state === 'Blocked' ? 'S-BLOCKED' : undefined);
+        }
+        expect(tiles[3]?.querySelector('.rule-sentence')?.textContent).toBe('Derived: plan is Done, waiting for review');
+        expect(tiles[0]?.querySelector('.mc-tile-count')?.textContent).toBe('5');
+    });
+
+    it('AC-004: activating a tile sends the state request of 0006 BR-08', async () => {
+        const container = await open(FIVE_SEVEN);
+        const review = area(container).querySelector<HTMLButtonElement>('.mc-tile[data-board-state="Review"]')!;
+        await click(review);
+        expect(posted.filter((message) => message.type === 'navigate').map((message) => message.payload)).toEqual([{ area: 'specBoard', target: { kind: 'boardFilter', filter: { states: ['Review'] } } }]);
+    });
+
+    it('AC-005: 5 Backlog and 7 Review give two segments, 41.7 % and 58.3 % wide, named "Backlog: 5 of 12" and "Review: 7 of 12"; no segment for 0', async () => {
+        const bar = area(await open(FIVE_SEVEN)).querySelector('.mc-distribution')!;
+        expect(bar.getAttribute('role')).toBe('group');
+        expect(bar.getAttribute('aria-label')).toBeTruthy();
+        const segments = [...bar.querySelectorAll<HTMLElement>('.mc-segment')];
+        expect(segments.map((segment) => segment.getAttribute('aria-label'))).toEqual(['Backlog: 5 of 12', 'Review: 7 of 12']);
+        expect(segments.map((segment) => segment.getAttribute('data-board-state'))).toEqual(['Backlog', 'Review']);
+        const widths = segments.map((segment) => Number.parseFloat(segment.style.width));
+        expect(Math.abs((widths[0] ?? 0) - 41.7)).toBeLessThanOrEqual(1);
+        expect(Math.abs((widths[1] ?? 0) - 58.3)).toBeLessThanOrEqual(1);
+        for (const segment of segments) {
+            expect(segment.getAttribute('style')).toMatch(/^width: [\d.]+%;?$/);
+        }
+    });
+
+    it('AC-005: the progress figure shows 0006 BR-04\'s rule as visible secondary text and as tooltip', async () => {
+        const progress = area(await open(sampleView())).querySelector<HTMLElement>('[data-progress]')!;
+        expect(progress.querySelector('.mc-formula')?.textContent).toBe('Done specs with status Implemented or Baseline ÷ (all specs − Deprecated), rounded down');
+        expect(progress.getAttribute('title')).toBe('Done specs with status Implemented or Baseline ÷ (all specs − Deprecated), rounded down');
+    });
+
+    it('AC-003: Total and every tile are Tab stops', async () => {
+        const container = area(await open(FIVE_SEVEN));
+        const total = container.querySelector<HTMLButtonElement>('[data-drill="total"]')!;
+        expect(isKeyboardReachable(total)).toBe(true);
+        const tiles = [...container.querySelectorAll('.mc-tile')];
+        expect(tiles).toHaveLength(6);
+        expect(tiles.every((tile) => isKeyboardReachable(tile))).toBe(true);
     });
 });

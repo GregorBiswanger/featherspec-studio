@@ -3,7 +3,7 @@
 **Spec:** [0013-studio-visual-design.md](0013-studio-visual-design.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-003
+**Current step:** T-004
 
 ## Approach
 
@@ -130,8 +130,8 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
   Tests in `MissionControl.test.tsx`: tile order and request, segment shares within 1 pp and names (the
   5/7 example), no segment for 0, formula visible and as tooltip, tiles are Tab stops.
 - **Verify:** quality gates; manual: `01-mission-control-{dark,light}` — tiles and bar scan at a glance.
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-16 — red: 5 new tests in `MissionControl.test.tsx` (no `.mc-tile`, no `.mc-distribution`, no `title`/`.mc-formula`; the Tab-stop test was vacuously green until it asserted six tiles); green: eslint, both `tsc`, `npm run test:unit` 89 files / 1292 tests, `npm run compile`. Looked at `01-mission-control-{dark,light,hc}`: six tiles with tinted top edge and icon, zero counts dimmed, sentences wrap inside the tile, bar 5/1/7 in grey/purple/yellow; removed a max-width that left an unexplained right gap.
+- **Notes:** the 0006 texts `[data-state-count]` row strings stay as T-002 left them (name, count, sentence inside one tile button). `Drill` gained optional `className` and `state` props.
 
 ### T-004 — Mission Control: header line, attention rows, side-by-side panels
 
