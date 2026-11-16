@@ -3,7 +3,7 @@
 **Spec:** [0006-mission-control-dashboard.md](0006-mission-control-dashboard.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-003
+**Current step:** T-005
 
 ## Approach
 
@@ -358,8 +358,9 @@ small, so the recommendation is to run them in sequence.
     - AC-024 guard: `generateProject` with 200 specs plus 1,000 runs and 1,000 history entries →
       the projection takes < 1000 ms.
 - **Verify:** `npx vitest run src/core/missionControl` plus the per-step gates
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-16 — red: `npx vitest run src/core/missionControl/activity.test.ts` 12 failed and `missionControlService.test.ts` 11 failed (stubs threw `Not implemented`); green: 2 files 23/23, whole folder 69/69. Covers AC-010, AC-011 (events appended through a real memory store cause no view, a created run does), AC-006, AC-015, AC-018, A-005, A-006, A-007, A-011 (no read and no subscription without a listener), burst coalescing (20 notifications, at most 2 reads), reading (c), AC-023 (fakes with read members only), AC-024 guard (200 specs, 5 runs each, 1,000 history entries: under 1000 ms). Gates: eslint 0, `tsc --noEmit` 0, `tsc --noEmit -p src/webview` 0, `npm run test:unit` 83 files, 1191 passed.
+- **Notes:** Deviation: no `lifecycle` or `repository` dep (see *Code reality*); `updatedAt` is stamped when the model object changes. The service clears its view and unsubscribes when the last listener leaves, so a reopened panel never gets a stale view. `testing/serviceWorld.ts` and `testing/bigModel.ts` are shared with the host wiring.
+
 
 ### T-005 — Webview area: transport, header and spec figures
 
@@ -493,25 +494,25 @@ small, so the recommendation is to run them in sequence.
 | AC-003 | T-002 | specFigures.ts:projectSpecFigures | specFigures.test.ts (AC-003, rounding, PD-021) | verified |
 | AC-004 | T-002 | specFigures.ts:projectSpecFigures | specFigures.test.ts (AC-004) | verified |
 | AC-005 | T-003, T-006 | src/core/missionControl/runFigures.ts:projectRuns | runFigures.test.ts (AC-005); rendering in T-006 | built |
-| AC-006 | T-001, T-004 | — | — | open |
+| AC-006 | T-001, T-004 | src/core/missionControl/missionControlService.ts | missionControlService.test.ts (AC-006) | verified |
 | AC-007 | T-003, T-006 | runFigures.ts:projectRuns | runFigures.test.ts (AC-007, OP-10); rendering in T-006 | built |
 | AC-008 | T-003, T-006 | src/core/missionControl/attention.ts:projectAttention | attention.test.ts (AC-008); rendering in T-006 | built |
 | AC-009 | T-003 | attention.ts:carriesDiagnostic | attention.test.ts (AC-009) | verified |
-| AC-010 | T-004, T-006 | — | — | open |
-| AC-011 | T-004 | — | — | open |
+| AC-010 | T-004, T-006 | src/core/missionControl/activity.ts:projectActivity | activity.test.ts (AC-010, A-005); rendering in T-006 | built |
+| AC-011 | T-004 | activity.ts | activity.test.ts (AC-011), missionControlService.test.ts (AC-011, real store) | verified |
 | AC-012 | T-007 | — | — | open |
 | AC-013 | T-007 | — | — | open |
 | AC-014 | T-007 | — | — | open |
-| AC-015 | T-001, T-004, T-008 | — | deciding: host smoke on CI | open |
+| AC-015 | T-001, T-004, T-008 | src/core/missionControl/runSource.ts, missionControlService.ts | runSource.test.ts, missionControlService.test.ts (AC-015); host smoke on CI in T-008 | built |
 | AC-016 | T-005 | — | — | open |
 | AC-017 | T-002, T-005, T-007 | — | — | open |
-| AC-018 | T-001, T-003, T-004, T-006 | — | — | open |
+| AC-018 | T-001, T-003, T-004, T-006 | runSource.ts, runFigures.ts, attention.ts, activity.ts | runSource.test.ts, missionControlService.test.ts, attention.test.ts (AC-018); rendering in T-006 | built |
 | AC-019 | T-002, T-005 | — | — | open |
 | AC-020 | T-002, T-005 | specFigures.ts (empty form) | specFigures.test.ts (AC-020); rendering in T-005 | built |
 | AC-021 | T-006 | — | + manual: Gregor, High Contrast | open |
 | AC-022 | T-007 | — | + manual: Gregor, focus, Enter and Space | open |
-| AC-023 | T-004, T-008 | — | — | open |
-| AC-024 | T-004, T-005 | — | — | open |
+| AC-023 | T-004, T-008 | missionControlService.ts (read-only Picks) | missionControlService.test.ts (AC-023); host smoke snapshotTree in T-008 | built |
+| AC-024 | T-004, T-005 | missionControlService.ts | missionControlService.test.ts (AC-024 projection); render time in T-005 | built |
 | AC-025 | T-002, T-005 | specFigures.ts (derivedRule) | specFigures.test.ts (AC-025) | built |
 | AC-026 | T-002, T-003, T-006 | src/shared/protocol/missionControl.ts (no such field), runFigures.ts | missionControl.test.ts (AC-026), runFigures.test.ts (AC-026); DOM in T-006 | built |
 | AC-027 | T-003, T-006 | runFigures.ts:projectRuns (unreadable) | runFigures.test.ts (AC-027); rendering in T-006 | built |
@@ -520,8 +521,8 @@ small, so the recommendation is to run them in sequence.
 
 ## Session handoff
 
-- **Done so far:** T-001 (run source) and T-002 (view contract, spec figures, header) ticked; 1143 unit tests green.
-- **Next action:** T-003: run figures, highlighted runs, attention list (`src/core/missionControl`), then T-004, stage 3 (webview) and T-008.
+- **Done so far:** Stages 1 and 2 ticked: T-001 run source, T-002 view contract and spec figures, T-003 run figures and attention, T-004 activity and the dashboard service; 1191 unit tests green.
+- **Next action:** Stage 3: T-005 (webview transport, header, spec figures, area registration), T-006 (runs, attention, activity), T-007 (drill-down requests); then T-008 (host wiring, smoke, docs).
 - **Open decisions:** none blocking. Gregor's manual checks (spec §14): AC-021 in a High Contrast theme, AC-022 focus with Enter and Space, the §9 layout in the hands-on run.
 - **Baseline:** `1ba50ff` (HEAD before the first step commit of this plan).
 - **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); CI runs it. `node_modules` is installed; no dependency is added.

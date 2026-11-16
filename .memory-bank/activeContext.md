@@ -15,10 +15,11 @@ Spec 0007 (Spec Board and spec detail) is built (plan Done, T-001...T-010; 0003 
 - Spec 0007: [spec](../.specs/active/0007-spec-board-spec-detail.md) / [plan](../.specs/active/0007-spec-board-spec-detail.plan.md) (Done, T-001...T-010 ticked; spec `In Progress` until `/sdd-compile`).
 - Spec 0005: [spec](../.specs/active/0005-studio-shell-navigation.md) / [plan](../.specs/active/0005-studio-shell-navigation.plan.md) (Done, T-001...T-009 ticked; spec `In Progress` until `/sdd-compile`).
 - Spec 0006: [spec](../.specs/active/0006-mission-control-dashboard.md) / [plan](../.specs/active/0006-mission-control-dashboard.plan.md) (In Progress, T-001...T-008; approved by Gregor 2026-11-16).
-- Current task: 0006 T-003; 0001...0005 and 0007 all steps ticked.
+- Current task: 0006 T-005; 0001...0005 and 0007 all steps ticked.
 - Acceptance criteria in focus: 0007 AC-001...AC-028 (manual: AC-017, AC-018, AC-026).
 
 ## Changed Recently
+- Spec 0006 stage 2 (T-003, T-004): run figures, highlighted runs, attention list, recent activity, dashboard service (listens only while the panel is open); 1191 unit tests green.
 - Spec 0006 stage 1 (T-001, T-002): `src/core/missionControl` run source, spec figures and header; `src/shared/protocol/missionControl.ts` view contract and guard; plan adjusted to the real code, spec revised (OP-4, OP-6, OP-8...OP-12 answered); 1143 unit tests green.
 - Spec 0005 T-010 (after `/sdd-compile`): AC-030 selected-row text uses the selection foreground, AC-031 High Contrast borders in `main.css`; style and DOM tests; 1119 unit tests green.
 - Spec 0007 (T-001...T-010): `src/core/board`, `src/shared/protocol/{boardFilter,board,detail}.ts`, Spec Board area, keyboard, Move to menu, native drag and drop, spec detail in Spec Explorer, `onDidNavigate`, `featherspec-studio.moveSpec`, host smoke `src/test/board.smoke.test.ts` (not run here); 0003 T-009/T-010, 0004 T-010; 1111 unit tests green.
