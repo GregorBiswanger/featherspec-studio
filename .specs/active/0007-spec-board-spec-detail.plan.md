@@ -3,7 +3,7 @@
 **Spec:** [0007-spec-board-spec-detail.md](0007-spec-board-spec-detail.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-009
+**Current step:** T-010
 
 ## Approach
 
@@ -472,8 +472,8 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
     - the hint with no selection;
     - a new `detail` event after a folder move keeps the view.
 - **Verify:** `npm run test:unit -- src/webview/detail` plus the per-step gates
-- [ ] **Verified (T-009):** —
-- **Notes:** —
+- [x] **Verified (T-009):** eslint, tsc (both), test:unit: 74 files, 1100 tests passed; SpecDetail.test.tsx (19 tests) red first against the unchanged SpecExplorer (19 failed), then green.
+- **Notes:** No detailStore.tsx: useBoard() already exposes detail, fileResult and openFile. SpecExplorer wraps the 0005 list and SpecDetail in an .explorer grid; the list and its rows are untouched. A section shows the not-found text when the file's key is the section's own open key or one of its items' keys, so Plan and Verification both show it for the plan file. Plan and Verification pass keys=[] and rely on their own open target. Runs are shown in the order the core delivers (newest created first, covered in detail.test.ts).
 
 ### T-010 — Wiring, command, host smoke; docs sync and final gates
 
@@ -535,15 +535,15 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 | AC-006 | T-003, T-006 | `src/core/board/progress.ts` | `progress.test.ts` (AC-006) | built |
 | AC-007 | T-003 | `src/core/board/runs.ts:indexRuns, cardRun` | `runs.test.ts` (AC-007) | built |
 | AC-008 | T-007, T-010 | — | — | open |
-| AC-009 | T-006, T-009 | — | — | open |
-| AC-010 | T-005, T-006, T-009, T-010 | `src/core/board/openFile.ts:createOpenFile` | `openFile.test.ts` (AC-010) | built |
+| AC-009 | T-006, T-009 | src/webview/detail/SpecDetail.tsx | SpecDetail.test.tsx (AC-009) | built |
+| AC-010 | T-005, T-006, T-009, T-010 | `src/core/board/openFile.ts:createOpenFile`; src/webview/detail/{SpecDetail,DetailSection}.tsx | `openFile.test.ts` (AC-010); SpecDetail.test.tsx (AC-010) | built |
 | AC-011 | T-001, T-004 | `src/core/board/filters.ts:arrangeBoard` | `filters.test.ts` (AC-011, T-001 part) | open |
 | AC-012 | T-001, T-007 | `src/core/board/filters.ts:arrangeBoard` | `filters.test.ts` (AC-012) | open |
 | AC-013 | T-001 | `src/core/board/filters.ts:arrangeBoard` | `filters.test.ts` (AC-013) | verified |
 | AC-014 | T-005, T-008, T-010 | `src/core/board/moves.ts:createMoves`; src/webview/board/MoveMenu.tsx; SpecBoard.tsx | `moves.test.ts` (AC-014); Keyboard.test.tsx (AC-014) | built |
 | AC-015 | T-005 | `src/core/board/moves.ts:requestMove` | `moves.test.ts` (AC-015) | verified |
 | AC-016 | T-005, T-010 | `src/core/board/moves.ts`, `openFile.ts` | `noWrite.test.ts` (AC-016) | built |
-| AC-017 | T-008, T-009 | src/webview/board/focusModel.ts | — + manual: Gregor, keyboard-only pass; focusModel.test.ts; Keyboard.test.tsx (AC-017) | built |
+| AC-017 | T-008, T-009 | src/webview/board/focusModel.ts; src/webview/detail/DetailSection.tsx:OpenButton | — + manual: Gregor, keyboard-only pass; focusModel.test.ts; Keyboard.test.tsx (AC-017); SpecDetail.test.tsx (keyboard-operable) | built |
 | AC-018 | T-007, T-008 | src/webview/board/Announcer.tsx | — + manual: Gregor, screen reader; Keyboard.test.tsx (AC-018) | built |
 | AC-019 | T-004, T-007, T-008 | src/webview/board/focusModel.ts:fallbackFocus | Keyboard.test.tsx (AC-019) | built |
 | AC-020 | T-002 | `src/core/board/cards.ts:buildCards, buildBanner` | `cards.test.ts` (AC-020) | built |
@@ -553,8 +553,8 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 | AC-024 | T-002, T-006 | `src/core/board/cards.ts:blockedLines, readinessLine` | `cards.test.ts` (AC-024) | built |
 | AC-025 | T-003 | `src/core/board/progress.ts:lastChange`, `cards.ts` | `progress.test.ts` (AC-025) | verified |
 | AC-026 | T-007 | — | manual: Gregor, light/dark/High Contrast | open |
-| AC-027 | T-006, T-009 | — | — | open |
-| AC-028 | T-006, T-009 | — | — | open |
+| AC-027 | T-006, T-009 | src/webview/detail/SpecDetail.tsx | SpecDetail.test.tsx (AC-027) | built |
+| AC-028 | T-006, T-009 | src/webview/detail/SpecDetail.tsx | SpecDetail.test.tsx (AC-028) | built |
 
 ## Session handoff
 

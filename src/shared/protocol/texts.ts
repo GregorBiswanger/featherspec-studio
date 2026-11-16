@@ -224,3 +224,15 @@ export function successorText(successor: { kind: 'link'; text: string } | { kind
             return 'Successor: not available';
     }
 }
+
+export const DETAIL_LABEL = 'Spec detail';
+export const NO_RELATED_TEXT = 'No related artifacts';
+export const SECTION_TITLES = {
+    overview: 'Overview',
+    requirements: 'Requirements',
+    criteria: 'Acceptance criteria',
+    plan: 'Plan & tasks',
+    verification: 'Verification',
+    related: 'Related artifacts',
+    history: 'Agent history',
+} as const;

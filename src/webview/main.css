@@ -317,3 +317,28 @@ main {
 .move-items button {
     text-align: left;
 }
+
+.explorer {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(320px, 2fr);
+    gap: 16px;
+}
+
+.spec-detail {
+    min-width: 0;
+}
+
+.detail-section {
+    border-top: 1px solid var(--vscode-panel-border);
+    padding: 4px 0;
+}
+
+.detail-status {
+    min-height: 1.2em;
+    color: var(--vscode-errorForeground);
+}
+
+.illustration {
+    white-space: pre-wrap;
+    margin: 2px 0;
+}
