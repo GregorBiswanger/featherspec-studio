@@ -2,6 +2,7 @@ import { act, type ReactElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { PROTOCOL_VERSION, type Envelope } from '../../shared/protocol/envelope';
 import type { ShellView } from '../../shared/protocol/messages';
+import type { MissionControlView } from '../../shared/protocol/missionControl';
 
 export interface Mounted {
     container: HTMLElement;
@@ -76,4 +77,8 @@ export async function pressKey(element: Element, key: 'Enter' | ' '): Promise<vo
 export function isKeyboardReachable(element: Element): boolean {
     const target = element as HTMLElement;
     return !(target as HTMLButtonElement).disabled && target.tabIndex >= 0;
+}
+
+export function missionControlEvent(view: MissionControlView | unknown): Envelope {
+    return { v: PROTOCOL_VERSION, kind: 'evt', type: 'missionControl', payload: { view } };
 }

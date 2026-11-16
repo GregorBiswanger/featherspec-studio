@@ -37,3 +37,37 @@ export function sampleView(): MissionControlView {
         },
     };
 }
+
+export function bigView(specCount: number, perSpec: number): MissionControlView {
+    const stateWords = ['Backlog', 'Ready', 'Active', 'Review', 'Done', 'Blocked'] as const;
+    const refs = Array.from({ length: specCount }, (_, index) => ({
+        stem: `${String(index + 1).padStart(4, '0')}-thing`,
+        number: String(index + 1).padStart(4, '0'),
+        title: `Thing ${index + 1}`,
+        found: true,
+    }));
+    return {
+        header: { name: 'big', version: '1.10.0', updatedAt: '2026-11-16T10:00:00.000Z', projectDiagnostics: 3, diagnosticStems: refs.slice(0, 3).map((ref) => ref.stem) },
+        specs: {
+            kind: 'counts',
+            total: specCount,
+            states: stateWords.map((state) => ({ state, count: Math.floor(specCount / stateWords.length) })),
+            progress: { kind: 'value', percent: 16, done: 33, divisor: specCount },
+        },
+        runs: {
+            available: true,
+            running: specCount * perSpec,
+            highlighted: refs.map((spec, index) => ({ runId: `run-${index}`, status: index % 2 === 0 ? 'Failed' : 'Interrupted', spec })),
+            unreadable: 0,
+        },
+        attention: { rows: refs.map((spec) => ({ spec, reasons: ['Blocked', 'Run failed', 'Review pending'] })), runReasons: { available: true } },
+        activity: {
+            available: true,
+            entries: refs.slice(0, 10).map((spec, index) => ({
+                at: `2026-11-16T09:${String(index).padStart(2, '0')}:00.000Z`,
+                spec,
+                change: { kind: 'state', old: 'Backlog', new: 'Ready', whileClosed: false },
+            })),
+        },
+    };
+}

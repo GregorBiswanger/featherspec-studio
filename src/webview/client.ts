@@ -4,9 +4,11 @@ import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../shared/protoco
 import type { BoardView, MoveResult, SortKey } from '../shared/protocol/board';
 import type { BoardFilter, BoardState } from '../shared/protocol/boardFilter';
 import { isOpenFileResultPayload, type DetailView } from '../shared/protocol/detail';
+import type { MissionControlView } from '../shared/protocol/missionControl';
 import {
     isBoardEventPayload,
     isDetailEventPayload,
+    isMissionControlEventPayload,
     isMoveResultEventPayload,
     isProbePayload,
     isResponsePayload,
@@ -25,6 +27,7 @@ export interface ClientSnapshot {
     area: AreaId;
     board: BoardView | undefined;
     detail: DetailView | undefined;
+    missionControl: MissionControlView | undefined;
     move: MoveResult;
     fileResult: { key: string; text: string } | undefined;
 }
@@ -70,9 +73,10 @@ export function createClient(deps: ClientDeps): ShellClient {
     let localArea: { area: AreaId; id: string } | undefined;
     let board: BoardView | undefined;
     let detail: DetailView | undefined;
+    let missionControl: MissionControlView | undefined;
     let move: MoveResult = { kind: 'none' };
     let fileResult: { key: string; text: string } | undefined;
-    let snapshot: ClientSnapshot = { view: undefined, state: { id: 'S4' }, area: DEFAULT_AREA, board: undefined, detail: undefined, move, fileResult: undefined };
+    let snapshot: ClientSnapshot = { view: undefined, state: { id: 'S4' }, area: DEFAULT_AREA, board: undefined, detail: undefined, missionControl: undefined, move, fileResult: undefined };
     let unlisten: (() => void) | undefined;
     let mismatch = false;
     let protocolFailure = false;
@@ -96,13 +100,14 @@ export function createClient(deps: ClientDeps): ShellClient {
             snapshot.area === area &&
             snapshot.board === board &&
             snapshot.detail === detail &&
+            snapshot.missionControl === missionControl &&
             snapshot.move === move &&
             snapshot.fileResult === fileResult &&
             JSON.stringify(snapshot.state) === JSON.stringify(state)
         ) {
             return;
         }
-        snapshot = { view, state, area, board, detail, move, fileResult };
+        snapshot = { view, state, area, board, detail, missionControl, move, fileResult };
         listeners.forEach((listener) => listener());
     }
 
@@ -201,6 +206,11 @@ export function createClient(deps: ClientDeps): ShellClient {
                 if (isDetailEventPayload(envelope.payload)) {
                     detail = envelope.payload.view;
                     fileResult = undefined;
+                    refresh();
+                }
+            } else if (envelope.kind === 'evt' && envelope.type === 'missionControl') {
+                if (isMissionControlEventPayload(envelope.payload)) {
+                    missionControl = envelope.payload.view;
                     refresh();
                 }
             } else if (envelope.kind === 'evt' && envelope.type === 'moveResult') {

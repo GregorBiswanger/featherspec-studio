@@ -3,6 +3,7 @@ import { isBoardView, isMoveResult, isSortKey, type BoardView, type MoveResult, 
 import { isDetailView, type DetailView } from './detail';
 import { isBoardFilter, isBoardState, type BoardFilter, type BoardState } from './boardFilter';
 import { isRecord } from './envelope';
+import { isMissionControlView, type MissionControlView } from './missionControl';
 
 export const ACTION_IDS = [
     'openFolder',
@@ -144,6 +145,10 @@ export interface MoveResultEventPayload {
     result: MoveResult;
 }
 
+export interface MissionControlEventPayload {
+    view: MissionControlView;
+}
+
 export interface ShellEventPayload {
     view: ShellView;
 }
@@ -228,6 +233,10 @@ export function isBoardEventPayload(value: unknown): value is BoardEventPayload 
 
 export function isDetailEventPayload(value: unknown): value is DetailEventPayload {
     return isRecord(value) && isDetailView(value.view);
+}
+
+export function isMissionControlEventPayload(value: unknown): value is MissionControlEventPayload {
+    return isRecord(value) && isMissionControlView(value.view);
 }
 
 export function isMoveResultEventPayload(value: unknown): value is MoveResultEventPayload {

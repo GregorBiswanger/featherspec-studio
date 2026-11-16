@@ -7,6 +7,7 @@ import { fixturePath } from '../../core/discovery/testing/fixtures';
 import { arrangeBoard } from '../../core/board/filters';
 import { buildBanner, buildCards } from '../../core/board/cards';
 import { deriveLifecycle } from '../../core/lifecycle/deriveLifecycle';
+import { buildMissionControlView } from '../../core/missionControl/missionControlView';
 import { readProject } from '../../core/specs/readProject';
 import { createNodeSpecSource } from './nodeSpecSource';
 
@@ -110,6 +111,47 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         expect(cards.length).toBeGreaterThan(0);
         expect(document.querySelector('[data-column="Ready"] [data-card]')?.textContent).toContain('Derived (rule S-READY)');
         expect(document.querySelector('[data-placeholder]')).toBeNull();
+        expect(errors).toEqual([]);
+    });
+
+    it('mounts Mission Control with a snapshot of a fixture project: header, six state counts, progress, no start-up error', async () => {
+        const project = await readProject(createNodeSpecSource(), fixturePath('fs110-ready-synthetic'), '1.10.0');
+        const lifecycle = deriveLifecycle(project);
+        const mission = buildMissionControlView({
+            model: { project, lifecycle },
+            active: { name: 'fixture', version: '1.10.0' },
+            updatedAt: '2026-11-16T10:00:00.000Z',
+            runs: { available: true, runs: [] },
+            history: { available: true, label: 'Observed', entries: [] },
+        });
+        const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
+        await settle();
+        const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'missionControl', target: undefined, selection: undefined, notice: undefined, rows: [] };
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', type: 'missionControl', payload: { view: mission } } }));
+        await settle();
+        const document = dom.window.document;
+        expect(document.querySelector('h1')?.textContent).toBe('Mission Control');
+        expect(document.querySelector('[data-placeholder]')).toBeNull();
+        expect(document.querySelector('[data-mission-control]')).not.toBeNull();
+        expect(document.querySelector('[data-header]')?.textContent).toContain('fixture');
+        expect(document.querySelector('[data-header]')?.textContent).toContain('FeatherSpec 1.10.0');
+        expect(document.querySelectorAll('[data-state-count]')).toHaveLength(6);
+        expect(document.querySelector('[data-total]')?.textContent).toBe(`Total ${lifecycle.entries.length}`);
+        expect(lifecycle.entries.length).toBeGreaterThan(0);
+        expect(document.querySelector('[data-progress]')?.textContent).toContain('Progress');
+        expect(errors).toEqual([]);
+    });
+
+    it('control: a Mission Control event with an extra field is refused and the area stays an empty frame', async () => {
+        const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
+        await settle();
+        const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'missionControl', target: undefined, selection: undefined, notice: undefined, rows: [] };
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', type: 'missionControl', payload: { view: { header: {}, extra: 1 } } } }));
+        await settle();
+        expect(dom.window.document.querySelector('[data-mission-control]')).toBeNull();
+        expect(dom.window.document.querySelector('[data-mission-control-empty]')).not.toBeNull();
         expect(errors).toEqual([]);
     });
 

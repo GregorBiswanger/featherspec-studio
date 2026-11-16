@@ -390,8 +390,9 @@ small, so the recommendation is to run them in sequence.
     - AC-024: a generated 200-spec view (5 runs per spec, 1,000 history entries, helper
       `testing/bigView.ts`) renders within 1000 ms of the message event.
 - **Verify:** `npx vitest run src/webview src/shared` plus the per-step gates
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-16 — red: `npx vitest run src/webview src/shared` 5 failed plus 4 files failed to load (the area stub threw `Not implemented`, `format.ts` missing); and the bundle test with the Mission Control snapshot failed on the missing run section (kept for T-006); green: 13 files, 207 passed after the area, the client snapshot, the event guard and the flag change landed. Covers AC-016 (< 500 ms), AC-017 header, AC-019 (unknown version), AC-020 and AC-028 (zero specs keeps the header), AC-024 (200-spec view, < 1000 ms; run, attention and activity sections add to it in T-006), AC-025, AC-001/AC-002/AC-003/AC-004 rendering, invalid event ignored. Bundle test mounts the area with a fixture snapshot built by the real projection. Gates: eslint 0, `tsc --noEmit` 0, `tsc --noEmit -p src/webview` 0, `npm run test:unit` 84 files, 1205 passed.
+- **Notes:** Deviations: the event has no `seq` (board pattern; see *Code reality*); before the first view the area shows an empty frame (`data-mission-control-empty`), not a loading text, because 0005's existing test pins that the loading text disappears with the first shell snapshot and the shell owns S4; 0005's tests were adjusted for the flag (`messages.test.ts` placeholder list, `areas.test.tsx` placeholder list and control). The service's assembly moved into `missionControlView.ts:buildMissionControlView` so the bundle test builds its snapshot with the real projection. `bigView` and `sampleView` live in `src/shared/protocol/testing/missionControlSample.ts`. The diagnostics count is plain text here; it becomes a button in T-007.
+
 
 ### T-006 — Webview area: runs, attention and activity sections
 
@@ -504,19 +505,19 @@ small, so the recommendation is to run them in sequence.
 | AC-013 | T-007 | — | — | open |
 | AC-014 | T-007 | — | — | open |
 | AC-015 | T-001, T-004, T-008 | src/core/missionControl/runSource.ts, missionControlService.ts | runSource.test.ts, missionControlService.test.ts (AC-015); host smoke on CI in T-008 | built |
-| AC-016 | T-005 | — | — | open |
-| AC-017 | T-002, T-005, T-007 | — | — | open |
+| AC-016 | T-005 | src/webview/areas/missionControl/MissionControl.tsx, src/webview/client.ts | MissionControl.test.tsx (AC-016) | verified |
+| AC-017 | T-002, T-005, T-007 | Header.tsx (T-005); request in T-007 | MissionControl.test.tsx (AC-017); request test in T-007 | built |
 | AC-018 | T-001, T-003, T-004, T-006 | runSource.ts, runFigures.ts, attention.ts, activity.ts | runSource.test.ts, missionControlService.test.ts, attention.test.ts (AC-018); rendering in T-006 | built |
-| AC-019 | T-002, T-005 | — | — | open |
+| AC-019 | T-002, T-005 | src/core/missionControl/specFigures.ts, Header.tsx | specFigures.test.ts, MissionControl.test.tsx (unknown version) | built |
 | AC-020 | T-002, T-005 | specFigures.ts (empty form) | specFigures.test.ts (AC-020); rendering in T-005 | built |
 | AC-021 | T-006 | — | + manual: Gregor, High Contrast | open |
 | AC-022 | T-007 | — | + manual: Gregor, focus, Enter and Space | open |
 | AC-023 | T-004, T-008 | missionControlService.ts (read-only Picks) | missionControlService.test.ts (AC-023); host smoke snapshotTree in T-008 | built |
-| AC-024 | T-004, T-005 | missionControlService.ts | missionControlService.test.ts (AC-024 projection); render time in T-005 | built |
+| AC-024 | T-004, T-005 | missionControlService.ts, MissionControl.tsx | missionControlService.test.ts (projection), MissionControl.test.tsx (render, header and figures) | built |
 | AC-025 | T-002, T-005 | specFigures.ts (derivedRule) | specFigures.test.ts (AC-025) | built |
 | AC-026 | T-002, T-003, T-006 | src/shared/protocol/missionControl.ts (no such field), runFigures.ts | missionControl.test.ts (AC-026), runFigures.test.ts (AC-026); DOM in T-006 | built |
 | AC-027 | T-003, T-006 | runFigures.ts:projectRuns (unreadable) | runFigures.test.ts (AC-027); rendering in T-006 | built |
-| AC-028 | T-005 | — | — | open |
+| AC-028 | T-005 | MissionControl.tsx | MissionControl.test.tsx (AC-028); run section and activity remain in T-006 | built |
 | AC-029 | T-007 | — | — | open |
 
 ## Session handoff

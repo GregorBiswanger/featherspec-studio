@@ -13,7 +13,7 @@ export const AREAS: readonly AreaInfo[] = [
         id: 'missionControl',
         title: 'Mission Control',
         purpose: 'See the project at a glance: spec counts, agent activity and what needs attention.',
-        placeholder: true,
+        placeholder: false,
     },
     {
         id: 'specBoard',

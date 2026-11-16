@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { isMissionControlEventPayload } from './messages';
 import { isMissionControlView } from './missionControl';
 import { sampleView } from './testing/missionControlSample';
 
@@ -25,5 +26,14 @@ describe('Mission Control view contract', () => {
         expect(isMissionControlView({ ...view, attention: { ...view.attention, rows: [{ spec: view.attention.rows[0]?.spec, reasons: ['Made up'] }] } })).toBe(false);
         expect(isMissionControlView({ ...view, specs: { kind: 'counts', total: 1, states: [{ state: 'Nope', count: 1 }], progress: { kind: 'not available' } } })).toBe(false);
         expect(isMissionControlView({ ...view, runs: { available: true, running: -1, highlighted: [], unreadable: 0 } })).toBe(false);
+    });
+});
+
+describe('Mission Control event payload', () => {
+    it('accepts a payload that holds a valid view and refuses anything else (negative control: a board view is no Mission Control view)', () => {
+        expect(isMissionControlEventPayload({ view: sampleView() })).toBe(true);
+        expect(isMissionControlEventPayload({ view: { columns: [] } })).toBe(false);
+        expect(isMissionControlEventPayload(undefined)).toBe(false);
+        expect(isMissionControlEventPayload({})).toBe(false);
     });
 });

@@ -3,12 +3,8 @@ import type { DiscoveryController } from '../discovery/discoveryController';
 import type { HistoryView } from '../lifecycle/statusHistory';
 import type { ClockPort, Disposable } from '../ports/host';
 import type { ShellModel, ShellModelSource } from '../ports/shell';
-import { projectActivity } from './activity';
-import { projectAttention } from './attention';
-import { projectRuns } from './runFigures';
+import { buildMissionControlView } from './missionControlView';
 import { createRunSource, type RunSourceSession } from './runSource';
-import { projectHeader, projectSpecFigures } from './specFigures';
-import { createSpecResolver } from './specRefs';
 
 export interface MissionControlServiceDeps {
     source: ShellModelSource;
@@ -80,15 +76,7 @@ export function createMissionControlService(deps: MissionControlServiceDeps): Mi
         if (disposed || listeners.size === 0) {
             return;
         }
-        const specs = createSpecResolver(model);
-        const facts = projectRuns(runs, model, (stem) => specs.forStem(stem));
-        setView({
-            header: projectHeader({ name: active.name, version: active.version }, model, updatedAt),
-            specs: projectSpecFigures(model),
-            runs: facts.view,
-            attention: projectAttention(model, facts, specs),
-            activity: projectActivity(history, runs, specs),
-        });
+        setView(buildMissionControlView({ model, active: { name: active.name, version: active.version }, updatedAt, runs, history }));
     }
 
     function schedule(): void {

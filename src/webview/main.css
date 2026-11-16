@@ -351,3 +351,48 @@ main {
     white-space: pre-wrap;
     margin: 2px 0;
 }
+
+.mission-control {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.mc-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: baseline;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
+}
+
+.mc-folder {
+    font-weight: bold;
+}
+
+.mc-version,
+.mc-updated,
+.mc-formula,
+.mc-derived,
+.mc-deprecated {
+    color: var(--vscode-descriptionForeground);
+}
+
+.mc-states {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin: 4px 0;
+    padding: 0;
+    list-style: none;
+}
+
+.mc-state-count {
+    font-weight: bold;
+}
+
+.mc-derived,
+.mc-deprecated {
+    margin-left: 6px;
+}
