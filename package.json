@@ -33,8 +33,24 @@
       {
         "command": "featherspec-studio.refreshDiscovery",
         "title": "FeatherSpec Studio: Refresh Project Discovery"
+      },
+      {
+        "command": "featherspec-studio.clearRunHistory",
+        "title": "FeatherSpec Studio: Clear Run History"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "FeatherSpec Studio",
+      "properties": {
+        "featherspec-studio.runHistory.maxAgeDays": {
+          "type": "integer",
+          "default": 90,
+          "minimum": 1,
+          "scope": "application",
+          "description": "Number of days FeatherSpec Studio keeps ended agent runs, their events and the spec status history. Older data is removed when Studio activates. Runs that are still open are never removed."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

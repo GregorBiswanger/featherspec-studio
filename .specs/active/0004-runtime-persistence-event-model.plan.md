@@ -208,8 +208,8 @@ T-007 need the complete medium contract.
   `manifest.test.ts` updated; host smoke `src/test/runtime.smoke.test.ts` (store *writable*, command
   registered, workspace fixture unchanged) — runs on CI only.
 - **Verify:** `npm run test:unit` (session and manifest tests red first, then green) plus the per-step gates and `npm run compile`
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** 2026-11-16 — red: `npx vitest run src/core/runtime/runtimeSession.test.ts` failed (`Cannot find module './runtimeSession'`) and 3 of 7 `manifest.test.ts` cases failed (no clear command, no setting); green: session tests 8 of 8 (real `DiscoveryController` + `onDidChangeActiveProject`, open/switch/dispose, Clear flow: confirm every time, declined, no project, reader, failed count), manifest 7 of 7; `npm run test:unit` 258 passed, `npx eslint src --max-warnings 0`, `npx tsc --noEmit`, `npm run compile` clean, `npx tsc -p . --outDir /tmp/out-check` compiles the host smoke suite. Host smoke `src/test/runtime.smoke.test.ts` not run here (CI only).
+- **Notes:** Tests: `src/core/runtime/runtimeSession.test.ts`, `src/adapters/vscode/manifest.test.ts` (the 0001 command-list case now expects three commands), `src/test/runtime.smoke.test.ts` (CI). No controller API added: the session follows `onDidChangeActiveProject` (0001 AC-023). `StudioApi` gained `runtimeState()` and `runtimeStore()`; `deactivate` is async and releases the lock. Setting read through `createMaxAgeDaysSetting`, notices through `UiPort`-style `RuntimeUiPort.warn`. Credential values are an empty list until 0009/0010 supply theirs.
 
 ### T-008 — Data-access document, ADR-002 amendment, docs sync, final gates
 
