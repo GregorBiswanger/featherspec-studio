@@ -101,6 +101,7 @@ Sources:
 3. T-006 → T-007 — the Node-fs medium under the same contract suite, then the VS Code wiring
 4. T-008 — data-access document, ADR-002 amendment, docs sync and final gates
 5. T-009 — after `/sdd-compile` (NOT READY): append-only after a kill, writes to unreadable or newer data refused
+6. T-010 — run-change notification for 0007 (2026-11-16)
 
 No parallel stage: every slice extends the one `RuntimeStore` and its shared contract suite; T-006 and
 T-007 need the complete medium contract.
@@ -236,6 +237,15 @@ T-007 need the complete medium contract.
 - [x] **Verified (T-009):** 2026-11-16 — red: `npx vitest run src/core/runtime src/adapters/node/fileRuntimeMedium.test.ts` 16 of 16 new contract cases failed (8 per medium: after kill and two restarts the run read 'Starting'/history unreadable, events 'unavailable', the second history entry lost, 5 writes accepted that must be refused), `truncatedJson` module missing; the 4 negative controls (damaged line still unreadable, readable run accepts writes) were green; green: `npm run test:unit` 280 passed (18 files), `npx eslint src --max-warnings 0`, `npx tsc --noEmit`, `npm run compile` clean. Kill scenario compares every `.jsonl` file after each activation: the bytes before it are a prefix.
 - **Notes:** Tests: `testing/contractFaults.ts` (new describes), `truncatedJson.test.ts`. Replaces the T-005 limitations (1) and (2): after a kill the run no longer reads as unreadable at the second activation. An unreadable or newer line in an events file is found when the events are loaded for an append (the run is then marked unreadable and the append refused) or when they are read. A run whose only record is an incomplete `created` record stays "history unreadable". `docs/product/product-decisions.md` PD-028 still says "last record"; the PD register is Gregor's, not edited here.
 
+### T-010 — Run-change notification (for 0007)
+
+- **Covers:** AC-030
+- **Files:** `src/core/runtime/runtimeStore.ts`, `src/core/runtime/testing/contractRunChanges.ts`, `src/core/runtime/testing/contract.ts`
+- **Do:** test first, in the contract suite, so it runs on both media. `RuntimeStore.onDidChangeRuns(listener: () => void): Disposable`, additive; fired after `createRun`, `reportStatus` (not for the `Interrupted` classification on its own), `clear` (when it removed runs) and at the end of `becomeWriter` (load, classify, prune). A listener that throws does not stop the others or the call. `dispose()` drops the listeners. Other windows' changes are not notified (limitation, spec AC-030).
+- **Verify:** `npm run test:unit -- src/core/runtime src/adapters/node/fileRuntimeMedium` plus the per-step gates
+- [x] **Verified (T-010):** 2026-11-16 — red: `npx vitest run --project node src/core/runtime/runtimeStore.test.ts` 6 of 6 new contract cases failed (`store.onDidChangeRuns is not a function`); green: `npx vitest run --project node src/core/runtime src/adapters/node/fileRuntimeMedium` 166 of 166 on both media; gates: eslint 0 warnings, both `tsc --noEmit` clean, `npm run test:unit` 58 files, 881 tests passed.
+- **Notes:** additive. `notifyRuns()` fires after `createRun` and `reportStatus` have stored, after `clear` removed at least one run, and at the end of `becomeWriter`; `classifyOpenRuns` does not fire on its own. Tests: `testing/contractRunChanges.ts` (registered in `contract.ts`). A reader window's poll still reloads runs silently: no notification for another window's writes, as the spec says.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -268,10 +278,11 @@ T-007 need the complete medium contract.
 | AC-027 | T-002 | src/core/runtime/runtimeStore.ts:appendEvent | src/core/runtime/testing/contractEvents.ts (AC-027) | verified |
 | AC-028 | T-001, T-002 | src/core/runtime/runtimeStore.ts:requireRun | src/core/runtime/testing/contractRuns.ts, contractEvents.ts (AC-028) | verified |
 | AC-029 | T-002 | src/core/runtime/runtimeStore.ts:persistEvents | src/core/runtime/testing/contractEvents.ts (AC-029) | verified |
+| AC-030 | T-010 | `src/core/runtime/runtimeStore.ts:notifyRuns, onDidChangeRuns` | `src/core/runtime/testing/contractRunChanges.ts` (AC-030, both media) | verified |
 
 ## Session handoff
 
-- **Done so far:** T-001…T-009 ticked. `/sdd-compile` found 'Interrupted run reads as unreadable at the second activation' and writes to unreadable or newer data accepted; both fixed test-first on both media (T-009), spec wording adjusted, `docs/runtime-data.md` accepted (AC-020, T-008). `npm run test:unit`: 280 tests green.
+- **Done so far:** T-001…T-010 ticked (T-010: run-change notification for 0007). `/sdd-compile` found 'Interrupted run reads as unreadable at the second activation' and writes to unreadable or newer data accepted; both fixed test-first on both media (T-009), spec wording adjusted, `docs/runtime-data.md` accepted (AC-020, T-008). `npm run test:unit`: 280 tests green.
 - **Next action:** `npm test` on CI/Windows (the host suite, incl. `src/test/runtime.smoke.test.ts`); then `/sdd-compile` again in a fresh session (another model family). Do not move the spec to `done/` before that.
 - **Open decisions:** PD-028 in `docs/product/product-decisions.md` still reads "incomplete last record" (Gregor's register).
 - **Baseline:** 767ac42 (HEAD before the first step commit)

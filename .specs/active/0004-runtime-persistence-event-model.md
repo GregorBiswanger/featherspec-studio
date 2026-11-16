@@ -153,6 +153,7 @@ Rules:
 | FR-010 (FR-004.8) | Document data access and error handling | AC-020 |
 | FR-011 | One writer per project store; store state for consumers (PD-030) | AC-023, AC-024, AC-025 |
 | FR-012 | Store and return the spec status history of 0003 (PD-023) | AC-026, AC-018, AC-019 |
+| FR-013 | Tell consumers when the runs of this window's store change (for 0007; Gregor, 2026-11-16) | AC-030 |
 
 ## 8. Data requirements
 
@@ -344,6 +345,13 @@ English (PD-016) and is fixed in `/sdd-plan`.
   the storage medium.
   - *Given* an adapter whose medium write never completes, *when* 100 events are appended, *then*
     all 100 calls return and a read through the port returns the 100 events in order.
+- **AC-030** When this window changes the runs of its store — a run is created, a run's status is
+  reported, runs are removed by Clear, or the window becomes the writer and loads, classifies and
+  prunes the stored runs — the system shall tell the subscribers of the store, after the change can
+  be read through the port. It shall not tell them about a change another window made; such a change
+  is read at the consumer's next refresh (PD-030; accepted limitation, Gregor, 2026-11-16).
+  - *Given* a subscriber and a writable store, *when* a run is created and then its status is
+    reported, *then* the subscriber is told twice and a read shows the new run and status each time.
 
 ## 13. Technical notes for developers or AI agents
 
@@ -472,7 +480,7 @@ Open, none blocks planning (clarify finding in brackets; a recommendation each):
 
 ## 17. Definition of Done
 
-- [ ] AC-001…AC-029 (without the withdrawn AC-012) pass with evidence; tests green
+- [ ] AC-001…AC-030 (without the withdrawn AC-012) pass with evidence; tests green
       (`npm run test:unit`, `npm test` before done).
 - [ ] No out-of-scope behaviour added; no file written inside a workspace folder (AC-016).
 - [ ] `docs/security/secret-patterns.md` and the data-access document present; the latter accepted

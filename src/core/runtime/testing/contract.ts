@@ -5,6 +5,7 @@ import { registerEventsContract } from './contractEvents';
 import { registerFaultsContract } from './contractFaults';
 import { registerMaskingContract } from './contractMasking';
 import { registerWriterContract } from './contractWriter';
+import { registerRunChangesContract } from './contractRunChanges';
 import { registerRunsContract } from './contractRuns';
 import { createFaults, createFaultyMedium, type Faults } from './faultyMedium';
 import {
@@ -105,6 +106,7 @@ export function describeRuntimeStoreContract(label: string, makeHarness: () => P
             },
         };
         registerRunsContract(context);
+        registerRunChangesContract(context);
         registerEventsContract(context);
         registerMaskingContract(context);
         registerWriterContract(context);

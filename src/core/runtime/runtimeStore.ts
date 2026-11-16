@@ -69,6 +69,7 @@ export interface RuntimeStoreDeps {
 export interface RuntimeStore {
     state(): StoreState;
     onDidChangeState(listener: (state: StoreState) => void): Disposable;
+    onDidChangeRuns(listener: () => void): Disposable;
     createRun(input: CreateRunInput): Promise<RunView>;
     reportStatus(runId: string, status: string, report?: StatusReport): Promise<RunView>;
     listRuns(query?: RunQuery): Promise<ReadResult<RunView[]>>;
@@ -282,6 +283,7 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
     const runs = new Map<string, RunEntry>();
     const queues = new Map<string, Promise<void>>();
     const stateListeners = new Set<(state: StoreState) => void>();
+    const runListeners = new Set<() => void>();
     let currentState: StoreState = { kind: 'writable', reason: undefined };
     let orderCounter = 0;
 
@@ -313,6 +315,16 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
         }
         currentState = next;
         [...stateListeners].forEach((listener) => listener(next));
+    }
+
+    function notifyRuns(): void {
+        [...runListeners].forEach((listener) => {
+            try {
+                listener();
+            } catch {
+                return;
+            }
+        });
     }
 
     function assertWritable(): void {
@@ -562,6 +574,7 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
         indexDirty = true;
         await writeIndex();
         setState({ kind: 'writable', reason: undefined });
+        notifyRuns();
     }
 
     function startTimer(): void {
@@ -707,6 +720,10 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             stateListeners.add(listener);
             return { dispose: () => void stateListeners.delete(listener) };
         },
+        onDidChangeRuns(listener) {
+            runListeners.add(listener);
+            return { dispose: () => void runListeners.delete(listener) };
+        },
         async createRun(input) {
             assertWritable();
             const runId = deps.ids.newId();
@@ -744,6 +761,7 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
                 throw new RuntimeRefusal('storage-failed', `The run could not be stored: ${failure}`);
             }
             scheduleIndex();
+            notifyRuns();
             return copyView(entry.view);
         },
         async reportStatus(runId, status, report = {}) {
@@ -773,6 +791,7 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
                 record.result = masker.json(report.result);
             }
             await commitStatus(entry, record);
+            notifyRuns();
             return copyView(entry.view);
         },
         async listRuns(query = {}) {
@@ -936,6 +955,9 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             await rewriteHistory(() => false);
             indexDirty = true;
             await writeIndex();
+            if (removed > 0) {
+                notifyRuns();
+            }
             return { removed, failed };
         },
         async dispose() {
@@ -956,6 +978,7 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
                 await lock.release().catch(() => undefined);
             }
             stateListeners.clear();
+            runListeners.clear();
         },
     };
 }
