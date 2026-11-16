@@ -3,7 +3,7 @@
 **Spec:** [0003-spec-lifecycle-readiness-model.md](0003-spec-lifecycle-readiness-model.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-005
+**Current step:** T-006
 
 ## Approach
 
@@ -164,8 +164,8 @@ exists after T-002 and writes its own files.
   fake store and clock; plan `In Progress` → `Done` gives one Active → Review entry with the plan
   path; an out-of-flow move is marked; a status edit that leaves the state alone appends nothing.
 - **Verify:** `npm run test:unit -- src/core/lifecycle/statusHistory` plus the per-step gates
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-16 · red: `npm run test:unit -- src/core/lifecycle/statusHistory src/core/lifecycle/changedPaths` 11 of 11 failed with `Not implemented` (stubs `createStatusHistory`, `changedPaths`); green: 94 of 94 in `src/core/lifecycle`; gates: eslint 0 warnings, `tsc --noEmit` clean, `npm run test:unit` 38 files, 610 tests passed.
+- **Notes:** extra files: `changedPaths.ts` (snapshot comparison for AC-014), `testing/fakeHistoryStore.ts`. The entry carries its own `observedAt` from `ClockPort` inside the entry; the store's own record stamp is separate. In T-005 the first `observe` only seeds the last states (the stored-history baseline is T-006); `read()` already reports an unreadable store as *not available* (its test comes with T-006). The first T-005 commit went in before the `tsc` fix of `read()`; the follow-up commit carries it.
 
 ### T-006 — Baseline, identity and store outage in the history
 

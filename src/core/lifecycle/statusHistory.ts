@@ -113,7 +113,14 @@ export function createStatusHistory(deps: StatusHistoryDeps): StatusHistory {
             if (!result.available) {
                 return { available: false, text: `Status history not available: ${result.reason}` };
             }
-            return { available: true, label: HISTORY_LABEL, entries: result.value.map((record) => record.entry).filter(isHistoryEntry) };
+            const entries: StatusHistoryEntry[] = [];
+            for (const record of result.value) {
+                const candidate: unknown = record.entry;
+                if (isHistoryEntry(candidate)) {
+                    entries.push(candidate);
+                }
+            }
+            return { available: true, label: HISTORY_LABEL, entries };
         },
     };
 }
