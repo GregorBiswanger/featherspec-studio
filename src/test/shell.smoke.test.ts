@@ -1,18 +1,15 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { snapshotTree } from '../core/discovery/testing/snapshotTree';
+import { waitFor } from '../core/discovery/testing/waitFor';
 import type { StudioApi } from '../extension';
 
 const VIEW_TYPE = 'featherspecStudio.main';
+const WAIT_MS = 20_000;
 
-async function waitFor(condition: () => boolean, timeoutMs: number): Promise<void> {
-    const started = Date.now();
-    while (!condition()) {
-        if (Date.now() - started > timeoutMs) {
-            throw new Error('Timed out waiting for the condition');
-        }
-        await new Promise((resolve) => setTimeout(resolve, 50));
-    }
+function panelState(api: StudioApi): { panels: number; tabs: number; area: string; rows: number; helloAt: number | undefined } {
+    const view = api.shell().view();
+    return { panels: api.shell().panelCount(), tabs: studioTabs().length, area: view.area, rows: view.rows.length, helloAt: api.shell().lastHelloAt() };
 }
 
 async function activateStudio(): Promise<StudioApi> {
@@ -29,10 +26,12 @@ function studioTabs(): vscode.Tab[] {
 
 async function closeStudio(api: StudioApi): Promise<void> {
     await Promise.all(studioTabs().map((tab) => vscode.window.tabGroups.close(tab)));
-    await waitFor(() => api.shell().panelCount() === 0, 5000);
+    await waitFor('the Studio panel to close', () => panelState(api), (state) => state.panels === 0, { timeoutMs: WAIT_MS });
 }
 
-suite('FeatherSpec Studio shell smoke', () => {
+suite('FeatherSpec Studio shell smoke', function () {
+    this.timeout(60_000);
+
     teardown(async () => {
         const api = await activateStudio();
         await closeStudio(api);
@@ -42,7 +41,7 @@ suite('FeatherSpec Studio shell smoke', () => {
         const api = await activateStudio();
         await api.whenIdle();
         await vscode.commands.executeCommand('featherspec-studio.open');
-        await waitFor(() => studioTabs().length === 1, 10000);
+        await waitFor('exactly one Studio tab', () => panelState(api), (state) => state.tabs === 1, { timeoutMs: WAIT_MS });
         assert.strictEqual(api.shell().panelCount(), 1);
     });
 
@@ -50,7 +49,7 @@ suite('FeatherSpec Studio shell smoke', () => {
         const api = await activateStudio();
         await vscode.commands.executeCommand('featherspec-studio.open');
         await vscode.commands.executeCommand('featherspec-studio.open');
-        await waitFor(() => studioTabs().length >= 1, 10000);
+        await waitFor('at least one Studio tab', () => panelState(api), (state) => state.tabs >= 1, { timeoutMs: WAIT_MS });
         assert.strictEqual(studioTabs().length, 1);
         assert.strictEqual(api.shell().panelCount(), 1);
     });
@@ -59,7 +58,7 @@ suite('FeatherSpec Studio shell smoke', () => {
         const api = await activateStudio();
         await closeStudio(api);
         await vscode.commands.executeCommand('featherspec-studio.openSpecBoard');
-        await waitFor(() => studioTabs().length === 1, 10000);
+        await waitFor('exactly one Studio tab', () => panelState(api), (state) => state.tabs === 1, { timeoutMs: WAIT_MS });
         assert.strictEqual(api.shell().view().area, 'specBoard');
         await vscode.commands.executeCommand('featherspec-studio.openAgentCenter');
         assert.strictEqual(api.shell().view().area, 'agentCenter');
@@ -70,7 +69,7 @@ suite('FeatherSpec Studio shell smoke', () => {
         const api = await activateStudio();
         await api.whenIdle();
         await vscode.commands.executeCommand('featherspec-studio.openSpecExplorer');
-        await waitFor(() => api.shell().view().rows.length > 0, 10000);
+        await waitFor('the Spec Explorer to list a spec row', () => panelState(api), (state) => state.rows > 0, { timeoutMs: WAIT_MS });
         const stem = api.shell().view().rows[0]?.stem;
         assert.ok(stem, 'the fixture project has a spec');
         await api.shell().select(stem);
@@ -78,7 +77,7 @@ suite('FeatherSpec Studio shell smoke', () => {
         const before = api.shell().lastHelloAt() ?? 0;
         const restored = vscode.window.createWebviewPanel(VIEW_TYPE, 'FeatherSpec Studio', vscode.ViewColumn.Active, { enableScripts: true });
         await api.shell().restore(restored);
-        await waitFor(() => (api.shell().lastHelloAt() ?? 0) > before, 10000);
+        await waitFor('the restored panel to say hello', () => ({ ...panelState(api), before }), (state) => (state.helloAt ?? 0) > before, { timeoutMs: WAIT_MS });
         assert.strictEqual(api.shell().panelCount(), 1);
         assert.strictEqual(api.shell().view().area, 'specExplorer');
         assert.strictEqual(api.shell().view().selection?.stem, stem);
@@ -87,7 +86,7 @@ suite('FeatherSpec Studio shell smoke', () => {
     test('AC-020: the panel is limited to dist/webview, ships the CSP, and a workspace file cannot be loaded by path', async () => {
         const api = await activateStudio();
         await vscode.commands.executeCommand('featherspec-studio.open');
-        await waitFor(() => api.shell().lastHelloAt() !== undefined && studioTabs().length === 1, 10000);
+        await waitFor('the Studio tab and its hello', () => panelState(api), (state) => state.helloAt !== undefined && state.tabs === 1, { timeoutMs: WAIT_MS });
         const inspected = api.shell().inspect();
         assert.ok(inspected);
         assert.strictEqual(inspected.options.enableScripts, true);
@@ -111,7 +110,7 @@ suite('FeatherSpec Studio shell smoke', () => {
         await closeStudio(api);
         const started = Date.now();
         await vscode.commands.executeCommand('featherspec-studio.open');
-        await waitFor(() => (api.shell().lastHelloAt() ?? 0) >= started, 10000);
+        await waitFor('the reopened panel to say hello', () => ({ ...panelState(api), started }), (state) => (state.helloAt ?? 0) >= started, { timeoutMs: WAIT_MS });
         const elapsed = (api.shell().lastHelloAt() ?? Date.now()) - started;
         assert.ok(elapsed < 1000, `the first message arrived after ${elapsed} ms`);
     });
@@ -119,7 +118,7 @@ suite('FeatherSpec Studio shell smoke', () => {
     test('AC-003, AC-029: the tree shows the project name and the six entries; every shell command is registered', async () => {
         const api = await activateStudio();
         await api.whenIdle();
-        await waitFor(() => api.shell().tree().items.length === 6, 10000);
+        await waitFor('the tree to show six items', () => api.shell().tree().items.map((item) => item.label), (labels) => labels.length === 6, { timeoutMs: WAIT_MS });
         assert.deepStrictEqual(
             api.shell().tree().items.map((item) => item.label),
             ['fs110-de-active-review', 'Open Studio', 'Mission Control', 'Spec Board', 'Spec Explorer', 'Agent Center'],
@@ -159,16 +158,16 @@ suite('FeatherSpec Studio shell smoke', () => {
         assert.ok(folders.length > 0);
         const before = await Promise.all(folders.map((folder) => snapshotTree(folder.uri.fsPath)));
         await vscode.commands.executeCommand('featherspec-studio.open');
-        await waitFor(() => api.shell().lastHelloAt() !== undefined && studioTabs().length === 1, 10000);
+        await waitFor('the Studio tab and its hello', () => panelState(api), (state) => state.helloAt !== undefined && state.tabs === 1, { timeoutMs: WAIT_MS });
         await vscode.commands.executeCommand('featherspec-studio.openSpecBoard');
         await vscode.commands.executeCommand('featherspec-studio.openSpecExplorer');
         await closeStudio(api);
         await vscode.commands.executeCommand('featherspec-studio.open');
-        await waitFor(() => studioTabs().length === 1, 10000);
+        await waitFor('exactly one Studio tab', () => panelState(api), (state) => state.tabs === 1, { timeoutMs: WAIT_MS });
         await closeStudio(api);
         const restored = vscode.window.createWebviewPanel(VIEW_TYPE, 'FeatherSpec Studio', vscode.ViewColumn.Active, { enableScripts: true });
         await api.shell().restore(restored);
-        await waitFor(() => api.shell().panelCount() === 1, 10000);
+        await waitFor('the restored panel to be adopted', () => panelState(api), (state) => state.panels === 1, { timeoutMs: WAIT_MS });
         await new Promise((resolve) => setTimeout(resolve, 500));
         const after = await Promise.all(folders.map((folder) => snapshotTree(folder.uri.fsPath)));
         assert.deepStrictEqual(after, before);

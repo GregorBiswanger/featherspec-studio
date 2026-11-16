@@ -523,6 +523,10 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 | AC-031 | T-010 | src/webview/main.css (contrast borders, focus outline) | webviewCss.test.ts (AC-031), areas.test.tsx (AC-031); manual: High Contrast, Gregor | built |
 | AC-029 | T-006, T-009 | src/core/shell/shellService.ts:rescan, src/extension.ts (featherspec-studio.rescan), package.json | shellService.test.ts (AC-029), manifest.test.ts (AC-029), src/test/shell.smoke.test.ts (CI only) | built |
 
+## Open evidence
+
+- 2026-11-16 — First host-suite run (Gregor, Windows 11, Node 26, VS Code 1.146): `shell.smoke` AC-009 failed with Mocha's 2000 ms default (the suite set no timeout, while its waits allow 5-10 s) and its `teardown` hook failed the same way; Mocha then skipped the remaining shell tests (AC-020, AC-024, AC-003, AC-029, AC-025), so they are still unrun on the host. Cause is the test, not the product: the webview hello of a restored panel needs more than 2 s on a first, loaded window. Fix in `src/test/shell.smoke.test.ts`: suite and hooks 60 s, waits 20 s through the shared `waitFor`, which reports the panel count, tab count, area, row count and last hello on a timeout. Assertions unchanged. Open: AC-024 (first message within 1000 ms) has never run on a host and may still be too tight on this machine; its failure text states the measured time.
+
 ## Session handoff
 
 - **Done so far:** all ten steps ticked (T-001...T-010; T-010 after `/sdd-compile`: AC-030, AC-031) plus 0001 T-013 (AC-024). 860 unit tests, eslint, both tsc and `npm run compile` green. `npm test` (host smoke `src/test/shell.smoke.test.ts` and the older ones) was not run: VS Code download blocked.
