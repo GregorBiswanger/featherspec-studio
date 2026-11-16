@@ -3,7 +3,7 @@
 **Spec:** [0002-spec-repository-parser.md](0002-spec-repository-parser.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-002 ‖ T-004 (stage 2, other agents)
+**Current step:** T-003 ‖ T-005 (stage 3, other agents)
 
 ## Approach
 
@@ -110,8 +110,8 @@ the slices are small.
   (pre-heading section); `## Plan history` lines; checkboxes never read as steps. Fixtures
   TS110, TS180, HU180, LS170 text.
 - **Verify:** `npm run test:unit -- src/core/specs/parseSpec.test.ts` (red, then green) + per-step gates
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-16 · `npm run test:unit -- src/core/specs/parseSpec.test.ts`: red first (38 of 38 `Not implemented`) → green 38 of 38; worker's negative controls (fence tracking, Status diagnostic, archive classification, Plan-history heading, blank-line skip) red then restored. Integrated by the main session: file re-run 38 green; gates eslint, tsc, `npm run test:unit` (202 tests) green. Test review: accepted by Gregor 2026-11-16 (worker could not stop).
+- **Notes:** API `parseSpec(text, key): ParsedSpec`; header fields `{ value: FieldValue; line? }`; `planClassification` absent | empty | placeholder | sibling | archive | other. Header block = contiguous `**Label:** value` lines after the H1; a repeated known label keeps the first, the repeat is unsupported content + `unknown-content`. Status check case-sensitive; `## Plan history` matched exactly. T-003 adds criteria and `FR-` fields in this file.
 
 ### T-003 — Locate acceptance criteria and FR requirements by content
 
@@ -137,8 +137,8 @@ the slices are small.
   `—`), `Notes`; unknown step field → unsupported + diagnostic; duplicate `T-NNN` → all kept +
   `duplicate`. Fixtures TS110 (1.10), TS180/LS170 (≤ 1.9).
 - **Verify:** `npm run test:unit -- src/core/specs/planSteps.test.ts` (red, then green) + per-step gates
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-16 · `npm run test:unit -- src/core/specs/planSteps.test.ts`: red first (27 of 27 `Not implemented`) → green 27 of 27; worker's negative controls (range check, dialect rule) red then restored. Integrated: file re-run 27 green; gates green (202 tests). Test review: accepted by Gregor 2026-11-16.
+- **Notes:** API `parsePlanSteps(text, fileKey) → { steps, diagnostics }`, `expandCovers(raw)`; `ticked: boolean | 'undetermined'`; dialect `verified-line | covers-line | undetermined`; struck step = `### ~~T-NNN — title~~` (UNVERIFIED); ranges over 1000 IDs expand to the endpoints only; step blocks end at any heading of level 1-3; repeated field: first wins. T-005 imports `planSteps.ts`.
 
 ### T-005 — Parse plan header, stages, traceability and handoff
 
@@ -224,23 +224,23 @@ the slices are small.
 | --- | --- | --- | --- | --- |
 | AC-001 | T-001 | `src/core/specs/files.ts:readProjectFiles` | `files.test.ts` (AC-001 cases) | verified |
 | AC-002 | T-001 | `src/core/specs/files.ts:readProjectFiles` | `files.test.ts` (AC-002 move case) | verified |
-| AC-003 | T-002, T-003 | — | — | open |
+| AC-003 | T-002, T-003 | `src/core/specs/parseSpec.ts:parseSpec` (FR part: T-003) | `parseSpec.test.ts` | open |
 | AC-004 | T-003 | — | — | open |
 | AC-005 | T-003 | — | — | open |
 | AC-006 | T-006 | — | — | open |
-| AC-007 | T-004, T-005 | — | — | open |
-| AC-008 | T-004 | — | — | open |
-| AC-009 | T-002, T-005 | — | — | open |
+| AC-007 | T-004, T-005 | `src/core/specs/planSteps.ts:parsePlanSteps` (plan header, traceability: T-005) | `planSteps.test.ts` | open |
+| AC-008 | T-004 | `src/core/specs/planSteps.ts:expandCovers` | `planSteps.test.ts` (AC-008) | verified |
+| AC-009 | T-002, T-005 | `src/core/specs/parseSpec.ts` (plan history), `planSteps.ts` (steps); traceability: T-005 | `parseSpec.test.ts`, `planSteps.test.ts` | open |
 | AC-010 | T-006 | — | — | open |
 | AC-011 | T-001 | `src/core/specs/files.ts:readOne` (file-level; parse errors: T-006) | `files.test.ts` (AC-011, fs-broken) | built |
 | AC-012 | T-007, T-008 | — | — | open |
 | AC-013 | T-007 | — | — | open |
-| AC-014 | T-002, T-005 | — | — | open |
+| AC-014 | T-002, T-005 | `src/core/specs/parseSpec.ts`, `planSteps.ts` (plan parts: T-005) | `parseSpec.test.ts`, `planSteps.test.ts` | open |
 | AC-015 | T-003, T-004, T-006 | — | — | open |
 | AC-016 | T-006 | — | — | open |
 | AC-017 | T-006 | — | — | open |
 | AC-018 | T-007 | — | — | open |
-| AC-019 | T-002 | — | — | open |
+| AC-019 | T-002 | `src/core/specs/parseSpec.ts`, `fieldValue.ts` | `parseSpec.test.ts` (AC-019) | verified |
 | AC-020 | T-001 | `src/core/specs/text.ts:decodeText` | `files.test.ts` (AC-020 cases) | verified |
 | AC-021 | T-001, T-006 | `src/core/specs/files.ts:isFollowable` (links not followed; link targets: T-006) | `files.test.ts` (A-006 / AC-021) | built |
 | AC-022 | T-007, T-008 | — | — | open |
@@ -248,8 +248,8 @@ the slices are small.
 
 ## Session handoff
 
-- **Done so far:** plan approved by Gregor; spec and plan moved to `active/`; stage 1 (T-001) built, verified and committed. Decisions answered: 0001 feed via `onDidChangeActiveProject` (T-008 text adjusted); symbolic links not followed (A-006).
-- **Next action:** stage 2, T-002 ‖ T-004 with **other agents** (Gregor's answer; stages 3 likewise). Main session printed the start lines; it waits for Gregor's word that the workers are back, then integrates per `.claude/rules/parallel-work.md` (union of the steps' `Files:` plus return notes `activeContext.0002-T-002.md`, `activeContext.0002-T-004.md`; re-run each `Verify:`, then the gates; tick; delete the notes).
+- **Done so far:** stage 1 (T-001) and stage 2 (T-002, T-004) built, integrated and verified (202 unit tests). Workers shared this checkout, no worktree.
+- **Next action:** stage 3, T-003 ‖ T-005 with **other agents**: T-003 edits `parseSpec.ts` (+ new `leadingIds.*`), T-005 adds `parsePlan.*` and two synthetic fixtures; they share no file. Main session waits for Gregor, then integrates per `.claude/rules/parallel-work.md` (return notes `activeContext.0002-T-003.md`, `activeContext.0002-T-005.md`), then T-006.
 - **Open decisions:** none.
-- **Baseline:** 9bb1c18 (HEAD before T-001). Stage 2 base: the T-001 commit (see `git log`).
-- **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); runs on CI. A worktree holds committed files only: `npm install` is Ask-first there.
+- **Baseline:** 9bb1c18 (HEAD before T-001). Stage 3 base: the stage 2 integration commit (see `git log`).
+- **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); runs on CI.
