@@ -30,6 +30,17 @@ holds the *why*: decisions and patterns.
   `Disposable`); first result always, later only when root, version or legacy differ; no replay for late
   subscribers (they read `snapshot().active`); a throwing subscriber is isolated. Specs 0002 and 0004 consume it;
   no workaround in other modules · 2026-11-16 · spec 0001 AC-023, A-006 (Gregor, after `/sdd-compile`)
+- Spec repository gets its own read-only port `SpecSourcePort` (list without following links, stat with mtime, read bytes) beside 0001's
+  `ReadOnlyFileSystem`, which decodes without a UTF-8 check and reports neither mtime nor symbolic links; no write method exists, so BR-02
+  holds by construction. Text is decoded strictly (UTF-8, BOM stripped) and normalised to LF once, parsers see one shape · 2026-11-16 ·
+  [plan 0002](../.specs/active/0002-spec-repository-parser.plan.md) *Approach*, T-001
+- Spec model conventions: a field is `{ state: 'absent' }` or `{ state: 'empty' | 'placeholder' | 'value'; raw }` (nothing is defaulted); diagnostic
+  kinds `unreadable-file · unknown-content · duplicate · orphan · dangling-link · unverified-version`, scope `{ file, line? }` or `'project'`, reasons in
+  English; symbolic links are not followed (reported as unreadable); links leaving the project root are dangling and never touched · 2026-11-16 ·
+  plan 0002 *Approach*, spec 0002 A-006 (Gregor)
+- Live repository: every update re-lists and re-stats the project and re-reads only files named by events, changed in mtime/size or new; the model is
+  swapped whole; change notifications name affected references (own file, linked plan or note, gained or lost link) and flag untied changes. Fed by 0001's
+  `onDidChangeActiveProject` through `connectActiveProject`; no StatusBar decorator · 2026-11-16 · plan 0002 T-007, T-008
 - Folder identity is the root URI string; `displayPath` is only for text shown to the user (BR-05) ·
   2026-11-16 · plan 0001 T-009
 

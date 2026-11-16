@@ -1,6 +1,6 @@
 # FeatherSpec Studio
 
-Visual command center for spec-driven development with [FeatherSpec](https://github.com/GregorBiswanger/featherspec), as a VS Code extension. This is an early build: the first slice, project discovery, exists; the Studio views follow.
+Visual command center for spec-driven development with [FeatherSpec](https://github.com/GregorBiswanger/featherspec), as a VS Code extension. This is an early build: project discovery and the spec model exist; the Studio views follow.
 
 ## Project discovery
 
@@ -17,6 +17,10 @@ Older projects without the version line still count (shown as version "unknown",
 - The status bar shows nothing in workspaces without a FeatherSpec project.
 - Discovery details (path, verdict, version, diagnostics per folder) go to the Output channel "FeatherSpec Studio".
 - Discovery runs again by itself when a folder is added or removed, or a root `AGENTS.md` or `.specs/` appears, changes or disappears.
+
+## Spec model
+
+For the active project Studio reads every spec, plan, archived plan and parallel-worker return note into one model, keeps it current while the files change, and reports what it cannot read or recognise (unreadable file, unknown content, duplicate, orphan, dangling link, unverified version). It reads files only and follows no symbolic links. No view shows the model yet: the board and dashboard that use it come next.
 
 ## Commands
 

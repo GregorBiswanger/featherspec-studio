@@ -1,9 +1,9 @@
 # Plan — Spec Repository & Parser
 
 **Spec:** [0002-spec-repository-parser.md](0002-spec-repository-parser.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-16
-**Current step:** T-009
+**Current step:** none (all steps ticked)
 
 ## Approach
 
@@ -215,8 +215,8 @@ the slices are small.
   identifiers, feed through `onDidChangeActiveProject`. `techContext.md`: new fixtures, AC-018 perf test.
   README: model availability line if README lists features. `activeContext.md` refresh.
 - **Verify:** `npx eslint src --max-warnings 0` && `npx tsc --noEmit` && `npm run test:unit` && `npm run compile`; pre-done `npm test` on CI
-- [ ] **Verified (T-009):** —
-- **Notes:** —
+- [x] **Verified (T-009):** 2026-11-16 · `npx eslint src --max-warnings 0` · `npx tsc --noEmit` · `npm run test:unit` (358 tests, 20 files) · `npm run compile`: all green, zero warnings. Pre-done `npm test` (host suite incl. `specRepository.smoke.test.ts`) not run here: CI.
+- **Notes:** `AGENTS.md` snapshot changed exactly as planned (now 214 lines, the cap-eviction proposal from `activeContext.md` stays due). README gained a short *Spec model* section. `systemPatterns.md`: three entries (own port, model conventions, live repository + feed). `techContext.md`: fixtures, AC-018 test, second smoke file.
 
 ## Traceability
 
@@ -248,8 +248,8 @@ the slices are small.
 
 ## Session handoff
 
-- **Done so far:** T-001 … T-008 built and verified (358 unit tests); host smoke test written, runs on CI.
-- **Next action:** T-009 (docs sync and final gates).
-- **Open decisions:** none.
+- **Done so far:** T-001 … T-009 built and verified; 358 unit tests; stage 2 and 3 workers integrated. Docs synced (AGENTS.md snapshot, README, Memory Bank).
+- **Next action:** `/sdd-compile` for spec 0002 in a fresh session, best with a strong model of another family than the implementer. Open evidence: `npm test` host suite on CI (`src/test/specRepository.smoke.test.ts`); Gregor's re-measurement of the AC-018 thresholds on a real project (spec OP-001). Then `/sdd-lifecycle` to `done/`. Not done here: compile and the move.
+- **Open decisions:** none. Findings for Gregor: 0001 notifies only on changed root/version, so an unchanged re-report of the project does not trigger a re-read (watcher and `rescan()` cover it); no Rescan command exists yet (OP-008, 0005).
 - **Baseline:** 9bb1c18 (HEAD before T-001).
 - **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); runs on CI.

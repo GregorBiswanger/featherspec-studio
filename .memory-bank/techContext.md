@@ -19,8 +19,11 @@
 
 ## Test
 - `npm run test:unit` — fast unit tests in plain Node, no VS Code. Fixtures: `test/fixtures/`
-  (every `.specs/` holds a `README.md`, git drops empty folders).
-- `npm test` — extension-host smoke suite (`src/test/discovery.smoke.test.ts`); `pretest` compiles and lints
+  (every `.specs/` holds a `README.md`, git drops empty folders). Spec-repository fixtures (spec 0002): `fs180-en-done-archived`,
+  `fs180-de-baselines`, `fs170-brownfield-mixed` (copies of the owner's samples), hand-made `fs-broken` (invalid UTF-8, `-text` in its
+  `.gitattributes`), `fs110-parallel-synthetic`, `fs110-ready-synthetic` (shapes seen in no sample: UNVERIFIED). The AC-018 performance test
+  generates 200 specs in a temp dir (`src/core/specs/testing/generateProject.ts`; full read < 2 s, update < 1 s).
+- `npm test` — extension-host smoke suite (`src/test/discovery.smoke.test.ts`, `src/test/specRepository.smoke.test.ts`); `pretest` compiles and lints
   first; downloads and launches VS Code, so it is slow and needs network and a display. It cannot run
   in the agent sandbox (download blocked): CI and the Windows machine run it.
 - Manual checks nothing automates: window reload keeps the active project (AC-009), Restricted Mode (AC-022).
