@@ -3,7 +3,7 @@
 **Spec:** [0003-spec-lifecycle-readiness-model.md](0003-spec-lifecycle-readiness-model.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-003 ‖ T-004 (in sequence)
+**Current step:** T-004
 
 ## Approach
 
@@ -136,8 +136,8 @@ exists after T-002 and writes its own files.
   entry. Tests: every row `verified` on an `active/` Review spec stays Review (AC-007); deriving
   the same fixture twice, and from a fresh read, gives deep-equal models (AC-010).
 - **Verify:** `npm run test:unit -- src/core/lifecycle/verification src/core/lifecycle/deriveLifecycle` plus the per-step gates
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-16 · red: `npm run test:unit -- src/core/lifecycle/verification src/core/lifecycle/deriveLifecycle` 10 of 24 failed (entries had no `verification`; stub `Not implemented`); green: 56 of 56 in `src/core/lifecycle`; gates: eslint 0 warnings, `tsc --noEmit` clean, `npm run test:unit` 34 files, 569 tests passed. Negative controls: active/ never Done, changed file content changes the model.
+- **Notes:** `VerificationStatus.source` is the plan path whose rows were counted (`undefined` when summary is *not available*). AC-010 holds without a clock input because the model carries no timestamps; the test compares two reads with different mtimes.
 
 ### T-004 — Transition check and flow marker
 

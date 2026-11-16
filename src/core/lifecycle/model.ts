@@ -42,6 +42,24 @@ export interface DeprecatedMarker {
     successor: Successor;
 }
 
+export const VERIFICATION_SUMMARIES = ['not available', 'pending', 'all verified'] as const;
+export type VerificationSummary = (typeof VERIFICATION_SUMMARIES)[number];
+
+export interface VerificationCounts {
+    open: number;
+    built: number;
+    verified: number;
+    other: number;
+}
+
+export interface VerificationStatus {
+    source: string | undefined;
+    counts: VerificationCounts;
+    summary: VerificationSummary;
+    compileVerdict: 'not available';
+    compileVerdictText: string;
+}
+
 export interface LifecycleEntry {
     key: string;
     stem: string;
@@ -52,6 +70,7 @@ export interface LifecycleEntry {
     persistence: Persistence;
     derivedLabel: string | undefined;
     readiness: ReadinessResult;
+    verification: VerificationStatus;
     diagnostics: LifecycleDiagnostic[];
     deprecated: DeprecatedMarker | undefined;
 }

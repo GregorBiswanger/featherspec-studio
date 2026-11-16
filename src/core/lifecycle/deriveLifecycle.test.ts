@@ -86,3 +86,30 @@ describe('deriveLifecycle: states and rules', () => {
         expect(deriveLifecycle(project).entries[0].state).toBe('Active');
     });
 });
+
+describe('deriveLifecycle: determinism', () => {
+    const FILES = {
+        '.specs/backlog/0001-a.md': specText({ plan: LINKED }),
+        '.specs/backlog/0001-a.plan.md': planText(),
+        '.specs/active/0002-b.md': specText({ status: 'Draft', plan: '_none yet_' }),
+        '.specs/done/0003-c.md': specText({ status: 'Deprecated', plan: '_none yet_', extraHeader: '**Successor:** soon' }),
+    };
+
+    it('AC-010: deriving the same project twice gives deep-equal models', async () => {
+        const project = await readMemory(FILES);
+        expect(deriveLifecycle(project)).toEqual(deriveLifecycle(project));
+    });
+
+    it('AC-010: a fresh read of the same files with different timestamps gives a deep-equal model', async () => {
+        const first = deriveLifecycle(await readMemory(FILES));
+        const second = deriveLifecycle(await readMemory(FILES));
+        expect(second).toEqual(first);
+        expect(JSON.stringify(second)).toBe(JSON.stringify(first));
+    });
+
+    it('AC-010: the model changes when a file content changes (negative control)', async () => {
+        const first = deriveLifecycle(await readMemory(FILES));
+        const second = deriveLifecycle(await readMemory({ ...FILES, '.specs/backlog/0001-a.plan.md': planText({ status: 'In Progress' }) }));
+        expect(second).not.toEqual(first);
+    });
+});
