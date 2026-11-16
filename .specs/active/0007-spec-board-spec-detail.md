@@ -171,7 +171,7 @@ select one.
 | --- | --- | --- |
 | Overview | header lines as 0002 delivers them, state with rule ID and the *persisted* or *derived* marker, *Deprecated* marker with the successor as 0003 reports it, readiness checks R-1…R-7 with *pass / fail / not available* and reason, for entries in `backlog/` only, every diagnostic with its reason, "Priority: not available" | spec file |
 | Requirements | every `FR-` requirement 0002 delivers. A spec without `FR-` IDs: "No `FR-` requirements found" | spec file |
-| Acceptance criteria | every `AC-` definition 0002 delivers, with its full text as delivered (annotations included), its Given/When/Then illustration, the *uncertain* flag and the *struck* flag | spec file |
+| Acceptance criteria | every `AC-` definition 0002 delivers, with its full text as delivered (annotations included, the leading ID shown once), its Given/When/Then illustration, the *uncertain* flag and the *struck* flag | spec file |
 | Plan & tasks | stages and steps of the plan (§6.2) with tick state and `Verified` text, struck steps marked; "No plan yet" when absent | the plan, when one exists |
 | Verification | the verification status of 0003 §6.6: rows per state, the summary, and the `/sdd-compile` verdict as *not available* | the plan, when one exists |
 | Related artifacts | sibling plan, archived plans, return notes | each listed file |
@@ -405,7 +405,9 @@ to open Spec Explorer with that spec selected, and the detail view shall show th
 **AC-009** The detail view shall show every acceptance-criterion definition that 0002 delivers
 for the spec, with its full text as delivered, its Given/When/Then illustration, its
 *uncertain* flag and its *struck* flag. It shall show every `FR-` requirement 0002 delivers for
-the spec. Where 0002 delivers none, the Requirements section shall show "No `FR-` requirements
+the spec. It shall show each ID exactly once: the text as delivered loses only its own leading
+list marker, ID and separator (revised 2026-11-16, first visual check), and in the plan's stage
+list a stage line loses its list number, which the list adds again. Where 0002 delivers none, the Requirements section shall show "No `FR-` requirements
 found" and still offer "Open file" on the spec. *(AC-007.5, PD-034)*
 
 **AC-010** The detail view shall show the detail sections Overview, Requirements, Acceptance

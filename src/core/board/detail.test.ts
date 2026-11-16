@@ -81,6 +81,20 @@ describe('spec detail', () => {
         expect(bare.sections.requirements.open).toEqual({ key: '.specs/backlog/0002-b.md' });
     });
 
+    it('AC-009: each ID appears once in a requirement, a criterion and a stage; the rest of the delivered text is kept', async () => {
+        const files = {
+            ...FILES,
+            '.specs/active/0001-a.plan.md': `${FILES['.specs/active/0001-a.plan.md']}\n## Stages\n\n1. T-001 — First\n2. T-002 — Second\n`,
+        };
+        const view = spec(await detailOf(files, { stem: '0001-a' }));
+        expect(view.sections.requirements.items[0]?.text).toBe('Show a board | AC-001');
+        expect(view.sections.criteria.items.map((item) => item.text)).toEqual(['The board shall show cards.', 'The board shall sort.', 'Struck criterion.']);
+        expect(view.sections.plan.stages).toEqual(['T-001 — First', 'T-002 — Second']);
+        for (const item of [...view.sections.requirements.items, ...view.sections.criteria.items]) {
+            expect(item.text.split(item.id).length - 1).toBe(0);
+        }
+    });
+
     it('AC-010: Overview, Plan, Verification and Related carry their open targets; runs and history carry none', async () => {
         const view = spec(await detailOf(FILES, { stem: '0001-a' }));
         expect(view.sections.overview.open).toEqual({ key: '.specs/active/0001-a.md' });

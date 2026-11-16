@@ -7,6 +7,7 @@ import type { ReadResult, RunView } from '../runtime/model';
 import type { HeaderField } from '../specs/parseSpec';
 import type { SpecEntry } from '../specs/readProject';
 import { titleOf } from './cards';
+import { withoutLeadingId, withoutListMarker } from './idText';
 import { criteriaProgress } from './progress';
 
 export interface DetailInput {
@@ -134,19 +135,19 @@ export function buildDetail(input: DetailInput): DetailView {
                 return file === undefined ? { reason: diagnostic.reason } : { reason: diagnostic.reason, open: line === undefined ? { key: file } : { key: file, line } };
             }),
         },
-        requirements: { open: specTarget, items: (parsed?.requirements ?? []).map((item) => ({ id: item.id, text: item.text, open: { key: spec.key, line: item.line } })) },
+        requirements: { open: specTarget, items: (parsed?.requirements ?? []).map((item) => ({ id: item.id, text: withoutLeadingId(item.text, item.id), open: { key: spec.key, line: item.line } })) },
         criteria: {
             open: specTarget,
             items: (parsed?.criteria ?? []).map((item) => ({
                 id: item.id,
-                text: item.text,
+                text: withoutLeadingId(item.text, item.id),
                 illustration: item.illustration,
                 uncertain: item.uncertain,
                 struck: item.struck,
                 open: { key: spec.key, line: item.line },
             })),
         },
-        plan: { open: planTarget, stages: (planEntry?.parsed?.stages.stages ?? []).map((stage) => stage.raw), steps },
+        plan: { open: planTarget, stages: (planEntry?.parsed?.stages.stages ?? []).map((stage) => withoutListMarker(stage.raw)), steps },
         verification: {
             open: planTarget,
             openRows: entry.verification.counts.open,

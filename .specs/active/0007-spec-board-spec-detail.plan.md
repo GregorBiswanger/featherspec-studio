@@ -3,7 +3,7 @@
 **Spec:** [0007-spec-board-spec-detail.md](0007-spec-board-spec-detail.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-012 (after `/sdd-compile`)
+**Current step:** T-013 (after the first visual check)
 
 ## Approach
 
@@ -544,6 +544,16 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 - [x] **Verified (T-012):** 2026-11-16 · no red run is possible (no code was missing); negative control instead: with both limits set to 0 the two new tests failed (2 failed, 37 passed), restored: `npx vitest run src/core/board/boardService.test.ts src/webview/detail` 39 of 39; gates: eslint 0 warnings, both `tsc --noEmit` clean, `npm run test:unit` 86 files, 1248 tests passed.
 - **Notes:** The in-process `postMessage` hop is still not measured (see *Research*, the 500 ms split).
 
+### T-013 — Each ID appears once in the detail view (first visual check)
+
+- **Covers:** AC-009 (revised 2026-11-16)
+- **Do:**
+  - Tests first: `src/core/board/idText.test.ts` (bold, uncertain, struck, bullet, numbered, colon, table row, dotted FR ID, continuation lines, a later mention kept, negative control) and a `detail.test.ts` case on requirements, criteria and stages.
+  - `src/core/board/idText.ts`: `withoutLeadingId(text, id)` and `withoutListMarker(text)`. `detail.ts` applies them to requirement and criterion text and to stage lines. The parser and 0002's delivery stay as they are ("as delivered"); the webview renders what it gets.
+- **Verify:** `npm run test:unit -- src/core/board` plus the per-step gates
+- [x] **Verified (T-013):** 2026-11-16 · red: `npx vitest run src/core/board/idText.test.ts src/core/board/detail.test.ts` 18 failed (stubs threw `Not implemented`; the new `detail.test.ts` case failed on the doubled IDs), the negative control (a text not starting with the ID) was green at once; green: `npx vitest run src/core/board` 130 of 130; gates: eslint 0 warnings, both `tsc --noEmit` clean, `npm run test:unit` 87 files, 1266 tests passed.
+- **Notes:** —
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -556,7 +566,7 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 | AC-006 | T-003, T-006 | `src/core/board/progress.ts` | `progress.test.ts` (AC-006) | built |
 | AC-007 | T-003 | `src/core/board/runs.ts:indexRuns, cardRun` | `runs.test.ts` (AC-007) | built |
 | AC-008 | T-007, T-010 | src/webview/areas/SpecBoard.tsx; `src/core/shell/shellService.ts:onDidNavigate` | SpecBoard.test.tsx (AC-008); `boardService.test.ts` (AC-008); `webviewBundle.test.ts`; `src/test/board.smoke.test.ts` (CI) | built |
-| AC-009 | T-006, T-009 | src/webview/detail/SpecDetail.tsx | SpecDetail.test.tsx (AC-009) | built |
+| AC-009 | T-006, T-009, T-013 | src/webview/detail/SpecDetail.tsx; `src/core/board/idText.ts`, `detail.ts` | SpecDetail.test.tsx (AC-009); `idText.test.ts`, `detail.test.ts` (AC-009, IDs once) | built |
 | AC-010 | T-005, T-006, T-009, T-010 | `src/core/board/openFile.ts:createOpenFile`; src/webview/detail/{SpecDetail,DetailSection}.tsx | `openFile.test.ts` (AC-010); SpecDetail.test.tsx (AC-010) | built |
 | AC-011 | T-001, T-004 | `src/core/board/filters.ts:arrangeBoard`; `boardRequests.ts` | `filters.test.ts` (AC-011); `boardService.test.ts` (AC-011); `boardRequests.test.ts` | built |
 | AC-012 | T-001, T-007 | `src/core/board/filters.ts:arrangeBoard`; src/webview/board/FilterBar.tsx | `filters.test.ts` (AC-012); SpecBoard.test.tsx (AC-012); `shellService.navigation.test.ts` (onDidNavigate) | built |
