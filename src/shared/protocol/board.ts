@@ -1,5 +1,6 @@
 import { isBoardFilter, isBoardState, type BoardFilter, type BoardState } from './boardFilter';
 import { isRecord } from './envelope';
+import { isDerivedRule, type DerivedRule } from './missionControl';
 
 export const SORT_KEYS = ['number', 'title', 'lastChange'] as const;
 export type SortKey = (typeof SORT_KEYS)[number];
@@ -27,16 +28,21 @@ export interface CardView {
     titleIsStem: boolean;
     path: string | undefined;
     state: BoardState;
-    derivedLabel: string | undefined;
+    derivedRule: DerivedRule | undefined;
     deprecated: boolean;
     diagnostics: number;
     blocked: string[];
-    readiness: string | undefined;
+    readiness: ReadinessCheck | undefined;
     summary: string | undefined;
     tasks: Progress | undefined;
     criteria: Progress | undefined;
     lastChangeMs: number | undefined;
     run: CardRun;
+}
+
+export interface ReadinessCheck {
+    id: string;
+    reason: string;
 }
 
 export interface BoardColumn {
@@ -104,12 +110,12 @@ export function isCardView(value: unknown): value is CardView {
         typeof value.titleIsStem === 'boolean' &&
         isOptionalString(value.path) &&
         isBoardState(value.state) &&
-        isOptionalString(value.derivedLabel) &&
+        (value.derivedRule === undefined || isDerivedRule(value.derivedRule)) &&
         typeof value.deprecated === 'boolean' &&
         typeof value.diagnostics === 'number' &&
         Array.isArray(value.blocked) &&
         value.blocked.every(isString) &&
-        isOptionalString(value.readiness) &&
+        (value.readiness === undefined || (isRecord(value.readiness) && isString(value.readiness.id) && isString(value.readiness.reason))) &&
         isOptionalString(value.summary) &&
         isProgress(value.tasks) &&
         isProgress(value.criteria) &&

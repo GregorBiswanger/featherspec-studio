@@ -80,6 +80,10 @@ export interface MissionControlView {
 }
 
 const DERIVED_RULES: readonly string[] = ['S-READY', 'S-REVIEW', 'S-BLOCKED'];
+
+export function isDerivedRule(value: unknown): value is DerivedRule {
+    return typeof value === 'string' && DERIVED_RULES.includes(value);
+}
 const RUN_STATUS_WORDS: readonly string[] = ['Starting', 'Running', 'WaitingForApproval', 'WaitingForInput', 'Completed', 'Failed', 'Cancelled', 'Interrupted'];
 const ATTENTION_REASONS: readonly string[] = ['Blocked', 'Run failed', 'Run interrupted', 'Waiting for you', 'Diagnostic', 'Review pending'];
 

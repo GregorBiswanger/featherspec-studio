@@ -24,7 +24,7 @@ const view: ShellView = {
     selection: { stem: '0003-x', number: '0003' },
     notice: undefined,
     rows: [
-        { stem: '0003-x', path: '.specs/active/0003-x.md', number: '0003', title: undefined, state: 'Active', derivedLabel: undefined, showPath: false, selected: true },
+        { stem: '0003-x', path: '.specs/active/0003-x.md', number: '0003', title: undefined, state: 'Active', derivedRule: undefined, showPath: false, selected: true },
     ],
 };
 
@@ -116,6 +116,8 @@ describe('host messages: guards accept and reject', () => {
         expect(isShellEventPayload({})).toBe(false);
         expect(isShellView({ ...view, area: 'x' })).toBe(false);
         expect(isShellView({ ...view, rows: [{ stem: 1 }] })).toBe(false);
+        expect(isShellView({ ...view, rows: [{ ...view.rows[0], derivedRule: 'S-READY' }] })).toBe(true);
+        expect(isShellView({ ...view, rows: [{ ...view.rows[0], derivedRule: 'Derived (rule S-READY)' }] })).toBe(false);
         expect(isShellView({ ...view, restricted: 'no' })).toBe(false);
         expect(isShellView({ ...view, state: { id: 'S42' } })).toBe(false);
         expect(isShellView({ ...view, notice: { number: 3 } })).toBe(false);

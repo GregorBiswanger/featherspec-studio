@@ -1,3 +1,4 @@
+import { DERIVED_SENTENCES } from '../../../shared/protocol/texts';
 import type { ActivityChange, AttentionReason, DerivedRule, HighlightedStatus, RunStatusWord, SpecRef } from '../../../shared/protocol/missionControl';
 
 export const MC_NOT_AVAILABLE = 'not available';
@@ -31,7 +32,7 @@ export function mcTotal(count: number): string {
 }
 
 export function mcDerived(rule: DerivedRule): string {
-    return `derived · ${rule}`;
+    return DERIVED_SENTENCES[rule];
 }
 
 export function mcDeprecated(count: number): string {

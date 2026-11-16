@@ -1,6 +1,7 @@
 import type { DragEvent, ReactNode } from 'react';
 import type { CardView } from '../../shared/protocol/board';
-import { cardRunText, criteriaText, DEPRECATED_MARKER, diagnosticsBadgeText, lastChangeText, NO_SUMMARY_TEXT, tasksText } from '../../shared/protocol/texts';
+import { cardRunText, criteriaText, DEPRECATED_MARKER, DERIVED_SENTENCES, diagnosticsBadgeText, lastChangeText, NO_SUMMARY_TEXT, tasksText } from '../../shared/protocol/texts';
+import { RuleText } from '../ui/RuleText';
 import { BadgeIcon, StateIcon } from './icons';
 
 export function Card(props: {
@@ -37,9 +38,9 @@ export function Card(props: {
                 <span className="marker state-marker">
                     <StateIcon state={card.state} /> {card.state}
                 </span>
-                {card.derivedLabel === undefined ? null : (
+                {card.derivedRule === undefined ? null : (
                     <span className="marker" data-marker="derived">
-                        <BadgeIcon kind="derived" /> {card.derivedLabel}
+                        <BadgeIcon kind="derived" /> <RuleText text={DERIVED_SENTENCES[card.derivedRule]} id={card.derivedRule} />
                     </span>
                 )}
                 {card.deprecated ? (
@@ -60,7 +61,11 @@ export function Card(props: {
                     {line}
                 </div>
             ))}
-            {card.readiness === undefined ? null : <div className="card-readiness">{card.readiness}</div>}
+            {card.readiness === undefined ? null : (
+                <div className="card-readiness">
+                    <RuleText text={card.readiness.reason} id={card.readiness.id} />
+                </div>
+            )}
             <div className="card-figures">
                 <span>{tasksText(card.tasks)}</span> <span>{criteriaText(card.criteria)}</span> <span>{lastChangeText(card.lastChangeMs)}</span>
             </div>

@@ -106,11 +106,11 @@ describe('AC-001, AC-002, AC-025: spec counts', () => {
         const rows = [...specs.querySelectorAll('[data-state-count]')].map((row) => row.textContent);
         expect(rows).toEqual([
             'Backlog 2',
-            'Ready 1derived · S-READY',
+            'Ready 1Derived: draft with a plan that has not started S-READY',
             'Active 1',
-            'Review 1derived · S-REVIEW',
+            'Review 1Derived: plan is Done, waiting for review S-REVIEW',
             'Done 3of which Deprecated: 1',
-            'Blocked 1derived · S-BLOCKED',
+            'Blocked 1Derived: plan or return note says Blocked S-BLOCKED',
         ]);
     });
 

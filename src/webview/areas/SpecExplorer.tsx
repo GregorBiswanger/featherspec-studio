@@ -2,6 +2,7 @@ import type { KeyboardEvent } from "react";
 import { isBoardState } from "../../shared/protocol/boardFilter";
 import type { SpecRow } from "../../shared/protocol/messages";
 import {
+  DERIVED_SENTENCES,
   NO_SPECS_TEXT,
   SPEC_LIST_LABEL,
   TITLE_NOT_AVAILABLE,
@@ -9,6 +10,7 @@ import {
 import { useBoard } from "../board/boardStore";
 import { SpecDetail } from "../detail/SpecDetail";
 import { useShell } from "../shell";
+import { RuleText } from "../ui/RuleText";
 import { StateChip } from "../ui/StateChip";
 
 export function SpecExplorer() {
@@ -61,8 +63,13 @@ export function SpecExplorer() {
                   row.state
                 )}
               </span>
-              {row.derivedLabel === undefined ? null : (
-                <span className="spec-derived"> {row.derivedLabel}</span>
+              {row.derivedRule === undefined ? null : (
+                <span className="spec-derived">
+                  <RuleText
+                    text={DERIVED_SENTENCES[row.derivedRule]}
+                    id={row.derivedRule}
+                  />
+                </span>
               )}
               {row.showPath ? (
                 <span className="spec-path"> {row.path}</span>

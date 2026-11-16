@@ -3,7 +3,7 @@ import { isBoardView, isMoveResult, isSortKey, type BoardView, type MoveResult, 
 import { isDetailView, type DetailView } from './detail';
 import { isBoardFilter, isBoardState, type BoardFilter, type BoardState } from './boardFilter';
 import { isRecord } from './envelope';
-import { isMissionControlView, type MissionControlView } from './missionControl';
+import { isDerivedRule, isMissionControlView, type DerivedRule, type MissionControlView } from './missionControl';
 
 export const ACTION_IDS = [
     'openFolder',
@@ -53,7 +53,7 @@ export interface SpecRow {
     number: string;
     title: string | undefined;
     state: string;
-    derivedLabel: string | undefined;
+    derivedRule: DerivedRule | undefined;
     showPath: boolean;
     selected: boolean;
 }
@@ -309,7 +309,7 @@ export function isSpecRow(value: unknown): value is SpecRow {
         isString(value.number) &&
         isOptionalString(value.title) &&
         isString(value.state) &&
-        isOptionalString(value.derivedLabel) &&
+        (value.derivedRule === undefined || isDerivedRule(value.derivedRule)) &&
         typeof value.showPath === 'boolean' &&
         typeof value.selected === 'boolean'
     );

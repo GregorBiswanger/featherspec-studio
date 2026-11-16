@@ -1,4 +1,5 @@
-import type { BannerLine, CardView } from '../../shared/protocol/board';
+import type { BannerLine, CardView, ReadinessCheck } from '../../shared/protocol/board';
+import { isDerivedRule } from '../../shared/protocol/missionControl';
 import type { LifecycleEntry, LifecycleModel } from '../lifecycle/model';
 import type { ProjectRead, SpecEntry } from '../specs/readProject';
 import { describeSpec } from './description';
@@ -20,13 +21,13 @@ function blockedLines(entry: LifecycleEntry): string[] {
     ];
 }
 
-function readinessLine(entry: LifecycleEntry): string | undefined {
+function readinessLine(entry: LifecycleEntry): ReadinessCheck | undefined {
     if (entry.state !== 'Backlog') {
         return undefined;
     }
     const lowest = [...entry.readiness.failing].sort()[0];
     const check = entry.readiness.checks.find((candidate) => candidate.id === lowest);
-    return lowest === undefined || check === undefined || check.result === 'pass' ? undefined : `${lowest}: ${check.reason}`;
+    return lowest === undefined || check === undefined || check.result === 'pass' ? undefined : { id: lowest, reason: check.reason };
 }
 
 export function buildCards(project: ProjectRead, lifecycle: LifecycleModel, runs: RunIndex = { available: true, latest: new Map() }): CardView[] {
@@ -46,7 +47,7 @@ export function buildCards(project: ProjectRead, lifecycle: LifecycleModel, runs
             titleIsStem: title === undefined,
             path: (stems.get(entry.stem) ?? 0) > 1 ? entry.key : undefined,
             state: entry.state,
-            derivedLabel: entry.derivedLabel,
+            derivedRule: entry.persistence === 'derived' && isDerivedRule(entry.rule) ? entry.rule : undefined,
             deprecated: entry.deprecated !== undefined,
             diagnostics: entry.diagnostics.length,
             blocked: blockedLines(entry),

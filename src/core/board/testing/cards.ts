@@ -9,7 +9,7 @@ export function card(number: string, overrides: Partial<CardView> = {}): CardVie
         titleIsStem: false,
         path: undefined,
         state: 'Active',
-        derivedLabel: undefined,
+        derivedRule: undefined,
         deprecated: false,
         diagnostics: 0,
         blocked: [],

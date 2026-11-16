@@ -18,14 +18,14 @@ function row(number: string, overrides: Partial<SpecRow> = {}): SpecRow {
         number,
         title: `Thing ${number}`,
         state: 'Active',
-        derivedLabel: undefined,
+        derivedRule: undefined,
         showPath: false,
         selected: false,
         ...overrides,
     };
 }
 
-const THREE = [row('0001'), row('0002', { state: 'Backlog' }), row('0003', { state: 'Review', derivedLabel: 'Derived (rule S-REVIEW)' })];
+const THREE = [row('0001'), row('0002', { state: 'Backlog' }), row('0003', { state: 'Review', derivedRule: 'S-REVIEW' })];
 
 async function open(view: ShellView): Promise<HTMLElement> {
     const client = createClient({ post: (message) => void posted.push(message) });
@@ -84,7 +84,7 @@ describe('AC-007: the Spec Explorer list', () => {
     it('renders every field: number, title or "not available", the state word, the derived label and the path of a duplicated stem', async () => {
         const rows = [
             row('0001'),
-            row('0003', { title: undefined, state: 'Review', derivedLabel: 'Derived (rule S-REVIEW)' }),
+            row('0003', { title: undefined, state: 'Review', derivedRule: 'S-REVIEW' }),
             row('0004', { showPath: true, path: '.specs/backlog/0004-thing.md' }),
             row('0004', { showPath: true, path: '.specs/active/0004-thing.md', state: 'Active' }),
         ];
@@ -97,7 +97,8 @@ describe('AC-007: the Spec Explorer list', () => {
         expect(listed[0]?.textContent).not.toContain('.specs/');
         expect(listed[1]?.textContent).toContain('not available');
         expect(listed[1]?.textContent).toContain('Review');
-        expect(listed[1]?.textContent).toContain('Derived (rule S-REVIEW)');
+        expect(listed[1]?.querySelector('.rule-sentence')?.textContent).toBe('Derived: plan is Done, waiting for review');
+        expect(listed[1]?.querySelector('.rule-id')?.textContent).toBe('S-REVIEW');
         expect(listed[2]?.textContent).toContain('.specs/backlog/0004-thing.md');
         expect(listed[3]?.textContent).toContain('.specs/active/0004-thing.md');
         expect(container.querySelector('[role="listbox"]')?.getAttribute('aria-label')).toBe('Specs');
@@ -155,8 +156,8 @@ describe('AC-008: selection in the panel UI', () => {
     it('AC-030: in the real DOM the secondary text of a selected row is reached by a rule with the selection foreground, that of another row is not', async () => {
         const css = mainCss as string;
         const rows = [
-            row('0001', { derivedLabel: 'Derived (rule S-REVIEW)', showPath: true }),
-            row('0002', { selected: true, derivedLabel: 'Derived (rule S-REVIEW)', showPath: true }),
+            row('0001', { derivedRule: 'S-REVIEW', showPath: true }),
+            row('0002', { selected: true, derivedRule: 'S-REVIEW', showPath: true }),
         ];
         const container = await open(baseView({ area: 'specExplorer', rows, selection: { stem: '0002-thing', number: '0002' } }));
         const [other, selected] = optionRows(container);

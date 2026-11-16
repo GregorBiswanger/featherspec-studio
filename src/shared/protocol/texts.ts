@@ -1,6 +1,13 @@
 import type { BoardState } from './boardFilter';
 import type { CardRun, Progress, SortKey } from './board';
 import type { ActionId, PanelState } from './messages';
+import type { DerivedRule } from './missionControl';
+
+export const DERIVED_SENTENCES: Record<DerivedRule, string> = {
+    'S-READY': 'Derived: draft with a plan that has not started',
+    'S-REVIEW': 'Derived: plan is Done, waiting for review',
+    'S-BLOCKED': 'Derived: plan or return note says Blocked',
+};
 
 export function ignoredMessageLine(type: string, reason: string): string {
     return `Ignored a message from the Studio panel: type ${type}, ${reason}.`;

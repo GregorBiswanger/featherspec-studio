@@ -31,7 +31,7 @@ describe('AC-007: spec rows', () => {
         const m = await model({ '.specs/backlog/0001-a.md': spec('Alpha', 'Draft'), '.specs/backlog/0002-b.md': spec(undefined, 'Draft') });
         const rows = buildSpecRows(m, undefined);
         expect(rows.map((row) => row.title)).toEqual(['Alpha', undefined]);
-        expect(rows[0]).toMatchObject({ stem: '0001-a', state: 'Backlog', derivedLabel: undefined, showPath: false, selected: false });
+        expect(rows[0]).toMatchObject({ stem: '0001-a', state: 'Backlog', derivedRule: undefined, showPath: false, selected: false });
     });
 
     it('carries the derived label with its rule for a derived state (PD-004) and none for a persisted one', async () => {
@@ -41,11 +41,11 @@ describe('AC-007: spec rows', () => {
         });
         const derived = m.lifecycle.entries.filter((entry) => entry.persistence === 'derived');
         const rows = buildSpecRows(m, undefined);
-        expect(rows.filter((row) => row.derivedLabel !== undefined)).toHaveLength(derived.length);
+        expect(rows.filter((row) => row.derivedRule !== undefined)).toHaveLength(derived.length);
         for (const entry of derived) {
-            expect(rows.find((row) => row.path === entry.key)?.derivedLabel).toBe(`Derived (rule ${entry.rule})`);
+            expect(rows.find((row) => row.path === entry.key)?.derivedRule).toBe(entry.rule);
         }
-        expect(rows.find((row) => row.stem === '0001-a')?.derivedLabel).toBeUndefined();
+        expect(rows.find((row) => row.stem === '0001-a')?.derivedRule).toBeUndefined();
     });
 
     it('shows the project-relative path for a duplicated stem only', async () => {

@@ -1,5 +1,6 @@
 import type { NavigationRequest } from '../../../shared/protocol/messages';
 import type { McSpecs } from '../../../shared/protocol/missionControl';
+import { RuleText } from '../../ui/RuleText';
 import { Drill } from './Drill';
 import { stateRequest, totalRequest } from './requests';
 import { MC_FORMULA, MC_PROGRESS_UNAVAILABLE, MC_SPECS_HEADING, mcDeprecated, mcDerived, mcProgress, mcTotal } from './texts';
@@ -21,7 +22,11 @@ export function SpecFigures(props: { specs: Extract<McSpecs, { kind: 'counts' }>
                         <Drill id={`state:${entry.state}`} onActivate={() => navigate(stateRequest(entry.state))}>
                             {entry.state} {entry.count}
                         </Drill>
-                        {entry.derivedRule === undefined ? null : <span className="mc-derived">{mcDerived(entry.derivedRule)}</span>}
+                        {entry.derivedRule === undefined ? null : (
+                            <span className="mc-derived">
+                                <RuleText text={mcDerived(entry.derivedRule)} id={entry.derivedRule} />
+                            </span>
+                        )}
                         {entry.deprecated === undefined ? null : <span className="mc-deprecated">{mcDeprecated(entry.deprecated)}</span>}
                     </li>
                 ))}

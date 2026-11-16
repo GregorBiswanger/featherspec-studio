@@ -91,12 +91,16 @@ describe('board requests', () => {
 
     it('card and board views are guarded', () => {
         const card = {
-            key: 'k', stem: '0001-a', number: '0001', title: 'A', titleIsStem: false, path: undefined, state: 'Active', derivedLabel: undefined, deprecated: false,
+            key: 'k', stem: '0001-a', number: '0001', title: 'A', titleIsStem: false, path: undefined, state: 'Active', derivedRule: undefined, deprecated: false,
             diagnostics: 0, blocked: [], readiness: undefined, summary: undefined, tasks: { done: 1, total: 2 }, criteria: undefined, lastChangeMs: 5, run: { kind: 'none' },
         };
         expect(isCardView(card)).toBe(true);
         expect(isCardView({ ...card, state: 'Doing' })).toBe(false);
         expect(isCardView({ ...card, run: { kind: 'run' } })).toBe(false);
+        expect(isCardView({ ...card, derivedRule: 'S-REVIEW', readiness: { id: 'R-3', reason: 'No plan.' } })).toBe(true);
+        expect(isCardView({ ...card, derivedRule: 'Derived (rule S-REVIEW)' })).toBe(false);
+        expect(isCardView({ ...card, readiness: 'R-3: No plan.' })).toBe(false);
+        expect(isCardView({ ...card, readiness: { id: 'R-3' } })).toBe(false);
         const view = { columns: [{ state: 'Active', cards: [card], hidden: 0, emptyBeforeFilter: false }], banner: [{ where: 'project', reason: 'x' }], filter: {}, sort: 'number', providers: ['fake'], noSpecs: false };
         expect(isBoardView(view)).toBe(true);
         expect(isBoardView({ ...view, sort: 'priority' })).toBe(false);

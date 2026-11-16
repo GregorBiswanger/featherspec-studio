@@ -45,12 +45,12 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
     });
 
     it('shows number, title, state text, description, figures, last change and run', async () => {
-        const entry = card('0007', { derivedLabel: 'Derived (rule S-REVIEW)', state: 'Review', run: { kind: 'run', provider: 'copilot', status: 'Running' } });
+        const entry = card('0007', { derivedRule: 'S-REVIEW', state: 'Review', run: { kind: 'run', provider: 'copilot', status: 'Running' } });
         const text = (await open(boardView([entry]))).querySelector('[data-card]')!.textContent!;
         expect(text).toContain('0007');
         expect(text).toContain('Thing 0007');
         expect(text).toContain('Review');
-        expect(text).toContain('Derived (rule S-REVIEW)');
+        expect(text).toContain('Derived: plan is Done, waiting for review');
         expect(text).toContain('A summary.');
         expect(text).toContain('Tasks: 3 of 7');
         expect(text).toContain('Criteria: 1 of 4 verified');
@@ -80,7 +80,7 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
         const entry = card('0001', {
             state: 'Blocked',
             blocked: ['Blocked: plan status Blocked', 'Blocked: return note activeContext.0001-T-002.md'],
-            readiness: 'R-3: No sibling plan.',
+            readiness: { id: 'R-3', reason: 'No sibling plan.' },
             deprecated: true,
             diagnostics: 2,
             path: '.specs/active/0001-thing.md',
@@ -88,14 +88,15 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
         const text = (await open(boardView([entry]))).querySelector('[data-card]')!.textContent!;
         expect(text).toContain('Blocked: plan status Blocked');
         expect(text).toContain('Blocked: return note activeContext.0001-T-002.md');
-        expect(text).toContain('R-3: No sibling plan.');
+        expect(text).toContain('No sibling plan.');
+        expect(text).toContain('R-3');
         expect(text).toContain('Deprecated');
         expect(text).toContain('2 diagnostics');
         expect(text).toContain('.specs/active/0001-thing.md');
     });
 
     it('AC-018: every state and every badge carries an icon beside its text, hidden from assistive technology', async () => {
-        const container = await open(boardView([card('0001', { derivedLabel: 'Derived (rule S-REVIEW)', deprecated: true, diagnostics: 1 })]));
+        const container = await open(boardView([card('0001', { derivedRule: 'S-REVIEW', deprecated: true, diagnostics: 1 })]));
         const markers = [...container.querySelectorAll('[data-card] .marker')];
         expect(markers).toHaveLength(4);
         markers.forEach((marker) => {

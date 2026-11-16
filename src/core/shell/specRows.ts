@@ -1,4 +1,5 @@
 import type { SpecRow } from '../../shared/protocol/messages';
+import { isDerivedRule } from '../../shared/protocol/missionControl';
 import { headerValue } from '../lifecycle/entryContext';
 import type { ShellModel } from '../ports/shell';
 import type { RememberedSelection } from './uiMemory';
@@ -26,7 +27,7 @@ export function buildSpecRows(model: ShellModel | undefined, selection: Remember
                 number: entry.number,
                 title: titles.get(entry.key),
                 state: entry.state,
-                derivedLabel: entry.derivedLabel,
+                derivedRule: entry.persistence === 'derived' && isDerivedRule(entry.rule) ? entry.rule : undefined,
                 showPath: duplicated,
                 selected:
                     selection !== undefined &&

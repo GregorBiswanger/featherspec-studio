@@ -3,7 +3,7 @@
 **Spec:** [0013-studio-visual-design.md](0013-studio-visual-design.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-002
+**Current step:** T-003
 
 ## Approach
 
@@ -116,8 +116,8 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
   cards (marker line) now; tiles and Overview use it in T-003/T-008. Update the assertions listed in
   *Research* (delta 4), each in the same change set.
 - **Verify:** quality gates (new RuleText test red first; the updated assertions red on the old shape, then green).
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-16 — red: 13 tests (new `RuleText.test.tsx` 2 on `Not implemented`/empty sentences; guard tests in `boardFilter.test.ts` and `messages.test.ts`; the delta-4 assertions of *Research* failing on the old `derivedLabel`/string shape); green: eslint, both `tsc`, `npm run test:unit` 89 files / 1287 tests, `npm run compile`. Looked at `03-spec-explorer-list-*`, `04-*-light` list and `02-spec-board-dark`: sentence primary, rule ID small and monospaced after it, row heights even; the card marker line wraps (card layout is T-006).
+- **Notes:** also updated, same delta 4 (the shape change, not named in *Research*): the card literal in `shared/protocol/boardFilter.test.ts` l.94 and the two test builders `core/board/testing/cards.ts`, `webview/board/testing/views.ts`. New `isDerivedRule` in `shared/protocol/missionControl.ts` serves both guards.
 
 ### T-003 — Mission Control: stat tiles, distribution bar, progress
 
@@ -238,7 +238,7 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001, T-010 | — | — | open |
+| AC-001 | T-001, T-010 | `src/webview/main.css` (`--fs-*`, `[data-board-state]`), `src/webview/testing/css.ts:declarations` | `src/adapters/node/webviewCss.test.ts` (0013 AC-001 block) | verified |
 | AC-002 | T-009 | — | — | open |
 | AC-003 | T-001, T-003, T-004, T-006, T-008, T-009 | — | — | open |
 | AC-004 | T-003 | — | — | open |
@@ -247,20 +247,20 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
 | AC-007 | T-004 | — | — | open |
 | AC-008 | T-005 | — | — | open |
 | AC-009 | T-006 | — | — | open |
-| AC-010 | T-002, T-006, T-008 | — | — | open |
+| AC-010 | T-002, T-006, T-008 | `src/webview/ui/RuleText.tsx`, `src/shared/protocol/texts.ts:DERIVED_SENTENCES`, `src/core/board/cards.ts`, `src/core/shell/specRows.ts` | `src/webview/ui/RuleText.test.tsx`, `src/webview/areas/areas.test.tsx` (AC-007 row) | built |
 | AC-011 | T-005 | — | — | open |
 | AC-012 | T-008 | — | — | open |
 | AC-013 | T-008 | — | — | open |
 | AC-014 | T-007 | — | — | open |
 | AC-015 | T-007 | — | — | open |
-| AC-016 | T-002, T-004, T-008, T-010 | — | — | open |
+| AC-016 | T-002, T-004, T-008, T-010 | delta-4 assertions (T-002 Verified) | `npm run test:unit` | built |
 | AC-017 | T-010 | — | manual: Gregor, screenshots | open |
 | AC-018 | T-010 (listed) | — | manual: Gregor, real VS Code | open |
 
 ## Session handoff
 
-- **Done so far:** plan approved by Gregor 2026-11-16 (whole plan; `--fs-*` aliases accepted under AC-001 if every alias resolves only to `--vscode-*`); pair moved to `active/`.
-- **Next action:** T-001.
+- **Done so far:** plan approved by Gregor 2026-11-16 (whole plan; `--fs-*` aliases accepted under AC-001 if every alias resolves only to `--vscode-*`); pair moved to `active/`. Stage 1 done (T-001, T-002).
+- **Next action:** T-003 (Mission Control tiles, bar, progress).
 - **Open decisions:** AC-001's `--fs-*` alias interpretation (see *Research*); harness extension for
   900 px, collapsed detail and HC of every area (outside the repo) before T-010.
 - **Baseline:** e78fa54

@@ -34,8 +34,8 @@ describe('cards', () => {
             '.specs/active/0002-b.plan.md': planText({ status: 'In Progress' }),
             '.specs/done/0003-c.md': specText({ status: 'Baseline' }),
         });
-        expect(cards.map((card) => [card.number, card.state, card.derivedLabel])).toEqual([
-            ['0001', 'Review', 'Derived (rule S-REVIEW)'],
+        expect(cards.map((card) => [card.number, card.state, card.derivedRule])).toEqual([
+            ['0001', 'Review', 'S-REVIEW'],
             ['0002', 'Active', undefined],
             ['0003', 'Done', undefined],
         ]);
@@ -71,7 +71,7 @@ describe('cards', () => {
             '.specs/backlog/0001-a.md': specText(),
             '.specs/done/0002-b.md': specText({ status: 'Baseline' }),
         });
-        expect(cards[0]?.readiness).toBe('R-3: No sibling plan, or the Plan line does not link it.');
+        expect(cards[0]?.readiness).toEqual({ id: 'R-3', reason: 'No sibling plan, or the Plan line does not link it.' });
         expect(cards[1]?.readiness).toBeUndefined();
     });
 
