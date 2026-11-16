@@ -1,9 +1,9 @@
 # Plan — Spec Board & Spec Detail
 
 **Spec:** [0007-spec-board-spec-detail.md](0007-spec-board-spec-detail.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-001
+**Current step:** 0003 T-010 (before T-001)
 
 ## Approach
 
@@ -40,8 +40,35 @@ plus Gregor's manual checks (T-010).
 
 ## Research
 
-- **Survey** (2026-11-16, worktree `spec-0007` at `2cf3cc8`; 0001–0004 built, 0005 planned only):
-  - **0005 is not in this checkout.** Its plan supplies these extension points:
+- **Start (2026-11-16, Gregor's approval and answers; OP-010 in the spec):** the plan's additive
+  changes to 0003 and 0004 are approved and are done in their own specs first (0003 T-010 with
+  AC-027/AC-028, 0004 T-010 with AC-030); T-002, T-003 and T-004 below only use them. 0007 owns the
+  board filter encoding. Filters stay in extension memory, no drag-and-drop library, and the
+  reader-window limitation is recorded in the spec (§10, §13). Stages 4 and 5 run **in sequence**
+  after the core stages (Gregor's start message).
+- **0005 as built (2026-11-16, replaces the survey bullet below; where the plan assumed otherwise,
+  the code wins):**
+  - `ShellModelSource` (`current(): { project, lifecycle }`, `onDidChange`) is the model feed;
+    the board service takes it, not the `LifecycleService`. `judgeTransition` is called as the
+    pure function on that model, so a move is judged against the snapshot the board shows.
+    `LifecycleService.history()` is used for the status history only.
+  - `shellService.handlers` is typed as `RequestHandlers` (every request type). The board's
+    requests get their own handler set, `boardService.handlers`, and the panel host merges both.
+    `RequestType` is split into the shell's and the board's requests in `messages.ts`.
+  - `shellService.navigate` stores `target` in the view but has no hook for a consumer. T-010 adds
+    `onDidNavigate(listener)`, additively, as the plan foresaw.
+  - The router writes `ignoredMessageLine(type, 'invalid payload')` for a request whose guard
+    fails. That is the X-14 line; the `boardFilter` target guard therefore uses the board filter
+    guard, and a bad filter drops the whole request.
+  - The webview client keeps one snapshot (`view`, `state`, `area`) and handles only the `shell`
+    event (with `seq`). `board`, `detail` and `moveResult` are added as events without `seq`: each
+    is a full snapshot that replaces the last, and the host re-sends them on `hello`.
+  - There is no `areas/registry.tsx` map of placeholders: `AREA_COMPONENTS` is a
+    `Partial<Record<AreaId, ComponentType>>`, and `AREAS[].placeholder` marks the placeholder
+    texts (`specBoard` flips to `false` in T-007).
+- **Survey** (2026-11-16, worktree `spec-0007` at `2cf3cc8`; 0001–0004 built, 0005 planned only —
+  this bullet is the original survey; the block above says what the code looks like now):
+  - **0005 is not in this checkout.** Its plan supplied these extension points:
     - the area registry `src/webview/areas/registry.tsx`;
     - `useShell().navigate({ area, target })` and the `navigate` message;
     - the target `{ kind: 'boardFilter', filter: JsonValue }`, whose inside 0007 validates;
@@ -536,7 +563,7 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 - **Next action:**
   1. Gregor reviews the plan, the *Texts* table and the §15 decisions in *Research*.
   2. Main, with 0005 built, is merged into `spec-0007`, then `npm ci`.
-  3. On the start signal: `/sdd-lifecycle` backlog → active, then T-001.
+  3. On the start signal: `/sdd-lifecycle` backlog → active, then T-001. (Done 2026-11-16.)
 - **Open decisions:**
   - the additive changes to 0003 (T-002, T-003) and 0004 (T-004);
   - filter encoding v1, to be aligned with 0006's parallel plan;
@@ -545,5 +572,5 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
   - the reader-window run limitation;
   - the command title `FeatherSpec: Move Spec to…`, as the spec writes it; the existing
     commands read `FeatherSpec Studio: …`.
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** 0ecc7a7 (HEAD before the first 0007 commit)
 - **Environment:** this worktree needs `npm ci` first; `npm test` cannot run in the sandbox (CI runs it).

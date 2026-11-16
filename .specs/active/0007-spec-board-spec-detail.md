@@ -1,6 +1,6 @@
 # Spec Board & Spec Detail
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0007-spec-board-spec-detail.plan.md](0007-spec-board-spec-detail.plan.md)
 
 Handoff reference: FS-007 ([po-handoff.md](../../docs/product/po-handoff.md) §4.2, §4.3, §10,
@@ -302,7 +302,9 @@ and are not repeated here (PD-036, PD-038).
 
 - **0002:** model and change notifications (input).
 - **0003:** per-entry results, the transition check, the status history (input).
-- **0004:** runs per stem, the store state, run-event notifications (input).
+- **0004:** runs per stem, the store state, run-change notifications of this window (input).
+  A second window sees runs written by the writer window only at its next refresh — an accepted
+  limitation (Gregor, 2026-11-16; PD-030).
 - **0005:** panel, areas, the selected spec, the navigation request (area plus optional target:
   a spec by stem or a board filter), every panel-level state (PD-036, PD-039, PD-040).
 - **0006:** asks the shell to open the board with a filter (a state, or a named spec set) or
@@ -348,6 +350,7 @@ and are not repeated here (PD-036, PD-038).
 | Ready → Active before 0008 exists | Refused with "Agent start is not available yet" |
 | Ready → Active in Restricted Mode, in a reader window, or with a run active | Handed to 0008, which refuses with its own reason (ADR-001 §14, PD-005, PD-030) |
 | Active project changes | Filters cleared; selection handling is the shell's (0005) |
+| A run is written by another window (PD-030) | Not pushed to this window; its board shows it at its next model change or refresh (accepted limitation, Gregor, 2026-11-16) |
 
 ## 14. Acceptance criteria
 
@@ -514,13 +517,13 @@ that §9 leaves to the plan are asserted by kind, not by wording.
 
 - Brownfield check: no source module exists yet (`architecture: modules: []`); nothing to reuse.
 - ADR-001 §11 names `@dnd-kit/react` 0.5.3 with native HTML5 DnD as fallback, plus the mandatory
-  "Move to…" alternative. Adding the dependency is Ask-first (`AGENTS.md` *Non-negotiables*).
+  "Move to…" alternative. Decided (Gregor, 2026-11-16): native HTML5 DnD, no new dependency.
 - Keys for the "Move to…" menu: the context-menu key or Shift+F10 where the platform has them,
   and a menu button on the card that works on every platform (macOS has neither key).
-- ADR-001 rejects `retainContextWhenHidden`. Keep filter and sort state in the webview state so
-  it survives a rebuild of the content (§6.5), and rebuild domain state from the host snapshot
-  (ADR-001 §7). ADR-001 §7's serializer would restore that state after a restart: §6.5 wants it
-  reset, so clear it on restore.
+- ADR-001 rejects `retainContextWhenHidden`. Decided (Gregor, 2026-11-16): filter and sort live in
+  extension memory, per panel, not in webview state; they survive hiding and a rebuild of the
+  content (§6.5), and a restart or a closed panel ends them, so no restore flag is needed.
+  Domain state is rebuilt from the host snapshot (ADR-001 §7).
 - Card and detail data should be shaped in a pure core view model (no `vscode` import, *Core
   purity*), so most criteria are unit-testable without the webview.
 - The description comes from 0002's sections with raw content. Do not locate it by heading
@@ -540,7 +543,7 @@ that §9 leaves to the plan are asserted by kind, not by wording.
 | A-003 | *Withdrawn 2026-11-16.* Replaced by PD-043: the description is the first paragraph under the first second-level heading | — | — |
 | A-004 | *Withdrawn 2026-11-16.* Replaced by PD-041: filters by state, provider and named spec set | — | — |
 | A-005 | Proxy decisions PD-002, PD-013, PD-014, PD-015, PD-016 hold | The PD register records them as proxy decisions that follow the handoff's own proposals (P2, §6.3, §6.5); same basis as 0003 A-008 | Move, priority and language rules change (OP-002) |
-| A-006 | 0003 reports which S-BLOCKED conditions hold for a Blocked entry | Handoff §4.2 asks for the blocking reason on the card; 0003 §6.1 defines the two conditions but its output (§8 there) names none (OP-008) | The card can only say "Blocked (S-BLOCKED)" |
+| A-006 | 0003 reports which S-BLOCKED conditions hold for a Blocked entry, and which plan §6.6 uses | Handoff §4.2 asks for the blocking reason on the card; 0003 §6.1 defines the two conditions; added to its output (0003 AC-027, AC-028) on Gregor's approval, 2026-11-16 | The card can only say "Blocked (S-BLOCKED)" |
 | A-007 | 0005 offers the navigation request, keeps the selection by stem and hosts the detail view in Spec Explorer | PD-039, PD-040, PD-042; 0005 as written still selects by number and has no navigation request (OP-008) | AC-008 and AC-028 have no counterpart; 0005 is realigned first |
 
 ## 17. Open points
@@ -560,11 +563,17 @@ Cross-spec, for the main session (no product decision):
   State at `/sdd-plan` (2026-11-16, [plan](0007-spec-board-spec-detail.plan.md) *Research*):
   (a) holds in code — 0002 delivers `modifiedMs` for every file it reads; only 0002 §8's text
   lags. (b) not in code — the plan adds the blocking conditions to 0003's output as an additive
-  change (T-002). (c) done by 0005's revision and plan. (d) the plan proposes encoding v1; 0006
-  is planned in parallel and has to use the same shape.
+  change (T-002). (c) done by 0005's revision and plan. (d) the plan proposes encoding v1, owned
+  by this spec; 0006 uses it (OP-010).
 
 Resolved:
 
+- OP-010 (2026-11-16, Gregor, approving the plan): the additive changes to 0003 (which blocking
+  condition holds, which plan is in use) and to 0004 (a notification when runs change) are
+  made in their own specs and plans; the board filter encoding is owned by this spec
+  (`src/shared/protocol/boardFilter.ts`, covers the named set of PD-041: label and stems) and
+  0006 uses it; filters are kept in extension memory; no drag-and-drop library; a second window
+  sees new runs at its next refresh (limitation, §13).
 - OP-001 (2026-11-16): the "1 s of the save" bound is replaced by PD-047 (500 ms after the
   notification, automated test). The re-measurement on a real project stays with 0002 OP-001.
 - OP-003 (2026-11-16): interview questions 2–8 were asked in one message at Gregor's explicit

@@ -2,7 +2,7 @@
 
 Last updated: 2026-11-16
 Current branch: main
-Current phase: idle
+Current phase: act
 
 ## Now
 Spec 0005 (studio shell & navigation) is built (plan Done, T-001...T-009, plus 0001 T-013 for AC-024). It awaits the host suite on CI, Gregor's manual checks and `/sdd-compile` in a fresh session. Specs 0001...0004 are built too and wait for the same.
@@ -12,6 +12,7 @@ Spec 0005 (studio shell & navigation) is built (plan Done, T-001...T-009, plus 0
 - Spec 0002: [spec](../.specs/active/0002-spec-repository-parser.md) / [plan](../.specs/active/0002-spec-repository-parser.plan.md) (Done, T-001...T-011 ticked; spec revised 2026-11-16 after `/sdd-compile`; AC-022 `built`, `verified` after the host suite).
 - Spec 0004: [spec](../.specs/active/0004-runtime-persistence-event-model.md) / [plan](../.specs/active/0004-runtime-persistence-event-model.plan.md) (Done, T-001...T-009 ticked; AC-020 accepted 2026-11-16).
 - Spec 0003: [spec](../.specs/active/0003-spec-lifecycle-readiness-model.md) / [plan](../.specs/active/0003-spec-lifecycle-readiness-model.plan.md) (Done, 9 of 9 steps; T-009 after `/sdd-compile`: no history entry for a gap at the first derivation, PD-023).
+- Spec 0007: [spec](../.specs/active/0007-spec-board-spec-detail.md) / [plan](../.specs/active/0007-spec-board-spec-detail.plan.md) (In Progress; moved backlog → active 2026-11-16).
 - Spec 0005: [spec](../.specs/active/0005-studio-shell-navigation.md) / [plan](../.specs/active/0005-studio-shell-navigation.plan.md) (Done, T-001...T-009 ticked; spec `In Progress` until `/sdd-compile`).
 - Current task: none open; 0001...0005 all steps ticked.
 - Acceptance criteria in focus: 0001 AC-024; 0005 AC-001...AC-029.
