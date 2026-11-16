@@ -3,6 +3,7 @@ import { readMemory } from '../../lifecycle/testing/projects';
 import type { Disposable } from '../../ports/host';
 import type { ShellModel, ShellModelSource } from '../../ports/shell';
 import type { ReadResult, RunView } from '../../runtime/model';
+import type { RuntimeStore } from '../../runtime/runtimeStore';
 import { createBoardService, type BoardService } from '../boardService';
 
 export async function modelOf(files: Record<string, string>): Promise<ShellModel> {
