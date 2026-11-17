@@ -1,6 +1,6 @@
 # Plan — Agent Orchestrator & Run Lifecycle
 
-**Spec:** [0011-agent-orchestrator-run-lifecycle.md](0011-agent-orchestrator-run-lifecycle.md)
+**Spec:** [0011-agent-orchestrator-run-lifecycle.md](../done/0011-agent-orchestrator-run-lifecycle.md)
 **Status:** Done
 **Last updated:** 2026-11-17
 **Current step:** T-009 (done)
@@ -288,7 +288,7 @@ test world, one module.
 | AC-022 | T-007 | `src/core/orchestrator/runCommands.ts`, `src/adapters/vscode/orchestratorUi.ts`, `package.json`, `src/extension.ts` | `runCommands.test.ts`, `src/adapters/vscode/manifest.test.ts`; host smoke `src/test/orchestrator.smoke.test.ts` (CI) | verified |
 | AC-023 | T-001 | imports of `src/core/orchestrator/` | `importScan.test.ts` | verified |
 | AC-024 | T-003, T-007, T-009 | `src/core/orchestrator/orchestrator.ts:letGo`, `checkStores`, `dispose`; `src/core/runtime/runtimeSession.ts:switchTo` (store switch announced) | `orchestratorEnd.test.ts`, `orchestratorSession.test.ts` (real `RuntimeSession`) | verified |
-| M-01, M-02 | — (0010's acceptance, OP-006) | — | — | open |
+| M-01, M-02 | — (0010's acceptance, OP-006) | — | — | with 0010 |
 | M-03 | — | `src/core/orchestrator/texts.ts` | texts pinned by the orchestrator tests; wording acceptance moved to the pre-release checklist (`/home/claude/orch/checklist/0011.md`), delegation Gregor 2026-11-17 | checklist |
 
 ## Open evidence
@@ -298,7 +298,7 @@ test world, one module.
 ## Session handoff
 
 - **Done so far:** T-001…T-009 built and verified with recorded runs; `/sdd-compile` 2026-11-17 (second run) READY after T-009. Two deviations outside this plan's folder, both 0004: `createRun` takes an optional `cause` (T-005), `RuntimeSession` announces every store switch (T-009).
-- **Next action:** `/sdd-lifecycle` active → done. Gregor: M-03 wording on the pre-release checklist.
+- **Next action:** none — archived 2026-11-17 after `/sdd-compile` READY; spec in `done/`. Gregor: M-03 wording on the pre-release checklist; the host suite is re-run on Windows on the merged commit (T-009 changed `runtimeSession.ts`).
 - **Open decisions:** none. M-01 and M-02 stay with 0010's acceptance (OP-006).
 - **Baseline:** commit `0820c2e` (lifecycle move), work in `f2eff94`…T-009.
 - **Environment:** `npm test` cannot run here (VS Code download blocked); the host smoke runs on CI or Gregor's Windows machine.
