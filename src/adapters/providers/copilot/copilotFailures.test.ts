@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { DeliveredEvent } from '../../../core/ports/agentProvider';
-import { INSTALL_URL } from './cliLocator';
+import { INSTALL_URL, MIN_CLI_VERSION } from './cliLocator';
 import type { CopilotEvent } from './client';
 import { recordedRows, syntheticRows, toSteps } from './testing/recorded';
-import { createCopilotWorld, ROOT, type CopilotWorldOptions } from './testing/world';
+import { CLI_PATH, createCopilotWorld, ROOT, type CopilotWorldOptions } from './testing/world';
 
 const SIGN_IN = 'Run `copilot` in a terminal and sign in, then retry.';
 const PROTOCOL_MISMATCH = 'SDK protocol version mismatch: SDK supports versions 3-3, but server reports version 4. Please update your SDK or server to ensure compatibility.';
@@ -99,6 +99,27 @@ describe('failures before a session exists (AC-004, AC-009, AC-018, AC-021)', ()
         const world = await failing({ client: { startError: new Error('spawn EACCES') } });
         noSession(world);
         expect(failedPayload(world)).toMatchObject({ category: 'runtime_missing', providerMessage: 'spawn EACCES' });
+        expect(callsOf(world).at(-1)).toBe('stop');
+    });
+
+    it('BR-12 §9: a runtime that cannot be started in a run carries the hint of §9, the found and required version and the install link', async () => {
+        const world = await failing({ location: { kind: 'found', path: CLI_PATH, version: '1.0.90' }, client: { startError: new Error('spawn EACCES') } });
+        const payload = failedPayload(world);
+        expect(payload.category).toBe('runtime_missing');
+        expect(payload.hint).toContain('1.0.90');
+        expect(payload.hint).toContain(MIN_CLI_VERSION);
+        expect(payload.hint).toContain(INSTALL_URL);
+        expect(payload.hint).toContain(CLI_PATH);
+    });
+
+    it('BR-12 OP-008: an installed CLI whose protocol the SDK does not share fails the run as unknown naming both versions, no session, runtime stopped', async () => {
+        const world = await failing({ client: { startError: new Error(PROTOCOL_MISMATCH) } });
+        noSession(world);
+        const payload = failedPayload(world);
+        expect(payload).toMatchObject({ category: 'unknown', providerMessage: PROTOCOL_MISMATCH });
+        expect(payload.hint).toContain('1.0.87');
+        expect(payload.hint).toContain('3-3');
+        expect(payload.hint).toContain('version 4');
         expect(callsOf(world).at(-1)).toBe('stop');
     });
 

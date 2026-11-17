@@ -1,7 +1,7 @@
 # First Agent Provider Integration (GitHub Copilot SDK)
 
-**Status:** In Progress
-**Plan:** [0010-first-agent-provider-copilot.plan.md](0010-first-agent-provider-copilot.plan.md)
+**Status:** Implemented
+**Plan:** [0010-first-agent-provider-copilot.2026-11-17.plan.md](../plan-archive/0010-first-agent-provider-copilot.2026-11-17.plan.md)
 
 Handoff reference: FS-010 ([po-handoff.md](../../docs/product/po-handoff.md) §2.1, §8.3, §10 FS-010, §13, §14 Provider Contract Tests).
 Provider choice: PD-001 (proxy) and [ADR-003](../../docs/decisions/ADR-003-first-agent-provider.md) (Proposed; PoC open). The PD register wins over ADRs.
@@ -177,7 +177,8 @@ text arrives as `assistant.reasoning`), `assistant.idle`, `user.message`, `syste
 `session.usage_checkpoint`, `session.background_tasks_changed`, `session.shutdown`,
 `agent.interrupted`, `prompt_cache_break`. A type in neither list is `provider.unknown`.
 
-Errors (→ 0009 category): runtime cannot be started → `runtime_missing` · auth status not
+Errors (→ 0009 category): runtime cannot be started → `runtime_missing` · a protocol the installed
+CLI and the SDK do not share (also in a run) → `unknown` naming both versions (OP-008) · auth status not
 authenticated, or `errorType` `authentication` → `auth` · `errorType` `rate_limit` or `quota` →
 `quota_or_rate_limit` · model named in the call is not in Copilot's list → `model_unavailable` ·
 `statusCode` 500 or higher, or a connection failure → `network_or_server` · `errorType`
@@ -349,7 +350,8 @@ field per line instead of one file per check).
   this increment (OP-007).
 - **M-07** M-01…M-03 inside an Extension Development Host; log Node and Electron versions. — not run
   in the PoC; it becomes the host smoke `src/test/copilot.smoke.test.ts`, the first acceptance check
-  (OP-013).
+  (OP-013). — *pass* 2026-11-17 10:35 CET on Windows 11 in the extension host at 93537b7, opted in:
+  supported Node, a text-only run completed, a rejected write left no file (plan, *Open evidence*).
 - **M-08** Login visible from a base directory in Studio's global storage — decides A-003. — *pass*
   for a `gh-cli` login with an empty base directory.
 - **M-09** SDK 1.0.34 against the installed CLI version — sets OP-001's minimum, decides A-002. —
@@ -357,9 +359,12 @@ field per line instead of one file per check).
   the WinGet `copilot.exe` is.
 
 **Acceptance, after the build:** first M-07 (the host smoke on Windows; an engine mismatch stops
-the spec), then M-01…M-05 repeated in Studio with the built adapter, including the parts the PoC
-left open: M-01 signed out, M-02 approve once and a read, M-03 with the A3 prompt (`fileEdits`),
-M-04 5 s into a tool-using run, and A-003 with a login made only with `copilot`.
+the spec) — passed. Then, by Gregor's delegation (2026-11-17: what a test can decide is automated,
+the rest is a pre-release check): M-02 approve once and a read (A-005 logged as an observation),
+M-03 with a write (`fileEdits` → `file.changed`), M-04 cancel while a write waits for approval and
+M-05 resume in a new runtime run in the same opt-in host smoke on Windows, by Gregor's delegate;
+M-01 signed out and A-003 with a login made only with `copilot` need a person to sign out or in —
+checked by Gregor or his delegate; pre-release checklist item.
 
 If M-01 fails on Gregor's machine, PD-001 is reopened per ADR-003's decision rule and this spec is
 revised (Q7); no second provider spec is written in parallel. A failed M-06: OP-007.
@@ -421,11 +426,17 @@ Open:
 ## 16. Definition of Done
 
 - AC-001…AC-025 pass in plain Node (AC-022 only if adopted); 0009's contract suite passes for `copilot`.
-- The acceptance checks of §13 pass in Studio, accepted by Gregor.
+- The acceptance checks of §13 pass: M-07 and the automated ones in the opt-in host smoke on Windows
+  (Gregor's delegate); M-01 signed out and A-003 checked by Gregor or his delegate — pre-release
+  checklist item (Gregor's delegation, 2026-11-17).
 - No credential in any emitted event or adapter log line; docs state the disclosure, the installed-CLI
   requirement, the removed environment variables and the remote limitation.
 
 ## 17. Recommended next steps
 
-Gregor reads [the plan](0010-first-agent-provider-copilot.plan.md); after the build, the
+Gregor reads [the archived plan](../plan-archive/0010-first-agent-provider-copilot.2026-11-17.plan.md); after the build, the
 acceptance checks of §13.
+
+## Plan history
+
+- 2026-11-17 — [0010-first-agent-provider-copilot.2026-11-17.plan.md](../plan-archive/0010-first-agent-provider-copilot.2026-11-17.plan.md) — eleven steps; 24 criteria verified (AC-022 not planned, OP-007); second `/sdd-compile` READY after T-009…T-011; M-07 host smoke passed on Windows at 93537b7; re-run on the closing head open at the move.

@@ -3,7 +3,7 @@ import type { Disposable } from '../../../core/ports/host';
 import type { RuntimeClock } from '../../../core/ports/runtimeMedium';
 import { isEndKind, type CapabilityDeclaration, type ErrorCategory } from '../../../core/providers/vocabulary';
 import type { CopilotClient, CopilotClientFactory, CopilotElicitationRequest, CopilotEvent, CopilotPermissionAnswer, CopilotSession, CopilotSessionConfig } from './client';
-import { CLI_PATH_SETTING, INSTALL_URL, type CliLocation } from './cliLocator';
+import { CLI_PATH_SETTING, INSTALL_URL, MIN_CLI_VERSION, type CliLocation } from './cliLocator';
 import { createEventMapper, isSingleTextField, locateInProject, SIGN_IN_HINT, type EventMapper } from './mapping';
 
 export const COPILOT_PROVIDER_ID = 'copilot';
@@ -68,6 +68,11 @@ interface RunState {
 export const FORCE_STOP_AFTER_MS = 10_000;
 
 const messageOf = (error: unknown): string => (error instanceof Error ? error.message : String(error));
+
+const PROTOCOL_MISMATCH = /protocol version/i;
+
+const protocolHint = (location: Extract<CliLocation, { kind: 'found' }>, message: string): string =>
+    `The installed Copilot CLI ${location.version} and Studio's Copilot SDK do not share a protocol. ${message}`;
 
 export function createCopilotProvider(options: CopilotProviderOptions): CopilotProvider {
     const runs = new Map<string, RunState>();
@@ -230,7 +235,17 @@ export function createCopilotProvider(options: CopilotProviderOptions): CopilotP
         try {
             await client.start();
         } catch (error) {
-            await failRun(run, 'runtime_missing', messageOf(error), undefined);
+            const message = messageOf(error);
+            if (PROTOCOL_MISMATCH.test(message)) {
+                await failRun(run, 'unknown', message, protocolHint(location, message));
+            } else {
+                await failRun(
+                    run,
+                    'runtime_missing',
+                    message,
+                    `GitHub Copilot CLI ${location.version} at ${location.path} could not be started (required: ${MIN_CLI_VERSION} or newer). Install it (${INSTALL_URL}) or set ${CLI_PATH_SETTING}.`,
+                );
+            }
             return;
         }
         if (run.ended) {
@@ -296,8 +311,8 @@ export function createCopilotProvider(options: CopilotProviderOptions): CopilotP
 
     const startupFailure = (location: Extract<CliLocation, { kind: 'found' }>, error: unknown): AvailabilityReport => {
         const message = messageOf(error);
-        if (/protocol version/i.test(message)) {
-            return { result: 'unknown', hint: `The installed Copilot CLI ${location.version} and Studio's Copilot SDK do not share a protocol. ${message}` };
+        if (PROTOCOL_MISMATCH.test(message)) {
+            return { result: 'unknown', hint: protocolHint(location, message) };
         }
         if (/ENOENT|EACCES|EPERM|spawn/i.test(message)) {
             return { result: 'not-installed', hint: `The GitHub Copilot CLI at ${location.path} could not be started: ${message}. Install it (${INSTALL_URL}) or set ${CLI_PATH_SETTING}.` };
