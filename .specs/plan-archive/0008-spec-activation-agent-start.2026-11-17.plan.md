@@ -1,6 +1,6 @@
 # Plan — Spec Activation & Agent Start Workflow
 
-**Spec:** [0008-spec-activation-agent-start.md](0008-spec-activation-agent-start.md)
+**Spec:** [0008-spec-activation-agent-start.md](../done/0008-spec-activation-agent-start.md)
 **Status:** Done
 **Last updated:** 2026-11-17
 **Current step:** — (all steps done)
@@ -312,7 +312,7 @@ stage and becomes its own step.
 - **Done so far:** T-001…T-009 built, ticked with recorded results and committed; every criterion
   `verified`, M-2 revised and recorded (T-009); second `/sdd-compile` 2026-11-17 (session
   S08-close-g5): READY (manual items: 1) after T-009.
-- **Next action:** `/sdd-lifecycle` active → done (same session).
+- **Next action:** none — spec moved to done/ and this plan archived 2026-11-17 (frozen).
 - **Open decisions:** none. M-1 is accepted with 0010 (OP-011).
 - **Baseline:** 3b3ab8b (before T-001).
 - **Environment:** `npm test` cannot run here; it runs on Windows and CI.

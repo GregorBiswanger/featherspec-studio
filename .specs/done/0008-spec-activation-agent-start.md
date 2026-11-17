@@ -1,7 +1,7 @@
 # Spec Activation & Agent Start Workflow
 
-**Status:** In Progress
-**Plan:** [0008-spec-activation-agent-start.plan.md](0008-spec-activation-agent-start.plan.md)
+**Status:** Implemented
+**Plan:** [0008-spec-activation-agent-start.2026-11-17.plan.md](../plan-archive/0008-spec-activation-agent-start.2026-11-17.plan.md)
 
 Handoff reference: FS-008 ([po-handoff.md](../../docs/product/po-handoff.md) §5.2, §6.4, §6.5,
 §10). Builds on 0001, 0002, 0003, 0004, 0005, 0007, 0009 and 0011 (§10); M-1 also needs 0010
@@ -366,3 +366,7 @@ by the hand-off, docs synced, M-2 recorded as revised in §13; M-1 is accepted w
 ## 18. Recommended next steps
 
 `/sdd-plan`; OP-010 goes to the main session.
+
+## Plan history
+
+- 2026-11-17 — [0008-spec-activation-agent-start.2026-11-17.plan.md](../plan-archive/0008-spec-activation-agent-start.2026-11-17.plan.md) — nine steps; AC-001…AC-014 verified, M-2 revised and recorded (screen reader in VS Code on the pre-release checklist); second `/sdd-compile` READY (manual items: 1); host suite 28 passing on Windows at e6f0c85.
