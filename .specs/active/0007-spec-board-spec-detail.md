@@ -517,6 +517,16 @@ Gregor's manual keyboard-only pass in the panel. AC-026 and the two-line limit o
 decided by Gregor's manual check in a light, a dark and a High Contrast theme. Message texts
 that §9 leaves to the plan are asserted by kind, not by wording.
 
+Revised 2026-11-17 (Gregor delegated the closing checks, 2026-11-17): the manual parts are
+checked by Gregor or his delegate. AC-017 and AC-018 are decided by the component tests (focus
+model, Tab onto "Move to…", menu, live region text); AC-026 and the two-line limit of AC-004
+by the CSS guard tests (theme variables only, visible outlines, `line-clamp: 2`) plus the
+delegate's check of the screenshots `02-spec-board-*` and `04-spec-explorer-detail-0002-*`
+in Light, Dark and High Contrast (headless Chrome with the real core, 2026-11-17). What only a
+person in a real VS Code window can judge — the keyboard-only pass, a real screen reader
+reading the announcements, focus outlines in the three real themes — is a pre-release
+checklist item for Gregor.
+
 ## 15. Technical notes for developers or AI agents
 
 - Brownfield check: no source module exists yet (`architecture: modules: []`); nothing to reuse.
@@ -630,6 +640,10 @@ All must-requirements are built and AC-001 to AC-028 pass. No out-of-scope behav
 in particular no file writes and no agent start. Gregor's manual keyboard and theme check is
 done. Assumptions are verified or documented. The architecture snapshot is updated for the new
 modules. Gregor accepted the result.
+
+Revised 2026-11-17: the keyboard and theme check is done by Gregor or his delegate (§14); the
+checks that need a real VS Code window are pre-release checklist items, and the acceptance is
+the closing run Gregor delegated on 2026-11-17.
 
 ## 20. Recommended next steps
 
