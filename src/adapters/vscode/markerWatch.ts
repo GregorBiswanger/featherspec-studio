@@ -1,21 +1,19 @@
 import * as vscode from 'vscode';
+import { MARKER_WATCH_PATHS } from '../../core/discovery/markerWatchPaths';
 import type { MarkerWatchPort } from '../../core/ports/host';
 
 export function createMarkerWatch(): MarkerWatchPort {
     return {
         watch(root, listener) {
             const base = vscode.Uri.parse(root);
-            const agents = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(base, 'AGENTS.md'));
-            const specs = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(base, '.specs'));
-            const subscriptions = [
-                agents.onDidCreate(() => listener()),
-                agents.onDidChange(() => listener()),
-                agents.onDidDelete(() => listener()),
-                specs.onDidCreate(() => listener()),
-                specs.onDidDelete(() => listener()),
-                agents,
-                specs,
-            ];
+            const subscriptions: vscode.Disposable[] = [];
+            for (const marker of MARKER_WATCH_PATHS) {
+                const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(base, marker));
+                subscriptions.push(watcher.onDidCreate(() => listener()), watcher.onDidDelete(() => listener()), watcher);
+                if (marker === 'AGENTS.md') {
+                    subscriptions.push(watcher.onDidChange(() => listener()));
+                }
+            }
             return { dispose: () => subscriptions.forEach((subscription) => subscription.dispose()) };
         },
     };

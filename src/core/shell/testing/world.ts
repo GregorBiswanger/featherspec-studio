@@ -108,6 +108,12 @@ export function createShellWorld(options: WorldOptions = {}): ShellWorld {
         reloadPanel() {
             actions.calls.push('reloadPanel');
         },
+        async setUp() {
+            actions.calls.push('setUp');
+        },
+        async copyMergePrompt() {
+            actions.calls.push('copyMergePrompt');
+        },
     };
     const services: ShellService[] = [];
     const build = (): ShellService => {

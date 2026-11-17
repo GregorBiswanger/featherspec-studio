@@ -157,6 +157,13 @@ describe('state actions', () => {
         expect(current.actions.calls).toEqual(['openFolder', 'openSetupGuide', 'manageTrust', 'reloadPanel']);
     });
 
+    it('AC-001, AC-002: Set up FeatherSpec and Copy merge prompt go to the host actions', async () => {
+        const current = ready();
+        await current.service.runAction('setUp');
+        await current.service.runAction('copyMergePrompt');
+        expect(current.actions.calls).toEqual(['setUp', 'copyMergePrompt']);
+    });
+
     it('AC-013: Select project runs the project selection of spec 0001', async () => {
         const current = ready({ roots: ['a', 'b'] });
         addProject(current, 'a');

@@ -1,0 +1,54 @@
+import { describe, expect, it } from 'vitest';
+import type { PanelState } from './messages';
+import { ACTION_LABELS, panelStateActions, panelStateLines } from './texts';
+
+const pending = { folder: 'api', markers: [], setupPending: true as const };
+const missing = { folder: 'web', markers: ['.specs/ directory'] };
+
+function labels(state: PanelState): string[] {
+    return panelStateActions(state).map((action) => ACTION_LABELS[action]);
+}
+
+describe('AC-001: the setup actions of S2 and S9', () => {
+    it('S2 offers Set up FeatherSpec first, then Open setup guide and Refresh', () => {
+        expect(labels({ id: 'S2' })).toEqual(['Set up FeatherSpec', 'Open setup guide', 'Refresh']);
+    });
+
+    it('S9 without a setup-pending folder offers Set up FeatherSpec first and no Copy merge prompt', () => {
+        expect(labels({ id: 'S9', folders: [missing] })).toEqual(['Set up FeatherSpec', 'Open setup guide', 'Refresh']);
+    });
+
+    it('S9 with a setup-pending folder next to another one offers Set up FeatherSpec first, then Copy merge prompt', () => {
+        expect(labels({ id: 'S9', folders: [pending, missing] })).toEqual(['Set up FeatherSpec', 'Copy merge prompt', 'Open setup guide', 'Refresh']);
+    });
+
+    it('PD-053: S9 whose folders are all setup-pending offers Copy merge prompt first, Set up FeatherSpec second', () => {
+        expect(labels({ id: 'S9', folders: [pending] })).toEqual(['Copy merge prompt', 'Set up FeatherSpec', 'Open setup guide', 'Refresh']);
+        expect(labels({ id: 'S9', folders: [pending, { ...pending, folder: 'other' }] })[0]).toBe('Copy merge prompt');
+    });
+
+    it('the other states keep their actions', () => {
+        expect(labels({ id: 'S1' })).toEqual(['Open Folder']);
+        expect(labels({ id: 'S3' })).toEqual(['Select project']);
+        expect(labels({ id: 'S8', name: 'x', canSelect: false })).toEqual(['Refresh']);
+    });
+});
+
+describe('AC-015: the S9 lines', () => {
+    it('a setup-pending folder gets its own line in place of marker lines, the others keep theirs', () => {
+        expect(panelStateLines({ id: 'S9', folders: [pending, missing] })).toEqual([
+            'FeatherSpec setup not finished: api has files to merge.',
+            'FeatherSpec project incomplete: web has no .specs/ directory.',
+        ]);
+    });
+
+    it('negative control, a folder without the flag shows its marker line even with no marker listed elsewhere', () => {
+        expect(panelStateLines({ id: 'S9', folders: [missing] })).toEqual(['FeatherSpec project incomplete: web has no .specs/ directory.']);
+    });
+
+    it('a setup-pending folder that also lists markers shows only the setup line', () => {
+        expect(panelStateLines({ id: 'S9', folders: [{ folder: 'api', markers: ['.specs/ directory'], setupPending: true }] })).toEqual([
+            'FeatherSpec setup not finished: api has files to merge.',
+        ]);
+    });
+});

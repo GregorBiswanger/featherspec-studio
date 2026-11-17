@@ -3,7 +3,7 @@
 **Spec:** [0014-setup-featherspec-from-studio.md](0014-setup-featherspec-from-studio.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-001
+**Current step:** T-002
 
 ## Approach
 
@@ -99,8 +99,8 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 - **Covers:** AC-001, AC-015
 - **Do:** `classifyFolder.ts`: a root `.featherspec-setup` directory makes the folder *incomplete* with `setupPending: true`, ranked before the marker rules, after read failures; `discoverWorkspace.ts` adds the AC-015 diagnostic. Export `MARKER_WATCH_PATHS` (`AGENTS.md`, `.specs`, `.featherspec-setup`) from discovery; `markerWatch.ts` loops over it. `messages.ts`: `IncompleteFolder.setupPending?: true` (guard), `ACTION_IDS` += `setUp`, `copyMergePrompt`. `texts.ts`: labels "Set up FeatherSpec", "Copy merge prompt"; the S9 pending line in place of that folder's marker lines; `panelStateActions` S2 = setUp, openSetupGuide, refresh; S9 = setUp, copyMergePrompt (only with a pending folder), openSetupGuide, refresh — copyMergePrompt first when all folders are pending. `treeModel.ts`: S2 → no message, no items, `welcome: 'S2'`. `ShellActionsPort` += `setUp()`, `copyMergePrompt()`; `shellService.runAction` routes them; the shell world fake records them; `vscode/shellActions.ts` gets both as callbacks from `extension.ts`, which executes `featherspec-studio.setup` and `featherspec-studio.copyMergePrompt` — registered only in T-008, so until then the two buttons fail in a dev build (known intermediate state; the gates stay green). `PanelStateView.tsx`: first action is the primary button (`data-primary`), CSS via `--vscode-button-secondary-*` for the rest (guard test).
 - **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-17 — red first: `npx vitest run --project node --project webview` on the touched areas: 22 failed (assertions on verdict/actions/lines, missing module `markerWatchPaths`), 366 passed; then green. Gates: eslint, `tsc --noEmit` (both), `npm run test:unit` 168 files / 2181 tests (+11 timing) passed, `npm run compile` finished.
+- **Notes:** Constant lives in `src/core/discovery/markerWatchPaths.ts` (also `SETUP_FOLDER`). `.specs` and `.featherspec-setup` watchers keep create/delete only; `AGENTS.md` also change. The context key for the welcome view is set in T-008. Tests: `classifyFolder`, `discoverWorkspace`, `markerWatchPaths`, `panelState`, `treeModel`, `shellService`, `messages`, `panelStateTexts` (new), `PanelStateView`, `webviewCss`.
 
 ### T-002 — Read and check the release archive
 

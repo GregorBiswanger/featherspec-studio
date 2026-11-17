@@ -44,7 +44,7 @@ afterEach(() => {
 describe('panel states S1 to S9 in the panel UI', () => {
     const cases: { name: string; state: PanelState; text: string[]; actions: string[]; label: string }[] = [
         { name: 'AC-011 S1', state: { id: 'S1' }, text: ['Open a folder to use FeatherSpec Studio.'], actions: ['Open Folder'], label: 'No folder open' },
-        { name: 'AC-012 S2', state: { id: 'S2' }, text: ['No FeatherSpec project found in this workspace.'], actions: ['Open setup guide', 'Refresh'], label: 'No project found' },
+        { name: 'AC-012 S2', state: { id: 'S2' }, text: ['No FeatherSpec project found in this workspace.'], actions: ['Set up FeatherSpec', 'Open setup guide', 'Refresh'], label: 'No project found' },
         { name: 'AC-013 S3', state: { id: 'S3' }, text: ['Several FeatherSpec projects found. Select one to continue.'], actions: ['Select project'], label: 'Several projects found' },
         {
             name: 'AC-015 S5 discovery',
@@ -94,7 +94,14 @@ describe('panel states S1 to S9 in the panel UI', () => {
                 'FeatherSpec project incomplete: api has no .specs/ directory.',
                 'FeatherSpec project incomplete: web has no AGENTS.md with a FeatherSpecVersion: line.',
             ],
-            actions: ['Open setup guide', 'Refresh'],
+            actions: ['Set up FeatherSpec', 'Open setup guide', 'Refresh'],
+            label: 'Project incomplete',
+        },
+        {
+            name: 'AC-015 S9 with a setup-pending folder',
+            state: { id: 'S9', folders: [{ folder: 'api', markers: [], setupPending: true }] },
+            text: ['FeatherSpec setup not finished: api has files to merge.'],
+            actions: ['Copy merge prompt', 'Set up FeatherSpec', 'Open setup guide', 'Refresh'],
             label: 'Project incomplete',
         },
     ];
@@ -105,6 +112,19 @@ describe('panel states S1 to S9 in the panel UI', () => {
         expect(region?.getAttribute('aria-label')).toBe(label);
         expect([...(region?.querySelectorAll('p') ?? [])].map((paragraph) => paragraph.textContent)).toEqual(text);
         expect(actions(container)).toEqual(expected);
+    });
+
+    it('AC-001: in S2 and S9 the first action is the primary button and Set up FeatherSpec sends runAction setUp', async () => {
+        const container = await show({ id: 'S2' });
+        const buttons = [...container.querySelectorAll<HTMLElement>('.panel-state button')];
+        expect(buttons.map((button) => button.getAttribute('data-primary'))).toEqual(['true', null, null]);
+        await click(buttons[0]!);
+        expect(runActions()).toEqual(['setUp']);
+    });
+
+    it('AC-001: negative control, no other state marks a primary button', async () => {
+        const container = await show({ id: 'S3' });
+        expect(container.querySelector('.panel-state [data-primary]')).toBeNull();
     });
 
     it('AC-014 S4: shows "Loading project…" with a progress indicator and no action', async () => {

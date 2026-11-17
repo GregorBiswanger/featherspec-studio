@@ -18,6 +18,8 @@ export interface ShellActionsPort {
     showOutput(): void;
     manageTrust(): Promise<void>;
     reloadPanel(): void;
+    setUp(): Promise<void>;
+    copyMergePrompt(): Promise<void>;
 }
 
 export interface ShellModel {

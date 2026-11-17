@@ -71,6 +71,14 @@ describe('panel state derivation (BR-05), each condition alone', () => {
         });
     });
 
+    it('AC-015 S9: a setup-pending folder is flagged, one that is not stays without the flag', () => {
+        const pending = folder('pend', 'incomplete', { setupPending: true });
+        expect(derivePanelState(input({ discovery: snapshot([pending, incompleteA]) }))).toEqual({
+            id: 'S9',
+            folders: [{ folder: 'pend', markers: [], setupPending: true }, { folder: 'inc-a', markers: ['.specs/ directory'] }],
+        });
+    });
+
     it('AC-015 S5: an unexpected discovery failure, and a listing failure of the loaded project', () => {
         expect(derivePanelState(input({ discovery: snapshot([a], { active: a, remembered: 'a', failure: 'boom' }), modelLoaded: true }))).toEqual({
             id: 'S5',

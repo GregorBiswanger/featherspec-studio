@@ -171,6 +171,10 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
                 return deps.actions.manageTrust();
             case 'reload':
                 return deps.actions.reloadPanel();
+            case 'setUp':
+                return deps.actions.setUp();
+            case 'copyMergePrompt':
+                return deps.actions.copyMergePrompt();
             case 'selectProject':
                 return deps.discovery.selectProject();
             case 'refresh':

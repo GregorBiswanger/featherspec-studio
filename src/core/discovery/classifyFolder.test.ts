@@ -109,4 +109,48 @@ describe('classifyFolder', () => {
         expect(result.verdict).toBe('incomplete');
         expect(result.agentsText).toBeUndefined();
     });
+
+    it.each([
+        ['a project', 'FeatherSpecVersion: 1.10.0\n', true],
+        ['a folder with .specs/ only', undefined, true],
+        ['a plain folder', undefined, false],
+    ])('AC-015, BR-07: a .featherspec-setup/ directory makes %s incomplete and setup-pending, with no missing marker', async (_name, agents, hasSpecs) => {
+        const fileSystem = createMemoryFileSystem();
+        if (agents !== undefined) {
+            fileSystem.setFile('r', 'AGENTS.md', agents);
+        }
+        if (hasSpecs) {
+            fileSystem.setDirectory('r', '.specs');
+        }
+        fileSystem.setFile('r', '.featherspec-setup/AGENTS.md', 'x');
+        const result = await classifyFolder(fileSystem, 'r');
+        expect(result.verdict).toBe('incomplete');
+        expect(result.setupPending).toBe(true);
+        expect(result.legacy).toBe(false);
+        expect(result.missingMarkers).toEqual([]);
+    });
+
+    it('BR-07: negative control, without the directory a project stays a project and is not setup-pending', async () => {
+        const fileSystem = createMemoryFileSystem();
+        fileSystem.setFile('r', 'AGENTS.md', 'FeatherSpecVersion: 1.10.0\n');
+        fileSystem.setDirectory('r', '.specs');
+        const result = await classifyFolder(fileSystem, 'r');
+        expect(result.verdict).toBe('project');
+        expect(result.setupPending).toBe(false);
+    });
+
+    it('BR-07: a .featherspec-setup file (not a directory) does not make a folder setup-pending', async () => {
+        const fileSystem = createMemoryFileSystem();
+        fileSystem.setFile('r', '.featherspec-setup', 'x');
+        const result = await classifyFolder(fileSystem, 'r');
+        expect(result.verdict).toBe('not-a-project');
+        expect(result.setupPending).toBe(false);
+    });
+
+    it('0001 AC-017 still wins: an unreadable AGENTS.md in a setup-pending folder is a read error', async () => {
+        const fileSystem = createMemoryFileSystem();
+        fileSystem.setUnreadable('r', 'AGENTS.md', 'denied');
+        fileSystem.setDirectory('r', '.featherspec-setup');
+        await expect(classifyFolder(fileSystem, 'r')).rejects.toThrow('denied');
+    });
 });

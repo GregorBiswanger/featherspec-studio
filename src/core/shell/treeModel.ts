@@ -23,6 +23,7 @@ const ACTION_ICON = 'play';
 export interface TreeModel {
     message: string | undefined;
     items: TreeItemModel[];
+    welcome?: 'S2';
 }
 
 export interface TreeInput {
@@ -45,6 +46,9 @@ export function buildTreeModel(input: TreeInput): TreeModel {
     const state = input.state;
     if (state === undefined || state.id === 'S6') {
         return { message: undefined, items: [] };
+    }
+    if (state.id === 'S2') {
+        return { message: undefined, items: [], welcome: 'S2' };
     }
     return {
         message: panelStateLines(state).join(' '),

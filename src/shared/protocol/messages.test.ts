@@ -140,6 +140,9 @@ describe('host messages: guards accept and reject', () => {
         expect(isPanelState({ id: 'S8', name: 'demo' })).toBe(false);
         expect(isPanelState({ id: 'S9', folders: [{ folder: 'a', markers: ['.specs/ directory'] }] })).toBe(true);
         expect(isPanelState({ id: 'S9', folders: [{ folder: 'a', markers: [1] }] })).toBe(false);
+        expect(isPanelState({ id: 'S9', folders: [{ folder: 'a', markers: [], setupPending: true }] })).toBe(true);
+        expect(isPanelState({ id: 'S9', folders: [{ folder: 'a', markers: [], setupPending: false }] })).toBe(false);
+        expect(isPanelState({ id: 'S9', folders: [{ folder: 'a', markers: [], setupPending: 'yes' }] })).toBe(false);
         expect(isPanelState({ id: 'S7' })).toBe(false);
     });
 });

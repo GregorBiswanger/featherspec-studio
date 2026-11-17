@@ -31,8 +31,13 @@ export function PanelStateView(props: { state: PanelState }) {
             )}
             {panelStateActions(state).length === 0 ? null : (
                 <div className="actions">
-                    {panelStateActions(state).map((action) => (
-                        <button key={action} type="button" onClick={() => shell.runAction(action)}>
+                    {panelStateActions(state).map((action, index) => (
+                        <button
+                            key={action}
+                            type="button"
+                            {...(index === 0 && (state.id === 'S2' || state.id === 'S9') ? { 'data-primary': 'true' } : {})}
+                            onClick={() => shell.runAction(action)}
+                        >
                             {ACTION_LABELS[action]}
                         </button>
                     ))}

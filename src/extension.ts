@@ -228,7 +228,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         folders: createWorkspaceFolders(),
         trust: createTrust(),
         memory: createUiMemory(context.workspaceState),
-        actions: createShellActions({ showOutput: () => output.show(), reloadPanel: () => studio?.reload() }),
+        actions: createShellActions({
+            showOutput: () => output.show(),
+            reloadPanel: () => studio?.reload(),
+            setUp: async () => void (await vscode.commands.executeCommand('featherspec-studio.setup')),
+            copyMergePrompt: async () => void (await vscode.commands.executeCommand('featherspec-studio.copyMergePrompt')),
+        }),
         sameRoot,
     });
     const selection = createShellSelection(service);

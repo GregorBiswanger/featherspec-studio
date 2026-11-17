@@ -327,3 +327,18 @@ describe('0005 AC-019: the panel follows the theme without being reopened', () =
         expect(THEME_READS.test('const label = "Spec Board";')).toBe(false);
     });
 });
+
+describe('0014 AC-001: the setup button of the panel states', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+
+    it('the first action is a primary button on the button colours, every other one uses the secondary button colours', () => {
+        const primary = rulesFor(css, '.panel-state button');
+        expect(primary.some((rule) => rule.body.includes('var(--vscode-button-background)') && rule.body.includes('var(--vscode-button-foreground)'))).toBe(true);
+        const secondary = rulesFor(css, '.panel-state .actions button + button');
+        expect(secondary.some((rule) => rule.body.includes('var(--vscode-button-secondaryBackground') && rule.body.includes('var(--vscode-button-secondaryForeground'))).toBe(true);
+    });
+
+    it('negative control, a selector that does not exist has no rule', () => {
+        expect(rulesFor(css, '.panel-state .no-such-button')).toEqual([]);
+    });
+});

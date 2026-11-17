@@ -149,4 +149,29 @@ describe('discoverWorkspace', () => {
             await fs.rm(probe);
         }
     });
+
+    it('AC-015: a setup-pending folder is incomplete, carries the setup diagnostic and the flag; a read failure of the folder still wins', async () => {
+        const fileSystem = createMemoryFileSystem();
+        fileSystem.setFile('r', 'AGENTS.md', 'FeatherSpecVersion: 1.10.0\n');
+        fileSystem.setDirectory('r', '.specs');
+        fileSystem.setDirectory('r', '.featherspec-setup');
+        fileSystem.setFile('bad', 'AGENTS.md', 'x');
+        fileSystem.setUnreadable('bad', 'AGENTS.md', 'denied');
+        fileSystem.setDirectory('bad', '.featherspec-setup');
+        const result = await discoverWorkspace(fileSystem, [{ root: 'r', name: 'r' }, { root: 'bad', name: 'bad' }], caseSensitive);
+        expect(result.folders[0]).toMatchObject({ verdict: 'incomplete', setupPending: true, missingMarkers: [], version: '1.10.0' });
+        expect(result.folders[0]?.diagnostics).toContain('FeatherSpec setup not finished: merge the files in .featherspec-setup/, then delete that folder');
+        expect(result.folders[1]).toMatchObject({ verdict: 'not-a-project' });
+        expect(result.folders[1]?.readError).toBe('denied');
+        expect(result.folders[1]?.setupPending).toBeUndefined();
+    });
+
+    it('AC-015: negative control, a folder without the directory has no setup diagnostic and no flag', async () => {
+        const fileSystem = createMemoryFileSystem();
+        fileSystem.setFile('r', 'AGENTS.md', 'FeatherSpecVersion: 1.10.0\n');
+        fileSystem.setDirectory('r', '.specs');
+        const result = await discoverWorkspace(fileSystem, [{ root: 'r', name: 'r' }], caseSensitive);
+        expect(result.folders[0]?.setupPending).toBeUndefined();
+        expect(result.folders[0]?.diagnostics.join('\n')).not.toContain('setup not finished');
+    });
 });

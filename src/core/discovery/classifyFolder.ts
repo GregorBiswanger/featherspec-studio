@@ -1,4 +1,5 @@
 import type { ReadOnlyFileSystem } from '../ports/readOnlyFileSystem';
+import { SETUP_FOLDER } from './markerWatchPaths';
 
 export type FolderVerdict = 'project' | 'incomplete' | 'not-a-project';
 
@@ -6,6 +7,7 @@ export interface FolderClassification {
     verdict: FolderVerdict;
     legacy: boolean;
     missingMarkers: readonly string[];
+    setupPending: boolean;
     agentsText: string | undefined;
 }
 
@@ -42,18 +44,22 @@ export async function classifyFolder(fileSystem: ReadOnlyFileSystem, root: strin
     const agentsText = agentsKind === 'file' ? await reading('AGENTS.md', () => fileSystem.readText(root, 'AGENTS.md')) : undefined;
     const hasM1 = agentsText !== undefined && VERSION_LINE_PATTERN.test(agentsText);
     const hasM2 = (await reading('.specs', () => fileSystem.stat(root, '.specs'))) === 'directory';
+    const setupPending = (await reading(SETUP_FOLDER, () => fileSystem.stat(root, SETUP_FOLDER))) === 'directory';
 
+    if (setupPending) {
+        return { verdict: 'incomplete', legacy: false, missingMarkers: [], setupPending: true, agentsText };
+    }
     if (hasM1 && hasM2) {
-        return { verdict: 'project', legacy: false, missingMarkers: [], agentsText };
+        return { verdict: 'project', legacy: false, missingMarkers: [], setupPending: false, agentsText };
     }
     if (agentsText !== undefined && hasM2 && (await hasSddCommand(fileSystem, root))) {
-        return { verdict: 'project', legacy: true, missingMarkers: [], agentsText };
+        return { verdict: 'project', legacy: true, missingMarkers: [], setupPending: false, agentsText };
     }
     if (hasM1) {
-        return { verdict: 'incomplete', legacy: false, missingMarkers: [MISSING_M2], agentsText };
+        return { verdict: 'incomplete', legacy: false, missingMarkers: [MISSING_M2], setupPending: false, agentsText };
     }
     if (hasM2) {
-        return { verdict: 'incomplete', legacy: false, missingMarkers: [MISSING_M1], agentsText };
+        return { verdict: 'incomplete', legacy: false, missingMarkers: [MISSING_M1], setupPending: false, agentsText };
     }
-    return { verdict: 'not-a-project', legacy: false, missingMarkers: [], agentsText };
+    return { verdict: 'not-a-project', legacy: false, missingMarkers: [], setupPending: false, agentsText };
 }

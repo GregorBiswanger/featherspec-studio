@@ -52,7 +52,12 @@ export function derivePanelState(input: PanelStateInput): PanelState | undefined
                 return { id: 'S2' };
             }
             if (projects.length === 0) {
-                return { id: 'S9', folders: incomplete.map((folder) => ({ folder: folder.name, markers: [...folder.missingMarkers] })) };
+                return { id: 'S9', folders: incomplete.map((folder) => ({
+                        folder: folder.name,
+                        markers: [...folder.missingMarkers],
+                        ...(folder.setupPending === true ? { setupPending: true as const } : {}),
+                    })),
+                };
             }
             if (projects.length > 1) {
                 return { id: 'S3' };

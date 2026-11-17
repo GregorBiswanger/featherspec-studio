@@ -30,6 +30,8 @@ export const ACTION_LABELS: Record<ActionId, string> = {
     retry: 'Retry',
     manageTrust: 'Manage Workspace Trust',
     reload: 'Reload',
+    setUp: 'Set up FeatherSpec',
+    copyMergePrompt: 'Copy merge prompt',
 };
 
 export const STATE_LABELS: Record<StateId, string> = {
@@ -75,7 +77,9 @@ export function panelStateLines(state: PanelState): string[] {
             return [`FeatherSpec project ${state.name} was not found.`];
         case 'S9':
             return state.folders.flatMap((folder) =>
-                folder.markers.map((marker) => `FeatherSpec project incomplete: ${folder.folder} has no ${marker}.`),
+                folder.setupPending === true
+                    ? [`FeatherSpec setup not finished: ${folder.folder} has files to merge.`]
+                    : folder.markers.map((marker) => `FeatherSpec project incomplete: ${folder.folder} has no ${marker}.`),
             );
     }
 }
@@ -85,7 +89,7 @@ export function panelStateActions(state: PanelState): ActionId[] {
         case 'S1':
             return ['openFolder'];
         case 'S2':
-            return ['openSetupGuide', 'refresh'];
+            return ['setUp', 'openSetupGuide', 'refresh'];
         case 'S3':
             return ['selectProject'];
         case 'S4':
@@ -96,8 +100,15 @@ export function panelStateActions(state: PanelState): ActionId[] {
             return ['reload'];
         case 'S8':
             return state.canSelect ? ['selectProject', 'refresh'] : ['refresh'];
-        case 'S9':
-            return ['openSetupGuide', 'refresh'];
+        case 'S9': {
+            const pending = state.folders.filter((folder) => folder.setupPending === true).length;
+            if (pending === 0) {
+                return ['setUp', 'openSetupGuide', 'refresh'];
+            }
+            return pending === state.folders.length
+                ? ['copyMergePrompt', 'setUp', 'openSetupGuide', 'refresh']
+                : ['setUp', 'copyMergePrompt', 'openSetupGuide', 'refresh'];
+        }
     }
 }
 

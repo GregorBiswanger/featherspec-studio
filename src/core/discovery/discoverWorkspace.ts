@@ -11,6 +11,7 @@ export interface DiscoveredFolder {
     legacy: boolean;
     version: string;
     missingMarkers: readonly string[];
+    setupPending?: true;
     diagnostics: readonly string[];
     readError: string | undefined;
 }
@@ -22,6 +23,8 @@ export interface DiscoveryResult {
 export interface DiscoveryOptions {
     sameRoot: (first: string, second: string) => boolean;
 }
+
+export const SETUP_PENDING_DIAGNOSTIC = 'FeatherSpec setup not finished: merge the files in .featherspec-setup/, then delete that folder';
 
 const LEGACY_DIAGNOSTIC =
     'AGENTS.md has no FeatherSpecVersion: line (legacy project); run /sdd-featherspec-update to stamp the version.';
@@ -41,6 +44,9 @@ async function discoverFolder(fileSystem: ReadOnlyFileSystem, folder: WorkspaceF
         if (classification.legacy) {
             diagnostics.push(LEGACY_DIAGNOSTIC);
         }
+        if (classification.setupPending) {
+            diagnostics.push(SETUP_PENDING_DIAGNOSTIC);
+        }
         return {
             root: folder.root,
             name: folder.name,
@@ -49,6 +55,7 @@ async function discoverFolder(fileSystem: ReadOnlyFileSystem, folder: WorkspaceF
             legacy: classification.legacy,
             version: reading.version,
             missingMarkers: classification.missingMarkers,
+            ...(classification.setupPending ? { setupPending: true as const } : {}),
             diagnostics,
             readError: undefined,
         };

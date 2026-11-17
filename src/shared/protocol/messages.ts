@@ -16,6 +16,8 @@ export const ACTION_IDS = [
     'retry',
     'manageTrust',
     'reload',
+    'setUp',
+    'copyMergePrompt',
 ] as const;
 export type ActionId = (typeof ACTION_IDS)[number];
 
@@ -37,6 +39,7 @@ export type S5Reason =
 export interface IncompleteFolder {
     folder: string;
     markers: string[];
+    setupPending?: true;
 }
 
 export type PanelState =
@@ -405,7 +408,10 @@ export function isPanelState(value: unknown): value is PanelState {
             return (
                 Array.isArray(value.folders) &&
                 value.folders.every(
-                    (folder) => isRecord(folder) && isString(folder.folder) && Array.isArray(folder.markers) && folder.markers.every(isString),
+                    (folder) => isRecord(folder) && isString(folder.folder) &&
+                        Array.isArray(folder.markers) &&
+                        folder.markers.every(isString) &&
+                        (folder.setupPending === undefined || folder.setupPending === true),
                 )
             );
         default:

@@ -30,8 +30,7 @@ describe('AC-003: the Activity Bar tree model', () => {
 
     const cases: [string, PanelState, string, string[]][] = [
         ['AC-011 S1', { id: 'S1' }, 'Open a folder to use FeatherSpec Studio.', ['Open Folder']],
-        ['AC-012 S2', { id: 'S2' }, 'No FeatherSpec project found in this workspace.', ['Open setup guide', 'Refresh']],
-        ['AC-013 S3', { id: 'S3' }, 'Several FeatherSpec projects found. Select one to continue.', ['Select project']],
+                ['AC-013 S3', { id: 'S3' }, 'Several FeatherSpec projects found. Select one to continue.', ['Select project']],
         ['S4', { id: 'S4' }, 'Loading project…', []],
         ['S5', { id: 'S5', reason: { cause: 'listing', folder: '.specs', reason: 'denied' } }, 'The project could not be loaded: the lifecycle folders of .specs/ could not be listed (.specs: denied).', ['Show output', 'Retry']],
         ['AC-026 S8', { id: 'S8', name: 'demo', canSelect: true }, 'FeatherSpec project demo was not found.', ['Select project', 'Refresh']],
@@ -39,7 +38,13 @@ describe('AC-003: the Activity Bar tree model', () => {
             'AC-027 S9',
             { id: 'S9', folders: [{ folder: 'a', markers: ['.specs/ directory'] }, { folder: 'b', markers: ['AGENTS.md with a FeatherSpecVersion: line'] }] },
             'FeatherSpec project incomplete: a has no .specs/ directory. FeatherSpec project incomplete: b has no AGENTS.md with a FeatherSpecVersion: line.',
-            ['Open setup guide', 'Refresh'],
+            ['Set up FeatherSpec', 'Open setup guide', 'Refresh'],
+        ],
+        [
+            'AC-015 S9 setup-pending',
+            { id: 'S9', folders: [{ folder: 'a', markers: [], setupPending: true }] },
+            'FeatherSpec setup not finished: a has files to merge.',
+            ['Copy merge prompt', 'Set up FeatherSpec', 'Open setup guide', 'Refresh'],
         ],
     ];
 
@@ -48,6 +53,18 @@ describe('AC-003: the Activity Bar tree model', () => {
         expect(model.message).toBe(message);
         expect(model.items.map((item) => item.label)).toEqual(labels);
         expect(model.items.every((item) => item.kind === 'action')).toBe(true);
+    });
+
+    it('AC-001: S2 shows no message and no items, so that VS Code draws the welcome content with the Set up FeatherSpec button', () => {
+        const model = buildTreeModel({ projectActive: false, projectName: undefined, state: { id: 'S2' } });
+        expect(model).toEqual({ message: undefined, items: [], welcome: 'S2' });
+    });
+
+    it('AC-001: negative control, no other state asks for the welcome content', () => {
+        for (const state of [{ id: 'S1' }, { id: 'S3' }, { id: 'S4' }, { id: 'S9', folders: [] }] as PanelState[]) {
+            expect(buildTreeModel({ projectActive: false, projectName: undefined, state }).welcome).toBeUndefined();
+        }
+        expect(buildTreeModel({ projectActive: true, projectName: 'demo', state: { id: 'S2' } }).welcome).toBeUndefined();
     });
 
     it('never shows S6 or the Restricted Mode note (they appear in the panel only)', () => {

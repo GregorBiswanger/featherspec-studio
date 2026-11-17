@@ -7,6 +7,8 @@ export const MANAGE_TRUST_COMMAND = 'workbench.trust.manage';
 export interface ShellActionsDeps {
     showOutput: () => void;
     reloadPanel: () => void;
+    setUp: () => Promise<void>;
+    copyMergePrompt: () => Promise<void>;
 }
 
 export function createShellActions(deps: ShellActionsDeps): ShellActionsPort {
@@ -22,5 +24,7 @@ export function createShellActions(deps: ShellActionsDeps): ShellActionsPort {
             await vscode.commands.executeCommand(MANAGE_TRUST_COMMAND);
         },
         reloadPanel: () => deps.reloadPanel(),
+        setUp: () => deps.setUp(),
+        copyMergePrompt: () => deps.copyMergePrompt(),
     };
 }
