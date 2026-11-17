@@ -1,9 +1,9 @@
 # Plan — Spec Board & Spec Detail
 
-**Spec:** [0007-spec-board-spec-detail.md](0007-spec-board-spec-detail.md)
+**Spec:** [0007-spec-board-spec-detail.md](../done/0007-spec-board-spec-detail.md)
 **Status:** Done
-**Last updated:** 2026-11-16
-**Current step:** none (T-001...T-014 ticked; T-011...T-014 added after `/sdd-compile` and the first visual check)
+**Last updated:** 2026-11-17
+**Current step:** none (T-001...T-014 ticked; T-011...T-014 added after the first `/sdd-compile` and the first visual check; second `/sdd-compile` READY, 2026-11-17)
 
 ## Approach
 
@@ -571,44 +571,42 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 | AC-001 | T-002 | `src/core/board/cards.ts:buildCards` | `cards.test.ts` (AC-001) | verified |
 | AC-002 | T-002 | `src/core/board/cards.ts:buildCards` | `cards.test.ts` (AC-002) | verified |
 | AC-003 | T-002 | `src/core/board/cards.ts:buildCards` | `cards.test.ts` (AC-003) | verified |
-| AC-004 | T-002, T-007 | `src/core/board/description.ts:describeSpec` | — + manual: Gregor, two-line limit; `description.test.ts`, `cards.test.ts` (AC-004) | built |
-| AC-005 | T-001, T-006 | `src/core/board/filters.ts:arrangeBoard`; src/webview/board/FilterBar.tsx | `filters.test.ts` (AC-005); SpecBoard.test.tsx (AC-005) | built |
-| AC-006 | T-003, T-006 | `src/core/board/progress.ts` | `progress.test.ts` (AC-006) | built |
-| AC-007 | T-003 | `src/core/board/runs.ts:indexRuns, cardRun` | `runs.test.ts` (AC-007) | built |
-| AC-008 | T-007, T-010 | src/webview/areas/SpecBoard.tsx; `src/core/shell/shellService.ts:onDidNavigate` | SpecBoard.test.tsx (AC-008); `boardService.test.ts` (AC-008); `webviewBundle.test.ts`; `src/test/board.smoke.test.ts` (CI) | built |
-| AC-009 | T-006, T-009, T-013 | src/webview/detail/SpecDetail.tsx; `src/core/board/idText.ts`, `detail.ts` | SpecDetail.test.tsx (AC-009); `idText.test.ts`, `detail.test.ts` (AC-009, IDs once) | built |
-| AC-010 | T-005, T-006, T-009, T-010, T-014 | `src/core/board/openFile.ts:createOpenFile`; src/webview/detail/{SpecDetail,DetailSection}.tsx | `openFile.test.ts` (AC-010); SpecDetail.test.tsx (AC-010); `webviewCss.test.ts` (header grid) | built |
-| AC-011 | T-001, T-004 | `src/core/board/filters.ts:arrangeBoard`; `boardRequests.ts` | `filters.test.ts` (AC-011); `boardService.test.ts` (AC-011); `boardRequests.test.ts` | built |
-| AC-012 | T-001, T-007 | `src/core/board/filters.ts:arrangeBoard`; src/webview/board/FilterBar.tsx | `filters.test.ts` (AC-012); SpecBoard.test.tsx (AC-012); `shellService.navigation.test.ts` (onDidNavigate) | built |
+| AC-004 | T-002, T-007 | `src/core/board/description.ts:describeSpec` | `description.test.ts`, `cards.test.ts` (AC-004); `webviewCss.test.ts` (`line-clamp: 2`); two-line limit seen by Gregor's delegate on `02-spec-board-{light,dark,hc}`, 2026-11-17 | verified |
+| AC-005 | T-001, T-006 | `src/core/board/filters.ts:arrangeBoard`; src/webview/board/FilterBar.tsx | `filters.test.ts` (AC-005); SpecBoard.test.tsx (AC-005) | verified |
+| AC-006 | T-003, T-006 | `src/core/board/progress.ts` | `progress.test.ts` (AC-006) | verified |
+| AC-007 | T-003 | `src/core/board/runs.ts:indexRuns, cardRun` | `runs.test.ts` (AC-007) | verified |
+| AC-008 | T-007, T-010 | src/webview/areas/SpecBoard.tsx; `src/core/shell/shellService.ts:onDidNavigate` | SpecBoard.test.tsx (AC-008); `boardService.test.ts` (AC-008); `webviewBundle.test.ts`; `src/test/board.smoke.test.ts` (host suite, Windows 2026-11-17 at e6f0c85) | verified |
+| AC-009 | T-006, T-009, T-013 | src/webview/detail/SpecDetail.tsx; `src/core/board/idText.ts`, `detail.ts` | SpecDetail.test.tsx (AC-009); `idText.test.ts`, `detail.test.ts` (AC-009, IDs once) | verified |
+| AC-010 | T-005, T-006, T-009, T-010, T-014 | `src/core/board/openFile.ts:createOpenFile`; src/webview/detail/{SpecDetail,DetailSection}.tsx | `openFile.test.ts` (AC-010); SpecDetail.test.tsx (AC-010); `webviewCss.test.ts` (header grid) | verified |
+| AC-011 | T-001, T-004 | `src/core/board/filters.ts:arrangeBoard`; `boardRequests.ts` | `filters.test.ts` (AC-011); `boardService.test.ts` (AC-011); `boardRequests.test.ts` | verified |
+| AC-012 | T-001, T-007 | `src/core/board/filters.ts:arrangeBoard`; src/webview/board/FilterBar.tsx | `filters.test.ts` (AC-012); SpecBoard.test.tsx (AC-012); `shellService.navigation.test.ts` (onDidNavigate) | verified |
 | AC-013 | T-001 | `src/core/board/filters.ts:arrangeBoard` | `filters.test.ts` (AC-013) | verified |
-| AC-014 | T-005, T-008, T-010 | `src/core/board/moves.ts:createMoves`; src/webview/board/MoveMenu.tsx; SpecBoard.tsx | `moves.test.ts` (AC-014); Keyboard.test.tsx (AC-014); `manifest.test.ts`; `src/test/board.smoke.test.ts` (CI) | built |
+| AC-014 | T-005, T-008, T-010 | `src/core/board/moves.ts:createMoves`; src/webview/board/MoveMenu.tsx; SpecBoard.tsx | `moves.test.ts` (AC-014); Keyboard.test.tsx (AC-014); `manifest.test.ts`; `src/test/board.smoke.test.ts` (host suite, Windows 2026-11-17 at e6f0c85) | verified |
 | AC-015 | T-005 | `src/core/board/moves.ts:requestMove` | `moves.test.ts` (AC-015) | verified |
-| AC-016 | T-005, T-010 | `src/core/board/moves.ts`, `openFile.ts` | `noWrite.test.ts` (AC-016); `src/test/board.smoke.test.ts` (CI) | built |
-| AC-017 | T-008, T-009, T-011 | src/webview/board/focusModel.ts; src/webview/board/MoveMenu.tsx (tabStop); src/webview/detail/DetailSection.tsx:OpenButton | — + manual: Gregor, keyboard-only pass; focusModel.test.ts; Keyboard.test.tsx (AC-017); SpecDetail.test.tsx (keyboard-operable) | built |
-| AC-018 | T-007, T-008 | src/webview/board/Announcer.tsx | — + manual: Gregor, screen reader; Keyboard.test.tsx (AC-018) | built |
-| AC-019 | T-004, T-007, T-008, T-012 | src/webview/board/focusModel.ts:fallbackFocus | Keyboard.test.tsx (AC-019); `boardService.test.ts` (detail freshness); SpecDetail.test.tsx (AC-019) | built |
-| AC-020 | T-002 | `src/core/board/cards.ts:buildCards, buildBanner` | `cards.test.ts` (AC-020) | built |
-| AC-021 | T-007 | src/webview/areas/SpecBoard.tsx; src/webview/board/Column.tsx | SpecBoard.test.tsx (AC-021); `boardService.test.ts` (AC-021) | built |
-| AC-022 | T-001, T-004 | `src/shared/protocol/boardFilter.ts`, `filters.ts`; `extension.ts` (navigation to `applyNavigationFilter`) | `boardFilter.test.ts`, `filters.test.ts` (AC-022); `boardService.test.ts` (AC-022); SpecBoard.test.tsx (AC-022) | built |
-| AC-023 | T-004 | `src/core/board/boardUiState.ts`; `studioPanel.ts` (`panelClosed`) | `boardService.test.ts` (AC-023) | built |
-| AC-024 | T-002, T-006 | `src/core/board/cards.ts:blockedLines, readinessLine` | `cards.test.ts` (AC-024) | built |
+| AC-016 | T-005, T-010 | `src/core/board/moves.ts`, `openFile.ts` | `noWrite.test.ts` (AC-016); `src/test/board.smoke.test.ts` (host suite, Windows 2026-11-17 at e6f0c85) | verified |
+| AC-017 | T-008, T-009, T-011 | src/webview/board/focusModel.ts; src/webview/board/MoveMenu.tsx (tabStop); src/webview/detail/DetailSection.tsx:OpenButton | focusModel.test.ts; Keyboard.test.tsx (AC-017); SpecDetail.test.tsx (keyboard-operable); real keyboard-only pass in VS Code: pre-release checklist | verified |
+| AC-018 | T-007, T-008 | src/webview/board/Announcer.tsx | Keyboard.test.tsx (AC-018); SpecBoard.test.tsx (text and icons); real screen reader: pre-release checklist | verified |
+| AC-019 | T-004, T-007, T-008, T-012 | src/webview/board/focusModel.ts:fallbackFocus | Keyboard.test.tsx (AC-019); `boardService.test.ts` (detail freshness); SpecDetail.test.tsx (AC-019) | verified |
+| AC-020 | T-002 | `src/core/board/cards.ts:buildCards, buildBanner` | `cards.test.ts` (AC-020) | verified |
+| AC-021 | T-007 | src/webview/areas/SpecBoard.tsx; src/webview/board/Column.tsx | SpecBoard.test.tsx (AC-021); `boardService.test.ts` (AC-021) | verified |
+| AC-022 | T-001, T-004 | `src/shared/protocol/boardFilter.ts`, `filters.ts`; `extension.ts` (navigation to `applyNavigationFilter`) | `boardFilter.test.ts`, `filters.test.ts` (AC-022); `boardService.test.ts` (AC-022); SpecBoard.test.tsx (AC-022) | verified |
+| AC-023 | T-004 | `src/core/board/boardUiState.ts`; `studioPanel.ts` (`panelClosed`) | `boardService.test.ts` (AC-023) | verified |
+| AC-024 | T-002, T-006 | `src/core/board/cards.ts:blockedLines, readinessLine` | `cards.test.ts` (AC-024) | verified |
 | AC-025 | T-003 | `src/core/board/progress.ts:lastChange`, `cards.ts` | `progress.test.ts` (AC-025) | verified |
-| AC-026 | T-007 | src/webview/main.css (theme variables only) | `webviewCss.test.ts` (AC-026) + manual: Gregor, light/dark/High Contrast | built |
-| AC-027 | T-006, T-009 | src/webview/detail/SpecDetail.tsx | SpecDetail.test.tsx (AC-027) | built |
-| AC-028 | T-006, T-009 | src/webview/detail/SpecDetail.tsx | SpecDetail.test.tsx (AC-028) | built |
+| AC-026 | T-007 | src/webview/main.css (theme variables only) | `webviewCss.test.ts` (AC-026); Gregor's delegate checked `02-spec-board-*`, `04-spec-explorer-detail-0002-*` in Light, Dark, High Contrast, 2026-11-17; focus outlines in real themes: pre-release checklist | verified |
+| AC-027 | T-006, T-009 | src/webview/detail/SpecDetail.tsx | SpecDetail.test.tsx (AC-027) | verified |
+| AC-028 | T-006, T-009 | src/webview/detail/SpecDetail.tsx | SpecDetail.test.tsx (AC-028) | verified |
 
 ## Open evidence
 
 - 2026-11-16 — First host-suite run (Gregor, Windows 11, Node 26, VS Code 1.146): `board.smoke` AC-010/AC-016 expected `opened`, got `not-found`. Cause is a product bug: `project.root` is a workspace folder URI string (`file:///c%3A/...`), and `src/adapters/vscode/editor.ts` built the target with `vscode.Uri.file(root)`, so the path never existed (every other adapter uses `Uri.parse(root)`). Fix: `Uri.parse(root)`; Vitest `src/adapters/vscode/editor.test.ts` (mocked `vscode`) was red on the old line first. Wait helper in `src/test/board.smoke.test.ts` now reports the columns seen. Not yet seen green on the host.
 - 2026-11-17 — CI windows-latest failed `SpecBoard.test.tsx` AC-019 (359.95 ms against a private 300 ms). All unit and component timing assertions now assert the budget a decision states and use `bestOfThree` (`src/shared/testing/timing.ts`: one warm-up, best of three, the helper itself covered with negative controls). 0007: board and detail, core and webview, each within 500 ms (PD-047); the plan's 200 ms and 300 ms split had no decision behind it and was removed from the plan text and the test names. Host smoke unchanged.
+- 2026-11-17 — Second `/sdd-compile` (closing session, Gregor's delegation 2026-11-17), at e6f0c85 plus doc edits only (no product code or test changed): eslint 0, both `tsc --noEmit` 0, `npm run compile` green; `npm run test:unit` 160 files, 2008 passed (`SpecBoard.test.tsx` AC-019 went over 500 ms once at load average 14 on the shared 2-core sandbox; green in isolation and in the full re-run). Mutation spot-check: AC-022 (named set ignored in `filters.ts`) failed 3 tests in `filters.test.ts` and `boardService.test.ts`, restored. Host suite: Windows 11 (Gregor's machine, VS Code stable, Node 26) `npm test` 28 passing, 0 failing at e6f0c85, 2026-11-17 08:45 CET — all tests in `src/test`, the four of `board.smoke` (AC-001, AC-002, AC-010, AC-014, AC-016) included, so the editor-URI fix of 2026-11-16 is now seen green on the host; GitHub Actions ubuntu-latest + windows-latest green at 9635ba4, 2026-11-17. Pre-done gate passed for e6f0c85. Delegate check (Gregor's delegation): `02-spec-board-{light,dark,hc}.png` and `04-spec-explorer-detail-0002-{light,dark,hc}.png` (headless Chrome, real core, 2026-11-17) — theme colours only, text readable in all three, two-line descriptions with ellipsis (AC-004), state chips and diagnostic badges as text with icon (AC-018), each ID once in the detail (AC-009), the Overview header lines on one row (T-014). Real-window checks are in `orch/checklist/0007.md` for the pre-release checklist.
 
 ## Session handoff
 
-- **Done so far:** T-001 to T-014 are ticked and committed. T-004, T-006 and T-007 were found unticked by `/sdd-compile` and ticked on 2026-11-16 with re-run results. T-011 (Move to button is a Tab stop), T-012 (detail timing test), T-013 (each ID once) and T-014 (header lines on one row) followed from `/sdd-compile` and Gregor's first visual check. 1268 unit tests, both `tsc`, eslint and `npm run compile` are green.
-- **Next action:**
-  1. CI or Gregor: `npm test` (host suite, including `src/test/board.smoke.test.ts`).
-  2. Gregor, manual: AC-017 keyboard-only pass (now with Tab onto the Move to button), AC-018 screen reader, AC-026 and the two-line limit of AC-004 in a Light, a Dark and a High Contrast theme, one look at the Overview header lines.
-  3. A fresh session: a second `/sdd-compile` for 0007; the spec stays `In Progress` until then.
-- **Open decisions:** none. Accepted limitation (spec): a second window sees new runs only at its next refresh. Looks (Markdown rendering, styling) belong to design spec 0013, not here.
+- **Done so far:** T-001 to T-014 ticked and committed; second `/sdd-compile` on 2026-11-17 READY (manual items: 3 — AC-017 keyboard-only pass, AC-018 screen reader, AC-026 focus outlines in real themes, as pre-release checklist items); every traceability row `verified` with the evidence above. Spec §14 and §19 revised for the delegated checks.
+- **Next action:** none — archived 2026-11-17 after `/sdd-lifecycle` active → done; this plan is frozen.
+- **Open decisions:** OP-002 (proxy decisions, non-blocking). Accepted limitation (spec): a second window sees new runs only at its next refresh.
 - **Baseline:** 0ecc7a7 (HEAD before the first 0007 commit)
-- **Environment:** `npm test` cannot run in the sandbox (CI runs it).
+- **Environment:** `npm test` runs on Gregor's Windows machine and on CI only.

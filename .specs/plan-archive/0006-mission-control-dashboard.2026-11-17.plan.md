@@ -1,9 +1,9 @@
 # Plan — Mission Control Dashboard
 
-**Spec:** [0006-mission-control-dashboard.md](0006-mission-control-dashboard.md)
+**Spec:** [0006-mission-control-dashboard.md](../done/0006-mission-control-dashboard.md)
 **Status:** Done
-**Last updated:** 2026-11-16
-**Current step:** none (all steps ticked; T-009 added after `/sdd-compile`)
+**Last updated:** 2026-11-17
+**Current step:** none (all steps ticked; T-009 added after the first `/sdd-compile`; second `/sdd-compile` READY, 2026-11-17)
 
 ## Approach
 
@@ -520,17 +520,17 @@ small, so the recommendation is to run them in sequence.
 | AC-012 | T-007 | src/webview/areas/missionControl/requests.ts, SpecFigures.tsx, Attention.tsx | Drilldown.test.tsx (AC-012) | verified |
 | AC-013 | T-007 | requests.ts, RunSection.tsx | Drilldown.test.tsx (AC-013) | verified |
 | AC-014 | T-007 | requests.ts, Activity.tsx, MissionControl.tsx (notice) | Drilldown.test.tsx (AC-014) | verified |
-| AC-015 | T-001, T-004, T-008 | src/core/missionControl/runSource.ts, missionControlService.ts, src/adapters/vscode/studioPanel.ts, src/extension.ts | runSource.test.ts, missionControlService.test.ts (AC-015); deciding: src/test/missionControl.smoke.test.ts (CI only) | built |
+| AC-015 | T-001, T-004, T-008 | src/core/missionControl/runSource.ts, missionControlService.ts, src/adapters/vscode/studioPanel.ts, src/extension.ts | runSource.test.ts, missionControlService.test.ts (AC-015); deciding: src/test/missionControl.smoke.test.ts (host suite, Windows 2026-11-17 at e6f0c85) | verified |
 | AC-016 | T-005 | src/webview/areas/missionControl/MissionControl.tsx, src/webview/client.ts | MissionControl.test.tsx (AC-016) | verified |
 | AC-017 | T-002, T-005, T-007, T-009 | Header.tsx, requests.ts:diagnosticsRequest | MissionControl.test.tsx, Drilldown.test.tsx (AC-017); `missionControlService.test.ts` (AC-017), `specRepository.test.ts` (readAt) | verified |
 | AC-018 | T-001, T-003, T-004, T-006 | RunSection.tsx, Attention.tsx, Activity.tsx | missionControlService.test.ts, Sections.test.tsx (AC-018) | verified |
-| AC-019 | T-002, T-005 | src/core/missionControl/specFigures.ts, Header.tsx | specFigures.test.ts, MissionControl.test.tsx (unknown version) | built |
-| AC-020 | T-002, T-005 | specFigures.ts (empty form) | specFigures.test.ts (AC-020); rendering in T-005 | built |
-| AC-021 | T-006 | RunSection.tsx, Attention.tsx, SpecFigures.tsx (text nodes) | Sections.test.tsx (AC-021); manual: Gregor, High Contrast | built |
-| AC-022 | T-007 | src/webview/areas/missionControl/Drill.tsx (native buttons), main.css | Drilldown.test.tsx (AC-022), webviewCss.test.ts; manual: Gregor, focus with Enter and Space | built |
-| AC-023 | T-004, T-008 | src/core/missionControl (read-only Picks; no write call), studioPanel.ts | missionControlService.test.ts (AC-023); src/test/missionControl.smoke.test.ts (snapshotTree; CI only) | built |
+| AC-019 | T-002, T-005 | src/core/missionControl/specFigures.ts, Header.tsx | specFigures.test.ts, MissionControl.test.tsx (unknown version), Sections.test.tsx (missing title, runs not available) | verified |
+| AC-020 | T-002, T-005 | specFigures.ts (empty form), MissionControl.tsx | specFigures.test.ts (AC-020); MissionControl.test.tsx (AC-020, AC-028) | verified |
+| AC-021 | T-006 | RunSection.tsx, Attention.tsx, SpecFigures.tsx (text nodes) | Sections.test.tsx (AC-021); manual: Gregor's delegate checked the screenshots `01-mission-control-{light,dark,hc}`, 2026-11-17 (real VS Code High Contrast: pre-release checklist) | verified |
+| AC-022 | T-007 | src/webview/areas/missionControl/Drill.tsx (native buttons), main.css | Drilldown.test.tsx (AC-022), webviewCss.test.ts (0006 AC-022); real keys in VS Code: pre-release checklist | verified |
+| AC-023 | T-004, T-008 | src/core/missionControl (read-only Picks; no write call), studioPanel.ts | missionControlService.test.ts (AC-023); src/test/missionControl.smoke.test.ts (snapshotTree; host suite, Windows 2026-11-17 at e6f0c85) | verified |
 | AC-024 | T-004, T-005 | missionControlService.ts, MissionControl.tsx | missionControlService.test.ts, MissionControl.test.tsx, Sections.test.tsx (AC-024); Gregor re-measures on a real project (OP-12) | verified |
-| AC-025 | T-002, T-005 | specFigures.ts (derivedRule) | specFigures.test.ts (AC-025) | built |
+| AC-025 | T-002, T-005 | specFigures.ts (derivedRule) | specFigures.test.ts (AC-025), MissionControl.test.tsx (AC-025) | verified |
 | AC-026 | T-002, T-003, T-006 | no field in the contract; guard refuses extra keys | missionControl.test.ts, runFigures.test.ts, Sections.test.tsx (AC-026) | verified |
 | AC-027 | T-003, T-006 | RunSection.tsx, runFigures.ts | runFigures.test.ts, Sections.test.tsx (AC-027) | verified |
 | AC-028 | T-005 | MissionControl.tsx | MissionControl.test.tsx, Sections.test.tsx (AC-028) | verified |
@@ -540,11 +540,12 @@ small, so the recommendation is to run them in sequence.
 
 - 2026-11-16 — First host-suite run (Gregor, Windows 11, Node 26, VS Code 1.146): `missionControl.smoke` AC-015/AC-023 failed in `createRun` with `RuntimeRefusal: storage location is not on the local file system`. Cause is the product wiring of the runtime store (see 0004, `resolveStorageLocation`), not the dashboard. Test changes in `src/test/missionControl.smoke.test.ts`: it waits for a writable store first, and counts running runs relative to the number it sees before creating its run (the host profile persists run history between invocations, so an earlier left-over `Running` run would have broken the absolute `1` and `0`); waits report the last observed figures. Assertions otherwise unchanged. AC-006 passed.
 - 2026-11-17 — CI windows-latest failed `SpecBoard.test.tsx` AC-019 (359.95 ms against a private 300 ms). All unit and component timing assertions now assert the budget a decision states and use `bestOfThree` (`src/shared/testing/timing.ts`: one warm-up, best of three, the helper itself covered with negative controls). 0006: AC-016 within 500 ms (PD-047), AC-024 within 1000 ms (PD-035), both in the component and service tests.
+- 2026-11-17 — Second `/sdd-compile` (closing session, Gregor's delegation 2026-11-17), at e6f0c85 plus doc edits only (no product code or test changed): `npx eslint src --max-warnings 0` 0, `npx tsc --noEmit` 0, `npx tsc --noEmit -p src/webview` 0, `npm run compile` green; `npm run test:unit` 160 files, 2008 passed (a first run on the shared sandbox at load average 14 on 2 cores had 2 timing tests over their bounds, `Sections.test.tsx` AC-024 by the 5 s test timeout and `SpecBoard.test.tsx` AC-019; both green in isolation and in the full re-run). Mutation spot-check: AC-009 (`unknown-content` counted as reason (d)) failed 7 tests in `attention.test.ts`, restored. Host suite: Windows 11 (Gregor's machine, VS Code stable, Node 26) `npm test` 28 passing, 0 failing at e6f0c85, 2026-11-17 08:45 CET — the 28 tests are all tests in `src/test`, `missionControl.smoke` (AC-015, AC-023, AC-006) included; GitHub Actions ubuntu-latest + windows-latest green at 9635ba4, 2026-11-17. Pre-done gate passed for e6f0c85. Delegate check (Gregor's delegation): screenshots `01-mission-control-{light,dark,hc}.png` (headless Chrome, real core, 2026-11-17 01:43) — header on one line, states, reasons and run statuses as words with icon and colour in addition (AC-021), the 0013 §3.2 arrangement. Real-window checks are in `orch/checklist/0006.md` for the pre-release checklist.
 
 ## Session handoff
 
-- **Done so far:** all nine steps ticked (T-001...T-009; T-009 fixed the header time after `/sdd-compile`, A-013); 1243 unit tests, eslint, both tsc and `npm run compile` green. `npm test` (host smoke `src/test/missionControl.smoke.test.ts` and the older ones) was not run: VS Code download blocked.
-- **Next action:** Gregor/CI: `npm test` on CI or Windows; manual checks AC-021 in a High Contrast theme, AC-022 focus with Enter and Space, the §9 layout in the hands-on run, AC-016 and AC-024 on a real project (OP-12). Then `/sdd-compile` for 0006 in a fresh session (another model family), then `/sdd-lifecycle`.
-- **Open decisions:** none blocking. Gregor's manual checks (spec §14): AC-021 in a High Contrast theme, AC-022 focus with Enter and Space, the §9 layout in the hands-on run.
+- **Done so far:** all nine steps ticked; second `/sdd-compile` on 2026-11-17 READY (manual items: 2 — AC-021, AC-022 real-window parts as pre-release checklist items); every traceability row `verified` with the evidence above. Spec §9, §14, §19 revised for the delegated checks.
+- **Next action:** none — archived 2026-11-17 after `/sdd-lifecycle` active → done; this plan is frozen.
+- **Open decisions:** none. Pre-release checklist for Gregor: real High Contrast look, real Enter and Space with visible focus, OP-12 re-measurement on a real project.
 - **Baseline:** `1ba50ff` (HEAD before the first step commit of this plan).
-- **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); CI runs it. `node_modules` is installed; no dependency is added.
+- **Environment:** `npm test` runs on Gregor's Windows machine and on CI only; `node_modules` is installed; no dependency is added.

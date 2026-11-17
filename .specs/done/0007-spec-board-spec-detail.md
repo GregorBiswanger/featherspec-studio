@@ -1,7 +1,7 @@
 # Spec Board & Spec Detail
 
-**Status:** In Progress
-**Plan:** [0007-spec-board-spec-detail.plan.md](0007-spec-board-spec-detail.plan.md)
+**Status:** Implemented
+**Plan:** [0007-spec-board-spec-detail.2026-11-17.plan.md](../plan-archive/0007-spec-board-spec-detail.2026-11-17.plan.md)
 
 Handoff reference: FS-007 ([po-handoff.md](../../docs/product/po-handoff.md) §4.2, §4.3, §10,
 §13 *Usability und Accessibility*). Builds on 0002 (parser model), 0003 (states, readiness,
@@ -517,6 +517,16 @@ Gregor's manual keyboard-only pass in the panel. AC-026 and the two-line limit o
 decided by Gregor's manual check in a light, a dark and a High Contrast theme. Message texts
 that §9 leaves to the plan are asserted by kind, not by wording.
 
+Revised 2026-11-17 (Gregor delegated the closing checks, 2026-11-17): the manual parts are
+checked by Gregor or his delegate. AC-017 and AC-018 are decided by the component tests (focus
+model, Tab onto "Move to…", menu, live region text); AC-026 and the two-line limit of AC-004
+by the CSS guard tests (theme variables only, visible outlines, `line-clamp: 2`) plus the
+delegate's check of the screenshots `02-spec-board-*` and `04-spec-explorer-detail-0002-*`
+in Light, Dark and High Contrast (headless Chrome with the real core, 2026-11-17). What only a
+person in a real VS Code window can judge — the keyboard-only pass, a real screen reader
+reading the announcements, focus outlines in the three real themes — is a pre-release
+checklist item for Gregor.
+
 ## 15. Technical notes for developers or AI agents
 
 - Brownfield check: no source module exists yet (`architecture: modules: []`); nothing to reuse.
@@ -567,7 +577,7 @@ Cross-spec, for the main session (no product decision):
   has to name the S-BLOCKED conditions that hold (A-006). (c) 0005 has to be realigned to
   PD-039, PD-040 and PD-042 (A-007). (d) The filter encoding shared with 0006 and 0012 is
   agreed in the first plan that needs it (0006 OP-1).
-  State at `/sdd-plan` (2026-11-16, [plan](0007-spec-board-spec-detail.plan.md) *Research*):
+  State at `/sdd-plan` (2026-11-16, [plan](../plan-archive/0007-spec-board-spec-detail.2026-11-17.plan.md) *Research*):
   (a) holds in code — 0002 delivers `modifiedMs` for every file it reads; only 0002 §8's text
   lags. (b) not in code — the plan adds the blocking conditions to 0003's output as an additive
   change (T-002). (c) done by 0005's revision and plan. (d) the plan proposes encoding v1, owned
@@ -631,8 +641,16 @@ in particular no file writes and no agent start. Gregor's manual keyboard and th
 done. Assumptions are verified or documented. The architecture snapshot is updated for the new
 modules. Gregor accepted the result.
 
+Revised 2026-11-17: the keyboard and theme check is done by Gregor or his delegate (§14); the
+checks that need a real VS Code window are pre-release checklist items, and the acceptance is
+the closing run Gregor delegated on 2026-11-17.
+
 ## 20. Recommended next steps
 
 1. Main session: OP-008 — align 0002, 0003 and 0005.
 2. Gregor: OP-002, non-blocking.
 3. `/sdd-plan` after 0002–0005 are planned, since they define this spec's inputs.
+
+## Plan history
+
+- 2026-11-17 — [0007-spec-board-spec-detail.2026-11-17.plan.md](../plan-archive/0007-spec-board-spec-detail.2026-11-17.plan.md) — T-001 to T-014 built; second `/sdd-compile` READY (manual items: 3, pre-release checklist); host suite green on Windows at e6f0c85.
