@@ -18,10 +18,10 @@ holds the *why*: decisions and patterns.
   [docs/product/po-handoff.md](../docs/product/po-handoff.md) §3 P2, §6.3
 - Activation: `workspaceContains:AGENTS.md`, `workspaceContains:.specs` and `onWebviewPanel:featherspecStudio.main` (panel restore) plus Studio's own commands and views;
   no `onStartupFinished` (ADR-001 §8 stays). Live re-detection holds once Studio is active · 2026-11-16 ·
-  [spec 0001](../.specs/active/0001-workspace-discovery-project-recognition.md) §15 (OP-005, Gregor)
+  [spec 0001](../.specs/done/0001-workspace-discovery-project-recognition.md) §15 (OP-005, Gregor)
 - Unit tests sit next to the code and the Vitest config is `.mjs`, because `tsconfig.json` has
   `rootDir: src` and no `include`; `skipLibCheck` is on because vitest's `index.d.cts` fails
-  `tsc` under Node16 · 2026-11-16 · [plan 0001](../.specs/active/0001-workspace-discovery-project-recognition.plan.md) T-001
+  `tsc` under Node16 · 2026-11-16 · [plan 0001](../.specs/plan-archive/0001-workspace-discovery-project-recognition.2026-11-17.plan.md) T-001
 - Core reaches the host through small ports (`src/core/ports/host.ts`); the discovery controller is
   proven on fakes, the VS Code adapters hold no logic; the `vscode` import in `src/core/**` is
   banned by ESLint · 2026-11-16 · plan 0001 *Approach*
@@ -32,7 +32,7 @@ holds the *why*: decisions and patterns.
 - Spec repository gets its own read-only port `SpecSourcePort` (list without following links, stat with mtime, read bytes) beside 0001's
   `ReadOnlyFileSystem`, which decodes without a UTF-8 check and reports neither mtime nor symbolic links; no write method exists, so BR-02
   holds by construction. Text is decoded strictly (UTF-8, BOM stripped) and normalised to LF once, parsers see one shape · 2026-11-16 ·
-  [plan 0002](../.specs/active/0002-spec-repository-parser.plan.md) *Approach*, T-001
+  [plan 0002](../.specs/plan-archive/0002-spec-repository-parser.2026-11-17.plan.md) *Approach*, T-001
 - Spec model conventions: a field is `{ state: 'absent' }` or `{ state: 'empty' | 'placeholder' | 'value'; raw }` (nothing is defaulted); diagnostic
   kinds `unreadable-file · unknown-content · duplicate · orphan · dangling-link · unverified-version`, scope `{ file, line? }` or `'project'`, reasons in
   English; symbolic links are not followed (reported as unreadable); links leaving the project root are dangling and never touched · 2026-11-16 ·

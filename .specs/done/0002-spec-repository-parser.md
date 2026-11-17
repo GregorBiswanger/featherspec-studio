@@ -1,7 +1,7 @@
 # Spec Repository & Parser
 
-**Status:** In Progress
-**Plan:** [0002-spec-repository-parser.plan.md](0002-spec-repository-parser.plan.md)
+**Status:** Implemented
+**Plan:** [0002-spec-repository-parser.2026-11-17.plan.md](../plan-archive/0002-spec-repository-parser.2026-11-17.plan.md)
 
 ## 1. Summary
 
@@ -481,3 +481,7 @@ core modules. Gregor accepts the result.
 ## 19. Recommended next steps
 
 1. `/sdd-plan`, after 0001's model of the active project is planned (input dependency).
+
+## Plan history
+
+- 2026-11-17 — [0002-spec-repository-parser.2026-11-17.plan.md](../plan-archive/0002-spec-repository-parser.2026-11-17.plan.md) — T-001…T-011 done; `/sdd-compile` READY (host suite green on Windows at e6f0c85).

@@ -1,8 +1,8 @@
 # Plan — Spec Repository & Parser
 
-**Spec:** [0002-spec-repository-parser.md](0002-spec-repository-parser.md)
+**Spec:** [0002-spec-repository-parser.md](../done/0002-spec-repository-parser.md)
 **Status:** Done
-**Last updated:** 2026-11-16
+**Last updated:** 2026-11-17
 **Current step:** none (all steps ticked)
 
 ## Approach
@@ -252,7 +252,7 @@ the slices are small.
 | AC-009 | T-002, T-005 | `src/core/specs/parseSpec.ts` (plan history), `planSteps.ts`, `parsePlan.ts` (traceability) | `parseSpec.test.ts`, `planSteps.test.ts`, `parsePlan.test.ts` | verified |
 | AC-010 | T-006 | `src/core/specs/readProject.ts:readProject`, `returnNote.ts:parseReturnNote` | `readProject.test.ts`, `returnNote.test.ts` (AC-010) | verified |
 | AC-011 | T-001, T-006 | `src/core/specs/files.ts:readOne`, `readProject.ts:parseFile` | `files.test.ts`, `readProject.test.ts` (AC-011) | verified |
-| AC-012 | T-007, T-008 | `src/core/specs/specRepository.ts`, `src/adapters/vscode/fileWatch.ts`, `eventPath.ts` | `specRepository.test.ts`, `eventPath.test.ts` (AC-012), host `src/test/specRepository.smoke.test.ts` (CI) | verified |
+| AC-012 | T-007, T-008 | `src/core/specs/specRepository.ts`, `src/adapters/vscode/fileWatch.ts`, `eventPath.ts` | `specRepository.test.ts`, `eventPath.test.ts` (AC-012), host `src/test/specRepository.smoke.test.ts` (green on Windows at e6f0c85, CI at 9635ba4) | verified |
 | AC-013 | T-007 | `src/core/specs/specRepository.ts`, `src/core/ports/specSource.ts` (no write method) | `specRepository.test.ts` (AC-013, `snapshotTree`) | verified |
 | AC-014 | T-002, T-005 | `src/core/specs/parseSpec.ts`, `planSteps.ts`, `parsePlan.ts` | `parseSpec.test.ts`, `planSteps.test.ts`, `parsePlan.test.ts` | verified |
 | AC-015 | T-003, T-004, T-006 | `src/core/specs/readProject.ts:readProject`, `leadingIds.ts`, `planSteps.ts` | `readProject.test.ts`, `leadingIds.test.ts`, `planSteps.test.ts` (AC-015) | verified |
@@ -262,17 +262,18 @@ the slices are small.
 | AC-019 | T-002 | `src/core/specs/parseSpec.ts`, `fieldValue.ts` | `parseSpec.test.ts` (AC-019) | verified |
 | AC-020 | T-001 | `src/core/specs/text.ts:decodeText` | `files.test.ts` (AC-020 cases) | verified |
 | AC-021 | T-001, T-006 | `src/core/specs/files.ts:isFollowable`, `readProject.ts:resolveInRoot` | `files.test.ts`, `readProject.test.ts` (AC-021) | verified |
-| AC-022 | T-007, T-008, T-011 | `src/core/specs/specRepository.ts:open/rescan`, `activeProjectFeed.ts:connectActiveProject` | `specRepository.test.ts`, `activeProjectFeed.test.ts` (AC-022, incl. same-project re-report), host smoke (CI, not run yet) | built |
+| AC-022 | T-007, T-008, T-011 | `src/core/specs/specRepository.ts:open/rescan`, `activeProjectFeed.ts:connectActiveProject` | `specRepository.test.ts`, `activeProjectFeed.test.ts` (AC-022, incl. same-project re-report), host `src/test/specRepository.smoke.test.ts` (green on Windows at e6f0c85, CI at 9635ba4) | verified |
 | AC-023 | T-001 | `src/core/specs/files.ts:readOne` | `files.test.ts` (AC-023 cases) | verified |
 
 ## Open evidence
 
+- [x] 2026-11-17 — host suite: `npm test` 28 passing, 0 failing on Windows 11 (Gregor's machine, VS Code stable, Node 26) at commit e6f0c85, 2026-11-17 08:45 CET; GitHub Actions ubuntu-latest + windows-latest green at commit 9635ba4, 2026-11-17. Includes `src/test/specRepository.smoke.test.ts` (AC-012, AC-022 through the real watcher). AC-022 row `built` → `verified`.
 - 2026-11-17 — CI windows-latest failed `SpecBoard.test.tsx` AC-019 (359.95 ms against a private 300 ms). All unit and component timing assertions now assert the budget a decision states and use `bestOfThree` (`src/shared/testing/timing.ts`: one warm-up, best of three, the helper itself covered with negative controls). 0002: full read of 200 specs under 2 s and update under 1 s (PD-035).
 
 ## Session handoff
 
-- **Done so far:** T-001 … T-011 built and verified; 644 unit tests. T-010 and T-011 (appended 2026-11-16) are the delta after `/sdd-compile`: the spec was revised (AC-022 same-project re-report, AC-008 three-dot range), code unchanged, tests name both. Docs synced (AGENTS.md snapshot, README, Memory Bank).
-- **Next action:** `npm test` host suite on CI (`src/test/specRepository.smoke.test.ts`) decides AC-022: its traceability row stays `built` until then; Gregor's re-measurement of the AC-018 thresholds (spec OP-001); then `/sdd-compile` again in a fresh session and `/sdd-lifecycle` to `done/`.
+- **Done so far:** T-001 … T-011 built and verified. Second `/sdd-compile` 2026-11-17 (closing session): READY; AC-012/AC-022 host evidence recorded (Windows e6f0c85, CI 9635ba4). No code change.
+- **Next action:** none; plan archived 2026-11-17 after `/sdd-compile` READY. Frozen. Gregor's re-measurement of the AC-018 thresholds on a real project stays spec OP-001 (a failed re-measurement reopens the spec).
 - **Open decisions:** none. Findings for Gregor: no Rescan command exists yet (OP-008, 0005).
 - **Baseline:** 9bb1c18 (HEAD before T-001).
-- **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); runs on CI.
+- **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); runs on CI and on Gregor's Windows machine.
