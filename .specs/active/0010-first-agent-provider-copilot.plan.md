@@ -1,7 +1,7 @@
 # Plan — First Agent Provider Integration (GitHub Copilot SDK)
 
 **Spec:** [0010-first-agent-provider-copilot.md](0010-first-agent-provider-copilot.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-17
 **Current step:** T-001
 
@@ -128,7 +128,7 @@ No parallel stage: every step from T-003 on builds on T-002's seam, and T-004…
   empty, scope `window`). Manifest test: both keys, `cliPath` scope `machine`, the SDK pinned exactly.
   Tests `cliLocator.test.ts` with fake `isFile`/`runVersion` (PoC's six PATH hits as a case).
 - **Verify:** `npx vitest run src/adapters/providers/copilot/cliLocator.test.ts src/adapters/vscode/manifest.test.ts` then the per-step gates and `npm run compile`
-- [ ] **Verified (T-001):** —
+- [x] **Verified (T-001):** 2026-11-17. `npm install --save-dev --save-exact @github/copilot-sdk@1.0.34` (Gregor's approval; package.json gains that one line, lock file 7 packages). Red: `npx vitest run src/adapters/providers/copilot/cliLocator.test.ts` 14 of 15 tests failed on the `Not implemented` stubs (the 15th, a missing file rejects, passed on the stub's rejection alone; tightened to `/ENOENT/` before the code, then red); `npx vitest run src/adapters/vscode/manifest.test.ts` 3 new tests failed (settings absent; the SDK-pin test was green at once, proven by mutation: `^1.0.34` made it fail, reverted). Green after cliLocator.ts and the two settings in package.json: 2 files, 38 tests passed. Gates: eslint --max-warnings 0, tsc, tsc -p src/webview clean; `npm run test:unit` 153 files, 1907 passed; `npm run compile` finished.
 - **Notes:** —
 
 ### T-002 — SDK wrapper and universal bundle
@@ -304,6 +304,6 @@ No parallel stage: every step from T-003 on builds on T-002's seam, and T-004…
   asks); (b) the 5 s ping watcher as the runtime-exit signal; (c) a cold first runtime start took
   14 s against 0009's 15 s availability timeout — a slow first check reports *unknown* with the
   timeout hint and the next one is warm; M-07 measures it.
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** bab7268
 - **Environment:** `npm test` cannot run here; the host smoke runs on Windows through the
   orchestrator with `FEATHERSPEC_COPILOT_SMOKE=1`.

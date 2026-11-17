@@ -6,6 +6,8 @@ import { FAKE_SCENARIOS } from '../providers/fake/scenarios';
 import { PROVIDER_IDS } from '../../core/providers/testing/scan';
 
 interface Manifest {
+    dependencies?: Record<string, string>;
+    devDependencies?: Record<string, string>;
     activationEvents?: string[];
     extensionKind?: string[];
     capabilities?: {
@@ -166,5 +168,30 @@ describe('extension manifest', () => {
         const hidden = (manifest.contributes?.menus?.commandPalette ?? []).filter((entry) => entry.when === 'false').map((entry) => entry.command);
         expect(hidden).not.toContain('featherspec-studio.moveSpec');
         expect(hidden).toContain('featherspec-studio.shellAction');
+    });
+    it('AC-002 (0010): the CLI path setting is a machine-scoped string with an empty default', () => {
+        const setting = manifest.contributes?.configuration?.properties?.['featherspec-studio.copilot.cliPath'];
+        expect(setting?.type).toBe('string');
+        expect(setting?.default).toBe('');
+        expect(setting?.scope).toBe('machine');
+        expect(setting?.description?.length ?? 0).toBeGreaterThan(10);
+    });
+
+    it('AC-008 (0010): the model setting is a window-scoped string with an empty default', () => {
+        const setting = manifest.contributes?.configuration?.properties?.['featherspec-studio.copilot.model'];
+        expect(setting?.type).toBe('string');
+        expect(setting?.default).toBe('');
+        expect(setting?.scope).toBe('window');
+        expect(setting?.description?.length ?? 0).toBeGreaterThan(10);
+    });
+
+    it('AC-002 (0010): negative control, the manifest declares exactly the two copilot settings', () => {
+        const keys = Object.keys(manifest.contributes?.configuration?.properties ?? {}).filter((key) => key.startsWith('featherspec-studio.copilot.'));
+        expect(keys.sort()).toEqual(['featherspec-studio.copilot.cliPath', 'featherspec-studio.copilot.model']);
+    });
+
+    it('AC-005 (0010): the Copilot SDK is a devDependency pinned exactly and no production dependency exists, so the VSIX carries only the bundle', () => {
+        expect(manifest.devDependencies?.['@github/copilot-sdk']).toBe('1.0.34');
+        expect(manifest.dependencies ?? {}).toEqual({});
     });
 });

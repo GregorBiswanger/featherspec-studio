@@ -121,6 +121,18 @@
           "scope": "window",
           "description": "ID of the agent provider that starts an agent when you move a Ready spec to Active. There is no picker: this setting is the only choice. Shipped as copilot; set it to fake, after enabling the fake provider, to try Studio without an agent."
         },
+        "featherspec-studio.copilot.cliPath": {
+          "type": "string",
+          "default": "",
+          "scope": "machine",
+          "description": "Full path of the GitHub Copilot CLI that Studio starts for agent runs (copilot.exe on Windows). Empty: Studio uses the first copilot on your PATH. Version 1.0.87 or newer is required. Only your user settings count; a workspace cannot choose the program."
+        },
+        "featherspec-studio.copilot.model": {
+          "type": "string",
+          "default": "",
+          "scope": "window",
+          "description": "Model name for the next GitHub Copilot run, for example claude-sonnet-5. Empty: Copilot picks its default model. Studio shows this model in the start confirmation."
+        },
         "featherspec-studio.fakeProvider.enabled": {
           "type": "boolean",
           "default": false,
@@ -184,6 +196,7 @@
     "test:unit": "vitest run"
   },
   "devDependencies": {
+    "@github/copilot-sdk": "1.0.34",
     "@types/mocha": "^10.0.10",
     "@types/node": "24.x",
     "@types/react": "19.3.0",

@@ -1,6 +1,6 @@
 # First Agent Provider Integration (GitHub Copilot SDK)
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0010-first-agent-provider-copilot.plan.md](0010-first-agent-provider-copilot.plan.md)
 
 Handoff reference: FS-010 ([po-handoff.md](../../docs/product/po-handoff.md) §2.1, §8.3, §10 FS-010, §13, §14 Provider Contract Tests).
