@@ -3,7 +3,7 @@
 **Spec:** [0008-spec-activation-agent-start.md](0008-spec-activation-agent-start.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-001
+**Current step:** T-002
 
 ## Approach
 
@@ -131,8 +131,8 @@ stage and becomes its own step.
   prompt holds no file content (no line of the fixture spec occurs in it). `.gitattributes`:
   `*.golden.txt text eol=lf`.
 - **Verify:** `npx vitest run src/core/agentStart/startPrompt` then the per-step gates
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-17 — red: `npx vitest run src/core/agentStart/startPrompt` with the `Not implemented` stub: 5 of 6 failed (`Error: Not implemented`; the sixth only reads the fixture paths). Green: 6 of 6 pass (golden byte equality, one-character and CRLF negative controls, 7 non-empty LF lines, no placeholder left, no spec line in the prompt). Gates: eslint 0 warnings, tsc and tsc -p src/webview clean, `npm run test:unit` 125 files, 1618 tests green.
+- **Notes:** The root `.gitattributes` already has `* text=auto eol=lf`; `*.golden.txt text eol=lf` is added anyway so the golden file stays pinned. Golden layout: paragraphs separated by one blank line, the four list items directly under the first paragraph, no trailing newline.
 
 ### T-002 — Precondition check
 

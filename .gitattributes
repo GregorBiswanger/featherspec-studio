@@ -12,3 +12,5 @@
 *.ttf binary
 
 test/fixtures/** -text
+
+*.golden.txt text eol=lf
