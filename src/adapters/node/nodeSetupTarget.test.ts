@@ -1,4 +1,4 @@
-import { promises as fs } from 'node:fs';
+import { existsSync, mkdtempSync, promises as fs, rmSync, writeFileSync } from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -11,6 +11,18 @@ import { createNodeSetupTarget, type NodeSetupFs } from './nodeSetupTarget';
 
 const directories = createTempDirectories();
 const onWindows = process.platform === 'win32';
+
+function tempDirectoryIgnoresCase(): boolean {
+    const probe = mkdtempSync(path.join(os.tmpdir(), 'fs-setup-case-probe-'));
+    try {
+        writeFileSync(path.join(probe, 'Probe-A'), '');
+        return existsSync(path.join(probe, 'probe-a'));
+    } finally {
+        rmSync(probe, { recursive: true, force: true });
+    }
+}
+
+const caseInsensitiveTemp = tempDirectoryIgnoresCase();
 
 afterEach(async () => {
     await directories.removeAll();
@@ -351,6 +363,34 @@ describe('0014 AC-009, AC-010, AC-014, AC-024: a whole setup of the real 1.10.0 
         expect(outcome.created.length + outcome.notWritten.length).toBe(63);
         expect(await fs.stat(path.join(dir, 'AGENTS.md')).then(() => true, () => false)).toBe(false);
         expect(await fs.readFile(path.join(dir, '.github', 'agents'), 'utf8')).toBe('a file where a folder belongs');
+    });
+});
+
+describe.runIf(caseInsensitiveTemp)('0014 BR-03, AC-010: letter case on a case-insensitive file system (runs only where the temp directory ignores case)', () => {
+    it('an own agents.md is never replaced and is classed by its content: other content is kept and parked, release content in CRLF is the same', async () => {
+        const real = await loadRealRelease();
+        const { dir, root } = await folder();
+        const mine = enc('# my own constitution\r\n');
+        const releaseClaude = real.files.find((file) => file.path === 'CLAUDE.md');
+        const claudeInCrlf = enc(new TextDecoder().decode(releaseClaude?.bytes).replace(/\n/g, '\r\n'));
+        await fs.writeFile(path.join(dir, 'agents.md'), mine);
+        await fs.writeFile(path.join(dir, 'claude.md'), claudeInCrlf);
+        const target = createNodeSetupTarget();
+        const classes = await classifyFiles(target, root, real.files);
+        expect(classes.find((entry) => entry.file.path === 'AGENTS.md')?.kind).toBe('kept');
+        expect(classes.find((entry) => entry.file.path === 'CLAUDE.md')?.kind).toBe('same');
+        const outcome = await applySetup(target, root, classes);
+        expect(outcome.stopped).toBeUndefined();
+        expect(outcome.kept).toEqual(['AGENTS.md']);
+        expect(outcome.created).toHaveLength(61);
+        const names = await fs.readdir(dir);
+        expect(names).toEqual(expect.arrayContaining(['agents.md', 'claude.md']));
+        expect(names).not.toContain('AGENTS.md');
+        expect(names).not.toContain('CLAUDE.md');
+        expect([...(await fs.readFile(path.join(dir, 'agents.md')))]).toEqual([...mine]);
+        expect([...(await fs.readFile(path.join(dir, 'claude.md')))]).toEqual([...claudeInCrlf]);
+        const releaseAgents = real.files.find((file) => file.path === 'AGENTS.md');
+        expect([...(await fs.readFile(path.join(dir, '.featherspec-setup', 'AGENTS.md')))]).toEqual([...(releaseAgents?.bytes ?? [])]);
     });
 });
 

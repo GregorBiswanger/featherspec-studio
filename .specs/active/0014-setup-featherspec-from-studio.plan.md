@@ -191,6 +191,14 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 - [x] **Verified (T-012):** 2026-11-17 — red first: `npx vitest run --project node src/core/setup/setupFinish` 2 failed ("stopped after writing only .featherspec-setup/ content", "stopped right after it cleared an earlier .featherspec-setup/": expected 1 refresh, got 0), 33 passed (incl. the new negative control: a stop at the very first write with no earlier folder reruns nothing); green after: `src/core/setup` + `src/adapters/node` 451 passed. Gates: eslint, both `tsc`, `npm run test:unit` 182 files / 2494 tests (+11 timing) passed.
 - **Notes:** The clear of an earlier `.featherspec-setup/` counts as a write because it changes the verdict (BR-07); `applySetup` reads `kind('.featherspec-setup')` once before clearing.
 
+### T-013 — Letter case on a case-insensitive target (compile: Windows risk, decision G1)
+
+- **Covers:** BR-03, AC-010 (existing behaviour, newly proven)
+- **Do:** `testing/memoryTarget.ts`: option `caseInsensitive` (paths that differ only in letter case are one entry; the existing name stays). `applySetup.test.ts`: own `agents.md` with other content → kept, parked, never replaced; own `claude.md` with the release content in CRLF → same; an `agents.md` racing in before the create → `exists`, classed anew, never replaced; negative control on the case-sensitive target. `nodeSetupTarget.test.ts`: the same on the real file system, `describe.runIf` the temp directory ignores case (probed with a file `Probe-A` read back as `probe-a`, not by platform).
+- **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit`
+- [x] **Verified (T-013):** 2026-11-17 — red first: `npx vitest run --project node src/core/setup/applySetup` with the option accepted but ignored: 3 failed (AGENTS.md `missing` instead of `kept`, CLAUDE.md `missing` instead of `same`, `AGENTS.md` created beside the raced `agents.md`), 31 passed (incl. the case-sensitive negative control); green after the memory target honours the option: `src/core/setup` 267 passed. The real-file-system case is skipped on this Linux sandbox (temp directory is case-sensitive): `nodeSetupTarget.test.ts` 26 passed, 1 skipped; it runs on Windows and macOS. Gates: eslint, both `tsc`, `npm run test:unit` 182 files / 2498 passed, 1 skipped (+11 timing).
+- **Notes:** No product code changed: the setup already decides by the file system's answer (BR-03). Open evidence: the real-file-system case passing on Gregor's Windows machine.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |

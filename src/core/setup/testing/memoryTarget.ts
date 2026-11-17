@@ -20,17 +20,29 @@ function key(root: string, relativePath: string): string {
     return `${root}\u0000${relativePath}`;
 }
 
-export function createMemoryTarget(): MemoryTarget {
+export function createMemoryTarget(options: { caseInsensitive?: boolean } = {}): MemoryTarget {
     const entries = new Map<string, Entry>();
     const failures = new Map<string, string>();
     const createListeners: ((relativePath: string) => void)[] = [];
     const replaceListeners: ((relativePath: string) => void)[] = [];
     const log: string[] = [];
+    const fold = (name: string) => (options.caseInsensitive === true ? name.toLowerCase() : name);
+
+    function at(name: string): string {
+        if (entries.has(name) || options.caseInsensitive !== true) {
+            return name;
+        }
+        return [...entries.keys()].find((existing) => fold(existing) === fold(name)) ?? name;
+    }
+
+    function within(name: string, base: string): boolean {
+        return fold(name) === fold(base) || fold(name).startsWith(`${fold(base)}/`);
+    }
 
     function parents(root: string, relativePath: string): void {
         const parts = relativePath.split('/');
         for (let index = 1; index < parts.length; index++) {
-            const parent = key(root, parts.slice(0, index).join('/'));
+            const parent = at(key(root, parts.slice(0, index).join('/')));
             if (!entries.has(parent)) {
                 entries.set(parent, { kind: 'directory' });
             }
@@ -40,7 +52,7 @@ export function createMemoryTarget(): MemoryTarget {
     function refuseBelowFile(root: string, relativePath: string): void {
         const parts = relativePath.split('/');
         for (let index = 1; index < parts.length; index++) {
-            const parent = entries.get(key(root, parts.slice(0, index).join('/')));
+            const parent = entries.get(at(key(root, parts.slice(0, index).join('/'))));
             if (parent !== undefined && parent.kind !== 'directory') {
                 throw new Error('not a directory');
             }
@@ -51,19 +63,19 @@ export function createMemoryTarget(): MemoryTarget {
         log,
         setFile(root, relativePath, content) {
             parents(root, relativePath);
-            entries.set(key(root, relativePath), { kind: 'file', bytes: typeof content === 'string' ? new TextEncoder().encode(content) : content.slice() });
+            entries.set(at(key(root, relativePath)), { kind: 'file', bytes: typeof content === 'string' ? new TextEncoder().encode(content) : content.slice() });
         },
         setDirectory(root, relativePath) {
             parents(root, relativePath);
-            entries.set(key(root, relativePath), { kind: 'directory' });
+            entries.set(at(key(root, relativePath)), { kind: 'directory' });
         },
         setOther(root, relativePath) {
             parents(root, relativePath);
-            entries.set(key(root, relativePath), { kind: 'other' });
+            entries.set(at(key(root, relativePath)), { kind: 'other' });
         },
         remove(root, relativePath) {
             for (const name of [...entries.keys()]) {
-                if (name === key(root, relativePath) || name.startsWith(`${key(root, relativePath)}/`)) {
+                if (within(name, key(root, relativePath))) {
                     entries.delete(name);
                 }
             }
@@ -72,7 +84,7 @@ export function createMemoryTarget(): MemoryTarget {
             return [...entries.entries()].filter(([name, entry]) => name.startsWith(`${root}\u0000`) && entry.kind === 'file').map(([name]) => name.slice(root.length + 1)).sort();
         },
         text(root, relativePath) {
-            const entry = entries.get(key(root, relativePath));
+            const entry = entries.get(at(key(root, relativePath)));
             return entry?.kind === 'file' ? new TextDecoder().decode(entry.bytes) : undefined;
         },
         failOn(relativePath, reason) {
@@ -88,10 +100,10 @@ export function createMemoryTarget(): MemoryTarget {
             replaceListeners.push(listener);
         },
         async kind(root, relativePath): Promise<TargetEntryKind | undefined> {
-            return entries.get(key(root, relativePath))?.kind;
+            return entries.get(at(key(root, relativePath)))?.kind;
         },
         async listDirectory(root, relativePath) {
-            const base = key(root, relativePath);
+            const base = at(key(root, relativePath));
             if (entries.get(base)?.kind !== 'directory') {
                 return undefined;
             }
@@ -104,7 +116,7 @@ export function createMemoryTarget(): MemoryTarget {
             return [...names].sort();
         },
         async readBytes(root, relativePath) {
-            const entry = entries.get(key(root, relativePath));
+            const entry = entries.get(at(key(root, relativePath)));
             if (entry?.kind !== 'file') {
                 throw new Error(`not a file: ${relativePath}`);
             }
@@ -117,7 +129,7 @@ export function createMemoryTarget(): MemoryTarget {
                 throw new Error(failure);
             }
             refuseBelowFile(root, relativePath);
-            if (entries.has(key(root, relativePath))) {
+            if (entries.has(at(key(root, relativePath)))) {
                 return 'exists';
             }
             parents(root, relativePath);
@@ -131,11 +143,11 @@ export function createMemoryTarget(): MemoryTarget {
             if (failure !== undefined) {
                 throw new Error(failure);
             }
-            const entry = entries.get(key(root, relativePath));
+            const entry = entries.get(at(key(root, relativePath)));
             if (entry?.kind !== 'file' || entry.bytes.length !== expected.length || !entry.bytes.every((byte, index) => byte === expected[index])) {
                 return 'changed';
             }
-            entries.set(key(root, relativePath), { kind: 'file', bytes: next.slice() });
+            entries.set(at(key(root, relativePath)), { kind: 'file', bytes: next.slice() });
             log.push(`replace ${relativePath}`);
             return 'replaced';
         },
@@ -145,7 +157,7 @@ export function createMemoryTarget(): MemoryTarget {
                 throw new Error(failure);
             }
             for (const name of [...entries.keys()]) {
-                if (name === key(root, '.featherspec-setup') || name.startsWith(`${key(root, '.featherspec-setup')}/`)) {
+                if (within(name, key(root, '.featherspec-setup'))) {
                     entries.delete(name);
                 }
             }

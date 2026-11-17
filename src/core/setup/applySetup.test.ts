@@ -302,6 +302,55 @@ describe('0014 AC-010: a file that appears or changes after the confirmation is 
     });
 });
 
+describe('0014 BR-03, AC-010: a name that differs from a release path only in letter case, on a case-insensitive target', () => {
+    it('an own agents.md with other content is the same path: classed by content as kept, never replaced, the release copy parked', async () => {
+        const target = createMemoryTarget({ caseInsensitive: true });
+        target.setFile(ROOT, 'agents.md', 'my own constitution\r\n');
+        const { classes, outcome } = await setup(target, SMALL);
+        expect(classes.find((entry) => entry.file.path === 'AGENTS.md')?.kind).toBe('kept');
+        expect(outcome.kept).toEqual(['AGENTS.md']);
+        expect(outcome.created).not.toContain('AGENTS.md');
+        expect(target.files(ROOT)).toContain('agents.md');
+        expect(target.files(ROOT)).not.toContain('AGENTS.md');
+        expect(target.text(ROOT, 'agents.md')).toBe('my own constitution\r\n');
+        expect(target.text(ROOT, '.featherspec-setup/AGENTS.md')).toBe('FeatherSpecVersion: 2.0.0\n');
+        expect(target.log).not.toContain('create AGENTS.md');
+    });
+
+    it('an own claude.md with the release content in CRLF is the same: untouched, neither parked nor counted', async () => {
+        const target = createMemoryTarget({ caseInsensitive: true });
+        target.setFile(ROOT, 'claude.md', '@AGENTS.md\r\n');
+        const { classes, outcome } = await setup(target, SMALL);
+        expect(classes.find((entry) => entry.file.path === 'CLAUDE.md')?.kind).toBe('same');
+        expect(outcome.kept).toEqual([]);
+        expect(target.text(ROOT, 'claude.md')).toBe('@AGENTS.md\r\n');
+        expect(target.files(ROOT)).not.toContain('CLAUDE.md');
+    });
+
+    it('an agents.md that appears after the confirmation answers exists to the create, is classed anew and is never replaced', async () => {
+        const target = createMemoryTarget({ caseInsensitive: true });
+        const classes = await classifyFiles(target, ROOT, SMALL);
+        target.beforeCreate((relativePath) => {
+            if (relativePath === 'AGENTS.md') {
+                target.setFile(ROOT, 'agents.md', 'raced in\n');
+            }
+        });
+        const outcome = await applySetup(target, ROOT, classes);
+        expect(target.text(ROOT, 'agents.md')).toBe('raced in\n');
+        expect(target.files(ROOT)).not.toContain('AGENTS.md');
+        expect(outcome.kept).toEqual(['AGENTS.md']);
+        expect(target.text(ROOT, '.featherspec-setup/AGENTS.md')).toBe('FeatherSpecVersion: 2.0.0\n');
+    });
+
+    it('negative control: on a case-sensitive target agents.md is another file and AGENTS.md is created beside it', async () => {
+        const target = createMemoryTarget();
+        target.setFile(ROOT, 'agents.md', 'my own constitution\r\n');
+        const { outcome } = await setup(target, SMALL);
+        expect(outcome.created).toContain('AGENTS.md');
+        expect(target.files(ROOT)).toEqual(expect.arrayContaining(['agents.md', 'AGENTS.md']));
+    });
+});
+
 describe('0014 AC-020: a failed write stops the setup, keeps what is written and leaves the folder eligible', () => {
     it('stops at the first failure with its path and the file system\'s reason, and does not create AGENTS.md', async () => {
         const target = createMemoryTarget();
