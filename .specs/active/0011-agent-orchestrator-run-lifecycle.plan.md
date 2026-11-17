@@ -145,8 +145,8 @@ test world, one module.
   `src/core/orchestrator/` (tests aside) imports `vscode`, `src/adapters/` or a `PROVIDER_SDKS`
   package, with a negative control.
 - **Verify:** `npx vitest run src/core/orchestrator` then the per-step gates
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-17 — red: `npx vitest run src/core/orchestrator` with `Not implemented` stubs: 21 failed | 2 passed (runTrack, errorClasses; importScan's guard and its negative control stayed green by design); green after the implementation: 23 passed; gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 1521 passed.
+- **Notes:** `applyEvent` returns `steps` (a list), not one status: a request opened before `session.started` needs Starting → Running → Waiting (BR-004), and BR-001 allows no direct Starting → Waiting. Added `transition(track, status)` for timeouts and stops. The import scan's file-count guard is `>= 2` now and grows with the module.
 
 ### T-002 — Start and the event pipeline
 
