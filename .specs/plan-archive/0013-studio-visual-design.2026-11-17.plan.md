@@ -1,6 +1,6 @@
 # Plan — Studio Visual Design
 
-**Spec:** [0013-studio-visual-design.md](0013-studio-visual-design.md)
+**Spec:** [0013-studio-visual-design.md](../done/0013-studio-visual-design.md)
 **Status:** Done
 **Last updated:** 2026-11-17
 **Current step:** none (all steps ticked; AC-017 by Gregor's delegate 2026-11-17)
@@ -264,7 +264,7 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
 ## Session handoff
 
 - **Done so far:** T-001…T-010 ticked; AC-017 checked by Gregor's delegate 2026-11-17 (T-010 Verified); AC-017 taste verdict and AC-018 are pre-release checklist items.
-- **Next action:** none in this plan — `/sdd-lifecycle` active → done after a `READY` compile brief.
+- **Next action:** none — closed 2026-11-17 (`/sdd-compile` READY (manual items: 2), moved to done, plan archived).
 - **Open decisions:** none blocking. On the pre-release checklist for Gregor: the taste verdict (§1), AC-018 in real VS Code, the 1400 px board overflow (A-004, accepted), the Plan line showing the same file name as text and target (AC-015 literal, T-007 Notes). The 0006 layout-order change is in the spec (§3.2).
 - **Baseline:** e78fa54
 - **Environment:** `npm test` cannot run here (VS Code download blocked); it ran on Gregor's machine and CI.

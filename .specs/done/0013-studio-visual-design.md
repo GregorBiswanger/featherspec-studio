@@ -1,7 +1,7 @@
 # Studio Visual Design
 
-**Status:** In Progress
-**Plan:** [0013-studio-visual-design.plan.md](0013-studio-visual-design.plan.md)
+**Status:** Implemented
+**Plan:** [0013-studio-visual-design.2026-11-17.plan.md](../plan-archive/0013-studio-visual-design.2026-11-17.plan.md)
 
 Depends on: 0005, 0006, 0007. Input: [design-brief.md](../../docs/product/design-brief.md), Gregor's interview answers
 for this spec. `D-n` = defect n of the UI preview report of 2026-11-16.
@@ -227,3 +227,7 @@ Ready: OP-1 decided, 0006/0007 fixes landed, `/sdd-clarify` passed — waived by
 (presentation only, judged by screenshots). Done: AC-001…AC-016 green,
 dependencies unchanged, AC-017 checked by Gregor's delegate (2026-11-17) with the taste verdict and
 AC-018 on the pre-release checklist, `techContext.md` manual checks updated.
+
+## Plan history
+
+- 2026-11-17 — [0013-studio-visual-design.2026-11-17.plan.md](../plan-archive/0013-studio-visual-design.2026-11-17.plan.md) — tokens, Mission Control tiles and bar, board layout, safe inline Markdown and collapsible detail, states and motion in 10 steps; closing `/sdd-compile` READY (manual items: 2).
