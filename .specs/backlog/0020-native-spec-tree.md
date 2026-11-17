@@ -65,7 +65,7 @@ from the tree; the panel has two tabs; no test that decides a staying criterion 
 
 - Every spec entry (PD-018, PD-019: each file its own row) is in exactly one group; a group with no spec is not shown (guideline 7).
 - A group row: label = group name, description = the number of its specs, no icon of its own, an ID that does not contain the count, so VS Code keeps the user's expand or collapse while the view lives (A-009).
-- *Up next* holds Ready only, because Backlog is a group of its own (target picture, `docs/product/ux-guidelines.md`); the Overview's *Up next* also lists Backlog entries (0018 O-3, PD-062). Same word, named difference.
+- *Up next* is what to pick up next; here it holds Ready only because Backlog is a group of its own (target picture, `docs/product/ux-guidelines.md`), while the Overview, which has no Backlog section, lists Backlog entries there too (0018 O-3, PD-062).
 
 ### 4.2 Spec row
 
@@ -141,6 +141,7 @@ spec list exists (A-007).
 | 0018 AC-001 "(until 0020) `specExplorer`", "tree entry labels"; §7 "tree entry" | Void: no such area ID (AC-016), no area entries in the tree |
 | 0018 AC-002 | For a remembered `specExplorer` the remembered selection stays (AC-017) |
 | 0019 §4 in scope "The Spec Explorer area keeps …"; §5 row "0005 AC-007, AC-008 … stay until 0020"; §6.1 "Spec Explorer until 0020"; §8 pane hint "stay"; FR-02; AC-008 | Void: no Spec Explorer area, list or pane; the side panel is the only detail |
+| 0013 AC-016; 0015 AC-027; 0016 AC-023; 0017 AC-024; 0018 AC-030; 0019 AC-023 (test audits) | Also except the tests 0020 AC-021 lists against a criterion this table voids |
 | PD-042 (register not edited) | Superseded: no Spec Explorer area; the detail is 0019's side panel |
 | PD-048 (register not edited) | Activity Bar icon unchanged; tree icons per §4.2; toolbar `window`, `refresh`; project and area entries end |
 | PD-054 (register not edited) | Two navigation icons; the list-tree motif ends |

@@ -81,6 +81,7 @@ dependency line reads as amended by this table.
 | 0007 AC-020; §13 row "Diagnostics tied to no spec entry"; 0013 AC-009 last sentence | Badge for *Problems* only; banner per AC-009; 0013 AC-009 reads 0007 as amended here |
 | 0014 §9 S2 bullet; AC-026 M-1 | S2 carries T-20; M-1 judges the look with it |
 | 0015 §6.1 NS-1 text; §8 Detail and Drop result; §9 first bullet; AC-005; AC-009 | NS-1 T-18; feedback at the button (§6.5, T-19); Copy primary, Dismiss secondary |
+| 0013 AC-016; 0015 AC-027 (test audits) | Also except the tests 0016 AC-023 lists against a criterion this table changes |
 | PD-004 "labelled as derived in the UI and shows its rule"; PD-015, PD-041 "'Priority: not available'" (superseded by the new entry) | Label and rule in the tooltip (T-08), the sentence visible; nothing about priority is shown, the README says once why |
 | PD-059 (refined by the new entry) | §6.1 (A-001, A-002) |
 

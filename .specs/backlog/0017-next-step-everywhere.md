@@ -79,7 +79,7 @@ sentence that also says something else keeps that part. The rows name what needs
 | 0015 §6.1 row NS-6; §8 *Detail* labels | NS-6 per 0017 §6.2; label "Then, in the same chat, if nothing blocks:" |
 | 0015 §4 in-scope "and on an accepted Ready → Active request"; §6.2; FR-03; AC-006; §8 *Drop result*; §11 sentence on `MoveResultSink` and `Announcer.tsx` | Void (PD-060) |
 | 0015 AC-030 "a dropped Ready spec shows the NS-7 line" | "a Ready card's Copy puts the NS-7 line on the clipboard" |
-| 0016 §6.5 and AC-017 "the drop result's Copy", "Dismiss"; its §5 row on 0015's *Drop result* | Void (no drop result); card and row Copy are Copies of a next step there |
+| 0016 §4 out-of-scope "its Copy and Dismiss styles"; §6.5, AC-017 "the drop result's" Copy and Dismiss; its §5 row on 0015's *Drop result* | Drop-result parts void (PD-060); the detail's Copy keeps them; card and row Copy are Copies of a next step there |
 | 0016 AC-022 "every other next-step line … of 0015 §6.1 shall stay unchanged" | Except NS-6 (0017 §6.2) |
 | ADR-001 §11 board drag and drop, "Move to…" alternative | Note "superseded by 0017 (PD-060): no drag, no Move to…, no move command" |
 | PD-014; PD-045 (drop part); PD-056 "when a card is dropped from Ready onto Active"; PD-057 (4) "no next step on cards for now" | Superseded by PD-060, PD-061 and this spec: the next step shows in the detail, on cards, rows, status bar and command |
