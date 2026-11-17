@@ -180,7 +180,7 @@ No parallel stage: stages 1–2 are one module (`src/core/agentCenter`), and eve
   project root. Tests `runList.test.ts`, `header.test.ts`, `selection.test.ts`,
   `agentCenterDuration.test.ts` with the AC-003 example.
 - **Verify:** `npx vitest run src/core/agentCenter src/shared/protocol` then the per-step gates
-- [ ] **Verified (T-003):** —
+- [x] **Verified (T-003):** 2026-11-17 — red: `npx vitest run` on runList, header, selection and agentCenterDuration tests with the exports as `Not implemented` stubs: 22 failed (all `Error: Not implemented`). Green: `npx vitest run src/core/agentCenter src/shared/protocol` 11 files, 111 tests passed. Gates after an environment restart, re-run: eslint 0 warnings, both tsc clean, `npm run test:unit` 143 files, 1779 tests passed. Notes: the AC-003 example sits in selection.test.ts, the duration cases (AC-006) in agentCenterDuration.test.ts.
 - **Notes:** —
 
 ### T-004 — Service: reading, paging, live updates, store states
