@@ -1,7 +1,7 @@
 # First Agent Provider Integration (GitHub Copilot SDK)
 
-**Status:** In Progress
-**Plan:** [0010-first-agent-provider-copilot.plan.md](0010-first-agent-provider-copilot.plan.md)
+**Status:** Implemented
+**Plan:** [0010-first-agent-provider-copilot.2026-11-17.plan.md](../plan-archive/0010-first-agent-provider-copilot.2026-11-17.plan.md)
 
 Handoff reference: FS-010 ([po-handoff.md](../../docs/product/po-handoff.md) §2.1, §8.3, §10 FS-010, §13, §14 Provider Contract Tests).
 Provider choice: PD-001 (proxy) and [ADR-003](../../docs/decisions/ADR-003-first-agent-provider.md) (Proposed; PoC open). The PD register wins over ADRs.
@@ -434,5 +434,9 @@ Open:
 
 ## 17. Recommended next steps
 
-Gregor reads [the plan](0010-first-agent-provider-copilot.plan.md); after the build, the
+Gregor reads [the archived plan](../plan-archive/0010-first-agent-provider-copilot.2026-11-17.plan.md); after the build, the
 acceptance checks of §13.
+
+## Plan history
+
+- 2026-11-17 — [0010-first-agent-provider-copilot.2026-11-17.plan.md](../plan-archive/0010-first-agent-provider-copilot.2026-11-17.plan.md) — eleven steps; 24 criteria verified (AC-022 not planned, OP-007); second `/sdd-compile` READY after T-009…T-011; M-07 host smoke passed on Windows at 93537b7; re-run on the closing head open at the move.

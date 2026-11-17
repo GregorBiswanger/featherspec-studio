@@ -1,6 +1,6 @@
 # Plan — First Agent Provider Integration (GitHub Copilot SDK)
 
-**Spec:** [0010-first-agent-provider-copilot.md](0010-first-agent-provider-copilot.md)
+**Spec:** [0010-first-agent-provider-copilot.md](../done/0010-first-agent-provider-copilot.md)
 **Status:** Done
 **Last updated:** 2026-11-17
 **Current step:** none (T-001 … T-011 verified)
@@ -359,9 +359,10 @@ No parallel stage: every step from T-003 on builds on T-002's seam, and T-004…
   unstartable CLI now carries the §9 hint; protocol mismatch → `unknown` naming both versions),
   T-010 (Copilot output with secrets is masked before the store writes it). T-011 automates the
   acceptance checks M-02…M-05 in the opt-in host smoke.
-- **Next action:** orchestrator: `npm test` on Windows on this branch's head, plain and with
-  `FEATHERSPEC_COPILOT_SMOKE=1` (T-009 changed product code, T-011 host tests). Gregor: M-01
-  signed out and A-003 from the pre-release checklist.
+- **Next action:** none — second `/sdd-compile` 2026-11-17 (session S08-close-g8): READY after
+  T-009…T-011; spec moved to done/ and this plan archived 2026-11-17 (frozen). The move rests on
+  the orchestrator's Windows re-run of `npm test` (plain and opted in) on the head of branch
+  `close-g8` (*Open evidence*); M-01 signed out and A-003 are pre-release checklist items.
 - **Open decisions:** none. A-005 (do reads ask?) is logged by the smoke as an observation; if reads
   run unasked, §8 and BR-14 are reworded (spec §12).
 - **Baseline:** bab7268
