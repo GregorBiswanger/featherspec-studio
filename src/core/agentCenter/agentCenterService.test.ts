@@ -193,6 +193,14 @@ describe('AC-027: states of the area', () => {
         expect(ready(world.service.view()).rows).toHaveLength(1);
     });
 
+    it('the store gone without a reason gives a sentence for humans, not a code word', async () => {
+        const world = await createCenterWorld();
+        await world.flush();
+        world.world.session.use(undefined, { kind: 'unavailable', reason: undefined });
+        await world.flush();
+        expect(world.service.view()).toEqual({ kind: 'unavailable', reason: 'the run history of this project is not open' });
+    });
+
     it('zero runs gives "no-runs"; a filter without a match gives "no-match" with the filter label', async () => {
         const world = await createCenterWorld();
         await world.flush();

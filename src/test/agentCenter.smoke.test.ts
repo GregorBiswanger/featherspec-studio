@@ -17,7 +17,7 @@ function statusOf(view: AgentCenterView | undefined, runId: string): string | un
 suite('FeatherSpec Studio Agent Center smoke', function () {
     this.timeout(120_000);
 
-    test('AC-018: a run and its events written through the runtime store show up in the Agent Center view and timeline', async () => {
+    test('AC-012, AC-013: a run and its events written through the runtime store show up in the live run list and the timeline', async () => {
         const api = await activateStudio();
         await api.whenIdle();
         await waitFor('the runtime store to be writable', () => api.runtimeState(), (state) => state.kind === 'writable', { timeoutMs: 30_000 });

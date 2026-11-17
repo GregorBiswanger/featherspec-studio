@@ -74,7 +74,7 @@ interface Window {
     unreadable: boolean;
 }
 
-const NO_STORE_REASON = 'no store';
+const NO_STORE_REASON = 'the run history of this project is not open';
 const UNREADABLE_REASON = 'runs could not be read';
 const WINDOW_LIMIT = AGENT_CENTER_PAGE_SIZE * MAX_LOADED_PAGES;
 

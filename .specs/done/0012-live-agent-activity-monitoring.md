@@ -300,7 +300,8 @@ and the in-memory store of 0004 decides each criterion. Quoted UI texts are work
   > fake.mystery" and the later rows follow. **Given** a stored event of type `x.custom` **Then** its
   > row shows "Unknown provider event: x.custom".
 - **AC-027** If the store is *unavailable*, then the system shall show "Runs: not available — <reason>"
-  with the store's reason instead of a list; with zero runs "No runs yet…" (BR-17); for a filter
+  with the store's reason (when the store gives none: "the run history of this project is not open")
+  instead of a list; with zero runs "No runs yet…" (BR-17); for a filter
   without a match "No runs match this filter" with "Clear filter". The system shall show none of
   the shell's panel-state texts (0005 S1–S9) inside the area (PD-036).
 - **AC-028** While the store is *read-only*, the system shall show Cancel, Resume and the answer
@@ -397,3 +398,4 @@ Gregor reads OP-04's readings and OP-05…OP-13; then `/sdd-plan`, together with
 ## Plan history
 
 - 2026-11-17 — [0012-live-agent-activity-monitoring.2026-11-17.plan.md](../plan-archive/0012-live-agent-activity-monitoring.2026-11-17.plan.md) — Agent Center built (T-001…T-010); second `/sdd-compile` READY (manual items: 2), AC-009 and AC-018 wording revised, real-agent checks on the pre-release checklist
+- 2026-11-17 — follow-up (fast path, release preparation): AC-027's fallback reason "no store" replaced by a sentence for humans; test `agentCenterService.test.ts` (*AC-027: states of the area*); host smoke title of the live run list renamed to AC-012/AC-013.
