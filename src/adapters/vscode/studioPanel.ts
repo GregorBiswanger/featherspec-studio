@@ -3,11 +3,12 @@ import * as vscode from 'vscode';
 import type { OutputPort } from '../../core/ports/host';
 import { createMessageRouter, type RequestHandlers } from '../../core/shell/messageRouter';
 import type { ShellService } from '../../core/shell/shellService';
+import type { AgentStartView } from '../../shared/protocol/agentStart';
 import type { BoardView, MoveResult } from '../../shared/protocol/board';
 import type { DetailView, OpenFileResultPayload } from '../../shared/protocol/detail';
 import type { MissionControlView } from '../../shared/protocol/missionControl';
 import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../../shared/protocol/envelope';
-import { isProbeResultPayload, type BoardRequestType, type ProbeOutcome } from '../../shared/protocol/messages';
+import { isProbeResultPayload, type AgentStartRequestType, type BoardRequestType, type ProbeOutcome } from '../../shared/protocol/messages';
 import { createProbeChannel } from './probeChannel';
 import { buildWebviewHtml } from './webviewHtml';
 
@@ -31,11 +32,18 @@ export interface PanelMissionControl {
     onDidChangeView(listener: (view: MissionControlView | undefined) => void): vscode.Disposable;
 }
 
+export interface PanelAgentStart {
+    handlers: Pick<RequestHandlers, AgentStartRequestType>;
+    view(): AgentStartView;
+    onDidChangeView(listener: () => void): vscode.Disposable;
+}
+
 export interface StudioPanelDeps {
     extensionUri: vscode.Uri;
     service: ShellService;
     board: PanelBoard;
     missionControl: PanelMissionControl;
+    agentStart?: PanelAgentStart;
     output: OutputPort;
     testMode: boolean;
 }
@@ -126,6 +134,9 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
         handlers: {
             ...deps.board.handlers,
             ...deps.service.handlers,
+            agentStartConfirm: async (payload) => deps.agentStart?.handlers.agentStartConfirm(payload),
+            agentStartCancel: async (payload) => deps.agentStart?.handlers.agentStartCancel(payload),
+            agentStartDismiss: async (payload) => deps.agentStart?.handlers.agentStartDismiss(payload),
             hello: async (payload) => {
                 helloAt = Date.now();
                 pushView(payload.lastSeq);

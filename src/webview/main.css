@@ -246,6 +246,43 @@ main > h1 {
     border-color: var(--vscode-inputValidation-infoBorder);
 }
 
+.start-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.start-line {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 6px 12px;
+    background: var(--vscode-inputValidation-infoBackground);
+    border: 1px solid var(--vscode-inputValidation-infoBorder);
+}
+
+.start-refusal,
+.start-notice {
+    background: var(--vscode-inputValidation-warningBackground);
+    border-color: var(--vscode-inputValidation-warningBorder);
+}
+
+.start-refusal ul {
+    flex: 1;
+    margin: 0;
+    padding-left: 18px;
+}
+
+.start-line button {
+    padding: 4px 12px;
+    color: var(--vscode-button-foreground);
+    background: var(--vscode-button-background);
+    border: 1px solid var(--vscode-button-border, transparent);
+    cursor: pointer;
+    font: inherit;
+}
+
 .actions {
     display: flex;
     gap: 8px;

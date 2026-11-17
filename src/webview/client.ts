@@ -5,7 +5,9 @@ import type { BoardView, MoveResult, SortKey } from '../shared/protocol/board';
 import type { BoardFilter, BoardState } from '../shared/protocol/boardFilter';
 import { isOpenFileResultPayload, type DetailView } from '../shared/protocol/detail';
 import type { MissionControlView } from '../shared/protocol/missionControl';
+import type { AgentStartView } from '../shared/protocol/agentStart';
 import {
+    isAgentStartEventPayload,
     isBoardEventPayload,
     isDetailEventPayload,
     isMissionControlEventPayload,
@@ -28,6 +30,7 @@ export interface ClientSnapshot {
     board: BoardView | undefined;
     detail: DetailView | undefined;
     missionControl: MissionControlView | undefined;
+    agentStart: AgentStartView | undefined;
     move: MoveResult;
     fileResult: { key: string; text: string } | undefined;
 }
@@ -52,6 +55,9 @@ export interface ShellClient {
     requestMove(key: string, target: BoardState): void;
     openFile(key: string, line?: number): void;
     dismissMove(): void;
+    confirmStart(token: string): void;
+    cancelStart(token: string): void;
+    dismissStart(which: 'refusal' | 'notice'): void;
     subscribe(listener: () => void): () => void;
     getSnapshot(): ClientSnapshot;
 }
@@ -74,9 +80,10 @@ export function createClient(deps: ClientDeps): ShellClient {
     let board: BoardView | undefined;
     let detail: DetailView | undefined;
     let missionControl: MissionControlView | undefined;
+    let agentStart: AgentStartView | undefined;
     let move: MoveResult = { kind: 'none' };
     let fileResult: { key: string; text: string } | undefined;
-    let snapshot: ClientSnapshot = { view: undefined, state: { id: 'S4' }, area: DEFAULT_AREA, board: undefined, detail: undefined, missionControl: undefined, move, fileResult: undefined };
+    let snapshot: ClientSnapshot = { view: undefined, state: { id: 'S4' }, area: DEFAULT_AREA, board: undefined, detail: undefined, missionControl: undefined, agentStart: undefined, move, fileResult: undefined };
     let unlisten: (() => void) | undefined;
     let mismatch = false;
     let protocolFailure = false;
@@ -101,13 +108,14 @@ export function createClient(deps: ClientDeps): ShellClient {
             snapshot.board === board &&
             snapshot.detail === detail &&
             snapshot.missionControl === missionControl &&
+            snapshot.agentStart === agentStart &&
             snapshot.move === move &&
             snapshot.fileResult === fileResult &&
             JSON.stringify(snapshot.state) === JSON.stringify(state)
         ) {
             return;
         }
-        snapshot = { view, state, area, board, detail, missionControl, move, fileResult };
+        snapshot = { view, state, area, board, detail, missionControl, agentStart, move, fileResult };
         listeners.forEach((listener) => listener());
     }
 
@@ -213,6 +221,11 @@ export function createClient(deps: ClientDeps): ShellClient {
                     missionControl = envelope.payload.view;
                     refresh();
                 }
+            } else if (envelope.kind === 'evt' && envelope.type === 'agentStart') {
+                if (isAgentStartEventPayload(envelope.payload)) {
+                    agentStart = envelope.payload.view;
+                    refresh();
+                }
             } else if (envelope.kind === 'evt' && envelope.type === 'moveResult') {
                 if (isMoveResultEventPayload(envelope.payload)) {
                     move = envelope.payload.result;
@@ -262,6 +275,15 @@ export function createClient(deps: ClientDeps): ShellClient {
         dismissMove() {
             move = { kind: 'none' };
             refresh();
+        },
+        confirmStart(token) {
+            send('agentStartConfirm', { token });
+        },
+        cancelStart(token) {
+            send('agentStartCancel', { token });
+        },
+        dismissStart(which) {
+            send('agentStartDismiss', { which });
         },
         subscribe(listener) {
             listeners.add(listener);

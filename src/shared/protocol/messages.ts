@@ -1,4 +1,5 @@
 import { isAreaId, type AreaId } from './areas';
+import { isAgentStartView, type AgentStartView } from './agentStart';
 import { isBoardView, isMoveResult, isSortKey, type BoardView, type MoveResult, type SortKey } from './board';
 import { isDetailView, type DetailView } from './detail';
 import { isBoardFilter, isBoardState, type BoardFilter, type BoardState } from './boardFilter';
@@ -127,11 +128,26 @@ export interface BoardRequestPayloads {
     openFile: OpenFilePayload;
 }
 
-export type RequestPayloads = ShellRequestPayloads & BoardRequestPayloads;
+export interface AgentStartTokenPayload {
+    token: string;
+}
+
+export interface AgentStartDismissPayload {
+    which: 'refusal' | 'notice';
+}
+
+export interface AgentStartRequestPayloads {
+    agentStartConfirm: AgentStartTokenPayload;
+    agentStartCancel: AgentStartTokenPayload;
+    agentStartDismiss: AgentStartDismissPayload;
+}
+
+export type RequestPayloads = ShellRequestPayloads & BoardRequestPayloads & AgentStartRequestPayloads;
 
 export type RequestType = keyof RequestPayloads;
 export type ShellRequestType = keyof ShellRequestPayloads;
 export type BoardRequestType = keyof BoardRequestPayloads;
+export type AgentStartRequestType = keyof AgentStartRequestPayloads;
 
 export interface BoardEventPayload {
     view: BoardView;
@@ -147,6 +163,10 @@ export interface MoveResultEventPayload {
 
 export interface MissionControlEventPayload {
     view: MissionControlView;
+}
+
+export interface AgentStartEventPayload {
+    view: AgentStartView;
 }
 
 export interface ShellEventPayload {
@@ -239,6 +259,18 @@ export function isMissionControlEventPayload(value: unknown): value is MissionCo
     return isRecord(value) && isMissionControlView(value.view);
 }
 
+export function isAgentStartTokenPayload(value: unknown): value is AgentStartTokenPayload {
+    return isRecord(value) && isString(value.token) && value.token.length > 0;
+}
+
+export function isAgentStartDismissPayload(value: unknown): value is AgentStartDismissPayload {
+    return isRecord(value) && (value.which === 'refusal' || value.which === 'notice');
+}
+
+export function isAgentStartEventPayload(value: unknown): value is AgentStartEventPayload {
+    return isRecord(value) && isAgentStartView(value.view);
+}
+
 export function isMoveResultEventPayload(value: unknown): value is MoveResultEventPayload {
     return isRecord(value) && isMoveResult(value.result);
 }
@@ -255,6 +287,9 @@ export const REQUEST_GUARDS: { [Type in RequestType]: (value: unknown) => value 
     boardFocus: isBoardFocusPayload,
     moveRequest: isMoveRequestPayload,
     openFile: isOpenFilePayload,
+    agentStartConfirm: isAgentStartTokenPayload,
+    agentStartCancel: isAgentStartTokenPayload,
+    agentStartDismiss: isAgentStartDismissPayload,
 };
 
 export function isRequestType(value: string): value is RequestType {

@@ -57,7 +57,22 @@ describe('board filter encoding v1 (PD-041, shared with 0006)', () => {
 describe('board requests', () => {
     it('every board request has a guard', () => {
         expect(Object.keys(REQUEST_GUARDS).sort()).toEqual(
-            ['boardClearFilters', 'boardFocus', 'boardSetFilter', 'boardSetSort', 'dismissNotice', 'hello', 'moveRequest', 'navigate', 'openFile', 'runAction', 'select'].sort(),
+            [
+                'agentStartCancel',
+                'agentStartConfirm',
+                'agentStartDismiss',
+                'boardClearFilters',
+                'boardFocus',
+                'boardSetFilter',
+                'boardSetSort',
+                'dismissNotice',
+                'hello',
+                'moveRequest',
+                'navigate',
+                'openFile',
+                'runAction',
+                'select',
+            ].sort(),
         );
     });
 

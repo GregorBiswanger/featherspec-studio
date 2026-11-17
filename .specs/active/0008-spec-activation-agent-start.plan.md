@@ -3,7 +3,7 @@
 **Spec:** [0008-spec-activation-agent-start.md](0008-spec-activation-agent-start.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-005
+**Current step:** T-006
 
 ## Approach
 
@@ -213,8 +213,8 @@ stage and becomes its own step.
   one line per item, IDs visible, Open run's navigation payload, Dismiss request, invalid view
   ignored.
 - **Verify:** `npx vitest run src/webview/agentStart src/shared/protocol` then the per-step gates
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-17 — red: `npx vitest run src/shared/protocol src/webview/client src/webview/agentStart src/core/agentStart/agentStartRequests src/core/shell` with `Not implemented` stubs (three guards, three client methods, texts, `StartLines` rendering nothing, handlers): 14 failed, 180 passed (`Error: Not implemented` and missing elements). Green: same command plus `src/adapters`: 651 pass (new: guards and request registry, client keeps last valid view and ignores invalid ones, sends confirm/cancel/dismiss, one line per refusal item with ID visible, P-2 one line per path, Open run sends `navigate {area: 'agentCenter', target: {kind: 'run', id}}`, Dismiss requests, empty view removes the lines). Gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 135 files, 1709 tests green.
+- **Notes:** Added `src/core/agentStart/agentStartRequests.ts` (handlers from the flow, tested) and `src/webview/agentStart/useAgentStart.ts` (hook over the client context); `studioPanel.ts` has only the optional `agentStart` dependency and the three handler entries, the push and re-send on `hello` follow in T-007. The existing test `boardFilter.test.ts` 'every board request has a guard' lists all request types; its list gained the three new ones (an enumeration, not a behaviour change). `src/core/shell/messageRouter.test.ts` handler set gained three entries for the same reason. Refusal lines use `role="alert"`, the checking line `role="status"`.
 
 ### T-006 — Confirmation dialog
 
@@ -268,26 +268,26 @@ stage and becomes its own step.
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-002, T-003, T-005 | src/core/agentStart/startFlow.ts:handOff, src/core/agentStart/refusalItems.ts | src/core/agentStart/startFlow.test.ts (refusal), preconditions.test.ts | built |
+| AC-001 | T-002, T-003, T-005 | src/core/agentStart/startFlow.ts:handOff, src/core/agentStart/refusalItems.ts, src/webview/agentStart/StartLines.tsx, texts.ts | startFlow.test.ts (refusal), preconditions.test.ts, StartLines.test.tsx | built |
 | AC-002 | T-003, T-006 | src/core/agentStart/startFlow.ts:check | src/core/agentStart/startFlow.test.ts (confirmation items) | built |
 | AC-003 | T-003, T-006, T-007 | src/core/agentStart/startFlow.ts:cancel, panelHidden | src/core/agentStart/startFlow.test.ts (cancel, hide, project change) | built |
 | AC-004 | T-004 | src/core/agentStart/startFlow.ts:doStart | src/core/agentStart/startFlow.start.test.ts (AC-004) | built |
 | AC-005 | T-004, T-007 | src/core/agentStart/startFlow.ts:doStart, src/core/agentStart/orchestratorBinding.ts | src/core/agentStart/startFlow.start.test.ts (AC-005), agentStart.endToEnd.test.ts | built |
 | AC-006 | T-001, T-006 | src/core/agentStart/startPrompt.ts:buildStartPrompt | src/core/agentStart/startPrompt.test.ts (golden byte equality) | built |
 | AC-007 | T-002 | src/core/agentStart/preconditions.ts:checkPreconditions | src/core/agentStart/preconditions.test.ts (P-2) | verified |
-| AC-008 | T-002, T-004, T-005 | src/core/agentStart/preconditions.ts (P-5), startFlow.ts:doStart (0011 refusal) | preconditions.test.ts (P-5), startFlow.start.test.ts (AC-008) | built |
+| AC-008 | T-002, T-004, T-005 | src/core/agentStart/preconditions.ts (P-5), startFlow.ts:doStart, src/webview/agentStart/StartLines.tsx | preconditions.test.ts (P-5), startFlow.start.test.ts (AC-008), StartLines.test.tsx | built |
 | AC-009 | T-003 | src/core/agentStart/startFlow.ts:handOff (pending), confirm | startFlow.test.ts, startFlow.start.test.ts (pending while starting) | built |
-| AC-010 | T-004, T-005 | src/core/agentStart/startFlow.ts:watchRun | startFlow.start.test.ts (AC-010), agentStart.endToEnd.test.ts (runtime_missing) | built |
+| AC-010 | T-004, T-005 | src/core/agentStart/startFlow.ts:watchRun, src/webview/agentStart/StartLines.tsx (Open run) | startFlow.start.test.ts (AC-010), agentStart.endToEnd.test.ts, StartLines.test.tsx | built |
 | AC-011 | T-004 | src/core/agentStart/startFlow.ts (request without permission field) | startFlow.start.test.ts (AC-011) | built |
 | AC-012 | T-004 | src/core/agentStart/startFlow.ts (no file API) | src/core/agentStart/noWrite.test.ts | built |
-| AC-013 | T-002, T-005 | src/core/agentStart/preconditions.ts:checkPreconditions | src/core/agentStart/preconditions.test.ts (P-6) | built |
+| AC-013 | T-002, T-005 | src/core/agentStart/preconditions.ts (P-6), src/webview/agentStart/texts.ts | preconditions.test.ts (P-6), StartLines.test.tsx | built |
 | AC-014 | T-003 | src/core/agentStart/startFlow.ts:handOff | src/core/agentStart/startFlow.test.ts (ended run) | built |
 | M-2 | T-006 | — | manual: Gregor, keyboard and screen reader | open |
 
 ## Session handoff
 
-- **Done so far:** Stage 1 (T-001, T-002) built and verified: start prompt with golden file; precondition check P-1..P-8 with the shared test world `src/core/agentStart/testing/startWorld.ts`.
-- **Next action:** T-003 (start flow: hand-off, refusal, confirmation, cancel, pending; view contract).
+- **Done so far:** Stages 1 to 3 built (T-001 to T-005): prompt with golden file, preconditions, start flow (hand-off, refusal, confirmation, cancel, pending, Start, 0011 answers, start failure notice), orchestrator binding with the end-to-end test through the board's `requestMove`, panel lines and messages.
+- **Next action:** T-006 (confirmation dialog), then T-007 (setting, panel and extension wiring, host smoke), T-008 (docs sync, final gates).
 - **Open decisions:** the narrowed 0009 manifest assertion (T-007, 0009's plan to be amended the FeatherSpec way); OP-010 taken by the spec's recommendation (Gregor, 2026-11-17).
 - **Baseline:** 3b3ab8b (before T-001).
 - **Environment:** `npm test` cannot run here; it runs on CI or Gregor's Windows machine. Steps are run test-first through a `Not implemented` stub; one commit per step.

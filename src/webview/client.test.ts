@@ -93,3 +93,39 @@ describe('AC-015: S5 because panel UI and extension cannot agree', () => {
         expect(client.getSnapshot().state).toEqual(state);
     });
 });
+
+describe('agent start (spec 0008)', () => {
+    const view = { confirmation: undefined, refusal: { items: [{ id: 'P-7' as const }] } };
+    const event = (payload: unknown) => ({ v: 1, kind: 'evt', type: 'agentStart', payload });
+
+    it('keeps the last valid view and ignores an invalid one', () => {
+        const client = make();
+        expect(client.getSnapshot().agentStart).toBeUndefined();
+        client.receive(event({ view }));
+        expect(client.getSnapshot().agentStart).toEqual(view);
+        client.receive(event({ view: { extra: 1 } }));
+        client.receive(event({ nope: 1 }));
+        expect(client.getSnapshot().agentStart).toEqual(view);
+        client.receive(event({ view: {} }));
+        expect(client.getSnapshot().agentStart).toEqual({});
+    });
+
+    it('does not change the panel state when a view arrives', () => {
+        const client = make();
+        client.receive(shellEvent(baseView(), 1));
+        client.receive(event({ view }));
+        expect(client.getSnapshot().state).toBeUndefined();
+    });
+
+    it('sends confirm, cancel and dismiss as requests', () => {
+        const client = make();
+        client.confirmStart('c-4');
+        client.cancelStart('c-4');
+        client.dismissStart('notice');
+        expect(posted.slice(-3).map((message) => [message.type, message.payload])).toEqual([
+            ['agentStartConfirm', { token: 'c-4' }],
+            ['agentStartCancel', { token: 'c-4' }],
+            ['agentStartDismiss', { which: 'notice' }],
+        ]);
+    });
+});
