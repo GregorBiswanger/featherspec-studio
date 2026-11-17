@@ -1,6 +1,6 @@
 # Plan — Live Agent Activity & Monitoring (Agent Center)
 
-**Spec:** [0012-live-agent-activity-monitoring.md](0012-live-agent-activity-monitoring.md)
+**Spec:** [0012-live-agent-activity-monitoring.md](../done/0012-live-agent-activity-monitoring.md)
 **Status:** Done
 **Last updated:** 2026-11-17
 **Current step:** — (all steps done)
@@ -358,7 +358,7 @@ No parallel stage: stages 1–2 are one module (`src/core/agentCenter`), and eve
 ## Session handoff
 
 - **Done so far:** T-001 to T-010
-- **Next action:** none; second `/sdd-compile` READY (2026-11-17), then `/sdd-lifecycle` to done
+- **Next action:** none — archived 2026-11-17 after the second `/sdd-compile` (READY, manual items: 2); spec `Implemented` in `done/`. Plan frozen.
 - **Open decisions:** none.
 - **Baseline:** 2026-11-17, HEAD 70362df: eslint, both tsc and `npm run test:unit` green (136 files, 1723 tests).
 - **Environment:** `npm test` cannot run here (VS Code download blocked); the host smoke runs on CI or Gregor's Windows machine. UI looks: `npm run compile` and `/home/claude/orch/preview/run.sh`, screenshots in `/mnt/user-data/outputs/screens/`.

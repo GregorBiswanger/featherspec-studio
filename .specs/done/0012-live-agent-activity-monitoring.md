@@ -1,7 +1,7 @@
 # Live Agent Activity & Monitoring (Agent Center)
 
-**Status:** In Progress
-**Plan:** [0012-live-agent-activity-monitoring.plan.md](0012-live-agent-activity-monitoring.plan.md)
+**Status:** Implemented
+**Plan:** [0012-live-agent-activity-monitoring.2026-11-17.plan.md](../plan-archive/0012-live-agent-activity-monitoring.2026-11-17.plan.md)
 
 Handoff reference: FS-012 ([po-handoff.md](../../docs/product/po-handoff.md) §4.4, §5.3, §10 FS-012,
 §13). Depends on: 0004 (runs, events, store state), 0005 (shell, panel-level states, navigation),
@@ -393,3 +393,7 @@ checklist (Gregor, 2026-11-17), and the architecture snapshot lists the Agent Ce
 ## 15. Recommended next steps
 
 Gregor reads OP-04's readings and OP-05…OP-13; then `/sdd-plan`, together with 0011's plan (§11).
+
+## Plan history
+
+- 2026-11-17 — [0012-live-agent-activity-monitoring.2026-11-17.plan.md](../plan-archive/0012-live-agent-activity-monitoring.2026-11-17.plan.md) — Agent Center built (T-001…T-010); second `/sdd-compile` READY (manual items: 2), AC-009 and AC-018 wording revised, real-agent checks on the pre-release checklist
