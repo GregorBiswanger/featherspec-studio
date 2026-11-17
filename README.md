@@ -22,7 +22,7 @@ Every spec as a card in six columns: Backlog, Ready, Active, Review, Done and Bl
 
 ### Spec Explorer
 
-![Spec Explorer with the detail of a spec](media/screenshots/spec-explorer-detail-light.png)
+![Spec Explorer with the detail of a spec and its next step](media/screenshots/spec-explorer-detail-light.png)
 
 The spec list beside the detail of the selected spec. Above its sections the detail shows **Next step**: the FeatherSpec command that moves this spec on, for example `/sdd-plan .specs/backlog/0007-example.md`. **Copy** puts that line on your clipboard; paste it into your assistant's chat. A second line ("Then: …") names the step after it. The sections are overview, requirements, acceptance criteria, plan and tasks, verification, related artifacts and status history. Every section folds from its heading and offers "Open file", which opens the spec, plan or return note in the editor. The selection survives switching areas, closing the panel and reloading the window.
 
