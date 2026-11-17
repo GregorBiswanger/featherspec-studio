@@ -1,6 +1,6 @@
 # Live Agent Activity & Monitoring (Agent Center)
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0012-live-agent-activity-monitoring.plan.md](0012-live-agent-activity-monitoring.plan.md)
 
 Handoff reference: FS-012 ([po-handoff.md](../../docs/product/po-handoff.md) §4.4, §5.3, §10 FS-012,

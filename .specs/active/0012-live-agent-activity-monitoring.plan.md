@@ -1,8 +1,8 @@
 # Plan — Live Agent Activity & Monitoring (Agent Center)
 
 **Spec:** [0012-live-agent-activity-monitoring.md](0012-live-agent-activity-monitoring.md)
-**Status:** Not started
-**Last updated:** 2026-11-16
+**Status:** In Progress
+**Last updated:** 2026-11-17
 **Current step:** T-001
 
 ## Approach
@@ -147,7 +147,7 @@ No parallel stage: stages 1–2 are one module (`src/core/agentCenter`), and eve
   `tool.*`. Tests `timeline.test.ts` incl. the AC-008 and AC-026 examples, `<b>x</b>` kept as text,
   a table-completeness test (every kind, status, class has a word).
 - **Verify:** `npx vitest run src/core/agentCenter/timeline.test.ts src/shared/protocol` then the per-step gates
-- [ ] **Verified (T-001):** —
+- [x] **Verified (T-001):** 2026-11-17 — red: `npx vitest run src/core/agentCenter/timeline.test.ts src/shared/protocol/agentCenter.test.ts` with `timelineRows` and both guards as `Not implemented` stubs: 14 failed (all with `Error: Not implemented`: the 12 timeline cases for AC-008, AC-011, AC-014, AC-026 and the 2 guard cases), the 2 table-completeness cases passed at once (negative control inside: a missing word is reported). Green after the implementation: same command plus `src/shared/protocol` 6 files, 71 tests passed; gates: eslint 0 warnings, tsc and tsc -p src/webview clean, `npm run test:unit` 138 files, 1739 tests passed.
 - **Notes:** —
 
 ### T-002 — Run summary: activity, requests, file changes, error, result
@@ -333,6 +333,6 @@ No parallel stage: stages 1–2 are one module (`src/core/agentCenter`), and eve
   signal `/sdd-lifecycle` backlog → active, then T-001.
 - **Open decisions:** none. Nine steps (one over the aim): the UI is two slices and T-005 carries
   seven criteria of one control-state model.
-- **Baseline:** _(set when work starts)_
+- **Baseline:** 2026-11-17, HEAD 70362df: eslint, both tsc and `npm run test:unit` green (136 files, 1723 tests).
 - **Environment:** `npm test` cannot run here (VS Code download blocked); the host smoke runs on CI
   or Gregor's Windows machine.
