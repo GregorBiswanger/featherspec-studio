@@ -17,7 +17,7 @@ export const COPILOT_CAPABILITIES: CapabilityDeclaration = {
     resume: { value: 'native' },
     streamText: { value: 'native' },
     toolEvents: { value: 'native' },
-    fileChanges: { value: 'native', experimental: true },
+    fileChanges: { value: 'derived', experimental: true },
     approvals: { value: 'native' },
     userInput: { value: 'native' },
     planUpdates: { value: 'native' },

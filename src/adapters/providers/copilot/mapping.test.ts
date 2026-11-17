@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { DeliveredEvent } from '../../../core/ports/agentProvider';
 import type { CopilotEvent, CopilotTodo } from './client';
 import { createEventMapper, IGNORED_TYPES, isSingleTextField, type EventMapper, type MapperOptions } from './mapping';
-import { events, recordedRows, syntheticRows, toSteps, type Placeholders } from './testing/recorded';
+import { approvedWriteRows, events, recordedRows, syntheticRows, toSteps, type Placeholders } from './testing/recorded';
 
 const POSIX: Placeholders = { root: '/work/project', outside: '/work/other' };
 const WINDOWS: Placeholders = { root: 'C:\\work\\project', outside: 'D:\\other' };
@@ -116,7 +116,7 @@ describe('mapping of the recorded stream (AC-010, spec §7)', () => {
         expect(await run(mapper, stream)).toEqual([]);
         expect(IGNORED_TYPES).toContain('assistant.streaming_delta');
         expect(IGNORED_TYPES).toContain('session.usage_info');
-        expect(IGNORED_TYPES).toHaveLength(20);
+        expect(IGNORED_TYPES).toHaveLength(21);
     });
 
     it('AC-010: the ID path: started() delivers session.started once, a later session.start event delivers nothing, and the model is only what Copilot named', async () => {
@@ -343,5 +343,140 @@ describe('mapping of the synthetic stream (AC-010, AC-012, spec §7)', () => {
             { type: 'session.idle', id: 'i', data: {} },
         ]);
         expect(kinds(delivered)).toEqual(['run.failed']);
+    });
+});
+
+const WRITE_CALL = 'toolu_01Uz7ndXpB5xqkbo14jQAUmg';
+const WRITE_COMPLETE_ID = 'f5f1eeb4-774c-4987-bf76-27691f04dfa1';
+
+function writeRequest(requestId: string, callId: string, request: Record<string, unknown>): CopilotEvent {
+    return { type: 'permission.requested', id: `req-${requestId}`, data: { requestId, permissionRequest: { kind: 'write', toolCallId: callId, intention: 'Edit file', ...request } } };
+}
+const completed = (requestId: string, callId: string, result: string): CopilotEvent => ({ type: 'permission.completed', id: `done-${requestId}`, data: { requestId, toolCallId: callId, result: { kind: result } } });
+const toolDone = (callId: string, success: boolean, extra: Record<string, unknown> = {}): CopilotEvent => ({ type: 'tool.execution_complete', id: `tool-${callId}`, data: { toolCallId: callId, success, ...extra } });
+const filesOf = (delivered: readonly DeliveredEvent[]): DeliveredEvent[] => delivered.filter((event) => event.kind === 'file.changed');
+
+describe('mapping of the recorded approved write (M-02, M-03; capture 2026-11-17, CLI 1.0.87)', () => {
+    it('AC-010 AC-012: the approved write maps in order, the file change is derived from the approved write and the successful tool, nothing is provider.unknown', async () => {
+        const { mapper } = arrange({}, WINDOWS);
+        mapper.promptSent();
+        const delivered = await run(mapper, events(toSteps(approvedWriteRows(), WINDOWS)));
+        expect(kinds(delivered)).toEqual([
+            'session.started',
+            'turn.started',
+            'usage',
+            'message.completed',
+            'tool.started',
+            'approval.requested',
+            'approval.resolved',
+            'tool.completed',
+            'file.changed',
+            'turn.completed',
+            'turn.started',
+            'message.delta',
+            'usage',
+            'message.completed',
+            'turn.completed',
+            'run.completed',
+        ]);
+        const [file] = filesOf(delivered);
+        expect(file).toEqual({
+            kind: 'file.changed',
+            source: 'derived',
+            providerEventId: `${WRITE_COMPLETE_ID}#2`,
+            occurredAt: '2026-11-17T08:40:24.906Z',
+            payload: { path: 'hello.txt', operation: 'add', confidence: 'derived', outsideProject: false },
+        });
+        expect(delivered.filter((event) => event.kind !== 'file.changed').every((event) => event.source === 'provider')).toBe(true);
+        expect(delivered.find((event) => event.kind === 'tool.completed')?.payload).toEqual({ toolName: 'create', callId: WRITE_CALL, ok: true });
+        expect(delivered.at(-1)?.payload).toEqual({ finalMessage: 'done' });
+    });
+
+    it('AC-012: the recording carries no fileEdits, so the derived file change is the only one; Studio answering the request itself changes nothing about it', async () => {
+        const rows = approvedWriteRows();
+        expect(rows.some((row) => row.data?.fileEdits !== undefined)).toBe(false);
+        const { mapper } = arrange({ isAnswered: () => true }, WINDOWS);
+        mapper.promptSent();
+        const delivered = await run(mapper, events(toSteps(rows, WINDOWS)));
+        expect(kinds(delivered)).not.toContain('approval.resolved');
+        expect(filesOf(delivered).map((event) => event.payload)).toEqual([{ path: 'hello.txt', operation: 'add', confidence: 'derived', outsideProject: false }]);
+    });
+
+    it('AC-012 negative control: the recorded rejected write (M-02) yields no file change', async () => {
+        const { mapper } = arrange();
+        mapper.promptSent();
+        expect(filesOf(await run(mapper, events(toSteps(recordedRows('M-02')))))).toEqual([]);
+    });
+
+    it('AC-011: session.info, whose file_created text repeats the derived change, is ignored; another unlisted type stays provider.unknown', async () => {
+        expect(IGNORED_TYPES).toContain('session.info');
+        const { mapper } = arrange();
+        const delivered = await run(mapper, [
+            { type: 'session.info', id: 'i', data: { infoType: 'file_created', message: '/work/project/hello.txt' } },
+            { type: 'session.workspace_file_changed', id: 'w', data: { path: 'plan.md', operation: 'create' } },
+        ]);
+        expect(delivered.map((event) => [event.kind, event.payload])).toEqual([['provider.unknown', { typeName: 'session.workspace_file_changed', fieldNames: ['path', 'operation'] }]]);
+    });
+});
+
+describe('derived file changes from write requests (AC-012, spec §7; operations beyond create follow the SDK types, synthetic)', () => {
+    it('AC-012: the operation comes from the write request: new contents or no before side add, no after side delete, otherwise update', async () => {
+        const { mapper } = arrange();
+        const delivered = await run(mapper, [
+            writeRequest('r1', 'c1', { fileName: '/work/project/src/new.ts', newFileContents: 'x' }),
+            writeRequest('r2', 'c2', { fileName: '/work/project/src/old.ts', fileEdits: [{ before: { path: '/work/project/src/old.ts', content: 'a' }, after: { path: '/work/project/src/old.ts', content: 'b' } }] }),
+            writeRequest('r3', 'c3', { fileName: '/work/project/src/gone.ts', fileEdits: [{ before: { path: '/work/project/src/gone.ts', content: 'a' } }] }),
+            writeRequest('r4', 'c4', { fileName: '/work/project/src/plain.ts' }),
+            writeRequest('r5', 'c5', { fileName: '/work/project/src/fresh.ts', fileEdits: [{ after: { path: '/work/project/src/fresh.ts', content: 'n' } }] }),
+            ...['r1', 'r2', 'r3', 'r4', 'r5'].map((id, index) => completed(id, `c${index + 1}`, 'approved')),
+            ...['c1', 'c2', 'c3', 'c4', 'c5'].map((id) => toolDone(id, true)),
+        ]);
+        expect(filesOf(delivered).map((event) => [event.source, event.payload])).toEqual([
+            ['derived', { path: 'src/new.ts', operation: 'add', confidence: 'derived', outsideProject: false }],
+            ['derived', { path: 'src/old.ts', operation: 'update', confidence: 'derived', outsideProject: false }],
+            ['derived', { path: 'src/gone.ts', operation: 'delete', confidence: 'derived', outsideProject: false }],
+            ['derived', { path: 'src/plain.ts', operation: 'update', confidence: 'derived', outsideProject: false }],
+            ['derived', { path: 'src/fresh.ts', operation: 'add', confidence: 'derived', outsideProject: false }],
+        ]);
+    });
+
+    it('AC-012: no file change for a rejected request, a failed tool, a tool without a write request, or a second completion of the same call', async () => {
+        const { mapper } = arrange();
+        const delivered = await run(mapper, [
+            writeRequest('r1', 'c1', { fileName: '/work/project/a.ts', newFileContents: 'x' }),
+            completed('r1', 'c1', 'denied-interactively-by-user'),
+            toolDone('c1', true),
+            writeRequest('r2', 'c2', { fileName: '/work/project/b.ts', newFileContents: 'x' }),
+            completed('r2', 'c2', 'approved'),
+            toolDone('c2', false, { error: { message: 'disk full' } }),
+            toolDone('c3', true),
+            writeRequest('r4', 'c4', { fileName: '/work/project/d.ts', newFileContents: 'x' }),
+            toolDone('c4', true),
+            toolDone('c4', true),
+        ]);
+        expect(filesOf(delivered).map((event) => event.payload)).toEqual([{ path: 'd.ts', operation: 'add', confidence: 'derived', outsideProject: false }]);
+    });
+
+    it('AC-012: fileEdits on the completion win: reported changes only, no derived duplicate for that call', async () => {
+        const { mapper } = arrange();
+        const delivered = await run(mapper, [
+            writeRequest('r1', 'c1', { fileName: '/work/project/a.ts', newFileContents: 'x' }),
+            toolDone('c1', true, { fileEdits: [{ kind: 'create', path: '/work/project/a.ts' }] }),
+        ]);
+        expect(filesOf(delivered).map((event) => [event.source, event.payload])).toEqual([['provider', { path: 'a.ts', operation: 'add', confidence: 'reported', outsideProject: false }]]);
+    });
+
+    it('AC-012: a derived path outside the root stays as delivered and carries the marker; the resolved path is preferred to the file name', async () => {
+        const { mapper } = arrange();
+        const delivered = await run(mapper, [
+            writeRequest('r1', 'c1', { fileName: '/work/other/x.ts', newFileContents: 'x' }),
+            writeRequest('r2', 'c2', { fileName: 'link/y.ts', resolvedPath: '/work/project/real/y.ts', newFileContents: 'x' }),
+            toolDone('c1', true),
+            toolDone('c2', true),
+        ]);
+        expect(filesOf(delivered).map((event) => event.payload)).toEqual([
+            { path: '/work/other/x.ts', operation: 'add', confidence: 'derived', outsideProject: true },
+            { path: 'real/y.ts', operation: 'add', confidence: 'derived', outsideProject: false },
+        ]);
     });
 });

@@ -6,6 +6,7 @@ const FIXTURES = path.resolve(__dirname, '..', '..', '..', '..', '..', 'test', '
 
 export const RECORDED_FILE = path.join(FIXTURES, 'recorded-2026-11-17.jsonl');
 export const SYNTHETIC_FILE = path.join(FIXTURES, 'synthetic.jsonl');
+export const APPROVED_WRITE_FILE = path.join(FIXTURES, 'recorded-approved-write-2026-11-17.jsonl');
 
 export interface FixtureRow {
     seq: number;
@@ -17,6 +18,7 @@ export interface FixtureRow {
     eventId?: string;
     ephemeral?: boolean;
     synthetic?: boolean;
+    keys?: string[];
     summary?: Record<string, unknown>;
     data?: Record<string, unknown>;
 }
@@ -47,6 +49,9 @@ function keysOnly(keys: unknown): Record<string, unknown> {
 function rebuild(row: FixtureRow): Record<string, unknown> {
     if (row.data !== undefined) {
         return row.data;
+    }
+    if (row.summary === undefined && row.keys !== undefined) {
+        return keysOnly(row.keys);
     }
     const summary = row.summary ?? {};
     if ('keys' in summary && Object.keys(summary).length === 1) {
@@ -116,6 +121,10 @@ export function toSteps(rows: readonly FixtureRow[], placeholders: Placeholders 
 
 export function recordedRows(check: 'M-02' | 'M-03' | 'M-04' | 'M-05', session?: string): FixtureRow[] {
     return readFixture(RECORDED_FILE).filter((row) => row.check === check && (session === undefined || row.session === session || row.src === 'handler'));
+}
+
+export function approvedWriteRows(): FixtureRow[] {
+    return readFixture(APPROVED_WRITE_FILE);
 }
 
 export function syntheticRows(...checks: string[]): FixtureRow[] {

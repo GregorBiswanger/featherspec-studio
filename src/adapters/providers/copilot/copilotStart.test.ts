@@ -23,7 +23,7 @@ describe('registration (AC-001, AC-023)', () => {
             expected[capability] = { value: 'native' };
         }
         Object.assign(expected, {
-            fileChanges: { value: 'native', experimental: true },
+            fileChanges: { value: 'derived', experimental: true },
             typedErrors: { value: 'derived' },
             mcp: { value: 'none' },
             customTools: { value: 'none' },

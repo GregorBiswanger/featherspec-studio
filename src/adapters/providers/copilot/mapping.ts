@@ -22,6 +22,7 @@ export const IGNORED_TYPES: readonly string[] = [
     'session.usage_info',
     'session.usage_checkpoint',
     'session.background_tasks_changed',
+    'session.info',
     'session.shutdown',
     'agent.interrupted',
     'prompt_cache_break',
@@ -117,6 +118,34 @@ function approvalPath(kind: string, request: Data): string | undefined {
     return kind === 'read' ? (text(request.resolvedPath) ?? text(request.path)) : undefined;
 }
 
+type FileOperation = 'add' | 'update' | 'delete';
+
+interface PendingWrite {
+    callId: string;
+    path: string;
+    operation: FileOperation;
+}
+
+function writeOperation(request: Data): FileOperation {
+    const edits = Array.isArray(request.fileEdits) ? request.fileEdits.map(record) : [];
+    if (edits.length > 0 && edits.every((edit) => edit.after === undefined)) {
+        return 'delete';
+    }
+    if (typeof request.newFileContents === 'string' || (edits.length > 0 && edits.every((edit) => edit.before === undefined))) {
+        return 'add';
+    }
+    return 'update';
+}
+
+function pendingWrite(request: Data): PendingWrite | undefined {
+    const callId = text(request.toolCallId);
+    const file = text(request.resolvedPath) ?? text(request.fileName);
+    if (text(request.kind) !== 'write' || callId === undefined || file === undefined) {
+        return undefined;
+    }
+    return { callId, path: file, operation: writeOperation(request) };
+}
+
 export function createEventMapper(options: MapperOptions): EventMapper {
     let startedEmitted = false;
     let promptWasSent = false;
@@ -125,9 +154,12 @@ export function createEventMapper(options: MapperOptions): EventMapper {
     let inputTokens = 0;
     let outputTokens = 0;
     const toolNames = new Map<string, string>();
+    const pendingWrites = new Map<string, PendingWrite>();
 
-    const make = (event: CopilotEvent | undefined, kind: string, payload: Record<string, JsonValue>, index = 0): DeliveredEvent => {
-        const delivered: DeliveredEvent = { kind, source: 'provider', payload };
+    type Item = { kind: string; payload: Record<string, JsonValue>; source?: 'provider' | 'derived' };
+
+    const make = (event: CopilotEvent | undefined, kind: string, payload: Record<string, JsonValue>, index = 0, source: 'provider' | 'derived' = 'provider'): DeliveredEvent => {
+        const delivered: DeliveredEvent = { kind, source, payload };
         if (event?.id !== undefined) {
             delivered.providerEventId = index === 0 ? event.id : `${event.id}#${index + 1}`;
         }
@@ -137,8 +169,18 @@ export function createEventMapper(options: MapperOptions): EventMapper {
         return delivered;
     };
 
-    const many = (event: CopilotEvent, items: { kind: string; payload: Record<string, JsonValue> }[]): DeliveredEvent[] =>
-        items.map((item, index) => make(event, item.kind, item.payload, index));
+    const many = (event: CopilotEvent, items: Item[]): DeliveredEvent[] => items.map((item, index) => make(event, item.kind, item.payload, index, item.source));
+
+    const takeWrites = (callId: string): PendingWrite[] => {
+        const taken: PendingWrite[] = [];
+        for (const [requestId, write] of pendingWrites) {
+            if (write.callId === callId) {
+                taken.push(write);
+                pendingWrites.delete(requestId);
+            }
+        }
+        return taken;
+    };
 
     const start = (event: CopilotEvent | undefined, sessionRef: string | undefined, model: string | undefined): DeliveredEvent[] => {
         if (startedEmitted || sessionRef === undefined) {
@@ -156,9 +198,16 @@ export function createEventMapper(options: MapperOptions): EventMapper {
         return [make(event, kind, payload)];
     };
 
-    const fileChanges = (event: CopilotEvent, data: Data, completed: { kind: string; payload: Record<string, JsonValue> }): DeliveredEvent[] => {
+    const fileChanges = (event: CopilotEvent, data: Data, callId: string, completed: Item): DeliveredEvent[] => {
         const items = [completed];
         const edits = Array.isArray(data.fileEdits) ? (data.fileEdits as unknown[]) : [];
+        const writes = takeWrites(callId);
+        if (edits.length === 0 && data.success === true) {
+            for (const write of writes) {
+                const located = locateInProject(write.path, options.workingDirectory, options.platform);
+                items.push({ kind: 'file.changed', source: 'derived', payload: { path: located.path, operation: write.operation, confidence: 'derived', outsideProject: located.outsideProject } });
+            }
+        }
         for (const edit of edits) {
             const { kind, path: file } = record(edit);
             const operation = kind === 'create' ? 'add' : kind === 'edit' ? 'update' : kind === 'delete' ? 'delete' : undefined;
@@ -210,21 +259,28 @@ export function createEventMapper(options: MapperOptions): EventMapper {
                 if (errorText !== undefined) {
                     payload.errorText = errorText;
                 }
-                return fileChanges(event, data, { kind: 'tool.completed', payload });
+                return fileChanges(event, data, callId, { kind: 'tool.completed', payload });
             }
             case 'permission.requested': {
                 const request = record(data.permissionRequest);
                 const kind = text(request.kind) ?? 'unknown';
                 const located = approvalPath(kind, request);
                 const outsideProject = located !== undefined && locateInProject(located, options.workingDirectory, options.platform).outsideProject;
+                const write = pendingWrite(request);
+                if (write !== undefined) {
+                    pendingWrites.set(text(data.requestId) ?? write.callId, write);
+                }
                 return [make(event, 'approval.requested', { requestId: text(data.requestId) ?? '', actionKind: kind, summary: approvalSummary(kind, request), outsideProject })];
             }
             case 'permission.completed': {
                 const requestId = text(data.requestId) ?? '';
+                const result = typeof data.result === 'string' ? data.result : (text(record(data.result).kind) ?? '');
+                if (!result.startsWith('approved')) {
+                    pendingWrites.delete(requestId);
+                }
                 if (options.isAnswered(requestId)) {
                     return [];
                 }
-                const result = typeof data.result === 'string' ? data.result : (text(record(data.result).kind) ?? '');
                 return [make(event, 'approval.resolved', { requestId, decision: result.startsWith('approved') ? 'approve-once' : 'reject' })];
             }
             case 'user_input.requested': {

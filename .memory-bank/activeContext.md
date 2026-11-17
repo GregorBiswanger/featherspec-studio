@@ -17,6 +17,7 @@ Release preparation for 0.1.0: all 13 specs are `Implemented` in `.specs/done/`;
 - `AGENTS.md` snapshot compacted (229 → 215 lines); module detail in `.architecture/{core,adapters,webview}.md`.
 - Timing tests in `*.timing.test.*`, run after the rest of `npm run test:unit` in one worker (see `techContext.md`).
 - 0012 follow-up: Agent Center fallback reason is a sentence ("the run history of this project is not open"); host smoke renamed to AC-012/AC-013.
+- 0010 follow-up: the host smoke's M-03 failed (approved write, no `file.changed`); a capture showed CLI 1.0.87 sends no `fileEdits`, so `file.changed` is now derived from the approved `write` request and its successful tool, `session.info` ignored, `fileChanges` `derived` (spec 0010 §7, AC-012; fixture `recorded-approved-write-2026-11-17.jsonl`).
 - 0004 follow-up: masking samples moved to `src/core/runtime/testing/secretSamples.ts` (the sample token in `dist/extension.js` failed `vsce package`'s secret scan); link fixes in the archived plans of 0006 and 0008.
 
 ## Decisions in Flight
@@ -27,7 +28,7 @@ Release preparation for 0.1.0: all 13 specs are `Implemented` in `.specs/done/`;
 - None.
 
 ## Next
-1. Orchestrator/Gregor: Windows host suite at the release head (`npm test`, plain and Copilot opt-in).
+1. Orchestrator/Gregor: Windows host suite at the release head (`npm test`, plain and Copilot opt-in) — the opt-in M-02/M-03/M-05 test must now pass.
 2. Gregor: work through [docs/release-checklist.md](../docs/release-checklist.md) (publisher, icon, screenshots pushed, manual passes).
 3. Gregor: Go → `npx @vscode/vsce publish`.
 

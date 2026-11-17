@@ -84,7 +84,8 @@ Copilot-specific text beside 0009's generic availability or error text (0012: "r
 
 - **BR-01 Capabilities** (0009 BR-002, ADR-003 §3). `native`: `start`, `cancel`, `resume`,
   `streamText`, `toolEvents`, `approvals`, `userInput`, `planUpdates`, `usage`, `modelList`;
-  `fileChanges` `native` and *experimental*; `typedErrors` `derived` (inferred from Copilot's
+  `fileChanges` `derived` and *experimental* (CLI 1.0.87 sends no `fileEdits` for an approved write,
+  capture 2026-11-17, §13 M-03; `native` until then); `typedErrors` `derived` (inferred from Copilot's
   `errorType` string; ADR-003's "partial" is no value of 0009); `mcp`, `customTools` `none`
   (PD-009). A manual check that disproves a value revises this rule.
 - **BR-02 Authentication** (Q1, handoff AC-010.10). Only the GitHub account signed in to the Copilot
@@ -125,7 +126,7 @@ Copilot-specific text beside 0009's generic availability or error text (0012: "r
   off for every runtime and session Studio starts or resumes.
 - **BR-11 Events** (0009 BR-007, §8.2). Mapped per §7, source `provider`. Source `derived` marks
   what the adapter adds itself: the forced stop's `run.cancelled`, a `.resolved` Copilot does not
-  send (0009 BR-005) and the runtime-exit `run.failed` — the only derived `run.failed`, which 0011
+  send (0009 BR-005), the `file.changed` inferred from an approved write (§7) and the runtime-exit `run.failed` — the only derived `run.failed`, which 0011
   classes `provider_exited` (0011 BR-008). The `.resolved` the adapter emits when the developer's
   answer reaches it is `derived`; a later Copilot `.completed` for that request is dropped. A type
   §7 neither maps nor ignores becomes `provider.unknown`; the run continues. No raw Copilot object
@@ -145,8 +146,9 @@ Copilot-specific text beside 0009's generic availability or error text (0012: "r
 
 ## 7. Mapping tables
 
-Event types and field names are those of the recording `docs/decisions/poc-copilot-2026-11-17/`
-(SDK 1.0.34, CLI 1.0.87, 2026-11-17); types the recording lacks follow the SDK's
+Event types and field names are those of the recordings `docs/decisions/poc-copilot-2026-11-17/`
+(SDK 1.0.34, CLI 1.0.87, 2026-11-17: `events-copilot.jsonl` and, for the approved write,
+`events-approved-write.jsonl`); types the recording lacks follow the SDK's
 `dist/generated/session-events.d.ts` and are marked *synthetic* in the fixtures.
 
 Events (Copilot → 0009 kind): `session.start` (start) or `session.resume` (resume), or the created
@@ -157,7 +159,13 @@ session ID, whichever comes first → one `session.started{sessionRef, model = s
 `_progress` / `_complete` → `tool.started` / `tool.progress` / `tool.completed{ok = success, errorText
 = error.message}` · `tool.execution_complete.fileEdits[]` → `file.changed` per entry, kind `create` /
 `edit` / `delete` → `add` / `update` / `delete`, another kind → no `file.changed` but one `warning`
-naming it · `permission.requested` → `approval.requested` · `permission.completed` →
+naming it (source `provider`, confidence *reported*) · a `write` permission request (`resolvedPath`,
+else `fileName`, per `toolCallId`) whose `permission.completed` is not a denial, followed by a
+successful `tool.execution_complete` of that call without `fileEdits` → one `file.changed` (source
+and confidence `derived`); operation `add` when the request carries `newFileContents` or its
+`fileEdits` lack every `before`, `delete` when they lack every `after`, else `update` — the recorded
+approved write carries `newFileContents` and no `fileEdits` on the completion (`add`; `update` and
+`delete` follow the SDK's `PermissionRequestWrite` type, *synthetic*) · `permission.requested` → `approval.requested` · `permission.completed` →
 `approval.resolved` only for a request Studio did not answer · `user_input.requested`,
 `elicitation.requested` → `input.requested` · `user_input.completed`, `elicitation.completed` →
 `input.resolved` only for a request Studio did not answer · `session.todos_changed` (a signal
@@ -174,7 +182,9 @@ text arrives as `assistant.reasoning`), `assistant.idle`, `user.message`, `syste
 `pending_messages.modified`, `session.managed_settings_resolved`, `session.mcp_server_status_changed`,
 `session.mcp_servers_loaded`, `session.tools_updated`, `session.title_changed`,
 `session.model_change`, `session.usage_info` (a context-window snapshot, not consumption),
-`session.usage_checkpoint`, `session.background_tasks_changed`, `session.shutdown`,
+`session.usage_checkpoint`, `session.background_tasks_changed`, `session.info` (display text; after
+the approved write it carried `infoType` `file_created` and the path, which the derived
+`file.changed` already covers), `session.shutdown`,
 `agent.interrupted`, `prompt_cache_break`. A type in neither list is `provider.unknown`.
 
 Errors (→ 0009 category): runtime cannot be started → `runtime_missing` · a protocol the installed
@@ -255,7 +265,10 @@ settled (§15).
 - **AC-012** When `tool.execution_complete` carries `fileEdits`, the adapter shall emit one
   `file.changed` per entry with the operation (OP-002), confidence *reported* and the path relative
   to the project root with forward slashes; a path outside the root shall stay as delivered and
-  carry the flag of BR-06.
+  carry the flag of BR-06. When a `write` request that was not denied is followed by a successful
+  `tool.execution_complete` of its tool call without `fileEdits`, the adapter shall emit one
+  `file.changed` for the request's path with source and confidence *derived*, the operation of §7
+  and the same path rules; a denied request or a failed tool shall yield none.
 - **AC-013** When Copilot raises a permission request of any kind, one missing from the adapter's
   list included, the adapter shall emit exactly one `approval.requested` with Copilot's request ID,
   the kind, the path, command or URL as delivered, and the flag of BR-06, and shall send Copilot
@@ -338,9 +351,20 @@ field per line instead of one file per check).
   half (`gh-cli`, 25 models); the signed-out half moves to the acceptance checks.
 - **M-02** (A2) Approval round trip: shell request rejected, write request approved once; no tool
   runs before the answer; note whether a request arrives once and whether reads ask. — *pass* for
-  reject (one `write` request, once, with `requestId`; file absent); approve once and reads: acceptance.
+  reject (one `write` request, once, with `requestId`; file absent); approve once: *pass* in the
+  capture of 2026-11-17 (`capture-approved-write.mjs`, CLI 1.0.87: one `write` request with
+  `newFileContents`, `permission.completed` result `approved`, `hello.txt` written with `hello`);
+  reads: acceptance.
 - **M-03** (A3) Full run with the A3 prompt: events of §7 arrive, `fileEdits` present, the run ends
-  with `session.idle`. — *pass* with a text-only prompt; `fileEdits`: acceptance.
+  with `session.idle`. — *pass* with a text-only prompt. The host smoke of 2026-11-17 (VS Code on
+  Windows, CLI 1.0.87, 31 passing, 1 failing) wrote the approved file but delivered no
+  `file.changed`, only a `provider.unknown` between `approval.resolved` and `tool.completed`. The
+  capture of an approved write (`events-approved-write.jsonl`, 94 lines; fixture
+  `test/fixtures/copilot/recorded-approved-write-2026-11-17.jsonl`) shows why: no `fileEdits` on
+  `tool.execution_complete`, and `session.info{infoType file_created, message = path}` as the
+  unknown type. The change is visible through the typed `write` request and the successful tool, so
+  `fileChanges` is `derived` (BR-01, §7, AC-012); the host smoke's expectation stands and is to be
+  re-run.
 - **M-04** (A4) Abort 5 s into a run: confirmed, no file written after it; time to confirmation noted.
   — *pass*, abort confirmed after 34 ms (1.5 s into a text-only run), no delta and no file after it.
 - **M-05** (A5) Resume in a new process; the agent answers about its earlier changes; note whether
@@ -440,3 +464,4 @@ acceptance checks of §13.
 ## Plan history
 
 - 2026-11-17 — [0010-first-agent-provider-copilot.2026-11-17.plan.md](../plan-archive/0010-first-agent-provider-copilot.2026-11-17.plan.md) — eleven steps; 24 criteria verified (AC-022 not planned, OP-007); second `/sdd-compile` READY after T-009…T-011; M-07 host smoke passed on Windows at 93537b7; re-run on the closing head open at the move.
+- 2026-11-17 — follow-up after the archived plan, no new plan (orchestrator task S10): approved-write capture on Gregor's machine; `file.changed` derived from an approved `write` request and its successful tool, `session.info` ignored, `fileChanges` `derived` *experimental* (BR-01, BR-11, §7, AC-012, §13 M-02/M-03); tests in `mapping.test.ts`, `fixture.test.ts`, `copilotStart.test.ts`; host smoke unchanged, re-run open.

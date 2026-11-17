@@ -161,7 +161,8 @@ client seam, so tests replay the recorded stream without a CLI or a network.
 | --- | --- |
 | ID and display name | `copilot`, "GitHub Copilot" |
 | Permission label | "Asks before every tool action (Copilot manual mode)" |
-| Declaration | `mcp` and `customTools` `none`, `typedErrors` `derived`, `fileChanges` `native` and experimental, the rest `native` |
+| Declaration | `mcp` and `customTools` `none`, `typedErrors` `derived`, `fileChanges` `derived` and experimental, the rest `native` |
+| File changes | `fileEdits` on a completed tool, where Copilot sends them, are `reported`; otherwise an approved `write` request whose tool succeeds gives one `derived` change (CLI 1.0.87 sends no `fileEdits`) |
 | Settings | `featherspec-studio.copilot.cliPath` (machine scope), `featherspec-studio.copilot.model` |
 | Timing | cancel forces a stop after 10 s; a runtime exit is noticed within 5 s; resume waits 2 s for its session event |
 
