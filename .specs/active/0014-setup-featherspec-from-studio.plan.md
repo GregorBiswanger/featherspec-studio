@@ -3,7 +3,7 @@
 **Spec:** [0014-setup-featherspec-from-studio.md](0014-setup-featherspec-from-studio.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-003
+**Current step:** T-004
 
 ## Approach
 
@@ -117,8 +117,8 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 - **Files:** `src/core/ports/setupTarget.ts`, `src/core/setup/fileClasses.ts`, `src/core/setup/fileClasses.test.ts`, `src/core/setup/gitignore.ts`, `src/core/setup/gitignore.test.ts`, `src/core/setup/jsonc.ts`, `src/core/setup/settingsJson.ts`, `src/core/setup/settingsJson.test.ts`, `src/core/setup/testing/memoryTarget.ts`
 - **Do:** `SetupTargetPort` read part: `kind(root, path)`, `readBytes(root, path)`. `fileClasses.ts`: BR-03 (CRLF→LF on bytes) and BR-04 → missing / same / completed / kept with the computed completion. `gitignore.ts`: AC-012 (comment lines above, trailing-space compare, line ending of the first line, end an open last line). `jsonc.ts`: a small scanner with offsets (strings, both comment kinds, trailing commas); `settingsJson.ts`: insert keys missing at any depth before the closing brace in the file's indentation and line ending; report kept keys whose value differs (for AC-023); not one object → kept. Round-trip test: removing the added keys and their commas gives the input back, on inputs with comments, trailing comma, CRLF, empty object, nested missing and nested partial objects.
 - **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx vitest run --project node src/core/setup/fileClasses src/core/setup/gitignore src/core/setup/settingsJson` (own tests only; the full gates run once on the stage's combined result)
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-17 — red first: `npx vitest run --project node src/core/setup/gitignore src/core/setup/settingsJson src/core/setup/fileClasses` 80 failed (`Not implemented` stubs); green: 117 passed in `src/core/setup` (gitignore 17, settingsJson incl. 21 not-an-object cases and the round trip that removes the recorded insertions, fileClasses incl. the real 1.10.0 release against empty, CRLF-copy and own-files folders). Combined stage gates (T-002 and T-003): eslint, both `tsc`, `npm run test:unit` 173 files / 2313 tests (+11 timing) passed, `npm run compile` finished.
+- **Notes:** A `.gitignore` or `settings.json` that differs but has nothing to add is class `left` (not counted as created, completed or kept in AC-008). `completeGitignore` and `completeSettings` return a result kind (`not-text` / `not-an-object` → class `kept`). `testing/realRelease.ts` loads the real 1.10.0 archive as the realistic release for later steps. No new text (T-003 adds none). Kept-setting key paths read `parent > child`.
 
 ### T-004 — Download the latest release
 
