@@ -270,8 +270,8 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
   with it under the new run ID … `run.completed`, any other → `run.failed{unknown}`. Tests: no event
   while a request is open, also after 24 h; the fake answers nothing itself.
 - **Verify:** `npx vitest run src/adapters/providers/fake/fakeInteraction.test.ts`
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-17. Red: `npx vitest run src/adapters/providers/fake/fakeInteraction.test.ts` 14 of 17 tests failed (cancel, answers and resume rejected with `Not implemented`, scenarios approval, input and long-run fell back to the happy path); the 3 that passed at once (profile minimal approval and input, endSession through the service) were proven by mutation: endSession without dispose (2 failed), no inlining of an awaitAnswer in profile minimal (1 failed), an answer text added to input.resolved (1 failed), a cancel accepted after the end (1 failed), each reverted. Green: `npx vitest run src/adapters/providers` 4 files, 37 tests passed (fakeInteraction 17, noIo now runs all 14 scenarios in both profiles with answers and cancel). Gates: eslint --max-warnings 0, tsc, tsc -p src/webview clean; `npm run test:unit` 108 files, 1456 passed.
+- **Notes:** Script gained the step `repeat` (interval emit until cancel) beside the plan's list; ScriptRun has cancel and answer. In profile minimal an approval or input scenario inlines its first branch (no request, no wait). Resume always runs the happy path under the reference (the scenario setting does not apply). Request IDs: fake-approval-1, fake-input-1.
 
 ### T-007 — Contract suite, third provider, literal scan
 

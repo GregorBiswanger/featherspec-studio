@@ -1,5 +1,5 @@
 import { KIND_CAPABILITY, ERROR_CATEGORIES, type CapabilityDeclaration, type ErrorCategory } from '../../../core/providers/vocabulary';
-import type { ScriptEvent, ScriptStep } from './script';
+import type { AnswerKey, ScriptEvent, ScriptStep } from './script';
 
 export const FAKE_PROVIDER_ID = 'fake';
 export const FAKE_DISPLAY_NAME = 'Fake provider (no agent, no network)';
@@ -90,6 +90,49 @@ function work(): ScriptStep[] {
     ];
 }
 
+const APPROVAL_ID = 'fake-approval-1';
+const INPUT_ID = 'fake-input-1';
+
+function approvalScenario(context: ScenarioContext): ScriptStep[] {
+    const resolved = (decision: 'approve-once' | 'reject'): ScriptStep =>
+        emit('approval.resolved', { requestId: APPROVAL_ID, decision });
+    const completed = (ok: boolean): ScriptStep =>
+        emit('tool.completed', { toolName: 'edit', callId: 'fake-call-1', ok, ...(ok ? {} : { errorText: 'The action was rejected.' }) });
+    return [
+        ...prelude(context),
+        ...turn(),
+        emit('tool.started', { toolName: 'edit', callId: 'fake-call-1' }),
+        emit('approval.requested', { requestId: APPROVAL_ID, actionKind: 'edit', summary: `Edit ${FAKE_FILE_PATH}`, outsideProject: false }),
+        {
+            type: 'awaitAnswer',
+            answerType: 'approval',
+            requestId: APPROVAL_ID,
+            branches: {
+                'approve-once': [resolved('approve-once'), completed(true)],
+                reject: [resolved('reject'), completed(false)],
+            },
+        },
+        emit('run.completed', { finalMessage: 'Done (fake).' }),
+        { type: 'close' },
+    ];
+}
+
+function inputScenario(context: ScenarioContext): ScriptStep[] {
+    return [
+        ...prelude(context),
+        ...turn(),
+        emit('input.requested', { requestId: INPUT_ID, question: 'Which option should the fake use?' }),
+        {
+            type: 'awaitAnswer',
+            answerType: 'input',
+            requestId: INPUT_ID,
+            branches: { answer: [emit('input.resolved', { requestId: INPUT_ID }), emit('message.completed', { text: 'Thanks for the answer.' })] },
+        },
+        emit('run.completed', { finalMessage: 'Done (fake).' }),
+        { type: 'close' },
+    ];
+}
+
 function ending(): ScriptStep[] {
     return [emit('turn.completed', {}), emit('run.completed', { finalMessage: 'Done (fake).' })];
 }
@@ -98,14 +141,34 @@ function happyPath(context: ScenarioContext): ScriptStep[] {
     return [...prelude(context), ...turn(), ...work(), ...ending(), { type: 'close' }];
 }
 
+const kindAllowed = (kind: string, capabilities: CapabilityDeclaration): boolean => {
+    const needed = (KIND_CAPABILITY as Record<string, string | null | undefined>)[kind];
+    return needed === null || needed === undefined || capabilities[needed as keyof CapabilityDeclaration].value !== 'none';
+};
+
 export function filterByCapabilities(steps: readonly ScriptStep[], capabilities: CapabilityDeclaration): ScriptStep[] {
-    return steps.filter((step) => {
-        if (step.type !== 'emit') {
-            return true;
+    const result: ScriptStep[] = [];
+    for (const step of steps) {
+        if ((step.type === 'emit' || step.type === 'repeat') && !kindAllowed(step.event.kind, capabilities)) {
+            continue;
         }
-        const needed = (KIND_CAPABILITY as Record<string, string | null | undefined>)[step.event.kind];
-        return needed === null || needed === undefined || capabilities[needed as keyof CapabilityDeclaration].value !== 'none';
-    });
+        if (step.type === 'awaitAnswer') {
+            const capability = step.answerType === 'approval' ? 'approvals' : 'userInput';
+            const inline = step.branches['approve-once'] ?? step.branches.answer ?? [];
+            if (capabilities[capability].value === 'none') {
+                result.push(...filterByCapabilities(inline, capabilities));
+            } else {
+                const branches: Partial<Record<AnswerKey, ScriptStep[]>> = {};
+                for (const [key, branch] of Object.entries(step.branches) as [AnswerKey, ScriptStep[]][]) {
+                    branches[key] = filterByCapabilities(branch, capabilities);
+                }
+                result.push({ ...step, branches });
+            }
+            continue;
+        }
+        result.push(step);
+    }
+    return result;
 }
 
 function buildRaw(id: FakeScenarioId, context: ScenarioContext): ScriptStep[] {
@@ -137,6 +200,12 @@ function buildRaw(id: FakeScenarioId, context: ScenarioContext): ScriptStep[] {
                 emit('warning', { text: 'A late event after the end.' }),
                 { type: 'close' },
             ];
+        case 'approval':
+            return approvalScenario(context);
+        case 'input':
+            return inputScenario(context);
+        case 'long-run':
+            return [...prelude(context), { type: 'repeat', intervalMs: FAKE_LONG_RUN_INTERVAL_MS, event: { kind: 'message.delta', payload: { text: 'still working ' } } }];
         case 'no-end':
             return [...prelude(context), ...turn(), { type: 'close' }];
         default:

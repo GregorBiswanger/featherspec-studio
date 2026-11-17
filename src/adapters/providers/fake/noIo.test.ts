@@ -58,12 +58,19 @@ describe('fake provider without network or file system', () => {
 
     it('AC-013: every scenario in both profiles runs to its end without touching a recorder', () => {
         for (const profile of ['full', 'minimal'] as FakeProfile[]) {
-            for (const scenario of FAKE_SCENARIOS.filter((id) => !['approval', 'input', 'long-run'].includes(id))) {
+            for (const scenario of FAKE_SCENARIOS) {
                 const clock = createFakeRuntimeClock();
                 const provider = createFakeProvider({ clock, profile, scenario });
                 const sink = createRecordingSink();
                 void provider.start({ runId: 'r', workingDirectory: '/project', prompt: 'p' }, sink);
                 clock.advance(10_000);
+                if (scenario === 'approval') {
+                    void provider.respondToApproval('r', 'fake-approval-1', { decision: 'approve-once' });
+                } else if (scenario === 'input') {
+                    void provider.respondToInput('r', 'fake-input-1', 'answer');
+                } else if (scenario === 'long-run') {
+                    void provider.cancel('r');
+                }
                 expect(sink.closed, `${profile} ${scenario}`).toBe(1);
             }
         }

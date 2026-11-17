@@ -14,6 +14,7 @@ import {
     FAKE_PROVIDER_ID,
     FAKE_SAMPLE_CREDENTIAL,
     buildScenario,
+    isFakeSessionRef,
     resolveScenario,
     type FakeScenarioId,
 } from './scenarios';
@@ -68,7 +69,7 @@ export function createFakeProvider(options: FakeProviderOptions): FakeProvider {
         runs.set(runId, runScript(steps, options.clock, sink));
     };
 
-    const notImplemented = (): Promise<OperationOutcome> => Promise.reject(new Error('Not implemented'));
+    const refused = (reason: string): OperationOutcome => ({ ok: false, reason });
 
     return {
         id: FAKE_PROVIDER_ID,
@@ -88,21 +89,40 @@ export function createFakeProvider(options: FakeProviderOptions): FakeProvider {
             launch(request.runId, sink);
             return Promise.resolve();
         },
-        resume(request: ProviderResumeRequest) {
+        resume(request: ProviderResumeRequest, sink) {
             calls.push({ operation: 'resume', runId: request.runId });
-            return Promise.reject(new Error('Not implemented'));
+            if (isFakeSessionRef(request.sessionRef)) {
+                runs.set(
+                    request.runId,
+                    runScript(buildScenario('happy-path', { runId: request.runId, capabilities, sessionRef: request.sessionRef }), options.clock, sink),
+                );
+            } else {
+                runs.set(
+                    request.runId,
+                    runScript(
+                        [
+                            { type: 'emit', event: { kind: 'run.failed', payload: { category: 'unknown', providerMessage: 'Unknown session reference.' } } },
+                            { type: 'close' },
+                        ],
+                        options.clock,
+                        sink,
+                    ),
+                );
+            }
+            return Promise.resolve();
         },
         cancel(runId) {
             calls.push({ operation: 'cancel', runId });
-            return notImplemented();
+            const outcome = runs.get(runId)?.cancel();
+            return Promise.resolve(outcome === 'cancelled' || outcome === 'ignored' ? { ok: true } : refused('run is not active'));
         },
-        respondToApproval(runId) {
+        respondToApproval(runId, requestId, answer) {
             calls.push({ operation: 'respondToApproval', runId });
-            return notImplemented();
+            return Promise.resolve(runs.get(runId)?.answer('approval', requestId, answer.decision) === true ? { ok: true } : refused('no open approval request'));
         },
-        respondToInput(runId) {
+        respondToInput(runId, requestId) {
             calls.push({ operation: 'respondToInput', runId });
-            return notImplemented();
+            return Promise.resolve(runs.get(runId)?.answer('input', requestId, 'answer') === true ? { ok: true } : refused('no open input request'));
         },
         endSession(runId) {
             calls.push({ operation: 'endSession', runId });
