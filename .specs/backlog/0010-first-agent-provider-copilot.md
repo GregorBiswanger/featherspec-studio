@@ -1,7 +1,7 @@
 # First Agent Provider Integration (GitHub Copilot SDK)
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0010-first-agent-provider-copilot.plan.md](0010-first-agent-provider-copilot.plan.md)
 
 Handoff reference: FS-010 ([po-handoff.md](../../docs/product/po-handoff.md) §2.1, §8.3, §10 FS-010, §13, §14 Provider Contract Tests).
 Provider choice: PD-001 (proxy) and [ADR-003](../../docs/decisions/ADR-003-first-agent-provider.md) (Proposed; PoC open). The PD register wins over ADRs.
@@ -90,12 +90,16 @@ Copilot-specific text beside 0009's generic availability or error text (0012: "r
 - **BR-02 Authentication** (Q1, handoff AC-010.10). Only the GitHub account signed in to the Copilot
   CLI. The adapter passes no token and starts the runtime without `COPILOT_GITHUB_TOKEN`, `GH_TOKEN`
   and `GITHUB_TOKEN`, so no other path applies silently — tools the agent runs do not see them
-  either (documented). Studio holds and stores no credential.
+  either (documented). Studio holds and stores no credential. The GitHub CLI's stored login, which
+  Copilot reports as auth type `gh-cli`, is such a signed-in login (M-01, 2026-11-17).
 - **BR-03 Runtime and availability** (Q2, 0009 BR-004). The CLI comes from the machine-scoped setting
   `featherspec-studio.copilot.cliPath` (never from workspace or folder settings), else from `PATH`;
-  none is bundled. Results are 0009's: *not installed* (not found, not startable, older than
-  OP-001's minimum), *not signed in*, *blocked by policy* (UNVERIFIED, OP-005), otherwise *unknown*
-  with Copilot's message.
+  none is bundled. Only a file the runtime can be started from without a shell counts: on Windows
+  `copilot.exe`; `.cmd`, `.ps1`, `.bat` and `.js` entries are skipped (M-09 preflight: npm shims
+  are not startable without a shell, and the SDK would start a `.js` with the extension host's own
+  executable). Minimum CLI version 1.0.87 and SDK protocol 3 (OP-001). Results are 0009's: *not
+  installed* (not found, not startable, older than the minimum), *not signed in*, *blocked by
+  policy* (not detected in this increment, OP-005), otherwise *unknown* with Copilot's message.
 - **BR-04 Working context** (Q5). The session's working directory is the project root. 0008's prompt
   and 0011's continuation text are passed byte for byte; the adapter adds no file content and no
   instruction of its own.
@@ -116,14 +120,17 @@ Copilot-specific text beside 0009's generic availability or error text (0012: "r
   `session.started`, never one of its own.
 - **BR-09 Runtime data folder** (Q6). One base directory in Studio's global storage, outside every
   workspace folder, for all projects. If M-08 fails, none is passed and the docs say Copilot keeps
-  those files outside Studio's retention (A-003).
+  those files outside Studio's retention (A-003). M-08 passed on 2026-11-17 for a `gh-cli` login.
 - **BR-10 Telemetry** (handoff §13 Privacy, ADR-003 §5). Copilot telemetry and session telemetry are
   off for every runtime and session Studio starts or resumes.
 - **BR-11 Events** (0009 BR-007, §8.2). Mapped per §7, source `provider`. Source `derived` marks
   what the adapter adds itself: the forced stop's `run.cancelled`, a `.resolved` Copilot does not
   send (0009 BR-005) and the runtime-exit `run.failed` — the only derived `run.failed`, which 0011
-  classes `provider_exited` (0011 BR-008). A type §7 does not list becomes `provider.unknown`; the
-  run continues. No raw Copilot object is delivered (PD-029).
+  classes `provider_exited` (0011 BR-008). The `.resolved` the adapter emits when the developer's
+  answer reaches it is `derived`; a later Copilot `.completed` for that request is dropped. A type
+  §7 neither maps nor ignores becomes `provider.unknown`; the run continues. No raw Copilot object
+  is delivered (PD-029). Provider event identity is Copilot's event `id`; where one Copilot event
+  yields several events, the second and later carry `<id>#<n>` (0004 deduplicates by identity).
 - **BR-12 Errors** (0009 BR-009). Mapped per §7; unmapped → `unknown`; never `cancelled` or
   `tool_failure` (a failed tool is `tool.completed` not ok). 0009 owns the generic texts, the
   adapter adds the hints of §9. A failure before a session exists ends the run with `run.failed`
@@ -132,31 +139,53 @@ Copilot-specific text beside 0009's generic availability or error text (0012: "r
   the runtime, cause "forced stop". `endSession` (0009 §8.1) stops it at once. The adapter delivers
   exactly one end kind per run, whatever arrives later.
 - **BR-14 Disclosure** (handoff §13 Privacy, ADR-003 §5). The adapter supplies the text "Runs with
-  GitHub Copilot send the prompt and every file the agent reads to GitHub, and each prompt counts
-  against your Copilot plan." as its registry entry's disclosure (0009 BR-001; wording: OP-010).
+  GitHub Copilot send the prompt, every file the agent reads, command output and your answers to
+  GitHub, and each prompt counts against your Copilot plan." as its registry entry's disclosure
+  (0009 BR-001; wording: OP-010).
 
 ## 7. Mapping tables
 
-Events (Copilot → 0009 kind): `session.start` or the created session ID, whichever comes first →
-one `session.started{sessionRef}` · `assistant.turn_start` / `assistant.turn_end` → `turn.started` /
-`turn.completed` · `assistant.message_delta` / `assistant.message` → `message.delta` /
-`message.completed` · `assistant.reasoning(_delta)` → `reasoning` · `tool.execution_start` /
-`_progress` / `_complete` → `tool.started` / `tool.progress` / `tool.completed{ok}` ·
-`tool.execution_complete.fileEdits[]` → `file.changed` · `permission.requested` /
-`permission.completed` → `approval.requested` / `approval.resolved` · `user_input.requested` /
-`user_input.completed`, `elicitation.*` → `input.requested` / `input.resolved` ·
-`session.todos_changed` → `plan.updated` · `assistant.usage`, `session.usage_info` → `usage` ·
-`session.warning` → `warning` · the first `session.idle` after the prompt or continuation text was
-sent → `run.completed` · `session.error` → `run.failed{category}` · `abort` → `run.cancelled`.
-Types Studio deliberately drops are added as *ignored* before planning (OP-011).
+Event types and field names are those of the recording `docs/decisions/poc-copilot-2026-11-17/`
+(SDK 1.0.34, CLI 1.0.87, 2026-11-17); types the recording lacks follow the SDK's
+`dist/generated/session-events.d.ts` and are marked *synthetic* in the fixtures.
 
-Errors (→ 0009 category): runtime cannot be started → `runtime_missing` · not signed in, token
-rejected → `auth` · `errorType` `rate_limit` or `quota` → `quota_or_rate_limit` · model named in
-the call is not in Copilot's list → `model_unavailable` · connection or server failure →
-`network_or_server` · policy refusal of the seat → `policy_denied` · runtime exits during a run →
-`unknown` with "Copilot runtime stopped unexpectedly" and its exit code · a session Copilot no
-longer knows, anything else → `unknown`. The `errorType` values for auth, policy, network and
-model, and the `fileEdits` kinds behind `add`, `update`, `delete`, are UNVERIFIED (OP-002).
+Events (Copilot → 0009 kind): `session.start` (start) or `session.resume` (resume), or the created
+session ID, whichever comes first → one `session.started{sessionRef, model = selectedModel}` ·
+`assistant.turn_start` / `assistant.turn_end` → `turn.started` / `turn.completed` ·
+`assistant.message_delta` (`deltaContent`) / `assistant.message` (`content`) → `message.delta` /
+`message.completed` · `assistant.reasoning` (whole text) → `reasoning` · `tool.execution_start` /
+`_progress` / `_complete` → `tool.started` / `tool.progress` / `tool.completed{ok = success, errorText
+= error.message}` · `tool.execution_complete.fileEdits[]` → `file.changed` per entry, kind `create` /
+`edit` / `delete` → `add` / `update` / `delete`, another kind → no `file.changed` but one `warning`
+naming it · `permission.requested` → `approval.requested` · `permission.completed` →
+`approval.resolved` only for a request Studio did not answer · `user_input.requested`,
+`elicitation.requested` → `input.requested` · `user_input.completed`, `elicitation.completed` →
+`input.resolved` only for a request Studio did not answer · `session.todos_changed` (a signal
+without payload) → `plan.updated` from Copilot's todo list read at that moment (item text = title,
+done when the status is `done`, UNVERIFIED) · `assistant.usage` → `usage` with running totals of
+`inputTokens` and `outputTokens` · `session.warning` → `warning` · the first `session.idle` after the
+prompt or continuation text was sent, unless the run already has an end kind → `run.completed
+{finalMessage = the last message.completed}` · `session.error` → `run.failed{category}` · `abort` →
+`run.cancelled`.
+
+Ignored (OP-011, from the recording): every `model.*` type, `assistant.streaming_delta`,
+`assistant.message_start`, `assistant.tool_call_delta`, `assistant.reasoning_delta` (its whole
+text arrives as `assistant.reasoning`), `assistant.idle`, `user.message`, `system.message`,
+`pending_messages.modified`, `session.managed_settings_resolved`, `session.mcp_server_status_changed`,
+`session.mcp_servers_loaded`, `session.tools_updated`, `session.title_changed`,
+`session.model_change`, `session.usage_info` (a context-window snapshot, not consumption),
+`session.usage_checkpoint`, `session.background_tasks_changed`, `session.shutdown`,
+`agent.interrupted`, `prompt_cache_break`. A type in neither list is `provider.unknown`.
+
+Errors (→ 0009 category): runtime cannot be started → `runtime_missing` · auth status not
+authenticated, or `errorType` `authentication` → `auth` · `errorType` `rate_limit` or `quota` →
+`quota_or_rate_limit` · model named in the call is not in Copilot's list → `model_unavailable` ·
+`statusCode` 500 or higher, or a connection failure → `network_or_server` · `errorType`
+`authorization` or `policy` → `policy_denied` · runtime exits during a run → `unknown` with "Copilot
+runtime stopped unexpectedly" and its exit code where the SDK reports it · a session Copilot no
+longer knows, anything else → `unknown`. The `errorType` values come from the SDK's `ErrorData`
+documentation, not from a recorded error (OP-002); the `fileEdits` kinds from its
+`ToolExecutionCompleteFileEditKind` type.
 
 ## 8. Security, permissions and privacy
 
@@ -170,10 +199,13 @@ model, and the `fileEdits` kinds behind `add`, `update`, `delete`, are UNVERIFIE
 ## 9. Hints
 
 English (PD-016): *not installed* / `runtime_missing` → the found and required version where known,
-and the install link (OP-008) · *not signed in* / `auth` → "Run `copilot` in a terminal and sign in,
-then retry." · `quota_or_rate_limit` → "Your Copilot allowance or rate limit is reached; retry
-later." · `model_unavailable` → names the model and "Change the setting
-featherspec-studio.copilot.model."
+and the install link <https://docs.github.com/en/copilot/how-tos/copilot-cli/set-up-copilot-cli/install-copilot-cli>
+(OP-008); a skipped shim names itself and asks for `copilot.exe` or the setting
+featherspec-studio.copilot.cliPath · *not signed in* / `auth` → "Run `copilot` in a terminal and
+sign in, then retry." · `quota_or_rate_limit` → "Your Copilot allowance or rate limit is reached;
+retry later." · `model_unavailable` → names the model, lists the offered models and "Change the
+setting featherspec-studio.copilot.model." · *unknown* for a protocol Copilot and the SDK do not
+share → names both versions (OP-008).
 
 ## 10. Acceptance criteria
 
@@ -189,10 +221,10 @@ settled (§15).
 - **AC-003** If the found CLI reports a version below the minimum (OP-001), then the adapter shall
   return *not installed* naming the found and the required version; if the adapter cannot read a
   version, then it shall return *unknown* with that reason.
-- **AC-004** If Copilot answers the availability check with its not-signed-in error (OP-002), then
-  the adapter shall return *not signed in* with the hint of §9; if a `start` or `resume` receives
-  that error, then it shall emit `run.failed` with category `auth` and that hint, and create no
-  session.
+- **AC-004** If Copilot's auth status reports not authenticated (OP-002), then the adapter shall
+  return *not signed in* from the availability check with the hint of §9; if a `start` or `resume`
+  receives that status, then it shall emit `run.failed` with category `auth` and that hint, and
+  create no session.
 - **AC-005** When the adapter starts the runtime — for a check, a start or a resume — it shall pass
   an environment without `COPILOT_GITHUB_TOKEN`, `GH_TOKEN` and `GITHUB_TOKEN` (also when Studio's
   own environment sets them) and with `COPILOT_TELEMETRY_DISABLED=true`, disable session telemetry,
@@ -205,7 +237,8 @@ settled (§15).
   `session.started` with the Copilot session ID as session reference and the run ID of the call,
   before any other event of that run.
 - **AC-008** When `start` names a model, the adapter shall create the session with it; when none is
-  named, and on `resume`, the adapter shall pass none. When asked for the next start's model
+  named, and on `resume`, the adapter shall pass none (Copilot names the model as `selectedModel`
+  of `session.start` or `session.resume`). When asked for the next start's model
   (OP-006 a), the adapter shall return the setting's value, or none when it is empty. The adapter
   shall deliver the model Copilot names for the session with `session.started`, otherwise none.
 - **AC-009** If `start` names a model that Copilot's model list does not contain, then the adapter
@@ -248,8 +281,8 @@ settled (§15).
   continuation text, the adapter shall resume that session with the options of AC-005 and AC-006,
   send the continuation text byte-identical, and never create a new session in its place.
 - **AC-020** If the runtime process exits while a run has no end kind and no cancel is pending, then
-  the adapter shall emit `run.failed` with category `unknown`, the message of §7 and the exit code,
-  source `derived`; no other `run.failed` of the adapter shall carry that source (0011 BR-008).
+  the adapter shall emit `run.failed` with category `unknown`, the message of §7 and the exit code
+  where the SDK reports one, source `derived`; no other `run.failed` of the adapter shall carry that source (0011 BR-008).
 - **AC-021** If Copilot refuses a resume, then the adapter shall emit `run.failed` with the category
   of §7 — `unknown` with Copilot's message for a session it no longer knows — and create no session.
 - **AC-022** *Only if OP-007 adopts a token path; not planned before.* Where the adapter passes a
@@ -271,11 +304,12 @@ AC-018 · .8 → AC-002, AC-003 · .9 → AC-007 · .10 → AC-005 · FR-010.3 �
 - Seam: one thin client interface; production wires `@github/copilot-sdk` (pin 1.0.34, ADR-003
   risk 2), tests the scripted client. Adding the SDK is a dependency change — Ask-first in
   `/sdd-plan` (AGENTS.md). It is bundled and must bring neither a native module nor the platform
-  runtime packages into the VSIX (ADR-001 Decision 1); how is decided in the plan after M-09.
+  runtime packages into the VSIX (ADR-001 Decision 1); how: plan 0010 *Approach* (2026-11-17).
 - Lives in `src/adapters/providers/copilot/`; no core or webview import (0009 AC-002).
-- Fixtures: Gregor's event files from M-01…M-05, stripped of account names, home paths and file
-  content and checked against `docs/security/secret-patterns.md` before they enter the repository;
-  until then synthetic streams written from `dist/generated/session-events.d.ts`.
+- Fixtures: the recorded stream of `docs/decisions/poc-copilot-2026-11-17/events-copilot.jsonl`
+  (one file with a `check` field per line; already redacted, account and home path replaced),
+  checked against `docs/security/secret-patterns.md`; event types it lacks come from a synthetic
+  stream written from `dist/generated/session-events.d.ts` and marked *synthetic*.
 - SDK option names: ADR-003 §1–§2, §5. Setting keys keep the manifest's `featherspec-studio.`
   prefix. Node engine `^20.19 || >=22.12` must match the extension host's (M-07).
 
@@ -283,34 +317,49 @@ AC-018 · .8 → AC-002, AC-003 · .9 → AC-007 · .10 → AC-005 · FR-010.3 �
 
 | ID | Assumption | Why we believe it | What breaks if wrong |
 | --- | --- | --- | --- |
-| A-001 | The SDK uses the installed CLI's signed-in login without a token | ADR-003 §2 Auth row, docs only; Gregor's MVP path (Q1) | BR-02 fails; PD-001 is reopened (M-01) |
-| A-002 | The SDK works with a separately installed CLI of a compatible version | ADR-003 §2 names `COPILOT_CLI_PATH`; compatibility unproven until M-09 | BR-03 fails; bundling and per-platform VSIX come back (revises ADR-001) |
-| A-003 | The signed-in login is visible from a Studio-owned base directory | ADR-003 §2 (`baseDirectory` sets `COPILOT_HOME`); unproven until M-08 | BR-09 falls back to the default folder (Q6) |
-| A-004 | 10 s is long enough for Copilot to confirm an abort | Working threshold, mine; not measured | Forced stops where a clean abort would have come; re-measured in M-04 |
-| A-005 | `manual` mode raises a request for every tool use, reads included | ADR-003 §1 lists a `read` kind — not proof that every read asks | Reads happen unasked; §8 and BR-14 are reworded; M-02 decides |
-| A-006 | A request arrives once, with an ID; the first `session.idle` after the prompt ends the run; `session.error` is terminal | ADR-003 §4, from types only; 0009 §8.2 expects the ID | §7, AC-013, AC-018 change; M-02, M-03 decide |
+| A-001 | The SDK uses the installed CLI's signed-in login without a token | Confirmed by M-01 (2026-11-17, auth type `gh-cli`, 25 models) | BR-02 fails; PD-001 is reopened (M-01) |
+| A-002 | The SDK works with a separately installed CLI of a compatible version | Confirmed by M-09: SDK 1.0.34 (expects 1.0.112) ran the installed CLI 1.0.87, protocol 3 | BR-03 fails; bundling and per-platform VSIX come back (revises ADR-001) |
+| A-003 | The signed-in login is visible from a Studio-owned base directory | M-08 passed for a `gh-cli` login with an empty base directory; a login made only with `copilot` is unproven (acceptance) | BR-09 falls back to the default folder (Q6) |
+| A-004 | 10 s is long enough for Copilot to confirm an abort | M-04: abort confirmed after 34 ms (text-only run) | Forced stops where a clean abort would have come; re-measured in M-04 |
+| A-005 | `manual` mode raises a request for every tool use, reads included | ADR-003 §1 lists a `read` kind; M-02's prompt read nothing, so still open (acceptance) | Reads happen unasked; §8 and BR-14 are reworded; M-02 decides |
+| A-006 | A request arrives once, with an ID; the first `session.idle` after the prompt ends the run; `session.error` is terminal | M-02: one handler call and one `permission.requested` with `requestId`; M-03: run ended with `session.idle`; `session.error` not yet observed | §7, AC-013, AC-018 change; M-02, M-03 decide |
 
 ## 13. Manual checks (only Gregor's machine can prove these)
 
 Windows 11, folder `C:\projects\test\spike002-poc`, signed-in Copilot seat.
 
-**PoC, before `/sdd-plan`** (ADR-003 §7 A1–A6, plain `node poc.mjs`), one event file per check
-(`events-copilot-M0N.jsonl`); Gregor sends the files and states pass or fail.
+**PoC, before `/sdd-plan`** (ADR-003 §7 A1–A6) — run 2026-11-17 with `poc.mjs` (plain Node 26.13,
+SDK 1.0.34, installed CLI 1.0.87 from WinGet); evidence: `docs/decisions/poc-copilot-2026-11-17/`
+(`report.json`, `preflight.json`, `events-copilot.jsonl` with 333 lines, one file with a `check`
+field per line instead of one file per check).
 
-- **M-01** (A1) Signed out: record the error shape. Signed in: model list returned.
+- **M-01** (A1) Signed out: record the error shape. Signed in: model list returned. — *pass*, signed-in
+  half (`gh-cli`, 25 models); the signed-out half moves to the acceptance checks.
 - **M-02** (A2) Approval round trip: shell request rejected, write request approved once; no tool
-  runs before the answer; note whether a request arrives once and whether reads ask.
+  runs before the answer; note whether a request arrives once and whether reads ask. — *pass* for
+  reject (one `write` request, once, with `requestId`; file absent); approve once and reads: acceptance.
 - **M-03** (A3) Full run with the A3 prompt: events of §7 arrive, `fileEdits` present, the run ends
-  with `session.idle`.
+  with `session.idle`. — *pass* with a text-only prompt; `fileEdits`: acceptance.
 - **M-04** (A4) Abort 5 s into a run: confirmed, no file written after it; time to confirmation noted.
+  — *pass*, abort confirmed after 34 ms (1.5 s into a text-only run), no delta and no file after it.
 - **M-05** (A5) Resume in a new process; the agent answers about its earlier changes; note whether
-  earlier events are replayed.
-- **M-06** (A6, optional) VS Code GitHub token accepted or not — input for OP-007.
-- **M-07** M-01…M-03 inside an Extension Development Host; log Node and Electron versions.
-- **M-08** Login visible from a base directory in Studio's global storage — decides A-003.
-- **M-09** SDK 1.0.34 against the installed CLI version — sets OP-001's minimum, decides A-002.
+  earlier events are replayed. — *pass*: resumed in 185 ms, earlier events not replayed (three
+  setup events before the prompt), the agent remembered its first answer.
+- **M-06** (A6, optional) VS Code GitHub token accepted or not — input for OP-007. — not run; out of
+  this increment (OP-007).
+- **M-07** M-01…M-03 inside an Extension Development Host; log Node and Electron versions. — not run
+  in the PoC; it becomes the host smoke `src/test/copilot.smoke.test.ts`, the first acceptance check
+  (OP-013).
+- **M-08** Login visible from a base directory in Studio's global storage — decides A-003. — *pass*
+  for a `gh-cli` login with an empty base directory.
+- **M-09** SDK 1.0.34 against the installed CLI version — sets OP-001's minimum, decides A-002. —
+  *pass*: CLI 1.0.87, protocol 3; the npm `.cmd`/`.ps1` shims are not startable without a shell,
+  the WinGet `copilot.exe` is.
 
-**Acceptance, after the build:** M-01…M-05 repeated in Studio with the built adapter.
+**Acceptance, after the build:** first M-07 (the host smoke on Windows; an engine mismatch stops
+the spec), then M-01…M-05 repeated in Studio with the built adapter, including the parts the PoC
+left open: M-01 signed out, M-02 approve once and a read, M-03 with the A3 prompt (`fileEdits`),
+M-04 5 s into a tool-using run, and A-003 with a login made only with `copilot`.
 
 If M-01 fails on Gregor's machine, PD-001 is reopened per ADR-003's decision rule and this spec is
 revised (Q7); no second provider spec is written in parallel. A failed M-06: OP-007.
@@ -329,44 +378,45 @@ Resolved:
   `cliPath`; (d) BR-06 compares text; (e) M-01 in the acceptance checks; (f) no answer to open
   requests at cancel; (g) stripped fixtures; (h) only the runtime-exit `run.failed` is `derived`.
 
-Open — none needs a guess in the plan; finding in brackets, a recommendation each:
+Decided 2026-11-17 from the PoC evidence (§13) and, where it settles nothing, by each point's own
+recommendation (Gregor's standing approval for plan sessions):
 
-- OP-001 Minimum CLI version — from M-09.
-- OP-002 Copilot `errorType` values and `fileEdits` kinds — UNVERIFIED, from M-01 and M-03.
-- OP-003 [20] Neither the age cap nor "Clear Run History" (PD-027) reaches Copilot's session files.
-  Recommendation: the adapter offers "remove session data" by session reference; the main session
-  decides who calls it.
+- OP-001 Minimum CLI version 1.0.87 (the lowest proven, M-09) and protocol 3; a newer CLI with
+  protocol 3 is accepted (BR-03).
+- OP-002 Not signed in = auth status not authenticated (typed, no error string needed); `errorType`
+  values from the SDK's `ErrorData` documentation and the `fileEdits` kinds from its types (§7) —
+  still UNVERIFIED by a recorded error; the acceptance checks record one where they can.
+- OP-003 Not built here: removing session data needs a caller and a port operation 0009's surface
+  does not have; it stays with the main session.
+- OP-005 *Blocked by policy* is not detected in this increment; `errorType` `authorization` or
+  `policy` ends a run as `policy_denied` (§7).
+- OP-006 (a) settled by 0009's surface: `permissionModeLabel` and `nextStartModel`; (b) `endSession`
+  is in 0009's port; (c) accepted; (d) done.
+- OP-007 The VS Code GitHub token is out of the MVP; M-06 was not run; AC-022 is not planned.
+- OP-008 Install link and hints in §9; the `model_unavailable` hint lists the offered models; a
+  protocol mismatch is *unknown* naming both versions.
+- OP-009 Choices are appended to the question; an elicitation whose form is one text field is a
+  question, any other form is declined and reported as `warning`.
+- OP-010 Disclosure with "command output and your answers" (BR-14).
+- OP-011 The *ignored* list of §7.
+- OP-012 One runtime per run, stopped at the end kind, after a check and at deactivation; earlier
+  events are not replayed on resume (M-05); the session is created with the working directory
+  trusted for that session only (as in the PoC), so Copilot asks no folder-trust question — every
+  tool action still asks (BR-05); processes surviving a forced stop and two windows on one base
+  directory stay unverified and are documented.
+- OP-013 M-07 is the host smoke and the first acceptance check (Gregor, 2026-11-17).
+
+Open:
+
 - OP-004 Remote, WSL, Dev Containers: unverified; documented as a limitation (handoff §13).
-- OP-005 Copilot Business/Enterprise policies blocking SDK use — UNVERIFIED (ADR-003 §5).
-- OP-006 (cross-spec, main session) (a) [8] No port operation reports the permission mode or the
-  next start's model (0009 OP-002, 0008 OP-010). Recommendation: the mode as 0009's registry label
-  for "every action asks", the model by one port query. (b) 0009 §8.1 has `endSession` (AC-025); 0011
-  OP-004 still says the port can only cancel. (c) 0008 OP-011 and 0011 OP-006 move their
-  real-provider checks into §13's acceptance. Recommendation: accept. (d) 0009 OP-011's notes on
-  this spec are done.
-- OP-007 [13, 24] VS Code GitHub token. Recommendation: out of the MVP whatever M-06 shows; a failed
-  M-06 does not reopen PD-001. If adopted later, AC-022 applies.
-- OP-008 [60] The install link's URL (fixed in the plan); whether the `model_unavailable` hint lists
-  the offered models (recommended: yes); a CLI newer than the pinned SDK supports (recommended:
-  *unknown* naming both versions).
-- OP-009 [70] Questions with choices, structured elicitation. Recommendation: choices are appended
-  to the question; a form free text cannot answer is declined and reported as `warning`.
-- OP-010 [82] Disclosure wording, for Gregor to accept. Recommendation: add "command output and your
-  answers".
-- OP-011 [69] Unlisted Copilot event types flood `provider.unknown`. Recommendation: after M-03, §7
-  gets an *ignored* list; only types in neither list are unknown.
-- OP-012 [65, 66, 71, 73] Runtime behaviour, UNVERIFIED: runtime lifetime (recommended: stopped at
-  the end kind, after a check, at deactivation; a check that never returns: 0009 OP-009);
-  processes surviving a forced stop; Copilot's folder-trust question; replayed events on resume;
-  two windows on one base directory.
-- OP-013 [83] M-07 does not precede the plan. Recommendation: add it — an engine mismatch is a no-go.
 
 ## 15. Definition of Ready
 
 - 0009 is clarified (done 2026-11-16) and OP-006 a is settled.
 - M-01…M-06, M-08 and M-09 are done and their stripped files are in the repository as fixtures —
   `/sdd-plan` for this spec waits for them (Q7); OP-001 and OP-002 are filled in from them.
-- A-001…A-003 are confirmed or the spec is revised.
+  Met 2026-11-17 except M-06 (not run, OP-007); the evidence is in `docs/decisions/poc-copilot-2026-11-17/`.
+- A-001…A-003 are confirmed or the spec is revised. A-001 and A-002 confirmed; A-003 for `gh-cli`.
 
 ## 16. Definition of Done
 
@@ -377,5 +427,5 @@ Open — none needs a guess in the plan; finding in brackets, a recommendation e
 
 ## 17. Recommended next steps
 
-Gregor runs the PoC checks of §13; the main session settles OP-006 and puts the open points to
-Gregor; then `/sdd-plan`.
+Gregor reads [the plan](0010-first-agent-provider-copilot.plan.md); after the build, the
+acceptance checks of §13.

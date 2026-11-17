@@ -1,0 +1,309 @@
+# Plan — First Agent Provider Integration (GitHub Copilot SDK)
+
+**Spec:** [0010-first-agent-provider-copilot.md](0010-first-agent-provider-copilot.md)
+**Status:** Not started
+**Last updated:** 2026-11-17
+**Current step:** T-001
+
+## Approach
+
+One adapter folder `src/adapters/providers/copilot/` implements 0009's `AgentProviderPort` exactly as
+the *Surface* of [plan 0009](../active/0009-agent-provider-abstraction.plan.md) names it; nothing of
+that surface is redefined. Inside, a **client seam** (`client.ts`: our own minimal types for client,
+session, events and the three handlers) separates the logic from the SDK: production wires
+`sdkClient.ts` over `@github/copilot-sdk@1.0.34`, every criterion runs on a **scripted client** that
+replays the recorded PoC stream (`test/fixtures/copilot/`) or a stream marked *synthetic*. The pure
+**mapping** (`mapping.ts`) turns one Copilot event into zero or more `DeliveredEvent`s; the adapter
+(`copilotProvider.ts`) owns runs, the runtime per run, open requests, cancel and exit. Order: the
+risky packaging first (dependency, universal bundle, CLI lookup), then the seam, then mapping and the
+happy path, then failures, then the interactive paths, then wiring and the host smoke (M-07). Memory
+Bank files touched: `techContext.md`, `systemPatterns.md`, `activeContext.md` (T-008).
+
+**Precondition:** plan 0009 is `Done` (registry, service, `createProviderSetup`, contract suite,
+`StudioApi.providers()`); 0011, 0008 and 0012 are implemented before this plan (orchestrator order).
+
+**Packaging (one universal VSIX, ADR-001 Decision 1).** The SDK is a **devDependency** pinned
+exactly (`"1.0.34"`), like React here: esbuild bundles its JavaScript (`zod`, `vscode-jsonrpc`,
+`lossless-json` come with it), so vsce sees no production dependency, and `.vscodeignore` already
+drops `node_modules/**`. `koffi` (native FFI) is added to esbuild's `external`: the SDK loads it only
+in `ffiRuntimeHost.js`, behind a dynamic `import()` on the in-process path, which this adapter never
+takes (it uses `RuntimeConnection.forStdio({path})`). The optional per-platform packages
+(`@github/copilot-sdk-<platform>`, 211 MB for `win32-x64`) are installed by `npm ci` but never
+imported on the stdio path, so esbuild does not pull them in; a bundle test proves both.
+
+**Decisions taken here** (spec revised the same day, §14): minimum CLI 1.0.87 and protocol 3;
+Windows lookup takes `copilot.exe` only; not signed in = `getAuthStatus().isAuthenticated === false`;
+runtime exit is detected by the wrapper (SDK 1.0.34 has no public exit hook): a `ping()` every 5 s
+while a run is open, a failure with no stop requested is the exit, the code parsed from the SDK's
+"exited … with code N" text; approvals, questions and elicitations are answered by settling the
+promise the SDK handler returned — the SDK calls the handler while dispatching the `.requested`
+event, before `onEvent` (`session.js` 1.0.34; recording lines 106/107), so the adapter pairs the
+pending handler call with the next `.requested` event of its kind; after a run's end such a promise
+is never settled (no answer is sent, AC-015). Display name "GitHub Copilot"; permission mode label
+"Asks before every tool action (Copilot manual mode)"; base directory
+`<globalStorage>/copilot-home`. M-06 is not in this increment (OP-007): no token path, AC-022 is
+not planned.
+
+**Quality gates:** `npx eslint src --max-warnings 0` · `npx tsc --noEmit` ·
+`npx tsc --noEmit -p src/webview` · `npm run test:unit` · `npm run compile` (T-001, T-002, T-007,
+T-008). Pre-done gate on CI or Windows: `npm test` with the new `src/test/copilot.smoke.test.ts`.
+
+## Research
+
+- Survey (2026-11-17): 0009 is in progress (T-001…T-003 verified): `src/core/ports/agentProvider.ts`
+  holds every port type of the surface, `src/core/providers/testing/scan.ts` already lists
+  `@github/copilot-sdk` in `PROVIDER_SDKS` and `'copilot'` in `PROVIDER_IDS`, ESLint bans SDK imports
+  in core production files. No Copilot code exists. `RuntimeClock` (`epochMs`, `setTimeout`) in
+  `src/core/ports/runtimeMedium.ts`; `resolveStorageLocation` in `src/adapters/vscode/storageLocation.ts`
+  (global storage path, reused for the base directory); `sameRootFor(platform)` in
+  `src/adapters/vscode/sameRoot.ts` (case-insensitive on Windows, no `vscode` import) serves BR-06.
+  `esbuild.js` bundles `src/extension.ts` (cjs, node, `external: ['vscode']`) and runs on load, so
+  T-002 exports the host options and guards `main()`. `.vscodeignore` holds `node_modules/**`. No
+  vsce in `node_modules`; CI (`ci.yml`, Ubuntu + Windows, Node 22) runs `npm ci` and all gates.
+  Masking patterns: `src/core/runtime/masking.ts` (mirrors `docs/security/secret-patterns.md`).
+- Consumers: 0008 reads `nextStartModel`, `permissionModeLabel`, `disclosure` and availability, and
+  ships `featherspec-studio.defaultProvider = copilot`; 0011 needs `START_TIMEOUT_MS = 60 000` (a
+  cold runtime start took 14 s) and classes a derived `run.failed` as `provider_exited`; 0012
+  renders `approval.requested.summary` and hints as delivered.
+- PoC evidence, [docs/decisions/poc-copilot-2026-11-17/](../../docs/decisions/poc-copilot-2026-11-17/)
+  (repo, 2026-11-17): M-01, M-02 (reject only), M-03 (text only), M-04, M-05, M-08, M-09 pass;
+  M-06, M-07 not run. Facts used: auth type `gh-cli`, 25 models incl. `auto`; first `client.start`
+  13 952 ms, later starts 2.0–2.3 s; `listModels` 1 018 ms; `createSession` 826 ms; abort confirmed
+  in 34 ms, then `session.idle`; resume 185 ms without replay; `session.start` carries no
+  `selectedModel` here, `session.resume` does; permission handler call precedes
+  `permission.requested`; denied tool → `tool.execution_complete{success: false, error.code
+  denied}`; 31 event types in M-03 (ignored list, spec §7).
+- [@github/copilot-sdk 1.0.34 on npm](https://www.npmjs.com/package/@github/copilot-sdk/v/1.0.34)
+  (`npm view`, tarball read with `npm pack` in a temp dir, nothing installed) — dependencies `zod`
+  4.6.7, `koffi` 3.3.6, `lossless-json` 4.3.3, `vscode-jsonrpc` 10.0.0; eight optional platform
+  packages; engines `^20.19.0 || >=22.12.0`; `exports` with `import` and `require` builds;
+  `cliVersion.js` 1.0.112; protocol 3, `MIN_PROTOCOL_VERSION` 3 (`client.js`
+  `verifyProtocolVersion` throws on mismatch); `koffi` only in `ffiRuntimeHost.js`, loaded by
+  dynamic `import()` on the in-process path; `runtimeArtifacts.js` uses
+  `createRequire(__filename ?? import.meta.url)` (safe in a cjs bundle); a `.js` CLI path is
+  spawned with `process.execPath` (Electron in the extension host), any other path directly with
+  `windowsHide`, no shell; options `baseDirectory` (sets `COPILOT_HOME`), `useLoggedInUser`,
+  `gitHubToken`, session `permissionMode`, `enableSessionTelemetry`, `trustWorkingDirectory`,
+  `onPermissionRequest`, `onUserInputRequest` (request carries `requestId`), `onElicitationRequest`,
+  `onEvent`; permission results `approve-once` and `reject{feedback?}`; `session.todos_changed` has
+  no payload — todos come from `session.rpc.plan.readSqlTodosWithDependencies()` (`rows[].title`,
+  `status`, experimental); `ErrorData.errorType` documented as "authentication", "authorization",
+  "policy", "quota", "rate_limit", "context_limit", "query"; `fileEdits[].kind` `create` · `edit` ·
+  `delete` · other, `path` absolute; a runtime exit only marks sessions disconnected (no public
+  hook); retrieved 2026-11-17.
+- [Bundling extensions](https://code.visualstudio.com/api/working-with-extensions/bundling-extension)
+  — once bundled, exclude `node_modules` in `.vscodeignore`; modules that cannot be bundled are
+  externals, and only a negated pattern would ship them; retrieved 2026-11-17.
+- [Installing GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/set-up-copilot-cli/install-copilot-cli)
+  — the install link of §9; retrieved 2026-11-17.
+- Not settled by research: the Node and Electron versions of VS Code 1.146 (a web search found no
+  statement) — M-07 logs them; an engine outside `^20.19 || >=22.12` stops the spec (OP-013).
+- New dependency (approved by Gregor, 2026-11-17): `@github/copilot-sdk@1.0.34` exact, as
+  devDependency. Installing it is a network command: T-001 asks once before `npm install`.
+
+## Stages
+
+1. T-001 → T-002 — packaging first: dependency, CLI lookup, settings; SDK wrapper and universal bundle
+2. T-003 → T-004 — recorded stream, mapping, scripted client; start and resume
+3. T-005 → T-006 — availability, failures and runtime exit; approvals, questions, cancel, end
+4. T-007 → T-008 — contract suite, wiring, host smoke (M-07); docs sync and final gates
+
+No parallel stage: every step from T-003 on builds on T-002's seam, and T-004…T-006 all change
+`copilotProvider.ts`; T-001 and T-002 share `package.json`.
+
+## Steps
+
+### T-001 — Dependency, CLI lookup and settings
+
+- **Covers:** AC-002, AC-003
+- **Do:** Ask-first, then `npm install --save-dev --save-exact @github/copilot-sdk@1.0.34`.
+  `src/adapters/providers/copilot/cliLocator.ts`: `locateCli({settingPath, pathVariable, platform,
+  isFile, runVersion})` → `found {path, version}` · `not-installed {hint}` · `unknown {reason}`.
+  Setting first, else `PATH` in order; Windows takes `copilot.exe` only and remembers a skipped
+  `.cmd`/`.ps1`/`.bat`/`.js` for the hint (§9); `runVersion` runs `<path> --version` without a shell
+  (10 s), parses `GitHub Copilot CLI x.y.z`; below 1.0.87 → *not installed* naming both versions;
+  no version readable → *unknown* with that reason; install link in every *not installed* hint.
+  Constants `MIN_CLI_VERSION`, `INSTALL_URL`. `package.json`: `featherspec-studio.copilot.cliPath`
+  (string, default empty, scope `machine`) and `featherspec-studio.copilot.model` (string, default
+  empty, scope `window`). Manifest test: both keys, `cliPath` scope `machine`, the SDK pinned exactly.
+  Tests `cliLocator.test.ts` with fake `isFile`/`runVersion` (PoC's six PATH hits as a case).
+- **Verify:** `npx vitest run src/adapters/providers/copilot/cliLocator.test.ts src/adapters/vscode/manifest.test.ts` then the per-step gates and `npm run compile`
+- [ ] **Verified (T-001):** —
+- **Notes:** —
+
+### T-002 — SDK wrapper and universal bundle
+
+- **Covers:** AC-005, AC-020, AC-024
+- **Do:** `client.ts`: the seam — `CopilotClientFactory(options: {cliPath, baseDirectory?,
+  workingDirectory})` → client `{start, stop, forceStop, getStatus, getAuthStatus, listModels,
+  createSession(config), resumeSession(id, config), onExit(listener)}`, session `{sessionId, send,
+  abort, disconnect, readTodos}`, config `{workingDirectory, model?, onEvent, onPermission,
+  onUserInput, onElicitation}`, `CopilotEvent = {type, id?, timestamp?, ephemeral?, data}`.
+  `sdkClient.ts`: implements it over an injected SDK module (`{CopilotClient, RuntimeConnection}`,
+  production loads `@github/copilot-sdk` lazily on first use): `forStdio({path})`,
+  `useLoggedInUser: true`, no `gitHubToken`, `env` = the given environment without
+  `COPILOT_GITHUB_TOKEN`, `GH_TOKEN`, `GITHUB_TOKEN` (any case) plus `COPILOT_TELEMETRY_DISABLED=true`,
+  `baseDirectory`, `logLevel: 'error'`; sessions with `permissionMode: 'manual'`, `streaming: true`,
+  `enableSessionTelemetry: false`, `trustWorkingDirectory: 'session'` on create only;
+  `readTodos` over `rpc.plan.readSqlTodosWithDependencies()`; `onExit` from the 5 s `ping()`
+  watcher (clock-driven, only while a session is open, silent after `stop`/`forceStop`).
+  `esbuild.js`: `external: ['vscode', 'koffi']`, host options exported, `main()` only when run
+  directly. `src/adapters/node/extensionBundle.test.ts`: builds `sdkClient.ts` with those options
+  (`write: false`, `metafile`): SDK inputs present, no input under `@github/copilot-sdk-*`, none
+  ending in `.node`, `koffi` external; `.vscodeignore` keeps `node_modules/**` and no `!node_modules`.
+  `sdkClient.test.ts` on a stub SDK recording constructor and session options.
+- **Verify:** `npx vitest run src/adapters/providers/copilot/sdkClient.test.ts src/adapters/node/extensionBundle.test.ts` then the per-step gates and `npm run compile`
+- [ ] **Verified (T-002):** —
+- **Notes:** —
+
+### T-003 — Recorded stream, scripted client and event mapping
+
+- **Covers:** AC-010, AC-011, AC-012
+- **Do:** `test/fixtures/copilot/recorded-2026-11-17.jsonl`: the `sdk` and `handler` lines of the
+  PoC's `events-copilot.jsonl`, unchanged; `test/fixtures/copilot/synthetic.jsonl` (marked) for the
+  §7 types the recording lacks (`tool.execution_progress`, `fileEdits` of each kind and one other,
+  `user_input.*`, `elicitation.*`, `session.todos_changed`, `session.warning`, `session.error`, an
+  unlisted type) from `dist/generated/session-events.d.ts`. `testing/recorded.ts` turns lines into
+  script steps (SDK data rebuilt from the summary per type; keys-only data → `null` values;
+  reasoning text of the recorded length). `testing/scriptedClient.ts`: implements the seam, replays
+  steps on the clock, calls a handler before the event it belongs to, logs every call.
+  `mapping.ts`: `mapEvent(event, context)` per spec §7 — mapped list, ignored list (`model.*`
+  prefix), `provider.unknown {typeName, fieldNames}`, `<id>#<n>` identities, `file.changed` paths
+  relative with `/` or as delivered plus `outsideProject` (BR-06 via `sameRootFor`), running usage
+  totals. Tests: `fixture.test.ts` (no masking-pattern match, no home path, no `poc.` line),
+  `mapping.test.ts` (recorded stream → kinds in order with payload fields; synthetic types; unknown
+  type keeps the run going).
+- **Verify:** `npx vitest run src/adapters/providers/copilot/mapping.test.ts src/adapters/providers/copilot/fixture.test.ts`
+- [ ] **Verified (T-003):** —
+- **Notes:** —
+
+### T-004 — Adapter: start, resume, model, registration
+
+- **Covers:** AC-001 (declaration), AC-006, AC-007, AC-008, AC-019, AC-023, AC-024
+- **Do:** `copilotProvider.ts`: `createCopilotProvider({clock, clientFactory, locate, settings:
+  {model(): string}, baseDirectory, workspaceFolders(), platform})` → `AgentProviderPort & {dispose}`.
+  `id` `copilot`, capabilities of BR-01, label and disclosure (BR-14, byte for byte).
+  `start`: runtime per run, one session (working directory = project root, model only if named,
+  base directory only if outside every workspace folder), `session.started` from `session.start` or
+  the created ID, whichever is first, then the prompt byte-identical; the mapping feeds the sink;
+  the runtime stops at the end kind. `resume`: `resumeSession(sessionRef)`, never `createSession`,
+  continuation text byte-identical, `session.started` from `session.resume` with `selectedModel`.
+  `nextStartModel()` = setting or none; `listModels()`; `credentialValues()` = `[]`. Tests
+  `copilotStart.test.ts` on the recorded M-03 and M-05 parts.
+- **Verify:** `npx vitest run src/adapters/providers/copilot/copilotStart.test.ts`
+- [ ] **Verified (T-004):** —
+- **Notes:** —
+
+### T-005 — Availability, pre-session failures, errors, runtime exit
+
+- **Covers:** AC-002, AC-003, AC-004, AC-009, AC-018, AC-020, AC-021
+- **Do:** `checkAvailability`: locator result → *not installed* / *unknown*; else a runtime with the
+  same options, protocol mismatch from `start` → *unknown* naming both versions, `getAuthStatus`
+  not authenticated → *not signed in* + hint, else *available*; the runtime is stopped in every
+  case. `start`/`resume` check in the order runtime, sign-in, model (named model not in
+  `listModels` → `model_unavailable` naming it and the offered models) and fail with no session.
+  `session.error` → category per §7 with the §9 hints; never `cancelled` or `tool_failure`; resume
+  refused → per §7. Runtime exit with no end kind and no cancel pending → derived `run.failed
+  {unknown, "Copilot runtime stopped unexpectedly", exit code where known}`, the only derived
+  `run.failed`. Tests `copilotFailures.test.ts`.
+- **Verify:** `npx vitest run src/adapters/providers/copilot/copilotFailures.test.ts`
+- [ ] **Verified (T-005):** —
+- **Notes:** —
+
+### T-006 — Approvals, questions, cancel, end session
+
+- **Covers:** AC-013, AC-014, AC-015, AC-016, AC-017, AC-025
+- **Do:** pending handler call paired with its `.requested` event → `approval.requested {requestId,
+  actionKind, summary = command, path or URL as delivered, outsideProject}`; no answer before
+  `respondToApproval`, also after 24 h of clock time; the answer settles the promise with
+  `approve-once` or `reject{feedback}` and emits one derived `approval.resolved`; a later
+  `permission.completed` for it is dropped. `input.requested` for user input (choices appended) and
+  one-text-field elicitations (other forms declined plus `warning`); `respondToInput` passes the text
+  unchanged, `input.resolved` carries none. `cancel`: one `abort` per run, `run.cancelled` on
+  Copilot's `abort`, `forceStop` after 10 s with cause "forced stop", no session yet → `run.cancelled`
+  and no prompt. `endSession`: `forceStop` at once, nothing more delivered. One end kind per run.
+  Call-log check over every test of the folder: only `approve-once`/`reject`, only `manual`, no
+  answer after a run's end. Tests `copilotInteraction.test.ts`.
+- **Verify:** `npx vitest run src/adapters/providers/copilot`
+- [ ] **Verified (T-006):** —
+- **Notes:** —
+
+### T-007 — Contract suite, wiring and host smoke
+
+- **Covers:** AC-001, AC-002, AC-008, AC-024
+- **Do:** `copilotContract.test.ts`: 0009's `runProviderContract('copilot', harness)`, cases
+  arranged as scripted streams (`credential-in-text`: the adapter holds no credential, BR-02 — if
+  0009's suite cannot run that case without one, stop and ask the main session).
+  `src/adapters/vscode/copilotSettings.ts`: `cliPath` from `inspect().globalValue` only, `model`,
+  both as `SettingPort`. `src/extension.ts`: `createCopilotProvider` with `sdkClient`, the locator,
+  the settings, `<globalStorage>/copilot-home`, the workspace folders, in
+  `createProviderSetup({adapters})`, disposed on deactivation. `extensionBundle.test.ts` now builds
+  `src/extension.ts`. `src/test/copilot.smoke.test.ts` (M-07, runs on Windows only through the
+  orchestrator): logs `process.versions.node`/`electron` and asserts `^20.19 || >=22.12`; skips with
+  a logged reason unless `FEATHERSPEC_COPILOT_SMOKE=1` and availability is *available*; then a
+  text-only run to `run.completed` and a write request rejected (file absent) in a temp folder,
+  Mocha timeout 300 s, each wait reports what it awaited and the last event on timeout.
+- **Verify:** `npx vitest run src/adapters/providers/copilot src/adapters/node/extensionBundle.test.ts src/adapters/vscode/manifest.test.ts` then the per-step gates and `npm run compile`
+- [ ] **Verified (T-007):** —
+- **Notes:** —
+
+### T-008 — Docs sync and final gates
+
+- **Covers:** AC-001 … AC-025 (AC-022 not planned, OP-007)
+- **Do:** README: section "GitHub Copilot provider" (installed CLI 1.0.87+, `copilot.exe` on
+  Windows, sign-in, the two settings, the disclosure, removed token variables, telemetry off,
+  session files under Studio's global storage and outside its retention, remote limitation).
+  `docs/agent-provider-port.md`: the `copilot` row. `AGENTS.md` snapshot — extend the
+  `src/adapters/providers` entry (added by 0009) with "; copilot/ is the GitHub Copilot SDK adapter:
+  client seam, SDK wrapper, mapping, scripted client (spec 0010)"; extend the `test/fixtures` entry
+  with "and the recorded Copilot stream". `techContext.md`: SDK devDependency and `koffi` external,
+  the bundle test, fixtures, host smoke and its opt-in variable, the `npm ci` download of the
+  platform package. `systemPatterns.md`: client seam and scripted client, handler pairing, exit
+  watcher (dated, linked). `activeContext.md`. Then every gate.
+- **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`
+- [ ] **Verified (T-008):** —
+- **Notes:** —
+
+## Traceability
+
+| Acceptance criterion | Steps | Code / files | Test | State |
+| --- | --- | --- | --- | --- |
+| AC-001 | T-004, T-007 | — | — | open |
+| AC-002 | T-001, T-005, T-007 | — | — | open |
+| AC-003 | T-001, T-005 | — | — | open |
+| AC-004 | T-005 | — | — | open |
+| AC-005 | T-002 | — | — | open |
+| AC-006 | T-004 | — | — | open |
+| AC-007 | T-004 | — | — | open |
+| AC-008 | T-004, T-007 | — | — | open |
+| AC-009 | T-005 | — | — | open |
+| AC-010 | T-003 | — | — | open |
+| AC-011 | T-003 | — | — | open |
+| AC-012 | T-003 | — | — | open |
+| AC-013 | T-006 | — | — | open |
+| AC-014 | T-006 | — | — | open |
+| AC-015 | T-006 | — | — | open |
+| AC-016 | T-006 | — | — | open |
+| AC-017 | T-006 | — | — | open |
+| AC-018 | T-005 | — | — | open |
+| AC-019 | T-004 | — | — | open |
+| AC-020 | T-002, T-005 | — | — | open |
+| AC-021 | T-005 | — | — | open |
+| AC-022 | — (not planned, OP-007) | — | — | open |
+| AC-023 | T-004 | — | — | open |
+| AC-024 | T-002, T-004, T-007 | — | — | open |
+| AC-025 | T-006 | — | — | open |
+
+## Session handoff
+
+- **Done so far:** plan written 2026-11-17; spec revised the same day from the PoC evidence (§7,
+  §9, §12–§15, AC-004, AC-020 wording; open points decided).
+- **Next action:** Gregor reads the plan; on the start signal T-001 (asks before `npm install`).
+- **Open decisions:** for Gregor to confirm while reading — (a) `trustWorkingDirectory: 'session'`
+  on create (as in the PoC; trusts the project root for that session only, every tool action still
+  asks); (b) the 5 s ping watcher as the runtime-exit signal; (c) a cold first runtime start took
+  14 s against 0009's 15 s availability timeout — a slow first check reports *unknown* with the
+  timeout hint and the next one is warm; M-07 measures it.
+- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Environment:** `npm test` cannot run here; the host smoke runs on Windows through the
+  orchestrator with `FEATHERSPEC_COPILOT_SMOKE=1`.
