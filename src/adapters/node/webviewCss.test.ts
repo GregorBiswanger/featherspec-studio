@@ -308,3 +308,22 @@ describe('0012 AC-029: the Agent Center stylesheet', () => {
         expect(rulesFor(css, '.ac-row[aria-current="true"]').some((rule) => /var\(--vscode-contrastActiveBorder/.test(rule.body))).toBe(true);
     });
 });
+
+describe('0005 AC-019: the panel follows the theme without being reopened', () => {
+    const webviewDir = path.resolve(__dirname, '..', '..', 'webview');
+    const THEME_READS = /classList|vscode-(?:light|dark|high-contrast)|getComputedStyle|matchMedia|getPropertyValue/;
+
+    it('no panel UI module reads or caches the theme, so every colour stays a live --vscode-* lookup', () => {
+        const offenders = tsxFiles(webviewDir)
+            .filter((file) => !file.includes(`${path.sep}testing${path.sep}`))
+            .filter((file) => THEME_READS.test(readFileSync(file, 'utf8')))
+            .map((file) => path.relative(webviewDir, file));
+        expect(offenders).toEqual([]);
+    });
+
+    it('negative control: the check flags a module that reads the theme class or a computed colour', () => {
+        expect(THEME_READS.test("document.body.classList.contains('vscode-dark')")).toBe(true);
+        expect(THEME_READS.test("getComputedStyle(document.body).getPropertyValue('--vscode-foreground')")).toBe(true);
+        expect(THEME_READS.test('const label = "Spec Board";')).toBe(false);
+    });
+});

@@ -2,8 +2,8 @@
 
 **Spec:** [0005-studio-shell-navigation.md](0005-studio-shell-navigation.md)
 **Status:** Done
-**Last updated:** 2026-11-16
-**Current step:** none (all steps ticked, T-010 appended 2026-11-16)
+**Last updated:** 2026-11-17
+**Current step:** none (all steps ticked; T-011 appended 2026-11-17 at the closing `/sdd-compile`)
 
 ## Approach
 
@@ -170,6 +170,7 @@ Memory Bank files touched: `techContext.md` (T-002 gate line, T-009), `systemPat
 3. T-005 → T-006 → T-007 — the core shell: panel-state derivation, shell service, selection and navigation
 4. T-008 → T-009 — VS Code adapters and the host smoke, then docs sync and final gates
 5. T-010 — after `/sdd-compile` (2026-11-16): two rendering risks (AC-030, AC-031), appended
+6. T-011 — closing `/sdd-compile` (2026-11-17): hand checks turned into tests or delegate evidence (AC-019, AC-022, AC-023, AC-024, AC-009), appended
 
 No parallel stage: inside every stage each step builds on the one before it, in one module.
 Stages 2 and 3 share only `src/shared/protocol` and could run side by side after T-001, in two
@@ -487,21 +488,33 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 - [x] **Verified (T-010):** 2026-11-16 — red: `npx vitest run src/webview/areas src/adapters/node/webviewCss.test.ts` 6 failed (4 style assertions and 2 DOM assertions on the unchanged CSS), the 2 controls passed; green after the CSS change: the same files 26/26. Gates: `npx eslint src --max-warnings 0` 0, `npx tsc --noEmit` 0, `npx tsc --noEmit -p src/webview` 0, `npm run test:unit` 76 files, 1119 passed, `npm run compile` ok. The fallback of the contrast variables is `transparent` (borders and outlines) or the previous variable, so the Light and Dark look is unchanged where a theme defines no contrast colour.
 - **Notes:** Appended after the plan was Done (Gregor's decision on the `/sdd-compile` findings); AC-030 and AC-031 appended to the spec. The card focus rule of the board (spec 0007) keeps `--vscode-focusBorder` and is not part of this step. The real readability stays in Gregor's manual AC-019 and AC-023 checks.
 
+### T-011 — Hand checks into tests and delegate evidence (closing `/sdd-compile`)
+
+- **Covers:** AC-019, AC-022 (spec revised 2026-11-17; AC-009, AC-023, AC-024 wording revised, no code)
+- **Do:**
+  - `src/webview/focusIndicator.test.tsx`: every focusable element of the panel (four navigation items, the list rows, the notice's Dismiss, the S7 note's action, the actions of S1, S2, S3) is reached by a `:focus-visible` rule whose outline is a visible width in a `--vscode-*` colour; negative control on a stylesheet without the generic focus rule.
+  - `src/adapters/node/webviewCss.test.ts`, block `0005 AC-019`: no panel UI module reads or caches the theme (body class, computed style, `matchMedia`), so every colour stays a live `--vscode-*` lookup; negative control on the pattern.
+  - Spec: §14 intro, AC-009, AC-019, AC-022, AC-023, AC-024, OP-012 revised under Gregor's delegation of 2026-11-17; checklist items for Gregor in `/home/claude/orch/checklist/0005.md`.
+  - No product code changes.
+- **Verify:** `npx vitest run src/webview/focusIndicator.test.tsx src/adapters/node/webviewCss.test.ts` plus the per-step gates
+- [x] **Verified (T-011):** 2026-11-17 — preserved behaviour, so the tests were green at once (35/35); red by negative control on the product: with the generic `button:focus-visible, [role="option"]:focus-visible` rule removed from `main.css` and a `classList` theme read appended to `App.tsx`, the same run gave 6 failed (both new AC-022 tests, the new AC-019 test, plus three older focus tests), then both files restored, 35/35. Stash spot check of AC-030: the two `.spec-row.selected` secondary-text selectors renamed → 2 failed (`webviewCss.test.ts` AC-030, `areas.test.tsx` AC-030), restored. Gates: `npx eslint src --max-warnings 0` 0, `npx tsc --noEmit` 0, `npx tsc --noEmit -p src/webview` 0; 0005's own test files 28 files, 342/342; full `npm run test:unit` 2008 tests with only load-timing failures in other specs' files (0004, 0006, 0007; machine load average 15 on 2 cores, seven sessions in parallel), none in a 0005 file.
+- **Notes:** Delegate evidence (Gregor's delegation 2026-11-17): screenshot set `/mnt/user-data/outputs/screens/` (headless Chrome, real core, taken 2026-11-17 01:44 UTC at `796b7e5`; `main.css` changed since only by Agent Center rules). Checked: `03-spec-explorer-list-{dark,light,hc}`, `04b-…-criteria-collapsed-{light,hc}` (selected row 0002), `06-panel-state-no-folder-light`, `07-panel-state-not-a-project-hc`: all text readable on its background in all three themes, the selected row's secondary text in Light is in the selection foreground, High Contrast draws the contrast border on navigation items, rows and the state box and the active (orange) border on the current item and the selected row, the current area carries the `▸` marker and the selected row the `▸` marker, every board state shows an icon plus a word.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-008 | package.json, src/extension.ts, src/adapters/vscode/studioPanel.ts | manifest.test.ts, src/test/shell.smoke.test.ts (AC-001; CI only) | built |
-| AC-002 | T-008 | src/adapters/vscode/studioPanel.ts:show (reveal) | src/test/shell.smoke.test.ts (AC-002; CI only) | built |
-| AC-003 | T-005, T-009 | src/core/shell/treeModel.ts, src/adapters/vscode/studioTree.ts, package.json (viewsContainers, views), media/studio.svg | treeModel.test.ts (AC-003), manifest.test.ts (AC-003), src/test/shell.smoke.test.ts (tree; CI only) | built |
+| AC-001 | T-008 | package.json, src/extension.ts, src/adapters/vscode/studioPanel.ts | manifest.test.ts, src/test/shell.smoke.test.ts (AC-001; host suite green, see Open evidence) | verified |
+| AC-002 | T-008 | src/adapters/vscode/studioPanel.ts:show (reveal) | src/test/shell.smoke.test.ts (AC-002; host suite green) | verified |
+| AC-003 | T-005, T-009 | src/core/shell/treeModel.ts, src/adapters/vscode/studioTree.ts, package.json (viewsContainers, views), media/studio.svg | treeModel.test.ts (AC-003), manifest.test.ts (AC-003), src/test/shell.smoke.test.ts (tree; host suite green) | verified |
 | AC-004 | T-002 | src/webview/Navigation.tsx, App.tsx, client.ts | src/webview/App.test.tsx (AC-004) | verified |
-| AC-005 | T-007, T-008 | src/extension.ts (per-area commands), shellService.ts:open | shellService.navigation.test.ts, manifest.test.ts, src/test/shell.smoke.test.ts (AC-005; CI only) | built |
+| AC-005 | T-007, T-008 | src/extension.ts (per-area commands), shellService.ts:open | shellService.navigation.test.ts, manifest.test.ts, src/test/shell.smoke.test.ts (AC-005; host suite green) | verified |
 | AC-006 | T-004 | src/webview/areas/Placeholder.tsx, registry.tsx | src/webview/areas/areas.test.tsx (AC-006, three areas, no rows) | verified |
 | AC-007 | T-004, T-007 | src/core/shell/specRows.ts, shellService.ts (rows), src/webview/areas/SpecExplorer.tsx | specRows.test.ts, shellService.navigation.test.ts (rows follow), areas.test.tsx (AC-007, 500 ms) | verified |
 | AC-008 | T-004, T-007 | src/core/shell/shellService.ts (select), specRows.ts, SpecExplorer.tsx | shellService.navigation.test.ts (AC-008), areas.test.tsx (round trip) | verified |
-| AC-009 | T-007, T-008 | src/core/shell/uiMemory.ts, shellService.ts, src/adapters/vscode/uiMemory.ts, studioPanel.ts:serializer | uiMemory.test.ts, shellService.navigation.test.ts, src/test/shell.smoke.test.ts (AC-009 serializer; CI only); manual: real reload (Gregor) | built |
+| AC-009 | T-007, T-008 | src/core/shell/uiMemory.ts, shellService.ts, src/adapters/vscode/uiMemory.ts, studioPanel.ts:serializer | uiMemory.test.ts, shellService.navigation.test.ts, src/test/shell.smoke.test.ts (AC-009 serializer; host suite green); real window reload: pre-release checklist item (spec revised 2026-11-17) | verified |
 | AC-010 | T-004, T-007 | src/core/shell/selection.ts:reconcileSelection, shellService.ts, NoticeBar.tsx | selection.test.ts, shellService.navigation.test.ts (AC-010 G/W/T), areas.test.tsx (notice) | verified |
-| AC-011 | T-005, T-009 | src/core/shell/panelState.ts (S1), treeModel.ts, src/adapters/vscode/shellActions.ts (vscode.openFolder) | panelState.test.ts, treeModel.test.ts, shellService.test.ts (S1), PanelStateView.test.tsx; smoke: command registered (CI only) | built |
+| AC-011 | T-005, T-009 | src/core/shell/panelState.ts (S1), treeModel.ts, src/adapters/vscode/shellActions.ts (vscode.openFolder) | panelState.test.ts, treeModel.test.ts, shellService.test.ts (S1), PanelStateView.test.tsx; smoke: command registered (host suite green) | verified |
 | AC-012 | T-005 | src/core/shell/panelState.ts (S2) | panelState.test.ts (AC-012), treeModel.test.ts | verified |
 | AC-013 | T-005, T-009 | src/core/shell/panelState.ts (S3), shellService.ts:runAction (selectProject) | panelState.test.ts, shellService.test.ts (AC-013 Select project runs 0001's selection), treeModel.test.ts | verified |
 | AC-014 | T-002, T-006 | src/core/shell/shellService.ts (loading), panelState.ts, src/webview/client.ts | shellService.test.ts (AC-014), App.test.tsx, PanelStateView.test.tsx | verified |
@@ -509,19 +522,19 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 | AC-016 | T-001, T-003 | src/core/shell/messageRouter.ts, src/webview/client.ts (S6, S5 after reload), PanelStateView.tsx | messageRouter.test.ts, client.test.ts (AC-016), PanelStateView.test.tsx (S6) | verified |
 | AC-017 | T-003, T-006, T-009 | src/core/shell/shellService.ts (restricted flag), src/webview/RestrictedNote.tsx | shellService.test.ts (AC-017), PanelStateView.test.tsx (AC-017) | verified |
 | AC-018 | T-003, T-005 | src/core/shell/panelState.ts (precedence), src/webview/client.ts (S6 first) | panelState.test.ts (AC-018 pairs), PanelStateView.test.tsx (S6 over a host state) | verified |
-| AC-019 | T-009 | src/webview/main.css (only --vscode-* variables) | manual: Gregor, Light/Dark/both HC + live switch | built |
-| AC-020 | T-008 | src/adapters/vscode/webviewHtml.ts, studioPanel.ts (options), src/webview/probe.ts | webviewHtml.test.ts, probe.test.ts, src/test/shell.smoke.test.ts (AC-020; CI only) | built |
+| AC-019 | T-009, T-011 | src/webview/main.css (only --vscode-* variables), src/webview (no theme read) | webviewCss.test.ts (AC-026 colours, 0013 AC-001, 0005 AC-019 no theme read); delegate: screenshots Light/Dark/HC 2026-11-17 (T-011 Notes); live switch and light HC: pre-release checklist item | verified |
+| AC-020 | T-008 | src/adapters/vscode/webviewHtml.ts, studioPanel.ts (options), src/webview/probe.ts | webviewHtml.test.ts, probe.test.ts, src/test/shell.smoke.test.ts (AC-020; host suite green) | verified |
 | AC-021 | T-001 | src/core/shell/messageRouter.ts, src/shared/protocol/messages.ts | messageRouter.test.ts, messages.test.ts; wired in studioPanel.ts | verified |
-| AC-022 | T-002, T-003, T-004 | src/webview/Navigation.tsx, PanelStateView.tsx, RestrictedNote.tsx, areas/SpecExplorer.tsx, NoticeBar.tsx | App.test.tsx, PanelStateView.test.tsx, areas.test.tsx (keyboard); manual: focus indicator, Gregor | built |
-| AC-023 | T-002, T-003, T-004 | src/webview (aria-current, aria-label, role=status, aria-selected, markers) | App.test.tsx, PanelStateView.test.tsx, areas.test.tsx (AC-023); manual: High Contrast, Gregor | built |
-| AC-024 | T-008 | src/adapters/vscode/studioPanel.ts (hello time), src/webview/main.tsx | src/test/shell.smoke.test.ts (AC-024 < 1000 ms; CI only); manual: Gregor | built |
-| AC-025 | T-009 | src/core/ports/readOnlyFileSystem.ts-style read-only ports; no write call in src/core/shell, src/adapters/vscode/studio*.ts | src/test/shell.smoke.test.ts (AC-025 snapshotTree; CI only) | built |
+| AC-022 | T-002, T-003, T-004 | src/webview/Navigation.tsx, PanelStateView.tsx, RestrictedNote.tsx, areas/SpecExplorer.tsx, NoticeBar.tsx | App.test.tsx, PanelStateView.test.tsx, areas.test.tsx (keyboard), focusIndicator.test.tsx (AC-022 focus indicator) | verified |
+| AC-023 | T-002, T-003, T-004 | src/webview (aria-current, aria-label, role=status, aria-selected, markers) | App.test.tsx, PanelStateView.test.tsx, areas.test.tsx (AC-023); delegate: HC screenshots 2026-11-17 (T-011 Notes) | verified |
+| AC-024 | T-008 | src/adapters/vscode/studioPanel.ts (hello time), src/webview/main.tsx | src/test/shell.smoke.test.ts (AC-024 < 1000 ms; host suite green on Gregor's Windows machine and CI) | verified |
+| AC-025 | T-009 | src/core/ports/readOnlyFileSystem.ts-style read-only ports; no write call in src/core/shell, src/adapters/vscode/studio*.ts | src/test/shell.smoke.test.ts (AC-025 snapshotTree; host suite green) | verified |
 | AC-026 | T-005 | src/core/shell/panelState.ts (S8) | panelState.test.ts (AC-026, with and without another project), treeModel.test.ts | verified |
 | AC-027 | T-005 | src/core/shell/panelState.ts (S9) | panelState.test.ts (AC-027), treeModel.test.ts | verified |
 | AC-028 | T-007 | src/core/shell/shellService.ts:navigate, selection.ts:findSpec | shellService.navigation.test.ts (AC-028 G/W/T, notice, run and filter targets), areas.test.tsx (target to placeholder) | verified |
-| AC-030 | T-010 | src/webview/main.css (.spec-row.selected .spec-derived, .spec-path) | webviewCss.test.ts (AC-030), areas.test.tsx (AC-030); manual: AC-019 Light, Gregor | built |
-| AC-031 | T-010 | src/webview/main.css (contrast borders, focus outline) | webviewCss.test.ts (AC-031), areas.test.tsx (AC-031); manual: High Contrast, Gregor | built |
-| AC-029 | T-006, T-009 | src/core/shell/shellService.ts:rescan, src/extension.ts (featherspec-studio.rescan), package.json | shellService.test.ts (AC-029), manifest.test.ts (AC-029), src/test/shell.smoke.test.ts (CI only) | built |
+| AC-030 | T-010 | src/webview/main.css (.spec-row.selected .spec-derived, .spec-path) | webviewCss.test.ts (AC-030), areas.test.tsx (AC-030); delegate: Light screenshot 2026-11-17 | verified |
+| AC-031 | T-010 | src/webview/main.css (contrast borders, focus outline) | webviewCss.test.ts (AC-031), areas.test.tsx (AC-031); delegate: HC screenshot 2026-11-17 | verified |
+| AC-029 | T-006, T-009 | src/core/shell/shellService.ts:rescan, src/extension.ts (featherspec-studio.rescan), package.json | shellService.test.ts (AC-029), manifest.test.ts (AC-029), src/test/shell.smoke.test.ts (host suite green) | verified |
 
 ## Open evidence
 
@@ -530,10 +543,11 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 - 2026-11-17 — First CI run (GitHub Actions, Node 22). (1) windows-latest: spec 0009's `portDocument.test.ts` failed because the runner checks out CRLF; fixed for the whole repository with a root `.gitattributes` (`* text=auto eol=lf`, binaries marked, `test/fixtures/** -text` so the 24 deliberately CRLF fixture files stay byte-exact on every platform); `git ls-files --eol` shows nothing in the index to renormalise; the Windows job also sets `core.autocrlf false` before checkout. (2) ubuntu-latest: `shell.smoke` AC-020 failed with `The probe got no answer` (5 s). Cause not provable without the runner; the test already waits for the first hello, so the likely cause is a webview `fetch` of a blocked URL that never settles, or a slow cold xvfb runner. Fixes: the webview probe answers `failed` after 10 s if its fetch does not settle; the host probe lives in `src/adapters/vscode/probeChannel.ts` (unit-tested), sends only after the webview's hello (re-sends after a reload), waits up to 20 s for hello and 20 s for the answer, and its timeout error states what was seen (hello, sends, visibility, last hello age). CI job got `timeout-minutes: 30`. Not run on a host: to be confirmed by the next CI run.
 - 2026-11-17 — CI windows-latest failed `SpecBoard.test.tsx` AC-019 (359.95 ms against a private 300 ms). All unit and component timing assertions now assert the budget a decision states and use `bestOfThree` (`src/shared/testing/timing.ts`: one warm-up, best of three, the helper itself covered with negative controls). 0005: the Spec Explorer update within 500 ms (PD-047). The host-suite AC-024 (1000 ms to `hello`) is not a unit test and is unchanged.
 
+- 2026-11-17 — **Pre-done gate, host suite:** Windows 11 (Gregor's machine, VS Code stable, Node 26): `npm test` 28 passing, 0 failing at commit `e6f0c85`, 2026-11-17 08:45 CET — all nine `shell.smoke` tests among them (AC-001, AC-002, AC-005, AC-009 serializer, AC-020, AC-024 < 1000 ms, AC-003/AC-029 tree and commands incl. `workbench.trust.manage`, AC-029 Rescan, AC-025). GitHub Actions ubuntu-latest + windows-latest: green at `9635ba4`, 2026-11-17. T-011 changed tests only (no product code, no host test).
+
 ## Session handoff
 
-- **Done so far:** all ten steps ticked (T-001...T-010; T-010 after `/sdd-compile`: AC-030, AC-031) plus 0001 T-013 (AC-024). 860 unit tests, eslint, both tsc and `npm run compile` green. `npm test` (host smoke `src/test/shell.smoke.test.ts` and the older ones) was not run: VS Code download blocked.
-- **Next action:** Gregor/CI: `npm test` on CI or Windows; manual checks AC-019 (Light, Dark, both High Contrast, one live switch), the AC-022 focus indicator, AC-023 in High Contrast, AC-024 on his machine, AC-009 with a real window reload. Then `/sdd-compile` for 0005 and 0001 (again) in a fresh session (another model family), then `/sdd-lifecycle`.
-- **Open decisions:** OP-010…OP-013 (spec §17), none blocking.
+- **Done so far:** all eleven steps ticked (T-011 at the closing `/sdd-compile`, 2026-11-17: AC-019 and AC-022 decided by tests, AC-009/AC-019/AC-023/AC-024 revised under Gregor's delegation). Host suite green on Windows at `e6f0c85`, CI green at `9635ba4`.
+- **Next action:** `/sdd-lifecycle` active → done (after a `READY` compile brief); Gregor's pre-release checklist items: live theme switch, light High Contrast theme, a real window reload.
+- **Open decisions:** OP-010, OP-011, OP-013 (spec §17), none blocking.
 - **Baseline:** `2cf3cc8` (HEAD before the lifecycle move and the first commit of this work).
-- **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); CI runs it.

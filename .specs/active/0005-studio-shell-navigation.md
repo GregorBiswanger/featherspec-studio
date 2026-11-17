@@ -248,8 +248,13 @@ Edge cases:
 
 ## 14. Acceptance criteria
 
-Handoff IDs in brackets (PD-017). Manual checks by Gregor: AC-019, AC-024, the focus indicator
-in AC-022 and the High Contrast part of AC-023. Everything else is decided by automated tests.
+Handoff IDs in brackets (PD-017). Revised 2026-11-17 at the closing `/sdd-compile` under Gregor's
+delegation of 2026-11-17 ("everything must work, be tested with quality gates and TDD"): the
+former hand checks are decided by automated tests where a test can decide them; the readability
+checks are decided by his delegate on the dated screenshot set; what only a person in a real
+VS Code can judge (a live theme switch, a real window reload, the light High Contrast theme) is
+"checked by Gregor or his delegate; pre-release checklist item". Everything else is decided by
+automated tests.
 
 - **AC-001** When the user runs "FeatherSpec Studio: Open", the system shall show the Studio panel
   in the editor area. [AC-005.1]
@@ -286,7 +291,9 @@ in AC-022 and the High Contrast part of AC-023. Everything else is decided by au
   "Open Studio", the system shall show the area last shown and the same selected spec. After a
   window reload, the system shall restore a panel that was open, without user action, on the
   area last shown and with the same selected spec. On the first open in a workspace, it shall
-  show Mission Control (BR-02).
+  show Mission Control (BR-02). The restore is decided by the host test of the serializer; a real
+  window reload is checked by Gregor or his delegate; pre-release checklist item (revised
+  2026-11-17).
 - **AC-010** When another project becomes active, the system shall clear the selection without
   a notice. If a loaded model of the active project does not contain the selected spec's stem,
   then the system shall clear the selection and show "Spec <number> is no longer in the
@@ -319,9 +326,12 @@ in AC-022 and the High Contrast part of AC-023. Everything else is decided by au
   the highest precedence (BR-05). The S7 note is outside the precedence (AC-017).
 - **AC-019** The system shall draw the panel in the colours of the current VS Code theme. When
   the user switches the theme, the panel shall follow without the user reopening it. [AC-005.4]
-  Checked by Gregor by hand in a Light, a Dark and a High Contrast theme, plus one live switch.
   It fails when any part of the panel keeps the colours of the previous theme, or shows text
-  Gregor cannot read against its background.
+  that cannot be read against its background. Decided by the stylesheet tests (every colour is a
+  `--vscode-*` variable, no inline colour, no panel module reads or caches the theme); the
+  readability in a Light, a Dark and a High Contrast theme by Gregor's delegate on the screenshot
+  set of 2026-11-17; the live switch in a real VS Code, and the light High Contrast theme
+  (OP-012), are checked by Gregor or his delegate; pre-release checklist item.
 - **AC-020** If the panel UI asks for a file outside the files Studio ships for it (not through
   a message to the extension), then the system shall not deliver it. The panel UI shall load
   nothing from the internet. [AC-005.6]
@@ -333,15 +343,18 @@ in AC-022 and the High Contrast part of AC-023. Everything else is decided by au
   AC-016. Many such messages: OP-011.)
 - **AC-022** The system shall make every navigation item, list row and state action in the
   panel reachable by keyboard focus and activatable with Enter or Space, and shall show a focus
-  indicator on the focused element. The tree entries follow VS Code's own tree keys.
+  indicator on the focused element. The tree entries follow VS Code's own tree keys. The focus
+  indicator is decided by a component test: every focusable element of the panel is reached by a
+  `:focus-visible` rule with a visible outline in a theme colour (revised 2026-11-17).
 - **AC-023** The system shall give the current area, the selected spec, every board state and
   every panel state S1–S9 a text label that assistive technology can read. The system shall
-  convey no meaning by colour alone. Checked by a component test on the labels, and by Gregor
-  in a High Contrast theme.
+  convey no meaning by colour alone. Checked by a component test on the labels, and by Gregor's
+  delegate in a High Contrast theme on the screenshot set of 2026-11-17 (revised 2026-11-17).
 - **AC-024** When the user runs "FeatherSpec Studio: Open", the system shall show the panel's frame
   (navigation plus the current area or state) within 1 second, without waiting for project data.
-  Checked by Gregor on his machine, and by an automated host test that measures from the command
-  to the panel UI's first message to the extension, with the extension already active (OP-002; the 1 second is a working threshold like PD-035).
+  Checked by an automated host test that measures from the command to the panel UI's first
+  message to the extension, with the extension already active, run on Gregor's machine (Windows
+  11) and on CI (OP-002; the 1 second is a working threshold like PD-035; revised 2026-11-17).
 - **AC-025** The system shall create, modify, rename or delete no file inside any workspace
   folder while the panel or the Activity Bar view is opened, shown, navigated or restored (BR-06).
 - **AC-026** While the workspace has a remembered project that 0001 does not report as a
@@ -421,7 +434,7 @@ Open, none blocks the work (clarify finding in brackets):
 
 - OP-010 [6.7]: per-state counts in the tree (ADR-001 §2 "compact status of specs and runs") have no owner; 0006 does not contain them. Recommendation: out of the MVP until a spec claims them.
 - OP-011 [5.9]: AC-021 writes one line per malformed message, without a limit. Recommendation: repeat lines of one message type are collapsed into a count.
-- OP-012 [2.16]: AC-019 names one High Contrast theme; VS Code has a dark and a light one. Recommendation: Gregor checks both.
+- OP-012 [2.16]: AC-019 names one High Contrast theme; VS Code has a dark and a light one. Resolved 2026-11-17: the dark one is in the delegate's screenshot set, the light one is a pre-release checklist item (AC-019).
 - OP-013 [6.6, 6.9]: basis. PD-013 and PD-016 are marked "(proxy)", ADR-001 is "Proposed"; OP-001's bulk acceptance does not show which state texts and rules Gregor chose himself. Recommendation: Gregor reads §13 and BR-05 once at the plan review and confirms the two PDs in the register.
 
 ## 18. Definition of Ready
