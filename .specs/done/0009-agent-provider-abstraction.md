@@ -1,7 +1,7 @@
 # Agent Provider Abstraction
 
-**Status:** In Progress
-**Plan:** [0009-agent-provider-abstraction.plan.md](0009-agent-provider-abstraction.plan.md)
+**Status:** Implemented
+**Plan:** [0009-agent-provider-abstraction.2026-11-17.plan.md](../plan-archive/0009-agent-provider-abstraction.2026-11-17.plan.md)
 
 Handoff reference: FS-009 ([po-handoff.md](../../docs/product/po-handoff.md) §2.1, §8.3, §10 FS-009,
 §14 *Provider Contract Tests*). Depends on: 0004 (event envelope, credential port for masking).
@@ -122,8 +122,9 @@ A **hint** is adapter-owned text beside a generic one (0010: remedy text; 0012: 
   adapter's event stream ends — closed or failed — without an end kind, the port adds one derived
   `run.failed` with category `unknown` and the reason "provider stopped without a final event"
   (0011 BR-008: `provider_exited`). Silence is not an end (0011 BR-009). Everything after the
-  first end kind, another end kind included, is passed on unchanged as a late event (0004 AC-028,
-  0011 BR-001).
+  first end kind, another end kind included, is passed on as a late event — normalised like every
+  delivered event (BR-007, BR-009), never dropped, and never followed by an added end kind (0004
+  AC-028, 0011 BR-001).
 - **BR-009 Error categories.** Closed list (ADR-003 §4): `auth`, `quota_or_rate_limit`,
   `model_unavailable`, `network_or_server`, `runtime_missing`, `policy_denied`, `cancelled`,
   `tool_failure`, `unknown`. They classify `run.failed` only: a cancellation is delivered as
@@ -276,8 +277,8 @@ worded in `/sdd-plan`.
     and no field value is delivered, and `run.completed` follows.
 - **AC-009** If an adapter's event stream ends — closed or failed — before an end kind, then the
   port shall pass on exactly one derived `run.failed` with category `unknown` (scenario *no end*).
-  The port shall pass on everything after the first end kind unchanged, another end kind
-  included, and add none.
+  The port shall pass on everything after the first end kind as delivered — normalised as BR-007
+  and BR-009 require, another end kind included — and add none.
 - **AC-010** When 0008's precondition check asks a provider for its availability, the system shall
   return one of the five results of BR-004, with a reason for all but *available*, and *unknown*
   if the check itself fails. Activation, registration, reading the registry and switching the
@@ -330,8 +331,8 @@ worded in `/sdd-plan`.
   delivered — decided with the fake's sample credential in the provider message of scenario
   *failure:auth*.
 
-Manual check: Gregor's walkthrough of handoff §21 in an Extension Development Host with the fake
-as default provider (OP-005).
+Manual check, not a criterion of this spec: Gregor's walkthrough of handoff §21 in an Extension
+Development Host with the fake as default provider — owned by 0012 (OP-005).
 
 ## 12. Technical notes for developers or AI agents
 
@@ -396,3 +397,7 @@ snapshot lists the new modules. The §21 walkthrough is OP-005.
 ## 17. Recommended next steps
 
 `/sdd-plan` (OP-004…OP-010 resolved 2026-11-16); then `/sdd-lifecycle` on the start signal.
+
+## Plan history
+
+- 2026-11-17 — [0009-agent-provider-abstraction.2026-11-17.plan.md](../plan-archive/0009-agent-provider-abstraction.2026-11-17.plan.md) — ten steps; all 22 criteria verified; second `/sdd-compile` READY; host suite 28 passing on Windows at e6f0c85.

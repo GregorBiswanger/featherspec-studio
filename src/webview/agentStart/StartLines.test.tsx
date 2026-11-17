@@ -3,7 +3,7 @@ import type { AgentStartView, RefusalItem } from '../../shared/protocol/agentSta
 import type { Envelope } from '../../shared/protocol/envelope';
 import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
-import { baseView, click, mount, send, shellEvent, type Mounted } from '../testing/dom';
+import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
 import { checkingText, noticeText, refusalLines, OPEN_RUN_LABEL } from './texts';
 
 let posted: Envelope[];
@@ -102,6 +102,31 @@ describe('start lines above the area (AC-001, AC-008, AC-010, AC-013)', () => {
         expect(posted.at(-1)).toMatchObject({ type: 'navigate', payload: { area: 'agentCenter', target: { kind: 'run', id: 'run-9' } } });
         await click(buttons[1]!);
         expect(posted.at(-1)).toMatchObject({ type: 'agentStartDismiss', payload: { which: 'notice' } });
+    });
+
+    it('M-2: refusal and notice are announced as alerts and operable by keyboard alone', async () => {
+        const container = await open();
+        await show({ refusal: { number: '0001', items: ITEMS }, notice: { runId: 'run-9', errorClass: 'runtime_missing' } });
+        for (const selector of ['[data-start-refusal]', '[data-start-notice]']) {
+            const line = container.querySelector(selector);
+            expect(line?.getAttribute('role'), selector).toBe('alert');
+            expect(line?.textContent?.trim().length, selector).toBeGreaterThan(0);
+            const controls = [...line!.querySelectorAll('button, a, [tabindex]')];
+            expect(controls.length, selector).toBeGreaterThan(0);
+            for (const control of controls) {
+                expect(control.tagName, `${selector} ${control.textContent}`).toBe('BUTTON');
+                expect(isKeyboardReachable(control), `${selector} ${control.textContent}`).toBe(true);
+            }
+        }
+        const notice = container.querySelector('[data-start-notice]')!;
+        const [openRun, dismissNotice] = [...notice.querySelectorAll('button')];
+        posted = [];
+        await pressKey(openRun!, 'Enter');
+        expect(posted.at(-1)).toMatchObject({ type: 'navigate', payload: { area: 'agentCenter', target: { kind: 'run', id: 'run-9' } } });
+        await pressKey(dismissNotice!, ' ');
+        expect(posted.at(-1)).toMatchObject({ type: 'agentStartDismiss', payload: { which: 'notice' } });
+        await pressKey(container.querySelector('[data-start-refusal] button')!, 'Enter');
+        expect(posted.at(-1)).toMatchObject({ type: 'agentStartDismiss', payload: { which: 'refusal' } });
     });
 
     it('an invalid view is ignored and the last valid view stays', async () => {

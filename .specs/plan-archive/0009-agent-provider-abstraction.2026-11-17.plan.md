@@ -1,9 +1,9 @@
 # Plan — Agent Provider Abstraction
 
-**Spec:** [0009-agent-provider-abstraction.md](0009-agent-provider-abstraction.md)
+**Spec:** [0009-agent-provider-abstraction.md](../done/0009-agent-provider-abstraction.md)
 **Status:** Done
 **Last updated:** 2026-11-17
-**Current step:** — (all nine steps done)
+**Current step:** — (all ten steps done)
 
 ## Approach
 
@@ -323,11 +323,22 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
 - [x] **Verified (T-009):** 2026-11-17. Docs synced: README Providers section, AGENTS.md snapshot (two modules, ports entry, reconciled date), systemPatterns.md provider decision (planned → built), techContext.md (provider tests, host smoke file), activeContext.md. Gates: `npx eslint src --max-warnings 0`, `npx tsc --noEmit`, `npx tsc --noEmit -p src/webview` clean; `npm run test:unit` 112 files, 1495 tests passed; `npm run compile` finished with no warnings. `npm test` not run (VS Code download blocked here); `src/test/providers.smoke.test.ts` is compiled and linted, it runs on CI.
 - **Notes:** —
 
+### T-010 — Closing fixes after the second compile
+
+- **Covers:** AC-001, AC-009 (wording), AC-012, AC-013, AC-014, AC-017 (re-check of T-004/T-008 tests)
+- **Do:** `portDocument.test.ts` splits the document on `/\r?\n/` and its negative control runs on
+  LF and CRLF line endings (first-compile finding 1). Spec BR-008/AC-009 and the port document say
+  that late events are passed on normalised, not "unchanged" (finding 2). Re-check that the tests of
+  T-004 and T-008, written after their code, can fail.
+- **Verify:** `npx vitest run src/core/providers/portDocument.test.ts` then the per-step gates
+- [x] **Verified (T-010):** 2026-11-17. Red: the new case "negative control … (CRLF line endings)" failed (`expected [] to deeply equal [ Array(1) ]`, the extra row was not inserted under CRLF), 1 failed, 5 passed. Green after `/\r?\n/` in both splits and the insert: 6 passed; also with `docs/agent-provider-port.md` converted to CRLF on disk (restored afterwards): 6 passed. T-004/T-008 tests re-checked by fresh mutations, each reverted: second duplicate under another identity (AC-017, 1 of 16 failed), type name `fake.other` (AC-008, 1 failed), every failure category `unknown` (AC-011, 1 failed), random text in `message.delta` (AC-014, 2 failed), an ESM `node:fs` call in `start` (AC-013, noIo 1 of 2 failed: "node:fs.existsSync used by the fake provider"), `enabled` default `true` (AC-012, manifest 1 of 23 failed), `defaultProvider` default `fake` (AC-012, 2 failed). Survived in noIo alone: a CommonJS `require('node:fs')` call (vi.mock does not intercept `require`); fakeImports.test.ts catches that mutation (1 of 2 failed), so AC-013 is decided by both files together, as the traceability row says. T-004 and T-008 tests were never red before their code: that stays a process deviation; the mutations above show the tests can fail. Stated cases re-run in a scratch test (removed): cancel with an approval open → `ok`, `run.cancelled` last, then the answer → `request-not-open`, a second cancel → `already-ended`; *no end* → one derived `run.failed{unknown}`; *unknown event* → `{typeName: fake.mystery, fieldNames}` then `run.completed`; resume with a foreign reference → `run.failed{unknown}`, with `fake-session-old` → `session.started` under the new run ID … `run.completed`. Gates: eslint --max-warnings 0, tsc, tsc -p src/webview clean; `npm run test:unit` 160 files, 2009 tests: 2008 passed, 1 failed — `SpecBoard.test.tsx` AC-019 timing (0007, 500 ms budget) under load average 11 from parallel sessions; that file alone: 26 passed. No product code changed.
+- **Notes:** `src/core/runtime/masking.test.ts:17` (0004) has the same `'\n'` split; not this spec's file, left to 0004.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001 | src/core/providers/vocabulary.ts, docs/agent-provider-port.md | portDocument.test.ts | verified |
+| AC-001 | T-001, T-010 | src/core/providers/vocabulary.ts, docs/agent-provider-port.md | portDocument.test.ts (LF and CRLF) | verified |
 | AC-002 | T-001 | eslint.config.mjs, src/core/providers/testing/scan.ts | importScan.test.ts | verified |
 | AC-003 | T-002 | src/core/providers/registry.ts | registry.test.ts (AC-003) | verified |
 | AC-004 | T-002 | src/core/providers/registry.ts:declarationDefect | registry.test.ts (AC-004) | verified |
@@ -335,7 +346,7 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
 | AC-006 | T-003 | src/core/providers/providerService.ts | providerService.test.ts (AC-006) | verified |
 | AC-007 | T-003 | src/core/providers/providerService.ts:normalise | providerService.test.ts (AC-007), payloadTypes.test.ts | verified |
 | AC-008 | T-004 | src/adapters/providers/fake/scenarios.ts:unknown-event | fakeProvider.test.ts (AC-008) | verified |
-| AC-009 | T-003 | src/core/providers/providerService.ts:stopped | providerService.test.ts (AC-009) | verified |
+| AC-009 | T-003, T-010 | src/core/providers/providerService.ts:stopped | providerService.test.ts (AC-009) | verified |
 | AC-010 | T-005, T-008 | providerService.ts:checkAvailability; providerSetup.ts | providerAvailability.test.ts, providerSetup.test.ts (AC-010) | verified |
 | AC-011 | T-003, T-004 | providerService.ts:normalise, fake/scenarios.ts:failure | providerService.test.ts, fakeProvider.test.ts (AC-011) | verified |
 | AC-012 | T-008 | src/core/providers/providerSetup.ts, adapters/vscode/providerSettings.ts, package.json | providerSetup.test.ts, manifest.test.ts (AC-012); host smoke providers.smoke.test.ts (CI) | verified |
@@ -350,11 +361,19 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
 | AC-021 | T-007 | src/core/providers/registry.ts, providerService.ts | extensibility.test.ts, providerIdScan.test.ts | verified |
 | AC-022 | T-004, T-005, T-008 | fake/fakeProvider.ts:credentialValues, providerService.ts:credentials, extension.ts | fakeProvider.test.ts (AC-022), contract BR-010 in fakeContract.test.ts | verified |
 
+## Open evidence
+
+- Host suite (`npm test`, includes `src/test/providers.smoke.test.ts`): Windows 11, Gregor's machine,
+  VS Code stable, Node 26 — 28 passing, 0 failing at commit e6f0c85, 2026-11-17 08:45 CET. That is
+  the pre-done gate for e6f0c85; T-010 changes no product code and no host test.
+- GitHub Actions (ubuntu-latest + windows-latest): green at commit 9635ba4, 2026-11-17 (before
+  0009's code); no CI run recorded for a commit containing 0009.
+
 ## Session handoff
 
-- **Done so far:** all nine steps T-001...T-009 built, ticked with recorded results and committed; every acceptance criterion `verified` in the traceability table; docs, Memory Bank and snapshot synced. Mechanical check before Done: 0 unticked steps, 9 of 9 `Verified:` filled.
-- **Next action:** Gregor reviews the tests per stage; CI runs `npm test` (new `src/test/providers.smoke.test.ts`); then `/sdd-compile` in a fresh session (another model family), then `/sdd-lifecycle` to done. Not started by this session.
-- **Open decisions:** none. Nine steps (one over the aim): the surface step carries the document,
-  and the service and the fake are each two slices so they can run in parallel.
-- **Baseline:** 2026-11-16, eslint, both tsc runs and `npm run test:unit` green: 1350 tests.
-- **Environment:** `npm test` cannot run here (VS Code download blocked); the host smoke runs on CI.
+- **Done so far:** T-001…T-010 built, ticked with recorded results and committed; every acceptance
+  criterion `verified`; second `/sdd-compile` 2026-11-17 (session S08-close-g5): READY after T-010.
+- **Next action:** none — spec moved to done/ and this plan archived 2026-11-17 (frozen).
+- **Open decisions:** none.
+- **Baseline:** 2026-11-16 (commit c3e1ab6, before T-001), eslint, both tsc runs and `npm run test:unit` green: 1350 tests.
+- **Environment:** `npm test` cannot run here (VS Code download blocked); it runs on Windows and CI.

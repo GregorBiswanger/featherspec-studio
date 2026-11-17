@@ -1,7 +1,7 @@
 # Spec Activation & Agent Start Workflow
 
-**Status:** In Progress
-**Plan:** [0008-spec-activation-agent-start.plan.md](0008-spec-activation-agent-start.plan.md)
+**Status:** Implemented
+**Plan:** [0008-spec-activation-agent-start.2026-11-17.plan.md](../plan-archive/0008-spec-activation-agent-start.2026-11-17.plan.md)
 
 Handoff reference: FS-008 ([po-handoff.md](../../docs/product/po-handoff.md) §5.2, §6.4, §6.5,
 §10). Builds on 0001, 0002, 0003, 0004, 0005, 0007, 0009 and 0011 (§10); M-1 also needs 0010
@@ -289,6 +289,13 @@ start whose run has ended, the system shall show the confirmation again.
   stage, ends with plan `Done` before `/sdd-compile`, makes no commit and lists commit proposals.
 - **M-2** Gregor accepts the confirmation and the expanded prompt as readable, and operates
   confirmation, refusal and notice by keyboard alone with a screen reader announcing them.
+  Revised 2026-11-17 under Gregor's delegation ("everything must work, be tested", Gregor,
+  2026-11-17): keyboard-only operation and what a screen reader is given to announce — the
+  dialog named by its title, refusal and notice as alerts, the checking line as a status — are
+  decided by the component tests named "M-2" in `StartDialog.test.tsx` and `StartLines.test.tsx`;
+  readability is checked by Gregor's delegate on headless-Chrome screenshots of the real webview
+  bundle in Dark, Light and High Contrast; the announcement by a real screen reader inside VS Code
+  is checked by Gregor or his delegate — pre-release checklist item.
 
 ### Handoff criteria map
 
@@ -354,8 +361,12 @@ Resolved:
 
 Ready: preconditions, prompt text and criteria fixed; 0003, 0004 and 0011 faked in tests until
 they exist. Done: all criteria green, 0007's "Agent start is not available yet" refusal replaced
-by the hand-off, docs synced, M-2 accepted by Gregor; M-1 is accepted with 0010 (OP-011).
+by the hand-off, docs synced, M-2 recorded as revised in §13; M-1 is accepted with 0010 (OP-011).
 
 ## 18. Recommended next steps
 
 `/sdd-plan`; OP-010 goes to the main session.
+
+## Plan history
+
+- 2026-11-17 — [0008-spec-activation-agent-start.2026-11-17.plan.md](../plan-archive/0008-spec-activation-agent-start.2026-11-17.plan.md) — nine steps; AC-001…AC-014 verified, M-2 revised and recorded (screen reader in VS Code on the pre-release checklist); second `/sdd-compile` READY (manual items: 1); host suite 28 passing on Windows at e6f0c85.

@@ -221,6 +221,19 @@ describe('start flow: 0011 answers (AC-008, AC-010)', () => {
         expect(world.flow.view().notice).toBeUndefined();
     });
 
+    it('AC-010: a run first read as Failed after passing through Running gives no notice (coalesced read)', async () => {
+        const world = await createFlowWorld();
+        world.orchestrator2.answer = async () => {
+            const run = await world.store.createRun({ providerId: 'fake', spec: { stem: START_STEM, path: SPEC_PATH } });
+            await world.store.reportStatus(run.runId, 'Running');
+            await world.store.reportStatus(run.runId, 'Failed', { errorClass: 'network_or_server' });
+            return { kind: 'started', runId: run.runId };
+        };
+        await startOf(world, await confirmed(world));
+        await world.flow.whenIdle();
+        expect(world.flow.view().notice).toBeUndefined();
+    });
+
     it('AC-010: another project becoming active drops the watch and the notice', async () => {
         const world = await createFlowWorld();
         let runId = '';

@@ -1,6 +1,6 @@
 # Plan — Spec Activation & Agent Start Workflow
 
-**Spec:** [0008-spec-activation-agent-start.md](0008-spec-activation-agent-start.md)
+**Spec:** [0008-spec-activation-agent-start.md](../done/0008-spec-activation-agent-start.md)
 **Status:** Done
 **Last updated:** 2026-11-17
 **Current step:** — (all steps done)
@@ -98,7 +98,7 @@ Pre-done gate on CI or Windows: `npm test` with the new `src/test/agentStart.smo
   state unless persisted, so host-side state plus re-send is the pattern; retrieved 2026-11-16.
 - [gitattributes](https://git-scm.com/docs/gitattributes) — `eol=lf` keeps LF in the working
   tree on every platform, `-text` disables conversion; retrieved 2026-11-16.
-- Specs read: [plan 0009](../active/0009-agent-provider-abstraction.plan.md) *Surface*,
+- Specs read: [plan 0009](../plan-archive/0009-agent-provider-abstraction.2026-11-17.plan.md) *Surface*,
   [0011](0011-agent-orchestrator-run-lifecycle.md) §6, §9, AC-001, AC-002, AC-021,
   [0012](0012-live-agent-activity-monitoring.md) §1 (navigation from the notice),
   [0010](0010-first-agent-provider-copilot.md) BR-04, BR-05, BR-08, BR-14.
@@ -264,6 +264,20 @@ stage and becomes its own step.
 - [x] **Verified (T-008):** 2026-11-17 — doc-only step plus the final gates, run after the last edit: `npx eslint src --max-warnings 0` 0 warnings, `npx tsc --noEmit` and `npx tsc --noEmit -p src/webview` clean, `npm run test:unit` 136 files, 1723 tests passed, `npm run compile` finished. Synced: README (*Starting an agent*, P-1…P-8, Commands, Providers, Spec Board paragraph), `AGENTS.md` snapshot (module `src/core/agentStart`, ports, webview, shared entries; plan-named entries, so the plan's approval is the confirmation), `systemPatterns.md`, `techContext.md`, `activeContext.md`. `npm test` (host suite, incl. `src/test/agentStart.smoke.test.ts`) not run: CI or Gregor's machine.
 - **Notes:** `AGENTS.md` is 228 lines, over its 200-line target as before (the open eviction proposal in `activeContext.md` stands). The dialog's M-2 check stays with Gregor.
 
+### T-009 — M-2 automated, coalesced-read test (closing, after the second compile)
+
+- **Covers:** M-2, AC-010
+- **Do:** component tests "M-2" in `src/webview/agentStart/StartDialog.test.tsx` (dialog named by its
+  title, focus inside, every control reachable by Tab, Enter and Space activate toggle, Start and
+  Cancel) and `src/webview/agentStart/StartLines.test.tsx` (refusal and notice are alerts, every
+  control a native reachable button, Enter and Space activate Open run and Dismiss). AC-010 test for
+  a coalesced read (first-compile survived mutation: `Starting → Running → Failed` read at once gives
+  no notice). Delegate screenshots for readability; spec M-2 revised (Gregor's delegation,
+  2026-11-17); the real screen-reader check goes to Gregor's pre-release checklist.
+- **Verify:** `npx vitest run src/webview/agentStart src/core/agentStart/startFlow.start.test.ts` then the per-step gates
+- [x] **Verified (T-009):** 2026-11-17. The three new tests cover behaviour that exists, so they were green at once (21 passed in `src/webview/agentStart`, the coalesced test 1 passed); each was proven by a negative control that made it fail, reverted: Dismiss with `tabIndex={-1}` (StartLines M-2 failed), Open run as a `<span>` (failed), the dialog swallowing Enter in its keydown handler (StartDialog M-2 failed), no `aria-labelledby` (failed), notice without `role="alert"` (failed), `watchRun` without the "previous status was Starting" guard (coalesced test failed, 1 of 19). Readability: delegate (session S08-close-g5) rendered the real webview bundle (`npm run compile`, dist/webview) in headless Chrome with views produced by the real core (`createFlowWorld`: confirmation full profile with previous run, confirmation with approvals/userInput lines and prompt expanded by keyboard, refusal P-1/P-2/P-5, notice) in Dark, Light and High Contrast: `/mnt/user-data/outputs/screens/0008-agent-start/` (12 PNG + report.json), 2026-11-17. Looked at 01-confirmation-full-dark/-hc, 02-…-prompt-expanded-light, 03-refusal-hc, 04-notice-light: every field label and value legible, focus ring on Cancel visible, the prompt wraps in a scrollable block (40vh), refusal lists one line per item with its ID, notice shows run ID and class with Open run and Dismiss; Chrome's accessibility tree names the dialog "Start an agent on spec 0001?" and exposes refusal and notice as `alert`. No console error but the favicon 404. Gates: eslint --max-warnings 0, tsc, tsc -p src/webview clean; `npm run test:unit` 160 files, 2012 tests passed. No product code changed.
+- **Notes:** In the screenshot of the "minimal" confirmation the permission mode reads "Asks before every tool action": `createFlowWorld({minimal: true})` overrides only the capabilities, not the fake's profile — a test-world artefact, not product behaviour (the fake in profile minimal reports "Never asks (no approval support)", 0009 fakeProvider.test.ts). Exploratory finding kept open (not stated in the spec): P-3 with a whitespace-only setting reports "no provider configured". Pre-release checklist item for Gregor in `/home/claude/orch/checklist/0008.md`.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -272,22 +286,33 @@ stage and becomes its own step.
 | AC-002 | T-003, T-006 | src/core/agentStart/startFlow.ts:check, src/webview/agentStart/StartDialog.tsx | startFlow.test.ts (confirmation items), StartDialog.test.tsx | verified |
 | AC-003 | T-003, T-006, T-007 | src/core/agentStart/startFlow.ts:cancel, panelHidden, src/adapters/vscode/studioPanel.ts (view state, dispose), StartDialog.tsx (Escape) | startFlow.test.ts (cancel, hide, project change), StartDialog.test.tsx | verified |
 | AC-004 | T-004 | src/core/agentStart/startFlow.ts:doStart | src/core/agentStart/startFlow.start.test.ts (AC-004) | verified |
-| AC-005 | T-004, T-007 | src/core/agentStart/startFlow.ts:doStart, orchestratorBinding.ts, src/extension.ts (wiring) | startFlow.start.test.ts (AC-005), agentStart.endToEnd.test.ts, src/test/agentStart.smoke.test.ts (CI) | verified |
+| AC-005 | T-004, T-007 | src/core/agentStart/startFlow.ts:doStart, orchestratorBinding.ts, src/extension.ts (wiring) | startFlow.start.test.ts (AC-005), agentStart.endToEnd.test.ts; src/test/agentStart.smoke.test.ts covers the wiring only (it decides the refusal path) | verified |
 | AC-006 | T-001, T-006 | src/core/agentStart/startPrompt.ts:buildStartPrompt, src/webview/agentStart/StartDialog.tsx | startPrompt.test.ts (golden), StartDialog.test.tsx (same text shown) | verified |
 | AC-007 | T-002 | src/core/agentStart/preconditions.ts:checkPreconditions | src/core/agentStart/preconditions.test.ts (P-2) | verified |
 | AC-008 | T-002, T-004, T-005 | src/core/agentStart/preconditions.ts (P-5), startFlow.ts:doStart, src/webview/agentStart/StartLines.tsx | preconditions.test.ts (P-5), startFlow.start.test.ts (AC-008), StartLines.test.tsx | verified |
 | AC-009 | T-003 | src/core/agentStart/startFlow.ts:handOff (pending), confirm | startFlow.test.ts, startFlow.start.test.ts (pending while starting) | verified |
-| AC-010 | T-004, T-005 | src/core/agentStart/startFlow.ts:watchRun, src/webview/agentStart/StartLines.tsx (Open run) | startFlow.start.test.ts (AC-010), agentStart.endToEnd.test.ts, StartLines.test.tsx | verified |
+| AC-010 | T-004, T-005, T-009 | src/core/agentStart/startFlow.ts:watchRun, src/webview/agentStart/StartLines.tsx (Open run) | startFlow.start.test.ts (AC-010, incl. coalesced read), agentStart.endToEnd.test.ts, StartLines.test.tsx | verified |
 | AC-011 | T-004 | src/core/agentStart/startFlow.ts (request without permission field) | startFlow.start.test.ts (AC-011) | verified |
 | AC-012 | T-004 | src/core/agentStart/startFlow.ts (no file API) | src/core/agentStart/noWrite.test.ts | verified |
 | AC-013 | T-002, T-005 | src/core/agentStart/preconditions.ts (P-6), src/webview/agentStart/texts.ts | preconditions.test.ts (P-6), StartLines.test.tsx | verified |
 | AC-014 | T-003 | src/core/agentStart/startFlow.ts:handOff | src/core/agentStart/startFlow.test.ts (ended run) | verified |
-| M-2 | T-006 | src/webview/agentStart/StartDialog.tsx, StartLines.tsx | manual: Gregor, keyboard and screen reader | built |
+| M-2 | T-006, T-009 | src/webview/agentStart/StartDialog.tsx, StartLines.tsx | StartDialog.test.tsx (M-2), StartLines.test.tsx (M-2); manual: Gregor's delegate (S08-close-g5) checked readability of confirmation, expanded prompt, refusal and notice on screenshots in three themes, 2026-11-17; real screen reader in VS Code: pre-release checklist item for Gregor | verified |
+
+## Open evidence
+
+- Host suite (`npm test`, includes `src/test/agentStart.smoke.test.ts`): Windows 11, Gregor's machine,
+  VS Code stable, Node 26 — 28 passing, 0 failing at commit e6f0c85, 2026-11-17 08:45 CET (earlier:
+  27 passing at 70362df, the last T-008 commit). Pre-done gate for e6f0c85; T-009 changes no product
+  code and no host test.
+- GitHub Actions (ubuntu-latest + windows-latest): green at commit 9635ba4, 2026-11-17 (before
+  0008's code); no CI run recorded for a commit containing 0008.
 
 ## Session handoff
 
-- **Done so far:** All eight steps (T-001 to T-008) built and verified; plan Done. Every acceptance criterion has a recorded unit-level run; the host smoke `src/test/agentStart.smoke.test.ts` and manual M-2 (dialog, refusal and notice by keyboard and screen reader) are open; M-1 is accepted with 0010.
-- **Next action:** Gregor reviews the tests per stage (lists in the session report), accepts M-2; then `/sdd-compile` in a fresh session (another model family) and `/sdd-lifecycle` to done. Not done here on purpose.
-- **Open decisions:** the narrowed 0009 manifest assertion (T-007, 0009's plan to be amended the FeatherSpec way); OP-010 taken by the spec's recommendation (Gregor, 2026-11-17).
+- **Done so far:** T-001…T-009 built, ticked with recorded results and committed; every criterion
+  `verified`, M-2 revised and recorded (T-009); second `/sdd-compile` 2026-11-17 (session
+  S08-close-g5): READY (manual items: 1) after T-009.
+- **Next action:** none — spec moved to done/ and this plan archived 2026-11-17 (frozen).
+- **Open decisions:** none. M-1 is accepted with 0010 (OP-011).
 - **Baseline:** 3b3ab8b (before T-001).
-- **Environment:** `npm test` cannot run here; it runs on CI or Gregor's Windows machine. Steps are run test-first through a `Not implemented` stub; one commit per step.
+- **Environment:** `npm test` cannot run here; it runs on Windows and CI.
