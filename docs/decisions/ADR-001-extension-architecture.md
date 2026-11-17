@@ -1,6 +1,7 @@
 # ADR-001: Extension and Webview Architecture (SPIKE-003)
 
 - Status: Proposed (awaiting PO/Tech-Lead review); Date: 2026-11-16
+- Note: superseded in part by 0015 (PD-055): the agent provider port, the orchestrator and the Agent Center no longer exist; the rest stands.
 - Scope: VS Code Desktop extension skeleton (`yo code` scaffold, TypeScript, esbuild, `engines.vscode ^1.146.0`)
 - Related: po-handoff sections 2, 3, 4, 8, 12 (SPIKE-003), 13, 14; ADR-002 (runtime storage); SPIKE-001 (format audit), SPIKE-002 (agent SDK)
 

@@ -1,6 +1,6 @@
 # ADR-003: First productive agent provider (SPIKE-002)
 
-- Status: Proposed. Desk evaluation only. The PoC on Gregor's machine is still open (see "PoC checklist").
+- Status: Superseded (PD-055): Studio starts no agent since spec 0015, so no provider is chosen. Was: Proposed. Desk evaluation only. The PoC on Gregor's machine is still open (see "PoC checklist").
 - Date: 2026-11-16
 - Relates to: SPIKE-002, FS-009, FS-010, FS-011, FS-012, PD-001, PD-006, PD-007, PD-009, PD-010
 - Evidence base: npm registry metadata, plus the published tarballs fetched with `npm pack` and read locally (`.d.ts`, README, bundled binaries), plus official docs. Every source was retrieved on 2026-11-16. **No authenticated run was possible here.** Nothing below says a run *works* end to end. It says only what the types and docs declare.

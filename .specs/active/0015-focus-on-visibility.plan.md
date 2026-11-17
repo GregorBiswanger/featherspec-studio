@@ -3,7 +3,7 @@
 **Spec:** [0015-focus-on-visibility.md](0015-focus-on-visibility.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-014
+**Current step:** T-015
 
 ## Approach
 
@@ -322,7 +322,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
   (PD-055)". `CHANGELOG.md` entry. Docs scan test `src/adapters/node/docsScan.test.ts` (AC-025, negative control).
 - **Deletes:** `docs/agent-provider-port.md`, `docs/security/secret-patterns.md`, `media/screenshots/agent-center-dark.png`
 - **Verify:** docs scan red then green; gates 1–4
-- [ ] **Verified (T-014):** —
+- [x] **Verified (T-014):** 2026-11-17 — red: docsScan.test.ts failed on release-checklist, runtime-data, deleted files and ADR notes before the rewrite; green after: 7 docs-scan tests (with negative control), sourceScan allow-list extended by docsScan.test.ts; gates 1–4 and compile clean. README, runtime-data, release-checklist rewritten, ADR-001/002/003 notes, CHANGELOG entry, three files deleted. AC-030 checklist item M-1 added (Gregor).
 - **Notes:** —
 
 ### T-015 — Architecture, Memory Bank, test-title audit, final gates
@@ -375,7 +375,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 | AC-022 | T-007, T-012 | src/test (host suites), .vscode-test.mjs | src/adapters/node/sourceScan.test.ts | verified |
 | AC-023 | T-004, T-011 | src/core/runtime/earlierRunData.ts, src/adapters/node/earlierRunDataFiles.ts, src/extension.ts | src/core/runtime/earlierRunData.test.ts, src/adapters/node/earlierRunDataFiles.test.ts, src/adapters/node/earlierRunData.endToEnd.test.ts | verified |
 | AC-024 | T-004, T-011 | src/core/runtime/earlierRunData.ts, src/extension.ts | src/core/runtime/earlierRunData.test.ts, src/adapters/node/earlierRunData.endToEnd.test.ts | verified |
-| AC-025 | T-014 | — | — | open |
+| AC-025 | T-014 | src/adapters/node/docsScan.test.ts | — | verified |
 | AC-026 | T-006, T-010 | src/shared/protocol/areas.ts, src/shared/protocol/texts.ts, src/core/runtime/notices.ts | src/shared/protocol/messages.test.ts, src/webview/PanelStateView.test.tsx, src/core/runtime/runtimeSession.test.ts | verified |
 | AC-027 | T-015 | — | — | open |
 | AC-028 | T-013 | .specs/done/0008–0012 (Deprecated), .specs/done/0003–0007 and 0013 (notes) | grep checks of T-013 | verified |
@@ -385,7 +385,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 ## Session handoff
 
 - **Done so far:** Stages 1 to 4 (T-001…T-012): next step, copy, drop result; board and detail without runs; Mission Control without runs; run wiring, manifest entries and dead modules removed; three areas; the status-history store; the earlier-data removal wired at activation; the SDK uninstalled, the bundle and source scans.
-- **Next action:** T-014 (product docs), then T-015.
+- **Next action:** T-015 (architecture update, test-title audit, final gates).
 - **Open decisions:** — (Gregor approved the changed order and `npm uninstall @github/copilot-sdk`; the parallel stage runs in sequence; deletions listed per step are approved.)
 - **Baseline:** ea4a8bd
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked); host suites run on Windows and CI. Gates: `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`.

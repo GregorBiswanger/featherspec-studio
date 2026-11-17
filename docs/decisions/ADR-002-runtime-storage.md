@@ -1,6 +1,7 @@
 # ADR-002: Runtime Storage for Agent Runs and Events (SPIKE-004)
 
 - Status: Proposed (awaiting PO/Tech-Lead review); Date: 2026-11-16
+- Note: superseded in part by 0015 (PD-055): the store keeps only the spec status history; runs and events are gone.
 - Scope: runtime data only (AgentRuns, normalised AgentEvents, UI hints). Markdown under `.specs/` stays the single source of truth for specs (P2); nothing in this store may override spec state.
 - Related: FS-004 (FR-004.1–8, AC-004.1–8), NFR 13 (Reliability, Security, Privacy), ADR-001 (ports and adapters)
 

@@ -12,10 +12,9 @@ and the expected result. A clear miss reopens the named spec.
 - [ ] **Screenshots and links**: push `media/screenshots/` and `docs/` to the default branch of
   `GregorBiswanger/featherspec-studio` first; vsce rewrites the README's relative links to that repository.
 - [ ] **Gallery banner, categories, keywords** in `package.json` read right to you.
-- [ ] **Host suite** green on Windows at the release commit: `npm test`, and once with
-  `FEATHERSPEC_COPILOT_SMOKE=1` and a signed-in Copilot CLI. Last run 2026-11-17 on Gregor's machine
-  (by the agent, through the bridge): `npm test` 29 + 1 + 1 passing, opt-in 32 passing, the opt-in suite
-  against the unpacked VSIX 32 passing, `npm run test:unit` 2,152 + 11. Repeat only if the head moved.
+- [ ] **Host suite** green on Windows at the release commit: `npm test`. Repeat only if the head moved.
+- [ ] **Universal VSIX**: `npx @vscode/vsce ls` → only `dist/`, `media/` (icon, Activity Bar icon), `package.json`,
+  README, CHANGELOG, LICENSE; no `node_modules/`, no `.node` file.
 
 ## Trying the extension locally
 
@@ -23,11 +22,7 @@ and the expected result. A clear miss reopens the named spec.
    built extension; open a FeatherSpec project there (e.g. `C:\projects\test\tip-splitter`).
 2. **VSIX**: `npx @vscode/vsce package` → `featherspec-studio-0.1.0.vsix`; install with
    *Extensions: Install from VSIX…* or `code --install-extension featherspec-studio-0.1.0.vsix`.
-3. **Without Copilot**: settings `featherspec-studio.fakeProvider.enabled` = `true` and
-   `featherspec-studio.defaultProvider` = `fake`; `featherspec-studio.fakeProvider.scenario` picks the run
-   (`approval`, `input`, `long-run`, `failure:*`, …). The fake changes no file.
-4. **Real Copilot run**: Copilot CLI 1.0.87+ installed and signed in (`copilot`, then `/login`),
-   `defaultProvider` = `copilot`, then drag a Ready spec to Active and confirm with **Start**.
+3. **Next step**: select a spec in the Spec Explorer, click **Copy** on its next step and paste it into your assistant's chat.
 
 ## Discovery (0001)
 
@@ -50,6 +45,10 @@ and the expected result. A clear miss reopens the named spec.
   `$env:FEATHERSPEC_SETUP_LIVE='1'; npx vitest run --project node src/adapters/node/setupLive; Remove-Item Env:FEATHERSPEC_SETUP_LIVE`
   → 2 passed, one summary line per run (version, tag, counts, ms).
 
+## Focus on visibility (0015)
+
+- [ ] **AC-030 / M-1**: in a real VS Code window on `tip-splitter`: the panel shows Mission Control, Spec Board and Spec Explorer only; a spec's detail shows **Next step**, **Copy** puts the line on the clipboard and pasting it into the assistant's chat works; moving a Ready spec to Active starts nothing, shows the next step and **Copy**; no command, setting or text offers to start an agent or a run.
+
 ## Shell (0005)
 
 - [ ] **AC-019 live theme switch**: panel on Spec Explorer with a spec selected; switch Dark Modern → Light
@@ -63,9 +62,9 @@ and the expected result. A clear miss reopens the named spec.
 
 ## Dashboard — Mission Control (0006)
 
-- [ ] **AC-021 / §9**: in High Contrast, Light and Dark every state, attention reason and run status reads as a
-  word (icon and colour only in addition); attention below the counts, Agent runs and Recent activity side by side.
-- [ ] **AC-022**: Tab, Enter and Space only → every count, attention row, run row, activity entry and the
+- [ ] **AC-021 / §9**: in High Contrast, Light and Dark every state and attention reason reads as a
+  word (icon and colour only in addition); attention below the counts, Recent activity beside it.
+- [ ] **AC-022**: Tab, Enter and Space only → every count, attention row, activity entry and the
   diagnostics link shows a focus outline; Enter and Space each open the target area.
 - [ ] **OP-12 (AC-016, AC-024)**: on a real project with many specs the content shows within about 1 s of
   opening and updates within about 0.5 s of saving a spec file.
@@ -75,38 +74,9 @@ and the expected result. A clear miss reopens the named spec.
 - [ ] **AC-017 keyboard only**: Tab reaches the board, arrows move between cards, Enter opens the detail,
   the next Tab reaches "Move to…", Enter opens its menu; filters, sort, "Clear filters", every "Open file" work.
 - [ ] **AC-018 screen reader** (NVDA or Narrator): a refused move is read with its reason; Ready → Active
-  announces the hand-off to the start workflow.
+  announces the next step that Studio names.
 - [ ] **AC-026**: board and detail in Light, Dark and High Contrast — text readable, focus outline visible on
   cards, buttons and "Open file", descriptions cut to two lines.
-
-## Start workflow (0008)
-
-- [ ] **M-2 screen reader** (fake provider as above): move a Ready spec to Active by keyboard → dialog
-  announced as "Start an agent on spec NNNN?", focus on Cancel, Tab cycles Show start prompt / Start / Cancel,
-  Escape cancels; a refusal is an alert with one line per P-ID; a start-failure notice reads run ID and class,
-  Open run / Dismiss work with Enter; the expanded prompt scrolls inside the dialog in a narrow panel.
-
-## Agent Center (0012)
-
-- [ ] **Live run** on `tip-splitter` with Copilot: events appear live, the timeline follows the newest row.
-- [ ] **Approval**: a notification names the spec and "approval" with "Open in Agent Center"; "Approve once"
-  answers once and the agent continues.
-- [ ] **Cancel**: "Cancel run" asks once; confirm → the agent stops and the run shows Cancelled.
-- [ ] **Restart**: reload or restart VS Code → same run and events, a formerly open run as Interrupted, the
-  selected run still selected.
-- [ ] **File changes**: the run's "File changes" list matches `git status` in `tip-splitter`.
-
-## Copilot provider (0010)
-
-- [ ] **M-01 signed out**: `copilot` → `/logout`, open the start dialog for a Ready spec → availability
-  "not signed in" with the hint "Run `copilot` in a terminal and sign in, then retry."; no run starts. Note
-  Copilot's error shape.
-- [ ] **A-003**: signed in with `copilot` only (no `gh auth`), start a run → runs with the base directory
-  `<globalStorage>/copilot-home`; if not signed in there, BR-09's fallback applies.
-- [ ] **A-005**: read the log line "A-005 observation" of the opt-in smoke run → if reads run without a
-  request, reword spec 0010 §8 and BR-14.
-- [ ] **Universal VSIX**: `npx @vscode/vsce ls` → only `dist/`, `media/` (icon, Activity Bar icon), `package.json`,
-  README, CHANGELOG, LICENSE; no `node_modules/`, no `@github/copilot-sdk-*`, no `.node` file.
 
 ## Visual design (0013)
 
@@ -118,12 +88,6 @@ and the expected result. A clear miss reopens the named spec.
   (240 px minimum per column) — accept or ask for narrower columns.
 - [ ] **AC-015 Plan line**: an Overview whose Plan line is `[x](x)` shows the file name and the same target as
   secondary text — accept the duplicate or not.
-
-## Orchestrator texts (0011)
-
-- [ ] **M-03**: read the refusal and continuation texts in `src/core/orchestrator/texts.ts` (also via
-  *Stop Run* / *Resume Run* with no run: "No run is open." / "No run can be resumed.") → clear English you
-  accept, including "An input answer is text." and the continuation text of spec 0011 OP-005.
 
 ## Go
 

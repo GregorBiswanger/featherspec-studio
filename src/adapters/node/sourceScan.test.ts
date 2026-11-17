@@ -64,6 +64,7 @@ const REMOVED_ALLOWED = [
     'src/adapters/node/earlierRunDataFiles.test.ts',
     'src/adapters/node/earlierRunData.endToEnd.test.ts',
     'src/adapters/node/sourceScan.test.ts',
+    'src/adapters/node/docsScan.test.ts',
     'src/adapters/node/extensionBundle.test.ts',
     'src/adapters/node/webviewBundle.test.ts',
     'src/adapters/vscode/manifest.test.ts',

@@ -6,6 +6,11 @@ All notable changes to FeatherSpec Studio are documented in this file. The forma
 
 ## [Unreleased]
 
+### Changed
+
+- Studio focuses on visibility: it starts no agent. The Agent Center, the run commands, the provider settings and the `@github/copilot-sdk` dependency are removed. Studio names each spec's next FeatherSpec step with a **Copy** button; moving a Ready spec to Active shows that step instead of starting a run.
+- The local store keeps only the spec status history (90 days, fixed). Data of earlier builds (`copilot-home`, `index.json`, `runs/`, the `featherspec-studio.agentCenter` state) is removed at the next start.
+
 ### Added
 
 - Set up FeatherSpec: in a folder without a FeatherSpec project, Studio downloads the latest release from
