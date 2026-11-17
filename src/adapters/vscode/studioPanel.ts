@@ -5,12 +5,11 @@ import type { OutputPort } from '../../core/ports/host';
 import { createMessageRouter, type RequestHandlers } from '../../core/shell/messageRouter';
 import type { ShellService } from '../../core/shell/shellService';
 import type { AgentCenterView, TimelinePayload } from '../../shared/protocol/agentCenter';
-import type { AgentStartView } from '../../shared/protocol/agentStart';
 import type { BoardView, MoveResult } from '../../shared/protocol/board';
 import type { DetailView, OpenFileResultPayload } from '../../shared/protocol/detail';
 import type { MissionControlView } from '../../shared/protocol/missionControl';
 import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../../shared/protocol/envelope';
-import { isProbeResultPayload, type AgentCenterRequestType, type AgentStartRequestType, type BoardRequestType, type CopyResultEventPayload, type ProbeOutcome } from '../../shared/protocol/messages';
+import { isProbeResultPayload, type AgentCenterRequestType, type BoardRequestType, type CopyResultEventPayload, type ProbeOutcome } from '../../shared/protocol/messages';
 import { createProbeChannel } from './probeChannel';
 import { buildWebviewHtml } from './webviewHtml';
 
@@ -35,13 +34,6 @@ export interface PanelMissionControl {
     onDidChangeView(listener: (view: MissionControlView | undefined) => void): vscode.Disposable;
 }
 
-export interface PanelAgentStart {
-    handlers: Pick<RequestHandlers, AgentStartRequestType>;
-    view(): AgentStartView;
-    onDidChangeView(listener: () => void): vscode.Disposable;
-    panelHidden(): void;
-}
-
 export interface PanelAgentCenter {
     handlers: Pick<RequestHandlers, AgentCenterRequestType>;
     view(): AgentCenterView | undefined;
@@ -56,7 +48,6 @@ export interface StudioPanelDeps {
     service: ShellService;
     board: PanelBoard;
     missionControl: PanelMissionControl;
-    agentStart?: PanelAgentStart;
     agentCenter?: PanelAgentCenter;
     output: OutputPort;
     testMode: boolean;
@@ -162,12 +153,6 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
         post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'detail', payload: { view } });
     }
 
-    function pushAgentStart(): void {
-        if (deps.agentStart !== undefined) {
-            post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'agentStart', payload: { view: deps.agentStart.view() } });
-        }
-    }
-
     function pushMove(result: MoveResult): void {
         lastMove = result.kind === 'none' ? undefined : result;
         post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'moveResult', payload: { result } });
@@ -177,9 +162,6 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
         handlers: {
             ...deps.board.handlers,
             ...deps.service.handlers,
-            agentStartConfirm: async (payload) => deps.agentStart?.handlers.agentStartConfirm(payload),
-            agentStartCancel: async (payload) => deps.agentStart?.handlers.agentStartCancel(payload),
-            agentStartDismiss: async (payload) => deps.agentStart?.handlers.agentStartDismiss(payload),
             acSelect: async (payload) => deps.agentCenter?.handlers.acSelect(payload),
             acClearFilter: async (payload) => deps.agentCenter?.handlers.acClearFilter(payload),
             acLoadEarlier: async (payload) => deps.agentCenter?.handlers.acLoadEarlier(payload),
@@ -194,7 +176,6 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
                 pushBoard(deps.board.view());
                 pushMissionControl(deps.missionControl.view());
                 pushDetail(deps.board.detail());
-                pushAgentStart();
                 if (deps.agentCenter !== undefined) {
                     deps.agentCenter.reread();
                     pushAgentCenter(deps.agentCenter.view());
@@ -235,13 +216,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
             deps.missionControl.onDidChangeView(pushMissionControl),
             deps.board.onDidChangeDetail(pushDetail),
             deps.board.onDidMoveResult(pushMove),
-            ...(deps.agentStart === undefined ? [] : [deps.agentStart.onDidChangeView(pushAgentStart)]),
             ...(deps.agentCenter === undefined ? [] : [deps.agentCenter.onDidChangeView(pushAgentCenter), deps.agentCenter.onDidChangeTimeline(pushAgentCenterTimeline)]),
-            target.onDidChangeViewState((event) => {
-                if (!event.webviewPanel.visible) {
-                    deps.agentStart?.panelHidden();
-                }
-            }),
             deps.board.onDidOpenFileResult((payload) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'openFileResult', payload })),
             deps.board.onDidCopyResult((payload) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'copyResult', payload })),
             target.onDidDispose(() => {
@@ -250,7 +225,6 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
                 panel = undefined;
                 lastMove = undefined;
                 probeChannel.markNotReady();
-                deps.agentStart?.panelHidden();
                 deps.board.panelClosed();
             }),
         ];
@@ -312,7 +286,6 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
             panel?.dispose();
             panel = undefined;
             lastMove = undefined;
-            deps.agentStart?.panelHidden();
             deps.board.panelClosed();
         },
     };

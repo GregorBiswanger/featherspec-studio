@@ -10,8 +10,6 @@ import { buildDetail } from '../../core/board/detail';
 import { deriveLifecycle } from '../../core/lifecycle/deriveLifecycle';
 import { buildMissionControlView } from '../../core/missionControl/missionControlView';
 import { readProject } from '../../core/specs/readProject';
-import { buildStartPrompt } from '../../core/agentStart/startPrompt';
-import { isAgentStartView } from '../../shared/protocol/agentStart';
 import { isAgentCenterView, isTimelinePayload } from '../../shared/protocol/agentCenter';
 import { sampleCenterView, sampleDetail, sampleRow } from '../../shared/protocol/testing/agentCenterSample';
 import { createNodeSpecSource } from './nodeSpecSource';
@@ -153,43 +151,6 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         expect(document.querySelector('[data-runs]')).toBeNull();
         expect(document.querySelector('[data-attention] h2')?.textContent).toContain('Needs attention (');
         expect(document.querySelector('[data-activity] h2')?.textContent).toBe('Recent activity');
-        expect(errors).toEqual([]);
-    });
-
-    it('0008: mounts the start confirmation dialog and the start lines from a fixture view: modal dialog, prompt collapsed, no start-up error', async () => {
-        const prompt = buildStartPrompt({ stem: '0001-ready-feature', specPath: '.specs/backlog/0001-ready-feature.md', planPath: '.specs/backlog/0001-ready-feature.plan.md' });
-        const startView = {
-            confirmation: {
-                token: 'c-1',
-                spec: { number: '0001', title: 'Ready feature', stem: '0001-ready-feature' },
-                provider: { id: 'fake', displayName: 'Fake provider' },
-                permissionMode: 'Asks before every tool action',
-                missing: ['userInput'],
-                previousRun: { kind: 'none' },
-                prompt,
-                starting: false,
-            },
-            refusal: { number: '0001', items: [{ id: 'pending' }] },
-        };
-        expect(isAgentStartView(startView)).toBe(true);
-        const { dom, posted, errors } = boot(readFileSync(bundlePath, 'utf8'));
-        await settle();
-        const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'specExplorer', target: undefined, selection: undefined, notice: undefined, rows: [] };
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', type: 'agentStart', payload: { view: startView } } }));
-        await settle();
-        const document = dom.window.document;
-        const dialog = document.querySelector('[role="dialog"]') as unknown as (QueryRoot & { getAttribute(name: string): string | null }) | null;
-        expect(dialog?.getAttribute('aria-modal')).toBe('true');
-        expect(dialog?.textContent).toContain('Start an agent on spec 0001?');
-        const pre = document.querySelector('pre') as unknown as { hidden: boolean; textContent: string | null };
-        expect(pre.hidden).toBe(true);
-        expect(pre.textContent).toBe(prompt);
-        expect(document.querySelector('[data-start-refusal]')?.textContent).toContain('Another start is still being prepared.');
-        const start = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Start') as unknown as { click(): void };
-        start.click();
-        await settle();
-        expect(posted.some((message) => message.type === 'agentStartConfirm')).toBe(true);
         expect(errors).toEqual([]);
     });
 

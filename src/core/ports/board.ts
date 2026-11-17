@@ -2,15 +2,6 @@ import type { BoardState } from '../../shared/protocol/boardFilter';
 import type { MoveResult } from '../../shared/protocol/board';
 import type { Disposable } from './host';
 
-export interface StartRequest {
-    stem: string;
-    key: string;
-}
-
-export interface StartWorkflowPort {
-    start(request: StartRequest): Promise<void>;
-}
-
 export interface ClipboardPort {
     writeText(text: string): Promise<void>;
 }

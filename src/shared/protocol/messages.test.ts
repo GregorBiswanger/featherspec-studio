@@ -3,9 +3,6 @@ import { AREAS, AREA_IDS, isAreaId } from './areas';
 import { RESTRICTED_TEXT } from './texts';
 import { PROTOCOL_VERSION, isJsonValue, readEnvelope } from './envelope';
 import {
-    isAgentStartDismissPayload,
-    isAgentStartEventPayload,
-    isAgentStartTokenPayload,
     isHelloPayload,
     isNavigationRequest,
     isNavigationTarget,
@@ -155,32 +152,6 @@ describe('areas', () => {
         expect(AREAS.filter((area) => !area.placeholder).map((area) => area.id)).toEqual(['missionControl', 'specBoard', 'specExplorer', 'agentCenter']);
         expect(AREA_IDS.every(isAreaId)).toBe(true);
         expect(isAreaId('settings')).toBe(false);
-    });
-});
-
-describe('agent start requests and event (spec 0008)', () => {
-    it('guards the token payload, the dismiss payload and the event payload', () => {
-        expect(isAgentStartTokenPayload({ token: 'c-1' })).toBe(true);
-        expect(isAgentStartTokenPayload({ token: '' })).toBe(false);
-        expect(isAgentStartTokenPayload({ token: 1 })).toBe(false);
-        expect(isAgentStartTokenPayload(undefined)).toBe(false);
-        expect(isAgentStartDismissPayload({ which: 'refusal' })).toBe(true);
-        expect(isAgentStartDismissPayload({ which: 'notice' })).toBe(true);
-        expect(isAgentStartDismissPayload({ which: 'confirmation' })).toBe(false);
-        expect(isAgentStartDismissPayload({})).toBe(false);
-        expect(isAgentStartEventPayload({ view: {} })).toBe(true);
-        expect(isAgentStartEventPayload({ view: { checking: { number: '0001' } } })).toBe(true);
-        expect(isAgentStartEventPayload({ view: { extra: 1 } })).toBe(false);
-        expect(isAgentStartEventPayload({})).toBe(false);
-    });
-
-    it('registers the three request types with their guards', () => {
-        for (const type of ['agentStartConfirm', 'agentStartCancel', 'agentStartDismiss']) {
-            expect(isRequestType(type)).toBe(true);
-        }
-        expect(REQUEST_GUARDS.agentStartConfirm({ token: 'c-2' })).toBe(true);
-        expect(REQUEST_GUARDS.agentStartCancel({ which: 'x' })).toBe(false);
-        expect(REQUEST_GUARDS.agentStartDismiss({ which: 'notice' })).toBe(true);
     });
 });
 

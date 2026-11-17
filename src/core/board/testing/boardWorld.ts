@@ -3,7 +3,6 @@ import { readMemory } from '../../lifecycle/testing/projects';
 import type { Disposable } from '../../ports/host';
 import type { HistoryView } from '../../lifecycle/statusHistory';
 import type { ShellModel, ShellModelSource } from '../../ports/shell';
-import type { RunView } from '../../runtime/model';
 import { createBoardService, type BoardService } from '../boardService';
 
 export async function modelOf(files: Record<string, string>): Promise<ShellModel> {
@@ -37,28 +36,6 @@ export function createFakeSource(initial?: ShellModel): FakeSource {
             }
             [...listeners].forEach((listener) => listener());
         },
-    };
-}
-
-export function run(runId: string, stem: string, overrides: Partial<RunView> = {}): RunView {
-    return {
-        runId,
-        providerId: 'copilot',
-        model: 'not available',
-        spec: { stem, path: `.specs/active/${stem}.md` },
-        sessionRef: undefined,
-        status: 'Running',
-        statusHistory: [],
-        created: '2026-11-16T10:00:00.000Z',
-        started: undefined,
-        ended: undefined,
-        errorClass: undefined,
-        errorMessage: undefined,
-        result: undefined,
-        historyIncomplete: false,
-        historyUnreadable: false,
-        newerVersion: false,
-        ...overrides,
     };
 }
 

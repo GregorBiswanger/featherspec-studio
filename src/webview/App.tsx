@@ -1,7 +1,5 @@
 import { areaInfo, type AreaId } from '../shared/protocol/areas';
 import type { ShellClient } from './client';
-import { StartDialog } from './agentStart/StartDialog';
-import { StartLines } from './agentStart/StartLines';
 import { AREA_COMPONENTS } from './areas/registry';
 import { Placeholder } from './areas/Placeholder';
 import { Navigation } from './Navigation';
@@ -28,10 +26,8 @@ function Frame() {
                 <h1>{info.title}</h1>
                 <RestrictedNote />
                 <NoticeBar />
-                <StartLines />
                 {shell.state === undefined ? <AreaContent area={shell.area} /> : <PanelStateView state={shell.state} />}
             </main>
-            <StartDialog />
         </div>
     );
 }

@@ -18,7 +18,6 @@ import { COPY_MERGE_PROMPT_COMMAND_ID, SETUP_COMMAND_ID } from './shared/protoco
 import { createStudioTree } from './adapters/vscode/studioTree';
 import { createTrust } from './adapters/vscode/trust';
 import { createUiMemory } from './adapters/vscode/uiMemory';
-import { withEventSignal } from './core/agentCenter/eventSignal';
 import { sameRootFor } from './adapters/vscode/sameRoot';
 import { createStatusBar } from './adapters/vscode/statusBar';
 import { createFileWatch } from './adapters/vscode/fileWatch';
@@ -128,7 +127,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         discovery: controller,
         ui: runtimeUi,
         openStore: async (projectRoot) =>
-            withEventSignal(await openRuntimeStore({
+            await openRuntimeStore({
                 medium:
                     storage.kind === 'directory'
                         ? createFileRuntimeMedium(
@@ -141,7 +140,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
                 credentials: { values: () => [] },
                 projectRoot,
                 maxAgeDays: () => 90,
-            })),
+            }),
     });
     runtimeSession = session;
     const lifecycle = createLifecycleService({ repository, session, clock: createSystemClock() });

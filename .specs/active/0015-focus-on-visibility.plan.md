@@ -3,7 +3,7 @@
 **Spec:** [0015-focus-on-visibility.md](0015-focus-on-visibility.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-008
+**Current step:** T-009
 
 ## Approach
 
@@ -233,7 +233,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
   `src/adapters/vscode/{agentCenterMemory,agentCenterUi,copilotSettings,orchestratorUi,providerSettings,runtimeSettings}.ts`,
   `src/core/missionControl/{runSource.ts,runSource.test.ts}`, `test/fixtures/copilot/`, `test/fixtures/fs110-start-ready/`
 - **Verify:** gates 1–5; `ls src/core/agentCenter src/core/agentStart src/core/orchestrator src/core/providers src/adapters/providers src/webview/agentStart test/fixtures/copilot` fails for each
-- [ ] **Verified (T-008):** —
+- [x] **Verified (T-008):** 2026-11-17 — pure deletion, so no red run; the ls check fails for every named folder (No such file or directory); gates 1–5 clean: 1852 passed + 3 skipped, 12 timing (the count drop is the deleted tests of removed behaviour). Notes: .gitattributes keeps the *.golden.txt line because src/core/setup/mergePrompt.golden.txt (0014) still needs LF on Windows; src/core/missionControl/testing/runtimeWorld.ts (dead helper of runSource) deleted too; RunStatusWord and run() in boardWorld.ts removed; the agentStart protocol (messages.ts, client.ts, studioPanel.ts) removed with its guards and tests; the Agent Center protocol and webview area stay until T-009.
 - **Notes:** —
 
 ### T-009 — Three areas
@@ -385,7 +385,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 ## Session handoff
 
 - **Done so far:** Stages 1 and 2 (T-001…T-005): next step, copy, drop result; earlier-data removal module (not wired); board and detail without runs (the parallel stage ran in sequence).
-- **Next action:** T-008 (delete the dead run modules), then T-009.
+- **Next action:** T-009 (three areas), then the stage 3 sync.
 - **Open decisions:** — (Gregor approved the changed order and `npm uninstall @github/copilot-sdk`; the parallel stage runs in sequence; deletions listed per step are approved.)
 - **Baseline:** ea4a8bd
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked); host suites run on Windows and CI. Gates: `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`.

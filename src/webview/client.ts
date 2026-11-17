@@ -5,12 +5,10 @@ import type { BoardView, MoveResult, SortKey } from '../shared/protocol/board';
 import type { BoardFilter, BoardState } from '../shared/protocol/boardFilter';
 import { isOpenFileResultPayload, type DetailView } from '../shared/protocol/detail';
 import type { MissionControlView } from '../shared/protocol/missionControl';
-import type { AgentStartView } from '../shared/protocol/agentStart';
 import type { AgentCenterView, TimelinePayload } from '../shared/protocol/agentCenter';
 import {
     isAgentCenterEventPayload,
     isAgentCenterTimelineEventPayload,
-    isAgentStartEventPayload,
     isBoardEventPayload,
     isCopyResultEventPayload,
     isDetailEventPayload,
@@ -36,7 +34,6 @@ export interface ClientSnapshot {
     board: BoardView | undefined;
     detail: DetailView | undefined;
     missionControl: MissionControlView | undefined;
-    agentStart: AgentStartView | undefined;
     agentCenter: AgentCenterView | undefined;
     agentCenterTimeline: TimelinePayload | undefined;
     move: MoveResult;
@@ -65,9 +62,6 @@ export interface ShellClient {
     openFile(key: string, line?: number): void;
     copyText(text: string): void;
     dismissMove(): void;
-    confirmStart(token: string): void;
-    cancelStart(token: string): void;
-    dismissStart(which: 'refusal' | 'notice'): void;
     acSelect(runId: string): void;
     acClearFilter(): void;
     acLoadEarlier(runId: string): void;
@@ -98,13 +92,12 @@ export function createClient(deps: ClientDeps): ShellClient {
     let board: BoardView | undefined;
     let detail: DetailView | undefined;
     let missionControl: MissionControlView | undefined;
-    let agentStart: AgentStartView | undefined;
     let agentCenter: AgentCenterView | undefined;
     let agentCenterTimeline: TimelinePayload | undefined;
     let move: MoveResult = { kind: 'none' };
     let fileResult: { key: string; text: string } | undefined;
     let copyResult: CopyResultEventPayload | undefined;
-    let snapshot: ClientSnapshot = { view: undefined, state: { id: 'S4' }, area: DEFAULT_AREA, board: undefined, detail: undefined, missionControl: undefined, agentStart: undefined, agentCenter: undefined, agentCenterTimeline: undefined, move, fileResult: undefined, copyResult: undefined };
+    let snapshot: ClientSnapshot = { view: undefined, state: { id: 'S4' }, area: DEFAULT_AREA, board: undefined, detail: undefined, missionControl: undefined, agentCenter: undefined, agentCenterTimeline: undefined, move, fileResult: undefined, copyResult: undefined };
     let unlisten: (() => void) | undefined;
     let mismatch = false;
     let protocolFailure = false;
@@ -129,7 +122,6 @@ export function createClient(deps: ClientDeps): ShellClient {
             snapshot.board === board &&
             snapshot.detail === detail &&
             snapshot.missionControl === missionControl &&
-            snapshot.agentStart === agentStart &&
             snapshot.agentCenter === agentCenter &&
             snapshot.agentCenterTimeline === agentCenterTimeline &&
             snapshot.move === move &&
@@ -139,7 +131,7 @@ export function createClient(deps: ClientDeps): ShellClient {
         ) {
             return;
         }
-        snapshot = { view, state, area, board, detail, missionControl, agentStart, agentCenter, agentCenterTimeline, move, fileResult, copyResult };
+        snapshot = { view, state, area, board, detail, missionControl, agentCenter, agentCenterTimeline, move, fileResult, copyResult };
         listeners.forEach((listener) => listener());
     }
 
@@ -248,11 +240,6 @@ export function createClient(deps: ClientDeps): ShellClient {
                     missionControl = envelope.payload.view;
                     refresh();
                 }
-            } else if (envelope.kind === 'evt' && envelope.type === 'agentStart') {
-                if (isAgentStartEventPayload(envelope.payload)) {
-                    agentStart = envelope.payload.view;
-                    refresh();
-                }
             } else if (envelope.kind === 'evt' && envelope.type === 'agentCenter') {
                 if (isAgentCenterEventPayload(envelope.payload)) {
                     agentCenter = envelope.payload.view;
@@ -322,15 +309,6 @@ export function createClient(deps: ClientDeps): ShellClient {
             move = { kind: 'none' };
             copyResult = undefined;
             refresh();
-        },
-        confirmStart(token) {
-            send('agentStartConfirm', { token });
-        },
-        cancelStart(token) {
-            send('agentStartCancel', { token });
-        },
-        dismissStart(which) {
-            send('agentStartDismiss', { which });
         },
         acSelect(runId) {
             send('acSelect', { runId });

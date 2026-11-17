@@ -1,8 +1,6 @@
 import { builtinModules } from "node:module";
 import typescriptEslint from "typescript-eslint";
 
-const PROVIDER_SDK_GROUPS = ["@github/copilot-sdk", "@github/copilot-sdk/*", "@anthropic-ai/claude-agent-sdk", "@anthropic-ai/claude-agent-sdk/*", "@openai/codex-sdk", "@openai/codex-sdk/*"];
-
 export default [{
     files: ["**/*.ts", "**/*.tsx"],
 }, {
@@ -27,8 +25,6 @@ export default [{
             ],
             patterns: [
                 { group: ["vscode/*"], message: "Core code never imports vscode." },
-                { group: ["**/adapters/providers", "**/adapters/providers/**"], message: "Core code reaches providers only through the provider port." },
-                { group: PROVIDER_SDK_GROUPS, message: "Core code never imports a provider SDK." },
             ],
         }],
     },

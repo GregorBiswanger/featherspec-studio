@@ -3,8 +3,6 @@ import { isRecord } from './envelope';
 
 export type DerivedRule = 'S-READY' | 'S-REVIEW' | 'S-BLOCKED';
 
-export type RunStatusWord = 'Starting' | 'Running' | 'WaitingForApproval' | 'WaitingForInput' | 'Completed' | 'Failed' | 'Cancelled' | 'Interrupted';
-
 export type AttentionReason = 'Blocked' | 'Diagnostic' | 'Review pending';
 
 export interface SpecRef {
