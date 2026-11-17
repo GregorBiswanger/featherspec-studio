@@ -10,6 +10,7 @@ Current phase: act
 ## Active Spec
 - [0015 spec](../.specs/active/0015-focus-on-visibility.md) / [plan](../.specs/active/0015-focus-on-visibility.plan.md), In Progress, all steps verified (T-016…T-020: fixes from the compile of 2026-11-17).
 - [0014 spec](../.specs/active/0014-setup-featherspec-from-studio.md) / [plan](../.specs/active/0014-setup-featherspec-from-studio.plan.md), In Progress.
+- Planned: [0016 spec](../.specs/backlog/0016-honest-signals.md) / [plan](../.specs/backlog/0016-honest-signals.plan.md) (Draft, 10 steps, not started); 0017…0020 in backlog/, specified, unplanned.
 - Completed: 0001…0007 and 0013 in [.specs/done/](../.specs/done/) (amended by 0015); 0008…0012 in done/ are Deprecated with a successor link to 0015. Plans frozen in [.specs/plan-archive/](../.specs/plan-archive/).
 
 ## Changed Recently
@@ -29,6 +30,7 @@ Current phase: act
 1. Gregor: AC-030 / M-1 on `tip-splitter` (release checklist), `npm test` on Windows and CI at the fix head (product code changed in T-016, T-018; pre-done gate, AC-027); then `/sdd-compile` for 0015 in a fresh session.
 2. Gregor: 0014 M-2 with the button, then `/sdd-compile` for 0014.
 3. Gregor: work through [docs/release-checklist.md](../docs/release-checklist.md), then Go.
+4. Gregor (or delegate): review the 0016 plan (proxy readings Q-1…Q-12 in its Research), commit it, then the start signal for T-001.
 
 ## Validation
 - 0015: gates 1–5 and compile-tests green in the agent sandbox after T-020 (1688 passed + 3 skipped, 12 timing); `npm test` green on Gregor's Windows at `c4f7a5d`, not yet at the fix head.

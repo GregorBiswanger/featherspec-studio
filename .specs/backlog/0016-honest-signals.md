@@ -1,7 +1,7 @@
 # Honest Signals: Diagnostics in Three Tiers, User Language, Readiness as a Need
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0016-honest-signals.plan.md](0016-honest-signals.plan.md)
 
 Basis: UX audit 2026-11-17 (`docs/ux-audit/` R-01, R-08, R-09, R-12, R-13, R-17, R-18; Q-3, Q-4);
 PD-058, PD-059 (proxy); `.claude/rules/ux-guidelines.md` 3, 6, 8–10; PD-016, PD-013. Gregor is not
