@@ -3,7 +3,7 @@
 **Spec:** [0014-setup-featherspec-from-studio.md](0014-setup-featherspec-from-studio.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-002
+**Current step:** T-003
 
 ## Approach
 
@@ -108,8 +108,8 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 - **Files:** `src/core/ports/releaseArchive.ts`, `src/core/setup/releaseArchive.ts`, `src/core/setup/releaseArchive.test.ts`, `src/adapters/node/tarGzArchive.ts`, `src/adapters/node/tarGzArchive.test.ts`, `src/adapters/node/testing/tarWriter.ts`, `test/fixtures/setup/git-archive-sample.tar.gz`, `test/fixtures/setup/featherspec-1.10.0.tar.gz` (exists), `src/shared/protocol/texts.ts`
 - **Do:** Port `ReleaseArchivePort.read(bytes) → entries {path, kind: file|directory|metadata|other, bytes}` or a refusal reason. Adapter: `zlib.gunzipSync` with `maxOutputLength` 20 MB, tar reader for ustar headers (checksum, `prefix` field), pax `g`/`x` records (path override), types 0/NUL file, 5 directory, `g`/`x` metadata, everything else `other`. Core `releaseArchive.ts`: AC-006's checks in spec order (single top folder, root `AGENTS.md` with a valued version line via `versionLine.ts`, a file below `.specs/`, entry kinds, path rules, case collisions, size), strips the top folder, selects BR-02's release files (root exclusions only), returns version. Refusal texts in `texts.ts`. Fixture: one real `git archive --format=tar.gz` of a small tree with a path over 100 characters (command in Notes); hostile archives built in tests by `testing/tarWriter.ts`.
 - **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx vitest run --project node src/core/setup/releaseArchive src/adapters/node/tarGzArchive` (own tests only; the full gates run once on the stage's combined result)
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-17 — red first: `npx vitest run --project node src/core/setup src/adapters/node/tarGz` 51 failed (all `Not implemented` stubs); green after: 51 passed (real 1.10.0 archive: `pax_global_header` metadata, 16 folders, 67 files, 67 → 63 taken, version 1.10.0; real `git archive` sample with ustar prefix, pax path and a symbolic link; hostile archives built by `testing/tarWriter.ts`). `npx eslint src --max-warnings 0` and `npx tsc --noEmit` clean. Full gates run once after T-003 (sequence).
+- **Notes:** Texts live in `src/core/setup/setupTexts.ts` (the setup's text module, asserted literally by tests), not `shared/protocol/texts.ts`; T-003 adds none. `read(bytes, maxUnpackedBytes)` is async (zlib `gunzip` with `maxOutputLength`). Path rules are checked before the top-folder check, so a hostile path is named as such. `.git` segment compared case-insensitively; `.` and empty segments are refused too. Fixture command: `git archive --format=tar.gz --prefix=sample-1.0.0/ HEAD` of a temp repo with a 162-character path (ustar prefix), a 134-character single name (pax `path`) and a symbolic link (so this sample is refused as a release, which is what its test shows).
 
 ### T-003 — Class release files against the folder and compute completions
 
