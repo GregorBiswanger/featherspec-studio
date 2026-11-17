@@ -1,7 +1,7 @@
 # Studio Visual Design
 
-**Status:** In Progress
-**Plan:** [0013-studio-visual-design.plan.md](0013-studio-visual-design.plan.md)
+**Status:** Implemented
+**Plan:** [0013-studio-visual-design.2026-11-17.plan.md](../plan-archive/0013-studio-visual-design.2026-11-17.plan.md)
 
 Depends on: 0005, 0006, 0007. Input: [design-brief.md](../../docs/product/design-brief.md), Gregor's interview answers
 for this spec. `D-n` = defect n of the UI preview report of 2026-11-16.
@@ -175,14 +175,20 @@ its `Verified` text. *(fixture: a copy of this repo's spec 0002 and its plan; D-
 **AC-016** Every existing test of 0005–0007 shall stay green; only assertions on wording or
 structure that §2's five deltas change are updated, in the same change set, each named in the plan.
 
-**AC-017** *(manual, Gregor)* Screenshots from the preview harness of Mission Control, Spec Board,
+**AC-017** *(manual, Gregor or his delegate)* Screenshots from the preview harness of Mission Control, Spec Board,
 Spec Explorer list, detail of 0002 (expanded, and with Acceptance criteria collapsed), Agent
 Center and panel states S1 and S2, each in Dark, Light and High Contrast at 1400×900, plus board
-and detail at 900 px width. Gregor checks: no cut-off card, no raw Markdown, readable contrast in
-Light, project state readable at a glance; his verdict is recorded in the plan.
+and detail at 900 px width. Checked: no cut-off card, no raw Markdown, readable contrast in
+Light, project state readable at a glance; the verdict is recorded in the plan. Revised
+2026-11-17 under Gregor's delegation of 2026-11-17: these four checks are made by his delegate
+on the dated screenshot set; the taste verdict of §1 ("fit for a talk or a Marketplace
+listing") is checked by Gregor or his delegate; pre-release checklist item.
 
-**AC-018** *(manual, Gregor)* One pass in real VS Code with a Dark, a Light and a High Contrast
-theme plus one live theme switch: colours, borders and focus match the screenshots.
+**AC-018** *(manual, Gregor or his delegate)* One pass in real VS Code with a Dark, a Light and a High Contrast
+theme plus one live theme switch: colours, borders and focus match the screenshots. Revised
+2026-11-17 under Gregor's delegation of 2026-11-17: only a person in a real VS Code can judge
+this; checked by Gregor or his delegate; pre-release checklist item. The parts a test can decide
+stay decided by AC-001 and AC-003 and by 0005 AC-019 (no panel module reads or caches the theme).
 
 ## 5. Technical notes
 
@@ -205,7 +211,7 @@ theme plus one live theme switch: colours, borders and focus match the screensho
 | A-001 | The brief's taste proposals are Gregor's decisions | He said so in the command | Revise the changed points |
 | A-002 | Related artifacts keep one link per listed file | Each item is another file; one section button cannot choose | AC-013 changes |
 | A-003 | Sections start expanded; collapse state per section name, panel lifetime only | Brief names collapsing, not defaults; no new persistence | Detail long by default |
-| A-004 | Breakpoints 720 px, 640 px, 240 px column | Fit 1400 px and a half-width editor group | Layout tweak only |
+| A-004 | Breakpoints 720 px, 640 px, 240 px column | Fit 1400 px and a half-width editor group | Layout tweak only. Observed 2026-11-16 (plan T-005): at 1400 px the sixth column sits partly behind the board's horizontal scroll, because AC-008's 240 px minimum wins; recorded as accepted 2026-11-17 (closing compile, Gregor's delegation), Gregor's taste check on the pre-release checklist |
 | A-005 | Brief's "History" is 0007's "Agent history"; the name stays | Renaming is not a named delta | Label change only |
 | A-006 | Section "Open file" opens at the top, not an item's line | Per-item jumps leave with per-item buttons | Small navigation loss |
 
@@ -219,4 +225,9 @@ theme plus one live theme switch: colours, borders and focus match the screensho
 
 Ready: OP-1 decided, 0006/0007 fixes landed, `/sdd-clarify` passed — waived by Gregor on 2026-11-16
 (presentation only, judged by screenshots). Done: AC-001…AC-016 green,
-dependencies unchanged, AC-017/AC-018 accepted by Gregor, `techContext.md` manual checks updated.
+dependencies unchanged, AC-017 checked by Gregor's delegate (2026-11-17) with the taste verdict and
+AC-018 on the pre-release checklist, `techContext.md` manual checks updated.
+
+## Plan history
+
+- 2026-11-17 — [0013-studio-visual-design.2026-11-17.plan.md](../plan-archive/0013-studio-visual-design.2026-11-17.plan.md) — tokens, Mission Control tiles and bar, board layout, safe inline Markdown and collapsible detail, states and motion in 10 steps; closing `/sdd-compile` READY (manual items: 2).

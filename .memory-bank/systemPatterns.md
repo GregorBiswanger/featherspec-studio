@@ -60,7 +60,7 @@ holds the *why*: decisions and patterns.
   may be the old or the new state, never an intermediate one · 2026-11-16 · spec 0003 §6.4, plan 0003 Research
 
 - Studio shell UI memory (area, selection with project root) lives in `context.workspaceState` (`featherspec-studio.shell`, versioned, validated on read), not
-  in the webview's `getState`/`setState`: that state dies with the panel and cannot carry reopen or reload · 2026-11-16 · [plan 0005](../.specs/active/0005-studio-shell-navigation.plan.md) *Research*
+  in the webview's `getState`/`setState`: that state dies with the panel and cannot carry reopen or reload · 2026-11-16 · [plan 0005](../.specs/plan-archive/0005-studio-shell-navigation.2026-11-17.plan.md) *Research*
 - The host derives every panel state except two: the webview decides S6 (any inbound message of another protocol version, ranks first) and S5's protocol cause
   (no valid snapshot within 5 s of `hello`, an invalid snapshot, or a second mismatch right after a reload) · 2026-11-16 · spec 0005 BR-05, OP-008, plan 0005 *Research*
 - All UI texts the shell owns sit in one shared file (`src/shared/protocol/texts.ts`), used by the panel UI and the host tree · 2026-11-16 · plan 0005 *Approach*

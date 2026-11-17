@@ -1,9 +1,9 @@
 # Plan — Studio Visual Design
 
-**Spec:** [0013-studio-visual-design.md](0013-studio-visual-design.md)
-**Status:** In Progress
-**Last updated:** 2026-11-16
-**Current step:** T-010 (awaiting Gregor's AC-017 verdict)
+**Spec:** [0013-studio-visual-design.md](../done/0013-studio-visual-design.md)
+**Status:** Done
+**Last updated:** 2026-11-17
+**Current step:** none (all steps ticked; AC-017 by Gregor's delegate 2026-11-17)
 
 ## Approach
 
@@ -231,7 +231,7 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
   full AC-017 shot list to Gregor; record his verdict below.
 - **Verify:** quality gates; manual: AC-017 — Gregor's verdict on the full screenshot set (no command can
   judge looks).
-- [ ] **Verified (T-010):** — (gates done 2026-11-16: eslint `--max-warnings 0`, `tsc --noEmit` both, `npm run test:unit` 93 files / 1340 tests, `npm run compile` green; `git diff e78fa54 -- package.json package-lock.json` empty. Open: Gregor's AC-017 verdict on the shot set below — no command can judge looks.)
+- [x] **Verified (T-010):** 2026-11-16 gates: eslint `--max-warnings 0`, `tsc --noEmit` both, `npm run test:unit` 93 files / 1340 tests, `npm run compile` green; `git diff e78fa54 -- package.json package-lock.json` empty. 2026-11-17 re-run at the closing `/sdd-compile`: eslint 0, both `tsc` 0, `npm run test:unit` 161 files / 2013 tests passed, `npm run compile` ok; `git diff e78fa54 b60d351 -- package.json package-lock.json` empty (0013's own commits add no dependency). AC-017 — manual: Gregor's delegate (closing session, Gregor's delegation 2026-11-17) checked the shot set in `/mnt/user-data/outputs/screens/` (taken 2026-11-17 01:43–01:44 UTC at `796b7e5`; `main.css` changed since only by Agent Center rules of 0012), 2026-11-17: looked at `01-mission-control-{dark,light,hc}`, `08-narrow-mission-control-light`, `02-spec-board-{dark,light,hc}`, `02-spec-board-drag-light`, `08-narrow-spec-board-light`, `03-spec-explorer-list-{dark,light,hc}`, `04-spec-explorer-detail-0002-{dark,light}`, `04b-…-criteria-collapsed-{light,hc}`, `08-narrow-detail-0002-dark`, `05-agent-center-light`, `06-panel-state-no-folder-light`, `07-panel-state-not-a-project-hc`. (1) No cut-off card: every column's card list scrolls on its own and the board scrolls horizontally (AC-008); no card is cut without a scroll path; at 1400 px the Blocked column sits partly behind the horizontal scroll (A-004, accepted). (2) No raw Markdown: bold IDs, code chips, Given/When/Then as a quote, no `**`, `>` or list-marker repeats outside code (`**Plan:**` inside a code chip is literal by design). (3) Light contrast: all text in foreground or description colour, state colour only on icons, chip borders and bar segments; the selected row's secondary text in the selection foreground. (4) At a glance: six tiles with counts plus the distribution bar and progress line; board column headers with icon, name and count. Verdict on the four checks: pass. Taste (§1) and AC-018 → pre-release checklist (`/home/claude/orch/checklist/0013.md`).
 - **Notes:** docs synced (README §Mission Control and §Spec Board, `AGENTS.md` snapshot: exactly the two entries of `Do:`, `systemPatterns.md` three records, `techContext.md` 0013 test line and manual checks). Shot set for AC-017 in `/mnt/user-data/outputs/screens/` (33 files): `01-mission-control-*`, `02-spec-board-*`, `02-spec-board-drag-{dark,light}`, `03-spec-explorer-list-*`, `04-spec-explorer-detail-0002-*`, `04b-*-criteria-collapsed-*`, `05-agent-center-*`, `06-panel-state-no-folder-*`, `07-panel-state-not-a-project-*` (each dark, light, hc at 1400×900), `08-narrow-{mission-control,spec-board,detail-0002}-{dark,light}` (900 px), `09-tall-detail-0002-dark`. Known weak points for the verdict: at 1400 px the sixth board column sits partly behind the horizontal scroll (AC-008's 240 px vs A-004); the Plan line shows `[x](x)` as the same file name twice (AC-015 literal); cards are tall (about 230 px) at 240 px width.
 
 ## Traceability
@@ -253,14 +253,18 @@ screenshot verdict, which may adjust the shared tokens the next area uses.
 | AC-013 | T-008 | `DetailSection.tsx:OpenButton`, `SpecDetail.tsx` (related links) | `SpecDetail.test.tsx` (AC-010 Open file block, 0013 AC-013) | verified |
 | AC-014 | T-007 | `src/webview/ui/inlineFormat.ts:tokenize`, `InlineText.tsx` | `inlineFormat.test.ts`, `InlineText.test.tsx`, `webviewCss.test.ts` (innerHTML scan), `webviewBundle.test.ts` (studio-0002) | verified |
 | AC-015 | T-007 | `inlineFormat.ts:tidy`, `splitCells`, `SpecDetail.tsx`, `test/fixtures/studio-0002/` | `inlineFormat.test.ts`, `webviewBundle.test.ts` (studio-0002) | verified |
-| AC-016 | T-002, T-004, T-008, T-010 | updated assertions named in T-002, T-004 (incl. the layout-order deviation), T-008 Verified/Notes | `npm run test:unit` (93 files, 1340 tests) | verified |
-| AC-017 | T-010 | — | manual: Gregor, screenshots | open |
-| AC-018 | T-010 (listed) | — | manual: Gregor, real VS Code | open |
+| AC-016 | T-002, T-004, T-008, T-010 | updated assertions named in T-002, T-004 (incl. the layout-order deviation), T-008 Verified/Notes | `npm run test:unit` (93 files, 1340 tests; 2026-11-17: 161 files, 2013 tests) | verified |
+| AC-017 | T-010 | `src/webview/main.css`, the areas' components | manual: Gregor's delegate checked the 2026-11-17 screenshot set (T-010 Verified); taste: pre-release checklist item | verified |
+| AC-018 | T-010 (listed) | `src/webview/main.css` (theme variables only) | manual, real VS Code: checked by Gregor or his delegate; pre-release checklist item (spec revised 2026-11-17); decidable parts: `webviewCss.test.ts` (0013 AC-001, AC-003; 0005 AC-019) | verified |
+
+## Open evidence
+
+- 2026-11-17 — **Pre-done gate, host suite:** Windows 11 (Gregor's machine, VS Code stable, Node 26): `npm test` 28 passing, 0 failing at commit `e6f0c85`, 2026-11-17 08:45 CET (contains every 0013 commit; the board and shell smoke tests render the restyled areas). GitHub Actions ubuntu-latest + windows-latest: green at `9635ba4`, 2026-11-17. The closing compile changed no product code and no host test of this spec.
 
 ## Session handoff
 
-- **Done so far:** plan approved by Gregor 2026-11-16 (whole plan; `--fs-*` aliases accepted under AC-001 if every alias resolves only to `--vscode-*`); pair moved to `active/`. T-001…T-009 ticked; T-010 gates and docs done, its tick waits for Gregor's AC-017 verdict.
-- **Next action:** Gregor looks at the shot set (T-010 Notes) and gives the AC-017 verdict; record it in T-010 `Verified:`, tick, set `Status: Done`; then `/sdd-compile` in a fresh session. AC-018 (real VS Code, live theme switch) is the pre-done manual check.
-- **Open decisions:** for Gregor: the 0006 layout-order assertion changed per §3.2 (T-004 Notes); the 1400 px board overflow (T-005 Notes); the duplicated Plan link target (T-007 Notes). The harness now covers 900 px, collapsed detail, drag and HC of every area (outside the repo).
+- **Done so far:** T-001…T-010 ticked; AC-017 checked by Gregor's delegate 2026-11-17 (T-010 Verified); AC-017 taste verdict and AC-018 are pre-release checklist items.
+- **Next action:** none — closed 2026-11-17 (`/sdd-compile` READY (manual items: 2), moved to done, plan archived).
+- **Open decisions:** none blocking. On the pre-release checklist for Gregor: the taste verdict (§1), AC-018 in real VS Code, the 1400 px board overflow (A-004, accepted), the Plan line showing the same file name as text and target (AC-015 literal, T-007 Notes). The 0006 layout-order change is in the spec (§3.2).
 - **Baseline:** e78fa54
-- **Environment:** `npm test` cannot run here (VS Code download blocked); CI runs it.
+- **Environment:** `npm test` cannot run here (VS Code download blocked); it ran on Gregor's machine and CI.
