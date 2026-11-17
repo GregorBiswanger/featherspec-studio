@@ -1,0 +1,13 @@
+FeatherSpec was added to the folder /work/tip-splitter.
+These files already existed there, so FeatherSpec's own copies were put in .featherspec-setup/ and nothing was replaced.
+
+Merge each pair into the existing file:
+- .vscode/settings.json (existing file) and .featherspec-setup/.vscode/settings.json (FeatherSpec copy)
+- AGENTS.md (existing file) and .featherspec-setup/AGENTS.md (FeatherSpec copy)
+- CLAUDE.md (existing file) and .featherspec-setup/CLAUDE.md (FeatherSpec copy)
+
+How to merge:
+- Keep all of the existing content. Add the sections that FeatherSpec's copy has and the existing file lacks.
+- In AGENTS.md, use the FeatherSpecVersion: line of the FeatherSpec copy.
+- When every file is merged, delete the folder .featherspec-setup/.
+- Then tell the user to run /sdd-setup themselves. You cannot start it.

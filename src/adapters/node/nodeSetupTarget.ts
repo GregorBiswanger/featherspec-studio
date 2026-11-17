@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import type { CreateOutcome, ReplaceOutcome, SetupTargetPort, TargetEntryKind } from '../../core/ports/setupTarget';
 import { SETUP_FOLDER } from '../../core/discovery/markerWatchPaths';
 
-export type NodeSetupFs = Pick<typeof fsPromises, 'stat' | 'lstat' | 'readFile' | 'mkdir' | 'open' | 'rm' | 'rename' | 'realpath'>;
+export type NodeSetupFs = Pick<typeof fsPromises, 'stat' | 'lstat' | 'readFile' | 'readdir' | 'mkdir' | 'open' | 'rm' | 'rename' | 'realpath'>;
 
 const ABSENT_CODES = new Set(['ENOENT', 'ENOTDIR']);
 const BUSY_CODES = new Set(['EPERM', 'EBUSY', 'EACCES']);
@@ -92,6 +92,17 @@ export function createNodeSetupTarget(fs: NodeSetupFs = fsPromises): SetupTarget
             try {
                 return new Uint8Array(await fs.readFile(locate(root, relativePath)));
             } catch (error) {
+                throw reason(error);
+            }
+        },
+
+        async listDirectory(root, relativePath) {
+            try {
+                return await fs.readdir(locate(root, relativePath));
+            } catch (error) {
+                if (ABSENT_CODES.has(codeOf(error))) {
+                    return undefined;
+                }
                 throw reason(error);
             }
         },

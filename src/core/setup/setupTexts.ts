@@ -74,3 +74,54 @@ export function confirmDetail(path: string, created: number, completed: number, 
     const sentence = countSentence(created, completed, kept);
     return sentence === '' ? path : `${path}\n\n${sentence}`;
 }
+
+export const FINISH_TEXTS = {
+    copySetup: '/sdd-setup',
+    nothingToMerge: (folder: string): string => `There are no files to merge in ${folder}.`,
+    noPendingFolder: 'No folder of this workspace has files to merge.',
+    pickMergePlaceholder: 'Choose the folder whose merge prompt to copy',
+    mergeCopied: 'The merge prompt was copied to the clipboard.',
+};
+
+export function nextStepWithoutKept(): string {
+    return 'Open the AI assistant of your choice and run /sdd-setup.';
+}
+
+export function nextStepWithKept(kept: number): string {
+    return `${kept} existing ${kept === 1 ? 'file was' : 'files were'} kept: merge them with your AI assistant, then run /sdd-setup.`;
+}
+
+export function setUpMessage(version: string, folder: string, kept: number): string {
+    return kept === 0 ? `FeatherSpec ${version} is set up in ${folder}. ${nextStepWithoutKept()}` : `FeatherSpec ${version} files were added to ${folder}. ${nextStepWithKept(kept)}`;
+}
+
+export function stoppedMessage(path: string, reason: string): string {
+    return `FeatherSpec setup stopped: ${path} could not be written (${reason}).`;
+}
+
+export function mergePromptText(folderPath: string, files: readonly string[]): string {
+    const lines = [
+        `FeatherSpec was added to the folder ${folderPath}.`,
+        "These files already existed there, so FeatherSpec's own copies were put in .featherspec-setup/ and nothing was replaced.",
+        '',
+        'Merge each pair into the existing file:',
+        ...files.map((file) => `- ${file} (existing file) and .featherspec-setup/${file} (FeatherSpec copy)`),
+        '',
+        'How to merge:',
+        "- Keep all of the existing content. Add the sections that FeatherSpec's copy has and the existing file lacks.",
+        ...(files.includes('AGENTS.md') ? ['- In AGENTS.md, use the FeatherSpecVersion: line of the FeatherSpec copy.'] : []),
+        '- When every file is merged, delete the folder .featherspec-setup/.',
+        '- Then tell the user to run /sdd-setup themselves. You cannot start it.',
+    ];
+    return `${lines.join('\n')}\n`;
+}
+
+export const OUTPUT_TEXTS = {
+    title: (when: string): string => `FeatherSpec Studio setup - ${when}`,
+    outcomeSetUp: 'set up',
+    outcomeCancelled: 'cancelled',
+    outcomeDownloadFailed: (reason: string): string => `download failed: ${reason}`,
+    outcomeArchiveRefused: (reason: string): string => `archive refused: ${reason}`,
+    outcomeStopped: (path: string, reason: string): string => `stopped: ${path} could not be written (${reason})`,
+    tagNote: (tag: string, version: string): string => `note: the release tag ${tag} names another version than AGENTS.md (${version})`,
+};

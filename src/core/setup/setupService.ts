@@ -11,7 +11,8 @@ import { classifyFiles, type FileClass } from './fileClasses';
 import { checkRelease, type ReleaseFile } from './releaseArchive';
 import { downloadLatestRelease } from './releaseDownload';
 import { reportRun } from './setupReport';
-import { ARCHIVE_REFUSAL, confirmDetail, confirmTitle, SETUP_TEXTS } from './setupTexts';
+import { buildMergePrompt, gatherParkedFiles } from './mergePrompt';
+import { ARCHIVE_REFUSAL, confirmDetail, confirmTitle, FINISH_TEXTS, SETUP_TEXTS } from './setupTexts';
 
 export interface SetupDiscoveryPort {
     snapshot(): { result: DiscoveryResult | undefined };
@@ -60,6 +61,7 @@ export type RunResult =
 
 export interface SetupService {
     start(request?: { root: string }): Promise<void>;
+    copyMergePrompt(): Promise<void>;
     isRunning(): boolean;
     whenIdle(): Promise<void>;
 }
@@ -193,6 +195,37 @@ export function createSetupService(deps: SetupServiceDeps): SetupService {
     }
 
     const service: SetupService = {
+        async copyMergePrompt() {
+            let result = deps.discovery.snapshot().result;
+            if (result === undefined) {
+                await deps.discovery.refresh();
+                result = deps.discovery.snapshot().result;
+            }
+            const pending = (result?.folders ?? []).filter((folder) => folder.setupPending === true && folder.root.startsWith('file:'));
+            if (pending.length === 0) {
+                notices.show(FINISH_TEXTS.noPendingFolder, []);
+                return;
+            }
+            let chosen: DiscoveredFolder | undefined = pending[0];
+            if (pending.length > 1) {
+                const root = await deps.ui.pickTarget(
+                    pending.map((folder) => ({ label: folder.name, description: verdictText(folder), detail: folder.displayPath ?? folder.root, root: folder.root })),
+                    FINISH_TEXTS.pickMergePlaceholder,
+                );
+                chosen = pending.find((folder) => folder.root === root);
+            }
+            if (chosen === undefined) {
+                return;
+            }
+            const folder = targetOf(chosen);
+            const files = await gatherParkedFiles(deps.target, folder.root);
+            if (files.length === 0) {
+                notices.show(FINISH_TEXTS.nothingToMerge(folder.name), []);
+                return;
+            }
+            await deps.ui.copy(buildMergePrompt(folder.path, files));
+            notices.show(FINISH_TEXTS.mergeCopied, []);
+        },
         isRunning: () => running,
         async whenIdle() {
             while (pending.size > 0) {
@@ -205,12 +238,15 @@ export function createSetupService(deps: SetupServiceDeps): SetupService {
                 return;
             }
             running = true;
-            try {
-                const result = await run(request);
-                reportRun(deps, notices, result, (root) => void service.start({ root }));
-            } finally {
-                running = false;
-            }
+            const finished = (async () => {
+                try {
+                    const result = await run(request);
+                    await reportRun(deps, notices, result, (root) => finished.then(() => service.start({ root })));
+                } finally {
+                    running = false;
+                }
+            })();
+            await finished;
         },
     };
     return service;

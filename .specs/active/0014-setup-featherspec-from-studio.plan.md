@@ -3,7 +3,7 @@
 **Spec:** [0014-setup-featherspec-from-studio.md](0014-setup-featherspec-from-studio.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-007
+**Current step:** T-008
 
 ## Approach
 
@@ -149,8 +149,8 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 - **Covers:** AC-016, AC-017, AC-018, AC-020 (message and Retry), AC-023
 - **Do:** `mergePrompt.ts` from the files below `.featherspec-setup/` (read through 0001's `ReadOnlyFileSystem`), golden file `src/core/setup/mergePrompt.golden.txt`; `copyMergePrompt` asks for the folder when several are pending. Final messages of AC-017 (both variants, "Copy /sdd-setup" or "Copy merge prompt", no chat); failure messages of AC-006, AC-019, AC-020 with "Retry" (whole run again for the same target, confirmation included), "Open setup guide", "Show output". `outputBlock.ts`: one block per run with a target (version, tag, folder, outcome, path lists, kept setting keys, merge prompt, next step; no content). `discovery.refresh()` after the last write when at least one file was written. Cancel shows nothing (AC-021).
 - **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npm run test:unit`
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** 2026-11-17 — red first: `npx vitest run --project node src/core/setup/mergePrompt src/core/setup/setupFinish` with the gather/build stubbed to `Not implemented`, `reportRun` a no-op and `copyMergePrompt` stubbed: 31 failed, 5 passed (negative controls); with the code 2 cases failed on the test side (retry request count, discovery refresh count now that a setup also refreshes), corrected, then 256 passed in `src/core/setup`. Cases: AC-017 both variants (singular/plural), AC-018 (refresh once after the last write, also when stopped, never when nothing was written, a failing refresh is no error), AC-020 message + Retry through the whole run, AC-006/AC-019 messages with Retry / Open setup guide, AC-023 blocks for set up, stopped, cancelled, declined, download failed, archive refused, BR-06 tag note, no content, AC-016 prompt golden (`mergePrompt.golden.txt`) and the copy from S9. Gates: eslint, both `tsc`, `npm run test:unit` 182 files / 2485 tests (+11 timing) passed.
+- **Notes:** The merge prompt is read from `.featherspec-setup/` through `SetupTargetPort.listDirectory` (added; node adapter and memory target), not `ReadOnlyFileSystem`. "Copy merge prompt" from the panel also shows "The merge prompt was copied to the clipboard." (a click on a button with no other feedback; not in the spec) and says "No folder of this workspace has files to merge." or "There are no files to merge in <folder>." when there is nothing to copy. Retry waits for the current run to end, then starts a new `start({root})` for the same folder (confirmation included). The Output block is written for every run with a target; its "kept" group lists the user's files kept, the parked copies are in the merge prompt. Texts: `FINISH_TEXTS`, `OUTPUT_TEXTS`, `setUpMessage`, `stoppedMessage`, `mergePromptText` in `setupTexts.ts`.
 
 ### T-008 — Wire the setup into VS Code
 

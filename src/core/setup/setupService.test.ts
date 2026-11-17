@@ -112,6 +112,7 @@ describe('0014 AC-003: the target folder', () => {
     it('asks discovery for a result when it has none yet', async () => {
         const world = createSetupWorld();
         world.discovery.hide();
+        world.ui.confirmAnswer = false;
         await started(world);
         expect(world.discovery.refreshes).toBe(1);
         expect(world.ui.confirmations).toHaveLength(1);

@@ -11,6 +11,7 @@ export interface MemoryTarget extends SetupTargetPort {
     text(root: string, relativePath: string): string | undefined;
     log: string[];
     failOn(relativePath: string, reason: string): void;
+    clearFailures(): void;
     beforeCreate(listener: (relativePath: string) => void): void;
     beforeReplace(listener: (relativePath: string) => void): void;
 }
@@ -77,6 +78,9 @@ export function createMemoryTarget(): MemoryTarget {
         failOn(relativePath, reason) {
             failures.set(relativePath, reason);
         },
+        clearFailures() {
+            failures.clear();
+        },
         beforeCreate(listener) {
             createListeners.push(listener);
         },
@@ -85,6 +89,19 @@ export function createMemoryTarget(): MemoryTarget {
         },
         async kind(root, relativePath): Promise<TargetEntryKind | undefined> {
             return entries.get(key(root, relativePath))?.kind;
+        },
+        async listDirectory(root, relativePath) {
+            const base = key(root, relativePath);
+            if (entries.get(base)?.kind !== 'directory') {
+                return undefined;
+            }
+            const names = new Set<string>();
+            for (const name of entries.keys()) {
+                if (name.startsWith(`${base}/`)) {
+                    names.add(name.slice(base.length + 1).split('/')[0] ?? '');
+                }
+            }
+            return [...names].sort();
         },
         async readBytes(root, relativePath) {
             const entry = entries.get(key(root, relativePath));
