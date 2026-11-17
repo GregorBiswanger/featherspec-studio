@@ -351,8 +351,8 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-009 | — | — | open |
-| AC-002 | T-009 | — | — | open |
+| AC-001 | T-009 | src/shared/protocol/areas.ts, src/adapters/vscode/commands.ts, src/core/shell/treeModel.ts | src/shared/protocol/messages.test.ts, src/core/shell/treeModel.test.ts, src/webview/App.test.tsx, src/adapters/node/webviewBundle.test.ts | verified |
+| AC-002 | T-009 | src/core/shell/uiMemory.ts, src/shared/protocol/areas.ts | src/core/shell/uiMemory.test.ts, src/core/shell/shellService.navigation.test.ts, src/shared/protocol/messages.test.ts | verified |
 | AC-003 | T-001, T-002 | src/core/board/nextStep.ts, src/core/board/detail.ts, src/webview/detail/NextStep.tsx | src/core/board/detail.test.ts, src/webview/detail/SpecDetail.test.tsx | verified |
 | AC-004 | T-001 | src/core/board/nextStep.ts | src/core/board/nextStep.test.ts | verified |
 | AC-005 | T-002 | src/core/board/boardRequests.ts, src/adapters/vscode/clipboard.ts, src/webview/detail/NextStep.tsx | src/core/board/boardRequests.test.ts, src/webview/detail/SpecDetail.test.tsx | verified |
@@ -360,23 +360,23 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 | AC-007 | T-002 | src/webview/detail/SpecDetail.tsx | src/webview/detail/SpecDetail.timing.test.tsx | verified |
 | AC-008 | T-002, T-003 | src/core/board/boardRequests.ts, src/core/board/moves.ts | src/core/board/boardRequests.test.ts, src/core/board/moves.test.ts | verified |
 | AC-009 | T-002 | src/core/board/boardRequests.ts | src/core/board/boardRequests.test.ts, src/webview/detail/SpecDetail.test.tsx | verified |
-| AC-010 | T-006 | — | — | open |
+| AC-010 | T-006 | src/core/missionControl/missionControlView.ts, src/core/missionControl/attention.ts, src/core/missionControl/activity.ts, src/webview/areas/missionControl/ | src/core/missionControl/*.test.ts, src/webview/areas/missionControl/Sections.test.tsx, src/webview/areas/missionControl/Drilldown.test.tsx | verified |
 | AC-011 | T-005 | src/core/board/cards.ts, src/core/board/filters.ts, src/webview/board/FilterBar.tsx | src/core/board/boardService.test.ts, src/core/board/filters.test.ts, src/webview/board/SpecBoard.test.tsx, src/shared/protocol/boardFilter.test.ts | verified |
 | AC-012 | T-005 | src/core/board/detail.ts, src/webview/detail/SpecDetail.tsx | src/core/board/detail.test.ts, src/core/board/boardService.test.ts, src/webview/detail/SpecDetail.test.tsx | verified |
 | AC-013 | T-010 | — | — | open |
-| AC-014 | T-007, T-009 | — | — | open |
-| AC-015 | T-007 | — | — | open |
-| AC-016 | T-007 | — | — | open |
+| AC-014 | T-007, T-009 | package.json, src/extension.ts | src/adapters/vscode/manifest.test.ts, src/test/runtime.smoke.test.ts (host) | verified |
+| AC-015 | T-007 | package.json | src/adapters/vscode/manifest.test.ts | verified |
+| AC-016 | T-007 | package.json | src/adapters/vscode/manifest.test.ts | verified |
 | AC-017 | T-012 | — | — | open |
 | AC-018 | T-012 | — | — | open |
 | AC-019 | T-012 | — | — | open |
 | AC-020 | T-012 | — | — | open |
-| AC-021 | T-008, T-009, T-012 | — | — | open |
-| AC-022 | T-007, T-012 | — | — | open |
+| AC-021 | T-008, T-009, T-012 | the folders named in the criterion are deleted | gates; scan test follows in T-012 | built |
+| AC-022 | T-007, T-012 | src/extension.ts (no child_process, no provider wiring) | scan test follows in T-012 | built |
 | AC-023 | T-004, T-011 | src/core/runtime/earlierRunData.ts, src/adapters/node/earlierRunDataFiles.ts (not wired until T-011) | src/core/runtime/earlierRunData.test.ts, src/adapters/node/earlierRunDataFiles.test.ts | built |
 | AC-024 | T-004, T-011 | src/core/runtime/earlierRunData.ts (not wired until T-011) | src/core/runtime/earlierRunData.test.ts, src/adapters/node/earlierRunDataFiles.test.ts | built |
 | AC-025 | T-014 | — | — | open |
-| AC-026 | T-006, T-010 | — | — | open |
+| AC-026 | T-006, T-010 | src/shared/protocol/areas.ts, src/shared/protocol/texts.ts | src/shared/protocol/messages.test.ts, src/webview/PanelStateView.test.tsx (reader reason follows in T-010) | built |
 | AC-027 | T-015 | — | — | open |
 | AC-028 | T-013 | — | — | open |
 | AC-029 | T-015 | — | — | open |
@@ -384,8 +384,8 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 
 ## Session handoff
 
-- **Done so far:** Stages 1 and 2 (T-001…T-005): next step, copy, drop result; earlier-data removal module (not wired); board and detail without runs (the parallel stage ran in sequence).
-- **Next action:** stage 3 sync, then T-010.
+- **Done so far:** Stages 1 to 3 (T-001…T-009): next step, copy, drop result; earlier-data removal module (not wired); board and detail without runs; Mission Control without runs; run wiring, manifest entries and dead modules removed; three areas.
+- **Next action:** T-010 (status-history store), then T-011, T-012.
 - **Open decisions:** — (Gregor approved the changed order and `npm uninstall @github/copilot-sdk`; the parallel stage runs in sequence; deletions listed per step are approved.)
 - **Baseline:** ea4a8bd
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked); host suites run on Windows and CI. Gates: `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`.
