@@ -5,9 +5,8 @@ and the expected result. A clear miss reopens the named spec.
 
 ## Before publishing
 
-- [ ] **Publisher ID**: `package.json` → `"publisher": "GregorBiswanger"` is a placeholder — confirm or change
-  it to your Marketplace publisher ID. It is part of the extension ID, so it also moves the run-history folder
-  (runs from earlier test builds stay under the old ID).
+- [x] **Publisher ID**: `package.json` → `"publisher": "GregorBiswanger"` is Gregor's existing Marketplace
+  publisher (publisher management page, confirmed by Gregor on 2026-11-17; it already owns three extensions).
 - [ ] **Icon**: `media/icon.png` is the FeatherSpec logo (from the template's `featherspec-logo.png`, padded to
   256 × 256) — confirm it may be used for Studio or replace it.
 - [ ] **Screenshots and links**: push `media/screenshots/` and `docs/` to the default branch of

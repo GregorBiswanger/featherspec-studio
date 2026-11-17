@@ -25,7 +25,7 @@ Current phase: act
 
 ## Decisions in Flight
 - `AGENTS.md` stays 15 lines over its 200-line target: the FeatherSpec 1.10.0 template body alone is 200 lines; the rest is project preferences and the snapshot. Further eviction would edit template wiring — Gregor's call.
-- Publisher ID `GregorBiswanger` is a placeholder (first checklist item).
+- Publisher ID `GregorBiswanger` is confirmed: it is Gregor's existing Marketplace publisher (2026-11-17).
 
 ## Blockers / Questions
 - None.
