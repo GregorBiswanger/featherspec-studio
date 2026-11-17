@@ -102,6 +102,9 @@ holds the *why*: decisions and patterns.
 
 - Copilot adapter (spec 0010, built): `src/adapters/providers/copilot/` keeps all logic behind a client seam (`client.ts`), so `sdkClient.ts` is the only file that touches `@github/copilot-sdk`; tests use the scripted client (`testing/scriptedClient.ts`) that replays the recorded PoC stream on a fake clock · the SDK calls its permission, input and elicitation handlers before the matching `.requested` event, so the adapter queues the handler promises per kind and pairs them with the next request; an answer settles the promise and derives the `*.resolved` event · cancel sends one abort and force-stops after 10 s with a derived `run.cancelled`; a 5 s `ping()` watcher turns a dead runtime into a derived `run.failed` · the contract suite got a `settle` hook and a no-credential case so async adapters without a credential can run it · 2026-11-17 · plan 0010 (T-001…T-008), spec 0010 [docs/agent-provider-port.md](../docs/agent-provider-port.md)
 
+- Module maps: the `AGENTS.md` snapshot keeps one inventory line per top-level source folder; each area's inside view lives in `.architecture/{core,adapters,webview}.md` (≤ 40 lines each) · 2026-11-17 · release preparation, eviction delegated by Gregor
+- Timing tests: every wall-clock budget test lives in a `*.timing.test.{ts,tsx}` file and runs after the rest of `npm run test:unit` in one worker (Vitest projects `timing-node`, `timing-webview`); budgets unchanged · 2026-11-17 · commit 0920dd7
+
 ## Patterns
 - Provider independence: each agent provider is an adapter that declares its capabilities;
   provider events are normalised into an internal model (handoff §2.1, §8.3).
