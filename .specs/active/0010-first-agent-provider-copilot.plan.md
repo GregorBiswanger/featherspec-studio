@@ -278,6 +278,20 @@ No parallel stage: every step from T-003 on builds on T-002's seam, and T-004…
 - [x] **Verified (T-009):** 2026-11-17. Red: `npx vitest run src/adapters/providers/copilot/copilotFailures.test.ts` 2 failed, 25 passed — "BR-12 §9: a runtime that cannot be started in a run carries the hint of §9 …" (hint undefined) and "BR-12 OP-008: an installed CLI whose protocol the SDK does not share fails the run as unknown …" (category `runtime_missing`, expected `unknown`). Green after `copilotProvider.ts` (`PROTOCOL_MISMATCH`, `protocolHint` shared with `checkAvailability`): `npx vitest run src/adapters/providers/copilot` 10 files, 150 passed. Gates: eslint --max-warnings 0, tsc, tsc -p src/webview clean; `npm run test:unit` 165 files, 2056 passed; `npm run compile` finished.
 - **Notes:** Product code changed: the Windows host suite has to run again on the commit of this step.
 
+### T-010 — Secrets from Copilot never reach stored events (from `/sdd-compile`, 2026-11-17)
+
+- **Covers:** §8, §16 (no credential in any stored event); AC-005 context
+- **Do:** compile finding: no test carried Copilot output into the runtime store; 0004's masking
+  contract proves masking on its own events only. `copilotSecrets.test.ts`: a scripted run whose
+  message delta, permission request, tool start, tool progress, tool error, final message and
+  `session.error` carry the samples of `SECRET_PATTERNS`, appended to an in-memory runtime store
+  exactly as the orchestrator does (payload plus `source`, provider event ID); no sample in the
+  events read back or in the written bytes. Preserved behaviour: green at once, negative control
+  by mutation.
+- **Verify:** `npx vitest run src/adapters/providers/copilot/copilotSecrets.test.ts`
+- [x] **Verified (T-010):** 2026-11-17. Green at once (preserved behaviour of 0004): 1 passed. Negative control: `createMasker().text` in `src/core/runtime/masking.ts` made to return its input → the test failed ("expected … not to contain 'ghp_0123…'"); reverted, `git diff` of masking.ts empty, green again. Gates: eslint --max-warnings 0, tsc, tsc -p src/webview clean; `npm run test:unit` 165 files, 2056 passed.
+- **Notes:** Test only; the adapter delivers Copilot's text as it is (it holds no credential, `credentialValues()` is `[]`) and the store masks by pattern.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
