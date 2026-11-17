@@ -3,7 +3,7 @@
 **Spec:** [0008-spec-activation-agent-start.md](0008-spec-activation-agent-start.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-002
+**Current step:** T-003
 
 ## Approach
 
@@ -151,8 +151,8 @@ stage and becomes its own step.
   Tests: each precondition failing alone (ID and parameters), the two skips, several at once
   (AC-001's example: P-1 with R-4 and P-5 with `r-7`), each of the three P-2 paths missing.
 - **Verify:** `npx vitest run src/core/agentStart/preconditions` then the per-step gates
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-17 — red: `npx vitest run src/core/agentStart/preconditions` with the `Not implemented` stub: 20 of 20 failed (`Error: Not implemented`). Green: 20 of 20 pass (each of P-1 transition/no-entry/several, P-2 each path and all three, P-3, P-4 four results and the 15 s timeout, P-5 for all four open statuses, P-6 both states, P-7, P-8 eight bad stems, the two skips, several at once in ID order). Gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 126 files, 1638 tests green.
+- **Notes:** Reasons are flat objects (`{ id: 'P-1', kind: 'transition', refusal, text }`), not nested, with the stub for a service refusal on P-4 mapped to result `unknown`. P-2 is skipped when there is no model (no root to look under; P-1 already fails). `startWorld.ts` wraps 0011's `createWorld` (real store, session double, real 0009 service, fake provider, controlled adapter) so T-003/T-004 and the end-to-end test reuse it.
 
 ### T-003 — Start flow: hand-off, refusal, confirmation, cancel
 

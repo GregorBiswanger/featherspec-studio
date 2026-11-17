@@ -1,0 +1,1 @@
+# /sdd-lifecycle (fixture stub)
