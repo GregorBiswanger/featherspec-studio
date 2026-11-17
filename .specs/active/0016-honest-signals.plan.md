@@ -3,7 +3,7 @@
 **Spec:** [0016-honest-signals.md](0016-honest-signals.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-002
+**Current step:** T-003
 
 ## Approach
 
@@ -180,8 +180,8 @@ everything after T-002 shares the text modules, `main.css` or `SpecDetail.tsx` a
   and `npx vitest run --project node src/adapters/node/webviewCss.test.ts` red then green;
   `npx eslint src --max-warnings 0`; `npx tsc --noEmit -p src/webview`. Stage end: gates 1–4
   once on the combined result.
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-17 — red: `npx vitest run --project webview src/webview/ui/CopyButton.test.tsx` against the `Not implemented` stub: 10 failed (AC-018 cases; AC-019 not reached), then green: CopyButton.test.tsx 12 passed incl. the MutationObserver control; `SpecDetail.test.tsx` and `Keyboard.test.tsx` green after the activate-first rewrite; `webviewCss.test.ts` 5 new guards green. Gates 1–4 on the combined stage 1: eslint 0, tsc x2 clean, `npm run test:unit` 1736 passed + 3 skipped, timing 12.
+- **Notes:** `CopyButton` clears its feedback when `copyResult` becomes undefined (another spec shown), so 0015's 'status goes away' test stays. `.detail-status` stays for DetailSection's open-file result (outside Copy). `box-sizing: content-box` is set explicitly on `.copy-button` because buttons are border-box by default. Added `COPIED_LABEL`, `COPY_FAILED_LABEL` to `nextStepTexts.ts`; tests asserted literally.
 
 ### T-003 — Problems decide R-6; this repository shows none
 
@@ -348,8 +348,8 @@ everything after T-002 shares the text modules, `main.css` or `SpecDetail.tsx` a
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
 | AC-001 | T-001, T-003 | — | — | open |
-| AC-002 | T-001 | — | — | open |
-| AC-003 | T-001 | — | — | open |
+| AC-002 | T-001 | `src/core/specs/parseSpec.ts`:parseSpec, `src/core/lifecycle/successor.ts`:readSuccessor | `parseSpec.test.ts`, `successor.test.ts`, `core/board/detail.test.ts` (AC-002) | verified |
+| AC-003 | T-001 | `src/core/specs/testing/readSnapshot.ts`, `test/fixtures/read-baseline/*.json` | `src/core/specs/readBaseline.test.ts` | verified |
 | AC-004 | T-003 | — | — | open |
 | AC-005 | T-003 | — | — | open |
 | AC-006 | T-004, T-005 | — | — | open |
@@ -363,9 +363,9 @@ everything after T-002 shares the text modules, `main.css` or `SpecDetail.tsx` a
 | AC-014 | T-006 | — | — | open |
 | AC-015 | T-008 | — | — | open |
 | AC-016 | T-005 | — | — | open |
-| AC-017 | T-002 | — | — | open |
-| AC-018 | T-002 | — | — | open |
-| AC-019 | T-002 | — | — | open |
+| AC-017 | T-002 | `src/webview/main.css` (.copy-button, .secondary-button), `src/webview/board/Announcer.tsx` | `webviewCss.test.ts`, `board/Keyboard.test.tsx` | verified |
+| AC-018 | T-002 | `src/webview/ui/CopyButton.tsx`:CopyButton, `src/webview/detail/NextStep.tsx` | `src/webview/ui/CopyButton.test.tsx`, `detail/SpecDetail.test.tsx` | verified |
+| AC-019 | T-002 | `src/webview/ui/CopyButton.tsx`, `src/webview/main.css` | `CopyButton.test.tsx` (MutationObserver), `webviewCss.test.ts` | verified |
 | AC-020 | T-007 | — | — | open |
 | AC-021 | T-009 | — | — | open |
 | AC-022 | T-005 | — | — | open |
@@ -375,8 +375,8 @@ everything after T-002 shares the text modules, `main.css` or `SpecDetail.tsx` a
 
 ## Session handoff
 
-- **Done so far:** plan written; start signal given (delegated), spec and plan moved to `active/` (2026-11-17).
-- **Next action:** T-001, which writes the read-baseline snapshot before any code change.
+- **Done so far:** T-001 and T-002 verified (stage 1, 2026-11-17); Baseline 3cdab90, unit tests then 1688 + 3 skipped, now 1736 + 3 skipped, timing 12.
+- **Next action:** T-003 (stage 2): R-6 by tier, fixture `repo-8052f9a`, `problems.test.ts`.
 - **Open decisions:** none blocking; Q-1…Q-12 (Research) are proxy readings that Gregor may overrule.
 - **Baseline:** 3cdab90 (code identical to the move commit; unit tests 1688 passed + 3 skipped, timing 12)
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked).

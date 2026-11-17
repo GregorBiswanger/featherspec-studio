@@ -23,7 +23,7 @@ export function Announcer(props: { move: MoveResult; copyResult: { ok: boolean; 
                     {move.kind === 'nextStep' ? (
                         <span>
                             {moveNextStepText(move.number)} <code>{move.line}</code>{' '}
-                            <button type="button" className="open-file next-step-copy" aria-label={`${NEXT_STEP_COPY_LABEL}: ${move.line}`} onClick={() => props.onCopy(move.line)}>
+                            <button type="button" className="copy-button next-step-copy" aria-label={`${NEXT_STEP_COPY_LABEL}: ${move.line}`} onClick={() => props.onCopy(move.line)}>
                                 {NEXT_STEP_COPY_LABEL}
                             </button>
                             {props.copyResult === undefined ? null : <span> {props.copyResult.text}</span>}
@@ -31,7 +31,7 @@ export function Announcer(props: { move: MoveResult; copyResult: { ok: boolean; 
                     ) : (
                         <span>{text}</span>
                     )}{' '}
-                    <button type="button" onClick={props.onDismiss}>
+                    <button type="button" className="secondary-button" onClick={props.onDismiss}>
                         {DISMISS_LABEL}
                     </button>
                 </>

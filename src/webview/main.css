@@ -855,6 +855,49 @@ main > h1 {
     background: var(--vscode-button-secondaryHoverBackground, var(--vscode-toolbar-hoverBackground));
 }
 
+.copy-button {
+    flex: none;
+    box-sizing: content-box;
+    min-width: 14ch;
+    padding: 1px 8px;
+    color: var(--vscode-button-foreground);
+    background: var(--vscode-button-background);
+    border: 1px solid var(--vscode-button-border, transparent);
+    border-radius: 2px;
+    text-align: center;
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+}
+
+.copy-button:hover {
+    background: var(--vscode-button-hoverBackground, var(--vscode-button-background));
+}
+
+.secondary-button {
+    padding: 1px 8px;
+    color: var(--vscode-button-secondaryForeground, var(--vscode-button-foreground));
+    background: var(--vscode-button-secondaryBackground, var(--vscode-button-background));
+    border: 1px solid var(--vscode-button-border, transparent);
+    border-radius: 2px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+}
+
+.secondary-button:hover {
+    background: var(--vscode-button-secondaryHoverBackground, var(--vscode-button-secondaryBackground));
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
 .next-step-lines {
     list-style: none;
     margin: 0;
@@ -1489,6 +1532,8 @@ blockquote.illustration {
 .nav-item,
 .related-link,
 .open-file,
+.copy-button,
+.secondary-button,
 .move-button {
     transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }

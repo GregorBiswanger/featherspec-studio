@@ -298,3 +298,41 @@ describe('0014 AC-001: the setup button of the panel states', () => {
         expect(rulesFor(css, '.panel-state .no-such-button')).toEqual([]);
     });
 });
+
+describe('0016 AC-017, AC-019: Copy is the primary button and keeps its size', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+
+    it('AC-017: .copy-button uses the primary button colours and hover', () => {
+        const rules = rulesFor(css, '.copy-button');
+        expect(rules.some((rule) => rule.body.includes('var(--vscode-button-background)') && rule.body.includes('var(--vscode-button-foreground)'))).toBe(true);
+        expect(rulesFor(css, '.copy-button:hover').some((rule) => rule.body.includes('var(--vscode-button-hoverBackground'))).toBe(true);
+    });
+
+    it('AC-017: .secondary-button uses the secondary button colours and hover', () => {
+        const rules = rulesFor(css, '.secondary-button');
+        expect(rules.some((rule) => rule.body.includes('var(--vscode-button-secondaryBackground') && rule.body.includes('var(--vscode-button-secondaryForeground'))).toBe(true);
+        expect(rulesFor(css, '.secondary-button:hover').some((rule) => rule.body.includes('var(--vscode-button-secondaryHoverBackground'))).toBe(true);
+    });
+
+    it('AC-017 negative control: the secondary rule does not carry the primary background alone', () => {
+        const rules = rulesFor(css, '.secondary-button');
+        expect(rules.every((rule) => !/background:\s*var\(--vscode-button-background\)/.test(rule.body))).toBe(true);
+    });
+
+    it('AC-019: .copy-button has a min-width of at least 14ch on a content-box and no error colour or outline in any of its rules', () => {
+        const rules = parseRules(css).filter((rule) => rule.selectors.some((selector) => selector.startsWith('.copy-button')));
+        expect(rules.length).toBeGreaterThan(0);
+        const widths = rules.flatMap((rule) => [...rule.body.matchAll(/min-width:\s*(\d+(?:\.\d+)?)ch/g)].map((match) => Number(match[1])));
+        expect(widths.length).toBeGreaterThan(0);
+        expect(Math.max(...widths)).toBeGreaterThanOrEqual('Could not copy'.length);
+        expect(rulesFor(css, '.copy-button').some((rule) => /box-sizing:\s*content-box/.test(rule.body))).toBe(true);
+        for (const rule of rules) {
+            expect(rule.body).not.toContain('errorForeground');
+            expect(rule.body).not.toMatch(/outline/);
+        }
+    });
+
+    it('AC-019: nothing that styles the copy feedback uses the error colour (the old status line is gone)', () => {
+        expect(rulesFor(css, '.next-step .detail-status')).toEqual([]);
+    });
+});

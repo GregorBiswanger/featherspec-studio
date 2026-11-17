@@ -384,9 +384,10 @@ describe('0015 AC-003, AC-005, AC-008, AC-009: the next step in the detail', () 
         await click(buttons[1]!);
         expect(requests('copyText')).toEqual([{ text: '/sdd-plan .specs/backlog/0007-x.md' }]);
         await send(copyResultEvent(true, COPIED_TEXT));
-        const status = nextStepSection(container).querySelector('[role="status"]')!;
+        expect(buttons[1]!.textContent).toBe('Copied');
+        const status = buttons[1]!.parentElement!.querySelector('[role="status"]')!;
         expect(status.textContent).toBe('Copied to the clipboard.');
-        expect(status.getAttribute('aria-live') ?? 'polite').toBe('polite');
+        expect(status.getAttribute('aria-live')).toBe('polite');
     });
 
     it('AC-005: Copy is reachable by Tab and works with Enter and with Space', async () => {
@@ -401,8 +402,12 @@ describe('0015 AC-003, AC-005, AC-008, AC-009: the next step in the detail', () 
 
     it('AC-009: a failed copy shows the failure text', async () => {
         const container = await open();
+        await click(copyButtons(nextStepSection(container))[0]!);
         await send(copyResultEvent(false, COPY_FAILED_TEXT));
-        expect(nextStepSection(container).textContent).toContain('Could not copy to the clipboard.');
+        const failed = nextStepSection(container).querySelector('button')!;
+        expect(failed.textContent).toBe('Could not copy');
+        expect(failed.getAttribute('title')).toBe('Could not copy to the clipboard.');
+        expect(nextStepSection(container).querySelector('[role="status"]')!.textContent).toBe('Could not copy to the clipboard.');
     });
 
     it('AC-008: Copy is offered with no trust or writer information in the view', async () => {
@@ -412,9 +417,11 @@ describe('0015 AC-003, AC-005, AC-008, AC-009: the next step in the detail', () 
 
     it('the status of a copy goes away when another spec is shown', async () => {
         const container = await open();
+        await click(copyButtons(nextStepSection(container))[0]!);
         await send(copyResultEvent(true, COPIED_TEXT));
         expect(nextStepSection(container).textContent).toContain('Copied to the clipboard.');
         await send(detailEvent({ ...detailView(), key: 'other', stem: '0008-other' } as ReturnType<typeof detailView>));
         expect(nextStepSection(container).textContent).not.toContain('Copied to the clipboard.');
+        expect(nextStepSection(container).querySelector('button')!.textContent).toBe('Copy');
     });
 });

@@ -10,7 +10,7 @@ Current phase: act
 ## Active Spec
 - [0015 spec](../.specs/active/0015-focus-on-visibility.md) / [plan](../.specs/active/0015-focus-on-visibility.plan.md), In Progress, all steps verified (T-016…T-020: fixes from the compile of 2026-11-17).
 - [0014 spec](../.specs/active/0014-setup-featherspec-from-studio.md) / [plan](../.specs/active/0014-setup-featherspec-from-studio.plan.md), In Progress.
-- [0016 spec](../.specs/active/0016-honest-signals.md) / [plan](../.specs/active/0016-honest-signals.plan.md), In Progress, 10 steps, started 2026-11-17 (Baseline 3cdab90). Planned: 0017…0020 in backlog/, specified, unplanned.
+- [0016 spec](../.specs/active/0016-honest-signals.md) / [plan](../.specs/active/0016-honest-signals.plan.md), In Progress, 10 steps, started 2026-11-17 (Baseline 3cdab90); T-001, T-002 verified. Planned: 0017…0020 in backlog/, specified, unplanned.
 - Completed: 0001…0007 and 0013 in [.specs/done/](../.specs/done/) (amended by 0015); 0008…0012 in done/ are Deprecated with a successor link to 0015. Plans frozen in [.specs/plan-archive/](../.specs/plan-archive/).
 
 ## Changed Recently

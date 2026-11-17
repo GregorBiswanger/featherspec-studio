@@ -320,6 +320,15 @@ describe('AC-018: the outcome of a move is announced', () => {
         expect(container.querySelector('[role="status"]')!.textContent).toContain('Copied to the clipboard.');
     });
 
+    it('0016 AC-017: Copy in the drop result is the primary button and Dismiss the secondary one', async () => {
+        const container = await open();
+        await send({ v: 1, kind: 'evt', type: 'moveResult', payload: { result: { kind: 'nextStep', number: '0003', line: '/sdd-plan x' } } });
+        const buttons = [...container.querySelectorAll('[role="status"] button')];
+        expect(buttons.find((button) => button.textContent === 'Copy')!.className).toContain('copy-button');
+        expect(buttons.find((button) => button.textContent === 'Dismiss')!.className).toContain('secondary-button');
+        expect(buttons.find((button) => button.textContent === 'Copy')!.className).not.toContain('open-file');
+    });
+
     it('0015 AC-006: Copy in the drop result is reachable by Tab and works with Enter and Space', async () => {
         const container = await open();
         await send({ v: 1, kind: 'evt', type: 'moveResult', payload: { result: { kind: 'nextStep', number: '0003', line: '/sdd-plan x' } } });
