@@ -9,6 +9,7 @@ export const NO_RUN_RESUMABLE = 'No run can be resumed.';
 export const RESUME_PICK_PLACEHOLDER = 'Choose the run to resume';
 export const STOP_NOT_CONFIRMED_CAUSE = 'stop not confirmed by provider';
 export const INVALID_APPROVAL_TEXT = 'An approval answer is "approve once" or "reject".';
+export const INVALID_INPUT_TEXT = 'An input answer is text.';
 export const NO_RUN = 'No run';
 
 function plain(reason: string): string {

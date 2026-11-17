@@ -192,8 +192,8 @@ test world, one module.
   answers (`ignoreCancel`), 29 999 ms vs. 30 000 ms, refusals call nothing, invalid answer value,
   resolved request, 24 h unanswered still open.
 - **Verify:** `npx vitest run src/core/orchestrator` then the per-step gates
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-17 — red: `npx vitest run src/core/orchestrator/orchestratorOperations.test.ts` with `stop`, `respondToApproval` and `respondToInput` rejecting `Not implemented`: 15 failed, all with that error; green after the implementation: 75 passed in `src/core/orchestrator` (one test of mine corrected: a controlled-adapter override replaces its call recording); gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 1573 passed.
+- **Notes:** Added `INVALID_INPUT_TEXT` (`An input answer is text.`) for a non-text input answer: the plan's texts name no wording for it (M-03 to accept). A request is checked before the answer value, so an invalid value for a closed request reports `request-not-open`. Stop and answers wait for the event queue first, so a request that arrived a moment earlier counts.
 
 ### T-005 — Resume
 

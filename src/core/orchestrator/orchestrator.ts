@@ -4,7 +4,7 @@ import type { OrchestratorUiPort } from '../ports/orchestrator';
 import type { RuntimeClock } from '../ports/runtimeMedium';
 import type { ShellModelSource } from '../ports/shell';
 import type { ProviderRegistry } from '../providers/registry';
-import type { ProviderService, ServiceRefusal } from '../providers/providerService';
+import type { ProviderService, ServiceRefusal, ServiceResult } from '../providers/providerService';
 import { NOT_AVAILABLE, OPEN_STATUSES, isEndStatus, type JsonValue, type RunStatus, type StatusReport } from '../runtime/model';
 import { READER_REASON } from '../runtime/notices';
 import type { RuntimeStore } from '../runtime/runtimeStore';
@@ -12,8 +12,14 @@ import type { RuntimeSession } from '../runtime/runtimeSession';
 import { storedResult } from './result';
 import { applyEvent, createTrack, transition, type RunTrack, type TrackStep } from './runTrack';
 import {
+    INVALID_APPROVAL_TEXT,
+    INVALID_INPUT_TEXT,
     READER_TEXT,
     START_TIMEOUT_MS,
+    STOP_NOT_CONFIRMED_CAUSE,
+    STOP_TIMEOUT_MS,
+    noStopText,
+    stopPendingText,
     START_TIMEOUT_TEXT,
     alreadyEndedText,
     createFailedText,
@@ -92,6 +98,7 @@ interface Tracked {
     store: RuntimeStore;
     track: RunTrack;
     startTimer: Disposable | undefined;
+    stopTimer: Disposable | undefined;
 }
 
 function messageOf(error: unknown): string {
@@ -153,6 +160,9 @@ export function createOrchestrator(deps: OrchestratorDeps): Orchestrator {
 
     const commit = async (run: Tracked, step: TrackStep): Promise<void> => {
         const report: StatusReport = {};
+        if (step.cause !== undefined) {
+            report.cause = step.cause;
+        }
         if (step.sessionRef !== undefined) {
             report.sessionRef = step.sessionRef;
         }
@@ -178,6 +188,10 @@ export function createOrchestrator(deps: OrchestratorDeps): Orchestrator {
             run.startTimer?.dispose();
             run.startTimer = undefined;
         }
+        if (isEndStatus(run.track.status)) {
+            run.stopTimer?.dispose();
+            run.stopTimer = undefined;
+        }
     };
 
     const declaresCancel = (providerId: string): boolean => {
@@ -192,6 +206,8 @@ export function createOrchestrator(deps: OrchestratorDeps): Orchestrator {
         runs.delete(run.runId);
         run.startTimer?.dispose();
         run.startTimer = undefined;
+        run.stopTimer?.dispose();
+        run.stopTimer = undefined;
         if (isEndStatus(run.track.status)) {
             return;
         }
@@ -230,6 +246,76 @@ export function createOrchestrator(deps: OrchestratorDeps): Orchestrator {
             deps.providers.cancel(run.runId).catch(() => undefined);
         }
         deps.providers.endSession(run.runId);
+    };
+
+    const endStop = async (run: Tracked): Promise<void> => {
+        if (runs.get(run.runId) !== run) {
+            return;
+        }
+        const ended = transition(run.track, 'Cancelled');
+        if (ended === undefined) {
+            return;
+        }
+        run.track = ended;
+        leftStarting(run);
+        await commit(run, { status: 'Cancelled', cause: STOP_NOT_CONFIRMED_CAUSE });
+        deps.providers.endSession(run.runId);
+    };
+
+    const openRun = (runId: string): Tracked | undefined => {
+        checkStores();
+        const run = runs.get(runId);
+        return run === undefined || isEndStatus(run.track.status) ? undefined : run;
+    };
+
+    const stop = async (runId: string): Promise<StopResult> => {
+        const blocked = writerRefusal();
+        if (blocked !== undefined) {
+            return blocked;
+        }
+        await queue;
+        const run = openRun(runId);
+        if (run === undefined) {
+            return { kind: 'refused', code: 'not-open', reason: alreadyEndedText(runId) };
+        }
+        const entry = deps.registry.entry(run.providerId);
+        if (entry.kind !== 'ok' || entry.entry.capabilities.cancel.value === 'none') {
+            return { kind: 'refused', code: 'not-supported', reason: noStopText(entry.kind === 'ok' ? entry.entry.displayName : run.providerId) };
+        }
+        if (run.stopTimer !== undefined) {
+            return { kind: 'refused', code: 'stop-pending', reason: stopPendingText(runId) };
+        }
+        run.stopTimer = deps.clock.setTimeout(() => enqueue(() => endStop(run)), STOP_TIMEOUT_MS);
+        deps.providers.cancel(runId).catch(() => undefined);
+        return { kind: 'stopping' };
+    };
+
+    const answer = async (
+        runId: string,
+        requestId: string,
+        type: 'approval' | 'input',
+        valid: boolean,
+        forward: () => Promise<ServiceResult>,
+    ): Promise<AnswerResult> => {
+        const blocked = writerRefusal();
+        if (blocked !== undefined) {
+            return blocked;
+        }
+        await queue;
+        const run = openRun(runId);
+        const open = run !== undefined && (type === 'approval' ? run.track.approvals : run.track.inputs).includes(requestId);
+        if (!open) {
+            return { kind: 'refused', code: 'request-not-open', reason: requestNotOpenText(runId, requestId) };
+        }
+        if (!valid) {
+            return { kind: 'refused', code: 'invalid-answer', reason: type === 'approval' ? INVALID_APPROVAL_TEXT : INVALID_INPUT_TEXT };
+        }
+        const result = await forward();
+        if (result.kind === 'ok') {
+            return { kind: 'ok' };
+        }
+        const code = result.kind === 'request-not-open' ? 'request-not-open' : result.kind === 'invalid-answer' ? 'invalid-answer' : 'provider-refused';
+        return { kind: 'refused', code, reason: refusalReason(result) };
     };
 
     const handleEvent = async (event: ProviderEvent): Promise<void> => {
@@ -300,7 +386,7 @@ export function createOrchestrator(deps: OrchestratorDeps): Orchestrator {
                     spec: { stem: request.stem, path: request.path },
                     ...(model === undefined ? {} : { model }),
                 });
-                const tracked: Tracked = { runId: run.runId, stem: request.stem, providerId: request.providerId, store, track: createTrack(), startTimer: undefined };
+                const tracked: Tracked = { runId: run.runId, stem: request.stem, providerId: request.providerId, store, track: createTrack(), startTimer: undefined, stopTimer: undefined };
                 tracked.startTimer = deps.clock.setTimeout(() => enqueue(() => endStart(tracked)), START_TIMEOUT_MS);
                 runs.set(run.runId, tracked);
                 return { kind: 'created', runId: run.runId };
@@ -326,11 +412,18 @@ export function createOrchestrator(deps: OrchestratorDeps): Orchestrator {
 
     return {
         start,
-        stop: () => Promise.reject(new Error('Not implemented')),
+        stop,
         resumability: () => Promise.reject(new Error('Not implemented')),
         resume: () => Promise.reject(new Error('Not implemented')),
-        respondToApproval: () => Promise.reject(new Error('Not implemented')),
-        respondToInput: () => Promise.reject(new Error('Not implemented')),
+        respondToApproval: (runId, requestId, approval) => {
+            const decision = (approval as { decision?: unknown } | undefined)?.decision;
+            const reason = (approval as { reason?: unknown } | undefined)?.reason;
+            const valid = decision === 'approve-once' || (decision === 'reject' && (reason === undefined || typeof reason === 'string'));
+            const exact: ApprovalAnswer = decision === 'reject' ? (typeof reason === 'string' ? { decision: 'reject', reason } : { decision: 'reject' }) : { decision: 'approve-once' };
+            return answer(runId, requestId, 'approval', valid, () => deps.providers.respondToApproval(runId, requestId, exact));
+        },
+        respondToInput: (runId, requestId, text) =>
+            answer(runId, requestId, 'input', typeof text === 'string', () => deps.providers.respondToInput(runId, requestId, text)),
         async previousRun(stem) {
             const store = deps.session.current();
             if (store === undefined) {

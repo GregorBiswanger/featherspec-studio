@@ -26,6 +26,7 @@ export interface TrackEvent {
 
 export interface TrackStep {
     status: RunStatus;
+    cause?: string;
     sessionRef?: string;
     model?: string;
     failure?: { errorClass: string; errorMessage: string };
