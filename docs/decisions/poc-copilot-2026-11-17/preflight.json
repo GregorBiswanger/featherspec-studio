@@ -1,0 +1,151 @@
+{
+  "tool": "featherspec-studio copilot preflight",
+  "time": "2026-11-16T23:58:23.743Z",
+  "node": {
+    "version": "v26.13.0",
+    "platform": "win32",
+    "arch": "x64",
+    "execPath": "C:\\Program Files\\nodejs\\node.exe"
+  },
+  "sdk": {
+    "pinned": "1.0.34",
+    "expectsCliVersion": "1.0.112",
+    "protocolVersion": 3,
+    "installedHere": {
+      "path": "C:\\projects\\featherspec-studio.sync\\poc\\node_modules\\@github\\copilot-sdk\\package.json",
+      "exists": true,
+      "type": "file"
+    }
+  },
+  "copilotOnPath": {
+    "found": true,
+    "candidates": [
+      {
+        "hit": "~\\AppData\\Local\\Microsoft\\WinGet\\Links\\copilot.exe",
+        "spawnTarget": {
+          "kind": "executable",
+          "path": "~\\AppData\\Local\\Microsoft\\WinGet\\Links\\copilot.exe"
+        },
+        "version": {
+          "ran": true,
+          "exitCode": 0,
+          "stdout": "GitHub Copilot CLI 1.0.87.\nRun 'copilot update' to check for updates."
+        }
+      },
+      {
+        "hit": "~\\AppData\\Local\\Programs\\Microsoft VS Code\\bin\\copilot-shim\\copilot.exe",
+        "spawnTarget": {
+          "kind": "executable",
+          "path": "~\\AppData\\Local\\Programs\\Microsoft VS Code\\bin\\copilot-shim\\copilot.exe"
+        },
+        "version": {
+          "ran": true,
+          "exitCode": 0,
+          "stdout": "GitHub Copilot CLI 1.0.87.\nRun 'copilot update' to check for updates."
+        }
+      },
+      {
+        "hit": "~\\AppData\\Local\\Programs\\Microsoft VS Code\\bin\\copilot-shim\\copilot",
+        "spawnTarget": {
+          "kind": "shim-unresolved",
+          "path": "~\\AppData\\Local\\Programs\\Microsoft VS Code\\bin\\copilot-shim\\copilot"
+        },
+        "version": {
+          "ran": false,
+          "reason": "shim without resolvable npm-loader.js; not spawned (no shell)"
+        }
+      },
+      {
+        "hit": "~\\AppData\\Roaming\\npm\\copilot.cmd",
+        "spawnTarget": {
+          "kind": "shim-unresolved",
+          "path": "~\\AppData\\Roaming\\npm\\copilot.cmd"
+        },
+        "version": {
+          "ran": false,
+          "reason": "shim without resolvable npm-loader.js; not spawned (no shell)"
+        }
+      },
+      {
+        "hit": "~\\AppData\\Roaming\\npm\\copilot.ps1",
+        "spawnTarget": {
+          "kind": "shim-unresolved",
+          "path": "~\\AppData\\Roaming\\npm\\copilot.ps1"
+        },
+        "version": {
+          "ran": false,
+          "reason": "shim without resolvable npm-loader.js; not spawned (no shell)"
+        }
+      },
+      {
+        "hit": "~\\AppData\\Roaming\\npm\\copilot",
+        "spawnTarget": {
+          "kind": "shim-unresolved",
+          "path": "~\\AppData\\Roaming\\npm\\copilot"
+        },
+        "version": {
+          "ran": false,
+          "reason": "shim without resolvable npm-loader.js; not spawned (no shell)"
+        }
+      }
+    ]
+  },
+  "sdkRuntimeLookup": {
+    "order": [
+      "connection.path",
+      "env COPILOT_CLI_PATH",
+      "bundled platform package"
+    ],
+    "COPILOT_CLI_PATH": {
+      "set": false
+    },
+    "bundledWrapper": {
+      "path": "C:\\projects\\featherspec-studio.sync\\poc\\node_modules\\@github\\copilot-sdk-win32-x64\\prebuilds\\win32-x64\\copilot-runtime.exe",
+      "exists": true,
+      "type": "file"
+    },
+    "bundledRuntimeNode": {
+      "path": "C:\\projects\\featherspec-studio.sync\\poc\\node_modules\\@github\\copilot-sdk-win32-x64\\prebuilds\\win32-x64\\runtime.node",
+      "exists": true,
+      "type": "file"
+    },
+    "runtimeCacheDir": {
+      "path": "~\\AppData\\Local\\github-copilot-sdk\\runtime",
+      "exists": false
+    }
+  },
+  "loginState": {
+    "note": "existence only; contents never read. Copilot CLI may keep the OAuth token in the OS credential store, so a missing file does not prove signed-out.",
+    "COPILOT_HOME_env_set": false,
+    "copilotHome": {
+      "path": "~\\.copilot",
+      "exists": true,
+      "type": "dir"
+    },
+    "copilotConfigJson": {
+      "path": "~\\.copilot\\config.json",
+      "exists": true,
+      "type": "file"
+    },
+    "copilotSessionState": {
+      "path": "~\\.copilot\\session-state",
+      "exists": true,
+      "type": "dir"
+    },
+    "copilotLogs": {
+      "path": "~\\.copilot\\logs",
+      "exists": true,
+      "type": "dir"
+    },
+    "ghHostsYml": {
+      "path": "~\\AppData\\Roaming\\GitHub CLI\\hosts.yml",
+      "exists": true,
+      "type": "file"
+    },
+    "tokenEnvVarsSet": {
+      "COPILOT_GITHUB_TOKEN": false,
+      "GH_TOKEN": false,
+      "GITHUB_TOKEN": false
+    }
+  }
+}

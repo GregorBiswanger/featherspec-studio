@@ -1,0 +1,450 @@
+{
+  "results": {
+    "M-01": {
+      "status": "pass",
+      "reason": "signed in (authType gh-cli); listModels returned 25 models",
+      "scope": "signed-in half only; repeat signed out to record the error shape"
+    },
+    "M-02": {
+      "status": "pass",
+      "reason": "1 handler calls (kinds: write), 1 permission.requested events, 1 permission.completed; hello.txt absent; 0 denied tool calls completed successfully",
+      "scope": "partial: deny-all only (write approve-once not tested by this PoC)",
+      "handlerCalls": 1,
+      "kinds": [
+        "write"
+      ],
+      "readsAsked": false,
+      "duplicateRequestsPerToolCall": 0,
+      "permissionRequestedEvents": 1,
+      "permissionCompletedResults": [
+        "denied-interactively-by-user"
+      ],
+      "helloTxtExists": false,
+      "endEvent": "session.idle"
+    },
+    "M-03": {
+      "status": "pass",
+      "reason": "ended with session.idle; reply \"ok\"; 1 deltas; 0 permission requests",
+      "scope": "partial: trivial prompt, not the A3 prompt; fileEdits not observable under deny-all",
+      "eventTypes": [
+        "session.managed_settings_resolved",
+        "session.start",
+        "pending_messages.modified",
+        "session.mcp_server_status_changed",
+        "session.title_changed",
+        "session.model_change",
+        "session.mcp_servers_loaded",
+        "session.tools_updated",
+        "user.message",
+        "system.message",
+        "model.turn_started",
+        "assistant.turn_start",
+        "session.usage_info",
+        "model.call_start",
+        "model.model_call_started",
+        "assistant.streaming_delta",
+        "assistant.message_start",
+        "assistant.message_delta",
+        "model.captured_assignment_context",
+        "assistant.usage",
+        "model.model_call_success",
+        "model.call_finished",
+        "model.message",
+        "assistant.message",
+        "model.response",
+        "model.turn_ended",
+        "assistant.turn_end",
+        "model.messages_snapshot",
+        "session.usage_checkpoint",
+        "assistant.idle",
+        "session.idle"
+      ],
+      "deltas": 1,
+      "reply": "ok",
+      "endEvent": "session.idle"
+    },
+    "M-04": {
+      "status": "pass",
+      "reason": "abort() acked in 34 ms; abort event after 34 ms (reason user_initiated); idle after abort: true; 0 deltas after abort; new files: 0",
+      "scope": "abort ~1.5 s after first activity, not 5 s into a tool-using run",
+      "ackMs": 34,
+      "abortEventMs": 34,
+      "abortReason": "user_initiated",
+      "idleAfterAbort": true,
+      "deltasAfterAbort": 0,
+      "newFiles": []
+    },
+    "M-05": {
+      "status": "pass",
+      "reason": "resumed in 185 ms (metadata found); 3 events before P4 (session.resume,session.managed_settings_resolved,session.mcp_server_status_changed); reply \"ok\"",
+      "scope": "fresh client and runtime process, same node process; not an extension-host restart",
+      "resumeMs": 185,
+      "eventsBeforePrompt": 3,
+      "eventTypesBeforePrompt": [
+        "session.resume",
+        "session.managed_settings_resolved",
+        "session.mcp_server_status_changed"
+      ],
+      "reply": "ok",
+      "remembersFirstAnswer": true,
+      "endEvent": "session.idle"
+    },
+    "M-06": {
+      "status": "not-run",
+      "reason": "needs a VS Code GitHub session token inside an extension; out of scope for plain node (OP-007)"
+    },
+    "M-07": {
+      "status": "not-run",
+      "reason": "needs an Extension Development Host; run separately"
+    },
+    "M-08": {
+      "status": "pass",
+      "reason": "with an empty baseDirectory (COPILOT_HOME) auth is visible (authType gh-cli; default home authType gh-cli)",
+      "scope": "probe dir ./probe-copilot-home, not Studio's global storage; authType gh-cli means the gh login, not the copilot login, was used",
+      "isAuthenticated": true,
+      "authType": "gh-cli",
+      "statusMessage": "[LOGIN] (via gh)",
+      "defaultHomeAuthType": "gh-cli"
+    },
+    "M-09": {
+      "status": "pass",
+      "reason": "SDK 1.0.34 (expects CLI 1.0.112, protocol 3) started the installed CLI 1.0.87, protocol 3; remaining checks confirm it works",
+      "installedCliVersion": "1.0.87",
+      "protocolVersion": 3
+    }
+  },
+  "meta": {
+    "tool": "featherspec-studio copilot poc",
+    "sdk": "@github/copilot-sdk",
+    "sdkPinned": "1.0.34",
+    "sdkExpectsCli": "1.0.112",
+    "sdkProtocolVersion": 3,
+    "node": "v26.13.0",
+    "platform": "win32-x64",
+    "startedAt": "2026-11-16T23:59:16.229Z",
+    "prompts": {
+      "p1": "Reply with the single word: ok. Do not use any tools.",
+      "p2": "Create a file named hello.txt in the current working directory containing the single line: hello. Use your file creation tool.",
+      "p3": "Write the numbers from one to four hundred in English words, one per line. Do not use any tools.",
+      "p4": "What single word did you reply with to my first message in this session? Reply with that word only. Do not use any tools."
+    },
+    "settings": {
+      "permissionMode": "manual",
+      "streaming": true,
+      "enableSessionTelemetry": false,
+      "env_COPILOT_TELEMETRY_DISABLED": "true",
+      "tokenEnvVarsRemovedFromRuntimeEnv": [
+        "COPILOT_GITHUB_TOKEN",
+        "GH_TOKEN",
+        "GITHUB_TOKEN"
+      ],
+      "useLoggedInUser": true,
+      "trustWorkingDirectory": "session",
+      "workingDirectory": "./scratch"
+    },
+    "steps": [
+      {
+        "name": "import @github/copilot-sdk",
+        "check": "setup",
+        "startMs": 3,
+        "budgetMs": 20000,
+        "ok": true,
+        "ms": 58
+      },
+      {
+        "name": "client.start (installed)",
+        "check": "M-09",
+        "startMs": 70,
+        "budgetMs": 45000,
+        "ok": true,
+        "ms": 13952
+      },
+      {
+        "name": "client.getStatus",
+        "check": "M-09",
+        "startMs": 14023,
+        "budgetMs": 10000,
+        "ok": true,
+        "ms": 2
+      },
+      {
+        "name": "client.getAuthStatus",
+        "check": "M-01",
+        "startMs": 14026,
+        "budgetMs": 15000,
+        "ok": true,
+        "ms": 2
+      },
+      {
+        "name": "client.listModels",
+        "check": "M-01",
+        "startMs": 14029,
+        "budgetMs": 25000,
+        "ok": true,
+        "ms": 1018
+      },
+      {
+        "name": "client.createSession",
+        "check": "M-03",
+        "startMs": 15048,
+        "budgetMs": 30000,
+        "ok": true,
+        "ms": 826
+      },
+      {
+        "name": "send P1",
+        "check": "M-03",
+        "startMs": 15875,
+        "budgetMs": 15000,
+        "ok": true,
+        "ms": 7
+      },
+      {
+        "name": "send P2",
+        "check": "M-02",
+        "startMs": 22038,
+        "budgetMs": 15000,
+        "ok": true,
+        "ms": 8
+      },
+      {
+        "name": "send P3",
+        "check": "M-04",
+        "startMs": 25026,
+        "budgetMs": 15000,
+        "ok": true,
+        "ms": 8
+      },
+      {
+        "name": "session.abort",
+        "check": "M-04",
+        "startMs": 26650,
+        "budgetMs": 10000,
+        "ok": true,
+        "ms": 32
+      },
+      {
+        "name": "session.disconnect",
+        "check": "M-05",
+        "startMs": 27697,
+        "budgetMs": 10000,
+        "ok": true,
+        "ms": 355
+      },
+      {
+        "name": "stop client 1",
+        "check": "M-05",
+        "startMs": 28054,
+        "budgetMs": 15000,
+        "ok": true,
+        "ms": 250
+      },
+      {
+        "name": "client2.start",
+        "check": "M-05",
+        "startMs": 28308,
+        "budgetMs": 40000,
+        "ok": true,
+        "ms": 2273
+      },
+      {
+        "name": "client2.getSessionMetadata",
+        "check": "M-05",
+        "startMs": 30581,
+        "budgetMs": 10000,
+        "ok": true,
+        "ms": 2
+      },
+      {
+        "name": "client2.resumeSession",
+        "check": "M-05",
+        "startMs": 30583,
+        "budgetMs": 30000,
+        "ok": true,
+        "ms": 184
+      },
+      {
+        "name": "send P4",
+        "check": "M-05",
+        "startMs": 31282,
+        "budgetMs": 15000,
+        "ok": true,
+        "ms": 5
+      },
+      {
+        "name": "session2.disconnect",
+        "check": "M-05",
+        "startMs": 38923,
+        "budgetMs": 10000,
+        "ok": true,
+        "ms": 336
+      },
+      {
+        "name": "stop client 2",
+        "check": "M-05",
+        "startMs": 39259,
+        "budgetMs": 15000,
+        "ok": true,
+        "ms": 212
+      },
+      {
+        "name": "client3.start (baseDirectory probe)",
+        "check": "M-08",
+        "startMs": 39479,
+        "budgetMs": 40000,
+        "ok": true,
+        "ms": 1999
+      },
+      {
+        "name": "client3.getAuthStatus",
+        "check": "M-08",
+        "startMs": 41478,
+        "budgetMs": 15000,
+        "ok": true,
+        "ms": 1
+      },
+      {
+        "name": "stop client 3",
+        "check": "M-08",
+        "startMs": 41479,
+        "budgetMs": 15000,
+        "ok": true,
+        "ms": 86
+      }
+    ],
+    "permissionHandlerCalls": [
+      {
+        "check": "M-02",
+        "tMs": 23769,
+        "kind": "write",
+        "toolCallId": "toolu_013ViVzPrvCB21VQ4TvY9Gr3",
+        "invocationSessionId": "1488aad6-283c-422a-9763-3ca334e77457",
+        "detail": "hello.txt",
+        "intention": "Create file"
+      }
+    ],
+    "notes": [],
+    "runtimeRequested": "auto",
+    "installedCli": {
+      "kind": "executable",
+      "hit": "~\\AppData\\Local\\Microsoft\\WinGet\\Links\\copilot.exe",
+      "path": "~\\AppData\\Local\\Microsoft\\WinGet\\Links\\copilot.exe"
+    },
+    "runtimeUsed": "installed",
+    "status": {
+      "version": "1.0.87",
+      "protocolVersion": 3
+    },
+    "auth": {
+      "isAuthenticated": true,
+      "authType": "gh-cli",
+      "host": "https://github.com",
+      "loginPresent": true,
+      "statusMessage": "[LOGIN] (via gh)"
+    },
+    "models": {
+      "count": 25,
+      "ids": [
+        {
+          "id": "auto"
+        },
+        {
+          "id": "claude-sonnet-5",
+          "policy": "enabled"
+        },
+        {
+          "id": "claude-fable-5.1",
+          "policy": "enabled"
+        },
+        {
+          "id": "claude-fable-5",
+          "policy": "enabled"
+        },
+        {
+          "id": "claude-opus-4.8-fast",
+          "policy": "enabled"
+        },
+        {
+          "id": "claude-haiku-4.5",
+          "policy": "enabled"
+        },
+        {
+          "id": "gpt-6-astra",
+          "policy": "enabled"
+        },
+        {
+          "id": "gpt-5.6-sol",
+          "policy": "enabled"
+        },
+        {
+          "id": "gpt-5.6-luna",
+          "policy": "enabled"
+        },
+        {
+          "id": "gpt-5.3-codex"
+        },
+        {
+          "id": "mai-code-1.1-flash",
+          "policy": "enabled"
+        },
+        {
+          "id": "kimi-k3",
+          "policy": "enabled"
+        },
+        {
+          "id": "claude-fable-5.2",
+          "policy": "enabled"
+        },
+        {
+          "id": "claude-haiku-5.5",
+          "policy": "enabled"
+        },
+        {
+          "id": "claude-opus-5.5",
+          "policy": "enabled"
+        },
+        {
+          "id": "claude-sonnet-5.5",
+          "policy": "enabled"
+        },
+        {
+          "id": "gemini-4-argon",
+          "policy": "enabled"
+        },
+        {
+          "id": "gemini-4-carbon"
+        },
+        {
+          "id": "gemini-4-hydrogen"
+        },
+        {
+          "id": "gpt-6.1-sol",
+          "policy": "enabled"
+        },
+        {
+          "id": "gpt-6.1-terra"
+        },
+        {
+          "id": "gpt-6-luna",
+          "policy": "enabled"
+        },
+        {
+          "id": "gpt-6-sol",
+          "policy": "enabled"
+        },
+        {
+          "id": "grok-4.6"
+        },
+        {
+          "id": "grok-4.7"
+        }
+      ]
+    },
+    "sessionId": "1488aad6-283c-422a-9763-3ca334e77457",
+    "permissionModeResult": null,
+    "endedAt": "2026-11-16T23:59:57.794Z",
+    "durationMs": 41565,
+    "endReason": "completed",
+    "eventLines": 333
+  }
+}

@@ -1,7 +1,7 @@
 # Agent Orchestrator & Run Lifecycle
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0011-agent-orchestrator-run-lifecycle.plan.md](0011-agent-orchestrator-run-lifecycle.plan.md)
 
 Handoff reference: FS-011 ([po-handoff.md](../../docs/product/po-handoff.md) §8.4, §10 FS-011,
 §5.3, §6.2, §7). Decisions: PD-004, PD-005, PD-006, PD-007, PD-011, PD-013, PD-018, PD-019,
@@ -123,7 +123,8 @@ Rules:
   provider's cancel once. The run becomes `Cancelled` on `run.cancelled`; another end kind that
   arrives first wins. If no end kind arrives within the stop timeout (30 s) after the cancel call,
   whatever that call returned, the orchestrator sets `Cancelled` itself with the cause "stop not
-  confirmed by provider". Stopping the runtime is the adapter's duty (0010 BR-13; OP-004).
+  confirmed by provider" and calls the port's `endSession` once (0009 OP-006). Stopping the
+  runtime is the adapter's duty (0010 BR-13; OP-004).
 - **BR-007 New start after an end state** (handoff §5.3 step 5). No automatic retry ever. A new run
   is a normal start through 0008. On request the orchestrator returns the previous-run summary of
   a stem: the latest run's ID, status, error class and error text.
@@ -132,10 +133,12 @@ Rules:
   `policy_denied`, `provider_exited`, `start_timeout`, `unknown`. A `run.failed` whose category
   (0009 BR-009) bears the name of a class gets that class; any other category is `unknown`. A
   `run.failed` with source `derived` — the provider stopped without an end kind (0009 BR-008) —
-  is `provider_exited`. A start or resume call the provider refuses, or that returns an error,
-  fails the run at once with the class of the returned category. A failed tool call fails no run.
-  A run still `Starting` when the start timeout (60 s) has passed since its creation becomes
-  `Failed`/`start_timeout`, and the orchestrator calls cancel once where declared.
+  is `provider_exited`. A start or resume that fails reaches the orchestrator as the `run.failed`
+  0009's port delivers for it (0009 BR-008) and is classed by the two rules before; a start or
+  resume the port refuses without delivering an end kind fails the run at once with `unknown` and
+  the refusal reason as error text. A failed tool call fails no run. A run still `Starting` when
+  the start timeout (60 s) has passed since its creation becomes `Failed`/`start_timeout`, and the
+  orchestrator calls cancel once where declared, then `endSession` once (0009 OP-006).
 - **BR-009 No stall timeout** (Gregor 2026-11-16). Once a session has started, an open run without
   events keeps its status, however long; only an end kind, the stop timeout or a restart (0004
   AC-011) ends it.
@@ -162,6 +165,11 @@ Rules:
 - **BR-015 Reader window** (PD-030). In a window without the write lock every operation that
   changes a run — start, stop, resume, answers — is refused with the reason "another window holds
   the write lock". Reads work.
+- **BR-016 Window end** (OP-001, OP-003; Gregor 2026-11-16). If the window stops being the writer
+  of the run's store, or the store is closed, while a run is open, the orchestrator calls the
+  provider's cancel once where declared, then `endSession` once, and appends nothing more for that
+  run; 0004 AC-011 sets its status in the window that becomes the writer. When VS Code shuts down
+  with a run open, it does the same without waiting for an answer.
 
 ## 7. Functional requirements
 
@@ -170,7 +178,7 @@ Rules:
 | FR-001 (FR-011.1, FR-011.3) | Create a run linked to its spec for a start request | AC-001, AC-002, AC-003 |
 | FR-002 (FR-011.2) | Apply the transition rules; no stall timeout | AC-004, AC-005, AC-006, AC-014 |
 | FR-003 (FR-011.4) | At most one open run per project | AC-002 |
-| FR-004 (FR-011.5) | Stop a run | AC-009, AC-010, AC-011 |
+| FR-004 (FR-011.5) | Stop a run; let go of a run at the window's end | AC-009, AC-010, AC-011, AC-024 |
 | FR-005 (FR-011.6) | Classify and store errors | AC-007, AC-008 |
 | FR-006 (FR-011.7) | Resume `Interrupted` runs explicitly | AC-015, AC-016 |
 | FR-007 (FR-011.8) | Store the result with the end state | AC-018 |
@@ -246,18 +254,19 @@ refusal carries its reason and, where one exists, the blocking run's ID and stem
   either waiting status.
 - **AC-007** When a `run.failed` arrives, the system shall set `Failed` with its text and the
   class of BR-008: `provider_exited` for a derived one, `unknown` for a category that is no class.
-  If a start or resume call is refused or returns an error, then the system shall set `Failed` at
-  once with the class of the returned category. A `tool.completed` that is not ok shall change
-  no status.
+  If the port refuses a start or resume call without delivering an end kind, then the system shall
+  set `Failed` at once with `unknown` and the refusal reason. A `tool.completed` that is not ok
+  shall change no status.
 - **AC-008** If a run is still `Starting` when 60 s have passed since its creation, then the
-  system shall set `Failed` with `start_timeout` and call the provider's cancel once where the
-  provider declares `cancel`. This holds for a run created by resume too.
+  system shall set `Failed` with `start_timeout`, call the provider's cancel once where the
+  provider declares `cancel`, then the port's `endSession` once. This holds for a run created by
+  resume too.
 - **AC-009** When a stop is requested for an open run whose provider declares `cancel`, the
   system shall call the provider's cancel exactly once, ask no confirmation of its own and leave
   the status as it is until an end kind arrives; on `run.cancelled` it shall set `Cancelled`.
 - **AC-010** If no end kind has arrived when 30 s have passed since the cancel call, whatever
   that call returned, then the system shall set `Cancelled` with the cause "stop not confirmed by
-  provider" and call no provider again.
+  provider", call the port's `endSession` once and call no other provider operation again.
 - **AC-011** If a stop is requested for a run in an end state, for a run whose provider does not
   declare `cancel`, or while a stop of that run is pending, then the system shall refuse it with
   that reason and call no provider.
@@ -303,6 +312,10 @@ refusal carries its reason and, where one exists, the blocking run's ID and stem
 - **AC-023** The system shall reach providers only through 0009's port: no orchestrator module
   under `src/core/` shall import `vscode`, a provider SDK or a module under `src/adapters/` —
   the import scan of 0009 AC-002 covers it.
+- **AC-024** If, while a run is open, the window stops being the writer of the store or the store
+  is closed, then the system shall call the provider's cancel once where declared, then the port's
+  `endSession` once, and append no further status or event of that run. When VS Code shuts down
+  with a run open, the system shall make the same two calls without waiting for their answers.
 
 ### Manual checks (not decidable without a real provider)
 
@@ -330,26 +343,13 @@ refusal carries its reason and, where one exists, the blocking run's ID and stem
 | A-003 | A real provider delivers `session.started` within 60 s and an end kind within 30 s of a cancel | Interview working values, not measured; 0010 BR-13 forces a stop after 10 s | First starts fail with `start_timeout`; the constants change after M-01 |
 | A-004 | A `run.failed` with source `derived` means the provider stopped without an end kind | 0009 BR-007 and BR-008; 0010 AC-020 | Such runs are classed `unknown` instead of `provider_exited` |
 | A-005 | 0002/0003 answer, per stem, which entries carry it and whether one is Done | 0002's entries carry the stem (PD-018); 0003 derives one state per entry | BR-005 (7), (8) and BR-013 need a lookup of their own |
+| A-006 | "Accepted by 0004" (BR-003) means every event 0004 does not refuse as a duplicate; an event cut by the size cap (0004 AC-027, outcome *dropped*) still counts | 0004 keeps storing status changes after the cap; otherwise a run past 20,000 events could never end | A run past the cap stays open until a restart |
 
 A-001 and A-002 are withdrawn: decided by 0009 BR-008 and §8.1/§8.2.
 
 ## 15. Open points
 
-Open — Gregor decides; the recommendation is not applied. All non-blocking:
-
-- OP-001: An open run when VS Code shuts down cleanly. Recommendation: call cancel once, best
-  effort, without waiting; 0004 AC-011 settles the status at the next activation.
-- OP-003: The window loses the write lock while its run is open (0004 AC-024 sets the run
-  `Interrupted`). Recommendation: call cancel once and handle no further event of it.
-- OP-004: The interview had the orchestrator "end the provider session itself" after a timeout;
-  0009's port can only cancel, so BR-006 and BR-008 leave the runtime to the adapter.
-  Recommendation: no new operation; 0009's contract suite demands an end kind after a cancel.
-- OP-005: The continuation text. Recommendation: "Continue the interrupted work on spec `<stem>`:
-  read `AGENTS.md` and the plan beside the spec again, then continue at the plan's current step
-  under the same rules as before." Accepted with M-03.
-- OP-006: M-01 and M-02 need a real provider, so Done waits for PD-001's PoC. Recommendation:
-  move both to 0010's acceptance.
-- OP-007: PD-002, PD-006, PD-011 and PD-013 are proxy decisions. Recommendation: confirm them.
+Open: none. OP-001 and OP-003…OP-007 were resolved at `/sdd-plan` (below).
 
 Cross-spec, for the main session (no product decision):
 
@@ -359,9 +359,23 @@ Cross-spec, for the main session (no product decision):
   step 7 fails where creation fails (BR-012); its confirmation shows no summary (BR-007).
   (d) 0010 AC-020: source `derived` (A-004). (e) 0012 AC-022 hands a resume over unconfirmed: it
   is asked here. 0006 and 0012 take "spec not found" from BR-013; "category" there means class.
+  (b) is answered by 0009 (its OP-011 and its plan's *Surface*: `resume` carries the run ID and
+  the continuation text, `start` no mode).
 
 Resolved:
 
+- 2026-11-16 (Gregor, at `/sdd-plan`: every recommendation approved as written; aligned with
+  0009's `endSession`, 0009 OP-006): OP-001 — at a clean shutdown the orchestrator calls cancel
+  once where declared and `endSession`, without waiting; 0004 AC-011 settles the status (BR-016,
+  AC-024). OP-003 — losing the write lock or the store with a run open: the same two calls, then no
+  further event of that run is handled (BR-016, AC-024). OP-004 — no new port operation: after its
+  timeouts the orchestrator calls 0009's `endSession`, which leaves the runtime to the adapter
+  (BR-006, BR-008). OP-005 — the continuation text is: "Continue the interrupted work on spec
+  `<stem>`: read `AGENTS.md` and the plan beside the spec again, then continue at the plan's
+  current step under the same rules as before." Its wording is accepted with M-03. OP-006 — M-01
+  and M-02 move to 0010's acceptance (the edit of 0010 is the main session's). OP-007 — PD-002,
+  PD-006, PD-011 and PD-013 confirmed. Alignment with 0009 (its OP-011): a failing start or resume
+  is the port's `run.failed`; a refusal without an end kind is `unknown` (BR-008, AC-007).
 - OP-008 (2026-11-16): `/sdd-clarify` listed 79 findings, 10 blocking. Gregor delegated the
   resolution in one pass, a one-off exception to the one-finding walkthrough. The list, its
   disposition and the readings made on the way are kept by the run orchestrator
@@ -374,11 +388,11 @@ Resolved:
 
 ## 17. Definition of Done
 
-- [ ] AC-001…AC-023 pass with evidence; `npm run test:unit` green, `npm test` before done.
-- [ ] M-01…M-03 recorded by Gregor (OP-006).
+- [ ] AC-001…AC-024 pass with evidence; `npm run test:unit` green, `npm test` before done.
+- [ ] M-03 recorded by Gregor; M-01 and M-02 with 0010's acceptance (OP-006).
 - [ ] No out-of-scope behaviour; nothing written inside the workspace (AC-017).
 - [ ] Architecture snapshot and Memory Bank updated for the orchestrator module.
 
 ## 18. Recommended next steps
 
-`/sdd-plan`, once 0009 has had its `/sdd-clarify` pass (its names are used here).
+Plan written 2026-11-16; Gregor reviews it. Implementation after 0009 is done (order 0009 → 0011 → 0008 → 0012).

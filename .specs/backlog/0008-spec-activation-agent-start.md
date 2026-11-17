@@ -1,7 +1,7 @@
 # Spec Activation & Agent Start Workflow
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0008-spec-activation-agent-start.plan.md](0008-spec-activation-agent-start.plan.md)
 
 Handoff reference: FS-008 ([po-handoff.md](../../docs/product/po-handoff.md) §5.2, §6.4, §6.5,
 §10). Builds on 0001, 0002, 0003, 0004, 0005, 0007, 0009 and 0011 (§10); M-1 also needs 0010
@@ -41,7 +41,7 @@ visible with its run, and a refused or cancelled start leaves nothing but the re
 ### In scope
 
 - Receiving the hand-off from 0007 (PD-045).
-- Run-start preconditions P-1 to P-7 (§6.1), checked before the confirmation and again on Start.
+- Run-start preconditions P-1 to P-8 (§6.1), checked before the confirmation and again on Start.
 - The confirmation (§6.2), the start prompt (§6.3), the default-provider setting (§6.5).
 - The start request to 0011; showing 0011's refusal and the start failure.
 
@@ -86,16 +86,18 @@ visible with its run, and a refused or cancelled start leaves nothing but the re
 | ID | Precondition | Fails when | Reason shows |
 | --- | --- | --- | --- |
 | P-1 | 0003's transition check accepts Ready → Active for the one entry with the stem in its latest snapshot | refused; no entry or several entries carry the stem (PD-019) | 0003's reason kind and its rule or precondition IDs |
-| P-2 | `.claude/commands/sdd-plan.md` and `.claude/commands/sdd-lifecycle.md` exist in the project | either is missing | the project-relative path of each missing file |
+| P-2 | `.claude/commands/sdd-plan.md`, `.claude/commands/sdd-lifecycle.md` and `.claude/rules/plans.md` exist in the project (OP-001) | any of them is missing | the project-relative path of each missing file |
 | P-3 | The default-provider setting (§6.5) names a registered provider (0009 BR-001) | empty, or the ID is not registered | the configured value or "no provider configured" |
 | P-4 | That provider's availability result is *available* (0009 BR-004) | any other result, *unknown* included | the result and the reason 0009 returns, unchanged |
 | P-5 | No run of this project is in an open state (PD-005; 0004 BR-001) | an open run exists | its run ID and spec stem |
 | P-6 | The runtime store's state is *writable* (0004 BR-009, PD-030) | *read-only* or *unavailable* | the store's reason, unchanged |
 | P-7 | The workspace is trusted (ADR-001 §14; 0007 §6.6) | Restricted Mode | — |
+| P-8 | The stem matches the format doc §3.1: four digits, `-`, ASCII kebab-case slug (OP-009) | any other stem | the stem |
 
 - Every precondition is evaluated each time — P-1 on 0003's latest snapshot, the others asked
   afresh — so several can fail at once; P-4 is left out when P-3 fails, P-5 when the store is
-  *unavailable*. Tests assert IDs, reason kinds and parameters, not the wording; the English
+  *unavailable*. While P-4's availability check runs, the panel shows that it runs; 0009's
+  check timeout (`AVAILABILITY_TIMEOUT_MS`, 15 s) turns no answer into *unknown* (OP-006). Tests assert IDs, reason kinds and parameters, not the wording; the English
   texts (PD-016) are written in the plan.
 - From a hand-off's arrival until its refusal, its cancel or 0011's answer, every further
   hand-off is refused with the reason kind *start pending*.
@@ -106,10 +108,11 @@ visible with its run, and a refused or cancelled start leaves nothing but the re
 Shown for every start, never skipped. It shows: spec number, title and stem · the provider's
 display name (0009 BR-001) · the model the provider reports for its next start, otherwise
 "provider default" · the permission mode the provider reports for the run · the provider's
-disclosure text where it supplies one (0010 BR-14) · the spec's previous-run summary from 0011
+disclosure text where it supplies one (0010 BR-14) · one line for each of the capabilities
+`approvals` and `userInput` the provider declares as `none` (OP-005) · the spec's previous-run summary from 0011
 (BR-007, AC-021) · the start prompt (§6.3), not editable, collapsed until expanded. Actions:
-**Start** and **Cancel**. Closing the confirmation or the panel, or another project becoming
-active, counts as Cancel.
+**Start** and **Cancel**. Closing the confirmation, closing or hiding the panel (OP-007), or another project
+becoming active, counts as Cancel.
 
 ### 6.3 The start prompt (owned by 0008; text decided by Gregor, 2026-11-16)
 
@@ -149,7 +152,7 @@ to the agent, not a permission: git commands still pass through the provider's a
 
 ### 6.5 Provider and model (Gregor, 2026-11-16)
 
-One setting names the default provider by ID; no picker. Its shipped value is the first
+One setting, `featherspec-studio.defaultProvider`, names the default provider by ID; no picker. Its shipped value is the first
 provider's ID (PD-001; 0010) — until that provider is registered, P-3 refuses. The fake (0009
 BR-006) is never the shipped value; the developer and tests may set it. The model is the
 provider's matter (0010 BR-08): 0008 shows and passes on what the provider reports for its next
@@ -180,7 +183,8 @@ project-relative path · start prompt · the project root (0001) as working dire
 ## 9. UI/UX requirements
 
 - English (PD-016). Confirmation, refusal and start-failure notice appear in the Studio panel;
-  panel-level states stay with 0005 (PD-036). Placement and texts: OP-002.
+  panel-level states stay with 0005 (PD-036). The confirmation is a dialog above the area; refusal
+  and start-failure notice are one line each above the area until dismissed (OP-002). Texts: plan.
 - A refusal lists each failing precondition on its own line. "Open run" sends the navigation
   request to the Agent Center with the run ID (PD-040, 0012 BR-02).
 - All three are keyboard-operable and announced to screen readers (handoff §13) — M-2.
@@ -217,7 +221,7 @@ the fake provider of 0009 and fakes for 0003, 0004 and 0011, on what 0008 shows 
 requests it sends; what the neighbours do with them is proven there (as PD-046 rules for
 navigation). The prompt's collapsed state is decided by a component test of the confirmation.
 
-**AC-001** When a hand-off for a stem reaches 0008, the system shall evaluate P-1 to P-7 before
+**AC-001** When a hand-off for a stem reaches 0008, the system shall evaluate P-1 to P-8 before
 showing a confirmation and, if any fails, shall show a refusal naming every failing precondition
 by ID with the parameters of §6.1, show no confirmation, hand 0011 no start request and store
 nothing. A test fails each precondition alone and asserts its ID and parameters.
@@ -231,7 +235,7 @@ shall show it collapsed until the developer expands it.
 **AC-003** When the developer cancels the confirmation, or it ends as Cancel (§6.2), the system
 shall hand 0011 no start request and write nothing to the store.
 
-**AC-004** When the developer activates Start, the system shall evaluate P-1 to P-7 again. If
+**AC-004** When the developer activates Start, the system shall evaluate P-1 to P-8 again. If
 any fails, or the default provider, model or permission mode differs from what the confirmation
 showed (reason kind *confirmation outdated*), then it shall refuse as in AC-001 and hand 0011 no
 start request.
@@ -246,8 +250,8 @@ confirmation showed them.
 path>` and `<plan path>` replaced as §6.3 defines; for a fixture spec the result shall equal a
 golden file byte for byte, and the confirmation shall show the same text.
 
-**AC-007** If `.claude/commands/sdd-plan.md` or `.claude/commands/sdd-lifecycle.md` is missing,
-then the system shall refuse with P-2 naming each missing path.
+**AC-007** If `.claude/commands/sdd-plan.md`, `.claude/commands/sdd-lifecycle.md` or
+`.claude/rules/plans.md` is missing, then the system shall refuse with P-2 naming each missing path.
 
 **AC-008** If a run of the project is in an open state, then the system shall refuse with P-5
 naming that run's ID and stem. If 0011 refuses a start request because a run is open (0011
@@ -280,7 +284,7 @@ start whose run has ended, the system shall show the confirmation again.
 
 ### Manual checks (Gregor)
 
-- **M-1** Real provider on `tip-splitter` (needs 0010, 0011, 0012): the agent moves spec and
+- **M-1** (checked with 0010's acceptance, OP-011) Real provider on `tip-splitter` (needs 0010, 0011, 0012): the agent moves spec and
   plan to `active/` via `/sdd-lifecycle` (`git mv`), implements, stops at the test review per
   stage, ends with plan `Done` before `/sdd-compile`, makes no commit and lists commit proposals.
 - **M-2** Gregor accepts the confirmation and the expanded prompt as readable, and operates
@@ -295,7 +299,7 @@ AC-010 · AC-008.9 → AC-011 + 0011 AC-012.
 ## 14. Technical notes for developers or AI agents
 
 - 0008 is an application service in the core behind ports to 0003, 0004, 0009, 0011 and the UI;
-  no `vscode` import in the core (AGENTS.md). The setting's key is fixed in `/sdd-plan`.
+  no `vscode` import in the core (AGENTS.md). The setting's key is `featherspec-studio.defaultProvider`.
 - One prompt template. The golden file fixes its byte form: the wraps inside the quote of §6.3
   are layout, not line breaks — one line per paragraph and list item, LF. A change to template
   or golden file is a spec change of §6.3.
@@ -313,37 +317,31 @@ AC-010 · AC-008.9 → AC-011 + 0011 AC-012.
 
 ## 16. Open points
 
-Open, none blocks planning (clarify finding in brackets; a recommendation each):
+Open (cross-spec, main session):
 
-- OP-001 [F-53] The prompt names `.claude/rules/plans.md`, which P-2 does not check; nothing
-  says which `FeatherSpecVersion` the prompt fits (PD-031). Recommendation: add `plans.md` to
-  P-2; no version gate in the MVP.
-- OP-002 [F-29, F-52] Texts are written in the plan (PD-016). Open: where in the panel refusal
-  and notice appear and how long the notice stays. Recommendation: a line above the area until
-  dismissed (as 0005 OP-007).
-- OP-004 [F-18] Once the agent moved the spec to `active/` and the run ended `Failed`,
-  `Completed` or `Cancelled`, Studio offers no way on: only Ready → Active starts (PD-014),
-  resume covers `Interrupted` only (against 0011 BR-007 "a normal start through 0008").
-  Recommendation: MVP — continue in the developer's own agent chat; a "continue" start later.
-- OP-005 [F-51] Default provider declaring `approvals` or `userInput` as `none`.
-  Recommendation: allow; the confirmation names each missing capability.
-- OP-006 [F-46] Availability check slow or without answer. Recommendation: show that it runs;
-  after a named constant fixed in `/sdd-plan`, P-4 fails with *unknown*.
-- OP-007 [F-44] Panel hidden while the confirmation is open. Recommendation: Cancel.
-- OP-008 [F-56] Git working tree before a start. Recommendation: no check in the MVP (A-004).
-- OP-009 [F-49] A stem outside ASCII kebab-case reaches the prompt's code spans.
-  Recommendation: refuse the start for a stem not matching the format doc §3.1.
-- OP-010 (cross-spec, main session) [F-04…F-07, F-17, F-58]: 0009 §8.1 has no operation that
-  reports permission mode, disclosure text and next-start model; its "never the default
-  provider" is read here as "never the shipped value" · the format doc §1.1 lacks A-001's note ·
-  the "Gregor, 2026-11-16" decisions have no PD entry.
-- OP-011 [F-16] M-1 needs 0010, 0011 and 0012, so Done waits for them. Recommendation: move M-1
-  to 0010's acceptance (as 0011 OP-006 does for its own checks).
+- OP-010 [F-04…F-07, F-17, F-58]: 0009's port now reports permission mode (`permissionModeLabel`),
+  disclosure text and next-start model (plan 0009 *Surface*); still open: 0009's "never the
+  default provider" is read here as "never the shipped value" · the format doc §1.1 lacks A-001's
+  note · the "Gregor, 2026-11-16" decisions have no PD entry · 0010's acceptance has to list M-1.
 
 Resolved:
 
+- 2026-11-16, by each point's own recommendation (Gregor, applied while planning):
+  OP-001 `.claude/rules/plans.md` joins P-2; no version gate in the MVP ·
+  OP-002 refusal and notice are one line above the area until dismissed, the confirmation a
+  dialog above the area (§9) ·
+  OP-004 MVP: after a run ended on an `active/` spec the developer continues in their own agent
+  chat; a "continue" start is later work ·
+  OP-005 a default provider declaring `approvals` or `userInput` as `none` is allowed; the
+  confirmation names each such capability (§6.2) ·
+  OP-006 the panel shows that the availability check runs; 0009's `AVAILABILITY_TIMEOUT_MS`
+  (15 s) makes P-4 fail with *unknown* (§6.1) ·
+  OP-007 hiding the panel cancels an open confirmation (§6.2) ·
+  OP-008 no git check in the MVP (A-004) ·
+  OP-009 P-8 refuses a stem outside the format doc §3.1 ·
+  OP-011 M-1 moves to 0010's acceptance; 0008's Done does not wait for it.
 - OP-003 (2026-11-16): `/sdd-clarify` listed 59 findings, 11 blocking; resolved in one go at
-  Gregor's request (one-off exception to the walkthrough): 48 resolved, 11 parked (above), none
+  Gregor's request (one-off exception to the walkthrough): 48 resolved, 11 parked, none
   asked. The blocking ones were contract conflicts, settled by the owner: 0011 — one start
   request, refusal without a run, error class (A-003 withdrawn) · 0007 §6.6, ADR-001 §14 — P-7 ·
   0010, 0011 BR-007 — confirmation content, permission mode, model · 0009, 0004 — P-3, P-4, P-6.
@@ -356,7 +354,7 @@ Resolved:
 
 Ready: preconditions, prompt text and criteria fixed; 0003, 0004 and 0011 faked in tests until
 they exist. Done: all criteria green, 0007's "Agent start is not available yet" refusal replaced
-by the hand-off, docs synced, M-1 and M-2 accepted by Gregor (M-1: OP-011).
+by the hand-off, docs synced, M-2 accepted by Gregor; M-1 is accepted with 0010 (OP-011).
 
 ## 18. Recommended next steps
 
