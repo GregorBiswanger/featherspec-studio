@@ -1,4 +1,4 @@
-import type { RefusalItem } from '../../shared/protocol/agentStart';
+import type { CapabilityGap, PreviousRunView, RefusalItem } from '../../shared/protocol/agentStart';
 
 export const OPEN_RUN_LABEL = 'Open run';
 
@@ -38,4 +38,38 @@ export function refusalLines(item: RefusalItem): string[] {
 
 export function noticeText(runId: string, errorClass: string): string {
     return `Run ${runId} failed to start: ${errorClass}.`;
+}
+
+export const START_LABEL = 'Start';
+export const CANCEL_LABEL = 'Cancel';
+export const SHOW_PROMPT_LABEL = 'Show start prompt';
+export const HIDE_PROMPT_LABEL = 'Hide start prompt';
+export const MODEL_FALLBACK = 'provider default';
+export const NO_PREVIOUS_RUN = 'No run';
+export const FIELD_LABELS = {
+    spec: 'Spec',
+    provider: 'Provider',
+    model: 'Model',
+    permissionMode: 'Permission mode',
+    previousRun: 'Previous run',
+    prompt: 'Start prompt',
+} as const;
+
+export function dialogTitle(number: string): string {
+    return `Start an agent on spec ${number}?`;
+}
+
+export function capabilityLine(gap: CapabilityGap): string {
+    return gap === 'approvals' ? 'This provider cannot ask for approval before it acts.' : 'This provider cannot ask you questions, so the agent cannot wait for your answer.';
+}
+
+export function previousRunText(previous: PreviousRunView): string {
+    if (previous.kind === 'none') {
+        return NO_PREVIOUS_RUN;
+    }
+    if (previous.kind === 'not-available') {
+        return `Not available: ${previous.reason}`;
+    }
+    const detail = previous.status === 'Failed' ? `${previous.errorClass}: ${previous.errorText}` : undefined;
+    return `${previous.runId}, ${previous.status}${detail === undefined ? '' : `, ${detail}`}`;
 }

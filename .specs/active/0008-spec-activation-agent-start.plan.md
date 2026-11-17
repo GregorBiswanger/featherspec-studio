@@ -3,7 +3,7 @@
 **Spec:** [0008-spec-activation-agent-start.md](0008-spec-activation-agent-start.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-006
+**Current step:** T-007
 
 ## Approach
 
@@ -228,8 +228,8 @@ stage and becomes its own step.
   text, Start and Cancel send their token, Escape cancels, no editable element, the bundle test
   mounts it from a fixture view.
 - **Verify:** `npx vitest run src/webview src/adapters/node/webviewCss` then the per-step gates
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-17 — red: `npx vitest run src/webview/agentStart/StartDialog` with `StartDialog` rendering nothing and the three texts as `Not implemented`: 10 of 11 failed (the eleventh, no dialog without a confirmation, was green at once; the other ten are its negative control). Green: `npx vitest run src/webview/agentStart src/adapters/node` 133 pass (modal dialog labelled by its title, every §6.2 item, model fallback, disclosure, one line per missing capability and none otherwise, prompt collapsed with `aria-expanded`/`aria-controls`, hidden until expanded, text equals the view's prompt, no input/textarea/contenteditable, focus on Cancel and back to the opener, Tab and Shift+Tab wrap, Escape and Cancel send the token, Start disabled while starting). Bundle: `webviewBundle.test.ts` mounts the dialog and the lines from a fixture view without a start-up error; CSS guard (theme variables only) green. Gates: eslint 0 warnings, both tsc clean, `npm run test:unit` full run green. Manual M-2 stays open for Gregor.
+- **Notes:** The bundle test was green on its first run (integration over code that existed); its negative control is the other bundle tests, which fail on a start-up error. Escape does not send Cancel while the start is running (the host ignores it anyway). Backdrop colour is `--vscode-widget-shadow` (theme variable, no literal).
 
 ### T-007 — Setting, panel and extension wiring
 
@@ -269,11 +269,11 @@ stage and becomes its own step.
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
 | AC-001 | T-002, T-003, T-005 | src/core/agentStart/startFlow.ts:handOff, src/core/agentStart/refusalItems.ts, src/webview/agentStart/StartLines.tsx, texts.ts | startFlow.test.ts (refusal), preconditions.test.ts, StartLines.test.tsx | built |
-| AC-002 | T-003, T-006 | src/core/agentStart/startFlow.ts:check | src/core/agentStart/startFlow.test.ts (confirmation items) | built |
-| AC-003 | T-003, T-006, T-007 | src/core/agentStart/startFlow.ts:cancel, panelHidden | src/core/agentStart/startFlow.test.ts (cancel, hide, project change) | built |
+| AC-002 | T-003, T-006 | src/core/agentStart/startFlow.ts:check, src/webview/agentStart/StartDialog.tsx | startFlow.test.ts (confirmation items), StartDialog.test.tsx | built |
+| AC-003 | T-003, T-006, T-007 | src/core/agentStart/startFlow.ts:cancel, panelHidden, src/webview/agentStart/StartDialog.tsx (Escape) | startFlow.test.ts (cancel, hide, project change), StartDialog.test.tsx | built |
 | AC-004 | T-004 | src/core/agentStart/startFlow.ts:doStart | src/core/agentStart/startFlow.start.test.ts (AC-004) | built |
 | AC-005 | T-004, T-007 | src/core/agentStart/startFlow.ts:doStart, src/core/agentStart/orchestratorBinding.ts | src/core/agentStart/startFlow.start.test.ts (AC-005), agentStart.endToEnd.test.ts | built |
-| AC-006 | T-001, T-006 | src/core/agentStart/startPrompt.ts:buildStartPrompt | src/core/agentStart/startPrompt.test.ts (golden byte equality) | built |
+| AC-006 | T-001, T-006 | src/core/agentStart/startPrompt.ts:buildStartPrompt, src/webview/agentStart/StartDialog.tsx | startPrompt.test.ts (golden), StartDialog.test.tsx (same text shown) | built |
 | AC-007 | T-002 | src/core/agentStart/preconditions.ts:checkPreconditions | src/core/agentStart/preconditions.test.ts (P-2) | verified |
 | AC-008 | T-002, T-004, T-005 | src/core/agentStart/preconditions.ts (P-5), startFlow.ts:doStart, src/webview/agentStart/StartLines.tsx | preconditions.test.ts (P-5), startFlow.start.test.ts (AC-008), StartLines.test.tsx | built |
 | AC-009 | T-003 | src/core/agentStart/startFlow.ts:handOff (pending), confirm | startFlow.test.ts, startFlow.start.test.ts (pending while starting) | built |
@@ -282,7 +282,7 @@ stage and becomes its own step.
 | AC-012 | T-004 | src/core/agentStart/startFlow.ts (no file API) | src/core/agentStart/noWrite.test.ts | built |
 | AC-013 | T-002, T-005 | src/core/agentStart/preconditions.ts (P-6), src/webview/agentStart/texts.ts | preconditions.test.ts (P-6), StartLines.test.tsx | built |
 | AC-014 | T-003 | src/core/agentStart/startFlow.ts:handOff | src/core/agentStart/startFlow.test.ts (ended run) | built |
-| M-2 | T-006 | — | manual: Gregor, keyboard and screen reader | open |
+| M-2 | T-006 | src/webview/agentStart/StartDialog.tsx, StartLines.tsx | manual: Gregor, keyboard and screen reader | built |
 
 ## Session handoff
 

@@ -283,6 +283,65 @@ main > h1 {
     font: inherit;
 }
 
+.start-dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--vscode-widget-shadow);
+}
+
+.start-dialog {
+    box-sizing: border-box;
+    width: min(640px, calc(100vw - 32px));
+    max-height: calc(100vh - 32px);
+    overflow: auto;
+    padding: 16px;
+    color: var(--vscode-editorWidget-foreground, var(--vscode-foreground));
+    background: var(--vscode-editorWidget-background);
+    border: 1px solid var(--vscode-contrastBorder, var(--vscode-editorWidget-border));
+}
+
+.start-dialog h2 {
+    margin: 0 0 8px;
+}
+
+.start-dialog-fields {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 4px 12px;
+    margin: 0 0 8px;
+}
+
+.start-dialog-fields dd {
+    margin: 0;
+}
+
+.start-dialog-prompt {
+    max-height: 40vh;
+    margin: 8px 0;
+    overflow: auto;
+    padding: 8px;
+    white-space: pre-wrap;
+    background: var(--vscode-textCodeBlock-background);
+}
+
+.start-dialog button {
+    padding: 4px 12px;
+    color: var(--vscode-button-foreground);
+    background: var(--vscode-button-background);
+    border: 1px solid var(--vscode-button-border, transparent);
+    cursor: pointer;
+    font: inherit;
+}
+
+.start-dialog button:disabled {
+    cursor: default;
+    opacity: 0.6;
+}
+
 .actions {
     display: flex;
     gap: 8px;
