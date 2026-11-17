@@ -2,10 +2,10 @@ import { readFileSync } from 'fs';
 import * as path from 'path';
 import { describe, expect, it } from 'vitest';
 import { MOVE_COMMAND_TITLE, S2_WELCOME } from '../../shared/protocol/texts';
-import { FAKE_SCENARIOS } from '../providers/fake/scenarios';
-import { PROVIDER_IDS } from '../../core/providers/testing/scan';
 
 interface Manifest {
+    description?: string;
+    keywords?: string[];
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
     activationEvents?: string[];
@@ -53,84 +53,25 @@ describe('extension manifest', () => {
         expect(manifest.extensionKind).toEqual(['workspace']);
     });
 
-    it('AC-015, AC-016, 0004 AC-019: contributes the select, refresh and clear-history commands and no scaffold command', () => {
+    it('AC-015, AC-016: contributes the select and refresh commands and no scaffold command', () => {
         const commands = manifest.contributes?.commands ?? [];
         expect(commands).toEqual(
             expect.arrayContaining([
                 { command: 'featherspec-studio.selectProject', title: 'FeatherSpec Studio: Select Project' },
                 { command: 'featherspec-studio.refreshDiscovery', title: 'FeatherSpec Studio: Refresh Project Discovery' },
-                { command: 'featherspec-studio.clearRunHistory', title: 'FeatherSpec Studio: Clear Run History' },
             ]),
         );
         expect(commands.map((entry) => entry.command)).not.toContain('featherspec-studio.helloWorld');
     });
 
-    it('0004 AC-018: the run-history age cap is a user setting, whole days, minimum 1, default 90', () => {
-        const setting = manifest.contributes?.configuration?.properties?.['featherspec-studio.runHistory.maxAgeDays'];
-        expect(setting?.type).toBe('integer');
-        expect(setting?.default).toBe(90);
-        expect(setting?.minimum).toBe(1);
-        expect(setting?.scope).toBe('application');
-        expect((setting?.description ?? '').length).toBeGreaterThan(20);
-    });
 
-    it('0004 AC-018: negative control, the manifest declares no other run-history setting', () => {
-        const names = Object.keys(manifest.contributes?.configuration?.properties ?? {}).filter((name) => name.startsWith('featherspec-studio.runHistory.'));
-        expect(names).toEqual(['featherspec-studio.runHistory.maxAgeDays']);
-    });
 
-    it('AC-012 (0009): the fake provider is off by default, a boolean with the default window scope', () => {
-        const setting = manifest.contributes?.configuration?.properties?.['featherspec-studio.fakeProvider.enabled'];
-        expect(setting?.type).toBe('boolean');
-        expect(setting?.default).toBe(false);
-        expect(setting?.scope === undefined || setting.scope === 'window').toBe(true);
-        expect((setting?.description ?? '').length).toBeGreaterThan(20);
-    });
 
-    it('AC-012 (0009): the scenario setting lists exactly the fake scenarios, each described, default happy path', () => {
-        const setting = manifest.contributes?.configuration?.properties?.['featherspec-studio.fakeProvider.scenario'];
-        expect(setting?.enum).toEqual([...FAKE_SCENARIOS]);
-        expect(setting?.enumDescriptions).toHaveLength(FAKE_SCENARIOS.length);
-        expect(setting?.enumDescriptions?.every((text) => text.length > 10)).toBe(true);
-        expect(setting?.default).toBe('happy-path');
-        expect(setting?.scope === undefined || setting.scope === 'window').toBe(true);
-    });
 
-    it('AC-012 (0009): no configuration property defaults to the fake provider, so the fake never ships as a default', () => {
-        const defaults = Object.values(manifest.contributes?.configuration?.properties ?? {}).map((property) => property.default);
-        expect(defaults).not.toContain('fake');
-    });
 
-    it('AC-012 (0009): negative control, the fake ID as a default would be found', () => {
-        expect(['fake', 'copilot'].some((id) => (PROVIDER_IDS as readonly string[]).includes(id))).toBe(true);
-        expect([false, 'happy-path', 90].some((value) => (PROVIDER_IDS as readonly unknown[]).includes(value))).toBe(false);
-        expect([false, 'fake', 90]).toContain('fake');
-    });
 
-    it('FR-04 (0008): the default provider is one string setting, window scope, shipped as the first provider copilot and never as fake, its description naming fake for trying', () => {
-        const setting = manifest.contributes?.configuration?.properties?.['featherspec-studio.defaultProvider'];
-        expect(setting?.type).toBe('string');
-        expect(setting?.default).toBe('copilot');
-        expect(setting?.scope === undefined || setting.scope === 'window').toBe(true);
-        expect(setting?.default).not.toBe('fake');
-        expect(setting?.enum).toBeUndefined();
-        expect(setting?.description ?? '').toContain('fake');
-        expect((setting?.description ?? '').length).toBeGreaterThan(40);
-    });
 
-    it('FR-04 (0008): negative control, the manifest declares exactly one default-provider setting', () => {
-        const names = Object.keys(manifest.contributes?.configuration?.properties ?? {}).filter((name) => /defaultProvider|defaultModel|permission/i.test(name));
-        expect(names).toEqual(['featherspec-studio.defaultProvider']);
-    });
 
-    it('AC-022 (0011): contributes "Stop Run" and "Resume Run" to the palette with their titles', () => {
-        const commands = Object.fromEntries((manifest.contributes?.commands ?? []).map((command) => [command.command, command.title]));
-        expect(commands['featherspec-studio.stopRun']).toBe('FeatherSpec Studio: Stop Run');
-        expect(commands['featherspec-studio.resumeRun']).toBe('FeatherSpec Studio: Resume Run');
-        const hidden = (manifest.contributes?.menus?.commandPalette ?? []).map((entry) => entry.command);
-        expect(hidden).not.toContain('featherspec-studio.stopRun');
-        expect(hidden).not.toContain('featherspec-studio.resumeRun');
-    });
 
     it('AC-001, AC-005 (0005): contributes the Open command and one command per area with their titles', () => {
         const commands = Object.fromEntries((manifest.contributes?.commands ?? []).map((command) => [command.command, command.title]));
@@ -211,29 +152,39 @@ describe('extension manifest', () => {
         expect(hidden).not.toContain('featherspec-studio.moveSpec');
         expect(hidden).toContain('featherspec-studio.shellAction');
     });
-    it('AC-002 (0010): the CLI path setting is a machine-scoped string with an empty default', () => {
-        const setting = manifest.contributes?.configuration?.properties?.['featherspec-studio.copilot.cliPath'];
-        expect(setting?.type).toBe('string');
-        expect(setting?.default).toBe('');
-        expect(setting?.scope).toBe('machine');
-        expect(setting?.description?.length ?? 0).toBeGreaterThan(10);
+
+    it('AC-014 (0015): contributes no command to clear run history, stop a run or resume a run', () => {
+        const commands = (manifest.contributes?.commands ?? []).map((entry) => entry.command);
+        for (const removed of ['clearRunHistory', 'stopRun', 'resumeRun']) {
+            expect(commands).not.toContain(`featherspec-studio.${removed}`);
+        }
+        const titles = (manifest.contributes?.commands ?? []).map((entry) => entry.title);
+        expect(titles.filter((title) => /Run History|Stop Run|Resume Run/.test(title))).toEqual([]);
     });
 
-    it('AC-008 (0010): the model setting is a window-scoped string with an empty default', () => {
-        const setting = manifest.contributes?.configuration?.properties?.['featherspec-studio.copilot.model'];
-        expect(setting?.type).toBe('string');
-        expect(setting?.default).toBe('');
-        expect(setting?.scope).toBe('window');
-        expect(setting?.description?.length ?? 0).toBeGreaterThan(10);
+    it('AC-014 (0015): negative control, the matcher finds the removed titles', () => {
+        expect(['FeatherSpec Studio: Clear Run History', 'FeatherSpec Studio: Stop Run', 'FeatherSpec Studio: Resume Run'].filter((title) => /Run History|Stop Run|Resume Run/.test(title))).toHaveLength(3);
     });
 
-    it('AC-002 (0010): negative control, the manifest declares exactly the two copilot settings', () => {
-        const keys = Object.keys(manifest.contributes?.configuration?.properties ?? {}).filter((key) => key.startsWith('featherspec-studio.copilot.'));
-        expect(keys.sort()).toEqual(['featherspec-studio.copilot.cliPath', 'featherspec-studio.copilot.model']);
+    it('AC-015 (0015): declares no configuration property', () => {
+        expect(manifest.contributes?.configuration).toBeUndefined();
     });
 
-    it('AC-005 (0010): the Copilot SDK is a devDependency pinned exactly and no production dependency exists, so the VSIX carries only the bundle', () => {
-        expect(manifest.devDependencies?.['@github/copilot-sdk']).toBe('1.0.34');
-        expect(manifest.dependencies ?? {}).toEqual({});
+    it('AC-015 (0015): negative control, a manifest with a configuration would be found', () => {
+        const withConfiguration: Manifest = { contributes: { configuration: { properties: {} } } };
+        expect(withConfiguration.contributes?.configuration).toBeDefined();
+    });
+
+    it('AC-016 (0015): the description reads as the product text and names no agent or Copilot; the keywords drop agents, ai agents and github copilot', () => {
+        expect(manifest.description).toBe('Visual command center for spec-driven development with FeatherSpec: see every spec, know its next step.');
+        expect(manifest.description ?? '').not.toMatch(/agent|copilot/i);
+        for (const removed of ['agents', 'ai agents', 'github copilot']) {
+            expect(manifest.keywords ?? []).not.toContain(removed);
+        }
+    });
+
+    it('AC-016 (0015): negative control, the old description and keywords would be found', () => {
+        expect('Visual command center for spec-driven development with FeatherSpec: see every spec, control every agent.').toMatch(/agent/i);
+        expect(['featherspec', 'agents', 'ai agents'].filter((keyword) => ['agents', 'ai agents', 'github copilot'].includes(keyword))).toHaveLength(2);
     });
 });

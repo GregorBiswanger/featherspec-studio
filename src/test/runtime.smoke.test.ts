@@ -13,13 +13,15 @@ async function activateStudio(): Promise<StudioApi> {
 suite('FeatherSpec Studio runtime store smoke', function () {
     this.timeout(60_000);
 
-    test('0004 AC-025: the store of the active project is writable, and the clear command is registered', async () => {
+    test('0004 AC-025: the store of the active project is writable, and the run commands are gone', async () => {
         const api = await activateStudio();
         await api.whenIdle();
         await waitFor('the runtime store of the active project to be writable', () => api.runtimeState(), (state) => state.kind === 'writable', { timeoutMs: 30_000 });
         assert.deepStrictEqual(api.runtimeState(), { kind: 'writable', reason: undefined });
         const commands = await vscode.commands.getCommands(true);
-        assert.ok(commands.includes('featherspec-studio.clearRunHistory'));
+        for (const removed of ['clearRunHistory', 'stopRun', 'resumeRun']) {
+            assert.ok(!commands.includes(`featherspec-studio.${removed}`));
+        }
     });
 
     test('0004 AC-016: storing a run and events leaves the workspace fixture unchanged', async () => {

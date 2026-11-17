@@ -1,4 +1,3 @@
-import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { createFileRuntimeMedium, projectStoreDirectory } from './adapters/node/fileRuntimeMedium';
 import { createRandomIds } from './adapters/node/randomIds';
@@ -19,31 +18,11 @@ import { COPY_MERGE_PROMPT_COMMAND_ID, SETUP_COMMAND_ID } from './shared/protoco
 import { createStudioTree } from './adapters/vscode/studioTree';
 import { createTrust } from './adapters/vscode/trust';
 import { createUiMemory } from './adapters/vscode/uiMemory';
-import { createAgentCenterMemory } from './adapters/vscode/agentCenterMemory';
-import { createAgentCenterUi } from './adapters/vscode/agentCenterUi';
-import { createAgentCenterService } from './core/agentCenter/agentCenterService';
-import { createAgentCenterHandlers } from './core/agentCenter/agentCenterRequests';
-import { createRequestNotifier } from './core/agentCenter/requestNotifier';
 import { withEventSignal } from './core/agentCenter/eventSignal';
-import type { AgentCenterStore } from './core/ports/agentCenter';
-import type { AgentCenterView, TimelinePayload } from './shared/protocol/agentCenter';
 import { sameRootFor } from './adapters/vscode/sameRoot';
 import { createStatusBar } from './adapters/vscode/statusBar';
 import { createFileWatch } from './adapters/vscode/fileWatch';
 import { createRuntimeUi } from './adapters/vscode/runtimeUi';
-import { createMaxAgeDaysSetting } from './adapters/vscode/runtimeSettings';
-import { createDefaultProviderSetting, createFakeProviderEnabledSetting, createFakeProviderScenarioSetting } from './adapters/vscode/providerSettings';
-import { createFakeProvider } from './adapters/providers/fake/fakeProvider';
-import { createCopilotProvider } from './adapters/providers/copilot/copilotProvider';
-import { createSdkClientFactory, loadCopilotSdk } from './adapters/providers/copilot/sdkClient';
-import { createNodeLocate } from './adapters/providers/copilot/nodeLocate';
-import { createCopilotCliPathSetting, createCopilotModelSetting } from './adapters/vscode/copilotSettings';
-import { createOrchestrator, type Orchestrator } from './core/orchestrator/orchestrator';
-import { createRunCommands } from './core/orchestrator/runCommands';
-import { createOrchestratorUi } from './adapters/vscode/orchestratorUi';
-import { createProviderSetup } from './core/providers/providerSetup';
-import type { ProviderRegistry } from './core/providers/registry';
-import type { ProviderService } from './core/providers/providerService';
 import { createEditor } from './adapters/vscode/editor';
 import { createMovePicks, createMoveResultSink } from './adapters/vscode/boardPicks';
 import { createClipboard } from './adapters/vscode/clipboard';
@@ -64,10 +43,6 @@ import { createBoardService } from './core/board/boardService';
 import { createMissionControlService } from './core/missionControl/missionControlService';
 import { createBoardRequests } from './core/board/boardRequests';
 import { createMoves } from './core/board/moves';
-import { createAgentStartHandlers } from './core/agentStart/agentStartRequests';
-import { bindOrchestrator } from './core/agentStart/orchestratorBinding';
-import { createStartFlow } from './core/agentStart/startFlow';
-import { createRunSource } from './core/missionControl/runSource';
 import { createOpenFile } from './core/board/openFile';
 import { createShellSelection } from './core/board/shellSelection';
 import { createLifecycleService, type LifecycleService } from './core/lifecycle/lifecycleService';
@@ -76,7 +51,6 @@ import { createShellService, type OpenRequest } from './core/shell/shellService'
 import { AREA_IDS } from './shared/protocol/areas';
 import type { BoardView, MoveResult } from './shared/protocol/board';
 import type { BoardFilter, BoardState } from './shared/protocol/boardFilter';
-import type { AgentStartView } from './shared/protocol/agentStart';
 import type { DetailView } from './shared/protocol/detail';
 import type { MissionControlView } from './shared/protocol/missionControl';
 import { isRunActionPayload, type ProbeOutcome, type ShellView } from './shared/protocol/messages';
@@ -110,21 +84,6 @@ export interface MissionControlTestApi {
     listen(listener: (view: MissionControlView | undefined) => void): vscode.Disposable;
 }
 
-export interface AgentStartTestApi {
-    view(): AgentStartView;
-    handOff(stem: string, key: string): void;
-    cancel(token: string): void;
-    whenIdle(): Promise<void>;
-}
-
-export interface AgentCenterTestApi {
-    view(): AgentCenterView | undefined;
-    timeline(): TimelinePayload | undefined;
-    whenIdle(): Promise<void>;
-    listen(listener: (view: AgentCenterView | undefined) => void): vscode.Disposable;
-    select(runId: string): void;
-}
-
 export interface StudioApi {
     snapshot(): DiscoverySnapshot;
     whenIdle(): Promise<void>;
@@ -132,17 +91,12 @@ export interface StudioApi {
     runtimeState(): StoreState;
     runtimeStore(): RuntimeStore | undefined;
     lifecycle(): LifecycleService;
-    providers(): { registry: ProviderRegistry; service: ProviderService };
-    orchestrator(): Orchestrator;
-    agentStart(): AgentStartTestApi;
     shell(): ShellTestApi;
     board(): BoardTestApi;
     missionControl(): MissionControlTestApi;
-    agentCenter(): AgentCenterTestApi;
 }
 
 let runtimeSession: RuntimeSession | undefined;
-let runOrchestrator: Orchestrator | undefined;
 
 export async function activate(context: vscode.ExtensionContext): Promise<StudioApi> {
     const statusBar = createStatusBar();
@@ -170,27 +124,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     const storage = resolveStorageLocation(context.globalStorageUri, context.globalStoragePath);
     const clock = createSystemRuntimeClock();
     const ids = createRandomIds();
-    const maxAgeDays = createMaxAgeDaysSetting();
-    const fakeScenario = createFakeProviderScenarioSetting();
-    const copilotCliPath = createCopilotCliPathSetting();
-    const copilotModel = createCopilotModelSetting();
-    const copilot = createCopilotProvider({
-        clock,
-        clientFactory: createSdkClientFactory({ loadSdk: loadCopilotSdk, environment: process.env, clock }),
-        locate: createNodeLocate({ settingPath: () => String(copilotCliPath.read()), environment: process.env, platform: process.platform }),
-        settings: { model: () => String(copilotModel.read()) },
-        ...(storage.kind === 'directory' ? { baseDirectory: path.join(storage.path, 'copilot-home') } : {}),
-        workspaceFolders: () => createWorkspaceFolders().list().flatMap((folder) => (folder.displayPath === undefined ? [] : [folder.displayPath])),
-        platform: process.platform,
-        isTrusted: () => vscode.workspace.isTrusted,
-    });
-    context.subscriptions.push({ dispose: () => copilot.dispose() });
-    const providers = createProviderSetup({
-        clock,
-        adapters: [copilot],
-        toggled: [{ enabled: createFakeProviderEnabledSetting(), create: () => createFakeProvider({ clock, profile: 'full', scenario: fakeScenario }) }],
-    });
-    context.subscriptions.push({ dispose: () => providers.dispose() });
     const session = createRuntimeSession({
         discovery: controller,
         ui: runtimeUi,
@@ -205,9 +138,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
                 ids,
                 clock,
                 notices: { show: (message) => runtimeUi.warn(message) },
-                credentials: providers.service.credentials,
+                credentials: { values: () => [] },
                 projectRoot,
-                maxAgeDays,
+                maxAgeDays: () => 90,
             })),
     });
     runtimeSession = session;
@@ -216,18 +149,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     const sameRoot = sameRootFor(process.platform);
     let studio: StudioPanel | undefined;
     const modelSource = createModelSource(repository);
-    const orchestrator = createOrchestrator({
-        session,
-        registry: providers.registry,
-        providers: providers.service,
-        specs: modelSource,
-        ui: createOrchestratorUi(),
-        clock,
-        workingDirectory: () => controller.snapshot().active?.root,
-    });
-    runOrchestrator = orchestrator;
-    const startRuns = createRunSource({ session });
-    const runCommands = createRunCommands({ orchestrator, session, ui: createOrchestratorUi() });
     const shellActions = createShellActions({
         showOutput: () => output.show(),
         reloadPanel: () => studio?.reload(),
@@ -270,54 +191,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         discovery: controller,
         history: { read: () => lifecycle.history(), onDidChange: (listener) => lifecycle.onDidChange(() => listener()) },
     });
-    const agentCenterUi = createAgentCenterUi();
-    const agentCenter = createAgentCenterService({
-        session: {
-            current: () => session.current() as AgentCenterStore | undefined,
-            state: () => session.state(),
-            onDidChangeState: (listener) => session.onDidChangeState(listener),
-        },
-        providers: providers.registry,
-        source: modelSource,
-        memory: createAgentCenterMemory(context.workspaceState),
-        discovery: controller,
-        navigation: service,
-        trust: createTrust(),
-        orchestrator,
-        ui: agentCenterUi,
-        files: createVscodeFileSystem(),
-        editor: createEditor(),
-    });
-    const requestNotifier = createRequestNotifier({
-        session: { current: () => session.current() as AgentCenterStore | undefined, state: () => session.state(), onDidChangeState: (listener) => session.onDidChangeState(listener) },
-        model: modelSource,
-        ui: agentCenterUi,
-        trust: createTrust(),
-        shownAndFocused: (runId) => {
-            const view = agentCenter.view();
-            const selected = view?.kind === 'ready' ? view.detail?.header.runId : undefined;
-            return studio?.isFocused() === true && service.view().area === 'agentCenter' && selected === runId;
-        },
-        open: (runId) => {
-            void service.handlers.navigate({ area: 'agentCenter', target: { kind: 'run', id: runId } });
-            studio?.show();
-        },
-    });
-    const agentStart = createStartFlow({
-        preconditions: {
-            model: modelSource,
-            files: createVscodeFileSystem(),
-            setting: createDefaultProviderSetting(),
-            registry: providers.registry,
-            providers: providers.service,
-            runs: startRuns,
-            session,
-            trust: createTrust(),
-        },
-        orchestrator: bindOrchestrator(orchestrator, (root) => vscode.Uri.parse(root).fsPath),
-        ui: { reveal: () => studio?.show() },
-        runs: startRuns,
-    });
     const moves = createMoves({
         source: modelSource,
         picks: createMovePicks(),
@@ -350,29 +223,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             onDidCopyResult: (listener) => requests.onDidCopyResult(listener),
             panelClosed: () => board.panelClosed(),
         },
-        agentCenter: {
-            handlers: createAgentCenterHandlers(agentCenter),
-            view: () => agentCenter.view(),
-            timeline: () => agentCenter.timeline(),
-            onDidChangeView: (listener) => {
-                const subscription = agentCenter.onDidChangeView(listener);
-                return new vscode.Disposable(() => subscription.dispose());
-            },
-            onDidChangeTimeline: (listener) => {
-                const subscription = agentCenter.onDidChangeTimeline(listener);
-                return new vscode.Disposable(() => subscription.dispose());
-            },
-            reread: () => agentCenter.reread(),
-        },
-        agentStart: {
-            handlers: createAgentStartHandlers(agentStart),
-            view: () => agentStart.view(),
-            onDidChangeView: (listener) => {
-                const subscription = agentStart.onDidChangeView(listener);
-                return new vscode.Disposable(() => subscription.dispose());
-            },
-            panelHidden: () => agentStart.panelHidden(),
-        },
         output,
         testMode: context.extensionMode === vscode.ExtensionMode.Test,
     });
@@ -388,11 +238,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         { dispose: () => service.dispose() },
         navigation,
         { dispose: () => board.dispose() },
-        { dispose: () => agentStart.dispose() },
-        { dispose: () => startRuns.dispose() },
         { dispose: () => missionControl.dispose() },
-        { dispose: () => agentCenter.dispose() },
-        { dispose: () => requestNotifier.dispose() },
         tree,
         panel,
         vscode.window.registerWebviewPanelSerializer(VIEW_TYPE, panel.serializer),
@@ -413,9 +259,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         vscode.commands.registerCommand(MOVE_COMMAND, () => moves.runMoveCommand()),
         vscode.commands.registerCommand('featherspec-studio.selectProject', () => controller.selectProject()),
         vscode.commands.registerCommand('featherspec-studio.refreshDiscovery', () => controller.refresh()),
-        vscode.commands.registerCommand('featherspec-studio.clearRunHistory', () => session.clearRunHistory()),
-        vscode.commands.registerCommand('featherspec-studio.stopRun', () => runCommands.stopRun()),
-        vscode.commands.registerCommand('featherspec-studio.resumeRun', () => runCommands.resumeRun()),
     );
 
     await session.start();
@@ -430,21 +273,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             await lifecycle.whenIdle();
             await board.whenIdle();
             await missionControl.whenIdle();
-            await agentCenter.whenIdle();
-            await agentStart.whenIdle();
         },
         specs: () => repository,
         runtimeState: () => session.state(),
         runtimeStore: () => session.current(),
         lifecycle: () => lifecycle,
-        providers: () => ({ registry: providers.registry, service: providers.service }),
-        orchestrator: () => orchestrator,
-        agentStart: () => ({
-            view: () => agentStart.view(),
-            handOff: (stem, key) => agentStart.handOff({ stem, key }),
-            cancel: (token) => agentStart.cancel(token),
-            whenIdle: () => agentStart.whenIdle(),
-        }),
         board: () => ({
             view: () => board.view(),
             detail: () => board.detail(),
@@ -464,20 +297,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
                 return new vscode.Disposable(() => subscription.dispose());
             },
         }),
-        agentCenter: () => ({
-            view: () => agentCenter.view(),
-            timeline: () => agentCenter.timeline(),
-            whenIdle: () => agentCenter.whenIdle(),
-            listen: (listener) => {
-                const subscription = agentCenter.onDidChangeView(listener);
-                const timelineSubscription = agentCenter.onDidChangeTimeline(() => undefined);
-                return new vscode.Disposable(() => {
-                    subscription.dispose();
-                    timelineSubscription.dispose();
-                });
-            },
-            select: (runId) => agentCenter.select(runId),
-        }),
         shell: () => ({
             view: () => service.view(),
             lastHelloAt: () => panel.lastHelloAt(),
@@ -496,8 +315,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
 }
 
 export async function deactivate(): Promise<void> {
-    runOrchestrator?.dispose();
-    runOrchestrator = undefined;
     const closing = runtimeSession;
     runtimeSession = undefined;
     await closing?.dispose();

@@ -3,7 +3,7 @@
 **Spec:** [0015-focus-on-visibility.md](0015-focus-on-visibility.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-007
+**Current step:** T-008
 
 ## Approach
 
@@ -217,7 +217,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
   `.vscode-test.mjs` stays as it is (its globs name no removed file).
 - **Deletes:** `src/test/{agentCenter,agentStart,copilot,orchestrator,providers}.smoke.test.ts` (incl. the opt-in Copilot runner)
 - **Verify:** gates 1–5; `node -e "const p=require('./package.json');process.exit(p.contributes.configuration?1:0)"`
-- [ ] **Verified (T-007):** —
+- [x] **Verified (T-007):** 2026-11-17 — red: with the previous package.json restored the three new manifest tests (AC-014, AC-015, AC-016) failed; green after the change: 2483 passed + 3 skipped, 12 timing; gates 1–5 clean; the configuration probe exits 0. The five smoke tests named in Deletes are removed. Notes: extensionBundle.test.ts lost its three SDK/koffi tests (the bundle no longer reaches the SDK once extension.ts stops importing it); esbuild externals stay as they are until T-012; the AC-014 check for openAgentCenter and 'Agent' titles follows with T-009.
 - **Notes:** —
 
 ### T-008 — Delete the dead run modules
@@ -385,7 +385,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 ## Session handoff
 
 - **Done so far:** Stages 1 and 2 (T-001…T-005): next step, copy, drop result; earlier-data removal module (not wired); board and detail without runs (the parallel stage ran in sequence).
-- **Next action:** T-007 (cut run features from extension.ts and the manifest), then T-008, T-009.
+- **Next action:** T-008 (delete the dead run modules), then T-009.
 - **Open decisions:** — (Gregor approved the changed order and `npm uninstall @github/copilot-sdk`; the parallel stage runs in sequence; deletions listed per step are approved.)
 - **Baseline:** ea4a8bd
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked); host suites run on Windows and CI. Gates: `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`.

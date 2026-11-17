@@ -1,7 +1,7 @@
 {
   "name": "featherspec-studio",
   "displayName": "FeatherSpec Studio",
-  "description": "Visual command center for spec-driven development with FeatherSpec: see every spec, control every agent.",
+  "description": "Visual command center for spec-driven development with FeatherSpec: see every spec, know its next step.",
   "version": "0.1.0",
   "publisher": "GregorBiswanger",
   "license": "MIT",
@@ -31,10 +31,7 @@
     "spec-driven development",
     "sdd",
     "specs",
-    "kanban",
-    "agents",
-    "github copilot",
-    "ai agents"
+    "kanban"
   ],
   "extensionKind": [
     "workspace"
@@ -101,18 +98,6 @@
       {
         "command": "featherspec-studio.refreshDiscovery",
         "title": "FeatherSpec Studio: Refresh Project Discovery"
-      },
-      {
-        "command": "featherspec-studio.clearRunHistory",
-        "title": "FeatherSpec Studio: Clear Run History"
-      },
-      {
-        "command": "featherspec-studio.stopRun",
-        "title": "FeatherSpec Studio: Stop Run"
-      },
-      {
-        "command": "featherspec-studio.resumeRun",
-        "title": "FeatherSpec Studio: Resume Run"
       }
     ],
     "viewsContainers": {
@@ -135,7 +120,7 @@
     "viewsWelcome": [
       {
         "view": "featherspec-studio.navigator",
-        "contents": "No FeatherSpec project found in this workspace.\n[Set up FeatherSpec](command:featherspec-studio.setup)\n[Open setup guide](command:featherspec-studio.shellAction?%5B%22openSetupGuide%22%5D) \u00b7 [Refresh](command:featherspec-studio.shellAction?%5B%22refresh%22%5D)",
+        "contents": "No FeatherSpec project found in this workspace.\n[Set up FeatherSpec](command:featherspec-studio.setup)\n[Open setup guide](command:featherspec-studio.shellAction?%5B%22openSetupGuide%22%5D) · [Refresh](command:featherspec-studio.shellAction?%5B%22refresh%22%5D)",
         "when": "featherspec-studio.panelState == S2"
       }
     ],
@@ -150,80 +135,6 @@
           "when": "false"
         }
       ]
-    },
-    "configuration": {
-      "title": "FeatherSpec Studio",
-      "properties": {
-        "featherspec-studio.runHistory.maxAgeDays": {
-          "type": "integer",
-          "default": 90,
-          "minimum": 1,
-          "scope": "application",
-          "description": "Number of days FeatherSpec Studio keeps ended agent runs, their events and the spec status history. Older data is removed when Studio activates. Runs that are still open are never removed."
-        },
-        "featherspec-studio.defaultProvider": {
-          "type": "string",
-          "default": "copilot",
-          "scope": "window",
-          "description": "ID of the agent provider that starts an agent when you move a Ready spec to Active. There is no picker: this setting is the only choice. Shipped as copilot; set it to fake, after enabling the fake provider, to try Studio without an agent."
-        },
-        "featherspec-studio.copilot.cliPath": {
-          "type": "string",
-          "default": "",
-          "scope": "machine",
-          "description": "Full path of the GitHub Copilot CLI that Studio starts for agent runs (copilot.exe on Windows). Empty: Studio uses the first copilot on your PATH. Version 1.0.87 or newer is required. Only your user settings count; a workspace cannot choose the program."
-        },
-        "featherspec-studio.copilot.model": {
-          "type": "string",
-          "default": "",
-          "scope": "window",
-          "description": "Model name for the next GitHub Copilot run, for example claude-sonnet-5. Empty: Copilot picks its default model. Studio shows this model in the start confirmation."
-        },
-        "featherspec-studio.fakeProvider.enabled": {
-          "type": "boolean",
-          "default": false,
-          "description": "Enable fake provider: registers a deterministic provider that runs without an agent, an account or a network, for trying Studio. It never changes a file."
-        },
-        "featherspec-studio.fakeProvider.scenario": {
-          "type": "string",
-          "default": "happy-path",
-          "enum": [
-            "happy-path",
-            "approval",
-            "input",
-            "failure:auth",
-            "failure:quota_or_rate_limit",
-            "failure:model_unavailable",
-            "failure:network_or_server",
-            "failure:runtime_missing",
-            "failure:policy_denied",
-            "failure:tool_failure",
-            "failure:unknown",
-            "long-run",
-            "unknown-event",
-            "duplicates-and-late",
-            "no-end"
-          ],
-          "enumDescriptions": [
-            "A complete run: message, plan, tool call, file change, usage, then completed.",
-            "Asks for one approval and waits for your answer; the run ends after it.",
-            "Asks one question and waits for your answer; the run ends after it.",
-            "The run fails with the category auth.",
-            "The run fails with the category quota_or_rate_limit.",
-            "The run fails with the category model_unavailable.",
-            "The run fails with the category network_or_server.",
-            "The run fails with the category runtime_missing.",
-            "The run fails with the category policy_denied.",
-            "The run fails with the category tool_failure.",
-            "The run fails with the category unknown.",
-            "Streams text every second until you cancel the run.",
-            "A happy path with one event the port does not know.",
-            "A happy path with one event delivered twice and one event after the end.",
-            "The stream closes without a final event."
-          ],
-          "description": "Fake provider scenario: what the fake provider does at each start. An unknown value runs the happy path."
-        }
-      }
     }
   },
   "scripts": {
