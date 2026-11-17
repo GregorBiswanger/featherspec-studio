@@ -240,8 +240,8 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
   recorders that throw; every scenario runs to its end with no recorder hit; plus an import scan of
   the fake folder.
 - **Verify:** `npx vitest run src/adapters/providers/fake`
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-17. No red run before the code: the fake was written before its tests (process slip, not a design choice). Instead each test family was proven by mutation, each mutation made `npx vitest run src/adapters/providers` fail and was reverted: delta interval 60 ms (1 failed), a value added to provider.unknown (1 failed), credentialValues() empty (2 failed), typedErrors ignored in profile minimal (1 failed); unmutated 16 passed. noIo.test.ts has a negative control that every one of the 18 recorder spellings throws and is counted. Green: `npx vitest run src/adapters/providers` 3 files, 20 tests passed. Gates: eslint --max-warnings 0, tsc, tsc -p src/webview clean; `npm run test:unit` 105 files, 1418 passed.
+- **Notes:** Import scan of the fake folder lives in fakeImports.test.ts (the file-system mock of noIo.test.ts would break its directory walk). Script step `emit` has an optional `delayMs` (so dropping a kind by profile drops its wait). cancel, resume, respondToApproval and respondToInput reject with `Not implemented` until T-006; scenarios approval, input and long-run arrive in T-006 and join noIo.test.ts then. Recording sink helper: fake/testing/recordingSink.ts.
 
 ### T-005 — Service: open requests, answers, availability, credentials
 
