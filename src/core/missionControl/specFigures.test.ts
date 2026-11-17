@@ -93,9 +93,9 @@ describe('header', () => {
         expect(projectHeader({ name: 'demo', version: 'unknown' }, model, 'x').version).toBe('unknown');
     });
 
-    it('AC-017: an orphan plan counts as a project-level diagnostic (attached to no spec)', async () => {
+    it('AC-017 (0016 §5): an archived orphan plan counts as a project-level diagnostic (attached to no spec)', async () => {
         const model = await modelFor([{ number: '0001', kind: 'Backlog' }], {
-            '.specs/backlog/0042-lonely.plan.md': '# Plan\n\n**Spec:** [x](0042-lonely.md)\n**Status:** Not started\n',
+            '.specs/plan-archive/0042-lonely.2026-09-19.plan.md': '# Plan\n\n**Spec:** [x](0042-lonely.md)\n**Status:** Not started\n',
         });
         expect(projectHeader({ name: 'demo', version: '1.10.0' }, model, 'x').projectDiagnostics).toBeGreaterThan(0);
     });

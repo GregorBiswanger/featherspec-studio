@@ -60,7 +60,7 @@ describe('readProject', () => {
         expect(project.diagnostics.filter((diagnostic) => diagnostic.kind === 'orphan')).toEqual([]);
     });
 
-    it('AC-006: a plan whose stem matches no spec is an orphan with a diagnostic, sibling or archived', async () => {
+    it('AC-006 (0016 §5): a sibling plan in active/ whose stem matches no spec stays in the model with no diagnostic; an archived one is a note', async () => {
         const source = createMemorySpecSource();
         source.setFile(ROOT, '.specs/active/0001-real.md', spec('_none yet_'));
         source.setFile(ROOT, '.specs/active/0005-lost.plan.md', plan('[x](0005-lost.md)'));
@@ -71,9 +71,9 @@ describe('readProject', () => {
             ['0006-gone', []],
         ]);
         expect(project.diagnostics.filter((diagnostic) => diagnostic.kind === 'orphan')).toEqual([
-            { kind: 'orphan', scope: { file: '.specs/active/0005-lost.plan.md' }, reason: 'plan matches no spec (0005-lost)' },
-            { kind: 'orphan', scope: { file: '.specs/plan-archive/0006-gone.2026-09-19.plan.md' }, reason: 'plan matches no spec (0006-gone)' },
+            { kind: 'orphan', tier: 'note', scope: { file: '.specs/plan-archive/0006-gone.2026-09-19.plan.md' }, reason: 'plan matches no spec (0006-gone)' },
         ]);
+        expect(project.diagnostics.filter((diagnostic) => diagnostic.kind === 'dangling-link')).toEqual([]);
     });
 
     it('AC-006: a plan in a folder other than its spec is linked by stem without a diagnostic', async () => {
@@ -103,7 +103,7 @@ describe('readProject', () => {
         expect(project.returnNotes).toHaveLength(1);
         expect(project.returnNotes[0]?.specKeys).toEqual([]);
         expect(project.diagnostics).toEqual([
-            { kind: 'orphan', scope: { file: '.memory-bank/activeContext.0099-T-001.md' }, reason: 'return note matches no spec (number 0099)' },
+            { kind: 'orphan', tier: 'problem', scope: { file: '.memory-bank/activeContext.0099-T-001.md' }, reason: 'return note matches no spec (number 0099)' },
         ]);
     });
 
@@ -131,11 +131,13 @@ describe('readProject', () => {
         expect(project.diagnostics.filter((diagnostic) => diagnostic.kind === 'duplicate')).toEqual([
             {
                 kind: 'duplicate',
+                tier: 'problem',
                 scope: { file: '.specs/active/0003-twin.md' },
                 reason: 'reference 0003-twin also exists in .specs/backlog/0003-twin.md',
             },
             {
                 kind: 'duplicate',
+                tier: 'problem',
                 scope: { file: '.specs/backlog/0003-twin.md' },
                 reason: 'reference 0003-twin also exists in .specs/active/0003-twin.md',
             },
@@ -151,8 +153,8 @@ describe('readProject', () => {
         expect(project.specs).toHaveLength(2);
         expect(project.returnNotes[0]?.specReferences).toEqual(['0004-first', '0004-second']);
         expect(project.diagnostics.filter((diagnostic) => diagnostic.kind === 'duplicate')).toEqual([
-            { kind: 'duplicate', scope: { file: '.specs/backlog/0004-first.md' }, reason: 'number 0004 also used by .specs/backlog/0004-second.md' },
-            { kind: 'duplicate', scope: { file: '.specs/backlog/0004-second.md' }, reason: 'number 0004 also used by .specs/backlog/0004-first.md' },
+            { kind: 'duplicate', tier: 'problem', scope: { file: '.specs/backlog/0004-first.md' }, reason: 'number 0004 also used by .specs/backlog/0004-second.md' },
+            { kind: 'duplicate', tier: 'problem', scope: { file: '.specs/backlog/0004-second.md' }, reason: 'number 0004 also used by .specs/backlog/0004-first.md' },
         ]);
     });
 
@@ -170,8 +172,8 @@ describe('readProject', () => {
         const unknown = await readProject(source, ROOT, 'unknown');
         const newer = await readProject(source, ROOT, '1.10.1');
         const known = await readProject(source, ROOT, '1.8.0-rc3');
-        expect(unknown.diagnostics).toEqual([{ kind: 'unverified-version', scope: 'project', reason: 'version not verified' }]);
-        expect(newer.diagnostics).toEqual([{ kind: 'unverified-version', scope: 'project', reason: 'newer than known' }]);
+        expect(unknown.diagnostics).toEqual([{ kind: 'unverified-version', tier: 'note', scope: 'project', reason: 'version not verified' }]);
+        expect(newer.diagnostics).toEqual([{ kind: 'unverified-version', tier: 'note', scope: 'project', reason: 'newer than known' }]);
         expect(known.diagnostics).toEqual([]);
         expect(unknown.specs).toEqual(known.specs);
         expect(newer.version).toBe('1.10.1');
@@ -186,9 +188,9 @@ describe('readProject', () => {
         const project = await readProject(source, ROOT, VERSION);
         const dangling = project.diagnostics.filter((diagnostic) => diagnostic.kind === 'dangling-link');
         expect(dangling).toEqual([
-            { kind: 'dangling-link', scope: { file: '.specs/active/0001-a.md', line: 4 }, reason: 'plan link 0001-a.plan.md points to a missing file' },
-            { kind: 'dangling-link', scope: { file: '.specs/active/0002-b.md', line: 4 }, reason: 'plan link ../plan-archive/0002-b.2026-09-19.plan.md points to a missing file' },
-            { kind: 'dangling-link', scope: { file: '.specs/active/0002-b.plan.md', line: 3 }, reason: 'spec link 0002-missing.md points to a missing file' },
+            { kind: 'dangling-link', tier: 'problem', scope: { file: '.specs/active/0001-a.md', line: 4 }, reason: 'plan link 0001-a.plan.md points to a missing file' },
+            { kind: 'dangling-link', tier: 'problem', scope: { file: '.specs/active/0002-b.md', line: 4 }, reason: 'plan link ../plan-archive/0002-b.2026-09-19.plan.md points to a missing file' },
+            { kind: 'dangling-link', tier: 'problem', scope: { file: '.specs/active/0002-b.plan.md', line: 3 }, reason: 'spec link 0002-missing.md points to a missing file' },
         ]);
         expect(project.specs).toHaveLength(2);
     });
@@ -227,7 +229,7 @@ describe('readProject', () => {
             ['0002-good', true],
         ]);
         expect(project.diagnostics).toEqual([
-            { kind: 'unreadable-file', scope: { file: '.specs/active/0001-bad.md' }, reason: 'parsing failed: boom' },
+            { kind: 'unreadable-file', tier: 'problem', scope: { file: '.specs/active/0001-bad.md' }, reason: 'parsing failed: boom' },
         ]);
     });
 
@@ -236,7 +238,7 @@ describe('readProject', () => {
         expect(project.specs).toHaveLength(3);
         expect(project.specs.filter((entry) => entry.parsed !== undefined)).toHaveLength(2);
         expect(project.diagnostics).toEqual([
-            { kind: 'unreadable-file', scope: { file: '.specs/active/0002-invalid-utf8.md' }, reason: 'not valid UTF-8' },
+            { kind: 'unreadable-file', tier: 'problem', scope: { file: '.specs/active/0002-invalid-utf8.md' }, reason: 'not valid UTF-8' },
         ]);
     });
 

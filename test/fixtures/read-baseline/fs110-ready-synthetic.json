@@ -1,0 +1,685 @@
+{
+  "version": "1.10.0",
+  "specs": [
+    {
+      "key": ".specs/backlog/0001-ready-feature.md",
+      "readable": true,
+      "reference": "0001-ready-feature",
+      "number": "0001",
+      "slug": "ready-feature",
+      "folder": "backlog",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Ready feature"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Draft"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "value",
+            "raw": "[0001-ready-feature.plan.md](0001-ready-feature.plan.md)"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "sibling",
+          "target": "0001-ready-feature.plan.md",
+          "text": "0001-ready-feature.plan.md"
+        },
+        "ticket": {
+          "value": {
+            "state": "value",
+            "raw": "PROJ-42"
+          },
+          "line": 5
+        },
+        "origin": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "validatedBy": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [],
+        "sections": [
+          {
+            "heading": "Acceptance criteria",
+            "raw": "- **AC-001** The system shall be ready.",
+            "line": 7
+          }
+        ],
+        "planHistory": [],
+        "criteria": [
+          {
+            "id": "AC-001",
+            "text": "- **AC-001** The system shall be ready.",
+            "line": 9,
+            "uncertain": false,
+            "struck": false
+          }
+        ],
+        "requirements": [],
+        "diagnostics": []
+      },
+      "planKeys": [
+        ".specs/backlog/0001-ready-feature.plan.md"
+      ],
+      "returnNoteKeys": []
+    },
+    {
+      "key": ".specs/done/0002-old-feature.md",
+      "readable": true,
+      "reference": "0002-old-feature",
+      "number": "0002",
+      "slug": "old-feature",
+      "folder": "done",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Old feature"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Deprecated"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "value",
+            "raw": "[0002-old-feature.2026-11-01-2.plan.md](../plan-archive/0002-old-feature.2026-11-01-2.plan.md)"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "archive",
+          "target": "../plan-archive/0002-old-feature.2026-11-01-2.plan.md",
+          "text": "0002-old-feature.2026-11-01-2.plan.md"
+        },
+        "ticket": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "origin": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "validatedBy": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [
+          {
+            "label": "Successor",
+            "raw": "**Successor:** [0001-ready-feature.md](../backlog/0001-ready-feature.md)",
+            "line": 5
+          }
+        ],
+        "sections": [
+          {
+            "heading": "Acceptance criteria",
+            "raw": "- **AC-001** The system shall be old.",
+            "line": 7
+          },
+          {
+            "heading": "Plan history",
+            "raw": "- 2026-11-01 — [first iteration](../plan-archive/0002-old-feature.2026-11-01.plan.md)\n- 2026-11-01 — [second iteration](../plan-archive/0002-old-feature.2026-11-01-2.plan.md)",
+            "line": 11
+          }
+        ],
+        "planHistory": [
+          {
+            "raw": "- 2026-11-01 — [first iteration](../plan-archive/0002-old-feature.2026-11-01.plan.md)",
+            "line": 13
+          },
+          {
+            "raw": "- 2026-11-01 — [second iteration](../plan-archive/0002-old-feature.2026-11-01-2.plan.md)",
+            "line": 14
+          }
+        ],
+        "criteria": [
+          {
+            "id": "AC-001",
+            "text": "- **AC-001** The system shall be old.",
+            "line": 9,
+            "uncertain": false,
+            "struck": false
+          }
+        ],
+        "requirements": [],
+        "diagnostics": [
+          {
+            "kind": "unknown-content",
+            "scope": {
+              "file": ".specs/done/0002-old-feature.md",
+              "line": 5
+            },
+            "reason": "unknown header line \"Successor\""
+          }
+        ]
+      },
+      "planKeys": [
+        ".specs/plan-archive/0002-old-feature.2026-11-01-2.plan.md",
+        ".specs/plan-archive/0002-old-feature.2026-11-01.plan.md"
+      ],
+      "returnNoteKeys": []
+    }
+  ],
+  "plans": [
+    {
+      "key": ".specs/backlog/0001-ready-feature.plan.md",
+      "readable": true,
+      "variant": "sibling",
+      "reference": "0001-ready-feature",
+      "number": "0001",
+      "slug": "ready-feature",
+      "folder": "backlog",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Plan — Ready feature"
+          },
+          "line": 1
+        },
+        "spec": {
+          "value": {
+            "state": "value",
+            "raw": "[0001-ready-feature.md](0001-ready-feature.md)"
+          },
+          "line": 3
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Not started"
+          },
+          "line": 4
+        },
+        "lastUpdated": {
+          "value": {
+            "state": "value",
+            "raw": "2026-11-10"
+          },
+          "line": 5
+        },
+        "currentStep": {
+          "value": {
+            "state": "value",
+            "raw": "T-001"
+          },
+          "line": 6
+        },
+        "stages": {
+          "present": true,
+          "stages": [
+            {
+              "number": 1,
+              "raw": "1. T-001 — the feature",
+              "line": 18,
+              "stepIds": [
+                "T-001"
+              ],
+              "kind": "single"
+            }
+          ],
+          "closing": {
+            "raw": "No parallel stage: one step.",
+            "line": 20,
+            "parallel": false
+          }
+        },
+        "steps": [
+          {
+            "id": "T-001",
+            "title": "The feature",
+            "line": 24,
+            "struck": false,
+            "dialect": "verified-line",
+            "ticked": false,
+            "covers": {
+              "state": "value",
+              "raw": "AC-001"
+            },
+            "coveredCriteria": [
+              "AC-001"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "build it."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`npm test`"
+            },
+            "verified": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "notes": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "unsupported": []
+          }
+        ],
+        "traceability": [
+          {
+            "criterion": "AC-001",
+            "steps": {
+              "state": "value",
+              "raw": "T-001"
+            },
+            "code": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "test": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "manual": false,
+            "state": "open",
+            "stateKnown": true,
+            "line": 36
+          }
+        ],
+        "handoff": {
+          "doneSoFar": {
+            "value": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "line": 40
+          },
+          "nextAction": {
+            "value": {
+              "state": "value",
+              "raw": "T-001"
+            },
+            "line": 41
+          },
+          "openDecisions": {
+            "value": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "line": 42
+          },
+          "baseline": {
+            "value": {
+              "state": "placeholder",
+              "raw": "_(commit hash before the first step commit; set when work starts)_"
+            },
+            "line": 43
+          },
+          "environment": {
+            "value": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "line": 44
+          }
+        },
+        "unsupported": [],
+        "diagnostics": []
+      },
+      "specKeys": [
+        ".specs/backlog/0001-ready-feature.md"
+      ],
+      "specReferences": [
+        "0001-ready-feature"
+      ]
+    },
+    {
+      "key": ".specs/plan-archive/0002-old-feature.2026-11-01-2.plan.md",
+      "readable": true,
+      "variant": "archived",
+      "reference": "0002-old-feature",
+      "number": "0002",
+      "slug": "old-feature",
+      "date": "2026-11-01",
+      "suffix": 2,
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Plan — Old feature"
+          },
+          "line": 1
+        },
+        "spec": {
+          "value": {
+            "state": "value",
+            "raw": "[0002-old-feature.md](../done/0002-old-feature.md)"
+          },
+          "line": 3
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Done"
+          },
+          "line": 4
+        },
+        "lastUpdated": {
+          "value": {
+            "state": "value",
+            "raw": "2026-11-01"
+          },
+          "line": 5
+        },
+        "currentStep": {
+          "value": {
+            "state": "value",
+            "raw": "none — all steps ticked"
+          },
+          "line": 6
+        },
+        "stages": {
+          "present": false,
+          "stages": []
+        },
+        "steps": [
+          {
+            "id": "T-001",
+            "title": "The feature",
+            "line": 14,
+            "struck": false,
+            "dialect": "covers-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-001"
+            },
+            "coveredCriteria": [
+              "AC-001"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "build it."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`npm test`"
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-11-01 · `npm test` green"
+            },
+            "notes": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "unsupported": []
+          }
+        ],
+        "traceability": [
+          {
+            "criterion": "AC-001",
+            "steps": {
+              "state": "value",
+              "raw": "T-001"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/old.ts`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`src/old.test.ts`"
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 26
+          }
+        ],
+        "handoff": {
+          "doneSoFar": {
+            "value": {
+              "state": "value",
+              "raw": "T-001."
+            },
+            "line": 30
+          },
+          "nextAction": {
+            "value": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "line": 31
+          },
+          "openDecisions": {
+            "value": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "line": 32
+          },
+          "baseline": {
+            "value": {
+              "state": "value",
+              "raw": "abc1234"
+            },
+            "line": 33
+          },
+          "environment": {
+            "value": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "line": 34
+          }
+        },
+        "unsupported": [],
+        "diagnostics": []
+      },
+      "specKeys": [
+        ".specs/done/0002-old-feature.md"
+      ],
+      "specReferences": [
+        "0002-old-feature"
+      ]
+    },
+    {
+      "key": ".specs/plan-archive/0002-old-feature.2026-11-01.plan.md",
+      "readable": true,
+      "variant": "archived",
+      "reference": "0002-old-feature",
+      "number": "0002",
+      "slug": "old-feature",
+      "date": "2026-11-01",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Plan — Old feature"
+          },
+          "line": 1
+        },
+        "spec": {
+          "value": {
+            "state": "value",
+            "raw": "[0002-old-feature.md](../done/0002-old-feature.md)"
+          },
+          "line": 3
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Done"
+          },
+          "line": 4
+        },
+        "lastUpdated": {
+          "value": {
+            "state": "value",
+            "raw": "2026-11-01"
+          },
+          "line": 5
+        },
+        "currentStep": {
+          "value": {
+            "state": "value",
+            "raw": "none — all steps ticked"
+          },
+          "line": 6
+        },
+        "stages": {
+          "present": false,
+          "stages": []
+        },
+        "steps": [
+          {
+            "id": "T-001",
+            "title": "The feature",
+            "line": 14,
+            "struck": false,
+            "dialect": "covers-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-001"
+            },
+            "coveredCriteria": [
+              "AC-001"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "build it."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`npm test`"
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-11-01 · `npm test` green"
+            },
+            "notes": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "unsupported": []
+          }
+        ],
+        "traceability": [
+          {
+            "criterion": "AC-001",
+            "steps": {
+              "state": "value",
+              "raw": "T-001"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/old.ts`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`src/old.test.ts`"
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 26
+          }
+        ],
+        "handoff": {
+          "doneSoFar": {
+            "value": {
+              "state": "value",
+              "raw": "T-001."
+            },
+            "line": 30
+          },
+          "nextAction": {
+            "value": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "line": 31
+          },
+          "openDecisions": {
+            "value": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "line": 32
+          },
+          "baseline": {
+            "value": {
+              "state": "value",
+              "raw": "abc1234"
+            },
+            "line": 33
+          },
+          "environment": {
+            "value": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "line": 34
+          }
+        },
+        "unsupported": [],
+        "diagnostics": []
+      },
+      "specKeys": [
+        ".specs/done/0002-old-feature.md"
+      ],
+      "specReferences": [
+        "0002-old-feature"
+      ]
+    }
+  ],
+  "returnNotes": [],
+  "diagnostics": [
+    {
+      "kind": "unknown-content",
+      "scope": {
+        "file": ".specs/done/0002-old-feature.md",
+        "line": 5
+      },
+      "reason": "unknown header line \"Successor\""
+    }
+  ]
+}

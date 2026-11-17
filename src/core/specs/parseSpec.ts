@@ -42,6 +42,7 @@ export interface ParsedSpec {
     origin: HeaderField;
     validatedBy: HeaderField;
     clarified: HeaderField;
+    successor: HeaderField;
     unsupportedHeaderLines: UnsupportedHeaderLine[];
     sections: SpecSection[];
     planHistory: PlanHistoryLine[];
@@ -59,8 +60,8 @@ const MARKDOWN_LINK = /^\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)$/;
 const EXTERNAL_TARGET = /^(?:[a-z][a-z0-9+.-]*:|\/)/i;
 const PLAN_HISTORY_HEADING = 'Plan history';
 
-type KnownLabel = 'Status' | 'Plan' | 'Ticket' | 'Origin' | 'Validated by' | 'Clarified';
-const KNOWN_LABELS: readonly KnownLabel[] = ['Status', 'Plan', 'Ticket', 'Origin', 'Validated by', 'Clarified'];
+type KnownLabel = 'Status' | 'Plan' | 'Ticket' | 'Origin' | 'Validated by' | 'Clarified' | 'Successor';
+const KNOWN_LABELS: readonly KnownLabel[] = ['Status', 'Plan', 'Ticket', 'Origin', 'Validated by', 'Clarified', 'Successor'];
 
 function fieldValue(raw: string): FieldValue {
     if (raw === '') {
@@ -151,6 +152,7 @@ export function parseSpec(text: string, key: string): ParsedSpec {
             if (known === 'Status' && match[2] !== '' && !KNOWN_STATUS.has(match[2])) {
                 diagnostics.push({
                     kind: 'unknown-content',
+                    tier: 'problem',
                     scope: { file: key, line },
                     reason: `unknown **Status:** value "${match[2]}"`,
                 });
@@ -159,6 +161,7 @@ export function parseSpec(text: string, key: string): ParsedSpec {
             unsupportedHeaderLines.push({ label, raw: lines[cursor].trimEnd(), line });
             diagnostics.push({
                 kind: 'unknown-content',
+                tier: 'note',
                 scope: { file: key, line },
                 reason: known === undefined ? `unknown header line "${label}"` : `repeated header line "${label}"`,
             });
@@ -206,6 +209,7 @@ export function parseSpec(text: string, key: string): ParsedSpec {
         origin: field('Origin'),
         validatedBy: field('Validated by'),
         clarified: field('Clarified'),
+        successor: field('Successor'),
         unsupportedHeaderLines,
         sections,
         planHistory,

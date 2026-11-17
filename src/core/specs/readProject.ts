@@ -76,6 +76,10 @@ function unique(values: readonly string[]): string[] {
     return [...new Set(values)];
 }
 
+function isAbandonedSiblingPlan(plan: PlanEntry): boolean {
+    return plan.variant === 'sibling' && (plan.folder === 'backlog' || plan.folder === 'active');
+}
+
 function parseFile<T>(file: ProjectFile, parse: (text: string, key: string) => T, diagnostics: Diagnostic[]): T | undefined {
     if (file.content.state !== 'text') {
         return undefined;
@@ -84,7 +88,7 @@ function parseFile<T>(file: ProjectFile, parse: (text: string, key: string) => T
         return parse(file.content.text, file.key);
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        diagnostics.push({ kind: 'unreadable-file', scope: { file: file.key }, reason: `parsing failed: ${message}` });
+        diagnostics.push({ kind: 'unreadable-file', tier: 'problem', scope: { file: file.key }, reason: `parsing failed: ${message}` });
         return undefined;
     }
 }
@@ -201,8 +205,8 @@ export async function buildProject(
         for (const spec of matching) {
             spec.planKeys.push(plan.key);
         }
-        if (matching.length === 0) {
-            diagnostics.push({ kind: 'orphan', scope: { file: plan.key }, reason: `plan matches no spec (${plan.reference})` });
+        if (matching.length === 0 && !isAbandonedSiblingPlan(plan)) {
+            diagnostics.push({ kind: 'orphan', tier: 'note', scope: { file: plan.key }, reason: `plan matches no spec (${plan.reference})` });
         }
     }
     for (const note of returnNotes) {
@@ -213,7 +217,7 @@ export async function buildProject(
             spec.returnNoteKeys.push(note.key);
         }
         if (matching.length === 0) {
-            diagnostics.push({ kind: 'orphan', scope: { file: note.key }, reason: `return note matches no spec (number ${note.number})` });
+            diagnostics.push({ kind: 'orphan', tier: 'problem', scope: { file: note.key }, reason: `return note matches no spec (number ${note.number})` });
         }
     }
     for (const spec of specs) {
@@ -221,6 +225,7 @@ export async function buildProject(
         if (sameReference.length > 0) {
             diagnostics.push({
                 kind: 'duplicate',
+                tier: 'problem',
                 scope: { file: spec.key },
                 reason: `reference ${spec.reference} also exists in ${sameReference.map((other) => other.key).join(', ')}`,
             });
@@ -229,6 +234,7 @@ export async function buildProject(
         if (sameNumber.length > 0) {
             diagnostics.push({
                 kind: 'duplicate',
+                tier: 'problem',
                 scope: { file: spec.key },
                 reason: `number ${spec.number} also used by ${sameNumber.map((other) => other.key).join(', ')}`,
             });
@@ -242,6 +248,7 @@ export async function buildProject(
         if (field !== undefined && target !== undefined && (await isDangling(source, root, known, spec.key, target))) {
             diagnostics.push({
                 kind: 'dangling-link',
+                tier: 'problem',
                 scope: { file: spec.key, ...(field.line === undefined ? {} : { line: field.line }) },
                 reason: `plan link ${target} points to a missing file`,
             });
@@ -250,9 +257,15 @@ export async function buildProject(
     for (const plan of plans) {
         const field = plan.parsed?.spec;
         const target = plan.variant === 'sibling' && field?.value.state === 'value' ? linkTarget(field.value.raw) : undefined;
-        if (field !== undefined && target !== undefined && (await isDangling(source, root, known, plan.key, target))) {
+        if (
+            field !== undefined &&
+            target !== undefined &&
+            !(plan.specKeys.length === 0 && isAbandonedSiblingPlan(plan)) &&
+            (await isDangling(source, root, known, plan.key, target))
+        ) {
             diagnostics.push({
                 kind: 'dangling-link',
+                tier: plan.specKeys.length > 0 ? 'problem' : 'note',
                 scope: { file: plan.key, ...(field.line === undefined ? {} : { line: field.line }) },
                 reason: `spec link ${target} points to a missing file`,
             });

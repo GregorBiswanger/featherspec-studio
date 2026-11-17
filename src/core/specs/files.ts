@@ -108,7 +108,7 @@ async function readOne(
     const reused = reuse?.(candidate.key, stats);
     if (reused !== undefined) {
         if (reused.content.state === 'unreadable') {
-            diagnostics.push({ kind: 'unreadable-file', scope: { file: candidate.key }, reason: reused.content.reason });
+            diagnostics.push({ kind: 'unreadable-file', tier: 'problem', scope: { file: candidate.key }, reason: reused.content.reason });
         }
         return reused;
     }
@@ -126,7 +126,7 @@ async function readOne(
         }
     }
     if (content.state === 'unreadable') {
-        diagnostics.push({ kind: 'unreadable-file', scope: { file: candidate.key }, reason: content.reason });
+        diagnostics.push({ kind: 'unreadable-file', tier: 'problem', scope: { file: candidate.key }, reason: content.reason });
     }
     return { ...candidate.identity, key: candidate.key, modifiedMs, size, content } as ProjectFile;
 }
@@ -155,7 +155,7 @@ async function collect(
         }
         return candidates;
     } catch (error) {
-        diagnostics.push({ kind: 'unreadable-file', scope: { file: folderKey }, reason: `could not be listed: ${messageOf(error)}` });
+        diagnostics.push({ kind: 'unreadable-file', tier: 'problem', scope: { file: folderKey }, reason: `could not be listed: ${messageOf(error)}` });
         return [];
     }
 }
@@ -167,12 +167,12 @@ async function isFollowable(source: SpecSourcePort, root: string, folderKey: str
             return false;
         }
         if (stats.kind === 'symlink') {
-            diagnostics.push({ kind: 'unreadable-file', scope: { file: folderKey }, reason: SYMLINK_REASON });
+            diagnostics.push({ kind: 'unreadable-file', tier: 'problem', scope: { file: folderKey }, reason: SYMLINK_REASON });
             return false;
         }
         return true;
     } catch (error) {
-        diagnostics.push({ kind: 'unreadable-file', scope: { file: folderKey }, reason: `could not be listed: ${messageOf(error)}` });
+        diagnostics.push({ kind: 'unreadable-file', tier: 'problem', scope: { file: folderKey }, reason: `could not be listed: ${messageOf(error)}` });
         return false;
     }
 }

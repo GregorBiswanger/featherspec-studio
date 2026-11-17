@@ -1,0 +1,825 @@
+{
+  "version": "1.10.0",
+  "specs": [
+    {
+      "key": ".specs/active/0001-tip-splitter.md",
+      "readable": true,
+      "reference": "0001-tip-splitter",
+      "number": "0001",
+      "slug": "tip-splitter",
+      "folder": "active",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Restaurant-Rechnung mit Trinkgeld aufteilen"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "In Progress"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "value",
+            "raw": "[0001-tip-splitter.plan.md](0001-tip-splitter.plan.md)"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "sibling",
+          "target": "0001-tip-splitter.plan.md",
+          "text": "0001-tip-splitter.plan.md"
+        },
+        "ticket": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "origin": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "validatedBy": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [],
+        "sections": [
+          {
+            "heading": "1. Ziel und Nutzen",
+            "raw": "Restaurantgäste sollen anhand von Rechnungsbetrag, Trinkgeld-Prozentsatz und\nPersonenzahl erfahren, was jede Person einschließlich Trinkgeld zahlt und wie\nhoch das Gesamttrinkgeld ist. Die Gruppe soll ohne Kopfrechnen in Sekunden\neine centgenaue Aufteilung erhalten.",
+            "line": 6
+          },
+          {
+            "heading": "2. Nutzer",
+            "raw": "Ein Restaurantgast gibt die Werte für die gesamte Gruppe ein. Es gibt keine\nBenutzerkonten oder unterschiedlichen Berechtigungsrollen.",
+            "line": 13
+          },
+          {
+            "heading": "3. Scope",
+            "raw": "### Im Scope\n- Eine Rechnung mit einem gemeinsamen Trinkgeld-Prozentsatz aufteilen.\n- Einzelbeträge für alle Personen und das Gesamttrinkgeld zurückgeben.\n- Trinkgeld kaufmännisch runden und Rest-Cents der ersten Person zuweisen.\n- Die bestätigten ungültigen Eingaben mit einer klaren Fehlermeldung ablehnen.\n- Antwortzeit unter einer Sekunde als nicht verbindliches Ziel ohne Messvorgabe\n  und ohne Test (AC-009).\n\n### Nicht im Scope\n- Login — weil der [Projektauftrag](../../.memory-bank/projectbrief.md) für v1\n  nur die Aufteilung der drei Eingaben vorsieht.\n- Speicherung — weil der Projektauftrag für v1 nur die Aufteilung der drei\n  Eingaben vorsieht.\n- Währungsumrechnung — weil der Projektauftrag für v1 nur die Aufteilung der\n  drei Eingaben vorsieht.\n- Aufteilung nach individuellen Bestellungen — weil der Projektauftrag für v1\n  nur die Aufteilung der drei Eingaben vorsieht.\n- Benutzeroberfläche — weil der [Projektauftrag](../../.memory-bank/projectbrief.md)\n  für diese erste Version ausschließlich einen HTTP-Service vorsieht.",
+            "line": 18
+          },
+          {
+            "heading": "4. Fachlicher Ablauf und Regeln",
+            "raw": "1. Der Nutzer übergibt Rechnungsbetrag, Trinkgeld-Prozentsatz und Personenzahl.\n   Der Trinkgeld-Prozentsatz ist eine Prozentzahl: `10` bedeutet 10 %.\n2. Verletzt eine Eingabe eine Gültigkeitsregel aus Abschnitt 5, gibt der\n   Service eine Fehlermeldung statt einer Berechnung zurück.\n3. Der Service berechnet das Gesamttrinkgeld aus Rechnungsbetrag und Prozentsatz.\n   Er rundet es kaufmännisch auf volle Cents: Ein halber Cent wird aufgerundet.\n4. Der Service addiert das gerundete Trinkgeld zum Rechnungsbetrag.\n5. Jede Person erhält zunächst den gleichen, auf volle Cents abgerundeten\n   Anteil. Die erste Person übernimmt zusätzlich sämtliche verbleibenden Cents.\n6. Der Service gibt die Einzelbeträge in Personenreihenfolge und das\n   Gesamttrinkgeld mit jeweils zwei Nachkommastellen zurück. Die erste Person\n   ist der erste Eintrag der Ausgabeliste. Ein Gesamtbetrag wird nicht ausgegeben.\n\nDie Summe der Einzelbeträge muss exakt dem Rechnungsbetrag einschließlich des\ngerundeten Gesamttrinkgelds entsprechen. Die erste Person kann durch diese\nausdrücklich gewählte Regel mehr als einen Cent zusätzlich übernehmen.\n\n0 % Trinkgeld ist erlaubt und ergibt kein Trinkgeld. Ein Rechnungsbetrag von\n0 ist bei sonst gültigen Eingaben erlaubt und ergibt für jede Person sowie\nfür das Gesamttrinkgeld 0,00.",
+            "line": 40
+          },
+          {
+            "heading": "5. Daten und Fehlerfälle",
+            "raw": "Eingaben sind ausschließlich Rechnungsbetrag, Trinkgeld-Prozentsatz und\nPersonenzahl. Die Ausgabe enthält einen Einzelbetrag pro Person sowie das\nGesamttrinkgeld. Namen oder weitere personenbezogene Angaben sind nicht erforderlich.\nUnbekannte zusätzliche Eingabefelder werden ignoriert.\n\nGültigkeitsregeln — eine Eingabe ist nur gültig, wenn:\n\n- Rechnungsbetrag, Trinkgeld-Prozentsatz und Personenzahl vorhanden und numerisch sind;\n- der Rechnungsbetrag nicht negativ ist, 100.000,00 nicht überschreitet und\n  höchstens zwei Nachkommastellen hat;\n- der Trinkgeld-Prozentsatz nicht negativ ist, 100 nicht überschreitet und\n  höchstens zwei Nachkommastellen hat;\n- die Personenzahl ganzzahlig und größer als null ist und 1.000 nicht überschreitet.\n\nEine Fehlermeldung muss die ungültige Eingabe und den Grund benennen; ihr\nWortlaut ist nicht festgelegt. Bei mehreren ungültigen Eingaben meldet der\nService alle; die Reihenfolge der Meldungen ist nicht festgelegt. Eine\nFehlerantwort darf keine berechneten Einzelbeträge oder ein berechnetes\nGesamttrinkgeld enthalten.\n\nDer Service speichert Rechnungsdaten und Berechnungsergebnisse weder in Dateien\nnoch in Datenbanken noch in Logs.",
+            "line": 63
+          },
+          {
+            "heading": "6. Akzeptanzkriterien",
+            "raw": "Die folgenden Kriterien sind verbindlich, mit Ausnahme des als nicht\nverbindliches Ziel gekennzeichneten AC-009; „muss“ bezeichnet die bindende\nAnforderung in der deutschen Dokumentensprache.\n\n- **AC-001:** Bei gültigen Eingaben muss der Service genau einen Einzelbetrag\n  je Person einschließlich Trinkgeld sowie das Gesamttrinkgeld zurückgeben.\n  Alle ausgegebenen Geldbeträge müssen zwei Nachkommastellen aufweisen.\n- **AC-002:** Der Service muss das Gesamttrinkgeld vor der Aufteilung\n  kaufmännisch auf volle Cents runden.\n  Beispiel: 10,05 mit 10 % ergeben 1,01 Gesamttrinkgeld und 11,06 Gesamtbetrag.\n- **AC-003:** Die Summe aller Einzelbeträge muss exakt dem Rechnungsbetrag\n  plus gerundetem Gesamttrinkgeld entsprechen.\n- **AC-004:** Wenn bei der Aufteilung Rest-Cents entstehen, muss der Service\n  sämtliche Rest-Cents der ersten Person (erster Eintrag der Ausgabeliste)\n  zuweisen und für alle übrigen Personen den gleichen, auf volle Cents\n  abgerundeten Anteil ausgeben.\n  Beispiel: 10,00 mit 0 % für sechs Personen ergeben 1,70 für die erste\n  Person und jeweils 1,66 für die fünf übrigen Personen.\n- **AC-005:** Wenn die Personenzahl kleiner oder gleich null ist, muss der\n  Service eine Fehlermeldung zurückgeben, die die Personenzahl und den Grund\n  „muss größer als null sein“ benennt (Wortlaut nicht festgelegt), und darf\n  kein Berechnungsergebnis zurückgeben. Die Tests prüfen mindestens 0 und -1.\n- **AC-006:** Wenn der Trinkgeld-Prozentsatz negativ ist, muss der Service\n  eine Fehlermeldung zurückgeben, die den Trinkgeld-Prozentsatz und den Grund\n  „darf nicht negativ sein“ benennt (Wortlaut nicht festgelegt), und darf kein\n  Berechnungsergebnis zurückgeben. Die Tests prüfen mindestens -1 und -0,01.\n- **AC-007:** Wenn der Trinkgeld-Prozentsatz 0 beträgt und die übrigen\n  Eingaben gültig sind, muss der Service die Rechnung ohne Trinkgeld aufteilen\n  und 0,00 als Gesamttrinkgeld ausgeben.\n- **AC-008:** Wenn der Rechnungsbetrag 0 beträgt und die übrigen Eingaben\n  gültig sind, muss der Service für jede Person und das Gesamttrinkgeld\n  0,00 ausgeben.\n- **AC-009 (nicht verbindliches Ziel):** Der Service soll auf eine gültige\n  Berechnungsanfrage in weniger als einer Sekunde antworten. Messgrenze,\n  Umgebung und Last werden bewusst nicht festgelegt; es gibt keinen Test und\n  keinen Nachweis, und dieses Ziel blockiert weder Planung noch Abschluss.\n- **AC-010:** Der Service muss Berechnungen ohne Login ermöglichen und darf\n  Rechnungsdaten oder Berechnungsergebnisse weder in Dateien noch in\n  Datenbanken noch in Logs speichern.\n- **AC-011:** Wenn der Rechnungsbetrag negativ ist, muss der Service eine\n  Fehlermeldung zurückgeben, die den Rechnungsbetrag und den Grund benennt,\n  und darf kein Berechnungsergebnis zurückgeben.\n- **AC-012:** Wenn Rechnungsbetrag, Trinkgeld-Prozentsatz oder Personenzahl\n  fehlt oder nicht numerisch ist, muss der Service eine Fehlermeldung\n  zurückgeben, die die betroffene Eingabe benennt, und darf kein\n  Berechnungsergebnis zurückgeben.\n- **AC-013:** Wenn die Personenzahl nicht ganzzahlig ist, der Rechnungsbetrag\n  mehr als zwei Nachkommastellen hat oder der Trinkgeld-Prozentsatz mehr als\n  zwei Nachkommastellen hat, muss der Service eine Fehlermeldung zurückgeben,\n  die die betroffene Eingabe und den Grund benennt, und darf kein\n  Berechnungsergebnis zurückgeben.\n- **AC-014:** Wenn der Rechnungsbetrag 100.000,00, der Trinkgeld-Prozentsatz\n  100 oder die Personenzahl 1.000 überschreitet, muss der Service eine\n  Fehlermeldung zurückgeben, die die betroffene Eingabe und den Grund benennt,\n  und darf kein Berechnungsergebnis zurückgeben.",
+            "line": 88
+          },
+          {
+            "heading": "7. Technische Hinweise",
+            "raw": "- Greenfield-Projekt; Anwendung, Manifeste und ausführbare Tests sind\n  implementiert.\n- Der [technische Kontext](../../.memory-bank/techContext.md) hält TypeScript,\n  Node.js, Express.js, npm, ESLint und den Node.js-Test-Runner fest.\n- Der [Architektur-Snapshot](../../AGENTS.md#architecture--design-snapshot-must-sync)\n  hält die implementierte Onion Architecture fest.\n- HTTP-Vertrag, Geldrepräsentation und konkrete Dateien werden in `/sdd-plan`\n  entschieden; die Geldrepräsentation muss die Cent-Invarianten erhalten.\n- Qualitätsprüfungen und TDD-Freigabestopps gelten gemäß\n  [Arbeitspräferenzen](../../AGENTS.md#current-preferences) und\n  [Prüfkommandos](../../.memory-bank/techContext.md#quality-gates).\n- Die zuletzt bestätigte Regel „alle Rest-Cents an die erste Person“ ersetzt\n  die anfängliche Verteilung je eines Rest-Cents an mehrere erste Personen.",
+            "line": 146
+          },
+          {
+            "heading": "8. Annahmen",
+            "raw": "| ID | Annahme | Begründung | Folge bei Irrtum |\n| --- | --- | --- | --- |\n| A-001 | _Erledigt:_ als Gültigkeitsregel übernommen (Abschnitt 5, AC-013). | — | — |\n| A-002 | _Erledigt:_ als Gültigkeitsregel übernommen (Abschnitt 5, AC-011, AC-013). | — | — |\n| A-003 | _Entfallen:_ AC-009 ist ein nicht verbindliches Ziel ohne Messgrenze. | — | — |\n| A-004 | Alle Beträge sind in einer nicht benannten Währung mit 100 Untereinheiten (Cents). | Die Spec verlangt eine centgenaue Aufteilung; eine Währung wird nirgends genannt. | Rundung, Rest-Cent-Regel und Nachkommastellen müssen für die tatsächliche Währung angepasst werden. |\n| A-005 | Ein numerischer String ist eine Dezimalzahl in Punktnotation ohne Leerzeichen, Exponent oder Tausendertrenner (z. B. `\"10.05\"`, `\"-1\"`); `\"10,05\"` oder `\"1e2\"` gelten als nicht numerisch. | Nutzer hat numerische Strings zugelassen (Plan-Checkpoint 2026-11-15); die genaue Schreibweise wurde nicht genannt. | Das Format der akzeptierten Strings muss erweitert werden; Validierungstests ändern sich. |\n| A-006 | Ungültiges JSON oder ein Body, der kein JSON-Objekt ist, ergibt HTTP 400 mit einer Fehlermeldung für `body` und ohne Berechnungsergebnis. | Die Spec regelt den Fall nicht; Nutzerentscheid im Plan-Checkpoint 2026-11-15. | Fehlerantwort für diesen Fall anpassen. |",
+            "line": 162
+          },
+          {
+            "heading": "9. Offene Punkte",
+            "raw": "- **OP-001 — Erledigt (Clarify 2026-11-15):** Obergrenzen 100.000,00, 100 %\n  und 1.000 Personen beschlossen; Prozentsatz mit höchstens zwei\n  Nachkommastellen (Abschnitt 5, AC-013, AC-014).\n- **OP-002 — Erledigt (Clarify 2026-11-15):** A-001 und A-002 als Regeln\n  übernommen; fehlende oder nicht numerische Eingaben ergeben einen Fehler (AC-012).\n- **OP-003 — Entfallen (Clarify 2026-11-15):** Antwortzeit ist ein nicht\n  verbindliches Ziel ohne Messvorgabe und ohne Test (AC-009).\n- **OP-004 — Erledigt (Plan-Checkpoint 2026-11-15):** `POST /split` mit\n  JSON `{\"billAmount\", \"tipPercentage\", \"numberOfPeople\"}`; Eingaben als\n  JSON-Zahl oder numerischer String (A-005). Erfolg: HTTP 200\n  `{\"amountsPerPerson\": [\"5.53\", \"5.53\"], \"totalTip\": \"1.01\"}` — Geldbeträge\n  als Strings mit genau zwei Nachkommastellen. Fehler: HTTP 400\n  `{\"errors\": [{\"field\": \"<Eingabe>\", \"message\": \"<Grund>\"}]}`; kaputter Body\n  siehe A-006.\n- **Erledigt:** Rest-Cent-Regel durch die letzte Nutzervorgabe geklärt;\n  keine Verteilung der Rest-Cents auf mehrere Personen.\n- **Erledigt (Clarify 2026-11-15, Vorschläge vom Nutzer gesammelt bestätigt):**\n  negativer Rechnungsbetrag ist ein Fehler (AC-011) · Prozentsatz als\n  Prozentzahl (`10` = 10 %) · Fehlermeldungen benennen Eingabe und Grund,\n  Wortlaut nicht festgelegt · kein Gesamtbetrag in der Ausgabe · erste Person =\n  erster Eintrag der Ausgabeliste · „nicht speichern“ = weder Dateien noch\n  Datenbanken noch Logs (AC-010) · AC-006 prüft -1 und -0,01 · Akteure in\n  AC-004/AC-005 ergänzt · alle ungültigen Eingaben werden gemeldet · unbekannte\n  Felder werden ignoriert · Begründungen unter *Nicht im Scope* auf den\n  Projektauftrag gestützt · Währung mit 100 Untereinheiten als Annahme A-004.",
+            "line": 173
+          },
+          {
+            "heading": "10. Bereitschaft und Abschluss",
+            "raw": "Die Spezifikation ist bereit für die Implementierung; OP-004 ist im\nPlan-Checkpoint entschieden.\n\nDie Implementierung ist abgeschlossen, wenn alle verbindlichen\nAkzeptanzkriterien (alle außer AC-009) nachgewiesen\nsind, die vereinbarten Tests und Qualitätsprüfungen ohne Warnungen oder Fehler\nbestehen, keine ausgeschlossenen Funktionen hinzugefügt wurden, Annahmen\nbestätigt oder korrigiert sind, relevante Dokumentation und Architektur synchron\nsind und der Auftraggeber das Ergebnis akzeptiert hat.\n\nNächster Schritt: Nach erfolgreicher `/sdd-compile`-Prüfung und\nAuftraggeberakzeptanz die Spezifikation mit `/sdd-lifecycle` nach `done/`\nüberführen.",
+            "line": 201
+          }
+        ],
+        "planHistory": [],
+        "criteria": [
+          {
+            "id": "AC-001",
+            "text": "- **AC-001:** Bei gültigen Eingaben muss der Service genau einen Einzelbetrag\n  je Person einschließlich Trinkgeld sowie das Gesamttrinkgeld zurückgeben.\n  Alle ausgegebenen Geldbeträge müssen zwei Nachkommastellen aufweisen.",
+            "line": 94,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-002",
+            "text": "- **AC-002:** Der Service muss das Gesamttrinkgeld vor der Aufteilung\n  kaufmännisch auf volle Cents runden.\n  Beispiel: 10,05 mit 10 % ergeben 1,01 Gesamttrinkgeld und 11,06 Gesamtbetrag.",
+            "line": 97,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-003",
+            "text": "- **AC-003:** Die Summe aller Einzelbeträge muss exakt dem Rechnungsbetrag\n  plus gerundetem Gesamttrinkgeld entsprechen.",
+            "line": 100,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-004",
+            "text": "- **AC-004:** Wenn bei der Aufteilung Rest-Cents entstehen, muss der Service\n  sämtliche Rest-Cents der ersten Person (erster Eintrag der Ausgabeliste)\n  zuweisen und für alle übrigen Personen den gleichen, auf volle Cents\n  abgerundeten Anteil ausgeben.\n  Beispiel: 10,00 mit 0 % für sechs Personen ergeben 1,70 für die erste\n  Person und jeweils 1,66 für die fünf übrigen Personen.",
+            "line": 102,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-005",
+            "text": "- **AC-005:** Wenn die Personenzahl kleiner oder gleich null ist, muss der\n  Service eine Fehlermeldung zurückgeben, die die Personenzahl und den Grund\n  „muss größer als null sein“ benennt (Wortlaut nicht festgelegt), und darf\n  kein Berechnungsergebnis zurückgeben. Die Tests prüfen mindestens 0 und -1.",
+            "line": 108,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-006",
+            "text": "- **AC-006:** Wenn der Trinkgeld-Prozentsatz negativ ist, muss der Service\n  eine Fehlermeldung zurückgeben, die den Trinkgeld-Prozentsatz und den Grund\n  „darf nicht negativ sein“ benennt (Wortlaut nicht festgelegt), und darf kein\n  Berechnungsergebnis zurückgeben. Die Tests prüfen mindestens -1 und -0,01.",
+            "line": 112,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-007",
+            "text": "- **AC-007:** Wenn der Trinkgeld-Prozentsatz 0 beträgt und die übrigen\n  Eingaben gültig sind, muss der Service die Rechnung ohne Trinkgeld aufteilen\n  und 0,00 als Gesamttrinkgeld ausgeben.",
+            "line": 116,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-008",
+            "text": "- **AC-008:** Wenn der Rechnungsbetrag 0 beträgt und die übrigen Eingaben\n  gültig sind, muss der Service für jede Person und das Gesamttrinkgeld\n  0,00 ausgeben.",
+            "line": 119,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-009",
+            "text": "- **AC-009 (nicht verbindliches Ziel):** Der Service soll auf eine gültige\n  Berechnungsanfrage in weniger als einer Sekunde antworten. Messgrenze,\n  Umgebung und Last werden bewusst nicht festgelegt; es gibt keinen Test und\n  keinen Nachweis, und dieses Ziel blockiert weder Planung noch Abschluss.",
+            "line": 122,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-010",
+            "text": "- **AC-010:** Der Service muss Berechnungen ohne Login ermöglichen und darf\n  Rechnungsdaten oder Berechnungsergebnisse weder in Dateien noch in\n  Datenbanken noch in Logs speichern.",
+            "line": 126,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-011",
+            "text": "- **AC-011:** Wenn der Rechnungsbetrag negativ ist, muss der Service eine\n  Fehlermeldung zurückgeben, die den Rechnungsbetrag und den Grund benennt,\n  und darf kein Berechnungsergebnis zurückgeben.",
+            "line": 129,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-012",
+            "text": "- **AC-012:** Wenn Rechnungsbetrag, Trinkgeld-Prozentsatz oder Personenzahl\n  fehlt oder nicht numerisch ist, muss der Service eine Fehlermeldung\n  zurückgeben, die die betroffene Eingabe benennt, und darf kein\n  Berechnungsergebnis zurückgeben.",
+            "line": 132,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-013",
+            "text": "- **AC-013:** Wenn die Personenzahl nicht ganzzahlig ist, der Rechnungsbetrag\n  mehr als zwei Nachkommastellen hat oder der Trinkgeld-Prozentsatz mehr als\n  zwei Nachkommastellen hat, muss der Service eine Fehlermeldung zurückgeben,\n  die die betroffene Eingabe und den Grund benennt, und darf kein\n  Berechnungsergebnis zurückgeben.",
+            "line": 136,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-014",
+            "text": "- **AC-014:** Wenn der Rechnungsbetrag 100.000,00, der Trinkgeld-Prozentsatz\n  100 oder die Personenzahl 1.000 überschreitet, muss der Service eine\n  Fehlermeldung zurückgeben, die die betroffene Eingabe und den Grund benennt,\n  und darf kein Berechnungsergebnis zurückgeben.",
+            "line": 141,
+            "uncertain": false,
+            "struck": false
+          }
+        ],
+        "requirements": [],
+        "diagnostics": []
+      },
+      "planKeys": [
+        ".specs/active/0001-tip-splitter.plan.md"
+      ],
+      "returnNoteKeys": []
+    }
+  ],
+  "plans": [
+    {
+      "key": ".specs/active/0001-tip-splitter.plan.md",
+      "readable": true,
+      "variant": "sibling",
+      "reference": "0001-tip-splitter",
+      "number": "0001",
+      "slug": "tip-splitter",
+      "folder": "active",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Plan — Restaurant-Rechnung mit Trinkgeld aufteilen"
+          },
+          "line": 1
+        },
+        "spec": {
+          "value": {
+            "state": "value",
+            "raw": "[0001-tip-splitter.md](0001-tip-splitter.md)"
+          },
+          "line": 3
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Done"
+          },
+          "line": 4
+        },
+        "lastUpdated": {
+          "value": {
+            "state": "value",
+            "raw": "2026-11-15"
+          },
+          "line": 5
+        },
+        "currentStep": {
+          "value": {
+            "state": "value",
+            "raw": "T-005 abgeschlossen; `/sdd-compile` READY; Lifecycle-Move nicht freigegeben"
+          },
+          "line": 6
+        },
+        "stages": {
+          "present": true,
+          "stages": [
+            {
+              "number": 1,
+              "raw": "1. T-001 — Toolchain und Rechenkern (beginnt mit Ask-first: `npm install`)",
+              "line": 66,
+              "stepIds": [
+                "T-001"
+              ],
+              "kind": "single"
+            },
+            {
+              "number": 2,
+              "raw": "2. T-002 → T-003 → T-004 — Eingabevalidierung (Format, dann Bereiche) und HTTP-Endpunkt",
+              "line": 67,
+              "stepIds": [
+                "T-002",
+                "T-003",
+                "T-004"
+              ],
+              "kind": "sequential"
+            },
+            {
+              "number": 3,
+              "raw": "3. T-005 — Docs-Sync und finale Quality gates",
+              "line": 68,
+              "stepIds": [
+                "T-005"
+              ],
+              "kind": "single"
+            }
+          ],
+          "closing": {
+            "raw": "No parallel stage: T-002 und T-003 ändern dieselbe Validierungsdatei, T-004 nutzt deren\nVertrag, und alle Schritte sind klein — Parallelität spart hier nichts.",
+            "line": 70,
+            "parallel": false
+          }
+        },
+        "steps": [
+          {
+            "id": "T-001",
+            "title": "Toolchain einrichten und Rechnung centgenau aufteilen",
+            "line": 75,
+            "struck": false,
+            "dialect": "verified-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-002, AC-003, AC-004, AC-007, AC-008"
+            },
+            "coveredCriteria": [
+              "AC-002",
+              "AC-003",
+              "AC-004",
+              "AC-007",
+              "AC-008"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "Nach eigener Freigabe (Ask-first: Abhängigkeiten) `package.json` anlegen\n(`\"type\": \"module\"`, `engines.node >=26`, Skripte `test`: `node --test \"test/**/*.test.ts\"`,\n`start`: `node src/server.ts`), Laufzeit-Abhängigkeit `express@5.3.0`, Dev-Abhängigkeiten\n`typescript@6.0.3` (exakt, nicht 7), `eslint@^10`, `@eslint/js@^10`,\n`typescript-eslint@^8.72`, `@types/express@^5`, `@types/node@^26` via `npm install`;\n`tsconfig.json` (`strict`, `noEmit`, `module`/`moduleResolution: nodenext`,\n`target: esnext`, `erasableSyntaxOnly`, `verbatimModuleSyntax`,\n`allowImportingTsExtensions`, `types: [\"node\"]`); `eslint.config.js` (Flat Config,\n`@eslint/js` + `typescript-eslint` recommended, `no-console: error`, `node_modules`\nignoriert); `.gitignore` um `node_modules/` ergänzen.\nTDD: `test/domain/tipSplit.test.ts` (AC-IDs in den Testnamen) gegen einen\n`Not implemented`-Stub in `src/domain/tipSplit.ts` rot laufen lassen, Fälle zeigen,\n**Stopp für Test-Review**; erst nach dem Ja `splitBillInCents({ billInCents,\ntipPercentageInHundredths, numberOfPeople })` → `{ amountsPerPersonInCents,\ntotalTipInCents }` implementieren (Trinkgeld `floor((bill · tip + 5000) / 10000)`,\nBasisanteil `floor(total / n)`, Rest an Eintrag 0). Fälle mindestens: 1005 / 1000 → Trinkgeld\n101, Summe 1106 (AC-002); 5 / 1000 → 0,5 Cent rundet auf 1 (AC-002); 1000 / 0 / 6 →\n170 + 5 × 166, Trinkgeld 0 (AC-004, AC-007); 1001 / 0 / 3 → 335, 333, 333 (AC-004,\nmehr als ein Rest-Cent); 0 / 1500 / 3 → alles 0 (AC-008); Summe = Rechnung + Trinkgeld\nfür mehrere Kombinationen inkl. 10.000.000 / 10000 / 1000 und 1 / 1 / 1 (AC-003)."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`npm test` — erst rot durch `Not implemented`, dann grün mit `tests` > 0\n(ein leerer Glob endet sonst grün); danach alle drei Quality gates"
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-11-15 — `npm test` first found 6 tests and all\nfailed at the `Not implemented` stub; after implementation, all 6 passed.\n`npm exec --no -- eslint . --max-warnings=0`, `npm exec --no -- tsc --noEmit`,\nand `npm test` then all exited 0."
+            },
+            "notes": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "unsupported": []
+          },
+          {
+            "id": "T-002",
+            "title": "Pflichtfelder und Zahlformat prüfen",
+            "line": 106,
+            "struck": false,
+            "dialect": "verified-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-012, AC-013"
+            },
+            "coveredCriteria": [
+              "AC-012",
+              "AC-013"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "`src/application/validateSplitRequest.ts`: nimmt `unknown`, liefert entweder\n`{ errors: [{ field, message }] }` mit **allen** Verstößen (deutsche Gründe) oder\n`{ billInCents, tipPercentageInHundredths, numberOfPeople }`. Body ist kein Objekt\n(`undefined`, `null`, Array, Primitive) → genau ein Fehler `field: \"body\"` (A-006).\nJe Feld: JSON-Zahl → `String(value)`; String unverändert; beides muss\n`^-?\\d+(\\.\\d+)?$` erfüllen (A-005), sonst „fehlt oder ist nicht numerisch“ (AC-012).\nGanzzahliges Parsen der Ziffern in Cents bzw. Hundertstel — **keine**\nGleitkomma-Multiplikation; mehr als zwei Nachkommastellen bzw. nicht ganzzahlige\nPersonenzahl → Fehler mit Grund (AC-013). Unbekannte Felder werden ignoriert.\n`src/application/splitBill.ts` als Use Case: validieren → `splitBillInCents` → Ergebnis.\nTDD in `test/application/validateSplitRequest.test.ts` (rot, **Stopp für Test-Review**,\ndann Code). Fälle: je Feld fehlend, `null`, `true`, `\"abc\"`, `\"10,05\"`, `\"1e2\"`,\n`\" 10\"` (AC-012); `0.0000001` (Exponent) ungültig; Personen `2.5` und `\"2.5\"`, Rechnung\n`10.001`, Prozent `\"10.001\"` (AC-013); `0.29` und `\"0.29\"` → 29 Cents (Gleitkomma-Falle);\n`\"10.05\"` wie `10.05`; drei ungültige Felder → drei Fehler; Body `null`/Array → `body`;\nFehlerantwort enthält keine Ergebnisfelder; Zusatzfeld wird ignoriert."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`npm test` (rot, dann grün, `tests` > 0) und danach alle drei Quality gates"
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-11-15 — Der erste `npm test`-Lauf war rot,\nweil `src/application/validateSplitRequest.ts` noch fehlte; dadurch wurden die\nneuen Assertions nicht ausgeführt (sechs bestehende Tests bestanden). Nach\nImplementierung: `npm test` — 39 Tests bestanden; anschließend ESLint,\nTypeScript-Prüfung und `npm test` in der vereinbarten Reihenfolge ohne\nWarnungen oder Fehler."
+            },
+            "notes": {
+              "state": "value",
+              "raw": "Der rote Vorab-Lauf scheiterte an der Modulauflösung statt an einem\n`Not implemented`-Stub; die Tests wurden nach Freigabe mit der Implementierung\nausgeführt."
+            },
+            "unsupported": []
+          },
+          {
+            "id": "T-003",
+            "title": "Wertebereiche prüfen",
+            "line": 136,
+            "struck": false,
+            "dialect": "verified-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-005, AC-006, AC-011, AC-014"
+            },
+            "coveredCriteria": [
+              "AC-005",
+              "AC-006",
+              "AC-011",
+              "AC-014"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "Bereichsregeln aus Spec §5 in `src/application/validateSplitRequest.ts`\nergänzen, gesammelt mit den Formatfehlern: Personenzahl ≤ 0 → „muss größer als null\nsein“ (AC-005); Prozentsatz < 0 → „darf nicht negativ sein“ (AC-006); Rechnung < 0\n(AC-011); Rechnung > 100.000,00, Prozent > 100, Personen > 1.000 (AC-014). `-0`/`\"-0\"`\ngilt als 0. TDD in derselben Testdatei (rot, **Stopp für Test-Review**, dann Code).\nFälle: Personen `0`, `-1` (AC-005); Prozent `-1`, `-0.01` (AC-006); Rechnung `-0.01`\n(AC-011); `100000.01`, `100.01`, `1001` ungültig und `100000`, `100`, `1000` gültig\n(AC-014); Prozent `0` und Rechnung `0` gültig; Fehler enthält kein Ergebnis."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`npm test` (rot, dann grün, `tests` > 0) und danach alle drei Quality gates"
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-11-15 — Vor der Implementierung erkannte\n`npm test` 59 Tests; 11 Bereichsassertions scheiterten an den noch fehlenden\nRegeln, 48 bestanden. Danach `npm test` — 59 bestanden; ESLint,\nTypeScript-Prüfung und `npm test` in der vereinbarten Reihenfolge ohne\nWarnungen oder Fehler."
+            },
+            "notes": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "unsupported": []
+          },
+          {
+            "id": "T-004",
+            "title": "HTTP-Endpunkt `POST /split` ohne Login und ohne Logging bereitstellen",
+            "line": 155,
+            "struck": false,
+            "dialect": "verified-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-001, AC-010 (plus HTTP-Belege für AC-002, AC-004, AC-005)"
+            },
+            "coveredCriteria": [
+              "AC-001",
+              "AC-010",
+              "AC-002",
+              "AC-004",
+              "AC-005"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "`src/presentation/http/createApp.ts`: Express-App mit `express.json()`,\n`POST /split` → Use Case; Erfolg 200 `{ amountsPerPerson: string[], totalTip: string }`,\nCents → `\"x.yy\"` per Ganzzahl-Division (kein `toFixed`); Validierungsfehler 400\n`{ errors }`; eigener 4-Argument-Fehlerhandler: Parse-Fehler → 400 `field: \"body\"`\n(A-006), sonst 500 ohne Details — kein `console`-Aufruf, kein Durchreichen an den\nExpress-Default-Handler. `src/server.ts`: `createApp().listen(Number(process.env.PORT ??\n3000))`, keine Ausgabe von Anfragedaten. TDD in\n`test/presentation/http/splitRoute.test.ts` mit eingebautem `fetch` gegen\n`app.listen(0)` (rot, **Stopp für Test-Review**, dann Code). Fälle: 10.05 / 10 / 2 →\n`[\"5.53\",\"5.53\"]`, `\"1.01\"` (AC-001, AC-002); 10 / 0 / 6 → `\"1.70\"` zuerst, 5 × `\"1.66\"`,\n`\"0.00\"` (AC-001, AC-004); numerische Strings akzeptiert; Personen 0 → 400 ohne\n`amountsPerPerson`/`totalTip` (AC-005); kaputtes JSON und Body ohne JSON-Content-Type →\n400 `body` (A-006); Anfrage ohne Auth-Header erfolgreich, und `console.log/info/warn/\nerror/debug`-Mocks bleiben bei Erfolg, Validierungsfehler und Parse-Fehler ungerufen\n(AC-010)."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`npm test` (rot, dann grün, `tests` > 0) und danach alle drei Quality gates;\nzusätzlich `node src/server.ts` starten und ein `POST /split` per `curl` beantwortet\nsehen (Prozess danach beenden)"
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-11-15 — `npm test` — 66 bestanden; danach ESLint,\nTypeScript-Prüfung und `npm test` in der vereinbarten Reihenfolge ohne\nWarnungen oder Fehler. `node src/server.ts` gestartet und `POST /split`\nlieferte `{\"amountsPerPerson\":[\"5.53\",\"5.53\"],\"totalTip\":\"1.01\"}`."
+            },
+            "notes": {
+              "state": "value",
+              "raw": "Der rote Vorab-Lauf konnte die neue Testdatei nicht laden, da\n`src/presentation/http/createApp.ts` noch fehlte; nach der Testfreigabe\nbestanden alle HTTP-Tests mit der Implementierung."
+            },
+            "unsupported": []
+          },
+          {
+            "id": "T-005",
+            "title": "Dokumentation synchronisieren und finale Quality gates fahren",
+            "line": 184,
+            "struck": false,
+            "dialect": "verified-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-001, AC-002, AC-003, AC-004, AC-005, AC-006, AC-007, AC-008, AC-010,\nAC-011, AC-012, AC-013, AC-014 (AC-009 bleibt laut Spec ohne Test und Nachweis)"
+            },
+            "coveredCriteria": [
+              "AC-001",
+              "AC-002",
+              "AC-003",
+              "AC-004",
+              "AC-005",
+              "AC-006",
+              "AC-007",
+              "AC-008",
+              "AC-010",
+              "AC-011",
+              "AC-012",
+              "AC-013",
+              "AC-014",
+              "AC-009"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "`AGENTS.md`-Snapshot — genau diese Einträge, die Planfreigabe bestätigt sie:\n`style: 'Onion Architecture: domain ← application ← presentation/http'` ·\n`entrypoints: ['src/server.ts — Express-HTTP-Service, POST /split']` ·\n`modules: ['src/domain — Cent-Arithmetik, Trinkgeld, Aufteilung; keine Abhängigkeiten',\n'src/application — Eingabevalidierung und Use Case; importiert nur domain',\n'src/presentation/http — Express-App, Route, Fehlerhandler ohne Logging']` ·\n`boundaries: ['domain importiert nichts aus application/presentation',\n'application importiert nur domain; keine Express-Typen in domain/application',\n'Keine Persistenz und kein Logging von Rechnungsdaten (AC-010)']` · `last reconciled`\nauf das Datum. `techContext.md`: Versionen (TypeScript 6.0.3 wegen typescript-eslint),\nType Stripping statt Build, Start- und Testkommando, `PORT`, Gates jetzt ausführbar,\nHinweis „leerer Test-Glob endet grün“. `systemPatterns.md`: Entscheidungen „Geld als\nganzzahlige Cents, Parsen über Dezimalstring, Ausgabe als String“ und „eigener\nExpress-Fehlerhandler ohne Logging“ (datiert, Link auf diesen Plan).\n`activeContext.md` aktualisieren. Für AC-010 alle `src/*.ts`-Dateien und\n`package.json` auf Datei- und Datenbankpersistenz prüfen, da diese Abwesenheit\nnicht durch den HTTP-Test allein belegt wird. README.md bleibt unverändert\n(FeatherSpec-Vorlage)."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`npm exec --no -- eslint . --max-warnings=0`; `npm exec --no -- tsc --noEmit`;\n`npm test` (`tests` > 0) — alle ohne Warnungen und Fehler; **manual:** alle\nQuellmodule und `package.json` auf Datei-/Datenbankpersistenz geprüft"
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-11-15 — ESLint und TypeScript-Prüfung\nohne Warnungen oder Fehler; `npm test` — 66 Tests bestanden, 0 fehlgeschlagen.\n**manual:** Fünf TypeScript-Quelldateien und `package.json` geprüft; die\n`rg`-Suche nach Dateisystem- und Datenbankzugriffen ergab keine Treffer."
+            },
+            "notes": {
+              "state": "value",
+              "raw": "Der Architektur-Snapshot in `AGENTS.md` entsprach bereits den\nbestätigten Werten und blieb unverändert. Technischer Kontext, Systemmuster\nund Spec wurden mit dem implementierten Stand synchronisiert. Die manuelle\nAC-010-Prüfung ergänzt den HTTP-Test zum fehlenden Login und Logging."
+            },
+            "unsupported": []
+          }
+        ],
+        "traceability": [
+          {
+            "criterion": "AC-001",
+            "steps": {
+              "state": "value",
+              "raw": "T-004, T-005"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/presentation/http/createApp.ts`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/presentation/http/splitRoute.test.ts` — formatiertes Ergebnis pro Person und Gesamttrinkgeld"
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 222
+          },
+          {
+            "criterion": "AC-002",
+            "steps": {
+              "state": "value",
+              "raw": "T-001, T-004, T-005"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/domain/tipSplit.ts`, `src/presentation/http/createApp.ts`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/domain/tipSplit.test.ts` — Rundung; `test/presentation/http/splitRoute.test.ts` — HTTP-Ausgabe"
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 223
+          },
+          {
+            "criterion": "AC-003",
+            "steps": {
+              "state": "value",
+              "raw": "T-001, T-005"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/domain/tipSplit.ts`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/domain/tipSplit.test.ts` — conservation test"
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 224
+          },
+          {
+            "criterion": "AC-004",
+            "steps": {
+              "state": "value",
+              "raw": "T-001, T-004, T-005"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/domain/tipSplit.ts`, `src/presentation/http/createApp.ts`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/domain/tipSplit.test.ts` — Restcents; `test/presentation/http/splitRoute.test.ts` — HTTP-Ausgabe"
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 225
+          },
+          {
+            "criterion": "AC-005",
+            "steps": {
+              "state": "value",
+              "raw": "T-003, T-004, T-005"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/application/validateSplitRequest.ts`, `src/presentation/http/createApp.ts`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/application/validateSplitRequest.test.ts` — Personenzahl 0 und negativ; `test/presentation/http/splitRoute.test.ts` — HTTP-400"
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 226
+          },
+          {
+            "criterion": "AC-006",
+            "steps": {
+              "state": "value",
+              "raw": "T-003, T-005"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/application/validateSplitRequest.ts`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/application/validateSplitRequest.test.ts` — negative, null und negative Null"
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 227
+          },
+          {
+            "criterion": "AC-007",
+            "steps": {
+              "state": "value",
+              "raw": "T-001, T-005"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/domain/tipSplit.ts`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/domain/tipSplit.test.ts` — zero-tip split test"
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 228
+          },
+          {
+            "criterion": "AC-008",
+            "steps": {
+              "state": "value",
+              "raw": "T-001, T-005"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/domain/tipSplit.ts`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/domain/tipSplit.test.ts` — zero-bill test"
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 229
+          },
+          {
+            "criterion": "AC-009",
+            "steps": {
+              "state": "value",
+              "raw": "— (nicht verbindliches Ziel, kein Test laut Spec)"
+            },
+            "code": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "test": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "manual": false,
+            "state": "open",
+            "stateKnown": true,
+            "line": 230
+          },
+          {
+            "criterion": "AC-010",
+            "steps": {
+              "state": "value",
+              "raw": "T-004, T-005"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/presentation/http/createApp.ts`, `src/server.ts`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/presentation/http/splitRoute.test.ts` — ohne Authentifizierung und ohne Console-Aufrufe; manual: fünf Quellmodule und `package.json` auf Datei-/Datenbankpersistenz geprüft, 2026-11-15"
+            },
+            "manual": true,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 231
+          },
+          {
+            "criterion": "AC-011",
+            "steps": {
+              "state": "value",
+              "raw": "T-003, T-005"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/application/validateSplitRequest.ts`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/application/validateSplitRequest.test.ts` — negativer und null Rechnungsbetrag"
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 232
+          },
+          {
+            "criterion": "AC-012",
+            "steps": {
+              "state": "value",
+              "raw": "T-002, T-005"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/application/validateSplitRequest.ts`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/application/validateSplitRequest.test.ts` — Pflichtfelder, Formate, Body-Fehler, alle Verstöße"
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 233
+          },
+          {
+            "criterion": "AC-013",
+            "steps": {
+              "state": "value",
+              "raw": "T-002, T-005"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/application/validateSplitRequest.ts`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/application/validateSplitRequest.test.ts` — Dezimalpräzision und ganzzahlige Personenzahl"
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 234
+          },
+          {
+            "criterion": "AC-014",
+            "steps": {
+              "state": "value",
+              "raw": "T-003, T-005"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/application/validateSplitRequest.ts`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/application/validateSplitRequest.test.ts` — Grenzwerte und Überschreitungen"
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 235
+          }
+        ],
+        "handoff": {
+          "doneSoFar": {
+            "value": {
+              "state": "value",
+              "raw": "T-001 bis T-005 abgeschlossen; HTTP-Service,\nFehlerbehandlung, Einstiegspunkt und Dokumentationsabgleich fertig. Alle\nverbindlichen Kriterien außer dem nicht verbindlichen AC-009 sind\nnachgewiesen; 66 Tests und finale Quality gates bestanden."
+            },
+            "line": 239
+          },
+          "nextAction": {
+            "value": {
+              "state": "value",
+              "raw": "Auf ausdrückliche Freigabe des Lifecycle-Moves warten; danach\n`/sdd-lifecycle` für den Wechsel nach `done/` und die Planarchivierung verwenden."
+            },
+            "line": 243
+          },
+          "openDecisions": {
+            "value": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "line": 245
+          },
+          "baseline": {
+            "value": {
+              "state": "placeholder",
+              "raw": "_(Commit-Hash vor dem ersten Schritt-Commit; wird bei Arbeitsbeginn gesetzt)_"
+            },
+            "line": 246
+          },
+          "environment": {
+            "value": {
+              "state": "value",
+              "raw": "Node v26.13.0, npm 11.17.0 lokal; `npm install` meldete 7 moderate\nAudit-Findings, noch nicht untersucht."
+            },
+            "line": 247
+          }
+        },
+        "unsupported": [],
+        "diagnostics": []
+      },
+      "specKeys": [
+        ".specs/active/0001-tip-splitter.md"
+      ],
+      "specReferences": [
+        "0001-tip-splitter"
+      ]
+    }
+  ],
+  "returnNotes": [],
+  "diagnostics": []
+}

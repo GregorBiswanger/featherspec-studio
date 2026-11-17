@@ -114,7 +114,7 @@ describe('readProjectFiles', () => {
         expect(broken?.content).toEqual({ state: 'unreadable', reason: 'not valid UTF-8' });
         expect(textOf(result.files.find((file) => file.key === '.specs/backlog/0001-valid-spec.md'))).toContain('# Valid spec');
         expect(result.diagnostics).toEqual([
-            { kind: 'unreadable-file', scope: { file: '.specs/active/0002-invalid-utf8.md' }, reason: 'not valid UTF-8' },
+            { kind: 'unreadable-file', tier: 'problem', scope: { file: '.specs/active/0002-invalid-utf8.md' }, reason: 'not valid UTF-8' },
         ]);
     });
 
@@ -128,6 +128,7 @@ describe('readProjectFiles', () => {
         expect(result.diagnostics).toEqual([
             {
                 kind: 'unreadable-file',
+                tier: 'problem',
                 scope: { file: '.specs/active/0002-denied.md' },
                 reason: 'could not be read: EACCES: permission denied',
             },
@@ -141,7 +142,7 @@ describe('readProjectFiles', () => {
         const result = await readProjectFiles(source, ROOT);
         expect(specKeys(result.files)).toEqual(['.specs/active/0001-fine.md']);
         expect(result.diagnostics).toEqual([
-            { kind: 'unreadable-file', scope: { file: '.specs/backlog' }, reason: 'could not be listed: EIO: i/o error' },
+            { kind: 'unreadable-file', tier: 'problem', scope: { file: '.specs/backlog' }, reason: 'could not be listed: EIO: i/o error' },
         ]);
     });
 
@@ -212,7 +213,7 @@ describe('readProjectFiles', () => {
         expect(link?.modifiedMs).toBeDefined();
         expect(source.reads()).toEqual(['.specs/active/0001-real.md']);
         expect(result.diagnostics).toEqual([
-            { kind: 'unreadable-file', scope: { file: '.specs/active/0002-link.md' }, reason: 'symbolic link not followed' },
+            { kind: 'unreadable-file', tier: 'problem', scope: { file: '.specs/active/0002-link.md' }, reason: 'symbolic link not followed' },
         ]);
     });
 

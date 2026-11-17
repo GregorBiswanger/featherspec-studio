@@ -1,0 +1,13 @@
+{
+  "version": "unknown",
+  "specs": [],
+  "plans": [],
+  "returnNotes": [],
+  "diagnostics": [
+    {
+      "kind": "unverified-version",
+      "scope": "project",
+      "reason": "version not verified"
+    }
+  ]
+}

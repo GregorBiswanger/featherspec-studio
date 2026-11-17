@@ -166,7 +166,7 @@ interface Context {
 
 function addUnsupported(context: Context, item: UnsupportedPlanContent, reason: string): void {
     context.unsupported.push(item);
-    context.diagnostics.push({ kind: 'unknown-content', scope: { file: context.file, line: item.line }, reason });
+    context.diagnostics.push({ kind: 'unknown-content', tier: 'note', scope: { file: context.file, line: item.line }, reason });
 }
 
 function readHeader(context: Context, end: number): Record<HeaderLabel, HeaderField> & { title: HeaderField } {
@@ -194,6 +194,7 @@ function readHeader(context: Context, end: number): Record<HeaderLabel, HeaderFi
             if (label === 'Status' && raw !== '' && !KNOWN_STATUS.has(raw)) {
                 context.diagnostics.push({
                     kind: 'unknown-content',
+                    tier: 'problem',
                     scope: { file: context.file, line },
                     reason: `Unknown plan status "${raw}"; documented values are Not started, In Progress, Blocked, Done`,
                 });
@@ -320,6 +321,7 @@ function readTraceability(context: Context, start: number, end: number): Traceab
             if (!stateKnown) {
                 context.diagnostics.push({
                     kind: 'unknown-content',
+                    tier: 'note',
                     scope: { file: context.file, line },
                     reason: `Unknown traceability state "${state}"; documented values are open, built, verified`,
                 });

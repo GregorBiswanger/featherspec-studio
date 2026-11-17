@@ -1,0 +1,1183 @@
+{
+  "version": "1.8.0",
+  "specs": [
+    {
+      "key": ".specs/done/0001-split-bill-with-tip.md",
+      "readable": true,
+      "reference": "0001-split-bill-with-tip",
+      "number": "0001",
+      "slug": "split-bill-with-tip",
+      "folder": "done",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Split a bill with tip evenly across a group"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Implemented"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "value",
+            "raw": "[0001-split-bill-with-tip.2026-09-19.plan.md](../plan-archive/0001-split-bill-with-tip.2026-09-19.plan.md)"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "archive",
+          "target": "../plan-archive/0001-split-bill-with-tip.2026-09-19.plan.md",
+          "text": "0001-split-bill-with-tip.2026-09-19.plan.md"
+        },
+        "ticket": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "origin": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "validatedBy": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [],
+        "sections": [
+          {
+            "heading": "1. Summary",
+            "raw": "A calling client, acting for a group at a restaurant table, sends the bill amount, a tip\npercentage and how many people share the bill. The service answers with one amount per person\n— in order — and the total tip. Bill plus rounded tip is split so that the per-person amounts\nadd up exactly, with no cent lost or invented. An invalid request never produces a number: it\nproduces one problem for every input that has one.",
+            "line": 6
+          },
+          {
+            "heading": "2. Goal and problem",
+            "raw": "Splitting a bill with tip at the table is done in the head or on a phone calculator, and the\nresult rarely adds up: the tip is rounded twice, the last cent goes missing, and someone\ncovers the difference. This feature makes the split exact and reproducible, in one request,\nwith no setup and no account.\n\nThe service is used machine-to-machine: the caller is a **calling client** — an app, a script\nor another service — acting for the guests at the table. The guests are the beneficiaries of\nthe answer, never the direct users of this service.\n\nThe goal is reached when a calling client can send three values and read off what each person\npays, and the sum of those amounts equals the bill plus the tip actually left on the table.",
+            "line": 14
+          },
+          {
+            "heading": "3. Users and roles",
+            "raw": "One role: the **calling client**, a program that sends the three values on behalf of the\nguests at the table and reads the answer. No permissions, no login, no distinction between\nclients — the service keeps nothing between requests.\n\nThe guests at the table are the people the answer is *for*; they never reach the service\nthemselves, because it exposes no user interface (see *Out of scope*).",
+            "line": 28
+          },
+          {
+            "heading": "4. Scope",
+            "raw": "### In scope\n\n- Calculating the total tip from a bill amount and a tip percentage.\n- Splitting bill plus tip evenly across a whole number of people, distributing leftover cents.\n- Returning one amount per person, in order, together with the total tip.\n- Validating all three inputs and reporting one problem for every faulty input in a single\n  answer.\n\n### Out of scope\n\n- **Tip as an absolute amount** (e.g. \"5 € tip\") — because the agreed input is a percentage;\n  a second tip form doubles the rule set and can follow once the percentage case is proven.\n- **Unequal shares** (per-person items, different quotas, one person paying more) — because\n  the point of this slice is the even split; unequal shares are a different calculation and a\n  different input shape.\n- **Currencies and exchange rates** — because all amounts are in one unnamed currency with\n  two decimals; formatting and conversion add no fairness value here.\n- **Persistence and history** — because each request is answered from its own input alone\n  (decision in `systemPatterns.md`); nothing is worth storing between two tables.\n- **Accounts, login, roles** — because there is no per-client data to protect.\n- **A user interface** — because the service answers machine-to-machine; a UI for the guests\n  is a separate slice that would consume this one.",
+            "line": 37
+          },
+          {
+            "heading": "5. Functional flow",
+            "raw": "1. The calling client sends three inputs: bill amount, tip percentage, number of people.\n2. The service checks all three inputs against the rules in section 6.\n3. If any input is invalid, the service answers with one problem per faulty input — every\n   problem naming the input it belongs to — and no amounts at all. The flow ends.\n4. Otherwise the service calculates the total tip and rounds it to the nearest cent.\n5. It splits bill plus rounded tip across the people, distributing any leftover cents.\n6. It answers with one amount per person, in the order of the people, plus the total tip.",
+            "line": 62
+          },
+          {
+            "heading": "6. Business rules",
+            "raw": "**Inputs**\n\nThe three inputs arrive as numbers. Written forms of a number — trailing zeros, separators,\nexponent notation — are whatever the caller's number format yields; they are not product\nrules, and every rule below is judged on the **numeric value** received.\n\n- **BR-01** The bill amount is a number of at least `0`. `0` is valid.\n- **BR-02** The bill amount is exact to the cent: its value multiplied by `100` is a whole\n  number. `10.1` and `10.100` are the same value and both valid; `10.005` is invalid and is\n  not rounded away.\n- **BR-03** The tip percentage is a number of at least `0`. `0` is valid. Any number of\n  decimal places is accepted (e.g. `12.5`, `7.125`).\n- **BR-04** The number of people is a whole number of at least `1`. A value with a zero\n  fractional part (`3.0`) is the whole number `3` and is valid. A value with a non-zero\n  fractional part (`2.5`) is invalid.\n- **BR-05** No rule caps any of the three inputs: there is no upper limit. The practical\n  ceiling of exact cent arithmetic is an implementation matter recorded in O-001 — it is a\n  decision for `/sdd-plan`, not a limit this spec imposes.\n- **BR-06** A missing, empty or non-numeric input is invalid, exactly like an out-of-range one.\n\n**Calculation**\n\n- **BR-07** Total tip = bill amount × tip percentage ÷ 100, rounded to the nearest cent,\n  with exact halves rounded up. This rounding happens **once**, before the split.\n- **BR-08** The amount to split is bill amount + rounded total tip.\n- **BR-09** Each person receives the amount to split divided by the number of people, rounded\n  **down** to the cent.\n- **BR-10** The cents left over after BR-09 are handed out one cent each, starting at the\n  first person, until they are used up. A leftover of *k* cents therefore raises the amounts\n  of the first *k* people by one cent each.\n- **BR-11** The per-person amounts sum **exactly** to the amount to split from BR-08. No cent\n  is lost or invented.\n- **BR-12** Two per-person amounts differ by at most one cent, and no person is given more\n  than a person before them.\n\n**Problems**\n\n- **BR-13** An answer contains either results or problems, never both. An invalid request\n  yields no per-person amount and no total tip.\n- **BR-14** Each input yields **at most one** problem: the first that applies in the check\n  order below. The answer carries a problem for **every** input that has one, not just the\n  first faulty input.\n\n  | Input | Check order — stops at the first problem |\n  | --- | --- |\n  | Bill amount | readable as a number (BR-06) → not negative (BR-01) → exact to the cent (BR-02) |\n  | Tip percentage | readable as a number (BR-06) → not negative (BR-03) |\n  | Number of people | readable as a number (BR-06) → whole number (BR-04) → at least `1` (BR-04) |\n\n- **BR-15** Every problem names the input it belongs to — by the **field name the input was\n  sent under** — and what is wrong with it. The field names themselves are a plan decision\n  (A-003).\n- **BR-16** If nothing can be read from the request at all — no input can be located — the\n  answer carries exactly one problem, naming `request`, and no per-input problems.",
+            "line": 72
+          },
+          {
+            "heading": "7. Functional requirements",
+            "raw": "| ID | Requirement | Criteria |\n| --- | --- | --- |\n| FR-01 | The service shall accept bill amount, tip percentage and number of people as one request. | AC-001 |\n| FR-02 | The service shall calculate and round the total tip per BR-07, for any accepted tip percentage and for a bill amount of `0`. | AC-003, AC-006, AC-007, AC-015 |\n| FR-03 | The service shall split bill plus rounded tip per BR-09 … BR-12, so the amounts sum exactly and differ by at most one cent. | AC-002, AC-004, AC-005 |\n| FR-04 | The service shall return one amount per person, in the order of the people, plus the total tip. | AC-001 |\n| FR-05 | The service shall validate all three inputs per BR-01 … BR-06, judging every rule on the numeric value received. | AC-008 … AC-012, AC-017, AC-019 |\n| FR-06 | The service shall report at most one problem per input and a problem for every faulty input in a single answer, naming each input by its sent field name, and return no amounts. | AC-013, AC-014, AC-020 |\n| FR-07 | The calculation shall impose no upper limit on bill amount, tip percentage or number of people. | AC-016 |\n| FR-08 | The service shall answer a request nothing can be read from with a single problem naming `request`. | AC-018 |",
+            "line": 129
+          },
+          {
+            "heading": "8. Data requirements",
+            "raw": "| Value | Meaning | Mandatory | Rules |\n| --- | --- | --- | --- |\n| Bill amount | Total on the bill, before tip, in one unnamed currency | yes | BR-01, BR-02 |\n| Tip percentage | Percentage of the bill left as tip | yes | BR-03 |\n| Number of people | How many people share the bill | yes | BR-04 |\n| Amount per person | One entry per person, in the order of the people | — (result) | BR-09 … BR-12 |\n| Total tip | The rounded tip for the whole table | — (result) | BR-07 |\n\nAll monetary values are exact to the cent — two decimal places. No value is personal or\nsensitive; nothing is stored beyond answering the request.",
+            "line": 142
+          },
+          {
+            "heading": "9. Problem cases and edge cases",
+            "raw": "**Rejected input** — the catalogue of problems. Per BR-14 an input contributes at most one of\nits rows to an answer, and every faulty input contributes one.\n\n| Case | Input | Reason |\n| --- | --- | --- |\n| E-01 | Bill amount | missing |\n| E-02 | Bill amount | empty |\n| E-03 | Bill amount | not a number |\n| E-04 | Bill amount | negative |\n| E-05 | Bill amount | not exact to the cent (value × 100 is not a whole number) |\n| E-06 | Tip percentage | missing |\n| E-07 | Tip percentage | empty |\n| E-08 | Tip percentage | not a number |\n| E-09 | Tip percentage | negative |\n| E-10 | Number of people | missing |\n| E-11 | Number of people | empty |\n| E-12 | Number of people | not a number |\n| E-13 | Number of people | not a whole number |\n| E-14 | Number of people | less than 1 |\n| E-15 | `request` | nothing can be read from the request (BR-16) |\n| E-16 | Bill amount · tip percentage · number of people | beyond the range of exact cent arithmetic (R-007; the input's own check order ends here) |\n\n**Accepted edge cases**\n\n- Bill amount `0` with any valid tip percentage → total tip `0.00`, every person `0.00`.\n- Tip percentage `0` → total tip `0.00`; the bill alone is split.\n- One person → that person receives bill plus tip in full.\n- A tip percentage with many decimals (`7.125`) → accepted; only the resulting tip is rounded.\n- A bill amount sent as `10.100` → the same value as `10.10`, accepted.\n- `3.0` people → the whole number `3`, accepted.\n- An amount that does not divide evenly (`10.00`, 10 %, 3 people → `11.00` / 3) → `3.67`,\n  `3.67`, `3.66`.",
+            "line": 155
+          },
+          {
+            "heading": "10. Acceptance criteria",
+            "raw": "**AC-001** The system shall answer a valid request with exactly one amount per person, in the\norder of the people, and the total tip.\n\n> **Given** a bill of `60.00`, a tip of `10` % and `4` people\n> **When** the split is requested\n> **Then** the answer contains four amounts — `16.50`, `16.50`, `16.50`, `16.50` — and a total\n> tip of `6.00`.\n\n**AC-002** The system shall produce per-person amounts that sum exactly to the bill amount\nplus the returned total tip.\n\n**AC-003** When a valid request is processed, the system shall set the total tip to the bill\namount multiplied by the tip percentage divided by 100, rounded to the nearest cent, with an\nexact half rounded up.\n\n> **Given** a bill of `10.05` and a tip of `5` % (exactly `0.5025`)\n> **When** the split is requested\n> **Then** the total tip is `0.50`.\n>\n> **Given** a bill of `10.10` and a tip of `5` % (exactly `0.505`)\n> **When** the split is requested\n> **Then** the total tip is `0.51`.\n\n**AC-004** While the amount to split does not divide evenly across the people, the system\nshall raise the amounts of the first people by one cent each until the amounts sum exactly to\nthe amount to split.\n\n> **Given** a bill of `10.00`, a tip of `10` % and `3` people\n> **When** the split is requested\n> **Then** the amounts are `3.67`, `3.67`, `3.66` and the total tip is `1.00`.\n\n**AC-005** The system shall produce per-person amounts that differ by at most one cent, with\nno amount larger than an amount before it.\n\n**AC-006** When the bill amount is `0` and the other inputs are valid, the system shall return\n`0.00` for every person and a total tip of `0.00`.\n\n**AC-007** When the tip percentage is `0` and the other inputs are valid, the system shall\nreturn a total tip of `0.00` and split the bill amount alone.\n\n**AC-008** If the bill amount is negative, then the system shall reject the request with a\nproblem naming the bill amount.\n\n**AC-009** If the bill amount is not exact to the cent, then the system shall reject the\nrequest with a problem naming the bill amount, and shall not round the value instead.\n\n> **Given** a bill of `10.005`\n> **When** the split is requested\n> **Then** the answer names the bill amount as not exact to the cent and contains no amounts.\n\n**AC-010** If the tip percentage is negative, then the system shall reject the request with a\nproblem naming the tip percentage.\n\n**AC-011** If the number of people is not a whole number, or is smaller than `1`, then the\nsystem shall reject the request with a problem naming the number of people.\n\n> **Given** `2.5` people\n> **When** the split is requested\n> **Then** the answer names the number of people as not a whole number and contains no amounts.\n\n**AC-012** If any of the three inputs is missing, empty or not a number, then the system shall\nreject the request with a problem naming that input.\n\n**AC-013** If more than one input is invalid, then the system shall name a problem for every\ninvalid input in a single answer.\n\n> **Given** a bill of `-5.001`, a tip of `-2` % and `0` people\n> **When** the split is requested\n> **Then** the answer carries exactly three problems — the bill amount as negative (its first\n> applicable rule per BR-14, not additionally \"not exact to the cent\"), the tip percentage as\n> negative, and the number of people as smaller than one — and no amounts.\n\n**AC-014** If a request is rejected, then the system shall return no per-person amount and no\ntotal tip.\n\n**AC-015** Where the tip percentage carries more than two decimal places, the system shall\naccept it and round only the resulting total tip.\n\n**AC-016** The system shall apply no upper limit to the bill amount, the tip percentage or the\nnumber of people.\n\n> **Given** a bill of `10.00`, a tip of `0` % and `1000` people\n> **When** the split is requested\n> **Then** the answer contains 1000 amounts that sum to `10.00`.\n\n**AC-017** Where the number of people is sent with a zero fractional part, the system shall\ntreat it as that whole number and accept the request.\n\n> **Given** a bill of `12.00`, a tip of `0` % and `3.0` people\n> **When** the split is requested\n> **Then** the answer contains three amounts of `4.00` and no problem.\n\n**AC-018** If nothing can be read from the request, then the system shall answer with exactly\none problem, naming `request`, and no per-input problems and no amounts.\n\n**AC-019** The system shall judge cent-exactness and whole-number-ness on the numeric value\nreceived, not on how that value was written.\n\n> **Given** a bill sent as `10.100`, a tip of `0` % and `1` person\n> **When** the split is requested\n> **Then** the request is accepted and the single amount is `10.10`.\n\n**AC-020** If one input breaks more than one rule, then the system shall report exactly one\nproblem for it — the first rule that applies in the check order of BR-14.",
+            "line": 190
+          },
+          {
+            "heading": "11. Technical notes for developers or AI agents",
+            "raw": "Context found in the repository, so the plan need not rediscover it:\n\n- No source files exist yet. `src/split.js` (pure calculation core) and `src/server.js`\n  (thin HTTP layer over `node:http`) are the agreed target layout in the `architecture:`\n  snapshot in `AGENTS.md`. Validation, parsing and formatting belong in the HTTP layer; the\n  core stays free of I/O.\n- Stack per `techContext.md`: Node.js LTS, ESM only, no runtime dependencies, no build step,\n  `node:test` as the runner, quality gate `npx eslint .` → `node --test`.\n- TDD is the working mode per *Style & Output Preferences* in `AGENTS.md`: the test comes\n  first and fails against a `Not implemented` stub.\n- **Money must not be calculated in binary floating point.** `0.1 + 0.2` and\n  `10.05 * 0.05` already break BR-07 and BR-11. Work in integer cents.\n- The inputs arrive as numbers, so BR-02 is a test on the **value**: `value × 100` must be a\n  whole number. Naive multiplication in binary floating point does not decide this —\n  `10.07 * 100` is `1006.9999999999999`, and `0.1 + 0.2` is not `0.3`. A tolerant comparison\n  against the nearest integer, or a decision made on the number's shortest decimal\n  representation, is a plan decision; whichever is chosen must accept `10.1`, `10.100` and\n  `10.07`, and reject `10.005`.\n- Rounding half **up** is not `Math.round` on a negative value — but with BR-01 and BR-03 in\n  force, all rounded values are non-negative, so the distinction does not arise.\n- The concrete request and response shape (transport, field names, status codes, problem\n  format) is a plan decision, not a spec decision — see A-002 and A-003. BR-15 binds the\n  problem to the field name the input was sent under, whatever those names become.",
+            "line": 297
+          },
+          {
+            "heading": "12. Assumptions",
+            "raw": "| ID | Assumption | Why we believe it | What breaks if it is wrong |\n| --- | --- | --- | --- |\n| A-001 | The three inputs arrive in one request and the answer comes back in one response; no dialogue, no partial results. | `projectbrief.md`: \"a single request, no setup, no account\". | The flow in section 5 and every acceptance criterion would need a session concept. |\n| A-002 | The feature is delivered as the HTTP endpoint of the existing service, not as a CLI or library API. | The `architecture:` snapshot names `src/server.js` as the sole entrypoint and calls the service \"HTTP\". | The spec still holds, but the plan would target a different entrypoint. |\n| A-003 | Input field names, transport format and problem-response shape are decided in `/sdd-plan`, not here. | Interview rule: technical form is not a product decision. | Nothing in this spec; it only moves the decision — BR-15 already binds whatever names are chosen. |\n| A-005 | The problems in a rejection are ordered by a fixed input order — bill amount, tip percentage, number of people — so the answer is reproducible. | BR-14 demands completeness and one problem per input; a stable order makes it testable. | AC-013's example would be order-independent and the deciding test weaker. |\n| A-006 | Per-person amounts are returned in the order of the people, and \"the first people\" in BR-10 means the lowest positions in that order. | The user's own wording: \"one amount per person (in order)\", \"leftover cents go to the first people\". | The distribution stays fair in sum but becomes unpredictable per position. |\n| A-007 | The answer carries per-person amounts and the total tip only; the grand total is not returned, because it is the sum of what is already there. | The user's list of what the answer carries names exactly these two. | Callers would compute the grand total themselves — a small, additive change. |\n| A-008 | The tip percentage is applied to the bill amount alone, never to an already-tipped total. | Standard restaurant practice; BR-07 is stated on the bill amount. | Every tip figure would be too high. |\n\nA-004 (decimal notation, comma and exponent forms) was dropped by the clarify decisions — see\n*Resolved* in section 13. IDs are not renumbered, so the gap is intentional.",
+            "line": 323
+          },
+          {
+            "heading": "13. Open points",
+            "raw": "None open — O-001 and O-002 were decided in `/sdd-plan` (see *Resolved by the plan decisions*).\n\n**Resolved by the plan decisions (2026-09-19)**\n\n- **R-007 — O-001, very large values.** Rejected, not widened: an input whose cent value does\n  not land inside JavaScript's safe-integer range — including the case where the amount to\n  split would leave it — yields a problem naming that input (catalogue row E-16), appended as\n  the last check in that input's BR-14 order. BR-05 stands unchanged: the product imposes no\n  upper limit; this is the arithmetic ceiling being named rather than silently crossed. No\n  wider numeric type is introduced. AC-016 is proven at realistic magnitudes (1000 people).\n- **R-008 — O-002, problem message wording.** A fixed English message per catalogue row,\n  each naming the field as sent (BR-15) — e.g. `amount: must be a number`, `amount: must not\n  be negative`, `amount: must be exact to the cent`, `people: must be a whole number`. The\n  table lives in the plan; section 9 stays the authority on *which* problems exist.\n\n**Resolved by the clarify decisions (2026-09-19)**\n\n- **R-001 — No upper limit vs. arithmetic ceiling.** No upper limit stays the rule (BR-05);\n  the numeric ceiling is O-001, a plan decision, not a spec contradiction.\n- **R-002 — Who the user is.** The user of the service is a calling client acting for the\n  guests at the table (sections 2, 3, 5).\n- **R-003 — Two-decimal rule on numbers.** Inputs arrive as numbers; BR-02 is judged on the\n  numeric value (value × 100 is a whole number), so `10.100` equals `10.1` and is valid.\n  Comma separators and exponent notation are number-format matters, not product rules —\n  assumption A-004 dropped.\n- **R-004 — Problem granularity.** At most one problem per input, the first that applies\n  (BR-14 check order); the answer lists every input that has a problem; \"naming the input\"\n  means the field name as sent (BR-15).\n- **R-005 — `3.0` people.** A zero fractional part is a whole number and valid (BR-04,\n  AC-017).\n- **R-006 — Unreadable request.** A request nothing can be read from yields exactly one\n  problem naming `request` (BR-16, AC-018, E-15).",
+            "line": 338
+          },
+          {
+            "heading": "14. Definition of Ready",
+            "raw": "- [x] Goal and problem unambiguous\n- [x] User role and business value clear\n- [x] Scope and out-of-scope documented, each exclusion with a reason\n- [x] Business rules testable\n- [x] Happy path described\n- [x] Edge cases described or deliberately excluded\n- [x] Acceptance criteria measurable\n- [x] Data and constraints clarified or marked as assumptions\n- [x] Open questions visible (section 13)",
+            "line": 373
+          },
+          {
+            "heading": "15. Definition of Done",
+            "raw": "- [ ] All must-requirements (FR-01 … FR-08) implemented\n- [ ] All acceptance criteria (AC-001 … AC-020) pass\n- [ ] Tests added and green; the calculation core is covered without HTTP\n- [ ] No out-of-scope functionality added\n- [ ] Problem handling covers every case in section 9\n- [ ] Assumptions verified or documented; open points O-001 and O-002 decided in the plan\n- [ ] Memory Bank and the `architecture:` snapshot updated in the same change set\n- [ ] Quality gate green: `npx eslint .` → `node --test`\n- [ ] Accepted by the user",
+            "line": 385
+          },
+          {
+            "heading": "16. Recommended next steps",
+            "raw": "1. `/sdd-plan` to turn this spec into a baby-step plan, deciding O-001, O-002 and A-003.\n2. `/sdd-lifecycle` to move the spec-plan pair from `backlog/` to `active/` when work starts.",
+            "line": 397
+          },
+          {
+            "heading": "Plan history",
+            "raw": "- 2026-09-19 — [0001-split-bill-with-tip.2026-09-19.plan.md](../plan-archive/0001-split-bill-with-tip.2026-09-19.plan.md) — nine steps, all verified; AC-001 … AC-020 proven by `node --test` (37 pass / 0 fail) with `npx eslint .` clean.",
+            "line": 402
+          }
+        ],
+        "planHistory": [
+          {
+            "raw": "- 2026-09-19 — [0001-split-bill-with-tip.2026-09-19.plan.md](../plan-archive/0001-split-bill-with-tip.2026-09-19.plan.md) — nine steps, all verified; AC-001 … AC-020 proven by `node --test` (37 pass / 0 fail) with `npx eslint .` clean.",
+            "line": 404
+          }
+        ],
+        "criteria": [
+          {
+            "id": "AC-001",
+            "text": "**AC-001** The system shall answer a valid request with exactly one amount per person, in the\norder of the people, and the total tip.",
+            "illustration": "> **Given** a bill of `60.00`, a tip of `10` % and `4` people\n> **When** the split is requested\n> **Then** the answer contains four amounts — `16.50`, `16.50`, `16.50`, `16.50` — and a total\n> tip of `6.00`.",
+            "line": 192,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-002",
+            "text": "**AC-002** The system shall produce per-person amounts that sum exactly to the bill amount\nplus the returned total tip.",
+            "line": 200,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-003",
+            "text": "**AC-003** When a valid request is processed, the system shall set the total tip to the bill\namount multiplied by the tip percentage divided by 100, rounded to the nearest cent, with an\nexact half rounded up.",
+            "illustration": "> **Given** a bill of `10.05` and a tip of `5` % (exactly `0.5025`)\n> **When** the split is requested\n> **Then** the total tip is `0.50`.\n>\n> **Given** a bill of `10.10` and a tip of `5` % (exactly `0.505`)\n> **When** the split is requested\n> **Then** the total tip is `0.51`.",
+            "line": 203,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-004",
+            "text": "**AC-004** While the amount to split does not divide evenly across the people, the system\nshall raise the amounts of the first people by one cent each until the amounts sum exactly to\nthe amount to split.",
+            "illustration": "> **Given** a bill of `10.00`, a tip of `10` % and `3` people\n> **When** the split is requested\n> **Then** the amounts are `3.67`, `3.67`, `3.66` and the total tip is `1.00`.",
+            "line": 215,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-005",
+            "text": "**AC-005** The system shall produce per-person amounts that differ by at most one cent, with\nno amount larger than an amount before it.",
+            "line": 223,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-006",
+            "text": "**AC-006** When the bill amount is `0` and the other inputs are valid, the system shall return\n`0.00` for every person and a total tip of `0.00`.",
+            "line": 226,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-007",
+            "text": "**AC-007** When the tip percentage is `0` and the other inputs are valid, the system shall\nreturn a total tip of `0.00` and split the bill amount alone.",
+            "line": 229,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-008",
+            "text": "**AC-008** If the bill amount is negative, then the system shall reject the request with a\nproblem naming the bill amount.",
+            "line": 232,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-009",
+            "text": "**AC-009** If the bill amount is not exact to the cent, then the system shall reject the\nrequest with a problem naming the bill amount, and shall not round the value instead.",
+            "illustration": "> **Given** a bill of `10.005`\n> **When** the split is requested\n> **Then** the answer names the bill amount as not exact to the cent and contains no amounts.",
+            "line": 235,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-010",
+            "text": "**AC-010** If the tip percentage is negative, then the system shall reject the request with a\nproblem naming the tip percentage.",
+            "line": 242,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-011",
+            "text": "**AC-011** If the number of people is not a whole number, or is smaller than `1`, then the\nsystem shall reject the request with a problem naming the number of people.",
+            "illustration": "> **Given** `2.5` people\n> **When** the split is requested\n> **Then** the answer names the number of people as not a whole number and contains no amounts.",
+            "line": 245,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-012",
+            "text": "**AC-012** If any of the three inputs is missing, empty or not a number, then the system shall\nreject the request with a problem naming that input.",
+            "line": 252,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-013",
+            "text": "**AC-013** If more than one input is invalid, then the system shall name a problem for every\ninvalid input in a single answer.",
+            "illustration": "> **Given** a bill of `-5.001`, a tip of `-2` % and `0` people\n> **When** the split is requested\n> **Then** the answer carries exactly three problems — the bill amount as negative (its first\n> applicable rule per BR-14, not additionally \"not exact to the cent\"), the tip percentage as\n> negative, and the number of people as smaller than one — and no amounts.",
+            "line": 255,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-014",
+            "text": "**AC-014** If a request is rejected, then the system shall return no per-person amount and no\ntotal tip.",
+            "line": 264,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-015",
+            "text": "**AC-015** Where the tip percentage carries more than two decimal places, the system shall\naccept it and round only the resulting total tip.",
+            "line": 267,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-016",
+            "text": "**AC-016** The system shall apply no upper limit to the bill amount, the tip percentage or the\nnumber of people.",
+            "illustration": "> **Given** a bill of `10.00`, a tip of `0` % and `1000` people\n> **When** the split is requested\n> **Then** the answer contains 1000 amounts that sum to `10.00`.",
+            "line": 270,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-017",
+            "text": "**AC-017** Where the number of people is sent with a zero fractional part, the system shall\ntreat it as that whole number and accept the request.",
+            "illustration": "> **Given** a bill of `12.00`, a tip of `0` % and `3.0` people\n> **When** the split is requested\n> **Then** the answer contains three amounts of `4.00` and no problem.",
+            "line": 277,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-018",
+            "text": "**AC-018** If nothing can be read from the request, then the system shall answer with exactly\none problem, naming `request`, and no per-input problems and no amounts.",
+            "line": 284,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-019",
+            "text": "**AC-019** The system shall judge cent-exactness and whole-number-ness on the numeric value\nreceived, not on how that value was written.",
+            "illustration": "> **Given** a bill sent as `10.100`, a tip of `0` % and `1` person\n> **When** the split is requested\n> **Then** the request is accepted and the single amount is `10.10`.",
+            "line": 287,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-020",
+            "text": "**AC-020** If one input breaks more than one rule, then the system shall report exactly one\nproblem for it — the first rule that applies in the check order of BR-14.",
+            "line": 294,
+            "uncertain": false,
+            "struck": false
+          }
+        ],
+        "requirements": [
+          {
+            "id": "FR-01",
+            "text": "| FR-01 | The service shall accept bill amount, tip percentage and number of people as one request. | AC-001 |",
+            "line": 133
+          },
+          {
+            "id": "FR-02",
+            "text": "| FR-02 | The service shall calculate and round the total tip per BR-07, for any accepted tip percentage and for a bill amount of `0`. | AC-003, AC-006, AC-007, AC-015 |",
+            "line": 134
+          },
+          {
+            "id": "FR-03",
+            "text": "| FR-03 | The service shall split bill plus rounded tip per BR-09 … BR-12, so the amounts sum exactly and differ by at most one cent. | AC-002, AC-004, AC-005 |",
+            "line": 135
+          },
+          {
+            "id": "FR-04",
+            "text": "| FR-04 | The service shall return one amount per person, in the order of the people, plus the total tip. | AC-001 |",
+            "line": 136
+          },
+          {
+            "id": "FR-05",
+            "text": "| FR-05 | The service shall validate all three inputs per BR-01 … BR-06, judging every rule on the numeric value received. | AC-008 … AC-012, AC-017, AC-019 |",
+            "line": 137
+          },
+          {
+            "id": "FR-06",
+            "text": "| FR-06 | The service shall report at most one problem per input and a problem for every faulty input in a single answer, naming each input by its sent field name, and return no amounts. | AC-013, AC-014, AC-020 |",
+            "line": 138
+          },
+          {
+            "id": "FR-07",
+            "text": "| FR-07 | The calculation shall impose no upper limit on bill amount, tip percentage or number of people. | AC-016 |",
+            "line": 139
+          },
+          {
+            "id": "FR-08",
+            "text": "| FR-08 | The service shall answer a request nothing can be read from with a single problem naming `request`. | AC-018 |",
+            "line": 140
+          }
+        ],
+        "diagnostics": []
+      },
+      "planKeys": [
+        ".specs/plan-archive/0001-split-bill-with-tip.2026-09-19.plan.md"
+      ],
+      "returnNoteKeys": []
+    }
+  ],
+  "plans": [
+    {
+      "key": ".specs/plan-archive/0001-split-bill-with-tip.2026-09-19.plan.md",
+      "readable": true,
+      "variant": "archived",
+      "reference": "0001-split-bill-with-tip",
+      "number": "0001",
+      "slug": "split-bill-with-tip",
+      "date": "2026-09-19",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Plan — Split a bill with tip evenly across a group"
+          },
+          "line": 1
+        },
+        "spec": {
+          "value": {
+            "state": "value",
+            "raw": "[0001-split-bill-with-tip.md](../done/0001-split-bill-with-tip.md)"
+          },
+          "line": 3
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Done"
+          },
+          "line": 4
+        },
+        "lastUpdated": {
+          "value": {
+            "state": "value",
+            "raw": "2026-09-19"
+          },
+          "line": 5
+        },
+        "currentStep": {
+          "value": {
+            "state": "value",
+            "raw": "none — all nine steps are ticked and verified"
+          },
+          "line": 6
+        },
+        "stages": {
+          "present": false,
+          "stages": []
+        },
+        "steps": [
+          {
+            "id": "T-001",
+            "title": "Scaffold the project",
+            "line": 88,
+            "struck": false,
+            "dialect": "covers-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "scaffolding only — no acceptance criterion"
+            },
+            "coveredCriteria": [],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "`package.json` (`name: tip-splitter`, `version: 0.1.0`, `\"type\": \"module\"`, `private`,\nscripts `test` → `node --test` and `lint` → `eslint .`), a minimal flat `eslint.config.js`\n(ESM, latest ecmaVersion, Node globals), `node_modules/` in `.gitignore`, ESLint installed as\nthe only dev dependency."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`npm install` then `npx eslint .` → exit 0, zero errors and zero warnings"
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-09-19 · `npm install` → 86 packages added, 0 vulnerabilities · `npx eslint .`\n→ exit 0, no output (zero errors, zero warnings)"
+            },
+            "notes": {
+              "state": "value",
+              "raw": "install was pre-approved by the user for this run (A-T3 settled). A-T2 settled: a\nplain array exported from `eslint.config.js` is enough and `npx eslint .` needs no `--config`;\n`@eslint/js` was deliberately not imported, so ESLint stays the only declared dev dependency,\nat the price of hand-listing the few rules instead of `js.configs.recommended`. npm warns\n`eslint@9.39.5` is past its support window — noted, not acted on (a version bump is an\nAsk-first dependency change and buys nothing this slice needs)."
+            },
+            "unsupported": []
+          },
+          {
+            "id": "T-002",
+            "title": "Core: total tip, rounded half up, in integer cents",
+            "line": 105,
+            "struck": false,
+            "dialect": "covers-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-003, AC-015"
+            },
+            "coveredCriteria": [
+              "AC-003",
+              "AC-015"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "`test/split.test.js` first — AC-003's two examples (`10.05` at `5 %` → `50` cents;\n`10.10` at `5 %` → `51` cents) and AC-015 (`7.125 %` accepted, only the result rounded) —\nagainst a `src/split.js` export `totalTipCents(amountCents, tipPercent)` that throws\n`Not implemented`. Then implement BR-07: scale `tipPercent` by its own decimal places so the\nhalf-up boundary is decided on integers, never on a possibly inexact float product."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`node --test` → both cases pass; then `npx eslint .`"
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-09-19 · red: `node --test` → 4 tests failing with\n`Error: Not implemented: totalTipCents(...)` (the stub, not a missing module) · green:\n`npx eslint .` clean, `node --test` → 4 pass / 0 fail"
+            },
+            "notes": {
+              "state": "value",
+              "raw": "A-T1 settled — `node --test` discovers `test/**/*.test.js` with no configuration.\nThe half-up boundary is decided on integers: `decimalToFraction` reads the number's shortest\ndecimal form into `numerator/denominator`, then `divideRoundHalfUp` compares `2·remainder`\nagainst the denominator. `10.07` at `100 %` is in the tests precisely because\n`10.07 * 100 === 1006.9999999999999`. `decimalToFraction` and `divideRoundHalfUp` are exported\nbecause T-006 and T-008 reuse them for BR-02 and the E-16 range check."
+            },
+            "unsupported": []
+          },
+          {
+            "id": "T-003",
+            "title": "Core: even split with leftover cents",
+            "line": 124,
+            "struck": false,
+            "dialect": "covers-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-001, AC-002, AC-004, AC-005"
+            },
+            "coveredCriteria": [
+              "AC-001",
+              "AC-002",
+              "AC-004",
+              "AC-005"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "test first for `splitEvenly(totalCents, people)` in `src/split.js` — AC-004's example\n(`1100 / 3` → `367, 367, 366`), AC-001's (`6600 / 4` → four × `1650`), plus the two invariants\nover a small case table: sum equals `totalCents` exactly (AC-002) and amounts are\nnon-increasing with a spread of at most one cent (AC-005). Then implement BR-09 … BR-12:\nfloor division plus one cent to each of the first *k* people."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`node --test` → all cases pass; then `npx eslint .`"
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-09-19 · red: `node --test` → 6 new tests failing with\n`Error: Not implemented: splitEvenly(...)` / `splitBill(...)` (stubs, not missing exports),\n4 pre-existing green · green: `npx eslint .` clean, `node --test` → 10 pass / 0 fail"
+            },
+            "notes": {
+              "state": "value",
+              "raw": "four criteria deliberately — they are the single contract of one function, since\nexact sum and ordering are invariants of the same distribution, not separable behaviours.\nAddition beyond the planned `splitEvenly`: `splitBill(amountCents, tipPercent, people)`\ncomposes tip and split, so AC-002 is proven where the spec states it — against the **returned**\ntotal tip — instead of only against a total the test computes itself. It also keeps\n`src/server.js` free of arithmetic. Both invariant tests run over an eight-case table;\nthe AC-004 negative control asserts that plain flooring (`366, 366, 366`) is *not* the result."
+            },
+            "unsupported": []
+          },
+          {
+            "id": "T-004",
+            "title": "Core: zero and scale edges",
+            "line": 144,
+            "struck": false,
+            "dialect": "covers-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-006, AC-007, AC-016"
+            },
+            "coveredCriteria": [
+              "AC-006",
+              "AC-007",
+              "AC-016"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "tests for bill `0` (tip `0.00`, every person `0.00`), `tipPercent 0` (bill alone\nsplit), one person (receives everything), and `10.00` at `0 %` across `1000` people summing to\n`10.00`. Implement only if something fails."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`node --test` → all cases pass"
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-09-19 · `node --test` → 15 pass / 0 fail; `npx eslint .` clean. The five new\ntests were **green on arrival** — no red run, because T-002/T-003 already covered the\nbehaviour; no production code changed in this step."
+            },
+            "notes": {
+              "state": "value",
+              "raw": "green-immediately is sanctioned by `AGENTS.md`, so two negative controls carry the\nweight instead: a zero bill must still yield one share *per person* (not an empty list), and the\nAC-004 control from T-003 already rules out plain flooring. AC-016 is proven at realistic\nmagnitude per spec R-007 — 1000 people, and a bill of 1 000 000 000.00 at 15 % that still sums\nback exactly."
+            },
+            "unsupported": []
+          },
+          {
+            "id": "T-005",
+            "title": "HTTP layer: handler, routing, happy path",
+            "line": 160,
+            "struck": false,
+            "dialect": "covers-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-001 (end to end)"
+            },
+            "coveredCriteria": [
+              "AC-001"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "test first, then `src/server.js`: export `handleSplit(rawBody) → {status, body}` and\nthe `node:http` request listener delegating to it; `POST /split` → `200` with\n`{perPerson, totalTip}` as JSON numbers (D-3); `listen` only when the file is run directly.\nTests call `handleSplit` with AC-001's body and drive the listener once with in-memory\n`req`/`res` stand-ins — no port is bound."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`node --test` → AC-001 passes through both entry paths; then `npx eslint .`"
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-09-19 · red: `node --test` → 4 failing with\n`Error: Not implemented: handleSplit(...)` / `requestListener(...)` · green: `npx eslint .`\nclean, `node --test` → 19 pass / 0 fail"
+            },
+            "notes": {
+              "state": "value",
+              "raw": "the core stays free of HTTP; no validation yet — invalid input is T-006 onwards.\nDeviation from the plan: the `404` / `405` plumbing was pulled forward from T-008 into this\nstep, with its own two tests, so no untested branch lands. T-008's `Do` keeps the item struck.\n`src/split.js` gained the pure numeric conversions `toCents` / `fromCents` — arithmetic belongs\nin the core, so the server only maps field names and status codes. The response carries plain\nJSON numbers (D-3): `16.5`, not `\"16.50\"`. `test/server.test.js` holds a local `fakeResponse` +\n`callListener` helper; every server test lives in this one file on purpose, because\n`node --test` treats *every* file under `test/` as a test file, so a shared helper module there\nwould be collected as one."
+            },
+            "unsupported": []
+          },
+          {
+            "id": "T-006",
+            "title": "Validation: bill amount",
+            "line": 182,
+            "struck": false,
+            "dialect": "covers-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-008, AC-009, AC-019, AC-012 (the `amount` share of it)"
+            },
+            "coveredCriteria": [
+              "AC-008",
+              "AC-009",
+              "AC-019",
+              "AC-012"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "test first, then implement the BR-14 check order for `amount` in `src/server.js`:\nreadable as a number (BR-06) → not negative (BR-01) → exact to the cent (BR-02), judged on the\n**value** via a tolerant comparison against the nearest integer of `value × 100`. Must accept\n`10.1`, `10.100` and `10.07`; must reject `10.005` without rounding it. Messages per D-2."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`node --test` → accepted and rejected cases both hold"
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-09-19 · red: `node --test` → 3 failing with `AssertionError` (200 with\namounts where a 400 with problems was expected — not a missing module) · green: `npx eslint .`\nclean, `node --test` → 23 pass / 0 fail"
+            },
+            "notes": {
+              "state": "value",
+              "raw": "`10.07 * 100` is `1006.9999999999999` — a naive integer test fails this step; the\ncheck runs on `toCents`, which divides the exact fraction, so `10.1`, `10.100`, `10.07` and\n`1e2` pass while `10.005` is rejected. AC-019 was **green on arrival**: the core already\njudged the value, so that test documents rather than drives. The three `amount` presence cases\nof AC-012 were pulled into this step, because they are the same `checkReadable` gate on the\nsame field; T-008 completes AC-012 for `tipPercent` and `people`. The validator is a\n`CHECKS` table that T-007 extends with one row per input."
+            },
+            "unsupported": []
+          },
+          {
+            "id": "T-007",
+            "title": "Validation: tip percentage and number of people",
+            "line": 201,
+            "struck": false,
+            "dialect": "covers-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-010, AC-011, AC-017"
+            },
+            "coveredCriteria": [
+              "AC-010",
+              "AC-011",
+              "AC-017"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "test first, then the check orders: `tipPercent` — number (BR-06) → not negative\n(BR-03); `people` — number (BR-06) → whole number (BR-04) → at least `1` (BR-04). `3.0` is the\nwhole number `3` and is accepted (AC-017); `2.5` and `0` are rejected. Messages per D-2."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`node --test` → each rejection names the right field with one message"
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-09-19 · red: `node --test` → 3 failing with `AssertionError` (the invalid\nvalues were still calculated) · green: `npx eslint .` clean, `node --test` → 28 pass / 0 fail"
+            },
+            "notes": {
+              "state": "value",
+              "raw": "AC-017 was green on arrival — JSON parses `3.0` to `3`, which `Number.isInteger`\naccepts; the test documents the rule. `people: -3` is deliberately in the tests: a negative\nwhole number passes the whole-number check and must fail on \"at least 1\", which is what pins\nthe BR-14 order rather than the outcome alone. One extra end-to-end case for AC-015 through the\nservice (`7.125 %` → `7.13`), since T-002 proved it only in the core."
+            },
+            "unsupported": []
+          },
+          {
+            "id": "T-008",
+            "title": "Problem-response contract",
+            "line": 216,
+            "struck": false,
+            "dialect": "covers-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-012, AC-013, AC-014, AC-018, AC-020"
+            },
+            "coveredCriteria": [
+              "AC-012",
+              "AC-013",
+              "AC-014",
+              "AC-018",
+              "AC-020"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "test first, then assemble the rejection in `src/server.js`: `400` with one problem per\nfaulty input, every faulty input present, fixed order `amount` → `tipPercent` → `people`\n(A-005), and never amounts beside problems (BR-13, AC-014). Cases: missing / empty / not a\nnumber per input (AC-012), AC-013's three-problem example, AC-020's one-problem-per-input\nrule, the single `request` problem for an unparseable or non-object body (AC-018, D-4), the\nD-1 safe-range check appended last in each input's order (E-16). ~~The `404` / `405` plumbing\nfrom D-5~~ — landed in T-005 with its own tests."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`node --test` → every case above passes; then `npx eslint .`"
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-09-19 · red: `node --test` → 3 failing — AC-018 twice with `SyntaxError`\nfrom `JSON.parse` escaping as a crash instead of a problem, and the E-16 test with an\n`AssertionError` (unsafe values were still calculated) · green: `npx eslint .` clean,\n`node --test` → 37 pass / 0 fail"
+            },
+            "notes": {
+              "state": "value",
+              "raw": "the riskiest step — five criteria, because they are one response contract. It did\nnot grow: AC-012, AC-013, AC-014 and AC-020 were **green on arrival**, because the `CHECKS`\ntable from T-006/T-007 already yields one problem per input, in input order, for every faulty\ninput, with no amounts beside them. Only two pieces were missing: `readPayload` (unparseable\nJSON, or JSON that is not a plain object — `null` and arrays included — become the single\n`request` problem, D-4) and the E-16 range checks. The E-16 message was revised, see D-2.\nThe range check is split: each input's own safe-range check sits last in its BR-14 order, so\ncompleteness across inputs still holds; the combined case — every input fine alone, yet\n`amountCents × tipPercent` or the sum leaving the safe range — is one problem naming `amount`,\nfrom the core predicate `canCalculateExactly`. A counter-test pins that no ceiling was invented:\none billion at 15 % across 3 people still answers `200`."
+            },
+            "unsupported": []
+          },
+          {
+            "id": "T-009",
+            "title": "Full quality gate and doc sync",
+            "line": 243,
+            "struck": false,
+            "dialect": "covers-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "re-proves AC-001 … AC-020"
+            },
+            "coveredCriteria": [
+              "AC-001",
+              "AC-002",
+              "AC-003",
+              "AC-004",
+              "AC-005",
+              "AC-006",
+              "AC-007",
+              "AC-008",
+              "AC-009",
+              "AC-010",
+              "AC-011",
+              "AC-012",
+              "AC-013",
+              "AC-014",
+              "AC-015",
+              "AC-016",
+              "AC-017",
+              "AC-018",
+              "AC-019",
+              "AC-020"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "run both gates clean; run `/sdd-architecture-update` (the snapshot still reads \"no\nsource files exist yet\", and `src/` plus a new top-level `test/` now exist); refresh\n`techContext.md` (real commands), `systemPatterns.md` (integer-cent arithmetic, the\npure-handler/listener split) and `activeContext.md`; complete the traceability table below to\n`verified`."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`npx eslint .` → `node --test`, both zero errors and zero warnings"
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-09-19 · `npx eslint .` → exit 0, no output · `node --test` → 37 pass /\n0 fail / 0 skipped / 0 todo, `duration_ms 209.9`"
+            },
+            "notes": {
+              "state": "value",
+              "raw": "`/sdd-architecture-update` ran with its confirmation gate; the user confirmed the\ndelta report on 2026-09-19 and added nothing. Written in this step: the `architecture:` snapshot\n(`last reconciled` date, the two sharpened module lines, new boundaries for the exported handler,\n`test/` and the root config files), `systemPatterns.md` (new `## Knowledge records` section with\n`arch-cents-001` and `arch-json-numbers-001`; the \"Money rounding\" pattern bullet now points at\nthe record instead of holding the *why*), `techContext.md` (real commands, ESLint 9 flat config\nwithout `@eslint/js`, observed Node version, and the `node --test` collection trap) and\n`activeContext.md`. Deliberately **not** a knowledge record: the E-16 safe-range rejection —\nit is validation, which `.claude/rules/knowledge-records.md` excludes; it stays in spec R-007\nand plan D-1."
+            },
+            "unsupported": []
+          }
+        ],
+        "traceability": [
+          {
+            "criterion": "AC-001",
+            "steps": {
+              "state": "value",
+              "raw": "T-003, T-005"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/split.js:splitEvenly`, `src/server.js:handleSplit`, `src/server.js:requestListener`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/server.test.js` — \"AC-001: the same answer comes back through POST /split…\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 269
+          },
+          {
+            "criterion": "AC-002",
+            "steps": {
+              "state": "value",
+              "raw": "T-003"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/split.js:splitEvenly`, `src/split.js:splitBill`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/split.test.js` — \"AC-002: bill plus returned total tip equals…\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 270
+          },
+          {
+            "criterion": "AC-003",
+            "steps": {
+              "state": "value",
+              "raw": "T-002"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/split.js:totalTipCents`, `src/split.js:divideRoundHalfUp`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/split.test.js` — \"AC-003: an exact half rounds up\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 271
+          },
+          {
+            "criterion": "AC-004",
+            "steps": {
+              "state": "value",
+              "raw": "T-003"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/split.js:splitEvenly`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/split.test.js` — \"AC-004: leftover cents raise the first people…\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 272
+          },
+          {
+            "criterion": "AC-005",
+            "steps": {
+              "state": "value",
+              "raw": "T-003"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/split.js:splitEvenly`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/split.test.js` — \"AC-005: shares differ by at most one cent…\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 273
+          },
+          {
+            "criterion": "AC-006",
+            "steps": {
+              "state": "value",
+              "raw": "T-004"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/split.js:splitBill`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/split.test.js` — \"AC-006: a bill of zero gives every person zero…\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 274
+          },
+          {
+            "criterion": "AC-007",
+            "steps": {
+              "state": "value",
+              "raw": "T-004"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/split.js:splitBill`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/split.test.js` — \"AC-007: a tip of zero percent splits the bill alone\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 275
+          },
+          {
+            "criterion": "AC-008",
+            "steps": {
+              "state": "value",
+              "raw": "T-006"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/server.js:checkAmount`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/server.test.js` — \"AC-008: a negative bill amount is rejected…\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 276
+          },
+          {
+            "criterion": "AC-009",
+            "steps": {
+              "state": "value",
+              "raw": "T-006"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/server.js:checkAmount`, `src/split.js:toCents`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/server.test.js` — \"AC-009: a bill amount that is not exact to the cent…\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 277
+          },
+          {
+            "criterion": "AC-010",
+            "steps": {
+              "state": "value",
+              "raw": "T-007"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/server.js:checkTipPercent`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/server.test.js` — \"AC-010: a negative tip percentage is rejected…\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 278
+          },
+          {
+            "criterion": "AC-011",
+            "steps": {
+              "state": "value",
+              "raw": "T-007"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/server.js:checkPeople`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/server.test.js` — \"AC-011: a fractional number of people…\" and \"AC-011: fewer than one person…\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 279
+          },
+          {
+            "criterion": "AC-012",
+            "steps": {
+              "state": "value",
+              "raw": "T-006, T-008"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/server.js:checkReadable`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/server.test.js` — \"AC-012 (amount): …\" and \"AC-012: a missing, empty or non-numeric tip percentage or people count…\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 280
+          },
+          {
+            "criterion": "AC-013",
+            "steps": {
+              "state": "value",
+              "raw": "T-008"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/server.js:collectProblems`, `src/server.js:CHECKS`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/server.test.js` — \"AC-013: every invalid input is named in a single answer…\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 281
+          },
+          {
+            "criterion": "AC-014",
+            "steps": {
+              "state": "value",
+              "raw": "T-008"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/server.js:rejection`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/server.test.js` — \"AC-014: a rejection carries no per-person amount…\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 282
+          },
+          {
+            "criterion": "AC-015",
+            "steps": {
+              "state": "value",
+              "raw": "T-002, T-007"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/split.js:totalTipCents`, `src/split.js:decimalToFraction`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/split.test.js` — \"AC-015: a tip percentage with more than two decimals…\"; `test/server.test.js` — \"AC-015 (service): …\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 283
+          },
+          {
+            "criterion": "AC-016",
+            "steps": {
+              "state": "value",
+              "raw": "T-004, T-008"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/split.js:splitBill`, `src/split.js:canCalculateExactly`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/split.test.js` — \"AC-016: no upper limit — 1000 people…\"; `test/server.test.js` — \"E-16: a large but exactly calculable request is still accepted\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 284
+          },
+          {
+            "criterion": "AC-017",
+            "steps": {
+              "state": "value",
+              "raw": "T-007"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/server.js:checkPeople`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/server.test.js` — \"AC-017: a number of people with a zero fractional part…\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 285
+          },
+          {
+            "criterion": "AC-018",
+            "steps": {
+              "state": "value",
+              "raw": "T-008"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/server.js:readPayload`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/server.test.js` — \"AC-018: a request nothing can be read from…\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 286
+          },
+          {
+            "criterion": "AC-019",
+            "steps": {
+              "state": "value",
+              "raw": "T-006"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/split.js:decimalToFraction`, `src/split.js:toCents`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/server.test.js` — \"AC-019: cent-exactness is judged on the value received…\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 287
+          },
+          {
+            "criterion": "AC-020",
+            "steps": {
+              "state": "value",
+              "raw": "T-008"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/server.js:checkAmount` (the ordered checks)"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`test/server.test.js` — \"AC-020: an input breaking several rules…\""
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 288
+          }
+        ],
+        "handoff": {
+          "doneSoFar": {
+            "value": {
+              "state": "value",
+              "raw": "T-001 scaffold · T-002 `totalTipCents` (AC-003, AC-015) · T-003 `splitEvenly`\nand `splitBill` (AC-002, AC-004, AC-005 verified; AC-001 built, end-to-end half in T-005) ·\nT-004 zero and scale edges (AC-006, AC-007, AC-016 verified). The core is complete ·\nT-005 `src/server.js` with `handleSplit` + `requestListener`, happy path and routing\n(AC-001 verified) · T-006 `amount` validation via a `CHECKS` table (AC-008, AC-009, AC-019\nverified; AC-012 built for `amount`) · T-007 `tipPercent` and `people` validation (AC-010,\nAC-011, AC-017 verified) · T-008 problem-response contract, `request` case and the E-16 range\nchecks (AC-012 … AC-014, AC-018, AC-020 verified) · T-009 final gate and doc sync. All nine\nsteps are done; all 20 criteria are `verified` in the table above."
+            },
+            "line": 292
+          },
+          "nextAction": {
+            "value": {
+              "state": "value",
+              "raw": "none — the iteration is closed. The spec moved to `../done/` on 2026-09-19\nand this plan was archived and frozen in the same change set."
+            },
+            "line": 301
+          },
+          "openDecisions": {
+            "value": {
+              "state": "value",
+              "raw": "none. D-1 … D-5 are settled; D-1/D-2 are recorded in the spec as R-007/R-008,\nand the D-2 wording for E-16 was revised in T-008."
+            },
+            "line": 303
+          },
+          "baseline": {
+            "value": {
+              "state": "value",
+              "raw": "`f325adb` (the `backlog → active` move; the last commit before T-001)"
+            },
+            "line": 305
+          },
+          "environment": {
+            "value": {
+              "state": "value",
+              "raw": "Node `v24.17.0`, npm `11.17.0`; standard commands live in\n`.memory-bank/techContext.md`."
+            },
+            "line": 306
+          }
+        },
+        "unsupported": [],
+        "diagnostics": []
+      },
+      "specKeys": [
+        ".specs/done/0001-split-bill-with-tip.md"
+      ],
+      "specReferences": [
+        "0001-split-bill-with-tip"
+      ]
+    }
+  ],
+  "returnNotes": [],
+  "diagnostics": []
+}

@@ -93,7 +93,26 @@ describe('parseSpec title and header lines', () => {
         expect(spec.unsupportedHeaderLines).toEqual([{ label: 'Owner', raw: '**Owner:** Gregor', line: 4 }]);
         expect(spec.plan.value).toEqual({ state: 'placeholder', raw: '_none yet_' });
         expect(spec.diagnostics).toEqual([
-            { kind: 'unknown-content', scope: { file: KEY, line: 4 }, reason: 'unknown header line "Owner"' },
+            { kind: 'unknown-content', tier: 'note', scope: { file: KEY, line: 4 }, reason: 'unknown header line "Owner"' },
+        ]);
+    });
+
+    it('AC-002: a Successor header line is a known header line, read as a field, with no diagnostic', () => {
+        const spec = parse('# T\n\n**Status:** Deprecated\n**Successor:** [b](../backlog/0002-b.md)\n');
+        expect(spec.successor).toEqual({ value: { state: 'value', raw: '[b](../backlog/0002-b.md)' }, line: 4 });
+        expect(spec.unsupportedHeaderLines).toEqual([]);
+        expect(spec.diagnostics).toEqual([]);
+    });
+
+    it('AC-002: a spec without a Successor line has an absent successor field (negative control)', () => {
+        expect(parse('# T\n\n**Status:** Draft\n').successor).toEqual({ value: { state: 'absent' } });
+    });
+
+    it('AC-002: a second Successor line is a repeated-header format note and keeps the first', () => {
+        const spec = parse('# T\n\n**Status:** Deprecated\n**Successor:** [b](b.md)\n**Successor:** [c](c.md)\n');
+        expect(spec.successor.value).toEqual({ state: 'value', raw: '[b](b.md)' });
+        expect(spec.diagnostics).toEqual([
+            { kind: 'unknown-content', tier: 'note', scope: { file: KEY, line: 5 }, reason: 'repeated header line "Successor"' },
         ]);
     });
 
@@ -113,6 +132,7 @@ describe('parseSpec title and header lines', () => {
         expect(spec.diagnostics).toEqual([
             {
                 kind: 'unknown-content',
+                tier: 'problem',
                 scope: { file: KEY, line: 3 },
                 reason: 'unknown **Status:** value "Half done"',
             },
@@ -288,6 +308,7 @@ describe('parseSpec sections and plan history', () => {
                 'requirements',
                 'sections',
                 'status',
+                'successor',
                 'ticket',
                 'title',
                 'unsupportedHeaderLines',

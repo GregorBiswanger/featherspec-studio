@@ -1,7 +1,6 @@
 import type { ParsedSpec } from '../specs/parseSpec';
 import type { Successor } from './model';
 
-const HEADER_PREFIX = /^\*\*Successor:\*\*[ \t]*/;
 const BODY_LINE = /^[ \t]*successor:[ \t]*(.*?)[ \t]*$/i;
 const LINK = /^\[([^\]]*)\]\(([^)\s]+)\)$/;
 const REMOVED = 'none — behaviour removed';
@@ -26,9 +25,9 @@ function classify(value: string): Successor {
 }
 
 export function readSuccessor(parsed: ParsedSpec): Successor {
-    const header = parsed.unsupportedHeaderLines.find((line) => line.label === 'Successor');
-    if (header !== undefined) {
-        return classify(header.raw.trim().replace(HEADER_PREFIX, ''));
+    const header = parsed.successor.value;
+    if (header.state !== 'absent') {
+        return classify(header.raw);
     }
     for (const section of parsed.sections) {
         for (const line of section.raw.split('\n')) {

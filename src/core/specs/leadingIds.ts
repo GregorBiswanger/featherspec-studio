@@ -196,6 +196,7 @@ export function locateLeadingIds(lines: readonly string[], fenced: readonly bool
         if (others.length > 0) {
             diagnostics.push({
                 kind: 'duplicate',
+                tier: 'note',
                 scope: { file: key, line: criterion.line },
                 reason: `${criterion.id} is defined more than once in this spec; other definitions at line ${others.map((other) => other.line).join(', ')}`,
             });

@@ -67,7 +67,7 @@ describe('connectActiveProject', () => {
         await controller.refresh();
         await repository.whenIdle();
         expect(repository.snapshot()?.version).toBe('2.0.0');
-        expect(repository.snapshot()?.diagnostics).toEqual([{ kind: 'unverified-version', scope: 'project', reason: 'newer than known' }]);
+        expect(repository.snapshot()?.diagnostics).toEqual([{ kind: 'unverified-version', tier: 'note', scope: 'project', reason: 'newer than known' }]);
     });
 
     it('AC-022: when 0001 reports no active project the repository stops watching and discards the model', async () => {

@@ -27,7 +27,7 @@ describe('parseReturnNote', () => {
         const note = parseReturnNote('- **Status:** DONE (one finding below)', KEY);
         expect(note.status.value).toEqual({ state: 'value', raw: 'DONE (one finding below)' });
         expect(note.diagnostics).toEqual([
-            { kind: 'unknown-content', scope: { file: KEY, line: 1 }, reason: 'unknown status value "DONE (one finding below)"' },
+            { kind: 'unknown-content', tier: 'problem', scope: { file: KEY, line: 1 }, reason: 'unknown status value "DONE (one finding below)"' },
         ]);
     });
 

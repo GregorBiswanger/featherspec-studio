@@ -1,0 +1,596 @@
+{
+  "version": "1.8.0",
+  "specs": [
+    {
+      "key": ".specs/done/0001-einer-handsup-session-beitreten.md",
+      "readable": true,
+      "reference": "0001-einer-handsup-session-beitreten",
+      "number": "0001",
+      "slug": "einer-handsup-session-beitreten",
+      "folder": "done",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Einer HandsUp-Session beitreten"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Baseline"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "placeholder",
+            "raw": "_none_"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "placeholder",
+          "raw": "_none_"
+        },
+        "ticket": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "origin": {
+          "value": {
+            "state": "value",
+            "raw": "Reverse — Brownfield"
+          },
+          "line": 5
+        },
+        "validatedBy": {
+          "value": {
+            "state": "value",
+            "raw": "Gregor Biswanger · 2026-09-24"
+          },
+          "line": 6
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [],
+        "sections": [
+          {
+            "heading": "Zusammenfassung",
+            "raw": "Workshop-Teilnehmer geben einen Session-Code und einen Benutzernamen ein, um die Übungsansicht einer vorhandenen HandsUp-Session zu öffnen (AC-001). Ein unbekannter Session-Code wird sichtbar abgelehnt (AC-003).",
+            "line": 8
+          },
+          {
+            "heading": "Benutzer und Rollen",
+            "raw": "- **Workshop-Teilnehmer:** tritt einer Session bei und sieht die Übungsansicht.\n- **Trainer:** sieht neu beigetretene Teilnehmer in der Teilnehmerliste.",
+            "line": 12
+          },
+          {
+            "heading": "Umfang",
+            "raw": "### Im Umfang\n\n- Beitritt über Session-Code und Benutzername.\n- Sichtbarer Erfolg oder Fehler des Beitritts.\n- Wiederaufnahme einer zuvor gespeicherten Session beim erneuten Öffnen.\n\n### Außerhalb des Umfangs\n\n- Steuerung und Anzeige einer laufenden Übung — eigene Capability.\n- Meldung des persönlichen Übungsstatus — eigene Capability.\n- Verlassen oder Beenden einer Session — eigene Capability.",
+            "line": 17
+          },
+          {
+            "heading": "Funktionsablauf",
+            "raw": "1. Der Teilnehmer gibt Session-Code und Benutzername ein und wählt `Training beitreten` (AC-001).\n2. Bei Erfolg öffnet das System die Übungsansicht.\n3. Bei einem unbekannten Code bleibt der Teilnehmer auf der Startseite und sieht den Fehler (AC-003).",
+            "line": 31
+          },
+          {
+            "heading": "Geschäftsregeln",
+            "raw": "- BR-02 Innerhalb einer Session kann derselbe Benutzername nur einmal neu beitreten.",
+            "line": 37
+          },
+          {
+            "heading": "Fehlerfälle",
+            "raw": "- Ein unbekannter Session-Code wird nach AC-003 abgelehnt.\n- Weitere codegestützte, aber nicht persönlich bestätigte Fehlerfälle stehen unter den offenen Punkten.",
+            "line": 41
+          },
+          {
+            "heading": "Akzeptanzkriterien",
+            "raw": "- AC-001 Wenn ein Teilnehmer einen vorhandenen Session-Code und einen noch nicht vorhandenen Benutzernamen absendet, shall das System die Übungsansicht öffnen, ihn mit `Hi <Benutzername>` begrüßen und zunächst `Übung fertig!` anzeigen.\n- AC-003 Wenn ein Teilnehmer einen unbekannten Session-Code absendet, shall das System auf der Startseite bleiben und `Session Code ungültig.` anzeigen.",
+            "line": 46
+          },
+          {
+            "heading": "Annahmen",
+            "raw": "| ID | Annahme | Begründung | Auswirkung, falls falsch |\n| --- | --- | --- | --- |\n| A-001 | Der Teilnehmer erhält den Session-Code außerhalb dieser Webseite vom Trainer. | Nutzeraussage vom 24.09.2026. | Der Einstieg in den beschriebenen Beitrittsfluss wäre unvollständig. |",
+            "line": 51
+          },
+          {
+            "heading": "Offene Punkte",
+            "raw": "- [Uncertain] BR-01 wurde geprüft, aber nicht persönlich bestätigt: Session-Codes und Benutzernamen werden exakt verglichen; Unterschiede bei Groß-/Kleinschreibung und Leerzeichen bleiben bestehen.\n- [Uncertain] AC-002 konnte der Teilnehmer nicht selbst sehen: Wenn ein Teilnehmer erfolgreich beitritt, nimmt das System ihn als fertig in die Teilnehmerliste des Trainers auf.\n- [Uncertain] AC-004 wurde geprüft, aber nicht persönlich bestätigt: Wenn ein Teilnehmer einen bereits vorhandenen Benutzernamen absendet, bleibt das System auf der Startseite und zeigt `Benutzername ist bereits vorhanden.` an.\n- [Uncertain] AC-005 wurde geprüft, aber nicht persönlich bestätigt: Beim erneuten Öffnen einer gespeicherten Session öffnet das System bei noch vorhandener Session die Übungsansicht und bei nicht mehr vorhandener Session die Startseite.\n- *Finding*: Ein Teilnehmer kann mit einem leeren oder nur aus Leerzeichen bestehenden Benutzernamen beitreten; dadurch kann die Teilnehmerliste Personen ohne erkennbaren Namen enthalten. Die Webseite prüft außerdem keine Länge des Namens.\n- *Finding*: Nach der Ablehnung eines bereits vorhandenen Benutzernamens bleibt diese Eingabe gespeichert; beim erneuten Öffnen kann der Teilnehmer die Übungsansicht mit dem Zustand des bereits vorhandenen Mitglieds betreten.\n- *Finding*: Nach der Ablehnung eines unbekannten Session-Codes bleibt dieser gespeichert und löst bei jedem erneuten Öffnen wieder einen erfolglosen Wiederaufnahmeversuch aus.\n- *Finding*: Ein Teilnehmer kann die Übungsansicht direkt öffnen, ohne dass sein Beitritt bestätigt wurde; die Seite kann dadurch einen Namen und Übungszustand anzeigen, obwohl keine Verbindung zur Session besteht.\n- *Finding*: Wenn die Session noch besteht, der gespeicherte Benutzername darin aber nicht mehr vorkommt, öffnet das System dennoch die Übungsansicht und zeigt zunächst den gespeicherten Namen sowie `Übung fertig!`; die anschließende Zustandsaktualisierung kann nicht verarbeitet werden.\n- *Finding*: Die fachliche Beschreibung nennt den Beitritt mit einem Namen; das ausgelieferte Verhalten lässt auch einen leeren Namen zu.\n- *Wish*: Gregor Biswanger möchte, dass die dokumentierten Findings bearbeitet werden.\n- *Check*: Der vorhandene Server-E2E-Test deckt Beitritt, Ablehnungen und Wiederaufnahme nicht ab.\n- Validierungsumfang: Gregor Biswanger bestätigte BR-02, AC-001 und AC-003; BR-01, AC-004 und AC-005 wurden geprüft, aber waren ihm nicht bekannt; AC-002 war nur für den Trainer sichtbar und wurde anhand des Codes geprüft.",
+            "line": 57
+          },
+          {
+            "heading": "Technical Reference",
+            "raw": "- Architektur: `AGENTS.md` → `clients/projects/members`, `server/src/training.gateway.ts`\n- Primäre Implementierung: `clients/projects/members/src/app/welcome/*`, `clients/projects/members/src/app/shared/training.service.ts`\n- Wiederaufnahme: `clients/projects/members/src/app/shared/member-session.guard.ts`, `server/src/training.gateway.ts › memberReconnectTraining`\n- Vertrag: `server/src/training.gateway.ts › memberLogin`, `memberReconnectTraining`\n- Entscheidender Test: `server/test/app.e2e-spec.ts`\n- Analysiert bei `51871f3` · 2026-09-24",
+            "line": 73
+          }
+        ],
+        "planHistory": [],
+        "criteria": [
+          {
+            "id": "AC-001",
+            "text": "- AC-001 Wenn ein Teilnehmer einen vorhandenen Session-Code und einen noch nicht vorhandenen Benutzernamen absendet, shall das System die Übungsansicht öffnen, ihn mit `Hi <Benutzername>` begrüßen und zunächst `Übung fertig!` anzeigen.",
+            "line": 48,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-003",
+            "text": "- AC-003 Wenn ein Teilnehmer einen unbekannten Session-Code absendet, shall das System auf der Startseite bleiben und `Session Code ungültig.` anzeigen.",
+            "line": 49,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-002",
+            "text": "- [Uncertain] AC-002 konnte der Teilnehmer nicht selbst sehen: Wenn ein Teilnehmer erfolgreich beitritt, nimmt das System ihn als fertig in die Teilnehmerliste des Trainers auf.",
+            "line": 60,
+            "uncertain": true,
+            "struck": false
+          },
+          {
+            "id": "AC-004",
+            "text": "- [Uncertain] AC-004 wurde geprüft, aber nicht persönlich bestätigt: Wenn ein Teilnehmer einen bereits vorhandenen Benutzernamen absendet, bleibt das System auf der Startseite und zeigt `Benutzername ist bereits vorhanden.` an.",
+            "line": 61,
+            "uncertain": true,
+            "struck": false
+          },
+          {
+            "id": "AC-005",
+            "text": "- [Uncertain] AC-005 wurde geprüft, aber nicht persönlich bestätigt: Beim erneuten Öffnen einer gespeicherten Session öffnet das System bei noch vorhandener Session die Übungsansicht und bei nicht mehr vorhandener Session die Startseite.",
+            "line": 62,
+            "uncertain": true,
+            "struck": false
+          }
+        ],
+        "requirements": [],
+        "diagnostics": []
+      },
+      "planKeys": [],
+      "returnNoteKeys": []
+    },
+    {
+      "key": ".specs/done/0002-laufenden-uebungszustand-verfolgen.md",
+      "readable": true,
+      "reference": "0002-laufenden-uebungszustand-verfolgen",
+      "number": "0002",
+      "slug": "laufenden-uebungszustand-verfolgen",
+      "folder": "done",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Laufenden Übungszustand verfolgen"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Baseline"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "placeholder",
+            "raw": "_none_"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "placeholder",
+          "raw": "_none_"
+        },
+        "ticket": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "origin": {
+          "value": {
+            "state": "value",
+            "raw": "Reverse — Brownfield"
+          },
+          "line": 5
+        },
+        "validatedBy": {
+          "value": {
+            "state": "value",
+            "raw": "Gregor Biswanger · 2026-09-24"
+          },
+          "line": 6
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [],
+        "sections": [
+          {
+            "heading": "Zusammenfassung",
+            "raw": "Workshop-Teilnehmer sehen in ihrer Übungsansicht, ob sie aktuell als übend oder fertig gelten (AC-001). Start und Stopp durch den Trainer ändern diese Anzeige (AC-002, AC-003).",
+            "line": 8
+          },
+          {
+            "heading": "Benutzer und Rollen",
+            "raw": "- **Workshop-Teilnehmer:** verfolgt den sichtbaren Übungszustand.\n- **Trainer:** startet oder stoppt die Übung für die Session.",
+            "line": 12
+          },
+          {
+            "heading": "Umfang",
+            "raw": "### Im Umfang\n\n- Sichtbarer Ausgangszustand der Übungsansicht.\n- Zustandsänderungen durch Start und Stopp des Trainers.\n- Wiederherstellung des persönlichen Zustands nach einer Verbindungsunterbrechung.\n\n### Außerhalb des Umfangs\n\n- Beitritt zu einer Session — Baseline `0001-einer-handsup-session-beitreten.md`.\n- Änderung des persönlichen Übungsstatus — eigene Capability.\n- Verlassen oder Beenden einer Session — eigene Capability.",
+            "line": 17
+          },
+          {
+            "heading": "Funktionsablauf",
+            "raw": "1. Die Übungsansicht zeigt zunächst den fertigen Zustand (AC-001).\n2. Startet der Trainer die Übung, wechselt die Anzeige zum übenden Zustand (AC-002).\n3. Beendet der Trainer die Übung, wechselt die Anzeige zum fertigen Zustand (AC-003).",
+            "line": 31
+          },
+          {
+            "heading": "Geschäftsregeln",
+            "raw": "- BR-01 Bei Start oder Stopp einer Übung setzt das System alle zu diesem Zeitpunkt in der Session vorhandenen Teilnehmer zunächst auf übend beziehungsweise fertig; eine spätere persönliche Meldung kann den eigenen Zustand wieder ändern.",
+            "line": 37
+          },
+          {
+            "heading": "Fehlerfälle",
+            "raw": "- Bei Problemen während der Wiederverbindung gelten die Findings unter den offenen Punkten.",
+            "line": 41
+          },
+          {
+            "heading": "Akzeptanzkriterien",
+            "raw": "- AC-001 Wenn ein Teilnehmer die Übungsansicht öffnet und noch keine andere Zustandsinformation erhalten hat, shall das System grün `Übung fertig!` anzeigen und `Ich bin fertig` markieren.\n- AC-002 Wenn der Trainer die Übung startet und diese Änderung den verbundenen Teilnehmer erreicht, shall das System ihm rot `Übung läuft!` anzeigen und `Ich übe` markieren.\n- AC-003 Wenn der Trainer die Übung beendet und diese Änderung den verbundenen Teilnehmer erreicht, shall das System ihm grün `Übung fertig!` anzeigen und `Ich bin fertig` markieren.",
+            "line": 45
+          },
+          {
+            "heading": "Annahmen",
+            "raw": "| ID | Annahme | Begründung | Auswirkung, falls falsch |\n| --- | --- | --- | --- |\n| A-001 | Trainer und Teilnehmer verwenden dieselbe Session während der Übung. | Der beobachtete Ablauf ordnet Zustandsänderungen über den gemeinsamen Session-Code zu. | Änderungen des Trainers würden den betrachteten Teilnehmer nicht erreichen. |",
+            "line": 51
+          },
+          {
+            "heading": "Offene Punkte",
+            "raw": "- [Uncertain] AC-004 wurde geprüft, aber nicht persönlich bestätigt: Wenn die Verbindung zu einer noch vorhandenen Session wiederhergestellt wird, der Teilnehmer dort noch vorhanden ist und dessen Zustandsaktualisierung die geöffnete Übungsansicht erreicht, zeigt das System seinen zuletzt gespeicherten persönlichen Übungszustand an.\n- *Finding*: Ist die Session während einer Verbindungsunterbrechung beendet worden, bleibt die letzte oder anfängliche Statusanzeige ohne sichtbare Fehlermeldung stehen; das System versucht ungefähr eine Minute lang erneut, die Session zu erreichen, und hört dann ohne Meldung auf.\n- *Finding*: Besteht die Session noch, aber der Teilnehmer ist darin nicht mehr vorhanden, bleibt nach der Wiederverbindung die letzte oder anfängliche Statusanzeige stehen und die Zustandsaktualisierung kann nicht verarbeitet werden.\n- *Finding*: Nachdem ein Teilnehmer `Ich bin fertig` gewählt hat, sieht er `Übung fertig!`, während der Trainer die Übung weiterhin als laufend sehen kann, solange mindestens ein anderer Teilnehmer noch übt. Teilnehmer und Trainer können dadurch gleichzeitig unterschiedliche Aussagen darüber sehen, ob die Übung läuft.\n- *Wish*: Gregor Biswanger möchte, dass die dokumentierten Findings bearbeitet werden.\n- *Check*: Die Wiederherstellung des persönlichen Zustands hängt davon ab, dass die Zustandsnachricht nach Anmeldung der Ansicht eintrifft; der Anwendungscode puffert eine zu früh eintreffende Nachricht nicht selbst.\n- *Check*: Der vorhandene Server-E2E-Test deckt Start, Stopp und Wiederverbindung nicht ab.\n- Validierungsumfang: Gregor Biswanger bestätigte BR-01 sowie AC-001 bis AC-003; AC-004 wurde geprüft, aber war ihm nicht bekannt.",
+            "line": 57
+          },
+          {
+            "heading": "Technical Reference",
+            "raw": "- Architektur: `AGENTS.md` → `clients/projects/members`, `clients/projects/trainer`, `server/src/training.gateway.ts`\n- Teilnehmeranzeige: `clients/projects/members/src/app/exercise/*`\n- Teilnehmerverbindung: `clients/projects/members/src/app/shared/training.service.ts`\n- Trainersteuerung: `clients/projects/trainer/src/app/training/*`, `clients/projects/trainer/src/app/shared/training.service.ts`\n- Vertrag: `server/src/training.gateway.ts › startExercise`, `stopExercise`, `memberReconnectTraining`\n- Entscheidender Test: `server/test/app.e2e-spec.ts`\n- Analysiert bei `51871f3` · 2026-09-24",
+            "line": 68
+          }
+        ],
+        "planHistory": [],
+        "criteria": [
+          {
+            "id": "AC-001",
+            "text": "- AC-001 Wenn ein Teilnehmer die Übungsansicht öffnet und noch keine andere Zustandsinformation erhalten hat, shall das System grün `Übung fertig!` anzeigen und `Ich bin fertig` markieren.",
+            "line": 47,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-002",
+            "text": "- AC-002 Wenn der Trainer die Übung startet und diese Änderung den verbundenen Teilnehmer erreicht, shall das System ihm rot `Übung läuft!` anzeigen und `Ich übe` markieren.",
+            "line": 48,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-003",
+            "text": "- AC-003 Wenn der Trainer die Übung beendet und diese Änderung den verbundenen Teilnehmer erreicht, shall das System ihm grün `Übung fertig!` anzeigen und `Ich bin fertig` markieren.",
+            "line": 49,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-004",
+            "text": "- [Uncertain] AC-004 wurde geprüft, aber nicht persönlich bestätigt: Wenn die Verbindung zu einer noch vorhandenen Session wiederhergestellt wird, der Teilnehmer dort noch vorhanden ist und dessen Zustandsaktualisierung die geöffnete Übungsansicht erreicht, zeigt das System seinen zuletzt gespeicherten persönlichen Übungszustand an.",
+            "line": 59,
+            "uncertain": true,
+            "struck": false
+          }
+        ],
+        "requirements": [],
+        "diagnostics": []
+      },
+      "planKeys": [],
+      "returnNoteKeys": []
+    },
+    {
+      "key": ".specs/done/0003-eigenen-uebungsstatus-melden.md",
+      "readable": true,
+      "reference": "0003-eigenen-uebungsstatus-melden",
+      "number": "0003",
+      "slug": "eigenen-uebungsstatus-melden",
+      "folder": "done",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Eigenen Übungsstatus melden"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Baseline"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "placeholder",
+            "raw": "_none_"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "placeholder",
+          "raw": "_none_"
+        },
+        "ticket": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "origin": {
+          "value": {
+            "state": "value",
+            "raw": "Reverse — Brownfield"
+          },
+          "line": 5
+        },
+        "validatedBy": {
+          "value": {
+            "state": "value",
+            "raw": "Gregor Biswanger · 2026-09-24"
+          },
+          "line": 6
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [],
+        "sections": [
+          {
+            "heading": "Zusammenfassung",
+            "raw": "Workshop-Teilnehmer können sich jederzeit als fertig oder übend melden. Die eigene Anzeige wechselt sofort (AC-001, AC-003).",
+            "line": 8
+          },
+          {
+            "heading": "Benutzer und Rollen",
+            "raw": "- **Workshop-Teilnehmer:** meldet seinen persönlichen Übungsstatus.\n- **Trainer:** sieht den gemeldeten Status je Teilnehmer und einen daraus abgeleiteten Gesamtzustand.",
+            "line": 12
+          },
+          {
+            "heading": "Umfang",
+            "raw": "### Im Umfang\n\n- Wechsel zwischen `Ich bin fertig` und `Ich übe`.\n- Unmittelbare Anzeige beim Teilnehmer.\n- Anzeige des persönlichen Zustands beim Trainer.\n\n### Außerhalb des Umfangs\n\n- Beitritt zur Session — Baseline `0001-einer-handsup-session-beitreten.md`.\n- Start, Stopp und Wiederherstellung der Übungsanzeige — Baseline `0002-laufenden-uebungszustand-verfolgen.md`.\n- Verlassen oder Beenden einer Session — eigene Capability.",
+            "line": 17
+          },
+          {
+            "heading": "Funktionsablauf",
+            "raw": "1. Der Teilnehmer wählt `Ich bin fertig` oder `Ich übe` (AC-001, AC-003).\n2. Seine eigene Anzeige wechselt unmittelbar zum gewählten Zustand (AC-001, AC-003).\n3. Nach erfolgreicher Verarbeitung zeigt die Teilnehmerliste des Trainers den neuen persönlichen Zustand; diese codegestützten Aussagen stehen unter den offenen Punkten.",
+            "line": 31
+          },
+          {
+            "heading": "Geschäftsregeln",
+            "raw": "- BR-01 Ein in einer vorhandenen Session vorhandener Teilnehmer kann seinen persönlichen Status ohne zeitliche oder mengenmäßige Begrenzung wechseln; maßgeblich ist die zuletzt erfolgreich verarbeitete Meldung, bis sie durch eine weitere persönliche Meldung oder einen Start beziehungsweise Stopp des Trainers ersetzt wird.",
+            "line": 37
+          },
+          {
+            "heading": "Fehlerfälle",
+            "raw": "- Bei einer nicht verarbeiteten Statusmeldung oder einer wiederhergestellten Session gelten die Findings unter den offenen Punkten.",
+            "line": 41
+          },
+          {
+            "heading": "Akzeptanzkriterien",
+            "raw": "- AC-001 Wenn ein Teilnehmer `Ich bin fertig` wählt, shall das System ihm sofort grün `Übung fertig!` anzeigen und `Ich bin fertig` markieren.\n- AC-003 Wenn ein Teilnehmer `Ich übe` wählt, shall das System ihm sofort rot `Übung läuft!` anzeigen und `Ich übe` markieren.",
+            "line": 45
+          },
+          {
+            "heading": "Annahmen",
+            "raw": "| ID | Annahme | Begründung | Auswirkung, falls falsch |\n| --- | --- | --- | --- |\n| A-001 | Teilnehmer und Trainer betrachten dieselbe Session. | Die Statusmeldung wird anhand des gemeinsamen Session-Codes zugeordnet. | Der Trainer würde die Meldung dieses Teilnehmers nicht sehen. |",
+            "line": 50
+          },
+          {
+            "heading": "Offene Punkte",
+            "raw": "- [Uncertain] AC-002 konnte der Teilnehmer nicht selbst sehen: Nach erfolgreich verarbeiteter Fertigmeldung zeigt das System dem Trainer neben dem Namen ein grünes Symbol mit `Fertig` an.\n- [Uncertain] AC-004 konnte der Teilnehmer nicht selbst sehen: Nach erfolgreich verarbeiteter Übenmeldung zeigt das System dem Trainer neben dem Namen ein rotes Symbol mit `Sitzt an der Übung` an.\n- *Finding*: Die eigene Anzeige bestätigt `Ich bin fertig` oder `Ich übe` sofort, auch wenn die Session oder der Teilnehmer bei der Verarbeitung nicht mehr vorhanden ist; der Trainer behält dann den bisherigen Zustand und der Teilnehmer sieht keinen Fehler. Ob eine während einer Verbindungsunterbrechung abgesendete Meldung später übermittelt wird, ist nicht festgelegt.\n- *Finding*: Wer Session-Code und Benutzername eines Teilnehmers kennt, kann dessen Statusmeldung ohne weitere Identitätsprüfung absenden. Der Trainer sieht den fremd ausgelösten Wechsel; der betroffene Teilnehmer sieht ihn erst, wenn sein gespeicherter Zustand bei einer späteren Wiederverbindung aktualisiert wird.\n- *Finding*: Geht die serverseitige Session verloren, kann der Trainer sie aus seiner zuletzt empfangenen Teilnehmerliste wiederherstellen. Eine zwischenzeitlich nur lokal sichtbare Statusmeldung eines Teilnehmers geht dabei verloren; nach der nächsten Wiederverbindung kann dessen Anzeige auf den älteren Status zurückspringen.\n- *Finding*: Die Desktop-Fortschrittsanzeige des Trainers kann einen falschen Anteil fertiger Teilnehmer zeigen; bei einem von zwei fertigen Teilnehmern wird beispielsweise 20 Prozent statt 50 Prozent berechnet, und bei keinem fertigen Teilnehmer entsteht kein gültiger Fortschrittswert.\n- *Wish*: Gregor Biswanger möchte, dass die dokumentierten Findings bearbeitet werden.\n- *Check*: Der vorhandene Server-E2E-Test deckt persönliche Statusmeldungen und ihre Fehlerwege nicht ab.\n- Validierungsumfang: Gregor Biswanger bestätigte BR-01, AC-001 und AC-003; AC-002 und AC-004 waren nur für den Trainer sichtbar und wurden anhand des Codes geprüft.",
+            "line": 56
+          },
+          {
+            "heading": "Technical Reference",
+            "raw": "- Architektur: `AGENTS.md` → `clients/projects/members`, `clients/projects/trainer`, `server/src/training.gateway.ts`\n- Teilnehmeraktionen: `clients/projects/members/src/app/exercise/*`\n- Übermittlung: `clients/projects/members/src/app/shared/training.service.ts`\n- Verarbeitung: `server/src/training.gateway.ts › memberExerciseFinish`, `memberExerciseRestart`\n- Traineranzeige: `clients/projects/trainer/src/app/training/*`\n- Desktop-Fortschritt: `clients/projects/trainer/src/app/shared/electron.service.ts`, `desktop/main.js`\n- Entscheidender Test: `server/test/app.e2e-spec.ts`\n- Analysiert bei `51871f3` · 2026-09-24",
+            "line": 68
+          }
+        ],
+        "planHistory": [],
+        "criteria": [
+          {
+            "id": "AC-001",
+            "text": "- AC-001 Wenn ein Teilnehmer `Ich bin fertig` wählt, shall das System ihm sofort grün `Übung fertig!` anzeigen und `Ich bin fertig` markieren.",
+            "line": 47,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-003",
+            "text": "- AC-003 Wenn ein Teilnehmer `Ich übe` wählt, shall das System ihm sofort rot `Übung läuft!` anzeigen und `Ich übe` markieren.",
+            "line": 48,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-002",
+            "text": "- [Uncertain] AC-002 konnte der Teilnehmer nicht selbst sehen: Nach erfolgreich verarbeiteter Fertigmeldung zeigt das System dem Trainer neben dem Namen ein grünes Symbol mit `Fertig` an.",
+            "line": 58,
+            "uncertain": true,
+            "struck": false
+          },
+          {
+            "id": "AC-004",
+            "text": "- [Uncertain] AC-004 konnte der Teilnehmer nicht selbst sehen: Nach erfolgreich verarbeiteter Übenmeldung zeigt das System dem Trainer neben dem Namen ein rotes Symbol mit `Sitzt an der Übung` an.",
+            "line": 59,
+            "uncertain": true,
+            "struck": false
+          }
+        ],
+        "requirements": [],
+        "diagnostics": []
+      },
+      "planKeys": [],
+      "returnNoteKeys": []
+    },
+    {
+      "key": ".specs/done/0004-handsup-session-verlassen.md",
+      "readable": true,
+      "reference": "0004-handsup-session-verlassen",
+      "number": "0004",
+      "slug": "handsup-session-verlassen",
+      "folder": "done",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "HandsUp-Session verlassen"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Baseline"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "placeholder",
+            "raw": "_none_"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "placeholder",
+          "raw": "_none_"
+        },
+        "ticket": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "origin": {
+          "value": {
+            "state": "value",
+            "raw": "Reverse — Brownfield"
+          },
+          "line": 5
+        },
+        "validatedBy": {
+          "value": {
+            "state": "value",
+            "raw": "Gregor Biswanger · 2026-09-25"
+          },
+          "line": 6
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [],
+        "sections": [
+          {
+            "heading": "Zusammenfassung",
+            "raw": "Ein Workshop-Teilnehmer kann die Session selbst verlassen (AC-001), vom Trainer entfernt werden (AC-002) oder durch das Trainingsende ausscheiden (AC-003). Alle drei Wege führen ohne Bestätigung zur gleichen Abschlussansicht.",
+            "line": 8
+          },
+          {
+            "heading": "Benutzer und Rollen",
+            "raw": "- **Workshop-Teilnehmer:** verlässt die Session oder wird aus ihr entfernt.\n- **Trainer:** entfernt einzelne Teilnehmer oder beendet die gesamte Session.",
+            "line": 12
+          },
+          {
+            "heading": "Umfang",
+            "raw": "### Im Umfang\n\n- Freiwilliges Verlassen durch den Teilnehmer.\n- Entfernung eines Teilnehmers durch den Trainer.\n- Ende der gesamten Session durch den Trainer.\n- Sichtbare Abschlussansicht und verbleibender Teilnehmerzustand.\n\n### Außerhalb des Umfangs\n\n- Beitritt zur Session — Baseline `0001-einer-handsup-session-beitreten.md`.\n- Übungszustand und persönliche Statusmeldung — Baselines `0002-laufenden-uebungszustand-verfolgen.md` und `0003-eigenen-uebungsstatus-melden.md`.",
+            "line": 17
+          },
+          {
+            "heading": "Funktionsablauf",
+            "raw": "1. Der Teilnehmer wählt `Training verlassen`, der Trainer entfernt ihn oder der Trainer beendet das Training (AC-001 bis AC-003).\n2. Bei erfolgreicher Verarbeitung wird der Teilnehmer beziehungsweise die Session entfernt (AC-001 bis AC-003).\n3. Der betroffene Teilnehmer sieht die Abschlussansicht mit `Danke das Du dabei warst!` (AC-001 bis AC-003).",
+            "line": 31
+          },
+          {
+            "heading": "Geschäftsregeln",
+            "raw": "- BR-01 Freiwilliges Verlassen, Entfernung durch den Trainer und Trainingsende verlangen keine Bestätigung und zeigen dem Teilnehmer denselben Abschluss ohne Angabe des Ausstiegsgrunds.",
+            "line": 37
+          },
+          {
+            "heading": "Fehlerfälle",
+            "raw": "- Kann ein freiwilliger Ausstieg nicht verarbeitet werden, gelten die Findings unter den offenen Punkten.\n- Wird ein unbekannter Teilnehmer oder eine unbekannte Session adressiert, gelten die Findings unter den offenen Punkten.",
+            "line": 41
+          },
+          {
+            "heading": "Akzeptanzkriterien",
+            "raw": "- AC-001 Wenn ein Teilnehmer `Training verlassen` wählt und sein Ausstieg erfolgreich verarbeitet wird, shall das System ihn aus der Teilnehmerliste entfernen, seine gespeicherten Zugangsdaten leeren und ihm `Danke das Du dabei warst!` anzeigen.\n- AC-002 Wenn der Trainer einen vorhandenen Teilnehmer entfernt, shall das System ihn aus der Teilnehmerliste entfernen und ausschließlich dem entfernten Teilnehmer `Danke das Du dabei warst!` anzeigen; die Traineransicht zeigt keine Dankeseite.\n- AC-003 Wenn der Trainer die Session beendet, shall das System die Session entfernen und den verbundenen Teilnehmern `Danke das Du dabei warst!` anzeigen.",
+            "line": 46
+          },
+          {
+            "heading": "Annahmen",
+            "raw": "| ID | Annahme | Begründung | Auswirkung, falls falsch |\n| --- | --- | --- | --- |\n| A-001 | Der Teilnehmer erkennt die gemeinsame Abschlussseite als Ende seiner Teilnahme. | Alle drei Ausstiegswege führen ausschließlich zu dieser Seite. | Der Abschluss wäre für Teilnehmer nicht verständlich. |",
+            "line": 52
+          },
+          {
+            "heading": "Offene Punkte",
+            "raw": "- *Finding*: Beim freiwilligen Verlassen werden die gespeicherten Zugangsdaten sofort geleert. Bleibt das Abschlussereignis aus, etwa weil die Session nicht mehr vorhanden ist, bleibt der Teilnehmer ohne Fehlermeldung in der Übungsansicht, während die Trainerliste unverändert bleibt; weitere persönliche Meldungen verwenden dann leere Zugangsdaten.\n- *Finding*: Wird bei vorhandener Session ein darin nicht vorhandener Benutzername zum freiwilligen Verlassen oder Entfernen übermittelt, entfernt das System stattdessen den letzten Teilnehmer der Liste. Beim freiwilligen Verlassen sieht der anfragende Teilnehmer dennoch die Abschlussseite; beim Trainer kann dies auftreten, wenn seine sichtbare Liste gegenüber der Session veraltet ist.\n- *Finding*: Beendet der Trainer mit einem nicht vorhandenen Session-Code das Training und besteht mindestens eine andere Session, entfernt das System deren letzten Eintrag. Deren Teilnehmer bleiben ohne Abschlussmeldung in ihrer aktuellen Ansicht, obwohl ihre Session nicht mehr besteht.\n- *Finding*: Nach Entfernung durch den Trainer oder nach Trainingsende bleiben die Zugangsdaten des Teilnehmers gespeichert. Beim erneuten Öffnen der Startseite in der veröffentlichten Anwendung kann ein entfernter Teilnehmer zunächst wieder zur Übungsansicht gelangen, obwohl er nicht mehr zur Session gehört; nach einem Trainingsende wird der alte Session-Code nicht dauerhaft geleert und bei jedem weiteren Aufruf erneut verwendet.\n- *Wish*: Gregor Biswanger möchte, dass die dokumentierten Findings bearbeitet werden.\n- *Check*: Nach dem Wechsel zur Abschlussseite bleiben nicht ausgelöste Session-Listener registriert; der Anwendungscode entfernt sie nicht ausdrücklich.\n- *Check*: Kein automatisierter Test im untersuchten Ausstiegsfluss prüft freiwilliges Verlassen, Entfernung oder Trainingsende.\n- Validierungsumfang: Gregor Biswanger bestätigte BR-01 und AC-001 bis AC-003; bei AC-002 stellte er klar, dass ausschließlich der entfernte Teilnehmer die Dankeseite sieht.",
+            "line": 58
+          },
+          {
+            "heading": "Technical Reference",
+            "raw": "- Architektur: `AGENTS.md` → `clients/projects/members`, `clients/projects/trainer`, `server/src/training.gateway.ts`\n- Teilnehmerausstieg: `clients/projects/members/src/app/exercise/*`, `clients/projects/members/src/app/shared/training.service.ts`\n- Abschlussansicht: `clients/projects/members/src/app/thanks/*`\n- Traineraktionen: `clients/projects/trainer/src/app/training/*`, `clients/projects/trainer/src/app/shared/training.service.ts`\n- Verarbeitung: `server/src/training.gateway.ts › memberLeavesTraining`, `removeMember`, `exitTraining`\n- Entscheidender Test: `server/test/app.e2e-spec.ts`\n- Analysiert bei `51871f3` · 2026-09-24",
+            "line": 69
+          }
+        ],
+        "planHistory": [],
+        "criteria": [
+          {
+            "id": "AC-001",
+            "text": "- AC-001 Wenn ein Teilnehmer `Training verlassen` wählt und sein Ausstieg erfolgreich verarbeitet wird, shall das System ihn aus der Teilnehmerliste entfernen, seine gespeicherten Zugangsdaten leeren und ihm `Danke das Du dabei warst!` anzeigen.",
+            "line": 48,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-002",
+            "text": "- AC-002 Wenn der Trainer einen vorhandenen Teilnehmer entfernt, shall das System ihn aus der Teilnehmerliste entfernen und ausschließlich dem entfernten Teilnehmer `Danke das Du dabei warst!` anzeigen; die Traineransicht zeigt keine Dankeseite.",
+            "line": 49,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-003",
+            "text": "- AC-003 Wenn der Trainer die Session beendet, shall das System die Session entfernen und den verbundenen Teilnehmern `Danke das Du dabei warst!` anzeigen.",
+            "line": 50,
+            "uncertain": false,
+            "struck": false
+          }
+        ],
+        "requirements": [],
+        "diagnostics": []
+      },
+      "planKeys": [],
+      "returnNoteKeys": []
+    }
+  ],
+  "plans": [],
+  "returnNotes": [],
+  "diagnostics": []
+}

@@ -58,7 +58,7 @@ describe('Needs attention', () => {
         const entry = model.lifecycle.entries[0]!;
         const broken = {
             ...model,
-            lifecycle: { ...model.lifecycle, entries: [{ ...entry, diagnostics: [{ kind: 'unreadable-file' as const, scope: { file: entry.key }, reason: 'cannot read' }] }] },
+            lifecycle: { ...model.lifecycle, entries: [{ ...entry, diagnostics: [{ kind: 'unreadable-file' as const, tier: 'problem' as const, scope: { file: entry.key }, reason: 'cannot read' }] }] },
         };
         const resolver = createSpecResolver(broken);
         expect(projectAttention(broken, resolver).rows.map((row) => row.reasons)).toEqual([['Diagnostic']]);

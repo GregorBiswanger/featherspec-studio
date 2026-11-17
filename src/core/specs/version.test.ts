@@ -12,12 +12,12 @@ describe('checkVersion', () => {
     it.each(['unknown', '', 'abc', '1.8', '1.x.0', 'v1.8.0', '01.8.0', '1.8.0-', '1.8.0-01', '1.6.9', '1.7.0-rc1', '0.9.0'])(
         'AC-016: %j is not verified (unknown, not comparable or older than 1.7.0)',
         (version) => {
-            expect(checkVersion(version)).toEqual({ kind: 'unverified-version', scope: 'project', reason: 'version not verified' });
+            expect(checkVersion(version)).toEqual({ kind: 'unverified-version', tier: 'note', scope: 'project', reason: 'version not verified' });
         },
     );
 
     it.each(['1.10.1', '1.11.0', '2.0.0', '1.10.1-rc1', '10.0.0'])('AC-016: %s is newer than known', (version) => {
-        expect(checkVersion(version)).toEqual({ kind: 'unverified-version', scope: 'project', reason: 'newer than known' });
+        expect(checkVersion(version)).toEqual({ kind: 'unverified-version', tier: 'note', scope: 'project', reason: 'newer than known' });
     });
 });
 

@@ -37,7 +37,7 @@ export function parseReturnNote(text: string, key: string): ParsedReturnNote {
         const value = classify(match[2]);
         fields.set(label, { value, line: index + 1 });
         if (label === 'Status' && value.state !== 'absent' && !KNOWN_STATUS.has(value.raw)) {
-            diagnostics.push({ kind: 'unknown-content', scope: { file: key, line: index + 1 }, reason: `unknown status value "${value.raw}"` });
+            diagnostics.push({ kind: 'unknown-content', tier: 'problem', scope: { file: key, line: index + 1 }, reason: `unknown status value "${value.raw}"` });
         }
     });
     const field = (label: Label): HeaderField => fields.get(label) ?? { value: { state: 'absent' } };

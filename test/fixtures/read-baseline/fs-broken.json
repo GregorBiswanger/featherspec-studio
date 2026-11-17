@@ -1,0 +1,158 @@
+{
+  "version": "1.10.0",
+  "specs": [
+    {
+      "key": ".specs/active/0002-invalid-utf8.md",
+      "readable": false,
+      "reference": "0002-invalid-utf8",
+      "number": "0002",
+      "slug": "invalid-utf8",
+      "folder": "active",
+      "planKeys": [],
+      "returnNoteKeys": []
+    },
+    {
+      "key": ".specs/backlog/0001-valid-spec.md",
+      "readable": true,
+      "reference": "0001-valid-spec",
+      "number": "0001",
+      "slug": "valid-spec",
+      "folder": "backlog",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Valid spec"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Draft"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "placeholder",
+            "raw": "_none yet_"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "placeholder",
+          "raw": "_none yet_"
+        },
+        "ticket": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "origin": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "validatedBy": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [],
+        "sections": [
+          {
+            "heading": "1. Summary",
+            "raw": "A readable spec beside a broken one.",
+            "line": 6
+          }
+        ],
+        "planHistory": [],
+        "criteria": [],
+        "requirements": [],
+        "diagnostics": []
+      },
+      "planKeys": [],
+      "returnNoteKeys": []
+    },
+    {
+      "key": ".specs/done/0003-also-valid.md",
+      "readable": true,
+      "reference": "0003-also-valid",
+      "number": "0003",
+      "slug": "also-valid",
+      "folder": "done",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Another valid spec"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Draft"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "placeholder",
+            "raw": "_none yet_"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "placeholder",
+          "raw": "_none yet_"
+        },
+        "ticket": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "origin": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "validatedBy": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [],
+        "sections": [],
+        "planHistory": [],
+        "criteria": [],
+        "requirements": [],
+        "diagnostics": []
+      },
+      "planKeys": [],
+      "returnNoteKeys": []
+    }
+  ],
+  "plans": [],
+  "returnNotes": [],
+  "diagnostics": [
+    {
+      "kind": "unreadable-file",
+      "scope": {
+        "file": ".specs/active/0002-invalid-utf8.md"
+      },
+      "reason": "not valid UTF-8"
+    }
+  ]
+}

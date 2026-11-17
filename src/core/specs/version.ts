@@ -66,10 +66,10 @@ const NEWEST = parseSemanticVersion(NEWEST_KNOWN);
 export function checkVersion(version: string): Diagnostic | undefined {
     const parsed = parseSemanticVersion(version);
     if (parsed === undefined || OLDEST === undefined || NEWEST === undefined || compareVersions(parsed, OLDEST) < 0) {
-        return { kind: 'unverified-version', scope: 'project', reason: 'version not verified' };
+        return { kind: 'unverified-version', tier: 'note', scope: 'project', reason: 'version not verified' };
     }
     if (compareVersions(parsed, NEWEST) > 0) {
-        return { kind: 'unverified-version', scope: 'project', reason: 'newer than known' };
+        return { kind: 'unverified-version', tier: 'note', scope: 'project', reason: 'newer than known' };
     }
     return undefined;
 }

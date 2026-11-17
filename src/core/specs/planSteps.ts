@@ -138,6 +138,7 @@ function buildStep(
             unsupported.push({ name: field.name, raw: field.raw, line: field.line });
             diagnostics.push({
                 kind: 'unknown-content',
+                tier: 'note',
                 scope: { file, line: field.line },
                 reason: `Step ${id} has an unknown field "${field.name}"`,
             });
@@ -164,6 +165,7 @@ function buildStep(
                 : 'carries a checkbox on both its Covers and its Verified line';
         diagnostics.push({
             kind: 'unknown-content',
+            tier: 'note',
             scope: { file, line },
             reason: `Step ${id} ${problem}; dialect and ticked state are undetermined`,
         });
@@ -226,6 +228,7 @@ export function parsePlanSteps(text: string, file: string): PlanStepsResult {
             const others = same.filter((other) => other !== step).map((other) => `line ${other.line}`);
             diagnostics.push({
                 kind: 'duplicate',
+                tier: 'note',
                 scope: { file, line: step.line },
                 reason: `Step ${step.id} occurs more than once in this plan (also at ${others.join(', ')})`,
             });

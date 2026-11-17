@@ -1,0 +1,1198 @@
+{
+  "version": "1.7.0",
+  "specs": [
+    {
+      "key": ".specs/active/0006-outbox-batch-size.md",
+      "readable": true,
+      "reference": "0006-outbox-batch-size",
+      "number": "0006",
+      "slug": "outbox-batch-size",
+      "folder": "active",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Make the outbox batch size configurable"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "In Progress"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "value",
+            "raw": "[0006-outbox-batch-size.plan.md](0006-outbox-batch-size.plan.md)"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "sibling",
+          "target": "0006-outbox-batch-size.plan.md",
+          "text": "0006-outbox-batch-size.plan.md"
+        },
+        "ticket": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "origin": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "validatedBy": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [],
+        "sections": [
+          {
+            "heading": "1. Summary",
+            "raw": "The dispatcher's batch size and interval are compiled constants. Make both configurable through\nenvironment variables, keeping today's values as defaults.",
+            "line": 6
+          },
+          {
+            "heading": "2. Acceptance criteria",
+            "raw": "**AC-001 — Batch size and interval are configurable**\nWhen `OUTBOX_BATCH_SIZE` or `OUTBOX_INTERVAL_MS` is set to a positive integer, the dispatcher shall\nuse that value; when neither is set, it shall use 50 and 2000 respectively.\n\n**AC-002 — Dispatch semantics are unchanged**\nWhen the dispatcher runs, it shall publish pending records in creation order and shall mark each\ndispatched exactly as it does today.\n\n**AC-003 — Invalid values fall back to the defaults**\nWhen `OUTBOX_BATCH_SIZE` or `OUTBOX_INTERVAL_MS` is set to a value that is not a positive integer,\nthe dispatcher shall use the default for that variable and shall write one `warn` log line naming\nthe variable and the rejected value.",
+            "line": 11
+          }
+        ],
+        "planHistory": [],
+        "criteria": [
+          {
+            "id": "AC-001",
+            "text": "**AC-001 — Batch size and interval are configurable**\nWhen `OUTBOX_BATCH_SIZE` or `OUTBOX_INTERVAL_MS` is set to a positive integer, the dispatcher shall\nuse that value; when neither is set, it shall use 50 and 2000 respectively.",
+            "line": 13,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-002",
+            "text": "**AC-002 — Dispatch semantics are unchanged**\nWhen the dispatcher runs, it shall publish pending records in creation order and shall mark each\ndispatched exactly as it does today.",
+            "line": 17,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-003",
+            "text": "**AC-003 — Invalid values fall back to the defaults**\nWhen `OUTBOX_BATCH_SIZE` or `OUTBOX_INTERVAL_MS` is set to a value that is not a positive integer,\nthe dispatcher shall use the default for that variable and shall write one `warn` log line naming\nthe variable and the rejected value.",
+            "line": 21,
+            "uncertain": false,
+            "struck": false
+          }
+        ],
+        "requirements": [],
+        "diagnostics": []
+      },
+      "planKeys": [
+        ".specs/active/0006-outbox-batch-size.plan.md"
+      ],
+      "returnNoteKeys": []
+    },
+    {
+      "key": ".specs/backlog/0003-direct-broker-publication.md",
+      "readable": true,
+      "reference": "0003-direct-broker-publication",
+      "number": "0003",
+      "slug": "direct-broker-publication",
+      "folder": "backlog",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Direct broker publication and order history"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Draft"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "placeholder",
+            "raw": "_none yet_"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "placeholder",
+          "raw": "_none yet_"
+        },
+        "ticket": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "origin": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "validatedBy": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [],
+        "sections": [
+          {
+            "heading": "1. Summary",
+            "raw": "Two independent changes to the orders module: order events go to the broker directly instead of\nthrough the outbox table, and customers get a history endpoint.",
+            "line": 6
+          },
+          {
+            "heading": "2. Goal and problem",
+            "raw": "The outbox loop adds up to two seconds between an order being placed and fulfilment reacting to\nit, and support cannot see what happened to an order without a database query.",
+            "line": 11
+          },
+          {
+            "heading": "3. Scope",
+            "raw": "- Publish order events directly from `OrderService` and remove the outbox table, its repository\n  and its dispatcher.\n- Add `GET /orders/{id}/history` returning the order's event stream.",
+            "line": 16
+          },
+          {
+            "heading": "4. Acceptance criteria",
+            "raw": "**AC-001 — Events reach the broker without an intermediate table**\nWhen an order event occurs, the system shall publish it to the broker and shall not write an\noutbox row.\n\n**AC-002 — History endpoint returns the event stream**\nWhen `GET /orders/{id}/history` is called by a principal with `orders:read`, the system shall\nreturn the order's events in chronological order.",
+            "line": 22
+          }
+        ],
+        "planHistory": [],
+        "criteria": [
+          {
+            "id": "AC-001",
+            "text": "**AC-001 — Events reach the broker without an intermediate table**\nWhen an order event occurs, the system shall publish it to the broker and shall not write an\noutbox row.",
+            "line": 24,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-002",
+            "text": "**AC-002 — History endpoint returns the event stream**\nWhen `GET /orders/{id}/history` is called by a principal with `orders:read`, the system shall\nreturn the order's events in chronological order.",
+            "line": 28,
+            "uncertain": false,
+            "struck": false
+          }
+        ],
+        "requirements": [],
+        "diagnostics": []
+      },
+      "planKeys": [],
+      "returnNoteKeys": []
+    },
+    {
+      "key": ".specs/backlog/0004-replace-authorization-service.md",
+      "readable": true,
+      "reference": "0004-replace-authorization-service",
+      "number": "0004",
+      "slug": "replace-authorization-service",
+      "folder": "backlog",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Replace the authorization service"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Draft"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "placeholder",
+            "raw": "_none yet_"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "placeholder",
+          "raw": "_none yet_"
+        },
+        "ticket": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "origin": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "validatedBy": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [],
+        "sections": [
+          {
+            "heading": "1. Summary",
+            "raw": "Replace the hand-written role-to-permission mapping in `AuthorizationService` with a policy file\nloaded at startup.",
+            "line": 6
+          },
+          {
+            "heading": "2. Goal and problem",
+            "raw": "Adding a role means editing TypeScript and shipping a release. Operations want to add roles\nwithout a deployment.",
+            "line": 11
+          },
+          {
+            "heading": "3. Acceptance criteria",
+            "raw": "**AC-001 — Roles come from a policy file**\nWhen the service starts, it shall load role definitions from `config/policies.yaml` and shall\nnot read them from a compiled constant.\n\n**AC-002 — Unknown roles grant nothing**\nIf a principal carries a role the policy file does not define, then the service shall grant no\npermission for it.",
+            "line": 16
+          }
+        ],
+        "planHistory": [],
+        "criteria": [
+          {
+            "id": "AC-001",
+            "text": "**AC-001 — Roles come from a policy file**\nWhen the service starts, it shall load role definitions from `config/policies.yaml` and shall\nnot read them from a compiled constant.",
+            "line": 18,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-002",
+            "text": "**AC-002 — Unknown roles grant nothing**\nIf a principal carries a role the policy file does not define, then the service shall grant no\npermission for it.",
+            "line": 22,
+            "uncertain": false,
+            "struck": false
+          }
+        ],
+        "requirements": [],
+        "diagnostics": []
+      },
+      "planKeys": [],
+      "returnNoteKeys": []
+    },
+    {
+      "key": ".specs/backlog/0005-rename-order-status-enum.md",
+      "readable": true,
+      "reference": "0005-rename-order-status-enum",
+      "number": "0005",
+      "slug": "rename-order-status-enum",
+      "folder": "backlog",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Rename the order status values"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Draft"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "placeholder",
+            "raw": "_none yet_"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "placeholder",
+          "raw": "_none yet_"
+        },
+        "ticket": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "origin": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "validatedBy": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [],
+        "sections": [
+          {
+            "heading": "1. Summary",
+            "raw": "Rename the `OrderStatus` values to the vocabulary the business uses: `draft` stays, `placed`\nbecomes `accepted`, `paid` becomes `settled`.",
+            "line": 6
+          },
+          {
+            "heading": "2. Goal and problem",
+            "raw": "Support and engineering use different words for the same states, and every incident call starts\nwith a translation.",
+            "line": 11
+          },
+          {
+            "heading": "3. Acceptance criteria",
+            "raw": "**AC-001 — The new vocabulary is used everywhere**\nWhen the rename is complete, the repository shall contain no occurrence of the old status values\noutside a migration.",
+            "line": 16
+          }
+        ],
+        "planHistory": [],
+        "criteria": [
+          {
+            "id": "AC-001",
+            "text": "**AC-001 — The new vocabulary is used everywhere**\nWhen the rename is complete, the repository shall contain no occurrence of the old status values\noutside a migration.",
+            "line": 18,
+            "uncertain": false,
+            "struck": false
+          }
+        ],
+        "requirements": [],
+        "diagnostics": []
+      },
+      "planKeys": [],
+      "returnNoteKeys": []
+    },
+    {
+      "key": ".specs/backlog/0007-auth-request-logging.md",
+      "readable": true,
+      "reference": "0007-auth-request-logging",
+      "number": "0007",
+      "slug": "auth-request-logging",
+      "folder": "backlog",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Log authorization decisions"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Draft"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "placeholder",
+            "raw": "_none yet_"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "placeholder",
+          "raw": "_none yet_"
+        },
+        "ticket": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "origin": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "validatedBy": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [],
+        "sections": [
+          {
+            "heading": "1. Summary",
+            "raw": "Write one structured log line for every authorization decision, allow and deny alike, so that\nsupport can answer \"why was I refused?\" without a debugger.",
+            "line": 6
+          },
+          {
+            "heading": "2. Scope",
+            "raw": "Logging only. The decision itself, the role mapping and the tenant check are untouched.",
+            "line": 11
+          },
+          {
+            "heading": "3. Acceptance criteria",
+            "raw": "**AC-001 — Every decision is logged**\nWhen `AuthorizationService.can` returns, the service shall emit one log line carrying the\nprincipal id, the permission and the outcome.\n\n**AC-002 — No secret reaches the log**\nWhen a decision is logged, the log line shall contain no token, password or session identifier.",
+            "line": 15
+          }
+        ],
+        "planHistory": [],
+        "criteria": [
+          {
+            "id": "AC-001",
+            "text": "**AC-001 — Every decision is logged**\nWhen `AuthorizationService.can` returns, the service shall emit one log line carrying the\nprincipal id, the permission and the outcome.",
+            "line": 17,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-002",
+            "text": "**AC-002 — No secret reaches the log**\nWhen a decision is logged, the log line shall contain no token, password or session identifier.",
+            "line": 21,
+            "uncertain": false,
+            "struck": false
+          }
+        ],
+        "requirements": [],
+        "diagnostics": []
+      },
+      "planKeys": [],
+      "returnNoteKeys": []
+    },
+    {
+      "key": ".specs/backlog/0008-order-immutability-window.md",
+      "readable": true,
+      "reference": "0008-order-immutability-window",
+      "number": "0008",
+      "slug": "order-immutability-window",
+      "folder": "backlog",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Correction window after payment"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Draft"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "placeholder",
+            "raw": "_none yet_"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "placeholder",
+          "raw": "_none yet_"
+        },
+        "ticket": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "origin": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "validatedBy": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [],
+        "sections": [
+          {
+            "heading": "1. Summary",
+            "raw": "Allow the shipping address of a paid order to be corrected within 30 minutes of payment, through\na correction event rather than a projection update.",
+            "line": 6
+          },
+          {
+            "heading": "2. Goal and problem",
+            "raw": "Support corrects addresses today by calling `updateOrderAfterPayment`, which writes straight to\nthe projection. The change is invisible in the event stream and disappears on the next rebuild.",
+            "line": 11
+          },
+          {
+            "heading": "3. Acceptance criteria",
+            "raw": "**AC-001 — Corrections are events**\nWhen a paid order is corrected within the window, the system shall append an `OrderCorrected`\nevent and shall not write the projection directly.\n\n**AC-002 — The window is enforced**\nIf more than 30 minutes have passed since payment, then the system shall refuse the correction.",
+            "line": 16
+          }
+        ],
+        "planHistory": [],
+        "criteria": [
+          {
+            "id": "AC-001",
+            "text": "**AC-001 — Corrections are events**\nWhen a paid order is corrected within the window, the system shall append an `OrderCorrected`\nevent and shall not write the projection directly.",
+            "line": 18,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-002",
+            "text": "**AC-002 — The window is enforced**\nIf more than 30 minutes have passed since payment, then the system shall refuse the correction.",
+            "line": 22,
+            "uncertain": false,
+            "struck": false
+          }
+        ],
+        "requirements": [],
+        "diagnostics": []
+      },
+      "planKeys": [],
+      "returnNoteKeys": []
+    },
+    {
+      "key": ".specs/backlog/0009-billing-rounding.md",
+      "readable": true,
+      "reference": "0009-billing-rounding",
+      "number": "0009",
+      "slug": "billing-rounding",
+      "folder": "backlog",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Round invoice totals once"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Draft"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "placeholder",
+            "raw": "_none yet_"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "placeholder",
+          "raw": "_none yet_"
+        },
+        "ticket": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "origin": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "validatedBy": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [],
+        "sections": [
+          {
+            "heading": "1. Summary",
+            "raw": "Sum the unrounded line totals and round the invoice total once, instead of rounding every line.",
+            "line": 6
+          },
+          {
+            "heading": "2. Goal and problem",
+            "raw": "Finance reports cent-level differences between our invoices and the totals in the accounting\nsystem, which rounds once at the end.",
+            "line": 10
+          },
+          {
+            "heading": "3. Acceptance criteria",
+            "raw": "**AC-001 — Rounding happens once**\nWhen an invoice total is computed, the system shall sum the unrounded line totals and shall round\nthe sum once.\n\n**AC-002 — The nightly export keeps working**\nWhen the nightly export runs, it shall export the recomputed totals.",
+            "line": 15
+          }
+        ],
+        "planHistory": [],
+        "criteria": [
+          {
+            "id": "AC-001",
+            "text": "**AC-001 — Rounding happens once**\nWhen an invoice total is computed, the system shall sum the unrounded line totals and shall round\nthe sum once.",
+            "line": 17,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-002",
+            "text": "**AC-002 — The nightly export keeps working**\nWhen the nightly export runs, it shall export the recomputed totals.",
+            "line": 21,
+            "uncertain": false,
+            "struck": false
+          }
+        ],
+        "requirements": [],
+        "diagnostics": []
+      },
+      "planKeys": [],
+      "returnNoteKeys": []
+    },
+    {
+      "key": ".specs/done/0001-baseline-orders.md",
+      "readable": true,
+      "reference": "0001-baseline-orders",
+      "number": "0001",
+      "slug": "baseline-orders",
+      "folder": "done",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Baseline — Orders module"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Baseline"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "placeholder",
+            "raw": "_none yet_"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "placeholder",
+          "raw": "_none yet_"
+        },
+        "ticket": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "origin": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "validatedBy": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [],
+        "sections": [
+          {
+            "heading": "1. Summary",
+            "raw": "Reconstructed from the code as it stands. Generated by `/sdd-specify` in Baseline mode.",
+            "line": 6
+          },
+          {
+            "heading": "2. Current behaviour",
+            "raw": "Orders are placed through `POST /orders`, validated with zod, and written as an append-only\nevent plus a projection row. Every order event is written to an outbox table inside the same\ndatabase transaction and dispatched to the broker by a background loop.\n\nThe outbox exists to guarantee delivery of order events even when the broker is unavailable at\nthe time the transaction commits.\n\nOrders are soft-deleted: `deletedAt` is set and every query filters on it.",
+            "line": 10
+          },
+          {
+            "heading": "3. Acceptance criteria",
+            "raw": "**AC-001 — Order placement writes an event**\nWhen an order is placed, the workflow shall append an `OrderPlaced` event and an outbox row in\none transaction.",
+            "line": 21
+          }
+        ],
+        "planHistory": [],
+        "criteria": [
+          {
+            "id": "AC-001",
+            "text": "**AC-001 — Order placement writes an event**\nWhen an order is placed, the workflow shall append an `OrderPlaced` event and an outbox row in\none transaction.",
+            "line": 23,
+            "uncertain": false,
+            "struck": false
+          }
+        ],
+        "requirements": [],
+        "diagnostics": []
+      },
+      "planKeys": [],
+      "returnNoteKeys": []
+    },
+    {
+      "key": ".specs/done/0002-payment-retry.md",
+      "readable": true,
+      "reference": "0002-payment-retry",
+      "number": "0002",
+      "slug": "payment-retry",
+      "folder": "done",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Payment retry budget"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Implemented"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "placeholder",
+            "raw": "_none yet_"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "placeholder",
+          "raw": "_none yet_"
+        },
+        "ticket": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "origin": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "validatedBy": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [],
+        "sections": [
+          {
+            "heading": "1. Summary",
+            "raw": "Payment capture retries transient failures with exponential backoff and gives up after five\nattempts.",
+            "line": 6
+          },
+          {
+            "heading": "2. Goal and problem",
+            "raw": "The provider charges per attempt and rate-limits the account, so an unbounded retry loop turns a\nprovider outage into an account-wide block. The budget of five attempts matches the provider's\nrate-limit window; a sixth attempt costs money and buys nothing.",
+            "line": 11
+          },
+          {
+            "heading": "3. Acceptance criteria",
+            "raw": "**AC-001 — The retry budget is bounded**\nWhen five capture attempts have failed, the workflow shall stop retrying and shall record the\nfailure.\n\n**AC-002 — Permanent client errors are not retried**\nIf the provider answers with a 4xx status other than 429, then the workflow shall not retry.",
+            "line": 17
+          }
+        ],
+        "planHistory": [],
+        "criteria": [
+          {
+            "id": "AC-001",
+            "text": "**AC-001 — The retry budget is bounded**\nWhen five capture attempts have failed, the workflow shall stop retrying and shall record the\nfailure.",
+            "line": 19,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-002",
+            "text": "**AC-002 — Permanent client errors are not retried**\nIf the provider answers with a 4xx status other than 429, then the workflow shall not retry.",
+            "line": 23,
+            "uncertain": false,
+            "struck": false
+          }
+        ],
+        "requirements": [],
+        "diagnostics": []
+      },
+      "planKeys": [],
+      "returnNoteKeys": []
+    }
+  ],
+  "plans": [
+    {
+      "key": ".specs/active/0006-outbox-batch-size.plan.md",
+      "readable": true,
+      "variant": "sibling",
+      "reference": "0006-outbox-batch-size",
+      "number": "0006",
+      "slug": "outbox-batch-size",
+      "folder": "active",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Plan — Make the outbox batch size configurable"
+          },
+          "line": 1
+        },
+        "spec": {
+          "value": {
+            "state": "value",
+            "raw": "[0006-outbox-batch-size.md](0006-outbox-batch-size.md)"
+          },
+          "line": 3
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Done"
+          },
+          "line": 4
+        },
+        "lastUpdated": {
+          "value": {
+            "state": "value",
+            "raw": "2026-09-19"
+          },
+          "line": 5
+        },
+        "currentStep": {
+          "value": {
+            "state": "value",
+            "raw": "— all four steps ticked and verified"
+          },
+          "line": 6
+        },
+        "stages": {
+          "present": false,
+          "stages": []
+        },
+        "steps": [
+          {
+            "id": "T-001",
+            "title": "Pin today's dispatch semantics with a characterization test",
+            "line": 70,
+            "struck": false,
+            "dialect": "covers-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-002"
+            },
+            "coveredCriteria": [
+              "AC-002"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "Add `tests/outbox.test.ts` with subclass fakes for `OutboxRepository` and `BrokerClient`.\nAssert that `tick()` publishes the records `takePending` returned, in that order, and calls\n`markDispatched` once per record. Negative control: a record whose `publish` rejects is **not**\nmarked dispatched and reaches `recordFailure` with `attempts + 1`. Name AC-002 in the test names."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`npm test` — the new tests pass on unchanged code (AC-002 preserves existing\nbehaviour, so red-first does not apply; the negative control is what makes green meaningful)."
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-09-19 · `npm test` · **8 tests, 8 pass, 0 fail, ~287 ms** — the 4 new AC-002\ntests plus the 4 pre-existing ones. First run was blocked (see *Blocker*, resolved); the four\ntests were unchanged by the fix."
+            },
+            "notes": {
+              "state": "value",
+              "raw": "Green on unchanged dispatcher code, as predicted — the negative control is what makes\nthat meaningful. Two incidental findings: the test's own fakes had to avoid TypeScript parameter\nproperties for the same reason as the blocker, and the AC-002 failure case emits the\ndispatcher's real `logger.warn` line into the test output (harmless, and it confirms the stdout\ncoupling recorded in *Research*). This step's change set also carries the blocker fix."
+            },
+            "unsupported": []
+          },
+          {
+            "id": "T-002",
+            "title": "Add failing tests for the configurable values and the fallback",
+            "line": 123,
+            "struck": false,
+            "dialect": "covers-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-001, AC-003"
+            },
+            "coveredCriteria": [
+              "AC-001",
+              "AC-003"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "Extend `tests/outbox.test.ts`: with no options the dispatcher requests a batch of 50 and\narms a 2000 ms interval; with `'10'` / `'500'` it uses 10 and 500; with `'0'`, `'-1'` and\n`'abc'` it uses the defaults and writes one `warn` line per rejected variable, naming the\nvariable and the value. Read the batch size through the fake's `takePending` argument and the\ninterval via a stubbed `setInterval`; capture the warning through a stubbed\n`process.stdout.write`, restored in `finally`. Name AC-001 / AC-003 in the test names.\n~~Then stop and confirm the expectations with the user before T-003~~ — waived for this run by\nthe working-mode exception above; the user confirmed the expectations in advance."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`npm test` — the new tests fail; the existing ones stay green."
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-09-19 · `npm test` · **22 tests, 11 pass, 11 fail** — red as intended. What\nwas red: failing assertions, not a missing module. The constructor ignores a third argument, so\nthe explicit values never arrive (`10 !== 50`, `500 !== 2000`) and no warning is ever emitted\n(`0 !== 1`, `0 !== 2`). All four AC-002 tests stayed green."
+            },
+            "notes": {
+              "state": "value",
+              "raw": "Four of the new tests pass already and are meant to: the two default cases (50 / 2000\nare today's constants) and the no-warning negative control. They are the guard that T-003 does\nnot fix configurability by breaking the defaults. Invalid inputs are table-driven over\n`'0'`, `'-1'`, `'abc'`, `'1.5'`, `''`, `' '` — `'1.5'` pins \"integer\", the last two pin that an\nempty or blank value is rejected rather than silently treated as unset."
+            },
+            "unsupported": []
+          },
+          {
+            "id": "T-003",
+            "title": "Read both variables in the composition root, resolve them in the dispatcher",
+            "line": 145,
+            "struck": false,
+            "dialect": "covers-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-001, AC-003"
+            },
+            "coveredCriteria": [
+              "AC-001",
+              "AC-003"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "In `src/infrastructure/outbox/OutboxDispatcher.ts`, replace the module constants with\n`DEFAULT_BATCH_SIZE = 50` / `DEFAULT_INTERVAL_MS = 2000` and a third constructor parameter\n`options: { batchSize?: string; intervalMs?: string } = {}`. Resolve each once in the\nconstructor into a private readonly field: `undefined` → default silently; a value that is not a\npositive integer → default plus one `logger.warn` naming the variable and the rejected value.\nUse the fields at `:17` and `:26`. In `src/main.ts:11`, pass\n`{ batchSize: process.env.OUTBOX_BATCH_SIZE, intervalMs: process.env.OUTBOX_INTERVAL_MS }`.\nAdd both variables to the `techContext.md` → *Configuration* table in the same change set."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`npm test` — all tests pass, including T-002's."
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-09-19 · `npm test` · **22 tests, 22 pass, 0 fail, ~330 ms** — all 11 red\ntests from T-002 green, the 4 default guards still green, AC-002 untouched."
+            },
+            "notes": {
+              "state": "value",
+              "raw": "Implemented as planned; the resolver is a module-level `resolvePositiveInteger`\nrather than inline constructor code, so both variables share one rule. Kept the existing\nparameter properties for `repository` and `broker` — the transform-types flag from T-001 makes\nthem legal, and rewriting them would have been unrelated churn. Two docs synced in this same\nchange set because the code falsified them: `.architecture/event-transport.md`'s playbook said\n\"compiled constants, not configuration\", and `techContext.md`'s *Configuration* table listed\nonly two variables (its `PORT` line number also shifted, 23 → 26). **Not** touched: the\n`architecture:` snapshot in `AGENTS.md`, which still calls the outbox \"drained by a 2 s poll\" —\nthat artifact is gated behind `/sdd-architecture-update`, proposed in the hand-off."
+            },
+            "unsupported": []
+          },
+          {
+            "id": "T-004",
+            "title": "Run the full quality gate",
+            "line": 169,
+            "struck": false,
+            "dialect": "covers-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-001, AC-002, AC-003"
+            },
+            "coveredCriteria": [
+              "AC-001",
+              "AC-002",
+              "AC-003"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "Run the Definition-of-Green sequence from `techContext.md` → *Quality gates* on the\nfinished change set and fix until zero warnings and zero errors. Reconcile this plan, the spec's\ntraceability and `activeContext.md` with the code before reporting anything as done."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`npm test`"
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-09-19 · `npm test` · **22 tests, 22 pass, 0 fail, ~388 ms**. Output scanned\nfor warnings: only the accepted `ExperimentalWarning: Transform Types` (once per test process)\nand the deliberate `outbox dispatch failed` line the AC-002 negative control provokes. Zero\nother warnings, zero errors."
+            },
+            "notes": {
+              "state": "value",
+              "raw": "This step is the recorded proof of the last clean run; `npm test` is the only gate\nthat exists today (no linter, and the TypeScript compiler is not installed — so nothing\ntype-checks this code, including the new `OutboxDispatcherOptions` interface)."
+            },
+            "unsupported": []
+          }
+        ],
+        "traceability": [
+          {
+            "criterion": "AC-001",
+            "steps": {
+              "state": "value",
+              "raw": "T-002, T-003, T-004"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/infrastructure/outbox/OutboxDispatcher.ts:resolvePositiveInteger`, `OutboxDispatcher.ts:5-6,27-39`, `src/main.ts:11-14`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`tests/outbox.test.ts` — the six `AC-001:` tests"
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 188
+          },
+          {
+            "criterion": "AC-002",
+            "steps": {
+              "state": "value",
+              "raw": "T-001, T-004"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/infrastructure/outbox/OutboxDispatcher.ts:tick` (unchanged)"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`tests/outbox.test.ts` — the four `AC-002:` tests"
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 189
+          },
+          {
+            "criterion": "AC-003",
+            "steps": {
+              "state": "value",
+              "raw": "T-002, T-003, T-004"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/infrastructure/outbox/OutboxDispatcher.ts:resolvePositiveInteger`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`tests/outbox.test.ts` — the eight `AC-003:` tests"
+            },
+            "manual": false,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 190
+          }
+        ],
+        "handoff": {
+          "doneSoFar": {
+            "value": {
+              "state": "value",
+              "raw": "Spec revised on 2026-09-19 (AC-001 tightened to \"positive integer\", AC-003\nadded for the invalid-value fallback); plan written and approved; pair moved to `.specs/active/`\nwith the spec at `In Progress`. Blocker resolved via Option A. **T-001 done** — AC-002 pinned by\nfour tests, `npm test` 8/8. **T-002 done** — AC-001 and AC-003 are red on 11 tests. No\n**T-003 done** — both variables configurable. **T-004 done** — closing gate `npm test` 22/22,\nno unexpected warnings. All four steps ticked with recorded runs; every criterion `verified`."
+            },
+            "line": 194
+          },
+          "nextAction": {
+            "value": {
+              "state": "value",
+              "raw": "`/sdd-compile`, then `/sdd-lifecycle` active → done. One loose end first:\n`/sdd-architecture-update`, because the `architecture:` snapshot in `AGENTS.md` still describes\nthe outbox as \"drained by a 2 s poll\" — true only as a default now. That artifact is gated, so\nthis run left it alone."
+            },
+            "line": 200
+          },
+          "openDecisions": {
+            "value": {
+              "state": "value",
+              "raw": "none."
+            },
+            "line": 204
+          },
+          "baseline": {
+            "value": {
+              "state": "value",
+              "raw": "`06f2d47` — the plan commit, immediately before the first step commit."
+            },
+            "line": 205
+          },
+          "environment": {
+            "value": {
+              "state": "value",
+              "raw": "none — standard commands live in `techContext.md`. Note that `npm start` is\nstill unverified in this repository; no step here needs it."
+            },
+            "line": 206
+          }
+        },
+        "unsupported": [
+          {
+            "place": "header",
+            "label": "Working mode for this run (user-granted one-off exception, 2026-09-19)",
+            "raw": "the user confirmed\nthe test expectations in advance, so the TDD confirmation gate in T-002 is waived — implementation\nfollows the tests without stopping, unless an expectation would deviate from the spec, which stops\nthe run. The red-first discipline itself is unchanged: every test step still records its failing\nrun. One commit per completed step is pre-approved.",
+            "line": 8
+          },
+          {
+            "place": "section",
+            "label": "Blocker — the repository's run command could not load its own source · RESOLVED 2026-09-19",
+            "raw": "Found while running T-001's `Verify` line, 2026-09-19. Node **v24.17.0** with\n`--experimental-strip-types` (the flag in both `package.json` scripts) rejects TypeScript\n**parameter properties**: `SyntaxError [ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX]: TypeScript parameter\nproperty is not supported in strip-only mode`.\n\nSix source files use them — `src/infrastructure/outbox/OutboxDispatcher.ts:12-13`,\n`src/infrastructure/broker/BrokerClient.ts:2`, `src/modules/orders/OrderService.ts:9-10`,\n`src/modules/billing/BillingService.ts:8-9`, `src/shared/cache/TtlCache.ts:13`,\n`src/shared/validation.ts:4`. Consequences:\n\n- **`npm start` is broken today**, not merely unverified as `techContext.md` records: `main.ts`\n  imports `BrokerClient` at `:2`, which is enough to throw. This is pre-existing and independent\n  of spec 0006.\n- **`npm test` passes today only by accident** — the four existing tests import `OrderEvents.ts`,\n  `Money.ts` and `PaymentRetryPolicy.ts`, the only subjects free of parameter properties. The\n  moment any test loads the dispatcher, the suite fails.\n- **No test of AC-001, AC-002 or AC-003 can run** until this is resolved; every one of them must\n  load `OutboxDispatcher`. T-002 through T-004 are blocked behind it.\n\n**Resolution — Option A, chosen by the user 2026-09-19** and applied in T-001's change set: both\n`package.json` scripts now use `--experimental-transform-types`. No source file was touched. The\nrejected Option B was to de-sugar the parameter properties in all six files, which would have\nedited four production files this spec does not otherwise touch.\n\nTwo follow-ups this fix produced, both recorded in `techContext.md`:\n\n- Node prints one `ExperimentalWarning: Transform Types` per test process. Left **visible** rather\n  than muted with `--disable-warning=ExperimentalWarning`, which would also hide future\n  experimental warnings; the \"zero warnings\" gate now means zero *other* warnings.\n- `npm start` clears the type barrier but still fails — `ERR_MODULE_NOT_FOUND: Cannot find package\n  'zod'`, because `node_modules/` is absent. Independent of this spec, needs an Ask-first\n  `npm install`, and no step here depends on it.",
+            "line": 88
+          }
+        ],
+        "diagnostics": [
+          {
+            "kind": "unknown-content",
+            "scope": {
+              "file": ".specs/active/0006-outbox-batch-size.plan.md",
+              "line": 8
+            },
+            "reason": "Unknown plan header line \"Working mode for this run (user-granted one-off exception, 2026-09-19)\""
+          },
+          {
+            "kind": "unknown-content",
+            "scope": {
+              "file": ".specs/active/0006-outbox-batch-size.plan.md",
+              "line": 88
+            },
+            "reason": "Unknown plan section \"Blocker — the repository's run command could not load its own source · RESOLVED 2026-09-19\""
+          }
+        ]
+      },
+      "specKeys": [
+        ".specs/active/0006-outbox-batch-size.md"
+      ],
+      "specReferences": [
+        "0006-outbox-batch-size"
+      ]
+    }
+  ],
+  "returnNotes": [],
+  "diagnostics": [
+    {
+      "kind": "unknown-content",
+      "scope": {
+        "file": ".specs/active/0006-outbox-batch-size.plan.md",
+        "line": 8
+      },
+      "reason": "Unknown plan header line \"Working mode for this run (user-granted one-off exception, 2026-09-19)\""
+    },
+    {
+      "kind": "unknown-content",
+      "scope": {
+        "file": ".specs/active/0006-outbox-batch-size.plan.md",
+        "line": 88
+      },
+      "reason": "Unknown plan section \"Blocker — the repository's run command could not load its own source · RESOLVED 2026-09-19\""
+    }
+  ]
+}

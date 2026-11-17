@@ -23,6 +23,16 @@ describe('Deprecated marker and successor', () => {
         expect(entry?.deprecated).toEqual({ successor: { kind: 'link', target: '../backlog/0001-ready-feature.md', text: '0001-ready-feature.md' } });
     });
 
+    it('AC-002: the Successor header line of a Deprecated spec gives the link and no diagnostic on the entry', async () => {
+        const model = deriveLifecycle(
+            await readMemory({
+                '.specs/done/0001-a.md': specText({ status: 'Deprecated', plan: ARCHIVE, extraHeader: '**Successor:** [0009-b.md](../active/0009-b.md)' }),
+            }),
+        );
+        expect(model.entries[0].deprecated?.successor).toEqual({ kind: 'link', target: '../active/0009-b.md', text: '0009-b.md' });
+        expect(model.entries[0].diagnostics.filter((diagnostic) => diagnostic.reason.includes('Successor'))).toEqual([]);
+    });
+
     it('AC-013: the text "successor: none — behaviour removed" gives the removed outcome, in the header or in the body', async () => {
         expect(await successorOf('**Successor:** none — behaviour removed')).toBe('successor: none — behaviour removed');
         expect(await successorOf(undefined, '\n## Notes\n\nsuccessor: none — behaviour removed\n')).toBe('successor: none — behaviour removed');

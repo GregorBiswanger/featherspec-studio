@@ -1,0 +1,568 @@
+{
+  "version": "1.10.0",
+  "specs": [
+    {
+      "key": ".specs/active/0001-parallel-demo.md",
+      "readable": true,
+      "reference": "0001-parallel-demo",
+      "number": "0001",
+      "slug": "parallel-demo",
+      "folder": "active",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Parallel demo"
+          },
+          "line": 1
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "In Progress"
+          },
+          "line": 3
+        },
+        "plan": {
+          "value": {
+            "state": "value",
+            "raw": "[0001-parallel-demo.plan.md](0001-parallel-demo.plan.md)"
+          },
+          "line": 4
+        },
+        "planClassification": {
+          "kind": "sibling",
+          "target": "0001-parallel-demo.plan.md",
+          "text": "0001-parallel-demo.plan.md"
+        },
+        "ticket": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "origin": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "validatedBy": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "clarified": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "unsupportedHeaderLines": [],
+        "sections": [
+          {
+            "heading": "Acceptance criteria",
+            "raw": "- **AC-001** The system shall add numbers.\n- **AC-002** The system shall subtract numbers.",
+            "line": 6
+          }
+        ],
+        "planHistory": [],
+        "criteria": [
+          {
+            "id": "AC-001",
+            "text": "- **AC-001** The system shall add numbers.",
+            "line": 8,
+            "uncertain": false,
+            "struck": false
+          },
+          {
+            "id": "AC-002",
+            "text": "- **AC-002** The system shall subtract numbers.",
+            "line": 9,
+            "uncertain": false,
+            "struck": false
+          }
+        ],
+        "requirements": [],
+        "diagnostics": []
+      },
+      "planKeys": [
+        ".specs/active/0001-parallel-demo.plan.md"
+      ],
+      "returnNoteKeys": [
+        ".memory-bank/activeContext.0001-T-003.md",
+        ".memory-bank/activeContext.0001-T-004.md"
+      ]
+    }
+  ],
+  "plans": [
+    {
+      "key": ".specs/active/0001-parallel-demo.plan.md",
+      "readable": true,
+      "variant": "sibling",
+      "reference": "0001-parallel-demo",
+      "number": "0001",
+      "slug": "parallel-demo",
+      "folder": "active",
+      "parsed": {
+        "title": {
+          "value": {
+            "state": "value",
+            "raw": "Plan — Parallel demo"
+          },
+          "line": 1
+        },
+        "spec": {
+          "value": {
+            "state": "value",
+            "raw": "[0001-parallel-demo.md](0001-parallel-demo.md)"
+          },
+          "line": 3
+        },
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "Blocked"
+          },
+          "line": 4
+        },
+        "lastUpdated": {
+          "value": {
+            "state": "value",
+            "raw": "2026-11-10"
+          },
+          "line": 5
+        },
+        "currentStep": {
+          "value": {
+            "state": "value",
+            "raw": "T-003 ‖ T-004"
+          },
+          "line": 6
+        },
+        "stages": {
+          "present": true,
+          "stages": [
+            {
+              "number": 1,
+              "raw": "1. T-001 → T-002 — shared types, then the entry point",
+              "line": 20,
+              "stepIds": [
+                "T-001",
+                "T-002"
+              ],
+              "kind": "sequential"
+            },
+            {
+              "number": 2,
+              "raw": "2. T-003 ‖ T-004 — add and subtract: separate modules and tests",
+              "line": 21,
+              "stepIds": [
+                "T-003",
+                "T-004"
+              ],
+              "kind": "parallel"
+            },
+            {
+              "number": 3,
+              "raw": "3. T-005 — docs sync",
+              "line": 22,
+              "stepIds": [
+                "T-005"
+              ],
+              "kind": "single"
+            }
+          ],
+          "closing": {
+            "raw": "Parallel: stage 2 (add vs. subtract: separate files).",
+            "line": 24,
+            "parallel": true
+          }
+        },
+        "steps": [
+          {
+            "id": "T-001",
+            "title": "Shared types",
+            "line": 28,
+            "struck": false,
+            "dialect": "verified-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-001"
+            },
+            "coveredCriteria": [
+              "AC-001"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "types."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`npm test`"
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-11-09 · `npm test` green"
+            },
+            "notes": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "unsupported": []
+          },
+          {
+            "id": "T-002",
+            "title": "Entry point",
+            "line": 36,
+            "struck": false,
+            "dialect": "verified-line",
+            "ticked": true,
+            "covers": {
+              "state": "value",
+              "raw": "AC-001, AC-002"
+            },
+            "coveredCriteria": [
+              "AC-001",
+              "AC-002"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "entry."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`npm test`"
+            },
+            "verified": {
+              "state": "value",
+              "raw": "2026-11-09 · `npm test` green"
+            },
+            "notes": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "unsupported": []
+          },
+          {
+            "id": "T-003",
+            "title": "Add",
+            "line": 44,
+            "struck": false,
+            "dialect": "verified-line",
+            "ticked": false,
+            "covers": {
+              "state": "value",
+              "raw": "AC-001"
+            },
+            "coveredCriteria": [
+              "AC-001"
+            ],
+            "files": {
+              "state": "value",
+              "raw": "`src/add.ts`, `src/add.test.ts`"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "add."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`npm test -- add`"
+            },
+            "verified": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "notes": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "unsupported": []
+          },
+          {
+            "id": "T-004",
+            "title": "Subtract",
+            "line": 53,
+            "struck": false,
+            "dialect": "verified-line",
+            "ticked": false,
+            "covers": {
+              "state": "value",
+              "raw": "AC-002"
+            },
+            "coveredCriteria": [
+              "AC-002"
+            ],
+            "files": {
+              "state": "value",
+              "raw": "`src/subtract.ts`, `src/subtract.test.ts`"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "subtract."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`npm test -- subtract`"
+            },
+            "verified": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "notes": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "unsupported": []
+          },
+          {
+            "id": "T-005",
+            "title": "Docs sync",
+            "line": 62,
+            "struck": false,
+            "dialect": "verified-line",
+            "ticked": false,
+            "covers": {
+              "state": "value",
+              "raw": "AC-001, AC-002"
+            },
+            "coveredCriteria": [
+              "AC-001",
+              "AC-002"
+            ],
+            "files": {
+              "state": "absent"
+            },
+            "doText": {
+              "state": "value",
+              "raw": "docs."
+            },
+            "verify": {
+              "state": "value",
+              "raw": "`npm test`"
+            },
+            "verified": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "notes": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "unsupported": []
+          }
+        ],
+        "traceability": [
+          {
+            "criterion": "AC-001",
+            "steps": {
+              "state": "value",
+              "raw": "T-001, T-003"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`src/add.ts`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "`src/add.test.ts` — adds"
+            },
+            "manual": false,
+            "state": "built",
+            "stateKnown": true,
+            "line": 74
+          },
+          {
+            "criterion": "AC-002",
+            "steps": {
+              "state": "value",
+              "raw": "T-002, T-004"
+            },
+            "code": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "test": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "manual": false,
+            "state": "open",
+            "stateKnown": true,
+            "line": 75
+          },
+          {
+            "criterion": "AC-003",
+            "steps": {
+              "state": "value",
+              "raw": "T-005"
+            },
+            "code": {
+              "state": "value",
+              "raw": "`README.md`"
+            },
+            "test": {
+              "state": "value",
+              "raw": "manual: read by the product owner, 2026-11-10"
+            },
+            "manual": true,
+            "state": "verified",
+            "stateKnown": true,
+            "line": 76
+          }
+        ],
+        "handoff": {
+          "doneSoFar": {
+            "value": {
+              "state": "value",
+              "raw": "T-001, T-002."
+            },
+            "line": 80
+          },
+          "nextAction": {
+            "value": {
+              "state": "value",
+              "raw": "T-003 ‖ T-004 with other agents."
+            },
+            "line": 81
+          },
+          "openDecisions": {
+            "value": {
+              "state": "placeholder",
+              "raw": "—"
+            },
+            "line": 82
+          },
+          "baseline": {
+            "value": {
+              "state": "value",
+              "raw": "abc1234"
+            },
+            "line": 83
+          },
+          "environment": {
+            "value": {
+              "state": "value",
+              "raw": "Node 22."
+            },
+            "line": 84
+          }
+        },
+        "unsupported": [],
+        "diagnostics": []
+      },
+      "specKeys": [
+        ".specs/active/0001-parallel-demo.md"
+      ],
+      "specReferences": [
+        "0001-parallel-demo"
+      ]
+    }
+  ],
+  "returnNotes": [
+    {
+      "key": ".memory-bank/activeContext.0001-T-003.md",
+      "readable": true,
+      "number": "0001",
+      "stepId": "T-003",
+      "parsed": {
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "DONE"
+          },
+          "line": 3
+        },
+        "files": {
+          "value": {
+            "state": "value",
+            "raw": "`src/add.ts`, `src/add.test.ts`"
+          },
+          "line": 4
+        },
+        "verified": {
+          "value": {
+            "state": "value",
+            "raw": "2026-11-10 · `npm test -- add`: red → green 3 of 3"
+          },
+          "line": 5
+        },
+        "notes": {
+          "value": {
+            "state": "placeholder",
+            "raw": "—"
+          },
+          "line": 6
+        },
+        "blockedOn": {
+          "value": {
+            "state": "absent"
+          }
+        },
+        "diagnostics": []
+      },
+      "specKeys": [
+        ".specs/active/0001-parallel-demo.md"
+      ],
+      "specReferences": [
+        "0001-parallel-demo"
+      ]
+    },
+    {
+      "key": ".memory-bank/activeContext.0001-T-004.md",
+      "readable": true,
+      "number": "0001",
+      "stepId": "T-004",
+      "parsed": {
+        "status": {
+          "value": {
+            "state": "value",
+            "raw": "BLOCKED"
+          },
+          "line": 3
+        },
+        "files": {
+          "value": {
+            "state": "placeholder",
+            "raw": "—"
+          },
+          "line": 4
+        },
+        "verified": {
+          "value": {
+            "state": "placeholder",
+            "raw": "—"
+          },
+          "line": 5
+        },
+        "notes": {
+          "value": {
+            "state": "placeholder",
+            "raw": "—"
+          },
+          "line": 6
+        },
+        "blockedOn": {
+          "value": {
+            "state": "value",
+            "raw": "needs a new dependency (Ask first)."
+          },
+          "line": 7
+        },
+        "diagnostics": []
+      },
+      "specKeys": [
+        ".specs/active/0001-parallel-demo.md"
+      ],
+      "specReferences": [
+        "0001-parallel-demo"
+      ]
+    }
+  ],
+  "diagnostics": []
+}

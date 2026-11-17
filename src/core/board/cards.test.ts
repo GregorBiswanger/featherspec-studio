@@ -94,13 +94,13 @@ describe('cards', () => {
         expect(clean.cards[0]?.diagnostics).toBe(0);
     });
 
-    it('AC-020: an orphan plan and an unlinked return note go to the banner, and no card is badged for them', async () => {
+    it('AC-020 (0016 §5): an archived orphan plan goes to the banner, and no card is badged for them', async () => {
         const { cards, banner } = await cardsOf({
             '.specs/backlog/0001-a.md': specText(),
-            '.specs/active/0009-orphan.plan.md': planText({ status: 'In Progress' }),
+            '.specs/plan-archive/0009-orphan.2026-09-19.plan.md': planText({ status: 'Done' }),
         });
         expect(cards.map((card) => card.diagnostics)).toEqual([0]);
-        expect(banner.map((line) => line.where)).toContain('.specs/active/0009-orphan.plan.md');
+        expect(banner.map((line) => line.where)).toContain('.specs/plan-archive/0009-orphan.2026-09-19.plan.md');
         expect(banner.every((line) => line.reason.length > 0)).toBe(true);
     });
 

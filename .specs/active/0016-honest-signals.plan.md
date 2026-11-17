@@ -3,7 +3,7 @@
 **Spec:** [0016-honest-signals.md](0016-honest-signals.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-001
+**Current step:** T-002
 
 ## Approach
 
@@ -149,8 +149,8 @@ everything after T-002 shares the text modules, `main.css` or `SpecDetail.tsx` a
   changes (orphan plan in backlog/active, Successor as unsupported) are rewritten under new titles.
 - **Verify:** `npx vitest run --project node src/core` red (missing `tier`, the Successor row)
   then green; `npx eslint src --max-warnings 0`; `npx tsc --noEmit`
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-17 — red: `npx vitest run --project node src/core/specs/tiers.test.ts` with the production files stashed: 14 failed (missing `tier`, Successor row, abandoned plan rows), 1 control green; green after the change: 15 passed. `readBaseline.test.ts` green before the change (10 passed incl. negative control) and after. `npx vitest run --project node src/core`: 1193 passed. Gates 1–4: eslint 0 warnings, tsc x2 clean, `npm run test:unit`: 1718 passed + 3 skipped, timing 12 (before: 1688 + 3, 12).
+- **Notes:** Baseline snapshot written at `3946b2c` (code = `3cdab90`) by `/home/claude/orch/s35/baseline.ts` outside the repo. `readSnapshot` (helper in `testing/`) keeps `version` and the three entry lists without `modifiedMs`/`size`, plus diagnostics. Tests rewritten under new titles (§5): readProject AC-006 (orphan plan), cards AC-020, specFigures AC-017 (now an archived orphan plan). Proxy: the `ContradictionDiagnostic` tier stays for T-003 as the plan says; `successor` is a `HeaderField` on `ParsedSpec`; an empty `**Successor:**` line still gives 'not available' as before.
 
 ### T-002 — Copy is primary and confirms at the button
 

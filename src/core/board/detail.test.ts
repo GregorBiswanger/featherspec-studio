@@ -140,6 +140,19 @@ describe('spec detail', () => {
         expect(deprecated.sections.overview.successor).toBe('Successor: none — behaviour removed');
     });
 
+    it('AC-002: the successor of a Deprecated spec shows once, as the successor line, with no Successor header line and no diagnostic', async () => {
+        const view = spec(
+            await detailOf(
+                { '.specs/done/0003-c.md': specText({ status: 'Deprecated', extraHeader: '**Successor:** [0009-b.md](../active/0009-b.md)' }) },
+                { stem: '0003-c' },
+            ),
+        );
+        expect(view.sections.overview.successor).toBe('Successor: 0009-b.md');
+        expect(view.sections.overview.headerLines.filter((line) => line.label === 'Successor')).toEqual([]);
+        expect(JSON.stringify(view.sections.overview.headerLines)).not.toContain('0009-b.md');
+        expect(view.sections.overview.diagnostics.filter((line) => line.reason.includes('Successor'))).toEqual([]);
+    });
+
     it('AC-010: a diagnostic carries its reason and opens at its line in its file', async () => {
         const project = await readFixture('fs-broken');
         const model = { project, lifecycle: deriveLifecycle(project) };

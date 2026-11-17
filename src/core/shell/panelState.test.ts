@@ -152,27 +152,27 @@ describe('listingFailure (PD-038)', () => {
     }
 
     it.each(['.specs', '.specs/backlog', '.specs/active', '.specs/done'])('%s that could not be listed is a listing failure', (file) => {
-        expect(listingFailure(project([{ kind: 'unreadable-file', scope: { file }, reason: 'could not be listed: EACCES' }]))).toEqual({
+        expect(listingFailure(project([{ kind: 'unreadable-file', tier: 'problem', scope: { file }, reason: 'could not be listed: EACCES' }]))).toEqual({
             folder: file,
             reason: 'EACCES',
         });
     });
 
     it('a single unreadable spec file is no listing failure (control)', () => {
-        expect(listingFailure(project([{ kind: 'unreadable-file', scope: { file: '.specs/active/0001-x.md' }, reason: 'invalid UTF-8' }]))).toBeUndefined();
+        expect(listingFailure(project([{ kind: 'unreadable-file', tier: 'problem', scope: { file: '.specs/active/0001-x.md' }, reason: 'invalid UTF-8' }]))).toBeUndefined();
     });
 
     it('an unlisted plan archive or memory bank folder is no listing failure of the lifecycle folders', () => {
-        expect(listingFailure(project([{ kind: 'unreadable-file', scope: { file: '.specs/plan-archive' }, reason: 'could not be listed: EIO' }]))).toBeUndefined();
-        expect(listingFailure(project([{ kind: 'unreadable-file', scope: { file: '.memory-bank' }, reason: 'could not be listed: EIO' }]))).toBeUndefined();
+        expect(listingFailure(project([{ kind: 'unreadable-file', tier: 'problem', scope: { file: '.specs/plan-archive' }, reason: 'could not be listed: EIO' }]))).toBeUndefined();
+        expect(listingFailure(project([{ kind: 'unreadable-file', tier: 'problem', scope: { file: '.memory-bank' }, reason: 'could not be listed: EIO' }]))).toBeUndefined();
     });
 
     it('a symbolic link that is not followed is no listing failure', () => {
-        expect(listingFailure(project([{ kind: 'unreadable-file', scope: { file: '.specs/active' }, reason: 'symbolic link not followed' }]))).toBeUndefined();
+        expect(listingFailure(project([{ kind: 'unreadable-file', tier: 'problem', scope: { file: '.specs/active' }, reason: 'symbolic link not followed' }]))).toBeUndefined();
     });
 
     it('other diagnostic kinds and no diagnostics give none', () => {
-        expect(listingFailure(project([{ kind: 'orphan', scope: { file: '.specs/active' }, reason: 'could not be listed: x' }]))).toBeUndefined();
+        expect(listingFailure(project([{ kind: 'orphan', tier: 'problem', scope: { file: '.specs/active' }, reason: 'could not be listed: x' }]))).toBeUndefined();
         expect(listingFailure(project([]))).toBeUndefined();
     });
 });

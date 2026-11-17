@@ -211,8 +211,8 @@ describe('duplicates', () => {
             ['AC-001', 3],
         ]);
         expect(diagnostics).toEqual([
-            { kind: 'duplicate', scope: { file: KEY, line: 1 }, reason: 'AC-001 is defined more than once in this spec; other definitions at line 3' },
-            { kind: 'duplicate', scope: { file: KEY, line: 3 }, reason: 'AC-001 is defined more than once in this spec; other definitions at line 1' },
+            { kind: 'duplicate', tier: 'note', scope: { file: KEY, line: 1 }, reason: 'AC-001 is defined more than once in this spec; other definitions at line 3' },
+            { kind: 'duplicate', tier: 'note', scope: { file: KEY, line: 3 }, reason: 'AC-001 is defined more than once in this spec; other definitions at line 1' },
         ]);
     });
 
