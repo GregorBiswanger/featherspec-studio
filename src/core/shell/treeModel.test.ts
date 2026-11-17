@@ -7,13 +7,19 @@ describe('AC-003: the Activity Bar tree model', () => {
         const model = buildTreeModel({ projectActive: true, projectName: 'demo', state: undefined });
         expect(model.message).toBeUndefined();
         expect(model.items).toEqual([
-            { kind: 'project', label: 'demo' },
-            { kind: 'open', label: 'Open Studio' },
-            { kind: 'area', label: 'Mission Control', area: 'missionControl' },
-            { kind: 'area', label: 'Spec Board', area: 'specBoard' },
-            { kind: 'area', label: 'Spec Explorer', area: 'specExplorer' },
-            { kind: 'area', label: 'Agent Center', area: 'agentCenter' },
+            { kind: 'project', label: 'demo', icon: 'folder' },
+            { kind: 'open', label: 'Open Studio', icon: 'window' },
+            { kind: 'area', label: 'Mission Control', area: 'missionControl', icon: 'dashboard' },
+            { kind: 'area', label: 'Spec Board', area: 'specBoard', icon: 'layout' },
+            { kind: 'area', label: 'Spec Explorer', area: 'specExplorer', icon: 'list-tree' },
+            { kind: 'area', label: 'Agent Center', area: 'agentCenter', icon: 'robot' },
         ]);
+    });
+
+    it('PD-048: every entry of an active project has an icon of its own', () => {
+        const icons = buildTreeModel({ projectActive: true, projectName: 'demo', state: undefined }).items.map((item) => item.icon);
+        expect(new Set(icons).size).toBe(icons.length);
+        expect(icons.every((icon) => /^[a-z][a-z-]*$/.test(icon))).toBe(true);
     });
 
     it('an active project keeps its entries while a state such as loading or a load error applies', () => {

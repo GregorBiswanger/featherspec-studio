@@ -155,6 +155,11 @@ suite('FeatherSpec Studio shell smoke', function () {
             api.shell().tree().items.map((item) => item.label),
             ['fs110-de-active-review', 'Open Studio', 'Mission Control', 'Spec Board', 'Spec Explorer', 'Agent Center'],
         );
+        assert.deepStrictEqual(
+            api.shell().tree().items.map((item) => item.icon),
+            ['folder', 'window', 'dashboard', 'layout', 'list-tree', 'robot'],
+            'PD-048: every entry has an icon of its own',
+        );
         const registered = await vscode.commands.getCommands(true);
         for (const command of [
             'featherspec-studio.open',

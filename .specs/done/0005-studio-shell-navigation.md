@@ -162,7 +162,8 @@ remembered for this workspace.
 
 UI text is in English (PD-016).
 
-- **Activity Bar view "FeatherSpec Studio":** present in every window (PD-008, ADR-001 §2).
+- **Activity Bar view "FeatherSpec Studio":** present in every window (PD-008, ADR-001 §2). Its
+  icon is the FeatherSpec logo mark in one colour; every tree entry has its own icon (PD-048).
   While a project is active, a tree shows the project's name, an "Open Studio" entry, and one
   entry each for Mission Control, Spec Board, Spec Explorer and Agent Center. While no project
   is active, the view shows, in place of the entries, the text and actions of the panel state
@@ -262,7 +263,8 @@ automated tests.
   the system shall bring that panel to the front and shall not open a second one (BR-01).
 - **AC-003** While a project is active, the system shall show in the Activity Bar view
   "FeatherSpec Studio" the active project's name, an "Open Studio" entry and one entry per
-  area. Activating "Open Studio" shall open the panel on the start area (BR-02); activating an
+  area, each with an icon of its own (PD-048, added 2026-11-17). Activating "Open Studio" shall
+  open the panel on the start area (BR-02); activating an
   area's entry shall open the panel on that area. While no project is active, the view shall
   show, in place of the entries, the text and actions of the panel state that applies among
   S1–S5, S8 and S9.

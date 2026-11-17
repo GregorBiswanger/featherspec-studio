@@ -155,6 +155,18 @@ describe('extension manifest', () => {
         expect(svg).not.toMatch(/#[0-9a-fA-F]{3,6}/);
     });
 
+    it('PD-048: the Activity Bar icon is the filled FeatherSpec logo mark (frame, code lines and feather), not a line drawing', () => {
+        const svg = readFileSync(path.resolve(process.cwd(), 'media', 'studio.svg'), 'utf8');
+        expect(svg).toContain('fill="currentColor"');
+        expect(svg).not.toContain('stroke');
+        const [, , width, height] = (svg.match(/viewBox="([^"]+)"/)?.[1] ?? '').split(' ').map(Number);
+        expect(width).toBeGreaterThan(0);
+        expect(width).toBe(height);
+        // The mark has separate shapes: the frame, the feather, "</>" and the text lines.
+        expect((svg.match(/M/g) ?? []).length).toBeGreaterThanOrEqual(8);
+        expect(Buffer.byteLength(svg)).toBeLessThan(20_000);
+    });
+
     it('AC-029 (0005): contributes "FeatherSpec Studio: Rescan Project"; the internal action command stays out of the palette', () => {
         const commands = Object.fromEntries((manifest.contributes?.commands ?? []).map((command) => [command.command, command.title]));
         expect(commands['featherspec-studio.rescan']).toBe('FeatherSpec Studio: Rescan Project');

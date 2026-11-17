@@ -9,20 +9,17 @@ export interface StudioTree extends vscode.Disposable {
 
 function toItem(model: TreeItemModel): vscode.TreeItem {
     const item = new vscode.TreeItem(model.label, vscode.TreeItemCollapsibleState.None);
+    item.iconPath = new vscode.ThemeIcon(model.icon);
     switch (model.kind) {
         case 'project':
-            item.iconPath = new vscode.ThemeIcon('folder');
             break;
         case 'open':
-            item.iconPath = new vscode.ThemeIcon('window');
             item.command = { command: OPEN_COMMAND, title: model.label };
             break;
         case 'area':
-            item.iconPath = new vscode.ThemeIcon('symbol-misc');
             item.command = { command: AREA_COMMANDS[model.area], title: model.label };
             break;
         case 'action':
-            item.iconPath = new vscode.ThemeIcon('play');
             item.command = { command: SHELL_ACTION_COMMAND, title: model.label, arguments: [model.action] };
             break;
     }
