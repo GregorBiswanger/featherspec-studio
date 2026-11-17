@@ -151,7 +151,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
   `src/test/board.smoke.test.ts` (expects the next-step result).
 - **Deletes:** `src/core/agentStart/agentStart.endToEnd.test.ts` (decides 0008 criteria only, drives the removed start port)
 - **Verify:** the new tests red then green; gates 1–5
-- [ ] **Verified (T-003):** —
+- [x] **Verified (T-003):** 2026-11-17 — red: with the old moves.ts, board.ts, Announcer.tsx restored, 7 tests failed (moves, noWrite, boardFilter guard, Keyboard drop result); green after the change: moves, noWrite, guards, Keyboard (announcement, Copy by pointer, Enter, Space) pass; endToEnd test deleted with the start port; gates 1–5 clean, test:unit 2532 passed + 12 timing. Notes: src/test/board.smoke.test.ts is unchanged: its spec is in Review so the refusal it expects still holds; no host-test fixture has a Ready spec (CI would need a new fixture, not added).
 - **Notes:** —
 
 ### T-004 — Remove the run data of earlier builds (module, not wired)

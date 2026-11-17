@@ -219,12 +219,6 @@ export function diagnosticsBadgeText(count: number): string {
 
 export const BANNER_HEADING = 'Project diagnostics';
 
-export const AGENT_START_UNAVAILABLE_TEXT = 'Agent start is not available yet';
-
-export function handedOffText(number: string): string {
-    return `Spec ${number} was handed to the agent start.`;
-}
-
 export const MOVE_MENU_LABEL = 'Move to…';
 export const MOVE_COMMAND_TITLE = 'FeatherSpec: Move Spec to…';
 export function moveMenuAriaLabel(number: string): string {

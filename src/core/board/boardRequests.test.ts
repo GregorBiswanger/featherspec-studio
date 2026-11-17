@@ -18,7 +18,7 @@ function setup(overrides: { move?: MoveResult; open?: OpenFileResult; copyFails?
         moves: {
             async requestMove(key: string, target: BoardState) {
                 calls.push(['requestMove', key, target]);
-                return overrides.move ?? { kind: 'handedOff', number: '0001' };
+                return overrides.move ?? { kind: 'nextStep', number: '0001', line: 'Implement p' };
             },
         },
         clipboard: {

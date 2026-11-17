@@ -1,14 +1,13 @@
 import type { MoveResult } from '../../shared/protocol/board';
 import { BOARD_STATES, type BoardState } from '../../shared/protocol/boardFilter';
-import { AGENT_START_UNAVAILABLE_TEXT } from '../../shared/protocol/texts';
 import { judgeTransition } from '../lifecycle/transitions';
-import type { MovePickPort, MoveResultSink, SelectionSource, StartWorkflowPort } from '../ports/board';
+import type { MovePickPort, MoveResultSink, SelectionSource } from '../ports/board';
 import type { ShellModel, ShellModelSource } from '../ports/shell';
 import { titleOf } from './cards';
+import { startLine } from './nextStep';
 
 export interface MovesDeps {
     source: ShellModelSource;
-    start: StartWorkflowPort | undefined;
     picks: MovePickPort;
     sink: MoveResultSink;
     selection: SelectionSource;
@@ -43,11 +42,7 @@ export function createMoves(deps: MovesDeps): Moves {
         if (!verdict.accepted) {
             return { kind: 'refused', text: verdict.text };
         }
-        if (deps.start === undefined) {
-            return { kind: 'refused', text: AGENT_START_UNAVAILABLE_TEXT };
-        }
-        await deps.start.start({ stem: entry.stem, key });
-        return { kind: 'handedOff', number: entry.number };
+        return { kind: 'nextStep', number: entry.number, line: startLine(model, entry) };
     }
 
     async function runMoveCommand(): Promise<void> {

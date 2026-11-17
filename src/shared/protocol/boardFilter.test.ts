@@ -108,8 +108,9 @@ describe('board requests', () => {
         expect(isSortKey('priority')).toBe(false);
         expect(isMoveResult({ kind: 'none' })).toBe(true);
         expect(isMoveResult({ kind: 'refused', text: 'No.' })).toBe(true);
-        expect(isMoveResult({ kind: 'handedOff', number: '0003' })).toBe(true);
-        expect(isMoveResult({ kind: 'handedOff' })).toBe(false);
+        expect(isMoveResult({ kind: 'nextStep', number: '0003', line: 'Start T-001 of p' })).toBe(true);
+        expect(isMoveResult({ kind: 'nextStep', number: '0003' })).toBe(false);
+        expect(isMoveResult({ kind: 'handedOff', number: '0003' })).toBe(false);
         expect(isMoveResult({ kind: 'moved' })).toBe(false);
     });
 

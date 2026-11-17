@@ -69,7 +69,7 @@ export interface BoardView {
 export type MoveResult =
     | { kind: 'none' }
     | { kind: 'refused'; text: string }
-    | { kind: 'handedOff'; number: string };
+    | { kind: 'nextStep'; number: string; line: string };
 
 function isString(value: unknown): value is string {
     return typeof value === 'string';
@@ -159,8 +159,8 @@ export function isMoveResult(value: unknown): value is MoveResult {
             return true;
         case 'refused':
             return isString(value.text);
-        case 'handedOff':
-            return isString(value.number);
+        case 'nextStep':
+            return isString(value.number) && isString(value.line);
         default:
             return false;
     }

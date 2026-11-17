@@ -29,6 +29,12 @@ function openStep(model: ShellModel, entry: LifecycleEntry): string | undefined 
     return first?.id;
 }
 
+export function startLine(model: ShellModel, entry: LifecycleEntry): string {
+    const plan = entry.plan ?? '';
+    const id = openStep(model, entry);
+    return id === undefined ? `Implement ${plan}` : `Start ${id} of ${plan}`;
+}
+
 function readable(spec: SpecEntry): boolean {
     return spec.readable && spec.parsed !== undefined;
 }
@@ -59,11 +65,8 @@ export function nextStep(model: ShellModel, key: string): NextStep | undefined {
             return lines('NS-5', { text: `/sdd-compile ${key}` }, { text: `/sdd-lifecycle ${key}`, label: NEXT_STEP_THEN_AFTER_READY_LABEL });
         case 'Active':
             return lines('NS-6', { text: `/sdd-plan ${key}` });
-        case 'Ready': {
-            const plan = entry.plan ?? '';
-            const id = openStep(model, entry);
-            return lines('NS-7', { text: id === undefined ? `Implement ${plan}` : `Start ${id} of ${plan}` });
-        }
+        case 'Ready':
+            return lines('NS-7', { text: startLine(model, entry) });
         case 'Backlog': {
             if (entry.readiness.checks.some((check) => check.id === 'R-2' && check.result === 'fail')) {
                 return lines('NS-8', { text: `/sdd-specify ${key}` });

@@ -177,7 +177,7 @@ export function SpecBoard() {
                 </EmptyState>
             ) : null}
             <FilterBar board={board} setFilter={api.setFilter} setSort={api.setSort} clearFilters={api.clearFilters} />
-            <Announcer move={api.move} onDismiss={dismissMove} />
+            <Announcer move={api.move} copyResult={api.copyResult} onCopy={api.copyText} onDismiss={dismissMove} />
             <div className="columns" ref={columnsRef} tabIndex={-1} onFocus={onFocus} onBlur={onBlur} onKeyDown={onKeyDown}>
                 {board.columns.map((column) => (
                     <Column

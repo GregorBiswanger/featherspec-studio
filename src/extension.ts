@@ -323,7 +323,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     });
     const moves = createMoves({
         source: modelSource,
-        start: agentStart,
         picks: createMovePicks(),
         sink: createMoveResultSink((result) => studio?.showMoveResult(result) ?? false),
         selection,

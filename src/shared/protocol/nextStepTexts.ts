@@ -17,3 +17,7 @@ export function nextStepNumberUsedText(number: string): string {
 export const COPIED_TEXT = 'Copied to the clipboard.';
 
 export const COPY_FAILED_TEXT = 'Could not copy to the clipboard.';
+
+export function moveNextStepText(number: string): string {
+    return `Studio starts no agent. Next step for ${number} — paste it into your AI assistant:`;
+}

@@ -1,10 +1,10 @@
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
-import { handedOffText } from '../../shared/protocol/texts';
+import { COPIED_TEXT, moveNextStepText } from '../../shared/protocol/nextStepTexts';
 import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
-import { baseView, click, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
+import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
 import { boardEvent, boardView, card } from './testing/views';
 
 let posted: Envelope[];
@@ -307,10 +307,27 @@ describe('AC-018: the outcome of a move is announced', () => {
         expect(container.querySelector('[role="status"]')!.textContent).toBe('');
     });
 
-    it('announces the hand-off', async () => {
+    it('0015 AC-006: announces the drop result with the line and a Copy button, and Copy asks for exactly that line', async () => {
         const container = await open();
-        await send({ v: 1, kind: 'evt', type: 'moveResult', payload: { result: { kind: 'handedOff', number: '0003' } } });
-        expect(container.querySelector('[role="status"]')!.textContent).toContain(handedOffText('0003'));
+        await send({ v: 1, kind: 'evt', type: 'moveResult', payload: { result: { kind: 'nextStep', number: '0003', line: 'Start T-002 of .specs/backlog/0003-a.plan.md' } } });
+        const status = container.querySelector('[role="status"]')!;
+        expect(status.textContent).toContain(moveNextStepText('0003'));
+        expect(moveNextStepText('0003')).toBe('Studio starts no agent. Next step for 0003 — paste it into your AI assistant:');
+        expect(status.textContent).toContain('Start T-002 of .specs/backlog/0003-a.plan.md');
+        await click([...status.querySelectorAll('button')].find((button) => button.textContent === 'Copy')!);
+        expect(posted.filter((message) => message.type === 'copyText').map((message) => message.payload)).toEqual([{ text: 'Start T-002 of .specs/backlog/0003-a.plan.md' }]);
+        await send({ v: 1, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
+        expect(container.querySelector('[role="status"]')!.textContent).toContain('Copied to the clipboard.');
+    });
+
+    it('0015 AC-006: Copy in the drop result is reachable by Tab and works with Enter and Space', async () => {
+        const container = await open();
+        await send({ v: 1, kind: 'evt', type: 'moveResult', payload: { result: { kind: 'nextStep', number: '0003', line: '/sdd-plan x' } } });
+        const copy = [...container.querySelectorAll('[role="status"] button')].find((button) => button.textContent === 'Copy')!;
+        expect(isKeyboardReachable(copy)).toBe(true);
+        await pressKey(copy, 'Enter');
+        await pressKey(copy, ' ');
+        expect(posted.filter((message) => message.type === 'copyText')).toHaveLength(2);
     });
 });
 

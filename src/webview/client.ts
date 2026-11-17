@@ -266,6 +266,7 @@ export function createClient(deps: ClientDeps): ShellClient {
             } else if (envelope.kind === 'evt' && envelope.type === 'moveResult') {
                 if (isMoveResultEventPayload(envelope.payload)) {
                     move = envelope.payload.result;
+                    copyResult = undefined;
                     refresh();
                 }
             } else if (envelope.kind === 'evt' && envelope.type === 'copyResult') {
@@ -319,6 +320,7 @@ export function createClient(deps: ClientDeps): ShellClient {
         },
         dismissMove() {
             move = { kind: 'none' };
+            copyResult = undefined;
             refresh();
         },
         confirmStart(token) {
