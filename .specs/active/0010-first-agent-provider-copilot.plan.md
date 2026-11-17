@@ -264,6 +264,20 @@ No parallel stage: every step from T-003 on builds on T-002's seam, and T-004…
 - [x] **Verified (T-008):** 2026-11-17. Docs only, no red test applies: `src/core/providers/portDocument.test.ts` (the port document's tables) stays green with the new `copilot` section. README section "GitHub Copilot provider", `docs/agent-provider-port.md`, `AGENTS.md` snapshot, `techContext.md`, `systemPatterns.md`, `activeContext.md` updated. Gates: eslint --max-warnings 0, tsc, tsc -p src/webview clean; `npm run test:unit` 163 files, 2045 passed; `npm run compile` finished.
 - **Notes:** `AGENTS.md` last-reconciled date was already 2026-11-17. Wiki not in this checkout.
 
+### T-009 — Run start with an incompatible or unstartable CLI (from `/sdd-compile`, 2026-11-17)
+
+- **Covers:** AC-002, AC-003 (BR-12, §9, OP-008)
+- **Do:** compile finding: in a `start`/`resume`, a `client.start()` failure was always
+  `runtime_missing` with Copilot's message and no hint — §9 asks for the found and required version
+  and the install link, and OP-008 makes a protocol the installed CLI and the SDK do not share
+  *unknown* naming both versions (the PoC ran CLI 1.0.87 against an SDK built for 1.0.112; only
+  protocol 3 is shared). Test first in `copilotFailures.test.ts`, then `copilotProvider.ts`: a
+  protocol mismatch → `run.failed{unknown, providerMessage, hint}` with the hint the availability
+  check already uses; any other start failure → `runtime_missing` with the §9 hint.
+- **Verify:** `npx vitest run src/adapters/providers/copilot` then the per-step gates and `npm run compile`
+- [x] **Verified (T-009):** 2026-11-17. Red: `npx vitest run src/adapters/providers/copilot/copilotFailures.test.ts` 2 failed, 25 passed — "BR-12 §9: a runtime that cannot be started in a run carries the hint of §9 …" (hint undefined) and "BR-12 OP-008: an installed CLI whose protocol the SDK does not share fails the run as unknown …" (category `runtime_missing`, expected `unknown`). Green after `copilotProvider.ts` (`PROTOCOL_MISMATCH`, `protocolHint` shared with `checkAvailability`): `npx vitest run src/adapters/providers/copilot` 10 files, 150 passed. Gates: eslint --max-warnings 0, tsc, tsc -p src/webview clean; `npm run test:unit` 165 files, 2056 passed; `npm run compile` finished.
+- **Notes:** Product code changed: the Windows host suite has to run again on the commit of this step.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
