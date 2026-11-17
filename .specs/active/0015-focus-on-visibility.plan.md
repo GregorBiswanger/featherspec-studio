@@ -3,7 +3,7 @@
 **Spec:** [0015-focus-on-visibility.md](0015-focus-on-visibility.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-001
+**Current step:** T-004
 
 ## Approach
 
@@ -353,13 +353,13 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 | --- | --- | --- | --- | --- |
 | AC-001 | T-009 | — | — | open |
 | AC-002 | T-009 | — | — | open |
-| AC-003 | T-001, T-002 | — | — | open |
-| AC-004 | T-001 | — | — | open |
-| AC-005 | T-002 | — | — | open |
-| AC-006 | T-003 | — | — | open |
-| AC-007 | T-002 | — | — | open |
-| AC-008 | T-002, T-003 | — | — | open |
-| AC-009 | T-002 | — | — | open |
+| AC-003 | T-001, T-002 | src/core/board/nextStep.ts, src/core/board/detail.ts, src/webview/detail/NextStep.tsx | src/core/board/detail.test.ts, src/webview/detail/SpecDetail.test.tsx | verified |
+| AC-004 | T-001 | src/core/board/nextStep.ts | src/core/board/nextStep.test.ts | verified |
+| AC-005 | T-002 | src/core/board/boardRequests.ts, src/adapters/vscode/clipboard.ts, src/webview/detail/NextStep.tsx | src/core/board/boardRequests.test.ts, src/webview/detail/SpecDetail.test.tsx | verified |
+| AC-006 | T-003 | src/core/board/moves.ts, src/webview/board/Announcer.tsx, src/adapters/vscode/boardPicks.ts | src/core/board/moves.test.ts, src/core/board/noWrite.test.ts, src/webview/board/Keyboard.test.tsx | verified |
+| AC-007 | T-002 | src/webview/detail/SpecDetail.tsx | src/webview/detail/SpecDetail.timing.test.tsx | verified |
+| AC-008 | T-002, T-003 | src/core/board/boardRequests.ts, src/core/board/moves.ts | src/core/board/boardRequests.test.ts, src/core/board/moves.test.ts | verified |
+| AC-009 | T-002 | src/core/board/boardRequests.ts | src/core/board/boardRequests.test.ts, src/webview/detail/SpecDetail.test.tsx | verified |
 | AC-010 | T-006 | — | — | open |
 | AC-011 | T-005 | — | — | open |
 | AC-012 | T-005 | — | — | open |
@@ -384,8 +384,8 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 
 ## Session handoff
 
-- **Done so far:** spec revised with PD-057; plan written.
-- **Next action:** Gregor reviews the plan; then `/sdd-lifecycle` (backlog → active) on the start signal and T-001.
-- **Open decisions:** —
+- **Done so far:** Stage 1 (T-001…T-003): the next step rule function, the detail section with Copy, the drop result without a start; the start workflow is now unreached.
+- **Next action:** T-004 (earlier-data removal module), then T-005 in sequence.
+- **Open decisions:** — (Gregor approved the changed order and `npm uninstall @github/copilot-sdk`; the parallel stage runs in sequence; deletions listed per step are approved.)
 - **Baseline:** ea4a8bd
-- **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked); host suites run on Windows and CI.
+- **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked); host suites run on Windows and CI. Gates: `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`.
