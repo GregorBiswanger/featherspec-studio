@@ -93,6 +93,7 @@ interface EventState {
     ids: Set<string>;
     truncated: boolean;
     pending: EventRecord[];
+    outbox: EventRecord[];
     tailUnterminated: boolean;
 }
 
@@ -108,7 +109,7 @@ interface RunEntry {
 }
 
 function emptyEventState(): EventState {
-    return { nextSeq: 1, count: 0, ids: new Set(), truncated: false, pending: [], tailUnterminated: false };
+    return { nextSeq: 1, count: 0, ids: new Set(), truncated: false, pending: [], outbox: [], tailUnterminated: false };
 }
 
 function eventFileName(runId: string): string {
@@ -702,13 +703,22 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
     }
 
     function persistEvents(entry: RunEntry, state: EventState, records: EventRecord[]): void {
-        const prefix = state.tailUnterminated ? '\n' : '';
-        state.tailUnterminated = false;
-        const text = prefix + records.map((record) => encodeLine(record)).join('');
+        const queued = state.outbox.length > 0;
+        state.outbox.push(...records);
+        if (queued) {
+            return;
+        }
         const name = eventFileName(entry.view.runId);
-        void enqueue(name, () => medium.append(name, text)).then(async (failure) => {
+        let batch: EventRecord[] = [];
+        void enqueue(name, () => {
+            batch = state.outbox.splice(0);
+            const prefix = state.tailUnterminated ? '\n' : '';
+            state.tailUnterminated = false;
+            return medium.append(name, prefix + batch.map((record) => encodeLine(record)).join(''));
+        }).then(async (failure) => {
             if (failure === undefined) {
-                state.pending = state.pending.filter((record) => !records.includes(record));
+                const written = new Set(batch);
+                state.pending = state.pending.filter((record) => !written.has(record));
             }
             await settleWrite(entry, failure);
         });

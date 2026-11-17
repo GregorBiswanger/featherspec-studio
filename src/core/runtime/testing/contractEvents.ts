@@ -184,6 +184,25 @@ export function registerEventsContract(context: ContractContext): void {
             rig.faults.hangWrites(false);
         });
 
+        it('AC-029, AC-021: events that arrive while a write is in flight reach the medium in one write, each on its own line, in order', async () => {
+            const rig = await context.newRig();
+            const store = await rig.open();
+            const run = await store.createRun({ providerId: 'fake', spec: SPEC });
+            await rig.settle();
+            const before = rig.faults.writeAttempts();
+            rig.faults.hangWrites(true);
+            for (let index = 1; index <= 100; index += 1) {
+                await store.appendEvent(run.runId, { type: 'message', payload: index });
+            }
+            rig.faults.hangWrites(false);
+            await rig.settle();
+            expect(rig.faults.writeAttempts() - before).toBe(2);
+            const raw = (await rig.harness.readRaw('project-A', `runs/${run.runId}.events.jsonl`)) ?? '';
+            expect(raw.endsWith('\n')).toBe(true);
+            const stored = raw.slice(0, -1).split('\n').map((line) => (JSON.parse(line) as { seq: number; payload: unknown }));
+            expect(stored.map((record) => [record.seq, record.payload])).toEqual(Array.from({ length: 100 }, (_, offset) => [offset + 1, offset + 1]));
+        });
+
         it('AC-029: negative control, without the hang the same events reach the medium', async () => {
             const rig = await context.newRig();
             const store = await rig.open();

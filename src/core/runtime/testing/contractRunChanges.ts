@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import type { ContractContext } from './contract';
-import { settle } from './fakes';
 
 const SPEC = { stem: '0007-board', path: '.specs/active/0007-board.md' };
 const DAY = 86_400_000;
@@ -15,9 +14,9 @@ export function registerRunChangesContract(context: ContractContext): void {
                 void store.listRuns().then((list) => seen.push(list.available ? (list.value[0]?.status ?? 'none') : 'n/a'));
             });
             const run = await store.createRun({ providerId: 'fake', spec: SPEC });
-            await settle();
+            await rig.settle();
             await store.reportStatus(run.runId, 'Running');
-            await settle();
+            await rig.settle();
             expect(seen).toEqual(['Starting', 'Running']);
         });
 
@@ -77,10 +76,10 @@ export function registerRunChangesContract(context: ContractContext): void {
                 void reader.listRuns().then((list) => seen.push(list.available ? list.value.map((run) => `${run.runId}:${run.status}`) : ['n/a']));
             });
             rig.clock.advance(50_000);
-            await settle();
+            await rig.settle();
             expect(seen).toEqual([]);
             rig.clock.advance(20_000);
-            await settle();
+            await rig.settle();
             expect(seen).toEqual([[`${open.runId}:Interrupted`]]);
         });
 

@@ -9,7 +9,7 @@ export interface Faults {
 }
 
 export function createFaults(): { faults: Faults; state: FaultState } {
-    const state: FaultState = { failures: [], hang: false, release: [], openFailure: undefined, removeFailure: undefined, attempts: 0 };
+    const state: FaultState = { failures: [], hang: false, release: [], openFailure: undefined, removeFailure: undefined, attempts: 0, inFlight: 0 };
     const faults: Faults = {
         failNext: (match) => void state.failures.push(match),
         hangWrites: (on) => {
@@ -36,9 +36,18 @@ export interface FaultState {
     openFailure: string | undefined;
     removeFailure: string | undefined;
     attempts: number;
+    inFlight: number;
 }
 
 export function createFaultyMedium(inner: RuntimeMedium, state: FaultState): RuntimeMedium {
+    async function tracked<T>(action: () => Promise<T>): Promise<T> {
+        state.inFlight += 1;
+        try {
+            return await action();
+        } finally {
+            state.inFlight -= 1;
+        }
+    }
     async function guardWrite(name: string): Promise<void> {
         state.attempts += 1;
         if (state.hang) {
@@ -55,28 +64,35 @@ export function createFaultyMedium(inner: RuntimeMedium, state: FaultState): Run
             if (state.openFailure !== undefined) {
                 throw new Error(state.openFailure);
             }
-            await inner.open();
+            await tracked(() => inner.open());
         },
-        read: (name) => inner.read(name),
-        lines: (name) => inner.lines(name),
+        read: (name) => tracked(() => inner.read(name)),
+        async *lines(name) {
+            state.inFlight += 1;
+            try {
+                yield* inner.lines(name);
+            } finally {
+                state.inFlight -= 1;
+            }
+        },
         async append(name, text) {
             await guardWrite(name);
-            await inner.append(name, text);
+            await tracked(() => inner.append(name, text));
         },
         async replace(name, text) {
             await guardWrite(name);
-            await inner.replace(name, text);
+            await tracked(() => inner.replace(name, text));
         },
         async createExclusive(name, text) {
             await guardWrite(name);
-            return inner.createExclusive(name, text);
+            return tracked(() => inner.createExclusive(name, text));
         },
         async remove(name) {
             if (state.removeFailure !== undefined && name.includes(state.removeFailure)) {
                 throw new Error(`injected remove failure for ${name}`);
             }
-            await inner.remove(name);
+            await tracked(() => inner.remove(name));
         },
-        list: (directory) => inner.list(directory),
+        list: (directory) => tracked(() => inner.list(directory)),
     };
 }

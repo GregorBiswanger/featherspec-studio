@@ -6,6 +6,8 @@ import type {
 } from '../../ports/runtimeMedium';
 import type { Disposable } from '../../ports/host';
 
+const SETTLE_LIMIT_MS = 4000;
+
 export interface FakeRuntimeClock extends RuntimeClock {
     advance(milliseconds: number): void;
     set(epochMs: number): void;
@@ -71,9 +73,20 @@ export function createFakeCredentials(...held: string[]): FakeCredentials {
     return credentials;
 }
 
-export async function settle(): Promise<void> {
+async function turns(): Promise<void> {
     for (let turn = 0; turn < 5; turn += 1) {
         await new Promise<void>((resolve) => setImmediate(resolve));
     }
-    await new Promise<void>((resolve) => setTimeout(resolve, 40));
+}
+
+const pause = (milliseconds: number): Promise<void> => new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
+
+export async function settle(operationsInFlight: () => number = () => 0): Promise<void> {
+    const deadline = Date.now() + SETTLE_LIMIT_MS;
+    await turns();
+    await pause(40);
+    while (operationsInFlight() > 0 && Date.now() < deadline) {
+        await pause(5);
+        await turns();
+    }
 }

@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { EXTENSION_HOST_RESTARTED, READER_REASON, storageUnreachableNotice } from '../notices';
 import type { StoreState } from '../model';
 import type { ContractContext, ContractRig } from './contract';
-import { settle } from './fakes';
 
 const SPEC = { stem: '0011-orchestrator', path: '.specs/active/0011-orchestrator.md' };
 const DAY = 86_400_000;
@@ -90,7 +89,7 @@ export function registerWriterContract(context: ContractContext): void {
             const run = await writer.createRun({ providerId: 'fake', spec: SPEC });
             await writer.reportStatus(run.runId, 'Running');
             await writer.appendEvent(run.runId, { type: 'message', payload: 'seen' });
-            await settle();
+            await rig.settle();
             const reader = await rig.open();
             expect(reader.state()).toEqual({ kind: 'read-only', reason: READER_REASON });
             const list = await reader.listRuns();
@@ -152,11 +151,11 @@ export function registerWriterContract(context: ContractContext): void {
             reader.onDidChangeState((state) => states.push(state));
             expect(reader.state().kind).toBe('read-only');
             rig.clock.advance(50_000);
-            await settle();
+            await rig.settle();
             expect(reader.state().kind).toBe('read-only');
             expect(states).toEqual([]);
             rig.clock.advance(20_000);
-            await settle();
+            await rig.settle();
             expect(reader.state()).toEqual({ kind: 'writable', reason: undefined });
             expect(states).toEqual([{ kind: 'writable', reason: undefined }]);
             const read = await reader.getRun(run.runId);
@@ -170,7 +169,7 @@ export function registerWriterContract(context: ContractContext): void {
             const writer = await rig.open();
             for (let step = 0; step < 12; step += 1) {
                 rig.clock.advance(10_000);
-                await settle();
+                await rig.settle();
             }
             const later = await rig.open();
             expect(later.state()).toEqual({ kind: 'read-only', reason: READER_REASON });
@@ -184,7 +183,7 @@ export function registerWriterContract(context: ContractContext): void {
             writer.onDidChangeState((state) => states.push(state));
             await plantLock(rig, 'thief', rig.clock.epochMs());
             rig.clock.advance(10_000);
-            await settle();
+            await rig.settle();
             expect(writer.state()).toEqual({ kind: 'read-only', reason: READER_REASON });
             expect(states).toEqual([{ kind: 'read-only', reason: READER_REASON }]);
             await expect(writer.createRun({ providerId: 'fake', spec: SPEC })).rejects.toMatchObject({ code: 'read-only' });
@@ -311,7 +310,7 @@ export function registerWriterContract(context: ContractContext): void {
             subscription.dispose();
             await plantLock(rig, 'thief', rig.clock.epochMs());
             rig.clock.advance(10_000);
-            await settle();
+            await rig.settle();
             expect(listenerStates).toEqual([]);
         });
     });

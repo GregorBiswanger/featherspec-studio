@@ -7,7 +7,6 @@ import {
     unreadableRunsNotice,
 } from '../notices';
 import type { ContractContext, ContractRig } from './contract';
-import { settle } from './fakes';
 
 const SPEC = { stem: '0011-orchestrator', path: '.specs/active/0011-orchestrator.md' };
 const PROJECT = 'project-A';
@@ -71,14 +70,14 @@ export function registerFaultsContract(context: ContractContext): void {
             const first = await rig.open();
             const run = await first.createRun({ providerId: 'fake', spec: SPEC });
             await first.appendEvent(run.runId, { type: 'message', payload: 'one' });
-            await settle();
+            await rig.settle();
             rig.faults.failNext('.events.jsonl');
             expect(await first.appendEvent(run.runId, { type: 'message', payload: 'lost' })).toEqual({ outcome: 'stored', seq: 2 });
-            await settle();
+            await rig.settle();
             await first.appendEvent(run.runId, { type: 'message', payload: 'three' });
-            await settle();
+            await rig.settle();
             rig.clock.advance(60_000);
-            await settle();
+            await rig.settle();
             const live = await first.readEvents(run.runId, 1, 10);
             expect(live.available && live.value.map((event) => event.payload)).toEqual(['one', 'lost', 'three']);
             expect(rig.notices.messages).toEqual([saveFailedNotice({ runId: run.runId, stem: SPEC.stem })]);
@@ -96,7 +95,7 @@ export function registerFaultsContract(context: ContractContext): void {
             const run = await store.createRun({ providerId: 'fake', spec: SPEC });
             await store.reportStatus(run.runId, 'Running');
             await store.appendEvent(run.runId, { type: 'message', payload: 'x' });
-            await settle();
+            await rig.settle();
             const read = await store.getRun(run.runId);
             expect(read.available && read.value?.historyIncomplete).toBe(false);
             expect(rig.notices.messages).toEqual([]);
@@ -122,7 +121,7 @@ export function registerFaultsContract(context: ContractContext): void {
                 await store.appendEvent(run.runId, { type: 'message', payload: stem });
                 ids.push(run.runId);
             }
-            await settle();
+            await rig.settle();
             await store.dispose();
             return ids;
         }
@@ -241,7 +240,7 @@ export function registerFaultsContract(context: ContractContext): void {
             await seed.reportStatus(run.runId, 'Running');
             await seed.appendEvent(run.runId, { type: 'message', payload: 'one' });
             await seed.appendEvent(run.runId, { type: 'message', payload: 'two' });
-            await settle();
+            await rig.settle();
             await seed.dispose();
             await rig.harness.writeRaw(PROJECT, runFile(run.runId), (await raw(rig, runFile(run.runId))) + PARTIAL_STATUS);
             await rig.harness.writeRaw(PROJECT, eventsFile(run.runId), (await raw(rig, eventsFile(run.runId))) + PARTIAL_EVENT);
@@ -259,7 +258,7 @@ export function registerFaultsContract(context: ContractContext): void {
             const killed = await snapshot(rig);
             rig.notices.messages.length = 0;
             const first = await rig.open();
-            await settle();
+            await rig.settle();
             await first.dispose();
             const afterFirst = await snapshot(rig);
             appendOnly(killed, afterFirst);
@@ -283,7 +282,7 @@ export function registerFaultsContract(context: ContractContext): void {
             const runId = await seedKilledRun(rig);
             const first = await rig.open();
             await first.appendEvent(runId, { type: 'message', payload: 'three' });
-            await settle();
+            await rig.settle();
             await first.dispose();
             const afterFirst = await snapshot(rig);
             const second = await rig.open();
@@ -329,7 +328,7 @@ export function registerFaultsContract(context: ContractContext): void {
             const run = await seed.createRun({ providerId: 'fake', spec: SPEC });
             await seed.appendEvent(run.runId, { type: 'message', payload: 'one' });
             await seed.reportStatus(run.runId, 'Completed');
-            await settle();
+            await rig.settle();
             await seed.dispose();
             return run.runId;
         }
@@ -346,7 +345,7 @@ export function registerFaultsContract(context: ContractContext): void {
             const store = await rig.open();
             await expect(store.reportStatus(runId, 'Running')).rejects.toMatchObject({ code: 'unreadable-run', message: expect.stringContaining(runId) });
             await expect(store.appendEvent(runId, { type: 'message', payload: 'x' })).rejects.toMatchObject({ code: 'unreadable-run', message: expect.stringContaining(runId) });
-            await settle();
+            await rig.settle();
             await store.dispose();
             for (const name of [runFile(runId), eventsFile(runId)]) {
                 expect(await raw(rig, name), name).toBe(before.get(name));
@@ -360,7 +359,7 @@ export function registerFaultsContract(context: ContractContext): void {
             const before = await raw(rig, eventsFile(runId));
             const store = await rig.open();
             await expect(store.appendEvent(runId, { type: 'message', payload: 'x' })).rejects.toMatchObject({ code: 'unreadable-run' });
-            await settle();
+            await rig.settle();
             await store.dispose();
             expect(await raw(rig, eventsFile(runId))).toBe(before);
         });
@@ -373,7 +372,7 @@ export function registerFaultsContract(context: ContractContext): void {
             const store = await rig.open();
             await expect(store.reportStatus(runId, 'Running')).rejects.toMatchObject({ code: 'newer-version', message: expect.stringContaining(NEWER_VERSION_REASON) });
             await expect(store.appendEvent(runId, { type: 'message', payload: 'x' })).rejects.toMatchObject({ code: 'newer-version' });
-            await settle();
+            await rig.settle();
             await store.dispose();
             for (const name of [runFile(runId), eventsFile(runId)]) {
                 expect(await raw(rig, name), name).toBe(before.get(name));
@@ -387,7 +386,7 @@ export function registerFaultsContract(context: ContractContext): void {
             const before = await raw(rig, eventsFile(runId));
             const store = await rig.open();
             await expect(store.appendEvent(runId, { type: 'message', payload: 'x' })).rejects.toMatchObject({ code: 'newer-version' });
-            await settle();
+            await rig.settle();
             await store.dispose();
             expect(await raw(rig, eventsFile(runId))).toBe(before);
         });
@@ -432,7 +431,7 @@ export function registerFaultsContract(context: ContractContext): void {
             await expect(store.createRun({ providerId: 'fake', spec: SPEC })).rejects.toMatchObject({ code: 'read-only' });
             await expect(store.clear()).rejects.toMatchObject({ code: 'read-only' });
             rig.clock.advance(60_000);
-            await settle();
+            await rig.settle();
             await store.dispose();
             expect(rig.notices.messages).toEqual([newerVersionNotice()]);
             expect(await snapshot(rig)).toEqual(before);
@@ -474,7 +473,7 @@ export function registerFaultsContract(context: ContractContext): void {
             await seed.reportStatus(ended.runId, 'Failed');
             await seed.reportStatus(broken.runId, 'Completed');
             await seed.appendSpecStatusEntry('0011-orchestrator', { to: 'x' });
-            await settle();
+            await rig.settle();
             await seed.dispose();
             await rig.harness.writeRaw(PROJECT, runFile(broken.runId), 'garbage\n{"x":1}\n');
             const store = await rig.open();

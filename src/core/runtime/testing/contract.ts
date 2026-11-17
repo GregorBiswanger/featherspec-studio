@@ -41,6 +41,7 @@ export interface ContractRig {
     faults: Faults;
     open(options?: OpenOptions): Promise<RuntimeStore>;
     rawBytes(project?: string): Promise<string>;
+    settle(): Promise<void>;
 }
 
 export function createContractRig(harness: MediumHarness): ContractRig {
@@ -68,8 +69,9 @@ export function createContractRig(harness: MediumHarness): ContractRig {
                 maxEventsPerRun: options.maxEventsPerRun,
             });
         },
+        settle: () => settle(() => state.inFlight),
         async rawBytes(project = 'project-A') {
-            await settle();
+            await settle(() => state.inFlight);
             const parts: string[] = [];
             for (const name of await harness.listRaw(project)) {
                 parts.push((await harness.readRaw(project, name)) ?? '');
