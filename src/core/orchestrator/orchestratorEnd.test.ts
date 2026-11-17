@@ -3,7 +3,7 @@ import { createControlledAdapter } from '../providers/testing/controlledAdapter'
 import { declarationWith } from '../providers/testing/adapters';
 import { NOT_AVAILABLE, type JsonValue } from '../runtime/model';
 import { readRunResult } from './result';
-import { START_TIMEOUT_MS } from './texts';
+import { START_TIMEOUT_MS, STOP_TIMEOUT_MS } from './texts';
 import { createWorld, type World } from './testing/world';
 
 async function started(world: World, overrides = {}): Promise<string> {
@@ -76,6 +76,11 @@ describe('result', () => {
 });
 
 describe('start timeout', () => {
+    it('AC-008, AC-010: the start timeout is 60 s and the stop timeout 30 s', () => {
+        expect(START_TIMEOUT_MS).toBe(60_000);
+        expect(STOP_TIMEOUT_MS).toBe(30_000);
+    });
+
     it('AC-008: 60 s minus 1 ms leaves Starting; at 60 s it is Failed/start_timeout, cancel once, then endSession once', async () => {
         const world = await createWorld();
         const runId = await controlled(world);

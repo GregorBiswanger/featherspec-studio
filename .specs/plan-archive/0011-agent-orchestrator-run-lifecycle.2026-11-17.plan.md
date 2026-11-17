@@ -1,9 +1,9 @@
 # Plan — Agent Orchestrator & Run Lifecycle
 
-**Spec:** [0011-agent-orchestrator-run-lifecycle.md](0011-agent-orchestrator-run-lifecycle.md)
+**Spec:** [0011-agent-orchestrator-run-lifecycle.md](../done/0011-agent-orchestrator-run-lifecycle.md)
 **Status:** Done
 **Last updated:** 2026-11-17
-**Current step:** T-008
+**Current step:** T-009 (done)
 
 ## Approach
 
@@ -179,7 +179,7 @@ test world, one module.
   through the world's session double, `dispose` with an open run, `previousRun` for none, `Failed` and `Completed`.
 - **Verify:** `npx vitest run src/core/orchestrator` then the per-step gates
 - [x] **Verified (T-003):** 2026-11-17 — red: `npx vitest run src/core/orchestrator/orchestratorEnd.test.ts` with `result.ts` throwing `Not implemented` and no timers, window end or previous run: 16 failed (Not implemented and failing assertions such as `expected [ 'start:run-2' ] to deeply equal [ …cancel…, …endSession… ]`), 1 passed (the timer-dropped test, kept: its siblings are the negative control); green after the implementation: 60 passed in `src/core/orchestrator`; gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 1558 passed.
-- **Notes:** The production `RuntimeSession` emits no state change for a switch between two writable stores (`setState` drops an equal state), so BR-016's store switch is also checked lazily at the next event (`storeLost` in `handleEvent`); the world's session double fires the change at once. `StoredResult` and `ChangedFile` are type aliases so they are assignable to `JsonValue`. Empty changed files are stored as `not available` (no event delivered them).
+- **Notes:** The production `RuntimeSession` emits no state change for a switch between two writable stores (`setState` drops an equal state), so BR-016's store switch is also checked lazily at the next event (`storeLost` in `handleEvent`; the gap is closed in T-009); the world's session double fires the change at once. `StoredResult` and `ChangedFile` are type aliases so they are assignable to `JsonValue`. Empty changed files are stored as `not available` (no event delivered them).
 
 ### T-004 — Stop and answers
 
@@ -252,6 +252,14 @@ test world, one module.
 - [x] **Verified (T-008):** 2026-11-17 — docs synced (README *Runs* paragraph and two palette commands, `AGENTS.md` snapshot with the orchestrator module and port, `systemPatterns.md`, `techContext.md`, `activeContext.md`); gates after the docs: `npx eslint src --max-warnings 0` 0 warnings, `npx tsc --noEmit` and `npx tsc --noEmit -p src/webview` clean, `npm run test:unit` 124 files, 1612 tests passed (twice stable at T-006), `npm run compile` built. Doc-only edit, no red run applies.
 - **Notes:** —
 
+### T-009 — BR-016 with the real RuntimeSession on a store switch
+
+- **Covers:** AC-024 (also pins AC-005's duplicate clause and the AC-008/AC-010 literals: compile findings F-1, F-2)
+- **Do:** after `/sdd-compile` 2026-11-17 (D-1): `orchestratorSession.test.ts` wires `createOrchestrator` to 0004's real `createRuntimeSession` (discovery controller on a memory file system, memory stores for roots `a` and `b`, the controlled adapter); a run waiting for approval, then the active project switches `a` → `b` → cancel once, then `endSession` once, nothing more. Fix in `src/core/runtime/runtimeSession.ts`: a newly opened store is announced to the state listeners even when its state equals the old one (`setState(…, storeSwitched)`), so every `onDidChangeState` consumer sees a store switch. Plus `orchestratorStart.test.ts` (a duplicate `approval.requested` after its `.resolved` changes no status) and `orchestratorEnd.test.ts` (`START_TIMEOUT_MS` is 60 000, `STOP_TIMEOUT_MS` 30 000).
+- **Verify:** `npx vitest run src/core/orchestrator src/core/runtime` then the per-step gates
+- [x] **Verified (T-009):** 2026-11-17 — red: `npx vitest run src/core/orchestrator/orchestratorSession.test.ts` before the fix: 1 failed `expected [ 'start:run-2' ] to deeply equal [ 'start:run-2', 'cancel:run-2', …(1) ]` (the compile's D-1 repro), 1 passed (no open run → no call); green after the fix: `npx vitest run src/core/orchestrator src/core/runtime` 17 files, 203 passed. F-1/F-2 tests were green at once (behaviour built in T-002/T-004); negative controls: mutation "duplicates applied" in `handleEvent` and `STOP_TIMEOUT_MS = 30_001` → exactly those 2 tests failed, 113 passed; restored. Gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 161 files, 2012 passed (an earlier run at load average 14 from parallel sessions failed three webview timing tests, untouched by this step; they passed alone, 63/63, and in the full re-run), `npm run compile` built.
+- **Notes:** Deviation, 0004 touched (one function, 3 lines): `RuntimeSession` now notifies its listeners on every store switch. The lazy `storeLost` check in `handleEvent` stays as a second guard. Other `onDidChangeState` consumers (0003 lifecycle service, 0006 run source, 0012 service and request notifier) now also see a switch between two writable stores; their suites stay green.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -260,12 +268,12 @@ test world, one module.
 | AC-002 | T-002 | `src/core/orchestrator/orchestrator.ts:start` (operation lock) | `orchestratorStart.test.ts` | verified |
 | AC-003 | T-002 | `src/core/orchestrator/orchestrator.ts:start`, `writerRefusal` | `orchestratorStart.test.ts` | verified |
 | AC-004 | T-001 | `src/core/orchestrator/runTrack.ts:ALLOWED_TRANSITIONS`, `canTransition`, `applyEvent` | `runTrack.test.ts` | verified |
-| AC-005 | T-002 | `src/core/orchestrator/runTrack.ts:applyEvent`, `orchestrator.ts:handleEvent` | `runTrack.test.ts`, `orchestratorStart.test.ts`, `orchestratorEnd.test.ts` | verified |
+| AC-005 | T-002, T-009 | `src/core/orchestrator/runTrack.ts:applyEvent`, `orchestrator.ts:handleEvent` | `runTrack.test.ts`, `orchestratorStart.test.ts` (incl. duplicate after `.resolved`), `orchestratorEnd.test.ts` | verified |
 | AC-006 | T-001, T-002 | `src/core/orchestrator/runTrack.ts:applyEvent` | `runTrack.test.ts`, `orchestratorStart.test.ts` | verified |
 | AC-007 | T-001, T-002 | `src/core/orchestrator/errorClasses.ts:classOf`, `runTrack.ts`, `orchestrator.ts:failRun` | `errorClasses.test.ts`, `runTrack.test.ts`, `orchestratorStart.test.ts` | verified |
-| AC-008 | T-003, T-005 | `src/core/orchestrator/orchestrator.ts:endStart` | `orchestratorEnd.test.ts`, `orchestratorResume.test.ts` | verified |
+| AC-008 | T-003, T-005, T-009 | `src/core/orchestrator/orchestrator.ts:endStart` | `orchestratorEnd.test.ts`, `orchestratorResume.test.ts` | verified |
 | AC-009 | T-004 | `src/core/orchestrator/orchestrator.ts:stop` | `orchestratorOperations.test.ts` | verified |
-| AC-010 | T-004 | `src/core/orchestrator/orchestrator.ts:stop`, `endStop` | `orchestratorOperations.test.ts` | verified |
+| AC-010 | T-004, T-009 | `src/core/orchestrator/orchestrator.ts:stop`, `endStop` | `orchestratorOperations.test.ts`, `orchestratorEnd.test.ts` (literal 30 s) | verified |
 | AC-011 | T-004 | `src/core/orchestrator/orchestrator.ts:stop` | `orchestratorOperations.test.ts` | verified |
 | AC-012 | T-004 | `src/core/orchestrator/orchestrator.ts:answer`, `respondToApproval` | `orchestratorOperations.test.ts` | verified |
 | AC-013 | T-004 | `src/core/orchestrator/orchestrator.ts:answer`, `respondToInput` | `orchestratorOperations.test.ts` | verified |
@@ -279,14 +287,18 @@ test world, one module.
 | AC-021 | T-003 | `src/core/orchestrator/orchestrator.ts:previousRun` | `orchestratorEnd.test.ts` | verified |
 | AC-022 | T-007 | `src/core/orchestrator/runCommands.ts`, `src/adapters/vscode/orchestratorUi.ts`, `package.json`, `src/extension.ts` | `runCommands.test.ts`, `src/adapters/vscode/manifest.test.ts`; host smoke `src/test/orchestrator.smoke.test.ts` (CI) | verified |
 | AC-023 | T-001 | imports of `src/core/orchestrator/` | `importScan.test.ts` | verified |
-| AC-024 | T-003, T-007 | `src/core/orchestrator/orchestrator.ts:letGo`, `checkStores`, `dispose` | `orchestratorEnd.test.ts` | verified |
-| M-01, M-02 | — (0010's acceptance, OP-006) | — | — | open |
-| M-03 | — | — | manual: Gregor accepts the texts of *Surface* | open |
+| AC-024 | T-003, T-007, T-009 | `src/core/orchestrator/orchestrator.ts:letGo`, `checkStores`, `dispose`; `src/core/runtime/runtimeSession.ts:switchTo` (store switch announced) | `orchestratorEnd.test.ts`, `orchestratorSession.test.ts` (real `RuntimeSession`) | verified |
+| M-01, M-02 | — (0010's acceptance, OP-006) | — | — | with 0010 |
+| M-03 | — | `src/core/orchestrator/texts.ts` | texts pinned by the orchestrator tests; wording acceptance moved to the pre-release checklist (`/home/claude/orch/checklist/0011.md`), delegation Gregor 2026-11-17 | checklist |
+
+## Open evidence
+
+- Host suite (`npm test`, incl. `src/test/orchestrator.smoke.test.ts`): Windows 11 (Gregor's machine, VS Code stable, Node 26) 28 passing, 0 failing at commit e6f0c85, 2026-11-17 08:45 CET; GitHub Actions (ubuntu-latest + windows-latest) green at 9635ba4, 2026-11-17 (before 0011). T-009 changes product code (`runtimeSession.ts`) after e6f0c85: the orchestrator re-runs the host suite on Windows on the merged commit before the done move counts.
 
 ## Session handoff
 
-- **Done so far:** T-001…T-008 built and verified with recorded runs; docs synced (README *Runs*, `AGENTS.md` snapshot, `systemPatterns.md`, `techContext.md`, `activeContext.md`). One deviation outside this plan's folder: 0004's `createRun` takes an optional `cause` (T-005 Notes).
-- **Next action:** Gregor reviews the tests per stage (test list in the session report) and accepts the texts (M-03); CI runs `npm test` with `src/test/orchestrator.smoke.test.ts`; then `/sdd-compile` in a fresh session.
-- **Open decisions:** none. M-01 and M-02 stay with 0010's acceptance. `AGENTS.md` is over its line target (one eviction proposal is due).
-- **Baseline:** commit `0820c2e` (lifecycle move), work in `f2eff94`…T-008.
+- **Done so far:** T-001…T-009 built and verified with recorded runs; `/sdd-compile` 2026-11-17 (second run) READY after T-009. Two deviations outside this plan's folder, both 0004: `createRun` takes an optional `cause` (T-005), `RuntimeSession` announces every store switch (T-009).
+- **Next action:** none — archived 2026-11-17 after `/sdd-compile` READY; spec in `done/`. Gregor: M-03 wording on the pre-release checklist; the host suite is re-run on Windows on the merged commit (T-009 changed `runtimeSession.ts`).
+- **Open decisions:** none. M-01 and M-02 stay with 0010's acceptance (OP-006).
+- **Baseline:** commit `0820c2e` (lifecycle move), work in `f2eff94`…T-009.
 - **Environment:** `npm test` cannot run here (VS Code download blocked); the host smoke runs on CI or Gregor's Windows machine.

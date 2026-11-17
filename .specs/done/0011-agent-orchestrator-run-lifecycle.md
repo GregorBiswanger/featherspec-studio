@@ -1,7 +1,7 @@
 # Agent Orchestrator & Run Lifecycle
 
-**Status:** In Progress
-**Plan:** [0011-agent-orchestrator-run-lifecycle.plan.md](0011-agent-orchestrator-run-lifecycle.plan.md)
+**Status:** Implemented
+**Plan:** [0011-agent-orchestrator-run-lifecycle.2026-11-17.plan.md](../plan-archive/0011-agent-orchestrator-run-lifecycle.2026-11-17.plan.md)
 
 Handoff reference: FS-011 ([po-handoff.md](../../docs/product/po-handoff.md) §8.4, §10 FS-011,
 §5.3, §6.2, §7). Decisions: PD-004, PD-005, PD-006, PD-007, PD-011, PD-013, PD-018, PD-019,
@@ -323,7 +323,9 @@ refusal carries its reason and, where one exists, the blocking run's ID and stem
   stop and resume behave as AC-001, AC-012, AC-009 and AC-016 describe; he notes how long
   `session.started` and a cancel take (A-003).
 - **M-02** Gregor: whether a resumed real session continues the earlier work (ADR-003 §6 risk 4).
-- **M-03** Gregor accepts the wording of the refusal texts and the continuation text.
+- **M-03** The wording of the refusal texts (including `An input answer is text.`) and the
+  continuation text is checked by Gregor or his delegate; pre-release checklist item (delegation,
+  Gregor, 2026-11-17). The texts themselves are pinned by the orchestrator tests.
 
 ## 13. Technical notes for developers or AI agents
 
@@ -388,11 +390,17 @@ Resolved:
 
 ## 17. Definition of Done
 
-- [ ] AC-001…AC-024 pass with evidence; `npm run test:unit` green, `npm test` before done.
-- [ ] M-03 recorded by Gregor; M-01 and M-02 with 0010's acceptance (OP-006).
-- [ ] No out-of-scope behaviour; nothing written inside the workspace (AC-017).
-- [ ] Architecture snapshot and Memory Bank updated for the orchestrator module.
+- [x] AC-001…AC-024 pass with evidence; `npm run test:unit` green, `npm test` before done
+  (Windows host suite 28 passing at e6f0c85, 2026-11-17; re-run on the merged commit after T-009).
+- [x] M-03 on the pre-release checklist (delegation, Gregor, 2026-11-17); M-01 and M-02 with
+  0010's acceptance (OP-006).
+- [x] No out-of-scope behaviour; nothing written inside the workspace (AC-017).
+- [x] Architecture snapshot and Memory Bank updated for the orchestrator module.
 
 ## 18. Recommended next steps
 
 Plan written 2026-11-16; Gregor reviews it. Implementation after 0009 is done (order 0009 → 0011 → 0008 → 0012).
+
+## Plan history
+
+- 2026-11-17 — [0011-agent-orchestrator-run-lifecycle.2026-11-17.plan.md](../plan-archive/0011-agent-orchestrator-run-lifecycle.2026-11-17.plan.md) — T-001…T-009 built and verified; second `/sdd-compile` READY after T-009 (window end on a project switch with the real `RuntimeSession`).
