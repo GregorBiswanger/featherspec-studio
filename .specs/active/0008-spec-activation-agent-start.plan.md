@@ -1,9 +1,9 @@
 # Plan — Spec Activation & Agent Start Workflow
 
 **Spec:** [0008-spec-activation-agent-start.md](0008-spec-activation-agent-start.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-17
-**Current step:** T-008
+**Current step:** — (all steps done)
 
 ## Approach
 
@@ -261,33 +261,33 @@ stage and becomes its own step.
   in the composition root, URI → path at the binding. `techContext.md`: agent start tests, fixture
   `fs110-start-ready`, host smoke file. `activeContext.md`. Then every gate.
 - **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** 2026-11-17 — doc-only step plus the final gates, run after the last edit: `npx eslint src --max-warnings 0` 0 warnings, `npx tsc --noEmit` and `npx tsc --noEmit -p src/webview` clean, `npm run test:unit` 136 files, 1723 tests passed, `npm run compile` finished. Synced: README (*Starting an agent*, P-1…P-8, Commands, Providers, Spec Board paragraph), `AGENTS.md` snapshot (module `src/core/agentStart`, ports, webview, shared entries; plan-named entries, so the plan's approval is the confirmation), `systemPatterns.md`, `techContext.md`, `activeContext.md`. `npm test` (host suite, incl. `src/test/agentStart.smoke.test.ts`) not run: CI or Gregor's machine.
+- **Notes:** `AGENTS.md` is 228 lines, over its 200-line target as before (the open eviction proposal in `activeContext.md` stands). The dialog's M-2 check stays with Gregor.
 
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-002, T-003, T-005 | src/core/agentStart/startFlow.ts:handOff, src/core/agentStart/refusalItems.ts, src/webview/agentStart/StartLines.tsx, texts.ts | startFlow.test.ts (refusal), preconditions.test.ts, StartLines.test.tsx | built |
-| AC-002 | T-003, T-006 | src/core/agentStart/startFlow.ts:check, src/webview/agentStart/StartDialog.tsx | startFlow.test.ts (confirmation items), StartDialog.test.tsx | built |
-| AC-003 | T-003, T-006, T-007 | src/core/agentStart/startFlow.ts:cancel, panelHidden, src/adapters/vscode/studioPanel.ts (view state, dispose), StartDialog.tsx (Escape) | startFlow.test.ts (cancel, hide, project change), StartDialog.test.tsx | built |
-| AC-004 | T-004 | src/core/agentStart/startFlow.ts:doStart | src/core/agentStart/startFlow.start.test.ts (AC-004) | built |
-| AC-005 | T-004, T-007 | src/core/agentStart/startFlow.ts:doStart, orchestratorBinding.ts, src/extension.ts (wiring) | startFlow.start.test.ts (AC-005), agentStart.endToEnd.test.ts, src/test/agentStart.smoke.test.ts (CI) | built |
-| AC-006 | T-001, T-006 | src/core/agentStart/startPrompt.ts:buildStartPrompt, src/webview/agentStart/StartDialog.tsx | startPrompt.test.ts (golden), StartDialog.test.tsx (same text shown) | built |
+| AC-001 | T-002, T-003, T-005 | src/core/agentStart/startFlow.ts:handOff, src/core/agentStart/refusalItems.ts, src/webview/agentStart/StartLines.tsx, texts.ts | startFlow.test.ts (refusal), preconditions.test.ts, StartLines.test.tsx | verified |
+| AC-002 | T-003, T-006 | src/core/agentStart/startFlow.ts:check, src/webview/agentStart/StartDialog.tsx | startFlow.test.ts (confirmation items), StartDialog.test.tsx | verified |
+| AC-003 | T-003, T-006, T-007 | src/core/agentStart/startFlow.ts:cancel, panelHidden, src/adapters/vscode/studioPanel.ts (view state, dispose), StartDialog.tsx (Escape) | startFlow.test.ts (cancel, hide, project change), StartDialog.test.tsx | verified |
+| AC-004 | T-004 | src/core/agentStart/startFlow.ts:doStart | src/core/agentStart/startFlow.start.test.ts (AC-004) | verified |
+| AC-005 | T-004, T-007 | src/core/agentStart/startFlow.ts:doStart, orchestratorBinding.ts, src/extension.ts (wiring) | startFlow.start.test.ts (AC-005), agentStart.endToEnd.test.ts, src/test/agentStart.smoke.test.ts (CI) | verified |
+| AC-006 | T-001, T-006 | src/core/agentStart/startPrompt.ts:buildStartPrompt, src/webview/agentStart/StartDialog.tsx | startPrompt.test.ts (golden), StartDialog.test.tsx (same text shown) | verified |
 | AC-007 | T-002 | src/core/agentStart/preconditions.ts:checkPreconditions | src/core/agentStart/preconditions.test.ts (P-2) | verified |
-| AC-008 | T-002, T-004, T-005 | src/core/agentStart/preconditions.ts (P-5), startFlow.ts:doStart, src/webview/agentStart/StartLines.tsx | preconditions.test.ts (P-5), startFlow.start.test.ts (AC-008), StartLines.test.tsx | built |
-| AC-009 | T-003 | src/core/agentStart/startFlow.ts:handOff (pending), confirm | startFlow.test.ts, startFlow.start.test.ts (pending while starting) | built |
-| AC-010 | T-004, T-005 | src/core/agentStart/startFlow.ts:watchRun, src/webview/agentStart/StartLines.tsx (Open run) | startFlow.start.test.ts (AC-010), agentStart.endToEnd.test.ts, StartLines.test.tsx | built |
-| AC-011 | T-004 | src/core/agentStart/startFlow.ts (request without permission field) | startFlow.start.test.ts (AC-011) | built |
-| AC-012 | T-004 | src/core/agentStart/startFlow.ts (no file API) | src/core/agentStart/noWrite.test.ts | built |
-| AC-013 | T-002, T-005 | src/core/agentStart/preconditions.ts (P-6), src/webview/agentStart/texts.ts | preconditions.test.ts (P-6), StartLines.test.tsx | built |
-| AC-014 | T-003 | src/core/agentStart/startFlow.ts:handOff | src/core/agentStart/startFlow.test.ts (ended run) | built |
+| AC-008 | T-002, T-004, T-005 | src/core/agentStart/preconditions.ts (P-5), startFlow.ts:doStart, src/webview/agentStart/StartLines.tsx | preconditions.test.ts (P-5), startFlow.start.test.ts (AC-008), StartLines.test.tsx | verified |
+| AC-009 | T-003 | src/core/agentStart/startFlow.ts:handOff (pending), confirm | startFlow.test.ts, startFlow.start.test.ts (pending while starting) | verified |
+| AC-010 | T-004, T-005 | src/core/agentStart/startFlow.ts:watchRun, src/webview/agentStart/StartLines.tsx (Open run) | startFlow.start.test.ts (AC-010), agentStart.endToEnd.test.ts, StartLines.test.tsx | verified |
+| AC-011 | T-004 | src/core/agentStart/startFlow.ts (request without permission field) | startFlow.start.test.ts (AC-011) | verified |
+| AC-012 | T-004 | src/core/agentStart/startFlow.ts (no file API) | src/core/agentStart/noWrite.test.ts | verified |
+| AC-013 | T-002, T-005 | src/core/agentStart/preconditions.ts (P-6), src/webview/agentStart/texts.ts | preconditions.test.ts (P-6), StartLines.test.tsx | verified |
+| AC-014 | T-003 | src/core/agentStart/startFlow.ts:handOff | src/core/agentStart/startFlow.test.ts (ended run) | verified |
 | M-2 | T-006 | src/webview/agentStart/StartDialog.tsx, StartLines.tsx | manual: Gregor, keyboard and screen reader | built |
 
 ## Session handoff
 
-- **Done so far:** Stages 1 to 4 built (T-001 to T-007): everything of stages 1 to 3, the confirmation dialog, the `featherspec-studio.defaultProvider` setting (default `copilot`), panel and extension wiring (flow, binding, handlers, push on hello, hide cancels), host smoke written (CI only), 0009's plan Notes amended for the narrowed manifest assertion.
-- **Next action:** T-008 (docs sync: README, AGENTS.md snapshot, systemPatterns.md, techContext.md, activeContext.md, then every gate and the mechanical plan check).
+- **Done so far:** All eight steps (T-001 to T-008) built and verified; plan Done. Every acceptance criterion has a recorded unit-level run; the host smoke `src/test/agentStart.smoke.test.ts` and manual M-2 (dialog, refusal and notice by keyboard and screen reader) are open; M-1 is accepted with 0010.
+- **Next action:** Gregor reviews the tests per stage (lists in the session report), accepts M-2; then `/sdd-compile` in a fresh session (another model family) and `/sdd-lifecycle` to done. Not done here on purpose.
 - **Open decisions:** the narrowed 0009 manifest assertion (T-007, 0009's plan to be amended the FeatherSpec way); OP-010 taken by the spec's recommendation (Gregor, 2026-11-17).
 - **Baseline:** 3b3ab8b (before T-001).
 - **Environment:** `npm test` cannot run here; it runs on CI or Gregor's Windows machine. Steps are run test-first through a `Not implemented` stub; one commit per step.

@@ -38,12 +38,29 @@ The Spec Board shows every spec as a card in six columns: Backlog, Ready, Active
 
 Spec Explorer shows the detail of the selected spec beside the list: overview, requirements, acceptance criteria, plan and tasks, verification, related artifacts and agent history. "Open file" opens the spec, the plan or a return note in the editor at the right line. Studio only reads: it changes no file.
 
-Move a card by dragging it to another column, with the "Move to…" button on the card (Shift+F10 or the context-menu key opens it from the keyboard), or with the command `FeatherSpec: Move Spec to…`. A move never writes a file: Studio checks the transition and, where an agent has to start, says so. Agent start is not available yet. Arrow keys move between cards; the board is one tab stop.
+Move a card by dragging it to another column, with the "Move to…" button on the card (Shift+F10 or the context-menu key opens it from the keyboard), or with the command `FeatherSpec: Move Spec to…`. A move never writes a file: Studio checks the transition and, moving a Ready spec to Active, starts the agent workflow described under *Starting an agent*. Arrow keys move between cards; the board is one tab stop.
+
+## Starting an agent
+
+Moving a Ready spec to Active on the board hands the spec to the start workflow. Studio first checks eight preconditions and, if all hold, shows one confirmation: spec, provider, model, permission mode, the provider's disclosure text, a line for each missing capability (approvals, questions), the previous run of the spec and the start prompt (collapsed, not editable). Only **Start** begins the run; **Cancel**, Escape, hiding the panel or switching the project starts nothing and stores nothing. The prompt tells the agent to read `AGENTS.md`, do the backlog to active move with `/sdd-lifecycle`, implement the whole plan and stop before `/sdd-compile`; the agent changes the files, Studio changes none. Which provider starts is one setting, `featherspec-studio.defaultProvider` (shipped as `copilot`; `fake` after enabling the fake provider, to try Studio).
+
+A refusal lists every failing precondition on its own line above the area:
+
+- P-1 the board does not accept the start (not Ready, or no or several specs with that stem)
+- P-2 `.claude/commands/sdd-plan.md`, `.claude/commands/sdd-lifecycle.md` or `.claude/rules/plans.md` is missing
+- P-3 the default provider is not set or not registered
+- P-4 the provider is not available (not installed, not signed in, blocked, or no answer in 15 seconds)
+- P-5 another run of the project is still open
+- P-6 the run history cannot be written
+- P-7 the workspace is in Restricted Mode
+- P-8 the spec stem is not of the form `NNNN-slug`
+
+If the run fails while it is still `Starting`, a notice names the run and its error class and offers "Open run".
 
 ## Commands
 
 - `FeatherSpec Studio: Open`: open the Studio panel (or bring it to the front) on the area last shown; `FeatherSpec Studio: Open Mission Control`, `… Open Spec Board`, `… Open Spec Explorer` and `… Open Agent Center` open it on that area.
-- `FeatherSpec: Move Spec to…`: pick a spec and a target column; a refusal or hand-off is announced on the board or as a message.
+- `FeatherSpec: Move Spec to…`: pick a spec and a target column; a refusal is announced on the board or as a message, a Ready → Active move opens the start confirmation.
 - `FeatherSpec Studio: Rescan Project`: read the specs of the active project again.
 
 - `FeatherSpec Studio: Select Project`: choose the active project (also opens from the status bar entry). With no project it offers the setup guide and a refresh.
@@ -54,7 +71,7 @@ Move a card by dragging it to another column, with the "Move to…" button on th
 
 ## Runs
 
-One orchestrator owns every agent run: it creates the run, follows the provider's events to a status, stores the result and sorts failures into a fixed list of error classes. Only one run of a project is open at a time, and only the window that holds the project's write lock can start, stop, resume or answer. A run still `Starting` after 60 seconds fails with `start_timeout`; a stop the provider does not confirm within 30 seconds ends as `Cancelled`. A run that has started is never timed out: it keeps its status until an end event, a stop or a restart. Studio never retries a failed run by itself, never answers an approval or a question for you, and never changes a spec's state because a run ended. An `Interrupted` run can be resumed with `FeatherSpec Studio: Resume Run` when its provider supports it, the spec is still in the project and not Done, and it is the latest run of that spec. Starting a run from a spec and the live activity view follow with their own specs.
+One orchestrator owns every agent run: it creates the run, follows the provider's events to a status, stores the result and sorts failures into a fixed list of error classes. Only one run of a project is open at a time, and only the window that holds the project's write lock can start, stop, resume or answer. A run still `Starting` after 60 seconds fails with `start_timeout`; a stop the provider does not confirm within 30 seconds ends as `Cancelled`. A run that has started is never timed out: it keeps its status until an end event, a stop or a restart. Studio never retries a failed run by itself, never answers an approval or a question for you, and never changes a spec's state because a run ended. An `Interrupted` run can be resumed with `FeatherSpec Studio: Resume Run` when its provider supports it, the spec is still in the project and not Done, and it is the latest run of that spec. Starting a run from a spec is described under *Starting an agent*; the live activity view follows with its own spec.
 
 ## Run history
 
@@ -62,7 +79,7 @@ Studio keeps a local record of agent runs, their events and the spec status hist
 
 ## Providers
 
-Studio reaches coding agents only through one provider port (`src/core/ports/agentProvider.ts`) with a registry in front of the adapters. No real provider ships yet. To try Studio without an agent, an account or a network, switch on the **fake provider**: the setting `featherspec-studio.fakeProvider.enabled` (off by default) registers it without a reload and switching it off removes it again; a fake run already started continues. The setting `featherspec-studio.fakeProvider.scenario` picks what the fake does at each start (`happy-path` by default, also approvals, an input question, failures per category, a long run, unknown and duplicate events, a stream with no end). The fake never changes a file. The port, every capability, event kind and error category, and how to test against the fake: [docs/agent-provider-port.md](docs/agent-provider-port.md).
+Studio reaches coding agents only through one provider port (`src/core/ports/agentProvider.ts`) with a registry in front of the adapters. No real provider ships yet; the setting `featherspec-studio.defaultProvider` names the one that starts agents. To try Studio without an agent, an account or a network, switch on the **fake provider**: the setting `featherspec-studio.fakeProvider.enabled` (off by default) registers it without a reload and switching it off removes it again; a fake run already started continues. The setting `featherspec-studio.fakeProvider.scenario` picks what the fake does at each start (`happy-path` by default, also approvals, an input question, failures per category, a long run, unknown and duplicate events, a stream with no end). The fake never changes a file. The port, every capability, event kind and error category, and how to test against the fake: [docs/agent-provider-port.md](docs/agent-provider-port.md).
 
 ## Activation
 
