@@ -3,7 +3,7 @@
 **Spec:** [0012-live-agent-activity-monitoring.md](0012-live-agent-activity-monitoring.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-001
+**Current step:** T-006
 
 ## Approach
 
@@ -294,45 +294,41 @@ No parallel stage: stages 1–2 are one module (`src/core/agentCenter`), and eve
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-003, T-006 | — | — | open |
-| AC-002 | T-003 | — | — | open |
-| AC-003 | T-003 | — | — | open |
-| AC-004 | T-003, T-006 | — | — | open |
-| AC-005 | T-003 | — | — | open |
-| AC-006 | T-003 | — | — | open |
-| AC-007 | T-002 | — | — | open |
+| AC-001 | T-003, T-006 | src/core/agentCenter/runList.ts:projectRunRows | runList.test.ts | built |
+| AC-002 | T-003 | src/core/agentCenter/selection.ts:applyTarget, reconcileSelection | selection.test.ts, agentCenterService.test.ts | built |
+| AC-003 | T-003 | src/core/agentCenter/selection.ts:applyTarget, visibleRuns | selection.test.ts | built |
+| AC-004 | T-003, T-006 | src/core/agentCenter/runList.ts:specRefOf | runList.test.ts | built |
+| AC-005 | T-003 | src/core/agentCenter/header.ts:runHeader | header.test.ts | built |
+| AC-006 | T-003 | src/shared/protocol/agentCenterDuration.ts:runDuration | agentCenterDuration.test.ts | built |
+| AC-007 | T-002 | src/core/agentCenter/summary.ts:currentActivity | summary.test.ts, agentCenterService.test.ts | built |
 | AC-008 | T-001, T-007 | — | — | open |
 | AC-009 | T-004, T-007 | — | — | open |
 | AC-010 | T-007 | — | — | open |
-| AC-011 | T-001 | — | — | open |
+| AC-011 | T-001 | src/core/agentCenter/timeline.ts:sourceOf | timeline.test.ts | built |
 | AC-012 | T-004, T-007 | — | — | open |
-| AC-013 | T-004 | — | — | open |
-| AC-014 | T-001 | — | — | open |
-| AC-015 | T-002 | — | — | open |
+| AC-013 | T-004 | src/core/agentCenter/agentCenterService.ts | agentCenterService.test.ts | built |
+| AC-014 | T-001 | src/core/agentCenter/timeline.ts, summary.ts:capabilityNotes | timeline.test.ts, summary.test.ts | built |
+| AC-015 | T-002 | src/core/agentCenter/summary.ts:summarize | summary.test.ts | built |
 | AC-016 | T-005, T-006 | — | — | open |
 | AC-017 | T-005, T-006 | — | — | open |
 | AC-018 | T-005, T-008 | — | — | open |
-| AC-019 | T-002 | — | — | open |
-| AC-020 | T-002 | — | — | open |
+| AC-019 | T-002 | src/core/agentCenter/summary.ts:errorDetails | summary.test.ts | built |
+| AC-020 | T-002 | src/core/agentCenter/summary.ts:resultView | summary.test.ts | built |
 | AC-021 | T-005, T-006, T-008 | — | — | open |
-| AC-022 | T-005 | — | — | open |
+| AC-022 | T-005 | src/core/agentCenter/agentCenterActions.ts:resume | agentCenterActions.test.ts | built |
 | AC-023 | T-006 | — | — | open |
-| AC-024 | T-005 | — | — | open |
-| AC-025 | T-004, T-008 | — | — | open |
-| AC-026 | T-001 | — | — | open |
+| AC-024 | T-005 | src/core/agentCenter/filePath.ts, agentCenterService.ts:openFile | agentCenterActions.test.ts | built |
+| AC-025 | T-004, T-008 | src/core/agentCenter/agentCenterService.ts | restart.test.ts | built |
+| AC-026 | T-001 | src/core/agentCenter/timeline.ts:rowOf | timeline.test.ts | built |
 | AC-027 | T-004, T-006 | — | — | open |
 | AC-028 | T-005, T-006 | — | — | open |
 | AC-029 | T-006 | — | manual: High Contrast pass (spec §10) | open |
-| AC-030 | T-004 | — | — | open |
+| AC-030 | T-004 | src/core/agentCenter/agentCenterService.ts | noWrite.test.ts | built |
 
 ## Session handoff
 
-- **Done so far:** plan written; spec OP-02, OP-05…OP-13 decided by its recommendations, A-005
-  withdrawn, A-006 settled by 0011's plan (2026-11-16).
-- **Next action:** Gregor reads the plan; implementation after 0009, 0011 and 0008; on the start
-  signal `/sdd-lifecycle` backlog → active, then T-001.
-- **Open decisions:** none. Nine steps (one over the aim): the UI is two slices and T-005 carries
-  seven criteria of one control-state model.
+- **Done so far:** stages 1 and 2 (T-001 to T-005): timeline, summary, run list, header, selection memory, service with paging and live updates, actions, notifier; all in src/core/agentCenter, src/shared/protocol/agentCenter*.ts, src/core/ports/agentCenter.ts.
+- **Next action:** T-006 area UI (list, detail, states, controls), then T-007, T-008, T-009.
+- **Open decisions:** none.
 - **Baseline:** 2026-11-17, HEAD 70362df: eslint, both tsc and `npm run test:unit` green (136 files, 1723 tests).
-- **Environment:** `npm test` cannot run here (VS Code download blocked); the host smoke runs on CI
-  or Gregor's Windows machine.
+- **Environment:** `npm test` cannot run here (VS Code download blocked); the host smoke runs on CI or Gregor's Windows machine. UI looks: `npm run compile` and `/home/claude/orch/preview/run.sh`, screenshots in `/mnt/user-data/outputs/screens/`.
