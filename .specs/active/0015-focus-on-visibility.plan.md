@@ -113,7 +113,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
   lines; the AC-004 example verbatim), determinism (same snapshot twice → equal output), negative
   controls for the order (a Done spec with a duplicate → NS-2; a Ready spec without open step → `Implement <plan path>`).
 - **Verify:** `npx vitest run --project node src/core/board/nextStep.test.ts`, then the per-step gates 1–4
-- [ ] **Verified (T-001):** —
+- [x] **Verified (T-001):** 2026-11-17 — red: `npx vitest run --project node src/core/board/nextStep.test.ts` 18 failed (`Not implemented` stub); green: 18 passed (NS-1…NS-11, AC-004 example, order controls, determinism); gates 1–4: eslint, both tsc clean, test:unit 2521 passed + 11 timing.
 - **Notes:** —
 
 ### T-002 — Show "Next step" in the detail and copy a line
