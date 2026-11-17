@@ -34,3 +34,43 @@ export const DOWNLOAD_FAILURE = {
 export function downloadFailedText(reason: string): string {
     return `FeatherSpec could not be downloaded: ${reason}.`;
 }
+
+export const SETUP_TEXTS = {
+    trustRequired: 'Setting up FeatherSpec needs a trusted workspace.',
+    noFolder: 'Open a folder to use FeatherSpec Studio.',
+    everyFolderIsProject: 'Every folder of this workspace is already a FeatherSpec project.',
+    noEligibleFolder: 'No folder of this workspace can be set up.',
+    alreadyRunning: 'A FeatherSpec setup is already running.',
+    downloading: 'Downloading FeatherSpec…',
+    pickPlaceholder: 'Choose the folder to set up FeatherSpec in',
+    confirmLabel: 'Set up',
+    cancelLabel: 'Cancel',
+    verdict: { notAProject: 'not a project', incomplete: 'incomplete', setupPending: 'setup not finished' },
+};
+
+function plural(count: number, one: string, many: string): string {
+    return count === 1 ? one : many;
+}
+
+export function confirmTitle(version: string, folder: string): string {
+    return `Set up FeatherSpec ${version} in ${folder}?`;
+}
+
+export function countSentence(created: number, completed: number, kept: number): string {
+    const parts: string[] = [];
+    if (created > 0) {
+        parts.push(`${created} ${plural(created, 'file', 'files')} will be created`);
+    }
+    if (completed > 0) {
+        parts.push(`${completed} completed`);
+    }
+    if (kept > 0) {
+        parts.push(`${kept} existing ${plural(kept, 'file', 'files')} kept unchanged`);
+    }
+    return parts.length === 0 ? '' : `${parts.join(', ')}.`;
+}
+
+export function confirmDetail(path: string, created: number, completed: number, kept: number): string {
+    const sentence = countSentence(created, completed, kept);
+    return sentence === '' ? path : `${path}\n\n${sentence}`;
+}

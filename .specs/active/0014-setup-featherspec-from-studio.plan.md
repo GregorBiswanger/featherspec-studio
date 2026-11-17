@@ -3,7 +3,7 @@
 **Spec:** [0014-setup-featherspec-from-studio.md](0014-setup-featherspec-from-studio.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-006
+**Current step:** T-007
 
 ## Approach
 
@@ -141,8 +141,8 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 - **Covers:** AC-003, AC-004, AC-005, AC-008, AC-021, AC-022
 - **Do:** Core `setupService.ts` with `SetupUiPort` (`pickTarget`, `confirm`, `withProgress(title, task(signal))`, `notify(message, actions)`, `copy(text)`) in `src/core/ports/setupUi.ts`: trust check first (AC-004 text, "Manage Workspace Trust"); eligible folders from the discovery snapshot (BR-01: incomplete, or not a project without `readError`, scheme `file:`); the three "none" messages; quick pick with name, path, verdict; download under "Downloading FeatherSpec…"; archive check; classes; modal with version, folder, path and counts (zero counts and singular forms, §9); a running flag answers "A FeatherSpec setup is already running." Tests on fakes (`testing/setupWorld.ts`: memory target, scripted HTTP, fake clock, UI recorder). `noWrite.test.ts`: the service over the Node target on a temp fixture copy for distrust, dismissed pick, cancel during download, download failure, archive refusal, cancelled confirmation → tree unchanged; negative control: a confirmed setup changes it.
 - **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npm run test:unit`
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-17 — red first: `npx vitest run --project node src/core/setup/setupService src/core/setup/noWrite` with `start` stubbed to `Not implemented`: 33 failed; with the code: 33 passed (`setupService.test.ts` 25: trust, targets and the three none-messages, pick, download title and cancel, confirmation text and counts incl. singular, one at a time; `noWrite.test.ts` 8 on a temp copy of fixtures over the Node target: distrust, dismissed pick, cancelled download, download failure, refused archive, cancelled confirmation leave the tree byte- and mtime-identical; negative controls: a confirmed setup changes it, a project is no target). Gates: eslint, both `tsc`, `npm run test:unit` 180 files / 2449 tests (+11 timing) passed.
+- **Notes:** `setupService.ts` holds trust, target, download, check, classes, confirmation and apply, and returns a `RunResult` that `setupReport.ts` (a no-op until T-007) turns into messages. A message is shown without awaiting the user's choice (a VS Code notification promise stays open until it is closed), so AC-022's flag is cleared when the message is shown; handlers (Manage Workspace Trust, Show output, later Retry) run through `whenIdle()`. `SetupUiPort` is in `src/core/ports/setupUi.ts`; the world is `testing/setupWorld.ts`. The merge prompt of T-007 will list `.featherspec-setup/` through a `listDirectory` added to `SetupTargetPort`, not through `ReadOnlyFileSystem` (one store in the fakes).
 
 ### T-007 — Finish a setup: messages, merge prompt, Output block, retry, rerun
 
