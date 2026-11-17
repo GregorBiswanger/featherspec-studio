@@ -292,6 +292,36 @@ No parallel stage: every step from T-003 on builds on T-002's seam, and T-004…
 - [x] **Verified (T-010):** 2026-11-17. Green at once (preserved behaviour of 0004): 1 passed. Negative control: `createMasker().text` in `src/core/runtime/masking.ts` made to return its input → the test failed ("expected … not to contain 'ghp_0123…'"); reverted, `git diff` of masking.ts empty, green again. Gates: eslint --max-warnings 0, tsc, tsc -p src/webview clean; `npm run test:unit` 165 files, 2056 passed.
 - **Notes:** Test only; the adapter delivers Copilot's text as it is (it holds no credential, `credentialValues()` is `[]`) and the store masks by pattern.
 
+### T-011 — Acceptance checks M-02…M-05 in the opt-in host smoke (closing session, 2026-11-17)
+
+- **Covers:** §13 acceptance checks (M-02 approve once and a read, M-03 `fileEdits`, M-04 cancel in a
+  tool-using run, M-05 resume in Studio); AC-012, AC-014, AC-017, AC-019 on a real CLI
+- **Do:** Gregor's delegation (2026-11-17: what a test can decide is automated) — two more tests in
+  `src/test/copilot.smoke.test.ts`, behind the same opt-in (`FEATHERSPEC_COPILOT_SMOKE=1`, signed-in
+  CLI; without it they skip before activating anything, so no request is sent): (1) a write approved
+  once lands, with a `file.changed`, no file before the answer; a read prompt logs whether a read
+  asks (A-005, observation only); the first run is resumed in a new runtime and the agent names the
+  file it created; (2) a cancel while a write waits for approval ends with exactly one
+  `run.cancelled` and no file. M-01 signed out and A-003 (login made only with `copilot`) need a
+  person to sign out or in: pre-release checklist (`/home/claude/orch/checklist/0010.md`).
+- **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npm run compile-tests`; the run itself: `npm test` with `FEATHERSPEC_COPILOT_SMOKE=1` on Windows (open evidence below).
+- [x] **Verified (T-011):** 2026-11-17. Host test, cannot run here (no VS Code download); no red run applies to an acceptance check against the real CLI. eslint --max-warnings 0 and tsc clean; `npm run compile-tests` compiled `out/test/copilot.smoke.test.js` with 4 tests. The opted-in run on Windows is open evidence (below), the pre-done gate for this plan.
+- **Notes:** Host tests changed: the orchestrator re-runs the suite on Windows with and without the opt-in.
+
+## Open evidence (pre-done gate)
+
+- **Host suite, plain** — Windows 11 (Gregor's machine), `npm test` at 93537b7, 2026-11-17 10:35 CET:
+  31 passing, 0 failing, 1 pending (the opt-in test); earlier at 2cb1aa7, 10:00 CET: 29 passing,
+  1 pending. GitHub Actions (ubuntu-latest + windows-latest) green at 9635ba4, 2026-11-17 (before
+  this spec's code).
+- **M-07 (host smoke, opted in)** — Windows 11, extension host, `FEATHERSPEC_COPILOT_SMOKE=1`, at
+  93537b7, 2026-11-17 10:35 CET: 2 passing, 0 failing in 17 s — "M-07: the extension host runs a
+  Node version the Copilot SDK supports" and "a text-only run completes and a write request is
+  rejected" (16.7 s; the rejected write left no file). M-07 passes.
+- **Still to run** — T-009 changed product code and T-011 added host tests after 93537b7: the
+  orchestrator re-runs `npm test` on Windows, plain and opted in, on this branch's head. The done
+  move counts only after that run is green (CLOSE.md, Gregor's delegation 2026-11-17).
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
