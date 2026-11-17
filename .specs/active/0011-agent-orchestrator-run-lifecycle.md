@@ -1,6 +1,6 @@
 # Agent Orchestrator & Run Lifecycle
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0011-agent-orchestrator-run-lifecycle.plan.md](0011-agent-orchestrator-run-lifecycle.plan.md)
 
 Handoff reference: FS-011 ([po-handoff.md](../../docs/product/po-handoff.md) §8.4, §10 FS-011,

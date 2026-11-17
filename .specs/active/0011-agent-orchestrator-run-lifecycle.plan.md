@@ -1,7 +1,7 @@
 # Plan — Agent Orchestrator & Run Lifecycle
 
 **Spec:** [0011-agent-orchestrator-run-lifecycle.md](0011-agent-orchestrator-run-lifecycle.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-16
 **Current step:** T-001
 
