@@ -1,6 +1,6 @@
 # Plan — Spec Board & Spec Detail
 
-**Spec:** [0007-spec-board-spec-detail.md](0007-spec-board-spec-detail.md)
+**Spec:** [0007-spec-board-spec-detail.md](../done/0007-spec-board-spec-detail.md)
 **Status:** Done
 **Last updated:** 2026-11-17
 **Current step:** none (T-001...T-014 ticked; T-011...T-014 added after the first `/sdd-compile` and the first visual check; second `/sdd-compile` READY, 2026-11-17)
@@ -606,7 +606,7 @@ contract, touch only `src/webview/**`, and run only their own tests. Every share
 ## Session handoff
 
 - **Done so far:** T-001 to T-014 ticked and committed; second `/sdd-compile` on 2026-11-17 READY (manual items: 3 — AC-017 keyboard-only pass, AC-018 screen reader, AC-026 focus outlines in real themes, as pre-release checklist items); every traceability row `verified` with the evidence above. Spec §14 and §19 revised for the delegated checks.
-- **Next action:** `/sdd-lifecycle` active → done (this closing session).
+- **Next action:** none — archived 2026-11-17 after `/sdd-lifecycle` active → done; this plan is frozen.
 - **Open decisions:** OP-002 (proxy decisions, non-blocking). Accepted limitation (spec): a second window sees new runs only at its next refresh.
 - **Baseline:** 0ecc7a7 (HEAD before the first 0007 commit)
 - **Environment:** `npm test` runs on Gregor's Windows machine and on CI only.

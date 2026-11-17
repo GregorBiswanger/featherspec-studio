@@ -1,7 +1,7 @@
 # Spec Board & Spec Detail
 
-**Status:** In Progress
-**Plan:** [0007-spec-board-spec-detail.plan.md](0007-spec-board-spec-detail.plan.md)
+**Status:** Implemented
+**Plan:** [0007-spec-board-spec-detail.2026-11-17.plan.md](../plan-archive/0007-spec-board-spec-detail.2026-11-17.plan.md)
 
 Handoff reference: FS-007 ([po-handoff.md](../../docs/product/po-handoff.md) §4.2, §4.3, §10,
 §13 *Usability und Accessibility*). Builds on 0002 (parser model), 0003 (states, readiness,
@@ -577,7 +577,7 @@ Cross-spec, for the main session (no product decision):
   has to name the S-BLOCKED conditions that hold (A-006). (c) 0005 has to be realigned to
   PD-039, PD-040 and PD-042 (A-007). (d) The filter encoding shared with 0006 and 0012 is
   agreed in the first plan that needs it (0006 OP-1).
-  State at `/sdd-plan` (2026-11-16, [plan](0007-spec-board-spec-detail.plan.md) *Research*):
+  State at `/sdd-plan` (2026-11-16, [plan](../plan-archive/0007-spec-board-spec-detail.2026-11-17.plan.md) *Research*):
   (a) holds in code — 0002 delivers `modifiedMs` for every file it reads; only 0002 §8's text
   lags. (b) not in code — the plan adds the blocking conditions to 0003's output as an additive
   change (T-002). (c) done by 0005's revision and plan. (d) the plan proposes encoding v1, owned
@@ -650,3 +650,7 @@ the closing run Gregor delegated on 2026-11-17.
 1. Main session: OP-008 — align 0002, 0003 and 0005.
 2. Gregor: OP-002, non-blocking.
 3. `/sdd-plan` after 0002–0005 are planned, since they define this spec's inputs.
+
+## Plan history
+
+- 2026-11-17 — [0007-spec-board-spec-detail.2026-11-17.plan.md](../plan-archive/0007-spec-board-spec-detail.2026-11-17.plan.md) — T-001 to T-014 built; second `/sdd-compile` READY (manual items: 3, pre-release checklist); host suite green on Windows at e6f0c85.
