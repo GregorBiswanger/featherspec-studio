@@ -1,7 +1,7 @@
 # Mission Control Dashboard
 
-**Status:** In Progress
-**Plan:** [0006-mission-control-dashboard.plan.md](0006-mission-control-dashboard.plan.md)
+**Status:** Implemented
+**Plan:** [0006-mission-control-dashboard.2026-11-17.plan.md](../plan-archive/0006-mission-control-dashboard.2026-11-17.plan.md)
 
 Handoff reference: FS-006 ([po-handoff.md](../../docs/product/po-handoff.md) §4.1, §10 FS-006,
 §13, §18). Depends on: 0002 (spec entries, diagnostics), 0003 (states, readiness, status
@@ -588,3 +588,7 @@ OP-8, OP-9, OP-10 and OP-12 are closed below by Gregor's answers; the plan's rea
 
 1. Gregor reads the readings in OP-3 and the recommendations in OP-4 to OP-12.
 2. Run `/sdd-plan` after 0002 to 0005 are planned, so the projection inputs are fixed.
+
+## Plan history
+
+- 2026-11-17 — [0006-mission-control-dashboard.2026-11-17.plan.md](../plan-archive/0006-mission-control-dashboard.2026-11-17.plan.md) — T-001 to T-009 built; second `/sdd-compile` READY (manual items: 2, pre-release checklist); host suite green on Windows at e6f0c85.

@@ -1,6 +1,6 @@
 # Plan — Mission Control Dashboard
 
-**Spec:** [0006-mission-control-dashboard.md](0006-mission-control-dashboard.md)
+**Spec:** [0006-mission-control-dashboard.md](../done/0006-mission-control-dashboard.md)
 **Status:** Done
 **Last updated:** 2026-11-17
 **Current step:** none (all steps ticked; T-009 added after the first `/sdd-compile`; second `/sdd-compile` READY, 2026-11-17)
@@ -545,7 +545,7 @@ small, so the recommendation is to run them in sequence.
 ## Session handoff
 
 - **Done so far:** all nine steps ticked; second `/sdd-compile` on 2026-11-17 READY (manual items: 2 — AC-021, AC-022 real-window parts as pre-release checklist items); every traceability row `verified` with the evidence above. Spec §9, §14, §19 revised for the delegated checks.
-- **Next action:** `/sdd-lifecycle` active → done (this closing session).
+- **Next action:** none — archived 2026-11-17 after `/sdd-lifecycle` active → done; this plan is frozen.
 - **Open decisions:** none. Pre-release checklist for Gregor: real High Contrast look, real Enter and Space with visible focus, OP-12 re-measurement on a real project.
 - **Baseline:** `1ba50ff` (HEAD before the first step commit of this plan).
 - **Environment:** `npm test` runs on Gregor's Windows machine and on CI only; `node_modules` is installed; no dependency is added.
