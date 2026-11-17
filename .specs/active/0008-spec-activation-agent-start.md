@@ -289,6 +289,13 @@ start whose run has ended, the system shall show the confirmation again.
   stage, ends with plan `Done` before `/sdd-compile`, makes no commit and lists commit proposals.
 - **M-2** Gregor accepts the confirmation and the expanded prompt as readable, and operates
   confirmation, refusal and notice by keyboard alone with a screen reader announcing them.
+  Revised 2026-11-17 under Gregor's delegation ("everything must work, be tested", Gregor,
+  2026-11-17): keyboard-only operation and what a screen reader is given to announce — the
+  dialog named by its title, refusal and notice as alerts, the checking line as a status — are
+  decided by the component tests named "M-2" in `StartDialog.test.tsx` and `StartLines.test.tsx`;
+  readability is checked by Gregor's delegate on headless-Chrome screenshots of the real webview
+  bundle in Dark, Light and High Contrast; the announcement by a real screen reader inside VS Code
+  is checked by Gregor or his delegate — pre-release checklist item.
 
 ### Handoff criteria map
 
@@ -354,7 +361,7 @@ Resolved:
 
 Ready: preconditions, prompt text and criteria fixed; 0003, 0004 and 0011 faked in tests until
 they exist. Done: all criteria green, 0007's "Agent start is not available yet" refusal replaced
-by the hand-off, docs synced, M-2 accepted by Gregor; M-1 is accepted with 0010 (OP-011).
+by the hand-off, docs synced, M-2 recorded as revised in §13; M-1 is accepted with 0010 (OP-011).
 
 ## 18. Recommended next steps
 

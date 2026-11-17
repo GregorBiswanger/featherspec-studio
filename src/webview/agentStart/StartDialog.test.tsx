@@ -4,7 +4,7 @@ import type { AgentStartView, StartConfirmation } from '../../shared/protocol/ag
 import type { Envelope } from '../../shared/protocol/envelope';
 import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
-import { baseView, click, mount, send, shellEvent, type Mounted } from '../testing/dom';
+import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
 import { MODEL_FALLBACK, capabilityLine, dialogTitle, previousRunText } from './texts';
 
 let posted: Envelope[];
@@ -182,6 +182,33 @@ describe('confirmation dialog (AC-002, AC-003, AC-006)', () => {
         await key(start, 'Escape');
         await click(start);
         expect(posted.filter((message) => message.type.startsWith('agentStart'))).toEqual([]);
+    });
+
+    it('M-2: is announced by its title and operable by keyboard alone (Tab reaches every control, Enter and Space activate it)', async () => {
+        const container = await open();
+        await show({ confirmation: confirmation() });
+        const root = dialog(container)!;
+        const labelId = root.getAttribute('aria-labelledby');
+        expect(labelId).not.toBeNull();
+        expect(document.getElementById(labelId!)?.textContent).toBe(dialogTitle('0001'));
+        expect(root.contains(document.activeElement)).toBe(true);
+        const controls = [...root.querySelectorAll('button, a, input, select, textarea, [tabindex]')];
+        expect(controls.map((control) => control.textContent)).toEqual(['Show start prompt', 'Start', 'Cancel']);
+        for (const control of controls) {
+            expect(isKeyboardReachable(control), control.textContent ?? '').toBe(true);
+        }
+        const toggle = button(root, 'Show start prompt');
+        await pressKey(toggle, 'Enter');
+        expect(toggle.getAttribute('aria-expanded')).toBe('true');
+        expect(root.querySelector('pre')?.hidden).toBe(false);
+        expect(root.querySelector('pre')?.getAttribute('aria-label')).toBeTruthy();
+        await pressKey(toggle, ' ');
+        expect(toggle.getAttribute('aria-expanded')).toBe('false');
+        posted = [];
+        await pressKey(button(root, 'Start'), 'Enter');
+        expect(posted.at(-1)).toMatchObject({ type: 'agentStartConfirm', payload: { token: 'c-1' } });
+        await pressKey(button(root, 'Cancel'), ' ');
+        expect(posted.at(-1)).toMatchObject({ type: 'agentStartCancel', payload: { token: 'c-1' } });
     });
 
     it('a new confirmation after a closed one opens a fresh collapsed dialog', async () => {
