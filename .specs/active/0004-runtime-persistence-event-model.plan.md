@@ -2,7 +2,7 @@
 
 **Spec:** [0004-runtime-persistence-event-model.md](0004-runtime-persistence-event-model.md)
 **Status:** Done
-**Last updated:** 2026-11-16
+**Last updated:** 2026-11-17
 **Current step:** none; all steps ticked
 
 ## Approach
@@ -268,7 +268,7 @@ T-007 need the complete medium contract.
 | AC-017 | T-005, T-009 | src/core/runtime/runtimeStore.ts:openRuntimeStore, refuseUnreadable, appendSpecStatusEntry | src/core/runtime/testing/contractFaults.ts (AC-017, refusals) | verified |
 | AC-018 | T-004, T-007 | src/core/runtime/runtimeStore.ts:applyAgeCap; package.json (setting); src/adapters/vscode/runtimeSettings.ts | src/core/runtime/testing/contractWriter.ts (AC-018); src/adapters/vscode/manifest.test.ts | verified |
 | AC-019 | T-005, T-007 | src/core/runtime/runtimeStore.ts:clear; src/core/runtime/runtimeSession.ts; src/adapters/vscode/runtimeUi.ts; package.json | src/core/runtime/testing/contractFaults.ts (AC-019); src/core/runtime/runtimeSession.test.ts | verified |
-| AC-020 | T-008 | docs/runtime-data.md | manual: accepted by Gregor's proxy, 2026-11-16 | verified |
+| AC-020 | T-008 | docs/runtime-data.md | manual: Gregor's proxy checked docs/runtime-data.md against AC-020 and accepted it, 2026-11-16 | verified |
 | AC-021 | T-005, T-006, T-009 | src/core/runtime/runtimeStore.ts:replayRun, loadEventState, reportIncompleteOnce; src/core/runtime/truncatedJson.ts | src/core/runtime/testing/contractFaults.ts (AC-021, kill during a write); src/core/runtime/truncatedJson.test.ts; src/adapters/node/fileRuntimeMedium.test.ts | verified |
 | AC-022 | T-005, T-006 | src/core/runtime/runtimeStore.ts:loadRuns, writeIndex | src/core/runtime/testing/contractFaults.ts (AC-022); src/adapters/node/fileRuntimeMedium.test.ts | verified |
 | AC-023 | T-004 | src/core/runtime/writerLock.ts; src/core/runtime/runtimeStore.ts:assertWritable | src/core/runtime/testing/contractWriter.ts (AC-023) | verified |
@@ -284,10 +284,13 @@ T-007 need the complete medium contract.
 
 - 2026-11-16 — First host-suite run (Gregor, Windows 11, Node 26, VS Code 1.146): `runtime.smoke` AC-025 and AC-016 timed out waiting for `writable` (70 s each); the Mission Control smoke (0006) then showed the store reason `storage location is not on the local file system`, so `context.globalStorageUri.scheme` was not `file` in that window. The log does not say which scheme it was. Fix: `src/adapters/vscode/storageLocation.ts:resolveStorageLocation` (Vitest `storageLocation.test.ts`, red first) keeps `file` URIs on `fsPath`, falls back to the absolute `context.globalStoragePath` for a non-file scheme, and otherwise reports the unavailable reason with the scheme named. `src/extension.ts` uses it. Tests: new `src/core/discovery/testing/waitFor.ts` (Vitest-covered) names what is awaited and the last observed state on a timeout; wait is 30 s, suite 60 s. Not yet seen green on the host; if the next run still reports `unavailable`, the reason now names the scheme.
 
+- 2026-11-17 — Seen green on the host: Windows 11 (Gregor's machine, VS Code stable, Node 26) `npm test` 28 passing, 0 failing at commit e6f0c85, 2026-11-17 08:45 CET, including `src/test/runtime.smoke.test.ts` (AC-016, AC-025: store *writable*); GitHub Actions (ubuntu-latest + windows-latest) green at commit 9635ba4, 2026-11-17. The storage-location fix above is thereby proven; this is the pre-done gate for e6f0c85. No product code or host test of this spec changed after it.
+- 2026-11-17 — Second `/sdd-compile` (closing session, worktree at e6f0c85): READY (manual items: 1 — AC-020, accepted by Gregor's proxy 2026-11-16). `npx eslint src --max-warnings 0` 0 warnings · `npx tsc --noEmit` and `-p src/webview` clean · `npm run test:unit` 160 files, 2008 tests passed · `npm run compile` green. Mutation spot-check: AC-007 identity check disabled → 2 AC-007 contract cases fail.
+
 ## Session handoff
 
 - **Done so far:** T-001…T-010 ticked (T-010: run-change notification for 0007). `/sdd-compile` found 'Interrupted run reads as unreadable at the second activation' and writes to unreadable or newer data accepted; both fixed test-first on both media (T-009), spec wording adjusted, `docs/runtime-data.md` accepted (AC-020, T-008). `npm run test:unit`: 280 tests green.
-- **Next action:** `npm test` on CI/Windows (the host suite, incl. `src/test/runtime.smoke.test.ts`); then `/sdd-compile` again in a fresh session (another model family). Do not move the spec to `done/` before that.
+- **Next action:** `/sdd-lifecycle` active → done (host suite green, second `/sdd-compile` READY; see *Open evidence*).
 - **Open decisions:** PD-028 in `docs/product/product-decisions.md` still reads "incomplete last record" (Gregor's register).
 - **Baseline:** 767ac42 (HEAD before the first step commit)
-- **Environment:** `npm test` cannot run here (VS Code download blocked); worktree `/home/claude/wt-0004`, branch `spec-0004`. Tests added — stage 1: `src/core/runtime/testing/{contract,contractRuns,contractEvents}.ts`, `src/core/runtime/runtimeStore.test.ts`, `src/core/runtime/importScan.test.ts`, `src/adapters/node/randomIds.test.ts`; stage 2: `src/core/runtime/testing/{contractMasking,contractWriter,contractFaults}.ts`, `src/core/runtime/masking.test.ts`; stage 3: `src/adapters/node/fileRuntimeMedium.test.ts`, `src/core/runtime/runtimeSession.test.ts`, `src/adapters/vscode/manifest.test.ts` (changed), `src/test/runtime.smoke.test.ts` (CI only); stage 5: `src/core/runtime/testing/contractFaults.ts` (new describes), `src/core/runtime/truncatedJson.test.ts`.
+- **Environment:** `npm test` runs on Gregor's Windows machine and on CI, not in the sandbox. Tests added — stage 1: `src/core/runtime/testing/{contract,contractRuns,contractEvents}.ts`, `src/core/runtime/runtimeStore.test.ts`, `src/core/runtime/importScan.test.ts`, `src/adapters/node/randomIds.test.ts`; stage 2: `src/core/runtime/testing/{contractMasking,contractWriter,contractFaults}.ts`, `src/core/runtime/masking.test.ts`; stage 3: `src/adapters/node/fileRuntimeMedium.test.ts`, `src/core/runtime/runtimeSession.test.ts`, `src/adapters/vscode/manifest.test.ts` (changed), `src/test/runtime.smoke.test.ts` (CI only); stage 5: `src/core/runtime/testing/contractFaults.ts` (new describes), `src/core/runtime/truncatedJson.test.ts`.
