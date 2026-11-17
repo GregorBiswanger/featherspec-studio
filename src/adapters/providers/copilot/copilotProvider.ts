@@ -1,9 +1,10 @@
 import type { AgentProviderPort, AvailabilityReport, DeliveredEvent, OperationOutcome, ProviderEventSink, ProviderResumeRequest, ProviderStartRequest } from '../../../core/ports/agentProvider';
+import type { Disposable } from '../../../core/ports/host';
 import type { RuntimeClock } from '../../../core/ports/runtimeMedium';
 import { isEndKind, type CapabilityDeclaration, type ErrorCategory } from '../../../core/providers/vocabulary';
-import type { CopilotClient, CopilotClientFactory, CopilotEvent, CopilotSession, CopilotSessionConfig } from './client';
+import type { CopilotClient, CopilotClientFactory, CopilotElicitationRequest, CopilotEvent, CopilotPermissionAnswer, CopilotSession, CopilotSessionConfig } from './client';
 import { CLI_PATH_SETTING, INSTALL_URL, type CliLocation } from './cliLocator';
-import { createEventMapper, locateInProject, SIGN_IN_HINT, type EventMapper } from './mapping';
+import { createEventMapper, isSingleTextField, locateInProject, SIGN_IN_HINT, type EventMapper } from './mapping';
 
 export const COPILOT_PROVIDER_ID = 'copilot';
 export const COPILOT_DISPLAY_NAME = 'GitHub Copilot';
@@ -56,11 +57,17 @@ interface RunState {
     startedDelivered: boolean;
     startedWaiters: (() => void)[];
     cancelRequested: boolean;
+    forceTimer?: Disposable;
+    pendingPermissions: ((answer: CopilotPermissionAnswer) => void)[];
+    pendingInputs: ((text: string) => void)[];
+    pendingElicitations: ((text: string) => void)[];
+    open: Map<string, { type: 'approval' | 'input'; settle(value: unknown): void }>;
+    answered: Set<string>;
 }
 
-const messageOf = (error: unknown): string => (error instanceof Error ? error.message : String(error));
+export const FORCE_STOP_AFTER_MS = 10_000;
 
-const neverAnswered = (): Promise<never> => new Promise<never>(() => undefined);
+const messageOf = (error: unknown): string => (error instanceof Error ? error.message : String(error));
 
 export function createCopilotProvider(options: CopilotProviderOptions): CopilotProvider {
     const runs = new Map<string, RunState>();
@@ -98,8 +105,33 @@ export function createCopilotProvider(options: CopilotProviderOptions): CopilotP
             }
         }
         if (run.ended) {
+            run.forceTimer?.dispose();
+            run.open.clear();
             finalize(run);
             run.sink.close();
+        }
+    };
+
+    const pair = (run: RunState, event: CopilotEvent): void => {
+        const requestId = typeof event.data.requestId === 'string' ? event.data.requestId : undefined;
+        if (requestId === undefined || run.ended) {
+            return;
+        }
+        if (event.type === 'permission.requested') {
+            const settle = run.pendingPermissions.shift();
+            if (settle !== undefined) {
+                run.open.set(requestId, { type: 'approval', settle: settle as (value: unknown) => void });
+            }
+        } else if (event.type === 'user_input.requested') {
+            const settle = run.pendingInputs.shift();
+            if (settle !== undefined) {
+                run.open.set(requestId, { type: 'input', settle: settle as (value: unknown) => void });
+            }
+        } else if (event.type === 'elicitation.requested' && isSingleTextField({ message: '', mode: typeof event.data.mode === 'string' ? event.data.mode : undefined, requestedSchema: event.data.requestedSchema } as CopilotElicitationRequest)) {
+            const settle = run.pendingElicitations.shift();
+            if (settle !== undefined) {
+                run.open.set(requestId, { type: 'input', settle: settle as (value: unknown) => void });
+            }
         }
     };
 
@@ -107,6 +139,7 @@ export function createCopilotProvider(options: CopilotProviderOptions): CopilotP
         if (run.mapper === undefined) {
             return;
         }
+        pair(run, event);
         for (const delivered of await run.mapper.map(event)) {
             deliver(run, delivered);
         }
@@ -117,9 +150,15 @@ export function createCopilotProvider(options: CopilotProviderOptions): CopilotP
         ...(model === undefined ? {} : { model }),
         trustWorkingDirectory: options.isTrusted(),
         onEvent: (event) => void enqueue(run, () => handleEvent(run, event)),
-        onPermission: neverAnswered,
-        onUserInput: neverAnswered,
-        onElicitation: neverAnswered,
+        onPermission: () => new Promise<CopilotPermissionAnswer>((resolve) => void run.pendingPermissions.push(resolve)),
+        onUserInput: () => new Promise((resolve) => void run.pendingInputs.push((answer) => resolve({ answer, wasFreeform: true }))),
+        onElicitation: (request) => {
+            if (!isSingleTextField(request)) {
+                return Promise.resolve({ action: 'decline' });
+            }
+            const field = Object.keys(request.requestedSchema?.properties ?? {})[0] ?? 'value';
+            return new Promise((resolve) => void run.pendingElicitations.push((answer) => resolve({ action: 'accept', content: { [field]: answer } })));
+        },
     });
 
     const waitForStarted = async (run: RunState): Promise<void> => {
@@ -166,13 +205,16 @@ export function createCopilotProvider(options: CopilotProviderOptions): CopilotP
         text: string,
         how: { model?: string } | { sessionRef: string },
     ): Promise<void> => {
-        const run: RunState = { runId, sink, queue: Promise.resolve(), ended: false, dropped: false, startedDelivered: false, startedWaiters: [], cancelRequested: false };
+        const run: RunState = { runId, sink, queue: Promise.resolve(), ended: false, dropped: false, startedDelivered: false, startedWaiters: [], cancelRequested: false, pendingPermissions: [], pendingInputs: [], pendingElicitations: [], open: new Map(), answered: new Set() };
         runs.set(runId, run);
         let location: CliLocation;
         try {
             location = await options.locate();
         } catch (error) {
             location = { kind: 'unknown', reason: messageOf(error) };
+        }
+        if (run.ended) {
+            return;
         }
         if (location.kind !== 'found') {
             await failRun(run, 'runtime_missing', undefined, location.kind === 'not-installed' ? location.hint : location.reason);
@@ -187,14 +229,24 @@ export function createCopilotProvider(options: CopilotProviderOptions): CopilotP
             await failRun(run, 'runtime_missing', messageOf(error), undefined);
             return;
         }
+        if (run.ended) {
+            finalize(run);
+            return;
+        }
         try {
             const auth = await client.getAuthStatus();
+            if (run.ended) {
+                return;
+            }
             if (!auth.isAuthenticated) {
                 await failRun(run, 'auth', undefined, SIGN_IN_HINT);
                 return;
             }
             if ('model' in how && how.model !== undefined) {
                 const offered = await client.listModels();
+                if (run.ended) {
+                    return;
+                }
                 if (!offered.includes(how.model)) {
                     await failRun(run, 'model_unavailable', `Copilot does not offer the model "${how.model}".`, modelHint(how.model, offered));
                     return;
@@ -204,15 +256,19 @@ export function createCopilotProvider(options: CopilotProviderOptions): CopilotP
             await failRun(run, 'unknown', messageOf(error), undefined);
             return;
         }
+        if (run.ended) {
+            finalize(run);
+            return;
+        }
         try {
             if ('sessionRef' in how) {
-                run.mapper = createEventMapper({ workingDirectory, platform: options.platform, sessionId: how.sessionRef, readTodos: () => run.session?.readTodos() ?? Promise.resolve([]), isAnswered: () => false });
+                run.mapper = createEventMapper({ workingDirectory, platform: options.platform, sessionId: how.sessionRef, readTodos: () => run.session?.readTodos() ?? Promise.resolve([]), isAnswered: (requestId) => run.answered.has(requestId) });
                 run.session = await client.resumeSession(how.sessionRef, sessionConfig(run, workingDirectory, undefined));
                 await waitForStarted(run);
                 const mapper = run.mapper;
                 await enqueue(run, () => void mapper.started(how.sessionRef).forEach((event) => deliver(run, event)));
             } else {
-                run.mapper = createEventMapper({ workingDirectory, platform: options.platform, readTodos: () => run.session?.readTodos() ?? Promise.resolve([]), isAnswered: () => false });
+                run.mapper = createEventMapper({ workingDirectory, platform: options.platform, readTodos: () => run.session?.readTodos() ?? Promise.resolve([]), isAnswered: (requestId) => run.answered.has(requestId) });
                 run.session = await client.createSession(sessionConfig(run, workingDirectory, how.model));
                 const mapper = run.mapper;
                 const sessionId = run.session.sessionId;
@@ -220,6 +276,10 @@ export function createCopilotProvider(options: CopilotProviderOptions): CopilotP
             }
         } catch (error) {
             await failRun(run, 'unknown', messageOf(error), undefined);
+            return;
+        }
+        if (run.ended) {
+            finalize(run);
             return;
         }
         run.mapper.promptSent();
@@ -286,8 +346,58 @@ export function createCopilotProvider(options: CopilotProviderOptions): CopilotP
         }
     };
 
-    const notImplemented = (): never => {
-        throw new Error('Not implemented');
+    const liveRun = (runId: string): RunState | undefined => {
+        const run = runs.get(runId);
+        return run === undefined || run.ended || run.dropped ? undefined : run;
+    };
+
+    const answer = (runId: string, requestId: string, type: 'approval' | 'input', value: unknown, resolved: DeliveredEvent): OperationOutcome => {
+        const run = liveRun(runId);
+        const request = run?.open.get(requestId);
+        if (run === undefined || request === undefined || request.type !== type || run.answered.has(requestId)) {
+            return { ok: false, reason: 'no open request with that ID' };
+        }
+        run.answered.add(requestId);
+        run.open.delete(requestId);
+        request.settle(value);
+        void enqueue(run, () => deliver(run, resolved));
+        return { ok: true };
+    };
+
+    const cancel = async (runId: string): Promise<OperationOutcome> => {
+        const run = liveRun(runId);
+        if (run === undefined) {
+            return { ok: false, reason: runs.has(runId) ? 'the run has already ended' : 'no such run' };
+        }
+        if (run.cancelRequested) {
+            return { ok: true };
+        }
+        run.cancelRequested = true;
+        const session = run.session;
+        if (session === undefined) {
+            await enqueue(run, () => deliver(run, { kind: 'run.cancelled', source: 'derived', payload: {} }));
+            return { ok: true };
+        }
+        run.forceTimer = options.clock.setTimeout(() => {
+            if (run.ended || run.dropped) {
+                return;
+            }
+            void run.client?.forceStop().catch(() => undefined);
+            void enqueue(run, () => deliver(run, { kind: 'run.cancelled', source: 'derived', payload: { cause: 'forced stop' } }));
+        }, FORCE_STOP_AFTER_MS);
+        try {
+            await session.abort();
+        } catch (error) {
+            return { ok: false, reason: messageOf(error) };
+        }
+        return { ok: true };
+    };
+
+    const endRun = (run: RunState): void => {
+        run.dropped = true;
+        run.forceTimer?.dispose();
+        run.open.clear();
+        void run.client?.forceStop().catch(() => undefined);
     };
 
     return {
@@ -299,18 +409,32 @@ export function createCopilotProvider(options: CopilotProviderOptions): CopilotP
         checkAvailability,
         start: (request: ProviderStartRequest, sink: ProviderEventSink) => launch(request.runId, sink, request.workingDirectory, request.prompt, request.model === undefined ? {} : { model: request.model }),
         resume: (request: ProviderResumeRequest, sink: ProviderEventSink) => launch(request.runId, sink, request.workingDirectory, request.continuationText, { sessionRef: request.sessionRef }),
-        cancel: notImplemented as () => Promise<OperationOutcome>,
-        respondToApproval: notImplemented as () => Promise<OperationOutcome>,
-        respondToInput: notImplemented as () => Promise<OperationOutcome>,
-        endSession: notImplemented,
+        cancel,
+        respondToApproval: (runId, requestId, decision) =>
+            Promise.resolve(
+                answer(
+                    runId,
+                    requestId,
+                    'approval',
+                    decision.decision === 'approve-once' ? { kind: 'approve-once' } : { kind: 'reject', ...(decision.reason === undefined ? {} : { feedback: decision.reason }) },
+                    { kind: 'approval.resolved', source: 'derived', payload: { requestId, decision: decision.decision } },
+                ),
+            ),
+        respondToInput: (runId, requestId, text) => Promise.resolve(answer(runId, requestId, 'input', text, { kind: 'input.resolved', source: 'derived', payload: { requestId } })),
+        endSession(runId) {
+            const run = runs.get(runId);
+            if (run !== undefined) {
+                endRun(run);
+                runs.delete(runId);
+            }
+        },
         listModels: () => withRuntime((client) => client.listModels()),
         nextStartModel: () => options.settings.model().trim() || undefined,
         credentialValues: () => [],
         dispose() {
             for (const run of runs.values()) {
-                if (!run.ended) {
-                    run.dropped = true;
-                    void run.client?.forceStop().catch(() => undefined);
+                if (!run.ended && !run.dropped) {
+                    endRun(run);
                 }
             }
             runs.clear();

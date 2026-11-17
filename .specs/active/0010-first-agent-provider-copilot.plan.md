@@ -225,8 +225,8 @@ No parallel stage: every step from T-003 on builds on T-002's seam, and T-004…
   Call-log check over every test of the folder: only `approve-once`/`reject`, only `manual`, no
   answer after a run's end. Tests `copilotInteraction.test.ts`.
 - **Verify:** `npx vitest run src/adapters/providers/copilot`
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-17. Red: `npx vitest run src/adapters/providers/copilot/copilotInteraction.test.ts` 18 of 21 tests failed (the operations cancel, respondToApproval, respondToInput, endSession threw `Not implemented`; handler promises never settled); 3 passed at once (unanswered requests after 24 h and of every kind), proven by mutation together with the rest: a second cancel allowed to abort again failed 1, accepting an answer twice or for the wrong request type failed 1, each reverted. Green after the implementation: `npx vitest run src/adapters/providers/copilot` 8 files, 132 passed; the call-log check (only approve-once/reject, no answer after a run's end) runs as an `afterEach` in `testing/world.ts` over every test that builds a world. Gates: eslint --max-warnings 0, tsc, tsc -p src/webview clean; `npm run test:unit` 161 files, 2029 passed.
+- **Notes:** (1) Pairing: handler calls queue per kind (permission, user input, one-field elicitation) and the next `.requested` event of that kind takes the oldest; a larger form is declined at once by the handler. (2) After an end kind the adapter delivers nothing more, so events after `abort` (e.g. `turn.completed`) are dropped; a cancel before the session exists delivers a derived `run.cancelled` and the start flow stops without a prompt (checks after each await). (3) `endSession` removes the run, so later cancel and answers are refused with "no such run".
 
 ### T-007 — Contract suite, wiring and host smoke
 

@@ -33,6 +33,7 @@ export interface ScriptedClientOptions {
     startError?: Error;
     authError?: Error;
     sendError?: Error;
+    abortError?: Error;
     createError?: Error;
     resumeError?: Error;
     onCreate?: readonly ScriptStep[];
@@ -93,6 +94,9 @@ export function createScriptedClient(options: ScriptedClientOptions): ScriptedCl
         },
         abort() {
             log.push({ call: 'abort' });
+            if (options.abortError !== undefined) {
+                return Promise.reject(options.abortError);
+            }
             if (options.onAbort !== 'silent') {
                 play(options.onAbort ?? [], config);
             }
