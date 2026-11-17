@@ -1,8 +1,8 @@
 # Plan — Spec Activation & Agent Start Workflow
 
 **Spec:** [0008-spec-activation-agent-start.md](0008-spec-activation-agent-start.md)
-**Status:** Not started
-**Last updated:** 2026-11-16
+**Status:** In Progress
+**Last updated:** 2026-11-17
 **Current step:** T-001
 
 ## Approach
@@ -289,5 +289,5 @@ stage and becomes its own step.
 - **Done so far:** plan written; spec open points resolved by their recommendations (spec §16).
 - **Next action:** Gregor reviews the plan; implementation after 0009 and 0011 (order 0009 → 0011 → 0008 → 0012).
 - **Open decisions:** OP-010 (main session); the narrowed 0009 manifest assertion (T-007).
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** 3b3ab8b (before T-001).
 - **Environment:** `npm test` cannot run here; it runs on CI or Gregor's Windows machine.

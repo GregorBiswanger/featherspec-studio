@@ -18,6 +18,7 @@ All seven active specs (0001...0007), spec 0009 (provider port, fake provider) a
 - Spec 0013: [spec](../.specs/active/0013-studio-visual-design.md) / [plan](../.specs/active/0013-studio-visual-design.plan.md) (In Progress, started 2026-11-16).
 - Spec 0009: [spec](../.specs/active/0009-agent-provider-abstraction.md) / [plan](../.specs/active/0009-agent-provider-abstraction.plan.md) (Done, 9 of 9 steps; host smoke `src/test/providers.smoke.test.ts` and the manual §21 walkthrough open; awaits `/sdd-compile`).
 - Spec 0011: [spec](../.specs/active/0011-agent-orchestrator-run-lifecycle.md) / [plan](../.specs/active/0011-agent-orchestrator-run-lifecycle.plan.md) (Done, 8 of 8 steps; host smoke `src/test/orchestrator.smoke.test.ts` open on CI, M-03 wording is Gregor's; awaits `/sdd-compile`).
+- Spec 0008: [spec](../.specs/active/0008-spec-activation-agent-start.md) / [plan](../.specs/active/0008-spec-activation-agent-start.plan.md) (In Progress, started 2026-11-17).
 - Current task: 0013 T-010 — gates and docs done; waiting for Gregor's AC-017 screenshot verdict (shot list in the plan, T-010 Notes).
 - Acceptance criteria in focus: manual 0007 AC-017 (Tab onto Move to), AC-018, AC-026; 0006 AC-021, AC-022.
 

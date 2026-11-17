@@ -1,6 +1,6 @@
 # Spec Activation & Agent Start Workflow
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0008-spec-activation-agent-start.plan.md](0008-spec-activation-agent-start.plan.md)
 
 Handoff reference: FS-008 ([po-handoff.md](../../docs/product/po-handoff.md) §5.2, §6.4, §6.5,
