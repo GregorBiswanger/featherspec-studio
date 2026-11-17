@@ -1,0 +1,285 @@
+import type { ApprovalAnswer, ProviderEvent } from '../ports/agentProvider';
+import type { Disposable } from '../ports/host';
+import type { OrchestratorUiPort } from '../ports/orchestrator';
+import type { RuntimeClock } from '../ports/runtimeMedium';
+import type { ShellModelSource } from '../ports/shell';
+import type { ProviderRegistry } from '../providers/registry';
+import type { ProviderService, ServiceRefusal } from '../providers/providerService';
+import { NOT_AVAILABLE, OPEN_STATUSES, type JsonValue, type RunStatus, type StatusReport } from '../runtime/model';
+import { READER_REASON } from '../runtime/notices';
+import type { RuntimeStore } from '../runtime/runtimeStore';
+import type { RuntimeSession } from '../runtime/runtimeSession';
+import { applyEvent, createTrack, transition, type RunTrack, type TrackStep } from './runTrack';
+import {
+    READER_TEXT,
+    alreadyEndedText,
+    createFailedText,
+    notRegisteredText,
+    requestNotOpenText,
+    runOpenText,
+    storeText,
+} from './texts';
+
+export type RefusalCode =
+    | 'reader-window'
+    | 'store-not-writable'
+    | 'run-open'
+    | 'not-registered'
+    | 'create-failed'
+    | 'not-open'
+    | 'not-supported'
+    | 'stop-pending'
+    | 'request-not-open'
+    | 'invalid-answer'
+    | 'not-resumable'
+    | 'provider-refused';
+
+export interface Refusal {
+    kind: 'refused';
+    code: RefusalCode;
+    reason: string;
+    run?: { runId: string; stem: string };
+}
+
+export interface StartRequest {
+    stem: string;
+    path: string;
+    providerId: string;
+    model: string;
+    prompt: string;
+    workingDirectory: string;
+}
+
+export type StartResult = { kind: 'started'; runId: string } | Refusal;
+export type StopResult = { kind: 'stopping' } | Refusal;
+export type AnswerResult = { kind: 'ok' } | Refusal;
+export type Resumability = { resumable: true } | { resumable: false; reason: string };
+export type ResumeResult = { kind: 'resumed'; runId: string } | { kind: 'declined' } | Refusal;
+export type PreviousRun =
+    | { kind: 'run'; runId: string; status: RunStatus; errorClass: string; errorText: string }
+    | { kind: 'none' }
+    | { kind: 'not-available'; reason: string };
+
+export interface Orchestrator {
+    start(request: StartRequest): Promise<StartResult>;
+    stop(runId: string): Promise<StopResult>;
+    resumability(runId: string): Promise<Resumability>;
+    resume(runId: string): Promise<ResumeResult>;
+    respondToApproval(runId: string, requestId: string, answer: ApprovalAnswer): Promise<AnswerResult>;
+    respondToInput(runId: string, requestId: string, text: string): Promise<AnswerResult>;
+    previousRun(stem: string): Promise<PreviousRun>;
+    whenIdle(): Promise<void>;
+    dispose(): void;
+}
+
+export interface OrchestratorDeps {
+    session: Pick<RuntimeSession, 'current' | 'state' | 'onDidChangeState'>;
+    registry: ProviderRegistry;
+    providers: ProviderService;
+    specs: ShellModelSource;
+    ui: OrchestratorUiPort;
+    clock: RuntimeClock;
+    workingDirectory: () => string | undefined;
+}
+
+interface Tracked {
+    runId: string;
+    stem: string;
+    providerId: string;
+    store: RuntimeStore;
+    track: RunTrack;
+}
+
+function messageOf(error: unknown): string {
+    return error instanceof Error ? error.message : String(error);
+}
+
+function isObject(value: JsonValue): value is { [key: string]: JsonValue } {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function refusalReason(refusal: ServiceRefusal): string {
+    switch (refusal.kind) {
+        case 'not-registered':
+            return notRegisteredText(refusal.providerId);
+        case 'failed':
+        case 'invalid-answer':
+            return refusal.reason;
+        case 'not-supported':
+            return `Provider ${refusal.providerId} does not support this operation.`;
+        case 'unknown-run':
+        case 'already-ended':
+            return alreadyEndedText(refusal.runId);
+        case 'request-not-open':
+            return requestNotOpenText(refusal.runId, refusal.requestId);
+    }
+}
+
+export function createOrchestrator(deps: OrchestratorDeps): Orchestrator {
+    const runs = new Map<string, Tracked>();
+    let queue: Promise<void> = Promise.resolve();
+    let lock: Promise<void> = Promise.resolve();
+
+    const enqueue = (task: () => Promise<void>): void => {
+        queue = queue.then(task).then(
+            () => undefined,
+            () => undefined,
+        );
+    };
+
+    const locked = <T>(task: () => Promise<T>): Promise<T> => {
+        const result = lock.then(task);
+        lock = result.then(
+            () => undefined,
+            () => undefined,
+        );
+        return result;
+    };
+
+    const writerRefusal = (): Refusal | undefined => {
+        const state = deps.session.state();
+        if (state.kind === 'writable' && deps.session.current() !== undefined) {
+            return undefined;
+        }
+        if (state.kind === 'read-only' && state.reason === READER_REASON) {
+            return { kind: 'refused', code: 'reader-window', reason: READER_TEXT };
+        }
+        return { kind: 'refused', code: 'store-not-writable', reason: storeText(state.reason ?? 'unknown') };
+    };
+
+    const commit = async (run: Tracked, step: TrackStep): Promise<void> => {
+        const report: StatusReport = {};
+        if (step.sessionRef !== undefined) {
+            report.sessionRef = step.sessionRef;
+        }
+        if (step.model !== undefined) {
+            report.model = step.model;
+        }
+        if (step.failure !== undefined) {
+            report.errorClass = step.failure.errorClass;
+            report.errorMessage = step.failure.errorMessage;
+        }
+        try {
+            await run.store.reportStatus(run.runId, step.status, report);
+        } catch {
+            return;
+        }
+    };
+
+    const failRun = async (run: Tracked, errorClass: string, errorMessage: string): Promise<void> => {
+        const ended = transition(run.track, 'Failed');
+        if (ended === undefined) {
+            return;
+        }
+        run.track = ended;
+        await commit(run, { status: 'Failed', failure: { errorClass, errorMessage } });
+    };
+
+    const handleEvent = async (event: ProviderEvent): Promise<void> => {
+        const run = runs.get(event.runId);
+        if (run === undefined) {
+            return;
+        }
+        const payload: JsonValue = isObject(event.payload) ? { ...event.payload, source: event.source } : { value: event.payload, source: event.source };
+        let outcome;
+        try {
+            outcome = await run.store.appendEvent(run.runId, {
+                type: event.kind,
+                payload,
+                ...(event.occurredAt === undefined ? {} : { occurredAt: event.occurredAt }),
+                ...(event.providerEventId === undefined ? {} : { providerEventId: event.providerEventId }),
+            });
+        } catch {
+            return;
+        }
+        if (outcome.outcome === 'duplicate') {
+            return;
+        }
+        const applied = applyEvent(run.track, { kind: event.kind, source: event.source, payload: event.payload });
+        run.track = applied.track;
+        for (const step of applied.steps) {
+            await commit(run, step);
+        }
+    };
+
+    const subscription: Disposable = deps.providers.onEvent((event) => enqueue(() => handleEvent(event)));
+
+    const start = async (request: StartRequest): Promise<StartResult> => {
+        const blocked = writerRefusal();
+        if (blocked !== undefined) {
+            return blocked;
+        }
+        if (deps.registry.entry(request.providerId).kind !== 'ok') {
+            return { kind: 'refused', code: 'not-registered', reason: notRegisteredText(request.providerId) };
+        }
+        const store = deps.session.current();
+        if (store === undefined) {
+            return { kind: 'refused', code: 'store-not-writable', reason: storeText('unknown') };
+        }
+        const model = request.model === NOT_AVAILABLE ? undefined : request.model;
+        const created = await locked(async (): Promise<Refusal | { kind: 'created'; runId: string }> => {
+            const listed = await store.listRuns();
+            if (!listed.available) {
+                return { kind: 'refused', code: 'store-not-writable', reason: storeText(listed.reason) };
+            }
+            const open = listed.value.find((run) => (OPEN_STATUSES as readonly string[]).includes(run.status));
+            if (open !== undefined) {
+                return {
+                    kind: 'refused',
+                    code: 'run-open',
+                    reason: runOpenText(open.runId, open.spec.stem),
+                    run: { runId: open.runId, stem: open.spec.stem },
+                };
+            }
+            try {
+                const run = await store.createRun({
+                    providerId: request.providerId,
+                    spec: { stem: request.stem, path: request.path },
+                    ...(model === undefined ? {} : { model }),
+                });
+                runs.set(run.runId, { runId: run.runId, stem: request.stem, providerId: request.providerId, store, track: createTrack() });
+                return { kind: 'created', runId: run.runId };
+            } catch (error) {
+                return { kind: 'refused', code: 'create-failed', reason: createFailedText(messageOf(error)) };
+            }
+        });
+        if (created.kind === 'refused') {
+            return created;
+        }
+        const run = runs.get(created.runId);
+        const result = await deps.providers.start(request.providerId, {
+            runId: created.runId,
+            workingDirectory: request.workingDirectory,
+            prompt: request.prompt,
+            ...(model === undefined ? {} : { model }),
+        });
+        if (result.kind !== 'ok' && run !== undefined) {
+            enqueue(() => failRun(run, 'unknown', refusalReason(result)));
+        }
+        return { kind: 'started', runId: created.runId };
+    };
+
+    return {
+        start,
+        stop: () => Promise.reject(new Error('Not implemented')),
+        resumability: () => Promise.reject(new Error('Not implemented')),
+        resume: () => Promise.reject(new Error('Not implemented')),
+        respondToApproval: () => Promise.reject(new Error('Not implemented')),
+        respondToInput: () => Promise.reject(new Error('Not implemented')),
+        previousRun: () => Promise.reject(new Error('Not implemented')),
+        async whenIdle() {
+            for (;;) {
+                const seenQueue = queue;
+                const seenLock = lock;
+                await seenQueue;
+                await seenLock;
+                if (seenQueue === queue && seenLock === lock) {
+                    return;
+                }
+            }
+        },
+        dispose() {
+            subscription.dispose();
+        },
+    };
+}

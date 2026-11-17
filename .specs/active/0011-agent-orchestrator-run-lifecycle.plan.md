@@ -163,8 +163,8 @@ test world, one module.
   `Cancelled`, waiting statuses with the fake's `approval` and `input` scenarios, `failure:<category>`
   and `no-end` classes).
 - **Verify:** `npx vitest run src/core/orchestrator` then the per-step gates
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-17 — red: `npx vitest run src/core/orchestrator/orchestratorStart.test.ts` against a stub whose methods reject with `Not implemented`: 20 failed, all with that error; green after the implementation: 43 passed in `src/core/orchestrator` (one assertion of my own test corrected: a duplicate is stored once, not twice); gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 1541 passed.
+- **Notes:** New port `src/core/ports/orchestrator.ts` (`OrchestratorUiPort`, `PickItem`) and the full `texts.ts` already exist; `orchestrator.ts` keeps the later operations as `Not implemented` stubs until their steps. `failRun` for a port refusal runs on the event queue.
 
 ### T-003 — Result, start timeout, no stall, window end, previous run
 
