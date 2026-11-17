@@ -1,7 +1,7 @@
 # Plan — Set Up FeatherSpec from the Studio
 
 **Spec:** [0014-setup-featherspec-from-studio.md](0014-setup-featherspec-from-studio.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-17
 **Current step:** T-001
 
@@ -212,5 +212,5 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 - **Done so far:** spec revised with PD-053; plan written.
 - **Next action:** Gregor reads the plan; on his start signal `/sdd-lifecycle` moves the pair to `active/`, then T-001.
 - **Open decisions:** —
-- **Baseline:** _(set when work starts)_
+- **Baseline:** HEAD 0753a62 (clean tree), moved to active/ 2026-11-17
 - **Environment:** `npm test` cannot run in the agent sandbox; GitHub is not reachable from it (live route checked only in M-2).

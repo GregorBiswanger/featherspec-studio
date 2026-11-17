@@ -1,6 +1,6 @@
 # Set Up FeatherSpec from the Studio
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0014-setup-featherspec-from-studio.plan.md](0014-setup-featherspec-from-studio.plan.md)
 
 Basis: Gregor's request of 2026-11-17 after his first local test of the VSIX. Decisions

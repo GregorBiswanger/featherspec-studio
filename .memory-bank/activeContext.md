@@ -2,13 +2,14 @@
 
 Last updated: 2026-11-17
 Current branch: main
-Current phase: idle
+Current phase: act
 
 ## Now
-Release preparation for 0.1.0: all 13 specs are `Implemented` in `.specs/done/`; waiting for Gregor's pre-release checklist and his Go for the Marketplace.
+Implementing 0014 (Set up FeatherSpec from the Studio), plan step by step, current step T-001. Release preparation for 0.1.0 (13 specs `Implemented`) waits for Gregor's checklist.
 
 ## Active Spec
-- None. Completed: 0001…0013 in [.specs/done/](../.specs/done/), plans frozen in [.specs/plan-archive/](../.specs/plan-archive/) (e.g. [0010 spec](../.specs/done/0010-first-agent-provider-copilot.md) / [plan](../.specs/plan-archive/0010-first-agent-provider-copilot.2026-11-17.plan.md), [0012 spec](../.specs/done/0012-live-agent-activity-monitoring.md) / [plan](../.specs/plan-archive/0012-live-agent-activity-monitoring.2026-11-17.plan.md)).
+- [0014 spec](../.specs/active/0014-setup-featherspec-from-studio.md) / [plan](../.specs/active/0014-setup-featherspec-from-studio.plan.md), In Progress.
+- Completed: 0001…0013 in [.specs/done/](../.specs/done/), plans frozen in [.specs/plan-archive/](../.specs/plan-archive/) (e.g. [0010 spec](../.specs/done/0010-first-agent-provider-copilot.md) / [plan](../.specs/plan-archive/0010-first-agent-provider-copilot.2026-11-17.plan.md), [0012 spec](../.specs/done/0012-live-agent-activity-monitoring.md) / [plan](../.specs/plan-archive/0012-live-agent-activity-monitoring.2026-11-17.plan.md)).
 - 0010 is proven by the Windows host suite with `FEATHERSPEC_COPILOT_SMOKE=1` (dev build and unpacked VSIX).
 
 ## Changed Recently
