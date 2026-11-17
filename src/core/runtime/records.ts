@@ -1,49 +1,5 @@
 import { isTruncatedJson } from './truncatedJson';
-import { FORMAT_VERSION, isRunStatus, type JsonValue, type RunStatus, type SpecReference } from './model';
-
-export interface CreatedRecord {
-    v: number;
-    k: 'created';
-    runId: string;
-    providerId: string;
-    spec: SpecReference;
-    model?: string;
-    sessionRef?: string;
-    cause?: string;
-    at: string;
-}
-
-export interface StatusRecord {
-    v: number;
-    k: 'status';
-    status: RunStatus;
-    at: string;
-    cause?: string;
-    model?: string;
-    sessionRef?: string;
-    errorClass?: string;
-    errorMessage?: string;
-    result?: JsonValue;
-}
-
-export interface FlagRecord {
-    v: number;
-    k: 'flag';
-    at: string;
-}
-
-export type RunRecord = CreatedRecord | StatusRecord | FlagRecord;
-
-export interface EventRecord {
-    v: number;
-    seq: number;
-    runId: string;
-    occurredAt?: string;
-    receivedAt: string;
-    type: string;
-    payload: JsonValue;
-    providerEventId?: string;
-}
+import { FORMAT_VERSION, type JsonValue } from './model';
 
 export interface HistoryRecord {
     v: number;
@@ -69,75 +25,6 @@ function parseObject(text: string): Record<string, unknown> | undefined {
 
 function isString(value: unknown): value is string {
     return typeof value === 'string';
-}
-
-function optionalString(value: unknown): boolean {
-    return value === undefined || typeof value === 'string';
-}
-
-export function parseRunRecord(text: string): ParsedLine<RunRecord> {
-    const object = parseObject(text);
-    if (object === undefined) {
-        return unparsable(text);
-    }
-    if (typeof object['v'] !== 'number') {
-        return { kind: 'broken' };
-    }
-    if (object['v'] !== FORMAT_VERSION) {
-        return object['v'] > FORMAT_VERSION ? { kind: 'newer' } : { kind: 'broken' };
-    }
-    const spec = object['spec'] as Record<string, unknown> | undefined;
-    if (object['k'] === 'created') {
-        const valid =
-            isString(object['runId']) &&
-            isString(object['providerId']) &&
-            isString(object['at']) &&
-            typeof spec === 'object' &&
-            spec !== null &&
-            isString(spec['stem']) &&
-            isString(spec['path']) &&
-            optionalString(object['model']) &&
-            optionalString(object['sessionRef']) &&
-            optionalString(object['cause']);
-        return valid ? { kind: 'record', record: object as unknown as CreatedRecord } : { kind: 'broken' };
-    }
-    if (object['k'] === 'status') {
-        const valid =
-            isRunStatus(object['status']) &&
-            isString(object['at']) &&
-            optionalString(object['cause']) &&
-            optionalString(object['model']) &&
-            optionalString(object['sessionRef']) &&
-            optionalString(object['errorClass']) &&
-            optionalString(object['errorMessage']);
-        return valid ? { kind: 'record', record: object as unknown as StatusRecord } : { kind: 'broken' };
-    }
-    if (object['k'] === 'flag' && isString(object['at'])) {
-        return { kind: 'record', record: object as unknown as FlagRecord };
-    }
-    return { kind: 'broken' };
-}
-
-export function parseEventRecord(text: string): ParsedLine<EventRecord> {
-    const object = parseObject(text);
-    if (object === undefined) {
-        return unparsable(text);
-    }
-    if (typeof object['v'] !== 'number') {
-        return { kind: 'broken' };
-    }
-    if (object['v'] !== FORMAT_VERSION) {
-        return object['v'] > FORMAT_VERSION ? { kind: 'newer' } : { kind: 'broken' };
-    }
-    const valid =
-        typeof object['seq'] === 'number' &&
-        isString(object['runId']) &&
-        isString(object['receivedAt']) &&
-        isString(object['type']) &&
-        'payload' in object &&
-        optionalString(object['occurredAt']) &&
-        optionalString(object['providerEventId']);
-    return valid ? { kind: 'record', record: object as unknown as EventRecord } : { kind: 'broken' };
 }
 
 export function parseHistoryRecord(text: string): ParsedLine<HistoryRecord> {

@@ -1,9 +1,4 @@
-import type {
-    CredentialValuesPort,
-    IdSource,
-    RuntimeClock,
-    RuntimeNoticePort,
-} from '../../ports/runtimeMedium';
+import type { IdSource, RuntimeClock, RuntimeNoticePort } from '../../ports/runtimeMedium';
 import type { Disposable } from '../../ports/host';
 
 const SETTLE_LIMIT_MS = 4000;
@@ -62,15 +57,6 @@ export function createFakeNotices(): FakeNotices {
         },
     };
     return notices;
-}
-
-export interface FakeCredentials extends CredentialValuesPort {
-    held: string[];
-}
-
-export function createFakeCredentials(...held: string[]): FakeCredentials {
-    const credentials: FakeCredentials = { held, values: () => credentials.held };
-    return credentials;
 }
 
 async function turns(): Promise<void> {

@@ -1,28 +1,16 @@
 import type { DiscoveryController } from '../discovery/discoveryController';
 import type { Disposable } from '../ports/host';
-import { RuntimeRefusal, type StoreState } from './model';
-import {
-    CLEAR_BUTTON,
-    NOT_CLEARED_DECLINED,
-    NOT_CLEARED_NO_PROJECT,
-    NO_ACTIVE_PROJECT_REASON,
-    clearedNotice,
-    notClearedBecause,
-} from './notices';
+import type { StoreState } from './model';
+import { NO_ACTIVE_PROJECT_REASON } from './notices';
 import type { RuntimeStore } from './runtimeStore';
 
-export { CLEAR_BUTTON };
-
 export interface RuntimeUiPort {
-    confirmClear(project: string): Promise<boolean>;
-    info(message: string): void;
     warn(message: string): void;
 }
 
 export interface RuntimeSessionDeps {
     discovery: Pick<DiscoveryController, 'snapshot' | 'onDidChangeActiveProject'>;
     openStore(projectRoot: string): Promise<RuntimeStore>;
-    ui: RuntimeUiPort;
 }
 
 export interface RuntimeSession {
@@ -30,7 +18,6 @@ export interface RuntimeSession {
     current(): RuntimeStore | undefined;
     state(): StoreState;
     onDidChangeState(listener: (state: StoreState) => void): Disposable;
-    clearRunHistory(): Promise<void>;
     whenIdle(): Promise<void>;
     dispose(): Promise<void>;
 }
@@ -42,7 +29,6 @@ export function createRuntimeSession(deps: RuntimeSessionDeps): RuntimeSession {
     let store: RuntimeStore | undefined;
     let storeSubscription: Disposable | undefined;
     let activeRoot: string | undefined;
-    let activeName = '';
     let state: StoreState = NO_PROJECT_STATE;
     let chain: Promise<void> = Promise.resolve();
     let subscription: Disposable | undefined;
@@ -64,12 +50,11 @@ export function createRuntimeSession(deps: RuntimeSessionDeps): RuntimeSession {
         await closing?.dispose();
     }
 
-    async function switchTo(root: string | undefined, name: string): Promise<void> {
+    async function switchTo(root: string | undefined): Promise<void> {
         if (disposed || root === activeRoot) {
             return;
         }
         activeRoot = root;
-        activeName = name;
         await closeStore();
         if (root === undefined) {
             setState(NO_PROJECT_STATE);
@@ -89,8 +74,8 @@ export function createRuntimeSession(deps: RuntimeSessionDeps): RuntimeSession {
         }
     }
 
-    function follow(active: { root: string; name: string } | undefined): void {
-        chain = chain.then(() => switchTo(active?.root, active?.name ?? ''));
+    function follow(active: { root: string } | undefined): void {
+        chain = chain.then(() => switchTo(active?.root));
     }
 
     return {
@@ -107,29 +92,6 @@ export function createRuntimeSession(deps: RuntimeSessionDeps): RuntimeSession {
         onDidChangeState(listener) {
             listeners.add(listener);
             return { dispose: () => void listeners.delete(listener) };
-        },
-        async clearRunHistory() {
-            await chain;
-            const target = store;
-            if (target === undefined || activeRoot === undefined) {
-                deps.ui.info(NOT_CLEARED_NO_PROJECT);
-                return;
-            }
-            const current = target.state();
-            if (current.kind !== 'writable') {
-                deps.ui.info(notClearedBecause(current.reason ?? ''));
-                return;
-            }
-            if (!(await deps.ui.confirmClear(activeName))) {
-                deps.ui.info(NOT_CLEARED_DECLINED);
-                return;
-            }
-            try {
-                const result = await target.clear();
-                deps.ui.info(clearedNotice(result.failed));
-            } catch (error) {
-                deps.ui.info(notClearedBecause(error instanceof RuntimeRefusal ? error.message : String(error)));
-            }
         },
         whenIdle: () => chain,
         async dispose() {

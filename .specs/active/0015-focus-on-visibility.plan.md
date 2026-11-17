@@ -3,7 +3,7 @@
 **Spec:** [0015-focus-on-visibility.md](0015-focus-on-visibility.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-010
+**Current step:** T-011
 
 ## Approach
 
@@ -267,7 +267,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
   checks the workspace is unchanged. `extensionBundle.test.ts` drops the secret-sample test.
 - **Deletes:** `src/core/runtime/{masking.ts,masking.test.ts}`, `src/core/runtime/testing/{contractEvents,contractRuns,contractRunChanges,contractMasking,secretSamples}.ts` (history tests of `contractMasking` move to `contract.ts` with their titles)
 - **Verify:** AC-013 test red then green; gates 1–5
-- [ ] **Verified (T-010):** —
+- [x] **Verified (T-010):** 2026-11-17 — red: with a stray index.json written at activation the new AC-013 afterEach and test failed in every contract scenario (memory, slow, file media) and the check restored passes: 56 passed in runtimeStore.test.ts; green after the change: 1639 passed + 3 skipped, 12 timing; gates 1–5 clean. The store keeps state, writer lock with heartbeat and takeover, store.json, newer-version refusal, cut-off-record tolerance and the history append/read with the fixed 90-day cap; runs, events, index, masking, size cap, clear, run listeners, credentials and maxAgeDays are gone. Notes: AC-013 runs as an afterEach of every contract scenario (memory, slow-memory and file-system media; the faulty medium wraps all of them); reader reason asserted literally in runtimeSession.test.ts; runtimeSession lost clearRunHistory and its ui dependency; contractMasking history tests moved to contract.ts (registerHistoryContract) with their titles; run-based contract tests were deleted with their module, the lock, retention, newer-version, cut-off-record and state tests were rewritten on history appends; the AC-006 lifecycle test about a run, the masking test of fileRuntimeMedium.test.ts and the secret-sample test of extensionBundle.test.ts were deleted with their behaviour.
 - **Notes:** riskiest step: the history depends on the same lock, truncation and age-cap code that loses its run paths.
 
 ### T-011 — Remove earlier run data at every activation
@@ -385,7 +385,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 ## Session handoff
 
 - **Done so far:** Stages 1 to 3 (T-001…T-009): next step, copy, drop result; earlier-data removal module (not wired); board and detail without runs; Mission Control without runs; run wiring, manifest entries and dead modules removed; three areas.
-- **Next action:** T-010 (status-history store), then T-011, T-012.
+- **Next action:** T-011 (earlier-data removal at activation), then T-012.
 - **Open decisions:** — (Gregor approved the changed order and `npm uninstall @github/copilot-sdk`; the parallel stage runs in sequence; deletions listed per step are approved.)
 - **Baseline:** ea4a8bd
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked); host suites run on Windows and CI. Gates: `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`.

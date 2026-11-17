@@ -25,10 +25,6 @@ export interface IdSource {
     newId(): string;
 }
 
-export interface CredentialValuesPort {
-    values(): readonly string[];
-}
-
 export interface RuntimeNoticePort {
     show(message: string): void;
 }

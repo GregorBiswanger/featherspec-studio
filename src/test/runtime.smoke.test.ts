@@ -24,7 +24,7 @@ suite('FeatherSpec Studio runtime store smoke', function () {
         }
     });
 
-    test('0004 AC-016: storing a run and events leaves the workspace fixture unchanged', async () => {
+    test('0004 AC-016: appending a status history entry leaves the workspace fixture unchanged', async () => {
         const api = await activateStudio();
         await api.whenIdle();
         await waitFor('the runtime store of the active project to be writable', () => api.runtimeState(), (state) => state.kind === 'writable', { timeoutMs: 30_000 });
@@ -33,11 +33,9 @@ suite('FeatherSpec Studio runtime store smoke', function () {
         const before = await snapshotTree(folder.uri.fsPath);
         const store = api.runtimeStore();
         assert.ok(store, 'a store is open for the active project');
-        const run = await store.createRun({ providerId: 'smoke', spec: { stem: '0001-smoke', path: '.specs/active/0001-smoke.md' } });
-        await store.appendEvent(run.runId, { type: 'message', payload: 'smoke event' });
-        await store.reportStatus(run.runId, 'Completed');
-        const page = await store.readEvents(run.runId, 1, 10);
-        assert.ok(page.available && page.value.length === 1);
+        await store.appendSpecStatusEntry('0001-smoke', { to: 'smoke' });
+        const history = await store.readSpecStatusHistory('0001-smoke');
+        assert.ok(history.available && history.value.length >= 1);
         assert.deepStrictEqual(await snapshotTree(folder.uri.fsPath), before);
     });
 });

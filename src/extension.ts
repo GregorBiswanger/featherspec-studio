@@ -125,7 +125,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     const ids = createRandomIds();
     const session = createRuntimeSession({
         discovery: controller,
-        ui: runtimeUi,
         openStore: async (projectRoot) =>
             await openRuntimeStore({
                 medium:
@@ -137,9 +136,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
                 ids,
                 clock,
                 notices: { show: (message) => runtimeUi.warn(message) },
-                credentials: { values: () => [] },
                 projectRoot,
-                maxAgeDays: () => 90,
             }),
     });
     runtimeSession = session;

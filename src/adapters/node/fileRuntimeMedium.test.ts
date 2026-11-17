@@ -2,7 +2,7 @@ import { promises as fs } from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { createFakeCredentials, createFakeNotices, createFakeRuntimeClock, createSequentialIds } from '../../core/runtime/testing/fakes';
+import { createFakeNotices, createFakeRuntimeClock, createSequentialIds } from '../../core/runtime/testing/fakes';
 import { describeRuntimeStoreContract, type MediumHarness } from '../../core/runtime/testing/contract';
 import { snapshotTree } from '../../core/discovery/testing/snapshotTree';
 import { openRuntimeStore } from '../../core/runtime/runtimeStore';
@@ -223,28 +223,7 @@ describe('file runtime medium', () => {
         await fs.rm(root, { recursive: true, force: true });
     });
 
-    it('AC-013: neither a sample token nor the credential is in the bytes the file medium wrote', async () => {
-        const root = await fs.mkdtemp(path.join(os.tmpdir(), 'fs-runtime-mask-'));
-        const store = await openRuntimeStore({
-            medium: createFileRuntimeMedium(root),
-            ids: createSequentialIds(),
-            clock: createFakeRuntimeClock(),
-            notices: createFakeNotices(),
-            credentials: createFakeCredentials('credential-value-9876'),
-            projectRoot: 'p',
-            maxAgeDays: () => undefined,
-        });
-        const run = await store.createRun({ providerId: 'fake', spec: { stem: '0009-x', path: 'p' } });
-        await store.appendEvent(run.runId, { type: 'm', payload: 'ghp_0123456789abcdefghijklmnopqrstuvwxyz and credential-value-9876' });
-        await store.dispose();
-        const bytes = (await Promise.all((await listRecursive(root)).map((name) => fs.readFile(path.join(root, ...name.split('/')), 'utf8')))).join('\n');
-        expect(bytes).not.toContain('ghp_0123');
-        expect(bytes).not.toContain('credential-value-9876');
-        expect(bytes).toContain('[masked]');
-        await fs.rm(root, { recursive: true, force: true });
-    });
-
-    it('AC-016: no file or folder in a workspace changes while storing, restoring, clearing and failing', async () => {
+    it('AC-016: no file or folder in a workspace changes while storing, restoring and failing', async () => {
         const workspace = await fs.mkdtemp(path.join(os.tmpdir(), 'fs-runtime-workspace-'));
         await fs.cp(path.resolve(process.cwd(), 'test/fixtures/fs110-de-active-review'), workspace, { recursive: true });
         const storage = await fs.mkdtemp(path.join(os.tmpdir(), 'fs-runtime-storage-'));
@@ -258,20 +237,14 @@ describe('file runtime medium', () => {
                 ids: createSequentialIds(),
                 clock,
                 notices: createFakeNotices(),
-                credentials: createFakeCredentials(),
                 projectRoot: workspace,
-                maxAgeDays: () => undefined,
             });
         const directory = projectStoreDirectory(storage, workspace);
         const first = await open(directory);
-        const run = await first.createRun({ providerId: 'fake', spec: { stem: '0007-board', path: '.specs/active/0007-board.md' } });
-        await first.appendEvent(run.runId, { type: 'message', payload: 'x' });
-        await first.reportStatus(run.runId, 'Completed');
         await first.appendSpecStatusEntry('0007-board', { to: 'done' });
         await first.dispose();
         const second = await open(directory);
-        await second.listRuns();
-        await second.clear();
+        await second.readSpecStatusHistory();
         await second.dispose();
         const blocker = path.join(storage, 'a-file-not-a-directory');
         await fs.writeFile(blocker, 'x');

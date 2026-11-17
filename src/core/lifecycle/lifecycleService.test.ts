@@ -12,7 +12,7 @@ import type { StoreState } from '../runtime/model';
 import type { RuntimeSession } from '../runtime/runtimeSession';
 import { openRuntimeStore } from '../runtime/runtimeStore';
 import type { RuntimeStore } from '../runtime/runtimeStore';
-import { createFakeCredentials, createFakeNotices, createFakeRuntimeClock, createSequentialIds, settle } from '../runtime/testing/fakes';
+import { createFakeNotices, createFakeRuntimeClock, createSequentialIds, settle } from '../runtime/testing/fakes';
 import { createMemoryBacking, createMemoryMedium } from '../runtime/testing/memoryMedium';
 import { readProject } from '../specs/readProject';
 import type { ProjectRead } from '../specs/readProject';
@@ -87,9 +87,7 @@ async function memoryStore(): Promise<RuntimeStore> {
         ids: createSequentialIds(),
         clock: createFakeRuntimeClock(),
         notices: createFakeNotices(),
-        credentials: createFakeCredentials(),
         projectRoot: 'project-A',
-        maxAgeDays: () => undefined,
     });
     cleanups.push(() => store.dispose());
     return store;
@@ -109,23 +107,6 @@ const ACTIVE_FILES = {
 };
 
 describe('lifecycle service', () => {
-    it('AC-006: a run of the spec that ends Completed does not change the model', async () => {
-        const store = await memoryStore();
-        const repo = fakeRepository();
-        repo.set(await readMemory(ACTIVE_FILES));
-        const service = createLifecycleService({ repository: repo.repository, session: fakeSession(store).session, clock: fakeClock() });
-        await service.whenIdle();
-        const before = structuredClone(service.model());
-        expect(before?.entries[0].state).toBe('Active');
-        const run = await store.createRun({ providerId: 'test', spec: { stem: '0001-a', path: '.specs/active/0001-a.md' } });
-        await store.reportStatus(run.runId, 'Running');
-        await store.reportStatus(run.runId, 'Completed');
-        repo.emit(['0001-a']);
-        await service.whenIdle();
-        expect(service.model()).toEqual(before);
-        service.dispose();
-    });
-
     it('AC-014: a change reported by the repository re-derives the model, notifies and appends one history entry', async () => {
         const store = await memoryStore();
         const repo = fakeRepository();
@@ -231,10 +212,8 @@ describe('lifecycle service', () => {
             ids: createSequentialIds(),
             clock: createFakeRuntimeClock(),
             notices: createFakeNotices(),
-            credentials: createFakeCredentials(),
-            projectRoot: project,
-            maxAgeDays: () => undefined,
-        });
+                projectRoot: project,
+            });
         cleanups.push(() => store.dispose());
         await store.appendSpecStatusEntry('0001-ready-feature', {
             observedAt: 'earlier',

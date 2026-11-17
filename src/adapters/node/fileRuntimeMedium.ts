@@ -40,11 +40,11 @@ export function createFileRuntimeMedium(baseDirectory: string, files: MediumFile
     function resolveInside(name: string): string {
         const segments = name.split('/');
         if (name === '' || name.includes('\\') || path.isAbsolute(name) || segments.some((segment) => segment === '' || segment === '..' || segment === '.')) {
-            throw new Error(`Run history path ${name} is not allowed.`);
+            throw new Error(`Status history path ${name} is not allowed.`);
         }
         const full = path.resolve(base, ...segments);
         if (!full.startsWith(base + path.sep)) {
-            throw new Error(`Run history path ${name} lies outside the store directory.`);
+            throw new Error(`Status history path ${name} lies outside the store directory.`);
         }
         return full;
     }
