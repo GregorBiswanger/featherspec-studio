@@ -115,3 +115,7 @@ export function timelineRows(events: readonly StoredEvent[]): TimelineRow[] {
     return rows;
 }
 
+
+export function kindText(event: StoredEvent): string {
+    return rowOf(event).kind;
+}

@@ -163,7 +163,7 @@ No parallel stage: stages 1–2 are one module (`src/core/agentCenter`), and eve
   `none`. Tests `summary.test.ts`: a deciding event outside the newest page still counts, the
   request precedence, a file changed without an event is never listed.
 - **Verify:** `npx vitest run src/core/agentCenter/summary.test.ts` then the per-step gates
-- [ ] **Verified (T-002):** —
+- [x] **Verified (T-002):** 2026-11-17 — red: `npx vitest run src/core/agentCenter/summary.test.ts` with the seven exports of `summary.ts` as `Not implemented` stubs: 18 of 18 failed (`Error: Not implemented`). Green after the implementation: `npx vitest run src/core/agentCenter` 2 files, 32 tests passed (the paged-versus-whole summary case covers a deciding event outside the newest page). Gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 139 files, 1757 tests passed.
 - **Notes:** —
 
 ### T-003 — Run list, header, durations, targets
