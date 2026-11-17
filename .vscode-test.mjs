@@ -11,7 +11,26 @@ for (const name of fixtureNames) {
 const workspaceFile = join(base, 'smoke.code-workspace');
 writeFileSync(workspaceFile, JSON.stringify({ folders: fixtureNames.map((name) => ({ path: name })) }));
 
-export default defineConfig({
-	files: 'out/test/**/*.test.js',
-	workspaceFolder: workspaceFile,
-});
+function singleFolderCopy(name) {
+	const folder = join(mkdtempSync(join(tmpdir(), 'featherspec-studio-activation-')), name);
+	cpSync(resolve('test', 'fixtures', name), folder, { recursive: true });
+	return folder;
+}
+
+export default defineConfig([
+	{
+		label: 'smoke',
+		files: 'out/test/*.test.js',
+		workspaceFolder: workspaceFile,
+	},
+	{
+		label: 'activation-specs-only',
+		files: 'out/test/activation/specsOnly.test.js',
+		workspaceFolder: singleFolderCopy('incomplete-specs-only'),
+	},
+	{
+		label: 'activation-no-marker',
+		files: 'out/test/activation/noMarker.test.js',
+		workspaceFolder: singleFolderCopy('not-fs-speckit'),
+	},
+]);

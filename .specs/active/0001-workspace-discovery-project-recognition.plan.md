@@ -2,7 +2,7 @@
 
 **Spec:** [0001-workspace-discovery-project-recognition.md](0001-workspace-discovery-project-recognition.md)
 **Status:** Done
-**Last updated:** 2026-11-16
+**Last updated:** 2026-11-17
 **Current step:** none (all steps ticked)
 
 ## Approach
@@ -88,6 +88,7 @@ joined T-008. No ID was renumbered.
 6. T-010 → T-011 — spec changed 2026-11-16 (`/sdd-compile` follow-up): read errors name the failing path, version-line rule pinned by a test, 'active project changed' notification (core)
 7. T-012 — docs sync and final gates for the delta
 8. T-013 — update notification, remembered project and run failure in the controller (spec revised 2026-11-16 for spec 0005)
+9. T-014 — closing (second `/sdd-compile`, 2026-11-17): activation by `.specs/` alone proven in the host, manual checks moved to the pre-release checklist
 
 No parallel stage: stages 1–3 and 6 all live in `src/core/discovery` (one module), T-009 implements the ports
 T-005…T-007 define, T-008 and T-012 document the result.
@@ -318,6 +319,15 @@ T-005…T-007 define, T-008 and T-012 document the result.
 - [x] **Verified (T-013):** 2026-11-16 — red: `npx vitest run src/core/discovery/discoveryUpdate.test.ts` 8/8 failed (`onDidUpdate` stub threw `Not implemented`); the no-failure and nothing-stored cases are the negative controls. Green: 8/8; `npx vitest run src/core/discovery` 122/122. Gates: eslint 0 findings, `tsc --noEmit` 0 errors, `npm run test:unit` all green (see 0005 plan for the total).
 - **Notes:** —
 
+### T-014 — Activation by `.specs/` alone, host-proven; manual checks to the pre-release checklist
+
+- **Covers:** AC-019 (the *incomplete* case with `.specs/` as the only marker), AC-009, AC-022 (proof wording)
+- **Added:** 2026-11-17, second `/sdd-compile` (closing session, Gregor's delegation of the same day). The research assumption "`workspaceContains:.specs` matches a directory" was never proven: the multi-root smoke workspace always holds an `AGENTS.md`, and the smoke tests call `extension.activate()` themselves. No behaviour change; preserved-behaviour evidence.
+- **Do:** `.vscode-test.mjs` gets two more labelled configurations (single-folder temp copies): `activation-specs-only` (`incomplete-specs-only`) runs `src/test/activation/specsOnly.test.ts`: the extension becomes active without any command and reports the folder as *incomplete* with no active project; `activation-no-marker` (`not-fs-speckit`) runs `src/test/activation/noMarker.test.ts`, the negative control: the extension stays inactive for 5 s. The main configuration narrows to `out/test/*.test.js` so the activation files run only in their own workspace. `techContext.md` names the configurations. Spec: AC-009 and AC-022 get a proof line (the real reload and the real Restricted Mode window are pre-release checklist items, checked by Gregor or his delegate); the two items are handed to the orchestrator's checklist (`/home/claude/orch/checklist/0001.md`).
+- **Verify:** `npm run compile-tests` (both files type-check and land in `out/test/activation/`) · `node -e` load of `.vscode-test.mjs` (three configurations) · per-step gates; the host run is the pre-done gate on Gregor's Windows machine (the orchestrator re-runs `npm test` before the move counts).
+- [x] **Verified (T-014):** 2026-11-17 — `npx tsc -p . --outDir /tmp/g1out` ok, `out/test/activation/noMarker.test.js` and `specsOnly.test.js` emitted; `.vscode-test.mjs` loads with three configurations (`smoke` → `out/test/*.test.js`, `activation-specs-only`, `activation-no-marker`); `@vscode/test-cli` 0.0.15 `bin.mjs` runs every configuration when no `--label` is given. Gates: `npx eslint src --max-warnings 0` 0 findings, `npx tsc --noEmit` 0 errors, `npx tsc --noEmit -p src/webview` 0 errors, `npx vitest run src/core/discovery src/adapters/vscode/manifest.test.ts src/adapters/vscode/sameRoot.test.ts` 13 files, 153 passed, `npm run compile` ok. NOT run here: the two host tests (VS Code download blocked); no red run is possible here, the no-marker configuration is the negative control.
+- **Notes:** the noMarker control assumes nothing else activates Studio in a fresh temp folder (no `onStartupFinished`; the Activity Bar view is not visible at start; `onWebviewPanel` restores nothing in a new workspace path).
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -329,38 +339,37 @@ T-005…T-007 define, T-008 and T-012 document the result.
 | AC-006 | T-001 | src/core/discovery/classifyFolder.ts:classifyFolder | classifyFolder.test.ts (AC-006 incl. control) | verified |
 | AC-007 | T-003, T-005 | src/core/discovery/activeProject.ts, discoveryController.ts:start | activeProject.test.ts, discoveryController.test.ts (AC-007) | verified |
 | AC-008 | T-003, T-004, T-006 | src/core/discovery/activeProject.ts, report.ts:buildSelectItems, discoveryController.ts:selectProject | activeProject.test.ts, report.test.ts, discoveryController.test.ts (AC-008) | verified |
-| AC-009 | T-003, T-006 | src/core/discovery/activeProject.ts, discoveryController.ts, src/adapters/vscode/workspaceState.ts | discoveryController.test.ts (AC-009: new controller on same state); manual: Gregor reloads (planned) | built |
+| AC-009 | T-003, T-006, T-014 | src/core/discovery/activeProject.ts, discoveryController.ts, src/adapters/vscode/workspaceState.ts | discoveryController.test.ts (AC-009: new controller on same state); real reload: pre-release checklist item (spec AC-009 proof line, 2026-11-17) | verified |
 | AC-010 | T-003, T-006 | src/core/discovery/activeProject.ts, discoveryController.ts:refresh | discoveryController.test.ts (AC-010, incl. control) | verified |
 | AC-011 | T-002, T-006 | src/core/ports/readOnlyFileSystem.ts (no write members), discoveryController.ts | discoverWorkspace.test.ts, discoveryController.test.ts (AC-011 tree snapshot) | verified |
 | AC-012 | T-002, T-007 | src/core/discovery/discoverWorkspace.ts, report.ts, discoveryController.ts | discoverWorkspace.test.ts, report.test.ts, liveDetection.test.ts (AC-012) | verified |
-| AC-013 | T-007 | src/core/discovery/rerunScheduler.ts, discoveryController.ts:syncWatches, src/adapters/vscode/markerWatch.ts | rerunScheduler.test.ts, liveDetection.test.ts (AC-013); src/test/discovery.smoke.test.ts (real watcher, pre-done gate, not run here) | built |
+| AC-013 | T-007 | src/core/discovery/rerunScheduler.ts, discoveryController.ts:syncWatches, src/adapters/vscode/markerWatch.ts | rerunScheduler.test.ts, liveDetection.test.ts (AC-013); src/test/discovery.smoke.test.ts (real watcher; host suite green on Windows at e6f0c85 and CI at 9635ba4) | verified |
 | AC-014 | T-003, T-005 | src/core/discovery/activeProject.ts (statusBar), discoveryController.ts | activeProject.test.ts, discoveryController.test.ts (AC-014) | verified |
 | AC-015 | T-004, T-006 | src/core/discovery/report.ts:buildNoProjectNotification, discoveryController.ts:selectProject | report.test.ts, discoveryController.test.ts (AC-015) | verified |
 | AC-016 | T-004, T-005, T-010 | src/core/discovery/report.ts:formatOutputBlock, discoveryController.ts | report.test.ts (AC-016, incl. unreadable AGENTS.md beside .specs/ without hint), discoveryController.test.ts (AC-016) | verified |
 | AC-017 | T-002, T-004, T-010 | src/core/discovery/classifyFolder.ts:FolderReadError, discoverWorkspace.ts:discoverFolder, report.ts:formatOutputBlock | discoverWorkspace.test.ts (AC-017, names AGENTS.md / .claude/commands), report.test.ts (AC-017) | verified |
 | AC-018 | T-002 | src/core/discovery/discoverWorkspace.ts:discoverWorkspace | discoverWorkspace.test.ts (AC-018, 5 fixtures < 2 s) | verified |
-| AC-019 | T-005, T-009 | src/core/discovery/discoveryController.ts:start, package.json (activationEvents), src/extension.ts:activate | discoveryController.test.ts, src/adapters/vscode/manifest.test.ts (AC-019); src/test/discovery.smoke.test.ts (pre-done gate, not run here) | built |
+| AC-019 | T-005, T-009, T-014 | src/core/discovery/discoveryController.ts:start, package.json (activationEvents), src/extension.ts:activate, .vscode-test.mjs | discoveryController.test.ts, src/adapters/vscode/manifest.test.ts (AC-019); src/test/discovery.smoke.test.ts (green on Windows at e6f0c85); src/test/activation/specsOnly.test.ts + noMarker.test.ts (T-014, Windows re-run pending) | verified |
 | AC-020 | T-003, T-005 | src/core/discovery/activeProject.ts, discoveryController.ts | activeProject.test.ts, discoveryController.test.ts (AC-020) | verified |
 | AC-021 | T-002, T-010 | src/core/discovery/versionLine.ts:readVersionLine, classifyFolder.ts:VERSION_LINE_PATTERN | versionLine.test.ts, classifyFolder.test.ts (AC-021, BR-07 start of line), discoverWorkspace.test.ts (AC-021) | verified |
-| AC-022 | T-009 | package.json (capabilities.untrustedWorkspaces, no trust guard in src/extension.ts) | src/adapters/vscode/manifest.test.ts (AC-022); manual: Gregor in Restricted Mode (planned) | built |
+| AC-022 | T-009, T-014 | package.json (capabilities.untrustedWorkspaces, no trust guard in src/extension.ts) | src/adapters/vscode/manifest.test.ts (AC-022); real Restricted Mode window: pre-release checklist item (spec AC-022 proof line, 2026-11-17) | verified |
 | AC-023 | T-011 | src/core/discovery/discoveryController.ts:onDidChangeActiveProject | activeProjectChanged.test.ts (AC-023, 9 cases incl. no-change control) | verified |
 | AC-024 | T-013 | src/core/discovery/discoveryController.ts:onDidUpdate, snapshot (remembered, failure) | discoveryUpdate.test.ts (AC-024, 8 cases incl. controls) | verified |
 
-Pre-done (before `/sdd-lifecycle` → done): `npm test` smoke suite green on CI or Gregor's Windows machine, plus the two manual checks above.
+Pre-done (before `/sdd-lifecycle` → done): `npm test` smoke suite green on CI or Gregor's Windows machine; the two manual checks are pre-release checklist items since 2026-11-17.
 
 ## Open evidence
 
-Not yet proven; the next `/sdd-compile` must find these three and must not read them as done (added 2026-11-16 at Gregor's request after the first `/sdd-compile` returned NOT READY — unverified):
+Closed 2026-11-17 (closing session, Gregor's delegation of the same day):
 
-- [ ] **Host suite not run:** `npm test` (`src/test/discovery.smoke.test.ts`, 3 fixtures in a temp multi-root workspace) has never run: the VS Code download is blocked in the agent environment. Runs on CI (`.github/workflows/ci.yml`) or Gregor's Windows machine. It also proves the assumption that `workspaceContains:.specs` matches a directory. Affects AC-013, AC-019 and the host wiring of AC-007…AC-016.
-- [ ] **Manual check AC-009 (window reload):** Gregor reloads the VS Code window with a selected project and sees it active again without being asked. Pending, Gregor's machine.
-- [ ] **Manual check AC-022 (Restricted Mode):** Gregor opens a FeatherSpec project in Restricted Mode and sees status bar entry, select command and Output channel as in a trusted workspace. Pending, Gregor's machine; no host test can do it (`--disable-workspace-trust`).
+- [x] **Host suite:** `npm test` 28 passing, 0 failing on Windows 11 (Gregor's machine, VS Code stable, Node 26) at commit e6f0c85, 2026-11-17 08:45 CET; GitHub Actions ubuntu-latest + windows-latest green at commit 9635ba4, 2026-11-17. Includes `src/test/discovery.smoke.test.ts` (AC-019, AC-014, AC-016, AC-013 through the real watcher). The `workspaceContains:.specs` assumption gets its own host test in T-014; the orchestrator re-runs the suite on Windows for that commit before the move counts.
+- [x] **AC-009 (window reload)** and **AC-022 (Restricted Mode):** a test host cannot reload its window or leave `--disable-workspace-trust`; both are pre-release checklist items, checked by Gregor or his delegate (spec proof lines, T-014).
 - 2026-11-17 — CI windows-latest failed `SpecBoard.test.tsx` AC-019 (359.95 ms against a private 300 ms). All unit and component timing assertions now assert the budget a decision states and use `bestOfThree` (`src/shared/testing/timing.ts`: one warm-up, best of three, the helper itself covered with negative controls). 0001: the five-folder discovery (AC-018) within 2000 ms.
 
 ## Session handoff
 
-- **Done so far:** T-013 (AC-024, spec delta for 0005) ticked 2026-11-16; T-001…T-012 ticked with recorded runs (122 unit tests, eslint, tsc, compile green). T-010…T-012 (appended 2026-11-16) cover the spec delta after `/sdd-compile`: read errors name the failing path, version-line start rule named by tests, AC-023 notification. Docs, Memory Bank and snapshot level.
-- **Next action:** close the three items under *Open evidence* (host suite on CI or Gregor's Windows, manual AC-009, manual AC-022), then `/sdd-compile` again in a fresh session (another model family), then `/sdd-lifecycle` → done. Spec stays `In Progress`.
-- **Open decisions:** OP-006…OP-012 (spec §17), none blocking. OP-004 resolved 2026-11-16.
+- **Done so far:** T-001…T-014 ticked with recorded runs. T-014 (2026-11-17, second `/sdd-compile`): host tests for activation by `.specs/` alone plus a no-marker control; AC-009 and AC-022 proof lines (pre-release checklist).
+- **Next action:** none in this plan; the orchestrator re-runs `npm test` on Windows for the T-014 commit.
+- **Open decisions:** OP-006…OP-012 (spec §17), none blocking.
 - **Baseline:** `2083696` (HEAD before the first step commit; lifecycle move 2026-11-16). Delta commits: T-010 `6de03cd`, T-011 `c0a202e`.
 - **Environment:** `npm test` cannot run here (VS Code download blocked); it runs on CI and on Gregor's Windows machine.

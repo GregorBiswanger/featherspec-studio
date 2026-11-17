@@ -8,7 +8,8 @@
 - Lint: ESLint 10 + typescript-eslint (`eslint.config.mjs`; rules at `warn` level).
 - Unit tests: Vitest 5.1 + vite 8.3 (`vitest.config.mjs`, co-located), two projects: `node` (`src/**/*.test.ts` outside `src/webview`) and `webview` (jsdom, `src/webview/**/*.test.{ts,tsx}`, setup `src/webview/testing/setup.ts`).
 - Host tests: Mocha via `@vscode/test-cli` / `@vscode/test-electron` (`.vscode-test.mjs` copies
-  `test/fixtures/` into a temp multi-root workspace; runs `out/test/**/*.test.js` inside a downloaded VS Code).
+  `test/fixtures/` into a temp multi-root workspace; runs `out/test/*.test.js` inside a downloaded VS Code;
+  two more configurations open single-folder copies for the activation checks in `out/test/activation/`, spec 0001 AC-019).
 - CI: `.github/workflows/ci.yml` (Ubuntu + Windows: `npm ci`, eslint, tsc, `test:unit`, `compile`, `npm test`; Linux via `xvfb-run -a`).
 
 ## Build / Run

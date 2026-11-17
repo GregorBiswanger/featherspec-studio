@@ -179,6 +179,7 @@ hand-made ones are listed in §15.
 - **AC-007** When discovery reports exactly one project and the workspace has no remembered project, the system shall make that project active without asking and remember it.
 - **AC-008** While two or more projects are reported and the workspace has no remembered project, the system shall have no active project and the status bar entry shall read "Select FeatherSpec project". The select command shall list every reported project. [AC-001.3]
 - **AC-009** When the user selects a project, the system shall make it active and remember it for this workspace. After a VS Code reload it shall be active again without asking. The system shall store the remembered value outside every workspace folder.
+  > Proof (revised 2026-11-17, Gregor's delegation of the same day): restoring from the remembered value is decided by a unit test (a new controller on the same workspace state); the real window reload is checked by Gregor or his delegate; pre-release checklist item.
 - **AC-010** If the remembered project is no longer reported as a project, then the system shall have no active project, the status bar entry shall read "FeatherSpec project not found", and the system shall make no other project active until the user selects one. When the remembered project is reported as a project again and the user has selected no other project meanwhile, the system shall make it active again without asking.
 - **AC-011** The system shall create, modify, rename or delete no file or folder inside any workspace folder during discovery, selection or refresh. [AC-001.5]
   > **Given** a fixture tree with recorded paths, sizes and modification times **When** discovery, refresh and selection run **Then** the recorded tree is unchanged.
@@ -199,6 +200,7 @@ hand-made ones are listed in §15.
 - **AC-024** When a discovery run ends, whether it succeeded or failed unexpectedly, the system shall notify every subscriber of `onDidUpdate` once, after the status bar entry shows the result and after the notification of AC-023. From then on `snapshot()` shall report `remembered`, the root remembered for this workspace or none, and `failure`, the message of the unexpected failure of the run that just ended, or none after a successful run. A failing subscriber shall not stop the notification of the others or any other step of the run. A subscriber that was disposed shall receive no further notification. `onDidChangeActiveProject` and every existing criterion shall behave as before.
   > **Given** a controller with an update subscriber **When** a refresh finds nothing changed **Then** the subscriber is notified once. **When** a run fails unexpectedly **Then** it is notified once and the snapshot reports the failure; **When** the next run succeeds **Then** the failure is gone. **When** the remembered project loses a marker **Then** the snapshot still reports its root as remembered and no active project.
 - **AC-022** While the workspace is not trusted (VS Code Restricted Mode), the system shall run discovery and show the status bar entry, the select command and the Output channel as in a trusted workspace.
+  > Proof (revised 2026-11-17, Gregor's delegation of the same day): the manifest declaration and the absence of a trust guard are decided by a unit test; the behaviour in a real Restricted Mode window is checked by Gregor or his delegate; pre-release checklist item.
 
 ## 15. Technical notes for developers or AI agents
 
@@ -236,7 +238,7 @@ hand-made ones are listed in §15.
   (AC-013) holds from then on.
 - AC-022 cannot run in an extension-host test: `@vscode/test-electron` always launches with
   `--disable-workspace-trust`. It is decided by a manifest unit test plus Gregor's manual check in
-  Restricted Mode (Gregor, 2026-11-16).
+  Restricted Mode (Gregor, 2026-11-16); since 2026-11-17 that check is a pre-release checklist item.
 - Restatement of the read-only rule (source: PD-013): Studio never writes FeatherSpec artifacts.
 
 ## 16. Assumptions
