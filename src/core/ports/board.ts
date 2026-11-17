@@ -27,6 +27,11 @@ export interface MoveResultSink {
     show(result: MoveResult): void;
 }
 
+export interface MoveMessagePort {
+    inform(text: string, action?: string): Promise<string | undefined>;
+    warn(text: string): void;
+}
+
 export interface SelectionSource {
     selection(): { stem: string; path?: string } | undefined;
     onDidChange(listener: () => void): Disposable;

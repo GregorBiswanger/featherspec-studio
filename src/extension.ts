@@ -23,7 +23,7 @@ import { createStatusBar } from './adapters/vscode/statusBar';
 import { createFileWatch } from './adapters/vscode/fileWatch';
 import { createRuntimeUi } from './adapters/vscode/runtimeUi';
 import { createEditor } from './adapters/vscode/editor';
-import { createMovePicks, createMoveResultSink } from './adapters/vscode/boardPicks';
+import { createMoveMessages, createMovePicks } from './adapters/vscode/boardPicks';
 import { createClipboard } from './adapters/vscode/clipboard';
 import { createUi } from './adapters/vscode/ui';
 import { createVscodeSpecSource } from './adapters/vscode/vscodeSpecSource';
@@ -43,7 +43,7 @@ import type { RuntimeStore } from './core/runtime/runtimeStore';
 import { createBoardService } from './core/board/boardService';
 import { createMissionControlService } from './core/missionControl/missionControlService';
 import { createBoardRequests } from './core/board/boardRequests';
-import { createMoves } from './core/board/moves';
+import { createMoveResultPresenter, createMoves } from './core/board/moves';
 import { createOpenFile } from './core/board/openFile';
 import { createShellSelection } from './core/board/shellSelection';
 import { createLifecycleService, type LifecycleService } from './core/lifecycle/lifecycleService';
@@ -183,15 +183,20 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         discovery: controller,
         history: { read: () => lifecycle.history(), onDidChange: (listener) => lifecycle.onDidChange(() => listener()) },
     });
+    const clipboard = createClipboard();
     const moves = createMoves({
         source: modelSource,
         picks: createMovePicks(),
-        sink: createMoveResultSink((result) => studio?.showMoveResult(result) ?? false),
+        sink: createMoveResultPresenter({
+            boardShown: (result) => studio?.showMoveResult(result) ?? false,
+            messages: createMoveMessages(),
+            clipboard,
+        }),
         selection,
         focused: () => board.focused(),
     });
     const openFile = createOpenFile({ source: modelSource, editor: createEditor() });
-    const requests = createBoardRequests({ board, moves, openFile, clipboard: createClipboard() });
+    const requests = createBoardRequests({ board, moves, openFile, clipboard });
     const navigation = service.onDidNavigate((request) => {
         if (request.target?.kind === 'boardFilter') {
             board.applyNavigationFilter(request.target.filter);

@@ -1,10 +1,11 @@
 import type { MoveResult } from '../../shared/protocol/board';
 import { BOARD_STATES, type BoardState } from '../../shared/protocol/boardFilter';
 import { judgeTransition } from '../lifecycle/transitions';
-import type { MovePickPort, MoveResultSink, SelectionSource } from '../ports/board';
+import type { ClipboardPort, MoveMessagePort, MovePickPort, MoveResultSink, SelectionSource } from '../ports/board';
 import type { ShellModel, ShellModelSource } from '../ports/shell';
 import { titleOf } from './cards';
 import { startLine } from './nextStep';
+import { COPIED_TEXT, COPY_FAILED_TEXT, moveNextStepText, NEXT_STEP_COPY_LABEL } from '../../shared/protocol/nextStepTexts';
 
 export interface MovesDeps {
     source: ShellModelSource;
@@ -77,4 +78,52 @@ export function createMoves(deps: MovesDeps): Moves {
     }
 
     return { requestMove, runMoveCommand };
+}
+
+export interface CopyOutcome {
+    ok: boolean;
+    text: string;
+}
+
+export async function copyLine(clipboard: ClipboardPort, line: string): Promise<CopyOutcome> {
+    try {
+        await clipboard.writeText(line);
+        return { ok: true, text: COPIED_TEXT };
+    } catch {
+        return { ok: false, text: COPY_FAILED_TEXT };
+    }
+}
+
+export interface MoveResultPresenterDeps {
+    boardShown: (result: MoveResult) => boolean;
+    messages: MoveMessagePort;
+    clipboard: ClipboardPort;
+}
+
+export interface MoveResultPresenter extends MoveResultSink {
+    show(result: MoveResult): Promise<void>;
+}
+
+export function createMoveResultPresenter(deps: MoveResultPresenterDeps): MoveResultPresenter {
+    return {
+        async show(result) {
+            if (result.kind === 'none' || deps.boardShown(result)) {
+                return;
+            }
+            if (result.kind === 'refused') {
+                deps.messages.warn(result.text);
+                return;
+            }
+            const choice = await deps.messages.inform(`${moveNextStepText(result.number)} ${result.line}`, NEXT_STEP_COPY_LABEL);
+            if (choice !== NEXT_STEP_COPY_LABEL) {
+                return;
+            }
+            const copied = await copyLine(deps.clipboard, result.line);
+            if (copied.ok) {
+                void deps.messages.inform(copied.text);
+            } else {
+                deps.messages.warn(copied.text);
+            }
+        },
+    };
 }

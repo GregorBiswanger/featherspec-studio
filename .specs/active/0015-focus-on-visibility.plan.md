@@ -363,6 +363,14 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 - [x] **Verified (T-017):** 2026-11-17 — the 8 restored tests pass at the head (preserved behaviour); red against each mutant of `src/core/board/boardUiState.ts` in a full unit run: B1 (`panelClosed` keeps the filter) → × AC-023 closed panel; B2 (project change keeps the filter) and B3 (project change resets the sort) → × AC-023 project change; B4 (Clear resets the sort) → × AC-012; B5 (closed panel keeps the focus) → × focused key; also B6 (navigation filter merges) → × AC-022, B7 (closed panel keeps the sort) → × AC-023, B8 (focus not stored) → × focused key. Gates 1–5 clean: 1681 passed + 3 skipped, 12 timing.
 - **Notes:** —
 
+### T-018 — Compile fix D3: "Copy" in the "Move Spec to…" message says "Copied" or "Could not copy"
+
+- **Covers:** AC-005, AC-006, AC-009 (command path); compile report 2026-11-17 D3
+- **Do:** the move result outside the board becomes the core presenter `createMoveResultPresenter` in `src/core/board/moves.ts` (port `MoveMessagePort` in `src/core/ports/board.ts`); `copyLine` there gives the panel path (`src/core/board/boardRequests.ts`) and the command path the same texts; `src/adapters/vscode/boardPicks.ts` keeps only the thin `createMoveMessages`; `src/extension.ts` wires one clipboard into both. Tests in `src/core/board/moves.test.ts`.
+- **Verify:** gates 1–5; the bug (copy without catch and without confirmation) red
+- [x] **Verified (T-018):** 2026-11-17 — red: with `Not implemented` stubs all 5 new tests failed; with the presenter written as the old sink (write without catch, no confirmation) the AC-005 and AC-009 tests failed (2 ×); a `copyLine` mutant giving the success text on failure → 3 × (presenter AC-009, copyLine, boardRequests AC-009). Green after: 1686 passed + 3 skipped, 12 timing; gates 1–5 and compile-tests clean.
+- **Notes:** product code changed (composition root, board adapter, core); the host suite has no test that clicks the information message's "Copy" — the decision now lives in the unit-tested core.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |

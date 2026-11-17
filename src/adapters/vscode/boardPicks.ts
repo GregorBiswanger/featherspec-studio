@@ -1,7 +1,5 @@
 import * as vscode from 'vscode';
-import type { MovePickPort, MoveResultSink } from '../../core/ports/board';
-import type { MoveResult } from '../../shared/protocol/board';
-import { moveNextStepText, NEXT_STEP_COPY_LABEL } from '../../shared/protocol/nextStepTexts';
+import type { MoveMessagePort, MovePickPort } from '../../core/ports/board';
 import { PICK_SPEC_PLACEHOLDER, pickTargetPlaceholder } from '../../shared/protocol/texts';
 
 export function createMovePicks(): MovePickPort {
@@ -23,19 +21,9 @@ export function createMovePicks(): MovePickPort {
     };
 }
 
-export function createMoveResultSink(boardShown: (result: MoveResult) => boolean): MoveResultSink {
+export function createMoveMessages(): MoveMessagePort {
     return {
-        show(result) {
-            if (result.kind === 'none' || boardShown(result)) {
-                return;
-            }
-            if (result.kind === 'refused') {
-                void vscode.window.showWarningMessage(result.text);
-            } else {
-                void vscode.window
-                    .showInformationMessage(`${moveNextStepText(result.number)} ${result.line}`, NEXT_STEP_COPY_LABEL)
-                    .then((choice) => (choice === NEXT_STEP_COPY_LABEL ? vscode.env.clipboard.writeText(result.line) : undefined));
-            }
-        },
+        inform: async (text, action) => (action === undefined ? await vscode.window.showInformationMessage(text) : await vscode.window.showInformationMessage(text, action)),
+        warn: (text) => void vscode.window.showWarningMessage(text),
     };
 }

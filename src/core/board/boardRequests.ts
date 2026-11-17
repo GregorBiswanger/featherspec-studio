@@ -1,12 +1,11 @@
 import type { MoveResult } from '../../shared/protocol/board';
 import type { OpenFileResultPayload } from '../../shared/protocol/detail';
 import type { BoardRequestType, CopyResultEventPayload } from '../../shared/protocol/messages';
-import { COPIED_TEXT, COPY_FAILED_TEXT } from '../../shared/protocol/nextStepTexts';
 import type { ClipboardPort } from '../ports/board';
 import type { Disposable } from '../ports/host';
 import type { RequestHandlers } from '../shell/messageRouter';
 import type { BoardService } from './boardService';
-import type { Moves } from './moves';
+import { copyLine, type Moves } from './moves';
 import type { OpenFile } from './openFile';
 
 export interface BoardRequestsDeps {
@@ -56,12 +55,7 @@ export function createBoardRequests(deps: BoardRequestsDeps): BoardRequests {
                 moveResults.emit(await deps.moves.requestMove(payload.key, payload.target));
             },
             copyText: async (payload) => {
-                try {
-                    await deps.clipboard.writeText(payload.text);
-                    copyResults.emit({ ok: true, text: COPIED_TEXT });
-                } catch {
-                    copyResults.emit({ ok: false, text: COPY_FAILED_TEXT });
-                }
+                copyResults.emit(await copyLine(deps.clipboard, payload.text));
             },
             openFile: async (payload) => {
                 const result = await (payload.line === undefined ? deps.openFile.open(payload.key) : deps.openFile.open(payload.key, payload.line));

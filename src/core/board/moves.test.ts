@@ -3,7 +3,7 @@ import type { BoardState } from '../../shared/protocol/boardFilter';
 import type { MoveResult } from '../../shared/protocol/board';
 import type { MovePickPort, PickableSpec } from '../ports/board';
 import { planText, specText } from '../lifecycle/testing/projects';
-import { createMoves } from './moves';
+import { copyLine, createMoveResultPresenter, createMoves } from './moves';
 import { createFakeSource, modelOf } from './testing/boardWorld';
 
 const LINKED = '[0002-r.plan.md](0002-r.plan.md)';
@@ -142,5 +142,74 @@ describe('the move command', () => {
         const { moves, picked } = await setup({ selected: { stem: '0099-gone' } });
         await moves.runMoveCommand();
         expect(picked.specs).toHaveLength(1);
+    });
+});
+
+describe('0015 AC-006, AC-009: the move result outside the board ("Move Spec to…" command)', () => {
+    const LINE = '/sdd-plan .specs/backlog/0002-r.md';
+    const RESULT: MoveResult = { kind: 'nextStep', number: '0002', line: LINE };
+
+    function presenter(options: { choice?: string; boardShown?: boolean; clipboardFails?: boolean } = {}) {
+        const said: string[] = [];
+        const copied: string[] = [];
+        const shown = createMoveResultPresenter({
+            boardShown: () => options.boardShown ?? false,
+            messages: {
+                async inform(text, action) {
+                    said.push(`info: ${text}${action === undefined ? '' : ` [${action}]`}`);
+                    return action === undefined ? undefined : options.choice;
+                },
+                warn: (text) => void said.push(`warn: ${text}`),
+            },
+            clipboard: {
+                async writeText(text) {
+                    if (options.clipboardFails === true) {
+                        throw new Error('clipboard refused');
+                    }
+                    copied.push(text);
+                },
+            },
+        });
+        return { shown, said, copied };
+    }
+
+    it('0015 AC-006: the result names the number and the line and offers "Copy"; dismissing it copies nothing', async () => {
+        const { shown, said, copied } = presenter();
+        await shown.show(RESULT);
+        expect(said).toEqual([`info: Studio starts no agent. Next step for 0002 — paste it into your AI assistant: ${LINE} [Copy]`]);
+        expect(copied).toEqual([]);
+    });
+
+    it('0015 AC-005: "Copy" puts exactly the line on the clipboard and says "Copied to the clipboard."', async () => {
+        const { shown, said, copied } = presenter({ choice: 'Copy' });
+        await shown.show(RESULT);
+        expect(copied).toEqual([LINE]);
+        expect(said.at(-1)).toBe('info: Copied to the clipboard.');
+    });
+
+    it('0015 AC-009: a failed clipboard write says "Could not copy to the clipboard." and nothing else', async () => {
+        const { shown, said, copied } = presenter({ choice: 'Copy', clipboardFails: true });
+        await shown.show(RESULT);
+        expect(copied).toEqual([]);
+        expect(said.slice(1)).toEqual(['warn: Could not copy to the clipboard.']);
+    });
+
+    it('a refusal is a warning; no change and a result the board shows say nothing here', async () => {
+        const refused = presenter();
+        await refused.shown.show({ kind: 'refused', text: 'Not allowed.' });
+        expect(refused.said).toEqual(['warn: Not allowed.']);
+        const none = presenter();
+        await none.shown.show({ kind: 'none' });
+        expect(none.said).toEqual([]);
+        const onBoard = presenter({ boardShown: true });
+        await onBoard.shown.show(RESULT);
+        expect(onBoard.said).toEqual([]);
+    });
+
+    it('0015 AC-005, AC-009: copyLine reports the panel texts for success and failure', async () => {
+        const written: string[] = [];
+        expect(await copyLine({ writeText: async (text) => void written.push(text) }, LINE)).toEqual({ ok: true, text: 'Copied to the clipboard.' });
+        expect(written).toEqual([LINE]);
+        expect(await copyLine({ writeText: async () => Promise.reject(new Error('no')) }, LINE)).toEqual({ ok: false, text: 'Could not copy to the clipboard.' });
     });
 });
