@@ -178,8 +178,8 @@ test world, one module.
   without events (fake script: `session.started`, then a long `wait`), lock loss and store switch
   through the world's session double, `dispose` with an open run, `previousRun` for none, `Failed` and `Completed`.
 - **Verify:** `npx vitest run src/core/orchestrator` then the per-step gates
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-17 — red: `npx vitest run src/core/orchestrator/orchestratorEnd.test.ts` with `result.ts` throwing `Not implemented` and no timers, window end or previous run: 16 failed (Not implemented and failing assertions such as `expected [ 'start:run-2' ] to deeply equal [ …cancel…, …endSession… ]`), 1 passed (the timer-dropped test, kept: its siblings are the negative control); green after the implementation: 60 passed in `src/core/orchestrator`; gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 1558 passed.
+- **Notes:** The production `RuntimeSession` emits no state change for a switch between two writable stores (`setState` drops an equal state), so BR-016's store switch is also checked lazily at the next event (`storeLost` in `handleEvent`); the world's session double fires the change at once. `StoredResult` and `ChangedFile` are type aliases so they are assignable to `JsonValue`. Empty changed files are stored as `not available` (no event delivered them).
 
 ### T-004 — Stop and answers
 

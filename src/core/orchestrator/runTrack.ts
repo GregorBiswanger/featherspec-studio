@@ -2,10 +2,10 @@ import type { EventSource } from '../ports/agentProvider';
 import { isEndStatus, type JsonValue, type RunStatus } from '../runtime/model';
 import { classOf } from './errorClasses';
 
-export interface ChangedFile {
+export type ChangedFile = {
     path: string;
     operation: string;
-}
+};
 
 export interface RunTrack {
     status: RunStatus;

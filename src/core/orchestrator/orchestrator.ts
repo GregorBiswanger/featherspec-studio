@@ -5,13 +5,16 @@ import type { RuntimeClock } from '../ports/runtimeMedium';
 import type { ShellModelSource } from '../ports/shell';
 import type { ProviderRegistry } from '../providers/registry';
 import type { ProviderService, ServiceRefusal } from '../providers/providerService';
-import { NOT_AVAILABLE, OPEN_STATUSES, type JsonValue, type RunStatus, type StatusReport } from '../runtime/model';
+import { NOT_AVAILABLE, OPEN_STATUSES, isEndStatus, type JsonValue, type RunStatus, type StatusReport } from '../runtime/model';
 import { READER_REASON } from '../runtime/notices';
 import type { RuntimeStore } from '../runtime/runtimeStore';
 import type { RuntimeSession } from '../runtime/runtimeSession';
+import { storedResult } from './result';
 import { applyEvent, createTrack, transition, type RunTrack, type TrackStep } from './runTrack';
 import {
     READER_TEXT,
+    START_TIMEOUT_MS,
+    START_TIMEOUT_TEXT,
     alreadyEndedText,
     createFailedText,
     notRegisteredText,
@@ -88,6 +91,7 @@ interface Tracked {
     providerId: string;
     store: RuntimeStore;
     track: RunTrack;
+    startTimer: Disposable | undefined;
 }
 
 function messageOf(error: unknown): string {
@@ -159,10 +163,51 @@ export function createOrchestrator(deps: OrchestratorDeps): Orchestrator {
             report.errorClass = step.failure.errorClass;
             report.errorMessage = step.failure.errorMessage;
         }
+        if (isEndStatus(step.status)) {
+            report.result = { ...storedResult(run.track) };
+        }
         try {
             await run.store.reportStatus(run.runId, step.status, report);
         } catch {
             return;
+        }
+    };
+
+    const leftStarting = (run: Tracked): void => {
+        if (run.track.status !== 'Starting') {
+            run.startTimer?.dispose();
+            run.startTimer = undefined;
+        }
+    };
+
+    const declaresCancel = (providerId: string): boolean => {
+        const found = deps.registry.entry(providerId);
+        return found.kind === 'ok' && found.entry.capabilities.cancel.value !== 'none';
+    };
+
+    const letGo = (run: Tracked): void => {
+        if (runs.get(run.runId) !== run) {
+            return;
+        }
+        runs.delete(run.runId);
+        run.startTimer?.dispose();
+        run.startTimer = undefined;
+        if (isEndStatus(run.track.status)) {
+            return;
+        }
+        if (declaresCancel(run.providerId)) {
+            deps.providers.cancel(run.runId).catch(() => undefined);
+        }
+        deps.providers.endSession(run.runId);
+    };
+
+    const storeLost = (run: Tracked): boolean => deps.session.state().kind !== 'writable' || deps.session.current() !== run.store;
+
+    const checkStores = (): void => {
+        for (const run of [...runs.values()]) {
+            if (storeLost(run)) {
+                letGo(run);
+            }
         }
     };
 
@@ -172,12 +217,28 @@ export function createOrchestrator(deps: OrchestratorDeps): Orchestrator {
             return;
         }
         run.track = ended;
+        leftStarting(run);
         await commit(run, { status: 'Failed', failure: { errorClass, errorMessage } });
+    };
+
+    const endStart = async (run: Tracked): Promise<void> => {
+        if (runs.get(run.runId) !== run || run.track.status !== 'Starting') {
+            return;
+        }
+        await failRun(run, 'start_timeout', START_TIMEOUT_TEXT);
+        if (declaresCancel(run.providerId)) {
+            deps.providers.cancel(run.runId).catch(() => undefined);
+        }
+        deps.providers.endSession(run.runId);
     };
 
     const handleEvent = async (event: ProviderEvent): Promise<void> => {
         const run = runs.get(event.runId);
         if (run === undefined) {
+            return;
+        }
+        if (storeLost(run)) {
+            letGo(run);
             return;
         }
         const payload: JsonValue = isObject(event.payload) ? { ...event.payload, source: event.source } : { value: event.payload, source: event.source };
@@ -197,12 +258,14 @@ export function createOrchestrator(deps: OrchestratorDeps): Orchestrator {
         }
         const applied = applyEvent(run.track, { kind: event.kind, source: event.source, payload: event.payload });
         run.track = applied.track;
+        leftStarting(run);
         for (const step of applied.steps) {
             await commit(run, step);
         }
     };
 
     const subscription: Disposable = deps.providers.onEvent((event) => enqueue(() => handleEvent(event)));
+    const stateSubscription: Disposable = deps.session.onDidChangeState(() => checkStores());
 
     const start = async (request: StartRequest): Promise<StartResult> => {
         const blocked = writerRefusal();
@@ -237,7 +300,9 @@ export function createOrchestrator(deps: OrchestratorDeps): Orchestrator {
                     spec: { stem: request.stem, path: request.path },
                     ...(model === undefined ? {} : { model }),
                 });
-                runs.set(run.runId, { runId: run.runId, stem: request.stem, providerId: request.providerId, store, track: createTrack() });
+                const tracked: Tracked = { runId: run.runId, stem: request.stem, providerId: request.providerId, store, track: createTrack(), startTimer: undefined };
+                tracked.startTimer = deps.clock.setTimeout(() => enqueue(() => endStart(tracked)), START_TIMEOUT_MS);
+                runs.set(run.runId, tracked);
                 return { kind: 'created', runId: run.runId };
             } catch (error) {
                 return { kind: 'refused', code: 'create-failed', reason: createFailedText(messageOf(error)) };
@@ -266,7 +331,27 @@ export function createOrchestrator(deps: OrchestratorDeps): Orchestrator {
         resume: () => Promise.reject(new Error('Not implemented')),
         respondToApproval: () => Promise.reject(new Error('Not implemented')),
         respondToInput: () => Promise.reject(new Error('Not implemented')),
-        previousRun: () => Promise.reject(new Error('Not implemented')),
+        async previousRun(stem) {
+            const store = deps.session.current();
+            if (store === undefined) {
+                return { kind: 'not-available', reason: deps.session.state().reason ?? 'unknown' };
+            }
+            const listed = await store.listRuns({ stem });
+            if (!listed.available) {
+                return { kind: 'not-available', reason: listed.reason };
+            }
+            const latest = listed.value[0];
+            if (latest === undefined) {
+                return { kind: 'none' };
+            }
+            return {
+                kind: 'run',
+                runId: latest.runId,
+                status: latest.status,
+                errorClass: latest.errorClass ?? NOT_AVAILABLE,
+                errorText: latest.errorMessage ?? NOT_AVAILABLE,
+            };
+        },
         async whenIdle() {
             for (;;) {
                 const seenQueue = queue;
@@ -280,6 +365,10 @@ export function createOrchestrator(deps: OrchestratorDeps): Orchestrator {
         },
         dispose() {
             subscription.dispose();
+            stateSubscription.dispose();
+            for (const run of [...runs.values()]) {
+                letGo(run);
+            }
         },
     };
 }

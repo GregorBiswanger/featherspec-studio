@@ -35,3 +35,4 @@ export const stopConfirmText = (stem: string): string => `Stop the run of spec $
 export const resumedCause = (runId: string): string => `resumed from ${runId}`;
 export const continuationText = (stem: string): string =>
     `Continue the interrupted work on spec \`${stem}\`: read \`AGENTS.md\` and the plan beside the spec again, then continue at the plan's current step under the same rules as before.`;
+export const START_TIMEOUT_TEXT = 'The run did not start within 60 seconds.';
