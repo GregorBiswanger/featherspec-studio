@@ -34,3 +34,11 @@ jobs:
       - name: Extension-host tests (Windows)
         if: runner.os != 'Linux'
         run: npm test
+      - name: Keep the VS Code logs of a failed run
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vscode-logs-${{ matrix.os }}
+          path: .vscode-test/user-data/logs
+          if-no-files-found: ignore
+          retention-days: 3
