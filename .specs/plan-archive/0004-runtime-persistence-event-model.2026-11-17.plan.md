@@ -1,6 +1,6 @@
 # Plan — Runtime Persistence & Event Model
 
-**Spec:** [0004-runtime-persistence-event-model.md](0004-runtime-persistence-event-model.md)
+**Spec:** [0004-runtime-persistence-event-model.md](../done/0004-runtime-persistence-event-model.md)
 **Status:** Done
 **Last updated:** 2026-11-17
 **Current step:** none; all steps ticked
@@ -290,7 +290,7 @@ T-007 need the complete medium contract.
 ## Session handoff
 
 - **Done so far:** T-001…T-010 ticked (T-010: run-change notification for 0007). `/sdd-compile` found 'Interrupted run reads as unreadable at the second activation' and writes to unreadable or newer data accepted; both fixed test-first on both media (T-009), spec wording adjusted, `docs/runtime-data.md` accepted (AC-020, T-008). `npm run test:unit`: 280 tests green.
-- **Next action:** `/sdd-lifecycle` active → done (host suite green, second `/sdd-compile` READY; see *Open evidence*).
+- **Next action:** none — moved to `done/` and archived 2026-11-17 (`/sdd-lifecycle`); this plan is frozen.
 - **Open decisions:** PD-028 in `docs/product/product-decisions.md` still reads "incomplete last record" (Gregor's register).
 - **Baseline:** 767ac42 (HEAD before the first step commit)
 - **Environment:** `npm test` runs on Gregor's Windows machine and on CI, not in the sandbox. Tests added — stage 1: `src/core/runtime/testing/{contract,contractRuns,contractEvents}.ts`, `src/core/runtime/runtimeStore.test.ts`, `src/core/runtime/importScan.test.ts`, `src/adapters/node/randomIds.test.ts`; stage 2: `src/core/runtime/testing/{contractMasking,contractWriter,contractFaults}.ts`, `src/core/runtime/masking.test.ts`; stage 3: `src/adapters/node/fileRuntimeMedium.test.ts`, `src/core/runtime/runtimeSession.test.ts`, `src/adapters/vscode/manifest.test.ts` (changed), `src/test/runtime.smoke.test.ts` (CI only); stage 5: `src/core/runtime/testing/contractFaults.ts` (new describes), `src/core/runtime/truncatedJson.test.ts`.
