@@ -21,6 +21,14 @@ function setup(overrides: Partial<RequestHandlers> = {}) {
         agentStartConfirm: async () => void calls.push('agentStartConfirm'),
         agentStartCancel: async () => void calls.push('agentStartCancel'),
         agentStartDismiss: async () => void calls.push('agentStartDismiss'),
+        acSelect: async () => void calls.push('acSelect'),
+        acClearFilter: async () => void calls.push('acClearFilter'),
+        acLoadEarlier: async () => void calls.push('acLoadEarlier'),
+        acFollow: async () => void calls.push('acFollow'),
+        acAnswer: async () => void calls.push('acAnswer'),
+        acCancel: async () => void calls.push('acCancel'),
+        acResume: async () => void calls.push('acResume'),
+        acOpenFile: async () => void calls.push('acOpenFile'),
         ...overrides,
     };
     const router = createMessageRouter({

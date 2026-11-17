@@ -8,7 +8,7 @@ import type { BoardView, MoveResult } from '../../shared/protocol/board';
 import type { DetailView, OpenFileResultPayload } from '../../shared/protocol/detail';
 import type { MissionControlView } from '../../shared/protocol/missionControl';
 import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../../shared/protocol/envelope';
-import { isProbeResultPayload, type AgentStartRequestType, type BoardRequestType, type ProbeOutcome } from '../../shared/protocol/messages';
+import { isProbeResultPayload, type AgentCenterRequestType, type AgentStartRequestType, type BoardRequestType, type ProbeOutcome } from '../../shared/protocol/messages';
 import { createProbeChannel } from './probeChannel';
 import { buildWebviewHtml } from './webviewHtml';
 
@@ -39,12 +39,17 @@ export interface PanelAgentStart {
     panelHidden(): void;
 }
 
+export interface PanelAgentCenter {
+    handlers: Pick<RequestHandlers, AgentCenterRequestType>;
+}
+
 export interface StudioPanelDeps {
     extensionUri: vscode.Uri;
     service: ShellService;
     board: PanelBoard;
     missionControl: PanelMissionControl;
     agentStart?: PanelAgentStart;
+    agentCenter?: PanelAgentCenter;
     output: OutputPort;
     testMode: boolean;
 }
@@ -144,6 +149,14 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
             agentStartConfirm: async (payload) => deps.agentStart?.handlers.agentStartConfirm(payload),
             agentStartCancel: async (payload) => deps.agentStart?.handlers.agentStartCancel(payload),
             agentStartDismiss: async (payload) => deps.agentStart?.handlers.agentStartDismiss(payload),
+            acSelect: async (payload) => deps.agentCenter?.handlers.acSelect(payload),
+            acClearFilter: async (payload) => deps.agentCenter?.handlers.acClearFilter(payload),
+            acLoadEarlier: async (payload) => deps.agentCenter?.handlers.acLoadEarlier(payload),
+            acFollow: async (payload) => deps.agentCenter?.handlers.acFollow(payload),
+            acAnswer: async (payload) => deps.agentCenter?.handlers.acAnswer(payload),
+            acCancel: async (payload) => deps.agentCenter?.handlers.acCancel(payload),
+            acResume: async (payload) => deps.agentCenter?.handlers.acResume(payload),
+            acOpenFile: async (payload) => deps.agentCenter?.handlers.acOpenFile(payload),
             hello: async (payload) => {
                 helloAt = Date.now();
                 pushView(payload.lastSeq);

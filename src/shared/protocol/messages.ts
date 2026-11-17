@@ -1,5 +1,6 @@
 import { isAreaId, type AreaId } from './areas';
 import { isAgentStartView, type AgentStartView } from './agentStart';
+import { isAgentCenterView, isTimelinePayload, type AgentCenterView, type TimelinePayload } from './agentCenter';
 import { isBoardView, isMoveResult, isSortKey, type BoardView, type MoveResult, type SortKey } from './board';
 import { isDetailView, type DetailView } from './detail';
 import { isBoardFilter, isBoardState, type BoardFilter, type BoardState } from './boardFilter';
@@ -142,12 +143,30 @@ export interface AgentStartRequestPayloads {
     agentStartDismiss: AgentStartDismissPayload;
 }
 
-export type RequestPayloads = ShellRequestPayloads & BoardRequestPayloads & AgentStartRequestPayloads;
+export type AgentCenterAnswer = { kind: 'approval'; decision: 'approve-once' | 'reject'; reason?: string } | { kind: 'input'; text: string };
+
+export interface AgentCenterRunPayload {
+    runId: string;
+}
+
+export interface AgentCenterRequestPayloads {
+    acSelect: AgentCenterRunPayload;
+    acClearFilter: Record<string, never>;
+    acLoadEarlier: AgentCenterRunPayload;
+    acFollow: { runId: string; on: boolean };
+    acAnswer: { runId: string; requestId: string; answer: AgentCenterAnswer };
+    acCancel: AgentCenterRunPayload;
+    acResume: AgentCenterRunPayload;
+    acOpenFile: { runId: string; path: string };
+}
+
+export type RequestPayloads = ShellRequestPayloads & BoardRequestPayloads & AgentStartRequestPayloads & AgentCenterRequestPayloads;
 
 export type RequestType = keyof RequestPayloads;
 export type ShellRequestType = keyof ShellRequestPayloads;
 export type BoardRequestType = keyof BoardRequestPayloads;
 export type AgentStartRequestType = keyof AgentStartRequestPayloads;
+export type AgentCenterRequestType = keyof AgentCenterRequestPayloads;
 
 export interface BoardEventPayload {
     view: BoardView;
@@ -168,6 +187,12 @@ export interface MissionControlEventPayload {
 export interface AgentStartEventPayload {
     view: AgentStartView;
 }
+
+export interface AgentCenterEventPayload {
+    view: AgentCenterView;
+}
+
+export type AgentCenterTimelineEventPayload = TimelinePayload;
 
 export interface ShellEventPayload {
     view: ShellView;
@@ -271,6 +296,50 @@ export function isAgentStartEventPayload(value: unknown): value is AgentStartEve
     return isRecord(value) && isAgentStartView(value.view);
 }
 
+function keysOnly(value: Record<string, unknown>, allowed: readonly string[]): boolean {
+    return Object.keys(value).every((key) => allowed.includes(key)) && allowed.every((key) => key in value || key === 'reason');
+}
+
+function isId(value: unknown): value is string {
+    return isString(value) && value.length > 0;
+}
+
+export function isAgentCenterRunPayload(value: unknown): value is AgentCenterRunPayload {
+    return isRecord(value) && keysOnly(value, ['runId']) && isId(value.runId);
+}
+
+export function isAgentCenterAnswerPayload(value: unknown): value is AgentCenterRequestPayloads['acAnswer'] {
+    if (!isRecord(value) || !keysOnly(value, ['runId', 'requestId', 'answer']) || !isId(value.runId) || !isId(value.requestId) || !isRecord(value.answer)) {
+        return false;
+    }
+    const answer = value.answer;
+    if (answer.kind === 'input') {
+        return keysOnly(answer, ['kind', 'text']) && isString(answer.text);
+    }
+    return (
+        answer.kind === 'approval' &&
+        keysOnly(answer, ['kind', 'decision', 'reason']) &&
+        (answer.decision === 'approve-once' || answer.decision === 'reject') &&
+        isOptionalString(answer.reason)
+    );
+}
+
+export function isAgentCenterFollowPayload(value: unknown): value is AgentCenterRequestPayloads['acFollow'] {
+    return isRecord(value) && keysOnly(value, ['runId', 'on']) && isId(value.runId) && typeof value.on === 'boolean';
+}
+
+export function isAgentCenterOpenFilePayload(value: unknown): value is AgentCenterRequestPayloads['acOpenFile'] {
+    return isRecord(value) && keysOnly(value, ['runId', 'path']) && isId(value.runId) && isId(value.path);
+}
+
+export function isAgentCenterEventPayload(value: unknown): value is AgentCenterEventPayload {
+    return isRecord(value) && keysOnly(value, ['view']) && isAgentCenterView(value.view);
+}
+
+export function isAgentCenterTimelineEventPayload(value: unknown): value is AgentCenterTimelineEventPayload {
+    return isTimelinePayload(value);
+}
+
 export function isMoveResultEventPayload(value: unknown): value is MoveResultEventPayload {
     return isRecord(value) && isMoveResult(value.result);
 }
@@ -290,6 +359,14 @@ export const REQUEST_GUARDS: { [Type in RequestType]: (value: unknown) => value 
     agentStartConfirm: isAgentStartTokenPayload,
     agentStartCancel: isAgentStartTokenPayload,
     agentStartDismiss: isAgentStartDismissPayload,
+    acSelect: isAgentCenterRunPayload,
+    acClearFilter: isEmptyPayload,
+    acLoadEarlier: isAgentCenterRunPayload,
+    acFollow: isAgentCenterFollowPayload,
+    acAnswer: isAgentCenterAnswerPayload,
+    acCancel: isAgentCenterRunPayload,
+    acResume: isAgentCenterRunPayload,
+    acOpenFile: isAgentCenterOpenFilePayload,
 };
 
 export function isRequestType(value: string): value is RequestType {

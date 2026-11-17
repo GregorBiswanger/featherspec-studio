@@ -31,7 +31,7 @@ export const AREAS: readonly AreaInfo[] = [
         id: 'agentCenter',
         title: 'Agent Center',
         purpose: 'Follow agent runs, their live events and the approvals they wait for.',
-        placeholder: true,
+        placeholder: false,
     },
 ];
 

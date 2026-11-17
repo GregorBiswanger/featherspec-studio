@@ -21,3 +21,5 @@ export function runDuration(run: RunTiming, nowMs: number): string {
     const end = isOpenStatusKey(run.status) ? nowMs : run.ended === undefined ? Number.NaN : Date.parse(run.ended);
     return Number.isNaN(end) ? AC_NOT_AVAILABLE : formatSeconds((end - started) / 1000);
 }
+
+export const DURATION_TICK_MS = 1000;

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isAgentCenterView, isTimelinePayload, isTimelineRow } from './agentCenter';
+import { AREAS } from './areas';
+import { isAgentCenterEventPayload, isAgentCenterTimelineEventPayload, isRequestType, REQUEST_GUARDS } from './messages';
 import { sampleCenterView } from './testing/agentCenterSample';
 
 const row = { key: 1, kind: 'Message', time: '2026-11-17T10:00:00.000Z', source: 'provider', fields: [{ label: 'Text', text: 'hi' }] };
@@ -52,5 +54,49 @@ describe('Agent Center view contract (AC-027, strict guard)', () => {
         expect(isAgentCenterView({ ...view, empty: 'maybe' })).toBe(false);
         expect(isAgentCenterView({ ...view, controls: { kind: 'enabled', reason: 'x' } })).toBe(false);
         expect(isAgentCenterView({ ...view, controls: { kind: 'disabled' } })).toBe(false);
+    });
+});
+
+describe('Agent Center requests and events (messages.ts)', () => {
+    it('registers the eight request types with strict guards', () => {
+        for (const type of ['acSelect', 'acClearFilter', 'acLoadEarlier', 'acFollow', 'acAnswer', 'acCancel', 'acResume', 'acOpenFile']) {
+            expect(isRequestType(type), type).toBe(true);
+        }
+        expect(REQUEST_GUARDS.acSelect({ runId: 'r1' })).toBe(true);
+        expect(REQUEST_GUARDS.acSelect({ runId: '' })).toBe(false);
+        expect(REQUEST_GUARDS.acSelect({ runId: 'r1', extra: 1 })).toBe(false);
+        expect(REQUEST_GUARDS.acClearFilter({})).toBe(true);
+        expect(REQUEST_GUARDS.acClearFilter({ x: 1 })).toBe(false);
+        expect(REQUEST_GUARDS.acLoadEarlier({ runId: 'r1' })).toBe(true);
+        expect(REQUEST_GUARDS.acCancel({ runId: 'r1' })).toBe(true);
+        expect(REQUEST_GUARDS.acResume({ runId: 5 })).toBe(false);
+        expect(REQUEST_GUARDS.acFollow({ runId: 'r1', on: false })).toBe(true);
+        expect(REQUEST_GUARDS.acFollow({ runId: 'r1', on: 'no' })).toBe(false);
+        expect(REQUEST_GUARDS.acOpenFile({ runId: 'r1', path: 'README.md' })).toBe(true);
+        expect(REQUEST_GUARDS.acOpenFile({ runId: 'r1', path: '' })).toBe(false);
+    });
+
+    it('an answer is an approval with one of the two decisions and an optional reason, or an input with a text; nothing else', () => {
+        const guard = REQUEST_GUARDS.acAnswer;
+        expect(guard({ runId: 'r1', requestId: 'a1', answer: { kind: 'approval', decision: 'approve-once' } })).toBe(true);
+        expect(guard({ runId: 'r1', requestId: 'a1', answer: { kind: 'approval', decision: 'reject', reason: 'no' } })).toBe(true);
+        expect(guard({ runId: 'r1', requestId: 'a1', answer: { kind: 'input', text: 'x' } })).toBe(true);
+        expect(guard({ runId: 'r1', requestId: 'a1', answer: { kind: 'approval', decision: 'approve-always' } })).toBe(false);
+        expect(guard({ runId: 'r1', requestId: 'a1', answer: { kind: 'approval', decision: 'approve-once', text: 'x' } })).toBe(false);
+        expect(guard({ runId: 'r1', requestId: 'a1', answer: { kind: 'input' } })).toBe(false);
+        expect(guard({ runId: 'r1', requestId: '', answer: { kind: 'input', text: 'x' } })).toBe(false);
+        expect(guard({ runId: 'r1', requestId: 'a1', answer: { kind: 'session', decision: 'approve-once' } })).toBe(false);
+    });
+
+    it('the view event holds a valid view, the timeline event a valid timeline; anything else is refused', () => {
+        expect(isAgentCenterEventPayload({ view: sampleCenterView() })).toBe(true);
+        expect(isAgentCenterEventPayload({ view: { kind: 'ready' } })).toBe(false);
+        expect(isAgentCenterEventPayload({})).toBe(false);
+        expect(isAgentCenterTimelineEventPayload({ runId: 'r1', rows: [], hasEarlier: false })).toBe(true);
+        expect(isAgentCenterTimelineEventPayload({ runId: 'r1', rows: [{}], hasEarlier: false })).toBe(false);
+    });
+
+    it('no area is a placeholder any more (AC-028 of 0005 now holds through a synthetic area info)', () => {
+        expect(AREAS.filter((area) => area.placeholder)).toEqual([]);
     });
 });

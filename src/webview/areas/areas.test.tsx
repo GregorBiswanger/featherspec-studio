@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import type { AreaInfo } from '../../shared/protocol/areas';
 import type { Envelope } from '../../shared/protocol/envelope';
 import type { ShellView, SpecRow } from '../../shared/protocol/messages';
 import { App } from '../App';
+import { Placeholder } from './Placeholder';
 import { createClient, type ShellClient } from '../client';
 import mainCss from '../main.css?raw';
 import { BUDGET_MS, bestOfThree } from '../../shared/testing/timing';
@@ -55,27 +57,25 @@ afterEach(() => {
     mounted = undefined;
 });
 
-describe('AC-006: placeholders', () => {
-    it.each([
-        ['agentCenter', 'Agent Center', 'Follow agent runs, their live events and the approvals they wait for.'],
-    ] as const)('%s shows its name, its purpose and "Not available in this version of FeatherSpec Studio", and no rows', async (area, title, purpose) => {
-        const container = await open(baseView({ area, rows: THREE }));
-        expect(container.querySelector('h1')?.textContent).toBe(title);
+const SYNTHETIC: AreaInfo = { id: 'agentCenter', title: 'Synthetic area', purpose: 'A purpose for a placeholder test.', placeholder: true };
+
+describe('AC-006: placeholders (no real area is a placeholder any more; the component is tested through a synthetic area)', () => {
+    it('a placeholder shows its name, its purpose and "Not available in this version of FeatherSpec Studio", and no rows', async () => {
+        mounted = await mount(<Placeholder area={SYNTHETIC} />);
+        const container = mounted.container;
         const placeholder = container.querySelector('[data-placeholder]');
-        expect(placeholder?.textContent).toContain(purpose);
+        expect(placeholder?.textContent).toContain('A purpose for a placeholder test.');
         expect(placeholder?.textContent).toContain('Not available in this version of FeatherSpec Studio');
         expect(container.textContent).not.toContain('Arrives with spec');
         expect(container.querySelectorAll('[role="option"], [role="listbox"]')).toHaveLength(0);
-        expect(container.textContent).not.toContain('Thing 0001');
     });
 
-    it('a request target handed to a placeholder area is ignored and the placeholder shows (AC-028)', async () => {
-        const container = await open(baseView({ area: 'agentCenter', target: { kind: 'run', id: 'r-1' }, rows: THREE }));
-        expect(container.querySelector('[data-placeholder]')).not.toBeNull();
-        expect(container.textContent).not.toContain('r-1');
+    it('a request target handed to the app does not reach a placeholder: nothing of the target shows in it (AC-028)', async () => {
+        mounted = await mount(<Placeholder area={SYNTHETIC} />);
+        expect(mounted.container.textContent).not.toContain('r-1');
     });
 
-    it.each(['missionControl', 'specExplorer', 'specBoard'] as const)('control: %s is no placeholder', async (area) => {
+    it.each(['missionControl', 'specExplorer', 'specBoard', 'agentCenter'] as const)('control: %s is no placeholder', async (area) => {
         const container = await open(baseView({ area, rows: THREE }));
         expect(container.querySelector('[data-placeholder]')).toBeNull();
     });

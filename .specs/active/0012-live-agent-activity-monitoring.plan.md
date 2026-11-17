@@ -3,7 +3,7 @@
 **Spec:** [0012-live-agent-activity-monitoring.md](0012-live-agent-activity-monitoring.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-006
+**Current step:** T-007
 
 ## Approach
 
@@ -240,7 +240,7 @@ No parallel stage: stages 1–2 are one module (`src/core/agentCenter`), and eve
   (keyboard: Tab and Enter/Space on rows and controls; status as text), CSS guard extension in
   `src/adapters/node/webviewCss.test.ts` (every run status has a rule).
 - **Verify:** `npx vitest run --project webview src/webview src/adapters/node/webviewCss.test.ts` then the per-step gates
-- [ ] **Verified (T-006):** —
+- [x] **Verified (T-006):** red: AgentCenter.test.tsx 33 of 33 failed with Not implemented, webviewCss.test.ts 3 AC-029 tests failed. green: webview suite 311 passed, full unit 1876 passed, eslint and both tsc clean, npm run compile ok. Preview (Dark, Light, High Contrast, 05-agent-center-*.png) shows list with 3 runs, open approval with Approve once/Reject, failed run chip, activity panel; looked at and no defects left.
 - **Notes:** —
 
 ### T-007 — Timeline with follow mode and Load earlier
@@ -327,8 +327,8 @@ No parallel stage: stages 1–2 are one module (`src/core/agentCenter`), and eve
 
 ## Session handoff
 
-- **Done so far:** stages 1 and 2 (T-001 to T-005): timeline, summary, run list, header, selection memory, service with paging and live updates, actions, notifier; all in src/core/agentCenter, src/shared/protocol/agentCenter*.ts, src/core/ports/agentCenter.ts.
-- **Next action:** T-006 area UI (list, detail, states, controls), then T-007, T-008, T-009.
+- **Done so far:** T-006
+- **Next action:** T-007
 - **Open decisions:** none.
 - **Baseline:** 2026-11-17, HEAD 70362df: eslint, both tsc and `npm run test:unit` green (136 files, 1723 tests).
 - **Environment:** `npm test` cannot run here (VS Code download blocked); the host smoke runs on CI or Gregor's Windows machine. UI looks: `npm run compile` and `/home/claude/orch/preview/run.sh`, screenshots in `/mnt/user-data/outputs/screens/`.
