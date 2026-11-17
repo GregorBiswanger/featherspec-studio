@@ -8,10 +8,12 @@ import type { DetailView, OpenFileResultPayload } from '../../shared/protocol/de
 import type { MissionControlView } from '../../shared/protocol/missionControl';
 import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../../shared/protocol/envelope';
 import { isProbeResultPayload, type BoardRequestType, type ProbeOutcome } from '../../shared/protocol/messages';
+import { createProbeChannel } from './probeChannel';
 import { buildWebviewHtml } from './webviewHtml';
 
 export const VIEW_TYPE = 'featherspecStudio.main';
-const PROBE_TIMEOUT_MS = 5000;
+const PROBE_HELLO_TIMEOUT_MS = 20_000;
+const PROBE_ANSWER_TIMEOUT_MS = 20_000;
 
 export interface PanelBoard {
     handlers: Pick<RequestHandlers, BoardRequestType>;
@@ -64,7 +66,13 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
     let reloaded = false;
     let helloAt: number | undefined;
     let lastMove: MoveResult | undefined;
-    let pendingProbe: ((outcome: ProbeOutcome) => void) | undefined;
+    const probeChannel = createProbeChannel({
+        send: (url) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'probe', payload: { url } }),
+        helloTimeoutMs: PROBE_HELLO_TIMEOUT_MS,
+        answerTimeoutMs: PROBE_ANSWER_TIMEOUT_MS,
+        describe: () =>
+            `panel open: ${panel !== undefined}, visible: ${panel?.visible}, active: ${panel?.active}, last hello ${helloAt === undefined ? 'never' : `${Date.now() - helloAt} ms ago`}`,
+    });
     const assets = vscode.Uri.joinPath(deps.extensionUri, 'dist', 'webview');
 
     function options(): vscode.WebviewOptions {
@@ -73,6 +81,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
 
     function render(target: vscode.WebviewPanel): void {
         const webview = target.webview;
+        probeChannel.markNotReady();
         webview.html = buildWebviewHtml({
             cspSource: webview.cspSource,
             nonce: randomBytes(16).toString('base64url'),
@@ -126,6 +135,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
                 if (lastMove !== undefined) {
                     pushMove(lastMove);
                 }
+                probeChannel.markReady();
             },
         },
         output: deps.output,
@@ -136,8 +146,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
         if (deps.testMode) {
             const read = readEnvelope(raw);
             if (read.ok && read.envelope.type === 'probeResult' && isProbeResultPayload(read.envelope.payload)) {
-                pendingProbe?.(read.envelope.payload.outcome);
-                pendingProbe = undefined;
+                probeChannel.answer(read.envelope.payload.outcome);
                 return;
             }
         }
@@ -160,6 +169,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
                 subscriptions = [];
                 panel = undefined;
                 lastMove = undefined;
+                probeChannel.markNotReady();
                 deps.board.panelClosed();
             }),
         ];
@@ -192,17 +202,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
             if (panel === undefined) {
                 return Promise.reject(new Error('No Studio panel is open'));
             }
-            return new Promise<ProbeOutcome>((resolve, reject) => {
-                const timer = setTimeout(() => {
-                    pendingProbe = undefined;
-                    reject(new Error('The probe got no answer'));
-                }, PROBE_TIMEOUT_MS);
-                pendingProbe = (outcome) => {
-                    clearTimeout(timer);
-                    resolve(outcome);
-                };
-                post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'probe', payload: { url } });
-            });
+            return probeChannel.probe(url);
         },
         showMoveResult(result) {
             if (panel === undefined || !panel.visible || deps.service.view().area !== 'specBoard') {

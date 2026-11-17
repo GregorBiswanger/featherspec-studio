@@ -17,6 +17,20 @@ describe('AC-020: the test-mode probe in the panel UI', () => {
         expect(await createFetchProbe(async () => ({ ok: true }))('u')).toBe('loaded');
     });
 
+    it('a fetch that never settles answers failed after the probe timeout instead of staying silent', async () => {
+        vi.useFakeTimers();
+        const outcome = createFetchProbe(() => new Promise(() => undefined), 3000)('u');
+        await vi.advanceTimersByTimeAsync(2999);
+        let settled = false;
+        void outcome.then(() => {
+            settled = true;
+        });
+        await vi.advanceTimersByTimeAsync(0);
+        expect(settled).toBe(false);
+        await vi.advanceTimersByTimeAsync(1);
+        await expect(outcome).resolves.toBe('failed');
+    });
+
     it('answers a probe event with probeResult and posts nothing else about it', async () => {
         vi.useFakeTimers();
         const posted: Envelope[] = [];
