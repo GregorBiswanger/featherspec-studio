@@ -3,7 +3,7 @@
 **Spec:** [0009-agent-provider-abstraction.md](0009-agent-provider-abstraction.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-007 (stage 4)
+**Current step:** T-008 (stage 5)
 
 ## Approach
 
@@ -287,8 +287,8 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
   no production module outside `src/adapters/providers/` and `src/extension.ts` holds `'fake'` or
   `'copilot'` as a string literal (`PROVIDER_IDS`; a new adapter joins it), with a negative control.
 - **Verify:** `npx vitest run src/core/providers src/adapters/providers` then the per-step gates
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** 2026-11-17. Red: `npx vitest run src/core/providers src/adapters/providers` fakeContract.test.ts failed to run, `Not implemented` in the stub of runProviderContract (13 other files, 102 tests passed). extensibility.test.ts and providerIdScan.test.ts were green at once (service already complete; clean tree), the scan has its own negative control for every ID and quote form. Green after the suite: fakeContract.test.ts 24 tests (12 contract tests x profiles full and minimal). Mutations that must fail the suite, each reverted: credentialValues() empty (2 failed), extra field on provider.unknown (2 failed), capability filter off in the fake (1 failed), service not adding the derived run.failed on close (2 failed). Gates: eslint --max-warnings 0, tsc, tsc -p src/webview, `npm run test:unit` 111 files, 1483 passed, `npm run compile` finished.
+- **Notes:** Contract cases are arranged by the harness (the fake harness uses its scenario function plus a wrapper that fails operations). The suite checks BR-010 by recording, per delivered event that contains an adapter credential, whether service.credentials already returned it.
 
 ### T-008 — Extension wiring and fake settings
 
@@ -346,14 +346,14 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
 | AC-017 | T-004 | src/adapters/providers/fake/scenarios.ts:duplicates-and-late | fakeProvider.test.ts (AC-017) | verified |
 | AC-018 | T-006 | src/adapters/providers/fake/fakeProvider.ts:resume | fakeInteraction.test.ts (AC-018) | verified |
 | AC-019 | T-005, T-006 | providerService.ts:respond; fake/script.ts:answer | providerRequests.test.ts, fakeInteraction.test.ts (AC-019) | verified |
-| AC-020 | T-007 | — | — | open |
-| AC-021 | T-007 | — | — | open |
-| AC-022 | T-004, T-005, T-008 | src/adapters/providers/fake/scenarios.ts, fakeProvider.ts:credentialValues | fakeProvider.test.ts (AC-022) | built |
+| AC-020 | T-007 | src/core/providers/testing/contract.ts | fakeContract.test.ts (both profiles) | verified |
+| AC-021 | T-007 | src/core/providers/registry.ts, providerService.ts | extensibility.test.ts, providerIdScan.test.ts | verified |
+| AC-022 | T-004, T-005, T-008 | fake/fakeProvider.ts:credentialValues, providerService.ts:credentials | fakeProvider.test.ts, providerAvailability.test.ts, contract BR-010 | built |
 
 ## Session handoff
 
-- **Done so far:** start signal given 2026-11-16, pair moved backlog → active; stages 1 to 3 (T-001...T-006) done and committed; parallel stages run in sequence.
-- **Next action:** T-007 contract suite, third provider, literal scan (test first); then T-008, T-009.
+- **Done so far:** start signal given 2026-11-16, pair moved backlog → active; stages 1 to 4 (T-001...T-007) done and committed.
+- **Next action:** T-008 extension wiring and settings (test first), then T-009 docs sync and final gates.
 - **Open decisions:** none. Nine steps (one over the aim): the surface step carries the document,
   and the service and the fake are each two slices so they can run in parallel.
 - **Baseline:** 2026-11-16, eslint, both tsc runs and `npm run test:unit` green: 1350 tests.
