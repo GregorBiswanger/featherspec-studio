@@ -7,7 +7,6 @@ import { Activity } from './Activity';
 import { Attention } from './Attention';
 import { Header } from './Header';
 import { activityRequest } from './requests';
-import { RunSection } from './RunSection';
 import { SpecFigures } from './SpecFigures';
 import { useMissionControl } from './store';
 import { EmptyState } from '../../ui/EmptyState';
@@ -50,7 +49,6 @@ export function MissionControl() {
             ) : <SpecFigures specs={view.specs} navigate={navigate} />}
             {view.specs.kind === 'empty' ? null : <Attention attention={view.attention} navigate={navigate} />}
             <div className="mc-panels">
-                <RunSection runs={view.runs} navigate={navigate} />
                 <Activity activity={view.activity} onActivate={openActivity} />
             </div>
         </div>

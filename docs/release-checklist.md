@@ -58,7 +58,7 @@ and the expected result. A clear miss reopens the named spec.
   border on the current area and the selected row.
 - [ ] **AC-009 reload**: panel on Spec Board with 0003 selected → *Reload Window* → panel returns on Spec
   Board, Spec Explorer still has 0003 selected.
-- [ ] **AC-017 Restricted Mode**: note "This workspace is in Restricted Mode. Agent actions are unavailable."
+- [ ] **AC-017 Restricted Mode**: note "This workspace is in Restricted Mode. Setting up FeatherSpec needs a trusted workspace."
   above the area; trust the folder → the note disappears without reopening the panel.
 
 ## Dashboard — Mission Control (0006)

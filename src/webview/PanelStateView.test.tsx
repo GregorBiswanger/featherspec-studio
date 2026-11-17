@@ -171,7 +171,7 @@ describe('AC-017: the Restricted Mode note', () => {
     it('shows beside S2 and does not replace it', async () => {
         const container = await show({ id: 'S2' }, { restricted: true });
         const note = container.querySelector('[role="note"]');
-        expect(note?.textContent).toContain('This workspace is in Restricted Mode. Agent actions are unavailable.');
+        expect(note?.textContent).toContain('This workspace is in Restricted Mode. Setting up FeatherSpec needs a trusted workspace.');
         expect(note?.getAttribute('aria-label')).toBe('Restricted Mode');
         expect(container.querySelector('section[role="status"]')?.textContent).toContain('No FeatherSpec project found');
     });

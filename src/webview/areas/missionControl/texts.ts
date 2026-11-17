@@ -1,5 +1,5 @@
 import { DERIVED_SENTENCES } from '../../../shared/protocol/texts';
-import type { ActivityChange, AttentionReason, DerivedRule, HighlightedStatus, RunStatusWord, SpecRef } from '../../../shared/protocol/missionControl';
+import type { ActivityChange, AttentionReason, DerivedRule, SpecRef } from '../../../shared/protocol/missionControl';
 
 export const MC_NOT_AVAILABLE = 'not available';
 
@@ -51,31 +51,11 @@ export function mcProgress(percent: number, done: number, divisor: number): stri
     return `Progress ${percent} % (${done} of ${divisor})`;
 }
 
-export const MC_RUNS_HEADING = 'Agent runs';
-
-export function mcRunning(count: number): string {
-    return `Running ${count}`;
-}
-
-export const MC_NO_HIGHLIGHTED = 'No failed or interrupted runs.';
-
-export function mcUnreadable(count: number): string {
-    return count === 1 ? '1 run unreadable' : `${count} runs unreadable`;
-}
-
-export function mcRunsUnavailable(reason: string): string {
-    return `Run data not available: ${reason}`;
-}
-
 export function mcAttentionHeading(count: number): string {
     return `Needs attention (${count})`;
 }
 
 export const MC_NOTHING_ATTENTION = 'Nothing needs attention.';
-
-export function mcRunReasonsUnavailable(reason: string): string {
-    return `Run-based reasons not available: ${reason}`;
-}
 
 export const MC_ACTIVITY_HEADING = 'Recent activity';
 
@@ -91,21 +71,6 @@ export const MC_WHILE_CLOSED = '(changed while Studio was not running)';
 
 export const MC_NO_LONGER_OBSERVED = 'no longer observed';
 
-const STATUS_WORDS: Record<RunStatusWord, string> = {
-    Starting: 'Starting',
-    Running: 'Running',
-    WaitingForApproval: 'Waiting for approval',
-    WaitingForInput: 'Waiting for input',
-    Completed: 'Completed',
-    Failed: 'Failed',
-    Cancelled: 'Cancelled',
-    Interrupted: 'Interrupted',
-};
-
-export function mcStatusWord(status: RunStatusWord | HighlightedStatus): string {
-    return STATUS_WORDS[status];
-}
-
 export function mcReason(reason: AttentionReason): string {
     return reason;
 }
@@ -120,7 +85,5 @@ export function mcChange(change: ActivityChange): string {
             return `${change.old} → ${change.new}${change.whileClosed ? ` ${MC_WHILE_CLOSED}` : ''}`;
         case 'gone':
             return `${change.old} → ${MC_NO_LONGER_OBSERVED}`;
-        case 'run':
-            return `Run: ${mcStatusWord(change.status)}`;
     }
 }

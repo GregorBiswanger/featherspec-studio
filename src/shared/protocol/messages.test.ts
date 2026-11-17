@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AREAS, AREA_IDS, isAreaId } from './areas';
+import { RESTRICTED_TEXT } from './texts';
 import { PROTOCOL_VERSION, isJsonValue, readEnvelope } from './envelope';
 import {
     isAgentStartDismissPayload,
@@ -198,5 +199,12 @@ describe('0015 AC-005, AC-009: copy request and result', () => {
         expect(isCopyResultEventPayload({ ok: 'yes', text: 'x' })).toBe(false);
         expect(isCopyResultEventPayload({ ok: true })).toBe(false);
         expect(isCopyResultEventPayload(undefined)).toBe(false);
+    });
+});
+
+describe('0015 AC-026: the Mission Control purpose and the Restricted Mode note', () => {
+    it('read as the product texts of the spec', () => {
+        expect(AREAS.find((area) => area.id === 'missionControl')?.purpose).toBe('See the project at a glance: spec counts, progress, what needs attention and recent activity.');
+        expect(RESTRICTED_TEXT).toBe('This workspace is in Restricted Mode. Setting up FeatherSpec needs a trusted workspace.');
     });
 });

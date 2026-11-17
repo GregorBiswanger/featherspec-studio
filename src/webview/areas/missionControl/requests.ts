@@ -1,6 +1,6 @@
 import type { BoardState } from '../../../shared/protocol/boardFilter';
 import type { NavigationRequest } from '../../../shared/protocol/messages';
-import type { ActivityEntry, AttentionRow, HighlightedRun, McHeader, McRuns } from '../../../shared/protocol/missionControl';
+import type { ActivityEntry, AttentionRow, McHeader } from '../../../shared/protocol/missionControl';
 
 export const ATTENTION_SET_LABEL = 'Needs attention';
 export const DIAGNOSTICS_SET_LABEL = 'Diagnostics';
@@ -28,14 +28,6 @@ export function diagnosticsRequest(header: McHeader): NavigationRequest {
 export function attentionRowRequest(row: AttentionRow): NavigationRequest {
     const { stem, path } = row.spec;
     return { area: 'specExplorer', target: path === undefined ? { kind: 'spec', stem } : { kind: 'spec', stem, path } };
-}
-
-export function runningRequest(runs: Extract<McRuns, { available: true }>): NavigationRequest {
-    return runs.singleRunId === undefined ? { area: 'agentCenter' } : { area: 'agentCenter', target: { kind: 'run', id: runs.singleRunId } };
-}
-
-export function runRequest(run: HighlightedRun): NavigationRequest {
-    return { area: 'agentCenter', target: { kind: 'run', id: run.runId } };
 }
 
 export function activityRequest(entry: ActivityEntry): NavigationRequest | undefined {

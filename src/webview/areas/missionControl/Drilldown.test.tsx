@@ -13,22 +13,12 @@ const clients: ShellClient[] = [];
 
 function drillView(): MissionControlView {
     const view = sampleView();
-    view.runs = {
-        available: true,
-        running: 2,
-        highlighted: [
-            { runId: 'run-f', status: 'Failed', spec: { stem: '0001-a', number: '0001', title: 'A', found: true } },
-            { runId: 'run-g', status: 'Interrupted', spec: { stem: '0099-gone', number: '0099', title: null, found: false } },
-        ],
-        unreadable: 0,
-    };
     view.attention = {
         rows: [
             { spec: { stem: '0001-a', number: '0001', title: 'A', found: true }, reasons: ['Blocked'] },
             { spec: { stem: '0004-dup', number: '0004', title: 'D', path: '.specs/active/0004-dup.md', found: true }, reasons: ['Review pending'] },
             { spec: { stem: '0004-dup', number: '0004', title: 'D', path: '.specs/done/0004-dup.md', found: true }, reasons: ['Diagnostic'] },
         ],
-        runReasons: { available: true },
     };
     return view;
 }
@@ -98,32 +88,17 @@ describe('AC-012: the total, a state count and Needs attention', () => {
     });
 });
 
-describe('AC-013: runs', () => {
-    it('a highlighted run sends the Agent Center with the run ID, also for a vanished stem', async () => {
+describe('0015 AC-010: no drill-down for runs', () => {
+    it('the view holds no run drill-down, and every request it can send names one of the three areas', async () => {
         const container = await open(drillView());
-        await clickAndReturn(container, 'run:run-f');
-        await clickAndReturn(container, 'run:run-g');
-        expect(sent()).toEqual([
-            { type: 'navigate', payload: { area: 'agentCenter', target: { kind: 'run', id: 'run-f' } } },
-            { type: 'navigate', payload: { area: 'agentCenter', target: { kind: 'run', id: 'run-g' } } },
-        ]);
-    });
-
-    it('the Running figure sends the Agent Center without a target while two runs are counted', async () => {
-        await click(drill(await open(drillView()), 'running'));
-        expect(sent()).toEqual([{ type: 'navigate', payload: { area: 'agentCenter' } }]);
-    });
-
-    it('the Running figure sends the run as target while exactly one run is counted', async () => {
-        await click(drill(await open(sampleView()), 'running'));
-        expect(sent()).toEqual([{ type: 'navigate', payload: { area: 'agentCenter', target: { kind: 'run', id: 'run-1' } } }]);
-    });
-
-    it('OP-9: Running 0 still sends the Agent Center without a target', async () => {
-        const view = drillView();
-        view.runs = { available: true, running: 0, highlighted: [], unreadable: 0 };
-        await click(drill(await open(view), 'running'));
-        expect(sent()).toEqual([{ type: 'navigate', payload: { area: 'agentCenter' } }]);
+        const ids = [...container.querySelectorAll('[data-drill]')].map((button) => button.getAttribute('data-drill') ?? '');
+        expect(ids.some((id) => id === 'running' || id.startsWith('run:'))).toBe(false);
+        for (const id of ids) {
+            await clickAndReturn(container, id);
+        }
+        const areas = sent().map((message) => (message.payload as { area: string }).area);
+        expect(areas.length).toBeGreaterThan(5);
+        expect(areas.every((area) => ['missionControl', 'specBoard', 'specExplorer'].includes(area))).toBe(true);
     });
 });
 
@@ -208,12 +183,8 @@ describe('AC-022: keyboard', () => {
             'row:0',
             'row:1',
             'row:2',
-            'running',
-            'run:run-f',
-            'run:run-g',
             'activity:0',
             'activity:1',
-            'activity:2',
         ]);
         for (const button of buttons) {
             expect(button.tagName).toBe('BUTTON');
@@ -236,16 +207,15 @@ describe('AC-022: keyboard', () => {
 });
 
 describe('OP-9: a value that is "not available" cannot be activated', () => {
-    it('with the runs, the activity and the progress not available the view holds no control for them', async () => {
+    it('with the activity and the progress not available the view holds no control for them', async () => {
         const view = drillView();
-        view.runs = { available: false, reason: 'disk is full' };
         view.activity = { available: false, reason: 'disk is full' };
         if (view.specs.kind === 'counts') {
             view.specs.progress = { kind: 'not available' };
         }
         const container = await open(view);
         const ids = [...container.querySelectorAll('[data-drill]')].map((button) => button.getAttribute('data-drill'));
-        expect(ids.some((id) => id === 'running' || id?.startsWith('run:') || id?.startsWith('activity:'))).toBe(false);
+        expect(ids.some((id) => id?.startsWith('activity:'))).toBe(false);
         expect(container.querySelector('[data-progress] button')).toBeNull();
         expect(ids).toContain('total');
     });

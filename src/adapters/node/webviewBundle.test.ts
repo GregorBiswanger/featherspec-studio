@@ -125,14 +125,13 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         expect(errors).toEqual([]);
     });
 
-    it('mounts Mission Control with a snapshot of a fixture project: header, six state counts, progress, the run section, the attention list, the activity, no start-up error', async () => {
+    it('mounts Mission Control with a snapshot of a fixture project: header, six state counts, progress, the attention list, the activity, no start-up error', async () => {
         const project = await readProject(createNodeSpecSource(), fixturePath('fs110-ready-synthetic'), '1.10.0');
         const lifecycle = deriveLifecycle(project);
         const mission = buildMissionControlView({
             model: { project, lifecycle },
             active: { name: 'fixture', version: '1.10.0' },
             updatedAt: '2026-11-16T10:00:00.000Z',
-            runs: { available: true, runs: [] },
             history: { available: true, label: 'Observed', entries: [] },
         });
         const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
@@ -151,7 +150,7 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         expect(document.querySelector('[data-total]')?.textContent).toBe(`Total ${lifecycle.entries.length}`);
         expect(lifecycle.entries.length).toBeGreaterThan(0);
         expect(document.querySelector('[data-progress]')?.textContent).toContain('Progress');
-        expect(document.querySelector('[data-runs]')?.textContent).toContain('Running 0');
+        expect(document.querySelector('[data-runs]')).toBeNull();
         expect(document.querySelector('[data-attention] h2')?.textContent).toContain('Needs attention (');
         expect(document.querySelector('[data-activity] h2')?.textContent).toBe('Recent activity');
         expect(errors).toEqual([]);

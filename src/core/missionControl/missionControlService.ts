@@ -1,17 +1,14 @@
 import type { MissionControlView } from '../../shared/protocol/missionControl';
 import type { DiscoveryController } from '../discovery/discoveryController';
 import type { HistoryView } from '../lifecycle/statusHistory';
-import type { ClockPort, Disposable } from '../ports/host';
-import type { ShellModel, ShellModelSource } from '../ports/shell';
+import type { Disposable } from '../ports/host';
+import type { ShellModelSource } from '../ports/shell';
 import { buildMissionControlView } from './missionControlView';
-import { createRunSource, type RunSourceSession } from './runSource';
 
 export interface MissionControlServiceDeps {
     source: ShellModelSource;
     discovery: Pick<DiscoveryController, 'snapshot' | 'onDidUpdate'>;
-    session: RunSourceSession;
     history: { read(): Promise<HistoryView>; onDidChange(listener: () => void): Disposable };
-    clock: ClockPort;
 }
 
 export interface MissionControlService {
@@ -24,12 +21,10 @@ export interface MissionControlService {
 const HISTORY_FAILED: HistoryView = { available: false, text: 'Status history not available' };
 
 export function createMissionControlService(deps: MissionControlServiceDeps): MissionControlService {
-    const runSource = createRunSource({ session: deps.session });
     const listeners = new Set<(view: MissionControlView | undefined) => void>();
     let subscriptions: Disposable[] = [];
     let current: MissionControlView | undefined;
     let last = 'undefined';
-    let runChangedAt = '';
     let running = false;
     let again = false;
     let idle: Promise<void> = Promise.resolve();
@@ -63,17 +58,14 @@ export function createMissionControlService(deps: MissionControlServiceDeps): Mi
         const model = deps.source.current();
         const active = deps.discovery.snapshot().active;
         if (model === undefined || active === undefined) {
-            runChangedAt = '';
             setView(undefined);
             return;
         }
-        const [runs, history] = await Promise.all([runSource.read(), readHistory()]);
+        const history = await readHistory();
         if (disposed || listeners.size === 0) {
             return;
         }
-        const modelReadAt = deps.source.updatedAt();
-        const updatedAt = runChangedAt > modelReadAt ? runChangedAt : modelReadAt;
-        setView(buildMissionControlView({ model, active: { name: active.name, version: active.version }, updatedAt, runs, history }));
+        setView(buildMissionControlView({ model, active: { name: active.name, version: active.version }, updatedAt: deps.source.updatedAt(), history }));
     }
 
     function schedule(): void {
@@ -106,10 +98,6 @@ export function createMissionControlService(deps: MissionControlServiceDeps): Mi
             deps.source.onDidChange(schedule),
             deps.history.onDidChange(schedule),
             deps.discovery.onDidUpdate(schedule),
-            runSource.onDidChange(() => {
-                runChangedAt = deps.clock.now();
-                schedule();
-            }),
         ];
     }
 
@@ -146,7 +134,6 @@ export function createMissionControlService(deps: MissionControlServiceDeps): Mi
             disposed = true;
             listeners.clear();
             release();
-            runSource.dispose();
         },
     };
 }

@@ -4,13 +4,10 @@ import { Glyph, type GlyphKind } from '../../board/icons';
 import { Drill } from './Drill';
 import { attentionRequest, attentionRowRequest } from './requests';
 import { SpecLabel } from './SpecLabel';
-import { MC_NOTHING_ATTENTION, mcAttentionHeading, mcReason, mcRunReasonsUnavailable } from './texts';
+import { MC_NOTHING_ATTENTION, mcAttentionHeading, mcReason } from './texts';
 
 const REASON_GLYPHS: Record<AttentionReason, GlyphKind> = {
     Blocked: 'Blocked',
-    'Run failed': 'failed',
-    'Run interrupted': 'interrupted',
-    'Waiting for you': 'waiting',
     Diagnostic: 'diagnostic',
     'Review pending': 'Review',
 };
@@ -52,7 +49,6 @@ export function Attention(props: { attention: McAttention; navigate: (request: N
                     ))}
                 </ul>
             )}
-            {attention.runReasons.available ? null : <p data-run-reasons className="mc-note">{mcRunReasonsUnavailable(attention.runReasons.reason)}</p>}
         </section>
     );
 }

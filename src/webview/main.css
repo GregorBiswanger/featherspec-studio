@@ -1341,7 +1341,7 @@ main > h1 {
 
 .mc-panels {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: 12px;
     align-items: stretch;
 }
@@ -1513,12 +1513,6 @@ main > h1 {
 .mc-drill:hover {
     color: var(--vscode-textLink-activeForeground);
     text-decoration: underline;
-}
-
-@media (max-width: 720px) {
-    .mc-panels {
-        grid-template-columns: minmax(0, 1fr);
-    }
 }
 
 .rule-id {

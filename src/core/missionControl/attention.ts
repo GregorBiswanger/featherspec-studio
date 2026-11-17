@@ -1,7 +1,6 @@
 import type { AttentionReason, AttentionRow, McAttention } from '../../shared/protocol/missionControl';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { ShellModel } from '../ports/shell';
-import type { RunFacts } from './runFigures';
 import type { SpecResolver } from './specRefs';
 
 function compareText(left: string, right: string): number {
@@ -16,17 +15,10 @@ function carriesDiagnostic(entry: LifecycleEntry): boolean {
     );
 }
 
-function reasonsOf(entry: LifecycleEntry, facts: RunFacts): AttentionReason[] {
+function reasonsOf(entry: LifecycleEntry): AttentionReason[] {
     const reasons: AttentionReason[] = [];
     if (entry.state === 'Blocked') {
         reasons.push('Blocked');
-    }
-    const highlighted = entry.state === 'Done' ? undefined : facts.highlightedByStem.get(entry.stem);
-    if (highlighted !== undefined) {
-        reasons.push(highlighted.status === 'Failed' ? 'Run failed' : 'Run interrupted');
-    }
-    if (facts.waitingStems.has(entry.stem)) {
-        reasons.push('Waiting for you');
     }
     if (carriesDiagnostic(entry)) {
         reasons.push('Diagnostic');
@@ -37,10 +29,10 @@ function reasonsOf(entry: LifecycleEntry, facts: RunFacts): AttentionReason[] {
     return reasons;
 }
 
-export function projectAttention(model: ShellModel, facts: RunFacts, specs: SpecResolver): McAttention {
+export function projectAttention(model: ShellModel, specs: SpecResolver): McAttention {
     const rows: AttentionRow[] = [...model.lifecycle.entries]
         .sort((left, right) => compareText(left.number, right.number) || compareText(left.key, right.key))
-        .map((entry) => ({ spec: specs.forEntry(entry), reasons: reasonsOf(entry, facts) }))
+        .map((entry) => ({ spec: specs.forEntry(entry), reasons: reasonsOf(entry) }))
         .filter((row) => row.reasons.length > 0);
-    return { rows, runReasons: facts.view.available ? { available: true } : { available: false, reason: facts.view.reason } };
+    return { rows };
 }

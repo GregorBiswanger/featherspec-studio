@@ -3,7 +3,7 @@
 **Spec:** [0015-focus-on-visibility.md](0015-focus-on-visibility.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-006
+**Current step:** T-007
 
 ## Approach
 
@@ -200,7 +200,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 - **Deletes:** `src/core/missionControl/{runFigures.ts,runFigures.test.ts}`, `src/core/missionControl/testing/runs.ts`,
   `src/webview/areas/missionControl/RunSection.tsx`
 - **Verify:** changed tests red then green; gates 1–5
-- [ ] **Verified (T-006):** —
+- [x] **Verified (T-006):** 2026-11-17 — red: with the old sources restored the rewritten attention, activity, service, protocol, section and drill-down tests and the new AC-026 literal test failed; green after the change: 2493 passed + 3 skipped, 12 timing; gates 1–5 (eslint, both tsc, test:unit, compile) clean. runFigures, testing/runs and RunSection deleted with their tests. Notes: RunStatusWord stays exported until T-008 (agentStart imports it); the Restricted Mode text in docs/release-checklist.md was updated here, the rest of the docs follow in T-014.
 - **Notes:** —
 
 ### T-007 — Cut the run features out of the composition root and the manifest
@@ -385,7 +385,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 ## Session handoff
 
 - **Done so far:** Stages 1 and 2 (T-001…T-005): next step, copy, drop result; earlier-data removal module (not wired); board and detail without runs (the parallel stage ran in sequence).
-- **Next action:** T-006 (Mission Control without runs), then T-007…T-009.
+- **Next action:** T-007 (cut run features from extension.ts and the manifest), then T-008, T-009.
 - **Open decisions:** — (Gregor approved the changed order and `npm uninstall @github/copilot-sdk`; the parallel stage runs in sequence; deletions listed per step are approved.)
 - **Baseline:** ea4a8bd
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked); host suites run on Windows and CI. Gates: `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`.

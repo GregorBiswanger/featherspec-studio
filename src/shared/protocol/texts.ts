@@ -46,7 +46,7 @@ export const STATE_LABELS: Record<StateId, string> = {
     S9: 'Project incomplete',
 };
 
-export const RESTRICTED_TEXT = 'This workspace is in Restricted Mode. Agent actions are unavailable.';
+export const RESTRICTED_TEXT = 'This workspace is in Restricted Mode. Setting up FeatherSpec needs a trusted workspace.';
 
 export function s5ReasonText(reason: Extract<PanelState, { id: 'S5' }>['reason']): string {
     switch (reason.cause) {

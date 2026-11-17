@@ -5,9 +5,7 @@ export type DerivedRule = 'S-READY' | 'S-REVIEW' | 'S-BLOCKED';
 
 export type RunStatusWord = 'Starting' | 'Running' | 'WaitingForApproval' | 'WaitingForInput' | 'Completed' | 'Failed' | 'Cancelled' | 'Interrupted';
 
-export type HighlightedStatus = 'Failed' | 'Interrupted';
-
-export type AttentionReason = 'Blocked' | 'Run failed' | 'Run interrupted' | 'Waiting for you' | 'Diagnostic' | 'Review pending';
+export type AttentionReason = 'Blocked' | 'Diagnostic' | 'Review pending';
 
 export interface SpecRef {
     stem: string;
@@ -36,32 +34,18 @@ export type McProgress = { kind: 'value'; percent: number; done: number; divisor
 
 export type McSpecs = { kind: 'empty' } | { kind: 'counts'; total: number; states: StateCount[]; progress: McProgress };
 
-export interface HighlightedRun {
-    runId: string;
-    status: HighlightedStatus;
-    spec: SpecRef;
-}
-
-export type McRuns =
-    | { available: false; reason: string }
-    | { available: true; running: number; singleRunId?: string; highlighted: HighlightedRun[]; unreadable: number };
-
 export interface AttentionRow {
     spec: SpecRef;
     reasons: AttentionReason[];
 }
 
-export type RunReasons = { available: true } | { available: false; reason: string };
-
 export interface McAttention {
     rows: AttentionRow[];
-    runReasons: RunReasons;
 }
 
 export type ActivityChange =
     | { kind: 'state'; old: BoardState; new: BoardState; whileClosed: boolean }
-    | { kind: 'gone'; old: BoardState }
-    | { kind: 'run'; status: RunStatusWord; runId: string };
+    | { kind: 'gone'; old: BoardState };
 
 export interface ActivityEntry {
     at: string;
@@ -74,7 +58,6 @@ export type McActivity = { available: false; reason: string } | { available: tru
 export interface MissionControlView {
     header: McHeader;
     specs: McSpecs;
-    runs: McRuns;
     attention: McAttention;
     activity: McActivity;
 }
@@ -85,7 +68,7 @@ export function isDerivedRule(value: unknown): value is DerivedRule {
     return typeof value === 'string' && DERIVED_RULES.includes(value);
 }
 const RUN_STATUS_WORDS: readonly string[] = ['Starting', 'Running', 'WaitingForApproval', 'WaitingForInput', 'Completed', 'Failed', 'Cancelled', 'Interrupted'];
-const ATTENTION_REASONS: readonly string[] = ['Blocked', 'Run failed', 'Run interrupted', 'Waiting for you', 'Diagnostic', 'Review pending'];
+const ATTENTION_REASONS: readonly string[] = ['Blocked', 'Diagnostic', 'Review pending'];
 
 function exactly(value: Record<string, unknown>, required: readonly string[], optional: readonly string[] = []): boolean {
     const keys = Object.keys(value);
@@ -167,28 +150,6 @@ function isSpecs(value: unknown): value is McSpecs {
     );
 }
 
-function isHighlighted(value: unknown): value is HighlightedRun {
-    return isRecord(value) && exactly(value, ['runId', 'status', 'spec']) && isText(value.runId) && isOneOf(value.status, ['Failed', 'Interrupted']) && isSpecRef(value.spec);
-}
-
-function isRuns(value: unknown): value is McRuns {
-    if (!isRecord(value)) {
-        return false;
-    }
-    if (value.available === false) {
-        return exactly(value, ['available', 'reason']) && isText(value.reason);
-    }
-    return (
-        value.available === true &&
-        exactly(value, ['available', 'running', 'highlighted', 'unreadable'], ['singleRunId']) &&
-        isCount(value.running) &&
-        (value.singleRunId === undefined || isText(value.singleRunId)) &&
-        Array.isArray(value.highlighted) &&
-        value.highlighted.every(isHighlighted) &&
-        isCount(value.unreadable)
-    );
-}
-
 function isAttentionRow(value: unknown): value is AttentionRow {
     return (
         isRecord(value) &&
@@ -199,18 +160,8 @@ function isAttentionRow(value: unknown): value is AttentionRow {
     );
 }
 
-function isRunReasons(value: unknown): value is RunReasons {
-    if (!isRecord(value)) {
-        return false;
-    }
-    if (value.available === true) {
-        return exactly(value, ['available']);
-    }
-    return value.available === false && exactly(value, ['available', 'reason']) && isText(value.reason);
-}
-
 function isAttention(value: unknown): value is McAttention {
-    return isRecord(value) && exactly(value, ['rows', 'runReasons']) && Array.isArray(value.rows) && value.rows.every(isAttentionRow) && isRunReasons(value.runReasons);
+    return isRecord(value) && exactly(value, ['rows']) && Array.isArray(value.rows) && value.rows.every(isAttentionRow);
 }
 
 function isChange(value: unknown): value is ActivityChange {
@@ -222,8 +173,6 @@ function isChange(value: unknown): value is ActivityChange {
             return exactly(value, ['kind', 'old', 'new', 'whileClosed']) && isBoardState(value.old) && isBoardState(value.new) && typeof value.whileClosed === 'boolean';
         case 'gone':
             return exactly(value, ['kind', 'old']) && isBoardState(value.old);
-        case 'run':
-            return exactly(value, ['kind', 'status', 'runId']) && isOneOf(value.status, RUN_STATUS_WORDS) && isText(value.runId);
         default:
             return false;
     }
@@ -246,10 +195,9 @@ function isActivity(value: unknown): value is McActivity {
 export function isMissionControlView(value: unknown): value is MissionControlView {
     return (
         isRecord(value) &&
-        exactly(value, ['header', 'specs', 'runs', 'attention', 'activity']) &&
+        exactly(value, ['header', 'specs', 'attention', 'activity']) &&
         isHeader(value.header) &&
         isSpecs(value.specs) &&
-        isRuns(value.runs) &&
         isAttention(value.attention) &&
         isActivity(value.activity)
     );

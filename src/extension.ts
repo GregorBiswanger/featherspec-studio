@@ -268,9 +268,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     const missionControl = createMissionControlService({
         source: modelSource,
         discovery: controller,
-        session,
         history: { read: () => lifecycle.history(), onDidChange: (listener) => lifecycle.onDidChange(() => listener()) },
-        clock: createSystemClock(),
     });
     const agentCenterUi = createAgentCenterUi();
     const agentCenter = createAgentCenterService({

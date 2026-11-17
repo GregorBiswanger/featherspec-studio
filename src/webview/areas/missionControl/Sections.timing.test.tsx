@@ -21,7 +21,7 @@ async function open(view: MissionControlView): Promise<HTMLElement> {
     return mounted.container;
 }
 
-function section(container: HTMLElement, name: 'runs' | 'attention' | 'activity'): HTMLElement {
+function section(container: HTMLElement, name: 'attention' | 'activity'): HTMLElement {
     return container.querySelector<HTMLElement>(`[data-${name}]`)!;
 }
 
@@ -36,7 +36,7 @@ afterEach(() => {
 });
 
 describe('AC-024: the whole content of a 200-spec project', () => {
-    it('renders runs, attention and activity within 1000 ms of the message event', async () => {
+    it('renders attention and activity within 1000 ms of the message event', async () => {
         const container = await open(sampleView());
         const big = bigView(200, 5);
         const best = await bestOfThree(
@@ -44,7 +44,6 @@ describe('AC-024: the whole content of a 200-spec project', () => {
             () => send(missionControlEvent(sampleView())),
         );
         expect(section(container, 'attention').querySelectorAll('[data-attention-row]')).toHaveLength(200);
-        expect(section(container, 'runs').querySelectorAll('[data-highlighted]')).toHaveLength(200);
         expect(section(container, 'activity').querySelectorAll('[data-activity-entry]')).toHaveLength(10);
         expect(best).toBeLessThan(BUDGET_MS.frame);
     });

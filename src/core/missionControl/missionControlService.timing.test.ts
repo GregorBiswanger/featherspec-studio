@@ -12,8 +12,8 @@ function current(world: ReturnType<typeof createServiceWorld>) {
 }
 
 describe('dashboard service', () => {
-    it('AC-024: a project of 200 specs, 5 runs per spec and 1,000 history entries is projected within 1000 ms (PD-035)', async () => {
-        const big = await generateModel(200, 5, 1000);
+    it('AC-024: a project of 200 specs and 1,000 history entries is projected within 1000 ms (PD-035)', async () => {
+        const big = await generateModel(200, 1000);
         let world = createServiceWorld(big.model);
         const best = await bestOfThree(
             async () => {
@@ -23,12 +23,11 @@ describe('dashboard service', () => {
             () => {
                 world.service.dispose();
                 world = createServiceWorld(big.model);
-                world.store.setRuns(big.runs);
                 world.history.view = big.history;
             },
         );
         expect(world.service.view()?.specs).toMatchObject({ total: 200 });
-        expect(world.service.view()?.runs).toMatchObject({ available: true });
+        expect(world.service.view()?.activity).toMatchObject({ available: true });
         expect(best).toBeLessThan(BUDGET_MS.modelUpdate);
     });
 });
