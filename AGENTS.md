@@ -117,9 +117,9 @@ architecture:
     - 'src/core/agentCenter — Agent Center projection: timeline rows, run summary, run list and header, selection and filter memory, event signal wrapper, Agent Center service, actions, request notifier (spec 0012)'
     - 'src/core/agentStart — agent start workflow: start prompt, run-start preconditions, start flow behind the board hand-off, orchestrator binding (spec 0008)'
     - 'src/adapters/node — Node file-system and spec-source adapters, Node-fs runtime medium, random IDs'
-    - 'src/adapters/providers — provider adapters behind AgentProviderPort; fake/ is the deterministic fake provider (spec 0009)'
+    - 'src/adapters/providers — provider adapters behind AgentProviderPort; fake/ is the deterministic fake provider (spec 0009); copilot/ is the GitHub Copilot SDK adapter: client seam, SDK wrapper, mapping, scripted client (spec 0010)'
     - 'src/adapters/vscode — thin implementations of the host ports with the VS Code API; no logic'
-    - 'test/fixtures — FeatherSpec fixture projects shared by unit and host tests'
+    - 'test/fixtures — FeatherSpec fixture projects shared by unit and host tests, and the recorded Copilot stream'
     - 'media — packaged static assets (Activity Bar icon)'
   shared:
     - 'src/shared/protocol — versioned message protocol, areas, board view and filter contract, Mission Control view, agent start view, Agent Center view, timeline and texts, UI texts; imported by extension and webview, imports nothing (specs 0005, 0007, 0006, 0013, 0008, 0012)'

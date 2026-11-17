@@ -3,6 +3,7 @@
 ## Stack
 - TypeScript (`strict`, target ES2022, module Node16), VS Code Desktop extension
   (`engines.vscode ^1.146.0`), npm.
+- GitHub Copilot SDK (spec 0010): `@github/copilot-sdk` 1.0.34 is the only SDK, an exact-pinned devDependency bundled by esbuild (`hostBuildOptions` exported from `esbuild.js`, `external: ['vscode','koffi']`); one universal VSIX, no per-platform runtime package (`npm ci` downloads the platform package into `node_modules` for the SDK's own install, it never reaches the bundle; `src/adapters/node/extensionBundle.test.ts` proves it). Recorded stream fixtures in `test/fixtures/copilot/` (PoC recording 2026-11-17, synthetic lines marked). Host smoke `src/test/copilot.smoke.test.ts` logs the host's Node version (M-07) and runs a real text-only session only with `FEATHERSPEC_COPILOT_SMOKE=1` and a signed-in CLI; otherwise it skips with a logged reason and sends no prompt.
 - Bundling: esbuild (`esbuild.js`), two targets: `src/extension.ts` → `dist/extension.js` (node, cjs) and `src/webview/main.tsx` → `dist/webview/main.js` + `main.css` (browser, iife, JSX automatic).
 - Webview: React 19.3.1 and react-dom 19.3.1 (devDependencies, bundled), jsdom 31.0.1 for tests; two tsconfigs (`tsconfig.json` excludes `src/webview`; `src/webview/tsconfig.json` has DOM lib and `jsx: react-jsx`).
 - Lint: ESLint 10 + typescript-eslint (`eslint.config.mjs`; rules at `warn` level).
@@ -23,7 +24,7 @@
   `fs180-de-baselines`, `fs170-brownfield-mixed` (copies of the owner's samples), hand-made `fs-broken` (invalid UTF-8, `-text` in its
   `.gitattributes`), `fs110-parallel-synthetic`, `fs110-ready-synthetic` (shapes seen in no sample: UNVERIFIED). The AC-018 performance test
   generates 200 specs in a temp dir (`src/core/specs/testing/generateProject.ts`; full read < 2 s, update < 1 s).
-- `npm test` — extension-host smoke suite (`src/test/discovery.smoke.test.ts`, `src/test/specRepository.smoke.test.ts`, `src/test/runtime.smoke.test.ts`, `src/test/lifecycle.smoke.test.ts`, `src/test/shell.smoke.test.ts`, `src/test/board.smoke.test.ts`, `src/test/missionControl.smoke.test.ts`, `src/test/providers.smoke.test.ts`, `src/test/orchestrator.smoke.test.ts`, `src/test/agentStart.smoke.test.ts`, `src/test/agentCenter.smoke.test.ts`); `pretest` compiles and lints
+- `npm test` — extension-host smoke suite (`src/test/discovery.smoke.test.ts`, `src/test/specRepository.smoke.test.ts`, `src/test/runtime.smoke.test.ts`, `src/test/lifecycle.smoke.test.ts`, `src/test/shell.smoke.test.ts`, `src/test/board.smoke.test.ts`, `src/test/missionControl.smoke.test.ts`, `src/test/providers.smoke.test.ts`, `src/test/orchestrator.smoke.test.ts`, `src/test/agentStart.smoke.test.ts`, `src/test/agentCenter.smoke.test.ts`, `src/test/copilot.smoke.test.ts`); `pretest` compiles and lints
   first; downloads and launches VS Code, so it is slow and needs network and a display. It cannot run
   in the agent sandbox (download blocked): CI and the Windows machine run it.
 - Runtime store (spec 0004): every store criterion is one contract suite (`src/core/runtime/testing/contract*.ts`)

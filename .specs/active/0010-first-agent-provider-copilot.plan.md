@@ -1,9 +1,9 @@
 # Plan — First Agent Provider Integration (GitHub Copilot SDK)
 
 **Spec:** [0010-first-agent-provider-copilot.md](0010-first-agent-provider-copilot.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-17
-**Current step:** T-001
+**Current step:** none (T-001 … T-008 verified)
 
 ## Approach
 
@@ -261,49 +261,47 @@ No parallel stage: every step from T-003 on builds on T-002's seam, and T-004…
   platform package. `systemPatterns.md`: client seam and scripted client, handler pairing, exit
   watcher (dated, linked). `activeContext.md`. Then every gate.
 - **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** 2026-11-17. Docs only, no red test applies: `src/core/providers/portDocument.test.ts` (the port document's tables) stays green with the new `copilot` section. README section "GitHub Copilot provider", `docs/agent-provider-port.md`, `AGENTS.md` snapshot, `techContext.md`, `systemPatterns.md`, `activeContext.md` updated. Gates: eslint --max-warnings 0, tsc, tsc -p src/webview clean; `npm run test:unit` 163 files, 2045 passed; `npm run compile` finished.
+- **Notes:** `AGENTS.md` last-reconciled date was already 2026-11-17. Wiki not in this checkout.
 
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-004, T-007 | — | — | open |
-| AC-002 | T-001, T-005, T-007 | — | — | open |
-| AC-003 | T-001, T-005 | — | — | open |
-| AC-004 | T-005 | — | — | open |
-| AC-005 | T-002 | — | — | open |
-| AC-006 | T-004 | — | — | open |
-| AC-007 | T-004 | — | — | open |
-| AC-008 | T-004, T-007 | — | — | open |
-| AC-009 | T-005 | — | — | open |
-| AC-010 | T-003 | — | — | open |
-| AC-011 | T-003 | — | — | open |
-| AC-012 | T-003 | — | — | open |
-| AC-013 | T-006 | — | — | open |
-| AC-014 | T-006 | — | — | open |
-| AC-015 | T-006 | — | — | open |
-| AC-016 | T-006 | — | — | open |
-| AC-017 | T-006 | — | — | open |
-| AC-018 | T-005 | — | — | open |
-| AC-019 | T-004 | — | — | open |
-| AC-020 | T-002, T-005 | — | — | open |
-| AC-021 | T-005 | — | — | open |
-| AC-022 | — (not planned, OP-007) | — | — | open |
-| AC-023 | T-004 | — | — | open |
-| AC-024 | T-002, T-004, T-007 | — | — | open |
-| AC-025 | T-006 | — | — | open |
+| AC-001 | T-004, T-007 | copilotProvider.ts, src/extension.ts | copilotStart.test.ts, copilotContract.test.ts | verified (unit; host smoke open) |
+| AC-002 | T-001, T-005, T-007 | cliLocator.ts, nodeLocate.ts, copilotSettingValues.ts, copilotProvider.ts | cliLocator.test.ts, copilotFailures.test.ts, copilotSettingValues.test.ts | verified (unit; host smoke open) |
+| AC-003 | T-001, T-005 | cliLocator.ts, copilotProvider.ts | cliLocator.test.ts, copilotFailures.test.ts | verified (unit; host smoke open) |
+| AC-004 | T-005 | copilotProvider.ts (sign-in check) | copilotFailures.test.ts | verified (unit; host smoke open) |
+| AC-005 | T-002 | sdkClient.ts, esbuild.js, package.json | sdkClient.test.ts, extensionBundle.test.ts | verified (unit; host smoke open) |
+| AC-006 | T-004 | copilotProvider.ts, sdkClient.ts | copilotStart.test.ts, sdkClient.test.ts | verified (unit; host smoke open) |
+| AC-007 | T-004 | copilotProvider.ts | copilotStart.test.ts | verified (unit; host smoke open) |
+| AC-008 | T-004, T-007 | copilotProvider.ts, copilotSettings.ts | copilotStart.test.ts, copilotSettingValues.test.ts | verified (unit; host smoke open) |
+| AC-009 | T-005 | copilotProvider.ts (model check) | copilotFailures.test.ts | verified (unit; host smoke open) |
+| AC-010 | T-003 | mapping.ts, testing/recorded.ts | mapping.test.ts, fixture.test.ts | verified (unit; host smoke open) |
+| AC-011 | T-003 | mapping.ts | mapping.test.ts | verified (unit; host smoke open) |
+| AC-012 | T-003 | mapping.ts | mapping.test.ts | verified (unit; host smoke open) |
+| AC-013 | T-006 | copilotProvider.ts (handler pairing) | copilotInteraction.test.ts | verified (unit; host smoke open) |
+| AC-014 | T-006 | copilotProvider.ts | copilotInteraction.test.ts | verified (unit; host smoke open) |
+| AC-015 | T-006 | copilotProvider.ts | copilotInteraction.test.ts | verified (unit; host smoke open) |
+| AC-016 | T-006 | copilotProvider.ts | copilotInteraction.test.ts | verified (unit; host smoke open) |
+| AC-017 | T-006 | copilotProvider.ts (cancel, force stop) | copilotInteraction.test.ts | verified (unit; host smoke open) |
+| AC-018 | T-005 | mapping.ts, copilotProvider.ts | copilotFailures.test.ts | verified (unit; host smoke open) |
+| AC-019 | T-004 | copilotProvider.ts (resume) | copilotStart.test.ts | verified (unit; host smoke open) |
+| AC-020 | T-002, T-005 | copilotProvider.ts (exit watcher), sdkClient.ts | copilotFailures.test.ts, sdkClient.test.ts | verified (unit; host smoke open) |
+| AC-021 | T-005 | copilotProvider.ts | copilotFailures.test.ts | verified (unit; host smoke open) |
+| AC-022 | — (not planned, OP-007) | — | — | not planned (OP-007) |
+| AC-023 | T-004 | copilotProvider.ts | copilotStart.test.ts | verified (unit; host smoke open) |
+| AC-024 | T-002, T-004, T-007 | copilotProvider.ts (base directory), sdkClient.ts | copilotStart.test.ts, sdkClient.test.ts | verified (unit; host smoke open) |
+| AC-025 | T-006 | copilotProvider.ts (endSession) | copilotInteraction.test.ts | verified (unit; host smoke open) |
 
 ## Session handoff
 
-- **Done so far:** plan written 2026-11-17; spec revised the same day from the PoC evidence (§7,
-  §9, §12–§15, AC-004, AC-020 wording; open points decided).
-- **Next action:** Gregor reads the plan; on the start signal T-001 (asks before `npm install`).
-- **Open decisions:** for Gregor to confirm while reading — (a) `trustWorkingDirectory: 'session'`
-  on create (as in the PoC; trusts the project root for that session only, every tool action still
-  asks); (b) the 5 s ping watcher as the runtime-exit signal; (c) a cold first runtime start took
-  14 s against 0009's 15 s availability timeout — a slow first check reports *unknown* with the
-  timeout hint and the next one is warm; M-07 measures it.
+- **Done so far:** T-001 … T-008 built and verified (2026-11-17); unit gates green; contract suite
+  passes for `copilot` (adapted suite, T-007 Notes).
+- **Next action:** run `npm test` on Windows/CI with `FEATHERSPEC_COPILOT_SMOKE=1` (host smoke, M-07);
+  then `/sdd-compile` in a new session.
+- **Open decisions:** none new; PoC-based assumptions A-006 etc. are confirmed only by M-07 on a real
+  signed-in CLI.
 - **Baseline:** bab7268
 - **Environment:** `npm test` cannot run here; the host smoke runs on Windows through the
   orchestrator with `FEATHERSPEC_COPILOT_SMOKE=1`.

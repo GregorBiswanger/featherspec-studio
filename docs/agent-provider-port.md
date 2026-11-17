@@ -150,6 +150,20 @@ every consumer. It opens no network connection and never creates, changes or del
 An unknown scenario value runs `happy-path`. `calls()` returns the recorded operations. Runs are
 deterministic: the same scenario, profile, clock and answers deliver the same kinds and payloads.
 
+## GitHub Copilot provider
+
+`createCopilotProvider` (`src/adapters/providers/copilot/copilotProvider.ts`, spec 0010) is the first
+real adapter. It talks to the Copilot CLI through `@github/copilot-sdk` (bundled by esbuild) behind a
+client seam, so tests replay the recorded stream without a CLI or a network.
+
+| Name | Value |
+| --- | --- |
+| ID and display name | `copilot`, "GitHub Copilot" |
+| Permission label | "Asks before every tool action (Copilot manual mode)" |
+| Declaration | `mcp` and `customTools` `none`, `typedErrors` `derived`, `fileChanges` `native` and experimental, the rest `native` |
+| Settings | `featherspec-studio.copilot.cliPath` (machine scope), `featherspec-studio.copilot.model` |
+| Timing | cancel forces a stop after 10 s; a runtime exit is noticed within 5 s; resume waits 2 s for its session event |
+
 ## Settings
 
 | Setting | Meaning |
