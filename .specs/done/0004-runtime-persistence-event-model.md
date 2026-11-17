@@ -494,3 +494,4 @@ Open, none blocks planning (clarify finding in brackets; a recommendation each):
 ## Plan history
 
 - 2026-11-17 — [0004-runtime-persistence-event-model.2026-11-17.plan.md](../plan-archive/0004-runtime-persistence-event-model.2026-11-17.plan.md) — T-001…T-010 built; second `/sdd-compile` READY (manual items: 1, AC-020); host suite 28 passing at e6f0c85 (Windows 11) and CI green at 9635ba4.
+- 2026-11-17 — follow-up (release preparation): the masking samples moved from `src/core/runtime/masking.ts` to `src/core/runtime/testing/secretSamples.ts`, because the sample GitHub token in `dist/extension.js` made `vsce package` refuse the VSIX; test `src/adapters/node/extensionBundle.test.ts` (no sample reaches the bundle). Patterns and AC-013 unchanged.

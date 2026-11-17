@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SECRET_PATTERNS } from '../masking';
+import { sampleOf } from './secretSamples';
 import type { ContractContext } from './contract';
 
 const SPEC = { stem: '0009-provider', path: '.specs/active/0009-provider.md' };
@@ -11,7 +12,7 @@ export function registerMaskingContract(context: ContractContext): void {
             const rig = await context.newRig();
             rig.credentials.held.push(CREDENTIAL);
             const store = await rig.open();
-            const samples = SECRET_PATTERNS.map((pattern) => pattern.sample);
+            const samples = SECRET_PATTERNS.map((pattern) => sampleOf(pattern.name));
             const run = await store.createRun({ providerId: 'fake', spec: SPEC });
             await store.appendEvent(run.runId, {
                 type: 'message',

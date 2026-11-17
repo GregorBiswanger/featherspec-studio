@@ -4,8 +4,8 @@ FeatherSpec Studio masks text before it stores a run or an event (spec 0004, BR-
 replaced by `[masked]`: the values of credentials Studio holds, and every match of a pattern below. Masking is
 **best effort**: a secret split across two events, or one that no pattern describes, is not recognised.
 
-Studio does not read `.env` files. A test keeps this list and the code (`src/core/runtime/masking.ts`) equal;
-change both in one change set. A pattern is a JavaScript regular expression.
+Studio does not read `.env` files. A test keeps this list and the code (`src/core/runtime/masking.ts`, samples in
+`src/core/runtime/testing/secretSamples.ts` so they never reach the shipped bundle) equal; change both in one change set. A pattern is a JavaScript regular expression.
 
 | Name | Category | Pattern | Flags | Sample |
 | --- | --- | --- | --- | --- |

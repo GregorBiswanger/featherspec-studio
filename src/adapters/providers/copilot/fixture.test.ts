@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { SECRET_PATTERNS } from '../../../core/runtime/masking';
+import { sampleOf } from '../../../core/runtime/testing/secretSamples';
 import { RECORDED_FILE, readFixture, SYNTHETIC_FILE } from './testing/recorded';
 
 const HOME_PATH = /[A-Za-z]:\\+Users|\/home\/|\/Users\/|AppData|~\\|\/root\//;
@@ -22,7 +23,7 @@ describe('Copilot fixtures (spec 0010 §11, BR-02)', () => {
 
     it('AC-010: negative control, every masking pattern finds its own sample', () => {
         for (const pattern of SECRET_PATTERNS) {
-            expect(secretHits(pattern.sample)).toContain(pattern.name);
+            expect(secretHits(sampleOf(pattern.name))).toContain(pattern.name);
         }
     });
 

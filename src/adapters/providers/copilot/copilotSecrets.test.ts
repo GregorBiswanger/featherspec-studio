@@ -4,12 +4,13 @@ import { SECRET_PATTERNS } from '../../../core/runtime/masking';
 import { openRuntimeStore } from '../../../core/runtime/runtimeStore';
 import { createFakeCredentials, createFakeNotices, createSequentialIds } from '../../../core/runtime/testing/fakes';
 import { createMemoryBacking, createMemoryMedium } from '../../../core/runtime/testing/memoryMedium';
+import { sampleOf } from '../../../core/runtime/testing/secretSamples';
 import type { JsonValue } from '../../../core/runtime/model';
 import type { CopilotEvent } from './client';
 import type { ScriptStep } from './testing/recorded';
 import { createCopilotWorld, ROOT } from './testing/world';
 
-const SAMPLES = SECRET_PATTERNS.map((pattern) => pattern.sample);
+const SAMPLES = SECRET_PATTERNS.map((pattern) => sampleOf(pattern.name));
 const leak = (index: number): string => SAMPLES[index % SAMPLES.length] ?? '';
 
 const event = (type: string, id: string, data: Record<string, unknown>): ScriptStep => ({

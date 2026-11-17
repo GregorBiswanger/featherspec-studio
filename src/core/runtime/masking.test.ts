@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import * as path from 'path';
 import { describe, expect, it } from 'vitest';
 import { MASK_PLACEHOLDER, SECRET_PATTERNS, createMasker } from './masking';
+import { sampleOf } from './testing/secretSamples';
 
 interface DocRow {
     name: string;
@@ -39,7 +40,7 @@ describe('secret patterns', () => {
             category: pattern.category,
             source: pattern.source,
             flags: pattern.flags,
-            sample: pattern.sample,
+            sample: sampleOf(pattern.name),
         }));
         expect(fromDoc).toEqual(fromCode);
     });
@@ -49,7 +50,7 @@ describe('secret patterns', () => {
         expect(categories).toEqual(new Set(['provider-token', 'bearer-token', 'private-key']));
         const masker = createMasker({ values: () => [] });
         for (const pattern of SECRET_PATTERNS) {
-            expect(masker.text(`before ${pattern.sample} after`), pattern.name).toBe(`before ${MASK_PLACEHOLDER} after`);
+            expect(masker.text(`before ${sampleOf(pattern.name)} after`), pattern.name).toBe(`before ${MASK_PLACEHOLDER} after`);
         }
     });
 

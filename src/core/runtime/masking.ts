@@ -8,7 +8,6 @@ export interface SecretPattern {
     category: 'provider-token' | 'bearer-token' | 'private-key';
     source: string;
     flags: string;
-    sample: string;
 }
 
 export const SECRET_PATTERNS: readonly SecretPattern[] = [
@@ -17,42 +16,36 @@ export const SECRET_PATTERNS: readonly SecretPattern[] = [
         category: 'provider-token',
         source: '\\bgh[pousr]_[A-Za-z0-9]{36,}',
         flags: 'g',
-        sample: 'ghp_0123456789abcdefghijklmnopqrstuvwxyz',
     },
     {
         name: 'github-fine-grained-token',
         category: 'provider-token',
         source: 'github_pat_[A-Za-z0-9_]{22,}',
         flags: 'g',
-        sample: 'github_pat_11ABCDEFG0123456789_abcdefghijklmnop',
     },
     {
         name: 'anthropic-key',
         category: 'provider-token',
         source: 'sk-ant-[A-Za-z0-9_-]{20,}',
         flags: 'g',
-        sample: 'sk-ant-api03-ABCDEFGHIJKLMNOPQRSTUV',
     },
     {
         name: 'secret-key',
         category: 'provider-token',
         source: '\\bsk-[A-Za-z0-9_-]{20,}',
         flags: 'g',
-        sample: 'sk-0123456789abcdefghijklmnop',
     },
     {
         name: 'bearer-token',
         category: 'bearer-token',
         source: '\\bBearer\\s+[A-Za-z0-9._~+/=-]{16,}',
         flags: 'gi',
-        sample: 'Bearer abcdef0123456789ABCDEF',
     },
     {
         name: 'private-key-block',
         category: 'private-key',
         source: '-----BEGIN [A-Z ]*PRIVATE KEY-----[\\s\\S]*?-----END [A-Z ]*PRIVATE KEY-----',
         flags: 'g',
-        sample: '-----BEGIN PRIVATE KEY-----MIIBVgIBADANBgkq-----END PRIVATE KEY-----',
     },
 ];
 
