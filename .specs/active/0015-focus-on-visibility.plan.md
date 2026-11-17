@@ -379,6 +379,14 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 - [x] **Verified (T-019):** 2026-11-17 — red: the new docs-scan test `ADR-001 carries the note at its §14…` failed while the note sat at the head; green after the move (9 docs-scan tests). The brief grep returned 0 before and 1 after; its term grep `provider|agent run|agentCenter|orchestrator` stays 0; `CHANGELOG.md` grep for agent center, provider, copilot, orchestrator, run history, stop run, resume run, agent run → 0. Gates 1–5 clean: 1688 passed + 3 skipped, 12 timing.
 - **Notes:** the spec edit (AC-021) changes no behaviour: `sourceScan.test.ts` already listed `docsScan.test.ts` as an exception since T-014.
 
+### T-020 — Compile fix D7: complete the test-title audit; host-suite evidence
+
+- **Covers:** AC-027; compile report 2026-11-17 D7
+- **Do:** `## Test-title audit`: counts at the new head, the board filter and sort block as restored (T-017), and a section for the runtime store contract suite registered in `src/core/runtime/testing/*.ts` (72 titles, each gone with its behaviour or mapped to its head title). Record Gregor's Windows results.
+- **Verify:** the audit script at tag and head (`/tmp/audit/titles.py` for `*.test.ts(x)`, `/tmp/audit2/titles.py` for the contract suite) gives the counts the audit states
+- [x] **Verified (T-020):** 2026-11-17 — no code change, so no red run; `*.test.ts(x)`: 2470 at the tag, 1703 at the head, 948 missing (820 in deleted files, 128 in staying files; the 4 boardService titles left are run titles); contract suite: 93 at the tag, 40 at the head, 72 missing (58 gone with their behaviour, 14 mapped to a head title, among them 0004 AC-009 → T-016).
+- **Notes:** Evidence from Gregor's Windows 11 machine, 2026-11-17, at commit `c4f7a5d`: `npm run test:unit` 1661 passed, 7 skipped, 12 timing passed; `npm test` 23 + 1 + 1 + 1 passing, 0 pending (after the stale-output fix of `c4f7a5d`; before it, at `7a13112`, 6 failures were compiled tests of deleted host files left in `out/`); live setup (`FEATHERSPEC_SETUP_LIVE=1`) 2 passed. T-016 and T-018 changed product code after `c4f7a5d` (the store opener and the move-result presenter in `src/extension.ts`), so `npm test` at the fix head is still to run on Windows and CI.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -387,13 +395,13 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 | AC-002 | T-009 | src/core/shell/uiMemory.ts, src/shared/protocol/areas.ts | src/core/shell/uiMemory.test.ts, src/core/shell/shellService.navigation.test.ts, src/shared/protocol/messages.test.ts | verified |
 | AC-003 | T-001, T-002 | src/core/board/nextStep.ts, src/core/board/detail.ts, src/webview/detail/NextStep.tsx | src/core/board/detail.test.ts, src/webview/detail/SpecDetail.test.tsx | verified |
 | AC-004 | T-001 | src/core/board/nextStep.ts | src/core/board/nextStep.test.ts | verified |
-| AC-005 | T-002 | src/core/board/boardRequests.ts, src/adapters/vscode/clipboard.ts, src/webview/detail/NextStep.tsx | src/core/board/boardRequests.test.ts, src/webview/detail/SpecDetail.test.tsx | verified |
-| AC-006 | T-003 | src/core/board/moves.ts, src/webview/board/Announcer.tsx, src/adapters/vscode/boardPicks.ts | src/core/board/moves.test.ts, src/core/board/noWrite.test.ts, src/webview/board/Keyboard.test.tsx | verified |
+| AC-005 | T-002, T-018 | src/core/board/boardRequests.ts, src/core/board/moves.ts:copyLine, src/adapters/vscode/clipboard.ts, src/webview/detail/NextStep.tsx | src/core/board/boardRequests.test.ts, src/core/board/moves.test.ts, src/webview/detail/SpecDetail.test.tsx | verified |
+| AC-006 | T-003, T-018 | src/core/board/moves.ts (with createMoveResultPresenter), src/webview/board/Announcer.tsx, src/adapters/vscode/boardPicks.ts | src/core/board/moves.test.ts, src/core/board/noWrite.test.ts, src/webview/board/Keyboard.test.tsx | verified |
 | AC-007 | T-002 | src/webview/detail/SpecDetail.tsx | src/webview/detail/SpecDetail.timing.test.tsx | verified |
 | AC-008 | T-002, T-003 | src/core/board/boardRequests.ts, src/core/board/moves.ts | src/core/board/boardRequests.test.ts, src/core/board/moves.test.ts | verified |
-| AC-009 | T-002 | src/core/board/boardRequests.ts | src/core/board/boardRequests.test.ts, src/webview/detail/SpecDetail.test.tsx | verified |
+| AC-009 | T-002, T-018 | src/core/board/boardRequests.ts, src/core/board/moves.ts:copyLine, src/core/board/moves.ts:createMoveResultPresenter | src/core/board/boardRequests.test.ts, src/core/board/moves.test.ts, src/webview/detail/SpecDetail.test.tsx | verified |
 | AC-010 | T-006 | src/core/missionControl/missionControlView.ts, src/core/missionControl/attention.ts, src/core/missionControl/activity.ts, src/webview/areas/missionControl/ | src/core/missionControl/*.test.ts, src/webview/areas/missionControl/Sections.test.tsx, src/webview/areas/missionControl/Drilldown.test.tsx | verified |
-| AC-011 | T-005 | src/core/board/cards.ts, src/core/board/filters.ts, src/webview/board/FilterBar.tsx | src/core/board/boardService.test.ts, src/core/board/filters.test.ts, src/webview/board/SpecBoard.test.tsx, src/shared/protocol/boardFilter.test.ts | verified |
+| AC-011 | T-005, T-017 | src/core/board/cards.ts, src/core/board/filters.ts, src/webview/board/FilterBar.tsx | src/core/board/boardService.test.ts, src/core/board/filters.test.ts, src/webview/board/SpecBoard.test.tsx, src/shared/protocol/boardFilter.test.ts | verified |
 | AC-012 | T-005 | src/core/board/detail.ts, src/webview/detail/SpecDetail.tsx | src/core/board/detail.test.ts, src/core/board/boardService.test.ts, src/webview/detail/SpecDetail.test.tsx | verified |
 | AC-013 | T-010 | src/core/runtime/runtimeStore.ts | src/core/runtime/testing/contract.ts (afterEach on every medium), src/core/runtime/runtimeStore.test.ts, src/adapters/node/fileRuntimeMedium.test.ts | verified |
 | AC-014 | T-007, T-009 | package.json, src/extension.ts | src/adapters/vscode/manifest.test.ts, src/test/runtime.smoke.test.ts (host) | verified |
@@ -403,28 +411,28 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 | AC-018 | T-012 | esbuild.js | src/adapters/node/extensionBundle.test.ts, src/adapters/node/webviewBundle.test.ts | verified |
 | AC-019 | T-012 | src | src/adapters/node/sourceScan.test.ts | verified |
 | AC-020 | T-012 | src/adapters/node/fetchReleaseHttp.ts, src/webview/main.tsx | src/adapters/node/sourceScan.test.ts | verified |
-| AC-021 | T-008, T-009, T-012 | the folders named in the criterion are deleted | src/adapters/node/sourceScan.test.ts | verified |
+| AC-021 | T-008, T-009, T-012, T-019 | the folders named in the criterion are deleted; exceptions amended (OP-008) | src/adapters/node/sourceScan.test.ts | verified |
 | AC-022 | T-007, T-012 | src/test (host suites), .vscode-test.mjs | src/adapters/node/sourceScan.test.ts | verified |
 | AC-023 | T-004, T-011 | src/core/runtime/earlierRunData.ts, src/adapters/node/earlierRunDataFiles.ts, src/extension.ts | src/core/runtime/earlierRunData.test.ts, src/adapters/node/earlierRunDataFiles.test.ts, src/adapters/node/earlierRunData.endToEnd.test.ts | verified |
 | AC-024 | T-004, T-011 | src/core/runtime/earlierRunData.ts, src/extension.ts | src/core/runtime/earlierRunData.test.ts, src/adapters/node/earlierRunData.endToEnd.test.ts | verified |
-| AC-025 | T-014 | src/adapters/node/docsScan.test.ts | — | verified |
+| AC-025 | T-014, T-019 | README.md, docs/runtime-data.md, docs/release-checklist.md, docs/decisions/ADR-001-extension-architecture.md (§14), ADR-002, ADR-003 | src/adapters/node/docsScan.test.ts | verified |
 | AC-026 | T-006, T-010 | src/shared/protocol/areas.ts, src/shared/protocol/texts.ts, src/core/runtime/notices.ts | src/shared/protocol/messages.test.ts, src/webview/PanelStateView.test.tsx, src/core/runtime/runtimeSession.test.ts | verified |
-| AC-027 | T-015 | ## Test-title audit in this plan | `npm test` (Windows, CI) is the pre-done gate, not run here | verified here, host suite pending |
+| AC-027 | T-015, T-016, T-017, T-020 | ## Test-title audit in this plan; 0004 AC-009 and 0007 filter and sort tests restored | src/adapters/node/fileRuntimeMedium.test.ts, src/core/runtime/testing/contract.ts, src/core/board/boardService.test.ts; `npm test` green on Windows at `c4f7a5d` (T-020 notes) | verified here; `npm test` at the fix head pending |
 | AC-028 | T-013 | .specs/done/0008–0012 (Deprecated), .specs/done/0003–0007 and 0013 (notes) | grep checks of T-013 | verified |
-| AC-029 | T-015 | AGENTS.md (214 lines), .architecture/*.md, .memory-bank/*.md | grep check in T-015 Verify | verified |
+| AC-029 | T-015, T-019 | AGENTS.md (214 lines), .architecture/*.md, .memory-bank/*.md | grep check in T-015 Verify | verified |
 | AC-030 | T-014, T-015 | — | manual: Gregor, M-1 on `tip-splitter` | open |
 
 ## Session handoff
 
-- **Done so far:** All five stages (T-001…T-015); stages 1 to 4: next step, copy, drop result; board and detail without runs; Mission Control without runs; run wiring, manifest entries and dead modules removed; three areas; the status-history store; the earlier-data removal wired at activation; the SDK uninstalled, the bundle and source scans. Stage 5: specs retired and amended (T-013), product docs (T-014), architecture, Memory Bank, test-title audit and final gates (T-015).
-- **Next action:** Gregor: AC-030 / M-1 on `tip-splitter`; `npm test` on Windows and CI; then `/sdd-compile` (not run here).
+- **Done so far:** All five stages (T-001…T-015); stages 1 to 4: next step, copy, drop result; board and detail without runs; Mission Control without runs; run wiring, manifest entries and dead modules removed; three areas; the status-history store; the earlier-data removal wired at activation; the SDK uninstalled, the bundle and source scans. Stage 5: specs retired and amended (T-013), product docs (T-014), architecture, Memory Bank, test-title audit and final gates (T-015). Compile fixes 2026-11-17 (T-016…T-020): 0004 AC-009 test with the store opener, the board filter and sort tests, Copy texts on the command path, ADR-001 §14 note, AC-021 exceptions (OP-008), brief mission, stale docs, the completed audit.
+- **Next action:** Gregor: AC-030 / M-1 on `tip-splitter`; `npm test` on Windows and CI at the fix head (product code changed in T-016, T-018); then `/sdd-compile` again in a fresh session (not run here). 0015 stays `In Progress` in `active/` until then.
 - **Open decisions:** — (Gregor approved the changed order and `npm uninstall @github/copilot-sdk`; the parallel stage runs in sequence; deletions listed per step are approved.)
 - **Baseline:** ea4a8bd
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked); host suites run on Windows and CI. Gates: `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`.
 
 ## Test-title audit
 
-AC-027. A throw-away script outside the repository (`/tmp/audit/titles.py`) extracted the `it`/`test`/`describe` title literals of all `src/**/*.test.ts(x)` at tag `archive/agent-runs-2026-11-17` (2470 distinct titles) and at the head (1680). 957 titles of the tag are missing at the head. Titles built by `%s` or `%j` are listed with their format text.
+AC-027. A throw-away script outside the repository (`/tmp/audit/titles.py`) extracted the `it`/`test`/`describe` title literals of all `src/**/*.test.ts(x)` at tag `archive/agent-runs-2026-11-17` (2470 distinct titles) and at the head (1703 after T-016–T-019; 1680 at T-015). 948 titles of the tag are missing at the head (957 at T-015; the 9 titles of the board filter and sort block are back since T-017). The runtime store contract suite registers its tests outside `*.test.ts` files, in `src/core/runtime/testing/*.ts`; its titles are audited separately below (corrected 2026-11-17 after the compile, finding D7). Titles built by `%s` or `%j` are listed with their format text.
 
 ### Deleted with their module (820 titles, the whole test file is gone)
 
@@ -446,7 +454,7 @@ AC-027. A throw-away script outside the repository (`/tmp/audit/titles.py`) extr
 
 These belong to removed behaviour (providers, orchestrator, agent start, Agent Center, Copilot adapter, run store parts); their criteria are voided by spec 0015 §5 (PD-055).
 
-### Missing from files that stay (137 titles)
+### Missing from files that stay (128 titles)
 
 **src/adapters/node/extensionBundle.test.ts** — voided with the SDK (AC-017/AC-018 replace them in the bundle scan)
 
@@ -498,20 +506,11 @@ These belong to removed behaviour (providers, orchestrator, agent start, Agent C
 - AC-002 (0010): negative control, the manifest declares exactly the two copilot settings
 - AC-005 (0010): the Copilot SDK is a devDependency pinned exactly and no production dependency exists, so the VSIX carries only the bundle
 
-**src/core/board/boardService.test.ts** — run notification and provider filters gone; the filter, sort and navigation tests stay under the same names without the run part (AC-007, AC-022 voided by 0015 §5)
+**src/core/board/boardService.test.ts** — run notification gone (0007 AC-007, AC-019 and AC-027's run part voided by 0015 §5). The block `board service: filters and sort` (0007 AC-011, AC-012, AC-022, AC-023, listeners, focus) was deleted in T-005 by mistake and is restored under its tag names in T-017.
 
 - AC-007: a run notification updates the card; the store being unavailable shows "not available"
 - AC-007: without a store every card reads "Runs: not available"
 - AC-019: the service follows the store that the session holds now (re-subscribed when it changes)
-- board service: filters and sort
-- AC-022: a navigation filter replaces the filters set before and is shown as set
-- AC-012: clear filters removes every filter and keeps the sort
-- AC-023: filters and sort survive a rebuild of the model and a hidden panel
-- AC-023: a closed panel resets filters and sort
-- AC-023: a change of the project clears the filters and keeps the sort
-- AC-011: the lifecycle model is unchanged by every filter and sort call
-- a change notifies the listeners once; setting the same view again notifies nobody
-- the focused key is remembered and cleared with the panel
 - AC-027: a run notification updates the detail history; an unavailable store shows not available
 
 **src/core/board/boardService.timing.test.ts** — run notification part voided
@@ -687,3 +686,27 @@ These belong to removed behaviour (providers, orchestrator, agent start, Agent C
 
 - the Agent Center empty list
 
+### Runtime store contract suite (`src/core/runtime/testing/*.ts`, 72 titles)
+
+At the tag the suite held 93 distinct titles in eight files, at the head 40 in three (`contract.ts`, `contractWriter.ts`, `contractFaults.ts`); 72 titles of the tag are missing (`contractFaults` 25, `contractEvents` 14, `contractWriter` 12, `contractRuns` 11, `contractRunChanges` 7, `contractMasking` 3; the compile report's "77" is the same list, its per-file counts sum to 72). Same extraction, run on `git show` of both refs.
+
+**Gone with their behaviour** (runs, events, masking, Clear, run classification, run-change notification; 0004 AC-003–AC-008, AC-011, AC-013 masking, AC-015, AC-019, AC-022, AC-027–AC-030 and the run parts of AC-010, AC-014, AC-017, AC-018, AC-021, AC-023, AC-024 voided or narrowed by 0015 §5): every title of `contractEvents.ts` (14), `contractMasking.ts` (3) and `contractRunChanges.ts` (7); of `contractRuns.ts` all but AC-009 (10); of `contractFaults.ts` the run, event, Clear, run-list and creation titles (AC-014 lost event and run flag; AC-015 all six; AC-017 status change or event for a newer run; AC-019 both; AC-021 kill and run-log record; AC-022; AC-023 Clear; OP-006; the describe headings `clearing`, `unreadable and incomplete data`, `writes to data that cannot be read or is newer (AC-015, AC-017)`) — 19; of `contractWriter.ts` the run titles (AC-011 both, AC-018 open run and ended runs, the heading `restore and Interrupted classification`) — 5. Together 58; with the 14 below, 72.
+
+**Replaced by a head title** (status-history form of the same criterion):
+
+| Tag title | Head title |
+| --- | --- |
+| AC-009: a project opened under another root URI returns no run | 0004 AC-009: a project opened under another root reads no status history of the first root (contract, T-016); 0004 AC-009 tests in `src/adapters/node/fileRuntimeMedium.test.ts` |
+| AC-010: after a restart every run is returned with history, timestamps, spec reference and events in order | AC-010: after a restart every entry is returned with its stem, its time and its content in append order |
+| AC-018: spec status history entries observed more than 90 days ago are removed, newer ones stay in order | AC-018: spec status history entries observed more than 90 days ago are removed at activation, newer ones stay in order |
+| AC-018: the setting changes the cap; a value below 1, fractional or not a number falls back to 90 | AC-018: the cap is 90 days, not configurable: an entry of exactly 89 days stays, one of 91 days goes |
+| AC-023, AC-014: closing waits for every write, also the flag that follows a successful write, before it releases the lock | AC-023: closing waits for every write before it releases the lock |
+| AC-023: a reader neither classifies open runs nor applies the age cap | AC-023: a reader does not apply the age cap |
+| AC-024: a reader takes over when the heartbeat is older than 60 s, not before | AC-024: a reader takes over when the heartbeat is older than 60 s, not before, and then applies the age cap |
+| AC-024: a stale lock is taken over at activation, and the open runs become Interrupted | AC-024: a stale lock is taken over at activation |
+| AC-014: a failed status write does not fail the caller; the run is flagged, readable, and warned about once | AC-014: a failed status history write is refused with the reason; the next write is stored and nothing was half written |
+| AC-021: an incomplete last record of the events is skipped, reported once, the bytes stay identical | AC-021: an incomplete last history record is skipped, the bytes stay unchanged and nothing is reported |
+| AC-021: an event appended after an incomplete record starts on a fresh line and stays readable across restarts | AC-021: a spec status entry appended after an incomplete history record stays readable |
+| AC-014: negative control, without a failure nothing is flagged and nothing is warned | AC-014: negative control, without a failure every entry is stored and nothing is warned |
+| AC-017: a run record of a newer format is untouched by the age cap and by Clear, and reported | AC-017: a history record of a newer format is untouched by the age cap |
+| AC-017: an event for a run whose events file holds a newer record is refused and nothing is appended | AC-017: a spec status entry for a history file with a newer record is refused and nothing is appended |
