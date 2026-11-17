@@ -163,6 +163,19 @@ describe('events and statuses', () => {
         expect(await world.statusesOf(runId)).toEqual(['Starting', 'Running', 'Completed']);
     });
 
+    it('AC-005: a duplicate approval.requested after its .resolved changes no status', async () => {
+        const world = await createWorld();
+        const runId = await started(world, { providerId: 'controlled' });
+        const sink = sinkFor(world, runId);
+        sink.emit({ kind: 'session.started', source: 'provider', payload: {} });
+        sink.emit({ kind: 'approval.requested', source: 'provider', providerEventId: 'p-1', payload: { requestId: 'r1', tool: 'shell', summary: 's' } });
+        sink.emit({ kind: 'approval.resolved', source: 'provider', providerEventId: 'p-2', payload: { requestId: 'r1' } });
+        sink.emit({ kind: 'approval.requested', source: 'provider', providerEventId: 'p-1', payload: { requestId: 'r1', tool: 'shell', summary: 's' } });
+        await world.orchestrator.whenIdle();
+        expect(await world.statusesOf(runId)).toEqual(['Starting', 'Running', 'WaitingForApproval', 'Running']);
+        expect(await world.eventKinds(runId)).toEqual(['session.started', 'approval.requested', 'approval.resolved']);
+    });
+
     it('AC-006: the fake approval and input scenarios hold their waiting statuses', async () => {
         const approval = await createWorld({ scenario: 'approval' });
         const approvalRun = await started(approval);

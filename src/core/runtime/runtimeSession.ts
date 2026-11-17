@@ -48,8 +48,8 @@ export function createRuntimeSession(deps: RuntimeSessionDeps): RuntimeSession {
     let subscription: Disposable | undefined;
     let disposed = false;
 
-    function setState(next: StoreState): void {
-        if (next.kind === state.kind && next.reason === state.reason) {
+    function setState(next: StoreState, storeSwitched = false): void {
+        if (!storeSwitched && next.kind === state.kind && next.reason === state.reason) {
             return;
         }
         state = next;
@@ -83,7 +83,7 @@ export function createRuntimeSession(deps: RuntimeSessionDeps): RuntimeSession {
             }
             store = opened;
             storeSubscription = opened.onDidChangeState((next) => setState(next));
-            setState(opened.state());
+            setState(opened.state(), true);
         } catch (error) {
             setState({ kind: 'unavailable', reason: error instanceof Error ? error.message : String(error) });
         }
