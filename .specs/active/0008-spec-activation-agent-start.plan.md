@@ -152,7 +152,7 @@ stage and becomes its own step.
   (AC-001's example: P-1 with R-4 and P-5 with `r-7`), each of the three P-2 paths missing.
 - **Verify:** `npx vitest run src/core/agentStart/preconditions` then the per-step gates
 - [x] **Verified (T-002):** 2026-11-17 — red: `npx vitest run src/core/agentStart/preconditions` with the `Not implemented` stub: 20 of 20 failed (`Error: Not implemented`). Green: 20 of 20 pass (each of P-1 transition/no-entry/several, P-2 each path and all three, P-3, P-4 four results and the 15 s timeout, P-5 for all four open statuses, P-6 both states, P-7, P-8 eight bad stems, the two skips, several at once in ID order). Gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 126 files, 1638 tests green.
-- **Notes:** Reasons are flat objects (`{ id: 'P-1', kind: 'transition', refusal, text }`), not nested, with the stub for a service refusal on P-4 mapped to result `unknown`. P-2 is skipped when there is no model (no root to look under; P-1 already fails). `startWorld.ts` wraps 0011's `createWorld` (real store, session double, real 0009 service, fake provider, controlled adapter) so T-003/T-004 and the end-to-end test reuse it.
+- **Notes:** Reasons are flat objects (`{ id: 'P-1', kind: 'transition', refusal, text }`), not nested, a service refusal on P-4 is mapped to result `unknown`. P-2 is skipped when there is no model (no root to look under; P-1 already fails). `startWorld.ts` wraps 0011's `createWorld` (real store, session double, real 0009 service, fake provider, controlled adapter) so T-003/T-004 and the end-to-end test reuse it.
 
 ### T-003 — Start flow: hand-off, refusal, confirmation, cancel
 
@@ -273,21 +273,21 @@ stage and becomes its own step.
 | AC-003 | T-003, T-006, T-007 | — | — | open |
 | AC-004 | T-004 | — | — | open |
 | AC-005 | T-004, T-007 | — | — | open |
-| AC-006 | T-001, T-006 | — | — | open |
-| AC-007 | T-002 | — | — | open |
+| AC-006 | T-001, T-006 | src/core/agentStart/startPrompt.ts:buildStartPrompt | src/core/agentStart/startPrompt.test.ts (golden byte equality) | built |
+| AC-007 | T-002 | src/core/agentStart/preconditions.ts:checkPreconditions | src/core/agentStart/preconditions.test.ts (P-2) | verified |
 | AC-008 | T-002, T-004, T-005 | — | — | open |
 | AC-009 | T-003 | — | — | open |
 | AC-010 | T-004, T-005 | — | — | open |
 | AC-011 | T-004 | — | — | open |
 | AC-012 | T-004 | — | — | open |
-| AC-013 | T-002, T-005 | — | — | open |
+| AC-013 | T-002, T-005 | src/core/agentStart/preconditions.ts:checkPreconditions | src/core/agentStart/preconditions.test.ts (P-6) | built |
 | AC-014 | T-003 | — | — | open |
 | M-2 | T-006 | — | manual: Gregor, keyboard and screen reader | open |
 
 ## Session handoff
 
-- **Done so far:** plan written; spec open points resolved by their recommendations (spec §16).
-- **Next action:** Gregor reviews the plan; implementation after 0009 and 0011 (order 0009 → 0011 → 0008 → 0012).
-- **Open decisions:** OP-010 (main session); the narrowed 0009 manifest assertion (T-007).
+- **Done so far:** Stage 1 (T-001, T-002) built and verified: start prompt with golden file; precondition check P-1..P-8 with the shared test world `src/core/agentStart/testing/startWorld.ts`.
+- **Next action:** T-003 (start flow: hand-off, refusal, confirmation, cancel, pending; view contract).
+- **Open decisions:** the narrowed 0009 manifest assertion (T-007, 0009's plan to be amended the FeatherSpec way); OP-010 taken by the spec's recommendation (Gregor, 2026-11-17).
 - **Baseline:** 3b3ab8b (before T-001).
-- **Environment:** `npm test` cannot run here; it runs on CI or Gregor's Windows machine.
+- **Environment:** `npm test` cannot run here; it runs on CI or Gregor's Windows machine. Steps are run test-first through a `Not implemented` stub; one commit per step.
