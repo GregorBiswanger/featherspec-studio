@@ -1,7 +1,7 @@
 # Agent Provider Abstraction
 
-**Status:** In Progress
-**Plan:** [0009-agent-provider-abstraction.plan.md](0009-agent-provider-abstraction.plan.md)
+**Status:** Implemented
+**Plan:** [0009-agent-provider-abstraction.2026-11-17.plan.md](../plan-archive/0009-agent-provider-abstraction.2026-11-17.plan.md)
 
 Handoff reference: FS-009 ([po-handoff.md](../../docs/product/po-handoff.md) §2.1, §8.3, §10 FS-009,
 §14 *Provider Contract Tests*). Depends on: 0004 (event envelope, credential port for masking).
@@ -397,3 +397,7 @@ snapshot lists the new modules. The §21 walkthrough is OP-005.
 ## 17. Recommended next steps
 
 `/sdd-plan` (OP-004…OP-010 resolved 2026-11-16); then `/sdd-lifecycle` on the start signal.
+
+## Plan history
+
+- 2026-11-17 — [0009-agent-provider-abstraction.2026-11-17.plan.md](../plan-archive/0009-agent-provider-abstraction.2026-11-17.plan.md) — ten steps; all 22 criteria verified; second `/sdd-compile` READY; host suite 28 passing on Windows at e6f0c85.

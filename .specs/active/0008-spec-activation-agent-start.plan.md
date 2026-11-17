@@ -98,7 +98,7 @@ Pre-done gate on CI or Windows: `npm test` with the new `src/test/agentStart.smo
   state unless persisted, so host-side state plus re-send is the pattern; retrieved 2026-11-16.
 - [gitattributes](https://git-scm.com/docs/gitattributes) — `eol=lf` keeps LF in the working
   tree on every platform, `-text` disables conversion; retrieved 2026-11-16.
-- Specs read: [plan 0009](../active/0009-agent-provider-abstraction.plan.md) *Surface*,
+- Specs read: [plan 0009](../plan-archive/0009-agent-provider-abstraction.2026-11-17.plan.md) *Surface*,
   [0011](0011-agent-orchestrator-run-lifecycle.md) §6, §9, AC-001, AC-002, AC-021,
   [0012](0012-live-agent-activity-monitoring.md) §1 (navigation from the notice),
   [0010](0010-first-agent-provider-copilot.md) BR-04, BR-05, BR-08, BR-14.

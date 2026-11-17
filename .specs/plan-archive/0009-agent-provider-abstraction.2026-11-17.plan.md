@@ -1,6 +1,6 @@
 # Plan — Agent Provider Abstraction
 
-**Spec:** [0009-agent-provider-abstraction.md](0009-agent-provider-abstraction.md)
+**Spec:** [0009-agent-provider-abstraction.md](../done/0009-agent-provider-abstraction.md)
 **Status:** Done
 **Last updated:** 2026-11-17
 **Current step:** — (all ten steps done)
@@ -373,7 +373,7 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
 
 - **Done so far:** T-001…T-010 built, ticked with recorded results and committed; every acceptance
   criterion `verified`; second `/sdd-compile` 2026-11-17 (session S08-close-g5): READY after T-010.
-- **Next action:** `/sdd-lifecycle` active → done (same session).
+- **Next action:** none — spec moved to done/ and this plan archived 2026-11-17 (frozen).
 - **Open decisions:** none.
 - **Baseline:** 2026-11-16 (commit c3e1ab6, before T-001), eslint, both tsc runs and `npm run test:unit` green: 1350 tests.
 - **Environment:** `npm test` cannot run here (VS Code download blocked); it runs on Windows and CI.
