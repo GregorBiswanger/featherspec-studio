@@ -3,7 +3,7 @@
 **Spec:** [0014-setup-featherspec-from-studio.md](0014-setup-featherspec-from-studio.md)
 **Status:** Done
 **Last updated:** 2026-11-17
-**Current step:** — (all steps done)
+**Current step:** — (all steps done, fix steps T-011…T-016 included)
 
 ## Approach
 
@@ -214,12 +214,20 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 - [x] **Verified (T-015):** 2026-11-17 — here (GitHub unreachable): skipped cleanly, `npm run test:unit` 183 files passed, 1 skipped / 2501 passed, 3 skipped (+11 timing); eslint, both `tsc` clean. Dry run of the test logic with `FEATHERSPEC_SETUP_LIVE=1` and global `fetch` stubbed outside the repository (scratch vitest config, `/releases/latest` 302 → tag, archive 200 = the 1.10.0 fixture): 2 passed, summaries "empty folder: version 1.10.0, tag v1.10.0, taken 63, created 63 …", "second run … created 0", "own files: … created 60, completed 2, kept 1"; negative control: the stub answering 404 for `/releases/latest` fails both cases. `noNetwork.test.ts` and the no-write tests unchanged.
 - **Notes:** Open evidence: the live run on Gregor's Windows machine (the orchestrator sends the output if it fails).
 
+### T-016 — Compile follow-ups: texts, amendment gaps, docs, rule breach, evidence (decisions C, D, E, F, I)
+
+- **Covers:** AC-016 (texts), 0014 §5 rows 4 and 5, §19, §20
+- **Do:** Spec AC-016 gets the three "Copy merge prompt" notices literally; §20 rewritten. 0001 BR-08 names AC-001…AC-004 (nothing else in 0001/0005 changed); PD-033 points to the `.featherspec-setup/` rerun trigger. README: the download comes before the confirmation; "files are never deleted" replaced by the true statement (a later run replaces the content of `.featherspec-setup/`). `src/test/setup/noProject.test.ts`: JSDoc removed, its content moved into the suite name. Release checklist: the live test item; `techContext.md`, `activeContext.md`. Traceability rows AC-002, AC-010, AC-016, AC-018, AC-020.
+- **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile && npm run compile-tests`
+- [x] **Verified (T-016):** 2026-11-17 — the AC-016 texts are the ones `setupFinish.test.ts` already asserts (lines with "copied to the clipboard", "has files to merge", "no files to merge"); `grep -n "AC-001…AC-004" .specs/done/0001-workspace-discovery-project-recognition.md` finds BR-08; `grep -n featherspec-setup docs/product/product-decisions.md` finds PD-031 and PD-033. Gates (whole chain, exit 0): eslint, both `tsc`, `npm run test:unit` 183 files passed, 1 skipped / 2501 passed, 3 skipped (the live test's 2 cases, the case-insensitive file-system case) + 11 timing, `npm run compile`, `npm run compile-tests`.
+- **Notes:** Evidence recorded from Gregor's side (the orchestrator, 2026-11-17), at commit `b7b9fd1`: Windows 11 machine — `npm run test:unit` 2482 passed, 5 skipped (the link and file-mode tests of `nodeSetupTarget.test.ts`, skipped on win32), 11 timing tests passed; `npm test` 30 + 1 + 1 + 1 passing (smoke, activation-specs-only, activation-no-marker passed and did not skip, setup-no-marker), 3 opt-in pending. GitHub Actions run 44117895965 at `b7b9fd1`: ubuntu-latest and windows-latest green. This closes the host evidence of AC-001 (view), AC-002 (registration) and AC-025 (wiring) at `b7b9fd1`; T-011…T-016 changed `extension.ts`, `shellActions.ts` and the host test `noProject.test.ts` (suite name only), so the host suite has to run again at the new head.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
 | AC-001 | T-001, T-008 | `src/shared/protocol/texts.ts` (`S2_WELCOME`, actions), `src/core/shell/treeModel.ts`, `package.json` | `panelStateTexts`, `treeModel`, `PanelStateView`, `manifest` tests; host `src/test/setup/noProject.test.ts` | verified |
-| AC-002 | T-008 | `package.json`, `src/extension.ts`, `src/adapters/vscode/setupUi.ts` | `manifest.test.ts`; host `src/test/setup.smoke.test.ts` | verified |
+| AC-002 | T-008, T-014 | `package.json`, `src/extension.ts`, `src/adapters/vscode/shellActions.ts`, `src/adapters/vscode/setupUi.ts` | `manifest.test.ts`, `shellActions.test.ts`, `shellService.test.ts`; host `src/test/setup.smoke.test.ts` | verified |
 | AC-003 | T-006 | in `src/core/setup`: `setupService.ts` | `setupService.test.ts` | verified |
 | AC-004 | T-006 | in `src/core/setup`: `setupService.ts` | `setupService.test.ts` | verified |
 | AC-005 | T-004, T-006 | in `src/core/setup`: `releaseDownload.ts`, `setupService.ts` | `releaseDownload.test.ts`, `setupService.test.ts`, `noWrite.test.ts` | verified |
@@ -227,17 +235,17 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 | AC-007 | T-002 | `src/adapters/node/tarGzArchive.ts`, `src/core/setup`: `releaseArchive.ts` | `tarGzArchive.test.ts` (real 1.10.0 archive), `releaseArchive.test.ts` | verified |
 | AC-008 | T-006 | in `src/core/setup`: `setupService.ts`, `setupTexts.ts` | `setupService.test.ts` | verified |
 | AC-009 | T-005 | in `src/core/setup`: `applySetup.ts`, `src/adapters/node/nodeSetupTarget.ts` | `applySetup.test.ts`, `nodeSetupTarget.test.ts` | verified |
-| AC-010 | T-005 | in `src/core/setup`: `applySetup.ts` | `applySetup.test.ts`, `nodeSetupTarget.test.ts` | verified |
+| AC-010 | T-005, T-013 | in `src/core/setup`: `applySetup.ts` | `applySetup.test.ts` (incl. case-insensitive target), `nodeSetupTarget.test.ts` | verified |
 | AC-011 | T-003 | in `src/core/setup`: `fileClasses.ts` | `fileClasses.test.ts` | verified |
 | AC-012 | T-003 | in `src/core/setup`: `fileClasses.ts` | `fileClasses.test.ts`, `gitignore.test.ts` | verified |
 | AC-013 | T-003 | in `src/core/setup`: `settingsJson.ts`, `jsonc.ts` | `settingsJson.test.ts`, `fileClasses.test.ts` | verified |
 | AC-014 | T-005 | in `src/core/setup`: `applySetup.ts` | `applySetup.test.ts`, `nodeSetupTarget.test.ts` | verified |
 | AC-015 | T-001 | `src/core/discovery/classifyFolder.ts`, `discoverWorkspace.ts` | `classifyFolder.test.ts`, `discoverWorkspace.test.ts`, `markerWatchPaths.test.ts` | verified |
-| AC-016 | T-007 | in `src/core/setup`: `mergePrompt.ts`, `setupReport.ts` | `mergePrompt.test.ts` (golden file), `setupFinish.test.ts` | verified |
+| AC-016 | T-007, T-016 | in `src/core/setup`: `mergePrompt.ts`, `setupService.ts` (`copyMergePrompt`, its three notices), `setupReport.ts` | `mergePrompt.test.ts` (golden file), `setupFinish.test.ts` | verified |
 | AC-017 | T-007 | in `src/core/setup`: `setupReport.ts`, `setupTexts.ts` | `setupFinish.test.ts` | verified |
-| AC-018 | T-007 | in `src/core/setup`: `outputBlock.ts` | `setupFinish.test.ts` | verified |
+| AC-018 | T-007, T-012 | in `src/core/setup`: `setupReport.ts` (`reportApplied`), `applySetup.ts` (`wroteAnything`) | `setupFinish.test.ts` | verified |
 | AC-019 | T-004 | in `src/core/setup`: `releaseDownload.ts` | `releaseDownload.test.ts` | verified |
-| AC-020 | T-005, T-007 | in `src/core/setup`: `applySetup.ts`, `setupReport.ts` | `applySetup.test.ts`, `setupFinish.test.ts` | verified |
+| AC-020 | T-005, T-007, T-011 | in `src/core/setup`: `applySetup.ts`, `setupReport.ts`, `setupService.ts` (`discoverTarget`) | `applySetup.test.ts`, `setupFinish.test.ts` | verified |
 | AC-021 | T-004, T-006 | in `src/core/setup`: `releaseDownload.ts`, `setupService.ts` | `releaseDownload.test.ts`, `setupService.test.ts` | verified |
 | AC-022 | T-006 | in `src/core/setup`: `setupService.ts` | `setupService.test.ts` | verified |
 | AC-023 | T-007 | in `src/core/setup`: `setupReport.ts` | `setupFinish.test.ts` | verified |
@@ -247,8 +255,10 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 
 ## Session handoff
 
-- **Done so far:** T-001…T-010 implemented and verified; amendments to 0001 and 0005 applied; docs synced.
-- **Next action:** CI `npm test` and the Windows machine (host suite, `npm test`), Gregor's M-1…M-3 and the diff read of 0001/0005; then `/sdd-compile`.
+- **Done so far:** T-001…T-010 implemented and verified; `/sdd-compile` (2026-11-17) found D1, D2 and gaps; Gregor's decisions A…J applied as T-011…T-016 (all verified). Spec stays `In Progress` in `active/` on Gregor's instruction: he tries the button first (M-2).
+- **Evidence:** at `b7b9fd1` on Gregor's Windows 11 machine and GitHub Actions run 44117895965 (ubuntu-latest, windows-latest), see T-016 Notes.
+- **Open evidence:** at the head of T-016: `npm test` and `npm run test:unit` on Windows and CI (the case-insensitive real-file-system test of T-013 runs there, skipped on Linux); the opt-in live test T-015 on Windows; M-1…M-3 (`manual:` records); the diff read of 0001/0005 (T-009); OP-004.
+- **Next action:** Gregor: M-2 with the button, the live test, the host suite; then `/sdd-compile` again in a fresh session; then `/sdd-lifecycle` (active → done).
 - **Open decisions:** —
-- **Baseline:** HEAD 0753a62 (clean tree), moved to active/ 2026-11-17
-- **Environment:** `npm test` cannot run in the agent sandbox; GitHub is not reachable from it (live route checked only in M-2).
+- **Baseline:** HEAD 0753a62 (clean tree), moved to active/ 2026-11-17; compile at `b7b9fd1`; fix steps from `b7b9fd1`.
+- **Environment:** `npm test` cannot run in the agent sandbox; GitHub is not reachable from it (live route checked only by T-015 on Windows and in M-2).

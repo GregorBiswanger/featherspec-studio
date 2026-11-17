@@ -60,7 +60,7 @@ In a workspace folder without a FeatherSpec project, the Studio view in the Acti
 3. It creates the files that are missing, completes `.gitignore` and `.vscode/settings.json` with the lines FeatherSpec needs, and never overwrites a file of yours. A file that differs from the release is kept as it is; its release version is parked in `.featherspec-setup/`.
 4. If files were parked, the folder stays "setup not finished". **Copy merge prompt** puts a prompt on your clipboard that tells your coding agent how to merge them; the folder becomes a project once `.featherspec-setup/` is gone.
 
-Links inside the folder are written through, so a file behind a link changes where the link points. Files are never deleted. The root `AGENTS.md` is created last, so an interrupted setup leaves the folder incomplete rather than half a project. Walkthrough: [Hands-On](https://github.com/GregorBiswanger/featherspec/wiki/Hands-On-Walkthrough).
+Links inside the folder are written through, so a file behind a link changes where the link points. No file of yours is deleted, renamed or moved; a later run replaces the content of `.featherspec-setup/` with that run's parked copies. The root `AGENTS.md` is created last, so an interrupted setup leaves the folder incomplete rather than half a project. Walkthrough: [Hands-On](https://github.com/GregorBiswanger/featherspec/wiki/Hands-On-Walkthrough).
 
 ## How board states are derived
 
@@ -103,7 +103,7 @@ A spec with contradictory or unreadable files stays in the column of its folder 
 
 ## Privacy and stored data
 
-- Studio has no telemetry. It reads your workspace and writes only its own run history. The one exception is [Set up FeatherSpec](#set-up-featherspec): after your confirmation it downloads the latest release from `github.com` and `codeload.github.com` (no account, no token, only a `User-Agent` header) and writes the release files into the folder you chose. Nothing else contacts a network service on its own.
+- Studio has no telemetry. It reads your workspace and writes only its own run history. The one exception is [Set up FeatherSpec](#set-up-featherspec): after you start it, it downloads the latest release from `github.com` and `codeload.github.com` (no account, no token, only a `User-Agent` header) and, once you confirm, writes the release files into the folder you chose. Nothing else contacts a network service on its own.
 - The run history (runs, their events, the spec status history) is stored on your machine in VS Code's global storage of the extension, outside your workspace, per project. Secrets Studio recognises are replaced by `[masked]` before writing (best effort). Ended runs older than the age cap are removed when Studio starts. Details, location and how to delete it: [docs/runtime-data.md](docs/runtime-data.md).
 - A GitHub Copilot run sends the prompt, the files the agent reads, command output and your answers to GitHub. Studio removes `COPILOT_GITHUB_TOKEN`, `GH_TOKEN` and `GITHUB_TOKEN` from the CLI's environment, so only your signed-in account is used, and turns the CLI's telemetry off. Copilot's session files live in Studio's global storage (`copilot-home`).
 

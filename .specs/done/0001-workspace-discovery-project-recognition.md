@@ -84,7 +84,8 @@ differences.
   token; a trailing `# comment` is ignored; the value is shown as written. An empty value gives the
   version "unknown" plus a diagnostic. A second such line: the first wins, plus a diagnostic.
 - **BR-08 Setup pending (PD-053):** *Amended by 0014 (PD-049, PD-053).* A folder with a `.featherspec-setup/` directory at its
-  root is *incomplete* whatever its markers say; it ranks before BR-01…BR-04 and carries the
+  root is *incomplete* whatever its markers say; it ranks before BR-01…BR-04 and so changes
+  AC-001…AC-004 (such a folder is *incomplete* even with both markers) and carries the
   diagnostic of spec 0014 AC-015. A read failure (AC-017) still wins.
 
 ## 7. Functional requirements

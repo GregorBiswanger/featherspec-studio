@@ -47,6 +47,9 @@ and the expected result. A clear miss reopens the named spec.
   the release GitHub calls latest (A-007).
 - [ ] **M-3 Restricted Mode**: in a real Restricted Mode window, "Set up FeatherSpec" refuses with the trust
   message and writes and downloads nothing (AC-004).
+- [ ] **Live setup test** (automated, opt-in, real GitHub release into temp folders): PowerShell
+  `$env:FEATHERSPEC_SETUP_LIVE='1'; npx vitest run --project node src/adapters/node/setupLive; Remove-Item Env:FEATHERSPEC_SETUP_LIVE`
+  → 2 passed, one summary line per run (version, tag, counts, ms).
 
 ## Shell (0005)
 

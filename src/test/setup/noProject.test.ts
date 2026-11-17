@@ -6,11 +6,7 @@ import type { StudioApi } from '../../extension';
 
 const WAIT_MS = 30_000;
 
-/**
- * Runs in its own window on a workspace without any marker. It only observes the offer: no setup runs here,
- * so nothing contacts the network and nothing is written.
- */
-suite('FeatherSpec Studio setup: a workspace without a FeatherSpec project', function () {
+suite('FeatherSpec Studio setup: a marker-free workspace only observes the offer, runs no setup, downloads and writes nothing', function () {
     this.timeout(90_000);
 
     test('AC-001, AC-002: the tree shows the S2 welcome and the first panel action is Set up FeatherSpec', async function () {
