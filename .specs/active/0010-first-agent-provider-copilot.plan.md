@@ -8,7 +8,7 @@
 ## Approach
 
 One adapter folder `src/adapters/providers/copilot/` implements 0009's `AgentProviderPort` exactly as
-the *Surface* of [plan 0009](../active/0009-agent-provider-abstraction.plan.md) names it; nothing of
+the *Surface* of [plan 0009](../plan-archive/0009-agent-provider-abstraction.2026-11-17.plan.md) names it; nothing of
 that surface is redefined. Inside, a **client seam** (`client.ts`: our own minimal types for client,
 session, events and the three handlers) separates the logic from the SDK: production wires
 `sdkClient.ts` over `@github/copilot-sdk@1.0.34`, every criterion runs on a **scripted client** that
