@@ -17,7 +17,7 @@ Release preparation for 0.1.0: all 13 specs are `Implemented` in `.specs/done/`;
 - `AGENTS.md` snapshot compacted (229 → 215 lines); module detail in `.architecture/{core,adapters,webview}.md`.
 - Timing tests in `*.timing.test.*`, run after the rest of `npm run test:unit` in one worker (see `techContext.md`).
 - 0012 follow-up: Agent Center fallback reason is a sentence ("the run history of this project is not open"); host smoke renamed to AC-012/AC-013.
-- Link fixes in the archived plans of 0006 and 0008.
+- 0004 follow-up: masking samples moved to `src/core/runtime/testing/secretSamples.ts` (the sample token in `dist/extension.js` failed `vsce package`'s secret scan); link fixes in the archived plans of 0006 and 0008.
 
 ## Decisions in Flight
 - `AGENTS.md` stays 15 lines over its 200-line target: the FeatherSpec 1.10.0 template body alone is 200 lines; the rest is project preferences and the snapshot. Further eviction would edit template wiring — Gregor's call.
@@ -32,4 +32,4 @@ Release preparation for 0.1.0: all 13 specs are `Implemented` in `.specs/done/`;
 3. Gregor: Go → `npx @vscode/vsce publish`.
 
 ## Validation
-- See the last gate run in the release-preparation session: eslint, both `tsc`, `npm run test:unit`, `npm run compile`, `npm run compile-tests`, `npm run package`. Pending: host suite on Windows, the checklist.
+- Green 2026-11-17 on the whole tree: eslint, both `tsc`, `npm run test:unit`, `npm run compile`, `npm run compile-tests`, `npm run package`, `vsce package` (11 files, ~290 KB). Pending: host suite on Windows, the checklist.
