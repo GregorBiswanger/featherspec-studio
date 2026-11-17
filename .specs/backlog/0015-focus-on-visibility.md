@@ -1,11 +1,12 @@
 # Focus the Studio on Visibility: No Agent Runs, a Named Next Step
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0015-focus-on-visibility.plan.md](0015-focus-on-visibility.plan.md)
 
 Basis: Gregor's request of 2026-11-17 after working on `sdd-tip-splitter` with GitHub Copilot
 next to the Studio. Decisions ([product-decisions.md](../../docs/product/product-decisions.md)):
-PD-055 (on Gregor's delegation), PD-056 (proxy, A-001), PD-016 (English UI), PD-013 (read-only).
+PD-055 (on Gregor's delegation), PD-056 (proxy, A-001), PD-057 (open points, proxy), PD-016 (English UI),
+PD-013 (read-only).
 Retires 0008–0012; amends 0003–0007 and 0013 (§5). The removed code stays reachable at Git tag
 `archive/agent-runs-2026-11-17` (commit dd6a6b5).
 
@@ -167,7 +168,8 @@ Never touched: any workspace folder; anything outside the extension's global sto
 user's own Copilot CLI data included); `store.json`, `lock.json` and `spec-status-history.jsonl`
 (its entries are read; only the age cap prunes them); a project folder whose `store.json`
 names a format version this build does not know (0004 AC-017). With the store location
-unavailable (0004 AC-025) nothing is removed.
+unavailable (0004 AC-025) nothing is removed. When it removed anything, Studio writes one line to
+the Output channel "FeatherSpec Studio" naming what it removed; nothing removed, no line (PD-057).
 
 ## 7. Functional requirements
 
@@ -240,15 +242,15 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
 - **AC-020** A search of `src` without test files for `fetch(`, `node:http`, `node:https`, `node:net`, `node:tls` and `WebSocket` shall find only the release adapter of 0014 and the webview's test-mode probe of 0005 in `src/webview/main.tsx`.
 - **AC-021** The folders `src/core/{agentCenter,agentStart,orchestrator,providers}`, `src/adapters/providers` and `src/webview/{areas/agentCenter,agentStart}` shall not exist, nor `test/fixtures/copilot`, and a search of `src`, `.vscode-test.mjs`, `esbuild.js` and `package.json` shall find none of `agentcenter`, `agent center`, `agentstart`, `orchestrator`, `copilot`, `fakeprovider`, `agentprovider`, `runhistory`, `stoprun`, `resumerun`, `waitingforapproval` — except in the earlier-data removal module (it names `copilot-home` and the `agentCenter` state key) and in the tests that decide AC-002, AC-014–AC-021 and AC-023.
 - **AC-022** The host test suite shall contain no `agentCenter`, `agentStart`, `copilot`, `orchestrator` or `providers` smoke test and no opt-in Copilot runner.
-- **AC-023** At every activation, the system shall remove what exists of the paths and the key §6.3 names and nothing else, count a path already gone as removed, and leave every path §6.3 never touches byte-identical except where the age cap prunes the status history.
+- **AC-023** At every activation, the system shall remove what exists of the paths and the key §6.3 names and nothing else, count a path already gone as removed, leave every path §6.3 never touches byte-identical except where the age cap prunes the status history, and, when it removed anything, write one line to the Output channel "FeatherSpec Studio" naming what it removed (PD-057).
   > **Given** a global storage written by the build at tag `archive/agent-runs-2026-11-17`, and one project folder whose `store.json` names format version 99 **When** this build activates **Then** `copilot-home/` is gone, every other project folder holds only `store.json`, `lock.json` and `spec-status-history.jsonl`, the version-99 folder is byte-identical, and *Recent activity* shows the kept entries BR-07 selects.
 - **AC-024** If a path of AC-023 cannot be removed, then the system shall keep it, keep working, write one line per such path to the Output channel "FeatherSpec Studio" naming the path and the reason, and try again at the next activation.
-- **AC-025** `media/screenshots/agent-center-dark.png`, `docs/agent-provider-port.md` and `docs/security/secret-patterns.md` shall not exist; a search of `README.md`, `docs/release-checklist.md` and `docs/runtime-data.md` shall find no "Agent Center", "provider", "Copilot", "Clear Run History", "Stop Run" or "Resume Run" — except "GitHub Copilot" in the README opening of §8 and the folder name `copilot-home` in `docs/runtime-data.md`; `docs/runtime-data.md` shall describe the status history, the earlier-data removal and deletion by hand; ADR-003 shall carry the status *Superseded (PD-055)*.
+- **AC-025** `media/screenshots/agent-center-dark.png`, `docs/agent-provider-port.md` and `docs/security/secret-patterns.md` shall not exist; a search of `README.md`, `docs/release-checklist.md` and `docs/runtime-data.md` shall find no "Agent Center", "provider", "Copilot", "Clear Run History", "Stop Run" or "Resume Run" — except "GitHub Copilot" in the README opening of §8 and the folder name `copilot-home` in `docs/runtime-data.md`; `docs/runtime-data.md` shall describe the status history, the earlier-data removal and deletion by hand; ADR-003 shall carry the status *Superseded (PD-055)*; ADR-001 (at its §14) and ADR-002 shall carry the note "superseded in part by 0015 (PD-055)" (PD-057).
 - **AC-026** The S7 note, the reader reason and the Mission Control purpose shall read as §8.
 - **AC-027** Every test at tag `archive/agent-runs-2026-11-17` that decides a criterion of 0001–0007, 0013 or 0014 not voided in §5 shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI. A script compares the test titles of both commits; every title of the tag missing at the head, a renamed one included, is listed in the plan with its voided criterion or with the head title that replaces it.
 - **AC-028** 0008–0012 shall have status `Deprecated`, stay in `done/` and link this spec as successor; 0003–0007 and 0013 shall carry the amendment notes of §5.
 - **AC-029** The `architecture:` snapshot in `AGENTS.md`, `.architecture/*.md` and `.memory-bank/projectbrief.md` shall name no removed module, no agent run and no provider; the brief's mission shall contain the manifest description of §8 and its success criteria the AC-030 scenario.
-- **AC-030** *(manual, Gregor)* M-1 on `tip-splitter` with the assistant he uses, the Hands-On walkthrough: three areas; a dropped Ready spec shows the NS-7 line, pasted into the chat it starts that step; Active and Review specs show NS-6 and NS-5 lines that the assistant runs as FeatherSpec commands. Pre-release checklist item.
+- **AC-030** *(manual, Gregor)* M-1 on `tip-splitter` with the assistant he uses, the Hands-On walkthrough: three areas; a dropped Ready spec shows the NS-7 line, pasted into the chat it starts that step; Active and Review specs show NS-6 and NS-5 lines that the assistant runs as FeatherSpec commands; he checks whether the S7 note reads as noise (PD-057, OP-006) and whether his assistant resolves the project-relative paths (OP-002). Pre-release checklist item.
 
 ## 11. Technical notes for developers or AI agents
 
@@ -272,12 +274,12 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
 
 ## 13. Open points
 
-- OP-001 Status history retention fixed at 90 days with no setting and no Clear command. Recommendation: keep; reopen when a user asks.
-- OP-002 Multi-root workspaces: the lines carry project-relative paths. Recommendation: keep; Gregor checks in M-1 whether his assistant resolves them, else prefix the folder name.
-- OP-003 Next step on cards or attention rows. Recommendation: not now; the detail is one click away.
-- OP-004 ADR-003 and `docs/decisions/poc-copilot-2026-11-17/` stay as superseded history; ADR-002 (run storage) and ADR-001 §14 (Restricted Mode hides agent start) also describe removed behaviour. Recommendation: keep all; one line "superseded in part (PD-055)" on ADR-001 and ADR-002 in the docs step.
-- OP-005 A successful earlier-data removal is silent; the user is never told that run data was deleted. Recommendation: one Output line naming what was removed, once per removed path.
-- OP-006 Without runs the S7 note concerns only the setup, also in a project already set up. Recommendation: keep it (0005 AC-017 stays); reopen if it reads as noise in M-1.
+- OP-001 Status history retention fixed at 90 days with no setting and no Clear command. Recommendation: keep; reopen when a user asks. **Resolved 2026-11-17 by PD-057 (4):** fixed 90 days, no setting.
+- OP-002 Multi-root workspaces: the lines carry project-relative paths. Recommendation: keep; Gregor checks in M-1 whether his assistant resolves them, else prefix the folder name. **Resolved 2026-11-17 by PD-057 (4):** project-relative; checked in M-1 (AC-030).
+- OP-003 Next step on cards or attention rows. Recommendation: not now; the detail is one click away. **Resolved 2026-11-17 by PD-057 (4):** not now.
+- OP-004 ADR-003 and `docs/decisions/poc-copilot-2026-11-17/` stay as superseded history; ADR-002 (run storage) and ADR-001 §14 (Restricted Mode hides agent start) also describe removed behaviour. Recommendation: keep all; one line "superseded in part (PD-055)" on ADR-001 and ADR-002 in the docs step. **Resolved 2026-11-17 by PD-057 (1):** as recommended (AC-025).
+- OP-005 A successful earlier-data removal is silent; the user is never told that run data was deleted. Recommendation: one Output line naming what was removed, once per removed path. **Resolved 2026-11-17 by PD-057 (2):** one Output line naming what was removed, one per path not removed (§6.3, AC-023, AC-024).
+- OP-006 Without runs the S7 note concerns only the setup, also in a project already set up. Recommendation: keep it (0005 AC-017 stays); reopen if it reads as noise in M-1. **Resolved 2026-11-17 by PD-057 (3):** the note stays, worded for the setup; checked in M-1 (AC-030).
 - OP-007 `/sdd-clarify` 2026-11-17: 38 findings, 35 resolved in one pass at Gregor's standing request, 3 parked (OP-004–OP-006), none asked; the list is kept by the orchestrator (`0015-findings.md`). Readings made; say so if one is wrong: (a) the §5 catch-all; (b) removal at every activation in any window, a gone path counts as removed, newer-format folders untouched; (c) the keywords drop `ai agents` too; (d) the README names GitHub Copilot once; (e) NS-11 for a number used twice; (f) an undetermined tick counts as not ticked; (g) S7 worded as 0014 AC-004; (h) 0006 AC-017's time is the last spec read; (i) the webview's test-mode probe stays (AC-020).
 
 ## 14. Definition of Ready / Done
@@ -288,4 +290,5 @@ not blocking. Done: AC-001–AC-029 green with evidence in the plan, AC-030 chec
 
 ## 15. Recommended next steps
 
-`/sdd-plan .specs/backlog/0015-focus-on-visibility.md` (clarified 2026-11-17, OP-007).
+`/sdd-plan .specs/backlog/0015-focus-on-visibility.md` (clarified 2026-11-17, OP-007; open points
+resolved by PD-057).
