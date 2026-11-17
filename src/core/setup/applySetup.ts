@@ -13,6 +13,7 @@ export interface SetupOutcome {
     kept: string[];
     notWritten: string[];
     keptSettingKeys: string[];
+    wroteAnything: boolean;
     stopped: { path: string; reason: string } | undefined;
 }
 
@@ -46,7 +47,7 @@ export function plannedPaths(classes: readonly FileClass[]): string[] {
 }
 
 export async function applySetup(target: SetupTargetPort, root: string, classes: readonly FileClass[]): Promise<SetupOutcome> {
-    const outcome: SetupOutcome = { created: [], completed: [], kept: [], notWritten: [], keptSettingKeys: [], stopped: undefined };
+    const outcome: SetupOutcome = { created: [], completed: [], kept: [], notWritten: [], keptSettingKeys: [], wroteAnything: false, stopped: undefined };
     const planned = plannedPaths(classes);
     const done = new Set<string>();
     const encoder = new TextEncoder();
@@ -63,6 +64,7 @@ export async function applySetup(target: SetupTargetPort, root: string, classes:
     async function ensureSetupFolder(): Promise<void> {
         if (!setupFolderReady) {
             await guarded(PARKED_GITIGNORE, () => target.createExclusive(root, PARKED_GITIGNORE, encoder.encode('*\n')));
+            outcome.wroteAnything = true;
             setupFolderReady = true;
             done.add(PARKED_GITIGNORE);
         }
@@ -75,6 +77,7 @@ export async function applySetup(target: SetupTargetPort, root: string, classes:
         if (result === 'exists') {
             throw new WriteStop(where, 'it already exists');
         }
+        outcome.wroteAnything = true;
         done.add(where);
         if (!outcome.kept.includes(file.path)) {
             outcome.kept.push(file.path);
@@ -95,6 +98,7 @@ export async function applySetup(target: SetupTargetPort, root: string, classes:
             case 'completed': {
                 const result = await guarded(file.path, () => target.replaceIfUnchanged(root, file.path, next.basis, next.content));
                 if (result === 'replaced') {
+                    outcome.wroteAnything = true;
                     outcome.completed.push(file.path);
                     outcome.keptSettingKeys.push(...next.keptSettingKeys);
                     return;
@@ -126,6 +130,7 @@ export async function applySetup(target: SetupTargetPort, root: string, classes:
     async function create(file: ReleaseFile): Promise<void> {
         const result = await guarded(file.path, () => target.createExclusive(root, file.path, file.bytes));
         if (result === 'created') {
+            outcome.wroteAnything = true;
             outcome.created.push(file.path);
             done.add(file.path);
             return;
@@ -142,7 +147,9 @@ export async function applySetup(target: SetupTargetPort, root: string, classes:
     }
 
     try {
+        const earlierSetupFolder = (await guarded(SETUP_FOLDER, () => target.kind(root, SETUP_FOLDER))) !== undefined;
         await guarded(SETUP_FOLDER, () => target.clearSetupFolder(root));
+        outcome.wroteAnything = earlierSetupFolder;
         for (const entry of classes) {
             if (entry.kind === 'kept') {
                 await park(entry.file);
@@ -157,6 +164,7 @@ export async function applySetup(target: SetupTargetPort, root: string, classes:
             if (entry.kind === 'completed') {
                 const result = await guarded(entry.file.path, () => target.replaceIfUnchanged(root, entry.file.path, entry.basis, entry.content));
                 if (result === 'replaced') {
+                    outcome.wroteAnything = true;
                     outcome.completed.push(entry.file.path);
                     outcome.keptSettingKeys.push(...entry.keptSettingKeys);
                 } else {

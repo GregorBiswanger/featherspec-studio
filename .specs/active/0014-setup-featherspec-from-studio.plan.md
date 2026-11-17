@@ -183,6 +183,14 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 - **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit`
 - [x] **Verified (T-011):** 2026-11-17 — red first: `npx vitest run --project node src/core/setup/setupFinish` 1 failed ("never switches … it asks": expected 2 picks, got 1, the fallback took folder `a` unasked), 31 passed (the picked-folder, none-message and still-eligible cases already held; the still-eligible case is the negative control); green after the fix: `src/core/setup` 260 passed. Gates: eslint, both `tsc`, `npm run test:unit` 182 files / 2491 tests (+11 timing) passed.
 
+### T-012 — Rerun discovery after any write, `.featherspec-setup/` included (compile finding D2)
+
+- **Covers:** AC-018 (revised 2026-11-17 by Gregor's decision B)
+- **Do:** `applySetup.ts`: `SetupOutcome.wroteAnything`, true after any created file, completion, parked copy, `.featherspec-setup/.gitignore`, or the clearing of an earlier `.featherspec-setup/`; `setupReport.ts` refreshes on it instead of on the created/completed/kept counts. Spec AC-018 says so. Tests in `setupFinish.test.ts`.
+- **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit`
+- [x] **Verified (T-012):** 2026-11-17 — red first: `npx vitest run --project node src/core/setup/setupFinish` 2 failed ("stopped after writing only .featherspec-setup/ content", "stopped right after it cleared an earlier .featherspec-setup/": expected 1 refresh, got 0), 33 passed (incl. the new negative control: a stop at the very first write with no earlier folder reruns nothing); green after: `src/core/setup` + `src/adapters/node` 451 passed. Gates: eslint, both `tsc`, `npm run test:unit` 182 files / 2494 tests (+11 timing) passed.
+- **Notes:** The clear of an earlier `.featherspec-setup/` counts as a write because it changes the verdict (BR-07); `applySetup` reads `kind('.featherspec-setup')` once before clearing.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |

@@ -69,7 +69,7 @@ export async function reportRun(deps: SetupServiceDeps, notices: NoticeSink, res
 
 async function reportApplied(deps: SetupServiceDeps, notices: NoticeSink, result: Extract<RunResult, { kind: 'applied' }>, retry: (root: string) => Promise<void>): Promise<void> {
     const { target, release, outcome } = result;
-    if (outcome.created.length + outcome.completed.length + outcome.kept.length > 0) {
+    if (outcome.wroteAnything) {
         try {
             await deps.discovery.refresh();
         } catch {

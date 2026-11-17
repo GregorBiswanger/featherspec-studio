@@ -98,6 +98,34 @@ describe('0014 AC-018: discovery reruns after the last write', () => {
         expect(world.discovery.refreshes).toBe(1);
     });
 
+    it('also when the setup stopped after writing only .featherspec-setup/ content', async () => {
+        const world = small();
+        world.target.setFile(ROOT, 'CLAUDE.md', 'mine\n');
+        world.target.failOn('.featherspec-setup/CLAUDE.md', 'EIO');
+        await run(world);
+        expect(world.target.files(ROOT)).toEqual(['.featherspec-setup/.gitignore', 'CLAUDE.md']);
+        expect(world.discovery.refreshes).toBe(1);
+    });
+
+    it('also when the setup stopped right after it cleared an earlier .featherspec-setup/', async () => {
+        const world = small();
+        world.target.setFile(ROOT, '.featherspec-setup/CLAUDE.md', 'old parked copy\n');
+        world.target.setFile(ROOT, 'CLAUDE.md', 'mine\n');
+        world.target.failOn('.featherspec-setup/.gitignore', 'EIO');
+        await run(world);
+        expect(world.target.files(ROOT)).toEqual(['CLAUDE.md']);
+        expect(world.discovery.refreshes).toBe(1);
+    });
+
+    it('negative control: a stop at the very first write into a folder without .featherspec-setup/ reruns nothing', async () => {
+        const world = small();
+        world.target.setFile(ROOT, 'CLAUDE.md', 'mine\n');
+        world.target.failOn('.featherspec-setup/.gitignore', 'EIO');
+        await run(world);
+        expect(world.target.files(ROOT)).toEqual(['CLAUDE.md']);
+        expect(world.discovery.refreshes).toBe(0);
+    });
+
     it('not when nothing was written: declined, cancelled, a refused archive, or every file the same', async () => {
         const declined = small();
         declined.ui.confirmAnswer = false;
