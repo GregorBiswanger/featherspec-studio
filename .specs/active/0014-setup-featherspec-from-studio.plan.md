@@ -3,7 +3,7 @@
 **Spec:** [0014-setup-featherspec-from-studio.md](0014-setup-featherspec-from-studio.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-004
+**Current step:** T-005
 
 ## Approach
 
@@ -125,8 +125,8 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 - **Covers:** AC-005 (download part), AC-019, AC-021 (abort), AC-025
 - **Do:** Port `ReleaseHttpPort.get(url, {headers, signal}) → {status, headers, body: AsyncIterable<Uint8Array>}`, never following redirects. Core `releaseDownload.ts`: GET `https://github.com/GregorBiswanger/featherspec/releases/latest`, tag from a `Location` ending in `/releases/tag/<tag>`; GET `…/archive/refs/tags/<tag>.tar.gz`; follow at most 5 redirects, https only, hosts `github.com` and `codeload.github.com`; only header `User-Agent: FeatherSpec-Studio/<version>`; 30 s answer and 30 s idle timers on `ClockPort`; 20 MB counted while reading (AC-006 reason); rate limit (429, or 403 with remaining 0) with the reset time from `x-ratelimit-reset` or `retry-after`; abort → `cancelled`. Reasons in `texts.ts`. Adapter `src/adapters/node/fetchReleaseHttp.ts`: global `fetch`, `redirect: 'manual'`, `credentials: 'omit'`, signal passed; tested against a local `node:http` server. `src/core/setup/noNetwork.test.ts`: `node:http`, `node:https`, `node:net`, `node:tls` mocked and `globalThis.fetch` replaced by recorders; discovery and the shell world run through S2, S9 and panel requests → no call; negative control: the download with the real adapter hits the recorder. Import scan: `fetch(` and `http`/`https`/`net` imports only in `fetchReleaseHttp.ts`.
 - **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-17 — red first: `npx vitest run --project node src/core/setup/releaseDownload` with the function stubbed to `Not implemented`: 36 failed; with the code: 36 passed. Adapter test `fetchReleaseHttp.test.ts` (local `node:http` server, 7 tests) written with the adapter; mutation check: `redirect: 'follow'` makes its no-redirect test fail, then restored. `noNetwork.test.ts` 4 passed (recorders for net/http/https/http2/tls/dgram/dns and `globalThis.fetch`; S2, S9, setup-pending, project and every shell action send nothing; negative control: the real adapter reaches the fetch recorder; scan: only `adapters/node/fetchReleaseHttp.ts` calls `fetch(` or imports a network module outside the webview bundle). Gates: eslint, both `tsc`, `npm run test:unit` 176 files / 2360 tests (+11 timing) passed, `npm run compile` finished.
+- **Notes:** Download texts and constants are in `src/core/setup/setupTexts.ts`. `downloadLatestRelease(deps, signal)` returns `ok | cancelled | too-large | failed(reason)`; the caller maps `too-large` to the archive refusal (AC-006) and `failed` to AC-019's message (`downloadFailedText`). The reset time is shown as `YYYY-MM-DD HH:MM UTC`. The latest page's own redirect target is also held to the hosts of §10. Test helpers: `testing/scriptedHttp.ts`, `testing/setupClock.ts` (ISO `now`). The scan of `noNetwork.test.ts` excludes `src/webview` (separate bundle with its own test probe).
 
 ### T-005 — Write the setup into the target
 

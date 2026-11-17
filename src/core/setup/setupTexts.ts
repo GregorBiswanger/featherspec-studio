@@ -15,3 +15,22 @@ export const ARCHIVE_REFUSAL = {
 export function archiveRefusedText(reason: string): string {
     return `The downloaded archive is not a FeatherSpec release: ${reason}.`;
 }
+
+export const DOWNLOAD_TIMEOUT_MS = 30_000;
+export const MAX_REDIRECTS = 5;
+
+export const DOWNLOAD_FAILURE = {
+    noConnection: (detail: string): string => `there is no connection to GitHub (${detail})`,
+    status: (status: number): string => `GitHub answered with status ${status}`,
+    rateLimit: (resetAt: string | undefined): string => (resetAt === undefined ? "GitHub's rate limit is reached" : `GitHub's rate limit is reached; it resets at ${resetAt}`),
+    noReleaseTag: 'GitHub names no latest release for this repository',
+    answerTimeout: 'GitHub did not answer within 30 seconds',
+    idleTimeout: 'GitHub sent no data for 30 seconds',
+    redirectNotAllowed: 'GitHub redirected to an address that is not allowed',
+    redirectWithoutTarget: 'GitHub redirected without saying where',
+    tooManyRedirects: 'GitHub redirected more than 5 times',
+};
+
+export function downloadFailedText(reason: string): string {
+    return `FeatherSpec could not be downloaded: ${reason}.`;
+}
