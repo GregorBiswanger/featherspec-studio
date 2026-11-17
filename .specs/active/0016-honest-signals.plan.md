@@ -1,7 +1,7 @@
 # Plan — Honest Signals: Diagnostics in Three Tiers, User Language, Readiness as a Need
 
 **Spec:** [0016-honest-signals.md](0016-honest-signals.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-17
 **Current step:** T-001
 
@@ -375,10 +375,8 @@ everything after T-002 shares the text modules, `main.css` or `SpecDetail.tsx` a
 
 ## Session handoff
 
-- **Done so far:** plan written (2026-11-17), not reviewed yet.
-- **Next action:** after Gregor's approval and an explicit start signal, `/sdd-lifecycle`
-  backlog → active, set Baseline, then T-001, which writes the read-baseline snapshot before any
-  code change.
+- **Done so far:** plan written; start signal given (delegated), spec and plan moved to `active/` (2026-11-17).
+- **Next action:** T-001, which writes the read-baseline snapshot before any code change.
 - **Open decisions:** none blocking; Q-1…Q-12 (Research) are proxy readings that Gregor may overrule.
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** 3cdab90 (code identical to the move commit; unit tests 1688 passed + 3 skipped, timing 12)
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked).
