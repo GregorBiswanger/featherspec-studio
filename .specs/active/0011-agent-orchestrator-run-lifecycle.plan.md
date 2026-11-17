@@ -1,9 +1,9 @@
 # Plan — Agent Orchestrator & Run Lifecycle
 
 **Spec:** [0011-agent-orchestrator-run-lifecycle.md](0011-agent-orchestrator-run-lifecycle.md)
-**Status:** In Progress
-**Last updated:** 2026-11-16
-**Current step:** T-001
+**Status:** Done
+**Last updated:** 2026-11-17
+**Current step:** T-008
 
 ## Approach
 
@@ -249,48 +249,44 @@ test world, one module.
   stored in the payload, `endSession` after timeouts and at window end. `techContext.md`: orchestrator
   tests and the host smoke file. `activeContext.md`. Then every gate.
 - **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`
-- [ ] **Verified (T-008):** —
+- [x] **Verified (T-008):** 2026-11-17 — docs synced (README *Runs* paragraph and two palette commands, `AGENTS.md` snapshot with the orchestrator module and port, `systemPatterns.md`, `techContext.md`, `activeContext.md`); gates after the docs: `npx eslint src --max-warnings 0` 0 warnings, `npx tsc --noEmit` and `npx tsc --noEmit -p src/webview` clean, `npm run test:unit` 124 files, 1612 tests passed (twice stable at T-006), `npm run compile` built. Doc-only edit, no red run applies.
 - **Notes:** —
 
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-002 | — | — | open |
-| AC-002 | T-002 | — | — | open |
-| AC-003 | T-002 | — | — | open |
-| AC-004 | T-001 | — | — | open |
-| AC-005 | T-002 | — | — | open |
-| AC-006 | T-001, T-002 | — | — | open |
-| AC-007 | T-001, T-002 | — | — | open |
-| AC-008 | T-003, T-005 | — | — | open |
-| AC-009 | T-004 | — | — | open |
-| AC-010 | T-004 | — | — | open |
-| AC-011 | T-004 | — | — | open |
-| AC-012 | T-004 | — | — | open |
-| AC-013 | T-004 | — | — | open |
-| AC-014 | T-003 | — | — | open |
-| AC-015 | T-005 | — | — | open |
-| AC-016 | T-005 | — | — | open |
-| AC-017 | T-006 | — | — | open |
-| AC-018 | T-003 | — | — | open |
-| AC-019 | T-006 | — | — | open |
-| AC-020 | T-006, T-007 | — | — | open |
-| AC-021 | T-003 | — | — | open |
-| AC-022 | T-007 | — | — | open |
-| AC-023 | T-001 | — | — | open |
-| AC-024 | T-003, T-007 | — | — | open |
+| AC-001 | T-002 | `src/core/orchestrator/orchestrator.ts:start`, `track`, `handleEvent` | `orchestratorStart.test.ts` | verified |
+| AC-002 | T-002 | `src/core/orchestrator/orchestrator.ts:start` (operation lock) | `orchestratorStart.test.ts` | verified |
+| AC-003 | T-002 | `src/core/orchestrator/orchestrator.ts:start`, `writerRefusal` | `orchestratorStart.test.ts` | verified |
+| AC-004 | T-001 | `src/core/orchestrator/runTrack.ts:ALLOWED_TRANSITIONS`, `canTransition`, `applyEvent` | `runTrack.test.ts` | verified |
+| AC-005 | T-002 | `src/core/orchestrator/runTrack.ts:applyEvent`, `orchestrator.ts:handleEvent` | `runTrack.test.ts`, `orchestratorStart.test.ts`, `orchestratorEnd.test.ts` | verified |
+| AC-006 | T-001, T-002 | `src/core/orchestrator/runTrack.ts:applyEvent` | `runTrack.test.ts`, `orchestratorStart.test.ts` | verified |
+| AC-007 | T-001, T-002 | `src/core/orchestrator/errorClasses.ts:classOf`, `runTrack.ts`, `orchestrator.ts:failRun` | `errorClasses.test.ts`, `runTrack.test.ts`, `orchestratorStart.test.ts` | verified |
+| AC-008 | T-003, T-005 | `src/core/orchestrator/orchestrator.ts:endStart` | `orchestratorEnd.test.ts`, `orchestratorResume.test.ts` | verified |
+| AC-009 | T-004 | `src/core/orchestrator/orchestrator.ts:stop` | `orchestratorOperations.test.ts` | verified |
+| AC-010 | T-004 | `src/core/orchestrator/orchestrator.ts:stop`, `endStop` | `orchestratorOperations.test.ts` | verified |
+| AC-011 | T-004 | `src/core/orchestrator/orchestrator.ts:stop` | `orchestratorOperations.test.ts` | verified |
+| AC-012 | T-004 | `src/core/orchestrator/orchestrator.ts:answer`, `respondToApproval` | `orchestratorOperations.test.ts` | verified |
+| AC-013 | T-004 | `src/core/orchestrator/orchestrator.ts:answer`, `respondToInput` | `orchestratorOperations.test.ts` | verified |
+| AC-014 | T-003 | `src/core/orchestrator/orchestrator.ts:track`, `leftStarting` | `orchestratorEnd.test.ts` | verified |
+| AC-015 | T-005 | `src/core/orchestrator/orchestrator.ts:checkResume`, `resumability` | `orchestratorResume.test.ts` | verified |
+| AC-016 | T-005 | `src/core/orchestrator/orchestrator.ts:resume`; `src/core/runtime/runtimeStore.ts:createRun` (cause) | `orchestratorResume.test.ts`, `src/core/runtime/testing/contractRuns.ts` | verified |
+| AC-017 | T-006 | no write path in `src/core/orchestrator/` | `noWrite.test.ts` | verified |
+| AC-018 | T-003 | `src/core/orchestrator/result.ts:storedResult`, `readRunResult` | `orchestratorEnd.test.ts` | verified |
+| AC-019 | T-006 | `src/core/orchestrator/specLink.ts:isSpecNotFound` | `specLink.test.ts`, `orchestratorReader.test.ts` | verified |
+| AC-020 | T-006, T-007 | `src/core/orchestrator/orchestrator.ts:writerRefusal` | `orchestratorReader.test.ts`, `orchestratorOperations.test.ts`, `orchestratorResume.test.ts` | verified |
+| AC-021 | T-003 | `src/core/orchestrator/orchestrator.ts:previousRun` | `orchestratorEnd.test.ts` | verified |
+| AC-022 | T-007 | `src/core/orchestrator/runCommands.ts`, `src/adapters/vscode/orchestratorUi.ts`, `package.json`, `src/extension.ts` | `runCommands.test.ts`, `src/adapters/vscode/manifest.test.ts`; host smoke `src/test/orchestrator.smoke.test.ts` (CI) | verified |
+| AC-023 | T-001 | imports of `src/core/orchestrator/` | `importScan.test.ts` | verified |
+| AC-024 | T-003, T-007 | `src/core/orchestrator/orchestrator.ts:letGo`, `checkStores`, `dispose` | `orchestratorEnd.test.ts` | verified |
 | M-01, M-02 | — (0010's acceptance, OP-006) | — | — | open |
 | M-03 | — | — | manual: Gregor accepts the texts of *Surface* | open |
 
 ## Session handoff
 
-- **Done so far:** plan written; spec revised 2026-11-16 (open points resolved, aligned with 0009's
-  surface, BR-016/AC-024, A-006).
-- **Next action:** Gregor reads the plan; after plan 0009 is `Done` and on the start signal,
-  `/sdd-lifecycle` backlog → active, then T-001.
-- **Open decisions:** none. For the main session: 0010 takes M-01/M-02 (OP-006); 0012 reads
-  `payload.source` (*Surface*).
-- **Baseline:** _(set when work starts)_
-- **Environment:** `npm test` cannot run here (VS Code download blocked); the host smoke runs on CI
-  or Gregor's Windows machine.
+- **Done so far:** T-001…T-008 built and verified with recorded runs; docs synced (README *Runs*, `AGENTS.md` snapshot, `systemPatterns.md`, `techContext.md`, `activeContext.md`). One deviation outside this plan's folder: 0004's `createRun` takes an optional `cause` (T-005 Notes).
+- **Next action:** Gregor reviews the tests per stage (test list in the session report) and accepts the texts (M-03); CI runs `npm test` with `src/test/orchestrator.smoke.test.ts`; then `/sdd-compile` in a fresh session.
+- **Open decisions:** none. M-01 and M-02 stay with 0010's acceptance. `AGENTS.md` is over its line target (one eviction proposal is due).
+- **Baseline:** commit `0820c2e` (lifecycle move), work in `f2eff94`…T-008.
+- **Environment:** `npm test` cannot run here (VS Code download blocked); the host smoke runs on CI or Gregor's Windows machine.

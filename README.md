@@ -49,6 +49,12 @@ Move a card by dragging it to another column, with the "Move to…" button on th
 - `FeatherSpec Studio: Select Project`: choose the active project (also opens from the status bar entry). With no project it offers the setup guide and a refresh.
 - `FeatherSpec Studio: Refresh Project Discovery`: run discovery again.
 - `FeatherSpec Studio: Clear Run History`: after a confirmation, remove the ended runs, their events and the spec status history of the active project. Runs still open are kept.
+- `FeatherSpec Studio: Stop Run`: after a confirmation, ask the provider to cancel the open run of the active project.
+- `FeatherSpec Studio: Resume Run`: after a confirmation, continue an `Interrupted` run as a new run (a list asks which when several can be resumed).
+
+## Runs
+
+One orchestrator owns every agent run: it creates the run, follows the provider's events to a status, stores the result and sorts failures into a fixed list of error classes. Only one run of a project is open at a time, and only the window that holds the project's write lock can start, stop, resume or answer. A run still `Starting` after 60 seconds fails with `start_timeout`; a stop the provider does not confirm within 30 seconds ends as `Cancelled`. A run that has started is never timed out: it keeps its status until an end event, a stop or a restart. Studio never retries a failed run by itself, never answers an approval or a question for you, and never changes a spec's state because a run ended. An `Interrupted` run can be resumed with `FeatherSpec Studio: Resume Run` when its provider supports it, the spec is still in the project and not Done, and it is the latest run of that spec. Starting a run from a spec and the live activity view follow with their own specs.
 
 ## Run history
 
