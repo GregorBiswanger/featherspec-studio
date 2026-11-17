@@ -2,6 +2,8 @@ import { createHash } from 'node:crypto';
 import { createReadStream, promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import type { MediumLine, RuntimeMedium } from '../../core/ports/runtimeMedium';
+import { openRuntimeStore, type RuntimeStore, type RuntimeStoreDeps } from '../../core/runtime/runtimeStore';
+import { createUnavailableMedium } from '../../core/runtime/unavailableMedium';
 
 const RETRY_CODES = new Set(['EPERM', 'EBUSY', 'EACCES']);
 const RETRY_DELAYS_MS = [10, 25, 60, 150, 300];
@@ -12,6 +14,26 @@ export type MediumFileSystem = Pick<typeof fs, 'mkdir' | 'readFile' | 'writeFile
 export function projectStoreDirectory(storageRoot: string, projectKey: string): string {
     const hash = createHash('sha256').update(projectKey).digest('hex').slice(0, 16);
     return path.join(storageRoot, 'featherspec-studio', 'projects', hash);
+}
+
+export type RuntimeStorage = { kind: 'directory'; path: string } | { kind: 'unavailable'; reason: string };
+
+export interface ProjectStoreOpenerDeps extends Omit<RuntimeStoreDeps, 'medium' | 'projectRoot'> {
+    storage: RuntimeStorage;
+    platform: NodeJS.Platform;
+}
+
+export function createProjectStoreOpener(deps: ProjectStoreOpenerDeps): (projectRoot: string) => Promise<RuntimeStore> {
+    const { storage, platform, ...store } = deps;
+    return async (projectRoot) =>
+        await openRuntimeStore({
+            ...store,
+            medium:
+                storage.kind === 'directory'
+                    ? createFileRuntimeMedium(projectStoreDirectory(storage.path, platform === 'win32' ? projectRoot.toLowerCase() : projectRoot))
+                    : createUnavailableMedium(storage.reason),
+            projectRoot,
+        });
 }
 
 function errorCode(error: unknown): string | undefined {

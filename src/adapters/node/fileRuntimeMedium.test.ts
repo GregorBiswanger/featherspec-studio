@@ -1,12 +1,13 @@
 import { promises as fs } from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { createFakeNotices, createFakeRuntimeClock, createSequentialIds } from '../../core/runtime/testing/fakes';
 import { describeRuntimeStoreContract, type MediumHarness } from '../../core/runtime/testing/contract';
 import { snapshotTree } from '../../core/discovery/testing/snapshotTree';
 import { openRuntimeStore } from '../../core/runtime/runtimeStore';
-import { createFileRuntimeMedium, projectStoreDirectory, type MediumFileSystem } from './fileRuntimeMedium';
+import { createTempDirectories } from '../../core/runtime/testing/tempDirectories';
+import { createFileRuntimeMedium, createProjectStoreOpener, projectStoreDirectory, type MediumFileSystem } from './fileRuntimeMedium';
 
 async function listRecursive(root: string, directory = ''): Promise<string[]> {
     const names: string[] = [];
@@ -257,5 +258,73 @@ describe('file runtime medium', () => {
         expect(await snapshotTree(workspace)).not.toEqual(before);
         await fs.rm(workspace, { recursive: true, force: true });
         await fs.rm(storage, { recursive: true, force: true });
+    });
+});
+
+describe('0004 AC-009: the status history has one folder per project root', () => {
+    const temp = createTempDirectories();
+    afterEach(async () => temp.removeAll());
+
+    async function openerFor(platform: NodeJS.Platform) {
+        const storage = await temp.make('fs-roots-');
+        const opener = createProjectStoreOpener({
+            storage: { kind: 'directory', path: storage },
+            platform,
+            ids: createSequentialIds(),
+            clock: createFakeRuntimeClock(),
+            notices: createFakeNotices(),
+        });
+        return async (projectRoot: string) => {
+            const store = await opener(projectRoot);
+            temp.closeBeforeRemoval(() => store.dispose());
+            return store;
+        };
+    }
+
+    it('0004 AC-009: different keys give different folders, the same key the same folder', () => {
+        expect(projectStoreDirectory('/s', 'file:///work/app')).toBe(projectStoreDirectory('/s', 'file:///work/app'));
+        expect(projectStoreDirectory('/s', 'file:///work/app')).not.toBe(projectStoreDirectory('/s', 'file:///work/app-renamed'));
+    });
+
+    it('0004 AC-009: a project opened under another root reads none of the history of the first root', async () => {
+        const open = await openerFor('linux');
+        const original = await open('file:///work/app');
+        await original.appendSpecStatusEntry('0007-board', { from: 'Draft', to: 'Ready' });
+        await original.dispose();
+        const renamed = await open('file:///work/app-renamed');
+        expect(await renamed.readSpecStatusHistory()).toEqual({ available: true, value: [] });
+        await renamed.dispose();
+        const again = await open('file:///work/app');
+        const history = await again.readSpecStatusHistory();
+        expect(history.available && history.value.map((record) => record.entry)).toEqual([{ from: 'Draft', to: 'Ready' }]);
+    });
+
+    it('0004 AC-009: on Windows a root that differs only in letter case is the same project; elsewhere it is another', async () => {
+        for (const [platform, shared] of [
+            ['win32', true],
+            ['linux', false],
+        ] as const) {
+            const open = await openerFor(platform);
+            const first = await open('file:///c%3A/Work/App');
+            await first.appendSpecStatusEntry('0007-board', { to: platform });
+            await first.dispose();
+            const other = await open('file:///c%3A/work/app');
+            const history = await other.readSpecStatusHistory();
+            expect(history.available && history.value.length, platform).toBe(shared ? 1 : 0);
+            await other.dispose();
+        }
+    });
+
+    it('an unavailable storage location opens an unavailable store with its reason', async () => {
+        const store = await createProjectStoreOpener({
+            storage: { kind: 'unavailable', reason: 'not local' },
+            platform: 'linux',
+            ids: createSequentialIds(),
+            clock: createFakeRuntimeClock(),
+            notices: createFakeNotices(),
+        })('file:///work/app');
+        temp.closeBeforeRemoval(() => store.dispose());
+        expect(store.state().kind).toBe('unavailable');
+        expect(await store.readSpecStatusHistory()).toMatchObject({ available: false });
     });
 });

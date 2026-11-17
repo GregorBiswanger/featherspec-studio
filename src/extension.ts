@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { createFileRuntimeMedium, projectStoreDirectory } from './adapters/node/fileRuntimeMedium';
+import { createProjectStoreOpener } from './adapters/node/fileRuntimeMedium';
 import { createRandomIds } from './adapters/node/randomIds';
 import { createSystemClock } from './adapters/node/systemClock';
 import { createSystemRuntimeClock } from './adapters/node/systemRuntimeClock';
@@ -39,8 +39,7 @@ import { isCaseInsensitivePlatform } from './core/specs/eventPath';
 import { createSpecRepository, type SpecRepository } from './core/specs/specRepository';
 import type { StoreState } from './core/runtime/model';
 import { createRuntimeSession, type RuntimeSession } from './core/runtime/runtimeSession';
-import { openRuntimeStore, type RuntimeStore } from './core/runtime/runtimeStore';
-import { createUnavailableMedium } from './core/runtime/unavailableMedium';
+import type { RuntimeStore } from './core/runtime/runtimeStore';
 import { createBoardService } from './core/board/boardService';
 import { createMissionControlService } from './core/missionControl/missionControlService';
 import { createBoardRequests } from './core/board/boardRequests';
@@ -128,19 +127,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     const ids = createRandomIds();
     const session = createRuntimeSession({
         discovery: controller,
-        openStore: async (projectRoot) =>
-            await openRuntimeStore({
-                medium:
-                    storage.kind === 'directory'
-                        ? createFileRuntimeMedium(
-                              projectStoreDirectory(storage.path, process.platform === 'win32' ? projectRoot.toLowerCase() : projectRoot),
-                          )
-                        : createUnavailableMedium(storage.reason),
-                ids,
-                clock,
-                notices: { show: (message) => runtimeUi.warn(message) },
-                projectRoot,
-            }),
+        openStore: createProjectStoreOpener({
+            storage,
+            platform: process.platform,
+            ids,
+            clock,
+            notices: { show: (message) => runtimeUi.warn(message) },
+        }),
     });
     runtimeSession = session;
     const lifecycle = createLifecycleService({ repository, session, clock: createSystemClock() });

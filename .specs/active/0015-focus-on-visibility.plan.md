@@ -347,6 +347,14 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 - [x] **Verified (T-015):** 2026-11-17 — AGENTS.md snapshot 214 lines (below 215), `.architecture/*.md` and `projectbrief.md` grep for provider|agent run|agentCenter|orchestrator → 0 each, Memory Bank updated, test-title audit written (957 missing titles: 820 with deleted modules, 137 in staying files, each with reason). Final gates: eslint, both tsc, `npm run test:unit` (1665 + 3 skipped in the node/webview projects, 12 timing), compile, compile-tests, package all clean.
 - **Notes:** `npm test` on Windows and CI is the pre-done gate (AC-027) before `/sdd-compile`.
 
+### T-016 — Compile fix D1: one status-history folder per project root (0004 AC-009)
+
+- **Covers:** AC-027 (0004 AC-009 stays decided by a test); compile report 2026-11-17 D1
+- **Do:** move the store opening of `src/extension.ts` (folder per root, lower-case key on Windows, unavailable medium) into `createProjectStoreOpener` in `src/adapters/node/fileRuntimeMedium.ts`, so the composition root passes no root of its own; tests in `src/adapters/node/fileRuntimeMedium.test.ts` (keys, root A vs B, Windows case) and a contract test for every medium in `src/core/runtime/testing/contract.ts`.
+- **Verify:** gates 1–5; the report's mutant K2 (key replaced by a constant) red
+- [x] **Verified (T-016):** 2026-11-17 — red: with a `Not implemented` stub the three opener tests failed; green after: 1673 passed + 3 skipped, 12 timing; gates 1–5 clean. Mutants, each red: K2 (`projectStoreDirectory(storage.path, 'x')` in the opener) → 2 tests × (root A vs B, Windows case); no Windows case folding → 1 ×; `projectStoreDirectory` ignoring its key → 4 × (key test, opener test, Windows test, and the new contract test on the file medium).
+- **Notes:** the composition root no longer names `projectRoot`, so K2 can no longer be made in `src/extension.ts`; it lives in the tested opener.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |

@@ -148,6 +148,15 @@ export function registerHistoryContract(context: ContractContext): void {
             expect(await second.readSpecStatusHistory('0099-none')).toEqual({ available: true, value: [] });
         });
 
+        it('0004 AC-009: a project opened under another root reads no status history of the first root', async () => {
+            const rig = await context.newRig();
+            const original = await rig.open({ project: 'file:///work/app' });
+            await original.appendSpecStatusEntry('0007-board', { from: 'Draft', to: 'Ready' });
+            await original.dispose();
+            const renamed = await rig.open({ project: 'file:///work/app-renamed' });
+            expect(await renamed.readSpecStatusHistory()).toEqual({ available: true, value: [] });
+        });
+
         it('AC-026, BR-010: entries are not masked or interpreted', async () => {
             const rig = await context.newRig();
             const store = await rig.open();
