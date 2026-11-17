@@ -1,6 +1,6 @@
 # Plan — Spec Repository & Parser
 
-**Spec:** [0002-spec-repository-parser.md](0002-spec-repository-parser.md)
+**Spec:** [0002-spec-repository-parser.md](../done/0002-spec-repository-parser.md)
 **Status:** Done
 **Last updated:** 2026-11-17
 **Current step:** none (all steps ticked)
@@ -273,7 +273,7 @@ the slices are small.
 ## Session handoff
 
 - **Done so far:** T-001 … T-011 built and verified. Second `/sdd-compile` 2026-11-17 (closing session): READY; AC-012/AC-022 host evidence recorded (Windows e6f0c85, CI 9635ba4). No code change.
-- **Next action:** none in this plan. Gregor's re-measurement of the AC-018 thresholds on a real project stays spec OP-001 (a failed re-measurement reopens the spec).
+- **Next action:** none; plan archived 2026-11-17 after `/sdd-compile` READY. Frozen. Gregor's re-measurement of the AC-018 thresholds on a real project stays spec OP-001 (a failed re-measurement reopens the spec).
 - **Open decisions:** none. Findings for Gregor: no Rescan command exists yet (OP-008, 0005).
 - **Baseline:** 9bb1c18 (HEAD before T-001).
 - **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); runs on CI and on Gregor's Windows machine.
