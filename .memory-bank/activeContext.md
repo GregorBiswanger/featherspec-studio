@@ -16,7 +16,7 @@ All seven active specs (0001...0007) are implemented: every plan is Done with ev
 - Spec 0006: [spec](../.specs/active/0006-mission-control-dashboard.md) / [plan](../.specs/active/0006-mission-control-dashboard.plan.md) (Done, 9 of 9; T-009 header time, A-013).
 - Spec 0007: [spec](../.specs/active/0007-spec-board-spec-detail.md) / [plan](../.specs/active/0007-spec-board-spec-detail.plan.md) (Done, 14 of 14; T-004, T-006, T-007 ticked late with re-run results; T-011...T-014 after `/sdd-compile` and the first visual check).
 - Spec 0013: [spec](../.specs/active/0013-studio-visual-design.md) / [plan](../.specs/active/0013-studio-visual-design.plan.md) (In Progress, started 2026-11-16).
-- Spec 0009: [spec](../.specs/active/0009-agent-provider-abstraction.md) / [plan](../.specs/active/0009-agent-provider-abstraction.plan.md) (In Progress, started 2026-11-16, 2 of 9 steps; stage 1 done).
+- Spec 0009: [spec](../.specs/active/0009-agent-provider-abstraction.md) / [plan](../.specs/active/0009-agent-provider-abstraction.plan.md) (In Progress, started 2026-11-16, 4 of 9 steps; stages 1 and 2 done).
 - Current task: 0013 T-010 — gates and docs done; waiting for Gregor's AC-017 screenshot verdict (shot list in the plan, T-010 Notes).
 - Acceptance criteria in focus: manual 0007 AC-017 (Tab onto Move to), AC-018, AC-026; 0006 AC-021, AC-022.
 

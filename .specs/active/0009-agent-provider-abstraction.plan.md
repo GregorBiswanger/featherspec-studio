@@ -3,7 +3,7 @@
 **Spec:** [0009-agent-provider-abstraction.md](0009-agent-provider-abstraction.md)
 **Status:** In Progress
 **Last updated:** 2026-11-16
-**Current step:** T-003 (stage 2, run in sequence with T-004)
+**Current step:** T-005 (stage 3, run in sequence with T-006)
 
 ## Approach
 
@@ -332,28 +332,28 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
 | AC-003 | T-002 | src/core/providers/registry.ts | registry.test.ts (AC-003) | verified |
 | AC-004 | T-002 | src/core/providers/registry.ts:declarationDefect | registry.test.ts (AC-004) | verified |
 | AC-005 | T-002 | src/core/providers/registry.ts:copyDeclaration | registry.test.ts (AC-005) | verified |
-| AC-006 | T-003 | — | — | open |
-| AC-007 | T-003 | — | — | open |
-| AC-008 | T-004 | — | — | open |
-| AC-009 | T-003 | — | — | open |
+| AC-006 | T-003 | src/core/providers/providerService.ts | providerService.test.ts (AC-006) | verified |
+| AC-007 | T-003 | src/core/providers/providerService.ts:normalise | providerService.test.ts (AC-007), payloadTypes.test.ts | verified |
+| AC-008 | T-004 | src/adapters/providers/fake/scenarios.ts:unknown-event | fakeProvider.test.ts (AC-008) | verified |
+| AC-009 | T-003 | src/core/providers/providerService.ts:stopped | providerService.test.ts (AC-009) | verified |
 | AC-010 | T-005, T-008 | — | — | open |
-| AC-011 | T-003, T-004 | — | — | open |
+| AC-011 | T-003, T-004 | providerService.ts:normalise, fake/scenarios.ts:failure | providerService.test.ts, fakeProvider.test.ts (AC-011) | verified |
 | AC-012 | T-008 | — | — | open |
-| AC-013 | T-004 | — | — | open |
-| AC-014 | T-004 | — | — | open |
-| AC-015 | T-003, T-006 | — | — | open |
+| AC-013 | T-004 | src/adapters/providers/fake/ | noIo.test.ts, fakeImports.test.ts | verified |
+| AC-014 | T-004 | src/adapters/providers/fake/fakeProvider.ts, scenarios.ts, script.ts | fakeProvider.test.ts (AC-014) | built |
+| AC-015 | T-003, T-006 | src/core/providers/providerService.ts:cancel, endSession | providerService.test.ts (AC-015) | built |
 | AC-016 | T-006 | — | — | open |
-| AC-017 | T-004 | — | — | open |
+| AC-017 | T-004 | src/adapters/providers/fake/scenarios.ts:duplicates-and-late | fakeProvider.test.ts (AC-017) | verified |
 | AC-018 | T-006 | — | — | open |
 | AC-019 | T-005, T-006 | — | — | open |
 | AC-020 | T-007 | — | — | open |
 | AC-021 | T-007 | — | — | open |
-| AC-022 | T-004, T-005, T-008 | — | — | open |
+| AC-022 | T-004, T-005, T-008 | src/adapters/providers/fake/scenarios.ts, fakeProvider.ts:credentialValues | fakeProvider.test.ts (AC-022) | built |
 
 ## Session handoff
 
-- **Done so far:** start signal given 2026-11-16, pair moved backlog → active; stage 1 (T-001, T-002) done and committed; parallel stages run in sequence (standing approval).
-- **Next action:** T-003 service core (test first), then T-004 fake scenarios; stage 2 ends after T-004.
+- **Done so far:** start signal given 2026-11-16, pair moved backlog → active; stages 1 and 2 (T-001...T-004) done and committed; parallel stages run in sequence (standing approval).
+- **Next action:** T-005 service requests and availability (test first), then T-006 fake interactions; stage 3 ends after T-006.
 - **Open decisions:** none. Nine steps (one over the aim): the surface step carries the document,
   and the service and the fake are each two slices so they can run in parallel.
 - **Baseline:** 2026-11-16, eslint, both tsc runs and `npm run test:unit` green: 1350 tests.
