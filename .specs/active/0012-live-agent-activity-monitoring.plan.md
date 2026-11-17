@@ -201,8 +201,8 @@ No parallel stage: stages 1–2 are one module (`src/core/agentCenter`), and eve
   the same memory: same rows, `Interrupted`, no open request, remembered selection and filter),
   `noWrite.test.ts` (fixture byte-identical before/after every scenario).
 - **Verify:** `npx vitest run src/core/agentCenter` then the per-step gates
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-17 — red: `npx vitest run src/core/agentCenter src/shared/protocol/agentCenter.test.ts` with `withEventSignal`, `createAgentCenterService` and `isAgentCenterView` as `Not implemented` stubs: 28 failed, all `Error: Not implemented` (service, restart, noWrite, signal and view-contract cases), 52 passed (earlier steps). Green: first run 4 failed (a host-subscription bug: the store re-follow disposed the session subscriptions; one test expected `dropped` where the store refuses an unknown run), fixed, then `npx vitest run src/core/agentCenter` 9 files passed. Gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 147 files, 1807 tests passed.
+- **Notes:** the event signal carries run ID, sequence number and type only (no payload: the store masks payloads, the signal must not leak the unmasked one); the service reads the newer events from the store on a signal. The service takes no clock (no timers). `view()` is `unavailable` also without an active project. The pending navigation target is kept until the first listener attaches (notification action with the panel closed).
 
 ### T-005 — Service: answers, cancel, resume, open file, notifications
 

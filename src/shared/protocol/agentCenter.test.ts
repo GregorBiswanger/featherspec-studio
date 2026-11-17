@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { isTimelinePayload, isTimelineRow } from './agentCenter';
+import { isAgentCenterView, isTimelinePayload, isTimelineRow } from './agentCenter';
+import { sampleCenterView } from './testing/agentCenterSample';
 
 const row = { key: 1, kind: 'Message', time: '2026-11-17T10:00:00.000Z', source: 'provider', fields: [{ label: 'Text', text: 'hi' }] };
 
@@ -19,5 +20,37 @@ describe('timeline row and payload contract', () => {
         expect(isTimelinePayload({ runId: '', rows: [], hasEarlier: false })).toBe(false);
         expect(isTimelinePayload({ runId: 'r', rows: [{ ...row, extra: 1 }], hasEarlier: true })).toBe(false);
         expect(isTimelinePayload(null)).toBe(false);
+    });
+});
+
+describe('Agent Center view contract (AC-027, strict guard)', () => {
+    it('accepts a built view, the unavailable form, the empty states and a view without a selection', () => {
+        expect(isAgentCenterView(sampleCenterView())).toBe(true);
+        expect(isAgentCenterView({ kind: 'unavailable', reason: 'disk is full' })).toBe(true);
+        expect(isAgentCenterView(sampleCenterView({ rows: [], detail: undefined, empty: 'no-runs' }))).toBe(true);
+        expect(isAgentCenterView(sampleCenterView({ filter: { stem: '0007-board', label: '0007' }, empty: 'no-match', rows: [], detail: undefined }))).toBe(true);
+        expect(isAgentCenterView(sampleCenterView({ controls: { kind: 'disabled', reason: 'reader window' }, notice: 'Run x is not in the run history' }))).toBe(true);
+        expect(isAgentCenterView(sampleCenterView({ controls: { kind: 'none' } }))).toBe(true);
+    });
+
+    it('refuses an extra key at any level, so no raw payload can reach the DOM', () => {
+        const view = sampleCenterView() as { rows: object[]; detail: { header: object; requests: object[]; files: object[] } };
+        expect(isAgentCenterView({ ...view, raw: 'SECRET' })).toBe(false);
+        expect(isAgentCenterView({ ...view, rows: [{ ...view.rows[0], prompt: 'SECRET' }] })).toBe(false);
+        expect(isAgentCenterView({ ...view, detail: { ...view.detail, payload: 'SECRET' } })).toBe(false);
+        expect(isAgentCenterView({ ...view, detail: { ...view.detail, header: { ...view.detail.header, token: 'SECRET' } } })).toBe(false);
+        expect(isAgentCenterView({ ...view, detail: { ...view.detail, requests: [{ ...view.detail.requests[0], answer: 'SECRET' }] } })).toBe(false);
+        expect(isAgentCenterView({ ...view, detail: { ...view.detail, files: [{ ...view.detail.files[0], diff: 'SECRET' }] } })).toBe(false);
+        expect(isAgentCenterView({ kind: 'unavailable', reason: 'x', extra: 1 })).toBe(false);
+    });
+
+    it('refuses wrong types and unknown words', () => {
+        const view = sampleCenterView() as { rows: { status: string }[] };
+        expect(isAgentCenterView(null)).toBe(false);
+        expect(isAgentCenterView({ kind: 'ready' })).toBe(false);
+        expect(isAgentCenterView({ ...view, rows: [{ ...view.rows[0], status: 'Paused' }] })).toBe(false);
+        expect(isAgentCenterView({ ...view, empty: 'maybe' })).toBe(false);
+        expect(isAgentCenterView({ ...view, controls: { kind: 'enabled', reason: 'x' } })).toBe(false);
+        expect(isAgentCenterView({ ...view, controls: { kind: 'disabled' } })).toBe(false);
     });
 });
