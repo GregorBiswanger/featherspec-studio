@@ -48,6 +48,18 @@ async function closeStudio(api: StudioApi): Promise<void> {
 suite('FeatherSpec Studio shell smoke', function () {
     this.timeout(60_000);
 
+    // The first webview of a VS Code window loads its service worker. On a slow machine (windows-latest) a panel
+    // that is closed before that first load ended left every later webview of the window without content, so the
+    // suite lets the first one finish loading before the open/close tests start.
+    suiteSetup(async function () {
+        this.timeout(150_000);
+        const api = await activateStudio();
+        await api.whenIdle();
+        await vscode.commands.executeCommand('featherspec-studio.open');
+        await waitFor('the first Studio webview of this window to load and say hello (warm-up)', () => panelState(api), (state) => state.helloAt !== undefined, { timeoutMs: 120_000 });
+        await closeStudio(api);
+    });
+
     teardown(async () => {
         const api = await activateStudio();
         await closeStudio(api);
