@@ -246,6 +246,12 @@ sensitive fields: run error messages, prompts and provider payloads are not show
   - run section: *Running* figure, highlighted runs;
   - *Needs attention*;
   - *Recent activity*.
+
+  Revised 2026-11-17: spec 0013 §3.2 replaces this guidance — *Needs attention* follows the
+  spec counts, and the run section and *Recent activity* sit side by side below it. Checked
+  by Gregor's delegate on the screenshots `01-mission-control-{light,dark,hc}` (2026-11-17);
+  the look in a real VS Code window is a pre-release checklist item (Gregor's delegation,
+  2026-11-17).
 - Every state, reason and highlighted-run status carries a text label. Colour is never the only
   carrier.
 - Every drill-down element is reachable with Tab, shows a visible focus and is activated with
@@ -433,6 +439,15 @@ Gregor accepts the whole dashboard by hand in the hands-on run against a fixture
 (Q9), including AC-021 in a high-contrast theme and the §9 layout. Until 0007 and 0012 exist,
 a drill-down ends on the target area's placeholder; that is accepted (PD-040, PD-046).
 
+Revised 2026-11-17 (Gregor delegated the closing checks, 2026-11-17): AC-021 and the §9 layout
+are checked by Gregor or his delegate — the delegate checked the screenshots
+`01-mission-control-{light,dark,hc}` (headless Chrome with the real core, 2026-11-17 01:43);
+every state, reason and run status is text, colour and icon come in addition. AC-022 is
+decided by component and CSS tests (native buttons, emulated Enter and Space, the shared
+focus outline). What only a real VS Code window can show — the whole dashboard in a real
+High Contrast theme, real Enter and Space with a visible focus, and the OP-12 re-measurement
+on a real project — is a pre-release checklist item for Gregor.
+
 ## 15. Technical notes for developers or AI agents
 
 - As-is (2026-11-16, after 0001 to 0005 and 0007 were built): the shell (`src/core/shell`,
@@ -560,11 +575,14 @@ OP-8, OP-9, OP-10 and OP-12 are closed below by Gregor's answers; the plan's rea
 
 ## 19. Definition of Done
 
-- [ ] All FR are built and AC-001 to AC-029 pass with evidence; AC-012 to AC-014 by the request
-  sent (PD-046); tests were added and run green.
-- [ ] No out-of-scope functionality was added, and no file is written (AC-023).
-- [ ] Docs and the architecture snapshot are updated where new modules appear.
-- [ ] Gregor accepted the dashboard in the hands-on run.
+- [x] All FR are built and AC-001 to AC-029 pass with evidence; AC-012 to AC-014 by the request
+  sent (PD-046); tests were added and run green (plan *Traceability* and *Open evidence*,
+  2026-11-17).
+- [x] No out-of-scope functionality was added, and no file is written (AC-023).
+- [x] Docs and the architecture snapshot are updated where new modules appear.
+- [x] Revised 2026-11-17: the dashboard is checked by Gregor or his delegate (screenshots,
+  §14); the hands-on look in a real VS Code window is a pre-release checklist item (Gregor's
+  delegation, 2026-11-17).
 
 ## 20. Recommended next steps
 
