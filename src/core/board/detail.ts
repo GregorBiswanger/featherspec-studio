@@ -1,9 +1,8 @@
-import type { DetailSections, DetailView, HeaderLine, OpenTarget, RunItem, StatusHistoryItem, StepItem } from '../../shared/protocol/detail';
+import type { DetailSections, DetailView, HeaderLine, OpenTarget, StatusHistoryItem, StepItem } from '../../shared/protocol/detail';
 import { successorText } from '../../shared/protocol/texts';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { HistoryCause, HistoryView } from '../lifecycle/statusHistory';
 import type { ShellModel } from '../ports/shell';
-import type { ReadResult, RunView } from '../runtime/model';
 import type { HeaderField } from '../specs/parseSpec';
 import type { SpecEntry } from '../specs/readProject';
 import { titleOf } from './cards';
@@ -14,7 +13,6 @@ import { criteriaProgress } from './progress';
 export interface DetailInput {
     selection: { stem: string; path?: string } | undefined;
     model: ShellModel | undefined;
-    runs: ReadResult<RunView[]>;
     history: HistoryView;
 }
 
@@ -94,23 +92,8 @@ export function buildDetail(input: DetailInput): DetailView {
 
     const related = [...spec.planKeys, ...spec.returnNoteKeys].map((key) => ({ label: baseName(key), open: { key } }));
 
-    const runItems: RunItem[] | undefined = input.runs.available
-        ? input.runs.value
-              .filter((candidate) => candidate.spec.stem === entry.stem)
-              .map((candidate) => ({
-                  runId: candidate.runId,
-                  provider: candidate.providerId,
-                  status: candidate.status,
-                  created: candidate.created,
-                  started: candidate.started,
-                  ended: candidate.ended,
-                  historyIncomplete: candidate.historyIncomplete,
-                  historyUnreadable: candidate.historyUnreadable,
-              }))
-        : undefined;
-
     const historyItems: StatusHistoryItem[] | undefined =
-        input.runs.available && input.history.available
+        input.history.available
             ? input.history.entries
                   .filter((candidate) => candidate.stem === entry.stem)
                   .map((candidate) => ({
@@ -164,7 +147,7 @@ export function buildDetail(input: DetailInput): DetailView {
             compileVerdict: entry.verification.compileVerdictText,
         },
         related,
-        history: { runs: runItems, statusHistory: historyItems, label: input.history.available ? input.history.label : 'Observed by Studio while it was running — not a reconstruction' },
+        history: { statusHistory: historyItems, label: input.history.available ? input.history.label : 'Observed by Studio while it was running — not a reconstruction', notAvailable: input.history.available ? undefined : input.history.text },
     };
     return { kind: 'spec', key: entry.key, stem: entry.stem, number: entry.number, title: titleOf(spec) ?? entry.stem, nextStep: next, sections };
 }

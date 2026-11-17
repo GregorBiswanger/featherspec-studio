@@ -10,11 +10,10 @@ export interface NamedSet {
 
 export interface BoardFilter {
     states?: BoardState[];
-    providers?: (string | null)[];
     set?: NamedSet;
 }
 
-const FILTER_KEYS = ['states', 'providers', 'set'];
+const FILTER_KEYS = ['states', 'set'];
 
 export function isBoardState(value: unknown): value is BoardState {
     return typeof value === 'string' && (BOARD_STATES as readonly string[]).includes(value);
@@ -35,16 +34,13 @@ export function isBoardFilter(value: unknown): value is BoardFilter {
     if (!isRecord(value) || !Object.keys(value).every((key) => FILTER_KEYS.includes(key))) {
         return false;
     }
-    const { states, providers, set } = value;
+    const { states, set } = value;
     if (states !== undefined && !(Array.isArray(states) && states.length > 0 && states.every(isBoardState))) {
-        return false;
-    }
-    if (providers !== undefined && !(Array.isArray(providers) && providers.length > 0 && providers.every((item) => item === null || (typeof item === 'string' && item.length > 0)))) {
         return false;
     }
     return set === undefined || isNamedSet(set);
 }
 
 export function isFilterSet(filter: BoardFilter): boolean {
-    return filter.states !== undefined || filter.providers !== undefined || filter.set !== undefined;
+    return filter.states !== undefined || filter.set !== undefined;
 }

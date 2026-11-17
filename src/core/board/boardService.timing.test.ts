@@ -10,7 +10,7 @@ import { generateProject } from '../specs/testing/generateProject';
 import type { DetailView } from '../../shared/protocol/detail';
 import { BUDGET_MS, bestOfThree } from '../../shared/testing/timing';
 import type { BoardService } from './boardService';
-import { createBoardWorld, modelOf, run, type BoardWorld } from './testing/boardWorld';
+import { createBoardWorld, modelOf, type BoardWorld } from './testing/boardWorld';
 
 const NINE: Record<string, string> = {};
 for (let number = 1; number <= 9; number += 1) {
@@ -40,7 +40,7 @@ describe('board service: freshness on 200 specs (AC-019, core part)', () => {
         }
     });
 
-    it('a model notification and a run notification reach the view within 500 ms each (PD-047)', async () => {
+    it('a model notification reaches the view within 500 ms (PD-047)', async () => {
         temp = await fs.mkdtemp(path.join(os.tmpdir(), 'board-perf-'));
         await generateProject(temp, 200);
         const project = await readProject(createNodeSpecSource(), temp, '1.10.0');
@@ -56,14 +56,6 @@ describe('board service: freshness on 200 specs (AC-019, core part)', () => {
             await w.service.whenIdle();
         });
         expect(modelBest).toBeLessThan(BUDGET_MS.uiFreshness);
-
-        w.store.setRuns(Array.from({ length: 200 }, (_, index) => run(`r${index}`, `${String(index + 1).padStart(4, '0')}-generated-spec`)));
-        const runBest = await bestOfThree(async () => {
-            w.store.notify();
-            await w.service.whenIdle();
-        });
-        expect(w.service.view()!.providers).toEqual(['copilot']);
-        expect(runBest).toBeLessThan(BUDGET_MS.uiFreshness);
     });
 });
 
@@ -75,7 +67,7 @@ describe('board service: detail freshness on 200 specs (AC-019, core part for th
         }
     });
 
-    it('a model notification and a run notification reach the detail of the selected spec within 500 ms each (PD-047)', async () => {
+    it('a model notification and a status history notification reach the detail of the selected spec within 500 ms each (PD-047)', async () => {
         temp = await fs.mkdtemp(path.join(os.tmpdir(), 'detail-perf-'));
         await generateProject(temp, 200);
         const project = await readProject(createNodeSpecSource(), temp, '1.10.0');
@@ -113,14 +105,18 @@ describe('board service: detail freshness on 200 specs (AC-019, core part for th
         seen.length = 0;
 
         const stem = w.service.detail().kind === 'spec' ? (w.service.detail() as { stem: string }).stem : '';
-        w.store.setRuns([run('r-detail', stem)]);
-        const runBest = await bestOfThree(async () => {
-            w.store.notify();
+        w.history.view = {
+            available: true,
+            label: 'Observed by Studio while it was running — not a reconstruction',
+            entries: [{ observedAt: '2026-11-16T09:00:00Z', stem, old: 'Ready', new: 'Active', rule: 'S-ACTIVE', cause: { kind: 'first-observed' }, flow: 'not checked' }],
+        };
+        const historyBest = await bestOfThree(async () => {
+            w.history.notify();
             await w.service.whenIdle();
         });
         const detail = w.service.detail();
-        expect(detail.kind === 'spec' ? detail.sections.history.runs?.map((item) => item.runId) : undefined).toEqual(['r-detail']);
+        expect(detail.kind === 'spec' ? detail.sections.history.statusHistory?.map((item) => item.new) : undefined).toEqual(['Active']);
         expect(seen.length).toBeGreaterThanOrEqual(1);
-        expect(runBest).toBeLessThan(BUDGET_MS.uiFreshness);
+        expect(historyBest).toBeLessThan(BUDGET_MS.uiFreshness);
     });
 });

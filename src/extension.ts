@@ -262,7 +262,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     const selection = createShellSelection(service);
     const board = createBoardService({
         source: modelSource,
-        session,
         selection,
         history: { read: () => lifecycle.history(), onDidChange: (listener) => lifecycle.onDidChange(() => listener()) },
     });

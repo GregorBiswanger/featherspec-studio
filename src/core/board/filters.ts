@@ -5,12 +5,6 @@ function matches(card: CardView, filter: BoardFilter): boolean {
     if (filter.states !== undefined && !filter.states.includes(card.state)) {
         return false;
     }
-    if (filter.providers !== undefined) {
-        const provider = card.run.kind === 'run' || card.run.kind === 'unreadable' ? card.run.provider : card.run.kind === 'none' ? null : undefined;
-        if (provider === undefined || !filter.providers.includes(provider)) {
-            return false;
-        }
-    }
     return filter.set === undefined || filter.set.stems.includes(card.stem);
 }
 

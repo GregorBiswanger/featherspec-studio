@@ -1,7 +1,6 @@
 import type { DragEvent, ReactNode } from 'react';
 import type { CardView, Progress } from '../../shared/protocol/board';
 import {
-    cardRunText,
     CRITERIA_PROGRESS_LABEL,
     criteriaText,
     DEPRECATED_MARKER,
@@ -90,7 +89,6 @@ export function Card(props: {
                         <BadgeIcon kind="diagnostic" /> {diagnosticsBadgeText(card.diagnostics)}
                     </span>
                 ) : null}
-                <span className="card-run">{cardRunText(card.run)}</span>
                 <span className="card-change">{lastChangeText(card.lastChangeMs)}</span>
             </div>
             {props.menu}

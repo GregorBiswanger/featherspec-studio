@@ -9,12 +9,6 @@ export function isSortKey(value: unknown): value is SortKey {
     return typeof value === 'string' && (SORT_KEYS as readonly string[]).includes(value);
 }
 
-export type CardRun =
-    | { kind: 'none' }
-    | { kind: 'unavailable' }
-    | { kind: 'run'; provider: string; status: string }
-    | { kind: 'unreadable'; provider: string };
-
 export interface Progress {
     done: number;
     total: number;
@@ -37,7 +31,6 @@ export interface CardView {
     tasks: Progress | undefined;
     criteria: Progress | undefined;
     lastChangeMs: number | undefined;
-    run: CardRun;
 }
 
 export interface ReadinessCheck {
@@ -62,7 +55,6 @@ export interface BoardView {
     banner: BannerLine[];
     filter: BoardFilter;
     sort: SortKey;
-    providers: string[];
     noSpecs: boolean;
 }
 
@@ -81,23 +73,6 @@ function isOptionalString(value: unknown): boolean {
 
 function isProgress(value: unknown): boolean {
     return value === undefined || (isRecord(value) && typeof value.done === 'number' && typeof value.total === 'number');
-}
-
-export function isCardRun(value: unknown): value is CardRun {
-    if (!isRecord(value)) {
-        return false;
-    }
-    switch (value.kind) {
-        case 'none':
-        case 'unavailable':
-            return true;
-        case 'run':
-            return isString(value.provider) && isString(value.status);
-        case 'unreadable':
-            return isString(value.provider);
-        default:
-            return false;
-    }
 }
 
 export function isCardView(value: unknown): value is CardView {
@@ -119,8 +94,7 @@ export function isCardView(value: unknown): value is CardView {
         isOptionalString(value.summary) &&
         isProgress(value.tasks) &&
         isProgress(value.criteria) &&
-        (value.lastChangeMs === undefined || typeof value.lastChangeMs === 'number') &&
-        isCardRun(value.run)
+        (value.lastChangeMs === undefined || typeof value.lastChangeMs === 'number')
     );
 }
 
@@ -144,8 +118,6 @@ export function isBoardView(value: unknown): value is BoardView {
         value.banner.every((line) => isRecord(line) && isString(line.where) && isString(line.reason)) &&
         isBoardFilter(value.filter) &&
         isSortKey(value.sort) &&
-        Array.isArray(value.providers) &&
-        value.providers.every(isString) &&
         typeof value.noSpecs === 'boolean'
     );
 }

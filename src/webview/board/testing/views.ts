@@ -20,7 +20,6 @@ export function card(number: string, overrides: Partial<CardView> = {}): CardVie
         tasks: { done: 3, total: 7 },
         criteria: { done: 1, total: 4 },
         lastChangeMs: Date.UTC(2026, 10, 16, 9, 30),
-        run: { kind: 'none' },
         ...overrides,
     };
 }
@@ -30,7 +29,7 @@ export function boardView(cards: CardView[], overrides: Partial<BoardView> = {})
         const own = cards.filter((entry) => entry.state === state);
         return { state, cards: own, hidden: 0, emptyBeforeFilter: own.length === 0 };
     });
-    return { columns, banner: [], filter: {}, sort: 'number', providers: [], noSpecs: cards.length === 0, ...overrides };
+    return { columns, banner: [], filter: {}, sort: 'number', noSpecs: cards.length === 0, ...overrides };
 }
 
 export function boardEvent(view: BoardView): Envelope {

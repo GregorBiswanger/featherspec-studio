@@ -234,7 +234,6 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         const detail = buildDetail({
             selection: { stem: '0002-spec-repository-parser' },
             model: { project, lifecycle },
-            runs: { available: true, value: [] },
             history: { available: true, label: 'Observed', entries: [] },
         });
         expect(detail.kind).toBe('spec');

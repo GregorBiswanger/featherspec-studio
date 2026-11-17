@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
-import { cardRunText, formatLastChange } from '../../shared/protocol/texts';
+import { formatLastChange } from '../../shared/protocol/texts';
 import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
 import { baseView, click, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
@@ -44,8 +44,8 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
         expect(columns[4]?.querySelectorAll('[data-card]')).toHaveLength(1);
     });
 
-    it('shows number, title, state text, description, figures, last change and run', async () => {
-        const entry = card('0007', { derivedRule: 'S-REVIEW', state: 'Review', run: { kind: 'run', provider: 'copilot', status: 'Running' } });
+    it('shows number, title, state text, description, figures and last change', async () => {
+        const entry = card('0007', { derivedRule: 'S-REVIEW', state: 'Review' });
         const text = (await open(boardView([entry]))).querySelector('[data-card]')!.textContent!;
         expect(text).toContain('0007');
         expect(text).toContain('Thing 0007');
@@ -55,17 +55,12 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
         expect(text).toContain('Tasks: 3 of 7');
         expect(text).toContain('Criteria: 1 of 4 verified');
         expect(text).toContain(`Last change: ${formatLastChange(Date.UTC(2026, 10, 16, 9, 30))}`);
-        expect(text).toContain('copilot · Running');
     });
 
-    it.each([
-        [{ kind: 'none' }, 'No run'],
-        [{ kind: 'unavailable' }, 'Runs: not available'],
-        [{ kind: 'unreadable', provider: 'copilot' }, 'copilot · history unreadable'],
-    ] as const)('AC-007: the run %j reads %s', async (run, expected) => {
-        const text = (await open(boardView([card('0001', { run })]))).querySelector('.card-run')!.textContent;
-        expect(text).toBe(expected);
-        expect(cardRunText(run)).toBe(expected);
+    it('0015 AC-011: the card shows no run line, whatever the run state of the spec was', async () => {
+        const container = await open(boardView([card('0001', { state: 'Active' })]));
+        expect(container.querySelector('.card-run')).toBeNull();
+        expect(container.querySelector('[data-card]')!.textContent).not.toMatch(/No run|Runs: not available|history unreadable/);
     });
 
     it('AC-004, AC-006: no summary and unavailable figures read as text, never as zero', async () => {
@@ -136,14 +131,10 @@ describe('AC-012, AC-022: the filter bar', () => {
         expect(requests('boardSetFilter')).toEqual([{ filter: { states: ['Active', 'Backlog'] } }, { filter: {} }]);
     });
 
-    it('the provider checkboxes offer "No run" (null) and the providers of the project', async () => {
-        const container = await open(boardView([card('0001')], { providers: ['copilot', 'fake'] }));
-        const group = container.querySelectorAll('fieldset')[1]!;
-        expect(group.textContent).toContain('No run');
-        expect(group.textContent).toContain('copilot');
-        await click(group.querySelectorAll('input')[0]!);
-        await click(group.querySelectorAll('input')[1]!);
-        expect(requests('boardSetFilter')).toEqual([{ filter: { providers: [null] } }, { filter: { providers: ['copilot'] } }]);
+    it('0015 AC-011: the filters offer board state and named spec set only: one checkbox group, no provider, no "No run"', async () => {
+        const container = await open(boardView([card('0001')]));
+        expect(container.querySelectorAll('fieldset')).toHaveLength(1);
+        expect(container.querySelector('.filter-bar')!.textContent).not.toMatch(/Provider|No run/);
     });
 
     it('a named set is shown under its label as a set filter, and Clear filters sends the request', async () => {
@@ -182,7 +173,7 @@ describe('AC-012, AC-022: the filter bar', () => {
     it('AC-017: every filter control is reachable by keyboard', async () => {
         const container = await open(boardView([card('0001')], { filter: { states: ['Done'] } }));
         const controls = [...container.querySelectorAll<HTMLElement>('.filter-bar input, .filter-bar select, .filter-bar button')];
-        expect(controls.length).toBeGreaterThan(8);
+        expect(controls).toHaveLength(8);
         controls.forEach((control) => expect(control.tabIndex).toBeGreaterThanOrEqual(0));
     });
 });

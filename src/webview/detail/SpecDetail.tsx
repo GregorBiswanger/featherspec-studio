@@ -1,18 +1,14 @@
 import type { DetailSections, DetailView, OpenTarget } from '../../shared/protocol/detail';
 import {
-    cardRunText,
     criteriaText,
     DEPRECATED_MARKER,
     DERIVED_SENTENCES,
     DETAIL_LABEL,
-    HISTORY_INCOMPLETE_FLAG,
     HISTORY_NOT_AVAILABLE_TEXT,
-    HISTORY_UNREADABLE_FLAG,
     NO_DETAIL_SELECTION_TEXT,
     NO_PLAN_TEXT,
     NO_REQUIREMENTS_TEXT,
     NO_RELATED_TEXT,
-    NO_RUN_LABEL,
     OPEN_FILE_LABEL,
     PRIORITY_TEXT,
     SECTION_TITLES,
@@ -224,25 +220,8 @@ function Sections(props: { sections: DetailSections; fileResult: { key: string; 
                 )}
             </DetailSection>
             <DetailSection title={SECTION_TITLES.history} keys={[]} fileResult={fileResult} onOpen={onOpen}>
-                {history.runs === undefined ? (
-                    <p>{cardRunText({ kind: 'unavailable' })}</p>
-                ) : history.runs.length === 0 ? (
-                    <p>{NO_RUN_LABEL}</p>
-                ) : (
-                    <ul className="detail-runs">
-                        {history.runs.map((run) => (
-                            <li key={run.runId}>
-                                {run.runId} · {run.provider} · {run.status} · created {run.created}
-                                {run.started === undefined ? '' : ` · started ${run.started}`}
-                                {run.ended === undefined ? '' : ` · ended ${run.ended}`}
-                                {run.historyIncomplete ? ` · ${HISTORY_INCOMPLETE_FLAG}` : ''}
-                                {run.historyUnreadable ? ` · ${HISTORY_UNREADABLE_FLAG}` : ''}
-                            </li>
-                        ))}
-                    </ul>
-                )}
                 {history.statusHistory === undefined ? (
-                    <p>{HISTORY_NOT_AVAILABLE_TEXT}</p>
+                    <p>{history.notAvailable ?? HISTORY_NOT_AVAILABLE_TEXT}</p>
                 ) : (
                     <>
                         <p>{history.label}</p>

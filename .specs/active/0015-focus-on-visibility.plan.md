@@ -185,7 +185,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
   "Status history" with 0003's history and *not available* with the reason.
 - **Deletes:** `src/core/board/runs.ts`, `src/core/board/runs.test.ts`
 - **Verify:** changed tests red then green; gates 1–5
-- [ ] **Verified (T-005):** —
+- [x] **Verified (T-005):** 2026-11-17 — red: with the previous source files restored, 57 tests failed (board service, detail, filters, guards, SpecBoard, SpecDetail); green after the change: 2526 passed + 12 timing; gates 1–5 (eslint, both tsc, test:unit, compile) clean. runs.ts and runs.test.ts deleted; tests of the provider filter, run line and run list deleted with their behaviour. Notes: `run()` stays in src/core/board/testing/boardWorld.ts until T-006/T-008 delete its last consumers (agentCenter and missionControl tests); the keyboard filter test now asserts exactly 8 controls (6 states, sort, Clear).
 - **Notes:** —
 
 ### T-006 — Mission Control without runs; product texts

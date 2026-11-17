@@ -59,7 +59,7 @@ describe('AC-010: the seven sections', () => {
             'Plan & tasks',
             'Verification',
             'Related artifacts',
-            'Agent history',
+            'Status history',
         ]);
     });
 
@@ -162,7 +162,7 @@ describe('AC-010: Open file exactly where a file is named', () => {
         expect([...section(container, 'Related artifacts').querySelectorAll('button.related-link')].map((button) => button.textContent)).toEqual(['0007-thing.plan.md']);
     });
 
-    it('is never offered for runs, status history or No plan yet', async () => {
+    it('is never offered for the status history or No plan yet', async () => {
         const noPlan = detailView({
             plan: { open: undefined, stages: [], steps: [] },
             verification: { ...sections().verification, open: undefined },
@@ -171,7 +171,7 @@ describe('AC-010: Open file exactly where a file is named', () => {
         expect(section(container, 'Plan & tasks').textContent).toContain(NO_PLAN_TEXT);
         expect(openButtons(section(container, 'Plan & tasks'))).toHaveLength(0);
         expect(openButtons(section(container, 'Verification'))).toHaveLength(0);
-        expect(openButtons(section(container, 'Agent history'))).toHaveLength(0);
+        expect(openButtons(section(container, 'Status history'))).toHaveLength(0);
     });
 
     it('0013 AC-013: sends openFile with the key of the section\'s file and no line', async () => {
@@ -206,31 +206,29 @@ describe('AC-010: Open file exactly where a file is named', () => {
     });
 });
 
-describe('AC-027: Agent history', () => {
-    it('lists runs as delivered with provider, status, timestamps and flags, and the labelled status history', async () => {
-        const text = section(await open(), 'Agent history').textContent!;
-        expect(text.indexOf('r2')).toBeLessThan(text.indexOf('r1'));
-        expect(text).toContain('claude');
-        expect(text).toContain('Running');
-        expect(text).toContain('2026-11-16T10:00:00Z');
-        expect(text).toContain('history incomplete');
-        expect(text).toContain('history unreadable');
+describe('0015 AC-012: Status history', () => {
+    it('lists the labelled status history and no run', async () => {
+        const text = section(await open(), 'Status history').textContent!;
         expect(text).toContain('Observed by Studio while it was running — not a reconstruction');
         expect(text).toContain('Ready');
         expect(text).toContain('S-ACTIVE');
+        expect(text).not.toContain('claude');
+        expect(text).not.toContain('Runs: not available');
+        expect(text).not.toContain('No run');
     });
 
-    it('shows not available for both while the store is unavailable', async () => {
+    it('shows not available with the reason while the history is not available', async () => {
         const base = sections().history;
-        const text = section(await open(detailView({ history: { ...base, runs: undefined, statusHistory: undefined } })), 'Agent history').textContent!;
-        expect(text).toContain('Runs: not available');
+        const reason = "Status history not available: Another VS Code window holds the write lock for this project's status history.";
+        const text = section(await open(detailView({ history: { ...base, statusHistory: undefined, notAvailable: reason } })), 'Status history').textContent!;
+        expect(text).toContain(reason);
+        expect(text).not.toContain('Observed by Studio');
+    });
+
+    it('shows not available even when the reason is missing', async () => {
+        const base = sections().history;
+        const text = section(await open(detailView({ history: { ...base, statusHistory: undefined } })), 'Status history').textContent!;
         expect(text).toContain(HISTORY_NOT_AVAILABLE_TEXT);
-    });
-
-    it('shows a note for no runs', async () => {
-        const base = sections().history;
-        const text = section(await open(detailView({ history: { ...base, runs: [] } })), 'Agent history').textContent!;
-        expect(text).toContain('No run');
     });
 });
 
@@ -287,7 +285,7 @@ describe('0013 AC-012, AC-013, AC-010: collapsible sections, detail header, Over
 
     it('AC-012: all sections start expanded; a collapsed section stays collapsed after another spec is selected', async () => {
         const container = await open();
-        for (const title of ['Overview', 'Requirements', 'Acceptance criteria', 'Plan & tasks', 'Verification', 'Related artifacts', 'Agent history']) {
+        for (const title of ['Overview', 'Requirements', 'Acceptance criteria', 'Plan & tasks', 'Verification', 'Related artifacts', 'Status history']) {
             expect(toggle(container, title).getAttribute('aria-expanded'), title).toBe('true');
         }
         await click(toggle(container, 'Acceptance criteria'));

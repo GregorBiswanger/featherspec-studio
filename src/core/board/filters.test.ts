@@ -10,15 +10,15 @@ function numbers(columns: ReturnType<typeof arrangeBoard>, state: string): strin
 }
 
 const NINE = [
-    card('0001', { state: 'Backlog', run: { kind: 'none' } }),
-    card('0002', { state: 'Ready', run: { kind: 'none' } }),
-    card('0003', { state: 'Active', run: { kind: 'run', provider: 'copilot', status: 'Running' } }),
-    card('0004', { state: 'Active', run: { kind: 'run', provider: 'fake', status: 'Completed' } }),
-    card('0005', { state: 'Review', run: { kind: 'unreadable', provider: 'copilot' } }),
-    card('0006', { state: 'Done', run: { kind: 'unavailable' } }),
-    card('0007', { state: 'Done', run: { kind: 'none' } }),
-    card('0008', { state: 'Blocked', run: { kind: 'run', provider: 'copilot', status: 'Failed' } }),
-    card('0009', { state: 'Active', run: { kind: 'none' } }),
+    card('0001', { state: 'Backlog' }),
+    card('0002', { state: 'Ready' }),
+    card('0003', { state: 'Active' }),
+    card('0004', { state: 'Active' }),
+    card('0005', { state: 'Review' }),
+    card('0006', { state: 'Done' }),
+    card('0007', { state: 'Done' }),
+    card('0008', { state: 'Blocked' }),
+    card('0009', { state: 'Active' }),
 ];
 
 describe('board contract', () => {
@@ -40,23 +40,9 @@ describe('filters', () => {
         expect(columns.map((column) => column.hidden)).toEqual([0, 0, 0, 0, 0, 0]);
     });
 
-    it('AC-022: a state filter and a provider filter combine with AND; several values of one filter combine with OR', () => {
+    it('0015 AC-011: a state filter combines several values with OR', () => {
         const states = arrangeBoard(NINE, { states: ['Active', 'Blocked'] }, 'number');
         expect(states.flatMap((column) => column.cards.map((entry) => entry.number))).toEqual(['0003', '0004', '0009', '0008']);
-        const both = arrangeBoard(NINE, { states: ['Active', 'Blocked'], providers: ['copilot'] }, 'number');
-        expect(both.flatMap((column) => column.cards.map((entry) => entry.number))).toEqual(['0003', '0008']);
-    });
-
-    it('AC-022: "No run" (null) matches a card with no run; a card whose runs are not available matches no provider value', () => {
-        const none = arrangeBoard(NINE, { providers: [null] }, 'number');
-        expect(none.flatMap((column) => column.cards.map((entry) => entry.number)).sort()).toEqual(['0001', '0002', '0007', '0009']);
-        const everything = arrangeBoard(NINE, { providers: [null, 'copilot', 'fake'] }, 'number');
-        expect(everything.flatMap((column) => column.cards.map((entry) => entry.number))).not.toContain('0006');
-    });
-
-    it('AC-022: a history-unreadable run still matches its provider', () => {
-        const copilot = arrangeBoard(NINE, { providers: ['copilot'] }, 'number');
-        expect(numbers(copilot, 'Review')).toEqual(['0005']);
     });
 
     it('AC-022: a named set shows exactly its stems; a stem not in the project matches no card', () => {
@@ -72,12 +58,12 @@ describe('filters', () => {
     });
 
     it('AC-012: a column shows how many of its cards the filter hides, and a column that never had cards has none to hide', () => {
-        const columns = arrangeBoard(NINE, { providers: ['copilot'] }, 'number');
+        const columns = arrangeBoard(NINE, { states: ['Active', 'Blocked'] }, 'number');
         expect(columns.map((column) => [column.state, column.cards.length, column.hidden])).toEqual([
             ['Backlog', 0, 1],
             ['Ready', 0, 1],
-            ['Active', 1, 2],
-            ['Review', 1, 0],
+            ['Active', 3, 0],
+            ['Review', 0, 1],
             ['Done', 0, 2],
             ['Blocked', 1, 0],
         ]);

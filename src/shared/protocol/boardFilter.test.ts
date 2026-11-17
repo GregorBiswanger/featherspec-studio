@@ -14,7 +14,7 @@ describe('board filter encoding v1 (PD-041, shared with 0006)', () => {
     it.each([
         ['empty (no filter)', {}],
         ['one state', { states: ['Active'] }],
-        ['states, providers with "No run", and a set', { states: ['Ready', 'Blocked'], providers: ['copilot', null], set: { label: 'Needs attention', stems: ['0003-x', '0004-y'] } }],
+        ['states and a set', { states: ['Ready', 'Blocked'], set: { label: 'Needs attention', stems: ['0003-x', '0004-y'] } }],
         ['a set with no stem', { set: { label: 'Needs attention', stems: [] } }],
     ])('AC-022: accepts %s', (_name, value) => {
         expect(isBoardFilter(value)).toBe(true);
@@ -27,9 +27,8 @@ describe('board filter encoding v1 (PD-041, shared with 0006)', () => {
         ['an unknown state', { states: ['Doing'] }],
         ['an empty state list', { states: [] }],
         ['a non-string state', { states: [3] }],
-        ['an empty provider list', { providers: [] }],
-        ['a provider that is a number', { providers: [1] }],
-        ['an empty provider name', { providers: [''] }],
+        ['a provider list (0015 AC-011)', { providers: ['copilot'] }],
+        ['a provider list with "No run" (0015 AC-011)', { states: ['Ready'], providers: [null] }],
         ['a set without label', { set: { stems: ['0003-x'] } }],
         ['a set with an empty label', { set: { label: '', stems: [] } }],
         ['a set with a non-string stem', { set: { label: 'x', stems: ['0003-x', 4] } }],
@@ -43,7 +42,8 @@ describe('board filter encoding v1 (PD-041, shared with 0006)', () => {
     it('a filter is set exactly when one of its keys is present', () => {
         expect(isFilterSet({})).toBe(false);
         expect(isFilterSet({ states: ['Done'] })).toBe(true);
-        expect(isFilterSet({ providers: [null] })).toBe(true);
+        expect(isBoardFilter({ providers: [null] })).toBe(false);
+        expect(isBoardFilter({ states: ['Done'], providers: ['copilot'] })).toBe(false);
         expect(isFilterSet({ set: { label: 'x', stems: [] } })).toBe(true);
     });
 
@@ -117,16 +117,15 @@ describe('board requests', () => {
     it('card and board views are guarded', () => {
         const card = {
             key: 'k', stem: '0001-a', number: '0001', title: 'A', titleIsStem: false, path: undefined, state: 'Active', derivedRule: undefined, deprecated: false,
-            diagnostics: 0, blocked: [], readiness: undefined, summary: undefined, tasks: { done: 1, total: 2 }, criteria: undefined, lastChangeMs: 5, run: { kind: 'none' },
+            diagnostics: 0, blocked: [], readiness: undefined, summary: undefined, tasks: { done: 1, total: 2 }, criteria: undefined, lastChangeMs: 5,
         };
         expect(isCardView(card)).toBe(true);
         expect(isCardView({ ...card, state: 'Doing' })).toBe(false);
-        expect(isCardView({ ...card, run: { kind: 'run' } })).toBe(false);
         expect(isCardView({ ...card, derivedRule: 'S-REVIEW', readiness: { id: 'R-3', reason: 'No plan.' } })).toBe(true);
         expect(isCardView({ ...card, derivedRule: 'Derived (rule S-REVIEW)' })).toBe(false);
         expect(isCardView({ ...card, readiness: 'R-3: No plan.' })).toBe(false);
         expect(isCardView({ ...card, readiness: { id: 'R-3' } })).toBe(false);
-        const view = { columns: [{ state: 'Active', cards: [card], hidden: 0, emptyBeforeFilter: false }], banner: [{ where: 'project', reason: 'x' }], filter: {}, sort: 'number', providers: ['fake'], noSpecs: false };
+        const view = { columns: [{ state: 'Active', cards: [card], hidden: 0, emptyBeforeFilter: false }], banner: [{ where: 'project', reason: 'x' }], filter: {}, sort: 'number', noSpecs: false };
         expect(isBoardView(view)).toBe(true);
         expect(isBoardView({ ...view, sort: 'priority' })).toBe(false);
         expect(isBoardView({ ...view, filter: { states: ['x'] } })).toBe(false);

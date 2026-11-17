@@ -78,17 +78,6 @@ export interface RelatedItem {
     open: OpenTarget;
 }
 
-export interface RunItem {
-    runId: string;
-    provider: string;
-    status: string;
-    created: string;
-    started: string | undefined;
-    ended: string | undefined;
-    historyIncomplete: boolean;
-    historyUnreadable: boolean;
-}
-
 export interface StatusHistoryItem {
     observedAt: string;
     old: string | null;
@@ -99,9 +88,9 @@ export interface StatusHistoryItem {
 }
 
 export interface HistorySection {
-    runs: RunItem[] | undefined;
     statusHistory: StatusHistoryItem[] | undefined;
     label: string;
+    notAvailable: string | undefined;
 }
 
 export interface DetailSections {

@@ -2,15 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
 import type { HistoryView } from '../lifecycle/statusHistory';
 import { noteText, planText, readFixture, readMemory, row, specText } from '../lifecycle/testing/projects';
-import type { ReadResult, RunView } from '../runtime/model';
 import { buildCards } from './cards';
 import { nextStepNumberUsedText } from '../../shared/protocol/nextStepTexts';
 import { buildDetail } from './detail';
 import { nextStep } from './nextStep';
-import { run } from './testing/boardWorld';
 
 const NO_HISTORY: HistoryView = { available: true, label: 'Observed by Studio while it was running — not a reconstruction', entries: [] };
-const NO_RUNS: ReadResult<RunView[]> = { available: true, value: [] };
 
 async function modelOf(files: Record<string, string>) {
     const project = await readMemory(files);
@@ -47,8 +44,8 @@ const FILES = {
     '.memory-bank/activeContext.0001-T-001.md': noteText('DONE'),
 };
 
-async function detailOf(files: Record<string, string>, selection: { stem: string; path?: string } | undefined, runs = NO_RUNS, history = NO_HISTORY) {
-    return buildDetail({ selection, model: await modelOf(files), runs, history });
+async function detailOf(files: Record<string, string>, selection: { stem: string; path?: string } | undefined, history = NO_HISTORY) {
+    return buildDetail({ selection, model: await modelOf(files), history });
 }
 
 function spec(view: Awaited<ReturnType<typeof detailOf>>) {
@@ -62,7 +59,7 @@ describe('spec detail', () => {
     it('AC-028: no selection, or a stem that is not in the project, gives no spec content', async () => {
         expect(await detailOf(FILES, undefined)).toEqual({ kind: 'none' });
         expect(await detailOf(FILES, { stem: '0099-gone' })).toEqual({ kind: 'none' });
-        expect(buildDetail({ selection: { stem: '0001-a' }, model: undefined, runs: NO_RUNS, history: NO_HISTORY })).toEqual({ kind: 'none' });
+        expect(buildDetail({ selection: { stem: '0001-a' }, model: undefined, history: NO_HISTORY })).toEqual({ kind: 'none' });
     });
 
     it('AC-009: every criterion with its full text, illustration, uncertain and struck flags, at its line', async () => {
@@ -122,7 +119,7 @@ describe('spec detail', () => {
     it('AC-006: the Verification section shows the same criteria numbers as the card', async () => {
         const model = await modelOf(FILES);
         const card = buildCards(model.project, model.lifecycle)[0]!;
-        const view = spec(buildDetail({ selection: { stem: '0001-a' }, model, runs: NO_RUNS, history: NO_HISTORY }));
+        const view = spec(buildDetail({ selection: { stem: '0001-a' }, model, history: NO_HISTORY }));
         expect(view.sections.verification.criteria).toEqual(card.criteria);
         expect(view.sections.verification.criteria).toEqual({ done: 1, total: 2 });
         expect(view.sections.verification.compileVerdict).toContain('not available');
@@ -147,16 +144,12 @@ describe('spec detail', () => {
         const project = await readFixture('fs-broken');
         const model = { project, lifecycle: deriveLifecycle(project) };
         const broken = model.lifecycle.entries.find((entry) => entry.diagnostics.length > 0)!;
-        const view = spec(buildDetail({ selection: { stem: broken.stem, path: broken.key }, model, runs: NO_RUNS, history: NO_HISTORY }));
+        const view = spec(buildDetail({ selection: { stem: broken.stem, path: broken.key }, model, history: NO_HISTORY }));
         expect(view.sections.overview.diagnostics.length).toBe(broken.diagnostics.length);
         view.sections.overview.diagnostics.forEach((line) => expect(line.reason.length).toBeGreaterThan(0));
     });
 
-    it('AC-027: runs of the stem, newest created first, with flags and no events; the status history of the stem under its label', async () => {
-        const runs: ReadResult<RunView[]> = {
-            available: true,
-            value: [run('r2', '0001-a', { created: '2026-11-16T12:00:00.000Z', status: 'Failed', historyIncomplete: true }), run('r1', '0001-a'), run('r9', '0002-other')],
-        };
+    it('0015 AC-012: the status history of the stem under its label, no run list', async () => {
         const history: HistoryView = {
             available: true,
             label: NO_HISTORY.available ? NO_HISTORY.label : '',
@@ -165,17 +158,19 @@ describe('spec detail', () => {
                 { observedAt: 't2', stem: '0002-other', old: null, new: 'Backlog', rule: 'S-BACKLOG', cause: { kind: 'first-observed' }, flow: 'not checked' },
             ],
         };
-        const view = spec(await detailOf(FILES, { stem: '0001-a' }, runs, history));
-        expect(view.sections.history.runs?.map((item) => [item.runId, item.historyIncomplete])).toEqual([['r2', true], ['r1', false]]);
+        const view = spec(await detailOf(FILES, { stem: '0001-a' }, history));
         expect(view.sections.history.statusHistory).toHaveLength(1);
         expect(view.sections.history.statusHistory?.[0]).toMatchObject({ old: 'Active', new: 'Review', cause: '.specs/active/0001-a.plan.md' });
         expect(view.sections.history.label).toBe('Observed by Studio while it was running — not a reconstruction');
+        expect(view.sections.history.notAvailable).toBeUndefined();
+        expect(Object.keys(view.sections.history).sort()).toEqual(['label', 'notAvailable', 'statusHistory']);
     });
 
-    it('AC-027: with the store unavailable both are not available', async () => {
-        const view = spec(await detailOf(FILES, { stem: '0001-a' }, { available: false, reason: 'no storage' }, { available: false, text: 'Status history not available: no storage' }));
-        expect(view.sections.history.runs).toBeUndefined();
+    it('0015 AC-012: with the history not available the section says so with the reason', async () => {
+        const text = "Status history not available: Another VS Code window holds the write lock for this project's status history.";
+        const view = spec(await detailOf(FILES, { stem: '0001-a' }, { available: false, text }));
         expect(view.sections.history.statusHistory).toBeUndefined();
+        expect(view.sections.history.notAvailable).toBe(text);
     });
 
     it('AC-028: after a folder move the same stem still gives the detail', async () => {
@@ -195,7 +190,7 @@ describe('spec detail', () => {
 describe('0015 AC-003, AC-004, AC-008: the next step in the detail view', () => {
     it('AC-003: the view carries the rule and lines of nextStep for the selected spec', async () => {
         const model = await modelOf(FILES);
-        const view = spec(buildDetail({ selection: { stem: '0001-a' }, model, runs: NO_RUNS, history: NO_HISTORY }));
+        const view = spec(buildDetail({ selection: { stem: '0001-a' }, model, history: NO_HISTORY }));
         expect(view.nextStep).toEqual(nextStep(model, '.specs/active/0001-a.md'));
         expect(view.nextStep).toEqual({ rule: 'NS-6', lines: [{ text: '/sdd-plan .specs/active/0001-a.md' }] });
     });
@@ -207,8 +202,8 @@ describe('0015 AC-003, AC-004, AC-008: the next step in the detail view', () => 
 
     it('AC-008: the view needs no trust or writer input; two builds from one snapshot are equal', async () => {
         const model = await modelOf(FILES);
-        const first = buildDetail({ selection: { stem: '0001-a' }, model, runs: NO_RUNS, history: NO_HISTORY });
-        const second = buildDetail({ selection: { stem: '0001-a' }, model, runs: NO_RUNS, history: NO_HISTORY });
+        const first = buildDetail({ selection: { stem: '0001-a' }, model, history: NO_HISTORY });
+        const second = buildDetail({ selection: { stem: '0001-a' }, model, history: NO_HISTORY });
         expect(second).toEqual(first);
     });
 });

@@ -3,8 +3,7 @@ import { readMemory } from '../../lifecycle/testing/projects';
 import type { Disposable } from '../../ports/host';
 import type { HistoryView } from '../../lifecycle/statusHistory';
 import type { ShellModel, ShellModelSource } from '../../ports/shell';
-import type { ReadResult, RunView } from '../../runtime/model';
-import type { RuntimeStore } from '../../runtime/runtimeStore';
+import type { RunView } from '../../runtime/model';
 import { createBoardService, type BoardService } from '../boardService';
 
 export async function modelOf(files: Record<string, string>): Promise<ShellModel> {
@@ -38,34 +37,6 @@ export function createFakeSource(initial?: ShellModel): FakeSource {
             }
             [...listeners].forEach((listener) => listener());
         },
-    };
-}
-
-export interface FakeStore {
-    store: Pick<RuntimeStore, 'listRuns' | 'onDidChangeRuns'>;
-    setRuns(runs: RunView[] | undefined): void;
-    notify(): void;
-    subscribers(): number;
-}
-
-export function createFakeStore(): FakeStore {
-    let runs: RunView[] | undefined = [];
-    const listeners = new Set<() => void>();
-    return {
-        store: {
-            async listRuns(): Promise<ReadResult<RunView[]>> {
-                return runs === undefined ? { available: false, reason: 'no storage' } : { available: true, value: runs };
-            },
-            onDidChangeRuns(listener): Disposable {
-                listeners.add(listener);
-                return { dispose: () => void listeners.delete(listener) };
-            },
-        },
-        setRuns(next) {
-            runs = next;
-        },
-        notify: () => [...listeners].forEach((listener) => listener()),
-        subscribers: () => listeners.size,
     };
 }
 
@@ -117,12 +88,21 @@ export function createFakeSelection(): FakeSelection {
 export interface FakeHistory {
     port: { read(): Promise<HistoryView>; onDidChange(listener: () => void): Disposable };
     view: HistoryView;
+    notify(): void;
 }
 
 export function createFakeHistory(): FakeHistory {
+    const listeners = new Set<() => void>();
     const fake: FakeHistory = {
         view: { available: true, label: 'Observed by Studio while it was running — not a reconstruction', entries: [] },
-        port: { read: async () => fake.view, onDidChange: () => ({ dispose: () => undefined }) },
+        port: {
+            read: async () => fake.view,
+            onDidChange(listener) {
+                listeners.add(listener);
+                return { dispose: () => void listeners.delete(listener) };
+            },
+        },
+        notify: () => [...listeners].forEach((listener) => listener()),
     };
     return fake;
 }
@@ -131,30 +111,22 @@ export interface BoardWorld {
     selection: FakeSelection;
     history: FakeHistory;
     source: FakeSource;
-    store: FakeStore;
     service: BoardService;
     views: string[];
-    setStore(store: FakeStore | undefined): void;
 }
 
 export function createBoardWorld(model: ShellModel | undefined): BoardWorld {
     const source = createFakeSource(model);
-    const store = createFakeStore();
-    let current: FakeStore | undefined = store;
     const selection = createFakeSelection();
     const history = createFakeHistory();
-    const service = createBoardService({ source, session: { current: () => current?.store }, selection: selection.source, history: history.port });
+    const service = createBoardService({ source, selection: selection.source, history: history.port });
     const views: string[] = [];
     service.onDidChangeView((view) => views.push(JSON.stringify(view)));
     return {
         selection,
         history,
         source,
-        store,
         service,
         views,
-        setStore(next) {
-            current = next;
-        },
     };
 }

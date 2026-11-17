@@ -46,7 +46,7 @@ afterEach(() => {
 });
 
 describe('AC-019: the detail is in the DOM within 500 ms of the event (PD-047; a large spec)', () => {
-    it('renders the update fast enough: 120 requirements, 200 criteria, 150 steps, 100 runs', async () => {
+    it('renders the update fast enough: 120 requirements, 200 criteria, 150 steps, 100 history entries', async () => {
         const base = sections();
         const container = await open();
         const large = detailView(
@@ -62,9 +62,9 @@ describe('AC-019: the detail is in the DOM within 500 ms of the event (PD-047; a
                     steps: Array.from({ length: 150 }, (_, index) => ({ id: `T-${index + 1}`, title: `Step ${index + 1}`, ticked: index % 2 === 0, struck: false, verified: index % 2 === 0 ? 'green' : undefined })),
                 },
                 history: {
-                    runs: Array.from({ length: 100 }, (_, index) => ({ runId: `r${index}`, provider: 'claude', status: 'Completed', created: '2026-11-16T10:00:00Z', started: undefined, ended: undefined, historyIncomplete: false, historyUnreadable: false })),
-                    statusHistory: [],
+                    statusHistory: Array.from({ length: 100 }, (_, index) => ({ observedAt: `2026-11-16T10:00:${String(index % 60).padStart(2, '0')}Z`, old: 'Ready', new: 'Active', rule: 'S-ACTIVE', cause: 'first observed', flow: 'not checked' })),
                     label: base.history.label,
+                    notAvailable: undefined,
                 },
             }),
         );
@@ -72,7 +72,7 @@ describe('AC-019: the detail is in the DOM within 500 ms of the event (PD-047; a
             () => send(detailEvent(large)),
             () => send(detailEvent(detailView())),
         );
-        expect(container.querySelectorAll('.detail-runs li')).toHaveLength(100);
+        expect(container.querySelectorAll('.detail-history li')).toHaveLength(100);
         expect(container.querySelectorAll('.detail-steps li')).toHaveLength(150);
         expect(best).toBeLessThan(BUDGET_MS.uiFreshness);
     });

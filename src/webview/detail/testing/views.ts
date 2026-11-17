@@ -40,12 +40,9 @@ export function sections(overrides: Partial<DetailSections> = {}): DetailSection
         verification: { open: { key: PLAN_KEY }, openRows: 1, built: 2, verified: 3, other: 0, summary: '3 of 6 rows verified', criteria: { done: 3, total: 6 }, compileVerdict: 'No compile verdict yet' },
         related: [{ label: '0007-thing.plan.md', open: { key: PLAN_KEY } }],
         history: {
-            runs: [
-                { runId: 'r2', provider: 'claude', status: 'Running', created: '2026-11-16T10:00:00Z', started: '2026-11-16T10:00:05Z', ended: undefined, historyIncomplete: true, historyUnreadable: false },
-                { runId: 'r1', provider: 'copilot', status: 'Completed', created: '2026-11-15T10:00:00Z', started: undefined, ended: undefined, historyIncomplete: false, historyUnreadable: true },
-            ],
             statusHistory: [{ observedAt: '2026-11-16T09:00:00Z', old: 'Ready', new: 'Active', rule: 'S-ACTIVE', cause: 'Observed', flow: 'moved' }],
             label: 'Observed by Studio while it was running — not a reconstruction',
+            notAvailable: undefined,
         },
         ...overrides,
     };

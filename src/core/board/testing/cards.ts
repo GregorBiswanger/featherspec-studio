@@ -18,7 +18,6 @@ export function card(number: string, overrides: Partial<CardView> = {}): CardVie
         tasks: undefined,
         criteria: undefined,
         lastChangeMs: undefined,
-        run: { kind: 'none' },
         ...overrides,
     };
 }

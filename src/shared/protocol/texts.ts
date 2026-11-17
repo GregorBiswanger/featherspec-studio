@@ -1,5 +1,5 @@
 import type { BoardState } from './boardFilter';
-import type { CardRun, Progress, SortKey } from './board';
+import type { Progress, SortKey } from './board';
 import type { ActionId, PanelState } from './messages';
 import type { DerivedRule } from './missionControl';
 
@@ -154,8 +154,6 @@ export function hiddenByFilterText(count: number): string {
 
 export const BOARD_LABEL = 'Spec board';
 export const STATE_FILTER_LABEL = 'State';
-export const PROVIDER_FILTER_LABEL = 'Provider';
-export const NO_RUN_LABEL = 'No run';
 export const CLEAR_FILTERS_LABEL = 'Clear filters';
 export const SORT_LABEL = 'Sort';
 export const SPEC_SET_LABEL = 'Named set';
@@ -194,24 +192,9 @@ export function lastChangeText(ms: number | undefined): string {
     return ms === undefined ? 'Last change: not available' : `Last change: ${formatLastChange(ms)}`;
 }
 
-export function cardRunText(run: CardRun): string {
-    switch (run.kind) {
-        case 'none':
-            return 'No run';
-        case 'unavailable':
-            return 'Runs: not available';
-        case 'run':
-            return `${run.provider} · ${run.status}`;
-        case 'unreadable':
-            return `${run.provider} · history unreadable`;
-    }
-}
-
 export const DEPRECATED_MARKER = 'Deprecated';
 export const UNCERTAIN_FLAG = 'uncertain';
 export const STRUCK_FLAG = 'struck';
-export const HISTORY_INCOMPLETE_FLAG = 'history incomplete';
-export const HISTORY_UNREADABLE_FLAG = 'history unreadable';
 
 export function diagnosticsBadgeText(count: number): string {
     return count === 1 ? '1 diagnostic' : `${count} diagnostics`;
@@ -263,5 +246,5 @@ export const SECTION_TITLES = {
     plan: 'Plan & tasks',
     verification: 'Verification',
     related: 'Related artifacts',
-    history: 'Agent history',
+    history: 'Status history',
 } as const;

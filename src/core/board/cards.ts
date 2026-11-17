@@ -4,7 +4,6 @@ import type { LifecycleEntry, LifecycleModel } from '../lifecycle/model';
 import type { ProjectRead, SpecEntry } from '../specs/readProject';
 import { describeSpec } from './description';
 import { criteriaProgress, lastChange, taskProgress } from './progress';
-import { cardRun, type RunIndex } from './runs';
 
 export function titleOf(entry: SpecEntry): string | undefined {
     const value = entry.parsed?.title.value;
@@ -30,7 +29,7 @@ function readinessLine(entry: LifecycleEntry): ReadinessCheck | undefined {
     return lowest === undefined || check === undefined || check.result === 'pass' ? undefined : { id: lowest, reason: check.reason };
 }
 
-export function buildCards(project: ProjectRead, lifecycle: LifecycleModel, runs: RunIndex = { available: true, latest: new Map() }): CardView[] {
+export function buildCards(project: ProjectRead, lifecycle: LifecycleModel): CardView[] {
     const plans = new Map(project.plans.map((plan) => [plan.key, plan]));
     const entries = new Map(project.specs.map((spec) => [spec.key, spec]));
     const stems = new Map<string, number>();
@@ -56,7 +55,6 @@ export function buildCards(project: ProjectRead, lifecycle: LifecycleModel, runs
             tasks: taskProgress(plan),
             criteria: criteriaProgress(entry.verification),
             lastChangeMs: lastChange(spec?.modifiedMs, plan?.modifiedMs),
-            run: cardRun(runs, entry.stem),
         };
     });
 }

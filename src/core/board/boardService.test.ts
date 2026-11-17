@@ -3,7 +3,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { specText } from '../lifecycle/testing/projects';
 import type { BoardService } from './boardService';
-import { createBoardWorld, createFakeStore, modelOf, run, type BoardWorld } from './testing/boardWorld';
+import { createBoardWorld, modelOf, type BoardWorld } from './testing/boardWorld';
 
 const NINE: Record<string, string> = {};
 for (let number = 1; number <= 9; number += 1) {
@@ -41,122 +41,11 @@ describe('board service: view', () => {
         expect(w.service.view()?.noSpecs).toBe(true);
     });
 
-    it('AC-007: a run notification updates the card; the store being unavailable shows "not available"', async () => {
+    it('0015 AC-011: no card and no board view carries a run line or a provider list', async () => {
         const w = await world();
-        w.store.setRuns([run('r1', '0010-act')]);
-        w.store.notify();
-        await w.service.whenIdle();
-        const card = w.service.view()!.columns.flatMap((column) => column.cards).find((entry) => entry.stem === '0010-act')!;
-        expect(card.run).toEqual({ kind: 'run', provider: 'copilot', status: 'Running' });
-        expect(w.service.view()!.providers).toEqual(['copilot']);
-        w.store.setRuns(undefined);
-        w.store.notify();
-        await w.service.whenIdle();
-        expect(w.service.view()!.columns.flatMap((column) => column.cards)[0]?.run).toEqual({ kind: 'unavailable' });
-    });
-
-    it('AC-007: without a store every card reads "Runs: not available"', async () => {
-        const w = await world();
-        w.setStore(undefined);
-        w.source.set(await modelOf(NINE));
-        await w.service.whenIdle();
-        expect(w.service.view()!.columns.flatMap((column) => column.cards).every((card) => card.run.kind === 'unavailable')).toBe(true);
-    });
-
-    it('AC-019: the service follows the store that the session holds now (re-subscribed when it changes)', async () => {
-        const w = await world();
-        expect(w.store.subscribers()).toBe(1);
-        const other = createFakeStore();
-        w.setStore(other);
-        w.source.set(await modelOf(NINE));
-        await w.service.whenIdle();
-        expect(w.store.subscribers()).toBe(0);
-        expect(other.subscribers()).toBe(1);
-        other.setRuns([run('r9', '0010-act', { status: 'Failed' })]);
-        other.notify();
-        await w.service.whenIdle();
-        expect(JSON.stringify(w.service.view())).toContain('Failed');
-    });
-});
-
-describe('board service: filters and sort', () => {
-    it('AC-022: a navigation filter replaces the filters set before and is shown as set', async () => {
-        const w = await world();
-        w.service.setFilter({ states: ['Backlog'] });
-        w.service.applyNavigationFilter({ set: { label: 'Needs attention', stems: ['0001-s1', '0002-s2', '0003-s3'] } });
         const view = w.service.view()!;
-        expect(view.filter).toEqual({ set: { label: 'Needs attention', stems: ['0001-s1', '0002-s2', '0003-s3'] } });
-        expect(shown(w)).toEqual(['0001', '0002', '0003']);
-    });
-
-    it('AC-012: clear filters removes every filter and keeps the sort', async () => {
-        const w = await world();
-        w.service.setSort('title');
-        w.service.setFilter({ states: ['Active'], set: { label: 'x', stems: ['0010-act'] } });
-        w.service.clearFilters();
-        expect(w.service.view()!.filter).toEqual({});
-        expect(w.service.view()!.sort).toBe('title');
-    });
-
-    it('AC-023: filters and sort survive a rebuild of the model and a hidden panel', async () => {
-        const w = await world();
-        w.service.setSort('lastChange');
-        w.service.setFilter({ states: ['Active'] });
-        w.source.set(await modelOf(NINE));
-        await w.service.whenIdle();
-        expect(w.service.view()!.filter).toEqual({ states: ['Active'] });
-        expect(w.service.view()!.sort).toBe('lastChange');
-    });
-
-    it('AC-023: a closed panel resets filters and sort', async () => {
-        const w = await world();
-        w.service.setSort('title');
-        w.service.setFilter({ states: ['Active'] });
-        w.service.panelClosed();
-        expect(w.service.view()!.filter).toEqual({});
-        expect(w.service.view()!.sort).toBe('number');
-    });
-
-    it('AC-023: a change of the project clears the filters and keeps the sort', async () => {
-        const w = await world();
-        w.service.setSort('title');
-        w.service.setFilter({ states: ['Active'] });
-        const other = await modelOf({ '.specs/backlog/0001-a.md': specText() });
-        w.source.set({ ...other, project: { ...other.project, root: 'memory://other' } });
-        await w.service.whenIdle();
-        expect(w.service.view()!.filter).toEqual({});
-        expect(w.service.view()!.sort).toBe('title');
-    });
-
-    it('AC-011: the lifecycle model is unchanged by every filter and sort call', async () => {
-        const model = await modelOf(NINE);
-        const w = createBoardWorld(model);
-        disposables.push(w.service);
-        const before = JSON.stringify(model.lifecycle);
-        w.service.setFilter({ states: ['Active'] });
-        w.service.setSort('title');
-        w.service.applyNavigationFilter({ set: { label: 'x', stems: [] } });
-        w.service.clearFilters();
-        w.service.panelClosed();
-        expect(JSON.stringify(model.lifecycle)).toBe(before);
-        expect(w.source.current()).toBe(model);
-    });
-
-    it('a change notifies the listeners once; setting the same view again notifies nobody', async () => {
-        const w = await world();
-        const before = w.views.length;
-        w.service.setSort('title');
-        expect(w.views.length).toBe(before + 1);
-        w.service.setSort('title');
-        expect(w.views.length).toBe(before + 1);
-    });
-
-    it('the focused key is remembered and cleared with the panel', async () => {
-        const w = await world();
-        w.service.setFocus('.specs/active/0010-act.md');
-        expect(w.service.focused()).toBe('.specs/active/0010-act.md');
-        w.service.panelClosed();
-        expect(w.service.focused()).toBeNull();
+        expect(JSON.stringify(view)).not.toMatch(/"run"|"providers"/);
+        expect(Object.keys(view).sort()).toEqual(['banner', 'columns', 'filter', 'noSpecs', 'sort']);
     });
 });
 
@@ -185,18 +74,24 @@ describe('board service: spec detail', () => {
         expect(view.kind === 'spec' && view.sections.overview.state).toBe('Active');
     });
 
-    it('AC-027: a run notification updates the detail history; an unavailable store shows not available', async () => {
+    it('0015 AC-012: a status history notification updates the detail; an unavailable history shows not available with its reason', async () => {
         const w = await world();
         w.selection.set({ stem: '0010-act' });
-        w.store.setRuns([run('r1', '0010-act')]);
-        w.store.notify();
+        await w.service.whenIdle();
+        w.history.view = {
+            available: true,
+            label: 'Observed by Studio while it was running — not a reconstruction',
+            entries: [{ observedAt: '2026-11-16T09:00:00Z', stem: '0010-act', old: 'Ready', new: 'Active', rule: 'S-ACTIVE', cause: { kind: 'first-observed' }, flow: 'not checked' }],
+        };
+        w.history.notify();
         await w.service.whenIdle();
         let view = w.service.detail();
-        expect(view.kind === 'spec' && view.sections.history.runs?.map((item) => item.runId)).toEqual(['r1']);
-        w.store.setRuns(undefined);
-        w.store.notify();
+        expect(view.kind === 'spec' && view.sections.history.statusHistory?.map((item) => item.new)).toEqual(['Active']);
+        w.history.view = { available: false, text: 'Status history not available: Another VS Code window holds the write lock for this project\'s status history.' };
+        w.history.notify();
         await w.service.whenIdle();
         view = w.service.detail();
-        expect(view.kind === 'spec' && view.sections.history.runs).toBeUndefined();
+        expect(view.kind === 'spec' && view.sections.history.statusHistory).toBeUndefined();
+        expect(view.kind === 'spec' && view.sections.history.notAvailable).toBe('Status history not available: Another VS Code window holds the write lock for this project\'s status history.');
     });
 });

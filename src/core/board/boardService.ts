@@ -5,17 +5,13 @@ import type { HistoryView } from '../lifecycle/statusHistory';
 import type { SelectionSource } from '../ports/board';
 import type { Disposable } from '../ports/host';
 import type { ShellModel, ShellModelSource } from '../ports/shell';
-import type { ReadResult, RunView } from '../runtime/model';
-import type { RuntimeStore } from '../runtime/runtimeStore';
 import { buildDetail } from './detail';
 import { createBoardUiState } from './boardUiState';
 import { buildBanner, buildCards } from './cards';
 import { arrangeBoard } from './filters';
-import { indexRuns, type RunIndex } from './runs';
 
 export interface BoardServiceDeps {
     source: ShellModelSource;
-    session: { current(): Pick<RuntimeStore, 'listRuns' | 'onDidChangeRuns'> | undefined };
     selection: SelectionSource;
     history: { read(): Promise<HistoryView>; onDidChange(listener: () => void): Disposable };
 }
@@ -38,23 +34,17 @@ export interface BoardService {
 
 interface Built {
     model: ShellModel;
-    runs: RunIndex;
     cards: CardView[];
     banner: BoardView['banner'];
-    providers: string[];
 }
 
 export function createBoardService(deps: BoardServiceDeps): BoardService {
     const ui = createBoardUiState();
     const listeners = new Set<(view: BoardView | undefined) => void>();
     const detailListeners = new Set<(view: DetailView) => void>();
-    let rawRuns: ReadResult<RunView[]> = { available: false, reason: 'no store' };
     let history: HistoryView = { available: false, text: 'Status history not available: no store' };
     let lastDetail = '';
-    let runs: RunIndex = { available: false };
     let built: Built | undefined;
-    let subscribedStore: unknown;
-    let storeSubscription: Disposable | undefined;
     let sequence = 0;
     let chain: Promise<void> = Promise.resolve();
     let last = 'undefined';
@@ -66,10 +56,9 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
             built = undefined;
             return undefined;
         }
-        if (built === undefined || built.model !== model || built.runs !== runs) {
-            const cards = buildCards(model.project, model.lifecycle, runs);
-            const providers = [...new Set(cards.flatMap((card) => (card.run.kind === 'run' || card.run.kind === 'unreadable' ? [card.run.provider] : [])))].sort();
-            built = { model, runs, cards, banner: buildBanner(model.project, model.lifecycle), providers };
+        if (built === undefined || built.model !== model) {
+            const cards = buildCards(model.project, model.lifecycle);
+            built = { model, cards, banner: buildBanner(model.project, model.lifecycle) };
         }
         return built;
     }
@@ -84,13 +73,12 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
             banner: current.banner,
             filter: ui.filter(),
             sort: ui.sort(),
-            providers: current.providers,
             noSpecs: current.cards.length === 0,
         };
     }
 
     function detail(): DetailView {
-        return buildDetail({ selection: deps.selection.selection(), model: deps.source.current(), runs: rawRuns, history });
+        return buildDetail({ selection: deps.selection.selection(), model: deps.source.current(), history });
     }
 
     function emitDetail(): void {
@@ -126,33 +114,11 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
         });
     }
 
-    function follow(store: ReturnType<BoardServiceDeps['session']['current']>): void {
-        if (store === subscribedStore) {
-            return;
-        }
-        storeSubscription?.dispose();
-        subscribedStore = store;
-        storeSubscription = store?.onDidChangeRuns(schedule);
-    }
-
     async function refresh(): Promise<void> {
         if (disposed) {
             return;
         }
         const token = ++sequence;
-        const store = deps.session.current();
-        follow(store);
-        let index: RunIndex = { available: false };
-        let list: ReadResult<RunView[]> = { available: false, reason: 'no store' };
-        if (store !== undefined) {
-            try {
-                list = await store.listRuns();
-                index = indexRuns(list);
-            } catch {
-                index = { available: false };
-                list = { available: false, reason: 'runs could not be read' };
-            }
-        }
         let nextHistory: HistoryView;
         try {
             nextHistory = await deps.history.read();
@@ -162,8 +128,6 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
         if (token !== sequence || disposed) {
             return;
         }
-        runs = index;
-        rawRuns = list;
         history = nextHistory;
         ui.projectChanged(deps.source.current()?.project.root);
         emit();
@@ -204,7 +168,6 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
         dispose() {
             disposed = true;
             subscriptions.forEach((subscription) => subscription.dispose());
-            storeSubscription?.dispose();
             listeners.clear();
             detailListeners.clear();
         },
