@@ -1,6 +1,6 @@
 # Focus the Studio on Visibility: No Agent Runs, a Named Next Step
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0015-focus-on-visibility.plan.md](0015-focus-on-visibility.plan.md)
 
 Basis: Gregor's request of 2026-11-17 after working on `sdd-tip-splitter` with GitHub Copilot

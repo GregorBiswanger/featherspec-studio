@@ -5,9 +5,10 @@ Current branch: main
 Current phase: act
 
 ## Now
-0014 (Set up FeatherSpec from the Studio): `/sdd-compile` findings fixed as plan steps T-011…T-016 (Gregor's decisions A…J); spec stays `In Progress` in `active/` until Gregor has tried the button (M-2), then `/sdd-compile` again. Release preparation for 0.1.0 (13 specs `Implemented`) waits for Gregor's checklist.
+0015 (Focus the Studio on visibility, no agent runs, next step) is in implementation: [spec](../.specs/active/0015-focus-on-visibility.md) / [plan](../.specs/active/0015-focus-on-visibility.plan.md), baseline ea4a8bd. Also open: 0014 (Set up FeatherSpec from the Studio): `/sdd-compile` findings fixed as plan steps T-011…T-016 (Gregor's decisions A…J); spec stays `In Progress` in `active/` until Gregor has tried the button (M-2), then `/sdd-compile` again. Release preparation for 0.1.0 (13 specs `Implemented`) waits for Gregor's checklist.
 
 ## Active Spec
+- [0015 spec](../.specs/active/0015-focus-on-visibility.md) / [plan](../.specs/active/0015-focus-on-visibility.plan.md), In Progress.
 - [0014 spec](../.specs/active/0014-setup-featherspec-from-studio.md) / [plan](../.specs/active/0014-setup-featherspec-from-studio.plan.md), In Progress.
 - Completed: 0001…0013 in [.specs/done/](../.specs/done/), plans frozen in [.specs/plan-archive/](../.specs/plan-archive/) (e.g. [0010 spec](../.specs/done/0010-first-agent-provider-copilot.md) / [plan](../.specs/plan-archive/0010-first-agent-provider-copilot.2026-11-17.plan.md), [0012 spec](../.specs/done/0012-live-agent-activity-monitoring.md) / [plan](../.specs/plan-archive/0012-live-agent-activity-monitoring.2026-11-17.plan.md)).
 - 0010 is proven by the Windows host suite with `FEATHERSPEC_COPILOT_SMOKE=1` (dev build and unpacked VSIX).

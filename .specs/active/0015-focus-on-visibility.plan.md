@@ -1,7 +1,7 @@
 # Plan — Focus the Studio on Visibility: No Agent Runs, a Named Next Step
 
 **Spec:** [0015-focus-on-visibility.md](0015-focus-on-visibility.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-17
 **Current step:** T-001
 
@@ -387,5 +387,5 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 - **Done so far:** spec revised with PD-057; plan written.
 - **Next action:** Gregor reviews the plan; then `/sdd-lifecycle` (backlog → active) on the start signal and T-001.
 - **Open decisions:** —
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** ea4a8bd
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked); host suites run on Windows and CI.
