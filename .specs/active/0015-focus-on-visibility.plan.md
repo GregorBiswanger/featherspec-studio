@@ -3,7 +3,7 @@
 **Spec:** [0015-focus-on-visibility.md](0015-focus-on-visibility.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-011
+**Current step:** T-012
 
 ## Approach
 
@@ -280,7 +280,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
   narrowed store over the file medium and Mission Control's activity: only the three files remain,
   version-99 folder byte-identical, *Recent activity* shows the kept entries (AC-023 example).
 - **Verify:** end-to-end test red (removal not called) then green; gates 1–5
-- [ ] **Verified (T-011):** —
+- [x] **Verified (T-011):** 2026-11-17 — red: with the removal made a no-op the end-to-end test failed (the tag-build data stayed), and with the call in extension.ts turned into an unawaited void the order check failed; green after the change: 1643 passed + 3 skipped, 12 timing; gates 1–5 clean. Notes: src/extension.ts awaits removeEarlierRunData (global storage, workspace state key via the new src/adapters/vscode/earlierRunDataState.ts, Output channel) before session.start(), in every window; the end-to-end test builds a tag-build storage (runs, index, tmp copy, copilot-home, a version-99 folder, the state key), runs the removal, opens the narrowed store on the file medium (lock, history, store.json while open; history and store.json after close), reads Recent activity through createStatusHistory and projectActivity (the kept entry shows), and checks the version-99 folder byte-identical; the wiring itself is only proven by the source-order check here, the host run on Windows and CI shows it live.
 - **Notes:** —
 
 ### T-012 — Dependency, bundle and source scans
@@ -385,7 +385,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 ## Session handoff
 
 - **Done so far:** Stages 1 to 3 (T-001…T-009): next step, copy, drop result; earlier-data removal module (not wired); board and detail without runs; Mission Control without runs; run wiring, manifest entries and dead modules removed; three areas.
-- **Next action:** T-011 (earlier-data removal at activation), then T-012.
+- **Next action:** T-012 (dependency, bundle and source scans), then the stage 4 sync.
 - **Open decisions:** — (Gregor approved the changed order and `npm uninstall @github/copilot-sdk`; the parallel stage runs in sequence; deletions listed per step are approved.)
 - **Baseline:** ea4a8bd
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked); host suites run on Windows and CI. Gates: `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`.

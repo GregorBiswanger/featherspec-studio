@@ -30,6 +30,9 @@ import { createVscodeSpecSource } from './adapters/vscode/vscodeSpecSource';
 import { createVscodeFileSystem } from './adapters/vscode/vscodeFileSystem';
 import { createWorkspaceFolders } from './adapters/vscode/workspaceFolders';
 import { createWorkspaceState } from './adapters/vscode/workspaceState';
+import { createEarlierRunDataFiles } from './adapters/node/earlierRunDataFiles';
+import { createEarlierRunDataState } from './adapters/vscode/earlierRunDataState';
+import { removeEarlierRunData } from './core/runtime/earlierRunData';
 import { createDiscoveryController, type DiscoverySnapshot } from './core/discovery/discoveryController';
 import { connectActiveProject } from './core/specs/activeProjectFeed';
 import { isCaseInsensitivePlatform } from './core/specs/eventPath';
@@ -257,6 +260,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         vscode.commands.registerCommand('featherspec-studio.refreshDiscovery', () => controller.refresh()),
     );
 
+    await removeEarlierRunData({
+        files: storage.kind === 'directory' ? createEarlierRunDataFiles(storage.path) : undefined,
+        state: createEarlierRunDataState(context.workspaceState),
+        output,
+    });
     await session.start();
     await controller.start();
     await session.whenIdle();
