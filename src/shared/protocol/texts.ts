@@ -113,6 +113,7 @@ export function panelStateActions(state: PanelState): ActionId[] {
 }
 
 export const SETUP_COMMAND_ID = 'featherspec-studio.setup';
+export const COPY_MERGE_PROMPT_COMMAND_ID = 'featherspec-studio.copyMergePrompt';
 
 function shellActionLink(label: string, action: ActionId): string {
     return `[${label}](command:featherspec-studio.shellAction?${encodeURIComponent(JSON.stringify([action]))})`;

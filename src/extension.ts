@@ -15,7 +15,7 @@ import { createNodeSetupTarget } from './adapters/node/nodeSetupTarget';
 import { createTarGzArchive } from './adapters/node/tarGzArchive';
 import { createSetupUi } from './adapters/vscode/setupUi';
 import { createSetupService } from './core/setup/setupService';
-import { SETUP_COMMAND_ID } from './shared/protocol/texts';
+import { COPY_MERGE_PROMPT_COMMAND_ID, SETUP_COMMAND_ID } from './shared/protocol/texts';
 import { createStudioTree } from './adapters/vscode/studioTree';
 import { createTrust } from './adapters/vscode/trust';
 import { createUiMemory } from './adapters/vscode/uiMemory';
@@ -230,8 +230,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     const shellActions = createShellActions({
         showOutput: () => output.show(),
         reloadPanel: () => studio?.reload(),
-        setUp: async () => void (await vscode.commands.executeCommand(SETUP_COMMAND_ID)),
-        copyMergePrompt: async () => void (await vscode.commands.executeCommand('featherspec-studio.copyMergePrompt')),
     });
     const service = createShellService({
         discovery: controller,
@@ -403,7 +401,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         vscode.commands.registerCommand(OPEN_COMMAND, openStudio({ via: 'start' })),
         ...AREA_IDS.map((area) => vscode.commands.registerCommand(AREA_COMMANDS[area], openStudio({ via: 'area', area }))),
         vscode.commands.registerCommand(SETUP_COMMAND_ID, () => setup.start()),
-        vscode.commands.registerCommand('featherspec-studio.copyMergePrompt', () => setup.copyMergePrompt()),
+        vscode.commands.registerCommand(COPY_MERGE_PROMPT_COMMAND_ID, () => setup.copyMergePrompt()),
         vscode.commands.registerCommand(RESCAN_COMMAND, () => service.rescan()),
         vscode.commands.registerCommand(SHELL_ACTION_COMMAND, (action: unknown) => {
             const payload = { action };

@@ -199,6 +199,13 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 - [x] **Verified (T-013):** 2026-11-17 — red first: `npx vitest run --project node src/core/setup/applySetup` with the option accepted but ignored: 3 failed (AGENTS.md `missing` instead of `kept`, CLAUDE.md `missing` instead of `same`, `AGENTS.md` created beside the raced `agents.md`), 31 passed (incl. the case-sensitive negative control); green after the memory target honours the option: `src/core/setup` 267 passed. The real-file-system case is skipped on this Linux sandbox (temp directory is case-sensitive): `nodeSetupTarget.test.ts` 26 passed, 1 skipped; it runs on Windows and macOS. Gates: eslint, both `tsc`, `npm run test:unit` 182 files / 2498 passed, 1 skipped (+11 timing).
 - **Notes:** No product code changed: the setup already decides by the file system's answer (BR-03). Open evidence: the real-file-system case passing on Gregor's Windows machine.
 
+### T-014 — The panel/S9 action `setUp` reaches the setup command (compile: AC-002 second half, decision G2)
+
+- **Covers:** AC-002 (the action of AC-001 runs the command)
+- **Do:** Cheapest true test at the wiring seam: `src/adapters/vscode/shellActions.ts` executes `featherspec-studio.setup` (`SETUP_COMMAND_ID`) and `featherspec-studio.copyMergePrompt` (new `COPY_MERGE_PROMPT_COMMAND_ID` in `src/shared/protocol/texts.ts`) itself, as it already does for `openFolder` and `manageTrust`; `extension.ts` no longer passes the two lambdas and registers both commands by these constants. New `src/adapters/vscode/shellActions.test.ts` (vscode mocked). The chain: S2/S9 action → `shellService.runAction('setUp')` (`shellService.test.ts`) → `ShellActionsPort.setUp` → `executeCommand('featherspec-studio.setup')` (this test) → registered to `setup.start()` (host `setup.smoke.test.ts` proves registration; `manifest.test.ts` the contribution). A host test that starts a setup was not chosen: it would open a quick pick or reach the network.
+- **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile && npm run compile-tests`
+- [x] **Verified (T-014):** 2026-11-17 — red first: `npx vitest run --project node src/adapters/vscode/shellActions` 2 failed (`TypeError: deps.setUp is not a function`, `deps.copyMergePrompt is not a function`), 1 passed (negative control: `manageTrust` runs `workbench.trust.manage`); green after: 3 passed, `src/adapters/vscode` 48 passed. Gates: eslint, both `tsc`, `npm run test:unit` 183 files / 2501 passed, 1 skipped (+11 timing), `npm run compile` and `npm run compile-tests` finished.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
