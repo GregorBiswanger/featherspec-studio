@@ -1,6 +1,6 @@
 # Plan — Live Agent Activity & Monitoring (Agent Center)
 
-**Spec:** [0012-live-agent-activity-monitoring.md](0012-live-agent-activity-monitoring.md)
+**Spec:** [0012-live-agent-activity-monitoring.md](../done/0012-live-agent-activity-monitoring.md)
 **Status:** Done
 **Last updated:** 2026-11-17
 **Current step:** — (all steps done)
@@ -290,6 +290,19 @@ No parallel stage: stages 1–2 are one module (`src/core/agentCenter`), and eve
 - [x] **Verified (T-009):** docs only, no code behaviour: README Agent Center section, AGENTS.md snapshot, systemPatterns.md, techContext.md, activeContext.md synced; traceability set to verified. green: eslint, both tsc, npm run test:unit (152 files, 1888 tests) and npm run compile all clean.
 - **Notes:** —
 
+### T-010 — Second compile: criterion wording and delegate evidence
+
+- **Covers:** AC-009, AC-010, AC-018, AC-029 (wording and evidence only, no behaviour change)
+- **Do:** spec revisions found by the second `/sdd-compile` (2026-11-17): AC-009 says the view gets
+  only the newest page while the store is read in pages of at most the page size (BR-07 needs the
+  whole run); AC-018 names its two decided exceptions (Restricted Mode, BR-12/BR-14; run shown in the
+  focused panel, OP-10); §10 and §14 turn Gregor's hand checks into delegate evidence (AC-010
+  scrolling, AC-029 High Contrast) and a pre-release checklist item (real Copilot run), per Gregor's
+  delegation of 2026-11-17. Traceability and *Open evidence* updated. No code or test changes.
+- **Verify:** `npx vitest run src/core/agentCenter/agentCenterService.test.ts src/core/agentCenter/requestNotifier.test.ts src/webview/areas/agentCenter` (the tests that decide the revised criteria) plus the delegate run below
+- [x] **Verified (T-010):** 2026-11-17 — docs only, no behaviour: `npx vitest run src/core/agentCenter/agentCenterService.test.ts src/core/agentCenter/requestNotifier.test.ts src/webview/areas/agentCenter` 4 files, 66 tests passed (the AC-009 paging case and the AC-018 "none while shown in the focused panel, none in a reader window, none in Restricted Mode" case among them); stash-spot-check: `openRequests` made to ignore the end state turned 4 tests red (AC-007, AC-017, AC-025 cases), restored. Delegate run in headless Chrome as in *Open evidence*: every AC-010 case held in Dark and HC, no page errors. Gates: eslint 0 warnings, both tsc clean; full unit suite `npx vitest run --maxWorkers=1` 160 files, 2008 tests passed (the parallel `npm run test:unit` on the 2-core VM, load ≈ 10 from seven sessions, timed out 3–7 render-timing tests of 0006/0007; they pass with one worker).
+- **Notes:** the host smoke `src/test/agentCenter.smoke.test.ts` is titled "AC-018" but decides the host side of AC-012 and AC-013 (live run list and timeline through the real store wrapper); AC-018 is decided by `requestNotifier.test.ts`. Title left unchanged so the Windows run at e6f0c85 stays the evidence for this commit; rename it at the next host-test change.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -302,16 +315,16 @@ No parallel stage: stages 1–2 are one module (`src/core/agentCenter`), and eve
 | AC-006 | T-003 | src/shared/protocol/agentCenterDuration.ts:runDuration | agentCenterDuration.test.ts | verified |
 | AC-007 | T-002 | src/core/agentCenter/summary.ts:currentActivity | summary.test.ts, agentCenterService.test.ts | verified |
 | AC-008 | T-001, T-007 | src/core/agentCenter/timeline.ts; src/webview/areas/agentCenter/Timeline.tsx | timeline.test.ts, Timeline.test.tsx | verified |
-| AC-009 | T-004, T-007 | agentCenterService.ts:loadEarlier; Timeline.tsx | agentCenterService.test.ts, Timeline.test.tsx | verified |
-| AC-010 | T-007 | src/webview/areas/agentCenter/Timeline.tsx | Timeline.test.tsx; manual: visible scrolling (spec §10) | verified, manual scroll pass open |
+| AC-009 | T-004, T-007, T-010 | agentCenterService.ts:loadEarlier, readAll; Timeline.tsx | agentCenterService.test.ts ("opens with the newest page only…"), Timeline.test.tsx | verified |
+| AC-010 | T-007, T-010 | src/webview/areas/agentCenter/Timeline.tsx; src/webview/main.css (.ac-timeline-scroll) | Timeline.test.tsx; manual: Gregor's delegate checked the visible scrolling in headless Chrome with the real core (follow, scroll away → "Jump to latest", live rows do not move the view, jump and scroll back resume), Dark and HC, 2026-11-17 | verified |
 | AC-011 | T-001 | src/core/agentCenter/timeline.ts:sourceOf | timeline.test.ts | verified |
-| AC-012 | T-004, T-007 | agentCenterService.ts:follow; Timeline.tsx | agentCenterService.test.ts, Timeline.test.tsx | verified |
-| AC-013 | T-004 | src/core/agentCenter/agentCenterService.ts | agentCenterService.test.ts | verified |
+| AC-012 | T-004, T-007 | agentCenterService.ts:follow; Timeline.tsx | agentCenterService.test.ts, Timeline.test.tsx; host: src/test/agentCenter.smoke.test.ts | verified |
+| AC-013 | T-004 | src/core/agentCenter/agentCenterService.ts | agentCenterService.test.ts; host: src/test/agentCenter.smoke.test.ts | verified |
 | AC-014 | T-001 | src/core/agentCenter/timeline.ts, summary.ts:capabilityNotes | timeline.test.ts, summary.test.ts | verified |
 | AC-015 | T-002 | src/core/agentCenter/summary.ts:summarize | summary.test.ts | verified |
 | AC-016 | T-005, T-006 | agentCenterActions.ts; Requests.tsx | agentCenterActions.test.ts, AgentCenter.test.tsx | verified |
 | AC-017 | T-005, T-006 | agentCenterActions.ts; Requests.tsx | agentCenterActions.test.ts, AgentCenter.test.tsx | verified |
-| AC-018 | T-005, T-008 | requestNotifier.ts; src/adapters/vscode/agentCenterUi.ts | requestNotifier.test.ts; src/test/agentCenter.smoke.test.ts (CI) | verified, smoke runs on CI |
+| AC-018 | T-005, T-008, T-010 | requestNotifier.ts; src/adapters/vscode/agentCenterUi.ts; src/extension.ts (shownAndFocused) | requestNotifier.test.ts | verified |
 | AC-019 | T-002 | src/core/agentCenter/summary.ts:errorDetails | summary.test.ts | verified |
 | AC-020 | T-002 | src/core/agentCenter/summary.ts:resultView | summary.test.ts | verified |
 | AC-021 | T-005, T-006, T-008 | agentCenterActions.ts; RunDetail.tsx; extension.ts | agentCenterActions.test.ts, AgentCenter.test.tsx | verified |
@@ -322,13 +335,30 @@ No parallel stage: stages 1–2 are one module (`src/core/agentCenter`), and eve
 | AC-026 | T-001 | src/core/agentCenter/timeline.ts:rowOf | timeline.test.ts | verified |
 | AC-027 | T-004, T-006 | agentCenterService.ts; AgentCenter.tsx | agentCenterService.test.ts, AgentCenter.test.tsx | verified |
 | AC-028 | T-005, T-006 | agentCenterActions.ts; RunDetail.tsx | agentCenterActions.test.ts, AgentCenter.test.tsx | verified |
-| AC-029 | T-006 | src/webview/main.css (.run-status-chip, .ac-*); RunStatusChip.tsx | webviewCss.test.ts, AgentCenter.test.tsx; manual: High Contrast pass (spec §10) | verified, manual High Contrast pass open |
+| AC-029 | T-006, T-010 | src/webview/main.css (.run-status-chip, .ac-*); RunStatusChip.tsx | webviewCss.test.ts, AgentCenter.test.tsx; manual: Gregor's delegate checked the High Contrast look (status as text in every chip, contrast borders on rows, buttons, sections and the request), screenshots 05-agent-center-hc.png and 0012-follow/10-*-hc.png, 2026-11-17 | verified |
 | AC-030 | T-004 | src/core/agentCenter/agentCenterService.ts | noWrite.test.ts | verified |
+
+## Open evidence
+
+- Host suite (`npm test`, includes `src/test/agentCenter.smoke.test.ts`): Windows 11, Gregor's
+  machine, VS Code stable, Node 26 — 28 passing, 0 failing at commit e6f0c85, 2026-11-17 08:45 CET;
+  GitHub Actions ubuntu-latest + windows-latest green at 9635ba4, 2026-11-17 (before 0012's code;
+  the Windows run is the pre-done gate). T-010 changed no code or test, so e6f0c85's run stands.
+- Delegate checks (Gregor's delegation, 2026-11-17): headless Chrome with the real core
+  (`/home/claude/orch/preview` harness pointed at this worktree, VS Code Dark Modern and HC Black
+  variables): AC-010 follow mode — opened at the end (gap 0), 15 live rows kept the end in view,
+  wheel up showed "Jump to latest", 15 more live rows left the view in place (gap 1524 px), "Jump
+  to latest" returned to the end (gap 0) and live rows followed again, scrolling away and back
+  turned following off and on; no page errors. Results and screenshots:
+  `/mnt/user-data/outputs/screens/0012-follow/` (`follow-result-2026-11-17.json`, `10-*.png`).
+  AC-029 High Contrast: `05-agent-center-hc.png` and `10-agent-center-follow-*-hc.png` looked at.
+- Pre-release checklist (not criteria): the real Copilot run of spec §10 (1)–(5) in a real VS Code
+  window — `/home/claude/orch/checklist/0012.md`.
 
 ## Session handoff
 
-- **Done so far:** T-001 to T-009
-- **Next action:** none; Gregor's manual passes remain (AC-010 scrolling, AC-029 High Contrast, host smoke on CI), then /sdd-compile
+- **Done so far:** T-001 to T-010
+- **Next action:** none — archived 2026-11-17 after the second `/sdd-compile` (READY, manual items: 2); spec `Implemented` in `done/`. Plan frozen.
 - **Open decisions:** none.
 - **Baseline:** 2026-11-17, HEAD 70362df: eslint, both tsc and `npm run test:unit` green (136 files, 1723 tests).
 - **Environment:** `npm test` cannot run here (VS Code download blocked); the host smoke runs on CI or Gregor's Windows machine. UI looks: `npm run compile` and `/home/claude/orch/preview/run.sh`, screenshots in `/mnt/user-data/outputs/screens/`.

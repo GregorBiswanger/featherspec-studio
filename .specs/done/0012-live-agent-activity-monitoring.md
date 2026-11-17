@@ -1,7 +1,7 @@
 # Live Agent Activity & Monitoring (Agent Center)
 
-**Status:** In Progress
-**Plan:** [0012-live-agent-activity-monitoring.plan.md](0012-live-agent-activity-monitoring.plan.md)
+**Status:** Implemented
+**Plan:** [0012-live-agent-activity-monitoring.2026-11-17.plan.md](../plan-archive/0012-live-agent-activity-monitoring.2026-11-17.plan.md)
 
 Handoff reference: FS-012 ([po-handoff.md](../../docs/product/po-handoff.md) §4.4, §5.3, §10 FS-012,
 §13). Depends on: 0004 (runs, events, store state), 0005 (shell, panel-level states, navigation),
@@ -229,10 +229,14 @@ and the in-memory store of 0004 decides each criterion. Quoted UI texts are work
   > **Given** a fake run emitting 3 `message.delta` and 1 `message.completed`, then 1 `tool.started`
   > **Then** the timeline has 2 rows: the message with the `message.completed` text, then the tool
   > call. A payload text `<b>x</b>` is shown as those eight characters.
-- **AC-009** When a run is opened, the system shall request only the newest page of its events; when
-  the developer activates "Load earlier", the system shall request the page before the oldest loaded
-  event. The system shall send no request for more events than the page size (0004 OP-010) and
-  shall offer no "Load earlier" once the run's first event is loaded.
+- **AC-009** When a run is opened, the system shall hand the view only the newest page of its events;
+  when the developer activates "Load earlier", the system shall request the page before the oldest
+  loaded event. The system shall send the store no request for more events than the page size
+  (0004 OP-010) — also while it reads the whole run page by page for current activity, open
+  requests and file changes (BR-07) — and shall offer no "Load earlier" once the run's first event
+  is loaded. *(Revised 2026-11-17, second `/sdd-compile`: "request only the newest page" read
+  literally contradicted BR-07, AC-007 and AC-015, which need the whole run; §11 already said the
+  extension feeds the projection the whole run page by page.)*
 - **AC-010** While follow mode is on, the system shall keep the newest event visible as events arrive;
   when the developer scrolls away, the system shall stop following and show "Jump to latest"; that
   action, or scrolling back, shall resume following. Decided by the follow state and the scroll
@@ -263,7 +267,9 @@ and the in-memory store of 0004 decides each criterion. Quoted UI texts are work
 - **AC-018** When a request opens while the store is *writable*, the system shall show exactly one VS
   Code notification for it, naming the spec number and whether approval or input is asked, with
   "Open in Agent Center"; activating it shall send a navigation request with that run ID. In a
-  reader window the system shall show none.
+  reader window, in Restricted Mode (BR-12, BR-14), and while that run's detail is shown in the
+  focused panel (OP-10) the system shall show none. *(Revised 2026-11-17, second `/sdd-compile`:
+  the two exceptions decided in BR-12 and OP-10 were missing from the criterion.)*
 - **AC-019** When a `Failed` run is selected, the system shall show the error class in words ("Unknown
   error" for `unknown` and for a value outside 0011 BR-008), the stored message, the failure time,
   the last status before `Failed` and the last event before the failing one.
@@ -307,12 +313,15 @@ and the in-memory store of 0004 decides each criterion. Quoted UI texts are work
 - **AC-030** The system shall create, change or delete no file in the workspace while showing or
   updating the Agent Center (PD-013); a fixture comparison before and after each scenario decides it.
 
-**Manual checks** (cannot be decided with the fake provider): after the PoC of PD-001, Gregor runs
-one real Copilot run on `C:\projects\test\tip-splitter` and confirms (1) events appear live and the
-timeline follows them, (2) an approval request is shown, notified, answered once and the agent
-continues, (3) cancel stops the agent, (4) the run and its events are shown after a VS Code restart,
-(5) reported file changes match the files the agent touched. AC-029 additionally in a high-contrast
-theme.
+**Manual checks** (cannot be decided with the fake provider): after the PoC of PD-001, one real
+Copilot run on `C:\projects\test\tip-splitter` confirms (1) events appear live and the timeline
+follows them, (2) an approval request is shown, notified, answered once and the agent continues,
+(3) cancel stops the agent, (4) the run and its events are shown after a VS Code restart, (5)
+reported file changes match the files the agent touched. These need a real agent in a real VS Code
+window: checked by Gregor or his delegate; pre-release checklist item (delegation by Gregor,
+2026-11-17). They are not criteria; the criteria above stay decided by the automated tests. AC-010's
+visible scrolling and AC-029's high-contrast look were checked by Gregor's delegate in headless
+Chrome with the real core and VS Code's theme variables (2026-11-17; plan *Open evidence*).
 
 ## 11. Technical notes for developers or AI agents
 
@@ -377,9 +386,14 @@ Open (cross-spec, main session; does not block):
 ## 14. Definition of Ready / Done
 
 Ready: no open point blocks (OP-04); 0004, 0005, 0009 and 0011 are clarified before planning.
-Done: all criteria pass in the unit and component tests, Gregor confirms the manual checks of §10,
-and the architecture snapshot lists the Agent Center module.
+Done: all criteria pass in the unit and component tests, the host smoke passes on Windows and CI,
+the delegate checks of §10 are recorded, the real-agent checks of §10 are on the pre-release
+checklist (Gregor, 2026-11-17), and the architecture snapshot lists the Agent Center module.
 
 ## 15. Recommended next steps
 
 Gregor reads OP-04's readings and OP-05…OP-13; then `/sdd-plan`, together with 0011's plan (§11).
+
+## Plan history
+
+- 2026-11-17 — [0012-live-agent-activity-monitoring.2026-11-17.plan.md](../plan-archive/0012-live-agent-activity-monitoring.2026-11-17.plan.md) — Agent Center built (T-001…T-010); second `/sdd-compile` READY (manual items: 2), AC-009 and AC-018 wording revised, real-agent checks on the pre-release checklist
