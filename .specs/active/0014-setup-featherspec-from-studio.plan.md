@@ -3,7 +3,7 @@
 **Spec:** [0014-setup-featherspec-from-studio.md](0014-setup-featherspec-from-studio.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-005
+**Current step:** T-006
 
 ## Approach
 
@@ -133,8 +133,8 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 - **Covers:** AC-009, AC-010, AC-014, AC-020 (write order and stop), AC-024
 - **Do:** `SetupTargetPort` write part: `createExclusive(root, path, bytes)` (parents created; `exists` result when the path exists; a failed write removes the file it just created), `replaceIfUnchanged(root, path, expected, next)`, `appendIfUnchanged` for `.gitignore`, `clearSetupFolder(root)` (only `.featherspec-setup`). Core `applySetup.ts`: clear `.featherspec-setup/` → parked copies and its `.gitignore` (`*`) → missing files → completions (content re-checked, recomputed on change) → root `AGENTS.md` last; a create that meets an existing path re-classes it (never replaced, parked if it differs); stop at the first failure with path and reason; result lists created, completed, kept, not written, kept setting keys. Adapter `src/adapters/node/nodeSetupTarget.ts` (`fileURLToPath`, `fs.open(…, 'wx')`, links written through per PD-053). Tests: core on `memoryTarget` with injected failures and a racing create; adapter on a temp dir (existing file, dangling link, nested parents); AC-010 example end-to-end on a temp copy (own `AGENTS.md`, `CLAUDE.md` byte-identical); AC-024 scan: no `child_process` and no `workspace.fs` write in `src/core/setup` and the setup adapters.
 - **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npm run test:unit && npm run compile`
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-17 — red first: `npx vitest run --project node src/core/setup/applySetup` with `applySetup` stubbed to `Not implemented`: 26 failed, 2 passed (the scan's negative controls); with the code 3 cases failed on the `.gitignore` collision (see Notes), fixed, then 187 passed in `src/core/setup`. `src/adapters/node/nodeSetupTarget.test.ts` 26 passed on a temp directory (exclusive create incl. 20 parallel creates, half-written file removed, temp file + rename for completions with EBUSY retry, clear, real 1.10.0 release into an empty folder = 63 files + nothing else, AC-010 example with own AGENTS.md/CLAUDE.md byte-identical, stop on a write error); mutation check: `'wx'` → `'w'` fails 4 tests, restored. Gates: eslint, both `tsc`, `npm run test:unit` 178 files / 2416 tests (+11 timing) passed, `npm run compile` finished.
+- **Notes:** Port `SetupTargetPort` write part is `createExclusive`, `replaceIfUnchanged` (one method for `.gitignore` and `settings.json`, replaces the plan's `appendIfUnchanged`), `clearSetupFolder`; root URIs are `file:` strings (`fileURLToPath`). **Gap in the spec, decided here (Gregor to look):** a root `.gitignore` that cannot be completed (not UTF-8, a folder, or it keeps changing) is class `left`, never `kept`: its parked copy `.featherspec-setup/.gitignore` would collide with that folder's own `.gitignore` (`*`, AC-014). Completions write a temporary file next to the target and rename it over (links are written through); EPERM/EBUSY/EACCES on the rename are retried 5 times at 100 ms. `clearSetupFolder` removes a real directory only (never a file or a link of that name). `notWritten` = planned paths not done (the failed one included); `done` counts a path `same` after a race as done. AC-024's scan (`applySetup.test.ts`) covers `src/core/setup`, the three node adapters and any `adapters/vscode/setup*.ts` T-008 adds.
 
 ### T-006 — Start a setup: trust, target, confirmation, one at a time
 

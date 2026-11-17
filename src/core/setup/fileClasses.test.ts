@@ -99,10 +99,10 @@ describe('0014 BR-04: .gitignore and .vscode/settings.json are completed, not ke
         expect((await classifyFile(target, ROOT, release('.gitignore', '.sdd-scan/\n'))).kind).toBe('same');
     });
 
-    it('a .gitignore with bytes that are no UTF-8 is kept', async () => {
+    it('a .gitignore with bytes that are no UTF-8 is left alone: no line can be appended safely, and its parked copy would collide with the .gitignore of .featherspec-setup/', async () => {
         const target = createMemoryTarget();
         target.setFile(ROOT, '.gitignore', new Uint8Array([0xff, 0xfe, 0x0a]));
-        expect((await classifyFile(target, ROOT, release('.gitignore', 'x\n'))).kind).toBe('kept');
+        expect((await classifyFile(target, ROOT, release('.gitignore', 'x\n'))).kind).toBe('left');
     });
 
     it('a differing settings.json with missing keys is completed and reports the kept keys', async () => {
@@ -137,10 +137,10 @@ describe('0014 BR-04: .gitignore and .vscode/settings.json are completed, not ke
         expect((await classifyFile(target, ROOT, release('sub/.gitignore', 'b\n'))).kind).toBe('kept');
     });
 
-    it('a folder at the path of .gitignore is kept', async () => {
+    it('a folder at the path of .gitignore is left alone for the same reason', async () => {
         const target = createMemoryTarget();
         target.setDirectory(ROOT, '.gitignore');
-        expect((await classifyFile(target, ROOT, release('.gitignore', 'x\n'))).kind).toBe('kept');
+        expect((await classifyFile(target, ROOT, release('.gitignore', 'x\n'))).kind).toBe('left');
     });
 });
 

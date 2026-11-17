@@ -38,7 +38,7 @@ export function classifyExisting(file: ReleaseFile, existing: Uint8Array): FileC
         if (result.kind === 'completed') {
             return { kind: 'completed', file, basis: existing, content: result.content, keptSettingKeys: [] };
         }
-        return result.kind === 'nothing-to-add' ? { kind: 'left', file, keptSettingKeys: [] } : { kind: 'kept', file };
+        return { kind: 'left', file, keptSettingKeys: [] };
     }
     if (file.path === SETTINGS_PATH) {
         const result = completeSettings(existing, file.bytes);
@@ -56,7 +56,7 @@ export async function classifyFile(target: SetupTargetPort, root: string, file: 
         return { kind: 'missing', file };
     }
     if (kind !== 'file') {
-        return { kind: 'kept', file };
+        return file.path === GITIGNORE_PATH ? { kind: 'left', file, keptSettingKeys: [] } : { kind: 'kept', file };
     }
     return classifyExisting(file, await target.readBytes(root, file.path));
 }
