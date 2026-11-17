@@ -18,7 +18,7 @@ import {
 const DOCUMENT = path.resolve(process.cwd(), 'docs/agent-provider-port.md');
 
 export function tableNames(markdown: string, heading: string): string[] {
-    const lines = markdown.split('\n');
+    const lines = markdown.split(/\r?\n/);
     const start = lines.findIndex((line) => line.trim() === `## ${heading}`);
     if (start < 0) {
         return [];
@@ -37,7 +37,7 @@ export function tableNames(markdown: string, heading: string): string[] {
 }
 
 function withoutRow(markdown: string, heading: string, name: string): string {
-    const lines = markdown.split('\n');
+    const lines = markdown.split(/\r?\n/);
     const start = lines.findIndex((line) => line.trim() === `## ${heading}`);
     const row = lines.findIndex((line, index) => index > start && line.startsWith(`| \`${name}\``));
     return lines.filter((_, index) => index !== row).join('\n');
@@ -98,13 +98,16 @@ describe('port document', () => {
         }
     });
 
-    it('AC-001: negative control, a document missing a name or listing an extra one fails', async () => {
-        const markdown = await fs.readFile(DOCUMENT, 'utf8');
-        for (const { heading, code } of TABLES) {
-            const first = code[0] ?? '';
-            expect(mismatch(withoutRow(markdown, heading, first))).toEqual([`${heading}: code defines ${first}, document does not`]);
-        }
-        const extra = markdown.replace('## Availability results\n', '## Availability results\n\n| `invented` | x |\n');
-        expect(mismatch(extra)).toEqual(['Availability results: document lists invented, code does not']);
-    });
+    for (const [ending, convert] of [['LF', (text: string) => text], ['CRLF', (text: string) => text.replace(/\r?\n/g, '\r\n')]] as const) {
+        it(`AC-001: negative control, a document missing a name or listing an extra one fails (${ending} line endings)`, async () => {
+            const markdown = convert(await fs.readFile(DOCUMENT, 'utf8'));
+            expect(mismatch(markdown)).toEqual([]);
+            for (const { heading, code } of TABLES) {
+                const first = code[0] ?? '';
+                expect(mismatch(withoutRow(markdown, heading, first))).toEqual([`${heading}: code defines ${first}, document does not`]);
+            }
+            const extra = markdown.replace(/## Availability results\r?\n/, '## Availability results\n\n| `invented` | x |\n');
+            expect(mismatch(extra)).toEqual(['Availability results: document lists invented, code does not']);
+        });
+    }
 });

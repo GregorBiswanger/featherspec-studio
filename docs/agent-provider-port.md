@@ -65,7 +65,8 @@ An adapter delivers a kind only where its capability is not `none`.
 An adapter emits `{kind, source: 'provider' | 'derived', providerEventId?, occurredAt?, payload}`;
 consumers receive the same with the `runId`. `session.started` comes first, unless `run.failed`
 ends the run before a session exists. The first end kind (`run.completed`, `run.failed`,
-`run.cancelled`) ends the run; later events, another end kind included, pass unchanged. A kind
+`run.cancelled`) ends the run; later events, another end kind included, are passed on normalised like any
+other event (a `run.failed` gets its category text) and no end kind is added. A kind
 outside this table becomes `provider.unknown` with that kind as type name.
 
 | Kind | Capability | Payload |
