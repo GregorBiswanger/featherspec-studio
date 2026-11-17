@@ -7,6 +7,7 @@ interface Manifest {
     description?: string;
     keywords?: string[];
     dependencies?: Record<string, string>;
+    scripts?: Record<string, string>;
     devDependencies?: Record<string, string>;
     activationEvents?: string[];
     extensionKind?: string[];
@@ -132,6 +133,12 @@ describe('extension manifest', () => {
         expect(mark('studio-dark.svg')).toBe(mark('studio.svg'));
         expect(fill('studio-light.svg')).toBe('#424242');
         expect(fill('studio-dark.svg')).toBe('#C5C5C5');
+    });
+
+    it('the host suite never runs compiled tests of deleted files: compile-tests empties out/ first', () => {
+        const script = manifest.scripts?.['compile-tests'] ?? '';
+        expect(script).toMatch(/rmSync\('out'/);
+        expect(script.indexOf("rmSync('out'")).toBeLessThan(script.indexOf('tsc -p . --outDir out'));
     });
 
     it('AC-029 (0005): contributes "FeatherSpec Studio: Rescan Project"; the internal action command stays out of the palette', () => {
