@@ -3,6 +3,8 @@
 **Status:** Implemented
 **Plan:** [0007-spec-board-spec-detail.2026-11-17.plan.md](../plan-archive/0007-spec-board-spec-detail.2026-11-17.plan.md)
 
+*Amended by 0015 (PD-055/PD-056): every other statement, requirement, criterion, term, assumption or open point of this spec about agent runs, run events, providers, approvals, the Agent Center, the start workflow, the Clear command or specs 0008–0012 is void; a sentence that also says something else keeps that part. The notes below name what changes in meaning or needs a replacement; see [0015](0015-focus-on-visibility.md) §5.*
+
 Handoff reference: FS-007 ([po-handoff.md](../../docs/product/po-handoff.md) §4.2, §4.3, §10,
 §13 *Usability und Accessibility*). Builds on 0002 (parser model), 0003 (states, readiness,
 transitions, history), 0004 (run store) and 0005 (Studio shell). UI surface per
@@ -150,6 +152,8 @@ Terms used below:
 
 ### 6.3 Run on the card
 
+*Amended by 0015 (PD-055/PD-056): void (no run on the card); the run lines of §6.8 and §13 are void too.*
+
 - The card shows the provider and run status of the spec's latest run (0004). No run →
   "No run". Run store state *unavailable* → "Runs: not available". A reader window (PD-030)
   reads runs like the writer.
@@ -161,6 +165,8 @@ Terms used below:
   updates when the store reports a run event (§12).
 
 ### 6.4 Spec detail view
+
+*Amended by 0015 (PD-055/PD-056): the section "Agent history" becomes "Status history": the 0003 history under its label, not available while the history is; the section list adds "Next step" above the sections (0015 AC-003).*
 
 The detail view lives in the Spec Explorer area, beside 0005's spec list, and shows the
 selected spec (PD-039, PD-042). The board, Mission Control and the list all reach it through
@@ -188,6 +194,8 @@ select one.
 
 ### 6.5 Filters and sorting
 
+*Amended by 0015 (PD-055/PD-056): filters by state and named spec set only; no provider filter and no "No run".*
+
 - Filters (PD-041): by board state; by provider of the latest run, "No run" included; and by a
   **named spec set** that a caller hands in (a label and a list of stems), shown under its
   label. This is how Mission Control opens "Needs attention".
@@ -210,6 +218,8 @@ select one.
 
 ### 6.6 Moves (drag & drop and "Move to…")
 
+*Amended by 0015 (PD-055/PD-056): an accepted Ready → Active request shows the next step (0015 AC-006), also in Restricted Mode and in a reader window (0015 AC-008); there is no hand-off to a start workflow.*
+
 - Three equal ways to make a move request: drag & drop, the card's "Move to…" menu, and the
   command `FeatherSpec: Move Spec to…`. The command acts on the focused card, else on the
   selected spec (PD-039), else it offers a pick list of the project's specs.
@@ -229,6 +239,8 @@ select one.
   change.
 
 ### 6.7 Keyboard and accessibility
+
+*Amended by 0015 (PD-055/PD-056): the announcement of the hand-off to the start workflow is void; the drop result of 0015 §8 is announced instead.*
 
 - Tab reaches the board. Up and Down move to the previous and next card of the column. Left and
   Right move to the nearest column in that direction that shows a card. Enter opens the detail
@@ -277,6 +289,14 @@ and are not repeated here (PD-036, PD-038).
 | FR-10 | Live update after file changes and run events | no FR; handoff AC-007.7 | AC-019 |
 | FR-11 | In-area empty and error states | §13 Usability | AC-020, AC-021 |
 
+*Amended by 0015 (PD-055/PD-056): FR-10: drop "run events" and "run-event notification".*
+
+*Amended by 0015 (PD-055/PD-056): FR-09: an accepted Ready → Active request shows the next step.*
+
+*Amended by 0015 (PD-055/PD-056): FR-06: filters by state and named spec set.*
+
+*Amended by 0015 (PD-055/PD-056): FR-04 is void (no run on the card).*
+
 ## 8. Data requirements
 
 - **Read only**, from three sources: the 0002 model (specs, plans, steps, criteria,
@@ -324,6 +344,8 @@ and are not repeated here (PD-036, PD-038).
 
 ## 12. Non-functional requirements
 
+*Amended by 0015 (PD-055/PD-056): drop "run status" and "run events".*
+
 - UI freshness (PD-047): the board and the detail view show a change within 500 ms after they
   receive the model-changed notification or a run-event notification. It is decided by an
   automated component test on the model of the generated 200-spec fixture (PD-035).
@@ -333,6 +355,8 @@ and are not repeated here (PD-036, PD-038).
   holds for that shape too.
 
 ## 13. Error cases and edge cases
+
+*Amended by 0015 (PD-055/PD-056): the rows "Ready → Active before 0008 exists" and "… in Restricted Mode, in a reader window, or with a run active" read: the next step is shown (0015 AC-006, AC-008).*
 
 | Case | Expected behaviour |
 | --- | --- |
@@ -398,6 +422,8 @@ of its stem created last — next to the state label and never in its place. It 
 *unavailable*, and "history unreadable" in place of the status when 0004 reports the latest run
 so.
 
+*Amended by 0015 (PD-055/PD-056): void (no run on the card).*
+
 **AC-008** When the developer activates a card by click or Enter, the board shall ask the shell
 to open Spec Explorer with that spec selected, and the detail view shall show that spec.
 *(AC-007.4, PD-040, PD-042)*
@@ -418,6 +444,8 @@ status history or "No plan yet". When the developer activates "Open file", the s
 open that file in the editor at the source location 0002 delivers for the item, or at the top
 of the file where 0002 delivers none. If the file no longer exists, then the system shall say
 so and open nothing. *(PD-044)*
+
+*Amended by 0015 (PD-055/PD-056): the list of sections adds "Next step" above the sections (0015 AC-003).*
 
 **AC-011** Applying, changing or clearing filters or sort order shall not change any spec's
 state, any 0003 result, or any file. *(AC-007.6)*
@@ -442,6 +470,8 @@ workflow of 0008 with the spec's stem and shall leave the card in Ready. While n
 workflow is available to the board — the case until 0008 is implemented — the board shall
 refuse the request with "Agent start is not available yet". *(PD-045)*
 
+*Amended by 0015 (PD-055/PD-056): an accepted request shows the next step (0015 AC-006).*
+
 **AC-016** The board shall not create, modify, move, rename or delete any file under `.specs/`,
 `.memory-bank/` or `AGENTS.md`, for any move request or other board action. *(PD-013)*
 
@@ -457,10 +487,14 @@ state and diagnostic badge with an icon as well. The board shall announce the re
 move request to screen readers: the refusal with its reason, or the hand-off to the start
 workflow.
 
+*Amended by 0015 (PD-055/PD-056): drop "run status" and the hand-off to the start workflow.*
+
 **AC-019** When the board or the detail view receives a model-changed notification or a
 run-event notification, it shall show the new content, state and run status within 500 ms,
 without a manual reload, for the model of the generated 200-spec fixture. Keyboard focus shall
 stay on the card of the same spec where that card still exists. *(AC-007.7, PD-047)*
+
+*Amended by 0015 (PD-055/PD-056): drop "run-event notification".*
 
 **AC-020** If a spec, its plan or its return note has a diagnostic, then the board shall show a
 diagnostic badge on that spec's card and shall leave the content, column and actions of every
@@ -476,6 +510,8 @@ their own. *(PD-036)*
 board state, the provider of the latest run ("No run" included), and a named spec set by its
 stems. When a navigation request carries a filter, the board shall replace the filters set
 before with it and show it as set and clearable. *(PD-040, PD-041)*
+
+*Amended by 0015 (PD-055/PD-056): filters by state and named spec set.*
 
 > **Given** 9 specs, 3 of them named in a set "Needs attention", and a state filter set by the
 > developer **When** a navigation request arrives with that set **Then** the board shows those
@@ -503,6 +539,8 @@ theme.
 provider, status and timestamps, and no run events. It shall show the status history of 0003
 under the label "Observed by Studio while it was running — not a reconstruction". While the run
 store's state is *unavailable*, it shall show *not available* for both.
+
+*Amended by 0015 (PD-055/PD-056): the section is "Status history".*
 
 **AC-028** When the selected spec moves between lifecycle folders, the detail view shall keep
 showing it. While no spec is selected, the detail view shall show a hint to select one and no
@@ -562,6 +600,8 @@ checklist item for Gregor.
 | A-005 | Proxy decisions PD-002, PD-013, PD-014, PD-015, PD-016 hold | The PD register records them as proxy decisions that follow the handoff's own proposals (P2, §6.3, §6.5); same basis as 0003 A-008 | Move, priority and language rules change (OP-002) |
 | A-006 | 0003 reports which S-BLOCKED conditions hold for a Blocked entry, and which plan §6.6 uses | Handoff §4.2 asks for the blocking reason on the card; 0003 §6.1 defines the two conditions; added to its output (0003 AC-027, AC-028) on Gregor's approval, 2026-11-16 | The card can only say "Blocked (S-BLOCKED)" |
 | A-007 | 0005 offers the navigation request, keeps the selection by stem and hosts the detail view in Spec Explorer | PD-039, PD-040, PD-042; 0005 as written still selects by number and has no navigation request (OP-008) | AC-008 and AC-028 have no counterpart; 0005 is realigned first |
+
+*Amended by 0015 (PD-055/PD-056): A-001 is void.*
 
 ## 17. Open points
 

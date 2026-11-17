@@ -1,7 +1,8 @@
 # Agent Orchestrator & Run Lifecycle
 
-**Status:** Implemented
+**Status:** Deprecated
 **Plan:** [0011-agent-orchestrator-run-lifecycle.2026-11-17.plan.md](../plan-archive/0011-agent-orchestrator-run-lifecycle.2026-11-17.plan.md)
+**Successor:** [0015-focus-on-visibility.md](0015-focus-on-visibility.md)
 
 Handoff reference: FS-011 ([po-handoff.md](../../docs/product/po-handoff.md) §8.4, §10 FS-011,
 §5.3, §6.2, §7). Decisions: PD-004, PD-005, PD-006, PD-007, PD-011, PD-013, PD-018, PD-019,
@@ -404,3 +405,4 @@ Plan written 2026-11-16; Gregor reviews it. Implementation after 0009 is done (o
 ## Plan history
 
 - 2026-11-17 — [0011-agent-orchestrator-run-lifecycle.2026-11-17.plan.md](../plan-archive/0011-agent-orchestrator-run-lifecycle.2026-11-17.plan.md) — T-001…T-009 built and verified; second `/sdd-compile` READY after T-009 (window end on a project switch with the real `RuntimeSession`).
+- 2026-11-17 — abandoned: 0015 (PD-055) removed every behaviour of this spec — Studio starts no agent and shows no agent run. Status `Deprecated`, successor [0015-focus-on-visibility.md](0015-focus-on-visibility.md); the archived plan above stays frozen.

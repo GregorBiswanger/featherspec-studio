@@ -3,6 +3,8 @@
 **Status:** Implemented
 **Plan:** [0004-runtime-persistence-event-model.2026-11-17.plan.md](../plan-archive/0004-runtime-persistence-event-model.2026-11-17.plan.md)
 
+*Amended by 0015 (PD-055/PD-056): every other statement, requirement, criterion, term, assumption or open point of this spec about agent runs, run events, providers, approvals, the Agent Center, the start workflow, the Clear command or specs 0008–0012 is void; a sentence that also says something else keeps that part. The notes below name what changes in meaning or needs a replacement; see [0015](0015-focus-on-visibility.md) §5.*
+
 Handoff reference: FS-004 ([po-handoff.md](../../docs/product/po-handoff.md) §7, §8.5, §10 FS-004, §13).
 Depends on: 0001 only (project root as store key, PD-025, PD-026). Consumers: 0003 (spec status
 history), 0006, 0007, 0012 (read), 0009/0010 (credential values for masking), 0011 (writes runs).
@@ -71,6 +73,8 @@ that masking can recognise (PD-029).
 
 ## 5. Functional flow
 
+*Amended by 0015 (PD-055/PD-056): steps 3–5 are void; step 2: the writer applies the age cap to the spec status history.*
+
 1. Studio activates for a project (0001 reports its root-folder URI) and tries to take the store's
    write lock. With the lock this window is the **writer**; without it the window is a **reader**.
 2. Writer only: every stored run in an open state becomes `Interrupted`, then the age cap is applied.
@@ -82,6 +86,8 @@ that masking can recognise (PD-029).
 7. VS Code closes (cleanly or not); the next activation starts at step 1.
 
 ## 6. Business rules
+
+*Amended by 0015 (PD-055/PD-056): BR-001, BR-002, BR-004–BR-007 and BR-011 are void. BR-008: only the spec status history age cap remains, fixed at 90 days; there is no Clear command. BR-009: a reader window refuses spec status history appends and the age cap.*
 
 Terms used below:
 
@@ -157,6 +163,8 @@ Rules:
 
 ## 8. Data requirements
 
+*Amended by 0015 (PD-055/PD-056): the Run and Event envelope is void.*
+
 **Run** — run ID · provider ID · model (if the provider delivers it; otherwise returned as "not
 available") · spec reference (spec stem `NNNN-slug` and project-relative path, both as at creation;
 PD-018) · provider session reference (opaque identifier, stored when the caller supplies it) ·
@@ -178,6 +186,8 @@ The spec reference is kept as recorded at creation; a later rename, move or dele
 file does not rewrite it (the PD-011 diagnostic belongs to 0002/0011).
 
 ## 9. Security, permissions and privacy
+
+*Amended by 0015 (PD-055/PD-056): masking is void.*
 
 - Masking applies before data reaches a storage adapter, to every text the store keeps for a run or
   an event: event payload, status cause, error message, result. It replaces (a) the values of
@@ -215,6 +225,8 @@ file does not rewrite it (the PD-011 diagnostic belongs to 0002/0011).
 - A run cannot be stored when it is created → OP-006.
 
 ## 12. Acceptance criteria
+
+*Amended by 0015 (PD-055/PD-056): AC-002–AC-008, AC-010, AC-011, AC-013–AC-015, AC-019, AC-022 and AC-027–AC-030 are void. AC-009, AC-016, AC-017, AC-018, AC-020, AC-021 and AC-023 read for the spec status history only: AC-018 without "another value"; AC-020 without masking and Clear; AC-023 without run writes, classification and Clear.*
 
 "The system" is FeatherSpec Studio. This spec owns the store behind the port, the Clear command and
 the notices named here. A **notice** is a message Studio shows to the developer; its wording is

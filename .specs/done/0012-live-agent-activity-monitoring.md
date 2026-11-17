@@ -1,7 +1,8 @@
 # Live Agent Activity & Monitoring (Agent Center)
 
-**Status:** Implemented
+**Status:** Deprecated
 **Plan:** [0012-live-agent-activity-monitoring.2026-11-17.plan.md](../plan-archive/0012-live-agent-activity-monitoring.2026-11-17.plan.md)
+**Successor:** [0015-focus-on-visibility.md](0015-focus-on-visibility.md)
 
 Handoff reference: FS-012 ([po-handoff.md](../../docs/product/po-handoff.md) §4.4, §5.3, §10 FS-012,
 §13). Depends on: 0004 (runs, events, store state), 0005 (shell, panel-level states, navigation),
@@ -399,3 +400,4 @@ Gregor reads OP-04's readings and OP-05…OP-13; then `/sdd-plan`, together with
 
 - 2026-11-17 — [0012-live-agent-activity-monitoring.2026-11-17.plan.md](../plan-archive/0012-live-agent-activity-monitoring.2026-11-17.plan.md) — Agent Center built (T-001…T-010); second `/sdd-compile` READY (manual items: 2), AC-009 and AC-018 wording revised, real-agent checks on the pre-release checklist
 - 2026-11-17 — follow-up (fast path, release preparation): AC-027's fallback reason "no store" replaced by a sentence for humans; test `agentCenterService.test.ts` (*AC-027: states of the area*); host smoke title of the live run list renamed to AC-012/AC-013.
+- 2026-11-17 — abandoned: 0015 (PD-055) removed every behaviour of this spec — Studio starts no agent and shows no agent run. Status `Deprecated`, successor [0015-focus-on-visibility.md](0015-focus-on-visibility.md); the archived plan above stays frozen.

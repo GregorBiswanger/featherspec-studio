@@ -3,6 +3,8 @@
 **Status:** Implemented
 **Plan:** [0013-studio-visual-design.2026-11-17.plan.md](../plan-archive/0013-studio-visual-design.2026-11-17.plan.md)
 
+*Amended by 0015 (PD-055/PD-056): every other statement, requirement, criterion, term, assumption or open point of this spec about agent runs, run events, providers, approvals, the Agent Center, the start workflow, the Clear command or specs 0008–0012 is void; a sentence that also says something else keeps that part. The notes below name what changes in meaning or needs a replacement; see [0015](0015-focus-on-visibility.md) §5.*
+
 Depends on: 0005, 0006, 0007. Input: [design-brief.md](../../docs/product/design-brief.md), Gregor's interview answers
 for this spec. `D-n` = defect n of the UI preview report of 2026-11-16.
 
@@ -14,6 +16,8 @@ Gregor accepts screenshots of every area in Dark, Light and High Contrast as fit
 Marketplace listing. Users: the developer in the Studio panel; Gregor accepts the look.
 
 ## 2. Scope
+
+*Amended by 0015 (PD-055/PD-056): "four areas" becomes three areas; no Agent Center content.*
 
 ### In scope
 
@@ -57,6 +61,8 @@ Marketplace listing. Users: the developer in the Studio panel; Gregor accepts th
 
 ### 3.2 Mission Control
 
+*Amended by 0015 (PD-055/PD-056): Recent activity alone below the attention list; the run panel is void.*
+
 - **Header**, one quiet line: name · `FeatherSpec <version>` · `Updated <time>` · diagnostics (AC-006).
 - **Stat tiles** (AC-004), the Done tile with the Deprecated sub-count as secondary text;
   **distribution bar** in §3.1 colours with "Total <n>" (0006's Total element) and progress
@@ -65,6 +71,8 @@ Marketplace listing. Users: the developer in the Studio panel; Gregor accepts th
   This order replaces 0006 §9's layout guidance.
 
 ### 3.3 Spec Board
+
+*Amended by 0015 (PD-055/PD-056): no run status on cards.*
 
 - Board fills the area height (D-8); columns per AC-008, header with icon, name, count badge.
 - **Card** per AC-009: the state chip is followed by the §3.5 sentence or Deprecated marker as
@@ -137,6 +145,8 @@ secondary text and tooltip.
 **AC-007** Each attention row shall show number chip, title and reason as text with an icon; the
 Agent runs and Recent activity panels shall each show, when empty, an icon and 0006's sentence.
 
+*Amended by 0015 (PD-055/PD-056): no run row; Needs attention rows carry the reasons Blocked, Diagnostic and Review pending.*
+
 **AC-008** The stylesheet shall set no height or max-height on a board column, make each column
 header `position: sticky`, let each column's card list scroll vertically, and give columns a
 minimum width of 240 px with horizontal scrolling of the board.
@@ -175,6 +185,8 @@ its `Verified` text. *(fixture: a copy of this repo's spec 0002 and its plan; D-
 **AC-016** Every existing test of 0005–0007 shall stay green; only assertions on wording or
 structure that §2's five deltas change are updated, in the same change set, each named in the plan.
 
+*Amended by 0015 (PD-055/PD-056): excepts the tests that 0015 AC-027 removes.*
+
 **AC-017** *(manual, Gregor or his delegate)* Screenshots from the preview harness of Mission Control, Spec Board,
 Spec Explorer list, detail of 0002 (expanded, and with Acceptance criteria collapsed), Agent
 Center and panel states S1 and S2, each in Dark, Light and High Contrast at 1400×900, plus board
@@ -183,6 +195,8 @@ Light, project state readable at a glance; the verdict is recorded in the plan. 
 2026-11-17 under Gregor's delegation of 2026-11-17: these four checks are made by his delegate
 on the dated screenshot set; the taste verdict of §1 ("fit for a talk or a Marketplace
 listing") is checked by Gregor or his delegate; pre-release checklist item.
+
+*Amended by 0015 (PD-055/PD-056): no Agent Center screenshot.*
 
 **AC-018** *(manual, Gregor or his delegate)* One pass in real VS Code with a Dark, a Light and a High Contrast
 theme plus one live theme switch: colours, borders and focus match the screenshots. Revised
@@ -214,6 +228,8 @@ stay decided by AC-001 and AC-003 and by 0005 AC-019 (no panel module reads or c
 | A-004 | Breakpoints 720 px, 640 px, 240 px column | Fit 1400 px and a half-width editor group | Layout tweak only. Observed 2026-11-16 (plan T-005): at 1400 px the sixth column sits partly behind the board's horizontal scroll, because AC-008's 240 px minimum wins; recorded as accepted 2026-11-17 (closing compile, Gregor's delegation), Gregor's taste check on the pre-release checklist |
 | A-005 | Brief's "History" is 0007's "Agent history"; the name stays | Renaming is not a named delta | Label change only |
 | A-006 | Section "Open file" opens at the top, not an item's line | Per-item jumps leave with per-item buttons | Small navigation loss |
+
+*Amended by 0015 (PD-055/PD-056): A-005: the section is named "Status history".*
 
 ## 7. Open points
 

@@ -3,7 +3,7 @@
 **Spec:** [0015-focus-on-visibility.md](0015-focus-on-visibility.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-013
+**Current step:** T-014
 
 ## Approach
 
@@ -306,7 +306,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
   head and the inline "*Amended by 0015 (PD-055/PD-056): …*" notes of §5 by ID. 0014 untouched.
 - **Verify:** `grep -l "^\*\*Status:\*\* Deprecated" .specs/done/001[0-2]*.md .specs/done/000[89]*.md | wc -l` → 5;
   `grep -L "Amended by 0015" .specs/done/000[3-7]*.md .specs/done/0013*.md` → empty; `git diff --stat .specs/plan-archive .specs/active` → empty
-- [ ] **Verified (T-013):** —
+- [x] **Verified (T-013):** 2026-11-17 — no code change, so no red run; verify commands: Deprecated count → 5; grep -L 'Amended by 0015' over 0003–0007 and 0013 → empty; git diff --stat .specs/plan-archive → empty; gates 1–5 clean (1658 passed + 3 skipped, 12 timing). Notes: 0008–0012 carry **Status:** Deprecated, a **Successor:** link to 0015-focus-on-visibility.md (the form 0003's successor reader parses; the link resolves once 0015 moves to done/) and a dated abandonment line in ## Plan history; 0003–0007 and 0013 carry the catch-all note after the header and one inline note per row of 0015 §5 at its heading, requirement or criterion (table rows: a note after the table that names the row ID); 0014 untouched.
 - **Notes:** —
 
 ### T-014 — Product docs
@@ -378,14 +378,14 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 | AC-025 | T-014 | — | — | open |
 | AC-026 | T-006, T-010 | src/shared/protocol/areas.ts, src/shared/protocol/texts.ts, src/core/runtime/notices.ts | src/shared/protocol/messages.test.ts, src/webview/PanelStateView.test.tsx, src/core/runtime/runtimeSession.test.ts | verified |
 | AC-027 | T-015 | — | — | open |
-| AC-028 | T-013 | — | — | open |
+| AC-028 | T-013 | .specs/done/0008–0012 (Deprecated), .specs/done/0003–0007 and 0013 (notes) | grep checks of T-013 | verified |
 | AC-029 | T-015 | — | — | open |
 | AC-030 | T-014, T-015 | — | manual: Gregor, M-1 on `tip-splitter` | open |
 
 ## Session handoff
 
 - **Done so far:** Stages 1 to 4 (T-001…T-012): next step, copy, drop result; board and detail without runs; Mission Control without runs; run wiring, manifest entries and dead modules removed; three areas; the status-history store; the earlier-data removal wired at activation; the SDK uninstalled, the bundle and source scans.
-- **Next action:** T-013 (specs 0008–0012 Deprecated, amendment notes), then T-014, T-015.
+- **Next action:** T-014 (product docs), then T-015.
 - **Open decisions:** — (Gregor approved the changed order and `npm uninstall @github/copilot-sdk`; the parallel stage runs in sequence; deletions listed per step are approved.)
 - **Baseline:** ea4a8bd
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked); host suites run on Windows and CI. Gates: `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`.

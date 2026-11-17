@@ -3,6 +3,8 @@
 **Status:** Implemented
 **Plan:** [0005-studio-shell-navigation.2026-11-17.plan.md](../plan-archive/0005-studio-shell-navigation.2026-11-17.plan.md)
 
+*Amended by 0015 (PD-055/PD-056): every other statement, requirement, criterion, term, assumption or open point of this spec about agent runs, run events, providers, approvals, the Agent Center, the start workflow, the Clear command or specs 0008–0012 is void; a sentence that also says something else keeps that part. The notes below name what changes in meaning or needs a replacement; see [0015](0015-focus-on-visibility.md) §5.*
+
 Handoff reference: FS-005 ([po-handoff.md](../../docs/product/po-handoff.md) §4, §10 FS-005,
 §11.1, §13 Usability). Architecture basis: [ADR-001](../../docs/decisions/ADR-001-extension-architecture.md)
 §2, §4, §6, §7, §14. Decisions ([product-decisions.md](../../docs/product/product-decisions.md)):
@@ -11,6 +13,8 @@ Depends on: 0001 (discovery result, active project), 0002 (spec model), 0003 (bo
 Used by: 0006, 0007, 0012 (they fill the areas and ask this shell to navigate, PD-040).
 
 ## 1. Summary
+
+*Amended by 0015 (PD-055/PD-056): four areas become three: Mission Control, Spec Board and Spec Explorer, with three per-area commands; Agent Center is gone.*
 
 FeatherSpec Studio gets its frame: an Activity Bar view and commands as the way in, one Studio
 panel inside the editor area, and navigation between the four MVP areas: Mission Control, Spec
@@ -54,6 +58,8 @@ and reloads, and understand every panel state, in a Light, a Dark and a High Con
 
 ### Out of scope
 
+*Amended by 0015 (PD-055/PD-056): "Agent Center content" is void.*
+
 - Mission Control content (counts, activity, attention list) — because spec 0006 owns it.
 - Board columns, cards, drag and drop, filters, and the spec detail — because spec 0007 owns
   them. The detail lives in the Spec Explorer area beside the list (PD-042).
@@ -70,6 +76,8 @@ and reloads, and understand every panel state, in a Light, a Dark and a High Con
 - Selecting several specs at once — because nothing in the MVP needs it; not now.
 
 ## 5. Functional flow
+
+*Amended by 0015 (PD-055/PD-056): step 7: navigation targets are a spec or a board filter, no run.*
 
 1. The developer opens the "FeatherSpec Studio" view in the Activity Bar and activates "Open
    Studio", or runs "FeatherSpec Studio: Open".
@@ -128,6 +136,8 @@ remembered for this workspace.
   in Spec Explorer (PD-042). A spec target whose stem is not in the project changes neither
   area nor selection and gets the notice of BR-03. A target for an area that is still a
   placeholder ends on the placeholder.
+
+*Amended by 0015 (PD-055/PD-056): a target is a spec or a board filter, no run.*
 - **BR-08 Ownership of states (PD-036):** the shell owns every panel state and its text. An
   area owns only its in-area states and repeats no panel state or text.
 
@@ -159,6 +169,8 @@ remembered for this workspace.
 - Nothing sensitive is read, shown or stored.
 
 ## 9. UI/UX requirements
+
+*Amended by 0015 (PD-055/PD-056): three areas; the tree shows three entries with the icons gauge, board layout and list tree, no robot; Mission Control purpose: "See the project at a glance: spec counts, progress, what needs attention and recent activity."*
 
 UI text is in English (PD-016).
 
@@ -197,6 +209,8 @@ UI text is in English (PD-016).
 - No network service. *Amended by 0014 (PD-049, PD-053): the one exception is the download of the setup of spec 0014 (its AC-025).*
 
 ## 11. Security, permissions and privacy
+
+*Amended by 0015 (PD-055/PD-056): the S7 note reads "This workspace is in Restricted Mode. Setting up FeatherSpec needs a trusted workspace." (0014 AC-004's wording).*
 
 - The panel UI gets no direct access to local files or to Node.js. Everything it shows arrives
   as messages from the extension, and everything it asks for goes out as a message (handoff
@@ -273,8 +287,12 @@ automated tests.
   S1–S5, S8 and S9.
 - **AC-004** The system shall show a navigation in the panel that lists Mission Control, Spec
   Board, Spec Explorer and Agent Center. Activating an item shall show that area. [AC-005.2]
+
+*Amended by 0015 (PD-055/PD-056): the navigation lists Mission Control, Spec Board and Spec Explorer.*
 - **AC-005** When the user runs one of the four per-area commands, the system shall show the panel
   on that area, opening the panel first if it is closed.
+
+*Amended by 0015 (PD-055/PD-056): three per-area commands.*
 - **AC-006** In this slice the system shall show, for Mission Control, Spec Board and Agent
   Center, the area's name, one sentence on its purpose, and "Not available in this version of
   FeatherSpec Studio", and shall show no sample data (BR-04). The purpose sentences are: Mission
@@ -283,6 +301,8 @@ automated tests.
   agent runs, their live events and the approvals they wait for." The criterion ends for an area
   when a later spec delivers it.
   > **Given** a project with three specs **When** the user opens Spec Board **Then** the area shows its name, its purpose sentence and "Not available in this version of FeatherSpec Studio", and shows no cards.
+
+*Amended by 0015 (PD-055/PD-056): no Agent Center placeholder or content; the purpose of Mission Control per 0015 §8.*
 - **AC-007** The system shall list every spec entry of the active project in Spec Explorer,
   ordered by number and then by path. Each row shall show the number, the title or "not
   available", and the board state as text; for a derived state it shall also show the *derived*
@@ -327,6 +347,8 @@ automated tests.
 - **AC-017** While the workspace is in Restricted Mode, the system shall show the S7 note in
   the panel in addition to whatever the panel shows otherwise. When trust is granted, the note
   shall disappear without the panel being reopened by the user.
+
+*Amended by 0015 (PD-055/PD-056): the S7 note text per 0015 §8.*
 - **AC-018** When several panel states apply at once, the system shall show only the one with
   the highest precedence (BR-05). The S7 note is outside the precedence (AC-017).
 - **AC-019** The system shall draw the panel in the colours of the current VS Code theme. When
@@ -376,6 +398,8 @@ automated tests.
   the request carries a run or board-filter target for an area that is still a placeholder,
   the system shall show the placeholder (PD-040).
   > **Given** Mission Control is shown and spec `0003-x` exists **When** the request "Spec Explorer, spec `0003-x`" arrives **Then** Spec Explorer is shown and 0003 is selected.
+
+*Amended by 0015 (PD-055/PD-056): the navigation request targets a spec or a board filter, no run.*
 - **AC-029** When the user runs "FeatherSpec Studio: Rescan Project" while a project is active,
   the system shall re-read that project's specs through the `rescan()` of the spec repository
   (0002). The panel shall keep its content until the new model arrives (0002 AC-022). While no
@@ -423,6 +447,8 @@ automated tests.
 | A-002 | *Withdrawn 2026-11-16.* Replaced by PD-036: the shell owns the panel-state texts (§13) | — | — |
 | A-003 | Remembering the area and selection per workspace is enough; no memory across workspaces | The selection belongs to a project, and 0001 remembers its project per workspace too (0001 AC-009) | A user expecting the same area across workspaces sees Mission Control |
 | A-004 | Restricted Mode changes nothing in this slice but the S7 note | This slice has no agent actions; ADR-001 §14 hides agent start and provider setup only | The specs that add agent actions (0008 onwards) must hide their own |
+
+*Amended by 0015 (PD-055/PD-056): A-004 is void.*
 
 ## 17. Open points
 

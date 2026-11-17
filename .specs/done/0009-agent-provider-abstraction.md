@@ -1,7 +1,8 @@
 # Agent Provider Abstraction
 
-**Status:** Implemented
+**Status:** Deprecated
 **Plan:** [0009-agent-provider-abstraction.2026-11-17.plan.md](../plan-archive/0009-agent-provider-abstraction.2026-11-17.plan.md)
+**Successor:** [0015-focus-on-visibility.md](0015-focus-on-visibility.md)
 
 Handoff reference: FS-009 ([po-handoff.md](../../docs/product/po-handoff.md) §2.1, §8.3, §10 FS-009,
 §14 *Provider Contract Tests*). Depends on: 0004 (event envelope, credential port for masking).
@@ -401,3 +402,4 @@ snapshot lists the new modules. The §21 walkthrough is OP-005.
 ## Plan history
 
 - 2026-11-17 — [0009-agent-provider-abstraction.2026-11-17.plan.md](../plan-archive/0009-agent-provider-abstraction.2026-11-17.plan.md) — ten steps; all 22 criteria verified; second `/sdd-compile` READY; host suite 28 passing on Windows at e6f0c85.
+- 2026-11-17 — abandoned: 0015 (PD-055) removed every behaviour of this spec — Studio starts no agent and shows no agent run. Status `Deprecated`, successor [0015-focus-on-visibility.md](0015-focus-on-visibility.md); the archived plan above stays frozen.

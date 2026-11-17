@@ -1,7 +1,8 @@
 # First Agent Provider Integration (GitHub Copilot SDK)
 
-**Status:** Implemented
+**Status:** Deprecated
 **Plan:** [0010-first-agent-provider-copilot.2026-11-17.plan.md](../plan-archive/0010-first-agent-provider-copilot.2026-11-17.plan.md)
+**Successor:** [0015-focus-on-visibility.md](0015-focus-on-visibility.md)
 
 Handoff reference: FS-010 ([po-handoff.md](../../docs/product/po-handoff.md) §2.1, §8.3, §10 FS-010, §13, §14 Provider Contract Tests).
 Provider choice: PD-001 (proxy) and [ADR-003](../../docs/decisions/ADR-003-first-agent-provider.md) (Proposed; PoC open). The PD register wins over ADRs.
@@ -465,3 +466,4 @@ acceptance checks of §13.
 
 - 2026-11-17 — [0010-first-agent-provider-copilot.2026-11-17.plan.md](../plan-archive/0010-first-agent-provider-copilot.2026-11-17.plan.md) — eleven steps; 24 criteria verified (AC-022 not planned, OP-007); second `/sdd-compile` READY after T-009…T-011; M-07 host smoke passed on Windows at 93537b7; re-run on the closing head open at the move.
 - 2026-11-17 — follow-up after the archived plan, no new plan (orchestrator task S10): approved-write capture on Gregor's machine; `file.changed` derived from an approved `write` request and its successful tool, `session.info` ignored, `fileChanges` `derived` *experimental* (BR-01, BR-11, §7, AC-012, §13 M-02/M-03); tests in `mapping.test.ts`, `fixture.test.ts`, `copilotStart.test.ts`; host smoke unchanged, re-run open.
+- 2026-11-17 — abandoned: 0015 (PD-055) removed every behaviour of this spec — Studio starts no agent and shows no agent run. Status `Deprecated`, successor [0015-focus-on-visibility.md](0015-focus-on-visibility.md); the archived plan above stays frozen.

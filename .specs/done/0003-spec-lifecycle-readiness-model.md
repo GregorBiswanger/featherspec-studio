@@ -3,6 +3,8 @@
 **Status:** Implemented
 **Plan:** [0003-spec-lifecycle-readiness-model.2026-11-17.plan.md](../plan-archive/0003-spec-lifecycle-readiness-model.2026-11-17.plan.md)
 
+*Amended by 0015 (PD-055/PD-056): every other statement, requirement, criterion, term, assumption or open point of this spec about agent runs, run events, providers, approvals, the Agent Center, the start workflow, the Clear command or specs 0008–0012 is void; a sentence that also says something else keeps that part. The notes below name what changes in meaning or needs a replacement; see [0015](0015-focus-on-visibility.md) §5.*
+
 Handoff reference: FS-003 ([po-handoff.md](../../docs/product/po-handoff.md) §6, §10). Format
 basis: [featherspec-format.md](../../docs/discovery/featherspec-format.md) §5–§7 (SPIKE-001).
 Decisions: [product-decisions.md](../../docs/product/product-decisions.md) PD-018–PD-023, PD-030.
@@ -16,6 +18,8 @@ readiness against named preconditions, accepts or refuses board transitions with
 and keeps three status dimensions apart: spec lifecycle, agent run, verification. It records
 a history of the state changes Studio observes while it is running. It never writes a
 FeatherSpec file.
+
+*Amended by 0015 (PD-055/PD-056): §1 and FR-08: two dimensions, spec lifecycle and verification; there is no agent run dimension.*
 
 ## 2. Goal and problem
 
@@ -55,6 +59,8 @@ it is in, which rule put it there, why it is or is not Ready, and why a drop was
 - Provider availability, authentication and the user's start confirmation — because they are
   run-start preconditions owned by 0008. This spec delivers only the spec-side readiness that
   0008 consumes.
+
+*Amended by 0015 (PD-055/PD-056): void. §2, §3 and §10 references to 0008 and 0011 are void; the consumer of an accepted request is the board (0007), which shows the next step.*
 - Inter-spec dependencies as a readiness rule — because FeatherSpec has no dependency field.
   Shown as "not available"; a blocking dependency is expressed by plan `Blocked` (Gregor,
   2026-11-16).
@@ -82,6 +88,8 @@ it is in, which rule put it there, why it is or is not Ready, and why a drop was
 5. When the board requests a transition, the model accepts it or refuses it with a reason (§6.4).
    The only accepted request is Ready → Active. Acceptance is a verdict for the caller and
    changes no state. 0008 then runs its own start checks and the start confirmation.
+
+*Amended by 0015 (PD-055/PD-056): §5 step 5: the board shows the next step (0015 AC-006); the verdict still changes no state.*
 
 ## 6. Business rules
 
@@ -120,6 +128,8 @@ Terms used below:
   linked to the entry by 0002 and its status is literally `BLOCKED`.
 - Spec states never change because of agent run states or the verification status.
 
+*Amended by 0015 (PD-055/PD-056): read: spec states never change because of the verification status.*
+
 ### 6.2 Readiness preconditions (spec side)
 
 | ID | Precondition | Fails when |
@@ -137,6 +147,8 @@ Terms used below:
 - Plan approval is not persisted by FeatherSpec. The explicit start confirmation in 0008
   (PD-002) **is** the plan approval; Ready does not wait for any other approval mark
   (Gregor, 2026-11-16).
+
+*Amended by 0015 (PD-055/PD-056): plan approval stays with the human in the assistant: FeatherSpec's explicit start signal (`/sdd-plan`). Ready still waits for no approval mark.*
 - The other diagnostic kinds of 0002 (unknown content or value, dangling link, unverified
   version, orphan) do not fail R-6. Where they matter for readiness, R-1, R-3 or R-4 fails.
 
@@ -168,6 +180,8 @@ against the entry's state in the latest snapshot delivered by 0002. Only a reque
 for a Ready entry is accepted. Acceptance is a verdict returned to the caller (0008): it
 changes no state, and the entry stays Ready until the files change (PD-013). Every other
 request is refused with a reason (PD-014). The first matching row applies:
+
+*Amended by 0015 (PD-055/PD-056): §6.4: the verdict is returned to the board (0007), which shows the next step; it still changes no state.*
 
 | Reason kind | Request | Reason given |
 | --- | --- | --- |
@@ -225,6 +239,8 @@ A-003). An entry with cause *changed while Studio was not running* is *not check
 - A `**Status:**` change that leaves the state unchanged creates no entry (OP-008).
 - Stored in Studio's runtime data (0004, A-009), never in the repository. Kept per PD-012 and
   PD-027.
+
+*Amended by 0015 (PD-055/PD-056): kept by the fixed 90-day age cap (0004 BR-008 as amended); there is no Clear.*
 - **Duplicated stem** (two or more entries share the stem, PD-019): no entry is appended for
   that stem while it is duplicated. When exactly one entry with the stem remains, its state is
   compared with the stem's last recorded state like a live change (cause: the changed file
@@ -343,10 +359,14 @@ result shall carry a reason. R-7 shall never make the check fail.
 it whatever run state an agent run of that spec enters, including Completed.
 *(AC-003.4, FR-003.8)*
 
+*Amended by 0015 (PD-055/PD-056): void (there are no runs).*
+
 **AC-007** The model shall report Review only for an `active/` spec with status `In Progress`
 whose sibling plan is `Done`, and Done only for a spec in `done/`. It shall report such an
 `active/` spec as Review, not Done, also when every traceability row is `verified` or a run of
 it is Completed. *(AC-003.5)*
+
+*Amended by 0015 (PD-055/PD-056): drop "or a run of it is Completed".*
 
 **AC-008** When the board requests a transition (entry and target state), the model shall
 accept only a request to Active for an entry that is Ready in the latest snapshot delivered by
@@ -365,6 +385,8 @@ shall carry the marker *not checked*. *(OP-005, Gregor 2026-11-16)*
 the model shall produce identical states, rule IDs,
 readiness results, diagnostics and verification statuses, regardless of the clock, the status
 history and agent runs. *(AC-003.7)*
+
+*Amended by 0015 (PD-055/PD-056): drop "and agent runs".*
 
 **AC-011** The model shall not create, modify, move, rename or delete any file under
 `.specs/`, `.memory-bank/` or `AGENTS.md`. *(AC-003.8, PD-013)*
@@ -406,6 +428,8 @@ and run state. It shall consist of the counts of traceability rows per `State` v
 source named in §6.6 (`open`, `built`, `verified`, and *other* for any other value) and the
 summary *not available*, *pending* or *all verified* as §6.6 defines them. The model shall
 report the `/sdd-compile` verdict as *not available*.
+
+*Amended by 0015 (PD-055/PD-056): drop "and run state".*
 
 **AC-019** If a spec file cannot be read or parsed, then the model shall keep deriving the
 states of all other specs, and shall derive the affected spec's state by §6.1 (S-DONE,
