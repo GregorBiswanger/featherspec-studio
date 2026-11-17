@@ -3,7 +3,7 @@
 **Spec:** [0008-spec-activation-agent-start.md](0008-spec-activation-agent-start.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-004
+**Current step:** T-005
 
 ## Approach
 
@@ -193,8 +193,8 @@ stage and becomes its own step.
   `noWrite.test.ts`: a temp copy of `fs110-start-ready` over the Node adapters, every scenario of
   §13 run, `snapshotTree` equal before and after.
 - **Verify:** `npx vitest run src/core/agentStart` then the per-step gates
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-17 — red: `npx vitest run src/core/agentStart/startFlow.start` with `confirm` and the binding as `Not implemented` stubs: 18 of 18 failed; `orchestratorBinding` + `agentStart.endToEnd`: 9 of 9 failed (`Error: Not implemented`). Green: `npx vitest run src/core/agentStart` 7 files, 77 tests pass (each outdated cause with a no-change negative control, request values equal the shown ones and no `model` key when the provider reports none, stale/duplicate Start ignored, 0011's open-run refusal names run and stem, Starting→Failed notice (also already Failed at the answer, none for Running→Failed, none after a project change), the fake provider's calls hold only `checkAvailability`, request keys carry no permission field, `noWrite.test.ts` tree equal with an intruder-file negative control, import scan). End to end (`agentStart.endToEnd.test.ts`): the board's `requestMove(Ready→Active)` hands off, readiness check, confirmation, Start, run `Starting→Running→Completed` in the store with `session.started` … `run.completed` events, one provider start with the confirmed prompt. Gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 132 files, 1693 tests green.
+- **Notes:** Deviation for testability: the orchestrator binding is the pure function `src/core/agentStart/orchestratorBinding.ts:bindOrchestrator(orchestrator, rootToPath)` (core, tested) instead of inline code in `extension.ts`; T-007 only passes the URI-to-path function. The fake provider's failure scenarios run a prelude first, so `Starting`→`Failed` is produced in the end-to-end test with the controlled adapter (`run.failed` `runtime_missing` before `session.started`). Added `importScan.test.ts` (core purity, copy of 0011's scan). `noWrite.test.ts` was green on its first run (preserved property); its negative control writes an intruder file.
 
 ### T-005 — Panel lines: checking, refusal, start-failure notice
 
@@ -271,15 +271,15 @@ stage and becomes its own step.
 | AC-001 | T-002, T-003, T-005 | src/core/agentStart/startFlow.ts:handOff, src/core/agentStart/refusalItems.ts | src/core/agentStart/startFlow.test.ts (refusal), preconditions.test.ts | built |
 | AC-002 | T-003, T-006 | src/core/agentStart/startFlow.ts:check | src/core/agentStart/startFlow.test.ts (confirmation items) | built |
 | AC-003 | T-003, T-006, T-007 | src/core/agentStart/startFlow.ts:cancel, panelHidden | src/core/agentStart/startFlow.test.ts (cancel, hide, project change) | built |
-| AC-004 | T-004 | — | — | open |
-| AC-005 | T-004, T-007 | — | — | open |
+| AC-004 | T-004 | src/core/agentStart/startFlow.ts:doStart | src/core/agentStart/startFlow.start.test.ts (AC-004) | built |
+| AC-005 | T-004, T-007 | src/core/agentStart/startFlow.ts:doStart, src/core/agentStart/orchestratorBinding.ts | src/core/agentStart/startFlow.start.test.ts (AC-005), agentStart.endToEnd.test.ts | built |
 | AC-006 | T-001, T-006 | src/core/agentStart/startPrompt.ts:buildStartPrompt | src/core/agentStart/startPrompt.test.ts (golden byte equality) | built |
 | AC-007 | T-002 | src/core/agentStart/preconditions.ts:checkPreconditions | src/core/agentStart/preconditions.test.ts (P-2) | verified |
-| AC-008 | T-002, T-004, T-005 | — | — | open |
-| AC-009 | T-003 | src/core/agentStart/startFlow.ts:handOff (pending) | src/core/agentStart/startFlow.test.ts (pending) | built |
-| AC-010 | T-004, T-005 | — | — | open |
-| AC-011 | T-004 | — | — | open |
-| AC-012 | T-004 | — | — | open |
+| AC-008 | T-002, T-004, T-005 | src/core/agentStart/preconditions.ts (P-5), startFlow.ts:doStart (0011 refusal) | preconditions.test.ts (P-5), startFlow.start.test.ts (AC-008) | built |
+| AC-009 | T-003 | src/core/agentStart/startFlow.ts:handOff (pending), confirm | startFlow.test.ts, startFlow.start.test.ts (pending while starting) | built |
+| AC-010 | T-004, T-005 | src/core/agentStart/startFlow.ts:watchRun | startFlow.start.test.ts (AC-010), agentStart.endToEnd.test.ts (runtime_missing) | built |
+| AC-011 | T-004 | src/core/agentStart/startFlow.ts (request without permission field) | startFlow.start.test.ts (AC-011) | built |
+| AC-012 | T-004 | src/core/agentStart/startFlow.ts (no file API) | src/core/agentStart/noWrite.test.ts | built |
 | AC-013 | T-002, T-005 | src/core/agentStart/preconditions.ts:checkPreconditions | src/core/agentStart/preconditions.test.ts (P-6) | built |
 | AC-014 | T-003 | src/core/agentStart/startFlow.ts:handOff | src/core/agentStart/startFlow.test.ts (ended run) | built |
 | M-2 | T-006 | — | manual: Gregor, keyboard and screen reader | open |

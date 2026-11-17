@@ -1,6 +1,6 @@
 import type { AgentStartView, StartConfirmation, StartNotice, StartRefusal } from '../../shared/protocol/agentStart';
 import { titleOf } from '../board/cards';
-import type { AgentStartUiPort, PreviousRunSummary, StartOrchestratorPort } from '../ports/agentStart';
+import type { AgentStartRequest, AgentStartUiPort, PreviousRunSummary, StartAnswer, StartOrchestratorPort } from '../ports/agentStart';
 import type { RunSource } from '../missionControl/runSource';
 import type { StartRequest, StartWorkflowPort } from '../ports/board';
 import type { Disposable } from '../ports/host';
@@ -17,6 +17,7 @@ export interface StartFlowDeps {
 
 export interface StartFlow extends StartWorkflowPort {
     handOff(request: StartRequest): void;
+    confirm(token: string): void;
     cancel(token: string): void;
     panelHidden(): void;
     dismiss(which: 'refusal' | 'notice'): void;
@@ -42,6 +43,7 @@ export function createStartFlow(deps: StartFlowDeps): StartFlow {
     let notice: StartNotice | undefined;
     let pending: Promise<void> = Promise.resolve();
     let disposed = false;
+    let watch: Disposable | undefined;
     let root = preconditions.model.current()?.project.root;
 
     function emit(): void {
@@ -60,6 +62,50 @@ export function createStartFlow(deps: StartFlowDeps): StartFlow {
     function numberOf(stem: string): string {
         const entry = preconditions.model.current()?.lifecycle.entries.find((candidate) => candidate.stem === stem);
         return entry?.number ?? stem.slice(0, 4);
+    }
+
+    function tracked(work: Promise<void>): void {
+        const earlier = pending;
+        pending = Promise.all([earlier, work]).then(() => undefined);
+    }
+
+    function stopWatching(): void {
+        watch?.dispose();
+        watch = undefined;
+    }
+
+    function watchRun(runId: string): void {
+        stopWatching();
+        let current = true;
+        let subscription: Disposable | undefined;
+        const handle: Disposable = {
+            dispose() {
+                current = false;
+                subscription?.dispose();
+            },
+        };
+        const evaluate = async (): Promise<void> => {
+            const read = await deps.runs.read();
+            if (!current || !read.available) {
+                return;
+            }
+            const run = read.runs.find((candidate) => candidate.runId === runId);
+            if (run === undefined || run.status === 'Starting') {
+                return;
+            }
+            handle.dispose();
+            if (watch === handle) {
+                watch = undefined;
+            }
+            const failed = run.statusHistory.findIndex((entry) => entry.status === 'Failed');
+            if (run.status === 'Failed' && failed > 0 && run.statusHistory[failed - 1]?.status === 'Starting') {
+                notice = { runId, errorClass: run.errorClass ?? 'not available' };
+                emit();
+            }
+        };
+        subscription = deps.runs.onDidChange(() => tracked(evaluate()));
+        watch = handle;
+        tracked(evaluate());
     }
 
     function reset(): void {
@@ -133,7 +179,55 @@ export function createStartFlow(deps: StartFlowDeps): StartFlow {
         refusal = undefined;
         checking = { number: numberOf(request.stem) };
         emit();
-        pending = check(request, mine);
+        tracked(check(request, mine));
+    }
+
+    async function doStart(mine: number, shown: StartConfirmation): Promise<void> {
+        const number = shown.spec.number;
+        const refuseWith = (items: StartRefusal['items']): void => {
+            phase = 'idle';
+            confirmation = undefined;
+            refusal = { number, items };
+            emit();
+        };
+        const result = await checkPreconditions(preconditions, shown.spec.stem);
+        if (mine !== generation) {
+            phase = 'idle';
+            return;
+        }
+        if (result.failures.length > 0 || result.entry === undefined || result.provider === undefined) {
+            refuseWith(refusalItems(result.failures, result.provider?.entry.displayName, shown.spec.stem));
+            return;
+        }
+        const { entry, provider } = result;
+        if (provider.entry.id !== shown.provider.id || provider.model !== shown.model || provider.entry.permissionModeLabel !== shown.permissionMode) {
+            refuseWith([{ id: 'outdated' }]);
+            return;
+        }
+        const request: AgentStartRequest = {
+            providerId: provider.entry.id,
+            ...(provider.model === undefined ? {} : { model: provider.model }),
+            spec: { stem: entry.stem, path: entry.key },
+            prompt: shown.prompt,
+            projectRoot: preconditions.model.current()?.project.root ?? '',
+        };
+        let answer: StartAnswer;
+        try {
+            answer = await deps.orchestrator.start(request);
+        } catch (error) {
+            answer = { kind: 'refused', text: error instanceof Error ? error.message : String(error) };
+        }
+        phase = 'idle';
+        if (mine !== generation) {
+            return;
+        }
+        if (answer.kind === 'refused') {
+            refuseWith([{ id: 'orchestrator', text: answer.text, ...(answer.run === undefined ? {} : { run: { runId: answer.run.runId, stem: answer.run.stem } }) }]);
+            return;
+        }
+        confirmation = undefined;
+        emit();
+        watchRun(answer.runId);
     }
 
     const modelSubscription = preconditions.model.onDidChange(() => {
@@ -143,6 +237,7 @@ export function createStartFlow(deps: StartFlowDeps): StartFlow {
         }
         root = next;
         reset();
+        stopWatching();
         refusal = undefined;
         notice = undefined;
         emit();
@@ -153,6 +248,16 @@ export function createStartFlow(deps: StartFlowDeps): StartFlow {
             handOff(request);
         },
         handOff,
+        confirm(token) {
+            if (disposed || phase !== 'confirming' || confirmation?.token !== token) {
+                return;
+            }
+            phase = 'starting';
+            notice = undefined;
+            confirmation = { ...confirmation, starting: true };
+            emit();
+            tracked(doStart(generation, confirmation));
+        },
         cancel(token) {
             if (phase !== 'confirming' || confirmation?.token !== token) {
                 return;
@@ -196,6 +301,7 @@ export function createStartFlow(deps: StartFlowDeps): StartFlow {
         },
         dispose() {
             disposed = true;
+            stopWatching();
             modelSubscription.dispose();
             listeners.clear();
         },
