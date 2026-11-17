@@ -207,8 +207,8 @@ test world, one module.
   a first store instance), decline, a condition that turns false while the confirmation is open, the
   new run's data, a resumed run still `Starting` after 60 s.
 - **Verify:** `npx vitest run src/core/orchestrator` then the per-step gates
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-17 — red: `npx vitest run src/core/orchestrator/orchestratorResume.test.ts` with `resumability` and `resume` rejecting `Not implemented`: 19 failed, all with that error; red for the 0004 extension: the contract test `0011 BR-005: a cause given at creation …` failed on both media (assertion: first status entry has no cause) before `records.ts`/`runtimeStore.ts` carried it; green: `npx vitest run src/core/orchestrator src/core/runtime src/adapters/node/fileRuntimeMedium.test.ts` all passed; gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 1594 passed.
+- **Notes:** Deviation, 0004 touched: BR-005 needs the cause `resumed from <runId>` on the new run's FIRST status entry, but `createRun` had no cause. Added optional `cause` to `CreateRunInput`, the created record (parsed as optional string, masked) and the first history entry; additive, format version unchanged, covered by the shared contract suite (`contractRuns.ts`, both media). The resume's model is the old run's model when it has one.
 
 ### T-006 — Spec flag, reader window, no-write proof
 

@@ -175,7 +175,7 @@ function newView(record: CreatedRecord): MutableRun {
         spec: { stem: record.spec.stem, path: record.spec.path },
         sessionRef: record.sessionRef,
         status: 'Starting',
-        statusHistory: [{ status: 'Starting', at: record.at }],
+        statusHistory: [record.cause === undefined ? { status: 'Starting', at: record.at } : { status: 'Starting', at: record.at, cause: record.cause }],
         created: record.at,
         started: undefined,
         ended: undefined,
@@ -743,6 +743,9 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             }
             if (input.sessionRef !== undefined) {
                 record.sessionRef = input.sessionRef;
+            }
+            if (input.cause !== undefined) {
+                record.cause = masker.text(input.cause);
             }
             const entry: RunEntry = {
                 view: newView(record),

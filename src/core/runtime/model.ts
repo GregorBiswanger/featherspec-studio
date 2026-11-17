@@ -57,6 +57,7 @@ export interface CreateRunInput {
     spec: SpecReference;
     model?: string;
     sessionRef?: string;
+    cause?: string;
 }
 
 export interface StatusReport {

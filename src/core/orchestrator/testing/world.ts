@@ -4,6 +4,8 @@ import type { ScriptStep } from '../../../adapters/providers/fake/script';
 import type { Disposable } from '../../ports/host';
 import type { OrchestratorUiPort, PickItem } from '../../ports/orchestrator';
 import type { ShellModel, ShellModelSource } from '../../ports/shell';
+import { deriveLifecycle } from '../../lifecycle/deriveLifecycle';
+import { readMemory, specText } from '../../lifecycle/testing/projects';
 import { createProviderSetup, type ProviderSetup } from '../../providers/providerSetup';
 import { createControlledAdapter, type ControlledAdapter } from '../../providers/testing/controlledAdapter';
 import type { RunView, StoreState } from '../../runtime/model';
@@ -89,6 +91,8 @@ export interface World {
     workingDirectory: { current: string | undefined };
     scenario: { current: FakeScenarioId };
     openStoreOn(backing?: MemoryBacking): Promise<RuntimeStore>;
+    reopen(): Promise<RuntimeStore>;
+    setSpecs(specs: readonly { folder: 'backlog' | 'active' | 'done'; stem: string; status?: string }[]): Promise<void>;
     advance(milliseconds: number): Promise<void>;
     request(overrides?: Partial<StartRequest>): StartRequest;
     runOf(runId: string): Promise<RunView>;
@@ -154,6 +158,20 @@ export async function createWorld(options: WorldOptions = {}): Promise<World> {
         workingDirectory,
         scenario,
         openStoreOn: (target = backing) => open(target),
+        async reopen() {
+            await world.store.dispose();
+            world.store = await open(backing);
+            session.use(world.store);
+            return world.store;
+        },
+        async setSpecs(specs) {
+            const files: Record<string, string> = {};
+            for (const spec of specs) {
+                files[`.specs/${spec.folder}/${spec.stem}.md`] = specText({ status: spec.status ?? (spec.folder === 'done' ? 'Implemented' : spec.folder === 'active' ? 'In Progress' : 'Draft') });
+            }
+            const project = await readMemory(files);
+            model.current = { project, lifecycle: deriveLifecycle(project) };
+        },
         async advance(milliseconds) {
             clock.advance(milliseconds);
             await orchestrator.whenIdle();
@@ -168,21 +186,21 @@ export async function createWorld(options: WorldOptions = {}): Promise<World> {
             ...overrides,
         }),
         async runOf(runId) {
-            const found = await store.getRun(runId);
+            const found = await world.store.getRun(runId);
             if (!found.available || found.value === undefined) {
                 throw new Error(`run ${runId} not found`);
             }
             return found.value;
         },
         async runs() {
-            const found = await store.listRuns();
+            const found = await world.store.listRuns();
             return found.available ? found.value : [];
         },
         async statusesOf(runId) {
             return (await world.runOf(runId)).statusHistory.map((entry) => entry.status);
         },
         async eventKinds(runId) {
-            const events = await store.readEvents(runId, 0, 500);
+            const events = await world.store.readEvents(runId, 0, 500);
             return events.available ? events.value.map((event) => event.type) : [];
         },
         fakeCalls: () => fake.calls().map((call) => call.operation),

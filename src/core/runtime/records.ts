@@ -9,6 +9,7 @@ export interface CreatedRecord {
     spec: SpecReference;
     model?: string;
     sessionRef?: string;
+    cause?: string;
     at: string;
 }
 
@@ -96,7 +97,8 @@ export function parseRunRecord(text: string): ParsedLine<RunRecord> {
             isString(spec['stem']) &&
             isString(spec['path']) &&
             optionalString(object['model']) &&
-            optionalString(object['sessionRef']);
+            optionalString(object['sessionRef']) &&
+            optionalString(object['cause']);
         return valid ? { kind: 'record', record: object as unknown as CreatedRecord } : { kind: 'broken' };
     }
     if (object['k'] === 'status') {

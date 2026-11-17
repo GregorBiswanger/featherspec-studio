@@ -28,6 +28,19 @@ export function registerRunsContract(context: ContractContext): void {
             expect(run.sessionRef).toBe('s-9');
         });
 
+        it('0011 BR-005: a cause given at creation is the cause of the first status entry and kept after a reopen', async () => {
+            const rig = await context.newRig();
+            const store = await rig.open();
+            const run = await store.createRun({ providerId: 'fake', spec: SPEC, cause: 'resumed from run-1' });
+            expect(run.statusHistory).toEqual([{ status: 'Starting', at: run.created, cause: 'resumed from run-1' }]);
+            await store.dispose();
+            const reopened = await rig.open();
+            const read = await reopened.getRun(run.runId);
+            expect(read.available && read.value?.statusHistory[0]).toEqual({ status: 'Starting', at: run.created, cause: 'resumed from run-1' });
+            const plain = await reopened.createRun({ providerId: 'fake', spec: SPEC });
+            expect(plain.statusHistory[0]).not.toHaveProperty('cause');
+        });
+
         it('AC-004: a status of the closed list is appended with its timestamp; the first Running is started', async () => {
             const rig = await context.newRig();
             const store = await rig.open();

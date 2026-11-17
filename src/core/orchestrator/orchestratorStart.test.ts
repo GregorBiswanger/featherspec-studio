@@ -21,17 +21,14 @@ const emit = (world: World, runId: string, kind: string, payload: JsonValue = {}
 
 describe('start', () => {
     it('AC-001: creates one Starting run with the request data, then calls the provider start once with run ID, directory, prompt and model', async () => {
-        const world = await createWorld({ scenario: 'long-run' });
-        const result = await world.orchestrator.start(world.request({ model: 'model-x', workingDirectory: 'C:/work', prompt: 'Do it.' }));
+        const world = await createWorld();
+        const result = await world.orchestrator.start(world.request({ providerId: 'controlled', model: 'model-x', workingDirectory: 'C:/work', prompt: 'Do it.' }));
         expect(result.kind).toBe('started');
         const runs = await world.runs();
         expect(runs).toHaveLength(1);
-        expect(runs[0]).toMatchObject({ providerId: 'fake', model: 'model-x', spec: { stem: '0007-board', path: '.specs/active/0007-board.md' }, status: 'Starting' });
-        expect(world.fakeCalls().filter((call) => call === 'start')).toHaveLength(1);
-        expect(world.fake.calls()[0]).toMatchObject({ operation: 'start', runId: runs[0]?.runId });
-        const world2 = await createWorld();
-        await started(world2, { providerId: 'controlled', model: 'model-x', workingDirectory: 'C:/work', prompt: 'Do it.' });
-        expect(world2.controlled.started).toEqual([{ runId: expect.any(String), workingDirectory: 'C:/work', prompt: 'Do it.', model: 'model-x' }]);
+        expect(runs[0]).toMatchObject({ providerId: 'controlled', model: 'model-x', spec: { stem: '0007-board', path: '.specs/active/0007-board.md' }, status: 'Starting' });
+        expect(world.controlled.started).toEqual([{ runId: runs[0]?.runId, workingDirectory: 'C:/work', prompt: 'Do it.', model: 'model-x' }]);
+        expect(world.controlled.calls).toEqual([`start:${runs[0]?.runId}`]);
     });
 
     it('AC-001: a model "not available" is passed to 0004 and the provider as absent', async () => {
