@@ -14,7 +14,9 @@ and the expected result. A clear miss reopens the named spec.
   `GregorBiswanger/featherspec-studio` first; vsce rewrites the README's relative links to that repository.
 - [ ] **Gallery banner, categories, keywords** in `package.json` read right to you.
 - [ ] **Host suite** green on Windows at the release commit: `npm test`, and once with
-  `FEATHERSPEC_COPILOT_SMOKE=1` and a signed-in Copilot CLI.
+  `FEATHERSPEC_COPILOT_SMOKE=1` and a signed-in Copilot CLI. Last run 2026-11-17 on Gregor's machine
+  (by the agent, through the bridge): `npm test` 29 + 1 + 1 passing, opt-in 32 passing, the opt-in suite
+  against the unpacked VSIX 32 passing, `npm run test:unit` 2,152 + 11. Repeat only if the head moved.
 
 ## Trying the extension locally
 
