@@ -219,7 +219,7 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
   `already-ended` for a cancel after the end, `failed` when the adapter answers `ok: false` or
   throws; a refused operation passes no event. `controlledAdapter` hands the sink to the test.
 - **Verify:** `npx vitest run src/core/providers/providerService.test.ts`
-- [ ] **Verified (T-003):** —
+- [x] **Verified (T-003):** 2026-11-17. Red: `npx vitest run src/core/providers/providerService.test.ts` 21 tests failed on the `Not implemented` stub of createProviderService. Green after the implementation: 21 tests passed (providers folder 41 in 5 files). Gates: eslint --max-warnings 0, tsc, tsc -p src/webview clean; `npm run test:unit` 101 files, 1391 passed.
 - **Notes:** —
 
 ### T-004 — Fake provider: profiles, scenarios, no I/O
