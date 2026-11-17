@@ -55,11 +55,11 @@ export function createScriptedClient(options: ScriptedClientOptions): ScriptedCl
     let onSend = options.onSend;
     const sessionId = options.sessionId ?? 'scripted-session-1';
 
-    const play = (steps: readonly ScriptStep[], config: CopilotSessionConfig): void => {
+    const play = (steps: readonly ScriptStep[], config: CopilotSessionConfig, immediate = false): void => {
         let elapsed = 0;
         for (const step of steps) {
             elapsed += step.afterMs ?? 0;
-            options.clock.setTimeout(() => {
+            const run = (): void => {
                 if (step.kind === 'event') {
                     config.onEvent(step.event);
                 } else if (step.kind === 'permission') {
@@ -69,7 +69,12 @@ export function createScriptedClient(options: ScriptedClientOptions): ScriptedCl
                 } else {
                     void config.onElicitation(step.request).then((answer) => void log.push({ call: 'answer.elicitation', answer }));
                 }
-            }, elapsed);
+            };
+            if (immediate) {
+                run();
+            } else {
+                options.clock.setTimeout(run, elapsed);
+            }
         }
     };
 
@@ -127,7 +132,7 @@ export function createScriptedClient(options: ScriptedClientOptions): ScriptedCl
                 if (options.createError !== undefined) {
                     return Promise.reject(options.createError);
                 }
-                play(options.onCreate ?? [], config);
+                play(options.onCreate ?? [], config, true);
                 return Promise.resolve(makeSession(sessionId, config));
             },
             resumeSession(id, config) {
@@ -135,7 +140,7 @@ export function createScriptedClient(options: ScriptedClientOptions): ScriptedCl
                 if (options.resumeError !== undefined) {
                     return Promise.reject(options.resumeError);
                 }
-                play(options.onResume ?? [], config);
+                play(options.onResume ?? [], config, true);
                 return Promise.resolve(makeSession(id, config));
             },
             onExit(listener): Disposable {

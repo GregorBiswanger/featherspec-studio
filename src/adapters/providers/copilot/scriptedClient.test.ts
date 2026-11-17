@@ -143,7 +143,6 @@ describe('scripted client (test double of the Copilot SDK client)', () => {
         const scripted = createScriptedClient({ clock, onResume: toSteps(recordedRows('M-05', 's2-resumed')).slice(0, 1) });
         const received: string[] = [];
         const session = await scripted.factory({ cliPath: '/c', workingDirectory: '/w' }).resumeSession('old-session', config(received));
-        clock.advance(0);
         expect(session.sessionId).toBe('old-session');
         expect(received).toEqual([`event:${events(toSteps(recordedRows('M-05', 's2-resumed')))[0]?.type ?? ''}`]);
         expect(scripted.log.find((entry) => entry.call === 'resumeSession')).toMatchObject({ sessionId: 'old-session' });

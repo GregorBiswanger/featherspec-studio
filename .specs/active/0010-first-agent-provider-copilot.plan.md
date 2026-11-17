@@ -191,8 +191,8 @@ No parallel stage: every step from T-003 on builds on T-002's seam, and T-004…
   `nextStartModel()` = setting or none; `listModels()`; `credentialValues()` = `[]`. Tests
   `copilotStart.test.ts` on the recorded M-03 and M-05 parts.
 - **Verify:** `npx vitest run src/adapters/providers/copilot/copilotStart.test.ts`
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-17. Red: `npx vitest run src/adapters/providers/copilot/copilotStart.test.ts` 16 of 19 tests failed on the `Not implemented` stubs (start, resume, listModels, nextStartModel, credentialValues, dispose); the 3 green at once (declaration, disclosure and label, no-fs-import scan) were proven by mutation, each reverted: `experimental` dropped from fileChanges, one word of the disclosure changed, an `fs` import added to copilotProvider.ts: 1 failed each. Green after copilotProvider.ts (start, resume, model, base directory, runtime stop at the end kind, dispose): `npx vitest run src/adapters/providers/copilot` 6 files, 86 passed. Gates: eslint --max-warnings 0, tsc, tsc -p src/webview clean; `npm run test:unit` 159 files, 1983 passed.
+- **Notes:** (1) `createCopilotProvider` takes `isTrusted()` as well (Gregor: working directory trusted only in a trusted workspace; T-007 wires 0001's trust port). (2) Resume waits for `session.resume` up to `STARTED_WAIT_MS` = 2 000 ms on the clock, then delivers `session.started` from the given reference with no model (the recording shows the event before the prompt on resume, after it on start); start delivers `session.started` from the created ID at once. (3) The scripted client delivers `onCreate`/`onResume` steps synchronously inside `createSession`/`resumeSession` (as the SDK does), `onSend`/`onAbort` on the clock. (4) Handlers for permission, input and elicitation are placeholders that never settle until T-006; locator results other than *found* throw `Not implemented` until T-005.
 
 ### T-005 — Availability, pre-session failures, errors, runtime exit
 
