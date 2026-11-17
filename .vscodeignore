@@ -6,7 +6,6 @@ src/**
 .gitignore
 .yarnrc
 esbuild.js
-vsc-extension-quickstart.md
 **/tsconfig.json
 **/eslint.config.mjs
 **/*.map
@@ -23,3 +22,6 @@ AGENTS.md
 CLAUDE.md
 test/**
 vitest.config.mjs
+media/screenshots/**
+package-lock.json
+.gitattributes

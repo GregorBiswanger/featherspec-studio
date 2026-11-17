@@ -2,12 +2,39 @@
   "name": "featherspec-studio",
   "displayName": "FeatherSpec Studio",
   "description": "Visual command center for spec-driven development with FeatherSpec: see every spec, control every agent.",
-  "version": "0.0.1",
+  "version": "0.1.0",
+  "publisher": "GregorBiswanger",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#1E1E1E",
+    "theme": "dark"
+  },
+  "homepage": "https://github.com/GregorBiswanger/featherspec-studio#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GregorBiswanger/featherspec-studio"
+  },
+  "bugs": {
+    "url": "https://github.com/GregorBiswanger/featherspec-studio/issues"
+  },
   "engines": {
     "vscode": "^1.146.0"
   },
   "categories": [
+    "AI",
+    "Visualization",
     "Other"
+  ],
+  "keywords": [
+    "featherspec",
+    "spec-driven development",
+    "sdd",
+    "specs",
+    "kanban",
+    "agents",
+    "github copilot",
+    "ai agents"
   ],
   "extensionKind": [
     "workspace"
