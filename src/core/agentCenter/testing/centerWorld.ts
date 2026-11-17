@@ -6,6 +6,10 @@ import type { AgentCenterStore } from '../../ports/agentCenter';
 import type { RunView, StoredEvent, StatusReport } from '../../runtime/model';
 import type { RuntimeStore } from '../../runtime/runtimeStore';
 import { createWorld, SPEC, type World, type WorldOptions } from '../../orchestrator/testing/world';
+import type { ApprovalAnswer } from '../../ports/agentProvider';
+import type { AgentCenterOrchestrator } from '../../ports/agentCenter';
+import type { EntryKind } from '../../ports/readOnlyFileSystem';
+import type { AnswerResult, Resumability, ResumeResult, StopResult } from '../../orchestrator/orchestrator';
 import { createAgentCenterService, type AgentCenterService } from '../agentCenterService';
 import { withEventSignal } from '../eventSignal';
 
@@ -23,6 +27,42 @@ export function recordReads(store: RuntimeStore, reads: Read[]): RuntimeStore {
             return store.readEvents(runId, fromSeq, size);
         },
     };
+}
+
+export interface RecordingOrchestrator extends AgentCenterOrchestrator {
+    calls: { op: string; args: unknown[] }[];
+    answers: { approval: AnswerResult; input: AnswerResult; stop: StopResult; resumability: Resumability; resume: ResumeResult };
+    gate: { approval: Promise<void> | undefined };
+}
+
+export function createRecordingOrchestrator(): RecordingOrchestrator {
+    const recorder: RecordingOrchestrator = {
+        calls: [],
+        answers: { approval: { kind: 'ok' }, input: { kind: 'ok' }, stop: { kind: 'stopping' }, resumability: { resumable: false, reason: 'not resumable' }, resume: { kind: 'declined' } },
+        gate: { approval: undefined },
+        async stop(runId) {
+            recorder.calls.push({ op: 'stop', args: [runId] });
+            return recorder.answers.stop;
+        },
+        async resumability(runId) {
+            recorder.calls.push({ op: 'resumability', args: [runId] });
+            return recorder.answers.resumability;
+        },
+        async resume(runId) {
+            recorder.calls.push({ op: 'resume', args: [runId] });
+            return recorder.answers.resume;
+        },
+        async respondToApproval(runId, requestId, answer: ApprovalAnswer) {
+            recorder.calls.push({ op: 'approval', args: [runId, requestId, answer] });
+            await recorder.gate.approval;
+            return recorder.answers.approval;
+        },
+        async respondToInput(runId, requestId, text) {
+            recorder.calls.push({ op: 'input', args: [runId, requestId, text] });
+            return recorder.answers.input;
+        },
+    };
+    return recorder;
 }
 
 export interface FakeMemory extends UiMemoryPort {
@@ -60,6 +100,12 @@ export function createFakeNavigation(): FakeNavigation {
 
 export interface CenterWorld {
     world: World;
+    recorder: RecordingOrchestrator;
+    confirmations: { text: string; button: string }[];
+    confirmAnswer: { current: boolean };
+    files: Map<string, EntryKind>;
+    opened: { root: string; key: string }[];
+    useRealOrchestrator: { current: boolean };
     reads: Read[];
     memory: FakeMemory;
     navigation: FakeNavigation;
@@ -88,6 +134,12 @@ export async function createCenterWorld(options: WorldOptions = {}): Promise<Cen
     const trust = { trusted: true };
     const root: CenterWorld['root'] = { current: 'memory://project' };
     const views: AgentCenterView[] = [];
+    const recorder = createRecordingOrchestrator();
+    const confirmations: CenterWorld['confirmations'] = [];
+    const confirmAnswer = { current: true };
+    const files = new Map<string, EntryKind>();
+    const opened: CenterWorld['opened'] = [];
+    const useRealOrchestrator = { current: false };
     function makeService(useMemory: FakeMemory = memory, subscribe = true): AgentCenterService {
         const created = createAgentCenterService({
             session: {
@@ -101,6 +153,28 @@ export async function createCenterWorld(options: WorldOptions = {}): Promise<Cen
             discovery: { snapshot: () => ({ result: undefined, active: root.current === undefined ? undefined : ({ root: root.current } as never), remembered: undefined, failure: undefined }) },
             navigation: navigation.port,
             trust: { isTrusted: () => trust.trusted },
+            orchestrator: {
+                stop: (runId) => (useRealOrchestrator.current ? world.orchestrator.stop(runId) : recorder.stop(runId)),
+                resumability: (runId) => (useRealOrchestrator.current ? world.orchestrator.resumability(runId) : recorder.resumability(runId)),
+                resume: (runId) => (useRealOrchestrator.current ? world.orchestrator.resume(runId) : recorder.resume(runId)),
+                respondToApproval: (runId, requestId, answer) =>
+                    useRealOrchestrator.current ? world.orchestrator.respondToApproval(runId, requestId, answer) : recorder.respondToApproval(runId, requestId, answer),
+                respondToInput: (runId, requestId, text) =>
+                    useRealOrchestrator.current ? world.orchestrator.respondToInput(runId, requestId, text) : recorder.respondToInput(runId, requestId, text),
+            },
+            ui: {
+                async confirm(text, button) {
+                    confirmations.push({ text, button });
+                    return confirmAnswer.current;
+                },
+            },
+            files: { stat: async (_root, key) => files.get(key) },
+            editor: {
+                async open(root, key) {
+                    opened.push({ root, key });
+                    return 'opened';
+                },
+            },
         });
         if (subscribe) {
             created.onDidChangeView((view) => view !== undefined && views.push(view));
@@ -111,6 +185,12 @@ export async function createCenterWorld(options: WorldOptions = {}): Promise<Cen
     const service = makeService();
     const center: CenterWorld = {
         world,
+        recorder,
+        confirmations,
+        confirmAnswer,
+        files,
+        opened,
+        useRealOrchestrator,
         reads,
         memory,
         navigation,

@@ -8,16 +8,21 @@ import type {
 } from '../../shared/protocol/agentCenter';
 import type { NavigationRequest, NavigationTarget } from '../../shared/protocol/messages';
 import type { DiscoveryController } from '../discovery/discoveryController';
-import type { AgentCenterStore } from '../ports/agentCenter';
+import type { AgentCenterOrchestrator, AgentCenterStore, AgentCenterUiPort } from '../ports/agentCenter';
+import type { EditorPort } from '../ports/board';
+import type { ReadOnlyFileSystem } from '../ports/readOnlyFileSystem';
 import type { Disposable } from '../ports/host';
 import type { ShellModelSource, TrustPort, UiMemoryPort } from '../ports/shell';
 import type { ProviderRegistry } from '../providers/registry';
-import type { RunView, StoreState, StoredEvent } from '../runtime/model';
+import { isEndStatus, type RunView, type StoreState, type StoredEvent } from '../runtime/model';
 import { READER_REASON } from '../runtime/notices';
+import { createActions, type ActionContext } from './agentCenterActions';
+import { projectRelativeKey } from './filePath';
 import { AGENT_CENTER_PAGE_SIZE, MAX_LOADED_PAGES, SUMMARY_READ_SIZE } from './constants';
 import { runHeader } from './header';
 import { projectRunRows, providerName, specRefOf } from './runList';
 import { applyTarget, filterLabel, parseMemory, reconcileSelection, serializeMemory, visibleRuns, type Selection } from './selection';
+import { acCancelNotSupported } from '../../shared/protocol/agentCenterTexts';
 import { capabilityNotes, currentActivity, emptySummary, errorDetails, openRequests, resultView, summarize, type RunSummary } from './summary';
 import { timelineRows } from './timeline';
 
@@ -35,6 +40,10 @@ export interface AgentCenterServiceDeps {
     discovery: Pick<DiscoveryController, 'snapshot'>;
     navigation: { onDidNavigate(listener: (request: NavigationRequest) => void): Disposable };
     trust: Pick<TrustPort, 'isTrusted'>;
+    orchestrator: AgentCenterOrchestrator;
+    ui: Pick<AgentCenterUiPort, 'confirm'>;
+    files: Pick<ReadOnlyFileSystem, 'stat'>;
+    editor: EditorPort;
 }
 
 export interface AgentCenterService {
@@ -47,6 +56,11 @@ export interface AgentCenterService {
     loadEarlier(runId: string): void;
     follow(runId: string, on: boolean): void;
     reread(): void;
+    answerApproval(runId: string, requestId: string, decision: 'approve-once' | 'reject', reason?: string): Promise<void>;
+    answerInput(runId: string, requestId: string, text: string): Promise<void>;
+    cancel(runId: string): Promise<void>;
+    resume(runId: string): Promise<void>;
+    openFile(runId: string, path: string): Promise<void>;
     whenIdle(): Promise<void>;
     dispose(): void;
 }
@@ -84,6 +98,7 @@ export function createAgentCenterService(deps: AgentCenterServiceDeps): AgentCen
     let lastView = 'undefined';
     let lastTimeline = 'undefined';
     let lastPersisted = '';
+    let lastRuns: RunView[] = [];
     let running = false;
     let again = false;
     let idle: Promise<void> = Promise.resolve();
@@ -95,6 +110,30 @@ export function createAgentCenterService(deps: AgentCenterServiceDeps): AgentCen
             schedule();
         }
     });
+
+    const actions = createActions({
+        orchestrator: deps.orchestrator,
+        ui: deps.ui,
+        context: contextOf,
+        changed: schedule,
+        selectRun: (runId) => api.select(runId),
+    });
+
+    function contextOf(runId: string): ActionContext | undefined {
+        const run = lastRuns.find((candidate) => candidate.runId === runId);
+        if (run === undefined || win === undefined || win.runId !== runId) {
+            return undefined;
+        }
+        const spec = specRefOf(run, deps.source.current());
+        const provider = deps.providers.entry(run.providerId);
+        return {
+            controls: controlsOf(deps.session.state()),
+            run,
+            specNumber: spec.found ? spec.number : spec.stem,
+            requestIds: openRequests(run, win.summary).map((request) => request.requestId),
+            cancelOffered: provider.kind === 'ok' && provider.entry.capabilities.cancel.value !== 'none',
+        };
+    }
 
     function active(): boolean {
         return !disposed && (viewListeners.size > 0 || timelineListeners.size > 0);
@@ -250,6 +289,26 @@ export function createAgentCenterService(deps: AgentCenterServiceDeps): AgentCen
         current.hasEarlier = (current.events[0]?.seq ?? 1) > 1;
     }
 
+    async function resumableOf(runId: string): Promise<boolean> {
+        try {
+            return (await deps.orchestrator.resumability(runId)).resumable;
+        } catch {
+            return false;
+        }
+    }
+
+    async function existsInProject(root: string, path: string): Promise<boolean> {
+        const key = projectRelativeKey(path);
+        if (key === undefined) {
+            return false;
+        }
+        try {
+            return (await deps.files.stat(root, key)) === 'file';
+        } catch {
+            return false;
+        }
+    }
+
     function controlsOf(state: StoreState): ControlsView {
         if (!deps.trust.isTrusted()) {
             return { kind: 'none' };
@@ -257,30 +316,47 @@ export function createAgentCenterService(deps: AgentCenterServiceDeps): AgentCen
         return state.kind === 'read-only' ? { kind: 'disabled', reason: state.reason ?? READER_REASON } : { kind: 'enabled' };
     }
 
-    function detailOf(run: RunView, current: Window, model: ReturnType<ShellModelSource['current']>): DetailView {
+    async function detailOf(run: RunView, current: Window, model: ReturnType<ShellModelSource['current']>, controls: ControlsView): Promise<DetailView> {
         const spec = specRefOf(run, model);
         const provider = deps.providers.entry(run.providerId);
-        const requests: RequestView[] = openRequests(run, current.summary).map((request) => ({
+        const open = openRequests(run, current.summary);
+        actions.prune(run.runId, open.map((request) => request.requestId));
+        const requests: RequestView[] = open.map((request) => ({
             kind: request.kind,
             requestId: request.requestId,
             actionKind: request.actionKind,
             summary: request.summary,
             question: request.question,
             outsideProject: request.outsideProject,
-            pending: false,
-            refusal: undefined,
+            ...actions.requestState(run.runId, request.requestId),
         }));
-        const actions: ActionsView = { cancel: 'none', cancelNote: undefined, resume: false, openSpec: spec.found, refusal: undefined };
+        const trusted = controls.kind !== 'none';
+        const declared = provider.kind === 'ok' ? provider.entry.capabilities.cancel.value : undefined;
+        const opened = !isEndStatus(run.status);
+        const offerCancel = trusted && opened && declared !== undefined && declared !== 'none';
+        const unsupported = trusted && opened && declared === 'none';
+        const resumable = trusted && !opened ? await resumableOf(run.runId) : false;
+        const root = model?.project.root;
+        const files = await Promise.all(
+            current.summary.files.map(async (file) => ({ ...file, canOpen: root !== undefined && !file.outsideProject && (await existsInProject(root, file.path)) })),
+        );
+        const view: ActionsView = {
+            cancel: offerCancel ? 'offer' : unsupported ? 'unsupported' : 'none',
+            cancelNote: unsupported && provider.kind === 'ok' ? acCancelNotSupported(provider.entry.displayName) : undefined,
+            resume: resumable,
+            openSpec: spec.found,
+            refusal: actions.runRefusal(run.runId),
+        };
         return {
             header: runHeader(run, spec, providerName(deps.providers, run.providerId)),
             unreadable: run.historyUnreadable || current.unreadable,
             activity: currentActivity(run, current.summary),
             error: errorDetails(run, current.summary),
             result: resultView(run),
-            files: current.summary.files.map((file) => ({ ...file, canOpen: false })),
+            files,
             notes: capabilityNotes(provider.kind === 'ok' ? provider.entry : undefined),
             requests,
-            actions,
+            actions: view,
         };
     }
 
@@ -355,17 +431,19 @@ export function createAgentCenterService(deps: AgentCenterServiceDeps): AgentCen
         if (!active()) {
             return;
         }
+        lastRuns = runs;
         const model = deps.source.current();
+        const controls = controlsOf(state);
         const rows = projectRunRows(visibleRuns(runs, selection.stem), { model, providers: deps.providers, selectedRunId: selection.runId });
         const current = shown !== undefined && win !== undefined && win.runId === shown.runId ? win : undefined;
         setView({
             kind: 'ready',
-            controls: controlsOf(state),
+            controls,
             filter: selection.stem === undefined ? undefined : { stem: selection.stem, label: filterLabel(selection.stem, model) },
             notice,
             empty: runs.length === 0 ? 'no-runs' : rows.length === 0 ? 'no-match' : undefined,
             rows,
-            detail: shown !== undefined && current !== undefined ? detailOf(shown, current, model) : undefined,
+            detail: shown !== undefined && current !== undefined ? await detailOf(shown, current, model, controls) : undefined,
         });
         setTimeline(current === undefined ? undefined : { runId: current.runId, rows: timelineRows(current.events), hasEarlier: current.hasEarlier });
     }
@@ -429,7 +507,7 @@ export function createAgentCenterService(deps: AgentCenterServiceDeps): AgentCen
         }
     }
 
-    return {
+    const api: AgentCenterService = {
         view: () => currentView,
         timeline: () => currentTimeline,
         onDidChangeView(listener) {
@@ -484,6 +562,20 @@ export function createAgentCenterService(deps: AgentCenterServiceDeps): AgentCen
             rereadAll = true;
             schedule();
         },
+        answerApproval: (runId, requestId, decision, reason) => actions.approval(runId, requestId, decision, reason),
+        answerInput: (runId, requestId, text) => actions.input(runId, requestId, text),
+        cancel: (runId) => actions.cancel(runId),
+        resume: (runId) => actions.resume(runId),
+        async openFile(runId, path) {
+            const run = lastRuns.find((candidate) => candidate.runId === runId);
+            const root = deps.source.current()?.project.root;
+            const key = projectRelativeKey(path);
+            const attributed = win?.runId === runId && win.summary.files.some((file) => file.path === path && !file.outsideProject);
+            if (run === undefined || root === undefined || key === undefined || !attributed || !(await existsInProject(root, path))) {
+                return;
+            }
+            await deps.editor.open(root, key);
+        },
         async whenIdle() {
             while (running) {
                 await idle;
@@ -497,4 +589,5 @@ export function createAgentCenterService(deps: AgentCenterServiceDeps): AgentCen
             release();
         },
     };
+    return api;
 }

@@ -221,8 +221,8 @@ No parallel stage: stages 1–2 are one module (`src/core/agentCenter`), and eve
   the real 0011 orchestrator with the fake provider's `approval` scenario. Seven criteria: kept
   together because one control-state model serves them all.
 - **Verify:** `npx vitest run src/core/agentCenter` then the per-step gates
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-17 — red: `npx vitest run src/core/agentCenter` with the service actions, `createActions`, `createRequestNotifier` and `projectRelativeKey` as `Not implemented` stubs: 24 failed (19 `Error: Not implemented`, 5 assertion failures for the defaults: cancel `none` instead of offer/unsupported, Open file `canOpen` false), 77 passed (earlier steps). Green: `npx vitest run src/core/agentCenter` 11 files, 101 tests passed (one test first over-asserted that no orchestrator call happens at all, though the resumability probe of an ended run is expected; narrowed). Includes the scenario through the real 0011 orchestrator with the fake provider's approval scenario. Gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 149 files, 1833 tests passed.
+- **Notes:** Open file offers relative paths only (backslashes become slashes; absolute, drive and parent paths are not openable); the control state lives in `agentCenterActions.ts` behind the service (`answerApproval`, `answerInput`, `cancel`, `resume`, `openFile`); resumability is asked only for ended runs; in Restricted Mode no cancel note is shown. The notifier takes `shownAndFocused(runId)` and `open(runId)` as callbacks for T-008.
 
 ### T-006 — Area UI: list, detail, states, controls
 

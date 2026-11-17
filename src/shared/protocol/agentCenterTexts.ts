@@ -221,3 +221,5 @@ export const AC_NOT_DONE = 'The spec is not done until FeatherSpec verifies it.'
 export const AC_ACTION_CANCEL = 'Cancel run';
 export const AC_ACTION_RESUME = 'Resume';
 export const AC_ACTION_OPEN_SPEC = 'Open spec';
+
+export const AC_REQUEST_FAILED = 'The request failed.';
