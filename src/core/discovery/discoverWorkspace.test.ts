@@ -2,7 +2,6 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { describe, expect, it } from 'vitest';
 import { createNodeFileSystem } from '../../adapters/node/nodeFileSystem';
-import { BUDGET_MS, bestOfThree } from '../../shared/testing/timing';
 import { discoverWorkspace } from './discoverWorkspace';
 import { createMemoryFileSystem } from './testing/memoryFileSystem';
 import { fixturePath } from './testing/fixtures';
@@ -128,22 +127,6 @@ describe('discoverWorkspace', () => {
             readError: 'EIO: i/o error',
             diagnostics: ['Cannot read .claude/commands: EIO: i/o error'],
         });
-    });
-
-    it('AC-018: one run over five fixture folders finishes within 2 seconds', async () => {
-        const names = [
-            'fs110-de-active-review',
-            'fs-legacy-unstamped',
-            'incomplete-specs-only',
-            'not-fs-speckit',
-            'nested-project',
-        ];
-        let result = await discoverWorkspace(nodeFileSystem, names.map(folder), caseSensitive);
-        const best = await bestOfThree(async () => {
-            result = await discoverWorkspace(nodeFileSystem, names.map(folder), caseSensitive);
-        });
-        expect(result.folders).toHaveLength(5);
-        expect(best).toBeLessThan(BUDGET_MS.discovery);
     });
 
     it('AC-011: the fixture tree is unchanged after discovery', async () => {

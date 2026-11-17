@@ -6,7 +6,6 @@ import { App } from '../App';
 import { Placeholder } from './Placeholder';
 import { createClient, type ShellClient } from '../client';
 import mainCss from '../main.css?raw';
-import { BUDGET_MS, bestOfThree } from '../../shared/testing/timing';
 import { rulesMatching } from '../testing/css';
 import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
 
@@ -116,16 +115,6 @@ describe('AC-007: the Spec Explorer list', () => {
         expect(container.querySelector('[role="listbox"]')).toBeNull();
     });
 
-    it('a new shell event with changed rows is in the DOM within 500 ms of the message event (PD-047)', async () => {
-        const container = await open(baseView({ area: 'specExplorer', rows: [row('0001')] }));
-        let version = 1;
-        const best = await bestOfThree(
-            () => send(shellEvent(baseView({ area: 'specExplorer', rows: [row('0001'), row('0002', { title: 'Brand new' })] }), (version += 1))),
-            () => send(shellEvent(baseView({ area: 'specExplorer', rows: [row('0001')] }), (version += 1))),
-        );
-        expect(container.textContent).toContain('Brand new');
-        expect(best).toBeLessThan(BUDGET_MS.uiFreshness);
-    });
 });
 
 describe('AC-008: selection in the panel UI', () => {

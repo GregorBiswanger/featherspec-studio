@@ -193,7 +193,7 @@
     "check-types": "tsc --noEmit && tsc --noEmit -p src/webview",
     "lint": "eslint src",
     "test": "vscode-test",
-    "test:unit": "vitest run"
+    "test:unit": "vitest run --project node --project webview && vitest run --project timing-node --project timing-webview --no-file-parallelism --maxWorkers=1"
   },
   "devDependencies": {
     "@github/copilot-sdk": "1.0.34",

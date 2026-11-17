@@ -1,8 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../../shared/protocol/envelope';
 import type { MissionControlView } from '../../../shared/protocol/missionControl';
-import { bigView, sampleView } from '../../../shared/protocol/testing/missionControlSample';
-import { BUDGET_MS, bestOfThree } from '../../../shared/testing/timing';
+import { sampleView } from '../../../shared/protocol/testing/missionControlSample';
 import { App } from '../../App';
 import { createClient, type ShellClient } from '../../client';
 import { baseView, click, isKeyboardReachable, missionControlEvent, mount, send, shellEvent, type Mounted } from '../../testing/dom';
@@ -154,31 +153,6 @@ describe('AC-020, AC-028: zero specs', () => {
 
     it('control: with specs the message is not shown', async () => {
         expect(area(await open(sampleView())).textContent).not.toContain('No specs yet');
-    });
-});
-
-describe('AC-016, AC-024: timing', () => {
-    it('AC-016: a new event is in the DOM within 500 ms of the message event', async () => {
-        const container = await open(sampleView());
-        const next = sampleView();
-        next.header.name = 'renamed';
-        const best = await bestOfThree(
-            () => send(missionControlEvent(next)),
-            () => send(missionControlEvent(sampleView())),
-        );
-        expect(area(container).textContent).toContain('renamed');
-        expect(best).toBeLessThan(BUDGET_MS.uiFreshness);
-    });
-
-    it('AC-024: the view of a 200-spec project renders within 1000 ms of the message event', async () => {
-        const container = await open();
-        const big = bigView(200, 5);
-        const best = await bestOfThree(
-            () => send(missionControlEvent(big)),
-            () => send(missionControlEvent(sampleView())),
-        );
-        expect(area(container).textContent).toContain('Total 200');
-        expect(best).toBeLessThan(BUDGET_MS.frame);
     });
 });
 

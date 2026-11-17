@@ -7,7 +7,7 @@
 - Bundling: esbuild (`esbuild.js`), two targets: `src/extension.ts` → `dist/extension.js` (node, cjs) and `src/webview/main.tsx` → `dist/webview/main.js` + `main.css` (browser, iife, JSX automatic).
 - Webview: React 19.3.1 and react-dom 19.3.1 (devDependencies, bundled), jsdom 31.0.1 for tests; two tsconfigs (`tsconfig.json` excludes `src/webview`; `src/webview/tsconfig.json` has DOM lib and `jsx: react-jsx`).
 - Lint: ESLint 10 + typescript-eslint (`eslint.config.mjs`; rules at `warn` level).
-- Unit tests: Vitest 5.1 + vite 8.3 (`vitest.config.mjs`, co-located), two projects: `node` (`src/**/*.test.ts` outside `src/webview`) and `webview` (jsdom, `src/webview/**/*.test.{ts,tsx}`, setup `src/webview/testing/setup.ts`).
+- Unit tests: Vitest 5.1 + vite 8.3 (`vitest.config.mjs`, co-located), projects `node` (`src/**/*.test.ts` outside `src/webview`) and `webview` (jsdom, `src/webview/**/*.test.{ts,tsx}`, setup `src/webview/testing/setup.ts`), plus `timing-node` and `timing-webview` for `*.timing.test.{ts,tsx}`: every test that measures wall-clock time against a budget (`src/shared/testing/timing.ts`) lives in such a file, and `npm run test:unit` runs them after the rest in one worker, one file at a time, so a loaded machine does not fail them (budgets unchanged). A plain `npx vitest run` runs all four projects in parallel; the gate is `npm run test:unit`.
 - Host tests: Mocha via `@vscode/test-cli` / `@vscode/test-electron` (`.vscode-test.mjs` copies
   `test/fixtures/` into a temp multi-root workspace; runs `out/test/*.test.js` inside a downloaded VS Code;
   two more configurations open single-folder copies for the activation checks in `out/test/activation/`, spec 0001 AC-019).
