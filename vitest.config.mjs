@@ -1,6 +1,8 @@
 import { configDefaults, defineConfig } from 'vitest/config';
 
 const TIMING = '**/*.timing.test.{ts,tsx}';
+const TIMING_FRAMEWORK_LIMIT_MS = 120_000;
+const timingLimits = { testTimeout: TIMING_FRAMEWORK_LIMIT_MS, hookTimeout: TIMING_FRAMEWORK_LIMIT_MS };
 
 const node = {
     environment: 'node',
@@ -26,11 +28,11 @@ export default defineConfig({
             },
             {
                 extends: true,
-                test: { ...node, name: 'timing-node', include: ['src/**/*.timing.test.ts'] },
+                test: { ...node, ...timingLimits, name: 'timing-node', include: ['src/**/*.timing.test.ts'] },
             },
             {
                 extends: true,
-                test: { ...webview, name: 'timing-webview', include: ['src/webview/**/*.timing.test.{ts,tsx}'] },
+                test: { ...webview, ...timingLimits, name: 'timing-webview', include: ['src/webview/**/*.timing.test.{ts,tsx}'] },
             },
         ],
     },

@@ -1,27 +1,19 @@
 import { promises as fs } from 'node:fs';
-import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createFileRuntimeMedium } from '../../adapters/node/fileRuntimeMedium';
 import { createNodeSpecSource } from '../../adapters/node/nodeSpecSource';
 import { fixturePath } from '../discovery/testing/fixtures';
 import { snapshotTree } from '../discovery/testing/snapshotTree';
+import { createTempDirectories } from '../runtime/testing/tempDirectories';
 import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
 import { readProject } from '../specs/readProject';
 import { createCenterWorld } from './testing/centerWorld';
 
-const temps: string[] = [];
-afterEach(async () => {
-    for (const directory of temps.splice(0)) {
-        await fs.rm(directory, { recursive: true, force: true });
-    }
-});
+const temps = createTempDirectories();
+afterEach(() => temps.removeAll());
 
-async function temp(prefix: string): Promise<string> {
-    const directory = await fs.mkdtemp(path.join(os.tmpdir(), prefix));
-    temps.push(directory);
-    return directory;
-}
+const temp = (prefix: string): Promise<string> => temps.make(prefix);
 
 const STEM = '0001-ready-feature';
 
@@ -31,6 +23,11 @@ async function scenarios(): Promise<{ copy: string }> {
     await fs.cp(fixturePath('fs110-ready-synthetic'), copy, { recursive: true });
     const project = await readProject(createNodeSpecSource(), copy, '1.10.0');
     const world = await createCenterWorld({ medium: () => createFileRuntimeMedium(history) });
+    temps.closeBeforeRemoval(async () => {
+        await world.flush();
+        await world.world.orchestrator.whenIdle();
+        await world.world.store.dispose();
+    });
     world.world.model.current = { project, lifecycle: deriveLifecycle(project) };
     const before = await snapshotTree(copy);
     const request = world.world.request({ stem: STEM, path: `.specs/backlog/${STEM}.md` });

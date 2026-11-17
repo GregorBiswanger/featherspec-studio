@@ -1,27 +1,19 @@
 import { promises as fs } from 'node:fs';
-import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createFileRuntimeMedium } from '../../adapters/node/fileRuntimeMedium';
 import { fixturePath } from '../discovery/testing/fixtures';
 import { snapshotTree } from '../discovery/testing/snapshotTree';
+import { createTempDirectories } from '../runtime/testing/tempDirectories';
 import { bindOrchestrator } from './orchestratorBinding';
 import { createStartFlow } from './startFlow';
 import { createFakeStartOrchestrator, createFakeStartUi } from './testing/fakeOrchestrator';
 import { START_FIXTURE, START_STEM, createStartWorld } from './testing/startWorld';
 
-const temps: string[] = [];
-afterEach(async () => {
-    for (const directory of temps.splice(0)) {
-        await fs.rm(directory, { recursive: true, force: true });
-    }
-});
+const temps = createTempDirectories();
+afterEach(() => temps.removeAll());
 
-async function temp(prefix: string): Promise<string> {
-    const directory = await fs.mkdtemp(path.join(os.tmpdir(), prefix));
-    temps.push(directory);
-    return directory;
-}
+const temp = (prefix: string): Promise<string> => temps.make(prefix);
 
 describe('AC-012: the start workflow changes no file in the project', () => {
     it('every scenario of the criteria section leaves the project tree identical while the run history does change', async () => {
@@ -29,6 +21,10 @@ describe('AC-012: the start workflow changes no file in the project', () => {
         const history = await temp('agent-start-history-');
         await fs.cp(fixturePath(START_FIXTURE), copy, { recursive: true });
         const world = await createStartWorld({ root: copy, medium: () => createFileRuntimeMedium(history) });
+        temps.closeBeforeRemoval(async () => {
+            await world.orchestrator.whenIdle();
+            await world.store.dispose();
+        });
         const flow = createStartFlow({
             preconditions: world.deps,
             orchestrator: bindOrchestrator(world.orchestrator, (root) => root),
