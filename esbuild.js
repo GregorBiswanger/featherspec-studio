@@ -23,25 +23,27 @@ const esbuildProblemMatcherPlugin = {
 	},
 };
 
+const hostBuildOptions = {
+	entryPoints: [
+		'src/extension.ts'
+	],
+	bundle: true,
+	format: 'cjs',
+	minify: production,
+	sourcemap: !production,
+	sourcesContent: false,
+	platform: 'node',
+	outfile: 'dist/extension.js',
+	external: ['vscode', 'koffi'],
+	logLevel: 'silent',
+	plugins: [
+		/* add to the end of plugins array */
+		esbuildProblemMatcherPlugin,
+	],
+};
+
 async function main() {
-	const hostContext = await esbuild.context({
-		entryPoints: [
-			'src/extension.ts'
-		],
-		bundle: true,
-		format: 'cjs',
-		minify: production,
-		sourcemap: !production,
-		sourcesContent: false,
-		platform: 'node',
-		outfile: 'dist/extension.js',
-		external: ['vscode'],
-		logLevel: 'silent',
-		plugins: [
-			/* add to the end of plugins array */
-			esbuildProblemMatcherPlugin,
-		],
-	});
+	const hostContext = await esbuild.context(hostBuildOptions);
 	const webviewContext = await esbuild.context({
 		entryPoints: [
 			'src/webview/main.tsx'
@@ -69,7 +71,11 @@ async function main() {
 	}
 }
 
-main().catch(e => {
-	console.error(e);
-	process.exit(1);
-});
+if (require.main === module) {
+	main().catch(e => {
+		console.error(e);
+		process.exit(1);
+	});
+}
+
+module.exports = { hostBuildOptions };
