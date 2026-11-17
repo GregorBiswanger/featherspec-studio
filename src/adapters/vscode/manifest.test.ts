@@ -105,6 +105,15 @@ describe('extension manifest', () => {
         expect([false, 'happy-path', 90].some((value) => (PROVIDER_IDS as readonly unknown[]).includes(value))).toBe(false);
     });
 
+    it('AC-022 (0011): contributes "Stop Run" and "Resume Run" to the palette with their titles', () => {
+        const commands = Object.fromEntries((manifest.contributes?.commands ?? []).map((command) => [command.command, command.title]));
+        expect(commands['featherspec-studio.stopRun']).toBe('FeatherSpec Studio: Stop Run');
+        expect(commands['featherspec-studio.resumeRun']).toBe('FeatherSpec Studio: Resume Run');
+        const hidden = (manifest.contributes?.menus?.commandPalette ?? []).map((entry) => entry.command);
+        expect(hidden).not.toContain('featherspec-studio.stopRun');
+        expect(hidden).not.toContain('featherspec-studio.resumeRun');
+    });
+
     it('AC-001, AC-005 (0005): contributes the Open command and one command per area with their titles', () => {
         const commands = Object.fromEntries((manifest.contributes?.commands ?? []).map((command) => [command.command, command.title]));
         expect(commands).toMatchObject({

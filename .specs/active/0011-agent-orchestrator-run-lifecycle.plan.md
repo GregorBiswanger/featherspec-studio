@@ -236,8 +236,8 @@ test world, one module.
   for and the last status): both commands registered; with the fake enabled a start on the fixture
   project reaches `Completed` in the store.
 - **Verify:** `npx vitest run src/core/orchestrator src/adapters/vscode/manifest.test.ts` then the per-step gates and `npm run compile`
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** 2026-11-17 — red: `npx vitest run src/core/orchestrator/runCommands.test.ts` against a stub rejecting `Not implemented`: 8 failed; `npx vitest run src/adapters/vscode/manifest.test.ts`: 1 failed (`expected undefined to be 'FeatherSpec Studio: Stop Run'`) before the two commands entered `package.json`; green: both files pass (8 and 17 tests); gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 1612 passed, `npm run compile` built. Host smoke `src/test/orchestrator.smoke.test.ts` written, compiled and linted; it runs on CI only (`npm test` cannot run here).
+- **Notes:** The smoke polls the store with a plain loop (`waitFor` observes synchronously) and names the last status in its failure. The wiring uses `controller.snapshot().active?.root` as the working directory for a resume. `deactivate` disposes the orchestrator before the session.
 
 ### T-008 — Docs sync and final gates
 

@@ -19,6 +19,9 @@ import { createRuntimeUi } from './adapters/vscode/runtimeUi';
 import { createMaxAgeDaysSetting } from './adapters/vscode/runtimeSettings';
 import { createFakeProviderEnabledSetting, createFakeProviderScenarioSetting } from './adapters/vscode/providerSettings';
 import { createFakeProvider } from './adapters/providers/fake/fakeProvider';
+import { createOrchestrator, type Orchestrator } from './core/orchestrator/orchestrator';
+import { createRunCommands } from './core/orchestrator/runCommands';
+import { createOrchestratorUi } from './adapters/vscode/orchestratorUi';
 import { createProviderSetup } from './core/providers/providerSetup';
 import type { ProviderRegistry } from './core/providers/registry';
 import type { ProviderService } from './core/providers/providerService';
@@ -90,12 +93,14 @@ export interface StudioApi {
     runtimeStore(): RuntimeStore | undefined;
     lifecycle(): LifecycleService;
     providers(): { registry: ProviderRegistry; service: ProviderService };
+    orchestrator(): Orchestrator;
     shell(): ShellTestApi;
     board(): BoardTestApi;
     missionControl(): MissionControlTestApi;
 }
 
 let runtimeSession: RuntimeSession | undefined;
+let runOrchestrator: Orchestrator | undefined;
 
 export async function activate(context: vscode.ExtensionContext): Promise<StudioApi> {
     const statusBar = createStatusBar();
@@ -155,6 +160,17 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     const sameRoot = sameRootFor(process.platform);
     let studio: StudioPanel | undefined;
     const modelSource = createModelSource(repository);
+    const orchestrator = createOrchestrator({
+        session,
+        registry: providers.registry,
+        providers: providers.service,
+        specs: modelSource,
+        ui: createOrchestratorUi(),
+        clock,
+        workingDirectory: () => controller.snapshot().active?.root,
+    });
+    runOrchestrator = orchestrator;
+    const runCommands = createRunCommands({ orchestrator, session, ui: createOrchestratorUi() });
     const service = createShellService({
         discovery: controller,
         repository,
@@ -246,6 +262,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         vscode.commands.registerCommand('featherspec-studio.selectProject', () => controller.selectProject()),
         vscode.commands.registerCommand('featherspec-studio.refreshDiscovery', () => controller.refresh()),
         vscode.commands.registerCommand('featherspec-studio.clearRunHistory', () => session.clearRunHistory()),
+        vscode.commands.registerCommand('featherspec-studio.stopRun', () => runCommands.stopRun()),
+        vscode.commands.registerCommand('featherspec-studio.resumeRun', () => runCommands.resumeRun()),
     );
 
     await session.start();
@@ -266,6 +284,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         runtimeStore: () => session.current(),
         lifecycle: () => lifecycle,
         providers: () => ({ registry: providers.registry, service: providers.service }),
+        orchestrator: () => orchestrator,
         board: () => ({
             view: () => board.view(),
             detail: () => board.detail(),
@@ -303,6 +322,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
 }
 
 export async function deactivate(): Promise<void> {
+    runOrchestrator?.dispose();
+    runOrchestrator = undefined;
     const closing = runtimeSession;
     runtimeSession = undefined;
     await closing?.dispose();
