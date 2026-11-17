@@ -55,6 +55,22 @@ async function optedInCopilot(context: Mocha.Context): Promise<AgentProviderPort
 
 const kindsOf = (events: DeliveredEvent[]): string => events.map((event) => event.kind).join(', ');
 
+/** Ends every session and removes the scratch folder without ever replacing the error of the test body: on Windows the folder stays locked while a session is alive. */
+function cleanUp(copilot: AgentProviderPort, runIds: readonly string[], folder: string): void {
+    for (const runId of runIds) {
+        try {
+            copilot.endSession(runId);
+        } catch (error) {
+            console.log(`cleanup: endSession(${runId}) failed: ${String(error)}`);
+        }
+    }
+    try {
+        fs.rmSync(folder, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 });
+    } catch (error) {
+        console.log(`cleanup: could not remove ${folder}: ${String(error)}`);
+    }
+}
+
 suite('FeatherSpec Studio GitHub Copilot provider smoke', function () {
     this.timeout(300_000);
 
@@ -99,7 +115,7 @@ suite('FeatherSpec Studio GitHub Copilot provider smoke', function () {
             assert.ok(!fs.existsSync(target), 'the rejected write left no file');
             copilot.endSession('smoke-2');
         } finally {
-            fs.rmSync(folder, { recursive: true, force: true });
+            cleanUp(copilot, ['smoke-1', 'smoke-2'], folder);
         }
     });
     test('M-02, M-03, M-05: a write approved once lands with file.changed, a read is observed, and the run resumes with its memory (skips without opt-in)', async function () {
@@ -147,7 +163,7 @@ suite('FeatherSpec Studio GitHub Copilot provider smoke', function () {
             assert.match((completed.payload as { finalMessage?: string }).finalMessage ?? '', /approved\.txt/, 'M-05: the agent remembers its earlier change');
             copilot.endSession('accept-3');
         } finally {
-            fs.rmSync(folder, { recursive: true, force: true });
+            cleanUp(copilot, ['accept-1', 'accept-2', 'accept-3'], folder);
         }
     });
 
@@ -173,7 +189,7 @@ suite('FeatherSpec Studio GitHub Copilot provider smoke', function () {
             assert.ok(!fs.existsSync(target), 'M-04: no file after the cancel');
             copilot.endSession('accept-4');
         } finally {
-            fs.rmSync(folder, { recursive: true, force: true });
+            cleanUp(copilot, ['accept-4'], folder);
         }
     });
 });
