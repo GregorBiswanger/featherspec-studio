@@ -32,7 +32,7 @@ afterEach(() => {
 });
 
 describe('AC-004: the navigation', () => {
-    it('lists Mission Control, Spec Board, Spec Explorer and Agent Center', async () => {
+    it('lists Mission Control, Spec Board and Spec Explorer', async () => {
         const { container } = await start();
         expect(items(container).map((item) => item.textContent?.replace('▸', '').trim())).toEqual(AREAS.map((area) => area.title));
     });
@@ -56,8 +56,8 @@ describe('AC-004: the navigation', () => {
         const { container } = await start();
         await pressKey(items(container)[2]!, 'Enter');
         expect(container.querySelector('h1')?.textContent).toBe('Spec Explorer');
-        await pressKey(items(container)[3]!, ' ');
-        expect(container.querySelector('h1')?.textContent).toBe('Agent Center');
+        await pressKey(items(container)[1]!, ' ');
+        expect(container.querySelector('h1')?.textContent).toBe('Spec Board');
         expect(posted.filter((message) => message.type === 'navigate')).toHaveLength(2);
     });
 
@@ -85,10 +85,10 @@ describe('AC-004: the navigation', () => {
     it('PD-054: every item shows the icon of its area before its title, hidden from assistive technology, and no two items share one', async () => {
         const { container } = await start();
         const icons = items(container).map((item) => item.querySelector('svg[data-icon]'));
-        expect(icons.map((icon) => icon?.getAttribute('data-icon'))).toEqual(['missionControl', 'specBoard', 'specExplorer', 'agentCenter']);
+        expect(icons.map((icon) => icon?.getAttribute('data-icon'))).toEqual(['missionControl', 'specBoard', 'specExplorer']);
         expect(icons.every((icon) => icon?.getAttribute('aria-hidden') === 'true')).toBe(true);
-        expect(new Set(icons.map((icon) => icon?.querySelector('path')?.getAttribute('d'))).size).toBe(4);
-        expect(items(container).map((item) => item.textContent?.replace('▸', '').trim())).toEqual(['Mission Control', 'Spec Board', 'Spec Explorer', 'Agent Center']);
+        expect(new Set(icons.map((icon) => icon?.querySelector('path')?.getAttribute('d'))).size).toBe(3);
+        expect(items(container).map((item) => item.textContent?.replace('▸', '').trim())).toEqual(['Mission Control', 'Spec Board', 'Spec Explorer']);
     });
 
     it('AC-023: the navigation has an accessible name', async () => {
@@ -107,8 +107,8 @@ describe('AC-014: loading', () => {
 
     it('the navigation stays operable while loading: an item changes the current area', async () => {
         const { container } = await start();
-        await click(items(container)[3]!);
-        expect(container.querySelector('h1')?.textContent).toBe('Agent Center');
+        await click(items(container)[2]!);
+        expect(container.querySelector('h1')?.textContent).toBe('Spec Explorer');
         expect(container.textContent).toContain('Loading project…');
     });
 
@@ -136,7 +136,7 @@ describe('AC-014: loading', () => {
     it('ignores a stale event with a lower sequence number', async () => {
         const { container } = await start();
         await send(shellEvent(baseView({ area: 'specBoard' }), 2));
-        await send(shellEvent(baseView({ area: 'agentCenter' }), 1));
+        await send(shellEvent(baseView({ area: 'specExplorer' }), 1));
         expect(container.querySelector('h1')?.textContent).toBe('Spec Board');
     });
 });

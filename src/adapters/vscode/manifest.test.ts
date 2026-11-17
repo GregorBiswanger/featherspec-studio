@@ -80,7 +80,6 @@ describe('extension manifest', () => {
             'featherspec-studio.openMissionControl': 'FeatherSpec Studio: Open Mission Control',
             'featherspec-studio.openSpecBoard': 'FeatherSpec Studio: Open Spec Board',
             'featherspec-studio.openSpecExplorer': 'FeatherSpec Studio: Open Spec Explorer',
-            'featherspec-studio.openAgentCenter': 'FeatherSpec Studio: Open Agent Center',
         });
     });
 
@@ -153,17 +152,17 @@ describe('extension manifest', () => {
         expect(hidden).toContain('featherspec-studio.shellAction');
     });
 
-    it('AC-014 (0015): contributes no command to clear run history, stop a run or resume a run', () => {
+    it('AC-014 (0015): contributes no command to open the Agent Center, clear run history, stop a run or resume a run', () => {
         const commands = (manifest.contributes?.commands ?? []).map((entry) => entry.command);
-        for (const removed of ['clearRunHistory', 'stopRun', 'resumeRun']) {
+        for (const removed of ['openAgentCenter', 'clearRunHistory', 'stopRun', 'resumeRun']) {
             expect(commands).not.toContain(`featherspec-studio.${removed}`);
         }
         const titles = (manifest.contributes?.commands ?? []).map((entry) => entry.title);
-        expect(titles.filter((title) => /Run History|Stop Run|Resume Run/.test(title))).toEqual([]);
+        expect(titles.filter((title) => /Agent|Run History|Stop Run|Resume Run/.test(title))).toEqual([]);
     });
 
     it('AC-014 (0015): negative control, the matcher finds the removed titles', () => {
-        expect(['FeatherSpec Studio: Clear Run History', 'FeatherSpec Studio: Stop Run', 'FeatherSpec Studio: Resume Run'].filter((title) => /Run History|Stop Run|Resume Run/.test(title))).toHaveLength(3);
+        expect(['FeatherSpec Studio: Open Agent Center', 'FeatherSpec Studio: Clear Run History', 'FeatherSpec Studio: Stop Run', 'FeatherSpec Studio: Resume Run'].filter((title) => /Agent|Run History|Stop Run|Resume Run/.test(title))).toHaveLength(4);
     });
 
     it('AC-015 (0015): declares no configuration property', () => {

@@ -65,7 +65,6 @@ const DERIVED_RULES: readonly string[] = ['S-READY', 'S-REVIEW', 'S-BLOCKED'];
 export function isDerivedRule(value: unknown): value is DerivedRule {
     return typeof value === 'string' && DERIVED_RULES.includes(value);
 }
-const RUN_STATUS_WORDS: readonly string[] = ['Starting', 'Running', 'WaitingForApproval', 'WaitingForInput', 'Completed', 'Failed', 'Cancelled', 'Interrupted'];
 const ATTENTION_REASONS: readonly string[] = ['Blocked', 'Diagnostic', 'Review pending'];
 
 function exactly(value: Record<string, unknown>, required: readonly string[], optional: readonly string[] = []): boolean {

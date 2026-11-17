@@ -19,14 +19,6 @@ function setup(overrides: Partial<RequestHandlers> = {}) {
         moveRequest: async (payload) => void calls.push(`moveRequest:${payload.target}`),
         openFile: async () => void calls.push('openFile'),
         copyText: async () => void calls.push('copyText'),
-        acSelect: async () => void calls.push('acSelect'),
-        acClearFilter: async () => void calls.push('acClearFilter'),
-        acLoadEarlier: async () => void calls.push('acLoadEarlier'),
-        acFollow: async () => void calls.push('acFollow'),
-        acAnswer: async () => void calls.push('acAnswer'),
-        acCancel: async () => void calls.push('acCancel'),
-        acResume: async () => void calls.push('acResume'),
-        acOpenFile: async () => void calls.push('acOpenFile'),
         ...overrides,
     };
     const router = createMessageRouter({

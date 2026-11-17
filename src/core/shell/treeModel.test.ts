@@ -12,7 +12,6 @@ describe('AC-003: the Activity Bar tree model', () => {
             { kind: 'area', label: 'Mission Control', area: 'missionControl', icon: 'dashboard' },
             { kind: 'area', label: 'Spec Board', area: 'specBoard', icon: 'layout' },
             { kind: 'area', label: 'Spec Explorer', area: 'specExplorer', icon: 'list-tree' },
-            { kind: 'area', label: 'Agent Center', area: 'agentCenter', icon: 'robot' },
         ]);
     });
 
@@ -24,7 +23,7 @@ describe('AC-003: the Activity Bar tree model', () => {
 
     it('an active project keeps its entries while a state such as loading or a load error applies', () => {
         const state: PanelState = { id: 'S5', reason: { cause: 'discovery', message: 'x' } };
-        expect(buildTreeModel({ projectActive: true, projectName: 'demo', state }).items).toHaveLength(6);
+        expect(buildTreeModel({ projectActive: true, projectName: 'demo', state }).items).toHaveLength(5);
         expect(buildTreeModel({ projectActive: true, projectName: 'demo', state: { id: 'S4' } }).message).toBeUndefined();
     });
 

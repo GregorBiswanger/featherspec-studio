@@ -68,10 +68,6 @@
         "title": "FeatherSpec Studio: Open Spec Explorer"
       },
       {
-        "command": "featherspec-studio.openAgentCenter",
-        "title": "FeatherSpec Studio: Open Agent Center"
-      },
-      {
         "command": "featherspec-studio.moveSpec",
         "title": "FeatherSpec: Move Spec to…"
       },

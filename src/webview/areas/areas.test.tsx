@@ -56,7 +56,7 @@ afterEach(() => {
     mounted = undefined;
 });
 
-const SYNTHETIC: AreaInfo = { id: 'agentCenter', title: 'Synthetic area', purpose: 'A purpose for a placeholder test.', placeholder: true };
+const SYNTHETIC: AreaInfo = { id: 'specBoard', title: 'Synthetic area', purpose: 'A purpose for a placeholder test.', placeholder: true };
 
 describe('AC-006: placeholders (no real area is a placeholder any more; the component is tested through a synthetic area)', () => {
     it('a placeholder shows its name, its purpose and "Not available in this version of FeatherSpec Studio", and no rows', async () => {
@@ -74,7 +74,7 @@ describe('AC-006: placeholders (no real area is a placeholder any more; the comp
         expect(mounted.container.textContent).not.toContain('r-1');
     });
 
-    it.each(['missionControl', 'specExplorer', 'specBoard', 'agentCenter'] as const)('control: %s is no placeholder', async (area) => {
+    it.each(['missionControl', 'specExplorer', 'specBoard'] as const)('control: %s is no placeholder', async (area) => {
         const container = await open(baseView({ area, rows: THREE }));
         expect(container.querySelector('[data-placeholder]')).toBeNull();
     });

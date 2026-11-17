@@ -55,7 +55,7 @@ afterEach(() => {
     mounted = undefined;
 });
 
-const SYNTHETIC: AreaInfo = { id: 'agentCenter', title: 'Synthetic area', purpose: 'A purpose for a placeholder test.', placeholder: true };
+const SYNTHETIC: AreaInfo = { id: 'specBoard', title: 'Synthetic area', purpose: 'A purpose for a placeholder test.', placeholder: true };
 
 describe('AC-007: the Spec Explorer list', () => {
     it('a new shell event with changed rows is in the DOM within 500 ms of the message event (PD-047)', async () => {

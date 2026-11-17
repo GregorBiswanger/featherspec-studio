@@ -10,8 +10,6 @@ import { buildDetail } from '../../core/board/detail';
 import { deriveLifecycle } from '../../core/lifecycle/deriveLifecycle';
 import { buildMissionControlView } from '../../core/missionControl/missionControlView';
 import { readProject } from '../../core/specs/readProject';
-import { isAgentCenterView, isTimelinePayload } from '../../shared/protocol/agentCenter';
-import { sampleCenterView, sampleDetail, sampleRow } from '../../shared/protocol/testing/agentCenterSample';
 import { createNodeSpecSource } from './nodeSpecSource';
 
 const root = path.resolve(__dirname, '..', '..', '..');
@@ -67,7 +65,7 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         expect(script).not.toContain('process.env.NODE_ENV');
     });
 
-    it('starts without a runtime error, renders the frame with the four areas and the loading state, and says hello', async () => {
+    it('starts without a runtime error, renders the frame with the three areas and the loading state, and says hello', async () => {
         const { dom, posted, errors } = boot(readFileSync(bundlePath, 'utf8'));
         await settle();
         const document = dom.window.document;
@@ -75,7 +73,6 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
             'Mission Control',
             'Spec Board',
             'Spec Explorer',
-            'Agent Center',
         ]);
         expect(document.body.textContent).toContain('Loading project…');
         expect(posted[0]).toMatchObject({ v: 1, kind: 'req', type: 'hello' });
@@ -151,28 +148,6 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         expect(document.querySelector('[data-runs]')).toBeNull();
         expect(document.querySelector('[data-attention] h2')?.textContent).toContain('Needs attention (');
         expect(document.querySelector('[data-activity] h2')?.textContent).toBe('Recent activity');
-        expect(errors).toEqual([]);
-    });
-
-    it('0012: mounts the Agent Center with a fixture snapshot: run list, detail with the open request and the timeline, no start-up error', async () => {
-        const center = sampleCenterView({ rows: [sampleRow()], detail: sampleDetail() });
-        const timeline = { runId: 'run-1', rows: [{ key: 1, kind: 'Message', time: '2026-11-17T10:00:00.000Z', source: 'provider', fields: [{ label: 'Text', text: 'hello' }] }], hasEarlier: false };
-        expect(isAgentCenterView(center)).toBe(true);
-        expect(isTimelinePayload(timeline)).toBe(true);
-        const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
-        await settle();
-        const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'agentCenter', target: undefined, selection: undefined, notice: undefined, rows: [] };
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', type: 'agentCenter', payload: { view: center } } }));
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', type: 'agentCenterTimeline', payload: timeline } }));
-        await settle();
-        const document = dom.window.document;
-        expect(document.querySelector('h1')?.textContent).toBe('Agent Center');
-        expect(document.querySelector('[data-placeholder]')).toBeNull();
-        expect(document.querySelectorAll('[data-run-row]')).toHaveLength(1);
-        expect(document.querySelector('[data-run-detail]')).not.toBeNull();
-        expect(document.querySelector('[data-request]')?.textContent).toContain('Approve once');
-        expect(document.querySelectorAll('[data-timeline-row]')).toHaveLength(1);
         expect(errors).toEqual([]);
     });
 

@@ -4,12 +4,11 @@ import * as vscode from 'vscode';
 import type { OutputPort } from '../../core/ports/host';
 import { createMessageRouter, type RequestHandlers } from '../../core/shell/messageRouter';
 import type { ShellService } from '../../core/shell/shellService';
-import type { AgentCenterView, TimelinePayload } from '../../shared/protocol/agentCenter';
 import type { BoardView, MoveResult } from '../../shared/protocol/board';
 import type { DetailView, OpenFileResultPayload } from '../../shared/protocol/detail';
 import type { MissionControlView } from '../../shared/protocol/missionControl';
 import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../../shared/protocol/envelope';
-import { isProbeResultPayload, type AgentCenterRequestType, type BoardRequestType, type CopyResultEventPayload, type ProbeOutcome } from '../../shared/protocol/messages';
+import { isProbeResultPayload, type BoardRequestType, type CopyResultEventPayload, type ProbeOutcome } from '../../shared/protocol/messages';
 import { createProbeChannel } from './probeChannel';
 import { buildWebviewHtml } from './webviewHtml';
 
@@ -34,21 +33,11 @@ export interface PanelMissionControl {
     onDidChangeView(listener: (view: MissionControlView | undefined) => void): vscode.Disposable;
 }
 
-export interface PanelAgentCenter {
-    handlers: Pick<RequestHandlers, AgentCenterRequestType>;
-    view(): AgentCenterView | undefined;
-    timeline(): TimelinePayload | undefined;
-    onDidChangeView(listener: (view: AgentCenterView | undefined) => void): vscode.Disposable;
-    onDidChangeTimeline(listener: (timeline: TimelinePayload | undefined) => void): vscode.Disposable;
-    reread(): void;
-}
-
 export interface StudioPanelDeps {
     extensionUri: vscode.Uri;
     service: ShellService;
     board: PanelBoard;
     missionControl: PanelMissionControl;
-    agentCenter?: PanelAgentCenter;
     output: OutputPort;
     testMode: boolean;
 }
@@ -137,18 +126,6 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
         }
     }
 
-    function pushAgentCenter(view: AgentCenterView | undefined): void {
-        if (view !== undefined) {
-            post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'agentCenter', payload: { view } });
-        }
-    }
-
-    function pushAgentCenterTimeline(timeline: TimelinePayload | undefined): void {
-        if (timeline !== undefined) {
-            post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'agentCenterTimeline', payload: timeline });
-        }
-    }
-
     function pushDetail(view: DetailView): void {
         post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'detail', payload: { view } });
     }
@@ -162,25 +139,12 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
         handlers: {
             ...deps.board.handlers,
             ...deps.service.handlers,
-            acSelect: async (payload) => deps.agentCenter?.handlers.acSelect(payload),
-            acClearFilter: async (payload) => deps.agentCenter?.handlers.acClearFilter(payload),
-            acLoadEarlier: async (payload) => deps.agentCenter?.handlers.acLoadEarlier(payload),
-            acFollow: async (payload) => deps.agentCenter?.handlers.acFollow(payload),
-            acAnswer: async (payload) => deps.agentCenter?.handlers.acAnswer(payload),
-            acCancel: async (payload) => deps.agentCenter?.handlers.acCancel(payload),
-            acResume: async (payload) => deps.agentCenter?.handlers.acResume(payload),
-            acOpenFile: async (payload) => deps.agentCenter?.handlers.acOpenFile(payload),
             hello: async (payload) => {
                 helloAt = Date.now();
                 pushView(payload.lastSeq);
                 pushBoard(deps.board.view());
                 pushMissionControl(deps.missionControl.view());
                 pushDetail(deps.board.detail());
-                if (deps.agentCenter !== undefined) {
-                    deps.agentCenter.reread();
-                    pushAgentCenter(deps.agentCenter.view());
-                    pushAgentCenterTimeline(deps.agentCenter.timeline());
-                }
                 if (lastMove !== undefined) {
                     pushMove(lastMove);
                 }
@@ -216,7 +180,6 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
             deps.missionControl.onDidChangeView(pushMissionControl),
             deps.board.onDidChangeDetail(pushDetail),
             deps.board.onDidMoveResult(pushMove),
-            ...(deps.agentCenter === undefined ? [] : [deps.agentCenter.onDidChangeView(pushAgentCenter), deps.agentCenter.onDidChangeTimeline(pushAgentCenterTimeline)]),
             deps.board.onDidOpenFileResult((payload) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'openFileResult', payload })),
             deps.board.onDidCopyResult((payload) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'copyResult', payload })),
             target.onDidDispose(() => {

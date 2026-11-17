@@ -265,50 +265,6 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
 });
 
 
-describe('0012 AC-029: the Agent Center stylesheet', () => {
-    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
-    const STATUS_TINTS: Record<string, string> = {
-        Starting: 'var(--vscode-charts-blue)',
-        Running: 'var(--vscode-charts-blue)',
-        WaitingForApproval: 'var(--vscode-charts-yellow)',
-        WaitingForInput: 'var(--vscode-charts-yellow)',
-        Completed: 'var(--vscode-charts-green)',
-        Failed: 'var(--vscode-charts-red)',
-        Cancelled: 'var(--vscode-descriptionForeground)',
-        Interrupted: 'var(--vscode-descriptionForeground)',
-    };
-
-    it('every run status has one rule that sets --fs-tint from its theme variable (open blue, waiting yellow, Completed green, Failed red, Cancelled and Interrupted muted)', () => {
-        for (const [status, variable] of Object.entries(STATUS_TINTS)) {
-            const rules = rulesFor(css, `[data-run-status="${status}"]`);
-            expect(rules.some((rule) => rule.body.includes(`--fs-tint: ${variable}`)), status).toBe(true);
-        }
-    });
-
-    it('control: a status the stylesheet does not know has no rule', () => {
-        expect(rulesFor(css, '[data-run-status="Paused"]')).toEqual([]);
-    });
-
-    it('a run status chip tints icon and border only, keeps its text in the foreground colour and takes the contrast border in High Contrast', () => {
-        const chip = rulesFor(css, '.run-status-chip');
-        expect(chip.some((rule) => /border[^;]*var\(--fs-tint\)/.test(rule.body))).toBe(true);
-        expect(chip.some((rule) => /color:\s*var\(--vscode-foreground\)/.test(rule.body))).toBe(true);
-        expect(rulesFor(css, '.run-status-chip .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);
-        expect(rulesFor(css, '.vscode-high-contrast .run-status-chip').some((rule) => /border-color:\s*var\(--vscode-contrastBorder\)/.test(rule.body))).toBe(true);
-    });
-
-    it('the run rows, the answer controls and the actions set no outline of their own; the selected run row carries the High Contrast active border', () => {
-        for (const selector of ['.ac-row', '.ac-button', '.ac-field']) {
-            const rules = parseRules(css).filter((rule) => rule.selectors.some((candidate) => candidate.startsWith(selector)));
-            expect(rules.length, selector).toBeGreaterThan(0);
-            for (const rule of rules) {
-                expect(rule.body, selector).not.toMatch(/outline/);
-            }
-        }
-        expect(rulesFor(css, '.ac-row[aria-current="true"]').some((rule) => /var\(--vscode-contrastActiveBorder/.test(rule.body))).toBe(true);
-    });
-});
-
 describe('0005 AC-019: the panel follows the theme without being reopened', () => {
     const webviewDir = path.resolve(__dirname, '..', '..', 'webview');
     const THEME_READS = /classList|vscode-(?:light|dark|high-contrast)|getComputedStyle|matchMedia|getPropertyValue/;

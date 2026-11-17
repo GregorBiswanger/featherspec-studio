@@ -82,11 +82,3 @@ export function isKeyboardReachable(element: Element): boolean {
 export function missionControlEvent(view: MissionControlView | unknown): Envelope {
     return { v: PROTOCOL_VERSION, kind: 'evt', type: 'missionControl', payload: { view } };
 }
-
-export function agentCenterEvent(view: unknown): Envelope {
-    return { v: PROTOCOL_VERSION, kind: 'evt', type: 'agentCenter', payload: { view } };
-}
-
-export function agentCenterTimelineEvent(payload: unknown): Envelope {
-    return { v: PROTOCOL_VERSION, kind: 'evt', type: 'agentCenterTimeline', payload };
-}

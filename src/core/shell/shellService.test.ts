@@ -44,8 +44,8 @@ describe('AC-014: loading (spec section 6)', () => {
 
     it('answers a navigate request while loading (the area changes, S4 stays)', async () => {
         const current = ready();
-        await current.service.handlers.navigate({ area: 'agentCenter' });
-        expect(current.service.view().area).toBe('agentCenter');
+        await current.service.handlers.navigate({ area: 'specBoard' });
+        expect(current.service.view().area).toBe('specBoard');
         expect(current.service.view().state).toEqual({ id: 'S4' });
     });
 });

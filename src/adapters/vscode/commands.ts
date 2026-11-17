@@ -10,5 +10,4 @@ export const AREA_COMMANDS: Record<AreaId, string> = {
     missionControl: 'featherspec-studio.openMissionControl',
     specBoard: 'featherspec-studio.openSpecBoard',
     specExplorer: 'featherspec-studio.openSpecExplorer',
-    agentCenter: 'featherspec-studio.openAgentCenter',
 };

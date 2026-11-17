@@ -1,4 +1,4 @@
-export const AREA_IDS = ['missionControl', 'specBoard', 'specExplorer', 'agentCenter'] as const;
+export const AREA_IDS = ['missionControl', 'specBoard', 'specExplorer'] as const;
 export type AreaId = (typeof AREA_IDS)[number];
 
 export interface AreaInfo {
@@ -25,12 +25,6 @@ export const AREAS: readonly AreaInfo[] = [
         id: 'specExplorer',
         title: 'Spec Explorer',
         purpose: 'Browse the specs of the project and select one.',
-        placeholder: false,
-    },
-    {
-        id: 'agentCenter',
-        title: 'Agent Center',
-        purpose: 'Follow agent runs, their live events and the approvals they wait for.',
         placeholder: false,
     },
 ];

@@ -57,7 +57,7 @@ describe('AC-022: the focus indicator', () => {
         const css = mainCss as string;
         const container = await open(baseView({ area: 'specExplorer', rows: ROWS, selection: { stem: '0002-b', number: '0002' }, notice: { number: '0003' }, restricted: true }));
         const elements = focusables(container);
-        expect(elements.length).toBeGreaterThanOrEqual(4 + ROWS.length + 2);
+        expect(elements.length).toBeGreaterThanOrEqual(3 + ROWS.length + 2);
         const missing = elements.filter((element) => !focusRulesFor(css, element).some(hasVisibleThemeOutline)).map((element) => element.outerHTML.slice(0, 80));
         expect(missing).toEqual([]);
     });

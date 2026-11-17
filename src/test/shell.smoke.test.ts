@@ -88,8 +88,8 @@ suite('FeatherSpec Studio shell smoke', function () {
         await vscode.commands.executeCommand('featherspec-studio.openSpecBoard');
         await waitFor('exactly one Studio tab', () => panelState(api), (state) => state.tabs === 1, { timeoutMs: WAIT_MS });
         assert.strictEqual(api.shell().view().area, 'specBoard');
-        await vscode.commands.executeCommand('featherspec-studio.openAgentCenter');
-        assert.strictEqual(api.shell().view().area, 'agentCenter');
+        await vscode.commands.executeCommand('featherspec-studio.openMissionControl');
+        assert.strictEqual(api.shell().view().area, 'missionControl');
         assert.strictEqual(studioTabs().length, 1);
     });
 
@@ -148,17 +148,17 @@ suite('FeatherSpec Studio shell smoke', function () {
         assert.ok(Math.min(...measured) < 1000, `the first message arrived after ${measured.join(', ')} ms in three attempts`);
     });
 
-    test('AC-003, AC-029: the tree shows the project name and the six entries; every shell command is registered', async () => {
+    test('AC-003, AC-029: the tree shows the project name and the five entries; every shell command is registered', async () => {
         const api = await activateStudio();
         await api.whenIdle();
-        await waitFor('the tree to show six items', () => api.shell().tree().items.map((item) => item.label), (labels) => labels.length === 6, { timeoutMs: WAIT_MS });
+        await waitFor('the tree to show five items', () => api.shell().tree().items.map((item) => item.label), (labels) => labels.length === 5, { timeoutMs: WAIT_MS });
         assert.deepStrictEqual(
             api.shell().tree().items.map((item) => item.label),
-            ['fs110-de-active-review', 'Open Studio', 'Mission Control', 'Spec Board', 'Spec Explorer', 'Agent Center'],
+            ['fs110-de-active-review', 'Open Studio', 'Mission Control', 'Spec Board', 'Spec Explorer'],
         );
         assert.deepStrictEqual(
             api.shell().tree().items.map((item) => item.icon),
-            ['folder', 'window', 'dashboard', 'layout', 'list-tree', 'robot'],
+            ['folder', 'window', 'dashboard', 'layout', 'list-tree'],
             'PD-048: every entry has an icon of its own',
         );
         const registered = await vscode.commands.getCommands(true);
@@ -167,7 +167,6 @@ suite('FeatherSpec Studio shell smoke', function () {
             'featherspec-studio.openMissionControl',
             'featherspec-studio.openSpecBoard',
             'featherspec-studio.openSpecExplorer',
-            'featherspec-studio.openAgentCenter',
             'featherspec-studio.rescan',
             'featherspec-studio.shellAction',
             'featherspec-studio.selectProject',

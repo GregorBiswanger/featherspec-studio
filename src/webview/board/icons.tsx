@@ -53,7 +53,6 @@ const AREA_PATHS: Record<AreaId, string> = {
     missionControl: 'M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2zm0 1.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zM10.6 4.7l.9.9-2.4 2.9a1.25 1.25 0 1 1-1-.8z',
     specBoard: 'M2 2h5v12H2zm1.5 1.5v9h2v-9zM9 2h5v5H9zm1.5 1.5v2h2v-2zM9 9h5v5H9zm1.5 1.5v2h2v-2z',
     specExplorer: 'M2 2.5h9V4H2zM3 4h1.5v3H14v1.5H4.5v3H14V13H3z',
-    agentCenter: 'M7.25 1h1.5v2H12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h3.25zM4.5 4.5v4h7v-4zM6 5.75h1.5v1.5H6zM8.5 5.75H10v1.5H8.5zM3.5 11.5h9V13h-9z',
 };
 
 export function AreaIcon(props: { area: AreaId }) {

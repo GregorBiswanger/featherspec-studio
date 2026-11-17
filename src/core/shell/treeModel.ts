@@ -14,7 +14,6 @@ export const AREA_ICONS: Record<AreaId, string> = {
     missionControl: 'dashboard',
     specBoard: 'layout',
     specExplorer: 'list-tree',
-    agentCenter: 'robot',
 };
 const PROJECT_ICON = 'folder';
 const OPEN_ICON = 'window';

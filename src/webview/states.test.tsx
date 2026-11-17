@@ -5,7 +5,7 @@ import { App } from './App';
 import { Placeholder } from './areas/Placeholder';
 import { boardEvent, boardView } from './board/testing/views';
 import { createClient, type ShellClient } from './client';
-import { agentCenterEvent, baseView, missionControlEvent, mount, send, shellEvent, type Mounted } from './testing/dom';
+import { baseView, missionControlEvent, mount, send, shellEvent, type Mounted } from './testing/dom';
 
 let mounted: Mounted | undefined;
 const clients: ShellClient[] = [];
@@ -39,14 +39,8 @@ describe('0013 §3.6: empty, placeholder and panel-level states show an icon bes
     });
 
     it('the placeholder component (through a synthetic area; no real area is a placeholder any more)', async () => {
-        mounted = await mount(<Placeholder area={{ id: 'agentCenter', title: 'Synthetic', purpose: 'A purpose.', placeholder: true }} />);
+        mounted = await mount(<Placeholder area={{ id: 'specBoard', title: 'Synthetic', purpose: 'A purpose.', placeholder: true }} />);
         expect(hasIcon(mounted.container.querySelector('[data-placeholder]'))).toBe(true);
-    });
-
-    it('the Agent Center empty list', async () => {
-        const container = await open(baseView({ area: 'agentCenter' }));
-        await send(agentCenterEvent({ kind: 'ready', controls: { kind: 'enabled' }, rows: [], empty: 'no-runs' }));
-        expect(hasIcon(container.querySelector('[data-agent-center] .empty-state'))).toBe(true);
     });
 
     it('the empty board, the empty Mission Control and the empty Spec Explorer', async () => {

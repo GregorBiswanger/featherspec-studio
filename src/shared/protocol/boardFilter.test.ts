@@ -58,14 +58,6 @@ describe('board requests', () => {
     it('every board request has a guard', () => {
         expect(Object.keys(REQUEST_GUARDS).sort()).toEqual(
             [
-                'acAnswer',
-                'acCancel',
-                'acClearFilter',
-                'acFollow',
-                'acLoadEarlier',
-                'acOpenFile',
-                'acResume',
-                'acSelect',
                 'boardClearFilters',
                 'boardFocus',
                 'boardSetFilter',

@@ -38,9 +38,9 @@ describe('BR-02, AC-009: start area and memory', () => {
     });
 
     it('Open and Open Studio (start) show the remembered area, a per-area open shows the named area and remembers it', async () => {
-        const current = await ready({ memory: { v: 1, area: 'agentCenter' } });
+        const current = await ready({ memory: { v: 1, area: 'specBoard' } });
         current.service.open({ via: 'start' });
-        expect(current.service.view().area).toBe('agentCenter');
+        expect(current.service.view().area).toBe('specBoard');
         current.service.open({ via: 'area', area: 'specExplorer' });
         expect(current.service.view().area).toBe('specExplorer');
         expect((current.memory.value as { area: string }).area).toBe('specExplorer');
@@ -48,6 +48,7 @@ describe('BR-02, AC-009: start area and memory', () => {
 
     it.each([
         ['an unknown area', { v: 1, area: 'settings' }],
+        ['the removed area agentCenter', { v: 1, area: 'agentCenter' }],
         ['another version', { v: 9, area: 'specBoard' }],
         ['garbage', 'specBoard'],
         ['a damaged selection', { v: 1, area: 'specBoard', selection: { stem: 4 } }],
@@ -65,7 +66,7 @@ describe('AC-008, AC-009: selection', () => {
         await current.service.handlers.select({ stem: '0003-x' });
         expect(current.service.view().selection).toEqual({ stem: '0003-x', number: '0003' });
         expect(current.service.view().rows.find((row) => row.selected)?.stem).toBe('0003-x');
-        await current.service.handlers.navigate({ area: 'agentCenter' });
+        await current.service.handlers.navigate({ area: 'specBoard' });
         await current.service.handlers.navigate({ area: 'specExplorer' });
         expect(current.service.view().selection?.stem).toBe('0003-x');
         expect(current.service.view().rows.find((row) => row.selected)?.stem).toBe('0003-x');
@@ -201,11 +202,9 @@ describe('AC-028: the navigation request (BR-07)', () => {
         expect(current.service.view().notice).toEqual({ number: '0099' });
     });
 
-    it('a run or board-filter target shows the area with the target in the view and changes no selection', async () => {
+    it('a board-filter target shows the area with the target in the view and changes no selection', async () => {
         const current = await ready();
         await current.service.handlers.select({ stem: '0002-b' });
-        await current.service.handlers.navigate({ area: 'agentCenter', target: { kind: 'run', id: 'r-1' } });
-        expect(current.service.view()).toMatchObject({ area: 'agentCenter', target: { kind: 'run', id: 'r-1' } });
         await current.service.handlers.navigate({ area: 'specBoard', target: { kind: 'boardFilter', filter: { states: ['Active'] } } });
         expect(current.service.view().target).toEqual({ kind: 'boardFilter', filter: { states: ['Active'] } });
         expect(current.service.view().selection?.stem).toBe('0002-b');
@@ -213,8 +212,8 @@ describe('AC-028: the navigation request (BR-07)', () => {
 
     it('a request without a target clears an earlier target', async () => {
         const current = await ready();
-        await current.service.handlers.navigate({ area: 'agentCenter', target: { kind: 'run', id: 'r-1' } });
-        await current.service.handlers.navigate({ area: 'specBoard' });
+        await current.service.handlers.navigate({ area: 'specBoard', target: { kind: 'boardFilter', filter: { states: ['Active'] } } });
+        await current.service.handlers.navigate({ area: 'specExplorer' });
         expect(current.service.view().target).toBeUndefined();
     });
 });
@@ -235,7 +234,7 @@ describe('0007 AC-012: onDidNavigate tells a consumer about every accepted navig
         await current.service.handlers.navigate({ area: 'specExplorer', target: { kind: 'spec', stem: '0099-none' } });
         expect(seen).toEqual([]);
         subscription.dispose();
-        await current.service.handlers.navigate({ area: 'agentCenter' });
+        await current.service.handlers.navigate({ area: 'specBoard' });
         expect(seen).toEqual([]);
     });
 
@@ -244,7 +243,25 @@ describe('0007 AC-012: onDidNavigate tells a consumer about every accepted navig
         current.service.onDidNavigate(() => {
             throw new Error('boom');
         });
-        await current.service.handlers.navigate({ area: 'agentCenter' });
-        expect(current.service.view().area).toBe('agentCenter');
+        await current.service.handlers.navigate({ area: 'specBoard' });
+        expect(current.service.view().area).toBe('specBoard');
+    });
+});
+
+describe('0015 AC-002: the removed Agent Center area', () => {
+    it('a remembered area agentCenter shows Mission Control with no notice and no selection', async () => {
+        const current = await ready({ memory: { v: 1, area: 'agentCenter', selection: { projectRoot: 'proj', stem: '0003-x' } } });
+        current.service.open({ via: 'start' });
+        expect(current.service.view().area).toBe('missionControl');
+        expect(current.service.view().state).toBeUndefined();
+        expect(current.service.view().notice).toBeUndefined();
+        expect(current.service.view().selection).toBeUndefined();
+    });
+
+    it('the next remembered area replaces the removed one', async () => {
+        const current = await ready({ memory: { v: 1, area: 'agentCenter' } });
+        current.service.open({ via: 'start' });
+        await current.service.handlers.navigate({ area: 'specBoard' });
+        expect(current.memory.value).toEqual({ v: 1, area: 'specBoard' });
     });
 });

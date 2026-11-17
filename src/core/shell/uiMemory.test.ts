@@ -17,6 +17,7 @@ describe('AC-009: remembered UI state', () => {
         ['a string', 'specBoard'],
         ['another version', { v: 2, area: 'specBoard' }],
         ['an unknown area', { v: 1, area: 'settings' }],
+        ['the removed area agentCenter', { v: 1, area: 'agentCenter' }],
         ['a missing area', { v: 1 }],
         ['a selection without a root', { v: 1, area: 'specBoard', selection: { stem: '0003-x' } }],
         ['a selection with a numeric stem', { v: 1, area: 'specBoard', selection: { projectRoot: 'p', stem: 3 } }],
