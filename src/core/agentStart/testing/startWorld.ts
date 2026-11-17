@@ -51,6 +51,7 @@ export interface StartWorld extends World {
     runSource: RunSource;
     deps: PreconditionDeps;
     loadFixture(root?: string): Promise<void>;
+    notifyModel(): void;
 }
 
 export async function createStartWorld(options: WorldOptions & { root?: string } = {}): Promise<StartWorld> {
@@ -66,6 +67,7 @@ export async function createStartWorld(options: WorldOptions & { root?: string }
     };
     const setting = createFakeSetting('fake');
     const trust: FakeTrust = { trusted: true, isTrusted: () => trust.trusted, onDidGrant: () => ({ dispose: () => undefined }) };
+    const modelListeners = new Set<() => void>();
     const originalSetSpecs = base.setSpecs;
     const runSource = createRunSource({ session: base.session });
     const world: StartWorld = Object.assign(base, {
@@ -75,7 +77,14 @@ export async function createStartWorld(options: WorldOptions & { root?: string }
         files,
         runSource,
         deps: {
-            model: { current: () => base.model.current, updatedAt: () => '', onDidChange: () => ({ dispose: () => undefined }) },
+            model: {
+                current: () => base.model.current,
+                updatedAt: () => '',
+                onDidChange(listener): Disposable {
+                    modelListeners.add(listener);
+                    return { dispose: () => void modelListeners.delete(listener) };
+                },
+            },
             files,
             setting,
             registry: base.setup.registry,
@@ -91,6 +100,7 @@ export async function createStartWorld(options: WorldOptions & { root?: string }
                 base.model.current = { ...current, project: { ...current.project, root } };
             }
         },
+        notifyModel: () => [...modelListeners].forEach((listener) => listener()),
         async loadFixture(target = root) {
             const project = await readProject(createNodeSpecSource(), target, '1.10.0');
             base.model.current = { project, lifecycle: deriveLifecycle(project) };

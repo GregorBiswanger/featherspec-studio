@@ -3,7 +3,7 @@
 **Spec:** [0008-spec-activation-agent-start.md](0008-spec-activation-agent-start.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-003
+**Current step:** T-004
 
 ## Approach
 
@@ -173,8 +173,8 @@ stage and becomes its own step.
   §6.2 item present, `missing` for the minimal fake profile; Cancel, hide and project change send
   nothing; second hand-off refused `pending`; after an ended run a new hand-off confirms again.
 - **Verify:** `npx vitest run src/core/agentStart src/shared/protocol/agentStart` then the per-step gates
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-17 — red: `npx vitest run src/core/agentStart/startFlow src/shared/protocol/agentStart` with the `Not implemented` stubs (flow and guard): 26 of 26 failed (`Error: Not implemented`). Green: 52 of 52 in `src/core/agentStart` and the contract (26 new: hand-off resolves at once, checking line, every §6.2 item incl. disclosure/model/missing/previous run, refusal lists P-1 and P-5 with nothing called or stored, every P-id reaches the view, Cancel/hide/stale token/project change, pending during check and while confirming, new hand-off after Cancel and after an ended run, JSON round trip through the strict guard). Gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 128 files, 1664 tests green.
+- **Notes:** Contract refusal items are a typed union (`RefusalItem`) instead of free `items`; texts follow in T-005. `run` in 0011's refusal is `{ runId, stem }` (0011's names), not `{ id, stem }`. `StartOrchestratorPort.previousRun` returns `none | run | not-available` like 0011's `PreviousRun`. Hand-off with the project root changing also clears an open notice (it belongs to the old project's runs). AC-014's test here covers the precondition side (an ended run no longer refuses); the start→ended→confirm-again path is added in T-004.
 
 ### T-004 — Start flow: Start, start request, 0011's answer, start failure
 
@@ -268,20 +268,20 @@ stage and becomes its own step.
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-002, T-003, T-005 | — | — | open |
-| AC-002 | T-003, T-006 | — | — | open |
-| AC-003 | T-003, T-006, T-007 | — | — | open |
+| AC-001 | T-002, T-003, T-005 | src/core/agentStart/startFlow.ts:handOff, src/core/agentStart/refusalItems.ts | src/core/agentStart/startFlow.test.ts (refusal), preconditions.test.ts | built |
+| AC-002 | T-003, T-006 | src/core/agentStart/startFlow.ts:check | src/core/agentStart/startFlow.test.ts (confirmation items) | built |
+| AC-003 | T-003, T-006, T-007 | src/core/agentStart/startFlow.ts:cancel, panelHidden | src/core/agentStart/startFlow.test.ts (cancel, hide, project change) | built |
 | AC-004 | T-004 | — | — | open |
 | AC-005 | T-004, T-007 | — | — | open |
 | AC-006 | T-001, T-006 | src/core/agentStart/startPrompt.ts:buildStartPrompt | src/core/agentStart/startPrompt.test.ts (golden byte equality) | built |
 | AC-007 | T-002 | src/core/agentStart/preconditions.ts:checkPreconditions | src/core/agentStart/preconditions.test.ts (P-2) | verified |
 | AC-008 | T-002, T-004, T-005 | — | — | open |
-| AC-009 | T-003 | — | — | open |
+| AC-009 | T-003 | src/core/agentStart/startFlow.ts:handOff (pending) | src/core/agentStart/startFlow.test.ts (pending) | built |
 | AC-010 | T-004, T-005 | — | — | open |
 | AC-011 | T-004 | — | — | open |
 | AC-012 | T-004 | — | — | open |
 | AC-013 | T-002, T-005 | src/core/agentStart/preconditions.ts:checkPreconditions | src/core/agentStart/preconditions.test.ts (P-6) | built |
-| AC-014 | T-003 | — | — | open |
+| AC-014 | T-003 | src/core/agentStart/startFlow.ts:handOff | src/core/agentStart/startFlow.test.ts (ended run) | built |
 | M-2 | T-006 | — | manual: Gregor, keyboard and screen reader | open |
 
 ## Session handoff

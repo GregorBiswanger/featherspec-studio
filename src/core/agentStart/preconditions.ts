@@ -19,7 +19,7 @@ export type PreconditionFailure =
     | { id: 'P-3'; configured: string | undefined }
     | { id: 'P-4'; result: AvailabilityResult; reason?: string; hint?: string }
     | { id: 'P-5'; runId: string; stem: string }
-    | { id: 'P-6'; state: StoreState['kind']; reason: string | undefined }
+    | { id: 'P-6'; state: Exclude<StoreState['kind'], 'writable'>; reason: string | undefined }
     | { id: 'P-7' }
     | { id: 'P-8'; stem: string };
 
