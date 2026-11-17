@@ -23,12 +23,13 @@
   `fs180-de-baselines`, `fs170-brownfield-mixed` (copies of the owner's samples), hand-made `fs-broken` (invalid UTF-8, `-text` in its
   `.gitattributes`), `fs110-parallel-synthetic`, `fs110-ready-synthetic` (shapes seen in no sample: UNVERIFIED). The AC-018 performance test
   generates 200 specs in a temp dir (`src/core/specs/testing/generateProject.ts`; full read < 2 s, update < 1 s).
-- `npm test` — extension-host smoke suite (`src/test/discovery.smoke.test.ts`, `src/test/specRepository.smoke.test.ts`, `src/test/runtime.smoke.test.ts`, `src/test/lifecycle.smoke.test.ts`, `src/test/shell.smoke.test.ts`, `src/test/board.smoke.test.ts`, `src/test/missionControl.smoke.test.ts`); `pretest` compiles and lints
+- `npm test` — extension-host smoke suite (`src/test/discovery.smoke.test.ts`, `src/test/specRepository.smoke.test.ts`, `src/test/runtime.smoke.test.ts`, `src/test/lifecycle.smoke.test.ts`, `src/test/shell.smoke.test.ts`, `src/test/board.smoke.test.ts`, `src/test/missionControl.smoke.test.ts`, `src/test/providers.smoke.test.ts`); `pretest` compiles and lints
   first; downloads and launches VS Code, so it is slow and needs network and a display. It cannot run
   in the agent sandbox (download blocked): CI and the Windows machine run it.
 - Runtime store (spec 0004): every store criterion is one contract suite (`src/core/runtime/testing/contract*.ts`)
   that runs against the in-memory medium and the Node-fs medium (`src/adapters/node/fileRuntimeMedium.test.ts`); no new
   tool or dependency. Host smoke: `src/test/runtime.smoke.test.ts` (CI only).
+- Provider port (spec 0009): `src/core/providers/*.test.ts` on a fake clock with `testing/adapters.ts` and `testing/controlledAdapter.ts`; the contract suite (`testing/contract.ts`) runs against the fake in both profiles (`src/adapters/providers/fake/fakeContract.test.ts`) and is what every real adapter calls; `fake/noIo.test.ts` replaces network and file modules with recorders that throw; doc, import and provider-ID literal scans (`portDocument`, `importScan`, `providerIdScan`); host smoke `src/test/providers.smoke.test.ts` (CI only). A new provider SDK joins `PROVIDER_SDKS` in `testing/scan.ts` and the ESLint core block.
 - Lifecycle model (spec 0003): `src/core/lifecycle/*.test.ts` run on memory sources and the fixtures `fs110-ready-synthetic`,
   `fs110-parallel-synthetic`, `fs-broken`, `fs170-brownfield-mixed`, `fs110-de-active-review`, `fs180-*`; history tests use a fake
   store (`testing/fakeHistoryStore.ts`); the no-write proof (AC-011) uses temp copies. Host smoke: `src/test/lifecycle.smoke.test.ts` (CI only).

@@ -54,6 +54,10 @@ Move a card by dragging it to another column, with the "Move to…" button on th
 
 Studio keeps a local record of agent runs, their events and the spec status history outside your workspace, per project, and never writes into your repository. Runs left open when VS Code closes show as `Interrupted` at the next start. Ended runs older than 90 days are removed at start; change this with the setting `featherspec-studio.runHistory.maxAgeDays` (whole days, at least 1). What is stored, where, how to delete it by hand and how storage errors behave: [docs/runtime-data.md](docs/runtime-data.md).
 
+## Providers
+
+Studio reaches coding agents only through one provider port (`src/core/ports/agentProvider.ts`) with a registry in front of the adapters. No real provider ships yet. To try Studio without an agent, an account or a network, switch on the **fake provider**: the setting `featherspec-studio.fakeProvider.enabled` (off by default) registers it without a reload and switching it off removes it again; a fake run already started continues. The setting `featherspec-studio.fakeProvider.scenario` picks what the fake does at each start (`happy-path` by default, also approvals, an input question, failures per category, a long run, unknown and duplicate events, a stream with no end). The fake never changes a file. The port, every capability, event kind and error category, and how to test against the fake: [docs/agent-provider-port.md](docs/agent-provider-port.md).
+
 ## Activation
 
 Studio activates when the workspace root contains `AGENTS.md` or `.specs`, when VS Code restores the Studio panel, or when you run one of its commands. In a workspace without either, run a Studio command once to start it.

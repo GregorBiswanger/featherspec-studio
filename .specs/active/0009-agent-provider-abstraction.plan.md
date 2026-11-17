@@ -1,9 +1,9 @@
 # Plan — Agent Provider Abstraction
 
 **Spec:** [0009-agent-provider-abstraction.md](0009-agent-provider-abstraction.md)
-**Status:** In Progress
-**Last updated:** 2026-11-16
-**Current step:** T-008 (stage 5)
+**Status:** Done
+**Last updated:** 2026-11-17
+**Current step:** — (all nine steps done)
 
 ## Approach
 
@@ -320,7 +320,7 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
   decisions (sink, service adds texts, fake as the single double). `techContext.md`: provider
   contract suite, `noIo` test, host smoke file. `activeContext.md`. Then every gate.
 - **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`
-- [ ] **Verified (T-009):** —
+- [x] **Verified (T-009):** 2026-11-17. Docs synced: README Providers section, AGENTS.md snapshot (two modules, ports entry, reconciled date), systemPatterns.md provider decision (planned → built), techContext.md (provider tests, host smoke file), activeContext.md. Gates: `npx eslint src --max-warnings 0`, `npx tsc --noEmit`, `npx tsc --noEmit -p src/webview` clean; `npm run test:unit` 112 files, 1495 tests passed; `npm run compile` finished with no warnings. `npm test` not run (VS Code download blocked here); `src/test/providers.smoke.test.ts` is compiled and linted, it runs on CI.
 - **Notes:** —
 
 ## Traceability
@@ -336,9 +336,9 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
 | AC-007 | T-003 | src/core/providers/providerService.ts:normalise | providerService.test.ts (AC-007), payloadTypes.test.ts | verified |
 | AC-008 | T-004 | src/adapters/providers/fake/scenarios.ts:unknown-event | fakeProvider.test.ts (AC-008) | verified |
 | AC-009 | T-003 | src/core/providers/providerService.ts:stopped | providerService.test.ts (AC-009) | verified |
-| AC-010 | T-005, T-008 | providerService.ts:checkAvailability | providerAvailability.test.ts (AC-010) | built |
+| AC-010 | T-005, T-008 | providerService.ts:checkAvailability; providerSetup.ts | providerAvailability.test.ts, providerSetup.test.ts (AC-010) | verified |
 | AC-011 | T-003, T-004 | providerService.ts:normalise, fake/scenarios.ts:failure | providerService.test.ts, fakeProvider.test.ts (AC-011) | verified |
-| AC-012 | T-008 | — | — | open |
+| AC-012 | T-008 | src/core/providers/providerSetup.ts, adapters/vscode/providerSettings.ts, package.json | providerSetup.test.ts, manifest.test.ts (AC-012); host smoke providers.smoke.test.ts (CI) | verified |
 | AC-013 | T-004 | src/adapters/providers/fake/ | noIo.test.ts, fakeImports.test.ts | verified |
 | AC-014 | T-004 | src/adapters/providers/fake/fakeProvider.ts, scenarios.ts, script.ts | fakeProvider.test.ts (AC-014) | verified |
 | AC-015 | T-003, T-006 | providerService.ts:cancel, endSession; fake/script.ts:cancel | providerService.test.ts, fakeInteraction.test.ts (AC-015) | verified |
@@ -348,12 +348,12 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
 | AC-019 | T-005, T-006 | providerService.ts:respond; fake/script.ts:answer | providerRequests.test.ts, fakeInteraction.test.ts (AC-019) | verified |
 | AC-020 | T-007 | src/core/providers/testing/contract.ts | fakeContract.test.ts (both profiles) | verified |
 | AC-021 | T-007 | src/core/providers/registry.ts, providerService.ts | extensibility.test.ts, providerIdScan.test.ts | verified |
-| AC-022 | T-004, T-005, T-008 | fake/fakeProvider.ts:credentialValues, providerService.ts:credentials | fakeProvider.test.ts, providerAvailability.test.ts, contract BR-010 | built |
+| AC-022 | T-004, T-005, T-008 | fake/fakeProvider.ts:credentialValues, providerService.ts:credentials, extension.ts | fakeProvider.test.ts (AC-022), contract BR-010 in fakeContract.test.ts | verified |
 
 ## Session handoff
 
-- **Done so far:** start signal given 2026-11-16, pair moved backlog → active; stages 1 to 4 (T-001...T-007) done and committed.
-- **Next action:** T-008 extension wiring and settings (test first), then T-009 docs sync and final gates.
+- **Done so far:** all nine steps T-001...T-009 built, ticked with recorded results and committed; every acceptance criterion `verified` in the traceability table; docs, Memory Bank and snapshot synced. Mechanical check before Done: 0 unticked steps, 9 of 9 `Verified:` filled.
+- **Next action:** Gregor reviews the tests per stage; CI runs `npm test` (new `src/test/providers.smoke.test.ts`); then `/sdd-compile` in a fresh session (another model family), then `/sdd-lifecycle` to done. Not started by this session.
 - **Open decisions:** none. Nine steps (one over the aim): the surface step carries the document,
   and the service and the fake are each two slices so they can run in parallel.
 - **Baseline:** 2026-11-16, eslint, both tsc runs and `npm run test:unit` green: 1350 tests.

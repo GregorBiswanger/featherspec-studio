@@ -96,14 +96,14 @@ run the `/sdd-architecture-update` workflow yourself, in the same change set, ex
 the user had typed it (its body lives in `.claude/commands/sdd-architecture-update.md`).
 
 ```yaml
-# last reconciled: 2026-11-16 · last deep scan: never
+# last reconciled: 2026-11-17 · last deep scan: never
 architecture:
   style: 'Hexagonal (ports & adapters): framework-free core (domain + application) behind ports; adapters for VS Code host, storage, file system, agent providers; webview as a separate UI bundle'
   entrypoints:
     - 'src/extension.ts — composition root; activates on workspaceContains:AGENTS.md, workspaceContains:.specs, onWebviewPanel:featherspecStudio.main and Studio commands and views; bundled by esbuild to dist/extension.js'
     - 'src/webview/main.tsx — Studio panel UI (React 19); bundled by esbuild to dist/webview/main.js and main.css; no Node.js or file access'
   modules:
-    - 'src/core/ports — read-only file-system port, spec source and file watch ports, and small host ports (status bar, output, state, UI, folders, marker watch, clock), runtime medium port, shell ports (trust, UI memory, shell actions, shell model source), board ports (start workflow, editor, move picks, move result)'
+    - 'src/core/ports — read-only file-system port, spec source and file watch ports, and small host ports (status bar, output, state, UI, folders, marker watch, clock), runtime medium port, shell ports (trust, UI memory, shell actions, shell model source), board ports (start workflow, editor, move picks, move result), agent provider port, setting port'
     - 'src/core/discovery — project verdicts, version line, active-project state, report model, discovery controller, rerun scheduler (spec 0001)'
     - 'src/core/specs — spec repository: file listing, spec and plan parsers, joins, diagnostics, live repository (spec 0002)'
     - 'src/core/runtime — runtime store: runs, run-change notification, events, masking, writer lock, retention, store state (spec 0004)'
@@ -112,7 +112,9 @@ architecture:
     - 'src/core/board — Spec Board and spec detail view models: cards, progress, latest run, filters and sorting, board UI state, move requests, open-file guard, detail sections, board service (spec 0007)'
     - 'src/core/missionControl — Mission Control projection: header, spec figures, progress, run source, run figures, attention list, recent activity, dashboard service (spec 0006)'
     - 'src/webview — Studio panel UI: protocol client, navigation, panel states, area registry with placeholders, Spec Explorer list, Spec Board, spec detail, Mission Control area; shared UI primitives in src/webview/ui (state chip, rule text, progress bar, inline text formatter) (specs 0005, 0007, 0006, 0013)'
+    - 'src/core/providers — provider vocabulary, registry, provider service (the port in front of adapters), setup with toggled registration, contract suite (spec 0009)'
     - 'src/adapters/node — Node file-system and spec-source adapters, Node-fs runtime medium, random IDs'
+    - 'src/adapters/providers — provider adapters behind AgentProviderPort; fake/ is the deterministic fake provider (spec 0009)'
     - 'src/adapters/vscode — thin implementations of the host ports with the VS Code API; no logic'
     - 'test/fixtures — FeatherSpec fixture projects shared by unit and host tests'
     - 'media — packaged static assets (Activity Bar icon)'
