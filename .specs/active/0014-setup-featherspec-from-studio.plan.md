@@ -1,9 +1,9 @@
 # Plan — Set Up FeatherSpec from the Studio
 
 **Spec:** [0014-setup-featherspec-from-studio.md](0014-setup-featherspec-from-studio.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-17
-**Current step:** T-010
+**Current step:** — (all steps done)
 
 ## Approach
 
@@ -173,44 +173,44 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 - **Covers:** AC-001…AC-025 (re-proved by the gates), AC-026 (checklist items)
 - **Do:** README: "Set up FeatherSpec" section, the one write and network exception, written-through links (PD-053 (4)); line 5's read-only sentence names the exception. `docs/release-checklist.md`: M-1, M-2, M-3. `CHANGELOG.md` Unreleased entry. `AGENTS.md` snapshot, exactly: modules `src/core/<area>` line += `setup 0014`; `src/adapters` line `node/` += `release download (fetch), tar.gz reader, setup target writer`; boundaries += `'Only the setup (0014) writes into a workspace folder or reaches the network, through SetupTargetPort and ReleaseHttpPort, after the user started it in a trusted workspace'`; `src/test` line += `setup archives in test/fixtures/setup`. `.architecture/core.md` (setup area, three ports) and `.architecture/adapters.md` (node entries). `techContext.md` (0014 test line, `setup-no-marker` host configuration), `systemPatterns.md` (web route without API quota; Node `wx` writer instead of `workspace.fs`; `viewsWelcome` for S2 only; own JSONC scanner and tar reader, no dependency), `activeContext.md`.
 - **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`; pre-done `npm test` on CI and the Windows machine
-- [ ] **Verified (T-010):** —
-- **Notes:** —
+- [x] **Verified (T-010):** 2026-11-17 — gates run on the whole tree (see the final run in the handoff); README section "Set up FeatherSpec", exception sentences in line 5 and Privacy, command row; `docs/release-checklist.md` M-1…M-3; CHANGELOG Unreleased; AGENTS.md snapshot edits exactly as listed; `.architecture/core.md` (still 40 lines) and `adapters.md`; Memory Bank updated. `npm test` and Windows runs are pending on CI and Gregor's machine.
+- **Notes:** AGENTS.md is 216 lines (was 215): one added boundary line, the rest are additions to existing lines.
 
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001, T-008 | — | — | open |
-| AC-002 | T-008 | — | — | open |
-| AC-003 | T-006 | — | — | open |
-| AC-004 | T-006 | — | — | open |
-| AC-005 | T-004, T-006 | — | — | open |
-| AC-006 | T-002, T-004 | — | — | open |
-| AC-007 | T-002 | — | — | open |
-| AC-008 | T-006 | — | — | open |
-| AC-009 | T-005 | — | — | open |
-| AC-010 | T-005 | — | — | open |
-| AC-011 | T-003 | — | — | open |
-| AC-012 | T-003 | — | — | open |
-| AC-013 | T-003 | — | — | open |
-| AC-014 | T-005 | — | — | open |
-| AC-015 | T-001 | — | — | open |
-| AC-016 | T-007 | — | — | open |
-| AC-017 | T-007 | — | — | open |
-| AC-018 | T-007 | — | — | open |
-| AC-019 | T-004 | — | — | open |
-| AC-020 | T-005, T-007 | — | — | open |
-| AC-021 | T-004, T-006 | — | — | open |
-| AC-022 | T-006 | — | — | open |
-| AC-023 | T-007 | — | — | open |
-| AC-024 | T-005 | — | — | open |
-| AC-025 | T-004, T-008 | — | — | open |
-| AC-026 | T-010 | — | manual: Gregor M-1…M-3 | open |
+| AC-001 | T-001, T-008 | `src/shared/protocol/texts.ts` (`S2_WELCOME`, actions), `src/core/shell/treeModel.ts`, `package.json` | `panelStateTexts`, `treeModel`, `PanelStateView`, `manifest` tests; host `src/test/setup/noProject.test.ts` | verified |
+| AC-002 | T-008 | `package.json`, `src/extension.ts`, `src/adapters/vscode/setupUi.ts` | `manifest.test.ts`; host `src/test/setup.smoke.test.ts` | verified |
+| AC-003 | T-006 | in `src/core/setup`: `setupService.ts` | `setupService.test.ts` | verified |
+| AC-004 | T-006 | in `src/core/setup`: `setupService.ts` | `setupService.test.ts` | verified |
+| AC-005 | T-004, T-006 | in `src/core/setup`: `releaseDownload.ts`, `setupService.ts` | `releaseDownload.test.ts`, `setupService.test.ts`, `noWrite.test.ts` | verified |
+| AC-006 | T-002, T-004 | in `src/core/setup`: `releaseDownload.ts`, `releaseArchive.ts` | `releaseDownload.test.ts`, `releaseArchive.test.ts` | verified |
+| AC-007 | T-002 | `src/adapters/node/tarGzArchive.ts`, `src/core/setup`: `releaseArchive.ts` | `tarGzArchive.test.ts` (real 1.10.0 archive), `releaseArchive.test.ts` | verified |
+| AC-008 | T-006 | in `src/core/setup`: `setupService.ts`, `setupTexts.ts` | `setupService.test.ts` | verified |
+| AC-009 | T-005 | in `src/core/setup`: `applySetup.ts`, `src/adapters/node/nodeSetupTarget.ts` | `applySetup.test.ts`, `nodeSetupTarget.test.ts` | verified |
+| AC-010 | T-005 | in `src/core/setup`: `applySetup.ts` | `applySetup.test.ts`, `nodeSetupTarget.test.ts` | verified |
+| AC-011 | T-003 | in `src/core/setup`: `fileClasses.ts` | `fileClasses.test.ts` | verified |
+| AC-012 | T-003 | in `src/core/setup`: `fileClasses.ts` | `fileClasses.test.ts`, `gitignore.test.ts` | verified |
+| AC-013 | T-003 | in `src/core/setup`: `settingsJson.ts`, `jsonc.ts` | `settingsJson.test.ts`, `fileClasses.test.ts` | verified |
+| AC-014 | T-005 | in `src/core/setup`: `applySetup.ts` | `applySetup.test.ts`, `nodeSetupTarget.test.ts` | verified |
+| AC-015 | T-001 | `src/core/discovery/classifyFolder.ts`, `discoverWorkspace.ts` | `classifyFolder.test.ts`, `discoverWorkspace.test.ts`, `markerWatchPaths.test.ts` | verified |
+| AC-016 | T-007 | in `src/core/setup`: `mergePrompt.ts`, `setupReport.ts` | `mergePrompt.test.ts` (golden file), `setupFinish.test.ts` | verified |
+| AC-017 | T-007 | in `src/core/setup`: `setupReport.ts`, `setupTexts.ts` | `setupFinish.test.ts` | verified |
+| AC-018 | T-007 | in `src/core/setup`: `outputBlock.ts` | `setupFinish.test.ts` | verified |
+| AC-019 | T-004 | in `src/core/setup`: `releaseDownload.ts` | `releaseDownload.test.ts` | verified |
+| AC-020 | T-005, T-007 | in `src/core/setup`: `applySetup.ts`, `setupReport.ts` | `applySetup.test.ts`, `setupFinish.test.ts` | verified |
+| AC-021 | T-004, T-006 | in `src/core/setup`: `releaseDownload.ts`, `setupService.ts` | `releaseDownload.test.ts`, `setupService.test.ts` | verified |
+| AC-022 | T-006 | in `src/core/setup`: `setupService.ts` | `setupService.test.ts` | verified |
+| AC-023 | T-007 | in `src/core/setup`: `setupReport.ts` | `setupFinish.test.ts` | verified |
+| AC-024 | T-005 | `src/core/setup` (all), `src/adapters/node/nodeSetupTarget.ts`, `src/adapters/vscode/setupUi.ts` | `applySetup.test.ts` scan, `nodeSetupTarget.test.ts` | verified |
+| AC-025 | T-004, T-008 | `src/adapters/node/fetchReleaseHttp.ts`, `src/extension.ts` | `noNetwork.test.ts`, `fetchReleaseHttp.test.ts`, `releaseDownload.test.ts`; host `noProject.test.ts` sends nothing | verified |
+| AC-026 | T-010 | `docs/release-checklist.md` (M-1…M-3) | manual: Gregor M-1…M-3 | open (manual) |
 
 ## Session handoff
 
-- **Done so far:** spec revised with PD-053; plan written.
-- **Next action:** Gregor reads the plan; on his start signal `/sdd-lifecycle` moves the pair to `active/`, then T-001.
+- **Done so far:** T-001…T-010 implemented and verified; amendments to 0001 and 0005 applied; docs synced.
+- **Next action:** CI `npm test` and the Windows machine (host suite, `npm test`), Gregor's M-1…M-3 and the diff read of 0001/0005; then `/sdd-compile`.
 - **Open decisions:** —
 - **Baseline:** HEAD 0753a62 (clean tree), moved to active/ 2026-11-17
 - **Environment:** `npm test` cannot run in the agent sandbox; GitHub is not reachable from it (live route checked only in M-2).

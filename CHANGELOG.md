@@ -6,6 +6,15 @@ All notable changes to FeatherSpec Studio are documented in this file. The forma
 
 ## [Unreleased]
 
+### Added
+
+- Set up FeatherSpec: in a folder without a FeatherSpec project, Studio downloads the latest release from
+  GitHub after your confirmation, creates the missing files, completes `.gitignore` and `.vscode/settings.json`,
+  and parks files that differ from yours in `.featherspec-setup/` with a "Copy merge prompt" for your coding
+  agent. It never overwrites or deletes a file of yours. This is the one place where Studio writes into your
+  workspace and contacts the network.
+- A folder with a `.featherspec-setup/` directory counts as incomplete until the merge is done.
+
 ## [0.1.0] - 2026-11-17
 
 First release.

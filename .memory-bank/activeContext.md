@@ -5,7 +5,7 @@ Current branch: main
 Current phase: act
 
 ## Now
-Implementing 0014 (Set up FeatherSpec from the Studio), plan step by step, current step T-001. Release preparation for 0.1.0 (13 specs `Implemented`) waits for Gregor's checklist.
+0014 (Set up FeatherSpec from the Studio) is implemented, T-001…T-010 verified; waits for `/sdd-compile` and Gregor's M-1…M-3. Release preparation for 0.1.0 (13 specs `Implemented`) waits for Gregor's checklist.
 
 ## Active Spec
 - [0014 spec](../.specs/active/0014-setup-featherspec-from-studio.md) / [plan](../.specs/active/0014-setup-featherspec-from-studio.plan.md), In Progress.
@@ -13,6 +13,7 @@ Implementing 0014 (Set up FeatherSpec from the Studio), plan step by step, curre
 - 0010 is proven by the Windows host suite with `FEATHERSPEC_COPILOT_SMOKE=1` (dev build and unpacked VSIX).
 
 ## Changed Recently
+- 0014: Studio can set up a folder from the latest GitHub release (the one write and network exception, PD-049); specs 0001 and 0005 amended in place; AGENTS.md snapshot, `.architecture` maps, README, CHANGELOG and the release checklist updated.
 - PD-048 (Gregor, first local test of the VSIX): the Activity Bar icon is the FeatherSpec logo mark in one colour (`media/studio.svg`, traced from `featherspec-logo.png`); every tree entry has its own product icon (`AREA_ICONS` in `src/core/shell/treeModel.ts`; spec 0005 AC-003, §9).
 - Found on the Windows machine and the hosted Windows runner after all specs were done, fixed test-first:
   - 0010: an approved write produced no `file.changed`. CLI 1.0.87 sends no `fileEdits`; `file.changed` is now derived from the approved `write` request and its successful tool, `session.info` ignored, `fileChanges` `derived` (spec 0010 §7, AC-012; fixture `recorded-approved-write-2026-11-17.jsonl`).

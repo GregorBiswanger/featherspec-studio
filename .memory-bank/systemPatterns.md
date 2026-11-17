@@ -104,6 +104,7 @@ holds the *why*: decisions and patterns.
 
 - Module maps: the `AGENTS.md` snapshot keeps one inventory line per top-level source folder; each area's inside view lives in `.architecture/{core,adapters,webview}.md` (≤ 40 lines each) · 2026-11-17 · release preparation, eviction delegated by Gregor
 - Timing tests: every wall-clock budget test lives in a `*.timing.test.{ts,tsx}` file and runs after the rest of `npm run test:unit` in one worker (Vitest projects `timing-node`, `timing-webview`); budgets unchanged · 2026-11-17 · commit 0920dd7
+- Setup from the Studio (spec 0014, PD-049, PD-053): the latest release comes through the web routes (`/releases/latest` redirect for the tag, then `archive/refs/tags/<tag>.tar.gz`), not the REST API, so there is no quota or token; files are written by a Node `wx` exclusive create and a temp-file rename, not `workspace.fs`, because only that gives no-overwrite and no-lost-update; the S2 offer is a `viewsWelcome` entry (S2 only, via the context key `featherspec-studio.panelState`); the JSONC scanner and the tar reader are our own, no new dependency; a root `.gitignore` that cannot be completed is class `left` because its parked copy would collide with the folder's own `.gitignore` · 2026-11-17 · plan 0014 T-003…T-008
 
 ## Patterns
 - Provider independence: each agent provider is an adapter that declares its capabilities;

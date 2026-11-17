@@ -103,15 +103,16 @@ architecture:
     - 'src/extension.ts — composition root; activates on workspaceContains:AGENTS.md, workspaceContains:.specs, onWebviewPanel:featherspecStudio.main and Studio commands and views; bundled by esbuild to dist/extension.js'
     - 'src/webview/main.tsx — Studio panel UI (React 19); bundled by esbuild to dist/webview/main.js and main.css; no Node.js or file access'
   modules:
-    - 'src/core/<area> — one folder per spec: discovery 0001, specs 0002, lifecycle 0003, runtime 0004, shell 0005, missionControl 0006, board 0007, agentStart 0008, providers 0009, orchestrator 0011, agentCenter 0012; ports/ holds every port (.architecture/core.md)'
-    - 'src/adapters — node/ (Node fs, spec source, runtime medium, IDs), providers/ (fake/ 0009, copilot/ 0010 behind AgentProviderPort), vscode/ (thin host ports, no logic) (.architecture/adapters.md)'
+    - 'src/core/<area> — one folder per spec: discovery 0001, specs 0002, lifecycle 0003, runtime 0004, shell 0005, missionControl 0006, board 0007, agentStart 0008, providers 0009, orchestrator 0011, agentCenter 0012, setup 0014; ports/ holds every port (.architecture/core.md)'
+    - 'src/adapters — node/ (Node fs, spec source, runtime medium, IDs, release download (fetch), tar.gz reader, setup target writer), providers/ (fake/ 0009, copilot/ 0010 behind AgentProviderPort), vscode/ (thin host ports, no logic) (.architecture/adapters.md)'
     - 'src/webview — panel UI: protocol client, shell, area registry, Spec Explorer, Spec Board, detail, Mission Control, Agent Center, agent start; primitives in ui/ (.architecture/webview.md)'
-    - 'src/test — extension-host smoke tests (Mocha, CI only); test/fixtures — fixture projects and the recorded Copilot stream; media — packaged assets'
+    - 'src/test — extension-host smoke tests (Mocha, CI only); test/fixtures — fixture projects, the recorded Copilot stream and setup archives in test/fixtures/setup; media — packaged assets'
   shared:
     - 'src/shared/protocol — versioned message protocol, areas, board view and filter contract, Mission Control view, agent start view, Agent Center view, timeline and texts, UI texts; imported by extension and webview, imports nothing (specs 0005, 0007, 0006, 0013, 0008, 0012); src/shared/testing — timing budgets for tests'
   boundaries:
     - 'Domain and application code never import vscode or provider SDKs; they reach the outside only through ports'
     - 'Webview and extension host communicate only through typed messages; the webview has no file-system or Node.js access'
+    - 'Only the setup (0014) writes into a workspace folder or reaches the network, through SetupTargetPort and ReleaseHttpPort, after the user started it in a trusted workspace'
     - 'src/shared imports neither vscode nor Node.js; src/webview imports only src/shared and its own files'
 ```
 

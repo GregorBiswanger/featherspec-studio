@@ -37,6 +37,17 @@ and the expected result. A clear miss reopens the named spec.
 - [ ] **AC-022 Restricted Mode**: open a project in a new window, choose "Don't Trust" → status bar entry with
   name and version, *Select Project* works, Output "FeatherSpec Studio" lists the folder as in a trusted window.
 
+## Set up FeatherSpec (0014)
+
+- [ ] **M-1 look**: in a folder without a project, the S2 button "Set up FeatherSpec" in the Activity Bar view
+  and in the panel looks and reads like Source Control's "Initialize Repository", in Dark Modern, Light Modern
+  and Dark High Contrast (renews the S2 screenshots of 0013 AC-017).
+- [ ] **M-2 real release**: on Windows 11 against the real GitHub release, a fresh `tip-splitter` folder becomes
+  a project, and the Hands-On walkthrough runs from `/sdd-setup` on. Also confirms that `/releases/latest` names
+  the release GitHub calls latest (A-007).
+- [ ] **M-3 Restricted Mode**: in a real Restricted Mode window, "Set up FeatherSpec" refuses with the trust
+  message and writes and downloads nothing (AC-004).
+
 ## Shell (0005)
 
 - [ ] **AC-019 live theme switch**: panel on Spec Explorer with a spec selected; switch Dark Modern → Light

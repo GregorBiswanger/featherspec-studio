@@ -3,7 +3,8 @@
 
 ## Internal pattern
 - `src/adapters/node/` — Node file-system and spec-source adapters, the Node-fs runtime medium,
-  system clocks, random IDs; also the bundle, webview-bundle and CSS guard tests.
+  system clocks, random IDs; the setup (0014): `fetchReleaseHttp` (only `fetch` caller), `tarGzArchive`
+  (zlib, own ustar/pax reader), `nodeSetupTarget` (`wx` create, temp file and rename); also the bundle, webview-bundle and CSS guard tests.
 - `src/adapters/providers/<id>/` — provider adapters behind `AgentProviderPort`:
   - `fake/` (0009) — the deterministic fake provider (scenarios, script); never touches I/O.
   - `copilot/` (0010) — the GitHub Copilot SDK adapter: client seam (`client.ts`), SDK wrapper
