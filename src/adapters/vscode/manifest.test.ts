@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import * as path from 'path';
 import { describe, expect, it } from 'vitest';
-import { MOVE_COMMAND_TITLE } from '../../shared/protocol/texts';
+import { MOVE_COMMAND_TITLE, S2_WELCOME } from '../../shared/protocol/texts';
 import { FAKE_SCENARIOS } from '../providers/fake/scenarios';
 import { PROVIDER_IDS } from '../../core/providers/testing/scan';
 
@@ -18,6 +18,7 @@ interface Manifest {
         commands?: { command: string; title: string }[];
         viewsContainers?: { activitybar?: { id: string; title: string; icon: string }[] };
         views?: Record<string, { id: string; name: string }[]>;
+        viewsWelcome?: { view: string; contents: string; when?: string }[];
         menus?: { commandPalette?: { command: string; when: string }[] };
         configuration?: {
             properties?: Record<
@@ -148,6 +149,22 @@ describe('extension manifest', () => {
         expect(manifest.contributes?.views?.['featherspec-studio']).toEqual([{ id: 'featherspec-studio.navigator', name: 'FeatherSpec Studio' }]);
     });
 
+    it('AC-001 (0014): contributes the setup command, the hidden merge prompt command and the S2 welcome with the setup link alone on its line', () => {
+        const commands = manifest.contributes?.commands ?? [];
+        expect(commands).toEqual(
+            expect.arrayContaining([
+                { command: 'featherspec-studio.setup', title: 'FeatherSpec Studio: Set Up FeatherSpec' },
+                { command: 'featherspec-studio.copyMergePrompt', title: 'FeatherSpec Studio: Copy Merge Prompt' },
+            ]),
+        );
+        expect(manifest.contributes?.menus?.commandPalette).toContainEqual({ command: 'featherspec-studio.copyMergePrompt', when: 'false' });
+        const welcome = manifest.contributes?.viewsWelcome ?? [];
+        expect(welcome).toEqual([{ view: 'featherspec-studio.navigator', contents: S2_WELCOME, when: 'featherspec-studio.panelState == S2' }]);
+        const lines = S2_WELCOME.split('\n');
+        expect(lines).toContain('[Set up FeatherSpec](command:featherspec-studio.setup)');
+        expect(lines.filter((line) => line.includes('featherspec-studio.setup'))).toHaveLength(1);
+    });
+
     it('AC-003 (0005): the icon file ships as a monochrome SVG', () => {
         const svg = readFileSync(path.resolve(process.cwd(), 'media', 'studio.svg'), 'utf8');
         expect(svg).toContain('<svg');
@@ -171,7 +188,10 @@ describe('extension manifest', () => {
         const commands = Object.fromEntries((manifest.contributes?.commands ?? []).map((command) => [command.command, command.title]));
         expect(commands['featherspec-studio.rescan']).toBe('FeatherSpec Studio: Rescan Project');
         expect(commands['featherspec-studio.shellAction']).toBeDefined();
-        expect(manifest.contributes?.menus?.commandPalette).toEqual([{ command: 'featherspec-studio.shellAction', when: 'false' }]);
+        expect(manifest.contributes?.menus?.commandPalette).toEqual([
+            { command: 'featherspec-studio.copyMergePrompt', when: 'false' },
+            { command: 'featherspec-studio.shellAction', when: 'false' },
+        ]);
     });
 
     it('0007 AC-014: contributes the Move Spec command with the spec title, and it is not hidden from the palette', () => {

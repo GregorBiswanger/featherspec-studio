@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PanelState } from './messages';
-import { ACTION_LABELS, panelStateActions, panelStateLines } from './texts';
+import { ACTION_LABELS, panelStateActions, panelStateLines, S2_WELCOME } from './texts';
 
 const pending = { folder: 'api', markers: [], setupPending: true as const };
 const missing = { folder: 'web', markers: ['.specs/ directory'] };
@@ -50,5 +50,18 @@ describe('AC-015: the S9 lines', () => {
         expect(panelStateLines({ id: 'S9', folders: [{ folder: 'api', markers: ['.specs/ directory'], setupPending: true }] })).toEqual([
             'FeatherSpec setup not finished: api has files to merge.',
         ]);
+    });
+});
+
+describe('AC-001: the S2 welcome text of the navigator', () => {
+    it('is the S2 line, the setup button alone on its line, then the two links on one line', () => {
+        expect(S2_WELCOME).toBe(
+            [
+                'No FeatherSpec project found in this workspace.',
+                '[Set up FeatherSpec](command:featherspec-studio.setup)',
+                '[Open setup guide](command:featherspec-studio.shellAction?%5B%22openSetupGuide%22%5D) · [Refresh](command:featherspec-studio.shellAction?%5B%22refresh%22%5D)',
+            ].join('\n'),
+        );
+        expect(S2_WELCOME.split('\n')[0]).toBe(panelStateLines({ id: 'S2' })[0]);
     });
 });

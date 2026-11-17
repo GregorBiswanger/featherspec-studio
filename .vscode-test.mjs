@@ -33,4 +33,9 @@ export default defineConfig([
 		files: 'out/test/activation/noMarker.test.js',
 		workspaceFolder: singleFolderCopy('not-fs-speckit'),
 	},
+	{
+		label: 'setup-no-marker',
+		files: 'out/test/setup/noProject.test.js',
+		workspaceFolder: singleFolderCopy('not-fs-speckit'),
+	},
 ]);

@@ -3,7 +3,7 @@
 **Spec:** [0014-setup-featherspec-from-studio.md](0014-setup-featherspec-from-studio.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-008
+**Current step:** T-009
 
 ## Approach
 
@@ -157,8 +157,8 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 - **Covers:** AC-001 (view), AC-002, AC-025 (wiring)
 - **Do:** `texts.ts`: `S2_WELCOME` (the S2 line; "Set up FeatherSpec" alone on its line → button; "Open setup guide · Refresh" as two links on one line, via `featherspec-studio.shellAction?["openSetupGuide"]` and `["refresh"]`). `package.json`: command `featherspec-studio.setup` "FeatherSpec Studio: Set Up FeatherSpec"; `featherspec-studio.copyMergePrompt` (hidden from the palette); `viewsWelcome` for `featherspec-studio.navigator` with `when: featherspec-studio.panelState == S2` and the contents of `S2_WELCOME`; activation events and the `untrustedWorkspaces` description unchanged. `src/adapters/vscode/setupUi.ts` (quick pick, modal `showInformationMessage`, cancellable `withProgress` → `AbortController`, notifications, `env.clipboard`). `studioTree.ts` sets the context key from `model.welcome` before refreshing. `extension.ts` composes service, fetch adapter (version from the manifest), Node target, tar reader; registers the command; shell actions call it. `manifest.test.ts`: command, welcome entry equals `S2_WELCOME` with the setup link alone on its line, activation unchanged. Host: `src/test/setup.smoke.test.ts` (command registered) and `src/test/setup/noProject.test.ts` with a `setup-no-marker` configuration in `.vscode-test.mjs` (own copy of `not-fs-speckit`; activates the extension explicitly; tree `welcome` is S2 and the panel's first action is setUp; runs no setup, so nothing is downloaded). `activation-no-marker` stays untouched.
 - **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`; host files compile via `npx tsc -p . --outDir out` (run on CI)
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** 2026-11-17 — gates: eslint, both `tsc`, `npm run test:unit` (manifest test updated for the hidden `copyMergePrompt` palette entry, then 25 passed; AC-024 scan in `applySetup.test.ts` now covers `adapters/vscode/setupUi.ts`: 256 passed in `src/core/setup`), `npm run compile` and `npm run compile-tests` (host files compile). Host tests `src/test/setup.smoke.test.ts` and `src/test/setup/noProject.test.ts` (`setup-no-marker` configuration) could not run here; they run on CI. Texts asserted literally in `panelStateTexts.test.ts` (`S2_WELCOME`) and `manifest.test.ts` (welcome entry equals `S2_WELCOME`, setup link alone on its line, activation events unchanged).
+- **Notes:** `featherspec-studio.setup` and `copyMergePrompt` are registered in `extension.ts`; the shell actions call them through `executeCommand`. The context key `featherspec-studio.panelState` is set from `model.welcome` (empty string otherwise). The host `noProject.test.ts` runs no setup, so nothing is downloaded.
 
 ### T-009 — Amend specs 0001 and 0005 (0014 §5)
 

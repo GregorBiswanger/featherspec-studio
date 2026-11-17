@@ -87,6 +87,14 @@
         "title": "FeatherSpec Studio: Run Panel Action"
       },
       {
+        "command": "featherspec-studio.setup",
+        "title": "FeatherSpec Studio: Set Up FeatherSpec"
+      },
+      {
+        "command": "featherspec-studio.copyMergePrompt",
+        "title": "FeatherSpec Studio: Copy Merge Prompt"
+      },
+      {
         "command": "featherspec-studio.selectProject",
         "title": "FeatherSpec Studio: Select Project"
       },
@@ -124,8 +132,19 @@
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "featherspec-studio.navigator",
+        "contents": "No FeatherSpec project found in this workspace.\n[Set up FeatherSpec](command:featherspec-studio.setup)\n[Open setup guide](command:featherspec-studio.shellAction?%5B%22openSetupGuide%22%5D) \u00b7 [Refresh](command:featherspec-studio.shellAction?%5B%22refresh%22%5D)",
+        "when": "featherspec-studio.panelState == S2"
+      }
+    ],
     "menus": {
       "commandPalette": [
+        {
+          "command": "featherspec-studio.copyMergePrompt",
+          "when": "false"
+        },
         {
           "command": "featherspec-studio.shellAction",
           "when": "false"

@@ -10,6 +10,12 @@ import { createOutputChannel } from './adapters/vscode/outputChannel';
 import { createShellActions } from './adapters/vscode/shellActions';
 import { createStudioPanel, VIEW_TYPE, type StudioPanel, type StudioPanelInspection } from './adapters/vscode/studioPanel';
 import { AREA_COMMANDS, MOVE_COMMAND, OPEN_COMMAND, RESCAN_COMMAND, SHELL_ACTION_COMMAND } from './adapters/vscode/commands';
+import { createFetchReleaseHttp } from './adapters/node/fetchReleaseHttp';
+import { createNodeSetupTarget } from './adapters/node/nodeSetupTarget';
+import { createTarGzArchive } from './adapters/node/tarGzArchive';
+import { createSetupUi } from './adapters/vscode/setupUi';
+import { createSetupService } from './core/setup/setupService';
+import { SETUP_COMMAND_ID } from './shared/protocol/texts';
 import { createStudioTree } from './adapters/vscode/studioTree';
 import { createTrust } from './adapters/vscode/trust';
 import { createUiMemory } from './adapters/vscode/uiMemory';
@@ -221,6 +227,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     runOrchestrator = orchestrator;
     const startRuns = createRunSource({ session });
     const runCommands = createRunCommands({ orchestrator, session, ui: createOrchestratorUi() });
+    const shellActions = createShellActions({
+        showOutput: () => output.show(),
+        reloadPanel: () => studio?.reload(),
+        setUp: async () => void (await vscode.commands.executeCommand(SETUP_COMMAND_ID)),
+        copyMergePrompt: async () => void (await vscode.commands.executeCommand('featherspec-studio.copyMergePrompt')),
+    });
     const service = createShellService({
         discovery: controller,
         repository,
@@ -228,13 +240,25 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         folders: createWorkspaceFolders(),
         trust: createTrust(),
         memory: createUiMemory(context.workspaceState),
-        actions: createShellActions({
-            showOutput: () => output.show(),
-            reloadPanel: () => studio?.reload(),
-            setUp: async () => void (await vscode.commands.executeCommand('featherspec-studio.setup')),
-            copyMergePrompt: async () => void (await vscode.commands.executeCommand('featherspec-studio.copyMergePrompt')),
-        }),
+        actions: shellActions,
         sameRoot,
+    });
+    const setup = createSetupService({
+        trust: createTrust(),
+        folders: createWorkspaceFolders(),
+        discovery: controller,
+        http: createFetchReleaseHttp(),
+        archive: createTarGzArchive(),
+        target: createNodeSetupTarget(),
+        ui: createSetupUi(),
+        clock: createSystemClock(),
+        output,
+        actions: {
+            manageTrust: () => shellActions.manageTrust(),
+            showOutput: () => output.show(),
+            openSetupGuide: () => shellActions.openSetupGuide(),
+        },
+        studioVersion: String((context.extension.packageJSON as { version?: unknown }).version ?? ''),
     });
     const selection = createShellSelection(service);
     const board = createBoardService({
@@ -378,6 +402,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         vscode.window.registerWebviewPanelSerializer(VIEW_TYPE, panel.serializer),
         vscode.commands.registerCommand(OPEN_COMMAND, openStudio({ via: 'start' })),
         ...AREA_IDS.map((area) => vscode.commands.registerCommand(AREA_COMMANDS[area], openStudio({ via: 'area', area }))),
+        vscode.commands.registerCommand(SETUP_COMMAND_ID, () => setup.start()),
+        vscode.commands.registerCommand('featherspec-studio.copyMergePrompt', () => setup.copyMergePrompt()),
         vscode.commands.registerCommand(RESCAN_COMMAND, () => service.rescan()),
         vscode.commands.registerCommand(SHELL_ACTION_COMMAND, (action: unknown) => {
             const payload = { action };

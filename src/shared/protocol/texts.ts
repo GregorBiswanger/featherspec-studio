@@ -112,6 +112,18 @@ export function panelStateActions(state: PanelState): ActionId[] {
     }
 }
 
+export const SETUP_COMMAND_ID = 'featherspec-studio.setup';
+
+function shellActionLink(label: string, action: ActionId): string {
+    return `[${label}](command:featherspec-studio.shellAction?${encodeURIComponent(JSON.stringify([action]))})`;
+}
+
+export const S2_WELCOME = [
+    'No FeatherSpec project found in this workspace.',
+    `[${ACTION_LABELS.setUp}](command:${SETUP_COMMAND_ID})`,
+    `${shellActionLink(ACTION_LABELS.openSetupGuide, 'openSetupGuide')} · ${shellActionLink(ACTION_LABELS.refresh, 'refresh')}`,
+].join('\n');
+
 export const PLACEHOLDER_TEXT = 'Not available in this version of FeatherSpec Studio';
 
 export const NO_SPECS_TEXT = 'This project has no specs yet.';

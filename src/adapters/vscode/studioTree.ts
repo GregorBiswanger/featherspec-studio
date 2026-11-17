@@ -3,6 +3,8 @@ import { buildTreeModel, type TreeItemModel, type TreeModel } from '../../core/s
 import type { ShellService } from '../../core/shell/shellService';
 import { AREA_COMMANDS, NAVIGATOR_VIEW, OPEN_COMMAND, SHELL_ACTION_COMMAND } from './commands';
 
+const PANEL_STATE_CONTEXT = 'featherspec-studio.panelState';
+
 export interface StudioTree extends vscode.Disposable {
     model(): TreeModel;
 }
@@ -38,11 +40,15 @@ export function createStudioTree(service: ShellService): StudioTree {
         getTreeItem: toItem,
         getChildren: (element) => (element === undefined ? model.items : []),
     };
+    const publish = () => {
+        treeView.message = model.message;
+        void vscode.commands.executeCommand('setContext', PANEL_STATE_CONTEXT, model.welcome ?? '');
+    };
     const treeView = vscode.window.createTreeView(NAVIGATOR_VIEW, { treeDataProvider: provider });
-    treeView.message = model.message;
+    publish();
     const subscription = service.onDidChangeView(() => {
         model = current();
-        treeView.message = model.message;
+        publish();
         changed.fire();
     });
     return {
