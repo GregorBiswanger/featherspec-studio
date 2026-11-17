@@ -1,6 +1,6 @@
 # Plan — Workspace Discovery & Project Recognition
 
-**Spec:** [0001-workspace-discovery-project-recognition.md](0001-workspace-discovery-project-recognition.md)
+**Spec:** [0001-workspace-discovery-project-recognition.md](../done/0001-workspace-discovery-project-recognition.md)
 **Status:** Done
 **Last updated:** 2026-11-17
 **Current step:** none (all steps ticked)
@@ -369,7 +369,7 @@ Closed 2026-11-17 (closing session, Gregor's delegation of the same day):
 ## Session handoff
 
 - **Done so far:** T-001…T-014 ticked with recorded runs. T-014 (2026-11-17, second `/sdd-compile`): host tests for activation by `.specs/` alone plus a no-marker control; AC-009 and AC-022 proof lines (pre-release checklist).
-- **Next action:** none in this plan; the orchestrator re-runs `npm test` on Windows for the T-014 commit.
+- **Next action:** none; plan archived 2026-11-17 after `/sdd-compile` READY (manual items: 2, pre-release checklist). Frozen.
 - **Open decisions:** OP-006…OP-012 (spec §17), none blocking.
 - **Baseline:** `2083696` (HEAD before the first step commit; lifecycle move 2026-11-16). Delta commits: T-010 `6de03cd`, T-011 `c0a202e`.
 - **Environment:** `npm test` cannot run here (VS Code download blocked); it runs on CI and on Gregor's Windows machine.

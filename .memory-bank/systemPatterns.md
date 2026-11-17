@@ -18,10 +18,10 @@ holds the *why*: decisions and patterns.
   [docs/product/po-handoff.md](../docs/product/po-handoff.md) §3 P2, §6.3
 - Activation: `workspaceContains:AGENTS.md`, `workspaceContains:.specs` and `onWebviewPanel:featherspecStudio.main` (panel restore) plus Studio's own commands and views;
   no `onStartupFinished` (ADR-001 §8 stays). Live re-detection holds once Studio is active · 2026-11-16 ·
-  [spec 0001](../.specs/active/0001-workspace-discovery-project-recognition.md) §15 (OP-005, Gregor)
+  [spec 0001](../.specs/done/0001-workspace-discovery-project-recognition.md) §15 (OP-005, Gregor)
 - Unit tests sit next to the code and the Vitest config is `.mjs`, because `tsconfig.json` has
   `rootDir: src` and no `include`; `skipLibCheck` is on because vitest's `index.d.cts` fails
-  `tsc` under Node16 · 2026-11-16 · [plan 0001](../.specs/active/0001-workspace-discovery-project-recognition.plan.md) T-001
+  `tsc` under Node16 · 2026-11-16 · [plan 0001](../.specs/plan-archive/0001-workspace-discovery-project-recognition.2026-11-17.plan.md) T-001
 - Core reaches the host through small ports (`src/core/ports/host.ts`); the discovery controller is
   proven on fakes, the VS Code adapters hold no logic; the `vscode` import in `src/core/**` is
   banned by ESLint · 2026-11-16 · plan 0001 *Approach*

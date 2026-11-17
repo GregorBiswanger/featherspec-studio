@@ -1,7 +1,7 @@
 # Workspace Discovery & Project Recognition
 
-**Status:** In Progress
-**Plan:** [0001-workspace-discovery-project-recognition.plan.md](0001-workspace-discovery-project-recognition.plan.md)
+**Status:** Implemented
+**Plan:** [0001-workspace-discovery-project-recognition.2026-11-17.plan.md](../plan-archive/0001-workspace-discovery-project-recognition.2026-11-17.plan.md)
 
 ## 1. Summary
 
@@ -299,5 +299,9 @@ manual check on his sample projects.
 
 ## 20. Recommended next steps
 
-1. Gregor reads the plan [0001-workspace-discovery-project-recognition.plan.md](0001-workspace-discovery-project-recognition.plan.md).
+1. Gregor reads the archived plan [0001-workspace-discovery-project-recognition.2026-11-17.plan.md](../plan-archive/0001-workspace-discovery-project-recognition.2026-11-17.plan.md).
 2. Gregor answers OP-006…OP-012 when convenient; `/sdd-specify` (revise mode) applies the answers.
+
+## Plan history
+
+- 2026-11-17 — [0001-workspace-discovery-project-recognition.2026-11-17.plan.md](../plan-archive/0001-workspace-discovery-project-recognition.2026-11-17.plan.md) — T-001…T-014 done; `/sdd-compile` READY (manual items: 2 — AC-009 reload, AC-022 Restricted Mode as pre-release checklist items).
