@@ -3,7 +3,7 @@
 **Spec:** [0008-spec-activation-agent-start.md](0008-spec-activation-agent-start.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-007
+**Current step:** T-008
 
 ## Approach
 
@@ -246,8 +246,8 @@ stage and becomes its own step.
   (`fs110-de-active-review`) is refused with P-1 and P-2, no run is created, the tree is unchanged;
   waits up to 60 s and reports what it awaited and the last view on timeout; Mocha timeout 120 s.
 - **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** 2026-11-17 — red: `npx vitest run src/adapters/vscode/manifest` after adding the 0008 manifest tests, before `package.json`: 2 of 19 failed (`expected undefined to be 'string'`, `expected [] to deeply equal ['featherspec-studio.defaultProvider']`). Green after the setting: 19 of 19. The wiring (`providerSettings.ts`, `studioPanel.ts`, `extension.ts`) has no unit test (VS Code API); it is covered by tsc, eslint, `npm run compile` and by the end-to-end unit test of T-004 over the same flow, binding and fakes. Host smoke `src/test/agentStart.smoke.test.ts` written, compiled and linted, not run here (CI only). Gates: `npx eslint src --max-warnings 0`, `npx tsc --noEmit`, `npx tsc --noEmit -p src/webview` clean, `npm run test:unit` 136 files, 1723 tests green, `npm run compile` finished.
+- **Notes:** Deviation from plan 0009 T-008 (approved by Gregor 2026-11-17): the manifest assertion is narrowed from 'no property defaults to a PROVIDER_IDS id' to 'no property defaults to fake'; recorded in 0009's plan T-008 Notes. The host smoke asserts that P-1 and P-2 are among the refusal items (P-3 is also there on a host without a registered copilot provider). `panelHidden` is also called on panel dispose and on extension dispose; `StudioApi.agentStart()` has `view`, `handOff(stem, key)`, `cancel`, `whenIdle`; `StudioApi.whenIdle` awaits the flow too. The flow reveals the panel through `studio?.show()`.
 
 ### T-008 — Docs sync and final gates
 
@@ -270,9 +270,9 @@ stage and becomes its own step.
 | --- | --- | --- | --- | --- |
 | AC-001 | T-002, T-003, T-005 | src/core/agentStart/startFlow.ts:handOff, src/core/agentStart/refusalItems.ts, src/webview/agentStart/StartLines.tsx, texts.ts | startFlow.test.ts (refusal), preconditions.test.ts, StartLines.test.tsx | built |
 | AC-002 | T-003, T-006 | src/core/agentStart/startFlow.ts:check, src/webview/agentStart/StartDialog.tsx | startFlow.test.ts (confirmation items), StartDialog.test.tsx | built |
-| AC-003 | T-003, T-006, T-007 | src/core/agentStart/startFlow.ts:cancel, panelHidden, src/webview/agentStart/StartDialog.tsx (Escape) | startFlow.test.ts (cancel, hide, project change), StartDialog.test.tsx | built |
+| AC-003 | T-003, T-006, T-007 | src/core/agentStart/startFlow.ts:cancel, panelHidden, src/adapters/vscode/studioPanel.ts (view state, dispose), StartDialog.tsx (Escape) | startFlow.test.ts (cancel, hide, project change), StartDialog.test.tsx | built |
 | AC-004 | T-004 | src/core/agentStart/startFlow.ts:doStart | src/core/agentStart/startFlow.start.test.ts (AC-004) | built |
-| AC-005 | T-004, T-007 | src/core/agentStart/startFlow.ts:doStart, src/core/agentStart/orchestratorBinding.ts | src/core/agentStart/startFlow.start.test.ts (AC-005), agentStart.endToEnd.test.ts | built |
+| AC-005 | T-004, T-007 | src/core/agentStart/startFlow.ts:doStart, orchestratorBinding.ts, src/extension.ts (wiring) | startFlow.start.test.ts (AC-005), agentStart.endToEnd.test.ts, src/test/agentStart.smoke.test.ts (CI) | built |
 | AC-006 | T-001, T-006 | src/core/agentStart/startPrompt.ts:buildStartPrompt, src/webview/agentStart/StartDialog.tsx | startPrompt.test.ts (golden), StartDialog.test.tsx (same text shown) | built |
 | AC-007 | T-002 | src/core/agentStart/preconditions.ts:checkPreconditions | src/core/agentStart/preconditions.test.ts (P-2) | verified |
 | AC-008 | T-002, T-004, T-005 | src/core/agentStart/preconditions.ts (P-5), startFlow.ts:doStart, src/webview/agentStart/StartLines.tsx | preconditions.test.ts (P-5), startFlow.start.test.ts (AC-008), StartLines.test.tsx | built |
@@ -286,8 +286,8 @@ stage and becomes its own step.
 
 ## Session handoff
 
-- **Done so far:** Stages 1 to 3 built (T-001 to T-005): prompt with golden file, preconditions, start flow (hand-off, refusal, confirmation, cancel, pending, Start, 0011 answers, start failure notice), orchestrator binding with the end-to-end test through the board's `requestMove`, panel lines and messages.
-- **Next action:** T-006 (confirmation dialog), then T-007 (setting, panel and extension wiring, host smoke), T-008 (docs sync, final gates).
+- **Done so far:** Stages 1 to 4 built (T-001 to T-007): everything of stages 1 to 3, the confirmation dialog, the `featherspec-studio.defaultProvider` setting (default `copilot`), panel and extension wiring (flow, binding, handlers, push on hello, hide cancels), host smoke written (CI only), 0009's plan Notes amended for the narrowed manifest assertion.
+- **Next action:** T-008 (docs sync: README, AGENTS.md snapshot, systemPatterns.md, techContext.md, activeContext.md, then every gate and the mechanical plan check).
 - **Open decisions:** the narrowed 0009 manifest assertion (T-007, 0009's plan to be amended the FeatherSpec way); OP-010 taken by the spec's recommendation (Gregor, 2026-11-17).
 - **Baseline:** 3b3ab8b (before T-001).
 - **Environment:** `npm test` cannot run here; it runs on CI or Gregor's Windows machine. Steps are run test-first through a `Not implemented` stub; one commit per step.

@@ -17,7 +17,7 @@ import { createStatusBar } from './adapters/vscode/statusBar';
 import { createFileWatch } from './adapters/vscode/fileWatch';
 import { createRuntimeUi } from './adapters/vscode/runtimeUi';
 import { createMaxAgeDaysSetting } from './adapters/vscode/runtimeSettings';
-import { createFakeProviderEnabledSetting, createFakeProviderScenarioSetting } from './adapters/vscode/providerSettings';
+import { createDefaultProviderSetting, createFakeProviderEnabledSetting, createFakeProviderScenarioSetting } from './adapters/vscode/providerSettings';
 import { createFakeProvider } from './adapters/providers/fake/fakeProvider';
 import { createOrchestrator, type Orchestrator } from './core/orchestrator/orchestrator';
 import { createRunCommands } from './core/orchestrator/runCommands';
@@ -44,6 +44,10 @@ import { createBoardService } from './core/board/boardService';
 import { createMissionControlService } from './core/missionControl/missionControlService';
 import { createBoardRequests } from './core/board/boardRequests';
 import { createMoves } from './core/board/moves';
+import { createAgentStartHandlers } from './core/agentStart/agentStartRequests';
+import { bindOrchestrator } from './core/agentStart/orchestratorBinding';
+import { createStartFlow } from './core/agentStart/startFlow';
+import { createRunSource } from './core/missionControl/runSource';
 import { createOpenFile } from './core/board/openFile';
 import { createShellSelection } from './core/board/shellSelection';
 import { createLifecycleService, type LifecycleService } from './core/lifecycle/lifecycleService';
@@ -52,6 +56,7 @@ import { createShellService, type OpenRequest } from './core/shell/shellService'
 import { AREA_IDS } from './shared/protocol/areas';
 import type { BoardView, MoveResult } from './shared/protocol/board';
 import type { BoardFilter, BoardState } from './shared/protocol/boardFilter';
+import type { AgentStartView } from './shared/protocol/agentStart';
 import type { DetailView } from './shared/protocol/detail';
 import type { MissionControlView } from './shared/protocol/missionControl';
 import { isRunActionPayload, type ProbeOutcome, type ShellView } from './shared/protocol/messages';
@@ -85,6 +90,13 @@ export interface MissionControlTestApi {
     listen(listener: (view: MissionControlView | undefined) => void): vscode.Disposable;
 }
 
+export interface AgentStartTestApi {
+    view(): AgentStartView;
+    handOff(stem: string, key: string): void;
+    cancel(token: string): void;
+    whenIdle(): Promise<void>;
+}
+
 export interface StudioApi {
     snapshot(): DiscoverySnapshot;
     whenIdle(): Promise<void>;
@@ -94,6 +106,7 @@ export interface StudioApi {
     lifecycle(): LifecycleService;
     providers(): { registry: ProviderRegistry; service: ProviderService };
     orchestrator(): Orchestrator;
+    agentStart(): AgentStartTestApi;
     shell(): ShellTestApi;
     board(): BoardTestApi;
     missionControl(): MissionControlTestApi;
@@ -170,6 +183,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         workingDirectory: () => controller.snapshot().active?.root,
     });
     runOrchestrator = orchestrator;
+    const startRuns = createRunSource({ session });
     const runCommands = createRunCommands({ orchestrator, session, ui: createOrchestratorUi() });
     const service = createShellService({
         discovery: controller,
@@ -195,9 +209,24 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         history: { read: () => lifecycle.history(), onDidChange: (listener) => lifecycle.onDidChange(() => listener()) },
         clock: createSystemClock(),
     });
+    const agentStart = createStartFlow({
+        preconditions: {
+            model: modelSource,
+            files: createVscodeFileSystem(),
+            setting: createDefaultProviderSetting(),
+            registry: providers.registry,
+            providers: providers.service,
+            runs: startRuns,
+            session,
+            trust: createTrust(),
+        },
+        orchestrator: bindOrchestrator(orchestrator, (root) => vscode.Uri.parse(root).fsPath),
+        ui: { reveal: () => studio?.show() },
+        runs: startRuns,
+    });
     const moves = createMoves({
         source: modelSource,
-        start: undefined,
+        start: agentStart,
         picks: createMovePicks(),
         sink: createMoveResultSink((result) => studio?.showMoveResult(result) ?? false),
         selection,
@@ -227,6 +256,15 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             onDidOpenFileResult: (listener) => requests.onDidOpenFileResult(listener),
             panelClosed: () => board.panelClosed(),
         },
+        agentStart: {
+            handlers: createAgentStartHandlers(agentStart),
+            view: () => agentStart.view(),
+            onDidChangeView: (listener) => {
+                const subscription = agentStart.onDidChangeView(listener);
+                return new vscode.Disposable(() => subscription.dispose());
+            },
+            panelHidden: () => agentStart.panelHidden(),
+        },
         output,
         testMode: context.extensionMode === vscode.ExtensionMode.Test,
     });
@@ -242,6 +280,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         { dispose: () => service.dispose() },
         navigation,
         { dispose: () => board.dispose() },
+        { dispose: () => agentStart.dispose() },
+        { dispose: () => startRuns.dispose() },
         { dispose: () => missionControl.dispose() },
         tree,
         panel,
@@ -278,6 +318,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             await lifecycle.whenIdle();
             await board.whenIdle();
             await missionControl.whenIdle();
+            await agentStart.whenIdle();
         },
         specs: () => repository,
         runtimeState: () => session.state(),
@@ -285,6 +326,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         lifecycle: () => lifecycle,
         providers: () => ({ registry: providers.registry, service: providers.service }),
         orchestrator: () => orchestrator,
+        agentStart: () => ({
+            view: () => agentStart.view(),
+            handOff: (stem, key) => agentStart.handOff({ stem, key }),
+            cancel: (token) => agentStart.cancel(token),
+            whenIdle: () => agentStart.whenIdle(),
+        }),
         board: () => ({
             view: () => board.view(),
             detail: () => board.detail(),

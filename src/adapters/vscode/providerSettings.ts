@@ -4,6 +4,7 @@ import type { SettingPort } from '../../core/ports/host';
 const SECTION = 'featherspec-studio';
 const ENABLED_KEY = 'fakeProvider.enabled';
 const SCENARIO_KEY = 'fakeProvider.scenario';
+const DEFAULT_PROVIDER_KEY = 'defaultProvider';
 
 export function createFakeProviderEnabledSetting(): SettingPort {
     return {
@@ -20,4 +21,17 @@ export function createFakeProviderEnabledSetting(): SettingPort {
 
 export function createFakeProviderScenarioSetting(): () => unknown {
     return () => vscode.workspace.getConfiguration(SECTION).get<unknown>(SCENARIO_KEY);
+}
+
+export function createDefaultProviderSetting(): SettingPort {
+    return {
+        read: () => vscode.workspace.getConfiguration(SECTION).get<unknown>(DEFAULT_PROVIDER_KEY),
+        onDidChange(listener) {
+            return vscode.workspace.onDidChangeConfiguration((event) => {
+                if (event.affectsConfiguration(`${SECTION}.${DEFAULT_PROVIDER_KEY}`)) {
+                    listener();
+                }
+            });
+        },
+    };
 }

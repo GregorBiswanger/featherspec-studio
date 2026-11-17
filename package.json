@@ -115,6 +115,12 @@
           "scope": "application",
           "description": "Number of days FeatherSpec Studio keeps ended agent runs, their events and the spec status history. Older data is removed when Studio activates. Runs that are still open are never removed."
         },
+        "featherspec-studio.defaultProvider": {
+          "type": "string",
+          "default": "copilot",
+          "scope": "window",
+          "description": "ID of the agent provider that starts an agent when you move a Ready spec to Active. There is no picker: this setting is the only choice. Shipped as copilot; set it to fake, after enabling the fake provider, to try Studio without an agent."
+        },
         "featherspec-studio.fakeProvider.enabled": {
           "type": "boolean",
           "default": false,

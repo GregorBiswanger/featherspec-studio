@@ -36,6 +36,7 @@ export interface PanelAgentStart {
     handlers: Pick<RequestHandlers, AgentStartRequestType>;
     view(): AgentStartView;
     onDidChangeView(listener: () => void): vscode.Disposable;
+    panelHidden(): void;
 }
 
 export interface StudioPanelDeps {
@@ -125,6 +126,12 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
         post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'detail', payload: { view } });
     }
 
+    function pushAgentStart(): void {
+        if (deps.agentStart !== undefined) {
+            post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'agentStart', payload: { view: deps.agentStart.view() } });
+        }
+    }
+
     function pushMove(result: MoveResult): void {
         lastMove = result.kind === 'none' ? undefined : result;
         post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'moveResult', payload: { result } });
@@ -143,6 +150,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
                 pushBoard(deps.board.view());
                 pushMissionControl(deps.missionControl.view());
                 pushDetail(deps.board.detail());
+                pushAgentStart();
                 if (lastMove !== undefined) {
                     pushMove(lastMove);
                 }
@@ -174,6 +182,12 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
             deps.missionControl.onDidChangeView(pushMissionControl),
             deps.board.onDidChangeDetail(pushDetail),
             deps.board.onDidMoveResult(pushMove),
+            ...(deps.agentStart === undefined ? [] : [deps.agentStart.onDidChangeView(pushAgentStart)]),
+            target.onDidChangeViewState((event) => {
+                if (!event.webviewPanel.visible) {
+                    deps.agentStart?.panelHidden();
+                }
+            }),
             deps.board.onDidOpenFileResult((payload) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'openFileResult', payload })),
             target.onDidDispose(() => {
                 subscriptions.forEach((subscription) => subscription.dispose());
@@ -181,6 +195,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
                 panel = undefined;
                 lastMove = undefined;
                 probeChannel.markNotReady();
+                deps.agentStart?.panelHidden();
                 deps.board.panelClosed();
             }),
         ];
@@ -241,6 +256,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
             panel?.dispose();
             panel = undefined;
             lastMove = undefined;
+            deps.agentStart?.panelHidden();
             deps.board.panelClosed();
         },
     };

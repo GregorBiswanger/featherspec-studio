@@ -93,16 +93,31 @@ describe('extension manifest', () => {
         expect(setting?.scope === undefined || setting.scope === 'window').toBe(true);
     });
 
-    it('AC-012 (0009): no configuration property defaults to a provider ID, so a default provider never ships as fake', () => {
+    it('AC-012 (0009): no configuration property defaults to the fake provider, so the fake never ships as a default', () => {
         const defaults = Object.values(manifest.contributes?.configuration?.properties ?? {}).map((property) => property.default);
-        for (const id of PROVIDER_IDS) {
-            expect(defaults).not.toContain(id);
-        }
+        expect(defaults).not.toContain('fake');
     });
 
-    it('AC-012 (0009): negative control, a provider ID as a default would be found', () => {
+    it('AC-012 (0009): negative control, the fake ID as a default would be found', () => {
         expect(['fake', 'copilot'].some((id) => (PROVIDER_IDS as readonly string[]).includes(id))).toBe(true);
         expect([false, 'happy-path', 90].some((value) => (PROVIDER_IDS as readonly unknown[]).includes(value))).toBe(false);
+        expect([false, 'fake', 90]).toContain('fake');
+    });
+
+    it('FR-04 (0008): the default provider is one string setting, window scope, shipped as the first provider copilot and never as fake, its description naming fake for trying', () => {
+        const setting = manifest.contributes?.configuration?.properties?.['featherspec-studio.defaultProvider'];
+        expect(setting?.type).toBe('string');
+        expect(setting?.default).toBe('copilot');
+        expect(setting?.scope === undefined || setting.scope === 'window').toBe(true);
+        expect(setting?.default).not.toBe('fake');
+        expect(setting?.enum).toBeUndefined();
+        expect(setting?.description ?? '').toContain('fake');
+        expect((setting?.description ?? '').length).toBeGreaterThan(40);
+    });
+
+    it('FR-04 (0008): negative control, the manifest declares exactly one default-provider setting', () => {
+        const names = Object.keys(manifest.contributes?.configuration?.properties ?? {}).filter((name) => /defaultProvider|defaultModel|permission/i.test(name));
+        expect(names).toEqual(['featherspec-studio.defaultProvider']);
     });
 
     it('AC-022 (0011): contributes "Stop Run" and "Resume Run" to the palette with their titles', () => {
