@@ -1,23 +1,12 @@
 # Project Brief
 
 ## Mission
-FeatherSpec Studio is a VS Code Desktop extension: a visual command center for spec-driven
-development with FeatherSpec — see every spec, control every agent. It makes the
-spec-to-code process visible and steerable (specs, plans, agent runs, file changes, tests,
-verification) on top of the existing FeatherSpec artifacts, which stay the source of truth.
-Product concept, MVP scope and backlog: [docs/product/po-handoff.md](../docs/product/po-handoff.md).
+A VS Code panel for projects that use FeatherSpec. Studio reads your specs, plans and Memory Bank, shows where every spec stands, and names each spec's next FeatherSpec step, ready to paste into the AI assistant you work with. It starts no agent; the work with the agent stays in the assistant's chat. The FeatherSpec artifacts stay the source of truth.
+Product concept and decisions: [docs/product/po-handoff.md](../docs/product/po-handoff.md), PD-055 and PD-056 in [docs/product/product-decisions.md](../docs/product/product-decisions.md).
 
 ## Primary users
-- Primary: developers working spec-driven with coding agents (GitHub Copilot, Claude Code,
-  Codex); software architects; tech leads steering agent-assisted work.
-- Secondary: product owners, engineering managers, AI engineers, teams using several agent
-  providers.
+- Primary: developers working spec-driven with coding agents (GitHub Copilot, Claude Code, or any other); software architects; tech leads steering agent-assisted work.
+- Secondary: product owners, engineering managers, AI engineers.
 
 ## Success criteria
-The MVP succeeds when the end-to-end scenario of handoff §21 works: open an existing
-FeatherSpec project → specs recognised and read → Mission Control shows the state → the board
-shows specs in the correct columns → a ready spec dragged to Active passes the readiness
-check → a configured agent starts with the spec and approved context → status, events, errors
-and approval requests appear live → the run is stored with its end state → the spec moves to
-Review → the existing FeatherSpec verification decides Done. Automated with a fake provider;
-validated manually with the chosen real provider.
+The product succeeds when this scenario works (spec 0015 AC-030, checked by Gregor on `tip-splitter`): open a FeatherSpec project, Mission Control shows the state, the Spec Board shows specs in the correct columns, a spec's detail names its next step, Copy puts the line on the clipboard and pasting it into the assistant's chat works, and moving a Ready spec to Active starts nothing and shows the next step.

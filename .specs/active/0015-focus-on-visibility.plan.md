@@ -1,9 +1,9 @@
 # Plan — Focus the Studio on Visibility: No Agent Runs, a Named Next Step
 
 **Spec:** [0015-focus-on-visibility.md](0015-focus-on-visibility.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-17
-**Current step:** T-015
+**Current step:** — (all steps verified)
 
 ## Approach
 
@@ -344,7 +344,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
   missing at the head is listed in this plan under `## Test-title audit` with its voided criterion
   or the replacing head title.
 - **Verify:** gates 1–5; `npm run package`; `wc -l AGENTS.md` below 215; `grep -ciE "provider|agent run|agentCenter|orchestrator" .architecture/*.md .memory-bank/projectbrief.md` → 0 each
-- [ ] **Verified (T-015):** —
+- [x] **Verified (T-015):** 2026-11-17 — AGENTS.md snapshot 214 lines (below 215), `.architecture/*.md` and `projectbrief.md` grep for provider|agent run|agentCenter|orchestrator → 0 each, Memory Bank updated, test-title audit written (957 missing titles: 820 with deleted modules, 137 in staying files, each with reason). Final gates: eslint, both tsc, `npm run test:unit` (1665 + 3 skipped in the node/webview projects, 12 timing), compile, compile-tests, package all clean.
 - **Notes:** `npm test` on Windows and CI is the pre-done gate (AC-027) before `/sdd-compile`.
 
 ## Traceability
@@ -377,15 +377,281 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 | AC-024 | T-004, T-011 | src/core/runtime/earlierRunData.ts, src/extension.ts | src/core/runtime/earlierRunData.test.ts, src/adapters/node/earlierRunData.endToEnd.test.ts | verified |
 | AC-025 | T-014 | src/adapters/node/docsScan.test.ts | — | verified |
 | AC-026 | T-006, T-010 | src/shared/protocol/areas.ts, src/shared/protocol/texts.ts, src/core/runtime/notices.ts | src/shared/protocol/messages.test.ts, src/webview/PanelStateView.test.tsx, src/core/runtime/runtimeSession.test.ts | verified |
-| AC-027 | T-015 | — | — | open |
+| AC-027 | T-015 | ## Test-title audit in this plan | `npm test` (Windows, CI) is the pre-done gate, not run here | verified here, host suite pending |
 | AC-028 | T-013 | .specs/done/0008–0012 (Deprecated), .specs/done/0003–0007 and 0013 (notes) | grep checks of T-013 | verified |
-| AC-029 | T-015 | — | — | open |
+| AC-029 | T-015 | AGENTS.md (214 lines), .architecture/*.md, .memory-bank/*.md | grep check in T-015 Verify | verified |
 | AC-030 | T-014, T-015 | — | manual: Gregor, M-1 on `tip-splitter` | open |
 
 ## Session handoff
 
-- **Done so far:** Stages 1 to 4 (T-001…T-012): next step, copy, drop result; board and detail without runs; Mission Control without runs; run wiring, manifest entries and dead modules removed; three areas; the status-history store; the earlier-data removal wired at activation; the SDK uninstalled, the bundle and source scans.
-- **Next action:** T-015 (architecture update, test-title audit, final gates).
+- **Done so far:** All five stages (T-001…T-015); stages 1 to 4: next step, copy, drop result; board and detail without runs; Mission Control without runs; run wiring, manifest entries and dead modules removed; three areas; the status-history store; the earlier-data removal wired at activation; the SDK uninstalled, the bundle and source scans. Stage 5: specs retired and amended (T-013), product docs (T-014), architecture, Memory Bank, test-title audit and final gates (T-015).
+- **Next action:** Gregor: AC-030 / M-1 on `tip-splitter`; `npm test` on Windows and CI; then `/sdd-compile` (not run here).
 - **Open decisions:** — (Gregor approved the changed order and `npm uninstall @github/copilot-sdk`; the parallel stage runs in sequence; deletions listed per step are approved.)
 - **Baseline:** ea4a8bd
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked); host suites run on Windows and CI. Gates: `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`.
+
+## Test-title audit
+
+AC-027. A throw-away script outside the repository (`/tmp/audit/titles.py`) extracted the `it`/`test`/`describe` title literals of all `src/**/*.test.ts(x)` at tag `archive/agent-runs-2026-11-17` (2470 distinct titles) and at the head (1680). 957 titles of the tag are missing at the head. Titles built by `%s` or `%j` are listed with their format text.
+
+### Deleted with their module (820 titles, the whole test file is gone)
+
+| Folder | Titles |
+| --- | ---: |
+| src/adapters/providers/copilot | 170 |
+| src/adapters/providers/fake | 45 |
+| src/core/agentCenter | 139 |
+| src/core/agentStart | 93 |
+| src/core/board | 6 |
+| src/core/missionControl | 28 |
+| src/core/orchestrator | 140 |
+| src/core/providers | 86 |
+| src/core/runtime | 5 |
+| src/shared/protocol | 22 |
+| src/test | 10 |
+| src/webview/agentStart | 23 |
+| src/webview/areas/agentCenter | 53 |
+
+These belong to removed behaviour (providers, orchestrator, agent start, Agent Center, Copilot adapter, run store parts); their criteria are voided by spec 0015 §5 (PD-055).
+
+### Missing from files that stay (137 titles)
+
+**src/adapters/node/extensionBundle.test.ts** — voided with the SDK (AC-017/AC-018 replace them in the bundle scan)
+
+- 0004 AC-013 follow-up: no secret sample reaches the bundle, so the package secret scan of vsce passes
+- AC-005: the SDK JavaScript is part of the bundle
+- AC-005: koffi stays an external of the bundle, never bundled
+- AC-005: negative control, a bundle without the koffi external would pull the native package in or fail
+
+**src/adapters/node/fileRuntimeMedium.test.ts** — run data and secret masking gone (0015 AC-010, AC-013 replace: status history only)
+
+- AC-013: neither a sample token nor the credential is in the bytes the file medium wrote
+- AC-016: no file or folder in a workspace changes while storing, restoring, clearing and failing
+
+**src/adapters/node/randomIds.test.ts** — run IDs gone (spec 0015 §5)
+
+- random run IDs
+- AC-002: 10,000 runs across two projects, one cleared in between, never share an ID
+- AC-002: negative control, a counter-based source repeats IDs across projects
+
+**src/adapters/node/webviewBundle.test.ts** — areas reduced to three; Agent Center and start dialog gone (AC-001)
+
+- starts without a runtime error, renders the frame with the four areas and the loading state, and says hello
+- mounts Mission Control with a snapshot of a fixture project: header, six state counts, progress, the run section, the attention list, the ac
+- 0008: mounts the start confirmation dialog and the start lines from a fixture view: modal dialog, prompt collapsed, no start-up error
+- 0012: mounts the Agent Center with a fixture snapshot: run list, detail with the open request and the timeline, no start-up error
+
+**src/adapters/node/webviewCss.test.ts** — Agent Center and run status styling gone (AC-001, AC-021)
+
+- 0012 AC-029: the Agent Center stylesheet
+- every run status has one rule that sets --fs-tint from its theme variable (open blue, waiting yellow, Completed green, Failed red, Cancelled
+- control: a status the stylesheet does not know has no rule
+- a run status chip tints icon and border only, keeps its text in the foreground colour and takes the contrast border in High Contrast
+- the run rows, the answer controls and the actions set no outline of their own; the selected run row carries the High Contrast active border
+
+**src/adapters/vscode/manifest.test.ts** — commands and settings of runs, providers, Copilot gone (AC-014, AC-015, AC-016 replace)
+
+- AC-015, AC-016, 0004 AC-019: contributes the select, refresh and clear-history commands and no scaffold command
+- 0004 AC-018: the run-history age cap is a user setting, whole days, minimum 1, default 90
+- 0004 AC-018: negative control, the manifest declares no other run-history setting
+- AC-012 (0009): the fake provider is off by default, a boolean with the default window scope
+- AC-012 (0009): the scenario setting lists exactly the fake scenarios, each described, default happy path
+- AC-012 (0009): no configuration property defaults to the fake provider, so the fake never ships as a default
+- AC-012 (0009): negative control, the fake ID as a default would be found
+- FR-04 (0008): the default provider is one string setting, window scope, shipped as the first provider copilot and never as fake, its descrip
+- FR-04 (0008): negative control, the manifest declares exactly one default-provider setting
+- AC-022 (0011): contributes "Stop Run" and "Resume Run" to the palette with their titles
+- AC-002 (0010): the CLI path setting is a machine-scoped string with an empty default
+- AC-008 (0010): the model setting is a window-scoped string with an empty default
+- AC-002 (0010): negative control, the manifest declares exactly the two copilot settings
+- AC-005 (0010): the Copilot SDK is a devDependency pinned exactly and no production dependency exists, so the VSIX carries only the bundle
+
+**src/core/board/boardService.test.ts** — run notification and provider filters gone; the filter, sort and navigation tests stay under the same names without the run part (AC-007, AC-022 voided by 0015 §5)
+
+- AC-007: a run notification updates the card; the store being unavailable shows "not available"
+- AC-007: without a store every card reads "Runs: not available"
+- AC-019: the service follows the store that the session holds now (re-subscribed when it changes)
+- board service: filters and sort
+- AC-022: a navigation filter replaces the filters set before and is shown as set
+- AC-012: clear filters removes every filter and keeps the sort
+- AC-023: filters and sort survive a rebuild of the model and a hidden panel
+- AC-023: a closed panel resets filters and sort
+- AC-023: a change of the project clears the filters and keeps the sort
+- AC-011: the lifecycle model is unchanged by every filter and sort call
+- a change notifies the listeners once; setting the same view again notifies nobody
+- the focused key is remembered and cleared with the panel
+- AC-027: a run notification updates the detail history; an unavailable store shows not available
+
+**src/core/board/boardService.timing.test.ts** — run notification part voided
+
+- a model notification and a run notification reach the view within 500 ms each (PD-047)
+- a model notification and a run notification reach the detail of the selected spec within 500 ms each (PD-047)
+
+**src/core/board/detail.test.ts** — detail without runs (AC-003, AC-027 of 0007 amended)
+
+- AC-027: runs of the stem, newest created first, with flags and no events; the status history of the stem under its label
+- AC-027: with the store unavailable both are not available
+
+**src/core/board/filters.test.ts** — provider filter gone (0015 §5)
+
+- AC-022: a state filter and a provider filter combine with AND; several values of one filter combine with OR
+- AC-022: "No run" (null) matches a card with no run; a card whose runs are not available matches no provider value
+- AC-022: a history-unreadable run still matches its provider
+
+**src/core/board/moves.test.ts** — start workflow replaced by the next-step answer (AC-006 replaces)
+
+- AC-015: an accepted Ready to Active move with no start workflow is refused with "Agent start is not available yet"
+- AC-015: with a start workflow the stem is handed off, the result names the number, and the model is untouched
+
+**src/core/lifecycle/lifecycleService.test.ts** — runs gone
+
+- AC-006: a run of the spec that ends Completed does not change the model
+
+**src/core/missionControl/activity.test.ts** — run sections and run reasons gone (0015 AC-001, §5; 0006 amended)
+
+- BR-07: run entries show every status but Running (a change to Running is not shown)
+- A-005: equal times — spec entries before run entries, then ascending spec number
+- A-006: with the runs not available the list is "not available" with the store reason, even if the history is readable
+- AC-011: only status changes appear — a run with events and an error text yields run status entries only, never the text
+- AC-010: an unreadable run adds no entry (its history is a placeholder)
+- an empty history and no runs give an available, empty list
+
+**src/core/missionControl/attention.test.ts** — run sections and run reasons gone (0015 AC-001, §5; 0006 amended)
+
+- AC-008: a Blocked spec with a failed latest run is one row with both reasons, in the order (a) to (e)
+- AC-008: an Interrupted latest run gives "Run interrupted"; a waiting run gives "Waiting for you" (c)
+- AC-008: a run whose stem matches no spec creates no row (PD-046)
+- AC-008: a Done spec with a failed run has no row (the highlight ended with Done), and a Cancelled run adds nothing (negative control)
+- AC-018: with the runs unavailable the list keeps reasons (a), (d) and (e) and says why the run reasons are missing
+
+**src/core/missionControl/missionControlService.test.ts** — run sections and run reasons gone (0015 AC-001, §5; 0006 amended)
+
+- AC-015: the first listener makes the service compute; the view has all five sections
+- AC-015: a file change (a new model), a run change and a store state change each yield a new view without a reopen
+- AC-006: a run that is created or changes status leaves the total and every state count unchanged; a spec state change leaves Running unchang
+- AC-018: with the store unavailable the runs and the activity are "not available" with the reason, the spec figures and reasons (a), (d), (e)
+- AC-011: events appended through the real store change nothing and cause no new view; a created run does
+- A-011: with no listener the service reads nothing and subscribes to nothing; the last listener leaving stops it again
+- a burst of notifications is coalesced: the sources are read at most once more after the running read
+- AC-017: a model read at 10:00 shows 10:00 in a panel opened at 11:00, and reopening keeps it
+- AC-017 (A-013): a spec read while open moves the time to the read; a processed run change moves it to the clock time of that change
+- AC-017 (negative control): a change the dashboard did not process leaves the time alone
+- createRunSource is the only way the service reaches runs: a session with a real store feeds it (integration of T-001)
+
+**src/core/missionControl/missionControlService.timing.test.ts** — run sections and run reasons gone (0015 AC-001, §5; 0006 amended)
+
+- AC-024: a project of 200 specs, 5 runs per spec and 1,000 history entries is projected within 1000 ms (PD-035)
+
+**src/core/runtime/runtimeSession.test.ts** — Clear Run History command gone (AC-014)
+
+- AC-019: Clear asks for confirmation, removes ended runs and the history, keeps open runs, and reports
+- AC-019: declining removes nothing and says so
+- AC-019: without an active project nothing is cleared and the developer is told
+- AC-019, AC-023: in a reader window Clear says why it did nothing and asks nothing
+- AC-019: a run that could not be removed is counted in the message
+
+**src/core/shell/shellService.navigation.test.ts** — run target of navigate gone
+
+- a run or board-filter target shows the area with the target in the view and changes no selection
+
+**src/shared/protocol/boardFilter.test.ts** — run, agent start and Agent Center messages gone (AC-001, AC-005)
+
+- AC-022: rejects %s
+
+**src/shared/protocol/messages.test.ts** — run, agent start and Agent Center messages gone (AC-001, AC-005)
+
+- navigate: an area with no target, or with a spec, run or board-filter target (PD-040)
+- areas
+- lists the four areas in order; all four have content in this version
+- agent start requests and event (spec 0008)
+- guards the token payload, the dismiss payload and the event payload
+- registers the three request types with their guards
+
+**src/shared/protocol/missionControl.test.ts** — run, agent start and Agent Center messages gone (AC-001, AC-005)
+
+- AC-026: a view with an extra key anywhere is refused, so no run error text can reach the DOM
+- a view with a wrong type or an unknown word is refused
+
+**src/test/missionControl.smoke.test.ts** — host smoke parts about runs gone (AC-010)
+
+- AC-015, AC-023: the view follows a spec file, a created run and a failed status without a reopen, and only the test\'s own file is written
+- AC-006: the run notification does not move the spec counts, the view of the fixture project has the six states
+
+**src/test/runtime.smoke.test.ts** — host smoke parts about runs gone (AC-010)
+
+- 0004 AC-025: the store of the active project is writable, and the clear command is registered
+- 0004 AC-016: storing a run and events leaves the workspace fixture unchanged
+
+**src/test/shell.smoke.test.ts** — host smoke parts about runs gone (AC-010)
+
+- AC-003, AC-029: the tree shows the project name and the six entries; every shell command is registered
+
+**src/webview/App.test.tsx** — four areas become three; run sections and agent history gone; Agent Center and agent start gone
+
+- lists Mission Control, Spec Board, Spec Explorer and Agent Center
+
+**src/webview/areas/missionControl/Drilldown.test.tsx** — four areas become three; run sections and agent history gone; Agent Center and agent start gone
+
+- AC-013: runs
+- a highlighted run sends the Agent Center with the run ID, also for a vanished stem
+- the Running figure sends the Agent Center without a target while two runs are counted
+- the Running figure sends the run as target while exactly one run is counted
+- OP-9: Running 0 still sends the Agent Center without a target
+- with the runs, the activity and the progress not available the view holds no control for them
+
+**src/webview/areas/missionControl/Sections.test.tsx** — four areas become three; run sections and agent history gone; Agent Center and agent start gone
+
+- AC-005, AC-007, AC-027: the run section
+- shows the Running figure and each highlighted run with number, title and the status as text
+- lists a run of a vanished stem with its recorded stem, "spec not found" and the status
+- a missing title reads "not available" (BR-09)
+- an empty list keeps its heading and says so; Running 0 is shown as 0
+- AC-027: unreadable runs are named with their count, singular and plural
+- AC-008, AC-018: the attention list
+- AC-018: with the runs unavailable the spec-based rows stay and one line gives the reason
+- AC-018: runs not available
+- shows "not available" with the reason in the run section, never Running 0 and never an empty list
+- AC-021: every state, reason and status is text
+- a view with an error text on a run is refused as a whole; the old view stays and the text is nowhere
+- AC-028: zero specs keep the run section and the activity
+- the message replaces counts, progress and the attention list; the header, runs and activity stay
+- AC-007: the empty Agent runs and Recent activity panels each show an icon and 0006\'s sentence
+- §3.2: Agent runs and Recent activity sit side by side in one panel row below the attention list
+
+**src/webview/areas/missionControl/Sections.timing.test.tsx** — four areas become three; run sections and agent history gone; Agent Center and agent start gone
+
+- renders runs, attention and activity within 1000 ms of the message event
+
+**src/webview/board/Keyboard.test.tsx** — four areas become three; run sections and agent history gone; Agent Center and agent start gone
+
+- announces the hand-off
+
+**src/webview/board/SpecBoard.test.tsx** — four areas become three; run sections and agent history gone; Agent Center and agent start gone
+
+- shows number, title, state text, description, figures, last change and run
+- AC-007: the run %j reads %s
+- the provider checkboxes offer "No run" (null) and the providers of the project
+
+**src/webview/client.test.ts** — four areas become three; run sections and agent history gone; Agent Center and agent start gone
+
+- agent start (spec 0008)
+- keeps the last valid view and ignores an invalid one
+- does not change the panel state when a view arrives
+- sends confirm, cancel and dismiss as requests
+
+**src/webview/detail/SpecDetail.test.tsx** — four areas become three; run sections and agent history gone; Agent Center and agent start gone
+
+- is never offered for runs, status history or No plan yet
+- AC-027: Agent history
+- lists runs as delivered with provider, status, timestamps and flags, and the labelled status history
+- shows not available for both while the store is unavailable
+- shows a note for no runs
+
+**src/webview/detail/SpecDetail.timing.test.tsx** — four areas become three; run sections and agent history gone; Agent Center and agent start gone
+
+- renders the update fast enough: 120 requirements, 200 criteria, 150 steps, 100 runs
+
+**src/webview/states.test.tsx** — four areas become three; run sections and agent history gone; Agent Center and agent start gone
+
+- the Agent Center empty list
+

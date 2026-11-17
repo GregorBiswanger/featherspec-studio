@@ -98,20 +98,18 @@ the user had typed it (its body lives in `.claude/commands/sdd-architecture-upda
 ```yaml
 # last reconciled: 2026-11-17 · last deep scan: never · module maps: .architecture/{core,adapters,webview}.md
 architecture:
-  style: 'Hexagonal (ports & adapters): framework-free core (domain + application) behind ports; adapters for VS Code host, storage, file system, agent providers; webview as a separate UI bundle'
+  style: 'Hexagonal (ports & adapters): framework-free core (domain + application) behind ports; adapters for VS Code host, storage, file system; webview as a separate UI bundle'
   entrypoints:
     - 'src/extension.ts — composition root; activates on workspaceContains:AGENTS.md, workspaceContains:.specs, onWebviewPanel:featherspecStudio.main and Studio commands and views; bundled by esbuild to dist/extension.js'
     - 'src/webview/main.tsx — Studio panel UI (React 19); bundled by esbuild to dist/webview/main.js and main.css; no Node.js or file access'
   modules:
-    - 'src/core/<area> — one folder per spec: discovery 0001, specs 0002, lifecycle 0003, runtime 0004, shell 0005, missionControl 0006, board 0007, agentStart 0008, providers 0009, orchestrator 0011, agentCenter 0012, setup 0014; ports/ holds every port (.architecture/core.md)'
-    - 'src/adapters — node/ (Node fs, spec source, runtime medium, IDs, release download (fetch), tar.gz reader, setup target writer), providers/ (fake/ 0009, copilot/ 0010 behind AgentProviderPort), vscode/ (thin host ports, no logic) (.architecture/adapters.md)'
-    - 'src/webview — panel UI: protocol client, shell, area registry, Spec Explorer, Spec Board, detail, Mission Control, Agent Center, agent start; primitives in ui/ (.architecture/webview.md)'
-    - 'src/test — extension-host smoke tests (Mocha, CI only); test/fixtures — fixture projects, the recorded Copilot stream and setup archives in test/fixtures/setup; media — packaged assets'
+    - 'src/core/<area> — one folder per spec: discovery 0001, specs 0002, lifecycle 0003, runtime 0004 (status history only), shell 0005, missionControl 0006, board 0007 (+ next step 0015), setup 0014; ports/ holds every port (.architecture/core.md)'
+    - 'src/adapters — node/ (Node fs, spec source, runtime medium, IDs, release download (fetch), tar.gz reader, setup target writer, earlier run data removal), vscode/ (thin host ports, no logic) (.architecture/adapters.md)'
+    - 'src/webview — panel UI: protocol client, shell, area registry, Spec Explorer, Spec Board, detail, Mission Control, detail with next step; primitives in ui/ (.architecture/webview.md); src/test — extension-host smoke tests (Mocha, CI only); test/fixtures — fixture projects and setup archives in test/fixtures/setup; media — packaged assets'
   shared:
-    - 'src/shared/protocol — versioned message protocol, areas, board view and filter contract, Mission Control view, agent start view, Agent Center view, timeline and texts, UI texts; imported by extension and webview, imports nothing (specs 0005, 0007, 0006, 0013, 0008, 0012); src/shared/testing — timing budgets for tests'
+    - 'src/shared/protocol — versioned message protocol, areas, board view and filter contract, Mission Control view, next step, UI texts; imported by extension and webview, imports nothing (specs 0005, 0007, 0006, 0013, 0015); src/shared/testing — timing budgets for tests'
   boundaries:
-    - 'Domain and application code never import vscode or provider SDKs; they reach the outside only through ports'
-    - 'Webview and extension host communicate only through typed messages; the webview has no file-system or Node.js access'
+    - 'Domain and application code never import vscode and reach the outside only through ports; webview and extension host communicate only through typed messages, and the webview has no file-system or Node.js access'
     - 'Only the setup (0014) writes into a workspace folder or reaches the network, through SetupTargetPort and ReleaseHttpPort, after the user started it in a trusted workspace'
     - 'src/shared imports neither vscode nor Node.js; src/webview imports only src/shared and its own files'
 ```
