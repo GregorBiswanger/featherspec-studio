@@ -65,7 +65,7 @@ and reloads, and understand every panel state, in a Light, a Dark and a High Con
 - Showing the diagnostics of 0002 and 0003 (badge, banner) — because 0007 owns them (its AC-020); not in this slice.
 - Per-state counts in the Activity Bar tree — because no spec owns them yet (OP-010); not in this slice.
 - A sidebar webview, or a separate panel per area — because ADR-001 §2 chose one panel plus a native tree; not in the MVP.
-- Any write to FeatherSpec artifacts — because PD-013 keeps Studio read-only; not in the MVP.
+- Any write to FeatherSpec artifacts — because PD-013 keeps Studio read-only; not in the MVP. *Amended by 0014 (PD-049, PD-053): the setup of spec 0014 is the one exception.*
 - Telemetry — because nothing in this slice needs it, and the handoff §13 Privacy allows none with spec content without a product decision.
 - Selecting several specs at once — because nothing in the MVP needs it; not now.
 
@@ -120,7 +120,7 @@ remembered for this workspace.
   project or the project returns. S7 (Restricted Mode) is a note shown in addition, never in
   place of a state or of the area. S6 ranks first because a panel UI that cannot read the
   extension's messages cannot know any other state (OP-008).
-- **BR-06 Read-only:** the Studio changes no file in the workspace (PD-013).
+- **BR-06 Read-only:** the Studio changes no file in the workspace (PD-013). *Amended by 0014 (PD-049, PD-053): the setup of spec 0014, started and confirmed by the user, is the one exception; AC-025 is unchanged.*
 - **BR-07 Navigation request (PD-040):** the shell offers one request: an area, plus at most
   one target — a spec (stem), a run (ID) or a board filter (its kinds are 0007's, PD-041). Areas ask the shell; they never open
   each other directly. The shell shows the area and hands it the target. A spec target makes
@@ -145,7 +145,7 @@ remembered for this workspace.
 | FR-08 | Keyboard operation and no colour-only meaning | §13 Usability | AC-022, AC-023 |
 | FR-09 | Offer one navigation request to the areas | PD-040 | AC-028 |
 | FR-10 | Show the frame within the time budget | §13 Performance | AC-024 |
-| FR-11 | Change no file in the workspace | PD-013 | AC-025 |
+| FR-11 | Change no file in the workspace (Amended by 0014 (PD-049, PD-053): exception, the setup of spec 0014) | PD-013 | AC-025 |
 | FR-12 | Offer a manual rescan of the project | ADR-001 §9, 0002 OP-008 | AC-029 |
 
 ## 8. Data requirements
@@ -192,7 +192,7 @@ UI text is in English (PD-016).
 - Studio-internal: reads the results of 0001 (including its update notification, the remembered project and a run failure: 0001 AC-024), 0002 and 0003. The panel UI gets them only as
   messages from the extension. Areas of later specs read the selected spec from the shell and
   send it the navigation request (BR-07).
-- No network service.
+- No network service. *Amended by 0014 (PD-049, PD-053): the one exception is the download of the setup of spec 0014 (its AC-025).*
 
 ## 11. Security, permissions and privacy
 
@@ -201,7 +201,7 @@ UI text is in English (PD-016).
   §8.2, ADR-001 §4, §6).
 - The panel UI loads no content from the internet and runs no code that the extension did not ship.
 - In Restricted Mode the panel and the tree work as in a trusted workspace. Actions that later
-  start agents are not offered (ADR-001 §14). In this slice, that means only the S7 note.
+  start agents are not offered (ADR-001 §14). In this slice, that means only the S7 note. *Amended by 0014 (PD-049, PD-053): also "Set up FeatherSpec" is offered and refuses (spec 0014 AC-004).*
 - No telemetry. No spec content in logs.
 
 ## 12. Non-functional requirements
@@ -217,14 +217,14 @@ The panel states (precedence: BR-05). "Remembered", "project" and "incomplete" a
 | ID | Condition | Text | Actions |
 | --- | --- | --- | --- |
 | S1 | No folder is open | "Open a folder to use FeatherSpec Studio." | Open Folder |
-| S2 | No remembered project; no folder is a project or incomplete | "No FeatherSpec project found in this workspace." | Open setup guide · Refresh |
+| S2 | No remembered project; no folder is a project or incomplete | "No FeatherSpec project found in this workspace." | Set up FeatherSpec · Open setup guide · Refresh (Amended by 0014 (PD-049, PD-053)) |
 | S3 | Two or more projects; no remembered project | "Several FeatherSpec projects found. Select one to continue." | Select project |
 | S4 | Loading (§6) | "Loading project…", with a visible progress indicator | — |
 | S5 | A project-level failure (PD-038): discovery fails unexpectedly; the lifecycle folders of `.specs/` cannot be listed; or the panel UI and the extension cannot agree on the message protocol (no valid project snapshot reaches the panel UI) | "The project could not be loaded: <reason>." The reason says which of the three happened | Show output · Retry |
 | S6 | The panel UI and the extension speak different versions of the message protocol | "FeatherSpec Studio was updated. Reload to continue." | Reload |
 | S7 | Restricted Mode | Note: "This workspace is in Restricted Mode. Agent actions are unavailable." (OP-006) | Manage Workspace Trust |
 | S8 | The remembered project is not reported as a project (0001 AC-010) | Names the missing project (PD-037): "FeatherSpec project <name> was not found." | Select project (only while another project is reported) · Refresh |
-| S9 | No remembered project; no folder is a project; at least one is incomplete | Names, per incomplete folder, the missing marker from 0001's diagnostics (PD-037): one line "FeatherSpec project incomplete: <folder> has no <marker>." per folder | Open setup guide · Refresh |
+| S9 | No remembered project; no folder is a project; at least one is incomplete | Names, per incomplete folder, the missing marker from 0001's diagnostics (PD-037): one line "FeatherSpec project incomplete: <folder> has no <marker>." per folder (Amended by 0014 (PD-049, PD-053): for a setup-pending folder the line "FeatherSpec setup not finished: <folder> has files to merge." takes its place) | Set up FeatherSpec · Copy merge prompt (only with a setup-pending folder; first when every folder is setup-pending) · Open setup guide · Refresh (Amended by 0014 (PD-049, PD-053)) |
 
 Actions: *Open Folder* opens VS Code's own folder dialog. *Open setup guide* opens the link of
 0001 A-005. *Refresh* runs 0001's "Refresh Project Discovery". *Select project* runs 0001's
@@ -232,6 +232,7 @@ Actions: *Open Folder* opens VS Code's own folder dialog. *Open setup guide* ope
 discovery and a full re-read (PD-038). *Manage Workspace Trust* opens VS Code's own trust
 dialog. *Reload* reloads the panel UI, not the VS Code window (OP-008). A second version
 mismatch right after that reload shows S5 with the protocol reason.
+*Amended by 0014 (PD-049, PD-053): *Set up FeatherSpec* runs the command of spec 0014 AC-002; *Copy merge prompt* is its AC-016.*
 
 Edge cases:
 
@@ -365,6 +366,7 @@ automated tests.
 - **AC-027** While the condition of S9 holds (§13), the system shall show state S9. S9 shall
   name, for each incomplete folder, the missing marker from 0001's diagnostics, and offer "Open
   setup guide" and "Refresh" (PD-037).
+  *Amended by 0014 (PD-049, PD-053): S9 also names "FeatherSpec setup not finished: <folder> has files to merge." for a setup-pending folder and offers "Set up FeatherSpec" and "Copy merge prompt" as §13 says; "Open setup guide" and "Refresh" stay.*
 - **AC-028** When an area sends the navigation request (BR-07), the system shall show the
   requested area. When the request carries a spec target whose stem is in the project, the
   system shall also make that spec the selected spec. If the stem is not in the project, then

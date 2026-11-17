@@ -3,7 +3,7 @@
 **Spec:** [0014-setup-featherspec-from-studio.md](0014-setup-featherspec-from-studio.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-009
+**Current step:** T-010
 
 ## Approach
 
@@ -165,8 +165,8 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 - **Covers:** — (spec 0014 §5, §19)
 - **Do:** Revise mode on `.specs/done/0001-workspace-discovery-project-recognition.md` and `.specs/done/0005-studio-shell-navigation.md`: per §5 row, add an "Amended by 0014 (PD-049, PD-053)" note at the named statement (FR-001.7/§15/BR-06/FR-11/out-of-scope; §4 creating; §10 network; BR-08 *Setup pending* ranking before BR-01…BR-04; §8/§11/AC-013 rerun trigger; §13 S2/S9 actions and texts, AC-027; §11 S7). Status `Implemented` and IDs unchanged; 0001 AC-011 and 0005 AC-025 untouched. `docs/product/product-decisions.md` PD-031: pointer to 0014 BR-07 (PD-053 (7)).
 - **Verify:** `grep -n "Amended by 0014" .specs/done/0001-workspace-discovery-project-recognition.md .specs/done/0005-studio-shell-navigation.md` lists a note at every statement §5 names, and `npm run test:unit` stays green; manual: Gregor reads the two diffs — the wording against §5 has no machine check
-- [ ] **Verified (T-009):** —
-- **Notes:** —
+- [x] **Verified (T-009):** 2026-11-17 — `grep -n "Amended by 0014"` lists 9 notes in 0001 (§3 read-only bullet, §4 creating, BR-08, FR-001.7, §8, §10, §11, AC-013, §15 restatement) and 9 in 0005 (out-of-scope bullet, BR-06, FR-11, §10, §11 S7, S2 and S9 rows, §13 actions paragraph, AC-027); status `Implemented`, all IDs and 0001 AC-011 / 0005 AC-025 unchanged; PD-031 points to 0014 BR-07. `npm run test:unit` 2487 passed (+11 timing). Manual check pending: Gregor reads the two diffs against §5.
+- **Notes:** The new 0001 BR-08 is the 0014 BR-07 rule; the amended specs are not reactivated.
 
 ### T-010 — Docs sync and final gates
 

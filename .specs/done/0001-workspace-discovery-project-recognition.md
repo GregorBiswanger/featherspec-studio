@@ -34,13 +34,13 @@ differences.
 - Choosing the active project when there are several, remembered per workspace (FR-001.4).
 - Automatic re-detection while VS Code is open, plus a manual Refresh command.
 - A status bar entry, a "Select FeatherSpec project" command and a no-project notification (FR-001.6).
-- Read-only behaviour (FR-001.7).
+- Read-only behaviour (FR-001.7). *Amended by 0014 (PD-049, PD-053): the setup of spec 0014 is the one exception; AC-011 is unchanged (discovery, selection and refresh still write nothing).*
 - An "active project changed" notification for in-process consumers (AC-023).
 - A "discovery updated" notification, with the remembered project and a failure in the snapshot, for consumers that show every discovery state (AC-024; revised 2026-11-16 for spec 0005).
 
 ### Out of scope
 
-- Creating or migrating a FeatherSpec project — because the handoff excludes it (FS-001 Out of Scope) and PD-013 keeps Studio read-only.
+- Creating or migrating a FeatherSpec project — because the handoff excludes it (FS-001 Out of Scope) and PD-013 keeps Studio read-only. *Amended by 0014 (PD-049, PD-053): creating is the setup of spec 0014; migrating stays out of scope.*
 - Projects nested in subfolders of a workspace folder (monorepos) — because Gregor decided this slice checks folder roots only; not now.
 - Entries in VS Code's Problems panel — because Gregor wants diagnostics in the Output channel only in this slice; not now.
 - Reading or parsing specs and plans — because that is spec 0002.
@@ -83,6 +83,9 @@ differences.
   `FeatherSpecVersion:` followed by a value, wherever it stands in the file. The value is the first
   token; a trailing `# comment` is ignored; the value is shown as written. An empty value gives the
   version "unknown" plus a diagnostic. A second such line: the first wins, plus a diagnostic.
+- **BR-08 Setup pending (PD-053):** *Amended by 0014 (PD-049, PD-053).* A folder with a `.featherspec-setup/` directory at its
+  root is *incomplete* whatever its markers say; it ranks before BR-01…BR-04 and carries the
+  diagnostic of spec 0014 AC-015. A read failure (AC-017) still wins.
 
 ## 7. Functional requirements
 
@@ -94,7 +97,7 @@ differences.
 | FR-001.4 | Let the user choose among several projects | AC-007, AC-008, AC-009, AC-010 |
 | FR-001.5 | Diagnose incomplete or invalid structures | AC-003, AC-016, AC-017, AC-021 |
 | FR-001.6 | Show a helpful empty state | AC-015, AC-020 |
-| FR-001.7 | Never change project files | AC-011 |
+| FR-001.7 | Never change project files (Amended by 0014 (PD-049, PD-053): exception, the setup of spec 0014) | AC-011 |
 | — | Re-detect without a reload | AC-013 |
 | — | Show the active project | AC-014 |
 | — | Detect within the time budget | AC-018 |
@@ -105,7 +108,7 @@ differences.
 ## 8. Data requirements
 
 - Read only: the existence of the marker paths, plus the text of the root `AGENTS.md` to find the
-  `FeatherSpecVersion:` line.
+  `FeatherSpecVersion:` line. *Amended by 0014 (PD-049, PD-053): also whether a root `.featherspec-setup/` directory exists; its appearing or disappearing is a rerun trigger (AC-013, extends PD-033's list).*
 - Discovery result per folder: root-folder URI, display name, verdict, legacy attribute, version
   (value as written, or "unknown"), diagnostics. Consumers: spec 0002 (project root for its
   project-relative paths, PD-018; version), spec 0004 (store key, PD-026), spec 0005. Specs 0002 and 0004 receive the active project through the notification of AC-023.
@@ -135,12 +138,12 @@ differences.
   consumers are later Studio modules, never an external service.
 - VS Code workspace (folders, folder-change events, file-change events, workspace state, status
   bar, commands, Output channel, notifications). Studio never contacts a network service. "Open
-  setup guide" hands a link to the user's browser.
+  setup guide" hands a link to the user's browser. *Amended by 0014 (PD-049, PD-053): the one exception is the download of the setup of spec 0014 (its AC-025); nothing else contacts the network.*
 
 ## 11. Security, permissions and privacy
 
 - Discovery reads only the marker paths and the root `AGENTS.md` of each workspace folder
-  (handoff §13 Security: workspace access stays within the intended context).
+  (handoff §13 Security: workspace access stays within the intended context). *Amended by 0014 (PD-049, PD-053): also the existence of the root `.featherspec-setup/` directory.*
 - No telemetry. The Output channel shows paths, verdicts, the version value and diagnostics; no
   other file content is written to logs.
 
@@ -184,7 +187,7 @@ hand-made ones are listed in §15.
 - **AC-011** The system shall create, modify, rename or delete no file or folder inside any workspace folder during discovery, selection or refresh. [AC-001.5]
   > **Given** a fixture tree with recorded paths, sizes and modification times **When** discovery, refresh and selection run **Then** the recorded tree is unchanged.
 - **AC-012** When discovery runs again (refresh, re-detection or reload), the system shall report exactly one entry per workspace folder (BR-05) in the discovery result, in the list of the select command and within each Output channel block. [AC-001.6]
-- **AC-013** While Studio is active (activated at open by AC-019, or later by one of its commands), when a workspace folder is added or removed, or the root `AGENTS.md` of a workspace folder appears, changes or disappears, or its root `.specs/` directory appears or disappears, the system shall rerun discovery and update the status bar entry and the Output channel without a reload. A change inside `.specs/` shall not trigger a rerun. After the last change, the status bar entry and the newest Output channel block shall match the state on disk.
+- **AC-013** While Studio is active (activated at open by AC-019, or later by one of its commands), when a workspace folder is added or removed, or the root `AGENTS.md` of a workspace folder appears, changes or disappears, or its root `.specs/` directory appears or disappears, the system shall rerun discovery and update the status bar entry and the Output channel without a reload. A change inside `.specs/` shall not trigger a rerun. After the last change, the status bar entry and the newest Output channel block shall match the state on disk. *Amended by 0014 (PD-049, PD-053): a root `.featherspec-setup/` directory that appears or disappears is a rerun trigger too.*
 - **AC-014** While a project is active, the status bar entry shall show its folder name and version ("unknown" for a legacy project or an empty value), and clicking the entry shall open the select command.
 - **AC-015** When the user runs the select command or clicks the status bar entry and no project is reported, the system shall show the notification "No FeatherSpec project found in this workspace" with the actions "Open setup guide" and "Refresh". "Open setup guide" shall open the link of A-005. With no folder open, the system shall show "Open a folder to use FeatherSpec Studio" instead.
 - **AC-016** When a discovery run finishes, the system shall write to the Output channel "FeatherSpec Studio", for each workspace folder: path, verdict, version and its diagnostics. For a folder reported as *not a project* because no marker exists at its root, the entry shall contain the hint "open the project folder itself". For a folder reported as *not a project* because a read failed (AC-017), the entry shall not contain that hint. The system shall create no entry in the Problems panel.
@@ -239,7 +242,7 @@ hand-made ones are listed in §15.
 - AC-022 cannot run in an extension-host test: `@vscode/test-electron` always launches with
   `--disable-workspace-trust`. It is decided by a manifest unit test plus Gregor's manual check in
   Restricted Mode (Gregor, 2026-11-16); since 2026-11-17 that check is a pre-release checklist item.
-- Restatement of the read-only rule (source: PD-013): Studio never writes FeatherSpec artifacts.
+- Restatement of the read-only rule (source: PD-013): Studio never writes FeatherSpec artifacts. *Amended by 0014 (PD-049, PD-053): except the setup of spec 0014, started and confirmed by the user.*
 
 ## 16. Assumptions
 
