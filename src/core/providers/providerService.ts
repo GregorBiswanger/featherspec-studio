@@ -1,5 +1,8 @@
 import type {
     AgentProviderPort,
+    ApprovalAnswer,
+    AvailabilityReport,
+    OperationOutcome,
     DeliveredEvent,
     ProviderEvent,
     ProviderEventSink,
@@ -8,14 +11,19 @@ import type {
 } from '../ports/agentProvider';
 import type { JsonValue } from '../runtime/model';
 import type { Disposable } from '../ports/host';
-import type { RuntimeClock } from '../ports/runtimeMedium';
+import type { CredentialValuesPort, RuntimeClock } from '../ports/runtimeMedium';
 import type { ProviderRegistry } from './registry';
 import {
+    AVAILABILITY_REASONS,
+    AVAILABILITY_RESULTS,
+    AVAILABILITY_TIMEOUT_HINT,
+    AVAILABILITY_TIMEOUT_MS,
     ERROR_CATEGORIES,
     ERROR_CATEGORY_TEXTS,
     STOPPED_WITHOUT_END_REASON,
     isEndKind,
     isEventKind,
+    type AvailabilityResult,
     type Capability,
     type CapabilityDeclaration,
     type ErrorCategory,
@@ -26,6 +34,8 @@ export type ServiceRefusal =
     | { kind: 'not-supported'; providerId: string }
     | { kind: 'unknown-run'; runId: string }
     | { kind: 'already-ended'; runId: string }
+    | { kind: 'request-not-open'; runId: string; requestId: string }
+    | { kind: 'invalid-answer'; reason: string }
     | { kind: 'failed'; reason: string };
 
 export type ServiceResult<T = object> = ({ kind: 'ok' } & T) | ServiceRefusal;
@@ -35,6 +45,10 @@ export interface ProviderService {
     resume(providerId: string, request: ProviderResumeRequest): Promise<ServiceResult>;
     cancel(runId: string): Promise<ServiceResult>;
     endSession(runId: string): ServiceResult;
+    checkAvailability(providerId: string): Promise<ServiceResult<{ result: AvailabilityResult; reason?: string; hint?: string }>>;
+    respondToApproval(runId: string, requestId: string, answer: ApprovalAnswer): Promise<ServiceResult>;
+    respondToInput(runId: string, requestId: string, text: string): Promise<ServiceResult>;
+    readonly credentials: CredentialValuesPort;
     listModels(providerId: string): Promise<ServiceResult<{ models: readonly string[] }>>;
     onEvent(listener: (event: ProviderEvent) => void): Disposable;
 }
@@ -47,6 +61,7 @@ export interface ProviderServiceOptions {
 interface RunRecord {
     adapter: AgentProviderPort;
     capabilities: CapabilityDeclaration;
+    open: Map<string, { type: 'approval' | 'input'; answering: boolean }>;
     ended: boolean;
     sessionEnded: boolean;
 }
@@ -89,6 +104,32 @@ function normalise(event: DeliveredEvent): DeliveredEvent {
     return event;
 }
 
+function trackRequests(run: RunRecord, event: DeliveredEvent): void {
+    if (!isRecord(event.payload) || typeof event.payload.requestId !== 'string') {
+        return;
+    }
+    const requestId = event.payload.requestId;
+    if (event.kind === 'approval.requested' || event.kind === 'input.requested') {
+        run.open.set(requestId, { type: event.kind === 'approval.requested' ? 'approval' : 'input', answering: false });
+    } else if (event.kind === 'approval.resolved' || event.kind === 'input.resolved') {
+        run.open.delete(requestId);
+    }
+}
+
+function validApproval(answer: unknown): ApprovalAnswer | undefined {
+    if (typeof answer !== 'object' || answer === null) {
+        return undefined;
+    }
+    const { decision, reason } = answer as { decision?: unknown; reason?: unknown };
+    if (decision === 'approve-once') {
+        return { decision };
+    }
+    if (decision === 'reject' && (reason === undefined || typeof reason === 'string')) {
+        return reason === undefined ? { decision } : { decision, reason };
+    }
+    return undefined;
+}
+
 export function createProviderService(options: ProviderServiceOptions): ProviderService {
     const { registry } = options;
     const runs = new Map<string, RunRecord>();
@@ -110,6 +151,7 @@ export function createProviderService(options: ProviderServiceOptions): Provider
             return;
         }
         run.ended = true;
+        run.open.clear();
         publish(runId, {
             kind: 'run.failed',
             source: 'derived',
@@ -128,8 +170,12 @@ export function createProviderService(options: ProviderServiceOptions): Provider
                 return;
             }
             const normalised = normalise(event);
+            if (!run.ended) {
+                trackRequests(run, normalised);
+            }
             if (!run.ended && isEndKind(normalised.kind)) {
                 run.ended = true;
+                run.open.clear();
             }
             publish(runId, normalised);
         },
@@ -155,7 +201,7 @@ export function createProviderService(options: ProviderServiceOptions): Provider
         if (runs.has(runId)) {
             return { kind: 'failed', reason: 'run ID already started' };
         }
-        const run: RunRecord = { adapter, capabilities, ended: false, sessionEnded: false };
+        const run: RunRecord = { adapter, capabilities, open: new Map(), ended: false, sessionEnded: false };
         runs.set(runId, run);
         const sink = sinkFor(runId, run);
         try {
@@ -164,6 +210,42 @@ export function createProviderService(options: ProviderServiceOptions): Provider
             sink.fail(messageOf(error));
         }
         return { kind: 'ok' };
+    };
+
+    const respond = async (
+        runId: string,
+        requestId: string,
+        type: 'approval' | 'input',
+        capability: Capability,
+        prepare: () => ((adapter: AgentProviderPort) => Promise<OperationOutcome>) | undefined,
+    ): Promise<ServiceResult> => {
+        const run = runs.get(runId);
+        if (run === undefined) {
+            return { kind: 'unknown-run', runId };
+        }
+        if (run.capabilities[capability].value === 'none') {
+            return { kind: 'not-supported', providerId: run.adapter.id };
+        }
+        const request = run.open.get(requestId);
+        if (run.ended || run.sessionEnded || request === undefined || request.type !== type || request.answering) {
+            return { kind: 'request-not-open', runId, requestId };
+        }
+        const send = prepare();
+        if (send === undefined) {
+            return { kind: 'invalid-answer', reason: type === 'approval' ? 'only approve-once or reject is accepted' : 'the answer must be text' };
+        }
+        request.answering = true;
+        try {
+            const outcome = await send(run.adapter);
+            if (!outcome.ok) {
+                request.answering = false;
+                return { kind: 'failed', reason: outcome.reason };
+            }
+            return { kind: 'ok' };
+        } catch (error) {
+            request.answering = false;
+            return { kind: 'failed', reason: messageOf(error) };
+        }
     };
 
     return {
@@ -214,6 +296,66 @@ export function createProviderService(options: ProviderServiceOptions): Provider
             } catch (error) {
                 return { kind: 'failed', reason: messageOf(error) };
             }
+        },
+        async checkAvailability(providerId) {
+            const adapter = registry.adapter(providerId);
+            if (adapter === undefined) {
+                return { kind: 'not-registered', providerId };
+            }
+            const outcome = await new Promise<AvailabilityReport | 'timeout'>((resolve) => {
+                const timer = options.clock.setTimeout(() => resolve('timeout'), AVAILABILITY_TIMEOUT_MS);
+                const settle = (value: AvailabilityReport | 'timeout'): void => {
+                    timer.dispose();
+                    resolve(value);
+                };
+                try {
+                    adapter.checkAvailability().then(settle, () => settle({ result: 'unknown' }));
+                } catch {
+                    settle({ result: 'unknown' });
+                }
+            });
+            if (outcome === 'timeout') {
+                return { kind: 'ok', result: 'unknown', reason: AVAILABILITY_REASONS.unknown, hint: AVAILABILITY_TIMEOUT_HINT };
+            }
+            const known = (AVAILABILITY_RESULTS as readonly unknown[]).includes(outcome?.result);
+            const result: AvailabilityResult = known ? outcome.result : 'unknown';
+            const hint = known && typeof outcome.hint === 'string' ? outcome.hint : undefined;
+            return {
+                kind: 'ok',
+                result,
+                ...(result === 'available' ? {} : { reason: AVAILABILITY_REASONS[result] }),
+                ...(hint === undefined ? {} : { hint }),
+            };
+        },
+        respondToApproval: (runId, requestId, answer) =>
+            respond(runId, requestId, 'approval', 'approvals', () => {
+                const valid = validApproval(answer);
+                return valid === undefined ? undefined : (adapter) => adapter.respondToApproval(runId, requestId, valid);
+            }),
+        respondToInput: (runId, requestId, text) =>
+            respond(runId, requestId, 'input', 'userInput', () =>
+                typeof text === 'string' ? (adapter) => adapter.respondToInput(runId, requestId, text) : undefined,
+            ),
+        credentials: {
+            values() {
+                const adapters = new Set<AgentProviderPort>(registry.adapters());
+                for (const run of runs.values()) {
+                    adapters.add(run.adapter);
+                }
+                const values = new Set<string>();
+                for (const adapter of adapters) {
+                    try {
+                        for (const value of adapter.credentialValues()) {
+                            if (typeof value === 'string' && value !== '') {
+                                values.add(value);
+                            }
+                        }
+                    } catch {
+                        continue;
+                    }
+                }
+                return [...values];
+            },
         },
         onEvent(listener) {
             listeners.add(listener);

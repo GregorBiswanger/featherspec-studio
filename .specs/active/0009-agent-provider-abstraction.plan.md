@@ -256,8 +256,8 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
   with the timeout hint; registry reads, registration and `list` cause no check (counted).
   `credentials.values()` returns the union of registered adapters and adapters of runs started.
 - **Verify:** `npx vitest run src/core/providers/providerRequests.test.ts src/core/providers/providerAvailability.test.ts`
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-17. Red: `npx vitest run src/core/providers/providerRequests.test.ts src/core/providers/providerAvailability.test.ts` 21 tests failed on the `Not implemented` stubs of checkAvailability, respondToApproval, respondToInput and credentials. Green after the implementation: the two files 21 tests passed (providers folder 62 in 7 files). Gates: eslint --max-warnings 0, tsc, tsc -p src/webview clean; `npm run test:unit` 107 files, 1439 passed.
+- **Notes:** A check that throws or rejects is `unknown` with the generic reason and no hint; the timeout hint is only for no answer within 15 s (the plan Do: gave it to both, wrong text for a throw). An answer in flight marks its request answered (one answer per request) and reverts if the adapter fails it. The registry gained adapter(id) and adapters() for the service.
 
 ### T-006 — Fake: approval, input, long run, resume
 
