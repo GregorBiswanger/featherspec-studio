@@ -220,8 +220,8 @@ test world, one module.
   after running the start, stop, resume and answer scenarios with the Node-fs runtime medium in a
   separate temp directory; negative control: a test-only write into the copy turns it red.
 - **Verify:** `npx vitest run src/core/orchestrator` then the per-step gates
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-17 — red: `npx vitest run src/core/orchestrator/specLink.test.ts` with `isSpecNotFound` throwing `Not implemented`: 4 failed; `orchestratorReader.test.ts` and `noWrite.test.ts` test behaviour built in T-002…T-005 and were green at once, each with a negative control (the same calls in the writer window are not refused as a reader; a stray write into the copy changes the snapshot); one test of mine was red on a wrong expectation (losing the lock itself cancels the open run, BR-016) and fixed. Green: `npx vitest run src/core/orchestrator` 103 passed; gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 1603 passed.
+- **Notes:** `noWrite.test.ts` runs seven fake-provider scenarios (happy path, approval answer, input answer, stop, failure, resume of a reopened store) through the Node-fs runtime medium in a separate temp directory; the world takes an optional `medium` factory.
 
 ### T-007 — Palette commands and VS Code wiring
 

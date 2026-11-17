@@ -2,6 +2,7 @@ import { createFakeProvider, type FakeProvider } from '../../../adapters/provide
 import type { FakeScenarioId } from '../../../adapters/providers/fake/scenarios';
 import type { ScriptStep } from '../../../adapters/providers/fake/script';
 import type { Disposable } from '../../ports/host';
+import type { RuntimeMedium } from '../../ports/runtimeMedium';
 import type { OrchestratorUiPort, PickItem } from '../../ports/orchestrator';
 import type { ShellModel, ShellModelSource } from '../../ports/shell';
 import { deriveLifecycle } from '../../lifecycle/deriveLifecycle';
@@ -74,6 +75,7 @@ export interface WorldOptions {
     scenario?: FakeScenarioId;
     script?: readonly ScriptStep[];
     fakeCapabilities?: FakeProvider['capabilities'];
+    medium?: () => RuntimeMedium;
     wrapProviders?: (service: ProviderSetup['service']) => ProviderSetup['service'];
 }
 
@@ -108,7 +110,7 @@ export async function createWorld(options: WorldOptions = {}): Promise<World> {
     const backing = createMemoryBacking();
     const open = (target: MemoryBacking): Promise<RuntimeStore> =>
         openRuntimeStore({
-            medium: createMemoryMedium(target),
+            medium: options.medium === undefined ? createMemoryMedium(target) : options.medium(),
             ids,
             clock,
             notices: createFakeNotices(),
