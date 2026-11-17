@@ -46,7 +46,7 @@
   `src/test/missionControl.smoke.test.ts` (CI only).
 - Agent Center (spec 0012): core tests in `src/core/agentCenter/*.test.ts` (timeline, summary, run list, header, selection, event signal, service, restart, no-write, actions, request notifier, request handlers) on `testing/centerWorld.ts` and `testing/events.ts`; contract tests in `src/shared/protocol/agentCenter.test.ts` and `agentCenterDuration.test.ts`; component tests in `src/webview/areas/agentCenter` (`AgentCenter`, `Timeline`); the bundle test mounts the area with a fixture snapshot; host smoke `src/test/agentCenter.smoke.test.ts` (CI only).
 - Studio visual design (spec 0013): stylesheet guard `src/adapters/node/webviewCss.test.ts` (colour only from theme variables, `--fs-*` alias chains, fonts, transitions ≤ 150 ms, reduced motion, focus outlines, board column rules); fixture `test/fixtures/studio-0002` (copy of this repo's spec 0002 and plan) mounted in the bundle test. Looks are checked with the UI preview harness outside the repository (`/home/claude/orch/preview/run.sh`: real core over Node fs, Chrome screenshots in Dark, Light and High Contrast, 900 px, drag state, collapsed section); its theme values approximate VS Code.
-- Manual checks nothing automates: spec 0013: AC-017 (Gregor's verdict on the preview screenshots) and AC-018 (one pass in real VS Code with a Dark, a Light and a High Contrast theme plus one live theme switch); spec 0006: AC-021 in a High Contrast theme, AC-022 focus with Enter and Space, the §9 layout in the hands-on run, AC-024 and AC-016 re-measured on a real project (OP-12); spec 0007: AC-017 and AC-018 as a keyboard-only and a screen-reader pass over the board, AC-026 and the two-line description limit of AC-004 in a Light, a Dark and a High Contrast theme; window reload keeps the active project (0001 AC-009), Restricted Mode (0001 AC-022); spec 0005: AC-019 in a Light, a Dark and both High Contrast themes plus one live switch (OP-012), the AC-022 focus indicator, AC-023 in High Contrast, AC-024 on Gregor's machine, a real window reload with the panel open for AC-009.
+- Manual checks nothing automates: one list for the release, [docs/release-checklist.md](../docs/release-checklist.md) (assembled from the specs' manual criteria; real VS Code, screen reader, High Contrast, a real Copilot run).
 
 ## Quality gates
 Per implementation step (Definition of Green), in order — zero warnings, zero errors:
@@ -57,7 +57,7 @@ Per implementation step (Definition of Green), in order — zero warnings, zero 
 5. `npm run compile` — only for steps that touch wiring, adapters, `src/extension.ts`, `package.json` or the bundle (it adds the esbuild bundle to the type check and lint).
 
 Pre-done gate (not per step): `npm test` (extension-host tests) runs in CI and on the
-developer's machine before a spec moves to `done/`, plus the two manual checks above.
+developer's machine before a spec moves to `done/` and before a release, plus the release checklist above.
 
 ## Constraints
 - Core (domain + application) must not depend on `vscode` or provider SDKs.

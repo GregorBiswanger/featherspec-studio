@@ -170,7 +170,7 @@ plus Gregor's manual checks (T-008).
   `click`. Enter and Space are added in the hands-on run. If 0005 T-002 has set a key helper,
   the tests use it. UNVERIFIED against an official jsdom page; the search found no
   authoritative source — 2026-11-16
-- [Plan 0005](0005-studio-shell-navigation.plan.md) *Approach*, *Research*, T-001, T-004, T-007
+- [Plan 0005](0005-studio-shell-navigation.2026-11-17.plan.md) *Approach*, *Research*, T-001, T-004, T-007
   — the extension points above — read 2026-11-16
 
 ## Texts (English, PD-016; in `src/webview/areas/missionControl/texts.ts`)
