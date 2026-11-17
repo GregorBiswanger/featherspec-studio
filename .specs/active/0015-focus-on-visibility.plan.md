@@ -170,7 +170,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
   Tests: core on a fake port (every path, gone paths, version-99 folder untouched, failing path
   kept and reported, second run retries), adapter on real temp directories (byte-identical kept files).
 - **Verify:** `npx vitest run src/core/runtime/earlierRunData.test.ts src/adapters/node/earlierRunDataFiles.test.ts` red then green; gates 1–4
-- [ ] **Verified (T-004):** —
+- [x] **Verified (T-004):** 2026-11-17 — red: core test 10 failed on the `Not implemented` stub, adapter test failed with module not found; green: `npx vitest run src/core/runtime/earlierRunData.test.ts src/adapters/node/earlierRunDataFiles.test.ts` 14 passed; gates 1–4 clean, test:unit 2546 passed + 12 timing. Notes: Output lines use OutputPort.appendBlock with one line; a path already gone is not named in the line (nothing removed, nothing to name); a missing, unreadable or broken store.json does not protect a folder — confirm at the test review.
 - **Notes:** a missing or unreadable `store.json` does not protect a folder (it names no version) — reading of §6.3, confirm at the test review.
 
 ### T-005 — Board and detail without runs
