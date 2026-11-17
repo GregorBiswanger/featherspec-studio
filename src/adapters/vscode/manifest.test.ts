@@ -2,6 +2,8 @@ import { readFileSync } from 'fs';
 import * as path from 'path';
 import { describe, expect, it } from 'vitest';
 import { MOVE_COMMAND_TITLE } from '../../shared/protocol/texts';
+import { FAKE_SCENARIOS } from '../providers/fake/scenarios';
+import { PROVIDER_IDS } from '../../core/providers/testing/scan';
 
 interface Manifest {
     activationEvents?: string[];
@@ -15,7 +17,12 @@ interface Manifest {
         viewsContainers?: { activitybar?: { id: string; title: string; icon: string }[] };
         views?: Record<string, { id: string; name: string }[]>;
         menus?: { commandPalette?: { command: string; when: string }[] };
-        configuration?: { properties?: Record<string, { type?: string; default?: unknown; minimum?: number; scope?: string; description?: string }> };
+        configuration?: {
+            properties?: Record<
+                string,
+                { type?: string; default?: unknown; minimum?: number; scope?: string; description?: string; enum?: string[]; enumDescriptions?: string[] }
+            >;
+        };
     };
 }
 
@@ -65,8 +72,37 @@ describe('extension manifest', () => {
     });
 
     it('0004 AC-018: negative control, the manifest declares no other run-history setting', () => {
-        const names = Object.keys(manifest.contributes?.configuration?.properties ?? {});
+        const names = Object.keys(manifest.contributes?.configuration?.properties ?? {}).filter((name) => name.startsWith('featherspec-studio.runHistory.'));
         expect(names).toEqual(['featherspec-studio.runHistory.maxAgeDays']);
+    });
+
+    it('AC-012 (0009): the fake provider is off by default, a boolean with the default window scope', () => {
+        const setting = manifest.contributes?.configuration?.properties?.['featherspec-studio.fakeProvider.enabled'];
+        expect(setting?.type).toBe('boolean');
+        expect(setting?.default).toBe(false);
+        expect(setting?.scope === undefined || setting.scope === 'window').toBe(true);
+        expect((setting?.description ?? '').length).toBeGreaterThan(20);
+    });
+
+    it('AC-012 (0009): the scenario setting lists exactly the fake scenarios, each described, default happy path', () => {
+        const setting = manifest.contributes?.configuration?.properties?.['featherspec-studio.fakeProvider.scenario'];
+        expect(setting?.enum).toEqual([...FAKE_SCENARIOS]);
+        expect(setting?.enumDescriptions).toHaveLength(FAKE_SCENARIOS.length);
+        expect(setting?.enumDescriptions?.every((text) => text.length > 10)).toBe(true);
+        expect(setting?.default).toBe('happy-path');
+        expect(setting?.scope === undefined || setting.scope === 'window').toBe(true);
+    });
+
+    it('AC-012 (0009): no configuration property defaults to a provider ID, so a default provider never ships as fake', () => {
+        const defaults = Object.values(manifest.contributes?.configuration?.properties ?? {}).map((property) => property.default);
+        for (const id of PROVIDER_IDS) {
+            expect(defaults).not.toContain(id);
+        }
+    });
+
+    it('AC-012 (0009): negative control, a provider ID as a default would be found', () => {
+        expect(['fake', 'copilot'].some((id) => (PROVIDER_IDS as readonly string[]).includes(id))).toBe(true);
+        expect([false, 'happy-path', 90].some((value) => (PROVIDER_IDS as readonly unknown[]).includes(value))).toBe(false);
     });
 
     it('AC-001, AC-005 (0005): contributes the Open command and one command per area with their titles', () => {

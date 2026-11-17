@@ -17,6 +17,11 @@ import { createStatusBar } from './adapters/vscode/statusBar';
 import { createFileWatch } from './adapters/vscode/fileWatch';
 import { createRuntimeUi } from './adapters/vscode/runtimeUi';
 import { createMaxAgeDaysSetting } from './adapters/vscode/runtimeSettings';
+import { createFakeProviderEnabledSetting, createFakeProviderScenarioSetting } from './adapters/vscode/providerSettings';
+import { createFakeProvider } from './adapters/providers/fake/fakeProvider';
+import { createProviderSetup } from './core/providers/providerSetup';
+import type { ProviderRegistry } from './core/providers/registry';
+import type { ProviderService } from './core/providers/providerService';
 import { createEditor } from './adapters/vscode/editor';
 import { createMovePicks, createMoveResultSink } from './adapters/vscode/boardPicks';
 import { createUi } from './adapters/vscode/ui';
@@ -84,6 +89,7 @@ export interface StudioApi {
     runtimeState(): StoreState;
     runtimeStore(): RuntimeStore | undefined;
     lifecycle(): LifecycleService;
+    providers(): { registry: ProviderRegistry; service: ProviderService };
     shell(): ShellTestApi;
     board(): BoardTestApi;
     missionControl(): MissionControlTestApi;
@@ -118,6 +124,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     const clock = createSystemRuntimeClock();
     const ids = createRandomIds();
     const maxAgeDays = createMaxAgeDaysSetting();
+    const fakeScenario = createFakeProviderScenarioSetting();
+    const providers = createProviderSetup({
+        clock,
+        toggled: [{ enabled: createFakeProviderEnabledSetting(), create: () => createFakeProvider({ clock, profile: 'full', scenario: fakeScenario }) }],
+    });
+    context.subscriptions.push({ dispose: () => providers.dispose() });
     const session = createRuntimeSession({
         discovery: controller,
         ui: runtimeUi,
@@ -132,7 +144,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
                 ids,
                 clock,
                 notices: { show: (message) => runtimeUi.warn(message) },
-                credentials: { values: () => [] },
+                credentials: providers.service.credentials,
                 projectRoot,
                 maxAgeDays,
             }),
@@ -253,6 +265,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         runtimeState: () => session.state(),
         runtimeStore: () => session.current(),
         lifecycle: () => lifecycle,
+        providers: () => ({ registry: providers.registry, service: providers.service }),
         board: () => ({
             view: () => board.view(),
             detail: () => board.detail(),

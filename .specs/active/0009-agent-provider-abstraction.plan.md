@@ -304,8 +304,8 @@ Parallel: stages 2 and 3. Both chains read only T-001/T-002's files; a change to
   Host smoke `src/test/providers.smoke.test.ts` (fake absent by default, present after switching
   on, gone after off; CI only).
 - **Verify:** `npx vitest run src/core/providers/providerSetup.test.ts src/adapters/vscode/manifest.test.ts` then the per-step gates and `npm run compile`
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** 2026-11-17. Red: `npx vitest run src/core/providers/providerSetup.test.ts` 8 tests failed on the `Not implemented` stub of createProviderSetup; green after it: 8 passed. The manifest tests were written after package.json (no red run); proven by mutation instead (fake default true, last scenario removed from the enum, a setting defaulting to `fake`): 4 of 16 failed, reverted, 16 passed. Host smoke src/test/providers.smoke.test.ts written, not run here (CI only), compiled and linted. Gates: eslint --max-warnings 0, tsc, tsc -p src/webview, `npm run test:unit` 112 files, 1495 passed, `npm run compile` finished.
+- **Notes:** The 0004 manifest negative control (`no other run-history setting`) now filters on the `featherspec-studio.runHistory.` prefix, the exact-list form could not survive any second setting. StudioApi.providers() returns {registry, service}. Scenario setting read by the fake at each start through createFakeProviderScenarioSetting.
 
 ### T-009 — Docs sync and final gates
 

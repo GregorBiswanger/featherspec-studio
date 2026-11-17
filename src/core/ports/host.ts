@@ -8,6 +8,11 @@ export interface Disposable {
     dispose(): void;
 }
 
+export interface SettingPort {
+    read(): unknown;
+    onDidChange(listener: () => void): Disposable;
+}
+
 export interface StatusBarPort {
     show(text: string, action: 'select'): void;
     hide(): void;

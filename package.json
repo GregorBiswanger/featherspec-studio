@@ -106,6 +106,50 @@
           "minimum": 1,
           "scope": "application",
           "description": "Number of days FeatherSpec Studio keeps ended agent runs, their events and the spec status history. Older data is removed when Studio activates. Runs that are still open are never removed."
+        },
+        "featherspec-studio.fakeProvider.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable fake provider: registers a deterministic provider that runs without an agent, an account or a network, for trying Studio. It never changes a file."
+        },
+        "featherspec-studio.fakeProvider.scenario": {
+          "type": "string",
+          "default": "happy-path",
+          "enum": [
+            "happy-path",
+            "approval",
+            "input",
+            "failure:auth",
+            "failure:quota_or_rate_limit",
+            "failure:model_unavailable",
+            "failure:network_or_server",
+            "failure:runtime_missing",
+            "failure:policy_denied",
+            "failure:tool_failure",
+            "failure:unknown",
+            "long-run",
+            "unknown-event",
+            "duplicates-and-late",
+            "no-end"
+          ],
+          "enumDescriptions": [
+            "A complete run: message, plan, tool call, file change, usage, then completed.",
+            "Asks for one approval and waits for your answer; the run ends after it.",
+            "Asks one question and waits for your answer; the run ends after it.",
+            "The run fails with the category auth.",
+            "The run fails with the category quota_or_rate_limit.",
+            "The run fails with the category model_unavailable.",
+            "The run fails with the category network_or_server.",
+            "The run fails with the category runtime_missing.",
+            "The run fails with the category policy_denied.",
+            "The run fails with the category tool_failure.",
+            "The run fails with the category unknown.",
+            "Streams text every second until you cancel the run.",
+            "A happy path with one event the port does not know.",
+            "A happy path with one event delivered twice and one event after the end.",
+            "The stream closes without a final event."
+          ],
+          "description": "Fake provider scenario: what the fake provider does at each start. An unknown value runs the happy path."
         }
       }
     }
