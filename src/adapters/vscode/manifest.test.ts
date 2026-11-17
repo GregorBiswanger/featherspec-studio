@@ -184,6 +184,16 @@ describe('extension manifest', () => {
         expect(Buffer.byteLength(svg)).toBeLessThan(20_000);
     });
 
+    it('PD-054: the editor tab icons are the same logo mark as the Activity Bar icon, one fixed colour per theme kind', () => {
+        const mark = (file: string): string => readFileSync(path.resolve(process.cwd(), 'media', file), 'utf8').match(/ d="([^"]+)"/)?.[1] ?? '';
+        const fill = (file: string): string => readFileSync(path.resolve(process.cwd(), 'media', file), 'utf8').match(/ fill="([^"]+)"/)?.[1] ?? '';
+        expect(mark('studio.svg')).not.toBe('');
+        expect(mark('studio-light.svg')).toBe(mark('studio.svg'));
+        expect(mark('studio-dark.svg')).toBe(mark('studio.svg'));
+        expect(fill('studio-light.svg')).toBe('#424242');
+        expect(fill('studio-dark.svg')).toBe('#C5C5C5');
+    });
+
     it('AC-029 (0005): contributes "FeatherSpec Studio: Rescan Project"; the internal action command stays out of the palette', () => {
         const commands = Object.fromEntries((manifest.contributes?.commands ?? []).map((command) => [command.command, command.title]));
         expect(commands['featherspec-studio.rescan']).toBe('FeatherSpec Studio: Rescan Project');

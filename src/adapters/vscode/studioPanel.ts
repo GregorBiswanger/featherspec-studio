@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto';
+import * as path from 'node:path';
 import * as vscode from 'vscode';
 import type { OutputPort } from '../../core/ports/host';
 import { createMessageRouter, type RequestHandlers } from '../../core/shell/messageRouter';
@@ -64,6 +65,16 @@ export interface StudioPanelInspection {
     options: vscode.WebviewOptions;
     panelOptions: vscode.WebviewPanelOptions;
     html: string;
+    icon: { light: string; dark: string } | undefined;
+}
+
+const TAB_ICON = { light: 'studio-light.svg', dark: 'studio-dark.svg' } as const;
+
+function iconFileNames(icon: vscode.WebviewPanel['iconPath']): { light: string; dark: string } | undefined {
+    if (icon === undefined || icon instanceof vscode.Uri || icon instanceof vscode.ThemeIcon) {
+        return undefined;
+    }
+    return { light: path.posix.basename(icon.light.path), dark: path.posix.basename(icon.dark.path) };
 }
 
 export interface StudioPanel extends vscode.Disposable {
@@ -211,6 +222,10 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
 
     function adopt(target: vscode.WebviewPanel): void {
         panel = target;
+        target.iconPath = {
+            light: vscode.Uri.joinPath(deps.extensionUri, 'media', TAB_ICON.light),
+            dark: vscode.Uri.joinPath(deps.extensionUri, 'media', TAB_ICON.dark),
+        };
         target.webview.options = options();
         subscriptions = [
             target.webview.onDidReceiveMessage(handle),
@@ -277,7 +292,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
         },
         isFocused: () => panel !== undefined && panel.visible && panel.active,
         asWebviewUri: (uri) => panel?.webview.asWebviewUri(uri).toString(),
-        inspect: () => (panel === undefined ? undefined : { options: panel.webview.options, panelOptions: panel.options, html: panel.webview.html }),
+        inspect: () => (panel === undefined ? undefined : { options: panel.webview.options, panelOptions: panel.options, html: panel.webview.html, icon: iconFileNames(panel.iconPath) }),
         serializer: {
             async deserializeWebviewPanel(restored) {
                 if (panel !== undefined) {

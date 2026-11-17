@@ -1,5 +1,6 @@
 import { AREAS } from '../shared/protocol/areas';
 import { NAVIGATION_LABEL } from '../shared/protocol/texts';
+import { AreaIcon } from './board/icons';
 import { useShell } from './shell';
 
 export function Navigation() {
@@ -18,6 +19,7 @@ export function Navigation() {
                                 onClick={() => shell.navigate({ area: area.id })}
                             >
                                 {current ? <span data-marker aria-hidden="true">▸</span> : null}
+                                <AreaIcon area={area.id} />
                                 {area.title}
                             </button>
                         </li>

@@ -117,6 +117,7 @@ suite('FeatherSpec Studio shell smoke', function () {
         await waitFor('the Studio tab and its hello', () => panelState(api), (state) => state.helloAt !== undefined && state.tabs === 1, { timeoutMs: WAIT_MS });
         const inspected = api.shell().inspect();
         assert.ok(inspected);
+        assert.deepStrictEqual(inspected.icon, { light: 'studio-light.svg', dark: 'studio-dark.svg' }, 'PD-054: the editor tab shows the logo mark');
         assert.strictEqual(inspected.options.enableScripts, true);
         assert.strictEqual(inspected.options.enableCommandUris, false);
         assert.strictEqual(inspected.panelOptions.retainContextWhenHidden ?? false, false);

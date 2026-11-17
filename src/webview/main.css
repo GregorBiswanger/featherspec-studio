@@ -101,6 +101,12 @@ body {
     border-color: var(--vscode-contrastActiveBorder, var(--fs-border));
 }
 
+.nav-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .nav-item [data-marker] {
     display: inline-block;
     width: 10px;

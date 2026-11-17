@@ -164,6 +164,8 @@ UI text is in English (PD-016).
 
 - **Activity Bar view "FeatherSpec Studio":** present in every window (PD-008, ADR-001 §2). Its
   icon is the FeatherSpec logo mark in one colour; every tree entry has its own icon (PD-048).
+  The panel's navigation shows the matching icon before each area title, and the panel's editor
+  tab shows the logo mark (PD-054).
   While a project is active, a tree shows the project's name, an "Open Studio" entry, and one
   entry each for Mission Control, Spec Board, Spec Explorer and Agent Center. While no project
   is active, the view shows, in place of the entries, the text and actions of the panel state

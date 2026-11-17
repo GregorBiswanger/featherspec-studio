@@ -13,6 +13,7 @@ Current phase: act
 - 0010 is proven by the Windows host suite with `FEATHERSPEC_COPILOT_SMOKE=1` (dev build and unpacked VSIX).
 
 ## Changed Recently
+- PD-054 (Gregor): the panel navigation shows an icon per area (`AreaIcon` in `src/webview/board/icons.tsx`), the editor tab shows the logo mark (`media/studio-light.svg`, `media/studio-dark.svg`, set in `studioPanel.ts`); README screenshots retaken.
 - 0014 compile fixes: Retry never switches folders (AC-020), discovery reruns after any write incl. `.featherspec-setup/` (AC-018), AC-016 notices in the spec, case-insensitive tests, `setUp` wiring test, opt-in live test `FEATHERSPEC_SETUP_LIVE=1` (`src/adapters/node/setupLive.test.ts`); 0001 BR-08 and PD-033 pointers; README wording.
 - 0014: Studio can set up a folder from the latest GitHub release (the one write and network exception, PD-049); specs 0001 and 0005 amended in place; AGENTS.md snapshot, `.architecture` maps, README, CHANGELOG and the release checklist updated.
 - PD-048 (Gregor, first local test of the VSIX): the Activity Bar icon is the FeatherSpec logo mark in one colour (`media/studio.svg`, traced from `featherspec-logo.png`); every tree entry has its own product icon (`AREA_ICONS` in `src/core/shell/treeModel.ts`; spec 0005 AC-003, §9).

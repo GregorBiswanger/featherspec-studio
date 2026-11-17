@@ -82,6 +82,15 @@ describe('AC-004: the navigation', () => {
         expect(container.querySelector('h1')?.textContent).toBe('Spec Board');
     });
 
+    it('PD-054: every item shows the icon of its area before its title, hidden from assistive technology, and no two items share one', async () => {
+        const { container } = await start();
+        const icons = items(container).map((item) => item.querySelector('svg[data-icon]'));
+        expect(icons.map((icon) => icon?.getAttribute('data-icon'))).toEqual(['missionControl', 'specBoard', 'specExplorer', 'agentCenter']);
+        expect(icons.every((icon) => icon?.getAttribute('aria-hidden') === 'true')).toBe(true);
+        expect(new Set(icons.map((icon) => icon?.querySelector('path')?.getAttribute('d'))).size).toBe(4);
+        expect(items(container).map((item) => item.textContent?.replace('▸', '').trim())).toEqual(['Mission Control', 'Spec Board', 'Spec Explorer', 'Agent Center']);
+    });
+
     it('AC-023: the navigation has an accessible name', async () => {
         const { container } = await start();
         expect(container.querySelector('nav')?.getAttribute('aria-label')).toBe('Studio areas');
