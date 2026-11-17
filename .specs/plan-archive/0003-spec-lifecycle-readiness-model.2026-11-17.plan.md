@@ -1,6 +1,6 @@
 # Plan — Spec Lifecycle & Readiness Model
 
-**Spec:** [0003-spec-lifecycle-readiness-model.md](0003-spec-lifecycle-readiness-model.md)
+**Spec:** [0003-spec-lifecycle-readiness-model.md](../done/0003-spec-lifecycle-readiness-model.md)
 **Status:** Done
 **Last updated:** 2026-11-17
 **Current step:** — (all steps ticked)
@@ -271,7 +271,7 @@ exists after T-002 and writes its own files.
 ## Session handoff
 
 - **Done so far:** all ten steps (T-001...T-010) ticked with recorded runs; `src/core/lifecycle` is complete and wired (`StudioApi.lifecycle()`); gates green; host suite green (see *Open evidence*); second `/sdd-compile` READY (2026-11-17).
-- **Next action:** `/sdd-lifecycle` active → done (this plan is then archived and frozen).
+- **Next action:** none — moved to `done/` and archived 2026-11-17 (`/sdd-lifecycle`); this plan is frozen.
 - **Open decisions:** `_none yet_` + `**Origin:**` is not an exception in AC-025 (see T-002 Notes); `AGENTS.md` over its line target (T-008 Notes).
 - **Baseline:** 0e0380a (HEAD before the first step commit).
 - **Environment:** `npm test` runs on Gregor's Windows machine and on CI, not in the sandbox.
