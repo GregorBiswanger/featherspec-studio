@@ -1,7 +1,7 @@
 # Runtime Persistence & Event Model
 
-**Status:** In Progress
-**Plan:** [0004-runtime-persistence-event-model.plan.md](0004-runtime-persistence-event-model.plan.md)
+**Status:** Implemented
+**Plan:** [0004-runtime-persistence-event-model.2026-11-17.plan.md](../plan-archive/0004-runtime-persistence-event-model.2026-11-17.plan.md)
 
 Handoff reference: FS-004 ([po-handoff.md](../../docs/product/po-handoff.md) §7, §8.5, §10 FS-004, §13).
 Depends on: 0001 only (project root as store key, PD-025, PD-026). Consumers: 0003 (spec status
@@ -490,3 +490,7 @@ Open, none blocks planning (clarify finding in brackets; a recommendation each):
 ## 18. Recommended next steps
 
 `/sdd-plan` on this spec. The plan starts by settling the store location against PD-026 (§13).
+
+## Plan history
+
+- 2026-11-17 — [0004-runtime-persistence-event-model.2026-11-17.plan.md](../plan-archive/0004-runtime-persistence-event-model.2026-11-17.plan.md) — T-001…T-010 built; second `/sdd-compile` READY (manual items: 1, AC-020); host suite 28 passing at e6f0c85 (Windows 11) and CI green at 9635ba4.

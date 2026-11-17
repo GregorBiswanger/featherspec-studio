@@ -1,7 +1,7 @@
 # Spec Lifecycle & Readiness Model
 
-**Status:** In Progress
-**Plan:** [0003-spec-lifecycle-readiness-model.plan.md](0003-spec-lifecycle-readiness-model.plan.md)
+**Status:** Implemented
+**Plan:** [0003-spec-lifecycle-readiness-model.2026-11-17.plan.md](../plan-archive/0003-spec-lifecycle-readiness-model.2026-11-17.plan.md)
 
 Handoff reference: FS-003 ([po-handoff.md](../../docs/product/po-handoff.md) §6, §10). Format
 basis: [featherspec-format.md](../../docs/discovery/featherspec-format.md) §5–§7 (SPIKE-001).
@@ -573,5 +573,9 @@ the result.
 ## 19. Recommended next steps
 
 1. Gregor: OP-003, OP-008, OP-009 (the plan follows the spec as written).
-2. Gregor reads the plan [0003-spec-lifecycle-readiness-model.plan.md](0003-spec-lifecycle-readiness-model.plan.md);
+2. Gregor reads the plan [0003-spec-lifecycle-readiness-model.2026-11-17.plan.md](../plan-archive/0003-spec-lifecycle-readiness-model.2026-11-17.plan.md);
    the main session aligns 0007 §12 (OP-010).
+
+## Plan history
+
+- 2026-11-17 — [0003-spec-lifecycle-readiness-model.2026-11-17.plan.md](../plan-archive/0003-spec-lifecycle-readiness-model.2026-11-17.plan.md) — T-001…T-010 built; second `/sdd-compile` READY; host suite 28 passing at e6f0c85 (Windows 11) and CI green at 9635ba4.
