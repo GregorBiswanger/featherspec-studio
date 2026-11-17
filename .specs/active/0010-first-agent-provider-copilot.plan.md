@@ -3,7 +3,7 @@
 **Spec:** [0010-first-agent-provider-copilot.md](0010-first-agent-provider-copilot.md)
 **Status:** Done
 **Last updated:** 2026-11-17
-**Current step:** none (T-001 … T-008 verified)
+**Current step:** none (T-001 … T-011 verified)
 
 ## Approach
 
@@ -326,40 +326,44 @@ No parallel stage: every step from T-003 on builds on T-002's seam, and T-004…
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-004, T-007 | copilotProvider.ts, src/extension.ts | copilotStart.test.ts, copilotContract.test.ts | verified (unit; host smoke open) |
-| AC-002 | T-001, T-005, T-007 | cliLocator.ts, nodeLocate.ts, copilotSettingValues.ts, copilotProvider.ts | cliLocator.test.ts, copilotFailures.test.ts, copilotSettingValues.test.ts | verified (unit; host smoke open) |
-| AC-003 | T-001, T-005 | cliLocator.ts, copilotProvider.ts | cliLocator.test.ts, copilotFailures.test.ts | verified (unit; host smoke open) |
-| AC-004 | T-005 | copilotProvider.ts (sign-in check) | copilotFailures.test.ts | verified (unit; host smoke open) |
-| AC-005 | T-002 | sdkClient.ts, esbuild.js, package.json | sdkClient.test.ts, extensionBundle.test.ts | verified (unit; host smoke open) |
-| AC-006 | T-004 | copilotProvider.ts, sdkClient.ts | copilotStart.test.ts, sdkClient.test.ts | verified (unit; host smoke open) |
-| AC-007 | T-004 | copilotProvider.ts | copilotStart.test.ts | verified (unit; host smoke open) |
-| AC-008 | T-004, T-007 | copilotProvider.ts, copilotSettings.ts | copilotStart.test.ts, copilotSettingValues.test.ts | verified (unit; host smoke open) |
-| AC-009 | T-005 | copilotProvider.ts (model check) | copilotFailures.test.ts | verified (unit; host smoke open) |
-| AC-010 | T-003 | mapping.ts, testing/recorded.ts | mapping.test.ts, fixture.test.ts | verified (unit; host smoke open) |
-| AC-011 | T-003 | mapping.ts | mapping.test.ts | verified (unit; host smoke open) |
-| AC-012 | T-003 | mapping.ts | mapping.test.ts | verified (unit; host smoke open) |
-| AC-013 | T-006 | copilotProvider.ts (handler pairing) | copilotInteraction.test.ts | verified (unit; host smoke open) |
-| AC-014 | T-006 | copilotProvider.ts | copilotInteraction.test.ts | verified (unit; host smoke open) |
-| AC-015 | T-006 | copilotProvider.ts | copilotInteraction.test.ts | verified (unit; host smoke open) |
-| AC-016 | T-006 | copilotProvider.ts | copilotInteraction.test.ts | verified (unit; host smoke open) |
-| AC-017 | T-006 | copilotProvider.ts (cancel, force stop) | copilotInteraction.test.ts | verified (unit; host smoke open) |
-| AC-018 | T-005 | mapping.ts, copilotProvider.ts | copilotFailures.test.ts | verified (unit; host smoke open) |
-| AC-019 | T-004 | copilotProvider.ts (resume) | copilotStart.test.ts | verified (unit; host smoke open) |
-| AC-020 | T-002, T-005 | copilotProvider.ts (exit watcher), sdkClient.ts | copilotFailures.test.ts, sdkClient.test.ts | verified (unit; host smoke open) |
-| AC-021 | T-005 | copilotProvider.ts | copilotFailures.test.ts | verified (unit; host smoke open) |
+| AC-001 | T-004, T-007 | copilotProvider.ts, src/extension.ts | copilotStart.test.ts, copilotContract.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-002 | T-001, T-005, T-007, T-009 | cliLocator.ts, nodeLocate.ts, copilotSettingValues.ts, copilotProvider.ts | cliLocator.test.ts, copilotFailures.test.ts, copilotSettingValues.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-003 | T-001, T-005, T-009 | cliLocator.ts, copilotProvider.ts (protocolHint) | cliLocator.test.ts, copilotFailures.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-004 | T-005 | copilotProvider.ts (sign-in check) | copilotFailures.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-005 | T-002, T-010 | sdkClient.ts, esbuild.js, package.json | sdkClient.test.ts, extensionBundle.test.ts, copilotSecrets.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-006 | T-004 | copilotProvider.ts, sdkClient.ts | copilotStart.test.ts, sdkClient.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-007 | T-004 | copilotProvider.ts | copilotStart.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-008 | T-004, T-007 | copilotProvider.ts, copilotSettings.ts | copilotStart.test.ts, copilotSettingValues.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-009 | T-005 | copilotProvider.ts (model check) | copilotFailures.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-010 | T-003 | mapping.ts, testing/recorded.ts | mapping.test.ts, fixture.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-011 | T-003 | mapping.ts | mapping.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-012 | T-003, T-011 | mapping.ts | mapping.test.ts, copilot.smoke.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-013 | T-006 | copilotProvider.ts (handler pairing) | copilotInteraction.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-014 | T-006, T-011 | copilotProvider.ts | copilotInteraction.test.ts, copilot.smoke.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-015 | T-006 | copilotProvider.ts | copilotInteraction.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-016 | T-006 | copilotProvider.ts | copilotInteraction.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-017 | T-006, T-011 | copilotProvider.ts (cancel, force stop) | copilotInteraction.test.ts, copilot.smoke.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-018 | T-005 | mapping.ts, copilotProvider.ts | copilotFailures.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-019 | T-004, T-011 | copilotProvider.ts (resume) | copilotStart.test.ts, copilot.smoke.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-020 | T-002, T-005 | copilotProvider.ts (exit watcher), sdkClient.ts | copilotFailures.test.ts, sdkClient.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-021 | T-005 | copilotProvider.ts | copilotFailures.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
 | AC-022 | — (not planned, OP-007) | — | — | not planned (OP-007) |
-| AC-023 | T-004 | copilotProvider.ts | copilotStart.test.ts | verified (unit; host smoke open) |
-| AC-024 | T-002, T-004, T-007 | copilotProvider.ts (base directory), sdkClient.ts | copilotStart.test.ts, sdkClient.test.ts | verified (unit; host smoke open) |
-| AC-025 | T-006 | copilotProvider.ts (endSession) | copilotInteraction.test.ts | verified (unit; host smoke open) |
+| AC-023 | T-004 | copilotProvider.ts | copilotStart.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-024 | T-002, T-004, T-007 | copilotProvider.ts (base directory), sdkClient.ts | copilotStart.test.ts, sdkClient.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
+| AC-025 | T-006 | copilotProvider.ts (endSession) | copilotInteraction.test.ts | verified (unit; M-07 host smoke passed 93537b7; re-run after T-009/T-011 open) |
 
 ## Session handoff
 
-- **Done so far:** T-001 … T-008 built and verified (2026-11-17); unit gates green; contract suite
-  passes for `copilot` (adapted suite, T-007 Notes).
-- **Next action:** run `npm test` on Windows/CI with `FEATHERSPEC_COPILOT_SMOKE=1` (host smoke, M-07);
-  then `/sdd-compile` in a new session.
-- **Open decisions:** none new; PoC-based assumptions A-006 etc. are confirmed only by M-07 on a real
-  signed-in CLI.
+- **Done so far:** T-001 … T-011 built and verified (2026-11-17). Second `/sdd-compile` (closing
+  session, fresh eyes) found two gaps and fixed them: T-009 (run start with an incompatible or
+  unstartable CLI now carries the §9 hint; protocol mismatch → `unknown` naming both versions),
+  T-010 (Copilot output with secrets is masked before the store writes it). T-011 automates the
+  acceptance checks M-02…M-05 in the opt-in host smoke.
+- **Next action:** orchestrator: `npm test` on Windows on this branch's head, plain and with
+  `FEATHERSPEC_COPILOT_SMOKE=1` (T-009 changed product code, T-011 host tests). Gregor: M-01
+  signed out and A-003 from the pre-release checklist.
+- **Open decisions:** none. A-005 (do reads ask?) is logged by the smoke as an observation; if reads
+  run unasked, §8 and BR-14 are reworded (spec §12).
 - **Baseline:** bab7268
-- **Environment:** `npm test` cannot run here; the host smoke runs on Windows through the
-  orchestrator with `FEATHERSPEC_COPILOT_SMOKE=1`.
+- **Environment:** `npm test` cannot run here; the host suite runs on Windows through the
+  orchestrator.
