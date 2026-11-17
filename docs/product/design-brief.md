@@ -1,5 +1,9 @@
 # Design brief — Studio visual design (input for spec 0013)
 
+> Partly superseded by the UX audit of 2026-11-17: PD-058 … PD-062 and
+> [ux-guidelines.md](ux-guidelines.md) win where they differ (Mission Control layout, board
+> moves, cards, detail, diagnostics). Theme, palette and accessibility rules here stay.
+
 Written 2026-11-16 by Claude as product-owner proxy after the first real look at the UI
 (screenshots from a headless-browser preview of the built webview, fed by the real core on this
 repository). Everything works and the data is right, but the Studio reads like unstyled HTML.
