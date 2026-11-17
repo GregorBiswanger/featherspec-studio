@@ -133,7 +133,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
   (guards), `SpecDetail.test.tsx` (pointer, Tab+Enter, Tab+Space, announcement, labels),
   `SpecDetail.timing.test.tsx` (model-changed → new line within 500 ms).
 - **Verify:** the new tests red then green; gates 1–5
-- [ ] **Verified (T-002):** —
+- [x] **Verified (T-002):** 2026-11-17 — red: 21 new/affected tests failed on missing behaviour (no copyText handler or guard, no nextStep in the view, no Next step section, timing test); green: boardRequests, detail, messages, SpecDetail (+ timing) and boardFilter guard list pass; gates 1–5: eslint, both tsc, compile clean, test:unit 2536 passed + 12 timing.
 - **Notes:** —
 
 ### T-003 — An accepted Ready → Active request starts nothing

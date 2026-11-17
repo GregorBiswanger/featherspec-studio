@@ -17,7 +17,7 @@ import { StateChip } from "../ui/StateChip";
 export function SpecExplorer() {
   const shell = useShell();
   const rows = shell.view?.rows ?? [];
-  const { detail, fileResult, openFile } = useBoard();
+  const { detail, fileResult, copyResult, openFile, copyText } = useBoard();
 
   function choose(row: SpecRow): void {
     shell.select(
@@ -83,7 +83,7 @@ export function SpecExplorer() {
   return (
     <div className="explorer">
       <div className="explorer-list">{list}</div>
-      <SpecDetail detail={detail} fileResult={fileResult} onOpen={openFile} />
+      <SpecDetail detail={detail} fileResult={fileResult} copyResult={copyResult} onOpen={openFile} onCopy={copyText} />
     </div>
   );
 }

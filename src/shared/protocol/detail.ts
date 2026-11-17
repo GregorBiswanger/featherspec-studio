@@ -114,9 +114,16 @@ export interface DetailSections {
     history: HistorySection;
 }
 
+export interface NextStepLineView {
+    text: string;
+    label?: string;
+}
+
+export type NextStepView = { rule: string; lines: NextStepLineView[] } | { rule: string; text: string };
+
 export type DetailView =
     | { kind: 'none' }
-    | { kind: 'spec'; key: string; stem: string; number: string; title: string; sections: DetailSections };
+    | { kind: 'spec'; key: string; stem: string; number: string; title: string; nextStep: NextStepView; sections: DetailSections };
 
 export interface OpenFileResultPayload {
     key: string;
@@ -124,6 +131,19 @@ export interface OpenFileResultPayload {
 }
 
 const SECTION_KEYS = ['overview', 'requirements', 'criteria', 'plan', 'verification', 'related', 'history'];
+
+function isNextStepView(value: unknown): value is NextStepView {
+    if (!isRecord(value) || typeof value.rule !== 'string') {
+        return false;
+    }
+    if (typeof value.text === 'string') {
+        return true;
+    }
+    return (
+        Array.isArray(value.lines) &&
+        value.lines.every((line) => isRecord(line) && typeof line.text === 'string' && (line.label === undefined || typeof line.label === 'string'))
+    );
+}
 
 export function isDetailView(value: unknown): value is DetailView {
     if (!isRecord(value)) {
@@ -138,6 +158,7 @@ export function isDetailView(value: unknown): value is DetailView {
         typeof value.stem === 'string' &&
         typeof value.number === 'string' &&
         typeof value.title === 'string' &&
+        isNextStepView(value.nextStep) &&
         isRecord(value.sections) &&
         SECTION_KEYS.every((key) => key in (value.sections as Record<string, unknown>))
     );

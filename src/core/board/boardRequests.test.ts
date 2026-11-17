@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { MoveResult } from '../../shared/protocol/board';
 import type { BoardState } from '../../shared/protocol/boardFilter';
+import { COPIED_TEXT, COPY_FAILED_TEXT } from '../../shared/protocol/nextStepTexts';
 import { fileNotFoundText } from '../../shared/protocol/texts';
 import { createBoardRequests } from './boardRequests';
 import type { OpenFileResult } from './openFile';
 
-function setup(overrides: { move?: MoveResult; open?: OpenFileResult } = {}) {
+function setup(overrides: { move?: MoveResult; open?: OpenFileResult; copyFails?: boolean } = {}) {
     const calls: unknown[][] = [];
     const requests = createBoardRequests({
         board: {
@@ -20,6 +21,14 @@ function setup(overrides: { move?: MoveResult; open?: OpenFileResult } = {}) {
                 return overrides.move ?? { kind: 'handedOff', number: '0001' };
             },
         },
+        clipboard: {
+            async writeText(text: string) {
+                calls.push(['writeText', text]);
+                if (overrides.copyFails === true) {
+                    throw new Error('clipboard denied');
+                }
+            },
+        },
         openFile: {
             async open(key, line) {
                 calls.push(line === undefined ? ['open', key] : ['open', key, line]);
@@ -31,7 +40,9 @@ function setup(overrides: { move?: MoveResult; open?: OpenFileResult } = {}) {
     const files: unknown[] = [];
     requests.onDidMoveResult((result) => moves.push(result));
     requests.onDidOpenFileResult((result) => files.push(result));
-    return { requests, calls, moves, files };
+    const copies: unknown[] = [];
+    requests.onDidCopyResult((result) => copies.push(result));
+    return { requests, calls, moves, files, copies };
 }
 
 describe('board requests', () => {
@@ -78,5 +89,32 @@ describe('board requests', () => {
         await requests.handlers.moveRequest({ key: 'k', target: 'Done' });
         expect(moves).toHaveLength(1);
         expect(extra).toEqual([]);
+    });
+});
+
+describe('0015 copy request', () => {
+    it('AC-005: copyText writes exactly the text to the clipboard and reports it', async () => {
+        const { requests, calls, copies } = setup();
+        await requests.handlers.copyText({ text: 'Start T-001 of .specs/backlog/0007-x.plan.md' });
+        expect(calls).toEqual([['writeText', 'Start T-001 of .specs/backlog/0007-x.plan.md']]);
+        expect(copies).toEqual([{ ok: true, text: COPIED_TEXT }]);
+        expect(COPIED_TEXT).toBe('Copied to the clipboard.');
+    });
+
+    it('AC-009: a failing clipboard gives the failure text and changes nothing else', async () => {
+        const { requests, calls, copies, moves, files } = setup({ copyFails: true });
+        await requests.handlers.copyText({ text: '/sdd-plan x' });
+        expect(copies).toEqual([{ ok: false, text: COPY_FAILED_TEXT }]);
+        expect(COPY_FAILED_TEXT).toBe('Could not copy to the clipboard.');
+        expect(calls).toEqual([['writeText', '/sdd-plan x']]);
+        expect(moves).toEqual([]);
+        expect(files).toEqual([]);
+    });
+
+    it('AC-008: the handler has no trust or writer dependency, so it behaves alike in Restricted Mode and in a reader window', async () => {
+        const { requests, copies } = setup();
+        await requests.handlers.copyText({ text: 'a' });
+        await requests.handlers.copyText({ text: 'b' });
+        expect(copies).toEqual([{ ok: true, text: COPIED_TEXT }, { ok: true, text: COPIED_TEXT }]);
     });
 });

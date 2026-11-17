@@ -11,6 +11,10 @@ export interface StartWorkflowPort {
     start(request: StartRequest): Promise<void>;
 }
 
+export interface ClipboardPort {
+    writeText(text: string): Promise<void>;
+}
+
 export type OpenOutcome = 'opened' | 'not-found';
 
 export interface EditorPort {

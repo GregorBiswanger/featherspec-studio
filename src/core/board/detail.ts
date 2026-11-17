@@ -7,6 +7,7 @@ import type { ReadResult, RunView } from '../runtime/model';
 import type { HeaderField } from '../specs/parseSpec';
 import type { SpecEntry } from '../specs/readProject';
 import { titleOf } from './cards';
+import { nextStep } from './nextStep';
 import { withoutLeadingId, withoutListMarker } from './idText';
 import { criteriaProgress } from './progress';
 
@@ -72,6 +73,10 @@ export function buildDetail(input: DetailInput): DetailView {
     const entry = findEntry(model, selection);
     const spec = entry === undefined ? undefined : model.project.specs.find((candidate) => candidate.key === entry.key);
     if (entry === undefined || spec === undefined) {
+        return { kind: 'none' };
+    }
+    const next = nextStep(model, entry.key);
+    if (next === undefined) {
         return { kind: 'none' };
     }
     const parsed = spec.parsed;
@@ -161,5 +166,5 @@ export function buildDetail(input: DetailInput): DetailView {
         related,
         history: { runs: runItems, statusHistory: historyItems, label: input.history.available ? input.history.label : 'Observed by Studio while it was running — not a reconstruction' },
     };
-    return { kind: 'spec', key: entry.key, stem: entry.stem, number: entry.number, title: titleOf(spec) ?? entry.stem, sections };
+    return { kind: 'spec', key: entry.key, stem: entry.stem, number: entry.number, title: titleOf(spec) ?? entry.stem, nextStep: next, sections };
 }

@@ -29,6 +29,7 @@ import { EmptyState } from '../ui/EmptyState';
 import { RuleText } from '../ui/RuleText';
 import { StateChip } from '../ui/StateChip';
 import { DetailSection, OpenButton } from './DetailSection';
+import { NextStep } from './NextStep';
 
 type OpenFile = (key: string) => void;
 
@@ -259,7 +260,13 @@ function Sections(props: { sections: DetailSections; fileResult: { key: string; 
     );
 }
 
-export function SpecDetail(props: { detail: DetailView | undefined; fileResult: { key: string; text: string } | undefined; onOpen: OpenFile }) {
+export function SpecDetail(props: {
+    detail: DetailView | undefined;
+    fileResult: { key: string; text: string } | undefined;
+    copyResult: { ok: boolean; text: string } | undefined;
+    onOpen: OpenFile;
+    onCopy(text: string): void;
+}) {
     const { detail } = props;
     if (detail === undefined || detail.kind === 'none') {
         return (
@@ -279,6 +286,7 @@ export function SpecDetail(props: { detail: DetailView | undefined; fileResult: 
                 {isBoardState(detail.sections.overview.state) ? <StateChip state={detail.sections.overview.state} /> : null}
                 <OpenButton target={detail.sections.overview.open} onOpen={props.onOpen} label={detail.number} />
             </div>
+            <NextStep nextStep={detail.nextStep} copyResult={props.copyResult} onCopy={props.onCopy} />
             <Sections sections={detail.sections} fileResult={props.fileResult} onOpen={props.onOpen} />
         </section>
     );

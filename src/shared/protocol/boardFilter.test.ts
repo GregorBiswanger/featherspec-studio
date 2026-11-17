@@ -73,6 +73,7 @@ describe('board requests', () => {
                 'boardFocus',
                 'boardSetFilter',
                 'boardSetSort',
+                'copyText',
                 'dismissNotice',
                 'hello',
                 'moveRequest',

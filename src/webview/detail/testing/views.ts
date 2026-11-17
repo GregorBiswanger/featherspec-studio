@@ -1,4 +1,4 @@
-import type { DetailSections, DetailView } from '../../../shared/protocol/detail';
+import type { DetailSections, DetailView, NextStepView } from '../../../shared/protocol/detail';
 import { PROTOCOL_VERSION, type Envelope } from '../../../shared/protocol/envelope';
 
 export const SPEC_KEY = '.specs/active/0007-thing.md';
@@ -51,8 +51,10 @@ export function sections(overrides: Partial<DetailSections> = {}): DetailSection
     };
 }
 
-export function detailView(overrides: Partial<DetailSections> = {}): DetailView {
-    return { kind: 'spec', key: SPEC_KEY, stem: '0007-thing', number: '0007', title: 'Thing 0007', sections: sections(overrides) };
+export const NEXT_STEP: NextStepView = { rule: 'NS-6', lines: [{ text: `/sdd-plan ${SPEC_KEY}` }] };
+
+export function detailView(overrides: Partial<DetailSections> = {}, nextStep: NextStepView = NEXT_STEP): DetailView {
+    return { kind: 'spec', key: SPEC_KEY, stem: '0007-thing', number: '0007', title: 'Thing 0007', nextStep, sections: sections(overrides) };
 }
 
 export function detailEvent(view: DetailView): Envelope {
@@ -61,4 +63,8 @@ export function detailEvent(view: DetailView): Envelope {
 
 export function openFileResultEvent(key: string, text: string): Envelope {
     return { v: PROTOCOL_VERSION, kind: 'evt', type: 'openFileResult', payload: { key, text } };
+}
+
+export function copyResultEvent(ok: boolean, text: string): Envelope {
+    return { v: PROTOCOL_VERSION, kind: 'evt', type: 'copyResult', payload: { ok, text } };
 }

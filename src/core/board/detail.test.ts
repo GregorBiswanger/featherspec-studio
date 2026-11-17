@@ -4,7 +4,9 @@ import type { HistoryView } from '../lifecycle/statusHistory';
 import { noteText, planText, readFixture, readMemory, row, specText } from '../lifecycle/testing/projects';
 import type { ReadResult, RunView } from '../runtime/model';
 import { buildCards } from './cards';
+import { nextStepNumberUsedText } from '../../shared/protocol/nextStepTexts';
 import { buildDetail } from './detail';
+import { nextStep } from './nextStep';
 import { run } from './testing/boardWorld';
 
 const NO_HISTORY: HistoryView = { available: true, label: 'Observed by Studio while it was running — not a reconstruction', entries: [] };
@@ -187,5 +189,26 @@ describe('spec detail', () => {
         const files = { '.specs/backlog/0004-x.md': specText(), '.specs/active/0004-x.md': specText({ status: 'In Progress' }) };
         const view = spec(await detailOf(files, { stem: '0004-x', path: '.specs/backlog/0004-x.md' }));
         expect(view.key).toBe('.specs/backlog/0004-x.md');
+    });
+});
+
+describe('0015 AC-003, AC-004, AC-008: the next step in the detail view', () => {
+    it('AC-003: the view carries the rule and lines of nextStep for the selected spec', async () => {
+        const model = await modelOf(FILES);
+        const view = spec(buildDetail({ selection: { stem: '0001-a' }, model, runs: NO_RUNS, history: NO_HISTORY }));
+        expect(view.nextStep).toEqual(nextStep(model, '.specs/active/0001-a.md'));
+        expect(view.nextStep).toEqual({ rule: 'NS-6', lines: [{ text: '/sdd-plan .specs/active/0001-a.md' }] });
+    });
+
+    it('AC-003: a rule without a line gives its text', async () => {
+        const view = spec(await detailOf({ '.specs/backlog/0002-b.md': specText(), '.specs/backlog/0002-c.md': specText() }, { stem: '0002-b' }));
+        expect(view.nextStep).toEqual({ rule: 'NS-11', text: nextStepNumberUsedText('0002') });
+    });
+
+    it('AC-008: the view needs no trust or writer input; two builds from one snapshot are equal', async () => {
+        const model = await modelOf(FILES);
+        const first = buildDetail({ selection: { stem: '0001-a' }, model, runs: NO_RUNS, history: NO_HISTORY });
+        const second = buildDetail({ selection: { stem: '0001-a' }, model, runs: NO_RUNS, history: NO_HISTORY });
+        expect(second).toEqual(first);
     });
 });

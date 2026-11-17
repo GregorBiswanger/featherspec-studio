@@ -15,6 +15,7 @@ import {
     isShellEventPayload,
     isShellView,
     REQUEST_GUARDS,
+    isCopyResultEventPayload,
     type ShellView,
 } from './messages';
 
@@ -179,5 +180,23 @@ describe('agent start requests and event (spec 0008)', () => {
         expect(REQUEST_GUARDS.agentStartConfirm({ token: 'c-2' })).toBe(true);
         expect(REQUEST_GUARDS.agentStartCancel({ which: 'x' })).toBe(false);
         expect(REQUEST_GUARDS.agentStartDismiss({ which: 'notice' })).toBe(true);
+    });
+});
+
+describe('0015 AC-005, AC-009: copy request and result', () => {
+    it('copyText takes one non-empty text and nothing else', () => {
+        expect(REQUEST_GUARDS.copyText({ text: '/sdd-plan .specs/active/0001-a.md' })).toBe(true);
+        expect(REQUEST_GUARDS.copyText({ text: '' })).toBe(false);
+        expect(REQUEST_GUARDS.copyText({ text: 4 })).toBe(false);
+        expect(REQUEST_GUARDS.copyText({ text: 'a', extra: 1 })).toBe(false);
+        expect(REQUEST_GUARDS.copyText({})).toBe(false);
+    });
+
+    it('copyResult carries the outcome and its text', () => {
+        expect(isCopyResultEventPayload({ ok: true, text: 'Copied to the clipboard.' })).toBe(true);
+        expect(isCopyResultEventPayload({ ok: false, text: 'Could not copy to the clipboard.' })).toBe(true);
+        expect(isCopyResultEventPayload({ ok: 'yes', text: 'x' })).toBe(false);
+        expect(isCopyResultEventPayload({ ok: true })).toBe(false);
+        expect(isCopyResultEventPayload(undefined)).toBe(false);
     });
 });

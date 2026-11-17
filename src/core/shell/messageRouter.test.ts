@@ -18,6 +18,7 @@ function setup(overrides: Partial<RequestHandlers> = {}) {
         boardFocus: async () => void calls.push('boardFocus'),
         moveRequest: async (payload) => void calls.push(`moveRequest:${payload.target}`),
         openFile: async () => void calls.push('openFile'),
+        copyText: async () => void calls.push('copyText'),
         agentStartConfirm: async () => void calls.push('agentStartConfirm'),
         agentStartCancel: async () => void calls.push('agentStartCancel'),
         agentStartDismiss: async () => void calls.push('agentStartDismiss'),

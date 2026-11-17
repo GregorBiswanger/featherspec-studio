@@ -46,6 +46,7 @@ import type { ProviderRegistry } from './core/providers/registry';
 import type { ProviderService } from './core/providers/providerService';
 import { createEditor } from './adapters/vscode/editor';
 import { createMovePicks, createMoveResultSink } from './adapters/vscode/boardPicks';
+import { createClipboard } from './adapters/vscode/clipboard';
 import { createUi } from './adapters/vscode/ui';
 import { createVscodeSpecSource } from './adapters/vscode/vscodeSpecSource';
 import { createVscodeFileSystem } from './adapters/vscode/vscodeFileSystem';
@@ -329,7 +330,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         focused: () => board.focused(),
     });
     const openFile = createOpenFile({ source: modelSource, editor: createEditor() });
-    const requests = createBoardRequests({ board, moves, openFile });
+    const requests = createBoardRequests({ board, moves, openFile, clipboard: createClipboard() });
     const navigation = service.onDidNavigate((request) => {
         if (request.target?.kind === 'boardFilter') {
             board.applyNavigationFilter(request.target.filter);
@@ -350,6 +351,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             onDidChangeDetail: (listener) => board.onDidChangeDetail(listener),
             onDidMoveResult: (listener) => requests.onDidMoveResult(listener),
             onDidOpenFileResult: (listener) => requests.onDidOpenFileResult(listener),
+            onDidCopyResult: (listener) => requests.onDidCopyResult(listener),
             panelClosed: () => board.panelClosed(),
         },
         agentCenter: {

@@ -12,6 +12,7 @@ import {
     isAgentCenterTimelineEventPayload,
     isAgentStartEventPayload,
     isBoardEventPayload,
+    isCopyResultEventPayload,
     isDetailEventPayload,
     isMissionControlEventPayload,
     isMoveResultEventPayload,
@@ -20,6 +21,7 @@ import {
     isShellEventPayload,
     type ActionId,
     type AgentCenterAnswer,
+    type CopyResultEventPayload,
     type NavigationRequest,
     type PanelState,
     type RequestPayloads,
@@ -39,6 +41,7 @@ export interface ClientSnapshot {
     agentCenterTimeline: TimelinePayload | undefined;
     move: MoveResult;
     fileResult: { key: string; text: string } | undefined;
+    copyResult: CopyResultEventPayload | undefined;
 }
 
 export interface SpecReference {
@@ -60,6 +63,7 @@ export interface ShellClient {
     focusCard(key: string | null): void;
     requestMove(key: string, target: BoardState): void;
     openFile(key: string, line?: number): void;
+    copyText(text: string): void;
     dismissMove(): void;
     confirmStart(token: string): void;
     cancelStart(token: string): void;
@@ -99,7 +103,8 @@ export function createClient(deps: ClientDeps): ShellClient {
     let agentCenterTimeline: TimelinePayload | undefined;
     let move: MoveResult = { kind: 'none' };
     let fileResult: { key: string; text: string } | undefined;
-    let snapshot: ClientSnapshot = { view: undefined, state: { id: 'S4' }, area: DEFAULT_AREA, board: undefined, detail: undefined, missionControl: undefined, agentStart: undefined, agentCenter: undefined, agentCenterTimeline: undefined, move, fileResult: undefined };
+    let copyResult: CopyResultEventPayload | undefined;
+    let snapshot: ClientSnapshot = { view: undefined, state: { id: 'S4' }, area: DEFAULT_AREA, board: undefined, detail: undefined, missionControl: undefined, agentStart: undefined, agentCenter: undefined, agentCenterTimeline: undefined, move, fileResult: undefined, copyResult: undefined };
     let unlisten: (() => void) | undefined;
     let mismatch = false;
     let protocolFailure = false;
@@ -129,11 +134,12 @@ export function createClient(deps: ClientDeps): ShellClient {
             snapshot.agentCenterTimeline === agentCenterTimeline &&
             snapshot.move === move &&
             snapshot.fileResult === fileResult &&
+            snapshot.copyResult === copyResult &&
             JSON.stringify(snapshot.state) === JSON.stringify(state)
         ) {
             return;
         }
-        snapshot = { view, state, area, board, detail, missionControl, agentStart, agentCenter, agentCenterTimeline, move, fileResult };
+        snapshot = { view, state, area, board, detail, missionControl, agentStart, agentCenter, agentCenterTimeline, move, fileResult, copyResult };
         listeners.forEach((listener) => listener());
     }
 
@@ -230,6 +236,9 @@ export function createClient(deps: ClientDeps): ShellClient {
                 }
             } else if (envelope.kind === 'evt' && envelope.type === 'detail') {
                 if (isDetailEventPayload(envelope.payload)) {
+                    if (detail?.kind !== 'spec' || envelope.payload.view.kind !== 'spec' || detail.key !== envelope.payload.view.key) {
+                        copyResult = undefined;
+                    }
                     detail = envelope.payload.view;
                     fileResult = undefined;
                     refresh();
@@ -257,6 +266,11 @@ export function createClient(deps: ClientDeps): ShellClient {
             } else if (envelope.kind === 'evt' && envelope.type === 'moveResult') {
                 if (isMoveResultEventPayload(envelope.payload)) {
                     move = envelope.payload.result;
+                    refresh();
+                }
+            } else if (envelope.kind === 'evt' && envelope.type === 'copyResult') {
+                if (isCopyResultEventPayload(envelope.payload)) {
+                    copyResult = envelope.payload;
                     refresh();
                 }
             } else if (envelope.kind === 'evt' && envelope.type === 'openFileResult') {
@@ -296,6 +310,9 @@ export function createClient(deps: ClientDeps): ShellClient {
         },
         requestMove(key, target) {
             send('moveRequest', { key, target });
+        },
+        copyText(text) {
+            send('copyText', { text });
         },
         openFile(key, line) {
             send('openFile', line === undefined ? { key } : { key, line });

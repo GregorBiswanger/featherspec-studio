@@ -77,3 +77,17 @@ describe('AC-019: the detail is in the DOM within 500 ms of the event (PD-047; a
         expect(best).toBeLessThan(BUDGET_MS.uiFreshness);
     });
 });
+
+describe('0015 AC-007: a new next step is in the DOM within 500 ms of the event (PD-047)', () => {
+    it('shows the line of the new detail view', async () => {
+        const container = await open();
+        const next = detailView({}, { rule: 'NS-5', lines: [{ text: '/sdd-compile k' }, { text: '/sdd-lifecycle k', label: 'Then, after a READY verdict:' }] });
+        const best = await bestOfThree(
+            () => send(detailEvent(next)),
+            () => send(detailEvent(detailView())),
+        );
+        await send(detailEvent(next));
+        expect(section(container, 'Next step').textContent).toContain('/sdd-compile k');
+        expect(best).toBeLessThan(BUDGET_MS.uiFreshness);
+    });
+});

@@ -5,7 +5,8 @@ import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
 import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
 import { resetSectionMemory } from './sectionMemory';
-import { detailEvent, detailView, openFileResultEvent, PLAN_KEY, sections, SPEC_KEY } from './testing/views';
+import { copyResultEvent, detailEvent, detailView, openFileResultEvent, PLAN_KEY, sections, SPEC_KEY } from './testing/views';
+import { COPIED_TEXT, COPY_FAILED_TEXT, NEXT_STEP_DONE_TEXT } from '../../shared/protocol/nextStepTexts';
 
 let posted: Envelope[];
 let mounted: Mounted | undefined;
@@ -51,6 +52,7 @@ describe('AC-010: the seven sections', () => {
         expect(container.querySelector('h2')?.textContent).toContain('0007');
         expect(container.querySelector('h2')?.textContent).toContain('Thing 0007');
         expect([...container.querySelectorAll('h3')].map((heading) => heading.textContent)).toEqual([
+            'Next step',
             'Overview',
             'Requirements',
             'Acceptance criteria',
@@ -346,3 +348,75 @@ describe('0013 AC-012, AC-013, AC-010: collapsible sections, detail header, Over
     });
 });
 
+describe('0015 AC-003, AC-005, AC-008, AC-009: the next step in the detail', () => {
+    const TWO = { rule: 'NS-9', lines: [{ text: '/sdd-clarify .specs/backlog/0007-x.md' }, { text: '/sdd-plan .specs/backlog/0007-x.md', label: 'Then:' }] };
+
+    function nextStepSection(container: HTMLElement): HTMLElement {
+        return section(container, 'Next step');
+    }
+
+    function copyButtons(root: Element): HTMLButtonElement[] {
+        return [...root.querySelectorAll<HTMLButtonElement>('button')].filter((button) => button.textContent === 'Copy');
+    }
+
+    it('AC-003: "Next step" stands above the other sections with its line and a Copy button', async () => {
+        const container = await open();
+        const headings = [...container.querySelectorAll('h3')].map((heading) => heading.textContent);
+        expect(headings[0]).toBe('Next step');
+        const root = nextStepSection(container);
+        expect(root.textContent).toContain(`/sdd-plan ${SPEC_KEY}`);
+        expect(copyButtons(root)).toHaveLength(1);
+    });
+
+    it('AC-003: two lines carry the label of the second one; a rule with text only shows the text and no button', async () => {
+        const root = nextStepSection(await open(detailView({}, TWO)));
+        expect(root.textContent).toContain('/sdd-clarify .specs/backlog/0007-x.md');
+        expect(root.textContent).toContain('Then:');
+        expect(copyButtons(root)).toHaveLength(2);
+        const after = nextStepSection(await open(detailView({}, { rule: 'NS-5', lines: [{ text: '/sdd-compile k' }, { text: '/sdd-lifecycle k', label: 'Then, after a READY verdict:' }] })));
+        expect(after.textContent).toContain('Then, after a READY verdict:');
+        const done = nextStepSection(await open(detailView({}, { rule: 'NS-3', text: NEXT_STEP_DONE_TEXT })));
+        expect(done.textContent).toContain('Done — no FeatherSpec step left.');
+        expect(copyButtons(done)).toHaveLength(0);
+    });
+
+    it('AC-005: a pointer click on Copy requests exactly that line, and the result is announced', async () => {
+        const container = await open(detailView({}, TWO));
+        const buttons = copyButtons(nextStepSection(container));
+        await click(buttons[1]!);
+        expect(requests('copyText')).toEqual([{ text: '/sdd-plan .specs/backlog/0007-x.md' }]);
+        await send(copyResultEvent(true, COPIED_TEXT));
+        const status = nextStepSection(container).querySelector('[role="status"]')!;
+        expect(status.textContent).toBe('Copied to the clipboard.');
+        expect(status.getAttribute('aria-live') ?? 'polite').toBe('polite');
+    });
+
+    it('AC-005: Copy is reachable by Tab and works with Enter and with Space', async () => {
+        const container = await open(detailView({}, TWO));
+        const [first, second] = copyButtons(nextStepSection(container));
+        expect(isKeyboardReachable(first!)).toBe(true);
+        expect(isKeyboardReachable(second!)).toBe(true);
+        await pressKey(first!, 'Enter');
+        await pressKey(second!, ' ');
+        expect(requests('copyText')).toEqual([{ text: '/sdd-clarify .specs/backlog/0007-x.md' }, { text: '/sdd-plan .specs/backlog/0007-x.md' }]);
+    });
+
+    it('AC-009: a failed copy shows the failure text', async () => {
+        const container = await open();
+        await send(copyResultEvent(false, COPY_FAILED_TEXT));
+        expect(nextStepSection(container).textContent).toContain('Could not copy to the clipboard.');
+    });
+
+    it('AC-008: Copy is offered with no trust or writer information in the view', async () => {
+        const container = await open();
+        expect(copyButtons(nextStepSection(container))[0]!.disabled).toBe(false);
+    });
+
+    it('the status of a copy goes away when another spec is shown', async () => {
+        const container = await open();
+        await send(copyResultEvent(true, COPIED_TEXT));
+        expect(nextStepSection(container).textContent).toContain('Copied to the clipboard.');
+        await send(detailEvent({ ...detailView(), key: 'other', stem: '0008-other' } as ReturnType<typeof detailView>));
+        expect(nextStepSection(container).textContent).not.toContain('Copied to the clipboard.');
+    });
+});

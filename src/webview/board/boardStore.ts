@@ -10,12 +10,14 @@ export interface BoardApi {
     detail: DetailView | undefined;
     move: MoveResult;
     fileResult: { key: string; text: string } | undefined;
+    copyResult: { ok: boolean; text: string } | undefined;
     setFilter(filter: BoardFilter): void;
     setSort(sort: SortKey): void;
     clearFilters(): void;
     focusCard(key: string | null): void;
     requestMove(key: string, target: BoardState): void;
     openFile(key: string, line?: number): void;
+    copyText(text: string): void;
     dismissMove(): void;
 }
 
@@ -30,12 +32,14 @@ export function useBoard(): BoardApi {
         detail: snapshot.detail,
         move: snapshot.move,
         fileResult: snapshot.fileResult,
+        copyResult: snapshot.copyResult,
         setFilter: client.setBoardFilter,
         setSort: client.setBoardSort,
         clearFilters: client.clearBoardFilters,
         focusCard: client.focusCard,
         requestMove: client.requestMove,
         openFile: client.openFile,
+        copyText: client.copyText,
         dismissMove: client.dismissMove,
     };
 }

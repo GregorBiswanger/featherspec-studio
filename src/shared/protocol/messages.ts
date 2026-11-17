@@ -115,6 +115,15 @@ export interface OpenFilePayload {
     line?: number;
 }
 
+export interface CopyTextPayload {
+    text: string;
+}
+
+export interface CopyResultEventPayload {
+    ok: boolean;
+    text: string;
+}
+
 export interface ShellRequestPayloads {
     hello: HelloPayload;
     navigate: NavigationRequest;
@@ -130,6 +139,7 @@ export interface BoardRequestPayloads {
     boardFocus: BoardFocusPayload;
     moveRequest: MoveRequestPayload;
     openFile: OpenFilePayload;
+    copyText: CopyTextPayload;
 }
 
 export interface AgentStartTokenPayload {
@@ -275,6 +285,14 @@ export function isOpenFilePayload(value: unknown): value is OpenFilePayload {
     );
 }
 
+export function isCopyTextPayload(value: unknown): value is CopyTextPayload {
+    return isRecord(value) && Object.keys(value).length === 1 && isString(value.text) && value.text.length > 0;
+}
+
+export function isCopyResultEventPayload(value: unknown): value is CopyResultEventPayload {
+    return isRecord(value) && typeof value.ok === 'boolean' && isString(value.text);
+}
+
 export function isBoardEventPayload(value: unknown): value is BoardEventPayload {
     return isRecord(value) && isBoardView(value.view);
 }
@@ -359,6 +377,7 @@ export const REQUEST_GUARDS: { [Type in RequestType]: (value: unknown) => value 
     boardFocus: isBoardFocusPayload,
     moveRequest: isMoveRequestPayload,
     openFile: isOpenFilePayload,
+    copyText: isCopyTextPayload,
     agentStartConfirm: isAgentStartTokenPayload,
     agentStartCancel: isAgentStartTokenPayload,
     agentStartDismiss: isAgentStartDismissPayload,

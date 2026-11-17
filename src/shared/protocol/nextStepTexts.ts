@@ -13,3 +13,7 @@ export const NEXT_STEP_DONE_TEXT = 'Done — no FeatherSpec step left.';
 export function nextStepNumberUsedText(number: string): string {
     return `Another spec uses number ${number}. FeatherSpec has no command for this: rename one spec by hand.`;
 }
+
+export const COPIED_TEXT = 'Copied to the clipboard.';
+
+export const COPY_FAILED_TEXT = 'Could not copy to the clipboard.';
