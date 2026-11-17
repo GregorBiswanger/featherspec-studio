@@ -207,8 +207,8 @@ No parallel stage: every step from T-003 on builds on T-002's seam, and T-004…
   {unknown, "Copilot runtime stopped unexpectedly", exit code where known}`, the only derived
   `run.failed`. Tests `copilotFailures.test.ts`.
 - **Verify:** `npx vitest run src/adapters/providers/copilot/copilotFailures.test.ts`
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-17. Red: `npx vitest run src/adapters/providers/copilot/copilotFailures.test.ts` 21 of 25 tests failed (availability on the `Not implemented` stub, no pre-session checks or exit handling in start and resume); the 4 session.error tests passed at once (the mapper already mapped it in T-003), proven by mutation: dropping the runtime stop at the end kind failed 7 of 25, reverted. Green after the checks (runtime, sign-in, model), `checkAvailability` and the exit watcher: `npx vitest run src/adapters/providers/copilot` 7 files, 111 passed (two T-004 tests named a model and now list it, since the model check exists). Gates: eslint --max-warnings 0, tsc, tsc -p src/webview clean; `npm run test:unit` 160 files, 2008 passed.
+- **Notes:** (1) A start failure of the client (spawn error) in a run is `runtime_missing` with Copilot's message; in the availability check a spawn error (ENOENT, EACCES, EPERM, `spawn`) is *not installed*, a protocol-version message is *unknown* naming the CLI version and the SDK's text with both protocol versions, anything else *unknown* with the message. (2) Failures after the checks (session cannot be created, resume refused, prompt not sent, auth status unreadable) are `unknown` with Copilot's message, source `provider`; the only `derived` run.failed is the runtime exit (`Copilot runtime stopped unexpectedly (exit code N)`, the code appended to `providerMessage`, `RunFailedPayload` has no code field). (3) The scripted client gained `authError` and `sendError`. (4) `session.error` mapping lives in mapping.ts since T-003; this step proves it end to end through the adapter.
 
 ### T-006 — Approvals, questions, cancel, end session
 

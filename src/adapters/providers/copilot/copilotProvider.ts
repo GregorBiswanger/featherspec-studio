@@ -1,9 +1,9 @@
-import type { AgentProviderPort, DeliveredEvent, OperationOutcome, ProviderEventSink, ProviderResumeRequest, ProviderStartRequest } from '../../../core/ports/agentProvider';
+import type { AgentProviderPort, AvailabilityReport, DeliveredEvent, OperationOutcome, ProviderEventSink, ProviderResumeRequest, ProviderStartRequest } from '../../../core/ports/agentProvider';
 import type { RuntimeClock } from '../../../core/ports/runtimeMedium';
-import { isEndKind, type CapabilityDeclaration } from '../../../core/providers/vocabulary';
+import { isEndKind, type CapabilityDeclaration, type ErrorCategory } from '../../../core/providers/vocabulary';
 import type { CopilotClient, CopilotClientFactory, CopilotEvent, CopilotSession, CopilotSessionConfig } from './client';
-import type { CliLocation } from './cliLocator';
-import { createEventMapper, locateInProject, type EventMapper } from './mapping';
+import { CLI_PATH_SETTING, INSTALL_URL, type CliLocation } from './cliLocator';
+import { createEventMapper, locateInProject, SIGN_IN_HINT, type EventMapper } from './mapping';
 
 export const COPILOT_PROVIDER_ID = 'copilot';
 export const COPILOT_DISPLAY_NAME = 'GitHub Copilot';
@@ -55,7 +55,10 @@ interface RunState {
     dropped: boolean;
     startedDelivered: boolean;
     startedWaiters: (() => void)[];
+    cancelRequested: boolean;
 }
+
+const messageOf = (error: unknown): string => (error instanceof Error ? error.message : String(error));
 
 const neverAnswered = (): Promise<never> => new Promise<never>(() => undefined);
 
@@ -119,17 +122,6 @@ export function createCopilotProvider(options: CopilotProviderOptions): CopilotP
         onElicitation: neverAnswered,
     });
 
-    const openRuntime = async (run: RunState, workingDirectory: string): Promise<CopilotClient> => {
-        const location = await options.locate();
-        if (location.kind !== 'found') {
-            throw new Error('Not implemented');
-        }
-        const client = options.clientFactory({ cliPath: location.path, workingDirectory, ...baseDirectoryOption() });
-        run.client = client;
-        await client.start();
-        return client;
-    };
-
     const waitForStarted = async (run: RunState): Promise<void> => {
         await run.queue;
         return new Promise<void>((resolve) => {
@@ -145,6 +137,28 @@ export function createCopilotProvider(options: CopilotProviderOptions): CopilotP
         });
     };
 
+    const failRun = (run: RunState, category: ErrorCategory, providerMessage: string | undefined, hint: string | undefined, source: 'provider' | 'derived' = 'provider'): Promise<void> =>
+        enqueue(run, () =>
+            deliver(run, {
+                kind: 'run.failed',
+                source,
+                payload: { category, ...(providerMessage === undefined ? {} : { providerMessage }), ...(hint === undefined ? {} : { hint }) },
+            }),
+        );
+
+    const watchExit = (run: RunState, client: CopilotClient): void => {
+        client.onExit((exit) => {
+            if (run.ended || run.dropped || run.cancelRequested) {
+                return;
+            }
+            const code = exit.code === undefined ? '' : ` (exit code ${exit.code})`;
+            void failRun(run, 'unknown', `Copilot runtime stopped unexpectedly${code}`, undefined, 'derived');
+        });
+    };
+
+    const modelHint = (model: string, offered: readonly string[]): string =>
+        `The model "${model}" is not available. Offered models: ${offered.join(', ')}. Change the setting featherspec-studio.copilot.model.`;
+
     const launch = async (
         runId: string,
         sink: ProviderEventSink,
@@ -152,30 +166,116 @@ export function createCopilotProvider(options: CopilotProviderOptions): CopilotP
         text: string,
         how: { model?: string } | { sessionRef: string },
     ): Promise<void> => {
-        const run: RunState = { runId, sink, queue: Promise.resolve(), ended: false, dropped: false, startedDelivered: false, startedWaiters: [] };
+        const run: RunState = { runId, sink, queue: Promise.resolve(), ended: false, dropped: false, startedDelivered: false, startedWaiters: [], cancelRequested: false };
         runs.set(runId, run);
-        const client = await openRuntime(run, workingDirectory);
-        if ('sessionRef' in how) {
-            run.mapper = createEventMapper({ workingDirectory, platform: options.platform, sessionId: how.sessionRef, readTodos: () => run.session?.readTodos() ?? Promise.resolve([]), isAnswered: () => false });
-            run.session = await client.resumeSession(how.sessionRef, sessionConfig(run, workingDirectory, undefined));
-            await waitForStarted(run);
-            const mapper = run.mapper;
-            await enqueue(run, () => void mapper.started(how.sessionRef).forEach((event) => deliver(run, event)));
-        } else {
-            run.mapper = createEventMapper({ workingDirectory, platform: options.platform, readTodos: () => run.session?.readTodos() ?? Promise.resolve([]), isAnswered: () => false });
-            run.session = await client.createSession(sessionConfig(run, workingDirectory, how.model));
-            const mapper = run.mapper;
-            const sessionId = run.session.sessionId;
-            await enqueue(run, () => void mapper.started(sessionId).forEach((event) => deliver(run, event)));
+        let location: CliLocation;
+        try {
+            location = await options.locate();
+        } catch (error) {
+            location = { kind: 'unknown', reason: messageOf(error) };
+        }
+        if (location.kind !== 'found') {
+            await failRun(run, 'runtime_missing', undefined, location.kind === 'not-installed' ? location.hint : location.reason);
+            return;
+        }
+        const client = options.clientFactory({ cliPath: location.path, workingDirectory, ...baseDirectoryOption() });
+        run.client = client;
+        watchExit(run, client);
+        try {
+            await client.start();
+        } catch (error) {
+            await failRun(run, 'runtime_missing', messageOf(error), undefined);
+            return;
+        }
+        try {
+            const auth = await client.getAuthStatus();
+            if (!auth.isAuthenticated) {
+                await failRun(run, 'auth', undefined, SIGN_IN_HINT);
+                return;
+            }
+            if ('model' in how && how.model !== undefined) {
+                const offered = await client.listModels();
+                if (!offered.includes(how.model)) {
+                    await failRun(run, 'model_unavailable', `Copilot does not offer the model "${how.model}".`, modelHint(how.model, offered));
+                    return;
+                }
+            }
+        } catch (error) {
+            await failRun(run, 'unknown', messageOf(error), undefined);
+            return;
+        }
+        try {
+            if ('sessionRef' in how) {
+                run.mapper = createEventMapper({ workingDirectory, platform: options.platform, sessionId: how.sessionRef, readTodos: () => run.session?.readTodos() ?? Promise.resolve([]), isAnswered: () => false });
+                run.session = await client.resumeSession(how.sessionRef, sessionConfig(run, workingDirectory, undefined));
+                await waitForStarted(run);
+                const mapper = run.mapper;
+                await enqueue(run, () => void mapper.started(how.sessionRef).forEach((event) => deliver(run, event)));
+            } else {
+                run.mapper = createEventMapper({ workingDirectory, platform: options.platform, readTodos: () => run.session?.readTodos() ?? Promise.resolve([]), isAnswered: () => false });
+                run.session = await client.createSession(sessionConfig(run, workingDirectory, how.model));
+                const mapper = run.mapper;
+                const sessionId = run.session.sessionId;
+                await enqueue(run, () => void mapper.started(sessionId).forEach((event) => deliver(run, event)));
+            }
+        } catch (error) {
+            await failRun(run, 'unknown', messageOf(error), undefined);
+            return;
         }
         run.mapper.promptSent();
-        await run.session.send(text);
+        try {
+            await run.session.send(text);
+        } catch (error) {
+            await failRun(run, 'unknown', messageOf(error), undefined);
+        }
+    };
+
+    const startupFailure = (location: Extract<CliLocation, { kind: 'found' }>, error: unknown): AvailabilityReport => {
+        const message = messageOf(error);
+        if (/protocol version/i.test(message)) {
+            return { result: 'unknown', hint: `The installed Copilot CLI ${location.version} and Studio's Copilot SDK do not share a protocol. ${message}` };
+        }
+        if (/ENOENT|EACCES|EPERM|spawn/i.test(message)) {
+            return { result: 'not-installed', hint: `The GitHub Copilot CLI at ${location.path} could not be started: ${message}. Install it (${INSTALL_URL}) or set ${CLI_PATH_SETTING}.` };
+        }
+        return { result: 'unknown', hint: message };
+    };
+
+    const checkAvailability = async (): Promise<AvailabilityReport> => {
+        let location: CliLocation;
+        try {
+            location = await options.locate();
+        } catch (error) {
+            return { result: 'unknown', hint: messageOf(error) };
+        }
+        if (location.kind === 'not-installed') {
+            return { result: 'not-installed', hint: location.hint };
+        }
+        if (location.kind === 'unknown') {
+            return { result: 'unknown', hint: location.reason };
+        }
+        const client = options.clientFactory({ cliPath: location.path, workingDirectory: options.workspaceFolders()[0] ?? options.baseDirectory, ...baseDirectoryOption() });
+        try {
+            try {
+                await client.start();
+            } catch (error) {
+                return startupFailure(location, error);
+            }
+            try {
+                const auth = await client.getAuthStatus();
+                return auth.isAuthenticated ? { result: 'available' } : { result: 'not-signed-in', hint: SIGN_IN_HINT };
+            } catch (error) {
+                return { result: 'unknown', hint: messageOf(error) };
+            }
+        } finally {
+            await client.stop().catch(() => undefined);
+        }
     };
 
     const withRuntime = async <T>(use: (client: CopilotClient) => Promise<T>): Promise<T> => {
         const location = await options.locate();
         if (location.kind !== 'found') {
-            throw new Error('Not implemented');
+            throw new Error(location.kind === 'not-installed' ? location.hint : location.reason);
         }
         const client = options.clientFactory({ cliPath: location.path, workingDirectory: options.workspaceFolders()[0] ?? options.baseDirectory, ...baseDirectoryOption() });
         try {
@@ -196,7 +296,7 @@ export function createCopilotProvider(options: CopilotProviderOptions): CopilotP
         capabilities: COPILOT_CAPABILITIES,
         permissionModeLabel: COPILOT_PERMISSION_LABEL,
         disclosure: COPILOT_DISCLOSURE,
-        checkAvailability: notImplemented,
+        checkAvailability,
         start: (request: ProviderStartRequest, sink: ProviderEventSink) => launch(request.runId, sink, request.workingDirectory, request.prompt, request.model === undefined ? {} : { model: request.model }),
         resume: (request: ProviderResumeRequest, sink: ProviderEventSink) => launch(request.runId, sink, request.workingDirectory, request.continuationText, { sessionRef: request.sessionRef }),
         cancel: notImplemented as () => Promise<OperationOutcome>,

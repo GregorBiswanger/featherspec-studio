@@ -99,6 +99,7 @@ describe('start (AC-006, AC-007, AC-008, AC-024)', () => {
         const world = createCopilotWorld({
             client: {
                 sessionId: 'abc',
+                models: ['requested-model'],
                 onCreate: [{ kind: 'event', event: { type: 'session.start', id: 's1', data: { sessionId: 'abc', selectedModel: 'gpt-named-by-copilot' } } }],
             },
         });
@@ -106,7 +107,7 @@ describe('start (AC-006, AC-007, AC-008, AC-024)', () => {
         await world.settle();
         expect(world.sink.events[0]?.payload).toEqual({ sessionRef: 'abc', model: 'gpt-named-by-copilot' });
         expect(world.sink.events.filter((event) => event.kind === 'session.started')).toHaveLength(1);
-        const plain = createCopilotWorld({ client: { sessionId: 'abc' } });
+        const plain = createCopilotWorld({ client: { sessionId: 'abc', models: ['requested-model'] } });
         await plain.provider.start(plain.request({ model: 'requested-model' }), plain.sink);
         await plain.settle();
         expect(plain.sink.events[0]?.payload).toEqual({ sessionRef: 'abc' });

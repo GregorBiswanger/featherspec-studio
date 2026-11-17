@@ -31,6 +31,8 @@ export interface ScriptedClientOptions {
     models?: readonly string[];
     sessionId?: string;
     startError?: Error;
+    authError?: Error;
+    sendError?: Error;
     createError?: Error;
     resumeError?: Error;
     onCreate?: readonly ScriptStep[];
@@ -82,6 +84,9 @@ export function createScriptedClient(options: ScriptedClientOptions): ScriptedCl
         sessionId: id,
         send(prompt) {
             log.push({ call: 'send', prompt });
+            if (options.sendError !== undefined) {
+                return Promise.reject(options.sendError);
+            }
             const steps = typeof onSend === 'function' ? onSend(prompt) : (onSend ?? []);
             play(steps, config);
             return Promise.resolve();
@@ -121,6 +126,9 @@ export function createScriptedClient(options: ScriptedClientOptions): ScriptedCl
             },
             getAuthStatus() {
                 log.push({ call: 'getAuthStatus' });
+                if (options.authError !== undefined) {
+                    return Promise.reject(options.authError);
+                }
                 return Promise.resolve(options.auth ?? { isAuthenticated: true, authType: 'gh-cli' });
             },
             listModels() {
