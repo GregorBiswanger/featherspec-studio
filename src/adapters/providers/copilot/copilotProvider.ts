@@ -33,7 +33,7 @@ export interface CopilotProviderOptions {
     clientFactory: CopilotClientFactory;
     locate(): Promise<CliLocation>;
     settings: { model(): string };
-    baseDirectory: string;
+    baseDirectory?: string;
     workspaceFolders(): readonly string[];
     platform: string;
     isTrusted(): boolean;
@@ -72,8 +72,12 @@ const messageOf = (error: unknown): string => (error instanceof Error ? error.me
 export function createCopilotProvider(options: CopilotProviderOptions): CopilotProvider {
     const runs = new Map<string, RunState>();
 
-    const baseDirectoryOption = (): { baseDirectory?: string } =>
-        options.workspaceFolders().every((folder) => locateInProject(options.baseDirectory, folder, options.platform).outsideProject) ? { baseDirectory: options.baseDirectory } : {};
+    const baseDirectoryOption = (): { baseDirectory?: string } => {
+        const base = options.baseDirectory;
+        return base !== undefined && options.workspaceFolders().every((folder) => locateInProject(base, folder, options.platform).outsideProject) ? { baseDirectory: base } : {};
+    };
+
+    const idleDirectory = (): string => options.workspaceFolders()[0] ?? options.baseDirectory ?? process.cwd();
 
     const enqueue = (run: RunState, job: () => Promise<void> | void): Promise<void> => {
         run.queue = run.queue.then(job).catch(() => undefined);
@@ -314,7 +318,7 @@ export function createCopilotProvider(options: CopilotProviderOptions): CopilotP
         if (location.kind === 'unknown') {
             return { result: 'unknown', hint: location.reason };
         }
-        const client = options.clientFactory({ cliPath: location.path, workingDirectory: options.workspaceFolders()[0] ?? options.baseDirectory, ...baseDirectoryOption() });
+        const client = options.clientFactory({ cliPath: location.path, workingDirectory: idleDirectory(), ...baseDirectoryOption() });
         try {
             try {
                 await client.start();
@@ -337,7 +341,7 @@ export function createCopilotProvider(options: CopilotProviderOptions): CopilotP
         if (location.kind !== 'found') {
             throw new Error(location.kind === 'not-installed' ? location.hint : location.reason);
         }
-        const client = options.clientFactory({ cliPath: location.path, workingDirectory: options.workspaceFolders()[0] ?? options.baseDirectory, ...baseDirectoryOption() });
+        const client = options.clientFactory({ cliPath: location.path, workingDirectory: idleDirectory(), ...baseDirectoryOption() });
         try {
             await client.start();
             return await use(client);

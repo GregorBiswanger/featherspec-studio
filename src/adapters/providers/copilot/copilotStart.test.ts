@@ -137,6 +137,13 @@ describe('start (AC-006, AC-007, AC-008, AC-024)', () => {
         expect(factory && 'options' in factory ? factory.options : {}).not.toHaveProperty('baseDirectory');
     });
 
+    it('AC-024: with no storage folder available no base directory is passed at all', async () => {
+        const world = createCopilotWorld({ baseDirectory: null, client: { onSend: textOnly() } });
+        await world.provider.start(world.request(), world.sink);
+        const factory = world.scripted.log.find((entry) => entry.call === 'factory');
+        expect(factory && 'options' in factory ? factory.options : { baseDirectory: 'present' }).not.toHaveProperty('baseDirectory');
+    });
+
     it('AC-024: no module of the adapter imports a file-system module, so it creates no file anywhere', () => {
         const folder = __dirname;
         for (const name of ['copilotProvider.ts', 'mapping.ts', 'client.ts', 'sdkClient.ts']) {

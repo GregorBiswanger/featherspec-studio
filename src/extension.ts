@@ -1,3 +1,4 @@
+import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { createFileRuntimeMedium, projectStoreDirectory } from './adapters/node/fileRuntimeMedium';
 import { createRandomIds } from './adapters/node/randomIds';
@@ -27,6 +28,10 @@ import { createRuntimeUi } from './adapters/vscode/runtimeUi';
 import { createMaxAgeDaysSetting } from './adapters/vscode/runtimeSettings';
 import { createDefaultProviderSetting, createFakeProviderEnabledSetting, createFakeProviderScenarioSetting } from './adapters/vscode/providerSettings';
 import { createFakeProvider } from './adapters/providers/fake/fakeProvider';
+import { createCopilotProvider } from './adapters/providers/copilot/copilotProvider';
+import { createSdkClientFactory, loadCopilotSdk } from './adapters/providers/copilot/sdkClient';
+import { createNodeLocate } from './adapters/providers/copilot/nodeLocate';
+import { createCopilotCliPathSetting, createCopilotModelSetting } from './adapters/vscode/copilotSettings';
 import { createOrchestrator, type Orchestrator } from './core/orchestrator/orchestrator';
 import { createRunCommands } from './core/orchestrator/runCommands';
 import { createOrchestratorUi } from './adapters/vscode/orchestratorUi';
@@ -160,8 +165,22 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     const ids = createRandomIds();
     const maxAgeDays = createMaxAgeDaysSetting();
     const fakeScenario = createFakeProviderScenarioSetting();
+    const copilotCliPath = createCopilotCliPathSetting();
+    const copilotModel = createCopilotModelSetting();
+    const copilot = createCopilotProvider({
+        clock,
+        clientFactory: createSdkClientFactory({ loadSdk: loadCopilotSdk, environment: process.env, clock }),
+        locate: createNodeLocate({ settingPath: () => String(copilotCliPath.read()), environment: process.env, platform: process.platform }),
+        settings: { model: () => String(copilotModel.read()) },
+        ...(storage.kind === 'directory' ? { baseDirectory: path.join(storage.path, 'copilot-home') } : {}),
+        workspaceFolders: () => createWorkspaceFolders().list().flatMap((folder) => (folder.displayPath === undefined ? [] : [folder.displayPath])),
+        platform: process.platform,
+        isTrusted: () => vscode.workspace.isTrusted,
+    });
+    context.subscriptions.push({ dispose: () => copilot.dispose() });
     const providers = createProviderSetup({
         clock,
+        adapters: [copilot],
         toggled: [{ enabled: createFakeProviderEnabledSetting(), create: () => createFakeProvider({ clock, profile: 'full', scenario: fakeScenario }) }],
     });
     context.subscriptions.push({ dispose: () => providers.dispose() });

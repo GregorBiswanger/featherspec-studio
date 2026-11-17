@@ -244,8 +244,8 @@ No parallel stage: every step from T-003 on builds on T-002's seam, and T-004…
   text-only run to `run.completed` and a write request rejected (file absent) in a temp folder,
   Mocha timeout 300 s, each wait reports what it awaited and the last event on timeout.
 - **Verify:** `npx vitest run src/adapters/providers/copilot src/adapters/node/extensionBundle.test.ts src/adapters/vscode/manifest.test.ts` then the per-step gates and `npm run compile`
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** red first: the unchanged 0009 contract suite failed 10 of 13 copilot cases (async adapter, no credentials); `extensionBundle.test.ts` built on `src/extension.ts` failed 3 tests before the wiring; `copilotSettingValues` stub failed 2; the no-base-directory test failed 1. Green: contract 13/13 with the adapted suite, fake provider 61 still green, copilot + bundle + manifest tests pass; eslint, both tsc, `npm run compile` clean; `npm run test:unit` 2044 of 2045 (one timing test in SpecBoard.test.tsx failed under load, 26/26 alone). Host smoke compiled and linted only (not run here, skips without opt-in).
+- **Notes:** (1) Contract suite adapted compatibly (main session decision, not a stop): `ContractSubject.settle?()` hook plus `session.advance(ms)` (clock advance, then settle), and the BR-010 case is conditional: with no credential values it expects `credentialChecks` equal to `[]`. Fake provider unaffected. (2) `baseDirectory` is optional: without a storage folder none is passed (AC-024). (3) Scripted client gained an `exit` step, `afterAnswer` and `configure`. (4) `isTrusted` wired to `vscode.workspace.isTrusted`. (5) `providers.smoke.test.ts` now expects `['copilot']` by default and finds the fake by id.
 
 ### T-008 — Docs sync and final gates
 

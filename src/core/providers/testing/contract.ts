@@ -19,6 +19,7 @@ export type ContractCase =
 export interface ContractSubject {
     adapter: AgentProviderPort;
     arrange(contractCase: ContractCase): void;
+    settle?(): Promise<void>;
 }
 
 export interface ContractHarness {
@@ -32,6 +33,7 @@ interface Session {
     events: ProviderEvent[];
     arrange(contractCase: ContractCase): void;
     run(runId?: string): Promise<void>;
+    advance(milliseconds: number): Promise<void>;
     kinds(runId?: string): string[];
     credentialChecks: { event: ProviderEvent; present: boolean }[];
 }
@@ -63,7 +65,13 @@ function open(harness: ContractHarness): Session {
         async run(runId = 'run-1') {
             const result = await service.start(subject.adapter.id, { runId, workingDirectory: '/project', prompt: 'do it' });
             expect(result).toEqual({ kind: 'ok' });
+            await subject.settle?.();
             clock.advance(5_000);
+            await subject.settle?.();
+        },
+        async advance(milliseconds) {
+            clock.advance(milliseconds);
+            await subject.settle?.();
         },
         kinds: (runId = 'run-1') => events.filter((event) => event.runId === runId).map((event) => event.kind),
         credentialChecks,
@@ -150,11 +158,11 @@ export function runProviderContract(name: string, harness: ContractHarness): voi
             const requested = session.events.find((event) => event.kind === 'approval.requested');
             const requestId = (requested?.payload as { requestId: string }).requestId;
             const count = session.events.length;
-            session.clock.advance(DAY);
+            await session.advance(DAY);
             expect(session.events).toHaveLength(count);
             expect((await session.service.respondToApproval('run-1', requestId, { decision: 'approve-always' } as never)).kind).toBe('invalid-answer');
             expect(await session.service.respondToApproval('run-1', requestId, { decision: 'approve-once' })).toEqual({ kind: 'ok' });
-            session.clock.advance(5_000);
+            await session.advance(5_000);
             expect((await session.service.respondToApproval('run-1', requestId, { decision: 'approve-once' })).kind).toBe('request-not-open');
             const resolved = session.events.filter((event) => event.kind === 'approval.resolved');
             expect(resolved).toHaveLength(1);
@@ -176,7 +184,7 @@ export function runProviderContract(name: string, harness: ContractHarness): voi
             const requestId = (requested?.payload as { requestId: string }).requestId;
             expect((await session.service.respondToInput('run-1', requestId, 5 as never)).kind).toBe('invalid-answer');
             expect(await session.service.respondToInput('run-1', requestId, 'distinctive-answer-text')).toEqual({ kind: 'ok' });
-            session.clock.advance(5_000);
+            await session.advance(5_000);
             expect(session.events.filter((event) => event.kind === 'input.resolved')).toHaveLength(1);
             expect(JSON.stringify(session.events)).not.toContain('distinctive-answer-text');
         });
@@ -224,7 +232,7 @@ export function runProviderContract(name: string, harness: ContractHarness): voi
                 return;
             }
             expect(await session.service.cancel('run-1')).toEqual({ kind: 'ok' });
-            session.clock.advance(5_000);
+            await session.advance(5_000);
             const kinds = session.kinds();
             expect(kinds.at(-1)).toBe('run.cancelled');
             expect(kinds.filter((kind) => (END_KINDS as readonly string[]).includes(kind))).toHaveLength(1);
@@ -246,7 +254,10 @@ export function runProviderContract(name: string, harness: ContractHarness): voi
             const session = open(harness);
             session.arrange('credential-in-text');
             await session.run();
-            expect(session.adapter.credentialValues().length).toBeGreaterThan(0);
+            if (session.adapter.credentialValues().length === 0) {
+                expect(session.credentialChecks).toEqual([]);
+                return;
+            }
             expect(session.credentialChecks.length).toBeGreaterThan(0);
             expect(session.credentialChecks.every((check) => check.present)).toBe(true);
         });

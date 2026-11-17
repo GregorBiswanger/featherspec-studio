@@ -21,10 +21,10 @@ suite('FeatherSpec Studio provider smoke', function () {
         const api = await activateStudio();
         await api.whenIdle();
         const configuration = vscode.workspace.getConfiguration('featherspec-studio');
-        assert.deepStrictEqual(ids(api), []);
+        assert.deepStrictEqual(ids(api), ['copilot']);
         await configuration.update('fakeProvider.enabled', true, vscode.ConfigurationTarget.Global);
         await waitUntil(() => ids(api).includes('fake'));
-        assert.strictEqual(api.providers().registry.list()[0]?.displayName, 'Fake provider (no agent, no network)');
+        assert.strictEqual(api.providers().registry.list().find((entry) => entry.id === 'fake')?.displayName, 'Fake provider (no agent, no network)');
         await configuration.update('fakeProvider.enabled', false, vscode.ConfigurationTarget.Global);
         await waitUntil(() => !ids(api).includes('fake'));
     });

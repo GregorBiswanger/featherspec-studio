@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
-import type { CopilotElicitationRequest, CopilotEvent, CopilotPermissionRequest, CopilotUserInputRequest } from '../client';
+import type { CopilotElicitationRequest, CopilotEvent, CopilotPermissionRequest, CopilotRuntimeExit, CopilotUserInputRequest } from '../client';
 
 const FIXTURES = path.resolve(__dirname, '..', '..', '..', '..', '..', 'test', 'fixtures', 'copilot');
 
@@ -23,6 +23,7 @@ export interface FixtureRow {
 
 export type ScriptStep =
     | { kind: 'event'; event: CopilotEvent; afterMs?: number }
+    | { kind: 'exit'; exit: CopilotRuntimeExit; afterMs?: number }
     | { kind: 'permission'; request: CopilotPermissionRequest; afterMs?: number }
     | { kind: 'userInput'; request: CopilotUserInputRequest; afterMs?: number }
     | { kind: 'elicitation'; request: CopilotElicitationRequest; afterMs?: number };

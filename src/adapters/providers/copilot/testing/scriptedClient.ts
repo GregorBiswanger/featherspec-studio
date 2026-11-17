@@ -40,6 +40,7 @@ export interface ScriptedClientOptions {
     onResume?: readonly ScriptStep[];
     onSend?: readonly ScriptStep[] | ((prompt: string) => readonly ScriptStep[]);
     onAbort?: readonly ScriptStep[] | 'silent';
+    afterAnswer?: readonly ScriptStep[];
     todos?: readonly CopilotTodo[];
 }
 
@@ -50,12 +51,13 @@ export interface ScriptedClient {
     answers(): ScriptedCall[];
     exit(exit: CopilotRuntimeExit): void;
     setScript(onSend: ScriptedClientOptions['onSend']): void;
+    configure(next: Partial<Omit<ScriptedClientOptions, 'clock'>>): void;
 }
 
-export function createScriptedClient(options: ScriptedClientOptions): ScriptedClient {
+export function createScriptedClient(initial: ScriptedClientOptions): ScriptedClient {
+    const options: ScriptedClientOptions = { ...initial };
     const log: ScriptedCall[] = [];
     const exitListeners = new Set<(exit: CopilotRuntimeExit) => void>();
-    let onSend = options.onSend;
     const sessionId = options.sessionId ?? 'scripted-session-1';
 
     const play = (steps: readonly ScriptStep[], config: CopilotSessionConfig, immediate = false): void => {
@@ -63,14 +65,22 @@ export function createScriptedClient(options: ScriptedClientOptions): ScriptedCl
         for (const step of steps) {
             elapsed += step.afterMs ?? 0;
             const run = (): void => {
+                const answered = (entry: ScriptedCall): void => {
+                    log.push(entry);
+                    play(options.afterAnswer ?? [], config);
+                };
                 if (step.kind === 'event') {
                     config.onEvent(step.event);
+                } else if (step.kind === 'exit') {
+                    for (const listener of [...exitListeners]) {
+                        listener(step.exit);
+                    }
                 } else if (step.kind === 'permission') {
-                    void config.onPermission(step.request).then((answer) => void log.push({ call: 'answer.permission', answer }));
+                    void config.onPermission(step.request).then((answer) => answered({ call: 'answer.permission', answer }));
                 } else if (step.kind === 'userInput') {
-                    void config.onUserInput(step.request).then((answer) => void log.push({ call: 'answer.userInput', answer }));
+                    void config.onUserInput(step.request).then((answer) => answered({ call: 'answer.userInput', answer }));
                 } else {
-                    void config.onElicitation(step.request).then((answer) => void log.push({ call: 'answer.elicitation', answer }));
+                    void config.onElicitation(step.request).then((answer) => answered({ call: 'answer.elicitation', answer }));
                 }
             };
             if (immediate) {
@@ -88,7 +98,7 @@ export function createScriptedClient(options: ScriptedClientOptions): ScriptedCl
             if (options.sendError !== undefined) {
                 return Promise.reject(options.sendError);
             }
-            const steps = typeof onSend === 'function' ? onSend(prompt) : (onSend ?? []);
+            const steps = typeof options.onSend === 'function' ? options.onSend(prompt) : (options.onSend ?? []);
             play(steps, config);
             return Promise.resolve();
         },
@@ -174,7 +184,10 @@ export function createScriptedClient(options: ScriptedClientOptions): ScriptedCl
             }
         },
         setScript(next) {
-            onSend = next;
+            options.onSend = next;
+        },
+        configure(next) {
+            Object.assign(options, next);
         },
     };
 }

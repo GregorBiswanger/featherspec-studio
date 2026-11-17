@@ -34,7 +34,7 @@ async function bundle(entry: string): Promise<{ inputs: string[]; externals: str
 
 describe('universal bundle (ADR-001 Decision 1)', () => {
     beforeAll(async () => {
-        const built = await bundle('src/adapters/providers/copilot/sdkClient.ts');
+        const built = await bundle('src/extension.ts');
         inputs = built.inputs;
         externals = built.externals;
         source = built.source;
@@ -67,7 +67,7 @@ describe('universal bundle (ADR-001 Decision 1)', () => {
         const result = await build({
             ...hostOptions,
             external: ['vscode'],
-            entryPoints: [path.join(root, 'src/adapters/providers/copilot/sdkClient.ts')],
+            entryPoints: [path.join(root, 'src/extension.ts')],
             outfile: path.join(root, 'dist', 'bundle-test.js'),
             write: false,
             metafile: true,

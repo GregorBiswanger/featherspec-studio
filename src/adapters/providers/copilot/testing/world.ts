@@ -13,7 +13,7 @@ export interface CopilotWorldOptions {
     model?: string;
     trusted?: boolean;
     folders?: readonly string[];
-    baseDirectory?: string;
+    baseDirectory?: string | null;
     platform?: string;
 }
 
@@ -61,7 +61,7 @@ export function createCopilotWorld(options: CopilotWorldOptions = {}): CopilotWo
         clientFactory: scripted.factory,
         locate: options.locate ?? (() => Promise.resolve(location)),
         settings: { model: () => options.model ?? '' },
-        baseDirectory: options.baseDirectory ?? '/storage/copilot-home',
+        ...(options.baseDirectory === null ? {} : { baseDirectory: options.baseDirectory ?? '/storage/copilot-home' }),
         workspaceFolders: () => options.folders ?? [ROOT],
         platform: options.platform ?? 'linux',
         isTrusted: () => options.trusted ?? true,
