@@ -1,0 +1,32 @@
+name: Publish to the VS Code Marketplace
+
+# Runs only by hand (Actions → "Publish to the VS Code Marketplace" → Run workflow, or
+# `gh workflow run publish.yml -f confirm=publish`). It needs a Trusted Publishing policy on the
+# Marketplace publisher for this repository and this workflow file (docs/release-checklist.md → Go).
+# No token is stored: the Marketplace exchanges the GitHub OIDC token of this run.
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "publish" to publish the version in package.json'
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    if: inputs.confirm == 'publish'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:unit
+      - run: npx @vscode/vsce publish --oidc
