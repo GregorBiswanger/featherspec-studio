@@ -19,6 +19,7 @@ Dark, Light and High Contrast, no custom colour palette, no web fonts, no new de
   figure next to it with its rule as a tooltip/secondary line.
 - "Needs attention" as a list of compact rows/cards: spec number chip, title, reason chip.
 - Agent runs and recent activity as two panels side by side below; friendly empty states.
+  *Superseded by PD-055 (spec 0015): there are no agent runs; recent activity stands alone.*
 - Header: project name, FeatherSpec version, last model update, diagnostics — one quiet line.
   Say "0 project-level diagnostics · N specs with diagnostics" so the header and the cards agree.
 
@@ -30,6 +31,7 @@ Dark, Light and High Contrast, no custom colour palette, no web fonts, no new de
   VS Code chart/status variables, never colour alone), summary (two lines), two thin progress
   bars (tasks, criteria) with their figures, diagnostics badge, run status, "Move to…" as a
   small button in the card's corner that is reachable by Tab.
+  *Run status: superseded by PD-055 (spec 0015); cards carry no run line.*
 - Readiness and rule references read as sentences for humans; the rule ID is secondary text.
 - Drag feedback: the dragged card and the valid/invalid target columns are visibly marked.
 
@@ -45,6 +47,7 @@ Dark, Light and High Contrast, no custom colour palette, no web fonts, no new de
 
 ## Agent Center (placeholder until 0012) and panel-level states
 - Friendly, centred empty/placeholder states with an icon, one sentence and the action.
+- *Superseded by PD-055 (spec 0015): the Agent Center no longer exists; the panel-level states stand.*
 
 ## Motion and accessibility
 - Short transitions (≤ 150 ms) for hover, selection and collapsing; none when the user prefers

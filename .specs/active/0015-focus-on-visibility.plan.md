@@ -371,6 +371,14 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 - [x] **Verified (T-018):** 2026-11-17 — red: with `Not implemented` stubs all 5 new tests failed; with the presenter written as the old sink (write without catch, no confirmation) the AC-005 and AC-009 tests failed (2 ×); a `copyLine` mutant giving the success text on failure → 3 × (presenter AC-009, copyLine, boardRequests AC-009). Green after: 1686 passed + 3 skipped, 12 timing; gates 1–5 and compile-tests clean.
 - **Notes:** product code changed (composition root, board adapter, core); the host suite has no test that clicks the information message's "Copy" — the decision now lives in the unit-tested core.
 
+### T-019 — Compile fixes D4, D5, D6 and the stale docs
+
+- **Covers:** AC-021 (spec amendment), AC-025, AC-029; compile report 2026-11-17 D4, D5, D6 and *Docs*
+- **Do:** ADR-001: the note moves from the document head into item 14; `src/adapters/node/docsScan.test.ts` checks it inside item 14 (`itemOf`, with a negative control). Spec AC-021: the exceptions add the tests that decide AC-025, recorded as OP-008. `.memory-bank/projectbrief.md` Mission opens with the §8 manifest description. `CHANGELOG.md`: the unpublished 0.1.0 entry describes 0.1.0 as it ships (three areas, next step, setup, status history; no removed feature), Unreleased empty. `.memory-bank/systemPatterns.md`: the board line without runs, the run-refresh limitation removed. `docs/product/design-brief.md`: the agent-run, run-status and Agent Center lines marked *Superseded by PD-055*.
+- **Verify:** docs scan red then green; `grep -cF "<§8 description>" .memory-bank/projectbrief.md` 0 → 1; gates 1–5
+- [x] **Verified (T-019):** 2026-11-17 — red: the new docs-scan test `ADR-001 carries the note at its §14…` failed while the note sat at the head; green after the move (9 docs-scan tests). The brief grep returned 0 before and 1 after; its term grep `provider|agent run|agentCenter|orchestrator` stays 0; `CHANGELOG.md` grep for agent center, provider, copilot, orchestrator, run history, stop run, resume run, agent run → 0. Gates 1–5 clean: 1688 passed + 3 skipped, 12 timing.
+- **Notes:** the spec edit (AC-021) changes no behaviour: `sourceScan.test.ts` already listed `docsScan.test.ts` as an exception since T-014.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |

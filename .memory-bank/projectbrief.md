@@ -1,6 +1,8 @@
 # Project Brief
 
 ## Mission
+Visual command center for spec-driven development with FeatherSpec: see every spec, know its next step.
+
 A VS Code panel for projects that use FeatherSpec. Studio reads your specs, plans and Memory Bank, shows where every spec stands, and names each spec's next FeatherSpec step, ready to paste into the AI assistant you work with. It starts no agent; the work with the agent stays in the assistant's chat. The FeatherSpec artifacts stay the source of truth.
 Product concept and decisions: [docs/product/po-handoff.md](../docs/product/po-handoff.md), PD-055 and PD-056 in [docs/product/product-decisions.md](../docs/product/product-decisions.md).
 

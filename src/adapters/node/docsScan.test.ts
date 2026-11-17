@@ -17,6 +17,16 @@ export function findForbidden(text: string): string[] {
     return FORBIDDEN.filter((word) => lower.includes(word));
 }
 
+export function itemOf(text: string, number: number): string {
+    const start = text.search(new RegExp(`^${number}\\. `, 'm'));
+    if (start < 0) {
+        return '';
+    }
+    const rest = text.slice(start);
+    const end = rest.search(new RegExp(`^(${number + 1}\\. |#)`, 'm'));
+    return (end < 0 ? rest : rest.slice(0, end)).trimEnd();
+}
+
 async function read(file: string): Promise<string> {
     return fs.readFile(path.join(root, file), 'utf8');
 }
@@ -61,7 +71,15 @@ describe('product docs after 0015 (AC-025)', () => {
 
     it('marks the decisions as superseded', async () => {
         expect(await read('docs/decisions/ADR-003-first-agent-provider.md')).toContain('Status: Superseded (PD-055)');
-        expect(await read('docs/decisions/ADR-001-extension-architecture.md')).toContain('superseded in part by 0015 (PD-055)');
         expect(await read('docs/decisions/ADR-002-runtime-storage.md')).toContain('superseded in part by 0015 (PD-055)');
+    });
+
+    it('ADR-001 carries the note at its §14, the item that hid the agent start', async () => {
+        expect(itemOf(await read('docs/decisions/ADR-001-extension-architecture.md'), 14)).toContain('superseded in part by 0015 (PD-055)');
+    });
+
+    it('negative control: a note outside §14 is not found in §14', () => {
+        const text = '- Note: superseded in part by 0015 (PD-055)\n\n13. **Packaging.**\n14. **Trust.**\n    - hidden\n\n## Options';
+        expect(itemOf(text, 14)).toBe('14. **Trust.**\n    - hidden');
     });
 });
