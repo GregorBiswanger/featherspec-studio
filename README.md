@@ -1,6 +1,6 @@
 # FeatherSpec Studio
 
-Visual command center for spec-driven development with [FeatherSpec](https://github.com/GregorBiswanger/featherspec), as a VS Code extension. This is an early build: project discovery, the spec model, the Studio shell, Mission Control, the Spec Board and the spec detail exist; Agent Center follows.
+Visual command center for spec-driven development with [FeatherSpec](https://github.com/GregorBiswanger/featherspec), as a VS Code extension. This is an early build: project discovery, the spec model, the Studio shell, Mission Control, the Spec Board, the spec detail and the Agent Center exist.
 
 ## Project discovery
 
@@ -24,13 +24,17 @@ For the active project Studio reads every spec, plan, archived plan and parallel
 
 ## Studio
 
-Open it from the **FeatherSpec Studio** icon in the Activity Bar (a tree with the project name, "Open Studio" and the four areas) or with `FeatherSpec Studio: Open`. The Studio is one panel in the editor area with four areas: Mission Control, Spec Board, Spec Explorer and Agent Center. Spec Explorer lists the specs of the active project (number, title, board state); select one and it stays selected while you switch areas, close and reopen the panel, or reload the window. Agent Center says that it is not available in this version. The panel follows the VS Code theme, works with the keyboard and changes no file.
+Open it from the **FeatherSpec Studio** icon in the Activity Bar (a tree with the project name, "Open Studio" and the four areas) or with `FeatherSpec Studio: Open`. The Studio is one panel in the editor area with four areas: Mission Control, Spec Board, Spec Explorer and Agent Center. Spec Explorer lists the specs of the active project (number, title, board state); select one and it stays selected while you switch areas, close and reopen the panel, or reload the window. Agent Center shows the agent runs of the project (see below). The panel follows the VS Code theme, works with the keyboard and changes no file.
 
 When there is nothing to show yet, the panel and the tree say why and offer the next action: no folder open, no project found, several projects, a remembered project that was not found, an incomplete project, loading, a load error ("Show output", "Retry") and Restricted Mode (a note; agent actions are unavailable).
 
 ## Mission Control
 
 Mission Control is the first area. One quiet header line shows the folder name, the FeatherSpec version, the time of the last project update and the diagnostics (project-level and specs with diagnostics). Six stat tiles in board order show the specs per state (a derived state with its rule in words), a coloured bar shows the distribution, and one progress figure explains its rule (done specs with status Implemented or Baseline ÷ all specs without Deprecated); the open agent runs and the failed or interrupted ones; the specs that need attention as compact rows with their reasons (blocked, failed or interrupted run, waiting for you, diagnostic, review pending); and, side by side below, the agent runs and the ten latest activities. A figure the sources cannot deliver reads "not available". Every count, row and entry is a button: it opens the Spec Board (filtered), Spec Explorer or the Agent Center. The dashboard follows file and run changes while the panel is open and changes no file.
+
+### Agent Center
+
+The Agent Center lists the agent runs of the active project, newest first: spec, provider, status chip, start time and duration. Select a run to see its header (run, provider, model, session, spec, status, duration), the current activity, the requests that wait for you, the error or result, the files the run changed and a timeline of its events (follows the newest event; scroll away and "Jump to latest" brings you back, "Load earlier" shows older events). Answer an approval with "Approve once" or "Reject" (with an optional reason) and answer a question in the text field; "Cancel run" asks once before it stops the run, "Resume" continues an ended run when the provider can, and "Open spec" and "Open file" jump to the spec or the changed file. When a run asks for you while that run is not in view, a notification offers to open it. The selected run and the spec filter are remembered per project. A store that is read-only shows the history without controls; in Restricted Mode no controls appear. The Agent Center only reads the run history and the event log; nothing is written to your project files.
 
 ## Spec Board and spec detail
 
