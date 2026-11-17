@@ -2,11 +2,12 @@ import { AC_NO_MATCH, AC_NO_RUNS, AC_PICK_A_RUN, acRunsUnavailable } from '../..
 import { useShell } from '../../shell';
 import { EmptyState } from '../../ui/EmptyState';
 import { RunDetail } from './RunDetail';
+import { Timeline } from './Timeline';
 import { RunList } from './RunList';
 import { useAgentCenter } from './store';
 
 export function AgentCenter() {
-    const { view, client } = useAgentCenter();
+    const { view, timeline, client } = useAgentCenter();
     const shell = useShell();
     if (view === undefined) {
         return <div data-agent-center-empty className="agent-center" />;
@@ -64,7 +65,9 @@ export function AgentCenter() {
                             },
                             onOpenFile: (path) => client.acOpenFile(runId, path),
                         }}
-                    />
+                    >
+                        <Timeline runId={runId} timeline={timeline} client={client} />
+                    </RunDetail>
                 )}
             </div>
         </div>

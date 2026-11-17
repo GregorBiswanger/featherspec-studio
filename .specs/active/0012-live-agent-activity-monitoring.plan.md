@@ -3,7 +3,7 @@
 **Spec:** [0012-live-agent-activity-monitoring.md](0012-live-agent-activity-monitoring.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-007
+**Current step:** T-008
 
 ## Approach
 
@@ -254,7 +254,7 @@ No parallel stage: stages 1–2 are one module (`src/core/agentCenter`), and eve
   activation, rows applied synchronously on the timeline event. The visible scrolling stays the
   manual check of AC-010.
 - **Verify:** `npx vitest run --project webview src/webview/areas/agentCenter` then the per-step gates
-- [ ] **Verified (T-007):** —
+- [x] **Verified (T-007):** red: Timeline.test.tsx 8 of 9 failed (no timeline rendered). green: Timeline.test.tsx 9 passed, webview suite 320 passed, full unit 1885 passed, eslint and both tsc clean, compile ok. Preview Dark/Light/HC screenshots show the timeline panel with rows and clock times; scrolling stays the manual AC-010 check.
 - **Notes:** —
 
 ### T-008 — VS Code wiring and host smoke
@@ -327,8 +327,8 @@ No parallel stage: stages 1–2 are one module (`src/core/agentCenter`), and eve
 
 ## Session handoff
 
-- **Done so far:** T-006
-- **Next action:** T-007
+- **Done so far:** T-007
+- **Next action:** T-008
 - **Open decisions:** none.
 - **Baseline:** 2026-11-17, HEAD 70362df: eslint, both tsc and `npm run test:unit` green (136 files, 1723 tests).
 - **Environment:** `npm test` cannot run here (VS Code download blocked); the host smoke runs on CI or Gregor's Windows machine. UI looks: `npm run compile` and `/home/claude/orch/preview/run.sh`, screenshots in `/mnt/user-data/outputs/screens/`.
