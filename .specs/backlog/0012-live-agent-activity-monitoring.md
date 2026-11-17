@@ -1,7 +1,7 @@
 # Live Agent Activity & Monitoring (Agent Center)
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0012-live-agent-activity-monitoring.plan.md](0012-live-agent-activity-monitoring.plan.md)
 
 Handoff reference: FS-012 ([po-handoff.md](../../docs/product/po-handoff.md) §4.4, §5.3, §10 FS-012,
 §13). Depends on: 0004 (runs, events, store state), 0005 (shell, panel-level states, navigation),
@@ -331,11 +331,12 @@ theme.
 
 | ID | Assumption | Why | What breaks if wrong |
 | --- | --- | --- | --- |
-| A-005 | In the writer window the store signals new runs, events and status changes to consumers | 0004 AC-025 covers store-state changes only; 0006 AC-015 and 0007 AC-019 assume the same | AC-012/013 need polling |
-| A-006 | 0004 returns each event's source | 0009 §8.2 delivers it; 0004 §8 does not list it | Rows show the source "not available" |
+| A-006 | Each stored event carries its source as the top-level payload field `source` (0011 plan *Surface*, "Stored events") | 0009 §8.2 delivers it; 0004 §8 has no field; the 0011 plan stores it in the payload | Rows show the source "not available" (AC-011 stays true) |
 
 A-001…A-004 are withdrawn: decided by 0009 (BR-002, §8.2), by Gregor (now BR-05, BR-04) and by
-0011 (BR-005, BR-006, AC-011, AC-015).
+0011 (BR-005, BR-006, AC-011, AC-015). A-005 is withdrawn (2026-11-16, `/sdd-plan`): new runs and
+status changes come from 0004's run-change notification (0004 AC-030); stored events from a
+notifying wrapper around the window's store that this spec's plan adds (writer window only, OP-09).
 
 ## 13. Open points
 
@@ -354,26 +355,24 @@ Resolved:
   notifications appear only in the window that can answer; (j) selection and filter survive a
   restart; (k) payload text is never interpreted as markup.
 
-Open, none blocks planning (a recommendation each):
+- OP-02, OP-05…OP-13 (2026-11-16, `/sdd-plan`): decided by the recommendations below, approved
+  by Gregor as a standing answer for this plan session. OP-02: the wording is the text table of
+  the plan (*Texts*), one file the tests read (`src/shared/protocol/agentCenterTexts.ts`). OP-05:
+  only BR-04's duration is shown. OP-06: whole seconds, refreshed once a second while shown.
+  OP-07: a status entry's cause is shown beside the status in the header. OP-08: after a
+  confirmed Resume the new run is selected. OP-09: no live updates in a reader window; it re-reads
+  when the area is shown. OP-10: no notification while that run's detail is shown in the focused
+  window. OP-11: "Send" is disabled while the field is empty. OP-12: the view keeps a fixed number
+  of loaded pages (named constant) and drops the oldest while following. OP-13: selection and
+  filter are kept per project root.
+- OP-14, 0004 and 0009 parts (2026-11-16, `/sdd-plan`): no change to 0004 is needed — sequence
+  numbers are contiguous per run, so the page before the oldest loaded event is read forwards from
+  a computed start; the event signal is the plan's store wrapper (A-005); `source` stays A-006.
+  0009's plan surface carries `outsideProject` on `approval.requested`.
 
-- OP-02: Final wording of notices, labels, kind words and confirmation texts — fixed in `/sdd-plan`
-  (English, PD-016).
-- OP-05: Two durations: 0011 BR-011 stores created → end time, BR-04 shows first `Running` → end
-  time. Recommendation: this area shows only BR-04's.
-- OP-06: Refresh of an open run's duration. Recommendation: whole seconds, once a second.
-- OP-07: Causes of status entries ("stop not confirmed by provider", "extension host restarted",
-  "resumed from <run ID>") are shown nowhere. Recommendation: beside the status in the header.
-- OP-08: A confirmed Resume creates a new run (0011 BR-005). Recommendation: select it.
-- OP-09: Live updates in a reader window (A-005 covers the writer). Recommendation: none promised
-  in the MVP; the reader re-reads when the area is shown.
-- OP-10: Notification while the run's detail is visible in the focused window. Recommendation: none.
-- OP-11: "Send" with an empty field. Recommendation: disabled while the field is empty.
-- OP-12: A long open run adds rows without bound while shown. Recommendation: the view keeps a
-  fixed number of pages (named constant) and drops the oldest while following.
-- OP-13: The active project changes. Recommendation: selection and filter per project root.
-- OP-14 (cross-spec, main session): 0004 — paging backwards or the run's newest sequence number
-  (AC-009), `source` in the envelope (A-006), a criterion for the signal of A-005. 0009 — §8.2 lacks
-  `outsideProject` (0010 BR-06). 0007 — a card offers no way to its run in the Agent Center.
+Open (cross-spec, main session; does not block):
+
+- OP-14, 0007 part: a card offers no way to its run in the Agent Center.
 
 ## 14. Definition of Ready / Done
 
