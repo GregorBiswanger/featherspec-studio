@@ -2,7 +2,7 @@
 
 **Spec:** [0003-spec-lifecycle-readiness-model.md](0003-spec-lifecycle-readiness-model.md)
 **Status:** Done
-**Last updated:** 2026-11-16
+**Last updated:** 2026-11-17
 **Current step:** — (all steps ticked)
 
 ## Approach
@@ -263,10 +263,15 @@ exists after T-002 and writes its own files.
 | AC-027 | T-010 | `src/core/lifecycle/deriveLifecycle.ts:deriveLifecycle`, `entryContext.ts:buildContexts` | `blockedBy.test.ts` (AC-027) | verified |
 | AC-028 | T-010 | `src/core/lifecycle/verification.ts:planInUse`, `deriveLifecycle.ts` | `blockedBy.test.ts` (AC-028) | verified |
 
+## Open evidence
+
+- Host suite (pre-done gate, includes `src/test/lifecycle.smoke.test.ts`): Windows 11 (Gregor's machine, VS Code stable, Node 26) `npm test` 28 passing, 0 failing at commit e6f0c85, 2026-11-17 08:45 CET; GitHub Actions (ubuntu-latest + windows-latest) green at commit 9635ba4, 2026-11-17. No product code or host test of this spec changed after e6f0c85.
+- Second `/sdd-compile` (2026-11-17, closing session, worktree at e6f0c85): READY. `npx eslint src --max-warnings 0` 0 warnings · `npx tsc --noEmit` and `-p src/webview` clean · `npm run test:unit` 160 files, 2008 tests passed · `npm run compile` green · `src/core/lifecycle` 132 of 132. Mutation spot-checks red as expected: Blocked allowed as an intermediate state → 2 AC-009 tests fail; baseline skipped when the history cannot be read → 2 AC-024 tests fail.
+
 ## Session handoff
 
-- **Done so far:** all ten steps (T-001...T-010) ticked with recorded runs; `src/core/lifecycle` is complete and wired (`StudioApi.lifecycle()`); eslint, tsc, `test:unit` (639 tests) and `compile` green; docs synced.
-- **Next action:** `npm test` (host smoke incl. `src/test/lifecycle.smoke.test.ts`) on CI or Windows; then `/sdd-compile` in a fresh session with a model from another family; then `/sdd-lifecycle` active → done.
+- **Done so far:** all ten steps (T-001...T-010) ticked with recorded runs; `src/core/lifecycle` is complete and wired (`StudioApi.lifecycle()`); gates green; host suite green (see *Open evidence*); second `/sdd-compile` READY (2026-11-17).
+- **Next action:** `/sdd-lifecycle` active → done (this plan is then archived and frozen).
 - **Open decisions:** `_none yet_` + `**Origin:**` is not an exception in AC-025 (see T-002 Notes); `AGENTS.md` over its line target (T-008 Notes).
 - **Baseline:** 0e0380a (HEAD before the first step commit).
-- **Environment:** `npm test` cannot run in the sandbox (VS Code download blocked); CI runs it.
+- **Environment:** `npm test` runs on Gregor's Windows machine and on CI, not in the sandbox.
