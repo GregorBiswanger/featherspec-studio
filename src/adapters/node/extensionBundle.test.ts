@@ -33,6 +33,37 @@ describe('universal bundle (ADR-001 Decision 1)', () => {
         inputs = built.inputs;
     }, 60_000);
 
+    it('AC-017 (0015): package.json and package-lock.json do not name the Copilot SDK, and the bundler leaves only vscode external', () => {
+        expect(readFileSync(path.join(root, 'package.json'), 'utf8')).not.toContain('@github/copilot-sdk');
+        expect(readFileSync(path.join(root, 'package-lock.json'), 'utf8')).not.toContain('@github/copilot-sdk');
+        expect(hostOptions.external).toEqual(['vscode']);
+    });
+
+    it('AC-017 (0015): negative control, the earlier externals and a manifest with the SDK would be found', () => {
+        expect(['vscode', 'koffi']).not.toEqual(['vscode']);
+        expect('"devDependencies": { "@github/copilot-sdk": "1.0.34" }').toContain('@github/copilot-sdk');
+    });
+
+    it('AC-018 (0015): the production host bundle contains no child_process and no Copilot SDK', async () => {
+        const result = await build({
+            ...hostOptions,
+            minify: true,
+            sourcemap: false,
+            write: false,
+            logLevel: 'silent',
+            plugins: [],
+            outfile: path.join(root, 'dist', 'bundle-production-test.js'),
+        });
+        const text = result.outputFiles?.[0]?.text ?? '';
+        expect(text.length).toBeGreaterThan(10_000);
+        expect(text).not.toContain('child_process');
+        expect(text).not.toContain('@github/copilot-sdk');
+    }, 60_000);
+
+    it('AC-018 (0015): negative control, a bundle that required child_process would be found', () => {
+        expect("const cp = require('child_process');").toContain('child_process');
+    });
+
     it('AC-005: no per-platform runtime package and no native module gets into the bundle', () => {
         expect(inputs.filter((input) => /@github\/copilot-sdk-[a-z0-9]+/.test(input))).toEqual([]);
         expect(inputs.filter((input) => input.endsWith('.node'))).toEqual([]);

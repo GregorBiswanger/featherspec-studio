@@ -3,7 +3,7 @@ import { READER_REASON, STORE_CLOSED_REASON, storageUnreachableNotice } from '..
 import type { StoreState } from '../model';
 import type { ContractContext, ContractRig } from './contract';
 
-const STEM = '0011-orchestrator';
+const STEM = '0011-example';
 const DAY = 86_400_000;
 const PROJECT = 'project-A';
 

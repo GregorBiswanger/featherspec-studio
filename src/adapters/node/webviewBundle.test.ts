@@ -65,6 +65,12 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         expect(script).not.toContain('process.env.NODE_ENV');
     });
 
+    it('AC-018 (0015): the webview bundle contains no Agent Center, and a bundle that held the old title would be found', () => {
+        const script = readFileSync(bundlePath, 'utf8');
+        expect(script).not.toContain('Agent Center');
+        expect('const title = "Agent Center";').toContain('Agent Center');
+    });
+
     it('starts without a runtime error, renders the frame with the three areas and the loading state, and says hello', async () => {
         const { dom, posted, errors } = boot(readFileSync(bundlePath, 'utf8'));
         await settle();

@@ -27,7 +27,7 @@ describe('board filter encoding v1 (PD-041, shared with 0006)', () => {
         ['an unknown state', { states: ['Doing'] }],
         ['an empty state list', { states: [] }],
         ['a non-string state', { states: [3] }],
-        ['a provider list (0015 AC-011)', { providers: ['copilot'] }],
+        ['a provider list (0015 AC-011)', { providers: ['some-agent'] }],
         ['a provider list with "No run" (0015 AC-011)', { states: ['Ready'], providers: [null] }],
         ['a set without label', { set: { stems: ['0003-x'] } }],
         ['a set with an empty label', { set: { label: '', stems: [] } }],
@@ -43,7 +43,7 @@ describe('board filter encoding v1 (PD-041, shared with 0006)', () => {
         expect(isFilterSet({})).toBe(false);
         expect(isFilterSet({ states: ['Done'] })).toBe(true);
         expect(isBoardFilter({ providers: [null] })).toBe(false);
-        expect(isBoardFilter({ states: ['Done'], providers: ['copilot'] })).toBe(false);
+        expect(isBoardFilter({ states: ['Done'], providers: ['some-agent'] })).toBe(false);
         expect(isFilterSet({ set: { label: 'x', stems: [] } })).toBe(true);
     });
 

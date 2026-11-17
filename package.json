@@ -149,7 +149,6 @@
     "test:unit": "vitest run --project node --project webview && vitest run --project timing-node --project timing-webview --no-file-parallelism --maxWorkers=1"
   },
   "devDependencies": {
-    "@github/copilot-sdk": "1.0.34",
     "@types/mocha": "^10.0.10",
     "@types/node": "24.x",
     "@types/react": "19.3.0",

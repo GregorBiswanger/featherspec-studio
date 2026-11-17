@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { NEWER_VERSION_REASON, newerVersionNotice } from '../notices';
 import type { ContractContext, ContractRig } from './contract';
 
-const STEM = '0011-orchestrator';
+const STEM = '0011-example';
 const PROJECT = 'project-A';
 const DAY = 86_400_000;
 const HISTORY = 'spec-status-history.jsonl';
@@ -53,7 +53,7 @@ export function registerFaultsContract(context: ContractContext): void {
             const seed = await rig.open();
             await seed.appendSpecStatusEntry(STEM, { to: 'a' });
             await seed.dispose();
-            await append(rig, HISTORY, '{"v":1,"stem":"0011-orchestrator","obse');
+            await append(rig, HISTORY, '{"v":1,"stem":"0011-example","obse');
             const killed = await snapshot(rig);
             rig.notices.messages.length = 0;
             const store = await rig.open();
@@ -68,7 +68,7 @@ export function registerFaultsContract(context: ContractContext): void {
             const seed = await rig.open();
             await seed.appendSpecStatusEntry(STEM, { to: 'a' });
             await seed.dispose();
-            await append(rig, HISTORY, '{"v":1,"stem":"0011-orchestrator","obse');
+            await append(rig, HISTORY, '{"v":1,"stem":"0011-example","obse');
             const killed = await snapshot(rig);
             const first = await rig.open();
             await first.appendSpecStatusEntry(STEM, { to: 'b' });

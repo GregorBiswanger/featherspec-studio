@@ -3,7 +3,7 @@
 **Spec:** [0015-focus-on-visibility.md](0015-focus-on-visibility.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-012
+**Current step:** T-013
 
 ## Approach
 
@@ -294,7 +294,7 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
   `fetchReleaseHttp.ts` and the probe in `src/webview/main.tsx`), AC-021 (term list, named
   exceptions), AC-022 (host suite file names), each with a negative control on a planted sample.
 - **Verify:** gates 1–5; `npm run package`; `grep -c child_process dist/extension.js` → 0
-- [ ] **Verified (T-012):** —
+- [x] **Verified (T-012):** 2026-11-17 — red: with the previous package.json, package-lock.json and esbuild.js restored the new AC-017 test and the AC-021 term scan failed; green after the change: 1658 passed + 3 skipped, 12 timing; gates 1–5 clean; npm run package builds, and grep -c child_process dist/extension.js → 0, copilot-sdk → 0, 'Agent Center' in dist/webview/main.js → 0. Notes: npm uninstall @github/copilot-sdk removed the SDK and its per-platform and koffi packages from both files; npm also added the root version and license fields to the lockfile header (from package.json); new src/adapters/node/sourceScan.test.ts decides AC-019, AC-020, AC-021 (folders, term list, named exceptions that must each still name a term) and AC-022 with negative controls; the AC-018 bundle checks live in extensionBundle.test.ts (production host bundle built in memory) and webviewBundle.test.ts; the test fixture sample 'copilot' in boardFilter.test.ts became 'some-agent' and the spec stem '0011-orchestrator' in the contract files became '0011-example' so no exception is needed for them.
 - **Notes:** —
 
 ### T-013 — Retire 0008–0012 and amend 0003–0007, 0013
@@ -363,20 +363,20 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 | AC-010 | T-006 | src/core/missionControl/missionControlView.ts, src/core/missionControl/attention.ts, src/core/missionControl/activity.ts, src/webview/areas/missionControl/ | src/core/missionControl/*.test.ts, src/webview/areas/missionControl/Sections.test.tsx, src/webview/areas/missionControl/Drilldown.test.tsx | verified |
 | AC-011 | T-005 | src/core/board/cards.ts, src/core/board/filters.ts, src/webview/board/FilterBar.tsx | src/core/board/boardService.test.ts, src/core/board/filters.test.ts, src/webview/board/SpecBoard.test.tsx, src/shared/protocol/boardFilter.test.ts | verified |
 | AC-012 | T-005 | src/core/board/detail.ts, src/webview/detail/SpecDetail.tsx | src/core/board/detail.test.ts, src/core/board/boardService.test.ts, src/webview/detail/SpecDetail.test.tsx | verified |
-| AC-013 | T-010 | — | — | open |
+| AC-013 | T-010 | src/core/runtime/runtimeStore.ts | src/core/runtime/testing/contract.ts (afterEach on every medium), src/core/runtime/runtimeStore.test.ts, src/adapters/node/fileRuntimeMedium.test.ts | verified |
 | AC-014 | T-007, T-009 | package.json, src/extension.ts | src/adapters/vscode/manifest.test.ts, src/test/runtime.smoke.test.ts (host) | verified |
 | AC-015 | T-007 | package.json | src/adapters/vscode/manifest.test.ts | verified |
 | AC-016 | T-007 | package.json | src/adapters/vscode/manifest.test.ts | verified |
-| AC-017 | T-012 | — | — | open |
-| AC-018 | T-012 | — | — | open |
-| AC-019 | T-012 | — | — | open |
-| AC-020 | T-012 | — | — | open |
-| AC-021 | T-008, T-009, T-012 | the folders named in the criterion are deleted | gates; scan test follows in T-012 | built |
-| AC-022 | T-007, T-012 | src/extension.ts (no child_process, no provider wiring) | scan test follows in T-012 | built |
-| AC-023 | T-004, T-011 | src/core/runtime/earlierRunData.ts, src/adapters/node/earlierRunDataFiles.ts (not wired until T-011) | src/core/runtime/earlierRunData.test.ts, src/adapters/node/earlierRunDataFiles.test.ts | built |
-| AC-024 | T-004, T-011 | src/core/runtime/earlierRunData.ts (not wired until T-011) | src/core/runtime/earlierRunData.test.ts, src/adapters/node/earlierRunDataFiles.test.ts | built |
+| AC-017 | T-012 | package.json, package-lock.json, esbuild.js | src/adapters/node/extensionBundle.test.ts | verified |
+| AC-018 | T-012 | esbuild.js | src/adapters/node/extensionBundle.test.ts, src/adapters/node/webviewBundle.test.ts | verified |
+| AC-019 | T-012 | src | src/adapters/node/sourceScan.test.ts | verified |
+| AC-020 | T-012 | src/adapters/node/fetchReleaseHttp.ts, src/webview/main.tsx | src/adapters/node/sourceScan.test.ts | verified |
+| AC-021 | T-008, T-009, T-012 | the folders named in the criterion are deleted | src/adapters/node/sourceScan.test.ts | verified |
+| AC-022 | T-007, T-012 | src/test (host suites), .vscode-test.mjs | src/adapters/node/sourceScan.test.ts | verified |
+| AC-023 | T-004, T-011 | src/core/runtime/earlierRunData.ts, src/adapters/node/earlierRunDataFiles.ts, src/extension.ts | src/core/runtime/earlierRunData.test.ts, src/adapters/node/earlierRunDataFiles.test.ts, src/adapters/node/earlierRunData.endToEnd.test.ts | verified |
+| AC-024 | T-004, T-011 | src/core/runtime/earlierRunData.ts, src/extension.ts | src/core/runtime/earlierRunData.test.ts, src/adapters/node/earlierRunData.endToEnd.test.ts | verified |
 | AC-025 | T-014 | — | — | open |
-| AC-026 | T-006, T-010 | src/shared/protocol/areas.ts, src/shared/protocol/texts.ts | src/shared/protocol/messages.test.ts, src/webview/PanelStateView.test.tsx (reader reason follows in T-010) | built |
+| AC-026 | T-006, T-010 | src/shared/protocol/areas.ts, src/shared/protocol/texts.ts, src/core/runtime/notices.ts | src/shared/protocol/messages.test.ts, src/webview/PanelStateView.test.tsx, src/core/runtime/runtimeSession.test.ts | verified |
 | AC-027 | T-015 | — | — | open |
 | AC-028 | T-013 | — | — | open |
 | AC-029 | T-015 | — | — | open |
@@ -384,8 +384,8 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 
 ## Session handoff
 
-- **Done so far:** Stages 1 to 3 (T-001…T-009): next step, copy, drop result; earlier-data removal module (not wired); board and detail without runs; Mission Control without runs; run wiring, manifest entries and dead modules removed; three areas.
-- **Next action:** T-012 (dependency, bundle and source scans), then the stage 4 sync.
+- **Done so far:** Stages 1 to 4 (T-001…T-012): next step, copy, drop result; board and detail without runs; Mission Control without runs; run wiring, manifest entries and dead modules removed; three areas; the status-history store; the earlier-data removal wired at activation; the SDK uninstalled, the bundle and source scans.
+- **Next action:** T-013 (specs 0008–0012 Deprecated, amendment notes), then T-014, T-015.
 - **Open decisions:** — (Gregor approved the changed order and `npm uninstall @github/copilot-sdk`; the parallel stage runs in sequence; deletions listed per step are approved.)
 - **Baseline:** ea4a8bd
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked); host suites run on Windows and CI. Gates: `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile`.
