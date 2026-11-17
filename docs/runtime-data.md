@@ -32,7 +32,7 @@ Ended runs, their events and spec status history entries are removed when Studio
 
 ## One window writes
 
-Only one VS Code window writes a project's history. A second window with the same project reads it and says that it cannot start or change runs; the reason is "Another VS Code window holds the write lock for this project's run history." A lock that has not been refreshed for 60 seconds counts as abandoned and is taken over.
+Only one VS Code window writes a project's history. A second window with the same project reads it and says that it cannot start or change runs; the reason is "Another VS Code window holds the write lock for this project's run history." A lock that has not been refreshed for 60 seconds counts as abandoned and is taken over. When a window closes the history, it first finishes the writes it started, then releases the lock; it writes nothing after that. On Windows, a file that another program briefly holds open (a virus scanner, a second window reading it) is retried for about half a second before the write counts as failed.
 
 ## When storing goes wrong
 

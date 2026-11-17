@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EXTENSION_HOST_RESTARTED, READER_REASON, storageUnreachableNotice } from '../notices';
+import { EXTENSION_HOST_RESTARTED, READER_REASON, STORE_CLOSED_REASON, storageUnreachableNotice } from '../notices';
 import type { StoreState } from '../model';
 import type { ContractContext, ContractRig } from './contract';
 
@@ -187,6 +187,35 @@ export function registerWriterContract(context: ContractContext): void {
             expect(writer.state()).toEqual({ kind: 'read-only', reason: READER_REASON });
             expect(states).toEqual([{ kind: 'read-only', reason: READER_REASON }]);
             await expect(writer.createRun({ providerId: 'fake', spec: SPEC })).rejects.toMatchObject({ code: 'read-only' });
+        });
+
+        it('AC-023, AC-014: closing waits for every write, also the flag that follows a successful write, before it releases the lock', async () => {
+            const rig = await context.newRig();
+            const store = await rig.open();
+            const run = await store.createRun({ providerId: 'fake', spec: SPEC });
+            rig.faults.failNext('.events.jsonl');
+            await store.appendEvent(run.runId, { type: 'message', payload: 'lost' });
+            await rig.settle();
+            await store.appendEvent(run.runId, { type: 'message', payload: 'kept' });
+            await store.dispose();
+            expect(rig.faults.operationsInFlight()).toBe(0);
+            expect(await rig.harness.readRaw(PROJECT, 'lock.json')).toBeUndefined();
+            expect(await rig.harness.readRaw(PROJECT, `runs/${run.runId}.run.jsonl`)).toContain('"k":"flag"');
+        });
+
+        it('AC-023: a closed store refuses every write and touches the medium no more', async () => {
+            const rig = await context.newRig();
+            const store = await rig.open();
+            const run = await store.createRun({ providerId: 'fake', spec: SPEC });
+            await store.dispose();
+            const before = rig.faults.writeAttempts();
+            await expect(store.appendEvent(run.runId, { type: 'message', payload: 'late' })).rejects.toMatchObject({ code: 'read-only', message: STORE_CLOSED_REASON });
+            await expect(store.reportStatus(run.runId, 'Completed')).rejects.toMatchObject({ code: 'read-only', message: STORE_CLOSED_REASON });
+            await expect(store.createRun({ providerId: 'fake', spec: SPEC })).rejects.toMatchObject({ code: 'read-only' });
+            expect(store.state()).toEqual({ kind: 'read-only', reason: STORE_CLOSED_REASON });
+            await rig.settle();
+            expect(rig.faults.writeAttempts()).toBe(before);
+            expect(await rig.harness.readRaw(PROJECT, 'lock.json')).toBeUndefined();
         });
 
         it('AC-023: closing the writer releases the lock, the next window becomes the writer', async () => {

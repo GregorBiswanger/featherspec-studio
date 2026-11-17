@@ -11,6 +11,7 @@ import {
     EXTENSION_HOST_RESTARTED,
     NEWER_VERSION_REASON,
     READER_REASON,
+    STORE_CLOSED_REASON,
     incompleteRecordNotice,
     newerVersionNotice,
     saveFailedNotice,
@@ -290,11 +291,32 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
 
     const iso = (): string => new Date(clock.epochMs()).toISOString();
 
+    let busy = 0;
+    const quietWaiters: (() => void)[] = [];
+
+    function track<T>(work: Promise<T>): Promise<T> {
+        busy += 1;
+        const done = (): void => {
+            busy -= 1;
+            if (busy === 0) {
+                quietWaiters.splice(0).forEach((resolve) => resolve());
+            }
+        };
+        void work.then(done, done);
+        return work;
+    }
+
+    function quiet(): Promise<void> {
+        return busy === 0 ? Promise.resolve() : new Promise<void>((resolve) => quietWaiters.push(resolve));
+    }
+
     function enqueue(name: string, action: () => Promise<void>): Promise<string | undefined> {
         const previous = queues.get(name) ?? Promise.resolve();
-        const outcome = previous.then(action).then(
-            () => undefined,
-            (error: unknown) => describeError(error),
+        const outcome = track(
+            previous.then(action).then(
+                () => undefined,
+                (error: unknown) => describeError(error),
+            ),
         );
         queues.set(name, outcome.then(() => undefined));
         return outcome;
@@ -329,6 +351,9 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
     }
 
     function assertWritable(): void {
+        if (disposed) {
+            throw new RuntimeRefusal('read-only', STORE_CLOSED_REASON);
+        }
         if (currentState.kind === 'writable') {
             return;
         }
@@ -602,7 +627,7 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
         if (disposed) {
             return;
         }
-        await pollOrBeat().catch(() => undefined);
+        await track(pollOrBeat().catch(() => undefined));
         if (!disposed) {
             startTimer();
         }
@@ -830,6 +855,7 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             const entry = requireRun(runId);
             refuseUnreadable(entry);
             const state = await ensureEventState(entry);
+            assertWritable();
             refuseUnreadable(entry);
             if (input.providerEventId !== undefined && state.ids.has(input.providerEventId)) {
                 return { outcome: 'duplicate' };
@@ -984,12 +1010,13 @@ export async function openRuntimeStore(deps: RuntimeStoreDeps): Promise<RuntimeS
             const gaveUp = new Promise<void>((resolve) => {
                 bound = clock.setTimeout(resolve, 3000);
             });
-            await Promise.race([Promise.all([flushed, ...queues.values()]), gaveUp]);
+            await Promise.race([Promise.all([flushed, quiet()]), gaveUp]);
             bound?.dispose();
             if (writer) {
                 writer = false;
                 await lock.release().catch(() => undefined);
             }
+            currentState = { kind: 'read-only', reason: STORE_CLOSED_REASON };
             stateListeners.clear();
             runListeners.clear();
         },

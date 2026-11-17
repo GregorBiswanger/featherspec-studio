@@ -6,6 +6,7 @@ export interface Faults {
     failOpen(reason: string | undefined): void;
     failRemove(match: string | undefined): void;
     writeAttempts(): number;
+    operationsInFlight(): number;
 }
 
 export function createFaults(): { faults: Faults; state: FaultState } {
@@ -25,6 +26,7 @@ export function createFaults(): { faults: Faults; state: FaultState } {
             state.removeFailure = match;
         },
         writeAttempts: () => state.attempts,
+        operationsInFlight: () => state.inFlight,
     };
     return { faults, state };
 }

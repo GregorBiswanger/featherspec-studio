@@ -6,7 +6,7 @@ import { createFakeCredentials, createFakeNotices, createFakeRuntimeClock, creat
 import { describeRuntimeStoreContract, type MediumHarness } from '../../core/runtime/testing/contract';
 import { snapshotTree } from '../../core/discovery/testing/snapshotTree';
 import { openRuntimeStore } from '../../core/runtime/runtimeStore';
-import { createFileRuntimeMedium, projectStoreDirectory } from './fileRuntimeMedium';
+import { createFileRuntimeMedium, projectStoreDirectory, type MediumFileSystem } from './fileRuntimeMedium';
 
 async function listRecursive(root: string, directory = ''): Promise<string[]> {
     const names: string[] = [];
@@ -47,6 +47,136 @@ describeRuntimeStoreContract('Node file-system medium', async (): Promise<Medium
         },
         cleanup: async () => fs.rm(root, { recursive: true, force: true }),
     };
+});
+
+type Operation = 'writeFile' | 'readFile' | 'rename' | 'appendFile' | 'unlink';
+
+function windowsLike(failures: Partial<Record<Operation, { code: string; times: number }>>): MediumFileSystem & { calls: Record<string, number> } {
+    const calls: Record<string, number> = {};
+    function gate(operation: Operation, exclusiveOnly = false, flag?: unknown): void {
+        calls[operation] = (calls[operation] ?? 0) + 1;
+        const failure = failures[operation];
+        if (failure === undefined || failure.times <= 0 || (exclusiveOnly && flag !== 'wx')) {
+            return;
+        }
+        failure.times -= 1;
+        throw Object.assign(new Error(`${failure.code}: simulated Windows ${operation}`), { code: failure.code });
+    }
+    return {
+        calls,
+        mkdir: fs.mkdir.bind(fs),
+        access: fs.access.bind(fs),
+        readdir: fs.readdir.bind(fs),
+        rm: fs.rm.bind(fs),
+        readFile: (async (...args: Parameters<typeof fs.readFile>) => {
+            gate('readFile');
+            return fs.readFile(...args);
+        }) as typeof fs.readFile,
+        writeFile: (async (...args: Parameters<typeof fs.writeFile>) => {
+            const options = args[2];
+            gate('writeFile', true, typeof options === 'object' && options !== null ? options.flag : undefined);
+            return fs.writeFile(...args);
+        }) as typeof fs.writeFile,
+        appendFile: (async (...args: Parameters<typeof fs.appendFile>) => {
+            gate('appendFile');
+            return fs.appendFile(...args);
+        }) as typeof fs.appendFile,
+        rename: (async (...args: Parameters<typeof fs.rename>) => {
+            gate('rename');
+            return fs.rename(...args);
+        }) as typeof fs.rename,
+        unlink: (async (...args: Parameters<typeof fs.unlink>) => {
+            gate('unlink');
+            return fs.unlink(...args);
+        }) as typeof fs.unlink,
+    };
+}
+
+describe('file runtime medium on Windows file semantics (transient EPERM, EBUSY, EACCES)', () => {
+    async function rig(failures: Parameters<typeof windowsLike>[0]) {
+        const root = await fs.mkdtemp(path.join(os.tmpdir(), 'fs-runtime-win-'));
+        const fileSystem = windowsLike(failures);
+        const medium = createFileRuntimeMedium(root, fileSystem);
+        await medium.open();
+        return { root, fileSystem, medium, done: () => fs.rm(root, { recursive: true, force: true }) };
+    }
+
+    it('AC-024: the exclusive create of the lock waits out a delete that is still pending (EPERM) instead of failing the activation', async () => {
+        const { medium, fileSystem, done } = await rig({ writeFile: { code: 'EPERM', times: 2 } });
+        expect(await medium.createExclusive('lock.json', 'mine')).toBe(true);
+        expect(await medium.read('lock.json')).toBe('mine');
+        expect(fileSystem.calls['writeFile']).toBe(3);
+        await done();
+    });
+
+    it('AC-024: reading the lock while its delete is pending (EPERM) is retried and then reads what is there', async () => {
+        const { medium, done } = await rig({ readFile: { code: 'EPERM', times: 2 } });
+        expect(await medium.read('lock.json')).toBeUndefined();
+        await done();
+    });
+
+    it('AC-024: a heartbeat replace onto a lock another process holds open (EACCES) is retried and lands', async () => {
+        const { medium, root, done } = await rig({ rename: { code: 'EACCES', times: 2 } });
+        await medium.replace('lock.json', 'beat-1');
+        expect(await fs.readFile(path.join(root, 'lock.json'), 'utf8')).toBe('beat-1');
+        expect((await fs.readdir(root)).filter((name) => name.includes('.tmp-'))).toEqual([]);
+        await done();
+    });
+
+    it('AC-021: an append refused by a sharing violation (EBUSY) is retried and stored exactly once', async () => {
+        const { medium, root, done } = await rig({ appendFile: { code: 'EBUSY', times: 2 } });
+        await medium.append('runs/a.events.jsonl', 'one\n');
+        expect(await fs.readFile(path.join(root, 'runs', 'a.events.jsonl'), 'utf8')).toBe('one\n');
+        await done();
+    });
+
+    it('AC-014: negative control, a lasting EPERM still fails within the retry bound and leaves the old bytes', async () => {
+        const { medium, root, done } = await rig({ rename: { code: 'EPERM', times: 100 } });
+        await fs.writeFile(path.join(root, 'index.json'), 'old');
+        const started = performance.now();
+        await expect(medium.replace('index.json', 'new')).rejects.toMatchObject({ code: 'EPERM' });
+        expect(performance.now() - started).toBeLessThan(2000);
+        expect(await fs.readFile(path.join(root, 'index.json'), 'utf8')).toBe('old');
+        expect((await fs.readdir(root)).filter((name) => name.includes('.tmp-'))).toEqual([]);
+        await done();
+    });
+
+    it('AC-024: on this platform a replace onto a file another handle holds open ends within the bound, with either the new or the old bytes and no temp file', async () => {
+        const root = await fs.mkdtemp(path.join(os.tmpdir(), 'fs-runtime-open-'));
+        const medium = createFileRuntimeMedium(root);
+        await medium.open();
+        await fs.writeFile(path.join(root, 'lock.json'), 'old');
+        const holder = await fs.open(path.join(root, 'lock.json'), 'r');
+        const started = performance.now();
+        const outcome = await medium.replace('lock.json', 'new').then(
+            () => 'replaced',
+            (error: unknown) => String((error as { code?: unknown }).code),
+        );
+        const elapsed = performance.now() - started;
+        await holder.close();
+        expect(['replaced', 'EPERM', 'EBUSY', 'EACCES']).toContain(outcome);
+        expect(elapsed).toBeLessThan(2000);
+        expect(await fs.readFile(path.join(root, 'lock.json'), 'utf8')).toBe(outcome === 'replaced' ? 'new' : 'old');
+        expect((await fs.readdir(root)).filter((name) => name.includes('.tmp-'))).toEqual([]);
+        await medium.replace('lock.json', 'after-close');
+        expect(await medium.read('lock.json')).toBe('after-close');
+        await fs.rm(root, { recursive: true, force: true });
+    });
+
+    it('AC-023: a lock removed while another handle still reads it can be created again once that handle closes', async () => {
+        const root = await fs.mkdtemp(path.join(os.tmpdir(), 'fs-runtime-release-'));
+        const medium = createFileRuntimeMedium(root);
+        await medium.open();
+        expect(await medium.createExclusive('lock.json', 'first')).toBe(true);
+        const holder = await fs.open(path.join(root, 'lock.json'), 'r');
+        const closing = new Promise<void>((resolve) => setTimeout(() => void holder.close().then(resolve), 100));
+        await medium.remove('lock.json');
+        const created = await medium.createExclusive('lock.json', 'second');
+        await closing;
+        expect(created).toBe(true);
+        expect(await medium.read('lock.json')).toBe('second');
+        await fs.rm(root, { recursive: true, force: true });
+    });
 });
 
 describe('file runtime medium', () => {

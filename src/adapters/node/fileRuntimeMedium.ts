@@ -3,9 +3,11 @@ import { createReadStream, promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import type { MediumLine, RuntimeMedium } from '../../core/ports/runtimeMedium';
 
-const RETRY_CODES = new Set(['EPERM', 'EBUSY']);
+const RETRY_CODES = new Set(['EPERM', 'EBUSY', 'EACCES']);
 const RETRY_DELAYS_MS = [10, 25, 60, 150, 300];
 const TEMP_MARK = '.tmp-';
+
+export type MediumFileSystem = Pick<typeof fs, 'mkdir' | 'readFile' | 'writeFile' | 'appendFile' | 'rename' | 'rm' | 'unlink' | 'readdir' | 'access'>;
 
 export function projectStoreDirectory(storageRoot: string, projectKey: string): string {
     const hash = createHash('sha256').update(projectKey).digest('hex').slice(0, 16);
@@ -30,7 +32,7 @@ async function withRetry<T>(action: () => Promise<T>): Promise<T> {
     }
 }
 
-export function createFileRuntimeMedium(baseDirectory: string): RuntimeMedium {
+export function createFileRuntimeMedium(baseDirectory: string, files: MediumFileSystem = fs): RuntimeMedium {
     const base = path.resolve(baseDirectory);
     const queues = new Map<string, Promise<void>>();
     let tempCounter = 0;
@@ -62,12 +64,12 @@ export function createFileRuntimeMedium(baseDirectory: string): RuntimeMedium {
 
     return {
         async open() {
-            await fs.mkdir(base, { recursive: true });
+            await files.mkdir(base, { recursive: true });
         },
         async read(name) {
             const full = resolveInside(name);
             try {
-                return await fs.readFile(full, 'utf8');
+                return await withRetry(() => files.readFile(full, 'utf8'));
             } catch (error) {
                 if (errorCode(error) === 'ENOENT') {
                     return undefined;
@@ -78,7 +80,7 @@ export function createFileRuntimeMedium(baseDirectory: string): RuntimeMedium {
         async *lines(name): AsyncGenerator<MediumLine> {
             const full = resolveInside(name);
             try {
-                await fs.access(full);
+                await files.access(full);
             } catch {
                 return;
             }
@@ -104,20 +106,20 @@ export function createFileRuntimeMedium(baseDirectory: string): RuntimeMedium {
         async append(name, text) {
             const full = resolveInside(name);
             return serial(name, async () => {
-                await fs.mkdir(path.dirname(full), { recursive: true });
-                await fs.appendFile(full, text, 'utf8');
+                await files.mkdir(path.dirname(full), { recursive: true });
+                await withRetry(() => files.appendFile(full, text, 'utf8'));
             });
         },
         async replace(name, text) {
             const full = resolveInside(name);
             return serial(name, async () => {
-                await fs.mkdir(path.dirname(full), { recursive: true });
+                await files.mkdir(path.dirname(full), { recursive: true });
                 const temporary = `${full}${TEMP_MARK}${process.pid}-${++tempCounter}`;
-                await fs.writeFile(temporary, text, 'utf8');
+                await files.writeFile(temporary, text, 'utf8');
                 try {
-                    await withRetry(() => fs.rename(temporary, full));
+                    await withRetry(() => files.rename(temporary, full));
                 } catch (error) {
-                    await fs.rm(temporary, { force: true });
+                    await files.rm(temporary, { force: true });
                     throw error;
                 }
             });
@@ -125,9 +127,9 @@ export function createFileRuntimeMedium(baseDirectory: string): RuntimeMedium {
         async createExclusive(name, text) {
             const full = resolveInside(name);
             return serial(name, async () => {
-                await fs.mkdir(path.dirname(full), { recursive: true });
+                await files.mkdir(path.dirname(full), { recursive: true });
                 try {
-                    await fs.writeFile(full, text, { encoding: 'utf8', flag: 'wx' });
+                    await withRetry(() => files.writeFile(full, text, { encoding: 'utf8', flag: 'wx' }));
                     return true;
                 } catch (error) {
                     if (errorCode(error) === 'EEXIST') {
@@ -141,7 +143,7 @@ export function createFileRuntimeMedium(baseDirectory: string): RuntimeMedium {
             const full = resolveInside(name);
             return serial(name, async () => {
                 try {
-                    await withRetry(() => fs.unlink(full));
+                    await withRetry(() => files.unlink(full));
                 } catch (error) {
                     if (errorCode(error) !== 'ENOENT') {
                         throw error;
@@ -152,7 +154,7 @@ export function createFileRuntimeMedium(baseDirectory: string): RuntimeMedium {
         async list(directory) {
             const full = resolveInside(directory);
             try {
-                const entries = await fs.readdir(full, { withFileTypes: true });
+                const entries = await files.readdir(full, { withFileTypes: true });
                 return entries
                     .filter((entry) => entry.isFile() && !entry.name.includes(TEMP_MARK))
                     .map((entry) => `${directory}/${entry.name}`)
