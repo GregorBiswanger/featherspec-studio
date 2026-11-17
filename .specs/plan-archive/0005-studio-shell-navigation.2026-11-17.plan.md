@@ -1,6 +1,6 @@
 # Plan — Studio Shell & Navigation
 
-**Spec:** [0005-studio-shell-navigation.md](0005-studio-shell-navigation.md)
+**Spec:** [0005-studio-shell-navigation.md](../done/0005-studio-shell-navigation.md)
 **Status:** Done
 **Last updated:** 2026-11-17
 **Current step:** none (all steps ticked; T-011 appended 2026-11-17 at the closing `/sdd-compile`)
@@ -548,6 +548,6 @@ install, and T-003 adds `texts.ts` to the shared contract, which T-005 reads.
 ## Session handoff
 
 - **Done so far:** all eleven steps ticked (T-011 at the closing `/sdd-compile`, 2026-11-17: AC-019 and AC-022 decided by tests, AC-009/AC-019/AC-023/AC-024 revised under Gregor's delegation). Host suite green on Windows at `e6f0c85`, CI green at `9635ba4`.
-- **Next action:** `/sdd-lifecycle` active → done (after a `READY` compile brief); Gregor's pre-release checklist items: live theme switch, light High Contrast theme, a real window reload.
+- **Next action:** none — closed 2026-11-17 (`/sdd-compile` READY (manual items: 2), moved to done, plan archived). Gregor's pre-release checklist items: live theme switch, light High Contrast theme, a real window reload.
 - **Open decisions:** OP-010, OP-011, OP-013 (spec §17), none blocking.
 - **Baseline:** `2cf3cc8` (HEAD before the lifecycle move and the first commit of this work).

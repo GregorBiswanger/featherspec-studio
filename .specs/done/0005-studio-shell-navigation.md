@@ -1,7 +1,7 @@
 # Studio Shell & Navigation
 
-**Status:** In Progress
-**Plan:** [0005-studio-shell-navigation.plan.md](0005-studio-shell-navigation.plan.md)
+**Status:** Implemented
+**Plan:** [0005-studio-shell-navigation.2026-11-17.plan.md](../plan-archive/0005-studio-shell-navigation.2026-11-17.plan.md)
 
 Handoff reference: FS-005 ([po-handoff.md](../../docs/product/po-handoff.md) §4, §10 FS-005,
 §11.1, §13 Usability). Architecture basis: [ADR-001](../../docs/decisions/ADR-001-extension-architecture.md)
@@ -452,5 +452,9 @@ added. The architecture snapshot and the Memory Bank are updated. Gregor accepts
 
 ## 20. Recommended next steps
 
-1. Planned and started 2026-11-16 (plan beside this spec).
+1. Planned and started 2026-11-16; implemented 2026-11-17 (plan archived, see *Plan history*).
 2. Gregor answers OP-010…OP-013 when convenient; `/sdd-specify` (revise mode) applies the answers.
+
+## Plan history
+
+- 2026-11-17 — [0005-studio-shell-navigation.2026-11-17.plan.md](../plan-archive/0005-studio-shell-navigation.2026-11-17.plan.md) — shell, navigation, panel states, Spec Explorer list and navigation request built in 11 steps; closing `/sdd-compile` READY (manual items: 2).
