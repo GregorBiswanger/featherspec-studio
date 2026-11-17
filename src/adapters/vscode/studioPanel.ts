@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import type { OutputPort } from '../../core/ports/host';
 import { createMessageRouter, type RequestHandlers } from '../../core/shell/messageRouter';
 import type { ShellService } from '../../core/shell/shellService';
+import type { AgentCenterView, TimelinePayload } from '../../shared/protocol/agentCenter';
 import type { AgentStartView } from '../../shared/protocol/agentStart';
 import type { BoardView, MoveResult } from '../../shared/protocol/board';
 import type { DetailView, OpenFileResultPayload } from '../../shared/protocol/detail';
@@ -41,6 +42,11 @@ export interface PanelAgentStart {
 
 export interface PanelAgentCenter {
     handlers: Pick<RequestHandlers, AgentCenterRequestType>;
+    view(): AgentCenterView | undefined;
+    timeline(): TimelinePayload | undefined;
+    onDidChangeView(listener: (view: AgentCenterView | undefined) => void): vscode.Disposable;
+    onDidChangeTimeline(listener: (timeline: TimelinePayload | undefined) => void): vscode.Disposable;
+    reread(): void;
 }
 
 export interface StudioPanelDeps {
@@ -68,6 +74,7 @@ export interface StudioPanel extends vscode.Disposable {
     lastHelloAt(): number | undefined;
     probe(url: string): Promise<ProbeOutcome>;
     showMoveResult(result: MoveResult): boolean;
+    isFocused(): boolean;
     asWebviewUri(uri: vscode.Uri): string | undefined;
     inspect(): StudioPanelInspection | undefined;
     serializer: vscode.WebviewPanelSerializer;
@@ -127,6 +134,18 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
         }
     }
 
+    function pushAgentCenter(view: AgentCenterView | undefined): void {
+        if (view !== undefined) {
+            post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'agentCenter', payload: { view } });
+        }
+    }
+
+    function pushAgentCenterTimeline(timeline: TimelinePayload | undefined): void {
+        if (timeline !== undefined) {
+            post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'agentCenterTimeline', payload: timeline });
+        }
+    }
+
     function pushDetail(view: DetailView): void {
         post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'detail', payload: { view } });
     }
@@ -164,6 +183,11 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
                 pushMissionControl(deps.missionControl.view());
                 pushDetail(deps.board.detail());
                 pushAgentStart();
+                if (deps.agentCenter !== undefined) {
+                    deps.agentCenter.reread();
+                    pushAgentCenter(deps.agentCenter.view());
+                    pushAgentCenterTimeline(deps.agentCenter.timeline());
+                }
                 if (lastMove !== undefined) {
                     pushMove(lastMove);
                 }
@@ -196,6 +220,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
             deps.board.onDidChangeDetail(pushDetail),
             deps.board.onDidMoveResult(pushMove),
             ...(deps.agentStart === undefined ? [] : [deps.agentStart.onDidChangeView(pushAgentStart)]),
+            ...(deps.agentCenter === undefined ? [] : [deps.agentCenter.onDidChangeView(pushAgentCenter), deps.agentCenter.onDidChangeTimeline(pushAgentCenterTimeline)]),
             target.onDidChangeViewState((event) => {
                 if (!event.webviewPanel.visible) {
                     deps.agentStart?.panelHidden();
@@ -250,6 +275,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
             pushMove(result);
             return true;
         },
+        isFocused: () => panel !== undefined && panel.visible && panel.active,
         asWebviewUri: (uri) => panel?.webview.asWebviewUri(uri).toString(),
         inspect: () => (panel === undefined ? undefined : { options: panel.webview.options, panelOptions: panel.options, html: panel.webview.html }),
         serializer: {

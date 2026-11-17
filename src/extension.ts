@@ -12,6 +12,14 @@ import { AREA_COMMANDS, MOVE_COMMAND, OPEN_COMMAND, RESCAN_COMMAND, SHELL_ACTION
 import { createStudioTree } from './adapters/vscode/studioTree';
 import { createTrust } from './adapters/vscode/trust';
 import { createUiMemory } from './adapters/vscode/uiMemory';
+import { createAgentCenterMemory } from './adapters/vscode/agentCenterMemory';
+import { createAgentCenterUi } from './adapters/vscode/agentCenterUi';
+import { createAgentCenterService } from './core/agentCenter/agentCenterService';
+import { createAgentCenterHandlers } from './core/agentCenter/agentCenterRequests';
+import { createRequestNotifier } from './core/agentCenter/requestNotifier';
+import { withEventSignal } from './core/agentCenter/eventSignal';
+import type { AgentCenterStore } from './core/ports/agentCenter';
+import type { AgentCenterView, TimelinePayload } from './shared/protocol/agentCenter';
 import { sameRootFor } from './adapters/vscode/sameRoot';
 import { createStatusBar } from './adapters/vscode/statusBar';
 import { createFileWatch } from './adapters/vscode/fileWatch';
@@ -97,6 +105,14 @@ export interface AgentStartTestApi {
     whenIdle(): Promise<void>;
 }
 
+export interface AgentCenterTestApi {
+    view(): AgentCenterView | undefined;
+    timeline(): TimelinePayload | undefined;
+    whenIdle(): Promise<void>;
+    listen(listener: (view: AgentCenterView | undefined) => void): vscode.Disposable;
+    select(runId: string): void;
+}
+
 export interface StudioApi {
     snapshot(): DiscoverySnapshot;
     whenIdle(): Promise<void>;
@@ -110,6 +126,7 @@ export interface StudioApi {
     shell(): ShellTestApi;
     board(): BoardTestApi;
     missionControl(): MissionControlTestApi;
+    agentCenter(): AgentCenterTestApi;
 }
 
 let runtimeSession: RuntimeSession | undefined;
@@ -151,8 +168,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     const session = createRuntimeSession({
         discovery: controller,
         ui: runtimeUi,
-        openStore: (projectRoot) =>
-            openRuntimeStore({
+        openStore: async (projectRoot) =>
+            withEventSignal(await openRuntimeStore({
                 medium:
                     storage.kind === 'directory'
                         ? createFileRuntimeMedium(
@@ -165,7 +182,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
                 credentials: providers.service.credentials,
                 projectRoot,
                 maxAgeDays,
-            }),
+            })),
     });
     runtimeSession = session;
     const lifecycle = createLifecycleService({ repository, session, clock: createSystemClock() });
@@ -208,6 +225,39 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         session,
         history: { read: () => lifecycle.history(), onDidChange: (listener) => lifecycle.onDidChange(() => listener()) },
         clock: createSystemClock(),
+    });
+    const agentCenterUi = createAgentCenterUi();
+    const agentCenter = createAgentCenterService({
+        session: {
+            current: () => session.current() as AgentCenterStore | undefined,
+            state: () => session.state(),
+            onDidChangeState: (listener) => session.onDidChangeState(listener),
+        },
+        providers: providers.registry,
+        source: modelSource,
+        memory: createAgentCenterMemory(context.workspaceState),
+        discovery: controller,
+        navigation: service,
+        trust: createTrust(),
+        orchestrator,
+        ui: agentCenterUi,
+        files: createVscodeFileSystem(),
+        editor: createEditor(),
+    });
+    const requestNotifier = createRequestNotifier({
+        session: { current: () => session.current() as AgentCenterStore | undefined, state: () => session.state(), onDidChangeState: (listener) => session.onDidChangeState(listener) },
+        model: modelSource,
+        ui: agentCenterUi,
+        trust: createTrust(),
+        shownAndFocused: (runId) => {
+            const view = agentCenter.view();
+            const selected = view?.kind === 'ready' ? view.detail?.header.runId : undefined;
+            return studio?.isFocused() === true && service.view().area === 'agentCenter' && selected === runId;
+        },
+        open: (runId) => {
+            void service.handlers.navigate({ area: 'agentCenter', target: { kind: 'run', id: runId } });
+            studio?.show();
+        },
     });
     const agentStart = createStartFlow({
         preconditions: {
@@ -256,6 +306,20 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             onDidOpenFileResult: (listener) => requests.onDidOpenFileResult(listener),
             panelClosed: () => board.panelClosed(),
         },
+        agentCenter: {
+            handlers: createAgentCenterHandlers(agentCenter),
+            view: () => agentCenter.view(),
+            timeline: () => agentCenter.timeline(),
+            onDidChangeView: (listener) => {
+                const subscription = agentCenter.onDidChangeView(listener);
+                return new vscode.Disposable(() => subscription.dispose());
+            },
+            onDidChangeTimeline: (listener) => {
+                const subscription = agentCenter.onDidChangeTimeline(listener);
+                return new vscode.Disposable(() => subscription.dispose());
+            },
+            reread: () => agentCenter.reread(),
+        },
         agentStart: {
             handlers: createAgentStartHandlers(agentStart),
             view: () => agentStart.view(),
@@ -283,6 +347,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         { dispose: () => agentStart.dispose() },
         { dispose: () => startRuns.dispose() },
         { dispose: () => missionControl.dispose() },
+        { dispose: () => agentCenter.dispose() },
+        { dispose: () => requestNotifier.dispose() },
         tree,
         panel,
         vscode.window.registerWebviewPanelSerializer(VIEW_TYPE, panel.serializer),
@@ -318,6 +384,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             await lifecycle.whenIdle();
             await board.whenIdle();
             await missionControl.whenIdle();
+            await agentCenter.whenIdle();
             await agentStart.whenIdle();
         },
         specs: () => repository,
@@ -350,6 +417,20 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
                 const subscription = missionControl.onDidChangeView(listener);
                 return new vscode.Disposable(() => subscription.dispose());
             },
+        }),
+        agentCenter: () => ({
+            view: () => agentCenter.view(),
+            timeline: () => agentCenter.timeline(),
+            whenIdle: () => agentCenter.whenIdle(),
+            listen: (listener) => {
+                const subscription = agentCenter.onDidChangeView(listener);
+                const timelineSubscription = agentCenter.onDidChangeTimeline(() => undefined);
+                return new vscode.Disposable(() => {
+                    subscription.dispose();
+                    timelineSubscription.dispose();
+                });
+            },
+            select: (runId) => agentCenter.select(runId),
         }),
         shell: () => ({
             view: () => service.view(),

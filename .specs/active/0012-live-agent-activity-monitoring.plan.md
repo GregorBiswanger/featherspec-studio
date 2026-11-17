@@ -3,7 +3,7 @@
 **Spec:** [0012-live-agent-activity-monitoring.md](0012-live-agent-activity-monitoring.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-008
+**Current step:** T-009
 
 ## Approach
 
@@ -272,7 +272,7 @@ No parallel stage: stages 1–2 are one module (`src/core/agentCenter`), and eve
   polling waits up to 20 s that report what was awaited and the last view on timeout; Mocha
   timeout 120 s per test.
 - **Verify:** `npx vitest run src/adapters` then the per-step gates and `npm run compile`
-- [ ] **Verified (T-008):** —
+- [x] **Verified (T-008):** red: agentCenterRequests.test.ts 2 of 2 failed with Not implemented. green: 2 passed, bundle test 'mounts the Agent Center with a fixture snapshot' passed (it was written after T-006 had registered the area, so it was not seen red; it asserts rows, detail, request and timeline in the built bundle), full unit 1888 passed, eslint and both tsc clean, npm run compile ok. src/test/agentCenter.smoke.test.ts is written and typechecks; it runs on CI only (npm test is blocked here).
 - **Notes:** —
 
 ### T-009 — Docs sync and final gates
@@ -327,8 +327,8 @@ No parallel stage: stages 1–2 are one module (`src/core/agentCenter`), and eve
 
 ## Session handoff
 
-- **Done so far:** T-007
-- **Next action:** T-008
+- **Done so far:** T-008
+- **Next action:** T-009
 - **Open decisions:** none.
 - **Baseline:** 2026-11-17, HEAD 70362df: eslint, both tsc and `npm run test:unit` green (136 files, 1723 tests).
 - **Environment:** `npm test` cannot run here (VS Code download blocked); the host smoke runs on CI or Gregor's Windows machine. UI looks: `npm run compile` and `/home/claude/orch/preview/run.sh`, screenshots in `/mnt/user-data/outputs/screens/`.
