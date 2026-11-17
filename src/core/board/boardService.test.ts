@@ -49,6 +49,87 @@ describe('board service: view', () => {
     });
 });
 
+describe('board service: filters and sort', () => {
+    it('AC-022: a navigation filter replaces the filters set before and is shown as set', async () => {
+        const w = await world();
+        w.service.setFilter({ states: ['Backlog'] });
+        w.service.applyNavigationFilter({ set: { label: 'Needs attention', stems: ['0001-s1', '0002-s2', '0003-s3'] } });
+        const view = w.service.view()!;
+        expect(view.filter).toEqual({ set: { label: 'Needs attention', stems: ['0001-s1', '0002-s2', '0003-s3'] } });
+        expect(shown(w)).toEqual(['0001', '0002', '0003']);
+    });
+
+    it('AC-012: clear filters removes every filter and keeps the sort', async () => {
+        const w = await world();
+        w.service.setSort('title');
+        w.service.setFilter({ states: ['Active'], set: { label: 'x', stems: ['0010-act'] } });
+        w.service.clearFilters();
+        expect(w.service.view()!.filter).toEqual({});
+        expect(w.service.view()!.sort).toBe('title');
+    });
+
+    it('AC-023: filters and sort survive a rebuild of the model and a hidden panel', async () => {
+        const w = await world();
+        w.service.setSort('lastChange');
+        w.service.setFilter({ states: ['Active'] });
+        w.source.set(await modelOf(NINE));
+        await w.service.whenIdle();
+        expect(w.service.view()!.filter).toEqual({ states: ['Active'] });
+        expect(w.service.view()!.sort).toBe('lastChange');
+    });
+
+    it('AC-023: a closed panel resets filters and sort', async () => {
+        const w = await world();
+        w.service.setSort('title');
+        w.service.setFilter({ states: ['Active'] });
+        w.service.panelClosed();
+        expect(w.service.view()!.filter).toEqual({});
+        expect(w.service.view()!.sort).toBe('number');
+    });
+
+    it('AC-023: a change of the project clears the filters and keeps the sort', async () => {
+        const w = await world();
+        w.service.setSort('title');
+        w.service.setFilter({ states: ['Active'] });
+        const other = await modelOf({ '.specs/backlog/0001-a.md': specText() });
+        w.source.set({ ...other, project: { ...other.project, root: 'memory://other' } });
+        await w.service.whenIdle();
+        expect(w.service.view()!.filter).toEqual({});
+        expect(w.service.view()!.sort).toBe('title');
+    });
+
+    it('AC-011: the lifecycle model is unchanged by every filter and sort call', async () => {
+        const model = await modelOf(NINE);
+        const w = createBoardWorld(model);
+        disposables.push(w.service);
+        const before = JSON.stringify(model.lifecycle);
+        w.service.setFilter({ states: ['Active'] });
+        w.service.setSort('title');
+        w.service.applyNavigationFilter({ set: { label: 'x', stems: [] } });
+        w.service.clearFilters();
+        w.service.panelClosed();
+        expect(JSON.stringify(model.lifecycle)).toBe(before);
+        expect(w.source.current()).toBe(model);
+    });
+
+    it('a change notifies the listeners once; setting the same view again notifies nobody', async () => {
+        const w = await world();
+        const before = w.views.length;
+        w.service.setSort('title');
+        expect(w.views.length).toBe(before + 1);
+        w.service.setSort('title');
+        expect(w.views.length).toBe(before + 1);
+    });
+
+    it('the focused key is remembered and cleared with the panel', async () => {
+        const w = await world();
+        w.service.setFocus('.specs/active/0010-act.md');
+        expect(w.service.focused()).toBe('.specs/active/0010-act.md');
+        w.service.panelClosed();
+        expect(w.service.focused()).toBeNull();
+    });
+});
+
 describe('board service: spec detail', () => {
     it('AC-008, AC-028: the detail follows the selection, and no selection gives no content', async () => {
         const w = await world();

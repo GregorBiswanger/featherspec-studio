@@ -355,6 +355,14 @@ and `src/adapters/node`; T-005 only board, detail and the board protocol (+ its 
 - [x] **Verified (T-016):** 2026-11-17 — red: with a `Not implemented` stub the three opener tests failed; green after: 1673 passed + 3 skipped, 12 timing; gates 1–5 clean. Mutants, each red: K2 (`projectStoreDirectory(storage.path, 'x')` in the opener) → 2 tests × (root A vs B, Windows case); no Windows case folding → 1 ×; `projectStoreDirectory` ignoring its key → 4 × (key test, opener test, Windows test, and the new contract test on the file medium).
 - **Notes:** the composition root no longer names `projectRoot`, so K2 can no longer be made in `src/extension.ts`; it lives in the tested opener.
 
+### T-017 — Compile fix D2: restore the board filter and sort tests (0007 AC-011, AC-012, AC-022, AC-023)
+
+- **Covers:** AC-027 (staying 0007 behaviour keeps its tests), AC-011; compile report 2026-11-17 D2
+- **Do:** restore the block `board service: filters and sort` of `src/core/board/boardService.test.ts` from tag `archive/agent-runs-2026-11-17` (it uses state and named-set filters only, so it needs no change for the board without runs).
+- **Verify:** gates 1–5; every surviving `boardUiState.ts` mutant of the report red
+- [x] **Verified (T-017):** 2026-11-17 — the 8 restored tests pass at the head (preserved behaviour); red against each mutant of `src/core/board/boardUiState.ts` in a full unit run: B1 (`panelClosed` keeps the filter) → × AC-023 closed panel; B2 (project change keeps the filter) and B3 (project change resets the sort) → × AC-023 project change; B4 (Clear resets the sort) → × AC-012; B5 (closed panel keeps the focus) → × focused key; also B6 (navigation filter merges) → × AC-022, B7 (closed panel keeps the sort) → × AC-023, B8 (focus not stored) → × focused key. Gates 1–5 clean: 1681 passed + 3 skipped, 12 timing.
+- **Notes:** —
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
