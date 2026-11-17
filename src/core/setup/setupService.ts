@@ -123,17 +123,15 @@ export function createSetupService(deps: SetupServiceDeps): SetupService {
         }
         const folders = result?.folders ?? [];
         const candidates = folders.filter(eligible);
-        if (request !== undefined) {
-            const same = candidates.find((folder) => folder.root === request.root);
-            if (same !== undefined) {
-                return targetOf(same);
-            }
+        const same = request === undefined ? undefined : candidates.find((folder) => folder.root === request.root);
+        if (same !== undefined) {
+            return targetOf(same);
         }
         if (candidates.length === 0) {
             refuseWithoutTarget(folders, deps.folders.list().length);
             return undefined;
         }
-        if (candidates.length === 1) {
+        if (candidates.length === 1 && request === undefined) {
             return targetOf(candidates[0] as DiscoveredFolder);
         }
         const root = await deps.ui.pickTarget(

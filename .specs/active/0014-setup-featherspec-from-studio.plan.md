@@ -176,6 +176,13 @@ Parallel: stage 2 — T-002 owns `src/core/ports/releaseArchive.ts`, `src/core/s
 - [x] **Verified (T-010):** 2026-11-17 — gates run on the whole tree (see the final run in the handoff); README section "Set up FeatherSpec", exception sentences in line 5 and Privacy, command row; `docs/release-checklist.md` M-1…M-3; CHANGELOG Unreleased; AGENTS.md snapshot edits exactly as listed; `.architecture/core.md` (still 40 lines) and `adapters.md`; Memory Bank updated. `npm test` and Windows runs are pending on CI and Gregor's machine.
 - **Notes:** AGENTS.md is 216 lines (was 215): one added boundary line, the rest are additions to existing lines.
 
+### T-011 — Retry never switches to another folder (compile finding D1)
+
+- **Covers:** AC-020 (Retry, revised 2026-11-17 by Gregor's decision A on the compile report)
+- **Do:** `setupService.ts` `discoverTarget`: a retry whose root is no longer eligible starts over at the target choice and always asks with the quick pick when at least one folder is eligible (also exactly one); none → AC-003's message. Spec AC-020 says so. Tests in `setupFinish.test.ts`.
+- **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit`
+- [x] **Verified (T-011):** 2026-11-17 — red first: `npx vitest run --project node src/core/setup/setupFinish` 1 failed ("never switches … it asks": expected 2 picks, got 1, the fallback took folder `a` unasked), 31 passed (the picked-folder, none-message and still-eligible cases already held; the still-eligible case is the negative control); green after the fix: `src/core/setup` 260 passed. Gates: eslint, both `tsc`, `npm run test:unit` 182 files / 2491 tests (+11 timing) passed.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |

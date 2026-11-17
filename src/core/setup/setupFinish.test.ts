@@ -164,6 +164,79 @@ describe('0014 AC-020: a write that fails', () => {
     });
 });
 
+describe('0014 AC-020: "Retry" when its target is no longer eligible', () => {
+    function stoppingWorld(folders: Parameters<typeof folderAt>[]): SetupWorld {
+        const world = createSetupWorld({
+            folders: folders.map((args) => folderAt(...args)),
+            releaseBytes: SMALL,
+            routes: { [LATEST]: reply(302, { location: TAG_URL }), [archiveUrl('v1.10.0')]: reply(200, {}, [SMALL]) },
+        });
+        world.ui.pickAnswer = () => ROOT;
+        world.target.failOn('.claude/rules/a.md', 'EACCES: permission denied');
+        world.ui.noticeAnswer = (message) => {
+            if (message.startsWith('FeatherSpec setup stopped')) {
+                world.target.clearFailures();
+                world.discovery.folders = world.discovery.folders.map((folder) => (folder.root === ROOT ? { ...folder, verdict: 'project' } : folder));
+                return 'Retry';
+            }
+            return undefined;
+        };
+        return world;
+    }
+
+    it('never switches to another folder on its own: with exactly one other eligible folder it asks', async () => {
+        const world = stoppingWorld([
+            ['a', 'not-a-project'],
+            ['plain', 'not-a-project'],
+        ]);
+        world.ui.pickAnswer = () => (world.ui.picks.length === 1 ? ROOT : undefined);
+        await run(world);
+        expect(world.ui.picks).toHaveLength(2);
+        expect(world.ui.picks[1]?.items.map((item) => item.root)).toEqual(['file:///w/a']);
+        expect(world.ui.confirmations.map((confirmation) => confirmation.message)).toEqual(['Set up FeatherSpec 2.0.0 in plain?']);
+        expect(world.target.files('file:///w/a')).toEqual([]);
+    });
+
+    it('the folder picked in that ask is set up, confirmation included', async () => {
+        const world = stoppingWorld([
+            ['a', 'not-a-project'],
+            ['plain', 'not-a-project'],
+        ]);
+        world.ui.pickAnswer = (items) => (world.ui.picks.length === 1 ? ROOT : items[0]?.root);
+        await run(world);
+        expect(world.ui.confirmations.map((confirmation) => confirmation.message)).toEqual(['Set up FeatherSpec 2.0.0 in plain?', 'Set up FeatherSpec 2.0.0 in a?']);
+        expect(world.target.files('file:///w/a')).toContain('AGENTS.md');
+    });
+
+    it('with no eligible folder left, the "none" message of AC-003 applies and nothing more is requested', async () => {
+        const world = stoppingWorld([['plain', 'not-a-project']]);
+        await run(world);
+        expect(world.ui.picks).toHaveLength(0);
+        expect(noticeTexts(world)).toEqual([
+            'FeatherSpec setup stopped: .claude/rules/a.md could not be written (EACCES: permission denied).',
+            'Every folder of this workspace is already a FeatherSpec project.',
+        ]);
+        expect(world.http.requests).toHaveLength(2);
+    });
+
+    it('negative control: a target that is still eligible is used again without asking', async () => {
+        const world = stoppingWorld([
+            ['a', 'not-a-project'],
+            ['plain', 'not-a-project'],
+        ]);
+        world.ui.noticeAnswer = (message) => {
+            if (message.startsWith('FeatherSpec setup stopped')) {
+                world.target.clearFailures();
+                return 'Retry';
+            }
+            return undefined;
+        };
+        await run(world);
+        expect(world.ui.picks).toHaveLength(1);
+        expect(world.ui.confirmations.map((confirmation) => confirmation.message)).toEqual(['Set up FeatherSpec 2.0.0 in plain?', 'Set up FeatherSpec 2.0.0 in plain?']);
+    });
+});
+
 describe('0014 AC-006, AC-019: failures before any write', () => {
     it('a refused archive: the text, "Retry", and nothing written', async () => {
         const hostile = tarGz(releaseEntries('top', '1.0.0', [{ path: 'top/../escape.txt', content: 'x' }]));
