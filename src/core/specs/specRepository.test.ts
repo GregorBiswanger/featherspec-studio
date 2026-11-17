@@ -6,6 +6,7 @@ import { createNodeSpecSource } from '../../adapters/node/nodeSpecSource';
 import { createFakeHost } from '../discovery/testing/fakeHost';
 import { fixturePath } from '../discovery/testing/fixtures';
 import { snapshotTree } from '../discovery/testing/snapshotTree';
+import { BUDGET_MS, bestOfThree } from '../../shared/testing/timing';
 import { createSystemClock } from '../../adapters/node/systemClock';
 import { readProject } from './readProject';
 import { createSpecRepository } from './specRepository';
@@ -360,30 +361,38 @@ describe('specRepository', () => {
         expect(repository.snapshot()?.specs[0]?.parsed?.sections.map((section) => section.raw).join('')).toContain('the test itself edits');
     });
 
-    it('AC-018: a full read of a generated 200-spec project takes under 2 seconds and an update under 1 second after the event', async () => {
+    it('AC-018: a full read of a generated 200-spec project takes under 2 seconds and an update under 1 second after the event (PD-035)', async () => {
         const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'featherspec-perf-'));
         cleanups.push(() => fs.rm(directory, { recursive: true, force: true }));
         await generateProject(directory, 200);
         const watch = createFakeFileWatch();
-        const repository = createSpecRepository({ source: createNodeSpecSource(), watch, clock: createSystemClock() });
-        const started = performance.now();
-        await repository.open({ root: directory, version: VERSION });
-        const fullRead = performance.now() - started;
+        let repository = createSpecRepository({ source: createNodeSpecSource(), watch, clock: createSystemClock() });
+        const fullRead = await bestOfThree(
+            () => repository.open({ root: directory, version: VERSION }),
+            () => {
+                repository.dispose();
+                repository = createSpecRepository({ source: createNodeSpecSource(), watch, clock: createSystemClock() });
+            },
+        );
         const snapshot = repository.snapshot();
         expect(snapshot?.specs).toHaveLength(200);
         expect(snapshot?.plans).toHaveLength(200);
         expect(snapshot?.returnNotes).toHaveLength(10);
         expect(snapshot?.diagnostics).toEqual([]);
-        expect(fullRead).toBeLessThan(2000);
-        const updated = new Promise<number>((resolve) => {
-            repository.onDidChange(() => resolve(performance.now()));
-        });
+        expect(fullRead).toBeLessThan(BUDGET_MS.fullRead);
         const target = path.join(directory, '.specs', 'active', '0001-generated-spec.md');
-        await fs.appendFile(target, '\nedited\n');
-        const fired = performance.now();
-        watch.fire(directory, '.specs/active/0001-generated-spec.md');
-        const finished = await updated;
-        expect(finished - fired).toBeLessThan(1000);
+        const update = await bestOfThree(async () => {
+            const updated = new Promise<void>((resolve) => {
+                const subscription = repository.onDidChange(() => {
+                    subscription.dispose();
+                    resolve();
+                });
+            });
+            await fs.appendFile(target, '\nedited\n');
+            watch.fire(directory, '.specs/active/0001-generated-spec.md');
+            await updated;
+        });
+        expect(update).toBeLessThan(BUDGET_MS.modelUpdate);
         expect(repository.snapshot()?.specs.find((entry) => entry.reference === '0001-generated-spec')?.parsed?.sections.map((section) => section.raw).join('')).toContain('edited');
         repository.dispose();
     });

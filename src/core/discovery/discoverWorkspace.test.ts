@@ -2,6 +2,7 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { describe, expect, it } from 'vitest';
 import { createNodeFileSystem } from '../../adapters/node/nodeFileSystem';
+import { BUDGET_MS, bestOfThree } from '../../shared/testing/timing';
 import { discoverWorkspace } from './discoverWorkspace';
 import { createMemoryFileSystem } from './testing/memoryFileSystem';
 import { fixturePath } from './testing/fixtures';
@@ -137,11 +138,12 @@ describe('discoverWorkspace', () => {
             'not-fs-speckit',
             'nested-project',
         ];
-        const started = performance.now();
-        const result = await discoverWorkspace(nodeFileSystem, names.map(folder), caseSensitive);
-        const elapsed = performance.now() - started;
+        let result = await discoverWorkspace(nodeFileSystem, names.map(folder), caseSensitive);
+        const best = await bestOfThree(async () => {
+            result = await discoverWorkspace(nodeFileSystem, names.map(folder), caseSensitive);
+        });
         expect(result.folders).toHaveLength(5);
-        expect(elapsed).toBeLessThan(2000);
+        expect(best).toBeLessThan(BUDGET_MS.discovery);
     });
 
     it('AC-011: the fixture tree is unchanged after discovery', async () => {

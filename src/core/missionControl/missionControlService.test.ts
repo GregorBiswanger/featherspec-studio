@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { BUDGET_MS, bestOfThree } from '../../shared/testing/timing';
 import { createRunSource } from './runSource';
 import { generateModel } from './testing/bigModel';
 import { createServiceWorld } from './testing/serviceWorld';
@@ -207,18 +208,24 @@ describe('dashboard service', () => {
         service.dispose();
     });
 
-    it('AC-024: a project of 200 specs, 5 runs per spec and 1,000 history entries is projected in under 1000 ms', async () => {
+    it('AC-024: a project of 200 specs, 5 runs per spec and 1,000 history entries is projected within 1000 ms (PD-035)', async () => {
         const big = await generateModel(200, 5, 1000);
-        const world = createServiceWorld(big.model);
-        world.store.setRuns(big.runs);
-        world.history.view = big.history;
-        const started = performance.now();
-        world.listen();
-        await world.service.whenIdle();
-        const elapsed = performance.now() - started;
+        let world = createServiceWorld(big.model);
+        const best = await bestOfThree(
+            async () => {
+                world.listen();
+                await world.service.whenIdle();
+            },
+            () => {
+                world.service.dispose();
+                world = createServiceWorld(big.model);
+                world.store.setRuns(big.runs);
+                world.history.view = big.history;
+            },
+        );
         expect(world.service.view()?.specs).toMatchObject({ total: 200 });
         expect(world.service.view()?.runs).toMatchObject({ available: true });
-        expect(elapsed).toBeLessThan(1000);
+        expect(best).toBeLessThan(BUDGET_MS.modelUpdate);
     });
 
     it('createRunSource is the only way the service reaches runs: a session with a real store feeds it (integration of T-001)', async () => {

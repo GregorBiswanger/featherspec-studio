@@ -539,6 +539,7 @@ small, so the recommendation is to run them in sequence.
 ## Open evidence
 
 - 2026-11-16 — First host-suite run (Gregor, Windows 11, Node 26, VS Code 1.146): `missionControl.smoke` AC-015/AC-023 failed in `createRun` with `RuntimeRefusal: storage location is not on the local file system`. Cause is the product wiring of the runtime store (see 0004, `resolveStorageLocation`), not the dashboard. Test changes in `src/test/missionControl.smoke.test.ts`: it waits for a writable store first, and counts running runs relative to the number it sees before creating its run (the host profile persists run history between invocations, so an earlier left-over `Running` run would have broken the absolute `1` and `0`); waits report the last observed figures. Assertions otherwise unchanged. AC-006 passed.
+- 2026-11-17 — CI windows-latest failed `SpecBoard.test.tsx` AC-019 (359.95 ms against a private 300 ms). All unit and component timing assertions now assert the budget a decision states and use `bestOfThree` (`src/shared/testing/timing.ts`: one warm-up, best of three, the helper itself covered with negative controls). 0006: AC-016 within 500 ms (PD-047), AC-024 within 1000 ms (PD-035), both in the component and service tests.
 
 ## Session handoff
 

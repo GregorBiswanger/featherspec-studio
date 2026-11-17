@@ -355,6 +355,7 @@ Not yet proven; the next `/sdd-compile` must find these three and must not read 
 - [ ] **Host suite not run:** `npm test` (`src/test/discovery.smoke.test.ts`, 3 fixtures in a temp multi-root workspace) has never run: the VS Code download is blocked in the agent environment. Runs on CI (`.github/workflows/ci.yml`) or Gregor's Windows machine. It also proves the assumption that `workspaceContains:.specs` matches a directory. Affects AC-013, AC-019 and the host wiring of AC-007…AC-016.
 - [ ] **Manual check AC-009 (window reload):** Gregor reloads the VS Code window with a selected project and sees it active again without being asked. Pending, Gregor's machine.
 - [ ] **Manual check AC-022 (Restricted Mode):** Gregor opens a FeatherSpec project in Restricted Mode and sees status bar entry, select command and Output channel as in a trusted workspace. Pending, Gregor's machine; no host test can do it (`--disable-workspace-trust`).
+- 2026-11-17 — CI windows-latest failed `SpecBoard.test.tsx` AC-019 (359.95 ms against a private 300 ms). All unit and component timing assertions now assert the budget a decision states and use `bestOfThree` (`src/shared/testing/timing.ts`: one warm-up, best of three, the helper itself covered with negative controls). 0001: the five-folder discovery (AC-018) within 2000 ms.
 
 ## Session handoff
 

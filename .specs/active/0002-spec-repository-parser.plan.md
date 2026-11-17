@@ -265,6 +265,10 @@ the slices are small.
 | AC-022 | T-007, T-008, T-011 | `src/core/specs/specRepository.ts:open/rescan`, `activeProjectFeed.ts:connectActiveProject` | `specRepository.test.ts`, `activeProjectFeed.test.ts` (AC-022, incl. same-project re-report), host smoke (CI, not run yet) | built |
 | AC-023 | T-001 | `src/core/specs/files.ts:readOne` | `files.test.ts` (AC-023 cases) | verified |
 
+## Open evidence
+
+- 2026-11-17 — CI windows-latest failed `SpecBoard.test.tsx` AC-019 (359.95 ms against a private 300 ms). All unit and component timing assertions now assert the budget a decision states and use `bestOfThree` (`src/shared/testing/timing.ts`: one warm-up, best of three, the helper itself covered with negative controls). 0002: full read of 200 specs under 2 s and update under 1 s (PD-035).
+
 ## Session handoff
 
 - **Done so far:** T-001 … T-011 built and verified; 644 unit tests. T-010 and T-011 (appended 2026-11-16) are the delta after `/sdd-compile`: the spec was revised (AC-022 same-project re-report, AC-008 three-dot range), code unchanged, tests name both. Docs synced (AGENTS.md snapshot, README, Memory Bank).

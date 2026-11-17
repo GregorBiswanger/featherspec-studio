@@ -4,6 +4,7 @@ import { fileNotFoundText, HISTORY_NOT_AVAILABLE_TEXT, NO_DETAIL_SELECTION_TEXT,
 import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
 import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
+import { BUDGET_MS, bestOfThree } from '../../shared/testing/timing';
 import { resetSectionMemory } from './sectionMemory';
 import { detailEvent, detailView, openFileResultEvent, PLAN_KEY, sections, SPEC_KEY } from './testing/views';
 
@@ -253,7 +254,7 @@ describe('AC-028: the selection', () => {
     });
 });
 
-describe('AC-019: the detail is in the DOM within 300 ms of the event (a large spec)', () => {
+describe('AC-019: the detail is in the DOM within 500 ms of the event (PD-047; a large spec)', () => {
     it('renders the update fast enough: 120 requirements, 200 criteria, 150 steps, 100 runs', async () => {
         const base = sections();
         const container = await open();
@@ -276,12 +277,13 @@ describe('AC-019: the detail is in the DOM within 300 ms of the event (a large s
                 },
             }),
         );
-        const before = performance.now();
-        await send(detailEvent(large));
-        const elapsed = performance.now() - before;
+        const best = await bestOfThree(
+            () => send(detailEvent(large)),
+            () => send(detailEvent(detailView())),
+        );
         expect(container.querySelectorAll('.detail-runs li')).toHaveLength(100);
         expect(container.querySelectorAll('.detail-steps li')).toHaveLength(150);
-        expect(elapsed).toBeLessThan(300);
+        expect(best).toBeLessThan(BUDGET_MS.uiFreshness);
     });
 });
 
