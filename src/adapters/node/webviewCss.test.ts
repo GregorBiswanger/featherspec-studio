@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { DRAWER_QUERY } from '../../shared/protocol/layout';
 import { declarations, parseRules, rulesFor } from '../../webview/testing/css';
 
 describe('AC-026: colours come from the theme', () => {
@@ -345,9 +346,17 @@ describe('0005 AC-019: the panel follows the theme without being reopened', () =
     it('no panel UI module reads or caches the theme, so every colour stays a live --vscode-* lookup', () => {
         const offenders = tsxFiles(webviewDir)
             .filter((file) => !file.includes(`${path.sep}testing${path.sep}`))
+            .filter((file) => path.relative(webviewDir, file) !== path.join('detail', 'drawer.ts'))
             .filter((file) => THEME_READS.test(readFileSync(file, 'utf8')))
             .map((file) => path.relative(webviewDir, file));
         expect(offenders).toEqual([]);
+    });
+
+    it('0019: the one module that calls matchMedia asks only the width query of the drawer, never a colour scheme', () => {
+        const source = readFileSync(path.join(webviewDir, 'detail', 'drawer.ts'), 'utf8');
+        expect(DRAWER_QUERY).toBe('(max-width: 899px)');
+        expect(source.match(/matchMedia\(([^)]*)\)/g)).toEqual(['matchMedia(DRAWER_QUERY)']);
+        expect(source).not.toMatch(/prefers-color-scheme|classList|getComputedStyle|getPropertyValue/);
     });
 
     it('negative control: the check flags a module that reads the theme class or a computed colour', () => {
@@ -427,5 +436,60 @@ describe('0016 AC-017, AC-019: Copy is the primary button and keeps its size', (
     it('0017 §6.5 control: the check sees a reserved corner when one is present', () => {
         const sample = '.card-head::before { content: ""; float: right; width: 60px; }';
         expect(rulesFor(sample, '.card-head::before')).toHaveLength(1);
+    });
+});
+
+describe('0019 AC-005, AC-021: the side panel beside the area or as a drawer', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const plain = (selector: string) => rulesFor(css, selector).filter((rule) => rule.media === undefined);
+
+    it('AC-005: from the drawer width up the side panel is a 400 px column with its own scroll beside the area content', () => {
+        expect(plain('.area-frame').some((rule) => /display:\s*flex/.test(rule.body) && /position:\s*relative/.test(rule.body))).toBe(true);
+        expect(plain('.area-content').some((rule) => /flex:\s*1\b/.test(rule.body) && /min-width:\s*0/.test(rule.body) && /overflow:\s*auto/.test(rule.body))).toBe(true);
+        const panel = plain('.side-panel').map((rule) => rule.body).join(';');
+        expect(panel).toMatch(/flex:\s*0 0 400px/);
+        expect(panel).toMatch(/box-sizing:\s*border-box/);
+        expect(panel).toMatch(/overflow-y:\s*auto/);
+        expect(panel).toMatch(/border-left:\s*1px solid var\(--vscode-contrastBorder/);
+    });
+
+    it('AC-005: the only media rule is the drawer query of the code, at 899 px, and it overlays the panel from the right edge at min(400px, 100vw)', () => {
+        const limit = Number(/max-width:\s*(\d+)px/.exec(DRAWER_QUERY)?.[1]);
+        expect(limit).toBe(899);
+        const drawer = parseRules(css).filter((rule) => rule.media === `@media ${DRAWER_QUERY}`);
+        expect(drawer.flatMap((rule) => rule.selectors)).toEqual(['.side-panel']);
+        const body = drawer.map((rule) => rule.body).join(';');
+        expect(body).toMatch(/position:\s*absolute/);
+        expect(body).toMatch(/right:\s*0/);
+        expect(body).toMatch(/width:\s*min\(400px, 100vw\)/);
+    });
+
+    it('AC-005: no media rule changes the area content, the frame or the board, so the area keeps its width under the drawer', () => {
+        const touched = parseRules(css).filter((rule) => rule.media !== undefined && rule.selectors.some((selector) => /\.area-(?:frame|content)\b|\.columns?\b/.test(selector)));
+        expect(touched).toEqual([]);
+    });
+
+    it('AC-005: while the drawer shows, the board end padding and scroll padding equal the drawer width', () => {
+        const rules = plain('.columns[data-drawer]');
+        expect(rules).toHaveLength(1);
+        expect(rules[0]!.body).toMatch(/padding-inline-end:\s*min\(400px, 100vw\)/);
+        expect(rules[0]!.body).toMatch(/scroll-padding-inline-end:\s*min\(400px, 100vw\)/);
+    });
+
+    it('AC-021: every colour of the side panel and its close button is a --vscode-* variable and no rule sets or removes an outline', () => {
+        for (const selector of ['.side-panel', '.detail-close', '.detail-close:hover', '.detail-title h2:focus-visible']) {
+            const rules = rulesFor(css, selector);
+            expect(rules.length, selector).toBeGreaterThan(0);
+            for (const rule of rules) {
+                expect(rule.body, selector).not.toMatch(/#[0-9a-fA-F]{3,8}\b|\b(?:rgb|rgba|hsl|hsla)\(/);
+                for (const match of rule.body.matchAll(/var\(\s*(--[\w-]+)/g)) {
+                    expect(match[1], selector).toMatch(/^--vscode-/);
+                }
+            }
+        }
+        for (const rule of rulesFor(css, '.detail-close')) {
+            expect(rule.body).not.toMatch(/outline/);
+        }
+        expect(rulesFor(css, '.detail-title h2:focus-visible').some((rule) => /outline:\s*2px solid var\(--vscode-contrastActiveBorder, var\(--vscode-focusBorder\)\)/.test(rule.body))).toBe(true);
     });
 });

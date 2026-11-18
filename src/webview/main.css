@@ -1340,6 +1340,37 @@ blockquote.illustration {
     flex-direction: column;
     min-width: 0;
     min-height: 0;
+    overflow: auto;
+}
+
+.side-panel {
+    box-sizing: border-box;
+    flex: 0 0 400px;
+    min-height: 0;
+    overflow-y: auto;
+    background: var(--vscode-editor-background);
+    border-left: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
+}
+
+.side-panel > .spec-detail {
+    overflow: visible;
+}
+
+@media (max-width: 899px) {
+    .side-panel {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1;
+        flex: none;
+        width: min(400px, 100vw);
+    }
+}
+
+.columns[data-drawer] {
+    padding-inline-end: min(400px, 100vw);
+    scroll-padding-inline-end: min(400px, 100vw);
 }
 
 .card[aria-current="true"],

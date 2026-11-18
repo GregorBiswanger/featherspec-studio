@@ -4,6 +4,8 @@ import { App } from './App';
 import { createClient, type ShellClient } from './client';
 import mainCss from './main.css?raw';
 import { parseRules, type CssRule } from './testing/css';
+import { boardEvent, boardView, card } from './board/testing/views';
+import { detailEvent, detailView } from './detail/testing/views';
 import { baseView, mount, send, shellEvent, type Mounted } from './testing/dom';
 
 let mounted: Mounted | undefined;
@@ -82,5 +84,23 @@ describe('AC-022: the focus indicator', () => {
         const container = await open(baseView({ area: 'specExplorer', rows: ROWS }));
         const item = container.querySelector('nav button')!;
         expect(focusRulesFor(stripped, item).some(hasVisibleThemeOutline)).toBe(false);
+    });
+});
+
+describe('0019 AC-021: the focus indicator inside the side panel', () => {
+    it('the close button, Copy, every link and every toggle of the side panel are reached by a :focus-visible rule with a visible outline in a theme colour, and so is the heading', async () => {
+        const css = mainCss as string;
+        const container = await open(baseView({ area: 'board', selection: { stem: '0007-thing', number: '0007' } }));
+        await send(boardEvent(boardView([card('0007')])));
+        await send(detailEvent(detailView()));
+        const panel = container.querySelector<HTMLElement>('aside.side-panel')!;
+        const controls = focusables(panel);
+        for (const selector of ['.detail-close', '.copy-button, .next-step-copy', '.file-link', 'h3 > button']) {
+            expect(controls.some((element) => element.matches(selector)), selector).toBe(true);
+        }
+        const missing = controls.map((element) => element).filter((element) => !focusRulesFor(css, element).some(hasVisibleThemeOutline)).map((element) => element.outerHTML.slice(0, 80));
+        expect(missing).toEqual([]);
+        const heading = panel.querySelector('[data-detail-heading]')!;
+        expect(focusRulesFor(css, heading).some(hasVisibleThemeOutline)).toBe(true);
     });
 });

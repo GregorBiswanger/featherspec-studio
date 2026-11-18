@@ -9,6 +9,7 @@ import { useBoard } from '../board/boardStore';
 import { Column } from '../board/Column';
 import { FilterBar } from '../board/FilterBar';
 import { fallbackFocus, moveFocus, type Direction, type Grid } from '../board/focusModel';
+import { useDrawer } from '../detail/drawer';
 import { CopyButton } from '../ui/CopyButton';
 import { EmptyState } from '../ui/EmptyState';
 
@@ -63,6 +64,7 @@ export function SpecBoard() {
     const openSpec = useOpenSpec();
     const open = useCallback((card: CardView, opener: HTMLElement): void => openSpec({ stem: card.stem, path: card.path }, opener), [openSpec]);
     const selection = shell.view?.selection;
+    const drawer = useDrawer();
 
     function onFocus(event: FocusEvent<HTMLElement>): void {
         const key = keyOfTarget(event.target);
@@ -112,7 +114,7 @@ export function SpecBoard() {
                 </EmptyState>
             ) : null}
             <FilterBar board={board} setSort={api.setSort} clearFilters={api.clearFilters} />
-            <div className="columns" ref={columnsRef} tabIndex={-1} onFocus={onFocus} onBlur={onBlur} onKeyDown={onKeyDown}>
+            <div className="columns" ref={columnsRef} tabIndex={-1} {...(drawer && selection !== undefined ? { 'data-drawer': '' } : {})} onFocus={onFocus} onBlur={onBlur} onKeyDown={onKeyDown}>
                 {board.columns.map((column) => (
                     <Column
                         key={column.state}

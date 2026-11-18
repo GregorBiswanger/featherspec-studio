@@ -3,7 +3,7 @@
 **Spec:** [0019-detail-situation-picture.md](0019-detail-situation-picture.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-007
+**Current step:** T-008
 
 ## Approach
 
@@ -365,8 +365,8 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
   for `data-drawer` with a stubbed `matchMedia`.
 - **Verify:** `npx vitest run src/adapters/node/webviewCss.test.ts src/webview` red, then green;
   gates 1–5; layout itself: `manual:` preview harness in T-008 (jsdom computes no layout)
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** 2026-11-18 — red: with `main.css` and `SpecBoard.tsx` stashed, `npx vitest run src/adapters/node/webviewCss.test.ts src/webview/detail/SidePanel.test.tsx src/webview/focusIndicator.test.tsx` failed 5 tests (no `.side-panel` rules, no drawer media rule, no `data-drawer`); green with them: 60 passed in those three files. Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2100 passed + 3 skipped (+12 timing), `npm run compile`, `npm run compile-tests` green. Layout itself (jsdom computes none): manual: preview harness in T-008.
+- **Notes:** (1) `DRAWER_QUERY` lives in `src/shared/protocol/layout.ts` (no DOM types, so the node-side CSS test imports the same constant as the webview); `detail/drawer.ts` holds `useDrawer()` (`useSyncExternalStore` on `matchMedia(DRAWER_QUERY)`, false where `matchMedia` is missing). (2) `SpecBoard` sets `data-drawer` on `.columns` while a spec is selected and the query matches; the board's own tests never see a media rule (`.columns?` has none). (3) `.area-content` now scrolls itself (`overflow: auto`), the frame is the positioning context of the overlay, `.side-panel > .spec-detail` has `overflow: visible` so the aside is the one scroll container. (4) The 0005 AC-019 theme-read guard exempts `detail/drawer.ts` only, and a new test pins that file to the one width query and no colour-scheme or computed-style reads. (5) The new tests were written after the code; the red run above stashes the CSS and board edit.
 
 ### T-008 — §5 notes, docs, test-title audit, architecture and Memory Bank sync, final gates
 

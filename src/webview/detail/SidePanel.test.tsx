@@ -1,9 +1,11 @@
+import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
 import { sampleView } from '../../shared/protocol/testing/overviewSample';
 import type { OverviewView } from '../../shared/protocol/overview';
 import type { SelectedSpec } from '../../shared/protocol/messages';
 import { App } from '../App';
+import { DRAWER_QUERY } from '../../shared/protocol/layout';
 import { createClient, type ShellClient } from '../client';
 import { boardEvent, boardView, card } from '../board/testing/views';
 import { baseView, click, mount, overviewEvent, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
@@ -125,5 +127,48 @@ describe('AC-007: the selected spec is marked', () => {
         expect(current[0]).toBe(cardOf(container, '0004'));
         await send(shellEvent(baseView({ area: 'board', selection: undefined }), 2));
         expect(container.querySelectorAll('[data-card][aria-current]')).toHaveLength(0);
+    });
+});
+
+describe('AC-005: the drawer marks the board', () => {
+    const original = window.matchMedia;
+    let listeners: (() => void)[];
+    let matches: boolean;
+
+    beforeEach(() => {
+        listeners = [];
+        matches = true;
+        window.matchMedia = ((query: string) => ({
+            get matches() {
+                return matches;
+            },
+            media: query,
+            addEventListener: (_type: string, listener: () => void) => void listeners.push(listener),
+            removeEventListener: (_type: string, listener: () => void) => void (listeners = listeners.filter((entry) => entry !== listener)),
+        })) as unknown as typeof window.matchMedia;
+    });
+
+    afterEach(() => {
+        window.matchMedia = original;
+    });
+
+    it('asks the drawer query, marks the columns while a spec is selected and the panel is narrow, and follows the change event', async () => {
+        const asked: string[] = [];
+        const wrapped = window.matchMedia;
+        window.matchMedia = ((query: string) => (asked.push(query), wrapped(query))) as typeof window.matchMedia;
+        const container = await board(selection('0004'));
+        expect(asked).toContain(DRAWER_QUERY);
+        expect(container.querySelector('.columns')?.hasAttribute('data-drawer')).toBe(true);
+        matches = false;
+        await act(async () => listeners.forEach((listener) => listener()));
+        expect(container.querySelector('.columns')?.hasAttribute('data-drawer')).toBe(false);
+        matches = true;
+        await act(async () => listeners.forEach((listener) => listener()));
+        expect(container.querySelector('.columns')?.hasAttribute('data-drawer')).toBe(true);
+    });
+
+    it('control: without a selection the narrow board carries no drawer mark', async () => {
+        const container = await board();
+        expect(container.querySelector('.columns')?.hasAttribute('data-drawer')).toBe(false);
     });
 });
