@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../../shared/protocol/envelope';
+import { COPIED_TEXT } from '../../../shared/protocol/nextStepTexts';
 import type { MissionControlView } from '../../../shared/protocol/missionControl';
 import { sampleView } from '../../../shared/protocol/testing/missionControlSample';
 import { App } from '../../App';
 import { createClient, type ShellClient } from '../../client';
-import { baseView, missionControlEvent, mount, send, shellEvent, type Mounted } from '../../testing/dom';
+import { baseView, click, missionControlEvent, mount, pressKey, send, shellEvent, type Mounted } from '../../testing/dom';
 
 let posted: Envelope[];
 let mounted: Mounted | undefined;
@@ -164,5 +165,77 @@ describe('0013 AC-007: attention rows and empty panels', () => {
         expect([...(panels?.children ?? [])].map((child) => (child.hasAttribute('data-activity') ? 'activity' : 'other'))).toEqual(['activity']);
         const attention = section(container, 'attention');
         expect(attention.compareDocumentPosition(panels!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+});
+
+describe('0017 AC-012: Next and Copy on a Needs attention row', () => {
+    function withSteps(): MissionControlView {
+        const view = sampleView();
+        view.attention = {
+            rows: [
+                {
+                    spec: { stem: '0001-a', number: '0001', title: 'Alpha', path: '.specs/active/0001-a.md', found: true },
+                    reasons: ['Blocked'],
+                    step: { short: '/sdd-plan', line: '/sdd-plan .specs/active/0001-a.md', lines: [{ text: '/sdd-plan .specs/active/0001-a.md' }, { text: 'continue', label: 'Then, in the same chat, if nothing blocks:' }] },
+                },
+                { spec: { stem: '0002-b', number: '0002', title: 'Beta', found: true }, reasons: ['Problem'] },
+            ],
+        };
+        return view;
+    }
+
+    function rowOf(container: HTMLElement, stem: string): HTMLElement {
+        return container.querySelector<HTMLElement>(`[data-attention-row="${stem}"]`)!;
+    }
+
+    it('shows "Next" and the short form after the reasons inside the row button, with the full lines as tooltip', async () => {
+        const row = rowOf(await open(withSteps()), '0001-a');
+        const drill = row.querySelector('.mc-row')!;
+        const reasons = drill.querySelector('.mc-reasons')!;
+        const step = drill.querySelector('.step-text')!;
+        expect(reasons.compareDocumentPosition(step) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(step.querySelector('.step-label')?.textContent).toBe('Next');
+        expect(step.querySelector('.step-short')?.textContent).toBe('/sdd-plan');
+        expect(step.getAttribute('title')).toBe('/sdd-plan .specs/active/0001-a.md\nThen, in the same chat, if nothing blocks: continue');
+    });
+
+    it('Copy sits outside the row button, is the next Tab stop after it and is named with the full first line', async () => {
+        const row = rowOf(await open(withSteps()), '0001-a');
+        const copy = row.querySelector<HTMLButtonElement>('.next-step-copy')!;
+        expect(row.querySelector('.mc-row')?.contains(copy)).toBe(false);
+        const tabbable = [...row.querySelectorAll<HTMLElement>('button')].filter((button) => button.tabIndex === 0);
+        expect(tabbable.map((button) => button.className.split(' ')[0])).toEqual(['mc-row', 'copy-button']);
+        expect(copy.getAttribute('aria-label')).toBe('Copy: /sdd-plan .specs/active/0001-a.md');
+        expect(row.querySelector('.mc-row')?.nextElementSibling).toBe(copy);
+    });
+
+    it('Copy by pointer, Enter and Space posts copyText only, shows Copied at that Copy and sends no navigation request', async () => {
+        const container = await open(withSteps());
+        const copy = rowOf(container, '0001-a').querySelector<HTMLButtonElement>('.next-step-copy')!;
+        await click(copy);
+        await pressKey(copy, 'Enter');
+        await pressKey(copy, ' ');
+        const sent = posted.filter((message) => message.type !== 'hello' && message.type !== 'ready').map((message) => message.type);
+        expect(sent.filter((type) => type === 'copyText')).toHaveLength(3);
+        expect(sent).not.toContain('navigate');
+        expect(sent).not.toContain('select');
+        expect(posted.filter((message) => message.type === 'copyText')[0]?.payload).toEqual({ text: '/sdd-plan .specs/active/0001-a.md' });
+        await send({ v: 1, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
+        expect(copy.textContent).toBe('Copied');
+    });
+
+    it('activating the rest of the row still sends the request of 0006 AC-014', async () => {
+        const container = await open(withSteps());
+        await click(rowOf(container, '0001-a').querySelector('.mc-row')!);
+        expect(posted.filter((message) => message.type === 'navigate').map((message) => message.payload)).toEqual([
+            { area: 'specExplorer', target: { kind: 'spec', stem: '0001-a', path: '.specs/active/0001-a.md' } },
+        ]);
+    });
+
+    it('a row whose spec has no step shows no "Next" and no Copy (negative control)', async () => {
+        const row = rowOf(await open(withSteps()), '0002-b');
+        expect(row.querySelector('.step-text, .copy-button')).toBeNull();
+        expect(row.textContent).not.toContain('Next');
+        expect(row.querySelectorAll('button')).toHaveLength(1);
     });
 });

@@ -14,7 +14,9 @@ import {
 } from '../../shared/protocol/texts';
 import { ProgressBar } from '../ui/ProgressBar';
 import { RuleText } from '../ui/RuleText';
+import { CopyButton, type CopyResult } from '../ui/CopyButton';
 import { StateChip } from '../ui/StateChip';
+import { StepText } from '../ui/StepText';
 import { BadgeIcon, Glyph } from './icons';
 
 function Figure(props: { label: string; progress: Progress | undefined; text: string }) {
@@ -25,6 +27,9 @@ export function Card(props: {
     card: CardView;
     onOpen(card: CardView): void;
     tabIndex?: number;
+    copyResult: CopyResult | undefined;
+    onCopy(line: string): void;
+    copyTabIndex?: number;
 }) {
     const { card } = props;
     return (
@@ -84,6 +89,12 @@ export function Card(props: {
                 ) : null}
                 <span className="card-change">{lastChangeText(card.lastChangeMs)}</span>
             </div>
+            {card.step === undefined ? null : (
+                <div className="card-step" onClick={(event) => event.stopPropagation()}>
+                    <StepText step={card.step} />
+                    <CopyButton line={card.step.line} copyResult={props.copyResult} onCopy={props.onCopy} {...(props.copyTabIndex === undefined ? {} : { tabIndex: props.copyTabIndex })} />
+                </div>
+            )}
         </li>
     );
 }

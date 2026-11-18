@@ -3,19 +3,24 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
 import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
-import { baseView, mount, send, shellEvent, type Mounted } from '../testing/dom';
+import { baseView, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
+import type { StepView } from '../../shared/protocol/stepView';
 import { boardEvent, boardView, card } from './testing/views';
 
 let posted: Envelope[];
 let mounted: Mounted | undefined;
 const clients: ShellClient[] = [];
 
+function stepOf(number: string): StepView {
+    return { short: '/sdd-plan', line: `/sdd-plan .specs/active/${number}-thing.md`, lines: [{ text: `/sdd-plan .specs/active/${number}-thing.md` }] };
+}
+
 const CARDS = [
-    card('0001', { state: 'Backlog' }),
-    card('0002', { state: 'Backlog' }),
-    card('0003', { state: 'Active' }),
-    card('0004', { state: 'Active' }),
-    card('0005', { state: 'Active' }),
+    card('0001', { state: 'Backlog', step: stepOf('0001') }),
+    card('0002', { state: 'Backlog', step: stepOf('0002') }),
+    card('0003', { state: 'Active', step: stepOf('0003') }),
+    card('0004', { state: 'Active', step: stepOf('0004') }),
+    card('0005', { state: 'Active', step: stepOf('0005') }),
     card('0006', { state: 'Done' }),
 ];
 
@@ -98,6 +103,51 @@ describe('AC-017: the board is one tab stop with arrow-key navigation', () => {
         await focus(cardOf(container, '0004'));
         const tabbable = [...container.querySelectorAll<HTMLElement>('[data-card]')].filter((element) => element.tabIndex === 0);
         expect(tabbable.map((element) => element.getAttribute('data-card'))).toEqual([key('0004')]);
+    });
+});
+
+describe('0017 AC-006: Tab from the tab-stop card reaches its Copy and no other', () => {
+    function copyOf(container: HTMLElement, number: string): HTMLElement | null {
+        return cardOf(container, number).querySelector<HTMLElement>('.next-step-copy');
+    }
+
+    function stops(container: HTMLElement): string[] {
+        return [...container.querySelectorAll<HTMLElement>('[data-card], .next-step-copy')]
+            .filter((element) => element.tabIndex === 0)
+            .map((element) => element.getAttribute('data-card') ?? `copy of ${element.closest('[data-card]')?.getAttribute('data-card')}`);
+    }
+
+    it('the card that is the tab stop is followed by its own Copy only', async () => {
+        const container = await open();
+        expect(stops(container)).toEqual([key('0001'), `copy of ${key('0001')}`]);
+    });
+
+    it('the Copy tab stop follows the focused card; a card without a step has none', async () => {
+        const container = await open();
+        await focus(cardOf(container, '0004'));
+        expect(stops(container)).toEqual([key('0004'), `copy of ${key('0004')}`]);
+        expect(copyOf(container, '0001')?.tabIndex).toBe(-1);
+        await focus(cardOf(container, '0006'));
+        expect(stops(container)).toEqual([key('0006')]);
+        expect(copyOf(container, '0006')).toBeNull();
+    });
+
+    it('arrows pressed on a Copy move between cards, and Enter on a card opens the spec as before', async () => {
+        const container = await open();
+        await focus(cardOf(container, '0003'));
+        const copy = copyOf(container, '0003')!;
+        await focus(copy);
+        expect(stops(container)).toEqual([key('0003'), `copy of ${key('0003')}`]);
+        await press(copy, 'ArrowDown');
+        expect(document.activeElement).toBe(cardOf(container, '0004'));
+        await pressKey(cardOf(container, '0004'), 'Enter');
+        expect(requests('navigate')).toEqual([{ area: 'specExplorer', target: { kind: 'spec', stem: '0004-thing' } }]);
+    });
+
+    it('leaving the board from a Copy and focus returning later keeps the tab stop on the card', async () => {
+        const container = await open();
+        await focus(copyOf(container, '0001')!);
+        expect(stops(container)).toEqual([key('0001'), `copy of ${key('0001')}`]);
     });
 });
 

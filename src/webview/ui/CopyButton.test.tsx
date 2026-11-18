@@ -193,3 +193,13 @@ describe('0016 AC-019: nothing else moves while the feedback shows', () => {
         expect(outside.length).toBeGreaterThan(0);
     });
 });
+
+describe('0017 AC-006: the optional tab index', () => {
+    it('sets the tab index when given and leaves the button at its default (reachable by Tab) when not', async () => {
+        const container = await show();
+        expect(button(container).tabIndex).toBe(0);
+        mounted?.unmount();
+        mounted = await mount(<CopyButton line={LINE} copyResult={undefined} onCopy={() => undefined} tabIndex={-1} />);
+        expect(mounted.container.querySelector('button')?.tabIndex).toBe(-1);
+    });
+});

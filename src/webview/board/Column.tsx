@@ -1,5 +1,6 @@
 import type { BoardColumn, CardView } from '../../shared/protocol/board';
 import { COLUMN_HINTS, hiddenByFilterText } from '../../shared/protocol/texts';
+import type { CopyResult } from '../ui/CopyButton';
 import { Card } from './Card';
 import { StateIcon } from './icons';
 
@@ -7,6 +8,8 @@ export function Column(props: {
     column: BoardColumn;
     onOpen(card: CardView): void;
     tabIndexOf?(card: CardView): number;
+    copyResult: CopyResult | undefined;
+    onCopy(line: string): void;
 }) {
     const { column } = props;
     return (
@@ -27,7 +30,9 @@ export function Column(props: {
                         key={card.key}
                         card={card}
                         onOpen={props.onOpen}
-                        {...(props.tabIndexOf === undefined ? {} : { tabIndex: props.tabIndexOf(card) })}
+                        copyResult={props.copyResult}
+                        onCopy={props.onCopy}
+                        {...(props.tabIndexOf === undefined ? {} : { tabIndex: props.tabIndexOf(card), copyTabIndex: props.tabIndexOf(card) })}
                     />
                 ))}
             </ul>

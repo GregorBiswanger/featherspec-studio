@@ -1,10 +1,20 @@
+import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
+import { COPIED_TEXT, COPY_FAILED_TEXT } from '../../shared/protocol/nextStepTexts';
+import type { StepView } from '../../shared/protocol/stepView';
 import { formatLastChange } from '../../shared/protocol/texts';
 import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
 import { baseView, click, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
 import { boardEvent, boardView, card } from './testing/views';
+
+const STEP: StepView = { short: 'Start T-003', line: 'Start T-003 of .specs/backlog/0007-x.plan.md', lines: [{ text: 'Start T-003 of .specs/backlog/0007-x.plan.md' }] };
+const TWO: StepView = {
+    short: '/sdd-plan',
+    line: '/sdd-plan .specs/active/0008-y.md',
+    lines: [{ text: '/sdd-plan .specs/active/0008-y.md' }, { text: 'continue', label: 'Then, in the same chat, if nothing blocks:' }],
+};
 
 let posted: Envelope[];
 let mounted: Mounted | undefined;
@@ -249,8 +259,8 @@ describe('0013 AC-009, AC-010: card layout', () => {
         return first !== null && second !== null && (first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
     }
 
-    it('AC-009: number and title, one state chip, summary, the tasks and criteria progressbars follow in DOM order', async () => {
-        const entry = (await open(boardView([card('0007', { state: 'Review', derivedRule: 'S-REVIEW' })]))).querySelector('[data-card]')!;
+    it('AC-009: number and title, one state chip, summary, the tasks and criteria progressbars and the next-step line follow in DOM order', async () => {
+        const entry = (await open(boardView([card('0007', { state: 'Review', derivedRule: 'S-REVIEW', step: STEP })]))).querySelector('[data-card]')!;
         const head = entry.querySelector('.card-head');
         const chips = entry.querySelectorAll('.state-chip');
         const summary = entry.querySelector('.card-summary');
@@ -265,6 +275,8 @@ describe('0013 AC-009, AC-010: card layout', () => {
         expect(follows(chips[0] ?? null, summary)).toBe(true);
         expect(follows(summary, bars[0] ?? null)).toBe(true);
         expect(follows(bars[0] ?? null, bars[1] ?? null)).toBe(true);
+        expect(follows(bars[1] ?? null, entry.querySelector('.card-step'))).toBe(true);
+        expect(entry.lastElementChild?.classList.contains('card-step')).toBe(true);
     });
 
     it('AC-009: the progressbars carry value, maximum and the figure text', async () => {
@@ -299,3 +311,71 @@ describe('0013 AC-009, AC-010: card layout', () => {
     });
 });
 
+describe('0017 AC-004: the next step on a card', () => {
+    it('a card with a step shows "Next", the short form with the full lines as tooltip and a Copy named with the full first line, as its last line', async () => {
+        const container = await open(boardView([card('0008', { step: TWO })]));
+        const entry = container.querySelector('[data-card]')!;
+        const line = entry.querySelector('.card-step')!;
+        expect(entry.lastElementChild).toBe(line);
+        expect(line.querySelector('.step-label')?.textContent).toBe('Next');
+        expect(line.querySelector('.step-short')?.textContent).toBe('/sdd-plan');
+        expect(line.querySelector('.step-text')?.getAttribute('title')).toBe('/sdd-plan .specs/active/0008-y.md\nThen, in the same chat, if nothing blocks: continue');
+        const copy = line.querySelector('button')!;
+        expect(copy.textContent).toBe('Copy');
+        expect(copy.getAttribute('aria-label')).toBe('Copy: /sdd-plan .specs/active/0008-y.md');
+        expect(entry.textContent).not.toContain('continue');
+    });
+
+    it('a Ready card shows Start T-003 and a card of a spec without a step shows no such line (negative control)', async () => {
+        const container = await open(boardView([card('0007', { state: 'Ready', step: STEP }), card('0009', { state: 'Done' })]));
+        const cards = [...container.querySelectorAll('[data-card]')];
+        expect(cards.find((entry) => entry.getAttribute('data-card')?.includes('0007'))?.querySelector('.step-short')?.textContent).toBe('Start T-003');
+        const done = cards.find((entry) => entry.getAttribute('data-card')?.includes('0009'))!;
+        expect(done.querySelector('.card-step, .step-text, .copy-button')).toBeNull();
+        expect(done.textContent).not.toContain('Next');
+    });
+});
+
+describe('0017 AC-005: Copy on a card', () => {
+    function copies(container: HTMLElement): HTMLButtonElement[] {
+        return [...container.querySelectorAll<HTMLButtonElement>('.card-step button')];
+    }
+
+    it('a click posts one copyText with the full first line, and opens nothing, selects nothing', async () => {
+        const container = await open(boardView([card('0007', { state: 'Ready', step: STEP }), card('0008', { step: TWO })]));
+        await click(copies(container)[0]!);
+        expect(requests('copyText')).toEqual([{ text: 'Start T-003 of .specs/backlog/0007-x.plan.md' }]);
+        expect(requests('navigate')).toEqual([]);
+        expect(requests('select')).toEqual([]);
+        expect(container.querySelector('.board')).not.toBeNull();
+    });
+
+    it('Enter and Space on a reached Copy each post one copyText and open nothing', async () => {
+        const container = await open(boardView([card('0008', { step: TWO })]));
+        const copy = copies(container)[0]!;
+        await act(async () => copy.focus());
+        await pressKey(copy, 'Enter');
+        await pressKey(copy, ' ');
+        expect(requests('copyText')).toEqual([{ text: '/sdd-plan .specs/active/0008-y.md' }, { text: '/sdd-plan .specs/active/0008-y.md' }]);
+        expect(requests('navigate')).toEqual([]);
+        expect(requests('select')).toEqual([]);
+    });
+
+    it('the feedback shows at that Copy only, as Copied, and as Could not copy after a failure', async () => {
+        const container = await open(boardView([card('0007', { state: 'Ready', step: STEP }), card('0008', { step: TWO })]));
+        await click(copies(container)[0]!);
+        await send({ v: 1, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
+        expect(copies(container).map((button) => button.textContent)).toEqual(['Copied', 'Copy']);
+        expect(container.querySelectorAll('.card-step [role="status"]')[0]?.textContent).toBe(COPIED_TEXT);
+        expect(container.querySelectorAll('.card-step [role="status"]')[1]?.textContent).toBe('');
+        await click(copies(container)[1]!);
+        await send({ v: 1, kind: 'evt', type: 'copyResult', payload: { ok: false, text: COPY_FAILED_TEXT } });
+        expect(copies(container)[1]?.textContent).toBe('Could not copy');
+    });
+
+    it('the card does not open, even when the click lands on the step text next to Copy', async () => {
+        const container = await open(boardView([card('0008', { step: TWO })]));
+        await click(container.querySelector('.step-text')!);
+        expect(requests('navigate')).toEqual([]);
+    });
+});

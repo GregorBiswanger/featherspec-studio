@@ -117,6 +117,8 @@ export function SpecBoard() {
                         key={column.state}
                         column={column}
                         onOpen={open}
+                        copyResult={api.copyResult}
+                        onCopy={api.copyText}
                         tabIndexOf={(card) => (card.key === tabbable ? 0 : -1)}
                     />
                 ))}

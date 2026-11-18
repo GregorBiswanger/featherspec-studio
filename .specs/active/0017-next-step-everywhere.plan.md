@@ -3,7 +3,7 @@
 **Spec:** [0017-next-step-everywhere.md](0017-next-step-everywhere.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-004
+**Current step:** T-005
 
 ## Approach
 
@@ -249,8 +249,8 @@ Stages 4 and 5 cannot: they share `extension.ts`, `package.json`, the protocol a
   row button still sends 0006 AC-014's request, no step → no Copy; the DOM-order test ends with the
   step line.
 - **Verify:** `npx vitest run src/webview` red, then green; gates 1–5
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-18 — new tests (AC-004/005/006 in SpecBoard.test and Keyboard.test, AC-012 in Sections.test, tab index in CopyButton.test) written first against the finished UI; red shown by mutation: card container without stopPropagation 4 failed, Copy tab index not following the tab-stop card 4 failed; green after. `npx vitest run src/webview` 289 passed. Gates 1–5: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 1856 passed, 3 skipped, `npm run compile` ok.
+- **Notes:** No separator text between the reasons and 'Next' on a row (layout gap only, so the row text without a step stays as 0006 decided). The row's `li` carries `mc-row-item` and draws the divider; the button's own top border is removed there. Card Copy tab index is passed from `Column` as the card's own tab index (0 for the tab-stop card, -1 else). The CSS font guard (0013 AC-001) refused a monospace fallback: `.step-short` uses `var(--vscode-editor-font-family)` alone.
 
 ### T-005 — Copy Next Step: one behaviour for click and command
 
