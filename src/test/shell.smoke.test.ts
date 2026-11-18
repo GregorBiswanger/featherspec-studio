@@ -159,7 +159,7 @@ suite('FeatherSpec Studio shell smoke', function () {
         assert.strictEqual(group.description, '1');
         assert.deepStrictEqual(
             group.children.map((row) => [row.label, row.description]),
-            [['0001 Restaurant-Rechnung mit…', 'Review · /sdd-compile']],
+            [['0001 Restaurant-Rec…', '/sdd-compile']],
         );
         assert.deepStrictEqual(tree.badge, { value: 1, tooltip: '1 spec waits for you: 1 in Review' });
         assert.strictEqual(tree.description, undefined);

@@ -366,6 +366,11 @@ export const GROUP_LABELS = { inProgress: 'In progress', upNext: 'Up next', back
 export const NEXT_STEP_PREFIX = 'Next step: ';
 export const PROBLEM_PREFIX = 'Problem: ';
 
+export function treeRowAccessibleLabel(row: { number: string; title: string; state: string; deprecated: boolean; step: string | undefined; problems: number }): string {
+    const parts = [`${row.number} ${row.title}`, row.state, ...(row.deprecated ? [DEPRECATED_MARKER] : []), ...(row.step === undefined ? [] : [row.step]), ...(row.problems > 0 ? [problemsBadgeText(row.problems)] : [])];
+    return parts.join(', ');
+}
+
 export function badgeTooltip(review: number, blocked: number): string {
     const waiting = review + blocked;
     const parts = [...(review > 0 ? [`${review} in Review`] : []), ...(blocked > 0 ? [`${blocked} Blocked`] : [])];

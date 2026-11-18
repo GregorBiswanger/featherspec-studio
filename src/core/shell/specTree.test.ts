@@ -1,6 +1,7 @@
 import { STATE_LOOK } from '../../shared/protocol/stateLook';
 import { describe, expect, it } from 'vitest';
 import { modelOf } from '../board/testing/boardWorld';
+import { problemSentence } from '../lifecycle/problemSentence';
 import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
 import { readFixture } from '../lifecycle/testing/projects';
 import type { PanelState } from '../../shared/protocol/messages';
@@ -145,7 +146,7 @@ describe('0020 AC-003: the order', () => {
                 '.specs/active/0010-e.plan.md': plan('In Progress'),
             }),
         );
-        expect(groupOf(tree, 'In progress').children.map((row) => [row.stem.slice(0, 4), row.description.split(' ')[0]])).toEqual([
+        expect(groupOf(tree, 'In progress').children.map((row) => [row.stem.slice(0, 4), row.state])).toEqual([
             ['0003', 'Blocked'],
             ['0002', 'Review'],
             ['0004', 'Review'],
@@ -192,23 +193,31 @@ describe('0020 AC-003: the order', () => {
 });
 
 describe('0020 AC-004: the row texts', () => {
-    it('a title of 24 characters is not cut; one of 25 is cut at its last space within the first 24, then …', async () => {
-        const exact = 'abcdefghi jklmnopqrstuvw';
-        const long = 'abcdefghi jklmnopqrstuvwx';
-        expect(exact).toHaveLength(24);
-        expect(long).toHaveLength(25);
-        const tree = treeOf(await modelOf({ '.specs/backlog/0001-a.md': spec(exact, 'Draft'), '.specs/backlog/0002-b.md': spec(long, 'Draft') }));
-        expect(rows(tree).map((row) => row.label)).toEqual([`0001 ${exact}`, '0002 abcdefghi…']);
-    });
-
-    it('the description is the state, with the short form of the next step where there is one', async () => {
+    it('the description is the step short form only, the state where there is no step, and Deprecated as before', async () => {
         const tree = treeOf(await modelOf(MIXED));
         const byStem = Object.fromEntries(rows(tree).map((row) => [row.stem, row.description]));
-        expect(byStem['0004-reviewing']).toBe('Review · /sdd-compile');
-        expect(byStem['0005-stuck']).toBe('Blocked · /sdd-plan');
-        expect(byStem['0001-idea']).toBe('Backlog · /sdd-clarify');
+        expect(byStem['0004-reviewing']).toBe('/sdd-compile');
+        expect(byStem['0005-stuck']).toBe('/sdd-plan');
+        expect(byStem['0001-idea']).toBe('/sdd-clarify');
         expect(byStem['0006-finished']).toBe('Done');
         expect(byStem['0007-old']).toBe('Deprecated');
+    });
+
+    it('0022 AC-004: no description starts with a state name followed by " · "', async () => {
+        const project = await readFixture('fs-broken');
+        const trees = [treeOf(await modelOf(MIXED)), treeOf({ project, lifecycle: deriveLifecycle(project) })];
+        for (const row of trees.flatMap(rows)) {
+            expect(row.description, row.label).not.toMatch(/^(?:Backlog|Ready|Active|Review|Blocked|Done) · /);
+        }
+    });
+
+    it('0022 AC-005: label and description of every row of the fixtures hold at most 32 characters unless the title room was raised to 12', async () => {
+        const project = await readFixture('studio-0015');
+        const trees = [treeOf(await modelOf(MIXED)), treeOf({ project, lifecycle: deriveLifecycle(project) })];
+        for (const row of trees.flatMap(rows)) {
+            const title = row.label.slice(row.label.indexOf(' ') + 1);
+            expect(row.label.length + row.description.length <= 32 || title.length <= 12 + 1, row.label).toBe(true);
+        }
     });
 
     it('a title of only spaces or none shows the slug, in the label and the accessible label', async () => {
@@ -224,9 +233,25 @@ describe('0020 AC-004: the row texts', () => {
         const project = await readFixture('studio-0015');
         const model = { project, lifecycle: deriveLifecycle(project) };
         const row = rows(treeOf(model)).find((candidate) => candidate.stem === '0015-focus-on-visibility');
-        expect(row?.label).toBe('0015 Focus the Studio on…');
-        expect(row?.description).toBe('Review · /sdd-compile');
-        expect(row?.accessibleLabel).toBe('0015 Focus the Studio on Visibility: No Agent Runs, a Named Next Step, Review · /sdd-compile');
+        expect(row?.label).toBe('0015 Focus the…');
+        expect(row?.description).toBe('/sdd-compile');
+        expect(row?.accessibleLabel).toBe('0015 Focus the Studio on Visibility: No Agent Runs, a Named Next Step, Review, /sdd-compile');
+    });
+});
+
+describe('0022 AC-004: the accessible label (X-05)', () => {
+    it('reads number, full title, state, Deprecated, step short form and problem count in this order, each only where it applies', async () => {
+        const tree = treeOf(await modelOf(MIXED));
+        const byStem = Object.fromEntries(rows(tree).map((row) => [row.stem, row.accessibleLabel]));
+        expect(byStem['0004-reviewing']).toBe('0004 Reviewing, Review, /sdd-compile');
+        expect(byStem['0006-finished']).toBe('0006 Finished, Done');
+        expect(byStem['0007-old']).toBe('0007 Old, Done, Deprecated');
+    });
+
+    it('a Problem adds its count last', async () => {
+        const project = await readFixture('fs-broken');
+        const row = rows(treeOf({ project, lifecycle: deriveLifecycle(project) })).find((candidate) => candidate.icon === 'warning')!;
+        expect(row.accessibleLabel).toMatch(new RegExp(`^${row.label.split(' ')[0]} .+, ${row.state}(?:, [^,]+)?, 1 problem$`));
     });
 });
 
@@ -252,7 +277,7 @@ describe('0022 AC-026: the tree takes icon and colour from the one table', () =>
 describe('0020 AC-005: icons and colours', () => {
     it('every state has its icon and colour', async () => {
         const tree = treeOf(await modelOf({ ...MIXED, '.specs/active/0009-ready.md': spec('Ready', 'In Progress', '0009-ready.plan.md'), '.specs/active/0009-ready.plan.md': plan('Not started') }));
-        const byState = new Map(rows(tree).map((row) => [row.description.split(' ')[0]!, [row.icon, row.color]]));
+        const byState = new Map(rows(tree).map((row) => [row.description === 'Deprecated' ? 'Deprecated' : row.state, [row.icon, row.color]]));
         expect(Object.fromEntries(byState)).toEqual({
             Backlog: ['list-flat', 'descriptionForeground'],
             Ready: ['pass', 'charts.blue'],
@@ -271,7 +296,7 @@ describe('0020 AC-005: icons and colours', () => {
         expect(broken.length).toBeGreaterThan(0);
         for (const row of broken) {
             expect(row.color).toBe('problemsWarningIcon.foreground');
-            expect(row.description.startsWith(row.description.split(' ')[0]!)).toBe(true);
+            expect(row.accessibleLabel).toContain(`, ${row.state}`);
             expect(row.accessibleLabel).toMatch(/, 1 problem$/);
         }
         expect(rows(tree).filter((row) => row.icon !== 'warning').every((row) => !/problem/.test(row.accessibleLabel))).toBe(true);
@@ -336,7 +361,8 @@ describe('0020 AC-006: the tooltip', () => {
         expect(problems.length).toBe(1);
         const entry = model.lifecycle.entries.find((candidate) => candidate.key === row.specKey)!;
         const reason = entry.diagnostics.find((diagnostic) => diagnostic.tier === 'problem')!.reason;
-        expect(problems[0]).toBe(`Problem: ${reason.replace(/[!-/:-@[-`{-~]/g, (character) => `\\${character}`)}`);
+        expect(problems[0]).toBe(`Problem: ${problemSentence(entry.diagnostics.find((diagnostic) => diagnostic.tier === 'problem')!).replace(/[!-/:-@[-`{-~]/g, (character) => `\\${character}`)}`);
+        expect(reason).not.toBe('');
     });
 
     it('two Problems give two lines, a duplicated stem names each path', async () => {

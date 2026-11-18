@@ -3,7 +3,7 @@
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-009
+**Current step:** T-010
 
 ## Approach
 
@@ -385,8 +385,8 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
   sentence in the tooltip; `src/test/shell.smoke.test.ts` AC-019 expects `['0001 Restaurant-Rec…', '/sdd-compile']`.
 - **Verify:** `npx vitest run --project node src/core/shell/treeLabel.test.ts src/core/shell/specTree.test.ts` red, then
   green; gates 1–4; `npm run compile-tests` (host smoke runs at the pre-done gate)
-- [ ] **Verified (T-009):** —
-- **Notes:** —
+- [x] **Verified (T-009):** Red first: `treeLabel.test.ts` failed on the missing module; the updated `specTree.test.ts` failed 6 tests on the old state prefix, the 24-character cut and the reason in the tooltip. Green after: eslint 0 warnings, tsc and tsc -p src/webview clean, test:unit 2386 passed (3 skipped, +13 timing), `npm run compile-tests` clean (host smoke runs at the pre-done gate).
+- **Notes:** Deleted exactly `LABEL_MAX`, the state prefix of `descriptionOf`, and the test "a title of 24 characters is not cut; one of 25 is cut ..." (replaced by `treeLabel.test.ts` and the AC-004/AC-005 describes). New `core/shell/treeLabel.ts` (`TREE_BUDGET` 32, `TITLE_FLOOR` 12, optional `command` for a description with an intent, never given today); `treeRowAccessibleLabel` (X-05) in `shared/protocol/texts.ts`; the tooltip holds `Problem: <problemSentence>`. The AC-005 sweep runs 3 numbers x 16 short forms x 80 title lengths. Host smoke AC-019 now expects `['0001 Restaurant-Rec…', '/sdd-compile']` (compiles; it runs on Windows and CI).
 
 ### T-010 — "Up next" names one set; a group or strip says when it hides a Problem
 

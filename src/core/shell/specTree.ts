@@ -18,13 +18,15 @@ import {
     PROBLEM_PREFIX,
     problemsBadgeText,
     stepsText,
+    treeRowAccessibleLabel,
 } from '../../shared/protocol/texts';
 import { buildCards } from '../board/cards';
 import { nextStep } from '../board/nextStep';
-import { cutAt } from '../board/shortTitle';
 import { escapeMarkdown } from '../copyNextStep/entryView';
 import type { LifecycleEntry } from '../lifecycle/model';
+import { problemSentence } from '../lifecycle/problemSentence';
 import type { ShellModel } from '../ports/shell';
+import { treeLabel } from './treeLabel';
 
 export interface SpecRowModel {
     kind: 'spec';
@@ -78,8 +80,6 @@ export interface SpecTreeInput {
     model: ShellModel | undefined;
 }
 
-const LABEL_MAX = 24;
-
 type GroupKey = keyof typeof GROUP_LABELS;
 
 const STATE_GROUP: Record<BoardState, GroupKey> = {
@@ -123,7 +123,7 @@ function descriptionOf(card: CardView): string {
     if (card.deprecated) {
         return DEPRECATED_MARKER;
     }
-    return card.step === undefined ? card.state : `${card.state} · ${card.step.short}`;
+    return card.step === undefined ? card.state : card.step.short;
 }
 
 function contextValueOf(card: CardView, entry: LifecycleEntry): string {
@@ -160,7 +160,7 @@ function tooltipOf(model: ShellModel, card: CardView, entry: LifecycleEntry, tit
     }
     for (const diagnostic of entry.diagnostics) {
         if (diagnostic.tier === 'problem') {
-            paragraphs.push(`${PROBLEM_PREFIX}${escapeMarkdown(diagnostic.reason)}`);
+            paragraphs.push(`${PROBLEM_PREFIX}${escapeMarkdown(problemSentence(diagnostic))}`);
         }
     }
     paragraphs.push(code(card.key));
@@ -169,17 +169,16 @@ function tooltipOf(model: ShellModel, card: CardView, entry: LifecycleEntry, tit
 
 function rowOf(model: ShellModel, card: CardView, entry: LifecycleEntry, slug: string): SpecRowModel {
     const title = fullTitle(card, slug);
-    const description = descriptionOf(card);
+    const shown = treeLabel({ number: card.number, title, description: descriptionOf(card) });
     const style = card.problems > 0 ? PROBLEM_ICON : { icon: STATE_LOOK[card.state].motif, color: STATE_LOOK[card.state].colour };
-    const problem = card.problems > 0 ? `, ${problemsBadgeText(card.problems)}` : '';
     return {
         kind: 'spec',
         id: rowId(model.project.root, card),
-        label: `${card.number} ${cutAt(title, LABEL_MAX)}`,
-        description,
+        label: shown.label,
+        description: shown.description,
         icon: style.icon,
         color: style.color,
-        accessibleLabel: `${card.number} ${title}, ${description}${problem}`,
+        accessibleLabel: treeRowAccessibleLabel({ number: card.number, title, state: card.state, deprecated: card.deprecated, step: card.step?.short, problems: card.problems }),
         tooltip: tooltipOf(model, card, entry, title),
         contextValue: contextValueOf(card, entry),
         stem: card.stem,
