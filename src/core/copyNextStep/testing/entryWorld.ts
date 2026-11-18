@@ -16,6 +16,7 @@ export interface FakeProject {
     name: string;
     version?: string;
     root?: string;
+    verdict?: DiscoveredFolder['verdict'];
 }
 
 export interface EntryWorld {
@@ -39,7 +40,7 @@ function folderOf(project: FakeProject): DiscoveredFolder {
     return {
         root: project.root ?? ROOT,
         name: project.name,
-        verdict: 'project',
+        verdict: project.verdict ?? 'project',
         legacy: false,
         version: project.version ?? '1.10.0',
         missingMarkers: [],

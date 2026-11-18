@@ -148,6 +148,27 @@ describe('0017 AC-016: the feedback lasts 2000 ms', () => {
         expect(fakes.written.at(-1)).toBe('/sdd-compile .specs/active/0020-thing.md');
     });
 
+    it('W2: a successful copy shows no warning and no warning text', async () => {
+        await ready(BLOCKED_ACTIVE);
+        await command.run();
+        expect(fakes.warned).toEqual([]);
+        expect(world.last()).toMatchObject({ text: '$(check) Copied', accessibleLabel: 'Copied' });
+    });
+
+    it('F8: a failure within 2 s after a success replaces the Copied text, warns once and restores 2000 ms after the failure', async () => {
+        await ready(BLOCKED_ACTIVE);
+        await command.run();
+        world.clock.advance(1000);
+        fakes.failing = true;
+        await command.run();
+        expect(world.last()).toMatchObject({ text: '$(warning) Could not copy', accessibleLabel: 'Could not copy' });
+        expect(fakes.warned).toEqual(['Could not copy to the clipboard.']);
+        world.clock.advance(1999);
+        expect(world.text()).toBe('$(warning) Could not copy');
+        world.clock.advance(1);
+        expect(world.text()).toBe('$(checklist) 0020 · Blocked · /sdd-plan');
+    });
+
     it('a copy that succeeds after a failure replaces the warning text', async () => {
         await ready(BLOCKED_ACTIVE);
         fakes.failing = true;

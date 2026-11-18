@@ -191,6 +191,28 @@ describe('0017 AC-002: NS-6 names "continue" only while the plan has an open ste
     });
 });
 
+describe('0017 AC-002: NS-6 reads the open step from the spec\'s own plan', () => {
+    const A = '.specs/active/0001-a.md';
+    const B = '.specs/active/0002-b.md';
+    const link = (stem: string) => `[${stem}.plan.md](${stem}.plan.md)`;
+    const ticked = `${planText({ status: 'In Progress' })}\n## Steps\n\n### T-001 — A\n\n- [x] **Verified (T-001):** done\n`;
+    const open = `${planText({ status: 'In Progress' })}\n## Steps\n\n### T-001 — A\n\n- [ ] **Verified (T-001):** —\n`;
+
+    it('N8: with two Active specs the one whose plan has an open step gets "continue", the other not, in either order', async () => {
+        for (const [planA, planB] of [[ticked, open], [open, ticked]] as const) {
+            const m = await model({
+                [A]: specText({ status: 'In Progress', plan: link('0001-a') }),
+                '.specs/active/0001-a.plan.md': planA,
+                [B]: specText({ status: 'In Progress', plan: link('0002-b') }),
+                '.specs/active/0002-b.plan.md': planB,
+            });
+            const withLines = (key: string) => (nextStep(m, key) as { lines: unknown[] }).lines.length;
+            expect(withLines(A)).toBe(planA === open ? 2 : 1);
+            expect(withLines(B)).toBe(planB === open ? 2 : 1);
+        }
+    });
+});
+
 describe('0017 AC-001, AC-003: the step view', () => {
     it('AC-001: the short form of the first line of every rule, and line is the detail\'s first line with its path', async () => {
         const cases: Array<[string, Record<string, string>, string, string, string]> = [

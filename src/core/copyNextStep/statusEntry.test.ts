@@ -123,6 +123,18 @@ describe('0017 AC-015: no current spec', () => {
         expect(view().text).toBe('$(checklist) 0020 · Blocked · /sdd-plan');
     });
 
+    it('C13: a model of another project root is not the active project\'s: the specs are not read', async () => {
+        await ready([{ number: '0020', kind: 'Blocked' }]);
+        expect(view().text).toBe('$(checklist) 0020 · Blocked · /sdd-plan');
+        const loaded = world.source.current();
+        if (loaded === undefined) {
+            throw new Error('no model');
+        }
+        world.setModel({ ...loaded, project: { ...loaded.project, root: `${loaded.project.root}-elsewhere` } });
+        expect(view().text).toBe('$(checklist) FeatherSpec');
+        expect(view().accessibleLabel).toBe('FeatherSpec. Click to open the Studio.');
+    });
+
     it('no loaded model reads as specs not read', () => {
         world = createEntryWorld();
         world.setProjects([{ name: 'proj' }], 'proj');
@@ -138,6 +150,14 @@ describe('0017 AC-017: the project pick and the project line', () => {
         await ready([{ number: '0020', kind: 'Blocked' }], [{ name: 'proj' }]);
         expect(markdown()).not.toContain('Switch project');
         expect(markdown().endsWith(OPEN_LINK)).toBe(true);
+    });
+
+    it('P3: folders that are no project (incomplete, not a project) are not counted for "Switch project"', async () => {
+        await ready([{ number: '0020', kind: 'Blocked' }], [{ name: 'proj' }, { name: 'half', root: 'half', verdict: 'incomplete' }, { name: 'plain', root: 'plain', verdict: 'not-a-project' }]);
+        expect(markdown()).not.toContain('Switch project');
+        expect(markdown().endsWith(OPEN_LINK)).toBe(true);
+        await ready([{ number: '0020', kind: 'Blocked' }], [{ name: 'proj' }, { name: 'half', root: 'half', verdict: 'incomplete' }, { name: 'second', root: 'second' }]);
+        expect(markdown().endsWith(`${OPEN_LINK} · ${SWITCH_LINK}`)).toBe(true);
     });
 
     it('with an active project no text, tooltip or command opens the project pick', async () => {
