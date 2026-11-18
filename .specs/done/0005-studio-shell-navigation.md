@@ -323,10 +323,10 @@ automated tests.
   path. With zero specs, it shall show "This project has no specs yet." When 0002 reports a
   change, the list shall show it within 500 ms after the panel UI receives the notification,
   without being reopened by the user (PD-047).
-  *Amended by 0019 (PD-058): stays until 0020; the pane beside the list shows 0019 AC-008's detail.*
+  *Amended by 0019 (PD-058): AC-007 — stays until 0020; the pane beside the list shows 0019 AC-008's detail.*
 - **AC-008** When the user selects a spec, switches to any other area and returns to Spec
   Explorer, the system shall still show that spec as selected. [AC-005.3]
-  *Amended by 0019 (PD-058): stays; the selection also shows the side panel in Overview and Board (0019 AC-002).*
+  *Amended by 0019 (PD-058): AC-008 — stays; the selection also shows the side panel in Overview and Board (0019 AC-002).*
 - **AC-009** When the user closes the panel and opens it again with "FeatherSpec Studio: Open" or
   "Open Studio", the system shall show the area last shown and the same selected spec. After a
   window reload, the system shall restore a panel that was open, without user action, on the

@@ -433,7 +433,7 @@ error text, prompts or provider payloads (AC-026). It sends no telemetry (handof
   longer in the project". *(PD-039, PD-042)*
   *Amended by 0017 (PD-060/PD-061): Copy on a row sends no navigation request (0017 AC-012); activating the rest of the row is unchanged.*
   *Amended by 0018 (PD-062): Now, Up next and Problems rows (0018 AC-006).*
-  *Amended by 0019 (PD-058): a row or an entry of a spec that is in the project selects that spec in place (0019 AC-001) instead of the request "Spec Explorer, that spec"; the not-found notice stays.*
+  *Amended by 0019 (PD-058): AC-014 — a row or an entry of a spec that is in the project selects that spec in place (0019 AC-001) instead of the request "Spec Explorer, that spec"; the not-found notice stays.*
 - **AC-015** When a spec, plan or return note of the active project changes on disk, when a run
   of the active project is created, changes status or is removed, or when the store's state
   changes, the system shall show the resulting figures, highlighted runs, attention rows and

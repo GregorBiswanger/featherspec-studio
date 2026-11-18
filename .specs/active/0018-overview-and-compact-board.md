@@ -31,6 +31,7 @@ marker and a highlight, and two refresh commands were hard to tell apart (02 §3
 Goal: "what now?" answered at a glance; on this repository every column that shows a card visible
 without horizontal scrolling at 1240 px, and at 640 px while at most two do (B-2); no date that
 misleads (AC-031).
+*Amended by 0019 (PD-058): §2 goal — "visible without horizontal scrolling" holds with no spec selected; with the side panel the board scrolls (0019 §9).*
 
 ## 3. Users and roles
 
@@ -221,6 +222,7 @@ marked manual. Fixtures: 0006's and 0007's, `fs170-brownfield-mixed`, one with e
 - **AC-030** Every test at the commit before 0018's first change that decides a criterion §5 does not void — 0006's drill-downs (AC-012, AC-014, AC-029) and the host smoke tests of 0001 and 0005 included, with the new IDs — shall exist at the head and pass; the plan shall list every title missing at the head, a renamed one included, with the criterion this spec voids or the head title that replaces it, from a script comparing both commits; `npm run test:unit` and `npm test` shall pass on Windows and in CI.
   *Amended by 0019 (PD-058): AC-030 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*
 - **AC-031** *(manual, Gregor or his delegate)* Preview-harness screenshots of Overview and Board for this repository and `fs170-brownfield-mixed`, Dark, Light and High Contrast, panel width 1240 px and 640 px, height 900 px: Now is the first section; rows keep one line at 1240 px and take two lines at 640 px with the state text readable (AC-006); with no spec selected, every column that shows a card is visible without horizontal scrolling at 1240 px, and at 640 px where at most two do; a wide column shows at least six cards when it holds them (R-10); strips, toggle and focus are legible. Verdict in the plan; the real VS Code window is a release-checklist item.
+  *Amended by 0019 (PD-058): AC-031 — "visible without horizontal scrolling" holds "with no spec selected"; with the side panel the board scrolls (0019 §9).*
 
 ## 10. Technical notes for developers or AI agents
 

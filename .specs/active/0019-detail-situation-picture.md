@@ -118,7 +118,7 @@ detail until 0020; *Overview row* a Now, Up next or Problems row of a spec (0018
 | 4 | Progress | 0016's needs (Backlog) and the Steps and Criteria rows (§6.3) |
 | 5 | Files | "Spec", "Plan", one "Archived plan" per archived plan, one "Return note" per note, each kind by file name; file name as link; rows for absent files are not shown |
 | 6 | Format notes | collapsed on every showing, no memory (PD-063 (5)); heading 0016's T-07; expanded: each note's reason, a link where it has a file; hidden at zero |
-| 7 | Status history | collapsed; heading "Status history (n)"; expanded: 0016's T-15 label and §6.4 entries in their order; hidden at zero entries; while the history is not available, heading "Status history" with 0003's "Status history not available: <reason>" ("Status history: not available" without a reason) |
+| 7 | Status history | collapsed; heading "Status history (n)"; expanded: 0016's T-15 label and §6.4 entries in their order; hidden at zero entries; while the history is not available, heading "Status history" with 0003's "Status history not available: <reason>" ("Status history: not available" without a reason); that text is a plain section, always visible and not collapsible, so its reason is readable without a click (guideline 3) and AC-015's "collapsed" applies to a history with entries |
 
 ### 6.3 Progress
 

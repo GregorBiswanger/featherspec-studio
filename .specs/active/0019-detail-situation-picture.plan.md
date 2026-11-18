@@ -393,7 +393,7 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
   §5 rows; `git diff --stat <Baseline> -- docs/product/product-decisions.md` empty; gates 1–5;
   `npm run compile-tests`; `npm test` on Windows and CI (pre-done gate, Gregor); AC-022 by Gregor or
   his delegate (pre-release)
-- [x] **Verified (T-008):** 2026-11-18 — audit: `python3 /tmp/audit-0019/titles.py` Baseline vs head lists 40 absent test titles, each mapped in "Test-title audit"; `grep -c "Amended by 0019"` 0005 4, 0006 2, 0007 16, 0013 7, 0015 2, 0016 5, 0017 2, 0018 3 (all eight ≥ 1, one per §5 statement); `git diff 20792ca -- docs/product/product-decisions.md` empty. Gates: eslint 0 warnings, `tsc --noEmit` and `tsc -p src/webview` clean, `npm run test:unit` 2100 passed + 3 skipped (+12 timing), `npm run compile`, `npm run compile-tests` green. Not run here: `npm test` (host smoke; VS Code download blocked, Windows and CI), AC-022 (manual: preview harness screenshots and a real window); jsdom computes no layout, so the 400 px column, the drawer overlay and the scroll-clear padding rest on the CSS guard tests until then.
+- [x] **Verified (T-008):** 2026-11-18 — audit: `python3 /tmp/audit-0019/titles.py` Baseline vs head lists 40 absent test titles, each mapped in "Test-title audit" (the 8 absent `describe` titles were missing there until T-016, compile S48 D3); `grep -c "Amended by 0019"` 0005 4, 0006 2, 0007 16, 0013 7, 0015 2, 0016 5, 0017 2, 0018 3 (all eight ≥ 1; "one per §5 statement" was wrong: the §5 row "0018 §2 goal, AC-031" had no note until T-016, compile S48 D4; the 0018 count is 5 at the head); `git diff 20792ca -- docs/product/product-decisions.md` empty. Gates: eslint 0 warnings, `tsc --noEmit` and `tsc -p src/webview` clean, `npm run test:unit` 2100 passed + 3 skipped (+12 timing), `npm run compile`, `npm run compile-tests` green. Not run here: `npm test` (host smoke; VS Code download blocked, Windows and CI), AC-022 (manual: preview harness screenshots and a real window); jsdom computes no layout, so the 400 px column, the drawer overlay and the scroll-clear padding rest on the CSS guard tests until then.
 - **Notes:** (1) §5 notes are one `*Amended by 0019 (PD-058): …*` line under each named statement (bullet, paragraph, table or heading), the PD register stays unedited. (2) README: Spec Explorer and "The detail of a spec" sections, Overview and Board sentences (select in place), next-step sentences; its screenshot of the old detail stays (a docs scan requires three screenshot links) until AC-022's new ones replace it. (3) `docs/product/design-brief.md` Spec Explorer section marks the old detail superseded by PD-058; `docs/release-checklist.md` rewords the keyboard and "Open file" items and adds the 0019 section with AC-022; CHANGELOG Unreleased has Added, Changed and Removed lines. (4) `/sdd-architecture-update`: `last reconciled` → `(0019)` in `AGENTS.md` and the three module maps, plus the core, webview, protocol and adapter lines named in this step; Memory Bank: `techContext.md`, `systemPatterns.md`, `activeContext.md`. (5) Commit trailers follow `/home/claude/orch/IMPL-UX.md` (`Co-Authored-By: Claude Opus 5.5`); T-005 to T-007 were first committed with another model name and rewritten before this commit.
 
 ### T-009 — Fix D5: a card focused under the drawer scrolls clear (compile 0019 D5, AC-022 V1)
@@ -502,17 +502,21 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
   for the titles of this round.
 - **Verify:** `python3 -I` audit script (Baseline `20792ca` vs head) lists only titles homed in the plan; `grep -c`
   on the notes; gates 1–5 once more
-- [ ] **Verified (T-016):**
-- **Notes:**
+- [x] **Verified (T-016):** 2026-11-18 — docs. Audit: `python3 -I /tmp/fs50/titles.py <git archive 20792ca> <head>` lists ABSENT 48 (40 test titles + the 8 `describe` titles now in the table), DECREASED 0, MOVED 0; the titles of T-009…T-015 are new, none renames a Baseline title. `grep -c "Amended by 0019"`: 0005 4, 0006 2, 0007 16, 0013 7, 0015 2, 0016 5, 0017 2, 0018 5; `git diff 20792ca -- docs/product/product-decisions.md`: one added line (PD-066), none removed. Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2126 passed + 3 skipped (+12 timing), `npm run compile`, `npm run compile-tests` green.
+- **Notes:** (1) D4: the 0018 notes sit under the §2 goal sentence and under AC-031 ("visible without horizontal scrolling" holds with no spec selected; AC-031 already says so inline since `f6d53c5`). (2) F8: the notes under 0005 AC-007, AC-008 and 0006 AC-014 now begin with their statement's ID. (3) F9: 0019 §6.2 row 7 says the not-available text is a plain, always visible section and that AC-015's "collapsed" applies to a history with entries. (4) The T-008 `Verified:` claims ("one per §5 statement", 40 absent titles) are corrected in place. (5) `.architecture/webview.md` names `src/shared/protocol/layout.ts` and the `data-drawer` marks; `activeContext.md`, `systemPatterns.md`, README line 31, the release checklist and the CHANGELOG follow PD-066. (6) AC-024 text allows the one appended PD-066 row; the check is a diff against the Baseline that shows only that row. (7) Not done on purpose: `tidy`/`splitCells` stay (note only), the README's old Spec Explorer screenshot stays until 0020, nothing of 0020 touched except the stale "unplanned" in `activeContext.md`.
 
 ## Test-title audit
 
 Method (0018's): `/tmp/audit-0019/titles.py` reads every `describe`/`it`/`test`/`suite` literal of each `.ts`/`.tsx`
 under `src` (`src/test/**` and `testing/*.ts` included) at the Baseline 20792ca (`git archive`) and at the
-head, 2026-11-18. Baseline: 2,077 titles, 1,728 tests; head: 2,167 titles, 1,801 tests. Every Baseline test
-title that is absent at the head is listed (40); every other title exists at the head and passes
-(`npm run test:unit`: 2,100 passed, 3 skipped, +12 timing). Retargeted tests that kept their title are not
-listed. The PD register is unedited (`git diff 20792ca -- docs/product/product-decisions.md` is empty).
+head, 2026-11-18 (T-008, head `fd74ec7`: Baseline 2,077 titles, 1,728 tests; head 2,167 titles, 1,801 tests;
+re-run in T-016 on the fix head: Baseline 2,079 titles by the compile's script, head 2,199). Every Baseline title
+that is absent at the head is listed: 40 test titles and 8 `describe` titles (the compile S48 found the 8 missing,
+D3), 48 in all; no title has a lower count, none moved out of its file; every other title exists at the head and
+passes (`npm run test:unit`: 2,126 passed, 3 skipped, +12 timing). The titles of T-009…T-015 are new or renamed
+0019 titles that do not exist at the Baseline, so no row is needed for them (T-016 re-run: still 48 absent).
+Retargeted tests that kept their title are not listed. The PD register carries no edit of an existing entry:
+`git diff 20792ca -- docs/product/product-decisions.md` shows the one appended row PD-066 and no removed line.
 
 | Absent title (file) | Voided or replaced by |
 | --- | --- |
@@ -556,6 +560,14 @@ listed. The PD register is unedited (`git diff 20792ca -- docs/product/product-d
 | `shows the heading of the spec and the sections in order, each under a heading` | AC-009 ("shows Next step, Problems, Progress, Files, Format notes and Status history in this order") |
 | `shows the not-found text in the status line of the section that holds the file` | AC-019 ("the activated link reads "File not found: <path>" …") |
 | `the buttons are keyboard-operable` | AC-004, AC-017 ("every link is a native button in the Tab order and works with Enter and with Space") |
+| `0013 AC-012, AC-013, AC-010: collapsible sections, detail header, Overview rules` (SpecDetail.test, group) | Group void: its tests are listed above or void; §5 0013 AC-012, AC-013, §3.4 |
+| `0015 AC-012: Status history` (SpecDetail.test, group) | Renamed "0015 AC-012, 0019 AC-015: Status history" (AC-015; §5 0015 AC-012) |
+| `0016 AC-006, AC-007, AC-016, AC-022: Problems, format notes and the title emphasis` (SpecDetail.test, group) | Renamed "0016 AC-006, AC-007, AC-022: Problems, format notes"; §5 0016 AC-016 void |
+| `AC-009: criteria and requirements as delivered` (SpecDetail.test, group) | Group void: §5 0007 AC-009 (its three tests are listed above) |
+| `AC-010: Open file exactly where a file is named` (SpecDetail.test, group) | "0019 AC-017: every link opens its file at its line" (AC-017, AC-019) |
+| `AC-010: the Overview header lines` (SpecDetail.test, group) | Group void: §5 0013 §3.4 (A-007; no header lines) |
+| `AC-010: the seven sections` (SpecDetail.test, group) | "0019 AC-009: the situation picture in its order" (§5 0007 §6.4) |
+| `AC-019: the detail is in the DOM within 500 ms of the event (PD-047; a large spec)` (SpecDetail.timing, group) | "0019 AC-020: the situation picture is in the DOM within 500 ms of the event (PD-047; a large spec)" |
 
 ## Traceability
 
@@ -563,38 +575,41 @@ listed. The PD register is unedited (`git diff 20792ca -- docs/product/product-d
 | --- | --- | --- | --- | --- |
 | AC-001 | T-005 | `webview/{App,detail/useOpenSpec,board/Card,areas/SpecBoard,areas/overview/*}.tsx` | `detail/SidePanel.test.tsx`, `board/SpecBoard.test.tsx`, `board/Keyboard.test.tsx`, `areas/overview/{Drilldown,Sections}.test.tsx` | verified |
 | AC-002 | T-005 | `webview/App.tsx`, `detail/SidePanel.tsx` | `detail/SidePanel.test.tsx`, `core/shell/shellService.navigation.test.ts` | verified |
-| AC-003 | T-006 | `shared/protocol/messages.ts`, `core/shell/shellService.ts`, `webview/{client,shell}`, `detail/{DetailFrame,focus}` | `detail/Close.test.tsx`, `shared/protocol/messages.test.ts`, `core/shell/{messageRouter,shellService.navigation}.test.ts` | verified |
+| AC-003 | T-006, T-013, T-015 | `shared/protocol/messages.ts`, `core/shell/shellService.ts`, `webview/{client,shell}`, `detail/{DetailFrame,focus,opener}` | `detail/Close.test.tsx` (incl. G1, G2, F1), `shared/protocol/messages.test.ts`, `core/shell/{messageRouter,shellService.navigation}.test.ts` | verified |
 | AC-004 | T-006 | `detail/{DetailFrame,CloseButton,focus,SpecDetail}.tsx` | `detail/Close.test.tsx`, `detail/SpecDetail.test.tsx` | verified |
-| AC-005 | T-007 | `webview/main.css`, `detail/drawer.ts`, `shared/protocol/layout.ts`, `areas/SpecBoard.tsx` | `adapters/node/webviewCss.test.ts`, `detail/SidePanel.test.tsx` | verified (CSS guard); layout by AC-022 |
+| AC-005 | T-007, T-009, T-010, T-014 | `webview/main.css`, `detail/drawer.ts`, `shared/protocol/layout.ts`, `areas/SpecBoard.tsx` (focus scrolls clear), `areas/overview/Overview.tsx` (PD-066) | `adapters/node/webviewCss.test.ts`, `detail/SidePanel.test.tsx` | verified (CSS guard, unit); layout by AC-022 round 2 |
 | AC-006 | T-005 | `webview/App.tsx`, `detail/{focus,SidePanel}` | `detail/SidePanel.test.tsx`, `detail/Close.test.tsx` | verified |
-| AC-007 | T-005 | `webview/detail/selected.ts`, `board/Card.tsx`, `areas/overview/SpecRow.tsx` | `detail/SidePanel.test.tsx` | verified |
+| AC-007 | T-005, T-015 | `webview/detail/selected.ts`, `board/Card.tsx`, `areas/overview/SpecRow.tsx`, `webview/main.css` | `detail/SidePanel.test.tsx` (cards, Overview rows G3), `adapters/node/webviewCss.test.ts` (G4) | verified |
 | AC-008 | T-005, T-006 | `areas/SpecExplorer.tsx`, `detail/SpecDetail.tsx` | `detail/Close.test.tsx`, `detail/SidePanel.test.tsx` | verified |
 | AC-009 | T-002, T-003, T-004 | `core/board/detail.ts`, `shared/protocol/detail.ts`, `webview/detail/SpecDetail.tsx` | `core/board/detail.test.ts`, `detail/SpecDetail.test.tsx`, `shared/protocol/detail.test.ts` | verified |
 | AC-010 | T-003, T-004 | `webview/detail/*`, `core/board/detail.ts` | `detail/SpecDetail.test.tsx`, `core/board/detail.test.ts`, `adapters/node/webviewBundle.test.ts`, `webview/userLanguage.test.tsx` | verified |
 | AC-011 | T-002 | `core/board/situation.ts`, `detail/Progress.tsx` | `core/board/detail.test.ts`, `detail/SpecDetail.test.tsx` | verified |
 | AC-012 | T-002 | `core/board/situation.ts`, `detail/Progress.tsx` | `core/board/{detail,boardService}.test.ts`, `detail/SpecDetail.test.tsx` | verified |
 | AC-013 | T-002 | `core/board/shortTitle.ts` | `core/board/shortTitle.test.ts`, `core/board/detail.test.ts` | verified |
-| AC-014 | T-002 | `core/board/situation.ts` (`filesOf`) | `core/board/detail.test.ts`, `detail/SpecDetail.test.tsx` | verified |
+| AC-014 | T-002, T-012 | `core/board/situation.ts` (`filesOf`) | `core/board/detail.test.ts` (incl. the duplicated stem, D2), `detail/SpecDetail.test.tsx` | verified |
 | AC-015 | T-004 | `detail/{DetailSection,sectionMemory,SpecDetail}.tsx`, `ui/FormatNotes.tsx` | `detail/SpecDetail.test.tsx` | verified |
 | AC-016 | T-002 | `core/board/detail.ts`, `shared/protocol/detail.ts` | `core/board/detail.test.ts`, `shared/protocol/detail.test.ts` | verified |
 | AC-017 | T-003 | `ui/FileLink.tsx`, `core/board/openFile.ts` | `detail/SpecDetail.test.tsx`, `core/board/boardService.test.ts` | verified |
-| AC-018 | T-001 | `adapters/vscode/{editor,commands}.ts`, `studioPanel.ts`, `extension.ts` | `adapters/vscode/editor.test.ts`, `core/shell/shellService.navigation.test.ts`, host smoke `board.smoke`, `shell.smoke` (CI only) | verified here (unit); host smoke runs on Windows and CI |
-| AC-019 | T-003 | `ui/FileLink.tsx` | `detail/SpecDetail.test.tsx` | verified |
-| AC-020 | T-003, T-006 | `detail/{DetailFrame,SpecDetail}.tsx`, `core/board/boardService.ts` | `detail/Close.test.tsx`, `detail/SpecDetail.timing.test.tsx`, `core/board/boardService.timing.test.ts` | verified |
+| AC-018 | T-001, T-015 | `adapters/vscode/{editor,commands}.ts`, `studioPanel.ts`, `extension.ts` | `adapters/vscode/editor.test.ts`, `core/shell/shellService.navigation.test.ts`, `core/board/openFile.test.ts` (no trust or writer, G7), host smoke `board.smoke`, `shell.smoke` | verified: unit; Windows `npm test` 28 + 1 + 1 + 1 and CI run 44261156444, both green at `fd74ec7` (orchestrator, STATE.md) |
+| AC-019 | T-003, T-015 | `ui/FileLink.tsx` | `detail/SpecDetail.test.tsx` (incl. G5, F2) | verified |
+| AC-020 | T-003, T-006, T-011 | `detail/{DetailFrame,SpecDetail,Progress,identityKeys}.tsx`, `core/board/boardService.ts` | `detail/Close.test.tsx` (incl. the changed update, G6), `detail/SpecDetail.timing.test.tsx`, `core/board/boardService.timing.test.ts` | verified |
 | AC-021 | T-007 | `webview/main.css` | `adapters/node/webviewCss.test.ts`, `webview/focusIndicator.test.tsx` | verified |
-| AC-022 | T-008 | `docs/release-checklist.md` item | manual: Gregor or his delegate (preview harness, real VS Code) | open |
-| AC-023 | T-008 | `/tmp/audit-0019/titles.py` (throwaway) | section "Test-title audit" above; `npm run test:unit` | verified here (unit); `npm test` on Windows and CI pending |
-| AC-024 | T-008 | `.specs/{done,active}/` notes | `grep -c "Amended by 0019"`: 0005 4, 0006 2, 0007 16, 0013 7, 0015 2, 0016 5, 0017 2, 0018 3; PD register unedited | verified |
+| AC-022 | T-008, T-009, T-010, T-014 | `docs/release-checklist.md` item; fixes in `areas/SpecBoard.tsx`, `areas/overview/Overview.tsx`, `webview/main.css` | manual: round 1 (orchestrator, `fd74ec7`) passed the height and failed V1 and V2; round 2 after T-009, T-010, T-014 by the orchestrator, then a real VS Code window (Gregor or his delegate) | open |
+| AC-023 | T-008, T-016 | `/tmp/audit-0019/titles.py` (throwaway) | section "Test-title audit" above (48 absent titles, all homed); `npm run test:unit`; Windows unit 2096 passed, 7 skipped, +12 timing and `npm test` 28 + 1 + 1 + 1, CI run 44261156444, all green at `fd74ec7` | verified (unit, Windows, CI at `fd74ec7`; unit again at the fix head) |
+| AC-024 | T-008, T-010, T-016 | `.specs/{done,active}/` notes | `grep -c "Amended by 0019"`: 0005 4, 0006 2, 0007 16, 0013 7, 0015 2, 0016 5, 0017 2, 0018 5 (the §5 row "0018 §2 goal, AC-031" has its two notes since T-016); the PD register: one appended row (PD-066), no edit of an existing entry | verified |
 
 ## Session handoff
 
-- **Done so far:** T-001…T-008 verified, plan Done, spec stays `In Progress` until AC-022 and a fresh `/sdd-compile`.
-- **Next action:** orchestrator or Gregor: preview-harness screenshots (AC-022: Board and Overview with
-  the side panel of `studio-0015` at 1400×900 and 800×900 in Dark, Light and High Contrast), a real
-  window (an ID opens the file beside the Studio at its line), `npm test` on Windows and CI, then
-  `/sdd-compile` in a fresh session.
-- **Open decisions:** none; P-1…P-19 stand unless Gregor changes them.
+- **Done so far:** T-001…T-016 verified, plan Done (the compile S48 verdict NOT READY is answered by T-009…T-016); spec
+  stays `In Progress` until AC-022 round 2 and a fresh `/sdd-compile`.
+- **Next action:** the orchestrator re-runs AC-022 (all six harness runs and the keyboard walk at 800 px, Board and
+  Overview: a card focused under the drawer scrolls clear; every Overview row, its next step, Copy and the figures
+  line stay visible left of the drawer), then `npm test` on Windows and CI at the fix head, a real window by Gregor
+  (an ID opens the file beside the Studio at its line), then `/sdd-compile` in a fresh session.
+- **Open decisions:** none; P-1…P-19 stand, PD-066 records the Overview under the drawer. Left as a note, not fixed:
+  `tidy` and `splitCells` in `ui/inlineFormat.ts` have no caller left (T-004 Note 4); the old Spec Explorer screenshot in
+  the README stays until 0020; 0020's files are not touched.
 - **Baseline:** 20792ca (commit before the first step commit; backlog → active move done 2026-11-18)
-- **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here). Commit
-  messages end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` and
-  `Claude-Session: https://claude.ai/code/session_01Gjx4ug55tnrs2YJYnrBwo6`.
+- **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here). Commit messages end with
+  `Co-Authored-By: <model of the session>` and `Claude-Session: https://claude.ai/code/session_01Gjx4ug55tnrs2YJYnrBwo6`
+  (T-001…T-008: Claude Opus 5.5; T-009…T-016: Claude Sonnet 5.5).

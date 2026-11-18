@@ -16,7 +16,8 @@ All notable changes to FeatherSpec Studio are documented in this file. The forma
 
 - The detail of a spec as a side panel (0019): selecting a spec on the Board or in the Overview (click,
   Enter or Space) shows its detail in a 400 px panel beside the area and keeps the area; below 900 px
-  the panel is a drawer. Close it with its button or Escape. The detail is a picture of the spec's
+  the panel is a drawer (a card you focus under it scrolls clear, and the Overview narrows its rows to the
+  space left of it). Close it with its button or Escape. The detail is a picture of the spec's
   situation: Next step, Problems, Progress (steps and the next open step, criteria verified and still
   open, needs), Files, and folded Format notes and Status history. Every ID and file name is a link
   that opens the file beside the Studio at the line of the ID. The command `featherspec-studio.selectSpec`
