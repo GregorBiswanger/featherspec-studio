@@ -3,7 +3,7 @@
 **Spec:** [0024-send-next-step-to-assistant.md](0024-send-next-step-to-assistant.md)
 **Status:** Done
 **Last updated:** 2026-11-18
-**Current step:** T-015 (T-001…T-013 verified; manual AC-016 real window and AC-017…AC-019 open)
+**Current step:** T-016 (T-001…T-013 verified; manual AC-016 real window and AC-017…AC-019 open)
 
 ## Approach
 
@@ -622,7 +622,8 @@ copy (`git archive` of the head into `/tmp`).
   - `docsScan.test.ts` first: the file is at most 7000 bytes and 60 lines, holds the three metadata lines and the seven
     headings, *Now* is at most five lines, *Changed Recently* has at most three bullets, *Next* starts at 1.
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green
-- [ ] **Verified (T-015):**
+- [x] **Verified (T-015):** 2026-11-19 red: the new `docsScan.test.ts` against a `git archive` of 5c70dbd 2 failed for this step (18,375 bytes against 7000; *Now* one paragraph, six *Changed Recently* bullets, *Next* numbered 0c, 0b, 0a, 0, 1–5, several *Validation* lines); green after: `npx vitest run --project node src/adapters/node/docsScan.test.ts` 156 passed. `activeContext.md` 18,375 → about 4.4 KB, 59 → 44 lines.
+- **Notes:** the headings and the three metadata lines are the structure of `.claude/rules/memory-bank.md`, unchanged. No scan pinned old content of the file (none read it), so no literal was changed. The *Validation* details are in each plan's traceability, AC evidence and handoff. The third test (one line per spec in `active/`, with its plan) was already green on the old file; it guards a property the rewrite keeps. The newest *Changed Recently* entry for this fix round is written at T-022.
 
 ### T-016 — The CHANGELOG's 0.1.0 entry agrees with itself and the product
 

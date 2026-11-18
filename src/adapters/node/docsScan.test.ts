@@ -811,4 +811,44 @@ describe('product docs after the final check of round 2 (0024 T-014 to T-022)', 
     it('.vscodeignore still keeps the screenshots out of the VSIX', async () => {
         expect((await read('.vscodeignore')).split('\n')).toContain('media/screenshots/**');
     });
+    async function section(text: string, heading: string): Promise<string[]> {
+        const start = text.indexOf(`\n## ${heading}\n`);
+        expect(start, heading).toBeGreaterThan(-1);
+        const end = text.indexOf('\n## ', start + 1);
+        return text.slice(start + heading.length + 5, end < 0 ? undefined : end).split('\n').filter((line) => line.trim() !== '');
+    }
+
+    it('activeContext.md is a short dashboard in content, not only in lines', async () => {
+        const text = await read('.memory-bank/activeContext.md');
+        expect(Buffer.byteLength(text)).toBeLessThanOrEqual(7000);
+        expect(text.split('\n').length).toBeLessThanOrEqual(60);
+        const lines = text.split('\n');
+        expect(lines[0]).toBe('# Active Context');
+        expect(lines.filter((line) => /^(Last updated|Current branch|Current phase): \S/.test(line)).map((line) => line.split(':')[0])).toEqual(['Last updated', 'Current branch', 'Current phase']);
+        expect(lines.filter((line) => line.startsWith('## '))).toEqual(['## Now', '## Active Spec', '## Changed Recently', '## Decisions in Flight', '## Blockers / Questions', '## Next', '## Validation']);
+        for (const line of lines) {
+            expect(line.length, line.slice(0, 60)).toBeLessThanOrEqual(330);
+        }
+    });
+
+    it('activeContext.md: Now is at most five lines, Changed Recently at most three, Next is numbered from 1, Validation is one pointer', async () => {
+        const text = await read('.memory-bank/activeContext.md');
+        expect((await section(text, 'Now')).length).toBeLessThanOrEqual(5);
+        expect((await section(text, 'Changed Recently')).length).toBeLessThanOrEqual(3);
+        const next = await section(text, 'Next');
+        expect(next.map((line) => line.split('.')[0])).toEqual(next.map((_, index) => String(index + 1)));
+        expect((await section(text, 'Validation')).length).toBe(1);
+    });
+
+    it('activeContext.md names every spec in active/ on one line of its own, and the plan beside it', async () => {
+        const text = await read('.memory-bank/activeContext.md');
+        const lines = await section(text, 'Active Spec');
+        const active = (await fs.readdir(path.join(root, '.specs', 'active'))).filter((name) => name.endsWith('.md') && !name.endsWith('.plan.md'));
+        expect(active.length).toBeGreaterThan(0);
+        for (const name of active) {
+            const own = lines.filter((line) => line.includes(`(../.specs/active/${name})`));
+            expect(own, name).toHaveLength(1);
+            expect(own[0], name).toContain(`(../.specs/active/${name.replace(/\.md$/, '.plan.md')})`);
+        }
+    });
 });
