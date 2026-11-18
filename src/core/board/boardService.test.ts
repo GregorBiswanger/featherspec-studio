@@ -120,14 +120,6 @@ describe('board service: filters and sort', () => {
         w.service.setSort('title');
         expect(w.views.length).toBe(before + 1);
     });
-
-    it('the focused key is remembered and cleared with the panel', async () => {
-        const w = await world();
-        w.service.setFocus('.specs/active/0010-act.md');
-        expect(w.service.focused()).toBe('.specs/active/0010-act.md');
-        w.service.panelClosed();
-        expect(w.service.focused()).toBeNull();
-    });
 });
 
 describe('board service: spec detail', () => {

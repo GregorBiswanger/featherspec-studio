@@ -128,19 +128,17 @@ describe('lifecycle service', () => {
         service.dispose();
     });
 
-    it('AC-014: judgeTransition uses the latest snapshot; without a project the request is refused as not observed', async () => {
+    it('AC-014: without a project there is no model; the latest snapshot of the repository gives one', async () => {
         const repo = fakeRepository();
         const service = createLifecycleService({ repository: repo.repository, session: fakeSession(undefined).session, clock: fakeClock() });
         await service.whenIdle();
         expect(service.model()).toBeUndefined();
-        const refused = service.judgeTransition('.specs/backlog/0001-a.md', 'Active');
-        expect(!refused.accepted && refused.refusal).toEqual({ kind: 'not-observed' });
         repo.set(
             await readMemory({ '.specs/backlog/0001-a.md': specText({ plan: LINKED }), '.specs/backlog/0001-a.plan.md': planText() }),
         );
         repo.emit();
         await service.whenIdle();
-        expect(service.judgeTransition('.specs/backlog/0001-a.md', 'Active')).toEqual({ accepted: true, key: '.specs/backlog/0001-a.md', target: 'Active' });
+        expect(service.model()?.entries.map((entry) => [entry.key, entry.state])).toEqual([['.specs/backlog/0001-a.md', 'Ready']]);
         service.dispose();
     });
 
@@ -199,7 +197,7 @@ describe('lifecycle service', () => {
         expect(repo.listenerCount()).toBe(0);
     });
 
-    it('AC-011: derivation, a transition request and a history append leave the project tree unchanged', async () => {
+    it('AC-011: derivation and a history append leave the project tree unchanged', async () => {
         const project = await fs.mkdtemp(path.join(os.tmpdir(), 'fs-lifecycle-project-'));
         const storage = await fs.mkdtemp(path.join(os.tmpdir(), 'fs-lifecycle-store-'));
         cleanups.push(async () => {
@@ -231,9 +229,7 @@ describe('lifecycle service', () => {
         const before = await snapshotTree(project);
         const service = createLifecycleService({ repository, session: fakeSession(store).session, clock });
         await service.whenIdle();
-        const verdict = service.judgeTransition('.specs/backlog/0001-ready-feature.md', 'Active');
-        expect(verdict.accepted).toBe(true);
-        service.judgeTransition('.specs/backlog/0001-ready-feature.md', 'Done');
+        expect(service.model()?.entries.map((entry) => entry.state)).toContain('Ready');
         await settle();
         const history = await service.history();
         expect(history.available && history.entries.map((entry) => entry.cause.kind)).toContain('changed-while-not-running');

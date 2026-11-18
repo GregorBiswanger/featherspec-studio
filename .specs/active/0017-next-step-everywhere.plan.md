@@ -3,7 +3,7 @@
 **Spec:** [0017-next-step-everywhere.md](0017-next-step-everywhere.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-006
+**Current step:** T-007
 
 ## Approach
 
@@ -297,8 +297,8 @@ Stages 4 and 5 cannot: they share `extension.ts`, `package.json`, the protocol a
   without the moves dep.
 - **Verify:** `npx vitest run src/adapters src/core src/shared` red, then green; gates 1–5;
   `npm run compile-tests`
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-18 — AC-011 (sourceScan), AC-010 (messageRouter) and AC-009 (manifest) written first and run red on the code before the deletion: 4 failed (five files exist, eight terms found, moveSpec contributed, moveRequest/boardFocus handled), then green. `npx vitest run src/adapters src/core src/shared` green. Gates 1–5: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 1848 passed, 3 skipped, `npm run compile` ok, `npm run compile-tests` ok.
+- **Notes:** Before the deletion each deleted test title was listed and checked against a staying home: `moves.test.ts` (16 titles: move requests, move command, 'Move Spec to…' result presenter; its copyLine title moved to `copyLine.test.ts` in T-001; 'Copy puts exactly the line…' and 'failed clipboard write' live on in `boardRequests.test.ts` 0015 copy request and `copyLine.test.ts`), `transitions.test.ts` (8 titles, all 0003 AC-008, void). Staying behaviour and its home: keyboard navigation `Keyboard.test.tsx` AC-017/AC-019 + `focusModel.test.ts`; Enter and click open `SpecBoard.test.tsx` AC-008; filters, sort, clear `filters.test.ts`, `boardService.test.ts`, `boardRequests.test.ts`, `SpecBoard.test.tsx`; lifecycle derivation `lifecycleService.test.ts` (AC-014 re-derive, AC-011 tree check kept under 'derivation and a history append', plus a new 'without a project there is no model' title replacing the judgeTransition one), `deriveLifecycle` tests untouched; copy feedback `CopyButton.test.tsx`, `boardRequests.test.ts`, `copyLine.test.ts`. Edited, not deleted: `boardRequests.test.ts` (focus and move titles gone, the throwing-listener test now uses the copy event), `noWrite.test.ts` (title kept, no moves), `boardFilter.test.ts` (guards without boardFocus/moveRequest/isMoveResult), `boardService.test.ts` ('the focused key is remembered…' gone), `manifest.test.ts` (0007 AC-014 replaced by 0017 AC-009 and a control), `board.smoke` ('Move Spec command registered' and the refused-move assertions gone, the write-nothing test kept as 'AC-016: filter changes write nothing'), `lifecycle.smoke` (title 'AC-001: …', the Ready→Active assertion gone). T-009 re-checks all of it with the title script.
 
 ### T-007 — Status bar and command wired
 

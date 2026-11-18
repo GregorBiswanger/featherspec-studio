@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { isBoardFilter, isFilterSet } from './boardFilter';
-import { isBoardView, isCardView, isMoveResult, isSortKey } from './board';
+import { isBoardView, isCardView, isSortKey } from './board';
 import {
-    isBoardFocusPayload,
     isBoardSetFilterPayload,
-    isMoveRequestPayload,
     isNavigationRequest,
     isOpenFilePayload,
     REQUEST_GUARDS,
@@ -59,13 +57,11 @@ describe('board requests', () => {
         expect(Object.keys(REQUEST_GUARDS).sort()).toEqual(
             [
                 'boardClearFilters',
-                'boardFocus',
                 'boardSetFilter',
                 'boardSetSort',
                 'copyText',
                 'dismissNotice',
                 'hello',
-                'moveRequest',
                 'navigate',
                 'openFile',
                 'runAction',
@@ -79,11 +75,6 @@ describe('board requests', () => {
         expect(isBoardSetFilterPayload({ filter: { states: ['x'] } })).toBe(false);
         expect(REQUEST_GUARDS.boardSetSort({ sort: 'title' })).toBe(true);
         expect(REQUEST_GUARDS.boardSetSort({ sort: 'priority' })).toBe(false);
-        expect(isBoardFocusPayload({ key: null })).toBe(true);
-        expect(isBoardFocusPayload({ key: '.specs/active/0001-a.md' })).toBe(true);
-        expect(isBoardFocusPayload({ key: '' })).toBe(false);
-        expect(isMoveRequestPayload({ key: 'k', target: 'Active' })).toBe(true);
-        expect(isMoveRequestPayload({ key: 'k', target: 'Doing' })).toBe(false);
         expect(isOpenFilePayload({ key: 'k' })).toBe(true);
         expect(isOpenFilePayload({ key: 'k', line: 12 })).toBe(true);
         expect(isOpenFilePayload({ key: 'k', line: 0 })).toBe(false);
@@ -92,15 +83,9 @@ describe('board requests', () => {
         expect(REQUEST_GUARDS.boardClearFilters({ x: 1 })).toBe(false);
     });
 
-    it('sort keys and move results are guarded', () => {
+    it('sort keys are guarded', () => {
         expect(isSortKey('lastChange')).toBe(true);
         expect(isSortKey('priority')).toBe(false);
-        expect(isMoveResult({ kind: 'none' })).toBe(true);
-        expect(isMoveResult({ kind: 'refused', text: 'No.' })).toBe(true);
-        expect(isMoveResult({ kind: 'nextStep', number: '0003', line: 'Start T-001 of p' })).toBe(true);
-        expect(isMoveResult({ kind: 'nextStep', number: '0003' })).toBe(false);
-        expect(isMoveResult({ kind: 'handedOff', number: '0003' })).toBe(false);
-        expect(isMoveResult({ kind: 'moved' })).toBe(false);
     });
 
     it('card and board views are guarded', () => {

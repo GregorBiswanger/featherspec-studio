@@ -286,18 +286,6 @@ export function formatNotesText(count: number): string {
     return count === 1 ? '1 format note — no action needed' : `${count} format notes — no action needed`;
 }
 
-export const MOVE_MENU_LABEL = 'Move to…';
-export const MOVE_COMMAND_TITLE = 'FeatherSpec: Move Spec to…';
-export function moveMenuAriaLabel(number: string): string {
-    return `${MOVE_MENU_LABEL} (spec ${number})`;
-}
-
-export const PICK_SPEC_PLACEHOLDER = 'Select a spec to move';
-
-export function pickTargetPlaceholder(number: string): string {
-    return `Move spec ${number} to…`;
-}
-
 export const NO_DETAIL_SELECTION_TEXT = 'Select a spec in the list to see its details.';
 export const NO_REQUIREMENTS_TEXT = 'No FR- requirements found';
 export const NO_PLAN_TEXT = 'No plan yet';

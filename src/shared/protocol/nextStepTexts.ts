@@ -26,10 +26,6 @@ export const COPIED_LABEL = 'Copied';
 
 export const COPY_FAILED_LABEL = 'Could not copy';
 
-export function moveNextStepText(number: string): string {
-    return `Studio starts no agent. Next step for ${number} — paste it into your AI assistant:`;
-}
-
 export function stepTooltip(lines: ReadonlyArray<{ text: string; label?: string | undefined }>): string {
     return lines.map((line) => (line.label === undefined ? line.text : `${line.label} ${line.text}`)).join('\n');
 }

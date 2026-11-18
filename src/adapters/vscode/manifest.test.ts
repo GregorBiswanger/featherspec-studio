@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import * as path from 'path';
 import { describe, expect, it } from 'vitest';
-import { MOVE_COMMAND_TITLE, S2_WELCOME } from '../../shared/protocol/texts';
+import { S2_WELCOME } from '../../shared/protocol/texts';
 
 interface Manifest {
     description?: string;
@@ -151,12 +151,17 @@ describe('extension manifest', () => {
         ]);
     });
 
-    it('0007 AC-014: contributes the Move Spec command with the spec title, and it is not hidden from the palette', () => {
+    it('0017 AC-009: contributes no moveSpec command and no title with "Move"; the internal action command stays hidden', () => {
         const commands = manifest.contributes?.commands ?? [];
-        expect(commands).toContainEqual({ command: 'featherspec-studio.moveSpec', title: MOVE_COMMAND_TITLE });
+        expect(commands.map((entry) => entry.command)).not.toContain('featherspec-studio.moveSpec');
+        expect(commands.filter((entry) => /move/i.test(entry.title))).toEqual([]);
         const hidden = (manifest.contributes?.menus?.commandPalette ?? []).filter((entry) => entry.when === 'false').map((entry) => entry.command);
-        expect(hidden).not.toContain('featherspec-studio.moveSpec');
         expect(hidden).toContain('featherspec-studio.shellAction');
+        expect(hidden).not.toContain('featherspec-studio.moveSpec');
+    });
+
+    it('0017 AC-009: negative control, the matcher finds a Move title', () => {
+        expect(['FeatherSpec: Move Spec to…', 'FeatherSpec Studio: Open'].filter((title) => /move/i.test(title))).toEqual(['FeatherSpec: Move Spec to…']);
     });
 
     it('AC-014 (0015): contributes no command to open the Agent Center, clear run history, stop a run or resume a run', () => {

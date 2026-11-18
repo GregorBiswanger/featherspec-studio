@@ -25,8 +25,6 @@ export interface BoardService {
     setSort(sort: SortKey): void;
     clearFilters(): void;
     applyNavigationFilter(filter: BoardFilter): void;
-    setFocus(key: string | null): void;
-    focused(): string | null;
     panelClosed(): void;
     whenIdle(): Promise<void>;
     dispose(): void;
@@ -161,8 +159,6 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
         setSort: (sort) => changed(() => ui.setSort(sort)),
         clearFilters: () => changed(() => ui.clearFilters()),
         applyNavigationFilter: (filter) => changed(() => ui.applyNavigationFilter(filter)),
-        setFocus: (key) => ui.setFocus(key),
-        focused: () => ui.focused(),
         panelClosed: () => changed(() => ui.panelClosed()),
         whenIdle: () => chain,
         dispose() {

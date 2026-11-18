@@ -15,8 +15,6 @@ function setup(overrides: Partial<RequestHandlers> = {}) {
         boardSetFilter: async () => void calls.push('boardSetFilter'),
         boardSetSort: async (payload) => void calls.push(`boardSetSort:${payload.sort}`),
         boardClearFilters: async () => void calls.push('boardClearFilters'),
-        boardFocus: async () => void calls.push('boardFocus'),
-        moveRequest: async (payload) => void calls.push(`moveRequest:${payload.target}`),
         openFile: async () => void calls.push('openFile'),
         copyText: async () => void calls.push('copyText'),
         ...overrides,
@@ -110,3 +108,27 @@ describe('AC-021: message router', () => {
         expect(posted[0]?.kind).toBe('res');
     });
 });
+
+describe('0017 AC-010: the moveRequest and boardFocus messages are no longer known', () => {
+    it('a moveRequest and a boardFocus with formerly valid payloads are ignored as an unknown message type: no handler, no response', async () => {
+        const { router, calls, lines, posted } = setup();
+        await router.receive(req('moveRequest', { key: '.specs/active/0003-a.md', target: 'Done' }));
+        await router.receive(req('boardFocus', { key: '.specs/active/0003-a.md' }));
+        await router.receive(req('boardFocus', { key: null }));
+        expect(calls).toEqual([]);
+        expect(posted).toEqual([]);
+        expect(lines).toEqual([
+            ['Ignored a message from the Studio panel: type moveRequest, unknown message type.'],
+            ['Ignored a message from the Studio panel: type boardFocus, unknown message type.'],
+            ['Ignored a message from the Studio panel: type boardFocus, unknown message type.'],
+        ]);
+    });
+
+    it('control: a message that stays known is still handled after the ignored ones', async () => {
+        const { router, calls } = setup();
+        await router.receive(req('moveRequest', { key: 'k', target: 'Done' }));
+        await router.receive(req('boardSetSort', { sort: 'title' }));
+        expect(calls).toEqual(['boardSetSort:title']);
+    });
+});
+

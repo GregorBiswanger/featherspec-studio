@@ -174,3 +174,34 @@ describe('0016 AC-021: the old texts are gone from the panel sources', () => {
         expect(hits("const text = 'verdict: not available';", OLD_TEXTS, false)).toEqual(['verdict: not available']);
     });
 });
+
+describe('0017 AC-011: no move path is left in the source', () => {
+    const MOVE_FILES = [
+        'src/core/board/moves.ts',
+        'src/core/lifecycle/transitions.ts',
+        'src/webview/board/MoveMenu.tsx',
+        'src/webview/board/Announcer.tsx',
+        'src/adapters/vscode/boardPicks.ts',
+    ];
+    const MOVE_TERMS = ['judgeTransition', 'moveRequest', 'moveResult', 'requestMove', 'moveSpec', 'boardFocus', 'Move to…', 'Studio starts no agent'];
+
+    it('the five move files do not exist', async () => {
+        for (const file of MOVE_FILES) {
+            expect(await exists(file), file).toBe(false);
+        }
+    });
+
+    it('src without test files names none of the eight terms, in any letter case', async () => {
+        const files = (await sourceFiles()).filter((file) => !isTestFile(file.name));
+        expect(files.length).toBeGreaterThan(0);
+        const found = files.flatMap((file) => hits(file.text, MOVE_TERMS, true).map((term) => `${file.name}: ${term}`));
+        expect(found).toEqual([]);
+    });
+
+    it('negative control: the scan finds every term, in any letter case, in a planted sample', () => {
+        for (const term of MOVE_TERMS) {
+            expect(hits(`const name = '${term.toUpperCase()}';`, MOVE_TERMS, true)).toContain(term);
+        }
+        expect(hits('const name = "copy next step";', MOVE_TERMS, true)).toEqual([]);
+    });
+});

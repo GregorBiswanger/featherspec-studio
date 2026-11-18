@@ -15,12 +15,6 @@ const SPEC_KEY = '.specs/active/0001-tip-splitter.md';
 suite('FeatherSpec Studio board smoke', function () {
     this.timeout(60_000);
 
-    test('AC-014: the Move Spec command is registered', async () => {
-        await activateStudio();
-        const commands = await vscode.commands.getCommands(true);
-        assert.ok(commands.includes('featherspec-studio.moveSpec'));
-    });
-
     test('AC-001, AC-002: the board of the active project has six columns and the spec in Review', async () => {
         const api = await activateStudio();
         await api.whenIdle();
@@ -38,17 +32,12 @@ suite('FeatherSpec Studio board smoke', function () {
         assert.strictEqual(view?.columns.find((column) => column.state === 'Review')?.cards[0]?.stem, '0001-tip-splitter');
     });
 
-    test('AC-014, AC-016: a refused move says what the lifecycle says, and open, move and filter write nothing into the project', async () => {
+    test('AC-016: filter changes write nothing into the project', async () => {
         const api = await activateStudio();
         await api.whenIdle();
         const folder = (vscode.workspace.workspaceFolders ?? []).find((candidate) => candidate.name === 'fs110-de-active-review');
         assert.ok(folder, 'fixture folder is part of the workspace');
         const before = await snapshotTree(folder.uri.fsPath);
-        const verdict = api.lifecycle().judgeTransition(SPEC_KEY, 'Active');
-        assert.strictEqual(verdict.accepted, false);
-        const result = await api.board().requestMove(SPEC_KEY, 'Active');
-        assert.strictEqual(result.kind, 'refused');
-        assert.strictEqual(result.kind === 'refused' ? result.text : '', verdict.accepted ? '' : verdict.text);
         api.board().setFilter({ states: ['Review'] });
         api.board().setFilter({});
         assert.deepStrictEqual(await snapshotTree(folder.uri.fsPath), before);

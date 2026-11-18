@@ -8,7 +8,7 @@ import { resolveStorageLocation } from './adapters/vscode/storageLocation';
 import { createOutputChannel } from './adapters/vscode/outputChannel';
 import { createShellActions } from './adapters/vscode/shellActions';
 import { createStudioPanel, VIEW_TYPE, type StudioPanel, type StudioPanelInspection } from './adapters/vscode/studioPanel';
-import { AREA_COMMANDS, MOVE_COMMAND, OPEN_COMMAND, RESCAN_COMMAND, SHELL_ACTION_COMMAND } from './adapters/vscode/commands';
+import { AREA_COMMANDS, OPEN_COMMAND, RESCAN_COMMAND, SHELL_ACTION_COMMAND } from './adapters/vscode/commands';
 import { createFetchReleaseHttp } from './adapters/node/fetchReleaseHttp';
 import { createNodeSetupTarget } from './adapters/node/nodeSetupTarget';
 import { createTarGzArchive } from './adapters/node/tarGzArchive';
@@ -23,7 +23,6 @@ import { createStatusBar } from './adapters/vscode/statusBar';
 import { createFileWatch } from './adapters/vscode/fileWatch';
 import { createRuntimeUi } from './adapters/vscode/runtimeUi';
 import { createEditor } from './adapters/vscode/editor';
-import { createMoveMessages, createMovePicks } from './adapters/vscode/boardPicks';
 import { createClipboard } from './adapters/vscode/clipboard';
 import { createUi } from './adapters/vscode/ui';
 import { createVscodeSpecSource } from './adapters/vscode/vscodeSpecSource';
@@ -43,14 +42,13 @@ import type { RuntimeStore } from './core/runtime/runtimeStore';
 import { createBoardService } from './core/board/boardService';
 import { createMissionControlService } from './core/missionControl/missionControlService';
 import { createBoardRequests } from './core/board/boardRequests';
-import { createMoveResultPresenter, createMoves } from './core/board/moves';
 import { createOpenFile } from './core/board/openFile';
 import { createShellSelection } from './core/board/shellSelection';
 import { createLifecycleService, type LifecycleService } from './core/lifecycle/lifecycleService';
 import { createModelSource } from './core/shell/modelSource';
 import { createShellService, type OpenRequest } from './core/shell/shellService';
 import { AREA_IDS } from './shared/protocol/areas';
-import type { BoardView, MoveResult } from './shared/protocol/board';
+import type { BoardView } from './shared/protocol/board';
 import type { BoardFilter, BoardState } from './shared/protocol/boardFilter';
 import type { DetailView } from './shared/protocol/detail';
 import type { MissionControlView } from './shared/protocol/missionControl';
@@ -75,7 +73,6 @@ export interface BoardTestApi {
     detail(): DetailView;
     whenIdle(): Promise<void>;
     setFilter(filter: BoardFilter): void;
-    requestMove(key: string, target: BoardState): Promise<MoveResult>;
     openFile(key: string, line?: number): Promise<'opened' | 'refused' | 'not-found'>;
 }
 
@@ -184,19 +181,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         history: { read: () => lifecycle.history(), onDidChange: (listener) => lifecycle.onDidChange(() => listener()) },
     });
     const clipboard = createClipboard();
-    const moves = createMoves({
-        source: modelSource,
-        picks: createMovePicks(),
-        sink: createMoveResultPresenter({
-            boardShown: (result) => studio?.showMoveResult(result) ?? false,
-            messages: createMoveMessages(),
-            clipboard,
-        }),
-        selection,
-        focused: () => board.focused(),
-    });
     const openFile = createOpenFile({ source: modelSource, editor: createEditor() });
-    const requests = createBoardRequests({ board, moves, openFile, clipboard });
+    const requests = createBoardRequests({ board, openFile, clipboard });
     const navigation = service.onDidNavigate((request) => {
         if (request.target?.kind === 'boardFilter') {
             board.applyNavigationFilter(request.target.filter);
@@ -215,7 +201,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             detail: () => board.detail(),
             onDidChangeView: (listener) => board.onDidChangeView(listener),
             onDidChangeDetail: (listener) => board.onDidChangeDetail(listener),
-            onDidMoveResult: (listener) => requests.onDidMoveResult(listener),
             onDidOpenFileResult: (listener) => requests.onDidOpenFileResult(listener),
             onDidCopyResult: (listener) => requests.onDidCopyResult(listener),
             panelClosed: () => board.panelClosed(),
@@ -253,7 +238,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         feed,
         { dispose: () => repository.dispose() },
         { dispose: () => lifecycle.dispose() },
-        vscode.commands.registerCommand(MOVE_COMMAND, () => moves.runMoveCommand()),
         vscode.commands.registerCommand('featherspec-studio.selectProject', () => controller.selectProject()),
         vscode.commands.registerCommand('featherspec-studio.refreshDiscovery', () => controller.refresh()),
     );
@@ -285,7 +269,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             detail: () => board.detail(),
             whenIdle: () => board.whenIdle(),
             setFilter: (filter) => board.setFilter(filter),
-            requestMove: (key, target) => moves.requestMove(key, target),
             openFile: async (key, line) => {
                 const result = await (line === undefined ? openFile.open(key) : openFile.open(key, line));
                 return result.kind === 'opened' ? 'opened' : result.kind;

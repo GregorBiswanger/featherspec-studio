@@ -34,7 +34,6 @@ describe('0017 AC-023: no Copy, click or command writes a file', () => {
         const written: string[] = [];
         const requests = createBoardRequests({
             board: board.service,
-            moves: { requestMove: async () => ({ kind: 'none' }) },
             openFile: { open: async () => ({ kind: 'opened' }) } as never,
             clipboard: { writeText: async (text) => void written.push(text) },
         });

@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import type { OutputPort } from '../../core/ports/host';
 import { createMessageRouter, type RequestHandlers } from '../../core/shell/messageRouter';
 import type { ShellService } from '../../core/shell/shellService';
-import type { BoardView, MoveResult } from '../../shared/protocol/board';
+import type { BoardView } from '../../shared/protocol/board';
 import type { DetailView, OpenFileResultPayload } from '../../shared/protocol/detail';
 import type { MissionControlView } from '../../shared/protocol/missionControl';
 import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../../shared/protocol/envelope';
@@ -22,7 +22,6 @@ export interface PanelBoard {
     detail(): DetailView;
     onDidChangeView(listener: (view: BoardView | undefined) => void): vscode.Disposable;
     onDidChangeDetail(listener: (view: DetailView) => void): vscode.Disposable;
-    onDidMoveResult(listener: (result: MoveResult) => void): vscode.Disposable;
     onDidOpenFileResult(listener: (result: OpenFileResultPayload) => void): vscode.Disposable;
     onDidCopyResult(listener: (result: CopyResultEventPayload) => void): vscode.Disposable;
     panelClosed(): void;
@@ -65,7 +64,6 @@ export interface StudioPanel extends vscode.Disposable {
     closePanel(): void;
     lastHelloAt(): number | undefined;
     probe(url: string): Promise<ProbeOutcome>;
-    showMoveResult(result: MoveResult): boolean;
     isFocused(): boolean;
     asWebviewUri(uri: vscode.Uri): string | undefined;
     inspect(): StudioPanelInspection | undefined;
@@ -78,7 +76,6 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
     let seq = 0;
     let reloaded = false;
     let helloAt: number | undefined;
-    let lastMove: MoveResult | undefined;
     const probeChannel = createProbeChannel({
         send: (url) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'probe', payload: { url } }),
         helloTimeoutMs: PROBE_HELLO_TIMEOUT_MS,
@@ -130,11 +127,6 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
         post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'detail', payload: { view } });
     }
 
-    function pushMove(result: MoveResult): void {
-        lastMove = result.kind === 'none' ? undefined : result;
-        post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'moveResult', payload: { result } });
-    }
-
     const router = createMessageRouter({
         handlers: {
             ...deps.board.handlers,
@@ -145,9 +137,6 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
                 pushBoard(deps.board.view());
                 pushMissionControl(deps.missionControl.view());
                 pushDetail(deps.board.detail());
-                if (lastMove !== undefined) {
-                    pushMove(lastMove);
-                }
                 probeChannel.markReady();
             },
         },
@@ -179,14 +168,12 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
             deps.board.onDidChangeView(pushBoard),
             deps.missionControl.onDidChangeView(pushMissionControl),
             deps.board.onDidChangeDetail(pushDetail),
-            deps.board.onDidMoveResult(pushMove),
             deps.board.onDidOpenFileResult((payload) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'openFileResult', payload })),
             deps.board.onDidCopyResult((payload) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'copyResult', payload })),
             target.onDidDispose(() => {
                 subscriptions.forEach((subscription) => subscription.dispose());
                 subscriptions = [];
                 panel = undefined;
-                lastMove = undefined;
                 probeChannel.markNotReady();
                 deps.board.panelClosed();
             }),
@@ -222,13 +209,6 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
             }
             return probeChannel.probe(url);
         },
-        showMoveResult(result) {
-            if (panel === undefined || !panel.visible || deps.service.view().area !== 'specBoard') {
-                return false;
-            }
-            pushMove(result);
-            return true;
-        },
         isFocused: () => panel !== undefined && panel.visible && panel.active,
         asWebviewUri: (uri) => panel?.webview.asWebviewUri(uri).toString(),
         inspect: () => (panel === undefined ? undefined : { options: panel.webview.options, panelOptions: panel.options, html: panel.webview.html, icon: iconFileNames(panel.iconPath) }),
@@ -248,7 +228,6 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
             subscriptions = [];
             panel?.dispose();
             panel = undefined;
-            lastMove = undefined;
             deps.board.panelClosed();
         },
     };

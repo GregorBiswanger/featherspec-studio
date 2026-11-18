@@ -7,8 +7,6 @@ import { deriveLifecycle } from './deriveLifecycle';
 import type { LifecycleModel, LifecycleState } from './model';
 import { createStatusHistory } from './statusHistory';
 import type { HistoryView, StatusHistory } from './statusHistory';
-import { judgeTransition } from './transitions';
-import type { TransitionVerdict } from './transitions';
 
 export interface LifecycleServiceDeps {
     repository: Pick<SpecRepository, 'snapshot' | 'onDidChange'>;
@@ -18,7 +16,6 @@ export interface LifecycleServiceDeps {
 
 export interface LifecycleService {
     model(): LifecycleModel | undefined;
-    judgeTransition(key: string, target: LifecycleState): TransitionVerdict;
     history(): Promise<HistoryView>;
     onDidChange(listener: (model: LifecycleModel | undefined) => void): Disposable;
     whenIdle(): Promise<void>;
@@ -75,7 +72,6 @@ export function createLifecycleService(deps: LifecycleServiceDeps): LifecycleSer
 
     return {
         model: () => model,
-        judgeTransition: (key, target) => judgeTransition(model ?? { entries: [], projectDiagnostics: [] }, key, target),
         async history() {
             if (recorder === undefined) {
                 return { available: false, text: `Status history not available: ${session.state().reason ?? 'no store'}` };

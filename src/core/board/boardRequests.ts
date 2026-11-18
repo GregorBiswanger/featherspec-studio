@@ -1,4 +1,3 @@
-import type { MoveResult } from '../../shared/protocol/board';
 import type { OpenFileResultPayload } from '../../shared/protocol/detail';
 import type { BoardRequestType, CopyResultEventPayload } from '../../shared/protocol/messages';
 import type { ClipboardPort } from '../ports/board';
@@ -6,19 +5,16 @@ import type { Disposable } from '../ports/host';
 import type { RequestHandlers } from '../shell/messageRouter';
 import type { BoardService } from './boardService';
 import { copyLine } from './copyLine';
-import type { Moves } from './moves';
 import type { OpenFile } from './openFile';
 
 export interface BoardRequestsDeps {
-    board: Pick<BoardService, 'setFilter' | 'setSort' | 'clearFilters' | 'setFocus'>;
-    moves: Pick<Moves, 'requestMove'>;
+    board: Pick<BoardService, 'setFilter' | 'setSort' | 'clearFilters'>;
     openFile: OpenFile;
     clipboard: ClipboardPort;
 }
 
 export interface BoardRequests {
     handlers: Pick<RequestHandlers, BoardRequestType>;
-    onDidMoveResult(listener: (result: MoveResult) => void): Disposable;
     onDidOpenFileResult(listener: (result: OpenFileResultPayload) => void): Disposable;
     onDidCopyResult(listener: (result: CopyResultEventPayload) => void): Disposable;
 }
@@ -43,7 +39,6 @@ function notifier<T>(): { add(listener: (value: T) => void): Disposable; emit(va
 }
 
 export function createBoardRequests(deps: BoardRequestsDeps): BoardRequests {
-    const moveResults = notifier<MoveResult>();
     const fileResults = notifier<OpenFileResultPayload>();
     const copyResults = notifier<CopyResultEventPayload>();
     return {
@@ -51,10 +46,6 @@ export function createBoardRequests(deps: BoardRequestsDeps): BoardRequests {
             boardSetFilter: async (payload) => deps.board.setFilter(payload.filter),
             boardSetSort: async (payload) => deps.board.setSort(payload.sort),
             boardClearFilters: async () => deps.board.clearFilters(),
-            boardFocus: async (payload) => deps.board.setFocus(payload.key),
-            moveRequest: async (payload) => {
-                moveResults.emit(await deps.moves.requestMove(payload.key, payload.target));
-            },
             copyText: async (payload) => {
                 copyResults.emit(await copyLine(deps.clipboard, payload.text));
             },
@@ -65,7 +56,6 @@ export function createBoardRequests(deps: BoardRequestsDeps): BoardRequests {
                 }
             },
         },
-        onDidMoveResult: moveResults.add,
         onDidOpenFileResult: fileResults.add,
         onDidCopyResult: copyResults.add,
     };

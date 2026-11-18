@@ -1,25 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import type { MoveResult } from '../../shared/protocol/board';
-import type { BoardState } from '../../shared/protocol/boardFilter';
 import { COPIED_TEXT, COPY_FAILED_TEXT } from '../../shared/protocol/nextStepTexts';
 import { fileNotFoundText } from '../../shared/protocol/texts';
 import { createBoardRequests } from './boardRequests';
 import type { OpenFileResult } from './openFile';
 
-function setup(overrides: { move?: MoveResult; open?: OpenFileResult; copyFails?: boolean } = {}) {
+function setup(overrides: { open?: OpenFileResult; copyFails?: boolean } = {}) {
     const calls: unknown[][] = [];
     const requests = createBoardRequests({
         board: {
             setFilter: (filter) => void calls.push(['setFilter', filter]),
             setSort: (sort) => void calls.push(['setSort', sort]),
             clearFilters: () => void calls.push(['clearFilters']),
-            setFocus: (key) => void calls.push(['setFocus', key]),
-        },
-        moves: {
-            async requestMove(key: string, target: BoardState) {
-                calls.push(['requestMove', key, target]);
-                return overrides.move ?? { kind: 'nextStep', number: '0001', line: 'Implement p' };
-            },
         },
         clipboard: {
             async writeText(text: string) {
@@ -36,30 +27,20 @@ function setup(overrides: { move?: MoveResult; open?: OpenFileResult; copyFails?
             },
         },
     });
-    const moves: MoveResult[] = [];
     const files: unknown[] = [];
-    requests.onDidMoveResult((result) => moves.push(result));
     requests.onDidOpenFileResult((result) => files.push(result));
     const copies: unknown[] = [];
     requests.onDidCopyResult((result) => copies.push(result));
-    return { requests, calls, moves, files, copies };
+    return { requests, calls, files, copies };
 }
 
 describe('board requests', () => {
-    it('AC-011, AC-012, AC-013: filter, sort, clear and focus go to the board state', async () => {
+    it('AC-011, AC-012, AC-013: filter, sort and clear go to the board state', async () => {
         const { requests, calls } = setup();
         await requests.handlers.boardSetFilter({ filter: { states: ['Active'] } });
         await requests.handlers.boardSetSort({ sort: 'title' });
         await requests.handlers.boardClearFilters({});
-        await requests.handlers.boardFocus({ key: 'k' });
-        expect(calls).toEqual([['setFilter', { states: ['Active'] }], ['setSort', 'title'], ['clearFilters'], ['setFocus', 'k']]);
-    });
-
-    it('AC-014: a move request is judged by the moves module and the result is announced', async () => {
-        const { requests, calls, moves } = setup({ move: { kind: 'refused', text: 'No.' } });
-        await requests.handlers.moveRequest({ key: 'k', target: 'Active' });
-        expect(calls).toEqual([['requestMove', 'k', 'Active']]);
-        expect(moves).toEqual([{ kind: 'refused', text: 'No.' }]);
+        expect(calls).toEqual([['setFilter', { states: ['Active'] }], ['setSort', 'title'], ['clearFilters']]);
     });
 
     it('AC-010: an open request passes the line, and says nothing when the file opened', async () => {
@@ -80,14 +61,14 @@ describe('board requests', () => {
     });
 
     it('a listener that throws does not break the request, and a disposed listener hears nothing', async () => {
-        const { requests, moves } = setup();
-        requests.onDidMoveResult(() => {
+        const { requests, copies } = setup();
+        requests.onDidCopyResult(() => {
             throw new Error('boom');
         });
-        const extra: MoveResult[] = [];
-        requests.onDidMoveResult((result) => extra.push(result)).dispose();
-        await requests.handlers.moveRequest({ key: 'k', target: 'Done' });
-        expect(moves).toHaveLength(1);
+        const extra: unknown[] = [];
+        requests.onDidCopyResult((result) => extra.push(result)).dispose();
+        await requests.handlers.copyText({ text: 'x' });
+        expect(copies).toHaveLength(1);
         expect(extra).toEqual([]);
     });
 });
@@ -102,12 +83,11 @@ describe('0015 copy request', () => {
     });
 
     it('AC-009: a failing clipboard gives the failure text and changes nothing else', async () => {
-        const { requests, calls, copies, moves, files } = setup({ copyFails: true });
+        const { requests, calls, copies, files } = setup({ copyFails: true });
         await requests.handlers.copyText({ text: '/sdd-plan x' });
         expect(copies).toEqual([{ ok: false, text: COPY_FAILED_TEXT }]);
         expect(COPY_FAILED_TEXT).toBe('Could not copy to the clipboard.');
         expect(calls).toEqual([['writeText', '/sdd-plan x']]);
-        expect(moves).toEqual([]);
         expect(files).toEqual([]);
     });
 

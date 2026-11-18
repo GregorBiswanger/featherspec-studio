@@ -65,11 +65,6 @@ export interface BoardView {
     noSpecs: boolean;
 }
 
-export type MoveResult =
-    | { kind: 'none' }
-    | { kind: 'refused'; text: string }
-    | { kind: 'nextStep'; number: string; line: string };
-
 function isString(value: unknown): value is string {
     return typeof value === 'string';
 }
@@ -135,20 +130,4 @@ export function isBoardView(value: unknown): value is BoardView {
         isSortKey(value.sort) &&
         typeof value.noSpecs === 'boolean'
     );
-}
-
-export function isMoveResult(value: unknown): value is MoveResult {
-    if (!isRecord(value)) {
-        return false;
-    }
-    switch (value.kind) {
-        case 'none':
-            return true;
-        case 'refused':
-            return isString(value.text);
-        case 'nextStep':
-            return isString(value.number) && isString(value.line);
-        default:
-            return false;
-    }
 }

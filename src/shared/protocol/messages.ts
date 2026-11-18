@@ -1,7 +1,7 @@
 import { isAreaId, type AreaId } from './areas';
-import { isBoardView, isMoveResult, isSortKey, type BoardView, type MoveResult, type SortKey } from './board';
+import { isBoardView, isSortKey, type BoardView, type SortKey } from './board';
 import { isDetailView, type DetailView } from './detail';
-import { isBoardFilter, isBoardState, type BoardFilter, type BoardState } from './boardFilter';
+import { isBoardFilter, type BoardFilter } from './boardFilter';
 import { isRecord } from './envelope';
 import { isDerivedRule, isMissionControlView, type DerivedRule, type MissionControlView } from './missionControl';
 
@@ -98,15 +98,6 @@ export interface BoardSetSortPayload {
     sort: SortKey;
 }
 
-export interface BoardFocusPayload {
-    key: string | null;
-}
-
-export interface MoveRequestPayload {
-    key: string;
-    target: BoardState;
-}
-
 export interface OpenFilePayload {
     key: string;
     line?: number;
@@ -133,8 +124,6 @@ export interface BoardRequestPayloads {
     boardSetFilter: BoardSetFilterPayload;
     boardSetSort: BoardSetSortPayload;
     boardClearFilters: Record<string, never>;
-    boardFocus: BoardFocusPayload;
-    moveRequest: MoveRequestPayload;
     openFile: OpenFilePayload;
     copyText: CopyTextPayload;
 }
@@ -151,10 +140,6 @@ export interface BoardEventPayload {
 
 export interface DetailEventPayload {
     view: DetailView;
-}
-
-export interface MoveResultEventPayload {
-    result: MoveResult;
 }
 
 export interface MissionControlEventPayload {
@@ -219,14 +204,6 @@ export function isBoardSetSortPayload(value: unknown): value is BoardSetSortPayl
     return isRecord(value) && isSortKey(value.sort);
 }
 
-export function isBoardFocusPayload(value: unknown): value is BoardFocusPayload {
-    return isRecord(value) && (value.key === null || (isString(value.key) && value.key.length > 0));
-}
-
-export function isMoveRequestPayload(value: unknown): value is MoveRequestPayload {
-    return isRecord(value) && isString(value.key) && value.key.length > 0 && isBoardState(value.target);
-}
-
 export function isOpenFilePayload(value: unknown): value is OpenFilePayload {
     return (
         isRecord(value) &&
@@ -260,10 +237,6 @@ function keysOnly(value: Record<string, unknown>, allowed: readonly string[]): b
     return Object.keys(value).every((key) => allowed.includes(key)) && allowed.every((key) => key in value || key === 'reason');
 }
 
-export function isMoveResultEventPayload(value: unknown): value is MoveResultEventPayload {
-    return isRecord(value) && isMoveResult(value.result);
-}
-
 export const REQUEST_GUARDS: { [Type in RequestType]: (value: unknown) => value is RequestPayloads[Type] } = {
     hello: isHelloPayload,
     navigate: isNavigationRequest,
@@ -273,8 +246,6 @@ export const REQUEST_GUARDS: { [Type in RequestType]: (value: unknown) => value 
     boardSetFilter: isBoardSetFilterPayload,
     boardSetSort: isBoardSetSortPayload,
     boardClearFilters: isEmptyPayload,
-    boardFocus: isBoardFocusPayload,
-    moveRequest: isMoveRequestPayload,
     openFile: isOpenFilePayload,
     copyText: isCopyTextPayload,
 };
