@@ -1,0 +1,480 @@
+# Plan — Layout and Signal Polish
+
+**Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
+**Status:** Not started
+**Last updated:** 2026-11-18
+**Current step:** T-001
+
+## Approach
+
+The frame comes first, because every row and width rule rests on it: one scrollbar per region and the
+list-or-detail switch below 900 px replace 0019's drawer (T-001), then the remembered width (pure arithmetic in
+`shared/protocol/layout.ts`, memory in the shell service) and the divider (T-002, T-003). Two single sources
+follow, independent of each other: the state table and the problem sentence (T-004 ‖ T-005). The Overview rows
+are cut only once their Copies have their final looks and the state icon exists (T-006 → T-007, the riskiest:
+container queries plus a subgrid that puts the row button's sibling Copy on the last line). Then the signals in
+the webview and the tree (T-008 → T-010), and the docs, §5 notes and the test-title audit last (T-011). Layout is
+decided here by stylesheet tests and component tests with stubbed sizes (jsdom computes none); the look is the
+orchestrator's preview harness (guideline 12), best at the ends of stages 1 and 3. Files this task did not create
+are deleted only where a step's **Deletes:** line names them, confirmed at the start of each stage (0020's
+practice). Test review once per stage from the tests named in `Do:` (`AGENTS.md` *TDD*). Memory Bank touched in
+T-011 only: `techContext.md`, `systemPatterns.md`, `activeContext.md`.
+
+**Quality gates:** per step (`techContext.md` *Quality gates*): 1 `npx eslint src --max-warnings 0` ·
+2 `npx tsc --noEmit` · 3 `npx tsc --noEmit -p src/webview` · 4 `npm run test:unit` · 5 `npm run compile` (steps
+touching wiring, adapters, `extension.ts`, `package.json` or the bundle) · `npm run compile-tests` where a host
+test changes · pre-done gate `npm test` on Windows and CI (host smoke cannot run here; PLAN-NOTE).
+
+## Research
+
+**Checkpoint digest (2026-11-18, `/sdd-plan` Mode A under Gregor's delegation).** No question only Gregor can
+answer: every open choice is decided by the spec, PD-068…PD-075 (newest wins) and `.claude/rules/ux-guidelines.md`
+1–12, recorded as proxies P-1…P-22 below. Gregor reads this plan and replies with changes or approval.
+
+**Survey (code at `a5264df`).**
+- Frame: `App.tsx` `Frame` renders `main` (`overflow: auto`, `padding: 12px 16px`) with `RestrictedNote`,
+  `NoticeBar`, then `.area-frame` (`.area-content` `overflow: auto` + `SidePanel`) or `PanelStateView`. Side panel
+  `flex: 0 0 400px`, own `overflow-y: auto`; `.spec-detail` also sets `overflow-y: auto` (overridden inside the side
+  panel). Drawer: `@media (max-width: 899px) .side-panel` absolute; `DRAWER_QUERY` (`shared/protocol/layout.ts`),
+  `useDrawer()` (`detail/drawer.ts`) feeds `data-drawer` on `.columns` (`SpecBoard.tsx`, plus `scrollIntoView` on
+  focus, 0019 T-009) and on `.overview` (`Overview.tsx`, PD-066, 0019 T-010, T-014).
+- Close: `CloseButton` in `SpecDetail`'s title row and in `SidePanel`'s fallback; Escape via `DetailFrame`;
+  `focusAfterClose(stem)` (opener, else the spec's card or row in `.area-content`); unmount runs `rescueFocus`.
+- Memory: `parseUiMemory` (`core/shell/uiMemory.ts`) drops all for one bad part (spec §9); the Board's Done choice
+  uses its own key `featherspec-studio.board` `{v: 1, done}` (`adapters/vscode/uiMemory.ts`, `extension.ts`).
+  Requests reach `ShellService.handlers` through `messageRouter` and `studioPanel.ts`; `isShellView` tolerates
+  extra fields; `PROTOCOL_VERSION` 4.
+- States: tree `STATE_ICONS` (`core/shell/specTree.ts`); webview `PATHS` (`board/icons.tsx`, the Blocked glyph is
+  a circle with a bar, not a slash); CSS `[data-board-state="…"] { --fs-tint }` used by `.state-chip` and
+  `.column-heading .icon`; `data-board-state` on columns, cards, chips and Overview rows (`Drill.tsx`).
+- Problems: reasons emitted in `core/specs/{files,readProject,parseSpec,parsePlan,returnNote}.ts` and
+  `core/lifecycle/entryContext.ts`; shown raw by `core/board/detail.ts` (`DiagnosticLine`), `cards.ts`
+  (`projectFindings` → banner and Overview lines), `core/overview/problems.ts` (row `status` = reasons) and the
+  tree tooltip. `readSnapshot` serializes `read.diagnostics` whole (0016 AC-003), so no field may be added there.
+  Return notes are `.memory-bank/activeContext.NNNN-T-n.md`; folder keys have no `.md`.
+- Overview row: `li.ov-row-item` = `Drill` button `.ov-row` (number, title, `ov-status`, warning, `StepText`) +
+  sibling `CopyButton` (0017 P-5); the same `.ov-row` class serves Activity rows. Wide rules unscoped, two-line rules
+  in `@media (max-width: 720px)` with `overflow-wrap: anywhere` (the cause of n16/g03: `anywhere` lets min-content
+  shrink to one letter). `webview/testing/css.ts` parses `@media` and `@supports`, not `@container`.
+- Copy: one `CopyButton` (`.copy-button`, primary colours, `min-width: 14ch`), name `<label>: <line>` from
+  `NEXT_STEP_COPY_LABEL`/`COPIED_LABEL`/`COPY_FAILED_LABEL`; callers NextStep, Card, SpecRow, Now (empty Up next),
+  Overview and SpecBoard (zero specs). `.restricted-note button`, `.notice button` share the primary rule with
+  `.panel-state button` (0014 AC-001 keeps the panel-state part).
+- Tree: description `<State> · <short>`, label cut at 24 (`cutAt`), group key `upNext`; host smoke "AC-019"
+  expects `['0001 Restaurant-Rechnung mit…', 'Review · /sdd-compile']`; with the budget it becomes
+  `['0001 Restaurant-Rec…', '/sdd-compile']` (32 − 5 − 12 = 15). `GROUP_LABELS`, `UP_NEXT_HEADING`,
+  `NOTHING_UP_NEXT_TEXT`, `UP_NEXT_SET_LABEL` are the only `up next` texts in `src` and `package.json`.
+- jsdom 31.0.1 (probed 2026-11-18): `PointerEvent` exists; `setPointerCapture`, `ResizeObserver`, `matchMedia` do
+  not; `scrollTop` is stored; `clientWidth` is 0; `<wbr>` adds nothing to `textContent`. React 19.3.1 renders
+  `inert` as a boolean attribute (`@types/react` has `inert?: boolean`).
+- No `Deprecated` candidate: 0005, 0007, 0013, 0016–0020 keep their other criteria; §5 rows become inline notes.
+  0021 (planned after 0022) also amends some statements; its notes go above 0022's (OP-003).
+
+**Sources (retrieved 2026-11-18).**
+- [APG Window Splitter](https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/) — focusable `separator` with
+  `aria-valuenow`/`min`/`max` and `aria-controls` (required), `aria-label` without a visible label; Left/Right move a
+  vertical splitter, Home/End optional (smallest/largest primary pane), Enter collapses (0022 A-012 resets instead).
+- [MDN overflow-wrap](https://developer.mozilla.org/en-US/docs/Web/CSS/overflow-wrap) — `break-word` breaks an
+  unbreakable word only when it overflows and, unlike `anywhere`, adds no soft wrap to the min-content size (P-11).
+- [MDN container queries](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_size_and_style_queries)
+  — `container-type: inline-size`, named `@container name (width …)`; rules style descendants, not the container (P-13).
+- [web.dev Baseline 2023](https://web.dev/blog/baseline2023) — size container queries Chrome 105, subgrid Chrome 117;
+  VS Code 1.146 ([notes](https://code.visualstudio.com/updates/v1_146), Nov 2026) ships a far newer Chromium.
+- [CSS Grid 2 §9 Subgrids](https://www.w3.org/TR/css-grid-2/#subgrid-listing) — a subgrid inherits the parent's line
+  names, including the implicit ones of `grid-template-areas`, so its children can be placed by the parent's area names;
+  [MDN Subgrid](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout/Subgrid) — gaps pass into the subgrid.
+- [MDN `<wbr>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/wbr) — a break opportunity
+  only, empty element, no hyphen (P-11).
+- [MDN setPointerCapture](https://developer.mozilla.org/en-US/docs/Web/API/Element/setPointerCapture) — capture
+  until `releasePointerCapture` or `pointerup`; `lostpointercapture` ends the drag (P-8).
+- [VS Code Theme Color](https://code.visualstudio.com/api/references/theme-color) — `sash.hoverBorder`,
+  `charts.green`/`orange`/`blue`/`red`, `problemsWarningIcon.foreground`, `button.secondaryBackground`/`Foreground`,
+  `toolbar.hoverBackground`, `descriptionForeground` exist. Codicons `list-flat`, `pass`, `play`, `eye`,
+  `circle-slash`, `check`, `warning` are already used by 0020's tree.
+
+**Proxy decisions (Gregor delegated; read with the plan).**
+- P-1 No spec revision: PD-073…PD-075 entered with the spec's last revision (`a5264df`); the survey contradicts no
+  criterion. Only the `**Plan:**` line changes.
+- P-2 Eleven steps, one spec: the two halves (signals §4.2–§4.5, §4.8; layout §4.1, §4.6, §4.7) share the Copy, the
+  row and the state icon; Gregor delegated one round and 0021 waits for both. The stage ends give the stops.
+- P-3 0022 before 0021, today's step texts (task constraint): the step short form is today's command short form, so
+  budget step 2 never fires (§7) and is tested with a synthetic intent; the icon Copy's name and tooltip are built
+  from the same constants as the text button (`Copy: <line>` today; 0021 changes the constant once). Of the coach
+  line and `?` 0022 builds only their place: `.ov-row-item > .ov-coach { grid-column: 1 / -1 }` is auto-placed after
+  the row's last line in every layout; the stylesheet test proves it now, 0021 renders `.ov-coach` and adds the
+  component test. No 0021 text is built.
+- P-4 Frame (G-1): `html, body, #root`, `main`, `.area-frame` `overflow: hidden`; `main` loses its padding;
+  `.area-content` `padding: 12px 16px; overflow-y: auto` (scrollbar at the divider); `.side-panel` `overflow-y: auto`,
+  no margin; `main > .restricted-note` and `main > .notice` take `margin: 8px 16px` (the Overview's own notice sits in
+  the padded area content); `main > .panel-state` `min-height: 0; overflow-y: auto`;
+  `.spec-detail`'s `overflow-y: auto` and the `.side-panel > .spec-detail` override go. The 16 px stay, so A-005's
+  "panel − 34 px" holds.
+- P-5 List or detail (G-4): `NARROW_QUERY = '(max-width: 899px)'` (was `DRAWER_QUERY`), `useNarrow()` in
+  `detail/narrow.ts` (replaces `drawer.ts`). Below 900 px with a selection `.area-frame` carries
+  `data-layout="detail"`: the area content stays mounted and laid out but is set aside (`position: absolute; inset: 0;
+  visibility: hidden` plus `inert`), the side panel stays in the flow at full width (`flex: 1 1 auto`). Every scroll
+  position of the area (content, Board columns, card lists) survives without code, and no rule lays the side panel over
+  the area (AC-001). `detail/BackButton.tsx` is the detail's first line, above the title row, text X-27
+  (`BACK_LABELS[area]`), sends `clearSelection` as close does; no close button then. Crossing 900 px: focus moves to
+  the detail heading only when it sat inside the area content that is set aside.
+- P-6 Width memory: own key `featherspec-studio.sidePanel` (`SIDE_PANEL_MEMORY_KEY`, `workspaceState`, as the Board's
+  key), value `{ v: 1, fraction }`, parsed apart from `parseUiMemory` (`core/shell/sidePanelWidth.ts`); anything else
+  is ignored. `ShellView.sideWidth?: number`; requests `setSideWidth { fraction }` (guard: finite, 0 < f < 1) and
+  `resetSideWidth {}` (stores `undefined`, which deletes the key). `PROTOCOL_VERSION` stays 4: only additions.
+- P-7 Arithmetic in `shared/protocol/layout.ts` (no DOM, node-tested): `SIDE_MIN 320`, `AREA_MIN 360`,
+  `SIDE_STEP 16`, `SIDE_STEP_LARGE 64`; `clampSideWidth(w, frame) = max(320, min(w, frame − 360))`;
+  `defaultSideWidth(frame) = clampSideWidth(max(400, round(0.4 × frame)), frame)`; `sideWidthOf(fraction?, frame)`.
+  The frame is `.area-frame`'s width, read with `ResizeObserver` where it exists (tests stub it).
+- P-8 Divider `detail/Divider.tsx`: 0 px in the flow (the side panel's 1 px left border is the line, a 4 px `::before`
+  hit area as VS Code's sash); `tabIndex 0`, `role="separator"`, `aria-orientation="vertical"`, `aria-controls` = the
+  side panel's `id`, `aria-valuemin` 320, `aria-valuemax` frame − 360, `aria-valuenow` width, `aria-label` X-25,
+  `title` X-26. Keys per G-2 with `preventDefault`; primary-button `pointerdown` → `setPointerCapture` (guarded),
+  `pointermove` → `frame.right − clientX` clamped, `pointerup`/`lostpointercapture` → end; drag end and every key change
+  send the fraction, Enter and `dblclick` send `resetSideWidth`. The side panel's width is an inline `style` width (no
+  colour; the 0013 guard holds), set only while side by side (below 900 px P-5's full width applies); CSS `cursor: col-resize`, `--vscode-sash-hoverBorder` on `:hover` and
+  `[data-dragging]`, focus outline from the shared `:focus-visible` rule.
+- P-9 State table `shared/protocol/stateLook.ts` `STATE_LOOK: Record<BoardState, { motif, colour }>` (codicon ID,
+  theme colour ID; Deprecated is Done). The tree uses both IDs; the webview's `StateIcon` draws its own SVG of the
+  motif (the Blocked glyph gets a diagonal slash) and sets `data-tint="<colour ID>"`; the stylesheet maps the five
+  colour IDs to `--fs-tint` (`[data-tint="charts.green"] { --fs-tint: var(--vscode-charts-green); }`), so it names no
+  state (AC-026) and 0013's alias and inline-style guards stay valid. `data-board-state` stays as a hook without colour.
+- P-10 Problem sentence `core/lifecycle/problemSentence.ts` `problemSentence(diagnostic)`: by kind, contradiction,
+  scope (spec, `.plan.md`, return note, folder) and the values our own emitters put into the reason; reasons and read
+  snapshots unchanged (0016 AC-003, A-009). Fallback = the reason, asserted unused for every Problem of the nine
+  baseline fixtures and the memory cases. X-10…X-24 in `shared/protocol/texts.ts`. Protocol: `DiagnosticLine.sentence?`
+  and `BannerLine.sentence?` (Problems only), Overview `ProblemLine.sentence`, `OverviewRow.reasons?` (a Problems row's
+  tooltip, ` · `-joined); a Problems row's `status` = sentences joined by ` · ` (PD-064 P-6).
+- P-11 Paths (§4.6): `ui/PathText.tsx` — `<PathText path>` puts `<wbr>` after every `/`, `-`, `.` (detail path, card
+  path, Files link names, the place of a project-level problem line); `<PathText command>` for next-step lines puts
+  them only into tokens that contain `/` and do not start with `/` (the path arguments; not `/sdd-plan`, not
+  `continue`). `overflow-wrap: break-word` replaces `anywhere` on these, the card head, the side panel's heading and
+  Overview titles.
+- P-12 Copy looks: `CopyButton` gets a required `look: 'primary' | 'secondary' | 'icon'`. Primary keeps
+  `.copy-button` (0016 AC-017/AC-019 tests stay), secondary `.copy-button.copy-secondary`, icon `.copy-icon`
+  (border-box 24 × 24 px, transparent, `toolbar.hoverBackground` on hover, contrast border in High Contrast; glyphs
+  copy, check, warning in `board/icons.tsx`); name as today, tooltip the name, during feedback T-19. Primary only:
+  `NextStep` line 1, the first Now row (`SpecRow` prop `copyLook`), both zero-spec Copies. `.restricted-note button`
+  and `.notice button` (BR-03 and the Overview's own notice) get the secondary colours.
+- P-13 Rows: `container: ov-list / inline-size` on every `.ov-list` of Now, Up next and Problems; three blocks
+  `@container ov-list (width > 686px)`, `(420px <= width <= 686px)`, `(width < 420px)`; `li.ov-row-item` is a grid with
+  named areas; `.ov-row-item > .ov-row` spans it and places its children on `subgrid` rows and columns by the parent's
+  area names; the sibling Copy sits in area `copy`, painted over the button's box. `.ov-problems .ov-row-item` takes
+  the two-line template from 420 px up. Activity rows keep their flex rule (`.ov-row` outside `.ov-row-item`).
+- P-14 State in rows: `SpecRow` renders `StateIcon` (title = state) before `.ov-status`; where `status === state` the
+  text carries `.ov-state-name` (visually hidden in the two narrower blocks only) and the icon is `aria-hidden`;
+  otherwise (a need, sentences) the icon is `role="img"` with the state as `aria-label` — the name once in the row's name.
+- P-15 AC-028 arithmetic: the CSS test parses `.area-content`, `.ov-panel` (padding, border), `.ov-list` (margins),
+  `.ov-row-item` paddings and uses `defaultSideWidth`; 1ch = 0.6 em of 13 px (titles) and of 11 px (Copy); no scrollbar
+  width (the harness at 920 px checks the real one). 920 px → side 400, area 520, list 486: two lines. Area 360 → list
+  326, row content 302 ≥ number + gap + 12ch (≈ 130 px) and ≥ the primary Copy (≈ 110 px).
+- P-16 Tree: description `step.short` | `<State>` | `Deprecated`; pure budget `core/shell/treeLabel.ts` (number, full
+  title, description, the command short form when the description carries an intent — absent today), `cutAt` from
+  `shortTitle.ts`. Group key and ID `ready` / `group:ready` (unreleased). Group hint: `GroupModel` gains `icon?`,
+  `color?`, `tooltip?`, `accessibleLabel?`; n = the sum of its rows' Problems; the adapter sets them only then.
+- P-17 Strips: `BoardColumn.problems?: number` on a `collapsed` or `filtered` narrow column (`core/board/filters.ts`):
+  the Problems of the specs it stands for and does not show; `Column` draws the warning under the count and appends
+  ` · <T-05>` to its name and title, before B-6's rule text.
+- P-18 X-07 `UP_NEXT_NOTE` in `areas/overview/texts.ts`, a `p.ov-note` after the Up next heading while rows are listed.
+- P-19 AC-007 scan (`sourceScan.test.ts`): every literal of `src` (no tests) and `package.json` matching /up next/i is
+  one of `UP_NEXT_HEADING`, `NOTHING_UP_NEXT_TEXT`, `UP_NEXT_SET_LABEL`; negative control.
+- P-20 Deletions named per step (**Deletes:**), confirmed at the start of the stage; removing a test is evidence too.
+- P-21 Test-title audit by 0018–0020's method in T-011 against the Baseline; expected map below.
+- P-22 Docs: README "The Specs view" (`Ready`), Overview (note, icon Copies, one primary), "The detail of a spec"
+  (divider, Enter or double-click reset, remembered width, back button below 900 px); `docs/product/ux-guidelines.md`
+  rows 18 and 21; release checklist items AC-019, AC-020, AC-021 (build part), AC-025; CHANGELOG `[0.1.0] - Unreleased`.
+  The README screenshot stays unless the harness gives a new one (orchestrator's call).
+
+**Expected test-title audit map (T-011 confirms it against the Baseline).** Absent at the head:
+- `detail/SidePanel.test.tsx` describes "AC-005: the drawer marks the board" and "AC-005, AC-022: a card focused under
+  the drawer is scrolled clear" with their tests → void (§5 0019 §6.1 drawer, AC-005 drawer part; PD-075), replaced by
+  AC-029's tests.
+- `adapters/node/webviewCss.test.ts`: the drawer media rule, the board drawer padding, "0019 F3 …", both "0019 PD-066 …"
+  → void (same rows); "full-height frame: … main scrolls on its own", "AC-005: from the drawer width up … 400 px column
+  …", "AC-005: no media rule changes … under the drawer", "0019: the one module that calls matchMedia … the drawer …",
+  the 0019 describe title → retitled (G-1, G-2, AC-022, AC-023); "0018 AC-006: a spec row stays on one line …" and both
+  "0018 AC-006 (V1) …" → replaced by AC-001 (§5 0018 AC-006); "§3.1: one state-colour mapping …" → replaced by AC-026
+  (§5 0013 §3.1).
+- `core/shell/specTree.test.ts`: the 24/25-character cut → AC-005; "the description is the state, with the short form
+  …" → AC-004; group titles naming "Up next" → retitled `Ready` (§5 0020 §4.1, AC-001, AC-002); "… keeps its state word
+  …" and "… with its reason, escaped" → retitled (AC-004, AC-013).
+- `core/overview/problems.test.ts`, `shared/protocol/overview.test.ts`, `areas/overview/Overview.test.tsx`,
+  `core/board/detail.test.ts`: titles naming "reason(s)" of a Problem → retitled "sentence(s)" (§5 0016 §6.2, 0018 O-4,
+  O-5, AC-007, 0019 §6.2 row 3).
+
+## Stages
+
+1. T-001 → T-002 → T-003 — side by side or alone: one scrollbar each, the area or the detail below 900 px, a remembered divider
+2. T-004 ‖ T-005 — one source each: the state table and the problem sentence
+3. T-006 → T-007 — Overview rows: one primary Copy, icon Copies, rows by the list's own width
+4. T-008 → T-009 → T-010 — signals: Problems as sentences and paths that break; tree rows with the step; Ready and the hidden-Problem hints
+5. T-011 — §5 notes, docs, test-title audit, architecture and Memory Bank sync, final gates
+
+Parallel: stage 2 (T-004 touches `stateLook`, `specTree`, the webview icons, chip, column and the stylesheet; T-005
+`problemSentence`, `texts.ts`, the detail, board and Overview protocols and their core projections; no shared file,
+each `Verify` runs its own tests). Both are small: run them in sequence. Stages 1, 3 and 4 share `App.tsx`,
+`main.css`, `webviewCss.test.ts`, `specTree.ts` or `SpecRow.tsx` within the stage, so they stay `→`.
+
+## Steps
+
+### T-001 — One scrollbar each; below 900 px the area or the detail alone
+
+- **Covers:** AC-022, AC-029; AC-001 (no `data-drawer`, no side panel over the area)
+- **Deletes:** `src/webview/detail/drawer.ts` (replaced by `src/webview/detail/narrow.ts`, Ask-first move); in code
+  `data-drawer` on `.columns` (`areas/SpecBoard.tsx`) and `.overview` (`areas/overview/Overview.tsx`), the
+  `scrollIntoView` branch of `SpecBoard.onFocus` (0019 T-009), `DRAWER_QUERY` (renamed `NARROW_QUERY`); in `main.css`
+  `@media (max-width: 899px) .side-panel`, `.columns[data-drawer]`, `.overview[data-drawer]` and its four row rules
+  (0019 T-010, T-014, PD-066), `.spec-detail`'s `overflow-y: auto` and `.side-panel > .spec-detail`; tests: both drawer
+  describes of `detail/SidePanel.test.tsx` and the five drawer and PD-066 tests of `webviewCss.test.ts` (audit map)
+- **Do:** CSS per P-4 and P-5. `App.tsx` `Frame`: `useNarrow()`; with a selection and the query matching, frame
+  `data-layout="detail"`, area content `inert`, `SidePanel` with `back={shell.area}`; `SpecDetail`/`SidePanel` render
+  `BackButton` (X-27, `BACK_LABELS` in `texts.ts`) in place of `CloseButton`; an effect on crossing moves focus to the
+  heading only from inside the set-aside area. Tests: new `src/webview/detail/ListOrDetail.test.tsx` (stubbed
+  `matchMedia` with change events): area alone without a selection; detail alone with X-27 for Overview and Board, no
+  close button, no `[role="separator"]`, the area content the same node with its `scrollTop`; back and Escape send
+  `clearSelection`, after the host event focus as 0019 AC-003 (opener card, Overview row); switching area keeps the
+  detail and renames the back button; crossing both ways keeps the selection, focus kept in the side panel, moved to the
+  heading from the area. `webviewCss.test.ts` AC-022 (root, `main`, frame `overflow: hidden`; within the frame
+  `overflow-y: auto` only on `.area-content`, `.side-panel`, `.column-cards`; panel state own box; no padding, margin or
+  gap at the side panel's right edge) and AC-001's part (no `data-drawer`, no `position: absolute|fixed` or `z-index` on
+  `.side-panel`); the matchMedia guard retargeted to `narrow.ts`.
+- **Verify:** `npx vitest run --project webview src/webview/detail` and `npx vitest run --project node src/adapters/node/webviewCss.test.ts`
+  red (stub, failing rules), then green; gates 1–4
+- [ ] **Verified (T-001):** —
+- **Notes:** —
+
+### T-002 — The side panel's width is remembered per workspace
+
+- **Covers:** AC-024 (arithmetic, memory, requests)
+- **Do:** `shared/protocol/layout.ts` per P-7; `core/shell/sidePanelWidth.ts` (`parseSideWidth`, `serializeSideWidth`)
+  and `ShellService` deps `sideMemory`, handlers `setSideWidth`, `resetSideWidth`, `view().sideWidth` (P-6);
+  `messages.ts` payloads, guards, `REQUEST_GUARDS`, `isShellView`; `adapters/vscode/uiMemory.ts`
+  `SIDE_PANEL_MEMORY_KEY`, `extension.ts` wiring; `webview/client.ts` `setSideWidth(fraction)`, `resetSideWidth()`.
+  Tests: new `src/shared/protocol/layout.test.ts` (1428 → 571, 900 → 400, clamps at 320 and frame − 360, a fraction of
+  0.6 at 1428 → 857, 0.7 at 900 clamped to 540, validity of 0, 1, −0.1, NaN, '0.5'); new
+  `src/core/shell/sidePanelWidth.test.ts` on the shell world (`testing/world.ts` gets a fake side memory) (set stores
+  `{v: 1, fraction}` and shows it; reset deletes;
+  each invalid stored value is ignored while the remembered area and selection still apply; nothing reaches a workspace
+  folder: the port is the only writer); `messages.test.ts` (guards accept and refuse); `client.test.ts` (requests sent).
+- **Verify:** `npx vitest run --project node src/shared/protocol/layout.test.ts src/core/shell/sidePanelWidth.test.ts src/shared/protocol/messages.test.ts`
+  and `npx vitest run --project webview src/webview/client.test.ts` red (stub), then green; gates 1–5
+- [ ] **Verified (T-002):** —
+- **Notes:** —
+
+### T-003 — A divider sets the side panel's width; Enter or a double-click resets it
+
+- **Covers:** AC-023, AC-024 (the fraction applies, clamped, whenever side by side); AC-022 re-proved
+- **Deletes:** none; replaced: "AC-005: from the drawer width up the side panel is a 400 px column …" (`webviewCss.test.ts`)
+- **Do:** `detail/Divider.tsx` and a `useSideWidth(frameRef)` hook (`detail/sideWidth.ts`) per P-8; `App.tsx` renders
+  the divider between area content and side panel while side by side with a selection; the side panel gets an `id` and
+  the width. CSS: `.side-panel` `flex: none` (width from the divider), `.divider` rules. Texts X-25, X-26 in `texts.ts`.
+  Tests: new `src/webview/detail/Divider.test.tsx` (stubbed `ResizeObserver`, frame rect, `setPointerCapture`,
+  `matchMedia`): one separator with role, orientation, `aria-controls` = the panel's id, min 320, max 1068, now 571 at
+  1428 px, X-25, X-26; Left +16, Right −16, Shift ±64, Home 320, End 1068, each sending `setSideWidth`; Enter and
+  `dblclick` send `resetSideWidth` and show 571; a drag follows the pointer within the limits and ends at `pointerup`
+  and at `lostpointercapture` with one `setSideWidth`; a remembered 0.6 shows 857 at 1428 px, a remembered 0.7 shows 540
+  at a frame of 900 px without a request (the fraction stays); below 900 px no divider and no inline width. `webviewCss.test.ts`: `.side-panel` sets no fixed width; divider cursor,
+  `sash.hoverBorder`, no outline removed.
+- **Verify:** `npx vitest run --project webview src/webview/detail/Divider.test.tsx` and `npx vitest run --project node src/adapters/node/webviewCss.test.ts`
+  red, then green; gates 1–4
+- [ ] **Verified (T-003):** —
+- **Notes:** —
+
+### T-004 — One table gives each state its icon and colour
+
+- **Covers:** AC-026
+- **Files:** `src/shared/protocol/stateLook.ts`, `src/shared/protocol/stateLook.test.ts`, `src/core/shell/specTree.ts`,
+  `src/core/shell/specTree.test.ts`, `src/webview/board/icons.tsx`, `src/webview/ui/StateChip.tsx`,
+  `src/webview/ui/StateChip.test.tsx`, `src/webview/board/Column.tsx`, `src/webview/board/SpecBoard.test.tsx`,
+  `src/webview/main.css`, `src/adapters/node/webviewCss.test.ts`
+- **Deletes:** `STATE_ICONS` in `specTree.ts`; the six `[data-board-state="…"]` tint rules in `main.css`; test "§3.1:
+  one state-colour mapping …" (replaced)
+- **Do:** P-9. Tests: `stateLook.test.ts` (the table of §4.8 literally, six distinct motifs, none `warning`); tree rows
+  take icon and colour from it (Active `charts.green`, Review `charts.orange`, Done `descriptionForeground`; the Problem
+  override unchanged); chip and column header and strip render the motif glyph with `data-tint`; CSS: no rule whose
+  selector names a state sets a colour or `--fs-tint`, each colour ID maps to its `--vscode-*` variable, chip and header
+  icon use `--fs-tint`.
+- **Verify:** `npx vitest run --project node src/shared/protocol/stateLook.test.ts src/core/shell/specTree.test.ts src/adapters/node/webviewCss.test.ts`
+  and `npx vitest run --project webview src/webview/ui/StateChip.test.tsx src/webview/board/SpecBoard.test.tsx` red, then green; gates 1–4
+- [ ] **Verified (T-004):** —
+- **Notes:** —
+
+### T-005 — Every Problem has one user sentence; the reason travels beside it
+
+- **Covers:** AC-013 (core and protocol), AC-014
+- **Files:** `src/core/lifecycle/problemSentence.ts`, `src/core/lifecycle/problemSentence.test.ts`,
+  `src/shared/protocol/texts.ts`, `src/shared/protocol/detail.ts`, `src/shared/protocol/detail.test.ts`,
+  `src/shared/protocol/board.ts`, `src/shared/protocol/overview.ts`, `src/shared/protocol/overview.test.ts`,
+  `src/core/board/detail.ts`, `src/core/board/detail.test.ts`, `src/core/board/cards.ts`, `src/core/board/cards.test.ts`,
+  `src/core/overview/problems.ts`, `src/core/overview/problems.test.ts`
+- **Do:** P-10. Tests: `problemSentence.test.ts` — each of X-10…X-24 literally from `fs-broken`,
+  `fs170-brownfield-mixed` and memory projects (folder/status both forms, plan, return note with its file name, folder,
+  duplicate reference and number, both dangling links, three unknown statuses, orphan note); every Problem of the nine
+  baseline fixtures maps without the fallback; AC-014 (each sentence with inserted paths, values and numbers as `x`
+  holds none of the nine words; negative control). Detail problem lines, banner lines and Overview lines carry sentence
+  and reason; a Problems row's status is the sentences, its tooltip the reasons; notes keep their reason only; protocol
+  guards accept and refuse the new fields.
+- **Verify:** `npx vitest run --project node src/core/lifecycle/problemSentence.test.ts src/core/board/detail.test.ts src/core/board/cards.test.ts src/core/overview/problems.test.ts src/shared/protocol/detail.test.ts src/shared/protocol/overview.test.ts`
+  red (stub), then green; `src/core/specs/readBaseline.test.ts` unchanged and green; gates 1–4
+- [ ] **Verified (T-005):** —
+- **Notes:** —
+
+### T-006 — At most two primary buttons; list Copies are icon buttons
+
+- **Covers:** AC-010, AC-011, AC-012
+- **Do:** P-12 in `ui/CopyButton.tsx`, `board/icons.tsx` (copy, copied glyphs), `detail/NextStep.tsx`, `board/Card.tsx`,
+  `areas/overview/SpecRow.tsx`, `Now.tsx`, `Problems.tsx`, `Overview.tsx`, `areas/SpecBoard.tsx`, `main.css`. Tests:
+  `CopyButton.test.tsx` (icon: pointer, Enter and Space copy the full first line; check or warning, name and T-19 in
+  tooltip and live region until 2000 ms after the last activation, then restored; selects nothing; same element; tab
+  index kept); new `src/webview/primaryButtons.test.tsx` (AC-011's Given: Overview 2 and Board 1 with NS-5 selected, 1 and
+  0 without); `webviewCss.test.ts` (secondary colours on `.copy-secondary`, `.restricted-note button`, `.notice button`;
+  `.copy-icon` fixed width and height ≥ 24 px, no outline of its own, HC border); existing Copy tests of cards and rows
+  (`Keyboard.test.tsx`, `SpecBoard.test.tsx`, `Sections.test.tsx`, `Overview.test.tsx`) target `.copy-icon`, titles kept.
+- **Verify:** `npx vitest run --project webview src/webview/ui/CopyButton.test.tsx src/webview/primaryButtons.test.tsx`
+  and `npx vitest run --project node src/adapters/node/webviewCss.test.ts` red, then green; gates 1–4
+- [ ] **Verified (T-006):** —
+- **Notes:** —
+
+### T-007 — Overview rows follow the list's own width and show the state as an icon
+
+- **Covers:** AC-001, AC-027, AC-028; AC-002 (Overview row title); AC-003 (Problems rows two lines from 420 px)
+- **Deletes:** in `main.css` the `@media (max-width: 720px)` block (0018 T-013, PD-065) and the unscoped one-line row
+  rules (`.ov-row { white-space: nowrap }`, `.ov-row .ov-title|.ov-status|.step-text`, `.ov-title` ellipsis), moved into
+  the container blocks; tests "0018 AC-006: a spec row stays on one line …" and both "0018 AC-006 (V1) …" (replaced)
+- **Do:** P-13, P-14, P-3's coach place; `webview/testing/css.ts` parses `@container` (rule field `container`).
+  `SpecRow.tsx` state icon and `.ov-state-name`. Tests in `webviewCss.test.ts`: every `.ov-list` an inline-size container
+  named `ov-list`; the three templates exactly at 686 px and 420 px, only inside `@container` rules; no `@media` rule
+  touches an `.ov-` selector; number and title alone on the first line in two and three lines, no `nowrap` on the title;
+  Problems rows two lines from 420 px, no ellipsis there; `.ov-coach` on the last line; no `anywhere` or `break-all` on
+  `.ov-title`; `.ov-state-name` hidden visually inside the narrower blocks only; AC-028's arithmetic (P-15). Component
+  tests in `Sections.test.tsx`: every row's state icon before its text with the state as tooltip; the accessible name
+  holds the state once (name as text, a need, sentences); a need and sentences carry no hiding class.
+- **Verify:** `npx vitest run --project node src/adapters/node/webviewCss.test.ts` and `npx vitest run --project webview src/webview/areas/overview`
+  red, then green; gates 1–4; layout itself: the orchestrator's harness after stage 3 (jsdom computes none)
+- [ ] **Verified (T-007):** —
+- **Notes:** —
+
+### T-008 — Problems read as sentences and wrap; paths break only after a separator
+
+- **Covers:** AC-013 (webview), AC-015, AC-002 (card title and head, side panel heading, §4.6 elements), AC-003 (lines,
+  banner, detail list; full text in the DOM)
+- **Deletes:** `overflow-wrap: anywhere` in `.card-head`, `.card-path`, `.detail-path`
+- **Do:** `detail/SpecDetail.tsx` problem list: the sentence, as the link where the finding has a file; `ui/FileLink.tsx`
+  optional `reason`: tooltip and description = reason, then 0019 AC-017's text on its own line; without a file the
+  reason is the tooltip. `SpecRow` tooltip = `reasons` for a Problems row; Overview and banner lines
+  `<PathText path={where}/>: <sentence>` with the reason as tooltip. New `ui/PathText.tsx` (P-11) in `NextStep.tsx`, the
+  detail path, `Card.tsx` path, Files links. CSS `break-word`. Tests: new `src/webview/ui/PathText.test.tsx` (a `<wbr>`
+  after each `/`, `-`, `.` of a path and no other, none in `/sdd-plan` or `continue`, text content and Copy unchanged);
+  `SpecDetail.test.tsx`, `Overview.test.tsx`, `SpecBoard.test.tsx` (banner) for each surface's sentence and tooltip;
+  `webviewCss.test.ts` AC-002 and AC-003 (no ellipsis, clamp or `nowrap` on Problems rows, lines, banner, detail list);
+  `userLanguage.test.tsx` sweeps the sentences.
+- **Verify:** `npx vitest run --project webview src/webview/ui/PathText.test.tsx src/webview/detail/SpecDetail.test.tsx src/webview/areas/overview src/webview/board/SpecBoard.test.tsx src/webview/userLanguage.test.tsx`
+  and `npx vitest run --project node src/adapters/node/webviewCss.test.ts` red, then green; gates 1–4
+- [ ] **Verified (T-008):** —
+- **Notes:** —
+
+### T-009 — A tree row shows its step, uncut, within a label budget of 32
+
+- **Covers:** AC-004, AC-005; AC-013 (tree tooltip `Problem: <sentence>`)
+- **Deletes:** `LABEL_MAX` and the state prefix of `descriptionOf` (`specTree.ts`); test "a title of 24 characters is not
+  cut; one of 25 is cut …" (replaced)
+- **Do:** P-16 rows: new `core/shell/treeLabel.ts`; `specTree.ts` description, label, X-05 accessible label, tooltip with
+  `problemSentence`. Tests: new `src/core/shell/treeLabel.test.ts` (room formula, a fitting title not cut, the floor of
+  12, step 2 with a synthetic intent, four-digit numbers); AC-005's sweep over 0020's tree fixtures and titles of 1…80
+  characters × every NS rule's short form (≤ 32 unless raised to 12; ends with the whole command short form);
+  `specTree.test.ts` AC-004 (no description starts with a state and ` · `; X-05 with Deprecated and T-05) and the
+  sentence in the tooltip; `src/test/shell.smoke.test.ts` AC-019 expects `['0001 Restaurant-Rec…', '/sdd-compile']`.
+- **Verify:** `npx vitest run --project node src/core/shell/treeLabel.test.ts src/core/shell/specTree.test.ts` red, then
+  green; gates 1–4; `npm run compile-tests` (host smoke runs at the pre-done gate)
+- [ ] **Verified (T-009):** —
+- **Notes:** —
+
+### T-010 — "Up next" names one set; a group or strip says when it hides a Problem
+
+- **Covers:** AC-006, AC-007, AC-008, AC-009
+- **Deletes:** `GROUP_LABELS.upNext` and the ID `group:upNext` (renamed `ready`)
+- **Do:** texts X-01, X-02, X-03, X-06, X-07; P-16 groups in `specTree.ts` and `adapters/vscode/studioTree.ts`; P-17 in
+  `core/board/filters.ts`, `shared/protocol/board.ts`, `board/Column.tsx`, `main.css`; P-18 in `areas/overview/Now.tsx`.
+  Tests: `specTree.test.ts` (four groups in order, `Ready`; a Problem in collapsed Done: X-02, `warning` in
+  `problemsWarningIcon.foreground`, X-03 for 1 and n; without: count only, no icon or tooltip; the ID unchanged for both
+  counts); `studioTree.test.ts` (group icon, tooltip, accessibility only with Problems); one model: tree `Ready` count =
+  Overview `Ready` figure = Board Ready count (`specTree.test.ts`, AC-007); `sourceScan.test.ts` P-19; `filters.test.ts`
+  and `SpecBoard.test.tsx` (collapsed Done and a filter-emptied column with a Problem: glyph, X-06 in title and name,
+  B-6 after it; other strips as 0018 AC-014); `Sections.test.tsx` X-07 with rows, none without.
+- **Verify:** `npx vitest run --project node src/core/shell/specTree.test.ts src/adapters/vscode/studioTree.test.ts src/core/board/filters.test.ts src/adapters/node/sourceScan.test.ts`
+  and `npx vitest run --project webview src/webview/board/SpecBoard.test.tsx src/webview/areas/overview/Sections.test.tsx`
+  red, then green; gates 1–5
+- [ ] **Verified (T-010):** —
+- **Notes:** —
+
+### T-011 — §5 notes, docs, test-title audit, architecture and Memory Bank sync, final gates
+
+- **Covers:** AC-016, AC-017, AC-018; checklist items for AC-019, AC-020, AC-021, AC-025; re-proves AC-001…AC-029
+- **Do:** "*Amended by 0022 (PD-069): …*" directly under each §5 statement of 0005, 0007, 0013, 0015, 0016, 0017, 0018,
+  0019, 0020 (0021's later notes go above them, OP-003); PD register unedited. README, `docs/product/ux-guidelines.md`,
+  `docs/release-checklist.md`, CHANGELOG per P-22; the plan lists each "Up next" left there as the Overview's set
+  (README lines 19, 35; guidelines row 21; checklist lines 48, 104) and renames the tree's (README 15, guidelines 18,
+  checklist 128); checklist line 47 ("every state … reads as a word", "every reason under Problems") follows §4.8 and
+  §4.5; `docs/product/design-brief.md` lines 46 and 51–52 (groups, 400 px, drawer) get a superseded-by-0022 note. `docsScan.test.ts`: a 0022 block (README names, groups, checklist items, CHANGELOG, note counts) and the
+  0020 group test reads `**Ready**`. Test-title audit: throwaway `/tmp/audit-0022/titles.py` (`describe`/`it`/`test`/
+  `suite` literals of every `.ts`/`.tsx` under `src`, `src/test/**` and `testing/*.ts` included; describe titles count)
+  at the Baseline (`git archive`) and the head; `## Test-title audit` here lists every absent title with its §5 row or
+  replacing title. `/sdd-architecture-update` (confirmation = this plan's approval) changes exactly: `last reconciled` →
+  `<date> (0022)` in `AGENTS.md` and the three module maps; snapshot core line `lifecycle 0003` → `lifecycle 0003 (+
+  problem sentences 0022)` and `shell 0005 (+ spec tree, tree service, tree actions 0020)` → `… tree actions 0020; tree
+  label budget, side panel width 0022)`; webview line `detail as side panel in Overview and Board (0019)` → `detail as
+  side panel beside Overview and Board with a divider, alone below 900 px (0019, 0022)`; shared line adds `state look,
+  side panel layout` and `0022` to its list; `.architecture/core.md` (lifecycle, shell), `webview.md` (`detail/narrow.ts`,
+  `Divider.tsx`, `BackButton.tsx`, `ui/PathText.tsx`, Copy looks), `adapters.md` (`SIDE_PANEL_MEMORY_KEY`). Memory Bank:
+  `techContext.md` *Test* (one 0022 line; the 0019 drawer sentence corrected), `systemPatterns.md` (one 0022 entry; the
+  0018 and 0019 entries' media-query and drawer clauses marked superseded), `activeContext.md`. Final gates.
+- **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green; audit counts in this
+  plan; `grep -c "Amended by 0022"` per spec ≥ its §5 rows; `git diff <Baseline> -- docs/product/product-decisions.md`
+  empty; gates 1–5; `npm run compile-tests`; `npm test` on Windows and CI (pre-done gate); AC-019, AC-020, AC-021, AC-025:
+  `manual:` the orchestrator's harness (1600, 1000, 920, 800 px, zoom 2; Dark, Light, HC) and Gregor in a real window —
+  no command sees rendered layout or VS Code's tree drawing
+- [ ] **Verified (T-011):** —
+- **Notes:** —
+
+## Traceability
+
+| Acceptance criterion | Steps | Code / files | Test | State |
+| --- | --- | --- | --- | --- |
+| AC-001 | T-001, T-007 | — | — | open |
+| AC-002 | T-007, T-008 | — | — | open |
+| AC-003 | T-007, T-008 | — | — | open |
+| AC-004 | T-009 | — | — | open |
+| AC-005 | T-009 | — | — | open |
+| AC-006 | T-010 | — | — | open |
+| AC-007 | T-010 | — | — | open |
+| AC-008 | T-010 | — | — | open |
+| AC-009 | T-010 | — | — | open |
+| AC-010 | T-006 | — | — | open |
+| AC-011 | T-006 | — | — | open |
+| AC-012 | T-006 | — | — | open |
+| AC-013 | T-005, T-008, T-009 | — | — | open |
+| AC-014 | T-005 | — | — | open |
+| AC-015 | T-008 | — | — | open |
+| AC-016 | T-011 | — | — | open |
+| AC-017 | T-011 | — | — | open |
+| AC-018 | T-011 | — | — | open |
+| AC-019 | T-011 | — | manual: orchestrator's harness, then Gregor | open |
+| AC-020 | T-011 | — | manual: Gregor or delegate, real VS Code | open |
+| AC-021 | T-011 | — | manual: Gregor on `tip-splitter` (draft part done: PD-073) | open |
+| AC-022 | T-001, T-003 | — | — | open |
+| AC-023 | T-003 | — | — | open |
+| AC-024 | T-002, T-003 | — | — | open |
+| AC-025 | T-011 | — | manual: orchestrator's harness, then Gregor | open |
+| AC-026 | T-004 | — | — | open |
+| AC-027 | T-007 | — | — | open |
+| AC-028 | T-007 | — | — | open |
+| AC-029 | T-001 | — | — | open |
+
+## Session handoff
+
+- **Done so far:** plan written (2026-11-18, `/sdd-plan` Mode A, delegated); no code changed.
+- **Next action:** Gregor reads the plan (P-1…P-22, the Deletes lines); on the start signal the pair moves to `active/`
+  (`/sdd-lifecycle`), the Baseline is recorded, stage 1's deletions are named and confirmed, then T-001.
+- **Open decisions:** none; P-1…P-22 stand unless Gregor changes them.
+- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here); layout is checked in the
+  orchestrator's preview harness.
