@@ -3,7 +3,7 @@
 **Spec:** [0020-native-spec-tree.md](0020-native-spec-tree.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-003
+**Current step:** T-004
 
 ## Approach
 
@@ -257,8 +257,8 @@ and the host smoke, so they stay `→`.
 - **Verify:** `npx vitest run --project node src/core/shell/specTreeService.test.ts` and
   `npx vitest run --project timing-node src/core/shell/specTreeService.timing.test.ts` red (stub),
   then green; gates 1–4
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-18: vitest (node) specTreeService.test.ts and (timing-node) specTreeService.timing.test.ts red first (9 + 1 failed, Not implemented stub), then green 9/9 and 1/1; mutant without the source subscription fails the timing test (heard >= 3); gates 1-4 green, unit 2191 passed + 3 skipped, timing 13.
+- **Notes:** Sequence, not parallel. The shell world's model source is a second createModelSource over the world's repository. Nothing deleted.
 
 ### T-004 — Select, copy and open from a row
 
