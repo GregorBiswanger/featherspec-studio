@@ -3,7 +3,7 @@
 **Spec:** [0021-next-step-intent-and-guidance.md](0021-next-step-intent-and-guidance.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-003
+**Current step:** T-005
 
 ## Approach
 
@@ -349,15 +349,15 @@ _(T-008: counts and the absent titles with the statement that replaces each.)_
 | AC-005 | T-001, T-002, T-005 | src/core/board/nextStep.ts:nextStep (NS-6-resume, NS-6-plan) | src/core/board/nextStep.test.ts 0021 AC-005, AC-006 | built |
 | AC-006 | T-002 | src/shared/protocol/nextStepTexts.ts:stepShortForm, src/core/board/nextStep.ts:shortForm, stepView, src/core/shell/specTree.ts, src/core/copyNextStep/copyNextStep.ts, src/webview/ui/StepText.tsx | src/core/board/nextStep.test.ts 0021 AC-006; src/core/shell/treeLabel.test.ts 0021 AC-006; src/webview/board/SpecBoard.test.tsx | verified |
 | AC-007 | T-001 | src/shared/protocol/nextStepTexts.ts:stepTooltip, src/core/shell/specTree.ts:tooltipOf, src/core/copyNextStep/entryView.ts:tooltipOf | src/core/shell/specTree.test.ts; src/core/copyNextStep/statusEntry.test.ts 0021 AC-007; src/webview/board/SpecBoard.test.tsx; src/webview/areas/overview/Sections.test.tsx | verified |
-| AC-008 | T-003 | — | — | open |
+| AC-008 | T-003 | src/shared/protocol/nextStepTexts.ts:COPY_PROMPT_LABEL, src/webview/ui/CopyButton.tsx, src/core/copyNextStep/copyNextStep.ts | src/webview/ui/CopyButton.test.tsx 0021 AC-008; src/adapters/node/webviewBundle.test.ts 0021 AC-008 sweep; src/core/copyNextStep/copyNextStep.test.ts | verified |
 | AC-009 | T-005, T-007 | — | — | open |
 | AC-010 | T-005, T-006, T-007 | — | — | open |
 | AC-011 | T-006 | — | — | open |
-| AC-012 | T-004, T-005 | — | — | open |
+| AC-012 | T-004, T-005 | src/core/settings/stepTipSettings.ts:parseStepTipSettings (coach texts: T-005) | src/core/settings/stepTipSettings.test.ts | built |
 | AC-013 | T-005 | — | — | open |
 | AC-014 | T-007 | — | — | open |
 | AC-015 | T-007 | — | — | open |
-| AC-016 | T-004 | — | — | open |
+| AC-016 | T-004 | package.json contributes.configuration | src/adapters/vscode/manifest.test.ts 0021 AC-016 | verified |
 | AC-017 | T-006, T-007 | — | — | open |
 | AC-018 | T-006 | — | — | open |
 | AC-019 | T-001 | src/shared/protocol/nextStepTexts.ts:continueIntent, startIntent, src/core/board/shortTitle.ts:plainShort | src/core/board/nextStep.test.ts 0021 AC-019 | verified |
@@ -372,8 +372,8 @@ AC-004 is void (PD-072 chose variant A); no step builds it.
 
 ## Session handoff
 
-- **Done so far:** plan written 2026-11-18; spec revised (P-1); moved to active/ and started on Gregor's delegated start signal; stage 1 (T-001, T-002) verified and committed (`db15d7a`, `c17e064`); the harness check at the end of stage 1 is the orchestrator's.
-- **Next action:** T-003 (Copy prompt on every copy control), then T-004 (run in sequence), then stage 3.
+- **Done so far:** plan written 2026-11-18; spec revised (P-1); moved to active/ and started on Gregor's delegated start signal; stages 1 and 2 verified and committed (T-001 `db15d7a`, T-002 `c17e064`, T-003 `f8cd8fc`, T-004 `7f583e9`).
+- **Next action:** T-005 (coach line in the core and the views), then T-006 (live settings), T-007 (About this step); then T-008. The harness check at the end of stages 1 and 3 is the orchestrator's.
 - **Open decisions:** none for Gregor; proxies P-1…P-22 above plus those in the step notes.
 - **Baseline:** `0ef5875` (head before the first step commit; moved to active/ 2026-11-18)
 - **Environment:** `npm test` (host smoke) only on Windows and CI; layout checks in the orchestrator's harness.
