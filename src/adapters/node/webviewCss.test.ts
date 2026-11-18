@@ -81,6 +81,28 @@ describe('AC-026: colours come from the theme', () => {
         expect(rulesFor(css, '.ov-row-item .copy-button').some((rule) => /flex:\s*none/.test(rule.body))).toBe(true);
     });
 
+    it('0018 AC-006 (V1): at 720 px or less a spec row wraps to two lines, number and title first, then the status, the step and Copy, with no text cut by an ellipsis', () => {
+        const narrow = (selector: string) => rulesFor(css, selector).filter((rule) => rule.media !== undefined && /max-width:\s*720px/.test(rule.media));
+        expect(narrow('.ov-row').some((rule) => /flex-wrap:\s*wrap/.test(rule.body) && /white-space:\s*normal/.test(rule.body))).toBe(true);
+        expect(narrow('.ov-row-item').some((rule) => /align-items:\s*flex-end/.test(rule.body))).toBe(true);
+        const title = narrow('.ov-row .ov-title');
+        expect(title.some((rule) => /flex:\s*1 1 calc\(100% - [\d.]+em\)/.test(rule.body) && /white-space:\s*normal/.test(rule.body))).toBe(true);
+        const status = narrow('.ov-row .ov-status');
+        expect(status.some((rule) => /white-space:\s*normal/.test(rule.body) && /overflow:\s*visible/.test(rule.body))).toBe(true);
+        for (const rule of [...title, ...status]) {
+            expect(rule.body).not.toMatch(/text-overflow:\s*ellipsis/);
+            expect(rule.body).not.toMatch(/white-space:\s*nowrap/);
+        }
+        for (const selector of ['.ov-row .step-text', '.ov-row-item .copy-button', '.ov-row .ov-number']) {
+            expect(narrow(selector).filter((rule) => /flex:\s*(?!none)/.test(rule.body) || /flex-shrink:\s*[1-9]/.test(rule.body)), selector).toEqual([]);
+        }
+    });
+
+    it('0018 AC-006 (V1) control: the wide row rules sit outside every media query, so above 720 px the row stays on one line', () => {
+        expect(rulesFor(css, '.ov-row').some((rule) => rule.media === undefined && /white-space:\s*nowrap/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.ov-row .ov-status').some((rule) => rule.media === undefined && /text-overflow:\s*ellipsis/.test(rule.body))).toBe(true);
+    });
+
     it('AC-031: a focused control and a focused row use the High Contrast active border before the focus border', () => {
         const rules = rulesFor(css, '[role="option"]:focus-visible');
         expect(rules.length).toBeGreaterThan(0);
