@@ -194,6 +194,7 @@ archived plan, `planKeys` = that one plan only. `repo-8052f9a` 0015: Review, 20/
 2. T-003 → T-004 — the detail shows the picture with links at the line; the full-text contract goes
 3. T-005 → T-006 → T-007 — the side panel: select in place, close and focus, beside or drawer
 4. T-008 — §5 notes, docs, test-title audit, architecture and Memory Bank sync, final gates
+5. T-009 → T-016 — fixes of the compile S48 (NOT READY): D5, D6 (PD-066), D1, D2, F1, F3, the test gaps, docs
 
 Parallel: stage 1 (T-001 touches the editor adapter, panel, shell service, wiring and host smoke;
 T-002 the protocol detail, core board, the test builder and a new fixture; no shared file, each
@@ -394,6 +395,115 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
   his delegate (pre-release)
 - [x] **Verified (T-008):** 2026-11-18 — audit: `python3 /tmp/audit-0019/titles.py` Baseline vs head lists 40 absent test titles, each mapped in "Test-title audit"; `grep -c "Amended by 0019"` 0005 4, 0006 2, 0007 16, 0013 7, 0015 2, 0016 5, 0017 2, 0018 3 (all eight ≥ 1, one per §5 statement); `git diff 20792ca -- docs/product/product-decisions.md` empty. Gates: eslint 0 warnings, `tsc --noEmit` and `tsc -p src/webview` clean, `npm run test:unit` 2100 passed + 3 skipped (+12 timing), `npm run compile`, `npm run compile-tests` green. Not run here: `npm test` (host smoke; VS Code download blocked, Windows and CI), AC-022 (manual: preview harness screenshots and a real window); jsdom computes no layout, so the 400 px column, the drawer overlay and the scroll-clear padding rest on the CSS guard tests until then.
 - **Notes:** (1) §5 notes are one `*Amended by 0019 (PD-058): …*` line under each named statement (bullet, paragraph, table or heading), the PD register stays unedited. (2) README: Spec Explorer and "The detail of a spec" sections, Overview and Board sentences (select in place), next-step sentences; its screenshot of the old detail stays (a docs scan requires three screenshot links) until AC-022's new ones replace it. (3) `docs/product/design-brief.md` Spec Explorer section marks the old detail superseded by PD-058; `docs/release-checklist.md` rewords the keyboard and "Open file" items and adds the 0019 section with AC-022; CHANGELOG Unreleased has Added, Changed and Removed lines. (4) `/sdd-architecture-update`: `last reconciled` → `(0019)` in `AGENTS.md` and the three module maps, plus the core, webview, protocol and adapter lines named in this step; Memory Bank: `techContext.md`, `systemPatterns.md`, `activeContext.md`. (5) Commit trailers follow `/home/claude/orch/IMPL-UX.md` (`Co-Authored-By: Claude Opus 5.5`); T-005 to T-007 were first committed with another model name and rewritten before this commit.
+
+### T-009 — Fix D5: a card focused under the drawer scrolls clear (compile 0019 D5, AC-022 V1)
+
+- **Covers:** AC-005, AC-022 (V1); §6.1 Place, §9 "Drawer shown, a covered card … gets focus"
+- **Do:** `areas/SpecBoard.tsx` `onFocus`: while the drawer is shown (`drawer` and a selection), a card or a
+  control inside a card that receives focus calls `target.scrollIntoView({ block: 'nearest', inline: 'nearest' })`
+  (Chromium's focus scrolling ignores `scroll-padding` for an element already inside the scrollport; this call
+  honours it — orchestrator harness: `scrollLeft` 0 → 111). Guard `typeof scrollIntoView === 'function'` (jsdom
+  has none). Test in `detail/SidePanel.test.tsx` (stubbed `scrollIntoView` and `matchMedia`): the card and its
+  Copy button each get one call with exactly those options, on the focused element; no call without the drawer
+  match, none without a selection.
+- **Verify:** `npx vitest run src/webview/detail/SidePanel.test.tsx` red (no call), then green; gates 1–5;
+  a mutant on a scratch copy (call removed; drawer condition dropped) dies; layout: AC-022 round 2 (orchestrator)
+- [ ] **Verified (T-009):**
+- **Notes:**
+
+### T-010 — Fix D6: the Overview takes the width left of the drawer (PD-066; compile 0019 D6, AC-022 V2)
+
+- **Covers:** AC-005, AC-022 (V2); §6.1 Place, §9; WCAG 2.2 SC 2.4.11
+- **Do:** Proxy decision PD-066 in `docs/product/product-decisions.md` (newest PD). While the drawer is shown
+  (panel < 900 px and a spec selected) the Overview's content takes the width left of the drawer: `Overview.tsx`
+  sets `data-drawer` on `.overview` from `useDrawer()` and the selection; `main.css` `.overview[data-drawer]`
+  gets `padding-inline-end: min(400px, 100%)` (percentage of the frame's width), and the two-line row layout of
+  0018 T-013 (the rules of `@media (max-width: 720px)` for `.ov-row-item`, `.ov-row`, `.ov-title`, `.ov-status`)
+  repeated under `.overview[data-drawer]`, because a media query on the viewport alone does not trigger at 800 px.
+  Spec 0019 §6.1 Place, §9 and AC-005 amended ("the Board's content keeps its width; the Overview's content
+  takes the width left of the drawer (PD-066)"). Tests: `SidePanel.test.tsx` (the Overview carries the drawer
+  mark exactly while a spec is selected and the query matches, follows the change event); `webviewCss.test.ts`
+  (the end padding of `.overview[data-drawer]`, the two-line rules, no new media rule on `.overview`).
+- **Verify:** `npx vitest run src/webview/detail/SidePanel.test.tsx src/adapters/node/webviewCss.test.ts` red, then
+  green; gates 1–5; mutants (mark dropped, padding rule removed) die; layout: AC-022 round 2 (orchestrator)
+- [ ] **Verified (T-010):**
+- **Notes:**
+
+### T-011 — Fix D1 and G6: focus stays on the same link when an earlier entry leaves (AC-020)
+
+- **Covers:** AC-020 (focus kept where the control still exists, scroll container kept)
+- **Do:** Identity keys: Problems by `reason` + file + line, open criteria by `id ?? text` + file + line, each with
+  an occurrence counter so equal entries stay distinct (`detail/identityKeys.ts`); no index in a key.
+  Test in `detail/Close.test.tsx`: a detail with Problems [A, B] and open criteria [AC-001, AC-002, AC-003],
+  focus the AC-003 link and the second Problem, send a CHANGED view of the same spec (the first entries removed):
+  focus is still on the same link element, the side panel, the detail frame and the heading are the same nodes.
+- **Verify:** `npx vitest run src/webview/detail` red (focus on the heading), then green; gates 1–5; mutant
+  (index key restored; detail remounted on every change) dies
+- [ ] **Verified (T-011):**
+- **Notes:**
+
+### T-012 — Fix D2: the Files "Plan" row lists only the plan beside this spec (AC-014)
+
+- **Covers:** AC-014; §9 "Duplicated stem → its own files"
+- **Do:** `core/board/situation.ts` `filesOf`: a sibling plan only when it lies in the spec's own folder (same
+  directory of the key); the archived plans and return notes follow the spec's stem as before. Test in
+  `core/board/detail.test.ts`: a memory project with `.specs/active/0005-e.md`, `.specs/active/0005-e.plan.md`,
+  `.specs/backlog/0005-e.md` — the backlog entry shows Spec only, the active one Spec and Plan.
+- **Verify:** `npx vitest run src/core/board` red, then green; gates 1–4; mutant (folder test dropped) dies
+- [ ] **Verified (T-012):**
+- **Notes:**
+
+### T-013 — Fix F1: the opener is forgotten on close and for another spec (AC-003)
+
+- **Covers:** AC-003 ("the card or Overview row that opened it"), the entry point of 0020's tree
+- **Do:** `detail/opener.ts` keeps the stem with the element; `currentOpener(stem)` returns it only for the same
+  spec; `focusAfterClose` clears it. Test in `Close.test.tsx` through the host selection path: open 0003 from its
+  card, close, the host selects 0007 (`selectSpec`, no opener), close: focus goes to the card of 0007.
+- **Verify:** `npx vitest run src/webview/detail` red, then green; gates 1–5; mutant (stem check dropped) dies
+- [ ] **Verified (T-013):**
+- **Notes:**
+
+### T-014 — Fix F3: the drawer never extends past the frame's left edge (AC-005)
+
+- **Covers:** AC-005; §6.1 Place ("min(400 px, panel width)")
+- **Do:** `main.css`: the drawer's width and the board's end and scroll padding are relative to the frame, not to
+  the window (`min(400px, 100%)`), so a panel under 432 px (16 px padding each side) is never overrun. CSS guard
+  in `webviewCss.test.ts` (no `vw` unit in the drawer rules; the three values read `min(400px, 100%)`).
+- **Verify:** `npx vitest run src/adapters/node/webviewCss.test.ts` red, then green; gates 1–5; mutant (`100vw`
+  restored) dies
+- [ ] **Verified (T-014):**
+- **Notes:**
+
+### T-015 — Close the test gaps G1–G5, G7 and F4 of the compile
+
+- **Covers:** AC-003 (G1, G2), AC-007 (G3, G4), AC-019 (G5, F2), AC-018 (G7), AC-009/§8 (F4)
+- **Do:** Tests only (plus the F2 fix if G5 shows it): G1 `Close.test.tsx` the opener is a second element of the
+  same spec (focus returns to it, not to the first card); G2 close in the Overview without an opener focuses the
+  spec's first Overview row; G3 Overview rows of the selected spec carry `aria-current="true"`, others not; G4
+  `webviewCss.test.ts` the selection background and border on `.card[aria-current="true"]` and
+  `.ov-row[aria-current="true"]`; G5 `SpecDetail.test.tsx` link A succeeds, link B gets not-found for its key: A
+  keeps its text (F2: a result marks only the link that was activated after it arrived); G7 `openFile.test.ts`
+  `createOpenFile` takes `source` and `editor` and nothing else (like 0015's `boardRequests` test); F4 the visible
+  "Criteria" row label asserted literally.
+- **Verify:** each test green on the head, then its mutant on a scratch copy dies: `focus.ts` opener branch,
+  `focus.ts` Overview selector, `SpecRow` `current`, the CSS rule background, `FileLink` key match, `createOpenFile`
+  dependency, `CRITERIA_LABEL`; gates 1–5
+- [ ] **Verified (T-015):**
+- **Notes:**
+
+### T-016 — Docs: audit rows, 0018 notes, traceability, memory, F8 and F9
+
+- **Covers:** AC-023, AC-024, AC-015 (F9 wording); compile §8 items 1–5
+- **Do:** Test-title audit: the 8 absent `describe` titles with their homes (compile D3); the 0018 notes at §2 goal and
+  AC-031 (D4); fix the T-008 `Verified:` note count; traceability rows (Windows `npm test` 28+1+1+1, unit 2096/7 + 12,
+  CI run 44261156444 green at `fd74ec7`; AC-014, AC-020, AC-022, AC-024 state); 0019 §6.2 row 7 one sentence for the
+  not-available history (F9); the statement named in the notes under 0005 AC-007, AC-008 and 0006 AC-014 (F8);
+  `src/shared/protocol/layout.ts` named in `.architecture/webview.md`; `activeContext.md`; re-run of the test-title audit
+  for the titles of this round.
+- **Verify:** `python3 -I` audit script (Baseline `20792ca` vs head) lists only titles homed in the plan; `grep -c`
+  on the notes; gates 1–5 once more
+- [ ] **Verified (T-016):**
+- **Notes:**
 
 ## Test-title audit
 
