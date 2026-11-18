@@ -1,9 +1,9 @@
 # Plan — Plan Map: Stages, Parallel Work, Workers
 
 **Spec:** [0023-plan-map-stages-parallel-work.md](0023-plan-map-stages-parallel-work.md)
-**Status:** Done
+**Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-008
+**Current step:** T-009
 
 ## Approach
 
@@ -209,12 +209,15 @@ lines of nextStep …" (Integrate), `nextStep.test.ts` "the guide of each case �
    section in the side panel
 3. T-006 → T-007 — the map: stage rows, cards and their keys; ways, Copies, live updates and the sweeps
 4. T-008 — §4 notes, docs, test-title audit, architecture and Memory Bank sync, final gates
+5. T-009 → T-010 → T-011 → T-012 → T-013 → T-014 → T-015 → T-016 → T-017 — the fix round after the compile (S78):
+   D1–D3, the not-found chip, the test gaps, housekeeping, evidence and docs
 
 No parallel stage: T-001 and T-002 share `src/core/planMap/planMap.ts` and its test, T-003 builds on both; the webview
 steps share `main.css` (the Studio's one stylesheet, 0013), `planMapTexts.ts` and `areas/planMap/PlanMap.tsx`, and
 T-005's M-03 focus needs T-004's map heading. T-005 ‖ T-006 would need their CSS in separate files and the texts
 table complete before both; at eight medium steps that buys less than it costs. Preview harness (guideline 12,
-orchestrator) at the ends of stages 2 and 3; AC-018 screenshots recorded here.
+orchestrator) at the ends of stages 2 and 3; AC-018 screenshots recorded here. Stage 5 runs in sequence as well: its steps
+share `PlanMap.tsx`, the map's test files and this plan.
 
 ## Steps
 
@@ -387,6 +390,119 @@ orchestrator) at the ends of stages 2 and 3; AC-018 screenshots recorded here.
   `grep -c "Amended by 0023 (PD-069)"` per spec ≥ its §4 rows; audit counts; gates 1–5 and `npm run compile-tests`
 - [x] **Verified (T-008):** 2026-11-18 · `npx vitest run --project node src/adapters/node/docsScan.test.ts` red first against the docs of `6346495` (17 failed: the README, CHANGELOG, checklist, guideline, the §4 note counts and the retitled README test), then green (130 passed); `grep -c "Amended by 0023 (PD-069)"` per spec: 0005 4, 0013 1, 0015 4, 0016 1, 0017 1, 0018 3, 0019 12, 0020 7, 0021 5, 0022 8, ADR-001 1 (≥ its §4 rows); the audit above: 7 absent, each listed; gates 1–5 and `npm run compile-tests`: `eslint src --max-warnings 0`, `tsc --noEmit`, `tsc --noEmit -p src/webview`, `npm run test:unit` 2792 passed + 3 skipped (+16 timing), `npm run compile`, `npm run compile-tests`
 - **Notes:** §4 notes written by `/tmp/amend-0023/amend.py` (throwaway), each directly under its statement and after the notes of 0021 and 0022; no PD row edited (`product-decisions.md` untouched). 0013 AC-016's test audit and the other audits (0015 AC-027, 0016 AC-023, 0017 AC-024, 0018 AC-030, 0019 AC-023, 0020 AC-021, 0021 AC-020, 0022 AC-017) carry the AC-016 note. The architecture update ran with the plan's approval as the confirmation (the entries are exactly the ones named in *Do*): `AGENTS.md` snapshot and `last reconciled` (0023), `.architecture/{core,webview,adapters}.md`. Memory Bank: `techContext.md` one test line, `systemPatterns.md` one dated entry, `activeContext.md`. The checklist section `## Plan map (0023)` stands before `## Go` and the order test lists it. The 0015 M-1 line now says the panel shows "Overview, Board and Plan map". Open: AC-018 (the orchestrator's preview harness), AC-019's build part and AC-020 (Gregor), `npm test` on Windows and CI, a fresh `/sdd-compile`; 0024 is not built.
+
+## Fix round after the compile (S78, `/home/claude/orch/compile/0023.md`; Gregor: "Fix the findings of the 0023 compile")
+
+Proxy decisions of this round (Gregor delegated; P-25 …), recorded here and in the step Notes.
+- P-25 D3 (b) is PD-077: a focused card hands the focus to the card now at its place, and only a way, a Copy, a start
+  line or an empty place hands it to the map's heading. AC-012 is revised to say so (T-011), 0019 AC-020 is unchanged.
+- P-26 M22 (a stage of only not-found IDs): *finished* needs at least one found step (P-5, unchanged): a stage with
+  nothing found has no step that could be done, so it is not shown as done. Pinned by a test (T-013).
+- P-27 M74 (loose cards as one card row) and M76 (Alt+arrow): note only. §5.3 calls the loose row one row ("a parallel
+  group's cards or a card of its own") and the spec says nothing about Alt+arrow; the tests are not touched for them.
+- P-28 F1 (a not-found ID of an unfinished stage is a disclosure with an empty panel, guideline 2): rendered as the
+  chip P-5 asked for, outside the card grid (T-012). F3 (a swept fixture with an open `‖` stage) is not part of this
+  round: the harness (AC-018) counted the Copies on `par-open`, and the unit tests render the ways from a sample view.
+
+### T-009 — The ways wait for a spec without a return note, Ready included
+
+- **Covers:** AC-009 (D1, §5.4)
+- **Do:** `src/core/planMap/planMap.ts`: the ways condition adds `spec.returnNoteKeys.length === 0`. Test first,
+  `planMap.test.ts` "0023 AC-009": a Ready spec with a `‖` stage and a return note (`.memory-bank/activeContext.0001-T-009.md`)
+  offers no way; the same Ready spec without the note still offers them (negative control).
+- **Verify:** `npx vitest run --project node src/core/planMap` red on a scratch copy of the head, then green; gates 1–4
+- [ ] **Verified (T-009):**
+- **Notes:**
+
+### T-010 — Cards, grid, tab stop and expansion go by occurrence, not by step ID
+
+- **Covers:** AC-011, AC-008 (D2, F5; §7 "an ID twice")
+- **Do:** `PlanMap.tsx`, `StageRow.tsx`, `StepCard.tsx`: a card is addressed by its stage number and its place (`data-step-card`
+  stays the step ID, a new `data-card-at="<stage>.<n>"` addresses the occurrence); the grid, the tab stop, the arrow keys, the
+  expansion and the focus fallback use that address. Tests first: `Keyboard.test.tsx` "0023 AC-011" with an ID in two
+  unfinished stages (one tab stop; the arrows start from the card that holds the focus; the stop follows the second
+  card); `PlanMap.test.tsx` "0023 AC-008" (expanding one card of an ID that stands twice expands only it).
+- **Verify:** `npx vitest run --project webview src/webview/areas/planMap` red on a scratch copy of the head, then green; gates 1–4
+- [ ] **Verified (T-010):**
+- **Notes:**
+
+### T-011 — Focus stays in the map: a removed way, Copy or start line hands it to the heading (PD-077)
+
+- **Covers:** AC-012 (D3, PD-077)
+- **Do:** `PlanMap.tsx` (`Stages` and the map root): focus is tracked anywhere inside `[data-plan-map]` (card heads, links,
+  the ways toggle, Copies, start lines); when the focused element is gone after an update, a card hands the focus to the
+  card now at its place (PD-077, as P-19 does), anything else to the map's heading. Spec: AC-012 revised to PD-077 with an
+  amendment note `*Amended by PD-077 …*` under it. Tests first, `PlanMap.test.tsx` "0023 AC-012": the compile's repro (open
+  the ways, focus a start-line Copy, send the detail with the step returned: the ways block is gone and the heading holds
+  the focus), the same for a way's Copy and the ways toggle; the card test (b) is kept as it is.
+- **Verify:** `npx vitest run --project webview src/webview/areas/planMap` red on a scratch copy of the head, then green; gates 1–4
+- [ ] **Verified (T-011):**
+- **Notes:**
+
+### T-012 — A step the plan does not know is a chip, not a card
+
+- **Covers:** AC-008, AC-004 (F1, P-5; guideline 2)
+- **Do:** `StageRow.tsx`, `PlanMap.tsx` (`gridOf`): in an unfinished stage a `notFound` step renders as `StepChip` (plain
+  `span`, M-01 `?` and `not in the steps`), and it is not in the card grid or a card row. Test first, `PlanMap.test.tsx`
+  "0023 AC-008": a stage with a not-found ID among cards has no card for it and no disclosure; the arrows skip it.
+- **Verify:** `npx vitest run --project webview src/webview/areas/planMap` red on a scratch copy of the head, then green; gates 1–4
+- [ ] **Verified (T-012):**
+- **Notes:**
+
+### T-013 — Core test gaps: M01, M02, M17, M21, M22, M24
+
+- **Covers:** AC-001, AC-002, AC-008, AC-012 (compile survivors)
+- **Do:** `planMap.test.ts` only: "0023 AC-001" (M01 `‖` wins over `→` between two IDs; M02 IDs with no mark between them are
+  two groups), "0023 AC-002" (M17 a note on another step: no step is *next* while a note lies), "0023 AC-012" (M21 m counts
+  returned and unfinished steps, not done ones; M24 the notes of another spec are not this spec's), "0023 AC-008"
+  (M22 P-26: a stage of only not-found IDs is not finished). No code change; each test is shown red on a scratch copy
+  with its mutant (`/tmp/c0023s78/tools/mutants.py` definitions), green on the head.
+- **Verify:** `npx vitest run --project node src/core/planMap`; the six mutants red, one by one on a scratch copy; gates 1–4
+- [ ] **Verified (T-013):**
+- **Notes:**
+
+### T-014 — Webview test gaps: M64, M65, M66, M67, M72, M79, M90
+
+- **Covers:** AC-011, AC-008, AC-012, AC-004 (compile survivors)
+- **Do:** tests only. `Keyboard.test.tsx` (M64 the card that is expanded and not the stop keeps `Open in plan` out of the
+  tab order; M72 an arrow is `preventDefault`ed); `PlanMap.test.tsx` (M65 the state word of a card for assistive
+  technology; M66 a dropped ID on a card is struck; M67 the full blocked reason as the card's tooltip; M79 the
+  expansion resets with another spec when selection and detail arrive in one render, order-independent);
+  `PlanSection.test.tsx` (M90 M-04 after a `mixed` stage). M74 and M76: note only (P-27).
+- **Verify:** `npx vitest run --project webview src/webview`; the seven mutants red on a scratch copy; gates 1–4
+- [ ] **Verified (T-014):**
+- **Notes:**
+
+### T-015 — The map breaks long prompts and Files as 0022 AC-015 says: M105, M107, M108
+
+- **Covers:** AC-008, AC-009 (0022 AC-015 as §4 amends it)
+- **Do:** tests only. `PlanMap.test.tsx` (a way's prompt and a start line carry a `<wbr>` through `PathText`; a card's
+  Files too); `webviewCss.test.ts` (`.plan-way-prompt code` and `.plan-start-lines code` wrap with `overflow-wrap`, never
+  `white-space: nowrap`).
+- **Verify:** `npx vitest run --project webview src/webview/areas/planMap` and `npx vitest run --project node src/adapters/node/webviewCss.test.ts`; the three mutants red on a scratch copy; gates 1–4
+- [ ] **Verified (T-015):**
+- **Notes:**
+
+### T-016 — Housekeeping of the tests and texts: the comment, the `any`, the dead constant
+
+- **Covers:** — (rule check of the compile; `AGENTS.md` *Comments*, *TypeScript*; M54)
+- **Do:** remove the comment at `Keyboard.test.tsx:49`; `src/shared/protocol/planMap.test.ts:26-27` types the edited view
+  without `any`; `PLAN_MAP_COMMAND_TITLE` is asserted against `package.json` in `manifest.test.ts` (the title the user sees
+  stays one text, so the constant is kept and pinned).
+- **Verify:** `npx vitest run --project node src/adapters/vscode/manifest.test.ts src/shared/protocol`; M54 red on a scratch copy; gates 1–4
+- [ ] **Verified (T-016):**
+- **Notes:**
+
+### T-017 — Evidence, notes and docs of the fix round
+
+- **Covers:** AC-016, AC-018 (records only)
+- **Do:** this plan: the manual evidence of the orchestrator's harness (`/home/claude/orch/compile/0023-preview.md`) under AC-018,
+  Windows at `c9845e1` under AC-016, the Baseline note, the T-006 and T-007 notes (no red run existed; the mutants are the
+  negative control now), traceability and handoff; `.memory-bank/activeContext.md` (*Now*, *Changed Recently*, *Validation*);
+  `CHANGELOG.md` (the side panel beside the Plan map from 900 px).
+- **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts`; the final gates 1–5 and `npm run compile-tests`
+- [ ] **Verified (T-017):**
+- **Notes:**
 
 ## Test-title audit
 
