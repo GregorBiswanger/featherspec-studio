@@ -107,6 +107,8 @@ and the expected result. A clear miss reopens the named spec.
   Publishing* → *Create*: repository owner `GregorBiswanger`, repository `featherspec-studio`, workflow
   `publish.yml`, no environment. For a private repository the workflow must run within 48 hours after that.
   Azure DevOps tokens (PAT) stop working for publishing on 2026-12-01, so no token is used here.
+- [ ] **CHANGELOG date**: set the date of the 0.1.0 entry in CHANGELOG.md (`## [0.1.0] - Unreleased` becomes
+  `## [0.1.0] - <release day>`) and commit it before the publish.
 - [ ] All boxes ticked → Go → `gh workflow run publish.yml -f confirm=publish` (the workflow runs the unit
   suite and `npx @vscode/vsce publish --oidc`). Alternative without the workflow: `npx @vscode/vsce package`
   and upload the `.vsix` by hand on the publisher management page.

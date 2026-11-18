@@ -40,6 +40,12 @@ async function exists(file: string): Promise<boolean> {
     }
 }
 
+export function firstRelease(changelog: string): string {
+    const start = changelog.indexOf('## [');
+    const next = changelog.indexOf('\n## [', start + 1);
+    return changelog.slice(start, next === -1 ? undefined : next + 1).replace(/\n+$/, '\n');
+}
+
 describe('product docs after 0015 (AC-025)', () => {
     it('finds a forbidden word in a negative control', () => {
         expect(findForbidden('Open the Agent Center')).toEqual(['agent center']);
@@ -160,14 +166,11 @@ describe('product docs after 0017 (AC-025)', () => {
         expect(text).toContain('AC-026');
     });
 
-    it('CHANGELOG names the removal and the new places under Unreleased', async () => {
-        const text = await read('CHANGELOG.md');
-        const unreleased = text.slice(text.indexOf('## [Unreleased]'), text.indexOf('## [0.1.0]'));
-        expect(unreleased).toContain('0017');
-        expect(unreleased.toLowerCase()).toContain('drag');
-        expect(unreleased).toContain('Move to…');
-        expect(unreleased).toContain('Copy Next Step');
-        expect(unreleased.toLowerCase()).toContain('status bar');
+    it('CHANGELOG describes the status bar entry and Copy Next Step in the 0.1.0 entry', async () => {
+        const entry = firstRelease(await read('CHANGELOG.md'));
+        expect(entry).toContain('Copy Next Step');
+        expect(entry.toLowerCase()).toContain('status bar');
+        expect(entry).toContain('<number> · <state> · <short form>');
     });
 });
 
@@ -199,11 +202,10 @@ describe('product docs after 0018 (AC-001, AC-029)', () => {
         }
     });
 
-    it('the CHANGELOG names the new areas and commands under Unreleased', async () => {
-        const changelog = await read('CHANGELOG.md');
-        const unreleased = changelog.slice(changelog.indexOf('## [Unreleased]'), changelog.indexOf('\n## [', changelog.indexOf('## [Unreleased]') + 1));
+    it('the CHANGELOG names the two tabs and the Refresh command in the 0.1.0 entry', async () => {
+        const entry = firstRelease(await read('CHANGELOG.md'));
         for (const term of ['Open Overview', 'Open Board', 'FeatherSpec Studio: Refresh', 'Overview', 'Board']) {
-            expect(unreleased, term).toContain(term);
+            expect(entry, term).toContain(term);
         }
     });
 
@@ -310,13 +312,36 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         expect(text).toContain('`FeatherSpec Studio: Focus on Specs View` reaches the view');
     });
 
-    it('CHANGELOG names the tree and the removal under Unreleased', async () => {
+    it('CHANGELOG names the tree and its menu in the 0.1.0 entry, and nothing that never shipped', async () => {
         const text = await read('CHANGELOG.md');
-        const unreleased = text.slice(text.indexOf('## [Unreleased]'), text.indexOf('## [0.1.0]'));
-        expect(unreleased).toContain('(0020)');
-        expect(unreleased).toContain('native tree');
-        expect(unreleased).toContain('Open Spec, Open Plan and Copy Next Step');
-        expect(unreleased).toContain('Spec Explorer');
+        const entry = firstRelease(text);
+        expect(entry).toContain('native tree');
+        expect(entry).toContain('Open Spec, Open Plan and Copy Next Step');
+        expect(text).not.toContain('(0020)');
+    });
+
+    it('CHANGELOG is one first release, undated until the release, and describes the product as it ships', async () => {
+        const text = await read('CHANGELOG.md');
+        expect(text.match(/^## \[/gm)).toEqual(['## [']);
+        expect(text).toContain('\n## [0.1.0] - Unreleased\n');
+        expect(text).not.toContain('## [Unreleased]');
+        const lower = text.toLowerCase();
+        for (const gone of ['drag', 'move to', 'mission control', 'spec explorer', 'spec board', 'rescan', 'needs attention', 'featherspec-studio.']) {
+            expect(lower, gone).not.toContain(gone);
+        }
+        for (const term of ['Set up FeatherSpec', 'Restricted Mode', 'side panel', 'Problems']) {
+            expect(text, term).toContain(term);
+        }
+    });
+
+    it('the release checklist asks for the date of the 0.1.0 entry before the publish', async () => {
+        const text = await read('docs/release-checklist.md');
+        const go = text.slice(text.indexOf('\n## Go\n'));
+        expect(go).toContain('set the date of the 0.1.0 entry in CHANGELOG.md');
+    });
+
+    it('finds the first release section of a changelog and stops at the next one', () => {
+        expect(firstRelease('# C\n\n## [1.0.0] - x\nA\n\n## [0.9.0] - y\nB\n')).toBe('## [1.0.0] - x\nA\n');
     });
 
     for (const [file, note] of [
