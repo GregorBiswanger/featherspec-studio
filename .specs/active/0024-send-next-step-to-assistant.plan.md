@@ -484,8 +484,7 @@ them all." No step above is renumbered or edited except where its note says so. 
   outside §7.
 - P-21 (D2, F4) "Focus was inside the split button" is `root.contains(document.activeElement)` read at the moment of the
   change, never an event's `relatedTarget`. Where the same commit removes the focused menu item (the assistant changes from
-  Copilot to Claude Code while the item `Send to the current chat` has focus), the layout effect also counts "the last
-  commit had focus in the open menu and the focus is on `body` now" as inside.
+  Copilot to Claude Code while the item `Send to the current chat` has focus), the layout effect also counts "the menu was open at the last commit and the focus is on `body` now" as inside.
 - P-22 (D3, F3) The handoff is scoped to the place. A place component `StepAction` (`ui/StepAction.tsx`) renders the Send
   button or the primary Copy prompt of the detail's first line and of an Overview row, and owns a `FocusHandoff` created by
   `useFocusHandoff()` (`ui/popup.ts`). The Send button reports "I leave with focus inside" to its place; the Copy prompt
@@ -543,7 +542,8 @@ them all." No step above is renumbered or edited except where its note says so. 
     - a negative control: no window blur, same results.
   - Code: `SendButton.tsx` (`onFocus`/`onBlur` bookkeeping removed).
 - **Verify:** `npx vitest run --project webview src/webview` red, then green; gates 1–4
-- [ ] **Verified (T-010):**
+- [x] **Verified (T-010):** 2026-11-18 red: `npx vitest run --project webview src/webview/detail/SpecDetail.test.tsx src/webview/areas/overview/Overview.test.tsx` 8 failed (window blur with the offer gone: focus on the heading or `body`; assistant change: not on the arrow part; W6: focus pulled from the second line's Copy). Green after: `--project webview src/webview` 613 passed. Gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 3101 passed + 3 skipped (+18 timing), compile and compile-tests green.
+- **Notes:** The `onFocus`/`onBlur` bookkeeping is gone; `focusIsInside()` reads `root.contains(document.activeElement)`, plus the removed-item case (menu open at the last commit and focus on `body`). The handoff to the new Copy is still the module flag until T-011.
 
 ### T-011 — The focus handoff belongs to the place; the comments of popup.ts go
 

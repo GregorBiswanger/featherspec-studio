@@ -1,5 +1,5 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import type { FocusEvent, KeyboardEvent } from 'react';
+import type { KeyboardEvent } from 'react';
 import type { SendPromptPayload, SendResultEventPayload, SendView } from '../../shared/protocol/assistant';
 import { ASSISTANT_NAMES, MORE_ACTIONS_TITLE, moreActionsName, SEND_ITEM_TEXT, sendMainLabel, sendMainName, sendOpenedLabel, sendOpenedName } from '../../shared/protocol/assistantTexts';
 import { COPIED_LABEL, COPY_FAILED_LABEL, COPY_PROMPT_LABEL } from '../../shared/protocol/nextStepTexts';
@@ -30,7 +30,7 @@ export function SendButton(props: SendButtonProps) {
     const root = useRef<HTMLSpanElement>(null);
     const arrow = useRef<HTMLButtonElement>(null);
     const menu = useRef<HTMLDivElement>(null);
-    const focusInside = useRef(false);
+    const menuWasOpen = useRef(false);
     const focusOnOpen = useRef<'first' | 'last' | undefined>(undefined);
     const [shown, setShown] = useState<Shown | undefined>(undefined);
     const pendingSend = useRef(0);
@@ -38,6 +38,11 @@ export function SendButton(props: SendButtonProps) {
     const seenSend = useRef<SendResultEventPayload | undefined>(sendResult);
     const seenCopy = useRef<CopyResult | undefined>(copyResult);
     const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+    const focusIsInside = (): boolean => {
+        const active = document.activeElement;
+        return root.current?.contains(active) === true || (menuWasOpen.current && (active === null || active === document.body));
+    };
 
     const stopTimer = (): void => {
         if (timer.current !== undefined) {
@@ -100,7 +105,7 @@ export function SendButton(props: SendButtonProps) {
     useLayoutEffect(
         () => () => {
             closePopup(arrowId);
-            if (focusInside.current) {
+            if (focusIsInside()) {
                 offerFocusHandoff();
             }
         },
@@ -113,11 +118,15 @@ export function SendButton(props: SendButtonProps) {
         if (lastOffer.current !== offerKey) {
             lastOffer.current = offerKey;
             closePopup(arrowId);
-            if (focusInside.current) {
+            if (focusIsInside()) {
                 arrow.current?.focus();
             }
         }
     }, [offerKey]);
+
+    useLayoutEffect(() => {
+        menuWasOpen.current = menu.current !== null;
+    });
 
     const itemButtons = (): HTMLElement[] => [...(menu.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])];
 
@@ -193,13 +202,6 @@ export function SendButton(props: SendButtonProps) {
         }
     };
 
-    const onFocus = (): void => {
-        focusInside.current = true;
-    };
-    const onBlur = (event: FocusEvent<HTMLElement>): void => {
-        focusInside.current = event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget);
-    };
-
     const activateSend = (target: SendView['target'], fromMenu = false): void => {
         pendingSend.current += 1;
         if (fromMenu) {
@@ -216,7 +218,7 @@ export function SendButton(props: SendButtonProps) {
 
     const idleName = sendMainName(name, send.target, line);
     return (
-        <span ref={root} className="send-split next-step-copy" onKeyDown={onKeyDown} onFocus={onFocus} onBlur={onBlur}>
+        <span ref={root} className="send-split next-step-copy" onKeyDown={onKeyDown}>
             <button type="button" className="copy-button send-main" aria-label={shown?.name ?? idleName} title={shown?.text ?? idleName} onClick={() => activateSend(send.target)}>
                 {shown?.label ?? sendMainLabel(name)}
             </button>

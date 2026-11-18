@@ -963,3 +963,91 @@ describe('0024 AC-010: focus when the offer changes', () => {
     });
 });
 
+describe('0024 AC-010: focus is decided at the moment of the change, also after the webview lost the window focus', () => {
+    const WITH: NextStepView = {
+        rule: 'NS-6',
+        lines: [
+            { text: 'Implement T-003 of .specs/active/0007-thing.plan.md', intent: 'Continue with T-003' },
+            { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Not sure where it stands? Let the agent report first' },
+        ],
+        send: { assistant: 'copilot', target: 'new', targets: ['new', 'current'] },
+    };
+    const WITHOUT = { ...WITH, send: undefined } as NextStepView;
+    const OTHER = { ...WITH, send: { assistant: 'claudeCode', target: 'new', targets: ['new'] } } satisfies NextStepView;
+    const focusOn = async (element: HTMLElement): Promise<void> => {
+        await act(async () => element.focus());
+    };
+    const windowBlur = async (element: HTMLElement): Promise<void> => {
+        await act(async () => {
+            element.dispatchEvent(new FocusEvent('blur', { relatedTarget: null }));
+            element.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+            await Promise.resolve();
+        });
+    };
+    const reset = (): void => {
+        mounted?.unmount();
+        mounted = undefined;
+        clients.splice(0).forEach((client) => client.stop());
+    };
+
+    it.each(['main', 'arrow', 'item'] as const)('the offer goes away after a window blur with focus on the %s part: focus goes to the Copy prompt that replaces it', async (place) => {
+        const container = await open(spec({}, WITH));
+        const arrow = container.querySelector<HTMLButtonElement>('button.send-arrow')!;
+        if (place === 'main') {
+            await focusOn(container.querySelector<HTMLElement>('button.send-main')!);
+        } else if (place === 'arrow') {
+            await focusOn(arrow);
+        } else {
+            await click(arrow);
+        }
+        const held = document.activeElement as HTMLElement;
+        await windowBlur(held);
+        expect(document.activeElement).toBe(held);
+        await send(detailEvent(spec({}, WITHOUT)));
+        expect(document.activeElement).toBe(container.querySelector('.next-step-lines li button.copy-button'));
+        reset();
+    });
+
+    it.each(['main', 'arrow', 'first item', 'item that leaves'] as const)('the assistant changes after a window blur with focus on the %s: focus goes to the arrow part and the menu closes', async (place) => {
+        const container = await open(spec({}, WITH));
+        if (place === 'main') {
+            await focusOn(container.querySelector<HTMLElement>('button.send-main')!);
+        } else if (place === 'arrow') {
+            await focusOn(container.querySelector<HTMLElement>('button.send-arrow')!);
+        } else {
+            await click(container.querySelector('button.send-arrow')!);
+            if (place === 'item that leaves') {
+                await focusOn([...container.querySelectorAll<HTMLElement>('[role="menuitem"]')][1]!);
+            }
+        }
+        await windowBlur(document.activeElement as HTMLElement);
+        await send(detailEvent(spec({}, OTHER)));
+        expect(container.querySelector('[role="menu"]')).toBeNull();
+        expect(document.activeElement).toBe(container.querySelector('button.send-arrow'));
+        reset();
+    });
+
+    it('focus elsewhere stays: a pointer press on the second line while the menu is open, then the offer goes away or changes', async () => {
+        for (const next of [WITHOUT, OTHER]) {
+            const container = await open(spec({}, WITH));
+            await click(container.querySelector('button.send-arrow')!);
+            const secondary = container.querySelector<HTMLElement>('button.copy-secondary')!;
+            await act(async () => {
+                secondary.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, cancelable: true }));
+            });
+            await focusOn(secondary);
+            await send(detailEvent(spec({}, next)));
+            expect(document.activeElement).toBe(secondary);
+            reset();
+        }
+    });
+
+    it('focus on the second line stays after a window blur when the offer goes away', async () => {
+        const container = await open(spec({}, WITH));
+        const secondary = container.querySelector<HTMLElement>('button.copy-secondary')!;
+        await focusOn(secondary);
+        await windowBlur(secondary);
+        await send(detailEvent(spec({}, WITHOUT)));
+        expect(document.activeElement).toBe(secondary);
+    });
+});

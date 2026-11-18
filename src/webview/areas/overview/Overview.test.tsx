@@ -331,6 +331,21 @@ describe('0024 AC-003, AC-002: the split button at the first Now row only', () =
         expect(document.activeElement).toBe(container.querySelector('[data-spec-row="0001-r"] button.copy-button'));
     });
 
+    it('after a window blur (focusout without a related target, the active element unchanged) the same moves hold', async () => {
+        const container = await open(viewWith([row('0001', { send: SEND }), row('0002')]));
+        const main = container.querySelector<HTMLElement>('button.send-main')!;
+        await act(async () => main.focus());
+        await act(async () => {
+            main.dispatchEvent(new FocusEvent('blur', { relatedTarget: null }));
+            main.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+            await Promise.resolve();
+        });
+        expect(document.activeElement).toBe(main);
+        await send(overviewEvent(viewWith([row('0001'), row('0002')])));
+        expect(container.querySelector('.send-split')).toBeNull();
+        expect(document.activeElement).toBe(container.querySelector('[data-spec-row="0001-r"] button.copy-button'));
+    });
+
     it('without send the first Now row renders the 0021 DOM: the Copy prompt in place of the split button', async () => {
         const container = await open(viewWith([row('0001'), row('0002')]));
         expect(container.querySelector('[data-spec-row="0001-r"] button.copy-icon, [data-spec-row="0001-r"] button.copy-button')).not.toBeNull();
