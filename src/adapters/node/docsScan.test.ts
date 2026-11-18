@@ -292,7 +292,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         for (const group of ['**In progress**', '**Ready**', '**Backlog**', '**Done**']) {
             expect(section, group).toContain(group);
         }
-        expect(section).toContain('inline **Copy prompt** button');
+        expect(section).toContain('inline **Copy Next Step** button');
         expect(section).toContain('**Open Spec**, **Open Plan** and **Copy Next Step**');
         expect(section).toContain('The badge on the Activity Bar icon counts the specs that wait for you (Review and Blocked).');
     });
@@ -544,6 +544,15 @@ describe('product docs after 0021 (AC-021)', () => {
             expect(readme, literal).toContain(literal);
         }
         expect(readme).toContain('\n## Settings\n');
+    });
+
+    it('the README names the inline action of the Specs view Copy Next Step (A-007) and the step short form in the Overview and on the Board', async () => {
+        const readme = await read('README.md');
+        expect(readme).toContain('(its inline **Copy Next Step**)');
+        expect(readme).not.toContain('inline **Copy prompt**');
+        expect(readme).toContain('the spec\'s next step ("Next" and the step short form, for example `Verify · /sdd-compile`) with its own **Copy prompt**');
+        expect(readme).toContain('**Next**, the short intent and the short form of the prompt (for example `Plan · /sdd-plan`) with a **Copy prompt** button');
+        expect(readme).not.toContain('**Next** and the short form of the command');
     });
 
     it('neither the README nor the release checklist holds **Copy** or then `continue`', async () => {

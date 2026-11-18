@@ -3,7 +3,7 @@
 **Spec:** [0021-next-step-intent-and-guidance.md](0021-next-step-intent-and-guidance.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-013 (fix stage after the compile of S74: `/home/claude/orch/compile/0021.md`)
+**Current step:** T-014 (fix stage after the compile of S74: `/home/claude/orch/compile/0021.md`)
 
 ## Approach
 
@@ -396,7 +396,8 @@ ends of stages 1 and 3.
   e.g. `Verify · /sdd-compile`; line 25 (Board): **Next**, the short intent and the short form of the prompt, e.g.
   `Plan · /sdd-plan`. `docsScan.test.ts` literals first (red against the README), then the README.
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green
-- [ ] **Verified (T-013):**
+- [x] **Verified (T-013):** 2026-11-18 · red: `npx vitest run --project node src/adapters/node/docsScan.test.ts` 2 failed of 113 (the retargeted literal `inline **Copy Next Step** button`; the new test for README lines 15, 19, 25 and 35) → green: same file 113 passed after the README edit; `npm run test:unit` 157 files, 2636 passed, 3 skipped, timing 15 passed; eslint 0 warnings, both `tsc` clean.
+- **Notes:** Lines 15 and 35 name the tree action by its command title (A-007, `package.json` `featherspec-studio.tree.copyNextStep`); the card, the Overview row and the detail keep **Copy prompt**. The wiki (`C:\projects\featherspec.wiki`) is not reachable here and holds no 0021 text in this repository; it follows at the release.
 
 ### T-014 — A cut hint never ends in a space before the ellipsis (compile exploratory)
 
