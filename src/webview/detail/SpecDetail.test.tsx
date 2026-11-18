@@ -438,7 +438,7 @@ describe('0015 AC-003, AC-005, AC-008, AC-009: the next step in the detail', () 
 });
 
 describe('0016 AC-006, AC-007, AC-016, AC-022: Problems, format notes and the title emphasis', () => {
-    const PROBLEM = { reason: 'Folder done/ does not match status "In Progress".', open: { key: SPEC_KEY } };
+    const PROBLEM = { reason: 'Folder done/ does not match status "In Progress".', open: { key: SPEC_KEY, line: 1 } };
 
     function notesToggle(container: HTMLElement): HTMLButtonElement {
         return container.querySelector<HTMLButtonElement>('.format-notes-toggle')!;

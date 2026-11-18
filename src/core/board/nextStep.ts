@@ -9,6 +9,7 @@ import {
 import type { StepView } from '../../shared/protocol/stepView';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { ShellModel } from '../ports/shell';
+import type { PlanStep } from '../specs/planSteps';
 import type { SpecEntry } from '../specs/readProject';
 
 export const NEXT_STEP_RULE_IDS = ['NS-1', 'NS-2', 'NS-11', 'NS-3', 'NS-4', 'NS-5', 'NS-6', 'NS-7', 'NS-8', 'NS-9', 'NS-10'] as const;
@@ -25,15 +26,14 @@ function lines(rule: NextStepRuleId, ...texts: NextStepLine[]): NextStep {
     return { rule, lines: texts };
 }
 
-function openStep(model: ShellModel, entry: LifecycleEntry): string | undefined {
+export function openStep(model: ShellModel, entry: LifecycleEntry): PlanStep | undefined {
     const plan = model.project.plans.find((candidate) => candidate.key === entry.plan);
-    const first = (plan?.parsed?.steps ?? []).find((step) => step.ticked !== true && !step.struck);
-    return first?.id;
+    return (plan?.parsed?.steps ?? []).find((step) => step.ticked !== true && !step.struck);
 }
 
 export function startLine(model: ShellModel, entry: LifecycleEntry): string {
     const plan = entry.plan ?? '';
-    const id = openStep(model, entry);
+    const id = openStep(model, entry)?.id;
     return id === undefined ? `Implement ${plan}` : `Start ${id} of ${plan}`;
 }
 

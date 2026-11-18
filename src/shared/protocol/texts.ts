@@ -336,6 +336,7 @@ export function successorText(successor: { kind: 'link'; text: string } | { kind
 }
 
 export const DETAIL_LABEL = 'Spec detail';
+export const FILE_LABELS = { spec: 'Spec', plan: 'Plan', archivedPlan: 'Archived plan', returnNote: 'Return note' } as const;
 export const NO_RELATED_TEXT = 'No related artifacts';
 export const SECTION_TITLES = {
     overview: 'Overview',

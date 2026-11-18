@@ -10,6 +10,7 @@ import { needsOf } from './needs';
 import { nextStep } from './nextStep';
 import { withoutLeadingId, withoutListMarker } from './idText';
 import { criteriaProgress } from './progress';
+import { filesOf, progressOf } from './situation';
 
 export interface DetailInput {
     selection: { stem: string; path?: string } | undefined;
@@ -55,7 +56,7 @@ function diagnosticLine(diagnostic: LifecycleEntry['diagnostics'][number]): Diag
     const scope = diagnostic.scope;
     const file = scope === 'project' ? undefined : scope.file;
     const line = scope === 'project' || !('line' in scope) ? undefined : scope.line;
-    return file === undefined ? { reason: diagnostic.reason } : { reason: diagnostic.reason, open: line === undefined ? { key: file } : { key: file, line } };
+    return file === undefined ? { reason: diagnostic.reason } : { reason: diagnostic.reason, open: { key: file, line: line === undefined || line < 1 ? 1 : line } };
 }
 
 function baseName(key: string): string {
@@ -142,5 +143,25 @@ export function buildDetail(input: DetailInput): DetailView {
         related,
         history: { statusHistory: historyItems, label: input.history.available ? input.history.label : HISTORY_LABEL, notAvailable: input.history.available ? undefined : input.history.text },
     };
-    return { kind: 'spec', key: entry.key, stem: entry.stem, number: entry.number, title: titleOf(spec) ?? entry.stem, nextStep: next, problems: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').map(diagnosticLine), sections };
+    const duplicated = model.lifecycle.entries.filter((candidate) => candidate.stem === entry.stem).length > 1;
+    const progress = progressOf(model, entry, spec);
+    return {
+        kind: 'spec',
+        key: entry.key,
+        stem: entry.stem,
+        ...(duplicated ? { path: entry.key } : {}),
+        number: entry.number,
+        title: titleOf(spec) ?? entry.stem,
+        state: entry.state,
+        rule: entry.rule,
+        persistence: entry.persistence,
+        ...(entry.deprecated === undefined ? {} : { successor: successorText(entry.deprecated.successor) }),
+        nextStep: next,
+        problems: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').map(diagnosticLine),
+        notes: sections.overview.notes,
+        ...(progress === undefined ? {} : { progress }),
+        files: filesOf(model, spec),
+        history: sections.history,
+        sections,
+    };
 }

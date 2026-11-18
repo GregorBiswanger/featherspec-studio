@@ -3,7 +3,7 @@
 **Spec:** [0019-detail-situation-picture.md](0019-detail-situation-picture.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-002
+**Current step:** T-003
 
 ## Approach
 
@@ -258,8 +258,8 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
   for a duplicated stem); `detail.test.ts` in `shared/protocol` for the guard.
 - **Verify:** `npx vitest run src/core/board src/shared/protocol src/webview/detail` red (stubs), then
   green; gates 1–4
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-18 — red: `npx vitest run src/core/board/shortTitle.test.ts` failed 24 of 24 on the `Not implemented` stub; `npx vitest run src/core/board/detail.test.ts` failed 22 of 44 (no `progress`, `files`, `state` … on the view, problems without a line); green after the change: shortTitle 24, detail 44, `src/shared/protocol/detail.test.ts` 24 (guard: one accepting case, 21 damaged views each refused, so no case is vacuous). Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2066 passed + 3 skipped (+12 timing).
+- **Notes:** Deviations and proxies: (1) the new builder part lives in `src/core/board/situation.ts` (`progressOf`, `filesOf`), not inside `detail.ts`, to keep that file small; `src/core/board/shortTitle.ts` also exports `plainShort` (next open step title). (2) `DiagnosticLine.open` is now a `LineTarget` (line ≥ 1; line 1 without one) for `problems` and `notes`; the old `sections.overview.notes` follows. (3) A Backlog spec without a plan and without an applying need (unreadable spec) gets `noPlan: true`, so Progress is never empty. (4) File rows carry their `label` from `FILE_LABELS` (`texts.ts`), `openStep` returns the `PlanStep`. (5) The fixture `studio-0015` holds `.gitkeep` in backlog/ and done/ as `studio-0002` does. (6) Webview tests keep passing on the old `sections`; `views.ts` builds the new fields with defaults (`extra` parameter overrides).
 
 ### T-003 — The detail shows the picture; every link opens its file at the line
 

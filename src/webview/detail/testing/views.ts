@@ -1,4 +1,4 @@
-import type { DetailSections, DetailView, DiagnosticLine, NextStepView } from '../../../shared/protocol/detail';
+import type { DetailSections, DetailView, DiagnosticLine, NextStepView, SpecDetailView } from '../../../shared/protocol/detail';
 import { PROTOCOL_VERSION, type Envelope } from '../../../shared/protocol/envelope';
 
 export const SPEC_KEY = '.specs/active/0007-thing.md';
@@ -50,8 +50,40 @@ export function sections(overrides: Partial<DetailSections> = {}): DetailSection
 
 export const NEXT_STEP: NextStepView = { rule: 'NS-6', lines: [{ text: `/sdd-plan ${SPEC_KEY}` }] };
 
-export function detailView(overrides: Partial<DetailSections> = {}, nextStep: NextStepView = NEXT_STEP, problems: DiagnosticLine[] = []): DetailView {
-    return { kind: 'spec', key: SPEC_KEY, stem: '0007-thing', number: '0007', title: 'Thing 0007', nextStep, problems, sections: sections(overrides) };
+export function detailView(overrides: Partial<DetailSections> = {}, nextStep: NextStepView = NEXT_STEP, problems: DiagnosticLine[] = [], extra: Partial<SpecDetailView> = {}): DetailView {
+    const built = sections(overrides);
+    const view: SpecDetailView = {
+        kind: 'spec',
+        key: SPEC_KEY,
+        stem: '0007-thing',
+        number: '0007',
+        title: 'Thing 0007',
+        state: built.overview.state,
+        rule: built.overview.rule,
+        persistence: built.overview.persistence,
+        nextStep,
+        problems,
+        notes: built.overview.notes.map((note) => ({ reason: note.reason, open: { key: note.open?.key ?? SPEC_KEY, line: note.open?.line ?? 1 } })),
+        progress: {
+            needs: [],
+            noPlan: false,
+            steps: { kind: 'steps', done: 1, total: 3, next: { id: 'T-002', title: 'Second step', open: { key: PLAN_KEY, line: 30 } } },
+            criteria: {
+                kind: 'criteria',
+                verified: 1,
+                total: 2,
+                open: [{ id: 'AC-002', text: 'The board shall sort.', built: false, open: { key: SPEC_KEY, line: 44 } }],
+            },
+        },
+        files: [
+            { label: 'Spec', name: '0007-thing.md', open: { key: SPEC_KEY, line: 1 } },
+            { label: 'Plan', name: '0007-thing.plan.md', open: { key: PLAN_KEY, line: 1 } },
+        ],
+        history: built.history,
+        sections: built,
+        ...extra,
+    };
+    return view;
 }
 
 export function detailEvent(view: DetailView): Envelope {

@@ -5,7 +5,7 @@ import { noteText, planText, readFixture, readMemory, row, specText } from '../l
 import { buildCards } from './cards';
 import { nextStepNumberUsedText } from '../../shared/protocol/nextStepTexts';
 import { buildDetail } from './detail';
-import { nextStep } from './nextStep';
+import { nextStep, openStep } from './nextStep';
 
 const NO_HISTORY: HistoryView = { available: true, label: 'Only changes Studio saw while it was running.', entries: [] };
 
@@ -173,7 +173,7 @@ describe('spec detail', () => {
         const view = spec(buildDetail({ selection: { stem: '0003-also-valid' }, model, history: NO_HISTORY }));
         expect(view.problems).toHaveLength(1);
         expect(view.problems[0]?.reason.length).toBeGreaterThan(0);
-        expect(view.problems[0]?.open).toEqual({ key: '.specs/done/0003-also-valid.md' });
+        expect(view.problems[0]?.open).toEqual({ key: '.specs/done/0003-also-valid.md', line: 1 });
     });
 
     it('AC-007: format notes alone give no Problem and the notes with their reasons in the overview', async () => {
@@ -252,5 +252,217 @@ describe('0015 AC-003, AC-004, AC-008: the next step in the detail view', () => 
         const first = buildDetail({ selection: { stem: '0001-a' }, model, history: NO_HISTORY });
         const second = buildDetail({ selection: { stem: '0001-a' }, model, history: NO_HISTORY });
         expect(second).toEqual(first);
+    });
+});
+
+describe('0019: the situation picture', () => {
+    async function fixtureDetail(name: string, stem: string, path?: string) {
+        const project = await readFixture(name);
+        const model = { project, lifecycle: deriveLifecycle(project) };
+        return { model, view: spec(buildDetail({ selection: path === undefined ? { stem } : { stem, path }, model, history: NO_HISTORY })) };
+    }
+
+    const READY = '.specs/backlog/0001-ready-feature.md';
+    const READY_PLAN = '.specs/backlog/0001-ready-feature.plan.md';
+    const OUTBOX = '.specs/active/0006-outbox-batch-size.md';
+    const OUTBOX_PLAN = '.specs/active/0006-outbox-batch-size.plan.md';
+
+    it('AC-009: the header facts are state, rule and persistence; a path only for a duplicated stem', async () => {
+        const { view } = await fixtureDetail('fs110-ready-synthetic', '0001-ready-feature');
+        expect([view.state, view.rule, view.persistence]).toEqual(['Ready', 'S-READY', 'derived']);
+        expect(view.path).toBeUndefined();
+        expect(view.successor).toBeUndefined();
+        const files = { '.specs/backlog/0004-x.md': specText(), '.specs/active/0004-x.md': specText({ status: 'In Progress' }) };
+        const duplicated = spec(await detailOf(files, { stem: '0004-x', path: '.specs/backlog/0004-x.md' }));
+        expect(duplicated.path).toBe('.specs/backlog/0004-x.md');
+        const other = spec(await detailOf(files, { stem: '0004-x', path: '.specs/active/0004-x.md' }));
+        expect(other.path).toBe('.specs/active/0004-x.md');
+    });
+
+    it('AC-009: a Deprecated spec carries the successor text, others none', async () => {
+        const deprecated = spec(await detailOf({ '.specs/done/0003-c.md': `${specText({ status: 'Deprecated' })}\nsuccessor: none — behaviour removed\n` }, { stem: '0003-c' }));
+        expect(deprecated.successor).toBe('Successor: none — behaviour removed');
+        expect(spec(await detailOf(FILES, { stem: '0001-a' })).successor).toBeUndefined();
+    });
+
+    it('AC-009: the format notes are delivered as notes with their reasons and lines, the Problems stay apart', async () => {
+        const { view } = await fixtureDetail('fs170-brownfield-mixed', '0006-outbox-batch-size');
+        expect(view.notes).toHaveLength(2);
+        view.notes.forEach((note) => {
+            expect(note.reason.length).toBeGreaterThan(0);
+            expect(note.open?.line).toBeGreaterThanOrEqual(1);
+        });
+        expect(view.problems).toEqual([]);
+    });
+
+    it('AC-011: fs110-ready-synthetic 0001 has 0 of 1 steps done and T-001 "The feature" as next open step at plan line 24', async () => {
+        const { view } = await fixtureDetail('fs110-ready-synthetic', '0001-ready-feature');
+        expect(view.progress).toEqual({
+            needs: [],
+            noPlan: false,
+            steps: { kind: 'steps', done: 0, total: 1, next: { id: 'T-001', title: 'The feature', open: { key: READY_PLAN, line: 24 } } },
+            criteria: expect.anything(),
+        });
+    });
+
+    it('AC-011: fs170-brownfield-mixed 0006 has 4 of 4 steps done and no next open step', async () => {
+        const { view } = await fixtureDetail('fs170-brownfield-mixed', '0006-outbox-batch-size');
+        expect(view.progress?.steps).toEqual({ kind: 'steps', done: 4, total: 4 });
+    });
+
+    it('AC-011: 0003 of fs170-brownfield-mixed shows the need "needs a plan" only, no Steps and no Criteria', async () => {
+        const { view } = await fixtureDetail('fs170-brownfield-mixed', '0003-direct-broker-publication');
+        expect(view.progress).toEqual({ needs: [{ text: 'needs a plan', rule: 'R-3' }], noPlan: false });
+    });
+
+    it('AC-011: a Done spec without a plan has no Progress, a spec of another state without a plan says so', async () => {
+        const { view } = await fixtureDetail('fs180-de-baselines', '0001-einer-handsup-session-beitreten');
+        expect(view.state).toBe('Done');
+        expect(view.progress).toBeUndefined();
+        const active = spec(await detailOf({ '.specs/active/0005-e.md': specText({ status: 'In Progress' }) }, { stem: '0005-e' }));
+        expect(active.progress).toEqual({ needs: [], noPlan: true });
+    });
+
+    it('AC-011: a plan whose steps are all struck gives "none"; control: one open step gives a next open step', async () => {
+        const struck = {
+            '.specs/active/0001-a.md': SPEC_TEXT,
+            '.specs/active/0001-a.plan.md': `${planText({ status: 'In Progress', rows: [row('AC-001', 'open')] })}\n## Steps\n\n### ~~T-001 — Dropped~~\n\n- [ ] **Verified (T-001):** —\n`,
+        };
+        expect(spec(await detailOf(struck, { stem: '0001-a' })).progress?.steps).toEqual({ kind: 'none' });
+        const unticked = { ...struck, '.specs/active/0001-a.plan.md': struck['.specs/active/0001-a.plan.md'].replace('### ~~T-001 — Dropped~~', '### T-001 — First step') };
+        const open = spec(await detailOf(unticked, { stem: '0001-a' }));
+        expect(open.progress?.steps).toMatchObject({ kind: 'steps', done: 0, total: 1, next: { id: 'T-001', title: 'First step' } });
+    });
+
+    it('AC-011: a plan that cannot be read gives "unavailable" for both rows', async () => {
+        const { model } = await fixtureDetail('fs110-ready-synthetic', '0001-ready-feature');
+        const broken = { ...model, project: { ...model.project, plans: model.project.plans.map((plan) => (plan.key === READY_PLAN ? { ...plan, parsed: undefined } : plan)) } };
+        const view = spec(buildDetail({ selection: { stem: '0001-ready-feature' }, model: broken, history: NO_HISTORY }));
+        expect(view.progress?.steps).toEqual({ kind: 'unavailable' });
+        expect(view.progress?.criteria).toEqual({ kind: 'unavailable', reason: 'unreadable' });
+    });
+
+    it('AC-011: for every fixture spec with a plan the next open step is the one NS-7 uses', async () => {
+        let compared = 0;
+        for (const name of ['fs110-ready-synthetic', 'fs110-parallel-synthetic', 'fs170-brownfield-mixed', 'fs180-en-done-archived', 'fs110-de-active-review', 'studio-0002', 'studio-0015', 'repo-8052f9a']) {
+            const project = await readFixture(name);
+            const model = { project, lifecycle: deriveLifecycle(project) };
+            for (const entry of model.lifecycle.entries.filter((candidate) => candidate.plan !== undefined)) {
+                const view = spec(buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history: NO_HISTORY }));
+                const next = view.progress?.steps?.kind === 'steps' ? view.progress.steps.next : undefined;
+                expect(next?.id, `${name} ${entry.key}`).toBe(openStep(model, entry)?.id);
+                compared += 1;
+            }
+        }
+        expect(compared).toBeGreaterThanOrEqual(8);
+    });
+
+    it('AC-012: fs110-ready-synthetic 0001 has 0 of 1 verified and lists AC-001 with its short title at spec line 9', async () => {
+        const { view } = await fixtureDetail('fs110-ready-synthetic', '0001-ready-feature');
+        expect(view.progress?.criteria).toEqual({
+            kind: 'criteria',
+            verified: 0,
+            total: 1,
+            open: [{ id: 'AC-001', text: 'The system shall be ready.', built: false, open: { key: READY, line: 9 } }],
+        });
+    });
+
+    it('AC-012: fs170-brownfield-mixed 0006 has 3 of 3 verified and no list', async () => {
+        const { view } = await fixtureDetail('fs170-brownfield-mixed', '0006-outbox-batch-size');
+        expect(view.progress?.criteria).toEqual({ kind: 'criteria', verified: 3, total: 3, open: [] });
+    });
+
+    it('AC-012: a plan with no traceability rows gives "no-table"', async () => {
+        const files = { '.specs/active/0001-a.md': SPEC_TEXT, '.specs/active/0001-a.plan.md': planText({ status: 'In Progress' }) };
+        expect(spec(await detailOf(files, { stem: '0001-a' })).progress?.criteria).toEqual({ kind: 'unavailable', reason: 'no-table' });
+    });
+
+    it('AC-012: studio-0015 has 28 of 30 verified and lists exactly AC-027 and AC-030, unmarked', async () => {
+        const { view } = await fixtureDetail('studio-0015', '0015-focus-on-visibility');
+        const criteria = view.progress?.criteria;
+        expect(criteria).toMatchObject({ kind: 'criteria', verified: 28, total: 30 });
+        const open = criteria?.kind === 'criteria' ? criteria.open : [];
+        expect(open.map((item) => [item.id, item.built])).toEqual([['AC-027', false], ['AC-030', false]]);
+        open.forEach((item) => expect(item.open.key).toBe('.specs/active/0015-focus-on-visibility.md'));
+    });
+
+    it('AC-012: a built row is marked built, a cell with several IDs shows its text and links to its plan row; an undefined ID too', async () => {
+        const spec1 = `${SPEC_TEXT}\n**AC-009** The ninth shall hold. More text.\n`;
+        const plan = `${planText({ status: 'In Progress', rows: [row('AC-001', 'built'), row('M-01, M-02', 'open'), row('AC-077', 'open'), row('AC-009', 'verified')] })}`;
+        const view = spec(await detailOf({ '.specs/active/0001-a.md': spec1, '.specs/active/0001-a.plan.md': plan }, { stem: '0001-a' }));
+        const criteria = view.progress?.criteria;
+        expect(criteria).toMatchObject({ kind: 'criteria', verified: 1, total: 4 });
+        const open = criteria?.kind === 'criteria' ? criteria.open : [];
+        expect(open.map((item) => [item.id, item.text, item.built])).toEqual([
+            ['AC-001', 'The board shall show cards.', true],
+            [undefined, 'M-01, M-02', false],
+            [undefined, 'AC-077', false],
+        ]);
+        expect(open[0]?.open.key).toBe('.specs/active/0001-a.md');
+        expect(open[1]?.open.key).toBe('.specs/active/0001-a.plan.md');
+        expect(open[2]?.open.key).toBe('.specs/active/0001-a.plan.md');
+        expect(open[1]?.open.line).toBeGreaterThan(1);
+    });
+
+    it('AC-012: a row state is compared exactly: "verified " with other text is listed, a state of "verified" is not', async () => {
+        const plan = planText({ status: 'In Progress', rows: [row('AC-001', 'verified'), row('AC-002', 'verified here; pending')] });
+        const view = spec(await detailOf({ '.specs/active/0001-a.md': SPEC_TEXT, '.specs/active/0001-a.plan.md': plan }, { stem: '0001-a' }));
+        const open = view.progress?.criteria?.kind === 'criteria' ? view.progress.criteria.open : [];
+        expect(open.map((item) => item.id)).toEqual(['AC-002']);
+    });
+
+    it('AC-014: fs180-en-done-archived 0001 lists Spec and one Archived plan and no Plan', async () => {
+        const { view } = await fixtureDetail('fs180-en-done-archived', '0001-split-bill-with-tip');
+        expect(view.files.map((file) => [file.label, file.name])).toEqual([
+            ['Spec', '0001-split-bill-with-tip.md'],
+            ['Archived plan', '0001-split-bill-with-tip.2026-09-19.plan.md'],
+        ]);
+        view.files.forEach((file) => expect(file.open.line).toBe(1));
+    });
+
+    it('AC-014: a spec with a sibling plan and a return note lists Spec, Plan and Return note in that order; no plan, no row', async () => {
+        const view = spec(await detailOf(FILES, { stem: '0001-a' }));
+        expect(view.files.map((file) => [file.label, file.name, file.open.key])).toEqual([
+            ['Spec', '0001-a.md', '.specs/active/0001-a.md'],
+            ['Plan', '0001-a.plan.md', '.specs/active/0001-a.plan.md'],
+            ['Return note', 'activeContext.0001-T-001.md', '.memory-bank/activeContext.0001-T-001.md'],
+        ]);
+        const bare = spec(await detailOf({ '.specs/backlog/0002-b.md': specText() }, { stem: '0002-b' }));
+        expect(bare.files.map((file) => file.label)).toEqual(['Spec']);
+    });
+
+    it('AC-016: the model delivers the lines of fs110-ready-synthetic: AC-001 spec line 9, T-001 plan line 24, its row plan line 36', async () => {
+        const { model, view } = await fixtureDetail('fs110-ready-synthetic', '0001-ready-feature');
+        const spec1 = model.project.specs.find((candidate) => candidate.key === READY);
+        const plan = model.project.plans.find((candidate) => candidate.key === READY_PLAN);
+        expect(spec1?.parsed?.criteria.find((item) => item.id === 'AC-001')?.line).toBe(9);
+        expect(plan?.parsed?.steps.find((step) => step.id === 'T-001')?.line).toBe(24);
+        expect(plan?.parsed?.traceability[0]?.line).toBe(36);
+        expect(view.progress?.steps).toMatchObject({ next: { open: { key: READY_PLAN, line: 24 } } });
+    });
+
+    it('AC-016: 0006 of fs170-brownfield-mixed has AC-001, AC-002, AC-003 at spec lines 13, 17, 21 and T-001, T-004 at plan lines 70 and 169', async () => {
+        const { model } = await fixtureDetail('fs170-brownfield-mixed', '0006-outbox-batch-size');
+        const spec1 = model.project.specs.find((candidate) => candidate.key === OUTBOX);
+        const plan = model.project.plans.find((candidate) => candidate.key === OUTBOX_PLAN);
+        expect(spec1?.parsed?.criteria.map((item) => [item.id, item.line])).toEqual([['AC-001', 13], ['AC-002', 17], ['AC-003', 21]]);
+        expect(plan?.parsed?.steps.filter((step) => step.id === 'T-001' || step.id === 'T-004').map((step) => [step.id, step.line])).toEqual([['T-001', 70], ['T-004', 169]]);
+    });
+
+    it('AC-016: a criterion defined twice links to the line of its first definition', async () => {
+        const text = `${SPEC_TEXT}\n**AC-001** Defined a second time.\n`;
+        const plan = planText({ status: 'In Progress', rows: [row('AC-001', 'open')] });
+        const view = spec(await detailOf({ '.specs/active/0001-a.md': text, '.specs/active/0001-a.plan.md': plan }, { stem: '0001-a' }));
+        const open = view.progress?.criteria?.kind === 'criteria' ? view.progress.criteria.open : [];
+        expect(open).toHaveLength(1);
+        expect(open[0]?.open.line).toBe(text.split('\n').findIndex((line) => line.startsWith('**AC-001**')) + 1);
+        expect(open[0]?.text).toBe('The board shall show cards.');
+    });
+
+    it('AC-017: every Problem and format note without a line opens at line 1 of its file', async () => {
+        const project = await readFixture('fs-broken');
+        const model = { project, lifecycle: deriveLifecycle(project) };
+        const view = spec(buildDetail({ selection: { stem: '0003-also-valid' }, model, history: NO_HISTORY }));
+        expect(view.problems[0]?.open).toEqual({ key: '.specs/done/0003-also-valid.md', line: 1 });
     });
 });
