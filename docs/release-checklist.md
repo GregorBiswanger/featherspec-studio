@@ -44,8 +44,9 @@ and the expected result. A clear miss reopens the named spec.
 
 ## Overview (0006, 0018)
 
-- [ ] **AC-021 / §9**: in High Contrast, Light and Dark every state and every reason under Problems reads as a
-  word (icon and colour only in addition); Now, Up next and Problems above the figures line, Activity collapsed below.
+- [ ] **AC-021 / §9**: in High Contrast, Light and Dark every state is told apart by its icon shape without colour
+  (its name is the icon's tooltip in the narrower rows) and every Problem under Problems reads as a sentence; Now,
+  Up next and Problems above the figures line, Activity collapsed below.
 - [ ] **AC-022**: Tab, Enter and Space only → every figure, row, the "+ n more" link, the Problems and
   Activity headings and every activity entry shows a focus outline; Enter and Space each open the target area.
 - [ ] **OP-12 (AC-016, AC-024)**: on a real project with many specs the content shows within about 1 s of
@@ -125,12 +126,28 @@ and the expected result. A clear miss reopens the named spec.
 
 - [ ] **AC-022** *(Gregor or his delegate)*: on `tip-splitter` and on this repository, in Dark, Light and High
   Contrast at a sidebar width of 400 px, every state icon is told apart without colour, the description of every
-  In progress and Up next row is visible and the badge is readable. In the Hands-On, copy a next step from the
+  In progress and Ready row is visible and the badge is readable. In the Hands-On, copy a next step from the
   tree (inline Copy), paste it into the assistant's chat and see it work; select a row and see the detail open in the
   panel without taking focus; Open Spec and Open Plan open the file in the active group, beside the Studio when the
   Studio is the active tab.
 - [ ] **Keyboard and screen reader**: `FeatherSpec Studio: Focus on Specs View` reaches the view; arrow keys walk
   the rows, Enter selects, Shift+F10 opens a row's context menu with Open Spec, Open Plan and Copy Next Step; the screen reader reads a row as one sentence with the state and the next step.
+
+## Layout and signal polish (0022)
+
+- [ ] **AC-019** *(preview harness, Gregor or his delegate; guideline 12)*: in Dark, Light and High Contrast, height
+  800 px, at window widths 1600 px and 1000 px, a Studio panel of 920 px, at 800 px and at VS Code zoom level 2, with a
+  spec selected, on this repository and `fs170-brownfield-mixed`, Overview and Board show: no title word split, every Copy fully visible and
+  reachable by Tab, at most two filled buttons, paths broken only after a separator, whole Problem sentences, the warning
+  on the collapsed Done strip, and each state told at a glance. Screenshots and verdict in the plan.
+- [ ] **AC-020** *(real VS Code)*: at a sidebar width of 300 px in the three themes, on this repository,
+  `fs170-brownfield-mixed` and `tip-splitter`, every tree row shows its command uncut, the `Done` group shows its
+  Problem hint and the state icons differ by shape.
+- [ ] **AC-021 (build part)** *(Gregor on `tip-splitter`)*: without asking, say which Copy you press first, where a
+  Done spec's Problem shows and what `Ready` and `Up next` hold; the plan records the answers.
+- [ ] **AC-025** *(preview harness, then Gregor)*: at 1600 px with 0015 selected, no two vertical scrollbars side by
+  side; a width set by the divider returns after closing and selecting again and after a window reload; a double-click restores the
+  default; at 800 px and at zoom level 2 the area shows alone, the detail alone with its back button and no divider.
 
 ## Go
 

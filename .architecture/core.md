@@ -1,5 +1,5 @@
 # Map: src/core (framework-free core)
-# last reconciled: 2026-11-18 (0020)
+# last reconciled: 2026-11-18 (0022)
 
 ## Internal pattern
 - `src/core/<area>/` — one folder per spec; `<area>Service.ts` is the application service where the
@@ -13,10 +13,10 @@
   - `discovery` (0001) — project verdicts, version line, active-project state, report model, controller, rerun scheduler.
   - `specs` (0002) — spec repository: file listing, spec and plan parsers, joins, diagnostics, live repository; every diagnostic carries a tier, problem or note (0016), set where it is emitted; compatibility findings are not emitted.
   - `lifecycle` (0003) — state derivation, readiness, contradictions, blocking conditions, plan in
-    use, verification status, flow marker, status history, lifecycle service.
+    use, verification status, flow marker, status history, lifecycle service; `problemSentence.ts` turns a Problem into its user sentence (0022).
   - `runtime` (0004) — runtime store narrowed to the spec status history: writer lock, retention (90 days), store state; earlier run data removal.
   - `shell` (0005) — panel states and precedence, selection, remembered area, navigation request,
-    spec tree, tree service, tree actions (0020), message router, shell service.
+    spec tree, tree service, tree actions (0020), tree label budget (`treeLabel.ts`) and the remembered side panel width (`sidePanelWidth.ts`, 0022), message router, shell service.
   - `overview` (0006, 0018) — Now and Up next rows, problems, figures and progress, activity,
     overview service (the open state of Activity lives here, reset with the last listener).
   - `board` (0007) — Board and spec detail view models: cards, progress, narrow columns and Done memory, card date (0018), filters

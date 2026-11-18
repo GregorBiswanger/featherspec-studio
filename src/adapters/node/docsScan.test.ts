@@ -289,7 +289,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
 
     it('the README section names the four groups, the inline Copy, the menu entry Copy Next Step and the badge', async () => {
         const section = await specsViewSection();
-        for (const group of ['**In progress**', '**Up next**', '**Backlog**', '**Done**']) {
+        for (const group of ['**In progress**', '**Ready**', '**Backlog**', '**Done**']) {
             expect(section, group).toContain(group);
         }
         expect(section).toContain('inline **Copy** button');
@@ -358,6 +358,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
             '## Overview and a compact Board (0018)',
             '## The detail as a side panel (0019)',
             '## The native Specs tree (0020)',
+            '## Layout and signal polish (0022)',
             '## Go',
         ]);
         for (const gone of ['Plan line', 'descriptions cut', 'attention row', 'attention reason', 'filters, sort']) {
@@ -383,6 +384,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
             ['Overview and a compact Board (0018)', ['**AC-031 / M-1**']],
             ['The detail as a side panel (0019)', ['**AC-022**']],
             ['The native Specs tree (0020)', ['**AC-022**', '**Keyboard and screen reader**']],
+            ['Layout and signal polish (0022)', ['**AC-019**', '**AC-020**', '**AC-021 (build part)**', '**AC-025**']],
         ];
         for (const [title, marks] of items) {
             for (const mark of marks) {
@@ -461,3 +463,76 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         });
     }
 });
+
+describe('product docs after 0022 (AC-016, AC-018)', () => {
+    it('the README names the tree groups with Ready, the divider with its reset, the width memory and the back button below 900 px', async () => {
+        const readme = await read('README.md');
+        expect(readme).toContain('**In progress** (Blocked, Review, then Active), **Ready**, **Backlog** and **Done**');
+        expect(readme).not.toContain('**Up next** (Ready)');
+        expect(readme).toContain('**divider**');
+        expect(readme).toContain('Enter or a double click resets it');
+        expect(readme).toContain('Studio remembers it for the workspace');
+        expect(readme).toContain('a back button at the top of the detail returns to the area');
+        expect(readme).not.toContain('like a drawer');
+    });
+
+    it('the README names the icon Copy and the two primary buttons', async () => {
+        const readme = await read('README.md');
+        expect(readme).toContain('Only the first Now row and the Copy of an empty project are primary buttons');
+    });
+
+    it('the three product docs name Ready for the tree and keep "Up next" only for the Overview\'s set', async () => {
+        const guidelines = await read('docs/product/ux-guidelines.md');
+        const checklist = await read('docs/release-checklist.md');
+        expect(guidelines).toContain('In progress · Ready · Backlog · Done');
+        expect(guidelines).not.toContain('In progress · Up next · Backlog · Done');
+        expect(checklist).toContain('every\n  In progress and Ready row is visible');
+        expect(checklist).not.toContain('In progress and Up next row');
+    });
+
+    it('the release checklist has the 0022 section with AC-019, AC-020, AC-021 (build part) and AC-025', async () => {
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('\n## Layout and signal polish (0022)\n');
+        expect(start).toBeGreaterThan(-1);
+        const section = text.slice(start, text.indexOf('\n## ', start + 1));
+        for (const mark of ['**AC-019**', '**AC-020**', '**AC-021 (build part)**', '**AC-025**']) {
+            expect(section, mark).toContain(mark);
+        }
+    });
+
+    it('the design brief marks its tree groups, 400 px and drawer superseded by 0022', async () => {
+        const text = await read('docs/product/design-brief.md');
+        expect(text.split('Superseded by spec 0022 (PD-069').length - 1).toBeGreaterThanOrEqual(2);
+    });
+
+    it('the CHANGELOG names the 0022 changes under the version in preparation', async () => {
+        const first = firstRelease(await read('CHANGELOG.md'));
+        expect(first).toContain('Ready, Backlog and Done');
+        expect(first).toContain('divider');
+        expect(first).toContain('a back button returns');
+        expect(first).toContain('Layout and signals:');
+        expect(first).not.toContain('(a drawer below 900 px)');
+    });
+
+    for (const [file, note] of [
+        ['.specs/done/0005-studio-shell-navigation.md', 2],
+        ['.specs/done/0007-spec-board-spec-detail.md', 1],
+        ['.specs/done/0013-studio-visual-design.md', 2],
+        ['.specs/active/0015-focus-on-visibility.md', 1],
+        ['.specs/active/0016-honest-signals.md', 7],
+        ['.specs/active/0017-next-step-everywhere.md', 2],
+        ['.specs/active/0018-overview-and-compact-board.md', 13],
+        ['.specs/active/0019-detail-situation-picture.md', 12],
+        ['.specs/active/0020-native-spec-tree.md', 19],
+    ] as const) {
+        it(`${file} carries its ${note} notes of 0022`, async () => {
+            const count = (await read(file)).split('Amended by 0022 (PD-069)').length - 1;
+            expect(count).toBeGreaterThanOrEqual(note);
+        });
+    }
+
+    it('negative control: a text without the note has none', () => {
+        expect('no note here'.split('Amended by 0022 (PD-069)').length - 1).toBe(0);
+    });
+});
+

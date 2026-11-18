@@ -11,8 +11,9 @@ First release.
 ### Added
 
 - The **Specs** view in the Activity Bar, a native tree of your specs in four groups: In progress,
-  Up next, Backlog and Done (collapsed). A row shows number, title, state and the short next step,
-  with an icon and a colour per state and a tooltip that explains the row. A click selects the spec
+  Ready, Backlog and Done (collapsed); a group that holds a problem says so. A row shows number, title
+  and the short next step (the state where there is none), within 32 characters for label and
+  description, with an icon and a colour per state and a tooltip that explains the row. A click selects the spec
   and shows its detail in the panel; an inline **Copy** and the context menu (Open Spec, Open Plan and Copy Next Step)
   act on the row. The badge counts the specs that wait for you (Review and Blocked),
   the toolbar has **Open** and **Refresh**, and the tree follows every file change within half a second.
@@ -28,11 +29,17 @@ First release.
   rows (title; what matters in its state, problems and the day of the last change; next step), and you
   can sort by number, title or last change. Both work with the keyboard and in Light, Dark and High
   Contrast themes.
-- The detail of a spec as a side panel next to the Overview and the Board (a drawer below 900 px). It
+- The detail of a spec as a side panel next to the Overview and the Board, with a divider to set its width
+  (remembered per workspace; Enter or a double-click resets it); below 900 px the area or the detail shows
+  alone and a back button returns. It
   is a picture of the spec's situation: Next step, Problems, Progress (steps and the next open step,
   criteria verified and still open), Files, and folded Format notes and Status history. Every ID and
   file name is a link that opens the file beside the Studio at the line of the ID. Close it with its
   button or Escape.
+- Layout and signals: one scrollbar per region; Overview rows follow the width of their own list, with the
+  state as an icon; at most two filled buttons per view and icon buttons for the Copies in lists; a *Problem*
+  reads as a sentence everywhere (the technical reason is the tooltip); paths and commands break only after
+  a separator; a collapsed or filtered Board strip shows a warning when it hides a problem.
 - Honest signals: Studio shows a *Problem* (a contradiction, an unreadable file, a duplicate number, a
   link to nothing) with a warning wherever the spec appears; *format notes* sit behind a collapsed
   toggle; what FeatherSpec itself writes is not reported. A Backlog spec shows what it still needs.

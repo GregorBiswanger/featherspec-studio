@@ -1,7 +1,7 @@
 # Plan — Layout and Signal Polish
 
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-18
 **Current step:** T-011
 
@@ -200,6 +200,47 @@ answer: every open choice is decided by the spec, PD-068…PD-075 (newest wins) 
 - `core/overview/problems.test.ts`, `shared/protocol/overview.test.ts`, `areas/overview/Overview.test.tsx`,
   `core/board/detail.test.ts`: titles naming "reason(s)" of a Problem → retitled "sentence(s)" (§5 0016 §6.2, 0018 O-4,
   O-5, AC-007, 0019 §6.2 row 3).
+
+## Test-title audit
+
+`python3 -I /tmp/audit-0022/titles.py <git archive 20a1e68> <head>` over every `describe`, `it`, `test` and `suite` literal of every `.ts` and `.tsx` under `src` (`src/test/**` and `testing/*.ts` included), 2026-11-18, T-011: baseline 2291 titles (2282 distinct), head 2494 (2484 distinct); **34 absent, 0 decreased** (the 4 `describe`/`describe`-like group titles are among the absent ones and mapped). Every absent title is a voided or retitled statement of §5 or is replaced by the head title named:
+
+- `src/adapters/node/webviewCss.test.ts`: "0018 AC-006 (V1) control: the wide row rules sit outside every media query, so above 720 px the row stays on one line" → voided by §5 row 0018 AC-006; replaced by `0022 AC-001, AC-003, AC-027, AC-028` (container rules, subgrid, title rules)
+- `src/adapters/node/webviewCss.test.ts`: "0018 AC-006 (V1): at 720 px or less a spec row wraps to two lines, number and title first, then the status, the step and Copy, with no text cut by an ellipsis" → voided by §5 row 0018 AC-006; replaced by `0022 AC-001, AC-003, AC-027, AC-028` (container rules, subgrid, title rules)
+- `src/adapters/node/webviewCss.test.ts`: "0018 AC-006: a spec row stays on one line: title and status cut by an ellipsis, number, step, warning icon and Copy never cut" → voided by §5 row 0018 AC-006; replaced by `0022 AC-001, AC-003, AC-027, AC-028` (container rules, subgrid, title rules)
+- `src/shared/protocol/overview.test.ts`: "0018 AC-007: Problems carry rows and lines; a line takes exactly where and reason" → retitled `0018 AC-007, 0022 AC-013: Problems carry rows and lines; a line takes exactly where, reason and sentence` (§5 0018 AC-007; PD-063 (1))
+- `src/adapters/node/webviewCss.test.ts`: "0019 AC-005, AC-021: the side panel beside the area or as a drawer" → describe retitled `0019 AC-005, AC-021, 0022 AC-022, AC-023` (§5 0019 AC-005 drawer part; G-1, G-2)
+- `src/adapters/node/webviewCss.test.ts`: "0019 F3: no drawer width or drawer padding is relative to the window (no vw unit), so a panel under 432 px is never overrun at its left edge" → voided with the drawer (§5 0019 §6.1 Place, §9 rows; PD-075)
+- `src/adapters/node/webviewCss.test.ts`: "0019 PD-066: a marked Overview uses the two-line row layout of 0018 T-013 for every property of the 720 px rules, without a media query" → voided: PD-066 superseded by PD-075; rows follow the list width (0022 AC-001)
+- `src/webview/detail/SidePanel.test.tsx`: "0019 PD-066: the Overview carries the drawer mark exactly while a spec is selected and the query matches, and follows the change event" → voided: PD-066 superseded by PD-075; replaced by `ListOrDetail.test.tsx` (AC-029)
+- `src/webview/detail/SidePanel.test.tsx`: "0019 PD-066: while the Overview shows, exactly one element carries the drawer mark and no board columns are there" → voided: PD-066 superseded by PD-075; replaced by `ListOrDetail.test.tsx` (AC-029)
+- `src/adapters/node/webviewCss.test.ts`: "0019 PD-066: while the drawer shows, the Overview takes the width left of the drawer: end padding of min(400px, 100%) on the marked Overview and no media rule on it" → voided: PD-066 superseded by PD-075 (no drawer padding); AC-022 and AC-001 cover the frame
+- `src/adapters/node/webviewCss.test.ts`: "0019: the one module that calls matchMedia asks only the width query of the drawer, never a colour scheme" → retitled: the one module asks only `NARROW_QUERY` (0022 AC-029; `narrow.ts`)
+- `src/webview/detail/SidePanel.test.tsx`: "AC-005, AC-022: a card focused under the drawer is scrolled clear" → voided (§5 0019 AC-005 drawer part, AC-022 "the drawer"); replaced by `ListOrDetail.test.tsx`
+- `src/adapters/node/webviewCss.test.ts`: "AC-005: from the drawer width up the side panel is a 400 px column with its own scroll beside the area content" → retitled `AC-022, AC-023: side panel width` (§5 0019 §6.1 Place; G-1, G-2)
+- `src/adapters/node/webviewCss.test.ts`: "AC-005: no media rule changes the area content, the frame or the board, so the area keeps its width under the drawer" → voided with the drawer (§5 0019 AC-005 drawer part); AC-022 describe covers the frame
+- `src/webview/detail/SidePanel.test.tsx`: "AC-005: the drawer marks the board" → voided (§5 0019 §6.1 drawer, AC-005 drawer part; PD-075); replaced by AC-029's tests
+- `src/adapters/node/webviewCss.test.ts`: "AC-005: the only media rule is the drawer query of the code, at 899 px, and it overlays the panel from the right edge at min(400px, 100%) of the frame" → voided with the drawer (§5 0019 AC-005 drawer part); the `NARROW_QUERY` test of `webviewCss.test.ts` replaces it
+- `src/adapters/node/webviewCss.test.ts`: "AC-005: while the drawer shows, the board end padding and scroll padding equal the drawer width" → voided with the drawer (§5 0019 AC-005 drawer part, §9)
+- `src/core/board/detail.test.ts`: "AC-006: a Problem carries its reason and opens at its line in its file; the format notes stay out of the Problems" → retitled `AC-006, 0022 AC-013: a Problem carries its sentence and its reason …` (§5 0019 §6.2 row 3, 0016 AC-006)
+- `src/core/board/detail.test.ts`: "AC-006: the detail of 0003 of fs-broken shows the contradiction reason as its Problem" → retitled `AC-006, 0022 AC-013: the detail of 0003 of fs-broken shows the contradiction sentence …` (§5 0016 AC-006)
+- `src/webview/detail/SidePanel.test.tsx`: "a browser without scrollIntoView does not break focusing a card" → voided with the drawer's `scrollIntoView` (§5 0019 AC-005 drawer part, AC-022)
+- `src/core/shell/specTree.test.ts`: "a title of 24 characters is not cut; one of 25 is cut at its last space within the first 24, then …" → replaced by `treeLabel.test.ts` and `0022 AC-005` (§5 0020 §4.2 Label, A-005)
+- `src/core/overview/problems.test.ts`: "an orphan return note gives a line "where" and "reason" and no row" → retitled `an orphan return note gives a line with "where", "reason" and its sentence and no row` (§5 0018 O-4)
+- `src/webview/detail/SidePanel.test.tsx`: "asks the drawer query, marks the columns while a spec is selected and the panel is narrow, and follows the change event" → voided with the drawer (§5 0019 AC-005 drawer part); replaced by `ListOrDetail.test.tsx`
+- `src/webview/detail/SidePanel.test.tsx`: "control: the drawer query not matching (panel from 900 px) scrolls nothing" → voided with the drawer; replaced by `ListOrDetail.test.tsx`
+- `src/webview/detail/SidePanel.test.tsx`: "control: without a selection the narrow board carries no drawer mark" → voided with the drawer mark; replaced by `ListOrDetail.test.tsx`
+- `src/webview/detail/SidePanel.test.tsx`: "control: without a selection there is no drawer and nothing scrolls" → voided with the drawer; replaced by `ListOrDetail.test.tsx`
+- `src/webview/detail/SidePanel.test.tsx`: "focusing a card, and a control inside a card, calls scrollIntoView on the focused element with block and inline nearest" → voided (§5 0019 AC-005 drawer part, AC-022 "the drawer")
+- `src/core/overview/problems.test.ts`: "fs-broken gives the rows 0002 (unreadable) and 0003 (contradiction), each with its own reason as the state text" → retitled `… each with its own sentence as the state text and its reason as the tooltip text` (§5 0018 O-5, AC-007)
+- `src/adapters/node/webviewCss.test.ts`: "full-height frame: the studio is a flex column of the viewport height and main scrolls on its own" → retitled `G-1: …` frame tests (0022 AC-022; §5 0019 §6.1 Place)
+- `src/core/overview/problems.test.ts`: "several Problems of one spec give one row, the reasons joined by " · " and the count of the Problems" → retitled `… the sentences joined by " · ", the reasons joined the same way …` (§5 0018 O-5, AC-007)
+- `src/core/shell/specTree.test.ts`: "shows the groups that hold a spec, in the order In progress, Up next, Backlog, Done, each with its count as the description" → retitled `… In progress, Ready, Backlog, Done …` (§5 0020 §4.1, AC-001)
+- `src/core/shell/specTree.test.ts`: "starts In progress, Up next and Backlog expanded and Done collapsed" → retitled `starts In progress, Ready and Backlog expanded …` (§5 0020 AC-002)
+- `src/core/shell/specTree.test.ts`: "the description is the state, with the short form of the next step where there is one" → replaced by `the description is the step short form only, …` and `0022 AC-004` (§5 0020 §4.2 Description)
+- `src/adapters/node/webviewCss.test.ts`: "§3.1: one state-colour mapping, each state tinting through --fs-tint from its theme variable" → replaced by `0022 AC-026` tests (`stateLook.test.ts`, `webviewCss.test.ts`; §5 0013 §3.1)
+
+`## Docs: "Up next" left as the Overview's set` (AC-018): README lines 19 (the Overview's Up next section) and 35 (the Overview rows list); `docs/product/ux-guidelines.md` row 21 ("then up next"); `docs/release-checklist.md` lines 49 and 105 (Overview checks) and the new 0022 item that names `Ready` and `Up next` together. The tree's group renamed to `Ready` in README line 15, guidelines row 18, checklist (the 0020 item) and CHANGELOG. This implementation edits no row of `docs/product/product-decisions.md`: `git diff 20a1e68 -- docs/product/product-decisions.md` shows only PD-076, added by the orchestrator's commit `428fb19` (0024); none of this branch's 0022 commits touches the file.
 
 ## Stages
 
@@ -432,8 +473,8 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
   empty; gates 1–5; `npm run compile-tests`; `npm test` on Windows and CI (pre-done gate); AC-019, AC-020, AC-021, AC-025:
   `manual:` the orchestrator's harness (1600, 1000, 920, 800 px, zoom 2; Dark, Light, HC) and Gregor in a real window —
   no command sees rendered layout or VS Code's tree drawing
-- [ ] **Verified (T-011):** —
-- **Notes:** —
+- [x] **Verified (T-011):** Red first: the 0022 block of `docsScan.test.ts` against the docs of HEAD (scratch copy via `git archive`) failed 18 tests; the old 0020 group test and the checklist order test failed until the README and checklist were changed. Green after: `docsScan.test.ts` 98 passed; audit counts below; `grep -c "Amended by 0022 (PD-069)"` 0005 2, 0007 1, 0013 2, 0015 1, 0016 7, 0017 2, 0018 13, 0019 12, 0020 19 (the §5 table rows, none fewer); `git diff 20a1e68 -- docs/product/product-decisions.md` holds only PD-076 of the orchestrator's `428fb19`. Final gates: eslint 0 warnings, tsc and tsc -p src/webview clean, test:unit 2418 passed (3 skipped, +13 timing), `npm run compile` and `npm run compile-tests` clean. `npm test` (host smoke) and AC-019, AC-020, AC-021, AC-025 are manual or Windows and CI: the orchestrator's harness, then Gregor.
+- **Notes:** (1) §5 notes: one `*Amended by 0022 (PD-069): ...*` line under each named statement (bullet, paragraph or table), after any earlier note; the PD register is unedited here. (2) Docs: README (tree groups with Ready, the divider and its reset, the remembered width, the back button, the primary and icon Copies), ux-guidelines rows 18 and 21, release checklist (new 0022 section with AC-019, AC-020, AC-021 build part, AC-025; two Overview and tree items reworded), CHANGELOG (two bullets edited, one added), design-brief (two superseded notes); each "Up next" left is the Overview's set (listed in `## Test-title audit`). The README avoids the word "drag" because 0017's move-path scan forbids it. (3) `/sdd-architecture-update` with the plan's approval: `last reconciled` to `(0022)` in `AGENTS.md` and the three maps, the snapshot lines named in the step, plus the core, webview and adapters map lines. (4) Memory Bank: techContext (one 0022 line, 0019 drawer sentences marked superseded), systemPatterns (one 0022 entry, 0018 and 0019 clauses marked superseded), activeContext. (5) The test-title audit script is `/tmp/audit-0022/titles.py` (throwaway).
 
 ## Traceability
 
@@ -454,16 +495,16 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
 | AC-013 | T-005, T-008, T-009 | `src/core/lifecycle/problemSentence.ts`, `src/core/board/{detail,cards}.ts`, `src/core/overview/problems.ts`, `src/core/shell/specTree.ts`, `src/webview/detail/SpecDetail.tsx`, `src/webview/board/Banner.tsx`, `src/webview/areas/overview/{Problems,SpecRow}.tsx` | `problemSentence.test.ts`, `detail.test.ts`, `cards.test.ts`, `problems.test.ts`, `specTree.test.ts`, `SpecDetail.test.tsx`, `Overview.test.tsx`, `SpecBoard.test.tsx`, `userLanguage.test.tsx` | verified |
 | AC-014 | T-005 | `src/core/lifecycle/problemSentence.ts`, `src/shared/protocol/texts.ts` (X-10…X-24) | `src/core/lifecycle/problemSentence.test.ts` (AC-014 describe) | verified |
 | AC-015 | T-008 | `src/webview/ui/FileLink.tsx`, `src/webview/detail/SpecDetail.tsx`, `src/webview/areas/overview/SpecRow.tsx` | `SpecDetail.test.tsx`, `Overview.test.tsx` | verified |
-| AC-016 | T-011 | — | — | open |
-| AC-017 | T-011 | — | — | open |
-| AC-018 | T-011 | — | — | open |
-| AC-019 | T-011 | — | manual: orchestrator's harness, then Gregor | open |
-| AC-020 | T-011 | — | manual: Gregor or delegate, real VS Code | open |
-| AC-021 | T-011 | — | manual: Gregor on `tip-splitter` (draft part done: PD-073) | open |
+| AC-016 | T-011 | `.specs/{done,active}/0005, 0007, 0013, 0015–0020` (the §5 notes) | `docsScan.test.ts` (0022 block: 2, 1, 2, 1, 7, 2, 13, 12, 19 notes); PD register unedited by this branch | verified |
+| AC-017 | T-011 | all of `src` (no staying test weakened) | `## Test-title audit` of this plan: 34 absent, 0 decreased, each mapped; `npm run test:unit`; `npm test` on Windows and CI is the pre-done gate | verified |
+| AC-018 | T-011 | `README.md`, `docs/product/ux-guidelines.md`, `docs/release-checklist.md`, `CHANGELOG.md`, `docs/product/design-brief.md` | `docsScan.test.ts` (0020 group test, 0022 block) | verified |
+| AC-019 | T-011 | `docs/release-checklist.md` (Layout and signal polish (0022)) | manual: orchestrator's harness, then Gregor | open |
+| AC-020 | T-011 | `docs/release-checklist.md` (Layout and signal polish (0022)) | manual: Gregor or delegate, real VS Code | open |
+| AC-021 | T-011 | `docs/release-checklist.md` (build part) | manual: Gregor on `tip-splitter` (draft part done: PD-073) | open |
 | AC-022 | T-001, T-003 | `src/webview/main.css` (html/body/#root, main, `.area-frame`, `.area-content`, `.side-panel`), `src/webview/App.tsx` | `src/adapters/node/webviewCss.test.ts` (0022 AC-022 describe) | verified |
 | AC-023 | T-003 | `src/webview/detail/Divider.tsx`, `src/webview/detail/sideWidth.ts`, `src/webview/App.tsx` | `src/webview/detail/Divider.test.tsx` (AC-023 describes), `webviewCss.test.ts` (0022 G-2) | verified |
 | AC-024 | T-002, T-003 | `src/shared/protocol/layout.ts`, `src/core/shell/sidePanelWidth.ts`, `src/core/shell/shellService.ts`, `src/webview/detail/sideWidth.ts`, `src/adapters/vscode/uiMemory.ts` | `layout.test.ts`, `sidePanelWidth.test.ts`, `messages.test.ts`, `client.test.ts`, `Divider.test.tsx` (AC-024) | verified |
-| AC-025 | T-011 | — | manual: orchestrator's harness, then Gregor | open |
+| AC-025 | T-011 | `docs/release-checklist.md` (Layout and signal polish (0022)) | manual: orchestrator's harness, then Gregor | open |
 | AC-026 | T-004 | `src/shared/protocol/stateLook.ts`, `src/core/shell/specTree.ts`, `src/webview/board/icons.tsx`, `src/webview/ui/StateChip.tsx`, `src/webview/board/Column.tsx`, `src/webview/main.css` (Overview rows: T-007) | `stateLook.test.ts`, `specTree.test.ts`, `StateChip.test.tsx`, `SpecBoard.test.tsx`, `webviewCss.test.ts` (0022 AC-026) | built |
 | AC-027 | T-007 | `src/webview/areas/overview/SpecRow.tsx`, `src/webview/main.css` | `Sections.test.tsx`, `webviewCss.test.ts` (0022 AC-027) | verified |
 | AC-028 | T-007 | `src/webview/main.css` | `webviewCss.test.ts` (0022 AC-028) | verified |
@@ -471,8 +512,8 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
 
 ## Session handoff
 
-- **Done so far:** stages 1 to 4 (T-001…T-010) built and verified 2026-11-18 on branch `ux-round-2`: list-or-detail frame, remembered side width and divider, state table, problem sentences on every surface with breaking paths, Copy looks, Overview rows by container queries, tree rows with the step and a label budget of 32, `Ready` group, Problem hints on groups and strips. Gates green (unit 2402 passed, 3 skipped, +13 timing; compile and compile-tests clean).
-- **Next action:** stage 5, T-011 (§5 notes in the older specs, README, ux-guidelines, release checklist, CHANGELOG, design-brief note, docsScan block, test-title audit, architecture and Memory Bank sync, final gates).
+- **Done so far:** all 11 steps (T-001…T-011) built and verified 2026-11-18 on branch `ux-round-2`; plan Done, spec stays In Progress. Gates green (eslint 0 warnings, both tsc clean, unit 2418 passed, 3 skipped, +13 timing; compile and compile-tests clean). Test-title audit: 34 absent, 0 decreased, all mapped.
+- **Next action:** the orchestrator's preview harness for AC-019 and AC-025 (layout that jsdom cannot decide), `npm test` on Windows and CI (host smoke AC-019 of 0020 now expects `0001 Restaurant-Rec…` and `/sdd-compile`), Gregor's AC-020 and AC-021 on `tip-splitter`, then `/sdd-compile`.
 - **Open decisions:** none; the proxy decisions P-1…P-22 stand, new ones are in the steps' `Notes:`.
 - **Baseline:** `20a1e68`.
 - **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here); layout is checked in the orchestrator's preview harness.

@@ -181,6 +181,7 @@ remembered for this workspace.
 - **Remembered per workspace (UI state only):** the area last shown; the selected spec's stem,
   plus its path while the stem is duplicated. Kept outside every workspace folder. Never domain
   data (ADR-001 §7).
+  *Amended by 0022 (PD-069): §8 — also the side panel's width as a fraction of the panel, in its own memory key (0022 §4.7 G-3).*
 - Nothing sensitive is read, shown or stored.
 
 *Amended by 0016 (PD-059, proxy): the visible text is the sentence of 0016 T-09; the rule ID is in the tooltip (T-08).*
@@ -498,6 +499,8 @@ automated tests.
 | A-004 | Restricted Mode changes nothing in this slice but the S7 note | This slice has no agent actions; ADR-001 §14 hides agent start and provider setup only | The specs that add agent actions (0008 onwards) must hide their own |
 
 *Amended by 0015 (PD-055/PD-056): A-004 is void.*
+
+*Amended by 0022 (PD-069): A-003 — the remembered state also holds the side panel width (0022 §4.7 G-3).*
 
 ## 17. Open points
 

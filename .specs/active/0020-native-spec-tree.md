@@ -63,15 +63,21 @@ from the tree; the panel has two tabs; no test that decides a staying criterion 
 | Backlog | Backlog | number, then path | expanded (proxy, A-003) |
 | Done | Done (Deprecated included) | number, then path | collapsed |
 
+*Amended by 0022 (PD-069): §4.1 group `Up next` — the group is named `Ready` (0022 §4.2, X-01); "Up next" names the Overview's set only.*
+
 - Every spec entry (PD-018, PD-019: each file its own row) is in exactly one group; a group with no spec is not shown (guideline 7).
 - A group row: label = group name, description = the number of its specs, no icon of its own, an ID that does not contain the count, so VS Code keeps the user's expand or collapse while the view lives (A-009).
+  *Amended by 0022 (PD-069): §4.1 "description = the number of its specs, no icon of its own" — a group holding a spec with a Problem shows the count and the problem count, the warning icon and the sentence as tooltip and accessible label (0022 §4.2, X-02, X-03).*
 - *Up next* is what to pick up next; here it holds Ready only because Backlog is a group of its own (target picture, `docs/product/ux-guidelines.md`), while the Overview, which has no Backlog section, lists Backlog entries there too (0018 O-3, PD-062).
+  *Amended by 0022 (PD-069): §4.1 bullet "*Up next* is what to pick up next …" — void for the tree: its group is `Ready`; the Overview's Up next lists Ready, then Backlog (0022 §4.2).*
 
 ### 4.2 Spec row
 
 - **Label:** `<number> <title>`. The title — or the slug, for a spec without one — when longer than 24 characters is cut at its last space within the first 24 characters, then `…` (no such space: after 23 characters) (proxy, A-005).
+  *Amended by 0022 (PD-069): §4.2 Label "longer than 24 characters is cut" — label and description together hold 32 characters; the title is cut to the room, never below 12 characters, and a title that fits is not cut (0022 §4.2, AC-005).*
 - **ID:** the active project's root, the stem and, while the stem is duplicated, the path (PD-039): unique across the tree (VS Code requires it), unchanged by a move between groups, never the same in two projects.
 - **Description:** `<State> · <short form>` (0017 §6.1) for a spec that has a step; `<State>` alone for one that has none (NS-1, NS-3, NS-11); `Deprecated` for a deprecated spec. No rule ID (guideline 6).
+  *Amended by 0022 (PD-069): §4.2 Description "`<State> · `" — the step's short form alone; `<State>` for a spec without a step; `Deprecated` as before (0022 AC-004).*
 - **Icon** (VS Code product icon with a theme colour, the board's motifs and tints):
 
 | State | Icon | Colour |
@@ -84,8 +90,12 @@ from the tree; the panel has two tabs; no test that decides a staying criterion 
 | Blocked | `circle-slash` | `charts.red` |
 | any state with a *Problem* (0016 §6.1) | `warning` | `problemsWarningIcon.foreground` |
 
+*Amended by 0022 (PD-069): §4.2 icon colours of Active, Review and Done — Active `charts.green`, Review `charts.orange`, Done `descriptionForeground` (0022 §4.8, STATE_LOOK).*
+
 - **Accessible label:** `<number> <full title>, <description>`, plus `, ` and 0016's T-05 text (`1 problem`, `<n> problems`).
+  *Amended by 0022 (PD-069): §4.2 Accessible label — `<number> <full title>, <State>[, Deprecated][, <step short form>][, <T-05>]` (0022 X-05).*
 - **Tooltip** (Markdown, one line each, a line without data is left out): `**<number> <full title>**` · `<State>`, for a derived state `<State> — <0016 T-09 sentence>` · `Next step: ` + the full first line in code, or the rule's text where it names no line · the second line in code under its label (0017 §6.1) · `Steps <d>/<t> · Criteria <d>/<t>` with 0018 B-5's figures, in every state, a figure that is not available left out · per *Problem* finding `Problem: <its reason>` (0016 §6.2) · the project-relative spec path in code. Text from the files shows as written; the tooltip runs no command link.
+  *Amended by 0022 (PD-069): §4.2 Tooltip "`Problem: <its reason>`" — `Problem: <sentence>` (0022 §4.2, §4.5).*
 - **Click or Enter:** the spec becomes the selected spec (0005 BR-03), so 0019's side panel shows it and 0017's current spec follows (0017 §6.3 (1)). An open panel comes to the front without taking the keyboard focus from the tree (0019 §6.1, A-006) and keeps its tab; a closed panel opens, without the focus, on the start area of 0005 BR-02.
 - **Inline action and context menu:** inline `Copy Next Step` (icon `copy`) only on rows of a spec that has a step (0017 §6.1; guideline 2); it copies the full first line and shows 0017's status-bar feedback (`$(check) Copied` or `$(warning) Could not copy`, 2000 ms, 0017 AC-016) — not at the control, success not announced (0017 §6.3), deviating from guidelines 8 and 9 (A-011); it does not select the spec. Context menu, in this order: `Open Spec`; `Open Plan` only where 0019's Steps row has a plan (sibling, else the archived plan 0003 uses); `Copy Next Step` as the inline rule says. The three are the tree's own commands, hidden from the Command Palette; 0017's `featherspec-studio.copyNextStep` stays the palette's one "Copy Next Step".
 - **Open Spec, Open Plan** (proxy, A-010): the file at line 1, not as preview, in the active editor group, or beside it when that group shows the Studio panel, so a visible Studio stays visible (guideline 5; with no panel in view there is nothing to open beside — named deviation); the panel is neither opened nor revealed. A file gone since the last model update opens nothing and shows VS Code's warning `File not found: <path>` (0019's text).
@@ -163,11 +173,16 @@ spec list exists (A-007).
 | Panel navigation | `Spec Explorer` | — (two tabs per 0018) |
 | Area purpose; list label; pane hint | `Browse the specs of the project and select one.`; `Specs`; `Select a spec in the list to see its details.` | — |
 
+*Amended by 0022 (PD-069): §6 row "Tree entries" — groups `In progress`, `Ready`, `Backlog`, `Done` (0022 X-01).*
+
+*Amended by 0022 (PD-069): §6 row "Row description, tooltip, accessible label" — the step short form alone, e.g. `/sdd-compile`, `Done`, `Deprecated`; accessible label per 0022 X-05; Problem lines are sentences.*
+
 ## 7. Error cases and edge cases
 
 - A spec moves between lifecycle folders → it changes group, keeps its row ID and stays the selected spec (PD-039).
 - A duplicated stem → one row per file, each with its warning (0016 *Problem*); the tooltip names each path.
 - A title made only of spaces or missing → the slug; a title of exactly 24 characters is not cut.
+  *Amended by 0022 (PD-069): §4.2 "a title of exactly 24 characters is not cut" — the budget of 0022 §4.2 replaces the 24-character rule.*
 - The clipboard fails → 0017's failure feedback; the tree is unchanged.
 - The panel shows a panel state when a row is clicked → the selection is kept and the side panel appears once the model is loaded (0005 BR-03).
 - The tree's highlight is VS Code's own selection: after the side panel closes or the panel selects another spec it may stay on the row last clicked; a click on it selects again (§3, no reveal).
@@ -181,11 +196,15 @@ Decided by unit tests on the tree model (core, no `vscode`) and the manifest unl
 `fs110-de-active-review` — the one project, 0001 in Review — `incomplete-agents-only`, `not-fs-speckit`).
 
 - **AC-001** While a project is active and its model holds at least one spec, the view shall show at its root the groups of §4.1 that hold a spec, in the order In progress, Up next, Backlog, Done, with every spec entry in exactly one group by its board state, and each group row's description shall be its count.
+  *Amended by 0022 (PD-069): AC-001 "Up next", "each group row's description shall be its count" — `Ready`; the description is the count, plus the problem count where the group holds a Problem (0022 AC-006).*
 - **AC-002** The groups In progress, Up next and Backlog shall start expanded and Done collapsed; a group row's ID shall be the same for any count; a spec row's ID shall follow §4.2 — the same before and after a move between groups, different for two duplicated entries and for one stem in two projects — and no two rows of one tree shall share an ID.
+  *Amended by 0022 (PD-069): AC-002 "Up next" — `Ready`; the group ID is `group:ready` and holds neither count (0022 AC-006).*
 - **AC-003** The system shall order the rows of In progress Blocked, Review, Active, then by number, then by path, and the rows of every other group by number, then by path.
 - **AC-004** Each spec row shall carry the label, description and accessible label of §4.2.
   > **Given** `.specs/active/0015-focus-on-visibility.md` in Review with the title "Focus the Studio on Visibility: No Agent Runs, a Named Next Step" **When** the tree is built **Then** the label is `0015 Focus the Studio on…`, the description `Review · /sdd-compile` and the accessible label `0015 Focus the Studio on Visibility: No Agent Runs, a Named Next Step, Review · /sdd-compile`.
+  *Amended by 0022 (PD-069): AC-004 example — the row is described `/sdd-compile` with the label `0015 Focus the…` and the accessible label per 0022 X-05 (0022 AC-004, AC-005).*
 - **AC-005** Each spec row shall carry the icon and colour of §4.2 for its state; if the spec has a *Problem* finding (0016), then the row shall carry `warning` in `problemsWarningIcon.foreground`, keep its state word in the description and add the problem count to the accessible label.
+  *Amended by 0022 (PD-069): AC-005 "keep its state word in the description" — void: the state shows in icon, group, tooltip and accessible label (0022 AC-004).*
 - **AC-006** Each spec row's tooltip shall be Markdown with the lines of §4.2, in that order, leaving out a line or part without data; text from the files shall show as written, and the tooltip shall not be trusted for command links.
 - **AC-007** A row of a spec that has a step (0017 §6.1) shall offer `Copy Next Step` inline and in its context menu; activating it shall put the full first line on the clipboard, show 0017's status-bar feedback and leave the selection unchanged. A row of a spec without a step (Done among them) shall offer neither.
 - **AC-008** A spec row's context menu shall offer `Open Spec`, `Open Plan` only where the spec has a plan (§4.2), and `Copy Next Step` per AC-007, in this order. Open Spec and Open Plan shall open that file at line 1, not as preview, in the active editor group, or beside it when that group shows the Studio panel, and shall neither open nor reveal the panel; if the file no longer exists, then the system shall open nothing and show the warning `File not found: <path>`. Group rows shall offer no action. (Unit test on the editor port with fake groups.)
@@ -201,9 +220,12 @@ Decided by unit tests on the tree model (core, no `vscode`) and the manifest unl
   > **Given** a stored memory `{ v: 1, area: 'specExplorer', selection: { projectRoot: <the active root>, stem: '0003-x' } }` and 0003 in the project **When** the panel opens **Then** Overview shows with 0003's side panel.
 - **AC-018** A search of `src` without test files shall find no `specExplorer`, `SpecExplorer`, `openSpecExplorer` and "Spec Explorer", except the mapping of AC-017; a case-insensitive search of `README.md`, `docs/release-checklist.md`, `docs/product/design-brief.md`, `.architecture/*.md` and the `architecture:` snapshot of `AGENTS.md` shall find neither "Spec Explorer" nor `spec-explorer` (CHANGELOG history exempt); the README shall name the view "Specs", its four groups, the inline Copy, the badge and the tabs Overview and Board.
 - **AC-019** Host smoke: after activation, the tree reported by the test API (`api.shell().tree()`) shall hold one group `In progress` with description `1` and the row `0001 Restaurant-Rechnung mit…` described `Review · /sdd-compile`, the badge `1` with the tooltip `1 spec waits for you: 1 in Review` and no view description, and every command of AC-011 shall be registered. No test of this spec shall run in the configurations `activation-specs-only`, `activation-no-marker` or `setup-no-marker`, whose tests shall stay unchanged and pass.
+  *Amended by 0022 (PD-069): AC-019 — the smoke expects the description `/sdd-compile` and the label `0001 Restaurant-Rec…` (0022 AC-004, AC-005).*
 - **AC-020** 0005, 0007, 0013, 0015, 0016, 0017, 0018, 0019 and ADR-001 §2 shall carry the notes of §5 as inline notes "*Amended by 0020 (PD-058): …*"; the PD register is history and is not edited (as in 0018 §5).
 - **AC-021** Every test at the commit on which this spec's implementation starts that decides a criterion not voided in §5 shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI. A script shall compare the test titles of both commits, and the plan shall list every title missing at the head, a renamed one included, with its voided criterion or the head title that replaces it.
+  *Amended by 0022 (PD-069): AC-021 — also excepts the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
 - **AC-022** *(manual; pre-release checklist)* On `tip-splitter` and on this repository, in Dark, Light and High Contrast at a sidebar width of 400 px, Gregor or his delegate shall confirm that every state icon is told apart without colour, the description of every In progress and Up next row is visible and the badge is readable; in the Hands-On he copies a next step from the tree and his assistant runs it.
+  *Amended by 0022 (PD-069): AC-022 "Up next row" — a `Ready` row.*
 
 ## 9. Technical notes for developers or AI agents
 
@@ -229,6 +251,8 @@ Decided by unit tests on the tree model (core, no `vscode`) and the manifest unl
 | A-009 | VS Code keeps a group's expand state by its ID while the view lives; across a window reload it is VS Code's choice and not asserted | The API documents the ID for expansion state; it documents nothing about reloads | Done may start collapsed again after a reload — the default anyway |
 | A-010 | (proxy) Open Spec and Open Plan use the active group, beside it when that group shows the Studio panel; a gone file gets VS Code's warning | VS Code's own trees open in the active group (guideline 4); `Beside` from the sidebar can cover the Studio or split beside an empty group; guideline 5 aims at a visible Studio | A user expecting the file always to the side; one rule changes |
 | A-011 | (proxy) A Copy from the tree confirms in the status bar only (guidelines 8, 9 deviation) | A row has no place for transient text without changing its description and accessible label; one feedback place for every native Copy (0017 §6.3) | Screen readers hear only a failure (0017's warning); a row-description flash is the fallback |
+
+*Amended by 0022 (PD-069): A-005 — superseded by the label budget of 0022 §4.2 (32 characters for label and description together).*
 
 ## 11. Open points
 

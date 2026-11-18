@@ -100,6 +100,7 @@ sentence that also says something else keeps that part. The rows name what needs
   detail and every tooltip show the full line(s), the second under its label. **Copy always copies
   the full first line**; the detail keeps one Copy per line. Card and row Copy take 0016 §6.5's
   style and feedback.
+  *Amended by 0022 (PD-069): §6.1 "Card and row Copy take 0016 §6.5's style and feedback" — they are the icon button of 0022 §4.4 with that feedback.*
 - The step is the card's last line, follows a row's reasons and ends the status bar text: the
   spec is named first (audit R-03 field 4, K-G; deviation from guideline 1 "before anything else", named).
 - A spec without a step shows no step line on its card or row (problems show per 0016).
@@ -240,6 +241,7 @@ Decided by automated tests unless marked manual. Fixtures: one per NS rule (0015
   *Amended by 0018 (PD-062): the test audit also excepts the tests 0018 AC-030 lists against a criterion 0018 §5 voids.*
   *Amended by 0019 (PD-058): AC-024 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*
   *Amended by 0020 (PD-058): AC-024 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
+  *Amended by 0022 (PD-069): AC-024 — also excepts the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
 - **AC-025** 0001, 0003, 0006, 0007, 0013, 0015, 0016 and ADR-001 shall carry the notes of §5; a case-insensitive search of `README.md`, `docs/release-checklist.md`, `docs/product/design-brief.md` and `.architecture/*.md` shall find no "Move to…", "Move Spec", "drag", "move request", "move pick", "move result", "transition check" or `FeatherSpec: <name> (<version>)`; the README shall name the card Copy, the status bar with the rule of §6.3 and "Copy Next Step"; the release checklist shall carry AC-026; `CHANGELOG.md` shall name the removal and the new places of the next step under the version in preparation.
 - **AC-026** *(manual, Gregor)* M-1 on `tip-splitter`, Hands-On walkthrough with his assistant: task "start the Ready spec" — the Start line copied from the card with no failed attempt; on an Active spec `/sdd-plan`, then `continue` in the same chat, runs one step; the status bar names the spec he works on and its click copies; Dark, Light and High Contrast show the card line and row readable.
 
