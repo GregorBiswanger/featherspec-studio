@@ -1,16 +1,17 @@
 # Send the Next Step to My Assistant
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0024-send-next-step-to-assistant.plan.md](0024-send-next-step-to-assistant.plan.md)
 
 Basis: review `docs/ux-audit/07-implementation-review.md` §6a (2026-11-18) as cut in `docs/ux-audit/08-spec-handoff.md`
 §5 (S-1…S-6, AC drafts, E-11, E-12). Decisions: **PD-068** (Gregor, E-6; supersedes PD-056's "the Studio opens no
 chat" for this case and decides what PD-061 (2) deferred, "Send to chat"), **PD-074** (V-2 result, record
-`docs/decisions/v2-prefill-spike-2026-11-18.md`), PD-069 (round, click test), PD-075, PD-047, PD-013, PD-016. Guidelines
-1, 2, 8–12 (`.claude/rules/ux-guidelines.md`). Builds on **0021** (intents, prompts, Copy prompt, coach line and its
-session column, `(?)`, the first `contributes.configuration`) and **0022** (layout; button hierarchy: at most two primary
-buttons per view, list Copies are icon buttons; the detail alone below 900 px, G-4); restates neither. No interview:
-Gregor delegated the round (PD-069); every choice is a proxy in §11.
+`docs/decisions/v2-prefill-spike-2026-11-18.md`), PD-069 (round, click test), PD-076 (click test passed), PD-075, PD-047,
+PD-013, PD-016. Guidelines 1, 2, 8–12 (`.claude/rules/ux-guidelines.md`). Builds on **0021** (intents, prompts, Copy
+prompt, coach line and its session column, `(?)`, the first `contributes.configuration`) and **0022** (layout; button
+hierarchy: at most two primary buttons per view, list Copies are icon buttons; the detail alone below 900 px, G-4);
+restates neither. 0021, 0022 and 0023 are implemented (In Progress). No interview: Gregor delegated the round (PD-069);
+every choice is a proxy in §11.
 
 ## 1. Summary
 
@@ -166,7 +167,7 @@ Specs view's toolbar (group `navigation`, after 0020's Open and Refresh) and in 
 
 While Send is offered the toggletip's third paragraph is §7's Send sentence; the fourth is §7's settings sentence always.
 
-## 7. Texts (English, PD-016; text modules and manifest, asserted literally; proxies until the click test, OP-001)
+## 7. Texts (English, PD-016; text modules and manifest, asserted literally; confirmed by the click test, PD-076)
 
 | New | Replaces |
 | --- | --- |
@@ -274,14 +275,16 @@ with both assistants of §6.2. A *Send control* is a button or menu item whose t
 
 ## 12. Open points
 
-- OP-001 Click test on an HTML draft before `/sdd-plan` (PD-069, AC-019): Gregor confirms §6.3 and §7; a change is a
-  revise. **Blocking for `/sdd-plan`.**
+- OP-001 Click test on an HTML draft before `/sdd-plan` (PD-069, AC-019). Closed 2026-11-18 by PD-076: passed ("ich
+  finde es super so"); §6.3 and §7 stand as the draft shows them (`/home/claude/orch/clicktest2/project/Send.dc.html`).
 - OP-002 Codex: when a Codex version takes a prompt argument, a new spike and a revise add `codex` (PD-068 "where
   technically possible"); then 08 S-5's wording (`/sdd-*` without a Codex loader) needs its own V-2 row. Not blocking.
 - OP-003 Claude Code "current chat": `claude-vscode.sidebar.open` and `claude-vscode.primaryEditor.open` exist but
   were not tried with a prompt (V-2); a spike may add the target. Not blocking.
 - OP-004 Unsent text in Copilot's current chat may be replaced by `open` (not tested in V-2). Recommendation: keep the
   target; AC-017 records the behaviour; if text is lost, Gregor decides whether the current chat stays. Not blocking.
+  VS Code's source (`chatActions.ts`, main, read 2026-11-18) sets the input with `isPartialQuery`, which suggests a
+  draft is replaced; the plan's *Research* holds the reading, AC-017 decides.
 - OP-005 `/sdd-clarify` 2026-11-18 (S68): 42 findings, 7 blocking, resolved in one pass at Gregor's standing request
   (`0024-findings.md`; cross-spec with 0023). Readings; say so if one is wrong: (a) the first Now row only where it
   has a line; (b) feedback runs from the result; (c) 5000 ms end a hanging Send (A-015); (d) the warning is a VS Code
@@ -291,5 +294,5 @@ with both assistants of §6.2. A *Send control* is a button or menu item whose t
 
 Ready: §6 and §7 literal, §5 listed, OP-001 closed, 0021 and 0022 implemented (their settings, Copy prompt and button
 classes are this spec's base). Clarified on 2026-11-18 (OP-005). Done: AC-001–AC-015 green with evidence in the plan,
-AC-016–AC-019 checked, §5 applied, docs, architecture and Memory Bank synced, `/sdd-compile` READY. Next: the click
-test (OP-001); then `/sdd-plan` after 0021 and 0022.
+AC-016–AC-019 checked, §5 applied, docs, architecture and Memory Bank synced, `/sdd-compile` READY. Click test passed
+(PD-076, OP-001 closed); planned 2026-11-18. Next: Gregor reads the plan; then the start signal.
