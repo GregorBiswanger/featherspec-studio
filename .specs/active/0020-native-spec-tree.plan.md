@@ -201,6 +201,7 @@ sources (API reference, 1.72 notes, UX guidelines: Views) were checked 2026-11-1
 3. T-005 — the Specs view in VS Code: adapter, manifest, wiring, host smoke
 4. T-006 → T-007 — the Spec Explorer area ends: two tabs and the mapping, then the list's contract and styles
 5. T-008 — §5 notes, docs, test-title audit, architecture and Memory Bank sync, final gates
+6. T-009 → T-016 — fix round after the 0020 compile (NOT READY: D1–D3, G1–G5, F1–F9): order, gap tests, leftovers, docs, deletions, sync
 
 Parallel: stage 2 (T-003 adds only `specTreeService*`; T-004 the actions, two ports, `openFile`,
 `editor` and `copyNextStep`; both only read `specTree.ts`, each `Verify` runs its own tests). Both
@@ -372,6 +373,72 @@ and the host smoke, so they stay `→`.
   his delegate in a real VS Code (no command sees VS Code's native tree drawing)
 - [x] **Verified (T-008):** 2026-11-18, agent sandbox: `docsScan.test.ts` red first on a scratch copy of the T-007 head (17 failed of 72: no Spec Explorer in README, checklist, design brief, AGENTS.md and `.architecture`, the README names, the checklist item, CHANGELOG, the nine `Amended by 0020` counts), then green (72 passed); `grep -c "Amended by 0020"`: 0005 28, 0007 6, 0013 4, 0015 3, 0016 4, 0017 2, 0018 5, 0019 8, ADR-001 1 (each at least its §5 rows); `git diff 16fc52b -- docs/product/product-decisions.md` empty; test-title audit below (44 absent, all explained); eslint, `tsc --noEmit`, `tsc --noEmit -p src/webview` clean; `npm run test:unit` 139 files, 2217 passed + 3 skipped (timing project 13 passed); `npm run compile` and `npm run compile-tests` green. Not run here: `npm test` on Windows and CI (host tests), AC-022 (manual, Gregor or his delegate).
 - **Notes:** (1) Deletes: none in this step. (2) The §5 notes are one `*Amended by 0020 (PD-058): …*` line under each named statement (bullet, paragraph, table or heading), inserted by a throwaway script (`/tmp/audit-0020/note.py`); the PD register is untouched. (3) README: the section "The Specs view" replaces "Spec Explorer"; the new `media/screenshots/spec-detail-light.png` is a preview-harness screenshot (Board, side panel of `studio-0015`, Light, 1400x900) taken on a scratch build of the T-007 head; the old `spec-explorer-detail-light.png` is now unreferenced and stays on disk: its deletion is Ask-first and proposed to Gregor. (4) `docsScan.test.ts` got a 0020 describe block (gone terms in README, checklist, design brief, AGENTS.md, `.architecture`; README names and screenshot files; checklist item; CHANGELOG; the nine note counts); CHANGELOG history is exempt. (5) `/sdd-architecture-update` changed exactly the lines the step names (the plan's approval is the confirmation); `adapters.md` also names the tree adapter and the editor's active-group rule. (6) The audit's "present" test is the same literal in any file at the head; template-literal titles are compared as written. (7) Checklist item "Keyboard and screen reader" is added beside AC-022 as a cheap extra for the same manual session.
+
+### T-009 — Equal numbers are ordered by path (compile D1, G1)
+
+- **Covers:** AC-003
+- **Do:** Test first in `src/core/shell/specTree.test.ts` ("0020 AC-003: the order"): `0003-login.md` and `0003-login-page.md` in one group (Backlog, and the same pair in In progress at one state) must read `0003-login-page.md` before `0003-login.md` (path order: `-` sorts before `.`), in both directions of insertion. Then remove the stem tie-break (`compareText(left.stem, right.stem) ||`) from `compareRows` in `src/core/shell/specTree.ts`. Mutants M10 (stem tie-break stays), M11 (path tie-break removed) and M81 (stem tie-break reversed) must die.
+- **Verify:** `npx vitest run --project node src/core/shell/specTree.test.ts` red on a scratch copy of HEAD (`git archive HEAD`), then green; the three mutants each fail the new test; gates 1–4
+- [ ] **Verified (T-009):**
+- **Notes:**
+
+### T-010 — A row reopens a closed panel through the start path (compile G2)
+
+- **Covers:** AC-009
+- **Do:** A deciding test in `src/core/shell/treeActions.test.ts` ("0020 AC-009"): a navigation target set before the panel closed is gone after a row reopens the panel (BR-02: `shell.open({ via: 'start' })` consumes `target`); with the panel open the target stays. Mutant M40 (the `if (!deps.panel.isOpen()) deps.shell.open({ via: 'start' })` line removed) must die. Code unchanged unless the test shows a defect.
+- **Verify:** `npx vitest run --project node src/core/shell/treeActions.test.ts` green, mutant M40 red; gates 1–4
+- [ ] **Verified (T-010):**
+- **Notes:**
+
+### T-011 — The view description shows the project count while one project is active (compile G3)
+
+- **Covers:** AC-011
+- **Do:** In `src/core/shell/specTreeService.test.ts` replace the test whose `else` branch asserted no description by two cases: two projects and one active → the view description shows the count and the name; two projects and none active → S3 message, no description. Mutants M82 (`projectCount: 1`) and M83 (counts every folder, not only verdict `project`) in `specTreeService.ts` must die.
+- **Verify:** `npx vitest run --project node src/core/shell/specTreeService.test.ts` green, M82 and M83 red; gates 1–4
+- [ ] **Verified (T-011):**
+- **Notes:**
+
+### T-012 — The timing test says what it times; three weak tests decide something (compile F2, F3)
+
+- **Covers:** AC-010 (retitle), AC-016, AC-012, AC-021 (audit home)
+- **Do:** `src/webview/areas/areas.timing.test.tsx:40` "0020 AC-010: a shell event reaches the DOM" times 0005's notice (PD-047): retitle it, and home the old title in the audit (T-015). `messages.test.ts:125` `expect('rows' in view).toBe(false)` asserts the test's own literal: assert on the view the code built, or drop it. `studioTree.test.ts` "AC-012: an action row keeps its command, a group and a spec row have no icon colour of an action" asserts the action row only: assert the group and the spec row too. `shellService.navigation.test.ts`: remove the two duplicated assertion lines. A mutant per changed test must die where the test claims to decide something.
+- **Verify:** the three files green; a mutant per decided claim red; gates 1–4
+- [ ] **Verified (T-012):**
+- **Notes:**
+
+### T-013 — Leftovers of the removal go (compile F4)
+
+- **Covers:** AC-016, AC-018 (no dead Spec Explorer code)
+- **Deletes:** `src/webview/ui/RuleText.tsx`, `src/webview/ui/RuleText.test.tsx` (only if a grep shows no production user; approved by the orchestrator, Gregor's delegate)
+- **Do:** Remove `VIEW_NAME` and `TITLE_NOT_AVAILABLE` from `texts.ts` if nothing uses them; the manifest test asserts all four `TREE_COMMAND_TITLES` from the constant (so the constant has users); remove the dead `[role="option"]:focus-visible` selector in `main.css:111`; remove `SpecDetail`'s dead `region`/null branch (the side panel passes `region={false}` and a spec detail); remove the stale `rows: []` of the fake shell view in `specTreeService.timing.test.ts`; fix the "three areas" title in `Drilldown.test.tsx:102`; drop "rule text" from `.architecture/webview.md`.
+- **Verify:** `grep -rn "VIEW_NAME\|TITLE_NOT_AVAILABLE\|RuleText" src` has no hit; gates 1–5, `npm run compile-tests`
+- [ ] **Verified (T-013):**
+- **Notes:**
+
+### T-014 — The README and the docs scan say what the view is; screenshots are current (compile G4, G5, F6, F9)
+
+- **Covers:** AC-018, AC-020
+- **Deletes:** `media/screenshots/spec-explorer-detail-light.png` (unreferenced), `media/screenshots/mission-control-dark.png` and `media/screenshots/spec-board-dark.png` (outdated: taken before 0016–0020); approved by the orchestrator
+- **Do:** `docsScan.test.ts`: the README names the four groups, the inline Copy and "Copy Next Step", the badge sentence and the tab Board (M78–M80 die); thresholds equal the §5 counts (0005 28, 0007 6, 0013 4, 0015 3, 0016 4, 0017 2, 0018 5, 0019 8, ADR-001 1; M76 dies). README: "Copy Next Step" for the menu entry, "Focus on Specs View reaches the view; Shift+F10 opens a row's context menu"; the Overview and Board images point at `media/screenshots/overview-dark.png` and `board-dark.png` (preview-harness shots at `77f585b`, Dark, 1400×900, no selection, two tabs); `spec-detail-light.png` stays. CHANGELOG and the checklist item "Keyboard and screen reader": "Copy Next Step".
+- **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red on a scratch copy (the new checks against the old README), then green; mutants M76, M78–M80 red; gates 1–4
+- [ ] **Verified (T-014):**
+- **Notes:**
+
+### T-015 — The audit homes hold; the notes sit where they belong (compile D2, D3, F1)
+
+- **Covers:** AC-020, AC-021
+- **Do:** Plan audit: the row "an active project keeps its entries …" is homed to §5 "0005 AC-003" with the titles "a loaded model keeps its groups while Refresh or Retry re-reads (S4)" and "S5 for discovery or listing with a project active shows its line and the rows Show output and Retry, rows of an old model gone" ("0020 AC-012: the states of the view"); "PD-048" names AC-005 (not AC-002), `states.test.tsx` names AC-012 (not AC-014); the retitled timing test of T-012 is homed. `0013`: the Amended-by note moves directly below the first §3.4 bullet. `0005` pointers: lines 81 and 517 AC-009 → AC-010; 102 and 350 AC-005 → AC-009; 423 AC-022 → AC-004; 51, 93, 124 §4.1 → §4.3. Re-run the title audit against `16fc52b` at the fix head: every absent title homed.
+- **Verify:** the audit script lists every absent title with a home that holds; the docsScan counts of T-014 still pass; `git diff 16fc52b -- docs/product/product-decisions.md` empty
+- [ ] **Verified (T-015):**
+- **Notes:**
+
+### T-016 — Traceability, handoff and Memory Bank agree; the 0019 record
+
+- **Covers:** AC-021, AC-022 (state only; the manual check stays open)
+- **Do:** Traceability rows to `verified` where a passing deciding test ran (AC-001…AC-020 with the Windows run at `77f585b` plus this round's runs; AC-021 after T-015; AC-022 stays `open`, manual). T-008 `Verified:` and the handoff record Windows at `77f585b` (unit 2213 passed / 7 skipped + 13 timing; `npm test` 30+1+1+1) and CI 44277740119. `.memory-bank/activeContext.md` Now / Validation / Next: 0020 implemented, compiled NOT READY, fixed by T-009…T-016; next: Windows and CI at the fix head, Gregor's AC-022, a fresh `/sdd-compile` for 0014–0020. 0019 plan: the orchestrator's harness result on the AC-022 row and T-017 Notes (docs only).
+- **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts`; full gates of `IMPL-UX.md`
+- [ ] **Verified (T-016):**
+- **Notes:**
 
 ## Test-title audit (0020 AC-021)
 
