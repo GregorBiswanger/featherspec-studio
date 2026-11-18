@@ -71,6 +71,7 @@ describe('readiness', () => {
         const entry = await entryOf({
             '.specs/backlog/0001-a.md': specText({ plan: '[x](0002-other.plan.md)' }),
             '.specs/backlog/0001-a.plan.md': planText(),
+            '.specs/backlog/0002-other.plan.md': planText(),
         });
         expect(failing(entry)).toEqual(['R-3']);
     });

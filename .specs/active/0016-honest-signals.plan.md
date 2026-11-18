@@ -3,7 +3,7 @@
 **Spec:** [0016-honest-signals.md](0016-honest-signals.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-003
+**Current step:** T-004
 
 ## Approach
 
@@ -198,8 +198,8 @@ everything after T-002 shares the text modules, `main.css` or `SpecDetail.tsx` a
   `deriveLifecycle.rules.test.ts` gain `tier`.
 - **Verify:** the new tests red (AC-010: an ID twice fails R-6; the contradiction has no tier),
   then green; gates 1–4
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-17 — red: `npx vitest run --project node src/core/lifecycle/problems.test.ts`: 5 failed (contradiction has no tier; AC-010 an ID twice fails R-6 (`R-6` in failing); archived-plan and return-note Problem controls did not fail R-6), 5 already green (AC-004 and AC-005 follow from T-001's tiers); green after: 10 passed. Gates 1–4: eslint 0, tsc x2 clean, `npm run test:unit` 1746 passed + 3 skipped, timing 12.
+- **Notes:** `hasProblem` is now exactly 'a contradiction or any own diagnostic with tier problem'; the two readability conditions went (an unreadable file always carries its Problem). Consequence: a dangling Plan link or a sibling plan's dangling Spec link now fails R-6 (§5). Two test helpers changed for it: `planText` default Spec line is now `—` (was a dangling `[spec](spec.md)`), and the 0003 AC-004 R-3 test gives its linked 'other' plan an existing file so the link is not dangling; its title and expectation stay. Fixture `test/fixtures/repo-8052f9a` is `git archive 8052f9a .specs` (35 files), not in `.vscode-test.mjs`.
 
 ### T-004 — Problems on the card, in Needs attention and in the header
 

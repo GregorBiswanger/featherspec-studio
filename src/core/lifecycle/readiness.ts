@@ -25,18 +25,7 @@ function linksSiblingPlan(context: EntryContext): boolean {
 }
 
 function hasProblem(context: EntryContext): boolean {
-    const planKey = context.siblingPlan?.key;
-    return (
-        context.contradictions.length > 0 ||
-        !context.specReadable ||
-        (context.siblingPlan !== undefined && !context.siblingPlanReadable) ||
-        context.diagnostics.some(
-            (diagnostic) =>
-                diagnostic.scope !== 'project' &&
-                ((diagnostic.kind === 'unreadable-file' && (diagnostic.scope.file === context.entry.key || diagnostic.scope.file === planKey)) ||
-                    (diagnostic.kind === 'duplicate' && diagnostic.scope.file === context.entry.key)),
-        )
-    );
+    return context.contradictions.length > 0 || context.diagnostics.some((diagnostic) => diagnostic.tier === 'problem');
 }
 
 export function evaluateReadiness(context: EntryContext): ReadinessResult {

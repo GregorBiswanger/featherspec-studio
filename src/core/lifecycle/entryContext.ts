@@ -28,7 +28,7 @@ const DONE_STATUSES = new Set(['Implemented', 'Baseline', 'Deprecated']);
 const EXPECTED_STATUS: Record<'backlog' | 'active', string> = { backlog: 'Draft', active: 'In Progress' };
 
 function contradiction(kind: ContradictionKind, file: string, reason: string): ContradictionDiagnostic {
-    return { kind: 'lifecycle-contradiction', contradiction: kind, scope: { file }, reason };
+    return { kind: 'lifecycle-contradiction', tier: 'problem', contradiction: kind, scope: { file }, reason };
 }
 
 function findContradictions(context: Omit<EntryContext, 'contradictions'>): ContradictionDiagnostic[] {

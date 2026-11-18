@@ -26,6 +26,7 @@ export type ContradictionKind = 'folder-status' | 'active-without-plan' | 'done-
 
 export interface ContradictionDiagnostic {
     kind: 'lifecycle-contradiction';
+    tier: 'problem';
     contradiction: ContradictionKind;
     scope: { file: string };
     reason: string;

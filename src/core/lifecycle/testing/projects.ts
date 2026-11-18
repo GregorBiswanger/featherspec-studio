@@ -56,7 +56,7 @@ export interface PlanOptions {
 }
 
 export function planText(options: PlanOptions = {}): string {
-    const lines = ['# Plan', '', `**Spec:** ${options.spec ?? '[spec](spec.md)'}`, `**Status:** ${options.status ?? 'Not started'}`, ''];
+    const lines = ['# Plan', '', `**Spec:** ${options.spec ?? '—'}`, `**Status:** ${options.status ?? 'Not started'}`, ''];
     if (options.rows !== undefined) {
         lines.push(
             '## Traceability',

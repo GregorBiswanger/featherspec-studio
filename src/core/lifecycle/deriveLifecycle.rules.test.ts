@@ -97,6 +97,7 @@ describe('lifecycle contradictions (closed list)', () => {
         const entry = only(deriveLifecycle(await readMemory({ '.specs/backlog/0001-a.md': specText({ status: 'In Progress' }) })));
         expect(entry.diagnostics).toContainEqual({
             kind: 'lifecycle-contradiction',
+            tier: 'problem',
             contradiction: 'folder-status',
             scope: { file: '.specs/backlog/0001-a.md' },
             reason: 'Folder backlog/ does not match status "In Progress".',
