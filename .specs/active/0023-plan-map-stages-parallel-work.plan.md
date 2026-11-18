@@ -3,7 +3,7 @@
 **Spec:** [0023-plan-map-stages-parallel-work.md](0023-plan-map-stages-parallel-work.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-001
+**Current step:** T-002
 
 ## Approach
 
@@ -235,8 +235,8 @@ orchestrator) at the ends of stages 2 and 3; AC-018 screenshots recorded here.
   `unreadable` for an unreadable plan; `shortTitle.test.ts` (`plainText` keeps length, drops marks).
 - **Verify:** `npx vitest run --project node src/core/planMap src/core/board/shortTitle.test.ts src/core/specs/parsePlan.test.ts`
   red (stub), then green; gates 1–4
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-18 · `npx vitest run --project node src/core/planMap src/core/board/shortTitle.test.ts src/core/specs/parsePlan.test.ts` red first (stub `planOf`: 24 of 24 planMap tests failed with `Not implemented`), then green 94 of 94 (24 planMap + `plainText`); gates 1–4 green, `npm run test:unit` 2663 passed + 3 skipped (+15 timing)
+- **Notes:** Stage view carries `groups` only (a group is a run joined by `‖`, its `sep` is the `→` before it), so the chips' separators need no second list; a plan without a stage line has `staged: false`, `stages: []` and all steps in `loose`. A note for an ID the plan lacks leaves the stage chip *not found* (§7: in Files only). Types of the view are in `src/shared/protocol/planMap.ts` (guards in T-003).
 
 ### T-002 — Returned work leads to Integrate; the current stage offers its ways
 

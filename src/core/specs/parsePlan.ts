@@ -81,7 +81,7 @@ const STEP_HEADING = /^### (?:~~)?\s*T-\d+\b/;
 const FENCE = /^ {0,3}(`{3,}|~{3,})/;
 const STAGE_LINE = /^(\d+)\.[ \t]+(.*?)[ \t]*$/;
 const CLOSING_LINE = /^(Parallel|No parallel stage):/;
-const STAGE_DELIMITER = /\s[—–-]\s/;
+export const STAGE_DELIMITER = /\s[—–-]\s/;
 const SEPARATOR_CELL = /^:?-+:?$/;
 
 type HeaderLabel = 'Spec' | 'Status' | 'Last updated' | 'Current step';
