@@ -3,7 +3,7 @@
 **Spec:** [0024-send-next-step-to-assistant.md](0024-send-next-step-to-assistant.md)
 **Status:** Done
 **Last updated:** 2026-11-18
-**Current step:** T-017 (T-001…T-013 verified; manual AC-016 real window and AC-017…AC-019 open)
+**Current step:** T-018 (T-001…T-013 verified; manual AC-016 real window and AC-017…AC-019 open)
 
 ## Approach
 
@@ -632,7 +632,8 @@ copy (`git archive` of the head into `/tmp`).
   control, **Copy prompt**; three settings (the Send bullet folded into the settings bullet); Problems are sentences; the
   palette list is complete (Open Plan Map, Copy Next Step, Open Settings). `docsScan.test.ts` first.
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green
-- [x] **Verified (T-016):** 2026-11-19 red: the two new `docsScan.test.ts` tests against a `git archive` of 5c70dbd 2 failed (inline **Copy**, toolbar without the gear, **Copy** as a second name, Two settings, Problems with their reasons, a palette list without five commands); green after: `npx vitest run --project node src/adapters/node/docsScan.test.ts` 158 passed. Doc-only: no code gates.\n- **Notes:** the palette list now names all ten (Open, Open Overview, Open Board, Open Plan Map, Focus on Specs View, Copy Next Step, Set Up FeatherSpec, Select Project, Refresh, Open Settings; Focus on Specs View is the one the README's table already names). The Send bullet is folded into the settings bullet; `featherspec-studio.assistant` keeps its prefix there, the one place the CHANGELOG scan allows it. No staying test was changed.
+- [x] **Verified (T-016):** 2026-11-19 red: the two new `docsScan.test.ts` tests against a `git archive` of 5c70dbd 2 failed (inline **Copy**, toolbar without the gear, **Copy** as a second name, Two settings, Problems with their reasons, a palette list without five commands); green after: `npx vitest run --project node src/adapters/node/docsScan.test.ts` 158 passed. Doc-only: no code gates.
+- **Notes:** the palette list now names all ten (Open, Open Overview, Open Board, Open Plan Map, Focus on Specs View, Copy Next Step, Set Up FeatherSpec, Select Project, Refresh, Open Settings; Focus on Specs View is the one the README's table already names). The Send bullet is folded into the settings bullet; `featherspec-studio.assistant` keeps its prefix there, the one place the CHANGELOG scan allows it. No staying test was changed.
 
 ### T-017 — The README no longer contradicts itself
 
@@ -640,7 +641,8 @@ copy (`git archive` of the head into `/tmp`).
 - **Do:** "The toolbar has **Open**, **Refresh** and the gear (**Open Settings**)"; the new-chat default reads
   "(verifying a result and challenging a spec)". `docsScan.test.ts` first.
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green
-- [ ] **Verified (T-017):**
+- [x] **Verified (T-017):** 2026-11-19 red: the new `docsScan.test.ts` test against a `git archive` of 5c70dbd failed (toolbar without the gear, "the verification and the review"); green after: `npx vitest run --project node src/adapters/node/docsScan.test.ts` 159 passed. Doc-only: no code gates.
+- **Notes:** the two new-chat cases are NS-5 (verifying a result, `/sdd-compile`) and NS-9 (challenging a spec, `/sdd-clarify`). This commit also puts a line break back in T-016's note that the earlier commit joined to its Verified line.
 
 ### T-018 — The checklist keeps Gregor's real window at 0021 AC-022
 

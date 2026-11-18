@@ -872,4 +872,12 @@ describe('product docs after the final check of round 2 (0024 T-014 to T-022)', 
         }
     });
 
+    it('the README names the gear in the toolbar and the two cases of a new chat', async () => {
+        const readme = await read('README.md');
+        expect(readme).toContain('The toolbar has **Open**, **Refresh** and the gear (**Open Settings**)');
+        expect(readme).not.toContain('The toolbar has **Open** and **Refresh**');
+        expect(readme).toContain('where the step wants a fresh session (verifying a result and challenging a spec)');
+        expect(readme).not.toContain('(the verification and the review)');
+    });
+
 });
