@@ -342,6 +342,62 @@ describe('0023 AC-008: stage rows and step cards', () => {
         expect(stageRow(container, 1).querySelector('.plan-stage-returned')?.textContent).toBe('All steps returned: the next step integrates them.');
     });
 
+    it('a card says its state in words for assistive technology, and the symbol is left out of the reading', async () => {
+        const plan = planSample({
+            stages: [
+                stage(1, [{ steps: [step('T-001', 'done'), step('T-002', 'next'), step('T-003', 'open'), step('T-004', 'returned', { returned: { status: 'blocked' } }), step('T-005', 'returned', { returned: { status: 'done' } }), step('T-006', 'dropped')] }, { sep: '→', steps: [step('T-007', 'open')] }], {
+                    current: true,
+                }),
+            ],
+        });
+        const container = await show({ selection: selected('0007'), detail: detailWith(plan) });
+        const heads = ['T-001', 'T-002', 'T-003', 'T-004', 'T-005', 'T-006'].map((id) => cardOf(container, id).querySelector<HTMLElement>('button[data-card-toggle]')!);
+        expect(heads.map((head) => head.querySelector('.visually-hidden')?.textContent)).toEqual([', done', ', next', ', open', ', returned, blocked', ', returned', ', dropped']);
+        expect(heads.map((head) => squeezed(head))).toEqual([
+            '✓ T-001 Step T-001, done',
+            '◐ T-002 Step T-002, next',
+            '○ T-003 Step T-003, open',
+            '⊘ T-004 Step T-004, returned, blocked',
+            '↩ T-005 Step T-005, returned',
+            'T-006 Step T-006, dropped',
+        ]);
+        expect(heads.slice(0, 5).every((head) => head.querySelector('.chip-symbol')?.getAttribute('aria-hidden') === 'true')).toBe(true);
+    });
+
+    it('a dropped step keeps its card with the ID struck through; no other state strikes it', async () => {
+        const plan = planSample({ stages: [stage(1, [{ steps: [step('T-001', 'dropped'), step('T-002', 'open')] }], { current: true })] });
+        const container = await show({ selection: selected('0007'), detail: detailWith(plan) });
+        expect(cardOf(container, 'T-001').querySelector('.step-card-id s')?.textContent).toBe('T-001');
+        expect(cardOf(container, 'T-002').querySelector('.step-card-id s')).toBeNull();
+        expect(cardOf(container, 'T-002').querySelector('.step-card-id')?.textContent).toBe('T-002');
+    });
+
+    it('a blocked card shows the short reason and carries the full reason as its tooltip; a reason without a full text has no tooltip', async () => {
+        const plan = planSample({
+            stages: [
+                stage(
+                    1,
+                    [
+                        {
+                            steps: [
+                                step('T-001', 'returned', { returned: { status: 'blocked', reason: 'no access to the …', reasonFull: 'no access to the shared drive for the build agent' } }),
+                                step('T-002', 'returned', { returned: { status: 'blocked' } }),
+                                step('T-003', 'returned', { returned: { status: 'done' } }),
+                            ],
+                        },
+                    ],
+                    { current: true },
+                ),
+            ],
+        });
+        const container = await show({ selection: selected('0007'), detail: detailWith(plan) });
+        const returned = (id: string): HTMLElement => cardOf(container, id).querySelector<HTMLElement>('.step-card-returned')!;
+        expect(returned('T-001').textContent).toBe('Returned · blocked: no access to the …');
+        expect(returned('T-001').getAttribute('title')).toBe('no access to the shared drive for the build agent');
+        expect(returned('T-002').hasAttribute('title')).toBe(false);
+        expect(returned('T-003').hasAttribute('title')).toBe(false);
+    });
+
     it('steps outside a stage line sit in a "Not in a stage" row; a plan without stages stacks its cards without heading or kind', async () => {
         const staged = planSample({ stages: [stage(1, [{ steps: [step('T-001', 'open')] }], { current: true })], loose: [step('T-009', 'open')] });
         const container = await show({ selection: selected('0007'), detail: detailWith(staged) });
@@ -371,6 +427,23 @@ describe('0023 AC-008: stage rows and step cards', () => {
             document.activeElement!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }));
         });
         expect(document.activeElement).toBe(cardOf(container, 'T-003').querySelector('button[data-card-toggle]'));
+    });
+
+    it('the expansion and the ways state reset with another spec, also when its selection and detail arrive in one render', async () => {
+        const container = await show({ selection: selected('0007'), detail: detailWith(planSample()) });
+        await click(cardOf(container, 'T-003').querySelector<HTMLButtonElement>('button[data-card-toggle]')!);
+        await click(waysOf(container)!.querySelector<HTMLButtonElement>('.plan-ways-toggle')!);
+        const other = detailWith(planSample(), { stem: '0003-thing', number: '0003', title: 'Thing 0003', key: '.specs/active/0003-thing.md' });
+        seq += 1;
+        const view = shellEvent(baseView({ area: 'planMap', selection: selected('0003') }), seq);
+        const together = detailEvent(other);
+        await act(async () => {
+            window.dispatchEvent(new MessageEvent('message', { data: view }));
+            window.dispatchEvent(new MessageEvent('message', { data: together }));
+        });
+        expect(map(container).querySelector('[data-map-heading]')?.getAttribute('data-map-stem')).toBe('0003-thing');
+        expect(cardOf(container, 'T-003').querySelector('button[data-card-toggle]')?.getAttribute('aria-expanded')).toBe('false');
+        expect(waysOf(container)!.querySelector('.plan-ways-toggle')?.getAttribute('aria-expanded')).toBe('false');
     });
 
     it('an ID that stands in two stages is two cards: opening one opens only it, and it stays open through an update', async () => {

@@ -112,12 +112,45 @@ describe('0023 AC-011: keyboard in the Plan map', () => {
     });
 
     it('a card that is expanded keeps its links reachable only while it holds the tab stop', async () => {
+        const open1 = { key: '.specs/active/0007-thing.plan.md', line: 41 };
+        const open2 = { key: '.specs/active/0007-thing.plan.md', line: 42 };
         const withCovers = planSample({
-            stages: [stage(1, [{ steps: [step('T-001', 'next', { covers: [{ id: 'AC-001', open: { key: '.specs/active/0007-thing.md', line: 3 } }] }), step('T-002', 'open', { covers: [{ id: 'AC-002', open: { key: '.specs/active/0007-thing.md', line: 4 } }] })] }], { current: true })],
+            stages: [
+                stage(
+                    1,
+                    [
+                        {
+                            steps: [
+                                step('T-001', 'next', { open: open1, covers: [{ id: 'AC-001', open: { key: '.specs/active/0007-thing.md', line: 3 } }] }),
+                                step('T-002', 'open', { open: open2, covers: [{ id: 'AC-002', open: { key: '.specs/active/0007-thing.md', line: 4 } }] }),
+                            ],
+                        },
+                    ],
+                    { current: true },
+                ),
+            ],
         });
         const container = await open(withCovers);
-        const links = [...container.querySelectorAll<HTMLButtonElement>('[data-step-card] .step-card-covers button.file-link')];
-        expect(links.map((link) => link.tabIndex)).toEqual([0, -1]);
+        const links = (id: string): number[] => [...container.querySelectorAll<HTMLButtonElement>(`[data-step-card="${id}"] button.file-link`)].map((link) => link.tabIndex);
+        expect(links('T-001')).toEqual([0, 0]);
+        expect(links('T-002')).toEqual([-1, -1]);
+        await click(toggle(container, 'T-002'));
+        expect(toggle(container, 'T-002').getAttribute('aria-expanded')).toBe('true');
+        expect(container.querySelectorAll('[data-step-card="T-002"] .step-card-open button.file-link')).toHaveLength(1);
+        expect(links('T-002')).toEqual([-1, -1]);
+        await focus(toggle(container, 'T-002'));
+        expect(links('T-002')).toEqual([0, 0]);
+        expect(links('T-001')).toEqual([-1, -1]);
+    });
+
+    it('an arrow key is handled by the grid: its default, scrolling the map, is prevented, also at an end', async () => {
+        const container = await open(plan());
+        await focus(toggle(container, 'T-003'));
+        expect(await press(toggle(container, 'T-003'), 'ArrowRight')).toBe(false);
+        expect(document.activeElement).toBe(toggle(container, 'T-004'));
+        expect(await press(document.activeElement!, 'ArrowUp')).toBe(false);
+        expect(document.activeElement).toBe(toggle(container, 'T-004'));
+        expect(await press(document.activeElement!, 'ArrowDown')).toBe(false);
     });
 });
 

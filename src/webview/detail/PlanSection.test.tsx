@@ -171,6 +171,16 @@ describe('0023 AC-004: the chips', () => {
         expect(lines[1]!.querySelectorAll('.plan-parallel')).toHaveLength(1);
     });
 
+    it('M-04 also follows a mixed stage: part of it runs in parallel, so the line says so', async () => {
+        const mixed = planSample({
+            stages: [stage(1, [{ steps: [step('T-001', 'open'), step('T-002', 'open')] }, { sep: '→', steps: [step('T-003', 'open')] }], { current: true }), stage(2, [{ steps: [step('T-004', 'open')] }, { sep: '→', steps: [step('T-005', 'open')] }])],
+        });
+        expect(mixed.stages[0]!.kind).toBe('mixed');
+        const container = await open(mixed);
+        const lines = [...sectionOf(container, 'Plan')!.querySelectorAll<HTMLElement>('li[data-stage]')];
+        expect(lines.map((line) => line.querySelectorAll('.plan-parallel').length)).toEqual([1, 0]);
+    });
+
     it('steps in no stage form the last line headed "Not in a stage"', async () => {
         const container = await open(planSample({ loose: [step('T-009', 'open')] }));
         const last = [...sectionOf(container, 'Plan')!.querySelectorAll('li')].pop()!;

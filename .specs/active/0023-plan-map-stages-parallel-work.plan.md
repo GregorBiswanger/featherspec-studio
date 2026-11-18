@@ -3,7 +3,7 @@
 **Spec:** [0023-plan-map-stages-parallel-work.md](0023-plan-map-stages-parallel-work.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-014
+**Current step:** T-015
 
 ## Approach
 
@@ -470,8 +470,8 @@ Proxy decisions of this round (Gregor delegated; P-25 …), recorded here and in
   expansion resets with another spec when selection and detail arrive in one render, order-independent);
   `PlanSection.test.tsx` (M90 M-04 after a `mixed` stage). M74 and M76: note only (P-27).
 - **Verify:** `npx vitest run --project webview src/webview`; the seven mutants red on a scratch copy; gates 1–4
-- [ ] **Verified (T-014):**
-- **Notes:**
+- [x] **Verified (T-014):** 2026-11-18 · `npx vitest run --project webview src/webview/areas/planMap src/webview/detail` green 194 + 51 (planMap) on the head; each new test shown red against its mutant on a scratch copy of the working tree (compile mutant definitions, one at a time, restored after): M64 and M109 killed by "a card that is expanded keeps its links reachable only while it holds the tab stop" (now expands T-002; `1 failed | 232 passed`), M65 by "a card says its state in words for assistive technology…", M66 by "a dropped step keeps its card with the ID struck through…", M67 by "a blocked card shows the short reason and carries the full reason as its tooltip…", M72 by "an arrow key is handled by the grid: its default… is prevented", M79 by "the expansion and the ways state reset with another spec, also when its selection and detail arrive in one render" (both events dispatched in one `act`, so the order of the two renders no longer matters), M90 by "M-04 also follows a mixed stage…"; gates 1–4 green, `npm run test:unit` 2813 passed + 3 skipped (+16 timing)
+- **Notes:** Tests only. The title of the M64 test is kept (no title is lost for the audit) and the test now does what the title says: it expands the card that is not the stop. M72's mutant text was re-cut for the T-010 code (`moveFocus(grid, key, direction)`). M74 (loose cards as one card row) and M76 (Alt+arrow moves focus): note only (P-27): §5.3 defines a card row as "a parallel group's cards or a card of its own" and the M-07 row is one row; the spec says nothing of Alt, and the existing test pins that Shift leaves the key alone.
 
 ### T-015 — The map breaks long prompts and Files as 0022 AC-015 says: M105, M107, M108
 
