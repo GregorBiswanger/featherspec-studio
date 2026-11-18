@@ -18,7 +18,7 @@ AI assistant does the work (PD-055, PD-056). Every guideline serves that sentenc
 | Activity Bar view "Specs" | the project as a grouped tree: In progress · Ready · Backlog · Done; each row with its state icon, the next step, inline Copy; a group or strip says when it hides a problem; badge = specs waiting for the user |
 | Status bar | the current spec, its state and next step; click copies |
 | Command | "Copy Next Step" |
-| Panel "FeatherSpec Studio" | two tabs: Overview (now first, then up next, problems, one figures line, activity) and Board (read-only pipeline); rows follow the width of their own list; the spec detail opens as a side panel in both, resizable by a divider and shown alone below 900 px (0022); at most two primary buttons per view |
+| Panel "FeatherSpec Studio" | three tabs: Overview (now first, then up next, problems, one figures line, activity), Board (read-only pipeline) and Plan map (a spec's stages, steps as cards, the ways to run the current stage); rows follow the width of their own list; the spec detail opens as a side panel in Overview and Board (and beside the Plan map from 900 px), resizable by a divider and shown alone below 900 px (0022); at most two primary buttons per view |
 | Editor | the spec and plan files themselves, opened beside the panel at the line |
 
 Reached in five specs, in the audit's order: 0016 honest signals · 0017 next step everywhere,

@@ -89,7 +89,7 @@ and the expected result. A clear miss reopens the named spec.
 
 ## Focus on visibility (0015)
 
-- [ ] **AC-030 / M-1**: in a real VS Code window on `tip-splitter`: the Specs view lists the specs in its groups and the panel shows Overview and Board only; a spec's detail shows **Next step**, **Copy prompt** puts the prompt on the clipboard and pasting it into the assistant's chat works; a Ready card's **Copy prompt** puts the NS-7 line on the clipboard (0017); no command, setting or text offers to start an agent or a run.
+- [ ] **AC-030 / M-1**: in a real VS Code window on `tip-splitter`: the Specs view lists the specs in its groups and the panel shows Overview, Board and Plan map; a spec's detail shows **Next step**, **Copy prompt** puts the prompt on the clipboard and pasting it into the assistant's chat works; a Ready card's **Copy prompt** puts the NS-7 line on the clipboard (0017); no command, setting or text offers to start an agent or a run.
 
 ## Honest signals (0016)
 
@@ -167,6 +167,21 @@ and the expected result. A clear miss reopens the named spec.
   frame and the side panel about 40 % by default, the area's scrollbar sits at the divider and the side panel's scrollbar at the
   right edge, so no two vertical scrollbars stand side by side; back returns to the row or card that opened the detail; a width set by the divider returns after closing and selecting again and after a window reload; a double-click restores the
   default; at 800 px and at zoom level 2 the area shows alone, the detail alone with its back button and no divider.
+
+## Plan map (0023)
+
+- [ ] **AC-018** *(preview harness by the orchestrator, then Gregor; guideline 12)*: in Dark, Light and High Contrast at
+  1600 px and 1000 px window width on `fs110-parallel-synthetic` and `studio-0015`, at 1600 px with the side panel at its
+  default width: the Plan section and the Plan map cut no ID, prompt or start line; `‖` cards sit side by side and wrap,
+  uncut, once the divider leaves the map less than two cards' width; at 1000 px (Studio panel below 900 px) the map shows
+  alone; every Copy is fully visible and reachable by Tab. Screenshots and verdict in the plan.
+- [ ] **AC-019 (build part)** *(Gregor, on a project with a `‖` stage)*: without the plan file, say which stages could run
+  in parallel, why or why not, and which prompt you would copy; confirm or change the three ways, the two places and the
+  texts; the plan records the answers.
+- [ ] **AC-020** *(Gregor, with the assistants he uses)*: on a copy of `tip-splitter` re-cut with a `‖` stage, each stage
+  prompt copied into a fresh chat does what its effect says and keeps the test-review stop; a start line in a second chat
+  builds exactly its step and writes its return note; `/sdd-plan` then integrates it; the next-step line of a step of that
+  stage builds only that step. A prompt that fails is replaced by the wording that worked.
 
 ## Go
 

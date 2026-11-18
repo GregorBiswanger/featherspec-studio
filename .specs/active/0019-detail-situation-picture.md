@@ -34,6 +34,7 @@ Developer (one role), as in 0005–0007; workshop participants use the same surf
 ### In scope
 
 - Side panel for the selected spec in Overview and Board: open, close, width, drawer, focus, keyboard, restore.
+  *Amended by 0023 (PD-069): §3 — also in the Plan map from a 900 px panel, without its Plan section; below 900 px the map shows alone (0023 §5.3).*
 - Detail content of §6.2; no full text of requirements, criteria, plan steps or verification logs.
 - A line per ID; every ID and file link opens the file beside the panel at its line.
 - The Spec Explorer area keeps list + detail pane, with the new content, until 0020.
@@ -95,6 +96,7 @@ detail until 0020; *Overview row* a Now, Up next or Problems row of a spec (0018
   panel in the current area. Never an area switch, never a navigation request (guideline 8). The
   side panel shows whenever a spec is selected, whoever set the selection (list, restore, 0020's
   tree); 0017's current spec follows the same selection.
+  *Amended by 0023 (PD-069): §6.1 *Open* "shows the side panel in the current area" — also in the Plan map from a 900 px panel; below, the map shows alone (0023 §5.3).*
 - **Place.** Panel ≥ 900 px wide: 400 px at the right edge beside the area content, own scroll.
   Narrower: a drawer over the area from the right edge, min(400 px, the width of the area frame)
   wide; the Board's content keeps its width; the Overview's content takes the width left of the
@@ -135,6 +137,8 @@ detail until 0020; *Overview row* a Now, Up next or Problems row of a spec (0018
 
 *Amended by 0022 (PD-069): §6.2 row 3 — each Problem shows as its sentence, the link where the finding has a file; the reason is its tooltip (0022 §4.5).*
 
+*Amended by 0023 (PD-069): §6.2 table (order fixed) — a new section "Plan" (0023 §5.2) between 3 Problems and 4 Progress; the Steps row of row 4 shows only while no Plan section shows, otherwise its count heads the Plan section (0023 §5.2).*
+
 ### 6.3 Progress
 
 - **Steps:** from the plan of 0007 §6.2 (0003 §6.6): "<done> of <total> done" over non-struck
@@ -142,6 +146,7 @@ detail until 0020; *Overview row* a Now, Up next or Problems row of a spec (0018
   step: <ID> <title>" — the first step neither ticked nor struck, by the function NS-7 uses
   (guideline 1), its title plain and cut like a short title. No countable step (none, or all
   struck) → "No steps in the plan".
+  *Amended by 0023 (PD-069): §6.3 *Steps* bullet — shows only while no Plan section shows; otherwise its count heads the Plan section (0023 §5.2).*
 - **Criteria:** from 0003's traceability counts (PD-043): "<verified> of <total> verified" over all
   rows, with a bar; below, "Not verified yet:" and one entry per row whose trimmed `State` is not
   exactly `verified`, in table order; `built` adds " · built", any other value adds nothing (0016:
@@ -183,6 +188,8 @@ detail until 0020; *Overview row* a Now, Up next or Problems row of a spec (0018
 | FR-05 | No quality loss; amendments; themes | AC-021–AC-024 |
 
 *Amended by 0020 (PD-058): FR-02 — void: no Spec Explorer area, list or pane (0020 §5).*
+
+*Amended by 0023 (PD-069): FR-01 — also in the Plan map from a 900 px panel (0023 §5.3).*
 
 ## 8. Texts (English, PD-016; in the text modules, asserted literally)
 
@@ -231,6 +238,7 @@ at commit `8052f9a` (made by the plan, like `studio-0002`).
   > **Given** `fs170-brownfield-mixed` on the Board **When** the developer activates the cards of 0003, 0004 and 0006 one after another **Then** the Board is still the current area, the side panel shows 0006, and no navigation request was sent.
 - **AC-002** While a spec is selected and Overview or Board is shown, the system shall show the side panel with that spec's detail; while none is selected, it shall show no side panel. Switching area by hand shall keep both.
   *Amended by 0022 (PD-069): AC-002 — "and Overview or Board is shown": below 900 px the side panel shows the detail alone (0022 AC-029).*
+  *Amended by 0023 (PD-069): AC-002 — "Overview or Board is shown" also covers the Plan map from a 900 px panel (0023 §5.3).*
 - **AC-003** When the developer activates the close button, or presses Escape while focus is inside the side panel, the system shall clear the selection, hide the side panel and move focus to the card or Overview row that opened it while that is shown, else to that spec's first card or Overview row in DOM order, else to the area's first focusable element.
   *Amended by 0021 (PD-069): AC-003 — Escape with a toggletip open closes only the toggletip (0021 AC-014).*
   *Amended by 0022 (PD-069): AC-003 — below 900 px the back button, or Escape inside the detail, clears the selection and shows the area again (0022 AC-029).*
@@ -243,8 +251,11 @@ at commit `8052f9a` (made by the plan, like `studio-0002`).
   *Amended by 0020 (PD-058): AC-008 — void: no Spec Explorer area, list or pane; the side panel is the only detail (0020 §5).*
 - **AC-009** The detail shall show the sections of §6.2 in that order, Problems, Format notes and Status history only under §6.2's conditions, Format notes and Status history collapsed when first shown, and the header of §6.2 row 1, the path only for a duplicated stem.
   > **Given** `fs110-ready-synthetic` 0001 **Then** the chip reads "Ready", its tooltip "Plan written, not started yet · Derived from the files · rule S-READY", and the header holds that sentence as visually hidden text.
+  *Amended by 0023 (PD-069): AC-009 — plus the section "Plan" (0023 §5.2) between Problems and Progress.*
 - **AC-010** The detail shall show no requirement text, no criterion text other than short titles, no stage or step text other than the next open step's title, no `Verified` text, no spec header line, no readiness check and none of §8's removed texts as a heading or line of its own. For `studio-0015` with both collapsible sections closed, its visible text shall contain no text of any `FR-` row of that spec and at most 300 words (today 3,459).
+  *Amended by 0023 (PD-069): AC-010 "no stage or step text other than the next open step's title" — plus the Plan section's IDs, symbols and "The plan says" line (0023 §5.2).*
 - **AC-011** The Steps row shall follow §6.3: `fs110-ready-synthetic` 0001 shows "0 of 1 done" and "Next open step: T-001 The feature"; `fs170-brownfield-mixed` 0006 shows "4 of 4 done" and no next open step; 0003 there shows the need "needs a plan" and no Steps or Criteria row; `fs180-de-baselines` 0001 shows no Progress section; a plan whose steps are all struck shows "No steps in the plan". For every fixture spec with a plan, the next open step shall be the step NS-7's open-step function returns for that plan.
+  *Amended by 0023 (PD-069): AC-011 — the Steps row shows only while no Plan section shows (0023 §5.2).*
 - **AC-012** The Criteria row shall follow §6.3, one entry per row not `verified`: `fs110-ready-synthetic` 0001 shows "0 of 1 verified" and the entry "AC-001 The system shall be ready."; `fs170-brownfield-mixed` 0006 shows "3 of 3 verified" and no list; a plan with no traceability rows shows "not available — the plan has no traceability table"; `studio-0015` shows "28 of 30 verified" and exactly the entries AC-027 and AC-030, in that order, unmarked (AC-027's state is free text); a `built` row ends with " · built"; a cell `M-01, M-02` shows as that text, linked to its plan row.
 - **AC-013** The short title shall follow §6.3: `**AC-001 — Batch size and interval are configurable**` gives "Batch size and interval are configurable"; `**AC-002** — Dispatch is unchanged. More text` gives "Dispatch is unchanged."; a text with `` `OUTBOX_BATCH_SIZE` `` gives `OUTBOX_BATCH_SIZE` without backticks; no short title shall keep a `*` or `_` of emphasis (an intraword `_` stays); the system shall cut a short title over 80 characters at the last space within the first 80, or after 79 characters without such a space, and end it with "…"; a row whose ID the spec does not define shows the ID only.
 - **AC-014** The Files section shall show one row per existing file of §6.2 with its label and file name, each kind by file name, and no row for an absent file: `fs180-en-done-archived` 0001 shows "Spec" and one "Archived plan" and no "Plan".
@@ -252,16 +263,19 @@ at commit `8052f9a` (made by the plan, like `studio-0002`).
 - **AC-016** The model shall deliver these lines: `fs110-ready-synthetic` AC-001 → spec line 9, T-001 → plan line 24, its traceability row → plan line 36; `fs170-brownfield-mixed` 0006 AC-001, AC-002, AC-003 → spec lines 13, 17, 21, T-001 → plan line 70, T-004 → plan line 169. A criterion defined twice shall carry the line of its first definition.
 - **AC-017** When the developer activates a link of the side panel (ID, criterion cell, problem, format note, file), the system shall send the open request with the file and line of §6.4, line 1 for a file link; no need, history entry or text without a file shall send one. Each link's accessible name shall be its visible text, and its tooltip and accessible description "Open <file name> at line <n>".
   *Amended by 0022 (PD-069): AC-017 — a Problem link's tooltip and description hold the reason, then "Open <file name> at line <n>" on its own line (0022 §4.5).*
+  *Amended by 0023 (PD-069): AC-017 "accessible name shall be its visible text", tooltip and description — a Plan section chip: name `<ID> <title>, <state word>`; tooltip and description that name, then this text (0023 §5.2).*
 - **AC-018** When the host receives an open request for a file the model knows inside the active project, it shall call `showTextDocument` with `viewColumn` `Beside`, `preview` false, no `preserveFocus` and a selection at the start of that line; that line shall be in the editor's visible ranges and the Studio panel shall stay in its group; Restricted Mode and a reader window shall change nothing. (adapter unit test; host smoke with the Studio panel open and active: editor column ≠ panel column, cursor and visible line = requested line)
 - **AC-019** If the file no longer exists, then the system shall open nothing; the activated link shall keep the focus and read "File not found: <path>" until the next model update or until the side panel shows another spec, and 0016's live region shall announce it.
 - **AC-020** When the side panel receives a model-changed notification, it shall show the new content within 500 ms for the 200-spec fixture (PD-047), keep its scroll position and keep focus on the same control where it still exists, else on its heading. If the selected spec is no longer in the model, then the side panel shall close, focus that was inside it shall move as AC-003 says, and the shell's notice shall appear (0005 AC-010).
 - **AC-021** The side panel's CSS shall use VS Code theme variables only and show a visible focus outline on every control; the CSS guard tests of 0013 shall cover its rules.
 - **AC-022** *(manual, Gregor or his delegate)* Preview-harness screenshots in Dark, Light and High Contrast: Board and Overview with the side panel of `studio-0015` at 1400×900 and 800×900. Checked: the side panel's content is at most 900 px tall with both collapsible sections closed (today 4,952 px); at 800 px the drawer covers the board's right part and a card focused under it by Tab or arrow scrolls clear; in the Overview at 800 px every row with its next step and Copy and the figures line stay visible; nothing is cut off. In real VS Code: an ID opens the file beside the Studio, which stays visible. Pre-release checklist item.
   *Amended by 0022 (PD-069): AC-022 — "the drawer" is void: below 900 px the detail shows alone (0022 AC-029); the rows follow the list's width (0022 AC-001).*
+  *Amended by 0023 (PD-069): AC-022 height check — includes the Plan section; the 300 words of AC-010 include it (0023 §5.2).*
 - **AC-023** Every test title at the commit before 0019's first implementation commit shall exist at the head and pass, or the plan's *Test-title audit* shall list it with the criterion of this spec or the §5 row that voids or replaces it; a script compares the titles of both commits; `npm run test:unit` and `npm test` shall pass on Windows and in CI.
   *Amended by 0020 (PD-058): AC-023 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
   *Amended by 0021 (PD-069): AC-023 (test audit) — also except the tests 0021 AC-020 lists against a statement 0021 §5 replaces.*
   *Amended by 0022 (PD-069): AC-023 — also excepts the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
+  *Amended by 0023 (PD-069): AC-023 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
 - **AC-024** 0005, 0006, 0007, 0013, 0015, 0016, 0017 and 0018 shall carry the notes of §5 at the named statements, and the PD register shall hold no edit of an existing entry (PD-066, appended by the fix round of the compile S48, is the one new entry); checked by a grep and a diff in the plan.
 
 ## 11. Technical notes for developers or AI agents

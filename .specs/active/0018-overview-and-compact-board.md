@@ -145,6 +145,8 @@ read Overview or Board; the rows below change behaviour.
 | `featherspec-studio.rescan` · FeatherSpec Studio: Rescan Project; `featherspec-studio.refreshDiscovery` · FeatherSpec Studio: Refresh Project Discovery | `featherspec-studio.refresh` · FeatherSpec Studio: Refresh |
 | Area IDs `missionControl`, `specBoard` | `overview`, `board` |
 
+*Amended by 0023 (PD-069): §6.4 command table — plus area `planMap` and `featherspec-studio.openPlanMap` · `FeatherSpec Studio: Open Plan Map` (0023 AC-006).*
+
 ## 7. Visible texts (English, PD-016)
 
 | Where | Old | New |
@@ -195,6 +197,7 @@ marked manual. Fixtures: 0006's and 0007's, `fs170-brownfield-mixed`, one with e
 
 - **AC-001** The manifest shall contribute the commands of §6.4's right column with those titles and none of the left column; the protocol's area IDs shall be `overview`, `board` and (until 0020) `specExplorer`, and no navigation request shall name `missionControl` or `specBoard`; the navigation, area heading, tree entry labels and purpose texts shall read as §7; a scan of `src` without tests, `package.json`, `README.md`, `docs/release-checklist.md`, `docs/product/design-brief.md` and `.architecture/*.md` shall find neither `Mission Control` nor `Spec Board` in any letter case; `CHANGELOG.md` shall name the renamed areas and commands under the version in preparation.
   *Amended by 0020 (PD-058): AC-001 "(until 0020) `specExplorer`" and "tree entry labels" — void: no such area ID (0020 AC-016) and no area entries in the tree.*
+  *Amended by 0023 (PD-069): AC-001 "area IDs shall be `overview`, `board`" — plus `planMap` and `featherspec-studio.openPlanMap` (0023 AC-006).*
 - **AC-002** When the panel opens for the first time in a workspace, or the remembered area is one this version does not know (`missionControl` and `specBoard` included), the system shall show the Overview with no remembered selection (0005 §13).
   *Amended by 0020 (PD-058): AC-002 — for a remembered `specExplorer` the remembered selection stays (0020 AC-017).*
 - **AC-003** While the project has a spec, the Overview shall render in DOM order Now, Up next, Problems, the figures line and Activity, Problems only while O-4 lists something and Activity per AC-010, and no header line, tile, distribution bar or visible progress text.
@@ -251,6 +254,7 @@ marked manual. Fixtures: 0006's and 0007's, `fs170-brownfield-mixed`, one with e
   *Amended by 0020 (PD-058): AC-030 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
   *Amended by 0021 (PD-069): AC-030 (test audit) — also except the tests 0021 AC-020 lists against a statement 0021 §5 replaces.*
   *Amended by 0022 (PD-069): AC-030 — also excepts the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
+  *Amended by 0023 (PD-069): AC-030 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
 - **AC-031** *(manual, Gregor or his delegate)* Preview-harness screenshots of Overview and Board for this repository and `fs170-brownfield-mixed`, Dark, Light and High Contrast, panel width 1240 px and 640 px, height 900 px: Now is the first section; rows keep one line at 1240 px and take two lines at 640 px with the state text readable (AC-006); with no spec selected, every column that shows a card is visible without horizontal scrolling at 1240 px, and at 640 px where at most two do; a wide column shows at least six cards when it holds them (R-10); strips, toggle and focus are legible. Verdict in the plan; the real VS Code window is a release-checklist item.
   *Amended by 0019 (PD-058): AC-031 — "visible without horizontal scrolling" holds "with no spec selected"; with the side panel the board scrolls (0019 §9).*
 

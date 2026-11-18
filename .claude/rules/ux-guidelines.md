@@ -28,7 +28,7 @@ A spec may deviate only by naming the guideline.
    count in the detail only. *Compatibility* (variants FeatherSpec itself writes) is not
    reported. A normal state (a fresh backlog spec) is never shown as an error.
 4. **Native first.** Prefer TreeView, status bar, quick pick, Problems over the webview.
-   Tree rows are items with state, not command buttons. The webview is for overview and board.
+   Tree rows are items with state, not command buttons. The webview is for overview, board and plan map.
 5. **Do not duplicate the editor.** Show the state of a spec (next step, progress, open
    criteria, next open step, files), not its full text; IDs and "Open" go to the file at the
    line, beside the panel (`ViewColumn.Beside`).

@@ -104,6 +104,8 @@ B-6's rule tooltip where one applies. Every other strip is unchanged.
 
 ### 4.4 Button hierarchy (N-6, guideline 8)
 
+*Amended by 0023 (PD-069): §4.4 classes — also the Plan map tab: way Copies are secondary text buttons, start-line Copies icon buttons, no primary button (0023 AC-010).*
+
 - **Primary** (0016 AC-017's colours), and only these: (1) the side panel's Copy of the next step's first line; (2) the Copy
   of the Overview's first Now row; (3) the one Copy of the zero-spec state (0018 O-8, Overview and
   Board), alone on its screen (A-007). Hence at most two per view.
@@ -130,6 +132,8 @@ B-6's rule tooltip where one applies. Every other strip is unchanged.
 - Problem rows, lines and the detail's list wrap; nothing in them is cut by an ellipsis or clamp.
 
 ### 4.6 Paths and commands (N-8)
+
+*Amended by 0023 (PD-069): §4.6 "(this list is complete)" — plus the map's `Files`, way prompts and start lines (0023 §5.3, §5.4).*
 
 Every project path and every command line the webview shows — side-panel next-step lines, the
 detail path, a card path, Files links, the place of a project-level problem line (this list is complete) —
@@ -167,6 +171,7 @@ side at the right edge — the side panel's and `main`'s — and a fixed 400 px 
   focus as 0019 §6.1 *Close* says. Switching area keeps the detail; the back button names the current
   area. Crossing 900 px keeps the selection — side by side from 900 px, the detail alone below — and the
   focus where it is while that stays shown, else on the detail's heading (A-016).
+  *Amended by 0023 (PD-069): G-4 "a selected spec's detail shows alone in its place" — not in the Plan map: below 900 px the map shows alone, with no detail or back button (0023 §5.3).*
 
 ### 4.8 State at a glance (Gregor's click test, PD-073)
 
@@ -248,6 +253,8 @@ side panel", below 900 px the detail shows alone (G-4).
 | X-26 | Divider, tooltip | — | `Drag to resize. Double-click to reset.` |
 | X-27 | Back button below 900 px, text and accessible name | — (close button of the drawer) | `Back to Overview` · `Back to Board` |
 
+*Amended by 0023 (PD-069): X-27 — not in the Plan map: it has no back button (0023 §5.3).*
+
 ## 7. Error cases and edge cases
 
 - A title word wider than the list (three-line layout) breaks inside; nothing overflows or hides Copy.
@@ -277,13 +284,17 @@ Decided by unit tests (core, no `vscode`), component tests (jsdom) and styleshee
 - **AC-008** While the Up next section lists a row it shall show X-07 after its heading; while it lists none it shall not.
 - **AC-009** A narrow strip standing for a spec with a Problem it does not show shall render the warning icon with X-06 as tooltip and accessible name (collapsed Done and a filter-emptied column tested); every other strip shall render as 0018 AC-014.
 - **AC-010** The webview shall style as primary (0016 AC-017's colours) only the Copies of §4.4 (1)–(3); every other next-step Copy shall be the icon button in a list and the secondary button (`--vscode-button-secondaryBackground`, `--vscode-button-secondaryForeground`) in the side panel, as shall the buttons of the Restricted Mode note and the notice.
+  *Amended by 0023 (PD-069): AC-010 — also the Plan map tab: no primary button there (0023 AC-010).*
 - **AC-011** With seven Now rows, three Up next rows, a Problems row and a selected NS-5 spec, the Overview shall render exactly two primary buttons and the Board exactly one; with no spec selected, one and zero.
+  *Amended by 0023 (PD-069): AC-011 — the Plan map tab adds no primary button; the view holds at most the side panel's (0023 AC-010).*
 - **AC-012** When the developer activates an icon Copy by pointer, Enter or Space, the system shall copy the full first line, show the check or warning, 0021 §6.4's name and 0016 T-19's sentence (tooltip and live region) on the same element until 2000 ms after the last activation, then restore it, and select nothing; the stylesheet shall give the icon button a fixed width and height of at least 24 px.
 - **AC-013** Each Problem kind of §6 shall show its sentence literally on each surface of §4.5, and in the webview with the technical reason as tooltip; a problem link's tooltip and accessible description shall be the reason, then 0019 AC-017's text.
 - **AC-014** No sentence X-10…X-24, with every inserted path, value and number replaced by `x`, shall contain `backlog/`, `active/`, `done/`, `**`, `Plan line`, `sibling`, `stem`, `parsing` or `diagnostic`.
 - **AC-015** Every element of §4.6 shall render a `<wbr>` directly after each `/`, `-` and `.` of its path and no other `<wbr>`; its text content and its Copy's clipboard text shall equal the path or line unchanged.
+  *Amended by 0023 (PD-069): AC-015 — also the Plan map's `Files`, way prompts and start lines (0023 §5.3, §5.4).*
 - **AC-016** The statements of §5 shall carry their notes directly beneath them; the implementation shall edit no existing row of the PD register.
 - **AC-017** Every test at the commit on which this spec's implementation starts that decides a criterion not changed in §5 shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI; a script shall compare the test titles of both commits, and the plan shall list every missing title with the changed statement or the head title that replaces it.
+  *Amended by 0023 (PD-069): AC-017 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
 - **AC-018** `README.md`, `docs/product/ux-guidelines.md` and `docs/release-checklist.md` shall name the tree groups In progress, Ready, Backlog, Done, and the plan shall list each "Up next" left there as the Overview's set; the README shall name the divider, its reset and the back button below 900 px; `CHANGELOG.md` shall name the changes under the version in preparation; the checklist shall carry AC-019, AC-020, AC-025.
 - **AC-019** *(manual, preview; guideline 12)* In Dark, Light and High Contrast, height 800 px, at window widths 1600 px and 1000 px with VS Code's sidebar open at its default width, at a Studio panel of 920 px, at 800 px and at VS Code zoom level 2, each with a spec selected, on this repository and `fs170-brownfield-mixed`, Overview and Board, Gregor or his delegate shall confirm: no title word split (one wider than its line excepted); every Copy fully visible and reachable by Tab; at most two filled buttons; paths broken only after a separator; whole Problem sentences; the warning on `fs170-brownfield-mixed`'s collapsed Done strip; each state told at a glance, every icon shape distinct, the Problem warning included. Screenshots and verdict in the plan.
 - **AC-020** *(manual, real VS Code)* At a sidebar width of 300 px in the three themes, on this repository, `fs170-brownfield-mixed` and `tip-splitter`, Gregor or his delegate shall confirm that every tree row shows its command uncut, that `fs170-brownfield-mixed`'s `Done` group shows its Problem hint and that the state icons differ by shape; a cut command retunes the budget of 32 (A-006) by a revise of §4.2 and AC-005.

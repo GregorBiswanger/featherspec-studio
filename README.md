@@ -8,7 +8,7 @@ Studio reads your project and starts no agent; the work with your agent stays in
 
 ## Feature tour
 
-The **FeatherSpec Studio** icon in the Activity Bar opens the **Specs** view: every spec as a row in four groups, with the next step on a click away. The panel (the toolbar's **Open** button, or `FeatherSpec Studio: Open`) has two tabs, Overview and Board.
+The **FeatherSpec Studio** icon in the Activity Bar opens the **Specs** view: every spec as a row in four groups, with the next step on a click away. The panel (the toolbar's **Open** button, or `FeatherSpec Studio: Open`) has three tabs, Overview, Board and Plan map.
 
 ### The Specs view
 
@@ -23,6 +23,12 @@ What is in progress, what comes next and what needs fixing, one line per spec: *
 ![Board](media/screenshots/board-dark.png)
 
 Every spec as a card in six columns: Backlog, Ready, Active, Review, Done and Blocked. A column without a card is a narrow strip with its name and count; the other columns share the width, and the board scrolls sideways when they do not fit. **Done** is collapsed until you open it with its toggle, and Studio remembers your choice per workspace. A card has three rows: number and title; what matters in its state (a Backlog card shows what the spec still needs, a Blocked card why, otherwise the steps and criteria progress), a warning with the number of problems and the day of the last change; and the next step. Hover a Ready, Review or Blocked column header for the rule behind the state, and a card for its description. The day comes from the plan's `Last updated:` line, else from the file's modification time; it is left out while all specs show the same day. Opening the Board from the Overview with a filter shows one **Filter: …** chip with **Clear filters**; sort by number, title or last change. The last line of a card is the next step: **Next**, the short intent and the short form of the prompt (for example `Plan · /sdd-plan`) with a **Copy prompt** button that puts the full line on your clipboard. The board works with the keyboard: arrow keys move between cards, Enter or Space selects a card and shows its detail in the side panel, Tab from the card reaches its **Copy prompt**, Enter or Space copies. The board moves no spec; lifecycle moves belong to FeatherSpec's `/sdd-lifecycle`.
+
+### Plan map
+
+The third tab shows one spec's plan as stages. Select a spec that has a plan (in the tab's own list, the Specs view, the Overview or the Board) and each stage is a row: `Stage 2 — add and subtract`, with a line that says whether its steps run in order or can run in parallel because they share no file. Steps are cards with their files and the acceptance criteria they cover, side by side where they can run together; open a card for what to do and how it is verified. A finished stage folds to the step IDs. The side panel stands beside the map from 900 px; below that the map shows alone.
+
+For the stage you are on, **Ways to run stage 2** offers three prompts to copy: in sequence (one chat builds the steps one after another), with subagents, or with other agents (one start line per step for a second chat, tool or worktree; commit first). A worker leaves a return note; once steps have returned, the next step is **Integrate the returned steps** and the map shows `Returned · done` or `Returned · blocked` on the cards. The Plan section in the detail gives the same picture in short, with a link to the map. Studio only shows and copies: it starts no agent and writes no file.
 
 ### The detail of a spec
 
@@ -80,7 +86,7 @@ A spec with contradictory or unreadable files stays in the column of its folder 
 | --- | --- |
 | `FeatherSpec Studio: Set Up FeatherSpec` | Download the latest FeatherSpec release and set it up in a folder without a project, after a confirmation |
 | `FeatherSpec Studio: Open` | Open the panel on the area last shown |
-| `FeatherSpec Studio: Open Overview` / `Open Board` | Open the panel on that tab |
+| `FeatherSpec Studio: Open Overview` / `Open Board` / `Open Plan Map` | Open the panel on that tab |
 | `FeatherSpec Studio: Focus on Specs View` | Move the keyboard focus into the Specs view |
 | `FeatherSpec Studio: Copy Next Step` | Copy the prompt of the next step of the current spec (same as a click on the status bar entry); without a current spec, pick a spec from a list |
 | `FeatherSpec Studio: Select Project` | Choose the active project when the workspace has several |

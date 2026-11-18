@@ -33,13 +33,20 @@ First release.
   `showStepTips` (coach line and **About this step**, default on) and
   `modelHints` (your own names for a `strong` and a `fast` model; Studio ships no
   model name).
-- The panel with two tabs. The **Overview** lists what is in progress (Now), what comes next (Up next),
+- The panel with three tabs. The **Overview** lists what is in progress (Now), what comes next (Up next),
   Problems with their reasons, one line of figures and a collapsed Activity. The **Board** shows every
   spec as a card in six columns (Backlog, Ready, Active, Review, Done, Blocked): a column without a card
   is a narrow strip, Done is collapsed until you open it (remembered per workspace), a card has three
   rows (title; what matters in its state, problems and the day of the last change; next step), and you
   can sort by number, title or last change. Both work with the keyboard and in Light, Dark and High
-  Contrast themes.
+  Contrast themes. The **Plan map** is the third tab (see below).
+- The **Plan map**: a spec's plan as stages, each a row with the way its steps run (in order, or in parallel
+  because they share no file) and a card per step with its files and the criteria it covers; a finished stage
+  folds to its step IDs. For the stage you are on, **Ways to run stage n** offers three prompts to copy (in
+  sequence, with subagents, with other agents) and one start line per step for parallel workers. The command
+  `FeatherSpec Studio: Open Plan Map` opens it. The detail of a spec gets a **Plan** section with the same
+  stages in short and a link to the map. Returned work (a worker's return note) shows on the step and leads
+  to **Integrate the returned steps** as the next step. Studio starts no agent and writes no file.
 - The detail of a spec as a side panel next to the Overview and the Board, with a divider to set its width
   (remembered per workspace; Enter or a double-click resets it); below 900 px the area or the detail shows
   alone and a back button returns. It

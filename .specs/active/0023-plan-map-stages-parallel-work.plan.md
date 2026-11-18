@@ -1,7 +1,7 @@
 # Plan — Plan Map: Stages, Parallel Work, Workers
 
 **Spec:** [0023-plan-map-stages-parallel-work.md](0023-plan-map-stages-parallel-work.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-18
 **Current step:** T-008
 
@@ -385,40 +385,62 @@ orchestrator) at the ends of stages 2 and 3; AC-018 screenshots recorded here.
   here); AC-019's build part and AC-020 on a re-cut `tip-splitter` copy (OP-004) are Gregor's.
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red (docs of the Baseline), then green;
   `grep -c "Amended by 0023 (PD-069)"` per spec ≥ its §4 rows; audit counts; gates 1–5 and `npm run compile-tests`
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** 2026-11-18 · `npx vitest run --project node src/adapters/node/docsScan.test.ts` red first against the docs of `6346495` (17 failed: the README, CHANGELOG, checklist, guideline, the §4 note counts and the retitled README test), then green (130 passed); `grep -c "Amended by 0023 (PD-069)"` per spec: 0005 4, 0013 1, 0015 4, 0016 1, 0017 1, 0018 3, 0019 12, 0020 7, 0021 5, 0022 8, ADR-001 1 (≥ its §4 rows); the audit above: 7 absent, each listed; gates 1–5 and `npm run compile-tests`: `eslint src --max-warnings 0`, `tsc --noEmit`, `tsc --noEmit -p src/webview`, `npm run test:unit` 2792 passed + 3 skipped (+16 timing), `npm run compile`, `npm run compile-tests`
+- **Notes:** §4 notes written by `/tmp/amend-0023/amend.py` (throwaway), each directly under its statement and after the notes of 0021 and 0022; no PD row edited (`product-decisions.md` untouched). 0013 AC-016's test audit and the other audits (0015 AC-027, 0016 AC-023, 0017 AC-024, 0018 AC-030, 0019 AC-023, 0020 AC-021, 0021 AC-020, 0022 AC-017) carry the AC-016 note. The architecture update ran with the plan's approval as the confirmation (the entries are exactly the ones named in *Do*): `AGENTS.md` snapshot and `last reconciled` (0023), `.architecture/{core,webview,adapters}.md`. Memory Bank: `techContext.md` one test line, `systemPatterns.md` one dated entry, `activeContext.md`. The checklist section `## Plan map (0023)` stands before `## Go` and the order test lists it. The 0015 M-1 line now says the panel shows "Overview, Board and Plan map". Open: AC-018 (the orchestrator's preview harness), AC-019's build part and AC-020 (Gregor), `npm test` on Windows and CI, a fresh `/sdd-compile`; 0024 is not built.
+
+## Test-title audit
+
+Method (0021's): the string literals of `describe`, `it`, `test` and `suite` (with `.each`, `.skip`, `.only`) in every
+`.ts` and `.tsx` under `src`, Baseline `0f3f48a` (the move commit; its code equals `8ce8cb7`) by `git show` against the
+head of T-008; titles compared as a multiset (`/tmp/audit-0023/titles.py`, throwaway). Result: Baseline 2672 titles,
+head 2829, **7 absent**, 164 added, none decreased by count. Each absent title is a statement §4 changes; the first
+six are retitled in place, their body kept with three areas, the seventh is a title of the README test.
+
+| Absent at the head | Statement changed (§4) | Head title |
+| --- | --- | --- |
+| `messages.test.ts` describe "0020 AC-016: two areas" | 0020 AC-016 (0005 AC-004, AC-005) | describe "0023 AC-006: three areas" |
+| `messages.test.ts` "0020 AC-016: lists exactly Overview and Board, in this order, and no area specExplorer" | 0020 AC-016 | "0023 AC-006: lists exactly Overview, Board and Plan map, in this order, and no area specExplorer" |
+| `SidePanel.test.tsx` "0020: the panel has no area without a side panel; the navigation offers only Overview and Board, and both show it" | 0019 §3, 0020 §4.5 | "0023 AC-007: the navigation offers Overview, Board and Plan map, and the panel stands beside each of them" |
+| `manifest.test.ts` "AC-001, AC-005 (0005): contributes the Open command and one command per area (Overview and Board) with their titles" | 0005 AC-001, AC-005, 0018 AC-001 | the same title with "(Overview, Board and Plan map)" |
+| `App.test.tsx` "0020 AC-016: lists exactly Overview and Board, in this order" | 0020 AC-016 | "0023 AC-006: lists exactly Overview, Board and Plan map, in this order" |
+| `webviewBundle.test.ts` "starts without a runtime error, renders the frame with the two areas and the loading state, and says hello" | 0020 AC-016 | the same title with "the three areas" |
+| `docsScan.test.ts` "the README names the two tabs, and says Focus on Specs View …" | 0020 §1, README | "the README names the three tabs, and says Focus on Specs View …" |
+
+Titles kept with changed literals (not absent): `detail.test.ts` "AC-003: the view carries the rule and lines of
+nextStep …" (Integrate), `nextStep.test.ts` "the guide of each case …", `PanelStateView.test.tsx` AC-018.
 
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001 | — | — | open |
-| AC-002 | T-001, T-002 | — | — | open |
-| AC-003 | T-003, T-005 | — | — | open |
-| AC-004 | T-005 | — | — | open |
-| AC-005 | T-005 | — | — | open |
-| AC-006 | T-004 | — | — | open |
-| AC-007 | T-004 | — | — | open |
-| AC-008 | T-004, T-006 | — | — | open |
-| AC-009 | T-002, T-007 | — | — | open |
-| AC-010 | T-007 | — | — | open |
-| AC-011 | T-006 | — | — | open |
-| AC-012 | T-001, T-003, T-007 | — | — | open |
-| AC-013 | T-002 | — | — | open |
-| AC-014 | T-003 | — | — | open |
-| AC-015 | T-007 | — | — | open |
-| AC-016 | T-008 | — | — | open |
-| AC-017 | T-008 | — | — | open |
-| AC-018 | T-008 | — | manual: orchestrator's preview harness, then Gregor | open |
-| AC-019 | T-008 | — | manual: Gregor; draft part answered by PD-076 (*Research*), build part open | open |
-| AC-020 | T-008 | — | manual: Gregor with two assistants on a re-cut `tip-splitter` | open |
+| AC-001 | T-001 | `src/core/planMap/planMap.ts`, `src/shared/protocol/planMap.ts`, `planMapTexts.ts` | `planMap.test.ts` (0023 AC-001), `src/shared/protocol/planMap.test.ts` | verified |
+| AC-002 | T-001, T-002 | `src/core/planMap/planMap.ts` | `planMap.test.ts` (0023 AC-002) | verified |
+| AC-003 | T-003, T-005 | `src/core/board/detail.ts`, `src/core/board/boardService.ts`, `src/webview/detail/PlanSection.tsx`, `src/webview/ui/StepChip.tsx` | `planMap.test.ts`, `detail.test.ts`, `boardService.test.ts`, `PlanSection.test.tsx`, `SpecDetail.test.tsx` (0023 AC-003) | verified |
+| AC-004 | T-005 | `src/webview/detail/PlanSection.tsx`, `src/webview/ui/StepChip.tsx` | `PlanSection.test.tsx` (0023 AC-004) | verified |
+| AC-005 | T-005 | `src/webview/detail/PlanSection.tsx`, `src/webview/areas/planMap/focus.ts` | `PlanSection.test.tsx` (0023 AC-005) | verified |
+| AC-006 | T-004 | `src/shared/protocol/areas.ts`, `src/adapters/vscode/commands.ts`, `package.json`, `src/webview/areas/registry.tsx`, `src/webview/board/icons.tsx` | `messages.test.ts`, `App.test.tsx`, `shellService.navigation.test.ts` (0023 AC-006), `manifest.test.ts` | verified |
+| AC-007 | T-004 | `src/webview/App.tsx`, `src/webview/areas/planMap/PlanMap.tsx`, `src/core/planMap/planSpecs.ts` | `PlanMap.test.tsx` (0023 AC-007), `SidePanel.test.tsx` | verified |
+| AC-008 | T-004, T-006 | `src/webview/areas/planMap/{PlanMap,StageRow,StepCard}.tsx`, `src/shared/protocol/planMapTexts.ts`, `src/webview/main.css` | `PlanMap.test.tsx` (0023 AC-008), `webviewCss.test.ts` (0023 AC-008, AC-011) | verified |
+| AC-009 | T-002, T-007 | `src/core/planMap/planMap.ts`, `src/webview/areas/planMap/Ways.tsx` | `planMap.test.ts`, `PlanMap.test.tsx` (0023 AC-009) | verified |
+| AC-010 | T-007 | `src/webview/areas/planMap/Ways.tsx`, `src/webview/ui/CopyButton.tsx` | `PlanMap.test.tsx` (0023 AC-010), `primaryButtons.test.tsx`, `webviewBundle.test.ts` (0023 AC-010, AC-015) | verified |
+| AC-011 | T-006 | `src/webview/areas/planMap/PlanMap.tsx`, `src/webview/ui/FileLink.tsx` | `Keyboard.test.tsx` (0023 AC-011), `webviewCss.test.ts` | verified |
+| AC-012 | T-001, T-003, T-007 | `src/core/planMap/planMap.ts`, `src/core/board/boardService.ts`, `src/webview/areas/planMap/PlanMap.tsx` | `planMap.test.ts`, `boardService.timing.test.ts`, `PlanMap.test.tsx` (0023 AC-012) | verified |
+| AC-013 | T-002 | `src/core/board/nextStep.ts`, `src/shared/protocol/nextStepTexts.ts` | `nextStep.test.ts`, `stepTips.test.ts` (0023 AC-013) | verified |
+| AC-014 | T-003 | `src/core/planMap/planMap.ts` | `noWrite.test.ts`, `planMap.test.ts` (0023 AC-014) | verified |
+| AC-015 | T-007 | `src/shared/protocol/planMapTexts.ts`, `src/shared/protocol/nextStepTexts.ts` | `userLanguage.test.tsx` (0023 AC-015), `webviewBundle.test.ts` | verified |
+| AC-016 | T-008 | `/tmp/audit-0023/titles.py` (throwaway), this plan's *Test-title audit* | the audit: 7 absent titles, every one listed; `npm run test:unit` green; `npm test` on Windows and CI open | verified (`npm test` open) |
+| AC-017 | T-008 | `README.md`, `CHANGELOG.md`, `docs/release-checklist.md`, `.claude/rules/ux-guidelines.md`, `docs/product/ux-guidelines.md`, §4 notes in 0005, 0013, 0015–0022 and ADR-001 | `docsScan.test.ts` (product docs after 0023) | verified |
+| AC-018 | T-008 | `docs/release-checklist.md` (Plan map (0023)) | manual: orchestrator's preview harness, then Gregor | open |
+| AC-019 | T-008 | `docs/release-checklist.md` (Plan map (0023)) | manual: Gregor; draft part answered by PD-076 (*Research*), build part open | open |
+| AC-020 | T-008 | `docs/release-checklist.md` (Plan map (0023)) | manual: Gregor with two assistants on a re-cut `tip-splitter` | open |
 
 ## Session handoff
 
-- **Done so far:** plan written 2026-11-18; spec revised for PD-076 (open points only).
-- **Next action:** Gregor reads the plan; on the start signal `/sdd-lifecycle` moves spec and plan to `active/`, then
-  T-001.
-- **Open decisions:** none for Gregor; proxies P-1…P-24 above.
+- **Done so far:** T-001…T-008 verified 2026-11-18, one commit per step; the plan is Done, the spec stays In Progress
+  until AC-018–AC-020 are checked and a fresh `/sdd-compile` reads READY.
+- **Next action:** the orchestrator's preview harness for AC-018, then Gregor: AC-019 (build part) and AC-020 on a
+  re-cut `tip-splitter`; `npm test` on Windows and CI; `/sdd-compile`.
+- **Open decisions:** none for Gregor beyond the manual checks; proxies P-1…P-24 above and those in the step Notes.
 - **Baseline:** 8ce8cb7 (head before the first step commit, 2026-11-18)
 - **Environment:** `npm test` (host smoke, including `src/test/shell.smoke.test.ts`) only on Windows and CI; layout
   checks in the orchestrator's harness.

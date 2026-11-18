@@ -297,9 +297,9 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         expect(section).toContain('The badge on the Activity Bar icon counts the specs that wait for you (Review and Blocked).');
     });
 
-    it('the README names the two tabs, and says Focus on Specs View reaches the view while Shift+F10 opens a row\'s context menu', async () => {
+    it('the README names the three tabs, and says Focus on Specs View reaches the view while Shift+F10 opens a row\'s context menu', async () => {
         const readme = await read('README.md');
-        expect(readme).toContain('has two tabs, Overview and Board.');
+        expect(readme).toContain('has three tabs, Overview, Board and Plan map.');
         expect(await specsViewSection()).toContain('`FeatherSpec Studio: Focus on Specs View` reaches the view from the keyboard; Shift+F10 on a row opens its context menu.');
         expect(readme).not.toContain('(or Shift+F10 on a row) reaches the view');
     });
@@ -360,6 +360,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
             '## The native Specs tree (0020)',
             '## Next step with intent and guidance (0021)',
             '## Layout and signal polish (0022)',
+            '## Plan map (0023)',
             '## Go',
         ]);
         for (const gone of ['Plan line', 'descriptions cut', 'attention row', 'attention reason', 'filters, sort']) {
@@ -605,3 +606,73 @@ describe('product docs after 0021 (AC-021)', () => {
     });
 });
 
+
+describe('product docs after 0023 (AC-017)', () => {
+    it('the README names the Plan map tab, the three ways and "Integrate the returned steps", and no "two tabs"', async () => {
+        const readme = await read('README.md');
+        expect(readme).toContain('### Plan map');
+        expect(readme).toContain('Ways to run stage 2');
+        for (const way of ['in sequence', 'with subagents', 'with other agents']) {
+            expect(readme, way).toContain(way);
+        }
+        expect(readme).toContain('Integrate the returned steps');
+        expect(readme).not.toMatch(/two tabs/i);
+        expect(readme).toContain('Open Plan Map');
+    });
+
+    it('the CHANGELOG names the Plan section and the Plan map under the version in preparation', async () => {
+        const first = firstRelease(await read('CHANGELOG.md'));
+        expect(first).toContain('The **Plan map**');
+        expect(first).toContain('**Plan** section');
+        expect(first).toContain('FeatherSpec Studio: Open Plan Map');
+        expect(first).toContain('Integrate the returned steps');
+        expect(first).not.toContain('The panel with two tabs');
+    });
+
+    it('the release checklist has the 0023 section with AC-018, AC-019 (build part) and AC-020, and says no more that the panel shows "Overview and Board only"', async () => {
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('\n## Plan map (0023)\n');
+        expect(start).toBeGreaterThan(-1);
+        const section = text.slice(start, text.indexOf('\n## ', start + 1));
+        for (const mark of ['**AC-018**', '**AC-019 (build part)**', '**AC-020**']) {
+            expect(section, mark).toContain(mark);
+        }
+        expect(text).not.toContain('Overview and Board only');
+    });
+
+    it('guideline 4 and the Panel row name the Plan map', async () => {
+        expect(await read('.claude/rules/ux-guidelines.md')).toContain('The webview is for overview, board and plan map.');
+        const guidelines = await read('docs/product/ux-guidelines.md');
+        expect(guidelines).toContain('three tabs: Overview');
+        expect(guidelines).toContain('Plan map (a spec\'s stages');
+        expect(guidelines).not.toContain('two tabs: Overview');
+    });
+
+    for (const [file, notes] of [
+        ['.specs/done/0005-studio-shell-navigation.md', 4],
+        ['.specs/done/0013-studio-visual-design.md', 1],
+        ['.specs/active/0015-focus-on-visibility.md', 4],
+        ['.specs/active/0016-honest-signals.md', 1],
+        ['.specs/active/0017-next-step-everywhere.md', 1],
+        ['.specs/active/0018-overview-and-compact-board.md', 3],
+        ['.specs/active/0019-detail-situation-picture.md', 12],
+        ['.specs/active/0020-native-spec-tree.md', 7],
+        ['.specs/active/0021-next-step-intent-and-guidance.md', 5],
+        ['.specs/active/0022-layout-and-signal-polish.md', 8],
+        ['docs/decisions/ADR-001-extension-architecture.md', 1],
+    ] as const) {
+        it(`${file} carries its ${notes} notes of 0023`, async () => {
+            const text = await read(file);
+            expect(text.split('Amended by 0023 (PD-069)').length - 1).toBeGreaterThanOrEqual(notes);
+        });
+    }
+
+    it('no row of the PD register names 0023 as its editor', async () => {
+        const register = await read('docs/product/product-decisions.md').catch(() => '');
+        expect(register).not.toContain('Amended by 0023');
+    });
+
+    it('negative control: a text without the note has none', () => {
+        expect('no note here'.split('Amended by 0023 (PD-069)').length - 1).toBe(0);
+    });
+});

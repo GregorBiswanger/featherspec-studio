@@ -1,5 +1,5 @@
 # Map: src/core (framework-free core)
-# last reconciled: 2026-11-18 (0021)
+# last reconciled: 2026-11-18 (0023)
 
 ## Internal pattern
 - `src/core/<area>/` — one folder per spec; `<area>Service.ts` is the application service where the
@@ -22,6 +22,7 @@
     overview service (the open state of Activity lives here, reset with the last listener).
   - `board` (0007) — Board and spec detail view models: cards, progress, narrow columns and Done memory, card date (0018), filters
     and sorting, board UI state, open-file guard, the detail's situation picture (header, next step, problems, progress with lines, files, notes, history; `detail.ts`, `situation.ts`, `shortTitle.ts`; 0019), next step (NS rules, 0015; step view and short form, 0017), needs of a Backlog spec (0016), copy line, board service; `STEP_GUIDES` cases and intents in `nextStep.ts` and `stepTips.ts` compose the coach line and the four paragraphs of About this step from the case, the two settings and the shared texts (0021).
+  - `planMap` (0023) — `planOf` turns a spec's plan into stages with step and return states, the `‖` groups and the current stage's ways (three stage prompts, start lines); `planSpecs.ts` lists the specs with a plan for the Plan map; one view serves the Plan section and the Plan map. NS-6 returned work (0023) lives in `board/nextStep.ts`.
   - `copyNextStep` (0017) — current spec, project line, status entry view (text, tooltip, accessible text), Copy Next Step behaviour (click and command), quick pick items; `testing/` holds the entry world.
   - `setup` (0014) — the only writer and network user: release download and check, file classes, `.gitignore` and
     `settings.json` completions, apply, merge prompt, setup service; `testing/` holds the in-memory target and scripted HTTP.

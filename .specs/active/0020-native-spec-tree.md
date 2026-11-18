@@ -5,6 +5,8 @@
 
 *Amended by 0021 (PD-069): wherever this spec names the control "Copy" of a prompt (a next step or `/sdd-specify`), read `Copy prompt`, named as 0021 §6.4; the feedback stays; wherever it shows a next step line, 0021 §6.1 gives each line its intent.*
 
+*Amended by 0023 (PD-069): Title, §1, §2, §4.5, AC-016, AC-018 — "two tabs" and "Two-Tab Panel" read three tabs: Overview, Board and Plan map (`planMap`), each with its icon (0023 AC-006).*
+
 Basis: UX audit 2026-11-17 ([docs/ux-audit/](../../docs/ux-audit/)) R-05 (05), concept K-B (04),
 target picture B (03 §4), evidence 02 §3.1, §3.6 and screenshots 02, 05, 11. Decisions:
 PD-058 (proxy, on Gregor's delegation), PD-016 (English UI), PD-013 (read-only), PD-060 (no moves).
@@ -21,6 +23,8 @@ step, copies the step inline and opens the spec's side panel on click. A badge o
 Bar icon counts the specs waiting for the user. The Spec Explorer area ends: its list is the
 tree, its detail is 0019's side panel. The panel keeps two tabs, Overview and Board.
 
+*Amended by 0023 (PD-069): §1 — the panel has three tabs, Overview, Board and Plan map (0023 AC-006).*
+
 ## 2. Goal, problem and users
 
 Today the sidebar holds five starter entries and no information (audit IA-1, IA-7, screenshot
@@ -30,6 +34,8 @@ should answer "what is in progress, what waits for me, what is the next command"
 the panel (guideline 4, native first). **Users:** the developer working beside an AI chat
 (primary) and the workshop presenter (audit P1, P2). Success: every spec's next step is one click
 from the tree; the panel has two tabs; no test that decides a staying criterion is lost (AC-021).
+
+*Amended by 0023 (PD-069): §2 — the panel has three tabs (0023 AC-006).*
 
 ## 3. Scope
 
@@ -130,6 +136,7 @@ spec list exists (A-007).
 ### 4.5 End of the Spec Explorer area
 
 - The panel offers two tabs, Overview (`overview`) and Board (`board`) as 0018 names them, each with its icon; the list-tree motif ends (PD-054 amended).
+  *Amended by 0023 (PD-069): §4.5 — the panel offers three tabs: Overview (`overview`), Board (`board`) and Plan map (`planMap`), each with its icon (0023 AC-006).*
 - Removed, not redirected (PD-058: nothing is published): the command `featherspec-studio.openSpecExplorer` ("FeatherSpec Studio: Open Spec Explorer"); the tree entries project, Open Studio, Overview, Board, Spec Explorer (0018 §7 labels); the panel's Spec Explorer tab and area; the area ID `specExplorer` in the protocol; the Explorer's purpose text and list label. Keyboard users reach the tree through VS Code's own view focus command and the context menu (Shift+F10).
 - A remembered UI state or restored panel state naming `specExplorer` shows Overview (0018 AC-002) and keeps the remembered selection, which then follows 0005 BR-03 like any remembered one: its side panel while the stem is in the project, else cleared with the notice.
 - Cards, Overview rows and activity entries already select in place (0019 AC-001); 0019's Spec Explorer pane, its hint and AC-008 end with the area.
@@ -220,15 +227,18 @@ Decided by unit tests on the tree model (core, no `vscode`) and the manifest unl
 - **AC-014** The view, its actions and its badge shall change no file in any workspace folder (0005 AC-025); in Restricted Mode and a reader window they shall work as in a trusted one.
 - **AC-015** The manifest shall contribute no command `featherspec-studio.openSpecExplorer` and no title containing "Spec Explorer"; a spec row shall carry at most one inline action (VS Code view guidelines: at most three).
 - **AC-016** The panel navigation shall list exactly two tabs, Overview and Board, in this order, each with its icon; the protocol shall have no area `specExplorer`, and no panel element shall send a request for it.
+  *Amended by 0023 (PD-069): AC-016 — exactly three tabs, Overview, Board and Plan map, in this order (0023 AC-006).*
 - **AC-017** If the remembered UI state or a restored panel state names `specExplorer`, then the system shall show Overview and keep the remembered selection, with its side panel while the stem is in the loaded model and otherwise cleared with 0005 BR-03's notice; no other message shall appear.
   > **Given** a stored memory `{ v: 1, area: 'specExplorer', selection: { projectRoot: <the active root>, stem: '0003-x' } }` and 0003 in the project **When** the panel opens **Then** Overview shows with 0003's side panel.
 - **AC-018** A search of `src` without test files shall find no `specExplorer`, `SpecExplorer`, `openSpecExplorer` and "Spec Explorer", except the mapping of AC-017; a case-insensitive search of `README.md`, `docs/release-checklist.md`, `docs/product/design-brief.md`, `.architecture/*.md` and the `architecture:` snapshot of `AGENTS.md` shall find neither "Spec Explorer" nor `spec-explorer` (CHANGELOG history exempt); the README shall name the view "Specs", its four groups, the inline Copy, the badge and the tabs Overview and Board.
+  *Amended by 0023 (PD-069): AC-018 "the tabs Overview and Board" — Overview, Board and Plan map (0023 AC-006).*
 - **AC-019** Host smoke: after activation, the tree reported by the test API (`api.shell().tree()`) shall hold one group `In progress` with description `1` and the row `0001 Restaurant-Rechnung mit…` described `Review · /sdd-compile`, the badge `1` with the tooltip `1 spec waits for you: 1 in Review` and no view description, and every command of AC-011 shall be registered. No test of this spec shall run in the configurations `activation-specs-only`, `activation-no-marker` or `setup-no-marker`, whose tests shall stay unchanged and pass.
   *Amended by 0022 (PD-069): AC-019 — the smoke expects the description `/sdd-compile` and the label `0001 Restaurant-Rec…` (0022 AC-004, AC-005).*
 - **AC-020** 0005, 0007, 0013, 0015, 0016, 0017, 0018, 0019 and ADR-001 §2 shall carry the notes of §5 as inline notes "*Amended by 0020 (PD-058): …*"; the PD register is history and is not edited (as in 0018 §5).
 - **AC-021** Every test at the commit on which this spec's implementation starts that decides a criterion not voided in §5 shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI. A script shall compare the test titles of both commits, and the plan shall list every title missing at the head, a renamed one included, with its voided criterion or the head title that replaces it.
   *Amended by 0021 (PD-069): AC-021 (test audit) — also except the tests 0021 AC-020 lists against a statement 0021 §5 replaces.*
   *Amended by 0022 (PD-069): AC-021 — also excepts the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
+  *Amended by 0023 (PD-069): AC-021 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
 - **AC-022** *(manual; pre-release checklist)* On `tip-splitter` and on this repository, in Dark, Light and High Contrast at a sidebar width of 400 px, Gregor or his delegate shall confirm that every state icon is told apart without colour, the description of every In progress and Up next row is visible and the badge is readable; in the Hands-On he copies a next step from the tree and his assistant runs it.
   *Amended by 0022 (PD-069): AC-022 "Up next row" — a `Ready` row.*
 

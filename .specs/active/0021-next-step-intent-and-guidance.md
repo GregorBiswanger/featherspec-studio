@@ -122,6 +122,8 @@ Open step = the plan step NS-7's function finds (0015 NS-7). PD-072 (V-1, record
 | Plan without open step | Let the agent report where the plan stands · `/sdd-plan <spec path>` | — | Resume | any chat · fast | The agent checks the plan against the code; with every step ticked it closes the plan and recommends the review. | The spec then shows Verify. |
 | No sibling plan | Write the plan · `/sdd-plan <spec path>` | — | Plan | any chat · strong, web search | The agent researches and writes the plan; for a reactivated spec, a fresh plan for the change. | You read the plan before anything is built. |
 
+*Amended by 0023 (PD-069): §6.2 table — a new first case "returned work" (0023 §5.5, NS-6 returned): while an Active spec has a return note, `/sdd-plan <spec path>` under `Integrate the returned steps`; the rows above hold while no return note of the spec lies.*
+
 Sources: open step — PD-072 (V-1 cases 1–3 passed; case 4: line 1 does not bring missing ticks level after a break,
 line 2 does, hence its intent); `parallel-work.md` "`Implement T-00x of <plan path> as a parallel worker.`" without
 the worker suffix. Without open step — `sdd-plan.md` Mode B steps 2 and 4. No sibling plan — *Pick the mode* (A or C).
@@ -147,6 +149,8 @@ text button reads `Copy prompt`, during feedback `Copied` · `Could not copy` (0
 `min-width: 14ch`. Every one in the webview, 0022's icon button included, is named `Copy prompt: <line>` (`<line>` = the full prompt),
 during feedback `Copied: <line>` · `Could not copy: <line>` (as today); an icon button's tooltip is that name outside
 feedback.
+
+*Amended by 0023 (PD-069): §6.4 — also the Plan map's way Copies (secondary text buttons) and start-line Copies (icon buttons) (0023 §5.4, AC-010).*
 
 ### 6.5 Coach line (R-5, guideline 11)
 
@@ -232,8 +236,10 @@ vocabulary rule of `.claude/rules/specs.md`; it is never a qualifier here.
 - **AC-002** For every fixture of 0015 AC-004 whose rule is not NS-6, the rule ID and the prompts shall be byte-identical to those `nextStep()` returns at the commit on which this spec's implementation starts.
 - **AC-003** An Active spec whose sibling plan's open step is `<ID>` shall show `Implement <ID> of <plan path>` under `Continue with <ID> <title>`, then `/sdd-plan <spec path>` under `Not sure where it stands? Let the agent report first`, short form `Continue · Implement <ID>`, coach `same chat or new chat · fast model`.
   > **Given** Active `.specs/active/0001-tip-splitter.md`, T-001 and T-002 ticked, T-003 "Reject money values" open **Then** `Continue with T-003 Reject money values` over `Implement T-003 of .specs/active/0001-tip-splitter.plan.md`.
+  *Amended by 0023 (PD-069): AC-003 — holds while no return note of the spec lies; with one, 0023 AC-013 gives the returned-work line first.*
 - **AC-004** *(void: PD-072 chose variant A; B is OP-001's fallback)*
 - **AC-005** An Active spec whose sibling plan has no open step shall show `/sdd-plan <spec path>` under `Let the agent report where the plan stands` (short form `Resume · /sdd-plan`, coach `any chat · fast model`), and one without a sibling plan the same prompt under `Write the plan` (short form `Plan · /sdd-plan`, coach `any chat · strong model, allow web search`).
+  *Amended by 0023 (PD-069): AC-005 — holds while no return note of the spec lies; with one, 0023 AC-013 gives the returned-work line first.*
 - **AC-006** Every card and Overview row whose spec has a step and the quick-pick description shall show the step short form of §6.3, the tree row's description the step short form or, where 0022 §4.2's budget drops the intent, the command short form; the status bar text shall keep the command short form (0017 AC-014 unchanged); `Implement <ID> of <plan path>` shall shorten to `Implement <ID>`, `Implement <plan path>` to `Implement`; identical snapshots shall give identical short forms.
 - **AC-007** Every tooltip that shows a next step (card, Overview row, tree row, status bar entry) shall show the full form of §6.3, each line's intent on its own line before its prompt, in line order; the tree tooltip's step part shall start with `Next step: <intent>`; text from the files shall appear escaped, as text.
 - **AC-008** Every Copy prompt of §6.4 in the webview shall be named `Copy prompt: <line>`, for 2000 ms after activation `Copied: <line>` or `Could not copy: <line>`, then `Copy prompt: <line>` again, and put exactly the prompt on the clipboard, no intent or coach text; a text button shall read `Copy prompt`, `Copied` or `Could not copy` at the same times; rendering the detail, Board and Overview of every fixture, the empty states included, shall find no button whose text is `Copy` or whose name starts with `Copy: `; the quick-pick message's action shall be `Copy prompt`.
@@ -249,6 +255,7 @@ vocabulary rule of `.claude/rules/specs.md`; it is never a qualifier here.
 - **AC-018** While the workspace is in Restricted Mode or the window is a reader, AC-001–AC-016 shall hold.
 - **AC-019** For an open plan step without a title the intent shall be `Continue with <ID>` (NS-6) or `Start implementing: <ID>` (NS-7), without a trailing space; a title with Markdown, a link or over 80 characters shall appear as 0019 AC-013's short title.
 - **AC-020** Every test at the commit on which this spec's implementation starts that decides a statement §5 does not replace shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI. A script compares the test titles of both commits; the plan lists every title missing at the head, a renamed one included, with the replaced statement or the head title that replaces it.
+  *Amended by 0023 (PD-069): AC-020 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
 - **AC-021** 0006, 0007, 0013 and 0015–0020 shall carry the notes of §5; a literal search of `README.md` shall find `Copy prompt`, `About this step`, `featherspec-studio.showStepTips` and `featherspec-studio.modelHints`, and of `CHANGELOG.md` under the version in preparation `Copy prompt`, `showStepTips` and `modelHints`; neither `README.md` nor `docs/release-checklist.md` shall contain `**Copy**` or ``then `continue` ``; the checklist shall carry AC-022–AC-025.
 - **AC-022** *(manual, preview harness by the orchestrator, then Gregor in a real window)* Guideline 12: detail and Overview with the first Now row in Dark, Light and High Contrast at 1600 px and 1000 px window width with the side panel open at its default and at 0022 G-2's minimum width: no intent, prompt or coach line is cut; an open toggletip stays inside its panel and covers no Copy prompt of its step; the `(?)` shows a visible focus outline; screenshots recorded in the plan.
 - **AC-023** *(manual, Gregor)* Both settings appear under "FeatherSpec Studio" in the Settings UI; Show Step Tips toggles the tips in the open panel; Model Hints offers `strong` and `fast` as text fields and the coach line shows the entered name.

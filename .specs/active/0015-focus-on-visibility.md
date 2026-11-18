@@ -149,6 +149,8 @@ The rules use only what 0002 and 0003 deliver; first match wins, top-down:
 
 *Amended by 0021 (PD-069): §6.1 row NS-6 — 0021 §6.2 (variant A, PD-072): `Implement <ID> of <plan>` under "Continue with <ID> <title>" while a plan step is open, else `/sdd-plan <spec path>` to report where the plan stands; an Active spec without a sibling plan gets `/sdd-plan <spec path>` to write it.*
 
+*Amended by 0023 (PD-069): §6.1 row NS-6 (as 0017 and 0021 amended it) — plus 0023 §5.5's case "returned work", checked first: `/sdd-plan <spec path>` under `Integrate the returned steps` while a return note lies.*
+
 NS-11 sits below NS-2 in the order; IDs are stable, not ordinal. Basis: FeatherSpec 1.10.0
 command files. `/sdd-plan` resumes an existing plan (Mode B: integrates return notes, reports
 what blocks), writes a fresh one for a reactivated spec (Mode C) and names "start T-001" and
@@ -250,6 +252,7 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
 - **AC-001** The system shall offer exactly the areas Mission Control, Spec Board and Spec Explorer, in this order, in the panel navigation, the Activity Bar tree and as per-area commands.
   *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
   *Amended by 0020 (PD-058): AC-001 — panel navigation and per-area commands offer Overview and Board (0018 §6.4); the tree has no area entries (0020 AC-016).*
+  *Amended by 0023 (PD-069): AC-001 (as 0020 amended it) — Overview, Board and Plan map (0023 AC-006).*
 - **AC-002** If the remembered area or a restored panel state names `agentCenter`, then the system shall show Mission Control and no error.
   *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
 - **AC-003** While a spec is selected, the detail view shall show "Next step" above its sections with the line(s) of the first matching rule of §6.1, each with a "Copy" button and a second line under its §8 label, or the rule's text where it names no line.
@@ -294,12 +297,14 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
   *Amended by 0020 (PD-058): AC-027 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
   *Amended by 0021 (PD-069): AC-027 (test audit) — also except the tests 0021 AC-020 lists against a statement 0021 §5 replaces.*
   *Amended by 0022 (PD-069): AC-027 (test audit) — also except the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
+  *Amended by 0023 (PD-069): AC-027 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
 - **AC-028** 0008–0012 shall have status `Deprecated`, stay in `done/` and link this spec as successor; 0003–0007 and 0013 shall carry the amendment notes of §5.
 - **AC-029** The `architecture:` snapshot in `AGENTS.md`, `.architecture/*.md` and `.memory-bank/projectbrief.md` shall name no removed module, no agent run and no provider; the brief's mission shall contain the manifest description of §8 and its success criteria the AC-030 scenario.
 - **AC-030** *(manual, Gregor)* M-1 on `tip-splitter` with the assistant he uses, the Hands-On walkthrough: three areas; a dropped Ready spec shows the NS-7 line, pasted into the chat it starts that step; Active and Review specs show NS-6 and NS-5 lines that the assistant runs as FeatherSpec commands; he checks whether the S7 note reads as noise (PD-057, OP-006) and whether his assistant resolves the project-relative paths (OP-002). Pre-release checklist item.
   *Amended by 0017 (PD-060/PD-061): "a dropped Ready spec shows the NS-7 line" reads "a Ready card's Copy puts the NS-7 line on the clipboard".*
   *Amended by 0020 (PD-058): AC-030 "three areas" — the panel has Overview and Board; the tree has no area entries; M-1 checks the tree and the two tabs (0020 §5).*
   *Amended by 0021 (PD-069): AC-030 — NS-6's lines do what 0021 AC-025 checks.*
+  *Amended by 0023 (PD-069): AC-030 (as 0020 amended it) — the panel has three tabs, Overview, Board and Plan map (0023 AC-006).*
 
 ## 11. Technical notes for developers or AI agents
 
