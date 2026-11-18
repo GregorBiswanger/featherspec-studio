@@ -10,6 +10,7 @@ import { buildDetail } from '../../core/board/detail';
 import { deriveLifecycle } from '../../core/lifecycle/deriveLifecycle';
 import { buildOverviewView } from '../../core/overview/overviewView';
 import { readProject } from '../../core/specs/readProject';
+import { parseStepTipSettings, type StepTipSettings } from '../../core/settings/stepTipSettings';
 import { createNodeSpecSource } from './nodeSpecSource';
 
 const root = path.resolve(__dirname, '..', '..', '..');
@@ -63,18 +64,19 @@ interface Rendered {
     where: string;
     buttons: Array<{ text: string; name: string }>;
     texts: string[];
+    coaches: number;
 }
 
 function inspect(dom: JSDOM, where: string): Rendered {
     const document = dom.window.document as unknown as { body: ElementLike; querySelectorAll(selector: string): Iterable<ElementLike> };
     const buttons = [...document.querySelectorAll('button')].map((button) => ({ text: button.textContent ?? '', name: button.getAttribute('aria-label') ?? '' }));
     const attributes = [...document.querySelectorAll('[title], [aria-label]')].flatMap((element) => [element.getAttribute('title'), element.getAttribute('aria-label')]).filter((value): value is string => value !== null);
-    return { where, buttons, texts: [document.body.textContent ?? '', ...attributes] };
+    return { where, buttons, texts: [document.body.textContent ?? '', ...attributes], coaches: [...document.querySelectorAll('.step-coach, .ov-coach')].length };
 }
 
 const SHELL_BOARD = { state: undefined, restricted: false, projectName: 'fixture', area: 'board', target: undefined, selection: undefined, notice: undefined, rows: [] };
 
-async function renderFixture(name: string, tips?: unknown): Promise<Rendered[]> {
+async function renderFixture(name: string, tips?: StepTipSettings): Promise<Rendered[]> {
     const project = await readProject(createNodeSpecSource(), fixturePath(name), '1.10.0');
     const lifecycle = deriveLifecycle(project);
     const model = { project, lifecycle };
@@ -93,7 +95,7 @@ async function renderFixture(name: string, tips?: unknown): Promise<Rendered[]> 
     const overviewDom = boot(readFileSync(bundlePath, 'utf8'));
     await settle();
     send(overviewDom.dom, { v: 5, kind: 'evt', seq: 1, type: 'shell', payload: { view: { ...SHELL_BOARD, area: 'overview' } } });
-    send(overviewDom.dom, { v: 5, kind: 'evt', type: 'overview', payload: { view: buildOverviewView({ model, history, ...(tips === undefined ? {} : { tips }) } as Parameters<typeof buildOverviewView>[0]) } });
+    send(overviewDom.dom, { v: 5, kind: 'evt', type: 'overview', payload: { view: buildOverviewView({ model, history, ...(tips === undefined ? {} : { tips }) }) } });
     await settle();
     rendered.push(inspect(overviewDom.dom, `${name} overview`));
     expect(overviewDom.errors).toEqual([]);
@@ -103,7 +105,7 @@ async function renderFixture(name: string, tips?: unknown): Promise<Rendered[]> 
         const selection = { stem: entry.stem, number: entry.number };
         send(detailDom.dom, { v: 5, kind: 'evt', seq: rendered.length + 1, type: 'shell', payload: { view: { ...SHELL_BOARD, selection } } });
         send(detailDom.dom, { v: 5, kind: 'evt', type: 'board', payload: { view: board } });
-        send(detailDom.dom, { v: 5, kind: 'evt', type: 'detail', payload: { view: buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history, ...(tips === undefined ? {} : { tips }) } as Parameters<typeof buildDetail>[0]) } });
+        send(detailDom.dom, { v: 5, kind: 'evt', type: 'detail', payload: { view: buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history, ...(tips === undefined ? {} : { tips }) }) } });
         await settle();
         rendered.push(inspect(detailDom.dom, `${name} detail ${entry.key}`));
     }
@@ -142,9 +144,49 @@ describe('0021 AC-008: no rendered surface of any fixture offers the old Copy', 
     }, 60000);
 
     it('negative control: the check finds a button that reads Copy and one named Copy: <line>', () => {
-        const stale: Rendered[] = [{ where: 'x', buttons: [{ text: 'Copy', name: 'Copy: /sdd-plan k' }, { text: 'Copy prompt', name: 'Copy prompt: /sdd-plan k' }], texts: [] }];
+        const stale: Rendered[] = [{ where: 'x', buttons: [{ text: 'Copy', name: 'Copy: /sdd-plan k' }, { text: 'Copy prompt', name: 'Copy prompt: /sdd-plan k' }], texts: [], coaches: 0 }];
         expect(oldCopyLabels(stale)).toEqual(['x: Copy / Copy: /sdd-plan k']);
     });
+});
+
+const MODEL_NAME = /opus|sonnet|haiku|gpt-|gemini|llama|mistral/i;
+
+describe('0021 AC-009, AC-010, AC-013: the coach line in the rendered bundle, over the fixtures', () => {
+    beforeAll(() => {
+        execFileSync(process.execPath, ['esbuild.js'], { cwd: root, stdio: 'pipe' });
+    }, 60000);
+
+    const SHOW = parseStepTipSettings(true, {});
+
+    it.each(SWEPT_FIXTURES.map((name) => [name]))('%s: tips on and no model hint, at most one coach line per Overview and per detail, none on the Board, and no model name in any text or title', async (name) => {
+        const rendered = await renderFixture(name, SHOW);
+        for (const surface of rendered) {
+            if (surface.where.endsWith(' board')) {
+                expect(surface.coaches, surface.where).toBe(0);
+            } else {
+                expect(surface.coaches, surface.where).toBeLessThanOrEqual(1);
+            }
+            for (const text of surface.texts) {
+                expect(text, surface.where).not.toMatch(MODEL_NAME);
+            }
+        }
+    }, 60000);
+
+    it('a project with steps shows the coach line in its Overview and in the detail of a spec with a step; with tips off no surface shows one', async () => {
+        const on = await renderFixture('fs110-de-active-review', SHOW);
+        expect(on.filter((surface) => surface.where.endsWith(' overview') && surface.coaches === 1)).toHaveLength(1);
+        expect(on.filter((surface) => surface.where.includes(' detail ') && surface.coaches === 1).length).toBeGreaterThan(0);
+        const off = await renderFixture('fs110-de-active-review', parseStepTipSettings(false, { strong: 'X' }));
+        expect(off.every((surface) => surface.coaches === 0)).toBe(true);
+        const none = await renderFixture('fs110-de-active-review');
+        expect(none.every((surface) => surface.coaches === 0)).toBe(true);
+    }, 60000);
+
+    it('a model hint shows in a coach line and nowhere else in the product text', async () => {
+        const named = await renderFixture('fs110-ready-synthetic', parseStepTipSettings(true, { strong: 'MyStrong', fast: 'MyFast' }));
+        const joined = named.flatMap((surface) => surface.texts).join('\n');
+        expect(joined).toMatch(/strong model \(MyStrong\)|fast model \(MyFast\)/);
+    }, 60000);
 });
 
 describe('built webview bundle in jsdom (a broken bundle or a start-up error turns this red)', () => {
@@ -272,6 +314,7 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
             selection: { stem: '0015-focus-on-visibility' },
             model: { project, lifecycle },
             history: { available: true, label: 'Observed', entries: [] },
+            tips: parseStepTipSettings(true, {}),
         });
         expect(detail.kind).toBe('spec');
         const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));

@@ -137,3 +137,35 @@ export function continueIntent(id: string, title: string): string {
 export function startIntent(id: string | undefined, title: string): string {
     return id === undefined ? START_PLAN_INTENT : withTitle('Start implementing: ', id, title);
 }
+
+export const SESSION_WORDS: Record<SessionKey, string> = {
+    new: 'new chat',
+    sameOrNew: 'same chat or new chat',
+    any: 'any chat',
+};
+
+export const SESSION_REASONS: Record<SessionKey, string> = {
+    new: 'New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread.',
+    sameOrNew: 'Same chat or new chat: the plan holds the state of the work; after a break, let the agent report first.',
+    any: 'Any chat: the step reads everything it needs from the files.',
+};
+
+export const MODEL_WORDS: Record<ModelKey, { base: 'fast model' | 'strong model'; suffix: string }> = {
+    fast: { base: 'fast model', suffix: '' },
+    strong: { base: 'strong model', suffix: '' },
+    strongOtherFamily: { base: 'strong model', suffix: ', other family' },
+    strongWebSearch: { base: 'strong model', suffix: ', allow web search' },
+};
+
+export const MODEL_REASONS: Record<ModelKey, string> = {
+    strong: 'Strong model: the step reasons over the whole spec or plan.',
+    fast: 'Fast model: one small, well-described step.',
+    strongOtherFamily: 'Strong model from another family than the one that built it: a reviewer tends to pass what its own family wrote.',
+    strongWebSearch: 'Strong model with web search: the plan checks libraries, versions and APIs against current facts.',
+};
+
+export const TIP_CLOSING: readonly [string, string] = ['Choose the chat and the model in your AI assistant before you paste.', 'Settings: Show Step Tips hides these tips; Model Hints names your models.'];
+
+export const ABOUT_STEP_LABEL = 'About this step';
+
+export const ABOUT_STEP_GLYPH = '?';

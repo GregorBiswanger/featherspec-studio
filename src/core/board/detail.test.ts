@@ -5,6 +5,8 @@ import { noteText, planText, readFixture, readMemory, row, specText } from '../l
 import { buildCards } from './cards';
 import { nextStepNumberUsedText } from '../../shared/protocol/nextStepTexts';
 import { buildDetail } from './detail';
+import { parseStepTipSettings } from '../settings/stepTipSettings';
+import { stepTips } from './stepTips';
 import { nextStep, openStep } from './nextStep';
 
 const NO_HISTORY: HistoryView = { available: true, label: 'Only changes Studio saw while it was running.', entries: [] };
@@ -420,5 +422,56 @@ describe('0019: the situation picture', () => {
         const model = { project, lifecycle: deriveLifecycle(project) };
         const view = spec(buildDetail({ selection: { stem: '0003-also-valid' }, model, history: NO_HISTORY }));
         expect(view.problems[0]?.open).toEqual({ key: '.specs/done/0003-also-valid.md', line: 1 });
+    });
+});
+
+describe('0021 AC-009, AC-010: the tips of the detail', () => {
+    const SHOW = parseStepTipSettings(true, {});
+    const HIDE = parseStepTipSettings(false, { strong: 'X' });
+    const BACKLOG_FILES = { '.specs/backlog/0002-b.md': specText() };
+
+    async function nextOf(files: Record<string, string>, stem: string, tips?: ReturnType<typeof parseStepTipSettings>) {
+        const model = await modelOf(files);
+        const view = spec(buildDetail({ selection: { stem }, model, history: NO_HISTORY, ...(tips === undefined ? {} : { tips }) }));
+        return view.nextStep as { rule: string; lines?: Array<{ text: string; intent: string }>; tips?: { coach: string; about: string[] }; text?: string };
+    }
+
+    it('a step with lines carries the coach line and the four paragraphs of its case, from the one table', async () => {
+        const next = await nextOf(BACKLOG_FILES, '0002-b', SHOW);
+        expect(next.rule).toBe('NS-9');
+        expect(next.tips).toEqual(stepTips('NS-9', SHOW));
+        expect(next.tips?.coach).toBe('new chat · strong model');
+        expect(next.tips?.about).toHaveLength(4);
+    });
+
+    it('a hint reaches the coach line of the case', async () => {
+        const next = await nextOf(BACKLOG_FILES, '0002-b', parseStepTipSettings(true, { strong: 'X' }));
+        expect(next.tips?.coach).toBe('new chat · strong model (X)');
+    });
+
+    it('without a tips input, and with show false, the view has no tips key and the lines are the same', async () => {
+        const without = await nextOf(BACKLOG_FILES, '0002-b');
+        const hidden = await nextOf(BACKLOG_FILES, '0002-b', HIDE);
+        const shown = await nextOf(BACKLOG_FILES, '0002-b', SHOW);
+        expect('tips' in without).toBe(false);
+        expect('tips' in hidden).toBe(false);
+        expect(hidden).toEqual(without);
+        expect(shown.lines).toEqual(without.lines);
+        expect(shown.rule).toBe(without.rule);
+    });
+
+    it('NS-1, NS-3 and NS-11 carry no tips even while they are on', async () => {
+        const twins = await nextOf({ '.specs/backlog/0002-b.md': specText(), '.specs/backlog/0002-c.md': specText() }, '0002-b', SHOW);
+        expect(twins.rule).toBe('NS-11');
+        expect('tips' in twins).toBe(false);
+        const done = await nextOf({ '.specs/done/0003-d.md': specText({ status: 'Implemented', plan: '[0003-d.2026-11-01.plan.md](../plan-archive/0003-d.2026-11-01.plan.md)' }) }, '0003-d', SHOW);
+        expect(done.rule).toBe('NS-3');
+        expect('tips' in done).toBe(false);
+    });
+
+    it('NS-6 coach and paragraphs come from the case of the open step', async () => {
+        const next = await nextOf(FILES, '0001-a', SHOW);
+        expect(next.rule).toBe('NS-6');
+        expect(next.tips).toEqual(stepTips('NS-6-resume', SHOW));
     });
 });

@@ -24,6 +24,12 @@ function valid(): SpecDetailView {
 }
 
 describe('0019 P-2: the guard of the situation picture', () => {
+    it('0021 AC-009: accepts a next step with tips', () => {
+        const view = valid();
+        view.nextStep = { rule: 'NS-6', lines: [{ text: 'a', intent: 'b' }], tips: { coach: 'any chat · fast model', about: ['one', 'two', 'three', 'four'] } };
+        expect(isDetailView(view)).toBe(true);
+    });
+
     it('accepts the picture of a spec, with and without its optional parts', () => {
         expect(isDetailView({ kind: 'none' })).toBe(true);
         const view = valid();
@@ -39,6 +45,9 @@ describe('0019 P-2: the guard of the situation picture', () => {
     it.each<[string, (view: Record<string, unknown>) => void]>([
         ['a missing state', (view) => delete view.state],
         ['a missing rule', (view) => delete view.rule],
+        ['0021 AC-009: tips that are not a record', (view) => (view.nextStep = { rule: 'NS-6', lines: [{ text: 'a', intent: 'b' }], tips: 'x' })],
+        ['0021 AC-009: tips with an extra key', (view) => (view.nextStep = { rule: 'NS-6', lines: [{ text: 'a', intent: 'b' }], tips: { coach: 'c', about: [], extra: 1 } })],
+        ['0021 AC-009: tips whose paragraphs are not text', (view) => (view.nextStep = { rule: 'NS-6', lines: [{ text: 'a', intent: 'b' }], tips: { coach: 'c', about: [1] } })],
         ['0021 AC-001: a next-step line without its intent', (view) => (view.nextStep = { rule: 'NS-6', lines: [{ text: '/sdd-plan k' }] })],
         ['0021 AC-001: a next-step line that still carries a label instead of an intent', (view) => (view.nextStep = { rule: 'NS-6', lines: [{ text: '/sdd-plan k', label: 'Then:' }] })],
         ['an unknown persistence', (view) => (view.persistence = 'stored')],

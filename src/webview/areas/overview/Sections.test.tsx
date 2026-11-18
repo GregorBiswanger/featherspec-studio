@@ -326,3 +326,36 @@ describe('0018 AC-004, AC-005, AC-012: Now and Up next', () => {
         expect(posted.find((message) => message.type === 'copyText')?.payload).toEqual({ text: '/sdd-specify' });
     });
 });
+
+describe('0021 AC-009, AC-010: the coach line of the first Now row', () => {
+    const TIPS = { coach: 'any chat · fast model', about: ['one', 'two', 'three', 'four'] };
+
+    function withTips(): OverviewView {
+        const view = withRows();
+        view.now[0] = { ...view.now[0]!, tips: TIPS };
+        return view;
+    }
+
+    it('shows one coach line, in the first Now row, after its Copy; no other row, no Up next row shows one', async () => {
+        const container = await open(withTips());
+        const coaches = container.querySelectorAll('.ov-coach');
+        expect(coaches).toHaveLength(1);
+        const item = nowRow(container, '0001-a');
+        const coach = item.querySelector('div.ov-coach')!;
+        expect(coach.parentElement).toBe(item);
+        expect(coach.textContent).toBe('any chat · fast model');
+        const copy = item.querySelector('button.next-step-copy')!;
+        expect(copy.nextElementSibling?.getAttribute('role')).toBe('status');
+        expect(copy.nextElementSibling?.nextElementSibling).toBe(coach);
+        expect(nowRow(container, '0002-b').querySelector('.ov-coach')).toBeNull();
+        expect(container.querySelector('[data-up-next] .ov-coach')).toBeNull();
+    });
+
+    it('shows no coach line without tips, and the row is the same otherwise', async () => {
+        const without = await open(withRows());
+        expect(without.querySelector('.ov-coach')).toBeNull();
+        const withoutHtml = nowRow(without, '0001-a').innerHTML;
+        const withHtml = nowRow(await open(withTips()), '0001-a').innerHTML.replace(/<div class="ov-coach">.*?<\/div>/, '');
+        expect(withoutHtml).toBe(withHtml);
+    });
+});

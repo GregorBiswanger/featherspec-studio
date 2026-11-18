@@ -1,17 +1,20 @@
 import { problemSentence } from '../lifecycle/problemSentence';
-import type { DetailView, DiagnosticLine, StatusHistoryItem } from '../../shared/protocol/detail';
+import type { DetailView, DiagnosticLine, NextStepView, StatusHistoryItem } from '../../shared/protocol/detail';
 import { HISTORY_LABEL, successorText } from '../../shared/protocol/texts';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { HistoryCause, HistoryView } from '../lifecycle/statusHistory';
 import type { ShellModel } from '../ports/shell';
 import { titleOf } from './cards';
-import { nextStep } from './nextStep';
+import type { StepTipSettings } from '../settings/stepTipSettings';
+import { nextStep, type NextStep } from './nextStep';
+import { stepTips } from './stepTips';
 import { filesOf, progressOf } from './situation';
 
 export interface DetailInput {
     selection: { stem: string; path?: string } | undefined;
     model: ShellModel | undefined;
     history: HistoryView;
+    tips?: StepTipSettings;
 }
 
 function causeView(cause: HistoryCause): StatusHistoryItem['cause'] {
@@ -29,6 +32,14 @@ function diagnosticLine(diagnostic: LifecycleEntry['diagnostics'][number]): Diag
     const line = scope === 'project' || !('line' in scope) ? undefined : scope.line;
     const base = diagnostic.tier === 'problem' ? { sentence: problemSentence(diagnostic), reason: diagnostic.reason } : { reason: diagnostic.reason };
     return file === undefined ? base : { ...base, open: { key: file, line: line === undefined || line < 1 ? 1 : line } };
+}
+
+function nextStepView(next: NextStep, tips: StepTipSettings | undefined): NextStepView {
+    if (!('lines' in next)) {
+        return next;
+    }
+    const lines = next.lines.map((line) => ({ text: line.text, intent: line.intent }));
+    return tips === undefined || !tips.show ? { rule: next.rule, lines } : { rule: next.rule, lines, tips: stepTips(next.case, tips) };
 }
 
 export function buildDetail(input: DetailInput): DetailView {
@@ -70,7 +81,7 @@ export function buildDetail(input: DetailInput): DetailView {
         rule: entry.rule,
         persistence: entry.persistence,
         ...(entry.deprecated === undefined ? {} : { successor: successorText(entry.deprecated.successor) }),
-        nextStep: 'lines' in next ? { rule: next.rule, lines: next.lines.map((line) => ({ text: line.text, intent: line.intent })) } : next,
+        nextStep: nextStepView(next, input.tips),
         problems: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').map(diagnosticLine),
         notes: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'note').map(diagnosticLine),
         ...(progress === undefined ? {} : { progress }),

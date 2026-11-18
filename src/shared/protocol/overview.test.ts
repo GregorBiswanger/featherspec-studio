@@ -87,3 +87,18 @@ describe('Overview event payload', () => {
         expect(isOverviewEventPayload({})).toBe(false);
     });
 });
+
+describe('0021 AC-009: the tips of a row', () => {
+    const TIPS = { coach: 'new chat · strong model', about: ['a', 'b', 'c', 'd'] };
+
+    it('a row takes tips with a coach line and a list of paragraphs, and refuses a bad one', () => {
+        const view = sampleView();
+        const row = view.problems.rows[0]!;
+        const step = { intent: 'Plan', short: '/sdd-plan', line: '/sdd-plan 0001', lines: [{ text: '/sdd-plan 0001', intent: 'Write the plan' }] };
+        expect(isOverviewView({ ...view, now: [{ ...row, step, tips: TIPS }] })).toBe(true);
+        expect(isOverviewView({ ...view, now: [{ ...row, step, tips: { ...TIPS, extra: 1 } }] })).toBe(false);
+        expect(isOverviewView({ ...view, now: [{ ...row, step, tips: { coach: 3, about: [] } }] })).toBe(false);
+        expect(isOverviewView({ ...view, now: [{ ...row, step, tips: { coach: 'x', about: [1] } }] })).toBe(false);
+        expect(isOverviewView({ ...view, now: [{ ...row, step, tips: 'x' }] })).toBe(false);
+    });
+});

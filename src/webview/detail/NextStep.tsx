@@ -5,6 +5,7 @@ import { CopyButton } from '../ui/CopyButton';
 
 export function NextStep(props: { nextStep: NextStepView; copyResult: { ok: boolean; text: string } | undefined; onCopy(text: string): void }) {
     const { nextStep, copyResult } = props;
+    const tips = 'tips' in nextStep ? nextStep.tips : undefined;
     return (
         <section className="detail-section next-step">
             <div className="section-head">
@@ -22,6 +23,7 @@ export function NextStep(props: { nextStep: NextStepView; copyResult: { ok: bool
                                     <PathText command={line.text} />
                                 </code>{' '}
                                 <CopyButton look={index === 0 ? 'primary' : 'secondary'} line={line.text} copyResult={copyResult} onCopy={props.onCopy} />
+                                {index === 0 && tips !== undefined ? <p className="step-coach">{tips.coach}</p> : null}
                             </li>
                         ))}
                     </ul>

@@ -5,6 +5,15 @@ export interface StepLineView {
     intent: string;
 }
 
+export interface StepTipsView {
+    coach: string;
+    about: string[];
+}
+
+export function isStepTipsView(value: unknown): value is StepTipsView {
+    return isRecord(value) && Object.keys(value).length === 2 && typeof value.coach === 'string' && Array.isArray(value.about) && value.about.every((paragraph) => typeof paragraph === 'string');
+}
+
 export interface StepView {
     intent: string;
     short: string;

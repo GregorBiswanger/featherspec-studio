@@ -748,3 +748,40 @@ describe('0022 AC-013, AC-015, AC-002, AC-003: sentences and breaking paths in t
     });
 });
 
+
+describe('0021 AC-009, AC-010: the coach line in the detail', () => {
+    const TIPS = { coach: 'new chat · strong model, other family', about: ['one', 'two', 'three', 'four'] };
+    const LINES = [
+        { text: '/sdd-compile k', intent: 'Have the result verified' },
+        { text: '/sdd-lifecycle k', intent: 'Then, after a READY verdict: close the spec' },
+    ];
+
+    function items(container: HTMLElement): HTMLElement[] {
+        return [...container.querySelectorAll<HTMLElement>('.next-step ul.next-step-lines > li')];
+    }
+
+    it('shows one coach line, in the first line, directly after its Copy prompt and the status region of the Copy', async () => {
+        const container = await open(detailView({}, { rule: 'NS-5', lines: LINES, tips: TIPS }));
+        const [first, second] = items(container);
+        const coach = first!.querySelector('p.step-coach')!;
+        expect(coach.textContent).toBe('new chat · strong model, other family');
+        const copy = first!.querySelector('button.next-step-copy')!;
+        expect(copy.nextElementSibling?.getAttribute('role')).toBe('status');
+        expect(copy.nextElementSibling?.nextElementSibling).toBe(coach);
+        expect(second!.querySelector('.step-coach')).toBeNull();
+        expect(container.querySelectorAll('.step-coach')).toHaveLength(1);
+    });
+
+    it('shows no coach line without tips, and the intents, prompts and Copy buttons equal those of the true case', async () => {
+        const withTips = await open(detailView({}, { rule: 'NS-5', lines: LINES, tips: TIPS }));
+        const withHtml = items(withTips).map((item) => item.innerHTML.replace(/<p class="step-coach">.*?<\/p>/, ''));
+        const without = await open(detailView({}, { rule: 'NS-5', lines: LINES }));
+        expect(without.querySelector('.step-coach')).toBeNull();
+        expect(items(without).map((item) => item.innerHTML)).toEqual(withHtml);
+    });
+
+    it('a rule with text only shows no coach line', async () => {
+        const container = await open(detailView({}, { rule: 'NS-3', text: NEXT_STEP_DONE_TEXT }));
+        expect(container.querySelector('.step-coach')).toBeNull();
+    });
+});

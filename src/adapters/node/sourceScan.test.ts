@@ -318,3 +318,24 @@ describe('0022 AC-007: "up next" names one set', () => {
     });
 });
 
+
+describe('0021 AC-013: the product names no model', () => {
+    const MODEL_NAMES = ['Opus', 'Sonnet', 'Haiku', 'GPT-', 'Gemini', 'Llama', 'Mistral'];
+
+    it('a case-insensitive search of src without test files and of package.json finds none of the model names', async () => {
+        const files = (await sourceFiles()).filter((file) => !isTestFile(file.name));
+        const offenders = files.map((file) => [file.name, hits(file.text, MODEL_NAMES, true)] as const).filter(([, found]) => found.length > 0);
+        expect(offenders).toEqual([]);
+        const manifest = await fs.readFile(path.join(root, 'package.json'), 'utf8');
+        expect(hits(manifest, MODEL_NAMES, true)).toEqual([]);
+        expect(files.length).toBeGreaterThan(50);
+    });
+
+    it('negative control: the scan finds each name in any case', () => {
+        for (const name of MODEL_NAMES) {
+            expect(hits(`const model = '${name.toUpperCase()}';`, MODEL_NAMES, true)).toEqual([name]);
+            expect(hits(`const model = '${name.toLowerCase()}';`, MODEL_NAMES, true)).toEqual([name]);
+        }
+        expect(hits('const model = "strong model";', MODEL_NAMES, true)).toEqual([]);
+    });
+});

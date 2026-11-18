@@ -278,8 +278,8 @@ ends of stages 1 and 3.
   `package.json`, negative control); `webviewBundle.test.ts` (P-16 names in rendered text and titles; P-18 budget).
 - **Verify:** `npx vitest run --project node src/core/board src/core/overview src/shared/protocol src/adapters/node/sourceScan.test.ts src/adapters/node/webviewBundle.test.ts`
   and `npx vitest run --project webview src/webview/detail src/webview/areas/overview` red (stub), then green; gates 1–4
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-18 · red: `npx vitest run --project node src/core/board/stepTips.test.ts` 28 failed (stub `Not implemented`); detail, rows, Sections and protocol-guard tests red on missing `tips` → green: `npx vitest run --project node --project webview` 2577 passed, 3 skipped (adds the bundle sweep over 11 fixtures: at most one coach line per Overview and detail, none on the Board, no model name in text or title, tips off and absent give none); eslint 0 warnings, both `tsc` clean, `npm run compile` clean.
+- **Notes:** `stepTips(case, settings, closing?)` in `core/board/stepTips.ts` composes the coach line and the four paragraphs from tables in `nextStepTexts.ts` (`SESSION_WORDS`, `MODEL_WORDS`, reasons, `TIP_CLOSING`). `buildDetail` and `projectNow`/`buildOverviewView` take an optional `tips`; absent means none (the services pass it in T-006). Guards: `isStepTipsView` (exactly `coach`, `about`) in `stepView.ts`, used by `NextStepView` and `OverviewRow`. CSS: `.step-coach` (detail, in the first line's `li`) and `.ov-coach` (flex, content at the inline end; at the start below 420 px container width, P-13). 0022's AC-001 rule `.ov-row-item > .ov-coach` and its test are unchanged. The 0019 AC-010 word budget test now builds the detail with default tips (P-18); it counts the coach line, and the `?` joins in T-007.
 
 ### T-006 — A settings change shows within 500 ms, in every window
 

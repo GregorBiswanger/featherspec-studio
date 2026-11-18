@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { NEED_PLAN_TEXT } from '../../shared/protocol/texts';
+import { parseStepTipSettings } from '../settings/stepTipSettings';
+import { stepTips } from '../board/stepTips';
 import { projectNow, projectUpNext } from './rows';
 import { createSpecResolver } from './specRefs';
 import { AC001_FIXTURE, modelFor, type SpecInput } from './testing/projects';
@@ -123,5 +125,53 @@ describe('0018 AC-005: Up next', () => {
             { number: '0002', kind: 'Done' },
         ]);
         expect(upNext).toEqual({ rows: [], more: 0, stems: [] });
+    });
+});
+
+describe('0021 AC-009, AC-010: the coach line of the first Now row', () => {
+    const SHOW = parseStepTipSettings(true, {});
+
+    async function rowsWith(specs: SpecInput[], tips?: ReturnType<typeof parseStepTipSettings>) {
+        const model = await modelFor(specs);
+        const resolver = createSpecResolver(model);
+        return { now: projectNow(model, resolver, tips), upNext: projectUpNext(model, resolver) };
+    }
+
+    it('only now[0] carries tips, those of its case; the other Now rows and Up next carry none', async () => {
+        const { now, upNext } = await rowsWith(
+            [
+                { number: '0001', kind: 'Review' },
+                { number: '0002', kind: 'Review' },
+                { number: '0003', kind: 'Backlog' },
+            ],
+            SHOW,
+        );
+        expect(now[0]?.tips).toEqual(stepTips('NS-5', SHOW));
+        expect(now[1]).toBeDefined();
+        expect('tips' in now[1]!).toBe(false);
+        expect(upNext.rows.every((row) => !('tips' in row))).toBe(true);
+    });
+
+    it('without tips input or with show false no row carries tips and the rows are equal', async () => {
+        const specs: SpecInput[] = [{ number: '0001', kind: 'Review' }];
+        const none = await rowsWith(specs);
+        const hidden = await rowsWith(specs, parseStepTipSettings(false, {}));
+        const shown = await rowsWith(specs, SHOW);
+        expect('tips' in none.now[0]!).toBe(false);
+        expect(hidden.now).toEqual(none.now);
+        expect({ ...shown.now[0], tips: undefined }).toEqual({ ...none.now[0], tips: undefined });
+    });
+
+    it('a first Now row without a line gives no coach line anywhere in Now', async () => {
+        const { now } = await rowsWith(
+            [
+                { number: '0001', slug: 'a', kind: 'Active' },
+                { number: '0001', slug: 'b', kind: 'Active' },
+                { number: '0002', kind: 'Active' },
+            ],
+            SHOW,
+        );
+        expect(now.map((row) => row.step === undefined)).toEqual([true, true, false]);
+        expect(now.some((row) => 'tips' in row)).toBe(false);
     });
 });

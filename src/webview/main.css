@@ -1070,6 +1070,27 @@ main > h1 {
     grid-column: 1 / -1;
 }
 
+.ov-coach {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 2px 6px;
+    min-width: 0;
+    padding: 0 12px 5px;
+    overflow-wrap: break-word;
+    color: var(--vscode-descriptionForeground);
+    font-size: 11px;
+}
+
+.step-coach {
+    flex: 1 0 100%;
+    margin: 0;
+    color: var(--vscode-descriptionForeground);
+    font-size: 11px;
+    overflow-wrap: break-word;
+}
+
 .ov-row .ov-number {
     grid-area: number;
 }
@@ -1323,6 +1344,10 @@ blockquote.illustration {
 }
 
 @container ov-list (width < 420px) {
+    .ov-coach {
+        justify-content: flex-start;
+    }
+
     .ov-row-item {
         grid-template-columns: auto minmax(0, 1fr) auto auto auto;
         grid-template-areas:

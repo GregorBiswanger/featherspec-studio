@@ -1,4 +1,5 @@
 import { isRecord } from './envelope';
+import { isStepTipsView, type StepTipsView } from './stepView';
 
 export interface LineTarget {
     key: string;
@@ -68,7 +69,7 @@ export interface NextStepLineView {
     intent: string;
 }
 
-export type NextStepView = { rule: string; lines: NextStepLineView[] } | { rule: string; text: string };
+export type NextStepView = { rule: string; lines: NextStepLineView[]; tips?: StepTipsView } | { rule: string; text: string };
 
 export interface SpecDetailView {
     kind: 'spec';
@@ -105,7 +106,8 @@ function isNextStepView(value: unknown): value is NextStepView {
     }
     return (
         Array.isArray(value.lines) &&
-        value.lines.every((line) => isRecord(line) && typeof line.text === 'string' && typeof line.intent === 'string')
+        value.lines.every((line) => isRecord(line) && typeof line.text === 'string' && typeof line.intent === 'string') &&
+        (value.tips === undefined || isStepTipsView(value.tips))
     );
 }
 

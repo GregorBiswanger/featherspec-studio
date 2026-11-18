@@ -43,6 +43,7 @@ export function SpecRow(props: { row: OverviewRow; group: string; copyLook?: Cop
                 {row.step === undefined ? null : <StepText step={row.step} />}
             </Drill>
             {row.step === undefined ? null : <CopyButton look={props.copyLook ?? 'icon'} line={row.step.line} copyResult={copyResult} onCopy={copyText} />}
+            {row.step === undefined || row.tips === undefined ? null : <div className="ov-coach">{row.tips.coach}</div>}
         </li>
     );
 }
