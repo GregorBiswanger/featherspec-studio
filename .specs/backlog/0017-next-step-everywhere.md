@@ -1,7 +1,7 @@
 # Next Step Everywhere, No Pseudo-Moves
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0017-next-step-everywhere.plan.md](0017-next-step-everywhere.plan.md)
 
 Basis: UX audit 2026-11-17 (`docs/ux-audit/`) R-02, R-03, R-04, R-16; K-A, K-D, K-G; Q-1, Q-2
 (screenshots 08–10, 25, 26). Decisions PD-058, PD-060, PD-061 (1), PD-062, PD-013, PD-016, PD-039,
