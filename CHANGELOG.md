@@ -6,6 +6,21 @@ All notable changes to FeatherSpec Studio are documented in this file. The forma
 
 ## [Unreleased]
 
+### Added
+
+- The next step everywhere (0017): every Spec Board card and every *Needs attention* row shows
+  "Next", the short form of the command and a **Copy** button; the status bar shows the spec you
+  work on (`<number> · <state> · <short form>`) and a click copies its next step; the command
+  `FeatherSpec Studio: Copy Next Step` does the same and, without a current spec, offers a list.
+  An Active spec with an open plan step gets a second line, `continue`, for the same chat.
+
+### Removed
+
+- Drag and drop on the Spec Board, the card's "Move to…" menu (and Shift+F10) and the command
+  `FeatherSpec: Move Spec to…` (0017). Studio moves no spec and checks no move; lifecycle moves
+  belong to `/sdd-lifecycle`. The status bar no longer shows `FeatherSpec: <name> (<version>)` while
+  a project is active; name and version are in its tooltip.
+
 ### Changed
 
 - Honest signals (0016): the Studio shows a problem only when something is wrong. Diagnostics now

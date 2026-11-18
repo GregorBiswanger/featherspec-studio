@@ -27,7 +27,7 @@ and the expected result. A clear miss reopens the named spec.
 ## Discovery (0001)
 
 - [ ] **AC-009 reload**: multi-root workspace with two projects → *Select Project*, pick one → *Developer:
-  Reload Window* → the same project is active again (status bar `FeatherSpec: <name> (<version>)`), no question.
+  Reload Window* → the same project is active again (status bar entry names the current spec; the tooltip names the project and version), no question.
 - [ ] **AC-022 Restricted Mode**: open a project in a new window, choose "Don't Trust" → status bar entry with
   name and version, *Select Project* works, Output "FeatherSpec Studio" lists the folder as in a trusted window.
 
@@ -47,7 +47,11 @@ and the expected result. A clear miss reopens the named spec.
 
 ## Focus on visibility (0015)
 
-- [ ] **AC-030 / M-1**: in a real VS Code window on `tip-splitter`: the panel shows Mission Control, Spec Board and Spec Explorer only; a spec's detail shows **Next step**, **Copy** puts the line on the clipboard and pasting it into the assistant's chat works; moving a Ready spec to Active starts nothing, shows the next step and **Copy**; no command, setting or text offers to start an agent or a run.
+- [ ] **AC-030 / M-1**: in a real VS Code window on `tip-splitter`: the panel shows Mission Control, Spec Board and Spec Explorer only; a spec's detail shows **Next step**, **Copy** puts the line on the clipboard and pasting it into the assistant's chat works; a Ready card's **Copy** puts the NS-7 line on the clipboard (0017); no command, setting or text offers to start an agent or a run.
+
+## The next step everywhere (0017)
+
+- [ ] **AC-026 / M-1**: on `tip-splitter`, Hands-On walkthrough with your assistant, task "start the Ready spec": the Start line copied from the card works with no failed attempt; on an Active spec `/sdd-plan`, then `continue` in the same chat runs one step; the status bar names the spec you work on and its click copies (`Copied` for 2 s); Dark, Light and High Contrast show the card line and the attention row readable; the card offers no way to move a spec.
 
 ## Honest signals (0016)
 
@@ -76,9 +80,10 @@ and the expected result. A clear miss reopens the named spec.
 ## Spec Board (0007)
 
 - [ ] **AC-017 keyboard only**: Tab reaches the board, arrows move between cards, Enter opens the detail,
-  the next Tab reaches "Move to…", Enter opens its menu; filters, sort, "Clear filters", every "Open file" work.
-- [ ] **AC-018 screen reader** (NVDA or Narrator): a refused move is read with its reason; Ready → Active
-  announces the next step that Studio names.
+  the next Tab reaches the card's Copy, Enter copies (0017: Shift+F10 opens no menu); filters, sort,
+  "Clear filters", every "Open file" work.
+- [ ] **AC-018 screen reader** (NVDA or Narrator): Copy on a card announces "Copied" (0016); the card
+  reads its next step (0017 replaced the move announcements).
 - [ ] **AC-026**: board and detail in Light, Dark and High Contrast — text readable, focus outline visible on
   cards, buttons and "Open file", descriptions cut to two lines.
 

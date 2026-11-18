@@ -3,6 +3,8 @@
 **Status:** In Progress
 **Plan:** [0015-focus-on-visibility.plan.md](0015-focus-on-visibility.plan.md)
 
+*Amended by 0017 (PD-060/PD-061): every other statement, criterion, note or open point of this spec about drag and drop, "Move to…", the move command, move requests, the board-requested transition check, an accepted Ready → Active request or the drop result is void; a sentence that also says something else keeps that part.*
+
 Basis: Gregor's request of 2026-11-17 after working on `sdd-tip-splitter` with GitHub Copilot
 next to the Studio. Decisions ([product-decisions.md](../../docs/product/product-decisions.md)):
 PD-055 (on Gregor's delegation), PD-056 (proxy, A-001), PD-057 (open points, proxy), PD-016 (English UI),
@@ -40,6 +42,7 @@ other that runs FeatherSpec commands) receives the copied line; the Studio never
 
 - Removal of the parts named in §7 and the end states of the specs in §5.
 - The next step (§6) in the detail view and on an accepted Ready → Active request.
+  *Amended by 0017 (PD-060/PD-061): "and on an accepted Ready → Active request" is void (PD-060); cards and rows show the next step (0017).*
 - What remains of the runtime store (§6.3) and the removal of earlier builds' run data.
 - The product texts of §8; README, CHANGELOG, docs, architecture snapshot and maps, Memory Bank.
 
@@ -58,6 +61,7 @@ other that runs FeatherSpec commands) receives the copied line; the Studio never
   never writes user settings; VS Code marks unknown settings itself.
 - The next step on cards or Mission Control rows — because PD-056 names the detail and the
   drop; not now (OP-003).
+  *Amended by 0017 (PD-060/PD-061): void: cards and rows show the next step (PD-060, 0017).*
 - Editing the PD register's earlier entries — because the register is history; PD-055
   supersedes them where they conflict.
 
@@ -131,6 +135,8 @@ The rules use only what 0002 and 0003 deliver; first match wins, top-down:
 | NS-9 | Backlog, no sibling plan | `/sdd-clarify <spec path>`; then `/sdd-plan <spec path>` |
 | NS-10 | Backlog, any other | `/sdd-plan <spec path>` |
 
+*Amended by 0017 (PD-060/PD-061): NS-6 per 0017 §6.2: a second line "continue" under "Then, in the same chat, if nothing blocks:" while the plan has an open step.*
+
 *Amended by 0016 (PD-059, proxy): §6.1 NS-1 — reads as 0016 T-18.*
 
 NS-11 sits below NS-2 in the order; IDs are stable, not ordinal. Basis: FeatherSpec 1.10.0
@@ -144,6 +150,8 @@ a named spec; the flow puts `/sdd-clarify` before `/sdd-plan`. Whether `/sdd-cla
 the `/sdd-compile` verdict are not persisted, so NS-9 and NS-5 name both lines.
 
 ### 6.2 Drop from Ready onto Active
+
+*Amended by 0017 (PD-060/PD-061): §6.2 is void (PD-060).*
 
 0003 judges every move request as before. An accepted Ready → Active request (drag, "Move
 to…", command) starts nothing, moves no file and leaves the card in Ready; the board shows the
@@ -185,6 +193,8 @@ the Output channel "FeatherSpec Studio" naming what it removed; nothing removed,
 | FR-06 | Commands, settings, dependencies, processes, network, source, tests, docs of runs gone | AC-014–AC-022, AC-025, AC-026 |
 | FR-07 | No quality loss; specs and architecture consistent | AC-027–AC-030 |
 
+*Amended by 0017 (PD-060/PD-061): void (PD-060).*
+
 ## 8. Product texts (proposals, English per PD-016; Gregor can overrule)
 
 - **Manifest description:** "Visual command center for spec-driven development with
@@ -205,8 +215,10 @@ the Output channel "FeatherSpec Studio" naming what it removed; nothing removed,
 - **Detail:** heading "Next step"; per line a "Copy" button; a second line under "Then:" (NS-9)
   or "Then, after a READY verdict:" (NS-5); after copying "Copied to the clipboard."
   *Amended by 0016 (PD-059, proxy): §8 Detail — Copy is primary; its feedback appears at the button (0016 §6.5, T-19), not as a line below.*
+  *Amended by 0017 (PD-060/PD-061): the label under the second line reads "Then, in the same chat, if nothing blocks:" (0017 §6.2).*
 - **Drop result:** "Studio starts no agent. Next step for <number> — paste it into your AI assistant:" plus the line and "Copy".
   *Amended by 0016 (PD-059, proxy): §8 Drop result — Copy is primary, Dismiss secondary (0016 §6.5, T-19).*
+  *Amended by 0017 (PD-060/PD-061): void (PD-060).*
 
 ## 9. Error cases and edge cases
 
@@ -232,6 +244,7 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
 - **AC-005** When the developer activates "Copy" — by pointer, or by Enter or Space after reaching it with Tab — the system shall put exactly that line on the clipboard and show and announce "Copied to the clipboard."
   *Amended by 0016 (PD-059, proxy): AC-005 — feedback appears at the button (0016 §6.5, T-19); Copy is primary.*
 - **AC-006** When 0003 accepts a Ready → Active request, the board shall start no process, reach no network, change no file, leave the card in Ready, and show and announce the drop result of §8 with the NS-7 line and "Copy".
+  *Amended by 0017 (PD-060/PD-061): void (PD-060).*
 - **AC-007** When the detail view receives a model-changed notification, it shall show the new next step within 500 ms (PD-047).
 - **AC-008** While the workspace is in Restricted Mode or the window is a reader, the system shall show the same next step and Copy shall work.
 - **AC-009** If writing the clipboard fails, then the system shall show "Could not copy to the clipboard."
@@ -256,9 +269,11 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
 - **AC-026** The S7 note, the reader reason and the Mission Control purpose shall read as §8.
 - **AC-027** Every test at tag `archive/agent-runs-2026-11-17` that decides a criterion of 0001–0007, 0013 or 0014 not voided in §5 shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI. A script compares the test titles of both commits; every title of the tag missing at the head, a renamed one included, is listed in the plan with its voided criterion or with the head title that replaces it.
   *Amended by 0016 (PD-059, proxy): AC-027 (test audit) — also excepted: the tests 0016 AC-023 lists against a criterion that 0016 §5 changes are excepted.*
+  *Amended by 0017 (PD-060/PD-061): also except the tests 0017 AC-024 lists against a criterion that 0017 §5 voids.*
 - **AC-028** 0008–0012 shall have status `Deprecated`, stay in `done/` and link this spec as successor; 0003–0007 and 0013 shall carry the amendment notes of §5.
 - **AC-029** The `architecture:` snapshot in `AGENTS.md`, `.architecture/*.md` and `.memory-bank/projectbrief.md` shall name no removed module, no agent run and no provider; the brief's mission shall contain the manifest description of §8 and its success criteria the AC-030 scenario.
 - **AC-030** *(manual, Gregor)* M-1 on `tip-splitter` with the assistant he uses, the Hands-On walkthrough: three areas; a dropped Ready spec shows the NS-7 line, pasted into the chat it starts that step; Active and Review specs show NS-6 and NS-5 lines that the assistant runs as FeatherSpec commands; he checks whether the S7 note reads as noise (PD-057, OP-006) and whether his assistant resolves the project-relative paths (OP-002). Pre-release checklist item.
+  *Amended by 0017 (PD-060/PD-061): "a dropped Ready spec shows the NS-7 line" reads "a Ready card's Copy puts the NS-7 line on the clipboard".*
 
 ## 11. Technical notes for developers or AI agents
 
@@ -271,6 +286,8 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
 - Removing files and the earlier-data removal are Ask-first steps (AGENTS.md); Gregor delegated
   the decision (PD-055), the plan still names them. `/sdd-architecture-update` runs in the same
   change set. Memory Bank, CHANGELOG and the release checklist are updated there too.
+
+*Amended by 0017 (PD-060/PD-061): the sentence on `MoveResultSink` and `Announcer.tsx` is void (PD-060).*
 
 ## 12. Assumptions
 
@@ -285,6 +302,7 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
 - OP-001 Status history retention fixed at 90 days with no setting and no Clear command. Recommendation: keep; reopen when a user asks. **Resolved 2026-11-17 by PD-057 (4):** fixed 90 days, no setting.
 - OP-002 Multi-root workspaces: the lines carry project-relative paths. Recommendation: keep; Gregor checks in M-1 whether his assistant resolves them, else prefix the folder name. **Resolved 2026-11-17 by PD-057 (4):** project-relative; checked in M-1 (AC-030).
 - OP-003 Next step on cards or attention rows. Recommendation: not now; the detail is one click away. **Resolved 2026-11-17 by PD-057 (4):** not now.
+  *Amended by 0017 (PD-060/PD-061): void: cards and rows show the next step (PD-060, 0017).*
 - OP-004 ADR-003 and `docs/decisions/poc-copilot-2026-11-17/` stay as superseded history; ADR-002 (run storage) and ADR-001 §14 (Restricted Mode hides agent start) also describe removed behaviour. Recommendation: keep all; one line "superseded in part (PD-055)" on ADR-001 and ADR-002 in the docs step. **Resolved 2026-11-17 by PD-057 (1):** as recommended (AC-025).
 - OP-005 A successful earlier-data removal is silent; the user is never told that run data was deleted. Recommendation: one Output line naming what was removed, once per removed path. **Resolved 2026-11-17 by PD-057 (2):** one Output line naming what was removed, one per path not removed (§6.3, AC-023, AC-024).
 - OP-006 Without runs the S7 note concerns only the setup, also in a project already set up. Recommendation: keep it (0005 AC-017 stays); reopen if it reads as noise in M-1. **Resolved 2026-11-17 by PD-057 (3):** the note stays, worded for the setup; checked in M-1 (AC-030).

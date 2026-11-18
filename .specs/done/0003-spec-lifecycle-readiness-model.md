@@ -5,6 +5,8 @@
 
 *Amended by 0015 (PD-055/PD-056): every other statement, requirement, criterion, term, assumption or open point of this spec about agent runs, run events, providers, approvals, the Agent Center, the start workflow, the Clear command or specs 0008–0012 is void; a sentence that also says something else keeps that part. The notes below name what changes in meaning or needs a replacement; see [0015](0015-focus-on-visibility.md) §5.*
 
+*Amended by 0017 (PD-060/PD-061): every other statement, criterion, note or open point of this spec about drag and drop, "Move to…", the move command, move requests, the board-requested transition check, an accepted Ready → Active request or the drop result is void; a sentence that also says something else keeps that part.*
+
 Handoff reference: FS-003 ([po-handoff.md](../../docs/product/po-handoff.md) §6, §10). Format
 basis: [featherspec-format.md](../../docs/discovery/featherspec-format.md) §5–§7 (SPIKE-001).
 Decisions: [product-decisions.md](../../docs/product/product-decisions.md) PD-018–PD-023, PD-030.
@@ -19,6 +21,8 @@ and keeps three status dimensions apart: spec lifecycle, agent run, verification
 a history of the state changes Studio observes while it is running. It never writes a
 FeatherSpec file.
 
+*Amended by 0017 (PD-060/PD-061): "accepts or refuses board transitions" is void; the model has no transition check (0017 §6.5).*
+
 *Amended by 0015 (PD-055/PD-056): §1 and FR-08: two dimensions, spec lifecycle and verification; there is no agent run dimension.*
 
 ## 2. Goal and problem
@@ -30,10 +34,13 @@ FeatherSpec persists only part of the lifecycle: folder plus `**Status:**`, and 
 traceable (PD-004). The model succeeds when a developer can see, for every spec, which state
 it is in, which rule put it there, why it is or is not Ready, and why a drop was refused.
 
+*Amended by 0017 (PD-060/PD-061): "why a drop was refused" is void (no drop, PD-060).*
+
 ## 3. Users and roles
 
 - **Developer** (primary): reads states and readiness, drags a Ready spec to Active. One role;
   no permission differences in the MVP (brief: [projectbrief.md](../../.memory-bank/projectbrief.md)).
+  *Amended by 0017 (PD-060/PD-061): "drags a Ready spec to Active" is void (PD-060).*
 - **Tech lead / architect:** reads the status history and the verification status.
 - **Consuming components (not people):** board and detail view (0007), Mission Control (0006),
   activation workflow (0008), orchestrator (0011).
@@ -49,6 +56,7 @@ it is in, which rule put it there, why it is or is not Ready, and why a drop was
   parse diagnostics come from 0002 and are passed on unchanged.
 - Validating board-requested transitions (§6.4) and marking observed transitions that leave
   the FeatherSpec flow.
+  *Amended by 0017 (PD-060/PD-061): "Validating board-requested transitions (§6.4)" is void; marking observed transitions stays.*
 - Re-deriving states after file changes, and the observed status history (§6.5).
 - A separate verification status read from the plan's traceability table (§6.6).
 
@@ -88,6 +96,7 @@ it is in, which rule put it there, why it is or is not Ready, and why a drop was
 5. When the board requests a transition, the model accepts it or refuses it with a reason (§6.4).
    The only accepted request is Ready → Active. Acceptance is a verdict for the caller and
    changes no state. 0008 then runs its own start checks and the start confirmation.
+   *Amended by 0017 (PD-060/PD-061): void: the model checks no board-requested transition (0017 §6.5).*
 
 *Amended by 0015 (PD-055/PD-056): §5 step 5: the board shows the next step (0015 AC-006); the verdict still changes no state.*
 
@@ -178,6 +187,8 @@ one number with two slugs — stays its own entry with its own state and its own
 never Ready (R-6), and nothing picks a canonical copy (PD-019).
 
 ### 6.4 Transitions
+
+*Amended by 0017 (PD-060/PD-061): the part "Requested by the board" with its table is void; "Observed from the files" stays.*
 
 **Requested by the board:** a request names an entry and a target state. The model judges it
 against the entry's state in the latest snapshot delivered by 0002. Only a request to Active
@@ -280,6 +291,8 @@ A-003). An entry with cause *changed while Studio was not running* is *not check
 | FR-10 | Keep working when individual files are broken or the history store is unavailable | no FR; follows 0002's isolation rule (handoff AC-002.5) and PD-023 | AC-019, AC-024 |
 | FR-11 | Name the blocking conditions and the plan in use, so a consumer can show why | handoff §4.2 (reason on the card); needed by 0007 | AC-027, AC-028 |
 
+*Amended by 0017 (PD-060/PD-061): the first half of FR-04 (validating transitions the board requests) and AC-008 are void; AC-009 stays.*
+
 ## 8. Data requirements
 
 - **Input** (from 0002, read-only; contract PD-018–PD-020, PD-034): per entry its key
@@ -333,6 +346,7 @@ history scope statement (§6.5). UI language English (PD-016).
   and shown; no entry is appended. Where the history cannot be read, it is reported as
   *not available* (PD-023, PD-030).
 - Request for an entry that is not in the latest snapshot: refused (§6.4).
+  *Amended by 0017 (PD-060/PD-061): void: no transition check (0017 §6.5).*
 
 ## 13. Acceptance criteria
 
@@ -379,6 +393,8 @@ accept only a request to Active for an entry that is Ready in the latest snapsho
 the spec repository. It shall refuse every other request with the reason kind of the first
 matching §6.4 row and that row's parameters. An accepted request shall change no state.
 *(AC-003.6, PD-013, PD-014)*
+
+*Amended by 0017 (PD-060/PD-061): void: no transition check (0017 §6.5).*
 
 **AC-009** If an observed state change with the changed file paths as cause cannot be reached
 from its old state by a sequence of in-flow steps of §6.4 that passes through no intermediate
@@ -499,6 +515,8 @@ Deprecated with successor exist only as synthetic fixtures and are flagged UNVER
 PD-022). AC-011 is decided by comparing the fixture tree before and after a derivation, a
 transition request and a history append. AC-016 is decided here on the label the model
 supplies; showing it is 0007's criterion.
+
+*Amended by 0017 (PD-060/PD-061): AC-011 is decided by comparing the fixture tree before and after a derivation and a history append.*
 
 ## 14. Technical notes for developers or AI agents
 

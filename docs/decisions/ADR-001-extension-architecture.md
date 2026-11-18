@@ -46,6 +46,7 @@
    - A manual "Rescan" command and a full rescan on `onDidChangeWorkspaceFolders` act as a safety net.
 10. **Multi-root.** A Project is a workspace folder that contains FeatherSpec markers. The MVP shows one active project with a project picker, and all IDs are scoped by project.
 11. **Board drag and drop.**
+    - *Amended by 0017 (PD-060/PD-061): superseded by 0017 (PD-060): no drag, no Move to…, no move command. The card shows the next step with a Copy button; the bullets below are history.*
     - `@dnd-kit/react` 0.5.3 (React 19 peer, keyboard sensor, live-region announcements). The fallback is native HTML5 DnD with our own announcements.
     - A mandatory non-drag alternative on every card: a "Move to…" menu, also available as the command `FeatherSpec: Move Spec to…` (WCAG 2.2 SC 2.5.7, NFR "board actions by keyboard").
     - Amendment 2026-11-16 (spec 0007 plan): drag and drop is native HTML5, not `@dnd-kit/react`; no dependency is added, announcements and keyboard handling are our own, and the "Move to…" menu and command stay the non-drag alternative.

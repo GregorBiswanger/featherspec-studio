@@ -5,6 +5,8 @@
 
 *Amended by 0015 (PD-055/PD-056): every other statement, requirement, criterion, term, assumption or open point of this spec about agent runs, run events, providers, approvals, the Agent Center, the start workflow, the Clear command or specs 0008–0012 is void; a sentence that also says something else keeps that part. The notes below name what changes in meaning or needs a replacement; see [0015](0015-focus-on-visibility.md) §5.*
 
+*Amended by 0017 (PD-060/PD-061): every other statement, criterion, note or open point of this spec about drag and drop, "Move to…", the move command, move requests, the board-requested transition check, an accepted Ready → Active request or the drop result is void; a sentence that also says something else keeps that part.*
+
 Depends on: 0005, 0006, 0007. Input: [design-brief.md](../../docs/product/design-brief.md), Gregor's interview answers
 for this spec. `D-n` = defect n of the UI preview report of 2026-11-16.
 
@@ -84,6 +86,9 @@ Marketplace listing. Users: the developer in the Studio panel; Gregor accepts th
   status and last change at the bottom; "Move to…" small, top-right corner.
 - **Drag feedback**: the dragged card is visibly lifted; the column under the pointer is marked
   as target. No valid/invalid marking before the drop; a refusal shows after the drop as today (OP-1 (a)).
+  *Amended by 0017 (PD-060/PD-061): void (PD-060).*
+
+*Amended by 0017 (PD-060/PD-061): "Move to…" small, top-right corner: the next-step line is the card's last line (0017 AC-004).*
 
 ### 3.4 Spec Explorer
 
@@ -133,6 +138,8 @@ toggle, section "Open file", "Move to…", related-artifact link) shall be reach
 show a focus outline from `--vscode-contrastActiveBorder` or `--vscode-focusBorder`; no rule
 shall remove an outline.
 
+*Amended by 0017 (PD-060/PD-061): "Move to…" reads "card and row Copy".*
+
 **AC-004** Mission Control shall show six stat tiles in board order, each one control with count,
 state name, state icon and, for Ready, Review and Blocked, the §3.5 sentence with rule ID. When
 the developer activates a tile, the system shall send 0006 BR-08's request for that count.
@@ -166,6 +173,8 @@ icon and text; summary; a tasks and a criteria `progressbar` with value and figu
 "not available" where 0007 delivers no figure; and a "Move to…" button reachable by Tab from the
 card. The content of 0007 AC-003…AC-007, AC-020, AC-024 and AC-025 stays.
 
+*Amended by 0017 (PD-060/PD-061): the clause "a 'Move to…' button reachable by Tab" reads "the next-step line of 0017 AC-004 last, its Copy reachable by Tab"; the rest is 0018's.*
+
 *Amended by 0016 (PD-059, proxy): the last sentence reads 0007 as amended by 0016 (badge for *Problems* only, banner per 0016 AC-009).*
 
 **AC-010** Wherever a card, a list row, Mission Control or the Overview shows a derived state, a
@@ -176,6 +185,8 @@ as primary text and the rule or check ID as secondary text only.
 
 **AC-011** While a card is dragged, the system shall mark the card and the column under the
 pointer, and remove both marks when the drag ends, with or without a drop.
+
+*Amended by 0017 (PD-060/PD-061): void (PD-060).*
 
 **AC-012** When the developer activates a section heading in the detail view, the system shall
 hide or show that section's body and set `aria-expanded`; the state shall survive selecting
@@ -198,6 +209,8 @@ its `Verified` text. *(fixture: a copy of this repo's spec 0002 and its plan; D-
 
 **AC-016** Every existing test of 0005–0007 shall stay green; only assertions on wording or
 structure that §2's five deltas change are updated, in the same change set, each named in the plan.
+
+*Amended by 0017 (PD-060/PD-061): also except the tests 0017 AC-024 lists against a criterion that 0017 §5 voids.*
 
 *Amended by 0016 (PD-059, proxy): AC-016 (test audit) — also excepted: the tests 0016 AC-023 lists against a criterion that 0016 §5 changes.*
 
@@ -252,6 +265,7 @@ stay decided by AC-001 and AC-003 and by 0005 AC-019 (no panel module reads or c
 - ~~**OP-1** Valid/invalid drop marking~~ — resolved 2026-11-16 by Gregor (`/sdd-plan`): (a) mark only the
   dragged card and the column under the pointer; a refusal shows after the drop as today (AC-011). (b) and (c)
   are not done.
+  *Amended by 0017 (PD-060/PD-061): (a) drop marking is void (PD-060).*
 
 ## 8. Definition of Ready / Done
 

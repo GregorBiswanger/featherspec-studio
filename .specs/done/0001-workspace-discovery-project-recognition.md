@@ -56,6 +56,7 @@ differences.
 3. Each folder gets one verdict: *project*, *incomplete* or *not a project*. A project may carry the attribute *legacy*.
 4. Exactly one project → it becomes active and is remembered. Several → the user picks one (remembered). None → no active project. Every change of the active project, and the first result, is passed on to subscribers (AC-023).
 5. The status bar entry shows the active project. The Output channel lists what was checked for each folder.
+   *Amended by 0017 (PD-060/PD-061): while a project is active the entry shows the current spec, its state and the short next step, and its click copies the next step (0017 §6.3); name and version move into the tooltip. Without an active project it stays as here.*
 6. When a folder is added or removed, or a root `AGENTS.md` or root `.specs/` appears, changes or disappears, steps 2–5 run again without a reload.
 
 ## 6. Business rules
@@ -122,6 +123,7 @@ differences.
   Active project → its name and version. Several projects and none remembered → "Select FeatherSpec
   project". No project reported, or the remembered project is missing → "FeatherSpec project not
   found". Clicking it runs the select command. Its text never depends on colour alone (handoff §13).
+  *Amended by 0017 (PD-060/PD-061): "its name and version" and "Clicking it runs the select command" are void while a project is active; 0017 §6.3 defines text, tooltip and click. Texts and click without an active project stay (AC-008, AC-010, AC-015).*
 - **Commands:** "FeatherSpec Studio: Select Project" and "FeatherSpec Studio: Refresh Project Discovery".
 - **Output channel "FeatherSpec Studio":** one block per discovery run. It lists every folder
   with path, verdict, version and diagnostics. A *diagnostic* is one line in the entry of the folder
@@ -189,7 +191,9 @@ hand-made ones are listed in §15.
   > **Given** a fixture tree with recorded paths, sizes and modification times **When** discovery, refresh and selection run **Then** the recorded tree is unchanged.
 - **AC-012** When discovery runs again (refresh, re-detection or reload), the system shall report exactly one entry per workspace folder (BR-05) in the discovery result, in the list of the select command and within each Output channel block. [AC-001.6]
 - **AC-013** While Studio is active (activated at open by AC-019, or later by one of its commands), when a workspace folder is added or removed, or the root `AGENTS.md` of a workspace folder appears, changes or disappears, or its root `.specs/` directory appears or disappears, the system shall rerun discovery and update the status bar entry and the Output channel without a reload. A change inside `.specs/` shall not trigger a rerun. After the last change, the status bar entry and the newest Output channel block shall match the state on disk. *Amended by 0014 (PD-049, PD-053): a root `.featherspec-setup/` directory that appears or disappears is a rerun trigger too.*
+  *Amended by 0017 (PD-060/PD-061): "the status bar entry" shows the 0017 §6.3 text while a project is active; every other statement stays.*
 - **AC-014** While a project is active, the status bar entry shall show its folder name and version ("unknown" for a legacy project or an empty value), and clicking the entry shall open the select command.
+  *Amended by 0017 (PD-060/PD-061): void while a project is active: the entry shows 0017 §6.3; folder name and version are in its tooltip.*
 - **AC-015** When the user runs the select command or clicks the status bar entry and no project is reported, the system shall show the notification "No FeatherSpec project found in this workspace" with the actions "Open setup guide" and "Refresh". "Open setup guide" shall open the link of A-005. With no folder open, the system shall show "Open a folder to use FeatherSpec Studio" instead.
 - **AC-016** When a discovery run finishes, the system shall write to the Output channel "FeatherSpec Studio", for each workspace folder: path, verdict, version and its diagnostics. For a folder reported as *not a project* because no marker exists at its root, the entry shall contain the hint "open the project folder itself". For a folder reported as *not a project* because a read failed (AC-017), the entry shall not contain that hint. The system shall create no entry in the Problems panel.
 - **AC-017** If reading a marker path of a folder fails (for example `AGENTS.md` without permission), then the system shall write the folder path, the path that failed and the reason to the Output channel, report that folder as *not a project* even when `.specs/` exists beside it (OP-004), and finish discovery for the remaining folders.
@@ -201,10 +205,13 @@ hand-made ones are listed in §15.
   > **Given** an `AGENTS.md` with the line `FeatherSpecVersion: 1.10.0 # managed by /sdd-featherspec-update` **When** discovery runs **Then** the version is `1.10.0` and no diagnostic is written.
 - **AC-023** When discovery has produced a result, the system shall notify every subscriber of the discovery controller with the active project (or with none) if this is the first result since Studio started, or if the active project's root, version or legacy attribute differs from the one last notified; it shall not notify when none of these differs. The system shall notify after the status bar entry shows the result, and a failing subscriber shall not stop the notification of the others or any other step of the run. A subscriber that was disposed shall receive no further notification.
   > **Given** a controller with a subscriber **When** the first discovery finds one project **Then** the subscriber receives that project once. **When** a refresh finds nothing changed **Then** it receives nothing. **When** the user selects another project **Then** it receives that project. **When** the remembered project loses a marker **Then** it receives none.
+  *Amended by 0017 (PD-060/PD-061): "the status bar entry" shows the 0017 §6.3 text while a project is active; every other statement stays.*
 - **AC-024** When a discovery run ends, whether it succeeded or failed unexpectedly, the system shall notify every subscriber of `onDidUpdate` once, after the status bar entry shows the result and after the notification of AC-023. From then on `snapshot()` shall report `remembered`, the root remembered for this workspace or none, and `failure`, the message of the unexpected failure of the run that just ended, or none after a successful run. A failing subscriber shall not stop the notification of the others or any other step of the run. A subscriber that was disposed shall receive no further notification. `onDidChangeActiveProject` and every existing criterion shall behave as before.
   > **Given** a controller with an update subscriber **When** a refresh finds nothing changed **Then** the subscriber is notified once. **When** a run fails unexpectedly **Then** it is notified once and the snapshot reports the failure; **When** the next run succeeds **Then** the failure is gone. **When** the remembered project loses a marker **Then** the snapshot still reports its root as remembered and no active project.
+  *Amended by 0017 (PD-060/PD-061): "the status bar entry" shows the 0017 §6.3 text while a project is active; every other statement stays.*
 - **AC-022** While the workspace is not trusted (VS Code Restricted Mode), the system shall run discovery and show the status bar entry, the select command and the Output channel as in a trusted workspace.
   > Proof (revised 2026-11-17, Gregor's delegation of the same day): the manifest declaration and the absence of a trust guard are decided by a unit test; the behaviour in a real Restricted Mode window is checked by Gregor or his delegate; pre-release checklist item.
+  *Amended by 0017 (PD-060/PD-061): "the status bar entry" shows the 0017 §6.3 text while a project is active; every other statement stays.*
 
 ## 15. Technical notes for developers or AI agents
 
@@ -282,6 +289,7 @@ Open, none blocks planning (clarify finding in brackets):
 - OP-008 [3.8]: "does not block the editor" (§12) has no observation that could prove it false. Recommendation: drop it as a requirement and keep a design note in §15 (file access is asynchronous).
 - OP-009 [5.3]: a discovery run that never finishes (hung network share). Recommendation: accept as a documented limitation in this slice, no timeout.
 - OP-010 [5.4]: two workspace folders with the same folder name look alike. Recommendation: the select list shows the folder path beside the name; the status bar keeps the name.
+  *Amended by 0017 (PD-060/PD-061): "the status bar keeps the name": with an active project the entry shows 0017 §6.3, the select list stays as recommended.*
 - OP-011 [6.3]: A-005, the exact setup guide page. Recommendation: keep the wiki home until a page is named.
 - OP-012 [6.9]: BR-05's case rule has no source, and the default macOS file system is case-insensitive. Recommendation: compare root-folder URIs as VS Code reports them, with no OS table of our own.
 

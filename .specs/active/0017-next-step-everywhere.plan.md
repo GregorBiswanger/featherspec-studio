@@ -3,7 +3,7 @@
 **Spec:** [0017-next-step-everywhere.md](0017-next-step-everywhere.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-008
+**Current step:** T-009
 
 ## Approach
 
@@ -333,8 +333,8 @@ Stages 4 and 5 cannot: they share `extension.ts`, `package.json`, the protocol a
   `.architecture/*.md`, which it edits), each §5 file carries "Amended by 0017", README, CHANGELOG
   and checklist name what AC-025 lists; negative control.
 - **Verify:** `npx vitest run src/adapters/node/docsScan.test.ts` red, then green; gates 1–4
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** 2026-11-18 — docsScan 0017 AC-025 red (18 failed, negative control green), then green 28/28; verify: gates 1–4 clean (1869 passed + 3 skipped, 12 timing)
+- **Notes:** 0001, 0003, 0006, 0007, 0013, 0015, 0016 carry inline notes per §5 row (0003/0007/0013/0015 also the catch-all at the head), ADR-001 §11 the superseded note; PD register untouched. README: card Copy, new section The next step everywhere replaces the move paragraph, Mission Control row Copy, quick start, command table. CHANGELOG [Unreleased] Added/Removed, checklist AC-026 plus 0015 AC-030 and 0007 AC-017/AC-018 as amended, design brief card/drag lines. Notes carry no links (nothing to retarget when 0017 moves to done). T-009 extends the scan to .architecture.
 
 ### T-009 — Test-title audit, sync, final gates
 

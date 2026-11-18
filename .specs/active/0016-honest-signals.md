@@ -55,6 +55,8 @@ Developer (one role, as in 0001–0007); first-time workshop participants.
 - Changing R-1…R-7, the compile-verdict fact or priority in the model — because only display changes (R-6 aside).
 - A setup sentence in S9 — because S9 already says per folder what remains.
 
+*Amended by 0017 (PD-060/PD-061): "its Copy and Dismiss styles" (the drop result's) is void (PD-060); the detail's Copy keeps them; card and row Copy are Copies of a next step here.*
+
 ## 5. Amendments of other specs
 
 The plan applies these as inline notes "*Amended by 0016 (PD-059, proxy): …*", as 0015 did, and
@@ -84,6 +86,8 @@ dependency line reads as amended by this table.
 | 0013 AC-016; 0015 AC-027 (test audits) | Also except the tests 0016 AC-023 lists against a criterion this table changes |
 | PD-004 "labelled as derived in the UI and shows its rule"; PD-015, PD-041 "'Priority: not available'" (superseded by the new entry) | Label and rule in the tooltip (T-08), the sentence visible; nothing about priority is shown, the README says once why |
 | PD-059 (refined by the new entry) | §6.1 (A-001, A-002) |
+
+*Amended by 0017 (PD-060/PD-061): the parts on 0015's *Drop result* are void (PD-060).*
 
 ## 6. Business rules
 
@@ -160,6 +164,8 @@ for 2 s, then `Copy`; the sentence of T-19 is announced through a visually hidde
 is the button's tooltip meanwhile; its accessible name reads `<label>: <line>` throughout. Nothing
 else appears, moves or changes colour; the button keeps its size. Success never uses the error colour.
 
+*Amended by 0017 (PD-060/PD-061): the drop result's Copy and Dismiss are void (PD-060); the detail's Copy keeps them; card and row Copy are Copies of a next step here.*
+
 ## 7. Texts (English, PD-016; all *(proxy)*, starting from audit 04 "Texte und Sprache")
 
 | ID | Where | Old | New |
@@ -220,12 +226,15 @@ the repository's own `.specs/`).
 - **AC-016** When a criterion or requirement starts with its ID inside emphasis that also encloses the title (`**AC-001 — Title**`, `__AC-001 — Title__`, `***AC-001 — Title***`), the detail shall show the ID once, the title with that emphasis, and no `*` or `_` left from it; `**AC-001** — text` shall render as today.
   > **Given** `fs170-brownfield-mixed` 0003 **Then** AC-001 shows "Events reach the broker without an intermediate table" in bold, then "When an order event occurs…", and no `**`.
 - **AC-017** Every Copy of a next step, the drop result's included, shall use the primary button colours (`--vscode-button-background`, `--vscode-button-foreground`), and the drop result's Dismiss `--vscode-button-secondaryBackground` and `--vscode-button-secondaryForeground`; a stylesheet guard decides it.
+  *Amended by 0017 (PD-060/PD-061): "the drop result's" is void (PD-060).*
 - **AC-018** When the developer activates Copy and the clipboard write succeeds, the button shall read `Copied`, carry `Copied to the clipboard.` as tooltip, and the live region shall announce that sentence; if it fails, then they shall read `Could not copy` and `Could not copy to the clipboard.`; 2 s after the last activation the button shall read `Copy` again with its earlier tooltip.
 - **AC-019** While Copy feedback shows, no element of the panel outside the activated button and the hidden live region shall be added, removed or change text or class; the stylesheet shall give the Copy button a `min-width` of at least `14ch` (the length of `Could not copy`) and no error colour to the success state.
 - **AC-020** While S2 holds, the Activity Bar view and the panel shall show T-20 after "No FeatherSpec project found in this workspace." and before "Set up FeatherSpec"; the manifest's `viewsWelcome` contents shall equal the shared text.
 - **AC-021** Every New text of §7 shall come from a text module and be asserted literally by a test; a search of `src/shared` and `src/webview` without test files shall find none of `Priority: not available`, `verdict: not available`, `Inter-spec dependencies`, `Derived: `, `Model updated`, `Project diagnostics`, `project-level diagnostic` and `See its diagnostics`, with a negative control (the model's reasons in `src/core` stay, AC-013).
 - **AC-022** NS-1 shall show T-18; every other next-step line and text of 0015 §6.1 shall stay unchanged.
+  *Amended by 0017 (PD-060/PD-061): except NS-6 (0017 §6.2).*
 - **AC-023** Every test at the plan's Baseline commit that decides a criterion of 0001–0007, 0013, 0014 or 0015 shall exist at the head and pass, unless §5 changes that criterion; a script compares the test titles of both commits and the plan lists every missing or renamed title with the §5 row or head title that replaces it; `npm run test:unit` and `npm test` shall pass on Windows and in CI.
+  *Amended by 0017 (PD-060/PD-061): also except the tests 0017 AC-024 lists against a criterion that 0017 §5 voids.*
 - **AC-024** The specs of §5 shall carry their amendment notes and the PD register one new entry superseding §5's PD rows, with no note in an older entry; the README shall say once that FeatherSpec has no priority, persisted compile verdict or dependency field, so the Studio shows none; CHANGELOG and `docs/release-checklist.md` shall name the changes and AC-025.
 - **AC-025** *(manual, Gregor or delegate)* Preview harness screenshots in Dark, Light and High Contrast: primary Copy, its label change without shift, the need line, the T-07 toggle, the problem badge and the S2 sentence in view and panel; Gregor's Hands-On on `tip-splitter` shows no problem marker without a real problem.
 

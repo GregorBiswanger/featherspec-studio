@@ -5,6 +5,8 @@
 
 *Amended by 0015 (PD-055/PD-056): every other statement, requirement, criterion, term, assumption or open point of this spec about agent runs, run events, providers, approvals, the Agent Center, the start workflow, the Clear command or specs 0008–0012 is void; a sentence that also says something else keeps that part. The notes below name what changes in meaning or needs a replacement; see [0015](0015-focus-on-visibility.md) §5.*
 
+*Amended by 0017 (PD-060/PD-061): every other statement, criterion, note or open point of this spec about drag and drop, "Move to…", the move command, move requests, the board-requested transition check, an accepted Ready → Active request or the drop result is void; a sentence that also says something else keeps that part.*
+
 Handoff reference: FS-007 ([po-handoff.md](../../docs/product/po-handoff.md) §4.2, §4.3, §10,
 §13 *Usability und Accessibility*). Builds on 0002 (parser model), 0003 (states, readiness,
 transitions, history), 0004 (run store) and 0005 (Studio shell). UI surface per
@@ -22,6 +24,8 @@ keyboard use. It owns the drag interaction and its keyboard alternative: it reje
 that 0003 refuses, and passes a Ready → Active move on to the start workflow of 0008.
 Everything is read-only. Studio never writes a FeatherSpec file.
 
+*Amended by 0017 (PD-060/PD-061): "owns the drag interaction and its keyboard alternative" is void (PD-060); the card shows the next step (0017 AC-004).*
+
 ## 2. Goal and problem
 
 Today the state of a FeatherSpec project is spread over folders, header lines, plans and
@@ -38,6 +42,7 @@ without a reload. Every board action can be done without a mouse.
 - **Developer** (primary): scans the board, opens details, filters, drags a Ready spec toward
   Active. One role; no permission differences in the MVP
   ([projectbrief.md](../../.memory-bank/projectbrief.md)).
+  *Amended by 0017 (PD-060/PD-061): "drags a Ready spec toward" is void (PD-060).*
 - **Tech lead / architect:** reads progress, verification and agent history.
 - **Consuming features:** Mission Control (0006) asks the shell to open the board with a filter,
   or the detail of one spec (PD-040). 0008 receives the Ready → Active move.
@@ -54,6 +59,7 @@ without a reload. Every board action can be done without a mouse.
   a filter handed in through the shell's navigation request (§6.5).
 - Drag interaction, the "Move to…" menu and the command `FeatherSpec: Move Spec to…`.
   Refused moves show the reason from 0003; a Ready → Active move is passed on to 0008 (§6.6).
+  *Amended by 0017 (PD-060/PD-061): void: no drag interaction, no "Move to…" menu, no move command (PD-060).*
 - Keyboard operation, non-colour status cues, screen-reader announcements, theme support (§6.7).
 - The in-area states: no specs, empty column, empty after filtering, runtime data not available
   (§6.8). Live update after file changes and run events.
@@ -98,6 +104,7 @@ without a reload. Every board action can be done without a mouse.
 5. The developer drags a card, or uses "Move to…". The board asks 0003 whether the move is
    allowed. If it is refused, the card stays in its column and the reason is shown and
    announced. If it is a Ready → Active move that 0003 accepts, the board hands it to 0008.
+   *Amended by 0017 (PD-060/PD-061): void: the developer copies the next step from the card (0017 AC-004).*
 6. A spec or plan changes on disk, or a run changes its status. The board and the detail view
    update without a reload.
 
@@ -112,6 +119,7 @@ Terms used below:
   for the four parts of the panel and is not used for them.
 - **Move request:** a request to show a card in another column, made by drag & drop, "Move
   to…" or the command. It never moves anything by itself (§6.6).
+  *Amended by 0017 (PD-060/PD-061): the term *Move request* is void (PD-060).*
 - **Latest run:** the run of the spec's stem that was created last (0004 AC-008).
 - **Marker:** the *derived* marker, the *Deprecated* marker, the diagnostic badge, the
   *uncertain* flag and the *struck* flag.
@@ -227,6 +235,8 @@ select one.
 
 ### 6.6 Moves (drag & drop and "Move to…")
 
+*Amended by 0017 (PD-060/PD-061): §6.6 is void (PD-060). The card shows the next step (0017 AC-004).*
+
 *Amended by 0015 (PD-055/PD-056): an accepted Ready → Active request shows the next step (0015 AC-006), also in Restricted Mode and in a reader window (0015 AC-008); there is no hand-off to a start workflow.*
 
 - Three equal ways to make a move request: drag & drop, the card's "Move to…" menu, and the
@@ -256,6 +266,7 @@ select one.
   view. The card's "Move to…" button is the next tab stop after the card it belongs to, on
   every platform; Enter or Space on it opens the menu. Shift+F10 and the context-menu key open
   the same menu from the card as extra ways.
+  *Amended by 0017 (PD-060/PD-061): Tab from the card reaches its Copy (one card stop plus one button stop stays); Enter or Space copies; Shift+F10 and the context-menu key open no Studio menu (0017 AC-006).*
 - The filters, the sort control, "Clear filters" and every "Open file" link are reachable and
   operable by keyboard.
 - Board state, run status, verification summary, every marker, every refusal and every "not
@@ -263,6 +274,7 @@ select one.
   icon. Nothing is conveyed by colour alone.
 - The result of a move request (refusal with its reason, or the hand-off to the start
   workflow) is announced to screen readers.
+  *Amended by 0017 (PD-060/PD-061): void; Copy feedback is announced per 0016.*
 - After a live update the keyboard focus stays on the card of the same spec, wherever that card
   now is.
 - The board and detail view use the active VS Code theme, including High Contrast themes.
@@ -298,6 +310,8 @@ and are not repeated here (PD-036, PD-038).
 | FR-09 | Drag & drop as the move interaction, handed to 0008 for Ready → Active | FR-007.9 | AC-014, AC-015, AC-016 |
 | FR-10 | Live update after file changes and run events | no FR; handoff AC-007.7 | AC-019 |
 | FR-11 | In-area empty and error states | §13 Usability | AC-020, AC-021 |
+
+*Amended by 0017 (PD-060/PD-061): void (PD-060).*
 
 *Amended by 0015 (PD-055/PD-056): FR-10: drop "run events" and "run-event notification".*
 
@@ -387,6 +401,8 @@ and are not repeated here (PD-036, PD-038).
 | Ready → Active in Restricted Mode, in a reader window, or with a run active | Handed to 0008, which refuses with its own reason (ADR-001 §14, PD-005, PD-030) |
 | Active project changes | Filters cleared; selection handling is the shell's (0005) |
 | A run is written by another window (PD-030) | Not pushed to this window; its board shows it at its next model change or refresh (accepted limitation, Gregor, 2026-11-16) |
+
+*Amended by 0017 (PD-060/PD-061): the rows "Card being dragged while its file changes" and "Drop on the own column or outside every column" are void (PD-060).*
 
 ## 14. Acceptance criteria
 
@@ -481,15 +497,21 @@ the card's own column or outside every column shall submit nothing. The command 
 the focused card, else on the selected spec, else on the spec the developer picks from a list
 of the project's specs. *(PD-045)*
 
+*Amended by 0017 (PD-060/PD-061): void (PD-060).*
+
 **AC-015** When 0003 accepts a Ready → Active request, the board shall hand it to the start
 workflow of 0008 with the spec's stem and shall leave the card in Ready. While no start
 workflow is available to the board — the case until 0008 is implemented — the board shall
 refuse the request with "Agent start is not available yet". *(PD-045)*
 
+*Amended by 0017 (PD-060/PD-061): void (PD-060).*
+
 *Amended by 0015 (PD-055/PD-056): an accepted request shows the next step (0015 AC-006).*
 
 **AC-016** The board shall not create, modify, move, rename or delete any file under `.specs/`,
 `.memory-bank/` or `AGENTS.md`, for any move request or other board action. *(PD-013)*
+
+*Amended by 0017 (PD-060/PD-061): "for any move request or other board action" reads "for any board action, Copy included".*
 
 **AC-017** A developer using only the keyboard shall be able to reach every card, move to the
 previous and next card of a column with Up and Down, move to the nearest column that shows a
@@ -497,11 +519,15 @@ card with Left and Right, open the detail view with Enter, reach the card's "Mov
 its menu from that button and choose a target in it, and reach and operate every filter, the sort control, "Clear filters"
 and every "Open file" link. *(AC-007.8)*
 
+*Amended by 0017 (PD-060/PD-061): "Move to… button … opens the menu … choose a target", Shift+F10 and the context-menu key: Tab from the card reaches its Copy, Enter or Space copies, Shift+F10 and the context-menu key open no Studio menu (0017 AC-006).*
+
 **AC-018** The board and the detail view shall show every board state, run status,
 verification summary, marker (§6), refusal and "not available" message as text, and every board
 state and diagnostic badge with an icon as well. The board shall announce the result of every
 move request to screen readers: the refusal with its reason, or the hand-off to the start
 workflow.
+
+*Amended by 0017 (PD-060/PD-061): "announce the result of every move request" is void; Copy feedback is announced per 0016.*
 
 *Amended by 0015 (PD-055/PD-056): drop "run status" and the hand-off to the start workflow.*
 

@@ -83,3 +83,82 @@ describe('product docs after 0015 (AC-025)', () => {
         expect(itemOf(text, 14)).toBe('14. **Trust.**\n    - hidden');
     });
 });
+
+const MOVE_TERMS = ['move to…', 'move spec', 'drag', 'move request', 'move pick', 'move result', 'transition check', 'featherspec: <name> (<version>)'];
+const MOVE_SCANNED = ['README.md', 'docs/release-checklist.md', 'docs/product/design-brief.md'];
+
+export function findMoveTerms(text: string): string[] {
+    const lower = text.toLowerCase();
+    return MOVE_TERMS.filter((term) => lower.includes(term));
+}
+
+async function specFile(number: string): Promise<string> {
+    for (const folder of ['done', 'active', 'backlog']) {
+        const dir = path.join(root, '.specs', folder);
+        const names = await fs.readdir(dir).catch(() => [] as string[]);
+        const hit = names.find((name) => name.startsWith(`${number}-`) && name.endsWith('.md') && !name.includes('.plan'));
+        if (hit) {
+            return `.specs/${folder}/${hit}`;
+        }
+    }
+    return '';
+}
+
+describe('product docs after 0017 (AC-025)', () => {
+    it('finds a move term in a negative control', () => {
+        expect(findMoveTerms('Drag a card or use "Move to…"')).toEqual(['move to…', 'drag']);
+        expect(findMoveTerms('status bar `FeatherSpec: <name> (<version>)`')).toEqual(['featherspec: <name> (<version>)']);
+        expect(findMoveTerms('Copy the next step of a card')).toEqual([]);
+    });
+
+    for (const file of MOVE_SCANNED) {
+        it(`${file} names no move path`, async () => {
+            expect(findMoveTerms(await read(file))).toEqual([]);
+        });
+    }
+
+    for (const number of ['0001', '0003', '0006', '0007', '0013', '0015', '0016']) {
+        it(`spec ${number} carries a note of 0017`, async () => {
+            const file = await specFile(number);
+            expect(file, number).not.toBe('');
+            expect(await read(file)).toContain('Amended by 0017 (PD-060/PD-061)');
+        });
+    }
+
+    for (const number of ['0003', '0007', '0013', '0015']) {
+        it(`spec ${number} carries the catch-all note in its head`, async () => {
+            const head = (await read(await specFile(number))).split('\n').slice(0, 14).join('\n');
+            expect(head).toContain('Amended by 0017 (PD-060/PD-061): every other statement');
+        });
+    }
+
+    it('ADR-001 carries the note on drag and drop', async () => {
+        expect(await read('docs/decisions/ADR-001-extension-architecture.md')).toContain(
+            'superseded by 0017 (PD-060): no drag, no Move to…, no move command',
+        );
+    });
+
+    it('README names the card Copy, the status bar and Copy Next Step', async () => {
+        const readme = await read('README.md');
+        expect(readme).toContain('Copy Next Step');
+        expect(readme).toContain('status bar');
+        expect(readme).toContain('· <state> ·');
+        expect(readme).toMatch(/card[^.]*\*\*Copy\*\*|\*\*Copy\*\*[^.]*card/);
+    });
+
+    it('the release checklist carries AC-026', async () => {
+        const text = await read('docs/release-checklist.md');
+        expect(text).toContain('0017');
+        expect(text).toContain('AC-026');
+    });
+
+    it('CHANGELOG names the removal and the new places under Unreleased', async () => {
+        const text = await read('CHANGELOG.md');
+        const unreleased = text.slice(text.indexOf('## [Unreleased]'), text.indexOf('## [0.1.0]'));
+        expect(unreleased).toContain('0017');
+        expect(unreleased.toLowerCase()).toContain('drag');
+        expect(unreleased).toContain('Move to…');
+        expect(unreleased).toContain('Copy Next Step');
+        expect(unreleased.toLowerCase()).toContain('status bar');
+    });
+});
