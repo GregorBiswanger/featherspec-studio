@@ -3,8 +3,9 @@ import { COPIED_TEXT, COPY_FAILED_TEXT } from '../../shared/protocol/nextStepTex
 import { fileNotFoundText } from '../../shared/protocol/texts';
 import { createBoardRequests } from './boardRequests';
 import type { OpenFileResult } from './openFile';
+import type { SendPromptPayload, SendResultEventPayload } from '../../shared/protocol/assistant';
 
-function setup(overrides: { open?: OpenFileResult; copyFails?: boolean } = {}) {
+function setup(overrides: { open?: OpenFileResult; copyFails?: boolean; send?: SendResultEventPayload } = {}) {
     const calls: unknown[][] = [];
     const requests = createBoardRequests({
         board: {
@@ -20,6 +21,10 @@ function setup(overrides: { open?: OpenFileResult; copyFails?: boolean } = {}) {
                 }
             },
         },
+        send: async (request: SendPromptPayload) => {
+            calls.push(['send', request]);
+            return overrides.send ?? { outcome: 'opened', text: 'The prompt is in Copilot\'s chat. Check it, then send it there.' };
+        },
         openFile: {
             async open(key, line) {
                 calls.push(line === undefined ? ['open', key] : ['open', key, line]);
@@ -31,7 +36,9 @@ function setup(overrides: { open?: OpenFileResult; copyFails?: boolean } = {}) {
     requests.onDidOpenFileResult((result) => files.push(result));
     const copies: unknown[] = [];
     requests.onDidCopyResult((result) => copies.push(result));
-    return { requests, calls, files, copies };
+    const sends: unknown[] = [];
+    requests.onDidSendResult((result) => sends.push(result));
+    return { requests, calls, files, copies, sends };
 }
 
 describe('board requests', () => {
@@ -99,3 +106,28 @@ describe('0015 copy request', () => {
         expect(copies).toEqual([{ ok: true, text: COPIED_TEXT }, { ok: true, text: COPIED_TEXT }]);
     });
 });
+
+describe('0024 AC-005: the sendPrompt request', () => {
+    it('hands the request to Send and emits its result as sendResult, once, and no copy result', async () => {
+        const { requests, calls, sends, copies } = setup();
+        await requests.handlers.sendPrompt({ assistant: 'copilot', target: 'current', line: 'Implement T-003 of p' });
+        expect(calls).toEqual([['send', { assistant: 'copilot', target: 'current', line: 'Implement T-003 of p' }]]);
+        expect(sends).toEqual([{ outcome: 'opened', text: "The prompt is in Copilot's chat. Check it, then send it there." }]);
+        expect(copies).toEqual([]);
+    });
+
+    it('a copied or failed result is emitted as it is; a disposed listener hears nothing', async () => {
+        const copied = setup({ send: { outcome: 'copied', text: COPIED_TEXT } });
+        await copied.requests.handlers.sendPrompt({ assistant: 'claudeCode', target: 'new', line: 'x' });
+        expect(copied.sends).toEqual([{ outcome: 'copied', text: COPIED_TEXT }]);
+        const failed = setup({ send: { outcome: 'copyFailed', text: COPY_FAILED_TEXT } });
+        await failed.requests.handlers.sendPrompt({ assistant: 'claudeCode', target: 'new', line: 'x' });
+        expect(failed.sends).toEqual([{ outcome: 'copyFailed', text: COPY_FAILED_TEXT }]);
+        const late: unknown[] = [];
+        const subscription = failed.requests.onDidSendResult((result) => late.push(result));
+        subscription.dispose();
+        await failed.requests.handlers.sendPrompt({ assistant: 'claudeCode', target: 'new', line: 'x' });
+        expect(late).toEqual([]);
+    });
+});
+

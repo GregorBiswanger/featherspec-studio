@@ -68,6 +68,7 @@ describe('board requests', () => {
                 'resetSideWidth',
                 'runAction',
                 'select',
+                'sendPrompt',
                 'setSideWidth',
             ].sort(),
         );

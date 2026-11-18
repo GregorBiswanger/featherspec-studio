@@ -69,6 +69,7 @@ const REMOVED_TERMS = [
 const REMOVED_ALLOWED = [
     'src/core/runtime/earlierRunData.ts',
     'src/core/assistant/offer.test.ts',
+    'src/core/assistant/send.test.ts',
     'src/core/runtime/earlierRunData.test.ts',
     'src/adapters/node/earlierRunDataFiles.test.ts',
     'src/adapters/node/earlierRunData.endToEnd.test.ts',
@@ -163,6 +164,42 @@ describe("0024 §5: 0015 AC-021 excepts 0024's own names of GitHub Copilot", () 
         for (const sample of ['copilotProvider', 'copilot-agent', 'COPILOT', 'copilot.smoke', 'CopilotAgent', 'Copilot-agent', 'const copilot = 1;', 'github.copilot.chat', 'Copilot.ts', 'xCopilot']) {
             expect(hits(maskAssistantNames(sample), REMOVED_TERMS, true), sample).toEqual(['copilot']);
         }
+    });
+});
+
+const SEND_FORBIDDEN_TERMS = ['submit', 'acceptInput', 'sendToNewChat', 'autoSend', 'isPartialQuery: false', 'chatgpt', 'github.copilot.', 'inlineChat', 'editorChat', 'vscode.lm', 'vscode://'];
+const SEND_COMMANDS = ['workbench.action.chat.newChat', 'workbench.action.chat.open', 'claude-vscode.editor.open'];
+
+export function chatCommandStrings(text: string): string[] {
+    return [...text.matchAll(/(?:workbench\.action\.chat\.|claude-vscode\.)[A-Za-z.]*/g)].map((match) => match[0]);
+}
+
+describe('0024 AC-007: the Studio never submits a chat and names no other chat command', () => {
+    async function productionFiles(): Promise<{ name: string; text: string }[]> {
+        const extra = await fs.readFile(path.join(root, 'package.json'), 'utf8');
+        return [...(await sourceFiles()).filter((file) => !isTestFile(file.name)), { name: 'package.json', text: extra }];
+    }
+
+    it('src without test files and package.json hold none of the forbidden terms, in any letter case', async () => {
+        const offenders = (await productionFiles()).filter((file) => hits(file.text, SEND_FORBIDDEN_TERMS, true).length > 0).map((file) => `${file.name}: ${hits(file.text, SEND_FORBIDDEN_TERMS, true).join(', ')}`);
+        expect(offenders).toEqual([]);
+    });
+
+    it('workbench.action.chat.open occurs exactly once, and every chat or Claude Code command string is one of the three', async () => {
+        const files = await productionFiles();
+        const strings = files.flatMap((file) => chatCommandStrings(file.text));
+        expect(strings.filter((text) => text === 'workbench.action.chat.open')).toHaveLength(1);
+        expect([...new Set(strings)].sort()).toEqual([...SEND_COMMANDS].sort());
+        expect(files.filter((file) => file.text.includes('workbench.action.chat.open')).map((file) => file.name)).toEqual(['src/core/assistant/assistants.ts']);
+    });
+
+    it('negative control: the scan finds each term, any letter case, and a command that is not one of the three', () => {
+        for (const term of SEND_FORBIDDEN_TERMS) {
+            expect(hits(`call ${term.toUpperCase()} here`, SEND_FORBIDDEN_TERMS, true), term).toContain(term);
+        }
+        expect(hits('const open = 1;', SEND_FORBIDDEN_TERMS, true)).toEqual([]);
+        expect(chatCommandStrings("run('workbench.action.chat.submit'); run('claude-vscode.sidebar.open')")).toEqual(['workbench.action.chat.submit', 'claude-vscode.sidebar.open']);
+        expect(chatCommandStrings('workbench.action.chat.open workbench.action.chat.open')).toHaveLength(2);
     });
 });
 

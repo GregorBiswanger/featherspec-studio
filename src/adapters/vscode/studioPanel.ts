@@ -8,6 +8,7 @@ import type { BoardView } from '../../shared/protocol/board';
 import type { DetailView, OpenFileResultPayload } from '../../shared/protocol/detail';
 import type { OverviewView } from '../../shared/protocol/overview';
 import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../../shared/protocol/envelope';
+import type { SendResultEventPayload } from '../../shared/protocol/assistant';
 import { isProbeResultPayload, type BoardRequestType, type CopyResultEventPayload, type OverviewRequestType, type ProbeOutcome } from '../../shared/protocol/messages';
 import { createProbeChannel } from './probeChannel';
 import { buildWebviewHtml } from './webviewHtml';
@@ -25,6 +26,7 @@ export interface PanelBoard {
     onDidChangeDetail(listener: (view: DetailView) => void): vscode.Disposable;
     onDidOpenFileResult(listener: (result: OpenFileResultPayload) => void): vscode.Disposable;
     onDidCopyResult(listener: (result: CopyResultEventPayload) => void): vscode.Disposable;
+    onDidSendResult(listener: (result: SendResultEventPayload) => void): vscode.Disposable;
     panelClosed(): void;
 }
 
@@ -177,6 +179,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
             deps.board.onDidChangeDetail(pushDetail),
             deps.board.onDidOpenFileResult((payload) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'openFileResult', payload })),
             deps.board.onDidCopyResult((payload) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'copyResult', payload })),
+            deps.board.onDidSendResult((payload) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'sendResult', payload })),
             target.onDidDispose(() => {
                 subscriptions.forEach((subscription) => subscription.dispose());
                 subscriptions = [];

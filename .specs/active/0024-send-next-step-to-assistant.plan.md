@@ -3,7 +3,7 @@
 **Spec:** [0024-send-next-step-to-assistant.md](0024-send-next-step-to-assistant.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-003
+**Current step:** T-004
 
 ## Approach
 
@@ -335,8 +335,8 @@ here.
       `assistantHost.ts` call no configuration `update`.
 - **Verify:** `npx vitest run --project node src/core/assistant src/core/board/boardRequests.test.ts src/shared/protocol/messages.test.ts src/core/copyNextStep/noWrite.test.ts src/adapters/node/sourceScan.test.ts`
   red (stub), then green; gates 1–4
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-18 red: `npx vitest run --project node src/core/assistant/send.test.ts` 27 failed + 1 passed (`createSend` stub `Not implemented`), then the guards, boardRequests and scan tests failed on their missing parts; green after: `npx vitest run --project node src/core src/shared/protocol src/adapters` 0 failed. Gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 2947 passed + 3 skipped (+16 timing), `npm run compile` and `compile-tests` green (gate 5 run although the plan lists 1-4: extension.ts changed).
+- **Notes:** extension.ts wiring moved from T-004 into T-003 because `createBoardRequests` now requires `send`: the offer source, `createSend` (platform from `process.platform`, `stepUi` as the warn port) and the studioPanel post of `sendResult`; T-004 passes the same offer source to the two services. `PROTOCOL_VERSION` stays 6 until T-004. Three existing `createBoardRequests` calls in noWrite.test.ts and messageRouter.test.ts / boardFilter.test.ts list the new `send` dep and request type (staying tests, behaviour unchanged). The AC-012 offer-change case moves to T-004 (the services take the source there); the no-update scan covers the six 0024 host files. Result texts: Copy outcomes are 'Copied to the clipboard.' / 'Could not copy to the clipboard.' (0021 `COPIED_TEXT`), the control's short 'Copied' is the webview's (T-005). `SendResultEventPayload.text` for `opened` is §7's sentence.
 
 ### T-004 — The detail and the first Now row carry the offer and follow it within 500 ms
 

@@ -1,3 +1,4 @@
+import type { SendPromptPayload, SendResultEventPayload } from '../../shared/protocol/assistant';
 import type { OpenFileResultPayload } from '../../shared/protocol/detail';
 import type { BoardRequestType, CopyResultEventPayload } from '../../shared/protocol/messages';
 import type { ClipboardPort } from '../ports/board';
@@ -11,12 +12,14 @@ export interface BoardRequestsDeps {
     board: Pick<BoardService, 'setSort' | 'setDone' | 'clearFilters'>;
     openFile: OpenFile;
     clipboard: ClipboardPort;
+    send: (request: SendPromptPayload) => Promise<SendResultEventPayload>;
 }
 
 export interface BoardRequests {
     handlers: Pick<RequestHandlers, BoardRequestType>;
     onDidOpenFileResult(listener: (result: OpenFileResultPayload) => void): Disposable;
     onDidCopyResult(listener: (result: CopyResultEventPayload) => void): Disposable;
+    onDidSendResult(listener: (result: SendResultEventPayload) => void): Disposable;
 }
 
 function notifier<T>(): { add(listener: (value: T) => void): Disposable; emit(value: T): void } {
@@ -41,6 +44,7 @@ function notifier<T>(): { add(listener: (value: T) => void): Disposable; emit(va
 export function createBoardRequests(deps: BoardRequestsDeps): BoardRequests {
     const fileResults = notifier<OpenFileResultPayload>();
     const copyResults = notifier<CopyResultEventPayload>();
+    const sendResults = notifier<SendResultEventPayload>();
     return {
         handlers: {
             boardSetDone: async (payload) => deps.board.setDone(payload.expanded),
@@ -48,6 +52,9 @@ export function createBoardRequests(deps: BoardRequestsDeps): BoardRequests {
             boardClearFilters: async () => deps.board.clearFilters(),
             copyText: async (payload) => {
                 copyResults.emit(await copyLine(deps.clipboard, payload.text));
+            },
+            sendPrompt: async (payload) => {
+                sendResults.emit(await deps.send(payload));
             },
             openFile: async (payload) => {
                 const result = await (payload.line === undefined ? deps.openFile.open(payload.key) : deps.openFile.open(payload.key, payload.line));
@@ -58,5 +65,6 @@ export function createBoardRequests(deps: BoardRequestsDeps): BoardRequests {
         },
         onDidOpenFileResult: fileResults.add,
         onDidCopyResult: copyResults.add,
+        onDidSendResult: sendResults.add,
     };
 }

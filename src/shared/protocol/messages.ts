@@ -1,4 +1,5 @@
 import { isAreaId, type AreaId } from './areas';
+import { isSendPromptPayload, type SendPromptPayload } from './assistant';
 import { isBoardView, isSortKey, type BoardView, type SortKey } from './board';
 import { isDetailView, type DetailView } from './detail';
 import { isBoardFilter, type BoardFilter } from './boardFilter';
@@ -126,6 +127,7 @@ export interface BoardRequestPayloads {
     boardClearFilters: Record<string, never>;
     openFile: OpenFilePayload;
     copyText: CopyTextPayload;
+    sendPrompt: SendPromptPayload;
 }
 
 export interface OverviewSetActivityPayload {
@@ -268,6 +270,7 @@ export const REQUEST_GUARDS: { [Type in RequestType]: (value: unknown) => value 
     boardClearFilters: isEmptyPayload,
     openFile: isOpenFilePayload,
     copyText: isCopyTextPayload,
+    sendPrompt: isSendPromptPayload,
     overviewSetActivity: isOverviewSetActivityPayload,
 };
 

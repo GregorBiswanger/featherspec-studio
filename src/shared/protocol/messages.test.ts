@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { AREAS, AREA_IDS, isAreaId } from './areas';
 import { RESTRICTED_TEXT } from './texts';
+import { isSendResultEventPayload } from './assistant';
 import { PROTOCOL_VERSION, isJsonValue, readEnvelope } from './envelope';
 import {
     isHelloPayload,
@@ -189,6 +190,42 @@ describe('0015 AC-005, AC-009: copy request and result', () => {
         expect(isCopyResultEventPayload({ ok: 'yes', text: 'x' })).toBe(false);
         expect(isCopyResultEventPayload({ ok: true })).toBe(false);
         expect(isCopyResultEventPayload(undefined)).toBe(false);
+    });
+});
+
+describe('0024 AC-007: the request sendPrompt and the event sendResult', () => {
+    const good = { assistant: 'copilot', target: 'new', line: 'Implement T-003 of .specs/active/0001-a.plan.md' };
+
+    it('sendPrompt takes the assistant, the target and the line, and is a request type', () => {
+        expect(isRequestType('sendPrompt')).toBe(true);
+        expect(REQUEST_GUARDS.sendPrompt(good)).toBe(true);
+        expect(REQUEST_GUARDS.sendPrompt({ ...good, target: 'current' })).toBe(true);
+        expect(REQUEST_GUARDS.sendPrompt({ assistant: 'claudeCode', target: 'new', line: 'x' })).toBe(true);
+    });
+
+    it('it refuses an extra key, a command name, an unknown assistant, current for Claude Code and an empty line', () => {
+        expect(REQUEST_GUARDS.sendPrompt({ ...good, extra: 1 })).toBe(false);
+        expect(REQUEST_GUARDS.sendPrompt({ ...good, command: 'workbench.action.chat.open' })).toBe(false);
+        expect(REQUEST_GUARDS.sendPrompt({ ...good, assistant: 'codex' })).toBe(false);
+        expect(REQUEST_GUARDS.sendPrompt({ assistant: 'claudeCode', target: 'current', line: 'x' })).toBe(false);
+        expect(REQUEST_GUARDS.sendPrompt({ ...good, line: '' })).toBe(false);
+        expect(REQUEST_GUARDS.sendPrompt({ ...good, line: 4 })).toBe(false);
+        expect(REQUEST_GUARDS.sendPrompt({ assistant: 'copilot', target: 'new' })).toBe(false);
+        expect(REQUEST_GUARDS.sendPrompt({ ...good, target: 'later' })).toBe(false);
+        for (const value of [null, undefined, 'copilot', []]) {
+            expect(REQUEST_GUARDS.sendPrompt(value)).toBe(false);
+        }
+    });
+
+    it('sendResult holds an outcome of the three and a text, nothing else', () => {
+        for (const outcome of ['opened', 'copied', 'copyFailed']) {
+            expect(isSendResultEventPayload({ outcome, text: 't' })).toBe(true);
+        }
+        expect(isSendResultEventPayload({ outcome: 'sent', text: 't' })).toBe(false);
+        expect(isSendResultEventPayload({ outcome: 'opened' })).toBe(false);
+        expect(isSendResultEventPayload({ outcome: 'opened', text: 1 })).toBe(false);
+        expect(isSendResultEventPayload({ outcome: 'opened', text: 't', extra: 1 })).toBe(false);
+        expect(isSendResultEventPayload(null)).toBe(false);
     });
 });
 

@@ -49,6 +49,8 @@ import { createSettingsSource } from './core/settings/settingsSource';
 import { MODEL_HINTS_KEY, parseStepTipSettings, SHOW_STEP_TIPS_KEY } from './core/settings/stepTipSettings';
 import { createSettingPort } from './adapters/vscode/settings';
 import { createAssistantHost } from './adapters/vscode/assistantHost';
+import { ASSISTANT_KEY, extensionPresence, offerOf } from './core/assistant/offer';
+import { createSend } from './core/assistant/send';
 import { openSettings } from './core/settings/openSettings';
 import { createBoardRequests } from './core/board/boardRequests';
 import { createOpenFile } from './core/board/openFile';
@@ -204,6 +206,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         tips,
     });
     const assistantHost = createAssistantHost();
+    const assistantOffer = createSettingsSource([createSettingPort(ASSISTANT_KEY), extensionPresence(assistantHost)], ([chosen, present]) => offerOf(chosen, present as readonly string[]));
     const clipboard = createClipboard();
     const entry = createStatusEntry({ line: projectLine, discovery: controller, shell: service, source: modelSource, item: statusItem, clock: createSystemClock(), sameRoot });
     const stepUi = createStepUi();
@@ -219,7 +222,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         },
     });
     const openFile = createOpenFile({ source: modelSource, editor: createEditor() });
-    const requests = createBoardRequests({ board, openFile, clipboard });
+    const sender = createSend({ host: assistantHost, clipboard, ui: stepUi, output, clock: createSystemClock(), platform: process.platform, offer: assistantOffer });
+    const requests = createBoardRequests({ board, openFile, clipboard, send: (request) => sender.send(request) });
     const navigation = service.onDidNavigate((request) => {
         if (request.target?.kind === 'boardFilter') {
             board.applyNavigationFilter(request.target.filter);
@@ -241,6 +245,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             onDidChangeDetail: (listener) => board.onDidChangeDetail(listener),
             onDidOpenFileResult: (listener) => requests.onDidOpenFileResult(listener),
             onDidCopyResult: (listener) => requests.onDidCopyResult(listener),
+            onDidSendResult: (listener) => requests.onDidSendResult(listener),
             panelClosed: () => board.panelClosed(),
         },
         output,

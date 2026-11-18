@@ -11,6 +11,10 @@ import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
 import { parseStepTipSettings } from '../settings/stepTipSettings';
 import { readProject } from '../specs/readProject';
 import { createCopyNextStep } from './copyNextStep';
+import { createFakeAssistantHost } from '../assistant/testing/fakeAssistantHost';
+import { createSend } from '../assistant/send';
+import { openSettings } from '../settings/openSettings';
+import { createSetupClock } from '../setup/testing/setupClock';
 import { createEntryWorld } from './testing/entryWorld';
 
 let temp: string | undefined;
@@ -34,6 +38,7 @@ describe('0017 AC-023: no Copy, click or command writes a file', () => {
         await board.service.whenIdle();
         const written: string[] = [];
         const requests = createBoardRequests({
+            send: async () => ({ outcome: 'copied', text: 'Copied to the clipboard.' }),
             board: board.service,
             openFile: { open: async () => ({ kind: 'opened' }) } as never,
             clipboard: { writeText: async (text) => void written.push(text) },
@@ -95,6 +100,7 @@ describe('0017 AC-023: no Copy, click or command writes a file', () => {
         board.selection.set({ stem: model.lifecycle.entries[0]!.stem });
         const written: string[] = [];
         const requests = createBoardRequests({
+            send: async () => ({ outcome: 'copied', text: 'Copied to the clipboard.' }),
             board: board.service,
             openFile: { open: async () => ({ kind: 'opened' }) } as never,
             clipboard: { writeText: async (text) => void written.push(text) },
@@ -127,6 +133,7 @@ describe('0017 AC-023: no Copy, click or command writes a file', () => {
         const opened: Array<[string, number | undefined]> = [];
         const written: string[] = [];
         const requests = createBoardRequests({
+            send: async () => ({ outcome: 'copied', text: 'Copied to the clipboard.' }),
             board: board.service,
             openFile: { open: async (key: string, line?: number) => (opened.push([key, line]), { kind: 'opened' }) } as never,
             clipboard: { writeText: async (text) => void written.push(text) },
@@ -145,6 +152,57 @@ describe('0017 AC-023: no Copy, click or command writes a file', () => {
         expect(opened).toEqual([[step!.open!.key, step!.open!.line]]);
         expect(await snapshotTree(temp)).toEqual(before);
         board.service.dispose();
+    });
+
+    it('0024 AC-012: every Send outcome, the Copy item and Open Settings leave a temp copy of fs110-ready-synthetic unchanged and write no setting', async () => {
+        temp = await fs.mkdtemp(path.join(os.tmpdir(), 'send-nowrite-'));
+        await fs.cp(fixturePath('fs110-ready-synthetic'), temp, { recursive: true });
+        const before = await snapshotTree(temp);
+        const host = createFakeAssistantHost(['workbench.action.chat.newChat', 'workbench.action.chat.open', 'claude-vscode.editor.open']);
+        host.install('GitHub.copilot-chat');
+        host.install('anthropic.claude-code');
+        const written: string[] = [];
+        let clipboardFails = false;
+        const sender = createSend({
+            host,
+            clipboard: {
+                writeText: async (text) => {
+                    if (clipboardFails) {
+                        throw new Error('no clipboard');
+                    }
+                    written.push(text);
+                },
+            },
+            ui: { warn: () => undefined },
+            output: { appendBlock: () => undefined },
+            clock: createSetupClock(),
+            platform: 'linux',
+            offer: { read: () => ({ assistant: 'copilot' }) },
+        });
+        const line = 'Implement T-003 of .specs/active/0001-a.plan.md';
+        const outcomes = [
+            (await sender.send({ assistant: 'copilot', target: 'new', line })).outcome,
+            (await sender.send({ assistant: 'copilot', target: 'current', line })).outcome,
+            (await sender.send({ assistant: 'claudeCode', target: 'new', line })).outcome,
+        ];
+        host.uninstall('GitHub.copilot-chat');
+        outcomes.push((await sender.send({ assistant: 'copilot', target: 'new', line })).outcome);
+        clipboardFails = true;
+        outcomes.push((await sender.send({ assistant: 'copilot', target: 'new', line })).outcome);
+        await openSettings(host);
+        expect(outcomes).toEqual(['opened', 'opened', 'copied', 'copied', 'copyFailed']);
+        expect(written).toEqual([line, line]);
+        expect(host.calls.map((call) => call.command)).toEqual(['workbench.action.chat.newChat', 'workbench.action.chat.open', 'workbench.action.chat.open', 'workbench.action.openSettings']);
+        expect(await snapshotTree(temp)).toEqual(before);
+    });
+
+    it('0024 AC-012: the assistant core, Open Settings and the host adapter call no configuration update and no file API', async () => {
+        const files = ['src/core/assistant/assistants.ts', 'src/core/assistant/offer.ts', 'src/core/assistant/sendView.ts', 'src/core/assistant/send.ts', 'src/core/settings/openSettings.ts', 'src/adapters/vscode/assistantHost.ts'];
+        for (const file of files) {
+            const source = await fs.readFile(path.resolve(process.cwd(), ...file.split('/')), 'utf8');
+            expect(source, file).not.toMatch(/\.update\(|\.inspect\(|writeFile|appendFile|mkdir|unlink|rename\(|rmSync|fs\./);
+        }
+        expect("config.update('assistant', 'copilot')").toMatch(/\.update\(/);
     });
 
     it('control: the snapshot sees a file that appears in the tree', async () => {

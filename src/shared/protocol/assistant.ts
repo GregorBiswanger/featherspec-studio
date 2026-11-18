@@ -37,3 +37,32 @@ export function isSendView(value: unknown): value is SendView {
     const own = ASSISTANT_TARGETS[assistant];
     return targets.length === own.length && own.every((item, index) => targets[index] === item) && own.includes(target);
 }
+
+export interface SendPromptPayload {
+    assistant: AssistantId;
+    target: AssistantTarget;
+    line: string;
+}
+
+export type SendOutcome = 'opened' | 'copied' | 'copyFailed';
+
+export interface SendResultEventPayload {
+    outcome: SendOutcome;
+    text: string;
+}
+
+const SEND_PROMPT_KEYS: readonly string[] = ['assistant', 'target', 'line'];
+
+export function isSendPromptPayload(value: unknown): value is SendPromptPayload {
+    if (!isRecord(value) || Object.keys(value).length !== SEND_PROMPT_KEYS.length || !SEND_PROMPT_KEYS.every((key) => key in value)) {
+        return false;
+    }
+    const { assistant, target, line } = value;
+    return isAssistantId(assistant) && isAssistantTarget(target) && ASSISTANT_TARGETS[assistant].includes(target) && typeof line === 'string' && line.length > 0;
+}
+
+const SEND_OUTCOMES: readonly string[] = ['opened', 'copied', 'copyFailed'];
+
+export function isSendResultEventPayload(value: unknown): value is SendResultEventPayload {
+    return isRecord(value) && Object.keys(value).length === 2 && typeof value.outcome === 'string' && SEND_OUTCOMES.includes(value.outcome) && typeof value.text === 'string';
+}
