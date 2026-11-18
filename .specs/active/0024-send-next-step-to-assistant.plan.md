@@ -3,7 +3,7 @@
 **Spec:** [0024-send-next-step-to-assistant.md](0024-send-next-step-to-assistant.md)
 **Status:** Done
 **Last updated:** 2026-11-18
-**Current step:** T-014 (T-001…T-013 verified; manual AC-016 real window and AC-017…AC-019 open)
+**Current step:** T-015 (T-001…T-013 verified; manual AC-016 real window and AC-017…AC-019 open)
 
 ## Approach
 
@@ -608,7 +608,8 @@ copy (`git archive` of the head into `/tmp`).
   - `docsScan.test.ts` first: the README links the four shots, each exists, each has an alt text of its own content,
     `.vscodeignore` still holds `media/screenshots/**`.
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green
-- [ ] **Verified (T-014):**
+- [x] **Verified (T-014):** 2026-11-19 red: the new `docsScan.test.ts` against a `git archive` of 5c70dbd in `/tmp` 2 failed (the alt texts of the three old links, no `plan-map-dark.png` in the Plan map part); green after: `npx vitest run --project node src/adapters/node/docsScan.test.ts` 153 passed. The four shots are 1400×900 PNGs from `/home/claude/orch/preview/readme2/` (preview harness, real core at 5c70dbd; the Plan map from a copy of `fs110-parallel-synthetic`); `.vscodeignore` is unchanged and still holds `media/screenshots/**` (the README links the images in the repository; the VSIX ships none). Doc-only: no code gates.
+- **Notes:** the README's three alt texts now say what each image shows (Overview: Now with the primary Copy prompt, coach line, Up next, figures; Board: six columns, Review open, icon Copy prompt; detail: light Board with the side panel). 0013 AC-017 (taste of the shots) stays Gregor's.
 
 ### T-015 — `activeContext.md` is a short dashboard again
 

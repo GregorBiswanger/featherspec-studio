@@ -4,7 +4,7 @@ A VS Code panel for projects that use [FeatherSpec](https://github.com/GregorBis
 
 Studio reads your project and starts no agent; the work with your agent stays in your assistant's chat. The one exception to read-only is [Set up FeatherSpec](#set-up-featherspec), which you start and confirm yourself.
 
-![Overview](media/screenshots/overview-dark.png)
+![Overview in the dark theme: Now lists the specs in Review, the first row with the primary Copy prompt and its coach line, then Up next and the figures](media/screenshots/overview-dark.png)
 
 ## Feature tour
 
@@ -20,11 +20,13 @@ What is in progress, what comes next and what needs fixing, one line per spec: *
 
 ### Board
 
-![Board](media/screenshots/board-dark.png)
+![Board in the dark theme: six columns, the Review column open with cards that show the next step and an icon Copy prompt](media/screenshots/board-dark.png)
 
 Every spec as a card in six columns: Backlog, Ready, Active, Review, Done and Blocked. A column without a card is a narrow strip with its name and count; the other columns share the width, and the board scrolls sideways when they do not fit. **Done** is collapsed until you open it with its toggle, and Studio remembers your choice per workspace. A card has three rows: number and title; what matters in its state (a Backlog card shows what the spec still needs, a Blocked card why, otherwise the steps and criteria progress), a warning with the number of problems and the day of the last change; and the next step. Hover a Ready, Review or Blocked column header for the rule behind the state, and a card for its description. The day comes from the plan's `Last updated:` line, else from the file's modification time; it is left out while all specs show the same day. Opening the Board from the Overview with a filter shows one **Filter: …** chip with **Clear filters**; sort by number, title or last change. The last line of a card is the next step: **Next**, the short intent and the short form of the prompt (for example `Plan · /sdd-plan`) with a **Copy prompt** button that puts the full line on your clipboard. The board works with the keyboard: arrow keys move between cards, Enter or Space selects a card and shows its detail in the side panel, Tab from the card reaches its **Copy prompt**, Enter or Space copies. The board moves no spec; lifecycle moves belong to FeatherSpec's `/sdd-lifecycle`.
 
 ### Plan map
+
+![Plan map in the dark theme: a plan as stages, stage 2 can run in parallel with two step cards and the ways to run it, the side panel beside the map](media/screenshots/plan-map-dark.png)
 
 The third tab shows one spec's plan as stages. Select a spec that has a plan (in the tab's own list, the Specs view, the Overview or the Board) and each stage is a row: `Stage 2 — add and subtract`, with a line that says whether its steps run in order or can run in parallel because they share no file. Steps are cards with their files and the acceptance criteria they cover, side by side where they can run together; open a card for what to do and how it is verified. A finished stage folds to the step IDs. The side panel stands beside the map from 900 px; below that the map shows alone.
 
@@ -32,7 +34,7 @@ For the stage you are on, **Ways to run stage 2** offers three prompts to copy: 
 
 ### The detail of a spec
 
-![Board with the detail of a spec in the side panel](media/screenshots/spec-detail-light.png)
+![Board in the light theme with the detail of a spec in the side panel: Next step with Copy prompt, Plan and Progress](media/screenshots/spec-detail-light.png)
 
 Select a spec in the Specs view, on the Board or in the Overview (click, Enter or Space) and its detail opens in a **side panel** to the right of the area; the area stays where it is. Set the width with the **divider** between the area and the panel (move it with the pointer, or focus it and press the arrow keys; Enter or a double click resets it); Studio remembers it for the workspace. Below 900 px the area or the detail shows alone: a back button at the top of the detail returns to the area, and so does Escape. Beside the area, close the panel with its close button or Escape; focus returns to the card or row you came from. The selection survives switching tabs, closing the panel and reloading the window. The panel is a picture of the spec's situation, not a copy of its files: the state, **Next step** (with **Copy prompt**), the **Problems**, **Progress** (steps done and the next open step; criteria verified and the ones still open), the **Files** (spec, plan, archived plans, return notes) and, folded, the **Format notes** and the **Status history**. Every ID and file name is a link: it opens the file in the editor **beside** the Studio, at the line where the ID is defined. A file that is gone reads "File not found: ..." at the link.
 

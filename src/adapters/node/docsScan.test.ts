@@ -777,3 +777,38 @@ describe('product docs after 0024 (AC-015)', () => {
     });
 });
 
+
+describe('product docs after the final check of round 2 (0024 T-014 to T-022)', () => {
+    const SHOTS = [
+        ['overview-dark', 'Overview in the dark theme: Now lists the specs in Review, the first row with the primary Copy prompt and its coach line, then Up next and the figures'],
+        ['board-dark', 'Board in the dark theme: six columns, the Review column open with cards that show the next step and an icon Copy prompt'],
+        ['plan-map-dark', 'Plan map in the dark theme: a plan as stages, stage 2 can run in parallel with two step cards and the ways to run it, the side panel beside the map'],
+        ['spec-detail-light', 'Board in the light theme with the detail of a spec in the side panel: Next step with Copy prompt, Plan and Progress'],
+    ] as const;
+
+    function pngSize(bytes: Buffer): [number, number] {
+        return [bytes.readUInt32BE(16), bytes.readUInt32BE(20)];
+    }
+
+    it('the README links the four shots with the alt text of what each shows, and each is a 1400 by 900 PNG', async () => {
+        const readme = await read('README.md');
+        const images = [...readme.matchAll(/!\[([^\]]*)\]\((media\/screenshots\/[\w-]+\.png)\)/g)].map((match) => [match[2], match[1]]);
+        expect(images).toEqual(SHOTS.map(([name, alt]) => [`media/screenshots/${name}.png`, alt]));
+        for (const [name] of SHOTS) {
+            const bytes = await fs.readFile(path.join(root, 'media', 'screenshots', `${name}.png`));
+            expect(pngSize(bytes), name).toEqual([1400, 900]);
+        }
+    });
+
+    it('the Plan map shot stands in the README part about the Plan map', async () => {
+        const readme = await read('README.md');
+        const start = readme.indexOf('\n### Plan map\n');
+        expect(start).toBeGreaterThan(-1);
+        const part = readme.slice(start, readme.indexOf('\n### ', start + 1));
+        expect(part).toContain('media/screenshots/plan-map-dark.png');
+    });
+
+    it('.vscodeignore still keeps the screenshots out of the VSIX', async () => {
+        expect((await read('.vscodeignore')).split('\n')).toContain('media/screenshots/**');
+    });
+});
