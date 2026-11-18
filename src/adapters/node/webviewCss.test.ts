@@ -303,17 +303,6 @@ describe('0016 AC-017, AC-019: Copy is the primary button and keeps its size', (
         expect(rulesFor(css, '.copy-button:hover').some((rule) => rule.body.includes('var(--vscode-button-hoverBackground'))).toBe(true);
     });
 
-    it('AC-017: .secondary-button uses the secondary button colours and hover', () => {
-        const rules = rulesFor(css, '.secondary-button');
-        expect(rules.some((rule) => rule.body.includes('var(--vscode-button-secondaryBackground') && rule.body.includes('var(--vscode-button-secondaryForeground'))).toBe(true);
-        expect(rulesFor(css, '.secondary-button:hover').some((rule) => rule.body.includes('var(--vscode-button-secondaryHoverBackground'))).toBe(true);
-    });
-
-    it('AC-017 negative control: the secondary rule does not carry the primary background alone', () => {
-        const rules = rulesFor(css, '.secondary-button');
-        expect(rules.every((rule) => !/background:\s*var\(--vscode-button-background\)/.test(rule.body))).toBe(true);
-    });
-
     it('AC-019: .copy-button has a min-width of at least 14ch on a content-box and no error colour or outline in any of its rules', () => {
         const rules = parseRules(css).filter((rule) => rule.selectors.some((selector) => selector.startsWith('.copy-button')));
         expect(rules.length).toBeGreaterThan(0);
@@ -345,5 +334,20 @@ describe('0016 AC-017, AC-019: Copy is the primary button and keeps its size', (
 
     it('AC-019: nothing that styles the copy feedback uses the error colour (the old status line is gone)', () => {
         expect(rulesFor(css, '.next-step .detail-status')).toEqual([]);
+    });
+
+    it('0017 §6.5: nothing reserves the corner of a card head for the removed Move to... and no rule styles the removed Dismiss button', () => {
+        expect(rulesFor(css, '.card-head::before')).toEqual([]);
+        expect(rulesFor(css, '.card-head::after')).toEqual([]);
+        expect(rulesFor(css, '.secondary-button')).toEqual([]);
+        expect(rulesFor(css, '.secondary-button:hover')).toEqual([]);
+        expect(rulesFor(css, '.card').some((rule) => /position:\s*relative/.test(rule.body))).toBe(false);
+        expect(css).not.toContain('card-head::before');
+        expect(css).not.toContain('secondary-button');
+    });
+
+    it('0017 §6.5 control: the check sees a reserved corner when one is present', () => {
+        const sample = '.card-head::before { content: ""; float: right; width: 60px; }';
+        expect(rulesFor(sample, '.card-head::before')).toHaveLength(1);
     });
 });

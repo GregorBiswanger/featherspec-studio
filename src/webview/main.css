@@ -549,20 +549,9 @@ main > h1 {
     outline-offset: 1px;
 }
 
-.card {
-    position: relative;
-}
-
 .card-head {
     line-height: 1.35;
     overflow-wrap: anywhere;
-}
-
-.card-head::before {
-    content: "";
-    float: right;
-    width: 60px;
-    height: 1em;
 }
 
 .card-number {
@@ -822,21 +811,6 @@ main > h1 {
 
 .copy-button:hover {
     background: var(--vscode-button-hoverBackground, var(--vscode-button-background));
-}
-
-.secondary-button {
-    padding: 1px 8px;
-    color: var(--vscode-button-secondaryForeground, var(--vscode-button-foreground));
-    background: var(--vscode-button-secondaryBackground, var(--vscode-button-background));
-    border: 1px solid var(--vscode-button-border, transparent);
-    border-radius: 2px;
-    cursor: pointer;
-    font: inherit;
-    font-size: 11px;
-}
-
-.secondary-button:hover {
-    background: var(--vscode-button-secondaryHoverBackground, var(--vscode-button-secondaryBackground));
 }
 
 .visually-hidden {
@@ -1512,8 +1486,7 @@ blockquote.illustration {
 .nav-item,
 .related-link,
 .open-file,
-.copy-button,
-.secondary-button {
+.copy-button {
     transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 
