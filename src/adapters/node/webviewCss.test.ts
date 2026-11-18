@@ -507,6 +507,16 @@ describe('0019 AC-005, AC-021: the side panel beside the area or as a drawer', (
         }
     });
 
+    it('0019 G4, AC-007: a selected card and a selected Overview row both get the selection background and the contrast active border', () => {
+        for (const selector of ['.card[aria-current="true"]', '.ov-row[aria-current="true"]']) {
+            const body = plain(selector).map((rule) => rule.body).join(';');
+            expect(body, selector).toMatch(/background:\s*var\(--vscode-list-activeSelectionBackground\)/);
+            expect(body, selector).toMatch(/border-color:\s*var\(--vscode-contrastActiveBorder/);
+            expect(body, selector).toMatch(/color:\s*var\(--vscode-list-activeSelectionForeground\)/);
+        }
+        expect(plain('.nothing[aria-current="true"]')).toEqual([]);
+    });
+
     it('AC-021: every colour of the side panel and its close button is a --vscode-* variable and no rule sets or removes an outline', () => {
         for (const selector of ['.side-panel', '.detail-close', '.detail-close:hover', '.detail-title h2:focus-visible']) {
             const rules = rulesFor(css, selector);

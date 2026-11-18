@@ -61,3 +61,19 @@ export function bigView(specCount: number, perSpec: number): OverviewView {
         },
     };
 }
+
+export function sharedSpecView(): OverviewView {
+    const first = { stem: '0001-a', number: '0001', title: 'A', found: true };
+    const second = { stem: '0002-x', number: '0002', title: 'Beta', found: true };
+    return {
+        ...sampleView(),
+        now: [{ spec: first, state: 'Active', status: 'Active', problems: 0 }],
+        problems: {
+            rows: [
+                { spec: second, state: 'Backlog', status: 'unreadable file', problems: 1 },
+                { spec: first, state: 'Active', status: 'unreadable file', problems: 1 },
+            ],
+            lines: [],
+        },
+    };
+}

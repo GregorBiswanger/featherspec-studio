@@ -7,7 +7,8 @@ import { NO_DETAIL_SELECTION_TEXT, noticeText } from '../../shared/protocol/text
 import { App } from '../App';
 import { boardEvent, boardView, card } from '../board/testing/views';
 import { createClient, type ShellClient } from '../client';
-import { baseView, click, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
+import { sharedSpecView } from '../../shared/protocol/testing/overviewSample';
+import { baseView, click, mount, overviewEvent, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
 import { resetSectionMemory } from './sectionMemory';
 import { detailEvent, detailView, PLAN_KEY, SPEC_KEY } from './testing/views';
 
@@ -135,6 +136,34 @@ describe('AC-003: closing the side panel', () => {
         await click(closeButton(container));
         await shell('board');
         expect(document.activeElement).toBe(cardOf(container, '0003'));
+    });
+
+    it('0019 G1: the opener is a second card of the same spec: closing returns focus to it, not to the first card', async () => {
+        const first = card('0007', { path: '.specs/active/0007-thing.md' });
+        const second = card('0007', { key: '.specs/backlog/0007-thing.md', path: '.specs/backlog/0007-thing.md' });
+        const container = await board(undefined, [first, second]);
+        const cards = [...container.querySelectorAll<HTMLElement>('[data-card]')];
+        await focus(cards[1]!);
+        await pressKey(cards[1]!, 'Enter');
+        await shell('board', { ...SELECTED, path: second.path! });
+        await send(detailEvent(detailView({ key: second.path! })));
+        await focus(closeButton(container));
+        await escape(closeButton(container));
+        await shell('board');
+        expect(document.activeElement).toBe(cards[1]);
+        expect(document.activeElement).not.toBe(cards[0]);
+    });
+
+    it('0019 G2: in the Overview without an opener closing focuses the first Overview row of the spec, not the first control of the area', async () => {
+        const container = await start();
+        await shell('overview', { stem: '0002-x', number: '0002' });
+        await send(overviewEvent(sharedSpecView()));
+        const rows = [...container.querySelectorAll<HTMLElement>('[data-spec-row] .ov-row')];
+        expect(rows[0]!.closest('[data-spec-row]')?.getAttribute('data-spec-row')).toBe('0001-a');
+        await focus(closeButton(container));
+        await click(closeButton(container));
+        await shell('overview');
+        expect(document.activeElement).toBe(rows[1]);
     });
 
     it('0019 F1: the opener is forgotten on close, so a later selection by the host focuses the first card of the spec', async () => {

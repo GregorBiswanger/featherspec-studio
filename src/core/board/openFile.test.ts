@@ -1,4 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import * as path from 'node:path';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import type { EditorPort } from '../ports/board';
 import { noteText, planText, specText } from '../lifecycle/testing/projects';
 import { createOpenFile } from './openFile';
@@ -23,6 +25,24 @@ async function setup(outcome: 'opened' | 'not-found' = 'opened') {
     const source = createFakeSource(await modelOf(FILES));
     return { open: createOpenFile({ source, editor }), calls, root: source.current()!.project.root };
 }
+
+describe('open file: no trust or writer dependency', () => {
+    it('0019 AC-018 G7: createOpenFile takes the model source and the editor and nothing else, and its modules name no trust or writer', () => {
+        expectTypeOf<keyof Parameters<typeof createOpenFile>[0]>().toEqualTypeOf<'source' | 'editor'>();
+        for (const file of ['openFile.ts', path.join('..', '..', 'adapters', 'vscode', 'editor.ts')]) {
+            const source = readFileSync(path.join(__dirname, file), 'utf8');
+            expect(source, file).not.toMatch(/trust|writer|restricted|readOnly|reader/i);
+        }
+        expect(createOpenFile.length).toBe(1);
+    });
+
+    it('0019 AC-018 G7: two opens of one file give the same result whatever happened before (nothing but the model and the editor decides)', async () => {
+        const { open, calls, root } = await setup();
+        expect(await open.open('.specs/active/0001-a.md', 3)).toEqual({ kind: 'opened' });
+        expect(await open.open('.specs/active/0001-a.md', 3)).toEqual({ kind: 'opened' });
+        expect(calls).toEqual([{ root, key: '.specs/active/0001-a.md', line: 3 }, { root, key: '.specs/active/0001-a.md', line: 3 }]);
+    });
+});
 
 describe('open file', () => {
     it.each(['.specs/active/0001-a.md', '.specs/active/0001-a.plan.md', '.specs/plan-archive/0002-b.2026-11-01.plan.md', '.memory-bank/activeContext.0001-T-002.md'])(

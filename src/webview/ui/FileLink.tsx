@@ -7,16 +7,18 @@ export interface FileResult {
     text: string;
 }
 
+const latestActivation = new Map<string, object>();
+
 function baseName(key: string): string {
     return key.slice(key.lastIndexOf('/') + 1);
 }
 
 export function FileLink(props: { target: LineTarget; fileResult: FileResult | undefined; onOpen(key: string, line: number): void; children: ReactNode }) {
     const { target, fileResult } = props;
-    const [activation, setActivation] = useState<{ before: FileResult | undefined } | undefined>(undefined);
+    const [activation, setActivation] = useState<{ before: FileResult | undefined; token: object } | undefined>(undefined);
     const descriptionId = useId();
     const tooltip = openFileTooltip(baseName(target.key), target.line);
-    const failed = activation !== undefined && fileResult !== undefined && fileResult !== activation.before && fileResult.key === target.key;
+    const failed = activation !== undefined && latestActivation.get(target.key) === activation.token && fileResult !== undefined && fileResult !== activation.before && fileResult.key === target.key;
 
     useEffect(() => {
         if (fileResult === undefined) {
@@ -32,7 +34,9 @@ export function FileLink(props: { target: LineTarget; fileResult: FileResult | u
                 title={tooltip}
                 aria-describedby={descriptionId}
                 onClick={() => {
-                    setActivation({ before: fileResult });
+                    const token = {};
+                    latestActivation.set(target.key, token);
+                    setActivation({ before: fileResult, token });
                     props.onOpen(target.key, target.line);
                 }}
             >

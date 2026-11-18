@@ -189,6 +189,12 @@ describe('0019 AC-011, AC-012: Progress', () => {
         expect(links(entries[0]!).map((link) => link.textContent)).toEqual(['AC-002']);
     });
 
+    it('0019 F4: the two row labels read "Steps" and "Criteria" literally, and the criteria bar is named "Criteria"', async () => {
+        const root = progressOf(await open());
+        expect([...root.querySelectorAll('.progress-label')].map(textOf)).toEqual(['Steps', 'Criteria']);
+        expect(root.querySelector('[role="progressbar"][aria-label="Criteria"]')).not.toBeNull();
+    });
+
     it('a built row ends with " · built", a row with no ID shows its text as the link, all verified shows no list', async () => {
         const criteria = {
             kind: 'criteria' as const,
@@ -351,6 +357,40 @@ describe('0019 AC-019: a file that is gone', () => {
         await send(openFileResultEvent(SPEC_KEY, fileNotFoundText(SPEC_KEY)));
         expect(step.textContent).toBe('T-002');
         expect(links(section(container, 'Files'))[0]!.textContent).toBe('0007-thing.md');
+    });
+
+    it('0019 G5: a link that was activated earlier keeps its text when another link gets the not-found result for another key', async () => {
+        const container = await open();
+        const step = links(container.querySelector('.progress-next')!)[0]!;
+        const criterion = links(container.querySelector('.criteria-open')!)[0]!;
+        await click(step);
+        await click(criterion);
+        await send(openFileResultEvent(SPEC_KEY, fileNotFoundText(SPEC_KEY)));
+        expect(criterion.textContent).toBe(fileNotFoundText(SPEC_KEY));
+        expect(step.textContent).toBe('T-002');
+    });
+
+    it('0019 F2: of two links to the same file only the one activated last reads "File not found", also when the earlier one opened the file', async () => {
+        const container = await open();
+        const file = links(section(container, 'Files'))[0]!;
+        const criterion = links(container.querySelector('.criteria-open')!)[0]!;
+        await click(file);
+        await click(criterion);
+        await send(openFileResultEvent(SPEC_KEY, fileNotFoundText(SPEC_KEY)));
+        expect(criterion.textContent).toBe(fileNotFoundText(SPEC_KEY));
+        expect(file.textContent).toBe('0007-thing.md');
+        expect(posted.filter((message) => message.type === 'openFile')).toHaveLength(2);
+    });
+
+    it('0019 F2: the link activated last for a file reads the result even when another link to another file was activated after it', async () => {
+        const container = await open();
+        const criterion = links(container.querySelector('.criteria-open')!)[0]!;
+        const step = links(container.querySelector('.progress-next')!)[0]!;
+        await click(criterion);
+        await click(step);
+        await send(openFileResultEvent(SPEC_KEY, fileNotFoundText(SPEC_KEY)));
+        expect(criterion.textContent).toBe(fileNotFoundText(SPEC_KEY));
+        expect(step.textContent).toBe('T-002');
     });
 
     it('the next model update restores the text and empties the live region', async () => {

@@ -1,7 +1,7 @@
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
-import { sampleView } from '../../shared/protocol/testing/overviewSample';
+import { sampleView, sharedSpecView } from '../../shared/protocol/testing/overviewSample';
 import type { OverviewView } from '../../shared/protocol/overview';
 import type { SelectedSpec } from '../../shared/protocol/messages';
 import { App } from '../App';
@@ -128,6 +128,22 @@ describe('AC-007: the selected spec is marked', () => {
         expect(current[0]).toBe(cardOf(container, '0004'));
         await send(shellEvent(baseView({ area: 'board', selection: undefined }), 2));
         expect(container.querySelectorAll('[data-card][aria-current]')).toHaveLength(0);
+    });
+});
+
+describe('0019 G3, AC-007: the Overview rows of the selected spec are marked', () => {
+    it('every Overview row of the selected spec carries aria-current, the rows of other specs do not', async () => {
+        const container = await start();
+        await send(shellEvent(baseView({ area: 'overview', selection: { stem: '0001-a', number: '0001' } }), 1));
+        await send(overviewEvent(sharedSpecView()));
+        const rows = [...container.querySelectorAll<HTMLElement>('[data-spec-row] .ov-row')];
+        expect(rows.map((row) => [row.closest('[data-spec-row]')?.getAttribute('data-spec-row'), row.getAttribute('aria-current')])).toEqual([
+            ['0001-a', 'true'],
+            ['0002-x', null],
+            ['0001-a', 'true'],
+        ]);
+        await send(shellEvent(baseView({ area: 'overview', selection: undefined }), 2));
+        expect(container.querySelectorAll('.ov-row[aria-current]')).toHaveLength(0);
     });
 });
 
