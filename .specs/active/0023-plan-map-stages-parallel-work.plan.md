@@ -3,7 +3,7 @@
 **Spec:** [0023-plan-map-stages-parallel-work.md](0023-plan-map-stages-parallel-work.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-011
+**Current step:** T-012
 
 ## Approach
 
@@ -436,8 +436,8 @@ Proxy decisions of this round (Gregor delegated; P-25 …), recorded here and in
   the ways, focus a start-line Copy, send the detail with the step returned: the ways block is gone and the heading holds
   the focus), the same for a way's Copy and the ways toggle; the card test (b) is kept as it is.
 - **Verify:** `npx vitest run --project webview src/webview/areas/planMap` red on a scratch copy of the head, then green; gates 1–4
-- [ ] **Verified (T-011):**
-- **Notes:**
+- [x] **Verified (T-011):** 2026-11-18 · `npx vitest run --project webview src/webview/areas/planMap` red first on a scratch copy of `241b190` (the four new tests: the three PD-077 tests failed with `expected <body> to be <h2 tabindex="-1" data-map-heading>` — the compile's repro with a start-line Copy, a way's Copy and the ways toggle, and a start line that goes while the ways block stays; the control "a focused Copy that still exists keeps the focus…" was green on both sides), then green (webview 542 of 542); gates 1–4 green, `npm run test:unit` 2800 passed + 3 skipped (+16 timing). Spec: AC-012 revised to PD-077 with the amendment note under it
+- **Notes:** `Stages` now remembers the last focused element of the whole stage area, not only of a card (`hadFocus = { card? }`; the card key only when the element sits in a card). After a plan update, when the focus is no longer inside the area: a card whose key leaves gets the card at its place (`fallbackFocus`, PD-077 and P-19, unchanged); anything else, or no card left, gets the map's heading. The header's own controls (heading, Open plan) are not removed by an update. The existing test "a focused card that leaves hands the focus to the card at its place, else to the heading of the map" already pinned (b) and keeps its title and body. P-19 reads: "expansion and the ways state survive; focus as PD-077".
 
 ### T-012 — A step the plan does not know is a chip, not a card
 

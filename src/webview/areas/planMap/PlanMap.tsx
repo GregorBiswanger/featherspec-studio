@@ -45,7 +45,7 @@ function Stages(props: { plan: PlanView; links: CardLinks; copyResult: CopyResul
         });
     }, []);
     const cards = { expanded, tabStop, onToggle: toggle };
-    const hadFocus = useRef<string | undefined>(undefined);
+    const hadFocus = useRef<{ card: string | undefined } | undefined>(undefined);
     const previous = useRef<Grid>(grid);
     useLayoutEffect(() => {
         const was = hadFocus.current;
@@ -58,11 +58,11 @@ function Stages(props: { plan: PlanView; links: CardLinks; copyResult: CopyResul
         if (box === null || box.contains(document.activeElement)) {
             return;
         }
-        const target = fallbackFocus(before, was, grid);
+        const target = was.card === undefined ? undefined : fallbackFocus(before, was.card, grid);
         const element = target === undefined ? undefined : toggleOf(box, target);
-        if (element !== undefined && element !== null) {
+        if (target !== undefined && element !== undefined) {
             setStop(target);
-            hadFocus.current = target;
+            hadFocus.current = { card: target };
             element.focus();
             return;
         }
@@ -76,11 +76,9 @@ function Stages(props: { plan: PlanView; links: CardLinks; copyResult: CopyResul
     };
     const onFocus = (event: React.FocusEvent<HTMLElement>): void => {
         const key = cardKeyOf(event.target as HTMLElement);
-        if (key !== undefined) {
-            hadFocus.current = key;
-            if (key !== stop) {
-                setStop(key);
-            }
+        hadFocus.current = { card: key };
+        if (key !== undefined && key !== stop) {
+            setStop(key);
         }
     };
     const onKeyDown = (event: KeyboardEvent<HTMLElement>): void => {
@@ -93,7 +91,7 @@ function Stages(props: { plan: PlanView; links: CardLinks; copyResult: CopyResul
         const target = moveFocus(grid, key, direction);
         if (target !== undefined) {
             setStop(target);
-            hadFocus.current = target;
+            hadFocus.current = { card: target };
             if (root.current !== null) {
                 toggleOf(root.current, target)?.focus();
             }

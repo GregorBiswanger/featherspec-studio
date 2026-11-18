@@ -547,6 +547,75 @@ describe('0023 AC-012: the map follows the files', () => {
         expect(document.activeElement).toBe(map(container).querySelector('[data-map-heading]'));
     });
 
+    function withoutWays(): PlanView {
+        const base = planSample();
+        return planSample({
+            stages: base.stages.map((entry) => {
+                if (entry.number !== 2) {
+                    return entry;
+                }
+                const { ways: _ways, ...rest } = entry;
+                return {
+                    ...rest,
+                    returned: { n: 1, m: 2 },
+                    groups: [{ steps: [entry.groups[0]!.steps[0]!, { ...entry.groups[0]!.steps[1]!, state: 'returned' as const, returned: { status: 'done' as const } }] }],
+                };
+            }),
+        });
+    }
+
+    async function openWays(): Promise<HTMLElement> {
+        const container = await show({ selection: selected('0007'), detail: detailWith(planSample()) });
+        await click(waysOf(container)!.querySelector<HTMLButtonElement>('.plan-ways-toggle')!);
+        return container;
+    }
+
+    it('PD-077: a focused start-line Copy whose ways block goes with a return note hands the focus to the heading of the map', async () => {
+        const container = await openWays();
+        const copy = waysOf(container)!.querySelector<HTMLButtonElement>('.plan-start-lines button.copy-icon')!;
+        await act(async () => copy.focus());
+        expect(document.activeElement).toBe(copy);
+        await update(withoutWays());
+        expect(waysOf(container)).toBeNull();
+        expect(document.activeElement).toBe(map(container).querySelector('[data-map-heading]'));
+    });
+
+    it('PD-077: the same for a way\'s Copy and for the toggle of the ways block', async () => {
+        const container = await openWays();
+        await act(async () => waysOf(container)!.querySelector<HTMLButtonElement>('.plan-way-prompt > button.copy-button')!.focus());
+        await update(withoutWays());
+        expect(document.activeElement).toBe(map(container).querySelector('[data-map-heading]'));
+        await update(planSample());
+        await click(waysOf(container)!.querySelector<HTMLButtonElement>('.plan-ways-toggle')!);
+        await act(async () => waysOf(container)!.querySelector<HTMLButtonElement>('.plan-ways-toggle')!.focus());
+        await update(withoutWays());
+        expect(document.activeElement).toBe(map(container).querySelector('[data-map-heading]'));
+    });
+
+    it('PD-077: a start line whose step returns takes the focus to the heading even while the ways block stays', async () => {
+        const container = await openWays();
+        const lines = [...waysOf(container)!.querySelectorAll<HTMLButtonElement>('.plan-start-lines button.copy-icon')];
+        await act(async () => lines[1]!.focus());
+        const base = planSample();
+        const shorter = planSample({
+            stages: base.stages.map((entry) =>
+                entry.number === 2 && entry.ways !== undefined ? { ...entry, ways: { ...entry.ways, startLines: entry.ways.startLines.slice(0, 1) } } : entry,
+            ),
+        });
+        await update(shorter);
+        expect(waysOf(container)).not.toBeNull();
+        expect(waysOf(container)!.querySelectorAll('.plan-start-lines button.copy-icon')).toHaveLength(1);
+        expect(document.activeElement).toBe(map(container).querySelector('[data-map-heading]'));
+    });
+
+    it('a focused Copy that still exists keeps the focus through an update, and the ways stay open', async () => {
+        const container = await openWays();
+        await act(async () => waysOf(container)!.querySelector<HTMLButtonElement>('.plan-start-lines button.copy-icon')!.focus());
+        await update(planSample({ count: { done: 3, total: 5 } }));
+        expect(document.activeElement).toBe(waysOf(container)!.querySelector('.plan-start-lines button.copy-icon'));
+        expect(waysOf(container)!.querySelector('.plan-ways-toggle')?.getAttribute('aria-expanded')).toBe('true');
+    });
+
     it('a focus outside the cards is left where it is', async () => {
         const container = await show({ selection: selected('0007'), detail: detailWith(planSample()) });
         const heading = map(container).querySelector<HTMLElement>('[data-map-heading]')!;
