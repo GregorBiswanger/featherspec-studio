@@ -720,6 +720,27 @@ describe('product docs after 0024 (AC-015)', () => {
         expect(codex).toContain('Copy prompt only');
     });
 
+    it('the README Privacy says the next step reaches the assistant by paste or by Send, and that Send fills the input and sends nothing', async () => {
+        const readme = await read('README.md');
+        const privacy = readme.slice(readme.indexOf('## Privacy and stored data'), readme.indexOf('## Known limitations')).replace(/\s+/g, ' ');
+        expect(privacy).toContain('it reaches your assistant only when you paste it, or when you choose Send to Copilot or Send to Claude Code, which fill the chat input and send nothing');
+        expect(privacy).not.toContain('it reaches your assistant only when you paste it.');
+    });
+
+    it('the checklist asks Gregor to record whether an unsent draft in the current chat of Copilot is kept or replaced, and to decide the default of NS-6 if it is replaced', async () => {
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('\n## Send to the assistant (0024)\n');
+        const section = text.slice(start, text.indexOf('\n## ', start + 1)).replace(/\s+/g, ' ');
+        expect(section).toContain('record whether an unsent draft in the current chat is kept or replaced (OP-004)');
+        expect(section).toContain('if it is replaced, decide whether the current chat stays the default target of NS-6 with GitHub Copilot; the Studio does not change it until you decide');
+    });
+
+    it('the project brief says that Send can put the prompt into the chosen assistant, and that the Studio never sends it', async () => {
+        const brief = (await read('.memory-bank/projectbrief.md')).replace(/\s+/g, ' ');
+        expect(brief).toContain('Send (PD-068) can put the prompt into the input of the assistant you chose');
+        expect(brief).toContain('Studio never sends it');
+    });
+
     for (const [file, notes] of [
         ['.specs/done/0013-studio-visual-design.md', 1],
         ['.specs/active/0015-focus-on-visibility.md', 7],

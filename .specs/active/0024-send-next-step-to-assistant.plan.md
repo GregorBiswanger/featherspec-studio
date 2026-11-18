@@ -1,9 +1,9 @@
 # Plan — Send the Next Step to My Assistant
 
 **Spec:** [0024-send-next-step-to-assistant.md](0024-send-next-step-to-assistant.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-18
-**Current step:** — (T-001…T-007 verified; manual AC-016…AC-019 open)
+**Current step:** none (T-001…T-013 verified; manual AC-016 real window and AC-017…AC-019 open)
 
 ## Approach
 
@@ -304,7 +304,7 @@ here.
 - **Verify:** `npx vitest run --project node src/core/assistant src/shared/protocol/assistant.test.ts src/adapters/vscode/assistantHost.test.ts`
   red (stubs), then green; gates 1–5
 - [x] **Verified (T-002):** 2026-11-18 red: `npx vitest run --project node src/core/assistant src/shared/protocol/assistant.test.ts src/adapters/vscode/assistantHost.test.ts` 77 failed + 5 passed (stubs `Not implemented`); green after: 82 passed. Gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 2909 passed + 3 skipped (+16 timing), compile and compile-tests green.
-- **Notes:** The AC-011 file list holds assistants.ts, offer.ts, sendView.ts; send.ts joins in T-003. The source scan (0015 AC-021) meets the unquoted object key `copilot:`: the production keys are quoted (`'copilot':`, masked by P-12) and the two test files that name the lowercase ID or value (offer.test.ts, shared assistant.test.ts) joined REMOVED_ALLOWED, the way earlier test files did. The host adapter's `activate` rejects with `extension <id> not found` for a missing extension.
+- **Notes:** The AC-011 file list holds assistants.ts, offer.ts, sendView.ts; send.ts did not join in T-003: it joined in T-009 (compile S82, M10). The source scan (0015 AC-021) meets the unquoted object key `copilot:`: the production keys are quoted (`'copilot':`, masked by P-12) and the two test files that name the lowercase ID or value (offer.test.ts, shared assistant.test.ts) joined REMOVED_ALLOWED, the way earlier test files did. The host adapter's `activate` rejects with `extension <id> not found` for a missing extension.
 
 ### T-003 — Send makes exactly PD-074's calls and falls back to Copy prompt
 
@@ -395,7 +395,7 @@ here.
     content at `AREA_MIN` (0022 AC-028's arithmetic).
 - **Verify:** `npx vitest run --project webview src/webview` and `npx vitest run --project node src/adapters/node/webviewCss.test.ts`
   red (stub), then green; gates 1–5
-- [x] **Verified (T-005):** eslint, tsc (host+webview), test:unit 3002 passed, compile, compile-tests green; SendButton/client/SpecDetail/Overview/primaryButtons/webviewCss tests added; client drop-on-key-change shown red by mutation
+- [x] **Verified (T-005):** 2026-11-18 `npx eslint src --max-warnings 0`, `npx tsc --noEmit` and `-p src/webview`, `npm run test:unit`, `npm run compile`, `npm run compile-tests`: eslint, tsc (host+webview), test:unit 3002 passed, compile, compile-tests green; SendButton/client/SpecDetail/Overview/primaryButtons/webviewCss tests added; client drop-on-key-change shown red by mutation. No red run of the tests exists: the code came first (historical, noted by the compile S82; the compile's 99 killed mutants stand in for it)
 - **Notes:** Proxy: SendButton and client tests were green on first run because the implementation preceded them; shown red by mutation instead. SendButton.test.tsx and SpecDetail.test.tsx joined REMOVED_ALLOWED (they name Copilot). Feedback timer runs from the result.
 
 ### T-006 — The menu follows the menu-button keys; one popup at a time; focus survives an offer change
@@ -425,7 +425,7 @@ here.
     - Negative control.
 - **Verify:** `npx vitest run --project webview src/webview` and `npx vitest run --project node src/adapters/node/webviewBundle.test.ts`
   red (stub), then green; gates 1–5
-- [x] **Verified (T-006):** eslint, tsc (host+webview), test:unit 3053 passed, compile, compile-tests green; SendButton keys 'AC-008' tests (wrap and Escape/handoff mutations shown red), Close/ListOrDetail Escape, SpecDetail/Overview AC-010 focus, webviewBundle sweeps
+- [x] **Verified (T-006):** 2026-11-18 `npx eslint src --max-warnings 0`, `npx tsc --noEmit` and `-p src/webview`, `npm run test:unit`, `npm run compile`, `npm run compile-tests`: eslint, tsc (host+webview), test:unit 3053 passed, compile, compile-tests green; SendButton keys 'AC-008' tests (wrap and Escape/handoff mutations shown red), Close/ListOrDetail Escape, SpecDetail/Overview AC-010 focus, webviewBundle sweeps. No red run of the tests exists (historical, noted by the compile S82); negative controls were mutations (wrap, Escape, handoff). The defects found later in this mechanism (D2, D3) are closed by T-010 and T-011
 - **Notes:** Proxy: one popup store ui/popup.ts shared by Toggletip and SendButton (Toggletip tests unchanged and green). Focus handoff when an offer goes away: SendButton unmount with focus inside flags a microtask-scoped handoff that the next mounted CopyButton consumes (no wrapper element, so the no-offer DOM stays the 0021 render). Assistant change handled inside SendButton (layout effect, arrow focus). A newly appearing offer takes no focus. Bundle sweep uses four fixtures for the 'shows Send' check because fs110-ready-synthetic has no Now row.
 
 ### T-007 — §5 notes, docs, test-title audit, architecture and Memory Bank sync, final gates
@@ -461,7 +461,7 @@ here.
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red (docs of the Baseline), then green;
   `grep -c "Amended by 0024 (PD-068)"` per spec ≥ its §5 rows; audit counts; gates 1–5 and `npm run compile-tests`
 - [x] **Verified (T-007):** 2026-11-18 `docsScan.test.ts` red (14 failed against the docs of `de5a1cc`), green (147 passed); `grep -c "Amended by 0024 (PD-068)"` per spec ≥ its §5 rows (0013 1, 0015 7, 0016 2, 0017 3, 0018 4, 0019 5, 0020 4, 0021 12, 0022 11, 0023 3); audit 3 absent, 0 decreased; gates 1–5 and `compile-tests`: eslint, tsc (host + webview) clean, `npm run test:unit` 3069 passed + 3 skipped (Baseline 2816 + 3), compile and compile-tests green. `npm test` (host smoke) cannot run here.
-- **Notes:** (1) §5 notes by a throwaway script (`/tmp/h/notes0024.py`): one `*Amended by 0024 (PD-068): …*` line under each named statement, after any 0021/0022/0023 note; 58 notes in 0013, 0015–0023 plus the catch-all at the head of 0015, 0018, 0019, 0021, 0022, 0023; no PD row edited. (2) `docsScan.test.ts` "product docs after 0024 (AC-015)" was red against the docs of `de5a1cc` (14 failed, scratch copy via `git archive`), green after; two existing assertions had to give way to AC-015, titles unchanged: the CHANGELOG scan ignores `featherspec-studio.assistant` (it still forbids every other `featherspec-studio.` command), and the checklist order list names the new section. The checklist says `GitHub Copilot Chat 0.75.0` (the 0015 scan allows only `GitHub Copilot`). (3) Test-title audit: see *Test-title audit* below. (4) `/sdd-architecture-update` by hand with the entries of *Do*: AGENTS.md snapshot, the three maps, `last reconciled … (0024)`; Memory Bank `techContext.md`, `systemPatterns.md`, `activeContext.md`. (5) Orchestrator's AC-016 screenshots and Gregor's AC-017/AC-018 answers are not here: manual, open.
+- **Notes:** (1) §5 notes by a throwaway script (`/tmp/h/notes0024.py`): one `*Amended by 0024 (PD-068): …*` line under each named statement, after any 0021/0022/0023 note; 52 notes in 0013, 0015–0023 plus the catch-all at the head of 0015, 0018, 0019, 0021, 0022, 0023; no PD row edited. (2) `docsScan.test.ts` "product docs after 0024 (AC-015)" was red against the docs of `de5a1cc` (14 failed, scratch copy via `git archive`), green after; two existing assertions had to give way to AC-015, titles unchanged: the CHANGELOG scan ignores `featherspec-studio.assistant` (it still forbids every other `featherspec-studio.` command), and the checklist order list names the new section. The checklist says `GitHub Copilot Chat 0.75.0` (the 0015 scan allows only `GitHub Copilot`). (3) Test-title audit: see *Test-title audit* below. (4) `/sdd-architecture-update` by hand with the entries of *Do*: AGENTS.md snapshot, the three maps, `last reconciled … (0024)`; Memory Bank `techContext.md`, `systemPatterns.md`, `activeContext.md`. (5) Orchestrator's AC-016 screenshots and Gregor's AC-017/AC-018 answers are not here: manual, open.
 
 ## Fix round (after /sdd-compile of 0024, 2026-11-18)
 
@@ -585,7 +585,8 @@ them all." No step above is renumbered or edited except where its note says so. 
     `projectbrief.md`.
   - F7 (OP-004) is Gregor's: the NS-6 default for Copilot is not changed.
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green; final gates
-- [ ] **Verified (T-013):**
+- [x] **Verified (T-013):** 2026-11-18 red: `npx vitest run --project node src/adapters/node/docsScan.test.ts` 3 failed (README Privacy still said "only when you paste it", the checklist's AC-017 did not ask for the NS-6 default, the project brief did not know Send); green after: 150 passed. Gates (final): eslint 0 warnings, both tsc clean, `npm run test:unit` 3113 tests (3110 passed + 3 skipped, +18 timing), `npm run compile`, `npm run compile-tests` green; `git status` clean.
+- **Notes:** F7 (OP-004) stays Gregor's: the NS-6 default for Copilot is unchanged, the checklist asks him to record the draft behaviour and decide. The plan's Status is Done (all steps ticked); the spec stays In Progress in `active/` and is not moved. The AC-016 harness note is recorded in *AC-016 harness evidence*.
 
 ## Test-title audit
 
@@ -603,6 +604,47 @@ by count. Each absent title is a statement §5 replaces; all three are retitled 
 
 The `stepTips` NS-5 closing test and 0018 AC-001 keep their titles (their bodies follow §6.8's fourth sentence).
 
+## AC-016 harness evidence
+
+`manual: orchestrator (Gregor's delegate) 2026-11-18, harness r5check at 7c6d975` — PASS, 60 views, 180 shots in
+`/home/claude/orch/preview/r5-0024/`. Gregor's real-window part of AC-016 stays open. The fix round after this evidence
+(T-008…T-013) changed focus handling and Send's silent copy only; no CSS and no layout, so the harness result for the
+split button's look stands, and Gregor's real window decides.
+
+Windows at 7c6d975: unit 3065 passed, 7 skipped, +18 timing; `npm test` 32+1+1+1.
+
+#### 0024 preview check (orchestrator, Gregor's delegate) — AC-016 at 7c6d975, 2026-11-18
+
+Harness /home/claude/orch/preview (real core at 7c6d975; the assistant offer from the repo's own `createFakeOffer`
+with the extension installed; Send answered `opened` by the harness, nothing executed), script r5check.mts, shots +
+report.json in /home/claude/orch/preview/r5-0024/ (180 shots). Cases: this repository with 0021 selected (Review, NS-5:
+default target new chat) and the fs170 copy with 0006 Active, T-003 open (NS-6: Copilot default current chat, Claude
+Code new chat); assistant Copilot and Claude Code; Dark, Light, High Contrast; window 1600 and 1000 px with the side
+panel at its default (640/400) and at G-2's minimum (320), and a Studio panel of 800 px (detail alone). Per view: the
+first Now row's split button with its menu open (Enter on the arrow), the detail's split button closed and open, a
+keyboard walk onto both parts, Escape.
+
+##### AC-016 — PASS (delegate), 60 views
+- No text of the split button cut (`Send to Copilot` / `Send to Claude Code`, 195 px, never clipped by its scroller),
+  at 320 px side panel too.
+- The open menu shows fully inside the Studio panel without scrolling, no item cut: Copilot `Send to a new chat`,
+  `Send to the current chat`, `Copy prompt`; Claude Code `Send to a new chat`, `Copy prompt`. Escape closes it, the
+  detail stays open, focus on the arrow part.
+- Both parts show a visible focus outline on keyboard focus (`:focus-visible`, solid) in all three themes.
+- Primary controls: per view at most two split buttons (the first Now row's and the detail's first line); each split
+  button is one primary control with two filled parts. Second lines stay secondary `Copy prompt`.
+- The page never scrolls.
+
+##### Observations for Gregor (not fails)
+- With Copilot, NS-6's main part targets the **current chat** (its session is "same chat or new chat"). By the V-2
+  source reading (OP-004) Copilot's `open` probably replaces an unsent draft there. AC-017 must record it; if the draft
+  is lost, deciding whether the current chat stays the default for NS-6 is Gregor's.
+- The open menu overlays the line below it (the coach line / the second line), as a menu does.
+
+##### Open
+- AC-017 (per assistant, versions), AC-018 (Settings UI, Restricted Mode), AC-019 build part: Gregor.
+- CI at the PR. Windows at 7c6d975: unit 3065 passed, 7 skipped, +18 timing; npm test 32+1+1+1 (green, incl. the 0024 board smoke).
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -612,26 +654,25 @@ The `stepTips` NS-5 closing test and 0018 AC-001 keep their titles (their bodies
 | AC-003 | T-004, T-005, T-006 | `src/core/board/detail.ts`, `src/core/overview/rows.ts`, `SendButton.tsx`, `NextStep.tsx`, `SpecRow.tsx` | `detail.test.ts`, `rows.test.ts`, `SpecDetail.test.tsx`, `Overview.test.tsx`, `primaryButtons.test.tsx`, `webviewBundle.test.ts` | verified |
 | AC-004 | T-002, T-004 | `src/core/assistant/offer.ts`, `sendView.ts`, `shared/protocol/assistantTexts.ts` | `offer.test.ts`, `sendView.test.ts`, `detail.test.ts`, `stepTips.test.ts` | verified |
 | AC-005 | T-003, T-005 | `src/core/assistant/send.ts`, `assistants.ts`, `SendButton.tsx` | `send.test.ts`, `SendButton.test.tsx`, `SpecDetail.test.tsx` | verified |
-| AC-006 | T-003 | `src/core/assistant/send.ts` | `send.test.ts` (PD-074's exact calls, timeout, fallback) | verified |
+| AC-006 | T-003, T-008, T-009 | `src/core/assistant/send.ts`, `wiring.ts` | `send.test.ts` (PD-074's exact calls, timeout, fallback, late results, causes), `wiring.test.ts` (production wiring) | verified |
 | AC-007 | T-003 | `src/core/assistant/assistants.ts`, `send.ts` | `send.test.ts`, `sourceScan.test.ts` (AC-007 scan), `assistant.test.ts` | verified |
 | AC-008 | T-006 | `src/webview/ui/SendButton.tsx`, `popup.ts`, `Toggletip.tsx` | `SendButton.test.tsx` (0024 AC-008), `Close.test.tsx`, `ListOrDetail.test.tsx`, `Toggletip.test.tsx` unchanged | verified |
 | AC-009 | T-005 | `src/webview/main.css`, `SendButton.tsx` | `webviewCss.test.ts` (0024 AC-009, AC-003) | verified; AC-016 manual |
-| AC-010 | T-004, T-006 | `src/core/board/boardService.ts`, `overviewService.ts`, `SendButton.tsx`, `CopyButton.tsx`, `popup.ts` | `boardService.test.ts`, `overviewService.test.ts`, both timing tests, `SpecDetail.test.tsx`, `Overview.test.tsx` | verified |
-| AC-011 | T-002, T-004 | `src/core/assistant/sendView.ts`, `src/shared/protocol/*` | `sendView.test.ts`, `assistant.test.ts`, `detail.test.ts`, `overview.test.ts` | verified |
+| AC-010 | T-004, T-006, T-010, T-011 | `src/core/board/boardService.ts`, `overviewService.ts`, `SendButton.tsx`, `CopyButton.tsx`, `StepAction.tsx`, `focusHandoff.ts`, `popup.ts` | `boardService.test.ts`, `overviewService.test.ts`, both timing tests, `SpecDetail.test.tsx`, `Overview.test.tsx` | verified |
+| AC-011 | T-002, T-004, T-009 | `src/core/assistant/sendView.ts`, `src/shared/protocol/*` | `sendView.test.ts` (scan incl. `send.ts`), `assistant.test.ts`, `detail.test.ts`, `overview.test.ts` | verified |
 | AC-012 | T-003 | `src/core/board/boardRequests.ts`, `send.ts` | `noWrite.test.ts`, `boardRequests.test.ts`, `messageRouter.test.ts` | verified |
 | AC-013 | T-001, T-004 | `package.json`, `src/core/settings/openSettings.ts`, `shared/protocol/nextStepTexts.ts` | `manifest.test.ts`, `openSettings.test.ts`, `stepTips.test.ts`, `board.smoke.test.ts` (CI) | verified; host smoke on CI |
-| AC-014 | T-007 | this plan, *Test-title audit*; `/tmp/audit-0024/titles.py` (throwaway) | the audit: 3 absent titles, each listed; `npm run test:unit` 3069 passed; `npm test` on Windows and CI open | open: unit and the audit verified; `npm test` open |
+| AC-014 | T-007 | this plan, *Test-title audit*; `/tmp/audit-0024/titles.py` (throwaway) | the audit: 3 absent titles, each listed; `npm run test:unit` 3069 passed; Windows 11 at `7c6d975`: unit 3065 passed, 7 skipped, +18 timing, `npm test` 32+1+1+1 (green, incl. the 0024 board smoke); CI at the PR | open: unit, audit and Windows verified; CI open (the fix round T-008…T-013 changed code after `7c6d975`, so Windows and CI run again at the fix head) |
 | AC-015 | T-007 | `README.md`, `CHANGELOG.md`, `docs/release-checklist.md`, §5 notes in 0013, 0015–0023 | `docsScan.test.ts` (product docs after 0024) | verified |
-| AC-016 | T-007 | — | manual: orchestrator's preview harness, then Gregor | open |
-| AC-017 | T-007 | — | manual: Gregor per assistant on `tip-splitter` | open |
+| AC-016 | T-007 | — | manual: orchestrator (Gregor's delegate) 2026-11-18, harness r5check at 7c6d975 — PASS, see *AC-016 harness evidence*; Gregor's real window | open: harness part recorded, Gregor's real-window part open |
+| AC-017 | T-007 | — | manual: Gregor per assistant on `tip-splitter`; with Copilot he records whether an unsent draft in the current chat is kept or replaced (OP-004) and decides NS-6's default if it is replaced | open |
 | AC-018 | T-007 | — | manual: Gregor, Settings UI and Restricted Mode | open |
 | AC-019 | T-007 | — | manual: draft part passed (PD-076, *Research*); build part in AC-017 | open |
 
 ## Session handoff
 
-- **Done so far:** T-001…T-007 verified 2026-11-18, one commit per step (f50bc4c, f0b011d, abf1925, 42e9cda, d683b82, de5a1cc, and T-007's); unit 2816 → 3069 passed (+3 skipped); title audit 3 absent, all retitled; plan and spec stay In Progress
-- **Next action:** `npm test` on Windows and CI (host smoke); the orchestrator's AC-016 harness; Gregor's AC-017…AC-019 per assistant; then `/sdd-compile 0024`
-- **Open decisions:** OP-004 (does `open` replace an unsent draft in Copilot's current chat? VS Code's `main` source
-  suggests yes; AC-017 records it, and Gregor decides whether "current chat" stays). OP-002 and OP-003 are not blocking.
-- **Baseline:** d756fa9 (head before the first step commit; started 2026-11-18 on Gregor's delegated start signal)
+- **Done so far:** T-001…T-007 verified 2026-11-18 (f50bc4c, f0b011d, abf1925, 42e9cda, d683b82, de5a1cc, 7c6d975); the fix round after the compile S82, T-008…T-013, verified 2026-11-18 (D1 Send by the effective value, D2 focus decided at the moment of the change, D3 the handoff scoped to the place, F1 narrow scan exemptions, F2 comments, F4, F6 causes, M10, M36, M37, M72, M78 closed; M63 and M73 noted only). Plan Done; the spec stays In Progress in `active/`.
+- **Next action:** `npm test` on Windows and CI at the fix head (AC-014); Gregor's AC-016 real window, AC-017 per assistant (with OP-004), AC-018, AC-019 build part; then a fresh `/sdd-compile 0024`.
+- **Open decisions:** OP-004 / F7 (Gregor's, AC-017): does Copilot's `open` replace an unsent draft in the current chat? If it does, Gregor decides whether the current chat stays NS-6's default target with Copilot; the default is not changed. OP-002 and OP-003 are not blocking.
+- **Baseline:** d756fa9 (head before the first step commit; started 2026-11-18 on Gregor's delegated start signal); compile S82 at 7c6d975.
 - **Environment:** `npm test` cannot run here (VS Code download blocked); host smoke runs on CI and Windows

@@ -193,7 +193,8 @@ and the expected result. A clear miss reopens the named spec.
 - [ ] **AC-017** *(Gregor, per assistant; record the versions)*: on `tip-splitter`, from the detail of an Active spec
   (NS-6) and of a Review spec (NS-5), the main part and each Send item open the named chat with the prompt in the input
   and nothing sent; after you send it yourself it runs as the FeatherSpec command or plan step it names; with GitHub Copilot
-  note whether unsent text in the current chat is kept or replaced (OP-004).
+  record whether an unsent draft in the current chat is kept or replaced (OP-004); if it is replaced, decide whether the
+  current chat stays the default target of NS-6 with GitHub Copilot; the Studio does not change it until you decide.
   - [ ] GitHub Copilot: VS Code 1.147.0, GitHub Copilot Chat 0.75.0 (`GitHub.copilot-chat`). Re-run on a newer version before the release.
   - [ ] Claude Code: VS Code 1.147.0, Claude Code 2.1.327 (`anthropic.claude-code`). Re-run on a newer version before the release.
   - [ ] Codex: Copy prompt only, no Send; re-check when a Codex version accepts a prompt.
