@@ -5,7 +5,8 @@ import type { ClipboardPort } from '../ports/board';
 import type { Disposable } from '../ports/host';
 import type { RequestHandlers } from '../shell/messageRouter';
 import type { BoardService } from './boardService';
-import { copyLine, type Moves } from './moves';
+import { copyLine } from './copyLine';
+import type { Moves } from './moves';
 import type { OpenFile } from './openFile';
 
 export interface BoardRequestsDeps {

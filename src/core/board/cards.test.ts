@@ -149,3 +149,21 @@ describe('cards', () => {
         expect(banner).toEqual({ problems: [], notes: [{ where: 'project', reason: 'newer than known' }] });
     });
 });
+
+describe('0017 AC-001: the step on a card', () => {
+    it('a Ready card carries the short form and the full first line with the plan path', async () => {
+        const { cards } = await cardsOf({
+            '.specs/backlog/0007-x.md': specText({ plan: '[0007-x.plan.md](0007-x.plan.md)' }),
+            '.specs/backlog/0007-x.plan.md': `${planText({ status: 'Not started' })}\n## Steps\n\n### T-003 — Step\n\n- [ ] **Verified (T-003):** —\n`,
+        });
+        expect(cards[0]?.state).toBe('Ready');
+        expect(cards[0]?.step).toEqual({ short: 'Start T-003', line: 'Start T-003 of .specs/backlog/0007-x.plan.md', lines: [{ text: 'Start T-003 of .specs/backlog/0007-x.plan.md' }] });
+    });
+
+    it('a Done card has no step', async () => {
+        const { cards } = await cardsOf({ '.specs/done/0001-a.md': specText({ status: 'Baseline' }) });
+        expect(cards[0]?.state).toBe('Done');
+        expect(cards[0]?.step).toBeUndefined();
+    });
+});
+

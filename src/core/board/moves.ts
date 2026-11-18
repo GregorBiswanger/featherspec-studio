@@ -4,8 +4,9 @@ import { judgeTransition } from '../lifecycle/transitions';
 import type { ClipboardPort, MoveMessagePort, MovePickPort, MoveResultSink, SelectionSource } from '../ports/board';
 import type { ShellModel, ShellModelSource } from '../ports/shell';
 import { titleOf } from './cards';
+import { copyLine } from './copyLine';
 import { startLine } from './nextStep';
-import { COPIED_TEXT, COPY_FAILED_TEXT, moveNextStepText, NEXT_STEP_COPY_LABEL } from '../../shared/protocol/nextStepTexts';
+import { moveNextStepText, NEXT_STEP_COPY_LABEL } from '../../shared/protocol/nextStepTexts';
 
 export interface MovesDeps {
     source: ShellModelSource;
@@ -78,20 +79,6 @@ export function createMoves(deps: MovesDeps): Moves {
     }
 
     return { requestMove, runMoveCommand };
-}
-
-export interface CopyOutcome {
-    ok: boolean;
-    text: string;
-}
-
-export async function copyLine(clipboard: ClipboardPort, line: string): Promise<CopyOutcome> {
-    try {
-        await clipboard.writeText(line);
-        return { ok: true, text: COPIED_TEXT };
-    } catch {
-        return { ok: false, text: COPY_FAILED_TEXT };
-    }
 }
 
 export interface MoveResultPresenterDeps {

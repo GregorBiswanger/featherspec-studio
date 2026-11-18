@@ -89,3 +89,23 @@ describe('Needs attention: Problem (0016 AC-006, AC-007)', () => {
         expect(result.filter(([, reasons]) => reasons.includes('Problem'))).toHaveLength(1);
     });
 });
+
+describe('Needs attention: the step (0017 AC-012)', () => {
+    it('a row whose spec has a step carries it; a row without a step has no step key', async () => {
+        const model = await modelFor([
+            { number: '0001', kind: 'Blocked' },
+            { number: '0002', kind: 'Review' },
+        ]);
+        const result = projectAttention(model, createSpecResolver(model));
+        expect(result.rows.map((row) => row.step?.short)).toEqual(['/sdd-plan', '/sdd-compile']);
+        expect(result.rows[1]?.step?.line).toMatch(/^\/sdd-compile \.specs\//);
+        const entry = model.lifecycle.entries[0]!;
+        const broken = {
+            ...model,
+            lifecycle: { ...model.lifecycle, entries: [{ ...entry, diagnostics: [{ kind: 'unreadable-file' as const, tier: 'problem' as const, scope: { file: entry.key }, reason: 'cannot read' }] }] },
+            project: { ...model.project, specs: model.project.specs.map((spec) => ({ ...spec, readable: false })) },
+        };
+        const row = projectAttention(broken, createSpecResolver(broken)).rows[0]!;
+        expect(Object.keys(row)).toEqual(['spec', 'reasons']);
+    });
+});

@@ -3,7 +3,7 @@ import type { BoardState } from '../../shared/protocol/boardFilter';
 import type { MoveResult } from '../../shared/protocol/board';
 import type { MovePickPort, PickableSpec } from '../ports/board';
 import { planText, specText } from '../lifecycle/testing/projects';
-import { copyLine, createMoveResultPresenter, createMoves } from './moves';
+import { createMoveResultPresenter, createMoves } from './moves';
 import { createFakeSource, modelOf } from './testing/boardWorld';
 
 const LINKED = '[0002-r.plan.md](0002-r.plan.md)';
@@ -204,12 +204,5 @@ describe('0015 AC-006, AC-009: the move result outside the board ("Move Spec toâ
         const onBoard = presenter({ boardShown: true });
         await onBoard.shown.show(RESULT);
         expect(onBoard.said).toEqual([]);
-    });
-
-    it('0015 AC-005, AC-009: copyLine reports the panel texts for success and failure', async () => {
-        const written: string[] = [];
-        expect(await copyLine({ writeText: async (text) => void written.push(text) }, LINE)).toEqual({ ok: true, text: 'Copied to the clipboard.' });
-        expect(written).toEqual([LINE]);
-        expect(await copyLine({ writeText: async () => Promise.reject(new Error('no')) }, LINE)).toEqual({ ok: false, text: 'Could not copy to the clipboard.' });
     });
 });

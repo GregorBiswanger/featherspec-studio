@@ -14,6 +14,7 @@ export function card(number: string, overrides: Partial<CardView> = {}): CardVie
         problems: 0,
         blocked: [],
         need: undefined,
+        step: undefined,
         summary: undefined,
         tasks: undefined,
         criteria: undefined,

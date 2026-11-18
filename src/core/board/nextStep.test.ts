@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { NEXT_STEP_DONE_TEXT, NEXT_STEP_THEN_AFTER_READY_LABEL, NEXT_STEP_THEN_LABEL, NEXT_STEP_UNREADABLE_TEXT, nextStepNumberUsedText } from '../../shared/protocol/nextStepTexts';
+import { NEXT_STEP_DONE_TEXT, NEXT_STEP_SAME_CHAT_LABEL, NEXT_STEP_THEN_AFTER_READY_LABEL, NEXT_STEP_THEN_LABEL, NEXT_STEP_UNREADABLE_TEXT, nextStepNumberUsedText } from '../../shared/protocol/nextStepTexts';
 import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
 import { planText, readMemory, ROOT, specText, VERSION } from '../lifecycle/testing/projects';
 import { createMemorySpecSource } from '../specs/testing/memorySpecSource';
 import { readProject } from '../specs/readProject';
 import type { ShellModel } from '../ports/shell';
 import { modelOf } from './testing/boardWorld';
-import { nextStep } from './nextStep';
+import { nextStep, shortForm, stepView } from './nextStep';
 
 const BACKLOG = '.specs/backlog/0007-x.md';
 const BACKLOG_PLAN = '.specs/backlog/0007-x.plan.md';
@@ -158,5 +158,98 @@ describe('AC-004: determinism and unknown keys', () => {
     it('a key that is not in the model has no next step', async () => {
         const m = await model({ [BACKLOG]: specText() });
         expect(nextStep(m, '.specs/backlog/0099-none.md')).toBeUndefined();
+    });
+});
+
+describe('0017 AC-002: NS-6 names "continue" only while the plan has an open step', () => {
+    const key = '.specs/active/0007-x.md';
+    const PLAN = '.specs/active/0007-x.plan.md';
+
+    it('an Active spec whose plan has an open step reads /sdd-plan, then "continue" under the same-chat label', async () => {
+        const m = await model({ [key]: specText({ status: 'In Progress', plan: LINK }), [PLAN]: plan([['T-001', '[x]'], ['T-002', '[ ]']], 'In Progress') });
+        expect(deriveLifecycle(m.project).entries[0].state).toBe('Active');
+        expect(nextStep(m, key)).toEqual({
+            rule: 'NS-6',
+            lines: [{ text: `/sdd-plan ${key}` }, { text: 'continue', label: NEXT_STEP_SAME_CHAT_LABEL }],
+        });
+        expect(NEXT_STEP_SAME_CHAT_LABEL).toBe('Then, in the same chat, if nothing blocks:');
+    });
+
+    it('an Active spec whose plan has no step list reads /sdd-plan only', async () => {
+        const m = await model({ [key]: specText({ status: 'In Progress', plan: LINK }), [PLAN]: planText({ status: 'In Progress' }) });
+        expect(deriveLifecycle(m.project).entries[0].state).toBe('Active');
+        expect(nextStep(m, key)).toEqual({ rule: 'NS-6', lines: [{ text: `/sdd-plan ${key}` }] });
+    });
+
+    it('an Active spec whose steps are all ticked or struck reads /sdd-plan only', async () => {
+        const m = await model({
+            [key]: specText({ status: 'In Progress', plan: LINK }),
+            [PLAN]: `${planText({ status: 'In Progress' })}\n## Steps\n\n### T-001 — A\n\n- [x] **Verified (T-001):** done\n\n### ~~T-002 — B~~\n\n- [ ] **Verified (T-002):** —\n`,
+        });
+        expect(deriveLifecycle(m.project).entries[0].state).toBe('Active');
+        expect(nextStep(m, key)).toEqual({ rule: 'NS-6', lines: [{ text: `/sdd-plan ${key}` }] });
+    });
+});
+
+describe('0017 AC-001, AC-003: the step view', () => {
+    it('AC-001: the short form of the first line of every rule, and line is the detail\'s first line with its path', async () => {
+        const cases: Array<[string, Record<string, string>, string, string, string]> = [
+            ['NS-7', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-003', '[ ]']]) }, BACKLOG, 'Start T-003', 'Start T-003 of .specs/backlog/0007-x.plan.md'],
+            ['NS-7', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[x]']]) }, BACKLOG, 'Implement', 'Implement .specs/backlog/0007-x.plan.md'],
+            ['NS-8', { [BACKLOG]: specText({ criteria: false }) }, BACKLOG, '/sdd-specify', `/sdd-specify ${BACKLOG}`],
+            ['NS-9', { [BACKLOG]: specText() }, BACKLOG, '/sdd-clarify', `/sdd-clarify ${BACKLOG}`],
+            ['NS-10', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: planText({ status: 'In Progress' }) }, BACKLOG, '/sdd-plan', `/sdd-plan ${BACKLOG}`],
+            ['NS-6', { '.specs/active/0007-x.md': specText({ status: 'In Progress', plan: LINK }), '.specs/active/0007-x.plan.md': planText({ status: 'In Progress' }) }, '.specs/active/0007-x.md', '/sdd-plan', '/sdd-plan .specs/active/0007-x.md'],
+            ['NS-5', { '.specs/active/0007-x.md': specText({ status: 'In Progress', plan: LINK }), '.specs/active/0007-x.plan.md': planText({ status: 'Done' }) }, '.specs/active/0007-x.md', '/sdd-compile', '/sdd-compile .specs/active/0007-x.md'],
+            ['NS-4', { '.specs/active/0007-x.md': specText({ status: 'In Progress', plan: LINK }), '.specs/active/0007-x.plan.md': planText({ status: 'Blocked' }) }, '.specs/active/0007-x.md', '/sdd-plan', '/sdd-plan .specs/active/0007-x.md'],
+            ['NS-2', { '.specs/active/0007-x.md': specText({ status: 'Draft', plan: LINK }), '.specs/active/0007-x.plan.md': planText({ status: 'In Progress' }) }, '.specs/active/0007-x.md', '/sdd-lifecycle', '/sdd-lifecycle .specs/active/0007-x.md'],
+        ];
+        for (const [rule, files, key, short, line] of cases) {
+            const m = await model(files);
+            const next = nextStep(m, key);
+            expect(next).toMatchObject({ rule });
+            const view = stepView(m, key);
+            expect(view?.short, rule).toBe(short);
+            expect(view?.line, rule).toBe(line);
+            expect(view?.lines[0]?.text, rule).toBe((next as { lines: Array<{ text: string }> }).lines[0]?.text);
+        }
+    });
+
+    it('AC-001: a spec without a step (NS-1, NS-3, NS-11) and an unknown key have no step view', async () => {
+        const done = await model({ '.specs/done/0007-x.md': specText({ status: 'Implemented', plan: ARCHIVE }) });
+        expect(stepView(done, '.specs/done/0007-x.md')).toBeUndefined();
+        const twins = await model({ [BACKLOG]: specText(), '.specs/backlog/0007-y.md': specText() });
+        expect(stepView(twins, BACKLOG)).toBeUndefined();
+        const source = createMemorySpecSource();
+        source.setFile(ROOT, BACKLOG, new Uint8Array([0xff, 0xfe, 0x00, 0xc3, 0x28]));
+        const project = await readProject(source, ROOT, VERSION);
+        expect(stepView({ project, lifecycle: deriveLifecycle(project) }, BACKLOG)).toBeUndefined();
+        expect(stepView(done, '.specs/done/0099-none.md')).toBeUndefined();
+    });
+
+    it('AC-001: the lines carry the second line and its label; a line without a label has no label key', async () => {
+        const m = await model({ [BACKLOG]: specText() });
+        expect(stepView(m, BACKLOG)).toEqual({
+            short: '/sdd-clarify',
+            line: `/sdd-clarify ${BACKLOG}`,
+            lines: [{ text: `/sdd-clarify ${BACKLOG}` }, { text: `/sdd-plan ${BACKLOG}`, label: NEXT_STEP_THEN_LABEL }],
+        });
+    });
+
+    it('AC-001: shortForm cuts a command at its name, a start at its id, an implement at its verb (control: other text stays)', () => {
+        expect(shortForm('/sdd-plan .specs/active/0007-x.md')).toBe('/sdd-plan');
+        expect(shortForm('/sdd-overview')).toBe('/sdd-overview');
+        expect(shortForm('Start T-003 of .specs/backlog/0007-x.plan.md')).toBe('Start T-003');
+        expect(shortForm('Implement .specs/backlog/0007-x.plan.md')).toBe('Implement');
+        expect(shortForm('continue')).toBe('continue');
+    });
+
+    it('AC-003: equal snapshots give equal views, also when read again', async () => {
+        const files = { [BACKLOG]: specText(), '.specs/active/0008-z.md': specText({ status: 'In Progress', plan: '[0008-z.plan.md](0008-z.plan.md)' }), '.specs/active/0008-z.plan.md': planText({ status: 'In Progress' }) };
+        const first = await model(files);
+        const second = await model(files);
+        for (const entry of first.lifecycle.entries) {
+            expect(stepView(first, entry.key)).toEqual(stepView(second, entry.key));
+        }
     });
 });

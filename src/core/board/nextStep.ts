@@ -1,10 +1,12 @@
 import {
     NEXT_STEP_DONE_TEXT,
+    NEXT_STEP_SAME_CHAT_LABEL,
     NEXT_STEP_THEN_AFTER_READY_LABEL,
     NEXT_STEP_THEN_LABEL,
     NEXT_STEP_UNREADABLE_TEXT,
     nextStepNumberUsedText,
 } from '../../shared/protocol/nextStepTexts';
+import type { StepView } from '../../shared/protocol/stepView';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { ShellModel } from '../ports/shell';
 import type { SpecEntry } from '../specs/readProject';
@@ -64,7 +66,9 @@ export function nextStep(model: ShellModel, key: string): NextStep | undefined {
         case 'Review':
             return lines('NS-5', { text: `/sdd-compile ${key}` }, { text: `/sdd-lifecycle ${key}`, label: NEXT_STEP_THEN_AFTER_READY_LABEL });
         case 'Active':
-            return lines('NS-6', { text: `/sdd-plan ${key}` });
+            return openStep(model, entry) === undefined
+                ? lines('NS-6', { text: `/sdd-plan ${key}` })
+                : lines('NS-6', { text: `/sdd-plan ${key}` }, { text: 'continue', label: NEXT_STEP_SAME_CHAT_LABEL });
         case 'Ready':
             return lines('NS-7', { text: startLine(model, entry) });
         case 'Backlog': {
@@ -77,4 +81,25 @@ export function nextStep(model: ShellModel, key: string): NextStep | undefined {
             return lines('NS-10', { text: `/sdd-plan ${key}` });
         }
     }
+}
+
+export function shortForm(line: string): string {
+    const command = /^\/sdd-[a-z-]+/.exec(line);
+    if (command !== null) {
+        return command[0];
+    }
+    const start = /^Start (\S+) of /.exec(line);
+    if (start !== null) {
+        return `Start ${start[1]}`;
+    }
+    return line.startsWith('Implement ') ? 'Implement' : line;
+}
+
+export function stepView(model: ShellModel, key: string): StepView | undefined {
+    const next = nextStep(model, key);
+    if (next === undefined || !('lines' in next)) {
+        return undefined;
+    }
+    const first = next.lines[0]!;
+    return { short: shortForm(first.text), line: first.text, lines: next.lines.map((line) => (line.label === undefined ? { text: line.text } : { text: line.text, label: line.label })) };
 }

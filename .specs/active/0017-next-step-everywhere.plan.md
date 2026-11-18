@@ -3,7 +3,7 @@
 **Spec:** [0017-next-step-everywhere.md](0017-next-step-everywhere.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-001
+**Current step:** T-002
 
 ## Approach
 
@@ -173,8 +173,8 @@ Stages 4 and 5 cannot: they share `extension.ts`, `package.json`, the protocol a
   has no key); `stepView`/`board`/`missionControl` guard tests (unknown key in a step refused).
 - **Verify:** `npx vitest run src/core/board src/core/missionControl src/shared/protocol` red, then
   green; gates 1–4
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-18 — `npx vitest run src/core/board src/core/missionControl src/shared/protocol`: tests written first for `stepView`/`shortForm`/NS-6 second line/card step/row step/guards; red shown by mutation of the finished code (short form returning the whole line: 3 tests failed; NS-6 condition inverted: 4 failed), green after. Gates 1–4: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 1833 passed, 3 skipped (baseline 1818), 12 timing passed.
+- **Notes:** Active without a plan file is NS-2 (contradiction), so AC-002's 'no sibling plan' row is covered by 'plan without a step list' and 'all steps ticked or struck'. The detail needed no change: it renders every line label generically. `CardView.step` is a required key (value `undefined` allowed), like `need`.
 
 ### T-002 — The board offers no move
 

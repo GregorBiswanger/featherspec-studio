@@ -4,6 +4,7 @@ import type { LifecycleEntry, LifecycleModel } from '../lifecycle/model';
 import type { ProjectRead, SpecEntry } from '../specs/readProject';
 import { describeSpec } from './description';
 import { needsOf } from './needs';
+import { stepView } from './nextStep';
 import { criteriaProgress, lastChange, taskProgress } from './progress';
 
 export function titleOf(entry: SpecEntry): string | undefined {
@@ -26,6 +27,7 @@ export function buildCards(project: ProjectRead, lifecycle: LifecycleModel): Car
     const entries = new Map(project.specs.map((spec) => [spec.key, spec]));
     const stems = new Map<string, number>();
     lifecycle.entries.forEach((entry) => stems.set(entry.stem, (stems.get(entry.stem) ?? 0) + 1));
+    const model = { project, lifecycle };
     return lifecycle.entries.map((entry) => {
         const spec = entries.get(entry.key);
         const title = spec === undefined ? undefined : titleOf(spec);
@@ -43,6 +45,7 @@ export function buildCards(project: ProjectRead, lifecycle: LifecycleModel): Car
             problems: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').length,
             blocked: blockedLines(entry),
             need: needsOf(project, entry)[0],
+            step: stepView(model, entry.key),
             summary: spec?.parsed === undefined ? undefined : describeSpec(spec.parsed.sections),
             tasks: taskProgress(plan),
             criteria: criteriaProgress(entry.verification),

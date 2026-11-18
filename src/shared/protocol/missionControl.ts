@@ -1,5 +1,6 @@
 import { isBoardState, type BoardState } from './boardFilter';
 import { isRecord } from './envelope';
+import { isStepView, type StepView } from './stepView';
 
 export type DerivedRule = 'S-READY' | 'S-REVIEW' | 'S-BLOCKED';
 
@@ -35,6 +36,7 @@ export type McSpecs = { kind: 'empty' } | { kind: 'counts'; total: number; state
 export interface AttentionRow {
     spec: SpecRef;
     reasons: AttentionReason[];
+    step?: StepView;
 }
 
 export interface McAttention {
@@ -150,7 +152,8 @@ function isSpecs(value: unknown): value is McSpecs {
 function isAttentionRow(value: unknown): value is AttentionRow {
     return (
         isRecord(value) &&
-        exactly(value, ['spec', 'reasons']) &&
+        exactly(value, ['spec', 'reasons'], ['step']) &&
+        (value.step === undefined || isStepView(value.step)) &&
         isSpecRef(value.spec) &&
         Array.isArray(value.reasons) &&
         value.reasons.every((reason) => isOneOf(reason, ATTENTION_REASONS))

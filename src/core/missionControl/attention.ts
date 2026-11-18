@@ -1,6 +1,7 @@
 import type { AttentionReason, AttentionRow, McAttention } from '../../shared/protocol/missionControl';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { ShellModel } from '../ports/shell';
+import { stepView } from '../board/nextStep';
 import type { SpecResolver } from './specRefs';
 
 function compareText(left: string, right: string): number {
@@ -28,7 +29,8 @@ function reasonsOf(entry: LifecycleEntry): AttentionReason[] {
 export function projectAttention(model: ShellModel, specs: SpecResolver): McAttention {
     const rows: AttentionRow[] = [...model.lifecycle.entries]
         .sort((left, right) => compareText(left.number, right.number) || compareText(left.key, right.key))
-        .map((entry) => ({ spec: specs.forEntry(entry), reasons: reasonsOf(entry) }))
-        .filter((row) => row.reasons.length > 0);
+        .map((entry) => ({ spec: specs.forEntry(entry), reasons: reasonsOf(entry), step: stepView(model, entry.key) }))
+        .filter((row) => row.reasons.length > 0)
+        .map(({ step, ...row }) => (step === undefined ? row : { ...row, step }));
     return { rows };
 }

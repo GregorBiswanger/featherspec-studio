@@ -1,6 +1,7 @@
 import { isBoardFilter, isBoardState, type BoardFilter, type BoardState } from './boardFilter';
 import { isRecord } from './envelope';
 import { isDerivedRule, type DerivedRule } from './missionControl';
+import { isStepView, type StepView } from './stepView';
 
 export const SORT_KEYS = ['number', 'title', 'lastChange'] as const;
 export type SortKey = (typeof SORT_KEYS)[number];
@@ -27,6 +28,7 @@ export interface CardView {
     problems: number;
     blocked: string[];
     need: NeedView | undefined;
+    step: StepView | undefined;
     summary: string | undefined;
     tasks: Progress | undefined;
     criteria: Progress | undefined;
@@ -96,6 +98,7 @@ export function isCardView(value: unknown): value is CardView {
         Array.isArray(value.blocked) &&
         value.blocked.every(isString) &&
         (value.need === undefined || (isRecord(value.need) && isString(value.need.text) && isString(value.need.rule))) &&
+        (value.step === undefined || isStepView(value.step)) &&
         isOptionalString(value.summary) &&
         isProgress(value.tasks) &&
         isProgress(value.criteria) &&
