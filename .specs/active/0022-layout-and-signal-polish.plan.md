@@ -3,7 +3,7 @@
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-019
+**Current step:** T-020
 
 ## Approach
 
@@ -548,6 +548,15 @@ never on the repository.
 - **Verify:** `npx vitest run --project webview src/webview/ui/PathText.test.tsx` red, then green; gates 1–4
 - [x] **Verified (T-019):** 2026-11-18, red first: the changed test against the unchanged `PathText.tsx`: 1 failed (`Expected "folder/|", Received "folder/"`), 5 passed. Green after the code: 6 passed; `npx vitest run --project webview` 446 passed (no surface test pins a trailing separator); gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2452 passed, 3 skipped (+13 timing).
 - **Notes:** Proxy decision (the compile's exploratory finding, decided by AC-015 and not asked): the criterion says "each" and "no other", so the final separator gets its `<wbr>` and a path without a separator none; the spec text wins over the earlier test, which asserted the opposite. The cost is nil: `<wbr>` adds no character (`textContent` and the clipboard text are unchanged, asserted), and a break after a trailing `/` is still after a separator (§4.6). The old title is listed as retitled in T-022's audit.
+
+### T-020 — Remove the unused `problemLineText`
+
+- **Covers:** the compile's leftover (no criterion; hygiene of 0022's own T-008, which replaced the line text by sentences)
+- **Deletes:** `problemLineText` in `src/webview/areas/overview/texts.ts` (no caller in `src`, no test; approved by Gregor's request)
+- **Do:** delete the function; nothing else changes.
+- **Verify:** `grep -rn problemLineText src` empty; gates 1–4
+- [x] **Verified (T-020):** 2026-11-18, `grep -rn "problemLineText" src` before: one hit (the definition), after: none; no test named it, so nothing is red. Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2452 passed, 3 skipped (+13 timing) (unchanged).
+- **Notes:** a deletion with no behaviour has no red run; the compiler is the control (a remaining caller would fail `tsc`).
 
 ## Traceability
 

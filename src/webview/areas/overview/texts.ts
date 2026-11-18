@@ -20,10 +20,6 @@ export function problemsHeading(count: number): string {
     return `Problems (${count})`;
 }
 
-export function problemLineText(where: string, reason: string): string {
-    return `${where}: ${reason}`;
-}
-
 export function totalText(count: number): string {
     return `Total ${count}`;
 }
