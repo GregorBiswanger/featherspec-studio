@@ -1,6 +1,6 @@
 # Spec Detail as a Situation Picture Beside the Content
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0019-detail-situation-picture.plan.md](0019-detail-situation-picture.plan.md)
 
 Owns R-07 and R-11 of the UX audit (`docs/ux-audit/` 05; K-E, K-I in 04; 03 §5.2, §6; evidence

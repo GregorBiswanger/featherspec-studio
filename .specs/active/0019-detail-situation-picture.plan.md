@@ -1,7 +1,7 @@
 # Plan — Spec Detail as a Situation Picture Beside the Content
 
 **Spec:** [0019-detail-situation-picture.md](0019-detail-situation-picture.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-18
 **Current step:** T-001
 
@@ -430,7 +430,7 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
 - **Next action:** Gregor reads the plan; on his start signal move the pair to `active/`
   (`/sdd-lifecycle`), set the Baseline, then T-001.
 - **Open decisions:** none for Gregor; P-1…P-19 stand unless he changes them.
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** 20792ca (commit before the first step commit; backlog → active move done 2026-11-18)
 - **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here). Commit
   messages end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` and
   `Claude-Session: https://claude.ai/code/session_01Gjx4ug55tnrs2YJYnrBwo6`.
