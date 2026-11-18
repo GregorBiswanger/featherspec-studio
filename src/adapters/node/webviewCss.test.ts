@@ -453,7 +453,7 @@ describe('0019 AC-005, AC-021: the side panel beside the area or as a drawer', (
         expect(panel).toMatch(/border-left:\s*1px solid var\(--vscode-contrastBorder/);
     });
 
-    it('AC-005: the only media rule is the drawer query of the code, at 899 px, and it overlays the panel from the right edge at min(400px, 100vw)', () => {
+    it('AC-005: the only media rule is the drawer query of the code, at 899 px, and it overlays the panel from the right edge at min(400px, 100%) of the frame', () => {
         const limit = Number(/max-width:\s*(\d+)px/.exec(DRAWER_QUERY)?.[1]);
         expect(limit).toBe(899);
         const drawer = parseRules(css).filter((rule) => rule.media === `@media ${DRAWER_QUERY}`);
@@ -461,7 +461,7 @@ describe('0019 AC-005, AC-021: the side panel beside the area or as a drawer', (
         const body = drawer.map((rule) => rule.body).join(';');
         expect(body).toMatch(/position:\s*absolute/);
         expect(body).toMatch(/right:\s*0/);
-        expect(body).toMatch(/width:\s*min\(400px, 100vw\)/);
+        expect(body).toMatch(/width:\s*min\(400px, 100%\)/);
     });
 
     it('AC-005: no media rule changes the area content, the frame or the board, so the area keeps its width under the drawer', () => {
@@ -472,8 +472,17 @@ describe('0019 AC-005, AC-021: the side panel beside the area or as a drawer', (
     it('AC-005: while the drawer shows, the board end padding and scroll padding equal the drawer width', () => {
         const rules = plain('.columns[data-drawer]');
         expect(rules).toHaveLength(1);
-        expect(rules[0]!.body).toMatch(/padding-inline-end:\s*min\(400px, 100vw\)/);
-        expect(rules[0]!.body).toMatch(/scroll-padding-inline-end:\s*min\(400px, 100vw\)/);
+        expect(rules[0]!.body).toMatch(/padding-inline-end:\s*min\(400px, 100%\)/);
+        expect(rules[0]!.body).toMatch(/scroll-padding-inline-end:\s*min\(400px, 100%\)/);
+    });
+
+    it('0019 F3: no drawer width or drawer padding is relative to the window (no vw unit), so a panel under 432 px is never overrun at its left edge', () => {
+        const drawerRules = parseRules(css).filter((rule) => rule.selectors.some((selector) => /\.side-panel|\[data-drawer\]/.test(selector)));
+        expect(drawerRules.length).toBeGreaterThanOrEqual(3);
+        for (const rule of drawerRules) {
+            expect(rule.body, rule.selectors.join(',')).not.toMatch(/\d\s*v[wi]\b|\bvmin\b|\bvmax\b/);
+        }
+        expect('width: min(400px, 100vw)').toMatch(/\d\s*v[wi]\b/);
     });
 
     it('0019 PD-066: while the drawer shows, the Overview takes the width left of the drawer: end padding of min(400px, 100%) on the marked Overview and no media rule on it', () => {

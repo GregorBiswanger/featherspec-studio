@@ -471,8 +471,8 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
   in `webviewCss.test.ts` (no `vw` unit in the drawer rules; the three values read `min(400px, 100%)`).
 - **Verify:** `npx vitest run src/adapters/node/webviewCss.test.ts` red, then green; gates 1–5; mutant (`100vw`
   restored) dies
-- [ ] **Verified (T-014):**
-- **Notes:**
+- [x] **Verified (T-014):** 2026-11-18 — red: `npx vitest run src/adapters/node/webviewCss.test.ts` failed 3 of 50 (the drawer width and both paddings still `min(400px, 100vw)`, the new no-`vw` guard), green after the change (50). Mutants on a scratch copy, all killed: drawer width back to `100vw`, board scroll padding back to `100vw`, Overview end padding to `100vw`. Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2116 passed + 3 skipped (+12 timing), `npm run compile`, `npm run compile-tests` green. Layout: AC-022 round 2 (orchestrator).
+- **Notes:** The drawer's `width`, the board's `padding-inline-end` and `scroll-padding-inline-end` and the Overview's end padding (T-010) are `min(400px, 100%)`: `100%` is the width of the frame (`.area-frame` is the containing block of the absolute panel), so the drawer ends at the frame's left edge under 432 px. The two AC-005 tests changed their expected value and one title ("… at min(400px, 100%) of the frame"); neither title exists at the Baseline.
 
 ### T-015 — Close the test gaps G1–G5, G7 and F4 of the compile
 
