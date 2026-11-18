@@ -450,8 +450,8 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
   `core/board/detail.test.ts`: a memory project with `.specs/active/0005-e.md`, `.specs/active/0005-e.plan.md`,
   `.specs/backlog/0005-e.md` — the backlog entry shows Spec only, the active one Spec and Plan.
 - **Verify:** `npx vitest run src/core/board` red, then green; gates 1–4; mutant (folder test dropped) dies
-- [ ] **Verified (T-012):**
-- **Notes:**
+- [x] **Verified (T-012):** 2026-11-18 — red: `npx vitest run src/core/board/detail.test.ts` failed 1 of 38 (the backlog entry listed `.specs/active/0005-e.plan.md` as its Plan), green after the change (`src/core/board` 230 passed). Mutant on a scratch copy killed: the `siblingPlanKey` condition removed. Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2113 passed + 3 skipped (+12 timing), `npm run compile`, `npm run compile-tests` green.
+- **Notes:** `filesOf` shows a sibling plan only when its key is the one beside this spec (`siblingPlanKey(spec.key)`, the function the lifecycle uses for `entry.plan` of a non-Done entry); archived plans and return notes still follow the stem/number (a reactivated spec legitimately lists its earlier archived plans, 0019 §6.2 row 5).
 
 ### T-013 — Fix F1: the opener is forgotten on close and for another spec (AC-003)
 

@@ -364,6 +364,20 @@ describe('0019: the situation picture', () => {
         expect(bare.files.map((file) => file.label)).toEqual(['Spec']);
     });
 
+    it('0019 D2, AC-014: with a duplicated stem each entry lists only the plan beside its own spec', async () => {
+        const files = {
+            '.specs/active/0005-e.md': specText({ status: 'In Progress', plan: '[0005-e.plan.md](0005-e.plan.md)' }),
+            '.specs/active/0005-e.plan.md': planText({ status: 'In Progress' }),
+            '.specs/backlog/0005-e.md': specText(),
+        };
+        const labels = (view: ReturnType<typeof spec>) => view.files.map((file) => [file.label, file.open.key]);
+        const active = spec(await detailOf(files, { stem: '0005-e', path: '.specs/active/0005-e.md' }));
+        expect(labels(active)).toEqual([['Spec', '.specs/active/0005-e.md'], ['Plan', '.specs/active/0005-e.plan.md']]);
+        const backlog = spec(await detailOf(files, { stem: '0005-e', path: '.specs/backlog/0005-e.md' }));
+        expect(labels(backlog)).toEqual([['Spec', '.specs/backlog/0005-e.md']]);
+        expect(backlog.progress?.steps).toBeUndefined();
+    });
+
     it('AC-016: the model delivers the lines of fs110-ready-synthetic: AC-001 spec line 9, T-001 plan line 24, its row plan line 36', async () => {
         const { model, view } = await fixtureDetail('fs110-ready-synthetic', '0001-ready-feature');
         const spec1 = model.project.specs.find((candidate) => candidate.key === READY);

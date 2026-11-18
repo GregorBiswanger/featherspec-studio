@@ -3,6 +3,7 @@ import { FILE_LABELS } from '../../shared/protocol/texts';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { ShellModel } from '../ports/shell';
 import type { PlanEntry, SpecEntry } from '../specs/readProject';
+import { siblingPlanKey } from '../lifecycle/entryContext';
 import { needsOf } from './needs';
 import { openStep } from './nextStep';
 import { criteriaProgress, taskProgress } from './progress';
@@ -74,7 +75,7 @@ export function filesOf(model: ShellModel, spec: SpecEntry): FileRow[] {
     const planKeys = spec.planKeys.filter((key) => variants.has(key));
     return [
         row(FILE_LABELS.spec, spec.key),
-        ...planKeys.filter((key) => variants.get(key) === 'sibling').map((key) => row(FILE_LABELS.plan, key)),
+        ...planKeys.filter((key) => variants.get(key) === 'sibling' && key === siblingPlanKey(spec.key)).map((key) => row(FILE_LABELS.plan, key)),
         ...planKeys.filter((key) => variants.get(key) === 'archived').map((key) => row(FILE_LABELS.archivedPlan, key)),
         ...spec.returnNoteKeys.map((key) => row(FILE_LABELS.returnNote, key)),
     ];
