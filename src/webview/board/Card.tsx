@@ -69,7 +69,8 @@ function StatePart(props: { card: CardView; kind: StateKind }) {
 
 export function Card(props: {
     card: CardView;
-    onOpen(card: CardView): void;
+    onOpen(card: CardView, opener: HTMLElement): void;
+    selected?: boolean;
     tabIndex?: number;
     copyResult: CopyResult | undefined;
     onCopy(line: string): void;
@@ -88,11 +89,12 @@ export function Card(props: {
             title={cardTooltip(card)}
             aria-label={cardName(card)}
             {...(hasDetail ? { 'aria-describedby': detailId } : {})}
-            onClick={() => props.onOpen(card)}
+            {...(props.selected === true ? { 'aria-current': 'true' as const } : {})}
+            onClick={(event) => props.onOpen(card, event.currentTarget)}
             onKeyDown={(event) => {
-                if (!event.defaultPrevented && event.key === 'Enter' && event.target === event.currentTarget) {
+                if (!event.defaultPrevented && (event.key === 'Enter' || event.key === ' ') && event.target === event.currentTarget) {
                     event.preventDefault();
-                    props.onOpen(card);
+                    props.onOpen(card, event.currentTarget);
                 }
             }}
         >

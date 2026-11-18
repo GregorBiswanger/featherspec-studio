@@ -3,7 +3,7 @@
 **Spec:** [0019-detail-situation-picture.md](0019-detail-situation-picture.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-005
+**Current step:** T-006
 
 ## Approach
 
@@ -325,8 +325,8 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
   retargeted.
 - **Verify:** `npx vitest run src/webview` red (cards still navigate; no complementary region), then
   green; gates 1–5
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-18 — red: `npx vitest run src/webview` failed 6 tests expecting `navigate` once the components called `select` (Keyboard, SpecBoard x2, Drilldown x2, Sections), and before the change cards and rows still sent `navigate` and no complementary region existed; green after the change and the retargeting: `src/webview` 330 passed incl. the new `detail/SidePanel.test.tsx` (7). Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2074 passed + 3 skipped (+12 timing), `npm run compile`, `npm run compile-tests` green.
+- **Notes:** (1) P-7 `App.tsx` frame: `.area-frame` holds `.area-content` and `SidePanel` only for `overview` and `board` while `view.selection` is set and no panel state shows; Spec Explorer keeps its pane. (2) P-8/P-17 `useOpenSpec` hands the opener element to `detail/opener.ts` and calls `shell.select` (path only for a duplicated stem); Copy selects nothing. (3) P-9 `detail/selected.ts` `isSelectedSpec` drives `aria-current="true"` on cards and rows, plus selected CSS. (4) P-18 a card opens on Space. (5) Overview `rowRequest` and `activityRequest` removed; `specReference` replaces them. (6) Retargeted tests keep their titles with an AC-001 prefix where the request changed; Drilldown's area check now filters to `navigate`. (7) The panel shows only the number until the detail event matching the selection arrives.
 
 ### T-006 — Close, Escape and focus; updates keep the place
 

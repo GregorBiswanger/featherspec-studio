@@ -4,7 +4,7 @@ import { Drill } from './Drill';
 import { SpecLabel } from './SpecLabel';
 import { ACTIVITY_HEADING, activityHeading, activityUnavailableText, changeText } from './texts';
 
-export function Activity(props: { activity: McActivity; onActivate: (entry: ActivityEntry) => void; setOpen: (open: boolean) => void }) {
+export function Activity(props: { activity: McActivity; onActivate: (entry: ActivityEntry, element: HTMLElement) => void; setOpen: (open: boolean) => void }) {
     const { activity, onActivate } = props;
     const now = new Date();
     if (!activity.available) {
@@ -29,7 +29,7 @@ export function Activity(props: { activity: McActivity; onActivate: (entry: Acti
                 <ul className="ov-list">
                     {activity.entries.map((entry, index) => (
                         <li key={`${entry.at}|${index}`} data-activity-entry>
-                            <Drill id={`activity:${index}`} className="ov-row" onActivate={() => onActivate(entry)}>
+                            <Drill id={`activity:${index}`} className="ov-row" onActivate={(element) => onActivate(entry, element)}>
                                 <span className="ov-time">{whenText(entry.at, now)}</span>
                                 <span className="ov-sep">{' · '}</span>
                                 <SpecLabel spec={entry.spec} />

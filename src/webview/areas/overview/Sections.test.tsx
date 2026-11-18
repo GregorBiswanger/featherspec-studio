@@ -216,10 +216,11 @@ describe('0018 AC-006: a spec row on one line', () => {
         expect(copy.textContent).toBe('Copied');
     });
 
-    it('activating the row outside Copy sends the request of 0006 AC-014', async () => {
+    it('AC-001: activating the row outside Copy sends select, not navigate', async () => {
         const container = await open(withRows());
         await click(nowRow(container, '0001-a').querySelector('.ov-row')!);
-        expect(posted.filter((message) => message.type === 'navigate').map((message) => message.payload)).toEqual([{ area: 'specExplorer', target: { kind: 'spec', stem: '0001-a' } }]);
+        expect(posted.filter((message) => message.type === 'select').map((message) => message.payload)).toEqual([{ stem: '0001-a' }]);
+        expect(posted.some((message) => message.type === 'navigate')).toBe(false);
     });
 });
 

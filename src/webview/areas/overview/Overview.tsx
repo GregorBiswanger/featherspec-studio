@@ -4,7 +4,8 @@ import type { ActivityEntry } from '../../../shared/protocol/overview';
 import { DISMISS_LABEL, noticeText } from '../../../shared/protocol/texts';
 import { useShell } from '../../shell';
 import { Activity } from './Activity';
-import { activityRequest } from './requests';
+import { specReference } from './requests';
+import { useOpenSpec } from '../../detail/useOpenSpec';
 import { Figures } from './Figures';
 import { Problems } from './Problems';
 import { useOverview, useOverviewActions } from './store';
@@ -19,6 +20,7 @@ export function Overview() {
     const { copyResult, copyText } = useBoard();
     const shell = useShell();
     const actions = useOverviewActions();
+    const openSpec = useOpenSpec();
     const [notice, setNotice] = useState<string | undefined>(undefined);
     if (view === undefined) {
         return <div data-overview-empty className="overview" />;
@@ -27,13 +29,13 @@ export function Overview() {
         setNotice(undefined);
         shell.navigate(request);
     };
-    const openActivity = (entry: ActivityEntry): void => {
-        const request = activityRequest(entry);
-        if (request === undefined) {
+    const openActivity = (entry: ActivityEntry, element: HTMLElement): void => {
+        if (!entry.spec.found) {
             setNotice(entry.spec.number);
             return;
         }
-        navigate(request);
+        setNotice(undefined);
+        openSpec(specReference(entry.spec), element);
     };
     return (
         <div data-overview className="overview">
@@ -52,7 +54,7 @@ export function Overview() {
                 </EmptyState>
             ) : (
                 <>
-                    <Now rows={view.now} navigate={navigate} />
+                    <Now rows={view.now} />
                     <UpNext upNext={view.upNext} navigate={navigate} />
                 </>
             )}

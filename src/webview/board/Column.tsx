@@ -6,7 +6,8 @@ import { StateIcon } from './icons';
 
 export function Column(props: {
     column: BoardColumn;
-    onOpen(card: CardView): void;
+    onOpen(card: CardView, opener: HTMLElement): void;
+    isSelected?(card: CardView): boolean;
     tabIndexOf?(card: CardView): number;
     copyResult: CopyResult | undefined;
     onCopy(line: string): void;
@@ -51,6 +52,7 @@ export function Column(props: {
                                 key={card.key}
                                 card={card}
                                 onOpen={props.onOpen}
+                                selected={props.isSelected?.(card) === true}
                                 copyResult={props.copyResult}
                                 onCopy={props.onCopy}
                                 {...(props.tabIndexOf === undefined ? {} : { tabIndex: props.tabIndexOf(card), copyTabIndex: props.tabIndexOf(card) })}

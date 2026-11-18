@@ -137,18 +137,21 @@ export function SpecDetail(props: {
     copyResult: { ok: boolean; text: string } | undefined;
     onOpen: OpenAt;
     onCopy(text: string): void;
+    region?: boolean;
 }) {
     const { detail } = props;
+    const Wrapper = props.region === false ? 'div' : 'section';
+    const label = props.region === false ? {} : { 'aria-label': DETAIL_LABEL };
     if (detail === undefined || detail.kind === 'none') {
         return (
-            <section className="spec-detail" aria-label={DETAIL_LABEL}>
+            <Wrapper className="spec-detail" {...label}>
                 <EmptyState icon="info">{NO_DETAIL_SELECTION_TEXT}</EmptyState>
-            </section>
+            </Wrapper>
         );
     }
     return (
-        <section className="spec-detail" aria-label={DETAIL_LABEL}>
+        <Wrapper className="spec-detail" {...label}>
             <Picture key={detail.key} detail={detail} fileResult={props.fileResult} copyResult={props.copyResult} onOpen={props.onOpen} onCopy={props.onCopy} />
-        </section>
+        </Wrapper>
     );
 }

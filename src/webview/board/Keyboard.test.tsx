@@ -141,7 +141,8 @@ describe('0017 AC-006: Tab from the tab-stop card reaches its Copy and no other'
         await press(copy, 'ArrowDown');
         expect(document.activeElement).toBe(cardOf(container, '0004'));
         await pressKey(cardOf(container, '0004'), 'Enter');
-        expect(requests('navigate')).toEqual([{ area: 'specExplorer', target: { kind: 'spec', stem: '0004-thing' } }]);
+        expect(requests('select')).toEqual([{ stem: '0004-thing' }]);
+        expect(requests('navigate')).toEqual([]);
     });
 
     it('leaving the board from a Copy and focus returning later keeps the tab stop on the card', async () => {

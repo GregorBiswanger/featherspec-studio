@@ -183,20 +183,21 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
 });
 
 describe('AC-008: opening a card', () => {
-    it('a click and Enter send the navigation request to Spec Explorer with the stem', async () => {
+    it('AC-001: a click and Enter send the select request with the stem and no navigation', async () => {
         const container = await open(boardView([card('0001'), card('0002')]));
         await click(container.querySelectorAll<HTMLElement>('[data-card]')[0]!);
-        expect(requests('navigate')).toEqual([{ area: 'specExplorer', target: { kind: 'spec', stem: '0001-thing' } }]);
+        expect(requests('select')).toEqual([{ stem: '0001-thing' }]);
+        expect(requests('navigate')).toEqual([]);
         mounted?.unmount();
         const again = await open(boardView([card('0001'), card('0002')]));
         await pressKey(again.querySelectorAll<HTMLElement>('[data-card]')[1]!, 'Enter');
-        expect(requests('navigate')[1]).toEqual({ area: 'specExplorer', target: { kind: 'spec', stem: '0002-thing' } });
+        expect(requests('select')[1]).toEqual({ stem: '0002-thing' });
     });
 
     it('a card of a duplicated stem sends its path', async () => {
         const container = await open(boardView([card('0004', { path: '.specs/backlog/0004-thing.md' })]));
         await click(container.querySelector<HTMLElement>('[data-card]')!);
-        expect(requests('navigate')).toEqual([{ area: 'specExplorer', target: { kind: 'spec', stem: '0004-thing', path: '.specs/backlog/0004-thing.md' } }]);
+        expect(requests('select')).toEqual([{ stem: '0004-thing', path: '.specs/backlog/0004-thing.md' }]);
     });
 });
 

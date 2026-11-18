@@ -54,7 +54,7 @@ async function clickAndReturn(container: HTMLElement, id: string): Promise<void>
 }
 
 function sent(): { type: string; payload: unknown }[] {
-    return posted.filter((message) => message.type === 'navigate' || message.type === 'runAction').map((message) => ({ type: message.type, payload: message.payload }));
+    return posted.filter((message) => message.type === 'navigate' || message.type === 'select' || message.type === 'runAction').map((message) => ({ type: message.type, payload: message.payload }));
 }
 
 beforeEach(() => {
@@ -106,7 +106,7 @@ describe('0015 AC-010: no drill-down for runs', () => {
         for (const id of ids) {
             await clickAndReturn(container, id);
         }
-        const areas = sent().map((message) => (message.payload as { area: string }).area);
+        const areas = sent().filter((message) => message.type === 'navigate').map((message) => (message.payload as { area: string }).area);
         expect(areas.length).toBeGreaterThan(5);
         expect(areas.every((area) => ['overview', 'board', 'specExplorer'].includes(area))).toBe(true);
     });
@@ -126,19 +126,19 @@ describe('0015 AC-010: no drill-down for runs', () => {
 });
 
 describe('AC-014: rows and activity entries', () => {
-    it('a Now row sends Spec Explorer with that spec; a row of a duplicated stem carries its path', async () => {
+    it('AC-001: a Now row sends select with that spec; a row of a duplicated stem carries its path', async () => {
         const container = await open(drillView());
         await clickAndReturn(container, 'row:now:0001-a');
         await clickAndReturn(container, 'row:now:0004-dup');
         expect(sent()).toEqual([
-            { type: 'navigate', payload: { area: 'specExplorer', target: { kind: 'spec', stem: '0001-a' } } },
-            { type: 'navigate', payload: { area: 'specExplorer', target: { kind: 'spec', stem: '0004-dup', path: '.specs/active/0004-dup.md' } } },
+            { type: 'select', payload: { stem: '0001-a' } },
+            { type: 'select', payload: { stem: '0004-dup', path: '.specs/active/0004-dup.md' } },
         ]);
     });
 
-    it('an activity entry of a current spec sends Spec Explorer with that spec', async () => {
+    it('AC-001: an activity entry of a current spec sends select with that spec', async () => {
         await click(drill(await open(drillView()), 'activity:0'));
-        expect(sent()).toEqual([{ type: 'navigate', payload: { area: 'specExplorer', target: { kind: 'spec', stem: '0001-a' } } }]);
+        expect(sent()).toEqual([{ type: 'select', payload: { stem: '0001-a' } }]);
     });
 
     it('an activity entry of a vanished stem sends no request and shows "Spec 0009 is no longer in the project"; Dismiss removes it', async () => {

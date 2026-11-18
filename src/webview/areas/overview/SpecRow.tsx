@@ -1,4 +1,3 @@
-import type { NavigationRequest } from '../../../shared/protocol/messages';
 import type { OverviewRow } from '../../../shared/protocol/overview';
 import { problemsBadgeText } from '../../../shared/protocol/texts';
 import { BadgeIcon } from '../../board/icons';
@@ -6,17 +5,23 @@ import { useBoard } from '../../board/boardStore';
 import { CopyButton } from '../../ui/CopyButton';
 import { StepText } from '../../ui/StepText';
 import { Drill } from './Drill';
-import { rowRequest } from './requests';
+import { isSelectedSpec } from '../../detail/selected';
+import { useOpenSpec } from '../../detail/useOpenSpec';
+import { useShell } from '../../shell';
+import { specReference } from './requests';
 import { NOT_AVAILABLE_TEXT, specLabelText } from './texts';
 
-export function SpecRow(props: { row: OverviewRow; group: string; navigate: (request: NavigationRequest) => void }) {
-    const { row, group, navigate } = props;
+export function SpecRow(props: { row: OverviewRow; group: string }) {
+    const { row, group } = props;
+    const openSpec = useOpenSpec();
+    const selection = useShell().view?.selection;
     const { copyResult, copyText } = useBoard();
     const { spec } = row;
     const title = spec.found ? (spec.title ?? NOT_AVAILABLE_TEXT) : specLabelText(spec);
     return (
         <li className="ov-row-item" data-spec-row={spec.stem} data-row-group={group}>
-            <Drill id={`row:${group}:${spec.stem}`} className="ov-row" state={row.state} onActivate={() => navigate(rowRequest(row))}>
+            <Drill id={`row:${group}:${spec.stem}`} className="ov-row" state={row.state} current={isSelectedSpec(selection, row.spec)}
+                onActivate={(element) => openSpec(specReference(row.spec), element)}>
                 <span className="ov-number">{spec.number}</span>
                 <span className="ov-title" title={title}>
                     {title}

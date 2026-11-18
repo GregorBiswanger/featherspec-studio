@@ -1305,3 +1305,39 @@ blockquote.illustration {
     color: var(--vscode-foreground);
     border-top: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
 }
+
+.area-frame {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    position: relative;
+}
+
+.area-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+.card[aria-current="true"],
+.ov-row[aria-current="true"] {
+    background: var(--vscode-list-activeSelectionBackground);
+    color: var(--vscode-list-activeSelectionForeground);
+    border-color: var(--vscode-contrastActiveBorder, var(--fs-border));
+}
+
+.card[aria-current="true"] .card-number,
+.card[aria-current="true"] .card-path,
+.card[aria-current="true"] .card-secondary,
+.card[aria-current="true"] .card-change,
+.card[aria-current="true"] .card-criteria,
+.card[aria-current="true"] .step-text,
+.card[aria-current="true"] .step-label,
+.ov-row[aria-current="true"] .ov-number,
+.ov-row[aria-current="true"] .ov-status,
+.ov-row[aria-current="true"] .step-text,
+.ov-row[aria-current="true"] .step-label {
+    color: var(--vscode-list-activeSelectionForeground);
+}

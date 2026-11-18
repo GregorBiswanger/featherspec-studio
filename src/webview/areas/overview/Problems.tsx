@@ -20,7 +20,7 @@ export function Problems(props: { problems: OverviewProblems; navigate: (request
             </h2>
             <ul className="ov-list">
                 {problems.rows.map((row) => (
-                    <SpecRow key={`${row.spec.stem}|${row.spec.path ?? ''}`} row={row} group="problems" navigate={navigate} />
+                    <SpecRow key={`${row.spec.stem}|${row.spec.path ?? ''}`} row={row} group="problems" />
                 ))}
                 {problems.lines.map((line, index) => (
                     <li key={`${line.where}|${index}`} className="ov-line" data-problem-line>

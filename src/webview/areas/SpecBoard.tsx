@@ -1,6 +1,8 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState, type FocusEvent, type KeyboardEvent } from 'react';
 import type { CardView } from '../../shared/protocol/board';
 import { BOARD_LABEL, NO_SPECS_START_TEXT, SDD_SPECIFY_LINE } from '../../shared/protocol/texts';
+import { isSelectedSpec } from '../detail/selected';
+import { useOpenSpec } from '../detail/useOpenSpec';
 import { useShell } from '../shell';
 import { Banner } from '../board/Banner';
 import { useBoard } from '../board/boardStore';
@@ -58,12 +60,9 @@ export function SpecBoard() {
         }
     }, [grid, focusedKey]);
 
-    const open = useCallback(
-        (card: CardView): void => {
-            shell.navigate({ area: 'specExplorer', target: card.path === undefined ? { kind: 'spec', stem: card.stem } : { kind: 'spec', stem: card.stem, path: card.path } });
-        },
-        [shell],
-    );
+    const openSpec = useOpenSpec();
+    const open = useCallback((card: CardView, opener: HTMLElement): void => openSpec({ stem: card.stem, path: card.path }, opener), [openSpec]);
+    const selection = shell.view?.selection;
 
     function onFocus(event: FocusEvent<HTMLElement>): void {
         const key = keyOfTarget(event.target);
@@ -119,6 +118,7 @@ export function SpecBoard() {
                         key={column.state}
                         column={column}
                         onOpen={open}
+                        isSelected={(card) => isSelectedSpec(selection, card)}
                         copyResult={api.copyResult}
                         onCopy={api.copyText}
                         {...(board.doneToggle === undefined ? {} : { doneToggle: board.doneToggle })}

@@ -3,6 +3,7 @@ import { projectTooltip } from '../shared/protocol/texts';
 import type { ShellClient } from './client';
 import { AREA_COMPONENTS } from './areas/registry';
 import { Placeholder } from './areas/Placeholder';
+import { SidePanel } from './detail/SidePanel';
 import { Navigation } from './Navigation';
 import { NoticeBar } from './NoticeBar';
 import { PanelStateView } from './PanelStateView';
@@ -17,6 +18,7 @@ function AreaContent(props: { area: AreaId }) {
 function Frame() {
     const shell = useShell();
     const info = areaInfo(shell.area);
+    const sideSelection = shell.area === 'overview' || shell.area === 'board' ? shell.view?.selection : undefined;
     return (
         <div className="studio">
             <header className="studio-header">
@@ -31,7 +33,16 @@ function Frame() {
                 <h1>{info.title}</h1>
                 <RestrictedNote />
                 <NoticeBar />
-                {shell.state === undefined ? <AreaContent area={shell.area} /> : <PanelStateView state={shell.state} />}
+                {shell.state === undefined ? (
+                    <div className="area-frame">
+                        <div className="area-content">
+                            <AreaContent area={shell.area} />
+                        </div>
+                        {sideSelection === undefined ? null : <SidePanel selection={sideSelection} />}
+                    </div>
+                ) : (
+                    <PanelStateView state={shell.state} />
+                )}
             </main>
         </div>
     );
