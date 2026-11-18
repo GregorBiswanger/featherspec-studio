@@ -3,7 +3,7 @@
 **Spec:** [0024-send-next-step-to-assistant.md](0024-send-next-step-to-assistant.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-001
+**Current step:** T-002
 
 ## Approach
 
@@ -273,8 +273,8 @@ here.
     - `docsScan.test.ts`: `findForbidden` controls for the new `ALLOWED`.
 - **Verify:** `npx vitest run --project node src/adapters/vscode src/core/settings src/adapters/node/sourceScan.test.ts src/adapters/node/docsScan.test.ts`
   red (stub, missing keys), then green; gates 1–5
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-18 red: `npx vitest run --project node src/adapters/vscode src/core/settings src/adapters/node/sourceScan.test.ts src/adapters/node/docsScan.test.ts` 9 failed (manifest: missing key, `restrictedConfigurations`, command, toolbar item; `openSettings` stub `Not implemented`); green after: 0 failed. Gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 2830 passed + 3 skipped (+16 timing), `npm run compile` and `compile-tests` green.
+- **Notes:** Retitled per P-16: manifest.test '0021 AC-016 … two settings' and its negative control, 'AC-011 (0020) … toolbar'; 0018 AC-001 gained the openSettings title. The scan mask (`maskAssistantNames`) lives in sourceScan.test.ts and runs before the case-insensitive offender scan only; the raw 'still needed' test is unchanged. Open Settings is wired through `createAssistantHost()` (CommandPort); the port gains its members in T-002.
 
 ### T-002 — Send is offered for a chosen, installed assistant, with the default target of the step's session
 

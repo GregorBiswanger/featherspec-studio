@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..', '..', '..');
 
 const SCANNED = ['README.md', 'docs/release-checklist.md', 'docs/runtime-data.md'];
 const FORBIDDEN = ['agent center', 'provider', 'copilot', 'clear run history', 'stop run', 'resume run'];
-const ALLOWED = ['GitHub Copilot, Claude Code or any other', 'copilot-home'];
+const ALLOWED = ['GitHub Copilot, Claude Code or any other', 'copilot-home', 'GitHub.copilot-chat', 'GitHub Copilot', 'Send to Copilot', '`copilot`', "Copilot's chat"];
 
 export function findForbidden(text: string): string[] {
     let rest = text;
@@ -51,6 +51,16 @@ describe('product docs after 0015 (AC-025)', () => {
         expect(findForbidden('Open the Agent Center')).toEqual(['agent center']);
         expect(findForbidden('a Copilot provider')).toEqual(['provider', 'copilot']);
         expect(findForbidden('GitHub Copilot, Claude Code or any other')).toEqual([]);
+    });
+
+    it("0024 §5: 0015 AC-025 excepts 0024's names of GitHub Copilot and keeps every other term", () => {
+        for (const allowed of ['GitHub Copilot', 'Send to Copilot', 'set `copilot` here', 'GitHub.copilot-chat', "Copilot's chat"]) {
+            expect(findForbidden(allowed), allowed).toEqual([]);
+        }
+        for (const forbidden of ['copilot', 'a Copilot provider', 'Copilot agent', 'the provider of GitHub Copilot', 'COPILOT', 'Copilot']) {
+            expect(findForbidden(forbidden).length, forbidden).toBeGreaterThan(0);
+        }
+        expect(findForbidden('a Copilot provider')).toEqual(['provider', 'copilot']);
     });
 
     for (const file of SCANNED) {

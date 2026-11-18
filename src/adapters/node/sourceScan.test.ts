@@ -27,6 +27,12 @@ function isTestFile(name: string): boolean {
     return /\.test\.tsx?$/.test(name) || name.includes('/testing/');
 }
 
+const ASSISTANT_NAME_FORMS: readonly RegExp[] = [/GitHub\.copilot-chat/g, /GitHub Copilot/g, /'copilot'/g, /"copilot"/g, /\bCopilot(?![A-Za-z0-9.-])/g];
+
+export function maskAssistantNames(text: string): string {
+    return ASSISTANT_NAME_FORMS.reduce((rest, form) => rest.replace(form, ''), text);
+}
+
 export function hits(text: string, terms: readonly string[], caseInsensitive: boolean): string[] {
     const haystack = caseInsensitive ? text.toLowerCase() : text;
     return terms.filter((term) => haystack.includes(caseInsensitive ? term.toLowerCase() : term));
@@ -125,7 +131,7 @@ describe('0015 AC-021: the removed features leave no name behind', () => {
         const extra = await Promise.all(
             ['.vscode-test.mjs', 'esbuild.js', 'package.json'].map(async (name) => ({ name, text: await fs.readFile(path.join(root, name), 'utf8') })),
         );
-        const offenders = [...(await sourceFiles()), ...extra].filter((file) => hits(file.text, REMOVED_TERMS, true).length > 0).map((file) => file.name);
+        const offenders = [...(await sourceFiles()), ...extra].filter((file) => hits(maskAssistantNames(file.text), REMOVED_TERMS, true).length > 0).map((file) => file.name);
         expect(offenders.filter((name) => !REMOVED_ALLOWED.includes(name))).toEqual([]);
     });
 
@@ -141,6 +147,20 @@ describe('0015 AC-021: the removed features leave no name behind', () => {
             expect(hits(`const name = '${term.toUpperCase()}';`, REMOVED_TERMS, true)).toContain(term);
         }
         expect(hits('const name = "spec board";', REMOVED_TERMS, true)).toEqual([]);
+    });
+});
+
+describe("0024 §5: 0015 AC-021 excepts 0024's own names of GitHub Copilot", () => {
+    it('the extension ID, the product name, the quoted setting value and the capitalised word are masked', () => {
+        const sample = "const id = 'GitHub.copilot-chat'; const v = 'copilot'; const w = \"copilot\"; // GitHub Copilot, Copilot's chat, Copilot";
+        expect(hits(maskAssistantNames(sample), REMOVED_TERMS, true)).toEqual([]);
+        expect(hits(sample, REMOVED_TERMS, true)).toEqual(['copilot']);
+    });
+
+    it('negative control: every other form is still found', () => {
+        for (const sample of ['copilotProvider', 'copilot-agent', 'COPILOT', 'copilot.smoke', 'CopilotAgent', 'Copilot-agent', 'const copilot = 1;', 'github.copilot.chat', 'Copilot.ts', 'xCopilot']) {
+            expect(hits(maskAssistantNames(sample), REMOVED_TERMS, true), sample).toEqual(['copilot']);
+        }
     });
 });
 

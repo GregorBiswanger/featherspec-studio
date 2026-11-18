@@ -8,7 +8,7 @@ import { resolveStorageLocation } from './adapters/vscode/storageLocation';
 import { createOutputChannel } from './adapters/vscode/outputChannel';
 import { createShellActions } from './adapters/vscode/shellActions';
 import { createStudioPanel, VIEW_TYPE, type StudioPanel, type StudioPanelInspection } from './adapters/vscode/studioPanel';
-import { AREA_COMMANDS, COPY_NEXT_STEP_COMMAND, OPEN_COMMAND, REFRESH_COMMAND, SELECT_SPEC_COMMAND, SHELL_ACTION_COMMAND, TREE_COPY_COMMAND, TREE_OPEN_PLAN_COMMAND, TREE_OPEN_SPEC_COMMAND } from './adapters/vscode/commands';
+import { AREA_COMMANDS, COPY_NEXT_STEP_COMMAND, OPEN_COMMAND, OPEN_SETTINGS_COMMAND, REFRESH_COMMAND, SELECT_SPEC_COMMAND, SHELL_ACTION_COMMAND, TREE_COPY_COMMAND, TREE_OPEN_PLAN_COMMAND, TREE_OPEN_SPEC_COMMAND } from './adapters/vscode/commands';
 import { createFetchReleaseHttp } from './adapters/node/fetchReleaseHttp';
 import { createNodeSetupTarget } from './adapters/node/nodeSetupTarget';
 import { createTarGzArchive } from './adapters/node/tarGzArchive';
@@ -48,6 +48,8 @@ import { createOverviewService } from './core/overview/overviewService';
 import { createSettingsSource } from './core/settings/settingsSource';
 import { MODEL_HINTS_KEY, parseStepTipSettings, SHOW_STEP_TIPS_KEY } from './core/settings/stepTipSettings';
 import { createSettingPort } from './adapters/vscode/settings';
+import { createAssistantHost } from './adapters/vscode/assistantHost';
+import { openSettings } from './core/settings/openSettings';
 import { createBoardRequests } from './core/board/boardRequests';
 import { createOpenFile } from './core/board/openFile';
 import { createShellSelection } from './core/board/shellSelection';
@@ -201,6 +203,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         history: { read: () => lifecycle.history(), onDidChange: (listener) => lifecycle.onDidChange(() => listener()) },
         tips,
     });
+    const assistantHost = createAssistantHost();
     const clipboard = createClipboard();
     const entry = createStatusEntry({ line: projectLine, discovery: controller, shell: service, source: modelSource, item: statusItem, clock: createSystemClock(), sameRoot });
     const stepUi = createStepUi();
@@ -278,6 +281,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         vscode.commands.registerCommand(SETUP_COMMAND_ID, () => setup.start()),
         vscode.commands.registerCommand(COPY_MERGE_PROMPT_COMMAND_ID, () => setup.copyMergePrompt()),
         vscode.commands.registerCommand(REFRESH_COMMAND, () => service.refresh()),
+        vscode.commands.registerCommand(OPEN_SETTINGS_COMMAND, () => openSettings(assistantHost)),
         vscode.commands.registerCommand(COPY_NEXT_STEP_COMMAND, () => copyNextStep.run()),
         vscode.commands.registerCommand(SHELL_ACTION_COMMAND, (action: unknown) => {
             const payload = { action };
