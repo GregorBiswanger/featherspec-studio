@@ -110,6 +110,49 @@ describe('0021 AC-014: the toggletip is a button with a status region', () => {
         expect(document.activeElement).toBe(button);
     });
 
+    it('Escape anywhere while open, with focus on the body after a press on its text, closes it, is handled and puts focus on the button', async () => {
+        const container = await show();
+        const button = toggle(container, 'one');
+        await click(button);
+        await pointerdown(region(container, 'one').querySelector('p')!);
+        await act(async () => {
+            button.blur();
+        });
+        expect(button.getAttribute('aria-expanded')).toBe('true');
+        expect(document.activeElement).toBe(document.body);
+        const event = await press(document.body, 'Escape');
+        expect(event.defaultPrevented).toBe(true);
+        expect(button.getAttribute('aria-expanded')).toBe('false');
+        expect(region(container, 'one').textContent).toBe('');
+        expect(document.activeElement).toBe(button);
+    });
+
+    it('Escape on another element of the page closes it too; other keys and Escape while closed are not handled', async () => {
+        const container = await show();
+        const button = toggle(container, 'one');
+        const other = container.querySelector<HTMLButtonElement>('[data-id="other"]')!;
+        expect((await press(document.body, 'Escape')).defaultPrevented).toBe(false);
+        await click(button);
+        expect((await press(document.body, 'Enter')).defaultPrevented).toBe(false);
+        expect(button.getAttribute('aria-expanded')).toBe('true');
+        const event = await press(other, 'Escape');
+        expect(event.defaultPrevented).toBe(true);
+        expect(button.getAttribute('aria-expanded')).toBe('false');
+        expect(document.activeElement).toBe(button);
+    });
+
+    it('the Escape listener lives only while it is open: closed by a press outside, a second Escape on the body is not handled; after unmounting nothing is handled', async () => {
+        const container = await show();
+        const button = toggle(container, 'one');
+        await click(button);
+        await pointerdown(container.querySelector('[data-id="text"]')!);
+        expect((await press(document.body, 'Escape')).defaultPrevented).toBe(false);
+        await click(button);
+        mounted!.unmount();
+        expect((await press(document.body, 'Escape')).defaultPrevented).toBe(false);
+        mounted = undefined;
+    });
+
     it('a pointer press outside the button and its region closes it', async () => {
         const container = await show();
         const button = toggle(container, 'one');

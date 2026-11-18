@@ -3,7 +3,7 @@
 **Spec:** [0021-next-step-intent-and-guidance.md](0021-next-step-intent-and-guidance.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-009 (fix stage after the compile of S74: `/home/claude/orch/compile/0021.md`)
+**Current step:** T-010 (fix stage after the compile of S74: `/home/claude/orch/compile/0021.md`)
 
 ## Approach
 
@@ -347,11 +347,11 @@ ends of stages 1 and 3.
   the button, Escape on `body` → `aria-expanded` false, region empty, focus on the `?`, event `defaultPrevented`; Escape
   on `body` while closed is not handled and registers nothing; the listener is gone after close and after unmount;
   `Close.test.tsx` and `ListOrDetail.test.tsx`: the same sequence with `DetailFrame`, the detail stays open, the second
-  Escape closes it or goes back. Red through `Not implemented`-free means: the tests run first against the head
-  (assertion red), then the code.
+  Escape closes it or goes back. Red is by assertion against the head (no stub needed: the behaviour is missing).
 - **Verify:** `npx vitest run --project webview src/webview/ui/Toggletip.test.tsx src/webview/detail` red, then green;
   gates 1–4
-- [ ] **Verified (T-009):**
+- [x] **Verified (T-009):** 2026-11-18 · red: `npx vitest run --project webview src/webview/ui/Toggletip.test.tsx src/webview/detail/Close.test.tsx src/webview/detail/ListOrDetail.test.tsx` 4 failed of 52 (Escape on `body` after a press on the region's text leaves `aria-expanded` true, in `Toggletip`, `Close` and `ListOrDetail`) → green: same files 52 passed; `npm run test:unit` 157 files, 2630 passed, 3 skipped, timing 15 passed; eslint 0 warnings, both `tsc` clean. Negative control on a scratch copy: removing the `removeEventListener('keydown')` fails 3 tests (listener leak).
+- **Notes:** The listener is added with the `pointerdown` one while open (capture phase) and removed with it. The button's own Escape handler stays (its tests stay); both close and focus the `?`, the second finds it closed. `DetailFrame` ignores the `defaultPrevented` Escape, so the first Escape never reaches the side panel. Not covered by design: focus leaving the webview (a click into the editor) keeps the toggletip open, P-14; Escape then goes to the editor.
 
 ### T-010 — Each toggletip closes only itself (compile M71)
 

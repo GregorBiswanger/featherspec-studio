@@ -271,4 +271,24 @@ describe('0021 AC-014: Escape with the About this step toggletip open below 900 
         await escape(toggle);
         expect(requests('clearSelection')).toEqual([{}]);
     });
+
+    it('after a press on the text of the open toggletip Escape on the body closes only the toggletip and keeps the detail; the second Escape sends clearSelection', async () => {
+        const container = await board(SELECTED);
+        await send(detailEvent(detailView({}, { rule: 'NS-5', lines: [{ text: '/sdd-compile k', intent: 'Have the result verified' }], tips: { coach: 'new chat · strong model', about: ['one', 'two', 'three', 'four'] } })));
+        const toggle = container.querySelector<HTMLButtonElement>('aside.side-panel button.toggletip')!;
+        await click(toggle);
+        await act(async () => {
+            container.querySelector('aside.side-panel [role="status"] p')!.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, cancelable: true }));
+            toggle.focus();
+            toggle.blur();
+        });
+        expect(toggle.getAttribute('aria-expanded')).toBe('true');
+        await escape(document.body);
+        expect(toggle.getAttribute('aria-expanded')).toBe('false');
+        expect(requests('clearSelection')).toEqual([]);
+        expect(back(container)).not.toBeNull();
+        expect(document.activeElement).toBe(toggle);
+        await escape(toggle);
+        expect(requests('clearSelection')).toEqual([{}]);
+    });
 });

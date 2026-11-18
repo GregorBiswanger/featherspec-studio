@@ -384,4 +384,23 @@ describe('0021 AC-014: Escape with the About this step toggletip open', () => {
         await escape(toggle);
         expect(requests('clearSelection')).toEqual([{}]);
     });
+
+    it('after a press on the text of the open toggletip focus is on the body: Escape there closes only the toggletip and keeps the side panel; the second Escape sends clearSelection', async () => {
+        const container = await withTip();
+        const toggle = container.querySelector<HTMLButtonElement>('aside.side-panel button.toggletip')!;
+        await click(toggle);
+        await act(async () => {
+            container.querySelector('aside.side-panel [role="status"] p')!.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, cancelable: true }));
+            toggle.focus();
+            toggle.blur();
+        });
+        expect(toggle.getAttribute('aria-expanded')).toBe('true');
+        await escape(document.body);
+        expect(toggle.getAttribute('aria-expanded')).toBe('false');
+        expect(requests('clearSelection')).toEqual([]);
+        expect(container.querySelector('aside.side-panel')).not.toBeNull();
+        expect(document.activeElement).toBe(toggle);
+        await escape(toggle);
+        expect(requests('clearSelection')).toEqual([{}]);
+    });
 });

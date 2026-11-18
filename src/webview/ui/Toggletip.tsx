@@ -59,8 +59,19 @@ export function Toggletip(props: { label: string; glyph: string; paragraphs: rea
             }
             close();
         };
+        const onEscape = (event: Event): void => {
+            if (event instanceof globalThis.KeyboardEvent && event.key === 'Escape') {
+                event.preventDefault();
+                close();
+                button.current?.focus();
+            }
+        };
         document.addEventListener('pointerdown', onPointerDown, true);
-        return () => document.removeEventListener('pointerdown', onPointerDown, true);
+        document.addEventListener('keydown', onEscape, true);
+        return () => {
+            document.removeEventListener('pointerdown', onPointerDown, true);
+            document.removeEventListener('keydown', onEscape, true);
+        };
     }, [open]);
 
     const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>): void => {
