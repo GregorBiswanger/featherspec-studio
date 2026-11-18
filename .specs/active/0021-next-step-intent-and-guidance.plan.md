@@ -1,9 +1,9 @@
 # Plan — Next Step with Intent and Guidance
 
 **Spec:** [0021-next-step-intent-and-guidance.md](0021-next-step-intent-and-guidance.md)
-**Status:** Done
+**Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** none: all 8 steps verified; AC-022–AC-025 manual
+**Current step:** T-009 (fix stage after the compile of S74: `/home/claude/orch/compile/0021.md`)
 
 ## Approach
 
@@ -167,6 +167,7 @@ AC-007); `SpecDetail.test.tsx` "AC-003: two lines carry the label of the second 
 2. T-003 ‖ T-004 — independent: **Copy prompt** on every copy control; the two settings contributed and read
 3. T-005 → T-006 → T-007 — guidance: coach line, live settings, About this step
 4. T-008 — §5 notes, docs, test-title audit, architecture and Memory Bank sync, final gates
+5. T-009 → T-010 → T-011 → T-012 → T-013 → T-014 → T-015 → T-016 — fix stage after the compile of 2026-11-18 (S74, NOT READY): D1, the five surviving mutants, D2 and the README, hint cut, `StepText`, stale fixtures, docs and evidence
 
 Parallel: stage 2 (T-003 touches `nextStepTexts.ts`, `CopyButton.tsx`, `copyNextStep.ts`, `webviewBundle.test.ts` and
 webview tests; T-004 `package.json`, `manifest.test.ts`, `src/core/settings/`; no shared file, each `Verify` runs its own
@@ -334,6 +335,94 @@ ends of stages 1 and 3.
   `grep -c "Amended by 0021 (PD-069)"` per spec ≥ its §5 rows; audit counts; gates 1–5 and `npm run compile-tests`
 - [x] **Verified (T-008):** 2026-11-18 · red: the new block "product docs after 0021 (AC-021)" in `docsScan.test.ts` failed 4 tests against the docs of the previous commit (README literals, `**Copy**` and then `continue`, CHANGELOG, checklist section); retargeting the literals then turned five older docs tests red until fixed (README card Copy regex, inline Copy button, 0022 primary-button sentence, CHANGELOG without `featherspec-studio.`, checklist heading order) → green: `npx vitest run --project node --project webview` 157 files, 2625 passed, 3 skipped; timing projects 15 passed; eslint 0 warnings, both `tsc` clean, `npm run compile` and `npm run compile-tests` clean. Audit: baseline 2516 titles (2506 distinct), head 2635 (2623), 18 absent, 0 decreased, each listed in the section above. `grep -c "Amended by 0021 (PD-069)"`: 0006 1, 0007 1, 0013 2, 0015 9, 0016 4, 0017 18, 0018 8, 0019 5, 0020 4.
 - **Notes:** §5 notes by a throwaway script (`/tmp/audit-0021/amend.py`): the catch-all after the last head note of each spec, one note under each statement of the table, table rows after the table, always before any 0022 note; PD-063 is a register entry and is not edited. The README gets a Settings section, a rewritten "The next step everywhere" and Getting started step 3; the tree keeps the command short form, so its example stays `/sdd-compile`. The checklist section 0021 stands between 0020 and 0022 (spec order; the order test lists it) and avoids the assistant vendor's name (the 0015 scan forbids it). Architecture update: `AGENTS.md` snapshot and the three maps `last reconciled` 0021 with the entries named in the step; Memory Bank: `techContext.md`, `systemPatterns.md`, `activeContext.md`. AC-022–AC-025 stay manual (orchestrator's harness and Gregor).
+
+### T-009 — Escape closes an open toggletip wherever focus is (compile D1)
+
+- **Covers:** AC-014 (Escape), §6.6
+- **Do:** `ui/Toggletip.tsx`: while open, a document `keydown` listener in the capture phase; on Escape it calls
+  `preventDefault`, closes the toggletip and focuses its `?` (Inclusive Components pattern, as §6.6 cites). It exists
+  only while open, like the `pointerdown` listener. The button's own `onKeyDown` Escape and its tests stay. A press on
+  the region's text still keeps it open (P-14); the side panel stays open on the first Escape (`DetailFrame` ignores a
+  `defaultPrevented` Escape). Test first in `Toggletip.test.tsx`: open it, `pointerdown` on the region's paragraph, blur
+  the button, Escape on `body` → `aria-expanded` false, region empty, focus on the `?`, event `defaultPrevented`; Escape
+  on `body` while closed is not handled and registers nothing; the listener is gone after close and after unmount;
+  `Close.test.tsx` and `ListOrDetail.test.tsx`: the same sequence with `DetailFrame`, the detail stays open, the second
+  Escape closes it or goes back. Red through `Not implemented`-free means: the tests run first against the head
+  (assertion red), then the code.
+- **Verify:** `npx vitest run --project webview src/webview/ui/Toggletip.test.tsx src/webview/detail` red, then green;
+  gates 1–4
+- [ ] **Verified (T-009):**
+
+### T-010 — Each toggletip closes only itself (compile M71)
+
+- **Covers:** AC-014 (one open at a time, content change)
+- **Do:** test in `Toggletip.test.tsx` with two toggletips: the second open, a content change of the closed first one
+  does not close the second; a blur of the closed first one does not close it either. The code is already right
+  (`close()` checks `openId === id`), so the test is green at once; its negative control is the mutant "`close()` closes
+  whichever is open" on a scratch copy (`git archive` to `/tmp`), recorded red below.
+- **Verify:** `npx vitest run --project webview src/webview/ui/Toggletip.test.tsx` green; the mutant on the scratch copy
+  red; gates 1–4
+- [ ] **Verified (T-010):**
+
+### T-011 — Unreadable plan and the settings sections are decided by a test (compile M26, M39)
+
+- **Covers:** AC-005 (§8 unreadable plan), AC-011
+- **Do:** M26: §8 says an unreadable plan gives NS-6 "plan without open step", and `nextStep()` already does; the
+  over-claiming title becomes true by adding the case: in `nextStep.test.ts` "0021 AC-005 … unreadable plan read as
+  Resume" a plan that fails to read (`setUnreadable`) and one of binary bytes both give `NS-6-resume`. M39: the fake
+  configuration of `adapters/vscode/settings.test.ts` gets the section-prefix semantics of `affectsConfiguration`
+  (`featherspec-studio` affects `featherspec-studio.showStepTips`, a different key does not), and a test shows the port
+  fires for its own key only.
+- **Verify:** `npx vitest run --project node src/core/board/nextStep.test.ts src/adapters/vscode/settings.test.ts`; the
+  mutants M26 and M39 on the scratch copy red; gates 1–4
+- [ ] **Verified (T-011):**
+
+### T-012 — The intent stands on its own line, the coach line is a description (compile M52, M79)
+
+- **Covers:** AC-001 (own line), AC-009, §6.5
+- **Do:** `webviewCss.test.ts` (0021 AC-001 and AC-009 describes): `.next-step-intent` takes the whole line
+  (`flex: 1 0 100%`, as the harness saw it); `.step-coach` uses `var(--vscode-descriptionForeground)`, and no
+  hard-coded colour. Red by the mutants M52 (`flex: none`) and M79 (foreground colour) on the scratch copy.
+- **Verify:** `npx vitest run --project node src/adapters/node/webviewCss.test.ts`; mutants red; gates 1–4
+- [ ] **Verified (T-012):**
+
+### T-013 — README names the tree action and the step short form (compile D2, edit 3)
+
+- **Covers:** AC-021, A-007
+- **Do:** README lines 15 and 35: "inline **Copy Next Step**"; line 19 (Overview): "Next" and the step short form,
+  e.g. `Verify · /sdd-compile`; line 25 (Board): **Next**, the short intent and the short form of the prompt, e.g.
+  `Plan · /sdd-plan`. `docsScan.test.ts` literals first (red against the README), then the README.
+- **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green
+- [ ] **Verified (T-013):**
+
+### T-014 — A cut hint never ends in a space before the ellipsis (compile exploratory)
+
+- **Covers:** AC-012 (the 39/40 rule stays)
+- **Do:** `stepTipSettings.ts`: after the cut to 39 code points, trim trailing whitespace, then add `…`. `stepTipSettings.test.ts`
+  first: 38 × `x`, space, `yyyy` gives 38 × `x` and `…`; the 40/41 boundary and emoji cases stay.
+- **Verify:** `npx vitest run --project node src/core/settings` red, then green; gates 1–4
+- [ ] **Verified (T-014):**
+
+### T-015 — `StepText` takes the format from the text module; stale fixtures are brought level (compile exploratory)
+
+- **Covers:** guideline 10, AC-006
+- **Do:** `nextStepTexts.ts` owns the separator of the step short form (`stepShortForm` builds from it); `StepText.tsx`
+  uses that one definition. A test in `SpecBoard.test.tsx` and `Sections.test.tsx`: the text after the label equals
+  `stepShortForm(step)` in every state. The synthetic views of `Sections.test.tsx`, `SpecBoard.test.tsx` and
+  `primaryButtons.test.tsx` drop the obsolete `continue` second line (NS-6 is variant A).
+- **Verify:** `npx vitest run --project webview src/webview` green (the new test red against a changed separator on the
+  scratch copy); gates 1–4
+- [ ] **Verified (T-015):**
+
+### T-016 — Traceability, titles, Memory Bank, evidence and handoff (compile edits 1, 5–8)
+
+- **Covers:** AC-013 (path), AC-011 (smoke title), AC-022 (harness part)
+- **Do:** Traceability row AC-013 → `src/adapters/node/sourceScan.test.ts`; the AC-022 harness result with the content
+  of the orchestrator's preview note; `board.smoke.test.ts:97` retitled (the assertion stays, `< 2_000`);
+  `.memory-bank/activeContext.md` *Now*; `.architecture/core.md` settings entry ("over 40 characters cut to 39 and
+  `…`"); the T-006 note on the reverse red; handoff and status.
+- **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts`; `npm run compile-tests`; final gates
+- [ ] **Verified (T-016):**
 
 ## Test-title audit
 
