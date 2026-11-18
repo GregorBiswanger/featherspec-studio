@@ -1,4 +1,4 @@
-import type { DetailSections, DetailView, NextStepView } from '../../../shared/protocol/detail';
+import type { DetailSections, DetailView, DiagnosticLine, NextStepView } from '../../../shared/protocol/detail';
 import { PROTOCOL_VERSION, type Envelope } from '../../../shared/protocol/envelope';
 
 export const SPEC_KEY = '.specs/active/0007-thing.md';
@@ -18,7 +18,7 @@ export function sections(overrides: Partial<DetailSections> = {}): DetailSection
             deprecated: false,
             successor: undefined,
             readiness: undefined,
-            diagnostics: [{ reason: 'Plan has no Verified line', open: { key: SPEC_KEY, line: 12 } }],
+            notes: [{ reason: 'Plan has no Verified line', open: { key: SPEC_KEY, line: 12 } }],
         },
         requirements: { open: { key: SPEC_KEY }, items: [{ id: 'FR-01', text: 'Show the board', open: { key: SPEC_KEY, line: 30 } }] },
         criteria: {
@@ -50,8 +50,8 @@ export function sections(overrides: Partial<DetailSections> = {}): DetailSection
 
 export const NEXT_STEP: NextStepView = { rule: 'NS-6', lines: [{ text: `/sdd-plan ${SPEC_KEY}` }] };
 
-export function detailView(overrides: Partial<DetailSections> = {}, nextStep: NextStepView = NEXT_STEP): DetailView {
-    return { kind: 'spec', key: SPEC_KEY, stem: '0007-thing', number: '0007', title: 'Thing 0007', nextStep, sections: sections(overrides) };
+export function detailView(overrides: Partial<DetailSections> = {}, nextStep: NextStepView = NEXT_STEP, problems: DiagnosticLine[] = []): DetailView {
+    return { kind: 'spec', key: SPEC_KEY, stem: '0007-thing', number: '0007', title: 'Thing 0007', nextStep, problems, sections: sections(overrides) };
 }
 
 export function detailEvent(view: DetailView): Envelope {

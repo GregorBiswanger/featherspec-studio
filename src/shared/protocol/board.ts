@@ -50,9 +50,14 @@ export interface BannerLine {
     reason: string;
 }
 
+export interface Banner {
+    problems: BannerLine[];
+    notes: BannerLine[];
+}
+
 export interface BoardView {
     columns: BoardColumn[];
-    banner: BannerLine[];
+    banner: Banner;
     filter: BoardFilter;
     sort: SortKey;
     noSpecs: boolean;
@@ -109,13 +114,20 @@ function isColumn(value: unknown): value is BoardColumn {
     );
 }
 
+function isBannerLines(value: unknown): boolean {
+    return Array.isArray(value) && value.every((line) => isRecord(line) && isString(line.where) && isString(line.reason));
+}
+
+function isBanner(value: unknown): value is Banner {
+    return isRecord(value) && isBannerLines(value.problems) && isBannerLines(value.notes);
+}
+
 export function isBoardView(value: unknown): value is BoardView {
     return (
         isRecord(value) &&
         Array.isArray(value.columns) &&
         value.columns.every(isColumn) &&
-        Array.isArray(value.banner) &&
-        value.banner.every((line) => isRecord(line) && isString(line.where) && isString(line.reason)) &&
+        isBanner(value.banner) &&
         isBoardFilter(value.filter) &&
         isSortKey(value.sort) &&
         typeof value.noSpecs === 'boolean'

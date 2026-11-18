@@ -114,9 +114,11 @@ describe('board requests', () => {
         expect(isCardView({ ...card, derivedRule: 'Derived (rule S-REVIEW)' })).toBe(false);
         expect(isCardView({ ...card, readiness: 'R-3: No plan.' })).toBe(false);
         expect(isCardView({ ...card, readiness: { id: 'R-3' } })).toBe(false);
-        const view = { columns: [{ state: 'Active', cards: [card], hidden: 0, emptyBeforeFilter: false }], banner: [{ where: 'project', reason: 'x' }], filter: {}, sort: 'number', noSpecs: false };
+        const view = { columns: [{ state: 'Active', cards: [card], hidden: 0, emptyBeforeFilter: false }], banner: { problems: [{ where: 'project', reason: 'x' }], notes: [] }, filter: {}, sort: 'number', noSpecs: false };
         expect(isBoardView(view)).toBe(true);
         expect(isBoardView({ ...view, sort: 'priority' })).toBe(false);
+        expect(isBoardView({ ...view, banner: [{ where: 'project', reason: 'x' }] })).toBe(false);
+        expect(isBoardView({ ...view, banner: { problems: [], notes: [{ where: 'project' }] } })).toBe(false);
         expect(isBoardView({ ...view, filter: { states: ['x'] } })).toBe(false);
     });
 });

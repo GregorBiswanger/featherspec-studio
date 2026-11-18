@@ -1,4 +1,4 @@
-import type { DetailSections, DetailView, HeaderLine, OpenTarget, StatusHistoryItem, StepItem } from '../../shared/protocol/detail';
+import type { DetailSections, DetailView, DiagnosticLine, HeaderLine, OpenTarget, StatusHistoryItem, StepItem } from '../../shared/protocol/detail';
 import { successorText } from '../../shared/protocol/texts';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { HistoryCause, HistoryView } from '../lifecycle/statusHistory';
@@ -59,6 +59,13 @@ function findEntry(model: ShellModel, selection: { stem: string; path?: string }
     return (selection.path === undefined ? undefined : matches.find((entry) => entry.key === selection.path)) ?? matches[0];
 }
 
+function diagnosticLine(diagnostic: LifecycleEntry['diagnostics'][number]): DiagnosticLine {
+    const scope = diagnostic.scope;
+    const file = scope === 'project' ? undefined : scope.file;
+    const line = scope === 'project' || !('line' in scope) ? undefined : scope.line;
+    return file === undefined ? { reason: diagnostic.reason } : { reason: diagnostic.reason, open: line === undefined ? { key: file } : { key: file, line } };
+}
+
 function baseName(key: string): string {
     return key.slice(key.lastIndexOf('/') + 1);
 }
@@ -116,12 +123,7 @@ export function buildDetail(input: DetailInput): DetailView {
             deprecated: entry.deprecated !== undefined,
             successor: entry.deprecated === undefined ? undefined : successorText(entry.deprecated.successor),
             readiness: entry.folder === 'backlog' ? entry.readiness.checks.map((check) => ({ id: check.id, result: check.result, reason: check.result === 'pass' ? undefined : check.reason })) : undefined,
-            diagnostics: entry.diagnostics.map((diagnostic) => {
-                const scope = diagnostic.scope;
-                const file = scope === 'project' ? undefined : scope.file;
-                const line = scope === 'project' || !('line' in scope) ? undefined : scope.line;
-                return file === undefined ? { reason: diagnostic.reason } : { reason: diagnostic.reason, open: line === undefined ? { key: file } : { key: file, line } };
-            }),
+            notes: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'note').map(diagnosticLine),
         },
         requirements: { open: specTarget, items: (parsed?.requirements ?? []).map((item) => ({ id: item.id, text: withoutLeadingId(item.text, item.id), open: { key: spec.key, line: item.line } })) },
         criteria: {
@@ -149,5 +151,5 @@ export function buildDetail(input: DetailInput): DetailView {
         related,
         history: { statusHistory: historyItems, label: input.history.available ? input.history.label : 'Observed by Studio while it was running — not a reconstruction', notAvailable: input.history.available ? undefined : input.history.text },
     };
-    return { kind: 'spec', key: entry.key, stem: entry.stem, number: entry.number, title: titleOf(spec) ?? entry.stem, nextStep: next, sections };
+    return { kind: 'spec', key: entry.key, stem: entry.stem, number: entry.number, title: titleOf(spec) ?? entry.stem, nextStep: next, problems: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').map(diagnosticLine), sections };
 }

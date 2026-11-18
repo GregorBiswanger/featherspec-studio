@@ -170,7 +170,7 @@ export function SpecBoard() {
     }
     return (
         <div className="board" aria-label={BOARD_LABEL}>
-            <Banner lines={board.banner} />
+            <Banner banner={board.banner} />
             {board.noSpecs ? (
                 <EmptyState icon="Backlog" className="board-empty">
                     {NO_SPECS_BOARD_TEXT}

@@ -79,14 +79,6 @@ export function projectFindings(project: ProjectRead, lifecycle: LifecycleModel)
     return found;
 }
 
-export function buildBanner(project: ProjectRead, lifecycle: LifecycleModel): BannerLine[] {
-    const owned = new Set<string>();
-    project.specs.forEach((spec) => [spec.key, ...spec.planKeys, ...spec.returnNoteKeys].forEach((key) => owned.add(key)));
-    const lines: BannerLine[] = lifecycle.projectDiagnostics.map((diagnostic) => ({ where: 'project', reason: diagnostic.reason }));
-    for (const diagnostic of project.diagnostics) {
-        if (diagnostic.scope !== 'project' && !owned.has(diagnostic.scope.file)) {
-            lines.push({ where: diagnostic.scope.file, reason: diagnostic.reason });
-        }
-    }
-    return lines;
+export function buildBanner(project: ProjectRead, lifecycle: LifecycleModel): ProjectFindings {
+    return projectFindings(project, lifecycle);
 }

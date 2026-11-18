@@ -30,7 +30,7 @@ export interface OverviewSection {
     deprecated: boolean;
     successor: string | undefined;
     readiness: ReadinessLine[] | undefined;
-    diagnostics: DiagnosticLine[];
+    notes: DiagnosticLine[];
 }
 
 export interface RequirementItem {
@@ -112,7 +112,7 @@ export type NextStepView = { rule: string; lines: NextStepLineView[] } | { rule:
 
 export type DetailView =
     | { kind: 'none' }
-    | { kind: 'spec'; key: string; stem: string; number: string; title: string; nextStep: NextStepView; sections: DetailSections };
+    | { kind: 'spec'; key: string; stem: string; number: string; title: string; nextStep: NextStepView; problems: DiagnosticLine[]; sections: DetailSections };
 
 export interface OpenFileResultPayload {
     key: string;
@@ -148,6 +148,7 @@ export function isDetailView(value: unknown): value is DetailView {
         typeof value.number === 'string' &&
         typeof value.title === 'string' &&
         isNextStepView(value.nextStep) &&
+        Array.isArray(value.problems) &&
         isRecord(value.sections) &&
         SECTION_KEYS.every((key) => key in (value.sections as Record<string, unknown>))
     );

@@ -200,7 +200,11 @@ export function problemsBadgeText(count: number): string {
     return count === 1 ? '1 problem' : `${count} problems`;
 }
 
-export const BANNER_HEADING = 'Project diagnostics';
+export const BANNER_HEADING = 'Problems';
+
+export function formatNotesText(count: number): string {
+    return count === 1 ? '1 format note — no action needed' : `${count} format notes — no action needed`;
+}
 
 export const MOVE_MENU_LABEL = 'Move to…';
 export const MOVE_COMMAND_TITLE = 'FeatherSpec: Move Spec to…';

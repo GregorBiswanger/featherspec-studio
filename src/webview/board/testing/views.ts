@@ -29,7 +29,7 @@ export function boardView(cards: CardView[], overrides: Partial<BoardView> = {})
         const own = cards.filter((entry) => entry.state === state);
         return { state, cards: own, hidden: 0, emptyBeforeFilter: own.length === 0 };
     });
-    return { columns, banner: [], filter: {}, sort: 'number', noSpecs: cards.length === 0, ...overrides };
+    return { columns, banner: { problems: [], notes: [] }, filter: {}, sort: 'number', noSpecs: cards.length === 0, ...overrides };
 }
 
 export function boardEvent(view: BoardView): Envelope {

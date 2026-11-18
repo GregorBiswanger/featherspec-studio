@@ -3,6 +3,7 @@ import {
     criteriaText,
     DEPRECATED_MARKER,
     DERIVED_SENTENCES,
+    BANNER_HEADING,
     DETAIL_LABEL,
     HISTORY_NOT_AVAILABLE_TEXT,
     NO_DETAIL_SELECTION_TEXT,
@@ -23,6 +24,7 @@ import { isBoardState } from '../../shared/protocol/boardFilter';
 import { isDerivedRule } from '../../shared/protocol/missionControl';
 import { EmptyState } from '../ui/EmptyState';
 import { RuleText } from '../ui/RuleText';
+import { FormatNotes } from '../ui/FormatNotes';
 import { StateChip } from '../ui/StateChip';
 import { DetailSection, OpenButton } from './DetailSection';
 import { NextStep } from './NextStep';
@@ -57,12 +59,12 @@ function keysOf(targets: (OpenTarget | undefined)[]): string[] {
     return targets.flatMap((target) => (target === undefined ? [] : [target.key]));
 }
 
-function Sections(props: { sections: DetailSections; fileResult: { key: string; text: string } | undefined; onOpen: OpenFile }) {
+function Sections(props: { detailKey: string; sections: DetailSections; fileResult: { key: string; text: string } | undefined; onOpen: OpenFile }) {
     const { sections, fileResult, onOpen } = props;
     const { overview, requirements, criteria, plan, verification, related, history } = sections;
     return (
         <>
-            <DetailSection title={SECTION_TITLES.overview} open={overview.open} keys={keysOf(overview.diagnostics.map((line) => line.open))} fileResult={fileResult} onOpen={onOpen}>
+            <DetailSection title={SECTION_TITLES.overview} open={overview.open} keys={keysOf(overview.notes.map((line) => line.open))} fileResult={fileResult} onOpen={onOpen}>
                 <div className="detail-grid">
                 <dl className="detail-header">
                     {overview.headerLines.map((line) => (
@@ -108,18 +110,7 @@ function Sections(props: { sections: DetailSections; fileResult: { key: string; 
                         ))}
                     </ul>
                 )}
-                {overview.diagnostics.length === 0 ? null : (
-                    <ul className="detail-diagnostics">
-                        {overview.diagnostics.map((line, index) => (
-                            <li key={`${index}|${line.reason}`}>
-                                <Glyph kind="diagnostic" />
-                                <span>
-                                    <InlineText text={line.reason} />
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
-                )}
+                <FormatNotes key={props.detailKey} notes={overview.notes} />
             </DetailSection>
             <DetailSection title={SECTION_TITLES.requirements} open={requirements.open} keys={keysOf(requirements.items.map((item) => item.open))} fileResult={fileResult} onOpen={onOpen}>
                 {requirements.items.length === 0 ? (
@@ -266,7 +257,19 @@ export function SpecDetail(props: {
                 <OpenButton target={detail.sections.overview.open} onOpen={props.onOpen} label={detail.number} />
             </div>
             <NextStep nextStep={detail.nextStep} copyResult={props.copyResult} onCopy={props.onCopy} />
-            <Sections sections={detail.sections} fileResult={props.fileResult} onOpen={props.onOpen} />
+            {detail.problems.length === 0 ? null : (
+                <ul className="detail-problems" aria-label={BANNER_HEADING}>
+                    {detail.problems.map((line, index) => (
+                        <li key={`${index}|${line.reason}`}>
+                            <Glyph kind="diagnostic" />
+                            <span>
+                                <InlineText text={line.reason} />
+                            </span>
+                        </li>
+                    ))}
+                </ul>
+            )}
+            <Sections detailKey={detail.key} sections={detail.sections} fileResult={props.fileResult} onOpen={props.onOpen} />
         </section>
     );
 }

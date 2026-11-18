@@ -3,7 +3,7 @@
 **Spec:** [0016-honest-signals.md](0016-honest-signals.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-005
+**Current step:** T-006
 
 ## Approach
 
@@ -239,8 +239,8 @@ everything after T-002 shares the text modules, `main.css` or `SpecDetail.tsx` a
   split), board guard test, `SpecDetail.test.tsx` (AC-006 Given detail part, toggle by pointer,
   Tab+Enter and Space, `<strong>` title with no `*`), `SpecBoard.test.tsx` (banner).
 - **Verify:** the new and changed tests red then green; gates 1–4
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-17 — red (core): `npx vitest run --project node src/core/board` before the change: 13 failed (no `problems`/`notes`, banner not split, emphasis cases and fs170 0003 AC-001 kept a stray `**`); green after. Webview `SpecDetail`, `SpecBoard` (banner), `FormatNotes` cases were written with the component (no separate red run; negative controls: no toggle at 0 notes, no list without Problems, collapsed again on another spec). Gates 1–4: eslint 0, tsc x2 clean, `npm run test:unit` 1774 passed + 3 skipped, timing 12.
+- **Notes:** Q-5/Q-6 as planned. `DetailView.problems` sits on the spec view (not in `sections`), `overview.diagnostics` became `overview.notes`; the Problems list has no Open file (guideline 5 keeps IDs and Open for sections). `buildBanner` returns `{ problems, notes }` and the board guard rejects the old array. The banner keeps the warning frame only while Problems exist; a notes-only banner is neutral and named by T-07. Emphasis fix lives in `idText.enclosingEmphasis`: the marker stays only when it does not close right after the ID (colon allowed). Not added: a guard test for `isDetailView` (none existed).
 
 ### T-006 — Backlog shows needs; permanent absences go
 

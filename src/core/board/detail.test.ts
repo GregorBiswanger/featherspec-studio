@@ -150,16 +150,47 @@ describe('spec detail', () => {
         expect(view.sections.overview.successor).toBe('Successor: 0009-b.md');
         expect(view.sections.overview.headerLines.filter((line) => line.label === 'Successor')).toEqual([]);
         expect(JSON.stringify(view.sections.overview.headerLines)).not.toContain('0009-b.md');
-        expect(view.sections.overview.diagnostics.filter((line) => line.reason.includes('Successor'))).toEqual([]);
+        expect([...view.problems, ...view.sections.overview.notes].filter((line) => line.reason.includes('Successor'))).toEqual([]);
     });
 
-    it('AC-010: a diagnostic carries its reason and opens at its line in its file', async () => {
+    it('AC-006: a Problem carries its reason and opens at its line in its file; the format notes stay out of the Problems', async () => {
         const project = await readFixture('fs-broken');
         const model = { project, lifecycle: deriveLifecycle(project) };
         const broken = model.lifecycle.entries.find((entry) => entry.diagnostics.length > 0)!;
         const view = spec(buildDetail({ selection: { stem: broken.stem, path: broken.key }, model, history: NO_HISTORY }));
-        expect(view.sections.overview.diagnostics.length).toBe(broken.diagnostics.length);
-        view.sections.overview.diagnostics.forEach((line) => expect(line.reason.length).toBeGreaterThan(0));
+        expect(view.problems.length).toBe(broken.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').length);
+        expect(view.problems.length).toBeGreaterThan(0);
+        view.problems.forEach((line) => expect(line.reason.length).toBeGreaterThan(0));
+        expect(view.sections.overview.notes).toEqual([]);
+    });
+
+    it('AC-006: the detail of 0003 of fs-broken shows the contradiction reason as its Problem', async () => {
+        const project = await readFixture('fs-broken');
+        const model = { project, lifecycle: deriveLifecycle(project) };
+        const view = spec(buildDetail({ selection: { stem: '0003-also-valid' }, model, history: NO_HISTORY }));
+        expect(view.problems).toHaveLength(1);
+        expect(view.problems[0]?.reason.length).toBeGreaterThan(0);
+        expect(view.problems[0]?.open).toEqual({ key: '.specs/done/0003-also-valid.md' });
+    });
+
+    it('AC-007: format notes alone give no Problem and the notes with their reasons in the overview', async () => {
+        const project = await readFixture('fs170-brownfield-mixed');
+        const model = { project, lifecycle: deriveLifecycle(project) };
+        const view = spec(buildDetail({ selection: { stem: '0006-outbox-batch-size' }, model, history: NO_HISTORY }));
+        expect(view.problems).toEqual([]);
+        expect(view.sections.overview.notes).toHaveLength(2);
+        view.sections.overview.notes.forEach((line) => expect(line.reason.length).toBeGreaterThan(0));
+    });
+
+    it('AC-016: AC-001 of 0003 in fs170-brownfield-mixed keeps its bold title and loses the ID and the stray marker', async () => {
+        const project = await readFixture('fs170-brownfield-mixed');
+        const model = { project, lifecycle: deriveLifecycle(project) };
+        const view = spec(buildDetail({ selection: { stem: '0003-direct-broker-publication' }, model, history: NO_HISTORY }));
+        const first = view.sections.criteria.items[0]!;
+        expect(first.id).toBe('AC-001');
+        expect(first.text.startsWith('**Events reach the broker without an intermediate table**')).toBe(true);
+        expect(first.text).toContain('When an order event occurs');
+        expect(first.text).not.toContain('AC-001');
     });
 
     it('0015 AC-012: the status history of the stem under its label, no run list', async () => {

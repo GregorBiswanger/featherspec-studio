@@ -6,7 +6,7 @@ export const NEXT_STEP_THEN_LABEL = 'Then:';
 
 export const NEXT_STEP_THEN_AFTER_READY_LABEL = 'Then, after a READY verdict:';
 
-export const NEXT_STEP_UNREADABLE_TEXT = 'Studio cannot read this spec. See its diagnostics.';
+export const NEXT_STEP_UNREADABLE_TEXT = 'Studio cannot read this spec. See the problem below.';
 
 export const NEXT_STEP_DONE_TEXT = 'Done — no FeatherSpec step left.';
 

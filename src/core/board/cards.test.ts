@@ -112,12 +112,26 @@ describe('cards', () => {
             '.specs/plan-archive/0009-orphan.2026-09-19.plan.md': planText({ status: 'Done' }),
         });
         expect(cards.map((card) => card.problems)).toEqual([0]);
-        expect(banner.map((line) => line.where)).toContain('.specs/plan-archive/0009-orphan.2026-09-19.plan.md');
-        expect(banner.every((line) => line.reason.length > 0)).toBe(true);
+        expect(banner.notes.map((line) => line.where)).toContain('.specs/plan-archive/0009-orphan.2026-09-19.plan.md');
+        expect(banner.notes.every((line) => line.reason.length > 0)).toBe(true);
+        expect(banner.problems).toEqual([]);
     });
 
     it('AC-020: a project with no diagnostic has an empty banner (negative control)', async () => {
         const { banner } = await cardsOf({ '.specs/backlog/0001-a.md': specText() });
-        expect(banner).toEqual([]);
+        expect(banner).toEqual({ problems: [], notes: [] });
+    });
+
+    it('AC-009: an orphan return note is a project-level Problem and the version note is a format note, split in the banner', async () => {
+        const project = await readMemory({ '.specs/backlog/0001-a.md': specText(), '.memory-bank/activeContext.0099-T-001.md': '**Status:** DONE\n' });
+        const banner = buildBanner(project, deriveLifecycle(project));
+        expect(banner.problems.map((line) => line.where)).toEqual(['.memory-bank/activeContext.0099-T-001.md']);
+        expect(banner.notes).toEqual([]);
+    });
+
+    it('AC-009: a version that is not verified is a project-level format note, never a Problem', async () => {
+        const project = { ...(await readMemory({ '.specs/backlog/0001-a.md': specText() })), version: '9.9.9', diagnostics: [{ kind: 'unverified-version' as const, tier: 'note' as const, scope: 'project' as const, reason: 'newer than known' }] };
+        const banner = buildBanner(project, deriveLifecycle(project));
+        expect(banner).toEqual({ problems: [], notes: [{ where: 'project', reason: 'newer than known' }] });
     });
 });

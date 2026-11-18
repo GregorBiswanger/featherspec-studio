@@ -203,12 +203,33 @@ describe('AC-021, AC-020, AC-012: in-area states', () => {
         expect(active.textContent).not.toContain('No spec is being implemented.');
     });
 
-    it('the banner lists each diagnostic with its reason', async () => {
-        const container = await open(boardView([card('0001')], { banner: [{ where: 'project', reason: 'Version unverified.' }, { where: '.specs/active/0009-x.plan.md', reason: 'Orphan plan.' }] }));
+    it('AC-009: the banner lists each project-level Problem under the heading Problems', async () => {
+        const container = await open(boardView([card('0001')], { banner: { problems: [{ where: '.memory-bank/activeContext.0099-T-001.md', reason: 'return note matches no spec' }, { where: '.specs/backlog', reason: 'could not be listed' }], notes: [] } }));
         const banner = container.querySelector('[data-banner]')!;
-        expect(banner.textContent).toContain('Project diagnostics');
-        expect(banner.textContent).toContain('project: Version unverified.');
-        expect(banner.textContent).toContain('.specs/active/0009-x.plan.md: Orphan plan.');
+        expect(banner.textContent).toContain('Problems');
+        expect(banner.textContent).not.toContain('Project diagnostics');
+        expect(banner.textContent).toContain('.memory-bank/activeContext.0099-T-001.md: return note matches no spec');
+        expect(banner.textContent).toContain('.specs/backlog: could not be listed');
+        expect(banner.getAttribute('aria-label')).toBe('Problems');
+        expect(banner.querySelector('.format-notes')).toBeNull();
+    });
+
+    it('AC-009: project-level format notes sit behind a collapsed toggle; the banner is named by it while no Problem exists', async () => {
+        const container = await open(boardView([card('0001')], { banner: { problems: [], notes: [{ where: 'project', reason: 'newer than known' }] } }));
+        const banner = container.querySelector('[data-banner]')!;
+        const toggle = banner.querySelector('button')!;
+        expect(toggle.textContent).toBe('1 format note — no action needed');
+        expect(toggle.getAttribute('aria-expanded')).toBe('false');
+        expect(banner.getAttribute('aria-label')).toBe('1 format note — no action needed');
+        expect(banner.querySelector('strong')).toBeNull();
+        expect(banner.querySelector<HTMLElement>('.format-notes-list')!.hidden).toBe(true);
+        await click(toggle);
+        expect(toggle.getAttribute('aria-expanded')).toBe('true');
+        expect(banner.querySelector<HTMLElement>('.format-notes-list')!.hidden).toBe(false);
+        expect(banner.textContent).toContain('project: newer than known');
+    });
+
+    it('AC-009 control: the banner does not render while neither exists', async () => {
         expect((await open(boardView([card('0001')]))).querySelector('[data-banner]')).toBeNull();
     });
 

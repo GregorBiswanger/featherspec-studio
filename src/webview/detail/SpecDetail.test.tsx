@@ -63,7 +63,7 @@ describe('AC-010: the seven sections', () => {
         ]);
     });
 
-    it('Overview shows header lines, state, rule, persistence, priority and diagnostics', async () => {
+    it('Overview shows header lines, state, rule, persistence, priority and the format notes behind a toggle', async () => {
         const text = section(await open(), 'Overview').textContent!;
         expect(text).toContain('Status');
         expect(text).toContain('In Progress');
@@ -423,5 +423,87 @@ describe('0015 AC-003, AC-005, AC-008, AC-009: the next step in the detail', () 
         await send(detailEvent({ ...detailView(), key: 'other', stem: '0008-other' } as ReturnType<typeof detailView>));
         expect(nextStepSection(container).textContent).not.toContain('Copied to the clipboard.');
         expect(nextStepSection(container).querySelector('button')!.textContent).toBe('Copy');
+    });
+});
+
+describe('0016 AC-006, AC-007, AC-016, AC-022: Problems, format notes and the title emphasis', () => {
+    const PROBLEM = { reason: 'Folder done/ does not match status "In Progress".', open: { key: SPEC_KEY } };
+
+    function notesToggle(container: HTMLElement): HTMLButtonElement {
+        return container.querySelector<HTMLButtonElement>('.format-notes-toggle')!;
+    }
+
+    it('AC-006: each Problem shows with the warning icon directly below Next step and above Overview', async () => {
+        const container = await open(detailView({}, undefined, [PROBLEM, { reason: 'plan link 0007-gone.plan.md points to a missing file' }]));
+        const list = container.querySelector('.detail-problems')!;
+        expect([...list.querySelectorAll('li')].map((item) => item.textContent)).toEqual([PROBLEM.reason, 'plan link 0007-gone.plan.md points to a missing file']);
+        expect([...list.querySelectorAll('li svg')]).toHaveLength(2);
+        const nextStep = section(container, 'Next step');
+        expect(nextStep.nextElementSibling).toBe(list);
+        expect(list.nextElementSibling).toBe(section(container, 'Overview'));
+        expect(list.querySelector('button')).toBeNull();
+    });
+
+    it('AC-006 control: with no Problem no list is shown', async () => {
+        expect((await open()).querySelector('.detail-problems')).toBeNull();
+    });
+
+    it('AC-007: the format-note toggle is collapsed when shown, reads the count text and shows the reasons after a pointer activation', async () => {
+        const container = await open();
+        const toggle = notesToggle(container);
+        expect(toggle.textContent).toBe('1 format note — no action needed');
+        expect(toggle.getAttribute('aria-expanded')).toBe('false');
+        const list = container.querySelector<HTMLElement>('.format-notes-list')!;
+        expect(toggle.getAttribute('aria-controls')).toBe(list.id);
+        expect(list.hidden).toBe(true);
+        await click(toggle);
+        expect(toggle.getAttribute('aria-expanded')).toBe('true');
+        expect(list.hidden).toBe(false);
+        expect(list.textContent).toBe('Plan has no Verified line');
+        expect(list.querySelector('button')).toBeNull();
+    });
+
+    it('AC-007: the toggle is reachable by Tab and works with Enter and with Space', async () => {
+        const container = await open();
+        const toggle = notesToggle(container);
+        expect(isKeyboardReachable(toggle)).toBe(true);
+        await pressKey(toggle, 'Enter');
+        expect(toggle.getAttribute('aria-expanded')).toBe('true');
+        await pressKey(toggle, ' ');
+        expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('AC-007: the plural reads "<n> format notes — no action needed" and no toggle exists at 0 notes', async () => {
+        const base = sections().overview;
+        const many = await open(detailView({ overview: { ...base, notes: [{ reason: 'a' }, { reason: 'b' }, { reason: 'c' }] } }));
+        expect(notesToggle(many).textContent).toBe('3 format notes — no action needed');
+        const none = await open(detailView({ overview: { ...base, notes: [] } }));
+        expect(none.querySelector('.format-notes-toggle')).toBeNull();
+    });
+
+    it('AC-007: the toggle is collapsed again when another spec is shown', async () => {
+        const container = await open();
+        await click(notesToggle(container));
+        await send(detailEvent({ ...detailView(), key: 'other', stem: '0008-other' } as ReturnType<typeof detailView>));
+        expect(notesToggle(container).getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('AC-016: a criterion whose title is bold shows it in <strong> with no asterisk left', async () => {
+        const base = sections().criteria;
+        const container = await open(
+            detailView({
+                criteria: { ...base, items: [{ id: 'AC-001', text: '**Events reach the broker without an intermediate table**\nWhen an order event occurs.', illustration: undefined, uncertain: false, struck: false, open: { key: SPEC_KEY } }] },
+            }),
+        );
+        const item = section(container, 'Acceptance criteria').querySelector('li')!;
+        expect(item.querySelector('strong:not(.item-id)')?.textContent).toBe('Events reach the broker without an intermediate table');
+        expect(item.textContent).not.toContain('*');
+        expect(item.querySelectorAll('.item-id')).toHaveLength(1);
+    });
+
+    it('AC-022: NS-1 reads the new text and keeps its rule', async () => {
+        const container = await open(detailView({}, { rule: 'NS-1', text: 'Studio cannot read this spec. See the problem below.' }, [PROBLEM]));
+        expect(section(container, 'Next step').textContent).toContain('Studio cannot read this spec. See the problem below.');
+        expect(container.querySelector('.detail-problems')?.textContent).toContain(PROBLEM.reason);
     });
 });

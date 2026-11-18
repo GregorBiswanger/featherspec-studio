@@ -15,6 +15,20 @@ describe('AC-009: an ID is shown once, so the delivered text loses its own leadi
         expect(withoutLeadingId(text, id)).toBe(expected);
     });
 
+    it.each([
+        ['bold', '**AC-001 — Events reach the broker**\nWhen an order event occurs.', 'AC-001', '**Events reach the broker**\nWhen an order event occurs.'],
+        ['underscore bold', '__AC-001 — Events reach the broker__', 'AC-001', '__Events reach the broker__'],
+        ['bold italic', '***AC-001 — Events reach the broker***', 'AC-001', '***Events reach the broker***'],
+        ['bullet and colon inside the emphasis', '- **FR-02: Show a board**', 'FR-02', '**Show a board**'],
+    ])('AC-016: the emphasis that also encloses the title stays around the title (%s)', (_name, text, id, expected) => {
+        expect(withoutLeadingId(text, id)).toBe(expected);
+    });
+
+    it('AC-016 control: an ID that closes its own emphasis still loses it, so no stray marker is left', () => {
+        expect(withoutLeadingId('**AC-001** — text **bold** more', 'AC-001')).toBe('text **bold** more');
+        expect(withoutLeadingId('**AC-006:** The board shall open.', 'AC-006')).toBe('The board shall open.');
+    });
+
     it('keeps the continuation lines as delivered and strips only the first line', () => {
         expect(withoutLeadingId('**AC-001** The board shall\nshow *(handoff AC-001)*\nevery card.', 'AC-001')).toBe('The board shall\nshow *(handoff AC-001)*\nevery card.');
     });
