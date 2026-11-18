@@ -15,6 +15,7 @@ Current phase: act
 - Completed: 0001…0007 and 0013 in [.specs/done/](../.specs/done/) (amended by 0015); 0008…0012 in done/ are Deprecated with a successor link to 0015. Plans frozen in [.specs/plan-archive/](../.specs/plan-archive/).
 
 ## Changed Recently
+- 0017 (PD-060/PD-061): the next step shows on every card and Needs-attention row, in the status bar (current spec, state, short form; click copies) and as the command "Copy Next Step"; NS-6 gains `continue`. Gone: drag, "Move to…", the move command, `judgeTransition`, the move messages and result. §5 notes in 0001, 0003, 0006, 0007, 0013, 0015, 0016, ADR-001.
 - 0016 (Honest signals, PD-063): diagnostics carry a tier (Problem or format note, set where each is emitted; R-6 fails on Problems only), the Studio shows Problems and needs instead of rule IDs and a readiness checklist, times and history as sentences, Copy confirms at the button, S2 says what Set up does. Compile fixes: test gaps closed (tiers of the reuse path, symlinked folder and folder stat; header counts Problems; first need; detail Copy class; user-language sweep over every surface; hidden live region), amendment notes named at their statements, PD-063 completed.
 - 0015 compile fixes (T-016…T-020): store opener `createProjectStoreOpener` with 0004 AC-009 tests; board filter and sort tests restored; "Move Spec to…" Copy says Copied / Could not copy (core `createMoveResultPresenter`); ADR-001 §14 note; AC-021 exceptions add AC-025 (OP-008); brief mission, CHANGELOG 0.1.0, systemPatterns, design brief; audit completed.
 - 0015 (PD-055, PD-056): Studio starts no agent. Removed: providers, orchestrator, agent start, Agent Center, run commands and settings, `@github/copilot-sdk`. Added: Next step with Copy in the spec detail, Ready → Active shows the next step, the store keeps only the spec status history, earlier run data is removed at every activation, scan tests for sources, bundle and product docs. Tag `archive/agent-runs-2026-11-17` keeps the old state.
@@ -33,7 +34,7 @@ Current phase: act
 2. Gregor: 0014 M-2 with the button, then `/sdd-compile` for 0014.
 3. Gregor: work through [docs/release-checklist.md](../docs/release-checklist.md), then Go.
 4. 0016: CI result at `870dc63` (orchestrator), Gregor's AC-025 (Hands-On on `tip-splitter`, S2 sentence in the Activity Bar view, Copy label change, a problem badge), then `/sdd-compile` again in a fresh session; the spec stays in `active/` until then.
-5. 0017 in progress: next step is the open one in its plan (*Session handoff*); Gregor reads the proxy decisions P-1…P-15.
+5. 0017 implemented (T-001…T-009), spec stays In Progress: Gregor reads the proxy decisions P-1…P-15, runs `npm test` on Windows and CI, AC-026 on `tip-splitter`, then `/sdd-compile` in a fresh session.
 
 ## Validation
 - 0016: unit, lint, both type checks, compile and compile-tests green in the agent sandbox after T-013; `npm test` green on Gregor's Windows 11 machine at `870dc63` on 2026-11-18 (24 + 1 + 1 + 1), `npm run test:unit` there 1801 passed, 7 skipped, 12 timing; CI at `870dc63` not recorded yet (AC-023 open), AC-025 open.

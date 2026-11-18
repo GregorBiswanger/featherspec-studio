@@ -1,9 +1,9 @@
 # Plan — Next Step Everywhere, No Pseudo-Moves
 
 **Spec:** [0017-next-step-everywhere.md](0017-next-step-everywhere.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-18
-**Current step:** T-009
+**Current step:** —
 
 ## Approach
 
@@ -357,45 +357,74 @@ Stages 4 and 5 cannot: they share `extension.ts`, `package.json`, the protocol a
   `activeContext.md`. Final gates.
 - **Verify:** audit counts in the plan; `npx vitest run src/adapters/node/docsScan.test.ts` red, then green;
   gates 1–5; `npm run compile-tests`; `npm test` on Windows and CI (pre-done gate, Gregor)
-- [ ] **Verified (T-009):** —
-- **Notes:** —
+- [x] **Verified (T-009):** 2026-11-18 — docsScan AC-025 extended to .architecture red (move request, transition check, drag), then green 29/29; verify: gates 1–5 clean (1870 passed + 3 skipped, 12 timing; baseline 1818 + 3), compile-tests clean; npm test not run (host, Windows/CI)
+- **Notes:** Title audit in this plan: 68 of 1894 baseline titles missing, all voided by §5 or replaced under a head title; no staying behaviour lost. Architecture sync: AGENTS.md snapshot (core, webview, protocol lines), .architecture/{core,adapters,webview}.md, Memory Bank techContext, systemPatterns (drag entries superseded, one 0017 entry), activeContext. last reconciled date stays 2026-11-18 (same day).
+
+## Test-title audit
+
+Script `/tmp/audit-0017/titles.py` (outside the repo): the `describe`/`it`/`test`/`suite` title literals of
+every `.ts`/`.tsx` under `src` at the Baseline `fe0bb37` (`git archive`) against the head; titles are
+compared across files, so a moved test is no loss. Baseline 1894 titles (1887 unique), head 1967
+(1959 unique); 68 baseline titles are missing at the head, 140 are new. Every missing title is listed
+here with its reason; none decides behaviour that stays.
+
+| Baseline file | Missing | Reason |
+| --- | --- | --- |
+| `core/board/moves.test.ts` (deleted) | 18 | `judgeMove`, `move requests`, the move command and the drop result: 0007 AC-014, 0015 AC-006/AC-008/AC-009 as voided by §5 (PD-060). Staying: the two titles on the clipboard text and the failed write live on as `core/board/copyLine.test.ts` ("0015 AC-005, AC-009: copyLine reports the panel texts…"); NS-7 stays in `nextStep.test.ts` |
+| `core/lifecycle/transitions.test.ts` (deleted) | 9 | `judgeTransition`, 0003 AC-008 (void, §5) |
+| `core/board/boardRequests.test.ts` | 2 | "filter, sort, clear and focus" now reads "filter, sort and clear go to the board state" (focus is void with the move path; filter, sort and clear kept); "a move request is judged by the moves module" void (0007 AC-014) |
+| `core/board/boardService.test.ts` | 1 | "the focused key is remembered and cleared with the panel": the focused key existed only for the Move to… button (0007 AC-017, void) |
+| `core/lifecycle/lifecycleService.test.ts` | 2 | "AC-011: derivation, a transition request and a history append leave the tree unchanged" is now "AC-011: derivation and a history append leave the project tree unchanged" (derivation kept, the request part void); "AC-014: judgeTransition uses the latest snapshot" is now "AC-014: without a project there is no model; the latest snapshot of the repository gives one" |
+| `shared/protocol/boardFilter.test.ts` | 1 | "sort keys and move results are guarded" is now "sort keys are guarded"; the move result type is gone |
+| `test/board.smoke.test.ts` | 2 | "a refused move says what the lifecycle says, and open, move and filter write nothing" is now "AC-016: filter changes write nothing" plus "AC-010, AC-016: Open file opens…"; "the Move Spec command is registered" is replaced by the manifest test that it is absent (0017 AC-009) |
+| `test/lifecycle.smoke.test.ts` | 1 | "the active project gets a state per spec and a Ready spec is accepted for Active" is now "AC-001: the active project gets a state per spec"; the accepted-request part is void |
+| `webview/board/Keyboard.test.tsx` | 29 | 0007 AC-014/AC-015/AC-017/AC-018 and 0013 AC-011 (drag and drop, Move to… button, menu, announcements, drop result) void (§5). Staying and still present: one tab stop, arrow keys, "the tab stop follows the focused card", Enter opens, AC-019 focus across live updates; the Copy tab stop of 0017 AC-006 replaces the Move to… button stop |
+| `webview/board/SpecBoard.test.tsx` | 1 | "AC-009: … progressbars and Move to… follow in DOM order" is now "… and the next-step line follow in DOM order" |
+| `adapters/node/webviewCss.test.ts` | 1 | 0013 AC-011 drag marks CSS (void, §5) |
+| `adapters/vscode/manifest.test.ts` | 1 | "contributes the Move Spec command" (void); 0017 AC-009 tests the opposite |
+
+Staying behaviour named by the task, with a home at the head: keyboard navigation (`Keyboard.test.tsx`
+"arrow keys move focus down, up, right and left", "only one card is tabbable"), Enter opens
+(`Keyboard.test.tsx` "Enter on a card opens the spec as before"), filters and sort
+(`boardRequests.test.ts`, `boardFilter.test.ts`, `board.smoke.test.ts`), lifecycle derivation
+(`lifecycleService.test.ts`, `lifecycle.smoke.test.ts`, `deriveLifecycle` tests untouched), Copy feedback
+(`copyLine.test.ts`, `CopyButton.test.tsx`, `copyNextStep.test.ts`). No staying behaviour was lost.
 
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001, T-003, T-004, T-005 | — | — | open |
-| AC-002 | T-001 | — | — | open |
-| AC-003 | T-001, T-003 | — | — | open |
-| AC-004 | T-004 | — | — | open |
-| AC-005 | T-004 | — | — | open |
-| AC-006 | T-002, T-004 | — | — | open |
-| AC-007 | T-002 | — | — | open |
-| AC-008 | T-002 | — | — | open |
-| AC-009 | T-006, T-007 | — | — | open |
-| AC-010 | T-006 | — | — | open |
-| AC-011 | T-006 | — | — | open |
-| AC-012 | T-001, T-004 | — | — | open |
-| AC-013 | T-003 | — | — | open |
-| AC-014 | T-003, T-007 | — | — | open |
-| AC-015 | T-003 | — | — | open |
-| AC-016 | T-005, T-007 | — | — | open |
-| AC-017 | T-003 | — | — | open |
-| AC-018 | T-003 | — | — | open |
-| AC-019 | T-005 | — | — | open |
-| AC-020 | T-005 | — | — | open |
-| AC-021 | T-005 | — | — | open |
-| AC-022 | T-005 | — | — | open |
-| AC-023 | T-005 | — | — | open |
-| AC-024 | T-009 (every step keeps staying tests) | — | — | open |
-| AC-025 | T-008, T-009 | — | — | open |
+| AC-001 | T-001, T-003, T-004, T-005 | core/board/nextStep.ts, cards.ts, attention.ts; core/copyNextStep/entryView.ts | nextStep, cards, attention, stepView, statusEntry tests | verified |
+| AC-002 | T-001 | core/board/nextStep.ts (NS-6) | nextStep.test.ts | verified |
+| AC-003 | T-001, T-003 | core/board/nextStep.ts `shortForm` | nextStep.test.ts, stepView.test.ts | verified |
+| AC-004 | T-004 | webview/board/Card.tsx, ui/StepText.tsx | SpecBoard.test.tsx | verified |
+| AC-005 | T-004 | webview/board/Card.tsx, ui/CopyButton.tsx | SpecBoard.test.tsx, CopyButton.test.tsx | verified |
+| AC-006 | T-002, T-004 | webview/board/SpecBoard.tsx, Column.tsx | Keyboard.test.tsx | verified |
+| AC-007 | T-002 | webview/board/SpecBoard.tsx | Keyboard.test.tsx | verified |
+| AC-008 | T-002 | webview/board/SpecBoard.tsx | Keyboard.test.tsx | verified |
+| AC-009 | T-006, T-007 | package.json, adapters/vscode/commands.ts | manifest.test.ts, copyNextStep.smoke.test.ts (CI) | verified |
+| AC-010 | T-006 | shared/protocol/messages.ts, shell messageRouter | messageRouter.test.ts | verified |
+| AC-011 | T-006 | removed move path across src | sourceScan.test.ts | verified |
+| AC-012 | T-001, T-004 | webview/missionControl/Attention.tsx | Sections.test.tsx | verified |
+| AC-013 | T-003 | core/copyNextStep/currentSpec.ts | currentSpec.test.ts | verified |
+| AC-014 | T-003, T-007 | core/copyNextStep/entryView.ts, statusEntry.ts; adapters/vscode/statusBar.ts | statusEntry.test.ts, manifest.test.ts | verified |
+| AC-015 | T-003 | core/copyNextStep/entryView.ts | statusEntry.test.ts | verified |
+| AC-016 | T-005, T-007 | core/copyNextStep/statusEntry.ts, adapters/vscode/statusBar.ts | statusEntry.test.ts, copyNextStep.smoke.test.ts (CI) | verified |
+| AC-017 | T-003 | core/copyNextStep/entryView.ts (escapeMarkdown) | statusEntry.test.ts | verified |
+| AC-018 | T-003 | core/copyNextStep/entryView.ts (accessibleText) | statusEntry.test.ts | verified |
+| AC-019 | T-005 | core/copyNextStep/copyNextStep.ts | copyNextStep.test.ts | verified |
+| AC-020 | T-005 | core/copyNextStep/copyNextStep.ts | copyNextStep.test.ts | verified |
+| AC-021 | T-005 | core/copyNextStep/copyNextStep.ts | copyNextStep.test.ts | verified |
+| AC-022 | T-005 | core/copyNextStep/copyNextStep.ts | copyNextStep.test.ts (real shell world, trust on and off) | verified |
+| AC-023 | T-005 | core/copyNextStep/copyNextStep.ts | copyNextStep.test.ts, noWrite.test.ts | verified |
+| AC-024 | T-009 (every step keeps staying tests) | — | Test-title audit below (0 staying titles lost) | verified |
+| AC-025 | T-008, T-009 | README.md, CHANGELOG.md, docs/, .architecture, §5 notes | docsScan.test.ts | verified |
 | AC-026 | T-008 (checklist) | — | manual: Gregor, M-1 on `tip-splitter` | open |
 
 ## Session handoff
 
-- **Done so far:** plan written 2026-11-18 (S38); moved to `active/` and started 2026-11-18 (S39).
-- **Next action:** T-001.
-  `active/`, then T-001.
+- **Done so far:** plan written 2026-11-18 (S38); moved to `active/`, T-001…T-009 verified 2026-11-18 (S39).
+- **Next action:** Gregor: `npm test` on Windows and CI, AC-026 (M-1 on `tip-splitter`), then `/sdd-compile` in a fresh session; the spec stays In Progress and 0017 moves to done/ only after that (retarget no links: the §5 notes carry none).
 - **Open decisions:** proxy decisions P-1…P-15 (Research) await Gregor's reading; spec OP-002 stays his.
 - **Baseline:** `fe0bb37` (plan commit, before the first step); unit tests at the Baseline: 1818 passed, 3 skipped (after the lifecycle move).
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked).

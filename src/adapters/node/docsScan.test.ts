@@ -111,6 +111,14 @@ describe('product docs after 0017 (AC-025)', () => {
         expect(findMoveTerms('Copy the next step of a card')).toEqual([]);
     });
 
+    it('.architecture/*.md name no move path', async () => {
+        const names = (await fs.readdir(path.join(root, '.architecture'))).filter((name) => name.endsWith('.md'));
+        expect(names.length).toBeGreaterThan(0);
+        for (const name of names) {
+            expect(findMoveTerms(await read(`.architecture/${name}`)), name).toEqual([]);
+        }
+    });
+
     for (const file of MOVE_SCANNED) {
         it(`${file} names no move path`, async () => {
             expect(findMoveTerms(await read(file))).toEqual([]);

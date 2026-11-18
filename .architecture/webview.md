@@ -1,15 +1,15 @@
 # Map: src/webview (Studio panel UI)
-# last reconciled: 2026-11-18
+# last reconciled: 2026-11-18 (0017)
 
 ## Internal pattern
 - `main.tsx` → `App.tsx` — entry and shell (navigation, panel states, notice bar, restricted note).
 - `client.ts` — typed protocol client; `vscodeApi.ts` holds the only host handle (`postMessage`).
 - `areas/registry.tsx` — area registry with placeholders; `areas/<Area>.tsx` or `areas/<area>/`
   (Spec Explorer list, Spec Board, Mission Control); area folders hold `store.ts` and `texts.ts`.
-- `board/`, `detail/` (0007) — Spec Board and spec detail (0015: Next step with Copy).
+- `board/`, `detail/` (0007) — Spec Board and spec detail (0015: Next step with Copy). Cards and Mission Control attention rows show "Next", the short form and Copy (0017, `ui/StepText.tsx`); the board offers no way to move a spec.
 - `ui/` (0013) — shared primitives: state chip, rule text, progress bar, inline text formatter, copy button, format-note toggle (0016).
 - `main.css` — the one stylesheet; colours only from VS Code theme variables via `--fs-*` aliases.
-- Specs: 0005, 0007, 0006, 0013, 0015.
+- Specs: 0005, 0007, 0006, 0013, 0015, 0017.
 
 ## Task playbooks
 - New view data: contract in `src/shared/protocol/<view>.ts` (with its guard test) → core

@@ -72,13 +72,13 @@ holds the *why*: decisions and patterns.
 - The shell model source derives the 0003 model from the repository snapshot itself (`deriveLifecycle`, cached per snapshot) instead of reading the lifecycle
   service, which refreshes asynchronously and could pair a project with a model of another snapshot · 2026-11-16 · plan 0005 T-006
 
-- Board filter, sort and focus live in extension memory (`boardUiState`), not in the webview: they survive a panel reload, a second reader gets one truth, and the filter is cleared when the project root changes;
+- Board filter and sort live in extension memory (`boardUiState`), not in the webview: they survive a panel reload, a second reader gets one truth, and the filter is cleared when the project root changes;
   closing the panel resets all three · 2026-11-16 · plan 0007 *Research*, Gregor
 - Board and detail logic live in `src/core/board` (cards, progress, filters, moves and the move result, open-file guard, detail sections, next step, board service; runs removed by 0015, PD-055); the webview only renders the `board`, `detail`, `moveResult` and
   `openFileResult` snapshots, which carry no `seq` (each replaces the last) and are re-sent on `hello` · 2026-11-16 · plan 0007 *Approach*, T-010
-- Native HTML5 drag and drop instead of `@dnd-kit/react` (ADR-001 §11 named it as the primary, native as the fallback): no new dependency, the "Move to…" menu and the command stay the mandatory non-drag alternative ·
+- Native HTML5 drag and drop instead of `@dnd-kit/react` (ADR-001 §11 named it as the primary, native as the fallback): no new dependency, the "Move to…" menu and the command stay the mandatory non-drag alternative · **superseded by 0017 (PD-060): no drag, no Move to…, no move command** ·
   2026-11-16 · plan 0007 *Research*, Gregor; amendment in ADR-001 §11
-- Drag tests dispatch `MouseEvent`s named `dragstart`, `dragover`, `drop` and `dragend`, because jsdom has no `DragEvent`; the drag handlers must not rely on `dataTransfer` · 2026-11-16 · plan 0007 T-008
+- Drag tests dispatch `MouseEvent`s named `dragstart`, `dragover`, `drop` and `dragend`, because jsdom has no `DragEvent`; the drag handlers must not rely on `dataTransfer` · **superseded by 0017 (PD-060): the board has no drag** · 2026-11-16 · plan 0007 T-008
 - Board filter encoding v1 is `{states?, set?: {label, stems}}` in `src/shared/protocol/boardFilter.ts`: AND across kinds, OR within a kind, an unknown stem matches
   nothing; the dashboard (spec 0006) uses this shape for its navigation requests · 2026-11-16 · plan 0007 T-001, Gregor
 - Mission Control: the host computes the dashboard as one serialisable `MissionControlView` (`src/core/missionControl`, contract and strict guard in `src/shared/protocol/missionControl.ts`) and the webview only renders
@@ -89,7 +89,7 @@ holds the *why*: decisions and patterns.
 - Area texts sit in one file per area (`src/webview/areas/missionControl/texts.ts`); the area shows no loading text of its own before its first view (the shell owns S4) · 2026-11-16 · plan 0006 T-005
 - Studio colours: the stylesheet uses only `--vscode-*` variables; own `--fs-*` custom properties are allowed as aliases whose every definition is a `var(--vscode-*)` chain (no literal, no spacing tokens); one state-colour mapping via `[data-board-state]` → `--fs-tint`, tint on icon, edge and bar only, text stays foreground · 2026-11-16 · plan 0013 T-001, Gregor
 - Inline Markdown of spec files is tokenised by a pure formatter (`src/webview/ui/inlineFormat.ts`) into tokens rendered as React elements; no HTML is ever parsed or injected (`innerHTML` banned under `src/webview`, guarded by a test) · 2026-11-16 · plan 0013 T-007
-- Drag feedback marks only the dragged card and the column under the pointer, no valid/invalid verdict before the drop; refusals show after the drop · 2026-11-16 · spec 0013 OP-1 (a), Gregor
+- Drag feedback marks only the dragged card and the column under the pointer, no valid/invalid verdict before the drop; refusals show after the drop · **superseded by 0017 (PD-060): no drag** · 2026-11-16 · spec 0013 OP-1 (a), Gregor
 
 
 
@@ -97,9 +97,10 @@ holds the *why*: decisions and patterns.
 - Timing tests: every wall-clock budget test lives in a `*.timing.test.{ts,tsx}` file and runs after the rest of `npm run test:unit` in one worker (Vitest projects `timing-node`, `timing-webview`); budgets unchanged · 2026-11-17 · commit 0920dd7
 - Setup from the Studio (spec 0014, PD-049, PD-053): the latest release comes through the web routes (`/releases/latest` redirect for the tag, then `archive/refs/tags/<tag>.tar.gz`), not the REST API, so there is no quota or token; files are written by a Node `wx` exclusive create and a temp-file rename, not `workspace.fs`, because only that gives no-overwrite and no-lost-update; the S2 offer is a `viewsWelcome` entry (S2 only, via the context key `featherspec-studio.panelState`); the JSONC scanner and the tar reader are our own, no new dependency; a root `.gitignore` that cannot be completed is class `left` because its parked copy would collide with the folder's own `.gitignore` · 2026-11-17 · plan 0014 T-003…T-008
 
-- Next step (spec 0015, PD-056): `src/core/board/nextStep.ts` derives the FeatherSpec command for a spec by pure rules NS-1…NS-11 from spec and plan facts; Copy hands the line to the clipboard through the `copyText` request and `copyResult` event; Ready → Active starts nothing and answers with the next step · 2026-11-17 · spec 0015, plan 0015 T-001, T-002
+- Next step (spec 0015, PD-056): `src/core/board/nextStep.ts` derives the FeatherSpec command for a spec by pure rules NS-1…NS-11 from spec and plan facts; Copy hands the line to the clipboard through the `copyText` request and `copyResult` event; Ready → Active starts nothing and answers with the next step (**the drop is superseded by 0017 (PD-060)**: a Ready card's Copy gives the line) · 2026-11-17 · spec 0015, plan 0015 T-001, T-002
 
 ## Patterns
 - Two dimensions: the spec lifecycle and the verification status are modelled apart (handoff §6.2; the agent-run lifecycle is gone, PD-055).
 
 - 2026-11-18 (spec 0016, PD-063): a diagnostic's tier (`problem` or `note`) is set where it is emitted, never derived later; compatibility findings (what FeatherSpec itself writes) are not emitted. R-6 fails exactly when the entry carries a Problem. Needs of a Backlog spec live in `core/board/needs.ts` (R-2, R-3, R-4), the readiness checks stay in the model. Copy feedback appears at the button (`ui/CopyButton.tsx`), not in a status line. Rule IDs appear only in `title` tooltips; texts come from `src/shared/protocol/texts.ts`.
+- 2026-11-18 (spec 0017, PD-060/PD-061): the next step shows on cards, Needs-attention rows, the status bar and the command "Copy Next Step"; the webview derives nothing (core `stepView()` gives short form, line and lines). Discovery reports to a *project line* latch (0001's tests unchanged); `src/core/copyNextStep/` composes the status entry from the latch, the discovery snapshot and the shell view (current spec: selected spec, else most urgent Blocked > Review > Active), and click and command share one behaviour (P-9, feedback 2 s, restarts on a second copy). Copy is a sibling of the row button (P-5), only the tab-stop card's Copy is tabbable (P-11). No move path remains: no drag, menu, command, `judgeTransition` or move messages.

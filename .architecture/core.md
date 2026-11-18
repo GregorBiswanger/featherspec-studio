@@ -1,5 +1,5 @@
 # Map: src/core (framework-free core)
-# last reconciled: 2026-11-18
+# last reconciled: 2026-11-18 (0017)
 
 ## Internal pattern
 - `src/core/<area>/` — one folder per spec; `<area>Service.ts` is the application service where the
@@ -8,19 +8,20 @@
 - Areas and what they hold (moved from the `AGENTS.md` snapshot, 2026-11-17):
   - `ports` — read-only file system, spec source, file watch; host ports (status bar, output, state,
     UI, folders, marker watch, clock); runtime medium; shell (trust, UI memory, actions, model
-    source); board (editor, move picks, move result, clipboard); setting;
+    source); board (editor, clipboard); copyNextStep (status entry, step quick pick, Copy feedback; 0017); setting;
     setup (release archive, release HTTP, setup target, setup UI).
   - `discovery` (0001) — project verdicts, version line, active-project state, report model, controller, rerun scheduler.
   - `specs` (0002) — spec repository: file listing, spec and plan parsers, joins, diagnostics, live repository; every diagnostic carries a tier, problem or note (0016), set where it is emitted; compatibility findings are not emitted.
   - `lifecycle` (0003) — state derivation, readiness, contradictions, blocking conditions, plan in
-    use, verification status, transition check, flow marker, status history, lifecycle service.
+    use, verification status, flow marker, status history, lifecycle service.
   - `runtime` (0004) — runtime store narrowed to the spec status history: writer lock, retention (90 days), store state; earlier run data removal.
   - `shell` (0005) — panel states and precedence, selection, remembered area, navigation request,
     spec rows, tree model, message router, shell service.
   - `missionControl` (0006) — header, spec figures, progress, attention
     list, recent activity, dashboard service.
   - `board` (0007) — Spec Board and spec detail view models: cards, progress, filters
-    and sorting, board UI state, move requests, open-file guard, detail sections, next step (NS rules, 0015), needs of a Backlog spec (0016), board service.
+    and sorting, board UI state, open-file guard, detail sections, next step (NS rules, 0015; step view and short form, 0017), needs of a Backlog spec (0016), copy line, board service.
+  - `copyNextStep` (0017) — current spec, project line, status entry view (text, tooltip, accessible text), Copy Next Step behaviour (click and command), quick pick items; `testing/` holds the entry world.
   - `setup` (0014) — the only writer and network user: release download and check, file classes, `.gitignore` and
     `settings.json` completions, apply, merge prompt, setup service; `testing/` holds the in-memory target and scripted HTTP.
 
