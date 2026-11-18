@@ -851,4 +851,25 @@ describe('product docs after the final check of round 2 (0024 T-014 to T-022)', 
             expect(own[0], name).toContain(`(../.specs/active/${name.replace(/\.md$/, '.plan.md')})`);
         }
     });
+    it('the CHANGELOG entry names the tree action Copy Next Step, the gear in the toolbar, one copy control, three settings and Problems as sentences', async () => {
+        const first = firstRelease(await read('CHANGELOG.md'));
+        expect(first).toContain('an inline **Copy Next Step** and the context menu (Open Spec, Open Plan and Copy Next Step)');
+        expect(first).toContain('the toolbar has **Open**, **Refresh** and the gear (**Open Settings**)');
+        expect(first).not.toContain('**Copy**');
+        expect(first).toContain('as one line with a **Copy prompt** button');
+        expect(first).toContain('Three settings, under **FeatherSpec Studio**');
+        expect(first).not.toContain('Two settings');
+        expect(first).not.toContain('**Send to your assistant**');
+        expect(first).toContain('`featherspec-studio.assistant`');
+        expect(first).toContain('Problems as sentences');
+        expect(first).not.toContain('Problems with their reasons');
+    });
+
+    it('the CHANGELOG lists every command of the Command Palette', async () => {
+        const first = firstRelease(await read('CHANGELOG.md'));
+        for (const name of ['Open', 'Open Overview', 'Open Board', 'Open Plan Map', 'Focus on Specs View', 'Copy Next Step', 'Set Up FeatherSpec', 'Select Project', 'Refresh', 'Open Settings']) {
+            expect(first, name).toContain(`\`FeatherSpec Studio: ${name}\``);
+        }
+    });
+
 });

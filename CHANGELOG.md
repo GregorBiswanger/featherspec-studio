@@ -14,10 +14,10 @@ First release.
   Ready, Backlog and Done (collapsed); a group that holds a problem says so. A row shows number, title
   and the short next step (the state where there is none), within 32 characters for label and
   description, with an icon and a colour per state and a tooltip that explains the row. A click selects the spec
-  and shows its detail in the panel; an inline **Copy** and the context menu (Open Spec, Open Plan and Copy Next Step)
+  and shows its detail in the panel; an inline **Copy Next Step** and the context menu (Open Spec, Open Plan and Copy Next Step)
   act on the row. The badge counts the specs that wait for you (Review and Blocked),
-  the toolbar has **Open** and **Refresh**, and the tree follows every file change within half a second.
-- The next step everywhere: each spec's next FeatherSpec step as one line with a **Copy** button, ready
+  the toolbar has **Open**, **Refresh** and the gear (**Open Settings**), and the tree follows every file change within half a second.
+- The next step everywhere: each spec's next FeatherSpec step as one line with a **Copy prompt** button, ready
   to paste into the AI assistant you work with. Studio starts no agent. The status bar shows the spec
   you work on (`<number> · <state> · <short form>`); a click copies its next step, and the command
   `FeatherSpec Studio: Copy Next Step` does the same and, without a current spec, offers a list. An
@@ -29,12 +29,17 @@ First release.
   copies the prompt only. A coach line under the first prompt of the detail and in the first Now row says
   where to run it and with which kind of model, and **About this step** (`?`) explains the step in four
   short paragraphs; Escape closes only it.
-- Two settings, under **FeatherSpec Studio** in the Settings UI, apply at once in every window:
-  `showStepTips` (coach line and **About this step**, default on) and
+- Three settings, under **FeatherSpec Studio** in the Settings UI, apply at once in every window:
+  `showStepTips` (coach line and **About this step**, default on),
   `modelHints` (your own names for a `strong` and a `fast` model; Studio ships no
-  model name).
+  model name) and `featherspec-studio.assistant` (`none`, `copilot`, `claudeCode`; default `none`). The last
+  turns the **Copy prompt** of the detail's first line and of the first Now row into a split button, **Send to
+  Copilot** or **Send to Claude Code**, while that assistant's extension is installed. It opens the assistant's
+  chat with the prompt in its input and sends nothing; the arrow offers the other chat and **Copy prompt**. Where
+  the chat cannot be opened, Studio copies the prompt and says so. The gear in the Specs view opens the
+  settings. Without the setting nothing changes.
 - The panel with three tabs. The **Overview** lists what is in progress (Now), what comes next (Up next),
-  Problems with their reasons, one line of figures and a collapsed Activity. The **Board** shows every
+  Problems as sentences, one line of figures and a collapsed Activity. The **Board** shows every
   spec as a card in six columns (Backlog, Ready, Active, Review, Done, Blocked): a column without a card
   is a narrow strip, Done is collapsed until you open it (remembered per workspace), a card has three
   rows (title; what matters in its state, problems and the day of the last change; next step), and you
@@ -69,14 +74,10 @@ First release.
   workspace and contacts the network. A folder with a `.featherspec-setup/` directory counts as incomplete
   until the merge is done.
 - Commands in the Command Palette: `FeatherSpec Studio: Open`, `FeatherSpec Studio: Open Overview`,
-  `FeatherSpec Studio: Open Board`, `FeatherSpec Studio: Select Project` (when the workspace holds several
-  FeatherSpec projects) and `FeatherSpec Studio: Refresh` (project discovery, then the specs again).
+  `FeatherSpec Studio: Open Board`, `FeatherSpec Studio: Open Plan Map`, `FeatherSpec Studio: Focus on Specs View`,
+  `FeatherSpec Studio: Copy Next Step`, `FeatherSpec Studio: Set Up FeatherSpec`, `FeatherSpec Studio: Select Project`
+  (when the workspace holds several FeatherSpec projects), `FeatherSpec Studio: Refresh` (project discovery, then
+  the specs again) and `FeatherSpec Studio: Open Settings`.
 - Local spec status history outside the workspace, kept for 90 days.
 - Restricted Mode: Studio only reads. It shows the project and the next step, and never runs workspace
   code or changes a file; Set up FeatherSpec needs a trusted workspace.
-- **Send to your assistant**: the setting `featherspec-studio.assistant` (`none`, `copilot`, `claudeCode`; default
-  `none`) turns the **Copy prompt** of the detail's first line and of the first Now row into a split button, **Send to
-  Copilot** or **Send to Claude Code**, while that assistant's extension is installed. It opens the assistant's chat
-  with the prompt in its input and sends nothing; the arrow offers the other chat and **Copy prompt**. Where the chat
-  cannot be opened, Studio copies the prompt and says so. The gear in the Specs view (`FeatherSpec Studio: Open
-  Settings`) opens the settings. Without the setting nothing changes.
