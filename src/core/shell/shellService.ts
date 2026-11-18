@@ -164,7 +164,8 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
 
     async function refresh(): Promise<void> {
         await ignoring(() => deps.discovery.refresh());
-        if (deps.discovery.snapshot().active !== undefined) {
+        const snapshot = deps.discovery.snapshot();
+        if (snapshot.active !== undefined && snapshot.failure === undefined) {
             await ignoring(() => deps.repository.rescan());
         }
     }

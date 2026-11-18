@@ -244,6 +244,30 @@ describe('0018 AC-027: the Refresh command', () => {
         expect(current.views).not.toContain('S4');
     });
 
+    it('0018 AC-027, §8: a discovery that fails during Refresh leaves the panel state S5 and re-reads no spec, from the command and from the panel actions', async () => {
+        const current = ready();
+        await current.controller.start();
+        await current.settle();
+        const appendBlock = current.host.output.appendBlock;
+        current.host.output.appendBlock = () => {
+            throw new Error('broke during refresh');
+        };
+        let rescans = 0;
+        const rescan = current.repository.rescan.bind(current.repository);
+        current.repository.rescan = async () => {
+            rescans += 1;
+            await rescan();
+        };
+        await current.service.refresh();
+        await current.service.runAction('refresh');
+        await current.service.runAction('retry');
+        expect(rescans).toBe(0);
+        expect(current.service.view().state).toEqual({ id: 'S5', reason: { cause: 'discovery', message: 'broke during refresh' } });
+        current.host.output.appendBlock = appendBlock;
+        await current.service.refresh();
+        expect(rescans).toBe(1);
+    });
+
     it('runs discovery only while no project is active', async () => {
         world = createShellWorld({ roots: ['plain'] });
         await world.controller.start();
