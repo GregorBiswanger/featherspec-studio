@@ -1,6 +1,8 @@
 import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { NOTHING_UP_NEXT_TEXT, UP_NEXT_HEADING } from '../../webview/areas/overview/texts';
+import { UP_NEXT_SET_LABEL } from '../../webview/areas/overview/requests';
 
 const root = path.resolve(__dirname, '..', '..', '..');
 
@@ -287,3 +289,32 @@ describe('0020 AC-018: the Spec Explorer is gone from the sources', () => {
         expect(hits("const name = 'Spec board';", TERMS, true)).toEqual([]);
     });
 });
+
+describe('0022 AC-007: "up next" names one set', () => {
+    const ALLOWED = [UP_NEXT_HEADING, NOTHING_UP_NEXT_TEXT, UP_NEXT_SET_LABEL];
+
+    function literalsWithUpNext(text: string): string[] {
+        return [...text.matchAll(/'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|`((?:[^`\\]|\\.)*)`/g)].map((match) => match[1] ?? match[2] ?? match[3] ?? '').filter((literal) => /up next/i.test(literal));
+    }
+
+    it('every literal of src without tests that holds "up next" is the Overview heading, its empty line or the named set', async () => {
+        const files = (await sourceFiles()).filter((file) => !isTestFile(file.name));
+        const found = files.flatMap((file) => literalsWithUpNext(file.text).map((literal) => `${file.name}: ${literal}`));
+        expect(found.sort()).toEqual(
+            [`src/webview/areas/overview/texts.ts: ${UP_NEXT_HEADING}`, `src/webview/areas/overview/texts.ts: ${NOTHING_UP_NEXT_TEXT}`, `src/webview/areas/overview/requests.ts: ${UP_NEXT_SET_LABEL}`].sort(),
+        );
+        expect(ALLOWED).toHaveLength(3);
+    });
+
+    it('package.json holds no "up next"', async () => {
+        expect(await fs.readFile(path.join(root, 'package.json'), 'utf8')).not.toMatch(/up next/i);
+    });
+
+    it('negative control: the scan finds a group label and a tooltip that say up next, and passes the allowed texts', () => {
+        expect(literalsWithUpNext("const GROUP = { upNext: 'Up next' };").filter((literal) => !ALLOWED.includes(literal))).toEqual([]);
+        expect(literalsWithUpNext("const GROUP = 'Up next group';")).toEqual(['Up next group']);
+        expect(literalsWithUpNext('const TIP = `The up next list`;')).toEqual(['The up next list']);
+        expect(literalsWithUpNext("const x = 'Ready';")).toEqual([]);
+    });
+});
+

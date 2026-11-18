@@ -112,6 +112,8 @@ describe('board requests', () => {
         expect(isBoardView({ ...view, columns: [{ ...view.columns[0], narrow: 'empty' }] })).toBe(true);
         expect(isBoardView({ ...view, columns: [{ ...view.columns[0], narrow: 'wide' }] })).toBe(false);
         expect(isBoardView({ ...view, columns: [{ state: 'Active', cards: [], hidden: 0, emptyBeforeFilter: false }] })).toBe(false);
+        expect(isBoardView({ ...view, columns: [{ ...view.columns[0], narrow: 'collapsed', problems: 2 }] })).toBe(true);
+        expect(isBoardView({ ...view, columns: [{ ...view.columns[0], narrow: 'collapsed', problems: '2' }] })).toBe(false);
         expect(isBoardView({ ...view, doneToggle: 'show' })).toBe(true);
         expect(isBoardView({ ...view, doneToggle: 'open' })).toBe(false);
         expect(isBoardView({ ...view, sortKeys: [] })).toBe(false);

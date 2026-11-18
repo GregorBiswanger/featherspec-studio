@@ -6,6 +6,9 @@ import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
 import { readFixture } from '../lifecycle/testing/projects';
 import type { PanelState } from '../../shared/protocol/messages';
 import type { ShellModel } from '../ports/shell';
+import { buildCards } from '../board/cards';
+import { arrangeBoard } from '../board/filters';
+import { projectFigures } from '../overview/figures';
 import { buildSpecTree, type GroupModel, type SpecRowModel, type SpecTreeModel } from './specTree';
 
 function spec(title: string | undefined, status: string, plan?: string): string {
@@ -51,12 +54,12 @@ const MIXED = {
 };
 
 describe('0020 AC-001: the groups', () => {
-    it('shows the groups that hold a spec, in the order In progress, Up next, Backlog, Done, each with its count as the description', async () => {
+    it('shows the groups that hold a spec, in the order In progress, Ready, Backlog, Done, each with its count as the description', async () => {
         const tree = treeOf(await modelOf(MIXED));
         expect(tree.message).toBeUndefined();
         expect(groups(tree).map((group) => [group.label, group.description])).toEqual([
             ['In progress', '3'],
-            ['Up next', '1'],
+            ['Ready', '1'],
             ['Backlog', '1'],
             ['Done', '2'],
         ]);
@@ -68,7 +71,7 @@ describe('0020 AC-001: the groups', () => {
         const byGroup = Object.fromEntries(groups(tree).map((group) => [group.label, group.children.map((row) => row.stem)]));
         expect(byGroup).toEqual({
             'In progress': ['0005-stuck', '0004-reviewing', '0003-working'],
-            'Up next': ['0002-planned'],
+            Ready: ['0002-planned'],
             Backlog: ['0001-idea'],
             Done: ['0006-finished', '0007-old'],
         });
@@ -82,11 +85,11 @@ describe('0020 AC-001: the groups', () => {
 });
 
 describe('0020 AC-002: expand state and IDs', () => {
-    it('starts In progress, Up next and Backlog expanded and Done collapsed', async () => {
+    it('starts In progress, Ready and Backlog expanded and Done collapsed', async () => {
         const tree = treeOf(await modelOf(MIXED));
         expect(groups(tree).map((group) => [group.label, group.collapsed])).toEqual([
             ['In progress', false],
-            ['Up next', false],
+            ['Ready', false],
             ['Backlog', false],
             ['Done', true],
         ]);
@@ -98,7 +101,7 @@ describe('0020 AC-002: expand state and IDs', () => {
         expect(groupOf(one, 'Backlog').id).toBe(groupOf(three, 'Backlog').id);
         expect(groupOf(one, 'Backlog').id).toBe('group:backlog');
         expect(groupOf(three, 'Backlog').description).toBe('3');
-        expect(groups(treeOf(await modelOf(MIXED))).map((group) => group.id)).toEqual(['group:inProgress', 'group:upNext', 'group:backlog', 'group:done']);
+        expect(groups(treeOf(await modelOf(MIXED))).map((group) => group.id)).toEqual(['group:inProgress', 'group:ready', 'group:backlog', 'group:done']);
     });
 
     it('no two rows or groups of one tree share an ID', async () => {
@@ -312,7 +315,7 @@ describe('0020 AC-001, AC-005: a move changes the group', () => {
     it('a spec moved from backlog to active leaves Backlog and shows in In progress', async () => {
         const before = treeOf(await modelOf({ '.specs/backlog/0001-a.md': spec('A', 'Draft', '0001-a.plan.md'), '.specs/backlog/0001-a.plan.md': plan('Not started') }));
         const after = treeOf(await modelOf({ '.specs/active/0001-a.md': spec('A', 'In Progress', '0001-a.plan.md'), '.specs/active/0001-a.plan.md': plan('In Progress') }));
-        expect(groupOf(before, 'Up next').children.map((row) => row.stem)).toEqual(['0001-a']);
+        expect(groupOf(before, 'Ready').children.map((row) => row.stem)).toEqual(['0001-a']);
         expect(groupOf(after, 'In progress').children.map((row) => row.stem)).toEqual(['0001-a']);
     });
 });
@@ -524,3 +527,61 @@ describe('AC-003: the Activity Bar tree model', () => {
         expect(buildSpecTree({ ...none, state: undefined })).toEqual({ message: undefined, items: [] });
     });
 });
+
+describe('0022 AC-006: the groups and their Problem hint', () => {
+    const BAD_DONE = { ...MIXED, '.specs/done/0008-bad.md': spec('Bad', 'In Progress') };
+
+    it('a group holding a spec with a Problem carries the count and the problem count, the warning icon, and the sentence as tooltip and accessible label, collapsed or not', async () => {
+        const tree = treeOf(await modelOf(BAD_DONE));
+        const withHint = groups(tree).filter((group) => group.icon !== undefined);
+        expect(withHint.length).toBeGreaterThan(0);
+        for (const group of withHint) {
+            const problems = Number(/ · (\d+) problems?$/.exec(group.description)?.[1] ?? 1);
+            const count = Number(group.description.split(' ')[0]);
+            expect(group.description).toBe(`${count} · ${problems === 1 ? '1 problem' : `${problems} problems`}`);
+            expect([group.icon, group.color]).toEqual(['warning', 'problemsWarningIcon.foreground']);
+            const label = `${group.label}: ${count === 1 ? '1 spec' : `${count} specs`} · ${problems === 1 ? '1 problem' : `${problems} problems`}`;
+            expect([group.tooltip, group.accessibleLabel]).toEqual([label, label]);
+        }
+        expect(withHint.some((group) => group.collapsed)).toBe(true);
+    });
+
+    it('a group without a Problem shows its count alone and no icon, colour, tooltip or accessible label', async () => {
+        const tree = treeOf(await modelOf(MIXED));
+        for (const group of groups(tree)) {
+            expect(group.description).toBe(String(group.children.length));
+            expect([group.icon, group.color, group.tooltip, group.accessibleLabel]).toEqual([undefined, undefined, undefined, undefined]);
+        }
+    });
+
+    it('the group ID holds neither count', async () => {
+        const plain = groups(treeOf(await modelOf(MIXED))).map((group) => group.id);
+        const hinted = groups(treeOf(await modelOf(BAD_DONE))).map((group) => group.id);
+        expect(hinted.filter((id) => plain.includes(id))).toEqual(plain);
+        for (const id of [...plain, ...hinted]) {
+            expect(id).not.toMatch(/\d/);
+        }
+    });
+
+    it('the plural and singular forms follow X-02 and X-03 at 1 and at 2', async () => {
+        const one = groups(treeOf(await modelOf({ '.specs/done/0008-bad.md': spec('Bad', 'In Progress') })));
+        expect(one.map((group) => group.accessibleLabel).filter((label) => label !== undefined)[0]).toMatch(/: 1 spec · 1 problem$/);
+        const two = groups(treeOf(await modelOf({ '.specs/done/0008-bad.md': spec('Bad', 'In Progress'), '.specs/done/0009-bad.md': spec('Bad two', 'In Progress') })));
+        expect(two.map((group) => group.accessibleLabel).filter((label) => label !== undefined)[0]).toMatch(/: 2 specs · 2 problems$/);
+    });
+});
+
+describe('0022 AC-007: one model, one Ready count', () => {
+    it('the Ready group, the Overview Ready figure and the Board Ready column hold the same number, and no group reads Up next', async () => {
+        const model = await modelOf(MIXED);
+        const tree = treeOf(model);
+        const figures = projectFigures(model);
+        const overview = figures.kind === 'counts' ? figures.states.find((state) => state.state === 'Ready')!.count : -1;
+        const board = arrangeBoard(buildCards(model.project, model.lifecycle), {}, 'number').find((column) => column.state === 'Ready')!.count;
+        expect(Number(groupOf(tree, 'Ready').description)).toBe(overview);
+        expect(overview).toBe(board);
+        expect(groups(tree).map((group) => group.label)).not.toContain('Up next');
+        expect(JSON.stringify(tree)).not.toMatch(/Up next|upNext/);
+    });
+});
+

@@ -164,6 +164,24 @@ function nowRow(container: HTMLElement, stem: string): HTMLElement {
     return container.querySelector<HTMLElement>(`[data-row-group="now"][data-spec-row="${stem}"]`)!;
 }
 
+describe('0022 AC-007 (X-07): the Up next note', () => {
+    it('shows "Ready first, then backlog" after the Up next heading while rows are listed', async () => {
+        const container = await open(withRows());
+        const panel = container.querySelector('[data-up-next]')!;
+        const note = panel.querySelector('p.ov-note')!;
+        expect(note.textContent).toBe('Ready first, then backlog');
+        expect(panel.querySelector('h2')?.nextElementSibling).toBe(note);
+    });
+
+    it('shows no note while the section lists no row', async () => {
+        const view = withRows();
+        view.upNext = { rows: [], more: 0, stems: [] };
+        const panel = (await open(view)).querySelector('[data-up-next]')!;
+        expect(panel.querySelector('.ov-note')).toBeNull();
+        expect(panel.textContent).toContain('Nothing up next');
+    });
+});
+
 describe('0018 AC-006: a spec row on one line', () => {
     it('shows number, title, status text, the next step and Copy, and no second step line', async () => {
         const container = await open(withRows());

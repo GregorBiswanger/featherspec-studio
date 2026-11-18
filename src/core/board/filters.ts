@@ -39,18 +39,23 @@ function compareBy(sort: SortKey): (left: CardView, right: CardView) => number {
     }
 }
 
+function problemsOf(cards: readonly CardView[]): { problems?: number } {
+    const problems = cards.reduce((sum, card) => sum + card.problems, 0);
+    return problems === 0 ? {} : { problems };
+}
+
 export function arrangeBoard(cards: readonly CardView[], filter: BoardFilter, sort: SortKey, doneExpanded = true): BoardColumn[] {
     const compare = compareBy(sort);
     return BOARD_STATES.map((state) => {
         const own = cards.filter((card) => card.state === state);
         const shown = own.filter((card) => matches(card, filter)).sort(compare);
         if (state === 'Done' && !doneExpanded && !isFilterSet(filter) && own.length > 0) {
-            return { state, cards: [], hidden: 0, emptyBeforeFilter: false, count: own.length, narrow: 'collapsed' };
+            return { state, cards: [], hidden: 0, emptyBeforeFilter: false, count: own.length, narrow: 'collapsed', ...problemsOf(own) };
         }
         const column: BoardColumn = { state, cards: shown, hidden: own.length - shown.length, emptyBeforeFilter: own.length === 0, count: shown.length };
         if (shown.length > 0) {
             return column;
         }
-        return own.length === 0 ? { ...column, narrow: 'empty' } : { ...column, narrow: 'filtered' };
+        return own.length === 0 ? { ...column, narrow: 'empty' } : { ...column, narrow: 'filtered', ...problemsOf(own) };
     });
 }

@@ -72,6 +72,7 @@ export interface BoardColumn {
     emptyBeforeFilter: boolean;
     count: number;
     narrow?: ColumnNarrow;
+    problems?: number;
 }
 
 export interface BannerLine {
@@ -139,7 +140,8 @@ function isColumn(value: unknown): value is BoardColumn {
         typeof value.hidden === 'number' &&
         typeof value.emptyBeforeFilter === 'boolean' &&
         typeof value.count === 'number' &&
-        (value.narrow === undefined || isColumnNarrow(value.narrow))
+        (value.narrow === undefined || isColumnNarrow(value.narrow)) &&
+        (value.problems === undefined || typeof value.problems === 'number')
     );
 }
 

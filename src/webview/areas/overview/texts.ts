@@ -6,6 +6,7 @@ export const NOT_AVAILABLE_TEXT = 'not available';
 export const NOW_HEADING = 'Now';
 
 export const UP_NEXT_HEADING = 'Up next';
+export const UP_NEXT_NOTE = 'Ready first, then backlog';
 
 export const NOTHING_IN_PROGRESS_TEXT = 'Nothing in progress.';
 

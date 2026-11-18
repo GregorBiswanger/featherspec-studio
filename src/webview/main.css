@@ -427,6 +427,11 @@ main > h1 {
     color: var(--fs-tint);
 }
 
+.column-problem {
+    display: inline-flex;
+    color: var(--vscode-charts-orange);
+}
+
 .column-count {
     min-width: 18px;
     padding: 0 6px;

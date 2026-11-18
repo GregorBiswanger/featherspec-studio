@@ -361,7 +361,23 @@ export function historyHeading(count: number): string {
     return `${HISTORY_HEADING} (${count})`;
 }
 
-export const GROUP_LABELS = { inProgress: 'In progress', upNext: 'Up next', backlog: 'Backlog', done: 'Done' } as const;
+export const GROUP_LABELS = { inProgress: 'In progress', ready: 'Ready', backlog: 'Backlog', done: 'Done' } as const;
+
+function specCountText(count: number): string {
+    return count === 1 ? '1 spec' : `${count} specs`;
+}
+
+export function groupProblemDescription(count: number, problems: number): string {
+    return `${count} · ${problemsBadgeText(problems)}`;
+}
+
+export function groupProblemLabel(group: string, count: number, problems: number): string {
+    return `${group}: ${specCountText(count)} · ${problemsBadgeText(problems)}`;
+}
+
+export function withProblemCount(text: string, problems: number | undefined): string {
+    return problems === undefined || problems === 0 ? text : `${text} · ${problemsBadgeText(problems)}`;
+}
 
 export const NEXT_STEP_PREFIX = 'Next step: ';
 export const PROBLEM_PREFIX = 'Problem: ';

@@ -10,6 +10,8 @@ import {
     DEPRECATED_MARKER,
     DERIVED_SENTENCES,
     GROUP_LABELS,
+    groupProblemDescription,
+    groupProblemLabel,
     LOADING_TEXT,
     NEXT_STEP_PREFIX,
     NO_SPECS_START_TEXT,
@@ -53,6 +55,10 @@ export interface GroupModel {
     description: string;
     collapsed: boolean;
     children: SpecRowModel[];
+    icon?: string;
+    color?: string;
+    tooltip?: string;
+    accessibleLabel?: string;
 }
 
 export interface ActionRowModel {
@@ -86,12 +92,12 @@ const STATE_GROUP: Record<BoardState, GroupKey> = {
     Blocked: 'inProgress',
     Review: 'inProgress',
     Active: 'inProgress',
-    Ready: 'upNext',
+    Ready: 'ready',
     Backlog: 'backlog',
     Done: 'done',
 };
 
-const GROUP_ORDER: readonly GroupKey[] = ['inProgress', 'upNext', 'backlog', 'done'];
+const GROUP_ORDER: readonly GroupKey[] = ['inProgress', 'ready', 'backlog', 'done'];
 
 const IN_PROGRESS_RANK: Partial<Record<BoardState, number>> = { Blocked: 0, Review: 1, Active: 2 };
 
@@ -199,14 +205,25 @@ function groupsOf(model: ShellModel): GroupModel[] {
         if (own.length === 0) {
             return [];
         }
+        const problems = own.reduce((sum, card) => sum + card.problems, 0);
+        const hint =
+            problems === 0
+                ? { description: String(own.length) }
+                : {
+                      description: groupProblemDescription(own.length, problems),
+                      icon: PROBLEM_ICON.icon,
+                      color: PROBLEM_ICON.color,
+                      tooltip: groupProblemLabel(GROUP_LABELS[key], own.length, problems),
+                      accessibleLabel: groupProblemLabel(GROUP_LABELS[key], own.length, problems),
+                  };
         return [
             {
                 kind: 'group' as const,
                 id: `group:${key}`,
                 label: GROUP_LABELS[key],
-                description: String(own.length),
                 collapsed: key === 'done',
                 children: own.map((card) => rowOf(model, card, entries.get(card.key)!, slugs.get(card.key) ?? card.stem)),
+                ...hint,
             },
         ];
     });

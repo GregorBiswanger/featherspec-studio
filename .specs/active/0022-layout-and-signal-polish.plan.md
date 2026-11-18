@@ -3,7 +3,7 @@
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-010
+**Current step:** T-011
 
 ## Approach
 
@@ -403,8 +403,8 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
 - **Verify:** `npx vitest run --project node src/core/shell/specTree.test.ts src/adapters/vscode/studioTree.test.ts src/core/board/filters.test.ts src/adapters/node/sourceScan.test.ts`
   and `npx vitest run --project webview src/webview/board/SpecBoard.test.tsx src/webview/areas/overview/Sections.test.tsx`
   red, then green; gates 1–5
-- [ ] **Verified (T-010):** —
-- **Notes:** —
+- [x] **Verified (T-010):** Red first: 14 new or updated tests failed before the change (group names and IDs, Problem hint on groups, `problems` on strips, X-07 note, the tree item mapping); `sourceScan` P-19 compares file and literal, so the old `GROUP_LABELS.upNext` literal would have failed it. Green after: eslint 0 warnings, tsc and tsc -p src/webview clean, test:unit 2402 passed (3 skipped, +13 timing), `npm run compile` and `npm run compile-tests` clean.
+- **Notes:** Deleted exactly `GROUP_LABELS.upNext` and the ID `group:upNext` (now `ready`, label `Ready`). `GroupModel` gains `icon`, `color`, `tooltip`, `accessibleLabel`, set only with a Problem (n = sum of the rows' Problems); `studioTree.ts` maps them. `BoardColumn.problems` on collapsed and filtered strips (`filters.ts`, guard in `board.ts`), `Column` draws `.column-problem` under the count and appends ` · <T-05>` to name and tooltip before the rule text (`withProblemCount`). `UP_NEXT_NOTE` after the Up next heading while rows are listed. New `sourceScan` block: the three literals sit in `overview/texts.ts` and `overview/requests.ts` only; negative control included.
 
 ### T-011 — §5 notes, docs, test-title audit, architecture and Memory Bank sync, final gates
 

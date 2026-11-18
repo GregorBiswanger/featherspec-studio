@@ -303,6 +303,29 @@ describe('AC-021, AC-020, AC-012: in-area states', () => {
         expect(container.textContent).not.toMatch(/No spec in the backlog|No spec is ready|No spec is being implemented|hidden by filter\s*$/);
     });
 
+    it('0022 AC-008: a strip that stands for a spec with a Problem shows the warning, and its name and tooltip end with the problem count before the rule text', async () => {
+        const view = boardView([card('0001', { state: 'Backlog' })]);
+        view.columns[3] = { state: 'Review', cards: [], hidden: 2, emptyBeforeFilter: false, count: 0, narrow: 'filtered', problems: 1 };
+        view.columns[4] = { state: 'Done', cards: [], hidden: 0, emptyBeforeFilter: false, count: 3, narrow: 'collapsed', problems: 2 };
+        const container = await open(view);
+        const review = container.querySelector('[data-column="Review"]')!;
+        expect(review.getAttribute('aria-label')).toBe('Review: 2 hidden by filter · 1 problem');
+        expect(review.getAttribute('title')).toBe('Review: 2 hidden by filter · 1 problem · Plan done, waiting for review · Derived from the files · rule S-REVIEW');
+        expect(review.querySelector('.column-problem svg')?.getAttribute('data-icon')).toBe('diagnostic');
+        const done = container.querySelector('[data-column="Done"]')!;
+        expect(done.getAttribute('aria-label')).toBe('Done: 3 specs, collapsed · 2 problems');
+        expect(done.getAttribute('title')).toBe('Done: 3 specs, collapsed · 2 problems');
+        expect(done.querySelector('.column-problem')).not.toBeNull();
+    });
+
+    it('0022 AC-008: every other strip and every wide column is as 0018 AC-014 has it, with no warning', async () => {
+        const view = boardView([card('0001', { state: 'Backlog' })]);
+        view.columns[3] = { state: 'Review', cards: [], hidden: 2, emptyBeforeFilter: false, count: 0, narrow: 'filtered' };
+        const container = await open(view);
+        expect(container.querySelector('[data-column="Review"]')?.getAttribute('aria-label')).toBe('Review: 2 hidden by filter');
+        expect(container.querySelector('.column-problem')).toBeNull();
+    });
+
     it('AC-012: a wide column that a filter partly empties still says how many are hidden', async () => {
         const view = boardView([card('0001')]);
         view.columns[2] = { state: 'Active', cards: [card('0009')], hidden: 3, emptyBeforeFilter: false, count: 1 };
