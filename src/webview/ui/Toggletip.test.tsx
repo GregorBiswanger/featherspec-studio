@@ -226,6 +226,39 @@ describe('0021 AC-014: the toggletip is a button with a status region', () => {
         expect(container.querySelector('[role="status"]')!.textContent).toBe('');
     });
 
+    it('each toggletip closes only itself: a content change of the closed one and its unmounting leave the open one open', async () => {
+        const holder = { set: (_next: readonly string[]): void => undefined, hide: (_next: boolean): void => undefined };
+        function Host() {
+            const [first, setFirst] = useState<readonly string[]>(PARAGRAPHS);
+            const [shown, setShown] = useState(true);
+            holder.set = setFirst;
+            holder.hide = (next) => setShown(!next);
+            return (
+                <div>
+                    <section data-id="one">{shown ? <Toggletip label={LABEL} glyph="?" paragraphs={first} /> : null}</section>
+                    <section data-id="two">
+                        <Toggletip label={LABEL} glyph="?" paragraphs={['Other.']} />
+                    </section>
+                </div>
+            );
+        }
+        mounted = await mount(<Host />);
+        const container = mounted.container;
+        await click(toggle(container, 'two'));
+        expect(toggle(container, 'two').getAttribute('aria-expanded')).toBe('true');
+        await act(async () => {
+            holder.set(['Changed.', ...PARAGRAPHS.slice(1)]);
+        });
+        expect(toggle(container, 'one').getAttribute('aria-expanded')).toBe('false');
+        expect(toggle(container, 'two').getAttribute('aria-expanded')).toBe('true');
+        expect(region(container, 'two').textContent).toBe('Other.');
+        await act(async () => {
+            holder.hide(true);
+        });
+        expect(toggle(container, 'two').getAttribute('aria-expanded')).toBe('true');
+        expect(region(container, 'two').textContent).toBe('Other.');
+    });
+
     it('unmounting an open toggletip frees the slot: the next one opens and closes normally', async () => {
         const container = await show();
         await click(toggle(container, 'one'));

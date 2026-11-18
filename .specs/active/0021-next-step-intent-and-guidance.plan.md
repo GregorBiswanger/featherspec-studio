@@ -3,7 +3,7 @@
 **Spec:** [0021-next-step-intent-and-guidance.md](0021-next-step-intent-and-guidance.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-010 (fix stage after the compile of S74: `/home/claude/orch/compile/0021.md`)
+**Current step:** T-011 (fix stage after the compile of S74: `/home/claude/orch/compile/0021.md`)
 
 ## Approach
 
@@ -362,7 +362,8 @@ ends of stages 1 and 3.
   whichever is open" on a scratch copy (`git archive` to `/tmp`), recorded red below.
 - **Verify:** `npx vitest run --project webview src/webview/ui/Toggletip.test.tsx` green; the mutant on the scratch copy
   red; gates 1–4
-- [ ] **Verified (T-010):**
+- [x] **Verified (T-010):** 2026-11-18 · green at once (behaviour already right): `npx vitest run --project webview src/webview/ui/Toggletip.test.tsx` 15 passed; negative control M71 on a scratch copy (`git ls-files` copy in `/tmp/fx`, `close()` without the `openId === id` check): 1 failed ("each toggletip closes only itself: a content change of the closed one and its unmounting leave the open one open"), restored by discarding the copy; `npm run test:unit` 157 files, 2631 passed, 3 skipped, timing 15 passed; eslint 0 warnings, both `tsc` clean.
+- **Notes:** The test uses two toggletips, the second open; a content change of the closed first and then its unmounting must not close the second. The blur of a closed toggletip is guarded by `open` in `onBlur` and was already covered by "focus moving to another control closes it".
 
 ### T-011 — Unreadable plan and the settings sections are decided by a test (compile M26, M39)
 
