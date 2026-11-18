@@ -51,12 +51,6 @@ export function focusAfterClose(stem: string): void {
     (own ?? firstFocusable(content))?.focus();
 }
 
-export function focusSpecListRow(stem: string, path: string | undefined): void {
-    const rows = [...document.querySelectorAll<HTMLElement>('[role="option"][data-spec-stem]')].filter((row) => row.getAttribute('data-spec-stem') === stem);
-    const row = rows.find((candidate) => path === undefined || candidate.getAttribute('data-spec-path') === path) ?? rows[0];
-    row?.focus();
-}
-
 export function rescueFocus(fallback: () => void): void {
     queueMicrotask(() => {
         const active = document.activeElement;

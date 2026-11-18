@@ -41,9 +41,9 @@ describe('BR-02, AC-009: start area and memory', () => {
         const current = await ready({ memory: { v: 1, area: 'board' } });
         current.service.open({ via: 'start' });
         expect(current.service.view().area).toBe('board');
-        current.service.open({ via: 'area', area: 'specExplorer' });
-        expect(current.service.view().area).toBe('specExplorer');
-        expect((current.memory.value as { area: string }).area).toBe('specExplorer');
+        current.service.open({ via: 'area', area: 'overview' });
+        expect(current.service.view().area).toBe('overview');
+        expect((current.memory.value as { area: string }).area).toBe('overview');
     });
 
     it.each([
@@ -89,7 +89,7 @@ describe('AC-008, AC-009: selection', () => {
         expect(current.service.view().selection).toEqual({ stem: '0003-x', number: '0003' });
         expect(current.service.view().rows.find((row) => row.selected)?.stem).toBe('0003-x');
         await current.service.handlers.navigate({ area: 'board' });
-        await current.service.handlers.navigate({ area: 'specExplorer' });
+        await current.service.handlers.navigate({ area: 'overview' });
         expect(current.service.view().selection?.stem).toBe('0003-x');
         expect(current.service.view().rows.find((row) => row.selected)?.stem).toBe('0003-x');
     });
@@ -189,7 +189,7 @@ describe('AC-010: clearing', () => {
         await world.controller.start();
         await world.service.runAction('selectProject');
         await world.settle();
-        await world.service.handlers.navigate({ area: 'specExplorer' });
+        await world.service.handlers.navigate({ area: 'board' });
         await world.service.handlers.select({ stem: '0002-b' });
         expect(world.service.view().selection?.stem).toBe('0002-b');
         world.host.ui.pickAnswer = () => 'b';
@@ -197,7 +197,7 @@ describe('AC-010: clearing', () => {
         await world.settle();
         expect(world.service.view().selection).toBeUndefined();
         expect(world.service.view().notice).toBeUndefined();
-        expect(world.service.view().area).toBe('specExplorer');
+        expect(world.service.view().area).toBe('board');
     });
 
     it('a project that is lost and returns keeps its selection (no model is loaded in between)', async () => {
@@ -217,11 +217,11 @@ describe('AC-010: clearing', () => {
 });
 
 describe('AC-028: the navigation request (BR-07)', () => {
-    it('Given Overview is shown and spec 0003-x exists When the request "Spec Explorer, spec 0003-x" arrives Then Spec Explorer is shown and 0003 is selected', async () => {
+    it('Given Overview is shown and spec 0003-x exists When the request "Board, spec 0003-x" arrives Then Board is shown and 0003 is selected', async () => {
         const current = await ready();
         expect(current.service.view().area).toBe('overview');
-        await current.service.handlers.navigate({ area: 'specExplorer', target: { kind: 'spec', stem: '0003-x' } });
-        expect(current.service.view().area).toBe('specExplorer');
+        await current.service.handlers.navigate({ area: 'board', target: { kind: 'spec', stem: '0003-x' } });
+        expect(current.service.view().area).toBe('board');
         expect(current.service.view().selection?.stem).toBe('0003-x');
         expect(current.service.view().target).toEqual({ kind: 'spec', stem: '0003-x' });
     });
@@ -246,7 +246,7 @@ describe('AC-028: the navigation request (BR-07)', () => {
     it('a request without a target clears an earlier target', async () => {
         const current = await ready();
         await current.service.handlers.navigate({ area: 'board', target: { kind: 'boardFilter', filter: { states: ['Active'] } } });
-        await current.service.handlers.navigate({ area: 'specExplorer' });
+        await current.service.handlers.navigate({ area: 'overview' });
         expect(current.service.view().target).toBeUndefined();
     });
 });
@@ -264,7 +264,7 @@ describe('0007 AC-012: onDidNavigate tells a consumer about every accepted navig
         const current = await ready();
         const seen: unknown[] = [];
         const subscription = current.service.onDidNavigate((request) => seen.push(request));
-        await current.service.handlers.navigate({ area: 'specExplorer', target: { kind: 'spec', stem: '0099-none' } });
+        await current.service.handlers.navigate({ area: 'board', target: { kind: 'spec', stem: '0099-none' } });
         expect(seen).toEqual([]);
         subscription.dispose();
         await current.service.handlers.navigate({ area: 'board' });
@@ -315,16 +315,16 @@ describe('0019 P-6: select from outside the panel', () => {
 
     it('undefined clears and remembers the selection and leaves area, target and notice untouched', async () => {
         const current = await ready();
-        await current.service.handlers.navigate({ area: 'specExplorer', target: { kind: 'spec', stem: '0003-x' } });
+        await current.service.handlers.navigate({ area: 'board', target: { kind: 'spec', stem: '0003-x' } });
         current.service.select({ stem: '0009-nope' });
         expect(current.service.view().notice).toEqual({ number: '0009' });
         current.service.select(undefined);
         const view = current.service.view();
         expect(view.selection).toBeUndefined();
-        expect(view.area).toBe('specExplorer');
+        expect(view.area).toBe('board');
         expect(view.target).toEqual({ kind: 'spec', stem: '0003-x' });
         expect(view.notice).toEqual({ number: '0009' });
-        expect(current.memory.value).toEqual({ v: 1, area: 'specExplorer' });
+        expect(current.memory.value).toEqual({ v: 1, area: 'board' });
     });
 
     it('an unknown stem shows the notice and keeps the selection (control: the known stem selects)', async () => {
@@ -339,5 +339,34 @@ describe('0019 P-6: select from outside the panel', () => {
         const current = await ready();
         await current.service.handlers.select({ stem: '0003-x' });
         expect(current.service.view().selection?.stem).toBe('0003-x');
+    });
+});
+
+describe('0020 AC-017: a remembered Spec Explorer shows Overview', () => {
+    it('keeps the remembered selection with its side panel while the stem is in the project, and no message appears', async () => {
+        const current = await ready({ memory: { v: 1, area: 'specExplorer', selection: { projectRoot: 'proj', stem: '0003-x' } } });
+        current.service.open({ via: 'start' });
+        const view = current.service.view();
+        expect(view.area).toBe('overview');
+        expect(view.selection).toEqual({ stem: '0003-x', number: '0003' });
+        expect(view.notice).toBeUndefined();
+        expect(view.state).toBeUndefined();
+    });
+
+    it('a stem that is not in the project is cleared with the notice of 0005 BR-03', async () => {
+        const current = await ready({ memory: { v: 1, area: 'specExplorer', selection: { projectRoot: 'proj', stem: '0099-none' } } });
+        current.service.open({ via: 'start' });
+        const view = current.service.view();
+        expect(view.area).toBe('overview');
+        expect(view.selection).toBeUndefined();
+        expect(view.notice).toEqual({ number: '0099' });
+    });
+
+    it('control: another unknown area still drops the memory, selection included', async () => {
+        const current = await ready({ memory: { v: 1, area: 'explorer', selection: { projectRoot: 'proj', stem: '0003-x' } } });
+        current.service.open({ via: 'start' });
+        expect(current.service.view().area).toBe('overview');
+        expect(current.service.view().selection).toBeUndefined();
+        expect(current.service.view().notice).toBeUndefined();
     });
 });

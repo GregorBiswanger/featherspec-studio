@@ -49,17 +49,12 @@ function hasVisibleThemeOutline(rule: CssRule): boolean {
     return /outline:\s*[1-9]\d*px\s+solid\s+var\(--vscode-/.test(rule.body);
 }
 
-const ROWS: SpecRow[] = [
-    { stem: '0001-a', path: '.specs/active/0001-a.md', number: '0001', title: 'A', state: 'Active', derivedRule: undefined, showPath: false, selected: false },
-    { stem: '0002-b', path: '.specs/active/0002-b.md', number: '0002', title: 'B', state: 'Review', derivedRule: 'S-REVIEW', showPath: false, selected: true },
-];
-
 describe('AC-022: the focus indicator', () => {
-    it('every navigation item, list row, notice action and note action is reached by a :focus-visible rule with a visible outline in a theme colour', async () => {
+    it('every navigation item, notice action and note action is reached by a :focus-visible rule with a visible outline in a theme colour', async () => {
         const css = mainCss as string;
-        const container = await open(baseView({ area: 'specExplorer', rows: ROWS, selection: { stem: '0002-b', number: '0002' }, notice: { number: '0003' }, restricted: true }));
+        const container = await open(baseView({ area: 'overview', notice: { number: '0003' }, restricted: true }));
         const elements = focusables(container);
-        expect(elements.length).toBeGreaterThanOrEqual(3 + ROWS.length + 2);
+        expect(elements.length).toBeGreaterThanOrEqual(2 + 2);
         const missing = elements.filter((element) => !focusRulesFor(css, element).some(hasVisibleThemeOutline)).map((element) => element.outerHTML.slice(0, 80));
         expect(missing).toEqual([]);
     });
@@ -81,7 +76,7 @@ describe('AC-022: the focus indicator', () => {
 
     it('negative control: a stylesheet without the generic focus rule leaves a navigation item without an indicator', async () => {
         const stripped = (mainCss as string).replace(/button:focus-visible,\s*\[role="option"\]:focus-visible\s*\{[^}]*\}/, '');
-        const container = await open(baseView({ area: 'specExplorer', rows: ROWS }));
+        const container = await open(baseView({ area: 'overview' }));
         const item = container.querySelector('nav button')!;
         expect(focusRulesFor(stripped, item).some(hasVisibleThemeOutline)).toBe(false);
     });

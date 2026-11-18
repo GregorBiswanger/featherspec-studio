@@ -98,10 +98,8 @@ suite('FeatherSpec Studio shell smoke', function () {
     test('AC-009: the serializer adopts a fresh panel on the remembered area and selection', async () => {
         const api = await activateStudio();
         await api.whenIdle();
-        await vscode.commands.executeCommand('featherspec-studio.openSpecExplorer');
-        await waitFor('the Spec Explorer to list a spec row', () => panelState(api), (state) => state.rows > 0, { timeoutMs: WAIT_MS });
-        const stem = api.shell().view().rows[0]?.stem;
-        assert.ok(stem, 'the fixture project has a spec');
+        await vscode.commands.executeCommand('featherspec-studio.openBoard');
+        const stem = '0001-tip-splitter';
         await api.shell().select(stem);
         await closeStudio(api);
         const before = api.shell().lastHelloAt() ?? 0;
@@ -109,7 +107,7 @@ suite('FeatherSpec Studio shell smoke', function () {
         await api.shell().restore(restored);
         await waitFor('the restored panel to say hello', () => ({ ...panelState(api), before }), (state) => (state.helloAt ?? 0) > before, { timeoutMs: WAIT_MS });
         assert.strictEqual(api.shell().panelCount(), 1);
-        assert.strictEqual(api.shell().view().area, 'specExplorer');
+        assert.strictEqual(api.shell().view().area, 'board');
         assert.strictEqual(api.shell().view().selection?.stem, stem);
     });
 
@@ -171,7 +169,6 @@ suite('FeatherSpec Studio shell smoke', function () {
             'featherspec-studio.open',
             'featherspec-studio.openOverview',
             'featherspec-studio.openBoard',
-            'featherspec-studio.openSpecExplorer',
             'featherspec-studio.refresh',
             'featherspec-studio.shellAction',
             'featherspec-studio.selectProject',
@@ -255,7 +252,7 @@ suite('FeatherSpec Studio shell smoke', function () {
         await vscode.commands.executeCommand('featherspec-studio.open');
         await waitFor('the Studio tab and its hello', () => panelState(api), (state) => state.helloAt !== undefined && state.tabs === 1, { timeoutMs: WAIT_MS });
         await vscode.commands.executeCommand('featherspec-studio.openBoard');
-        await vscode.commands.executeCommand('featherspec-studio.openSpecExplorer');
+        await vscode.commands.executeCommand('featherspec-studio.openOverview');
         await closeStudio(api);
         await vscode.commands.executeCommand('featherspec-studio.open');
         await waitFor('exactly one Studio tab', () => panelState(api), (state) => state.tabs === 1, { timeoutMs: WAIT_MS });

@@ -18,9 +18,17 @@ async function open(view = detailView()): Promise<HTMLElement> {
     clients.push(client);
     client.start();
     mounted = await mount(<App client={client} />);
-    await send(shellEvent(baseView({ area: 'specExplorer' }), 1));
+    seq = 1;
+    await send(shellEvent(baseView({ area: 'board', selection: { stem: '0007-thing', number: '0007' } }), seq));
     await send(detailEvent(view));
     return mounted.container;
+}
+
+let seq = 1;
+
+async function select(stem: string): Promise<void> {
+    seq += 1;
+    await send(shellEvent(baseView({ area: 'board', selection: { stem, number: stem.slice(0, 4) } }), seq));
 }
 
 function section(container: HTMLElement, title: string): HTMLElement {
@@ -408,6 +416,7 @@ describe('0019 AC-019: a file that is gone', () => {
         const container = await open();
         await click(links(container.querySelector('.criteria-open')!)[0]!);
         await send(openFileResultEvent(SPEC_KEY, fileNotFoundText(SPEC_KEY)));
+        await select('0008-other');
         await send(detailEvent({ ...detailView(), key: '.specs/active/0008-other.md', stem: '0008-other' } as ReturnType<typeof detailView>));
         expect(container.textContent).not.toContain(fileNotFoundText(SPEC_KEY));
     });
@@ -476,12 +485,14 @@ describe('0015 AC-012, 0019 AC-015: Status history', () => {
         await click(historyToggle(container));
         await click(container.querySelector('.format-notes-toggle')!);
         expect(container.querySelector('.format-notes-toggle')!.getAttribute('aria-expanded')).toBe('true');
+        await select('0008-other');
         await send(detailEvent({ ...detailView(), key: '.specs/active/0008-other.md', stem: '0008-other', title: 'Other 0008' } as ReturnType<typeof detailView>));
         expect(historyToggle(container).getAttribute('aria-expanded')).toBe('true');
         expect(container.querySelector('.format-notes-toggle')!.getAttribute('aria-expanded')).toBe('false');
         await click(container.querySelector('.format-notes-toggle')!);
         await send(detailEvent({ kind: 'none' }));
         expect(container.querySelector('.format-notes-toggle')).toBeNull();
+        await select('0007-thing');
         await send(detailEvent(detailView()));
         expect(historyToggle(container).getAttribute('aria-expanded')).toBe('true');
         expect(container.querySelector('.format-notes-toggle')!.getAttribute('aria-expanded')).toBe('false');
@@ -489,17 +500,17 @@ describe('0015 AC-012, 0019 AC-015: Status history', () => {
 
     it('control: a collapsed history stays collapsed across another spec', async () => {
         const container = await open();
+        await select('0008-other');
         await send(detailEvent({ ...detailView(), key: '.specs/active/0008-other.md', stem: '0008-other' } as ReturnType<typeof detailView>));
         expect(historyToggle(container).getAttribute('aria-expanded')).toBe('false');
     });
 });
 
 describe('AC-028: the selection', () => {
-    it('shows the hint and no spec content while nothing is selected', async () => {
+    it('0020: shows no spec content while the detail of the selected spec is not there', async () => {
         const container = await open({ kind: 'none' });
-        expect(container.textContent).toContain(NO_DETAIL_SELECTION_TEXT);
+        expect(container.textContent).not.toContain(NO_DETAIL_SELECTION_TEXT);
         expect(container.querySelectorAll('h3')).toHaveLength(0);
-        expect(container.querySelector('[aria-label="Spec detail"] button')).toBeNull();
     });
 
     it('keeps showing the spec when the same spec arrives again from another folder', async () => {
@@ -597,6 +608,7 @@ describe('0015 AC-003, AC-005, AC-008, AC-009: the next step in the detail', () 
         await click(copyButtons(nextStepSection(container))[0]!);
         await send(copyResultEvent(true, COPIED_TEXT));
         expect(nextStepSection(container).textContent).toContain('Copied to the clipboard.');
+        await select('0008-other');
         await send(detailEvent({ ...detailView(), key: 'other', stem: '0008-other' } as ReturnType<typeof detailView>));
         expect(nextStepSection(container).textContent).not.toContain('Copied to the clipboard.');
         expect(nextStepSection(container).querySelector('button')!.textContent).toBe('Copy');
@@ -659,6 +671,7 @@ describe('0016 AC-006, AC-007, AC-022: Problems, format notes', () => {
     it('AC-007: the toggle is collapsed again when another spec is shown', async () => {
         const container = await open();
         await click(notesToggle(container));
+        await select('0008-other');
         await send(detailEvent({ ...detailView(), key: 'other', stem: '0008-other' } as ReturnType<typeof detailView>));
         expect(notesToggle(container).getAttribute('aria-expanded')).toBe('false');
     });

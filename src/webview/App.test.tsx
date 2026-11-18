@@ -32,9 +32,10 @@ afterEach(() => {
 });
 
 describe('AC-004: the navigation', () => {
-    it('lists Overview, Board and Spec Explorer', async () => {
+    it('0020 AC-016: lists exactly Overview and Board, in this order', async () => {
         const { container } = await start();
         expect(items(container).map((item) => item.textContent?.trim())).toEqual(AREAS.map((area) => area.title));
+        expect(items(container).map((item) => item.textContent?.trim())).toEqual(['Overview', 'Board']);
     });
 
     it('sends hello on boot', async () => {
@@ -54,10 +55,10 @@ describe('AC-004: the navigation', () => {
 
     it('AC-022: Enter and Space on the focused item switch the area', async () => {
         const { container } = await start();
-        await pressKey(items(container)[2]!, 'Enter');
-        expect(container.querySelector('h1')?.textContent).toBe('Spec Explorer');
-        await pressKey(items(container)[1]!, ' ');
+        await pressKey(items(container)[1]!, 'Enter');
         expect(container.querySelector('h1')?.textContent).toBe('Board');
+        await pressKey(items(container)[0]!, ' ');
+        expect(container.querySelector('h1')?.textContent).toBe('Overview');
         expect(posted.filter((message) => message.type === 'navigate')).toHaveLength(2);
     });
 
@@ -85,10 +86,20 @@ describe('AC-004: the navigation', () => {
     it('PD-054: every item shows the icon of its area before its title, hidden from assistive technology, and no two items share one', async () => {
         const { container } = await start();
         const icons = items(container).map((item) => item.querySelector('svg[data-icon]'));
-        expect(icons.map((icon) => icon?.getAttribute('data-icon'))).toEqual(['overview', 'board', 'specExplorer']);
+        expect(icons.map((icon) => icon?.getAttribute('data-icon'))).toEqual(['overview', 'board']);
         expect(icons.every((icon) => icon?.getAttribute('aria-hidden') === 'true')).toBe(true);
-        expect(new Set(icons.map((icon) => icon?.querySelector('path')?.getAttribute('d'))).size).toBe(3);
-        expect(items(container).map((item) => item.textContent?.replace('▸', '').trim())).toEqual(['Overview', 'Board', 'Spec Explorer']);
+        expect(new Set(icons.map((icon) => icon?.querySelector('path')?.getAttribute('d'))).size).toBe(2);
+        expect(items(container).map((item) => item.textContent?.replace('▸', '').trim())).toEqual(['Overview', 'Board']);
+    });
+
+    it('0020 AC-016: no panel element sends a request for the removed Spec Explorer, whichever item is activated', async () => {
+        const { container } = await start();
+        for (const item of items(container)) {
+            await click(item);
+        }
+        const areas = posted.filter((message) => message.type === 'navigate').map((message) => (message.payload as { area: string }).area);
+        expect(areas).toEqual(['overview', 'board']);
+        expect(JSON.stringify(posted)).not.toContain('specExplorer');
     });
 
     it('AC-023: the navigation has an accessible name', async () => {
@@ -130,8 +141,8 @@ describe('AC-014: loading', () => {
 
     it('the navigation stays operable while loading: an item changes the current area', async () => {
         const { container } = await start();
-        await click(items(container)[2]!);
-        expect(container.querySelector('h1')?.textContent).toBe('Spec Explorer');
+        await click(items(container)[1]!);
+        expect(container.querySelector('h1')?.textContent).toBe('Board');
         expect(container.textContent).toContain('Loading project…');
     });
 
@@ -159,7 +170,7 @@ describe('AC-014: loading', () => {
     it('ignores a stale event with a lower sequence number', async () => {
         const { container } = await start();
         await send(shellEvent(baseView({ area: 'board' }), 2));
-        await send(shellEvent(baseView({ area: 'specExplorer' }), 1));
+        await send(shellEvent(baseView({ area: 'overview' }), 1));
         expect(container.querySelector('h1')?.textContent).toBe('Board');
     });
 });

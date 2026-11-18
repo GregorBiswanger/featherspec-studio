@@ -16,7 +16,7 @@ async function open(view = detailView()): Promise<HTMLElement> {
     clients.push(client);
     client.start();
     mounted = await mount(<App client={client} />);
-    await send(shellEvent(baseView({ area: 'specExplorer' }), 1));
+    await send(shellEvent(baseView({ area: 'board', selection: { stem: '0007-thing', number: '0007' } }), 1));
     await send(detailEvent(view));
     return mounted.container;
 }

@@ -101,10 +101,11 @@ describe('AC-002: the side panel exists exactly while a spec is selected', () =>
         expect(panel(container)).not.toBeNull();
     });
 
-    it('Spec Explorer shows no side panel', async () => {
+    it('0020: the panel has no area without a side panel; the navigation offers only Overview and Board, and both show it', async () => {
         const container = await start();
-        await send(shellEvent(baseView({ area: 'specExplorer', selection: selection('0003') }), 1));
-        expect(panel(container)).toBeNull();
+        await send(shellEvent(baseView({ area: 'overview', selection: selection('0003') }), 1));
+        expect(panel(container)).not.toBeNull();
+        expect([...container.querySelectorAll('nav button')].map((button) => button.textContent?.trim())).toEqual(['Overview', 'Board']);
     });
 });
 

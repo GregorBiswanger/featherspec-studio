@@ -21,7 +21,7 @@ const view: ShellView = {
     state: undefined,
     restricted: false,
     projectName: 'demo',
-    area: 'specExplorer',
+    area: 'board',
     target: undefined,
     selection: { stem: '0003-x', number: '0003' },
     notice: undefined,
@@ -76,8 +76,9 @@ describe('AC-021: request guards accept and reject', () => {
 
     it('navigate: an area with no target, or with a spec or board-filter target (PD-040)', () => {
         expect(isNavigationRequest({ area: 'overview' })).toBe(true);
-        expect(isNavigationRequest({ area: 'specExplorer', target: { kind: 'spec', stem: '0003-x' } })).toBe(true);
-        expect(isNavigationRequest({ area: 'specExplorer', target: { kind: 'spec', stem: '0003-x', path: 'a/b.md' } })).toBe(true);
+        expect(isNavigationRequest({ area: 'board', target: { kind: 'spec', stem: '0003-x' } })).toBe(true);
+        expect(isNavigationRequest({ area: 'board', target: { kind: 'spec', stem: '0003-x', path: 'a/b.md' } })).toBe(true);
+        expect(isNavigationRequest({ area: 'specExplorer' })).toBe(false);
         expect(isNavigationRequest({ area: 'board', target: { kind: 'boardFilter', filter: { states: ['Active'] } } })).toBe(true);
         expect(isNavigationRequest({ area: 'nowhere' })).toBe(false);
         expect(isNavigationRequest({ area: 'board', target: { kind: 'spec' } })).toBe(false);
@@ -190,10 +191,11 @@ describe('0015 AC-026: the Overview purpose and the Restricted Mode note', () =>
     });
 });
 
-describe('0015 AC-001, AC-002: three areas', () => {
-    it('lists exactly Overview, Board and Spec Explorer, in this order', () => {
-        expect(AREAS.map((area) => area.title)).toEqual(['Overview', 'Board', 'Spec Explorer']);
-        expect(AREA_IDS).toEqual(['overview', 'board', 'specExplorer']);
+describe('0020 AC-016: two areas', () => {
+    it('0020 AC-016: lists exactly Overview and Board, in this order, and no area specExplorer', () => {
+        expect(AREAS.map((area) => area.title)).toEqual(['Overview', 'Board']);
+        expect(AREA_IDS).toEqual(['overview', 'board']);
+        expect(isAreaId('specExplorer')).toBe(false);
     });
 
     it('0018 AC-001: missionControl and specBoard are no area and no navigation request', () => {

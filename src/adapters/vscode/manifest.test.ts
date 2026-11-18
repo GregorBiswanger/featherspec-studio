@@ -78,13 +78,12 @@ describe('extension manifest', () => {
 
 
 
-    it('AC-001, AC-005 (0005): contributes the Open command and one command per area with their titles', () => {
+    it('AC-001, AC-005 (0005): contributes the Open command and one command per area (Overview and Board) with their titles', () => {
         const commands = Object.fromEntries((manifest.contributes?.commands ?? []).map((command) => [command.command, command.title]));
         expect(commands).toMatchObject({
             'featherspec-studio.open': 'FeatherSpec Studio: Open',
             'featherspec-studio.openOverview': 'FeatherSpec Studio: Open Overview',
             'featherspec-studio.openBoard': 'FeatherSpec Studio: Open Board',
-            'featherspec-studio.openSpecExplorer': 'FeatherSpec Studio: Open Spec Explorer',
         });
     });
 
@@ -293,5 +292,16 @@ describe('extension manifest', () => {
                 when: 'featherspec-studio.panelState == S2',
             },
         ]);
+    });
+
+    it('0020 AC-015: contributes no command featherspec-studio.openSpecExplorer and no title containing "Spec Explorer"', () => {
+        const commands = manifest.contributes?.commands ?? [];
+        expect(commands.map((entry) => entry.command)).not.toContain('featherspec-studio.openSpecExplorer');
+        expect(commands.filter((entry) => /spec explorer/i.test(entry.title))).toEqual([]);
+        expect(commands.map((entry) => entry.command).filter((id) => /openOverview|openBoard/.test(id)).sort()).toEqual(['featherspec-studio.openBoard', 'featherspec-studio.openOverview']);
+    });
+
+    it('0020 AC-015: negative control, the matcher finds a Spec Explorer title', () => {
+        expect(['FeatherSpec Studio: Open Spec Explorer', 'FeatherSpec Studio: Open Board'].filter((title) => /spec explorer/i.test(title))).toEqual(['FeatherSpec Studio: Open Spec Explorer']);
     });
 });

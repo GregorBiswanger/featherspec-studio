@@ -10,7 +10,7 @@ let posted: Envelope[];
 let mounted: Mounted | undefined;
 const clients: ShellClient[] = [];
 
-async function open(view = boardView([card('0001')]), area: 'board' | 'specExplorer' = 'board'): Promise<HTMLElement> {
+async function open(view = boardView([card('0001')]), area: 'board' | 'overview' = 'board'): Promise<HTMLElement> {
     const client = createClient({ post: (message) => void posted.push(message) });
     clients.push(client);
     client.start();

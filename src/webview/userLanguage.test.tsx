@@ -45,7 +45,7 @@ async function visibleText(view = detailView()): Promise<string> {
     clients.push(client);
     client.start();
     mounted = await mount(<App client={client} />);
-    await send(shellEvent(baseView({ area: 'specExplorer' }), 1));
+    await send(shellEvent(baseView({ area: 'board', selection: { stem: '0007-thing', number: '0007' } }), 1));
     await send(detailEvent(view));
     return mounted.container.textContent ?? '';
 }
@@ -108,13 +108,6 @@ describe('0016 AC-011: user language on every surface 0016 touched', () => {
         expect(text).not.toMatch(FORBIDDEN);
         expect(text).toContain('needs a plan');
         expect(text).toContain('Blocked: plan status Blocked');
-    });
-
-    it('the Spec Explorer row shows no rule ID', async () => {
-        const rows = [row('0001', { state: 'Ready', derivedRule: 'S-READY' }), row('0002', { state: 'Review', derivedRule: 'S-REVIEW' }), row('0003', { state: 'Blocked', derivedRule: 'S-BLOCKED' })];
-        const text = await textOf('specExplorer', detailEvent(detailView()), rows);
-        expect(text).toContain('Thing 0002');
-        expect(text).not.toMatch(FORBIDDEN);
     });
 
     it('Overview (Now, Up next, Problems, figures, activity) shows no rule ID or internal word', async () => {

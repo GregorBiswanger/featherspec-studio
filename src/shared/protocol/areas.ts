@@ -1,4 +1,4 @@
-export const AREA_IDS = ['overview', 'board', 'specExplorer'] as const;
+export const AREA_IDS = ['overview', 'board'] as const;
 export type AreaId = (typeof AREA_IDS)[number];
 
 export interface AreaInfo {
@@ -19,12 +19,6 @@ export const AREAS: readonly AreaInfo[] = [
         id: 'board',
         title: 'Board',
         purpose: 'See every spec as a card in the column of its board state.',
-        placeholder: false,
-    },
-    {
-        id: 'specExplorer',
-        title: 'Spec Explorer',
-        purpose: 'Browse the specs of the project and select one.',
         placeholder: false,
     },
 ];

@@ -108,7 +108,7 @@ describe('0015 AC-010: no drill-down for runs', () => {
         }
         const areas = sent().filter((message) => message.type === 'navigate').map((message) => (message.payload as { area: string }).area);
         expect(areas.length).toBeGreaterThan(5);
-        expect(areas.every((area) => ['overview', 'board', 'specExplorer'].includes(area))).toBe(true);
+        expect(areas.every((area) => ['overview', 'board'].includes(area))).toBe(true);
     });
 
     it('all payloads pass the shared navigation guard', async () => {

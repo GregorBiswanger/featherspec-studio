@@ -65,10 +65,6 @@
         "title": "FeatherSpec Studio: Open Board"
       },
       {
-        "command": "featherspec-studio.openSpecExplorer",
-        "title": "FeatherSpec Studio: Open Spec Explorer"
-      },
-      {
         "command": "featherspec-studio.copyNextStep",
         "title": "FeatherSpec Studio: Copy Next Step"
       },

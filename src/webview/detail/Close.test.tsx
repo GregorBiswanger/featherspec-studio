@@ -2,8 +2,8 @@ import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DiagnosticLine, OpenCriterion } from '../../shared/protocol/detail';
 import type { Envelope } from '../../shared/protocol/envelope';
-import type { SelectedSpec, SpecRow } from '../../shared/protocol/messages';
-import { NO_DETAIL_SELECTION_TEXT, noticeText } from '../../shared/protocol/texts';
+import type { SelectedSpec } from '../../shared/protocol/messages';
+import { noticeText } from '../../shared/protocol/texts';
 import { App } from '../App';
 import { boardEvent, boardView, card } from '../board/testing/views';
 import { createClient, type ShellClient } from '../client';
@@ -40,9 +40,9 @@ async function start(): Promise<HTMLElement> {
     return mounted.container;
 }
 
-async function shell(area: 'overview' | 'board' | 'specExplorer', selection?: SelectedSpec, rows: SpecRow[] = [], notice?: { number: string }): Promise<void> {
+async function shell(area: 'overview' | 'board', selection?: SelectedSpec, notice?: { number: string }): Promise<void> {
     seq += 1;
-    await send(shellEvent(baseView({ area, selection, rows, notice }), seq));
+    await send(shellEvent(baseView({ area, selection, notice }), seq));
 }
 
 async function board(selection?: SelectedSpec, cards = CARDS): Promise<HTMLElement> {
@@ -262,44 +262,6 @@ describe('AC-004: focus and keyboard in the side panel', () => {
     });
 });
 
-describe('AC-008: the Spec Explorer pane', () => {
-    function row(selected: boolean): SpecRow {
-        return { stem: '0007-thing', path: SPEC_KEY, number: '0007', title: 'Thing 0007', state: 'Active', derivedRule: undefined, showPath: false, selected };
-    }
-
-    async function explorer(): Promise<HTMLElement> {
-        const container = await start();
-        await shell('specExplorer', SELECTED, [row(true)]);
-        await send(detailEvent(detailView()));
-        return container;
-    }
-
-    it('the pane has a close button, no side panel, and closing shows the hint with the list row focused', async () => {
-        const container = await explorer();
-        expect(container.querySelector('aside.side-panel')).toBeNull();
-        const button = closeButton(container);
-        expect(container.querySelector('.explorer')?.contains(button)).toBe(true);
-        await focus(button);
-        await click(button);
-        expect(requests('clearSelection')).toEqual([{}]);
-        await shell('specExplorer', undefined, [row(false)]);
-        await send(detailEvent({ kind: 'none' }));
-        expect(container.textContent).toContain(NO_DETAIL_SELECTION_TEXT);
-        expect(document.activeElement).toBe(container.querySelector('[role="option"]'));
-    });
-
-    it('Escape in the pane closes it the same way', async () => {
-        const container = await explorer();
-        const heading = container.querySelector<HTMLElement>('[data-detail-heading]')!;
-        await focus(heading);
-        await escape(heading);
-        expect(requests('clearSelection')).toEqual([{}]);
-        await shell('specExplorer', undefined, [row(false)]);
-        await send(detailEvent({ kind: 'none' }));
-        expect(document.activeElement).toBe(container.querySelector('[role="option"]'));
-    });
-});
-
 describe('AC-020: updates keep the focus and the scroll container', () => {
     it('a focused link stays focused across an update of the same detail, and the scroll container is the same element', async () => {
         const container = await board(SELECTED);
@@ -395,7 +357,7 @@ describe('AC-020: updates keep the focus and the scroll container', () => {
         await send(detailEvent(detailView({ stem: '0003-thing', number: '0003', key: '.specs/active/0003-thing.md' })));
         await shell('board', { stem: '0003-thing', number: '0003' });
         await focus(container.querySelector<HTMLElement>('[data-detail-heading]')!);
-        await shell('board', undefined, [], { number: '0003' });
+        await shell('board', undefined, { number: '0003' });
         expect(container.querySelector('aside.side-panel')).toBeNull();
         expect(container.querySelector('[data-notice]')?.textContent).toContain(noticeText('0003'));
         expect(document.activeElement).toBe(cardOf(container, '0003'));

@@ -208,7 +208,6 @@ describe('0017 AC-011: no move path is left in the source', () => {
 
 describe('0018 AC-001, AC-029: the old names and texts are gone from the sources', () => {
     const OLD_NAMES = ['mission control', 'spec board', '▸'];
-    const MARKER_ALLOWED = ['src/webview/areas/SpecExplorer.tsx'];
     const OLD_TEXTS = [
         'Nothing needs attention.',
         'No recent activity.',
@@ -232,12 +231,13 @@ describe('0018 AC-001, AC-029: the old names and texts are gone from the sources
         const files = (await sourceFiles()).filter((file) => !isTestFile(file.name));
         expect(files.length).toBeGreaterThan(0);
         const found = files.flatMap((file) => hits(file.text, OLD_NAMES, true).map((term) => `${file.name}: ${term}`));
-        expect(found.filter((entry) => !MARKER_ALLOWED.some((name) => entry === `${name}: ▸`))).toEqual([]);
+        expect(found).toEqual([]);
     });
 
-    it('the one marker left is the selected row of the Spec Explorer list (0005 AC-023), not the navigation', async () => {
+    it('0020 AC-018: no ▸ is left in src without test files, the marker of the Spec Explorer list went with it (0018 AC-029 exception void)', async () => {
         const files = (await sourceFiles()).filter((file) => !isTestFile(file.name));
-        expect(files.filter((file) => file.text.includes('▸')).map((file) => file.name)).toEqual(MARKER_ALLOWED);
+        expect(files.filter((file) => file.text.includes('▸')).map((file) => file.name)).toEqual([]);
+        expect(hits("const marker = '▸';", ['▸'], true)).toEqual(['▸']);
     });
 
     it('src without test files holds none of the old texts', async () => {

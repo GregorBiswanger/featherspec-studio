@@ -3,7 +3,7 @@
 **Spec:** [0020-native-spec-tree.md](0020-native-spec-tree.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-006
+**Current step:** T-007
 
 ## Approach
 
@@ -322,8 +322,8 @@ and the host smoke, so they stay `→`.
 - **Verify:** `npx vitest run --project node src/core/shell/uiMemory.test.ts src/core/shell/shellService.navigation.test.ts src/adapters/vscode/manifest.test.ts`
   and `npx vitest run --project webview src/webview/App.test.tsx` red, then green; gates 1–5;
   `npm run compile-tests`
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-18: uiMemory.test.ts + shellService.navigation.test.ts (AC-017: 3 red), manifest.test.ts (AC-015: 1 red), messages.test.ts (2 red), App.test.tsx (3 red) red on a scratch copy of HEAD (git archive), then green here; gates 1-5 green (eslint, both tsc, unit 2204 passed + 3 skipped, timing 13, compile) and compile-tests green.
+- **Notes:** Deletes named at the start of the stage and approved by Gregor's delegation: src/webview/areas/SpecExplorer.tsx (git rm, nothing else). Spec Explorer tests per the audit map: voided and removed (areas.test.tsx AC-007 and AC-008 groups, areas.timing.test.tsx AC-007 replaced by a notice freshness test, Close.test.tsx AC-008 pane, SidePanel.test.tsx Spec Explorer shows no side panel, states.test.tsx the explorer part, userLanguage.test.tsx the explorer row, SpecDetail.test.tsx the hint test), retargeted to Board/Overview (SpecDetail.test.tsx and timing, SpecBoard tests, focusIndicator.test.tsx, webviewBundle.test.ts, shellService.navigation.test.ts, shell.smoke.test.ts via openBoard); PanelStateView.test.tsx AC-018 count 3 to 2. sourceScan.test.ts: the marker exception test is replaced by 'no ▸' here (the Spec Explorer file is gone), the AC-018 search of src stays in T-007. focusSpecListRow went with its only caller. The one specExplorer left in src is the mapping in uiMemory.ts.
 
 ### T-007 — The list's contract, texts, styles and hint go
 
@@ -392,8 +392,8 @@ and the host smoke, so they stay `→`.
 | AC-013 | T-003, T-005 | src/core/shell/specTreeService.ts | specTreeService.test.ts, specTreeService.timing.test.ts "AC-013" | built |
 | AC-014 | T-004 | src/core/shell/treeActions.ts | treeActions.test.ts "AC-014" | built |
 | AC-015 | T-005, T-006 | package.json (inline Copy only) | manifest.test.ts "AC-011, AC-015 (0020)" | built |
-| AC-016 | T-006, T-007 | — | — | open |
-| AC-017 | T-006 | — | — | open |
+| AC-016 | T-006, T-007 | src/shared/protocol/areas.ts; src/webview/areas/registry.tsx | messages.test.ts "AC-016"; App.test.tsx "AC-016" | built |
+| AC-017 | T-006 | src/core/shell/uiMemory.ts:parseUiMemory | uiMemory.test.ts "AC-017"; shellService.navigation.test.ts "AC-017" | built |
 | AC-018 | T-007, T-008 | — | — | open |
 | AC-019 | T-005 | src/extension.ts; src/test/shell.smoke.test.ts | shell.smoke.test.ts "AC-019" (host, CI) | built |
 | AC-020 | T-008 | — | — | open |
@@ -402,8 +402,8 @@ and the host smoke, so they stay `→`.
 
 ## Session handoff
 
-- **Done so far:** stage 3 done: T-005 verified and committed (Specs view adapter, manifest, wiring, host smoke written; treeModel.ts and its test deleted).
-- **Next action:** T-006 (two tabs, specExplorer mapping), then T-007; deletes src/webview/areas/SpecExplorer.tsx in T-006.
+- **Done so far:** stage 4 half: T-006 verified and committed (two tabs, the mapping, SpecExplorer.tsx deleted, the Spec Explorer tests per the audit map).
+- **Next action:** T-007 (the list's protocol contract, texts, styles and hint go; PROTOCOL_VERSION 4); deletes src/core/shell/specRows.ts and specRows.test.ts.
 - **Open decisions:** none; P-1…P-24 stand unless Gregor changes them.
 - **Baseline:** `16fc52b` (HEAD before the first step commit; started 2026-11-18 on Gregor's delegated start signal)
 - **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here); the

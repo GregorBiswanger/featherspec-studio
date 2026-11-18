@@ -73,14 +73,13 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         expect('const title = "Agent Center";').toContain('Agent Center');
     });
 
-    it('starts without a runtime error, renders the frame with the three areas and the loading state, and says hello', async () => {
+    it('starts without a runtime error, renders the frame with the two areas and the loading state, and says hello', async () => {
         const { dom, posted, errors } = boot(readFileSync(bundlePath, 'utf8'));
         await settle();
         const document = dom.window.document;
         expect([...document.querySelectorAll('nav button')].map((button) => button.textContent?.replace('▸', ''))).toEqual([
             'Overview',
             'Board',
-            'Spec Explorer',
         ]);
         expect(document.body.textContent).toContain('Loading project…');
         expect(posted[0]).toMatchObject({ v: 3, kind: 'req', type: 'hello' });
@@ -184,7 +183,7 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         expect(detail.kind).toBe('spec');
         const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
         await settle();
-        const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'specExplorer', target: undefined, selection: undefined, notice: undefined, rows: [] };
+        const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'board', target: undefined, selection: { stem: '0015-focus-on-visibility', number: '0015' }, notice: undefined, rows: [] };
         dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 3, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
         dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 3, kind: 'evt', type: 'detail', payload: { view: detail } } }));
         await settle();

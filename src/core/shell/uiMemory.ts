@@ -1,4 +1,4 @@
-import { isAreaId, type AreaId } from '../../shared/protocol/areas';
+import { DEFAULT_AREA, isAreaId, type AreaId } from '../../shared/protocol/areas';
 import { isRecord } from '../../shared/protocol/envelope';
 
 export interface RememberedSelection {
@@ -29,14 +29,18 @@ function parseSelection(value: unknown): RememberedSelection | undefined | 'inva
 }
 
 export function parseUiMemory(value: unknown): UiMemory | undefined {
-    if (!isRecord(value) || value.v !== 1 || !isAreaId(value.area)) {
+    if (!isRecord(value) || value.v !== 1) {
+        return undefined;
+    }
+    const area = value.area === 'specExplorer' ? DEFAULT_AREA : value.area;
+    if (!isAreaId(area)) {
         return undefined;
     }
     const selection = parseSelection(value.selection);
     if (selection === 'invalid') {
         return undefined;
     }
-    return selection === undefined ? { v: 1, area: value.area } : { v: 1, area: value.area, selection };
+    return selection === undefined ? { v: 1, area } : { v: 1, area, selection };
 }
 
 export function serializeUiMemory(memory: UiMemory): unknown {
