@@ -13,6 +13,17 @@ export function OpenButton(props: { target: OpenTarget; onOpen(key: string): voi
     );
 }
 
+export function PlainSection(props: { title: string; children: ReactNode }) {
+    return (
+        <section className="detail-section">
+            <div className="section-head">
+                <h3>{props.title}</h3>
+            </div>
+            <div className="section-body">{props.children}</div>
+        </section>
+    );
+}
+
 export function DetailSection(props: { title: string; open?: OpenTarget | undefined; keys: string[]; fileResult: { key: string; text: string } | undefined; onOpen(key: string): void; children: ReactNode }) {
     const [collapsed, setCollapsed] = useCollapsed(props.title);
     const bodyId = useId();

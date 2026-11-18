@@ -70,6 +70,26 @@ describe('0016 AC-011: user language in the detail', () => {
         expect(text).toContain('Review → no longer in the project');
     });
 
+    it('0019: the situation picture (a derived state, needs, steps, open criteria, files, notes) shows no rule ID or internal word', async () => {
+        const view = detailView({}, undefined, [{ reason: 'Folder done/ does not match status "In Progress".', open: { key: '.specs/active/0007-thing.md', line: 4 } }], {
+            state: 'Review',
+            rule: 'S-REVIEW',
+            persistence: 'derived',
+            successor: 'Successor: none — behaviour removed',
+            progress: {
+                needs: [{ text: 'needs a plan', rule: 'R-3' }],
+                noPlan: false,
+                steps: { kind: 'steps', done: 1, total: 2, next: { id: 'T-002', title: 'Second', open: { key: '.specs/active/0007-thing.plan.md', line: 30 } } },
+                criteria: { kind: 'criteria', verified: 0, total: 1, open: [{ id: 'AC-001', text: 'The board shall render.', built: true, open: { key: '.specs/active/0007-thing.md', line: 9 } }] },
+            },
+        });
+        const text = await visibleText(view);
+        expect(text).not.toMatch(FORBIDDEN);
+        expect(text).toContain('Plan done, waiting for review');
+        expect(text).toContain('The board shall render. · built');
+        expect(text).toContain('needs a plan');
+    });
+
     it('negative control: the old history line is caught by the same pattern', () => {
         expect('2026-11-17T21:56:14.561Z · — → Review · S-REVIEW · first observed · not checked').toMatch(FORBIDDEN);
         expect('S-ACTIVE · persisted').toMatch(FORBIDDEN);

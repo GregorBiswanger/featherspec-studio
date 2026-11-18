@@ -46,6 +46,8 @@ interface QueryRoot {
     textContent: string | null;
     querySelector(selector: string): QueryRoot | null;
     querySelectorAll(selector: string): Iterable<QueryRoot>;
+    cloneNode(deep: boolean): QueryRoot;
+    remove(): void;
 }
 
 async function settle(): Promise<void> {
@@ -171,11 +173,11 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         expect(errors).toEqual([]);
     });
 
-    it('0013 AC-014, AC-015: the detail of this repo\'s spec 0002 (fixture studio-0002) shows no raw Markdown and each ID once', async () => {
-        const project = await readProject(createNodeSpecSource(), fixturePath('studio-0002'), '1.10.0');
+    it('0019 AC-010: the detail of this repo\'s spec 0015 (fixture studio-0015, real core) shows no FR- row text and at most 300 words with the collapsible sections closed', async () => {
+        const project = await readProject(createNodeSpecSource(), fixturePath('studio-0015'), '1.10.0');
         const lifecycle = deriveLifecycle(project);
         const detail = buildDetail({
-            selection: { stem: '0002-spec-repository-parser' },
+            selection: { stem: '0015-focus-on-visibility' },
             model: { project, lifecycle },
             history: { available: true, label: 'Observed', entries: [] },
         });
@@ -187,23 +189,23 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 2, kind: 'evt', type: 'detail', payload: { view: detail } } }));
         await settle();
         const section = dom.window.document.querySelector('.spec-detail') as unknown as QueryRoot | null;
-        let text = section?.textContent ?? '';
-        expect(text).toContain('AC-001');
-        const codes = [...(section?.querySelectorAll('code') ?? [])];
-        expect(codes.length).toBeGreaterThan(0);
-        for (const code of codes) {
-            text = text.replace(code.textContent ?? '', ' ');
+        expect(section).not.toBeNull();
+        const clone = section!.cloneNode(true);
+        [...clone.querySelectorAll('.visually-hidden, [hidden]')].forEach((hidden) => hidden.remove());
+        const text = (clone.textContent ?? '').replace(/\s+/g, ' ').trim();
+        const requirements = project.specs.find((spec) => spec.key.endsWith('0015-focus-on-visibility.md'))?.parsed?.requirements ?? [];
+        expect(requirements.length).toBeGreaterThan(5);
+        for (const requirement of requirements) {
+            const own = requirement.text.replace(/^\|?\s*FR-[\d.]+\s*\|?\s*/, '').split('|')[0]?.trim() ?? '';
+            expect(own.length, requirement.id).toBeGreaterThan(10);
+            expect(text, requirement.id).not.toContain(own.slice(0, 40));
         }
-        expect(text).not.toContain('**');
-        expect(text).not.toContain('`');
-        expect(text).not.toMatch(/(?:^|\n)\s*> /);
-        expect(text).not.toContain('](');
-        for (const id of ['AC-001', 'AC-012', 'FR-01', 'T-001']) {
-            const items = [...(section?.querySelectorAll('li') ?? [])].filter((item) => (item.querySelector('.item-id')?.textContent ?? '') === id);
-            expect(items, id).toHaveLength(1);
-            expect((items[0]?.textContent ?? '').split(id).length - 1, id).toBe(1);
-        }
-        expect(section?.querySelector('.inline-link-target')?.textContent).toBe('0002-spec-repository-parser.plan.md');
+        const words = text.split(' ').filter((word) => word !== '');
+        expect(words.length).toBeLessThanOrEqual(300);
+        expect(text).toContain('28 of 30 verified');
+        expect(text).toContain('AC-027');
+        expect(text).toContain('AC-030');
+        expect([...clone.querySelectorAll('button.file-link')].length).toBeGreaterThan(3);
         expect(errors).toEqual([]);
     });
 

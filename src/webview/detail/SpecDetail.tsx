@@ -1,217 +1,109 @@
-import type { DetailSections, DetailView, OpenTarget } from '../../shared/protocol/detail';
+import type { DetailView, DiagnosticLine, SpecDetailView } from '../../shared/protocol/detail';
 import {
-    criteriaText,
+    BANNER_HEADING,
+    columnRuleTooltip,
     DEPRECATED_MARKER,
     DERIVED_SENTENCES,
-    derivedTooltip,
-    persistedTooltip,
-    BANNER_HEADING,
     DETAIL_LABEL,
+    FILES_HEADING,
     historyEntryText,
     historyTooltip,
     HISTORY_NOT_AVAILABLE_TEXT,
     NO_DETAIL_SELECTION_TEXT,
-    NO_PLAN_TEXT,
-    NO_REQUIREMENTS_TEXT,
-    NO_RELATED_TEXT,
-    OPEN_FILE_LABEL,
-    needTooltip,
+    persistedTooltip,
     SECTION_TITLES,
-    STATE_LABEL,
-    STRUCK_FLAG,
-    UNCERTAIN_FLAG,
 } from '../../shared/protocol/texts';
-import { Glyph } from '../board/icons';
-import { InlineText } from '../ui/InlineText';
-import { splitCells, tidy } from '../ui/inlineFormat';
-import { isBoardState } from '../../shared/protocol/boardFilter';
 import { isDerivedRule } from '../../shared/protocol/board';
+import { isBoardState } from '../../shared/protocol/boardFilter';
+import { Glyph } from '../board/icons';
 import { EmptyState } from '../ui/EmptyState';
-import { RuleText } from '../ui/RuleText';
+import { FileLink, type FileResult } from '../ui/FileLink';
 import { FormatNotes } from '../ui/FormatNotes';
+import { InlineText } from '../ui/InlineText';
 import { StateChip } from '../ui/StateChip';
-import { DetailSection, OpenButton } from './DetailSection';
+import { DetailSection, PlainSection } from './DetailSection';
 import { NextStep } from './NextStep';
+import { Progress } from './Progress';
 
-type OpenFile = (key: string) => void;
+type OpenAt = (key: string, line?: number) => void;
 
-function tickText(ticked: boolean | 'undetermined'): string {
-    if (ticked === 'undetermined') {
-        return 'undetermined';
-    }
-    return ticked ? 'done' : 'open';
+function stateTooltip(detail: SpecDetailView): string {
+    return detail.persistence === 'derived' && isDerivedRule(detail.rule) ? columnRuleTooltip(detail.rule) : persistedTooltip(detail.rule);
 }
 
-function TickIcon(props: { ticked: boolean | 'undetermined' }) {
-    return <Glyph kind={props.ticked === 'undetermined' ? 'undetermined' : props.ticked ? 'ticked' : 'unticked'} />;
-}
-
-function Quote(props: { text: string }) {
-    const tidied = tidy(props.text);
-    return tidied.quote ? (
-        <blockquote className="illustration">
-            <InlineText text={tidied.text} />
-        </blockquote>
-    ) : (
-        <div className="illustration">
-            <InlineText text={tidied.text} />
-        </div>
+function Header(props: { detail: SpecDetailView }) {
+    const { detail } = props;
+    const tooltip = stateTooltip(detail);
+    return (
+        <>
+            <div className="detail-title">
+                <span className="detail-number">{detail.number}</span>
+                <h2>
+                    <span className="sr-number">{detail.number} </span>
+                    {detail.title}
+                </h2>
+                {isBoardState(detail.state) ? <StateChip state={detail.state} tooltip={tooltip} /> : <span title={tooltip}>{detail.state}</span>}
+                {detail.persistence === 'derived' && isDerivedRule(detail.rule) ? <span className="visually-hidden">{DERIVED_SENTENCES[detail.rule]}</span> : null}
+                {detail.successor === undefined ? null : <span className="detail-flag">{DEPRECATED_MARKER}</span>}
+            </div>
+            {detail.path === undefined ? null : <p className="detail-path">{detail.path}</p>}
+            {detail.successor === undefined ? null : <p className="detail-successor">{detail.successor}</p>}
+        </>
     );
 }
 
-function keysOf(targets: (OpenTarget | undefined)[]): string[] {
-    return targets.flatMap((target) => (target === undefined ? [] : [target.key]));
+function Reason(props: { line: DiagnosticLine; fileResult: FileResult | undefined; onOpen: OpenAt }) {
+    const { line } = props;
+    return line.open === undefined ? (
+        <InlineText text={line.reason} />
+    ) : (
+        <FileLink target={line.open} fileResult={props.fileResult} onOpen={props.onOpen}>
+            <InlineText text={line.reason} />
+        </FileLink>
+    );
 }
 
-function Sections(props: { detailKey: string; sections: DetailSections; fileResult: { key: string; text: string } | undefined; onOpen: OpenFile }) {
-    const { sections, fileResult, onOpen } = props;
-    const { overview, requirements, criteria, plan, verification, related, history } = sections;
+function Picture(props: { detail: SpecDetailView; fileResult: FileResult | undefined; copyResult: { ok: boolean; text: string } | undefined; onOpen: OpenAt; onCopy(text: string): void }) {
+    const { detail, fileResult, onOpen } = props;
     const now = new Date();
     return (
         <>
-            <DetailSection title={SECTION_TITLES.overview} open={overview.open} keys={keysOf(overview.notes.map((line) => line.open))} fileResult={fileResult} onOpen={onOpen}>
-                <div className="detail-grid">
-                <dl className="detail-header">
-                    {overview.headerLines.map((line) => (
-                        <div key={line.label}>
-                            <dt>{line.label}</dt> <dd>
-                                <InlineText text={line.value} />
-                            </dd>
-                        </div>
-                    ))}
-                </dl>
-                <dl className="detail-facts">
-                    <div>
-                        <dt>{STATE_LABEL}</dt>{' '}
-                        <dd className="detail-state">
-                            {isBoardState(overview.state) ? (
-                                <StateChip state={overview.state} tooltip={overview.persistence === 'persisted' ? persistedTooltip(overview.rule) : undefined} />
-                            ) : (
-                                <span title={overview.persistence === 'persisted' ? persistedTooltip(overview.rule) : undefined}>{overview.state}</span>
-                            )}{' '}
-                            {overview.persistence === 'derived' && isDerivedRule(overview.rule) ? (
-                                <RuleText text={DERIVED_SENTENCES[overview.rule]} tooltip={derivedTooltip(overview.rule)} />
-                            ) : null}
-                            {overview.deprecated ? <span className="detail-flag"> · {DEPRECATED_MARKER}</span> : null}
-                        </dd>
-                    </div>
-                </dl>
-                </div>
-                {overview.successor === undefined ? null : <p>{overview.successor}</p>}
-                {overview.needs.length === 0 ? null : (
-                    <ul className="detail-needs">
-                        {overview.needs.map((need) => (
-                            <li key={need.rule} title={needTooltip(need.rule)}>
-                                {need.text}
-                            </li>
-                        ))}
-                    </ul>
-                )}
-                <FormatNotes key={props.detailKey} notes={overview.notes} />
-            </DetailSection>
-            <DetailSection title={SECTION_TITLES.requirements} open={requirements.open} keys={keysOf(requirements.items.map((item) => item.open))} fileResult={fileResult} onOpen={onOpen}>
-                {requirements.items.length === 0 ? (
-                    <p>{NO_REQUIREMENTS_TEXT}</p>
-                ) : (
-                    <ul>
-                        {requirements.items.map((item) => {
-                            const cells = splitCells(tidy(item.text, { id: item.id, listItem: true }).text);
-                            return (
-                            <li key={item.id}>
-                                <strong className="item-id">{item.id}</strong> <InlineText text={cells.primary} />
-                                {cells.secondary === undefined ? null : (
-                                    <span className="item-secondary">
-                                        {' '}
-                                        <InlineText text={cells.secondary} />
-                                    </span>
-                                )}
-                            </li>
-                            );
-                        })}
-                    </ul>
-                )}
-            </DetailSection>
-            <DetailSection title={SECTION_TITLES.criteria} open={criteria.open} keys={keysOf(criteria.items.map((item) => item.open))} fileResult={fileResult} onOpen={onOpen}>
-                <ul>
-                    {criteria.items.map((item) => (
-                        <li key={item.id}>
-                            <strong className="item-id">{item.id}</strong> <InlineText text={tidy(item.text, { id: item.id, listItem: true }).text} />
-                            {item.uncertain ? <span className="flag"> {UNCERTAIN_FLAG}</span> : null}
-                            {item.struck ? <span className="flag"> {STRUCK_FLAG}</span> : null}
-                            {item.illustration === undefined ? null : <Quote text={item.illustration} />}
+            <Header detail={detail} />
+            <NextStep nextStep={detail.nextStep} copyResult={props.copyResult} onCopy={props.onCopy} />
+            {detail.problems.length === 0 ? null : (
+                <ul className="detail-problems" aria-label={BANNER_HEADING}>
+                    {detail.problems.map((line, index) => (
+                        <li key={`${index}|${line.reason}`}>
+                            <Glyph kind="diagnostic" />
+                            <span>
+                                <Reason line={line} fileResult={fileResult} onOpen={onOpen} />
+                            </span>
                         </li>
                     ))}
                 </ul>
-            </DetailSection>
-            <DetailSection title={SECTION_TITLES.plan} open={plan.open} keys={[]} fileResult={fileResult} onOpen={onOpen}>
-                {plan.open === undefined ? (
-                    <p>{NO_PLAN_TEXT}</p>
+            )}
+            {detail.progress === undefined ? null : <Progress progress={detail.progress} fileResult={fileResult} onOpen={onOpen} />}
+            <PlainSection title={FILES_HEADING}>
+                <ul className="detail-files">
+                    {detail.files.map((file) => (
+                        <li key={`${file.label}|${file.open.key}`}>
+                            <span className="file-label">{file.label}</span>{' '}
+                            <FileLink target={file.open} fileResult={fileResult} onOpen={onOpen}>
+                                {file.name}
+                            </FileLink>
+                        </li>
+                    ))}
+                </ul>
+            </PlainSection>
+            <FormatNotes key={detail.key} notes={detail.notes} renderNote={(note) => <Reason line={note} fileResult={fileResult} onOpen={onOpen} />} />
+            <DetailSection title={SECTION_TITLES.history} keys={[]} fileResult={fileResult} onOpen={(key) => onOpen(key)}>
+                {detail.history.statusHistory === undefined ? (
+                    <p>{detail.history.notAvailable ?? HISTORY_NOT_AVAILABLE_TEXT}</p>
                 ) : (
                     <>
-                        {plan.stages.length === 0 ? null : (
-                            <ol className="detail-stages">
-                                {plan.stages.map((stage) => (
-                                    <li key={stage}>
-                                        <InlineText text={stage} />
-                                    </li>
-                                ))}
-                            </ol>
-                        )}
-                        <ul className="detail-steps">
-                            {plan.steps.map((step) => (
-                                <li key={step.id}>
-                                    <span className="step-head">
-                                        <span className="step-tick" data-ticked={String(step.ticked)}>
-                                            <TickIcon ticked={step.ticked} />
-                                            <span className="step-tick-label">{tickText(step.ticked)}</span>
-                                        </span>{' '}
-                                        <strong className="item-id">{step.id}</strong> <InlineText text={tidy(step.title, { id: step.id }).text} />
-                                        {step.struck ? ` · ${STRUCK_FLAG}` : ''}
-                                    </span>
-                                    {step.verified === undefined ? null : (
-                                        <span className="step-verified">
-                                            {' · '}
-                                            <InlineText text={step.verified} />
-                                        </span>
-                                    )}
-                                </li>
-                            ))}
-                        </ul>
-                    </>
-                )}
-            </DetailSection>
-            <DetailSection title={SECTION_TITLES.verification} open={verification.open} keys={[]} fileResult={fileResult} onOpen={onOpen}>
-                <p>
-                    <InlineText text={verification.summary} />
-                </p>
-                <p>
-                    open {verification.openRows} · built {verification.built} · verified {verification.verified} · other {verification.other}
-                </p>
-                <p>{criteriaText(verification.criteria)}</p>
-            </DetailSection>
-            <DetailSection title={SECTION_TITLES.related} keys={keysOf(related.map((item) => item.open))} fileResult={fileResult} onOpen={onOpen}>
-                {related.length === 0 ? (
-                    <p>{NO_RELATED_TEXT}</p>
-                ) : (
-                    <ul>
-                        {related.map((item) => (
-                            <li key={item.open.key}>
-                                <button type="button" className="related-link" aria-label={`${OPEN_FILE_LABEL}: ${item.label}`} onClick={() => onOpen(item.open.key)}>
-                                    {item.label}
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </DetailSection>
-            <DetailSection title={SECTION_TITLES.history} keys={[]} fileResult={fileResult} onOpen={onOpen}>
-                {history.statusHistory === undefined ? (
-                    <p>{history.notAvailable ?? HISTORY_NOT_AVAILABLE_TEXT}</p>
-                ) : (
-                    <>
-                        <p>{history.label}</p>
+                        <p>{detail.history.label}</p>
                         <ul className="detail-history">
-                            {history.statusHistory.map((item, index) => (
+                            {detail.history.statusHistory.map((item, index) => (
                                 <li key={`${index}|${item.observedAt}`} title={historyTooltip(item)}>
                                     {historyEntryText(item, now)}
                                 </li>
@@ -220,15 +112,18 @@ function Sections(props: { detailKey: string; sections: DetailSections; fileResu
                     </>
                 )}
             </DetailSection>
+            <span className="visually-hidden detail-open-status" role="status" aria-live="polite" aria-atomic="true">
+                {fileResult === undefined ? '' : fileResult.text}
+            </span>
         </>
     );
 }
 
 export function SpecDetail(props: {
     detail: DetailView | undefined;
-    fileResult: { key: string; text: string } | undefined;
+    fileResult: FileResult | undefined;
     copyResult: { ok: boolean; text: string } | undefined;
-    onOpen: OpenFile;
+    onOpen: OpenAt;
     onCopy(text: string): void;
 }) {
     const { detail } = props;
@@ -241,29 +136,7 @@ export function SpecDetail(props: {
     }
     return (
         <section className="spec-detail" aria-label={DETAIL_LABEL}>
-            <div className="detail-title">
-                <span className="detail-number">{detail.number}</span>
-                <h2>
-                    <span className="sr-number">{detail.number} </span>
-                    {detail.title}
-                </h2>
-                {isBoardState(detail.sections.overview.state) ? <StateChip state={detail.sections.overview.state} /> : null}
-                <OpenButton target={detail.sections.overview.open} onOpen={props.onOpen} label={detail.number} />
-            </div>
-            <NextStep nextStep={detail.nextStep} copyResult={props.copyResult} onCopy={props.onCopy} />
-            {detail.problems.length === 0 ? null : (
-                <ul className="detail-problems" aria-label={BANNER_HEADING}>
-                    {detail.problems.map((line, index) => (
-                        <li key={`${index}|${line.reason}`}>
-                            <Glyph kind="diagnostic" />
-                            <span>
-                                <InlineText text={line.reason} />
-                            </span>
-                        </li>
-                    ))}
-                </ul>
-            )}
-            <Sections detailKey={detail.key} sections={detail.sections} fileResult={props.fileResult} onOpen={props.onOpen} />
+            <Picture key={detail.key} detail={detail} fileResult={props.fileResult} copyResult={props.copyResult} onOpen={props.onOpen} onCopy={props.onCopy} />
         </section>
     );
 }

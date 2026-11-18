@@ -999,6 +999,72 @@ main > h1 {
     display: none;
 }
 
+.file-link {
+    padding: 0;
+    color: var(--vscode-textLink-foreground);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+}
+
+.file-link:hover {
+    color: var(--vscode-textLink-activeForeground, var(--vscode-textLink-foreground));
+    text-decoration: underline;
+}
+
+.detail-path {
+    margin: 0 0 6px;
+    color: var(--fs-muted);
+    font-family: var(--vscode-editor-font-family);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.detail-successor {
+    margin: 0 0 6px;
+}
+
+.detail-flag {
+    color: var(--fs-muted);
+}
+
+.progress-row {
+    margin: 4px 0 8px;
+}
+
+.progress-label {
+    display: block;
+    color: var(--fs-muted);
+}
+
+.progress-next,
+.progress-open-label,
+.progress-absent {
+    margin: 4px 0;
+}
+
+.progress-open-label {
+    color: var(--fs-muted);
+}
+
+.criteria-open,
+.detail-files {
+    list-style: none;
+}
+
+.section-body .criteria-open,
+.section-body .detail-files {
+    padding-left: 0;
+}
+
+.file-label {
+    display: inline-block;
+    min-width: 12ch;
+    color: var(--fs-muted);
+}
+
 .related-link {
     padding: 0;
     color: var(--vscode-textLink-foreground);

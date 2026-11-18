@@ -26,14 +26,6 @@ function section(container: HTMLElement, title: string): HTMLElement {
     return heading.closest('section')!;
 }
 
-function openButtons(root: Element): HTMLButtonElement[] {
-    return [...root.querySelectorAll<HTMLButtonElement>('button')].filter((button) => button.textContent === 'Open file');
-}
-
-function requests(type: string): unknown[] {
-    return posted.filter((message) => message.type === type).map((message) => message.payload);
-}
-
 beforeEach(() => {
     posted = [];
 });
@@ -45,35 +37,35 @@ afterEach(() => {
     mounted = undefined;
 });
 
-describe('AC-019: the detail is in the DOM within 500 ms of the event (PD-047; a large spec)', () => {
-    it('renders the update fast enough: 120 requirements, 200 criteria, 150 steps, 100 history entries', async () => {
+describe('0019 AC-020: the situation picture is in the DOM within 500 ms of the event (PD-047; a large spec)', () => {
+    it('renders the update fast enough: 200 open criteria and 100 history entries', async () => {
         const base = sections();
         const container = await open();
-        const large = detailView(
-            sections({
-                requirements: { open: base.requirements.open, items: Array.from({ length: 120 }, (_, index) => ({ id: `FR-${index + 1}`, text: `Requirement ${index + 1}`, open: { key: SPEC_KEY, line: index + 1 } })) },
+        const large = detailView({}, undefined, [], {
+            progress: {
+                needs: [],
+                noPlan: false,
+                steps: { kind: 'steps', done: 10, total: 150, next: { id: 'T-011', title: 'Step 11', open: { key: PLAN_KEY, line: 90 } } },
                 criteria: {
-                    open: base.criteria.open,
-                    items: Array.from({ length: 200 }, (_, index) => ({ id: `AC-${index + 1}`, text: `Criterion ${index + 1}`, illustration: 'Given x, when y, then z', uncertain: index % 7 === 0, struck: index % 11 === 0, open: { key: SPEC_KEY, line: index + 1 } })),
+                    kind: 'criteria',
+                    verified: 20,
+                    total: 220,
+                    open: Array.from({ length: 200 }, (_, index) => ({ id: `AC-${index + 21}`, text: `Criterion ${index + 21}`, built: index % 3 === 0, open: { key: SPEC_KEY, line: index + 1 } })),
                 },
-                plan: {
-                    open: { key: PLAN_KEY },
-                    stages: ['1. T-001'],
-                    steps: Array.from({ length: 150 }, (_, index) => ({ id: `T-${index + 1}`, title: `Step ${index + 1}`, ticked: index % 2 === 0, struck: false, verified: index % 2 === 0 ? 'green' : undefined })),
-                },
-                history: {
-                    statusHistory: Array.from({ length: 100 }, (_, index) => ({ observedAt: `2026-11-16T10:00:${String(index % 60).padStart(2, '0')}Z`, old: 'Ready', new: 'Active', rule: 'S-ACTIVE', cause: { kind: 'first-observed', paths: [] }, flow: 'not checked' })),
-                    label: base.history.label,
-                    notAvailable: undefined,
-                },
-            }),
-        );
+            },
+            history: {
+                statusHistory: Array.from({ length: 100 }, (_, index) => ({ observedAt: `2026-11-16T10:00:${String(index % 60).padStart(2, '0')}Z`, old: 'Ready', new: 'Active', rule: 'S-ACTIVE', cause: { kind: 'first-observed', paths: [] }, flow: 'not checked' })),
+                label: base.history.label,
+                notAvailable: undefined,
+            },
+        });
         const best = await bestOfThree(
             () => send(detailEvent(large)),
             () => send(detailEvent(detailView())),
         );
+        await send(detailEvent(large));
         expect(container.querySelectorAll('.detail-history li')).toHaveLength(100);
-        expect(container.querySelectorAll('.detail-steps li')).toHaveLength(150);
+        expect(container.querySelectorAll('.criteria-open li')).toHaveLength(200);
         expect(best).toBeLessThan(BUDGET_MS.uiFreshness);
     });
 });

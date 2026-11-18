@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
-import { fileNotFoundText, HISTORY_NOT_AVAILABLE_TEXT, NO_DETAIL_SELECTION_TEXT, NO_PLAN_TEXT, NO_REQUIREMENTS_TEXT } from '../../shared/protocol/texts';
+import type { NextStepView, SpecDetailView } from '../../shared/protocol/detail';
+import { fileNotFoundText, HISTORY_NOT_AVAILABLE_TEXT, NO_DETAIL_SELECTION_TEXT, NO_PLAN_TEXT } from '../../shared/protocol/texts';
 import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
 import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
@@ -27,10 +28,6 @@ function section(container: HTMLElement, title: string): HTMLElement {
     return heading.closest('section')!;
 }
 
-function openButtons(root: Element): HTMLButtonElement[] {
-    return [...root.querySelectorAll<HTMLButtonElement>('button')].filter((button) => button.textContent === 'Open file');
-}
-
 function requests(type: string): unknown[] {
     return posted.filter((message) => message.type === type).map((message) => message.payload);
 }
@@ -46,166 +43,324 @@ afterEach(() => {
     mounted = undefined;
 });
 
-describe('AC-010: the seven sections', () => {
-    it('shows the heading of the spec and the sections in order, each under a heading', async () => {
+function textOf(root: Element): string {
+    const clone = root.cloneNode(true) as Element;
+    clone.querySelectorAll('.visually-hidden').forEach((hidden) => hidden.remove());
+    return (clone.textContent ?? '').replace(/\s+/g, ' ').trim();
+}
+
+function spec(overrides: Partial<SpecDetailView>, nextStep?: NextStepView, problems: SpecDetailView['problems'] = []) {
+    return detailView({}, nextStep, problems, overrides);
+}
+
+function links(root: Element): HTMLButtonElement[] {
+    return [...root.querySelectorAll<HTMLButtonElement>('button.file-link')];
+}
+
+function progressOf(container: HTMLElement): HTMLElement {
+    return section(container, 'Progress');
+}
+
+describe('0019 AC-009: the situation picture in its order', () => {
+    it('shows Next step, Problems, Progress, Files, Format notes and Status history in this order', async () => {
+        const container = await open(spec({}, undefined, [{ reason: 'A problem', open: { key: SPEC_KEY, line: 3 } }]));
+        const parts = [
+            section(container, 'Next step'),
+            container.querySelector('.detail-problems')!,
+            section(container, 'Progress'),
+            section(container, 'Files'),
+            container.querySelector('.format-notes')!,
+            section(container, 'Status history'),
+        ];
+        parts.forEach((part, index) => {
+            expect(part, `part ${index}`).not.toBeNull();
+            if (index > 0) {
+                expect(parts[index - 1]!.compareDocumentPosition(part) & Node.DOCUMENT_POSITION_FOLLOWING, `part ${index} follows part ${index - 1}`).toBeTruthy();
+            }
+        });
+        expect([...container.querySelectorAll('h3')].map((heading) => heading.textContent)).toEqual(['Next step', 'Progress', 'Files', 'Status history']);
+    });
+
+    it('the header holds the number, the title, one state chip and no Open file button', async () => {
         const container = await open();
-        expect(container.querySelector('h2')?.textContent).toContain('0007');
-        expect(container.querySelector('h2')?.textContent).toContain('Thing 0007');
-        expect([...container.querySelectorAll('h3')].map((heading) => heading.textContent)).toEqual([
-            'Next step',
-            'Overview',
-            'Requirements',
-            'Acceptance criteria',
-            'Plan & tasks',
-            'Verification',
-            'Related artifacts',
-            'Status history',
+        const header = container.querySelector('.detail-title')!;
+        expect(header.querySelector('.detail-number')?.textContent).toBe('0007');
+        expect(header.querySelector('h2')?.textContent).toContain('Thing 0007');
+        expect(header.querySelectorAll('.state-chip')).toHaveLength(1);
+        expect(header.querySelector('.state-chip')?.textContent?.trim()).toBe('Active');
+        expect(header.querySelectorAll('button')).toHaveLength(0);
+    });
+
+    it('a derived state shows its chip tooltip, the sentence as hidden text after the chip and no rule ID as text', async () => {
+        const container = await open(spec({ state: 'Ready', rule: 'S-READY', persistence: 'derived' }));
+        const chip = container.querySelector('.detail-title .state-chip')!;
+        expect(chip.textContent?.trim()).toBe('Ready');
+        expect(chip.getAttribute('title')).toBe('Plan written, not started yet · Derived from the files · rule S-READY');
+        const hidden = chip.nextElementSibling!;
+        expect(hidden.classList.contains('visually-hidden')).toBe(true);
+        expect(hidden.textContent).toBe('Plan written, not started yet');
+        expect(container.querySelector('.detail-title')!.textContent).not.toMatch(/S-READY|persisted|derived/);
+    });
+
+    it('a persisted state shows the tooltip of the files and no hidden sentence', async () => {
+        const container = await open();
+        const chip = container.querySelector('.detail-title .state-chip')!;
+        expect(chip.getAttribute('title')).toBe('Read from the files · rule S-ACTIVE');
+        expect(container.querySelector('.detail-title .visually-hidden')).toBeNull();
+    });
+
+    it('a duplicated stem shows its path below the title; control: none otherwise', async () => {
+        const container = await open(spec({ path: '.specs/backlog/0007-thing.md' }));
+        expect(container.querySelector('.detail-path')?.textContent).toBe('.specs/backlog/0007-thing.md');
+        expect((await open()).querySelector('.detail-path')).toBeNull();
+    });
+
+    it('a Deprecated spec shows the marker and its successor text', async () => {
+        const container = await open(spec({ successor: 'Successor: 0009-new' }));
+        expect(container.querySelector('.detail-title')!.textContent).toContain('Deprecated');
+        expect(container.querySelector('.detail-successor')?.textContent).toBe('Successor: 0009-new');
+        expect((await open()).querySelector('.detail-successor')).toBeNull();
+    });
+});
+
+describe('0019 AC-010: no second renderer of the files', () => {
+    const REMOVED = ['Overview', 'Requirements', 'Acceptance criteria', 'No FR- requirements found', 'Priority', 'verdict', 'Related artifacts', 'Plan & tasks', 'Verification', 'Open file'];
+
+    it('shows none of the removed texts as a heading or a line, no Verified text, no header line, no requirement or criterion text', async () => {
+        const container = await open();
+        const text = textOf(container.querySelector('.spec-detail')!);
+        for (const removed of REMOVED) {
+            expect(text, removed).not.toContain(removed);
+        }
+        expect(text).not.toContain('tests green');
+        expect(text).not.toContain('Show the board');
+        expect(text).not.toContain('The board shall render.');
+        expect(text).not.toContain('Given a project');
+        expect(text).not.toContain('In Progress');
+        expect(container.querySelector('.spec-detail dl')).toBeNull();
+        expect(container.querySelectorAll('button.open-file')).toHaveLength(0);
+    });
+
+    it('control: the same view still shows what the picture is for', async () => {
+        const text = textOf(await open());
+        expect(text).toContain('The board shall sort.');
+        expect(text).toContain('Second step');
+    });
+});
+
+describe('0019 AC-011, AC-012: Progress', () => {
+    it('shows the Steps row with its bar, "<done> of <total> done" and the next open step with its ID as link', async () => {
+        const container = await open();
+        const root = progressOf(container);
+        const bar = root.querySelector('[aria-label="Steps"][role="progressbar"]')!;
+        expect(bar.getAttribute('aria-valuenow')).toBe('1');
+        expect(bar.getAttribute('aria-valuemax')).toBe('3');
+        expect(textOf(root)).toContain('1 of 3 done');
+        expect(textOf(root.querySelector('.progress-next')!)).toBe('Next open step: T-002 Second step');
+        expect(links(root.querySelector('.progress-next')!).map((link) => link.textContent)).toEqual(['T-002']);
+    });
+
+    it('a complete plan shows no next open step; no countable step says so; an unreadable plan says so', async () => {
+        const done = await open(spec({ progress: { needs: [], noPlan: false, steps: { kind: 'steps', done: 4, total: 4 }, criteria: { kind: 'criteria', verified: 3, total: 3, open: [] } } }));
+        expect(textOf(progressOf(done))).toContain('4 of 4 done');
+        expect(done.querySelector('.progress-next')).toBeNull();
+        const none = await open(spec({ progress: { needs: [], noPlan: false, steps: { kind: 'none' } } }));
+        expect(textOf(progressOf(none))).toContain('No steps in the plan');
+        const unreadable = await open(spec({ progress: { needs: [], noPlan: false, steps: { kind: 'unavailable' }, criteria: { kind: 'unavailable', reason: 'unreadable' } } }));
+        expect(textOf(progressOf(unreadable))).toContain('not available — Studio cannot read the plan');
+        expect(progressOf(unreadable).querySelectorAll('[role="progressbar"]')).toHaveLength(0);
+    });
+
+    it('shows the Criteria row with "<verified> of <total> verified", "Not verified yet:" and one entry per open row', async () => {
+        const root = progressOf(await open());
+        expect(textOf(root)).toContain('1 of 2 verified');
+        expect(textOf(root)).toContain('Not verified yet:');
+        const entries = [...root.querySelectorAll('.criteria-open li')];
+        expect(entries.map(textOf)).toEqual(['AC-002 The board shall sort.']);
+        expect(links(entries[0]!).map((link) => link.textContent)).toEqual(['AC-002']);
+    });
+
+    it('a built row ends with " · built", a row with no ID shows its text as the link, all verified shows no list', async () => {
+        const criteria = {
+            kind: 'criteria' as const,
+            verified: 1,
+            total: 3,
+            open: [
+                { id: 'AC-001', text: 'First.', built: true, open: { key: SPEC_KEY, line: 9 } },
+                { text: 'M-01, M-02', built: false, open: { key: PLAN_KEY, line: 40 } },
+            ],
+        };
+        const container = await open(spec({ progress: { needs: [], noPlan: false, criteria } }));
+        const entries = [...progressOf(container).querySelectorAll('.criteria-open li')];
+        expect(entries.map(textOf)).toEqual(['AC-001 First. · built', 'M-01, M-02']);
+        expect(links(entries[1]!).map((link) => link.textContent)).toEqual(['M-01, M-02']);
+        const verified = await open(spec({ progress: { needs: [], noPlan: false, criteria: { kind: 'criteria', verified: 3, total: 3, open: [] } } }));
+        expect(textOf(progressOf(verified))).not.toContain('Not verified yet:');
+    });
+
+    it('the plan without a traceability table says so', async () => {
+        const container = await open(spec({ progress: { needs: [], noPlan: false, steps: { kind: 'steps', done: 0, total: 1 }, criteria: { kind: 'unavailable', reason: 'no-table' } } }));
+        expect(textOf(progressOf(container))).toContain('not available — the plan has no traceability table');
+    });
+
+    it('needs come first, each with its tooltip, no link; no Steps or Criteria row without a plan', async () => {
+        const container = await open(spec({ progress: { needs: [{ text: 'needs acceptance criteria', rule: 'R-2' }, { text: 'needs a plan', rule: 'R-3' }], noPlan: false } }));
+        const root = progressOf(container);
+        const needs = [...root.querySelectorAll('.detail-needs li')];
+        expect(needs.map((item) => item.textContent)).toEqual(['needs acceptance criteria', 'needs a plan']);
+        expect(needs.map((item) => item.getAttribute('title'))).toEqual(['Not Ready yet · rule R-2', 'Not Ready yet · rule R-3']);
+        expect(root.querySelectorAll('button')).toHaveLength(0);
+        expect(root.querySelectorAll('[role="progressbar"]')).toHaveLength(0);
+        expect(root.querySelector('.detail-needs')!.compareDocumentPosition(root.querySelector('.progress-rows') ?? root)).toBeDefined();
+    });
+
+    it('a spec without a plan says "No plan yet"; a Done spec without a plan has no Progress at all', async () => {
+        const noPlan = await open(spec({ progress: { needs: [], noPlan: true } }));
+        expect(textOf(progressOf(noPlan))).toContain(NO_PLAN_TEXT);
+        const baseline = detailView({}, undefined, []);
+        if (baseline.kind === 'spec') {
+            delete baseline.progress;
+        }
+        const container = await open(baseline);
+        expect(container.querySelector('h3')?.textContent).toBe('Next step');
+        expect([...container.querySelectorAll('h3')].map((heading) => heading.textContent)).not.toContain('Progress');
+    });
+});
+
+describe('0019 AC-014: Files', () => {
+    it('shows one row per file with its label and the file name as link', async () => {
+        const root = section(await open(), 'Files');
+        const rows = [...root.querySelectorAll('li')];
+        expect(rows.map(textOf)).toEqual(['Spec 0007-thing.md', 'Plan 0007-thing.plan.md']);
+        expect(links(root).map((link) => link.textContent)).toEqual(['0007-thing.md', '0007-thing.plan.md']);
+    });
+
+    it('lists an archived plan and a return note by their file names, nothing for an absent file', async () => {
+        const files = [
+            { label: 'Spec', name: '0001-a.md', open: { key: '.specs/done/0001-a.md', line: 1 } },
+            { label: 'Archived plan', name: '0001-a.2026-11-01.plan.md', open: { key: '.specs/plan-archive/0001-a.2026-11-01.plan.md', line: 1 } },
+            { label: 'Return note', name: 'activeContext.0001-T-001.md', open: { key: '.memory-bank/activeContext.0001-T-001.md', line: 1 } },
+        ];
+        const root = section(await open(spec({ files })), 'Files');
+        expect([...root.querySelectorAll('li')].map(textOf)).toEqual(['Spec 0001-a.md', 'Archived plan 0001-a.2026-11-01.plan.md', 'Return note activeContext.0001-T-001.md']);
+    });
+});
+
+describe('0019 AC-017: every link opens its file at its line', () => {
+    it('the next open step, an open criterion and a file send their key and line', async () => {
+        const container = await open();
+        await click(links(container.querySelector('.progress-next')!)[0]!);
+        await click(links(container.querySelector('.criteria-open')!)[0]!);
+        await click(links(section(container, 'Files'))[1]!);
+        expect(requests('openFile')).toEqual([
+            { key: PLAN_KEY, line: 30 },
+            { key: SPEC_KEY, line: 44 },
+            { key: PLAN_KEY, line: 1 },
         ]);
     });
 
-    it('Overview shows header lines, state, rule, persistence, priority and the format notes behind a toggle', async () => {
-        const text = section(await open(), 'Overview').textContent!;
-        expect(text).toContain('Status');
-        expect(text).toContain('In Progress');
-        expect(text).toContain('Active');
-        expect(text).not.toMatch(/S-ACTIVE|persisted/);
-        expect(section(await open(), 'Overview').querySelector('.state-chip')?.getAttribute('title')).toBe('Read from the files · rule S-ACTIVE');
-        expect(text).not.toMatch(/Priority|verdict/i);
-        expect(text).toContain('Plan has no Verified line');
+    it('a Problem with a file and a format note with a file send their key and line; one without a file is text', async () => {
+        const problems = [
+            { reason: 'Folder does not match.', open: { key: SPEC_KEY, line: 5 } },
+            { reason: 'Plan link is broken.' },
+        ];
+        const container = await open(spec({}, undefined, problems));
+        const list = container.querySelector('.detail-problems')!;
+        expect(links(list).map((link) => link.textContent)).toEqual(['Folder does not match.']);
+        expect(list.querySelectorAll('li')).toHaveLength(2);
+        await click(links(list)[0]!);
+        await click(container.querySelector('.format-notes-toggle')!);
+        await click(links(container.querySelector('.format-notes-list')!)[0]!);
+        expect(requests('openFile')).toEqual([
+            { key: SPEC_KEY, line: 5 },
+            { key: SPEC_KEY, line: 12 },
+        ]);
     });
 
-    it('Overview shows the needs, no readiness checklist, and the successor of a deprecated spec', async () => {
-        const base = sections().overview;
-        const container = await open(
-            detailView({
-                overview: { ...base, deprecated: true, successor: 'Successor: 0009-new', needs: [{ text: 'needs acceptance criteria', rule: 'R-2' }, { text: 'needs a plan', rule: 'R-3' }] },
-            }),
-        );
-        const text = section(container, 'Overview').textContent!;
-        expect(text).toContain('Deprecated');
-        expect(text).toContain('Successor: 0009-new');
-        const needs = [...section(container, 'Overview').querySelectorAll('.detail-needs li')];
-        expect(needs.map((item) => item.textContent)).toEqual(['needs acceptance criteria', 'needs a plan']);
-        expect(needs.map((item) => item.getAttribute('title'))).toEqual(['Not Ready yet · rule R-2', 'Not Ready yet · rule R-3']);
-        expect(needs.every((item) => item.querySelector('svg') === null)).toBe(true);
-        expect(section(container, 'Overview').querySelector('.detail-checks')).toBeNull();
-        expect(text).not.toMatch(/R-1|Inter-spec|failed/);
+    it('needs, history entries and texts send nothing', async () => {
+        const container = await open(spec({ progress: { needs: [{ text: 'needs a plan', rule: 'R-3' }], noPlan: false } }));
+        await click(container.querySelector('.detail-needs li')!);
+        await click(section(container, 'Status history').querySelector('li')!);
+        await click(container.querySelector('.detail-title h2')!);
+        expect(requests('openFile')).toEqual([]);
+        expect(section(container, 'Status history').querySelectorAll('button.file-link')).toHaveLength(0);
     });
 
-    it('Plan shows stages, steps with tick state, struck and the Verified text', async () => {
-        const text = section(await open(), 'Plan & tasks').textContent!;
-        expect(text).toContain('1. T-001 → T-002');
-        expect(text).toContain('T-001');
-        expect(text).toContain('First step');
-        expect(text).toContain('tests green');
-        expect(text).toContain('done');
-        expect(text).toContain('open');
-        expect(text).toContain('undetermined');
-        expect(text).toContain('struck');
-    });
-
-    it('Verification shows the counts, the summary, the criteria progress and no verdict line', async () => {
-        const text = section(await open(), 'Verification').textContent!;
-        expect(text).toContain('3 of 6 rows verified');
-        expect(text).toContain('Criteria: 3 of 6 verified');
-        expect(text).not.toMatch(/verdict/i);
-        expect(text).toContain('open 1');
-        expect(text).toContain('built 2');
-        expect(text).toContain('verified 3');
-    });
-
-    it('Related shows the artifacts, and a hint when there are none', async () => {
+    it('each link has its visible text as name, a tooltip and a description "Open <file name> at line <n>"', async () => {
         const container = await open();
-        expect(section(container, 'Related artifacts').textContent).toContain('0007-thing.plan.md');
-        const empty = await (async () => {
-            mounted?.unmount();
-            return open(detailView({ related: [] }));
-        })();
-        expect(section(empty, 'Related artifacts').textContent).toContain('No related artifacts');
+        const link = links(container.querySelector('.criteria-open')!)[0]!;
+        expect(link.textContent).toBe('AC-002');
+        expect(link.getAttribute('title')).toBe('Open 0007-thing.md at line 44');
+        const description = container.querySelector(`#${link.getAttribute('aria-describedby')!}`)!;
+        expect(description.textContent).toBe('Open 0007-thing.md at line 44');
+        expect(description.classList.contains('visually-hidden')).toBe(true);
+        expect(link.hasAttribute('aria-label')).toBe(false);
+        const fileLink = links(section(container, 'Files'))[1]!;
+        expect(fileLink.getAttribute('title')).toBe('Open 0007-thing.plan.md at line 1');
     });
-});
 
-describe('AC-009: criteria and requirements as delivered', () => {
-    it('shows each criterion with its text, its Given/When/Then and both flags', async () => {
+    it('every link is a native button in the Tab order and works with Enter and with Space', async () => {
         const container = await open();
-        const items = [...section(container, 'Acceptance criteria').querySelectorAll('li')];
-        expect(items).toHaveLength(2);
-        expect(items[0]!.textContent).toContain('AC-001');
-        expect(items[0]!.textContent).toContain('The board shall render.');
-        expect(items[0]!.textContent).toContain('Given a project, when opened, then six columns');
-        expect(items[0]!.textContent).not.toContain('uncertain');
-        expect(items[0]!.textContent).not.toContain('struck');
-        expect(items[1]!.textContent).toContain('uncertain');
-        expect(items[1]!.textContent).toContain('struck');
-    });
-
-    it('shows each requirement with its id and text', async () => {
-        const text = section(await open(), 'Requirements').textContent!;
-        expect(text).toContain('FR-01');
-        expect(text).toContain('Show the board');
-    });
-
-    it('says so and still offers Open file on the spec when there are no requirements', async () => {
-        const container = await open(detailView({ requirements: { open: { key: SPEC_KEY }, items: [] } }));
-        const requirements = section(container, 'Requirements');
-        expect(requirements.textContent).toContain(NO_REQUIREMENTS_TEXT);
-        expect(openButtons(requirements)).toHaveLength(1);
-    });
-});
-
-describe('AC-010: Open file exactly where a file is named', () => {
-    it('is offered for the spec, the plan, related artifacts, items and diagnostics', async () => {
-        const container = await open();
-        expect(openButtons(section(container, 'Overview'))).toHaveLength(1);
-        expect(openButtons(section(container, 'Requirements'))).toHaveLength(1);
-        expect(openButtons(section(container, 'Acceptance criteria'))).toHaveLength(1);
-        expect(openButtons(section(container, 'Plan & tasks'))).toHaveLength(1);
-        expect(openButtons(section(container, 'Verification'))).toHaveLength(1);
-        expect(openButtons(section(container, 'Related artifacts'))).toHaveLength(0);
-        expect([...section(container, 'Related artifacts').querySelectorAll('button.related-link')].map((button) => button.textContent)).toEqual(['0007-thing.plan.md']);
-    });
-
-    it('is never offered for the status history or No plan yet', async () => {
-        const noPlan = detailView({
-            plan: { open: undefined, stages: [], steps: [] },
-            verification: { ...sections().verification, open: undefined },
+        const all = links(container);
+        expect(all.length).toBeGreaterThanOrEqual(4);
+        all.forEach((link) => {
+            expect(link.tagName).toBe('BUTTON');
+            expect(link.type).toBe('button');
+            expect(isKeyboardReachable(link)).toBe(true);
         });
-        const container = await open(noPlan);
-        expect(section(container, 'Plan & tasks').textContent).toContain(NO_PLAN_TEXT);
-        expect(openButtons(section(container, 'Plan & tasks'))).toHaveLength(0);
-        expect(openButtons(section(container, 'Verification'))).toHaveLength(0);
-        expect(openButtons(section(container, 'Status history'))).toHaveLength(0);
+        const link = links(container.querySelector('.progress-next')!)[0]!;
+        await pressKey(link, 'Enter');
+        await pressKey(link, ' ');
+        expect(requests('openFile')).toEqual([
+            { key: PLAN_KEY, line: 30 },
+            { key: PLAN_KEY, line: 30 },
+        ]);
+    });
+});
+
+describe('0019 AC-019: a file that is gone', () => {
+    it('the activated link reads "File not found: <path>", keeps the focus and the live region announces it', async () => {
+        const container = await open();
+        const link = links(container.querySelector('.criteria-open')!)[0]!;
+        link.focus();
+        await click(link);
+        await send(openFileResultEvent(SPEC_KEY, fileNotFoundText(SPEC_KEY)));
+        expect(link.textContent).toBe(fileNotFoundText(SPEC_KEY));
+        expect(document.activeElement).toBe(link);
+        const region = container.querySelector('.detail-open-status')!;
+        expect(region.getAttribute('role')).toBe('status');
+        expect(region.getAttribute('aria-live')).toBe('polite');
+        expect(region.classList.contains('visually-hidden')).toBe(true);
+        expect(region.textContent).toBe(fileNotFoundText(SPEC_KEY));
     });
 
-    it('0013 AC-013: sends openFile with the key of the section\'s file and no line', async () => {
+    it('control: a link that was not activated keeps its text, and so does a link to another file', async () => {
         const container = await open();
-        await click(openButtons(section(container, 'Overview'))[0]!);
-        await click(openButtons(section(container, 'Acceptance criteria'))[0]!);
-        await click(section(container, 'Related artifacts').querySelector('button.related-link')!);
-        expect(requests('openFile')).toEqual([{ key: SPEC_KEY }, { key: SPEC_KEY }, { key: PLAN_KEY }]);
+        const criterion = links(container.querySelector('.criteria-open')!)[0]!;
+        const step = links(container.querySelector('.progress-next')!)[0]!;
+        await click(criterion);
+        await send(openFileResultEvent(SPEC_KEY, fileNotFoundText(SPEC_KEY)));
+        expect(step.textContent).toBe('T-002');
+        expect(links(section(container, 'Files'))[0]!.textContent).toBe('0007-thing.md');
     });
 
-    it('the buttons are keyboard-operable', async () => {
+    it('the next model update restores the text and empties the live region', async () => {
         const container = await open();
-        const button = openButtons(section(container, 'Plan & tasks'))[0]!;
-        expect(isKeyboardReachable(button)).toBe(true);
-        await pressKey(button, 'Enter');
-        expect(requests('openFile')).toEqual([{ key: PLAN_KEY }]);
-    });
-
-    it('shows the not-found text in the status line of the section that holds the file', async () => {
-        const container = await open();
-        await send(openFileResultEvent(PLAN_KEY, fileNotFoundText(PLAN_KEY)));
-        const status = section(container, 'Plan & tasks').querySelector('[role="status"]')!;
-        expect(status.textContent).toBe(fileNotFoundText(PLAN_KEY));
-        expect(section(container, 'Overview').querySelector('[role="status"]')?.textContent ?? '').toBe('');
-    });
-
-    it('a new detail view clears the message', async () => {
-        const container = await open();
-        await send(openFileResultEvent(PLAN_KEY, fileNotFoundText(PLAN_KEY)));
+        const link = links(container.querySelector('.criteria-open')!)[0]!;
+        await click(link);
+        await send(openFileResultEvent(SPEC_KEY, fileNotFoundText(SPEC_KEY)));
         await send(detailEvent(detailView()));
-        expect(container.textContent).not.toContain(fileNotFoundText(PLAN_KEY));
+        expect(links(container.querySelector('.criteria-open')!)[0]!.textContent).toBe('AC-002');
+        expect(container.querySelector('.detail-open-status')!.textContent).toBe('');
+        expect(container.textContent).not.toContain(fileNotFoundText(SPEC_KEY));
+    });
+
+    it('showing another spec restores the text', async () => {
+        const container = await open();
+        await click(links(container.querySelector('.criteria-open')!)[0]!);
+        await send(openFileResultEvent(SPEC_KEY, fileNotFoundText(SPEC_KEY)));
+        await send(detailEvent({ ...detailView(), key: '.specs/active/0008-other.md', stem: '0008-other' } as ReturnType<typeof detailView>));
+        expect(container.textContent).not.toContain(fileNotFoundText(SPEC_KEY));
     });
 });
 
@@ -250,102 +405,11 @@ describe('AC-028: the selection', () => {
         const moved = detailView();
         if (moved.kind === 'spec') {
             moved.key = '.specs/done/0007-thing.md';
-            moved.sections.overview.state = 'Done';
+            moved.state = 'Done';
         }
         await send(detailEvent(moved));
         expect(container.querySelector('h2')?.textContent).toContain('Thing 0007');
-        expect(section(container, 'Overview').textContent).toContain('Done');
-    });
-});
-
-describe('AC-010: the Overview header lines', () => {
-    it('each header line is one wrapper holding its label and its value, so a row can lay them side by side', async () => {
-        const container = await open();
-        const rows = [...container.querySelector('dl.detail-header')!.children];
-        expect(rows.map((row) => [...row.children].map((child) => child.tagName))).toEqual([['DT', 'DD'], ['DT', 'DD']]);
-        expect(rows.map((row) => row.textContent)).toEqual(['Status In Progress', 'Plan 0007-thing.plan.md']);
-    });
-});
-
-describe('0013 AC-012, AC-013, AC-010: collapsible sections, detail header, Overview rules', () => {
-    function toggle(container: HTMLElement, title: string): HTMLButtonElement {
-        return section(container, title).querySelector<HTMLButtonElement>('h3 > button')!;
-    }
-
-    it('AC-012: the heading holds one toggle button; activating it hides the body and sets aria-expanded; again shows it', async () => {
-        const container = await open();
-        const button = toggle(container, 'Acceptance criteria');
-        expect(button.parentElement?.children).toHaveLength(1);
-        expect(button.getAttribute('aria-expanded')).toBe('true');
-        const body = container.querySelector<HTMLElement>(`#${button.getAttribute('aria-controls')!}`)!;
-        expect(body.hidden).toBe(false);
-        expect(body.textContent).toContain('The board shall render.');
-        await click(button);
-        expect(button.getAttribute('aria-expanded')).toBe('false');
-        expect(body.hidden).toBe(true);
-        await pressKey(button, 'Enter');
-        expect(button.getAttribute('aria-expanded')).toBe('true');
-        expect(body.hidden).toBe(false);
-    });
-
-    it('AC-012: all sections start expanded; a collapsed section stays collapsed after another spec is selected', async () => {
-        const container = await open();
-        for (const title of ['Overview', 'Requirements', 'Acceptance criteria', 'Plan & tasks', 'Verification', 'Related artifacts', 'Status history']) {
-            expect(toggle(container, title).getAttribute('aria-expanded'), title).toBe('true');
-        }
-        await click(toggle(container, 'Acceptance criteria'));
-        const other = detailView();
-        if (other.kind === 'spec') {
-            other.key = '.specs/active/0008-other.md';
-            other.stem = '0008-other';
-            other.number = '0008';
-            other.title = 'Other 0008';
-        }
-        await send(detailEvent(other));
-        expect(container.querySelector('h2')?.textContent).toContain('Other 0008');
-        expect(toggle(container, 'Acceptance criteria').getAttribute('aria-expanded')).toBe('false');
-        expect(toggle(container, 'Requirements').getAttribute('aria-expanded')).toBe('true');
-    });
-
-    it('AC-013: no Open file per requirement, criterion or diagnostic; the Open file of a section sits in its heading row', async () => {
-        const container = await open();
-        for (const title of ['Overview', 'Requirements', 'Acceptance criteria']) {
-            const root = section(container, title);
-            expect(root.querySelectorAll('li button')).toHaveLength(0);
-            expect(openButtons(root)[0]?.closest('.section-head')).not.toBeNull();
-        }
-    });
-
-    it('AC-003: toggles, section Open file buttons and related links are native buttons in the Tab order', async () => {
-        const container = await open();
-        const controls = [...container.querySelectorAll<HTMLButtonElement>('h3 > button, .section-head .open-file, button.related-link')];
-        expect(controls.length).toBe(7 + 5 + 1);
-        controls.forEach((control) => {
-            expect(control.tagName).toBe('BUTTON');
-            expect(isKeyboardReachable(control)).toBe(true);
-        });
-    });
-
-    it('detail header: number chip, title, state chip and one Open file for the spec', async () => {
-        const container = await open();
-        const header = container.querySelector('.detail-title')!;
-        expect(header.querySelector('.detail-number')?.textContent).toBe('0007');
-        expect(header.querySelector('h2')?.textContent).toContain('Thing 0007');
-        expect(header.querySelector('.state-chip')?.textContent?.trim()).toBe('Active');
-        expect(openButtons(header)).toHaveLength(1);
-        await click(openButtons(header)[0]!);
-        expect(requests('openFile')).toEqual([{ key: SPEC_KEY }]);
-    });
-
-    it('AC-010: the Overview shows a derived state with its sentence and rule ID', async () => {
-        const base = sections().overview;
-        const container = await open(detailView({ overview: { ...base, state: 'Review', rule: 'S-REVIEW', persistence: 'derived' } }));
-        const overview = section(container, 'Overview');
-        const sentences = [...overview.querySelectorAll('.rule-text')].map((rule) => [rule.querySelector('.rule-sentence')?.textContent, rule.querySelector('.rule-id')?.textContent]);
-        expect(sentences).toEqual([['Plan done, waiting for review', undefined]]);
-        expect(overview.querySelector('.rule-text')?.getAttribute('title')).toBe('Derived from the files · rule S-REVIEW');
-        expect(overview.querySelector('.state-chip')?.hasAttribute('title')).toBe(false);
-        expect(overview.textContent).not.toMatch(/S-REVIEW|persisted|derived/);
+        expect(container.querySelector('.detail-title .state-chip')?.textContent).toContain('Done');
     });
 });
 
@@ -437,22 +501,22 @@ describe('0015 AC-003, AC-005, AC-008, AC-009: the next step in the detail', () 
     });
 });
 
-describe('0016 AC-006, AC-007, AC-016, AC-022: Problems, format notes and the title emphasis', () => {
+describe('0016 AC-006, AC-007, AC-022: Problems, format notes', () => {
     const PROBLEM = { reason: 'Folder done/ does not match status "In Progress".', open: { key: SPEC_KEY, line: 1 } };
 
     function notesToggle(container: HTMLElement): HTMLButtonElement {
         return container.querySelector<HTMLButtonElement>('.format-notes-toggle')!;
     }
 
-    it('AC-006: each Problem shows with the warning icon directly below Next step and above Overview', async () => {
+    it('AC-006: each Problem shows with the warning icon directly below Next step and above Progress', async () => {
         const container = await open(detailView({}, undefined, [PROBLEM, { reason: 'plan link 0007-gone.plan.md points to a missing file' }]));
         const list = container.querySelector('.detail-problems')!;
-        expect([...list.querySelectorAll('li')].map((item) => item.textContent)).toEqual([PROBLEM.reason, 'plan link 0007-gone.plan.md points to a missing file']);
+        expect([...list.querySelectorAll('li')].map(textOf)).toEqual([PROBLEM.reason, 'plan link 0007-gone.plan.md points to a missing file']);
         expect([...list.querySelectorAll('li svg')]).toHaveLength(2);
         const nextStep = section(container, 'Next step');
         expect(nextStep.nextElementSibling).toBe(list);
-        expect(list.nextElementSibling).toBe(section(container, 'Overview'));
-        expect(list.querySelector('button')).toBeNull();
+        expect(list.nextElementSibling).toBe(section(container, 'Progress'));
+        expect(list.querySelectorAll('button')).toHaveLength(1);
     });
 
     it('AC-006 control: with no Problem no list is shown', async () => {
@@ -470,8 +534,7 @@ describe('0016 AC-006, AC-007, AC-016, AC-022: Problems, format notes and the ti
         await click(toggle);
         expect(toggle.getAttribute('aria-expanded')).toBe('true');
         expect(list.hidden).toBe(false);
-        expect(list.textContent).toBe('Plan has no Verified line');
-        expect(list.querySelector('button')).toBeNull();
+        expect(textOf(list)).toBe('Plan has no Verified line');
     });
 
     it('AC-007: the toggle is reachable by Tab and works with Enter and with Space', async () => {
@@ -485,10 +548,9 @@ describe('0016 AC-006, AC-007, AC-016, AC-022: Problems, format notes and the ti
     });
 
     it('AC-007: the plural reads "<n> format notes — no action needed" and no toggle exists at 0 notes', async () => {
-        const base = sections().overview;
-        const many = await open(detailView({ overview: { ...base, notes: [{ reason: 'a' }, { reason: 'b' }, { reason: 'c' }] } }));
+        const many = await open(detailView({}, undefined, [], { notes: [{ reason: 'a' }, { reason: 'b' }, { reason: 'c' }] }));
         expect(notesToggle(many).textContent).toBe('3 format notes — no action needed');
-        const none = await open(detailView({ overview: { ...base, notes: [] } }));
+        const none = await open(detailView({}, undefined, [], { notes: [] }));
         expect(none.querySelector('.format-notes-toggle')).toBeNull();
     });
 
@@ -497,19 +559,6 @@ describe('0016 AC-006, AC-007, AC-016, AC-022: Problems, format notes and the ti
         await click(notesToggle(container));
         await send(detailEvent({ ...detailView(), key: 'other', stem: '0008-other' } as ReturnType<typeof detailView>));
         expect(notesToggle(container).getAttribute('aria-expanded')).toBe('false');
-    });
-
-    it('AC-016: a criterion whose title is bold shows it in <strong> with no asterisk left', async () => {
-        const base = sections().criteria;
-        const container = await open(
-            detailView({
-                criteria: { ...base, items: [{ id: 'AC-001', text: '**Events reach the broker without an intermediate table**\nWhen an order event occurs.', illustration: undefined, uncertain: false, struck: false, open: { key: SPEC_KEY } }] },
-            }),
-        );
-        const item = section(container, 'Acceptance criteria').querySelector('li')!;
-        expect(item.querySelector('strong:not(.item-id)')?.textContent).toBe('Events reach the broker without an intermediate table');
-        expect(item.textContent).not.toContain('*');
-        expect(item.querySelectorAll('.item-id')).toHaveLength(1);
     });
 
     it('AC-022: NS-1 reads the new text and keeps its rule', async () => {

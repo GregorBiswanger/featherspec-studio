@@ -336,6 +336,29 @@ export function successorText(successor: { kind: 'link'; text: string } | { kind
 }
 
 export const DETAIL_LABEL = 'Spec detail';
+export const PROGRESS_HEADING = 'Progress';
+export const STEPS_LABEL = 'Steps';
+export const CRITERIA_LABEL = 'Criteria';
+export const FILES_HEADING = 'Files';
+export const NEXT_OPEN_STEP_LABEL = 'Next open step:';
+export const NO_STEPS_TEXT = 'No steps in the plan';
+export const NOT_VERIFIED_YET_LABEL = 'Not verified yet:';
+export const BUILT_MARK = ' · built';
+export const CRITERIA_NO_TABLE_TEXT = 'not available — the plan has no traceability table';
+export const PLAN_UNREADABLE_TEXT = 'not available — Studio cannot read the plan';
+
+export function stepsDoneText(done: number, total: number): string {
+    return `${done} of ${total} done`;
+}
+
+export function criteriaVerifiedText(verified: number, total: number): string {
+    return `${verified} of ${total} verified`;
+}
+
+export function openFileTooltip(name: string, line: number): string {
+    return `Open ${name} at line ${line}`;
+}
+
 export const FILE_LABELS = { spec: 'Spec', plan: 'Plan', archivedPlan: 'Archived plan', returnNote: 'Return note' } as const;
 export const NO_RELATED_TEXT = 'No related artifacts';
 export const SECTION_TITLES = {

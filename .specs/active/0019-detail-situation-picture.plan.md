@@ -3,7 +3,7 @@
 **Spec:** [0019-detail-situation-picture.md](0019-detail-situation-picture.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-003
+**Current step:** T-004
 
 ## Approach
 
@@ -284,8 +284,8 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
   of an `FR-` row, at most 300 words); `userLanguage.test.tsx` sweeps the new detail.
 - **Verify:** `npx vitest run src/webview src/adapters/node/webviewBundle.test.ts` red (new
   expectations on the old component), then green; gates 1–5
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-18 — red: `npx vitest run src/webview/detail/SpecDetail.test.tsx` on the old component failed 28 of 46 (no Progress/Files, old sections, no `file-link`); the removed bundle test of 0013 AC-014/015 was replaced by the AC-010 test on `studio-0015` (first run red on a test slip: `SpecEntry` has no `stem`, fixed, then green). Green: `src/webview` 325 passed, `webviewBundle.test.ts` 9 passed (no `FR-` row text, at most 300 words, `28 of 30 verified`, AC-027 and AC-030). Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2070 passed + 3 skipped (+12 timing), `npm run compile`, `npm run compile-tests` green. `SpecDetail.timing.test.tsx` AC-020 (200 open criteria + 100 history entries) passes within the 500 ms budget in the timing project.
+- **Notes:** (1) The hidden description of each link is a `visually-hidden` span after the button (P-10); tests read visible text without `.visually-hidden`. (2) One live region (`.detail-open-status`) per detail announces the not-found text; the link itself shows it only when the `openFileResult` object is newer than the one present at its activation, so a stale result never marks a working link. (3) `PlainSection` (DetailSection.tsx) holds the headed sections without a toggle (Progress, Files). (4) Status history keeps the old `DetailSection` until T-004; Format notes use `FormatNotes` with `renderNote`. (5) New texts in `texts.ts`: `PROGRESS_HEADING`, `STEPS_LABEL`, `CRITERIA_LABEL`, `FILES_HEADING`, `NEXT_OPEN_STEP_LABEL`, `NO_STEPS_TEXT`, `NOT_VERIFIED_YET_LABEL`, `BUILT_MARK`, `CRITERIA_NO_TABLE_TEXT`, `PLAN_UNREADABLE_TEXT`, `stepsDoneText`, `criteriaVerifiedText`, `openFileTooltip`. (6) The old CSS rules and constants stay until T-004.
 
 ### T-004 — Format notes and Status history collapse; the full-text contract goes
 
