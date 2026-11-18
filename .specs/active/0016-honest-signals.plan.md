@@ -113,6 +113,7 @@ stage, from the tests listed in each `Do:` (AGENTS.md *TDD*). Memory Bank: `tech
 2. T-003 → T-004 → T-005 → T-006 — R-6 and this repo's counts; Problems on card, attention and header; detail and banner; needs
 3. T-007 → T-008 — user language: rule IDs into tooltips and the S2 sentence; times and history
 4. T-009 → T-010 — old texts gone, amendments, product docs; test-title audit, sync, final gates
+5. T-011 → T-012 → T-013 — fixes from the compile of 2026-11-18 (S36): amendment notes, PD-063 and docs sync; eight test gaps; evidence and final gates
 
 Parallel: stage 1. T-001 touches only `src/core/**` and `test/fixtures/**`; T-002 touches only
 `src/webview/**`, `src/shared/protocol/nextStepTexts.ts` and `src/adapters/node/webviewCss.test.ts`.
@@ -274,7 +275,7 @@ everything after T-002 shares the text modules, `main.css` or `SpecDetail.tsx` a
   `webviewBundle.test.ts` (Ready card sentence), `panelStateTexts.test.ts`, `PanelStateView.test.tsx`
   (T-20 between the line and Set up), `manifest.test.ts` (`viewsWelcome` equals `S2_WELCOME`).
 - **Verify:** the changed tests red then green; gates 1–5
-- [x] **Verified (T-007):** eslint, tsc (node, webview), test:unit 1789 passed + 3 skipped / timing 12, compile green. Rule IDs now only in title tooltips (T-08, T-10); S2 shows the T-20 sentence in panel and viewsWelcome. Tests updated first to literal new texts; production edits preceded the test edits in this step (no separate red run).
+- [x] **Verified (T-007):** 2026-11-18 — eslint, tsc (node, webview), test:unit 1789 passed + 3 skipped / timing 12, compile green. Rule IDs now only in title tooltips (T-08, T-10); S2 shows the T-20 sentence in panel and viewsWelcome. Tests and production were edited in one pass, so there was no separate red run; the compile of 2026-11-18 judged this step by mutation instead (all T-007 mutants killed).
 - **Notes:** Proxy: persisted State chip gets the T-10 tooltip, derived rows the T-08 tooltip; .rule-id CSS removed.
 
 ### T-008 — Times and status history as sentences
@@ -296,8 +297,8 @@ everything after T-002 shares the text modules, `main.css` or `SpecDetail.tsx` a
   `NS-…`, "persisted", "Model updated", "first observed" or "not checked". Negative control:
   today's history line is caught.
 - **Verify:** the new and changed tests red then green; gates 1–4
-- [x] **Verified (T-008):** eslint, tsc (node, webview), test:unit 1803 passed + 3 skipped / timing 12, compile green. New whenTexts.test.ts (fake-free Date injection, midnight, unparsable) and userLanguage.test.tsx (with negative control). Tests and production were written together; no separate red run.
-- **Notes:** Proxy: Q-2 tooltip omits empty parts; header time shows full date for yesterday (T-02 has no Yesterday form); history entries carry a structured cause, the sentence is computed at render; format.ts removed.
+- [x] **Verified (T-008):** 2026-11-18 — eslint, tsc (node, webview), test:unit 1803 passed + 3 skipped / timing 12, compile green. New whenTexts.test.ts (fake-free Date injection, midnight, unparsable) and userLanguage.test.tsx (with negative control). Tests and production were written together; no separate red run.
+- **Notes:** Proxy: Q-2 tooltip omits empty parts; header time shows full date for yesterday (T-02 has no Yesterday form); history entries carry a structured cause, the sentence is computed at render; format.ts removed. Correction (T-012): `userLanguage.test.tsx` first swept the detail only; since T-012 it also sweeps the Spec Board card, the Spec Explorer row, Mission Control (header, tiles, attention, activity) and the banner, as this step's *Do* promised.
 
 ### T-009 — Old texts gone; amendments and product docs
 
@@ -316,7 +317,7 @@ everything after T-002 shares the text modules, `main.css` or `SpecDetail.tsx` a
   green, with the negative control failing when its term is removed;
   `ls .specs/*/00{02,03,05,06,07,13,14,15}-*.md | grep -v '\.plan\.md$' | xargs grep -c "Amended by 0016"`
   ≥ 1 for each of the eight specs; gates 1–4
-- [x] **Verified (T-009):** sourceScan AC-021 test (with negative control) green; amendment notes in all eight specs (counts 2/2/6/4/4/7/7/7 for 0014,0015,0002,0003,0005,0006,0007,0013); PD-063, README, CHANGELOG, release-checklist written; gates 1-4 green, test:unit 1805 passed + 3 skipped, timing 12.
+- [x] **Verified (T-009):** 2026-11-18 — sourceScan AC-021 test (with negative control) green; amendment notes in all eight specs (counts 2/2/6/4/4/7/7/7 for 0014,0015,0002,0003,0005,0006,0007,0013); PD-063, README, CHANGELOG, release-checklist written; gates 1-4 green, test:unit 1805 passed + 3 skipped, timing 12.
 - **Notes:** Proxy: notes placed after the statement block (tables: after the table); done/ specs amended in place as 0015 did.
 
 ### T-010 — Test-title audit, Memory Bank, architecture, final gates
@@ -340,8 +341,32 @@ everything after T-002 shares the text modules, `main.css` or `SpecDetail.tsx` a
   The panel screenshots are taken by the agent with the harness. The S2 sentence in the Activity
   Bar view and the Hands-On on `tip-splitter` are Gregor's, because neither a look nor a native
   VS Code view can be checked by a command here.
-- [x] **Verified (T-010):** Title audit (1750 baseline, 1869 head, 27 missing all replaced per §5) written into the plan; Memory Bank, AGENTS.md snapshot, .architecture synced; final gates green: eslint, tsc node+webview, test:unit 1805 passed + 3 skipped / timing 12, compile, compile-tests. AC-025 screenshots from the harness (Dark, Light, High Contrast) show the need line, collapsed format-note toggle and S2 sentence; Copy button label change is covered by CopyButton.test.tsx, not by a screenshot.
+- [x] **Verified (T-010):** 2026-11-18 — Title audit (1750 baseline, 1869 head, 27 missing all replaced per §5) written into the plan; Memory Bank, AGENTS.md snapshot, .architecture synced; final gates green: eslint, tsc node+webview, test:unit 1805 passed + 3 skipped / timing 12, compile, compile-tests. AC-025 screenshots from the harness (Dark, Light, High Contrast) show the need line, collapsed format-note toggle and S2 sentence; Copy button label change is covered by CopyButton.test.tsx, not by a screenshot.
 - **Notes:** Not provable here: npm test (host), Windows, Gregor's Hands-On.
+
+### T-011 — Compile fixes D1, D2, D3 and the docs sync (documents only)
+
+- **Covers:** AC-024 (D1, D2, D3), AC-023 (docs sync of the compile report)
+- **Do:** D1: the §5 note for "0013 AC-016; 0015 AC-027 (test audits)" in both specs. D2: every note of 0002, 0006, 0007, 0014 and 0015 moved directly under its statement and named (`AC-014 — …`); the missing ones added (0002 BR-05, §8 Diagnostic, AC-006/014/015/017; 0006 §4, BR-01 (d), BR-08 row; 0007 §6.1 bullets 1/4/5, §6.4 Overview, Verification and history rows; 0014 §9 S2 bullet; 0015 §8 Detail and Drop result, §9 first bullet, AC-005, AC-009); 0002's wording "Problem or format note". D3: PD-063 gains Q-6, the content of A-002 and A-006; the citation in (7) reads (Q-7, Q-8). Docs sync: `techContext.md` (0016 line moves to *Test*, `repo-8052f9a` is its own fixture, the sweep's real scope), `.architecture/{core,webview}.md` reconciled 2026-11-18, `activeContext.md`, this plan (dates in `Verified:`, T-007 and T-008 notes).
+- **Verify:** `grep -c "Amended by 0016"` over the eight specs ≥ 1 each; `grep -n "Amended by 0016" .specs/done/0013-*.md .specs/active/0015-focus-on-visibility.md | grep -ci "AC-016\|AC-027"` ≥ 2; `grep "^| PD-063" docs/product/product-decisions.md | grep -c "Q-6"` = 1; `npx vitest run --project node src/adapters/node/docsScan.test.ts`
+- [x] **Verified (T-011):** 2026-11-18 — notes counts per spec (0002 6, 0003 4, 0005 4, 0006 10, 0007 13, 0013 8, 0014 2, 0015 7, all ≥ 1); the AC-016 / AC-027 grep gives 2; PD-063 has Q-6 (count 1), A-002 and A-006; `docsScan.test.ts` green (part of `npm run test:unit` below).
+- **Notes:** Documents only, so no test and no red run. Notes of 0003, 0005 and 0013 were already under their statements and stay. A note for a table row stands under its table.
+
+### T-012 — Compile fix: close the eight test gaps
+
+- **Covers:** AC-001, AC-008, AC-011, AC-014, AC-017, §6.5 (decided by existing code; the tests are new)
+- **Do:** Tests only; each seen red against the named mutant (recorded below), the production file restored afterwards. (1) `tiers.test.ts` three rows: a reused unreadable file, a symlinked lifecycle folder, a folder whose stat fails. (2) `specFigures.test.ts` AC-008: one spec with three Problems makes `problems` 3 and one stem. (3) `cards.test.ts` AC-014: a spec with two needs shows the first. (4) `SpecDetail.test.tsx` AC-017: the detail's Copy has `copy-button`, not `open-file`. (5) `userLanguage.test.tsx` AC-011: sweeps for the card, the Spec Explorer row, Mission Control and the banner, as T-008 promised; the pattern lost its word boundaries because `textContent` joins text with no space (`R-3Tasks`), with a negative control for it. (6) `webviewCss.test.ts` §6.5: `.visually-hidden` stays a clipped 1 px box that is not `display: none`.
+- **Verify:** `npx vitest run --project node src/core/specs/tiers.test.ts src/core/missionControl/specFigures.test.ts src/core/board/cards.test.ts src/adapters/node/webviewCss.test.ts` and `npx vitest run --project webview src/webview/userLanguage.test.tsx src/webview/detail/SpecDetail.test.tsx`, each red against its mutant, then green
+- [x] **Verified (T-012):** 2026-11-18 — red against mutants (one at a time, file restored): `files.ts` `tier: 'problem'` → `'note'` at the reuse path, at the symlinked folder and at the folder stat error: 1 failed each; `specFigures.ts` `counted.size` → `withProblems.length`: 1 failed; `cards.ts` `needsOf(...)[0]` → `.at(-1)`: 1 failed; `CopyButton.tsx` class `copy-button` → `open-file`: 1 failed; `Banner.tsx` and `Card.tsx` with an appended rule ID: 1 and 2 failed, `RuleText.tsx` with an appended `S-READY`: 3 failed (card, row, Mission Control); `.visually-hidden` with `overflow: visible`, `clip-path: none`, `width: 40px` or `display: none`: 1 failed each. Green unmutated: `npm run test:unit` 1818 passed + 3 skipped (was 1805 + 3), timing 12.
+- **Notes:** The AC-008 test counts three Problems, not two: an unknown status also gives the folder contradiction. A first sweep pattern with `\b` missed a rule ID glued to the next text; fixed and covered by a control.
+
+### T-013 — Record the host evidence; final gates
+
+- **Covers:** AC-023 (Windows part), AC-025 (state)
+- **Do:** Record Gregor's run on Windows 11 at `870dc63` (2026-11-18): `npm run test:unit` 1801 passed, 7 skipped, 12 timing passed; `npm test` 24 + 1 + 1 + 1 passing. The CI result at `870dc63` is checked by the orchestrator; AC-023's CI part stays open. AC-025 stays open: Gregor's Hands-On and the manual items below. No move to `done/`.
+- **Verify:** `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile && npm run compile-tests`
+- [x] **Verified (T-013):** 2026-11-18 — gates: eslint 0 warnings, tsc and `tsc -p src/webview` clean, `npm run test:unit` 1818 passed + 3 skipped, timing 12 passed, `npm run compile` and `npm run compile-tests` exit 0 (see the final message of the session for the run after the last edit).
+- **Notes:** The Windows unit count (1801 passed, 7 skipped) differs from this sandbox (more skips on Windows for symbolic-link and permission cases); the host suite 24 + 1 + 1 + 1 is the same set CI runs. The Windows run predates T-011 and T-012, which add tests and documents but no production code; Gregor or CI reruns them at the fix head.
 
 ## Test-title audit
 
@@ -379,36 +404,36 @@ No test file was deleted. Every missing title is a criterion that spec 0016 §5 
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001, T-003 | `src/core/specs/{files,parseSpec,parsePlan,planSteps,leadingIds,returnNote,version,readProject}.ts` (tier at each push), `src/core/lifecycle/entryContext.ts` | `src/core/specs/tiers.test.ts`, `src/core/lifecycle/problems.test.ts` | verified |
+| AC-001 | T-001, T-003 | `src/core/specs/{files,parseSpec,parsePlan,planSteps,leadingIds,returnNote,version,readProject}.ts` (tier at each push), `src/core/lifecycle/entryContext.ts` | `src/core/specs/tiers.test.ts` (rows incl. reuse path, symlinked folder, folder stat), `src/core/lifecycle/problems.test.ts` | verified |
 | AC-002 | T-001 | `src/core/specs/parseSpec.ts`:parseSpec, `src/core/lifecycle/successor.ts`:readSuccessor | `parseSpec.test.ts`, `successor.test.ts`, `core/board/detail.test.ts` (AC-002) | verified |
 | AC-003 | T-001 | `src/core/specs/testing/readSnapshot.ts`, `test/fixtures/read-baseline/*.json` | `src/core/specs/readBaseline.test.ts` | verified |
 | AC-004 | T-003 | `src/core/specs/*` tiers, `test/fixtures/repo-8052f9a` | `src/core/lifecycle/problems.test.ts` (AC-004) | verified |
 | AC-005 | T-003 | `src/core/lifecycle/readiness.ts`:hasProblem | `src/core/lifecycle/problems.test.ts` (AC-005) | verified |
 | AC-006 | T-004, T-005 | `src/core/board/cards.ts`:buildCards, `src/core/board/detail.ts`, `src/core/missionControl/attention.ts`, `src/webview/board/Card.tsx`, `src/webview/detail/SpecDetail.tsx` | `cards.test.ts`, `detail.test.ts`, `attention.test.ts`, `SpecBoard.test.tsx`, `SpecDetail.test.tsx` | verified |
 | AC-007 | T-004, T-005 | `src/webview/ui/FormatNotes.tsx`, `src/core/board/cards.ts` | `SpecDetail.test.tsx` (toggle), `cards.test.ts`, `attention.test.ts` | verified |
-| AC-008 | T-004 | `src/core/missionControl/specFigures.ts`:projectHeader, `src/webview/areas/missionControl/{Header.tsx,requests.ts}` | `specFigures.test.ts`, `Drilldown.test.tsx`, `MissionControl.test.tsx`, `src/test/missionControl.smoke.test.ts` (CI) | verified |
+| AC-008 | T-004 | `src/core/missionControl/specFigures.ts`:projectHeader, `src/webview/areas/missionControl/{Header.tsx,requests.ts}` | `specFigures.test.ts` (incl. several Problems on one spec), `Drilldown.test.tsx`, `MissionControl.test.tsx`, `src/test/missionControl.smoke.test.ts` (CI) | verified |
 | AC-009 | T-005 | `src/core/board/cards.ts`:buildBanner, `src/webview/board/Banner.tsx` | `cards.test.ts`, `SpecBoard.test.tsx`, `boardFilter.test.ts` | verified |
 | AC-010 | T-003 | `src/core/lifecycle/readiness.ts` | `src/core/lifecycle/problems.test.ts` | verified |
-| AC-011 | T-007, T-008 | `src/shared/protocol/texts.ts`, `src/webview/ui/RuleText.tsx`, `src/webview/detail/SpecDetail.tsx` | `src/webview/userLanguage.test.tsx`, `RuleText.test.tsx`, `whenTexts.test.ts`, `SpecDetail.test.tsx` | verified |
+| AC-011 | T-007, T-008 | `src/shared/protocol/texts.ts`, `src/webview/ui/RuleText.tsx`, `src/webview/detail/SpecDetail.tsx` | `src/webview/userLanguage.test.tsx` (detail, card, row, Mission Control, banner), `RuleText.test.tsx`, `whenTexts.test.ts`, `SpecDetail.test.tsx` | verified |
 | AC-012 | T-007 | `src/shared/protocol/texts.ts`:DERIVED_SENTENCES, `Card.tsx`, `SpecExplorer.tsx`, `SpecFigures.tsx`, `SpecDetail.tsx` | `RuleText.test.tsx`, `SpecBoard.test.tsx`, `areas.test.tsx`, `MissionControl.test.tsx`, `webviewBundle.test.ts` | verified |
 | AC-013 | T-006 | `src/core/board/detail.ts`, `src/webview/detail/SpecDetail.tsx` | `detail.test.ts`, `SpecDetail.test.tsx` | verified |
-| AC-014 | T-006 | `src/core/board/needs.ts`:needsOf, `Card.tsx`, `SpecDetail.tsx` | `needs.test.ts`, `cards.test.ts`, `detail.test.ts`, `SpecBoard.test.tsx` | verified |
+| AC-014 | T-006 | `src/core/board/needs.ts`:needsOf, `Card.tsx`, `SpecDetail.tsx` | `needs.test.ts`, `cards.test.ts` (first of two needs), `detail.test.ts`, `SpecBoard.test.tsx` | verified |
 | AC-015 | T-008 | `src/shared/protocol/texts.ts`:whenText, updatedText, historyEntryText, historyTooltip; `src/core/board/detail.ts`; `Header.tsx`, `Activity.tsx`, `SpecDetail.tsx` | `src/shared/protocol/whenTexts.test.ts`, `SpecDetail.test.tsx`, `Sections.test.tsx`, `MissionControl.test.tsx`, `detail.test.ts` | verified |
 | AC-016 | T-005 | `src/core/board/idText.ts`:enclosingEmphasis | `idText.test.ts`, `detail.test.ts`, `SpecDetail.test.tsx` | verified |
-| AC-017 | T-002 | `src/webview/main.css` (.copy-button, .secondary-button), `src/webview/board/Announcer.tsx` | `webviewCss.test.ts`, `board/Keyboard.test.tsx` | verified |
+| AC-017 | T-002 | `src/webview/main.css` (.copy-button, .secondary-button), `src/webview/board/Announcer.tsx` | `webviewCss.test.ts` (incl. §6.5 `.visually-hidden`), `board/Keyboard.test.tsx`, `detail/SpecDetail.test.tsx` (detail Copy class) | verified |
 | AC-018 | T-002 | `src/webview/ui/CopyButton.tsx`:CopyButton, `src/webview/detail/NextStep.tsx` | `src/webview/ui/CopyButton.test.tsx`, `detail/SpecDetail.test.tsx` | verified |
 | AC-019 | T-002 | `src/webview/ui/CopyButton.tsx`, `src/webview/main.css` | `CopyButton.test.tsx` (MutationObserver), `webviewCss.test.ts` | verified |
 | AC-020 | T-007 | `src/shared/protocol/texts.ts`:S2_SETUP_SENTENCE, S2_WELCOME, `package.json` viewsWelcome | `panelStateTexts.test.ts`, `PanelStateView.test.tsx`, `manifest.test.ts` | verified |
 | AC-021 | T-009 | `src/shared/protocol/texts.ts` (all New texts) | `src/adapters/node/sourceScan.test.ts` (AC-021 with negative control) | verified |
 | AC-022 | T-005 | `src/shared/protocol/nextStepTexts.ts` | `SpecDetail.test.tsx` | verified |
-| AC-023 | T-010 | plan section Test-title audit | audit script `/tmp/audit/titles.py` (counts in the plan) | verified |
+| AC-023 | T-010, T-013 | plan section Test-title audit | audit script `/tmp/audit/titles.py` (counts in the plan); Windows 11 at `870dc63`: `npm run test:unit` 1801 passed, 7 skipped, 12 timing; `npm test` 24 + 1 + 1 + 1. **CI at `870dc63` not recorded: open** | built |
 | AC-024 | T-009 | `.specs/{active,done}/00{02,03,05,06,07,13,14,15}-*.md`, `docs/product/product-decisions.md` (PD-063), `README.md`, `CHANGELOG.md`, `docs/release-checklist.md` | `ls … | xargs grep -c "Amended by 0016"` ≥ 1 each; `docsScan.test.ts` | verified |
 | AC-025 | T-010 | preview harness (`/home/claude/orch/preview/run.sh`) | screenshots in `/tmp/shots-out`: need line, collapsed format-note toggle, S2 sentence in Dark, Light, High Contrast; Gregor's Hands-On on `tip-splitter` open | built |
 
 ## Session handoff
 
-- **Done so far:** T-001…T-010 verified (2026-11-18); unit tests 1805 + 3 skipped, timing 12 (Baseline 1688 + 3).
-- **Next action:** Gregor: `npm test` on Windows and CI, Hands-On on `tip-splitter` (AC-025), then `/sdd-compile` in a fresh session.
+- **Done so far:** T-001…T-013 verified (2026-11-18); T-011…T-013 are the fixes from the compile of S36 (documents, eight test gaps, evidence). Unit tests 1818 + 3 skipped, timing 12 (Baseline 1688 + 3, 12). Windows 11 at `870dc63`: `npm run test:unit` 1801 passed, 7 skipped, 12 timing; `npm test` 24 + 1 + 1 + 1.
+- **Next action:** open: CI at `870dc63` or at the fix head (AC-023's CI part; the orchestrator checks it); AC-025: Gregor's Hands-On on `tip-splitter`, the S2 sentence in the Activity Bar view, Copy's label change without shift and a problem badge in a real window, recorded as `manual: <who> checked <what>, <date>`; then `/sdd-compile` in a fresh session. The spec stays in `active/`.
 - **Open decisions:** none blocking; Q-1…Q-12 (Research) are proxy readings that Gregor may overrule.
 - **Baseline:** 3cdab90 (code identical to the move commit; unit tests 1688 passed + 3 skipped, timing 12)
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked).
