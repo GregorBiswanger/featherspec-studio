@@ -3,7 +3,7 @@
 **Spec:** [0024-send-next-step-to-assistant.md](0024-send-next-step-to-assistant.md)
 **Status:** Done
 **Last updated:** 2026-11-18
-**Current step:** T-018 (T-001…T-013 verified; manual AC-016 real window and AC-017…AC-019 open)
+**Current step:** T-019 (T-001…T-013 verified; manual AC-016 real window and AC-017…AC-019 open)
 
 ## Approach
 
@@ -649,7 +649,8 @@ copy (`git archive` of the head into `/tmp`).
 - **Covers:** final check finding 5
 - **Do:** the 0021 AC-022 line says "then Gregor in a real window". `docsScan.test.ts` first.
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green
-- [ ] **Verified (T-018):**
+- [x] **Verified (T-018):** 2026-11-19 red: the new `docsScan.test.ts` test against a `git archive` of 5c70dbd failed (the line read "preview harness, orchestrator; guideline 12"); green after: `npx vitest run --project node src/adapters/node/docsScan.test.ts` 160 passed. Doc-only: no code gates.
+- **Notes:** the line now matches 0021 AC-022 ("manual, preview harness by the orchestrator, then Gregor in a real window"), as the checklist lines of 0023 AC-018 and 0024 AC-016 already do.
 
 ### T-019 — §5 lists 0019 AC-020; P-22 names `focusHandoff.ts`
 

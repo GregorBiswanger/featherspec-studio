@@ -136,7 +136,7 @@ and the expected result. A clear miss reopens the named spec.
 
 ## Next step with intent and guidance (0021)
 
-- [ ] **AC-022** *(preview harness, orchestrator; guideline 12)*: the detail and the Overview with the first Now row in
+- [ ] **AC-022** *(preview harness, orchestrator, then Gregor in a real window; guideline 12)*: the detail and the Overview with the first Now row in
   Dark, Light and High Contrast at 1600 px and 1000 px window width, with the side panel open at its default and at
   the minimum width: no intent, prompt or coach line is cut; an open **About this step** stays inside its panel and
   covers no Copy prompt of its step; the `?` shows a visible focus outline. Screenshots in the plan.

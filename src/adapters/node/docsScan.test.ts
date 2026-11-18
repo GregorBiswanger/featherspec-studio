@@ -880,4 +880,12 @@ describe('product docs after the final check of round 2 (0024 T-014 to T-022)', 
         expect(readme).not.toContain('(the verification and the review)');
     });
 
+    it('the checklist keeps Gregor\'s real window at 0021 AC-022', async () => {
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('\n## Next step with intent and guidance (0021)\n');
+        const section = text.slice(start, text.indexOf('\n## ', start + 1));
+        const line = section.split('\n').find((row) => row.includes('**AC-022**'));
+        expect(line).toContain('*(preview harness, orchestrator, then Gregor in a real window; guideline 12)*');
+    });
+
 });
