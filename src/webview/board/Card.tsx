@@ -121,7 +121,7 @@ export function Card(props: {
             {card.step === undefined ? null : (
                 <div className="card-step" onClick={(event) => event.stopPropagation()}>
                     <StepText step={card.step} />
-                    <CopyButton line={card.step.line} copyResult={props.copyResult} onCopy={props.onCopy} {...(props.copyTabIndex === undefined ? {} : { tabIndex: props.copyTabIndex })} />
+                    <CopyButton look="icon" line={card.step.line} copyResult={props.copyResult} onCopy={props.onCopy} {...(props.copyTabIndex === undefined ? {} : { tabIndex: props.copyTabIndex })} />
                 </div>
             )}
         </li>

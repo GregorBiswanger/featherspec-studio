@@ -108,7 +108,7 @@ export function SpecBoard() {
             {board.noSpecs ? (
                 <EmptyState icon="Backlog" className="board-empty">
                     {NO_SPECS_START_TEXT}
-                    <CopyButton line={SDD_SPECIFY_LINE} copyResult={api.copyResult} onCopy={api.copyText} />
+                    <CopyButton look="primary" line={SDD_SPECIFY_LINE} copyResult={api.copyResult} onCopy={api.copyText} />
                 </EmptyState>
             ) : null}
             <FilterBar board={board} setSort={api.setSort} clearFilters={api.clearFilters} />

@@ -3,7 +3,7 @@
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-006
+**Current step:** T-007
 
 ## Approach
 
@@ -331,8 +331,8 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
   (`Keyboard.test.tsx`, `SpecBoard.test.tsx`, `Sections.test.tsx`, `Overview.test.tsx`) target `.copy-icon`, titles kept.
 - **Verify:** `npx vitest run --project webview src/webview/ui/CopyButton.test.tsx src/webview/primaryButtons.test.tsx`
   and `npx vitest run --project node src/adapters/node/webviewCss.test.ts` red, then green; gates 1–4
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** Red first: `CopyButton` stub with the `look` prop rendered every Copy as a primary button, so primaryButtons.test (count 13, expected 2) and 3 CSS tests failed. Green after implementation: eslint 0 warnings, tsc and tsc -p src/webview clean, test:unit 2348 passed (3 skipped, +13 timing).
+- **Notes:** No deletions on this step. Looks: NextStep line 0 primary, further lines secondary; Card, Problems and Up next rows, "Nothing up next" icon; first Now row primary via `copyLook`; zero-spec Copies primary. SpecBoard.test card Copy assertions now read aria-label. `.panel-state button` stays primary; `.restricted-note button` and `.notice button` secondary.
 
 ### T-007 — Overview rows follow the list's own width and show the state as an icon
 

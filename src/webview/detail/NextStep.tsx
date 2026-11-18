@@ -14,11 +14,11 @@ export function NextStep(props: { nextStep: NextStepView; copyResult: { ok: bool
                     <p>{nextStep.text}</p>
                 ) : (
                     <ul className="next-step-lines">
-                        {nextStep.lines.map((line) => (
+                        {nextStep.lines.map((line, index) => (
                             <li key={`${line.label ?? ''}|${line.text}`}>
                                 {line.label === undefined ? null : <span className="next-step-label">{line.label} </span>}
                                 <code>{line.text}</code>{' '}
-                                <CopyButton line={line.text} copyResult={copyResult} onCopy={props.onCopy} />
+                                <CopyButton look={index === 0 ? 'primary' : 'secondary'} line={line.text} copyResult={copyResult} onCopy={props.onCopy} />
                             </li>
                         ))}
                     </ul>

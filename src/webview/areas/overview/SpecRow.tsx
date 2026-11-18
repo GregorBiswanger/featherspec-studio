@@ -2,7 +2,7 @@ import type { OverviewRow } from '../../../shared/protocol/overview';
 import { problemsBadgeText } from '../../../shared/protocol/texts';
 import { BadgeIcon } from '../../board/icons';
 import { useBoard } from '../../board/boardStore';
-import { CopyButton } from '../../ui/CopyButton';
+import { CopyButton, type CopyLook } from '../../ui/CopyButton';
 import { StepText } from '../../ui/StepText';
 import { Drill } from './Drill';
 import { isSelectedSpec } from '../../detail/selected';
@@ -11,7 +11,7 @@ import { useShell } from '../../shell';
 import { specReference } from './requests';
 import { NOT_AVAILABLE_TEXT, specLabelText } from './texts';
 
-export function SpecRow(props: { row: OverviewRow; group: string }) {
+export function SpecRow(props: { row: OverviewRow; group: string; copyLook?: CopyLook }) {
     const { row, group } = props;
     const openSpec = useOpenSpec();
     const selection = useShell().view?.selection;
@@ -36,7 +36,7 @@ export function SpecRow(props: { row: OverviewRow; group: string }) {
                 ) : null}
                 {row.step === undefined ? null : <StepText step={row.step} />}
             </Drill>
-            {row.step === undefined ? null : <CopyButton line={row.step.line} copyResult={copyResult} onCopy={copyText} />}
+            {row.step === undefined ? null : <CopyButton look={props.copyLook ?? 'icon'} line={row.step.line} copyResult={copyResult} onCopy={copyText} />}
         </li>
     );
 }

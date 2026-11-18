@@ -16,8 +16,8 @@ export function Now(props: { rows: readonly OverviewRow[] }) {
                 <p className="ov-empty">{NOTHING_IN_PROGRESS_TEXT}</p>
             ) : (
                 <ul className="ov-list">
-                    {props.rows.map((row) => (
-                        <SpecRow key={`${row.spec.stem}|${row.spec.path ?? ''}`} row={row} group="now" />
+                    {props.rows.map((row, index) => (
+                        <SpecRow key={`${row.spec.stem}|${row.spec.path ?? ''}`} row={row} group="now" copyLook={index === 0 ? 'primary' : 'icon'} />
                     ))}
                 </ul>
             )}
@@ -34,7 +34,7 @@ export function UpNext(props: { upNext: OverviewUpNext; navigate: (request: Navi
             {upNext.rows.length === 0 ? (
                 <p className="ov-empty" data-nothing-up-next>
                     <span>{NOTHING_UP_NEXT_TEXT}</span>
-                    <CopyButton line={SDD_SPECIFY_LINE} copyResult={copyResult} onCopy={copyText} />
+                    <CopyButton look="icon" line={SDD_SPECIFY_LINE} copyResult={copyResult} onCopy={copyText} />
                 </p>
             ) : (
                 <ul className="ov-list">

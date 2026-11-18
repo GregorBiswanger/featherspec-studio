@@ -611,3 +611,42 @@ describe('0022 AC-022, AC-001: one scrollbar each, and no drawer', () => {
         expect(touched).toEqual([]);
     });
 });
+
+describe('0022 AC-010, AC-012: only three Copies are primary, the icon button has a fixed box', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const secondary = (rule: { body: string }): boolean =>
+        /color:\s*var\(--vscode-button-secondaryForeground/.test(rule.body) && /background:\s*var\(--vscode-button-secondaryBackground/.test(rule.body);
+
+    it('AC-010: .copy-secondary, the Restricted Mode note button and the notice button use the secondary button colours; the panel-state button stays primary', () => {
+        for (const selector of ['.copy-secondary', '.restricted-note button', '.notice button']) {
+            const rules = rulesFor(css, selector);
+            expect(rules.some(secondary), selector).toBe(true);
+            for (const rule of rules) {
+                expect(rule.body, selector).not.toMatch(/background:\s*var\(--vscode-button-background\)/);
+            }
+        }
+        expect(rulesFor(css, '.copy-secondary:hover').some((rule) => rule.body.includes('var(--vscode-button-secondaryHoverBackground'))).toBe(true);
+        expect(rulesFor(css, '.panel-state button').some((rule) => /background:\s*var\(--vscode-button-background\)/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.copy-button').some((rule) => /background:\s*var\(--vscode-button-background\)/.test(rule.body))).toBe(true);
+        expect(secondary({ body: 'color: var(--vscode-button-foreground); background: var(--vscode-button-background)' })).toBe(false);
+    });
+
+    it('AC-012: .copy-icon has a fixed border-box of 24 by 24 px, no text colour of the primary button, no outline of its own and a contrast border in High Contrast', () => {
+        const rules = rulesFor(css, '.copy-icon');
+        const body = rules.map((rule) => rule.body).join(';');
+        expect(body).toMatch(/box-sizing:\s*border-box/);
+        expect(Number(/(?:^|;)\s*width:\s*(\d+)px/.exec(body)?.[1])).toBeGreaterThanOrEqual(24);
+        expect(Number(/(?:^|;)\s*height:\s*(\d+)px/.exec(body)?.[1])).toBeGreaterThanOrEqual(24);
+        expect(body).not.toMatch(/outline/);
+        expect(body).not.toMatch(/--vscode-button-background|--vscode-button-foreground/);
+        expect(body).toMatch(/user-select:\s*none/);
+        expect(rulesFor(css, '.copy-icon:hover').some((rule) => rule.body.includes('var(--vscode-toolbar-hoverBackground)'))).toBe(true);
+        expect(rulesFor(css, '.vscode-high-contrast .copy-icon').some((rule) => /border-color:\s*var\(--vscode-contrastBorder\)/.test(rule.body))).toBe(true);
+    });
+
+    it('AC-012: the icon button keeps its box while the glyph changes: nothing sized by content', () => {
+        const body = rulesFor(css, '.copy-icon').map((rule) => rule.body).join(';');
+        expect(body).not.toMatch(/(?:^|;)\s*(?:min-|max-)?width:\s*(?:auto|\d+ch|fit-content)/);
+        expect(body).toMatch(/flex:\s*none/);
+    });
+});

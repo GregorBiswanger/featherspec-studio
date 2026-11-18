@@ -259,11 +259,20 @@ main > h1 {
 .restricted-note button,
 .notice button {
     padding: 4px 12px;
-    color: var(--vscode-button-foreground);
-    background: var(--vscode-button-background);
     border: 1px solid var(--vscode-button-border, transparent);
     cursor: pointer;
     font: inherit;
+}
+
+.panel-state button {
+    color: var(--vscode-button-foreground);
+    background: var(--vscode-button-background);
+}
+
+.restricted-note button,
+.notice button {
+    color: var(--vscode-button-secondaryForeground, var(--vscode-button-foreground));
+    background: var(--vscode-button-secondaryBackground, var(--vscode-button-background));
 }
 
 .placeholder-note {
@@ -687,6 +696,40 @@ main > h1 {
     cursor: pointer;
     font: inherit;
     font-size: 11px;
+}
+
+.copy-secondary {
+    color: var(--vscode-button-secondaryForeground, var(--vscode-button-foreground));
+    background: var(--vscode-button-secondaryBackground, var(--vscode-button-background));
+}
+
+.copy-secondary:hover {
+    background: var(--vscode-button-secondaryHoverBackground, var(--vscode-button-secondaryBackground));
+}
+
+.copy-icon {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    color: var(--vscode-foreground);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.copy-icon:hover {
+    background: var(--vscode-toolbar-hoverBackground);
+}
+
+.vscode-high-contrast .copy-icon {
+    border-color: var(--vscode-contrastBorder);
 }
 
 .copy-button:hover {

@@ -50,7 +50,7 @@ export function Overview() {
             {view.figures.kind === 'empty' ? (
                 <EmptyState icon="Backlog" data-zero-specs>
                     {NO_SPECS_START_TEXT}
-                    <CopyButton line={SDD_SPECIFY_LINE} copyResult={copyResult} onCopy={copyText} />
+                    <CopyButton look="primary" line={SDD_SPECIFY_LINE} copyResult={copyResult} onCopy={copyText} />
                 </EmptyState>
             ) : (
                 <>

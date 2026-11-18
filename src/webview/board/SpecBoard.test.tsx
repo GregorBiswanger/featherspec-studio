@@ -416,7 +416,8 @@ describe('0017 AC-004: the next step on a card', () => {
         expect(line.querySelector('.step-short')?.textContent).toBe('/sdd-plan');
         expect(line.querySelector('.step-text')?.getAttribute('title')).toBe('/sdd-plan .specs/active/0008-y.md\nThen, in the same chat, if nothing blocks: continue');
         const copy = line.querySelector('button')!;
-        expect(copy.textContent).toBe('Copy');
+        expect(copy.className).toContain('copy-icon');
+        expect(copy.textContent).toBe('');
         expect(copy.getAttribute('aria-label')).toBe('Copy: /sdd-plan .specs/active/0008-y.md');
         expect(entry.textContent).not.toContain('continue');
     });
@@ -460,12 +461,12 @@ describe('0017 AC-005: Copy on a card', () => {
         const container = await open(boardView([card('0007', { state: 'Ready', step: STEP }), card('0008', { step: TWO })]));
         await click(copies(container)[0]!);
         await send({ v: 4, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
-        expect(copies(container).map((button) => button.textContent)).toEqual(['Copied', 'Copy']);
+        expect(copies(container).map((button) => button.getAttribute('aria-label')?.split(':')[0])).toEqual(['Copied', 'Copy']);
         expect(container.querySelectorAll('.card-step [role="status"]')[0]?.textContent).toBe(COPIED_TEXT);
         expect(container.querySelectorAll('.card-step [role="status"]')[1]?.textContent).toBe('');
         await click(copies(container)[1]!);
         await send({ v: 4, kind: 'evt', type: 'copyResult', payload: { ok: false, text: COPY_FAILED_TEXT } });
-        expect(copies(container)[1]?.textContent).toBe('Could not copy');
+        expect(copies(container)[1]?.getAttribute('aria-label')?.split(':')[0]).toBe('Could not copy');
     });
 
     it('the card does not open, even when the click lands on the step text next to Copy', async () => {
