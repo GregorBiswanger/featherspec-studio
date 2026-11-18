@@ -1,0 +1,94 @@
+import { promises as fs } from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
+import { afterEach, describe, expect, it } from 'vitest';
+import { createNodeSpecSource } from '../../adapters/node/nodeSpecSource';
+import { createBoardRequests } from '../board/boardRequests';
+import { createBoardWorld } from '../board/testing/boardWorld';
+import { fixturePath } from '../discovery/testing/fixtures';
+import { snapshotTree } from '../discovery/testing/snapshotTree';
+import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
+import { readProject } from '../specs/readProject';
+import { createCopyNextStep } from './copyNextStep';
+import { createEntryWorld } from './testing/entryWorld';
+
+let temp: string | undefined;
+
+afterEach(async () => {
+    if (temp !== undefined) {
+        await fs.rm(temp, { recursive: true, force: true });
+        temp = undefined;
+    }
+});
+
+describe('0017 AC-023: no Copy, click or command writes a file', () => {
+    it('card and row Copy, the entry and every path of the command leave a temp copy of fs110-ready-synthetic unchanged', async () => {
+        temp = await fs.mkdtemp(path.join(os.tmpdir(), 'copy-nowrite-'));
+        await fs.cp(fixturePath('fs110-ready-synthetic'), temp, { recursive: true });
+        const project = await readProject(createNodeSpecSource(), temp, '1.10.0');
+        const model = { project, lifecycle: deriveLifecycle(project) };
+        const before = await snapshotTree(temp);
+
+        const board = createBoardWorld(model);
+        await board.service.whenIdle();
+        const written: string[] = [];
+        const requests = createBoardRequests({
+            board: board.service,
+            moves: { requestMove: async () => ({ kind: 'none' }) },
+            openFile: { open: async () => ({ kind: 'opened' }) } as never,
+            clipboard: { writeText: async (text) => void written.push(text) },
+        });
+        const results: boolean[] = [];
+        requests.onDidCopyResult((result) => results.push(result.ok));
+        for (const entry of model.lifecycle.entries) {
+            await requests.handlers.copyText({ text: `/sdd-plan ${entry.key}` });
+        }
+
+        const world = createEntryWorld();
+        world.setProjects([{ name: 'fixture', root: temp }], 'fixture');
+        world.setModel(model);
+        const asked: string[] = [];
+        let answer: 'first' | 'none' = 'first';
+        const command = createCopyNextStep({
+            entry: world.entry,
+            clipboard: { writeText: async (text) => void written.push(text) },
+            ui: {
+                pick: async (items) => {
+                    asked.push(...items.map((item) => item.key));
+                    return answer === 'first' ? items[0] : undefined;
+                },
+                inform: async () => 'Copy',
+                warn: () => undefined,
+            },
+            actions: { selectProject: async () => void asked.push('select'), openStudio: async () => void asked.push('open') },
+        });
+        await command.run();
+        answer = 'none';
+        await command.run();
+        world.select({ stem: '0001-ready-feature' });
+        await command.run();
+        world.setPanelState({ id: 'S4' });
+        await command.run();
+        world.setPanelState(undefined);
+        world.clearActive();
+        await command.run();
+        await world.setSpecs([]);
+        world.setProjects([{ name: 'fixture', root: temp }], 'fixture');
+        await command.run();
+
+        expect(results.length).toBeGreaterThan(0);
+        expect(written.length).toBeGreaterThan(results.length);
+        expect(asked).toEqual(expect.arrayContaining(['select', 'open']));
+        expect(await snapshotTree(temp)).toEqual(before);
+        board.service.dispose();
+        world.dispose();
+    });
+
+    it('control: the snapshot sees a file that appears in the tree', async () => {
+        temp = await fs.mkdtemp(path.join(os.tmpdir(), 'copy-nowrite-'));
+        await fs.cp(fixturePath('fs110-ready-synthetic'), temp, { recursive: true });
+        const before = await snapshotTree(temp);
+        await fs.writeFile(path.join(temp, 'stray.txt'), 'x');
+        expect(await snapshotTree(temp)).not.toEqual(before);
+    });
+});

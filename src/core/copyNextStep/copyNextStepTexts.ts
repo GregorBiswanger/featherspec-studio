@@ -27,3 +27,15 @@ export const IDLE_ENTRY_TEXT = `${ENTRY_ICON} ${ENTRY_NAME}`;
 export function projectLineText(name: string, version: string): string {
     return `${name} · FeatherSpec ${version}`;
 }
+
+export const COPIED_ENTRY_TEXT = '$(check) Copied';
+
+export const COPY_FAILED_ENTRY_TEXT = '$(warning) Could not copy';
+
+export const PICK_PLACEHOLDER = 'Select a spec to copy its next step';
+
+export const NO_STEP_MESSAGE = 'No spec has a next step to copy. Start the next spec with /sdd-specify';
+
+export const NO_STEP_COPY_LINE = '/sdd-specify';
+
+export const FEEDBACK_MS = 2000;

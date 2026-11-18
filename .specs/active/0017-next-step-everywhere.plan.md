@@ -3,7 +3,7 @@
 **Spec:** [0017-next-step-everywhere.md](0017-next-step-everywhere.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-005
+**Current step:** T-006
 
 ## Approach
 
@@ -272,8 +272,8 @@ Stages 4 and 5 cannot: they share `extension.ts`, `package.json`, the protocol a
   no trust or store), AC-023 (`noWrite.test.ts`: card and row Copy through `boardRequests.copyText`,
   entry and every command path on a temp copy of `fs110-ready-synthetic` leave the tree unchanged).
 - **Verify:** `npx vitest run src/core/copyNextStep` red, then green; gates 1–4
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-18 — tests for the command, feedback, quick pick, Select Project, Restricted Mode (real shell world, trust on and off) and no-write written against the finished code; red shown by mutation (feedback 500 ms instead of 2000: 2 failed; restart of the timer removed: 1 failed). `npx vitest run src/core/copyNextStep` 46 passed. Gates 1–4: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 1874 passed, 3 skipped.
+- **Notes:** `statusEntry` gained a `clock` dependency for the 2000 ms feedback. `noWrite.test.ts` still passes a stub `moves` dep to `createBoardRequests` (T-006 removes the dep and the stub). During the feedback only text and accessible label change; tooltip and command stay (P-8).
 
 ### T-006 — The move command, messages and API go
 

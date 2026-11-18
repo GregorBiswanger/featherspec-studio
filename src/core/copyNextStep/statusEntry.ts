@@ -1,9 +1,11 @@
-import type { Disposable } from '../ports/host';
+import { COPIED_LABEL, COPY_FAILED_LABEL } from '../../shared/protocol/nextStepTexts';
+import type { ClockPort, Disposable } from '../ports/host';
 import type { DiscoveryController } from '../discovery/discoveryController';
 import type { StatusEntryView, StatusItemPort } from '../ports/copyNextStep';
 import type { ShellModel, ShellModelSource } from '../ports/shell';
 import type { ShellService } from '../shell/shellService';
 import { currentSpec, pickOrder, readyCount, specsWithStep } from './currentSpec';
+import { COPIED_ENTRY_TEXT, COPY_FAILED_ENTRY_TEXT, FEEDBACK_MS } from './copyNextStepTexts';
 import { entryView, type Situation } from './entryView';
 import type { ProjectLine } from './projectLine';
 
@@ -13,15 +15,19 @@ export interface StatusEntryDeps {
     shell: Pick<ShellService, 'view' | 'onDidChangeView'>;
     source: ShellModelSource;
     item: StatusItemPort;
+    clock: Pick<ClockPort, 'setTimeout'>;
     sameRoot: (first: string, second: string) => boolean;
 }
 
 export interface StatusEntry extends Disposable {
     situation(): Situation;
+    copied(ok: boolean): void;
 }
 
 export function createStatusEntry(deps: StatusEntryDeps): StatusEntry {
     let shown: string | undefined;
+    let feedback: { ok: boolean } | undefined;
+    let feedbackTimer: Disposable | undefined;
 
     function loadedModel(root: string): ShellModel | undefined {
         const model = deps.source.current();
@@ -47,7 +53,11 @@ export function createStatusEntry(deps: StatusEntryDeps): StatusEntry {
     }
 
     function render(): void {
-        const view: StatusEntryView | undefined = entryView(situation());
+        const underlying: StatusEntryView | undefined = entryView(situation());
+        const view: StatusEntryView | undefined =
+            underlying === undefined || feedback === undefined
+                ? underlying
+                : { ...underlying, text: feedback.ok ? COPIED_ENTRY_TEXT : COPY_FAILED_ENTRY_TEXT, accessibleLabel: feedback.ok ? COPIED_LABEL : COPY_FAILED_LABEL };
         const serialized = view === undefined ? '' : JSON.stringify(view);
         if (serialized === shown) {
             return;
@@ -70,7 +80,18 @@ export function createStatusEntry(deps: StatusEntryDeps): StatusEntry {
 
     return {
         situation,
+        copied(ok) {
+            feedbackTimer?.dispose();
+            feedback = { ok };
+            feedbackTimer = deps.clock.setTimeout(() => {
+                feedback = undefined;
+                feedbackTimer = undefined;
+                render();
+            }, FEEDBACK_MS);
+            render();
+        },
         dispose() {
+            feedbackTimer?.dispose();
             subscriptions.forEach((subscription) => subscription.dispose());
         },
     };

@@ -2,6 +2,8 @@ import type { PanelState, SelectedSpec, ShellView } from '../../../shared/protoc
 import type { DiscoveredFolder } from '../../discovery/discoverWorkspace';
 import type { DiscoveryController, DiscoverySnapshot } from '../../discovery/discoveryController';
 import { createFakeSource, type FakeSource } from '../../board/testing/boardWorld';
+import { createFakeHost, type FakeClock } from '../../discovery/testing/fakeHost';
+import type { ShellModel } from '../../ports/shell';
 import { ROOT } from '../../lifecycle/testing/projects';
 import { modelFor, type SpecInput } from '../../missionControl/testing/projects';
 import type { StatusEntryView } from '../../ports/copyNextStep';
@@ -20,11 +22,13 @@ export interface EntryWorld {
     entry: StatusEntry;
     line: ProjectLine;
     source: FakeSource;
+    clock: FakeClock;
     shown: Array<StatusEntryView | 'hidden'>;
     last(): StatusEntryView | 'hidden' | undefined;
     text(): string | undefined;
     setProjects(projects: FakeProject[], active?: string): void;
     clearActive(): void;
+    setModel(model: ShellModel): void;
     setSpecs(inputs: readonly SpecInput[], extraFiles?: Record<string, string>): Promise<void>;
     select(selection: { stem: string; path?: string } | undefined): void;
     setPanelState(state: PanelState | undefined): void;
@@ -47,6 +51,7 @@ function folderOf(project: FakeProject): DiscoveredFolder {
 export function createEntryWorld(): EntryWorld {
     const line = createProjectLine();
     const source = createFakeSource();
+    const clock = createFakeHost([]).clock;
     const shown: Array<StatusEntryView | 'hidden'> = [];
     let snapshot: DiscoverySnapshot = { result: undefined, active: undefined, remembered: undefined, failure: undefined };
     let state: PanelState | undefined;
@@ -80,6 +85,7 @@ export function createEntryWorld(): EntryWorld {
             show: (next) => void shown.push(next),
             hide: () => void shown.push('hidden'),
         },
+        clock,
         sameRoot: (first, second) => first === second,
     });
     const notifyUpdate = () => [...updateListeners].forEach((listener) => listener());
@@ -87,6 +93,7 @@ export function createEntryWorld(): EntryWorld {
         entry,
         line,
         source,
+        clock,
         shown,
         last: () => shown.at(-1),
         text() {
@@ -105,6 +112,9 @@ export function createEntryWorld(): EntryWorld {
         clearActive() {
             snapshot = { ...snapshot, active: undefined };
             notifyUpdate();
+        },
+        setModel(model) {
+            source.set(model);
         },
         async setSpecs(inputs, extraFiles = {}) {
             source.set(await modelFor(inputs, extraFiles));
