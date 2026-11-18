@@ -498,6 +498,14 @@ and the host smoke, so they stay `→`.
 - [x] **Verified (T-023):** 2026-11-18: the new test on a scratch copy of HEAD (`git archive`): 1 of 52 failed (no rule for the select), green after the rule (52/52); gates 1-5 green (unit 2237 passed + 3 skipped, timing 13, compile, compile-tests). jsdom paints no outline: the rendered ring is part of Gregor's manual checks.
 - **Notes:** Final-check finding 8. Before, the select relied on the webview's default ring (`-webkit-focus-ring-color`), not a theme variable. The rule has the same colours and offset as `button:focus-visible`.
 
+### T-024 — The 0018 audit sentence names the four groups that kept their tests (final check 10, second half)
+
+- **Covers:** AC-021 of 0018 (its audit is accurate); no test is lost
+- **Do:** `docsScan.test.ts` first: the 0018 plan's sentence about the 24 `describe` group titles names the four groups that kept all their tests under new names and no longer says each held only tests listed below. Then `0018-overview-and-compact-board.plan.md` (that sentence only): twenty held only listed tests; four kept all their tests under new names: "AC-016: the board writes no file", "0015 AC-026: the Mission Control purpose and the Restricted Mode note", "Mission Control view contract", "every request is one the shell accepts".
+- **Verify:** docsScan red on a scratch copy of HEAD with the new test, then green; gates 1–4
+- [x] **Verified (T-024):** 2026-11-18: the new test against the old plan 1 failed of 82, green after the edit (82/82); gates 1-4 green.
+- **Notes:** Final-check finding 10 (second half). The count of 24 was right; only "each held only tests listed below" was inaccurate. Nothing else in the 0018 plan changes.
+
 ## Test-title audit (0020 AC-021)
 
 Script: `/tmp/audit-0020/titles.py` (throwaway, run with `python3 -I`): every `describe`/`it`/`test`/`suite` literal of every `.ts`/`.tsx` under `src` (including `src/test/**` and `testing/*.ts`) at Baseline `16fc52b` (`git archive`) and at the T-008 head. A title counts as present when the same literal exists in any file at the head.

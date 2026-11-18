@@ -425,6 +425,20 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         expect(rows.find((row) => row.startsWith('| PD-060 |')) ?? '').not.toContain('PD-057');
     });
 
+    it('the 0018 plan names the four describe groups that kept all their tests under new names', async () => {
+        const plan = await read(`.specs/active/${(await fs.readdir(path.join(root, '.specs', 'active'))).find((name) => name.startsWith('0018-') && name.endsWith('.plan.md'))}`);
+        const sentence = plan.slice(plan.indexOf('24 `describe` group titles also changed'), plan.indexOf('- Kept unchanged by title: all of 0006'));
+        expect(sentence).not.toContain('each held only tests listed below');
+        for (const title of [
+            'AC-016: the board writes no file',
+            '0015 AC-026: the Mission Control purpose and the Restricted Mode note',
+            'Mission Control view contract',
+            'every request is one the shell accepts',
+        ]) {
+            expect(sentence, title).toContain(title);
+        }
+    });
+
     it('finds the first release section of a changelog and stops at the next one', () => {
         expect(firstRelease('# C\n\n## [1.0.0] - x\nA\n\n## [0.9.0] - y\nB\n')).toBe('## [1.0.0] - x\nA\n');
     });

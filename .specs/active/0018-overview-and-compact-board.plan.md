@@ -435,8 +435,10 @@ AC-030, from a throwaway script outside the repo (`/tmp/audit-0018/titles.py`, 2
   with 3 skipped; the timing projects pass 12 at both).
 - Absent at the head: 99 test titles, every one listed below with the criterion §5 voids or the head
   title that replaces it. No title is absent without a row (corrected by T-014: row 75 was no test and the real 99th is the host suite title, now row 75; rows 49 and 91 had lost assertions, restored in T-012). 24 `describe` group titles also changed:
-  they name the removed tiles, header and attention list or carry the old area names; each held only
-  tests listed below.
+  they name the removed tiles, header and attention list or carry the old area names. Twenty held only
+  tests listed below; four kept all their tests under new names: "AC-016: the board writes no file",
+  "0015 AC-026: the Mission Control purpose and the Restricted Mode note", "Mission Control view contract" and
+  "every request is one the shell accepts" (corrected 2026-11-18, final check 10: no test was lost).
 - Kept unchanged by title: all of 0006's drill-down tests that §5 maps (the total, the state counts,
   the named sets, Enter and Space, the activity entries, the vanished stem) apart from the renames
   below, the host smoke tests of 0001 and 0005 (renamed with the new IDs where the command or area name is
