@@ -7,7 +7,7 @@ import { Activity } from './Activity';
 import { activityRequest } from './requests';
 import { Figures } from './Figures';
 import { Problems } from './Problems';
-import { useOverview } from './store';
+import { useOverview, useOverviewActions } from './store';
 import { EmptyState } from '../../ui/EmptyState';
 import { NO_SPECS_START_TEXT, SDD_SPECIFY_LINE } from '../../../shared/protocol/texts';
 import { useBoard } from '../../board/boardStore';
@@ -18,6 +18,7 @@ export function Overview() {
     const view = useOverview();
     const { copyResult, copyText } = useBoard();
     const shell = useShell();
+    const actions = useOverviewActions();
     const [notice, setNotice] = useState<string | undefined>(undefined);
     if (view === undefined) {
         return <div data-overview-empty className="overview" />;
@@ -58,7 +59,7 @@ export function Overview() {
             <Problems problems={view.problems} navigate={navigate} />
             {view.figures.kind === 'empty' ? null : <Figures figures={view.figures} navigate={navigate} />}
             <div className="ov-panels">
-                <Activity activity={view.activity} onActivate={openActivity} />
+                <Activity activity={view.activity} onActivate={openActivity} setOpen={actions.setActivityOpen} />
             </div>
         </div>
     );

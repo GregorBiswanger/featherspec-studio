@@ -153,7 +153,7 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         expect(document.querySelector('#ov-progress-text')?.textContent).toContain('Progress');
         expect(document.querySelector('[data-runs]')).toBeNull();
         expect(document.querySelector('[data-attention]')).toBeNull();
-        expect(document.querySelector('[data-activity] h2')?.textContent).toBe('Recent activity');
+        expect(document.querySelector('[data-activity]')).toBeNull();
         expect(errors).toEqual([]);
     });
 

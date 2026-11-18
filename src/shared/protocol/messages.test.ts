@@ -163,6 +163,18 @@ describe('0015 AC-005, AC-009: copy request and result', () => {
     });
 });
 
+describe('0018 AC-010: the request overviewSetActivity', () => {
+    it('is a known request with a boolean open and nothing else', () => {
+        expect(isRequestType('overviewSetActivity')).toBe(true);
+        expect(REQUEST_GUARDS.overviewSetActivity({ open: true })).toBe(true);
+        expect(REQUEST_GUARDS.overviewSetActivity({ open: false })).toBe(true);
+        expect(REQUEST_GUARDS.overviewSetActivity({ open: 'yes' })).toBe(false);
+        expect(REQUEST_GUARDS.overviewSetActivity({})).toBe(false);
+        expect(REQUEST_GUARDS.overviewSetActivity({ open: true, extra: 1 })).toBe(false);
+        expect(REQUEST_GUARDS.overviewSetActivity(undefined)).toBe(false);
+    });
+});
+
 describe('0015 AC-026: the Overview purpose and the Restricted Mode note', () => {
     it('read as the product texts of the spec', () => {
         expect(AREAS.find((area) => area.id === 'overview')?.purpose).toBe('See what is in progress, what comes next and what needs fixing.');

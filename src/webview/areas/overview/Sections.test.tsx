@@ -45,41 +45,80 @@ describe('0015 AC-010: no run section', () => {
     });
 });
 
-describe('AC-010, AC-011: recent activity', () => {
-    it('shows time, number, title and the change of each entry in the order of the view, and no control that shows more', async () => {
-        const view = sampleView();
-        const activity = section(await open(view), 'activity');
-        expect(activity.querySelector('h2')?.textContent).toBe('Recent activity');
-        const rows = [...activity.querySelectorAll('[data-activity-entry]')].map((row) => row.textContent);
+function activityView(open: boolean): OverviewView {
+    const view = sampleView();
+    if (view.activity.available) {
+        view.activity = { ...view.activity, open };
+    }
+    return view;
+}
+
+describe('0018 AC-010: Activity, collapsed by default', () => {
+    it('shows the heading "Activity (2)" as a button with aria-expanded="false" and no entries', async () => {
+        const activity = section(await open(activityView(false)), 'activity');
+        const toggle = activity.querySelector<HTMLButtonElement>('h2 button')!;
+        expect(toggle.textContent).toBe('Activity (2)');
+        expect(toggle.getAttribute('aria-expanded')).toBe('false');
+        expect(activity.querySelectorAll('[data-activity-entry]')).toHaveLength(0);
+    });
+
+    it('activating the heading sends one overviewSetActivity request and changes nothing itself; the entries follow the view', async () => {
+        const container = await open(activityView(false));
+        await click(section(container, 'activity').querySelector('h2 button')!);
+        expect(posted.filter((message) => message.type === 'overviewSetActivity').map((message) => message.payload)).toEqual([{ open: true }]);
+        expect(section(container, 'activity').querySelectorAll('[data-activity-entry]')).toHaveLength(0);
+        await send(overviewEvent(activityView(true)));
+        const activity = section(container, 'activity');
+        expect(activity.querySelector('h2 button')?.getAttribute('aria-expanded')).toBe('true');
+        expect(activity.querySelectorAll('[data-activity-entry]')).toHaveLength(2);
+        await click(activity.querySelector('h2 button')!);
+        expect(posted.filter((message) => message.type === 'overviewSetActivity').map((message) => message.payload)).toEqual([{ open: true }, { open: false }]);
+    });
+
+    it.each(['Enter', ' '] as const)('the key %j on the heading sends the request', async (key) => {
+        const container = await open(activityView(false));
+        await pressKey(section(container, 'activity').querySelector('h2 button')!, key);
+        expect(posted.filter((message) => message.type === 'overviewSetActivity')).toHaveLength(1);
+    });
+
+    it('the heading is a Tab stop', async () => {
+        const toggle = section(await open(activityView(false)), 'activity').querySelector<HTMLElement>('h2 button')!;
+        expect(toggle.tabIndex).toBe(0);
+    });
+
+    it('while open it shows time, number, title and the change of each entry in the order of the view', async () => {
+        const rows = [...section(await open(activityView(true)), 'activity').querySelectorAll('[data-activity-entry]')].map((row) => row.textContent);
         expect(rows).toHaveLength(2);
         expect(rows[0]).toMatch(/^(Today|Yesterday) \d{2}:\d{2} · 0001 A · Backlog → Ready$|^\d{4}-\d{2}-\d{2} \d{2}:\d{2} · 0001 A · Backlog → Ready$/);
         expect(rows[1]).toMatch(/· 0009-gone — spec not found · Done → no longer in the project$/);
-        expect([...activity.querySelectorAll('button')].filter((button) => !button.hasAttribute('data-drill'))).toHaveLength(0);
-        expect(activity.querySelectorAll('button')).toHaveLength(rows.length);
-        expect(activity.textContent).not.toMatch(/\bmore\b/i);
     });
 
     it('names a change that happened while Studio was not running', async () => {
         const view = sampleView();
         view.activity = {
             available: true,
+            open: true,
             entries: [{ at: '2026-11-16T09:00:00.000Z', spec: { stem: '0001-a', number: '0001', title: 'A', found: true }, change: { kind: 'state', old: 'Ready', new: 'Active', whileClosed: true } }],
         };
         expect(section(await open(view), 'activity').textContent).toContain('Ready → Active (changed while Studio was not running)');
     });
 
-    it('an empty list keeps its heading and says so; "not available" shows the reason and no list', async () => {
+    it('without entries there is no Activity section at all', async () => {
         const view = sampleView();
-        view.activity = { available: true, entries: [] };
-        const empty = section(await open(view), 'activity');
-        expect(empty.querySelector('h2')?.textContent).toBe('Recent activity');
-        expect(empty.textContent).toContain('No recent activity.');
-        const unavailable = sampleView();
-        unavailable.activity = { available: false, reason: 'no store' };
-        await send(overviewEvent(unavailable));
-        const text = section(mounted!.container, 'activity').textContent!;
-        expect(text).toContain('Recent activity not available: no store');
-        expect(text).not.toContain('No recent activity');
+        view.activity = { available: true, open: false, entries: [] };
+        const container = await open(view);
+        expect(container.querySelector('[data-activity]')).toBeNull();
+        expect(container.textContent).not.toMatch(/Activity|No recent activity/);
+    });
+
+    it('while the status history is not available it shows the heading "Activity", the reason and no toggle', async () => {
+        const view = sampleView();
+        view.activity = { available: false, reason: 'no store' };
+        const activity = section(await open(view), 'activity');
+        expect(activity.querySelector('h2')?.textContent).toBe('Activity');
+        expect(activity.textContent).toContain('Activity not available: no store');
+        expect(activity.querySelector('button')).toBeNull();
+        expect(activity.hasAttribute('aria-expanded')).toBe(false);
     });
 });
 
@@ -94,15 +133,7 @@ describe('AC-026: nothing beyond the contract reaches the DOM', () => {
     });
 });
 
-describe('0013 AC-007: empty panels', () => {
-    it('AC-007: the empty Recent activity panel shows an icon and 0006\'s sentence', async () => {
-        const view = sampleView();
-        view.activity = { available: true, entries: [] };
-        const empty = section(await open(view), 'activity').querySelector('.ov-empty');
-        expect(empty?.textContent).toBe('No recent activity.');
-        expect(empty?.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
-    });
-
+describe('0013 §3.2: the panel row', () => {
     it('0015 §3.2 (0013): Activity stands alone in the panel row below the figures line', async () => {
         const container = await open(sampleView());
         const panels = container.querySelector('.ov-panels');

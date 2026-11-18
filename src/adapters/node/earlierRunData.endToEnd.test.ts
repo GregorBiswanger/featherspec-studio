@@ -79,7 +79,7 @@ function workspaceState(keys: string[]) {
 }
 
 describe('0015 AC-023, AC-024: the earlier-data removal, then the narrowed store, end to end', () => {
-    it('removes the data of the tag build, keeps the history and a newer folder, and Recent activity shows the kept entry', async () => {
+    it('removes the data of the tag build, keeps the history and a newer folder, and Activity shows the kept entry', async () => {
         const root = await directories.make('earlier-run-data-e2e-');
         const { folder, newer } = await seedTagBuild(root);
         const newerBefore = await tree(newer);
@@ -116,6 +116,7 @@ describe('0015 AC-023, AC-024: the earlier-data removal, then the narrowed store
         const activity = projectActivity(view, createSpecResolver(model));
         expect(activity).toEqual({
             available: true,
+            open: false,
             entries: [
                 {
                     at: '2026-11-15T09:00:00.000Z',

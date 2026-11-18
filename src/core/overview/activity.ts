@@ -25,7 +25,7 @@ function compareText(left: string, right: string): number {
     return left < right ? -1 : left > right ? 1 : 0;
 }
 
-export function projectActivity(history: HistoryView, specs: SpecResolver): McActivity {
+export function projectActivity(history: HistoryView, specs: SpecResolver, open = false): McActivity {
     if (!history.available) {
         return { available: false, reason: historyReason(history.text) };
     }
@@ -51,5 +51,5 @@ export function projectActivity(history: HistoryView, specs: SpecResolver): McAc
             compareText(left.entry.spec.number, right.entry.spec.number) ||
             compareText(left.id, right.id),
     );
-    return { available: true, entries: ranked.slice(0, ACTIVITY_LIMIT).map((item) => item.entry) };
+    return { available: true, entries: ranked.slice(0, ACTIVITY_LIMIT).map((item) => item.entry), open };
 }

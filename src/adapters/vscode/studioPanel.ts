@@ -8,7 +8,7 @@ import type { BoardView } from '../../shared/protocol/board';
 import type { DetailView, OpenFileResultPayload } from '../../shared/protocol/detail';
 import type { OverviewView } from '../../shared/protocol/overview';
 import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../../shared/protocol/envelope';
-import { isProbeResultPayload, type BoardRequestType, type CopyResultEventPayload, type ProbeOutcome } from '../../shared/protocol/messages';
+import { isProbeResultPayload, type BoardRequestType, type CopyResultEventPayload, type OverviewRequestType, type ProbeOutcome } from '../../shared/protocol/messages';
 import { createProbeChannel } from './probeChannel';
 import { buildWebviewHtml } from './webviewHtml';
 
@@ -28,6 +28,7 @@ export interface PanelBoard {
 }
 
 export interface PanelOverview {
+    handlers: Pick<RequestHandlers, OverviewRequestType>;
     view(): OverviewView | undefined;
     onDidChangeView(listener: (view: OverviewView | undefined) => void): vscode.Disposable;
 }
@@ -131,6 +132,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
         handlers: {
             ...deps.board.handlers,
             ...deps.service.handlers,
+            ...deps.overview.handlers,
             hello: async (payload) => {
                 helloAt = Date.now();
                 pushView(payload.lastSeq);

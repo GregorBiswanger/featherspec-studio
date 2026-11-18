@@ -40,7 +40,7 @@ export interface ActivityEntry {
     change: ActivityChange;
 }
 
-export type McActivity = { available: false; reason: string } | { available: true; entries: ActivityEntry[] };
+export type McActivity = { available: false; reason: string } | { available: true; entries: ActivityEntry[]; open: boolean };
 
 export interface OverviewRow {
     spec: SpecRef;
@@ -152,7 +152,7 @@ function isActivity(value: unknown): value is McActivity {
     if (value.available === false) {
         return exactly(value, ['available', 'reason']) && isText(value.reason);
     }
-    return value.available === true && exactly(value, ['available', 'entries']) && Array.isArray(value.entries) && value.entries.every(isActivityEntry);
+    return value.available === true && exactly(value, ['available', 'entries', 'open']) && typeof value.open === 'boolean' && Array.isArray(value.entries) && value.entries.every(isActivityEntry);
 }
 
 function isRow(value: unknown): value is OverviewRow {

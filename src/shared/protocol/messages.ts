@@ -131,11 +131,20 @@ export interface BoardRequestPayloads {
     copyText: CopyTextPayload;
 }
 
-export type RequestPayloads = ShellRequestPayloads & BoardRequestPayloads;
+export interface OverviewSetActivityPayload {
+    open: boolean;
+}
+
+export interface OverviewRequestPayloads {
+    overviewSetActivity: OverviewSetActivityPayload;
+}
+
+export type RequestPayloads = ShellRequestPayloads & BoardRequestPayloads & OverviewRequestPayloads;
 
 export type RequestType = keyof RequestPayloads;
 export type ShellRequestType = keyof ShellRequestPayloads;
 export type BoardRequestType = keyof BoardRequestPayloads;
+export type OverviewRequestType = keyof OverviewRequestPayloads;
 
 export interface BoardEventPayload {
     view: BoardView;
@@ -207,6 +216,10 @@ export function isBoardSetSortPayload(value: unknown): value is BoardSetSortPayl
     return isRecord(value) && isSortKey(value.sort);
 }
 
+export function isOverviewSetActivityPayload(value: unknown): value is OverviewSetActivityPayload {
+    return isRecord(value) && Object.keys(value).length === 1 && typeof value.open === 'boolean';
+}
+
 export function isOpenFilePayload(value: unknown): value is OpenFilePayload {
     return (
         isRecord(value) &&
@@ -251,6 +264,7 @@ export const REQUEST_GUARDS: { [Type in RequestType]: (value: unknown) => value 
     boardClearFilters: isEmptyPayload,
     openFile: isOpenFilePayload,
     copyText: isCopyTextPayload,
+    overviewSetActivity: isOverviewSetActivityPayload,
 };
 
 export function isRequestType(value: string): value is RequestType {

@@ -19,6 +19,9 @@ function drillView(): OverviewView {
     const view = sampleView();
     view.now = [row('0001-a', '0001', 'Blocked'), row('0004-dup', '0004', 'Review', '.specs/active/0004-dup.md')];
     view.upNext = { rows: [row('0003-c', '0003', 'Ready')], more: 2, stems: ['0003-c', '0005-e', '0006-f'] };
+    if (view.activity.available) {
+        view.activity = { ...view.activity, open: true };
+    }
     view.problems = { rows: [row('0002-x', '0002', 'Backlog', undefined, 1), row('0004-dup', '0004', 'Done', '.specs/done/0004-dup.md', 1)], lines: [{ where: 'project', reason: 'orphan' }] };
     return view;
 }
@@ -157,6 +160,7 @@ describe('AC-022: keyboard', () => {
             'state:Review',
             'state:Done',
             'state:Blocked',
+            'activity',
             'activity:0',
             'activity:1',
         ]);

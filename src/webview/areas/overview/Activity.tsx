@@ -1,24 +1,31 @@
 import type { McActivity, ActivityEntry } from '../../../shared/protocol/overview';
 import { whenText } from '../../../shared/protocol/texts';
-import { Glyph } from '../../board/icons';
 import { Drill } from './Drill';
 import { SpecLabel } from './SpecLabel';
-import { ACTIVITY_HEADING, NO_ACTIVITY_TEXT, activityUnavailableText, changeText } from './texts';
+import { ACTIVITY_HEADING, activityHeading, activityUnavailableText, changeText } from './texts';
 
-export function Activity(props: { activity: McActivity; onActivate: (entry: ActivityEntry) => void }) {
+export function Activity(props: { activity: McActivity; onActivate: (entry: ActivityEntry) => void; setOpen: (open: boolean) => void }) {
     const { activity, onActivate } = props;
     const now = new Date();
+    if (!activity.available) {
+        return (
+            <section data-activity className="ov-activity ov-panel">
+                <h2>{ACTIVITY_HEADING}</h2>
+                <p className="ov-note">{activityUnavailableText(activity.reason)}</p>
+            </section>
+        );
+    }
+    if (activity.entries.length === 0) {
+        return null;
+    }
     return (
         <section data-activity className="ov-activity ov-panel">
-            <h2>{ACTIVITY_HEADING}</h2>
-            {!activity.available ? (
-                <p className="ov-note">{activityUnavailableText(activity.reason)}</p>
-            ) : activity.entries.length === 0 ? (
-                <p className="ov-empty">
-                    <Glyph kind="empty" />
-                    {NO_ACTIVITY_TEXT}
-                </p>
-            ) : (
+            <h2>
+                <button type="button" className="ov-drill ov-toggle" data-drill="activity" aria-expanded={activity.open} onClick={() => props.setOpen(!activity.open)}>
+                    {activityHeading(activity.entries.length)}
+                </button>
+            </h2>
+            {activity.open ? (
                 <ul className="ov-list">
                     {activity.entries.map((entry, index) => (
                         <li key={`${entry.at}|${index}`} data-activity-entry>
@@ -32,7 +39,7 @@ export function Activity(props: { activity: McActivity; onActivate: (entry: Acti
                         </li>
                     ))}
                 </ul>
-            )}
+            ) : null}
         </section>
     );
 }

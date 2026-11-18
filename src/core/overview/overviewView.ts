@@ -10,6 +10,7 @@ import { createSpecResolver } from './specRefs';
 export interface ViewInput {
     model: ShellModel;
     history: HistoryView;
+    activityOpen?: boolean;
 }
 
 export function buildOverviewView(input: ViewInput): OverviewView {
@@ -20,6 +21,6 @@ export function buildOverviewView(input: ViewInput): OverviewView {
         upNext: projectUpNext(model, specs),
         problems: projectProblems(model, specs),
         figures: projectFigures(model),
-        activity: projectActivity(history, specs),
+        activity: projectActivity(history, specs, input.activityOpen ?? false),
     };
 }

@@ -107,3 +107,81 @@ describe('dashboard service', () => {
         service.dispose();
     });
 });
+
+describe('0018 AC-010: the open state of Activity lives in the host', () => {
+    function opened(world: ReturnType<typeof createServiceWorld>): boolean | undefined {
+        const activity = world.service.view()?.activity;
+        return activity?.available ? activity.open : undefined;
+    }
+
+    it('Activity is collapsed at the first listener', async () => {
+        const world = createServiceWorld(await modelFor(AC001_FIXTURE));
+        world.listen();
+        await world.service.whenIdle();
+        expect(opened(world)).toBe(false);
+    });
+
+    it('the request opens it, the view says so, and a new view while listened keeps it open', async () => {
+        const world = createServiceWorld(await modelFor(AC001_FIXTURE));
+        world.listen();
+        await world.service.whenIdle();
+        await world.service.handlers.overviewSetActivity({ open: true });
+        await world.service.whenIdle();
+        expect(opened(world)).toBe(true);
+        world.source.set(await modelFor([...AC001_FIXTURE, { number: '0010', kind: 'Backlog' }]));
+        await world.service.whenIdle();
+        expect(opened(world)).toBe(true);
+        world.history.fire();
+        await world.service.whenIdle();
+        expect(opened(world)).toBe(true);
+        await world.service.handlers.overviewSetActivity({ open: false });
+        await world.service.whenIdle();
+        expect(opened(world)).toBe(false);
+    });
+
+    it('a re-push for a hidden and shown panel (the view read again) carries the same state', async () => {
+        const world = createServiceWorld(await modelFor(AC001_FIXTURE));
+        world.listen();
+        await world.service.whenIdle();
+        world.service.setActivityOpen(true);
+        await world.service.whenIdle();
+        expect(world.service.view()).toEqual(world.service.view());
+        expect(opened(world)).toBe(true);
+    });
+
+    it('after the last listener left and a new one came (panel closed and reopened) it is collapsed again', async () => {
+        const world = createServiceWorld(await modelFor(AC001_FIXTURE));
+        const first = world.listen();
+        await world.service.whenIdle();
+        world.service.setActivityOpen(true);
+        await world.service.whenIdle();
+        expect(opened(world)).toBe(true);
+        first.dispose();
+        world.listen();
+        await world.service.whenIdle();
+        expect(opened(world)).toBe(false);
+    });
+
+    it('with a second listener still there, one leaving keeps the state (negative control)', async () => {
+        const world = createServiceWorld(await modelFor(AC001_FIXTURE));
+        const first = world.listen();
+        world.listen();
+        await world.service.whenIdle();
+        world.service.setActivityOpen(true);
+        await world.service.whenIdle();
+        first.dispose();
+        world.history.fire();
+        await world.service.whenIdle();
+        expect(opened(world)).toBe(true);
+    });
+
+    it('while the history is not available the view carries no open flag', async () => {
+        const world = createServiceWorld(await modelFor(AC001_FIXTURE));
+        world.history.view = { available: false, text: 'Status history not available: locked' };
+        world.listen();
+        await world.service.whenIdle();
+        world.service.setActivityOpen(true);
+        await world.service.whenIdle();
+        expect(world.service.view()?.activity).toEqual({ available: false, reason: 'locked' });
+    });
+});

@@ -2,6 +2,8 @@ import type { OverviewView } from '../../shared/protocol/overview';
 import type { DiscoveryController } from '../discovery/discoveryController';
 import type { HistoryView } from '../lifecycle/statusHistory';
 import type { Disposable } from '../ports/host';
+import type { RequestHandlers } from '../shell/messageRouter';
+import type { OverviewRequestType } from '../../shared/protocol/messages';
 import type { ShellModelSource } from '../ports/shell';
 import { buildOverviewView } from './overviewView';
 
@@ -14,6 +16,8 @@ export interface OverviewServiceDeps {
 export interface OverviewService {
     view(): OverviewView | undefined;
     onDidChangeView(listener: (view: OverviewView | undefined) => void): Disposable;
+    setActivityOpen(open: boolean): void;
+    handlers: Pick<RequestHandlers, OverviewRequestType>;
     whenIdle(): Promise<void>;
     dispose(): void;
 }
@@ -29,6 +33,7 @@ export function createOverviewService(deps: OverviewServiceDeps): OverviewServic
     let again = false;
     let idle: Promise<void> = Promise.resolve();
     let disposed = false;
+    let activityOpen = false;
 
     function setView(next: OverviewView | undefined): void {
         const serialized = JSON.stringify(next);
@@ -65,7 +70,7 @@ export function createOverviewService(deps: OverviewServiceDeps): OverviewServic
         if (disposed || listeners.size === 0) {
             return;
         }
-        setView(buildOverviewView({ model, history }));
+        setView(buildOverviewView({ model, history, activityOpen }));
     }
 
     function schedule(): void {
@@ -93,6 +98,14 @@ export function createOverviewService(deps: OverviewServiceDeps): OverviewServic
         })();
     }
 
+    function setActivityOpen(open: boolean): void {
+        if (listeners.size === 0 || activityOpen === open) {
+            return;
+        }
+        activityOpen = open;
+        schedule();
+    }
+
     function listen(): void {
         subscriptions = [
             deps.source.onDidChange(schedule),
@@ -106,6 +119,7 @@ export function createOverviewService(deps: OverviewServiceDeps): OverviewServic
         subscriptions = [];
         current = undefined;
         last = 'undefined';
+        activityOpen = false;
     }
 
     return {
@@ -124,6 +138,10 @@ export function createOverviewService(deps: OverviewServiceDeps): OverviewServic
                     }
                 },
             };
+        },
+        setActivityOpen,
+        handlers: {
+            overviewSetActivity: async (payload) => setActivityOpen(payload.open),
         },
         async whenIdle() {
             while (running) {

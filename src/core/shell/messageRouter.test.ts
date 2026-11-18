@@ -17,6 +17,7 @@ function setup(overrides: Partial<RequestHandlers> = {}) {
         boardClearFilters: async () => void calls.push('boardClearFilters'),
         openFile: async () => void calls.push('openFile'),
         copyText: async () => void calls.push('copyText'),
+        overviewSetActivity: async (payload) => void calls.push(`overviewSetActivity:${payload.open}`),
         ...overrides,
     };
     const router = createMessageRouter({

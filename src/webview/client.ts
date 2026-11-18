@@ -49,6 +49,7 @@ export interface ShellClient {
     setBoardFilter(filter: BoardFilter): void;
     setBoardSort(sort: SortKey): void;
     clearBoardFilters(): void;
+    setActivityOpen(open: boolean): void;
     openFile(key: string, line?: number): void;
     copyText(text: string): void;
     subscribe(listener: () => void): () => void;
@@ -248,6 +249,9 @@ export function createClient(deps: ClientDeps): ShellClient {
         },
         setBoardSort(sort) {
             send('boardSetSort', { sort });
+        },
+        setActivityOpen(open) {
+            send('overviewSetActivity', { open });
         },
         clearBoardFilters() {
             send('boardClearFilters', {});

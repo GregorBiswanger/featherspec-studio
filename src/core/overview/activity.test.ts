@@ -100,6 +100,6 @@ describe('Recent activity', () => {
     });
 
     it('an empty history gives an available, empty list', async () => {
-        expect(await activity([])).toEqual({ available: true, entries: [] });
+        expect(await activity([])).toEqual({ available: true, entries: [], open: false });
     });
 });

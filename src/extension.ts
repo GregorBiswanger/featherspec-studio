@@ -214,6 +214,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         extensionUri: context.extensionUri,
         service,
         overview: {
+            handlers: overview.handlers,
             view: () => overview.view(),
             onDidChangeView: (listener) => overview.onDidChangeView(listener),
         },

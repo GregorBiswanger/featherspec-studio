@@ -102,6 +102,9 @@ describe('0016 AC-011: user language on every surface 0016 touched', () => {
         const view = sampleView();
         view.now = [{ spec: { stem: '0002-b', number: '0002', title: 'B', path: '.specs/active/0002-b.md', found: true }, state: 'Review', status: 'Review', problems: 1 }];
         view.upNext = { rows: [{ spec: { stem: '0003-c', number: '0003', title: 'C', found: true }, state: 'Backlog', status: 'needs a plan', problems: 0 }], more: 1, stems: ['0003-c', '0004-d'] };
+        if (view.activity.available) {
+            view.activity = { ...view.activity, open: true };
+        }
         view.problems.lines = [{ where: 'project', reason: 'a return note has no spec' }];
         const text = await textOf('overview', overviewEvent(view));
         expect(text).toContain('Problems (2)');

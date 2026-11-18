@@ -3,7 +3,7 @@
 **Spec:** [0018-overview-and-compact-board.md](0018-overview-and-compact-board.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-004
+**Current step:** T-005
 
 ## Approach
 
@@ -261,8 +261,8 @@ No parallel stage: the Overview and Board steps share `messages.ts`, `client.ts`
   toggle sends one request, entries follow the view, no section without entries, unavailable form,
   Enter and Space).
 - **Verify:** `npx vitest run src/core/overview src/shared/protocol src/webview/areas` red, then green; gates 1–5
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-18: `overviewService.test.ts` AC-010 block red through the `Not implemented` stub (5 failures: open kept, re-push, reset after last listener, second-listener control, unavailable form), then green; guard test for `overviewSetActivity` in `messages.test.ts` and `boardFilter.test.ts` (guard list); webview AC-010 tests in `Sections.test.tsx` written after the component (heading button, `aria-expanded`, request, entries follow the view, Enter and Space, no section without entries, unavailable form). `npm run test:unit` 1910 passed, 3 skipped, timing 12 passed; eslint, both `tsc`, `compile` clean (no `compile-tests` required by the plan for this step).
+- **Notes:** The open flag travels in `activity: { available: true; entries; open }`; the toggle is a button with `data-drill="activity"` so the Tab-order test of 0006 AC-022 lists it. A request while no listener exists is ignored (the state is reset by the last listener leaving anyway). Old texts "Recent activity", "No recent activity." and "Recent activity not available" are gone from the Overview (T-008 scans them).
 
 ### T-005 — Board: narrow columns, widths and the filter chip
 

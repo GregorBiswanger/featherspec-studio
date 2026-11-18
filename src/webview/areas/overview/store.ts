@@ -11,3 +11,11 @@ export function useOverview(): OverviewView | undefined {
     const snapshot: ClientSnapshot = useSyncExternalStore(client.subscribe, client.getSnapshot);
     return snapshot.overview;
 }
+
+export function useOverviewActions(): { setActivityOpen(open: boolean): void } {
+    const client = useContext(ClientContext);
+    if (client === undefined) {
+        throw new Error('useOverviewActions needs a ShellProvider');
+    }
+    return { setActivityOpen: client.setActivityOpen };
+}

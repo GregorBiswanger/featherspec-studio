@@ -64,6 +64,7 @@ describe('board requests', () => {
                 'hello',
                 'navigate',
                 'openFile',
+                'overviewSetActivity',
                 'runAction',
                 'select',
             ].sort(),

@@ -45,12 +45,14 @@ export function progressText(percent: number, done: number, divisor: number): st
 
 export const FIGURES_LABEL = 'Figures';
 
-export const ACTIVITY_HEADING = 'Recent activity';
+export const ACTIVITY_HEADING = 'Activity';
 
-export const NO_ACTIVITY_TEXT = 'No recent activity.';
+export function activityHeading(count: number): string {
+    return `Activity (${count})`;
+}
 
 export function activityUnavailableText(reason: string): string {
-    return `Recent activity not available: ${reason}`;
+    return `Activity not available: ${reason}`;
 }
 
 export const SPEC_NOT_FOUND_TEXT = 'spec not found';
