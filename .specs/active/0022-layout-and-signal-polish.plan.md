@@ -440,20 +440,20 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
 | AC-001 | T-001, T-007 | `src/webview/main.css`, `src/webview/App.tsx`, `src/webview/areas/overview/SpecRow.tsx`, `src/webview/testing/css.ts` | `webviewCss.test.ts` (0022 AC-001, AC-003, AC-027, AC-028 describes), `ListOrDetail.test.tsx` | built |
-| AC-002 | T-007, T-008 | `src/webview/main.css`, `src/webview/areas/overview/SpecRow.tsx` (Overview row title; the rest: T-008) | `webviewCss.test.ts` (title rules) | open |
-| AC-003 | T-007, T-008 | `src/webview/main.css` (two-line Problems template from 420 px; sentences: T-008) | `webviewCss.test.ts` (0022 AC-003) | open |
-| AC-004 | T-009 | — | — | open |
-| AC-005 | T-009 | — | — | open |
-| AC-006 | T-010 | — | — | open |
-| AC-007 | T-010 | — | — | open |
-| AC-008 | T-010 | — | — | open |
-| AC-009 | T-010 | — | — | open |
+| AC-002 | T-007, T-008 | `src/webview/main.css`, `src/webview/ui/PathText.tsx`, `src/webview/detail/{SpecDetail,NextStep}.tsx`, `src/webview/board/Card.tsx`, `src/webview/areas/overview/SpecRow.tsx` | `PathText.test.tsx`, `SpecDetail.test.tsx`, `SpecBoard.test.tsx`, `webviewCss.test.ts` (0022 AC-001 and AC-002) | verified |
+| AC-003 | T-007, T-008 | `src/webview/main.css`, `src/webview/detail/SpecDetail.tsx`, `src/webview/board/Banner.tsx`, `src/webview/areas/overview/{Problems,SpecRow}.tsx` | `webviewCss.test.ts` (0022 AC-003), `SpecDetail.test.tsx`, `Overview.test.tsx` | verified |
+| AC-004 | T-009 | `src/core/shell/specTree.ts`, `src/shared/protocol/texts.ts` (X-05) | `specTree.test.ts` (0022 AC-004) | verified |
+| AC-005 | T-009 | `src/core/shell/treeLabel.ts`, `src/core/shell/specTree.ts`, `src/test/shell.smoke.test.ts` (AC-019 expectation) | `treeLabel.test.ts`, `specTree.test.ts` (0022 AC-005) | verified |
+| AC-006 | T-010 | `src/core/shell/specTree.ts`, `src/adapters/vscode/studioTree.ts`, `src/shared/protocol/texts.ts` (X-01…X-03) | `specTree.test.ts`, `studioTree.test.ts` | verified |
+| AC-007 | T-010 | `src/core/shell/specTree.ts`, `src/webview/areas/overview/Now.tsx` (X-07) | `specTree.test.ts` (0022 AC-007), `sourceScan.test.ts` (0022 AC-007), `Sections.test.tsx` | verified |
+| AC-008 | T-010 | `src/core/board/filters.ts`, `src/shared/protocol/board.ts`, `src/webview/board/Column.tsx`, `src/webview/main.css` | `filters.test.ts`, `boardFilter.test.ts`, `SpecBoard.test.tsx` | verified |
+| AC-009 | T-010 | `src/core/shell/specTree.ts`, `src/shared/protocol/texts.ts` | `specTree.test.ts` (group IDs hold neither count) | verified |
 | AC-010 | T-006 | `src/webview/ui/CopyButton.tsx`, `src/webview/main.css` | `CopyButton.test.tsx`, `webviewCss.test.ts` (0022 AC-010, AC-012) | verified |
 | AC-011 | T-006 | `src/webview/detail/NextStep.tsx`, `src/webview/areas/overview/{Now,Overview,SpecRow}.tsx`, `src/webview/areas/SpecBoard.tsx`, `src/webview/board/Card.tsx` | `src/webview/primaryButtons.test.tsx` | verified |
 | AC-012 | T-006 | `src/webview/ui/CopyButton.tsx`, `src/webview/board/icons.tsx`, `src/webview/main.css` | `CopyButton.test.tsx`, `webviewCss.test.ts` (0022 AC-010, AC-012) | verified |
-| AC-013 | T-005, T-008, T-009 | `src/core/lifecycle/problemSentence.ts`, `src/core/board/{detail,cards}.ts`, `src/core/overview/problems.ts`, protocols `detail.ts`, `board.ts`, `overview.ts` (webview and tree: T-008, T-009) | `problemSentence.test.ts`, `core/board/detail.test.ts`, `cards.test.ts`, `core/overview/problems.test.ts`, protocol tests | built |
+| AC-013 | T-005, T-008, T-009 | `src/core/lifecycle/problemSentence.ts`, `src/core/board/{detail,cards}.ts`, `src/core/overview/problems.ts`, `src/core/shell/specTree.ts`, `src/webview/detail/SpecDetail.tsx`, `src/webview/board/Banner.tsx`, `src/webview/areas/overview/{Problems,SpecRow}.tsx` | `problemSentence.test.ts`, `detail.test.ts`, `cards.test.ts`, `problems.test.ts`, `specTree.test.ts`, `SpecDetail.test.tsx`, `Overview.test.tsx`, `SpecBoard.test.tsx`, `userLanguage.test.tsx` | verified |
 | AC-014 | T-005 | `src/core/lifecycle/problemSentence.ts`, `src/shared/protocol/texts.ts` (X-10…X-24) | `src/core/lifecycle/problemSentence.test.ts` (AC-014 describe) | verified |
-| AC-015 | T-008 | — | — | open |
+| AC-015 | T-008 | `src/webview/ui/FileLink.tsx`, `src/webview/detail/SpecDetail.tsx`, `src/webview/areas/overview/SpecRow.tsx` | `SpecDetail.test.tsx`, `Overview.test.tsx` | verified |
 | AC-016 | T-011 | — | — | open |
 | AC-017 | T-011 | — | — | open |
 | AC-018 | T-011 | — | — | open |
@@ -471,8 +471,8 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
 
 ## Session handoff
 
-- **Done so far:** stages 1 to 3 (T-001…T-007) built and verified 2026-11-18 on branch `ux-round-2`: list-or-detail frame, remembered side width and divider, state table, problem sentence, Copy looks (at most two primary buttons), Overview rows by container queries with the state icon. Gates green (unit 2358 passed, 3 skipped, +13 timing).
-- **Next action:** stage 4, T-008 (sentences and breaking paths in the webview), T-009 (tree rows), T-010 (Ready rename and Problem hints); the orchestrator's preview harness checks stages 1 to 3 now (layout that jsdom cannot decide).
+- **Done so far:** stages 1 to 4 (T-001…T-010) built and verified 2026-11-18 on branch `ux-round-2`: list-or-detail frame, remembered side width and divider, state table, problem sentences on every surface with breaking paths, Copy looks, Overview rows by container queries, tree rows with the step and a label budget of 32, `Ready` group, Problem hints on groups and strips. Gates green (unit 2402 passed, 3 skipped, +13 timing; compile and compile-tests clean).
+- **Next action:** stage 5, T-011 (§5 notes in the older specs, README, ux-guidelines, release checklist, CHANGELOG, design-brief note, docsScan block, test-title audit, architecture and Memory Bank sync, final gates).
 - **Open decisions:** none; the proxy decisions P-1…P-22 stand, new ones are in the steps' `Notes:`.
 - **Baseline:** `20a1e68`.
 - **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here); layout is checked in the orchestrator's preview harness.
