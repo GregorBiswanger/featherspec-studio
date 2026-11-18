@@ -199,6 +199,8 @@ its `Verified` text. *(fixture: a copy of this repo's spec 0002 and its plan; D-
 **AC-016** Every existing test of 0005–0007 shall stay green; only assertions on wording or
 structure that §2's five deltas change are updated, in the same change set, each named in the plan.
 
+*Amended by 0016 (PD-059, proxy): AC-016 (test audit) — also excepted: the tests 0016 AC-023 lists against a criterion that 0016 §5 changes.*
+
 *Amended by 0015 (PD-055/PD-056): excepts the tests that 0015 AC-027 removes.*
 
 **AC-017** *(manual, Gregor or his delegate)* Screenshots from the preview harness of Mission Control, Spec Board,

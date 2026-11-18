@@ -45,8 +45,6 @@ Hands-On walkthrough in a fresh `tip-splitter` folder starting from this button 
   release copy of every other existing file in `.featherspec-setup/` with a merge prompt (PD-051).
 - The final message, a rerun of discovery, failure handling, an Output channel block per setup.
 
-*Amended by 0016 (PD-059, proxy): S2 carries the sentence of 0016 T-20 after its first line.*
-
 ### Out of scope
 
 - Starting a chat or running `/sdd-setup` — because PD-049 keeps that a manual step and the user picks the assistant.
@@ -132,6 +130,7 @@ singular ("1 file", "was kept").
 - In S2 the action reads like Source Control's "Initialize Repository": one primary button
   "Set up FeatherSpec", "Open setup guide" as the secondary way (VS Code UX guidelines: buttons
   for primary actions only). Its look is checked by Gregor (M-1).
+  *Amended by 0016 (PD-059, proxy): §9 S2 bullet — S2 carries the sentence of 0016 T-20 after its first line.*
 - The final message is a notification; it names the next step in one sentence, and its only
   action copies the next thing the user pastes into chat.
 
@@ -204,8 +203,7 @@ marked *Manual*.
 - **AC-024** The system shall start no process (so no Git command) and shall create nothing in the target but the release files, the folders they need, and `.featherspec-setup/` with its content.
 - **AC-025** The system shall send network requests only after the user started a setup in a trusted workspace, only to the hosts of §10, without credentials, cookies, or a workspace path or name. Discovery, the view and the panel shall send none.
 - **AC-026** *Manual (Gregor):* M-1 the S2 button looks and reads like Source Control's "Initialize Repository" in the view and in the panel, in a Dark, a Light and a High Contrast theme (this renews the S2 screenshots of 0013 AC-017); M-2 on Windows 11 against the real GitHub release, a fresh `tip-splitter` folder becomes a project and the Hands-On walkthrough runs from `/sdd-setup` on; M-3 in a real Restricted Mode window AC-004 holds. Pre-release checklist items.
-
-*Amended by 0016 (PD-059, proxy): M-1 judges the look with the sentence of 0016 T-20.*
+  *Amended by 0016 (PD-059, proxy): AC-026 M-1 — M-1 judges the look with the sentence of 0016 T-20.*
 
 ## 15. Technical notes for developers or AI agents
 

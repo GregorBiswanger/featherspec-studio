@@ -122,6 +122,7 @@ Terms used below:
   its rule ID for Ready, Review and Blocked, the *Deprecated* marker where 0003 reports it
   (0003 AC-013), and one diagnostic badge when 0003's result for the entry carries at least one
   diagnostic. A spec without an H1 has no title; its card shows the file stem in its place.
+  *Amended by 0016 (PD-059, proxy): §6.1 bullet 1 — the derived marker reads as 0016 T-09 with the rule ID in the tooltip (T-08); the badge counts *Problems* (T-05).*
 - Description (PD-043): the first non-empty paragraph under the spec's first second-level
   heading. Text before that heading (header lines, a handoff reference) is skipped. A paragraph
   is a block of text lines that is not a list, table, blockquote or code block. None →
@@ -130,7 +131,9 @@ Terms used below:
   and each `BLOCKED` return note by its file name (A-006).
 - Cards in state Backlog show the failing readiness precondition with the lowest ID and its
   reason from 0003, for example "R-3: no plan".
+  *Amended by 0016 (PD-059, proxy): §6.1 bullet 4 — a Backlog card shows its first need (0016 §6.3, T-11), no check ID.*
 - Priority: never on the card. The detail view shows "Priority: not available" (PD-015, PD-041).
+  *Amended by 0016 (PD-059, proxy): §6.1 bullet 5 — no element shows a priority; the README says once why (0016 T-13).*
 
 ### 6.2 Progress and last change
 
@@ -182,6 +185,12 @@ select one.
 | Verification | the verification status of 0003 §6.6: rows per state, the summary, and the `/sdd-compile` verdict as *not available* | the plan, when one exists |
 | Related artifacts | sibling plan, archived plans, return notes | each listed file |
 | Agent history | the spec's runs from 0004, newest created first, each with provider, status, timestamps and 0004's "history incomplete" or "history unreadable" flag — runs only, no events. Below them the status history from 0003, under its label "Observed by Studio while it was running — not a reconstruction" | none |
+
+*Amended by 0016 (PD-059, proxy): §6.4 status history row — entries read as 0016 T-14; the label as T-15.*
+
+*Amended by 0016 (PD-059, proxy): §6.4 Verification row — no `/sdd-compile` verdict line (0016 T-13); the readiness checks read as needs (§6.3, T-11).*
+
+*Amended by 0016 (PD-059, proxy): §6.4 Overview row — shows needs in place of R-1…R-7, *Problems* below "Next step" and format notes collapsed; the State chip reads T-09 or nothing visible (T-10); no priority line (0016 §6.2, T-13).*
 
 - Read-only, rendered from the model. No detail section offers editing.
 - "Open file" (PD-044) is offered only where the table names a source file and that file exists
@@ -272,8 +281,7 @@ and are not repeated here (PD-036, PD-038).
   are not affected.
 - Diagnostics tied to no spec entry — project scope, an orphan plan, an unlinked return note
   (0002 §9) — appear in one banner above the board, each with its reason.
-
-*Amended by 0016 (PD-059, proxy): the board shows *Problems* tied to no spec entry; format notes sit behind the collapsed toggle (0016 §6.2).*
+  *Amended by 0016 (PD-059, proxy): §6.8 (the statement of §13 row "Diagnostics tied to no spec entry") — the board shows *Problems* tied to no spec entry; format notes sit behind the collapsed toggle (0016 §6.2, AC-009).*
 
 ## 7. Functional requirements
 
@@ -399,7 +407,7 @@ matching the state 0003 derives for its entry. *(AC-007.2)*
 state label as text, and for Ready, Review and Blocked a *derived* marker with the rule ID.
 Where a spec has no title, the card shall show its file stem in the title's place. *(AC-007.3)*
 
-*Amended by 0016 (PD-059, proxy): the derived marker reads as 0016 T-09 with the rule ID in the tooltip (T-08); the badge counts *Problems* (T-05); a Backlog card shows a need (0016 §6.3).*
+*Amended by 0016 (PD-059, proxy): AC-003 — the derived marker reads as 0016 T-09 with the rule ID in the tooltip (T-08); the badge counts *Problems* (T-05); a Backlog card shows a need (0016 §6.3).*
 
 **AC-004** The card shall show as description the first non-empty paragraph under the spec's
 first second-level heading, skipping all text before that heading, or "No summary" when there
@@ -412,7 +420,7 @@ is no such heading or paragraph. The card shall limit the description to two lin
 **AC-005** The board shall show no priority on any card and shall offer no filter and no sort
 by priority. The detail view shall show "Priority: not available". *(PD-015, PD-041)*
 
-*Amended by 0016 (PD-059, proxy): no element shows a priority; the README says once why (0016 T-13).*
+*Amended by 0016 (PD-059, proxy): AC-005 — second sentence: no element shows a priority; the README says once why (0016 T-13).*
 
 **AC-006** The card shall show task progress as the number of ticked steps and the number of
 all steps of the plan named in §6.2, not counting struck steps. It shall show criteria progress
@@ -451,7 +459,7 @@ open that file in the editor at the source location 0002 delivers for the item, 
 of the file where 0002 delivers none. If the file no longer exists, then the system shall say
 so and open nothing. *(PD-044)*
 
-*Amended by 0016 (PD-059, proxy): the Overview shows needs in place of R-1…R-7, *Problems* below "Next step" and format notes collapsed; no priority or verdict line (0016 §6.2, T-13).*
+*Amended by 0016 (PD-059, proxy): AC-010 — the Overview shows needs in place of R-1…R-7, *Problems* below "Next step" and format notes collapsed; no priority or verdict line (0016 §6.2, T-13).*
 
 *Amended by 0015 (PD-055/PD-056): the list of sections adds "Next step" above the sections (0015 AC-003).*
 
@@ -509,7 +517,7 @@ diagnostic badge on that spec's card and shall leave the content, column and act
 other card unchanged. The board shall show every diagnostic that is tied to no spec entry
 (project scope, orphan plan, unlinked return note) in one banner above the columns.
 
-*Amended by 0016 (PD-059, proxy): the badge counts *Problems* only; the banner follows 0016 AC-009.*
+*Amended by 0016 (PD-059, proxy): AC-020 — the badge counts *Problems* only; the banner follows 0016 AC-009.*
 
 **AC-021** While the project has no specs, the board shall show "No specs yet" with the hint to
 run `/sdd-specify`. While a column holds no card before filtering, it shall show a one-line
@@ -538,7 +546,7 @@ reason, and on every card of a Deprecated spec the *Deprecated* marker. The Over
 the successor as 0003 reports it, and the readiness checks only for an entry in `backlog/`.
 *(handoff §4.2, 0003 AC-013)*
 
-*Amended by 0016 (PD-059, proxy): the readiness checks read as needs (0016 §6.3, T-11); no check ID is visible.*
+*Amended by 0016 (PD-059, proxy): AC-024 — the readiness checks read as needs (0016 §6.3, T-11); no check ID is visible.*
 
 **AC-025** The card shall show the last change: the newer file modification time of the spec
 file and the plan named in §6.2. *(PD-043)*
@@ -552,7 +560,7 @@ provider, status and timestamps, and no run events. It shall show the status his
 under the label "Observed by Studio while it was running — not a reconstruction". While the run
 store's state is *unavailable*, it shall show *not available* for both.
 
-*Amended by 0016 (PD-059, proxy): entries read as 0016 T-14; the label as T-15.*
+*Amended by 0016 (PD-059, proxy): AC-027 — entries read as 0016 T-14; the label as T-15.*
 
 *Amended by 0015 (PD-055/PD-056): the section is "Status history".*
 

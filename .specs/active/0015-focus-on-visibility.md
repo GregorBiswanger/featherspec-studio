@@ -131,7 +131,7 @@ The rules use only what 0002 and 0003 deliver; first match wins, top-down:
 | NS-9 | Backlog, no sibling plan | `/sdd-clarify <spec path>`; then `/sdd-plan <spec path>` |
 | NS-10 | Backlog, any other | `/sdd-plan <spec path>` |
 
-*Amended by 0016 (PD-059, proxy): NS-1 reads as 0016 T-18.*
+*Amended by 0016 (PD-059, proxy): §6.1 NS-1 — reads as 0016 T-18.*
 
 NS-11 sits below NS-2 in the order; IDs are stable, not ordinal. Basis: FeatherSpec 1.10.0
 command files. `/sdd-plan` resumes an existing plan (Mode B: integrates return notes, reports
@@ -204,11 +204,14 @@ the Output channel "FeatherSpec Studio" naming what it removed; nothing removed,
 - **Reader reason:** "Another VS Code window holds the write lock for this project's status history."
 - **Detail:** heading "Next step"; per line a "Copy" button; a second line under "Then:" (NS-9)
   or "Then, after a READY verdict:" (NS-5); after copying "Copied to the clipboard."
+  *Amended by 0016 (PD-059, proxy): §8 Detail — Copy is primary; its feedback appears at the button (0016 §6.5, T-19), not as a line below.*
 - **Drop result:** "Studio starts no agent. Next step for <number> — paste it into your AI assistant:" plus the line and "Copy".
+  *Amended by 0016 (PD-059, proxy): §8 Drop result — Copy is primary, Dismiss secondary (0016 §6.5, T-19).*
 
 ## 9. Error cases and edge cases
 
 - Clipboard write fails → "Could not copy to the clipboard." and nothing else changes.
+  *Amended by 0016 (PD-059, proxy): §9 first bullet — the failure text shows at the Copy button (0016 §6.5, T-19).*
 - The spec changes between showing and copying → Copy copies the line shown; the view updates.
 - Restricted Mode, reader window → next step and Copy work unchanged (they run nothing).
 - A path of the earlier-data removal cannot be removed (file held open) → AC-024.
@@ -227,10 +230,12 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
 - **AC-004** The system shall derive the next step only from the model of 0002 and 0003; for identical snapshots it shall show identical lines. One fixture per rule decides the rule ID and the exact lines.
   > **Given** `.specs/backlog/0007-x.md` is Ready and its plan's first step is `T-001` **When** it is selected **Then** the line reads `Start T-001 of .specs/backlog/0007-x.plan.md`.
 - **AC-005** When the developer activates "Copy" — by pointer, or by Enter or Space after reaching it with Tab — the system shall put exactly that line on the clipboard and show and announce "Copied to the clipboard."
+  *Amended by 0016 (PD-059, proxy): AC-005 — feedback appears at the button (0016 §6.5, T-19); Copy is primary.*
 - **AC-006** When 0003 accepts a Ready → Active request, the board shall start no process, reach no network, change no file, leave the card in Ready, and show and announce the drop result of §8 with the NS-7 line and "Copy".
 - **AC-007** When the detail view receives a model-changed notification, it shall show the new next step within 500 ms (PD-047).
 - **AC-008** While the workspace is in Restricted Mode or the window is a reader, the system shall show the same next step and Copy shall work.
 - **AC-009** If writing the clipboard fails, then the system shall show "Could not copy to the clipboard."
+  *Amended by 0016 (PD-059, proxy): AC-009 — the failure feedback appears at the button (0016 §6.5, T-19).*
 - **AC-010** Mission Control shall show no run figure, run section or run-based reason; *Needs attention* shall carry only Blocked, Diagnostic and Review pending; *Recent activity* only spec status history entries; no element shall send a request for an area outside AC-001.
 - **AC-011** The board card shall show no run line and the filters shall offer board state and named spec set only.
 - **AC-012** The detail view shall show a "Status history" section with 0003's history under its label, *not available* with the reason while the history is not available, and no run list.
@@ -250,11 +255,10 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
 - **AC-025** `media/screenshots/agent-center-dark.png`, `docs/agent-provider-port.md` and `docs/security/secret-patterns.md` shall not exist; a search of `README.md`, `docs/release-checklist.md` and `docs/runtime-data.md` shall find no "Agent Center", "provider", "Copilot", "Clear Run History", "Stop Run" or "Resume Run" — except "GitHub Copilot" in the README opening of §8 and the folder name `copilot-home` in `docs/runtime-data.md`; `docs/runtime-data.md` shall describe the status history, the earlier-data removal and deletion by hand; ADR-003 shall carry the status *Superseded (PD-055)*; ADR-001 (at its §14) and ADR-002 shall carry the note "superseded in part by 0015 (PD-055)" (PD-057).
 - **AC-026** The S7 note, the reader reason and the Mission Control purpose shall read as §8.
 - **AC-027** Every test at tag `archive/agent-runs-2026-11-17` that decides a criterion of 0001–0007, 0013 or 0014 not voided in §5 shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI. A script compares the test titles of both commits; every title of the tag missing at the head, a renamed one included, is listed in the plan with its voided criterion or with the head title that replaces it.
+  *Amended by 0016 (PD-059, proxy): AC-027 (test audit) — also excepted: the tests 0016 AC-023 lists against a criterion that 0016 §5 changes are excepted.*
 - **AC-028** 0008–0012 shall have status `Deprecated`, stay in `done/` and link this spec as successor; 0003–0007 and 0013 shall carry the amendment notes of §5.
 - **AC-029** The `architecture:` snapshot in `AGENTS.md`, `.architecture/*.md` and `.memory-bank/projectbrief.md` shall name no removed module, no agent run and no provider; the brief's mission shall contain the manifest description of §8 and its success criteria the AC-030 scenario.
 - **AC-030** *(manual, Gregor)* M-1 on `tip-splitter` with the assistant he uses, the Hands-On walkthrough: three areas; a dropped Ready spec shows the NS-7 line, pasted into the chat it starts that step; Active and Review specs show NS-6 and NS-5 lines that the assistant runs as FeatherSpec commands; he checks whether the S7 note reads as noise (PD-057, OP-006) and whether his assistant resolves the project-relative paths (OP-002). Pre-release checklist item.
-
-*Amended by 0016 (PD-059, proxy): feedback appears at the button (0016 §6.5, T-19); Copy is primary, Dismiss secondary.*
 
 ## 11. Technical notes for developers or AI agents
 

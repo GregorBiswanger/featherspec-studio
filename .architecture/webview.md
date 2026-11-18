@@ -1,5 +1,5 @@
 # Map: src/webview (Studio panel UI)
-# last reconciled: 2026-11-17
+# last reconciled: 2026-11-18
 
 ## Internal pattern
 - `main.tsx` → `App.tsx` — entry and shell (navigation, panel states, notice bar, restricted note).

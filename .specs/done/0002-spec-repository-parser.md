@@ -100,6 +100,7 @@ the files reaches the model without a manual reload.
   §3.2, §4.1–§4.5), anything outside that set stays in the model as unsupported content with
   its raw text and location, plus a diagnostic. A spec body is free text: it is kept whole as
   sections and is never unsupported content.
+  *Amended by 0016 (PD-059, proxy): BR-05 — `**Successor:**` joins the closed set of header lines: it is read and raises no diagnostic (compatibility, 0016 §6.1).*
 - **BR-06 No silent choice (PD-019).** The same stem in two folders, or one number with two
   slugs: every file stays its own entry with a duplicate diagnostic, and plans and return
   notes are linked to every matching entry. Likewise an `AC-NNN` defined twice in one spec or
@@ -114,8 +115,6 @@ the files reaches the model without a manual reload.
   as tasks or verification (format §6, §10 #15).
 - **BR-09 Facts, not judgements (PD-020).** This layer reports what the files contain and the
   diagnostics listed in §8. It never says whether a spec's lifecycle state is consistent.
-
-*Amended by 0016 (PD-059, proxy): `**Successor:**` joins the closed set of header lines: it is read and raises no diagnostic (compatibility, 0016 §6.1).*
 
 ## 7. Functional requirements
 
@@ -171,9 +170,8 @@ file rather than its content: key and modification time (PD-043).
   and a reason in English (PD-016) that names what was found. Kinds (PD-020): unreadable file ·
   unknown content or value · duplicate · orphan (plan or return note) · dangling link ·
   unverified version. Consumers rely on this list; its identifiers are decided in `/sdd-plan`.
+  *Amended by 0016 (PD-059, proxy): §8 Diagnostic — every diagnostic carries a tier, *Problem* or *format note* (0016 §6.1); an ID that occurs twice stays a diagnostic with the tier *format note*.*
 - No sensitive data. The content is the user's own project text and stays local.
-
-*Amended by 0016 (PD-059, proxy): every diagnostic carries a tier, *problem* or *note* (0016 §6.1); an ID that occurs twice stays a diagnostic with the tier *format note*.*
 
 ## 9. Interfaces and integrations
 
@@ -270,6 +268,7 @@ Handoff references in brackets (PD-017).
   `<stem>.YYYY-MM-DD[-n].plan.md` in `plan-archive/` (archived plan). If a plan matches no
   spec stem, then the system shall return it as an orphan plan with a diagnostic.
   [AC-002.4; PD-018]
+  *Amended by 0016 (PD-059, proxy): AC-006 — a plan in `backlog/` or `active/` whose stem matches no spec stays in the model as an orphan, with no diagnostic (compatibility, 0016 §6.1); an archived orphan plan is a *format note*.*
 - **AC-007** The system shall extract from every plan every item §8 lists for a plan, a step
   and a traceability row, for both step dialects: the checkbox on the `Verified (T-NNN):` line
   (1.10.0) and on the `Covers:` line (≤ 1.9). If a step carries no checkbox, or one on both
@@ -309,12 +308,14 @@ Handoff references in brackets (PD-017).
   a diagnostic for it. If a `**Status:**` value or a traceability state is not one of its
   documented values, then the system shall return the value as written, with a diagnostic.
   [AC-002.8; PD-020]
+  *Amended by 0016 (PD-059, proxy): AC-014 — `**Successor:**` is a known header line and raises no diagnostic (0016 §6.1).*
 - **AC-015** If a spec stem occurs in more than one lifecycle folder, or a spec number occurs
   with more than one slug, then the system shall return every such file as its own spec entry,
   each with a duplicate diagnostic naming the other files, and shall link plans and return
   notes to every matching entry. If an `AC-NNN` is defined twice in one spec or a `T-NNN`
   twice in one plan, then the system shall return every occurrence, with a duplicate
   diagnostic. [PD-019]
+  *Amended by 0016 (PD-059, proxy): AC-015 — second sentence: every diagnostic carries a tier; an ID that occurs twice stays a diagnostic, tier *format note* (0016 §6.1).*
 - **AC-016** If the version reported by 0001 is "unknown", cannot be compared as a semantic
   version, or is older than 1.7.0, then the system shall return one project diagnostic with
   the reason "version not verified". If it is newer than 1.10.0, then the reason shall be
@@ -325,6 +326,7 @@ Handoff references in brackets (PD-017).
   file that does not exist inside the project, then the system shall return a dangling-link
   diagnostic and shall still return the spec or plan. If an archived plan's `**Spec:**` line
   links to a missing file, the system shall return no diagnostic. [FR-002.7; PD-034]
+  *Amended by 0016 (PD-059, proxy): AC-017 — first sentence: an orphan plan in `backlog/` or `active/` has no dangling-link diagnostic (compatibility, 0016 §6.1).*
 - **AC-018** While the project is a generated fixture of 200 specs with their plans, the
   system shall complete a full read in under 2 seconds, from the read request to the model
   being available, and shall update the model within 1 second after a file-change event
@@ -352,14 +354,6 @@ Handoff references in brackets (PD-017).
   beside its content. If a file cannot be read (AC-011), then the system shall return its
   modification time when the file system reported one, and shall mark it absent otherwise
   (AC-019). [PD-043]
-
-*Amended by 0016 (PD-059, proxy): `**Successor:**` is a known header line and raises no diagnostic (0016 §6.1).*
-
-*Amended by 0016 (PD-059, proxy): a plan in `backlog/` or `active/` whose stem matches no spec stays in the model as an orphan, with no diagnostic and no dangling-link diagnostic (compatibility, 0016 §6.1).*
-
-*Amended by 0016 (PD-059, proxy): an orphan plan in `backlog/` or `active/` has no dangling-link diagnostic (compatibility, 0016 §6.1).*
-
-*Amended by 0016 (PD-059, proxy): every diagnostic carries a tier; an ID that occurs twice stays a diagnostic, tier *format note* (0016 §6.1).*
 
 ## 14. Technical notes for developers or AI agents
 
