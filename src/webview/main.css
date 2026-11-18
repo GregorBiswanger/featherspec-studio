@@ -1015,23 +1015,75 @@ main > h1 {
 }
 
 .ov-list {
+    container: ov-list / inline-size;
     margin: 0 -12px;
     padding: 0;
     list-style: none;
 }
 
 .ov-row-item {
-    display: flex;
+    display: grid;
     align-items: center;
-    gap: 8px;
-    padding-right: 12px;
+    column-gap: 8px;
+    row-gap: 2px;
+    padding: 0;
     border-top: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
 }
 
-.ov-row-item .ov-row {
-    flex: 1 1 auto;
+.ov-row-item > .ov-row {
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+    align-items: center;
     width: auto;
     border-top: none;
+}
+
+.ov-row-item > .next-step-copy {
+    grid-area: copy;
+    justify-self: end;
+    margin: 5px 12px 5px 0;
+}
+
+.ov-row-item > .ov-coach {
+    grid-column: 1 / -1;
+}
+
+.ov-row .ov-number {
+    grid-area: number;
+}
+
+.ov-row .ov-title {
+    grid-area: title;
+    min-width: 0;
+}
+
+.ov-state {
+    grid-area: state;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.ov-state-icon {
+    display: inline-flex;
+    flex: none;
+}
+
+.ov-row .ov-problem {
+    grid-area: problem;
+}
+
+.ov-row .step-text {
+    grid-area: step;
+}
+
+.ov-status {
+    min-width: 0;
+    color: var(--fs-muted);
 }
 
 .ov-row {
@@ -1068,7 +1120,7 @@ main > h1 {
     font-size: 0.92em;
 }
 
-.ov-title {
+.ov-spec .ov-title {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1178,61 +1230,94 @@ blockquote.illustration {
     color: var(--fs-muted);
 }
 
-.ov-row {
-    white-space: nowrap;
-}
 
-.ov-row .ov-number,
-.ov-row .step-text,
-.ov-row .ov-problem {
-    flex: none;
-}
-
-.ov-row .ov-title {
-    flex: 0 1 auto;
-    min-width: 0;
-}
-
-.ov-row .ov-status {
-    flex: 0 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    color: var(--fs-muted);
-    text-overflow: ellipsis;
-}
-
-.ov-row .step-text {
-    margin-left: auto;
-}
-
-.ov-row-item .copy-button {
-    flex: none;
-}
-
-@media (max-width: 720px) {
+@container ov-list (width > 686px) {
     .ov-row-item {
-        align-items: flex-end;
+        grid-template-columns: auto minmax(0, 1fr) auto auto auto auto;
+        grid-template-areas: "number title state problem step copy";
     }
 
-    .ov-row {
-        flex-wrap: wrap;
-        row-gap: 2px;
-        white-space: normal;
+    .ov-problems .ov-row-item {
+        grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+        grid-template-areas:
+            "number title title title title"
+            "state state problem step copy";
     }
 
     .ov-row .ov-title {
-        flex: 1 1 calc(100% - 4em);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .ov-row .ov-status {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .ov-problems .ov-status {
         overflow: visible;
-        overflow-wrap: anywhere;
+        overflow-wrap: break-word;
         text-overflow: clip;
+        white-space: normal;
+    }
+}
+
+@container ov-list (420px <= width <= 686px) {
+    .ov-row-item {
+        grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+        grid-template-areas:
+            "number title title title title"
+            "state state problem step copy";
+    }
+
+    .ov-row .ov-title {
+        overflow-wrap: break-word;
         white-space: normal;
     }
 
     .ov-row .ov-status {
-        overflow: visible;
-        overflow-wrap: anywhere;
-        text-overflow: clip;
+        overflow-wrap: break-word;
         white-space: normal;
+    }
+
+    .ov-state-name {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+}
+
+@container ov-list (width < 420px) {
+    .ov-row-item {
+        grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+        grid-template-areas:
+            "number title title title title"
+            "state state state state problem"
+            "step step step step copy";
+    }
+
+    .ov-row .ov-title {
+        overflow-wrap: break-word;
+        white-space: normal;
+    }
+
+    .ov-row .ov-status {
+        overflow-wrap: break-word;
+        white-space: normal;
+    }
+
+    .ov-state-name {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
     }
 }
 

@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { NARROW_QUERY } from '../../shared/protocol/layout';
+import { AREA_MIN, defaultSideWidth, NARROW_QUERY, SIDE_MIN } from '../../shared/protocol/layout';
 import { STATE_LOOK } from '../../shared/protocol/stateLook';
 import { declarations, parseRules, rulesFor } from '../../webview/testing/css';
 
@@ -50,41 +50,6 @@ describe('AC-026: colours come from the theme', () => {
             expect(rulesFor(css, gone), gone).toEqual([]);
         }
         expect(rulesFor(css, '.ov-figure-list').length).toBeGreaterThan(0);
-    });
-
-    it('0018 AC-006: a spec row stays on one line: title and status cut by an ellipsis, number, step, warning icon and Copy never cut', () => {
-        const row = rulesFor(css, '.ov-row');
-        expect(row.some((rule) => /white-space:\s*nowrap/.test(rule.body))).toBe(true);
-        for (const selector of ['.ov-row .ov-title', '.ov-row .ov-status']) {
-            const rules = rulesFor(css, selector);
-            expect(rules.some((rule) => /flex:\s*0 1 auto/.test(rule.body))).toBe(true);
-        }
-        expect(rulesFor(css, '.ov-row .ov-status').some((rule) => /text-overflow:\s*ellipsis/.test(rule.body))).toBe(true);
-        expect(rulesFor(css, '.ov-title').some((rule) => /text-overflow:\s*ellipsis/.test(rule.body))).toBe(true);
-        expect(rulesFor(css, '.ov-row .step-text').some((rule) => /flex:\s*none/.test(rule.body))).toBe(true);
-        expect(rulesFor(css, '.ov-row-item .copy-button').some((rule) => /flex:\s*none/.test(rule.body))).toBe(true);
-    });
-
-    it('0018 AC-006 (V1): at 720 px or less a spec row wraps to two lines, number and title first, then the status, the step and Copy, with no text cut by an ellipsis', () => {
-        const narrow = (selector: string) => rulesFor(css, selector).filter((rule) => rule.media !== undefined && /max-width:\s*720px/.test(rule.media));
-        expect(narrow('.ov-row').some((rule) => /flex-wrap:\s*wrap/.test(rule.body) && /white-space:\s*normal/.test(rule.body))).toBe(true);
-        expect(narrow('.ov-row-item').some((rule) => /align-items:\s*flex-end/.test(rule.body))).toBe(true);
-        const title = narrow('.ov-row .ov-title');
-        expect(title.some((rule) => /flex:\s*1 1 calc\(100% - [\d.]+em\)/.test(rule.body) && /white-space:\s*normal/.test(rule.body))).toBe(true);
-        const status = narrow('.ov-row .ov-status');
-        expect(status.some((rule) => /white-space:\s*normal/.test(rule.body) && /overflow:\s*visible/.test(rule.body))).toBe(true);
-        for (const rule of [...title, ...status]) {
-            expect(rule.body).not.toMatch(/text-overflow:\s*ellipsis/);
-            expect(rule.body).not.toMatch(/white-space:\s*nowrap/);
-        }
-        for (const selector of ['.ov-row .step-text', '.ov-row-item .copy-button', '.ov-row .ov-number']) {
-            expect(narrow(selector).filter((rule) => /flex:\s*(?!none)/.test(rule.body) || /flex-shrink:\s*[1-9]/.test(rule.body)), selector).toEqual([]);
-        }
-    });
-
-    it('0018 AC-006 (V1) control: the wide row rules sit outside every media query, so above 720 px the row stays on one line', () => {
-        expect(rulesFor(css, '.ov-row').some((rule) => rule.media === undefined && /white-space:\s*nowrap/.test(rule.body))).toBe(true);
-        expect(rulesFor(css, '.ov-row .ov-status').some((rule) => rule.media === undefined && /text-overflow:\s*ellipsis/.test(rule.body))).toBe(true);
     });
 
     it('AC-031: a focused control uses the High Contrast active border before the focus border, and no rule is left for the removed list rows', () => {
@@ -648,5 +613,133 @@ describe('0022 AC-010, AC-012: only three Copies are primary, the icon button ha
         const body = rulesFor(css, '.copy-icon').map((rule) => rule.body).join(';');
         expect(body).not.toMatch(/(?:^|;)\s*(?:min-|max-)?width:\s*(?:auto|\d+ch|fit-content)/);
         expect(body).toMatch(/flex:\s*none/);
+    });
+});
+
+describe('0022 AC-001, AC-003, AC-027, AC-028: Overview rows follow the list width', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const WIDE = 'ov-list (width > 686px)';
+    const MIDDLE = 'ov-list (420px <= width <= 686px)';
+    const NARROW = 'ov-list (width < 420px)';
+    const inside = (condition: string) => parseRules(css).filter((rule) => rule.container === condition);
+    const body = (condition: string, selector: string) =>
+        inside(condition)
+            .filter((rule) => rule.selectors.includes(selector))
+            .map((rule) => rule.body)
+            .join(';');
+    const areasOf = (condition: string, selector: string) => [...body(condition, selector).matchAll(/"([^"]+)"/g)].map((match) => match[1]!.trim().split(/\s+/));
+
+    it('the parser reads a container rule with its condition and keeps media rules apart', () => {
+        const rules = parseRules('@container box (width > 5px) { .a { color: red } } @media (x) { .b { color: blue } } .c { color: green }');
+        expect(rules.map((rule) => [rule.selectors[0], rule.container, rule.media])).toEqual([
+            ['.a', 'box (width > 5px)', undefined],
+            ['.b', undefined, '@media (x)'],
+            ['.c', undefined, undefined],
+        ]);
+    });
+
+    it('AC-001: every Overview list is an inline-size container named ov-list', () => {
+        expect(declarations(css).filter((declaration) => declaration.selectors.includes('.ov-list') && declaration.property === 'container').map((declaration) => declaration.value)).toEqual(['ov-list / inline-size']);
+    });
+
+    it('AC-001: exactly three container conditions exist, at 686 px and 420 px, and each lays out .ov-row-item with named areas', () => {
+        const conditions = [...new Set(parseRules(css).map((rule) => rule.container).filter((condition) => condition !== undefined))];
+        expect(conditions.sort()).toEqual([MIDDLE, NARROW, WIDE].sort());
+        for (const condition of [WIDE, MIDDLE, NARROW]) {
+            expect(body(condition, '.ov-row-item'), condition).toMatch(/grid-template-areas:/);
+            expect(body(condition, '.ov-row-item'), condition).toMatch(/grid-template-columns:/);
+        }
+    });
+
+    it('AC-001: no media rule touches an Overview row selector, and no row layout sits outside a container rule', () => {
+        const media = parseRules(css).filter((rule) => rule.media !== undefined && rule.selectors.some((selector) => /\.ov-/.test(selector)));
+        expect(media).toEqual([]);
+        const outside = declarations(css).filter((declaration) => declaration.container === undefined && declaration.selectors.some((selector) => /\.ov-row-item|\.ov-row\b/.test(selector)));
+        expect(outside.filter((declaration) => /grid-template-areas|white-space/.test(declaration.property))).toEqual([]);
+        expect(outside.some((declaration) => declaration.property === 'text-overflow')).toBe(false);
+    });
+
+    it('AC-001: the row button spans the item on subgrid rows and columns, so the Copy beside it takes its own area', () => {
+        const rule = rulesFor(css, '.ov-row-item > .ov-row').map((entry) => entry.body).join(';');
+        expect(rule).toMatch(/grid-template-columns:\s*subgrid/);
+        expect(rule).toMatch(/grid-template-rows:\s*subgrid/);
+        expect(rule).toMatch(/grid-column:\s*1 \/ -1/);
+        expect(rulesFor(css, '.ov-row-item > .next-step-copy').map((entry) => entry.body).join(';')).toMatch(/grid-area:\s*copy/);
+        for (const [selector, area] of [['.ov-row .ov-number', 'number'], ['.ov-row .ov-title', 'title'], ['.ov-state', 'state'], ['.ov-row .ov-problem', 'problem'], ['.ov-row .step-text', 'step']] as const) {
+            expect(rulesFor(css, selector).map((entry) => entry.body).join(';'), selector).toMatch(new RegExp(`grid-area:\\s*${area}\\b`));
+        }
+    });
+
+    it('AC-001: the coach line and its toggle take the last line of the item in every layout', () => {
+        expect(rulesFor(css, '.ov-row-item > .ov-coach').some((rule) => rule.container === undefined && /grid-column:\s*1 \/ -1/.test(rule.body))).toBe(true);
+    });
+
+    it('AC-028: in the two- and three-line layouts number and title share their first line with nothing else, and the title is not nowrap', () => {
+        for (const condition of [MIDDLE, NARROW]) {
+            const first = areasOf(condition, '.ov-row-item')[0]!;
+            expect([...new Set(first)].sort(), condition).toEqual(['number', 'title']);
+            expect(first[0]).toBe('number');
+        }
+        expect(areasOf(MIDDLE, '.ov-row-item')).toHaveLength(2);
+        expect(areasOf(NARROW, '.ov-row-item')).toHaveLength(3);
+        expect(areasOf(WIDE, '.ov-row-item')).toHaveLength(1);
+        for (const condition of [MIDDLE, NARROW]) {
+            expect(body(condition, '.ov-row .ov-title'), condition).not.toMatch(/white-space:\s*nowrap|text-overflow/);
+            expect(body(condition, '.ov-row .ov-title'), condition).toMatch(/overflow-wrap:\s*break-word/);
+        }
+        const nowrapTitles = declarations(css).filter((declaration) => declaration.selectors.some((selector) => /\.ov-row/.test(selector) && /\.ov-title/.test(selector)) && declaration.property === 'white-space' && declaration.value === 'nowrap');
+        expect(nowrapTitles.every((declaration) => declaration.container === WIDE)).toBe(true);
+        expect(nowrapTitles.length).toBeGreaterThan(0);
+    });
+
+    it('AC-001: no rule breaks a title anywhere or at every character', () => {
+        const titles = declarations(css).filter((declaration) => declaration.selectors.some((selector) => /\.ov-title/.test(selector)));
+        expect(titles.filter((declaration) => /anywhere|break-all/.test(declaration.value))).toEqual([]);
+    });
+
+    it('AC-003: a Problems row takes the two-line template from 420 px up, and nothing there cuts, clamps or keeps its text on one line', () => {
+        expect(areasOf(WIDE, '.ov-problems .ov-row-item')).toEqual(areasOf(MIDDLE, '.ov-row-item'));
+        const problems = declarations(css).filter((declaration) => declaration.selectors.some((selector) => /\.ov-problems|\.ov-line|\.problem-line|\.banner-line|\.detail-problems/.test(selector)));
+        expect(problems.filter((declaration) => /text-overflow|line-clamp|white-space/.test(declaration.property) && !/^(normal|pre-line|pre-wrap)$/.test(declaration.value) && !/^(clip|unset)$/.test(declaration.value))).toEqual([]);
+        expect(body(WIDE, '.ov-problems .ov-status')).toMatch(/white-space:\s*normal/);
+        expect(body(WIDE, '.ov-problems .ov-status')).toMatch(/overflow:\s*visible/);
+    });
+
+    it('AC-027: the state name hides visually inside the two narrower blocks only', () => {
+        const hiding = declarations(css).filter((declaration) => declaration.selectors.includes('.ov-state-name'));
+        expect(hiding.length).toBeGreaterThan(0);
+        expect(hiding.every((declaration) => declaration.container === MIDDLE || declaration.container === NARROW)).toBe(true);
+        for (const condition of [MIDDLE, NARROW]) {
+            expect(body(condition, '.ov-state-name'), condition).toMatch(/clip-path:\s*inset\(50%\)/);
+            expect(body(condition, '.ov-state-name'), condition).toMatch(/position:\s*absolute/);
+        }
+        expect(declarations(css).filter((declaration) => declaration.selectors.some((selector) => /\.ov-status|\.ov-problem|\.ov-problems/.test(selector)) && /display:\s*none|visibility:\s*hidden|clip-path/.test(`${declaration.property}: ${declaration.value}`))).toEqual([]);
+    });
+
+    it('AC-028: at 920 px with the side panel at its default width the list selects the two-line layout; beside it at 360 px the list holds 12ch of title and the widest Copy', () => {
+        const value = (selector: string, property: string) => {
+            const found = declarations(css).filter((declaration) => declaration.selectors.includes(selector) && declaration.property === property && declaration.container === undefined);
+            return found[found.length - 1]!.value;
+        };
+        const px = (text: string) => Number(/(-?\d+(?:\.\d+)?)px/.exec(text)![1]);
+        const areaPadding = px(value('.area-content', 'padding').split(/\s+/)[1]!) * 2;
+        const panelPadding = px(value('.ov-panel', 'padding').split(/\s+/)[1]!) * 2;
+        const panelBorder = px(value('.ov-panel', 'border')) * 2;
+        const listMargin = -px(value('.ov-list', 'margin').split(/\s+/)[1]!) * 2;
+        const listAt = (area: number) => area - areaPadding - panelPadding - panelBorder + listMargin;
+        const side = defaultSideWidth(920);
+        expect(listAt(920 - side)).toBeGreaterThanOrEqual(420);
+        expect(listAt(920 - side)).toBeLessThanOrEqual(686);
+        const narrow = listAt(AREA_MIN);
+        expect(narrow).toBeLessThan(420);
+        const rowPadding = px(value('.ov-row', 'padding').split(/\s+/)[1]!) * 2;
+        const content = narrow - rowPadding;
+        const number = 4 * 0.6 * 13 * 0.92;
+        const gap = px(value('.ov-row-item', 'column-gap'));
+        const title = 12 * 0.6 * 13;
+        const copy = 4 * 0.6 * 11 + 24;
+        expect(content).toBeGreaterThanOrEqual(number + gap + title);
+        expect(content).toBeGreaterThanOrEqual(copy);
+        expect(SIDE_MIN).toBeLessThan(AREA_MIN);
     });
 });

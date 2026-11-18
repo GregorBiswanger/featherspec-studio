@@ -3,7 +3,7 @@
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-007
+**Current step:** T-008
 
 ## Approach
 
@@ -350,8 +350,8 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
   holds the state once (name as text, a need, sentences); a need and sentences carry no hiding class.
 - **Verify:** `npx vitest run --project node src/adapters/node/webviewCss.test.ts` and `npx vitest run --project webview src/webview/areas/overview`
   red, then green; gates 1–4; layout itself: the orchestrator's harness after stage 3 (jsdom computes none)
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** Red first: with the new tests and no stylesheet or component change 11 of the new webviewCss tests failed (no container, no subgrid, media block still present, no state icon); the two Sections tests failed on a missing `.ov-state-icon`. Green after: eslint 0 warnings, tsc and tsc -p src/webview clean, test:unit 2358 passed (3 skipped, +13 timing). Layout itself is for the orchestrator's harness (jsdom computes none).
+- **Notes:** Deleted exactly the listed items: the `@media (max-width: 720px)` block, `.ov-row { white-space: nowrap }`, the `.ov-row .ov-number|.step-text|.ov-problem`, `.ov-row .ov-title|.ov-status|.step-text` flex rules, `.ov-row-item .copy-button`, the unscoped `.ov-title` ellipsis (kept as `.ov-spec .ov-title` for SpecLabel), and the tests "0018 AC-006: a spec row stays on one line ...", "0018 AC-006 (V1): at 720 px or less ..." and "0018 AC-006 (V1) control ...". `webview/testing/css.ts` parses `@container` (rule and declaration field `container`). Rows: li grid with named areas per block, button on subgrid, Copy in area `copy`; `.ov-state` wraps icon and text. Activity rows keep their flex `.ov-row` but wrap now (their one-line rules were among the listed ones). The coach rule is in place; its DOM is 0021's.
 
 ### T-008 — Problems read as sentences and wrap; paths break only after a separator
 

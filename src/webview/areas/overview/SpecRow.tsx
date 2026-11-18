@@ -1,6 +1,6 @@
 import type { OverviewRow } from '../../../shared/protocol/overview';
 import { problemsBadgeText } from '../../../shared/protocol/texts';
-import { BadgeIcon } from '../../board/icons';
+import { BadgeIcon, StateIcon } from '../../board/icons';
 import { useBoard } from '../../board/boardStore';
 import { CopyButton, type CopyLook } from '../../ui/CopyButton';
 import { StepText } from '../../ui/StepText';
@@ -17,6 +17,7 @@ export function SpecRow(props: { row: OverviewRow; group: string; copyLook?: Cop
     const selection = useShell().view?.selection;
     const { copyResult, copyText } = useBoard();
     const { spec } = row;
+    const named = row.status === row.state;
     const title = spec.found ? (spec.title ?? NOT_AVAILABLE_TEXT) : specLabelText(spec);
     return (
         <li className="ov-row-item" data-spec-row={spec.stem} data-row-group={group}>
@@ -26,8 +27,13 @@ export function SpecRow(props: { row: OverviewRow; group: string; copyLook?: Cop
                 <span className="ov-title" title={title}>
                     {title}
                 </span>
-                <span className="ov-status" title={row.status}>
-                    {row.status}
+                <span className="ov-state">
+                    <span className="ov-state-icon" title={row.state} {...(named ? {} : { role: 'img', 'aria-label': row.state })}>
+                        <StateIcon state={row.state} />
+                    </span>
+                    <span className={named ? 'ov-status ov-state-name' : 'ov-status'} title={row.status}>
+                        {row.status}
+                    </span>
                 </span>
                 {row.problems > 0 ? (
                     <span className="ov-problem" title={problemsBadgeText(row.problems)} role="img" aria-label={problemsBadgeText(row.problems)}>

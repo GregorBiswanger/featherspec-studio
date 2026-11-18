@@ -179,6 +179,30 @@ describe('0018 AC-006: a spec row on one line', () => {
         expect(drill.querySelector('br')).toBeNull();
     });
 
+    it('0022 AC-027: every row shows its state icon before its text, the state as tooltip, and the state name once in the row name', async () => {
+        const container = await open(withRows());
+        const row = nowRow(container, '0001-a');
+        const icon = row.querySelector('.ov-state-icon')!;
+        const status = row.querySelector('.ov-status')!;
+        expect(icon.getAttribute('title')).toBe('Blocked');
+        expect(icon.querySelector('svg')?.getAttribute('data-icon')).toBe('Blocked');
+        expect(icon.compareDocumentPosition(status) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(status.classList.contains('ov-state-name')).toBe(true);
+        expect(icon.getAttribute('role')).toBeNull();
+        expect(icon.getAttribute('aria-label')).toBeNull();
+    });
+
+    it('0022 AC-027: a row whose text is a need or a sentence names its state on the icon and hides nothing', async () => {
+        const container = await open(withRows());
+        const rows = [...container.querySelectorAll('[data-row-group="upNext"]')];
+        const needs = rows.find((row) => row.querySelector('.ov-status')?.textContent === 'needs a plan')!;
+        expect(needs.querySelector('.ov-status')?.classList.contains('ov-state-name')).toBe(false);
+        expect(needs.querySelector('.ov-state-icon')?.getAttribute('role')).toBe('img');
+        expect(needs.querySelector('.ov-state-icon')?.getAttribute('aria-label')).toBe(needs.querySelector('.ov-state-icon')?.getAttribute('title'));
+        const name = needs.querySelector('.ov-row')!.textContent!;
+        expect(name.split(needs.querySelector('.ov-state-icon')!.getAttribute('title')!).length - 1).toBe(0);
+    });
+
     it('title and status carry their full text as tooltip, the step its full lines', async () => {
         const row = nowRow(await open(withRows()), '0001-a');
         expect(row.querySelector('.ov-title')?.getAttribute('title')).toBe('Alpha');
