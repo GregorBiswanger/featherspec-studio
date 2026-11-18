@@ -239,6 +239,9 @@ session, fallback warning). The part on the build (AC-017) stays manual.
 2. T-004 → T-005 → T-006 — the visible feature: the views carry the offer and follow changes; the split button and its
    feedback; menu keys, one popup, focus and the sweeps
 3. T-007 — §5 notes, docs, test-title audit, architecture and Memory Bank sync, final gates
+4. T-008 → T-009 → T-010 → T-011 → T-012 → T-013 — the fix round after the compile: Send decides by the effective value and
+   stays quiet after the fallback; focus decided at the moment of the change and handed over at the place; narrow scan
+   exemptions; docs level
 
 No parallel stage:
 - T-002 and T-003 share the assistant table, the port and the fake host. An earlier contract step would have to hold
@@ -459,6 +462,126 @@ here.
   `grep -c "Amended by 0024 (PD-068)"` per spec ≥ its §5 rows; audit counts; gates 1–5 and `npm run compile-tests`
 - [x] **Verified (T-007):** 2026-11-18 `docsScan.test.ts` red (14 failed against the docs of `de5a1cc`), green (147 passed); `grep -c "Amended by 0024 (PD-068)"` per spec ≥ its §5 rows (0013 1, 0015 7, 0016 2, 0017 3, 0018 4, 0019 5, 0020 4, 0021 12, 0022 11, 0023 3); audit 3 absent, 0 decreased; gates 1–5 and `compile-tests`: eslint, tsc (host + webview) clean, `npm run test:unit` 3069 passed + 3 skipped (Baseline 2816 + 3), compile and compile-tests green. `npm test` (host smoke) cannot run here.
 - **Notes:** (1) §5 notes by a throwaway script (`/tmp/h/notes0024.py`): one `*Amended by 0024 (PD-068): …*` line under each named statement, after any 0021/0022/0023 note; 58 notes in 0013, 0015–0023 plus the catch-all at the head of 0015, 0018, 0019, 0021, 0022, 0023; no PD row edited. (2) `docsScan.test.ts` "product docs after 0024 (AC-015)" was red against the docs of `de5a1cc` (14 failed, scratch copy via `git archive`), green after; two existing assertions had to give way to AC-015, titles unchanged: the CHANGELOG scan ignores `featherspec-studio.assistant` (it still forbids every other `featherspec-studio.` command), and the checklist order list names the new section. The checklist says `GitHub Copilot Chat 0.75.0` (the 0015 scan allows only `GitHub Copilot`). (3) Test-title audit: see *Test-title audit* below. (4) `/sdd-architecture-update` by hand with the entries of *Do*: AGENTS.md snapshot, the three maps, `last reconciled … (0024)`; Memory Bank `techContext.md`, `systemPatterns.md`, `activeContext.md`. (5) Orchestrator's AC-016 screenshots and Gregor's AC-017/AC-018 answers are not here: manual, open.
+
+## Fix round (after /sdd-compile of 0024, 2026-11-18)
+
+Work order: `/home/claude/orch/compile/0024.md` (D1, D2, D3, F1, F2, F4, F6, survivors M10, M36, M37, M72, M78; M63 and M73
+are noted only). Gregor's instruction: "Fix the findings of the 0024 compile: append fix steps to the 0024 plan and implement
+them all." No step above is renumbered or edited except where its note says so. Decisions of 0021, 0022 and 0023 stand;
+0019 AC-020 (side panel focus) and PD-077 (map focus) stand. The Studio never submits a chat message (PD-068, PD-074).
+
+**Proxy decisions of the fix round (P-19 …).**
+- P-19 (D1) `createSend` takes the effective setting value (`chosen: { read(): unknown }`, the same setting port the offer
+  reads) and no longer the offer. The value that does not name the request's assistant (`none`, the other assistant, any
+  other value) copies silently, as §6.4 says. A value that names it with a missing extension takes the warning path: §7
+  warning once and one Output line with the cause `extension <ID> not found`. A new `core/assistant/wiring.ts` builds the
+  offer source and Send from the setting port and the host; `extension.ts` and the test use the same function, so the test
+  runs the production wiring (setting port + `extensionPresence(host)`).
+- P-20 (F6) Closest §7 cause for an unexpected error: a rejecting `commands()` is "command <first command of the row> not
+  found" (the list could not confirm the command; unchanged text, now deliberate); a synchronous throw from
+  `host.extension()` is "extension <ID> not found" (the extension cannot be found). Both go through `fallback` like every
+  cause: one warning, one Output block (the line and the blank separator `appendBlock` always writes), no raw message
+  outside §7.
+- P-21 (D2, F4) "Focus was inside the split button" is `root.contains(document.activeElement)` read at the moment of the
+  change, never an event's `relatedTarget`. Where the same commit removes the focused menu item (the assistant changes from
+  Copilot to Claude Code while the item `Send to the current chat` has focus), the layout effect also counts "the last
+  commit had focus in the open menu and the focus is on `body` now" as inside.
+- P-22 (D3, F3) The handoff is scoped to the place. A place component `StepAction` (`ui/StepAction.tsx`) renders the Send
+  button or the primary Copy prompt of the detail's first line and of an Overview row, and owns a `FocusHandoff` created by
+  `useFocusHandoff()` (`ui/popup.ts`). The Send button reports "I leave with focus inside" to its place; the Copy prompt
+  that mounts in the same place in the same commit takes the focus; the place clears the handoff in its own layout effect
+  after the children's. No module flag, no microtask. A line that changes key remounts its list item, so nothing is handed
+  over and 0019 AC-020's rule decides (the heading). A row that leaves the Overview takes its place with it: no other
+  spec's row gets focus; the existing Overview rule decides. The Board's cards and the map's ways are no consumers.
+  This is P-11 as written.
+
+### T-008 — Send decides the silent copy by the effective setting value; a chosen but missing extension warns
+
+- **Covers:** AC-006, AC-005 (unchanged behaviour), D1
+- **Do:**
+  - Proxies: P-19.
+  - Tests first, red via the current code: new `src/core/assistant/wiring.test.ts` "0024 AC-006 with the production
+    wiring": value `copilot` with only Claude Code installed, and value `claudeCode` with nothing installed, give one
+    warning, one Output block `Send to <Name> failed (extension <ID> not found); the prompt was copied instead.`, the
+    clipboard holds the line, no call; the value `none`, the other assistant's value and an unknown value copy silently;
+    uninstalling the extension after the offer was read (the 500 ms window) warns. `send.test.ts` keeps its cases with
+    `chosen` in place of `offer`.
+  - Code: `send.ts` (`chosen`), new `wiring.ts` (`createAssistantWiring`), `extension.ts`.
+- **Verify:** `npx vitest run --project node src/core/assistant` red, then green; gates 1–5
+- [ ] **Verified (T-008):**
+
+### T-009 — Send stays quiet after the fallback; unexpected errors map to a §7 cause; send.ts joins the AC-011 scan
+
+- **Covers:** AC-006 (M36, M37, F6), AC-011 (M10)
+- **Do:**
+  - Proxies: P-20.
+  - Tests first, red:
+    - "0024 AC-006": an activation that resolves after the 5000 ms fallback: no `commands()` result is used and no call is
+      made (M36). A `commands()` that resolves after it: no call (M37). Each with a negative control (the same sequence
+      before 5000 ms makes the calls).
+    - A rejecting `commands()` gives the cause of P-20, a synchronous throw from `host.extension()` the cause of P-20; one
+      warning, one Output block, the clipboard holds the line, for both assistants.
+    - `sendView.test.ts` "0024 AC-011": `send.ts` joins the scanned files (M10), with the negative control the scan has.
+  - Code: `send.ts` (the `extension()` call inside the guarded part); the scan list.
+- **Verify:** `npx vitest run --project node src/core/assistant` red, then green; gates 1–4
+- [ ] **Verified (T-009):**
+
+### T-010 — Focus inside the split button is decided at the moment of the change
+
+- **Covers:** AC-010 (D2, F4)
+- **Do:**
+  - Proxies: P-21.
+  - Tests first, red (W1, W2, W6, W7 of the compile): in `SpecDetail.test.tsx` and `Overview.test.tsx` "0024 AC-010" a
+    simulated window blur (`blur` and `focusout` with `relatedTarget: null`, `activeElement` unchanged):
+    - the offer goes: focus on the main part, on the arrow and on a menu item goes to the replacing Copy prompt (detail and
+      first Now row);
+    - the assistant changes: focus on the main part and on a menu item (also the item that leaves with the change) goes to
+      the arrow part, the menu closes;
+    - focus elsewhere stays (W6: a pointer press on the second line's Copy while the menu is open, then the offer goes);
+    - a negative control: no window blur, same results.
+  - Code: `SendButton.tsx` (`onFocus`/`onBlur` bookkeeping removed).
+- **Verify:** `npx vitest run --project webview src/webview` red, then green; gates 1–4
+- [ ] **Verified (T-010):**
+
+### T-011 — The focus handoff belongs to the place; the comments of popup.ts go
+
+- **Covers:** AC-010 (D3, F3, M72, M78), 0019 AC-020 (kept), F2
+- **Do:**
+  - Proxies: P-22.
+  - Tests first, red (W3, W4 of the compile, M72, M78): the detail's first line changes key while focus is on Send and a
+    second line appears: focus on the heading, not on the new secondary Copy (W3); an Overview row that leaves Now while
+    another enters Up next: focus on no other spec's row (W4); the handoff reaches only the Copy at the same place (a second
+    place with a Copy that mounts in the same commit does not take it: M78); a Copy that mounts in a later, unrelated commit
+    does not take it (M72); a Board card and a map way never take it; the offer goes at the same line: Copy prompt at that
+    line (W1 kept).
+  - Code: new `ui/StepAction.tsx`; `NextStep.tsx`, `SpecRow.tsx`, `CopyButton.tsx`, `SendButton.tsx`, `popup.ts` (the global
+    flag goes; the two comments go).
+- **Verify:** `npx vitest run --project webview src/webview` red, then green; gates 1–5
+- [ ] **Verified (T-011):**
+
+### T-012 — The scan exemptions shrink to §5's own names
+
+- **Covers:** §5 (0015 AC-021, AC-025), F1
+- **Do:**
+  - Tests first: `sourceScan.test.ts` "0024 §5": none of `offer.test.ts`, `send.test.ts`, `SendButton.test.tsx`,
+    `SpecDetail.test.tsx`, `shared/protocol/assistant.test.ts` is in `REMOVED_ALLOWED`, and a removed term that is not a
+    0024 name (`orchestrator`, `agentprovider`) stays found in each of them (red while the whole-file entries stand).
+  - Code: the constants in the five files are renamed (`OFFER_A` and `OFFER_B` as T-004 did); the entries go.
+- **Verify:** `npx vitest run --project node src/adapters/node/sourceScan.test.ts` red, then green; gates 1–4
+- [ ] **Verified (T-012):**
+
+### T-013 — Plan, Memory Bank, README, project brief and the release checklist agree with the code
+
+- **Covers:** AC-014 (record), AC-015, AC-016 (harness record), AC-017 (OP-004 asked of Gregor), compile edits 1–4
+- **Do:**
+  - `docsScan.test.ts` first, red: README *Privacy* names Send; the checklist's AC-017 asks to record whether an unsent
+    draft in Copilot's current chat is kept or replaced and to decide NS-6's default if it is replaced.
+  - Plan: Status, Current step, AC-016 harness evidence, Windows evidence, T-005/T-006 notes, the T-002 note, "52 notes",
+    traceability, handoff. `activeContext.md` (*Validation*, about 6 *Changed Recently* bullets), README *Privacy*,
+    `projectbrief.md`.
+  - F7 (OP-004) is Gregor's: the NS-6 default for Copilot is not changed.
+- **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green; final gates
+- [ ] **Verified (T-013):**
 
 ## Test-title audit
 
