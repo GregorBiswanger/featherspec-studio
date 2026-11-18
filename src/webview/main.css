@@ -1068,168 +1068,6 @@ main > h1 {
     text-transform: uppercase;
 }
 
-.ov-header {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    align-items: baseline;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
-}
-
-.ov-folder {
-    font-weight: bold;
-}
-
-.ov-version,
-.ov-updated,
-.ov-formula,
-.ov-derived,
-.ov-deprecated {
-    color: var(--vscode-descriptionForeground);
-}
-
-.ov-specs {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.ov-section-head {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-}
-
-.ov-total {
-    margin: 0;
-}
-
-.ov-tiles {
-    display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 8px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.ov-tile {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-        "name icon"
-        "count count"
-        "sub sub";
-    align-content: start;
-    row-gap: 2px;
-    width: 100%;
-    height: 100%;
-    min-height: 92px;
-    padding: 10px 12px;
-    color: var(--vscode-foreground);
-    background: var(--fs-lane);
-    border: 1px solid var(--fs-border);
-    border-top: 2px solid var(--fs-tint);
-    border-radius: 4px;
-    cursor: pointer;
-    font: inherit;
-    text-align: left;
-}
-
-.ov-tile:hover {
-    background: var(--vscode-list-hoverBackground);
-}
-
-.ov-tile-name {
-    grid-area: name;
-    color: var(--fs-muted);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-.ov-tile .icon {
-    grid-area: icon;
-    color: var(--fs-tint);
-}
-
-.ov-tile-count {
-    grid-area: count;
-    font-size: 26px;
-    font-weight: 600;
-    line-height: 1.15;
-    font-variant-numeric: tabular-nums;
-}
-
-.ov-tile-zero .ov-tile-count {
-    color: var(--fs-muted);
-    font-weight: normal;
-}
-
-.ov-tile-sub {
-    grid-area: sub;
-    color: var(--fs-muted);
-    font-size: 11px;
-    line-height: 1.35;
-}
-
-.ov-distribution {
-    display: flex;
-    gap: 2px;
-    height: 6px;
-    overflow: hidden;
-    border-radius: 3px;
-}
-
-.ov-segment {
-    min-width: 4px;
-    background: var(--fs-tint);
-}
-
-.vscode-high-contrast .ov-segment {
-    outline: 1px solid var(--vscode-contrastBorder);
-    outline-offset: -1px;
-}
-
-.ov-progress {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 4px 12px;
-    margin: 0;
-}
-
-.ov-progress-figure {
-    font-weight: 600;
-}
-
-.ov-formula {
-    font-size: 0.92em;
-}
-
-@media (max-width: 720px) {
-    .ov-tiles {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-}
-
-.ov-header {
-    gap: 0;
-    padding-bottom: 10px;
-}
-
-.ov-header > * + *::before {
-    content: "·";
-    margin: 0 8px;
-    color: var(--fs-muted);
-}
-
-.ov-header > .ov-drill::before {
-    display: inline-block;
-}
-
 .ov-panels {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -1328,43 +1166,9 @@ main > h1 {
     clip-path: inset(50%);
     white-space: nowrap;
 }
-
-.ov-reasons {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 4px 12px;
-    margin-left: auto;
-}
-
-.ov-reason {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    color: var(--vscode-foreground);
-    white-space: nowrap;
-}
-
-.ov-reason .icon,
 .ov-empty .icon {
     width: 12px;
     height: 12px;
-}
-
-[data-reason-kind="Blocked"] {
-    --fs-tint: var(--vscode-charts-red);
-}
-
-[data-reason-kind="Problem"] {
-    --fs-tint: var(--vscode-charts-orange);
-}
-
-[data-reason-kind="Review pending"] {
-    --fs-tint: var(--vscode-charts-yellow);
-}
-
-.ov-reason .icon {
-    color: var(--fs-tint);
 }
 
 .ov-time {
@@ -1471,9 +1275,7 @@ blockquote.illustration {
 .detail-steps li {
     margin: 6px 0;
 }
-
 .spec-row,
-.ov-tile,
 .ov-row,
 .card,
 .nav-item,
@@ -1537,4 +1339,22 @@ blockquote.illustration {
 
 .ov-more {
     margin: 0;
+}
+.ov-figure-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ov-figure .ov-drill {
+    padding: 2px 0;
+}
+
+.ov-line {
+    padding: 5px 12px;
+    color: var(--vscode-foreground);
+    border-top: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
 }

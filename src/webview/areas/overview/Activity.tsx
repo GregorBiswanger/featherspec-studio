@@ -3,20 +3,20 @@ import { whenText } from '../../../shared/protocol/texts';
 import { Glyph } from '../../board/icons';
 import { Drill } from './Drill';
 import { SpecLabel } from './SpecLabel';
-import { MC_ACTIVITY_HEADING, MC_NO_ACTIVITY, mcActivityUnavailable, mcChange } from './texts';
+import { ACTIVITY_HEADING, NO_ACTIVITY_TEXT, activityUnavailableText, changeText } from './texts';
 
 export function Activity(props: { activity: McActivity; onActivate: (entry: ActivityEntry) => void }) {
     const { activity, onActivate } = props;
     const now = new Date();
     return (
         <section data-activity className="ov-activity ov-panel">
-            <h2>{MC_ACTIVITY_HEADING}</h2>
+            <h2>{ACTIVITY_HEADING}</h2>
             {!activity.available ? (
-                <p className="ov-note">{mcActivityUnavailable(activity.reason)}</p>
+                <p className="ov-note">{activityUnavailableText(activity.reason)}</p>
             ) : activity.entries.length === 0 ? (
                 <p className="ov-empty">
                     <Glyph kind="empty" />
-                    {MC_NO_ACTIVITY}
+                    {NO_ACTIVITY_TEXT}
                 </p>
             ) : (
                 <ul className="ov-list">
@@ -27,7 +27,7 @@ export function Activity(props: { activity: McActivity; onActivate: (entry: Acti
                                 <span className="ov-sep">{' · '}</span>
                                 <SpecLabel spec={entry.spec} />
                                 <span className="ov-sep">{' · '}</span>
-                                <span className="ov-change">{mcChange(entry.change)}</span>
+                                <span className="ov-change">{changeText(entry.change)}</span>
                             </Drill>
                         </li>
                     ))}

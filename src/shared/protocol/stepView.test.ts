@@ -33,12 +33,12 @@ describe('0017 AC-001: the step view guard', () => {
         expect(isCardView({ ...card, step: 'Start' })).toBe(false);
     });
 
-    it('a Overview row takes a step or no step key, and refuses a bad step', () => {
+    it('an Overview row takes a step or no step key, and refuses a bad step', () => {
         const view = sampleView();
-        const row = view.attention.rows[0]!;
-        expect(isOverviewView({ ...view, attention: { rows: [row] } })).toBe(true);
-        expect(isOverviewView({ ...view, attention: { rows: [{ ...row, step: STEP }] } })).toBe(true);
-        expect(isOverviewView({ ...view, attention: { rows: [{ ...row, step: { ...STEP, extra: 1 } }] } })).toBe(false);
-        expect(isOverviewView({ ...view, attention: { rows: [{ ...row, other: 1 }] } })).toBe(false);
+        const row = view.problems.rows[0]!;
+        expect(isOverviewView({ ...view, now: [row] })).toBe(true);
+        expect(isOverviewView({ ...view, now: [{ ...row, step: STEP }] })).toBe(true);
+        expect(isOverviewView({ ...view, now: [{ ...row, step: { ...STEP, extra: 1 } }] })).toBe(false);
+        expect(isOverviewView({ ...view, now: [{ ...row, other: 1 }] })).toBe(false);
     });
 });

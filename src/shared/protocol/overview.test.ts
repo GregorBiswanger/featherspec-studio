@@ -8,25 +8,38 @@ describe('Overview view contract', () => {
         const view = sampleView();
         expect(isOverviewView(view)).toBe(true);
         expect(isOverviewView({ ...view, activity: { available: false, reason: 'no store' } })).toBe(true);
-        expect(isOverviewView({ ...view, specs: { kind: 'empty' } })).toBe(true);
+        expect(isOverviewView({ ...view, figures: { kind: 'empty' } })).toBe(true);
     });
 
     it('AC-026: a view with an extra key anywhere is refused, so no error text can reach the DOM', () => {
         const view = sampleView();
         expect(isOverviewView({ ...view, extra: 1 })).toBe(false);
-        expect(isOverviewView({ ...view, header: { ...view.header, errorMessage: 'SECRET-1' } })).toBe(false);
-        expect(isOverviewView({ ...view, attention: { ...view.attention, extra: 1 } })).toBe(false);
+        expect(isOverviewView({ ...view, problems: { ...view.problems, errorMessage: 'SECRET-1' } })).toBe(false);
+        expect(isOverviewView({ ...view, header: { name: 'demo' } })).toBe(false);
+        expect(isOverviewView({ ...view, attention: { rows: [] } })).toBe(false);
     });
 
     it('0015 AC-010: a view with a run section, a run reason or a run activity entry is refused', () => {
         const view = sampleView();
         expect(isOverviewView(null)).toBe(false);
-        expect(isOverviewView({ ...view, header: { ...view.header, projectDiagnostics: '1' } })).toBe(false);
-        expect(isOverviewView({ ...view, attention: { ...view.attention, rows: [{ spec: view.attention.rows[0]?.spec, reasons: ['Made up'] }] } })).toBe(false);
-        expect(isOverviewView({ ...view, specs: { kind: 'counts', total: 1, states: [{ state: 'Nope', count: 1 }], progress: { kind: 'not available' } } })).toBe(false);
+        expect(isOverviewView({ ...view, figures: { kind: 'counts', total: 1, states: [{ state: 'Nope', count: 1 }], progress: { kind: 'not available' } } })).toBe(false);
         expect(isOverviewView({ ...view, runs: { available: true, running: 0, highlighted: [], unreadable: 0 } })).toBe(false);
-        expect(isOverviewView({ ...view, attention: { rows: [{ spec: view.attention.rows[0]?.spec, reasons: ['Run failed'] }] } })).toBe(false);
-        expect(isOverviewView({ ...view, attention: { ...view.attention, runReasons: { available: true } } })).toBe(false);
+        expect(isOverviewView({ ...view, now: [{ ...view.problems.rows[0], status: 'Run failed', runReasons: 1 }] })).toBe(false);
+    });
+
+    it('0018 AC-003: the figures name no rule: a state count with a derived rule is refused', () => {
+        const view = sampleView();
+        const figures = view.figures.kind === 'counts' ? view.figures : undefined;
+        expect(figures).toBeDefined();
+        expect(isOverviewView({ ...view, figures: { ...figures, states: [{ state: 'Ready', count: 0, derivedRule: 'S-READY' }] } })).toBe(false);
+    });
+
+    it('0018 AC-007: Problems carry rows and lines; a line takes exactly where and reason', () => {
+        const view = sampleView();
+        expect(isOverviewView({ ...view, problems: { rows: [], lines: [{ where: 'project', reason: 'orphan return note' }] } })).toBe(true);
+        expect(isOverviewView({ ...view, problems: { rows: [], lines: [{ where: 'project' }] } })).toBe(false);
+        expect(isOverviewView({ ...view, problems: { rows: [], lines: [{ where: 'project', reason: 'x', extra: 1 }] } })).toBe(false);
+        expect(isOverviewView({ ...view, problems: { rows: [] } })).toBe(false);
     });
 });
 

@@ -11,15 +11,15 @@ let posted: Envelope[];
 let mounted: Mounted | undefined;
 const clients: ShellClient[] = [];
 
+function row(stem: string, number: string, state: OverviewView['now'][number]['state'], path?: string, problems = 0): OverviewView['now'][number] {
+    return { spec: { stem, number, title: stem.slice(5), ...(path === undefined ? {} : { path }), found: true }, state, status: state, problems };
+}
+
 function drillView(): OverviewView {
     const view = sampleView();
-    view.attention = {
-        rows: [
-            { spec: { stem: '0001-a', number: '0001', title: 'A', found: true }, reasons: ['Blocked'] },
-            { spec: { stem: '0004-dup', number: '0004', title: 'D', path: '.specs/active/0004-dup.md', found: true }, reasons: ['Review pending'] },
-            { spec: { stem: '0004-dup', number: '0004', title: 'D', path: '.specs/done/0004-dup.md', found: true }, reasons: ['Problem'] },
-        ],
-    };
+    view.now = [row('0001-a', '0001', 'Blocked'), row('0004-dup', '0004', 'Review', '.specs/active/0004-dup.md')];
+    view.upNext = { rows: [row('0003-c', '0003', 'Ready')], more: 2, stems: ['0003-c', '0005-e', '0006-f'] };
+    view.problems = { rows: [row('0002-x', '0002', 'Backlog', undefined, 1), row('0004-dup', '0004', 'Done', '.specs/done/0004-dup.md', 1)], lines: [{ where: 'project', reason: 'orphan' }] };
     return view;
 }
 
@@ -64,7 +64,7 @@ afterEach(() => {
     mounted = undefined;
 });
 
-describe('AC-012: the total, a state count and Needs attention', () => {
+describe('AC-012: the total, a state count and the named sets', () => {
     it('the total sends the Board without a target', async () => {
         await click(drill(await open(drillView()), 'total'));
         expect(sent()).toEqual([{ type: 'navigate', payload: { area: 'board' } }]);
@@ -80,10 +80,17 @@ describe('AC-012: the total, a state count and Needs attention', () => {
         expect(sent()).toEqual([{ type: 'navigate', payload: { area: 'board', target: { kind: 'boardFilter', filter: { states: ['Ready'] } } } }]);
     });
 
-    it('the Needs attention heading sends the named set "Needs attention" with the stems of exactly the listed rows, a duplicated stem once', async () => {
-        await click(drill(await open(drillView()), 'attention'));
+    it('0018 AC-005: "+ 2 more" sends the named set "Up next" with every stem of Up next', async () => {
+        await click(drill(await open(drillView()), 'more'));
         expect(sent()).toEqual([
-            { type: 'navigate', payload: { area: 'board', target: { kind: 'boardFilter', filter: { set: { label: 'Needs attention', stems: ['0001-a', '0004-dup'] } } } } },
+            { type: 'navigate', payload: { area: 'board', target: { kind: 'boardFilter', filter: { set: { label: 'Up next', stems: ['0003-c', '0005-e', '0006-f'] } } } } },
+        ]);
+    });
+
+    it('0018 AC-007: the Problems heading sends the named set "Problems" with the stems of the listed spec rows, a duplicated stem once', async () => {
+        await click(drill(await open(drillView()), 'problems'));
+        expect(sent()).toEqual([
+            { type: 'navigate', payload: { area: 'board', target: { kind: 'boardFilter', filter: { set: { label: 'Problems', stems: ['0002-x', '0004-dup'] } } } } },
         ]);
     });
 });
@@ -102,11 +109,11 @@ describe('0015 AC-010: no drill-down for runs', () => {
     });
 });
 
-describe('AC-014: attention rows and activity entries', () => {
-    it('an attention row sends Spec Explorer with that spec; a row of a duplicated stem carries its path', async () => {
+describe('AC-014: rows and activity entries', () => {
+    it('a Now row sends Spec Explorer with that spec; a row of a duplicated stem carries its path', async () => {
         const container = await open(drillView());
-        await clickAndReturn(container, 'row:0');
-        await clickAndReturn(container, 'row:1');
+        await clickAndReturn(container, 'row:now:0001-a');
+        await clickAndReturn(container, 'row:now:0004-dup');
         expect(sent()).toEqual([
             { type: 'navigate', payload: { area: 'specExplorer', target: { kind: 'spec', stem: '0001-a' } } },
             { type: 'navigate', payload: { area: 'specExplorer', target: { kind: 'spec', stem: '0004-dup', path: '.specs/active/0004-dup.md' } } },
@@ -131,56 +138,18 @@ describe('AC-014: attention rows and activity entries', () => {
     });
 });
 
-describe('AC-017: the diagnostics count', () => {
-    it('AC-008: sends one request for the Board with the named set "Problems" and the stems that carry a Problem, and no runAction', async () => {
-        await click(drill(await open(drillView()), 'problems'));
-        expect(sent()).toEqual([
-            { type: 'navigate', payload: { area: 'board', target: { kind: 'boardFilter', filter: { set: { label: 'Problems', stems: ['0002-x'] } } } } },
-        ]);
-        expect(posted.some((message) => message.type === 'runAction')).toBe(false);
-    });
-
-    it('AC-008: Problems at project level only open the Board without a filter, where its banner lists them', async () => {
-        const view = drillView();
-        view.header.problems = 1;
-        view.header.problemStems = [];
-        await click(drill(await open(view), 'problems'));
-        expect(sent()).toEqual([{ type: 'navigate', payload: { area: 'board' } }]);
-    });
-
-    it('AC-008: while no Problem exists the header shows no problem element at all', async () => {
-        const view = drillView();
-        view.header.problems = 0;
-        view.header.problemStems = [];
-        const container = await open(view);
-        expect(container.querySelector('[data-drill="problems"]')).toBeNull();
-        expect(container.querySelector('[data-header]')!.textContent).not.toMatch(/problem|diagnostic/i);
-    });
-});
-
-describe('every request is one the shell accepts', () => {
-    it('all payloads pass the shared navigation guard', async () => {
-        const container = await open(drillView());
-        const ids = [...container.querySelectorAll('[data-drill]')].map((element) => element.getAttribute('data-drill')!);
-        for (const id of ids) {
-            if (id !== 'activity:1') {
-                await clickAndReturn(container, id);
-            }
-        }
-        const requests = posted.filter((message) => message.type === 'navigate');
-        expect(requests.length).toBeGreaterThan(10);
-        for (const request of requests) {
-            expect(isNavigationRequest(request.payload)).toBe(true);
-        }
-    });
-});
-
 describe('AC-022: keyboard', () => {
     it('every drill-down element is a native enabled button in the tab order, in the order of the layout', async () => {
         const container = await open(drillView());
         const buttons = [...container.querySelectorAll<HTMLButtonElement>('[data-drill]')];
         expect(buttons.map((button) => button.getAttribute('data-drill'))).toEqual([
+            'row:now:0001-a',
+            'row:now:0004-dup',
+            'row:upNext:0003-c',
+            'more',
             'problems',
+            'row:problems:0002-x',
+            'row:problems:0004-dup',
             'total',
             'state:Backlog',
             'state:Ready',
@@ -188,10 +157,6 @@ describe('AC-022: keyboard', () => {
             'state:Review',
             'state:Done',
             'state:Blocked',
-            'attention',
-            'row:0',
-            'row:1',
-            'row:2',
             'activity:0',
             'activity:1',
         ]);
@@ -219,13 +184,13 @@ describe('OP-9: a value that is "not available" cannot be activated', () => {
     it('with the activity and the progress not available the view holds no control for them', async () => {
         const view = drillView();
         view.activity = { available: false, reason: 'disk is full' };
-        if (view.specs.kind === 'counts') {
-            view.specs.progress = { kind: 'not available' };
+        if (view.figures.kind === 'counts') {
+            view.figures.progress = { kind: 'not available' };
         }
         const container = await open(view);
         const ids = [...container.querySelectorAll('[data-drill]')].map((button) => button.getAttribute('data-drill'));
         expect(ids.some((id) => id?.startsWith('activity:'))).toBe(false);
-        expect(container.querySelector('[data-progress] button')).toBeNull();
+        expect(container.querySelector('[data-figures] [title^="Progress"]:not([data-drill="total"]):not([data-figures])')).toBeNull();
         expect(ids).toContain('total');
     });
 });

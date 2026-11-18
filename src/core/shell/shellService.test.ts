@@ -262,6 +262,19 @@ describe('0018 AC-027: the Refresh command', () => {
         expect(rescans).toBe(0);
     });
 
+    it('0018 F-1 (0015 AC-017, 0006): the time is the last spec read: a read moves it, a change of area leaves it (negative control)', async () => {
+        const current = ready();
+        await current.controller.start();
+        await current.settle();
+        const first = current.service.view().updatedAt;
+        expect(first).toMatch(/\S/);
+        await current.service.handlers.navigate({ area: 'board' });
+        expect(current.service.view().updatedAt).toBe(first);
+        await current.service.refresh();
+        await current.settle();
+        expect(current.service.view().updatedAt).not.toBe(first);
+    });
+
     it('0018 F-1: the view carries the version and the read time while a project is active, and neither without one', async () => {
         const current = ready();
         await current.controller.start();

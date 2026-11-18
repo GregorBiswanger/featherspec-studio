@@ -3,7 +3,7 @@
 **Spec:** [0018-overview-and-compact-board.md](0018-overview-and-compact-board.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-003
+**Current step:** T-004
 
 ## Approach
 
@@ -243,8 +243,8 @@ No parallel stage: the Overview and Board steps share `messages.ts`, `client.ts`
   Problems heading request, also without spec rows); `webviewCss.test.ts` (no `.mc-` selector;
   `.ov-drill` sets no outline — retargets the 0006 AC-022 test).
 - **Verify:** `npx vitest run src/core/overview src/shared/protocol src/webview src/adapters/node` red, then green; gates 1–5; `npm run compile-tests`
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-18: the contract and webview tests were adapted to the new view (`{ now, upNext, problems, figures, activity }`) and the removed parts; new tests: `problems.test.ts`, `figures.test.ts` (moved `specFigures.test.ts`, 0006 AC-001…AC-004, AC-020 kept), `overview.test.ts` contract cases, `Overview.test.tsx` (AC-003 order and absences, AC-007, AC-008, AC-009, AC-011, AC-013), `Drilldown.test.tsx` (0006 AC-012, AC-014, AC-022 kept and retargeted; Problems heading request also without spec rows), `webviewCss.test.ts` (no `.mc-` and no removed rule). `npm run test:unit` 1898 passed, 3 skipped, timing 12 passed; eslint, both `tsc`, `compile`, `compile-tests` clean.
+- **Notes:** Proxy: `problems.ts` and the webview components were written before their tests (no red run); the tests carry negative controls (Review without Problem, format notes, orphan plan). The view key `specs` is `figures` and `McSpecs` is `OverviewFigures`; `StateCount.derivedRule` and the rule names left the Overview contract (a view with `derivedRule` is refused, tested). The header facts moved to the shell view in T-001; the model-read-time tests of the old service moved to `shellService.test.ts` (F-1). The attention tests of 0016 AC-006/AC-007 live on as `problems.test.ts` (titles reworded, listed in the T-009 audit); the 0017 AC-012 tests on Needs-attention rows were replaced by the Now-row tests of T-002. Progress and "of which Deprecated" use `title` plus `aria-describedby` to `hidden` spans (P-7); tests read visible text without `[hidden]` nodes.
 
 ### T-004 — Overview: Activity collapsed
 

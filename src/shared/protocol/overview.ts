@@ -1,9 +1,6 @@
-import { isDerivedRule, type DerivedRule } from './board';
 import { isBoardState, type BoardState } from './boardFilter';
 import { isRecord } from './envelope';
 import { isStepView, type StepView } from './stepView';
-
-export type AttentionReason = 'Blocked' | 'Problem' | 'Review pending';
 
 export interface SpecRef {
     stem: string;
@@ -13,33 +10,24 @@ export interface SpecRef {
     found: boolean;
 }
 
-export interface McHeader {
-    name: string;
-    version: string;
-    updatedAt: string;
-    problems: number;
-    problemStems: string[];
-}
-
 export interface StateCount {
     state: BoardState;
     count: number;
-    derivedRule?: DerivedRule;
     deprecated?: number;
 }
 
 export type McProgress = { kind: 'value'; percent: number; done: number; divisor: number } | { kind: 'not available' };
 
-export type McSpecs = { kind: 'empty' } | { kind: 'counts'; total: number; states: StateCount[]; progress: McProgress };
+export type OverviewFigures = { kind: 'empty' } | { kind: 'counts'; total: number; states: StateCount[]; progress: McProgress };
 
-export interface AttentionRow {
-    spec: SpecRef;
-    reasons: AttentionReason[];
-    step?: StepView;
+export interface ProblemLine {
+    where: string;
+    reason: string;
 }
 
-export interface McAttention {
-    rows: AttentionRow[];
+export interface OverviewProblems {
+    rows: OverviewRow[];
+    lines: ProblemLine[];
 }
 
 export type ActivityChange =
@@ -71,13 +59,11 @@ export interface OverviewUpNext {
 export interface OverviewView {
     now: OverviewRow[];
     upNext: OverviewUpNext;
-    header: McHeader;
-    specs: McSpecs;
-    attention: McAttention;
+    problems: OverviewProblems;
+    figures: OverviewFigures;
     activity: McActivity;
 }
 
-const ATTENTION_REASONS: readonly string[] = ['Blocked', 'Problem', 'Review pending'];
 
 function exactly(value: Record<string, unknown>, required: readonly string[], optional: readonly string[] = []): boolean {
     const keys = Object.keys(value);
@@ -92,10 +78,6 @@ function isCount(value: unknown): value is number {
     return typeof value === 'number' && Number.isInteger(value) && value >= 0;
 }
 
-function isOneOf(value: unknown, words: readonly string[]): boolean {
-    return typeof value === 'string' && words.includes(value);
-}
-
 function isSpecRef(value: unknown): value is SpecRef {
     return (
         isRecord(value) &&
@@ -108,26 +90,12 @@ function isSpecRef(value: unknown): value is SpecRef {
     );
 }
 
-function isHeader(value: unknown): value is McHeader {
-    return (
-        isRecord(value) &&
-        exactly(value, ['name', 'version', 'updatedAt', 'problems', 'problemStems']) &&
-        isText(value.name) &&
-        isText(value.version) &&
-        isText(value.updatedAt) &&
-        isCount(value.problems) &&
-        Array.isArray(value.problemStems) &&
-        value.problemStems.every(isText)
-    );
-}
-
 function isStateCount(value: unknown): value is StateCount {
     return (
         isRecord(value) &&
-        exactly(value, ['state', 'count'], ['derivedRule', 'deprecated']) &&
+        exactly(value, ['state', 'count'], ['deprecated']) &&
         isBoardState(value.state) &&
         isCount(value.count) &&
-        (value.derivedRule === undefined || isDerivedRule(value.derivedRule)) &&
         (value.deprecated === undefined || isCount(value.deprecated))
     );
 }
@@ -142,7 +110,7 @@ function isProgress(value: unknown): value is McProgress {
     return value.kind === 'value' && exactly(value, ['kind', 'percent', 'done', 'divisor']) && isCount(value.percent) && isCount(value.done) && isCount(value.divisor);
 }
 
-function isSpecs(value: unknown): value is McSpecs {
+function isFigures(value: unknown): value is OverviewFigures {
     if (!isRecord(value)) {
         return false;
     }
@@ -157,21 +125,6 @@ function isSpecs(value: unknown): value is McSpecs {
         value.states.every(isStateCount) &&
         isProgress(value.progress)
     );
-}
-
-function isAttentionRow(value: unknown): value is AttentionRow {
-    return (
-        isRecord(value) &&
-        exactly(value, ['spec', 'reasons'], ['step']) &&
-        (value.step === undefined || isStepView(value.step)) &&
-        isSpecRef(value.spec) &&
-        Array.isArray(value.reasons) &&
-        value.reasons.every((reason) => isOneOf(reason, ATTENTION_REASONS))
-    );
-}
-
-function isAttention(value: unknown): value is McAttention {
-    return isRecord(value) && exactly(value, ['rows']) && Array.isArray(value.rows) && value.rows.every(isAttentionRow);
 }
 
 function isChange(value: unknown): value is ActivityChange {
@@ -222,15 +175,22 @@ function isUpNext(value: unknown): value is OverviewUpNext {
     return isRecord(value) && exactly(value, ['rows', 'more', 'stems']) && isRows(value.rows) && isCount(value.more) && Array.isArray(value.stems) && value.stems.every(isText);
 }
 
+function isProblemLine(value: unknown): value is ProblemLine {
+    return isRecord(value) && exactly(value, ['where', 'reason']) && isText(value.where) && isText(value.reason);
+}
+
+function isProblems(value: unknown): value is OverviewProblems {
+    return isRecord(value) && exactly(value, ['rows', 'lines']) && isRows(value.rows) && Array.isArray(value.lines) && value.lines.every(isProblemLine);
+}
+
 export function isOverviewView(value: unknown): value is OverviewView {
     return (
         isRecord(value) &&
-        exactly(value, ['now', 'upNext', 'header', 'specs', 'attention', 'activity']) &&
+        exactly(value, ['now', 'upNext', 'problems', 'figures', 'activity']) &&
         isRows(value.now) &&
         isUpNext(value.upNext) &&
-        isHeader(value.header) &&
-        isSpecs(value.specs) &&
-        isAttention(value.attention) &&
+        isProblems(value.problems) &&
+        isFigures(value.figures) &&
         isActivity(value.activity)
     );
 }

@@ -58,6 +58,14 @@ describe('AC-026: colours come from the theme', () => {
         expect(css).not.toContain('.nav-item [data-marker]');
     });
 
+    it('0018 AC-003: no rule is left of the removed header, tiles, distribution bar or attention list, and no .mc- selector', () => {
+        expect(css).not.toMatch(/\.mc-/);
+        for (const gone of ['.ov-header', '.ov-tile', '.ov-distribution', '.ov-segment', '.ov-progress', '.ov-formula', '.ov-attention', '.ov-reason', '.ov-specs', '.ov-tiles']) {
+            expect(rulesFor(css, gone), gone).toEqual([]);
+        }
+        expect(rulesFor(css, '.ov-figure-list').length).toBeGreaterThan(0);
+    });
+
     it('0018 AC-006: a spec row stays on one line: title and status cut by an ellipsis, number, step, warning icon and Copy never cut', () => {
         const row = rulesFor(css, '.ov-row');
         expect(row.some((rule) => /white-space:\s*nowrap/.test(rule.body))).toBe(true);
@@ -268,7 +276,7 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
     });
 
     it('AC-003: every control this spec adds or restyles sets no outline of its own, so the shared focus rule with contrastActiveBorder or focusBorder applies', () => {
-        for (const selector of ['.ov-tile', '.ov-drill', '.ov-row', '.section-toggle', '.open-file', '.copy-button', '.related-link']) {
+        for (const selector of ['.ov-drill', '.ov-row', '.section-toggle', '.open-file', '.copy-button', '.related-link']) {
             const rules = parseRules(css).filter((rule) => rule.selectors.some((candidate) => candidate.startsWith(selector)));
             expect(rules.length, selector).toBeGreaterThan(0);
             for (const rule of rules) {

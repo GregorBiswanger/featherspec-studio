@@ -4,22 +4,22 @@ export function sampleView(): OverviewView {
     return {
         now: [],
         upNext: { rows: [], more: 0, stems: [] },
-        header: { name: 'demo', version: '1.10.0', updatedAt: '2026-11-16T10:00:00.000Z', problems: 1, problemStems: ['0002-x'] },
-        specs: {
+        problems: {
+            rows: [{ spec: { stem: '0002-x', number: '0002', title: 'Beta', found: true }, state: 'Backlog', status: 'unreadable file', problems: 1 }],
+            lines: [],
+        },
+        figures: {
             kind: 'counts',
             total: 2,
             states: [
                 { state: 'Backlog', count: 1 },
-                { state: 'Ready', count: 0, derivedRule: 'S-READY' },
+                { state: 'Ready', count: 0 },
                 { state: 'Active', count: 0 },
-                { state: 'Review', count: 0, derivedRule: 'S-REVIEW' },
+                { state: 'Review', count: 0 },
                 { state: 'Done', count: 1, deprecated: 0 },
-                { state: 'Blocked', count: 0, derivedRule: 'S-BLOCKED' },
+                { state: 'Blocked', count: 0 },
             ],
             progress: { kind: 'value', percent: 50, done: 1, divisor: 2 },
-        },
-        attention: {
-            rows: [{ spec: { stem: '0001-a', number: '0001', title: null, path: '.specs/active/0001-a.md', found: true }, reasons: ['Blocked', 'Problem'] }],
         },
         activity: {
             available: true,
@@ -40,16 +40,15 @@ export function bigView(specCount: number, perSpec: number): OverviewView {
         found: true,
     }));
     return {
-        now: [],
+        now: refs.map((spec) => ({ spec, state: 'Active' as const, status: 'Active', problems: 0 })),
         upNext: { rows: [], more: 0, stems: [] },
-        header: { name: 'big', version: '1.10.0', updatedAt: '2026-11-16T10:00:00.000Z', problems: 3, problemStems: refs.slice(0, 3).map((ref) => ref.stem) },
-        specs: {
+        problems: { rows: refs.slice(0, 3).map((spec) => ({ spec, state: 'Active' as const, status: 'unreadable file', problems: 1 })), lines: [] },
+        figures: {
             kind: 'counts',
             total: specCount,
             states: stateWords.map((state) => ({ state, count: Math.floor(specCount / stateWords.length) })),
             progress: { kind: 'value', percent: 16, done: 33, divisor: specCount },
         },
-        attention: { rows: refs.map((spec) => ({ spec, reasons: ['Blocked', 'Problem', 'Review pending'] })) },
         activity: {
             available: true,
             entries: refs.slice(0, 10).map((spec, index) => ({

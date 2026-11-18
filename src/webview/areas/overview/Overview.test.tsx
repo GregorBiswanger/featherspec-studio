@@ -4,7 +4,7 @@ import type { OverviewView } from '../../../shared/protocol/overview';
 import { sampleView } from '../../../shared/protocol/testing/overviewSample';
 import { App } from '../../App';
 import { createClient, type ShellClient } from '../../client';
-import { baseView, click, isKeyboardReachable, overviewEvent, mount, send, shellEvent, type Mounted } from '../../testing/dom';
+import { baseView, click, isKeyboardReachable, overviewEvent, mount, pressKey, send, shellEvent, type Mounted } from '../../testing/dom';
 
 let posted: Envelope[];
 let mounted: Mounted | undefined;
@@ -49,179 +49,209 @@ describe('transport and the empty start', () => {
     it('a valid overview event fills the area; an invalid one is ignored and the view stays as it was', async () => {
         const container = await open(sampleView());
         expect(area(container).textContent).toContain('Total');
-        await send(overviewEvent({ header: 'broken' }));
+        await send(overviewEvent({ figures: 'broken' }));
         await send(overviewEvent({ ...sampleView(), extra: 'SECRET-1' }));
         expect(area(container).textContent).toContain('Total');
         expect(container.textContent).not.toContain('SECRET-1');
     });
 });
 
-describe('AC-017, AC-019: header', () => {
-    it('shows the problem count, singular for one, and no folder, version or time (0018 AC-025 moved them to the project name)', async () => {
-        const view = sampleView();
-        const header = area(await open(view)).querySelector('[data-header]')!;
-        expect(header.textContent).toContain('1 problem');
-        expect(header.textContent).not.toContain('1 problems');
-        expect(header.textContent).not.toContain('demo');
-        expect(header.textContent).not.toContain('FeatherSpec');
-        expect(header.textContent).not.toContain('Updated');
+function visibleText(container: HTMLElement): string {
+    const copy = container.cloneNode(true) as HTMLElement;
+    copy.querySelectorAll('[hidden]').forEach((node) => node.remove());
+    return copy.textContent ?? '';
+}
+
+function figuresOf(): Extract<OverviewView['figures'], { kind: 'counts' }> {
+    return {
+        kind: 'counts',
+        total: 9,
+        states: [
+            { state: 'Backlog', count: 2 },
+            { state: 'Ready', count: 1 },
+            { state: 'Active', count: 0 },
+            { state: 'Review', count: 1 },
+            { state: 'Done', count: 3, deprecated: 1 },
+            { state: 'Blocked', count: 1 },
+        ],
+        progress: { kind: 'value', percent: 25, done: 2, divisor: 8 },
+    };
+}
+
+const FORMULA = 'Done specs with status Implemented or Baseline ÷ (all specs − Deprecated), rounded down';
+
+function row(stem: string, number: string, state: OverviewView['now'][number]['state'], extra: Partial<OverviewView['now'][number]> = {}): OverviewView['now'][number] {
+    return { spec: { stem, number, title: `Title ${number}`, found: true }, state, status: state, problems: 0, ...extra };
+}
+
+function fullView(): OverviewView {
+    const view = sampleView();
+    view.now = [row('0001-a', '0001', 'Blocked')];
+    view.upNext = { rows: [row('0003-c', '0003', 'Ready')], more: 0, stems: ['0003-c'] };
+    view.figures = figuresOf();
+    return view;
+}
+
+describe('0018 AC-003: the order of the parts and what is gone', () => {
+    it('renders Now, Up next, Problems, the figures line and Activity in this DOM order', async () => {
+        const container = area(await open(fullView()));
+        const parts = ['[data-now]', '[data-up-next]', '[data-problems]', '[data-figures]', '[data-activity]'].map((selector) => container.querySelector(selector));
+        expect(parts.every((part) => part !== null)).toBe(true);
+        for (let index = 1; index < parts.length; index += 1) {
+            expect(parts[index - 1]!.compareDocumentPosition(parts[index]!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        }
     });
 
-    it('shows "n problems" in the plural', async () => {
-        const view = sampleView();
-        view.header.problems = 2;
-        const header = area(await open(view)).querySelector('[data-header]')!;
-        expect(header.querySelector('[data-drill="problems"]')?.textContent).toBe('2 problems');
+    it('shows no header line, tile, distribution bar, visible progress text or derived sentence', async () => {
+        const container = area(await open(fullView()));
+        expect(container.querySelector('[data-header], [data-attention], [data-specs], .ov-tile, .ov-distribution, [data-progress]')).toBeNull();
+        expect(visibleText(container)).not.toMatch(/Progress|rounded down|Plan written|S-READY|S-REVIEW|S-BLOCKED|Needs attention|Specs by state/);
     });
 
-    it('AC-008: with no Problem the header shows no problem element and no count', async () => {
-        const view = sampleView();
-        view.header.problems = 0;
-        view.header.problemStems = [];
-        const header = area(await open(view)).querySelector('[data-header]')!;
-        expect(header.querySelector('[data-drill]')).toBeNull();
-        expect(header.textContent).not.toMatch(/problem|diagnostic/i);
+    it('shows Problems only while it lists something', async () => {
+        const view = fullView();
+        view.problems = { rows: [], lines: [] };
+        expect(area(await open(view)).querySelector('[data-problems]')).toBeNull();
     });
 });
 
-describe('AC-001, AC-002, AC-025: spec counts', () => {
-    it('shows the total, the six states with their counts as text, "of which Deprecated" and the derived label with the rule ID', async () => {
-        const view = sampleView();
-        view.specs = {
-            kind: 'counts',
-            total: 9,
-            states: [
-                { state: 'Backlog', count: 2 },
-                { state: 'Ready', count: 1, derivedRule: 'S-READY' },
-                { state: 'Active', count: 1 },
-                { state: 'Review', count: 1, derivedRule: 'S-REVIEW' },
-                { state: 'Done', count: 3, deprecated: 1 },
-                { state: 'Blocked', count: 1, derivedRule: 'S-BLOCKED' },
-            ],
-            progress: { kind: 'value', percent: 25, done: 2, divisor: 8 },
+describe('0018 AC-007: Problems', () => {
+    it('shows "Problems (n)" with n = rows + lines, each spec row with its reasons, and a line as plain text', async () => {
+        const view = fullView();
+        view.problems = {
+            rows: [row('0002-x', '0002', 'Backlog', { status: 'plan link is dead · spec unreadable', problems: 2 })],
+            lines: [{ where: 'project', reason: 'a return note has no spec' }],
         };
-        const specs = area(await open(view)).querySelector('[data-specs]')!;
-        expect(specs.querySelector('h2')?.textContent).toBe('Specs');
-        expect(specs.textContent).toContain('Total 9');
-        const rows = [...specs.querySelectorAll('[data-state-count]')].map((row) => row.textContent);
-        expect(rows).toEqual([
-            'Backlog 2',
-            'Ready 1Plan written, not started yet',
-            'Active 1',
-            'Review 1Plan done, waiting for review',
-            'Done 3of which Deprecated: 1',
-            'Blocked 1Plan or return note says Blocked',
+        const problems = area(await open(view)).querySelector<HTMLElement>('[data-problems]')!;
+        expect(problems.querySelector('h2')?.textContent).toBe('Problems (2)');
+        expect(problems.querySelector('[data-spec-row="0002-x"] .ov-status')?.textContent).toBe('plan link is dead · spec unreadable');
+        const line = problems.querySelector('[data-problem-line]')!;
+        expect(line.textContent).toBe('project: a return note has no spec');
+        expect(line.querySelector('button')).toBeNull();
+        expect(line.hasAttribute('tabindex')).toBe(false);
+    });
+
+    it('activating the heading sends one request for the Board with the named set Problems and the stems of the rows', async () => {
+        const view = fullView();
+        view.problems = { rows: [row('0002-x', '0002', 'Backlog', { problems: 1 }), row('0003-y', '0003', 'Active', { problems: 1 })], lines: [] };
+        const container = await open(view);
+        await click(container.querySelector('[data-problems] h2 button')!);
+        expect(posted.filter((message) => message.type === 'navigate').map((message) => message.payload)).toEqual([
+            { area: 'board', target: { kind: 'boardFilter', filter: { set: { label: 'Problems', stems: ['0002-x', '0003-y'] } } } },
         ]);
     });
 
-    it('AC-003: progress shows the percentage, both numbers and the formula text', async () => {
-        const view = sampleView();
-        const text = area(await open(view)).querySelector('[data-progress]')!.textContent!;
-        expect(text).toContain('Progress 50 % (1 of 2)');
-        expect(text).toContain('Done specs with status Implemented or Baseline ÷ (all specs − Deprecated), rounded down');
-    });
-
-    it('AC-004: with no divisor progress reads "not available" and shows no percentage', async () => {
-        const view = sampleView();
-        if (view.specs.kind === 'counts') {
-            view.specs.progress = { kind: 'not available' };
-        }
-        const text = area(await open(view)).querySelector('[data-progress]')!.textContent!;
-        expect(text).toContain('Progress: not available');
-        expect(text).not.toContain('%');
+    it('with only project-level lines the heading still sends the named set Problems, with no stem', async () => {
+        const view = fullView();
+        view.problems = { rows: [], lines: [{ where: 'project', reason: 'orphan' }] };
+        const container = await open(view);
+        await click(container.querySelector('[data-problems] h2 button')!);
+        expect(posted.find((message) => message.type === 'navigate')?.payload).toEqual({ area: 'board', target: { kind: 'boardFilter', filter: { set: { label: 'Problems', stems: [] } } } });
     });
 });
 
-describe('AC-020, AC-028: zero specs', () => {
-    it('shows "No specs yet" with the pointer to /sdd-specify in place of counts and progress, and keeps the header', async () => {
+describe('0018 AC-008: the figures line', () => {
+    it('shows "Total n" and the six "State n" in board order, zeros included, each one control', async () => {
+        const figures = area(await open(fullView())).querySelector<HTMLElement>('[data-figures]')!;
+        expect([...figures.querySelectorAll('button')].map((button) => button.textContent)).toEqual(['Total 9', 'Backlog 2', 'Ready 1', 'Active 0', 'Review 1', 'Done 3', 'Blocked 1']);
+        expect(figures.querySelectorAll('li')).toHaveLength(7);
+    });
+
+    it.each([
+        ['total', { area: 'board' }],
+        ['state:Active', { area: 'board', target: { kind: 'boardFilter', filter: { states: ['Active'] } } }],
+        ['state:Review', { area: 'board', target: { kind: 'boardFilter', filter: { states: ['Review'] } } }],
+    ])('%s sends 0006 BR-08\'s request (a zero included)', async (id, request) => {
+        const container = await open(fullView());
+        await click(container.querySelector(`[data-drill="${id}"]`)!);
+        expect(posted.filter((message) => message.type === 'navigate').map((message) => message.payload)).toEqual([request]);
+    });
+
+    it('Done carries "of which Deprecated: n" as tooltip and accessible description while n > 0, and no other figure does', async () => {
+        const container = area(await open(fullView()));
+        const done = container.querySelector<HTMLElement>('[data-drill="state:Done"]')!;
+        expect(done.getAttribute('title')).toBe('of which Deprecated: 1');
+        const description = container.querySelector(`#${done.getAttribute('aria-describedby')}`);
+        expect(description?.textContent).toBe('of which Deprecated: 1');
+        expect(description?.hasAttribute('hidden')).toBe(true);
+        expect(container.querySelector('[data-drill="state:Ready"]')?.getAttribute('aria-describedby')).toBeNull();
+        expect(visibleText(container)).not.toContain('Deprecated');
+    });
+
+    it('with no Deprecated spec Done carries no tooltip (negative control)', async () => {
+        const view = fullView();
+        const figures = figuresOf();
+        figures.states = figures.states.map((entry) => (entry.state === 'Done' ? { ...entry, deprecated: 0 } : entry));
+        view.figures = figures;
+        const done = area(await open(view)).querySelector('[data-drill="state:Done"]')!;
+        expect(done.getAttribute('title')).toBeNull();
+        expect(done.getAttribute('aria-describedby')).toBeNull();
+    });
+});
+
+describe('0018 AC-009: the progress text is a tooltip, never visible', () => {
+    it('the line and "Total n" carry it as tooltip, "Total n" as accessible description', async () => {
+        const container = area(await open(fullView()));
+        const text = `Progress 25 % (2 of 8): ${FORMULA}`;
+        expect(container.querySelector('[data-figures]')?.getAttribute('title')).toBe(text);
+        const total = container.querySelector<HTMLElement>('[data-drill="total"]')!;
+        expect(total.getAttribute('title')).toBe(text);
+        const description = container.querySelector(`#${total.getAttribute('aria-describedby')}`);
+        expect(description?.textContent).toBe(text);
+        expect(description?.hasAttribute('hidden')).toBe(true);
+    });
+
+    it('no visible element shows it: every element holding the text is hidden or a tooltip', async () => {
+        const container = area(await open(fullView()));
+        const holders = [...container.querySelectorAll('*')].filter((node) => node.children.length === 0 && (node.textContent ?? '').includes('Progress'));
+        expect(holders.every((node) => node.hasAttribute('hidden'))).toBe(true);
+    });
+
+    it('without a divisor the text reads "Progress: not available" and shows no percentage', async () => {
+        const view = fullView();
+        const figures = figuresOf();
+        figures.progress = { kind: 'not available' };
+        view.figures = figures;
+        const container = area(await open(view));
+        expect(container.querySelector('[data-figures]')?.getAttribute('title')).toBe('Progress: not available');
+        expect(container.querySelector('[data-figures]')?.getAttribute('title')).not.toContain('%');
+    });
+});
+
+describe('0018 AC-013: keyboard', () => {
+    it('every spec row, Copy, figure, "+ n more", the Problems and Activity headings are Tab stops in DOM order', async () => {
+        const view = fullView();
+        view.now = [row('0001-a', '0001', 'Blocked', { step: { short: '/sdd-plan', line: '/sdd-plan 0001', lines: [{ text: '/sdd-plan 0001' }] } })];
+        view.upNext = { rows: [row('0003-c', '0003', 'Ready')], more: 2, stems: ['0003-c', '0004-d', '0005-e'] };
+        view.problems = { rows: [row('0002-x', '0002', 'Backlog', { problems: 1 })], lines: [] };
+        const container = area(await open(view));
+        const controls = [...container.querySelectorAll<HTMLElement>('button')];
+        expect(controls.length).toBeGreaterThanOrEqual(12);
+        expect(controls.every((control) => isKeyboardReachable(control))).toBe(true);
+        expect(controls.map((control) => control.getAttribute('data-drill') ?? control.className.split(' ')[0]).slice(0, 4)).toEqual(['row:now:0001-a', 'copy-button', 'row:upNext:0003-c', 'more']);
+    });
+
+    it.each(['Enter', ' '] as const)('the key %j activates a figure and sends its request', async (key) => {
+        const container = area(await open(fullView()));
+        await pressKey(container.querySelector<HTMLElement>('[data-drill="state:Review"]')!, key);
+        expect(posted.filter((message) => message.type === 'navigate').map((message) => message.payload)).toEqual([
+            { area: 'board', target: { kind: 'boardFilter', filter: { states: ['Review'] } } },
+        ]);
+    });
+});
+
+describe('0018 AC-011: zero specs', () => {
+    it('shows "No specs yet. Start with /sdd-specify" and Copy in place of Now, Up next and the figures; Problems and Activity stay', async () => {
         const view = sampleView();
-        view.specs = { kind: 'empty' };
+        view.figures = { kind: 'empty' };
         const container = area(await open(view));
         expect(container.textContent).toContain('No specs yet. Start with /sdd-specify');
-        expect(container.querySelector('[data-specs]')).toBeNull();
-        expect(container.querySelector('[data-progress]')).toBeNull();
-        expect(container.querySelector('[data-header]')).not.toBeNull();
+        expect(container.querySelector('[data-now], [data-up-next], [data-figures]')).toBeNull();
+        expect(container.querySelector('[data-problems]')).not.toBeNull();
+        expect(container.querySelector('[data-activity]')).not.toBeNull();
     });
 
     it('control: with specs the message is not shown', async () => {
         expect(area(await open(sampleView())).textContent).not.toContain('No specs yet');
-    });
-});
-
-describe('0013 AC-004, AC-005: stat tiles, distribution bar and progress', () => {
-    function countsView(states: { state: 'Backlog' | 'Ready' | 'Active' | 'Review' | 'Done' | 'Blocked'; count: number }[]): OverviewView {
-        const view = sampleView();
-        const total = states.reduce((sum, entry) => sum + entry.count, 0);
-        view.specs = {
-            kind: 'counts',
-            total,
-            states: states.map((entry) =>
-                entry.state === 'Ready' ? { ...entry, derivedRule: 'S-READY' as const } : entry.state === 'Review' ? { ...entry, derivedRule: 'S-REVIEW' as const } : entry.state === 'Blocked' ? { ...entry, derivedRule: 'S-BLOCKED' as const } : entry.state === 'Done' ? { ...entry, deprecated: 0 } : entry,
-            ),
-            progress: { kind: 'value', percent: 0, done: 0, divisor: total },
-        };
-        return view;
-    }
-    const FIVE_SEVEN = countsView([
-        { state: 'Backlog', count: 5 },
-        { state: 'Ready', count: 0 },
-        { state: 'Active', count: 0 },
-        { state: 'Review', count: 7 },
-        { state: 'Done', count: 0 },
-        { state: 'Blocked', count: 0 },
-    ]);
-
-    it('AC-004: six tiles in board order, each one native button with count, state name and state icon; Ready, Review and Blocked carry the sentence with the rule ID', async () => {
-        const tiles = [...area(await open(FIVE_SEVEN)).querySelectorAll<HTMLButtonElement>('.ov-tile')];
-        expect(tiles.map((tile) => tile.getAttribute('data-board-state'))).toEqual(['Backlog', 'Ready', 'Active', 'Review', 'Done', 'Blocked']);
-        for (const tile of tiles) {
-            const state = tile.getAttribute('data-board-state')!;
-            expect(tile.tagName).toBe('BUTTON');
-            expect(tile.tabIndex).toBe(0);
-            expect(tile.querySelector('.ov-tile-name')?.textContent).toBe(state);
-            expect(tile.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
-            expect(tile.querySelector('.ov-tile-count')?.textContent).toMatch(/^\d+$/);
-            const rule = tile.querySelector('.rule-text')?.getAttribute('title')?.replace('Derived from the files · rule ', '');
-            expect(rule).toBe(state === 'Ready' ? 'S-READY' : state === 'Review' ? 'S-REVIEW' : state === 'Blocked' ? 'S-BLOCKED' : undefined);
-        }
-        expect(tiles[3]?.querySelector('.rule-sentence')?.textContent).toBe('Plan done, waiting for review');
-        expect(tiles[0]?.querySelector('.ov-tile-count')?.textContent).toBe('5');
-    });
-
-    it('AC-004: activating a tile sends the state request of 0006 BR-08', async () => {
-        const container = await open(FIVE_SEVEN);
-        const review = area(container).querySelector<HTMLButtonElement>('.ov-tile[data-board-state="Review"]')!;
-        await click(review);
-        expect(posted.filter((message) => message.type === 'navigate').map((message) => message.payload)).toEqual([{ area: 'board', target: { kind: 'boardFilter', filter: { states: ['Review'] } } }]);
-    });
-
-    it('AC-005: 5 Backlog and 7 Review give two segments, 41.7 % and 58.3 % wide, named "Backlog: 5 of 12" and "Review: 7 of 12"; no segment for 0', async () => {
-        const bar = area(await open(FIVE_SEVEN)).querySelector('.ov-distribution')!;
-        expect(bar.getAttribute('role')).toBe('group');
-        expect(bar.getAttribute('aria-label')).toBeTruthy();
-        const segments = [...bar.querySelectorAll<HTMLElement>('.ov-segment')];
-        expect(segments.map((segment) => segment.getAttribute('aria-label'))).toEqual(['Backlog: 5 of 12', 'Review: 7 of 12']);
-        expect(segments.map((segment) => segment.getAttribute('data-board-state'))).toEqual(['Backlog', 'Review']);
-        const widths = segments.map((segment) => Number.parseFloat(segment.style.width));
-        expect(Math.abs((widths[0] ?? 0) - 41.7)).toBeLessThanOrEqual(1);
-        expect(Math.abs((widths[1] ?? 0) - 58.3)).toBeLessThanOrEqual(1);
-        for (const segment of segments) {
-            expect(segment.getAttribute('style')).toMatch(/^width: [\d.]+%;?$/);
-        }
-    });
-
-    it('AC-005: the progress figure shows 0006 BR-04\'s rule as visible secondary text and as tooltip', async () => {
-        const progress = area(await open(sampleView())).querySelector<HTMLElement>('[data-progress]')!;
-        expect(progress.querySelector('.ov-formula')?.textContent).toBe('Done specs with status Implemented or Baseline ÷ (all specs − Deprecated), rounded down');
-        expect(progress.getAttribute('title')).toBe('Done specs with status Implemented or Baseline ÷ (all specs − Deprecated), rounded down');
-    });
-
-    it('AC-003: Total and every tile are Tab stops', async () => {
-        const container = area(await open(FIVE_SEVEN));
-        const total = container.querySelector<HTMLButtonElement>('[data-drill="total"]')!;
-        expect(isKeyboardReachable(total)).toBe(true);
-        const tiles = [...container.querySelectorAll('.ov-tile')];
-        expect(tiles).toHaveLength(6);
-        expect(tiles.every((tile) => isKeyboardReachable(tile))).toBe(true);
     });
 });

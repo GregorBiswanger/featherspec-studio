@@ -13,15 +13,14 @@ function current(world: ReturnType<typeof createServiceWorld>) {
 }
 
 describe('dashboard service', () => {
-    it('AC-015: the first listener makes the service compute; the view has the four sections and no run figure', async () => {
+    it('AC-015: the first listener makes the service compute; the view has the five parts and no run figure', async () => {
         const world = createServiceWorld(await modelFor(AC001_FIXTURE));
         world.listen();
         await world.service.whenIdle();
         const view = current(world);
-        expect(view.header).toMatchObject({ name: 'demo', version: '1.10.0' });
-        expect(view.specs).toMatchObject({ kind: 'counts', total: 9 });
+        expect(view.figures).toMatchObject({ kind: 'counts', total: 9 });
         expect(view.activity).toMatchObject({ available: true });
-        expect(Object.keys(view).sort()).toEqual(['activity', 'attention', 'header', 'now', 'specs', 'upNext']);
+        expect(Object.keys(view).sort()).toEqual(['activity', 'figures', 'now', 'problems', 'upNext']);
         expect(world.views).toHaveLength(1);
     });
 
@@ -31,8 +30,8 @@ describe('dashboard service', () => {
         await world.service.whenIdle();
         world.source.set(await modelFor([{ number: '0001', kind: 'Backlog' }, { number: '0002', kind: 'Review' }]));
         await world.service.whenIdle();
-        expect(current(world).specs).toMatchObject({ total: 2 });
-        expect(current(world).attention.rows.map((row) => row.spec.number)).toEqual(['0002']);
+        expect(current(world).figures).toMatchObject({ total: 2 });
+        expect(current(world).now.map((row) => row.spec.number)).toEqual(['0002']);
         const count = world.views.length;
         world.history.view = {
             available: true,
@@ -45,15 +44,15 @@ describe('dashboard service', () => {
         expect(current(world).activity).toMatchObject({ available: true, entries: [{ change: { kind: 'state', old: 'Backlog', new: 'Ready' } }] });
     });
 
-    it('0015 AC-018 (0006): with the history not available Recent activity says so with the reason; the spec figures and the reasons stay', async () => {
+    it('0015 AC-018 (0006): with the history not available Activity says so with the reason; the figures and Now stay', async () => {
         const world = createServiceWorld(await modelFor(AC001_FIXTURE));
         world.history.view = { available: false, text: 'Status history not available: Another VS Code window holds the write lock for this project\'s status history.' };
         world.listen();
         await world.service.whenIdle();
         const view = current(world);
         expect(view.activity).toEqual({ available: false, reason: 'Another VS Code window holds the write lock for this project\'s status history.' });
-        expect(view.specs).toMatchObject({ kind: 'counts', total: 9 });
-        expect(view.attention.rows.map((row) => row.spec.number)).toEqual(['0005', '0009']);
+        expect(view.figures).toMatchObject({ kind: 'counts', total: 9 });
+        expect(view.now.map((row) => row.spec.number)).toEqual(['0009', '0005', '0004']);
     });
 
     it('A-011: with no listener the service reads nothing; the last listener leaving stops it again', async () => {
@@ -83,31 +82,6 @@ describe('dashboard service', () => {
         }
         await world.service.whenIdle();
         expect(world.history.reads - before).toBeLessThanOrEqual(2);
-    });
-
-    it('0015 AC-017 (0006): the time is the last spec read the dashboard processed: a model read at 10:00 shows 10:00 whenever the panel opens', async () => {
-        const world = createServiceWorld(await modelFor(AC001_FIXTURE));
-        world.source.stamp('2026-11-16T10:00:00.000Z');
-        const first = world.listen();
-        await world.service.whenIdle();
-        expect(current(world).header.updatedAt).toBe('2026-11-16T10:00:00.000Z');
-        first.dispose();
-        world.listen();
-        await world.service.whenIdle();
-        expect(current(world).header.updatedAt).toBe('2026-11-16T10:00:00.000Z');
-    });
-
-    it('0015 AC-017 (0006): a spec read while open moves the time to that read; a history change alone leaves it (negative control)', async () => {
-        const world = createServiceWorld(await modelFor(AC001_FIXTURE));
-        world.listen();
-        await world.service.whenIdle();
-        expect(current(world).header.updatedAt).toBe('2026-11-16T10:00:00.000Z');
-        world.history.fire();
-        await world.service.whenIdle();
-        expect(current(world).header.updatedAt).toBe('2026-11-16T10:00:00.000Z');
-        world.source.set(await modelFor(AC001_FIXTURE), '2026-11-16T10:30:00.000Z');
-        await world.service.whenIdle();
-        expect(current(world).header.updatedAt).toBe('2026-11-16T10:30:00.000Z');
     });
 
     it('without a model or an active project there is no view; the project coming back gives one', async () => {

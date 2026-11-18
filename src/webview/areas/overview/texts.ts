@@ -1,10 +1,7 @@
-import { DERIVED_SENTENCES, HISTORY_GONE_TEXT, HISTORY_WHILE_CLOSED_TEXT } from '../../../shared/protocol/texts';
-import type { ActivityChange, AttentionReason, SpecRef } from '../../../shared/protocol/overview';
-import type { DerivedRule } from '../../../shared/protocol/board';
+import { HISTORY_GONE_TEXT, HISTORY_WHILE_CLOSED_TEXT } from '../../../shared/protocol/texts';
+import type { ActivityChange, SpecRef } from '../../../shared/protocol/overview';
 
-export const MC_NOT_AVAILABLE = 'not available';
-
-export const MC_SPECS_HEADING = 'Specs';
+export const NOT_AVAILABLE_TEXT = 'not available';
 
 export const NOW_HEADING = 'Now';
 
@@ -18,66 +15,54 @@ export function moreText(count: number): string {
     return `+ ${count} more`;
 }
 
-export const MC_FORMULA = 'Done specs with status Implemented or Baseline ÷ (all specs − Deprecated), rounded down';
-
-export const MC_PROGRESS_UNAVAILABLE = 'Progress: not available';
-
-export const MC_DISTRIBUTION_LABEL = 'Specs by state';
-
-export function mcSegment(state: string, count: number, total: number): string {
-    return `${state}: ${count} of ${total}`;
+export function problemsHeading(count: number): string {
+    return `Problems (${count})`;
 }
 
-export function mcProblems(count: number): string {
-    return count === 1 ? '1 problem' : `${count} problems`;
+export function problemLineText(where: string, reason: string): string {
+    return `${where}: ${reason}`;
 }
 
-export function mcTotal(count: number): string {
+export function totalText(count: number): string {
     return `Total ${count}`;
 }
 
-export function mcDerived(rule: DerivedRule): string {
-    return DERIVED_SENTENCES[rule];
+export function stateFigureText(state: string, count: number): string {
+    return `${state} ${count}`;
 }
 
-export function mcDeprecated(count: number): string {
+export function deprecatedText(count: number): string {
     return `of which Deprecated: ${count}`;
 }
 
-export function mcProgress(percent: number, done: number, divisor: number): string {
-    return `Progress ${percent} % (${done} of ${divisor})`;
+export const FORMULA_TEXT = 'Done specs with status Implemented or Baseline ÷ (all specs − Deprecated), rounded down';
+
+export const PROGRESS_UNAVAILABLE_TEXT = 'Progress: not available';
+
+export function progressText(percent: number, done: number, divisor: number): string {
+    return `Progress ${percent} % (${done} of ${divisor}): ${FORMULA_TEXT}`;
 }
 
-export function mcAttentionHeading(count: number): string {
-    return `Needs attention (${count})`;
-}
+export const FIGURES_LABEL = 'Figures';
 
-export const MC_NOTHING_ATTENTION = 'Nothing needs attention.';
+export const ACTIVITY_HEADING = 'Recent activity';
 
-export const MC_ACTIVITY_HEADING = 'Recent activity';
+export const NO_ACTIVITY_TEXT = 'No recent activity.';
 
-export const MC_NO_ACTIVITY = 'No recent activity.';
-
-export function mcActivityUnavailable(reason: string): string {
+export function activityUnavailableText(reason: string): string {
     return `Recent activity not available: ${reason}`;
 }
 
-export const MC_SPEC_NOT_FOUND = 'spec not found';
+export const SPEC_NOT_FOUND_TEXT = 'spec not found';
 
-export const MC_WHILE_CLOSED = HISTORY_WHILE_CLOSED_TEXT;
-
-export function mcReason(reason: AttentionReason): string {
-    return reason;
+export function specLabelText(spec: SpecRef): string {
+    return spec.found ? `${spec.number} ${spec.title ?? NOT_AVAILABLE_TEXT}` : `${spec.stem} — ${SPEC_NOT_FOUND_TEXT}`;
 }
 
-export function mcSpecLabel(spec: SpecRef): string {
-    return spec.found ? `${spec.number} ${spec.title ?? MC_NOT_AVAILABLE}` : `${spec.stem} — ${MC_SPEC_NOT_FOUND}`;
-}
-
-export function mcChange(change: ActivityChange): string {
+export function changeText(change: ActivityChange): string {
     switch (change.kind) {
         case 'state':
-            return `${change.old} → ${change.new}${change.whileClosed ? ` ${MC_WHILE_CLOSED}` : ''}`;
+            return `${change.old} → ${change.new}${change.whileClosed ? ` ${HISTORY_WHILE_CLOSED_TEXT}` : ''}`;
         case 'gone':
             return `${change.old} → ${HISTORY_GONE_TEXT}`;
     }

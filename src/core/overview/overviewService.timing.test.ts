@@ -26,7 +26,7 @@ describe('dashboard service', () => {
                 world.history.view = big.history;
             },
         );
-        expect(world.service.view()?.specs).toMatchObject({ total: 200 });
+        expect(world.service.view()?.figures).toMatchObject({ total: 200 });
         expect(world.service.view()?.activity).toMatchObject({ available: true });
         expect(best).toBeLessThan(BUDGET_MS.modelUpdate);
     });

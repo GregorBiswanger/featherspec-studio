@@ -14,7 +14,7 @@ async function activateStudio(): Promise<StudioApi> {
 }
 
 function totalOf(view: OverviewView | undefined): number | undefined {
-    return view?.specs.kind === 'counts' ? view.specs.total : undefined;
+    return view?.figures.kind === 'counts' ? view.figures.total : undefined;
 }
 
 function figures(view: OverviewView | undefined): { specs: number | undefined } {
@@ -43,9 +43,8 @@ suite('FeatherSpec Studio Overview smoke', function () {
             await waitFor('Overview to show spec counts', () => figures(mission.view()), (state) => state.specs !== undefined, { timeoutMs: 20_000 });
             const first = mission.view();
             assert.strictEqual(totalOf(first), 1);
-            assert.strictEqual(first?.header.name, 'fs110-de-active-review');
-            assert.strictEqual(first?.attention.rows[0]?.spec.stem, '0001-tip-splitter');
-            assert.deepStrictEqual(first?.attention.rows[0]?.reasons, ['Review pending']);
+            assert.strictEqual(first?.now[0]?.spec.stem, '0001-tip-splitter');
+            assert.strictEqual(first?.now[0]?.state, 'Review');
             const before = await snapshotTree(root);
 
             await fs.writeFile(extra, '# Extra thing\n\n**Status:** Draft\n**Plan:** _none yet_\n');
@@ -63,7 +62,7 @@ suite('FeatherSpec Studio Overview smoke', function () {
         }
     });
 
-    test('0016 AC-007, AC-008: the fixture project has no Problem, so its header counts none and its attention row names no Problem', async () => {
+    test('0016 AC-007, AC-008 (0018 AC-007): the fixture project has no Problem, so Problems lists nothing', async () => {
         const api = await activateStudio();
         await api.whenIdle();
         const mission = api.overview();
@@ -71,9 +70,8 @@ suite('FeatherSpec Studio Overview smoke', function () {
         try {
             await waitFor('Overview to have a view', () => figures(mission.view()), (state) => state.specs !== undefined, { timeoutMs: 20_000 });
             const view = mission.view();
-            assert.strictEqual(view?.header.problems, 0);
-            assert.deepStrictEqual(view?.header.problemStems, []);
-            assert.ok(view?.attention.rows.every((row) => !row.reasons.includes('Problem')));
+            assert.deepStrictEqual(view?.problems, { rows: [], lines: [] });
+            assert.ok(view?.now.every((row) => row.problems === 0));
         } finally {
             listening.dispose();
         }
@@ -88,10 +86,10 @@ suite('FeatherSpec Studio Overview smoke', function () {
             await waitFor('Overview to have a view', () => figures(mission.view()), (state) => state.specs !== undefined, { timeoutMs: 20_000 });
             const view = mission.view();
             assert.deepStrictEqual(
-                view?.specs.kind === 'counts' ? view.specs.states.map((entry) => entry.state) : [],
+                view?.figures.kind === 'counts' ? view.figures.states.map((entry) => entry.state) : [],
                 ['Backlog', 'Ready', 'Active', 'Review', 'Done', 'Blocked'],
             );
-            assert.deepStrictEqual(Object.keys(view ?? {}).sort(), ['activity', 'attention', 'header', 'specs']);
+            assert.deepStrictEqual(Object.keys(view ?? {}).sort(), ['activity', 'figures', 'now', 'problems', 'upNext']);
         } finally {
             listening.dispose();
         }

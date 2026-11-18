@@ -126,13 +126,11 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         expect(errors).toEqual([]);
     });
 
-    it('mounts Overview with a snapshot of a fixture project: header, six state counts, progress, the attention list, the activity, no start-up error', async () => {
+    it('mounts Overview with a snapshot of a fixture project: Now, Up next, the figures line with six state counts, the progress text, the activity, no start-up error', async () => {
         const project = await readProject(createNodeSpecSource(), fixturePath('fs110-ready-synthetic'), '1.10.0');
         const lifecycle = deriveLifecycle(project);
         const mission = buildOverviewView({
             model: { project, lifecycle },
-            active: { name: 'fixture', version: '1.10.0' },
-            updatedAt: '2026-11-16T10:00:00.000Z',
             history: { available: true, label: 'Observed', entries: [] },
         });
         const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
@@ -146,13 +144,15 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         expect(document.querySelector('[data-placeholder]')).toBeNull();
         expect(document.querySelector('[data-overview]')).not.toBeNull();
         expect(document.querySelector('.project-name')?.textContent).toBe('fixture');
-        expect(document.querySelector('[data-header]')?.textContent ?? '').not.toContain('fixture');
+        expect(document.querySelector('[data-header]')).toBeNull();
+        expect(document.querySelector('[data-now]')).not.toBeNull();
+        expect(document.querySelector('[data-up-next]')).not.toBeNull();
         expect(document.querySelectorAll('[data-state-count]')).toHaveLength(6);
         expect(document.querySelector('[data-total]')?.textContent).toBe(`Total ${lifecycle.entries.length}`);
         expect(lifecycle.entries.length).toBeGreaterThan(0);
-        expect(document.querySelector('[data-progress]')?.textContent).toContain('Progress');
+        expect(document.querySelector('#ov-progress-text')?.textContent).toContain('Progress');
         expect(document.querySelector('[data-runs]')).toBeNull();
-        expect(document.querySelector('[data-attention] h2')?.textContent).toContain('Needs attention (');
+        expect(document.querySelector('[data-attention]')).toBeNull();
         expect(document.querySelector('[data-activity] h2')?.textContent).toBe('Recent activity');
         expect(errors).toEqual([]);
     });

@@ -65,7 +65,7 @@ export function createOverviewService(deps: OverviewServiceDeps): OverviewServic
         if (disposed || listeners.size === 0) {
             return;
         }
-        setView(buildOverviewView({ model, active: { name: active.name, version: active.version }, updatedAt: deps.source.updatedAt(), history }));
+        setView(buildOverviewView({ model, history }));
     }
 
     function schedule(): void {

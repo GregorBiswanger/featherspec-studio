@@ -4,10 +4,9 @@ import type { ActivityEntry } from '../../../shared/protocol/overview';
 import { DISMISS_LABEL, noticeText } from '../../../shared/protocol/texts';
 import { useShell } from '../../shell';
 import { Activity } from './Activity';
-import { Attention } from './Attention';
-import { Header } from './Header';
 import { activityRequest } from './requests';
-import { SpecFigures } from './SpecFigures';
+import { Figures } from './Figures';
+import { Problems } from './Problems';
 import { useOverview } from './store';
 import { EmptyState } from '../../ui/EmptyState';
 import { NO_SPECS_START_TEXT, SDD_SPECIFY_LINE } from '../../../shared/protocol/texts';
@@ -45,7 +44,7 @@ export function Overview() {
                     </button>
                 </div>
             )}
-            {view.specs.kind === 'empty' ? (
+            {view.figures.kind === 'empty' ? (
                 <EmptyState icon="Backlog" data-zero-specs>
                     {NO_SPECS_START_TEXT}
                     <CopyButton line={SDD_SPECIFY_LINE} copyResult={copyResult} onCopy={copyText} />
@@ -56,9 +55,8 @@ export function Overview() {
                     <UpNext upNext={view.upNext} navigate={navigate} />
                 </>
             )}
-            <Header header={view.header} navigate={navigate} />
-            {view.specs.kind === 'empty' ? null : <SpecFigures specs={view.specs} navigate={navigate} />}
-            {view.specs.kind === 'empty' ? null : <Attention attention={view.attention} navigate={navigate} />}
+            <Problems problems={view.problems} navigate={navigate} />
+            {view.figures.kind === 'empty' ? null : <Figures figures={view.figures} navigate={navigate} />}
             <div className="ov-panels">
                 <Activity activity={view.activity} onActivate={openActivity} />
             </div>

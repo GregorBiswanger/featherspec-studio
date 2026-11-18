@@ -98,11 +98,14 @@ describe('0016 AC-011: user language on every surface 0016 touched', () => {
         expect(text).not.toMatch(FORBIDDEN);
     });
 
-    it('Overview (header, tiles, attention row, activity) shows no rule ID or internal word', async () => {
+    it('Overview (Now, Up next, Problems, figures, activity) shows no rule ID or internal word', async () => {
         const view = sampleView();
-        view.attention.rows.push({ spec: { stem: '0002-b', number: '0002', title: 'B', path: '.specs/active/0002-b.md', found: true }, reasons: ['Review pending'] });
+        view.now = [{ spec: { stem: '0002-b', number: '0002', title: 'B', path: '.specs/active/0002-b.md', found: true }, state: 'Review', status: 'Review', problems: 1 }];
+        view.upNext = { rows: [{ spec: { stem: '0003-c', number: '0003', title: 'C', found: true }, state: 'Backlog', status: 'needs a plan', problems: 0 }], more: 1, stems: ['0003-c', '0004-d'] };
+        view.problems.lines = [{ where: 'project', reason: 'a return note has no spec' }];
         const text = await textOf('overview', overviewEvent(view));
-        expect(text).toContain('Plan done, waiting for review');
+        expect(text).toContain('Problems (2)');
+        expect(text).toContain('Up next');
         expect(text).toContain('no longer in the project');
         expect(text).not.toMatch(FORBIDDEN);
     });

@@ -6,17 +6,17 @@ import { useBoard } from '../../board/boardStore';
 import { CopyButton } from '../../ui/CopyButton';
 import { StepText } from '../../ui/StepText';
 import { Drill } from './Drill';
-import { attentionRowRequest } from './requests';
-import { MC_NOT_AVAILABLE, mcSpecLabel } from './texts';
+import { rowRequest } from './requests';
+import { NOT_AVAILABLE_TEXT, specLabelText } from './texts';
 
 export function SpecRow(props: { row: OverviewRow; group: string; navigate: (request: NavigationRequest) => void }) {
     const { row, group, navigate } = props;
     const { copyResult, copyText } = useBoard();
     const { spec } = row;
-    const title = spec.found ? (spec.title ?? MC_NOT_AVAILABLE) : mcSpecLabel(spec);
+    const title = spec.found ? (spec.title ?? NOT_AVAILABLE_TEXT) : specLabelText(spec);
     return (
         <li className="ov-row-item" data-spec-row={spec.stem} data-row-group={group}>
-            <Drill id={`row:${group}:${spec.stem}`} className="ov-row" state={row.state} onActivate={() => navigate(attentionRowRequest(row))}>
+            <Drill id={`row:${group}:${spec.stem}`} className="ov-row" state={row.state} onActivate={() => navigate(rowRequest(row))}>
                 <span className="ov-number">{spec.number}</span>
                 <span className="ov-title" title={title}>
                     {title}

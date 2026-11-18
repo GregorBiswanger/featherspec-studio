@@ -1,8 +1,7 @@
 import type { BoardState } from '../../../shared/protocol/boardFilter';
 import type { NavigationRequest } from '../../../shared/protocol/messages';
-import type { ActivityEntry, AttentionRow, McHeader, SpecRef } from '../../../shared/protocol/overview';
+import type { ActivityEntry, OverviewRow, SpecRef } from '../../../shared/protocol/overview';
 
-export const ATTENTION_SET_LABEL = 'Needs attention';
 export const PROBLEMS_SET_LABEL = 'Problems';
 export const UP_NEXT_SET_LABEL = 'Up next';
 
@@ -18,19 +17,15 @@ export function stateRequest(state: BoardState): NavigationRequest {
     return { area: 'board', target: { kind: 'boardFilter', filter: { states: [state] } } };
 }
 
-export function attentionRequest(rows: readonly AttentionRow[]): NavigationRequest {
-    return namedSet(ATTENTION_SET_LABEL, [...new Set(rows.map((row) => row.spec.stem))]);
-}
-
-export function problemsRequest(header: McHeader): NavigationRequest {
-    return header.problemStems.length === 0 ? totalRequest() : namedSet(PROBLEMS_SET_LABEL, header.problemStems);
-}
-
 export function upNextRequest(stems: readonly string[]): NavigationRequest {
     return namedSet(UP_NEXT_SET_LABEL, stems);
 }
 
-export function attentionRowRequest(row: { spec: SpecRef }): NavigationRequest {
+export function problemsRequest(rows: readonly OverviewRow[]): NavigationRequest {
+    return namedSet(PROBLEMS_SET_LABEL, [...new Set(rows.map((row) => row.spec.stem))]);
+}
+
+export function rowRequest(row: { spec: SpecRef }): NavigationRequest {
     const { stem, path } = row.spec;
     return { area: 'specExplorer', target: path === undefined ? { kind: 'spec', stem } : { kind: 'spec', stem, path } };
 }

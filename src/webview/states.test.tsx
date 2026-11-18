@@ -51,7 +51,7 @@ describe('0013 §3.6: empty, placeholder and panel-level states show an icon bes
         mounted?.unmount();
         const mission = await open(baseView({ area: 'overview' }));
         const view = sampleView();
-        view.specs = { kind: 'empty' };
+        view.figures = { kind: 'empty' };
         await send(overviewEvent(view));
         expect(hasIcon(mission.querySelector('[data-zero-specs]'))).toBe(true);
         mounted?.unmount();

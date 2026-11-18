@@ -41,12 +41,12 @@ describe('AC-016, AC-024: timing', () => {
     it('AC-016: a new event is in the DOM within 500 ms of the message event', async () => {
         const container = await open(sampleView());
         const next = sampleView();
-        next.header.problems = 5;
+        next.problems = { rows: [], lines: Array.from({ length: 5 }, (_, index) => ({ where: 'project', reason: `reason ${index}` })) };
         const best = await bestOfThree(
             () => send(overviewEvent(next)),
             () => send(overviewEvent(sampleView())),
         );
-        expect(area(container).textContent).toContain('5 problems');
+        expect(area(container).textContent).toContain('Problems (5)');
         expect(best).toBeLessThan(BUDGET_MS.uiFreshness);
     });
 
