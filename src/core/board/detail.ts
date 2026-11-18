@@ -9,6 +9,7 @@ import type { StepTipSettings } from '../settings/stepTipSettings';
 import { nextStep, type NextStep } from './nextStep';
 import { stepTips } from './stepTips';
 import { filesOf, progressOf } from './situation';
+import { planOf } from '../planMap/planMap';
 
 export interface DetailInput {
     selection: { stem: string; path?: string } | undefined;
@@ -70,6 +71,7 @@ export function buildDetail(input: DetailInput): DetailView {
         : undefined;
     const duplicated = model.lifecycle.entries.filter((candidate) => candidate.stem === entry.stem).length > 1;
     const progress = progressOf(model, entry, spec);
+    const plan = planOf(model, entry, spec);
     return {
         kind: 'spec',
         key: entry.key,
@@ -85,6 +87,7 @@ export function buildDetail(input: DetailInput): DetailView {
         problems: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').map(diagnosticLine),
         notes: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'note').map(diagnosticLine),
         ...(progress === undefined ? {} : { progress }),
+        ...(plan === undefined ? {} : { plan }),
         files: filesOf(model, spec),
         history: { statusHistory: historyItems, label: input.history.available ? input.history.label : HISTORY_LABEL, notAvailable: input.history.available ? undefined : input.history.text },
     };

@@ -8,6 +8,8 @@ import { buildDetail } from './detail';
 import { parseStepTipSettings } from '../settings/stepTipSettings';
 import { stepTips } from './stepTips';
 import { nextStep, openStep } from './nextStep';
+import { planOf } from '../planMap/planMap';
+import { fixtureModel, GEN_PLAN, GEN_SPEC, generatedFiles, modelWithUnreadable, PARALLEL_SPEC } from '../planMap/testing/plans';
 
 const NO_HISTORY: HistoryView = { available: true, label: 'Only changes Studio saw while it was running.', entries: [] };
 
@@ -473,5 +475,45 @@ describe('0021 AC-009, AC-010: the tips of the detail', () => {
         const next = await nextOf(FILES, '0001-a', SHOW);
         expect(next.rule).toBe('NS-6');
         expect(next.tips).toEqual(stepTips('NS-6-returned', SHOW));
+    });
+});
+
+describe('0023 AC-003: the detail carries the plan view of a spec that has a readable sibling plan', () => {
+    const detail = async (model: Awaited<ReturnType<typeof modelOf>>, key: string) => {
+        const entry = model.lifecycle.entries.find((candidate) => candidate.key === key)!;
+        return spec(buildDetail({ selection: { stem: entry.stem }, model, history: NO_HISTORY }));
+    };
+
+    it('an Active spec with a Blocked plan, a Review spec and a Ready spec each carry a plan view', async () => {
+        const blocked = await fixtureModel('fs110-parallel-synthetic');
+        const view = (await detail(blocked, PARALLEL_SPEC)).plan;
+        expect(view).toMatchObject({ kind: 'plan', staged: true, plan: { key: '.specs/active/0001-parallel-demo.plan.md', line: 1 } });
+        const review = await fixtureModel('studio-0015');
+        const reviewKey = review.lifecycle.entries[0]!.key;
+        expect(review.lifecycle.entries[0]!.state).toBe('Review');
+        expect((await detail(review, reviewKey)).plan).toMatchObject({ kind: 'plan', staged: true });
+        const ready = await fixtureModel('fs110-ready-synthetic');
+        expect((await detail(ready, '.specs/backlog/0001-ready-feature.md')).plan).toMatchObject({ kind: 'plan' });
+    });
+
+    it('the plan view of the detail is the one planOf gives', async () => {
+        const model = await fixtureModel('fs110-parallel-synthetic');
+        const entry = model.lifecycle.entries[0]!;
+        expect((await detail(model, entry.key)).plan).toEqual(planOf(model, entry, model.project.specs[0]!));
+    });
+
+    it('a Done spec, a spec without a plan and a reactivated spec with an archive link carry none', async () => {
+        const done = await fixtureModel('fs110-ready-synthetic');
+        expect('plan' in (await detail(done, '.specs/done/0002-old-feature.md'))).toBe(false);
+        const none = await modelOf({ '.specs/backlog/0004-a.md': specText() });
+        expect('plan' in (await detail(none, '.specs/backlog/0004-a.md'))).toBe(false);
+        const archive = '[0007-x.2026-11-01.plan.md](../plan-archive/0007-x.2026-11-01.plan.md)';
+        const reactivated = await modelOf({ '.specs/active/0007-x.md': specText({ status: 'In Progress', plan: archive }), '.specs/plan-archive/0007-x.2026-11-01.plan.md': planText({ status: 'Done' }) });
+        expect('plan' in (await detail(reactivated, '.specs/active/0007-x.md'))).toBe(false);
+    });
+
+    it('an unreadable plan gives the unreadable view', async () => {
+        const model = await modelWithUnreadable(generatedFiles(), [GEN_PLAN]);
+        expect((await detail(model, GEN_SPEC)).plan).toEqual({ kind: 'unreadable' });
     });
 });

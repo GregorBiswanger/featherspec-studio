@@ -10,6 +10,8 @@ import type { StepTipSettings } from '../settings/stepTipSettings';
 import { buildDetail } from './detail';
 import { createBoardUiState } from './boardUiState';
 import { buildBanner, buildCards } from './cards';
+import { buildPlanSpecs } from '../planMap/planSpecs';
+import type { PlanSpecView } from '../../shared/protocol/planMap';
 import { arrangeBoard } from './filters';
 import { HISTORY_REASON_UNREADABLE, historyUnavailableText } from '../lifecycle/historyTexts';
 
@@ -41,6 +43,7 @@ interface Built {
     cards: CardView[];
     banner: BoardView['banner'];
     sortKeys: SortKey[];
+    planSpecs: PlanSpecView[];
 }
 
 export function createBoardService(deps: BoardServiceDeps): BoardService {
@@ -65,7 +68,7 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
             const all = buildCards(model.project, model.lifecycle);
             const datesVary = new Set(all.flatMap((card) => (card.lastChange === undefined ? [] : [card.lastChange.day]))).size >= 2;
             const cards = datesVary ? all : all.map((card) => ({ ...card, lastChange: undefined }));
-            built = { model, cards, banner: buildBanner(model.project, model.lifecycle), sortKeys: datesVary ? [...SORT_KEYS] : SORT_KEYS.filter((key) => key !== 'lastChange') };
+            built = { model, cards, banner: buildBanner(model.project, model.lifecycle), planSpecs: buildPlanSpecs(model, cards), sortKeys: datesVary ? [...SORT_KEYS] : SORT_KEYS.filter((key) => key !== 'lastChange') };
         }
         return built;
     }
@@ -81,7 +84,7 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
         const columns = arrangeBoard(current.cards, ui.filter(), ui.sort(), ui.doneExpanded());
         const done = columns.find((column) => column.state === 'Done');
         const doneHasCards = done !== undefined && !isFilterSet(ui.filter()) && done.count > 0;
-        const base = { columns, banner: current.banner, filter: ui.filter(), sort: ui.sort(), sortKeys: current.sortKeys, noSpecs: current.cards.length === 0 };
+        const base = { columns, banner: current.banner, filter: ui.filter(), sort: ui.sort(), sortKeys: current.sortKeys, noSpecs: current.cards.length === 0, planSpecs: current.planSpecs };
         return doneHasCards ? { ...base, doneToggle: ui.doneExpanded() ? 'hide' : 'show' } : base;
     }
 

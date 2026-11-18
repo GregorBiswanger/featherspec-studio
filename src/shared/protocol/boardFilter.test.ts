@@ -107,7 +107,7 @@ describe('board requests', () => {
         expect(isCardView({ ...card, lastChange: 5 })).toBe(false);
         expect(isCardView({ ...card, need: 'needs a plan' })).toBe(false);
         expect(isCardView({ ...card, need: { text: 'x' } })).toBe(false);
-        const view = { columns: [{ state: 'Active', cards: [card], hidden: 0, emptyBeforeFilter: false, count: 1 }], banner: { problems: [{ where: 'project', reason: 'x' }], notes: [] }, filter: {}, sort: 'number', sortKeys: ['number', 'title'], noSpecs: false };
+        const view = { columns: [{ state: 'Active', cards: [card], hidden: 0, emptyBeforeFilter: false, count: 1 }], banner: { problems: [{ where: 'project', reason: 'x' }], notes: [] }, filter: {}, sort: 'number', sortKeys: ['number', 'title'], noSpecs: false, planSpecs: [] };
         expect(isBoardView(view)).toBe(true);
         expect(isBoardView({ ...view, columns: [{ ...view.columns[0], narrow: 'empty' }] })).toBe(true);
         expect(isBoardView({ ...view, columns: [{ ...view.columns[0], narrow: 'wide' }] })).toBe(false);

@@ -6,6 +6,7 @@ import { createNodeSpecSource } from '../../adapters/node/nodeSpecSource';
 import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
 import { specText } from '../lifecycle/testing/projects';
 import { readProject } from '../specs/readProject';
+import { parseReturnNote } from '../specs/returnNote';
 import { generateProject } from '../specs/testing/generateProject';
 import type { DetailView } from '../../shared/protocol/detail';
 import { BUDGET_MS, bestOfThree } from '../../shared/testing/timing';
@@ -151,5 +152,75 @@ describe('0021 AC-011: a settings change reaches the detail within 500 ms on 200
         const view = w.service.detail();
         expect(view.kind === 'spec' && 'tips' in view.nextStep).toBe(on);
         expect(best).toBeLessThan(BUDGET_MS.uiFreshness);
+    });
+});
+
+describe('0023 AC-012: a return note reaches the plan of the detail within 500 ms on 200 specs (PD-047)', () => {
+    let temp: string | undefined;
+    afterEach(async () => {
+        if (temp !== undefined) {
+            await fs.rm(temp, { recursive: true, force: true });
+        }
+    });
+
+    it('a note that appears, changes and disappears', async () => {
+        temp = await fs.mkdtemp(path.join(os.tmpdir(), 'plan-perf-'));
+        await generateProject(temp, 200);
+        const project = await readProject(createNodeSpecSource(), temp, '1.10.0');
+        const model = { project, lifecycle: deriveLifecycle(project) };
+        const w = createBoardWorld(model);
+        disposables.push(w.service);
+        const target = project.specs.find((spec) => spec.folder === 'active')!;
+        w.selection.set({ stem: model.lifecycle.entries.find((entry) => entry.key === target.key)!.stem });
+        await w.service.whenIdle();
+        const stageTwo = () => {
+            const view = w.service.detail();
+            const plan = view.kind === 'spec' ? view.plan : undefined;
+            return plan?.kind === 'plan' ? plan.stages[1]!.groups.flatMap((group) => group.steps).find((entry) => entry.id === 'T-003') : undefined;
+        };
+        expect(stageTwo()?.state).not.toBe('returned');
+
+        const withNote = (status: string) => {
+            const key = `.memory-bank/activeContext.${target.number}-T-003.md`;
+            const note = {
+                key,
+                modifiedMs: 1,
+                size: 10,
+                readable: true,
+                number: target.number,
+                stepId: 'T-003',
+                parsed: parseReturnNote(`- **Status:** ${status}\n`, key),
+                specKeys: [target.key],
+                specReferences: [target.reference],
+            };
+            const next = {
+                ...project,
+                returnNotes: [...project.returnNotes, note],
+                specs: project.specs.map((spec) => (spec.key === target.key ? { ...spec, returnNoteKeys: [...spec.returnNoteKeys, key] } : spec)),
+            };
+            return { project: next, lifecycle: deriveLifecycle(next) };
+        };
+        const appears = withNote('DONE');
+        const appearedBest = await bestOfThree(async () => {
+            w.source.set(appears);
+            await w.service.whenIdle();
+        });
+        expect(stageTwo()?.returned).toEqual({ status: 'done' });
+        expect(appearedBest).toBeLessThan(BUDGET_MS.uiFreshness);
+
+        const changes = withNote('BLOCKED');
+        const changedBest = await bestOfThree(async () => {
+            w.source.set(changes);
+            await w.service.whenIdle();
+        });
+        expect(stageTwo()?.returned?.status).toBe('blocked');
+        expect(changedBest).toBeLessThan(BUDGET_MS.uiFreshness);
+
+        const goneBest = await bestOfThree(async () => {
+            w.source.set({ project: { ...project }, lifecycle: model.lifecycle });
+            await w.service.whenIdle();
+        });
+        expect(stageTwo()?.returned).toBeUndefined();
+        expect(goneBest).toBeLessThan(BUDGET_MS.uiFreshness);
     });
 });

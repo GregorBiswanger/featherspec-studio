@@ -1,4 +1,5 @@
 import { isRecord } from './envelope';
+import { isPlanUnreadableView, isPlanView, type PlanUnreadableView, type PlanView } from './planMap';
 import { isStepTipsView, type StepTipsView } from './stepView';
 
 export interface LineTarget {
@@ -86,6 +87,7 @@ export interface SpecDetailView {
     problems: DiagnosticLine[];
     notes: DiagnosticLine[];
     progress?: ProgressView;
+    plan?: PlanView | PlanUnreadableView;
     files: FileRow[];
     history: HistorySection;
 }
@@ -208,6 +210,7 @@ export function isDetailView(value: unknown): value is DetailView {
         Array.isArray(value.notes) &&
         value.notes.every(isDiagnosticLine) &&
         (value.progress === undefined || isProgressView(value.progress)) &&
+        (value.plan === undefined || isPlanView(value.plan) || isPlanUnreadableView(value.plan)) &&
         Array.isArray(value.files) &&
         value.files.every(isFileRow) &&
         isHistorySection(value.history)

@@ -111,6 +111,42 @@ describe('0017 AC-023: no Copy, click or command writes a file', () => {
         board.service.dispose();
     });
 
+    it('0023 AC-014: the Copy of a stage prompt and of a start line, and opening a step heading, leave a temp copy of fs110-parallel-synthetic unchanged', async () => {
+        temp = await fs.mkdtemp(path.join(os.tmpdir(), 'copy-nowrite-'));
+        await fs.cp(fixturePath('fs110-parallel-synthetic'), temp, { recursive: true });
+        await fs.rm(path.join(temp, '.memory-bank', 'activeContext.0001-T-003.md'));
+        await fs.rm(path.join(temp, '.memory-bank', 'activeContext.0001-T-004.md'));
+        const planFile = path.join(temp, '.specs', 'active', '0001-parallel-demo.plan.md');
+        await fs.writeFile(planFile, (await fs.readFile(planFile, 'utf8')).replace('**Status:** Blocked', '**Status:** In Progress'));
+        const project = await readProject(createNodeSpecSource(), temp, '1.10.0');
+        const model = { project, lifecycle: deriveLifecycle(project) };
+        const before = await snapshotTree(temp);
+        const board = createBoardWorld(model);
+        board.selection.set({ stem: '0001-parallel-demo' });
+        await board.service.whenIdle();
+        const opened: Array<[string, number | undefined]> = [];
+        const written: string[] = [];
+        const requests = createBoardRequests({
+            board: board.service,
+            openFile: { open: async (key: string, line?: number) => (opened.push([key, line]), { kind: 'opened' }) } as never,
+            clipboard: { writeText: async (text) => void written.push(text) },
+        });
+        const detail = board.service.detail();
+        const plan = detail.kind === 'spec' ? detail.plan : undefined;
+        expect(plan?.kind).toBe('plan');
+        const step = plan?.kind === 'plan' ? plan.stages[1]!.groups[0]!.steps[0]! : undefined;
+        const ways = plan?.kind === 'plan' ? plan.stages[1]!.ways : undefined;
+        expect(ways).toBeDefined();
+        for (const text of [...ways!.prompts, ...ways!.startLines]) {
+            await requests.handlers.copyText({ text });
+        }
+        await requests.handlers.openFile({ key: step!.open!.key, line: step!.open!.line });
+        expect(written).toEqual([...ways!.prompts, ...ways!.startLines]);
+        expect(opened).toEqual([[step!.open!.key, step!.open!.line]]);
+        expect(await snapshotTree(temp)).toEqual(before);
+        board.service.dispose();
+    });
+
     it('control: the snapshot sees a file that appears in the tree', async () => {
         temp = await fs.mkdtemp(path.join(os.tmpdir(), 'copy-nowrite-'));
         await fs.cp(fixturePath('fs110-ready-synthetic'), temp, { recursive: true });

@@ -416,3 +416,20 @@ describe('0023 AC-002: the marked step is the one the next step names', () => {
         expect(checked).toBeGreaterThanOrEqual(4);
     });
 });
+
+describe('0023 AC-014: the projection needs neither trust nor a writer', () => {
+    it('the planMap files and the plan texts name no trust, writer, Restricted Mode or reader window', async () => {
+        for (const file of ['src/core/planMap/planMap.ts', 'src/core/planMap/planSpecs.ts', 'src/shared/protocol/planMap.ts', 'src/shared/protocol/planMapTexts.ts']) {
+            const source = await readFile(path.resolve(process.cwd(), ...file.split('/')), 'utf8');
+            expect(source, file).not.toMatch(/trust|writer|restricted|\breader\b/i);
+        }
+        expect('const restricted = true;').toMatch(/trust|writer|restricted|\breader\b/i);
+    });
+
+    it('the same model gives equal views however often and wherever it is built', async () => {
+        const first = planViewOf(await parallelModel(), PARALLEL_SPEC);
+        const second = planViewOf(await parallelModel(), PARALLEL_SPEC);
+        expect(second).toEqual(first);
+        expect(JSON.stringify(planViewOf(await generatedModel(), GEN_SPEC))).toBe(JSON.stringify(planViewOf(await generatedModel(), GEN_SPEC)));
+    });
+});

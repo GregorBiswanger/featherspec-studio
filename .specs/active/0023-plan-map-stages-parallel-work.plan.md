@@ -3,7 +3,7 @@
 **Spec:** [0023-plan-map-stages-parallel-work.md](0023-plan-map-stages-parallel-work.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-003
+**Current step:** T-004
 
 ## Approach
 
@@ -277,8 +277,8 @@ orchestrator) at the ends of stages 2 and 3; AC-018 screenshots recorded here.
 - **Verify:** `npx vitest run --project node src/core/board src/core/planMap src/core/copyNextStep/noWrite.test.ts src/shared/protocol`
   and `npx vitest run --project timing-node src/core/board/boardService.timing.test.ts` red (stub), then green; gates
   1–4
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-18 · `npx vitest run --project node src/core/board src/core/planMap src/core/copyNextStep/noWrite.test.ts src/shared/protocol` and `npx vitest run --project timing-node src/core/board/boardService.timing.test.ts`: red first (guards and `buildPlanSpecs` stubs: 4 of 4 guard tests, the board service and detail tests failed with `Not implemented`), then green (390 of 390 in board and copyNextStep, timing 4 of 4); gates 1–4 green, `npm run test:unit` 2700 passed + 3 skipped (+16 timing)
+- **Notes:** `PROTOCOL_VERSION` is 6; the six `v: 5` literals are `v: 6` and the "another version" literals `v: 7`. `BoardView.planSpecs` is required (strict guard), so the three literal board views in tests carry `planSpecs: []`. `core/shell/specTree.ts` exports `STATE_GROUP`, `GROUP_ORDER` and `compareRows` (P-11). The AC-012 timing test was written with the stubs in place and ran green once they were filled (the stub made every board build fail); its control is the first assertion (T-003 not returned before the note).
 
 ### T-004 — The Plan map tab, its command and its states
 

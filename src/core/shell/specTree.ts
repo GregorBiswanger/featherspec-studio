@@ -89,7 +89,7 @@ export interface SpecTreeInput {
 
 type GroupKey = keyof typeof GROUP_LABELS;
 
-const STATE_GROUP: Record<BoardState, GroupKey> = {
+export const STATE_GROUP: Record<BoardState, GroupKey> = {
     Blocked: 'inProgress',
     Review: 'inProgress',
     Active: 'inProgress',
@@ -98,7 +98,7 @@ const STATE_GROUP: Record<BoardState, GroupKey> = {
     Done: 'done',
 };
 
-const GROUP_ORDER: readonly GroupKey[] = ['inProgress', 'ready', 'backlog', 'done'];
+export const GROUP_ORDER: readonly GroupKey[] = ['inProgress', 'ready', 'backlog', 'done'];
 
 const IN_PROGRESS_RANK: Partial<Record<BoardState, number>> = { Blocked: 0, Review: 1, Active: 2 };
 
@@ -108,7 +108,7 @@ function compareText(left: string, right: string): number {
     return left < right ? -1 : left > right ? 1 : 0;
 }
 
-function compareRows(left: CardView, right: CardView): number {
+export function compareRows(left: CardView, right: CardView): number {
     return (
         (IN_PROGRESS_RANK[left.state] ?? 0) - (IN_PROGRESS_RANK[right.state] ?? 0) ||
         Number(left.number) - Number(right.number) ||
