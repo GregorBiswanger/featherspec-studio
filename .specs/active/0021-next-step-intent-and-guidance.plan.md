@@ -1,7 +1,7 @@
 # Plan — Next Step with Intent and Guidance
 
 **Spec:** [0021-next-step-intent-and-guidance.md](0021-next-step-intent-and-guidance.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-18
 **Current step:** T-001
 
@@ -375,5 +375,5 @@ AC-004 is void (PD-072 chose variant A); no step builds it.
 - **Done so far:** plan written 2026-11-18; spec revised (P-1).
 - **Next action:** Gregor reads the plan; on the start signal the pair moves to `active/` and T-001 starts.
 - **Open decisions:** none for Gregor; proxies P-1…P-22 above.
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** `0ef5875` (head before the first step commit; moved to active/ 2026-11-18 on Gregor's delegated start signal)
 - **Environment:** `npm test` (host smoke) only on Windows and CI; layout checks in the orchestrator's harness.

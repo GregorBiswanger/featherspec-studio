@@ -1,6 +1,6 @@
 # Next Step with Intent and Guidance
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0021-next-step-intent-and-guidance.plan.md](0021-next-step-intent-and-guidance.plan.md)
 
 Basis: review `docs/ux-audit/07-implementation-review.md` (2026-11-18) N-1, §5.1, §5.2, §6a; work order
