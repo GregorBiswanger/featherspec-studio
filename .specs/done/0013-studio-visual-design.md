@@ -96,12 +96,11 @@ Marketplace listing. Users: the developer in the Studio panel; Gregor accepts th
 
 ### 3.4 Spec Explorer
 
-*Amended by 0020 (PD-058): §3.4 first bullet — void for the list pane and the selected row; the detail's layout is 0019's (0020 §5).*
-
 *Amended by 0019 (PD-058): §3.4 detail bullets (header "Open file", sections, per-section Open file, inline Markdown and tidying of file text) — header per 0019 §6.2 row 1; collapsible: Format notes and Status history only; no file text. The safe inline renderer and AC-014 stay for problem and note reasons, which quote file text.*
 
 - Two panes (list with own scroll; detail with header: number chip, title, state chip, "Open
   file"), stacked under 640 px; selected row by background and border (D-12), no wrap (D-11).
+  *Amended by 0020 (PD-058): §3.4 first bullet — void for the list pane and the selected row; the detail's layout is 0019's (0020 §5).*
 - **Sections** (0007 §6.4 names): the heading is a button that collapses or expands the body;
   all start expanded; the choice is kept per section name across selections while the panel is
   open. **Open file**: one per section in its heading row, opening 0007's file at the top;
