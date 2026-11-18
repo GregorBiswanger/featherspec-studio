@@ -20,7 +20,7 @@ import { createProjectLine } from './core/copyNextStep/projectLine';
 import { createStatusEntry } from './core/copyNextStep/statusEntry';
 import { createStudioTree } from './adapters/vscode/studioTree';
 import { createTrust } from './adapters/vscode/trust';
-import { BOARD_MEMORY_KEY, SHELL_MEMORY_KEY, createUiMemory } from './adapters/vscode/uiMemory';
+import { BOARD_MEMORY_KEY, SHELL_MEMORY_KEY, SIDE_PANEL_MEMORY_KEY, createUiMemory } from './adapters/vscode/uiMemory';
 import { sameRootFor } from './adapters/vscode/sameRoot';
 import { createStatusItem, type StatusItemInspection } from './adapters/vscode/statusBar';
 import { createStepUi } from './adapters/vscode/stepUi';
@@ -162,6 +162,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         folders: createWorkspaceFolders(),
         trust: createTrust(),
         memory: createUiMemory(context.workspaceState, SHELL_MEMORY_KEY),
+        sideMemory: createUiMemory(context.workspaceState, SIDE_PANEL_MEMORY_KEY),
         actions: shellActions,
         sameRoot,
     });

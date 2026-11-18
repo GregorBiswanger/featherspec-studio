@@ -3,7 +3,7 @@
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-002
+**Current step:** T-003
 
 ## Approach
 
@@ -257,8 +257,8 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
   folder: the port is the only writer); `messages.test.ts` (guards accept and refuse); `client.test.ts` (requests sent).
 - **Verify:** `npx vitest run --project node src/shared/protocol/layout.test.ts src/core/shell/sidePanelWidth.test.ts src/shared/protocol/messages.test.ts`
   and `npx vitest run --project webview src/webview/client.test.ts` red (stub), then green; gates 1–5
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-18, red first with `Not implemented` stubs: `npx vitest run --project node src/shared/protocol/layout.test.ts src/core/shell/sidePanelWidth.test.ts src/shared/protocol/messages.test.ts src/core/shell/messageRouter.test.ts --project webview src/webview/client.test.ts`: 18 failed (stubs throw, guard returns false, handlers and client methods do nothing), the rest passed; green after the code: same command all passed. Gates: eslint 0 warnings, `tsc --noEmit` and `-p src/webview` clean, `npm run test:unit` 2271 passed, 3 skipped (+13 timing), `npm run compile` green (gate 5).
+- **Notes:** `SIDE_PANEL_MEMORY_KEY = 'featherspec-studio.sidePanel'` (`adapters/vscode/uiMemory.ts`), `ShellServiceDeps.sideMemory` is required (the world has a second fake memory `sideMemory`); `ShellView.sideWidth?` is validated by `isShellView` (a stored fraction outside 0…1 never reaches the view); `maxSideWidth(frame)` and `isSideFraction` added to `layout.ts` for the divider (T-003). A staying test had to change: `boardFilter.test.ts` "every board request has a guard" lists the two new request types. The webview `Shell` wrapper gets `setSideWidth`/`resetSideWidth` in T-003, where they are used.
 
 ### T-003 — A divider sets the side panel's width; Enter or a double-click resets it
 

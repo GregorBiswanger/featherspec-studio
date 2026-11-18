@@ -3,6 +3,7 @@ import { isBoardView, isSortKey, type BoardView, type SortKey } from './board';
 import { isDetailView, type DetailView } from './detail';
 import { isBoardFilter, type BoardFilter } from './boardFilter';
 import { isRecord } from './envelope';
+import { isSideFraction } from './layout';
 import { isDerivedRule, type DerivedRule } from './board';
 import { isOverviewView, type OverviewView } from './overview';
 
@@ -66,6 +67,7 @@ export interface ShellView {
     target: NavigationTarget | undefined;
     selection: SelectedSpec | undefined;
     notice: { number: string } | undefined;
+    sideWidth?: number;
 }
 
 export interface HelloPayload {
@@ -103,6 +105,10 @@ export interface CopyResultEventPayload {
     text: string;
 }
 
+export interface SetSideWidthPayload {
+    fraction: number;
+}
+
 export interface ShellRequestPayloads {
     hello: HelloPayload;
     navigate: NavigationRequest;
@@ -110,6 +116,8 @@ export interface ShellRequestPayloads {
     clearSelection: Record<string, never>;
     runAction: RunActionPayload;
     dismissNotice: Record<string, never>;
+    setSideWidth: SetSideWidthPayload;
+    resetSideWidth: Record<string, never>;
 }
 
 export interface BoardRequestPayloads {
@@ -197,6 +205,10 @@ export function isEmptyPayload(value: unknown): value is Record<string, never> {
     return value === undefined || (isRecord(value) && Object.keys(value).length === 0);
 }
 
+export function isSetSideWidthPayload(value: unknown): value is SetSideWidthPayload {
+    return isRecord(value) && Object.keys(value).length === 1 && isSideFraction(value.fraction);
+}
+
 export function isBoardSetDonePayload(value: unknown): value is BoardSetDonePayload {
     return isRecord(value) && Object.keys(value).length === 1 && typeof value.expanded === 'boolean';
 }
@@ -249,6 +261,8 @@ export const REQUEST_GUARDS: { [Type in RequestType]: (value: unknown) => value 
     clearSelection: isEmptyPayload,
     runAction: isRunActionPayload,
     dismissNotice: isEmptyPayload,
+    setSideWidth: isSetSideWidthPayload,
+    resetSideWidth: isEmptyPayload,
     boardSetSort: isBoardSetSortPayload,
     boardSetDone: isBoardSetDonePayload,
     boardClearFilters: isEmptyPayload,
@@ -319,7 +333,8 @@ export function isShellView(value: unknown): value is ShellView {
         isAreaId(value.area) &&
         (value.target === undefined || isNavigationTarget(value.target)) &&
         (selection === undefined || (isRecord(selection) && isString(selection.stem) && isOptionalString(selection.path) && isString(selection.number))) &&
-        (notice === undefined || (isRecord(notice) && isString(notice.number)))
+        (notice === undefined || (isRecord(notice) && isString(notice.number))) &&
+        (value.sideWidth === undefined || isSideFraction(value.sideWidth))
     );
 }
 

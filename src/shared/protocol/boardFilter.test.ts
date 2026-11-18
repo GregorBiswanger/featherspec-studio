@@ -65,8 +65,10 @@ describe('board requests', () => {
                 'navigate',
                 'openFile',
                 'overviewSetActivity',
+                'resetSideWidth',
                 'runAction',
                 'select',
+                'setSideWidth',
             ].sort(),
         );
     });

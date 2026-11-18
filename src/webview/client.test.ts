@@ -93,3 +93,14 @@ describe('AC-015: S5 because panel UI and extension cannot agree', () => {
         expect(client.getSnapshot().state).toEqual(state);
     });
 });
+
+describe('0022 AC-024: the side panel width requests', () => {
+    it('setSideWidth sends the fraction and resetSideWidth an empty payload', () => {
+        const client = make();
+        client.setSideWidth(0.6);
+        expect(posted.at(-1)).toMatchObject({ kind: 'req', type: 'setSideWidth', payload: { fraction: 0.6 } });
+        client.resetSideWidth();
+        expect(posted.at(-1)).toMatchObject({ kind: 'req', type: 'resetSideWidth', payload: {} });
+        expect(posted.filter((message) => message.type === 'setSideWidth' || message.type === 'resetSideWidth')).toHaveLength(2);
+    });
+});

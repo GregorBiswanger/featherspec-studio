@@ -116,6 +116,32 @@ describe('AC-021: request guards accept and reject', () => {
     });
 });
 
+describe('0022 AC-024: the side panel width requests', () => {
+    it('setSideWidth accepts exactly one fraction above 0 and below 1', () => {
+        expect(REQUEST_GUARDS.setSideWidth({ fraction: 0.6 })).toBe(true);
+        expect(REQUEST_GUARDS.setSideWidth({ fraction: 0.001 })).toBe(true);
+        for (const value of [{}, { fraction: 0 }, { fraction: 1 }, { fraction: -0.2 }, { fraction: Number.NaN }, { fraction: Number.POSITIVE_INFINITY }, { fraction: '0.5' }, { fraction: 0.5, extra: 1 }, undefined, 0.5, null]) {
+            expect(REQUEST_GUARDS.setSideWidth(value), JSON.stringify(value)).toBe(false);
+        }
+    });
+
+    it('resetSideWidth accepts an empty payload and nothing else', () => {
+        expect(REQUEST_GUARDS.resetSideWidth({})).toBe(true);
+        expect(REQUEST_GUARDS.resetSideWidth(undefined)).toBe(true);
+        expect(REQUEST_GUARDS.resetSideWidth({ fraction: 0.5 })).toBe(false);
+        expect(isRequestType('setSideWidth')).toBe(true);
+        expect(isRequestType('resetSideWidth')).toBe(true);
+    });
+
+    it('a shell view tolerates the width fraction and refuses an invalid one; without it the view is as before', () => {
+        expect(isShellView({ ...view, sideWidth: 0.6 })).toBe(true);
+        expect(isShellView(view)).toBe(true);
+        for (const value of [0, 1, -1, Number.NaN, '0.5', null]) {
+            expect(isShellView({ ...view, sideWidth: value }), String(value)).toBe(false);
+        }
+    });
+});
+
 describe('host messages: guards accept and reject', () => {
     it('accepts a complete shell view and rejects broken ones', () => {
         expect(isShellView(view)).toBe(true);

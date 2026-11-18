@@ -45,6 +45,8 @@ export interface ShellClient {
     navigate(request: NavigationRequest): void;
     select(reference: SpecReference): void;
     clearSelection(): void;
+    setSideWidth(fraction: number): void;
+    resetSideWidth(): void;
     runAction(action: ActionId): void;
     dismissNotice(): void;
     setBoardSort(sort: SortKey): void;
@@ -241,6 +243,12 @@ export function createClient(deps: ClientDeps): ShellClient {
         },
         clearSelection() {
             send('clearSelection', {});
+        },
+        setSideWidth(fraction) {
+            send('setSideWidth', { fraction });
+        },
+        resetSideWidth() {
+            send('resetSideWidth', {});
         },
         runAction(action) {
             send('runAction', { action });
