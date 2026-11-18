@@ -1,7 +1,7 @@
 # Overview and a Compact Board
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0018-overview-and-compact-board.plan.md](0018-overview-and-compact-board.plan.md)
 
 Basis: UX audit 2026-11-17 (`docs/ux-audit/`) R-06, R-10, R-14, R-15 (05); K-C, K-D, K-J (04); 03 §5–§7;
 findings 02 §3.3–§3.5, §3.11 (screenshots 03, 04, 20, 22, 28, 29). Decisions PD-058, PD-062, PD-016,
