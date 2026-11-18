@@ -244,6 +244,12 @@ export const DONE_SHOW_LABEL = 'Show Done';
 export const DONE_HIDE_LABEL = 'Hide Done';
 export const CLEAR_FILTERS_LABEL = 'Clear filters';
 export const SORT_LABEL = 'Sort';
+
+export const FILTERS_LABEL = 'Filters';
+
+export const SELECT_PROJECT_PLACEHOLDER = 'Select the FeatherSpec project';
+
+export const PANEL_TITLE = 'FeatherSpec Studio';
 export const FILTER_CHIP_LABEL = 'Filter';
 
 export const SORT_LABELS: Record<SortKey, string> = {

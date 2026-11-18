@@ -11,6 +11,7 @@ import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../../shared/prot
 import { isProbeResultPayload, type BoardRequestType, type CopyResultEventPayload, type OverviewRequestType, type ProbeOutcome } from '../../shared/protocol/messages';
 import { createProbeChannel } from './probeChannel';
 import { buildWebviewHtml } from './webviewHtml';
+import { PANEL_TITLE } from '../../shared/protocol/texts';
 
 export const VIEW_TYPE = 'featherspecStudio.main';
 const PROBE_HELLO_TIMEOUT_MS = 20_000;
@@ -194,7 +195,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
                 return;
             }
             reloaded = false;
-            const created = vscode.window.createWebviewPanel(VIEW_TYPE, 'FeatherSpec Studio', { viewColumn: vscode.ViewColumn.Active, preserveFocus }, options());
+            const created = vscode.window.createWebviewPanel(VIEW_TYPE, PANEL_TITLE, { viewColumn: vscode.ViewColumn.Active, preserveFocus }, options());
             adopt(created);
             render(created);
         },

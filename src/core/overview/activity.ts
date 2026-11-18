@@ -1,10 +1,11 @@
 import type { ActivityEntry, McActivity } from '../../shared/protocol/overview';
 import type { HistoryView } from '../lifecycle/statusHistory';
 import type { SpecResolver } from './specRefs';
+import { historyUnavailableText } from '../lifecycle/historyTexts';
 
 export const ACTIVITY_LIMIT = 10;
 
-const HISTORY_PREFIX = 'Status history not available: ';
+const HISTORY_PREFIX = historyUnavailableText('');
 
 interface Ranked {
     entry: ActivityEntry;

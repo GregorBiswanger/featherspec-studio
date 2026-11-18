@@ -152,6 +152,17 @@ describe('lifecycle service', () => {
         service.dispose();
     });
 
+    it('AC-024: a session that gives no reason makes the history say it could not be read', async () => {
+        const repo = fakeRepository();
+        repo.set(await readMemory(ACTIVE_FILES));
+        const fake = fakeSession(undefined);
+        fake.replace(undefined, { kind: 'unavailable', reason: undefined });
+        const service = createLifecycleService({ repository: repo.repository, session: fake.session, clock: fakeClock() });
+        await service.whenIdle();
+        expect(await service.history()).toEqual({ available: false, text: 'Status history not available: it could not be read' });
+        service.dispose();
+    });
+
     it('AC-024: a store that appears later gets its own baseline; a failing store does not stop the model', async () => {
         const repo = fakeRepository();
         repo.set(await readMemory(ACTIVE_FILES));

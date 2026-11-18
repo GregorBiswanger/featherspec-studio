@@ -7,6 +7,7 @@ import { deriveLifecycle } from './deriveLifecycle';
 import type { LifecycleModel, LifecycleState } from './model';
 import { createStatusHistory } from './statusHistory';
 import type { HistoryView, StatusHistory } from './statusHistory';
+import { HISTORY_REASON_UNREADABLE, historyUnavailableText } from './historyTexts';
 
 export interface LifecycleServiceDeps {
     repository: Pick<SpecRepository, 'snapshot' | 'onDidChange'>;
@@ -74,7 +75,7 @@ export function createLifecycleService(deps: LifecycleServiceDeps): LifecycleSer
         model: () => model,
         async history() {
             if (recorder === undefined) {
-                return { available: false, text: `Status history not available: ${session.state().reason ?? 'no store'}` };
+                return { available: false, text: historyUnavailableText(session.state().reason ?? HISTORY_REASON_UNREADABLE) };
             }
             return recorder.read();
         },

@@ -9,6 +9,7 @@ import { buildDetail } from './detail';
 import { createBoardUiState } from './boardUiState';
 import { buildBanner, buildCards } from './cards';
 import { arrangeBoard } from './filters';
+import { HISTORY_REASON_UNREADABLE, historyUnavailableText } from '../lifecycle/historyTexts';
 
 export interface BoardServiceDeps {
     source: ShellModelSource;
@@ -43,7 +44,7 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
     const ui = createBoardUiState(deps.memory);
     const listeners = new Set<(view: BoardView | undefined) => void>();
     const detailListeners = new Set<(view: DetailView) => void>();
-    let history: HistoryView = { available: false, text: 'Status history not available: no store' };
+    let history: HistoryView = { available: false, text: historyUnavailableText(HISTORY_REASON_UNREADABLE) };
     let lastDetail = '';
     let built: Built | undefined;
     let sequence = 0;
@@ -127,7 +128,7 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
         try {
             nextHistory = await deps.history.read();
         } catch {
-            nextHistory = { available: false, text: 'Status history not available' };
+            nextHistory = { available: false, text: historyUnavailableText() };
         }
         if (token !== sequence || disposed) {
             return;

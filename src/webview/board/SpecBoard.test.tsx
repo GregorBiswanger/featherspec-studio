@@ -202,6 +202,11 @@ describe('AC-008: opening a card', () => {
 });
 
 describe('AC-012, AC-022: the filter bar', () => {
+    it('the filter bar group is named Filters, from the text module', async () => {
+        const container = await open();
+        expect(container.querySelector('.filter-bar')?.getAttribute('aria-label')).toBe('Filters');
+    });
+
     it('AC-017: the board offers no checkbox and no filter control of its own, only the sort select', async () => {
         const container = await open(boardView([card('0001')]));
         expect(container.querySelectorAll('input, fieldset, legend')).toHaveLength(0);

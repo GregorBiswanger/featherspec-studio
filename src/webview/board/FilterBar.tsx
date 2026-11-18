@@ -1,5 +1,5 @@
 import type { BoardView, SortKey } from '../../shared/protocol/board';
-import { CLEAR_FILTERS_LABEL, FILTER_CHIP_LABEL, SORT_LABEL, SORT_LABELS } from '../../shared/protocol/texts';
+import { CLEAR_FILTERS_LABEL, FILTERS_LABEL, FILTER_CHIP_LABEL, SORT_LABEL, SORT_LABELS } from '../../shared/protocol/texts';
 
 export function filterLabel(filter: BoardView['filter']): string | undefined {
     if (filter.set !== undefined) {
@@ -12,7 +12,7 @@ export function FilterBar(props: { board: BoardView; setSort(sort: SortKey): voi
     const { board } = props;
     const label = filterLabel(board.filter);
     return (
-        <div className="filter-bar" role="group" aria-label="Filters">
+        <div className="filter-bar" role="group" aria-label={FILTERS_LABEL}>
             {label === undefined ? null : (
                 <>
                     <span className="set-chip" data-filter-chip>

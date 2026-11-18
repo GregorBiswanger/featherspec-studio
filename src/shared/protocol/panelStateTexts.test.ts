@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PanelState } from './messages';
-import { ACTION_LABELS, panelStateActions, panelStateLines, S2_WELCOME } from './texts';
+import { ACTION_LABELS, FILTERS_LABEL, PANEL_TITLE, panelStateActions, panelStateLines, S2_WELCOME, SELECT_PROJECT_PLACEHOLDER } from './texts';
 
 const pending = { folder: 'api', markers: [], setupPending: true as const };
 const missing = { folder: 'web', markers: ['.specs/ directory'] };
@@ -64,5 +64,13 @@ describe('AC-001: the S2 welcome text of the navigator', () => {
             ].join('\n'),
         );
         expect(S2_WELCOME.split('\n')[0]).toBe(panelStateLines({ id: 'S2' })[0]);
+    });
+});
+
+describe('final check 7: the literals that were written in the adapters and the filter bar', () => {
+    it('are one constant each, asserted literally', () => {
+        expect(FILTERS_LABEL).toBe('Filters');
+        expect(SELECT_PROJECT_PLACEHOLDER).toBe('Select the FeatherSpec project');
+        expect(PANEL_TITLE).toBe('FeatherSpec Studio');
     });
 });

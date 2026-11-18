@@ -1,12 +1,13 @@
 import * as vscode from 'vscode';
 import type { NotificationAction, SelectItem, UiPort } from '../../core/ports/host';
+import { SELECT_PROJECT_PLACEHOLDER } from '../../shared/protocol/texts';
 
 export function createUi(): UiPort {
     return {
         async showQuickPick(items) {
             const picked = await vscode.window.showQuickPick(
                 items.map((item) => ({ label: item.label, description: item.description, detail: item.detail, item })),
-                { placeHolder: 'Select the FeatherSpec project' },
+                { placeHolder: SELECT_PROJECT_PLACEHOLDER },
             );
             return picked?.item as SelectItem | undefined;
         },

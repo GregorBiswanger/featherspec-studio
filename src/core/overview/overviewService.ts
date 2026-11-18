@@ -6,6 +6,7 @@ import type { RequestHandlers } from '../shell/messageRouter';
 import type { OverviewRequestType } from '../../shared/protocol/messages';
 import type { ShellModelSource } from '../ports/shell';
 import { buildOverviewView } from './overviewView';
+import { historyUnavailableText } from '../lifecycle/historyTexts';
 
 export interface OverviewServiceDeps {
     source: ShellModelSource;
@@ -22,7 +23,7 @@ export interface OverviewService {
     dispose(): void;
 }
 
-const HISTORY_FAILED: HistoryView = { available: false, text: 'Status history not available' };
+const HISTORY_FAILED: HistoryView = { available: false, text: historyUnavailableText() };
 
 export function createOverviewService(deps: OverviewServiceDeps): OverviewService {
     const listeners = new Set<(view: OverviewView | undefined) => void>();

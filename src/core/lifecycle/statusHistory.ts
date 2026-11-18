@@ -6,6 +6,7 @@ import { changedPaths } from './changedPaths';
 import { classifyFlow } from './flow';
 import type { FlowMarker } from './flow';
 import type { LifecycleModel, LifecycleState, RuleId } from './model';
+import { historyUnavailableText } from './historyTexts';
 
 export { HISTORY_LABEL };
 
@@ -193,7 +194,7 @@ export function createStatusHistory(deps: StatusHistoryDeps): StatusHistory {
         async read() {
             const stored = await readStored();
             if (!stored.ok) {
-                return { available: false, text: `Status history not available: ${stored.reason}` };
+                return { available: false, text: historyUnavailableText(stored.reason) };
             }
             return { available: true, label: HISTORY_LABEL, entries: stored.entries };
         },
