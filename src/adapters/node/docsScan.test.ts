@@ -335,7 +335,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         expect(text.match(/^## \[/gm)).toEqual(['## [']);
         expect(text).toContain('\n## [0.1.0] - Unreleased\n');
         expect(text).not.toContain('## [Unreleased]');
-        const lower = text.toLowerCase();
+        const lower = text.toLowerCase().split('featherspec-studio.assistant').join('');
         for (const gone of ['drag', 'move to', 'mission control', 'spec explorer', 'spec board', 'rescan', 'needs attention', 'featherspec-studio.']) {
             expect(lower, gone).not.toContain(gone);
         }
@@ -371,6 +371,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
             '## Next step with intent and guidance (0021)',
             '## Layout and signal polish (0022)',
             '## Plan map (0023)',
+            '## Send to the assistant (0024)',
             '## Go',
         ]);
         for (const gone of ['Plan line', 'descriptions cut', 'attention row', 'attention reason', 'filters, sort']) {
@@ -686,3 +687,72 @@ describe('product docs after 0023 (AC-017)', () => {
         expect('no note here'.split('Amended by 0023 (PD-069)').length - 1).toBe(0);
     });
 });
+
+describe('product docs after 0024 (AC-015)', () => {
+    it('the README names the setting, both Send buttons, "sends nothing" and Open Settings', async () => {
+        const readme = await read('README.md');
+        for (const literal of ['featherspec-studio.assistant', 'Send to Copilot', 'Send to Claude Code', 'sends nothing', 'Open Settings']) {
+            expect(readme, literal).toContain(literal);
+        }
+    });
+
+    it('the CHANGELOG names the setting and Send under the version in preparation', async () => {
+        const first = firstRelease(await read('CHANGELOG.md'));
+        expect(first).toContain('featherspec-studio.assistant');
+        expect(first).toContain('Send to');
+    });
+
+    it('the release checklist has the 0024 section with AC-016 to AC-019 and one line each for GitHub Copilot, Claude Code and Codex', async () => {
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('\n## Send to the assistant (0024)\n');
+        expect(start).toBeGreaterThan(-1);
+        expect(start).toBeLessThan(text.indexOf('\n## Go'));
+        const section = text.slice(start, text.indexOf('\n## ', start + 1));
+        for (const mark of ['**AC-016**', '**AC-017**', '**AC-018**', '**AC-019**']) {
+            expect(section, mark).toContain(mark);
+        }
+        const lines = section.split('\n');
+        const copilot = lines.find((line) => line.includes('GitHub Copilot: '));
+        const claude = lines.find((line) => line.includes('Claude Code: '));
+        const codex = lines.find((line) => line.includes('Codex: '));
+        expect(copilot).toContain('VS Code 1.147.0, GitHub Copilot Chat 0.75.0');
+        expect(claude).toContain('VS Code 1.147.0, Claude Code 2.1.327');
+        expect(codex).toContain('Copy prompt only');
+    });
+
+    for (const [file, notes] of [
+        ['.specs/done/0013-studio-visual-design.md', 1],
+        ['.specs/active/0015-focus-on-visibility.md', 7],
+        ['.specs/active/0016-honest-signals.md', 2],
+        ['.specs/active/0017-next-step-everywhere.md', 3],
+        ['.specs/active/0018-overview-and-compact-board.md', 4],
+        ['.specs/active/0019-detail-situation-picture.md', 5],
+        ['.specs/active/0020-native-spec-tree.md', 4],
+        ['.specs/active/0021-next-step-intent-and-guidance.md', 12],
+        ['.specs/active/0022-layout-and-signal-polish.md', 11],
+        ['.specs/active/0023-plan-map-stages-parallel-work.md', 3],
+    ] as const) {
+        it(`${file} carries its ${notes} notes of 0024`, async () => {
+            const text = await read(file);
+            expect(text.split('Amended by 0024 (PD-068)').length - 1).toBeGreaterThanOrEqual(notes);
+        });
+    }
+
+    it('the catch-all note heads 0015, 0018, 0019, 0021, 0022 and 0023', async () => {
+        for (const name of ['0015-focus-on-visibility', '0018-overview-and-compact-board', '0019-detail-situation-picture', '0021-next-step-intent-and-guidance', '0022-layout-and-signal-polish', '0023-plan-map-stages-parallel-work']) {
+            const text = await read(`.specs/active/${name}.md`);
+            const head = text.slice(0, text.indexOf('\n## '));
+            expect(head, name).toContain('Amended by 0024 (PD-068): where Send is offered');
+        }
+    });
+
+    it('no row of the PD register names 0024 as its editor', async () => {
+        const register = await read('docs/product/product-decisions.md').catch(() => '');
+        expect(register).not.toContain('Amended by 0024');
+    });
+
+    it('negative control: a text without the note has none', () => {
+        expect('no note here'.split('Amended by 0024 (PD-068)').length - 1).toBe(0);
+    });
+});
+

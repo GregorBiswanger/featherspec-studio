@@ -44,6 +44,10 @@ Under the first prompt of the detail, and in the first Now row of the Overview, 
 
 The status bar shows the spec you work on: `<number> · <state> · <short form>`. The current spec is the one selected in the Specs view, the Overview or the Board; without a selection, the most urgent spec with a step (Blocked, then Review, then Active). A click copies the full line and the entry reads **Copied** for two seconds. Without a current spec the click opens a quick pick of the specs that have a step. The tooltip carries the project name and the FeatherSpec version, an "Open Studio" link and, with several projects, "Switch project".
 
+### Send to your assistant
+
+Choose your assistant once with the setting `featherspec-studio.assistant` (**Open Settings**, the gear in the Specs view, takes you there): `none` (the default), `copilot` or `claudeCode`. While that assistant's extension is installed and enabled, the first prompt of the detail and the first Now row of the Overview offer **Send to Copilot** or **Send to Claude Code** in place of **Copy prompt**. The button opens the assistant's chat with the prompt already in its input; it sends nothing, you read the prompt and send it yourself. The arrow beside the button opens a menu with the other chat (GitHub Copilot can open a new chat or use the current one; Claude Code opens a new chat) and **Copy prompt**. The default is a new chat where the step wants a fresh session (the verification and the review) and the current chat otherwise. If the chat cannot be opened, Studio copies the prompt and says so in one notification. Without the setting, or without the extension, nothing changes: you see **Copy prompt** only, and Codex and other assistants keep working the same way.
+
 ## Requirements
 
 - VS Code 1.146 or newer (desktop).
@@ -89,17 +93,19 @@ A spec with contradictory or unreadable files stays in the column of its folder 
 | `FeatherSpec Studio: Open Overview` / `Open Board` / `Open Plan Map` | Open the panel on that tab |
 | `FeatherSpec Studio: Focus on Specs View` | Move the keyboard focus into the Specs view |
 | `FeatherSpec Studio: Copy Next Step` | Copy the prompt of the next step of the current spec (same as a click on the status bar entry); without a current spec, pick a spec from a list |
+| `FeatherSpec Studio: Open Settings` | Open the Settings UI at the settings of this extension (the gear in the Specs view) |
 | `FeatherSpec Studio: Select Project` | Choose the active project when the workspace has several |
 | `FeatherSpec Studio: Refresh` | Run project discovery again, then read the specs of the active project again |
 
 ## Settings
 
-Both settings are under **FeatherSpec Studio** in the Settings UI and apply at once, in every window.
+The settings are under **FeatherSpec Studio** in the Settings UI and apply at once, in every window. The choice of the assistant is read from your user settings and, in a trusted workspace, from the workspace; in Restricted Mode only your user value counts.
 
 | Setting | Default | What it does |
 | --- | --- | --- |
 | `featherspec-studio.showStepTips` | `true` | Show the coach line and the **About this step** button. With `false`, intents, prompts and **Copy prompt** stay as they are. |
 | `featherspec-studio.modelHints` | `{}` | The names of your own models, `strong` and `fast`, for the coach line, for example `{ "strong": "my best model", "fast": "my quick model" }`. Plain text, at most 40 characters; Studio ships no model name and never switches a model. |
+| `featherspec-studio.assistant` | `none` | The AI assistant that **Send to Copilot** or **Send to Claude Code** opens: `none`, `copilot` (GitHub Copilot Chat, `GitHub.copilot-chat`) or `claudeCode` (Claude Code, `anthropic.claude-code`). Studio only fills the chat input and sends nothing; any other value acts as `none`. |
 
 ## Privacy and stored data
 
@@ -109,7 +115,7 @@ Both settings are under **FeatherSpec Studio** in the Settings UI and apply at o
 
 ## Known limitations
 
-- Studio names the next step; it does not run it. Lifecycle moves between folders belong to FeatherSpec's commands in your assistant.
+- Studio names the next step; it does not run it. **Send to Copilot** and **Send to Claude Code** fill the chat input and send nothing. Lifecycle moves between folders belong to FeatherSpec's commands in your assistant.
 - Only the VS Code window that holds the project's write lock records the status history; a second window shows it read-only. The next step and **Copy prompt** work in every window.
 - Projects are detected at workspace folder roots only, not in subfolders.
 - Restricted Mode: Studio shows the project and the next step; Set up FeatherSpec needs a trusted workspace.

@@ -183,6 +183,27 @@ and the expected result. A clear miss reopens the named spec.
   builds exactly its step and writes its return note; `/sdd-plan` then integrates it; the next-step line of a step of that
   stage builds only that step. A prompt that fails is replaced by the wording that worked.
 
+## Send to the assistant (0024)
+
+- [ ] **AC-016** *(preview harness by the orchestrator, then Gregor; guideline 12)*: the detail and the first Now row with
+  GitHub Copilot and with Claude Code chosen, menu closed and open, in Dark, Light and High Contrast at 1600 px and
+  1000 px window width, the side panel at its default and at its minimum width, and a Studio panel of 800 px: no text of
+  the split button is cut, the open menu shows fully inside the panel without scrolling, both parts show a visible focus
+  outline, each view holds at most two primary controls. Screenshots in the plan.
+- [ ] **AC-017** *(Gregor, per assistant; record the versions)*: on `tip-splitter`, from the detail of an Active spec
+  (NS-6) and of a Review spec (NS-5), the main part and each Send item open the named chat with the prompt in the input
+  and nothing sent; after you send it yourself it runs as the FeatherSpec command or plan step it names; with GitHub Copilot
+  note whether unsent text in the current chat is kept or replaced (OP-004).
+  - [ ] GitHub Copilot: VS Code 1.147.0, GitHub Copilot Chat 0.75.0 (`GitHub.copilot-chat`). Re-run on a newer version before the release.
+  - [ ] Claude Code: VS Code 1.147.0, Claude Code 2.1.327 (`anthropic.claude-code`). Re-run on a newer version before the release.
+  - [ ] Codex: Copy prompt only, no Send; re-check when a Codex version accepts a prompt.
+- [ ] **AC-018** *(Gregor)*: Settings UI shows "Assistant" under "FeatherSpec Studio" with its three labels and is reached
+  by the gear of the Specs view; with the chosen assistant's extension disabled, or only Codex installed, every surface
+  shows Copy prompt only and nothing names Codex; a workspace value overrides the user value in a trusted workspace and is
+  ignored in Restricted Mode.
+- [ ] **AC-019** *(Gregor)*: say without asking what Send to <Name> does (opens, fills, sends nothing) and which chat it
+  uses; confirm or change the texts. The draft part passed (PD-076); the build part is AC-017.
+
 ## Go
 
 - [ ] **Repository visibility**: the Marketplace page loads the README screenshots from

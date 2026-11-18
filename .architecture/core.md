@@ -1,5 +1,5 @@
 # Map: src/core (framework-free core)
-# last reconciled: 2026-11-18 (0023)
+# last reconciled: 2026-11-18 (0024)
 
 ## Internal pattern
 - `src/core/<area>/` — one folder per spec; `<area>Service.ts` is the application service where the
@@ -8,10 +8,11 @@
 - Areas and what they hold (moved from the `AGENTS.md` snapshot, 2026-11-17):
   - `ports` — read-only file system, spec source, file watch; host ports (status bar, output, state,
     UI, folders, marker watch, clock); runtime medium; shell (trust, UI memory, actions, model
-    source); board (editor, clipboard); copyNextStep (status entry, step quick pick, Copy feedback; 0017); setting;
+    source); board (editor, clipboard); copyNextStep (status entry, step quick pick, Copy feedback; 0017); setting; assistant (`CommandPort { execute }`, `AssistantHostPort`: extension, activate, commands, extension changes; 0024);
     setup (release archive, release HTTP, setup target, setup UI).
   - `discovery` (0001) — project verdicts, version line, active-project state, report model, controller, rerun scheduler.
   - `specs` (0002) — spec repository: file listing, spec and plan parsers, joins, diagnostics, live repository; every diagnostic carries a tier, problem or note (0016), set where it is emitted; compatibility findings are not emitted.
+  - `assistant` (0024) — `assistants.ts` is the only home of the chat command strings (extension ID and the calls per assistant and target, PD-074); `offer.ts` turns the setting value and the installed extensions into an `Offer` (none, Copilot, Claude Code); `sendView.ts` gives the detail and the first Now row their `SendView` (default target from the step's session, NS-5 and NS-9 new chat) and the closing tip sentence; `send.ts` runs one Send with a 5 s timeout and the fallback (copy, one warning, one Output line); `testing/` holds `fakeAssistantHost` and `fakeOffer`. `settings/openSettings.ts` opens the Settings UI at this extension.
   - `settings` (0021) — `parseStepTipSettings` reads `featherspec-studio.showStepTips` and `featherspec-studio.modelHints` (anything else is the default; a hint over 40 characters is cut to 39 and `…`, trailing space trimmed first); `createSettingsSource(ports, parse)` pairs the read-only `SettingPort`s with a change event; the board and Overview services read it per view and recompute on a change, so the detail and the first Now row follow a setting within 500 ms in every window; `testing/fakeTips.ts` is the fake.
   - `lifecycle` (0003) — state derivation, readiness, contradictions, blocking conditions, plan in
     use, verification status, flow marker, status history, lifecycle service; `problemSentence.ts` turns a Problem into its user sentence (0022).

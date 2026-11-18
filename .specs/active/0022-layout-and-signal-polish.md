@@ -3,6 +3,8 @@
 **Status:** In Progress
 **Plan:** [0022-layout-and-signal-polish.plan.md](0022-layout-and-signal-polish.plan.md)
 
+*Amended by 0024 (PD-068): where Send is offered (0024 §6.2), the Copy prompt of the detail's first next-step line and of the first Now row is 0024's split button `Send to <Name>` — for its place, what follows it, its width ("every Copy", "the widest Copy") and the primary count (once, both parts primary); its menu holds Copy prompt (0024 §6.3, AC-002, AC-003).*
+
 Basis: implementation review of 2026-11-18 ([07](../../docs/ux-audit/07-implementation-review.md) findings
 N-2…N-9, screenshots `screenshots-045b354/` n02, n04–n08, n16, n19, n21) as cut in
 [08 §3](../../docs/ux-audit/08-spec-handoff.md). Decisions: PD-069 (round adopted; guidelines 8 and 12),
@@ -70,6 +72,8 @@ decides a staying criterion is lost (AC-017).
 Each Overview list (Now, Up next, Problems) lays out its rows by its own content width, never by
 the viewport:
 
+*Amended by 0024 (PD-068): §4.1 — the first Now row's split button takes the place and the width of its Copy prompt (0024 AC-009).*
+
 | List width | Row |
 | --- | --- |
 | above 686 px | one line, as 0018 O-5 (title and state text cut by an ellipsis, full text as tooltip; step and Copy never cut) |
@@ -109,6 +113,7 @@ B-6's rule tooltip where one applies. Every other strip is unchanged.
 - **Primary** (0016 AC-017's colours), and only these: (1) the side panel's Copy of the next step's first line; (2) the Copy
   of the Overview's first Now row; (3) the one Copy of the zero-spec state (0018 O-8, Overview and
   Board), alone on its screen (A-007). Hence at most two per view.
+  *Amended by 0024 (PD-068): §4.4 (1), (2) — where Send is offered, the Copy of (1) and (2) is 0024's split button: both parts are primary and count once (0024 AC-003).*
 - **Secondary text button:** the side panel's Copy of every further line (NS-5, NS-6 with an open plan step
   (PD-072), NS-9); the buttons of the Restricted Mode note and the notice (0005 S7, BR-03; A-013).
 - **Icon button** (copy icon, no text): every other next-step Copy — Now rows after the first, Up next
@@ -172,6 +177,7 @@ side at the right edge — the side panel's and `main`'s — and a fixed 400 px 
   area. Crossing 900 px keeps the selection — side by side from 900 px, the detail alone below — and the
   focus where it is while that stays shown, else on the detail's heading (A-016).
   *Amended by 0023 (PD-069): G-4 "a selected spec's detail shows alone in its place" — not in the Plan map: below 900 px the map shows alone, with no detail or back button (0023 §5.3).*
+  *Amended by 0024 (PD-068): G-4 — an Escape in an open Send menu closes only the menu; the detail stays shown (0024 AC-008).*
 
 ### 4.8 State at a glance (Gregor's click test, PD-073)
 
@@ -275,6 +281,7 @@ side panel", below 900 px the detail shows alone (G-4).
 Decided by unit tests (core, no `vscode`), component tests (jsdom) and stylesheet tests unless marked.
 
 - **AC-001** The stylesheet shall declare each Overview list an inline-size container and set the row layouts of §4.1 only inside `@container` rules on that list's width at 686 px and 420 px; no `@media` rule shall change an Overview row, its title or state text; no rule shall hold `data-drawer` or lay the side panel over the area; in the first Now row 0021's coach line and `?` shall follow the Copy as the row's last elements, on a line of their own in every layout.
+  *Amended by 0024 (PD-068): AC-001 — the first Now row's split button is laid out as its Copy prompt was (0024 AC-009).*
 - **AC-002** No rule shall set `overflow-wrap: anywhere` or `word-break: break-all` on an Overview row title, a card title or head, the side panel's heading or an element of §4.6.
 - **AC-003** A Problems row shall hold its full title and every Problem sentence in the DOM; no rule matching a Problems row, a problem line, a banner line or the side panel's problem list shall set `text-overflow: ellipsis`, a line clamp or `white-space: nowrap`; a Problems row shall take the two-line layout at every list width from 420 px.
 - **AC-004** Each tree row with a step shall carry as description 0021's step or command short form (§4.2), each without a step `<State>` or `Deprecated`; no description shall start with a state name followed by ` · `; the accessible label shall be X-05.
@@ -285,8 +292,10 @@ Decided by unit tests (core, no `vscode`), component tests (jsdom) and styleshee
 - **AC-009** A narrow strip standing for a spec with a Problem it does not show shall render the warning icon with X-06 as tooltip and accessible name (collapsed Done and a filter-emptied column tested); every other strip shall render as 0018 AC-014.
 - **AC-010** The webview shall style as primary (0016 AC-017's colours) only the Copies of §4.4 (1)–(3); every other next-step Copy shall be the icon button in a list and the secondary button (`--vscode-button-secondaryBackground`, `--vscode-button-secondaryForeground`) in the side panel, as shall the buttons of the Restricted Mode note and the notice.
   *Amended by 0023 (PD-069): AC-010 — also the Plan map tab: no primary button there (0023 AC-010).*
+  *Amended by 0024 (PD-068): AC-010 — the split button's two parts are the primary style of (1) and (2) (0024 AC-003).*
 - **AC-011** With seven Now rows, three Up next rows, a Problems row and a selected NS-5 spec, the Overview shall render exactly two primary buttons and the Board exactly one; with no spec selected, one and zero.
   *Amended by 0023 (PD-069): AC-011 — the Plan map tab adds no primary button; the view holds at most the side panel's (0023 AC-010).*
+  *Amended by 0024 (PD-068): AC-011 — a split button counts as one primary control; with an offer the view still holds at most two (0024 AC-003).*
 - **AC-012** When the developer activates an icon Copy by pointer, Enter or Space, the system shall copy the full first line, show the check or warning, 0021 §6.4's name and 0016 T-19's sentence (tooltip and live region) on the same element until 2000 ms after the last activation, then restore it, and select nothing; the stylesheet shall give the icon button a fixed width and height of at least 24 px.
 - **AC-013** Each Problem kind of §6 shall show its sentence literally on each surface of §4.5, and in the webview with the technical reason as tooltip; a problem link's tooltip and accessible description shall be the reason, then 0019 AC-017's text.
 - **AC-014** No sentence X-10…X-24, with every inserted path, value and number replaced by `x`, shall contain `backlog/`, `active/`, `done/`, `**`, `Plan line`, `sibling`, `stem`, `parsing` or `diagnostic`.
@@ -295,8 +304,10 @@ Decided by unit tests (core, no `vscode`), component tests (jsdom) and styleshee
 - **AC-016** The statements of §5 shall carry their notes directly beneath them; the implementation shall edit no existing row of the PD register.
 - **AC-017** Every test at the commit on which this spec's implementation starts that decides a criterion not changed in §5 shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI; a script shall compare the test titles of both commits, and the plan shall list every missing title with the changed statement or the head title that replaces it.
   *Amended by 0023 (PD-069): AC-017 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
+  *Amended by 0024 (PD-068): AC-017 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
 - **AC-018** `README.md`, `docs/product/ux-guidelines.md` and `docs/release-checklist.md` shall name the tree groups In progress, Ready, Backlog, Done, and the plan shall list each "Up next" left there as the Overview's set; the README shall name the divider, its reset and the back button below 900 px; `CHANGELOG.md` shall name the changes under the version in preparation; the checklist shall carry AC-019, AC-020, AC-025.
 - **AC-019** *(manual, preview; guideline 12)* In Dark, Light and High Contrast, height 800 px, at window widths 1600 px and 1000 px with VS Code's sidebar open at its default width, at a Studio panel of 920 px, at 800 px and at VS Code zoom level 2, each with a spec selected, on this repository and `fs170-brownfield-mixed`, Overview and Board, Gregor or his delegate shall confirm: no title word split (one wider than its line excepted); every Copy fully visible and reachable by Tab; at most two filled buttons; paths broken only after a separator; whole Problem sentences; the warning on `fs170-brownfield-mixed`'s collapsed Done strip; each state told at a glance, every icon shape distinct, the Problem warning included. Screenshots and verdict in the plan.
+  *Amended by 0024 (PD-068): AC-019 "at most two filled buttons" — a split button counts once (0024 AC-003, AC-016).*
 - **AC-020** *(manual, real VS Code)* At a sidebar width of 300 px in the three themes, on this repository, `fs170-brownfield-mixed` and `tip-splitter`, Gregor or his delegate shall confirm that every tree row shows its command uncut, that `fs170-brownfield-mixed`'s `Done` group shows its Problem hint and that the state icons differ by shape; a cut command retunes the budget of 32 (A-006) by a revise of §4.2 and AC-005.
 - **AC-021** *(manual, Gregor; PD-069 click test)* On the HTML draft before `/sdd-plan` (held 2026-11-18, accepted: PD-073) and on `tip-splitter` after implementation, Gregor shall say without asking which Copy he presses first, where a Done spec's Problem shows and what `Ready` and `Up next` hold, matching §4.4, §4.3 and §4.2; the plan records his answers; a mismatch is a revise of this spec.
 - **AC-022** The stylesheet shall give the page root, `main` and the area frame no scrolling (`overflow: hidden`) and a panel state its own `overflow-y: auto` box; within the area frame only the area content, the side panel and the Board's card lists shall set `overflow-y: auto`; no padding, margin or gap shall stand between the side panel's right edge and the Studio panel's. (stylesheet test)
@@ -306,7 +317,9 @@ Decided by unit tests (core, no `vscode`), component tests (jsdom) and styleshee
 - **AC-026** One module in `src/shared` shall map each state to the motif and colour of §4.8; the tree model, the board's column headers and strips, the side panel's state chip and the Overview rows shall take them from it, and the stylesheet shall hold no colour per state. (unit, component and stylesheet tests)
 - **AC-027** Every Overview row shall render its spec's state icon (§4.8) before its state text with the state's name as tooltip, and the row's accessible name shall hold that name exactly once; where the state text is that name, the stylesheet shall hide it, visually only, inside the container rules below 686 px and nowhere else; no rule shall hide a need or a Problem sentence. (component and stylesheet tests)
 - **AC-028** With the Studio panel at 920 px, the side panel beside it at its default width and 0001 selected, the list width computed from G-2's default and the stylesheet's paddings shall select the two-line layout; at the narrowest list beside the side panel (area 360 px) the computed width shall hold a title line of 12 characters (`12ch`) and the widest Copy; in the two- and three-line layouts the stylesheet shall put number and title on a line of their own and set no `white-space: nowrap` on the title. (unit and stylesheet tests; AC-019 previews it)
+  *Amended by 0024 (PD-068): AC-028 — "every Copy", "the widest Copy": the split button of the first Now row is the widest control of its row (0024 AC-009).*
 - **AC-029** While the Studio panel is narrower than 900 px (query stubbed), the webview shall show the area alone with no spec selected and, with one selected, the detail alone with X-27 for the current area at its top left and no close button or divider; when the developer activates the back button or presses Escape inside the detail, the system shall clear the selection, show the area with its earlier scroll position and move focus as 0019 AC-003; when the width crosses 900 px, the selection shall stay, side by side from 900 px and the detail alone below, focus where it was while that stays shown, else on the detail's heading. (component tests)
+  *Amended by 0024 (PD-068): AC-029 — Escape inside the detail does not leave it while 0024's Send menu is open (0024 AC-008).*
 
 ## 9. Technical notes for developers or AI agents
 

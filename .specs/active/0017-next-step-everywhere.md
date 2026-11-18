@@ -59,6 +59,7 @@ trying gestures. The AI assistant receives the pasted line.
 - Keeping Ready → Active drag (audit D2) — because PD-060 chose removal; the card's Copy replaces it.
 - Alt+Click on the status bar — because an entry has one command; a tooltip link opens the Studio.
 - "Send to chat" — because PD-056 and PD-061 (2).
+  *Amended by 0024 (PD-068): §4 out of scope "Send to chat" — opening the chosen assistant's chat and filling its input is 0024 (PD-068); submitting stays out.*
 
 ## 5. Amendments of other specs
 
@@ -261,6 +262,7 @@ Decided by automated tests unless marked manual. Fixtures: one per NS rule (0015
 - **AC-021** While no project is active, "Copy Next Step" shall behave as "Select Project" (0001 AC-008, AC-015).
 - **AC-022** While the workspace is in Restricted Mode or the window is a reader, cards, rows, entry and command shall behave as in AC-004–AC-020.
 - **AC-023** No Copy, click or command of this spec shall create, change, move or delete a file of the workspace (0007 AC-016 as amended).
+  *Amended by 0024 (PD-068): AC-023 (no writes) — also every Send, every menu item and Open Settings of 0024 (0024 AC-012).*
 - **AC-024** Every test at the plan's Baseline commit (before 0017) that decides a criterion not voided in §5 shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI. A script compares the test titles of both commits; every title missing at the head is listed in the plan with its voided criterion or the head title replacing it. A test that decides a voided and a staying criterion stays for the staying one, its move assertions removed (§10).
   *Amended by 0018 (PD-062): the test audit also excepts the tests 0018 AC-030 lists against a criterion 0018 §5 voids.*
   *Amended by 0019 (PD-058): AC-024 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*
@@ -268,6 +270,7 @@ Decided by automated tests unless marked manual. Fixtures: one per NS rule (0015
   *Amended by 0021 (PD-069): AC-024 (test audit) — also except the tests 0021 AC-020 lists against a statement 0021 §5 replaces.*
   *Amended by 0022 (PD-069): AC-024 — also excepts the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
   *Amended by 0023 (PD-069): AC-024 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
+  *Amended by 0024 (PD-068): AC-024 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
 - **AC-025** 0001, 0003, 0006, 0007, 0013, 0015, 0016 and ADR-001 shall carry the notes of §5; a case-insensitive search of `README.md`, `docs/release-checklist.md`, `docs/product/design-brief.md` and `.architecture/*.md` shall find no "Move to…", "Move Spec", "drag", "move request", "move pick", "move result", "transition check" or `FeatherSpec: <name> (<version>)`; the README shall name the card Copy, the status bar with the rule of §6.3 and "Copy Next Step"; the release checklist shall carry AC-026; `CHANGELOG.md` shall name the removal and the new places of the next step under the version in preparation.
 - **AC-026** *(manual, Gregor)* M-1 on `tip-splitter`, Hands-On walkthrough with his assistant: task "start the Ready spec" — the Start line copied from the card with no failed attempt; on an Active spec `/sdd-plan`, then `continue` in the same chat, runs one step; the status bar names the spec he works on and its click copies; Dark, Light and High Contrast show the card line and row readable.
   *Amended by 0021 (PD-069): AC-026 — the run of 0021 AC-025.*

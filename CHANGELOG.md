@@ -74,3 +74,9 @@ First release.
 - Local spec status history outside the workspace, kept for 90 days.
 - Restricted Mode: Studio only reads. It shows the project and the next step, and never runs workspace
   code or changes a file; Set up FeatherSpec needs a trusted workspace.
+- **Send to your assistant**: the setting `featherspec-studio.assistant` (`none`, `copilot`, `claudeCode`; default
+  `none`) turns the **Copy prompt** of the detail's first line and of the first Now row into a split button, **Send to
+  Copilot** or **Send to Claude Code**, while that assistant's extension is installed. It opens the assistant's chat
+  with the prompt in its input and sends nothing; the arrow offers the other chat and **Copy prompt**. Where the chat
+  cannot be opened, Studio copies the prompt and says so. The gear in the Specs view (`FeatherSpec Studio: Open
+  Settings`) opens the settings. Without the setting nothing changes.

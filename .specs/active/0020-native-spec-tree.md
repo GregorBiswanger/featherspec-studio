@@ -56,6 +56,7 @@ from the tree; the panel has two tabs; no test that decides a staying criterion 
 - A "problems" summary row (K-B sketch) — because each row shows its warning and the Overview has a Problems section (0018).
 - Drag and drop in the tree — because PD-060 ended moves; never.
 - Problems panel, CodeLens, file decorations, "Send to chat" — because PD-061 (2) defers them until validated.
+  *Amended by 0024 (PD-068): §3 out of scope "Send to chat" — opening the chosen assistant's chat and filling its input is 0024 (PD-068); submitting stays out.*
 - Welcome content in place of the action rows of S1, S3, S5, S8, S9 — because their texts name a reason, a project or folders that a fixed welcome text cannot hold (§4.4); not until a user reports the rows as noise (proxy, A-007).
 - A second view in the container — because VS Code's view guidelines ask to keep views to a minimum.
 - Several projects in one tree — because the tree shows the active project, like the panel (0001); not now.
@@ -114,6 +115,7 @@ from the tree; the panel has two tabs; no test that decides a staying criterion 
 
 - **Badge** (`TreeView.badge`): value = number of spec entries in Review or Blocked; tooltip `<n> spec waits for you: …` (n = 1) or `<n> specs wait for you: …`, then `<r> in Review` and `<b> Blocked` joined by `, `, a zero part left out. No badge at zero or while the tree shows no spec rows.
 - **Toolbar** (`view/title`, group `navigation`, in this order): `featherspec-studio.open` (icon `window`, tooltip its title "FeatherSpec Studio: Open") and 0018's `featherspec-studio.refresh` (icon `refresh`, "FeatherSpec Studio: Refresh"); shown in every state.
+  *Amended by 0024 (PD-068): §4.3 Toolbar — a third entry follows: `featherspec-studio.openSettings` (gear, 0024 §6.7).*
 - **View name:** `Specs` (the view keeps its ID `featherspec-studio.navigator`); the container keeps "FeatherSpec Studio" and its logo icon. The view's description shows the active project's name only while 0001 reports two or more projects.
 
 ### 4.4 States of the view
@@ -222,6 +224,7 @@ Decided by unit tests on the tree model (core, no `vscode`) and the manifest unl
 - **AC-009** When the user activates a spec row by click or Enter, the system shall make that spec the selected spec; with the panel open, it shall reveal the panel keeping the focus where it is, keep the panel's area and show the spec's side panel; with the panel closed, it shall open the panel, without the focus, on the start area of 0005 BR-02 with that side panel. Unit test on the shell and panel port (selection, area, focus option); host smoke: the row command opens a closed panel with that spec selected, and leaves an open panel on Board.
 - **AC-010** While the view shows spec rows, the badge shall be the number of entries in Review or Blocked with the tooltip of §4.3; at zero, and while the view shows no spec rows, there shall be no badge.
 - **AC-011** The manifest shall name the view `Specs`; contribute in its `view/title` group `navigation` `featherspec-studio.open` (icon `$(window)`) and then `featherspec-studio.refresh` (icon `$(refresh)`); contribute the tree's own commands — row activation `Select Spec`, `Copy Next Step` (icon `$(copy)`), `Open Spec`, `Open Plan`, with exactly these titles — hidden from the Command Palette; the inline entry shall use group `inline` with a `when` limited to this view and, through `viewItem`, to rows with a line to copy. The view's description shall be the active project's name only while 0001 reports two or more projects.
+  *Amended by 0024 (PD-068): AC-011 — `view/title` group `navigation` holds a third command, `featherspec-studio.openSettings` (0024 §6.7).*
 - **AC-012** The view shall show, per condition of §4.4, exactly what §4.4 names; the S2 `viewsWelcome` entry shall be byte-identical to the one at AC-021's start commit.
 - **AC-013** When the model changes (a spec added, its state changed, a step ticked), the tree and the badge shall show the change within 500 ms after the model-changed notification reaches the shell (PD-047), measured by a core timing test on the generated 200-spec project (PD-035) as `boardService.timing.test.ts` does (best of three, `BUDGET_MS.uiFreshness`). Host smoke: a backlog spec added to the fixture appears in the group Backlog and goes with its removal in `finally`.
 - **AC-014** The view, its actions and its badge shall change no file in any workspace folder (0005 AC-025); in Restricted Mode and a reader window they shall work as in a trusted one.
@@ -239,6 +242,7 @@ Decided by unit tests on the tree model (core, no `vscode`) and the manifest unl
   *Amended by 0021 (PD-069): AC-021 (test audit) — also except the tests 0021 AC-020 lists against a statement 0021 §5 replaces.*
   *Amended by 0022 (PD-069): AC-021 — also excepts the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
   *Amended by 0023 (PD-069): AC-021 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
+  *Amended by 0024 (PD-068): AC-021 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
 - **AC-022** *(manual; pre-release checklist)* On `tip-splitter` and on this repository, in Dark, Light and High Contrast at a sidebar width of 400 px, Gregor or his delegate shall confirm that every state icon is told apart without colour, the description of every In progress and Up next row is visible and the badge is readable; in the Hands-On he copies a next step from the tree and his assistant runs it.
   *Amended by 0022 (PD-069): AC-022 "Up next row" — a `Ready` row.*
 

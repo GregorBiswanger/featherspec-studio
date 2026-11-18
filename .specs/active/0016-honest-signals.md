@@ -183,6 +183,8 @@ else appears, moves or changes colour; the button keeps its size. Success never 
 
 *Amended by 0022 (PD-069): §6.5 — only the Copies of 0022 §4.4 (1) to (3) use the primary style; every further side-panel line is secondary and every list Copy an icon button whose check or warning icon is the feedback, in a fixed box of at least 24 × 24 px (0022 AC-010 to AC-012).*
 
+*Amended by 0024 (PD-068): §6.5 "Nothing else appears, moves or changes colour" — except 0024 §6.5's warning notification after a Send that copies.*
+
 ## 7. Texts (English, PD-016; all *(proxy)*, starting from audit 04 "Texte und Sprache")
 
 | ID | Where | Old | New |
@@ -272,6 +274,7 @@ the repository's own `.specs/`).
   *Amended by 0021 (PD-069): AC-023 (test audit) — also except the tests 0021 AC-020 lists against a statement 0021 §5 replaces.*
   *Amended by 0022 (PD-069): AC-023 — also excepts the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
   *Amended by 0023 (PD-069): AC-023 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
+  *Amended by 0024 (PD-068): AC-023 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
 - **AC-024** The specs of §5 shall carry their amendment notes and the PD register one new entry superseding §5's PD rows, with no note in an older entry; the README shall say once that FeatherSpec has no priority, persisted compile verdict or dependency field, so the Studio shows none; CHANGELOG and `docs/release-checklist.md` shall name the changes and AC-025.
 - **AC-025** *(manual, Gregor or delegate)* Preview harness screenshots in Dark, Light and High Contrast: primary Copy, its label change without shift, the need line, the T-07 toggle, the problem badge and the S2 sentence in view and panel; Gregor's Hands-On on `tip-splitter` shows no problem marker without a real problem.
 

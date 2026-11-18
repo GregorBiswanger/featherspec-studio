@@ -3,6 +3,8 @@
 **Status:** In Progress
 **Plan:** [0021-next-step-intent-and-guidance.plan.md](0021-next-step-intent-and-guidance.plan.md)
 
+*Amended by 0024 (PD-068): where Send is offered (0024 §6.2), the Copy prompt of the detail's first next-step line and of the first Now row is 0024's split button `Send to <Name>` — for its place, what follows it, its width ("every Copy", "the widest Copy") and the primary count (once, both parts primary); its menu holds Copy prompt (0024 §6.3, AC-002, AC-003).*
+
 Basis: review `docs/ux-audit/07-implementation-review.md` (2026-11-18) N-1, §5.1, §5.2, §6a; work order
 `docs/ux-audit/08-spec-handoff.md` §2 (R-1…R-7, AC drafts, E-1…E-3), §6. Decisions PD-069, PD-072 (V-1), PD-073 (click
 test), PD-074 (V-1 for Copilot), PD-063 (7), PD-068, PD-016, PD-047, PD-013; guidelines 1, 6, 9–12 (`.claude/rules/ux-guidelines.md`). Gregor delegated the round
@@ -152,6 +154,8 @@ feedback.
 
 *Amended by 0023 (PD-069): §6.4 — also the Plan map's way Copies (secondary text buttons) and start-line Copies (icon buttons) (0023 §5.4, AC-010).*
 
+*Amended by 0024 (PD-068): §6.4 — where Send is offered, the first line's Copy prompt in the detail and on the first Now row is 0024's split button; its menu item reads `Copy prompt` and copies as this section states (0024 §6.3).*
+
 ### 6.5 Coach line (R-5, guideline 11)
 
 For a step with a line, one line in the description colour, in the detail directly under the first line's Copy prompt
@@ -170,9 +174,11 @@ a line → no coach line in Now.
   moving to another control closes it; that Escape closes only the toggletip; one open at a time. Pattern: Inclusive
   Components "Tooltips & Toggletips"; TPGi "Simple standalone toggletip widget pattern" (read 2026-11-18: click not
   hover, live region, Escape and outside click close, no interactive content).
+  *Amended by 0024 (PD-068): §6.6 — opening 0024's Send menu closes an open toggletip, and opening a toggletip closes the menu: one popup at a time (0024 AC-008).*
 - Content, four paragraphs: effect and then-sentence of the step's row (§6.1, §6.2); the reasons of its coach line's
   session and model; `Choose the chat and the model in your AI assistant before you paste.`; `Settings: Show Step Tips
   hides these tips; Model Hints names your models.`
+  *Amended by 0024 (PD-068): §6.6 paragraphs 3 and 4 — read 0024 §6.8 where the closing paragraphs change (the Assistant setting).*
 
 | Value | Reason |
 | --- | --- |
@@ -187,6 +193,8 @@ a line → no coach line in Now.
 ### 6.7 Settings (R-7)
 
 Contributed under the title `FeatherSpec Studio`; read at activation and on every change; never written by the Studio.
+
+*Amended by 0024 (PD-068): §6.7 — plus the key `featherspec-studio.assistant` (0024 §6.1).*
 
 | Key | Type, default | Description |
 | --- | --- | --- |
@@ -233,6 +241,7 @@ vocabulary rule of `.claude/rules/specs.md`; it is never a qualifier here.
 
 - **AC-001** The system shall give each next step that has a line the intents, step short form, coach line, effect and then-sentence of its row in §6.1 or §6.2, literally, from the text module; the detail shall show each line's intent as its own line directly before that line's prompt and Copy prompt in DOM order.
   > **Given** Review `.specs/active/0019-x.md` **Then** `Have the result verified` over `/sdd-compile .specs/active/0019-x.md`, `Then, after a READY verdict: close the spec` over `/sdd-lifecycle .specs/active/0019-x.md`, short form `Verify · /sdd-compile`, coach `new chat · strong model, other family`.
+  *Amended by 0024 (PD-068): AC-001 — the Copy prompt of the first line is, where Send is offered, 0024's split button (0024 AC-003).*
 - **AC-002** For every fixture of 0015 AC-004 whose rule is not NS-6, the rule ID and the prompts shall be byte-identical to those `nextStep()` returns at the commit on which this spec's implementation starts.
 - **AC-003** An Active spec whose sibling plan's open step is `<ID>` shall show `Implement <ID> of <plan path>` under `Continue with <ID> <title>`, then `/sdd-plan <spec path>` under `Not sure where it stands? Let the agent report first`, short form `Continue · Implement <ID>`, coach `same chat or new chat · fast model`.
   > **Given** Active `.specs/active/0001-tip-splitter.md`, T-001 and T-002 ticked, T-003 "Reject money values" open **Then** `Continue with T-003 Reject money values` over `Implement T-003 of .specs/active/0001-tip-splitter.plan.md`.
@@ -244,18 +253,24 @@ vocabulary rule of `.claude/rules/specs.md`; it is never a qualifier here.
 - **AC-007** Every tooltip that shows a next step (card, Overview row, tree row, status bar entry) shall show the full form of §6.3, each line's intent on its own line before its prompt, in line order; the tree tooltip's step part shall start with `Next step: <intent>`; text from the files shall appear escaped, as text.
 - **AC-008** Every Copy prompt of §6.4 in the webview shall be named `Copy prompt: <line>`, for 2000 ms after activation `Copied: <line>` or `Could not copy: <line>`, then `Copy prompt: <line>` again, and put exactly the prompt on the clipboard, no intent or coach text; a text button shall read `Copy prompt`, `Copied` or `Could not copy` at the same times; rendering the detail, Board and Overview of every fixture, the empty states included, shall find no button whose text is `Copy` or whose name starts with `Copy: `; the quick-pick message's action shall be `Copy prompt`.
 - **AC-009** While `showStepTips` is true, the detail and the first Now row shall show §6.5's coach line for a step with a line, in the detail directly after the first line's Copy prompt and its status region; no card, other row, tree item, tooltip, status bar entry, quick-pick item or step without a line shall show a coach line or a `(?)`.
+  *Amended by 0024 (PD-068): AC-009 — the coach line stays where the split button stands in place of the Copy prompt (0024 AC-003).*
 - **AC-010** Where `showStepTips` is false, no surface shall show a coach line or a `(?)`, and intents, prompts and Copy prompt shall be identical to the true case.
 - **AC-011** When `showStepTips` or `modelHints` changes, the detail and the Overview shall show the result within 500 ms after the host receives VS Code's configuration change event, keeping selection and area (PD-047's budget).
 - **AC-012** Where `modelHints.strong` is `X`, the coach lines shall read `new chat · strong model (X), other family` (NS-5), `any chat · strong model (X), allow web search` (NS-10) and `any chat · strong model (X)` (NS-8); where `modelHints.fast` is `Y`, the NS-7 coach line shall read `any chat · fast model (Y)`; a hint shall be trimmed, inner whitespace runs collapsed, cut to 39 characters and `…` over 40; a non-string hint, one empty after trimming, or a `modelHints` that is not an object shall show no name; other keys shall change nothing; a `showStepTips` that is not a boolean shall act as `true`.
 - **AC-013** A case-insensitive search of `src` without test files and of `package.json` shall find none of `Opus`, `Sonnet`, `Haiku`, `GPT-`, `Gemini`, `Llama`, `Mistral`; with `modelHints` empty, no rendered surface of any fixture shall contain one.
 - **AC-014** The `(?)` shall be a Tab-reachable button named `About this step` with that tooltip; when activated by pointer, Enter or Space it shall set `aria-expanded="true"` and write §6.6's content into the `role="status"` region directly after it; when, while it is open, Escape is pressed, it is activated again, a pointer press lands outside the button and its region or focus moves to another control, the system shall empty that region and set `aria-expanded="false"`; after Escape or a second activation focus shall be on the `(?)`; that Escape shall leave the side panel open; opening one toggletip shall close any other; a model update that changes its content shall close it, one that does not shall leave it open.
+  *Amended by 0024 (PD-068): AC-014 — opening one toggletip also closes 0024's Send menu (0024 AC-008).*
 - **AC-015** The toggletip shall show four paragraphs in order — the effect and then-sentence of the step's row; the reasons of §6.6 for its coach line's session and model; each closing sentence — literally, and contain no focusable element.
+  *Amended by 0024 (PD-068): AC-015 — each closing sentence reads 0024 §6.8 (0024 AC-013).*
 - **AC-016** The manifest shall contribute `contributes.configuration` titled `FeatherSpec Studio` with exactly the keys of §6.7 and their types, defaults, properties and descriptions literally.
+  *Amended by 0024 (PD-068): AC-016 — exactly the keys of §6.7 plus `featherspec-studio.assistant` (0024 AC-001).*
 - **AC-017** No Copy prompt, `(?)` or setting change shall create, change, move or delete a file of the workspace or write a setting (0017 AC-023's test extended).
+  *Amended by 0024 (PD-068): AC-017 (no writes) — also every Send, menu item and Open Settings of 0024 (0024 AC-012).*
 - **AC-018** While the workspace is in Restricted Mode or the window is a reader, AC-001–AC-016 shall hold.
 - **AC-019** For an open plan step without a title the intent shall be `Continue with <ID>` (NS-6) or `Start implementing: <ID>` (NS-7), without a trailing space; a title with Markdown, a link or over 80 characters shall appear as 0019 AC-013's short title.
 - **AC-020** Every test at the commit on which this spec's implementation starts that decides a statement §5 does not replace shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI. A script compares the test titles of both commits; the plan lists every title missing at the head, a renamed one included, with the replaced statement or the head title that replaces it.
   *Amended by 0023 (PD-069): AC-020 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
+  *Amended by 0024 (PD-068): AC-020 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
 - **AC-021** 0006, 0007, 0013 and 0015–0020 shall carry the notes of §5; a literal search of `README.md` shall find `Copy prompt`, `About this step`, `featherspec-studio.showStepTips` and `featherspec-studio.modelHints`, and of `CHANGELOG.md` under the version in preparation `Copy prompt`, `showStepTips` and `modelHints`; neither `README.md` nor `docs/release-checklist.md` shall contain `**Copy**` or ``then `continue` ``; the checklist shall carry AC-022–AC-025.
 - **AC-022** *(manual, preview harness by the orchestrator, then Gregor in a real window)* Guideline 12: detail and Overview with the first Now row in Dark, Light and High Contrast at 1600 px and 1000 px window width with the side panel open at its default and at 0022 G-2's minimum width: no intent, prompt or coach line is cut; an open toggletip stays inside its panel and covers no Copy prompt of its step; the `(?)` shows a visible focus outline; screenshots recorded in the plan.
 - **AC-023** *(manual, Gregor)* Both settings appear under "FeatherSpec Studio" in the Settings UI; Show Step Tips toggles the tips in the open panel; Model Hints offers `strong` and `fast` as text fields and the coach line shows the entered name.
