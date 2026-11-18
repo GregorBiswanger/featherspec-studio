@@ -1,9 +1,9 @@
 # Plan — Next Step with Intent and Guidance
 
 **Spec:** [0021-next-step-intent-and-guidance.md](0021-next-step-intent-and-guidance.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-18
-**Current step:** T-016 (fix stage after the compile of S74: `/home/claude/orch/compile/0021.md`)
+**Current step:** none: all 16 steps verified; AC-020 (CI), AC-022 real window, AC-023–AC-025 open
 
 ## Approach
 
@@ -296,7 +296,7 @@ ends of stages 1 and 3.
 - **Verify:** `npx vitest run --project node src/adapters/vscode/settings.test.ts src/core/board src/core/overview src/core/copyNextStep/noWrite.test.ts`
   and `npx vitest run --project timing-node src/core/board/boardService.timing.test.ts src/core/overview/overviewService.timing.test.ts`
   red (stub), then green; gates 1–5; `npm run compile-tests`
-- [x] **Verified (T-006):** 2026-11-18 · red: new service tests turned red by removing the two `deps.tips.onDidChange(schedule)` subscriptions (3 failed: board detail on/off, hint change, Overview) and restoring them; adapter tests red on the `Not implemented` stub (3 failed) → green: `npx vitest run --project node --project webview` 2588 passed, 3 skipped; `--project timing-node --project timing-webview` 15 passed (settings change within `BUDGET_MS.uiFreshness` on 200 specs, board and Overview); eslint 0 warnings, both `tsc` clean, `npm run compile` and `npm run compile-tests` clean. Host smoke (`src/test/board.smoke.test.ts`) runs on CI only.
+- [x] **Verified (T-006):** 2026-11-18 · red: new service tests turned red by removing the two `deps.tips.onDidChange(schedule)` subscriptions (3 failed: board detail on/off, hint change, Overview) and restoring them (a reverse red: a negative control after the code, not test-first; noted by the compile S74); adapter tests red on the `Not implemented` stub (3 failed) → green: `npx vitest run --project node --project webview` 2588 passed, 3 skipped; `--project timing-node --project timing-webview` 15 passed (settings change within `BUDGET_MS.uiFreshness` on 200 specs, board and Overview); eslint 0 warnings, both `tsc` clean, `npm run compile` and `npm run compile-tests` clean. Host smoke (`src/test/board.smoke.test.ts`) runs on CI only.
 - **Notes:** `tips` is a required dependency of both services (`SettingsSource<StepTipSettings>`); the test worlds take a `FakeTips` (default: tips off, so older service tests are unchanged) from `src/core/settings/testing/fakeTips.ts`. `extension.ts` builds one source from the two `createSettingPort` instances and gives it to both services. AC-018 is decided by a source scan (the tip modules name no trust, writer, Restricted Mode or reader: the services have no such input) plus equal tips for equal input. The host smoke test changes the setting with the Global target (test profile), never the workspace file, and resets it. `noWrite.test.ts` gets a second test beside the 0017 one (a settings change, a hint change and an NS-6 Copy prompt leave the tree unchanged).
 
 ### T-007 — About this step explains the tip and closes as a toggletip does
@@ -363,7 +363,7 @@ ends of stages 1 and 3.
 - **Verify:** `npx vitest run --project webview src/webview/ui/Toggletip.test.tsx` green; the mutant on the scratch copy
   red; gates 1–4
 - [x] **Verified (T-010):** 2026-11-18 · green at once (behaviour already right): `npx vitest run --project webview src/webview/ui/Toggletip.test.tsx` 15 passed; negative control M71 on a scratch copy (`git ls-files` copy in `/tmp/fx`, `close()` without the `openId === id` check): 1 failed ("each toggletip closes only itself: a content change of the closed one and its unmounting leave the open one open"), restored by discarding the copy; `npm run test:unit` 157 files, 2631 passed, 3 skipped, timing 15 passed; eslint 0 warnings, both `tsc` clean.
-- **Notes:** The test uses two toggletips, the second open; a content change of the closed first and then its unmounting must not close the second. The blur of a closed toggletip is guarded by `open` in `onBlur` and was already covered by "focus moving to another control closes it".
+- **Notes:** The test uses two toggletips, the second open; a content change of the closed first and then its unmounting must not close the second. The blur of a closed toggletip is guarded by `open` in `onBlur`; no test of its own decides that guard (the mutant that drops it is not in the compile's list).
 
 ### T-011 — Unreadable plan and the settings sections are decided by a test (compile M26, M39)
 
@@ -428,7 +428,8 @@ ends of stages 1 and 3.
   `.memory-bank/activeContext.md` *Now*; `.architecture/core.md` settings entry ("over 40 characters cut to 39 and
   `…`"); the T-006 note on the reverse red; handoff and status.
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts`; `npm run compile-tests`; final gates
-- [ ] **Verified (T-016):**
+- [x] **Verified (T-016):** 2026-11-18 · `npx vitest run --project node src/adapters/node/docsScan.test.ts` green; every path of the traceability table checked with `test -e` (AC-013 now `src/adapters/node/sourceScan.test.ts`); `npm run compile-tests` clean (smoke title changed, assertion `< 2_000` untouched); final gates `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile && npm run compile-tests` clean (unit 158 files, 2638 passed, 3 skipped, timing 15 passed); `git status` clean.
+- **Notes:** Edit 8 of the compile (T-006's reverse red) is a note in T-006; T-010's note on the blur guard is corrected there. AC-022's harness part is in *Manual evidence* with the orchestrator's note (the NS-9 sentence corrected after the compile); AC-022 stays open for Gregor's real window, AC-023, AC-024 and AC-025 for Gregor, AC-020 for CI at the PR.
 
 ## Test-title audit
 
@@ -459,19 +460,19 @@ Titles that name the control "Copy" otherwise stay (catch-all of §5): the tests
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001, T-002, T-005, T-007 | src/shared/protocol/nextStepTexts.ts:STEP_GUIDES, src/core/board/nextStep.ts:nextStep, src/webview/detail/NextStep.tsx | src/core/board/nextStep.test.ts 0021 AC-001; src/webview/detail/SpecDetail.test.tsx 0021 AC-001 | verified |
+| AC-001 | T-001, T-002, T-005, T-007 | src/shared/protocol/nextStepTexts.ts:STEP_GUIDES, src/core/board/nextStep.ts:nextStep, src/webview/detail/NextStep.tsx | src/core/board/nextStep.test.ts 0021 AC-001; src/webview/detail/SpecDetail.test.tsx 0021 AC-001; src/adapters/node/webviewCss.test.ts 0021 AC-001 (own line) | verified |
 | AC-002 | T-001 | src/core/board/nextStep.ts:nextStep | src/core/board/nextStep.test.ts 0021 AC-002 | verified |
 | AC-003 | T-001, T-002, T-005 | src/core/board/nextStep.ts:nextStep (NS-6-open), stepShortForm | src/core/board/nextStep.test.ts 0021 AC-003, AC-006 | verified |
-| AC-005 | T-001, T-002, T-005 | src/core/board/nextStep.ts:nextStep (NS-6-resume, NS-6-plan) | src/core/board/nextStep.test.ts 0021 AC-005, AC-006 | verified |
-| AC-006 | T-002 | src/shared/protocol/nextStepTexts.ts:stepShortForm, src/core/board/nextStep.ts:shortForm, stepView, src/core/shell/specTree.ts, src/core/copyNextStep/copyNextStep.ts, src/webview/ui/StepText.tsx | src/core/board/nextStep.test.ts 0021 AC-006; src/core/shell/treeLabel.test.ts 0021 AC-006; src/webview/board/SpecBoard.test.tsx | verified |
+| AC-005 | T-001, T-002, T-005 | src/core/board/nextStep.ts:nextStep (NS-6-resume, NS-6-plan) | src/core/board/nextStep.test.ts 0021 AC-005 (with the unreadable plan: read error and binary), AC-006 | verified |
+| AC-006 | T-002 | src/shared/protocol/nextStepTexts.ts:stepShortForm, src/core/board/nextStep.ts:shortForm, stepView, src/core/shell/specTree.ts, src/core/copyNextStep/copyNextStep.ts, src/webview/ui/StepText.tsx | src/core/board/nextStep.test.ts 0021 AC-006; src/core/shell/treeLabel.test.ts 0021 AC-006; src/webview/board/SpecBoard.test.tsx; src/webview/ui/StepText.test.tsx | verified |
 | AC-007 | T-001 | src/shared/protocol/nextStepTexts.ts:stepTooltip, src/core/shell/specTree.ts:tooltipOf, src/core/copyNextStep/entryView.ts:tooltipOf | src/core/shell/specTree.test.ts; src/core/copyNextStep/statusEntry.test.ts 0021 AC-007; src/webview/board/SpecBoard.test.tsx; src/webview/areas/overview/Sections.test.tsx | verified |
 | AC-008 | T-003 | src/shared/protocol/nextStepTexts.ts:COPY_PROMPT_LABEL, src/webview/ui/CopyButton.tsx, src/core/copyNextStep/copyNextStep.ts | src/webview/ui/CopyButton.test.tsx 0021 AC-008; src/adapters/node/webviewBundle.test.ts 0021 AC-008 sweep; src/core/copyNextStep/copyNextStep.test.ts | verified |
-| AC-009 | T-005, T-007 | src/core/board/stepTips.ts:stepTips, src/core/board/detail.ts, src/core/overview/rows.ts:projectNow, src/webview/detail/NextStep.tsx, src/webview/areas/overview/SpecRow.tsx, src/webview/ui/Toggletip.tsx | src/core/board/stepTips.test.ts; src/webview/detail/SpecDetail.test.tsx 0021 AC-009; src/webview/areas/overview/Sections.test.tsx 0021 AC-009, AC-014 | verified |
+| AC-009 | T-005, T-007 | src/core/board/stepTips.ts:stepTips, src/core/board/detail.ts, src/core/overview/rows.ts:projectNow, src/webview/detail/NextStep.tsx, src/webview/areas/overview/SpecRow.tsx, src/webview/ui/Toggletip.tsx | src/core/board/stepTips.test.ts; src/webview/detail/SpecDetail.test.tsx 0021 AC-009; src/webview/areas/overview/Sections.test.tsx 0021 AC-009, AC-014; src/adapters/node/webviewCss.test.ts 0021 AC-001, AC-009 (coach colour) | verified |
 | AC-010 | T-005, T-006, T-007 | src/core/board/detail.ts, src/core/overview/rows.ts (tips only while showStepTips) | src/core/board/detail.test.ts 0021 AC-010; src/core/overview/rows.test.ts; src/webview/detail/SpecDetail.test.tsx 0021 AC-010; src/adapters/node/webviewBundle.test.ts | verified |
-| AC-011 | T-006 | src/core/board/boardService.ts, src/core/overview/overviewService.ts, src/adapters/vscode/settings.ts, src/extension.ts | src/core/board/boardService.test.ts; src/core/overview/overviewService.test.ts; src/core/board/boardService.timing.test.ts; src/core/overview/overviewService.timing.test.ts; src/adapters/vscode/settings.test.ts; src/test/board.smoke.test.ts (CI) | verified |
-| AC-012 | T-004, T-005 | src/core/settings/stepTipSettings.ts:parseStepTipSettings, src/core/board/stepTips.ts | src/core/settings/stepTipSettings.test.ts; src/core/board/stepTips.test.ts | verified |
-| AC-013 | T-005 | src/shared/protocol/nextStepTexts.ts (no model name), package.json | src/core/board/sourceScan.test.ts 0021 AC-013; src/adapters/node/webviewBundle.test.ts coach sweep | verified |
-| AC-014 | T-007 | src/webview/ui/Toggletip.tsx, src/webview/detail/NextStep.tsx, src/webview/areas/overview/SpecRow.tsx, src/webview/main.css | src/webview/ui/Toggletip.test.tsx; src/webview/detail/SpecDetail.test.tsx 0021 AC-014; src/webview/detail/Close.test.tsx; src/webview/detail/ListOrDetail.test.tsx; src/webview/areas/overview/Sections.test.tsx; src/adapters/node/webviewCss.test.ts 0021 AC-014 | verified |
+| AC-011 | T-006 | src/core/board/boardService.ts, src/core/overview/overviewService.ts, src/adapters/vscode/settings.ts, src/extension.ts | src/core/board/boardService.test.ts; src/core/overview/overviewService.test.ts; src/core/board/boardService.timing.test.ts; src/core/overview/overviewService.timing.test.ts; src/adapters/vscode/settings.test.ts (section prefix); src/test/board.smoke.test.ts (CI) | verified |
+| AC-012 | T-004, T-005 | src/core/settings/stepTipSettings.ts:parseStepTipSettings, src/core/board/stepTips.ts | src/core/settings/stepTipSettings.test.ts (the cut trims before the ellipsis); src/core/board/stepTips.test.ts | verified |
+| AC-013 | T-005 | src/shared/protocol/nextStepTexts.ts (no model name), package.json | src/adapters/node/sourceScan.test.ts 0021 AC-013; src/adapters/node/webviewBundle.test.ts coach sweep | verified |
+| AC-014 | T-007 | src/webview/ui/Toggletip.tsx, src/webview/detail/NextStep.tsx, src/webview/areas/overview/SpecRow.tsx, src/webview/main.css | src/webview/ui/Toggletip.test.tsx (Escape on the body, each closes only itself); src/webview/detail/SpecDetail.test.tsx 0021 AC-014; src/webview/detail/Close.test.tsx; src/webview/detail/ListOrDetail.test.tsx; src/webview/areas/overview/Sections.test.tsx; src/adapters/node/webviewCss.test.ts 0021 AC-014 | verified |
 | AC-015 | T-007 | src/core/board/stepTips.ts:stepTips (about), src/webview/ui/Toggletip.tsx | src/core/board/stepTips.test.ts; src/webview/detail/SpecDetail.test.tsx 0021 AC-015; src/webview/ui/Toggletip.test.tsx (no focusable element) | verified |
 | AC-016 | T-004 | package.json contributes.configuration | src/adapters/vscode/manifest.test.ts 0021 AC-016 | verified |
 | AC-017 | T-006, T-007 | src/core/copyNextStep/noWrite.test.ts (guard), src/adapters/vscode/settings.ts (read-only) | src/core/copyNextStep/noWrite.test.ts 0021 AC-017; src/adapters/vscode/settings.test.ts; src/webview/ui/Toggletip.test.tsx (no message) | verified |
@@ -479,17 +480,35 @@ Titles that name the control "Copy" otherwise stay (catch-all of §5): the tests
 | AC-019 | T-001 | src/shared/protocol/nextStepTexts.ts:continueIntent, startIntent, src/core/board/shortTitle.ts:plainShort | src/core/board/nextStep.test.ts 0021 AC-019 | verified |
 | AC-020 | T-008 | src/adapters/node/docsScan.test.ts; plan section Test-title audit | plan section Test-title audit (18 absent titles, each with its §5 row or head title); npm run test:unit | verified |
 | AC-021 | T-008 | README.md, CHANGELOG.md, docs/release-checklist.md, the §5 notes in .specs/ | src/adapters/node/docsScan.test.ts product docs after 0021 (AC-021) | verified |
-| AC-022 | T-008 | — | manual: orchestrator's preview harness, then Gregor | open |
+| AC-022 | T-008, T-016 | — | manual: orchestrator (Gregor's delegate) 2026-11-18, harness `r3check` at `196cf72` (section Manual evidence): PASS; real window: Gregor | open (harness part verified) |
 | AC-023 | T-008 | — | manual: Gregor, Settings UI | open |
 | AC-024 | T-008 | — | manual: Gregor on `tip-splitter` | open |
 | AC-025 | T-008 | — | manual: Gregor with Copilot and Claude Code | open |
 
-AC-004 is void (PD-072 chose variant A); no step builds it.
+AC-004 is void (PD-072 chose variant A); no step builds it. AC-020 stays open for CI at the PR (Windows at `196cf72`: unit 2621 passed, 7 skipped, +15 timing; `npm test` 31+1+1+1).
+
+## Manual evidence
+
+manual: orchestrator (Gregor's delegate) 2026-11-18, harness `r3check` at `196cf72` — AC-022, harness part. Recorded by the fix session S76 from `/home/claude/orch/compile/0021-preview.md` (corrected after the compile S74); shots and `report.json` in `/home/claude/orch/preview/r3-0021/` (108 shots). Gregor's real-window part of AC-022 is open.
+
+Harness: `/home/claude/orch/preview` (real core at `196cf72` with a fake settings source: `showStepTips` default true as the manifest, `modelHints` strong `Strong Model X`, fast `Fast Y`; live changes through `/tips`), script `r3check.mts`. Cases: this repository with 0021 selected (Review: NS-5 and its then-line), 0023 selected (Backlog without plan: NS-9, two lines), and a copy of `fs170-brownfield-mixed` with 0006 Active and T-003 open (NS-6 variant A: `Implement T-003 of <plan>` and `/sdd-plan`). Dark, Light, High Contrast; window 1600 and 1000 px; side panel at its default (640 / 400) and at G-2's minimum (320).
+
+- No intent, prompt, step text or coach line is cut in any of the 36 views (`scrollWidth <= clientWidth`, no ellipsis).
+- Detail `(?)` (About this step): opens on Enter, `aria-expanded` true, 4 paragraphs, no focusable element inside, stays inside the side panel at 640, 400 and 320 px, covers no Copy prompt of its step (it opens inline under the heading and pushes the lines down); Escape closes it (`aria-expanded` false) and keeps the detail open.
+- Overview first Now row `(?)`: the same; the region opens full width under the row inside the Overview list.
+- `(?)` keyboard focus: `:focus-visible` with a 2 px solid focus outline (`focusBorder`) in all three themes.
+- Copy controls in the detail read `Copy prompt` (first primary, second secondary).
+- Coach lines: NS-5 `new chat · strong model (Strong Model X), other family`; NS-6 `same chat or new chat · fast model (Fast Y)`; NS-9 (0023 selected, detail) `new chat · strong model (Strong Model X)`; the first Now row (0021, NS-5) `new chat · strong model (Strong Model X), other family`.
+- Live settings (AC-011 smoke): `showStepTips` false → coach lines and `(?)` gone in 35–70 ms, selection and side panel kept; true plus a new strong hint → coach shows `(Other Strong)` in 15–30 ms (budget 500 ms).
+
+Not covered by that run and still open: the Escape with focus on the body (D1, fixed in T-009: Gregor checks it in the real window), the content pushed down when the toggletip opens, two coach lines in one window (guideline 11), AC-023, AC-024, AC-025.
+
+Notes only, from the compile S74 (no change made): the tree and status bar tooltips escape `,` and `:` (`Then\, after a READY verdict\: close the spec`), which renders correctly but is noisy in the source; when focus leaves the webview (a click into the editor) the toggletip stays open and is still open on return (P-14 by design).
 
 ## Session handoff
 
-- **Done so far:** all eight steps verified and committed (T-001 `db15d7a` … T-007 `65a41f6`, stage 3 sync `51260c8`, T-008 in the closing commit); gates green on Linux (`npm test` and the host smoke only on Windows and CI).
-- **Next action:** the orchestrator's preview harness for AC-022 (screenshots into this plan), Gregor's checks AC-023, AC-024, AC-025 on `tip-splitter` (checklist section 0021); then `/sdd-compile` and, after READY, `/sdd-lifecycle`. The spec stays in active/ until then.
-- **Open decisions:** none for Gregor; proxies P-1…P-22 above plus those in the step notes.
-- **Baseline:** `0ef5875` (head before the first step commit; moved to active/ 2026-11-18)
+- **Done so far:** T-001…T-008 (`db15d7a` … `9a0c652`), then the fix stage after the compile S74 (NOT READY): T-009 Escape on the body (D1), T-010 and T-011 and T-012 the mutants M71, M26, M39, M52, M79, T-013 README (D2) and short forms, T-014 hint cut, T-015 `StepText` and stale fixtures, T-016 traceability, titles, Memory Bank, evidence. Gates green on Linux; Windows at `196cf72` (before the fix): unit 2621 passed, 7 skipped, +15 timing, `npm test` 31+1+1+1.
+- **Next action:** Windows run at the fix head, then Gregor's real-window part of AC-022 (watch D1 and the content pushed down), AC-023, AC-024 and AC-025 on `tip-splitter` (checklist section 0021); the PR for CI (AC-020); then a fresh `/sdd-compile` and, after READY, `/sdd-lifecycle`. The spec stays in active/ until then.
+- **Open decisions:** none for Gregor; proxies P-1…P-22 above plus those in the step notes (T-011 unreadable plan, T-014 hint cut, T-015 separator).
+- **Baseline:** `0ef5875` (head before the first step commit; moved to active/ 2026-11-18); the fix stage starts at `f9f4fe7`.
 - **Environment:** `npm test` (host smoke, including `src/test/board.smoke.test.ts`) only on Windows and CI; layout checks in the orchestrator's harness.

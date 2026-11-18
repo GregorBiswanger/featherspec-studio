@@ -94,7 +94,7 @@ suite('FeatherSpec Studio board smoke', function () {
         await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     });
 
-    test('0021 AC-016, AC-011: both settings are contributed with their defaults, and switching Show Step Tips off drops the coach line from the detail within 500 ms', async () => {
+    test('0021 AC-016, AC-011: both settings are contributed with their defaults, and switching Show Step Tips off drops the coach line from the detail promptly, within 2 s including the settings write (the 500 ms budget is decided by the timing tests)', async () => {
         const api = await activateStudio();
         await api.whenIdle();
         const configuration = vscode.workspace.getConfiguration('featherspec-studio');
