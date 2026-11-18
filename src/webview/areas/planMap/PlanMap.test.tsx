@@ -9,7 +9,8 @@ import { planSample, stage, step } from '../../../shared/protocol/testing/planSa
 import { App } from '../../App';
 import { boardEvent, boardView, card } from '../../board/testing/views';
 import { createClient, type ShellClient } from '../../client';
-import { detailEvent, detailView, PLAN_KEY } from '../../detail/testing/views';
+import { copyResultEvent, detailEvent, detailView, PLAN_KEY } from '../../detail/testing/views';
+import { COPIED_TEXT } from '../../../shared/protocol/nextStepTexts';
 import { baseView, click, mount, send, shellEvent, type Mounted } from '../../testing/dom';
 
 let posted: Envelope[];
@@ -360,5 +361,178 @@ describe('0023 AC-008: stage rows and step cards', () => {
         expect(cardOf(container, 'T-003').querySelector('button[data-card-toggle]')?.getAttribute('aria-expanded')).toBe('true');
         await show({ selection: selected('0003'), detail: detailWith(planSample(), { stem: '0003-thing', number: '0003', title: 'Thing 0003', key: '.specs/active/0003-thing.md' }) });
         expect(cardOf(container, 'T-003').querySelector('button[data-card-toggle]')?.getAttribute('aria-expanded')).toBe('false');
+    });
+});
+
+function waysOf(container: HTMLElement, number: number | string = 2): HTMLElement | null {
+    return stageRow(container, number).querySelector<HTMLElement>('[data-ways]');
+}
+
+const SEQUENCE = 'Implement the whole stage 2 of .specs/active/0007-thing.plan.md in sequence';
+const SUBAGENTS = 'Implement the whole stage 2 of .specs/active/0007-thing.plan.md with subagents';
+const OTHERS = 'Implement the whole stage 2 of .specs/active/0007-thing.plan.md with other agents';
+
+describe('0023 AC-009: the ways of the current stage', () => {
+    it('the ways block stands after the cards of the current stage only, collapsed on every showing', async () => {
+        const container = await show({ selection: selected('0007'), detail: detailWith(planSample()) });
+        expect(map(container).querySelectorAll('[data-ways]')).toHaveLength(1);
+        expect(waysOf(container, 1)).toBeNull();
+        expect(waysOf(container, 3)).toBeNull();
+        const block = waysOf(container)!;
+        const toggle = block.querySelector<HTMLButtonElement>('.plan-ways-toggle')!;
+        expect(toggle.textContent).toBe('Ways to run stage 2');
+        expect(toggle.getAttribute('aria-expanded')).toBe('false');
+        expect(block.querySelector<HTMLElement>('.plan-ways-body')!.hidden).toBe(true);
+        expect(stageRow(container, 2).lastElementChild).toBe(block);
+        await click(toggle);
+        expect(toggle.getAttribute('aria-expanded')).toBe('true');
+        await show({ selection: selected('0003'), detail: detailWith(planSample(), { stem: '0003-thing', number: '0003', title: 'Thing 0003', key: '.specs/active/0003-thing.md' }) });
+        expect(waysOf(container)!.querySelector('.plan-ways-toggle')?.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('expanded: the lead, the three ways in order with effect and prompt literally, then the start lines under Other agents', async () => {
+        const container = await show({ selection: selected('0007'), detail: detailWith(planSample()) });
+        const block = waysOf(container)!;
+        await click(block.querySelector<HTMLButtonElement>('.plan-ways-toggle')!);
+        expect(block.querySelector('.plan-ways-lead')?.textContent).toBe(
+            'Steps joined by ‖ share no file and may run in parallel. In sequence is the default; parallel pays off for large steps. Either parallel way runs the quality gates once, on the combined result, before a step is ticked.',
+        );
+        const ways = [...block.querySelectorAll<HTMLElement>('.plan-way')];
+        expect(ways.map((way) => way.querySelector('.plan-way-name')?.textContent)).toEqual(['In sequence', 'Subagents', 'Other agents']);
+        expect(ways.map((way) => way.querySelector('.plan-way-effect')?.textContent)).toEqual([
+            'One chat builds the steps one after another and stops at the stage end and at every test review on the way.',
+            "Where a working agreement asks for a test review, the chat first writes the stage's tests and stops for it; then it hands each step to a subagent. Subagents cannot ask you; there is no steering in between.",
+            'The chat proposes the commit a worktree needs and prints one start line per step. Paste each into another chat, tool or worktree; each worker builds its step and leaves a return note.',
+        ]);
+        expect(ways.map((way) => way.querySelector('.plan-way-prompt code')?.textContent)).toEqual([SEQUENCE, SUBAGENTS, OTHERS]);
+        expect(ways[0]!.querySelector('.plan-start-lines')).toBeNull();
+        expect(ways[1]!.querySelector('.plan-start-lines')).toBeNull();
+        expect(ways[2]!.querySelector('.plan-start-lead')?.textContent).toBe('Start lines — commit first: a worktree holds committed files only.');
+        expect([...ways[2]!.querySelectorAll('.plan-start-lines code')].map((code) => code.textContent)).toEqual([
+            'Implement T-003 of .specs/active/0007-thing.plan.md as a parallel worker.',
+            'Implement T-004 of .specs/active/0007-thing.plan.md as a parallel worker.',
+        ]);
+    });
+
+    it('a stage view without start lines (Ready) shows the three ways and no start line', async () => {
+        const base = planSample();
+        const plan = planSample({ stages: base.stages.map((entry) => (entry.ways === undefined ? entry : { ...entry, ways: { ...entry.ways, startLines: [] } })) });
+        const container = await show({ selection: selected('0007'), detail: detailWith(plan) });
+        await click(waysOf(container)!.querySelector<HTMLButtonElement>('.plan-ways-toggle')!);
+        expect(waysOf(container)!.querySelectorAll('.plan-way')).toHaveLength(3);
+        expect(waysOf(container)!.querySelector('.plan-start-lines')).toBeNull();
+        expect(map(container).textContent).not.toContain('parallel worker');
+    });
+
+    it('no stage carries ways in a plan without the view for them', async () => {
+        const base = planSample();
+        const plan = planSample({ stages: base.stages.map(({ ways: _ways, ...entry }) => entry as typeof entry) });
+        const container = await show({ selection: selected('0007'), detail: detailWith(plan) });
+        expect(map(container).querySelector('[data-ways]')).toBeNull();
+        expect(map(container).textContent).not.toContain('Ways to run');
+    });
+});
+
+describe('0023 AC-010: the Copy buttons of the map', () => {
+    async function openWays(): Promise<HTMLElement> {
+        const container = await show({ selection: selected('0007'), detail: detailWith(planSample()) });
+        await click(waysOf(container)!.querySelector<HTMLButtonElement>('.plan-ways-toggle')!);
+        return container;
+    }
+
+    it('each way has a secondary Copy prompt that copies the prompt alone and shows the feedback of 0021', async () => {
+        const container = await openWays();
+        const buttons = [...waysOf(container)!.querySelectorAll<HTMLButtonElement>('.plan-way-prompt > button.copy-button')];
+        expect(buttons.map((button) => button.getAttribute('aria-label'))).toEqual([`Copy prompt: ${SEQUENCE}`, `Copy prompt: ${SUBAGENTS}`, `Copy prompt: ${OTHERS}`]);
+        expect(buttons.every((button) => button.classList.contains('copy-secondary'))).toBe(true);
+        expect(buttons[1]!.textContent).toBe('Copy prompt');
+        await click(buttons[1]!);
+        expect(requests('copyText')).toEqual([{ text: SUBAGENTS }]);
+        await send(copyResultEvent(true, COPIED_TEXT));
+        expect(buttons[1]!.textContent).toBe('Copied');
+        expect(buttons[0]!.textContent).toBe('Copy prompt');
+        expect(buttons[1]!.parentElement!.querySelector('[role="status"]')?.textContent).toBe('Copied to the clipboard.');
+    });
+
+    it('each start line has an icon Copy named "Copy prompt: <line>" that copies the line', async () => {
+        const container = await openWays();
+        const icons = [...waysOf(container)!.querySelectorAll<HTMLButtonElement>('.plan-start-lines button.copy-icon')];
+        expect(icons.map((button) => button.getAttribute('aria-label'))).toEqual([
+            'Copy prompt: Implement T-003 of .specs/active/0007-thing.plan.md as a parallel worker.',
+            'Copy prompt: Implement T-004 of .specs/active/0007-thing.plan.md as a parallel worker.',
+        ]);
+        await click(icons[0]!);
+        expect(requests('copyText')).toEqual([{ text: 'Implement T-003 of .specs/active/0007-thing.plan.md as a parallel worker.' }]);
+    });
+
+    it('the map renders no primary button, with the ways open', async () => {
+        const container = await openWays();
+        const primary = [...map(container).querySelectorAll('button.copy-button')].filter((button) => !button.classList.contains('copy-secondary'));
+        expect(primary).toEqual([]);
+    });
+});
+
+describe('0023 AC-012: the map follows the files', () => {
+    async function update(plan: PlanView): Promise<void> {
+        await send(detailEvent(detailWith(plan)));
+    }
+
+    it('a new return note shows its state on the card and the count of the stage, and keeps expanded cards and the ways block', async () => {
+        const container = await show({ selection: selected('0007'), detail: detailWith(planSample()) });
+        await click(cardOf(container, 'T-004').querySelector<HTMLButtonElement>('button[data-card-toggle]')!);
+        await click(waysOf(container)!.querySelector<HTMLButtonElement>('.plan-ways-toggle')!);
+        const base = planSample();
+        const changed = planSample({
+            stages: base.stages.map((entry) =>
+                entry.number !== 2
+                    ? entry
+                    : {
+                          ...entry,
+                          returned: { n: 1, m: 2 },
+                          groups: [{ steps: [entry.groups[0]!.steps[0]!, { ...entry.groups[0]!.steps[1]!, state: 'returned' as const, returned: { status: 'blocked' as const, reason: 'no access' } }] }],
+                      },
+            ),
+        });
+        await update(changed);
+        expect(cardOf(container, 'T-004').getAttribute('data-state')).toBe('returned');
+        expect(cardOf(container, 'T-004').querySelector('.step-card-returned')?.textContent).toBe('Returned · blocked: no access');
+        expect(stageRow(container, 2).querySelector('.plan-stage-returned')?.textContent).toBe('1 of 2 steps returned');
+        expect(cardOf(container, 'T-004').querySelector('button[data-card-toggle]')?.getAttribute('aria-expanded')).toBe('true');
+        expect(waysOf(container)!.querySelector('.plan-ways-toggle')?.getAttribute('aria-expanded')).toBe('true');
+        await update(planSample());
+        expect(cardOf(container, 'T-004').querySelector('.step-card-returned')).toBeNull();
+        expect(stageRow(container, 2).querySelector('.plan-stage-returned')).toBeNull();
+    });
+
+    it('a focused card keeps the focus through an update', async () => {
+        const container = await show({ selection: selected('0007'), detail: detailWith(planSample()) });
+        const head = cardOf(container, 'T-004').querySelector<HTMLButtonElement>('button[data-card-toggle]')!;
+        await act(async () => head.focus());
+        await update(planSample({ count: { done: 3, total: 5 } }));
+        expect(document.activeElement).toBe(cardOf(container, 'T-004').querySelector('button[data-card-toggle]'));
+    });
+
+    it('a focused card that leaves hands the focus to the card at its place, else to the heading of the map', async () => {
+        const container = await show({ selection: selected('0007'), detail: detailWith(planSample()) });
+        await act(async () => cardOf(container, 'T-004').querySelector<HTMLButtonElement>('button[data-card-toggle]')!.focus());
+        const base = planSample();
+        const without = planSample({
+            stages: base.stages.map((entry) => (entry.number === 2 ? { ...entry, groups: [{ steps: [entry.groups[0]!.steps[0]!] }] } : entry)),
+        });
+        await update(without);
+        expect(cardOf(container, 'T-004')).toBeNull();
+        expect(document.activeElement).toBe(cardOf(container, 'T-003').querySelector('button[data-card-toggle]'));
+        const finished = planSample({ stages: [stage(1, [{ steps: [step('T-001', 'done')] }])] });
+        await update(finished);
+        expect(map(container).querySelector('[data-step-card]')).toBeNull();
+        expect(document.activeElement).toBe(map(container).querySelector('[data-map-heading]'));
+    });
+
+    it('a focus outside the cards is left where it is', async () => {
+        const container = await show({ selection: selected('0007'), detail: detailWith(planSample()) });
+        const heading = map(container).querySelector<HTMLElement>('[data-map-heading]')!;
+        await act(async () => heading.focus());
+        await update(planSample({ stages: [stage(1, [{ steps: [step('T-001', 'done')] }])] }));
+        expect(document.activeElement).toBe(heading);
     });
 });

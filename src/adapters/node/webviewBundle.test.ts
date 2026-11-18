@@ -7,6 +7,7 @@ import { fixturePath } from '../../core/discovery/testing/fixtures';
 import { arrangeBoard } from '../../core/board/filters';
 import { buildBanner, buildCards } from '../../core/board/cards';
 import { buildDetail } from '../../core/board/detail';
+import { buildPlanSpecs } from '../../core/planMap/planSpecs';
 import { deriveLifecycle } from '../../core/lifecycle/deriveLifecycle';
 import { buildOverviewView } from '../../core/overview/overviewView';
 import { readProject } from '../../core/specs/readProject';
@@ -187,6 +188,88 @@ describe('0021 AC-009, AC-010, AC-013: the coach line in the rendered bundle, ov
         const joined = named.flatMap((surface) => surface.texts).join('\n');
         expect(joined).toMatch(/strong model \(MyStrong\)|fast model \(MyFast\)/);
     }, 60000);
+});
+
+interface MapRendered {
+    where: string;
+    primaries: number;
+    unnamedCopies: string[];
+    texts: string[];
+    cards: number;
+}
+
+async function renderMap(name: string): Promise<MapRendered[]> {
+    const project = await readProject(createNodeSpecSource(), fixturePath(name), '1.10.0');
+    const lifecycle = deriveLifecycle(project);
+    const model = { project, lifecycle };
+    const history = { available: true as const, label: 'Observed', entries: [] };
+    const send = (dom: JSDOM, data: unknown) => dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data }));
+    const cards = buildCards(project, lifecycle);
+    const board = { columns: arrangeBoard(cards, {}, 'number'), banner: buildBanner(project, lifecycle), filter: {}, sort: 'number', sortKeys: ['number', 'title', 'lastChange'], noSpecs: cards.length === 0, planSpecs: buildPlanSpecs(model, cards) };
+    const rendered: MapRendered[] = [];
+    const dom = boot(readFileSync(bundlePath, 'utf8'));
+    await settle();
+    let seq = 0;
+    const look = (where: string): void => {
+        const document = dom.dom.window.document as unknown as { body: ElementLike; querySelectorAll(selector: string): Iterable<ElementLike & { classList: { contains(name: string): boolean } }> };
+        const copies = [...document.querySelectorAll('[data-plan-map] button.copy-button, [data-plan-map] button.copy-icon')];
+        const attributes = [...document.querySelectorAll('[data-plan-map] [title], [data-plan-map] [aria-label]')].flatMap((element) => [element.getAttribute('title'), element.getAttribute('aria-label')]).filter((value): value is string => value !== null);
+        const mapText = [...document.querySelectorAll('[data-plan-map]')].map((element) => element.textContent ?? '').join('\n');
+        rendered.push({
+            where,
+            primaries: copies.filter((button) => button.classList.contains('copy-button') && !button.classList.contains('copy-secondary')).length,
+            unnamedCopies: copies.map((button) => button.getAttribute('aria-label') ?? '').filter((label) => !label.startsWith('Copy prompt: ')),
+            texts: [mapText, ...attributes],
+            cards: [...document.querySelectorAll('[data-step-card]')].length,
+        });
+    };
+    for (const entry of lifecycle.entries) {
+        seq += 1;
+        const selection = { stem: entry.stem, number: entry.number };
+        send(dom.dom, { v: 6, kind: 'evt', seq, type: 'shell', payload: { view: { ...SHELL_BOARD, area: 'planMap', selection } } });
+        send(dom.dom, { v: 6, kind: 'evt', type: 'board', payload: { view: board } });
+        send(dom.dom, { v: 6, kind: 'evt', type: 'detail', payload: { view: buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history }) } });
+        await settle();
+        look(`${name} map ${entry.key}`);
+    }
+    seq += 1;
+    send(dom.dom, { v: 6, kind: 'evt', seq, type: 'shell', payload: { view: { ...SHELL_BOARD, area: 'planMap' } } });
+    await settle();
+    look(`${name} map without selection`);
+    expect(dom.errors).toEqual([]);
+    return rendered;
+}
+
+const MAP_FORBIDDEN = /\b(?:S-[A-Z]{3,}|R-[1-7]|NS-\d|struck|sibling|kind|stem|parsing)\b/;
+
+describe('0023 AC-010, AC-015: the rendered Plan map over the fixtures', () => {
+    beforeAll(() => {
+        execFileSync(process.execPath, ['esbuild.js'], { cwd: root, stdio: 'pipe' });
+    }, 60000);
+
+    it.each(SWEPT_FIXTURES.map((name) => [name]))('%s: no primary button, every Copy named "Copy prompt: <line>", and no rule ID or internal word in any text or title', async (name) => {
+        const rendered = await renderMap(name);
+        expect(rendered.length).toBeGreaterThanOrEqual(1);
+        for (const surface of rendered) {
+            expect(surface.primaries, surface.where).toBe(0);
+            expect(surface.unnamedCopies, surface.where).toEqual([]);
+            for (const text of surface.texts) {
+                expect(text, surface.where).not.toMatch(MAP_FORBIDDEN);
+            }
+        }
+    }, 60000);
+
+    it('a fixture with a plan renders cards in the map', async () => {
+        const rendered = await renderMap('fs110-parallel-synthetic');
+        expect(rendered.some((surface) => surface.cards > 0)).toBe(true);
+    }, 60000);
+
+    it('negative control: the pattern finds a rule ID and an internal word', () => {
+        expect('Stage 2 R-3').toMatch(MAP_FORBIDDEN);
+        expect('a struck step').toMatch(MAP_FORBIDDEN);
+        expect('sibling of kind stem parsing NS-6').toMatch(MAP_FORBIDDEN);
+        expect('Stage 2 — add and subtract').not.toMatch(MAP_FORBIDDEN);
+    });
 });
 
 describe('built webview bundle in jsdom (a broken bundle or a start-up error turns this red)', () => {

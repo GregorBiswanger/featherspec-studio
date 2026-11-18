@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import type { SpecDetailView } from '../../../shared/protocol/detail';
 import type { PlanSpecView, PlanView } from '../../../shared/protocol/planMap';
 import { NOT_IN_A_STAGE_TEXT, NO_SPEC_SELECTED_TEXT, noPlanText, OPEN_PLAN_LABEL, planSaysText, specDoneText, SPECS_WITH_PLAN_HEADING } from '../../../shared/protocol/planMapTexts';
@@ -9,10 +9,12 @@ import { useShell } from '../../shell';
 import { FileLink, type FileResult } from '../../ui/FileLink';
 import { InlineText } from '../../ui/InlineText';
 import { ProgressBar } from '../../ui/ProgressBar';
-import { moveFocus, type Direction, type Grid } from '../../board/focusModel';
+import { fallbackFocus, moveFocus, type Direction, type Grid } from '../../board/focusModel';
 import { requestMapFocus, takePendingMapFocus } from './focus';
 import { StageRow } from './StageRow';
 import { StepCard, type CardLinks } from './StepCard';
+import { Ways } from './Ways';
+import type { CopyResult } from '../../ui/CopyButton';
 
 const ARROWS: Record<string, Direction> = { ArrowUp: 'left', ArrowDown: 'right', ArrowLeft: 'up', ArrowRight: 'down' };
 
@@ -33,7 +35,7 @@ function gridOf(plan: PlanView): Grid {
     return rows.filter((row) => row.length > 0);
 }
 
-function Stages(props: { plan: PlanView; links: CardLinks }) {
+function Stages(props: { plan: PlanView; links: CardLinks; copyResult: CopyResult | undefined; onCopy(text: string): void }) {
     const { plan, links } = props;
     const root = useRef<HTMLDivElement>(null);
     const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
@@ -50,10 +52,42 @@ function Stages(props: { plan: PlanView; links: CardLinks }) {
         });
     }, []);
     const cards = { expanded, tabStop, onToggle: toggle };
+    const hadFocus = useRef<string | undefined>(undefined);
+    const previous = useRef<Grid>(grid);
+    useLayoutEffect(() => {
+        const was = hadFocus.current;
+        const before = previous.current;
+        previous.current = grid;
+        if (was === undefined || before === grid) {
+            return;
+        }
+        const box = root.current;
+        if (box === null || box.contains(document.activeElement)) {
+            return;
+        }
+        const target = fallbackFocus(before, was, grid);
+        const element = target === undefined ? undefined : box.querySelector<HTMLElement>(`[data-card-toggle="${target}"]`);
+        if (element !== undefined && element !== null) {
+            setStop(target);
+            hadFocus.current = target;
+            element.focus();
+            return;
+        }
+        hadFocus.current = undefined;
+        box.closest<HTMLElement>('[data-plan-map]')?.querySelector<HTMLElement>('[data-map-heading]')?.focus();
+    }, [grid]);
+    const onBlur = (event: React.FocusEvent<HTMLElement>): void => {
+        if ((event.target as HTMLElement).isConnected) {
+            hadFocus.current = undefined;
+        }
+    };
     const onFocus = (event: React.FocusEvent<HTMLElement>): void => {
         const id = (event.target as HTMLElement).closest<HTMLElement>('[data-step-card]')?.getAttribute('data-step-card');
-        if (id !== null && id !== undefined && id !== stop) {
-            setStop(id);
+        if (id !== null && id !== undefined) {
+            hadFocus.current = id;
+            if (id !== stop) {
+                setStop(id);
+            }
         }
     };
     const onKeyDown = (event: KeyboardEvent<HTMLElement>): void => {
@@ -66,13 +100,20 @@ function Stages(props: { plan: PlanView; links: CardLinks }) {
         const target = moveFocus(grid, id, direction);
         if (target !== undefined) {
             setStop(target);
+            hadFocus.current = target;
             root.current?.querySelector<HTMLElement>(`[data-card-toggle="${target}"]`)?.focus();
         }
     };
     return (
-        <div className="plan-stages-map" ref={root} onFocus={onFocus} onKeyDown={onKeyDown}>
+        <div className="plan-stages-map" ref={root} onFocus={onFocus} onBlur={onBlur} onKeyDown={onKeyDown}>
             {plan.stages.map((stage) => (
-                <StageRow key={stage.number} stage={stage} links={links} cards={cards} />
+                <StageRow
+                    key={stage.number}
+                    stage={stage}
+                    links={links}
+                    cards={cards}
+                    {...(stage.ways === undefined ? {} : { ways: <Ways ways={stage.ways} copyResult={props.copyResult} onCopy={props.onCopy} /> })}
+                />
             ))}
             {plan.loose.length === 0 ? null : plan.staged ? (
                 <section className="plan-stage-row" data-stage-row="loose">
@@ -194,7 +235,7 @@ function Header(props: { detail: SpecDetailView; plan: PlanView; fileResult: Fil
 
 export function PlanMap() {
     const shell = useShell();
-    const { board, detail, fileResult, openFile } = useBoard();
+    const { board, detail, fileResult, openFile, copyResult, copyText } = useBoard();
     const selection = shell.view?.selection;
     const specs = board?.planSpecs ?? [];
     const shown: SpecDetailView | undefined =
@@ -207,7 +248,7 @@ export function PlanMap() {
         return (
             <div className="plan-map" data-plan-map>
                 <Header key={shown.key} detail={shown} plan={shown.plan} fileResult={fileResult} onOpen={openFile} />
-                <Stages key={`stages|${shown.key}`} plan={shown.plan} links={{ fileResult, onOpen: openFile }} />
+                <Stages key={`stages|${shown.key}`} plan={shown.plan} links={{ fileResult, onOpen: openFile }} copyResult={copyResult} onCopy={copyText} />
             </div>
         );
     }

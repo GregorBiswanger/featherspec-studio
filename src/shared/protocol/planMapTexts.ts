@@ -130,3 +130,12 @@ export function stageReturnedText(n: number, m: number): string {
 }
 
 export const ALL_RETURNED_TEXT = 'All steps returned: the next step integrates them.';
+
+export function waysHeading(n: number): string {
+    return `Ways to run stage ${n}`;
+}
+
+export const WAYS_LEAD_TEXT =
+    'Steps joined by ‖ share no file and may run in parallel. In sequence is the default; parallel pays off for large steps. Either parallel way runs the quality gates once, on the combined result, before a step is ticked.';
+
+export const START_LINES_LEAD_TEXT = 'Start lines — commit first: a worktree holds committed files only.';

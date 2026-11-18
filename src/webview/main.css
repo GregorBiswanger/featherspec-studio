@@ -1819,3 +1819,71 @@ blockquote.illustration {
 .step-card-more[hidden] {
     display: none;
 }
+
+.plan-ways {
+    min-width: 0;
+}
+
+.plan-ways-toggle {
+    padding: 2px 0;
+    color: var(--vscode-textLink-foreground);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+}
+
+.plan-ways-toggle:hover {
+    color: var(--vscode-textLink-activeForeground, var(--vscode-textLink-foreground));
+}
+
+.plan-ways-toggle:focus-visible {
+    outline: 1px solid var(--vscode-contrastActiveBorder, var(--vscode-focusBorder));
+    outline-offset: 2px;
+}
+
+.plan-ways-body[hidden] {
+    display: none;
+}
+
+.plan-ways-lead,
+.plan-start-lead,
+.plan-way-effect {
+    margin: 4px 0;
+    color: var(--fs-muted);
+    overflow-wrap: break-word;
+}
+
+.plan-ways-list,
+.plan-start-lines ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.plan-way {
+    margin: 8px 0;
+    min-width: 0;
+}
+
+.plan-way-name {
+    margin: 0;
+    font-weight: 600;
+}
+
+.plan-way-prompt,
+.plan-start-lines li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin: 4px 0;
+    min-width: 0;
+}
+
+.plan-way-prompt code,
+.plan-start-lines code {
+    min-width: 0;
+    overflow-wrap: break-word;
+}

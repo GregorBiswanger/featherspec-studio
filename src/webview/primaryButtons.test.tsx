@@ -7,7 +7,9 @@ import { App } from './App';
 import { boardEvent, boardView, card } from './board/testing/views';
 import { createClient, type ShellClient } from './client';
 import { detailEvent, detailView } from './detail/testing/views';
-import { baseView, mount, overviewEvent, send, shellEvent, type Mounted } from './testing/dom';
+import { baseView, click, mount, overviewEvent, send, shellEvent, type Mounted } from './testing/dom';
+import { planSample } from '../shared/protocol/testing/planSample';
+import type { SpecDetailView } from '../shared/protocol/detail';
 
 let mounted: Mounted | undefined;
 const clients: ShellClient[] = [];
@@ -138,5 +140,41 @@ describe('0022 AC-011: at most two primary buttons per view', () => {
         const host = document.createElement('div');
         host.innerHTML = '<button class="copy-button"></button><button class="copy-button copy-secondary"></button><button class="copy-icon"></button>';
         expect(primaries(host)).toHaveLength(1);
+    });
+});
+
+describe('0023 AC-010: the Plan map adds no primary button', () => {
+    async function openMap(selection: SelectedSpec | undefined): Promise<HTMLElement> {
+        const client = createClient({ post: (message) => void posted.push(message) });
+        clients.push(client);
+        client.start();
+        mounted = await mount(<App client={client} />);
+        await send(shellEvent(baseView({ area: 'planMap', selection }), 1));
+        await send(boardEvent(boardView(CARDS)));
+        if (selection !== undefined) {
+            const view = detailView({ stem: selection.stem, number: selection.number }, NS6) as SpecDetailView;
+            await send(detailEvent({ ...view, plan: planSample() }));
+            const toggle = mounted.container.querySelector<HTMLButtonElement>('[data-ways] .plan-ways-toggle');
+            if (toggle !== null) {
+                await click(toggle);
+            }
+        }
+        return mounted.container;
+    }
+
+    it('with a selected spec the view has one primary button, the first line of the side panel, and the map holds only secondary and icon Copies', async () => {
+        const container = await openMap(SELECTED);
+        const found = primaries(container);
+        expect(found).toHaveLength(1);
+        expect(found[0]?.closest('aside.side-panel')).not.toBeNull();
+        const inMap = container.querySelector('[data-plan-map]')!;
+        expect(primaries(inMap as HTMLElement)).toHaveLength(0);
+        expect(inMap.querySelectorAll('button.copy-secondary').length).toBe(3);
+        expect(inMap.querySelectorAll('button.copy-icon').length).toBe(2);
+    });
+
+    it('without a selection the view has none', async () => {
+        const container = await openMap(undefined);
+        expect(primaries(container)).toHaveLength(0);
     });
 });

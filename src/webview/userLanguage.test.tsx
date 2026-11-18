@@ -8,6 +8,10 @@ import { boardEvent, boardView, card } from './board/testing/views';
 import { overviewEvent } from './testing/dom';
 import { sampleView } from '../shared/protocol/testing/overviewSample';
 import type { AreaId } from '../shared/protocol/areas';
+import { planSample, stage, step } from '../shared/protocol/testing/planSample';
+import type { SpecDetailView } from '../shared/protocol/detail';
+import type { PlanView } from '../shared/protocol/planMap';
+import { click } from './testing/dom';
 
 /** 0016 AC-011: the visible text holds no internal vocabulary. */
 const FORBIDDEN = /S-[A-Z]{3,}|R-[1-7]|NS-\d|persisted|Model updated|first observed|no longer observed|not checked|\d{4}-\d{2}-\d{2}T\d{2}:/;
@@ -140,5 +144,74 @@ describe('0016 AC-011: user language on every surface 0016 touched', () => {
         expect('needs a plan R-3').toMatch(FORBIDDEN);
         expect('needs a planR-3Tasks: 3 of 7').toMatch(FORBIDDEN);
         expect('(number 0099)R-61 format note').toMatch(FORBIDDEN);
+    });
+});
+
+describe('0023 AC-015: user language in the Plan section and the Plan map', () => {
+    const INTERNAL = /S-[A-Z]{3,}|R-[1-7]|NS-\d|\bstruck\b|\bsibling\b|\bkind\b|\bstem\b|\bparsing\b/;
+
+    function sample(): PlanView {
+        const returned = planSample();
+        return {
+            ...returned,
+            stages: [
+                ...returned.stages.slice(0, 1),
+                stage(2, [{ steps: [step('T-003', 'returned', { returned: { status: 'blocked', reason: 'no access' } }), step('T-004', 'dropped'), step('T-005', 'notFound', { open: undefined })] }], { current: true, returned: { n: 1, m: 2 }, ways: returned.stages[1]!.ways! }),
+            ],
+            loose: [step('T-009', 'open')],
+        };
+    }
+
+    function within(container: HTMLElement, selector: string): string {
+        const scoped = [...container.querySelectorAll<HTMLElement>(selector)];
+        const attributes = scoped.flatMap((root) => [root, ...root.querySelectorAll('[title], [aria-label]')]).flatMap((element) => [element.getAttribute('title'), element.getAttribute('aria-label')]);
+        return [...scoped.map((root) => root.textContent ?? ''), ...attributes].join('\n');
+    }
+
+    async function mapText(plan: PlanView): Promise<string> {
+        const client = createClient({ post: () => undefined });
+        clients.push(client);
+        client.start();
+        mounted = await mount(<App client={client} />);
+        await send(shellEvent(baseView({ area: 'planMap', selection: { stem: '0007-thing', number: '0007' } }), 1));
+        await send(boardEvent(boardView([card('0007')])));
+        await send(detailEvent({ ...(detailView() as SpecDetailView), plan }));
+        const toggle = mounted.container.querySelector<HTMLButtonElement>('[data-ways] .plan-ways-toggle');
+        if (toggle !== null) {
+            await click(toggle);
+        }
+        for (const head of mounted.container.querySelectorAll<HTMLButtonElement>('[data-card-toggle]')) {
+            await click(head);
+        }
+        return within(mounted.container, '[data-plan-map]');
+    }
+
+    it('the Plan map with every state, the ways and the expanded cards holds no rule ID and no internal word', async () => {
+        const text = await mapText(sample());
+        expect(text).toContain('Ways to run stage 2');
+        expect(text).toContain('Returned · blocked: no access');
+        expect(text).not.toMatch(INTERNAL);
+        expect(text).not.toMatch(FORBIDDEN);
+    });
+
+    it('the Plan section of the side panel holds no rule ID and no internal word', async () => {
+        const client = createClient({ post: () => undefined });
+        clients.push(client);
+        client.start();
+        mounted = await mount(<App client={client} />);
+        await send(shellEvent(baseView({ area: 'board', selection: { stem: '0007-thing', number: '0007' } }), 1));
+        await send(boardEvent(boardView([card('0007')])));
+        await send(detailEvent({ ...(detailView() as SpecDetailView), plan: sample() }));
+        const text = within(mounted.container, '.plan-stages, .plan-closing');
+        expect(text).toContain('T-003');
+        expect(text).not.toMatch(INTERNAL);
+        expect(text).not.toMatch(FORBIDDEN);
+    });
+
+    it('negative control: the pattern finds each forbidden word', () => {
+        for (const word of ['S-REVIEW', 'R-3', 'NS-6', 'a struck step', 'a sibling', 'kind', 'stem', 'parsing']) {
+            expect(word).toMatch(INTERNAL);
+        }
+        expect('Returned · blocked: no access').not.toMatch(INTERNAL);
     });
 });
