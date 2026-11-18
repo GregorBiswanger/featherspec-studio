@@ -106,3 +106,29 @@ export function rulesMatching(css: string, element: { matches(selector: string):
         }),
     );
 }
+
+function specificity(selector: string): number {
+    return (selector.match(/[.[:#]/g) ?? []).length;
+}
+
+export function effectiveValue(rules: CssRule[], element: { matches(selector: string): boolean }, property: string): string | undefined {
+    let winner: { weight: number; order: number; value: string } | undefined;
+    rules.forEach((rule, order) => {
+        const weight = Math.max(...rule.selectors.filter((selector) => element.matches(selector)).map(specificity), -1);
+        if (weight < 0) {
+            return;
+        }
+        const declaration = rule.body
+            .split(';')
+            .map((part) => part.trim())
+            .filter((part) => part.startsWith(`${property}:`))
+            .pop();
+        if (declaration === undefined) {
+            return;
+        }
+        if (winner === undefined || weight > winner.weight || (weight === winner.weight && order >= winner.order)) {
+            winner = { weight, order, value: declaration.slice(property.length + 1).trim() };
+        }
+    });
+    return winner?.value;
+}

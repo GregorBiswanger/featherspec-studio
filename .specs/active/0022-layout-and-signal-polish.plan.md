@@ -3,7 +3,7 @@
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-013
+**Current step:** T-014
 
 ## Approach
 
@@ -500,6 +500,14 @@ never on the repository.
 - **Verify:** `npx vitest run --project webview src/webview/areas/overview/problemsCss.test.tsx` red, then green; gates 1–4
 - [x] **Verified (T-013):** 2026-11-18, red first: the new file against the unchanged `main.css`: 1 failed (`expected 'nowrap' not to be 'nowrap'`, the wide rule `.ov-row .ov-title` reaches the Problems title), 2 passed (control and helper). Green after the rule: 3 passed; `webviewCss.test.ts` 70 passed; gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2429 passed, 3 skipped (+13 timing).
 - **Notes:** The test sits in the webview project because it needs the rendered DOM; the node-side AC-003 test only looked at selectors that name `.ov-problems` or `.ov-line`, which is why D2 slipped through. The effective-value helper is a small cascade model (specificity = count of class, attribute and pseudo parts, then source order); it is enough for these rules and has its own test.
+
+### T-014 — The Overview rows tint their state icon (D3, harness V1)
+
+- **Covers:** AC-026 (§4.8 colour column for Overview rows), AC-019 (the harness's V1)
+- **Do:** `main.css`: `.ov-state-icon .icon { color: var(--fs-tint) }`; the five `[data-tint]` rules already map the colour IDs. `webview/testing/css.ts` gets `effectiveValue` (the cascade helper of T-013, moved there). New `src/webview/areas/overview/rowTint.test.tsx`: Now, Up next and Problems rows of all six states; for each icon the effective `color` is `var(--fs-tint)` and the effective `--fs-tint` is the literal variable of §4.8 (Active `charts-green`, Review `charts-orange`, Blocked `charts-red`, Ready `charts-blue`, Backlog and Done `descriptionForeground`); control: without `data-tint` no state colour reaches the icon.
+- **Verify:** `npx vitest run --project webview src/webview/areas/overview/rowTint.test.tsx` red, then green; gates 1–4
+- [x] **Verified (T-014):** 2026-11-18, red first: `npx vitest run --project webview src/webview/areas/overview/rowTint.test.tsx src/webview/areas/overview/problemsCss.test.tsx` against the unchanged stylesheet: 6 failed (every state, `color` undefined), the control and the 3 T-013 tests passed. Green after the rule: 75 passed in `src/webview/areas/overview`; gates: eslint 0 warnings, both `tsc` clean (the helper takes a `{ matches }` shape, not `Element`, because `testing/css.ts` is also compiled by the root project), `npm run test:unit` 2436 passed, 3 skipped (+13 timing).
+- **Notes:** the rule sits on the svg (`.icon`), where `data-tint` already sets `--fs-tint`; no new colour ID, no state name in a selector (0022 AC-026 test keeps passing). The harness round 2 repeats the look in Dark, Light and High Contrast.
 
 ## Traceability
 

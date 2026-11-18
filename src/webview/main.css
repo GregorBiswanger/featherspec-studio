@@ -1078,6 +1078,10 @@ main > h1 {
     flex: none;
 }
 
+.ov-state-icon .icon {
+    color: var(--fs-tint);
+}
+
 .ov-row .ov-problem {
     grid-area: problem;
 }
