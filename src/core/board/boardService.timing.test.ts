@@ -155,6 +155,50 @@ describe('0021 AC-011: a settings change reaches the detail within 500 ms on 200
     });
 });
 
+describe('0024 AC-010: a setting change and an extensions change reach the detail within 500 ms on 200 specs (PD-047)', () => {
+    let temp: string | undefined;
+    afterEach(async () => {
+        if (temp !== undefined) {
+            await fs.rm(temp, { recursive: true, force: true });
+        }
+    });
+
+    it('from the fake port events to the emitted detail', async () => {
+        temp = await fs.mkdtemp(path.join(os.tmpdir(), 'send-perf-'));
+        await generateProject(temp, 200);
+        const project = await readProject(createNodeSpecSource(), temp, '1.10.0');
+        const model = { project, lifecycle: deriveLifecycle(project) };
+        const w = createBoardWorld(model);
+        disposables.push(w.service);
+        w.selection.set({ stem: model.lifecycle.entries[0]!.stem });
+        await w.service.whenIdle();
+        w.assistant.choose('claudeCode');
+        let installed = false;
+        const best = await bestOfThree(async () => {
+            installed = !installed;
+            if (installed) {
+                w.assistant.install('claudeCode');
+            } else {
+                w.assistant.uninstall('claudeCode');
+            }
+            await w.service.whenIdle();
+        });
+        const view = w.service.detail();
+        expect(view.kind === 'spec' && 'send' in view.nextStep).toBe(installed);
+        expect(best).toBeLessThan(BUDGET_MS.uiFreshness);
+        w.assistant.install('claudeCode');
+        let chosen = true;
+        const settingBest = await bestOfThree(async () => {
+            chosen = !chosen;
+            w.assistant.choose(chosen ? 'claudeCode' : 'none');
+            await w.service.whenIdle();
+        });
+        const after = w.service.detail();
+        expect(after.kind === 'spec' && 'send' in after.nextStep).toBe(chosen);
+        expect(settingBest).toBeLessThan(BUDGET_MS.uiFreshness);
+    });
+});
+
 describe('0023 AC-012: a return note reaches the plan of the detail within 500 ms on 200 specs (PD-047)', () => {
     let temp: string | undefined;
     afterEach(async () => {

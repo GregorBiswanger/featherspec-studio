@@ -51,3 +51,37 @@ describe('0021 AC-011: a settings change reaches the Overview within 500 ms (PD-
         world.service.dispose();
     });
 });
+
+describe('0024 AC-010: a setting change and an extensions change reach the Overview within 500 ms (PD-047)', () => {
+    it('from the fake port events to the emitted view on 200 specs', async () => {
+        const big = await generateModel(200, 1000);
+        const world = createServiceWorld(big.model);
+        world.history.view = big.history;
+        world.listen();
+        await world.service.whenIdle();
+        world.assistant.choose('copilot');
+        let installed = false;
+        const best = await bestOfThree(async () => {
+            installed = !installed;
+            if (installed) {
+                world.assistant.install('copilot');
+            } else {
+                world.assistant.uninstall('copilot');
+            }
+            await world.service.whenIdle();
+        });
+        expect(current(world).now.some((row) => 'send' in row)).toBe(installed && current(world).now.length > 0);
+        expect(best).toBeLessThan(BUDGET_MS.uiFreshness);
+        world.assistant.install('copilot');
+        let chosen = true;
+        const settingBest = await bestOfThree(async () => {
+            chosen = !chosen;
+            world.assistant.choose(chosen ? 'copilot' : 'none');
+            await world.service.whenIdle();
+        });
+        expect(current(world).now.some((row) => 'send' in row)).toBe(chosen && current(world).now.length > 0);
+        expect(settingBest).toBeLessThan(BUDGET_MS.uiFreshness);
+        world.service.dispose();
+    });
+});
+

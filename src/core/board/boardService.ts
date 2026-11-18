@@ -5,6 +5,7 @@ import type { HistoryView } from '../lifecycle/statusHistory';
 import type { SelectionSource } from '../ports/board';
 import type { Disposable } from '../ports/host';
 import type { ShellModel, ShellModelSource, UiMemoryPort } from '../ports/shell';
+import type { Offer } from '../assistant/offer';
 import type { SettingsSource } from '../settings/settingsSource';
 import type { StepTipSettings } from '../settings/stepTipSettings';
 import { buildDetail } from './detail';
@@ -21,6 +22,7 @@ export interface BoardServiceDeps {
     history: { read(): Promise<HistoryView>; onDidChange(listener: () => void): Disposable };
     memory: UiMemoryPort;
     tips: SettingsSource<StepTipSettings>;
+    assistant: SettingsSource<Offer | undefined>;
 }
 
 export interface BoardService {
@@ -88,8 +90,13 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
         return doneHasCards ? { ...base, doneToggle: ui.doneExpanded() ? 'hide' : 'show' } : base;
     }
 
+    function offerOf(): { offer?: Offer } {
+        const offer = deps.assistant.read();
+        return offer === undefined ? {} : { offer };
+    }
+
     function detail(): DetailView {
-        return buildDetail({ selection: deps.selection.selection(), model: deps.source.current(), history, tips: deps.tips.read() });
+        return buildDetail({ selection: deps.selection.selection(), model: deps.source.current(), history, tips: deps.tips.read(), ...offerOf() });
     }
 
     function emitDetail(): void {
@@ -148,7 +155,7 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
         chain = chain.then(refresh, refresh);
     }
 
-    const subscriptions = [deps.source.onDidChange(schedule), deps.selection.onDidChange(schedule), deps.history.onDidChange(schedule), deps.tips.onDidChange(schedule)];
+    const subscriptions = [deps.source.onDidChange(schedule), deps.selection.onDidChange(schedule), deps.history.onDidChange(schedule), deps.tips.onDidChange(schedule), deps.assistant.onDidChange(schedule)];
     ui.projectChanged(deps.source.current()?.project.root);
     schedule();
 

@@ -48,3 +48,7 @@ export function commandFailedCause(command: string, message: string): string {
 export function noResultCause(milliseconds: number): string {
     return `no result within ${milliseconds} ms`;
 }
+
+export function sendTipText(name: string): string {
+    return `Send to ${name} puts the prompt into its chat and sends nothing: choose the model there, check the prompt, then send it.`;
+}

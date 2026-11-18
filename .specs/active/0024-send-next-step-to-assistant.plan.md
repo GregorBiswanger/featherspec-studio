@@ -3,7 +3,7 @@
 **Spec:** [0024-send-next-step-to-assistant.md](0024-send-next-step-to-assistant.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-004
+**Current step:** T-005
 
 ## Approach
 
@@ -364,8 +364,8 @@ here.
     - Host smoke "0024 AC-001, AC-002, AC-013" (P-15; CI only).
 - **Verify:** `npx vitest run --project node src/core src/shared/protocol` and `npx vitest run --project timing-node src/core/board/boardService.timing.test.ts src/core/overview/overviewService.timing.test.ts`
   red (stub, failing literals), then green; gates 1–5; `npm run compile-tests`
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-18 red: `npx vitest run --project node src/core src/shared/protocol` 16 failed and `--project timing-node` (boardService + overviewService timing) 2 failed against the unchanged views (no send, old closing sentence); green after: gates eslint 0 warnings, both tsc clean, `npm run test:unit` 2969 passed + 3 skipped (+18 timing), `npm run compile` and `compile-tests` green. Host smoke (CI only) compiles.
+- **Notes:** PD-ride: `PROTOCOL_VERSION` 7 (the `v: 6` literals became `v: 7`, the 'another version' `v: 7` became `v: 8`). The offer reaches the services as `assistant: SettingsSource<Offer | undefined>`; the test worlds take a fourth/third argument (`createFakeOffer`, a real `createSettingsSource` over a fake setting port and the fake host, so a setting change and an extensions change take the real path). `tipClosingOf(offer)` lives in core/assistant/sendView.ts; the old NS-5 closing literal test was updated to §6.8's fourth sentence. Host smoke P-15: the 'No foreign chat command runs' line is not asserted (the chat commands are built-ins and cannot be stubbed in the host); the Send fallback test in send.test.ts decides it. The AC-012 offer-change case joined noWrite.test.ts here. Test constants renamed OFFER_A/OFFER_B so 0015 AC-021's scan stays on its list.
 
 ### T-005 — The split button sends and shows its feedback at the two places
 

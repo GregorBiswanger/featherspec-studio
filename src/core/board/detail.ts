@@ -1,3 +1,5 @@
+import type { Offer } from '../assistant/offer';
+import { sendViewOf, tipClosingOf } from '../assistant/sendView';
 import { problemSentence } from '../lifecycle/problemSentence';
 import type { DetailView, DiagnosticLine, NextStepView, StatusHistoryItem } from '../../shared/protocol/detail';
 import { HISTORY_LABEL, successorText } from '../../shared/protocol/texts';
@@ -16,6 +18,7 @@ export interface DetailInput {
     model: ShellModel | undefined;
     history: HistoryView;
     tips?: StepTipSettings;
+    offer?: Offer;
 }
 
 function causeView(cause: HistoryCause): StatusHistoryItem['cause'] {
@@ -35,12 +38,18 @@ function diagnosticLine(diagnostic: LifecycleEntry['diagnostics'][number]): Diag
     return file === undefined ? base : { ...base, open: { key: file, line: line === undefined || line < 1 ? 1 : line } };
 }
 
-function nextStepView(next: NextStep, tips: StepTipSettings | undefined): NextStepView {
+function nextStepView(next: NextStep, tips: StepTipSettings | undefined, offer: Offer | undefined): NextStepView {
     if (!('lines' in next)) {
         return next;
     }
     const lines = next.lines.map((line) => ({ text: line.text, intent: line.intent }));
-    return tips === undefined || !tips.show ? { rule: next.rule, lines } : { rule: next.rule, lines, tips: stepTips(next.case, tips) };
+    const send = sendViewOf(offer, next.case);
+    return {
+        rule: next.rule,
+        lines,
+        ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer)) }),
+        ...(send === undefined ? {} : { send }),
+    };
 }
 
 export function buildDetail(input: DetailInput): DetailView {
@@ -83,7 +92,7 @@ export function buildDetail(input: DetailInput): DetailView {
         rule: entry.rule,
         persistence: entry.persistence,
         ...(entry.deprecated === undefined ? {} : { successor: successorText(entry.deprecated.successor) }),
-        nextStep: nextStepView(next, input.tips),
+        nextStep: nextStepView(next, input.tips, input.offer),
         problems: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').map(diagnosticLine),
         notes: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'note').map(diagnosticLine),
         ...(progress === undefined ? {} : { progress }),

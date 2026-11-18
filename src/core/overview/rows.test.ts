@@ -175,3 +175,66 @@ describe('0021 AC-009, AC-010: the coach line of the first Now row', () => {
         expect(now.some((row) => 'tips' in row)).toBe(false);
     });
 });
+
+describe('0024 AC-003: only the first Now row with a step carries the send view', () => {
+    const SHOW = parseStepTipSettings(true, {});
+    const OFFER_A = { assistant: 'copilot' } as const;
+
+    async function rowsWith(specs: SpecInput[], offer?: typeof OFFER_A | { assistant: 'claudeCode' }, tips: ReturnType<typeof parseStepTipSettings> | undefined = undefined) {
+        const model = await modelFor(specs);
+        const resolver = createSpecResolver(model);
+        return { now: projectNow(model, resolver, tips, offer), upNext: projectUpNext(model, resolver) };
+    }
+
+    it('now[0] carries send with the default target of its case; later Now rows and Up next carry none', async () => {
+        const { now, upNext } = await rowsWith(
+            [
+                { number: '0001', kind: 'Review' },
+                { number: '0002', kind: 'Review' },
+                { number: '0003', kind: 'Backlog' },
+            ],
+            OFFER_A,
+        );
+        expect(now[0]?.send).toEqual({ assistant: 'copilot', target: 'new', targets: ['new', 'current'] });
+        expect('send' in now[1]!).toBe(false);
+        expect(upNext.rows.every((row) => !('send' in row))).toBe(true);
+    });
+
+    it('Claude Code gives a new chat only; the Active case of Copilot is the current chat', async () => {
+        const claude = await rowsWith([{ number: '0001', kind: 'Review' }], { assistant: 'claudeCode' });
+        expect(claude.now[0]?.send).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
+        const active = await rowsWith([{ number: '0001', kind: 'Active' }], OFFER_A);
+        expect(active.now[0]?.send).toMatchObject({ assistant: 'copilot', target: 'current' });
+    });
+
+    it('without an offer no row carries send and the rows equal the rows of the earlier build', async () => {
+        const specs: SpecInput[] = [{ number: '0001', kind: 'Review' }, { number: '0002', kind: 'Active' }];
+        const none = await rowsWith(specs);
+        const offered = await rowsWith(specs, OFFER_A);
+        expect(none.now.some((row) => 'send' in row)).toBe(false);
+        expect(offered.now.map((row) => ({ ...row, send: undefined }))).toEqual(none.now.map((row) => ({ ...row, send: undefined })));
+    });
+
+    it('a first Now row without a line gives no send in any Now row', async () => {
+        const { now } = await rowsWith(
+            [
+                { number: '0001', slug: 'a', kind: 'Active' },
+                { number: '0001', slug: 'b', kind: 'Active' },
+                { number: '0002', kind: 'Active' },
+            ],
+            OFFER_A,
+            SHOW,
+        );
+        expect(now.map((row) => row.step === undefined)).toEqual([true, true, false]);
+        expect(now.some((row) => 'send' in row)).toBe(false);
+    });
+
+    it('the send view stays with tips off, and the tips of row 0 take the closing pair of the offer', async () => {
+        const hidden = await rowsWith([{ number: '0001', kind: 'Review' }], OFFER_A, parseStepTipSettings(false, {}));
+        expect(hidden.now[0]?.send).toBeDefined();
+        expect('tips' in hidden.now[0]!).toBe(false);
+        const shown = await rowsWith([{ number: '0001', kind: 'Review' }], { assistant: 'claudeCode' }, SHOW);
+        expect(shown.now[0]?.tips?.about[2]).toBe('Send to Claude Code puts the prompt into its chat and sends nothing: choose the model there, check the prompt, then send it.');
+    });
+});
+

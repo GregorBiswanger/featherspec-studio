@@ -50,8 +50,8 @@ describe('AC-016, AC-021: envelope', () => {
     });
 
     it('reads an envelope of another version (the router decides, AC-016)', () => {
-        expect(readEnvelope({ v: 7, kind: 'evt', type: 'shell', payload: {} }).ok).toBe(true);
-        expect(PROTOCOL_VERSION).toBe(6);
+        expect(readEnvelope({ v: 8, kind: 'evt', type: 'shell', payload: {} }).ok).toBe(true);
+        expect(PROTOCOL_VERSION).toBe(7);
     });
 
     it('isJsonValue accepts nested JSON and rejects functions, undefined and NaN', () => {

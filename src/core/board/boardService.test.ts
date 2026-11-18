@@ -366,6 +366,56 @@ describe('0021 AC-011, AC-010: a settings change reaches the detail', () => {
     });
 });
 
+describe('0024 AC-010: an offer change reaches the detail', () => {
+    function sendOf(w: BoardWorld): unknown {
+        const view = w.service.detail();
+        return view.kind === 'spec' && 'send' in view.nextStep ? view.nextStep.send : undefined;
+    }
+
+    it('choosing an assistant adds the send view to the open detail, a change of assistant replaces it, removing it takes it away; the selection stays', async () => {
+        const w = await world();
+        w.selection.set({ stem: '0010-act' });
+        await w.service.whenIdle();
+        expect(sendOf(w)).toBeUndefined();
+        const seen: string[] = [];
+        w.service.onDidChangeDetail((view) => seen.push(view.kind === 'spec' ? view.stem : view.kind));
+        w.assistant.set({ assistant: 'copilot' });
+        await w.service.whenIdle();
+        expect(sendOf(w)).toEqual({ assistant: 'copilot', target: 'current', targets: ['new', 'current'] });
+        w.assistant.set({ assistant: 'claudeCode' });
+        await w.service.whenIdle();
+        expect(sendOf(w)).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
+        w.assistant.set(undefined);
+        await w.service.whenIdle();
+        expect(sendOf(w)).toBeUndefined();
+        expect(seen).toEqual(['0010-act', '0010-act', '0010-act']);
+        expect(w.service.detail().kind).toBe('spec');
+    });
+
+    it('an extension that arrives or goes changes the offer; an unchanged offer emits nothing; the Board view is not rebuilt', async () => {
+        const w = await world();
+        w.selection.set({ stem: '0010-act' });
+        w.assistant.choose('copilot');
+        await w.service.whenIdle();
+        expect(sendOf(w)).toBeUndefined();
+        let emitted = 0;
+        w.service.onDidChangeDetail(() => (emitted += 1));
+        const board = JSON.stringify(w.service.view());
+        w.assistant.install('copilot');
+        await w.service.whenIdle();
+        expect(sendOf(w)).toMatchObject({ assistant: 'copilot' });
+        expect(emitted).toBe(1);
+        w.assistant.choose('copilot');
+        await w.service.whenIdle();
+        expect(emitted).toBe(1);
+        w.assistant.uninstall('copilot');
+        await w.service.whenIdle();
+        expect(sendOf(w)).toBeUndefined();
+        expect(emitted).toBe(2);
+        expect(JSON.stringify(w.service.view())).toBe(board);
+    });
+});
+
 describe('0023 AC-003: the board view lists the specs that have a plan for the Plan map', () => {
     const link = (stem: string) => `[${stem}.plan.md](${stem}.plan.md)`;
     const files = (): Record<string, string> => ({

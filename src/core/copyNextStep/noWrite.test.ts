@@ -196,6 +196,27 @@ describe('0017 AC-023: no Copy, click or command writes a file', () => {
         expect(await snapshotTree(temp)).toEqual(before);
     });
 
+    it('0024 AC-012: an offer change and the sends the views offer leave a temp copy of fs110-ready-synthetic unchanged', async () => {
+        temp = await fs.mkdtemp(path.join(os.tmpdir(), 'send-nowrite-'));
+        await fs.cp(fixturePath('fs110-ready-synthetic'), temp, { recursive: true });
+        const project = await readProject(createNodeSpecSource(), temp, '1.10.0');
+        const model = { project, lifecycle: deriveLifecycle(project) };
+        const before = await snapshotTree(temp);
+        const board = createBoardWorld(model);
+        board.selection.set({ stem: model.lifecycle.entries[0]!.stem });
+        await board.service.whenIdle();
+        board.assistant.set({ assistant: 'copilot' });
+        await board.service.whenIdle();
+        board.assistant.set({ assistant: 'claudeCode' });
+        await board.service.whenIdle();
+        board.assistant.uninstall('claudeCode');
+        await board.service.whenIdle();
+        const view = board.service.detail();
+        expect(view.kind).toBe('spec');
+        expect(await snapshotTree(temp)).toEqual(before);
+        board.service.dispose();
+    });
+
     it('0024 AC-012: the assistant core, Open Settings and the host adapter call no configuration update and no file API', async () => {
         const files = ['src/core/assistant/assistants.ts', 'src/core/assistant/offer.ts', 'src/core/assistant/sendView.ts', 'src/core/assistant/send.ts', 'src/core/settings/openSettings.ts', 'src/adapters/vscode/assistantHost.ts'];
         for (const file of files) {

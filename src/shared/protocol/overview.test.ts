@@ -102,3 +102,20 @@ describe('0021 AC-009: the tips of a row', () => {
         expect(isOverviewView({ ...view, now: [{ ...row, step, tips: 'x' }] })).toBe(false);
     });
 });
+
+describe('0024 AC-003: the send view of a row', () => {
+    const SEND = { assistant: 'claudeCode', target: 'new', targets: ['new'] };
+    const step = { intent: 'Plan', short: '/sdd-plan', line: '/sdd-plan 0001', lines: [{ text: '/sdd-plan 0001', intent: 'Write the plan' }] };
+
+    it('a row with a step takes a send view and refuses a bad one or one without a step', () => {
+        const view = sampleView();
+        const row = view.problems.rows[0]!;
+        expect(isOverviewView({ ...view, now: [{ ...row, step, send: SEND }] })).toBe(true);
+        expect(isOverviewView({ ...view, now: [{ ...row, step, tips: { coach: 'x', about: ['a'] }, send: { assistant: 'copilot', target: 'current', targets: ['new', 'current'] } }] })).toBe(true);
+        expect(isOverviewView({ ...view, now: [{ ...row, step, send: { ...SEND, extra: 1 } }] })).toBe(false);
+        expect(isOverviewView({ ...view, now: [{ ...row, step, send: { ...SEND, target: 'current' } }] })).toBe(false);
+        expect(isOverviewView({ ...view, now: [{ ...row, step, send: 'copilot' }] })).toBe(false);
+        expect(isOverviewView({ ...view, now: [{ ...row, send: SEND }] })).toBe(false);
+    });
+});
+

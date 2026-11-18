@@ -1,4 +1,5 @@
 import type { OverviewView } from '../../shared/protocol/overview';
+import type { Offer } from '../assistant/offer';
 import type { HistoryView } from '../lifecycle/statusHistory';
 import type { ShellModel } from '../ports/shell';
 import type { StepTipSettings } from '../settings/stepTipSettings';
@@ -13,13 +14,14 @@ export interface ViewInput {
     history: HistoryView;
     activityOpen?: boolean;
     tips?: StepTipSettings;
+    offer?: Offer;
 }
 
 export function buildOverviewView(input: ViewInput): OverviewView {
     const { model, history } = input;
     const specs = createSpecResolver(model);
     return {
-        now: projectNow(model, specs, input.tips),
+        now: projectNow(model, specs, input.tips, input.offer),
         upNext: projectUpNext(model, specs),
         problems: projectProblems(model, specs),
         figures: projectFigures(model),

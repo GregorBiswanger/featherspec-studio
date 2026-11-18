@@ -175,7 +175,7 @@ export const MODEL_REASONS: Record<ModelKey, string> = {
     strongWebSearch: 'Strong model with web search: the plan checks libraries, versions and APIs against current facts.',
 };
 
-export const TIP_CLOSING: readonly [string, string] = ['Choose the chat and the model in your AI assistant before you paste.', 'Settings: Show Step Tips hides these tips; Model Hints names your models.'];
+export const TIP_CLOSING: readonly [string, string] = ['Choose the chat and the model in your AI assistant before you paste.', "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."];
 
 export const ABOUT_STEP_LABEL = 'About this step';
 

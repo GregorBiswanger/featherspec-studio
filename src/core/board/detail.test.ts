@@ -517,3 +517,72 @@ describe('0023 AC-003: the detail carries the plan view of a spec that has a rea
         expect((await detail(model, GEN_SPEC)).plan).toEqual({ kind: 'unreadable' });
     });
 });
+
+describe('0024 AC-003, AC-004: the send view of the next step', () => {
+    const SHOW = parseStepTipSettings(true, {});
+    const OFFER_A = { assistant: 'copilot' } as const;
+    const OFFER_B = { assistant: 'claudeCode' } as const;
+
+    async function nextOf(model: Awaited<ReturnType<typeof modelOf>>, key: string, extra: { offer?: typeof OFFER_A | typeof OFFER_B; tips?: typeof SHOW } = {}) {
+        const entry = model.lifecycle.entries.find((candidate) => candidate.key === key)!;
+        const view = spec(buildDetail({ selection: { stem: entry.stem }, model, history: NO_HISTORY, ...extra }));
+        return view.nextStep as { rule: string; lines?: unknown[]; send?: unknown; tips?: { about: string[] }; text?: string };
+    }
+
+    it('NS-9 (a backlog spec): Copilot sends to a new chat, Claude Code to a new chat', async () => {
+        const model = await modelOf({ '.specs/backlog/0002-b.md': specText() });
+        const key = '.specs/backlog/0002-b.md';
+        expect((await nextOf(model, key, { offer: OFFER_A })).send).toEqual({ assistant: 'copilot', target: 'new', targets: ['new', 'current'] });
+        expect((await nextOf(model, key, { offer: OFFER_B })).send).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
+    });
+
+    it('NS-5 (a Review spec) is a new chat for Copilot; NS-7 (a Ready spec) and NS-6 are the current chat', async () => {
+        const review = await fixtureModel('studio-0015');
+        const reviewNext = await nextOf(review, review.lifecycle.entries[0]!.key, { offer: OFFER_A });
+        expect(reviewNext.rule).toBe('NS-5');
+        expect(reviewNext.send).toEqual({ assistant: 'copilot', target: 'new', targets: ['new', 'current'] });
+        const ready = await fixtureModel('fs110-ready-synthetic');
+        const readyNext = await nextOf(ready, '.specs/backlog/0001-ready-feature.md', { offer: OFFER_A });
+        expect(readyNext.rule).toBe('NS-7');
+        expect(readyNext.send).toEqual({ assistant: 'copilot', target: 'current', targets: ['new', 'current'] });
+        const active = await modelOf(FILES);
+        const activeNext = await nextOf(active, '.specs/active/0001-a.md', { offer: OFFER_A });
+        expect(activeNext.rule).toBe('NS-6');
+        expect(activeNext.send).toEqual({ assistant: 'copilot', target: 'current', targets: ['new', 'current'] });
+        expect((await nextOf(active, '.specs/active/0001-a.md', { offer: OFFER_B })).send).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
+    });
+
+    it('no offer: no send key and the view equals the view without the input; with tips off the send view stays', async () => {
+        const model = await modelOf({ '.specs/backlog/0002-b.md': specText() });
+        const key = '.specs/backlog/0002-b.md';
+        const plain = await nextOf(model, key);
+        expect('send' in plain).toBe(false);
+        const withTipsOff = await nextOf(model, key, { offer: OFFER_A, tips: parseStepTipSettings(false, {}) });
+        expect(withTipsOff.send).toBeDefined();
+        expect('tips' in withTipsOff).toBe(false);
+        expect({ ...withTipsOff, send: undefined }).toEqual({ ...plain, send: undefined });
+    });
+
+    it('a text-only next step (NS-1, NS-3, NS-11) carries no send view even with an offer', async () => {
+        const twins = await modelOf({ '.specs/backlog/0002-b.md': specText(), '.specs/backlog/0002-c.md': specText() });
+        const next = await nextOf(twins, '.specs/backlog/0002-b.md', { offer: OFFER_A });
+        expect(next.rule).toBe('NS-11');
+        expect('send' in next).toBe(false);
+        const done = await modelOf({ '.specs/done/0003-d.md': specText({ status: 'Implemented', plan: '[0003-d.2026-11-01.plan.md](../plan-archive/0003-d.2026-11-01.plan.md)' }) });
+        const doneNext = await nextOf(done, '.specs/done/0003-d.md', { offer: OFFER_B });
+        expect(doneNext.rule).toBe('NS-3');
+        expect('send' in doneNext).toBe(false);
+    });
+
+    it('the toggletip closing pair follows the offer: Send sentence third, settings sentence fourth; without it 0021\'s third', async () => {
+        const model = await modelOf({ '.specs/backlog/0002-b.md': specText() });
+        const key = '.specs/backlog/0002-b.md';
+        const offered = await nextOf(model, key, { offer: OFFER_B, tips: SHOW });
+        expect(offered.tips?.about[2]).toBe('Send to Claude Code puts the prompt into its chat and sends nothing: choose the model there, check the prompt, then send it.');
+        expect(offered.tips?.about[3]).toBe("Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt.");
+        const plain = await nextOf(model, key, { tips: SHOW });
+        expect(plain.tips?.about[2]).toBe('Choose the chat and the model in your AI assistant before you paste.');
+        expect(plain.tips?.about[3]).toBe(offered.tips?.about[3]);
+    });
+});
+

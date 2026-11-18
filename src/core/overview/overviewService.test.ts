@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createFakeSource } from '../board/testing/boardWorld';
 import { parseStepTipSettings } from '../settings/stepTipSettings';
+import { createFakeOffer } from '../assistant/testing/fakeOffer';
 import { createFakeTips } from '../settings/testing/fakeTips';
 import { createOverviewService } from './overviewService';
 import { AC001_FIXTURE, modelFor } from './testing/projects';
@@ -102,7 +103,7 @@ describe('dashboard service', () => {
 
     it('AC-023: the service needs only read members of its sources (these fakes have no write method at all)', async () => {
         const source = createFakeSource(await modelFor(AC001_FIXTURE));
-        const service = createOverviewService({ source, discovery: createDiscovery().port, history: createHistory().port, tips: createFakeTips() });
+        const service = createOverviewService({ source, discovery: createDiscovery().port, history: createHistory().port, tips: createFakeTips(), assistant: createFakeOffer() });
         service.onDidChangeView(() => undefined);
         await service.whenIdle();
         expect(service.view()?.activity).toMatchObject({ available: true });
@@ -220,3 +221,35 @@ describe('0021 AC-011, AC-010: a settings change reaches the Overview', () => {
         expect(world.views).toHaveLength(0);
     });
 });
+
+describe('0024 AC-010: an offer change reaches the Overview', () => {
+    it('the first Now row gains, changes and loses its send view; Activity stays open; nobody listening computes nothing', async () => {
+        const world = createServiceWorld(await modelFor(AC001_FIXTURE));
+        world.listen();
+        await world.service.whenIdle();
+        await world.service.handlers.overviewSetActivity({ open: true });
+        await world.service.whenIdle();
+        expect(current(world).now.some((row) => 'send' in row)).toBe(false);
+        world.assistant.set({ assistant: 'copilot' });
+        await world.service.whenIdle();
+        expect(current(world).now[0]?.send).toMatchObject({ assistant: 'copilot' });
+        expect(current(world).now.filter((row) => 'send' in row)).toHaveLength(1);
+        world.assistant.set({ assistant: 'claudeCode' });
+        await world.service.whenIdle();
+        expect(current(world).now[0]?.send).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
+        world.assistant.uninstall('claudeCode');
+        await world.service.whenIdle();
+        expect(current(world).now.some((row) => 'send' in row)).toBe(false);
+        const activity = current(world).activity;
+        expect(activity.available && activity.open).toBe(true);
+    });
+
+    it('a service nobody listens to computes nothing for an offer change', async () => {
+        const world = createServiceWorld(await modelFor(AC001_FIXTURE));
+        world.assistant.set({ assistant: 'copilot' });
+        await world.service.whenIdle();
+        expect(world.service.view()).toBeUndefined();
+        expect(world.views).toHaveLength(0);
+    });
+});
+

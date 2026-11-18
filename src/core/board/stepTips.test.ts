@@ -1,7 +1,8 @@
 import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { STEP_GUIDES, type StepCase } from '../../shared/protocol/nextStepTexts';
+import { STEP_GUIDES, TIP_CLOSING, type StepCase } from '../../shared/protocol/nextStepTexts';
+import { tipClosingOf } from '../assistant/sendView';
 import { parseStepTipSettings } from '../settings/stepTipSettings';
 import { stepTips } from './stepTips';
 
@@ -60,7 +61,7 @@ describe('0021 AC-015: the four paragraphs of About this step', () => {
             'A fresh reviewer checks every acceptance criterion against evidence and gives a verdict. Only after a READY verdict, close the spec with the second prompt.',
             'New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model from another family than the one that built it: a reviewer tends to pass what its own family wrote.',
             'Choose the chat and the model in your AI assistant before you paste.',
-            'Settings: Show Step Tips hides these tips; Model Hints names your models.',
+            'Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant\'s chat with the prompt.',
         ]);
     });
 
@@ -123,3 +124,27 @@ describe('0023 AC-013: the coach line and the paragraphs of the integrate case',
         );
     });
 });
+
+describe('0024 AC-013: the toggletip names Send and the settings', () => {
+    const SEND_SENTENCE = (name: string) => `Send to ${name} puts the prompt into its chat and sends nothing: choose the model there, check the prompt, then send it.`;
+    const SETTINGS = "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt.";
+
+    it('without an offer the third paragraph stays 0021\'s and the fourth is the settings sentence', () => {
+        expect(tipClosingOf(undefined)).toEqual(['Choose the chat and the model in your AI assistant before you paste.', SETTINGS]);
+        expect(TIP_CLOSING[1]).toBe(SETTINGS);
+        expect(stepTips('NS-5', NONE).about.slice(2)).toEqual(['Choose the chat and the model in your AI assistant before you paste.', SETTINGS]);
+    });
+
+    it('with an offer the third paragraph is the Send sentence of the assistant, the fourth stays the settings sentence', () => {
+        expect(tipClosingOf({ assistant: 'copilot' })).toEqual([SEND_SENTENCE('Copilot'), SETTINGS]);
+        expect(tipClosingOf({ assistant: 'claudeCode' })).toEqual([SEND_SENTENCE('Claude Code'), SETTINGS]);
+        for (const stepCase of Object.keys(STEP_GUIDES) as StepCase[]) {
+            const plain = stepTips(stepCase, NONE);
+            const sent = stepTips(stepCase, NONE, tipClosingOf({ assistant: 'copilot' }));
+            expect(sent.about.slice(0, 2), stepCase).toEqual(plain.about.slice(0, 2));
+            expect(sent.about.slice(2), stepCase).toEqual([SEND_SENTENCE('Copilot'), SETTINGS]);
+            expect(sent.coach, stepCase).toBe(plain.coach);
+        }
+    });
+});
+

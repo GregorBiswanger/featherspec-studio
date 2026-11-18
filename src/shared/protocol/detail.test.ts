@@ -85,3 +85,21 @@ describe('0019 P-2: the guard of the situation picture', () => {
         expect(isDetailView(progress({ kind: 'steps', done: 0, total: 1 }, { kind: 'criteria', verified: 0, total: 0, open: [] }))).toBe(true);
     });
 });
+
+describe('0024 AC-003: the send view of the next step', () => {
+    const SEND = { assistant: 'copilot', target: 'new', targets: ['new', 'current'] };
+
+    it('accepts a next step with a send view and refuses a bad one', () => {
+        const view = valid();
+        const lines = [{ text: 'a', intent: 'b' }];
+        view.nextStep = { rule: 'NS-9', lines, send: SEND } as never;
+        expect(isDetailView(view)).toBe(true);
+        view.nextStep = { rule: 'NS-9', lines, send: { assistant: 'claudeCode', target: 'new', targets: ['new'] } } as never;
+        expect(isDetailView(view)).toBe(true);
+        for (const send of [{ ...SEND, extra: 1 }, { ...SEND, assistant: 'codex' }, { assistant: 'claudeCode', target: 'current', targets: ['new'] }, { ...SEND, targets: ['new'] }, 'copilot', null]) {
+            view.nextStep = { rule: 'NS-9', lines, send } as never;
+            expect(isDetailView(view), JSON.stringify(send)).toBe(false);
+        }
+    });
+});
+

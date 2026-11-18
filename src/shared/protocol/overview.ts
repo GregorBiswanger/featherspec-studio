@@ -1,3 +1,4 @@
+import { isSendView, type SendView } from './assistant';
 import { isBoardState, type BoardState } from './boardFilter';
 import { isRecord } from './envelope';
 import { isStepTipsView, isStepView, type StepTipsView, type StepView } from './stepView';
@@ -51,6 +52,7 @@ export interface OverviewRow {
     reasons?: string;
     step?: StepView;
     tips?: StepTipsView;
+    send?: SendView;
 }
 
 export interface OverviewUpNext {
@@ -161,14 +163,15 @@ function isActivity(value: unknown): value is McActivity {
 function isRow(value: unknown): value is OverviewRow {
     return (
         isRecord(value) &&
-        exactly(value, ['spec', 'state', 'status', 'problems'], ['step', 'reasons', 'tips']) &&
+        exactly(value, ['spec', 'state', 'status', 'problems'], ['step', 'reasons', 'tips', 'send']) &&
         isSpecRef(value.spec) &&
         isBoardState(value.state) &&
         isText(value.status) &&
         isCount(value.problems) &&
         (value.reasons === undefined || isText(value.reasons)) &&
         (value.step === undefined || isStepView(value.step)) &&
-        (value.tips === undefined || isStepTipsView(value.tips))
+        (value.tips === undefined || isStepTipsView(value.tips)) &&
+        (value.send === undefined || (value.step !== undefined && isSendView(value.send)))
     );
 }
 

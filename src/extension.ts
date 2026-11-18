@@ -192,21 +192,23 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     });
     const selection = createShellSelection(service);
     const tips = createSettingsSource([createSettingPort(SHOW_STEP_TIPS_KEY), createSettingPort(MODEL_HINTS_KEY)], ([show, hints]) => parseStepTipSettings(show, hints));
+    const assistantHost = createAssistantHost();
+    const assistantOffer = createSettingsSource([createSettingPort(ASSISTANT_KEY), extensionPresence(assistantHost)], ([chosen, present]) => offerOf(chosen, present as readonly string[]));
     const board = createBoardService({
         source: modelSource,
         selection,
         history: { read: () => lifecycle.history(), onDidChange: (listener) => lifecycle.onDidChange(() => listener()) },
         memory: createUiMemory(context.workspaceState, BOARD_MEMORY_KEY),
         tips,
+        assistant: assistantOffer,
     });
     const overview = createOverviewService({
         source: modelSource,
         discovery: controller,
         history: { read: () => lifecycle.history(), onDidChange: (listener) => lifecycle.onDidChange(() => listener()) },
         tips,
+        assistant: assistantOffer,
     });
-    const assistantHost = createAssistantHost();
-    const assistantOffer = createSettingsSource([createSettingPort(ASSISTANT_KEY), extensionPresence(assistantHost)], ([chosen, present]) => offerOf(chosen, present as readonly string[]));
     const clipboard = createClipboard();
     const entry = createStatusEntry({ line: projectLine, discovery: controller, shell: service, source: modelSource, item: statusItem, clock: createSystemClock(), sameRoot });
     const stepUi = createStepUi();
