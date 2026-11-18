@@ -51,7 +51,7 @@ function world(platform = 'win32', options: { commands?: readonly string[]; inst
         output: { appendBlock: (lines) => void blocks.push([...lines]) },
         clock,
         platform,
-        offer: { read: () => (chosen.assistant === undefined ? undefined : { assistant: chosen.assistant }) },
+        chosen: { read: () => chosen.assistant },
     });
     return { host, written, warned, blocks, clock, chosen, clipboardFails, send: (request) => sender.send(request) };
 }

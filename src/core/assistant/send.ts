@@ -6,7 +6,6 @@ import type { ClipboardPort } from '../ports/board';
 import type { StepUiPort } from '../ports/copyNextStep';
 import type { ClockPort, OutputPort } from '../ports/host';
 import { ASSISTANTS } from './assistants';
-import type { Offer } from './offer';
 
 export const SEND_TIMEOUT_MS = 5000;
 
@@ -17,7 +16,7 @@ export interface SendDeps {
     output: OutputPort;
     clock: ClockPort;
     platform: string;
-    offer: { read(): Offer | undefined };
+    chosen: { read(): unknown };
 }
 
 export interface Send {
@@ -87,8 +86,7 @@ export function createSend(deps: SendDeps): Send {
 
     return {
         send(request) {
-            const offer = deps.offer.read();
-            if (offer?.assistant !== request.assistant) {
+            if (deps.chosen.read() !== request.assistant) {
                 return copied(request.line);
             }
             const name = ASSISTANT_NAMES[request.assistant];

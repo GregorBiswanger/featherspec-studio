@@ -177,7 +177,7 @@ describe('0017 AC-023: no Copy, click or command writes a file', () => {
             output: { appendBlock: () => undefined },
             clock: createSetupClock(),
             platform: 'linux',
-            offer: { read: () => ({ assistant: 'copilot' }) },
+            chosen: { read: () => 'copilot' },
         });
         const line = 'Implement T-003 of .specs/active/0001-a.plan.md';
         const outcomes = [

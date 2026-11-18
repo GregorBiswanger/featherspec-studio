@@ -508,7 +508,8 @@ them all." No step above is renumbered or edited except where its note says so. 
     `chosen` in place of `offer`.
   - Code: `send.ts` (`chosen`), new `wiring.ts` (`createAssistantWiring`), `extension.ts`.
 - **Verify:** `npx vitest run --project node src/core/assistant` red, then green; gates 1–5
-- [ ] **Verified (T-008):**
+- [x] **Verified (T-008):** 2026-11-18 red: `npx vitest run --project node src/core/assistant/wiring.test.ts` 11 failed (`createAssistantWiring` stub `Not implemented`); the compile's probe against the old code (offer read) gave the silent copy with `warned: []`. Green after: `npx vitest run --project node src/core/assistant src/adapters/node/sourceScan.test.ts` 145 passed. Gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 3080 passed + 3 skipped (+18 timing), compile and compile-tests green.
+- **Notes:** `createSend` takes `chosen` (the setting port) in place of `offer`; `extension.ts` builds offer and Send with `createAssistantWiring`, so the test runs the production wiring. `clipboard` and `stepUi` are created before the services now (same objects). The staying `send.test.ts` titles are unchanged; its world feeds the chosen value.
 
 ### T-009 — Send stays quiet after the fallback; unexpected errors map to a §7 cause; send.ts joins the AC-011 scan
 
