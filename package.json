@@ -68,6 +68,10 @@
         "title": "FeatherSpec Studio: Open Spec Explorer"
       },
       {
+        "command": "featherspec-studio.copyNextStep",
+        "title": "FeatherSpec Studio: Copy Next Step"
+      },
+      {
         "command": "featherspec-studio.rescan",
         "title": "FeatherSpec Studio: Rescan Project"
       },

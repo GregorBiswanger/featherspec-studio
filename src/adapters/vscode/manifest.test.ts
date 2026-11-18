@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import * as path from 'path';
 import { describe, expect, it } from 'vitest';
-import { S2_WELCOME } from '../../shared/protocol/texts';
+import { OPEN_STUDIO_COMMAND_ID, S2_WELCOME, SELECT_PROJECT_COMMAND_ID } from '../../shared/protocol/texts';
 
 interface Manifest {
     description?: string;
@@ -162,6 +162,21 @@ describe('extension manifest', () => {
 
     it('0017 AC-009: negative control, the matcher finds a Move title', () => {
         expect(['FeatherSpec: Move Spec to…', 'FeatherSpec Studio: Open'].filter((title) => /move/i.test(title))).toEqual(['FeatherSpec: Move Spec to…']);
+    });
+
+    it('0017 AC-009: contributes "FeatherSpec Studio: Copy Next Step", not hidden from the Command Palette, and the activation events stay', () => {
+        const commands = manifest.contributes?.commands ?? [];
+        expect(commands).toContainEqual({ command: 'featherspec-studio.copyNextStep', title: 'FeatherSpec Studio: Copy Next Step' });
+        const hidden = (manifest.contributes?.menus?.commandPalette ?? []).filter((entry) => entry.when === 'false').map((entry) => entry.command);
+        expect(hidden).not.toContain('featherspec-studio.copyNextStep');
+        expect(manifest.activationEvents).toEqual(['workspaceContains:AGENTS.md', 'workspaceContains:.specs', 'onWebviewPanel:featherspecStudio.main']);
+    });
+
+    it('0017 AC-009: the two commands the status bar tooltip links to are contributed commands, and so is the one a click runs', () => {
+        const contributed = (manifest.contributes?.commands ?? []).map((entry) => entry.command);
+        expect(contributed).toContain(OPEN_STUDIO_COMMAND_ID);
+        expect(contributed).toContain(SELECT_PROJECT_COMMAND_ID);
+        expect(contributed).toContain('featherspec-studio.copyNextStep');
     });
 
     it('AC-014 (0015): contributes no command to open the Agent Center, clear run history, stop a run or resume a run', () => {

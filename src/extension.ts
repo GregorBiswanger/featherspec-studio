@@ -8,18 +8,22 @@ import { resolveStorageLocation } from './adapters/vscode/storageLocation';
 import { createOutputChannel } from './adapters/vscode/outputChannel';
 import { createShellActions } from './adapters/vscode/shellActions';
 import { createStudioPanel, VIEW_TYPE, type StudioPanel, type StudioPanelInspection } from './adapters/vscode/studioPanel';
-import { AREA_COMMANDS, OPEN_COMMAND, RESCAN_COMMAND, SHELL_ACTION_COMMAND } from './adapters/vscode/commands';
+import { AREA_COMMANDS, COPY_NEXT_STEP_COMMAND, OPEN_COMMAND, RESCAN_COMMAND, SHELL_ACTION_COMMAND } from './adapters/vscode/commands';
 import { createFetchReleaseHttp } from './adapters/node/fetchReleaseHttp';
 import { createNodeSetupTarget } from './adapters/node/nodeSetupTarget';
 import { createTarGzArchive } from './adapters/node/tarGzArchive';
 import { createSetupUi } from './adapters/vscode/setupUi';
 import { createSetupService } from './core/setup/setupService';
-import { COPY_MERGE_PROMPT_COMMAND_ID, SETUP_COMMAND_ID } from './shared/protocol/texts';
+import { COPY_MERGE_PROMPT_COMMAND_ID, SELECT_PROJECT_COMMAND_ID, SETUP_COMMAND_ID } from './shared/protocol/texts';
+import { createCopyNextStep } from './core/copyNextStep/copyNextStep';
+import { createProjectLine } from './core/copyNextStep/projectLine';
+import { createStatusEntry } from './core/copyNextStep/statusEntry';
 import { createStudioTree } from './adapters/vscode/studioTree';
 import { createTrust } from './adapters/vscode/trust';
 import { createUiMemory } from './adapters/vscode/uiMemory';
 import { sameRootFor } from './adapters/vscode/sameRoot';
-import { createStatusBar } from './adapters/vscode/statusBar';
+import { createStatusItem, type StatusItemInspection } from './adapters/vscode/statusBar';
+import { createStepUi } from './adapters/vscode/stepUi';
 import { createFileWatch } from './adapters/vscode/fileWatch';
 import { createRuntimeUi } from './adapters/vscode/runtimeUi';
 import { createEditor } from './adapters/vscode/editor';
@@ -68,6 +72,10 @@ export interface ShellTestApi {
     tree(): TreeModel;
 }
 
+export interface StatusEntryTestApi {
+    inspect(): StatusItemInspection;
+}
+
 export interface BoardTestApi {
     view(): BoardView | undefined;
     detail(): DetailView;
@@ -91,17 +99,19 @@ export interface StudioApi {
     lifecycle(): LifecycleService;
     shell(): ShellTestApi;
     board(): BoardTestApi;
+    statusEntry(): StatusEntryTestApi;
     missionControl(): MissionControlTestApi;
 }
 
 let runtimeSession: RuntimeSession | undefined;
 
 export async function activate(context: vscode.ExtensionContext): Promise<StudioApi> {
-    const statusBar = createStatusBar();
+    const projectLine = createProjectLine();
+    const statusItem = createStatusItem();
     const output = createOutputChannel();
     const controller = createDiscoveryController({
         fileSystem: createVscodeFileSystem(),
-        statusBar,
+        statusBar: projectLine,
         output,
         state: createWorkspaceState(context.workspaceState),
         folders: createWorkspaceFolders(),
@@ -181,6 +191,18 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         history: { read: () => lifecycle.history(), onDidChange: (listener) => lifecycle.onDidChange(() => listener()) },
     });
     const clipboard = createClipboard();
+    const entry = createStatusEntry({ line: projectLine, discovery: controller, shell: service, source: modelSource, item: statusItem, clock: createSystemClock(), sameRoot });
+    const copyNextStep = createCopyNextStep({
+        entry,
+        clipboard,
+        ui: createStepUi(),
+        actions: {
+            selectProject: () => controller.selectProject(),
+            openStudio: async () => {
+                await vscode.commands.executeCommand(OPEN_COMMAND);
+            },
+        },
+    });
     const openFile = createOpenFile({ source: modelSource, editor: createEditor() });
     const requests = createBoardRequests({ board, openFile, clipboard });
     const navigation = service.onDidNavigate((request) => {
@@ -216,7 +238,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     const tree = createStudioTree(service);
 
     context.subscriptions.push(
-        statusBar,
+        statusItem,
+        entry,
         { dispose: () => service.dispose() },
         navigation,
         { dispose: () => board.dispose() },
@@ -229,6 +252,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         vscode.commands.registerCommand(SETUP_COMMAND_ID, () => setup.start()),
         vscode.commands.registerCommand(COPY_MERGE_PROMPT_COMMAND_ID, () => setup.copyMergePrompt()),
         vscode.commands.registerCommand(RESCAN_COMMAND, () => service.rescan()),
+        vscode.commands.registerCommand(COPY_NEXT_STEP_COMMAND, () => copyNextStep.run()),
         vscode.commands.registerCommand(SHELL_ACTION_COMMAND, (action: unknown) => {
             const payload = { action };
             return isRunActionPayload(payload) ? service.runAction(payload.action) : undefined;
@@ -238,7 +262,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         feed,
         { dispose: () => repository.dispose() },
         { dispose: () => lifecycle.dispose() },
-        vscode.commands.registerCommand('featherspec-studio.selectProject', () => controller.selectProject()),
+        vscode.commands.registerCommand(SELECT_PROJECT_COMMAND_ID, () => controller.selectProject()),
         vscode.commands.registerCommand('featherspec-studio.refreshDiscovery', () => controller.refresh()),
     );
 
@@ -274,6 +298,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
                 return result.kind === 'opened' ? 'opened' : result.kind;
             },
         }),
+        statusEntry: () => ({ inspect: () => statusItem.inspect() }),
         missionControl: () => ({
             view: () => missionControl.view(),
             whenIdle: () => missionControl.whenIdle(),

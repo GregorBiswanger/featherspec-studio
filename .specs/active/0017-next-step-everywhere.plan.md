@@ -3,7 +3,7 @@
 **Spec:** [0017-next-step-everywhere.md](0017-next-step-everywhere.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-007
+**Current step:** T-008
 
 ## Approach
 
@@ -316,8 +316,8 @@ Stages 4 and 5 cannot: they share `extension.ts`, `package.json`, the protocol a
   stay unchanged.
 - **Verify:** `npx vitest run src/adapters/vscode/manifest.test.ts` red, then green; gates 1–5;
   `npm run compile-tests`; host smoke on CI (pre-done gate)
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** 2026-11-18 — manifest AC-009 tests written first and run on HEAD's `package.json` in a scratch copy: 2 failed (command not contributed), green after. Gates 1–5: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 1850 passed, 3 skipped, `npm run compile` ok, `npm run compile-tests` ok (compiles the new host smoke). Host smoke `src/test/copyNextStep.smoke.test.ts`: written, compiled, NOT run here (the VS Code download is blocked); it runs on CI and Windows.
+- **Notes:** `createStatusItem()` (in `statusBar.ts`, which no longer implements `StatusBarPort`) maps a `StatusEntryView` to the item and offers `inspect()`; `stepUi.ts` holds the quick pick, information and warning. Discovery now gets the `projectLine` latch as its `StatusBarPort`. The host smoke accepts either feedback text after the command (`$(check) Copied` or `$(warning) Could not copy`) because a headless CI clipboard may refuse the write; the smoke expects the fixture's 0001-tip-splitter in Review to be the current spec.
 
 ### T-008 — §5 notes and product docs
 

@@ -3,6 +3,7 @@ import { OPEN_STUDIO_COMMAND_ID } from '../../shared/protocol/texts';
 
 export const OPEN_COMMAND = OPEN_STUDIO_COMMAND_ID;
 export const RESCAN_COMMAND = 'featherspec-studio.rescan';
+export const COPY_NEXT_STEP_COMMAND = 'featherspec-studio.copyNextStep';
 export const SHELL_ACTION_COMMAND = 'featherspec-studio.shellAction';
 export const NAVIGATOR_VIEW = 'featherspec-studio.navigator';
 
