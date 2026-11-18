@@ -779,3 +779,27 @@ describe('0022 AC-015, §7 g: a segment without a separator wider than its whole
         expect(rule.some((declaration) => declaration.property === 'overflow-wrap')).toBe(false);
     });
 });
+
+describe('0022 AC-002: no title, heading or path breaks at any character', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const breaking = (source: string) => declarations(source).filter((declaration) => /^(?:overflow-wrap|word-break)$/.test(declaration.property) && /anywhere|break-all/.test(declaration.value));
+
+    it('no rule of the stylesheet sets break-all, and anywhere is set only on the step text of a row or card', () => {
+        const found = breaking(css);
+        expect(found.filter((declaration) => /break-all/.test(declaration.value))).toEqual([]);
+        expect(found.filter((declaration) => !declaration.selectors.every((selector) => selector === '.step-text')).map((declaration) => declaration.selectors.join(','))).toEqual([]);
+    });
+
+    it('control: the scan sees break-all on the side panel heading, anywhere on a card title and break-all on a next-step command', () => {
+        for (const rule of ['.detail-title h2 { word-break: break-all }', '.card-title { overflow-wrap: anywhere }', '.next-step-lines code { word-break: break-all }']) {
+            expect(breaking(rule)).toHaveLength(1);
+        }
+        expect(breaking('.step-text { overflow-wrap: anywhere }').every((declaration) => declaration.selectors.every((selector) => selector === '.step-text'))).toBe(true);
+    });
+
+    it('the side panel heading wraps at word boundaries and breaks inside a single word only when it is wider than the panel', () => {
+        const heading = declarations(css).filter((declaration) => declaration.selectors.includes('.detail-title h2'));
+        expect(heading.filter((declaration) => declaration.property === 'overflow-wrap').map((declaration) => declaration.value)).toEqual(['break-word']);
+        expect(heading.filter((declaration) => declaration.property === 'min-width').map((declaration) => declaration.value)).toEqual(['0']);
+    });
+});

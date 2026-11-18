@@ -3,7 +3,7 @@
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-015
+**Current step:** T-016
 
 ## Approach
 
@@ -516,6 +516,14 @@ never on the repository.
 - **Verify:** `npx vitest run --project node src/adapters/node/webviewCss.test.ts` red, then green; gates 1–4
 - [x] **Verified (T-015):** 2026-11-18, red first: `npx vitest run --project node src/adapters/node/webviewCss.test.ts` against the unchanged stylesheet: 4 failed (one per selector: no rule for `.next-step-lines code` and `.banner li`, a rule without the pair for `.file-link` and `.ov-line`), 72 passed. Green after the rules: 76 passed; gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2442 passed, 3 skipped (+13 timing).
 - **Notes:** jsdom computes no layout, so the proof is the rule pair on the four elements the compile named; the visible result (a long segment breaks only when it exceeds the line) is part of the harness round 2 (AC-019).
+
+### T-016 — No title, heading or path breaks at any character; the side panel heading wraps (M05, M05b, M05c)
+
+- **Covers:** AC-002 (no `anywhere` or `break-all` on a row title, card title or head, the side panel's heading or a §4.6 element); exploratory finding: `.detail-title h2`
+- **Do:** `webviewCss.test.ts` new describe `0022 AC-002`: no declaration of the stylesheet sets `break-all`, and `anywhere` only on `.step-text` (not an AC-002 element); control on the three mutants' rules; `.detail-title h2` has `overflow-wrap: break-word` and `min-width: 0` (a single word wider than the panel wraps; `main.css` changes only this). The old AC-002 test named a class `.detail-heading` that does not exist and stays as it is.
+- **Verify:** `npx vitest run --project node src/adapters/node/webviewCss.test.ts` red, then green; mutants on a scratch copy; gates 1–4
+- [x] **Verified (T-016):** 2026-11-18, red first: the new describe against the unchanged heading rule: 1 failed (`.detail-title h2` has no `overflow-wrap`), 78 passed; the two ban tests are gap tests (code already right), so they were proved by the mutants on a scratch copy of the working tree (`/tmp/fix0022/scratch.sh`, `mutant.py`, command `npx vitest run --project node src/adapters/node/webviewCss.test.ts`): M05 (`word-break: break-all` on `.detail-title h2`) red, 1 failed; M05b (`overflow-wrap: anywhere` on `.card-title`) red, 1 failed; M05c (`word-break: break-all` on `.next-step-lines code`) red, 2 failed (this ban and T-015's); removing the heading's new pair red, 1 failed; unmutated green 79 passed. Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2445 passed, 3 skipped (+13 timing).
+- **Notes:** M05, M05b and M05c now die. The ban is global rather than per selector, so a new element cannot slip in; the one exception, `.step-text`, is named in the test.
 
 ## Traceability
 
