@@ -1,5 +1,6 @@
 import {
     continueIntent,
+    INTEGRATE_INTENT,
     NEXT_STEP_DONE_TEXT,
     NEXT_STEP_UNREADABLE_TEXT,
     nextStepNumberUsedText,
@@ -80,6 +81,9 @@ export function nextStep(model: ShellModel, key: string): NextStep | undefined {
         case 'Review':
             return lines('NS-5', 'NS-5', { intent: NS5_INTENT, text: `/sdd-compile ${key}` }, { intent: NS5_THEN_INTENT, text: `/sdd-lifecycle ${key}` });
         case 'Active': {
+            if (spec.returnNoteKeys.length > 0) {
+                return lines('NS-6', 'NS-6-returned', { intent: INTEGRATE_INTENT, text: `/sdd-plan ${key}` });
+            }
             if (entry.plan === undefined) {
                 return lines('NS-6', 'NS-6-plan', { intent: WRITE_PLAN_INTENT, text: `/sdd-plan ${key}` });
             }

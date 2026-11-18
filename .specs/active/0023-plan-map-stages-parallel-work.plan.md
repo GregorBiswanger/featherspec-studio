@@ -3,7 +3,7 @@
 **Spec:** [0023-plan-map-stages-parallel-work.md](0023-plan-map-stages-parallel-work.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-002
+**Current step:** T-003
 
 ## Approach
 
@@ -255,8 +255,8 @@ orchestrator) at the ends of stages 2 and 3; AC-018 screenshots recorded here.
   fixture and variant whose case is `NS-6-open` or `NS-7` with an ID: the *next* ID equals the ID in its first line).
 - **Verify:** `npx vitest run --project node src/core/board/nextStep.test.ts src/core/board/stepTips.test.ts src/core/board/detail.test.ts src/core/planMap`
   red (stubs, failing literals), then green; gates 1–4
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-18 · `npx vitest run --project node src/core/board/nextStep.test.ts src/core/board/stepTips.test.ts src/core/board/detail.test.ts src/core/planMap` red first (18 failed: the `STEP_GUIDES` literal, six integrate cases, the coach and paragraphs, the NS-6 detail literals, seven ways tests against stubs), then green 362 of 362 (`src/core/planMap` and `src/core/board`); gates 1–4 green, `npm run test:unit` 2685 passed + 3 skipped (+15 timing)
+- **Notes:** The integrate check is the first one in `case 'Active'`, before the no-plan case (spec §5.5 "checked before its other cases"). `ways` is computed from the finished stage views and attached to the current stage by `planOf`; its condition reads the case of `nextStep()` (NS-6-open or NS-7), so Blocked, Review and a lying note never carry it. `stagePrompt`/`startLine`/`WAYS` live in `src/shared/protocol/planMapTexts.ts` from this step (the rest of the texts land with the steps that render them, P-8).
 
 ### T-003 — The detail and the board view carry the plan
 

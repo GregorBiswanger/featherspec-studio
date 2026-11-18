@@ -183,7 +183,7 @@ describe('0015 AC-003, AC-004, AC-008: the next step in the detail view', () => 
         const view = spec(buildDetail({ selection: { stem: '0001-a' }, model, history: NO_HISTORY }));
         const next = nextStep(model, '.specs/active/0001-a.md') as { rule: string; lines: unknown[] };
         expect(view.nextStep).toEqual({ rule: next.rule, lines: next.lines });
-        expect(view.nextStep).toEqual({ rule: 'NS-6', lines: [{ text: '/sdd-plan .specs/active/0001-a.md', intent: 'Let the agent report where the plan stands' }] });
+        expect(view.nextStep).toEqual({ rule: 'NS-6', lines: [{ text: '/sdd-plan .specs/active/0001-a.md', intent: 'Integrate the returned steps' }] });
     });
 
     it('AC-003: a rule without a line gives its text', async () => {
@@ -472,6 +472,6 @@ describe('0021 AC-009, AC-010: the tips of the detail', () => {
     it('NS-6 coach and paragraphs come from the case of the open step', async () => {
         const next = await nextOf(FILES, '0001-a', SHOW);
         expect(next.rule).toBe('NS-6');
-        expect(next.tips).toEqual(stepTips('NS-6-resume', SHOW));
+        expect(next.tips).toEqual(stepTips('NS-6-returned', SHOW));
     });
 });

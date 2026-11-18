@@ -1,6 +1,9 @@
+import { readFile } from 'node:fs/promises';
+import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { startLine, stagePrompt, WAY_KEYS, WAYS } from '../../shared/protocol/planMapTexts';
 import type { PlanStageView, PlanStepView, PlanView } from '../../shared/protocol/planMap';
-import { openStep } from '../board/nextStep';
+import { nextStep, openStep } from '../board/nextStep';
 import { modelOf } from '../board/testing/boardWorld';
 import type { ShellModel } from '../ports/shell';
 import { planOf } from './planMap';
@@ -282,5 +285,134 @@ describe('0023 AC-012: returned work shows its state and the stage counts', () =
         const both = planViewOf(await fixtureModel('fs110-parallel-synthetic'), PARALLEL_SPEC);
         expect(both.stages[1]!.returned).toEqual({ n: 2, m: 2 });
         expect(PARALLEL_NOTE_4).toContain('T-004');
+    });
+});
+
+const PLAN_PATH = '.specs/active/0001-parallel-demo.plan.md';
+
+function waysOf(view: PlanView): Array<[number, string[], string[]]> {
+    return view.stages.flatMap((stage) => (stage.ways === undefined ? [] : [[stage.number, [...stage.ways.prompts], stage.ways.startLines] as [number, string[], string[]]]));
+}
+
+describe('0023 AC-009: the current stage offers its ways, and the next step its start lines', () => {
+    it('Given fs110-parallel-synthetic without notes and the plan In Progress, stage 2 offers the three prompts and the start lines of T-003 and T-004; stages 1 and 3 offer none', async () => {
+        const view = planViewOf(await parallelModel(), PARALLEL_SPEC);
+        expect(waysOf(view)).toEqual([
+            [
+                2,
+                [
+                    `Implement the whole stage 2 of ${PLAN_PATH} in sequence`,
+                    `Implement the whole stage 2 of ${PLAN_PATH} with subagents`,
+                    `Implement the whole stage 2 of ${PLAN_PATH} with other agents`,
+                ],
+                [`Implement T-003 of ${PLAN_PATH} as a parallel worker.`, `Implement T-004 of ${PLAN_PATH} as a parallel worker.`],
+            ],
+        ]);
+        expect(view.stages[1]!.ways).toMatchObject({ stage: 2 });
+        expect(view.stages[0]!.ways).toBeUndefined();
+        expect(view.stages[2]!.ways).toBeUndefined();
+    });
+
+    it('Given a stage T-002 → T-003 ‖ T-004 with T-002 next, the ways show and no start line', async () => {
+        const model = await generatedModel({ stages: '1. T-001 — a\n2. T-004 → T-005 ‖ T-006 — b', steps: ['T-001:[x]', 'T-004:[ ]', 'T-005:[ ]', 'T-006:[ ]'] });
+        const ways = planViewOf(model, GEN_SPEC).stages[1]!.ways;
+        expect(ways?.stage).toBe(2);
+        expect(ways?.startLines).toEqual([]);
+    });
+
+    it('a stage T-002 ‖ T-003 → T-004 with T-002 next: start lines for the two of the group only', async () => {
+        const model = await generatedModel({ stages: '1. T-001 — a\n2. T-004 ‖ T-005 → T-006 — b', steps: ['T-001:[x]', 'T-004:[ ]', 'T-005:[ ]', 'T-006:[ ]'] });
+        const ways = planViewOf(model, GEN_SPEC).stages[1]!.ways;
+        expect(ways?.startLines).toEqual([`Implement T-004 of ${GEN_PLAN} as a parallel worker.`, `Implement T-005 of ${GEN_PLAN} as a parallel worker.`]);
+    });
+
+    it('a ‖ partner already done leaves one unfinished step: no ways; a returned or dropped partner too', async () => {
+        const doneOne = await generatedModel({ stages: '1. T-004 ‖ T-005 — a', steps: ['T-004:[x]', 'T-005:[ ]'] });
+        expect(planViewOf(doneOne, GEN_SPEC).stages[0]!.ways).toBeUndefined();
+        const dropped = await generatedModel({ stages: '1. T-004 ‖ T-005 — a', steps: ['T-004:~~', 'T-005:[ ]'] });
+        expect(planViewOf(dropped, GEN_SPEC).stages[0]!.ways).toBeUndefined();
+    });
+
+    it('a sequential stage, a single step and a plan without stages carry no way', async () => {
+        const view = planViewOf(await generatedModel(), GEN_SPEC);
+        expect(waysOf(view).map(([stage]) => stage)).toEqual([3]);
+        const flat = planViewOf(await generatedModel({ stages: '' }), GEN_SPEC);
+        expect(waysOf(flat)).toEqual([]);
+    });
+
+    it('a Ready spec offers the ways and no start line', async () => {
+        const model = await fixtureModel('fs110-ready-synthetic', (found) => {
+            const plan = '.specs/backlog/0001-ready-feature.plan.md';
+            found[plan] = found[plan]!.replace('1. T-001 — the feature', '1. T-001 ‖ T-002 — the feature').replace('### T-001', '### T-002 — second\n\n- **Covers:** AC-001\n- **Do:** x\n- **Verify:** y\n- [ ] **Verified (T-002):** —\n- **Notes:** —\n\n### T-001');
+        });
+        const view = planViewOf(model, '.specs/backlog/0001-ready-feature.md');
+        expect(model.lifecycle.entries.find((entry) => entry.key === '.specs/backlog/0001-ready-feature.md')?.state).toBe('Ready');
+        expect(waysOf(view)).toHaveLength(1);
+        expect(view.stages[0]!.ways?.startLines).toEqual([]);
+        expect(view.stages[0]!.ways?.prompts[0]).toBe('Implement the whole stage 1 of .specs/backlog/0001-ready-feature.plan.md in sequence');
+    });
+
+    it('Blocked, Review, a lying note and the Resume case offer none', async () => {
+        const blocked = await fixtureModel('fs110-parallel-synthetic');
+        expect(waysOf(planViewOf(blocked, PARALLEL_SPEC))).toEqual([]);
+        const review = await fixtureModel('studio-0015');
+        const reviewKey = review.lifecycle.entries[0]!.key;
+        expect(review.lifecycle.entries[0]!.state).toBe('Review');
+        expect(waysOf(planViewOf(review, reviewKey))).toEqual([]);
+        const noted = await generatedModel({}, noteFile('T-001', 'DONE'));
+        expect(waysOf(planViewOf(noted, GEN_SPEC))).toEqual([]);
+        const resume = await generatedModel({ stages: '1. T-004 ‖ T-005 — a', steps: ['T-004:[x]', 'T-005:[x]'] });
+        expect(waysOf(planViewOf(resume, GEN_SPEC))).toEqual([]);
+    });
+
+    it('the start line is the wording of parallel-work.md, byte for byte', async () => {
+        const rule = await readFile(path.resolve(process.cwd(), '.claude', 'rules', 'parallel-work.md'), 'utf8');
+        expect(rule).toContain(`\`${startLine('T-00x', '<plan path>')}\``);
+        expect(startLine('T-004', 'a/b.plan.md')).toBe('Implement T-004 of a/b.plan.md as a parallel worker.');
+    });
+
+    it('the three prompts name the way in the words of plans.md: in sequence, with subagents, with other agents', () => {
+        expect(WAY_KEYS.map((way) => stagePrompt(way, 3, 'p.plan.md'))).toEqual([
+            'Implement the whole stage 3 of p.plan.md in sequence',
+            'Implement the whole stage 3 of p.plan.md with subagents',
+            'Implement the whole stage 3 of p.plan.md with other agents',
+        ]);
+        expect(WAY_KEYS.map((way) => WAYS[way].name)).toEqual(['In sequence', 'Subagents', 'Other agents']);
+        expect(WAYS.sequence.effect).toBe('One chat builds the steps one after another and stops at the stage end and at every test review on the way.');
+        expect(WAYS.subagents.effect).toBe(
+            'Where a working agreement asks for a test review, the chat first writes the stage\'s tests and stops for it; then it hands each step to a subagent. Subagents cannot ask you; there is no steering in between.',
+        );
+        expect(WAYS.otherAgents.effect).toBe(
+            'The chat proposes the commit a worktree needs and prints one start line per step. Paste each into another chat, tool or worktree; each worker builds its step and leaves a return note.',
+        );
+    });
+});
+
+describe('0023 AC-002: the marked step is the one the next step names', () => {
+    it('for every fixture and variant whose case is NS-6-open or NS-7 with an ID, the next marker equals the ID of its first line', async () => {
+        const models: Array<[string, ShellModel]> = [
+            ['parallel without notes', await parallelModel()],
+            ['ready', await fixtureModel('fs110-ready-synthetic')],
+            ['generated', await generatedModel()],
+            ['generated, first two stages done', await generatedModel({ steps: ['T-001:[x]', 'T-002:[x]', 'T-003:[x]', 'T-004:[x]', 'T-005:[ ]', 'T-006:[ ]'] })],
+        ];
+        let checked = 0;
+        for (const [name, model] of models) {
+            for (const entry of model.lifecycle.entries) {
+                const next = nextStep(model, entry.key);
+                const spec = model.project.specs.find((candidate) => candidate.key === entry.key)!;
+                const view = planOf(model, entry, spec);
+                if (next === undefined || !('lines' in next) || view === undefined || view.kind !== 'plan' || (next.case !== 'NS-6-open' && next.case !== 'NS-7')) {
+                    continue;
+                }
+                const id = /\b(T-\d+)\b/.exec(next.lines[0]!.text)?.[1];
+                if (id === undefined) {
+                    continue;
+                }
+                checked += 1;
+                expect(stepsOf(view).filter((step) => step.state === 'next').map((step) => step.id), name).toEqual([id]);
+            }
+        }
+        expect(checked).toBeGreaterThanOrEqual(4);
     });
 });

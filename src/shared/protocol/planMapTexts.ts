@@ -1,0 +1,35 @@
+export type WayKey = 'sequence' | 'subagents' | 'otherAgents';
+
+export const WAY_KEYS: readonly WayKey[] = ['sequence', 'subagents', 'otherAgents'];
+
+export interface WayText {
+    name: string;
+    effect: string;
+    suffix: string;
+}
+
+export const WAYS: Record<WayKey, WayText> = {
+    sequence: {
+        name: 'In sequence',
+        effect: 'One chat builds the steps one after another and stops at the stage end and at every test review on the way.',
+        suffix: 'in sequence',
+    },
+    subagents: {
+        name: 'Subagents',
+        effect: "Where a working agreement asks for a test review, the chat first writes the stage's tests and stops for it; then it hands each step to a subagent. Subagents cannot ask you; there is no steering in between.",
+        suffix: 'with subagents',
+    },
+    otherAgents: {
+        name: 'Other agents',
+        effect: 'The chat proposes the commit a worktree needs and prints one start line per step. Paste each into another chat, tool or worktree; each worker builds its step and leaves a return note.',
+        suffix: 'with other agents',
+    },
+};
+
+export function stagePrompt(way: WayKey, stage: number, plan: string): string {
+    return `Implement the whole stage ${stage} of ${plan} ${WAYS[way].suffix}`;
+}
+
+export function startLine(id: string, plan: string): string {
+    return `Implement ${id} of ${plan} as a parallel worker.`;
+}

@@ -15,6 +15,7 @@ const COACH: Record<StepCase, string> = {
     'NS-5': 'new chat · strong model, other family',
     'NS-6-open': 'same chat or new chat · fast model',
     'NS-6-resume': 'any chat · fast model',
+    'NS-6-returned': 'same chat or new chat · fast model',
     'NS-6-plan': 'any chat · strong model, allow web search',
     'NS-7': 'any chat · fast model',
     'NS-8': 'any chat · strong model',
@@ -29,6 +30,7 @@ const NAMED_COACH: Record<StepCase, string> = {
     'NS-5': 'new chat · strong model (X), other family',
     'NS-6-open': 'same chat or new chat · fast model (Y)',
     'NS-6-resume': 'any chat · fast model (Y)',
+    'NS-6-returned': 'same chat or new chat · fast model (Y)',
     'NS-6-plan': 'any chat · strong model (X), allow web search',
     'NS-7': 'any chat · fast model (Y)',
     'NS-8': 'any chat · strong model (X)',
@@ -106,5 +108,18 @@ describe('0021 AC-018: the tips need neither trust nor a writer', () => {
         const first = stepTips('NS-5', NAMED);
         const second = stepTips('NS-5', parseStepTipSettings(true, { strong: 'X', fast: 'Y' }));
         expect(second).toEqual(first);
+    });
+});
+
+describe('0023 AC-013: the coach line and the paragraphs of the integrate case', () => {
+    it('same chat or new chat, fast model; effect, then-sentence and reasons literally', () => {
+        expect(stepTips('NS-6-returned', NONE).coach).toBe('same chat or new chat · fast model');
+        expect(stepTips('NS-6-returned', NAMED).coach).toBe('same chat or new chat · fast model (Y)');
+        expect(stepTips('NS-6-returned', NONE).about[0]).toBe(
+            'The agent checks each returned step against its files, runs its check and the quality gates, then ticks the steps and removes the return notes. Paste it once every worker you started is back.',
+        );
+        expect(stepTips('NS-6-returned', NONE).about[1]).toBe(
+            'Same chat or new chat: the plan holds the state of the work; after a break, let the agent report first. Fast model: one small, well-described step.',
+        );
     });
 });

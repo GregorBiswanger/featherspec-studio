@@ -30,7 +30,7 @@ export function stepShortForm(step: { intent: string; short: string }): string {
     return `${step.intent}${STEP_SHORT_SEPARATOR}${step.short}`;
 }
 
-export type StepCase = 'NS-2' | 'NS-4' | 'NS-4-plan' | 'NS-5' | 'NS-6-open' | 'NS-6-resume' | 'NS-6-plan' | 'NS-7' | 'NS-8' | 'NS-9' | 'NS-10';
+export type StepCase = 'NS-2' | 'NS-4' | 'NS-4-plan' | 'NS-5' | 'NS-6-open' | 'NS-6-resume' | 'NS-6-returned' | 'NS-6-plan' | 'NS-7' | 'NS-8' | 'NS-9' | 'NS-10';
 
 export type SessionKey = 'new' | 'sameOrNew' | 'any';
 
@@ -81,6 +81,13 @@ export const STEP_GUIDES: Record<StepCase, StepGuide> = {
         effect: 'The agent checks the plan against the code; with every step ticked it closes the plan and recommends the review.',
         then: 'The spec then shows Verify.',
     },
+    'NS-6-returned': {
+        short: 'Integrate',
+        session: 'sameOrNew',
+        model: 'fast',
+        effect: 'The agent checks each returned step against its files, runs its check and the quality gates, then ticks the steps and removes the return notes.',
+        then: 'Paste it once every worker you started is back.',
+    },
     'NS-6-plan': {
         short: 'Plan',
         session: 'any',
@@ -117,6 +124,8 @@ export const NS5_THEN_INTENT = 'Then, after a READY verdict: close the spec';
 export const NS6_REPORT_INTENT = 'Not sure where it stands? Let the agent report first';
 
 export const NS6_RESUME_INTENT = 'Let the agent report where the plan stands';
+
+export const INTEGRATE_INTENT = 'Integrate the returned steps';
 
 export const WRITE_PLAN_INTENT = 'Write the plan';
 

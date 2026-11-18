@@ -1,7 +1,8 @@
 import type { LineTarget } from '../../shared/protocol/detail';
-import type { PlanGroupView, PlanReturnView, PlanStageKind, PlanStageView, PlanStepState, PlanStepView, PlanUnreadableView, PlanView } from '../../shared/protocol/planMap';
+import { startLine, stagePrompt } from '../../shared/protocol/planMapTexts';
+import type { PlanGroupView, PlanReturnView, PlanStageKind, PlanStageView, PlanStepState, PlanStepView, PlanUnreadableView, PlanView, PlanWaysView } from '../../shared/protocol/planMap';
 import { plainShort, plainText } from '../board/shortTitle';
-import { openStep } from '../board/nextStep';
+import { nextStep, openStep } from '../board/nextStep';
 import { taskProgress } from '../board/progress';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { ShellModel } from '../ports/shell';
@@ -138,6 +139,19 @@ function stageView(stage: PlanStage, items: ReturnType<typeof separatorsOf>, des
     };
 }
 
+function waysOf(stage: PlanStageView, planKey: string, active: boolean, nextId: string | undefined): PlanWaysView | undefined {
+    if (!stage.groups.some((group) => group.steps.filter(unfinished).length >= 2)) {
+        return undefined;
+    }
+    const holder = stage.groups.find((group) => group.steps.some((step) => step.id === nextId));
+    const lines = !active || holder === undefined || holder.steps.filter(unfinished).length < 2 ? [] : holder.steps.filter(unfinished).map((step) => startLine(step.id, planKey));
+    return {
+        stage: stage.number,
+        prompts: [stagePrompt('sequence', stage.number, planKey), stagePrompt('subagents', stage.number, planKey), stagePrompt('otherAgents', stage.number, planKey)],
+        startLines: lines,
+    };
+}
+
 function closingView(raw: string): PlanView['closing'] {
     const text = raw
         .split('\n')
@@ -181,6 +195,15 @@ export function planOf(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry
     const placed = new Set(rows.flatMap((row) => row.items.map((item) => item.id)));
     const currentIndex = rows.findIndex((row) => context.next !== undefined && row.items.some((item) => item.id === context.next));
     const stages = rows.map((row, index) => stageView(row.stage, row.items, row.description, index === currentIndex, context));
+    const next = nextStep(model, entry.key);
+    const waysCase = next !== undefined && 'lines' in next && (next.case === 'NS-6-open' || next.case === 'NS-7');
+    const current = stages[currentIndex];
+    if (waysCase && current !== undefined) {
+        const ways = waysOf(current, plan.key, entry.state === 'Active', context.next);
+        if (ways !== undefined) {
+            current.ways = ways;
+        }
+    }
     const counted = taskProgress(plan);
     const closing = plan.parsed.stages.closing;
     const loose = plan.parsed.steps.filter((step) => rows.length === 0 || !placed.has(step.id)).map((step) => stepView(step.id, context));

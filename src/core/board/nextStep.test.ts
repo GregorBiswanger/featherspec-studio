@@ -276,6 +276,7 @@ describe('0021 AC-001: every next step line carries its intent, one fixture per 
             'NS-5': { short: 'Verify', session: 'new', model: 'strongOtherFamily', effect: 'A fresh reviewer checks every acceptance criterion against evidence and gives a verdict.', then: 'Only after a READY verdict, close the spec with the second prompt.' },
             'NS-6-open': { short: 'Continue', session: 'sameOrNew', model: 'fast', effect: 'The agent builds this one step, runs its check, ticks it and stops.', then: 'When it stops, the Studio shows the next step; a working agreement such as a test review may stop it earlier.' },
             'NS-6-resume': { short: 'Resume', session: 'any', model: 'fast', effect: 'The agent checks the plan against the code; with every step ticked it closes the plan and recommends the review.', then: 'The spec then shows Verify.' },
+            'NS-6-returned': { short: 'Integrate', session: 'sameOrNew', model: 'fast', effect: 'The agent checks each returned step against its files, runs its check and the quality gates, then ticks the steps and removes the return notes.', then: 'Paste it once every worker you started is back.' },
             'NS-6-plan': { short: 'Plan', session: 'any', model: 'strongWebSearch', effect: 'The agent researches and writes the plan; for a reactivated spec, a fresh plan for the change.', then: 'You read the plan before anything is built.' },
             'NS-7': { short: 'Build', session: 'any', model: 'fast', effect: 'The agent moves the spec to active, builds one step, runs its check, ticks it and stops.', then: 'When it stops, the Studio shows the next step; a working agreement such as a test review may stop it earlier.' },
             'NS-8': { short: 'Add criteria', session: 'any', model: 'strong', effect: 'The agent goes through the spec with you and adds testable acceptance criteria.', then: 'Then the spec is challenged and planned.' },
@@ -439,5 +440,64 @@ describe('0021 AC-006: the step short form of every case', () => {
     it('equal snapshots give equal step views, also when read again', async () => {
         const files = { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: titled([['T-003', 'X', '[ ]']]) };
         expect(stepView(await model(files), ACTIVE)).toEqual(stepView(await model(files), ACTIVE));
+    });
+});
+
+describe('0023 AC-013: returned work is the first case of an Active spec', () => {
+    const noteLines = (status: string, extra = '') => `# Return note\n\n- **Status:** ${status}\n- **Files:** —\n- **Verified:** —\n- **Notes:** —\n${extra}`;
+    const base = { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: titled([['T-001', 'One', '[x]'], ['T-002', 'Two', '[ ]']]) };
+    const integrate = { rule: 'NS-6', case: 'NS-6-returned', lines: [{ intent: 'Integrate the returned steps', text: `/sdd-plan ${ACTIVE}` }] };
+
+    it.each([
+        ['a DONE note of an open step', { '.memory-bank/activeContext.0007-T-002.md': noteLines('DONE') }],
+        ['a DONE note of a ticked step', { '.memory-bank/activeContext.0007-T-001.md': noteLines('DONE') }],
+        ['a note for an ID the plan lacks', { '.memory-bank/activeContext.0007-T-099.md': noteLines('DONE') }],
+        ['a note of another status', { '.memory-bank/activeContext.0007-T-002.md': noteLines('WIP') }],
+    ])('%s: one line, /sdd-plan <spec>, the intent Integrate the returned steps', async (_name, note) => {
+        const m = await model({ ...base, ...note });
+        expect(nextStep(m, ACTIVE)).toEqual(integrate);
+        expect(stepView(m, ACTIVE)).toEqual({
+            intent: 'Integrate',
+            short: '/sdd-plan',
+            line: `/sdd-plan ${ACTIVE}`,
+            lines: [{ intent: 'Integrate the returned steps', text: `/sdd-plan ${ACTIVE}` }],
+        });
+        expect(stepShortForm(stepView(m, ACTIVE)!)).toBe('Integrate · /sdd-plan');
+    });
+
+    it('an unreadable note counts as a return note', async () => {
+        const source = createMemorySpecSource();
+        source.setFile(ROOT, ACTIVE, base[ACTIVE]);
+        source.setFile(ROOT, ACTIVE_PLAN, base[ACTIVE_PLAN]);
+        source.setUnreadable(ROOT, '.memory-bank/activeContext.0007-T-002.md', 'EACCES');
+        const project = await readProject(source, ROOT, VERSION);
+        expect(nextStep({ project, lifecycle: deriveLifecycle(project) }, ACTIVE)).toEqual(integrate);
+    });
+
+    it('the note of another spec does not integrate this one', async () => {
+        const m = await model({ ...base, '.memory-bank/activeContext.0008-T-002.md': noteLines('DONE') });
+        expect(nextStep(m, ACTIVE)).toMatchObject({ case: 'NS-6-open', lines: [{ text: `Implement T-002 of ${ACTIVE_PLAN}` }, { text: `/sdd-plan ${ACTIVE}` }] });
+    });
+
+    it('without a note NS-6 is as 0021 AC-003 and AC-005 say: open, resume, plan', async () => {
+        expect(nextStep(await model(base), ACTIVE)).toMatchObject({ case: 'NS-6-open' });
+        expect(nextStep(await model({ ...base, [ACTIVE_PLAN]: titled([['T-001', 'One', '[x]']]) }), ACTIVE)).toMatchObject({ case: 'NS-6-resume' });
+        expect(nextStep(await model({ [ACTIVE]: specText({ status: 'In Progress', plan: ARCHIVE }) }), ACTIVE)).toMatchObject({ case: 'NS-6-plan' });
+    });
+
+    it('a BLOCKED note still gives NS-4, and a plan Done with a note still gives NS-5', async () => {
+        const blocked = await model({ ...base, '.memory-bank/activeContext.0007-T-002.md': noteLines('BLOCKED', '- **Blocked on:** a question.\n') });
+        expect(nextStep(blocked, ACTIVE)).toMatchObject({ rule: 'NS-4', case: 'NS-4-plan' });
+        const review = await model({ [ACTIVE]: base[ACTIVE], [ACTIVE_PLAN]: planText({ status: 'Done' }), '.memory-bank/activeContext.0007-T-002.md': noteLines('DONE') });
+        expect(nextStep(review, ACTIVE)).toMatchObject({ rule: 'NS-5', case: 'NS-5' });
+    });
+
+    it('a Ready or Backlog spec with a note is not an Active case: NS-7 keeps its line', async () => {
+        const ready = await model({
+            [BACKLOG]: specText({ plan: LINK }),
+            [BACKLOG_PLAN]: plan([['T-001', '[ ]']]),
+            '.memory-bank/activeContext.0007-T-001.md': noteLines('DONE'),
+        });
+        expect(nextStep(ready, BACKLOG)).toMatchObject({ rule: 'NS-7', case: 'NS-7' });
     });
 });
