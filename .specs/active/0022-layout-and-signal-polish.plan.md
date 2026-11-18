@@ -451,8 +451,8 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
 | AC-010 | T-006 | — | — | open |
 | AC-011 | T-006 | — | — | open |
 | AC-012 | T-006 | — | — | open |
-| AC-013 | T-005, T-008, T-009 | — | — | open |
-| AC-014 | T-005 | — | — | open |
+| AC-013 | T-005, T-008, T-009 | `src/core/lifecycle/problemSentence.ts`, `src/core/board/{detail,cards}.ts`, `src/core/overview/problems.ts`, protocols `detail.ts`, `board.ts`, `overview.ts` (webview and tree: T-008, T-009) | `problemSentence.test.ts`, `core/board/detail.test.ts`, `cards.test.ts`, `core/overview/problems.test.ts`, protocol tests | built |
+| AC-014 | T-005 | `src/core/lifecycle/problemSentence.ts`, `src/shared/protocol/texts.ts` (X-10…X-24) | `src/core/lifecycle/problemSentence.test.ts` (AC-014 describe) | verified |
 | AC-015 | T-008 | — | — | open |
 | AC-016 | T-011 | — | — | open |
 | AC-017 | T-011 | — | — | open |
@@ -464,15 +464,15 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
 | AC-023 | T-003 | `src/webview/detail/Divider.tsx`, `src/webview/detail/sideWidth.ts`, `src/webview/App.tsx` | `src/webview/detail/Divider.test.tsx` (AC-023 describes), `webviewCss.test.ts` (0022 G-2) | verified |
 | AC-024 | T-002, T-003 | `src/shared/protocol/layout.ts`, `src/core/shell/sidePanelWidth.ts`, `src/core/shell/shellService.ts`, `src/webview/detail/sideWidth.ts`, `src/adapters/vscode/uiMemory.ts` | `layout.test.ts`, `sidePanelWidth.test.ts`, `messages.test.ts`, `client.test.ts`, `Divider.test.tsx` (AC-024) | verified |
 | AC-025 | T-011 | — | manual: orchestrator's harness, then Gregor | open |
-| AC-026 | T-004 | — | — | open |
+| AC-026 | T-004 | `src/shared/protocol/stateLook.ts`, `src/core/shell/specTree.ts`, `src/webview/board/icons.tsx`, `src/webview/ui/StateChip.tsx`, `src/webview/board/Column.tsx`, `src/webview/main.css` (Overview rows: T-007) | `stateLook.test.ts`, `specTree.test.ts`, `StateChip.test.tsx`, `SpecBoard.test.tsx`, `webviewCss.test.ts` (0022 AC-026) | built |
 | AC-027 | T-007 | — | — | open |
 | AC-028 | T-007 | — | — | open |
 | AC-029 | T-001 | `src/webview/App.tsx`, `src/webview/detail/narrow.ts`, `src/webview/detail/BackButton.tsx`, `src/webview/detail/SidePanel.tsx`, `src/webview/detail/SpecDetail.tsx` | `src/webview/detail/ListOrDetail.test.tsx` | verified |
 
 ## Session handoff
 
-- **Done so far:** stage 1 (T-001…T-003) built and verified 2026-11-18 on branch `ux-round-2`: one scrollbar each, the area or the detail alone below 900 px (`data-layout="detail"`, back button), a remembered divider (`featherspec-studio.sidePanel`). Gates green at the stage end (unit 2288 passed, 3 skipped, +13 timing).
-- **Next action:** stage 2, T-004 then T-005 in sequence (state table, problem sentence), then stage 3 (T-006 → T-007); the orchestrator's preview harness checks stage 1's layout after stage 3.
+- **Done so far:** stage 1 (T-001…T-003) and stage 2 (T-004, T-005, run in sequence) built and verified 2026-11-18 on branch `ux-round-2`: the state table (`stateLook.ts`, tree, chip, column, icons, `data-tint`) and the problem sentence (`problemSentence.ts`, protocol fields `sentence`, `reasons`). Gates green (unit 2329 passed, 3 skipped, +13 timing).
+- **Next action:** stage 3, T-006 (Copy looks, at most two primary buttons) then T-007 (Overview rows by the list's own width); the orchestrator's preview harness checks stages 1 to 3 after T-007.
 - **Open decisions:** none; the proxy decisions P-1…P-22 stand, new ones are in the steps' `Notes:`.
 - **Baseline:** `20a1e68`.
 - **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here); layout is checked in the orchestrator's preview harness.
