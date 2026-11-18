@@ -19,6 +19,7 @@ export interface CopyNextStepDeps {
 
 export interface CopyNextStep {
     run(): Promise<void>;
+    copy(line: string): Promise<void>;
 }
 
 export function createCopyNextStep(deps: CopyNextStepDeps): CopyNextStep {
@@ -61,5 +62,5 @@ export function createCopyNextStep(deps: CopyNextStepDeps): CopyNextStep {
         }
     }
 
-    return { run };
+    return { run, copy };
 }

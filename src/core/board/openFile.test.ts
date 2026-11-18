@@ -71,3 +71,32 @@ describe('open file', () => {
         expect(await open.open('.specs/active/0001-a.md')).toEqual({ kind: 'not-found', text: 'File not found: .specs/active/0001-a.md' });
     });
 });
+
+describe('0020 AC-008: the place of the opened file', () => {
+    it('passes the place to the editor and keeps the old call shape without one', async () => {
+        const calls: unknown[][] = [];
+        const editor: EditorPort = {
+            async open(...args) {
+                calls.push(args);
+                return 'opened';
+            },
+        };
+        const source = createFakeSource(await modelOf(FILES));
+        const open = createOpenFile({ source, editor });
+        const root = source.current()!.project.root;
+        await open.open('.specs/active/0001-a.md', 1, 'activeGroup');
+        await open.open('.specs/active/0001-a.md', 1);
+        await open.open('.specs/active/0001-a.md');
+        expect(calls).toEqual([
+            [root, '.specs/active/0001-a.md', 1, 'activeGroup'],
+            [root, '.specs/active/0001-a.md', 1],
+            [root, '.specs/active/0001-a.md'],
+        ]);
+    });
+
+    it('a file gone since the last model update gives File not found: <path>, and a key outside the model is refused', async () => {
+        const { open } = await setup('not-found');
+        expect(await open.open('.specs/active/0001-a.md', 1, 'activeGroup')).toEqual({ kind: 'not-found', text: 'File not found: .specs/active/0001-a.md' });
+        expect(await open.open('.specs/active/9999-none.md', 1, 'activeGroup')).toEqual({ kind: 'refused' });
+    });
+});

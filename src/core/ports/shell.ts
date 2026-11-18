@@ -32,3 +32,8 @@ export interface ShellModelSource {
     updatedAt(): string;
     onDidChange(listener: () => void): Disposable;
 }
+
+export interface StudioPanelPort {
+    isOpen(): boolean;
+    show(options?: { preserveFocus?: boolean }): void;
+}

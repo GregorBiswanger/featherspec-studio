@@ -9,6 +9,14 @@ interface FakeUri {
 const opened: string[] = [];
 const statted: string[] = [];
 const shown: { options: Record<string, unknown> }[] = [];
+const tabs = vi.hoisted(() => {
+    class FakeTabInputWebview {
+        constructor(public viewType: string) {}
+    }
+    class FakeTabInputText {}
+    return { FakeTabInputWebview, FakeTabInputText, active: undefined as { input: unknown } | undefined };
+});
+const { FakeTabInputWebview, FakeTabInputText } = tabs;
 
 vi.mock('vscode', () => {
     const make = (scheme: string, path: string): FakeUri => ({ scheme, path, toString: () => `${scheme}://${path}` });
@@ -34,6 +42,8 @@ vi.mock('vscode', () => {
             ) {}
         },
         ViewColumn: { Active: -1, Beside: -2 },
+        TabInputWebview: tabs.FakeTabInputWebview,
+        TabInputText: tabs.FakeTabInputText,
         workspace: {
             fs: {
                 stat: (uri: FakeUri) => {
@@ -47,6 +57,7 @@ vi.mock('vscode', () => {
             },
         },
         window: {
+            tabGroups: { get activeTabGroup() { return { activeTab: tabs.active }; } },
             showTextDocument: (_document: unknown, options: Record<string, unknown>) => {
                 shown.push({ options });
                 return Promise.resolve(undefined);
@@ -62,6 +73,7 @@ describe('createEditor', () => {
         opened.length = 0;
         statted.length = 0;
         shown.length = 0;
+        tabs.active = undefined;
     });
 
     it('AC-010: the project root arrives as a URI string, and the spec opens below that URI', async () => {
@@ -97,5 +109,28 @@ describe('createEditor', () => {
     it('0019 AC-018: a file that is not found shows no editor (negative control for the recorded options)', async () => {
         await createEditor().open('file:///d%3A/other', '.specs/active/0001-a.md', 5);
         expect(shown).toEqual([]);
+    });
+
+    it('0020 AC-008: the active group shows the Studio panel: the file opens beside it', async () => {
+        tabs.active = { input: new FakeTabInputWebview('mainThreadWebview-featherspecStudio.main') };
+        await createEditor().open('file:///c%3A/proj/app', '.specs/active/0001-a.md', 1, 'activeGroup');
+        expect(shown[0]?.options.viewColumn).toBe(-2);
+        expect(shown[0]?.options.preview).toBe(false);
+    });
+
+    it('0020 AC-008: the active group shows a text editor, another webview or nothing: the file opens in the active group', async () => {
+        for (const tab of [{ input: new FakeTabInputText() }, { input: new FakeTabInputWebview('mainThreadWebview-other.view') }, undefined]) {
+            tabs.active = tab;
+            await createEditor().open('file:///c%3A/proj/app', '.specs/active/0001-a.md', 1, 'activeGroup');
+        }
+        expect(shown.map((entry) => entry.options.viewColumn)).toEqual([-1, -1, -1]);
+        expect(shown.every((entry) => entry.options.preview === false)).toBe(true);
+    });
+
+    it('0020 AC-008: without a place the file opens beside, as 0019 left it, even over a text editor', async () => {
+        tabs.active = { input: new FakeTabInputText() };
+        await createEditor().open('file:///c%3A/proj/app', '.specs/active/0001-a.md', 1);
+        await createEditor().open('file:///c%3A/proj/app', '.specs/active/0001-a.md', 1, 'beside');
+        expect(shown.map((entry) => entry.options.viewColumn)).toEqual([-2, -2]);
     });
 });

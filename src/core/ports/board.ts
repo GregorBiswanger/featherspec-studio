@@ -6,8 +6,10 @@ export interface ClipboardPort {
 
 export type OpenOutcome = 'opened' | 'not-found';
 
+export type OpenPlace = 'beside' | 'activeGroup';
+
 export interface EditorPort {
-    open(root: string, key: string, line?: number): Promise<OpenOutcome>;
+    open(root: string, key: string, line?: number, place?: OpenPlace): Promise<OpenOutcome>;
 }
 
 export interface SelectionSource {

@@ -3,7 +3,7 @@
 **Spec:** [0020-native-spec-tree.md](0020-native-spec-tree.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-004
+**Current step:** T-005
 
 ## Approach
 
@@ -280,8 +280,8 @@ and the host smoke, so they stay `→`.
   `studio-0015` with untrusted fakes leave the snapshot unchanged.
 - **Verify:** `npx vitest run --project node src/core/shell/treeActions.test.ts src/core/board/openFile.test.ts src/adapters/vscode/editor.test.ts src/core/copyNextStep/copyNextStep.test.ts`
   red (stub, failing placement), then green; gates 1–4
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-18: vitest (node) on treeActions.test.ts, openFile.test.ts, editor.test.ts, copyNextStep.test.ts red first (10 failed on the Not implemented stub in treeActions; editor placement test failed with Beside for Active), then green 54/54; mutants (no open before select, preserveFocus false) fail 2 tests; gates 1-4 green, unit 2208 passed + 3 skipped, timing 13.
+- **Notes:** Sequence, not parallel. editor.test.ts mock gained tabGroups, TabInputWebview and TabInputText through vi.hoisted; 0019's editor tests unchanged. OpenFile.open(key, line?, place?) keeps the old editor call shape when no place is given. A refused key shows File not found: <key> like a gone file. Nothing deleted.
 
 ### T-005 — The Specs view in VS Code: rows, menus, badge, toolbar
 
@@ -383,14 +383,14 @@ and the host smoke, so they stay `→`.
 | AC-004 | T-001 | src/core/shell/specTree.ts:rowOf | specTree.test.ts "AC-004: the row texts" | built |
 | AC-005 | T-001 | src/core/shell/specTree.ts:STATE_ICONS | specTree.test.ts "AC-005: icons and colours" | built |
 | AC-006 | T-002, T-005 | src/core/shell/specTree.ts:tooltipOf | specTree.test.ts "AC-006: the tooltip" | built |
-| AC-007 | T-004 | — | — | open |
-| AC-008 | T-004 | — | — | open |
-| AC-009 | T-004, T-005 | — | — | open |
+| AC-007 | T-004 | src/core/shell/treeActions.ts:copy; src/core/copyNextStep/copyNextStep.ts:copy | treeActions.test.ts "AC-007"; copyNextStep.test.ts "AC-007" | built |
+| AC-008 | T-004 | src/core/shell/treeActions.ts:open; src/adapters/vscode/editor.ts; src/core/board/openFile.ts | treeActions.test.ts "AC-008"; editor.test.ts "AC-008"; openFile.test.ts "AC-008" | built |
+| AC-009 | T-004, T-005 | src/core/shell/treeActions.ts:select | treeActions.test.ts "AC-009" | built |
 | AC-010 | T-002, T-005 | src/core/shell/specTree.ts:badgeOf | specTree.test.ts "AC-010: the badge" | built |
 | AC-011 | T-002, T-005 | — | — | open |
 | AC-012 | T-002, T-005 | src/core/shell/specTree.ts:buildSpecTree | specTree.test.ts "AC-012: the states of the view" | built |
-| AC-013 | T-003, T-005 | — | — | open |
-| AC-014 | T-004 | — | — | open |
+| AC-013 | T-003, T-005 | src/core/shell/specTreeService.ts | specTreeService.test.ts, specTreeService.timing.test.ts "AC-013" | built |
+| AC-014 | T-004 | src/core/shell/treeActions.ts | treeActions.test.ts "AC-014" | built |
 | AC-015 | T-005, T-006 | — | — | open |
 | AC-016 | T-006, T-007 | — | — | open |
 | AC-017 | T-006 | — | — | open |
@@ -402,8 +402,8 @@ and the host smoke, so they stay `→`.
 
 ## Session handoff
 
-- **Done so far:** plan started (spec and plan moved to active/, Baseline 16fc52b); stage 1 done: T-001, T-002 verified and committed (core model src/core/shell/specTree.ts).
-- **Next action:** T-003 (tree service), then T-004 (actions), in sequence.
+- **Done so far:** stages 1-2 done: T-001..T-004 verified and committed (specTree.ts, specTreeService.ts, treeActions.ts, place on EditorPort/OpenFile, public CopyNextStep.copy).
+- **Next action:** T-005 (the Specs view in VS Code: adapter, manifest, wiring, host smoke); deletes src/core/shell/treeModel.ts and treeModel.test.ts.
 - **Open decisions:** none; P-1…P-24 stand unless Gregor changes them.
 - **Baseline:** `16fc52b` (HEAD before the first step commit; started 2026-11-18 on Gregor's delegated start signal)
 - **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here); the

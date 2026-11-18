@@ -307,3 +307,23 @@ describe('0017 AC-022: Restricted Mode and reader windows change nothing', () =>
         expect(source).not.toMatch(/trust|isTrusted|reader|store/i);
     });
 });
+
+describe('0020 AC-007: copy(line) is the tree\'s way to the same feedback', () => {
+    it('puts the line on the clipboard and shows Copied, selecting nothing', async () => {
+        await ready(BLOCKED_ACTIVE);
+        await command.copy('/sdd-plan .specs/active/0020-thing.md');
+        expect(fakes.written).toEqual(['/sdd-plan .specs/active/0020-thing.md']);
+        expect(world.text()).toBe('$(check) Copied');
+        expect(fakes.warned).toEqual([]);
+        expect(fakes.calls).toEqual([]);
+    });
+
+    it('a failing clipboard shows Could not copy and the warning', async () => {
+        await ready(BLOCKED_ACTIVE);
+        fakes.failing = true;
+        await command.copy('/sdd-plan x');
+        expect(fakes.written).toEqual([]);
+        expect(world.text()).toBe('$(warning) Could not copy');
+        expect(fakes.warned).toEqual(['Could not copy to the clipboard.']);
+    });
+});
