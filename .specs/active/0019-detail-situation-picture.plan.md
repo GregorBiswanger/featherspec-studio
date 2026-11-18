@@ -617,7 +617,7 @@ Retargeted tests that kept their title are not listed. The PD register carries n
   stays `In Progress` until AC-022 round 2 and a fresh `/sdd-compile`.
 - **Next action:** the orchestrator re-runs AC-022 (all six harness runs and the keyboard walk at 800 px, Board and
   Overview: a card focused under the drawer scrolls clear; every Overview row, its next step, Copy and the figures
-  line stay visible left of the drawer), then `npm test` on Windows and CI at the fix head, a real window by Gregor
+  line stay visible left of the drawer), then `npm test` on Windows and CI at the fix head (done: green at `338a532`, the head of the UX round: Windows `npm test` 30+1+1+1, unit 2217 passed + 7 skipped + 13 timing, CI run 44287407889, and the host suite against the VSIX unpacked from `338a532`), a real window by Gregor
   (an ID opens the file beside the Studio at its line), then `/sdd-compile` in a fresh session.
 - **Open decisions:** none; P-1…P-19 stand, PD-066 records the Overview under the drawer. Left as a note, not fixed:
   `tidy` and `splitCells` in `ui/inlineFormat.ts` have no caller left (T-004 Note 4); the old Spec Explorer screenshot in
