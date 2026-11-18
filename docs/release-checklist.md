@@ -13,7 +13,7 @@ and the expected result. A clear miss reopens the named spec.
   `GregorBiswanger/featherspec-studio` first; vsce rewrites the README's relative links to that repository.
 - [ ] **Gallery banner, categories, keywords** in `package.json` read right to you.
 - [ ] **Host suite** green on Windows at the release commit: `npm test`. Repeat only if the head moved.
-- [ ] **Universal VSIX**: `npx @vscode/vsce ls` → only `dist/`, `media/` (icon, Activity Bar icon), `package.json`,
+- [ ] **Universal VSIX**: `npx @vscode/vsce ls` → only `dist/`, `media/` (icon, Activity Bar icon, the two tab icons), `package.json`,
   README, CHANGELOG, LICENSE; no `node_modules/`, no `.node` file.
 
 ## Trying the extension locally
@@ -30,6 +30,47 @@ and the expected result. A clear miss reopens the named spec.
   Reload Window* → the same project is active again (status bar entry names the current spec; the tooltip names the project and version), no question.
 - [ ] **AC-022 Restricted Mode**: open a project in a new window, choose "Don't Trust" → status bar entry with
   name and version, *Select Project* works, Output "FeatherSpec Studio" lists the folder as in a trusted window.
+
+## Shell (0005)
+
+- [ ] **AC-019 live theme switch**: panel on the Board with a spec selected; switch Dark Modern → Light
+  Modern → High Contrast → every part of the panel takes the new colours at once, all text readable.
+- [ ] **AC-019 / OP-012 Light High Contrast**: contrast borders on nav items, rows and state boxes; active
+  border on the current area and the selected row.
+- [ ] **AC-009 reload**: panel on Board with 0003 selected → *Reload Window* → panel returns on the
+  Board, the side panel still shows 0003 selected.
+- [ ] **AC-017 Restricted Mode**: note "This workspace is in Restricted Mode. Setting up FeatherSpec needs a trusted workspace."
+  above the area; trust the folder → the note disappears without reopening the panel.
+
+## Overview (0006, 0018)
+
+- [ ] **AC-021 / §9**: in High Contrast, Light and Dark every state and every reason under Problems reads as a
+  word (icon and colour only in addition); Now, Up next and Problems above the figures line, Activity collapsed below.
+- [ ] **AC-022**: Tab, Enter and Space only → every figure, row, the "+ n more" link, the Problems and
+  Activity headings and every activity entry shows a focus outline; Enter and Space each open the target area.
+- [ ] **OP-12 (AC-016, AC-024)**: on a real project with many specs the content shows within about 1 s of
+  opening and updates within about 0.5 s of saving a spec file.
+
+## Board (0007, 0018)
+
+- [ ] **AC-017 keyboard only**: Tab reaches the board, arrows move between cards, Enter or Space selects the
+  card and shows the side panel (0019), the next Tab reaches the card's Copy, Enter copies (0017: Shift+F10
+  opens no menu); the sort select works, a filter chip from an Overview drill-down clears with "Clear filters", every link of the detail works.
+- [ ] **AC-018 screen reader** (NVDA or Narrator): Copy on a card announces "Copied" (0016); the card
+  reads its next step (0017 replaced the move announcements).
+- [ ] **AC-026**: board and detail in Light, Dark and High Contrast — text readable, focus outline visible on
+  cards, buttons and links, long titles cut to two lines.
+
+## Visual design (0013)
+
+- [ ] **AC-017 taste**: the screenshots in `media/screenshots/` (or the real panel) are fit for a talk and the
+  Marketplace page — calm, dense, native VS Code look. `spec-detail-light.png` shows this repository's own specs
+  (internal criteria text, "Steps" counts of its own plans): keep it or retake it on `tip-splitter`.
+- [ ] **AC-018 real VS Code**: Dark Modern, Light Modern, Dark High Contrast plus one live switch → colours,
+  borders and focus outlines match the screenshots; nothing keeps the old theme.
+- [ ] **README screenshots**: `media/screenshots/overview-dark.png` and `board-dark.png` are harness
+  screenshots of the Overview and the Board taken at `77f585b` (Dark, 1400×900, two tabs, no selection); look
+  at them against the head and retake them if the layout changed since.
 
 ## Set up FeatherSpec (0014)
 
@@ -49,69 +90,13 @@ and the expected result. A clear miss reopens the named spec.
 
 - [ ] **AC-030 / M-1**: in a real VS Code window on `tip-splitter`: the Specs view lists the specs in its groups and the panel shows Overview and Board only; a spec's detail shows **Next step**, **Copy** puts the line on the clipboard and pasting it into the assistant's chat works; a Ready card's **Copy** puts the NS-7 line on the clipboard (0017); no command, setting or text offers to start an agent or a run.
 
-## The next step everywhere (0017)
-
-- [ ] **AC-026 / M-1**: on `tip-splitter`, Hands-On walkthrough with your assistant, task "start the Ready spec": the Start line copied from the card works with no failed attempt; on an Active spec `/sdd-plan`, then `continue` in the same chat runs one step; the status bar names the spec you work on and its click copies (`Copied` for 2 s); Dark, Light and High Contrast show the card line and the attention row readable; the card offers no way to move a spec.
-
 ## Honest signals (0016)
 
 - [ ] **AC-025 / M-1**: preview harness screenshots in Dark, Light and High Contrast show the primary **Copy** and its label change without shift, the need line on a Backlog card, the collapsed format-note toggle, the problem badge and the S2 sentence in the view and the panel; on `tip-splitter` no problem marker shows without a real problem.
 
-## Shell (0005)
+## The next step everywhere (0017)
 
-- [ ] **AC-019 live theme switch**: panel on the Board with a spec selected; switch Dark Modern → Light
-  Modern → High Contrast → every part of the panel takes the new colours at once, all text readable.
-- [ ] **AC-019 / OP-012 Light High Contrast**: contrast borders on nav items, rows and state boxes; active
-  border on the current area and the selected row.
-- [ ] **AC-009 reload**: panel on Board with 0003 selected → *Reload Window* → panel returns on the
-  Board, the side panel still shows 0003 selected.
-- [ ] **AC-017 Restricted Mode**: note "This workspace is in Restricted Mode. Setting up FeatherSpec needs a trusted workspace."
-  above the area; trust the folder → the note disappears without reopening the panel.
-
-## Overview (0006, 0018)
-
-- [ ] **AC-021 / §9**: in High Contrast, Light and Dark every state and attention reason reads as a
-  word (icon and colour only in addition); Now, Up next and Problems above the figures line, Activity collapsed below.
-- [ ] **AC-022**: Tab, Enter and Space only → every figure, row, the "+ n more" link, the Problems and
-  Activity headings and every activity entry shows a focus outline; Enter and Space each open the target area.
-- [ ] **OP-12 (AC-016, AC-024)**: on a real project with many specs the content shows within about 1 s of
-  opening and updates within about 0.5 s of saving a spec file.
-
-## Board (0007, 0018)
-
-- [ ] **AC-017 keyboard only**: Tab reaches the board, arrows move between cards, Enter or Space selects the
-  card and shows the side panel (0019), the next Tab reaches the card's Copy, Enter copies (0017: Shift+F10
-  opens no menu); filters, sort, "Clear filters", every link of the detail work.
-- [ ] **AC-018 screen reader** (NVDA or Narrator): Copy on a card announces "Copied" (0016); the card
-  reads its next step (0017 replaced the move announcements).
-- [ ] **AC-026**: board and detail in Light, Dark and High Contrast — text readable, focus outline visible on
-  cards, buttons and links, descriptions cut to two lines.
-
-## Visual design (0013)
-
-- [ ] **AC-017 taste**: the screenshots in `media/screenshots/` (or the real panel) are fit for a talk and the
-  Marketplace page — calm, dense, native VS Code look.
-- [ ] **AC-018 real VS Code**: Dark Modern, Light Modern, Dark High Contrast plus one live switch → colours,
-  borders and focus outlines match the screenshots; nothing keeps the old theme.
-- [ ] **0018 AC-015 board width**: at a 1240 px editor five wide columns and one strip fit without scrolling;
-  at 640 px two wide columns and four strips do (200 to 360 px per column, 32 px per strip).
-- [ ] **AC-015 Plan line**: an Overview whose Plan line is `[x](x)` shows the file name and the same target as
-  secondary text — accept the duplicate or not.
-
-## Go
-
-- [ ] **Repository visibility**: the Marketplace page loads the README screenshots from
-  `GregorBiswanger/featherspec-studio`. While the repository is private they do not show — make it public
-  before the publish, or accept a page without pictures.
-- [ ] **Trusted Publishing policy** (once): Marketplace publisher management → your publisher → *Trusted
-  Publishing* → *Create*: repository owner `GregorBiswanger`, repository `featherspec-studio`, workflow
-  `publish.yml`, no environment. For a private repository the workflow must run within 48 hours after that.
-  Azure DevOps tokens (PAT) stop working for publishing on 2026-12-01, so no token is used here.
-- [ ] **CHANGELOG date**: set the date of the 0.1.0 entry in CHANGELOG.md (`## [0.1.0] - Unreleased` becomes
-  `## [0.1.0] - <release day>`) and commit it before the publish.
-- [ ] All boxes ticked → Go → `gh workflow run publish.yml -f confirm=publish` (the workflow runs the unit
-  suite and `npx @vscode/vsce publish --oidc`). Alternative without the workflow: `npx @vscode/vsce package`
-  and upload the `.vsix` by hand on the publisher management page.
+- [ ] **AC-026 / M-1**: on `tip-splitter`, Hands-On walkthrough with your assistant, task "start the Ready spec": the Start line copied from the card works with no failed attempt; on an Active spec `/sdd-plan`, then `continue` in the same chat runs one step; the status bar names the spec you work on and its click copies (`Copied` for 2 s); Dark, Light and High Contrast show the card line and the Overview row readable; the card offers no way to move a spec.
 
 ## Overview and a compact Board (0018)
 
@@ -121,9 +106,8 @@ and the expected result. A clear miss reopens the named spec.
   columns as strips, a collapsed Done with its toggle and cards of three rows; everything fits without
   vertical scrolling for the fixture, text stays legible and the panel header's tooltip shows the version and
   the update time. Compare with the screenshots from the preview harness.
-- [ ] **README screenshots**: `media/screenshots/overview-dark.png` and `board-dark.png` are harness
-  screenshots of the Overview and the Board taken at `77f585b` (Dark, 1400×900, two tabs, no selection); look
-  at them against the head and retake them if the layout changed since.
+- [ ] **0018 AC-015 board width**: at a 1240 px editor five wide columns and one strip fit without scrolling;
+  at 640 px two wide columns and four strips do (200 to 360 px per column, 32 px per strip).
 
 ## The detail as a side panel (0019)
 
@@ -147,3 +131,18 @@ and the expected result. A clear miss reopens the named spec.
   Studio is the active tab.
 - [ ] **Keyboard and screen reader**: `FeatherSpec Studio: Focus on Specs View` reaches the view; arrow keys walk
   the rows, Enter selects, Shift+F10 opens a row's context menu with Open Spec, Open Plan and Copy Next Step; the screen reader reads a row as one sentence with the state and the next step.
+
+## Go
+
+- [ ] **Repository visibility**: the Marketplace page loads the README screenshots from
+  `GregorBiswanger/featherspec-studio`. While the repository is private they do not show — make it public
+  before the publish, or accept a page without pictures.
+- [ ] **Trusted Publishing policy** (once): Marketplace publisher management → your publisher → *Trusted
+  Publishing* → *Create*: repository owner `GregorBiswanger`, repository `featherspec-studio`, workflow
+  `publish.yml`, no environment. For a private repository the workflow must run within 48 hours after that.
+  Azure DevOps tokens (PAT) stop working for publishing on 2026-12-01, so no token is used here.
+- [ ] **CHANGELOG date**: set the date of the 0.1.0 entry in CHANGELOG.md (`## [0.1.0] - Unreleased` becomes
+  `## [0.1.0] - <release day>`) and commit it before the publish.
+- [ ] All boxes ticked → Go → `gh workflow run publish.yml -f confirm=publish` (the workflow runs the unit
+  suite and `npx @vscode/vsce publish --oidc`). Alternative without the workflow: `npx @vscode/vsce package`
+  and upload the `.vsix` by hand on the publisher management page.

@@ -340,6 +340,57 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         expect(go).toContain('set the date of the 0.1.0 entry in CHANGELOG.md');
     });
 
+    it('the release checklist runs in spec order, ends with Go and checks no UI that is gone', async () => {
+        const text = await read('docs/release-checklist.md');
+        const headings = text.match(/^## .*$/gm) ?? [];
+        expect(headings).toEqual([
+            '## Before publishing',
+            '## Trying the extension locally',
+            '## Discovery (0001)',
+            '## Shell (0005)',
+            '## Overview (0006, 0018)',
+            '## Board (0007, 0018)',
+            '## Visual design (0013)',
+            '## Set up FeatherSpec (0014)',
+            '## Focus on visibility (0015)',
+            '## Honest signals (0016)',
+            '## The next step everywhere (0017)',
+            '## Overview and a compact Board (0018)',
+            '## The detail as a side panel (0019)',
+            '## The native Specs tree (0020)',
+            '## Go',
+        ]);
+        for (const gone of ['Plan line', 'descriptions cut', 'attention row', 'attention reason', 'filters, sort']) {
+            expect(text, gone).not.toContain(gone);
+        }
+        expect(text).toContain('tab icons');
+        expect(text).toContain('`spec-detail-light.png` shows this repository');
+    });
+
+    it('every manual criterion of 0014 to 0020 keeps its checklist item', async () => {
+        const text = await read('docs/release-checklist.md');
+        const section = (title: string): string => {
+            const start = text.indexOf(`\n## ${title}\n`);
+            expect(start, title).toBeGreaterThan(-1);
+            const next = text.indexOf('\n## ', start + 1);
+            return text.slice(start, next === -1 ? undefined : next);
+        };
+        const items: Array<[string, string[]]> = [
+            ['Set up FeatherSpec (0014)', ['**M-1 look**', '**M-2 real release**', '**M-3 Restricted Mode**']],
+            ['Focus on visibility (0015)', ['**AC-030 / M-1**']],
+            ['Honest signals (0016)', ['**AC-025 / M-1**']],
+            ['The next step everywhere (0017)', ['**AC-026 / M-1**']],
+            ['Overview and a compact Board (0018)', ['**AC-031 / M-1**']],
+            ['The detail as a side panel (0019)', ['**AC-022**']],
+            ['The native Specs tree (0020)', ['**AC-022**', '**Keyboard and screen reader**']],
+        ];
+        for (const [title, marks] of items) {
+            for (const mark of marks) {
+                expect(section(title), `${title}: ${mark}`).toContain(mark);
+            }
+        }
+    });
+
     it('finds the first release section of a changelog and stops at the next one', () => {
         expect(firstRelease('# C\n\n## [1.0.0] - x\nA\n\n## [0.9.0] - y\nB\n')).toBe('## [1.0.0] - x\nA\n');
     });
