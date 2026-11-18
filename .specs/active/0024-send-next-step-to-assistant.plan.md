@@ -3,7 +3,7 @@
 **Spec:** [0024-send-next-step-to-assistant.md](0024-send-next-step-to-assistant.md)
 **Status:** Done
 **Last updated:** 2026-11-18
-**Current step:** T-019 (T-001…T-013 verified; manual AC-016 real window and AC-017…AC-019 open)
+**Current step:** T-020 (T-001…T-013 verified; manual AC-016 real window and AC-017…AC-019 open)
 
 ## Approach
 
@@ -659,7 +659,8 @@ copy (`git archive` of the head into `/tmp`).
   `*Amended by 0024 (PD-068): …*` note under 0019 AC-020; P-22 says `useFocusHandoff()` lives in `ui/focusHandoff.ts`.
   `docsScan.test.ts` first (the 0019 count of 0024 notes rises from 5 to 6).
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green
-- [ ] **Verified (T-019):**
+- [x] **Verified (T-019):** 2026-11-19 red: the new `docsScan.test.ts` test and the raised count (0019 carries 6 notes of 0024, was 5) against a `git archive` of 5c70dbd 2 failed (no §5 row, no note under 0019 AC-020, P-22 named `ui/popup.ts`); green after: `npx vitest run --project node src/adapters/node/docsScan.test.ts` 161 passed. Doc-only: no code gates.
+- **Notes:** the §5 row sits before the `0020 §4.3 Toolbar` row; the note is the line directly under 0019 AC-020, in the house format. The P-22 path was corrected in the commit that appended these steps (2bb1189), so the scan for it is green from this step on. The behaviour is unchanged and tested since T-011; only the paper trail was missing. 0024's own §5 count of rows is not stated anywhere a scan pins.
 
 ### T-020 — The 0021 test-title audit homes the `docsScan.test.ts` rename of 463899b
 

@@ -747,7 +747,7 @@ describe('product docs after 0024 (AC-015)', () => {
         ['.specs/active/0016-honest-signals.md', 2],
         ['.specs/active/0017-next-step-everywhere.md', 3],
         ['.specs/active/0018-overview-and-compact-board.md', 4],
-        ['.specs/active/0019-detail-situation-picture.md', 5],
+        ['.specs/active/0019-detail-situation-picture.md', 6],
         ['.specs/active/0020-native-spec-tree.md', 4],
         ['.specs/active/0021-next-step-intent-and-guidance.md', 12],
         ['.specs/active/0022-layout-and-signal-polish.md', 11],
@@ -886,6 +886,19 @@ describe('product docs after the final check of round 2 (0024 T-014 to T-022)', 
         const section = text.slice(start, text.indexOf('\n## ', start + 1));
         const line = section.split('\n').find((row) => row.includes('**AC-022**'));
         expect(line).toContain('*(preview harness, orchestrator, then Gregor in a real window; guideline 12)*');
+    });
+
+    it('0024 §5 lists 0019 AC-020, the note stands under it, and P-22 places useFocusHandoff in ui/focusHandoff.ts', async () => {
+        const spec = await read('.specs/active/0024-send-next-step-to-assistant.md');
+        expect(spec).toContain('| 0019 AC-020 — an offer change hands focus to the replacing Copy prompt (0024 AC-010) |');
+        const lines = (await read('.specs/active/0019-detail-situation-picture.md')).split('\n');
+        const at = lines.findIndex((line) => line.startsWith('- **AC-020**'));
+        expect(at).toBeGreaterThan(-1);
+        expect(lines[at + 1]).toContain('*Amended by 0024 (PD-068): AC-020 — ');
+        expect(lines[at + 1]).toContain('0024 AC-010');
+        const plan = await read('.specs/active/0024-send-next-step-to-assistant.plan.md');
+        expect(plan).toContain('`useFocusHandoff()` (`ui/focusHandoff.ts`)');
+        expect(plan).not.toContain('`useFocusHandoff()` (`ui/popup.ts`)');
     });
 
 });

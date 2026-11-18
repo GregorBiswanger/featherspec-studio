@@ -72,6 +72,7 @@ AC-010, AC-011, AC-019 "at most two filled buttons", AC-028; 0023 AC-010 "at mos
 | 0021 §6.6 paragraphs 3 and 4; AC-015 "each closing sentence" | 0024 §6.8 |
 | 0021 §6.6, AC-014 "opening one toggletip shall close any other" | It also closes 0024's menu; opening the menu closes the toggletip |
 | 0019 §6.1 *Close*, AC-003 "Escape while focus is inside the side panel" (as 0021 amended); 0022 G-4, AC-029 "Escape inside the detail (0021's toggletip excepted)" | Not while 0024's menu is open: that Escape closes only the menu |
+| 0019 AC-020 — an offer change hands focus to the replacing Copy prompt (0024 AC-010) | "keep focus on the same control where it still exists, else on its heading" holds, except that focus on a split button that an offer change removes moves to the Copy prompt that replaces it in the same place; no other row, card or way receives it |
 | 0020 §4.3 *Toolbar*; AC-011 `view/title` group `navigation` | Third: `featherspec-studio.openSettings` (0024 §6.7) |
 | 0017 AC-023; 0021 AC-017 (no writes) | Also every Send, menu item and Open Settings (0024 AC-012) |
 | 0013 AC-016; 0015 AC-027; 0016 AC-023; 0017 AC-024; 0018 AC-030; 0019 AC-023; 0020 AC-021; 0021 AC-020; 0022 AC-017; 0023 AC-016 (test audits) | Also except the tests 0024 AC-014 lists against a statement this table replaces |
