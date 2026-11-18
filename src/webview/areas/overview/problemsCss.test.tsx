@@ -40,6 +40,7 @@ async function open(): Promise<HTMLElement> {
     await send(shellEvent(baseView({ area: 'overview' }), 1));
     const view = sampleView();
     view.now = [{ spec: { stem: '0001-a', number: '0001', title: PROBLEMS.rows[0]!.spec.title, found: true }, state: 'Active', status: 'Active', problems: 0 }];
+    view.now[0]!.step = { short: '/sdd-plan', line: '/sdd-plan 0001', lines: [{ text: '/sdd-plan 0001' }] };
     view.problems = PROBLEMS;
     await send(overviewEvent(view));
     return mounted.container;
@@ -77,5 +78,37 @@ describe('0022 AC-003: a Problems row title is never cut at any width', () => {
             { selectors: ['.a'], body: 'color: green' },
         ];
         expect(effectiveValue(rules, element, 'color')).toBe('blue');
+    });
+});
+
+describe('0022 AC-001, §4.1: the step and its Copy are never cut in any container width', () => {
+    const CONTAINERS = [WIDE, 'ov-list (420px <= width <= 686px)', 'ov-list (width < 420px)'];
+    const CUTTING = [
+        ['white-space', 'nowrap'],
+        ['text-overflow', 'ellipsis'],
+        ['overflow', 'hidden'],
+    ] as const;
+
+    async function parts(): Promise<{ step: Element; copy: Element }> {
+        const container = await open();
+        const item = container.querySelector('.ov-now .ov-row-item')!;
+        return { step: item.querySelector('.step-text')!, copy: item.querySelector('.next-step-copy')! };
+    }
+
+    it.each(CONTAINERS.map((container) => [container]))('inside %s no rule that matches the step text or the Copy cuts, clamps or keeps it on one line', async (container) => {
+        const { step, copy } = await parts();
+        for (const element of [step, copy]) {
+            const rules = rulesMatching(css, element).filter((rule) => rule.container === container || rule.container === undefined);
+            for (const [property, cutting] of CUTTING) {
+                expect(effectiveValue(rules, element, property), `${element.className} ${property}`).not.toBe(cutting);
+            }
+        }
+    });
+
+    it('control: the same check sees the cut on the title of a Now row in the wide container', async () => {
+        const container = await open();
+        const title = container.querySelector('.ov-now .ov-row .ov-title')!;
+        const rules = rulesMatching(css, title).filter((rule) => rule.container === WIDE || rule.container === undefined);
+        expect(CUTTING.some(([property, cutting]) => effectiveValue(rules, title, property) === cutting)).toBe(true);
     });
 });

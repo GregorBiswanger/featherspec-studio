@@ -3,7 +3,7 @@
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-017
+**Current step:** T-018
 
 ## Approach
 
@@ -532,6 +532,14 @@ never on the repository.
 - **Verify:** `npx vitest run --project webview src/webview/detail/Divider.test.tsx`; mutant M39 on a scratch copy; gates 1–4
 - [x] **Verified (T-017):** 2026-11-18, gap test (code already right, so green at once): 17 passed. Negative control on a scratch copy of the working tree: M39 (`onLostPointerCapture={finish}` removed from `Divider.tsx`) red, 1 failed, 16 passed; unmutated green. Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2446 passed, 3 skipped (+13 timing).
 - **Notes:** M39 now dies.
+
+### T-018 — The widest Copy and the step are decided from the stylesheet (M51, M55)
+
+- **Covers:** AC-028 (the widest Copy fits the row content at an area of 360 px), AC-001 / §4.1 ("step and Copy never cut")
+- **Do:** `webviewCss.test.ts` AC-028: a new test reads `.copy-button`'s `min-width`, padding and border at its font size from the stylesheet and asserts it fits the row content at `AREA_MIN` (the old test keeps its hard-coded icon width). `problemsCss.test.tsx` new describe: in each of the three container conditions no rule that matches the real `.step-text` or the Now row's Copy gives `nowrap`, `ellipsis` or `overflow: hidden` (cascade by specificity and order); control on the title, which the wide container does cut.
+- **Verify:** `npx vitest run --project node src/adapters/node/webviewCss.test.ts` and `npx vitest run --project webview src/webview/areas/overview/problemsCss.test.tsx`; mutants M51, M55 on a scratch copy; gates 1–4
+- [x] **Verified (T-018):** 2026-11-18, gap tests (code already right, green at once): 80 and 7 passed. Mutants on a scratch copy of the working tree: M51 (`.copy-button { min-width: 60ch }`) red, `webviewCss.test.ts` 1 failed; M55 (`.ov-row .step-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }` in the wide container) red, `problemsCss.test.tsx` 1 failed; extra probe `.copy-button { overflow: hidden }` red, 3 failed (one per container); unmutated green. Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2451 passed, 3 skipped (+13 timing).
+- **Notes:** M51 and M55 now die. The Baseline test "0018 AC-006: a spec row stays on one line …" that carried this guarantee was replaced in T-007; this is its replacement (audit entry in T-022).
 
 ## Traceability
 

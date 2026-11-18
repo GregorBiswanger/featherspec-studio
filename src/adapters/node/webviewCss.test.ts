@@ -756,6 +756,25 @@ describe('0022 AC-001, AC-003, AC-027, AC-028: Overview rows follow the list wid
         expect(content).toBeGreaterThanOrEqual(copy);
         expect(SIDE_MIN).toBeLessThan(AREA_MIN);
     });
+
+    it('AC-028: the widest Copy is read from the stylesheet (.copy-button: its min-width, padding and border at 11 px) and fits the row content at an area of 360 px', () => {
+        const value = (selector: string, property: string) => {
+            const found = declarations(css).filter((declaration) => declaration.selectors.includes(selector) && declaration.property === property && declaration.container === undefined && declaration.media === undefined);
+            return found[found.length - 1]!.value;
+        };
+        const px = (text: string) => Number(/(-?\d+(?:\.\d+)?)px/.exec(text)![1]);
+        const ch = (text: string) => Number(/(\d+(?:\.\d+)?)ch/.exec(text)![1]);
+        const fontSize = px(value('.copy-button', 'font-size'));
+        const copy = ch(value('.copy-button', 'min-width')) * 0.6 * fontSize + px(value('.copy-button', 'padding').split(/\s+/)[1]!) * 2 + px(value('.copy-button', 'border')) * 2;
+        const areaPadding = px(value('.area-content', 'padding').split(/\s+/)[1]!) * 2;
+        const panelPadding = px(value('.ov-panel', 'padding').split(/\s+/)[1]!) * 2;
+        const panelBorder = px(value('.ov-panel', 'border')) * 2;
+        const listMargin = -px(value('.ov-list', 'margin').split(/\s+/)[1]!) * 2;
+        const rowPadding = px(value('.ov-row', 'padding').split(/\s+/)[1]!) * 2;
+        const content = AREA_MIN - areaPadding - panelPadding - panelBorder + listMargin - rowPadding;
+        expect(copy).toBeGreaterThan(100);
+        expect(content).toBeGreaterThanOrEqual(copy);
+    });
 });
 
 describe('0022 AC-015, §7 g: a segment without a separator wider than its whole line breaks inside', () => {
