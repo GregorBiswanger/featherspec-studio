@@ -37,7 +37,7 @@ afterEach(() => {
 
 const SYNTHETIC: AreaInfo = { id: 'board', title: 'Synthetic area', purpose: 'A purpose for a placeholder test.', placeholder: true };
 
-describe('0020 AC-010: a shell event reaches the DOM', () => {
+describe('0005 AC-010 (PD-047): a shell event with a notice reaches the DOM', () => {
     it('a new shell event with a notice is in the DOM within 500 ms of the message event (PD-047)', async () => {
         const container = await open(baseView({ area: 'overview' }));
         let version = 1;

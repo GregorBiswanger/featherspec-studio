@@ -71,7 +71,6 @@ describe('0018 AC-002: remembered state of earlier versions', () => {
         current.service.open({ via: 'start' });
         expect(current.service.view().area).toBe('overview');
         expect(current.service.view().selection).toBeUndefined();
-        expect(current.service.view().selection).toBeUndefined();
     });
 
     it('control: the remembered area board keeps its selection', async () => {
@@ -87,11 +86,16 @@ describe('AC-008, AC-009: selection', () => {
         const current = await ready();
         await current.service.handlers.select({ stem: '0003-x' });
         expect(current.service.view().selection).toEqual({ stem: '0003-x', number: '0003' });
-        expect(current.service.view().selection?.stem).toBe('0003-x');
         await current.service.handlers.navigate({ area: 'board' });
         await current.service.handlers.navigate({ area: 'overview' });
         expect(current.service.view().selection?.stem).toBe('0003-x');
-        expect(current.service.view().selection?.stem).toBe('0003-x');
+    });
+
+    it('0020 AC-016: the view the service builds carries no spec rows, with a selection and without', async () => {
+        const current = await ready();
+        expect('rows' in current.service.view()).toBe(false);
+        await current.service.handlers.select({ stem: '0003-x' });
+        expect('rows' in current.service.view()).toBe(false);
     });
 
     it('0019 AC-003: clearSelection removes the selection, the marked row and the remembered value, and keeps the area', async () => {
@@ -112,7 +116,6 @@ describe('AC-008, AC-009: selection', () => {
         const second = current.restart();
         expect(second.view().selection?.stem).toBe('0003-x');
     });
-
 
     it('selecting a stem that is not in the project keeps the selection and shows the notice (control: a known stem has none)', async () => {
         const current = await ready();

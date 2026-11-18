@@ -172,11 +172,20 @@ describe('0020: the Specs view adapter', () => {
         expect(twin).toEqual({ command: 'featherspec-studio.selectSpec', title: 'Select Spec', arguments: [{ stem: '0004-r', path: '.specs/active/0004-r.md' }] });
     });
 
-    it('AC-012: an action row keeps its command, a group and a spec row have no icon colour of an action', () => {
-        createStudioTree(fakeService({ message: 'x', items: [{ kind: 'action', label: 'Retry', action: 'retry', icon: 'play' }] }));
-        const [action] = providerOf().getChildren() as Array<Record<string, unknown>>;
-        expect(providerOf().getTreeItem(action)).toMatchObject({ label: 'Retry', command: { command: 'featherspec-studio.shellAction', arguments: ['retry'] } });
+    it('AC-012: an action row keeps its command and an icon without colour; a group has no command and no icon; a spec row runs Select Spec, not the shell action', () => {
+        createStudioTree(fakeService({ message: undefined, items: [{ kind: 'action', label: 'Retry', action: 'retry', icon: 'play' }, WITH_ROWS.items[0]!] }));
+        const [action, group] = providerOf().getChildren() as Array<Record<string, unknown>>;
+        const actionItem = providerOf().getTreeItem(action) as Record<string, unknown> & { iconPath: { id: string; color: unknown } };
+        expect(actionItem).toMatchObject({ label: 'Retry', command: { command: 'featherspec-studio.shellAction', arguments: ['retry'] } });
+        expect(actionItem.iconPath.id).toBe('play');
+        expect(actionItem.iconPath.color).toBeUndefined();
         expect(providerOf().getChildren(action)).toEqual([]);
+        const groupItem = providerOf().getTreeItem(group);
+        expect(groupItem.command).toBeUndefined();
+        expect(groupItem.iconPath).toBeUndefined();
+        const rowItem = providerOf().getTreeItem(ROW) as { command: { command: string }; iconPath: { color: unknown } };
+        expect(rowItem.command.command).toBe('featherspec-studio.selectSpec');
+        expect(rowItem.iconPath.color).toBeDefined();
     });
 
     it('AC-010, AC-011, AC-012: the view shows the message, the badge and the description of the model, and sets the S2 context', () => {

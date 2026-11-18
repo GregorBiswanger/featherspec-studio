@@ -403,8 +403,8 @@ and the host smoke, so they stay `→`.
 - **Covers:** AC-010 (retitle), AC-016, AC-012, AC-021 (audit home)
 - **Do:** `src/webview/areas/areas.timing.test.tsx:40` "0020 AC-010: a shell event reaches the DOM" times 0005's notice (PD-047): retitle it, and home the old title in the audit (T-015). `messages.test.ts:125` `expect('rows' in view).toBe(false)` asserts the test's own literal: assert on the view the code built, or drop it. `studioTree.test.ts` "AC-012: an action row keeps its command, a group and a spec row have no icon colour of an action" asserts the action row only: assert the group and the spec row too. `shellService.navigation.test.ts`: remove the two duplicated assertion lines. A mutant per changed test must die where the test claims to decide something.
 - **Verify:** the three files green; a mutant per decided claim red; gates 1–4
-- [ ] **Verified (T-012):**
-- **Notes:**
+- [x] **Verified (T-012):** 2026-11-18: studioTree.test.ts, shellService.navigation.test.ts, messages.test.ts (node) and areas.timing.test.tsx (timing-webview) green (73 + 1); mutants on a scratch copy of HEAD: a group with an icon, an action icon with a colour, a spec row with the shell-action command (1, 1, 2 failed in studioTree.test.ts) and `rows: []` back in the view (shellService.navigation.test.ts, 1 failed); gates 1-4 green, unit 2222 passed + 3 skipped, timing 13.
+- **Notes:** F2: the timing describe is now '0005 AC-010 (PD-047): a shell event with a notice reaches the DOM'; the old title '0020 AC-010: a shell event reaches the DOM' (new in 0020, never at the Baseline) is homed in the audit in T-015. F3: the `'rows' in view` line of messages.test.ts asserted the test's own literal and is gone; its claim is decided by a new test on the view the ShellService builds (with and without a selection); the studioTree test asserts the action row, the group and the spec row; shellService.navigation.test.ts lost its two duplicated assertion lines (one more redundant line after a toEqual) and a double blank line. No code change, nothing deleted.
 
 ### T-013 — Leftovers of the removal go (compile F4)
 

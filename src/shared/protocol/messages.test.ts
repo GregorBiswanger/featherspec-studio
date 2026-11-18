@@ -122,7 +122,6 @@ describe('host messages: guards accept and reject', () => {
         expect(isShellEventPayload({ view })).toBe(true);
         expect(isShellEventPayload({})).toBe(false);
         expect(isShellView({ ...view, area: 'x' })).toBe(false);
-        expect('rows' in view).toBe(false);
         expect(isShellView({ ...view, restricted: 'no' })).toBe(false);
         expect(isShellView({ ...view, state: { id: 'S42' } })).toBe(false);
         expect(isShellView({ ...view, notice: { number: 3 } })).toBe(false);
