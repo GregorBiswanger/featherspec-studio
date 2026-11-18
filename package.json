@@ -50,6 +50,32 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "FeatherSpec Studio",
+      "properties": {
+        "featherspec-studio.showStepTips": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the session and model tip under the next step and the ? button that explains it."
+        },
+        "featherspec-studio.modelHints": {
+          "type": "object",
+          "default": {},
+          "description": "Names of your own models, shown in the tip. The Studio names no model itself.",
+          "properties": {
+            "strong": {
+              "type": "string",
+              "description": "Your strong model: for specify, clarify, writing a plan, compile and finding a block."
+            },
+            "fast": {
+              "type": "string",
+              "description": "Your fast model: for one plan step, a plan report, lifecycle moves and the workflow overview."
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
     "commands": [
       {
         "command": "featherspec-studio.open",

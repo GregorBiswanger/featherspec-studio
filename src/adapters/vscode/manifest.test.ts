@@ -25,12 +25,7 @@ interface Manifest {
             'view/title'?: { command: string; when?: string; group?: string }[];
             'view/item/context'?: { command: string; when?: string; group?: string }[];
         };
-        configuration?: {
-            properties?: Record<
-                string,
-                { type?: string; default?: unknown; minimum?: number; scope?: string; description?: string; enum?: string[]; enumDescriptions?: string[] }
-            >;
-        };
+        configuration?: unknown;
     };
 }
 
@@ -208,13 +203,38 @@ describe('extension manifest', () => {
         expect(['FeatherSpec Studio: Open Agent Center', 'FeatherSpec Studio: Clear Run History', 'FeatherSpec Studio: Stop Run', 'FeatherSpec Studio: Resume Run'].filter((title) => /Agent|Run History|Stop Run|Resume Run/.test(title))).toHaveLength(4);
     });
 
-    it('AC-015 (0015): declares no configuration property', () => {
-        expect(manifest.contributes?.configuration).toBeUndefined();
+    it('0021 AC-016: contributes the configuration FeatherSpec Studio with exactly the two settings, their types, defaults, properties and descriptions', () => {
+        const configuration = manifest.contributes?.configuration;
+        expect(configuration).toEqual({
+            title: 'FeatherSpec Studio',
+            properties: {
+                'featherspec-studio.showStepTips': {
+                    type: 'boolean',
+                    default: true,
+                    description: 'Show the session and model tip under the next step and the ? button that explains it.',
+                },
+                'featherspec-studio.modelHints': {
+                    type: 'object',
+                    default: {},
+                    description: 'Names of your own models, shown in the tip. The Studio names no model itself.',
+                    properties: {
+                        strong: { type: 'string', description: 'Your strong model: for specify, clarify, writing a plan, compile and finding a block.' },
+                        fast: { type: 'string', description: 'Your fast model: for one plan step, a plan report, lifecycle moves and the workflow overview.' },
+                    },
+                    additionalProperties: false,
+                },
+            },
+        });
     });
 
-    it('AC-015 (0015): negative control, a manifest with a configuration would be found', () => {
-        const withConfiguration: Manifest = { contributes: { configuration: { properties: {} } } };
-        expect(withConfiguration.contributes?.configuration).toBeDefined();
+    it('0021 AC-016: negative control, a third key, a Markdown description or a scope would be found', () => {
+        const properties = (manifest.contributes?.configuration as { properties?: Record<string, unknown> } | undefined)?.properties ?? {};
+        expect(Object.keys(properties)).toEqual(['featherspec-studio.showStepTips', 'featherspec-studio.modelHints']);
+        expect(JSON.stringify(properties)).not.toContain('markdownDescription');
+        expect(JSON.stringify(properties)).not.toContain('"scope"');
+        const extended = { ...properties, 'featherspec-studio.other': { type: 'string' } };
+        expect(Object.keys(extended)).not.toEqual(Object.keys(properties));
+        expect(JSON.stringify({ x: { markdownDescription: 'a' } })).toContain('markdownDescription');
     });
 
     it('AC-016 (0015): the description reads as the product text and names no agent or Copilot; the keywords drop agents, ai agents and github copilot', () => {

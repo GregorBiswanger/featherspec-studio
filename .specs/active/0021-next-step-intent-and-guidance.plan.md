@@ -260,8 +260,8 @@ ends of stages 1 and 3.
   `settingsSource.test.ts` (fake `SettingPort`s: read parses fresh, a change of either key notifies, dispose stops).
 - **Verify:** `npx vitest run --project node src/adapters/vscode/manifest.test.ts src/core/settings` red (stub), then
   green; gates 1–5
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-18 · red: `npx vitest run --project node src/adapters/vscode/manifest.test.ts src/core/settings` 11 failed (stub `Not implemented`, no configuration in the manifest) → green: same files 39 passed; full `npx vitest run --project node --project webview` 2516 passed, 3 skipped; eslint 0 warnings, both `tsc` clean, `npm run compile` clean.
+- **Notes:** Run after T-003. `settingsSource.ts` takes a list of ports and a `parse(values)` function (generic, reusable for 0024's `assistant`); `stepTipSettings.ts` exports the two key names the adapter in T-006 reads. Hint length counts code points. The manifest test's `Manifest` type now types `configuration` as `unknown` and the checks read it structurally. `npm run compile-tests` is run with the T-006 gate (no host test changed here).
 
 ### T-005 — The detail and the first Now row show the coach line
 
