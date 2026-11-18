@@ -235,7 +235,7 @@ describe('0018 AC-001, AC-029: the old names and texts are gone from the sources
         expect(found.filter((entry) => !MARKER_ALLOWED.some((name) => entry === `${name}: ▸`))).toEqual([]);
     });
 
-    it('the one marker left is the selected row of the Spec Explorer list (0007 AC-023), not the navigation', async () => {
+    it('the one marker left is the selected row of the Spec Explorer list (0005 AC-023), not the navigation', async () => {
         const files = (await sourceFiles()).filter((file) => !isTestFile(file.name));
         expect(files.filter((file) => file.text.includes('▸')).map((file) => file.name)).toEqual(MARKER_ALLOWED);
     });

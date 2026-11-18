@@ -158,6 +158,7 @@ compiles). Pre-done gate on Windows and CI: `npm test`.
 2. T-002 → T-003 → T-004 — the Overview: Now and Up next; Problems and the figures line; Activity
 3. T-005 → T-006 → T-007 — the Board: strips, widths, chip; Done remembered; three-row card and date
 4. T-008 → T-009 — §5 notes, docs, scans; test-title audit, sync, final gates
+5. T-010 → T-011 → T-012 → T-013 → T-014 — fixes from the compile S44 (appended 2026-11-18): Refresh after a failed discovery, strip count, test gaps, narrow Overview rows, spec and plan corrections
 
 No parallel stage: the Overview and Board steps share `messages.ts`, `client.ts`, `studioPanel.ts`,
 `extension.ts`, `texts.ts`, `main.css` and their tests (`webviewCss`, `userLanguage`,
@@ -355,7 +356,7 @@ No parallel stage: the Overview and Board steps share `messages.ts`, `client.ts`
   `Open Board` and `Refresh` under *Unreleased*; each §5 spec carries a 0018 note; negative control.
 - **Verify:** `npx vitest run src/adapters/node/sourceScan.test.ts src/adapters/node/docsScan.test.ts` red, then green; gates 1–4
 - [x] **Verified (T-008):** 2026-11-18: the scans written with the docs in one pass, no separate red run (`sourceScan.test.ts` "0018 AC-001, AC-029" with negative control; `docsScan.test.ts` "product docs after 0018": README, release checklist, design brief and `package.json` free of both old names, CHANGELOG *Unreleased* names `Open Overview`, `Open Board`, `FeatherSpec Studio: Refresh`, nine specs carry the 0018 note, seven carry the catch-all note in their head, PD-064 exists). `npm run test:unit` 1981 passed, 3 skipped, timing 12 passed; eslint and both `tsc` clean.
-- **Notes:** Notes were added by a throwaway script (`/tmp/amend/amend.py`): a head note per spec listing the §5 statements that are not acceptance criteria, an inline note after each acceptance criterion §5 names (0001 has only the head note: its §9 command row has no AC). The catch-all note sits in the head of 0003, 0005, 0006, 0007, 0013, 0015, 0016 (0017's own catch-all is not needed: it names no area as a place beyond the AC-012 rows). The scan allows one `▸`: the selected row of the Spec Explorer list (`SpecExplorer.tsx`, 0007 AC-023, a staying test that §5 does not amend; 0020's tree replaces it); a test pins that file as the only one. Hyphenated names (`mission-control-dark.png`) are not matched by the docs scan (P-15 keeps the screenshot files). The README tour, release checklist (new section for AC-031 and the screenshot replacement) and design brief headings name Overview and Board; the old design-brief text stays as history under a note.
+- **Notes:** Notes were added by a throwaway script (`/tmp/amend/amend.py`): a head note per spec listing the §5 statements that are not acceptance criteria, an inline note after each acceptance criterion §5 names (0001 has only the head note: its §9 command row has no AC). The catch-all note sits in the head of 0003, 0005, 0006, 0007, 0013, 0015, 0016 (0017's own catch-all is not needed: it names no area as a place beyond the AC-012 rows). The scan allows one `▸`: the selected row of the Spec Explorer list (`SpecExplorer.tsx`, 0005 AC-023 — first written as "0007 AC-023", corrected in T-014 — a staying test that §5 did not amend; 0020's tree replaces it; since T-014 the spec's AC-029 names the exception); a test pins that file as the only one. Hyphenated names (`mission-control-dark.png`) are not matched by the docs scan (P-15 keeps the screenshot files). The README tour, release checklist (new section for AC-031 and the screenshot replacement) and design brief headings name Overview and Board; the old design-brief text stays as history under a note.
 
 ### T-009 — Test-title audit, architecture and Memory Bank sync, final gates
 
@@ -378,8 +379,48 @@ No parallel stage: the Overview and Board steps share `messages.ts`, `client.ts`
   the host reset with the last listener, Done in `workspaceState`, card date from the plan line,
   flexbox widths), `activeContext.md`. Final gates.
 - **Verify:** audit counts in the plan; `npx vitest run src/adapters/node/docsScan.test.ts` red, then green; gates 1–5; `npm run compile-tests`; `npm test` on Windows and CI (pre-done gate, Gregor)
-- [ ] **Verified (T-009):** —
-- **Notes:** —
+- [x] **Verified (T-009):** 2026-11-18, re-checked in the fix session S45 (the box had stayed open with an empty `Verified:` while the plan said Done; the compile S44 named it). Claims re-checked against the repository: the audit table below exists (its two errors are corrected in T-014); `docsScan.test.ts` "`.architecture/*.md` name neither old area" and the "product docs after 0018" block exist and pass; the snapshot in `AGENTS.md` reads `last reconciled: 2026-11-18 (0018)` and names `overview 0006, 0018`; `techContext.md`, `systemPatterns.md`, `activeContext.md` carry the 0018 entries (`activeContext.md` 45 lines). The red run of the `.architecture` scan before the docs were fixed was not recorded at the time; the scan was seen red against its mutants in S44 (R4, R5 killed). Gates at `dc0077a` in the sandbox (S44 re-run): eslint, both `tsc`, `compile`, `compile-tests` exit 0; `npm run test:unit` 1983 passed, 3 skipped, timing 12 passed. Gregor's Windows 11 machine at `dc0077a` (2026-11-18): `npm run test:unit` 1979 passed, 7 skipped, 12 timing passed; `npm test` 26 + 1 + 1 + 1 passing. GitHub Actions run 44246134800 at `dc0077a`: ubuntu-latest and windows-latest green.
+- **Notes:** The fix head (T-010…T-014) changes product code (`shellService.ts`, `filters.ts`, `Column.tsx`, `main.css`): Windows and CI need a re-run at the fix head (orchestrator).
+
+### T-010 — Compile fix D1: Refresh after a failed discovery re-reads no spec
+
+- **Covers:** AC-027 (spec §8 "Discovery fails during Refresh → 0005's panel state, no re-read")
+- **Do:** `shellService.refresh()` re-reads only when discovery left an active project and no `failure`. Test first in `shellService.test.ts`: the command, the panel Refresh and Retry after a failing discovery re-read nothing and the state stays S5; a later working Refresh re-reads once (control).
+- **Verify:** `npx vitest run src/core/shell` red, then green; gates 1–5
+- [x] **Verified (T-010):** 2026-11-18: the new test `0018 AC-027, §8: a discovery that fails during Refresh leaves the panel state S5 and re-reads no spec, …` red against the code of `dc0077a` (`expected 3 to be +0`: three re-reads for the command, Refresh and Retry), then green after the change; `npx vitest run src/core/shell` 135 passed.
+- **Notes:** Proxy (PD-065): the orchestrator decided D1 as a code fix, the spec's §8 stays as written. The existing "Retry reruns discovery … and recovers" test stays green: a Retry whose discovery works again re-reads once.
+
+### T-011 — Compile fix D3: a strip's count is the cards it holds
+
+- **Covers:** AC-014 (B-1)
+- **Do:** `arrangeBoard` keeps `count` = the cards shown (0 on a strip a filter emptied); `Column.tsx` names `column.hidden` in the strip's tooltip and accessible name (`<State>: <n> hidden by filter`, §7 unchanged). Spec B-1 and AC-014 amended. Tests first: `filters.test.ts` (filtered strips read 0, `hidden` carries the number), `boardService.test.ts` (Done under a filter), `SpecBoard.test.tsx` (count badge `0`, text names 3).
+- **Verify:** `npx vitest run src/core/board src/webview/board` red, then green; gates 1–5
+- [x] **Verified (T-011):** 2026-11-18: with the tests changed first, 5 tests red (`filters.test.ts` ×3, `boardService.test.ts` ×1, `SpecBoard.test.tsx` ×1: filtered strips still counted their hidden cards); green after the change, `npx vitest run src/core/board src/webview` 509 passed.
+- **Notes:** Proxy (PD-065): rule B-1 holds as written. The wording stays "hidden by filter" (§7 literal) instead of "hidden by the filter". T-005's note "`count` is … the hidden cards on a `filtered` strip" is superseded.
+
+### T-012 — Compile fix: close the test gaps
+
+- **Covers:** AC-005 (boundary), AC-007 (duplicated stem), 0006 AC-010 (no show-more control), AC-021 (L-1 newer of the two times)
+- **Do:** `rows.test.ts` four entries give "more" 1 and three give 0; `Sections.test.tsx` "+ 1 more" renders and sends the request, and the open Activity list has only the heading toggle and one button per entry and no "more"; `Drilldown.test.tsx` fixture holds the stem `0004-dup` in two Problems rows (the Tab-order list gains one entry); `lastChange.test.ts` a spec newer than its plan gives the spec day. Each seen red against its mutant, restored after.
+- **Verify:** `npx vitest run src/core/overview src/webview/areas/overview src/core/board/lastChange.test.ts`, each mutant red
+- [x] **Verified (T-012):** 2026-11-18: the new or tightened tests are green at the code of `dc0077a` and red against their mutants: O7a (`more` = length − 4) → 2 red in `rows.test.ts`; O7b (`more <= 1` hides the line) → 1 red in `Sections.test.tsx`; D4 (Problems stems without the de-duplication) → 1 red in `Drilldown.test.tsx` (it stayed green before the fixture held the stem twice); O20b (a "Show more" button in an open Activity, with and without `data-drill`) → 1 red each in `Sections.test.tsx`; T4 (`planMs ?? specMs` instead of the newer time) → 1 red in `lastChange.test.ts`. Every mutant restored; `git diff` shows none.
+- **Notes:** Rows 49 and 91 of the audit are corrected in T-014. The `Drilldown.test.tsx` keyboard list test names the second `row:problems:0004-dup` (the id is by stem).
+
+### T-013 — Compile fix V1: Overview rows wrap at 720 px or less
+
+- **Covers:** AC-006, AC-031 (defect V1 of the orchestrator's preview check: at 640 px the rows cut the title and the state)
+- **Do:** `main.css` `@media (max-width: 720px)`: `.ov-row` wraps (`flex-wrap`, `white-space: normal`), the title takes `flex: 1 1 calc(100% - 4em)` so the state, the step and Copy fall to line 2 (Copy bottom-aligned by `.ov-row-item { align-items: flex-end }`), title and state wrap and are not cut. Spec O-5, AC-006 and AC-031 amended (PD-065). Guard tests first in `webviewCss.test.ts`: the narrow rules and a control that the wide rules sit outside every media query.
+- **Verify:** `npx vitest run src/adapters/node/webviewCss.test.ts` red, then green, three mutants red; gates 1–5
+- [x] **Verified (T-013):** 2026-11-18: `0018 AC-006 (V1): at 720 px or less a spec row wraps to two lines, …` red against the stylesheet of `dc0077a` (no media rule), green after the change (the control test was green throughout); mutants: no `flex-wrap`, a kept `text-overflow: ellipsis` on the state, threshold 600 px, each 1 red, restored. `npm run test:unit` 1989 passed, 3 skipped, timing 12 passed. A throwaway page (`/tmp/v1`, three sample rows, the real `main.css`) in headless Chrome at 640 px showed line 1 number and title (wrapping), line 2 state and "Next …", Copy at the right of the last line; at 1000 px one line. That page lacks the real theme, so the check after the fix is the orchestrator's in the preview harness.
+- **Notes:** A very long Problems reason pushes the step to a third line at 640 px; the state stays readable. `.step-text` keeps `margin-left: auto`.
+
+### T-014 — Compile fix: spec and plan corrections, evidence, PD-065
+
+- **Covers:** AC-029 (D2), AC-030, AC-031; plan hole of T-009
+- **Do:** Spec AC-029 excepts the selected-row marker of `src/webview/areas/SpecExplorer.tsx` (0005 AC-023) until 0020; the plan's citation "0007 AC-023" corrected; `sourceScan.test.ts` title names 0005. PD-065 records the decisions D1, D2, D3, V1 and the T-009 rule. T-009 ticked with its evidence; audit rows 49, 75, 91 and the describe count corrected; evidence of 2026-11-18 (Windows 11 and CI at `dc0077a`, AC-031) recorded; traceability and handoff updated.
+- **Verify:** `npx vitest run src/adapters/node/sourceScan.test.ts src/adapters/node/docsScan.test.ts`; gates 1–5, `compile-tests`
+- [x] **Verified (T-014):** 2026-11-18: `npx vitest run src/adapters/node` green (`sourceScan.test.ts` only retitled to cite 0005; its pin of `SpecExplorer.tsx` and its negative control are unchanged); gates 1–5 and `compile-tests` exit 0 at the end of the session: eslint, both `tsc`, `npm run test:unit` 1989 passed, 3 skipped, timing 12 passed (`dc0077a`: 1983; +6 = T-010 ×1, T-012 ×3, T-013 ×2), `compile`, `compile-tests`.
+- **Notes:** Proxy decisions of the orchestrator for Gregor, recorded in PD-065 (new row; PD-064 is not edited). The fix steps were committed code first (T-010…T-013), the plan, spec, PD and Memory Bank edits in one commit with T-014.
 
 ## Test-title audit
 
@@ -392,7 +433,7 @@ AC-030, from a throwaway script outside the repo (`/tmp/audit-0018/titles.py`, 2
   `it.each` expands: `npm run test:unit` at the Baseline 1,875 passed, at the head 1,983 passed, both
   with 3 skipped; the timing projects pass 12 at both).
 - Absent at the head: 99 test titles, every one listed below with the criterion §5 voids or the head
-  title that replaces it. No title is absent without a row. 25 `describe` group titles also changed:
+  title that replaces it. No title is absent without a row (corrected by T-014: row 75 was no test and the real 99th is the host suite title, now row 75; rows 49 and 91 had lost assertions, restored in T-012). 24 `describe` group titles also changed:
   they name the removed tiles, header and attention list or carry the old area names; each held only
   tests listed below.
 - Kept unchanged by title: all of 0006's drill-down tests that §5 maps (the total, the state counts,
@@ -450,7 +491,7 @@ AC-030, from a throwaway script outside the repo (`/tmp/audit-0018/titles.py`, 2
 | 46 | AC-024: blocked lines, the readiness line, the Deprecated marker, the diagnostic badge and a duplicated path show as text | `webview/board/SpecBoard.test.tsx` | renamed: head `AC-024: blocked lines, the Deprecated marker, the Problems badge and a duplicated path show as text`; the need is in `AC-019: a Backlog card shows its first need …` |
 | 47 | AC-025: Ready, Review and Blocked carry their rule ID, the other states carry none | `core/missionControl/specFigures.test.ts` | voided by 0018 §5 (0006 AC-025); the rule moves to the column header: head `AC-020: the Ready, Review and Blocked headers carry the sentence and the rule text …`; `0018 AC-003: the figures name no rule …` |
 | 48 | AC-025: a card takes the newer modification time of the spec and its plan | `core/board/progress.test.ts` | replaced: head `AC-021: a card takes the date of L-1 from the spec, its plan and the plan's Last updated line` (0007 AC-025 → 0018 §6.3) |
-| 49 | AC-025: the newer of the times, one time alone, or none | `core/board/progress.test.ts` | replaced: head `lastChange.test.ts` — `uses the spec file time alone when there is no plan, and nothing when no time is known` and `the plan's Last updated line wins …` (0007 AC-025 → 0018 §6.3) |
+| 49 | AC-025: the newer of the times, one time alone, or none | `core/board/progress.test.ts` | replaced: head `lastChange.test.ts` — `uses the spec file time alone when there is no plan, and nothing when no time is known`, `the plan's Last updated line wins …` and, restored in T-012 (the compile S44 found "the newer of spec and plan" untested, mutant T4), `the newer of the two file times decides: a spec newer than its plan gives the spec day, a plan newer than its spec the plan day` (0007 AC-025 → 0018 §6.3) |
 | 50 | AC-029 (0005): contributes "FeatherSpec Studio: Rescan Project"; the internal action command stays out of the palette | `adapters/vscode/manifest.test.ts` | voided by 0018 §5 (0005 AC-029: Rescan Project → Refresh); head `0018 AC-001: contributes exactly the commands of the spec with their titles …` |
 | 51 | AC-029: the Rescan command runs while a project is active and changes no file | `test/shell.smoke.test.ts` | replaced: head `0018 AC-027: the Refresh command runs while a project is active and changes no file` (0005 AC-029, §5) |
 | 52 | Copy by pointer, Enter and Space posts copyText only, shows Copied at that Copy and sends no navigation request | `webview/areas/missionControl/Sections.test.tsx` | retargeted to Now rows (0017 AC-012 amended): head `Copy sits outside the row button, is the next Tab stop after it, and posts copyText only` |
@@ -476,7 +517,7 @@ AC-030, from a throwaway script outside the repo (`/tmp/audit-0018/titles.py`, 2
 | 72 | an empty list keeps its heading and says that nothing needs attention | `webview/areas/missionControl/Sections.test.tsx` | voided by 0018 §5/§7 ("Nothing needs attention." removed; Problems shows only while it lists something) |
 | 73 | calls nothing while no project is active | `core/shell/shellService.test.ts` | voided by 0018 §5 (0005 OP-009 Rescan Project; 0001 §9 Refresh Project Discovery); head `runs discovery only while no project is active` (0018 AC-027) |
 | 74 | calls the repository rescan once while a project is active | `core/shell/shellService.test.ts` | voided by 0018 §5 (Rescan Project is gone); head `0018 AC-027` command test: discovery once, then the re-read once while a project is active |
-| 75 | const label = "Spec Board"; | `adapters/node/webviewCss.test.ts` | renamed text of a planted CSS sample: head `const label = "Board";` |
+| 75 | FeatherSpec Studio Mission Control smoke | `test/missionControl.smoke.test.ts` | renamed suite: head `FeatherSpec Studio Overview smoke` in `test/overview.smoke.test.ts`, its three tests present (host suite, CI and Windows only). The earlier row 75, `const label = "Spec Board";`, was a `THEME_READS.test('…')` regex call, no test title |
 | 76 | control: a Mission Control event with an extra field is refused and the area stays an empty frame | `adapters/node/webviewBundle.test.ts` | renamed: head `control: a Overview event with an extra field is refused …` |
 | 77 | lists Mission Control, Spec Board and Spec Explorer | `webview/App.test.tsx` | renamed: head `lists Overview, Board and Spec Explorer` |
 | 78 | lists exactly Mission Control, Spec Board and Spec Explorer, in this order | `shared/protocol/messages.test.ts` | renamed: head `lists exactly Overview, Board and Spec Explorer, in this order` |
@@ -492,7 +533,7 @@ AC-030, from a throwaway script outside the repo (`/tmp/audit-0018/titles.py`, 2
 | 88 | shows number, title, state text, description, figures and last change | `webview/board/SpecBoard.test.tsx` | replaced: head `AC-018: a card shows number and title, then row 2 with the steps, the criteria and the day …` (state text, description, "Last change:" voided, §5) |
 | 89 | shows the count in the heading and every reason of a row as text | `webview/areas/missionControl/Sections.test.tsx` | retargeted: head `shows "Problems (n)" with n = rows + lines, each spec row with its reasons …` |
 | 90 | shows the total, the six states with their counts as text, "of which Deprecated" and the derived label with the rule ID | `webview/areas/missionControl/MissionControl.test.tsx` | retargeted: head `shows "Total n" and the six "State n" …` and `Done carries "of which Deprecated: n" as tooltip …`; the derived label voided (0018 AC-003, §5) |
-| 91 | shows time, number, title and the change of each entry in the order of the view, and no control that shows more | `webview/areas/missionControl/Sections.test.tsx` | renamed: head `while open it shows time, number, title and the change of each entry in the order of the view` |
+| 91 | shows time, number, title and the change of each entry in the order of the view, and no control that shows more | `webview/areas/missionControl/Sections.test.tsx` | renamed: head `while open it shows time, number, title and the change of each entry in the order of the view, and no control that shows more (0006 AC-010)`; the "no control that shows more" assertions had been dropped in T-002 and are restored in T-012 (compile S44, mutant O20b) |
 | 92 | the Needs attention heading sends the named set "Needs attention" with the stems of exactly the listed rows, a duplicated stem once | `webview/areas/missionControl/Drilldown.test.tsx` | renamed: head `0018 AC-007: the Problems heading sends the named set "Problems" with the stems of the listed spec rows, a duplicated stem once` (set label per §7) |
 | 93 | the Spec Board card shows no rule ID or internal word, whatever its state, need or Problem | `webview/userLanguage.test.tsx` | renamed: head `the Board card shows no rule ID or internal word, whatever its state, need or Problem` |
 | 94 | the description is limited to two lines | `adapters/node/webviewCss.test.ts` | replaced: head `AC-018: the number and title of a card are limited to two lines …` (0007 AC-004: no description on the card, §5) |
@@ -510,48 +551,46 @@ AC-030, from a throwaway script outside the repo (`/tmp/audit-0018/titles.py`, 2
 | AC-002 | T-001 | `src/shared/protocol/areas.ts` (`parseUiMemory` rejects unknown areas) | `shellService.navigation.test.ts` (remembered `missionControl`, `specBoard`, `agentCenter`; first open) | verified |
 | AC-003 | T-003 | `src/core/overview/figures.ts`, `webview/areas/overview/Figures.tsx` | `figures.test.ts`, `Overview.test.tsx` (figures, tooltips) | verified |
 | AC-004 | T-002 | `src/core/overview/rows.ts`, `src/webview/areas/overview/Now.tsx`, `SpecRow.tsx` | `rows.test.ts`, `Sections.test.tsx` | verified |
-| AC-005 | T-002 | `src/core/overview/rows.ts`, `src/webview/areas/overview/Now.tsx`, `SpecRow.tsx`, `+ n more` request in `requests.ts` | `rows.test.ts`, `Sections.test.tsx`, `Drilldown.test.tsx` | verified |
-| AC-006 | T-002, T-003 | `SpecRow.tsx`, `main.css` (`.ov-row`) | `Sections.test.tsx`, `webviewCss.test.ts` | verified |
-| AC-007 | T-003 | `src/core/overview/problems.ts`, `Problems.tsx` | `problems.test.ts`, `Overview.test.tsx`, `Drilldown.test.tsx` | verified |
+| AC-005 | T-002, T-012 | `src/core/overview/rows.ts`, `src/webview/areas/overview/Now.tsx`, `SpecRow.tsx`, `+ n more` request in `requests.ts` | `rows.test.ts` (incl. the four-entry boundary), `Sections.test.tsx` ("+ 1 more"), `Drilldown.test.tsx` | verified |
+| AC-006 | T-002, T-003, T-013 | `SpecRow.tsx`, `main.css` (`.ov-row`, `@media (max-width: 720px)`) | `Sections.test.tsx`, `webviewCss.test.ts` (one line above 720 px; V1 two lines at 720 px or less, with its control) | verified |
+| AC-007 | T-003, T-012 | `src/core/overview/problems.ts`, `Problems.tsx` | `problems.test.ts`, `Overview.test.tsx`, `Drilldown.test.tsx` (the fixture holds a stem twice among the rows) | verified |
 | AC-008 | T-003 | `Figures.tsx`, `requests.ts` | `Overview.test.tsx`, `Drilldown.test.tsx` | verified |
 | AC-009 | T-003 | `Figures.tsx` (tooltip and `aria-describedby`) | `Overview.test.tsx`, `webviewBundle.test.ts` | verified |
 | AC-010 | T-004 | `src/core/overview/overviewService.ts`, `activity.ts`, `Activity.tsx`, `overviewSetActivity` in `messages.ts` | `overviewService.test.ts`, `Sections.test.tsx`, `messageRouter.test.ts` | verified |
 | AC-011 | T-002, T-005 | `NO_SPECS_START_TEXT` in `texts.ts`, `Overview.tsx`, `areas/SpecBoard.tsx` | `Sections.test.tsx`, `SpecBoard.test.tsx`, `states.test.tsx` | verified |
 | AC-012 | T-002 | `Now.tsx` (empty texts) | `Sections.test.tsx` | verified |
 | AC-013 | T-003 | `Drill.tsx`, `Overview.tsx` | `Overview.test.tsx`, `Drilldown.test.tsx`, `Sections.test.tsx` | verified |
-| AC-014 | T-005, T-006 | `src/core/board/filters.ts`, `webview/board/Column.tsx` | `filters.test.ts`, `SpecBoard.test.tsx`, `Keyboard.test.tsx` | verified |
+| AC-014 | T-005, T-006, T-011 | `src/core/board/filters.ts`, `webview/board/Column.tsx` | `filters.test.ts`, `boardService.test.ts`, `SpecBoard.test.tsx` (a filtered strip counts 0, its text names the hidden number), `Keyboard.test.tsx` | verified |
 | AC-015 | T-005 | `src/webview/main.css` (`.columns`, `.column`) | `webviewCss.test.ts` (AC-015) | verified |
 | AC-016 | T-006 | `src/core/board/doneMemory.ts`, `boardUiState.ts`, `boardService.ts`, `src/adapters/vscode/uiMemory.ts`, `Column.tsx` | `doneMemory.test.ts`, `boardService.test.ts`, `filters.test.ts`, `SpecBoard.test.tsx`, `Keyboard.test.tsx`, host `board.smoke.test.ts` | verified |
 | AC-017 | T-005 | `webview/board/FilterBar.tsx`, `messages.ts` (no `boardSetFilter`) | `SpecBoard.test.tsx`, `boardRequests.test.ts`, `boardFilter.test.ts` | verified |
 | AC-018 | T-007 | `webview/board/Card.tsx`, `texts.ts` (`cardTooltip`, `cardName`) | `SpecBoard.test.tsx`, `webviewCss.test.ts`, `userLanguage.test.tsx` | verified |
 | AC-019 | T-007 | `Card.tsx` | `SpecBoard.test.tsx` | verified |
 | AC-020 | T-005 | `Column.tsx`, `texts.ts` (`columnRuleTooltip`) | `SpecBoard.test.tsx`, `webviewBundle.test.ts` | verified |
-| AC-021 | T-007 | `src/core/board/lastChange.ts`, `cards.ts`, `Card.tsx` | `lastChange.test.ts`, `progress.test.ts`, `SpecBoard.test.tsx` | verified |
+| AC-021 | T-007, T-012 | `src/core/board/lastChange.ts`, `cards.ts`, `Card.tsx` | `lastChange.test.ts` (incl. the newer of spec and plan file time), `progress.test.ts`, `SpecBoard.test.tsx` | verified |
 | AC-022 | T-007 | `boardService.ts` (L-3), `FilterBar.tsx` | `boardService.test.ts`, `SpecBoard.test.tsx` | verified |
 | AC-023 | T-007 | `src/core/board/filters.ts` | `filters.test.ts`, `boardService.test.ts` | verified |
 | AC-024 | T-006 | `Column.tsx`, `areas/SpecBoard.tsx`, `FilterBar.tsx` | `Keyboard.test.tsx`, `SpecBoard.test.tsx` | verified |
 | AC-025 | T-001 | `src/webview/App.tsx`, `ShellView` in `messages.ts`, `shellService.ts` | `App.test.tsx`, `shellService.test.ts`, `messages.test.ts` | verified |
 | AC-026 | T-001 | `Navigation.tsx`, `main.css` | `App.test.tsx`, `webviewCss.test.ts` | verified |
-| AC-027 | T-001 | `src/core/shell/shellService.ts` (`refresh`), `src/extension.ts`, `commands.ts` | `shellService.test.ts`, host `shell.smoke.test.ts` (compiled, not run here) | verified |
+| AC-027 | T-001, T-010 | `src/core/shell/shellService.ts` (`refresh`, no re-read after a failed discovery), `src/extension.ts`, `commands.ts` | `shellService.test.ts` (incl. §8 failed discovery), host `shell.smoke.test.ts` (compiled; green on Windows and CI at `dc0077a`) | verified |
 | AC-028 | T-006 | read-only services (no new writer) | `noWrite.test.ts`, `overviewService.test.ts` (AC-023), host `board.smoke.test.ts` (compiled, not run here) | verified |
-| AC-029 | T-008 | texts in `src/shared/protocol/texts.ts` and `areas/overview/texts.ts` | `sourceScan.test.ts`, `docsScan.test.ts`, literal assertions in the area tests | verified |
-| AC-030 | T-009 | this plan's *Test-title audit*, `/tmp/audit-0018/titles.py` (not in the repo) | audit table above; `npm run test:unit` 1,983 passed; `npm test` on Windows and CI is the pre-done gate (Gregor) | built |
-| AC-031 | T-008 | — | manual: orchestrator's preview harness after T-009 (verdict here), Gregor in a real window (release checklist) | built |
+| AC-029 | T-008, T-014 | texts in `src/shared/protocol/texts.ts` and `areas/overview/texts.ts`; the one `▸` left is `src/webview/areas/SpecExplorer.tsx` (excepted in the spec, PD-065) | `sourceScan.test.ts` (pins that file as the only one), `docsScan.test.ts`, literal assertions in the area tests | verified |
+| AC-030 | T-009, T-014 | this plan's *Test-title audit* (corrected in T-014), `/tmp/audit-0018/titles.py` (not in the repo) | audit table above; Windows 11 at `dc0077a` (2026-11-18): `npm run test:unit` 1979 passed, 7 skipped, 12 timing, `npm test` 26 + 1 + 1 + 1; CI run 44246134800 at `dc0077a` green on ubuntu-latest and windows-latest; re-run at the fix head open (orchestrator) | verified (at `dc0077a`) |
+| AC-031 | T-008, T-013 | — | manual: the orchestrator looked at Overview and Board in Dark, Light and High Contrast at 1400 px and at 640 px on 2026-11-18: one defect, V1 (at 640 px the Overview rows cut the title and the state, "Re…", "needs …"), fixed in T-013; the re-check after the fix is the orchestrator's; Gregor in a real window (release checklist) | built |
 
 ## Session handoff
 
-- **Done so far:** T-001…T-009 verified and committed one by one on the current branch (Baseline
-  `a992d08`); gates 1–5 and `compile-tests` green in the sandbox: 1,983 unit tests passed (Baseline
-  1,875), timing 12. Overview (Now, Up next, Problems, figures line, collapsed Activity with its state
-  in the host), Board (strips, flexbox widths, filter chip, Done collapsed and remembered, three-row
-  card, date from the plan's `Last updated:` line), one Refresh command, the §5 notes, README,
-  CHANGELOG, release checklist, design brief, PD-064, architecture and Memory Bank sync, the
-  test-title audit.
-- **Next action:** `npm test` on Windows and in CI (pre-done gate); AC-031 in the preview harness and
-  in a real window (release checklist); then Gregor reads the proxy decisions (PD-064) and a fresh
-  `/sdd-compile` decides the move to done.
-- **Open decisions:** OP-002 (Gregor confirms the spec's proxies, recorded as PD-064). The Spec
-  Explorer list keeps its `▸` marker for the selected row (0007 AC-023, not amended by §5; the
-  scan names that one file).
-- **Baseline:** `a992d08` (HEAD at the start of implementation).
+- **Done so far:** T-001…T-009 verified (Baseline `a992d08`), T-009 ticked in S45 with the evidence of
+  2026-11-18; the compile S44 found D1 (Refresh after a failed discovery), D2 (`▸` exception), D3 (strip
+  count), four test gaps and the orchestrator's preview check found V1 (narrow Overview rows): fixed in
+  T-010…T-014 (PD-065). Gates 1–5 and `compile-tests` green in the sandbox at the fix head: 1,989 unit
+  tests passed, 3 skipped, timing 12. Windows 11 at `dc0077a`: `npm run test:unit` 1979 passed, 7 skipped,
+  12 timing; `npm test` 26 + 1 + 1 + 1; CI run 44246134800 at `dc0077a` green on both runners.
+- **Next action:** the orchestrator re-runs Windows (`npm run test:unit`, `npm test`) and CI at the fix head
+  (product code changed in T-010, T-011, T-013) and re-checks Overview at 640 px in the preview harness
+  (V1); Gregor reads PD-064 and PD-065 and checks a real window (release checklist); then a fresh
+  `/sdd-compile` decides the move to done. Do not move 0018 before that.
+- **Open decisions:** OP-002 (Gregor confirms the proxies, PD-064 and PD-065).
+- **Baseline:** `a992d08` (HEAD at the start of implementation); fix session base `dc0077a`.
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked); CI and Gregor's Windows machine run it.
