@@ -585,7 +585,7 @@ them all." No step above is renumbered or edited except where its note says so. 
     `projectbrief.md`.
   - F7 (OP-004) is Gregor's: the NS-6 default for Copilot is not changed.
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green; final gates
-- [x] **Verified (T-013):** 2026-11-18 red: `npx vitest run --project node src/adapters/node/docsScan.test.ts` 3 failed (README Privacy still said "only when you paste it", the checklist's AC-017 did not ask for the NS-6 default, the project brief did not know Send); green after: 150 passed. Gates (final): eslint 0 warnings, both tsc clean, `npm run test:unit` 3113 tests (3110 passed + 3 skipped, +18 timing), `npm run compile`, `npm run compile-tests` green; `git status` clean.
+- [x] **Verified (T-013):** 2026-11-18 red: `npx vitest run --project node src/adapters/node/docsScan.test.ts` 3 failed (README Privacy still said "only when you paste it", the checklist's AC-017 did not ask for the NS-6 default, the project brief did not know Send); green after: 150 passed. Gates (final): eslint 0 warnings, both tsc clean, `npm run test:unit` 3113 passed + 3 skipped (+18 timing), `npm run compile`, `npm run compile-tests` green; `git status` clean.
 - **Notes:** F7 (OP-004) stays Gregor's: the NS-6 default for Copilot is unchanged, the checklist asks him to record the draft behaviour and decide. The plan's Status is Done (all steps ticked); the spec stays In Progress in `active/` and is not moved. The AC-016 harness note is recorded in *AC-016 harness evidence*.
 
 ## Test-title audit
