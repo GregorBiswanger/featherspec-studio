@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { NEXT_STEP_DONE_TEXT, NEXT_STEP_UNREADABLE_TEXT, nextStepNumberUsedText, STEP_GUIDES } from '../../shared/protocol/nextStepTexts';
+import { NEXT_STEP_DONE_TEXT, NEXT_STEP_UNREADABLE_TEXT, nextStepNumberUsedText, STEP_GUIDES, stepShortForm } from '../../shared/protocol/nextStepTexts';
 import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
 import { planText, readMemory, ROOT, specText, VERSION } from '../lifecycle/testing/projects';
 import { createMemorySpecSource } from '../specs/testing/memorySpecSource';
@@ -389,5 +389,42 @@ describe('0021 AC-019: the title of an open step in an intent', () => {
 
     it('negative control: a plain short title is shown whole', async () => {
         expect(first(nextStep(await open('Reject money values'), ACTIVE))).toBe('Continue with T-004 Reject money values');
+    });
+});
+
+describe('0021 AC-006: the step short form of every case', () => {
+    const reviewing = { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: planText({ status: 'Done' }) };
+    const cases: Array<[string, Record<string, string>, string, string, string, string]> = [
+        ['NS-5', reviewing, ACTIVE, 'Verify', '/sdd-compile', 'Verify · /sdd-compile'],
+        ['NS-6 open', { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: titled([['T-003', 'Reject money values', '[ ]']]) }, ACTIVE, 'Continue', 'Implement T-003', 'Continue · Implement T-003'],
+        ['NS-6 resume', { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: titled([['T-003', 'Done', '[x]']]) }, ACTIVE, 'Resume', '/sdd-plan', 'Resume · /sdd-plan'],
+        ['NS-6 plan', { [ACTIVE]: specText({ status: 'In Progress', plan: ARCHIVE }) }, ACTIVE, 'Plan', '/sdd-plan', 'Plan · /sdd-plan'],
+        ['NS-7 step', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[ ]']]) }, BACKLOG, 'Build', 'Start T-001', 'Build · Start T-001'],
+        ['NS-7 plan', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[x]']]) }, BACKLOG, 'Build', 'Implement', 'Build · Implement'],
+        ['NS-8', { [BACKLOG]: specText({ criteria: false }) }, BACKLOG, 'Add criteria', '/sdd-specify', 'Add criteria · /sdd-specify'],
+        ['NS-9', { [BACKLOG]: specText() }, BACKLOG, 'Challenge', '/sdd-clarify', 'Challenge · /sdd-clarify'],
+        ['NS-10', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: planText({ status: 'In Progress' }) }, BACKLOG, 'Plan', '/sdd-plan', 'Plan · /sdd-plan'],
+        ['NS-2', { [ACTIVE]: specText({ status: 'Draft', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: planText({ status: 'In Progress' }) }, ACTIVE, 'Fix status', '/sdd-lifecycle', 'Fix status · /sdd-lifecycle'],
+    ];
+
+    it.each(cases)('%s: short intent, command short form and the joined step short form', async (_name, files, key, intent, short, joined) => {
+        const view = stepView(await model(files), key)!;
+        expect(view.intent).toBe(intent);
+        expect(view.short).toBe(short);
+        expect(stepShortForm(view)).toBe(joined);
+    });
+
+    it('shortForm cuts a command at its name, a start at its id, an implement of a step at its id, a plan implement at its verb (control: other text stays)', () => {
+        expect(shortForm('/sdd-plan .specs/active/0007-x.md')).toBe('/sdd-plan');
+        expect(shortForm('/sdd-overview')).toBe('/sdd-overview');
+        expect(shortForm('Start T-003 of .specs/backlog/0007-x.plan.md')).toBe('Start T-003');
+        expect(shortForm('Implement T-003 of .specs/active/0007-x.plan.md')).toBe('Implement T-003');
+        expect(shortForm('Implement .specs/backlog/0007-x.plan.md')).toBe('Implement');
+        expect(shortForm('continue')).toBe('continue');
+    });
+
+    it('equal snapshots give equal step views, also when read again', async () => {
+        const files = { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: titled([['T-003', 'X', '[ ]']]) };
+        expect(stepView(await model(files), ACTIVE)).toEqual(stepView(await model(files), ACTIVE));
     });
 });

@@ -238,7 +238,7 @@ describe('0020 AC-004: the row texts', () => {
         const row = rows(treeOf(model)).find((candidate) => candidate.stem === '0015-focus-on-visibility');
         expect(row?.label).toBe('0015 Focus the…');
         expect(row?.description).toBe('/sdd-compile');
-        expect(row?.accessibleLabel).toBe('0015 Focus the Studio on Visibility: No Agent Runs, a Named Next Step, Review, /sdd-compile');
+        expect(row?.accessibleLabel).toBe('0015 Focus the Studio on Visibility: No Agent Runs, a Named Next Step, Review, Verify · /sdd-compile');
     });
 });
 
@@ -246,7 +246,7 @@ describe('0022 AC-004: the accessible label (X-05)', () => {
     it('reads number, full title, state, Deprecated, step short form and problem count in this order, each only where it applies', async () => {
         const tree = treeOf(await modelOf(MIXED));
         const byStem = Object.fromEntries(rows(tree).map((row) => [row.stem, row.accessibleLabel]));
-        expect(byStem['0004-reviewing']).toBe('0004 Reviewing, Review, /sdd-compile');
+        expect(byStem['0004-reviewing']).toBe('0004 Reviewing, Review, Verify · /sdd-compile');
         expect(byStem['0006-finished']).toBe('0006 Finished, Done');
         expect(byStem['0007-old']).toBe('0007 Old, Done, Deprecated');
     });

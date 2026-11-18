@@ -220,8 +220,8 @@ ends of stages 1 and 3.
   `/sdd-compile`, control); `SpecBoard.test.tsx`, `Sections.test.tsx` (`Next`, intent text, ` · `, command in `code`).
 - **Verify:** `npx vitest run --project node src/core/board src/core/overview/rows.test.ts src/core/shell src/core/copyNextStep src/shared/protocol/stepView.test.ts`
   and `npx vitest run --project webview src/webview/board src/webview/areas/overview` red (stub), then green; gates 1–4
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-18 · red: `npx vitest run --project node src/core src/shared` 21 failed (no `stepShortForm`, no `intent` on the step view, `Implement <ID> of` still `Implement`, quick pick and accessible label on the old form) → green: `npx vitest run --project node --project webview` 2492 passed, 3 skipped; eslint 0 warnings, both `tsc` clean, `npm run compile` clean.
+- **Notes:** X-05 accessible label of a tree row carries the step short form as written (`Review, Verify · /sdd-compile`), not rewritten to commas. The tree description takes the step short form through `treeLabel` with `command` set to the command short form; with a four-digit number every case leaves a room below 12, so the tree shows the command short form for every row of the fixtures and the intent stays in the tooltip (0022 §4.2, OP-004). New `treeLabel` test proves the keep branch with a one-digit number. The test `AC-001: shortForm cuts …` is retitled `shortForm cuts a command at its name, …` under 0021 AC-006 (audit map).
 
 ### T-003 — Every copy control is a Copy prompt
 

@@ -77,3 +77,11 @@ describe('0022 AC-005: the label budget of a tree row', () => {
         expect(result.description).toBe('/sdd-plan');
     });
 });
+
+describe('0021 AC-006: the step short form in a tree row', () => {
+    it('keeps the step short form where its room stays at 12 or more and drops the intent for the command where it does not', () => {
+        expect(treeLabel({ number: '1', title: 'Alpha Beta Gamma Delta', description: 'Plan · /sdd-plan', command: '/sdd-plan' }).description).toBe('Plan · /sdd-plan');
+        expect(treeLabel({ number: '0001', title: 'Alpha Beta Gamma Delta', description: 'Plan · /sdd-plan', command: '/sdd-plan' }).description).toBe('/sdd-plan');
+        expect(treeLabel({ number: '0004', title: 'Reviewing', description: 'Verify · /sdd-compile', command: '/sdd-compile' }).description).toBe('/sdd-compile');
+    });
+});

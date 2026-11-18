@@ -13,6 +13,7 @@ import {
     NS9_INTENT,
     NS9_THEN_INTENT,
     startIntent,
+    STEP_GUIDES,
     type StepCase,
     WRITE_PLAN_INTENT,
 } from '../../shared/protocol/nextStepTexts';
@@ -117,6 +118,10 @@ export function shortForm(line: string): string {
     if (start !== null) {
         return `Start ${start[1]}`;
     }
+    const implement = /^Implement (\S+) of /.exec(line);
+    if (implement !== null) {
+        return `Implement ${implement[1]}`;
+    }
     return line.startsWith('Implement ') ? 'Implement' : line;
 }
 
@@ -126,5 +131,5 @@ export function stepView(model: ShellModel, key: string): StepView | undefined {
         return undefined;
     }
     const first = next.lines[0]!;
-    return { short: shortForm(first.text), line: first.text, lines: next.lines.map((line) => ({ text: line.text, intent: line.intent })) };
+    return { intent: STEP_GUIDES[next.case].short, short: shortForm(first.text), line: first.text, lines: next.lines.map((line) => ({ text: line.text, intent: line.intent })) };
 }

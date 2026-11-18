@@ -151,7 +151,7 @@ function rowFor(stem: string, number: string, title: string, state: OverviewView
     return { spec: { stem, number, title, found: true }, state, status: state, problems: 0, ...extra };
 }
 
-const STEP_PLAN = { short: '/sdd-plan', line: '/sdd-plan .specs/active/0001-a.md', lines: [{ text: '/sdd-plan .specs/active/0001-a.md', intent: 'Write the plan' }, { text: 'continue', intent: 'Not sure where it stands? Let the agent report first' }] };
+const STEP_PLAN = { intent: 'Plan', short: '/sdd-plan', line: '/sdd-plan .specs/active/0001-a.md', lines: [{ text: '/sdd-plan .specs/active/0001-a.md', intent: 'Write the plan' }, { text: 'continue', intent: 'Not sure where it stands? Let the agent report first' }] };
 
 function withRows(): OverviewView {
     const view = sampleView();
@@ -192,6 +192,8 @@ describe('0018 AC-006: a spec row on one line', () => {
         expect(drill.querySelector('.ov-status')?.textContent).toBe('Blocked');
         expect(drill.querySelector('.step-label')?.textContent).toBe('Next');
         expect(drill.querySelector('.step-short')?.textContent).toBe('/sdd-plan');
+        expect(drill.querySelector('.step-intent')?.textContent).toBe('Plan');
+        expect(drill.querySelector('.step-text')?.textContent).toBe('Next Plan · /sdd-plan');
         expect(row.querySelector('.next-step-copy')?.getAttribute('aria-label')).toBe('Copy: /sdd-plan .specs/active/0001-a.md');
         expect(drill.textContent).not.toContain('continue');
         expect(drill.querySelector('br')).toBeNull();

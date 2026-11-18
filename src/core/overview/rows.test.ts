@@ -35,6 +35,11 @@ describe('0018 AC-004: Now', () => {
         expect(now[0]?.step?.line).toMatch(/\S/);
     });
 
+    it('0021 AC-006: a row carries the short intent and the command short form of its step', async () => {
+        const { now } = await project([{ number: '0001', kind: 'Active', title: 'Login' }]);
+        expect(now[0]?.step).toMatchObject({ intent: expect.stringMatching(/^\S.*\S$/), short: expect.stringMatching(/^(?:\/sdd-|Implement)/) });
+    });
+
     it('a Problem finding shows as problems > 0 and keeps the entry in Now', async () => {
         const { now } = await project([{ number: '0002', kind: 'Contradicted' }]);
         expect(now.map((row) => [row.spec.number, row.problems > 0])).toEqual([['0002', true]]);

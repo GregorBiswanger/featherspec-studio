@@ -24,6 +24,10 @@ export function stepTooltip(lines: ReadonlyArray<{ text: string; intent: string 
     return lines.map((line) => `${line.intent}\n${line.text}`).join('\n');
 }
 
+export function stepShortForm(step: { intent: string; short: string }): string {
+    return `${step.intent} · ${step.short}`;
+}
+
 export type StepCase = 'NS-2' | 'NS-4' | 'NS-4-plan' | 'NS-5' | 'NS-6-open' | 'NS-6-resume' | 'NS-6-plan' | 'NS-7' | 'NS-8' | 'NS-9' | 'NS-10';
 
 export type SessionKey = 'new' | 'sameOrNew' | 'any';

@@ -192,9 +192,9 @@ describe('0017 AC-020: no current spec, the quick pick', () => {
         expect(fakes.asked).toHaveLength(1);
         expect(fakes.asked[0]?.placeholder).toBe('Select a spec to copy its next step');
         expect(fakes.asked[0]?.items).toEqual([
-            { key: '.specs/backlog/0007-thing.md', label: '0007 Thing 0007', description: 'Ready · Implement' },
-            { key: '.specs/backlog/0003-thing.md', label: '0003-thing', description: 'Backlog · /sdd-clarify' },
-            { key: '.specs/backlog/0008-thing.md', label: '0008 Thing 0008', description: 'Backlog · /sdd-clarify' },
+            { key: '.specs/backlog/0007-thing.md', label: '0007 Thing 0007', description: 'Ready · Build · Implement' },
+            { key: '.specs/backlog/0003-thing.md', label: '0003-thing', description: 'Backlog · Challenge · /sdd-clarify' },
+            { key: '.specs/backlog/0008-thing.md', label: '0008 Thing 0008', description: 'Backlog · Challenge · /sdd-clarify' },
         ]);
         expect(fakes.written).toEqual([]);
     });

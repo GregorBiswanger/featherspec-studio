@@ -10,9 +10,9 @@ import { createClient, type ShellClient } from '../client';
 import { baseView, click, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
 import { boardEvent, boardView, card } from './testing/views';
 
-const STEP: StepView = { short: 'Start T-003', line: 'Start T-003 of .specs/backlog/0007-x.plan.md', lines: [{ text: 'Start T-003 of .specs/backlog/0007-x.plan.md', intent: 'Write the plan' }] };
+const STEP: StepView = { intent: 'Build', short: 'Start T-003', line: 'Start T-003 of .specs/backlog/0007-x.plan.md', lines: [{ text: 'Start T-003 of .specs/backlog/0007-x.plan.md', intent: 'Write the plan' }] };
 const TWO: StepView = {
-    short: '/sdd-plan',
+    intent: 'Plan', short: '/sdd-plan',
     line: '/sdd-plan .specs/active/0008-y.md',
     lines: [{ text: '/sdd-plan .specs/active/0008-y.md', intent: 'Write the plan' }, { text: 'continue', intent: 'Not sure where it stands? Let the agent report first' }],
 };
@@ -62,7 +62,7 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
     });
 
     it('AC-018: the card is built of the rows head, path, state row and step line in that order, and has no state chip', async () => {
-        const entry = card('0001', { state: 'Active', path: '.specs/active/0001-thing.md', problems: 1, step: { short: '/sdd-plan', line: '/sdd-plan .specs/active/0001-thing.md', lines: [{ text: '/sdd-plan .specs/active/0001-thing.md', intent: 'Write the plan' }] } });
+        const entry = card('0001', { state: 'Active', path: '.specs/active/0001-thing.md', problems: 1, step: { intent: 'Plan', short: '/sdd-plan', line: '/sdd-plan .specs/active/0001-thing.md', lines: [{ text: '/sdd-plan .specs/active/0001-thing.md', intent: 'Write the plan' }] } });
         const li = (await open(boardView([entry]))).querySelector('[data-card]')!;
         expect([...li.children].map((child) => child.className)).toEqual(['card-head', 'card-path', 'card-state', 'card-step']);
         expect(li.querySelector('.state-chip, [data-marker="derived"], .card-summary, .card-foot')).toBeNull();
@@ -452,6 +452,10 @@ describe('0017 AC-004: the next step on a card', () => {
         expect(entry.lastElementChild).toBe(line);
         expect(line.querySelector('.step-label')?.textContent).toBe('Next');
         expect(line.querySelector('.step-short')?.textContent).toBe('/sdd-plan');
+        expect(line.querySelector('.step-intent')?.textContent).toBe('Plan');
+        expect(line.querySelector('.step-text')?.textContent).toBe('Next Plan · /sdd-plan');
+        expect(line.querySelector('code.step-short')).not.toBeNull();
+        expect(line.querySelector('.step-intent')?.tagName).toBe('SPAN');
         expect(line.querySelector('.step-text')?.getAttribute('title')).toBe('Write the plan\n/sdd-plan .specs/active/0008-y.md\nNot sure where it stands? Let the agent report first\ncontinue');
         const copy = line.querySelector('button')!;
         expect(copy.className).toContain('copy-icon');

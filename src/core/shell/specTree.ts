@@ -22,6 +22,7 @@ import {
     stepsText,
     treeRowAccessibleLabel,
 } from '../../shared/protocol/texts';
+import { stepShortForm } from '../../shared/protocol/nextStepTexts';
 import { buildCards } from '../board/cards';
 import { nextStep } from '../board/nextStep';
 import { escapeMarkdown } from '../copyNextStep/entryView';
@@ -129,7 +130,7 @@ function descriptionOf(card: CardView): string {
     if (card.deprecated) {
         return DEPRECATED_MARKER;
     }
-    return card.step === undefined ? card.state : card.step.short;
+    return card.step === undefined ? card.state : stepShortForm(card.step);
 }
 
 function contextValueOf(card: CardView, entry: LifecycleEntry): string {
@@ -175,7 +176,7 @@ function tooltipOf(model: ShellModel, card: CardView, entry: LifecycleEntry, tit
 
 function rowOf(model: ShellModel, card: CardView, entry: LifecycleEntry, slug: string): SpecRowModel {
     const title = fullTitle(card, slug);
-    const shown = treeLabel({ number: card.number, title, description: descriptionOf(card) });
+    const shown = treeLabel({ number: card.number, title, description: descriptionOf(card), ...(card.step === undefined || card.deprecated ? {} : { command: card.step.short }) });
     const style = card.problems > 0 ? PROBLEM_ICON : { icon: STATE_LOOK[card.state].motif, color: STATE_LOOK[card.state].colour };
     return {
         kind: 'spec',
@@ -184,7 +185,7 @@ function rowOf(model: ShellModel, card: CardView, entry: LifecycleEntry, slug: s
         description: shown.description,
         icon: style.icon,
         color: style.color,
-        accessibleLabel: treeRowAccessibleLabel({ number: card.number, title, state: card.state, deprecated: card.deprecated, step: card.step?.short, problems: card.problems }),
+        accessibleLabel: treeRowAccessibleLabel({ number: card.number, title, state: card.state, deprecated: card.deprecated, step: card.step === undefined ? undefined : stepShortForm(card.step), problems: card.problems }),
         tooltip: tooltipOf(model, card, entry, title),
         contextValue: contextValueOf(card, entry),
         stem: card.stem,

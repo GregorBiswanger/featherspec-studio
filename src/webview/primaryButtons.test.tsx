@@ -28,7 +28,7 @@ const NS5 = { rule: 'NS-5', lines: [{ text: '/sdd-plan .specs/active/0001-r.md',
 
 function step(n: string): OverviewRow['step'] {
     const line = `/sdd-plan .specs/active/${n}-r.md`;
-    return { short: '/sdd-plan', line, lines: [{ text: line, intent: 'Write the plan' }] };
+    return { intent: 'Plan', short: '/sdd-plan', line, lines: [{ text: line, intent: 'Write the plan' }] };
 }
 
 function row(n: string, withStep = true): OverviewRow {
