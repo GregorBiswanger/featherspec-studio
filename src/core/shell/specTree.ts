@@ -2,6 +2,7 @@ import type { CardView } from '../../shared/protocol/board';
 import type { BoardState } from '../../shared/protocol/boardFilter';
 import type { ActionId, PanelState } from '../../shared/protocol/messages';
 import { isDerivedRule } from '../../shared/protocol/board';
+import { STATE_LOOK } from '../../shared/protocol/stateLook';
 import {
     ACTION_LABELS,
     badgeTooltip,
@@ -94,15 +95,6 @@ const GROUP_ORDER: readonly GroupKey[] = ['inProgress', 'upNext', 'backlog', 'do
 
 const IN_PROGRESS_RANK: Partial<Record<BoardState, number>> = { Blocked: 0, Review: 1, Active: 2 };
 
-const STATE_ICONS: Record<BoardState, { icon: string; color: string }> = {
-    Backlog: { icon: 'list-flat', color: 'descriptionForeground' },
-    Ready: { icon: 'pass', color: 'charts.blue' },
-    Active: { icon: 'play', color: 'charts.purple' },
-    Review: { icon: 'eye', color: 'charts.yellow' },
-    Done: { icon: 'check', color: 'charts.green' },
-    Blocked: { icon: 'circle-slash', color: 'charts.red' },
-};
-
 const PROBLEM_ICON = { icon: 'warning', color: 'problemsWarningIcon.foreground' };
 
 function compareText(left: string, right: string): number {
@@ -178,7 +170,7 @@ function tooltipOf(model: ShellModel, card: CardView, entry: LifecycleEntry, tit
 function rowOf(model: ShellModel, card: CardView, entry: LifecycleEntry, slug: string): SpecRowModel {
     const title = fullTitle(card, slug);
     const description = descriptionOf(card);
-    const style = card.problems > 0 ? PROBLEM_ICON : STATE_ICONS[card.state];
+    const style = card.problems > 0 ? PROBLEM_ICON : { icon: STATE_LOOK[card.state].motif, color: STATE_LOOK[card.state].colour };
     const problem = card.problems > 0 ? `, ${problemsBadgeText(card.problems)}` : '';
     return {
         kind: 'spec',

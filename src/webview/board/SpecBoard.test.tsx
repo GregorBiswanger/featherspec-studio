@@ -1,6 +1,8 @@
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
+import { BOARD_STATES } from '../../shared/protocol/boardFilter';
+import { STATE_LOOK } from '../../shared/protocol/stateLook';
 import { COPIED_TEXT, COPY_FAILED_TEXT } from '../../shared/protocol/nextStepTexts';
 import type { StepView } from '../../shared/protocol/stepView';
 import { App } from '../App';
@@ -512,5 +514,22 @@ describe('AC-016: the Done toggle', () => {
         const withToggle = await open(boardView([card('0001', { state: 'Active' }), card('0002', { state: 'Done' })], { doneToggle: 'hide' }));
         expect(withToggle.querySelectorAll('[data-done-toggle]')).toHaveLength(1);
         expect(withToggle.querySelector('[data-done-toggle]')?.closest('[data-column]')?.getAttribute('data-column')).toBe('Done');
+    });
+});
+
+describe('0022 AC-026: column headers and strips take motif and colour from the one table', () => {
+    it('every column, wide or narrow, carries the colour ID and its heading icon the motif of STATE_LOOK', async () => {
+        const container = await open(boardView([card('0004', { state: 'Active' }), card('0005', { state: 'Review' })]));
+        const columns = [...container.querySelectorAll<HTMLElement>('[data-column]')];
+        expect(columns.map((column) => column.getAttribute('data-column'))).toEqual([...BOARD_STATES]);
+        expect(columns.some((column) => column.hasAttribute('data-narrow'))).toBe(true);
+        expect(columns.some((column) => !column.hasAttribute('data-narrow'))).toBe(true);
+        for (const column of columns) {
+            const state = column.getAttribute('data-column') as (typeof BOARD_STATES)[number];
+            expect(column.getAttribute('data-tint'), state).toBe(STATE_LOOK[state].colour);
+            const icon = column.querySelector('.column-heading svg');
+            expect(icon?.getAttribute('data-motif'), state).toBe(STATE_LOOK[state].motif);
+            expect(icon?.getAttribute('data-tint'), state).toBe(STATE_LOOK[state].colour);
+        }
     });
 });

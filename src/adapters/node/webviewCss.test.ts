@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { NARROW_QUERY } from '../../shared/protocol/layout';
+import { STATE_LOOK } from '../../shared/protocol/stateLook';
 import { declarations, parseRules, rulesFor } from '../../webview/testing/css';
 
 describe('AC-026: colours come from the theme', () => {
@@ -220,19 +221,34 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
         }
     });
 
-    it('§3.1: one state-colour mapping, each state tinting through --fs-tint from its theme variable', () => {
+    it('0022 AC-026: each colour ID of the state table maps to its theme variable through --fs-tint, and no rule that names a state sets a colour', () => {
         const expected: Record<string, string> = {
-            Backlog: 'var(--vscode-descriptionForeground)',
-            Ready: 'var(--vscode-charts-blue)',
-            Active: 'var(--vscode-charts-purple)',
-            Review: 'var(--vscode-charts-yellow)',
-            Done: 'var(--vscode-charts-green)',
-            Blocked: 'var(--vscode-charts-red)',
+            descriptionForeground: 'var(--vscode-descriptionForeground)',
+            'charts.blue': 'var(--vscode-charts-blue)',
+            'charts.green': 'var(--vscode-charts-green)',
+            'charts.orange': 'var(--vscode-charts-orange)',
+            'charts.red': 'var(--vscode-charts-red)',
         };
-        for (const [state, variable] of Object.entries(expected)) {
-            const rules = rulesFor(css, `[data-board-state="${state}"]`);
-            expect(rules.some((rule) => rule.body.includes(`--fs-tint: ${variable}`)), state).toBe(true);
+        expect([...new Set(Object.values(STATE_LOOK).map((look) => look.colour))].sort()).toEqual(Object.keys(expected).sort());
+        for (const [id, variable] of Object.entries(expected)) {
+            const rules = rulesFor(css, `[data-tint="${id}"]`);
+            expect(rules.some((rule) => rule.body.includes(`--fs-tint: ${variable}`)), id).toBe(true);
         }
+        const COLOURING = /--fs-tint|(?:^|;)\s*(?:color|background(?:-color)?|border(?:-[a-z]+)*|outline(?:-color)?|fill|stroke)\s*:/;
+        const naming = parseRules(css).filter((rule) => rule.selectors.some((selector) => /\b(?:Backlog|Ready|Active|Review|Done|Blocked)\b/.test(selector)));
+        for (const rule of naming) {
+            expect(rule.body, rule.selectors.join(',')).not.toMatch(COLOURING);
+        }
+        expect(COLOURING.test('--fs-tint: red')).toBe(true);
+        expect(COLOURING.test('width: 3px; color: red')).toBe(true);
+        expect(COLOURING.test('flex: 0 0 32px')).toBe(false);
+        expect(parseRules('[data-board-state="Active"] { --fs-tint: red; }').filter((rule) => rule.selectors.some((selector) => /Active/.test(selector)))).toHaveLength(1);
+    });
+
+    it('0022 AC-026: the chip and the column header icon take their colour from --fs-tint', () => {
+        expect(rulesFor(css, '.state-chip .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.column-heading .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.state-chip').some((rule) => /border[^;]*var\(--fs-tint\)/.test(rule.body))).toBe(true);
     });
 
     it('§3.1: a state chip keeps its text in the foreground colour, tints only icon and border, and falls back to the contrast border', () => {

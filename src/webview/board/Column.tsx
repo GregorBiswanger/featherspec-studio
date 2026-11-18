@@ -1,4 +1,5 @@
 import { STATE_RULES, type BoardColumn, type BoardView, type CardView } from '../../shared/protocol/board';
+import { STATE_LOOK } from '../../shared/protocol/stateLook';
 import { columnRuleTooltip, DONE_HIDE_LABEL, DONE_SHOW_LABEL, hiddenByFilterText, narrowColumnText } from '../../shared/protocol/texts';
 import type { CopyResult } from '../ui/CopyButton';
 import { Card } from './Card';
@@ -33,6 +34,7 @@ export function Column(props: {
             aria-label={narrowName ?? column.state}
             {...(title === undefined ? {} : { title })}
             data-board-state={column.state}
+            data-tint={STATE_LOOK[column.state].colour}
         >
             <h2 className="column-heading" {...(column.narrow === undefined && ruleText !== undefined ? { title: ruleText } : {})}>
                 {toggle === undefined ? (

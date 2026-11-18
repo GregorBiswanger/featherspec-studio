@@ -3,7 +3,7 @@
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-004
+**Current step:** T-005
 
 ## Approach
 
@@ -295,8 +295,8 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
   icon use `--fs-tint`.
 - **Verify:** `npx vitest run --project node src/shared/protocol/stateLook.test.ts src/core/shell/specTree.test.ts src/adapters/node/webviewCss.test.ts`
   and `npx vitest run --project webview src/webview/ui/StateChip.test.tsx src/webview/board/SpecBoard.test.tsx` red, then green; gates 1–4
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-18, red first: `npx vitest run --project node src/shared/protocol/stateLook.test.ts src/core/shell/specTree.test.ts src/adapters/node/webviewCss.test.ts --project webview src/webview/ui/StateChip.test.tsx src/webview/board/SpecBoard.test.tsx`: 5 files failed to load (module `stateLook` missing), no test ran. Green: all passed. Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2303 passed, 3 skipped (+13 timing).
+- **Notes:** Deleted as named: `STATE_ICONS` (`specTree.ts`), the six `[data-board-state="…"]` tint rules (`main.css`, now five `[data-tint="<colour ID>"]` rules), test "§3.1: one state-colour mapping …" (replaced by "0022 AC-026: each colour ID …"). `data-board-state` stays as a hook on columns, cards, chips and Overview rows and carries no colour; `data-tint` (colour ID) sits on the chip, the column and the `StateIcon` svg, which also carries `data-motif` (the table's codicon ID, so a test can tie the glyph to the table). The Blocked glyph is now a ring with a diagonal slash (the bar variant looked like a minus); `StateIcon` fills `evenodd`. The tree test "every state has its icon and colour" changed its three colour literals (Active green, Review orange, Done and Deprecated descriptionForeground), the tree's description still carries the state word until T-009.
 
 ### T-005 — Every Problem has one user sentence; the reason travels beside it
 

@@ -1,3 +1,4 @@
+import { STATE_LOOK } from '../../shared/protocol/stateLook';
 import { describe, expect, it } from 'vitest';
 import { modelOf } from '../board/testing/boardWorld';
 import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
@@ -229,6 +230,25 @@ describe('0020 AC-004: the row texts', () => {
     });
 });
 
+describe('0022 AC-026: the tree takes icon and colour from the one table', () => {
+    it('every state row carries the motif and the colour of STATE_LOOK, and Deprecated looks like Done', async () => {
+        const tree = treeOf(await modelOf({ ...MIXED, '.specs/active/0009-ready.md': spec('Ready', 'In Progress', '0009-ready.plan.md'), '.specs/active/0009-ready.plan.md': plan('Not started') }));
+        const states = new Set<string>();
+        for (const row of rows(tree)) {
+            const state = row.state;
+            states.add(state);
+            expect([row.icon, row.color], row.label).toEqual([STATE_LOOK[state].motif, STATE_LOOK[state].colour]);
+        }
+        expect([...states].sort()).toEqual(['Active', 'Backlog', 'Blocked', 'Done', 'Ready', 'Review']);
+    });
+
+    it('control: a Problem still overrides the look with the warning', async () => {
+        const project = await readFixture('fs-broken');
+        const tree = treeOf({ project, lifecycle: deriveLifecycle(project) });
+        expect(rows(tree).some((row) => row.icon === 'warning' && row.color === 'problemsWarningIcon.foreground')).toBe(true);
+    });
+});
+
 describe('0020 AC-005: icons and colours', () => {
     it('every state has its icon and colour', async () => {
         const tree = treeOf(await modelOf({ ...MIXED, '.specs/active/0009-ready.md': spec('Ready', 'In Progress', '0009-ready.plan.md'), '.specs/active/0009-ready.plan.md': plan('Not started') }));
@@ -236,11 +256,11 @@ describe('0020 AC-005: icons and colours', () => {
         expect(Object.fromEntries(byState)).toEqual({
             Backlog: ['list-flat', 'descriptionForeground'],
             Ready: ['pass', 'charts.blue'],
-            Active: ['play', 'charts.purple'],
-            Review: ['eye', 'charts.yellow'],
-            Done: ['check', 'charts.green'],
+            Active: ['play', 'charts.green'],
+            Review: ['eye', 'charts.orange'],
+            Done: ['check', 'descriptionForeground'],
             Blocked: ['circle-slash', 'charts.red'],
-            Deprecated: ['check', 'charts.green'],
+            Deprecated: ['check', 'descriptionForeground'],
         });
     });
 

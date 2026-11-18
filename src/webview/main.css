@@ -13,27 +13,23 @@ body,
     --fs-focus: var(--vscode-contrastActiveBorder, var(--vscode-focusBorder));
 }
 
-[data-board-state="Backlog"] {
+[data-tint="descriptionForeground"] {
     --fs-tint: var(--vscode-descriptionForeground);
 }
 
-[data-board-state="Ready"] {
+[data-tint="charts.blue"] {
     --fs-tint: var(--vscode-charts-blue);
 }
 
-[data-board-state="Active"] {
-    --fs-tint: var(--vscode-charts-purple);
-}
-
-[data-board-state="Review"] {
-    --fs-tint: var(--vscode-charts-yellow);
-}
-
-[data-board-state="Done"] {
+[data-tint="charts.green"] {
     --fs-tint: var(--vscode-charts-green);
 }
 
-[data-board-state="Blocked"] {
+[data-tint="charts.orange"] {
+    --fs-tint: var(--vscode-charts-orange);
+}
+
+[data-tint="charts.red"] {
     --fs-tint: var(--vscode-charts-red);
 }
 
