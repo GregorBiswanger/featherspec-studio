@@ -3,7 +3,7 @@
 **Spec:** [0021-next-step-intent-and-guidance.md](0021-next-step-intent-and-guidance.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-012 (fix stage after the compile of S74: `/home/claude/orch/compile/0021.md`)
+**Current step:** T-013 (fix stage after the compile of S74: `/home/claude/orch/compile/0021.md`)
 
 ## Approach
 
@@ -386,7 +386,8 @@ ends of stages 1 and 3.
   (`flex: 1 0 100%`, as the harness saw it); `.step-coach` uses `var(--vscode-descriptionForeground)`, and no
   hard-coded colour. Red by the mutants M52 (`flex: none`) and M79 (foreground colour) on the scratch copy.
 - **Verify:** `npx vitest run --project node src/adapters/node/webviewCss.test.ts`; mutants red; gates 1–4
-- [ ] **Verified (T-012):**
+- [x] **Verified (T-012):** 2026-11-18 · green at once (the CSS was right), killed by mutation on a scratch copy: M52 (`.next-step-intent { flex: none }`) → `npx vitest run --project node src/adapters/node/webviewCss.test.ts` 1 failed ("the intent of a line takes the whole row …"); M79 (`.step-coach` in `var(--vscode-foreground)`) → 1 failed ("the coach line of the detail and of the Overview row use the description colour …"); real code 87 passed; `npm run test:unit` 157 files, 2633 passed, 3 skipped, timing 15 passed; eslint 0 warnings, both `tsc` clean.
+- **Notes:** The new describe also pins `.ov-coach` to the description colour (same §6.5 line, Overview row). A third test is a negative control of the rule finder (a mutated copy of the text would be found).
 
 ### T-013 — README names the tree action and the step short form (compile D2, edit 3)
 

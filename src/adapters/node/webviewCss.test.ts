@@ -872,3 +872,26 @@ describe('0021 AC-014, AC-022: the toggletip uses the theme, shows its focus and
         expect(rulesFor(css, '.next-step .section-head').some((rule) => /flex-wrap:\s*wrap/.test(rule.body))).toBe(true);
     });
 });
+
+describe('0021 AC-001, AC-009, §6.5: the intent stands on its own line and the coach line is a description', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const body = (selector: string): string => rulesFor(css, selector).map((rule) => rule.body).join(';');
+
+    it('the intent of a line takes the whole row of its flex line, before the prompt and Copy', () => {
+        expect(body('.next-step-intent')).toMatch(/flex:\s*1 0 100%/);
+    });
+
+    it('the coach line of the detail and of the Overview row use the description colour and no literal colour', () => {
+        for (const selector of ['.step-coach', '.ov-coach']) {
+            expect(body(selector), selector).toMatch(/(?:^|;)\s*color:\s*var\(--vscode-descriptionForeground\)/);
+            expect(body(selector), selector).not.toMatch(/#[0-9a-fA-F]{3,8}\b|\b(?:rgb|rgba|hsl|hsla)\(/);
+        }
+    });
+
+    it('negative control: a rule that sets another colour or a shorter basis would be found', () => {
+        const mutated = css.replace(/(\.step-coach \{[^}]*?)color: var\(--vscode-descriptionForeground\)/, '$1color: var(--vscode-foreground)').replace(/(\.next-step-intent \{\s*)flex: 1 0 100%/, '$1flex: none');
+        const rule = (text: string, selector: string): string => rulesFor(text, selector).map((entry) => entry.body).join(';');
+        expect(rule(mutated, '.step-coach')).not.toMatch(/color:\s*var\(--vscode-descriptionForeground\)/);
+        expect(rule(mutated, '.next-step-intent')).not.toMatch(/flex:\s*1 0 100%/);
+    });
+});
