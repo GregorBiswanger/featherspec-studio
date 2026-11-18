@@ -120,3 +120,42 @@ describe('0023 AC-011: keyboard in the Plan map', () => {
         expect(links.map((link) => link.tabIndex)).toEqual([0, -1]);
     });
 });
+
+function twice(): PlanView {
+    return planSample({
+        stages: [
+            stage(1, [{ steps: [step('T-001', 'done')] }]),
+            stage(2, [{ steps: [step('T-003', 'next'), step('T-004', 'open')] }], { current: true }),
+            stage(3, [{ steps: [step('T-004', 'open'), step('T-005', 'open')] }]),
+        ],
+    });
+}
+
+function head(container: HTMLElement, stageNumber: number, id: string): HTMLButtonElement {
+    return container.querySelector<HTMLButtonElement>(`[data-stage-row="${stageNumber}"] [data-card-toggle="${id}"]`)!;
+}
+
+describe('0023 AC-011: an ID that stands in two stages is two cards, each at its own place (§7)', () => {
+    it('there is exactly one tab stop, the first card; the second T-004 is not a second one', async () => {
+        const container = await open(twice());
+        const heads = [...container.querySelectorAll<HTMLButtonElement>('[data-card-toggle]')];
+        expect(heads.map((entry) => entry.tabIndex)).toEqual([0, -1, -1, -1]);
+    });
+
+    it('the arrows start from the card that holds the focus: from the T-004 of stage 3 Right reaches T-005 and Up the card above it', async () => {
+        const container = await open(twice());
+        await focus(head(container, 3, 'T-004'));
+        expect([...container.querySelectorAll<HTMLButtonElement>('[data-card-toggle]')].map((entry) => entry.tabIndex)).toEqual([-1, -1, 0, -1]);
+        await press(document.activeElement!, 'ArrowRight');
+        expect(document.activeElement).toBe(head(container, 3, 'T-005'));
+        await press(document.activeElement!, 'ArrowLeft');
+        await press(document.activeElement!, 'ArrowLeft');
+        expect(document.activeElement).toBe(head(container, 3, 'T-004'));
+        await press(document.activeElement!, 'ArrowUp');
+        expect(document.activeElement).toBe(head(container, 2, 'T-003'));
+        await press(document.activeElement!, 'ArrowRight');
+        expect(document.activeElement).toBe(head(container, 2, 'T-004'));
+        await press(document.activeElement!, 'ArrowDown');
+        expect(document.activeElement).toBe(head(container, 3, 'T-005'));
+    });
+});

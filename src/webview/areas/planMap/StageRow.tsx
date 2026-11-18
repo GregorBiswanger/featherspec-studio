@@ -2,18 +2,20 @@ import type { ReactNode } from 'react';
 import type { PlanStageView } from '../../../shared/protocol/planMap';
 import { ALL_RETURNED_TEXT, stageHeading, STAGE_KIND_TEXTS, stageReturnedText } from '../../../shared/protocol/planMapTexts';
 import { StepChip } from '../../ui/StepChip';
+import { stageCardKeys } from './cardKeys';
 import { StepCard, type CardLinks } from './StepCard';
 
 export interface CardState {
     expanded: ReadonlySet<string>;
     tabStop: string | undefined;
-    onToggle(id: string): void;
+    onToggle(key: string): void;
 }
 
 export function StageRow(props: { stage: PlanStageView; links: CardLinks; cards: CardState; ways?: ReactNode }) {
     const { stage, links, cards } = props;
     const kind = STAGE_KIND_TEXTS[stage.kind];
     const steps = stage.groups.flatMap((group) => group.steps);
+    const keys = stageCardKeys(stage);
     const allReturned = stage.returned !== undefined && stage.returned.m > 0 && stage.returned.n === stage.returned.m;
     return (
         <section className="plan-stage-row" data-stage-row={stage.number} data-stage-kind={stage.kind} {...(stage.current ? { 'data-current': '' } : {})} {...(stage.finished ? { 'data-finished': '' } : {})}>
@@ -40,8 +42,16 @@ export function StageRow(props: { stage: PlanStageView; links: CardLinks; cards:
                                 </p>
                             )}
                             <div className="plan-group" data-card-row>
-                                {group.steps.map((step) => (
-                                    <StepCard key={step.id} step={step} expanded={cards.expanded.has(step.id)} tabStop={cards.tabStop === step.id} links={links} onToggle={cards.onToggle} />
+                                {group.steps.map((step, position) => (
+                                    <StepCard
+                                        key={keys[index]![position]}
+                                        cardKey={keys[index]![position]!}
+                                        step={step}
+                                        expanded={cards.expanded.has(keys[index]![position]!)}
+                                        tabStop={cards.tabStop === keys[index]![position]}
+                                        links={links}
+                                        onToggle={cards.onToggle}
+                                    />
                                 ))}
                             </div>
                         </div>

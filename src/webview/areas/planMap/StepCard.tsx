@@ -9,14 +9,14 @@ export interface CardLinks {
     onOpen(key: string, line: number): void;
 }
 
-export function StepCard(props: { step: PlanStepView; expanded: boolean; tabStop: boolean; links: CardLinks; onToggle(id: string): void }) {
+export function StepCard(props: { cardKey: string; step: PlanStepView; expanded: boolean; tabStop: boolean; links: CardLinks; onToggle(key: string): void }) {
     const { step, links } = props;
     const panelId = useId();
     const look = stepLook(step);
     const linkTab = props.tabStop ? 0 : -1;
     const dropped = step.state === 'dropped';
     return (
-        <div className="step-card" data-step-card={step.id} data-state={step.state} {...(props.expanded ? { 'data-expanded': '' } : {})}>
+        <div className="step-card" data-step-card={step.id} data-card-key={props.cardKey} data-state={step.state} {...(props.expanded ? { 'data-expanded': '' } : {})}>
             <button
                 type="button"
                 className="step-card-toggle"
@@ -24,7 +24,7 @@ export function StepCard(props: { step: PlanStepView; expanded: boolean; tabStop
                 aria-expanded={props.expanded}
                 aria-controls={panelId}
                 tabIndex={props.tabStop ? 0 : -1}
-                onClick={() => props.onToggle(step.id)}
+                onClick={() => props.onToggle(props.cardKey)}
             >
                 {look.symbol === undefined ? null : (
                     <span className="chip-symbol" aria-hidden="true">

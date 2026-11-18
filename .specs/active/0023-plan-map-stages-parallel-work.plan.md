@@ -3,7 +3,7 @@
 **Spec:** [0023-plan-map-stages-parallel-work.md](0023-plan-map-stages-parallel-work.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-010
+**Current step:** T-011
 
 ## Approach
 
@@ -423,8 +423,8 @@ Proxy decisions of this round (Gregor delegated; P-25 …), recorded here and in
   unfinished stages (one tab stop; the arrows start from the card that holds the focus; the stop follows the second
   card); `PlanMap.test.tsx` "0023 AC-008" (expanding one card of an ID that stands twice expands only it).
 - **Verify:** `npx vitest run --project webview src/webview/areas/planMap` red on a scratch copy of the head, then green; gates 1–4
-- [ ] **Verified (T-010):**
-- **Notes:**
+- [x] **Verified (T-010):** 2026-11-18 · `npx vitest run --project webview src/webview/areas/planMap` red first on a scratch copy of `d228cb8` (the three new tests only: `Keyboard.test.tsx` "…the arrows start from the card that holds the focus…" failed with `expected [-1, +0, +0, -1] to deeply equal [-1, -1, +0, -1]`, two tab stops; `PlanMap.test.tsx` "an ID that stands in two stages is two cards…" failed with `expected ['true','true'] to deeply equal ['false','true']`; the first Keyboard test of the pair, one tab stop at the start, was already green), then green (webview 538 of 538); gates 1–4 green, `npm run test:unit` 2796 passed + 3 skipped (+16 timing)
+- **Notes:** A card is addressed by `<stage>|<ID>|<n>` (n = the nth time that ID stands in that stage; the loose row uses `loose`), built by the new `areas/planMap/cardKeys.ts` for the grid (`cardRowsOf`), the stage rows and the loose row. `data-card-key` carries it; `data-step-card` and `data-card-toggle` stay the step ID (the existing tests and the sweeps read them). Expansion, tab stop, arrow keys and the focus fallback use the key, so a live update that drops another card keeps the focus and the expansion on the same step. P-17 and P-19 now read "per occurrence".
 
 ### T-011 — Focus stays in the map: a removed way, Copy or start line hands it to the heading (PD-077)
 

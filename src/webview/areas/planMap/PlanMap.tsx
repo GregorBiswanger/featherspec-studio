@@ -10,6 +10,7 @@ import { FileLink, type FileResult } from '../../ui/FileLink';
 import { InlineText } from '../../ui/InlineText';
 import { ProgressBar } from '../../ui/ProgressBar';
 import { fallbackFocus, moveFocus, type Direction, type Grid } from '../../board/focusModel';
+import { cardRowsOf, looseCardKeys } from './cardKeys';
 import { requestMapFocus, takePendingMapFocus } from './focus';
 import { StageRow } from './StageRow';
 import { StepCard, type CardLinks } from './StepCard';
@@ -18,21 +19,12 @@ import type { CopyResult } from '../../ui/CopyButton';
 
 const ARROWS: Record<string, Direction> = { ArrowUp: 'left', ArrowDown: 'right', ArrowLeft: 'up', ArrowRight: 'down' };
 
-function gridOf(plan: PlanView): Grid {
-    const rows: string[][] = [];
-    for (const stage of plan.stages) {
-        if (!stage.finished) {
-            stage.groups.forEach((group) => rows.push(group.steps.map((step) => step.id)));
-        }
-    }
-    if (plan.staged) {
-        if (plan.loose.length > 0) {
-            rows.push(plan.loose.map((step) => step.id));
-        }
-    } else {
-        plan.loose.forEach((step) => rows.push([step.id]));
-    }
-    return rows.filter((row) => row.length > 0);
+function cardKeyOf(element: HTMLElement): string | undefined {
+    return element.closest<HTMLElement>('[data-card-key]')?.getAttribute('data-card-key') ?? undefined;
+}
+
+function toggleOf(box: HTMLElement, key: string): HTMLElement | undefined {
+    return [...box.querySelectorAll<HTMLElement>('[data-card-key]')].find((card) => card.getAttribute('data-card-key') === key)?.querySelector<HTMLElement>('[data-card-toggle]') ?? undefined;
 }
 
 function Stages(props: { plan: PlanView; links: CardLinks; copyResult: CopyResult | undefined; onCopy(text: string): void }) {
@@ -40,13 +32,14 @@ function Stages(props: { plan: PlanView; links: CardLinks; copyResult: CopyResul
     const root = useRef<HTMLDivElement>(null);
     const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
     const [stop, setStop] = useState<string | undefined>(undefined);
-    const grid = useMemo(() => gridOf(plan), [plan]);
+    const grid = useMemo(() => cardRowsOf(plan), [plan]);
+    const looseKeys = useMemo(() => looseCardKeys(plan.loose), [plan]);
     const tabStop = stop !== undefined && grid.some((row) => row.includes(stop)) ? stop : grid[0]?.[0];
-    const toggle = useCallback((id: string) => {
+    const toggle = useCallback((key: string) => {
         setExpanded((before) => {
             const next = new Set(before);
-            if (!next.delete(id)) {
-                next.add(id);
+            if (!next.delete(key)) {
+                next.add(key);
             }
             return next;
         });
@@ -66,7 +59,7 @@ function Stages(props: { plan: PlanView; links: CardLinks; copyResult: CopyResul
             return;
         }
         const target = fallbackFocus(before, was, grid);
-        const element = target === undefined ? undefined : box.querySelector<HTMLElement>(`[data-card-toggle="${target}"]`);
+        const element = target === undefined ? undefined : toggleOf(box, target);
         if (element !== undefined && element !== null) {
             setStop(target);
             hadFocus.current = target;
@@ -82,26 +75,28 @@ function Stages(props: { plan: PlanView; links: CardLinks; copyResult: CopyResul
         }
     };
     const onFocus = (event: React.FocusEvent<HTMLElement>): void => {
-        const id = (event.target as HTMLElement).closest<HTMLElement>('[data-step-card]')?.getAttribute('data-step-card');
-        if (id !== null && id !== undefined) {
-            hadFocus.current = id;
-            if (id !== stop) {
-                setStop(id);
+        const key = cardKeyOf(event.target as HTMLElement);
+        if (key !== undefined) {
+            hadFocus.current = key;
+            if (key !== stop) {
+                setStop(key);
             }
         }
     };
     const onKeyDown = (event: KeyboardEvent<HTMLElement>): void => {
         const direction = ARROWS[event.key];
-        const id = (event.target as HTMLElement).closest<HTMLElement>('[data-step-card]')?.getAttribute('data-step-card');
-        if (direction === undefined || id === null || id === undefined || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+        const key = cardKeyOf(event.target as HTMLElement);
+        if (direction === undefined || key === undefined || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
             return;
         }
         event.preventDefault();
-        const target = moveFocus(grid, id, direction);
+        const target = moveFocus(grid, key, direction);
         if (target !== undefined) {
             setStop(target);
             hadFocus.current = target;
-            root.current?.querySelector<HTMLElement>(`[data-card-toggle="${target}"]`)?.focus();
+            if (root.current !== null) {
+                toggleOf(root.current, target)?.focus();
+            }
         }
     };
     return (
@@ -120,17 +115,17 @@ function Stages(props: { plan: PlanView; links: CardLinks; copyResult: CopyResul
                     <h3 className="plan-stage-heading">{NOT_IN_A_STAGE_TEXT}</h3>
                     <div className="plan-stage-groups">
                         <div className="plan-group" data-card-row>
-                            {plan.loose.map((step) => (
-                                <StepCard key={step.id} step={step} expanded={expanded.has(step.id)} tabStop={tabStop === step.id} links={links} onToggle={toggle} />
+                            {plan.loose.map((step, index) => (
+                                <StepCard key={looseKeys[index]} cardKey={looseKeys[index]!} step={step} expanded={expanded.has(looseKeys[index]!)} tabStop={tabStop === looseKeys[index]} links={links} onToggle={toggle} />
                             ))}
                         </div>
                     </div>
                 </section>
             ) : (
                 <div className="plan-card-list">
-                    {plan.loose.map((step) => (
-                        <div key={step.id} className="plan-group" data-card-row>
-                            <StepCard step={step} expanded={expanded.has(step.id)} tabStop={tabStop === step.id} links={links} onToggle={toggle} />
+                    {plan.loose.map((step, index) => (
+                        <div key={looseKeys[index]} className="plan-group" data-card-row>
+                            <StepCard cardKey={looseKeys[index]!} step={step} expanded={expanded.has(looseKeys[index]!)} tabStop={tabStop === looseKeys[index]} links={links} onToggle={toggle} />
                         </div>
                     ))}
                 </div>

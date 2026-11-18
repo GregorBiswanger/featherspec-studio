@@ -354,6 +354,25 @@ describe('0023 AC-008: stage rows and step cards', () => {
         expect([...map(container).querySelectorAll('[data-step-card]')].map((card) => card.getAttribute('data-step-card'))).toEqual(['T-001', 'T-002']);
     });
 
+    it('an ID that stands in two stages is two cards: opening one opens only it, and it stays open through an update', async () => {
+        const twice = planSample({
+            stages: [
+                stage(2, [{ steps: [step('T-003', 'next'), step('T-004', 'open')] }], { current: true }),
+                stage(3, [{ steps: [step('T-004', 'open'), step('T-005', 'open')] }]),
+            ],
+        });
+        const container = await show({ selection: selected('0007'), detail: detailWith(twice) });
+        const heads = (): HTMLButtonElement[] => [...map(container).querySelectorAll<HTMLButtonElement>('[data-card-toggle="T-004"]')];
+        expect(heads()).toHaveLength(2);
+        await click(heads()[1]!);
+        expect(heads().map((entry) => entry.getAttribute('aria-expanded'))).toEqual(['false', 'true']);
+        expect(heads().map((entry) => document.getElementById(entry.getAttribute('aria-controls')!)!.hidden)).toEqual([true, false]);
+        await show({ selection: selected('0007'), detail: detailWith({ ...twice, count: { done: 3, total: 5 } }) });
+        expect(heads().map((entry) => entry.getAttribute('aria-expanded'))).toEqual(['false', 'true']);
+        await click(heads()[0]!);
+        expect(heads().map((entry) => entry.getAttribute('aria-expanded'))).toEqual(['true', 'true']);
+    });
+
     it('the expansion belongs to the step ID: it survives an update of the plan and resets with another spec', async () => {
         const container = await show({ selection: selected('0007'), detail: detailWith(planSample()) });
         await click(cardOf(container, 'T-003').querySelector<HTMLButtonElement>('button[data-card-toggle]')!);
