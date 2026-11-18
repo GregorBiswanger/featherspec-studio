@@ -311,7 +311,7 @@ and are not repeated here (PD-036, PD-038).
 | FR-10 | Live update after file changes and run events | no FR; handoff AC-007.7 | AC-019 |
 | FR-11 | In-area empty and error states | §13 Usability | AC-020, AC-021 |
 
-*Amended by 0017 (PD-060/PD-061): void (PD-060).*
+*Amended by 0017 (PD-060/PD-061): FR-09 is void (PD-060).*
 
 *Amended by 0015 (PD-055/PD-056): FR-10: drop "run events" and "run-event notification".*
 

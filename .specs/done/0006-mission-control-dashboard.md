@@ -272,6 +272,7 @@ sensitive fields: run error messages, prompts and provider payloads are not show
   - spec counts and progress;
   - run section: *Running* figure, highlighted runs;
   - *Needs attention*;
+    *Amended by 0017 (PD-060/PD-061): a row whose spec has a step shows "Next", the short form and Copy (0017 AC-012).*
   - *Recent activity*.
 
   Revised 2026-11-17: spec 0013 §3.2 replaces this guidance — *Needs attention* follows the

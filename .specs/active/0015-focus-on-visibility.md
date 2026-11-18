@@ -193,7 +193,7 @@ the Output channel "FeatherSpec Studio" naming what it removed; nothing removed,
 | FR-06 | Commands, settings, dependencies, processes, network, source, tests, docs of runs gone | AC-014–AC-022, AC-025, AC-026 |
 | FR-07 | No quality loss; specs and architecture consistent | AC-027–AC-030 |
 
-*Amended by 0017 (PD-060/PD-061): void (PD-060).*
+*Amended by 0017 (PD-060/PD-061): FR-03 is void (PD-060).*
 
 ## 8. Product texts (proposals, English per PD-016; Gregor can overrule)
 
