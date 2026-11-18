@@ -96,6 +96,8 @@ Marketplace listing. Users: the developer in the Studio panel; Gregor accepts th
 
 ### 3.4 Spec Explorer
 
+*Amended by 0019 (PD-058): §3.4 detail bullets (header "Open file", sections, per-section Open file, inline Markdown and tidying of file text) — header per 0019 §6.2 row 1; collapsible: Format notes and Status history only; no file text. The safe inline renderer and AC-014 stay for problem and note reasons, which quote file text.*
+
 - Two panes (list with own scroll; detail with header: number chip, title, state chip, "Open
   file"), stacked under 640 px; selected row by background and border (D-12), no wrap (D-11).
 - **Sections** (0007 §6.4 names): the heading is a button that collapses or expands the body;
@@ -141,6 +143,9 @@ through `--vscode-font-family` and `--vscode-editor-font-family`, with no `@font
 toggle, section "Open file", "Move to…", related-artifact link) shall be reachable with Tab and
 show a focus outline from `--vscode-contrastActiveBorder` or `--vscode-focusBorder`; no rule
 shall remove an outline.
+
+*Amended by 0019 (PD-058): AC-003 list "section 'Open file'" and "related-artifact link" — the side panel's close button, links and toggles (0019 AC-021).*
+
 *Amended by 0018 (PD-062): control list: figures, rows, "+ n more", Problems and Activity headings, Done toggle, filter chip.*
 
 *Amended by 0017 (PD-060/PD-061): "Move to…" reads "card and row Copy".*
@@ -203,10 +208,14 @@ pointer, and remove both marks when the drag ends, with or without a drop.
 hide or show that section's body and set `aria-expanded`; the state shall survive selecting
 another spec while the panel stays open.
 
+*Amended by 0019 (PD-058): AC-012 applies to Status history, which starts collapsed; Format notes follow PD-063 (5): collapsed on every showing, no memory (0019 AC-015).*
+
 **AC-013** The detail view shall offer exactly one "Open file" per section that 0007 §6.4 gives a
 source file (Related artifacts: one link per listed file), none per requirement, criterion or
 diagnostic, and none where 0007 AC-010 forbids one; activating it shall send 0007's open request
 for that file without a line.
+
+*Amended by 0019 (PD-058): AC-013 is void: no per-section "Open file" (0019 AC-017).*
 
 **AC-014** When file text contains the §3.4 subset, the detail view shall render `strong`, `em`,
 `code` and text-plus-target elements for it. If file text contains HTML such as
@@ -218,8 +227,13 @@ drop a block quote's `> ` and a duplicated list marker, and show the Plan line's
 target; each plan step shows a ticked, unticked or undetermined icon with its text label and
 its `Verified` text. *(fixture: a copy of this repo's spec 0002 and its plan; D-1, D-2)*
 
+*Amended by 0019 (PD-058): AC-015 is void: the detail carries no full text (0019 AC-010).*
+
 **AC-016** Every existing test of 0005–0007 shall stay green; only assertions on wording or
 structure that §2's five deltas change are updated, in the same change set, each named in the plan.
+
+*Amended by 0019 (PD-058): AC-016 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*
+
 *Amended by 0018 (PD-062): the test audit also excepts the tests 0018 AC-030 lists against a criterion 0018 §5 voids.*
 
 *Amended by 0017 (PD-060/PD-061): also except the tests 0017 AC-024 lists against a criterion that 0017 §5 voids.*
@@ -236,6 +250,9 @@ Light, project state readable at a glance; the verdict is recorded in the plan. 
 2026-11-17 under Gregor's delegation of 2026-11-17: these four checks are made by his delegate
 on the dated screenshot set; the taste verdict of §1 ("fit for a talk or a Marketplace
 listing") is checked by Gregor or his delegate; pre-release checklist item.
+
+*Amended by 0019 (PD-058): AC-017 detail screenshots — replaced by 0019 AC-022.*
+
 *Amended by 0018 (PD-062): screenshot list: "Overview" and "Board" for the old names, plus both at 640 px (0018 AC-031).*
 
 *Amended by 0015 (PD-055/PD-056): no Agent Center screenshot.*

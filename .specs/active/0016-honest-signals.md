@@ -91,6 +91,8 @@ dependency line reads as amended by this table.
 | PD-004 "labelled as derived in the UI and shows its rule"; PD-015, PD-041 "'Priority: not available'" (superseded by the new entry) | Label and rule in the tooltip (T-08), the sentence visible; nothing about priority is shown, the README says once why |
 | PD-059 (refined by the new entry) | §6.1 (A-001, A-002) |
 
+*Amended by 0019 (PD-058): §5 row on 0007 §6.4 Overview — 0019 §6.2 gives the detail no Overview section: needs sit in Progress (0019 AC-011), the history is section 7 (0019 AC-015).*
+
 *Amended by 0017 (PD-060/PD-061): the parts on 0015's *Drop result* are void (PD-060).*
 
 ## 6. Business rules
@@ -133,6 +135,8 @@ FeatherSpec 1.10.0 writes none of `Added`, `Deletes`, `Open evidence`, `Evidence
 | Board banner (project level only) | listed under T-06 | collapsed toggle T-07 |
 | Detail | each with the warning icon and its reason, directly below "Next step", not collapsible | toggle T-07 in Overview, collapsed when shown |
 | Readiness | R-6 fails | R-6 passes |
+
+*Amended by 0019 (PD-058): §6.2 detail row "toggle T-07 in Overview" — no Overview section: T-07 heads section 6, Format notes, collapsed on every showing (0019 §6.2, AC-015).*
 
 Compatibility shows nowhere. A `**Successor:**` line is read in every spec; only a Deprecated
 spec's is used, and its successor appears once in its detail. NS-2 and NS-11 stay as 0015 defines them.
@@ -226,6 +230,7 @@ the repository's own `.specs/`).
 - **AC-011** No text the Studio writes itself on cards, list rows, Mission Control, the board banner and the detail — anything not quoted from the project's files — shall contain a rule ID (`S-…`, `R-1`…`R-7`, `NS-…`), "persisted", "Model updated", "first observed" or "not checked"; each rule ID shown before shall be in the tooltip of the element that showed it (T-08, T-10, T-12).
 - **AC-012** Wherever a derived state was shown with its rule at `8052f9a` (card, list row, tile, detail), the system shall show T-09's sentence.
   *Amended by 0018 (PD-062): card and tile: the card shows no derived sentence (0018 B-5); the tile is gone; the column tooltip carries it (0018 B-6).*
+  *Amended by 0019 (PD-058): AC-012 detail part — in the detail T-09's sentence is in the state chip's tooltip and in visually hidden text, not visible text (0019 AC-009; audit 03 §5.2, as 0018 B-6).*
 - **AC-013** The detail shall show no line of T-13; the model shall keep R-7 and the compile-verdict fact (0003 AC-005, AC-018 unchanged).
 - **AC-014** While a spec is Backlog, its card shall show §6.3's first applying need and its detail every applying need in order, each as text with no icon and the T-12 tooltip; if none applies, then neither shall show a need line; no element shall show a readiness checklist or a failure icon for a readiness check.
   > **Given** `fs170-brownfield-mixed` **Then** the card of 0003 reads `needs a plan`.
@@ -234,6 +239,7 @@ the repository's own `.specs/`).
   *Amended by 0018 (PD-062): header time → the project name's tooltip (0018 AC-025).*
 - **AC-016** When a criterion or requirement starts with its ID inside emphasis that also encloses the title (`**AC-001 — Title**`, `__AC-001 — Title__`, `***AC-001 — Title***`), the detail shall show the ID once, the title with that emphasis, and no `*` or `_` left from it; `**AC-001** — text` shall render as today.
   > **Given** `fs170-brownfield-mixed` 0003 **Then** AC-001 shows "Events reach the broker without an intermediate table" in bold, then "When an order event occurs…", and no `**`.
+  *Amended by 0019 (PD-058): AC-016 is void in the detail with the full text: criteria show as plain short titles, no `*` or `_` left (0019 AC-013).*
 - **AC-017** Every Copy of a next step, the drop result's included, shall use the primary button colours (`--vscode-button-background`, `--vscode-button-foreground`), and the drop result's Dismiss `--vscode-button-secondaryBackground` and `--vscode-button-secondaryForeground`; a stylesheet guard decides it.
   *Amended by 0017 (PD-060/PD-061): "the drop result's" is void (PD-060).*
 - **AC-018** When the developer activates Copy and the clipboard write succeeds, the button shall read `Copied`, carry `Copied to the clipboard.` as tooltip, and the live region shall announce that sentence; if it fails, then they shall read `Could not copy` and `Could not copy to the clipboard.`; 2 s after the last activation the button shall read `Copy` again with its earlier tooltip.
@@ -245,6 +251,7 @@ the repository's own `.specs/`).
 - **AC-023** Every test at the plan's Baseline commit that decides a criterion of 0001–0007, 0013, 0014 or 0015 shall exist at the head and pass, unless §5 changes that criterion; a script compares the test titles of both commits and the plan lists every missing or renamed title with the §5 row or head title that replaces it; `npm run test:unit` and `npm test` shall pass on Windows and in CI.
   *Amended by 0017 (PD-060/PD-061): also except the tests 0017 AC-024 lists against a criterion that 0017 §5 voids.*
   *Amended by 0018 (PD-062): the test audit also excepts the tests 0018 AC-030 lists against a criterion 0018 §5 voids.*
+  *Amended by 0019 (PD-058): AC-023 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*
 - **AC-024** The specs of §5 shall carry their amendment notes and the PD register one new entry superseding §5's PD rows, with no note in an older entry; the README shall say once that FeatherSpec has no priority, persisted compile verdict or dependency field, so the Studio shows none; CHANGELOG and `docs/release-checklist.md` shall name the changes and AC-025.
 - **AC-025** *(manual, Gregor or delegate)* Preview harness screenshots in Dark, Light and High Contrast: primary Copy, its label change without shift, the need line, the T-07 toggle, the problem badge and the S2 sentence in view and panel; Gregor's Hands-On on `tip-splitter` shows no problem marker without a real problem.
 

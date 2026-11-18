@@ -14,8 +14,19 @@ All notable changes to FeatherSpec Studio are documented in this file. The forma
   `FeatherSpec Studio: Copy Next Step` does the same and, without a current spec, offers a list.
   An Active spec with an open plan step gets a second line, `continue`, for the same chat.
 
+- The detail of a spec as a side panel (0019): selecting a spec on the Board or in the Overview (click,
+  Enter or Space) shows its detail in a 400 px panel beside the area and keeps the area; below 900 px
+  the panel is a drawer. Close it with its button or Escape. The detail is a picture of the spec's
+  situation: Next step, Problems, Progress (steps and the next open step, criteria verified and still
+  open, needs), Files, and folded Format notes and Status history. Every ID and file name is a link
+  that opens the file beside the Studio at the line of the ID. The command `featherspec-studio.selectSpec`
+  selects a spec by stem (for the native tree of 0020).
+
 ### Removed
 
+- The text of the files in the detail: requirements and criteria in full, the plan's steps with their
+  `Verified` text, the section "Open file" buttons and the foldable Overview, Requirements, Acceptance
+  criteria, Plan & tasks, Verification and Related sections (0019). Open the file by its link instead.
 - Drag and drop on the Spec Board, the card's "Move to…" menu (and Shift+F10) and the command
   `FeatherSpec: Move Spec to…` (0017). Studio moves no spec and checks no move; lifecycle moves
   belong to `/sdd-lifecycle`. The status bar no longer shows `FeatherSpec: <name> (<version>)` while
@@ -27,6 +38,8 @@ All notable changes to FeatherSpec Studio are documented in this file. The forma
 
 ### Changed
 
+- Activating a Board card, an Overview row or an activity entry selects the spec in place and shows its
+  detail in the side panel; it no longer switches to the Spec Explorer (0019). A card also opens on Space.
 - Overview and Board (0018): *Mission Control* is now the **Overview**
   (`FeatherSpec Studio: Open Overview`) and the *Spec Board* is the **Board**
   (`FeatherSpec Studio: Open Board`); the commands `Open Mission Control` and `Open Spec Board` are

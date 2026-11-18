@@ -79,13 +79,13 @@ and the expected result. A clear miss reopens the named spec.
 
 ## Board (0007, 0018)
 
-- [ ] **AC-017 keyboard only**: Tab reaches the board, arrows move between cards, Enter opens the detail,
-  the next Tab reaches the card's Copy, Enter copies (0017: Shift+F10 opens no menu); filters, sort,
-  "Clear filters", every "Open file" work.
+- [ ] **AC-017 keyboard only**: Tab reaches the board, arrows move between cards, Enter or Space selects the
+  card and shows the side panel (0019), the next Tab reaches the card's Copy, Enter copies (0017: Shift+F10
+  opens no menu); filters, sort, "Clear filters", every link of the detail work.
 - [ ] **AC-018 screen reader** (NVDA or Narrator): Copy on a card announces "Copied" (0016); the card
   reads its next step (0017 replaced the move announcements).
 - [ ] **AC-026**: board and detail in Light, Dark and High Contrast — text readable, focus outline visible on
-  cards, buttons and "Open file", descriptions cut to two lines.
+  cards, buttons and links, descriptions cut to two lines.
 
 ## Visual design (0013)
 
@@ -122,3 +122,14 @@ and the expected result. A clear miss reopens the named spec.
 - [ ] **README screenshots**: replace `media/screenshots/mission-control-dark.png` and
   `spec-board-dark.png` with harness screenshots of the Overview and the Board (the files keep their names;
   the README headings and alt texts already say Overview and Board).
+
+## The detail as a side panel (0019)
+
+- [ ] **AC-022** *(Gregor or his delegate)*: preview-harness screenshots in Dark, Light and High Contrast of
+  Board and Overview with the side panel of the `studio-0015` fixture at 1400x900 and 800x900. The side
+  panel is at most 900 px tall with Format notes and Status history closed; at 800 px the drawer covers the
+  right part of the board and a card focused under it by Tab or arrow scrolls clear; nothing is cut off.
+- [ ] In a real VS Code window: clicking an ID or a file name in the side panel opens the file beside the
+  Studio, at the line of the ID, and the Studio stays visible; a card, an Overview row and an activity entry
+  select in place without changing the area; Escape and the close button close the panel and return focus to
+  the card or row.

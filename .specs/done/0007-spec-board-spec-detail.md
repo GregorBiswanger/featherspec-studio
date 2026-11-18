@@ -28,6 +28,8 @@ keyboard use. It owns the drag interaction and its keyboard alternative: it reje
 that 0003 refuses, and passes a Ready → Active move on to the start workflow of 0008.
 Everything is read-only. Studio never writes a FeatherSpec file.
 
+*Amended by 0019 (PD-058): §1 — the detail is the side panel of 0019 in Overview and Board and the pane of Spec Explorer until 0020; a card selects in place (0019 AC-001).*
+
 *Amended by 0017 (PD-060/PD-061): "owns the drag interaction and its keyboard alternative" is void (PD-060); the card shows the next step (0017 AC-004).*
 
 ## 2. Goal and problem
@@ -59,6 +61,7 @@ without a reload. Every board action can be done without a mouse.
 - Card content: §6.1. Progress and last change: §6.2. Latest run: §6.3.
 - Spec detail view with seven detail sections and "Open file" links, shown in the Spec Explorer
   area (§6.4).
+  *Amended by 0019 (PD-058): §4 first in-scope bullet — the detail is 0019's situation picture (0019 §6.2), shown as the side panel in Overview and Board and as the Spec Explorer pane until 0020.*
 - Filters by state, provider and named spec set; sorting; hidden-card counts; "Clear filters";
   a filter handed in through the shell's navigation request (§6.5).
 - Drag interaction, the "Move to…" menu and the command `FeatherSpec: Move Spec to…`.
@@ -105,6 +108,7 @@ without a reload. Every board action can be done without a mouse.
 4. The developer activates a card with a click or Enter. The board asks the shell to open Spec
    Explorer with that spec selected (PD-040, PD-042). The detail view shows the seven detail
    sections. "Open file" opens the source in the editor.
+   *Amended by 0019 (PD-058): §5 step 4 — the card selects the spec in place (0019 AC-001); the detail is 0019's picture, not seven sections with "Open file".*
 5. The developer drags a card, or uses "Move to…". The board asks 0003 whether the move is
    allowed. If it is refused, the card stays in its column and the reason is shown and
    announced. If it is a Ready → Active move that 0003 accepts, the board hands it to 0008.
@@ -188,6 +192,8 @@ selected spec (PD-039, PD-042). The board, Mission Control and the list all reac
 the shell's navigation request (PD-040). With no spec selected it shows a one-line hint to
 select one.
 
+*Amended by 0019 (PD-058): §6.4 intro — the detail is the side panel of 0019 in Overview and Board and the pane of Spec Explorer beside 0005's list until 0020; the rest of this paragraph about reaching it through the navigation request is void for the board and the Overview (0019 AC-001).*
+
 | Detail section | Content | "Open file" |
 | --- | --- | --- |
 | Overview | header lines as 0002 delivers them, state with rule ID and the *persisted* or *derived* marker, *Deprecated* marker with the successor as 0003 reports it, readiness checks R-1…R-7 with *pass / fail / not available* and reason, for entries in `backlog/` only, every diagnostic with its reason, "Priority: not available" | spec file |
@@ -197,6 +203,8 @@ select one.
 | Verification | the verification status of 0003 §6.6: rows per state, the summary, and the `/sdd-compile` verdict as *not available* | the plan, when one exists |
 | Related artifacts | sibling plan, archived plans, return notes | each listed file |
 | Agent history | the spec's runs from 0004, newest created first, each with provider, status, timestamps and 0004's "history incomplete" or "history unreadable" flag — runs only, no events. Below them the status history from 0003, under its label "Observed by Studio while it was running — not a reconstruction" | none |
+
+*Amended by 0019 (PD-058): §6.4 table and the "Open file" bullet below it — replaced by 0019 §6.2 and AC-009–AC-019; §6.4's other bullets stay.*
 
 *Amended by 0016 (PD-059, proxy): §6.4 status history row — entries read as 0016 T-14; the label as T-15.*
 
@@ -271,6 +279,7 @@ select one.
   every platform; Enter or Space on it opens the menu. Shift+F10 and the context-menu key open
   the same menu from the card as extra ways.
   *Amended by 0017 (PD-060/PD-061): Tab from the card reaches its Copy (one card stop plus one button stop stays); Enter or Space copies; Shift+F10 and the context-menu key open no Studio menu (0017 AC-006).*
+  *Amended by 0019 (PD-058): §6.7 "Enter opens the detail view" and "every Open file link" — Enter opens the side panel (0019 AC-004); "every link of the detail" (0019 AC-017).*
 - The filters, the sort control, "Clear filters" and every "Open file" link are reachable and
   operable by keyboard.
 - Board state, run status, verification summary, every marker, every refusal and every "not
@@ -315,6 +324,8 @@ and are not repeated here (PD-036, PD-038).
 | FR-10 | Live update after file changes and run events | no FR; handoff AC-007.7 | AC-019 |
 | FR-11 | In-area empty and error states | §13 Usability | AC-020, AC-021 |
 
+*Amended by 0019 (PD-058): FR-05, AC-008 — the detail is 0019's side panel and pane; a card selects in place (0019 AC-001). AC-009 is void; AC-010 and AC-027 are replaced as the notes at §6.4 and at the criteria say.*
+
 *Amended by 0017 (PD-060/PD-061): FR-09 is void (PD-060).*
 
 *Amended by 0015 (PD-055/PD-056): FR-10: drop "run events" and "run-event notification".*
@@ -342,6 +353,7 @@ and are not repeated here (PD-036, PD-038).
 
 - UI language English (PD-016). The board fills the Spec Board area, the detail view sits in
   the Spec Explorer area of the Studio panel (0005, PD-042).
+  *Amended by 0019 (PD-058): §9 first bullet — the detail view is the side panel of 0019 in Overview and Board and the pane of Spec Explorer until 0020.*
 - The rules for card content, the detail view, the states and accessibility are in §6.1–§6.8.
   The English texts not fixed there (column hints, the no-selection hint, the hand-off
   announcement, "file not found") are written in the plan.
@@ -406,6 +418,8 @@ and are not repeated here (PD-036, PD-038).
 | Active project changes | Filters cleared; selection handling is the shell's (0005) |
 | A run is written by another window (PD-030) | Not pushed to this window; its board shows it at its next model change or refresh (accepted limitation, Gregor, 2026-11-16) |
 
+*Amended by 0019 (PD-058): §13 rows "stem disappears … no-selection hint" and "'Open file' on a file that is gone" — the side panel closes (0019 AC-020); the file-gone row is 0019 AC-019; the no-selection hint applies to the Spec Explorer pane only.*
+
 *Amended by 0017 (PD-060/PD-061): the rows "Card being dragged while its file changes" and "Drop on the own column or outside every column" are void (PD-060).*
 
 ## 14. Acceptance criteria
@@ -451,6 +465,9 @@ Where there is no such plan or it has no countable step, the task figure shall r
 available". Where 0003 reports the verification summary as *not available*, the criteria figure
 shall read "not available". The Verification section of the detail view shall show the same
 criteria numbers as the card. *(PD-043)*
+
+*Amended by 0019 (PD-058): AC-006 last sentence "The Verification section of the detail view …" — the Criteria row of 0019's Progress shows the card's numbers (0019 AC-012).*
+
 *Amended by 0018 (PD-062): card part: the card leaves out a figure that is not available; the detail keeps "not available".*
 
 **AC-007** The card shall show the provider and run status of the spec's latest run — the run
@@ -465,6 +482,8 @@ so.
 to open Spec Explorer with that spec selected, and the detail view shall show that spec.
 *(AC-007.4, PD-040, PD-042)*
 
+*Amended by 0019 (PD-058): AC-008 — a card selects its spec in place and the side panel shows it (0019 AC-001, AC-002); a card also opens on Space.*
+
 **AC-009** The detail view shall show every acceptance-criterion definition that 0002 delivers
 for the spec, with its full text as delivered, its Given/When/Then illustration, its
 *uncertain* flag and its *struck* flag. It shall show every `FR-` requirement 0002 delivers for
@@ -472,6 +491,8 @@ the spec. It shall show each ID exactly once: the text as delivered loses only i
 list marker, ID and separator (revised 2026-11-16, first visual check), and in the plan's stage
 list a stage line loses its list number, which the list adds again. Where 0002 delivers none, the Requirements section shall show "No `FR-` requirements
 found" and still offer "Open file" on the spec. *(AC-007.5, PD-034)*
+
+*Amended by 0019 (PD-058): AC-009 is void (0019 §5): the detail names IDs as links at their lines and carries no criterion or requirement text (0019 AC-010, AC-013).*
 
 **AC-010** The detail view shall show the detail sections Overview, Requirements, Acceptance
 criteria, Plan & tasks, Verification, Related artifacts and Agent history with the content
@@ -481,6 +502,8 @@ status history or "No plan yet". When the developer activates "Open file", the s
 open that file in the editor at the source location 0002 delivers for the item, or at the top
 of the file where 0002 delivers none. If the file no longer exists, then the system shall say
 so and open nothing. *(PD-044)*
+
+*Amended by 0019 (PD-058): AC-010 — the section list and the per-section "Open file" are void; its open-at-location and not-found sentences continue as 0019 AC-017–AC-019.*
 
 *Amended by 0016 (PD-059, proxy): AC-010 — the Overview shows needs in place of R-1…R-7, *Problems* below "Next step" and format notes collapsed; no priority or verdict line (0016 §6.2, T-13).*
 
@@ -527,6 +550,9 @@ previous and next card of a column with Up and Down, move to the nearest column 
 card with Left and Right, open the detail view with Enter, reach the card's "Move to…" button with Tab, open
 its menu from that button and choose a target in it, and reach and operate every filter, the sort control, "Clear filters"
 and every "Open file" link. *(AC-007.8)*
+
+*Amended by 0019 (PD-058): AC-017 — "open the detail view with Enter" reads "Enter opens the side panel" (0019 AC-004) and "every Open file link" reads "every link of the detail" (0019 AC-017).*
+
 *Amended by 0018 (PD-062): Left and Right skip narrow columns; the Done toggle joins the keyboard path; the checkboxes leave it (0018 AC-024).*
 
 *Amended by 0017 (PD-060/PD-061): "Move to… button … opens the menu … choose a target", Shift+F10 and the context-menu key: Tab from the card reaches its Copy, Enter or Space copies, Shift+F10 and the context-menu key open no Studio menu (0017 AC-006).*
@@ -600,6 +626,8 @@ provider, status and timestamps, and no run events. It shall show the status his
 under the label "Observed by Studio while it was running — not a reconstruction". While the run
 store's state is *unavailable*, it shall show *not available* for both.
 
+*Amended by 0019 (PD-058): AC-027 — its status history is the collapsed section "Status history (n)" of 0019 AC-015.*
+
 *Amended by 0016 (PD-059, proxy): AC-027 — entries read as 0016 T-14; the label as T-15.*
 
 *Amended by 0015 (PD-055/PD-056): the section is "Status history".*
@@ -607,6 +635,8 @@ store's state is *unavailable*, it shall show *not available* for both.
 **AC-028** When the selected spec moves between lifecycle folders, the detail view shall keep
 showing it. While no spec is selected, the detail view shall show a hint to select one and no
 spec content. *(PD-039)*
+
+*Amended by 0019 (PD-058): AC-028 — "a hint to select one" applies to the Spec Explorer pane only; the side panel closes while no spec is selected (0019 AC-002, AC-020).*
 
 Who decides: AC-001–AC-016, AC-019–AC-025, AC-027 and AC-028 are decided by unit tests over the
 fixture set (featherspec-format §11) and by UI component tests; the test level per criterion is

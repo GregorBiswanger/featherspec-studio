@@ -43,14 +43,15 @@ Dark, Light and High Contrast, no custom colour palette, no web fonts, no new de
 - Readiness and rule references read as sentences for humans; the rule ID is secondary text.
 
 ## Spec Explorer
-- Two panes: list left, detail right. Detail has a header (number, title, state chip, "Open
-  file") and sections that can be collapsed: Overview, Requirements, Acceptance criteria,
-  Plan & tasks, Verification, Related artifacts, History.
-- Text from the files is shown with inline Markdown rendered safely (bold, italics, inline
-  code, links as text + target) — escaped first, small built-in subset, no library, no HTML
-  from the files ever reaches the DOM. Block quotes and list markers are tidied.
-- IDs appear once ("FR-01", "T-001"), steps show a check icon and their `Verified` text;
-  one "Open file" per section, not per item.
+- Two panes: list left, detail right (until 0020 replaces the list with a native tree).
+- *Superseded by PD-058 and spec 0019:* the detail is a picture of the spec's situation, not its
+  text: header (number, title, state chip, close button), Next step, Problems, Progress (steps,
+  criteria, needs), Files, Format notes and Status history (the last two collapsed). It shows
+  as a 400 px side panel beside Overview and Board (a drawer below 900 px) and as the pane of the
+  Spec Explorer. Selecting a spec keeps the area; Escape or the close button closes it.
+- Every ID and file name is a link that opens the file beside the Studio at the line of the ID.
+  Text that quotes file content (reasons, format notes) is still rendered safely: escaped first,
+  small built-in subset, no HTML from the files reaches the DOM.
 
 ## Agent Center (placeholder until 0012) and panel-level states
 - Friendly, centred empty/placeholder states with an icon, one sentence and the action.

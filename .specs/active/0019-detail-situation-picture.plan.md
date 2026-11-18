@@ -1,9 +1,9 @@
 # Plan — Spec Detail as a Situation Picture Beside the Content
 
 **Spec:** [0019-detail-situation-picture.md](0019-detail-situation-picture.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-18
-**Current step:** T-008
+**Current step:** — (all steps verified)
 
 ## Approach
 
@@ -392,44 +392,98 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
   §5 rows; `git diff --stat <Baseline> -- docs/product/product-decisions.md` empty; gates 1–5;
   `npm run compile-tests`; `npm test` on Windows and CI (pre-done gate, Gregor); AC-022 by Gregor or
   his delegate (pre-release)
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** 2026-11-18 — audit: `python3 /tmp/audit-0019/titles.py` Baseline vs head lists 40 absent test titles, each mapped in "Test-title audit"; `grep -c "Amended by 0019"` 0005 4, 0006 2, 0007 16, 0013 7, 0015 2, 0016 5, 0017 2, 0018 3 (all eight ≥ 1, one per §5 statement); `git diff 20792ca -- docs/product/product-decisions.md` empty. Gates: eslint 0 warnings, `tsc --noEmit` and `tsc -p src/webview` clean, `npm run test:unit` 2100 passed + 3 skipped (+12 timing), `npm run compile`, `npm run compile-tests` green. Not run here: `npm test` (host smoke; VS Code download blocked, Windows and CI), AC-022 (manual: preview harness screenshots and a real window); jsdom computes no layout, so the 400 px column, the drawer overlay and the scroll-clear padding rest on the CSS guard tests until then.
+- **Notes:** (1) §5 notes are one `*Amended by 0019 (PD-058): …*` line under each named statement (bullet, paragraph, table or heading), the PD register stays unedited. (2) README: Spec Explorer and "The detail of a spec" sections, Overview and Board sentences (select in place), next-step sentences; its screenshot of the old detail stays (a docs scan requires three screenshot links) until AC-022's new ones replace it. (3) `docs/product/design-brief.md` Spec Explorer section marks the old detail superseded by PD-058; `docs/release-checklist.md` rewords the keyboard and "Open file" items and adds the 0019 section with AC-022; CHANGELOG Unreleased has Added, Changed and Removed lines. (4) `/sdd-architecture-update`: `last reconciled` → `(0019)` in `AGENTS.md` and the three module maps, plus the core, webview, protocol and adapter lines named in this step; Memory Bank: `techContext.md`, `systemPatterns.md`, `activeContext.md`. (5) Commit trailers follow `/home/claude/orch/IMPL-UX.md` (`Co-Authored-By: Claude Opus 5.5`); T-005 to T-007 were first committed with another model name and rewritten before this commit.
+
+## Test-title audit
+
+Method (0018's): `/tmp/audit-0019/titles.py` reads every `describe`/`it`/`test`/`suite` literal of each `.ts`/`.tsx`
+under `src` (`src/test/**` and `testing/*.ts` included) at the Baseline 20792ca (`git archive`) and at the
+head, 2026-11-18. Baseline: 2,077 titles, 1,728 tests; head: 2,167 titles, 1,801 tests. Every Baseline test
+title that is absent at the head is listed (40); every other title exists at the head and passes
+(`npm run test:unit`: 2,100 passed, 3 skipped, +12 timing). Retargeted tests that kept their title are not
+listed. The PD register is unedited (`git diff 20792ca -- docs/product/product-decisions.md` is empty).
+
+| Absent title (file) | Voided or replaced by |
+| --- | --- |
+| `0013 AC-013: sends openFile with the key of the section's file and no line` (SpecDetail.test) | Void: §5 0013 AC-013; replaced by AC-017 (key and line) |
+| `0013 AC-014, AC-015: the detail of this repo's spec 0002 (fixture studio-0002) …` (webviewBundle.test) | AC-010 on `studio-0015` ("0019 AC-010 … fixture studio-0015", detail.test and bundle); §5 0013 AC-015 void, AC-014's renderer stays for reasons |
+| `AC-003: toggles, section Open file buttons and related links are native buttons in the Tab order` | AC-004, AC-021; §5 0013 AC-003 |
+| `AC-006: each Problem shows with the warning icon directly below Next step and above Overview` | Kept as "… above Progress" (AC-009 order) |
+| `AC-006: the Verification section shows the same criteria numbers as the card` (detail.test) | AC-012; §5 0007 AC-006 ("AC-006 (0019 AC-012): the Criteria row shows the same numbers as the card") |
+| `AC-009: each ID appears once in a requirement, a criterion and a stage; the rest of the delivered text is kept` | Void: §5 0007 AC-009 (no text in the detail), AC-010 |
+| `AC-009: every FR- requirement; none gives an empty list and "Open file" stays on the spec` | Void: §5 0007 AC-009 |
+| `AC-009: every criterion with its full text, illustration, uncertain and struck flags, at its line` | Void: §5 0007 AC-009; the line per ID is AC-013, AC-017 |
+| `AC-010: Overview, Plan, Verification and Related carry their open targets; runs and history carry none` | AC-017, AC-014; §5 0007 AC-010 section list |
+| `AC-010: no plan gives no plan target and no steps ("No plan yet"), and no verification target` | AC-011 (no plan: "No plan yet", no Steps or Criteria row) |
+| `AC-010: plan steps carry tick, struck mark and their Verified text` | Void: §5 0007 AC-010 section list; AC-010 (no Verified text) |
+| `AC-010: the Overview header lines are a two-column grid …` (webviewCss.test) | Void: §5 0013 §3.4 (no header lines) |
+| `AC-010: the Overview shows a derived state with its sentence and rule ID` | AC-009 ("a derived state shows its chip tooltip, the sentence as hidden text …"); §5 0016 AC-012 detail part |
+| `AC-012: all sections start expanded; a collapsed section stays collapsed after another spec is selected` | AC-015 ("keeps its state across another spec …"); §5 0013 AC-012 |
+| `AC-012: the heading holds one toggle button; activating it hides the body and sets aria-expanded; again shows it` | AC-015 ("starts collapsed under the heading "Status history (n)" and shows its entries when expanded"); §5 0013 AC-012 |
+| `AC-013: no Open file per requirement, criterion or diagnostic; the Open file of a section sits in its heading row` | Void: §5 0013 AC-013 |
+| `AC-016: AC-001 of 0003 in fs170-brownfield-mixed keeps its bold title and loses the ID and the stray marker` (detail.test) | Void: §5 0016 AC-016 (no criterion text in the detail); AC-013 (plain short title) |
+| `AC-016: a criterion whose title is bold shows it in <strong> with no asterisk left` (SpecDetail.test) | Void: §5 0016 AC-016; AC-013 |
+| `Overview shows header lines, state, rule, persistence, priority and the format notes behind a toggle` | AC-009 (header, no header lines), AC-015 (format notes folded); §5 0016 §6.2 detail row |
+| `Overview shows the needs, no readiness checklist, and the successor of a deprecated spec` | AC-011 (needs in Progress), AC-009 ("a Deprecated spec shows the marker and its successor text") |
+| `Plan shows stages, steps with tick state, struck and the Verified text` | Void: §5 0007 §6.4 table (A-007); AC-011, AC-012 (Steps row, next open step) |
+| `Related shows the artifacts, and a hint when there are none` | AC-014 (Files: "lists an archived plan and a return note by their file names, nothing for an absent file") |
+| `Verification shows the counts, the summary, the criteria progress and no verdict line` | AC-012 (Criteria row); §5 0007 §6.4 |
+| `a Now row sends Spec Explorer with that spec; a row of a duplicated stem carries its path` (Drilldown.test) | AC-001 ("AC-001: a Now row sends select with that spec; …"); §5 0006 BR-08, AC-014; 0018 AC-006 |
+| `a click and Enter send the navigation request to Spec Explorer with the stem` (SpecBoard.test) | AC-001 ("AC-001: a click and Enter send the select request …"); §5 0007 FR-05, AC-008 |
+| `a new detail view clears the message` | AC-019 ("showing another spec restores the text") |
+| `activating the row outside Copy sends the request of 0006 AC-014` (Sections.test) | AC-001 ("AC-001: activating the row outside Copy sends select, not navigate"); §5 0006 AC-014; 0018 AC-006 |
+| `an activity entry of a current spec sends Spec Explorer with that spec` (Drilldown.test) | AC-001 ("AC-001: an activity entry of a current spec sends select …") |
+| `detail header: number chip, title, state chip and one Open file for the spec` | AC-009 ("the header holds the number, the title, one state chip and no Open file button") |
+| `each header line is one wrapper holding its label and its value …` | Void: §5 0013 §3.4 (no header lines) |
+| `is never offered for the status history or No plan yet` | AC-017 ("needs, history entries and texts send nothing"); §5 0007 §6.4 "Open file" bullet |
+| `is offered for the spec, the plan, related artifacts, items and diagnostics` | AC-017, AC-010 ("the next open step, an open criterion and a file send their key and line") |
+| `lists the labelled status history and no run` | AC-015 ("lists the labelled status history and no run once expanded") |
+| `renders the update fast enough: 120 requirements, 200 criteria, 150 steps, 100 history entries` (SpecDetail.timing) | AC-020 (timing of the picture's update, same budget) |
+| `says so and still offers Open file on the spec when there are no requirements` | Void: §5 0007 AC-009 |
+| `shows each criterion with its text, its Given/When/Then and both flags` | Void: §5 0007 AC-009 |
+| `shows each requirement with its id and text` | Void: §5 0007 AC-009 |
+| `shows the heading of the spec and the sections in order, each under a heading` | AC-009 ("shows Next step, Problems, Progress, Files, Format notes and Status history in this order") |
+| `shows the not-found text in the status line of the section that holds the file` | AC-019 ("the activated link reads "File not found: <path>" …") |
+| `the buttons are keyboard-operable` | AC-004, AC-017 ("every link is a native button in the Tab order and works with Enter and with Space") |
 
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-005 | — | — | open |
-| AC-002 | T-005 | — | — | open |
-| AC-003 | T-006 | — | — | open |
-| AC-004 | T-006 | — | — | open |
-| AC-005 | T-007 | — | — | open |
-| AC-006 | T-005 | — | — | open |
-| AC-007 | T-005 | — | — | open |
-| AC-008 | T-005, T-006 | — | — | open |
-| AC-009 | T-002, T-003, T-004 | — | — | open |
-| AC-010 | T-003, T-004 | — | — | open |
-| AC-011 | T-002 | — | — | open |
-| AC-012 | T-002 | — | — | open |
-| AC-013 | T-002 | — | — | open |
-| AC-014 | T-002 | — | — | open |
-| AC-015 | T-004 | — | — | open |
-| AC-016 | T-002 | — | — | open |
-| AC-017 | T-003 | — | — | open |
-| AC-018 | T-001 | — | — | open |
-| AC-019 | T-003 | — | — | open |
-| AC-020 | T-003, T-006 | — | — | open |
-| AC-021 | T-007 | — | — | open |
-| AC-022 | T-008 | — | manual: Gregor or his delegate (preview harness, real VS Code) | open |
-| AC-023 | T-008 | — | — | open |
-| AC-024 | T-008 | — | — | open |
+| AC-001 | T-005 | `webview/{App,detail/useOpenSpec,board/Card,areas/SpecBoard,areas/overview/*}.tsx` | `detail/SidePanel.test.tsx`, `board/SpecBoard.test.tsx`, `board/Keyboard.test.tsx`, `areas/overview/{Drilldown,Sections}.test.tsx` | verified |
+| AC-002 | T-005 | `webview/App.tsx`, `detail/SidePanel.tsx` | `detail/SidePanel.test.tsx`, `core/shell/shellService.navigation.test.ts` | verified |
+| AC-003 | T-006 | `shared/protocol/messages.ts`, `core/shell/shellService.ts`, `webview/{client,shell}`, `detail/{DetailFrame,focus}` | `detail/Close.test.tsx`, `shared/protocol/messages.test.ts`, `core/shell/{messageRouter,shellService.navigation}.test.ts` | verified |
+| AC-004 | T-006 | `detail/{DetailFrame,CloseButton,focus,SpecDetail}.tsx` | `detail/Close.test.tsx`, `detail/SpecDetail.test.tsx` | verified |
+| AC-005 | T-007 | `webview/main.css`, `detail/drawer.ts`, `shared/protocol/layout.ts`, `areas/SpecBoard.tsx` | `adapters/node/webviewCss.test.ts`, `detail/SidePanel.test.tsx` | verified (CSS guard); layout by AC-022 |
+| AC-006 | T-005 | `webview/App.tsx`, `detail/{focus,SidePanel}` | `detail/SidePanel.test.tsx`, `detail/Close.test.tsx` | verified |
+| AC-007 | T-005 | `webview/detail/selected.ts`, `board/Card.tsx`, `areas/overview/SpecRow.tsx` | `detail/SidePanel.test.tsx` | verified |
+| AC-008 | T-005, T-006 | `areas/SpecExplorer.tsx`, `detail/SpecDetail.tsx` | `detail/Close.test.tsx`, `detail/SidePanel.test.tsx` | verified |
+| AC-009 | T-002, T-003, T-004 | `core/board/detail.ts`, `shared/protocol/detail.ts`, `webview/detail/SpecDetail.tsx` | `core/board/detail.test.ts`, `detail/SpecDetail.test.tsx`, `shared/protocol/detail.test.ts` | verified |
+| AC-010 | T-003, T-004 | `webview/detail/*`, `core/board/detail.ts` | `detail/SpecDetail.test.tsx`, `core/board/detail.test.ts`, `adapters/node/webviewBundle.test.ts`, `webview/userLanguage.test.tsx` | verified |
+| AC-011 | T-002 | `core/board/situation.ts`, `detail/Progress.tsx` | `core/board/detail.test.ts`, `detail/SpecDetail.test.tsx` | verified |
+| AC-012 | T-002 | `core/board/situation.ts`, `detail/Progress.tsx` | `core/board/{detail,boardService}.test.ts`, `detail/SpecDetail.test.tsx` | verified |
+| AC-013 | T-002 | `core/board/shortTitle.ts` | `core/board/shortTitle.test.ts`, `core/board/detail.test.ts` | verified |
+| AC-014 | T-002 | `core/board/situation.ts` (`filesOf`) | `core/board/detail.test.ts`, `detail/SpecDetail.test.tsx` | verified |
+| AC-015 | T-004 | `detail/{DetailSection,sectionMemory,SpecDetail}.tsx`, `ui/FormatNotes.tsx` | `detail/SpecDetail.test.tsx` | verified |
+| AC-016 | T-002 | `core/board/detail.ts`, `shared/protocol/detail.ts` | `core/board/detail.test.ts`, `shared/protocol/detail.test.ts` | verified |
+| AC-017 | T-003 | `ui/FileLink.tsx`, `core/board/openFile.ts` | `detail/SpecDetail.test.tsx`, `core/board/boardService.test.ts` | verified |
+| AC-018 | T-001 | `adapters/vscode/{editor,commands}.ts`, `studioPanel.ts`, `extension.ts` | `adapters/vscode/editor.test.ts`, `core/shell/shellService.navigation.test.ts`, host smoke `board.smoke`, `shell.smoke` (CI only) | verified here (unit); host smoke runs on Windows and CI |
+| AC-019 | T-003 | `ui/FileLink.tsx` | `detail/SpecDetail.test.tsx` | verified |
+| AC-020 | T-003, T-006 | `detail/{DetailFrame,SpecDetail}.tsx`, `core/board/boardService.ts` | `detail/Close.test.tsx`, `detail/SpecDetail.timing.test.tsx`, `core/board/boardService.timing.test.ts` | verified |
+| AC-021 | T-007 | `webview/main.css` | `adapters/node/webviewCss.test.ts`, `webview/focusIndicator.test.tsx` | verified |
+| AC-022 | T-008 | `docs/release-checklist.md` item | manual: Gregor or his delegate (preview harness, real VS Code) | open |
+| AC-023 | T-008 | `/tmp/audit-0019/titles.py` (throwaway) | section "Test-title audit" above; `npm run test:unit` | verified here (unit); `npm test` on Windows and CI pending |
+| AC-024 | T-008 | `.specs/{done,active}/` notes | `grep -c "Amended by 0019"`: 0005 4, 0006 2, 0007 16, 0013 7, 0015 2, 0016 5, 0017 2, 0018 3; PD register unedited | verified |
 
 ## Session handoff
 
-- **Done so far:** plan written; spec revised per PD-063 (5) (P-1, OP-004).
-- **Next action:** Gregor reads the plan; on his start signal move the pair to `active/`
-  (`/sdd-lifecycle`), set the Baseline, then T-001.
-- **Open decisions:** none for Gregor; P-1…P-19 stand unless he changes them.
+- **Done so far:** T-001…T-008 verified, plan Done, spec stays `In Progress` until AC-022 and a fresh `/sdd-compile`.
+- **Next action:** orchestrator or Gregor: preview-harness screenshots (AC-022: Board and Overview with
+  the side panel of `studio-0015` at 1400×900 and 800×900 in Dark, Light and High Contrast), a real
+  window (an ID opens the file beside the Studio at its line), `npm test` on Windows and CI, then
+  `/sdd-compile` in a fresh session.
+- **Open decisions:** none; P-1…P-19 stand unless Gregor changes them.
 - **Baseline:** 20792ca (commit before the first step commit; backlog → active move done 2026-11-18)
 - **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here). Commit
   messages end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` and

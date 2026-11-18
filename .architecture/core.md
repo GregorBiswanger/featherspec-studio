@@ -1,5 +1,5 @@
 # Map: src/core (framework-free core)
-# last reconciled: 2026-11-18 (0018)
+# last reconciled: 2026-11-18 (0019)
 
 ## Internal pattern
 - `src/core/<area>/` — one folder per spec; `<area>Service.ts` is the application service where the
@@ -20,7 +20,7 @@
   - `overview` (0006, 0018) — Now and Up next rows, problems, figures and progress, activity,
     overview service (the open state of Activity lives here, reset with the last listener).
   - `board` (0007) — Board and spec detail view models: cards, progress, narrow columns and Done memory, card date (0018), filters
-    and sorting, board UI state, open-file guard, detail sections, next step (NS rules, 0015; step view and short form, 0017), needs of a Backlog spec (0016), copy line, board service.
+    and sorting, board UI state, open-file guard, the detail's situation picture (header, next step, problems, progress with lines, files, notes, history; `detail.ts`, `situation.ts`, `shortTitle.ts`; 0019), next step (NS rules, 0015; step view and short form, 0017), needs of a Backlog spec (0016), copy line, board service.
   - `copyNextStep` (0017) — current spec, project line, status entry view (text, tooltip, accessible text), Copy Next Step behaviour (click and command), quick pick items; `testing/` holds the entry world.
   - `setup` (0014) — the only writer and network user: release download and check, file classes, `.gitignore` and
     `settings.json` completions, apply, merge prompt, setup service; `testing/` holds the in-memory target and scripted HTTP.

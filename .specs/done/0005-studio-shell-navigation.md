@@ -122,6 +122,7 @@ remembered for this workspace.
   project" when a loaded model of the active project no longer contains the stem (file deleted,
   or stem changed: PD-018 "removed + new"). While no model is loaded, the remembered selection
   is kept and not checked, so a project that is lost and returns (0001 AC-010) keeps it.
+  *Amended by 0019 (PD-058): BR-03 — the side panel of 0019 §6.1 shows exactly while a spec is selected; closing it clears the selection (0019 AC-003); the rest of BR-03, the notice included, holds.*
 - **BR-04 Placeholder:** an area whose content a later spec delivers shows its name, one
   sentence on its purpose, and "Not available in this version of FeatherSpec Studio". It never
   shows sample or invented data (handoff P8). The three purpose sentences are in AC-006.
@@ -140,6 +141,7 @@ remembered for this workspace.
   in Spec Explorer (PD-042). A spec target whose stem is not in the project changes neither
   area nor selection and gets the notice of BR-03. A target for an area that is still a
   placeholder ends on the placeholder.
+  *Amended by 0019 (PD-058): BR-07 — the sentence "this is how the board and Mission Control open a spec's detail in Spec Explorer (PD-042)" is void: the board and the Overview select a spec in place (0019 AC-001); a spec target keeps its meaning.*
 
 *Amended by 0015 (PD-055/PD-056): a target is a spec or a board filter, no run.*
 - **BR-08 Ownership of states (PD-036):** the shell owns every panel state and its text. An
@@ -321,8 +323,10 @@ automated tests.
   path. With zero specs, it shall show "This project has no specs yet." When 0002 reports a
   change, the list shall show it within 500 ms after the panel UI receives the notification,
   without being reopened by the user (PD-047).
+  *Amended by 0019 (PD-058): stays until 0020; the pane beside the list shows 0019 AC-008's detail.*
 - **AC-008** When the user selects a spec, switches to any other area and returns to Spec
   Explorer, the system shall still show that spec as selected. [AC-005.3]
+  *Amended by 0019 (PD-058): stays; the selection also shows the side panel in Overview and Board (0019 AC-002).*
 - **AC-009** When the user closes the panel and opens it again with "FeatherSpec Studio: Open" or
   "Open Studio", the system shall show the area last shown and the same selected spec. After a
   window reload, the system shall restore a panel that was open, without user action, on the

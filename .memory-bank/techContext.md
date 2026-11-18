@@ -41,6 +41,7 @@
 - Board and spec detail (spec 0007, 0018): core tests in `src/core/board/*.test.ts` (cards, progress, filters, board service, open file, detail, board requests, no-write proof) on memory models and the
   fixtures; shared contract tests in `src/shared/protocol`; component tests in `src/webview/board` and `src/webview/detail` (keyboard flow, Copy tab stop, focus); the bundle test also mounts the
   board with a fixture snapshot; CSS guard in `src/adapters/node/webviewCss.test.ts`; host smoke `src/test/board.smoke.test.ts` (CI only).
+- The detail as a side panel (spec 0019): core `detail`, `situation`, `shortTitle` tests in `src/core/board` on the fixture `test/fixtures/studio-0015`; `src/webview/detail` tests (`SpecDetail`, `SidePanel`, `Close`: select in place, side panel, close, focus rules, drawer mark with a stubbed `matchMedia`); `editor.ts` opens `ViewColumn.Beside` (`editor.test.ts`, host smoke `board.smoke` and `shell.smoke`, CI only); CSS guard for the 400 px panel and the 899 px drawer in `webviewCss.test.ts`.
 - Overview (spec 0006, 0018): core tests in `src/core/overview/*.test.ts` (figures, rows of Now and Up next, problems, activity, service incl. Activity's open state and a 200-spec projection guard) on `testing/projects.ts`, `bigModel.ts`,
   `serviceWorld.ts`; contract tests in `src/shared/protocol/overview.test.ts`; component tests in `src/webview/areas/overview` (`Overview`, `Sections`, `Drilldown`); the bundle test mounts the area with a fixture snapshot; host smoke
   `src/test/overview.smoke.test.ts` (CI only).

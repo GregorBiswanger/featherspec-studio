@@ -214,6 +214,8 @@ Rules:
   | An activity entry | Spec Explorer, its spec. If its stem matches no current entry: no request, and the notice "Spec <number> is no longer in the project" (PD-039) |
   | Diagnostics count in the header | Spec Board, filter: the named spec set "Diagnostics" with the stems of the specs that carry at least one diagnostic (OP-4; the board's banner shows the project-level ones, 0007 §13) |
 
+*Amended by 0019 (PD-058): BR-08 rows "An attention row" and "An activity entry" — activating such a row or entry selects its spec in place, the area stays (0019 AC-001), and sends no request "Spec Explorer, that spec"; the not-found notice of the entry stays.*
+
   *Amended by 0017 (PD-060/PD-061): a row whose spec has a step shows "Next", the short form and Copy (0017 AC-012); Copy sends no navigation request; activating the rest of the row is unchanged.*
 
   *Amended by 0016 (PD-059, proxy): BR-08 row "Diagnostics count in the header" — the named spec set is `Problems` (0016 T-03); with only project-level *Problems* the request names no set.*
@@ -431,6 +433,7 @@ error text, prompts or provider payloads (AC-026). It sends no telemetry (handof
   longer in the project". *(PD-039, PD-042)*
   *Amended by 0017 (PD-060/PD-061): Copy on a row sends no navigation request (0017 AC-012); activating the rest of the row is unchanged.*
   *Amended by 0018 (PD-062): Now, Up next and Problems rows (0018 AC-006).*
+  *Amended by 0019 (PD-058): a row or an entry of a spec that is in the project selects that spec in place (0019 AC-001) instead of the request "Spec Explorer, that spec"; the not-found notice stays.*
 - **AC-015** When a spec, plan or return note of the active project changes on disk, when a run
   of the active project is created, changes status or is removed, or when the store's state
   changes, the system shall show the resulting figures, highlighted runs, attention rows and

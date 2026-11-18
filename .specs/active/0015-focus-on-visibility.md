@@ -259,6 +259,7 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
   *Amended by 0018 (PD-062): *Needs attention* part: Now, Up next and Problems (0018 §6.1).*
 - **AC-011** The board card shall show no run line and the filters shall offer board state and named spec set only.
 - **AC-012** The detail view shall show a "Status history" section with 0003's history under its label, *not available* with the reason while the history is not available, and no run list.
+  *Amended by 0019 (PD-058): AC-012 — the section is collapsed, headed "Status history (n)", hidden at zero entries; the not-available text with its reason stays (0019 AC-015, §6.2 row 7).*
 - **AC-013** The runtime store shall write only `spec-status-history.jsonl`, `lock.json` and `store.json`; a contract test lists the files of a store folder after every scenario.
 - **AC-014** The manifest shall contribute no command `openAgentCenter`, `clearRunHistory`, `stopRun` or `resumeRun` and no command title containing "Agent", "Run History", "Stop Run" or "Resume Run".
 - **AC-015** The manifest shall declare no configuration property.
@@ -278,6 +279,7 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
   *Amended by 0016 (PD-059, proxy): AC-027 (test audit) — also excepted: the tests 0016 AC-023 lists against a criterion that 0016 §5 changes are excepted.*
   *Amended by 0017 (PD-060/PD-061): also except the tests 0017 AC-024 lists against a criterion that 0017 §5 voids.*
   *Amended by 0018 (PD-062): the test audit also excepts the tests 0018 AC-030 lists against a criterion 0018 §5 voids.*
+  *Amended by 0019 (PD-058): AC-027 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*
 - **AC-028** 0008–0012 shall have status `Deprecated`, stay in `done/` and link this spec as successor; 0003–0007 and 0013 shall carry the amendment notes of §5.
 - **AC-029** The `architecture:` snapshot in `AGENTS.md`, `.architecture/*.md` and `.memory-bank/projectbrief.md` shall name no removed module, no agent run and no provider; the brief's mission shall contain the manifest description of §8 and its success criteria the AC-030 scenario.
 - **AC-030** *(manual, Gregor)* M-1 on `tip-splitter` with the assistant he uses, the Hands-On walkthrough: three areas; a dropped Ready spec shows the NS-7 line, pasted into the chat it starts that step; Active and Review specs show NS-6 and NS-5 lines that the assistant runs as FeatherSpec commands; he checks whether the S7 note reads as noise (PD-057, OP-006) and whether his assistant resolves the project-relative paths (OP-002). Pre-release checklist item.
