@@ -3,7 +3,7 @@
 **Spec:** [0024-send-next-step-to-assistant.md](0024-send-next-step-to-assistant.md)
 **Status:** Done
 **Last updated:** 2026-11-18
-**Current step:** T-021 (T-001…T-013 verified; manual AC-016 real window and AC-017…AC-019 open)
+**Current step:** T-022 (T-001…T-013 verified; manual AC-016 real window and AC-017…AC-019 open)
 
 ## Approach
 
@@ -677,7 +677,8 @@ copy (`git archive` of the head into `/tmp`).
   passed, 7 skipped, +16 timing; `npm test` 31+1+1+1). 0024 plan: harness recheck at 5c70dbd (60/60), Windows at
   5c70dbd (unit 3109 passed, 7 skipped, +18 timing; `npm test` 32+1+1+1). `docsScan.test.ts` first.
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green
-- [ ] **Verified (T-021):**
+- [x] **Verified (T-021):** 2026-11-19 red: the new `docsScan.test.ts` test against a `git archive` of 5c70dbd failed (neither plan recorded the recheck or Windows at its fix head); green after: `npx vitest run --project node src/adapters/node/docsScan.test.ts` 163 passed. Doc-only: no code gates.
+- **Notes:** recorded as `manual: orchestrator (Gregor's delegate) …` and `Windows at …` lines, from `compile/0023-preview.md` ("Recheck at d756fa9") and `compile/0024-preview.md` ("Recheck at 5c70dbd"), and the figures of Gregor's delegate for Windows; the traceability rows AC-014 and AC-016 of 0024 and AC-016 and AC-018 of 0023 and both handoffs follow. CI at the PR and the fresh `/sdd-compile` per spec stay open: CI runs only on a PR, and none of the four specs has a READY compile yet.
 
 ### T-022 — The `AGENTS.md` snapshot names modules and points to the maps
 
@@ -713,6 +714,14 @@ The `stepTips` NS-5 closing test and 0018 AC-001 keep their titles (their bodies
 split button's look stands, and Gregor's real window decides.
 
 Windows at 7c6d975: unit 3065 passed, 7 skipped, +18 timing; `npm test` 32+1+1+1.
+
+`manual: orchestrator (Gregor's delegate) 2026-11-19, harness recheck at 5c70dbd` — PASS, 60/60 pass, from
+`compile/0024-preview.md`, section "Recheck at 5c70dbd (after the fix round T-008…T-013)": the same 60 views (shots in
+`preview/r5-0024-fix/`) all pass again: the split button's text uncut, the menu fully inside without scrolling, both parts with
+a visible focus outline, at most two split buttons per view, Escape closes the menu and keeps the detail. Gregor's real-window
+part of AC-016 stays open.
+
+Windows at 5c70dbd: unit 3109 passed, 7 skipped, +18 timing; `npm test` 32+1+1+1.
 
 #### 0024 preview check (orchestrator, Gregor's delegate) — AC-016 at 7c6d975, 2026-11-18
 
@@ -763,9 +772,9 @@ keyboard walk onto both parts, Escape.
 | AC-011 | T-002, T-004, T-009 | `src/core/assistant/sendView.ts`, `src/shared/protocol/*` | `sendView.test.ts` (scan incl. `send.ts`), `assistant.test.ts`, `detail.test.ts`, `overview.test.ts` | verified |
 | AC-012 | T-003 | `src/core/board/boardRequests.ts`, `send.ts` | `noWrite.test.ts`, `boardRequests.test.ts`, `messageRouter.test.ts` | verified |
 | AC-013 | T-001, T-004 | `package.json`, `src/core/settings/openSettings.ts`, `shared/protocol/nextStepTexts.ts` | `manifest.test.ts`, `openSettings.test.ts`, `stepTips.test.ts`, `board.smoke.test.ts` (CI) | verified; host smoke on CI |
-| AC-014 | T-007 | this plan, *Test-title audit*; `/tmp/audit-0024/titles.py` (throwaway) | the audit: 3 absent titles, each listed; `npm run test:unit` 3069 passed; Windows 11 at `7c6d975`: unit 3065 passed, 7 skipped, +18 timing, `npm test` 32+1+1+1 (green, incl. the 0024 board smoke); CI at the PR | open: unit, audit and Windows verified; CI open (the fix round T-008…T-013 changed code after `7c6d975`, so Windows and CI run again at the fix head) |
+| AC-014 | T-007 | this plan, *Test-title audit*; `/tmp/audit-0024/titles.py` (throwaway) | the audit: 3 absent titles, each listed; `npm run test:unit` 3069 passed; Windows 11 at `7c6d975`: unit 3065 passed, 7 skipped, +18 timing, `npm test` 32+1+1+1 (green, incl. the 0024 board smoke); CI at the PR | open: unit, audit and Windows verified; Windows at the fix head `5c70dbd`: unit 3109 passed, 7 skipped, +18 timing, `npm test` 32+1+1+1; CI open (at the PR) |
 | AC-015 | T-007 | `README.md`, `CHANGELOG.md`, `docs/release-checklist.md`, §5 notes in 0013, 0015–0023 | `docsScan.test.ts` (product docs after 0024) | verified |
-| AC-016 | T-007 | — | manual: orchestrator (Gregor's delegate) 2026-11-18, harness r5check at 7c6d975 — PASS, see *AC-016 harness evidence*; Gregor's real window | open: harness part recorded, Gregor's real-window part open |
+| AC-016 | T-007 | — | manual: orchestrator (Gregor's delegate) 2026-11-18, harness r5check at 7c6d975 — PASS; recheck at 5c70dbd 2026-11-19, 60/60 pass; see *AC-016 harness evidence*; Gregor's real window | open: harness part recorded, Gregor's real-window part open |
 | AC-017 | T-007 | — | manual: Gregor per assistant on `tip-splitter`; with Copilot he records whether an unsent draft in the current chat is kept or replaced (OP-004) and decides NS-6's default if it is replaced | open |
 | AC-018 | T-007 | — | manual: Gregor, Settings UI and Restricted Mode | open |
 | AC-019 | T-007 | — | manual: draft part passed (PD-076, *Research*); build part in AC-017 | open |
@@ -773,7 +782,7 @@ keyboard walk onto both parts, Escape.
 ## Session handoff
 
 - **Done so far:** T-001…T-007 verified 2026-11-18 (f50bc4c, f0b011d, abf1925, 42e9cda, d683b82, de5a1cc, 7c6d975); the fix round after the compile S82, T-008…T-013, verified 2026-11-18 (D1 Send by the effective value, D2 focus decided at the moment of the change, D3 the handoff scoped to the place, F1 narrow scan exemptions, F2 comments, F4, F6 causes, M10, M36, M37, M72, M78 closed; M63 and M73 noted only). Plan Done; the spec stays In Progress in `active/`.
-- **Next action:** `npm test` on Windows and CI at the fix head (AC-014); Gregor's AC-016 real window, AC-017 per assistant (with OP-004), AC-018, AC-019 build part; then a fresh `/sdd-compile 0024`.
+- **Next action:** CI at the PR (AC-014; Windows at the fix head `5c70dbd` is recorded); Gregor's AC-016 real window, AC-017 per assistant (with OP-004), AC-018, AC-019 build part; then a fresh `/sdd-compile 0024`.
 - **Open decisions:** OP-004 / F7 (Gregor's, AC-017): does Copilot's `open` replace an unsent draft in the current chat? If it does, Gregor decides whether the current chat stays NS-6's default target with Copilot; the default is not changed. OP-002 and OP-003 are not blocking.
 - **Baseline:** d756fa9 (head before the first step commit; started 2026-11-18 on Gregor's delegated start signal); compile S82 at 7c6d975.
 - **Environment:** `npm test` cannot run here (VS Code download blocked); host smoke runs on CI and Windows

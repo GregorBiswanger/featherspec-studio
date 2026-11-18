@@ -912,4 +912,16 @@ describe('product docs after the final check of round 2 (0024 T-014 to T-022)', 
         expect(await read('src/adapters/node/docsScan.test.ts')).toContain("it('the decisions register carries PD-067 after PD-066, names what each later decision retires, and leaves the earlier rows as they were'");
     });
 
+    it('the 0023 and 0024 plans record the harness recheck and Windows at their fix heads', async () => {
+        const plan23 = (await read('.specs/active/0023-plan-map-stages-parallel-work.plan.md')).replace(/\s+/g, ' ');
+        expect(plan23).toContain("manual: orchestrator (Gregor's delegate) 2026-11-18, harness recheck at d756fa9");
+        expect(plan23).toContain('60 views');
+        expect(plan23).toContain('`par-odd`');
+        expect(plan23).toContain('Windows at d756fa9: unit 2812 passed, 7 skipped, +16 timing; `npm test` 31+1+1+1');
+        const plan24 = (await read('.specs/active/0024-send-next-step-to-assistant.plan.md')).replace(/\s+/g, ' ');
+        expect(plan24).toContain("manual: orchestrator (Gregor's delegate) 2026-11-19, harness recheck at 5c70dbd");
+        expect(plan24).toContain('60/60 pass');
+        expect(plan24).toContain('Windows at 5c70dbd: unit 3109 passed, 7 skipped, +18 timing; `npm test` 32+1+1+1');
+    });
+
 });

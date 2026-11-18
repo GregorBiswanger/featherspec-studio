@@ -573,6 +573,15 @@ the focus, the not-found chip and tests, so Gregor's real-window check is the ne
 > - AC-019 (build part) and AC-020: Gregor on a re-cut tip-splitter with Claude Code and Copilot.
 > - CI at the PR. Windows at c9845e1: unit 2788 passed, 7 skipped, +16 timing; npm test 31+1+1+1 (green).
 
+**AC-018, the harness recheck after the fix round.** `manual: orchestrator (Gregor's delegate) 2026-11-18, harness recheck at d756fa9`
+(PASS), from `compile/0023-preview.md`, section "Recheck at d756fa9 (after the fix round T-009…T-017)": the same matrix plus `par-odd`
+(a copy of `par-open` whose stage 2 names a missing `T-099` and whose stage 3 repeats `T-003`): 60 views, 120 shots in
+`preview/r4-0023-fix/`, all pass (nothing cut or clipped, no break-all, the page never scrolls, the groups never overflow, every Tab
+stop in view, at most two filled buttons in Dark and Light). The not-found ID is a chip `? T-099` beside the stage-2 cards (F1, T-012),
+top-aligned and not a card; the repeated `T-003` is its own card in stage 3.
+
+Windows at d756fa9: unit 2812 passed, 7 skipped, +16 timing; `npm test` 31+1+1+1.
+
 **Still open (Gregor):** AC-018 in a real window (also the three observations above), AC-019's build part, AC-020 on a
 re-cut `tip-splitter` with both assistants.
 
@@ -595,9 +604,9 @@ re-cut `tip-splitter` with both assistants.
 | AC-013 | T-002 | `src/core/board/nextStep.ts`, `src/shared/protocol/nextStepTexts.ts` | `nextStep.test.ts`, `stepTips.test.ts` (0023 AC-013) | verified |
 | AC-014 | T-003 | `src/core/planMap/planMap.ts` | `noWrite.test.ts`, `planMap.test.ts` (0023 AC-014) | verified |
 | AC-015 | T-007 | `src/shared/protocol/planMapTexts.ts`, `src/shared/protocol/nextStepTexts.ts` | `userLanguage.test.tsx` (0023 AC-015), `webviewBundle.test.ts` | verified |
-| AC-016 | T-008, T-017 | `/tmp/audit-0023/titles.py` (throwaway), this plan's *Test-title audit* | the audit: 7 absent titles, every one listed; `npm run test:unit` green; `npm test` on Windows and CI open | open: unit and the audit verified; Windows at `c9845e1` (before the fix round): unit 2788 passed, 7 skipped, +16 timing, `npm test` 31+1+1+1 green; Windows at the fix head and CI at the PR open |
+| AC-016 | T-008, T-017 | `/tmp/audit-0023/titles.py` (throwaway), this plan's *Test-title audit* | the audit: 7 absent titles, every one listed; `npm run test:unit` green; `npm test` on Windows and CI open | open: unit and the audit verified; Windows at `c9845e1` (before the fix round): unit 2788 passed, 7 skipped, +16 timing, `npm test` 31+1+1+1 green; Windows at the fix head `d756fa9`: unit 2812 passed, 7 skipped, +16 timing, `npm test` 31+1+1+1 (*Manual checks recorded*); CI at the PR open |
 | AC-017 | T-008 | `README.md`, `CHANGELOG.md`, `docs/release-checklist.md`, `.claude/rules/ux-guidelines.md`, `docs/product/ux-guidelines.md`, §4 notes in 0005, 0013, 0015–0022 and ADR-001 | `docsScan.test.ts` (product docs after 0023) | verified |
-| AC-018 | T-008, T-017 | `docs/release-checklist.md` (Plan map (0023)) | manual: orchestrator (Gregor's delegate) 2026-11-18, harness r4check at c9845e1 (PASS, *Manual checks recorded*); then Gregor in a real window | open (Gregor) |
+| AC-018 | T-008, T-017 | `docs/release-checklist.md` (Plan map (0023)) | manual: orchestrator (Gregor's delegate) 2026-11-18, harness r4check at c9845e1 (PASS, *Manual checks recorded*); then the recheck at d756fa9 (PASS, 60 views incl. `par-odd`); then Gregor in a real window | open (Gregor) |
 | AC-019 | T-008 | `docs/release-checklist.md` (Plan map (0023)) | manual: Gregor; draft part answered by PD-076 (*Research*), build part open | open |
 | AC-020 | T-008 | `docs/release-checklist.md` (Plan map (0023)) | manual: Gregor with two assistants on a re-cut `tip-splitter` | open |
 
@@ -610,8 +619,7 @@ re-cut `tip-splitter` with both assistants.
   M105, M107, M108 and M54 closed, the comment, the `any` and the dead constant gone, the evidence recorded. The plan is Done;
   the spec stays In Progress until AC-016 (CI), AC-018 (real window), AC-019 and AC-020 are checked and a fresh `/sdd-compile`
   reads READY.
-- **Next action:** `npm test` on Windows at the fix head and CI at the PR (AC-016); the orchestrator's harness may run
-  again at the fix head; then Gregor: AC-018 in a real window, AC-019 (build part) and AC-020 on a re-cut `tip-splitter`;
+- **Next action:** CI at the PR (AC-016; Windows and the harness recheck at the fix head `d756fa9` are recorded); then Gregor: AC-018 in a real window, AC-019 (build part) and AC-020 on a re-cut `tip-splitter`;
   then `/sdd-compile` in a fresh session. 0024 (planned, `eac4559`) waits for this fix and is not built.
 - **Open decisions:** none for Gregor beyond the manual checks; proxies P-1…P-28 above and those in the step Notes (M74 and
   M76 are notes only, F3 is not done: P-27, P-28).
