@@ -70,6 +70,8 @@ export interface ShellView {
     state: PanelState | undefined;
     restricted: boolean;
     projectName: string | undefined;
+    projectVersion?: string;
+    updatedAt?: string;
     area: AreaId;
     target: NavigationTarget | undefined;
     selection: SelectedSpec | undefined;
@@ -321,6 +323,8 @@ export function isShellView(value: unknown): value is ShellView {
         (value.state === undefined || isPanelState(value.state)) &&
         typeof value.restricted === 'boolean' &&
         isOptionalString(value.projectName) &&
+        isOptionalString(value.projectVersion) &&
+        isOptionalString(value.updatedAt) &&
         isAreaId(value.area) &&
         (value.target === undefined || isNavigationTarget(value.target)) &&
         (selection === undefined || (isRecord(selection) && isString(selection.stem) && isOptionalString(selection.path) && isString(selection.number))) &&

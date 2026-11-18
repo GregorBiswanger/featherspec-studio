@@ -46,9 +46,9 @@ describe('board filter encoding v1 (PD-041, shared with 0006)', () => {
     });
 
     it('AC-022: a navigation request carries a valid filter, and the whole request is rejected for an invalid one', () => {
-        expect(isNavigationRequest({ area: 'specBoard', target: { kind: 'boardFilter', filter: { states: ['Active'] } } })).toBe(true);
-        expect(isNavigationRequest({ area: 'specBoard', target: { kind: 'boardFilter', filter: { states: ['Nope'] } } })).toBe(false);
-        expect(isNavigationRequest({ area: 'specBoard', target: { kind: 'boardFilter', filter: 'Active' } })).toBe(false);
+        expect(isNavigationRequest({ area: 'board', target: { kind: 'boardFilter', filter: { states: ['Active'] } } })).toBe(true);
+        expect(isNavigationRequest({ area: 'board', target: { kind: 'boardFilter', filter: { states: ['Nope'] } } })).toBe(false);
+        expect(isNavigationRequest({ area: 'board', target: { kind: 'boardFilter', filter: 'Active' } })).toBe(false);
     });
 });
 

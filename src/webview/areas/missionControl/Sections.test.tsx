@@ -16,7 +16,7 @@ async function open(view: MissionControlView): Promise<HTMLElement> {
     clients.push(client);
     client.start();
     mounted = await mount(<App client={client} />);
-    await send(shellEvent(baseView({ area: 'missionControl' }), 1));
+    await send(shellEvent(baseView({ area: 'overview' }), 1));
     await send(missionControlEvent(view));
     return mounted.container;
 }
@@ -220,7 +220,7 @@ describe('0017 AC-012: Next and Copy on a Needs attention row', () => {
         expect(sent).not.toContain('navigate');
         expect(sent).not.toContain('select');
         expect(posted.filter((message) => message.type === 'copyText')[0]?.payload).toEqual({ text: '/sdd-plan .specs/active/0001-a.md' });
-        await send({ v: 1, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
+        await send({ v: 2, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
         expect(copy.textContent).toBe('Copied');
     });
 

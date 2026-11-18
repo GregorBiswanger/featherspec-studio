@@ -56,12 +56,12 @@
         "title": "FeatherSpec Studio: Open"
       },
       {
-        "command": "featherspec-studio.openMissionControl",
-        "title": "FeatherSpec Studio: Open Mission Control"
+        "command": "featherspec-studio.openOverview",
+        "title": "FeatherSpec Studio: Open Overview"
       },
       {
-        "command": "featherspec-studio.openSpecBoard",
-        "title": "FeatherSpec Studio: Open Spec Board"
+        "command": "featherspec-studio.openBoard",
+        "title": "FeatherSpec Studio: Open Board"
       },
       {
         "command": "featherspec-studio.openSpecExplorer",
@@ -70,10 +70,6 @@
       {
         "command": "featherspec-studio.copyNextStep",
         "title": "FeatherSpec Studio: Copy Next Step"
-      },
-      {
-        "command": "featherspec-studio.rescan",
-        "title": "FeatherSpec Studio: Rescan Project"
       },
       {
         "command": "featherspec-studio.shellAction",
@@ -92,8 +88,8 @@
         "title": "FeatherSpec Studio: Select Project"
       },
       {
-        "command": "featherspec-studio.refreshDiscovery",
-        "title": "FeatherSpec Studio: Refresh Project Discovery"
+        "command": "featherspec-studio.refresh",
+        "title": "FeatherSpec Studio: Refresh"
       }
     ],
     "viewsContainers": {

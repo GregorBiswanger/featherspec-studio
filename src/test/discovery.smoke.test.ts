@@ -30,8 +30,8 @@ suite('FeatherSpec Studio discovery smoke', function () {
         await activateStudio();
         const commands = await vscode.commands.getCommands(true);
         assert.ok(commands.includes('featherspec-studio.selectProject'));
-        assert.ok(commands.includes('featherspec-studio.refreshDiscovery'));
-        await vscode.commands.executeCommand('featherspec-studio.refreshDiscovery');
+        assert.ok(commands.includes('featherspec-studio.refresh'));
+        await vscode.commands.executeCommand('featherspec-studio.refresh');
     });
 
     test('AC-013: creating the missing .specs directory reruns discovery through the real watcher', async () => {

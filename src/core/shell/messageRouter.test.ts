@@ -32,9 +32,9 @@ const req = (type: string, payload: unknown, extra: Record<string, unknown> = {}
 describe('AC-021: message router', () => {
     it('runs the handler of a valid request and answers with exactly one ok response carrying the id', async () => {
         const { router, calls, posted, lines } = setup();
-        await router.receive(req('navigate', { area: 'specBoard' }));
-        expect(calls).toEqual(['navigate:specBoard']);
-        expect(posted).toEqual([{ v: 1, kind: 'res', id: 'r1', type: 'navigate', payload: { ok: true } }]);
+        await router.receive(req('navigate', { area: 'board' }));
+        expect(calls).toEqual(['navigate:board']);
+        expect(posted).toEqual([{ v: PROTOCOL_VERSION, kind: 'res', id: 'r1', type: 'navigate', payload: { ok: true } }]);
         expect(lines).toEqual([]);
     });
 
@@ -76,7 +76,7 @@ describe('AC-021: message router', () => {
         const { router, lines, posted } = setup();
         await router.receive('hello');
         await router.receive(null);
-        await router.receive({ v: 1, kind: 'evt', type: 'shell', payload: {} });
+        await router.receive({ v: PROTOCOL_VERSION, kind: 'evt', type: 'shell', payload: {} });
         expect(posted).toEqual([]);
         expect(lines).toEqual([
             ['Ignored a message from the Studio panel: type <invalid>, not a message.'],
@@ -90,21 +90,21 @@ describe('AC-021: message router', () => {
         await router.receive(req('select', { stem: 5 }));
         await router.receive(req('hello', { lastSeq: 0 }, { id: 'r2' }));
         expect(calls).toEqual(['hello:0']);
-        expect(posted).toEqual([{ v: 1, kind: 'res', id: 'r2', type: 'hello', payload: { ok: true } }]);
+        expect(posted).toEqual([{ v: PROTOCOL_VERSION, kind: 'res', id: 'r2', type: 'hello', payload: { ok: true } }]);
     });
 
     it('AC-016: a message of another version is answered with versionMismatch, runs no handler and writes no log line', async () => {
         const { router, calls, posted, lines } = setup();
-        await router.receive({ v: 2, kind: 'req', id: 'x', type: 'navigate', payload: { area: 'specBoard' } });
+        await router.receive({ v: PROTOCOL_VERSION + 1, kind: 'req', id: 'x', type: 'navigate', payload: { area: 'board' } });
         expect(calls).toEqual([]);
         expect(lines).toEqual([]);
-        expect(posted).toEqual([{ v: 1, kind: 'evt', type: 'versionMismatch', payload: {} }]);
+        expect(posted).toEqual([{ v: PROTOCOL_VERSION, kind: 'evt', type: 'versionMismatch', payload: {} }]);
     });
 
     it('AC-016 control: the same message with the current version is handled', async () => {
         const { router, calls, posted } = setup();
-        await router.receive({ v: 1, kind: 'req', id: 'x', type: 'navigate', payload: { area: 'specBoard' } });
-        expect(calls).toEqual(['navigate:specBoard']);
+        await router.receive({ v: PROTOCOL_VERSION, kind: 'req', id: 'x', type: 'navigate', payload: { area: 'board' } });
+        expect(calls).toEqual(['navigate:board']);
         expect(posted[0]?.kind).toBe('res');
     });
 });

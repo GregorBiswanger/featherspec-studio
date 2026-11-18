@@ -17,14 +17,6 @@ export function mcSegment(state: string, count: number, total: number): string {
     return `${state}: ${count} of ${total}`;
 }
 
-export function mcFolder(name: string): string {
-    return name;
-}
-
-export function mcVersion(version: string): string {
-    return `FeatherSpec ${version}`;
-}
-
 export function mcProblems(count: number): string {
     return count === 1 ? '1 problem' : `${count} problems`;
 }

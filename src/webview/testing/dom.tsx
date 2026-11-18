@@ -40,7 +40,7 @@ export function baseView(overrides: Partial<ShellView> = {}): ShellView {
         state: undefined,
         restricted: false,
         projectName: 'demo',
-        area: 'missionControl',
+        area: 'overview',
         target: undefined,
         selection: undefined,
         notice: undefined,

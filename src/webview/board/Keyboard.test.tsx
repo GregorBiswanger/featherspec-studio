@@ -33,7 +33,7 @@ async function open(view = boardView(CARDS)): Promise<HTMLElement> {
     clients.push(client);
     client.start();
     mounted = await mount(<App client={client} />);
-    await send(shellEvent(baseView({ area: 'specBoard' }), 1));
+    await send(shellEvent(baseView({ area: 'board' }), 1));
     await send(boardEvent(view));
     return mounted.container;
 }

@@ -85,11 +85,11 @@ suite('FeatherSpec Studio shell smoke', function () {
     test('AC-005: a per-area command opens the closed panel on that area', async () => {
         const api = await activateStudio();
         await closeStudio(api);
-        await vscode.commands.executeCommand('featherspec-studio.openSpecBoard');
+        await vscode.commands.executeCommand('featherspec-studio.openBoard');
         await waitFor('exactly one Studio tab', () => panelState(api), (state) => state.tabs === 1, { timeoutMs: WAIT_MS });
-        assert.strictEqual(api.shell().view().area, 'specBoard');
-        await vscode.commands.executeCommand('featherspec-studio.openMissionControl');
-        assert.strictEqual(api.shell().view().area, 'missionControl');
+        assert.strictEqual(api.shell().view().area, 'board');
+        await vscode.commands.executeCommand('featherspec-studio.openOverview');
+        assert.strictEqual(api.shell().view().area, 'overview');
         assert.strictEqual(studioTabs().length, 1);
     });
 
@@ -154,7 +154,7 @@ suite('FeatherSpec Studio shell smoke', function () {
         await waitFor('the tree to show five items', () => api.shell().tree().items.map((item) => item.label), (labels) => labels.length === 5, { timeoutMs: WAIT_MS });
         assert.deepStrictEqual(
             api.shell().tree().items.map((item) => item.label),
-            ['fs110-de-active-review', 'Open Studio', 'Mission Control', 'Spec Board', 'Spec Explorer'],
+            ['fs110-de-active-review', 'Open Studio', 'Overview', 'Board', 'Spec Explorer'],
         );
         assert.deepStrictEqual(
             api.shell().tree().items.map((item) => item.icon),
@@ -164,13 +164,12 @@ suite('FeatherSpec Studio shell smoke', function () {
         const registered = await vscode.commands.getCommands(true);
         for (const command of [
             'featherspec-studio.open',
-            'featherspec-studio.openMissionControl',
-            'featherspec-studio.openSpecBoard',
+            'featherspec-studio.openOverview',
+            'featherspec-studio.openBoard',
             'featherspec-studio.openSpecExplorer',
-            'featherspec-studio.rescan',
+            'featherspec-studio.refresh',
             'featherspec-studio.shellAction',
             'featherspec-studio.selectProject',
-            'featherspec-studio.refreshDiscovery',
             'workbench.trust.manage',
             'vscode.openFolder',
         ]) {
@@ -178,13 +177,13 @@ suite('FeatherSpec Studio shell smoke', function () {
         }
     });
 
-    test('AC-029: the Rescan command runs while a project is active and changes no file', async () => {
+    test('0018 AC-027: the Refresh command runs while a project is active and changes no file', async () => {
         const api = await activateStudio();
         await api.whenIdle();
         const folder = vscode.workspace.workspaceFolders?.[0];
         assert.ok(folder);
         const before = await snapshotTree(folder.uri.fsPath);
-        await vscode.commands.executeCommand('featherspec-studio.rescan');
+        await vscode.commands.executeCommand('featherspec-studio.refresh');
         assert.deepStrictEqual(await snapshotTree(folder.uri.fsPath), before);
     });
 
@@ -196,7 +195,7 @@ suite('FeatherSpec Studio shell smoke', function () {
         const before = await Promise.all(folders.map((folder) => snapshotTree(folder.uri.fsPath)));
         await vscode.commands.executeCommand('featherspec-studio.open');
         await waitFor('the Studio tab and its hello', () => panelState(api), (state) => state.helloAt !== undefined && state.tabs === 1, { timeoutMs: WAIT_MS });
-        await vscode.commands.executeCommand('featherspec-studio.openSpecBoard');
+        await vscode.commands.executeCommand('featherspec-studio.openBoard');
         await vscode.commands.executeCommand('featherspec-studio.openSpecExplorer');
         await closeStudio(api);
         await vscode.commands.executeCommand('featherspec-studio.open');

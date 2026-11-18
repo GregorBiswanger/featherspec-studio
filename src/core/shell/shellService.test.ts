@@ -44,8 +44,8 @@ describe('AC-014: loading (spec section 6)', () => {
 
     it('answers a navigate request while loading (the area changes, S4 stays)', async () => {
         const current = ready();
-        await current.service.handlers.navigate({ area: 'specBoard' });
-        expect(current.service.view().area).toBe('specBoard');
+        await current.service.handlers.navigate({ area: 'board' });
+        expect(current.service.view().area).toBe('board');
         expect(current.service.view().state).toEqual({ id: 'S4' });
     });
 });
@@ -130,20 +130,25 @@ describe('AC-015: load errors', () => {
         expect(refreshes).toBe(1);
     });
 
-    it('Refresh runs discovery only, with S4 while it runs', async () => {
+    it('0018 AC-027: the panel action Refresh runs discovery, then the re-read once, with S4 while it runs', async () => {
         const current = ready();
         await current.controller.start();
         await current.settle();
         current.views.length = 0;
-        let rescans = 0;
+        const order: string[] = [];
+        const discovery = current.controller.refresh.bind(current.controller);
+        current.controller.refresh = async () => {
+            order.push('discovery');
+            await discovery();
+        };
         const rescan = current.repository.rescan.bind(current.repository);
         current.repository.rescan = async () => {
-            rescans += 1;
+            order.push('rescan');
             await rescan();
         };
         await current.service.runAction('refresh');
         expect(current.views).toContain('S4');
-        expect(rescans).toBe(0);
+        expect(order).toEqual(['discovery', 'rescan']);
     });
 });
 
@@ -217,29 +222,55 @@ describe('AC-001 sections S1 and no project through the service', () => {
     });
 });
 
-describe('AC-029: Rescan Project', () => {
-    it('calls the repository rescan once while a project is active', async () => {
+describe('0018 AC-027: the Refresh command', () => {
+    it('runs discovery once, then the re-read once, while a project is active, with no S4', async () => {
         const current = ready();
         await current.controller.start();
         await current.settle();
-        let rescans = 0;
+        current.views.length = 0;
+        const order: string[] = [];
+        const discovery = current.controller.refresh.bind(current.controller);
+        current.controller.refresh = async () => {
+            order.push('discovery');
+            await discovery();
+        };
         const rescan = current.repository.rescan.bind(current.repository);
         current.repository.rescan = async () => {
-            rescans += 1;
+            order.push('rescan');
             await rescan();
         };
-        await current.service.rescan();
-        expect(rescans).toBe(1);
+        await current.service.refresh();
+        expect(order).toEqual(['discovery', 'rescan']);
+        expect(current.views).not.toContain('S4');
     });
 
-    it('calls nothing while no project is active', async () => {
+    it('runs discovery only while no project is active', async () => {
         world = createShellWorld({ roots: ['plain'] });
         await world.controller.start();
         let rescans = 0;
+        let discoveries = 0;
+        const discovery = world.controller.refresh.bind(world.controller);
+        world.controller.refresh = async () => {
+            discoveries += 1;
+            await discovery();
+        };
         world.repository.rescan = async () => {
             rescans += 1;
         };
-        await world.service.rescan();
+        await world.service.refresh();
+        expect(discoveries).toBe(1);
         expect(rescans).toBe(0);
+    });
+
+    it('0018 F-1: the view carries the version and the read time while a project is active, and neither without one', async () => {
+        const current = ready();
+        await current.controller.start();
+        await current.settle();
+        expect(current.service.view().projectVersion).toMatch(/\S/);
+        expect(current.service.view().updatedAt).toMatch(/\S/);
+        world = createShellWorld({ roots: ['plain'] });
+        await world.controller.start();
+        expect(world.service.view().projectVersion).toBeUndefined();
+        expect(world.service.view().updatedAt).toBeUndefined();
     });
 });

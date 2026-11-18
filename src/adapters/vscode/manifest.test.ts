@@ -59,7 +59,7 @@ describe('extension manifest', () => {
         expect(commands).toEqual(
             expect.arrayContaining([
                 { command: 'featherspec-studio.selectProject', title: 'FeatherSpec Studio: Select Project' },
-                { command: 'featherspec-studio.refreshDiscovery', title: 'FeatherSpec Studio: Refresh Project Discovery' },
+                { command: 'featherspec-studio.refresh', title: 'FeatherSpec Studio: Refresh' },
             ]),
         );
         expect(commands.map((entry) => entry.command)).not.toContain('featherspec-studio.helloWorld');
@@ -78,8 +78,8 @@ describe('extension manifest', () => {
         const commands = Object.fromEntries((manifest.contributes?.commands ?? []).map((command) => [command.command, command.title]));
         expect(commands).toMatchObject({
             'featherspec-studio.open': 'FeatherSpec Studio: Open',
-            'featherspec-studio.openMissionControl': 'FeatherSpec Studio: Open Mission Control',
-            'featherspec-studio.openSpecBoard': 'FeatherSpec Studio: Open Spec Board',
+            'featherspec-studio.openOverview': 'FeatherSpec Studio: Open Overview',
+            'featherspec-studio.openBoard': 'FeatherSpec Studio: Open Board',
             'featherspec-studio.openSpecExplorer': 'FeatherSpec Studio: Open Spec Explorer',
         });
     });
@@ -141,9 +141,18 @@ describe('extension manifest', () => {
         expect(script.indexOf("rmSync('out'")).toBeLessThan(script.indexOf('tsc -p . --outDir out'));
     });
 
-    it('AC-029 (0005): contributes "FeatherSpec Studio: Rescan Project"; the internal action command stays out of the palette', () => {
+    it('0018 AC-001: contributes exactly the commands of the spec with their titles and none of the old ones; the internal action command stays out of the palette', () => {
         const commands = Object.fromEntries((manifest.contributes?.commands ?? []).map((command) => [command.command, command.title]));
-        expect(commands['featherspec-studio.rescan']).toBe('FeatherSpec Studio: Rescan Project');
+        expect(commands['featherspec-studio.refresh']).toBe('FeatherSpec Studio: Refresh');
+        expect(commands['featherspec-studio.openOverview']).toBe('FeatherSpec Studio: Open Overview');
+        expect(commands['featherspec-studio.openBoard']).toBe('FeatherSpec Studio: Open Board');
+        for (const old of ['openMissionControl', 'openSpecBoard', 'rescan', 'refreshDiscovery']) {
+            expect(commands[`featherspec-studio.${old}`]).toBeUndefined();
+        }
+        const titles = Object.values(commands);
+        for (const old of ['Mission Control', 'Spec Board', 'Rescan Project', 'Refresh Project Discovery']) {
+            expect(titles.some((title) => title.includes(old))).toBe(false);
+        }
         expect(commands['featherspec-studio.shellAction']).toBeDefined();
         expect(manifest.contributes?.menus?.commandPalette).toEqual([
             { command: 'featherspec-studio.copyMergePrompt', when: 'false' },

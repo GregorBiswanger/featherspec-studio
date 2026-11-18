@@ -33,7 +33,7 @@ describe('0017 AC-001: the step view guard', () => {
         expect(isCardView({ ...card, step: 'Start' })).toBe(false);
     });
 
-    it('a Mission Control row takes a step or no step key, and refuses a bad step', () => {
+    it('a Overview row takes a step or no step key, and refuses a bad step', () => {
         const view = sampleView();
         const row = view.attention.rows[0]!;
         expect(isMissionControlView({ ...view, attention: { rows: [row] } })).toBe(true);

@@ -8,7 +8,7 @@ import { resolveStorageLocation } from './adapters/vscode/storageLocation';
 import { createOutputChannel } from './adapters/vscode/outputChannel';
 import { createShellActions } from './adapters/vscode/shellActions';
 import { createStudioPanel, VIEW_TYPE, type StudioPanel, type StudioPanelInspection } from './adapters/vscode/studioPanel';
-import { AREA_COMMANDS, COPY_NEXT_STEP_COMMAND, OPEN_COMMAND, RESCAN_COMMAND, SHELL_ACTION_COMMAND } from './adapters/vscode/commands';
+import { AREA_COMMANDS, COPY_NEXT_STEP_COMMAND, OPEN_COMMAND, REFRESH_COMMAND, SHELL_ACTION_COMMAND } from './adapters/vscode/commands';
 import { createFetchReleaseHttp } from './adapters/node/fetchReleaseHttp';
 import { createNodeSetupTarget } from './adapters/node/nodeSetupTarget';
 import { createTarGzArchive } from './adapters/node/tarGzArchive';
@@ -251,7 +251,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         ...AREA_IDS.map((area) => vscode.commands.registerCommand(AREA_COMMANDS[area], openStudio({ via: 'area', area }))),
         vscode.commands.registerCommand(SETUP_COMMAND_ID, () => setup.start()),
         vscode.commands.registerCommand(COPY_MERGE_PROMPT_COMMAND_ID, () => setup.copyMergePrompt()),
-        vscode.commands.registerCommand(RESCAN_COMMAND, () => service.rescan()),
+        vscode.commands.registerCommand(REFRESH_COMMAND, () => service.refresh()),
         vscode.commands.registerCommand(COPY_NEXT_STEP_COMMAND, () => copyNextStep.run()),
         vscode.commands.registerCommand(SHELL_ACTION_COMMAND, (action: unknown) => {
             const payload = { action };
@@ -263,7 +263,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         { dispose: () => repository.dispose() },
         { dispose: () => lifecycle.dispose() },
         vscode.commands.registerCommand(SELECT_PROJECT_COMMAND_ID, () => controller.selectProject()),
-        vscode.commands.registerCommand('featherspec-studio.refreshDiscovery', () => controller.refresh()),
     );
 
     await removeEarlierRunData({

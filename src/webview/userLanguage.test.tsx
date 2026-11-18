@@ -77,7 +77,7 @@ describe('0016 AC-011: user language in the detail', () => {
 });
 
 describe('0016 AC-011: user language on every surface 0016 touched', () => {
-    it('the Spec Board card shows no rule ID or internal word, whatever its state, need or Problem', async () => {
+    it('the Board card shows no rule ID or internal word, whatever its state, need or Problem', async () => {
         const cards = [
             card('0001', { state: 'Ready', derivedRule: 'S-READY' }),
             card('0002', { state: 'Review', derivedRule: 'S-REVIEW' }),
@@ -85,7 +85,7 @@ describe('0016 AC-011: user language on every surface 0016 touched', () => {
             card('0004', { state: 'Backlog', need: { text: 'needs a plan', rule: 'R-3' }, problems: 2 }),
             card('0005', { state: 'Done', deprecated: true }),
         ];
-        const text = await textOf('specBoard', boardEvent(boardView(cards)));
+        const text = await textOf('board', boardEvent(boardView(cards)));
         expect(text).not.toMatch(FORBIDDEN);
         expect(text).toContain('needs a plan');
         expect(text).toContain('Plan done, waiting for review');
@@ -98,10 +98,10 @@ describe('0016 AC-011: user language on every surface 0016 touched', () => {
         expect(text).not.toMatch(FORBIDDEN);
     });
 
-    it('Mission Control (header, tiles, attention row, activity) shows no rule ID or internal word', async () => {
+    it('Overview (header, tiles, attention row, activity) shows no rule ID or internal word', async () => {
         const view = sampleView();
         view.attention.rows.push({ spec: { stem: '0002-b', number: '0002', title: 'B', path: '.specs/active/0002-b.md', found: true }, reasons: ['Review pending'] });
-        const text = await textOf('missionControl', missionControlEvent(view));
+        const text = await textOf('overview', missionControlEvent(view));
         expect(text).toContain('Plan done, waiting for review');
         expect(text).toContain('no longer in the project');
         expect(text).not.toMatch(FORBIDDEN);
@@ -112,7 +112,7 @@ describe('0016 AC-011: user language on every surface 0016 touched', () => {
             problems: [{ where: '.memory-bank/activeContext.0099-T-001.md', reason: 'return note matches no spec (number 0099)' }],
             notes: [{ where: '.specs/plan-archive/0042-lonely.2026-09-19.plan.md', reason: 'plan matches no spec' }],
         };
-        const text = await textOf('specBoard', boardEvent(boardView([card('0001')], { banner })));
+        const text = await textOf('board', boardEvent(boardView([card('0001')], { banner })));
         expect(text).toContain('Problems');
         expect(text).toContain('return note matches no spec (number 0099)');
         expect(text).not.toMatch(FORBIDDEN);

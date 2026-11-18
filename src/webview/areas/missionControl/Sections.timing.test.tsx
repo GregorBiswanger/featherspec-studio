@@ -16,7 +16,7 @@ async function open(view: MissionControlView): Promise<HTMLElement> {
     clients.push(client);
     client.start();
     mounted = await mount(<App client={client} />);
-    await send(shellEvent(baseView({ area: 'missionControl' }), 1));
+    await send(shellEvent(baseView({ area: 'overview' }), 1));
     await send(missionControlEvent(view));
     return mounted.container;
 }

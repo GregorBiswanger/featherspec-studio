@@ -1,4 +1,5 @@
 import { areaInfo, type AreaId } from '../shared/protocol/areas';
+import { projectTooltip } from '../shared/protocol/texts';
 import type { ShellClient } from './client';
 import { AREA_COMPONENTS } from './areas/registry';
 import { Placeholder } from './areas/Placeholder';
@@ -20,7 +21,11 @@ function Frame() {
         <div className="studio">
             <header className="studio-header">
                 <Navigation />
-                {shell.view?.projectName === undefined ? null : <span className="project-name">{shell.view.projectName}</span>}
+                {shell.view?.projectName === undefined ? null : (
+                    <span className="project-name" title={shell.view.projectVersion === undefined ? undefined : projectTooltip(shell.view.projectVersion, shell.view.updatedAt, new Date())}>
+                        {shell.view.projectName}
+                    </span>
+                )}
             </header>
             <main>
                 <h1>{info.title}</h1>

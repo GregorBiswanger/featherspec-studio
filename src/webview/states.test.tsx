@@ -39,17 +39,17 @@ describe('0013 §3.6: empty, placeholder and panel-level states show an icon bes
     });
 
     it('the placeholder component (through a synthetic area; no real area is a placeholder any more)', async () => {
-        mounted = await mount(<Placeholder area={{ id: 'specBoard', title: 'Synthetic', purpose: 'A purpose.', placeholder: true }} />);
+        mounted = await mount(<Placeholder area={{ id: 'board', title: 'Synthetic', purpose: 'A purpose.', placeholder: true }} />);
         expect(hasIcon(mounted.container.querySelector('[data-placeholder]'))).toBe(true);
     });
 
-    it('the empty board, the empty Mission Control and the empty Spec Explorer', async () => {
-        const board = await open(baseView({ area: 'specBoard' }));
+    it('the empty board, the empty Overview and the empty Spec Explorer', async () => {
+        const board = await open(baseView({ area: 'board' }));
         await send(boardEvent(boardView([])));
         expect(board.querySelector('.board-empty')?.textContent).toBe('No specs yet. Run /sdd-specify to write the first one.');
         expect(hasIcon(board.querySelector('.board-empty'))).toBe(true);
         mounted?.unmount();
-        const mission = await open(baseView({ area: 'missionControl' }));
+        const mission = await open(baseView({ area: 'overview' }));
         const view = sampleView();
         view.specs = { kind: 'empty' };
         await send(missionControlEvent(view));

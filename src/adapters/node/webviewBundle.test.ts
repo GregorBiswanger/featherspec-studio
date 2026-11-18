@@ -76,12 +76,12 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         await settle();
         const document = dom.window.document;
         expect([...document.querySelectorAll('nav button')].map((button) => button.textContent?.replace('▸', ''))).toEqual([
-            'Mission Control',
-            'Spec Board',
+            'Overview',
+            'Board',
             'Spec Explorer',
         ]);
         expect(document.body.textContent).toContain('Loading project…');
-        expect(posted[0]).toMatchObject({ v: 1, kind: 'req', type: 'hello' });
+        expect(posted[0]).toMatchObject({ v: 2, kind: 'req', type: 'hello' });
         expect(errors).toEqual([]);
     });
 
@@ -92,32 +92,32 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
             state: undefined,
             restricted: false,
             projectName: 'demo',
-            area: 'specBoard',
+            area: 'board',
             target: undefined,
             selection: undefined,
             notice: undefined,
             rows: [],
         };
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 2, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
         await settle();
         expect(dom.window.document.body.textContent).not.toContain('Loading project…');
-        expect(dom.window.document.querySelector('h1')?.textContent).toBe('Spec Board');
+        expect(dom.window.document.querySelector('h1')?.textContent).toBe('Board');
         expect(errors).toEqual([]);
     });
 
-    it('mounts the Spec Board with a snapshot of a fixture project: six columns, the cards, no start-up error', async () => {
+    it('mounts the Board with a snapshot of a fixture project: six columns, the cards, no start-up error', async () => {
         const project = await readProject(createNodeSpecSource(), fixturePath('fs110-ready-synthetic'), '1.10.0');
         const lifecycle = deriveLifecycle(project);
         const cards = buildCards(project, lifecycle);
         const board = { columns: arrangeBoard(cards, {}, 'number'), banner: buildBanner(project, lifecycle), filter: {}, sort: 'number', providers: [], noSpecs: false };
         const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
         await settle();
-        const view = { state: undefined, restricted: false, projectName: 'demo', area: 'specBoard', target: undefined, selection: undefined, notice: undefined, rows: [] };
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', type: 'board', payload: { view: board } } }));
+        const view = { state: undefined, restricted: false, projectName: 'demo', area: 'board', target: undefined, selection: undefined, notice: undefined, rows: [] };
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 2, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 2, kind: 'evt', type: 'board', payload: { view: board } } }));
         await settle();
         const document = dom.window.document;
-        expect(document.querySelector('h1')?.textContent).toBe('Spec Board');
+        expect(document.querySelector('h1')?.textContent).toBe('Board');
         expect([...document.querySelectorAll('[data-column]')].map((column) => (column as unknown as { getAttribute(name: string): string | null }).getAttribute('data-column'))).toEqual(['Backlog', 'Ready', 'Active', 'Review', 'Done', 'Blocked']);
         expect(document.querySelectorAll('[data-card]')).toHaveLength(cards.length);
         expect(cards.length).toBeGreaterThan(0);
@@ -126,7 +126,7 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         expect(errors).toEqual([]);
     });
 
-    it('mounts Mission Control with a snapshot of a fixture project: header, six state counts, progress, the attention list, the activity, no start-up error', async () => {
+    it('mounts Overview with a snapshot of a fixture project: header, six state counts, progress, the attention list, the activity, no start-up error', async () => {
         const project = await readProject(createNodeSpecSource(), fixturePath('fs110-ready-synthetic'), '1.10.0');
         const lifecycle = deriveLifecycle(project);
         const mission = buildMissionControlView({
@@ -137,16 +137,16 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         });
         const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
         await settle();
-        const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'missionControl', target: undefined, selection: undefined, notice: undefined, rows: [] };
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', type: 'missionControl', payload: { view: mission } } }));
+        const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'overview', target: undefined, selection: undefined, notice: undefined, rows: [] };
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 2, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 2, kind: 'evt', type: 'missionControl', payload: { view: mission } } }));
         await settle();
         const document = dom.window.document;
-        expect(document.querySelector('h1')?.textContent).toBe('Mission Control');
+        expect(document.querySelector('h1')?.textContent).toBe('Overview');
         expect(document.querySelector('[data-placeholder]')).toBeNull();
         expect(document.querySelector('[data-mission-control]')).not.toBeNull();
-        expect(document.querySelector('[data-header]')?.textContent).toContain('fixture');
-        expect(document.querySelector('[data-header]')?.textContent).toContain('FeatherSpec 1.10.0');
+        expect(document.querySelector('.project-name')?.textContent).toBe('fixture');
+        expect(document.querySelector('[data-header]')?.textContent ?? '').not.toContain('fixture');
         expect(document.querySelectorAll('[data-state-count]')).toHaveLength(6);
         expect(document.querySelector('[data-total]')?.textContent).toBe(`Total ${lifecycle.entries.length}`);
         expect(lifecycle.entries.length).toBeGreaterThan(0);
@@ -157,12 +157,12 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         expect(errors).toEqual([]);
     });
 
-    it('control: a Mission Control event with an extra field is refused and the area stays an empty frame', async () => {
+    it('control: a Overview event with an extra field is refused and the area stays an empty frame', async () => {
         const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
         await settle();
-        const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'missionControl', target: undefined, selection: undefined, notice: undefined, rows: [] };
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', type: 'missionControl', payload: { view: { header: {}, extra: 1 } } } }));
+        const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'overview', target: undefined, selection: undefined, notice: undefined, rows: [] };
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 2, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 2, kind: 'evt', type: 'missionControl', payload: { view: { header: {}, extra: 1 } } } }));
         await settle();
         expect(dom.window.document.querySelector('[data-mission-control]')).toBeNull();
         expect(dom.window.document.querySelector('[data-mission-control-empty]')).not.toBeNull();
@@ -181,8 +181,8 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
         await settle();
         const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'specExplorer', target: undefined, selection: undefined, notice: undefined, rows: [] };
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 1, kind: 'evt', type: 'detail', payload: { view: detail } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 2, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 2, kind: 'evt', type: 'detail', payload: { view: detail } } }));
         await settle();
         const section = dom.window.document.querySelector('.spec-detail') as unknown as QueryRoot | null;
         let text = section?.textContent ?? '';

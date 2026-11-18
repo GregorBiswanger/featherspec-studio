@@ -21,7 +21,7 @@ function figures(view: MissionControlView | undefined): { specs: number | undefi
     return { specs: totalOf(view) };
 }
 
-suite('FeatherSpec Studio Mission Control smoke', function () {
+suite('FeatherSpec Studio Overview smoke', function () {
     this.timeout(90_000);
 
 
@@ -40,7 +40,7 @@ suite('FeatherSpec Studio Mission Control smoke', function () {
         });
         const extra = path.join(root, '.specs', 'backlog', '0002-extra-thing.md');
         try {
-            await waitFor('Mission Control to show spec counts', () => figures(mission.view()), (state) => state.specs !== undefined, { timeoutMs: 20_000 });
+            await waitFor('Overview to show spec counts', () => figures(mission.view()), (state) => state.specs !== undefined, { timeoutMs: 20_000 });
             const first = mission.view();
             assert.strictEqual(totalOf(first), 1);
             assert.strictEqual(first?.header.name, 'fs110-de-active-review');
@@ -49,7 +49,7 @@ suite('FeatherSpec Studio Mission Control smoke', function () {
             const before = await snapshotTree(root);
 
             await fs.writeFile(extra, '# Extra thing\n\n**Status:** Draft\n**Plan:** _none yet_\n');
-            await waitFor('Mission Control to count the added spec (2)', () => figures(mission.view()), (state) => state.specs === 2, { timeoutMs: 20_000 });
+            await waitFor('Overview to count the added spec (2)', () => figures(mission.view()), (state) => state.specs === 2, { timeoutMs: 20_000 });
 
             assert.strictEqual(totalOf(mission.view()), 2);
             assert.ok(seen.length >= 2, 'the change produced a new view');
@@ -69,7 +69,7 @@ suite('FeatherSpec Studio Mission Control smoke', function () {
         const mission = api.missionControl();
         const listening = mission.listen(() => undefined);
         try {
-            await waitFor('Mission Control to have a view', () => figures(mission.view()), (state) => state.specs !== undefined, { timeoutMs: 20_000 });
+            await waitFor('Overview to have a view', () => figures(mission.view()), (state) => state.specs !== undefined, { timeoutMs: 20_000 });
             const view = mission.view();
             assert.strictEqual(view?.header.problems, 0);
             assert.deepStrictEqual(view?.header.problemStems, []);
@@ -85,7 +85,7 @@ suite('FeatherSpec Studio Mission Control smoke', function () {
         const mission = api.missionControl();
         const listening = mission.listen(() => undefined);
         try {
-            await waitFor('Mission Control to have a view', () => figures(mission.view()), (state) => state.specs !== undefined, { timeoutMs: 20_000 });
+            await waitFor('Overview to have a view', () => figures(mission.view()), (state) => state.specs !== undefined, { timeoutMs: 20_000 });
             const view = mission.view();
             assert.deepStrictEqual(
                 view?.specs.kind === 'counts' ? view.specs.states.map((entry) => entry.state) : [],

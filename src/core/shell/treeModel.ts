@@ -11,8 +11,8 @@ export type TreeItemModel =
 
 /** One icon per area, none shared with another entry of the tree (PD-048). */
 export const AREA_ICONS: Record<AreaId, string> = {
-    missionControl: 'dashboard',
-    specBoard: 'layout',
+    overview: 'dashboard',
+    board: 'layout',
     specExplorer: 'list-tree',
 };
 const PROJECT_ICON = 'folder';

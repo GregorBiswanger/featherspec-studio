@@ -53,6 +53,10 @@ export function updatedText(iso: string, now: Date): string {
     return dayKey(date) === dayKey(now) ? `Updated ${time}` : `Updated ${date.getFullYear()}-${two(date.getMonth() + 1)}-${two(date.getDate())} ${time}`;
 }
 
+export function projectTooltip(version: string, updatedAt: string | undefined, now: Date): string {
+    return updatedAt === undefined ? `FeatherSpec ${version}` : `FeatherSpec ${version} · ${updatedText(updatedAt, now)}`;
+}
+
 export const HISTORY_LABEL = 'Only changes Studio saw while it was running.';
 export const HISTORY_GONE_TEXT = 'no longer in the project';
 export const HISTORY_WHILE_CLOSED_TEXT = '(changed while Studio was not running)';

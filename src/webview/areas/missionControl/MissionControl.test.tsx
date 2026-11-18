@@ -15,7 +15,7 @@ async function open(view?: MissionControlView, client?: ShellClient): Promise<HT
     clients.push(made);
     made.start();
     mounted = await mount(<App client={made} />);
-    await send(shellEvent(baseView({ area: 'missionControl' }), 1));
+    await send(shellEvent(baseView({ area: 'overview' }), 1));
     if (view !== undefined) {
         await send(missionControlEvent(view));
     }
@@ -40,7 +40,7 @@ describe('transport and the empty start', () => {
     it('the area is no placeholder; before the first view it shows an empty frame and no text of its own (the loading state is the shell\'s, 0005 AC-014)', async () => {
         const container = await open();
         expect(container.querySelector('[data-placeholder]')).toBeNull();
-        expect(container.querySelector('h1')?.textContent).toBe('Mission Control');
+        expect(container.querySelector('h1')?.textContent).toBe('Overview');
         expect(container.querySelector('[data-mission-control-empty]')).not.toBeNull();
         expect(container.textContent).not.toContain('Loading project…');
         expect(container.querySelector('[data-mission-control]')).toBeNull();
@@ -48,32 +48,29 @@ describe('transport and the empty start', () => {
 
     it('a valid missionControl event fills the area; an invalid one is ignored and the view stays as it was', async () => {
         const container = await open(sampleView());
-        expect(area(container).textContent).toContain('demo');
+        expect(area(container).textContent).toContain('Total');
         await send(missionControlEvent({ header: 'broken' }));
         await send(missionControlEvent({ ...sampleView(), extra: 'SECRET-1' }));
-        expect(area(container).textContent).toContain('demo');
+        expect(area(container).textContent).toContain('Total');
         expect(container.textContent).not.toContain('SECRET-1');
     });
 });
 
 describe('AC-017, AC-019: header', () => {
-    it('shows folder name, FeatherSpec version, the model update time in local time and the problem count', async () => {
+    it('shows the problem count, singular for one, and no folder, version or time (0018 AC-025 moved them to the project name)', async () => {
         const view = sampleView();
-        view.header.updatedAt = new Date(2026, 10, 16, 9, 5).toISOString();
         const header = area(await open(view)).querySelector('[data-header]')!;
-        expect(header.textContent).toContain('demo');
-        expect(header.textContent).toContain('FeatherSpec 1.10.0');
-        expect(header.textContent).toContain('Updated 2026-11-16 09:05');
         expect(header.textContent).toContain('1 problem');
         expect(header.textContent).not.toContain('1 problems');
+        expect(header.textContent).not.toContain('demo');
+        expect(header.textContent).not.toContain('FeatherSpec');
+        expect(header.textContent).not.toContain('Updated');
     });
 
-    it('shows "unknown" as the version and "n problems" in the plural', async () => {
+    it('shows "n problems" in the plural', async () => {
         const view = sampleView();
-        view.header.version = 'unknown';
         view.header.problems = 2;
         const header = area(await open(view)).querySelector('[data-header]')!;
-        expect(header.textContent).toContain('FeatherSpec unknown');
         expect(header.querySelector('[data-drill="problems"]')?.textContent).toBe('2 problems');
     });
 
@@ -84,14 +81,6 @@ describe('AC-017, AC-019: header', () => {
         const header = area(await open(view)).querySelector('[data-header]')!;
         expect(header.querySelector('[data-drill]')).toBeNull();
         expect(header.textContent).not.toMatch(/problem|diagnostic/i);
-    });
-
-    it('T-02: the header time reads Updated HH:MM today, else with the date', async () => {
-        const view = sampleView();
-        view.header.updatedAt = new Date().toISOString();
-        const now = new Date();
-        const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-        expect(area(await open(view)).querySelector('.mc-updated')?.textContent).toBe(`Updated ${hhmm}`);
     });
 });
 
@@ -203,7 +192,7 @@ describe('0013 AC-004, AC-005: stat tiles, distribution bar and progress', () =>
         const container = await open(FIVE_SEVEN);
         const review = area(container).querySelector<HTMLButtonElement>('.mc-tile[data-board-state="Review"]')!;
         await click(review);
-        expect(posted.filter((message) => message.type === 'navigate').map((message) => message.payload)).toEqual([{ area: 'specBoard', target: { kind: 'boardFilter', filter: { states: ['Review'] } } }]);
+        expect(posted.filter((message) => message.type === 'navigate').map((message) => message.payload)).toEqual([{ area: 'board', target: { kind: 'boardFilter', filter: { states: ['Review'] } } }]);
     });
 
     it('AC-005: 5 Backlog and 7 Review give two segments, 41.7 % and 58.3 % wide, named "Backlog: 5 of 12" and "Review: 7 of 12"; no segment for 0', async () => {

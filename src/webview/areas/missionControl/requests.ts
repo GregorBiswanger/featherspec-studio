@@ -6,15 +6,15 @@ export const ATTENTION_SET_LABEL = 'Needs attention';
 export const PROBLEMS_SET_LABEL = 'Problems';
 
 function namedSet(label: string, stems: readonly string[]): NavigationRequest {
-    return { area: 'specBoard', target: { kind: 'boardFilter', filter: { set: { label, stems: [...stems] } } } };
+    return { area: 'board', target: { kind: 'boardFilter', filter: { set: { label, stems: [...stems] } } } };
 }
 
 export function totalRequest(): NavigationRequest {
-    return { area: 'specBoard' };
+    return { area: 'board' };
 }
 
 export function stateRequest(state: BoardState): NavigationRequest {
-    return { area: 'specBoard', target: { kind: 'boardFilter', filter: { states: [state] } } };
+    return { area: 'board', target: { kind: 'boardFilter', filter: { states: [state] } } };
 }
 
 export function attentionRequest(rows: readonly AttentionRow[]): NavigationRequest {

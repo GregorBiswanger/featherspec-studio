@@ -51,6 +51,13 @@ describe('AC-026: colours come from the theme', () => {
         }
     });
 
+    it('0018 AC-026: the current navigation item has a 2 px bottom border, the contrast active border and no marker rule', () => {
+        const rules = rulesFor(css, '.nav-item.current');
+        expect(rules.some((rule) => /border-bottom:\s*2px solid/.test(rule.body))).toBe(true);
+        expect(rules.some((rule) => /border-color:\s*var\(--vscode-contrastActiveBorder/.test(rule.body))).toBe(true);
+        expect(css).not.toContain('.nav-item [data-marker]');
+    });
+
     it('AC-031: a focused control and a focused row use the High Contrast active border before the focus border', () => {
         const rules = rulesFor(css, '[role="option"]:focus-visible');
         expect(rules.length).toBeGreaterThan(0);
@@ -72,7 +79,7 @@ describe('AC-026: colours come from the theme', () => {
         expect(css).not.toMatch(/--vscode-contrast(?:Active)?Border,\s*#/);
     });
 
-    it('0006 AC-022: a Mission Control drill-down button sets no outline of its own, so the generic focus indicator of every button applies', () => {
+    it('0006 AC-022: an Overview drill-down button sets no outline of its own, so the generic focus indicator of every button applies', () => {
         const drill = rulesFor(css, '.mc-drill');
         expect(drill.length).toBeGreaterThan(0);
         for (const rule of drill) {
@@ -275,7 +282,7 @@ describe('0005 AC-019: the panel follows the theme without being reopened', () =
     it('negative control: the check flags a module that reads the theme class or a computed colour', () => {
         expect(THEME_READS.test("document.body.classList.contains('vscode-dark')")).toBe(true);
         expect(THEME_READS.test("getComputedStyle(document.body).getPropertyValue('--vscode-foreground')")).toBe(true);
-        expect(THEME_READS.test('const label = "Spec Board";')).toBe(false);
+        expect(THEME_READS.test('const label = "Board";')).toBe(false);
     });
 });
 

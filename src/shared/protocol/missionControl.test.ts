@@ -3,7 +3,7 @@ import { isMissionControlEventPayload } from './messages';
 import { isMissionControlView } from './missionControl';
 import { sampleView } from './testing/missionControlSample';
 
-describe('Mission Control view contract', () => {
+describe('Overview view contract', () => {
     it('AC-026: a built view is accepted, the unavailable forms too', () => {
         const view = sampleView();
         expect(isMissionControlView(view)).toBe(true);
@@ -30,8 +30,8 @@ describe('Mission Control view contract', () => {
     });
 });
 
-describe('Mission Control event payload', () => {
-    it('accepts a payload that holds a valid view and refuses anything else (negative control: a board view is no Mission Control view)', () => {
+describe('Overview event payload', () => {
+    it('accepts a payload that holds a valid view and refuses anything else (negative control: a board view is no Overview view)', () => {
         expect(isMissionControlEventPayload({ view: sampleView() })).toBe(true);
         expect(isMissionControlEventPayload({ view: { columns: [] } })).toBe(false);
         expect(isMissionControlEventPayload(undefined)).toBe(false);

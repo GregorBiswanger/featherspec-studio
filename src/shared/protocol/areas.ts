@@ -1,4 +1,4 @@
-export const AREA_IDS = ['missionControl', 'specBoard', 'specExplorer'] as const;
+export const AREA_IDS = ['overview', 'board', 'specExplorer'] as const;
 export type AreaId = (typeof AREA_IDS)[number];
 
 export interface AreaInfo {
@@ -10,14 +10,14 @@ export interface AreaInfo {
 
 export const AREAS: readonly AreaInfo[] = [
     {
-        id: 'missionControl',
-        title: 'Mission Control',
-        purpose: 'See the project at a glance: spec counts, progress, what needs attention and recent activity.',
+        id: 'overview',
+        title: 'Overview',
+        purpose: 'See what is in progress, what comes next and what needs fixing.',
         placeholder: false,
     },
     {
-        id: 'specBoard',
-        title: 'Spec Board',
+        id: 'board',
+        title: 'Board',
         purpose: 'See every spec as a card in the column of its board state.',
         placeholder: false,
     },
@@ -29,7 +29,7 @@ export const AREAS: readonly AreaInfo[] = [
     },
 ];
 
-export const DEFAULT_AREA: AreaId = 'missionControl';
+export const DEFAULT_AREA: AreaId = 'overview';
 
 export function isAreaId(value: unknown): value is AreaId {
     return typeof value === 'string' && (AREA_IDS as readonly string[]).includes(value);

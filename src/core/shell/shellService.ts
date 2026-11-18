@@ -29,7 +29,7 @@ export interface ShellService {
     onDidChangeView(listener: (view: ShellView) => void): Disposable;
     onDidNavigate(listener: (request: NavigationRequest) => void): Disposable;
     runAction(action: ActionId): Promise<void>;
-    rescan(): Promise<void>;
+    refresh(): Promise<void>;
     open(request: OpenRequest): void;
     handlers: Pick<RequestHandlers, ShellRequestType>;
     dispose(): void;
@@ -101,10 +101,13 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
             sameRoot: deps.sameRoot,
         });
         const state: PanelState | undefined = busy ? { id: 'S4' } : derived;
+        const read = discovery.active === undefined || !modelLoaded ? '' : deps.source.updatedAt();
         return {
             state,
             restricted: !deps.trust.isTrusted(),
             projectName: discovery.active?.name,
+            ...(discovery.active === undefined ? {} : { projectVersion: discovery.active.version }),
+            ...(read === '' ? {} : { updatedAt: read }),
             area,
             target,
             selection: selectedSpec(model),
@@ -159,6 +162,13 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
     ];
     lastNotified = JSON.stringify(compute());
 
+    async function refresh(): Promise<void> {
+        await ignoring(() => deps.discovery.refresh());
+        if (deps.discovery.snapshot().active !== undefined) {
+            await ignoring(() => deps.repository.rescan());
+        }
+    }
+
     async function runAction(action: ActionId): Promise<void> {
         switch (action) {
             case 'openFolder':
@@ -178,12 +188,8 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
             case 'selectProject':
                 return deps.discovery.selectProject();
             case 'refresh':
-                return guarded(() => ignoring(() => deps.discovery.refresh()));
             case 'retry':
-                return guarded(async () => {
-                    await ignoring(() => deps.discovery.refresh());
-                    await ignoring(() => deps.repository.rescan());
-                });
+                return guarded(refresh);
         }
     }
 
@@ -247,12 +253,7 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
             return { dispose: () => void navigationListeners.delete(listener) };
         },
         runAction,
-        async rescan() {
-            if (deps.discovery.snapshot().active === undefined) {
-                return;
-            }
-            await deps.repository.rescan();
-        },
+        refresh,
         handlers: {
             hello: async () => undefined,
             navigate: async (request) => navigate(request),

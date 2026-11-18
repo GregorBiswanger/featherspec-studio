@@ -5,7 +5,7 @@ import { SpecBoard } from './SpecBoard';
 import { SpecExplorer } from './SpecExplorer';
 
 export const AREA_COMPONENTS: Partial<Record<AreaId, ComponentType>> = {
-    missionControl: MissionControl,
-    specBoard: SpecBoard,
+    overview: MissionControl,
+    board: SpecBoard,
     specExplorer: SpecExplorer,
 };

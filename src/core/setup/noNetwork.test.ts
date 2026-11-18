@@ -88,9 +88,9 @@ describe('0014 AC-025: discovery, the view and the panel send no network request
         await world.controller.refresh();
         await world.settle();
         expect(world.service.view().state).toBeUndefined();
-        world.service.open({ via: 'area', area: 'specBoard' });
-        await world.service.handlers.navigate({ area: 'specBoard' });
-        await world.service.rescan();
+        world.service.open({ via: 'area', area: 'board' });
+        await world.service.handlers.navigate({ area: 'board' });
+        await world.service.refresh();
         world.dispose();
         expect(hits).toEqual([]);
         expect(fetched).toEqual([]);

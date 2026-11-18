@@ -18,7 +18,6 @@ export function Navigation() {
                                 aria-current={current ? 'page' : undefined}
                                 onClick={() => shell.navigate({ area: area.id })}
                             >
-                                {current ? <span data-marker aria-hidden="true">▸</span> : null}
                                 <AreaIcon area={area.id} />
                                 {area.title}
                             </button>

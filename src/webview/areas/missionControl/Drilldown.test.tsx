@@ -28,7 +28,7 @@ async function open(view: MissionControlView): Promise<HTMLElement> {
     clients.push(client);
     client.start();
     mounted = await mount(<App client={client} />);
-    await send(shellEvent(baseView({ area: 'missionControl' }), 1));
+    await send(shellEvent(baseView({ area: 'overview' }), 1));
     await send(missionControlEvent(view));
     return mounted.container;
 }
@@ -46,7 +46,7 @@ async function clickAndReturn(container: HTMLElement, id: string): Promise<void>
     await click(drill(container, id));
     const request = posted.slice(before).find((message) => message.type === 'navigate');
     if (request?.id !== undefined) {
-        await send({ v: 1, kind: 'res', id: request.id, type: 'navigate', payload: { ok: true } });
+        await send({ v: 2, kind: 'res', id: request.id, type: 'navigate', payload: { ok: true } });
     }
 }
 
@@ -65,25 +65,25 @@ afterEach(() => {
 });
 
 describe('AC-012: the total, a state count and Needs attention', () => {
-    it('the total sends the Spec Board without a target', async () => {
+    it('the total sends the Board without a target', async () => {
         await click(drill(await open(drillView()), 'total'));
-        expect(sent()).toEqual([{ type: 'navigate', payload: { area: 'specBoard' } }]);
+        expect(sent()).toEqual([{ type: 'navigate', payload: { area: 'board' } }]);
     });
 
-    it('a state count sends the Spec Board filtered to that state, once', async () => {
+    it('a state count sends the Board filtered to that state, once', async () => {
         await click(drill(await open(drillView()), 'state:Done'));
-        expect(sent()).toEqual([{ type: 'navigate', payload: { area: 'specBoard', target: { kind: 'boardFilter', filter: { states: ['Done'] } } } }]);
+        expect(sent()).toEqual([{ type: 'navigate', payload: { area: 'board', target: { kind: 'boardFilter', filter: { states: ['Done'] } } } }]);
     });
 
     it('OP-9: a count that reads 0 sends its request like any other count', async () => {
         await click(drill(await open(drillView()), 'state:Ready'));
-        expect(sent()).toEqual([{ type: 'navigate', payload: { area: 'specBoard', target: { kind: 'boardFilter', filter: { states: ['Ready'] } } } }]);
+        expect(sent()).toEqual([{ type: 'navigate', payload: { area: 'board', target: { kind: 'boardFilter', filter: { states: ['Ready'] } } } }]);
     });
 
     it('the Needs attention heading sends the named set "Needs attention" with the stems of exactly the listed rows, a duplicated stem once', async () => {
         await click(drill(await open(drillView()), 'attention'));
         expect(sent()).toEqual([
-            { type: 'navigate', payload: { area: 'specBoard', target: { kind: 'boardFilter', filter: { set: { label: 'Needs attention', stems: ['0001-a', '0004-dup'] } } } } },
+            { type: 'navigate', payload: { area: 'board', target: { kind: 'boardFilter', filter: { set: { label: 'Needs attention', stems: ['0001-a', '0004-dup'] } } } } },
         ]);
     });
 });
@@ -98,7 +98,7 @@ describe('0015 AC-010: no drill-down for runs', () => {
         }
         const areas = sent().map((message) => (message.payload as { area: string }).area);
         expect(areas.length).toBeGreaterThan(5);
-        expect(areas.every((area) => ['missionControl', 'specBoard', 'specExplorer'].includes(area))).toBe(true);
+        expect(areas.every((area) => ['overview', 'board', 'specExplorer'].includes(area))).toBe(true);
     });
 });
 
@@ -132,20 +132,20 @@ describe('AC-014: attention rows and activity entries', () => {
 });
 
 describe('AC-017: the diagnostics count', () => {
-    it('AC-008: sends one request for the Spec Board with the named set "Problems" and the stems that carry a Problem, and no runAction', async () => {
+    it('AC-008: sends one request for the Board with the named set "Problems" and the stems that carry a Problem, and no runAction', async () => {
         await click(drill(await open(drillView()), 'problems'));
         expect(sent()).toEqual([
-            { type: 'navigate', payload: { area: 'specBoard', target: { kind: 'boardFilter', filter: { set: { label: 'Problems', stems: ['0002-x'] } } } } },
+            { type: 'navigate', payload: { area: 'board', target: { kind: 'boardFilter', filter: { set: { label: 'Problems', stems: ['0002-x'] } } } } },
         ]);
         expect(posted.some((message) => message.type === 'runAction')).toBe(false);
     });
 
-    it('AC-008: Problems at project level only open the Spec Board without a filter, where its banner lists them', async () => {
+    it('AC-008: Problems at project level only open the Board without a filter, where its banner lists them', async () => {
         const view = drillView();
         view.header.problems = 1;
         view.header.problemStems = [];
         await click(drill(await open(view), 'problems'));
-        expect(sent()).toEqual([{ type: 'navigate', payload: { area: 'specBoard' } }]);
+        expect(sent()).toEqual([{ type: 'navigate', payload: { area: 'board' } }]);
     });
 
     it('AC-008: while no Problem exists the header shows no problem element at all', async () => {
@@ -206,11 +206,11 @@ describe('AC-022: keyboard', () => {
     it('Enter and Space activate a drill-down element and send its request', async () => {
         const container = await open(drillView());
         await pressKey(drill(container, 'total'), 'Enter');
-        await send({ v: 1, kind: 'res', id: posted.find((message) => message.type === 'navigate')!.id, type: 'navigate', payload: { ok: true } });
+        await send({ v: 2, kind: 'res', id: posted.find((message) => message.type === 'navigate')!.id, type: 'navigate', payload: { ok: true } });
         await pressKey(drill(container, 'state:Done'), ' ');
         expect(sent().map((message) => message.payload)).toEqual([
-            { area: 'specBoard' },
-            { area: 'specBoard', target: { kind: 'boardFilter', filter: { states: ['Done'] } } },
+            { area: 'board' },
+            { area: 'board', target: { kind: 'boardFilter', filter: { states: ['Done'] } } },
         ]);
     });
 });

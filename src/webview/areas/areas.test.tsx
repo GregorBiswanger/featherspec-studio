@@ -56,7 +56,7 @@ afterEach(() => {
     mounted = undefined;
 });
 
-const SYNTHETIC: AreaInfo = { id: 'specBoard', title: 'Synthetic area', purpose: 'A purpose for a placeholder test.', placeholder: true };
+const SYNTHETIC: AreaInfo = { id: 'board', title: 'Synthetic area', purpose: 'A purpose for a placeholder test.', placeholder: true };
 
 describe('AC-006: placeholders (no real area is a placeholder any more; the component is tested through a synthetic area)', () => {
     it('a placeholder shows its name, its purpose and "Not available in this version of FeatherSpec Studio", and no rows', async () => {
@@ -74,7 +74,7 @@ describe('AC-006: placeholders (no real area is a placeholder any more; the comp
         expect(mounted.container.textContent).not.toContain('r-1');
     });
 
-    it.each(['missionControl', 'specExplorer', 'specBoard'] as const)('control: %s is no placeholder', async (area) => {
+    it.each(['overview', 'specExplorer', 'board'] as const)('control: %s is no placeholder', async (area) => {
         const container = await open(baseView({ area, rows: THREE }));
         expect(container.querySelector('[data-placeholder]')).toBeNull();
     });
@@ -176,8 +176,8 @@ describe('AC-008: selection in the panel UI', () => {
     it('the selected row stays marked after a round trip to another area and back', async () => {
         const rows = [row('0001'), row('0002', { selected: true })];
         const container = await open(baseView({ area: 'specExplorer', rows, selection: { stem: '0002-thing', number: '0002' } }));
-        await click(nav(container, 'Spec Board'));
-        expect(container.querySelector('h1')?.textContent).toBe('Spec Board');
+        await click(nav(container, 'Board'));
+        expect(container.querySelector('h1')?.textContent).toBe('Board');
         await click(nav(container, 'Spec Explorer'));
         expect(optionRows(container)[1]?.getAttribute('aria-selected')).toBe('true');
     });

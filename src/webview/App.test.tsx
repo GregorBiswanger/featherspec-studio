@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AREAS } from '../shared/protocol/areas';
-import type { Envelope } from '../shared/protocol/envelope';
+import { PROTOCOL_VERSION, type Envelope } from '../shared/protocol/envelope';
 import { App } from './App';
 import { createClient, type ShellClient } from './client';
 import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from './testing/dom';
@@ -32,23 +32,23 @@ afterEach(() => {
 });
 
 describe('AC-004: the navigation', () => {
-    it('lists Mission Control, Spec Board and Spec Explorer', async () => {
+    it('lists Overview, Board and Spec Explorer', async () => {
         const { container } = await start();
-        expect(items(container).map((item) => item.textContent?.replace('▸', '').trim())).toEqual(AREAS.map((area) => area.title));
+        expect(items(container).map((item) => item.textContent?.trim())).toEqual(AREAS.map((area) => area.title));
     });
 
     it('sends hello on boot', async () => {
         await start();
         expect(posted).toHaveLength(1);
-        expect(posted[0]).toMatchObject({ v: 1, kind: 'req', type: 'hello', payload: { lastSeq: 0 } });
+        expect(posted[0]).toMatchObject({ v: PROTOCOL_VERSION, kind: 'req', type: 'hello', payload: { lastSeq: 0 } });
     });
 
     it('a click on an item shows that area at once and sends navigate', async () => {
         const { container } = await start();
         await click(items(container)[1]!);
-        expect(container.querySelector('h1')?.textContent).toBe('Spec Board');
+        expect(container.querySelector('h1')?.textContent).toBe('Board');
         const navigate = posted.find((message) => message.type === 'navigate');
-        expect(navigate?.payload).toEqual({ area: 'specBoard' });
+        expect(navigate?.payload).toEqual({ area: 'board' });
         expect(navigate?.id).toBeTypeOf('string');
     });
 
@@ -57,7 +57,7 @@ describe('AC-004: the navigation', () => {
         await pressKey(items(container)[2]!, 'Enter');
         expect(container.querySelector('h1')?.textContent).toBe('Spec Explorer');
         await pressKey(items(container)[1]!, ' ');
-        expect(container.querySelector('h1')?.textContent).toBe('Spec Board');
+        expect(container.querySelector('h1')?.textContent).toBe('Board');
         expect(posted.filter((message) => message.type === 'navigate')).toHaveLength(2);
     });
 
@@ -71,29 +71,52 @@ describe('AC-004: the navigation', () => {
         }
     });
 
-    it('AC-023: the current area is marked with aria-current, a visible marker and the area heading, not by colour', async () => {
+    it('0018 AC-026: the current area is marked with aria-current and the area heading; no marker and no ▸ anywhere in the navigation', async () => {
         const { container } = await start();
         await click(items(container)[1]!);
         const current = items(container).filter((item) => item.getAttribute('aria-current') === 'page');
         expect(current).toHaveLength(1);
-        expect(current[0]?.textContent).toContain('Spec Board');
-        expect(current[0]?.querySelector('[data-marker]')?.textContent).toBe('▸');
-        expect(items(container)[0]?.querySelector('[data-marker]')).toBeNull();
-        expect(container.querySelector('h1')?.textContent).toBe('Spec Board');
+        expect(current[0]?.textContent).toContain('Board');
+        expect(container.querySelector('nav')?.textContent).not.toContain('▸');
+        expect(container.querySelector('nav [data-marker]')).toBeNull();
+        expect(container.querySelector('h1')?.textContent).toBe('Board');
     });
 
     it('PD-054: every item shows the icon of its area before its title, hidden from assistive technology, and no two items share one', async () => {
         const { container } = await start();
         const icons = items(container).map((item) => item.querySelector('svg[data-icon]'));
-        expect(icons.map((icon) => icon?.getAttribute('data-icon'))).toEqual(['missionControl', 'specBoard', 'specExplorer']);
+        expect(icons.map((icon) => icon?.getAttribute('data-icon'))).toEqual(['overview', 'board', 'specExplorer']);
         expect(icons.every((icon) => icon?.getAttribute('aria-hidden') === 'true')).toBe(true);
         expect(new Set(icons.map((icon) => icon?.querySelector('path')?.getAttribute('d'))).size).toBe(3);
-        expect(items(container).map((item) => item.textContent?.replace('▸', '').trim())).toEqual(['Mission Control', 'Spec Board', 'Spec Explorer']);
+        expect(items(container).map((item) => item.textContent?.replace('▸', '').trim())).toEqual(['Overview', 'Board', 'Spec Explorer']);
     });
 
     it('AC-023: the navigation has an accessible name', async () => {
         const { container } = await start();
         expect(container.querySelector('nav')?.getAttribute('aria-label')).toBe('Studio areas');
+    });
+});
+
+describe('0018 AC-025: the project name once, with a tooltip', () => {
+    it('shows the folder name exactly once in the panel and the version and read time as its tooltip', async () => {
+        const { container } = await start();
+        await send(shellEvent(baseView({ projectName: 'alpha-project', projectVersion: '1.10.0', updatedAt: new Date(2026, 10, 16, 9, 5).toISOString() }), 1));
+        expect(container.textContent?.split('alpha-project').length).toBe(2);
+        expect(container.querySelector('.project-name')?.getAttribute('title')).toBe('FeatherSpec 1.10.0 · Updated 2026-11-16 09:05');
+    });
+
+    it('T-02: the time reads Updated HH:MM today', async () => {
+        const { container } = await start();
+        const now = new Date();
+        const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        await send(shellEvent(baseView({ projectName: 'alpha-project', projectVersion: '1.10.0', updatedAt: now.toISOString() }), 1));
+        expect(container.querySelector('.project-name')?.getAttribute('title')).toBe(`FeatherSpec 1.10.0 · Updated ${hhmm}`);
+    });
+
+    it('a legacy project reads "FeatherSpec unknown"', async () => {
+        const { container } = await start();
+        await send(shellEvent(baseView({ projectName: 'alpha-project', projectVersion: 'unknown', updatedAt: new Date().toISOString() }), 1));
+        expect(container.querySelector('.project-name')?.getAttribute('title')).toMatch(/^FeatherSpec unknown · Updated /);
     });
 });
 
@@ -120,14 +143,14 @@ describe('AC-014: loading', () => {
 
     it('the host decides the area once a snapshot arrives, and the pending local choice ends with the response', async () => {
         const { container } = await start();
-        await send(shellEvent(baseView({ area: 'specBoard' }), 1));
-        expect(container.querySelector('h1')?.textContent).toBe('Spec Board');
+        await send(shellEvent(baseView({ area: 'board' }), 1));
+        expect(container.querySelector('h1')?.textContent).toBe('Board');
     });
 
     it('re-sends hello with the last seen sequence number when an event is missing', async () => {
         await start();
         await send(shellEvent(baseView(), 1));
-        await send(shellEvent(baseView({ area: 'specBoard' }), 4));
+        await send(shellEvent(baseView({ area: 'board' }), 4));
         const hellos = posted.filter((message) => message.type === 'hello');
         expect(hellos).toHaveLength(2);
         expect(hellos[1]?.payload).toEqual({ lastSeq: 1 });
@@ -135,8 +158,8 @@ describe('AC-014: loading', () => {
 
     it('ignores a stale event with a lower sequence number', async () => {
         const { container } = await start();
-        await send(shellEvent(baseView({ area: 'specBoard' }), 2));
+        await send(shellEvent(baseView({ area: 'board' }), 2));
         await send(shellEvent(baseView({ area: 'specExplorer' }), 1));
-        expect(container.querySelector('h1')?.textContent).toBe('Spec Board');
+        expect(container.querySelector('h1')?.textContent).toBe('Board');
     });
 });

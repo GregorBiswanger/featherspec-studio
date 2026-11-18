@@ -52,8 +52,8 @@ describe('AC-016, AC-021: envelope', () => {
     });
 
     it('reads an envelope of another version (the router decides, AC-016)', () => {
-        expect(readEnvelope({ v: 2, kind: 'evt', type: 'shell', payload: {} }).ok).toBe(true);
-        expect(PROTOCOL_VERSION).toBe(1);
+        expect(readEnvelope({ v: 3, kind: 'evt', type: 'shell', payload: {} }).ok).toBe(true);
+        expect(PROTOCOL_VERSION).toBe(2);
     });
 
     it('isJsonValue accepts nested JSON and rejects functions, undefined and NaN', () => {
@@ -75,16 +75,16 @@ describe('AC-021: request guards accept and reject', () => {
     });
 
     it('navigate: an area with no target, or with a spec or board-filter target (PD-040)', () => {
-        expect(isNavigationRequest({ area: 'missionControl' })).toBe(true);
+        expect(isNavigationRequest({ area: 'overview' })).toBe(true);
         expect(isNavigationRequest({ area: 'specExplorer', target: { kind: 'spec', stem: '0003-x' } })).toBe(true);
         expect(isNavigationRequest({ area: 'specExplorer', target: { kind: 'spec', stem: '0003-x', path: 'a/b.md' } })).toBe(true);
-        expect(isNavigationRequest({ area: 'specBoard', target: { kind: 'boardFilter', filter: { states: ['Active'] } } })).toBe(true);
+        expect(isNavigationRequest({ area: 'board', target: { kind: 'boardFilter', filter: { states: ['Active'] } } })).toBe(true);
         expect(isNavigationRequest({ area: 'nowhere' })).toBe(false);
-        expect(isNavigationRequest({ area: 'specBoard', target: { kind: 'spec' } })).toBe(false);
-        expect(isNavigationRequest({ area: 'specBoard', target: { kind: 'spec', stem: '' } })).toBe(false);
-        expect(isNavigationRequest({ area: 'specBoard', target: { kind: 'run' } })).toBe(false);
-        expect(isNavigationRequest({ area: 'specBoard', target: { kind: 'boardFilter', filter: undefined } })).toBe(false);
-        expect(isNavigationRequest({ area: 'specBoard', target: { kind: 'other' } })).toBe(false);
+        expect(isNavigationRequest({ area: 'board', target: { kind: 'spec' } })).toBe(false);
+        expect(isNavigationRequest({ area: 'board', target: { kind: 'spec', stem: '' } })).toBe(false);
+        expect(isNavigationRequest({ area: 'board', target: { kind: 'run' } })).toBe(false);
+        expect(isNavigationRequest({ area: 'board', target: { kind: 'boardFilter', filter: undefined } })).toBe(false);
+        expect(isNavigationRequest({ area: 'board', target: { kind: 'other' } })).toBe(false);
         expect(isNavigationTarget('spec')).toBe(false);
     });
 
@@ -163,24 +163,32 @@ describe('0015 AC-005, AC-009: copy request and result', () => {
     });
 });
 
-describe('0015 AC-026: the Mission Control purpose and the Restricted Mode note', () => {
+describe('0015 AC-026: the Overview purpose and the Restricted Mode note', () => {
     it('read as the product texts of the spec', () => {
-        expect(AREAS.find((area) => area.id === 'missionControl')?.purpose).toBe('See the project at a glance: spec counts, progress, what needs attention and recent activity.');
+        expect(AREAS.find((area) => area.id === 'overview')?.purpose).toBe('See what is in progress, what comes next and what needs fixing.');
         expect(RESTRICTED_TEXT).toBe('This workspace is in Restricted Mode. Setting up FeatherSpec needs a trusted workspace.');
     });
 });
 
 describe('0015 AC-001, AC-002: three areas', () => {
-    it('lists exactly Mission Control, Spec Board and Spec Explorer, in this order', () => {
-        expect(AREAS.map((area) => area.title)).toEqual(['Mission Control', 'Spec Board', 'Spec Explorer']);
-        expect(AREA_IDS).toEqual(['missionControl', 'specBoard', 'specExplorer']);
+    it('lists exactly Overview, Board and Spec Explorer, in this order', () => {
+        expect(AREAS.map((area) => area.title)).toEqual(['Overview', 'Board', 'Spec Explorer']);
+        expect(AREA_IDS).toEqual(['overview', 'board', 'specExplorer']);
+    });
+
+    it('0018 AC-001: missionControl and specBoard are no area and no navigation request', () => {
+        for (const old of ['missionControl', 'specBoard']) {
+            expect(isAreaId(old)).toBe(false);
+            expect(isNavigationRequest({ area: old })).toBe(false);
+            expect(isShellView({ ...view, area: old })).toBe(false);
+        }
     });
 
     it('agentCenter is no area, no navigation target area and no shell view area', () => {
         expect(isAreaId('agentCenter')).toBe(false);
         expect(isNavigationRequest({ area: 'agentCenter' })).toBe(false);
         expect(isShellView({ ...view, area: 'agentCenter' })).toBe(false);
-        expect(isNavigationRequest({ area: 'specBoard' })).toBe(true);
+        expect(isNavigationRequest({ area: 'board' })).toBe(true);
     });
 
     it('there is no run navigation target', () => {

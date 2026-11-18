@@ -22,25 +22,25 @@ async function ready(options: Parameters<typeof createShellWorld>[0] = {}, files
 }
 
 describe('BR-02, AC-009: start area and memory', () => {
-    it('the first open in a workspace shows Mission Control', async () => {
+    it('0018 AC-002: the first open in a workspace shows the Overview', async () => {
         const current = await ready();
         current.service.open({ via: 'start' });
-        expect(current.service.view().area).toBe('missionControl');
+        expect(current.service.view().area).toBe('overview');
     });
 
     it('every change of area is remembered; a restart with that memory starts on the remembered area', async () => {
         const current = await ready();
-        await current.service.handlers.navigate({ area: 'specBoard' });
-        expect(current.memory.value).toEqual({ v: 1, area: 'specBoard' });
+        await current.service.handlers.navigate({ area: 'board' });
+        expect(current.memory.value).toEqual({ v: 1, area: 'board' });
         const second = current.restart();
         second.open({ via: 'start' });
-        expect(second.view().area).toBe('specBoard');
+        expect(second.view().area).toBe('board');
     });
 
     it('Open and Open Studio (start) show the remembered area, a per-area open shows the named area and remembers it', async () => {
-        const current = await ready({ memory: { v: 1, area: 'specBoard' } });
+        const current = await ready({ memory: { v: 1, area: 'board' } });
         current.service.open({ via: 'start' });
-        expect(current.service.view().area).toBe('specBoard');
+        expect(current.service.view().area).toBe('board');
         current.service.open({ via: 'area', area: 'specExplorer' });
         expect(current.service.view().area).toBe('specExplorer');
         expect((current.memory.value as { area: string }).area).toBe('specExplorer');
@@ -49,14 +49,36 @@ describe('BR-02, AC-009: start area and memory', () => {
     it.each([
         ['an unknown area', { v: 1, area: 'settings' }],
         ['the removed area agentCenter', { v: 1, area: 'agentCenter' }],
-        ['another version', { v: 9, area: 'specBoard' }],
-        ['garbage', 'specBoard'],
-        ['a damaged selection', { v: 1, area: 'specBoard', selection: { stem: 4 } }],
-    ])('a damaged remembered value (%s) gives Mission Control and no selection', async (_name, memory) => {
+        ['another version', { v: 9, area: 'board' }],
+        ['garbage', 'board'],
+        ['a damaged selection', { v: 1, area: 'board', selection: { stem: 4 } }],
+    ])('a damaged remembered value (%s) gives the Overview and no selection', async (_name, memory) => {
         const current = await ready({ memory });
         current.service.open({ via: 'start' });
-        expect(current.service.view().area).toBe('missionControl');
+        expect(current.service.view().area).toBe('overview');
         expect(current.service.view().selection).toBeUndefined();
+    });
+});
+
+describe('0018 AC-002: remembered state of earlier versions', () => {
+    const SELECTION = { projectRoot: 'proj', stem: '0003-x' };
+
+    it.each([
+        ['missionControl'],
+        ['specBoard'],
+    ])('the remembered area %s with a selection shows the Overview with no selection', async (area) => {
+        const current = await ready({ memory: { v: 1, area, selection: SELECTION } });
+        current.service.open({ via: 'start' });
+        expect(current.service.view().area).toBe('overview');
+        expect(current.service.view().selection).toBeUndefined();
+        expect(current.service.view().rows.some((row) => row.selected)).toBe(false);
+    });
+
+    it('control: the remembered area board keeps its selection', async () => {
+        const current = await ready({ memory: { v: 1, area: 'board', selection: SELECTION } });
+        current.service.open({ via: 'start' });
+        expect(current.service.view().area).toBe('board');
+        expect(current.service.view().selection?.stem).toBe('0003-x');
     });
 });
 
@@ -66,7 +88,7 @@ describe('AC-008, AC-009: selection', () => {
         await current.service.handlers.select({ stem: '0003-x' });
         expect(current.service.view().selection).toEqual({ stem: '0003-x', number: '0003' });
         expect(current.service.view().rows.find((row) => row.selected)?.stem).toBe('0003-x');
-        await current.service.handlers.navigate({ area: 'specBoard' });
+        await current.service.handlers.navigate({ area: 'board' });
         await current.service.handlers.navigate({ area: 'specExplorer' });
         expect(current.service.view().selection?.stem).toBe('0003-x');
         expect(current.service.view().rows.find((row) => row.selected)?.stem).toBe('0003-x');
@@ -109,7 +131,7 @@ describe('AC-010: clearing', () => {
         await current.repository.rescan();
         expect(current.service.view().selection).toBeUndefined();
         expect(current.service.view().notice).toEqual({ number: '0003' });
-        expect(current.memory.value).toEqual({ v: 1, area: 'missionControl' });
+        expect(current.memory.value).toEqual({ v: 1, area: 'overview' });
     });
 
     it('Given spec 0003 in backlog is selected When its file moves to active Then 0003 is still selected', async () => {
@@ -184,9 +206,9 @@ describe('AC-010: clearing', () => {
 });
 
 describe('AC-028: the navigation request (BR-07)', () => {
-    it('Given Mission Control is shown and spec 0003-x exists When the request "Spec Explorer, spec 0003-x" arrives Then Spec Explorer is shown and 0003 is selected', async () => {
+    it('Given Overview is shown and spec 0003-x exists When the request "Spec Explorer, spec 0003-x" arrives Then Spec Explorer is shown and 0003 is selected', async () => {
         const current = await ready();
-        expect(current.service.view().area).toBe('missionControl');
+        expect(current.service.view().area).toBe('overview');
         await current.service.handlers.navigate({ area: 'specExplorer', target: { kind: 'spec', stem: '0003-x' } });
         expect(current.service.view().area).toBe('specExplorer');
         expect(current.service.view().selection?.stem).toBe('0003-x');
@@ -196,8 +218,8 @@ describe('AC-028: the navigation request (BR-07)', () => {
     it('a spec target whose stem is not in the project keeps area and selection and shows the notice', async () => {
         const current = await ready();
         await current.service.handlers.select({ stem: '0002-b' });
-        await current.service.handlers.navigate({ area: 'specBoard', target: { kind: 'spec', stem: '0099-ghost' } });
-        expect(current.service.view().area).toBe('missionControl');
+        await current.service.handlers.navigate({ area: 'board', target: { kind: 'spec', stem: '0099-ghost' } });
+        expect(current.service.view().area).toBe('overview');
         expect(current.service.view().selection?.stem).toBe('0002-b');
         expect(current.service.view().notice).toEqual({ number: '0099' });
     });
@@ -205,14 +227,14 @@ describe('AC-028: the navigation request (BR-07)', () => {
     it('a board-filter target shows the area with the target in the view and changes no selection', async () => {
         const current = await ready();
         await current.service.handlers.select({ stem: '0002-b' });
-        await current.service.handlers.navigate({ area: 'specBoard', target: { kind: 'boardFilter', filter: { states: ['Active'] } } });
+        await current.service.handlers.navigate({ area: 'board', target: { kind: 'boardFilter', filter: { states: ['Active'] } } });
         expect(current.service.view().target).toEqual({ kind: 'boardFilter', filter: { states: ['Active'] } });
         expect(current.service.view().selection?.stem).toBe('0002-b');
     });
 
     it('a request without a target clears an earlier target', async () => {
         const current = await ready();
-        await current.service.handlers.navigate({ area: 'specBoard', target: { kind: 'boardFilter', filter: { states: ['Active'] } } });
+        await current.service.handlers.navigate({ area: 'board', target: { kind: 'boardFilter', filter: { states: ['Active'] } } });
         await current.service.handlers.navigate({ area: 'specExplorer' });
         expect(current.service.view().target).toBeUndefined();
     });
@@ -223,8 +245,8 @@ describe('0007 AC-012: onDidNavigate tells a consumer about every accepted navig
         const current = await ready();
         const seen: unknown[] = [];
         current.service.onDidNavigate((request) => seen.push([request, current.service.view().area]));
-        await current.service.handlers.navigate({ area: 'specBoard', target: { kind: 'boardFilter', filter: { states: ['Active'] } } });
-        expect(seen).toEqual([[{ area: 'specBoard', target: { kind: 'boardFilter', filter: { states: ['Active'] } } }, 'specBoard']]);
+        await current.service.handlers.navigate({ area: 'board', target: { kind: 'boardFilter', filter: { states: ['Active'] } } });
+        expect(seen).toEqual([[{ area: 'board', target: { kind: 'boardFilter', filter: { states: ['Active'] } } }, 'board']]);
     });
 
     it('is not called for a spec target that does not exist, and not after dispose of the listener', async () => {
@@ -234,7 +256,7 @@ describe('0007 AC-012: onDidNavigate tells a consumer about every accepted navig
         await current.service.handlers.navigate({ area: 'specExplorer', target: { kind: 'spec', stem: '0099-none' } });
         expect(seen).toEqual([]);
         subscription.dispose();
-        await current.service.handlers.navigate({ area: 'specBoard' });
+        await current.service.handlers.navigate({ area: 'board' });
         expect(seen).toEqual([]);
     });
 
@@ -243,16 +265,16 @@ describe('0007 AC-012: onDidNavigate tells a consumer about every accepted navig
         current.service.onDidNavigate(() => {
             throw new Error('boom');
         });
-        await current.service.handlers.navigate({ area: 'specBoard' });
-        expect(current.service.view().area).toBe('specBoard');
+        await current.service.handlers.navigate({ area: 'board' });
+        expect(current.service.view().area).toBe('board');
     });
 });
 
 describe('0015 AC-002: the removed Agent Center area', () => {
-    it('a remembered area agentCenter shows Mission Control with no notice and no selection', async () => {
+    it('a remembered area agentCenter shows Overview with no notice and no selection', async () => {
         const current = await ready({ memory: { v: 1, area: 'agentCenter', selection: { projectRoot: 'proj', stem: '0003-x' } } });
         current.service.open({ via: 'start' });
-        expect(current.service.view().area).toBe('missionControl');
+        expect(current.service.view().area).toBe('overview');
         expect(current.service.view().state).toBeUndefined();
         expect(current.service.view().notice).toBeUndefined();
         expect(current.service.view().selection).toBeUndefined();
@@ -261,7 +283,7 @@ describe('0015 AC-002: the removed Agent Center area', () => {
     it('the next remembered area replaces the removed one', async () => {
         const current = await ready({ memory: { v: 1, area: 'agentCenter' } });
         current.service.open({ via: 'start' });
-        await current.service.handlers.navigate({ area: 'specBoard' });
-        expect(current.memory.value).toEqual({ v: 1, area: 'specBoard' });
+        await current.service.handlers.navigate({ area: 'board' });
+        expect(current.memory.value).toEqual({ v: 1, area: 'board' });
     });
 });

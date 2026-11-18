@@ -1,9 +1,9 @@
 # Plan — Overview and a Compact Board
 
 **Spec:** [0018-overview-and-compact-board.md](0018-overview-and-compact-board.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-001
+**Current step:** T-002
 
 ## Approach
 
@@ -189,8 +189,8 @@ No parallel stage: the Overview and Board steps share `messages.ts`, `client.ts`
   (AC-005 with `openBoard`/`openOverview`, tree labels and command list, "AC-029: the Refresh
   command…"), `discovery.smoke` (`featherspec-studio.refresh`).
 - **Verify:** `npx vitest run src/core/shell src/shared/protocol src/webview/App.test.tsx src/webview/areas src/adapters/vscode/manifest.test.ts src/adapters/node/webviewCss.test.ts` red, then green; gates 1–5; `npm run compile-tests`
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-18: renaming area IDs, `PROTOCOL_VERSION` 2 and the commands first turned 21 existing tests red (old IDs, versions, titles); the new 0018 tests (AC-001 manifest and IDs, AC-002 remembered `missionControl`/`specBoard`, AC-025 tooltip, AC-026, AC-027 command and panel actions, F-1) were written with the change, not run red separately (see Notes). Green: `npm run test:unit` 1883 passed, 3 skipped (Baseline 1875 + 3); timing 12 passed; eslint, both `tsc`, `npm run compile`, `npm run compile-tests` clean.
+- **Notes:** Proxy: the new tests and the rename landed together, so no isolated red run of the new tests; each assertion is on a behaviour that did not exist before (`refresh`, `projectVersion`, tooltip). Test titles naming "Mission Control"/"Spec Board" in files outside the `missionControl` folders were reworded by script; the folder's own titles follow in T-002/T-003. `Header.tsx` keeps only the problem drill; its folder/version/time test moved to `App.test.tsx` (AC-025). Host smoke tests renamed (`openOverview`, `openBoard`, `refresh`), not runnable here.
 
 ### T-002 — Overview: Now and Up next (code names follow the UI)
 
@@ -423,5 +423,5 @@ No parallel stage: the Overview and Board steps share `messages.ts`, `client.ts`
 - **Next action:** Gregor reads the plan (proxy decisions P-1…P-17); on the start signal, the
   backlog → active move, then T-001.
 - **Open decisions:** OP-002 (Gregor confirms the spec's proxies; PD-064 records them in T-008).
-- **Baseline:** _(commit before the first step commit — after the 0017 fix session's commits; set when work starts)_
+- **Baseline:** `a992d08` (HEAD at the start of implementation).
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked); CI and Gregor's Windows machine run it.

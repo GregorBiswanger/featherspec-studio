@@ -9,8 +9,8 @@ describe('AC-003: the Activity Bar tree model', () => {
         expect(model.items).toEqual([
             { kind: 'project', label: 'demo', icon: 'folder' },
             { kind: 'open', label: 'Open Studio', icon: 'window' },
-            { kind: 'area', label: 'Mission Control', area: 'missionControl', icon: 'dashboard' },
-            { kind: 'area', label: 'Spec Board', area: 'specBoard', icon: 'layout' },
+            { kind: 'area', label: 'Overview', area: 'overview', icon: 'dashboard' },
+            { kind: 'area', label: 'Board', area: 'board', icon: 'layout' },
             { kind: 'area', label: 'Spec Explorer', area: 'specExplorer', icon: 'list-tree' },
         ]);
     });

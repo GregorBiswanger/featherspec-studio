@@ -16,7 +16,7 @@ async function open(view?: MissionControlView, client?: ShellClient): Promise<HT
     clients.push(made);
     made.start();
     mounted = await mount(<App client={made} />);
-    await send(shellEvent(baseView({ area: 'missionControl' }), 1));
+    await send(shellEvent(baseView({ area: 'overview' }), 1));
     if (view !== undefined) {
         await send(missionControlEvent(view));
     }
@@ -41,12 +41,12 @@ describe('AC-016, AC-024: timing', () => {
     it('AC-016: a new event is in the DOM within 500 ms of the message event', async () => {
         const container = await open(sampleView());
         const next = sampleView();
-        next.header.name = 'renamed';
+        next.header.problems = 5;
         const best = await bestOfThree(
             () => send(missionControlEvent(next)),
             () => send(missionControlEvent(sampleView())),
         );
-        expect(area(container).textContent).toContain('renamed');
+        expect(area(container).textContent).toContain('5 problems');
         expect(best).toBeLessThan(BUDGET_MS.uiFreshness);
     });
 
