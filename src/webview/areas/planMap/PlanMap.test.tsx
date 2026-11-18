@@ -544,6 +544,25 @@ describe('0023 AC-009: the ways of the current stage', () => {
     });
 });
 
+describe('0022 AC-015 as 0023 §4 amends it: the map breaks long paths', () => {
+    it('a way\'s prompt and a start line may break after a path separator, and their text stays whole', async () => {
+        const container = await show({ selection: selected('0007'), detail: detailWith(planSample()) });
+        await click(waysOf(container)!.querySelector<HTMLButtonElement>('.plan-ways-toggle')!);
+        const prompts = [...waysOf(container)!.querySelectorAll<HTMLElement>('.plan-way-prompt code')];
+        const lines = [...waysOf(container)!.querySelectorAll<HTMLElement>('.plan-start-lines code')];
+        expect(prompts.map((code) => code.textContent)).toEqual([SEQUENCE, SUBAGENTS, OTHERS]);
+        expect(lines.map((code) => code.textContent)).toEqual(['Implement T-003 of .specs/active/0007-thing.plan.md as a parallel worker.', 'Implement T-004 of .specs/active/0007-thing.plan.md as a parallel worker.']);
+        expect([...prompts, ...lines].map((code) => code.querySelectorAll('wbr').length > 0)).toEqual([true, true, true, true, true]);
+    });
+
+    it('the Files of a card may break after a path separator, and the paths stay whole', async () => {
+        const container = await show({ selection: selected('0007'), detail: detailWith(planSample()) });
+        const files = cardOf(container, 'T-003').querySelector<HTMLElement>('.step-card-files')!;
+        expect([...files.querySelectorAll('.step-card-file')].map((file) => file.textContent)).toEqual(['src/add.ts', ', src/add.test.ts']);
+        expect([...files.querySelectorAll('.step-card-file')].map((file) => file.querySelectorAll('wbr').length > 0)).toEqual([true, true]);
+    });
+});
+
 describe('0023 AC-010: the Copy buttons of the map', () => {
     async function openWays(): Promise<HTMLElement> {
         const container = await show({ selection: selected('0007'), detail: detailWith(planSample()) });

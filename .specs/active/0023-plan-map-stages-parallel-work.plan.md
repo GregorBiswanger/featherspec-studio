@@ -3,7 +3,7 @@
 **Spec:** [0023-plan-map-stages-parallel-work.md](0023-plan-map-stages-parallel-work.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-015
+**Current step:** T-016
 
 ## Approach
 
@@ -480,8 +480,8 @@ Proxy decisions of this round (Gregor delegated; P-25 …), recorded here and in
   Files too); `webviewCss.test.ts` (`.plan-way-prompt code` and `.plan-start-lines code` wrap with `overflow-wrap`, never
   `white-space: nowrap`).
 - **Verify:** `npx vitest run --project webview src/webview/areas/planMap` and `npx vitest run --project node src/adapters/node/webviewCss.test.ts`; the three mutants red on a scratch copy; gates 1–4
-- [ ] **Verified (T-015):**
-- **Notes:**
+- [x] **Verified (T-015):** 2026-11-18 · `npx vitest run --project webview src/webview/areas/planMap` green 53 and `npx vitest run --project node src/adapters/node/webviewCss.test.ts` green 92 on the head; each new test red against its mutant on a scratch copy of the working tree: M105 (way prompts `white-space: nowrap` instead of `overflow-wrap`) killed by the CSS test "0022 AC-015 as §4 amends it: ways, start lines and card lines break…", M107 (prompt without `PathText`) by "a way's prompt and a start line may break after a path separator…", M108 (Files without `PathText`) by "the Files of a card may break after a path separator…" (each `1 failed | 91–234 passed`); gates 1–4 green, `npm run test:unit` 2816 passed + 3 skipped (+16 timing)
+- **Notes:** Tests only. The CSS test reads the rules of `.plan-way-prompt code`, `.plan-start-lines code` and `.step-card-line` and finds no `white-space: nowrap` or `pre` in the way, start-line, stage, group and card rules; `.plan-parallel` (the short label "⇉ can run in parallel") is deliberately outside it. The DOM tests assert the text stays whole (`<wbr>` adds none) and that `<wbr>` is present.
 
 ### T-016 — Housekeeping of the tests and texts: the comment, the `any`, the dead constant
 

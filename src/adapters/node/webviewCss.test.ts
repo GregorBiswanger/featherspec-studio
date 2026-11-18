@@ -920,6 +920,17 @@ describe('0023 AC-008, AC-011: the step cards of the Plan map', () => {
         expect(body).toContain('var(--vscode-');
     });
 
+    it('0022 AC-015 as §4 amends it: ways, start lines and card lines break at any width and no rule of the map forbids a break', () => {
+        for (const selector of ['.plan-way-prompt code', '.plan-start-lines code', '.step-card-line']) {
+            const body = rulesFor(css, selector).map((rule) => rule.body).join(';');
+            expect(body, selector).toMatch(/overflow-wrap:\s*break-word/);
+            expect(body, selector).not.toMatch(/white-space:\s*(nowrap|pre)\b/);
+        }
+        const planRules = parseRules(css).filter((rule) => rule.selectors.some((selector) => /\.plan-(?:ways?|start|stage|group)|\.step-card/.test(selector)));
+        expect(planRules.length).toBeGreaterThan(10);
+        expect(planRules.filter((rule) => /white-space:\s*(nowrap|pre)\b/.test(rule.body))).toEqual([]);
+    });
+
     it('the card head has a visible focus outline of the theme and no rule removes it', () => {
         const focus = rulesFor(css, '.step-card-toggle:focus-visible').map((rule) => rule.body).join(';');
         expect(focus).toMatch(/outline:\s*2px solid var\(--vscode-contrastActiveBorder, var\(--vscode-focusBorder\)\)/);
