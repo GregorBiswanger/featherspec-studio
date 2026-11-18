@@ -114,7 +114,6 @@ function compareRows(left: CardView, right: CardView): number {
         (IN_PROGRESS_RANK[left.state] ?? 0) - (IN_PROGRESS_RANK[right.state] ?? 0) ||
         Number(left.number) - Number(right.number) ||
         compareText(left.number, right.number) ||
-        compareText(left.stem, right.stem) ||
         compareText(left.key, right.key)
     );
 }

@@ -164,6 +164,30 @@ describe('0020 AC-003: the order', () => {
         );
         expect(groupOf(tree, 'Backlog').children.map((row) => row.specKey)).toEqual(['.specs/backlog/0002-y.md', '.specs/backlog/0009-twin.md', '.specs/backlog/0010-z.md']);
     });
+
+    it('orders equal numbers in one group by path, not by stem, whatever order the model lists them in', async () => {
+        const model = await modelOf({
+            '.specs/backlog/0003-login.md': spec('Login', 'Draft'),
+            '.specs/backlog/0003-login-page.md': spec('Login page', 'Draft'),
+            '.specs/backlog/0005-alpha.md': spec('Alpha', 'Draft'),
+            '.specs/backlog/0005-beta.md': spec('Beta', 'Draft'),
+            '.specs/active/0004-sign.md': spec('Sign', 'In Progress', '0004-sign.plan.md'),
+            '.specs/active/0004-sign.plan.md': plan('In Progress'),
+            '.specs/active/0004-sign-up.md': spec('Sign up', 'In Progress', '0004-sign-up.plan.md'),
+            '.specs/active/0004-sign-up.plan.md': plan('In Progress'),
+        });
+        const reversed: ShellModel = { ...model, lifecycle: { ...model.lifecycle, entries: [...model.lifecycle.entries].reverse() } };
+        for (const given of [model, reversed]) {
+            const tree = treeOf(given);
+            expect(groupOf(tree, 'Backlog').children.map((row) => row.specKey)).toEqual([
+                '.specs/backlog/0003-login-page.md',
+                '.specs/backlog/0003-login.md',
+                '.specs/backlog/0005-alpha.md',
+                '.specs/backlog/0005-beta.md',
+            ]);
+            expect(groupOf(tree, 'In progress').children.map((row) => row.specKey)).toEqual(['.specs/active/0004-sign-up.md', '.specs/active/0004-sign.md']);
+        }
+    });
 });
 
 describe('0020 AC-004: the row texts', () => {

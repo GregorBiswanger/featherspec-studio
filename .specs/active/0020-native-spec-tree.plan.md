@@ -379,8 +379,8 @@ and the host smoke, so they stay `→`.
 - **Covers:** AC-003
 - **Do:** Test first in `src/core/shell/specTree.test.ts` ("0020 AC-003: the order"): `0003-login.md` and `0003-login-page.md` in one group (Backlog, and the same pair in In progress at one state) must read `0003-login-page.md` before `0003-login.md` (path order: `-` sorts before `.`), in both directions of insertion. Then remove the stem tie-break (`compareText(left.stem, right.stem) ||`) from `compareRows` in `src/core/shell/specTree.ts`. Mutants M10 (stem tie-break stays), M11 (path tie-break removed) and M81 (stem tie-break reversed) must die.
 - **Verify:** `npx vitest run --project node src/core/shell/specTree.test.ts` red on a scratch copy of HEAD (`git archive HEAD`), then green; the three mutants each fail the new test; gates 1–4
-- [ ] **Verified (T-009):**
-- **Notes:**
+- [x] **Verified (T-009):** 2026-11-18: `vitest --project node specTree.test.ts` red on a scratch copy of HEAD (1 failed: the equal-number case, order login before login-page), then green 50/50 here, also with the model's entries reversed; mutants M10 (stem tie-break back), M11 (path tie-break removed), M81 (stem tie-break reversed) each fail that one test (49 passed, 1 failed); gates 1-4 green, unit 2218 passed + 3 skipped, timing 13.
+- **Notes:** Compile D1 fixed: the stem tie-break of `compareRows` is gone, equal numbers fall to the path (`key`). The test lists the entries in model order and reversed, so M11 cannot hide behind a sorted input; two pairs are needed (`0003-login`/`0003-login-page` and `0005-alpha`/`0005-beta`) because a reversed stem order equals the path order for the first pair, so only the second kills M81. No deletions.
 
 ### T-010 — A row reopens a closed panel through the start path (compile G2)
 
