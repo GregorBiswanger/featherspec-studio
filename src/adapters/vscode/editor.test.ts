@@ -8,6 +8,7 @@ interface FakeUri {
 
 const opened: string[] = [];
 const statted: string[] = [];
+const shown: { options: Record<string, unknown> }[] = [];
 
 vi.mock('vscode', () => {
     const make = (scheme: string, path: string): FakeUri => ({ scheme, path, toString: () => `${scheme}://${path}` });
@@ -32,6 +33,7 @@ vi.mock('vscode', () => {
                 public end: unknown,
             ) {}
         },
+        ViewColumn: { Active: -1, Beside: -2 },
         workspace: {
             fs: {
                 stat: (uri: FakeUri) => {
@@ -44,7 +46,12 @@ vi.mock('vscode', () => {
                 return Promise.resolve({ uri });
             },
         },
-        window: { showTextDocument: () => Promise.resolve(undefined) },
+        window: {
+            showTextDocument: (_document: unknown, options: Record<string, unknown>) => {
+                shown.push({ options });
+                return Promise.resolve(undefined);
+            },
+        },
     };
 });
 
@@ -54,6 +61,7 @@ describe('createEditor', () => {
     beforeEach(() => {
         opened.length = 0;
         statted.length = 0;
+        shown.length = 0;
     });
 
     it('AC-010: the project root arrives as a URI string, and the spec opens below that URI', async () => {
@@ -66,5 +74,28 @@ describe('createEditor', () => {
     it('AC-010: a file that does not exist is reported as not found and nothing is opened', async () => {
         expect(await createEditor().open('file:///d%3A/other', '.specs/active/0001-a.md')).toBe('not-found');
         expect(opened).toEqual([]);
+    });
+
+    it('0019 AC-018: the file opens beside the Studio, not as preview, without preserveFocus, with the cursor at the start of the line', async () => {
+        await createEditor().open('file:///c%3A/proj/app', '.specs/active/0001-a.md', 94);
+        expect(shown).toHaveLength(1);
+        const options = shown[0]?.options ?? {};
+        expect(options.viewColumn).toBe(-2);
+        expect(options.preview).toBe(false);
+        expect('preserveFocus' in options).toBe(false);
+        expect(options.selection).toEqual({ start: { line: 93, character: 0 }, end: { line: 93, character: 0 } });
+    });
+
+    it('0019 AC-018: without a line the cursor is at the start of the file (control: line 1 gives the same)', async () => {
+        await createEditor().open('file:///c%3A/proj/app', '.specs/active/0001-a.md');
+        await createEditor().open('file:///c%3A/proj/app', '.specs/active/0001-a.md', 1);
+        expect(shown[0]?.options.viewColumn).toBe(-2);
+        expect(shown[0]?.options.selection).toEqual({ start: { line: 0, character: 0 }, end: { line: 0, character: 0 } });
+        expect(shown[1]?.options.selection).toEqual(shown[0]?.options.selection);
+    });
+
+    it('0019 AC-018: a file that is not found shows no editor (negative control for the recorded options)', async () => {
+        await createEditor().open('file:///d%3A/other', '.specs/active/0001-a.md', 5);
+        expect(shown).toEqual([]);
     });
 });

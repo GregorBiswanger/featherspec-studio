@@ -8,7 +8,7 @@ import { resolveStorageLocation } from './adapters/vscode/storageLocation';
 import { createOutputChannel } from './adapters/vscode/outputChannel';
 import { createShellActions } from './adapters/vscode/shellActions';
 import { createStudioPanel, VIEW_TYPE, type StudioPanel, type StudioPanelInspection } from './adapters/vscode/studioPanel';
-import { AREA_COMMANDS, COPY_NEXT_STEP_COMMAND, OPEN_COMMAND, REFRESH_COMMAND, SHELL_ACTION_COMMAND } from './adapters/vscode/commands';
+import { AREA_COMMANDS, COPY_NEXT_STEP_COMMAND, OPEN_COMMAND, REFRESH_COMMAND, SELECT_SPEC_COMMAND, SHELL_ACTION_COMMAND } from './adapters/vscode/commands';
 import { createFetchReleaseHttp } from './adapters/node/fetchReleaseHttp';
 import { createNodeSetupTarget } from './adapters/node/nodeSetupTarget';
 import { createTarGzArchive } from './adapters/node/tarGzArchive';
@@ -56,7 +56,7 @@ import type { BoardView } from './shared/protocol/board';
 import type { BoardFilter, BoardState } from './shared/protocol/boardFilter';
 import type { DetailView } from './shared/protocol/detail';
 import type { OverviewView } from './shared/protocol/overview';
-import { isRunActionPayload, type ProbeOutcome, type ShellView } from './shared/protocol/messages';
+import { isRunActionPayload, isSelectPayload, type ProbeOutcome, type ShellView } from './shared/protocol/messages';
 import type { TreeModel } from './core/shell/treeModel';
 
 export interface ShellTestApi {
@@ -265,6 +265,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         feed,
         { dispose: () => repository.dispose() },
         { dispose: () => lifecycle.dispose() },
+        vscode.commands.registerCommand(SELECT_SPEC_COMMAND, (reference: unknown) => {
+            if (!isSelectPayload(reference)) {
+                return;
+            }
+            service.select(reference.path === undefined ? { stem: reference.stem } : { stem: reference.stem, path: reference.path });
+            panel.show({ preserveFocus: true });
+        }),
         vscode.commands.registerCommand(SELECT_PROJECT_COMMAND_ID, () => controller.selectProject()),
     );
 

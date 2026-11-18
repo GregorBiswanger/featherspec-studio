@@ -3,7 +3,7 @@
 **Spec:** [0019-detail-situation-picture.md](0019-detail-situation-picture.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-001
+**Current step:** T-002
 
 ## Approach
 
@@ -226,8 +226,8 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
 - **Verify:** `npx vitest run src/adapters/vscode/editor.test.ts src/core/shell` red (no `viewColumn`;
   `select` is not on the service), then green; gates 1–5; `npm run compile-tests`; host smoke on
   Windows and CI (pre-done gate)
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-18 — red: `npx vitest run src/adapters/vscode/editor.test.ts src/core/shell` failed 5 tests (no `viewColumn` in the recorded options, `service.select is not a function`); green after the change (144 passed). Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 1996 passed + 3 skipped (+12 timing), `npm run compile` and `npm run compile-tests` green. Host smoke (`board.smoke` "0019 AC-018", `shell.smoke` "0019 P-6") written, compiled, not run here (CI and Windows).
+- **Notes:** Proxy: `ShellService.select` takes `SpecReference {stem, path?}` (exported from `shellService.ts`); the command id lives in `adapters/vscode/commands.ts` as `SELECT_SPEC_COMMAND`. A malformed command argument is ignored (no throw).
 
 ### T-002 — Core: the situation picture of a spec, a line for every ID
 

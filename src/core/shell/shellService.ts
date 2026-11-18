@@ -22,6 +22,11 @@ export interface ShellServiceDeps {
     sameRoot: (first: string, second: string) => boolean;
 }
 
+export interface SpecReference {
+    stem: string;
+    path?: string;
+}
+
 export type OpenRequest = { via: 'start' } | { via: 'area'; area: AreaId };
 
 export interface ShellService {
@@ -31,6 +36,7 @@ export interface ShellService {
     runAction(action: ActionId): Promise<void>;
     refresh(): Promise<void>;
     open(request: OpenRequest): void;
+    select(reference: SpecReference | undefined): void;
     handlers: Pick<RequestHandlers, ShellRequestType>;
     dispose(): void;
 }
@@ -228,9 +234,13 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
         });
     }
 
-    function select(stem: string, path: string | undefined): void {
+    function select(reference: SpecReference | undefined): void {
         reconcile();
-        chooseSpec(stem, path);
+        if (reference === undefined) {
+            selection = undefined;
+        } else {
+            chooseSpec(reference.stem, reference.path);
+        }
         persist();
         recompute();
     }
@@ -244,6 +254,7 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
 
     return {
         open,
+        select,
         view: compute,
         onDidChangeView(listener) {
             listeners.add(listener);
@@ -258,7 +269,7 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
         handlers: {
             hello: async () => undefined,
             navigate: async (request) => navigate(request),
-            select: async (payload) => select(payload.stem, payload.path),
+            select: async (payload) => select(payload.path === undefined ? { stem: payload.stem } : { stem: payload.stem, path: payload.path }),
             runAction: async (payload) => runAction(payload.action),
             dismissNotice: async () => {
                 notice = undefined;

@@ -12,7 +12,7 @@ export function createEditor(): EditorPort {
             }
             const document = await vscode.workspace.openTextDocument(uri);
             const position = new vscode.Position(line === undefined ? 0 : Math.max(0, line - 1), 0);
-            await vscode.window.showTextDocument(document, { selection: new vscode.Range(position, position), preview: false });
+            await vscode.window.showTextDocument(document, { viewColumn: vscode.ViewColumn.Beside, preview: false, selection: new vscode.Range(position, position) });
             return 'opened';
         },
     };

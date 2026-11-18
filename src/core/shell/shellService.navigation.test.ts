@@ -287,3 +287,46 @@ describe('0015 AC-002: the removed Agent Center area', () => {
         expect(current.memory.value).toEqual({ v: 1, area: 'board' });
     });
 });
+
+describe('0019 P-6: select from outside the panel', () => {
+    it('selects and remembers a spec, keeps the area and calls no navigation listener', async () => {
+        const current = await ready({ memory: { v: 1, area: 'board' } });
+        current.service.open({ via: 'start' });
+        const navigations: unknown[] = [];
+        current.service.onDidNavigate((request) => navigations.push(request));
+        current.service.select({ stem: '0003-x' });
+        expect(current.service.view().selection).toEqual({ stem: '0003-x', number: '0003' });
+        expect(current.service.view().area).toBe('board');
+        expect(current.service.view().target).toBeUndefined();
+        expect(current.memory.value).toMatchObject({ v: 1, area: 'board', selection: { projectRoot: 'proj', stem: '0003-x' } });
+        expect(navigations).toEqual([]);
+    });
+
+    it('undefined clears and remembers the selection and leaves area, target and notice untouched', async () => {
+        const current = await ready();
+        await current.service.handlers.navigate({ area: 'specExplorer', target: { kind: 'spec', stem: '0003-x' } });
+        current.service.select({ stem: '0009-nope' });
+        expect(current.service.view().notice).toEqual({ number: '0009' });
+        current.service.select(undefined);
+        const view = current.service.view();
+        expect(view.selection).toBeUndefined();
+        expect(view.area).toBe('specExplorer');
+        expect(view.target).toEqual({ kind: 'spec', stem: '0003-x' });
+        expect(view.notice).toEqual({ number: '0009' });
+        expect(current.memory.value).toEqual({ v: 1, area: 'specExplorer' });
+    });
+
+    it('an unknown stem shows the notice and keeps the selection (control: the known stem selects)', async () => {
+        const current = await ready();
+        current.service.select({ stem: '0002-b' });
+        current.service.select({ stem: '0009-nope' });
+        expect(current.service.view().selection?.stem).toBe('0002-b');
+        expect(current.service.view().notice).toEqual({ number: '0009' });
+    });
+
+    it('the select request handler is the same function (stem and path)', async () => {
+        const current = await ready();
+        await current.service.handlers.select({ stem: '0003-x' });
+        expect(current.service.view().selection?.stem).toBe('0003-x');
+    });
+});

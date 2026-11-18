@@ -177,6 +177,22 @@ suite('FeatherSpec Studio shell smoke', function () {
         }
     });
 
+    test('0019 P-6: the internal command selects a spec, shows one panel and keeps the area', async () => {
+        const api = await activateStudio();
+        await api.whenIdle();
+        await closeStudio(api);
+        await vscode.commands.executeCommand('featherspec-studio.openBoard');
+        await waitFor('exactly one Studio tab', () => panelState(api), (state) => state.tabs === 1, { timeoutMs: WAIT_MS });
+        assert.ok((await vscode.commands.getCommands(true)).includes('featherspec-studio.selectSpec'), 'the command is registered');
+        await vscode.commands.executeCommand('featherspec-studio.selectSpec', { stem: '0001-tip-splitter' });
+        assert.strictEqual(api.shell().view().selection?.stem, '0001-tip-splitter');
+        assert.strictEqual(api.shell().view().area, 'board');
+        assert.strictEqual(api.shell().panelCount(), 1);
+        assert.strictEqual(studioTabs().length, 1);
+        await vscode.commands.executeCommand('featherspec-studio.selectSpec', { stem: 4 });
+        assert.strictEqual(api.shell().view().selection?.stem, '0001-tip-splitter');
+    });
+
     test('0018 AC-027: the Refresh command runs while a project is active and changes no file', async () => {
         const api = await activateStudio();
         await api.whenIdle();

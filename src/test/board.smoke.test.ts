@@ -71,4 +71,32 @@ suite('FeatherSpec Studio board smoke', function () {
         await vscode.commands.executeCommand('workbench.action.closeAllEditors');
         assert.deepStrictEqual(await snapshotTree(folder.uri.fsPath), before);
     });
+
+    test('0019 AC-018: a file opens beside the Studio at the line; the Studio stays visible in its group', async () => {
+        const api = await activateStudio();
+        await api.whenIdle();
+        await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+        await vscode.commands.executeCommand('featherspec-studio.open');
+        await waitFor('the Studio tab', () => studioTabs().length, (count) => count === 1, { timeoutMs: 30_000 });
+        const before = studioTabs()[0];
+        assert.ok(before, 'the Studio tab exists');
+        const studioColumn = before.group.viewColumn;
+        assert.strictEqual(await api.board().openFile(SPEC_KEY, 94), 'opened');
+        const editor = vscode.window.activeTextEditor;
+        assert.ok(editor && editor.document.uri.fsPath.endsWith('0001-tip-splitter.md'));
+        assert.notStrictEqual(editor.viewColumn, studioColumn, 'the editor is in another group than the Studio');
+        assert.strictEqual(editor.selection.active.line, 93);
+        assert.strictEqual(editor.selection.active.character, 0);
+        await waitFor('the line to be visible', () => editor.visibleRanges.map((range) => `${range.start.line}-${range.end.line}`), () => editor.visibleRanges.some((range) => range.start.line <= 93 && range.end.line >= 93), { timeoutMs: 10_000 });
+        const after = studioTabs()[0];
+        assert.ok(after, 'the Studio tab is still open');
+        assert.strictEqual(after.group.viewColumn, studioColumn);
+        await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+    });
 });
+
+function studioTabs(): vscode.Tab[] {
+    return vscode.window.tabGroups.all
+        .flatMap((group) => group.tabs)
+        .filter((tab) => tab.input instanceof vscode.TabInputWebview && tab.input.viewType.endsWith('featherspecStudio.main'));
+}

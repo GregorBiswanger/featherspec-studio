@@ -58,8 +58,12 @@ function iconFileNames(icon: vscode.WebviewPanel['iconPath']): { light: string; 
     return { light: path.posix.basename(icon.light.path), dark: path.posix.basename(icon.dark.path) };
 }
 
+export interface StudioShowOptions {
+    preserveFocus?: boolean;
+}
+
 export interface StudioPanel extends vscode.Disposable {
-    show(): void;
+    show(options?: StudioShowOptions): void;
     reload(): void;
     panelCount(): number;
     closePanel(): void;
@@ -183,13 +187,14 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
     }
 
     return {
-        show() {
+        show(showOptions) {
+            const preserveFocus = showOptions?.preserveFocus === true;
             if (panel !== undefined) {
-                panel.reveal(panel.viewColumn ?? vscode.ViewColumn.Active);
+                panel.reveal(panel.viewColumn ?? vscode.ViewColumn.Active, preserveFocus);
                 return;
             }
             reloaded = false;
-            const created = vscode.window.createWebviewPanel(VIEW_TYPE, 'FeatherSpec Studio', vscode.ViewColumn.Active, options());
+            const created = vscode.window.createWebviewPanel(VIEW_TYPE, 'FeatherSpec Studio', { viewColumn: vscode.ViewColumn.Active, preserveFocus }, options());
             adopt(created);
             render(created);
         },
