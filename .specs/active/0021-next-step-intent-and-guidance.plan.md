@@ -3,7 +3,7 @@
 **Spec:** [0021-next-step-intent-and-guidance.md](0021-next-step-intent-and-guidance.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-011 (fix stage after the compile of S74: `/home/claude/orch/compile/0021.md`)
+**Current step:** T-012 (fix stage after the compile of S74: `/home/claude/orch/compile/0021.md`)
 
 ## Approach
 
@@ -376,7 +376,8 @@ ends of stages 1 and 3.
   fires for its own key only.
 - **Verify:** `npx vitest run --project node src/core/board/nextStep.test.ts src/adapters/vscode/settings.test.ts`; the
   mutants M26 and M39 on the scratch copy red; gates 1–4
-- [ ] **Verified (T-011):**
+- [x] **Verified (T-011):** 2026-11-18 · green at once, killed by mutation on a scratch copy (`git ls-files` copy in `/tmp/fx`): M26 (a plan that does not parse gives `NS-6-plan`) → `npx vitest run --project node src/core/board/nextStep.test.ts` 1 failed ("… and an unreadable plan read as Resume"); M39 (`|| affectsConfiguration(SECTION)` in `settings.ts`) → `src/adapters/vscode/settings.test.ts` 2 failed ("fires only when its own key changed", "the host answers by section prefix …"); both green on the real code: `npm run test:unit` 157 files, 2631 passed, 3 skipped, timing 15 passed; eslint 0 warnings, both `tsc` clean.
+- **Notes:** Decision M26 by §8 (proxy): the code was right and the title over-claimed, so the case is added, not the title cut: a plan whose read fails (`setUnreadable`) and one of binary bytes both keep `entry.plan` and give `NS-6-resume`. M39: the fake `affectsConfiguration` of `settings.test.ts` follows the host (a key is affected by itself, by its section and by a change of the whole section; a sibling or a longer section name is not). Compile edit 4 (the title at `nextStep.test.ts:354`) is closed by the case; the title stays as it was.
 
 ### T-012 — The intent stands on its own line, the coach line is a description (compile M52, M79)
 

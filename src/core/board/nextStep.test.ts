@@ -357,7 +357,20 @@ describe('0021 AC-005: an Active spec without an open step reports, one without 
             [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }),
             [ACTIVE_PLAN]: `${planText({ status: 'In Progress' })}\n## Steps\n\n### T-001 — A\n\n- [x] **Verified (T-001):** done\n\n### ~~T-002 — B~~\n\n- [ ] **Verified (T-002):** —\n`,
         });
-        for (const m of [noList, allDone]) {
+        const unreadable = createMemorySpecSource();
+        unreadable.setFile(ROOT, ACTIVE, specText({ status: 'In Progress', plan: ACTIVE_LINK }));
+        unreadable.setFile(ROOT, ACTIVE_PLAN, planText({ status: 'In Progress' }));
+        unreadable.setUnreadable(ROOT, ACTIVE_PLAN, 'EACCES');
+        const binary = createMemorySpecSource();
+        binary.setFile(ROOT, ACTIVE, specText({ status: 'In Progress', plan: ACTIVE_LINK }));
+        binary.setFile(ROOT, ACTIVE_PLAN, new Uint8Array([0xff, 0xfe, 0x00, 0xc3, 0x28]));
+        const broken: ShellModel[] = [];
+        for (const source of [unreadable, binary]) {
+            const project = await readProject(source, ROOT, VERSION);
+            broken.push({ project, lifecycle: deriveLifecycle(project) });
+        }
+        for (const m of [noList, allDone, ...broken]) {
+            expect(m.lifecycle.entries.find((entry) => entry.key === ACTIVE)?.plan).toBe(ACTIVE_PLAN);
             expect(nextStep(m, ACTIVE)).toEqual({ rule: 'NS-6', case: 'NS-6-resume', lines: [{ intent: 'Let the agent report where the plan stands', text: `/sdd-plan ${ACTIVE}` }] });
         }
     });

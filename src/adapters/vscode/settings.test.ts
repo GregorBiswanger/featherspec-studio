@@ -32,8 +32,12 @@ vi.mock('vscode', () => ({
 
 import { createSettingPort } from './settings';
 
-function change(...sections: string[]): void {
-    host.listeners.forEach((listener) => listener({ affectsConfiguration: (section) => sections.includes(section) }));
+function affects(changed: readonly string[], section: string): boolean {
+    return changed.some((key) => key === section || key.startsWith(`${section}.`) || section.startsWith(`${key}.`));
+}
+
+function change(...changed: string[]): void {
+    host.listeners.forEach((listener) => listener({ affectsConfiguration: (section) => affects(changed, section) }));
 }
 
 describe('0021 AC-011, AC-017: the setting port of the host', () => {
@@ -65,6 +69,20 @@ describe('0021 AC-011, AC-017: the setting port of the host', () => {
         expect(calls).toBe(1);
         change('featherspec-studio.showStepTips', 'featherspec-studio.modelHints');
         expect(calls).toBe(2);
+    });
+
+    it('the host answers by section prefix: a change of another key of the section does not fire it, a change of the whole section does', () => {
+        expect(affects(['featherspec-studio.showStepTips'], 'featherspec-studio')).toBe(true);
+        expect(affects(['featherspec-studio.showStepTips'], 'featherspec-studio.modelHints')).toBe(false);
+        expect(affects(['featherspec-studio'], 'featherspec-studio.modelHints')).toBe(true);
+        expect(affects(['featherspec-studio2.modelHints'], 'featherspec-studio.modelHints')).toBe(false);
+        const port = createSettingPort('modelHints');
+        let calls = 0;
+        port.onDidChange(() => (calls += 1));
+        change('featherspec-studio.showStepTips');
+        expect(calls).toBe(0);
+        change('featherspec-studio');
+        expect(calls).toBe(1);
     });
 
     it('dispose stops the listener, and the port never writes a setting', () => {
