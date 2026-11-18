@@ -3,7 +3,7 @@
 **Spec:** [0024-send-next-step-to-assistant.md](0024-send-next-step-to-assistant.md)
 **Status:** Done
 **Last updated:** 2026-11-18
-**Current step:** T-020 (T-001…T-013 verified; manual AC-016 real window and AC-017…AC-019 open)
+**Current step:** T-021 (T-001…T-013 verified; manual AC-016 real window and AC-017…AC-019 open)
 
 ## Approach
 
@@ -667,7 +667,8 @@ copy (`git archive` of the head into `/tmp`).
 - **Covers:** final check finding 7
 - **Do:** one row in the 0021 plan's `## Test-title audit`. `docsScan.test.ts` first.
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green
-- [ ] **Verified (T-020):**
+- [x] **Verified (T-020):** 2026-11-19 red: the new `docsScan.test.ts` test against a `git archive` of 5c70dbd failed (no row in the 0021 audit); green after: `npx vitest run --project node src/adapters/node/docsScan.test.ts` 162 passed. Doc-only: no code gates.
+- **Notes:** the row stands in its own paragraph after the 18 of 0021's audit, whose count is unchanged: 463899b precedes 0021's Baseline `0ef5875`, so no spec's method reached it. The assertion is the same one; only its title changed, and the test finds PD-067 by ID.
 
 ### T-021 — The harness rechecks and the Windows runs are recorded in the plans
 

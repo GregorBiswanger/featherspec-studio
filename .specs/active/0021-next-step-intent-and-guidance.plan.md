@@ -454,6 +454,10 @@ ends of stages 1 and 3.
 - `src/adapters/vscode/manifest.test.ts`: "AC-015 (0015): declares no configuration property" → replaced by `0021 AC-016: contributes the configuration FeatherSpec Studio with exactly the two settings …` (§5 0015 AC-015)
 - `src/adapters/vscode/manifest.test.ts`: "AC-015 (0015): negative control, a manifest with a configuration would be found" → replaced by `0021 AC-016: negative control, a third key, a Markdown description or a scope would be found` (§5 0015 AC-015)
 
+One more title sits outside the 18, because its commit precedes every Baseline of the round (added by the final check of round 2, 0024 T-020; the same method over `463899b`):
+
+- `src/adapters/node/docsScan.test.ts`: "the decisions register carries PD-067 as its last row, names what each later decision retires, and leaves the earlier rows as they were" → retitled `… carries PD-067 after PD-066, …` (463899b, the round's second commit): the same assertion, since PD-068 and the later rows were appended, so it finds PD-067 by ID and asserts that it directly follows PD-066
+
 Titles that name the control "Copy" otherwise stay (catch-all of §5): the tests still pass and read `Copy prompt` where they assert the label.
 
 ## Traceability

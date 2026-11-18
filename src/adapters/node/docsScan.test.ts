@@ -901,4 +901,15 @@ describe('product docs after the final check of round 2 (0024 T-014 to T-022)', 
         expect(plan).not.toContain('`useFocusHandoff()` (`ui/popup.ts`)');
     });
 
+    it('the 0021 audit homes the docsScan rename of 463899b, and the old and new titles are as the commit made them', async () => {
+        const plan = await read('.specs/active/0021-next-step-intent-and-guidance.plan.md');
+        const audit = plan.slice(plan.indexOf('\n## Test-title audit\n'), plan.indexOf('\n## Traceability\n'));
+        const row = audit.split('\n').find((line) => line.includes('as its last row')) ?? '';
+        expect(row).toContain('`src/adapters/node/docsScan.test.ts`');
+        expect(row).toContain('the decisions register carries PD-067 as its last row, names what each later decision retires, and leaves the earlier rows as they were');
+        expect(row).toContain('after PD-066');
+        expect(row).toContain('463899b');
+        expect(await read('src/adapters/node/docsScan.test.ts')).toContain("it('the decisions register carries PD-067 after PD-066, names what each later decision retires, and leaves the earlier rows as they were'");
+    });
+
 });
