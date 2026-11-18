@@ -315,6 +315,11 @@ main > h1 {
     font: inherit;
 }
 
+.filter-bar select:focus-visible {
+    outline: 2px solid var(--vscode-contrastActiveBorder, var(--vscode-focusBorder));
+    outline-offset: 1px;
+}
+
 .filter-bar button {
     color: var(--vscode-button-secondaryForeground, var(--vscode-button-foreground));
     background: var(--vscode-button-secondaryBackground, var(--vscode-button-background));

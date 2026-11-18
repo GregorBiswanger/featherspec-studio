@@ -325,6 +325,15 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
         }
         expect(rulesFor(css, 'button:focus-visible').some((rule) => /outline:\s*2px solid var\(--vscode-contrastActiveBorder, var\(--vscode-focusBorder\)\)/.test(rule.body))).toBe(true);
     });
+
+    it('guideline 9: the sort select has a visible focus outline in the same theme colours as the buttons', () => {
+        const rules = rulesFor(css, '.filter-bar select:focus-visible');
+        expect(rules.length).toBeGreaterThan(0);
+        expect(rules.some((rule) => /outline:\s*2px solid var\(--vscode-contrastActiveBorder, var\(--vscode-focusBorder\)\)/.test(rule.body))).toBe(true);
+        for (const rule of rules) {
+            expect(rule.body).not.toMatch(/outline:\s*(none|0)\b/);
+        }
+    });
 });
 
 

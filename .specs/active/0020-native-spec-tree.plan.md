@@ -490,6 +490,14 @@ and the host smoke, so they stay `→`.
 - [x] **Verified (T-022):** 2026-11-18: new tests against the old code: visibleLiterals 3 failed, lifecycleService 1 failed, historyTexts red (module missing); green after the change; gates 1-5 green (eslint 0 warnings, both tsc clean, unit 2236 passed + 3 skipped, timing 13, compile, compile-tests).
 - **Notes:** Final-check finding 7. The reasons that come from the runtime store (`READER_REASON`, `NO_ACTIVE_PROJECT_REASON`, an error message) are unchanged; only the fallback word `store` goes. `activity.ts` derives its prefix from the same function, so an Overview reason and a detail reason stay in step. The host smoke tests assert nothing about these three literals (the tab title value is unchanged).
 
+### T-023 — The sort select has a visible focus outline in a theme colour (final check 8)
+
+- **Covers:** ux-guidelines 9 (visible focus, theme variables only)
+- **Do:** `webviewCss.test.ts` first: a rule `.filter-bar select:focus-visible` sets `outline: 2px solid var(--vscode-contrastActiveBorder, var(--vscode-focusBorder))` and never `outline: none`. Then `main.css`: that rule, with the offset of the buttons.
+- **Verify:** `npx vitest run --project node src/adapters/node/webviewCss.test.ts` red on a scratch copy of HEAD with the new test, then green; gates 1–5
+- [x] **Verified (T-023):** 2026-11-18: the new test on a scratch copy of HEAD (`git archive`): 1 of 52 failed (no rule for the select), green after the rule (52/52); gates 1-5 green (unit 2237 passed + 3 skipped, timing 13, compile, compile-tests). jsdom paints no outline: the rendered ring is part of Gregor's manual checks.
+- **Notes:** Final-check finding 8. Before, the select relied on the webview's default ring (`-webkit-focus-ring-color`), not a theme variable. The rule has the same colours and offset as `button:focus-visible`.
+
 ## Test-title audit (0020 AC-021)
 
 Script: `/tmp/audit-0020/titles.py` (throwaway, run with `python3 -I`): every `describe`/`it`/`test`/`suite` literal of every `.ts`/`.tsx` under `src` (including `src/test/**` and `testing/*.ts`) at Baseline `16fc52b` (`git archive`) and at the T-008 head. A title counts as present when the same literal exists in any file at the head.
