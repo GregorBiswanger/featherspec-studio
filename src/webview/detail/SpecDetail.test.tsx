@@ -1051,3 +1051,60 @@ describe('0024 AC-010: focus is decided at the moment of the change, also after 
         expect(document.activeElement).toBe(secondary);
     });
 });
+
+describe('0024 AC-010, 0019 AC-020: the focus handoff belongs to the place of the split button', () => {
+    const COPILOT_SEND: SendView = { assistant: 'copilot', target: 'new', targets: ['new', 'current'] };
+    const FIRST = { text: 'Implement T-003 of .specs/active/0007-thing.plan.md', intent: 'Continue with T-003' };
+    const SECOND = { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Not sure where it stands? Let the agent report first' };
+    const PLAN: NextStepView = { rule: 'NS-6', lines: [{ text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Write the plan' }], send: COPILOT_SEND };
+    const OPEN: NextStepView = { rule: 'NS-6', lines: [FIRST, SECOND], send: COPILOT_SEND };
+    const PLAN_WITH_SECOND: NextStepView = OPEN;
+    const WITHOUT = (view: NextStepView): NextStepView => ({ ...view, send: undefined }) as NextStepView;
+    const TEXT: NextStepView = { rule: 'NS-1', text: 'Nothing to do.' } as NextStepView;
+    const focusOn = async (element: HTMLElement): Promise<void> => {
+        await act(async () => element.focus());
+    };
+
+    it('the first line changes key and a second line appears while focus is on Send: focus goes to the heading, not to the new second Copy prompt', async () => {
+        const container = await open(spec({}, PLAN));
+        await focusOn(container.querySelector<HTMLElement>('button.send-main')!);
+        await send(detailEvent(spec({}, OPEN)));
+        expect(document.activeElement?.hasAttribute('data-detail-heading')).toBe(true);
+        expect(document.activeElement?.classList.contains('copy-secondary')).toBe(false);
+    });
+
+    it('negative control: without any offer the same update lands on the heading too', async () => {
+        const container = await open(spec({}, WITHOUT(PLAN)));
+        await focusOn(container.querySelector<HTMLElement>('.next-step-lines button.copy-button')!);
+        await send(detailEvent(spec({}, WITHOUT(OPEN))));
+        expect(document.activeElement?.hasAttribute('data-detail-heading')).toBe(true);
+    });
+
+    it('the offer goes away and a second line appears in the same update: the Copy prompt of the same line takes the focus, not the new one', async () => {
+        const container = await open(spec({}, PLAN_WITH_SECOND));
+        const first: NextStepView = { rule: 'NS-6', lines: [FIRST], send: COPILOT_SEND };
+        await send(detailEvent(spec({}, first)));
+        await focusOn(container.querySelector<HTMLElement>('button.send-main')!);
+        await send(detailEvent(spec({}, WITHOUT(PLAN_WITH_SECOND))));
+        const copies = [...container.querySelectorAll<HTMLElement>('.next-step-lines button.copy-button')];
+        expect(copies).toHaveLength(2);
+        expect(document.activeElement).toBe(copies[0]);
+    });
+
+    it('a Send that leaves with focus inside while no Copy prompt takes its place hands nothing over to a Copy prompt that mounts later', async () => {
+        const container = await open(spec({}, PLAN));
+        await focusOn(container.querySelector<HTMLElement>('button.send-main')!);
+        await send(detailEvent(spec({}, TEXT)));
+        expect(container.querySelector('.send-split, button.copy-button')).toBeNull();
+        await send(detailEvent(spec({}, WITHOUT(OPEN))));
+        expect(container.querySelectorAll('.next-step-lines button.copy-button')).toHaveLength(2);
+        expect(document.activeElement?.classList.contains('copy-button')).toBe(false);
+    });
+
+    it('the offer goes away at the same line: the Copy prompt of that line takes the focus (kept)', async () => {
+        const container = await open(spec({}, PLAN));
+        await focusOn(container.querySelector<HTMLElement>('button.send-main')!);
+        await send(detailEvent(spec({}, WITHOUT(PLAN))));
+        expect(document.activeElement).toBe(container.querySelector('.next-step-lines button.copy-button'));
+    });
+});

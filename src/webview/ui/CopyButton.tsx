@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { takeFocusHandoff } from './popup';
+import type { FocusHandoff } from './focusHandoff';
 import { Glyph } from '../board/icons';
 import { COPIED_LABEL, COPY_FAILED_LABEL, COPY_PROMPT_LABEL } from '../../shared/protocol/nextStepTexts';
 
@@ -12,7 +12,7 @@ export const FEEDBACK_MS = 2000;
 
 export type CopyLook = 'primary' | 'secondary' | 'icon';
 
-export function CopyButton(props: { look: CopyLook; line: string; copyResult: CopyResult | undefined; onCopy(line: string): void; tabIndex?: number }) {
+export function CopyButton(props: { look: CopyLook; line: string; copyResult: CopyResult | undefined; onCopy(line: string): void; tabIndex?: number; handoff?: FocusHandoff }) {
     const { line, copyResult } = props;
     const [shown, setShown] = useState<CopyResult | undefined>(undefined);
     const waiting = useRef(false);
@@ -21,7 +21,7 @@ export function CopyButton(props: { look: CopyLook; line: string; copyResult: Co
     const button = useRef<HTMLButtonElement>(null);
 
     useLayoutEffect(() => {
-        if (takeFocusHandoff()) {
+        if (props.handoff?.take() === true) {
             button.current?.focus();
         }
     }, []);

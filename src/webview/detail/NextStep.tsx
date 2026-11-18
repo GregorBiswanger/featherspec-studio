@@ -3,7 +3,7 @@ import { ABOUT_STEP_GLYPH, ABOUT_STEP_LABEL, NEXT_STEP_HEADING } from '../../sha
 import { PathText } from '../ui/PathText';
 import type { SendPromptPayload, SendResultEventPayload } from '../../shared/protocol/assistant';
 import { CopyButton } from '../ui/CopyButton';
-import { SendButton } from '../ui/SendButton';
+import { StepAction } from '../ui/StepAction';
 import { Toggletip } from '../ui/Toggletip';
 
 export function NextStep(props: {
@@ -33,10 +33,10 @@ export function NextStep(props: {
                                 <code>
                                     <PathText command={line.text} />
                                 </code>{' '}
-                                {index === 0 && send !== undefined ? (
-                                    <SendButton send={send} line={line.text} sendResult={props.sendResult} onSend={props.onSend} copyResult={copyResult} onCopy={props.onCopy} />
+                                {index === 0 ? (
+                                    <StepAction send={send} look="primary" line={line.text} sendResult={props.sendResult} onSend={props.onSend} copyResult={copyResult} onCopy={props.onCopy} />
                                 ) : (
-                                    <CopyButton look={index === 0 ? 'primary' : 'secondary'} line={line.text} copyResult={copyResult} onCopy={props.onCopy} />
+                                    <CopyButton look="secondary" line={line.text} copyResult={copyResult} onCopy={props.onCopy} />
                                 )}
                                 {index === 0 && tips !== undefined ? <p className="step-coach">{tips.coach}</p> : null}
                             </li>

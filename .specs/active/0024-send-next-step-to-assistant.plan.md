@@ -559,7 +559,8 @@ them all." No step above is renumbered or edited except where its note says so. 
   - Code: new `ui/StepAction.tsx`; `NextStep.tsx`, `SpecRow.tsx`, `CopyButton.tsx`, `SendButton.tsx`, `popup.ts` (the global
     flag goes; the two comments go).
 - **Verify:** `npx vitest run --project webview src/webview` red, then green; gates 1–5
-- [ ] **Verified (T-011):**
+- [x] **Verified (T-011):** 2026-11-18 red: `npx vitest run --project webview src/webview/detail/SpecDetail.test.tsx src/webview/areas/overview/Overview.test.tsx` 2 failed (W3: a new second Copy prompt took the focus; W4: another spec's row took it). Green after: `--project webview src/webview` 620 passed. M72 and M78: the module flag is gone (no `takeFocusHandoff` or `offerFocusHandoff` left in `src`); only the `CopyButton` that `StepAction` hands its own `FocusHandoff` can take it, and the place clears it after its children, so neither mutation can be written. The tests that would have killed them (a Copy mounting in the same update at another line takes nothing; a Copy mounting later takes nothing) are in `SpecDetail.test.tsx`. Gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 3108 passed + 3 skipped (+18 timing), compile and compile-tests green.
+- **Notes:** New `ui/StepAction.tsx` and `ui/focusHandoff.ts` (`.architecture/webview.md` updated). The two comments of `popup.ts` are removed (F2). Board cards and the map's ways pass no handoff.
 
 ### T-012 — The scan exemptions shrink to §5's own names
 

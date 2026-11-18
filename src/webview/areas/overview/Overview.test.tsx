@@ -346,6 +346,23 @@ describe('0024 AC-003, AC-002: the split button at the first Now row only', () =
         expect(document.activeElement).toBe(container.querySelector('[data-spec-row="0001-r"] button.copy-button'));
     });
 
+    it('a row with focus on Send leaves Now while another spec enters Up next: no other spec\'s row takes the focus', async () => {
+        const container = await open(viewWith([row('0001', { send: SEND }), row('0002')]));
+        await act(async () => container.querySelector<HTMLElement>('button.send-main')!.focus());
+        const next = { ...sampleView(), now: [row('0002', { send: SEND })], upNext: { rows: [row('0009'), row('0003')], more: 0, stems: [] } } as OverviewView;
+        await send(overviewEvent(next));
+        const held = document.activeElement?.closest('[data-spec-row]')?.getAttribute('data-spec-row');
+        expect(held === undefined || held === null).toBe(true);
+        expect(document.activeElement?.classList.contains('copy-icon')).toBe(false);
+    });
+
+    it('the row stays first and its offer goes away: its own Copy prompt takes the focus, and a Copy that mounts in another row in the same update does not', async () => {
+        const container = await open(viewWith([row('0001', { send: SEND }), row('0002')]));
+        await act(async () => container.querySelector<HTMLElement>('button.send-main')!.focus());
+        await send(overviewEvent(viewWith([row('0001'), row('0002'), row('0005')])));
+        expect(document.activeElement).toBe(container.querySelector('[data-spec-row="0001-r"] button.copy-button'));
+    });
+
     it('without send the first Now row renders the 0021 DOM: the Copy prompt in place of the split button', async () => {
         const container = await open(viewWith([row('0001'), row('0002')]));
         expect(container.querySelector('[data-spec-row="0001-r"] button.copy-icon, [data-spec-row="0001-r"] button.copy-button')).not.toBeNull();

@@ -3,8 +3,8 @@ import { ABOUT_STEP_GLYPH, ABOUT_STEP_LABEL } from '../../../shared/protocol/nex
 import { problemsBadgeText } from '../../../shared/protocol/texts';
 import { BadgeIcon, StateIcon } from '../../board/icons';
 import { useBoard } from '../../board/boardStore';
-import { CopyButton, type CopyLook } from '../../ui/CopyButton';
-import { SendButton } from '../../ui/SendButton';
+import type { CopyLook } from '../../ui/CopyButton';
+import { StepAction } from '../../ui/StepAction';
 import { StepText } from '../../ui/StepText';
 import { Toggletip } from '../../ui/Toggletip';
 import { Drill } from './Drill';
@@ -45,10 +45,8 @@ export function SpecRow(props: { row: OverviewRow; group: string; copyLook?: Cop
                 ) : null}
                 {row.step === undefined ? null : <StepText step={row.step} />}
             </Drill>
-            {row.step === undefined ? null : row.send === undefined ? (
-                <CopyButton look={props.copyLook ?? 'icon'} line={row.step.line} copyResult={copyResult} onCopy={copyText} />
-            ) : (
-                <SendButton send={row.send} line={row.step.line} sendResult={sendResult} onSend={sendPrompt} copyResult={copyResult} onCopy={copyText} />
+            {row.step === undefined ? null : (
+                <StepAction send={row.send} look={props.copyLook ?? 'icon'} line={row.step.line} sendResult={sendResult} onSend={sendPrompt} copyResult={copyResult} onCopy={copyText} />
             )}
             {row.step === undefined || row.tips === undefined ? null : (
                 <div className="ov-coach">

@@ -5,7 +5,7 @@ import { ASSISTANT_NAMES, MORE_ACTIONS_TITLE, moreActionsName, SEND_ITEM_TEXT, s
 import { COPIED_LABEL, COPY_FAILED_LABEL, COPY_PROMPT_LABEL } from '../../shared/protocol/nextStepTexts';
 import { Glyph } from '../board/icons';
 import { FEEDBACK_MS, type CopyResult } from './CopyButton';
-import { closePopup, offerFocusHandoff, setPopup, useIsPopupOpen } from './popup';
+import { closePopup, setPopup, useIsPopupOpen } from './popup';
 
 export interface SendButtonProps {
     send: SendView;
@@ -14,6 +14,7 @@ export interface SendButtonProps {
     onSend(request: SendPromptPayload): void;
     copyResult: CopyResult | undefined;
     onCopy(line: string): void;
+    onLeaveWithFocus?: () => void;
 }
 
 interface Shown {
@@ -31,6 +32,8 @@ export function SendButton(props: SendButtonProps) {
     const arrow = useRef<HTMLButtonElement>(null);
     const menu = useRef<HTMLDivElement>(null);
     const menuWasOpen = useRef(false);
+    const leave = useRef(props.onLeaveWithFocus);
+    leave.current = props.onLeaveWithFocus;
     const focusOnOpen = useRef<'first' | 'last' | undefined>(undefined);
     const [shown, setShown] = useState<Shown | undefined>(undefined);
     const pendingSend = useRef(0);
@@ -106,7 +109,7 @@ export function SendButton(props: SendButtonProps) {
         () => () => {
             closePopup(arrowId);
             if (focusIsInside()) {
-                offerFocusHandoff();
+                leave.current?.();
             }
         },
         [],
