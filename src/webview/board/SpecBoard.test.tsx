@@ -12,9 +12,9 @@ import { boardEvent, boardView, card } from './testing/views';
 
 const STEP: StepView = { intent: 'Build', short: 'Start T-003', line: 'Start T-003 of .specs/backlog/0007-x.plan.md', lines: [{ text: 'Start T-003 of .specs/backlog/0007-x.plan.md', intent: 'Write the plan' }] };
 const TWO: StepView = {
-    intent: 'Plan', short: '/sdd-plan',
-    line: '/sdd-plan .specs/active/0008-y.md',
-    lines: [{ text: '/sdd-plan .specs/active/0008-y.md', intent: 'Write the plan' }, { text: 'continue', intent: 'Not sure where it stands? Let the agent report first' }],
+    intent: 'Continue', short: 'Implement T-003',
+    line: 'Implement T-003 of .specs/active/0008-y.plan.md',
+    lines: [{ text: 'Implement T-003 of .specs/active/0008-y.plan.md', intent: 'Continue with T-003 Reject money values' }, { text: '/sdd-plan .specs/active/0008-y.md', intent: 'Not sure where it stands? Let the agent report first' }],
 };
 
 let posted: Envelope[];
@@ -451,16 +451,16 @@ describe('0017 AC-004: the next step on a card', () => {
         const line = entry.querySelector('.card-step')!;
         expect(entry.lastElementChild).toBe(line);
         expect(line.querySelector('.step-label')?.textContent).toBe('Next');
-        expect(line.querySelector('.step-short')?.textContent).toBe('/sdd-plan');
-        expect(line.querySelector('.step-intent')?.textContent).toBe('Plan');
-        expect(line.querySelector('.step-text')?.textContent).toBe('Next Plan · /sdd-plan');
+        expect(line.querySelector('.step-short')?.textContent).toBe('Implement T-003');
+        expect(line.querySelector('.step-intent')?.textContent).toBe('Continue');
+        expect(line.querySelector('.step-text')?.textContent).toBe('Next Continue · Implement T-003');
         expect(line.querySelector('code.step-short')).not.toBeNull();
         expect(line.querySelector('.step-intent')?.tagName).toBe('SPAN');
-        expect(line.querySelector('.step-text')?.getAttribute('title')).toBe('Write the plan\n/sdd-plan .specs/active/0008-y.md\nNot sure where it stands? Let the agent report first\ncontinue');
+        expect(line.querySelector('.step-text')?.getAttribute('title')).toBe('Continue with T-003 Reject money values\nImplement T-003 of .specs/active/0008-y.plan.md\nNot sure where it stands? Let the agent report first\n/sdd-plan .specs/active/0008-y.md');
         const copy = line.querySelector('button')!;
         expect(copy.className).toContain('copy-icon');
         expect(copy.textContent).toBe('');
-        expect(copy.getAttribute('aria-label')).toBe('Copy prompt: /sdd-plan .specs/active/0008-y.md');
+        expect(copy.getAttribute('aria-label')).toBe('Copy prompt: Implement T-003 of .specs/active/0008-y.plan.md');
         expect(entry.textContent).not.toContain('continue');
     });
 
@@ -494,7 +494,7 @@ describe('0017 AC-005: Copy on a card', () => {
         await act(async () => copy.focus());
         await pressKey(copy, 'Enter');
         await pressKey(copy, ' ');
-        expect(requests('copyText')).toEqual([{ text: '/sdd-plan .specs/active/0008-y.md' }, { text: '/sdd-plan .specs/active/0008-y.md' }]);
+        expect(requests('copyText')).toEqual([{ text: 'Implement T-003 of .specs/active/0008-y.plan.md' }, { text: 'Implement T-003 of .specs/active/0008-y.plan.md' }]);
         expect(requests('navigate')).toEqual([]);
         expect(requests('select')).toEqual([]);
     });

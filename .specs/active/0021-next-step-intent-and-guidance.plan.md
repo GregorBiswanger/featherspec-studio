@@ -3,7 +3,7 @@
 **Spec:** [0021-next-step-intent-and-guidance.md](0021-next-step-intent-and-guidance.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-015 (fix stage after the compile of S74: `/home/claude/orch/compile/0021.md`)
+**Current step:** T-016 (fix stage after the compile of S74: `/home/claude/orch/compile/0021.md`)
 
 ## Approach
 
@@ -417,7 +417,8 @@ ends of stages 1 and 3.
   `primaryButtons.test.tsx` drop the obsolete `continue` second line (NS-6 is variant A).
 - **Verify:** `npx vitest run --project webview src/webview` green (the new test red against a changed separator on the
   scratch copy); gates 1–4
-- [ ] **Verified (T-015):**
+- [x] **Verified (T-015):** 2026-11-18 · new test `src/webview/ui/StepText.test.tsx` ("0021 AC-006, guideline 10 …": text after the label equals `stepShortForm(step)` for three cases, intent and prompt in their own elements, the tooltip): green at once; red by mutation on a scratch copy (`stepShortForm` joins with ` / ` while `StepText` still composes ` · `): 1 failed; green after the change, also with the separator changed in the module (the view follows it). The stale fixtures (`continue` second line) in `SpecBoard.test.tsx`, `Sections.test.tsx`, `primaryButtons.test.tsx` now carry NS-6 variant A (`Implement T-003 of <plan>`, then `/sdd-plan <spec>`); `npx vitest run --project webview src/webview` 477 passed (before the new test); `npm run test:unit` 158 files, 2638 passed, 3 skipped, timing 15 passed; eslint 0 warnings, both `tsc` clean, `npm run compile` clean.
+- **Notes:** Proxy decision: `StepText` cannot call `stepShortForm` for its text, because the DOM keeps the intent and the prompt in their own elements (the `code` styling, staying tests of 0017 AC-004 and 0021 AC-006). The format now has one definition: `STEP_SHORT_SEPARATOR` in `nextStepTexts.ts`, used by `stepShortForm` and by `StepText`; the new test equals the two for every case. The fixtures' expectations changed with their data (intent `Continue`, short `Implement T-003`, copy text `Implement T-003 of <plan>`); no assertion was weakened, the `not.toContain('continue')` guards stay.
 
 ### T-016 — Traceability, titles, Memory Bank, evidence and handoff (compile edits 1, 5–8)
 
