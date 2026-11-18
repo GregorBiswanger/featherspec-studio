@@ -37,6 +37,16 @@ describe('BR-02, AC-009: start area and memory', () => {
         expect(second.view().area).toBe('board');
     });
 
+    it('0023 AC-006: a remembered planMap area is restored after a reload, and a per-area open shows it', async () => {
+        const current = await ready({ memory: { v: 1, area: 'planMap' } });
+        current.service.open({ via: 'start' });
+        expect(current.service.view().area).toBe('planMap');
+        current.service.open({ via: 'area', area: 'board' });
+        current.service.open({ via: 'area', area: 'planMap' });
+        expect(current.service.view().area).toBe('planMap');
+        expect((current.memory.value as { area: string }).area).toBe('planMap');
+    });
+
     it('Open and Open Studio (start) show the remembered area, a per-area open shows the named area and remembers it', async () => {
         const current = await ready({ memory: { v: 1, area: 'board' } });
         current.service.open({ via: 'start' });

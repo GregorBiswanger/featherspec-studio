@@ -211,11 +211,14 @@ describe('0015 AC-026: the Overview purpose and the Restricted Mode note', () =>
     });
 });
 
-describe('0020 AC-016: two areas', () => {
-    it('0020 AC-016: lists exactly Overview and Board, in this order, and no area specExplorer', () => {
-        expect(AREAS.map((area) => area.title)).toEqual(['Overview', 'Board']);
-        expect(AREA_IDS).toEqual(['overview', 'board']);
+describe('0023 AC-006: three areas', () => {
+    it('0023 AC-006: lists exactly Overview, Board and Plan map, in this order, and no area specExplorer', () => {
+        expect(AREAS.map((area) => area.title)).toEqual(['Overview', 'Board', 'Plan map']);
+        expect(AREA_IDS).toEqual(['overview', 'board', 'planMap']);
+        expect(AREAS[2]).toEqual({ id: 'planMap', title: 'Plan map', purpose: 'See a plan\'s stages, what can run in parallel and how to start it.', placeholder: false });
         expect(isAreaId('specExplorer')).toBe(false);
+        expect(isAreaId('planmap')).toBe(false);
+        expect(isNavigationRequest({ area: 'planMap' })).toBe(true);
     });
 
     it('0018 AC-001: missionControl and specBoard are no area and no navigation request', () => {

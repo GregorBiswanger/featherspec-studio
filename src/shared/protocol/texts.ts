@@ -1,4 +1,4 @@
-import type { AreaId } from './areas';
+import type { DetailAreaId } from './areas';
 import type { StatusHistoryItem } from './detail';
 import type { BoardState } from './boardFilter';
 import type { ColumnNarrow, LastChange, Progress, SortKey } from './board';
@@ -330,7 +330,7 @@ export const CLOSE_DETAIL_LABEL = 'Close spec detail';
 export const CLOSE_DETAIL_TOOLTIP = 'Close (Esc)';
 export const DIVIDER_LABEL = 'Resize the side panel';
 export const DIVIDER_TOOLTIP = 'Drag to resize. Double-click to reset.';
-export const BACK_LABELS: Record<AreaId, string> = { overview: 'Back to Overview', board: 'Back to Board' };
+export const BACK_LABELS: Record<DetailAreaId, string> = { overview: 'Back to Overview', board: 'Back to Board' };
 export const PROGRESS_HEADING = 'Progress';
 export const STEPS_LABEL = 'Steps';
 export const CRITERIA_LABEL = 'Criteria';

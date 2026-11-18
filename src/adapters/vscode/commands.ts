@@ -14,4 +14,5 @@ export const NAVIGATOR_VIEW = 'featherspec-studio.navigator';
 export const AREA_COMMANDS: Record<AreaId, string> = {
     overview: 'featherspec-studio.openOverview',
     board: 'featherspec-studio.openBoard',
+    planMap: 'featherspec-studio.openPlanMap',
 };

@@ -90,6 +90,8 @@ suite('FeatherSpec Studio shell smoke', function () {
         await vscode.commands.executeCommand('featherspec-studio.openBoard');
         await waitFor('exactly one Studio tab', () => panelState(api), (state) => state.tabs === 1, { timeoutMs: WAIT_MS });
         assert.strictEqual(api.shell().view().area, 'board');
+        await vscode.commands.executeCommand('featherspec-studio.openPlanMap');
+        assert.strictEqual(api.shell().view().area, 'planMap');
         await vscode.commands.executeCommand('featherspec-studio.openOverview');
         assert.strictEqual(api.shell().view().area, 'overview');
         assert.strictEqual(studioTabs().length, 1);
@@ -169,6 +171,7 @@ suite('FeatherSpec Studio shell smoke', function () {
             'featherspec-studio.open',
             'featherspec-studio.openOverview',
             'featherspec-studio.openBoard',
+            'featherspec-studio.openPlanMap',
             'featherspec-studio.refresh',
             'featherspec-studio.shellAction',
             'featherspec-studio.selectProject',

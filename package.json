@@ -91,6 +91,10 @@
         "title": "FeatherSpec Studio: Open Board"
       },
       {
+        "command": "featherspec-studio.openPlanMap",
+        "title": "FeatherSpec Studio: Open Plan Map"
+      },
+      {
         "command": "featherspec-studio.copyNextStep",
         "title": "FeatherSpec Studio: Copy Next Step"
       },

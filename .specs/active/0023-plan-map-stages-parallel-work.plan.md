@@ -3,7 +3,7 @@
 **Spec:** [0023-plan-map-stages-parallel-work.md](0023-plan-map-stages-parallel-work.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-004
+**Current step:** T-005
 
 ## Approach
 
@@ -302,8 +302,8 @@ orchestrator) at the ends of stages 2 and 3; AC-018 screenshots recorded here.
   smoke `src/test/shell.smoke.test.ts` AC-005 (openPlanMap → `planMap`; CI only).
 - **Verify:** `npx vitest run --project webview src/webview` and `npx vitest run --project node src/shared/protocol src/adapters/vscode/manifest.test.ts src/core/shell`
   red (stub), then green; gates 1–5; `npm run compile-tests`
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-18 · `npx vitest run --project webview src/webview` and `npx vitest run --project node src/shared/protocol src/adapters/vscode/manifest.test.ts src/core/shell` red first (new tests against the code without the third area: `PlanMap.test.tsx` 13 of 13 failed, plus the retitled area, navigation, manifest and memory tests), then green (webview 492 of 492); gates 1–5 green, `npm run compile-tests` green; `npm run test:unit` 2715 passed + 3 skipped (+16 timing)
+- **Notes:** Retitled instead of deleted (the *Deletes* line's tests keep their body, with three areas): `messages.test.ts` describe "0020 AC-016: two areas" → "0023 AC-006: three areas" and its first test; `SidePanel.test.tsx` "0020: the panel has no area without a side panel; …" → "0023 AC-007: the navigation offers Overview, Board and Plan map, and the panel stands beside each of them"; `manifest.test.ts` "… (Overview and Board) …" → "… (Overview, Board and Plan map) …"; also `App.test.tsx` "0020 AC-016: lists exactly Overview and Board, in this order" → "0023 AC-006: lists exactly Overview, Board and Plan map, in this order" and `webviewBundle.test.ts` "… the two areas …" → "… the three areas …" (T-008's audit lists them). The below-900 px and divider tests of `ListOrDetail.test.tsx` live in `PlanMap.test.tsx` "0023 AC-007" (the frame is the same; the map needs the area and a detail event). `DetailAreaId` (`'overview' | 'board'`) types the back button and `BACK_LABELS`; the map's heading focus is `areas/planMap/focus.ts` (`requestMapFocus`, `takePendingMapFocus`). The map shows only its header and the state list so far: stage rows and cards are T-006, ways T-007. `src/test/shell.smoke.test.ts` AC-005 runs `openPlanMap` (CI only).
 
 ### T-005 — The side panel shows the Plan section
 

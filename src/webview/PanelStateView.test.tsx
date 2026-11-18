@@ -153,7 +153,7 @@ describe('panel states S1 to S9 in the panel UI', () => {
 
     it('AC-018: the navigation stays while a state is shown, and the state takes the place of the area content', async () => {
         const container = await show({ id: 'S2' });
-        expect(container.querySelectorAll('nav button')).toHaveLength(2);
+        expect(container.querySelectorAll('nav button')).toHaveLength(3);
         expect(container.querySelectorAll('section[role="status"]')).toHaveLength(1);
     });
 

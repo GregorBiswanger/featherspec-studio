@@ -33,3 +33,27 @@ export function stagePrompt(way: WayKey, stage: number, plan: string): string {
 export function startLine(id: string, plan: string): string {
     return `Implement ${id} of ${plan} as a parallel worker.`;
 }
+
+export const PLAN_MAP_TITLE = 'Plan map';
+
+export const PLAN_MAP_PURPOSE = "See a plan's stages, what can run in parallel and how to start it.";
+
+export const PLAN_MAP_COMMAND_TITLE = 'FeatherSpec Studio: Open Plan Map';
+
+export const NO_SPEC_SELECTED_TEXT = 'Select a spec with a plan to see its stages.';
+
+export function noPlanText(number: string): string {
+    return `${number} has no plan yet.`;
+}
+
+export function specDoneText(number: string): string {
+    return `${number} is done.`;
+}
+
+export const SPECS_WITH_PLAN_HEADING = 'Specs with a plan';
+
+export const OPEN_PLAN_LABEL = 'Open plan';
+
+export function planSaysText(closing: string): string {
+    return `The plan says: ${closing}`;
+}

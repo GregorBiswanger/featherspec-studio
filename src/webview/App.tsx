@@ -23,9 +23,10 @@ function AreaContent(props: { area: AreaId }) {
 function Frame() {
     const shell = useShell();
     const info = areaInfo(shell.area);
-    const sideSelection = shell.area === 'overview' || shell.area === 'board' ? shell.view?.selection : undefined;
     const narrow = useNarrow();
-    const detailAlone = narrow && sideSelection !== undefined;
+    const detailArea = shell.area === 'overview' || shell.area === 'board' ? shell.area : undefined;
+    const sideSelection = detailArea !== undefined || (shell.area === 'planMap' && !narrow) ? shell.view?.selection : undefined;
+    const detailAlone = narrow && detailArea !== undefined && sideSelection !== undefined;
     const [frameElement, setFrameElement] = useState<HTMLDivElement | null>(null);
     const side = useSideWidth(frameElement, shell.view?.sideWidth, { set: shell.setSideWidth, reset: shell.resetSideWidth });
     const beside = !narrow && sideSelection !== undefined && side.frame > 0;
@@ -58,7 +59,7 @@ function Frame() {
                             <AreaContent area={shell.area} />
                         </div>
                         {beside ? <Divider side={side} panelId={SIDE_PANEL_ID} /> : null}
-                        {sideSelection === undefined ? null : <SidePanel selection={sideSelection} {...(narrow ? { back: shell.area } : {})} {...(beside ? { width: side.width } : {})} />}
+                        {sideSelection === undefined ? null : <SidePanel selection={sideSelection} {...(narrow && detailArea !== undefined ? { back: detailArea } : {})} {...(beside ? { width: side.width } : {})} />}
                     </div>
                 ) : (
                     <PanelStateView state={shell.state} />

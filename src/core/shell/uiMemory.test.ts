@@ -4,9 +4,10 @@ import { parseUiMemory, serializeUiMemory } from './uiMemory';
 describe('AC-009: remembered UI state', () => {
     it('round-trips the area and a selection with and without a path', () => {
         const plain = { v: 1 as const, area: 'board' as const };
+        const map = { v: 1 as const, area: 'planMap' as const };
         const selected = { v: 1 as const, area: 'overview' as const, selection: { projectRoot: 'file:///p', stem: '0003-x' } };
         const duplicated = { v: 1 as const, area: 'overview' as const, selection: { projectRoot: 'file:///p', stem: '0003-x', path: '.specs/active/0003-x.md' } };
-        for (const memory of [plain, selected, duplicated]) {
+        for (const memory of [plain, map, selected, duplicated]) {
             expect(parseUiMemory(serializeUiMemory(memory))).toEqual(memory);
         }
     });

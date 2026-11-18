@@ -3,7 +3,7 @@ import type { SelectedSpec } from '../../shared/protocol/messages';
 import { DETAIL_LABEL } from '../../shared/protocol/texts';
 import { useBoard } from '../board/boardStore';
 import { useShell } from '../shell';
-import type { AreaId } from '../../shared/protocol/areas';
+import type { DetailAreaId } from '../../shared/protocol/areas';
 import { BackButton } from './BackButton';
 import { CloseButton } from './CloseButton';
 import { DetailFrame } from './DetailFrame';
@@ -16,7 +16,7 @@ function matches(selection: SelectedSpec, detail: ReturnType<typeof useBoard>['d
 
 export const SIDE_PANEL_ID = 'side-panel';
 
-export function SidePanel(props: { selection: SelectedSpec; back?: AreaId; width?: number }) {
+export function SidePanel(props: { selection: SelectedSpec; back?: DetailAreaId; width?: number }) {
     const { selection, back, width } = props;
     const shell = useShell();
     const { detail, fileResult, copyResult, openFile, copyText } = useBoard();

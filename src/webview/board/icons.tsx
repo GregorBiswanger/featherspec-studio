@@ -67,11 +67,14 @@ export function BadgeIcon(props: { kind: 'diagnostic' | 'derived' | 'deprecated'
 const AREA_PATHS: Record<AreaId, string> = {
     overview: 'M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2zm0 1.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zM10.6 4.7l.9.9-2.4 2.9a1.25 1.25 0 1 1-1-.8z',
     board: 'M2 2h5v12H2zm1.5 1.5v9h2v-9zM9 2h5v5H9zm1.5 1.5v2h2v-2zM9 9h5v5H9zm1.5 1.5v2h2v-2z',
+    planMap: 'M2 2h5v3H2zM3.5 5h1.5v9H3.5zM7 7h7v3H7zM5 7.75h2v1.5H5zM7 11.5h7v3H7zM5 12.25h2v1.5H5z',
 };
+
+const AREA_MOTIFS: Partial<Record<AreaId, string>> = { planMap: 'type-hierarchy-sub' };
 
 export function AreaIcon(props: { area: AreaId }) {
     return (
-        <svg className="icon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" fillRule="evenodd" aria-hidden="true" focusable="false" data-icon={props.area}>
+        <svg className="icon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" fillRule="evenodd" aria-hidden="true" focusable="false" data-icon={props.area} {...(AREA_MOTIFS[props.area] === undefined ? {} : { 'data-motif': AREA_MOTIFS[props.area] })}>
             <path d={AREA_PATHS[props.area]} />
         </svg>
     );

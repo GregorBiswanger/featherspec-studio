@@ -99,11 +99,14 @@ describe('AC-002: the side panel exists exactly while a spec is selected', () =>
         expect(panel(container)).not.toBeNull();
     });
 
-    it('0020: the panel has no area without a side panel; the navigation offers only Overview and Board, and both show it', async () => {
+    it('0023 AC-007: the navigation offers Overview, Board and Plan map, and the panel stands beside each of them', async () => {
         const container = await start();
         await send(shellEvent(baseView({ area: 'overview', selection: selection('0003') }), 1));
         expect(panel(container)).not.toBeNull();
-        expect([...container.querySelectorAll('nav button')].map((button) => button.textContent?.trim())).toEqual(['Overview', 'Board']);
+        expect([...container.querySelectorAll('nav button')].map((button) => button.textContent?.trim())).toEqual(['Overview', 'Board', 'Plan map']);
+        await send(shellEvent(baseView({ area: 'planMap', selection: selection('0003') }), 2));
+        expect(panel(container)).not.toBeNull();
+        expect(container.querySelector('h1')?.textContent).toBe('Plan map');
     });
 });
 

@@ -32,10 +32,10 @@ afterEach(() => {
 });
 
 describe('AC-004: the navigation', () => {
-    it('0020 AC-016: lists exactly Overview and Board, in this order', async () => {
+    it('0023 AC-006: lists exactly Overview, Board and Plan map, in this order', async () => {
         const { container } = await start();
         expect(items(container).map((item) => item.textContent?.trim())).toEqual(AREAS.map((area) => area.title));
-        expect(items(container).map((item) => item.textContent?.trim())).toEqual(['Overview', 'Board']);
+        expect(items(container).map((item) => item.textContent?.trim())).toEqual(['Overview', 'Board', 'Plan map']);
     });
 
     it('sends hello on boot', async () => {
@@ -86,10 +86,11 @@ describe('AC-004: the navigation', () => {
     it('PD-054: every item shows the icon of its area before its title, hidden from assistive technology, and no two items share one', async () => {
         const { container } = await start();
         const icons = items(container).map((item) => item.querySelector('svg[data-icon]'));
-        expect(icons.map((icon) => icon?.getAttribute('data-icon'))).toEqual(['overview', 'board']);
+        expect(icons.map((icon) => icon?.getAttribute('data-icon'))).toEqual(['overview', 'board', 'planMap']);
         expect(icons.every((icon) => icon?.getAttribute('aria-hidden') === 'true')).toBe(true);
-        expect(new Set(icons.map((icon) => icon?.querySelector('path')?.getAttribute('d'))).size).toBe(2);
-        expect(items(container).map((item) => item.textContent?.replace('▸', '').trim())).toEqual(['Overview', 'Board']);
+        expect(new Set(icons.map((icon) => icon?.querySelector('path')?.getAttribute('d'))).size).toBe(3);
+        expect(icons[2]?.getAttribute('data-motif')).toBe('type-hierarchy-sub');
+        expect(items(container).map((item) => item.textContent?.replace('▸', '').trim())).toEqual(['Overview', 'Board', 'Plan map']);
     });
 
     it('0020 AC-016: no panel element sends a request for the removed Spec Explorer, whichever item is activated', async () => {
@@ -98,7 +99,7 @@ describe('AC-004: the navigation', () => {
             await click(item);
         }
         const areas = posted.filter((message) => message.type === 'navigate').map((message) => (message.payload as { area: string }).area);
-        expect(areas).toEqual(['overview', 'board']);
+        expect(areas).toEqual(['overview', 'board', 'planMap']);
         expect(JSON.stringify(posted)).not.toContain('specExplorer');
     });
 

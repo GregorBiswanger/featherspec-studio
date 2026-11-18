@@ -1569,3 +1569,78 @@ blockquote.illustration {
 .ov-row[aria-current="true"] .step-label {
     color: var(--vscode-list-activeSelectionForeground);
 }
+
+.plan-map {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.plan-map-header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.plan-map-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+}
+
+.plan-map-title h2,
+.plan-map-specs h3 {
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: 600;
+    overflow-wrap: break-word;
+}
+
+.plan-map-title h2:focus-visible {
+    outline: 1px solid var(--vscode-contrastActiveBorder, var(--vscode-focusBorder));
+    outline-offset: 2px;
+}
+
+.plan-map-open,
+.plan-map-closing,
+.plan-map-state {
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: break-word;
+}
+
+.plan-map-closing {
+    color: var(--fs-muted);
+}
+
+.plan-map-specs ul {
+    margin: 6px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.plan-map-spec {
+    display: block;
+    width: 100%;
+    padding: 4px 8px;
+    color: var(--vscode-textLink-foreground);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+    overflow-wrap: break-word;
+}
+
+.plan-map-spec:hover {
+    color: var(--vscode-textLink-activeForeground, var(--vscode-textLink-foreground));
+    background: var(--vscode-list-hoverBackground);
+}
+
+.plan-map-spec:focus-visible {
+    outline: 1px solid var(--vscode-contrastActiveBorder, var(--vscode-focusBorder));
+    outline-offset: -1px;
+}

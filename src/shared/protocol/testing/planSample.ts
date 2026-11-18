@@ -5,7 +5,7 @@ export function step(id: string, state: PlanStepView['state'], overrides: Partia
         id,
         state,
         title: `Step ${id}`,
-        open: { key: '.specs/active/0007-x.plan.md', line: 40 + Number(id.slice(2)) },
+        open: { key: '.specs/active/0007-thing.plan.md', line: 40 + Number(id.slice(2)) },
         files: [],
         covers: [],
         ...overrides,
@@ -29,7 +29,7 @@ export function stage(number: number, groups: PlanStageView['groups'], overrides
 }
 
 export function planSample(overrides: Partial<PlanView> = {}): PlanView {
-    const key = '.specs/active/0007-x.plan.md';
+    const key = '.specs/active/0007-thing.plan.md';
     return {
         kind: 'plan',
         plan: { key, line: 1 },
@@ -43,7 +43,7 @@ export function planSample(overrides: Partial<PlanView> = {}): PlanView {
                 [
                     {
                         steps: [
-                            step('T-003', 'next', { files: ['src/add.ts', 'src/add.test.ts'], covers: [{ id: 'AC-001', open: { key: '.specs/active/0007-x.md', line: 12 } }], doText: 'Add.', verify: 'npm test -- add' }),
+                            step('T-003', 'next', { files: ['src/add.ts', 'src/add.test.ts'], covers: [{ id: 'AC-001', open: { key: '.specs/active/0007-thing.md', line: 12 } }], doText: 'Add.', verify: 'npm test -- add' }),
                             step('T-004', 'open', { files: ['src/subtract.ts'], covers: [{ id: 'AC-002' }] }),
                         ],
                     },

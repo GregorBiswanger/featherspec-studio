@@ -208,13 +208,14 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         expect('const title = "Agent Center";').toContain('Agent Center');
     });
 
-    it('starts without a runtime error, renders the frame with the two areas and the loading state, and says hello', async () => {
+    it('starts without a runtime error, renders the frame with the three areas and the loading state, and says hello', async () => {
         const { dom, posted, errors } = boot(readFileSync(bundlePath, 'utf8'));
         await settle();
         const document = dom.window.document;
         expect([...document.querySelectorAll('nav button')].map((button) => button.textContent?.replace('▸', ''))).toEqual([
             'Overview',
             'Board',
+            'Plan map',
         ]);
         expect(document.body.textContent).toContain('Loading project…');
         expect(posted[0]).toMatchObject({ v: 6, kind: 'req', type: 'hello' });

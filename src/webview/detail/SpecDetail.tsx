@@ -23,7 +23,7 @@ import { PathText } from '../ui/PathText';
 import { FormatNotes } from '../ui/FormatNotes';
 import { InlineText } from '../ui/InlineText';
 import { StateChip } from '../ui/StateChip';
-import type { AreaId } from '../../shared/protocol/areas';
+import type { DetailAreaId } from '../../shared/protocol/areas';
 import { BackButton } from './BackButton';
 import { CloseButton } from './CloseButton';
 import { DetailFrame } from './DetailFrame';
@@ -39,7 +39,7 @@ function stateTooltip(detail: SpecDetailView): string {
     return detail.persistence === 'derived' && isDerivedRule(detail.rule) ? columnRuleTooltip(detail.rule) : persistedTooltip(detail.rule);
 }
 
-function Header(props: { detail: SpecDetailView; onClose: (() => void) | undefined; back: AreaId | undefined; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
+function Header(props: { detail: SpecDetailView; onClose: (() => void) | undefined; back: DetailAreaId | undefined; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
     const { detail } = props;
     const tooltip = stateTooltip(detail);
     return (
@@ -107,7 +107,7 @@ function History(props: { history: SpecDetailView['history']; now: Date }) {
     );
 }
 
-function Picture(props: { detail: SpecDetailView; fileResult: FileResult | undefined; copyResult: { ok: boolean; text: string } | undefined; onOpen: OpenAt; onCopy(text: string): void; onClose: (() => void) | undefined; back: AreaId | undefined }) {
+function Picture(props: { detail: SpecDetailView; fileResult: FileResult | undefined; copyResult: { ok: boolean; text: string } | undefined; onOpen: OpenAt; onCopy(text: string): void; onClose: (() => void) | undefined; back: DetailAreaId | undefined }) {
     const { detail, fileResult, onOpen } = props;
     const now = new Date();
     const headingRef = useRef<HTMLHeadingElement>(null);
@@ -162,7 +162,7 @@ export function SpecDetail(props: {
     onOpen: OpenAt;
     onCopy(text: string): void;
     onClose?: () => void;
-    back?: AreaId;
+    back?: DetailAreaId;
     fallback?: () => void;
 }) {
     const { detail } = props;
