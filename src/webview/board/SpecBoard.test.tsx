@@ -338,6 +338,21 @@ describe('AC-021, AC-020, AC-012: in-area states', () => {
         expect(banner.querySelector('.format-notes')).toBeNull();
     });
 
+    it('0022 AC-013, AC-002: a banner line shows the place with break opportunities, the sentence, and the reason as tooltip; without a sentence the reason', async () => {
+        const container = await open(boardView([card('0001')], { banner: { problems: [{ where: '.specs/backlog', reason: 'could not be listed', sentence: 'Studio could not read the backlog folder.' }, { where: 'project', reason: 'plain reason' }], notes: [] } }));
+        const lines = [...container.querySelectorAll('[data-banner] li')];
+        expect(lines.map((line) => line.textContent)).toEqual(['.specs/backlog: Studio could not read the backlog folder.', 'project: plain reason']);
+        expect(lines.map((line) => line.getAttribute('title'))).toEqual(['could not be listed', null]);
+        expect(lines[0]!.querySelectorAll('wbr').length).toBeGreaterThan(0);
+    });
+
+    it('0022 AC-002: the path of a card breaks after a separator and keeps its text', async () => {
+        const container = await open(boardView([card('0001', { path: '.specs/active/0001-thing.md' })]));
+        const path = container.querySelector('.card-path')!;
+        expect(path.textContent).toBe('.specs/active/0001-thing.md');
+        expect(path.querySelectorAll('wbr').length).toBeGreaterThan(0);
+    });
+
     it('AC-009: project-level format notes sit behind a collapsed toggle; the banner is named by it while no Problem exists', async () => {
         const container = await open(boardView([card('0001')], { banner: { problems: [], notes: [{ where: 'project', reason: 'newer than known' }] } }));
         const banner = container.querySelector('[data-banner]')!;

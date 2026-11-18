@@ -19,6 +19,7 @@ import { isBoardState } from '../../shared/protocol/boardFilter';
 import { Glyph } from '../board/icons';
 import { EmptyState } from '../ui/EmptyState';
 import { FileLink, type FileResult } from '../ui/FileLink';
+import { PathText } from '../ui/PathText';
 import { FormatNotes } from '../ui/FormatNotes';
 import { InlineText } from '../ui/InlineText';
 import { StateChip } from '../ui/StateChip';
@@ -55,7 +56,11 @@ function Header(props: { detail: SpecDetailView; onClose: (() => void) | undefin
                 {detail.successor === undefined ? null : <span className="detail-flag">{DEPRECATED_MARKER}</span>}
                 {props.onClose === undefined || props.back !== undefined ? null : <CloseButton onClose={props.onClose} />}
             </div>
-            {detail.path === undefined ? null : <p className="detail-path">{detail.path}</p>}
+            {detail.path === undefined ? null : (
+                <p className="detail-path">
+                    <PathText path={detail.path} />
+                </p>
+            )}
             {detail.successor === undefined ? null : <p className="detail-successor">{detail.successor}</p>}
         </>
     );
@@ -63,11 +68,15 @@ function Header(props: { detail: SpecDetailView; onClose: (() => void) | undefin
 
 function Reason(props: { line: DiagnosticLine; fileResult: FileResult | undefined; onOpen: OpenAt }) {
     const { line } = props;
+    const text = line.sentence ?? line.reason;
+    const reason = line.sentence === undefined ? undefined : line.reason;
     return line.open === undefined ? (
-        <InlineText text={line.reason} />
+        <span {...(reason === undefined ? {} : { title: reason })}>
+            <InlineText text={text} />
+        </span>
     ) : (
-        <FileLink target={line.open} fileResult={props.fileResult} onOpen={props.onOpen}>
-            <InlineText text={line.reason} />
+        <FileLink target={line.open} fileResult={props.fileResult} onOpen={props.onOpen} {...(reason === undefined ? {} : { reason })}>
+            <InlineText text={text} />
         </FileLink>
     );
 }
@@ -131,7 +140,7 @@ function Picture(props: { detail: SpecDetailView; fileResult: FileResult | undef
                         <li key={`${file.label}|${file.open.key}`}>
                             <span className="file-label">{file.label}</span>{' '}
                             <FileLink target={file.open} fileResult={fileResult} onOpen={onOpen}>
-                                {file.name}
+                                <PathText path={file.name} />
                             </FileLink>
                         </li>
                     ))}

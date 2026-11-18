@@ -122,6 +122,19 @@ describe('0016 AC-011: user language on every surface 0016 touched', () => {
         expect(text).not.toMatch(FORBIDDEN);
     });
 
+    it('0022 AC-013: a sentence replaces the reason in the banner, the Overview and the detail, and the reason stays in the tooltip', async () => {
+        const banner = { problems: [{ where: '.specs/backlog', reason: 'R-5 listing failed', sentence: 'Studio could not read the backlog folder.' }], notes: [] };
+        const board = await textOf('board', boardEvent(boardView([card('0001')], { banner })));
+        expect(board).toContain('Studio could not read the backlog folder.');
+        expect(board).not.toContain('R-5 listing failed');
+        expect(board).not.toMatch(FORBIDDEN);
+        mounted?.unmount();
+        const detail = await visibleText(detailView({}, undefined, [{ reason: 'S-REVIEW contradiction', sentence: 'The files disagree about the state of this spec.' }]));
+        expect(detail).toContain('The files disagree about the state of this spec.');
+        expect(detail).not.toContain('S-REVIEW contradiction');
+        expect(detail).not.toMatch(FORBIDDEN);
+    });
+
     it('negative control: a rule ID in a card sentence is caught by the same pattern', () => {
         expect('Plan done, waiting for review S-REVIEW').toMatch(FORBIDDEN);
         expect('needs a plan R-3').toMatch(FORBIDDEN);

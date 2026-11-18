@@ -682,3 +682,52 @@ describe('0016 AC-006, AC-007, AC-022: Problems, format notes', () => {
         expect(container.querySelector('.detail-problems')?.textContent).toContain(PROBLEM.reason);
     });
 });
+
+describe('0022 AC-013, AC-015, AC-002, AC-003: sentences and breaking paths in the detail', () => {
+    const REASON = 'Folder done/ does not match status "In Progress".';
+    const SENTENCE = 'The spec sits in the done folder, but its status says it is still in progress.';
+
+    it('AC-013: a Problem with a file shows its sentence as the link; the tooltip and description hold the reason, then the open text on its own line', async () => {
+        const container = await open(spec({}, undefined, [{ reason: REASON, sentence: SENTENCE, open: { key: SPEC_KEY, line: 1 } }]));
+        const item = container.querySelector('.detail-problems li')!;
+        const link = item.querySelector<HTMLButtonElement>('button.file-link')!;
+        expect(link.textContent).toBe(SENTENCE);
+        expect(link.getAttribute('title')).toBe(`${REASON}\nOpen 0007-thing.md at line 1`);
+        expect(item.querySelector('.visually-hidden')?.textContent).toBe(`${REASON}\nOpen 0007-thing.md at line 1`);
+        expect(textOf(item)).toBe(SENTENCE);
+    });
+
+    it('AC-013: a Problem without a file shows its sentence with the reason as tooltip', async () => {
+        const container = await open(spec({}, undefined, [{ reason: REASON, sentence: SENTENCE }]));
+        const item = container.querySelector('.detail-problems li')!;
+        expect(item.querySelector('button')).toBeNull();
+        expect(item.querySelector('[title]')?.getAttribute('title')).toBe(REASON);
+        expect(textOf(item)).toBe(SENTENCE);
+    });
+
+    it('AC-013: a Problem with no sentence shows its reason', async () => {
+        const container = await open(spec({}, undefined, [{ reason: REASON }]));
+        expect(textOf(container.querySelector('.detail-problems li')!)).toBe(REASON);
+    });
+
+    it('AC-003: a Problem keeps its full text in the DOM, however long', async () => {
+        const long = `${SENTENCE} `.repeat(6).trim();
+        const container = await open(spec({}, undefined, [{ reason: REASON, sentence: long }]));
+        expect(textOf(container.querySelector('.detail-problems li')!)).toBe(long);
+    });
+
+    it('AC-002: the detail path, a Files link and the path in a next-step line break after a separator and keep their text', async () => {
+        const container = await open(spec({ path: '.specs/backlog/0007-thing.md' }, { rule: 'NS-5', lines: [{ text: '/sdd-plan .specs/backlog/0007-thing.md' }] }));
+        const path = container.querySelector('.detail-path')!;
+        expect(path.textContent).toBe('.specs/backlog/0007-thing.md');
+        expect(path.querySelectorAll('wbr').length).toBeGreaterThan(0);
+        const file = section(container, 'Files').querySelector('button.file-link')!;
+        expect(file.querySelectorAll('wbr').length).toBeGreaterThan(0);
+        const line = container.querySelector('.next-step-lines code')!;
+        expect(line.textContent).toBe('/sdd-plan .specs/backlog/0007-thing.md');
+        expect(line.innerHTML.startsWith('/sdd-plan .')).toBe(true);
+        expect(line.querySelectorAll('wbr').length).toBeGreaterThan(0);
+        expect(container.querySelector('.next-step-copy')?.getAttribute('aria-label')).toBe('Copy: /sdd-plan .specs/backlog/0007-thing.md');
+    });
+});
+

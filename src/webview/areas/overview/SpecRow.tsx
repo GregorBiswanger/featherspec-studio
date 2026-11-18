@@ -31,7 +31,7 @@ export function SpecRow(props: { row: OverviewRow; group: string; copyLook?: Cop
                     <span className="ov-state-icon" title={row.state} {...(named ? {} : { role: 'img', 'aria-label': row.state })}>
                         <StateIcon state={row.state} />
                     </span>
-                    <span className={named ? 'ov-status ov-state-name' : 'ov-status'} title={row.status}>
+                    <span className={named ? 'ov-status ov-state-name' : 'ov-status'} title={row.reasons ?? row.status}>
                         {row.status}
                     </span>
                 </span>

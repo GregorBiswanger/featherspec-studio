@@ -3,7 +3,7 @@
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-008
+**Current step:** T-009
 
 ## Approach
 
@@ -369,8 +369,8 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
   `userLanguage.test.tsx` sweeps the sentences.
 - **Verify:** `npx vitest run --project webview src/webview/ui/PathText.test.tsx src/webview/detail/SpecDetail.test.tsx src/webview/areas/overview src/webview/board/SpecBoard.test.tsx src/webview/userLanguage.test.tsx`
   and `npx vitest run --project node src/adapters/node/webviewCss.test.ts` red, then green; gates 1–4
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** Red first: PathText against a `Not implemented` stub failed 5 of 5; the surface tests (SpecDetail, Overview, SpecBoard banner and card path, userLanguage, webviewCss AC-002) failed 10 before the components changed. Green after: eslint 0 warnings, tsc and tsc -p src/webview clean, test:unit 2375 passed (3 skipped, +13 timing).
+- **Notes:** Deleted exactly the named `overflow-wrap: anywhere` of `.card-head`, `.card-path`, `.detail-path` (now `break-word`). New `ui/PathText.tsx` (`path` and `command` forms), `FileLink` optional `reason` (title and description = reason, newline, open text). Surfaces: detail problem list, detail path, Files link names, next-step lines, card path, banner and Overview lines, Problems row tooltip = `reasons`. `problemLineText` in `areas/overview/texts.ts` is now unused and was left (not on the Deletes line). `.step-text` keeps its `anywhere` (not named).
 
 ### T-009 — A tree row shows its step, uncut, within a label budget of 32
 

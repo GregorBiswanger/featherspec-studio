@@ -692,6 +692,20 @@ describe('0022 AC-001, AC-003, AC-027, AC-028: Overview rows follow the list wid
         expect(nowrapTitles.length).toBeGreaterThan(0);
     });
 
+    it('AC-002: the card head, the card path and the detail path wrap at words and separators and never at any character', () => {
+        for (const selector of ['.card-head', '.card-path', '.detail-path']) {
+            const wraps = declarations(css).filter((declaration) => declaration.selectors.includes(selector) && declaration.property === 'overflow-wrap');
+            expect(wraps.map((declaration) => declaration.value), selector).toEqual(['break-word']);
+        }
+        expect(declarations(css).filter((declaration) => /\.(?:card-path|detail-path|card-head|detail-heading|file-link)/.test(declaration.selectors.join(' ')) && /anywhere|break-all/.test(declaration.value))).toEqual([]);
+    });
+
+    it('AC-003: no rule of a problem line, the banner or the detail list cuts, clamps or keeps its text on one line', () => {
+        const lists = declarations(css).filter((declaration) => declaration.selectors.some((selector) => /^\.(?:banner|detail-problems)\b/.test(selector)));
+        expect(lists.filter((declaration) => /^(?:text-overflow|-webkit-line-clamp)$/.test(declaration.property) || (declaration.property === 'white-space' && declaration.value === 'nowrap'))).toEqual([]);
+        expect(declarations(css).filter((declaration) => declaration.selectors.includes('.ov-line') && /^(?:text-overflow|-webkit-line-clamp)$/.test(declaration.property))).toEqual([]);
+    });
+
     it('AC-001: no rule breaks a title anywhere or at every character', () => {
         const titles = declarations(css).filter((declaration) => declaration.selectors.some((selector) => /\.ov-title/.test(selector)));
         expect(titles.filter((declaration) => /anywhere|break-all/.test(declaration.value))).toEqual([]);

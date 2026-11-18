@@ -127,6 +127,7 @@ describe('0018 AC-007: Problems', () => {
         expect(problems.querySelector('[data-spec-row="0002-x"] .ov-status')?.textContent).toBe('plan link is dead · spec unreadable');
         const line = problems.querySelector('[data-problem-line]')!;
         expect(line.textContent).toBe('project: a return note has no spec');
+        expect(line.querySelector('[title]')).toBeNull();
         expect(line.querySelector('button')).toBeNull();
         expect(line.hasAttribute('tabindex')).toBe(false);
     });
@@ -255,3 +256,26 @@ describe('0018 AC-011: zero specs', () => {
         expect(area(await open(sampleView())).textContent).not.toContain('No specs yet');
     });
 });
+
+describe('0022 AC-013, AC-002, AC-003: Problems as sentences', () => {
+    it('a Problems row shows the sentences and carries the technical reasons as tooltip', async () => {
+        const view = fullView();
+        view.problems = {
+            rows: [row('0002-x', '0002', 'Backlog', { status: 'The plan link points to a missing file · The spec cannot be read', reasons: 'plan link is dead · spec unreadable', problems: 2 })],
+            lines: [],
+        };
+        const status = area(await open(view)).querySelector('[data-problems] [data-spec-row="0002-x"] .ov-status')!;
+        expect(status.textContent).toBe('The plan link points to a missing file · The spec cannot be read');
+        expect(status.getAttribute('title')).toBe('plan link is dead · spec unreadable');
+    });
+
+    it('a project-level line shows the place with break opportunities, then the sentence, and the reason as tooltip', async () => {
+        const view = fullView();
+        view.problems = { rows: [], lines: [{ where: '.memory-bank/activeContext.0099-T-001.md', reason: 'return note matches no spec', sentence: 'This return note belongs to no spec.' }] };
+        const line = area(await open(view)).querySelector('[data-problem-line]')!;
+        expect(line.textContent).toBe('.memory-bank/activeContext.0099-T-001.md: This return note belongs to no spec.');
+        expect(line.querySelectorAll('wbr').length).toBeGreaterThan(0);
+        expect(line.getAttribute('title')).toBe('return note matches no spec');
+    });
+});
+

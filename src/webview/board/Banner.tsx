@@ -1,5 +1,6 @@
 import type { Banner as BannerView } from '../../shared/protocol/board';
 import { BANNER_HEADING, formatNotesText } from '../../shared/protocol/texts';
+import { PathText } from '../ui/PathText';
 import { FormatNotes } from '../ui/FormatNotes';
 import { BadgeIcon } from './icons';
 
@@ -17,8 +18,8 @@ export function Banner(props: { banner: BannerView }) {
                     </strong>
                     <ul>
                         {problems.map((line, index) => (
-                            <li key={`${line.where}|${index}`}>
-                                {line.where}: {line.reason}
+                            <li key={`${line.where}|${index}`} {...(line.sentence === undefined ? {} : { title: line.reason })}>
+                                <PathText path={line.where} />: {line.sentence ?? line.reason}
                             </li>
                         ))}
                     </ul>

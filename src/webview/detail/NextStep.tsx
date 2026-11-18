@@ -1,5 +1,6 @@
 import type { NextStepView } from '../../shared/protocol/detail';
 import { NEXT_STEP_HEADING } from '../../shared/protocol/nextStepTexts';
+import { PathText } from '../ui/PathText';
 import { CopyButton } from '../ui/CopyButton';
 
 export function NextStep(props: { nextStep: NextStepView; copyResult: { ok: boolean; text: string } | undefined; onCopy(text: string): void }) {
@@ -17,7 +18,9 @@ export function NextStep(props: { nextStep: NextStepView; copyResult: { ok: bool
                         {nextStep.lines.map((line, index) => (
                             <li key={`${line.label ?? ''}|${line.text}`}>
                                 {line.label === undefined ? null : <span className="next-step-label">{line.label} </span>}
-                                <code>{line.text}</code>{' '}
+                                <code>
+                                    <PathText command={line.text} />
+                                </code>{' '}
                                 <CopyButton look={index === 0 ? 'primary' : 'secondary'} line={line.text} copyResult={copyResult} onCopy={props.onCopy} />
                             </li>
                         ))}

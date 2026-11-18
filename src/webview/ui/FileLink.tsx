@@ -13,11 +13,12 @@ function baseName(key: string): string {
     return key.slice(key.lastIndexOf('/') + 1);
 }
 
-export function FileLink(props: { target: LineTarget; fileResult: FileResult | undefined; onOpen(key: string, line: number): void; children: ReactNode }) {
+export function FileLink(props: { target: LineTarget; fileResult: FileResult | undefined; onOpen(key: string, line: number): void; reason?: string; children: ReactNode }) {
     const { target, fileResult } = props;
     const [activation, setActivation] = useState<{ before: FileResult | undefined; token: object } | undefined>(undefined);
     const descriptionId = useId();
-    const tooltip = openFileTooltip(baseName(target.key), target.line);
+    const opening = openFileTooltip(baseName(target.key), target.line);
+    const tooltip = props.reason === undefined ? opening : `${props.reason}\n${opening}`;
     const failed = activation !== undefined && latestActivation.get(target.key) === activation.token && fileResult !== undefined && fileResult !== activation.before && fileResult.key === target.key;
 
     useEffect(() => {

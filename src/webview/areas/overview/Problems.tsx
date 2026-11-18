@@ -1,9 +1,10 @@
 import type { NavigationRequest } from '../../../shared/protocol/messages';
 import type { OverviewProblems } from '../../../shared/protocol/overview';
+import { PathText } from '../../ui/PathText';
 import { Drill } from './Drill';
 import { problemsRequest } from './requests';
 import { SpecRow } from './SpecRow';
-import { problemLineText, problemsHeading } from './texts';
+import { problemsHeading } from './texts';
 
 export function Problems(props: { problems: OverviewProblems; navigate: (request: NavigationRequest) => void }) {
     const { problems, navigate } = props;
@@ -23,8 +24,8 @@ export function Problems(props: { problems: OverviewProblems; navigate: (request
                     <SpecRow key={`${row.spec.stem}|${row.spec.path ?? ''}`} row={row} group="problems" />
                 ))}
                 {problems.lines.map((line, index) => (
-                    <li key={`${line.where}|${index}`} className="ov-line" data-problem-line>
-                        {problemLineText(line.where, line.reason)}
+                    <li key={`${line.where}|${index}`} className="ov-line" data-problem-line title={line.reason}>
+                        <PathText path={line.where} />: {line.sentence}
                     </li>
                 ))}
             </ul>
