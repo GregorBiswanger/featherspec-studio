@@ -3,6 +3,10 @@
 **Status:** In Progress
 **Plan:** [0016-honest-signals.plan.md](0016-honest-signals.plan.md)
 
+*Amended by 0018 (PD-062): §6.2 rows *Needs attention* and "Mission Control header", T-01, T-02, T-04: no header — T-01 gives way to the Problems heading, whose n counts its rows (0018 O-4), its request the heading's (0018 AC-007); T-02 goes into the project name's tooltip (0018 AC-025); a Problems row shows each Problem's own reason, so T-04 ends with the attention list; T-09 leaves cards and tiles for the column tooltip (0018 B-6).*
+
+*Amended by 0018 (PD-062): wherever this spec names Mission Control or the Spec Board as a place, read Overview or Board; the rows of 0018 §5 change behaviour.*
+
 Basis: UX audit 2026-11-17 (`docs/ux-audit/` R-01, R-08, R-09, R-12, R-13, R-17, R-18; Q-3, Q-4);
 PD-058, PD-059 (proxy); `.claude/rules/ux-guidelines.md` 3, 6, 8–10; PD-016, PD-013. Gregor is not
 reachable: open questions are decided by audit, PD register and guidelines, marked *(proxy)* (§11).
@@ -211,18 +215,23 @@ the repository's own `.specs/`).
 - **AC-005** For this repository's own `.specs/`, read by a test in every unit-test run, the system shall report no Problem.
 - **AC-006** While a spec carries a Problem, the system shall show the warning icon with T-05 on its card, the reason T-04 in its *Needs attention* row, and each Problem with the warning icon and its reason directly below the detail's "Next step"; while it carries none, none of these shall appear.
   > **Given** `fs-broken` **When** the board, Mission Control and the detail of 0003 render **Then** 0003's card reads `1 problem`, its attention row `Problem`, and its detail shows the contradiction's reason.
+  *Amended by 0018 (PD-062): the *Needs attention* row is a Problems row (0018 O-4).*
 - **AC-007** If a spec carries format notes and no Problem, then its card, attention row and the header shall show nothing for them, and its detail shall show the T-07 toggle collapsed (`aria-expanded="false"`); when the developer activates it by pointer, or by Enter or Space after reaching it with Tab, the system shall show each note's reason and set `aria-expanded="true"`.
+  *Amended by 0018 (PD-062): attention row and header → the Problems heading and rows (0018 AC-007).*
 - **AC-008** While at least one Problem exists, the Mission Control header shall show T-01 with n = the Problems on specs plus those at project level; when the developer activates it, the system shall send one navigation request for the Spec Board with the named set T-03 holding exactly those specs' stems. While none exists, the header shall show no problem element.
+  *Amended by 0018 (PD-062): 0018 §5.*
 - **AC-009** The board banner shall list project-level Problems under T-06 and project-level format notes behind a collapsed T-07 toggle, and shall not render while neither exists.
 - **AC-010** The model shall fail R-6 exactly when the entry carries a Problem.
   > **Given** a `backlog/` Draft spec whose `AC-001` is defined twice and whose linked plan is `Not started` **Then** it is Ready with two format notes.
 - **AC-011** No text the Studio writes itself on cards, list rows, Mission Control, the board banner and the detail — anything not quoted from the project's files — shall contain a rule ID (`S-…`, `R-1`…`R-7`, `NS-…`), "persisted", "Model updated", "first observed" or "not checked"; each rule ID shown before shall be in the tooltip of the element that showed it (T-08, T-10, T-12).
 - **AC-012** Wherever a derived state was shown with its rule at `8052f9a` (card, list row, tile, detail), the system shall show T-09's sentence.
+  *Amended by 0018 (PD-062): card and tile: the card shows no derived sentence (0018 B-5); the tile is gone; the column tooltip carries it (0018 B-6).*
 - **AC-013** The detail shall show no line of T-13; the model shall keep R-7 and the compile-verdict fact (0003 AC-005, AC-018 unchanged).
 - **AC-014** While a spec is Backlog, its card shall show §6.3's first applying need and its detail every applying need in order, each as text with no icon and the T-12 tooltip; if none applies, then neither shall show a need line; no element shall show a readiness checklist or a failure icon for a readiness check.
   > **Given** `fs170-brownfield-mixed` **Then** the card of 0003 reads `needs a plan`.
 - **AC-015** The detail shall show each status history entry as §6.4 defines it under T-15, with the tooltip of §6.4, and Mission Control shall show its header time as T-02, activity times as T-17 and T-16 for a spec no longer in the project.
   > **Given** a local clock at 2026-11-17 22:00 and a *first observed* entry for Review at 21:56 the same day **Then** the line reads `Today 21:56 — first seen as Review`.
+  *Amended by 0018 (PD-062): header time → the project name's tooltip (0018 AC-025).*
 - **AC-016** When a criterion or requirement starts with its ID inside emphasis that also encloses the title (`**AC-001 — Title**`, `__AC-001 — Title__`, `***AC-001 — Title***`), the detail shall show the ID once, the title with that emphasis, and no `*` or `_` left from it; `**AC-001** — text` shall render as today.
   > **Given** `fs170-brownfield-mixed` 0003 **Then** AC-001 shows "Events reach the broker without an intermediate table" in bold, then "When an order event occurs…", and no `**`.
 - **AC-017** Every Copy of a next step, the drop result's included, shall use the primary button colours (`--vscode-button-background`, `--vscode-button-foreground`), and the drop result's Dismiss `--vscode-button-secondaryBackground` and `--vscode-button-secondaryForeground`; a stylesheet guard decides it.
@@ -235,6 +244,7 @@ the repository's own `.specs/`).
   *Amended by 0017 (PD-060/PD-061): except NS-6 (0017 §6.2).*
 - **AC-023** Every test at the plan's Baseline commit that decides a criterion of 0001–0007, 0013, 0014 or 0015 shall exist at the head and pass, unless §5 changes that criterion; a script compares the test titles of both commits and the plan lists every missing or renamed title with the §5 row or head title that replaces it; `npm run test:unit` and `npm test` shall pass on Windows and in CI.
   *Amended by 0017 (PD-060/PD-061): also except the tests 0017 AC-024 lists against a criterion that 0017 §5 voids.*
+  *Amended by 0018 (PD-062): the test audit also excepts the tests 0018 AC-030 lists against a criterion 0018 §5 voids.*
 - **AC-024** The specs of §5 shall carry their amendment notes and the PD register one new entry superseding §5's PD rows, with no note in an older entry; the README shall say once that FeatherSpec has no priority, persisted compile verdict or dependency field, so the Studio shows none; CHANGELOG and `docs/release-checklist.md` shall name the changes and AC-025.
 - **AC-025** *(manual, Gregor or delegate)* Preview harness screenshots in Dark, Light and High Contrast: primary Copy, its label change without shift, the need line, the T-07 toggle, the problem badge and the S2 sentence in view and panel; Gregor's Hands-On on `tip-splitter` shows no problem marker without a real problem.
 

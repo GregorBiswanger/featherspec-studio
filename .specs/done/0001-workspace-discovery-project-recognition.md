@@ -3,6 +3,8 @@
 **Status:** Implemented
 **Plan:** [0001-workspace-discovery-project-recognition.2026-11-17.plan.md](../plan-archive/0001-workspace-discovery-project-recognition.2026-11-17.plan.md)
 
+*Amended by 0018 (PD-062): the §9 command "Refresh Project Discovery" is replaced by "FeatherSpec Studio: Refresh" (0018 §6.4); AC-011, AC-012 and AC-015 (the notification's "Refresh", shown only without a project) stay.*
+
 ## 1. Summary
 
 When VS Code opens a workspace, FeatherSpec Studio finds out which workspace folders are FeatherSpec

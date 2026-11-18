@@ -3,6 +3,10 @@
 **Status:** Implemented
 **Plan:** [0007-spec-board-spec-detail.2026-11-17.plan.md](../plan-archive/0007-spec-board-spec-detail.2026-11-17.plan.md)
 
+*Amended by 0018 (PD-062): §1, §6.1, FR-02: three-row card (0018 §6.2 B-5), no state chip, derived marker or description on the card. §6.2 last change, FR-03, FR-07 and PD-043 last sentence: 0018 §6.3. §4 filter bullet, §6.5, FR-06 and PD-041: no filter control; a navigation request's filter shows as one chip (0018 B-4); "N hidden by filter" stays on columns that show cards. §6.7: Left and Right skip narrow columns, the Done toggle joins the keyboard path, the checkboxes leave it. §6.8: no column hint, narrow strip (0018 AC-014), zero specs per 0018 AC-011.*
+
+*Amended by 0018 (PD-062): wherever this spec names Mission Control or the Spec Board as a place, read Overview or Board; the rows of 0018 §5 change behaviour.*
+
 *Amended by 0015 (PD-055/PD-056): every other statement, requirement, criterion, term, assumption or open point of this spec about agent runs, run events, providers, approvals, the Agent Center, the start workflow, the Clear command or specs 0008–0012 is void; a sentence that also says something else keeps that part. The notes below name what changes in meaning or needs a replacement; see [0015](0015-focus-on-visibility.md) §5.*
 
 *Amended by 0017 (PD-060/PD-061): every other statement, criterion, note or open point of this spec about drag and drop, "Move to…", the move command, move requests, the board-requested transition check, an accepted Ready → Active request or the drop result is void; a sentence that also says something else keeps that part.*
@@ -422,12 +426,14 @@ matching the state 0003 derives for its entry. *(AC-007.2)*
 **AC-003** The board shall show on every card the spec number, the title 0002 delivers and the
 state label as text, and for Ready, Review and Blocked a *derived* marker with the rule ID.
 Where a spec has no title, the card shall show its file stem in the title's place. *(AC-007.3)*
+*Amended by 0018 (PD-062): three-row card (0018 B-5).*
 
 *Amended by 0016 (PD-059, proxy): AC-003 — the derived marker reads as 0016 T-09 with the rule ID in the tooltip (T-08); the badge counts *Problems* (T-05); a Backlog card shows a need (0016 §6.3).*
 
 **AC-004** The card shall show as description the first non-empty paragraph under the spec's
 first second-level heading, skipping all text before that heading, or "No summary" when there
 is no such heading or paragraph. The card shall limit the description to two lines. *(PD-043)*
+*Amended by 0018 (PD-062): three-row card (0018 B-5); the detail is unchanged.*
 
 > **Given** a spec whose header lines are followed by a "Handoff reference: …" paragraph and
 > then `## 1. Summary` **When** its card renders **Then** the description is the first
@@ -445,6 +451,7 @@ Where there is no such plan or it has no countable step, the task figure shall r
 available". Where 0003 reports the verification summary as *not available*, the criteria figure
 shall read "not available". The Verification section of the detail view shall show the same
 criteria numbers as the card. *(PD-043)*
+*Amended by 0018 (PD-062): card part: the card leaves out a figure that is not available; the detail keeps "not available".*
 
 **AC-007** The card shall show the provider and run status of the spec's latest run — the run
 of its stem created last — next to the state label and never in its place. It shall show
@@ -485,10 +492,12 @@ state, any 0003 result, or any file. *(AC-007.6)*
 **AC-012** While a filter hides cards in a column, that column shall show the number of hidden
 cards, and the board shall offer "Clear filters". When the developer activates "Clear filters",
 the board shall remove every filter, a named spec set included.
+*Amended by 0018 (PD-062): no filter control; a navigation request's filter shows as one chip (0018 B-4).*
 
 **AC-013** The board shall sort the cards within each column by spec number ascending by
 default, and on request by title from A to Z or by last change, newest first. It shall order
 ties by stem, then by path, and shall place cards without the sort value last.
+*Amended by 0018 (PD-062): 0018 §6.3 (L-4).*
 
 **AC-014** When the developer requests a move by drag & drop, "Move to…" or the command
 `FeatherSpec: Move Spec to…`, the board shall submit it to 0003's transition check. If 0003
@@ -518,6 +527,7 @@ previous and next card of a column with Up and Down, move to the nearest column 
 card with Left and Right, open the detail view with Enter, reach the card's "Move to…" button with Tab, open
 its menu from that button and choose a target in it, and reach and operate every filter, the sort control, "Clear filters"
 and every "Open file" link. *(AC-007.8)*
+*Amended by 0018 (PD-062): Left and Right skip narrow columns; the Done toggle joins the keyboard path; the checkboxes leave it (0018 AC-024).*
 
 *Amended by 0017 (PD-060/PD-061): "Move to… button … opens the menu … choose a target", Shift+F10 and the context-menu key: Tab from the card reaches its Copy, Enter or Space copies, Shift+F10 and the context-menu key open no Studio menu (0017 AC-006).*
 
@@ -549,11 +559,13 @@ other card unchanged. The board shall show every diagnostic that is tied to no s
 run `/sdd-specify`. While a column holds no card before filtering, it shall show a one-line
 hint. The board and the detail view shall show no loading state and no load-error state of
 their own. *(PD-036)*
+*Amended by 0018 (PD-062): no column hint; narrow strip (0018 AC-014); zero specs per 0018 AC-011.*
 
 **AC-022** The board shall show exactly the cards that match every filter that is set: the
 board state, the provider of the latest run ("No run" included), and a named spec set by its
 stems. When a navigation request carries a filter, the board shall replace the filters set
 before with it and show it as set and clearable. *(PD-040, PD-041)*
+*Amended by 0018 (PD-062): no filter control; a navigation request's filter shows as one chip (0018 B-4).*
 
 *Amended by 0015 (PD-055/PD-056): filters by state and named spec set.*
 
@@ -571,11 +583,13 @@ every card in state Backlog the failing readiness precondition with the lowest I
 reason, and on every card of a Deprecated spec the *Deprecated* marker. The Overview shall show
 the successor as 0003 reports it, and the readiness checks only for an entry in `backlog/`.
 *(handoff §4.2, 0003 AC-013)*
+*Amended by 0018 (PD-062): card part: three-row card (0018 B-5).*
 
 *Amended by 0016 (PD-059, proxy): AC-024 — the readiness checks read as needs (0016 §6.3, T-11); no check ID is visible.*
 
 **AC-025** The card shall show the last change: the newer file modification time of the spec
 file and the plan named in §6.2. *(PD-043)*
+*Amended by 0018 (PD-062): 0018 §6.3.*
 
 **AC-026** The board and the detail view shall take every colour from the active VS Code theme
 and shall keep every text and focus outline visible in a light, a dark and a High Contrast

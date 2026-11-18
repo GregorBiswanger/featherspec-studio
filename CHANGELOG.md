@@ -20,9 +20,26 @@ All notable changes to FeatherSpec Studio are documented in this file. The forma
   `FeatherSpec: Move Spec to…` (0017). Studio moves no spec and checks no move; lifecycle moves
   belong to `/sdd-lifecycle`. The status bar no longer shows `FeatherSpec: <name> (<version>)` while
   a project is active; name and version are in its tooltip.
+- The tiles, the distribution bar, the header line and the *Needs attention* list of the Overview;
+  the state checkboxes of the Board; the column hints; the state chip, derived sentence, description
+  and rule ID on a card (0018). The commands `FeatherSpec Studio: Rescan Project` and `FeatherSpec
+  Studio: Refresh Project Discovery` are replaced by one **Refresh**.
 
 ### Changed
 
+- Overview and Board (0018): *Mission Control* is now the **Overview**
+  (`FeatherSpec Studio: Open Overview`) and the *Spec Board* is the **Board**
+  (`FeatherSpec Studio: Open Board`); the commands `Open Mission Control` and `Open Spec Board` are
+  gone, and `FeatherSpec Studio: Refresh` runs project discovery and then reads the specs again. A remembered area from an earlier version opens the
+  Overview. The Overview lists what is in progress (Now), what comes next (Up next, three rows and
+  "+ n more"), Problems with their reasons, one line of figures and a collapsed Activity. The project
+  name appears once, in the panel header, with the FeatherSpec version and the update time as tooltip.
+- The Board is compact (0018): a column without a card is a narrow strip, the others share the width
+  (200 to 360 px) and the board scrolls sideways when they do not fit; Done is collapsed until you open
+  it, and the choice is remembered per workspace; a filter from the Overview shows one chip with
+  **Clear filters**; a card has three rows (title; what matters in its state, problems and the day of the
+  last change; next step). The day comes from the plan's `Last updated:` line, else from the file time,
+  and is left out while every spec shows the same day.
 - Honest signals (0016): the Studio shows a problem only when something is wrong. Diagnostics now
   carry a tier: *Problems* (contradictions, unreadable files, duplicate numbers, links to nothing)
   show on the card, in the header and in the detail; *format notes* sit behind a collapsed toggle;

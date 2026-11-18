@@ -3,6 +3,10 @@
 **Status:** Implemented
 **Plan:** [0006-mission-control-dashboard.2026-11-17.plan.md](../plan-archive/0006-mission-control-dashboard.2026-11-17.plan.md)
 
+*Amended by 0018 (PD-062): §1, §4, §5 step 3, §9 layout, BR-01, BR-02 (Deprecated beside Done, derived label) and BR-08 rows *Needs attention*, attention row and header diagnostics count: Overview §6.1 — Blocked and Review are Now (O-2), a Problem is a Problems row (O-4); BR-04's rule stays, shown in the tooltip (0018 AC-009); BR-07 and BR-09 stay. AC-001–AC-004, AC-010, AC-015, AC-016, AC-018, AC-019, AC-021, AC-023, AC-024, AC-029 and PD-046 hold for the Overview; *Recent activity* is its Activity section.*
+
+*Amended by 0018 (PD-062): wherever this spec names Mission Control or the Spec Board as a place, read Overview or Board; the rows of 0018 §5 change behaviour.*
+
 *Amended by 0015 (PD-055/PD-056): every other statement, requirement, criterion, term, assumption or open point of this spec about agent runs, run events, providers, approvals, the Agent Center, the start workflow, the Clear command or specs 0008–0012 is void; a sentence that also says something else keeps that part. The notes below name what changes in meaning or needs a replacement; see [0015](0015-focus-on-visibility.md) §5.*
 
 Handoff reference: FS-006 ([po-handoff.md](../../docs/product/po-handoff.md) §4.1, §10 FS-006,
@@ -387,11 +391,13 @@ error text, prompts or provider payloads (AC-026). It sends no telemetry (handof
   FR-006.5, PD-046)*
   > **Given** a Backlog spec without a plan and a Review spec **When** the dashboard is shown
   > **Then** only the Review spec is listed, with the reason "Review pending".
+  *Amended by 0018 (PD-062): → 0018 AC-004, AC-007 (the tier is 0016's).*
 
 *Amended by 0015 (PD-055/PD-056): drop the run parts.*
 - **AC-009** The system shall not count a diagnostic of the kind *unknown content or value*
   (0002 §8) as attention reason (d).
   *Amended by 0016 (PD-059, proxy): AC-009 — no *format note* counts as reason (d) (0016 §6.1).*
+  *Amended by 0018 (PD-062): → 0018 AC-004, AC-007 (the tier is 0016's).*
 - **AC-010** The system shall show in *Recent activity* the 10 newest entries of BR-07 — all of
   them while fewer than 10 exist — newest first, with ties in the order of BR-07. It shall take
   them only from the spec status history and the run status history as BR-07 selects them, and
@@ -410,6 +416,7 @@ error text, prompts or provider payloads (AC-026). It sends no telemetry (handof
   without a target for the total; with that state as filter for a state count; with the named
   spec set "Needs attention", holding the stems of exactly the listed specs, for *Needs
   attention*. *(AC-006.4, PD-040, PD-041, PD-046)*
+  *Amended by 0018 (PD-062): Total and state counts unchanged; the *Needs attention* part → 0018 AC-005, AC-007.*
 - **AC-013** When the developer activates a highlighted run, the system shall send the shell
   one navigation request for the Agent Center with that run's ID as target. When the developer
   activates the *Running* figure, the system shall send one request for the Agent Center, with
@@ -423,6 +430,7 @@ error text, prompts or provider payloads (AC-026). It sends no telemetry (handof
   current spec, then the system shall send no request and show the notice "Spec <number> is no
   longer in the project". *(PD-039, PD-042)*
   *Amended by 0017 (PD-060/PD-061): Copy on a row sends no navigation request (0017 AC-012); activating the rest of the row is unchanged.*
+  *Amended by 0018 (PD-062): Now, Up next and Problems rows (0018 AC-006).*
 - **AC-015** When a spec, plan or return note of the active project changes on disk, when a run
   of the active project is created, changes status or is removed, or when the store's state
   changes, the system shall show the resulting figures, highlighted runs, attention rows and
@@ -443,6 +451,7 @@ error text, prompts or provider payloads (AC-026). It sends no telemetry (handof
   Board with the named spec set "Diagnostics", holding the stems of the specs that carry at
   least one diagnostic.
   *Amended by 0016 (PD-059, proxy): AC-017 — the header shows 0016 T-01 only while a *Problem* exists; the time reads as T-02; the named set is `Problems` (T-03).*
+  *Amended by 0018 (PD-062): name, version and time (as 0015 left it) → the project name's tooltip (0018 F-1); the number → 0018 AC-007.*
 
 *Amended by 0015 (PD-055/PD-056): the time is the last spec read the dashboard processed.*
 - **AC-018** If the store is unavailable, then the system shall show the *Running* figure, the
@@ -457,12 +466,14 @@ error text, prompts or provider payloads (AC-026). It sends no telemetry (handof
   default or a value from another source. *(AC-006.6)*
 - **AC-020** If the active project has zero specs, then the system shall show "No specs yet"
   with a pointer to `/sdd-specify`. *(PD-036; the panel-level states are 0005's)*
+  *Amended by 0018 (PD-062): → 0018 AC-011.*
 - **AC-021** The system shall show every state, attention reason and highlighted-run status as
   text, with colour only in addition.
 
 *Amended by 0015 (PD-055/PD-056): drop the run parts.*
 - **AC-022** The system shall make every drill-down element of BR-08 reachable with the Tab
   key, show a visible focus on it, and activate it with Enter or Space. *(0005 AC-022)*
+  *Amended by 0018 (PD-062): → 0018 AC-013.*
 - **AC-023** The system shall create, modify, move or delete no file in the workspace while
   showing or updating the dashboard. While the workspace is in Restricted Mode, it shall show
   the same dashboard content as in a trusted workspace.
@@ -475,6 +486,7 @@ error text, prompts or provider payloads (AC-026). It sends no telemetry (handof
 - **AC-025** The system shall show the label "derived" and the rule ID (S-READY, S-REVIEW,
   S-BLOCKED) with the Ready, Review and Blocked counts. *(PD-004)*
   *Amended by 0016 (PD-059, proxy): AC-025 — sentences are 0016 T-09; the rule ID is in the tooltip (T-08).*
+  *Amended by 0018 (PD-062): void.*
 - **AC-026** The system shall show no run error message, prompt or provider payload anywhere on
   the dashboard.
 
@@ -489,6 +501,7 @@ error text, prompts or provider payloads (AC-026). It sends no telemetry (handof
 - **AC-028** (OP-8) If the active project has zero specs, then the system shall keep the header,
   the run section and *Recent activity* and replace the spec counts, progress and *Needs
   attention* by the message of AC-020.
+  *Amended by 0018 (PD-062): → 0018 AC-011.*
 
 *Amended by 0015 (PD-055/PD-056): drop the run parts.*
 - **AC-029** (OP-9) The system shall send its request when the developer activates a figure that

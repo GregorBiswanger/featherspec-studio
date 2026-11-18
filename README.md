@@ -4,21 +4,21 @@ A VS Code panel for projects that use [FeatherSpec](https://github.com/GregorBis
 
 Studio reads your project and starts no agent; the work with your agent stays in your assistant's chat. The one exception to read-only is [Set up FeatherSpec](#set-up-featherspec), which you start and confirm yourself.
 
-![Mission Control](media/screenshots/mission-control-dark.png)
+![Overview](media/screenshots/mission-control-dark.png)
 
 ## Feature tour
 
 Open Studio from the **FeatherSpec Studio** icon in the Activity Bar or with `FeatherSpec Studio: Open`. The panel has three areas.
 
-### Mission Control
+### Overview
 
-A dashboard of the active project: one header line (folder, FeatherSpec version, time of the last project update, problems), six tiles with the number of specs per board state, a distribution bar, a progress figure with its rule in words (done specs with status Implemented or Baseline ÷ all specs without Deprecated), the specs that need attention with their reasons (blocked, problem, review pending) and the ten latest activities. Every count and row opens the matching place in the Spec Board or Spec Explorer. A *Needs attention* row also shows the spec's next step ("Next", the short form) with its own **Copy** button, which copies without opening anything. A figure the sources cannot deliver reads "not available".
+What is in progress, what comes next and what needs fixing, one line per spec: **Now** lists the specs in Blocked, Review and Active, **Up next** the next three in Ready and Backlog ("+ n more" opens the rest on the Board), **Problems** every spec or project file with a problem and its reason. A row shows number, title, state and the spec's next step ("Next", the short form) with its own **Copy** button, which copies without opening anything. One line of figures shows the total and the number of specs per board state; hover it for the progress (done specs with status Implemented or Baseline ÷ all specs without Deprecated). **Activity** is collapsed until you open it and lists the ten latest status changes. Hover the project name in the panel header for the FeatherSpec version and the time of the last update. A figure the sources cannot deliver reads "not available".
 
-### Spec Board
+### Board
 
-![Spec Board](media/screenshots/spec-board-dark.png)
+![Board](media/screenshots/spec-board-dark.png)
 
-Every spec as a card in six columns: Backlog, Ready, Active, Review, Done and Blocked. A card shows number, title, state (a derived state reads as a sentence; hover it for the rule behind it), description, task and criteria progress, problems and the last change; a Backlog card shows what the spec still needs. Filter by state or a named set of specs; sort by number, title or last change. The last line of a card is the next step: **Next** and the short form of the command (for example `/sdd-plan`) with a **Copy** button that puts the full line on your clipboard. The board works with the keyboard: arrow keys move between cards, Enter opens a card, Tab from the card reaches its **Copy**, Enter or Space copies. The board moves no spec; lifecycle moves belong to FeatherSpec's `/sdd-lifecycle`.
+Every spec as a card in six columns: Backlog, Ready, Active, Review, Done and Blocked. A column without a card is a narrow strip with its name and count; the other columns share the width, and the board scrolls sideways when they do not fit. **Done** is collapsed until you open it with its toggle, and Studio remembers your choice per workspace. A card has three rows: number and title; what matters in its state (a Backlog card shows what the spec still needs, a Blocked card why, otherwise the steps and criteria progress), a warning with the number of problems and the day of the last change; and the next step. Hover a Ready, Review or Blocked column header for the rule behind the state, and a card for its description. The day comes from the plan's `Last updated:` line, else from the file's modification time; it is left out while all specs show the same day. Opening the Board from the Overview with a filter shows one **Filter: …** chip with **Clear filters**; sort by number, title or last change. The last line of a card is the next step: **Next** and the short form of the command (for example `/sdd-plan`) with a **Copy** button that puts the full line on your clipboard. The board works with the keyboard: arrow keys move between cards, Enter opens a card, Tab from the card reaches its **Copy**, Enter or Space copies. The board moves no spec; lifecycle moves belong to FeatherSpec's `/sdd-lifecycle`.
 
 ### Spec Explorer
 
@@ -28,9 +28,9 @@ The spec list beside the detail of the selected spec. Above its sections the det
 
 ### The next step everywhere
 
-The next step is one line of FeatherSpec, shown in four places and copied with one click: in the Spec Explorer detail, on every Spec Board card, on each *Needs attention* row in Mission Control and in the status bar. Studio starts no agent and changes no file; paste the line into your assistant's chat. On an Active spec with an open plan step the detail adds a second line, `continue`, for the same chat ("Then, in the same chat, if nothing blocks:").
+The next step is one line of FeatherSpec, shown in four places and copied with one click: in the Spec Explorer detail, on every Board card, on each row of Now, Up next and Problems in the Overview and in the status bar. Studio starts no agent and changes no file; paste the line into your assistant's chat. On an Active spec with an open plan step the detail adds a second line, `continue`, for the same chat ("Then, in the same chat, if nothing blocks:").
 
-The status bar shows the spec you work on: `<number> · <state> · <short form>`. The current spec is the one selected in the Spec Explorer or Spec Board; without a selection, the most urgent spec with a step (Blocked, then Review, then Active). A click copies the full line and the entry reads **Copied** for two seconds. Without a current spec the click opens a quick pick of the specs that have a step. The tooltip carries the project name and the FeatherSpec version, an "Open Studio" link and, with several projects, "Switch project".
+The status bar shows the spec you work on: `<number> · <state> · <short form>`. The current spec is the one selected in the Spec Explorer or Board; without a selection, the most urgent spec with a step (Blocked, then Review, then Active). A click copies the full line and the entry reads **Copied** for two seconds. Without a current spec the click opens a quick pick of the specs that have a step. The tooltip carries the project name and the FeatherSpec version, an "Open Studio" link and, with several projects, "Switch project".
 
 ## Requirements
 
@@ -42,7 +42,7 @@ The status bar shows the spec you work on: `<number> · <state> · <short form>`
 
 1. Install the extension and open a FeatherSpec project folder. The status bar shows the active project and its FeatherSpec version.
 2. Click the FeatherSpec Studio icon in the Activity Bar, then "Open Studio".
-3. Read the **Next** line on a card, a *Needs attention* row or in the status bar (or the **Next step** of a spec in the Spec Explorer), click **Copy** and paste the line into your assistant's chat.
+3. Read the **Next** line on a card, an Overview row or in the status bar (or the **Next step** of a spec in the Spec Explorer), click **Copy** and paste the line into your assistant's chat.
 
 ## Set up FeatherSpec
 
@@ -74,11 +74,10 @@ A spec with contradictory or unreadable files stays in the column of its folder 
 | --- | --- |
 | `FeatherSpec Studio: Set Up FeatherSpec` | Download the latest FeatherSpec release and set it up in a folder without a project, after a confirmation |
 | `FeatherSpec Studio: Open` | Open the panel on the area last shown |
-| `FeatherSpec Studio: Open Mission Control` / `Open Spec Board` / `Open Spec Explorer` | Open the panel on that area |
+| `FeatherSpec Studio: Open Overview` / `Open Board` / `Open Spec Explorer` | Open the panel on that area |
 | `FeatherSpec Studio: Copy Next Step` | Copy the next step of the current spec (same as a click on the status bar entry); without a current spec, pick a spec from a list |
-| `FeatherSpec Studio: Rescan Project` | Read the specs of the active project again |
 | `FeatherSpec Studio: Select Project` | Choose the active project when the workspace has several |
-| `FeatherSpec Studio: Refresh Project Discovery` | Run project discovery again |
+| `FeatherSpec Studio: Refresh` | Run project discovery again, then read the specs of the active project again |
 
 ## Privacy and stored data
 

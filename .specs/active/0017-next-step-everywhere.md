@@ -3,6 +3,10 @@
 **Status:** In Progress
 **Plan:** [0017-next-step-everywhere.plan.md](0017-next-step-everywhere.plan.md)
 
+*Amended by 0018 (PD-062): §4 and AC-012 (*Needs attention* rows): the rows of Now, Up next and Problems carry that next step and Copy (0018 O-5).*
+
+*Amended by 0018 (PD-062): wherever this spec names Mission Control or the Spec Board as a place, read Overview or Board; the rows of 0018 §5 change behaviour.*
+
 Basis: UX audit 2026-11-17 (`docs/ux-audit/`) R-02, R-03, R-04, R-16; K-A, K-D, K-G; Q-1, Q-2
 (screenshots 08–10, 25, 26). Decisions PD-058, PD-060, PD-061 (1), PD-062, PD-013, PD-016, PD-039,
 PD-047; guidelines 1, 2, 4, 6, 8, 9 (`.claude/rules/ux-guidelines.md`). Gregor delegated every
@@ -216,6 +220,7 @@ Decided by automated tests unless marked manual. Fixtures: one per NS rule (0015
 - **AC-010** If the webview sends a `moveRequest` or `boardFocus` message, then the host shall handle it as 0005 AC-021 handles an unknown message type and change nothing else.
 - **AC-011** The paths `src/core/board/moves.ts`, `src/core/lifecycle/transitions.ts`, `src/webview/board/MoveMenu.tsx`, `src/webview/board/Announcer.tsx` and `src/adapters/vscode/boardPicks.ts` shall not exist, and a case-insensitive search of `src` without test files (0015 §10) shall find none of `judgeTransition`, `moveRequest`, `moveResult`, `requestMove`, `moveSpec`, `boardFocus`, `Move to…`, `Studio starts no agent`.
 - **AC-012** Every *Needs attention* row whose spec has a step shall show after its reasons "Next", the short form with the full line(s) as tooltip, and a Copy named "Copy: <full first line>" outside the row's navigation control, the next Tab stop after it; Copy, by pointer or by Enter or Space, shall copy the full first line, show 0016's feedback at that Copy, change no selection and send no navigation request; activating the rest of the row shall send 0006 AC-014's request.
+  *Amended by 0018 (PD-062): *Needs attention* rows: the rows of Now, Up next and Problems carry that next step and Copy (0018 O-5).*
 - **AC-013** The system shall choose the current spec by §6.3 (1)–(3).
   > **Given** no selection, Review `0015`, Active `0012`, Blocked `0020` with a plan **Then** the entry reads `$(checklist) 0020 · Blocked · /sdd-plan`. **Given** the selection is Done `0003` **Then** the same.
 - **AC-014** While a project is active and a current spec exists, the entry shall read `$(checklist) <number> · <state> · <short form>` with the tooltip lines of §6.3 in order and the accessible label of §6.3.
@@ -229,6 +234,7 @@ Decided by automated tests unless marked manual. Fixtures: one per NS rule (0015
 - **AC-022** While the workspace is in Restricted Mode or the window is a reader, cards, rows, entry and command shall behave as in AC-004–AC-020.
 - **AC-023** No Copy, click or command of this spec shall create, change, move or delete a file of the workspace (0007 AC-016 as amended).
 - **AC-024** Every test at the plan's Baseline commit (before 0017) that decides a criterion not voided in §5 shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI. A script compares the test titles of both commits; every title missing at the head is listed in the plan with its voided criterion or the head title replacing it. A test that decides a voided and a staying criterion stays for the staying one, its move assertions removed (§10).
+  *Amended by 0018 (PD-062): the test audit also excepts the tests 0018 AC-030 lists against a criterion 0018 §5 voids.*
 - **AC-025** 0001, 0003, 0006, 0007, 0013, 0015, 0016 and ADR-001 shall carry the notes of §5; a case-insensitive search of `README.md`, `docs/release-checklist.md`, `docs/product/design-brief.md` and `.architecture/*.md` shall find no "Move to…", "Move Spec", "drag", "move request", "move pick", "move result", "transition check" or `FeatherSpec: <name> (<version>)`; the README shall name the card Copy, the status bar with the rule of §6.3 and "Copy Next Step"; the release checklist shall carry AC-026; `CHANGELOG.md` shall name the removal and the new places of the next step under the version in preparation.
 - **AC-026** *(manual, Gregor)* M-1 on `tip-splitter`, Hands-On walkthrough with his assistant: task "start the Ready spec" — the Start line copied from the card with no failed attempt; on an Active spec `/sdd-plan`, then `continue` in the same chat, runs one step; the status bar names the spec he works on and its click copies; Dark, Light and High Contrast show the card line and row readable.
 

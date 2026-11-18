@@ -3,7 +3,7 @@
 **Spec:** [0018-overview-and-compact-board.md](0018-overview-and-compact-board.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-008
+**Current step:** T-009
 
 ## Approach
 
@@ -354,8 +354,8 @@ No parallel stage: the Overview and Board steps share `messages.ts`, `client.ts`
   checklist, design brief and `package.json` name neither old area; CHANGELOG names `Open Overview`,
   `Open Board` and `Refresh` under *Unreleased*; each §5 spec carries a 0018 note; negative control.
 - **Verify:** `npx vitest run src/adapters/node/sourceScan.test.ts src/adapters/node/docsScan.test.ts` red, then green; gates 1–4
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** 2026-11-18: the scans written with the docs in one pass, no separate red run (`sourceScan.test.ts` "0018 AC-001, AC-029" with negative control; `docsScan.test.ts` "product docs after 0018": README, release checklist, design brief and `package.json` free of both old names, CHANGELOG *Unreleased* names `Open Overview`, `Open Board`, `FeatherSpec Studio: Refresh`, nine specs carry the 0018 note, seven carry the catch-all note in their head, PD-064 exists). `npm run test:unit` 1981 passed, 3 skipped, timing 12 passed; eslint and both `tsc` clean.
+- **Notes:** Notes were added by a throwaway script (`/tmp/amend/amend.py`): a head note per spec listing the §5 statements that are not acceptance criteria, an inline note after each acceptance criterion §5 names (0001 has only the head note: its §9 command row has no AC). The catch-all note sits in the head of 0003, 0005, 0006, 0007, 0013, 0015, 0016 (0017's own catch-all is not needed: it names no area as a place beyond the AC-012 rows). The scan allows one `▸`: the selected row of the Spec Explorer list (`SpecExplorer.tsx`, 0007 AC-023, a staying test that §5 does not amend; 0020's tree replaces it); a test pins that file as the only one. Hyphenated names (`mission-control-dark.png`) are not matched by the docs scan (P-15 keeps the screenshot files). The README tour, release checklist (new section for AC-031 and the screenshot replacement) and design brief headings name Overview and Board; the old design-brief text stays as history under a note.
 
 ### T-009 — Test-title audit, architecture and Memory Bank sync, final gates
 

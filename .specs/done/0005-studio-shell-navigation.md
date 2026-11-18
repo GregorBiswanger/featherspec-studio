@@ -3,6 +3,10 @@
 **Status:** Implemented
 **Plan:** [0005-studio-shell-navigation.2026-11-17.plan.md](../plan-archive/0005-studio-shell-navigation.2026-11-17.plan.md)
 
+*Amended by 0018 (PD-062): §1, §5, BR-02, §9 and the §13 edge "remembered area … cannot be used": the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002). §9 "marks the current area in text" (and PD-054): the current item is marked by its highlight with a 2 px bottom border and `aria-current="page"`, no ▸ (0018 AC-026). §9 "shows the active project's name": once, in the panel header, with the tooltip of 0018 §6.4 (AC-025). §4, §9, §13 *Refresh* action and OP-009 "Rescan Project": "FeatherSpec Studio: Refresh" (0018 F-3, AC-027).*
+
+*Amended by 0018 (PD-062): wherever this spec names Mission Control or the Spec Board as a place, read Overview or Board; the rows of 0018 §5 change behaviour.*
+
 *Amended by 0015 (PD-055/PD-056): every other statement, requirement, criterion, term, assumption or open point of this spec about agent runs, run events, providers, approvals, the Agent Center, the start workflow, the Clear command or specs 0008–0012 is void; a sentence that also says something else keeps that part. The notes below name what changes in meaning or needs a replacement; see [0015](0015-focus-on-visibility.md) §5.*
 
 Handoff reference: FS-005 ([po-handoff.md](../../docs/product/po-handoff.md) §4, §10 FS-005,
@@ -289,12 +293,15 @@ automated tests.
   area's entry shall open the panel on that area. While no project is active, the view shall
   show, in place of the entries, the text and actions of the panel state that applies among
   S1–S5, S8 and S9.
+  *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
 - **AC-004** The system shall show a navigation in the panel that lists Mission Control, Spec
   Board, Spec Explorer and Agent Center. Activating an item shall show that area. [AC-005.2]
+  *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
 
 *Amended by 0015 (PD-055/PD-056): the navigation lists Mission Control, Spec Board and Spec Explorer.*
 - **AC-005** When the user runs one of the four per-area commands, the system shall show the panel
   on that area, opening the panel first if it is closed.
+  *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
 
 *Amended by 0015 (PD-055/PD-056): three per-area commands.*
 - **AC-006** In this slice the system shall show, for Mission Control, Spec Board and Agent
@@ -323,6 +330,7 @@ automated tests.
   show Mission Control (BR-02). The restore is decided by the host test of the serializer; a real
   window reload is checked by Gregor or his delegate; pre-release checklist item (revised
   2026-11-17).
+  *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
 - **AC-010** When another project becomes active, the system shall clear the selection without
   a notice. If a loaded model of the active project does not contain the selected spec's stem,
   then the system shall clear the selection and show "Spec <number> is no longer in the
@@ -406,6 +414,7 @@ automated tests.
   the request carries a run or board-filter target for an area that is still a placeholder,
   the system shall show the placeholder (PD-040).
   > **Given** Mission Control is shown and spec `0003-x` exists **When** the request "Spec Explorer, spec `0003-x`" arrives **Then** Spec Explorer is shown and 0003 is selected.
+  *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
 
 *Amended by 0015 (PD-055/PD-056): the navigation request targets a spec or a board filter, no run.*
 - **AC-029** When the user runs "FeatherSpec Studio: Rescan Project" while a project is active,
@@ -413,6 +422,7 @@ automated tests.
   (0002). The panel shall keep its content until the new model arrives (0002 AC-022). While no
   project is active, the system shall change nothing and write no file (OP-009).
   > **Given** a project is active **When** the user runs the command **Then** the spec repository's `rescan()` runs once.
+  *Amended by 0018 (PD-062): the Refresh action is "FeatherSpec Studio: Refresh" (0018 F-3, AC-027); "keeps its content until the new model arrives" holds for the command.*
 - **AC-030** (added after `/sdd-compile`, 2026-11-16) The system shall draw every secondary text
   inside the selected spec row (derived label, path) in the theme's list selection foreground
   colour, not in the description colour, so that it stays readable on the selection background

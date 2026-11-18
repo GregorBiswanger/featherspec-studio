@@ -205,3 +205,60 @@ describe('0017 AC-011: no move path is left in the source', () => {
         expect(hits('const name = "copy next step";', MOVE_TERMS, true)).toEqual([]);
     });
 });
+
+describe('0018 AC-001, AC-029: the old names and texts are gone from the sources', () => {
+    const OLD_NAMES = ['mission control', 'spec board', '▸'];
+    const MARKER_ALLOWED = ['src/webview/areas/SpecExplorer.tsx'];
+    const OLD_TEXTS = [
+        'Nothing needs attention.',
+        'No recent activity.',
+        'Specs by state',
+        'Model updated',
+        'specs with diagnostics',
+        'Recent activity',
+        'Needs attention',
+        'Run /sdd-specify to write the first one',
+        'No spec in the backlog.',
+        'No spec is blocked.',
+        'Tasks: ',
+        'Criteria verified',
+        'Last change: ',
+        'Named set',
+        'Rescan Project',
+        'Refresh Project Discovery',
+    ] as const;
+
+    it('src without test files names neither old area, in any letter case, nor the marker', async () => {
+        const files = (await sourceFiles()).filter((file) => !isTestFile(file.name));
+        expect(files.length).toBeGreaterThan(0);
+        const found = files.flatMap((file) => hits(file.text, OLD_NAMES, true).map((term) => `${file.name}: ${term}`));
+        expect(found.filter((entry) => !MARKER_ALLOWED.some((name) => entry === `${name}: ▸`))).toEqual([]);
+    });
+
+    it('the one marker left is the selected row of the Spec Explorer list (0007 AC-023), not the navigation', async () => {
+        const files = (await sourceFiles()).filter((file) => !isTestFile(file.name));
+        expect(files.filter((file) => file.text.includes('▸')).map((file) => file.name)).toEqual(MARKER_ALLOWED);
+    });
+
+    it('src without test files holds none of the old texts', async () => {
+        const files = (await sourceFiles()).filter((file) => !isTestFile(file.name));
+        const found = files.flatMap((file) => hits(file.text, OLD_TEXTS, false).map((term) => `${file.name}: ${term}`));
+        expect(found).toEqual([]);
+    });
+
+    it('the old areas\' folders and files do not exist', async () => {
+        for (const old of ['src/core/missionControl', 'src/webview/areas/missionControl', 'src/shared/protocol/missionControl.ts', 'src/test/missionControl.smoke.test.ts']) {
+            expect(await exists(old), old).toBe(false);
+        }
+    });
+
+    it('negative control: the scans find every name in any letter case and every text in a planted sample', () => {
+        for (const name of OLD_NAMES) {
+            expect(hits(`const name = '${name.toUpperCase()}';`, OLD_NAMES, true)).toContain(name);
+        }
+        for (const text of OLD_TEXTS) {
+            expect(hits(`const text = '${text}';`, OLD_TEXTS, false)).toContain(text);
+        }
+        expect(hits('const name = "Overview and Board";', OLD_NAMES, true)).toEqual([]);
+    });
+});

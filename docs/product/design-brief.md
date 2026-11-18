@@ -1,8 +1,8 @@
 # Design brief — Studio visual design (input for spec 0013)
 
 > Partly superseded by the UX audit of 2026-11-17: PD-058 … PD-062 and
-> [ux-guidelines.md](ux-guidelines.md) win where they differ (Mission Control layout, board
-> moves, cards, detail, diagnostics). Theme, palette and accessibility rules here stay.
+> [ux-guidelines.md](ux-guidelines.md) win where they differ (Overview layout, board
+> moves, cards, detail, diagnostics; PD-062 and spec 0018: Overview and Board). Theme, palette and accessibility rules here stay.
 
 Written 2026-11-16 by Claude as product-owner proxy after the first real look at the UI
 (screenshots from a headless-browser preview of the built webview, fed by the real core on this
@@ -16,7 +16,9 @@ A calm, dense, native-looking VS Code tool with a clear visual hierarchy: you op
 state of the project in two seconds. Native means: only VS Code theme variables, correct in
 Dark, Light and High Contrast, no custom colour palette, no web fonts, no new dependencies.
 
-## Mission Control
+## Overview
+> Since spec 0018 (PD-062) this is the **Overview**: Now, Up next and Problems as one-line rows, one line of figures with the progress as tooltip, and a collapsed Activity. The tiles, the distribution bar and the header below are history.
+
 - A row of stat tiles, one per board state (big number, label, icon, "derived" marker where the
   state is derived); the tile is the drill-down link.
 - One segmented bar showing the distribution of all specs over the states, and the progress
@@ -27,7 +29,9 @@ Dark, Light and High Contrast, no custom colour palette, no web fonts, no new de
 - Header: project name, FeatherSpec version, last model update, diagnostics — one quiet line.
   Say "0 project-level diagnostics · N specs with diagnostics" so the header and the cards agree.
 
-## Spec Board
+## Board
+> Since spec 0018 (PD-062) this is the **Board**: columns without a card are narrow strips, Done is collapsed, the card has three rows. The card and column text below is history where it differs.
+
 - Columns use the full panel height with a sticky header (icon, name, count badge); each column
   scrolls on its own; the board scrolls horizontally below a minimum column width. No fixed
   70vh box, no cut-off cards.

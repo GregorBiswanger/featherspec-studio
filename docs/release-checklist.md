@@ -47,7 +47,7 @@ and the expected result. A clear miss reopens the named spec.
 
 ## Focus on visibility (0015)
 
-- [ ] **AC-030 / M-1**: in a real VS Code window on `tip-splitter`: the panel shows Mission Control, Spec Board and Spec Explorer only; a spec's detail shows **Next step**, **Copy** puts the line on the clipboard and pasting it into the assistant's chat works; a Ready card's **Copy** puts the NS-7 line on the clipboard (0017); no command, setting or text offers to start an agent or a run.
+- [ ] **AC-030 / M-1**: in a real VS Code window on `tip-splitter`: the panel shows Overview, Board and Spec Explorer only; a spec's detail shows **Next step**, **Copy** puts the line on the clipboard and pasting it into the assistant's chat works; a Ready card's **Copy** puts the NS-7 line on the clipboard (0017); no command, setting or text offers to start an agent or a run.
 
 ## The next step everywhere (0017)
 
@@ -63,21 +63,21 @@ and the expected result. A clear miss reopens the named spec.
   Modern → High Contrast → every part of the panel takes the new colours at once, all text readable.
 - [ ] **AC-019 / OP-012 Light High Contrast**: contrast borders on nav items, rows and state boxes; active
   border on the current area and the selected row.
-- [ ] **AC-009 reload**: panel on Spec Board with 0003 selected → *Reload Window* → panel returns on Spec
+- [ ] **AC-009 reload**: panel on Board with 0003 selected → *Reload Window* → panel returns on the
   Board, Spec Explorer still has 0003 selected.
 - [ ] **AC-017 Restricted Mode**: note "This workspace is in Restricted Mode. Setting up FeatherSpec needs a trusted workspace."
   above the area; trust the folder → the note disappears without reopening the panel.
 
-## Dashboard — Mission Control (0006)
+## Overview (0006, 0018)
 
 - [ ] **AC-021 / §9**: in High Contrast, Light and Dark every state and attention reason reads as a
-  word (icon and colour only in addition); attention below the counts, Recent activity beside it.
-- [ ] **AC-022**: Tab, Enter and Space only → every count, attention row, activity entry and the
-  diagnostics link shows a focus outline; Enter and Space each open the target area.
+  word (icon and colour only in addition); Now, Up next and Problems above the figures line, Activity collapsed below.
+- [ ] **AC-022**: Tab, Enter and Space only → every figure, row, the "+ n more" link, the Problems and
+  Activity headings and every activity entry shows a focus outline; Enter and Space each open the target area.
 - [ ] **OP-12 (AC-016, AC-024)**: on a real project with many specs the content shows within about 1 s of
   opening and updates within about 0.5 s of saving a spec file.
 
-## Spec Board (0007)
+## Board (0007, 0018)
 
 - [ ] **AC-017 keyboard only**: Tab reaches the board, arrows move between cards, Enter opens the detail,
   the next Tab reaches the card's Copy, Enter copies (0017: Shift+F10 opens no menu); filters, sort,
@@ -93,8 +93,8 @@ and the expected result. A clear miss reopens the named spec.
   Marketplace page — calm, dense, native VS Code look.
 - [ ] **AC-018 real VS Code**: Dark Modern, Light Modern, Dark High Contrast plus one live switch → colours,
   borders and focus outlines match the screenshots; nothing keeps the old theme.
-- [ ] **A-004 board width**: at a 1400 px editor the Blocked column sits partly behind the horizontal scroll
-  (240 px minimum per column) — accept or ask for narrower columns.
+- [ ] **0018 AC-015 board width**: at a 1240 px editor five wide columns and one strip fit without scrolling;
+  at 640 px two wide columns and four strips do (200 to 360 px per column, 32 px per strip).
 - [ ] **AC-015 Plan line**: an Overview whose Plan line is `[x](x)` shows the file name and the same target as
   secondary text — accept the duplicate or not.
 
@@ -110,3 +110,15 @@ and the expected result. A clear miss reopens the named spec.
 - [ ] All boxes ticked → Go → `gh workflow run publish.yml -f confirm=publish` (the workflow runs the unit
   suite and `npx @vscode/vsce publish --oidc`). Alternative without the workflow: `npx @vscode/vsce package`
   and upload the `.vsix` by hand on the publisher management page.
+
+## Overview and a compact Board (0018)
+
+- [ ] **AC-031 / M-1**: in a real VS Code window on `tip-splitter`, in Dark, Light and High Contrast, with the
+  panel at about 640 px and at about 1,240 px: Overview and Board show Now, Up next, Problems, the figures
+  line and a collapsed Activity, and the Board shows at most two wide columns at 640 px with the other
+  columns as strips, a collapsed Done with its toggle and cards of three rows; everything fits without
+  vertical scrolling for the fixture, text stays legible and the panel header's tooltip shows the version and
+  the update time. Compare with the screenshots from the preview harness.
+- [ ] **README screenshots**: replace `media/screenshots/mission-control-dark.png` and
+  `spec-board-dark.png` with harness screenshots of the Overview and the Board (the files keep their names;
+  the README headings and alt texts already say Overview and Board).

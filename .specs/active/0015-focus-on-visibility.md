@@ -3,6 +3,10 @@
 **Status:** In Progress
 **Plan:** [0015-focus-on-visibility.plan.md](0015-focus-on-visibility.plan.md)
 
+*Amended by 0018 (PD-062): §8 purpose, AC-001 and AC-002: the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
+
+*Amended by 0018 (PD-062): wherever this spec names Mission Control or the Spec Board as a place, read Overview or Board; the rows of 0018 §5 change behaviour.*
+
 *Amended by 0017 (PD-060/PD-061): every other statement, criterion, note or open point of this spec about drag and drop, "Move to…", the move command, move requests, the board-requested transition check, an accepted Ready → Active request or the drop result is void; a sentence that also says something else keeps that part.*
 
 Basis: Gregor's request of 2026-11-17 after working on `sdd-tip-splitter` with GitHub Copilot
@@ -237,7 +241,9 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
 `*.test.tsx`, everything below `src/test/` and every `testing/` folder.
 
 - **AC-001** The system shall offer exactly the areas Mission Control, Spec Board and Spec Explorer, in this order, in the panel navigation, the Activity Bar tree and as per-area commands.
+  *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
 - **AC-002** If the remembered area or a restored panel state names `agentCenter`, then the system shall show Mission Control and no error.
+  *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
 - **AC-003** While a spec is selected, the detail view shall show "Next step" above its sections with the line(s) of the first matching rule of §6.1, each with a "Copy" button and a second line under its §8 label, or the rule's text where it names no line.
 - **AC-004** The system shall derive the next step only from the model of 0002 and 0003; for identical snapshots it shall show identical lines. One fixture per rule decides the rule ID and the exact lines.
   > **Given** `.specs/backlog/0007-x.md` is Ready and its plan's first step is `T-001` **When** it is selected **Then** the line reads `Start T-001 of .specs/backlog/0007-x.plan.md`.
@@ -250,6 +256,7 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
 - **AC-009** If writing the clipboard fails, then the system shall show "Could not copy to the clipboard."
   *Amended by 0016 (PD-059, proxy): AC-009 — the failure feedback appears at the button (0016 §6.5, T-19).*
 - **AC-010** Mission Control shall show no run figure, run section or run-based reason; *Needs attention* shall carry only Blocked, Diagnostic and Review pending; *Recent activity* only spec status history entries; no element shall send a request for an area outside AC-001.
+  *Amended by 0018 (PD-062): *Needs attention* part: Now, Up next and Problems (0018 §6.1).*
 - **AC-011** The board card shall show no run line and the filters shall offer board state and named spec set only.
 - **AC-012** The detail view shall show a "Status history" section with 0003's history under its label, *not available* with the reason while the history is not available, and no run list.
 - **AC-013** The runtime store shall write only `spec-status-history.jsonl`, `lock.json` and `store.json`; a contract test lists the files of a store folder after every scenario.
@@ -270,6 +277,7 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
 - **AC-027** Every test at tag `archive/agent-runs-2026-11-17` that decides a criterion of 0001–0007, 0013 or 0014 not voided in §5 shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI. A script compares the test titles of both commits; every title of the tag missing at the head, a renamed one included, is listed in the plan with its voided criterion or with the head title that replaces it.
   *Amended by 0016 (PD-059, proxy): AC-027 (test audit) — also excepted: the tests 0016 AC-023 lists against a criterion that 0016 §5 changes are excepted.*
   *Amended by 0017 (PD-060/PD-061): also except the tests 0017 AC-024 lists against a criterion that 0017 §5 voids.*
+  *Amended by 0018 (PD-062): the test audit also excepts the tests 0018 AC-030 lists against a criterion 0018 §5 voids.*
 - **AC-028** 0008–0012 shall have status `Deprecated`, stay in `done/` and link this spec as successor; 0003–0007 and 0013 shall carry the amendment notes of §5.
 - **AC-029** The `architecture:` snapshot in `AGENTS.md`, `.architecture/*.md` and `.memory-bank/projectbrief.md` shall name no removed module, no agent run and no provider; the brief's mission shall contain the manifest description of §8 and its success criteria the AC-030 scenario.
 - **AC-030** *(manual, Gregor)* M-1 on `tip-splitter` with the assistant he uses, the Hands-On walkthrough: three areas; a dropped Ready spec shows the NS-7 line, pasted into the chat it starts that step; Active and Review specs show NS-6 and NS-5 lines that the assistant runs as FeatherSpec commands; he checks whether the S7 note reads as noise (PD-057, OP-006) and whether his assistant resolves the project-relative paths (OP-002). Pre-release checklist item.

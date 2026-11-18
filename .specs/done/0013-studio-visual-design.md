@@ -3,6 +3,10 @@
 **Status:** Implemented
 **Plan:** [0013-studio-visual-design.2026-11-17.plan.md](../plan-archive/0013-studio-visual-design.2026-11-17.plan.md)
 
+*Amended by 0018 (PD-062): §3.2 (as 0006 §9 layout) and §3.3: Overview §6.1 and the three-row card (0018 B-5).*
+
+*Amended by 0018 (PD-062): wherever this spec names Mission Control or the Spec Board as a place, read Overview or Board; the rows of 0018 §5 change behaviour.*
+
 *Amended by 0015 (PD-055/PD-056): every other statement, requirement, criterion, term, assumption or open point of this spec about agent runs, run events, providers, approvals, the Agent Center, the start workflow, the Clear command or specs 0008–0012 is void; a sentence that also says something else keeps that part. The notes below name what changes in meaning or needs a replacement; see [0015](0015-focus-on-visibility.md) §5.*
 
 *Amended by 0017 (PD-060/PD-061): every other statement, criterion, note or open point of this spec about drag and drop, "Move to…", the move command, move requests, the board-requested transition check, an accepted Ready → Active request or the drop result is void; a sentence that also says something else keeps that part.*
@@ -137,12 +141,14 @@ through `--vscode-font-family` and `--vscode-editor-font-family`, with no `@font
 toggle, section "Open file", "Move to…", related-artifact link) shall be reachable with Tab and
 show a focus outline from `--vscode-contrastActiveBorder` or `--vscode-focusBorder`; no rule
 shall remove an outline.
+*Amended by 0018 (PD-062): control list: figures, rows, "+ n more", Problems and Activity headings, Done toggle, filter chip.*
 
 *Amended by 0017 (PD-060/PD-061): "Move to…" reads "card and row Copy".*
 
 **AC-004** Mission Control shall show six stat tiles in board order, each one control with count,
 state name, state icon and, for Ready, Review and Blocked, the §3.5 sentence with rule ID. When
 the developer activates a tile, the system shall send 0006 BR-08's request for that count.
+*Amended by 0018 (PD-062): void (no tiles, bar, header, attention panel).*
 
 *Amended by 0016 (PD-059, proxy): sentences read as 0016 T-09; the rule ID is in the tooltip (T-08).*
 
@@ -152,26 +158,31 @@ count above 0, with width share = count ÷ total within 1 percentage point and a
 secondary text and tooltip.
 > **Given** 5 Backlog and 7 Review specs **When** Mission Control renders **Then** two segments,
 > 41.7 % and 58.3 % wide, are named "Backlog: 5 of 12" and "Review: 7 of 12".
+*Amended by 0018 (PD-062): void (no tiles, bar, header, attention panel).*
 
 **AC-006** The header shall read `<n> project-level diagnostics · <m> specs with diagnostics`
 (m = number of `diagnosticStems`, singular for 1); activating it shall send 0006 AC-017's request.
 > **Given** 0 project-level diagnostics, stems 0001, 0002, 0010 **Then** "… · 3 specs with diagnostics".
+*Amended by 0018 (PD-062): void (no tiles, bar, header, attention panel).*
 
 *Amended by 0016 (PD-059, proxy): the header reads as 0016 T-01 (only while a *Problem* exists) and T-02.*
 
 **AC-007** Each attention row shall show number chip, title and reason as text with an icon; the
 Agent runs and Recent activity panels shall each show, when empty, an icon and 0006's sentence.
+*Amended by 0018 (PD-062): void (no tiles, bar, header, attention panel).*
 
 *Amended by 0015 (PD-055/PD-056): no run row; Needs attention rows carry the reasons Blocked, Diagnostic and Review pending.*
 
 **AC-008** The stylesheet shall set no height or max-height on a board column, make each column
 header `position: sticky`, let each column's card list scroll vertically, and give columns a
 minimum width of 240 px with horizontal scrolling of the board.
+*Amended by 0018 (PD-062): widths of 0018 §6.2 B-2 (0018 AC-015).*
 
 **AC-009** Every card shall render in DOM order: number and title; exactly one state chip with
 icon and text; summary; a tasks and a criteria `progressbar` with value and figure text, or only
 "not available" where 0007 delivers no figure; and a "Move to…" button reachable by Tab from the
 card. The content of 0007 AC-003…AC-007, AC-020, AC-024 and AC-025 stays.
+*Amended by 0018 (PD-062): three-row card (0018 B-5).*
 
 *Amended by 0017 (PD-060/PD-061): the clause "a 'Move to…' button reachable by Tab" reads "the next-step line of 0017 AC-004 last, its Copy reachable by Tab"; the rest is 0018's.*
 
@@ -209,6 +220,7 @@ its `Verified` text. *(fixture: a copy of this repo's spec 0002 and its plan; D-
 
 **AC-016** Every existing test of 0005–0007 shall stay green; only assertions on wording or
 structure that §2's five deltas change are updated, in the same change set, each named in the plan.
+*Amended by 0018 (PD-062): the test audit also excepts the tests 0018 AC-030 lists against a criterion 0018 §5 voids.*
 
 *Amended by 0017 (PD-060/PD-061): also except the tests 0017 AC-024 lists against a criterion that 0017 §5 voids.*
 
@@ -224,6 +236,7 @@ Light, project state readable at a glance; the verdict is recorded in the plan. 
 2026-11-17 under Gregor's delegation of 2026-11-17: these four checks are made by his delegate
 on the dated screenshot set; the taste verdict of §1 ("fit for a talk or a Marketplace
 listing") is checked by Gregor or his delegate; pre-release checklist item.
+*Amended by 0018 (PD-062): screenshot list: "Overview" and "Board" for the old names, plus both at 640 px (0018 AC-031).*
 
 *Amended by 0015 (PD-055/PD-056): no Agent Center screenshot.*
 

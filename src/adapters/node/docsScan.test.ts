@@ -170,3 +170,58 @@ describe('product docs after 0017 (AC-025)', () => {
         expect(unreleased.toLowerCase()).toContain('status bar');
     });
 });
+
+const OLD_AREA_NAMES = ['mission control', 'spec board'];
+const OLD_AREA_SCANNED = ['README.md', 'docs/release-checklist.md', 'docs/product/design-brief.md', 'package.json'];
+
+export function findOldAreaNames(text: string): string[] {
+    const lower = text.toLowerCase();
+    return OLD_AREA_NAMES.filter((term) => lower.includes(term));
+}
+
+describe('product docs after 0018 (AC-001, AC-029)', () => {
+    it('finds an old area name in a negative control, in any letter case', () => {
+        expect(findOldAreaNames('Open MISSION CONTROL and the Spec Board')).toEqual(['mission control', 'spec board']);
+        expect(findOldAreaNames('the Overview and the Board')).toEqual([]);
+    });
+
+    for (const file of OLD_AREA_SCANNED) {
+        it(`${file} names neither old area`, async () => {
+            expect(findOldAreaNames(await read(file))).toEqual([]);
+        });
+    }
+
+    it('the CHANGELOG names the new areas and commands under Unreleased', async () => {
+        const changelog = await read('CHANGELOG.md');
+        const unreleased = changelog.slice(changelog.indexOf('## [Unreleased]'), changelog.indexOf('\n## [', changelog.indexOf('## [Unreleased]') + 1));
+        for (const term of ['Open Overview', 'Open Board', 'FeatherSpec Studio: Refresh', 'Overview', 'Board']) {
+            expect(unreleased, term).toContain(term);
+        }
+    });
+
+    for (const number of ['0001', '0003', '0005', '0006', '0007', '0013', '0015', '0016', '0017']) {
+        it(`spec ${number} carries a note of 0018`, async () => {
+            const file = await specFile(number);
+            expect(file, number).not.toBe('');
+            expect(await read(file)).toContain('Amended by 0018 (PD-062)');
+        });
+    }
+
+    for (const number of ['0003', '0005', '0006', '0007', '0013', '0015', '0016']) {
+        it(`spec ${number} carries the catch-all note in its head`, async () => {
+            const head = (await read(await specFile(number))).split('\n').slice(0, 24).join('\n');
+            expect(head).toContain('Amended by 0018 (PD-062): wherever this spec names Mission Control or the Spec Board as a place, read Overview or Board');
+        });
+    }
+
+    it('the decisions register records the proxies as PD-064', async () => {
+        const decisions = await read('docs/product/product-decisions.md');
+        expect(decisions).toContain('| PD-064 |');
+        expect(decisions).toContain('A-013');
+        expect(decisions).toContain('P-17');
+    });
+
+    it('negative control: a spec head without the note does not carry it', () => {
+        expect('# Spec\n\n**Status:** Implemented\n'.includes('Amended by 0018 (PD-062)')).toBe(false);
+    });
+});
