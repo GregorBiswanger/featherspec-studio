@@ -439,7 +439,7 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001, T-007 | — | — | open |
+| AC-001 | T-001, T-007 | `src/webview/main.css`, `src/webview/App.tsx` (no `data-drawer`, no side panel over the area; the container part is T-007) | `webviewCss.test.ts` (0022 AC-001 describe, part) | built |
 | AC-002 | T-007, T-008 | — | — | open |
 | AC-003 | T-007, T-008 | — | — | open |
 | AC-004 | T-009 | — | — | open |
@@ -460,21 +460,19 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
 | AC-019 | T-011 | — | manual: orchestrator's harness, then Gregor | open |
 | AC-020 | T-011 | — | manual: Gregor or delegate, real VS Code | open |
 | AC-021 | T-011 | — | manual: Gregor on `tip-splitter` (draft part done: PD-073) | open |
-| AC-022 | T-001, T-003 | — | — | open |
-| AC-023 | T-003 | — | — | open |
-| AC-024 | T-002, T-003 | — | — | open |
+| AC-022 | T-001, T-003 | `src/webview/main.css` (html/body/#root, main, `.area-frame`, `.area-content`, `.side-panel`), `src/webview/App.tsx` | `src/adapters/node/webviewCss.test.ts` (0022 AC-022 describe) | verified |
+| AC-023 | T-003 | `src/webview/detail/Divider.tsx`, `src/webview/detail/sideWidth.ts`, `src/webview/App.tsx` | `src/webview/detail/Divider.test.tsx` (AC-023 describes), `webviewCss.test.ts` (0022 G-2) | verified |
+| AC-024 | T-002, T-003 | `src/shared/protocol/layout.ts`, `src/core/shell/sidePanelWidth.ts`, `src/core/shell/shellService.ts`, `src/webview/detail/sideWidth.ts`, `src/adapters/vscode/uiMemory.ts` | `layout.test.ts`, `sidePanelWidth.test.ts`, `messages.test.ts`, `client.test.ts`, `Divider.test.tsx` (AC-024) | verified |
 | AC-025 | T-011 | — | manual: orchestrator's harness, then Gregor | open |
 | AC-026 | T-004 | — | — | open |
 | AC-027 | T-007 | — | — | open |
 | AC-028 | T-007 | — | — | open |
-| AC-029 | T-001 | — | — | open |
+| AC-029 | T-001 | `src/webview/App.tsx`, `src/webview/detail/narrow.ts`, `src/webview/detail/BackButton.tsx`, `src/webview/detail/SidePanel.tsx`, `src/webview/detail/SpecDetail.tsx` | `src/webview/detail/ListOrDetail.test.tsx` | verified |
 
 ## Session handoff
 
-- **Done so far:** plan written (2026-11-18, `/sdd-plan` Mode A, delegated); no code changed.
-- **Next action:** Gregor reads the plan (P-1…P-22, the Deletes lines); on the start signal the pair moves to `active/`
-  (`/sdd-lifecycle`), the Baseline is recorded, stage 1's deletions are named and confirmed, then T-001.
-- **Open decisions:** none; P-1…P-22 stand unless Gregor changes them.
-- **Baseline:** `20a1e68` (head before the first step commit; the lifecycle move is its own commit)
-- **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here); layout is checked in the
-  orchestrator's preview harness.
+- **Done so far:** stage 1 (T-001…T-003) built and verified 2026-11-18 on branch `ux-round-2`: one scrollbar each, the area or the detail alone below 900 px (`data-layout="detail"`, back button), a remembered divider (`featherspec-studio.sidePanel`). Gates green at the stage end (unit 2288 passed, 3 skipped, +13 timing).
+- **Next action:** stage 2, T-004 then T-005 in sequence (state table, problem sentence), then stage 3 (T-006 → T-007); the orchestrator's preview harness checks stage 1's layout after stage 3.
+- **Open decisions:** none; the proxy decisions P-1…P-22 stand, new ones are in the steps' `Notes:`.
+- **Baseline:** `20a1e68`.
+- **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here); layout is checked in the orchestrator's preview harness.
