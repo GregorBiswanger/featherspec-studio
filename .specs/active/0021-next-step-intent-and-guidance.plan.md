@@ -505,6 +505,8 @@ Not covered by that run and still open: the Escape with focus on the body (D1, f
 
 Notes only, from the compile S74 (no change made): the tree and status bar tooltips escape `,` and `:` (`Then\, after a READY verdict\: close the spec`), which renders correctly but is noisy in the source; when focus leaves the webview (a click into the editor) the toggletip stays open and is still open on return (P-14 by design).
 
+manual: orchestrator (Gregor's delegate) 2026-11-18, harness `r3check` at `8ce8cb7` (after T-009…T-016) — the same 36 views pass again (shots `/home/claude/orch/preview/r3-0021-fix/`). D1 (AC-014) in a real browser: open the detail's `(?)`, press on its text (focus goes to BODY, the toggletip stays open), Escape → toggletip closed, focus on the `(?)`, detail still open, in every view. Live settings: off 48 ms, on 19 ms. Windows at `8ce8cb7`: `npm run test:unit` 2634 passed, 7 skipped, +15 timing; `npm test` 31+1+1+1.
+
 ## Session handoff
 
 - **Done so far:** T-001…T-008 (`db15d7a` … `9a0c652`), then the fix stage after the compile S74 (NOT READY): T-009 Escape on the body (D1), T-010 and T-011 and T-012 the mutants M71, M26, M39, M52, M79, T-013 README (D2) and short forms, T-014 hint cut, T-015 `StepText` and stale fixtures, T-016 traceability, titles, Memory Bank, evidence. Gates green on Linux; Windows at `196cf72` (before the fix): unit 2621 passed, 7 skipped, +15 timing, `npm test` 31+1+1+1.
