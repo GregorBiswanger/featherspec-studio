@@ -3,7 +3,7 @@
 **Spec:** [0023-plan-map-stages-parallel-work.md](0023-plan-map-stages-parallel-work.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-012
+**Current step:** T-013
 
 ## Approach
 
@@ -446,8 +446,8 @@ Proxy decisions of this round (Gregor delegated; P-25 …), recorded here and in
   `span`, M-01 `?` and `not in the steps`), and it is not in the card grid or a card row. Test first, `PlanMap.test.tsx`
   "0023 AC-008": a stage with a not-found ID among cards has no card for it and no disclosure; the arrows skip it.
 - **Verify:** `npx vitest run --project webview src/webview/areas/planMap` red on a scratch copy of the head, then green; gates 1–4
-- [ ] **Verified (T-012):**
-- **Notes:**
+- [x] **Verified (T-012):** 2026-11-18 · `npx vitest run --project webview src/webview/areas/planMap` red first on a scratch copy of `ea45cd9` (the new test "a step the plan does not know is a plain chip, not a card…" failed with `expected ['T-003','T-099','T-004'] to deeply equal ['T-003','T-004']`), then green (webview 543 of 543); gates 1–4 green, `npm run test:unit` 2801 passed + 3 skipped (+16 timing)
+- **Notes:** Outside the compile's order list (F1, guideline 2, P-5 "a chip only"): an unfinished stage renders a `notFound` step as `StepChip` (the same plain `span` the finished stages and the Plan section use) inside its group row, and `cardRowsOf` leaves it out of the arrow grid. No card means no disclosure with an empty panel. The Plan section and the finished stages are unchanged. Layout of the chip beside cards is the flex row's own (no new CSS); the real-window check (AC-018) can look at it.
 
 ### T-013 — Core test gaps: M01, M02, M17, M21, M22, M24
 

@@ -42,17 +42,21 @@ export function StageRow(props: { stage: PlanStageView; links: CardLinks; cards:
                                 </p>
                             )}
                             <div className="plan-group" data-card-row>
-                                {group.steps.map((step, position) => (
-                                    <StepCard
-                                        key={keys[index]![position]}
-                                        cardKey={keys[index]![position]!}
-                                        step={step}
-                                        expanded={cards.expanded.has(keys[index]![position]!)}
-                                        tabStop={cards.tabStop === keys[index]![position]}
-                                        links={links}
-                                        onToggle={cards.onToggle}
-                                    />
-                                ))}
+                                {group.steps.map((step, position) =>
+                                    step.state === 'notFound' ? (
+                                        <StepChip key={keys[index]![position]} step={step} fileResult={links.fileResult} onOpen={links.onOpen} />
+                                    ) : (
+                                        <StepCard
+                                            key={keys[index]![position]}
+                                            cardKey={keys[index]![position]!}
+                                            step={step}
+                                            expanded={cards.expanded.has(keys[index]![position]!)}
+                                            tabStop={cards.tabStop === keys[index]![position]}
+                                            links={links}
+                                            onToggle={cards.onToggle}
+                                        />
+                                    ),
+                                )}
                             </div>
                         </div>
                     ))}

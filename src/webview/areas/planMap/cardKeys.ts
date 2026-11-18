@@ -23,7 +23,7 @@ export function cardRowsOf(plan: PlanView): string[][] {
     const rows: string[][] = [];
     for (const stage of plan.stages) {
         if (!stage.finished) {
-            rows.push(...stageCardKeys(stage));
+            stageCardKeys(stage).forEach((keys, index) => rows.push(keys.filter((_, position) => stage.groups[index]!.steps[position]!.state !== 'notFound')));
         }
     }
     const loose = looseCardKeys(plan.loose);

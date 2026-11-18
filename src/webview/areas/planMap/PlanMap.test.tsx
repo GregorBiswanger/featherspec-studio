@@ -354,6 +354,25 @@ describe('0023 AC-008: stage rows and step cards', () => {
         expect([...map(container).querySelectorAll('[data-step-card]')].map((card) => card.getAttribute('data-step-card'))).toEqual(['T-001', 'T-002']);
     });
 
+    it('a step the plan does not know is a plain chip, not a card: no disclosure, no empty panel, no stop in the arrow grid', async () => {
+        const plan = planSample({
+            stages: [stage(1, [{ steps: [step('T-003', 'next'), step('T-099', 'notFound', { open: undefined, title: '' })] }, { sep: '→', steps: [step('T-004', 'open')] }], { current: true })],
+        });
+        const container = await show({ selection: selected('0007'), detail: detailWith(plan) });
+        expect([...map(container).querySelectorAll('[data-step-card]')].map((entry) => entry.getAttribute('data-step-card'))).toEqual(['T-003', 'T-004']);
+        expect(map(container).querySelector('[data-card-toggle="T-099"]')).toBeNull();
+        expect(map(container).querySelectorAll('.step-card-more')).toHaveLength(2);
+        const chip = stageRow(container, 1).querySelector<HTMLElement>('[data-step-chip][data-state="notFound"]')!;
+        expect(chip.tagName).toBe('SPAN');
+        expect(chip.textContent).toBe('? T-099, not in the steps');
+        expect(chip.closest('[data-step-card]')).toBeNull();
+        await act(async () => cardOf(container, 'T-003').querySelector<HTMLButtonElement>('button[data-card-toggle]')!.focus());
+        await act(async () => {
+            document.activeElement!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }));
+        });
+        expect(document.activeElement).toBe(cardOf(container, 'T-003').querySelector('button[data-card-toggle]'));
+    });
+
     it('an ID that stands in two stages is two cards: opening one opens only it, and it stays open through an update', async () => {
         const twice = planSample({
             stages: [
