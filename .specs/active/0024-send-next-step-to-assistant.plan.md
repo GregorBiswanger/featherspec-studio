@@ -3,7 +3,7 @@
 **Spec:** [0024-send-next-step-to-assistant.md](0024-send-next-step-to-assistant.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-005
+**Current step:** T-006
 
 ## Approach
 
@@ -392,8 +392,8 @@ here.
     content at `AREA_MIN` (0022 AC-028's arithmetic).
 - **Verify:** `npx vitest run --project webview src/webview` and `npx vitest run --project node src/adapters/node/webviewCss.test.ts`
   red (stub), then green; gates 1–5
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** eslint, tsc (host+webview), test:unit 3002 passed, compile, compile-tests green; SendButton/client/SpecDetail/Overview/primaryButtons/webviewCss tests added; client drop-on-key-change shown red by mutation
+- **Notes:** Proxy: SendButton and client tests were green on first run because the implementation preceded them; shown red by mutation instead. SendButton.test.tsx and SpecDetail.test.tsx joined REMOVED_ALLOWED (they name Copilot). Feedback timer runs from the result.
 
 ### T-006 — The menu follows the menu-button keys; one popup at a time; focus survives an offer change
 

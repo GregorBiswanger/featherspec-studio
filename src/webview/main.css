@@ -719,6 +719,81 @@ main > h1 {
     background: var(--vscode-button-secondaryHoverBackground, var(--vscode-button-secondaryBackground));
 }
 
+.send-split {
+    position: relative;
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    vertical-align: middle;
+}
+
+.send-main {
+    min-width: 22ch;
+    min-height: 20px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.send-arrow {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    color: var(--vscode-button-foreground);
+    background: var(--vscode-button-background);
+    border: 1px solid var(--vscode-button-border, transparent);
+    border-left-color: var(--vscode-button-separator, var(--vscode-button-foreground));
+    border-radius: 0 2px 2px 0;
+    cursor: pointer;
+}
+
+.send-arrow:hover {
+    background: var(--vscode-button-hoverBackground, var(--vscode-button-background));
+}
+
+.send-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    min-width: 100%;
+    margin-top: 2px;
+    padding: 4px 0;
+    color: var(--vscode-menu-foreground, var(--vscode-foreground));
+    background: var(--vscode-menu-background, var(--vscode-editor-background));
+    border: 1px solid var(--vscode-menu-border, var(--vscode-widget-border, transparent));
+    border-radius: 4px;
+    box-shadow: 0 2px 8px var(--vscode-widget-shadow, transparent);
+}
+
+.send-menu [role="menuitem"] {
+    padding: 4px 12px;
+    color: inherit;
+    background: transparent;
+    border: none;
+    font: inherit;
+    font-size: 12px;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.send-menu [role="menuitem"]:hover,
+.send-menu [role="menuitem"]:focus-visible {
+    color: var(--vscode-menu-selectionForeground, var(--vscode-foreground));
+    background: var(--vscode-menu-selectionBackground, var(--vscode-toolbar-hoverBackground));
+}
+
+.vscode-high-contrast .send-menu {
+    border-color: var(--vscode-contrastBorder);
+}
+
 .copy-icon {
     display: inline-flex;
     flex: none;

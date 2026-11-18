@@ -1,4 +1,4 @@
-import type { AssistantId } from './assistant';
+import type { AssistantId, AssistantTarget } from './assistant';
 
 export const ASSISTANT_NAMES: Record<AssistantId, string> = {
     'copilot': 'Copilot',
@@ -51,4 +51,30 @@ export function noResultCause(milliseconds: number): string {
 
 export function sendTipText(name: string): string {
     return `Send to ${name} puts the prompt into its chat and sends nothing: choose the model there, check the prompt, then send it.`;
+}
+
+export const SEND_TARGET_TEXT: Record<AssistantTarget, string> = { new: 'new chat', current: 'current chat' };
+
+export const SEND_ITEM_TEXT: Record<AssistantTarget, string> = { new: 'Send to a new chat', current: 'Send to the current chat' };
+
+export const MORE_ACTIONS_TITLE = 'More actions';
+
+export function sendMainLabel(name: string): string {
+    return `Send to ${name}`;
+}
+
+export function sendMainName(name: string, target: AssistantTarget, line: string): string {
+    return `Send to ${name} (${SEND_TARGET_TEXT[target]}): ${line}`;
+}
+
+export function sendOpenedLabel(name: string): string {
+    return `Opened in ${name}`;
+}
+
+export function sendOpenedName(name: string, line: string): string {
+    return `Opened in ${name}: ${line}`;
+}
+
+export function moreActionsName(line: string): string {
+    return `More actions: ${line}`;
 }

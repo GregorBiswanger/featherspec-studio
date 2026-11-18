@@ -3,6 +3,7 @@ import { DEFAULT_AREA, type AreaId } from '../shared/protocol/areas';
 import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../shared/protocol/envelope';
 import type { BoardView, SortKey } from '../shared/protocol/board';
 import type { BoardFilter, BoardState } from '../shared/protocol/boardFilter';
+import { isSendResultEventPayload, type SendPromptPayload, type SendResultEventPayload } from '../shared/protocol/assistant';
 import { isOpenFileResultPayload, type DetailView } from '../shared/protocol/detail';
 import type { OverviewView } from '../shared/protocol/overview';
 import {
@@ -31,6 +32,7 @@ export interface ClientSnapshot {
     overview: OverviewView | undefined;
     fileResult: { key: string; text: string } | undefined;
     copyResult: CopyResultEventPayload | undefined;
+    sendResult: SendResultEventPayload | undefined;
 }
 
 export interface SpecReference {
@@ -55,6 +57,7 @@ export interface ShellClient {
     setActivityOpen(open: boolean): void;
     openFile(key: string, line?: number): void;
     copyText(text: string): void;
+    sendPrompt(request: SendPromptPayload): void;
     subscribe(listener: () => void): () => void;
     getSnapshot(): ClientSnapshot;
 }
@@ -79,7 +82,8 @@ export function createClient(deps: ClientDeps): ShellClient {
     let overview: OverviewView | undefined;
     let fileResult: { key: string; text: string } | undefined;
     let copyResult: CopyResultEventPayload | undefined;
-    let snapshot: ClientSnapshot = { view: undefined, state: { id: 'S4' }, area: DEFAULT_AREA, board: undefined, detail: undefined, overview: undefined, fileResult: undefined, copyResult: undefined };
+    let sendResult: SendResultEventPayload | undefined;
+    let snapshot: ClientSnapshot = { view: undefined, state: { id: 'S4' }, area: DEFAULT_AREA, board: undefined, detail: undefined, overview: undefined, fileResult: undefined, copyResult: undefined, sendResult: undefined };
     let unlisten: (() => void) | undefined;
     let mismatch = false;
     let protocolFailure = false;
@@ -106,11 +110,12 @@ export function createClient(deps: ClientDeps): ShellClient {
             snapshot.overview === overview &&
             snapshot.fileResult === fileResult &&
             snapshot.copyResult === copyResult &&
+            snapshot.sendResult === sendResult &&
             JSON.stringify(snapshot.state) === JSON.stringify(state)
         ) {
             return;
         }
-        snapshot = { view, state, area, board, detail, overview, fileResult, copyResult };
+        snapshot = { view, state, area, board, detail, overview, fileResult, copyResult, sendResult };
         listeners.forEach((listener) => listener());
     }
 
@@ -209,6 +214,7 @@ export function createClient(deps: ClientDeps): ShellClient {
                 if (isDetailEventPayload(envelope.payload)) {
                     if (detail?.kind !== 'spec' || envelope.payload.view.kind !== 'spec' || detail.key !== envelope.payload.view.key) {
                         copyResult = undefined;
+                        sendResult = undefined;
                     }
                     detail = envelope.payload.view;
                     fileResult = undefined;
@@ -222,6 +228,11 @@ export function createClient(deps: ClientDeps): ShellClient {
             } else if (envelope.kind === 'evt' && envelope.type === 'copyResult') {
                 if (isCopyResultEventPayload(envelope.payload)) {
                     copyResult = envelope.payload;
+                    refresh();
+                }
+            } else if (envelope.kind === 'evt' && envelope.type === 'sendResult') {
+                if (isSendResultEventPayload(envelope.payload)) {
+                    sendResult = envelope.payload;
                     refresh();
                 }
             } else if (envelope.kind === 'evt' && envelope.type === 'openFileResult') {
@@ -270,6 +281,9 @@ export function createClient(deps: ClientDeps): ShellClient {
         },
         copyText(text) {
             send('copyText', { text });
+        },
+        sendPrompt(request) {
+            send('sendPrompt', request);
         },
         openFile(key, line) {
             send('openFile', line === undefined ? { key } : { key, line });

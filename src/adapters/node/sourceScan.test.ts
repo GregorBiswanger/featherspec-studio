@@ -70,6 +70,8 @@ const REMOVED_ALLOWED = [
     'src/core/runtime/earlierRunData.ts',
     'src/core/assistant/offer.test.ts',
     'src/core/assistant/send.test.ts',
+    'src/webview/ui/SendButton.test.tsx',
+    'src/webview/detail/SpecDetail.test.tsx',
     'src/core/runtime/earlierRunData.test.ts',
     'src/adapters/node/earlierRunDataFiles.test.ts',
     'src/adapters/node/earlierRunData.endToEnd.test.ts',

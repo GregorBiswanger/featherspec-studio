@@ -165,7 +165,7 @@ describe('0016 AC-019: nothing else moves while the feedback shows', () => {
         if (detail.kind !== 'spec') {
             throw new Error('a spec detail is expected');
         }
-        return <SpecDetail detail={detail} fileResult={undefined} copyResult={result} onOpen={() => undefined} onCopy={(line) => void copied.push(line)} />;
+        return <SpecDetail detail={detail} fileResult={undefined} copyResult={result} sendResult={undefined} onOpen={() => undefined} onCopy={(line) => void copied.push(line)} onSend={() => undefined} />;
     }
 
     function mutationsOutside(root: HTMLElement, allowed: Element[], run: () => Promise<void>): Promise<MutationRecord[]> {

@@ -1,11 +1,20 @@
 import type { NextStepView } from '../../shared/protocol/detail';
 import { ABOUT_STEP_GLYPH, ABOUT_STEP_LABEL, NEXT_STEP_HEADING } from '../../shared/protocol/nextStepTexts';
 import { PathText } from '../ui/PathText';
+import type { SendPromptPayload, SendResultEventPayload } from '../../shared/protocol/assistant';
 import { CopyButton } from '../ui/CopyButton';
+import { SendButton } from '../ui/SendButton';
 import { Toggletip } from '../ui/Toggletip';
 
-export function NextStep(props: { nextStep: NextStepView; copyResult: { ok: boolean; text: string } | undefined; onCopy(text: string): void }) {
+export function NextStep(props: {
+    nextStep: NextStepView;
+    copyResult: { ok: boolean; text: string } | undefined;
+    onCopy(text: string): void;
+    sendResult: SendResultEventPayload | undefined;
+    onSend(request: SendPromptPayload): void;
+}) {
     const { nextStep, copyResult } = props;
+    const send = 'send' in nextStep ? nextStep.send : undefined;
     const tips = 'tips' in nextStep ? nextStep.tips : undefined;
     return (
         <section className="detail-section next-step">
@@ -24,7 +33,11 @@ export function NextStep(props: { nextStep: NextStepView; copyResult: { ok: bool
                                 <code>
                                     <PathText command={line.text} />
                                 </code>{' '}
-                                <CopyButton look={index === 0 ? 'primary' : 'secondary'} line={line.text} copyResult={copyResult} onCopy={props.onCopy} />
+                                {index === 0 && send !== undefined ? (
+                                    <SendButton send={send} line={line.text} sendResult={props.sendResult} onSend={props.onSend} copyResult={copyResult} onCopy={props.onCopy} />
+                                ) : (
+                                    <CopyButton look={index === 0 ? 'primary' : 'secondary'} line={line.text} copyResult={copyResult} onCopy={props.onCopy} />
+                                )}
                                 {index === 0 && tips !== undefined ? <p className="step-coach">{tips.coach}</p> : null}
                             </li>
                         ))}

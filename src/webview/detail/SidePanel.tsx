@@ -20,7 +20,7 @@ export const SIDE_PANEL_ID = 'side-panel';
 export function SidePanel(props: { selection: SelectedSpec; back?: DetailAreaId; width?: number }) {
     const { selection, back, width } = props;
     const shell = useShell();
-    const { detail, fileResult, copyResult, openFile, copyText } = useBoard();
+    const { detail, fileResult, copyResult, sendResult, openFile, copyText, sendPrompt } = useBoard();
     const close = shell.clearSelection;
     const fallback = () => focusAfterClose(selection.stem);
     const openMap = shell.area === 'planMap' ? undefined : () => {
@@ -30,7 +30,7 @@ export function SidePanel(props: { selection: SelectedSpec; back?: DetailAreaId;
     return (
         <aside id={SIDE_PANEL_ID} className="side-panel" role="complementary" aria-label={DETAIL_LABEL} {...(width === undefined ? {} : { style: { width } })}>
             {matches(selection, detail) ? (
-                <SpecDetail detail={detail} fileResult={fileResult} copyResult={copyResult} onOpen={openFile} onCopy={copyText} onClose={close} fallback={fallback} {...(back === undefined ? {} : { back })} {...(openMap === undefined ? {} : { onOpenMap: openMap })} />
+                <SpecDetail detail={detail} fileResult={fileResult} copyResult={copyResult} sendResult={sendResult} onOpen={openFile} onCopy={copyText} onSend={sendPrompt} onClose={close} fallback={fallback} {...(back === undefined ? {} : { back })} {...(openMap === undefined ? {} : { onOpenMap: openMap })} />
             ) : (
                 <DetailFrame as="div" labelled={false} onClose={close} fallback={fallback}>
                     {back === undefined ? null : <BackButton area={back} onBack={close} />}

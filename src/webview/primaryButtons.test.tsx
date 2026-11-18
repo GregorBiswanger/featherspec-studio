@@ -178,3 +178,23 @@ describe('0023 AC-010: the Plan map adds no primary button', () => {
         expect(primaries(container)).toHaveLength(0);
     });
 });
+
+describe('0024 AC-003: a split button counts as one primary action (A-013)', () => {
+    const SEND = { assistant: 'copilot', target: 'current', targets: ['new', 'current'] };
+    const NS6_SEND = { ...NS6, send: SEND };
+
+    it('with an offer the Overview with a selected spec still has two primaries: the main part of the first Now row and the main part of the detail; the arrow parts are no primary', async () => {
+        const view = fullView();
+        view.now[0] = { ...view.now[0]!, send: SEND as never };
+        const container = await open('overview', { overview: view, selection: SELECTED });
+        await send(detailEvent(detailView({ stem: SELECTED.stem, number: SELECTED.number }, NS6_SEND as never)));
+        const found = primaries(container);
+        expect(found).toHaveLength(2);
+        expect(found.every((button) => button.classList.contains('send-main'))).toBe(true);
+        expect(found[0]?.closest('[data-now]')).not.toBeNull();
+        expect(found[1]?.closest('aside.side-panel')).not.toBeNull();
+        expect(container.querySelectorAll('button.send-arrow')).toHaveLength(2);
+        expect([...container.querySelectorAll('button.send-arrow')].every((button) => !button.classList.contains('copy-button'))).toBe(true);
+    });
+});
+

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import type { SendPromptPayload, SendResultEventPayload } from '../../shared/protocol/assistant';
 import type { DetailView, DiagnosticLine, SpecDetailView } from '../../shared/protocol/detail';
 import {
     BANNER_HEADING,
@@ -116,8 +117,10 @@ function Picture(props: {
     detail: SpecDetailView;
     fileResult: FileResult | undefined;
     copyResult: { ok: boolean; text: string } | undefined;
+    sendResult: SendResultEventPayload | undefined;
     onOpen: OpenAt;
     onCopy(text: string): void;
+    onSend(request: SendPromptPayload): void;
     onClose: (() => void) | undefined;
     back: DetailAreaId | undefined;
     onOpenMap: (() => void) | undefined;
@@ -135,7 +138,7 @@ function Picture(props: {
     return (
         <>
             <Header detail={detail} onClose={props.onClose} back={props.back} headingRef={headingRef} />
-            <NextStep nextStep={detail.nextStep} copyResult={props.copyResult} onCopy={props.onCopy} />
+            <NextStep nextStep={detail.nextStep} copyResult={props.copyResult} onCopy={props.onCopy} sendResult={props.sendResult} onSend={props.onSend} />
             {detail.problems.length === 0 ? null : (
                 <ul className="detail-problems" aria-label={BANNER_HEADING}>
                     {detail.problems.map((line, index) => (
@@ -175,8 +178,10 @@ export function SpecDetail(props: {
     detail: SpecDetailView;
     fileResult: FileResult | undefined;
     copyResult: { ok: boolean; text: string } | undefined;
+    sendResult: SendResultEventPayload | undefined;
     onOpen: OpenAt;
     onCopy(text: string): void;
+    onSend(request: SendPromptPayload): void;
     onClose?: () => void;
     back?: DetailAreaId;
     fallback?: () => void;
@@ -185,7 +190,7 @@ export function SpecDetail(props: {
     const { detail } = props;
     return (
         <DetailFrame as="div" labelled={false} onClose={props.onClose} fallback={props.fallback}>
-            <Picture key={detail.key} detail={detail} fileResult={props.fileResult} copyResult={props.copyResult} onOpen={props.onOpen} onCopy={props.onCopy} onClose={props.onClose} back={props.back} onOpenMap={props.onOpenMap} />
+            <Picture key={detail.key} detail={detail} fileResult={props.fileResult} copyResult={props.copyResult} sendResult={props.sendResult} onOpen={props.onOpen} onCopy={props.onCopy} onSend={props.onSend} onClose={props.onClose} back={props.back} onOpenMap={props.onOpenMap} />
         </DetailFrame>
     );
 }

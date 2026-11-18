@@ -7,7 +7,7 @@ export interface CopyResult {
     text: string;
 }
 
-const FEEDBACK_MS = 2000;
+export const FEEDBACK_MS = 2000;
 
 export type CopyLook = 'primary' | 'secondary' | 'icon';
 

@@ -279,3 +279,51 @@ describe('0022 AC-013, AC-002, AC-003: Problems as sentences', () => {
     });
 });
 
+describe('0024 AC-003, AC-002: the split button at the first Now row only', () => {
+    const line = (n: string) => `/sdd-plan .specs/active/${n}-r.md`;
+    const step = (n: string) => ({ intent: 'Plan', short: '/sdd-plan', line: line(n), lines: [{ text: line(n), intent: 'Write the plan' }] });
+    const row = (n: string, extra: Record<string, unknown> = {}) => ({ spec: { stem: `${n}-r`, number: n, title: `Row ${n}`, found: true }, state: 'Active', status: 'Active', problems: 0, step: step(n), ...extra });
+    const SEND = { assistant: 'claudeCode', target: 'new', targets: ['new'] };
+
+    function viewWith(now: unknown[]): OverviewView {
+        return { ...sampleView(), now, upNext: { rows: [row('0003'), row('0004')], more: 0, stems: [] } } as OverviewView;
+    }
+
+    it('row 0 shows Send to Claude Code with its arrow part; the later rows and Up next keep their icon Copy; one split button in the Overview', async () => {
+        const container = await open(viewWith([row('0001', { send: SEND }), row('0002')]));
+        const splits = container.querySelectorAll('.send-split');
+        expect(splits).toHaveLength(1);
+        expect(splits[0]!.closest('[data-spec-row]')?.getAttribute('data-spec-row')).toBe('0001-r');
+        expect(splits[0]!.closest('li')?.parentElement?.closest('[data-now]')).not.toBeNull();
+        expect(splits[0]!.querySelector('button.send-main')?.textContent).toBe('Send to Claude Code');
+        expect(splits[0]!.querySelector('button.send-main')?.getAttribute('aria-label')).toBe(`Send to Claude Code (new chat): ${line('0001')}`);
+        const second = container.querySelector('[data-spec-row="0002-r"]')!;
+        expect(second.querySelector('button.copy-icon')).not.toBeNull();
+        expect(second.querySelector('.send-split')).toBeNull();
+        expect(container.querySelectorAll('[data-up-next] button.copy-icon')).toHaveLength(2);
+    });
+
+    it('a menu item and the main part post sendPrompt with the line of row 0', async () => {
+        const container = await open(viewWith([row('0001', { send: SEND })]));
+        await click(container.querySelector('button.send-main')!);
+        await click(container.querySelector('button.send-arrow')!);
+        await click([...container.querySelectorAll<HTMLElement>('[role="menuitem"]')][0]!);
+        expect(posted.filter((message) => message.type === 'sendPrompt').map((message) => message.payload)).toEqual([
+            { assistant: 'claudeCode', target: 'new', line: line('0001') },
+            { assistant: 'claudeCode', target: 'new', line: line('0001') },
+        ]);
+    });
+
+    it('a first Now row without a step holds no Send control; no row of any group does', async () => {
+        const noStep = { spec: { stem: '0001-r', number: '0001', title: 'Row 0001', found: true }, state: 'Active', status: 'Active', problems: 0 };
+        const container = await open(viewWith([noStep, row('0002')]));
+        expect(container.querySelector('.send-split, .send-arrow, [role="menu"]')).toBeNull();
+    });
+
+    it('without send the first Now row renders the 0021 DOM: the Copy prompt in place of the split button', async () => {
+        const container = await open(viewWith([row('0001'), row('0002')]));
+        expect(container.querySelector('[data-spec-row="0001-r"] button.copy-icon, [data-spec-row="0001-r"] button.copy-button')).not.toBeNull();
+        expect(container.querySelector('.send-split')).toBeNull();
+    });
+});
+

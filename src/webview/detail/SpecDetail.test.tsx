@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
+import type { SendView } from '../../shared/protocol/assistant';
 import type { NextStepView, SpecDetailView } from '../../shared/protocol/detail';
 import { fileNotFoundText, HISTORY_NOT_AVAILABLE_TEXT, NO_PLAN_TEXT } from '../../shared/protocol/texts';
 import { planSample } from '../../shared/protocol/testing/planSample';
@@ -7,7 +8,7 @@ import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
 import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
 import { resetSectionMemory } from './sectionMemory';
-import { copyResultEvent, detailEvent, detailView, historySection, openFileResultEvent, PLAN_KEY, SPEC_KEY } from './testing/views';
+import { copyResultEvent, detailEvent, detailView, historySection, openFileResultEvent, PLAN_KEY, sendResultEvent, SPEC_KEY } from './testing/views';
 import { ABOUT_STEP_LABEL, COPIED_TEXT, COPY_FAILED_TEXT, NEXT_STEP_DONE_TEXT } from '../../shared/protocol/nextStepTexts';
 
 let posted: Envelope[];
@@ -833,3 +834,63 @@ describe('0021 AC-014, AC-015, AC-009, AC-010: the About this step toggletip in 
         expect(text.querySelector('.toggletip')).toBeNull();
     });
 });
+
+describe('0024 AC-003, AC-002: the split button at the first next-step line only', () => {
+    const SEND_COPILOT = { assistant: 'copilot', target: 'new', targets: ['new', 'current'] } satisfies SendView;
+    const TWO_LINES: NextStepView = {
+        rule: 'NS-6',
+        lines: [
+            { text: 'Implement T-003 of .specs/active/0007-thing.plan.md', intent: 'Continue with T-003' },
+            { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Not sure where it stands? Let the agent report first' },
+        ],
+        send: SEND_COPILOT,
+    };
+
+    it('the first line shows Send to Copilot and its arrow part; the second line keeps its secondary Copy prompt; one split button in the detail', async () => {
+        const container = await open(spec({}, TWO_LINES));
+        const next = section(container, 'Next step');
+        expect(next.querySelectorAll('.send-split')).toHaveLength(1);
+        const lines = [...next.querySelectorAll('.next-step-lines li')];
+        expect(lines[0]!.querySelector('.send-split button.send-main')?.textContent).toBe('Send to Copilot');
+        expect(lines[0]!.querySelector('button.copy-button:not(.send-main)')).toBeNull();
+        expect(lines[0]!.querySelector('.send-arrow')?.getAttribute('aria-label')).toBe('More actions: Implement T-003 of .specs/active/0007-thing.plan.md');
+        expect(lines[1]!.querySelector('.send-split')).toBeNull();
+        expect(lines[1]!.querySelector('button.copy-secondary')?.textContent).toBe('Copy prompt');
+        expect(container.querySelectorAll('.send-split')).toHaveLength(1);
+    });
+
+    it('without a send view the DOM is the 0021 render: a primary Copy prompt on the first line and no Send control anywhere', async () => {
+        const container = await open(spec({}, { ...TWO_LINES, send: undefined } as NextStepView));
+        const next = section(container, 'Next step');
+        expect(next.querySelector('.send-split, .send-arrow, [role="menu"]')).toBeNull();
+        expect(next.querySelector('li button.copy-button')?.textContent).toBe('Copy prompt');
+        expect([...container.querySelectorAll('button')].filter((button) => /^(Send|More actions)/.test(button.textContent ?? '') || /^(Send|More actions)/.test(button.getAttribute('aria-label') ?? ''))).toEqual([]);
+        const text = spec({}, { rule: 'NS-3', text: 'Nothing to do.' });
+        const textOnly = await open(text);
+        expect(textOnly.querySelector('.send-split')).toBeNull();
+    });
+
+    it('the main part posts one sendPrompt with assistant, default target and the first line; the arrow item posts the other target', async () => {
+        const container = await open(spec({}, TWO_LINES));
+        await click(container.querySelector('button.send-main')!);
+        expect(requests('sendPrompt')).toEqual([{ assistant: 'copilot', target: 'new', line: 'Implement T-003 of .specs/active/0007-thing.plan.md' }]);
+        await click(container.querySelector('button.send-arrow')!);
+        await click([...container.querySelectorAll<HTMLElement>('[role="menuitem"]')][1]!);
+        expect(requests('sendPrompt')[1]).toEqual({ assistant: 'copilot', target: 'current', line: 'Implement T-003 of .specs/active/0007-thing.plan.md' });
+        expect(requests('copyText')).toEqual([]);
+    });
+
+    it('a sendResult event shows Opened in Copilot at the main part; the Copy prompt item posts copyText and shows Copied there', async () => {
+        const container = await open(spec({}, TWO_LINES));
+        await click(container.querySelector('button.send-main')!);
+        await send(sendResultEvent('opened', "The prompt is in Copilot's chat. Check it, then send it there."));
+        expect(container.querySelector('button.send-main')?.textContent).toBe('Opened in Copilot');
+        expect(container.querySelector('.send-split [role="status"]')?.textContent).toBe("The prompt is in Copilot's chat. Check it, then send it there.");
+        await click(container.querySelector('button.send-arrow')!);
+        await click([...container.querySelectorAll<HTMLElement>('[role="menuitem"]')][2]!);
+        expect(requests('copyText')).toEqual([{ text: 'Implement T-003 of .specs/active/0007-thing.plan.md' }]);
+        await send(copyResultEvent(true, COPIED_TEXT));
+        expect(container.querySelector('button.send-main')?.textContent).toBe('Copied');
+    });
+});
+

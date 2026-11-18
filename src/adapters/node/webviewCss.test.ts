@@ -937,3 +937,56 @@ describe('0023 AC-008, AC-011: the step cards of the Plan map', () => {
         expect(mapRules.some((rule) => /outline:\s*(none|0)\b/.test(rule.body))).toBe(false);
     });
 });
+
+describe('0024 AC-009, AC-003: the split button\'s stylesheet', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const value = (selector: string, property: string) => {
+        const found = declarations(css).filter((declaration) => declaration.selectors.includes(selector) && declaration.property === property && declaration.container === undefined && declaration.media === undefined);
+        return found[found.length - 1]?.value;
+    };
+    const px = (text: string | undefined) => Number(/(-?\d+(?:\.\d+)?)px/.exec(text ?? '')?.[1]);
+
+    it('the main part has min-width 22ch, the arrow part at least 24 by 24 px, the menu is absolutely positioned', () => {
+        expect(value('.send-main', 'min-width')).toBe('22ch');
+        expect(px(value('.send-arrow', 'width'))).toBeGreaterThanOrEqual(24);
+        expect(px(value('.send-arrow', 'height'))).toBeGreaterThanOrEqual(24);
+        expect(value('.send-menu', 'position')).toBe('absolute');
+        expect(value('.send-split', 'position')).toBe('relative');
+    });
+
+    it('both parts use the primary button variables, the menu the menu variables; theme variables only, no outline of their own', () => {
+        const parts = ['.send-main', '.copy-button', '.send-arrow'].flatMap((selector) => rulesFor(css, selector).map((rule) => rule.body)).join(';');
+        expect(parts).toContain('var(--vscode-button-background)');
+        expect(parts).toContain('var(--vscode-button-foreground)');
+        expect(rulesFor(css, '.send-arrow').some((rule) => /background:\s*var\(--vscode-button-background\)/.test(rule.body) && /color:\s*var\(--vscode-button-foreground\)/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.send-arrow:hover').some((rule) => rule.body.includes('var(--vscode-button-hoverBackground'))).toBe(true);
+        const own = parseRules(css).filter((rule) => rule.selectors.some((selector) => /^\.send-/.test(selector)));
+        expect(own.length).toBeGreaterThan(5);
+        const body = own.map((rule) => rule.body).join(';');
+        expect(body).toContain('var(--vscode-menu-background');
+        expect(body).toContain('var(--vscode-menu-foreground');
+        expect(body).not.toMatch(/#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(/);
+        expect(body).not.toMatch(/outline/);
+        expect(rulesFor(css, '.vscode-high-contrast .send-menu').some((rule) => /border-color:\s*var\(--vscode-contrastBorder\)/.test(rule.body))).toBe(true);
+    });
+
+    it('the split button (main part at 22ch, padding, border, and the 24 px arrow part) fits the row content at an area of 360 px (0022 AC-028\'s arithmetic)', () => {
+        const fontSize = px(value('.copy-button', 'font-size'));
+        const main = 22 * 0.6 * fontSize + px(value('.copy-button', 'padding')?.split(/\s+/)[1]) * 2 + px(value('.copy-button', 'border')) * 2;
+        const split = main + px(value('.send-arrow', 'width'));
+        const areaPadding = px(value('.area-content', 'padding')?.split(/\s+/)[1]) * 2;
+        const panelPadding = px(value('.ov-panel', 'padding')?.split(/\s+/)[1]) * 2;
+        const panelBorder = px(value('.ov-panel', 'border')) * 2;
+        const listMargin = -px(value('.ov-list', 'margin')?.split(/\s+/)[1]) * 2;
+        const rowPadding = px(value('.ov-row', 'padding')?.split(/\s+/)[1]) * 2;
+        const content = AREA_MIN - areaPadding - panelPadding - panelBorder + listMargin - rowPadding;
+        expect(split).toBeGreaterThan(150);
+        expect(content).toBeGreaterThanOrEqual(split);
+    });
+
+    it('control: a stylesheet without the menu position is seen', () => {
+        const own = declarations('.send-menu { color: red }').filter((declaration) => declaration.selectors.includes('.send-menu'));
+        expect(own.some((declaration) => declaration.property === 'position')).toBe(false);
+    });
+});
+

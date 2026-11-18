@@ -1,4 +1,5 @@
 import { useContext, useSyncExternalStore } from 'react';
+import type { SendPromptPayload, SendResultEventPayload } from '../../shared/protocol/assistant';
 import type { BoardView, SortKey } from '../../shared/protocol/board';
 import type { BoardFilter } from '../../shared/protocol/boardFilter';
 import type { DetailView } from '../../shared/protocol/detail';
@@ -10,11 +11,13 @@ export interface BoardApi {
     detail: DetailView | undefined;
     fileResult: { key: string; text: string } | undefined;
     copyResult: { ok: boolean; text: string } | undefined;
+    sendResult: SendResultEventPayload | undefined;
     setSort(sort: SortKey): void;
     setDone(expanded: boolean): void;
     clearFilters(): void;
     openFile(key: string, line?: number): void;
     copyText(text: string): void;
+    sendPrompt(request: SendPromptPayload): void;
 }
 
 export function useBoard(): BoardApi {
@@ -28,10 +31,12 @@ export function useBoard(): BoardApi {
         detail: snapshot.detail,
         fileResult: snapshot.fileResult,
         copyResult: snapshot.copyResult,
+        sendResult: snapshot.sendResult,
         setSort: client.setBoardSort,
         setDone: client.setBoardDone,
         clearFilters: client.clearBoardFilters,
         openFile: client.openFile,
         copyText: client.copyText,
+        sendPrompt: client.sendPrompt,
     };
 }

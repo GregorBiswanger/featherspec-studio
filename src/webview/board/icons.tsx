@@ -22,6 +22,7 @@ const PATHS: Record<string, string> = {
     unticked: 'M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm.5 1.5v9h9v-9z',
     undetermined: 'M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm.5 1.5v9h9v-9zM5 7.25h6v1.5H5z',
     chevron: 'M5.7 3.3L10.4 8l-4.7 4.7-1.1-1.1L8.2 8 4.6 4.4z',
+    chevronDown: 'M3.3 5.7L8 10.4l4.7-4.7 1.1 1.1L8 12.6 2.2 6.8z',
     folder: 'M1.5 2.5h5l1.5 1.5h6.5v9.5h-13zM3 5.5v6.5h10V5.5z',
     copy: 'M5.5 1.5h8v9h-2v-7.5h-6zM2.5 4.5h8v10h-8zm1.5 1.5v7h5v-7z',
     check: MOTIF_PATHS.check!,
@@ -29,7 +30,7 @@ const PATHS: Record<string, string> = {
     empty: 'M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 1.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11zM5 7.25h6v1.5H5z',
 };
 
-export type GlyphKind = 'diagnostic' | 'derived' | 'deprecated' | 'failed' | 'interrupted' | 'waiting' | 'empty' | 'ticked' | 'unticked' | 'undetermined' | 'chevron' | 'folder' | 'info' | 'copy' | 'check' | BoardState;
+export type GlyphKind = 'diagnostic' | 'derived' | 'deprecated' | 'failed' | 'interrupted' | 'waiting' | 'empty' | 'ticked' | 'unticked' | 'undetermined' | 'chevron' | 'chevronDown' | 'folder' | 'info' | 'copy' | 'check' | BoardState;
 
 function isState(kind: GlyphKind): kind is BoardState {
     return (BOARD_STATES as readonly string[]).includes(kind);

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Envelope } from '../shared/protocol/envelope';
 import { createClient, type ShellClient } from './client';
+import { detailEvent, detailView } from './detail/testing/views';
 import { baseView, shellEvent } from './testing/dom';
 
 let posted: Envelope[];
@@ -104,3 +105,38 @@ describe('0022 AC-024: the side panel width requests', () => {
         expect(posted.filter((message) => message.type === 'setSideWidth' || message.type === 'resetSideWidth')).toHaveLength(2);
     });
 });
+
+describe('0024 AC-005: the send request and the send result', () => {
+    const RESULT = { outcome: 'opened', text: "The prompt is in Copilot's chat. Check it, then send it there." };
+    const detail = (key: string) => detailEvent(detailView({ key, stem: key.slice(14, -3) }));
+
+    it('sendPrompt posts one sendPrompt request with exactly the assistant, the target and the line', () => {
+        const client = make();
+        client.sendPrompt({ assistant: 'claudeCode', target: 'new', line: 'Implement T-003 of p' });
+        expect(posted.at(-1)).toMatchObject({ v: 7, kind: 'req', type: 'sendPrompt', payload: { assistant: 'claudeCode', target: 'new', line: 'Implement T-003 of p' } });
+        expect(Object.keys(posted.at(-1)!.payload as object).sort()).toEqual(['assistant', 'line', 'target']);
+    });
+
+    it('a sendResult event is kept in the snapshot; a bad payload is dropped', () => {
+        const client = make();
+        client.receive({ v: 7, kind: 'evt', type: 'sendResult', payload: RESULT });
+        expect(client.getSnapshot().sendResult).toEqual(RESULT);
+        client.receive({ v: 7, kind: 'evt', type: 'sendResult', payload: { outcome: 'sent', text: 'x' } });
+        expect(client.getSnapshot().sendResult).toEqual(RESULT);
+    });
+
+    it('the result is dropped, like the copy result, when the detail moves to another spec, and kept for the same spec', () => {
+        const client = make();
+        client.receive(shellEvent(baseView(), 1));
+        client.receive(detail('.specs/active/0001-a.md'));
+        client.receive({ v: 7, kind: 'evt', type: 'sendResult', payload: RESULT });
+        client.receive({ v: 7, kind: 'evt', type: 'copyResult', payload: { ok: true, text: 'Copied to the clipboard.' } });
+        client.receive(detail('.specs/active/0001-a.md'));
+        expect(client.getSnapshot().sendResult).toEqual(RESULT);
+        expect(client.getSnapshot().copyResult).toBeDefined();
+        client.receive(detail('.specs/active/0002-b.md'));
+        expect(client.getSnapshot().sendResult).toBeUndefined();
+        expect(client.getSnapshot().copyResult).toBeUndefined();
+    });
+});
+
