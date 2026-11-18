@@ -34,11 +34,12 @@ describe('cards', () => {
             '.specs/active/0002-b.plan.md': planText({ status: 'In Progress' }),
             '.specs/done/0003-c.md': specText({ status: 'Baseline' }),
         });
-        expect(cards.map((card) => [card.number, card.state, card.derivedRule])).toEqual([
-            ['0001', 'Review', 'S-REVIEW'],
-            ['0002', 'Active', undefined],
-            ['0003', 'Done', undefined],
+        expect(cards.map((card) => [card.number, card.state])).toEqual([
+            ['0001', 'Review'],
+            ['0002', 'Active'],
+            ['0003', 'Done'],
         ]);
+        expect(cards.some((card) => 'derivedRule' in card || 'lastChangeMs' in card)).toBe(false);
         expect(cards[0]?.title).toBe('Spec');
         expect(cards[0]?.titleIsStem).toBe(false);
     });

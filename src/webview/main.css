@@ -517,12 +517,6 @@ main > h1 {
     list-style: none;
 }
 
-.card-path,
-.card-figures,
-.card-need {
-    color: var(--vscode-descriptionForeground);
-}
-
 .card {
     margin: 0 0 6px;
     padding: 8px 10px;
@@ -543,6 +537,10 @@ main > h1 {
 }
 
 .card-head {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
     line-height: 1.35;
     overflow-wrap: anywhere;
 }
@@ -557,12 +555,22 @@ main > h1 {
     font-weight: 600;
 }
 
+.card-path {
+    margin-top: 2px;
+    color: var(--vscode-descriptionForeground);
+    font-size: 11px;
+    overflow-wrap: anywhere;
+}
+
 .card-state {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 4px 8px;
-    margin-top: 6px;
+    gap: 2px 8px;
+    margin-top: 4px;
+    color: var(--vscode-descriptionForeground);
+    font-size: 11px;
+    line-height: 1.35;
 }
 
 .card-secondary {
@@ -571,58 +579,43 @@ main > h1 {
     gap: 4px;
     min-width: 0;
     color: var(--fs-muted);
-    font-size: 11px;
-    line-height: 1.35;
 }
 
-.card-secondary .icon {
+.card-secondary .icon,
+.card-blocked .icon,
+.card-problems .icon {
     width: 10px;
     height: 10px;
     align-self: center;
 }
 
-.card-path {
-    margin-top: 4px;
-    font-size: 11px;
-    overflow-wrap: anywhere;
-}
-
-.card-summary {
-    margin: 6px 0 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    color: var(--vscode-foreground);
-    line-height: 1.4;
-}
-
-.card-blocked,
-.card-need {
-    display: flex;
+.card-blocked {
+    display: inline-flex;
     align-items: baseline;
     gap: 4px;
-    margin-top: 6px;
-    font-size: 11px;
-    line-height: 1.35;
-}
-
-.card-blocked {
     color: var(--vscode-foreground);
 }
 
 .card-blocked .icon {
-    width: 10px;
-    height: 10px;
-    align-self: center;
     color: var(--vscode-charts-red);
 }
 
+.card-problems {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--vscode-foreground);
+}
+
+.card-problems .icon {
+    color: var(--vscode-charts-orange);
+}
+
 .card-figures {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    margin-top: 8px;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 6px;
 }
 
 .progress {
@@ -633,6 +626,11 @@ main > h1 {
     color: var(--fs-muted);
     font-size: 11px;
     line-height: 1.35;
+}
+
+.card-figures .progress {
+    grid-template-columns: max-content 56px;
+    gap: 6px;
 }
 
 .progress-na {
@@ -653,16 +651,10 @@ main > h1 {
     background: var(--vscode-progressBar-background);
 }
 
-.card-foot {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 2px 10px;
-    margin-top: 8px;
-    padding-top: 6px;
-    border-top: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
+.card-change {
+    margin-left: auto;
     color: var(--fs-muted);
-    font-size: 11px;
+    white-space: nowrap;
 }
 
 .card-step {
@@ -671,7 +663,7 @@ main > h1 {
     align-items: center;
     justify-content: space-between;
     gap: 4px 8px;
-    margin-top: 8px;
+    margin-top: 4px;
     cursor: default;
 }
 
@@ -688,19 +680,6 @@ main > h1 {
 
 .step-short {
     font-family: var(--vscode-editor-font-family);
-}
-
-.card-problems {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    color: var(--vscode-foreground);
-}
-
-.card-problems .icon {
-    width: 10px;
-    height: 10px;
-    color: var(--vscode-charts-orange);
 }
 
 .explorer {

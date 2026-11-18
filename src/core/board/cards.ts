@@ -1,11 +1,11 @@
 import type { BannerLine, CardView } from '../../shared/protocol/board';
-import { isDerivedRule } from '../../shared/protocol/board';
 import type { LifecycleEntry, LifecycleModel } from '../lifecycle/model';
 import type { ProjectRead, SpecEntry } from '../specs/readProject';
 import { describeSpec } from './description';
 import { needsOf } from './needs';
 import { stepView } from './nextStep';
-import { criteriaProgress, lastChange, taskProgress } from './progress';
+import { cardLastChange } from './lastChange';
+import { criteriaProgress, taskProgress } from './progress';
 
 export function titleOf(entry: SpecEntry): string | undefined {
     const value = entry.parsed?.title.value;
@@ -40,7 +40,6 @@ export function buildCards(project: ProjectRead, lifecycle: LifecycleModel): Car
             titleIsStem: title === undefined,
             path: (stems.get(entry.stem) ?? 0) > 1 ? entry.key : undefined,
             state: entry.state,
-            derivedRule: entry.persistence === 'derived' && isDerivedRule(entry.rule) ? entry.rule : undefined,
             deprecated: entry.deprecated !== undefined,
             problems: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').length,
             blocked: blockedLines(entry),
@@ -49,7 +48,7 @@ export function buildCards(project: ProjectRead, lifecycle: LifecycleModel): Car
             summary: spec?.parsed === undefined ? undefined : describeSpec(spec.parsed.sections),
             tasks: taskProgress(plan),
             criteria: criteriaProgress(entry.verification),
-            lastChangeMs: lastChange(spec?.modifiedMs, plan?.modifiedMs),
+            lastChange: cardLastChange(plan?.parsed?.lastUpdated.value, spec?.modifiedMs, plan?.modifiedMs),
         };
     });
 }

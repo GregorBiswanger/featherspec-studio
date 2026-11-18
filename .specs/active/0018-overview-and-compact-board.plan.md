@@ -3,7 +3,7 @@
 **Spec:** [0018-overview-and-compact-board.md](0018-overview-and-compact-board.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-007
+**Current step:** T-008
 
 ## Approach
 
@@ -332,8 +332,8 @@ No parallel stage: the Overview and Board steps share `messages.ts`, `client.ts`
   with the state; AC-019 givens; AC-022 two sort options); `webviewCss.test.ts` (title clamp replaces
   the description clamp test).
 - **Verify:** `npx vitest run src/core/board src/shared/protocol src/webview/board src/adapters/node/webviewCss.test.ts` red, then green; gates 1–4
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** 2026-11-18: written with the code in one pass, no separate red run (`lastChange.test.ts` AC-021 givens incl. `<date>`, `2026-13-40`, `2026-02-30`, prose and `2026-11-10 (stage 2)`; `boardService.test.ts` L-3 on in-memory projects with plan dates; `filters.test.ts` AC-023; `SpecBoard.test.tsx` AC-018, AC-019, AC-021, AC-022; guards; `webviewCss.test.ts` title clamp). `npm run test:unit` 1952 passed, 3 skipped, timing 12 passed; eslint, both `tsc`, `compile-tests` clean.
+- **Notes:** `criteriaText` stays in `texts.ts`: Spec Detail still shows "Criteria: d of t verified" (0007 detail, not a card); `tasksText`, `TASKS_PROGRESS_LABEL`, `CRITERIA_PROGRESS_LABEL`, `lastChangeText`, `formatLastChange` are gone. `progress.ts` `lastChange(...)` was removed with `lastChangeMs` (its 0007 AC-025 "newer of the times" test is replaced by `lastChange.test.ts`, the card test now compares with `cardLastChange`). `planText` in the test helpers gained `lastUpdated`. Row 2 state part in order: Backlog need, Blocked lines, Deprecated, else Steps bar and Criteria (a Deprecated Backlog card with a need shows the need). The state row is the card's `aria-describedby` target and is absent without parts. `webviewBundle.test.ts` Board mount now asserts the Ready header tooltip and the card name.
 
 ### T-008 — §5 notes, product docs and scans
 

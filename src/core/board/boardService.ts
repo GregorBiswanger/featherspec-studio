@@ -1,4 +1,4 @@
-import type { BoardView, CardView, SortKey } from '../../shared/protocol/board';
+import { SORT_KEYS, type BoardView, type CardView, type SortKey } from '../../shared/protocol/board';
 import { isFilterSet, type BoardFilter } from '../../shared/protocol/boardFilter';
 import type { DetailView } from '../../shared/protocol/detail';
 import type { HistoryView } from '../lifecycle/statusHistory';
@@ -36,6 +36,7 @@ interface Built {
     model: ShellModel;
     cards: CardView[];
     banner: BoardView['banner'];
+    sortKeys: SortKey[];
 }
 
 export function createBoardService(deps: BoardServiceDeps): BoardService {
@@ -57,8 +58,10 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
             return undefined;
         }
         if (built === undefined || built.model !== model) {
-            const cards = buildCards(model.project, model.lifecycle);
-            built = { model, cards, banner: buildBanner(model.project, model.lifecycle) };
+            const all = buildCards(model.project, model.lifecycle);
+            const datesVary = new Set(all.flatMap((card) => (card.lastChange === undefined ? [] : [card.lastChange.day]))).size >= 2;
+            const cards = datesVary ? all : all.map((card) => ({ ...card, lastChange: undefined }));
+            built = { model, cards, banner: buildBanner(model.project, model.lifecycle), sortKeys: datesVary ? [...SORT_KEYS] : SORT_KEYS.filter((key) => key !== 'lastChange') };
         }
         return built;
     }
@@ -68,10 +71,13 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
         if (current === undefined) {
             return undefined;
         }
+        if (ui.sort() === 'lastChange' && !current.sortKeys.includes('lastChange')) {
+            ui.setSort('number');
+        }
         const columns = arrangeBoard(current.cards, ui.filter(), ui.sort(), ui.doneExpanded());
         const done = columns.find((column) => column.state === 'Done');
         const doneHasCards = done !== undefined && !isFilterSet(ui.filter()) && done.count > 0;
-        const base = { columns, banner: current.banner, filter: ui.filter(), sort: ui.sort(), noSpecs: current.cards.length === 0 };
+        const base = { columns, banner: current.banner, filter: ui.filter(), sort: ui.sort(), sortKeys: current.sortKeys, noSpecs: current.cards.length === 0 };
         return doneHasCards ? { ...base, doneToggle: ui.doneExpanded() ? 'hide' : 'show' } : base;
     }
 

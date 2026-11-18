@@ -53,10 +53,11 @@ export interface PlanOptions {
     status?: string;
     rows?: string[];
     spec?: string;
+    lastUpdated?: string;
 }
 
 export function planText(options: PlanOptions = {}): string {
-    const lines = ['# Plan', '', `**Spec:** ${options.spec ?? '—'}`, `**Status:** ${options.status ?? 'Not started'}`, ''];
+    const lines = ['# Plan', '', `**Spec:** ${options.spec ?? '—'}`, `**Status:** ${options.status ?? 'Not started'}`, ...(options.lastUpdated === undefined ? [] : [`**Last updated:** ${options.lastUpdated}`]), ''];
     if (options.rows !== undefined) {
         lines.push(
             '## Traceability',

@@ -17,8 +17,10 @@ describe('AC-026: colours come from the theme', () => {
         expect(css).not.toMatch(/outline:\s*(none|0)\b/);
     });
 
-    it('the description is limited to two lines', () => {
-        expect(css).toMatch(/-webkit-line-clamp:\s*2/);
+    it('AC-018: the number and title of a card are limited to two lines, the date is pushed to the right and no rule styles the removed description, chip or footer', () => {
+        expect(rulesFor(css, '.card-head').some((rule) => /-webkit-line-clamp:\s*2/.test(rule.body) && /overflow:\s*hidden/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.card-change').some((rule) => /margin-left:\s*auto/.test(rule.body))).toBe(true);
+        expect(css).not.toMatch(/\.card-summary|\.card-foot\b|\.card-secondary \.icon \{[^}]*\}\s*\.card-state \.state-chip/);
     });
 
     it('AC-010: the Overview header lines are a two-column grid, label and value on one row, values without the default indent', () => {

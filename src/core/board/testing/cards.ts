@@ -9,7 +9,6 @@ export function card(number: string, overrides: Partial<CardView> = {}): CardVie
         titleIsStem: false,
         path: undefined,
         state: 'Active',
-        derivedRule: undefined,
         deprecated: false,
         problems: 0,
         blocked: [],
@@ -18,7 +17,7 @@ export function card(number: string, overrides: Partial<CardView> = {}): CardVie
         summary: undefined,
         tasks: undefined,
         criteria: undefined,
-        lastChangeMs: undefined,
+        lastChange: undefined,
         ...overrides,
     };
 }

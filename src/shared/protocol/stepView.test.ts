@@ -24,8 +24,8 @@ describe('0017 AC-001: the step view guard', () => {
 
     it('a card view takes a step or none, and refuses a bad step', () => {
         const card = {
-            key: 'k', stem: '0001-a', number: '0001', title: 'A', titleIsStem: false, path: undefined, state: 'Active', derivedRule: undefined, deprecated: false,
-            problems: 0, blocked: [], need: undefined, step: undefined, summary: undefined, tasks: undefined, criteria: undefined, lastChangeMs: undefined,
+            key: 'k', stem: '0001-a', number: '0001', title: 'A', titleIsStem: false, path: undefined, state: 'Active', deprecated: false,
+            problems: 0, blocked: [], need: undefined, step: undefined, summary: undefined, tasks: undefined, criteria: undefined, lastChange: undefined,
         };
         expect(isCardView(card)).toBe(true);
         expect(isCardView({ ...card, step: STEP })).toBe(true);

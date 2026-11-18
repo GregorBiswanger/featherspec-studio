@@ -14,8 +14,3 @@ export function criteriaProgress(verification: VerificationStatus): Progress | u
     const { open, built, verified, other } = verification.counts;
     return { done: verified, total: open + built + verified + other };
 }
-
-export function lastChange(...times: (number | undefined)[]): number | undefined {
-    const known = times.filter((time): time is number => time !== undefined);
-    return known.length === 0 ? undefined : Math.max(...known);
-}

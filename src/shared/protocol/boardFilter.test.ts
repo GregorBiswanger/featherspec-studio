@@ -93,22 +93,27 @@ describe('board requests', () => {
 
     it('card and board views are guarded', () => {
         const card = {
-            key: 'k', stem: '0001-a', number: '0001', title: 'A', titleIsStem: false, path: undefined, state: 'Active', derivedRule: undefined, deprecated: false,
-            problems: 0, blocked: [], need: undefined, summary: undefined, tasks: { done: 1, total: 2 }, criteria: undefined, lastChangeMs: 5,
+            key: 'k', stem: '0001-a', number: '0001', title: 'A', titleIsStem: false, path: undefined, state: 'Active', deprecated: false,
+            problems: 0, blocked: [], need: undefined, summary: undefined, tasks: { done: 1, total: 2 }, criteria: undefined, lastChange: { day: '2026-11-16', source: 'plan' },
         };
         expect(isCardView(card)).toBe(true);
         expect(isCardView({ ...card, state: 'Doing' })).toBe(false);
-        expect(isCardView({ ...card, derivedRule: 'S-REVIEW', need: { text: 'needs a plan', rule: 'R-3' } })).toBe(true);
-        expect(isCardView({ ...card, derivedRule: 'Derived (rule S-REVIEW)' })).toBe(false);
+        expect(isCardView({ ...card, need: { text: 'needs a plan', rule: 'R-3' } })).toBe(true);
+        expect(isCardView({ ...card, lastChange: { day: '16.11.2026', source: 'plan' } })).toBe(false);
+        expect(isCardView({ ...card, lastChange: { day: '2026-11-16', source: 'git' } })).toBe(false);
+        expect(isCardView({ ...card, lastChange: 5 })).toBe(false);
         expect(isCardView({ ...card, need: 'needs a plan' })).toBe(false);
         expect(isCardView({ ...card, need: { text: 'x' } })).toBe(false);
-        const view = { columns: [{ state: 'Active', cards: [card], hidden: 0, emptyBeforeFilter: false, count: 1 }], banner: { problems: [{ where: 'project', reason: 'x' }], notes: [] }, filter: {}, sort: 'number', noSpecs: false };
+        const view = { columns: [{ state: 'Active', cards: [card], hidden: 0, emptyBeforeFilter: false, count: 1 }], banner: { problems: [{ where: 'project', reason: 'x' }], notes: [] }, filter: {}, sort: 'number', sortKeys: ['number', 'title'], noSpecs: false };
         expect(isBoardView(view)).toBe(true);
         expect(isBoardView({ ...view, columns: [{ ...view.columns[0], narrow: 'empty' }] })).toBe(true);
         expect(isBoardView({ ...view, columns: [{ ...view.columns[0], narrow: 'wide' }] })).toBe(false);
         expect(isBoardView({ ...view, columns: [{ state: 'Active', cards: [], hidden: 0, emptyBeforeFilter: false }] })).toBe(false);
         expect(isBoardView({ ...view, doneToggle: 'show' })).toBe(true);
         expect(isBoardView({ ...view, doneToggle: 'open' })).toBe(false);
+        expect(isBoardView({ ...view, sortKeys: [] })).toBe(false);
+        expect(isBoardView({ ...view, sortKeys: ['lastChange'] })).toBe(false);
+        expect(isBoardView({ ...view, sortKeys: ['number', 'priority'] })).toBe(false);
         expect(isBoardView({ ...view, sort: 'priority' })).toBe(false);
         expect(isBoardView({ ...view, banner: [{ where: 'project', reason: 'x' }] })).toBe(false);
         expect(isBoardView({ ...view, banner: { problems: [], notes: [{ where: 'project' }] } })).toBe(false);

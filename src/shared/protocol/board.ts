@@ -24,6 +24,17 @@ export interface Progress {
     total: number;
 }
 
+export interface LastChange {
+    day: string;
+    source: 'plan' | 'file';
+}
+
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+function isLastChange(value: unknown): value is LastChange {
+    return isRecord(value) && typeof value.day === 'string' && DAY.test(value.day) && (value.source === 'plan' || value.source === 'file');
+}
+
 export interface CardView {
     key: string;
     stem: string;
@@ -32,7 +43,6 @@ export interface CardView {
     titleIsStem: boolean;
     path: string | undefined;
     state: BoardState;
-    derivedRule: DerivedRule | undefined;
     deprecated: boolean;
     problems: number;
     blocked: string[];
@@ -41,7 +51,7 @@ export interface CardView {
     summary: string | undefined;
     tasks: Progress | undefined;
     criteria: Progress | undefined;
-    lastChangeMs: number | undefined;
+    lastChange: LastChange | undefined;
 }
 
 export interface NeedView {
@@ -77,6 +87,7 @@ export interface Banner {
 export interface BoardView {
     columns: BoardColumn[];
     doneToggle?: 'show' | 'hide';
+    sortKeys: SortKey[];
     banner: Banner;
     filter: BoardFilter;
     sort: SortKey;
@@ -105,7 +116,6 @@ export function isCardView(value: unknown): value is CardView {
         typeof value.titleIsStem === 'boolean' &&
         isOptionalString(value.path) &&
         isBoardState(value.state) &&
-        (value.derivedRule === undefined || isDerivedRule(value.derivedRule)) &&
         typeof value.deprecated === 'boolean' &&
         typeof value.problems === 'number' &&
         Array.isArray(value.blocked) &&
@@ -115,7 +125,7 @@ export function isCardView(value: unknown): value is CardView {
         isOptionalString(value.summary) &&
         isProgress(value.tasks) &&
         isProgress(value.criteria) &&
-        (value.lastChangeMs === undefined || typeof value.lastChangeMs === 'number')
+        (value.lastChange === undefined || isLastChange(value.lastChange))
     );
 }
 
@@ -148,6 +158,10 @@ export function isBoardView(value: unknown): value is BoardView {
         isBanner(value.banner) &&
         isBoardFilter(value.filter) &&
         isSortKey(value.sort) &&
+        Array.isArray(value.sortKeys) &&
+        value.sortKeys.length > 0 &&
+        value.sortKeys.every(isSortKey) &&
+        value.sortKeys.includes(value.sort) &&
         typeof value.noSpecs === 'boolean' &&
         (value.doneToggle === undefined || value.doneToggle === 'show' || value.doneToggle === 'hide')
     );

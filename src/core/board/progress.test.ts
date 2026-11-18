@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
 import { planText, readFixture, readMemory, row, specText } from '../lifecycle/testing/projects';
 import { buildCards } from './cards';
-import { criteriaProgress, lastChange, taskProgress } from './progress';
+import { cardLastChange } from './lastChange';
+import { criteriaProgress, taskProgress } from './progress';
 
 const LINKED = '[0001-a.plan.md](0001-a.plan.md)';
 const ARCHIVE = '[0001-a.2026-11-01.plan.md](../plan-archive/0001-a.2026-11-01.plan.md)';
@@ -66,24 +67,17 @@ describe('criteria progress', () => {
     });
 });
 
-describe('last change', () => {
-    it('AC-025: the newer of the times, one time alone, or none', () => {
-        expect(lastChange(100, 300)).toBe(300);
-        expect(lastChange(500, 300)).toBe(500);
-        expect(lastChange(undefined, 300)).toBe(300);
-        expect(lastChange(undefined, undefined)).toBeUndefined();
-    });
-
-    it('AC-025: a card takes the newer modification time of the spec and its plan', async () => {
+describe('card last change', () => {
+    it('AC-021: a card takes the date of L-1 from the spec, its plan and the plan\'s Last updated line', async () => {
         const project = await readFixture('fs110-ready-synthetic');
         const lifecycle = deriveLifecycle(project);
         const cards = buildCards(project, lifecycle);
         cards.forEach((card) => {
             const spec = project.specs.find((candidate) => candidate.key === card.key)!;
             const plan = project.plans.find((candidate) => candidate.key === lifecycle.entries.find((entry) => entry.key === card.key)?.plan);
-            expect(card.lastChangeMs).toBe(Math.max(spec.modifiedMs ?? -1, plan?.modifiedMs ?? -1) < 0 ? undefined : Math.max(spec.modifiedMs ?? -1, plan?.modifiedMs ?? -1));
+            expect(card.lastChange).toEqual(cardLastChange(plan?.parsed?.lastUpdated.value, spec.modifiedMs, plan?.modifiedMs));
         });
-        expect(cards.some((card) => card.lastChangeMs !== undefined)).toBe(true);
+        expect(cards.some((card) => card.lastChange !== undefined)).toBe(true);
     });
 
     it('AC-025: a card carries the figures of the progress functions', async () => {

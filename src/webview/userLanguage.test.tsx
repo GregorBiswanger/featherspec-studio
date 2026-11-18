@@ -79,16 +79,16 @@ describe('0016 AC-011: user language in the detail', () => {
 describe('0016 AC-011: user language on every surface 0016 touched', () => {
     it('the Board card shows no rule ID or internal word, whatever its state, need or Problem', async () => {
         const cards = [
-            card('0001', { state: 'Ready', derivedRule: 'S-READY' }),
-            card('0002', { state: 'Review', derivedRule: 'S-REVIEW' }),
-            card('0003', { state: 'Blocked', derivedRule: 'S-BLOCKED', blocked: ['Blocked: plan status Blocked'] }),
+            card('0001', { state: 'Ready' }),
+            card('0002', { state: 'Review' }),
+            card('0003', { state: 'Blocked', blocked: ['Blocked: plan status Blocked'] }),
             card('0004', { state: 'Backlog', need: { text: 'needs a plan', rule: 'R-3' }, problems: 2 }),
             card('0005', { state: 'Done', deprecated: true }),
         ];
         const text = await textOf('board', boardEvent(boardView(cards)));
         expect(text).not.toMatch(FORBIDDEN);
         expect(text).toContain('needs a plan');
-        expect(text).toContain('Plan done, waiting for review');
+        expect(text).toContain('Blocked: plan status Blocked');
     });
 
     it('the Spec Explorer row shows no rule ID', async () => {

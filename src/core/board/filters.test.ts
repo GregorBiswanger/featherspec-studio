@@ -127,11 +127,11 @@ describe('filters', () => {
 
 describe('sorting', () => {
     const SET = [
-        card('0003', { title: 'Mango', lastChangeMs: 300 }),
-        card('0001', { title: 'cherry', lastChangeMs: 100 }),
-        card('0002', { title: 'Banana', lastChangeMs: 200 }),
-        card('0004', { title: '0004-thing', titleIsStem: true, lastChangeMs: undefined }),
-        card('0010', { title: 'Apple', lastChangeMs: 200 }),
+        card('0003', { title: 'Mango', lastChange: { day: '2026-11-17', source: 'file' } }),
+        card('0001', { title: 'cherry', lastChange: { day: '2026-11-15', source: 'plan' } }),
+        card('0002', { title: 'Banana', lastChange: { day: '2026-11-16', source: 'file' } }),
+        card('0004', { title: '0004-thing', titleIsStem: true, lastChange: undefined }),
+        card('0010', { title: 'Apple', lastChange: { day: '2026-11-16', source: 'plan' } }),
     ];
 
     it('AC-013: by number ascending is the order of the numbers, whatever the input order', () => {
@@ -142,7 +142,7 @@ describe('sorting', () => {
         expect(numbers(arrangeBoard(SET, {}, 'title'), 'Active')).toEqual(['0010', '0002', '0001', '0003', '0004']);
     });
 
-    it('AC-013: by last change newest first, ties by stem, a card without the value last', () => {
+    it('AC-023: by last change newest day first, ties by stem then path, a card without a date last', () => {
         expect(numbers(arrangeBoard(SET, {}, 'lastChange'), 'Active')).toEqual(['0003', '0002', '0010', '0001', '0004']);
     });
 
@@ -154,6 +154,16 @@ describe('sorting', () => {
         ];
         const order = arrangeBoard(twins, {}, 'title')[2]!.cards.map((entry) => entry.key);
         expect(order).toEqual(['.specs/active/0004-y.md', '.specs/active/0005-x.md', '.specs/backlog/0005-x.md']);
+    });
+
+    it('AC-023: equal days from the plan and from a file tie by stem, then by path', () => {
+        const day = { day: '2026-11-16', source: 'file' as const };
+        const twins = [
+            card('0005', { stem: '0005-x', key: '.specs/backlog/0005-x.md', lastChange: day }),
+            card('0005', { stem: '0005-x', key: '.specs/active/0005-x.md', lastChange: { day: '2026-11-16', source: 'plan' } }),
+            card('0004', { stem: '0004-y', key: '.specs/active/0004-y.md', lastChange: day }),
+        ];
+        expect(arrangeBoard(twins, {}, 'lastChange')[2]!.cards.map((entry) => entry.key)).toEqual(['.specs/active/0004-y.md', '.specs/active/0005-x.md', '.specs/backlog/0005-x.md']);
     });
 
     it('AC-013: sorting applies inside each column, and the filter keeps its order', () => {

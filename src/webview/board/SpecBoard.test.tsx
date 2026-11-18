@@ -3,7 +3,6 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
 import { COPIED_TEXT, COPY_FAILED_TEXT } from '../../shared/protocol/nextStepTexts';
 import type { StepView } from '../../shared/protocol/stepView';
-import { formatLastChange } from '../../shared/protocol/texts';
 import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
 import { baseView, click, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
@@ -54,18 +53,33 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
         expect(columns[4]?.querySelectorAll('[data-card]')).toHaveLength(1);
     });
 
-    it('shows number, title, state text, description, figures and last change', async () => {
-        const entry = card('0007', { derivedRule: 'S-REVIEW', state: 'Review' });
-        const text = (await open(boardView([entry]))).querySelector('[data-card]')!.textContent!;
-        expect(text).toContain('0007');
-        expect(text).toContain('Thing 0007');
-        expect(text).toContain('Review');
-        expect(text).toContain('Plan done, waiting for review');
-        expect(text).not.toMatch(/S-REVIEW/);
-        expect(text).toContain('A summary.');
-        expect(text).toContain('Tasks: 3 of 7');
-        expect(text).toContain('Criteria: 1 of 4 verified');
-        expect(text).toContain(`Last change: ${formatLastChange(Date.UTC(2026, 10, 16, 9, 30))}`);
+    it('AC-018: a card shows number and title, then row 2 with the steps, the criteria and the day, and no chip, sentence, rule ID, description or old label', async () => {
+        const text = (await open(boardView([card('0007', { state: 'Review' })]))).querySelector('[data-card]')!.textContent!;
+        expect(text).toBe('0007 Thing 0007Steps 3/7·Criteria 1/42026-11-16');
+        expect(text).not.toMatch(/Plan done, waiting for review|S-REVIEW|A summary|Tasks:|Criteria:|Last change:|No summary/);
+    });
+
+    it('AC-018: the card is built of the rows head, path, state row and step line in that order, and has no state chip', async () => {
+        const entry = card('0001', { state: 'Active', path: '.specs/active/0001-thing.md', problems: 1, step: { short: '/sdd-plan', line: '/sdd-plan .specs/active/0001-thing.md', lines: [{ text: '/sdd-plan .specs/active/0001-thing.md' }] } });
+        const li = (await open(boardView([entry]))).querySelector('[data-card]')!;
+        expect([...li.children].map((child) => child.className)).toEqual(['card-head', 'card-path', 'card-state', 'card-step']);
+        expect(li.querySelector('.state-chip, [data-marker="derived"], .card-summary, .card-foot')).toBeNull();
+        expect(li.querySelector('.card-path')?.textContent).toBe('.specs/active/0001-thing.md');
+    });
+
+    it('AC-018: the card tooltip is number and title, a line break, then the description or No summary; the name ends with the state', async () => {
+        const container = await open(boardView([card('0001', { summary: 'Splits a tip.' }), card('0002', { summary: undefined, state: 'Done' })]));
+        const [first, second] = [...container.querySelectorAll('[data-card]')];
+        expect(first!.getAttribute('title')).toBe('0001 Thing 0001\nSplits a tip.');
+        expect(first!.getAttribute('aria-label')).toBe('0001 Thing 0001, Active');
+        expect(second!.getAttribute('title')).toBe('0002 Thing 0002\nNo summary');
+        expect(second!.getAttribute('aria-label')).toBe('0002 Thing 0002, Done');
+    });
+
+    it('AC-018: the state row is the description of the card, so the screen reader says the figures after the name', async () => {
+        const li = (await open(boardView([card('0001')]))).querySelector('[data-card]')!;
+        const id = li.getAttribute('aria-describedby')!;
+        expect(li.querySelector(`[id="${id}"]`)?.className).toBe('card-state');
     });
 
     it('0015 AC-011: the card shows no run line, whatever the run state of the spec was', async () => {
@@ -74,19 +88,71 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
         expect(container.querySelector('[data-card]')!.textContent).not.toMatch(/No run|Runs: not available|history unreadable/);
     });
 
-    it('AC-004, AC-006: no summary and unavailable figures read as text, never as zero', async () => {
-        const text = (await open(boardView([card('0001', { summary: undefined, tasks: undefined, criteria: undefined, lastChangeMs: undefined })]))).querySelector('[data-card]')!.textContent!;
-        expect(text).toContain('No summary');
-        expect(text).toContain('Tasks: not available');
-        expect(text).toContain('Criteria: not available');
-        expect(text).toContain('Last change: not available');
+    it('AC-019: a Backlog card shows its first need, a Blocked card each blocked line, a Deprecated card the word, any other the progress', async () => {
+        const container = await open(
+            boardView([
+                card('0001', { state: 'Backlog', need: { text: 'needs a plan', rule: 'R-3' }, tasks: undefined, criteria: undefined }),
+                card('0002', { state: 'Blocked', blocked: ['Blocked: plan status Blocked', 'Blocked: return note n.md'] }),
+                card('0003', { state: 'Done', deprecated: true }),
+                card('0004', { state: 'Active' }),
+            ]),
+        );
+        const rows = Object.fromEntries([...container.querySelectorAll('[data-card]')].map((entry) => [/\d{4}/.exec(entry.getAttribute('data-card')!)![0], (entry.querySelector('.card-state')?.textContent ?? '').trim()]));
+        expect(rows['0001']).toBe('needs a plan2026-11-16');
+        expect(rows['0002']).toBe('Blocked: plan status BlockedBlocked: return note n.md2026-11-16');
+        expect(rows['0003']).toBe('Deprecated2026-11-16');
+        expect(rows['0004']).toBe('Steps 3/7·Criteria 1/42026-11-16');
+        expect(container.textContent).not.toContain('R-3');
     });
 
-    it('AC-024: blocked lines, the readiness line, the Deprecated marker, the diagnostic badge and a duplicated path show as text', async () => {
+    it('AC-019: unavailable parts are left out and never read as zero; with no part, row 2 is absent', async () => {
+        const container = await open(
+            boardView([
+                card('0001', { tasks: undefined, lastChange: undefined }),
+                card('0002', { criteria: undefined, lastChange: undefined }),
+                card('0003', { tasks: undefined, criteria: undefined, lastChange: undefined }),
+            ]),
+        );
+        const [only, steps, none] = [...container.querySelectorAll('[data-card]')];
+        expect(only!.querySelector('.card-state')?.textContent).toBe('Criteria 1/4');
+        expect(steps!.querySelector('.card-state')?.textContent).toBe('Steps 3/7');
+        expect(none!.querySelector('.card-state')).toBeNull();
+        expect(none!.hasAttribute('aria-describedby')).toBe(false);
+        expect(container.textContent).not.toMatch(/not available|0\/0/);
+    });
+
+    it('AC-019: the steps bar is named Steps and carries the figure', async () => {
+        const bar = (await open(boardView([card('0001')]))).querySelector('[role="progressbar"]')!;
+        expect(bar.getAttribute('aria-label')).toBe('Steps');
+        expect(bar.getAttribute('aria-valuenow')).toBe('3');
+        expect(bar.getAttribute('aria-valuemax')).toBe('7');
+        expect(bar.getAttribute('aria-valuetext')).toBe('Steps 3/7');
+    });
+
+    it('AC-019: the Problems badge is the warning icon with its text, and absent at 0 (negative control)', async () => {
+        const one = (await open(boardView([card('0001', { problems: 1 })]))).querySelector('[data-card]')!;
+        expect(one.querySelector('[data-marker="problems"]')?.textContent?.trim()).toBe('1 problem');
+        expect(one.querySelector('[data-marker="problems"] svg')?.getAttribute('aria-hidden')).toBe('true');
+        mounted?.unmount();
+        const two = (await open(boardView([card('0001', { problems: 2 })]))).querySelector('[data-marker="problems"]');
+        expect(two?.textContent?.trim()).toBe('2 problems');
+        mounted?.unmount();
+        const none = (await open(boardView([card('0002', { problems: 0 })]))).querySelector('[data-card]')!;
+        expect(none.querySelector('[data-marker="problems"]')).toBeNull();
+        expect(none.textContent).not.toMatch(/problem|diagnostic/i);
+    });
+
+    it('AC-021: the day is shown beside a tooltip naming its source', async () => {
+        const container = await open(boardView([card('0001', { lastChange: { day: '2026-11-10', source: 'plan' } }), card('0002', { lastChange: { day: '2026-11-12', source: 'file' } })]));
+        const days = [...container.querySelectorAll('.card-change')];
+        expect(days.map((day) => day.textContent)).toEqual(['2026-11-10', '2026-11-12']);
+        expect(days.map((day) => day.getAttribute('title'))).toEqual(["Last change 2026-11-10, from the plan's Last updated line", 'Last change 2026-11-12, file modification time']);
+    });
+
+    it('AC-024: blocked lines, the Deprecated marker, the Problems badge and a duplicated path show as text', async () => {
         const entry = card('0001', {
             state: 'Blocked',
             blocked: ['Blocked: plan status Blocked', 'Blocked: return note activeContext.0001-T-002.md'],
-            need: { text: 'needs a plan', rule: 'R-3' },
             deprecated: true,
             problems: 2,
             path: '.specs/active/0001-thing.md',
@@ -94,31 +160,25 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
         const text = (await open(boardView([entry]))).querySelector('[data-card]')!.textContent!;
         expect(text).toContain('Blocked: plan status Blocked');
         expect(text).toContain('Blocked: return note activeContext.0001-T-002.md');
-        expect(text).toContain('needs a plan');
-        expect(text).not.toContain('R-3');
-        expect(text).toContain('Deprecated');
         expect(text).toContain('2 problems');
         expect(text).toContain('.specs/active/0001-thing.md');
     });
 
-    it('0016 AC-006, AC-007: the badge reads 1 problem for one Problem and is absent at 0 (negative control)', async () => {
-        const one = (await open(boardView([card('0001', { problems: 1 })]))).querySelector('[data-card]')!;
-        expect(one.querySelector('[data-marker="problems"]')?.textContent?.trim()).toBe('1 problem');
-        const none = (await open(boardView([card('0002', { problems: 0 })]))).querySelector('[data-card]')!;
-        expect(none.querySelector('[data-marker="problems"]')).toBeNull();
-        expect(none.textContent).not.toMatch(/problem|diagnostic/i);
-    });
-
-    it('AC-018: every state and every badge carries an icon beside its text, hidden from assistive technology', async () => {
-        const container = await open(boardView([card('0001', { derivedRule: 'S-REVIEW', deprecated: true, problems: 1 })]));
+    it('AC-018: every badge carries an icon beside its text, hidden from assistive technology', async () => {
+        const container = await open(boardView([card('0001', { deprecated: true, problems: 1 })]));
         const markers = [...container.querySelectorAll('[data-card] .marker')];
-        expect(markers).toHaveLength(4);
+        expect(markers).toHaveLength(2);
         markers.forEach((marker) => {
             const icon = marker.querySelector('svg');
             expect(icon?.getAttribute('aria-hidden')).toBe('true');
             expect(marker.textContent?.trim().length).toBeGreaterThan(0);
         });
         container.querySelectorAll('.column-heading').forEach((heading) => expect(heading.querySelector('svg')).not.toBeNull());
+    });
+
+    it('AC-022: the sort control offers exactly the keys of the view', async () => {
+        const two = await open(boardView([card('0001')], { sortKeys: ['number', 'title'] }));
+        expect([...two.querySelector('select')!.options].map((option) => option.textContent)).toEqual(['Number', 'Title A–Z']);
     });
 });
 
@@ -303,55 +363,37 @@ describe('0013 AC-009, AC-010: card layout', () => {
         return first !== null && second !== null && (first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
     }
 
-    it('AC-009: number and title, one state chip, summary, the tasks and criteria progressbars and the next-step line follow in DOM order', async () => {
-        const entry = (await open(boardView([card('0007', { state: 'Review', derivedRule: 'S-REVIEW', step: STEP })]))).querySelector('[data-card]')!;
+    it('AC-009: number and title, the steps bar, the criteria and the next-step line follow in DOM order, and the card has one steps bar', async () => {
+        const entry = (await open(boardView([card('0007', { state: 'Review', step: STEP })]))).querySelector('[data-card]')!;
         const head = entry.querySelector('.card-head');
-        const chips = entry.querySelectorAll('.state-chip');
-        const summary = entry.querySelector('.card-summary');
         const bars = [...entry.querySelectorAll('[role="progressbar"]')];
+        const criteria = entry.querySelector('.card-criteria');
         expect(head?.textContent).toContain('0007');
         expect(head?.textContent).toContain('Thing 0007');
-        expect(chips).toHaveLength(1);
-        expect(chips[0]?.textContent?.trim()).toBe('Review');
-        expect(chips[0]?.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
-        expect(bars.map((bar) => bar.getAttribute('aria-label'))).toEqual(['Tasks', 'Criteria verified']);
-        expect(follows(head, chips[0] ?? null)).toBe(true);
-        expect(follows(chips[0] ?? null, summary)).toBe(true);
-        expect(follows(summary, bars[0] ?? null)).toBe(true);
-        expect(follows(bars[0] ?? null, bars[1] ?? null)).toBe(true);
-        expect(follows(bars[1] ?? null, entry.querySelector('.card-step'))).toBe(true);
+        expect(bars.map((bar) => bar.getAttribute('aria-label'))).toEqual(['Steps']);
+        expect(follows(head, bars[0] ?? null)).toBe(true);
+        expect(follows(bars[0] ?? null, criteria)).toBe(true);
+        expect(follows(criteria, entry.querySelector('.card-step'))).toBe(true);
         expect(entry.lastElementChild?.classList.contains('card-step')).toBe(true);
     });
 
-    it('AC-009: the progressbars carry value, maximum and the figure text', async () => {
-        const entry = (await open(boardView([card('0007')]))).querySelector('[data-card]')!;
-        const [tasks, criteria] = [...entry.querySelectorAll('[role="progressbar"]')];
-        expect([tasks?.getAttribute('aria-valuenow'), tasks?.getAttribute('aria-valuemax')]).toEqual(['3', '7']);
-        expect([criteria?.getAttribute('aria-valuenow'), criteria?.getAttribute('aria-valuemax')]).toEqual(['1', '4']);
-        expect(entry.textContent).toContain('Tasks: 3 of 7');
-        expect(entry.textContent).toContain('Criteria: 1 of 4 verified');
-    });
-
-    it('AC-009: where 0007 delivers no figure only "not available" shows, no progressbar', async () => {
+    it('AC-009: where 0007 delivers no figure nothing shows for it and no progressbar is drawn', async () => {
         const entry = (await open(boardView([card('0001', { tasks: undefined, criteria: undefined })]))).querySelector('[data-card]')!;
         expect(entry.querySelectorAll('[role="progressbar"]')).toHaveLength(0);
-        expect(entry.textContent).toContain('Tasks: not available');
-        expect(entry.textContent).toContain('Criteria: not available');
+        expect(entry.textContent).not.toMatch(/Steps|Criteria|not available/);
     });
 
-    it('AC-014 (0016): a Backlog card shows its need as text without icon, the rule only in the tooltip; the Deprecated marker sits beside the chip', async () => {
+    it('AC-014 (0016): a Backlog card shows its need as text without icon, the rule only in the tooltip; the Deprecated marker shows on a card without a need', async () => {
         const entry = (
-            await open(boardView([card('0001', { state: 'Backlog', derivedRule: undefined, deprecated: true, need: { text: 'needs a plan', rule: 'R-3' } }), card('0002', { state: 'Review', derivedRule: 'S-REVIEW' }), card('0003', { state: 'Ready' })]))
+            await open(boardView([card('0001', { state: 'Backlog', need: { text: 'needs a plan', rule: 'R-3' } }), card('0003', { state: 'Ready' }), card('0002', { state: 'Review', deprecated: true })]))
         ).querySelectorAll('[data-card]');
         const need = entry[0]!.querySelector('.card-need')!;
         expect(need.textContent).toBe('needs a plan');
         expect(need.getAttribute('title')).toBe('Not Ready yet · rule R-3');
         expect(need.querySelector('svg')).toBeNull();
-        expect(entry[1]!.querySelector('.card-need')).toBeNull();
-        expect(entry[0]!.querySelector('.card-state [data-marker="deprecated"]')?.textContent?.trim()).toBe('Deprecated');
-        const derived = entry[2]!.querySelector('.card-state [data-marker="derived"]')!;
-        expect(derived.querySelector('.rule-sentence')?.textContent).toBe('Plan done, waiting for review');
-        expect(derived.querySelector('.rule-text')?.getAttribute('title')).toBe('Derived from the files · rule S-REVIEW');
+        expect(entry[2]!.querySelector('.card-need')).toBeNull();
+        expect(entry[2]!.querySelector('.card-state [data-marker="deprecated"]')?.textContent?.trim()).toBe('Deprecated');
+        expect(entry[1]!.querySelector('[data-marker="derived"], .rule-text')).toBeNull();
     });
 });
 

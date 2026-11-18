@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import * as os from 'os';
 import * as path from 'path';
-import { specText } from '../lifecycle/testing/projects';
+import { planText, specText } from '../lifecycle/testing/projects';
 import type { BoardService } from './boardService';
 import { createBoardWorld, createFakeBoardMemory, modelOf, type BoardWorld } from './testing/boardWorld';
 
@@ -45,7 +45,7 @@ describe('board service: view', () => {
         const w = await world();
         const view = w.service.view()!;
         expect(JSON.stringify(view)).not.toMatch(/"run"|"providers"/);
-        expect(Object.keys(view).sort()).toEqual(['banner', 'columns', 'filter', 'noSpecs', 'sort']);
+        expect(Object.keys(view).sort()).toEqual(['banner', 'columns', 'filter', 'noSpecs', 'sort', 'sortKeys']);
     });
 });
 
@@ -70,12 +70,12 @@ describe('board service: filters and sort', () => {
 
     it('AC-023: filters and sort survive a rebuild of the model and a hidden panel', async () => {
         const w = await world();
-        w.service.setSort('lastChange');
+        w.service.setSort('title');
         w.service.setFilter({ states: ['Active'] });
         w.source.set(await modelOf(NINE));
         await w.service.whenIdle();
         expect(w.service.view()!.filter).toEqual({ states: ['Active'] });
-        expect(w.service.view()!.sort).toBe('lastChange');
+        expect(w.service.view()!.sort).toBe('title');
     });
 
     it('AC-023: a closed panel resets filters and sort', async () => {
@@ -207,6 +207,65 @@ describe('board service: Done collapsed and remembered', () => {
         expect(w.service.view()!.doneToggle).toBe('show');
         expect(shown(w)).toEqual([]);
         expect(w.service.view()!.noSpecs).toBe(false);
+    });
+});
+
+const LINKED_PLAN = (number: string, slug: string): string => `[${number}-${slug}.plan.md](${number}-${slug}.plan.md)`;
+
+function dated(days: [string, string]): Record<string, string> {
+    return {
+        '.specs/active/0001-a.md': specText({ status: 'In Progress', plan: LINKED_PLAN('0001', 'a') }),
+        '.specs/active/0001-a.plan.md': planText({ status: 'In Progress', lastUpdated: days[0] }),
+        '.specs/active/0002-b.md': specText({ status: 'In Progress', plan: LINKED_PLAN('0002', 'b') }),
+        '.specs/active/0002-b.plan.md': planText({ status: 'In Progress', lastUpdated: days[1] }),
+    };
+}
+
+describe('board service: the date of a card (L-3)', () => {
+    it('AC-022: files with equal times (an in-memory project) give no date, only Number and Title, and a last-change sort becomes Number', async () => {
+        const w = await world();
+        const view = w.service.view()!;
+        expect(view.columns.flatMap((column) => column.cards).every((entry) => entry.lastChange === undefined)).toBe(true);
+        expect(view.sortKeys).toEqual(['number', 'title']);
+        w.service.setSort('lastChange');
+        expect(w.service.view()!.sort).toBe('number');
+        w.service.setSort('title');
+        expect(w.service.view()!.sort).toBe('title');
+    });
+
+    it('AC-022: one spec alone gives no date', async () => {
+        const w = await world({ '.specs/active/0001-a.md': specText({ status: 'In Progress', plan: LINKED_PLAN('0001', 'a') }), '.specs/active/0001-a.plan.md': planText({ status: 'In Progress', lastUpdated: '2026-11-10' }) });
+        expect(w.service.view()!.columns.flatMap((column) => column.cards).map((entry) => entry.lastChange)).toEqual([undefined]);
+        expect(w.service.view()!.sortKeys).toEqual(['number', 'title']);
+    });
+
+    it('AC-022: two plan dates that are the same day give no date either', async () => {
+        const w = await world(dated(['2026-11-10', '2026-11-10 (stage 2)']));
+        expect(w.service.view()!.sortKeys).toEqual(['number', 'title']);
+    });
+
+    it('AC-021, AC-023: two different days show the days, offer the third sort and order by the newest first', async () => {
+        const w = await world(dated(['2026-11-10', '2026-11-12']));
+        const view = w.service.view()!;
+        expect(view.sortKeys).toEqual(['number', 'title', 'lastChange']);
+        expect(view.columns.flatMap((column) => column.cards).map((entry) => [entry.number, entry.lastChange])).toEqual([
+            ['0001', { day: '2026-11-10', source: 'plan' }],
+            ['0002', { day: '2026-11-12', source: 'plan' }],
+        ]);
+        w.service.setSort('lastChange');
+        expect(w.service.view()!.sort).toBe('lastChange');
+        expect(shown(w)).toEqual(['0002', '0001']);
+    });
+
+    it('AC-022: when the dates become equal the sort falls back to Number and stays there', async () => {
+        const w = await world(dated(['2026-11-10', '2026-11-12']));
+        w.service.setSort('lastChange');
+        w.source.set(await modelOf(dated(['2026-11-12', '2026-11-12'])));
+        await w.service.whenIdle();
+        expect(w.service.view()!.sort).toBe('number');
+        w.source.set(await modelOf(dated(['2026-11-10', '2026-11-12'])));
+        await w.service.whenIdle();
+        expect(w.service.view()!.sort).toBe('number');
     });
 });
 

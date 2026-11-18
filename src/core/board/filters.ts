@@ -29,10 +29,12 @@ function compareBy(sort: SortKey): (left: CardView, right: CardView) => number {
             };
         case 'lastChange':
             return (left, right) => {
-                if (left.lastChangeMs === undefined || right.lastChangeMs === undefined) {
-                    return left.lastChangeMs === right.lastChangeMs ? tieBreak(left, right) : left.lastChangeMs === undefined ? 1 : -1;
+                const leftDay = left.lastChange?.day;
+                const rightDay = right.lastChange?.day;
+                if (leftDay === undefined || rightDay === undefined) {
+                    return leftDay === rightDay ? tieBreak(left, right) : leftDay === undefined ? 1 : -1;
                 }
-                return right.lastChangeMs - left.lastChangeMs || tieBreak(left, right);
+                return compareText(rightDay, leftDay) || tieBreak(left, right);
             };
     }
 }

@@ -1,6 +1,6 @@
 import type { StatusHistoryItem } from './detail';
 import type { BoardState } from './boardFilter';
-import type { ColumnNarrow, Progress, SortKey } from './board';
+import type { ColumnNarrow, LastChange, Progress, SortKey } from './board';
 import type { ActionId, PanelState } from './messages';
 import type { DerivedRule } from './board';
 
@@ -261,24 +261,30 @@ export const SORT_LABELS: Record<SortKey, string> = {
 
 export const NO_SUMMARY_TEXT = 'No summary';
 
-export function tasksText(tasks: Progress | undefined): string {
-    return tasks === undefined ? 'Tasks: not available' : `Tasks: ${tasks.done} of ${tasks.total}`;
+export const STEPS_PROGRESS_LABEL = 'Steps';
+
+export function stepsText(steps: Progress): string {
+    return `Steps ${steps.done}/${steps.total}`;
 }
 
-export const TASKS_PROGRESS_LABEL = 'Tasks';
-export const CRITERIA_PROGRESS_LABEL = 'Criteria verified';
+export function criteriaShortText(criteria: Progress): string {
+    return `Criteria ${criteria.done}/${criteria.total}`;
+}
 
 export function criteriaText(criteria: Progress | undefined): string {
     return criteria === undefined ? 'Criteria: not available' : `Criteria: ${criteria.done} of ${criteria.total} verified`;
 }
 
-export function formatLastChange(ms: number): string {
-    const date = new Date(ms);
-    return `${date.getFullYear()}-${two(date.getMonth() + 1)}-${two(date.getDate())} ${two(date.getHours())}:${two(date.getMinutes())}`;
+export function lastChangeTooltip(last: LastChange): string {
+    return last.source === 'plan' ? `Last change ${last.day}, from the plan's Last updated line` : `Last change ${last.day}, file modification time`;
 }
 
-export function lastChangeText(ms: number | undefined): string {
-    return ms === undefined ? 'Last change: not available' : `Last change: ${formatLastChange(ms)}`;
+export function cardTooltip(card: { number: string; title: string; summary: string | undefined }): string {
+    return `${card.number} ${card.title}\n${card.summary ?? NO_SUMMARY_TEXT}`;
+}
+
+export function cardName(card: { number: string; title: string; state: string }): string {
+    return `${card.number} ${card.title}, ${card.state}`;
 }
 
 export const DEPRECATED_MARKER = 'Deprecated';

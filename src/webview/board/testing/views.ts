@@ -11,7 +11,6 @@ export function card(number: string, overrides: Partial<CardView> = {}): CardVie
         titleIsStem: false,
         path: undefined,
         state: 'Active',
-        derivedRule: undefined,
         deprecated: false,
         problems: 0,
         blocked: [],
@@ -20,7 +19,7 @@ export function card(number: string, overrides: Partial<CardView> = {}): CardVie
         summary: 'A summary.',
         tasks: { done: 3, total: 7 },
         criteria: { done: 1, total: 4 },
-        lastChangeMs: Date.UTC(2026, 10, 16, 9, 30),
+        lastChange: { day: '2026-11-16', source: 'file' },
         ...overrides,
     };
 }
@@ -31,7 +30,7 @@ export function boardView(cards: CardView[], overrides: Partial<BoardView> = {})
         const column: BoardColumn = { state, cards: own, hidden: 0, emptyBeforeFilter: own.length === 0, count: own.length };
         return own.length === 0 ? { ...column, narrow: 'empty' } : column;
     });
-    return { columns, banner: { problems: [], notes: [] }, filter: {}, sort: 'number', noSpecs: cards.length === 0, ...overrides };
+    return { columns, banner: { problems: [], notes: [] }, filter: {}, sort: 'number', sortKeys: ['number', 'title', 'lastChange'], noSpecs: cards.length === 0, ...overrides };
 }
 
 export function boardEvent(view: BoardView): Envelope {
