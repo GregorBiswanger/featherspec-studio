@@ -75,7 +75,7 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
         const entry = card('0001', {
             state: 'Blocked',
             blocked: ['Blocked: plan status Blocked', 'Blocked: return note activeContext.0001-T-002.md'],
-            readiness: { id: 'R-3', reason: 'No sibling plan.' },
+            need: { text: 'needs a plan', rule: 'R-3' },
             deprecated: true,
             problems: 2,
             path: '.specs/active/0001-thing.md',
@@ -83,8 +83,8 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
         const text = (await open(boardView([entry]))).querySelector('[data-card]')!.textContent!;
         expect(text).toContain('Blocked: plan status Blocked');
         expect(text).toContain('Blocked: return note activeContext.0001-T-002.md');
-        expect(text).toContain('No sibling plan.');
-        expect(text).toContain('R-3');
+        expect(text).toContain('needs a plan');
+        expect(text).not.toContain('R-3');
         expect(text).toContain('Deprecated');
         expect(text).toContain('2 problems');
         expect(text).toContain('.specs/active/0001-thing.md');
@@ -284,15 +284,17 @@ describe('0013 AC-009, AC-010: card layout', () => {
         expect(entry.textContent).toContain('Criteria: not available');
     });
 
-    it('AC-010: the derived sentence and the readiness reason are primary text, rule and check ID secondary; the Deprecated marker sits beside the chip', async () => {
+    it('AC-014 (0016): a Backlog card shows its need as text without icon, the rule only in the tooltip; the Deprecated marker sits beside the chip', async () => {
         const entry = (
-            await open(boardView([card('0001', { state: 'Backlog', derivedRule: undefined, deprecated: true, readiness: { id: 'R-3', reason: 'No sibling plan.' } }), card('0002', { state: 'Review', derivedRule: 'S-REVIEW' })]))
+            await open(boardView([card('0001', { state: 'Backlog', derivedRule: undefined, deprecated: true, need: { text: 'needs a plan', rule: 'R-3' } }), card('0002', { state: 'Review', derivedRule: 'S-REVIEW' }), card('0003', { state: 'Ready' })]))
         ).querySelectorAll('[data-card]');
-        const readiness = entry[0]!.querySelector('.card-readiness')!;
-        expect(readiness.querySelector('.rule-sentence')?.textContent).toBe('No sibling plan.');
-        expect(readiness.querySelector('.rule-id')?.textContent).toBe('R-3');
+        const need = entry[0]!.querySelector('.card-need')!;
+        expect(need.textContent).toBe('needs a plan');
+        expect(need.getAttribute('title')).toBe('Not Ready yet · rule R-3');
+        expect(need.querySelector('svg')).toBeNull();
+        expect(entry[1]!.querySelector('.card-need')).toBeNull();
         expect(entry[0]!.querySelector('.card-state [data-marker="deprecated"]')?.textContent?.trim()).toBe('Deprecated');
-        const derived = entry[1]!.querySelector('.card-state [data-marker="derived"]')!;
+        const derived = entry[2]!.querySelector('.card-state [data-marker="derived"]')!;
         expect(derived.querySelector('.rule-sentence')?.textContent).toBe('Derived: plan is Done, waiting for review');
         expect(derived.querySelector('.rule-id')?.textContent).toBe('S-REVIEW');
     });

@@ -66,13 +66,22 @@ describe('cards', () => {
         expect(cards[0]?.blocked).toEqual(['Blocked: plan status Blocked', 'Blocked: return note activeContext.0001-T-002.md']);
     });
 
-    it('AC-024: a Backlog card shows the lowest failing readiness check with its reason; a non-Backlog card shows none', async () => {
+    it('AC-014 (0016): a Backlog card shows the first applying need with its rule; a non-Backlog card and a Ready card show none', async () => {
         const { cards } = await cardsOf({
             '.specs/backlog/0001-a.md': specText(),
             '.specs/done/0002-b.md': specText({ status: 'Baseline' }),
+            '.specs/backlog/0003-c.md': specText({ plan: '[0003-c.plan.md](0003-c.plan.md)' }),
+            '.specs/backlog/0003-c.plan.md': planText({ spec: '[s](0003-c.md)' }),
         });
-        expect(cards[0]?.readiness).toEqual({ id: 'R-3', reason: 'No sibling plan, or the Plan line does not link it.' });
-        expect(cards[1]?.readiness).toBeUndefined();
+        expect(cards[0]?.need).toEqual({ text: 'needs a plan', rule: 'R-3' });
+        expect(cards[1]?.need).toBeUndefined();
+        expect(cards[2]?.need).toBeUndefined();
+    });
+
+    it('AC-014: fs170-brownfield-mixed gives the card of 0003 the need "needs a plan"', async () => {
+        const project = await readFixture('fs170-brownfield-mixed');
+        const cards = buildCards(project, deriveLifecycle(project));
+        expect(cards.find((card) => card.number === '0003')?.need).toEqual({ text: 'needs a plan', rule: 'R-3' });
     });
 
     it('AC-024: the Deprecated marker is on the card of a Deprecated spec only', async () => {

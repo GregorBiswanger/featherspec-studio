@@ -26,16 +26,16 @@ export interface CardView {
     deprecated: boolean;
     problems: number;
     blocked: string[];
-    readiness: ReadinessCheck | undefined;
+    need: NeedView | undefined;
     summary: string | undefined;
     tasks: Progress | undefined;
     criteria: Progress | undefined;
     lastChangeMs: number | undefined;
 }
 
-export interface ReadinessCheck {
-    id: string;
-    reason: string;
+export interface NeedView {
+    text: string;
+    rule: string;
 }
 
 export interface BoardColumn {
@@ -95,7 +95,7 @@ export function isCardView(value: unknown): value is CardView {
         typeof value.problems === 'number' &&
         Array.isArray(value.blocked) &&
         value.blocked.every(isString) &&
-        (value.readiness === undefined || (isRecord(value.readiness) && isString(value.readiness.id) && isString(value.readiness.reason))) &&
+        (value.need === undefined || (isRecord(value.need) && isString(value.need.text) && isString(value.need.rule))) &&
         isOptionalString(value.summary) &&
         isProgress(value.tasks) &&
         isProgress(value.criteria) &&

@@ -7,6 +7,7 @@ import {
     DERIVED_SENTENCES,
     problemsBadgeText,
     lastChangeText,
+    needTooltip,
     NO_SUMMARY_TEXT,
     TASKS_PROGRESS_LABEL,
     tasksText,
@@ -74,9 +75,9 @@ export function Card(props: {
                     {line}
                 </div>
             ))}
-            {card.readiness === undefined ? null : (
-                <div className="card-readiness">
-                    <RuleText text={card.readiness.reason} id={card.readiness.id} />
+            {card.need === undefined ? null : (
+                <div className="card-need" title={needTooltip(card.need.rule)}>
+                    {card.need.text}
                 </div>
             )}
             <div className="card-figures">

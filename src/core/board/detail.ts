@@ -6,6 +6,7 @@ import type { ShellModel } from '../ports/shell';
 import type { HeaderField } from '../specs/parseSpec';
 import type { SpecEntry } from '../specs/readProject';
 import { titleOf } from './cards';
+import { needsOf } from './needs';
 import { nextStep } from './nextStep';
 import { withoutLeadingId, withoutListMarker } from './idText';
 import { criteriaProgress } from './progress';
@@ -122,7 +123,7 @@ export function buildDetail(input: DetailInput): DetailView {
             persistence: entry.persistence,
             deprecated: entry.deprecated !== undefined,
             successor: entry.deprecated === undefined ? undefined : successorText(entry.deprecated.successor),
-            readiness: entry.folder === 'backlog' ? entry.readiness.checks.map((check) => ({ id: check.id, result: check.result, reason: check.result === 'pass' ? undefined : check.reason })) : undefined,
+            needs: needsOf(model.project, entry),
             notes: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'note').map(diagnosticLine),
         },
         requirements: { open: specTarget, items: (parsed?.requirements ?? []).map((item) => ({ id: item.id, text: withoutLeadingId(item.text, item.id), open: { key: spec.key, line: item.line } })) },
@@ -146,7 +147,6 @@ export function buildDetail(input: DetailInput): DetailView {
             other: entry.verification.counts.other,
             summary: entry.verification.summary,
             criteria: criteriaProgress(entry.verification),
-            compileVerdict: entry.verification.compileVerdictText,
         },
         related,
         history: { statusHistory: historyItems, label: input.history.available ? input.history.label : 'Observed by Studio while it was running — not a reconstruction', notAvailable: input.history.available ? undefined : input.history.text },

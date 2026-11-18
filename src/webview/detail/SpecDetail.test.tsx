@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
-import { fileNotFoundText, HISTORY_NOT_AVAILABLE_TEXT, NO_DETAIL_SELECTION_TEXT, NO_PLAN_TEXT, NO_REQUIREMENTS_TEXT, PRIORITY_TEXT } from '../../shared/protocol/texts';
+import { fileNotFoundText, HISTORY_NOT_AVAILABLE_TEXT, NO_DETAIL_SELECTION_TEXT, NO_PLAN_TEXT, NO_REQUIREMENTS_TEXT } from '../../shared/protocol/texts';
 import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
 import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
@@ -70,23 +70,26 @@ describe('AC-010: the seven sections', () => {
         expect(text).toContain('Active');
         expect(text).toContain('S-ACTIVE');
         expect(text).toContain('persisted');
-        expect(text).toContain(PRIORITY_TEXT);
+        expect(text).not.toMatch(/Priority|verdict/i);
         expect(text).toContain('Plan has no Verified line');
     });
 
-    it('Overview shows readiness checks and the successor of a deprecated spec', async () => {
+    it('Overview shows the needs, no readiness checklist, and the successor of a deprecated spec', async () => {
         const base = sections().overview;
         const container = await open(
             detailView({
-                overview: { ...base, deprecated: true, successor: 'Successor: 0009-new', readiness: [{ id: 'R-1', result: 'fail', reason: 'No acceptance criteria' }, { id: 'R-2', result: 'pass', reason: undefined }] },
+                overview: { ...base, deprecated: true, successor: 'Successor: 0009-new', needs: [{ text: 'needs acceptance criteria', rule: 'R-2' }, { text: 'needs a plan', rule: 'R-3' }] },
             }),
         );
         const text = section(container, 'Overview').textContent!;
         expect(text).toContain('Deprecated');
         expect(text).toContain('Successor: 0009-new');
-        expect(text).toContain('R-1');
-        expect(text).toContain('No acceptance criteria');
-        expect(text).toContain('R-2');
+        const needs = [...section(container, 'Overview').querySelectorAll('.detail-needs li')];
+        expect(needs.map((item) => item.textContent)).toEqual(['needs acceptance criteria', 'needs a plan']);
+        expect(needs.map((item) => item.getAttribute('title'))).toEqual(['Not Ready yet · rule R-2', 'Not Ready yet · rule R-3']);
+        expect(needs.every((item) => item.querySelector('svg') === null)).toBe(true);
+        expect(section(container, 'Overview').querySelector('.detail-checks')).toBeNull();
+        expect(text).not.toMatch(/R-1|Inter-spec|failed/);
     });
 
     it('Plan shows stages, steps with tick state, struck and the Verified text', async () => {
@@ -101,11 +104,11 @@ describe('AC-010: the seven sections', () => {
         expect(text).toContain('struck');
     });
 
-    it('Verification shows the counts, the summary, the criteria progress and the compile verdict', async () => {
+    it('Verification shows the counts, the summary, the criteria progress and no verdict line', async () => {
         const text = section(await open(), 'Verification').textContent!;
         expect(text).toContain('3 of 6 rows verified');
         expect(text).toContain('Criteria: 3 of 6 verified');
-        expect(text).toContain('No compile verdict yet');
+        expect(text).not.toMatch(/verdict/i);
         expect(text).toContain('open 1');
         expect(text).toContain('built 2');
         expect(text).toContain('verified 3');
@@ -332,17 +335,12 @@ describe('0013 AC-012, AC-013, AC-010: collapsible sections, detail header, Over
         expect(requests('openFile')).toEqual([{ key: SPEC_KEY }]);
     });
 
-    it('AC-010: the Overview shows a derived state with its sentence and rule ID, and a failing readiness check with reason and check ID', async () => {
+    it('AC-010: the Overview shows a derived state with its sentence and rule ID', async () => {
         const base = sections().overview;
-        const container = await open(
-            detailView({ overview: { ...base, state: 'Review', rule: 'S-REVIEW', persistence: 'derived', readiness: [{ id: 'R-3', result: 'fail', reason: 'No sibling plan.' }] } }),
-        );
+        const container = await open(detailView({ overview: { ...base, state: 'Review', rule: 'S-REVIEW', persistence: 'derived' } }));
         const overview = section(container, 'Overview');
         const sentences = [...overview.querySelectorAll('.rule-text')].map((rule) => [rule.querySelector('.rule-sentence')?.textContent, rule.querySelector('.rule-id')?.textContent]);
-        expect(sentences).toEqual([
-            ['Derived: plan is Done, waiting for review', 'S-REVIEW'],
-            ['No sibling plan.', 'R-3'],
-        ]);
+        expect(sentences).toEqual([['Derived: plan is Done, waiting for review', 'S-REVIEW']]);
     });
 });
 

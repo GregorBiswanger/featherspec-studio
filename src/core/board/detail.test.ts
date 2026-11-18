@@ -122,19 +122,22 @@ describe('spec detail', () => {
         const view = spec(buildDetail({ selection: { stem: '0001-a' }, model, history: NO_HISTORY }));
         expect(view.sections.verification.criteria).toEqual(card.criteria);
         expect(view.sections.verification.criteria).toEqual({ done: 1, total: 2 });
-        expect(view.sections.verification.compileVerdict).toContain('not available');
+        expect(Object.keys(view.sections.verification)).not.toContain('compileVerdict');
     });
 
-    it('AC-005: the Overview says "Priority: not available" through the model and carries no priority field', async () => {
+    it('AC-013: the detail carries no priority, verdict, readiness checklist or dependency line', async () => {
         const view = spec(await detailOf(FILES, { stem: '0001-a' }));
-        expect(JSON.stringify(view)).not.toMatch(/priorit/i);
+        expect(JSON.stringify(view)).not.toMatch(/priorit|verdict|Inter-spec|readiness/i);
     });
 
-    it('AC-024: readiness checks appear for a backlog/ entry only; the successor of a Deprecated spec as 0003 reports it', async () => {
-        const backlog = spec(await detailOf({ '.specs/backlog/0002-b.md': specText() }, { stem: '0002-b' }));
-        expect(backlog.sections.overview.readiness?.map((check) => check.id)).toEqual(['R-1', 'R-2', 'R-3', 'R-4', 'R-5', 'R-6', 'R-7']);
+    it('AC-014: needs appear for a backlog/ entry only, each with its rule; the successor of a Deprecated spec as 0003 reports it', async () => {
+        const backlog = spec(await detailOf({ '.specs/backlog/0002-b.md': specText({ criteria: false }) }, { stem: '0002-b' }));
+        expect(backlog.sections.overview.needs).toEqual([
+            { text: 'needs acceptance criteria', rule: 'R-2' },
+            { text: 'needs a plan', rule: 'R-3' },
+        ]);
         const active = spec(await detailOf(FILES, { stem: '0001-a' }));
-        expect(active.sections.overview.readiness).toBeUndefined();
+        expect(active.sections.overview.needs).toEqual([]);
         const deprecated = spec(await detailOf({ '.specs/done/0003-c.md': `${specText({ status: 'Deprecated' })}\nsuccessor: none — behaviour removed\n` }, { stem: '0003-c' }));
         expect(deprecated.sections.overview.deprecated).toBe(true);
         expect(deprecated.sections.overview.successor).toBe('Successor: none — behaviour removed');

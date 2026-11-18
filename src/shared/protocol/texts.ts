@@ -221,7 +221,15 @@ export function pickTargetPlaceholder(number: string): string {
 export const NO_DETAIL_SELECTION_TEXT = 'Select a spec in the list to see its details.';
 export const NO_REQUIREMENTS_TEXT = 'No FR- requirements found';
 export const NO_PLAN_TEXT = 'No plan yet';
-export const PRIORITY_TEXT = 'Priority: not available';
+export const NEED_CRITERIA_TEXT = 'needs acceptance criteria';
+export const NEED_PLAN_TEXT = 'needs a plan';
+export const NEED_PLAN_LINK_TEXT = 'needs the Plan line to link its plan';
+export const NEED_PLAN_STARTED_TEXT = 'plan already started';
+export const NEED_PLAN_NO_STATUS_TEXT = 'plan has no status';
+
+export function needTooltip(rule: string): string {
+    return `Not Ready yet · rule ${rule}`;
+}
 export const OPEN_FILE_LABEL = 'Open file';
 export const STATE_LABEL = 'State';
 export const HISTORY_NOT_AVAILABLE_TEXT = 'Status history: not available';

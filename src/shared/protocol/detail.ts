@@ -10,15 +10,14 @@ export interface HeaderLine {
     value: string;
 }
 
+export interface NeedLine {
+    text: string;
+    rule: string;
+}
+
 export interface DiagnosticLine {
     reason: string;
     open?: OpenTarget;
-}
-
-export interface ReadinessLine {
-    id: string;
-    result: 'pass' | 'fail' | 'not available';
-    reason: string | undefined;
 }
 
 export interface OverviewSection {
@@ -29,7 +28,7 @@ export interface OverviewSection {
     persistence: 'persisted' | 'derived';
     deprecated: boolean;
     successor: string | undefined;
-    readiness: ReadinessLine[] | undefined;
+    needs: NeedLine[];
     notes: DiagnosticLine[];
 }
 
@@ -70,7 +69,6 @@ export interface VerificationSection {
     other: number;
     summary: string;
     criteria: { done: number; total: number } | undefined;
-    compileVerdict: string;
 }
 
 export interface RelatedItem {

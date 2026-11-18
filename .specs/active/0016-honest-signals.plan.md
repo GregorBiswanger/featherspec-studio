@@ -3,7 +3,7 @@
 **Spec:** [0016-honest-signals.md](0016-honest-signals.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-006
+**Current step:** T-007
 
 ## Approach
 
@@ -257,8 +257,8 @@ everything after T-002 shares the text modules, `main.css` or `SpecDetail.tsx` a
   `SpecDetail.test.tsx` (no checklist, no failure icon, none of T-13's lines). The lifecycle tests
   of R-7 and the verdict fact stay green unchanged (AC-013).
 - **Verify:** the new and changed tests red then green; gates 1–4
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-17 — red: `npx vitest run --project node src/core/board/needs.test.ts` against the `Not implemented` stub: 13 failed; green after: 13 passed. cards/detail/SpecBoard/SpecDetail/boardFilter tests rewritten for `need`/`needs` (no checklist, no verdict, no priority; tooltips literal). Resumed after a session restart: working tree and gates re-checked. Gates 1–4: eslint 0, tsc x2 clean, `npm run test:unit` 1788 passed + 3 skipped, timing 12.
+- **Notes:** `needsOf` reads R-2/R-3/R-4 failures from the model and the sibling plan; unreadable plan or spec gives none (Q-4). Card shows `.card-need` (was `.card-readiness`), detail `.detail-needs`; `.detail-checks` CSS removed, `PRIORITY_TEXT` removed. The model's R-7 reason and verdict fact stay (AC-013). Rule IDs in the need tooltip use `needTooltip` (T-12).
 
 ### T-007 — Rule IDs into tooltips; S2 says what Set up does
 

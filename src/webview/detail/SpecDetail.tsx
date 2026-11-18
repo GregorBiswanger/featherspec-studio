@@ -11,7 +11,7 @@ import {
     NO_REQUIREMENTS_TEXT,
     NO_RELATED_TEXT,
     OPEN_FILE_LABEL,
-    PRIORITY_TEXT,
+    needTooltip,
     SECTION_TITLES,
     STATE_LABEL,
     STRUCK_FLAG,
@@ -93,19 +93,11 @@ function Sections(props: { detailKey: string; sections: DetailSections; fileResu
                 </dl>
                 </div>
                 {overview.successor === undefined ? null : <p>{overview.successor}</p>}
-                <p className="detail-muted">{PRIORITY_TEXT}</p>
-                {overview.readiness === undefined ? null : (
-                    <ul className="detail-checks">
-                        {overview.readiness.map((check) => (
-                            <li key={check.id} data-result={check.result}>
-                                <Glyph kind={check.result === 'pass' ? 'Done' : check.result === 'fail' ? 'failed' : 'undetermined'} />
-                                {check.reason === undefined ? (
-                                    <span>
-                                        {check.id}: {check.result}
-                                    </span>
-                                ) : (
-                                    <RuleText text={check.reason} id={check.id} />
-                                )}
+                {overview.needs.length === 0 ? null : (
+                    <ul className="detail-needs">
+                        {overview.needs.map((need) => (
+                            <li key={need.rule} title={needTooltip(need.rule)}>
+                                {need.text}
                             </li>
                         ))}
                     </ul>
@@ -191,9 +183,6 @@ function Sections(props: { detailKey: string; sections: DetailSections; fileResu
                     open {verification.openRows} · built {verification.built} · verified {verification.verified} · other {verification.other}
                 </p>
                 <p>{criteriaText(verification.criteria)}</p>
-                <p>
-                    <InlineText text={verification.compileVerdict} />
-                </p>
             </DetailSection>
             <DetailSection title={SECTION_TITLES.related} keys={keysOf(related.map((item) => item.open))} fileResult={fileResult} onOpen={onOpen}>
                 {related.length === 0 ? (

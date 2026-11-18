@@ -1,8 +1,9 @@
-import type { BannerLine, CardView, ReadinessCheck } from '../../shared/protocol/board';
+import type { BannerLine, CardView } from '../../shared/protocol/board';
 import { isDerivedRule } from '../../shared/protocol/missionControl';
 import type { LifecycleEntry, LifecycleModel } from '../lifecycle/model';
 import type { ProjectRead, SpecEntry } from '../specs/readProject';
 import { describeSpec } from './description';
+import { needsOf } from './needs';
 import { criteriaProgress, lastChange, taskProgress } from './progress';
 
 export function titleOf(entry: SpecEntry): string | undefined {
@@ -18,15 +19,6 @@ function blockedLines(entry: LifecycleEntry): string[] {
         ...(entry.blockedBy.plan ? ['Blocked: plan status Blocked'] : []),
         ...entry.blockedBy.returnNotes.map((name) => `Blocked: return note ${name}`),
     ];
-}
-
-function readinessLine(entry: LifecycleEntry): ReadinessCheck | undefined {
-    if (entry.state !== 'Backlog') {
-        return undefined;
-    }
-    const lowest = [...entry.readiness.failing].sort()[0];
-    const check = entry.readiness.checks.find((candidate) => candidate.id === lowest);
-    return lowest === undefined || check === undefined || check.result === 'pass' ? undefined : { id: lowest, reason: check.reason };
 }
 
 export function buildCards(project: ProjectRead, lifecycle: LifecycleModel): CardView[] {
@@ -50,7 +42,7 @@ export function buildCards(project: ProjectRead, lifecycle: LifecycleModel): Car
             deprecated: entry.deprecated !== undefined,
             problems: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').length,
             blocked: blockedLines(entry),
-            readiness: readinessLine(entry),
+            need: needsOf(project, entry)[0],
             summary: spec?.parsed === undefined ? undefined : describeSpec(spec.parsed.sections),
             tasks: taskProgress(plan),
             criteria: criteriaProgress(entry.verification),
