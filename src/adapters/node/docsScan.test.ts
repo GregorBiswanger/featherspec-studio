@@ -408,9 +408,10 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         }
     });
 
-    it('the decisions register carries PD-067 as its last row, names what each later decision retires, and leaves the earlier rows as they were', async () => {
+    it('the decisions register carries PD-067 after PD-066, names what each later decision retires, and leaves the earlier rows as they were', async () => {
         const rows = (await read('docs/product/product-decisions.md')).split('\n').filter((line) => line.startsWith('| PD-'));
-        const last = rows[rows.length - 1] ?? '';
+        const last = rows.find((row) => row.startsWith('| PD-067 |')) ?? '';
+        expect(rows.findIndex((row) => row.startsWith('| PD-067 |'))).toBe(rows.findIndex((row) => row.startsWith('| PD-066 |')) + 1);
         expect(last).toContain('| PD-067 | Register notes for the UX round **(proxy)** |');
         for (const retired of [
             'PD-058 supersedes PD-042 and the Spec Explorer parts of PD-048 and PD-054',

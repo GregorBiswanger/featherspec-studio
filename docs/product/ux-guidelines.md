@@ -2,8 +2,9 @@
 
 The binding, short form is [`.claude/rules/ux-guidelines.md`](../../.claude/rules/ux-guidelines.md)
 (loaded automatically when UI code is touched). This page says why each guideline exists and
-where the evidence is. Source: the UX audit of 2026-11-17 in [`docs/ux-audit/`](../ux-audit/)
-(German; codes such as Q-1, IA-5, R-03, K-D refer to it). Decisions: PD-058 … PD-062.
+where the evidence is. Source: the UX audit of 2026-11-17 and the implementation review of 2026-11-18 in
+[`docs/ux-audit/`](../ux-audit/) (German; codes such as Q-1, IA-5, R-03, K-D refer to the audit,
+N-1 … N-9 to the review 07). Decisions: PD-058 … PD-062, PD-068, PD-069.
 
 ## The product in one sentence
 
@@ -37,12 +38,17 @@ the content · 0020 native spec tree, Spec Explorer area folded into tree and si
 | 7 | Present over past | 13 of 15 specs were Done and filled board and list; three of six columns were empty (IA-4, Q-7). |
 | 8 | Keep the place | Clicking a card switched area; the board's status line shifted the layout; "Dismiss" was primary, "Copy" secondary (Q-6, B 08). |
 | 9 | Kept from 0.1.0 | Theme fidelity, keyboard model, empty and error states were rated excellent (02 §5). |
+| 1 (2026-11-18) | Intent before command, "Copy prompt" | For an Active spec the step showed `/sdd-plan`; Gregor read it as "write a new plan" although the plan existed (review 07 N-1, §5.1). "Copy" did not say what lands on the clipboard. |
+| 8 (2026-11-18) | At most two primary buttons per view | Every row and card carried a filled Copy button, ten on one screen; the buttons were louder than the titles (07 N-6). |
+| 11 | Guide, don't crowd | FeatherSpec's advice on session and model (a new chat for `/sdd-compile` with another model family, a new chat for `/sdd-clarify`, a strong model with web search for `/sdd-plan`) sat only in its README (07 §6a). Model names age in weeks, so the product speaks in classes. |
+| 12 | Check at narrow width | With the side panel open below 900 px the Overview kept about 250 px and broke titles mid-word; unit tests could not see it (07 N-2). |
 
 ## Not built for now (PD-061)
 
 Phase bar per spec (R-19), diagnostics in the Problems panel (R-20), CodeLens in plans and file
-decorations (R-21), activity from Git (R-22), "Send to chat" (R-23). Each needs validation with
-users first; "Send to chat" also contradicts PD-056.
+decorations (R-21), activity from Git (R-22). Each needs validation with users first. "Send to
+chat" (R-23) is decided by PD-068 (2026-11-18): prefill the chosen assistant's chat, never send,
+spec 0024.
 
 ## How a change is checked against the guidelines
 
