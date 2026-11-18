@@ -3,7 +3,7 @@
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-012
+**Current step:** T-013
 
 ## Approach
 
@@ -492,6 +492,14 @@ never on the repository.
 - **Verify:** `npx vitest run --project webview src/webview/board/icons.test.tsx` red, then green; gates 1–4
 - [x] **Verified (T-012):** 2026-11-18, red first: `npx vitest run --project webview src/webview/board/icons.test.tsx` against the unchanged `icons.tsx`: 6 failed (one per state, `Active as eye` still the play triangle), 2 passed (the motif-has-a-glyph test and the control). Green after the code: 8 passed; `npx vitest run --project webview` 430 passed; gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2426 passed, 3 skipped (+13 timing) (2418 + 8).
 - **Notes:** `Glyph kind="Blocked"` (card) and `kind="Backlog"` (panel state S3) also follow the table, so there is exactly one place where a state meets its shape. `data-icon` keeps the state name.
+
+### T-013 — A Problems row title is never cut in the wide container (D2)
+
+- **Covers:** AC-003 (§4.1 "A Problems row cuts nothing at any width")
+- **Do:** in `@container ov-list (width > 686px)` of `main.css`, `.ov-problems .ov-title` gets `overflow: visible; overflow-wrap: break-word; text-overflow: clip; white-space: normal` after the shared `.ov-row .ov-title`. New `src/webview/areas/overview/problemsCss.test.tsx`: renders the Overview with a Now row and a Problems row, matches every rule of the stylesheet against the real title element (`rulesMatching`), reduces the wide-container and unscoped rules to the effective value by specificity and order, and asserts no `nowrap`, `ellipsis` or `hidden` for the Problems title; control: the same reduction sees all three on the Now row title; the reduction helper is tested on its own.
+- **Verify:** `npx vitest run --project webview src/webview/areas/overview/problemsCss.test.tsx` red, then green; gates 1–4
+- [x] **Verified (T-013):** 2026-11-18, red first: the new file against the unchanged `main.css`: 1 failed (`expected 'nowrap' not to be 'nowrap'`, the wide rule `.ov-row .ov-title` reaches the Problems title), 2 passed (control and helper). Green after the rule: 3 passed; `webviewCss.test.ts` 70 passed; gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2429 passed, 3 skipped (+13 timing).
+- **Notes:** The test sits in the webview project because it needs the rendered DOM; the node-side AC-003 test only looked at selectors that name `.ov-problems` or `.ov-line`, which is why D2 slipped through. The effective-value helper is a small cascade model (specificity = count of class, attribute and pseudo parts, then source order); it is enough for these rules and has its own test.
 
 ## Traceability
 

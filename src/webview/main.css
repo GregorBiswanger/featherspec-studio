@@ -1261,6 +1261,13 @@ blockquote.illustration {
         white-space: nowrap;
     }
 
+    .ov-problems .ov-title {
+        overflow: visible;
+        overflow-wrap: break-word;
+        text-overflow: clip;
+        white-space: normal;
+    }
+
     .ov-problems .ov-status {
         overflow: visible;
         overflow-wrap: break-word;
