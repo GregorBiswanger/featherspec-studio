@@ -1,5 +1,5 @@
 import type { SpecRow } from '../../shared/protocol/messages';
-import { isDerivedRule } from '../../shared/protocol/missionControl';
+import { isDerivedRule } from '../../shared/protocol/board';
 import { headerValue } from '../lifecycle/entryContext';
 import type { ShellModel } from '../ports/shell';
 import type { RememberedSelection } from './uiMemory';

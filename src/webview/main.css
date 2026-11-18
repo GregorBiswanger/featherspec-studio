@@ -140,7 +140,7 @@ main > h1 {
     white-space: nowrap;
 }
 
-.mission-control,
+.overview,
 .board,
 .explorer {
     flex: 1;
@@ -1053,13 +1053,13 @@ main > h1 {
     }
 }
 
-.mission-control {
+.overview {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-.mission-control h2 {
+.overview h2 {
     margin: 0;
     color: var(--fs-muted);
     font-size: 11px;
@@ -1068,7 +1068,7 @@ main > h1 {
     text-transform: uppercase;
 }
 
-.mc-header {
+.ov-header {
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
@@ -1077,35 +1077,35 @@ main > h1 {
     border-bottom: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
 }
 
-.mc-folder {
+.ov-folder {
     font-weight: bold;
 }
 
-.mc-version,
-.mc-updated,
-.mc-formula,
-.mc-derived,
-.mc-deprecated {
+.ov-version,
+.ov-updated,
+.ov-formula,
+.ov-derived,
+.ov-deprecated {
     color: var(--vscode-descriptionForeground);
 }
 
-.mc-specs {
+.ov-specs {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-.mc-section-head {
+.ov-section-head {
     display: flex;
     align-items: baseline;
     gap: 12px;
 }
 
-.mc-total {
+.ov-total {
     margin: 0;
 }
 
-.mc-tiles {
+.ov-tiles {
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 8px;
@@ -1114,7 +1114,7 @@ main > h1 {
     list-style: none;
 }
 
-.mc-tile {
+.ov-tile {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
@@ -1137,11 +1137,11 @@ main > h1 {
     text-align: left;
 }
 
-.mc-tile:hover {
+.ov-tile:hover {
     background: var(--vscode-list-hoverBackground);
 }
 
-.mc-tile-name {
+.ov-tile-name {
     grid-area: name;
     color: var(--fs-muted);
     font-size: 11px;
@@ -1150,12 +1150,12 @@ main > h1 {
     text-transform: uppercase;
 }
 
-.mc-tile .icon {
+.ov-tile .icon {
     grid-area: icon;
     color: var(--fs-tint);
 }
 
-.mc-tile-count {
+.ov-tile-count {
     grid-area: count;
     font-size: 26px;
     font-weight: 600;
@@ -1163,19 +1163,19 @@ main > h1 {
     font-variant-numeric: tabular-nums;
 }
 
-.mc-tile-zero .mc-tile-count {
+.ov-tile-zero .ov-tile-count {
     color: var(--fs-muted);
     font-weight: normal;
 }
 
-.mc-tile-sub {
+.ov-tile-sub {
     grid-area: sub;
     color: var(--fs-muted);
     font-size: 11px;
     line-height: 1.35;
 }
 
-.mc-distribution {
+.ov-distribution {
     display: flex;
     gap: 2px;
     height: 6px;
@@ -1183,17 +1183,17 @@ main > h1 {
     border-radius: 3px;
 }
 
-.mc-segment {
+.ov-segment {
     min-width: 4px;
     background: var(--fs-tint);
 }
 
-.vscode-high-contrast .mc-segment {
+.vscode-high-contrast .ov-segment {
     outline: 1px solid var(--vscode-contrastBorder);
     outline-offset: -1px;
 }
 
-.mc-progress {
+.ov-progress {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
@@ -1201,43 +1201,43 @@ main > h1 {
     margin: 0;
 }
 
-.mc-progress-figure {
+.ov-progress-figure {
     font-weight: 600;
 }
 
-.mc-formula {
+.ov-formula {
     font-size: 0.92em;
 }
 
 @media (max-width: 720px) {
-    .mc-tiles {
+    .ov-tiles {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
-.mc-header {
+.ov-header {
     gap: 0;
     padding-bottom: 10px;
 }
 
-.mc-header > * + *::before {
+.ov-header > * + *::before {
     content: "·";
     margin: 0 8px;
     color: var(--fs-muted);
 }
 
-.mc-header > .mc-drill::before {
+.ov-header > .ov-drill::before {
     display: inline-block;
 }
 
-.mc-panels {
+.ov-panels {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 12px;
     align-items: stretch;
 }
 
-.mc-panel {
+.ov-panel {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -1248,11 +1248,11 @@ main > h1 {
     border-radius: 4px;
 }
 
-.mc-panel p {
+.ov-panel p {
     margin: 0;
 }
 
-.mission-control h2 .mc-drill {
+.overview h2 .ov-drill {
     color: inherit;
     font-size: inherit;
     font-weight: inherit;
@@ -1260,13 +1260,13 @@ main > h1 {
     text-transform: inherit;
 }
 
-.mc-list {
+.ov-list {
     margin: 0 -12px;
     padding: 0;
     list-style: none;
 }
 
-.mc-row-item {
+.ov-row-item {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -1274,13 +1274,13 @@ main > h1 {
     border-top: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
 }
 
-.mc-row-item .mc-row {
+.ov-row-item .ov-row {
     flex: 1 1 auto;
     width: auto;
     border-top: none;
 }
 
-.mc-row {
+.ov-row {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -1296,31 +1296,31 @@ main > h1 {
     text-align: left;
 }
 
-.mc-row:hover {
+.ov-row:hover {
     background: var(--vscode-list-hoverBackground);
 }
 
-.mc-spec {
+.ov-spec {
     display: flex;
     align-items: baseline;
     gap: 8px;
     min-width: 0;
 }
 
-.mc-number {
+.ov-number {
     flex: none;
     color: var(--fs-muted);
     font-family: var(--vscode-editor-font-family);
     font-size: 0.92em;
 }
 
-.mc-title {
+.ov-title {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.mc-sep {
+.ov-sep {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -1329,7 +1329,7 @@ main > h1 {
     white-space: nowrap;
 }
 
-.mc-reasons {
+.ov-reasons {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end;
@@ -1337,7 +1337,7 @@ main > h1 {
     margin-left: auto;
 }
 
-.mc-reason {
+.ov-reason {
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -1345,8 +1345,8 @@ main > h1 {
     white-space: nowrap;
 }
 
-.mc-reason .icon,
-.mc-empty .icon {
+.ov-reason .icon,
+.ov-empty .icon {
     width: 12px;
     height: 12px;
 }
@@ -1363,34 +1363,34 @@ main > h1 {
     --fs-tint: var(--vscode-charts-yellow);
 }
 
-.mc-reason .icon {
+.ov-reason .icon {
     color: var(--fs-tint);
 }
 
-.mc-time {
+.ov-time {
     flex: none;
     color: var(--fs-muted);
     font-family: var(--vscode-editor-font-family);
     font-size: 0.92em;
 }
 
-.mc-change {
+.ov-change {
     margin-left: auto;
     white-space: nowrap;
 }
 
-.mc-empty {
+.ov-empty {
     display: flex;
     align-items: center;
     gap: 6px;
     color: var(--fs-muted);
 }
 
-.mc-note {
+.ov-note {
     color: var(--fs-muted);
 }
 
-.mc-drill {
+.ov-drill {
     padding: 0;
     color: var(--vscode-textLink-foreground);
     background: transparent;
@@ -1400,7 +1400,7 @@ main > h1 {
     text-align: left;
 }
 
-.mc-drill:hover {
+.ov-drill:hover {
     color: var(--vscode-textLink-activeForeground);
     text-decoration: underline;
 }
@@ -1473,8 +1473,8 @@ blockquote.illustration {
 }
 
 .spec-row,
-.mc-tile,
-.mc-row,
+.ov-tile,
+.ov-row,
 .card,
 .nav-item,
 .related-link,
@@ -1496,4 +1496,45 @@ blockquote.illustration {
 .detail-needs {
     margin: 4px 0;
     color: var(--fs-muted);
+}
+
+.ov-row {
+    white-space: nowrap;
+}
+
+.ov-row .ov-number,
+.ov-row .step-text,
+.ov-row .ov-problem {
+    flex: none;
+}
+
+.ov-row .ov-title {
+    flex: 0 1 auto;
+    min-width: 0;
+}
+
+.ov-row .ov-status {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--fs-muted);
+    text-overflow: ellipsis;
+}
+
+.ov-row .step-text {
+    margin-left: auto;
+}
+
+.ov-row-item .copy-button {
+    flex: none;
+}
+
+.ov-problem {
+    display: inline-flex;
+    align-items: center;
+    color: var(--vscode-charts-orange);
+}
+
+.ov-more {
+    margin: 0;
 }

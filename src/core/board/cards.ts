@@ -1,5 +1,5 @@
 import type { BannerLine, CardView } from '../../shared/protocol/board';
-import { isDerivedRule } from '../../shared/protocol/missionControl';
+import { isDerivedRule } from '../../shared/protocol/board';
 import type { LifecycleEntry, LifecycleModel } from '../lifecycle/model';
 import type { ProjectRead, SpecEntry } from '../specs/readProject';
 import { describeSpec } from './description';

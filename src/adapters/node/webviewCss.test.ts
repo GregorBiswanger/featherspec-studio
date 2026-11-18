@@ -58,6 +58,19 @@ describe('AC-026: colours come from the theme', () => {
         expect(css).not.toContain('.nav-item [data-marker]');
     });
 
+    it('0018 AC-006: a spec row stays on one line: title and status cut by an ellipsis, number, step, warning icon and Copy never cut', () => {
+        const row = rulesFor(css, '.ov-row');
+        expect(row.some((rule) => /white-space:\s*nowrap/.test(rule.body))).toBe(true);
+        for (const selector of ['.ov-row .ov-title', '.ov-row .ov-status']) {
+            const rules = rulesFor(css, selector);
+            expect(rules.some((rule) => /flex:\s*0 1 auto/.test(rule.body))).toBe(true);
+        }
+        expect(rulesFor(css, '.ov-row .ov-status').some((rule) => /text-overflow:\s*ellipsis/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.ov-title').some((rule) => /text-overflow:\s*ellipsis/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.ov-row .step-text').some((rule) => /flex:\s*none/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.ov-row-item .copy-button').some((rule) => /flex:\s*none/.test(rule.body))).toBe(true);
+    });
+
     it('AC-031: a focused control and a focused row use the High Contrast active border before the focus border', () => {
         const rules = rulesFor(css, '[role="option"]:focus-visible');
         expect(rules.length).toBeGreaterThan(0);
@@ -80,7 +93,7 @@ describe('AC-026: colours come from the theme', () => {
     });
 
     it('0006 AC-022: an Overview drill-down button sets no outline of its own, so the generic focus indicator of every button applies', () => {
-        const drill = rulesFor(css, '.mc-drill');
+        const drill = rulesFor(css, '.ov-drill');
         expect(drill.length).toBeGreaterThan(0);
         for (const rule of drill) {
             expect(rule.body).not.toContain('outline');
@@ -255,7 +268,7 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
     });
 
     it('AC-003: every control this spec adds or restyles sets no outline of its own, so the shared focus rule with contrastActiveBorder or focusBorder applies', () => {
-        for (const selector of ['.mc-tile', '.mc-drill', '.mc-row', '.section-toggle', '.open-file', '.copy-button', '.related-link']) {
+        for (const selector of ['.ov-tile', '.ov-drill', '.ov-row', '.section-toggle', '.open-file', '.copy-button', '.related-link']) {
             const rules = parseRules(css).filter((rule) => rule.selectors.some((candidate) => candidate.startsWith(selector)));
             expect(rules.length, selector).toBeGreaterThan(0);
             for (const rule of rules) {

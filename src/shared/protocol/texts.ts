@@ -2,7 +2,7 @@ import type { StatusHistoryItem } from './detail';
 import type { BoardState } from './boardFilter';
 import type { Progress, SortKey } from './board';
 import type { ActionId, PanelState } from './messages';
-import type { DerivedRule } from './missionControl';
+import type { DerivedRule } from './board';
 
 export const DERIVED_SENTENCES: Record<DerivedRule, string> = {
     'S-READY': 'Plan written, not started yet',
@@ -283,6 +283,9 @@ export const STRUCK_FLAG = 'struck';
 export function problemsBadgeText(count: number): string {
     return count === 1 ? '1 problem' : `${count} problems`;
 }
+
+export const NO_SPECS_START_TEXT = 'No specs yet. Start with /sdd-specify';
+export const SDD_SPECIFY_LINE = '/sdd-specify';
 
 export const BANNER_HEADING = 'Problems';
 

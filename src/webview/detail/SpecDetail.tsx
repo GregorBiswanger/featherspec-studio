@@ -25,7 +25,7 @@ import { Glyph } from '../board/icons';
 import { InlineText } from '../ui/InlineText';
 import { splitCells, tidy } from '../ui/inlineFormat';
 import { isBoardState } from '../../shared/protocol/boardFilter';
-import { isDerivedRule } from '../../shared/protocol/missionControl';
+import { isDerivedRule } from '../../shared/protocol/board';
 import { EmptyState } from '../ui/EmptyState';
 import { RuleText } from '../ui/RuleText';
 import { FormatNotes } from '../ui/FormatNotes';

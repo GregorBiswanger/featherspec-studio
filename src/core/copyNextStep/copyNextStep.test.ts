@@ -5,7 +5,7 @@ import { createModelSource } from '../shell/modelSource';
 import { addProject, createShellWorld, SPEC_HEADER } from '../shell/testing/world';
 import { createProjectLine } from './projectLine';
 import { createStatusEntry } from './statusEntry';
-import type { SpecInput } from '../missionControl/testing/projects';
+import type { SpecInput } from '../overview/testing/projects';
 import type { StepPickItem, StepUiPort } from '../ports/copyNextStep';
 import type { ClipboardPort } from '../ports/board';
 import { createCopyNextStep, type CopyNextStep } from './copyNextStep';

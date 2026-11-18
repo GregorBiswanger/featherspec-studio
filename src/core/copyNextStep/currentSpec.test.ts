@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { modelFor, type SpecInput } from '../missionControl/testing/projects';
+import { modelFor, type SpecInput } from '../overview/testing/projects';
 import { currentSpec, pickOrder, readyCount, specsWithStep, type SpecStep } from './currentSpec';
 
 const URGENT: SpecInput[] = [

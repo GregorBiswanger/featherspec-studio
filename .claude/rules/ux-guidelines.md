@@ -4,7 +4,7 @@ paths:
   - src/adapters/vscode/**
   - src/shared/protocol/**
   - src/core/board/**
-  - src/core/missionControl/**
+  - src/core/overview/**
   - src/core/shell/**
   - package.json
 ---

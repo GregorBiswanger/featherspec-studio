@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { isCardView } from './board';
-import { isMissionControlView } from './missionControl';
+import { isOverviewView } from './overview';
 import { isStepView } from './stepView';
-import { sampleView } from './testing/missionControlSample';
+import { sampleView } from './testing/overviewSample';
 
 const STEP = { short: 'Start T-003', line: 'Start T-003 of p', lines: [{ text: 'Start T-003 of p' }] };
 
@@ -36,9 +36,9 @@ describe('0017 AC-001: the step view guard', () => {
     it('a Overview row takes a step or no step key, and refuses a bad step', () => {
         const view = sampleView();
         const row = view.attention.rows[0]!;
-        expect(isMissionControlView({ ...view, attention: { rows: [row] } })).toBe(true);
-        expect(isMissionControlView({ ...view, attention: { rows: [{ ...row, step: STEP }] } })).toBe(true);
-        expect(isMissionControlView({ ...view, attention: { rows: [{ ...row, step: { ...STEP, extra: 1 } }] } })).toBe(false);
-        expect(isMissionControlView({ ...view, attention: { rows: [{ ...row, other: 1 }] } })).toBe(false);
+        expect(isOverviewView({ ...view, attention: { rows: [row] } })).toBe(true);
+        expect(isOverviewView({ ...view, attention: { rows: [{ ...row, step: STEP }] } })).toBe(true);
+        expect(isOverviewView({ ...view, attention: { rows: [{ ...row, step: { ...STEP, extra: 1 } }] } })).toBe(false);
+        expect(isOverviewView({ ...view, attention: { rows: [{ ...row, other: 1 }] } })).toBe(false);
     });
 });

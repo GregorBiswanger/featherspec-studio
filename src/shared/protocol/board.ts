@@ -1,7 +1,16 @@
 import { isBoardFilter, isBoardState, type BoardFilter, type BoardState } from './boardFilter';
 import { isRecord } from './envelope';
-import { isDerivedRule, type DerivedRule } from './missionControl';
 import { isStepView, type StepView } from './stepView';
+
+export type DerivedRule = 'S-READY' | 'S-REVIEW' | 'S-BLOCKED';
+
+const DERIVED_RULES: readonly string[] = ['S-READY', 'S-REVIEW', 'S-BLOCKED'];
+
+export function isDerivedRule(value: unknown): value is DerivedRule {
+    return typeof value === 'string' && DERIVED_RULES.includes(value);
+}
+
+export const STATE_RULES: Partial<Record<BoardState, DerivedRule>> = { Ready: 'S-READY', Review: 'S-REVIEW', Blocked: 'S-BLOCKED' };
 
 export const SORT_KEYS = ['number', 'title', 'lastChange'] as const;
 export type SortKey = (typeof SORT_KEYS)[number];

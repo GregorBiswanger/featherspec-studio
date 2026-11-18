@@ -6,7 +6,7 @@ import { createMessageRouter, type RequestHandlers } from '../../core/shell/mess
 import type { ShellService } from '../../core/shell/shellService';
 import type { BoardView } from '../../shared/protocol/board';
 import type { DetailView, OpenFileResultPayload } from '../../shared/protocol/detail';
-import type { MissionControlView } from '../../shared/protocol/missionControl';
+import type { OverviewView } from '../../shared/protocol/overview';
 import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../../shared/protocol/envelope';
 import { isProbeResultPayload, type BoardRequestType, type CopyResultEventPayload, type ProbeOutcome } from '../../shared/protocol/messages';
 import { createProbeChannel } from './probeChannel';
@@ -27,16 +27,16 @@ export interface PanelBoard {
     panelClosed(): void;
 }
 
-export interface PanelMissionControl {
-    view(): MissionControlView | undefined;
-    onDidChangeView(listener: (view: MissionControlView | undefined) => void): vscode.Disposable;
+export interface PanelOverview {
+    view(): OverviewView | undefined;
+    onDidChangeView(listener: (view: OverviewView | undefined) => void): vscode.Disposable;
 }
 
 export interface StudioPanelDeps {
     extensionUri: vscode.Uri;
     service: ShellService;
     board: PanelBoard;
-    missionControl: PanelMissionControl;
+    overview: PanelOverview;
     output: OutputPort;
     testMode: boolean;
 }
@@ -117,9 +117,9 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
         }
     }
 
-    function pushMissionControl(view: MissionControlView | undefined): void {
+    function pushOverview(view: OverviewView | undefined): void {
         if (view !== undefined) {
-            post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'missionControl', payload: { view } });
+            post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'overview', payload: { view } });
         }
     }
 
@@ -135,7 +135,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
                 helloAt = Date.now();
                 pushView(payload.lastSeq);
                 pushBoard(deps.board.view());
-                pushMissionControl(deps.missionControl.view());
+                pushOverview(deps.overview.view());
                 pushDetail(deps.board.detail());
                 probeChannel.markReady();
             },
@@ -166,7 +166,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
             target.webview.onDidReceiveMessage(handle),
             deps.service.onDidChangeView(() => pushView()),
             deps.board.onDidChangeView(pushBoard),
-            deps.missionControl.onDidChangeView(pushMissionControl),
+            deps.overview.onDidChangeView(pushOverview),
             deps.board.onDidChangeDetail(pushDetail),
             deps.board.onDidOpenFileResult((payload) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'openFileResult', payload })),
             deps.board.onDidCopyResult((payload) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'copyResult', payload })),

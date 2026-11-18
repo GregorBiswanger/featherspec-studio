@@ -44,7 +44,7 @@ import type { StoreState } from './core/runtime/model';
 import { createRuntimeSession, type RuntimeSession } from './core/runtime/runtimeSession';
 import type { RuntimeStore } from './core/runtime/runtimeStore';
 import { createBoardService } from './core/board/boardService';
-import { createMissionControlService } from './core/missionControl/missionControlService';
+import { createOverviewService } from './core/overview/overviewService';
 import { createBoardRequests } from './core/board/boardRequests';
 import { createOpenFile } from './core/board/openFile';
 import { createShellSelection } from './core/board/shellSelection';
@@ -55,7 +55,7 @@ import { AREA_IDS } from './shared/protocol/areas';
 import type { BoardView } from './shared/protocol/board';
 import type { BoardFilter, BoardState } from './shared/protocol/boardFilter';
 import type { DetailView } from './shared/protocol/detail';
-import type { MissionControlView } from './shared/protocol/missionControl';
+import type { OverviewView } from './shared/protocol/overview';
 import { isRunActionPayload, type ProbeOutcome, type ShellView } from './shared/protocol/messages';
 import type { TreeModel } from './core/shell/treeModel';
 
@@ -84,10 +84,10 @@ export interface BoardTestApi {
     openFile(key: string, line?: number): Promise<'opened' | 'refused' | 'not-found'>;
 }
 
-export interface MissionControlTestApi {
-    view(): MissionControlView | undefined;
+export interface OverviewTestApi {
+    view(): OverviewView | undefined;
     whenIdle(): Promise<void>;
-    listen(listener: (view: MissionControlView | undefined) => void): vscode.Disposable;
+    listen(listener: (view: OverviewView | undefined) => void): vscode.Disposable;
 }
 
 export interface StudioApi {
@@ -100,7 +100,7 @@ export interface StudioApi {
     shell(): ShellTestApi;
     board(): BoardTestApi;
     statusEntry(): StatusEntryTestApi;
-    missionControl(): MissionControlTestApi;
+    overview(): OverviewTestApi;
 }
 
 let runtimeSession: RuntimeSession | undefined;
@@ -185,7 +185,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         selection,
         history: { read: () => lifecycle.history(), onDidChange: (listener) => lifecycle.onDidChange(() => listener()) },
     });
-    const missionControl = createMissionControlService({
+    const overview = createOverviewService({
         source: modelSource,
         discovery: controller,
         history: { read: () => lifecycle.history(), onDidChange: (listener) => lifecycle.onDidChange(() => listener()) },
@@ -213,9 +213,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     const panel = createStudioPanel({
         extensionUri: context.extensionUri,
         service,
-        missionControl: {
-            view: () => missionControl.view(),
-            onDidChangeView: (listener) => missionControl.onDidChangeView(listener),
+        overview: {
+            view: () => overview.view(),
+            onDidChangeView: (listener) => overview.onDidChangeView(listener),
         },
         board: {
             handlers: requests.handlers,
@@ -243,7 +243,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         { dispose: () => service.dispose() },
         navigation,
         { dispose: () => board.dispose() },
-        { dispose: () => missionControl.dispose() },
+        { dispose: () => overview.dispose() },
         tree,
         panel,
         vscode.window.registerWebviewPanelSerializer(VIEW_TYPE, panel.serializer),
@@ -281,7 +281,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             await session.whenIdle();
             await lifecycle.whenIdle();
             await board.whenIdle();
-            await missionControl.whenIdle();
+            await overview.whenIdle();
         },
         specs: () => repository,
         runtimeState: () => session.state(),
@@ -298,11 +298,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             },
         }),
         statusEntry: () => ({ inspect: () => statusItem.inspect() }),
-        missionControl: () => ({
-            view: () => missionControl.view(),
-            whenIdle: () => missionControl.whenIdle(),
+        overview: () => ({
+            view: () => overview.view(),
+            whenIdle: () => overview.whenIdle(),
             listen: (listener) => {
-                const subscription = missionControl.onDidChangeView(listener);
+                const subscription = overview.onDidChangeView(listener);
                 return new vscode.Disposable(() => subscription.dispose());
             },
         }),

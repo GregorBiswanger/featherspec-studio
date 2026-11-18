@@ -3,7 +3,8 @@ import { isBoardView, isSortKey, type BoardView, type SortKey } from './board';
 import { isDetailView, type DetailView } from './detail';
 import { isBoardFilter, type BoardFilter } from './boardFilter';
 import { isRecord } from './envelope';
-import { isDerivedRule, isMissionControlView, type DerivedRule, type MissionControlView } from './missionControl';
+import { isDerivedRule, type DerivedRule } from './board';
+import { isOverviewView, type OverviewView } from './overview';
 
 export const ACTION_IDS = [
     'openFolder',
@@ -144,8 +145,8 @@ export interface DetailEventPayload {
     view: DetailView;
 }
 
-export interface MissionControlEventPayload {
-    view: MissionControlView;
+export interface OverviewEventPayload {
+    view: OverviewView;
 }
 
 export interface ShellEventPayload {
@@ -231,8 +232,8 @@ export function isDetailEventPayload(value: unknown): value is DetailEventPayloa
     return isRecord(value) && isDetailView(value.view);
 }
 
-export function isMissionControlEventPayload(value: unknown): value is MissionControlEventPayload {
-    return isRecord(value) && isMissionControlView(value.view);
+export function isOverviewEventPayload(value: unknown): value is OverviewEventPayload {
+    return isRecord(value) && isOverviewView(value.view);
 }
 
 function keysOnly(value: Record<string, unknown>, allowed: readonly string[]): boolean {

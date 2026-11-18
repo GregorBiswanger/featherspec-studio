@@ -8,7 +8,7 @@ import { arrangeBoard } from '../../core/board/filters';
 import { buildBanner, buildCards } from '../../core/board/cards';
 import { buildDetail } from '../../core/board/detail';
 import { deriveLifecycle } from '../../core/lifecycle/deriveLifecycle';
-import { buildMissionControlView } from '../../core/missionControl/missionControlView';
+import { buildOverviewView } from '../../core/overview/overviewView';
 import { readProject } from '../../core/specs/readProject';
 import { createNodeSpecSource } from './nodeSpecSource';
 
@@ -129,7 +129,7 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
     it('mounts Overview with a snapshot of a fixture project: header, six state counts, progress, the attention list, the activity, no start-up error', async () => {
         const project = await readProject(createNodeSpecSource(), fixturePath('fs110-ready-synthetic'), '1.10.0');
         const lifecycle = deriveLifecycle(project);
-        const mission = buildMissionControlView({
+        const mission = buildOverviewView({
             model: { project, lifecycle },
             active: { name: 'fixture', version: '1.10.0' },
             updatedAt: '2026-11-16T10:00:00.000Z',
@@ -139,12 +139,12 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         await settle();
         const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'overview', target: undefined, selection: undefined, notice: undefined, rows: [] };
         dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 2, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 2, kind: 'evt', type: 'missionControl', payload: { view: mission } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 2, kind: 'evt', type: 'overview', payload: { view: mission } } }));
         await settle();
         const document = dom.window.document;
         expect(document.querySelector('h1')?.textContent).toBe('Overview');
         expect(document.querySelector('[data-placeholder]')).toBeNull();
-        expect(document.querySelector('[data-mission-control]')).not.toBeNull();
+        expect(document.querySelector('[data-overview]')).not.toBeNull();
         expect(document.querySelector('.project-name')?.textContent).toBe('fixture');
         expect(document.querySelector('[data-header]')?.textContent ?? '').not.toContain('fixture');
         expect(document.querySelectorAll('[data-state-count]')).toHaveLength(6);
@@ -162,10 +162,10 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         await settle();
         const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'overview', target: undefined, selection: undefined, notice: undefined, rows: [] };
         dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 2, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 2, kind: 'evt', type: 'missionControl', payload: { view: { header: {}, extra: 1 } } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 2, kind: 'evt', type: 'overview', payload: { view: { header: {}, extra: 1 } } } }));
         await settle();
-        expect(dom.window.document.querySelector('[data-mission-control]')).toBeNull();
-        expect(dom.window.document.querySelector('[data-mission-control-empty]')).not.toBeNull();
+        expect(dom.window.document.querySelector('[data-overview]')).toBeNull();
+        expect(dom.window.document.querySelector('[data-overview-empty]')).not.toBeNull();
         expect(errors).toEqual([]);
     });
 

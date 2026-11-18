@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { PanelState } from '../shared/protocol/messages';
-import { sampleView } from '../shared/protocol/testing/missionControlSample';
+import { sampleView } from '../shared/protocol/testing/overviewSample';
 import { App } from './App';
 import { Placeholder } from './areas/Placeholder';
 import { boardEvent, boardView } from './board/testing/views';
 import { createClient, type ShellClient } from './client';
-import { baseView, missionControlEvent, mount, send, shellEvent, type Mounted } from './testing/dom';
+import { baseView, overviewEvent, mount, send, shellEvent, type Mounted } from './testing/dom';
 
 let mounted: Mounted | undefined;
 const clients: ShellClient[] = [];
@@ -52,7 +52,7 @@ describe('0013 §3.6: empty, placeholder and panel-level states show an icon bes
         const mission = await open(baseView({ area: 'overview' }));
         const view = sampleView();
         view.specs = { kind: 'empty' };
-        await send(missionControlEvent(view));
+        await send(overviewEvent(view));
         expect(hasIcon(mission.querySelector('[data-zero-specs]'))).toBe(true);
         mounted?.unmount();
         const explorer = await open(baseView({ area: 'specExplorer', rows: [] }));

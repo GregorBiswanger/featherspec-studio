@@ -1,5 +1,5 @@
 ---
-applyTo: "src/webview/**,src/adapters/vscode/**,src/shared/protocol/**,src/core/board/**,src/core/missionControl/**,src/core/shell/**,package.json"
+applyTo: "src/webview/**,src/adapters/vscode/**,src/shared/protocol/**,src/core/board/**,src/core/overview/**,src/core/shell/**,package.json"
 description: "FeatherSpec Studio UX guidelines (thin loader)."
 ---
 

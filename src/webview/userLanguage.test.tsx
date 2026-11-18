@@ -5,8 +5,8 @@ import { baseView, mount, send, shellEvent, type Mounted } from './testing/dom';
 import { detailEvent, detailView, sections } from './detail/testing/views';
 import { resetSectionMemory } from './detail/sectionMemory';
 import { boardEvent, boardView, card } from './board/testing/views';
-import { missionControlEvent } from './testing/dom';
-import { sampleView } from '../shared/protocol/testing/missionControlSample';
+import { overviewEvent } from './testing/dom';
+import { sampleView } from '../shared/protocol/testing/overviewSample';
 import type { AreaId } from '../shared/protocol/areas';
 import type { SpecRow } from '../shared/protocol/messages';
 
@@ -101,7 +101,7 @@ describe('0016 AC-011: user language on every surface 0016 touched', () => {
     it('Overview (header, tiles, attention row, activity) shows no rule ID or internal word', async () => {
         const view = sampleView();
         view.attention.rows.push({ spec: { stem: '0002-b', number: '0002', title: 'B', path: '.specs/active/0002-b.md', found: true }, reasons: ['Review pending'] });
-        const text = await textOf('overview', missionControlEvent(view));
+        const text = await textOf('overview', overviewEvent(view));
         expect(text).toContain('Plan done, waiting for review');
         expect(text).toContain('no longer in the project');
         expect(text).not.toMatch(FORBIDDEN);

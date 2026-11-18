@@ -3,7 +3,7 @@
 **Spec:** [0018-overview-and-compact-board.md](0018-overview-and-compact-board.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-002
+**Current step:** T-003
 
 ## Approach
 
@@ -218,8 +218,8 @@ No parallel stage: the Overview and Board steps share `messages.ts`, `client.ts`
   `Drilldown.test.tsx` (+ n more request); `webviewCss.test.ts` (row `nowrap`, title and status with
   ellipsis, step and Copy `flex: none`).
 - **Verify:** `npx vitest run src/core/overview src/shared/protocol src/webview/areas src/adapters/node/webviewCss.test.ts src/adapters/node/webviewBundle.test.ts` red, then green; gates 1–5; `npm run compile-tests`
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-18: (a) the moves by `git mv` (`core/overview`, `shared/protocol/overview.ts` and its test and sample, `webview/areas/overview` with `Overview.tsx`, `src/test/overview.smoke.test.ts`, service and view files) plus the identifier rename: green after (a) except the three tests of mine that the global rename had touched (fixed). (b) `rows.test.ts` red through the `Not implemented` stub (12 failures: Now and Up next givens), then green; contract tests in `overview.test.ts` and the service key list; the webview tests (`Sections.test.tsx` 0018 AC-004/005/006/011/012, `webviewCss.test.ts` row rules) written after the components (no separate red run). `npm run test:unit` 1908 passed, 3 skipped, timing 12 passed; eslint, both `tsc`, `compile`, `compile-tests` clean.
+- **Notes:** P-1 done in full including CSS `.mc-*` → `.ov-*` and `data-mission-control` → `data-overview` (T-003 then only deletes the dead parts). The UX rule glob and the Copilot loader `applyTo` both read `src/core/overview/**`. P-2 done: `DerivedRule`, `isDerivedRule`, `STATE_RULES` live in `shared/protocol/board.ts`; `StateCount.derivedRule` stays until T-003 because the old tiles still show it. The old 0017 AC-012 "Needs attention row" tests stay beside the new Now-row tests until T-003 removes that section. Row status texts: Backlog = first need (`needsOf`), else `Backlog`; all other states their name. The "+ n more" test sits in `Sections.test.tsx`, not `Drilldown.test.tsx` (same file family, same helpers).
 
 ### T-003 — Overview: Problems and the figures line replace header, tiles and Needs attention
 

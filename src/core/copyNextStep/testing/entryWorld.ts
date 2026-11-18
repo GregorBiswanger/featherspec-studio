@@ -5,7 +5,7 @@ import { createFakeSource, type FakeSource } from '../../board/testing/boardWorl
 import { createFakeHost, type FakeClock } from '../../discovery/testing/fakeHost';
 import type { ShellModel } from '../../ports/shell';
 import { ROOT } from '../../lifecycle/testing/projects';
-import { modelFor, type SpecInput } from '../../missionControl/testing/projects';
+import { modelFor, type SpecInput } from '../../overview/testing/projects';
 import type { StatusEntryView } from '../../ports/copyNextStep';
 import type { Disposable } from '../../ports/host';
 import type { ShellService } from '../../shell/shellService';
