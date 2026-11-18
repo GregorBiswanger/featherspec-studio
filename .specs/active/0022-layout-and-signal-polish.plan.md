@@ -1,9 +1,9 @@
 # Plan — Layout and Signal Polish
 
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
-**Status:** Done
+**Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-011
+**Current step:** T-012
 
 ## Approach
 
@@ -249,6 +249,7 @@ answer: every open choice is decided by the spec, PD-068…PD-075 (newest wins) 
 3. T-006 → T-007 — Overview rows: one primary Copy, icon Copies, rows by the list's own width
 4. T-008 → T-009 → T-010 — signals: Problems as sentences and paths that break; tree rows with the step; Ready and the hidden-Problem hints
 5. T-011 — §5 notes, docs, test-title audit, architecture and Memory Bank sync, final gates
+6. T-012 → T-022 — fix round after the compile of 2026-11-18 (`/home/claude/orch/compile/0022.md`, D1–D4, survivors M05, M05b, M05c, M39, M51, M55, exploratory findings, traceability and docs)
 
 Parallel: stage 2 (T-004 touches `stateLook`, `specTree`, the webview icons, chip, column and the stylesheet; T-005
 `problemSentence`, `texts.ts`, the detail, board and Overview protocols and their core projections; no shared file,
@@ -475,6 +476,22 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
   no command sees rendered layout or VS Code's tree drawing
 - [x] **Verified (T-011):** Red first: the 0022 block of `docsScan.test.ts` against the docs of HEAD (scratch copy via `git archive`) failed 18 tests; the old 0020 group test and the checklist order test failed until the README and checklist were changed. Green after: `docsScan.test.ts` 98 passed; audit counts below; `grep -c "Amended by 0022 (PD-069)"` 0005 2, 0007 1, 0013 2, 0015 1, 0016 7, 0017 2, 0018 13, 0019 12, 0020 19 (the §5 table rows, none fewer); `git diff 20a1e68 -- docs/product/product-decisions.md` holds only PD-076 of the orchestrator's `428fb19`. Final gates: eslint 0 warnings, tsc and tsc -p src/webview clean, test:unit 2418 passed (3 skipped, +13 timing), `npm run compile` and `npm run compile-tests` clean. `npm test` (host smoke) and AC-019, AC-020, AC-021, AC-025 are manual or Windows and CI: the orchestrator's harness, then Gregor.
 - **Notes:** (1) §5 notes: one `*Amended by 0022 (PD-069): ...*` line under each named statement (bullet, paragraph or table), after any earlier note; the PD register is unedited here. (2) Docs: README (tree groups with Ready, the divider and its reset, the remembered width, the back button, the primary and icon Copies), ux-guidelines rows 18 and 21, release checklist (new 0022 section with AC-019, AC-020, AC-021 build part, AC-025; two Overview and tree items reworded), CHANGELOG (two bullets edited, one added), design-brief (two superseded notes); each "Up next" left is the Overview's set (listed in `## Test-title audit`). The README avoids the word "drag" because 0017's move-path scan forbids it. (3) `/sdd-architecture-update` with the plan's approval: `last reconciled` to `(0022)` in `AGENTS.md` and the three maps, the snapshot lines named in the step, plus the core, webview and adapters map lines. (4) Memory Bank: techContext (one 0022 line, 0019 drawer sentences marked superseded), systemPatterns (one 0022 entry, 0018 and 0019 clauses marked superseded), activeContext. (5) The test-title audit script is `/tmp/audit-0022/titles.py` (throwaway).
+
+## Fix round (after the compile of 2026-11-18, head `7cb4491`)
+
+Work order: the compile report (D1–D4, six surviving mutants, exploratory findings, intended document edits 1–7) and the
+orchestrator's harness round 1 (V1 = D3). Gregor's request: append fix steps and implement them all. No spec revision: every
+step restores a criterion the spec already states. Mutant checks run on a scratch copy of the working tree (`/tmp/fix0022/`),
+never on the repository.
+
+### T-012 — The webview draws the motif the state table names (D1)
+
+- **Covers:** AC-026 (§4.8 "no surface maps a state itself", §9)
+- **Deletes:** the state keys `Backlog`, `Ready`, `Active`, `Review`, `Done`, `Blocked` of `PATHS` in `src/webview/board/icons.tsx` (replaced by `MOTIF_PATHS`, keyed by motif)
+- **Do:** `StateIcon` and `Glyph` with a state kind draw `MOTIF_PATHS[STATE_LOOK[state].motif]`. New `src/webview/board/icons.test.tsx`: for every state and every motif of the table, with `STATE_LOOK[state]` set to that motif, `StateIcon` and `Glyph` draw the path of the motif's own owner; every motif has its own glyph; control with the unchanged table.
+- **Verify:** `npx vitest run --project webview src/webview/board/icons.test.tsx` red, then green; gates 1–4
+- [x] **Verified (T-012):** 2026-11-18, red first: `npx vitest run --project webview src/webview/board/icons.test.tsx` against the unchanged `icons.tsx`: 6 failed (one per state, `Active as eye` still the play triangle), 2 passed (the motif-has-a-glyph test and the control). Green after the code: 8 passed; `npx vitest run --project webview` 430 passed; gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2426 passed, 3 skipped (+13 timing) (2418 + 8).
+- **Notes:** `Glyph kind="Blocked"` (card) and `kind="Backlog"` (panel state S3) also follow the table, so there is exactly one place where a state meets its shape. `data-icon` keeps the state name.
 
 ## Traceability
 
