@@ -1,7 +1,7 @@
 # Plan — Layout and Signal Polish
 
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-18
 **Current step:** T-001
 
@@ -475,6 +475,6 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
 - **Next action:** Gregor reads the plan (P-1…P-22, the Deletes lines); on the start signal the pair moves to `active/`
   (`/sdd-lifecycle`), the Baseline is recorded, stage 1's deletions are named and confirmed, then T-001.
 - **Open decisions:** none; P-1…P-22 stand unless Gregor changes them.
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** `20a1e68` (head before the first step commit; the lifecycle move is its own commit)
 - **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here); layout is checked in the
   orchestrator's preview harness.

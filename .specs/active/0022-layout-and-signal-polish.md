@@ -1,6 +1,6 @@
 # Layout and Signal Polish
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0022-layout-and-signal-polish.plan.md](0022-layout-and-signal-polish.plan.md)
 
 Basis: implementation review of 2026-11-18 ([07](../../docs/ux-audit/07-implementation-review.md) findings
