@@ -395,8 +395,8 @@ and the host smoke, so they stay `→`.
 - **Covers:** AC-011
 - **Do:** In `src/core/shell/specTreeService.test.ts` replace the test whose `else` branch asserted no description by two cases: two projects and one active → the view description shows the count and the name; two projects and none active → S3 message, no description. Mutants M82 (`projectCount: 1`) and M83 (counts every folder, not only verdict `project`) in `specTreeService.ts` must die.
 - **Verify:** `npx vitest run --project node src/core/shell/specTreeService.test.ts` green, M82 and M83 red; gates 1–4
-- [ ] **Verified (T-011):**
-- **Notes:**
+- [x] **Verified (T-011):** 2026-11-18: `vitest --project node specTreeService.test.ts` green 11/11 (gap tests, code unchanged); mutants on a scratch copy of HEAD: M82 (`projectCount: 1`) fails 'with two projects and one active …', M83 (counts every folder) fails 'control: one project beside a folder that is no project …' (1 failed, 10 passed each); gates 1-4 green, unit 2221 passed + 3 skipped, timing 13.
+- **Notes:** Compile G3: the old test ('a second project sets the view description') took its else branch (two projects, none active gave S3 and no description). The shell world's `rememberedRoot` makes one project active, so the new test sees the name; the S3 case asserts message and no description; the control has a second folder that is no project (M83). The old 'control: one project' test stays. No code change, nothing deleted.
 
 ### T-012 — The timing test says what it times; three weak tests decide something (compile F2, F3)
 

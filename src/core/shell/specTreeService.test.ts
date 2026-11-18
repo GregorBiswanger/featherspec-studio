@@ -73,20 +73,42 @@ describe('0020 AC-013: the live tree (core part)', () => {
         expect(description()).toContain('Steps 1/1');
     });
 
-    it('a second project sets the view description', async () => {
-        world = createShellWorld({ roots: ['proj', 'other'] });
+    it('with two projects and one active, the view description is the name of the active one', async () => {
+        world = createShellWorld({ roots: ['proj', 'other'], rememberedRoot: 'other' });
         addProject(world, 'proj', { '.specs/active/0001-a.md': SPEC_HEADER('In Progress') });
         addProject(world, 'other', { '.specs/active/0001-a.md': SPEC_HEADER('In Progress') });
         service = createSpecTreeService({ shell: world.service, source: createModelSource(world.repository), discovery: world.controller, sameRoot: (a, b) => a === b });
         await world.controller.start();
         await world.settle();
         expect(world.controller.snapshot().result?.folders.filter((folder) => folder.verdict === 'project')).toHaveLength(2);
-        const name = world.controller.snapshot().active?.name;
-        if (name !== undefined) {
-            expect(service.model().description).toBe(name);
-        } else {
-            expect(service.model().description).toBeUndefined();
-        }
+        expect(world.controller.snapshot().active?.name).toBe('other');
+        expect(service.model().description).toBe('other');
+        expect(service.model().message).toBeUndefined();
+    });
+
+    it('with two projects and none active, the view shows the S3 message and no description', async () => {
+        world = createShellWorld({ roots: ['proj', 'other'] });
+        addProject(world, 'proj', { '.specs/active/0001-a.md': SPEC_HEADER('In Progress') });
+        addProject(world, 'other', { '.specs/active/0001-a.md': SPEC_HEADER('In Progress') });
+        service = createSpecTreeService({ shell: world.service, source: createModelSource(world.repository), discovery: world.controller, sameRoot: (a, b) => a === b });
+        await world.controller.start();
+        await world.settle();
+        expect(world.controller.snapshot().active).toBeUndefined();
+        expect(service.model().description).toBeUndefined();
+        expect(service.model().message).toBeDefined();
+    });
+
+    it('control: one project beside a folder that is no project gives no view description', async () => {
+        world = createShellWorld({ roots: ['proj', 'plain'], rememberedRoot: 'proj' });
+        addProject(world, 'proj', { '.specs/active/0001-a.md': SPEC_HEADER('In Progress') });
+        service = createSpecTreeService({ shell: world.service, source: createModelSource(world.repository), discovery: world.controller, sameRoot: (a, b) => a === b });
+        await world.controller.start();
+        await world.settle();
+        const folders = world.controller.snapshot().result?.folders ?? [];
+        expect(folders).toHaveLength(2);
+        expect(folders.filter((folder) => folder.verdict === 'project')).toHaveLength(1);
+        expect(world.controller.snapshot().active?.name).toBe('proj');
+        expect(service.model().description).toBeUndefined();
     });
 
     it('control: one project gives no view description', async () => {
