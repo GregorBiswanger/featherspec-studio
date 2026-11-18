@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
 import type { NextStepView, SpecDetailView } from '../../shared/protocol/detail';
 import { fileNotFoundText, HISTORY_NOT_AVAILABLE_TEXT, NO_PLAN_TEXT } from '../../shared/protocol/texts';
+import { planSample } from '../../shared/protocol/testing/planSample';
 import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
 import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
@@ -96,6 +97,14 @@ describe('0019 AC-009: the situation picture in its order', () => {
             }
         });
         expect([...container.querySelectorAll('h3')].map((heading) => heading.textContent)).toEqual(['Next step', 'Progress', 'Files', 'Status history (1)']);
+    });
+
+    it('0023 AC-003: with a plan the Plan section comes after Problems and before Progress; the samples without a plan keep their sections', async () => {
+        const planned = await open(spec({ plan: planSample() }, undefined, [{ reason: 'A problem', open: { key: SPEC_KEY, line: 3 } }]));
+        expect([...planned.querySelectorAll('h3')].map((heading) => heading.textContent)).toEqual(['Next step', 'Plan', 'Progress', 'Files', 'Status history (1)']);
+        expect(planned.querySelector('.detail-problems')!.compareDocumentPosition(section(planned, 'Plan')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        const sample = await open(spec({}));
+        expect([...sample.querySelectorAll('h3')].map((heading) => heading.textContent)).toEqual(['Next step', 'Progress', 'Files', 'Status history (1)']);
     });
 
     it('the header holds the number, the title, one state chip and no Open file button', async () => {

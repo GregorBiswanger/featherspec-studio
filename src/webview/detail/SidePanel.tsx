@@ -7,6 +7,7 @@ import type { DetailAreaId } from '../../shared/protocol/areas';
 import { BackButton } from './BackButton';
 import { CloseButton } from './CloseButton';
 import { DetailFrame } from './DetailFrame';
+import { requestMapFocus } from '../areas/planMap/focus';
 import { focusAfterClose } from './focus';
 import { SpecDetail } from './SpecDetail';
 
@@ -22,10 +23,14 @@ export function SidePanel(props: { selection: SelectedSpec; back?: DetailAreaId;
     const { detail, fileResult, copyResult, openFile, copyText } = useBoard();
     const close = shell.clearSelection;
     const fallback = () => focusAfterClose(selection.stem);
+    const openMap = shell.area === 'planMap' ? undefined : () => {
+        requestMapFocus(selection.stem);
+        shell.navigate({ area: 'planMap', target: { kind: 'spec', stem: selection.stem, ...(selection.path === undefined ? {} : { path: selection.path }) } });
+    };
     return (
         <aside id={SIDE_PANEL_ID} className="side-panel" role="complementary" aria-label={DETAIL_LABEL} {...(width === undefined ? {} : { style: { width } })}>
             {matches(selection, detail) ? (
-                <SpecDetail detail={detail} fileResult={fileResult} copyResult={copyResult} onOpen={openFile} onCopy={copyText} onClose={close} fallback={fallback} {...(back === undefined ? {} : { back })} />
+                <SpecDetail detail={detail} fileResult={fileResult} copyResult={copyResult} onOpen={openFile} onCopy={copyText} onClose={close} fallback={fallback} {...(back === undefined ? {} : { back })} {...(openMap === undefined ? {} : { onOpenMap: openMap })} />
             ) : (
                 <DetailFrame as="div" labelled={false} onClose={close} fallback={fallback}>
                     {back === undefined ? null : <BackButton area={back} onBack={close} />}

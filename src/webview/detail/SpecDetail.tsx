@@ -31,9 +31,14 @@ import { DetailSection, PlainSection } from './DetailSection';
 import { takePendingHeadingFocus } from './focus';
 import { identityKeys } from './identityKeys';
 import { NextStep } from './NextStep';
+import { PlanSection } from './PlanSection';
 import { Progress } from './Progress';
 
 type OpenAt = (key: string, line?: number) => void;
+
+function noop(): void {
+    return undefined;
+}
 
 function stateTooltip(detail: SpecDetailView): string {
     return detail.persistence === 'derived' && isDerivedRule(detail.rule) ? columnRuleTooltip(detail.rule) : persistedTooltip(detail.rule);
@@ -107,10 +112,20 @@ function History(props: { history: SpecDetailView['history']; now: Date }) {
     );
 }
 
-function Picture(props: { detail: SpecDetailView; fileResult: FileResult | undefined; copyResult: { ok: boolean; text: string } | undefined; onOpen: OpenAt; onCopy(text: string): void; onClose: (() => void) | undefined; back: DetailAreaId | undefined }) {
+function Picture(props: {
+    detail: SpecDetailView;
+    fileResult: FileResult | undefined;
+    copyResult: { ok: boolean; text: string } | undefined;
+    onOpen: OpenAt;
+    onCopy(text: string): void;
+    onClose: (() => void) | undefined;
+    back: DetailAreaId | undefined;
+    onOpenMap: (() => void) | undefined;
+}) {
     const { detail, fileResult, onOpen } = props;
     const now = new Date();
     const headingRef = useRef<HTMLHeadingElement>(null);
+    const plan = props.onOpenMap !== undefined && detail.plan?.kind === 'plan' ? detail.plan : undefined;
     const problemKeys = identityKeys(detail.problems, (line) => `${line.reason}|${line.open?.key ?? ''}|${line.open?.line ?? ''}`);
     useEffect(() => {
         if (takePendingHeadingFocus(detail.stem)) {
@@ -133,7 +148,8 @@ function Picture(props: { detail: SpecDetailView; fileResult: FileResult | undef
                     ))}
                 </ul>
             )}
-            {detail.progress === undefined ? null : <Progress progress={detail.progress} fileResult={fileResult} onOpen={onOpen} />}
+            {plan === undefined ? null : <PlanSection plan={plan} fileResult={fileResult} onOpen={onOpen} onOpenMap={props.onOpenMap ?? noop} />}
+            {detail.progress === undefined ? null : <Progress progress={detail.progress} fileResult={fileResult} onOpen={onOpen} withSteps={plan === undefined} />}
             <PlainSection title={FILES_HEADING}>
                 <ul className="detail-files">
                     {detail.files.map((file) => (
@@ -164,11 +180,12 @@ export function SpecDetail(props: {
     onClose?: () => void;
     back?: DetailAreaId;
     fallback?: () => void;
+    onOpenMap?: () => void;
 }) {
     const { detail } = props;
     return (
         <DetailFrame as="div" labelled={false} onClose={props.onClose} fallback={props.fallback}>
-            <Picture key={detail.key} detail={detail} fileResult={props.fileResult} copyResult={props.copyResult} onOpen={props.onOpen} onCopy={props.onCopy} onClose={props.onClose} back={props.back} />
+            <Picture key={detail.key} detail={detail} fileResult={props.fileResult} copyResult={props.copyResult} onOpen={props.onOpen} onCopy={props.onCopy} onClose={props.onClose} back={props.back} onOpenMap={props.onOpenMap} />
         </DetailFrame>
     );
 }

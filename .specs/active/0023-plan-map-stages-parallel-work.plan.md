@@ -3,7 +3,7 @@
 **Spec:** [0023-plan-map-stages-parallel-work.md](0023-plan-map-stages-parallel-work.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-005
+**Current step:** T-006
 
 ## Approach
 
@@ -322,8 +322,8 @@ orchestrator) at the ends of stages 2 and 3; AC-018 screenshots recorded here.
   re-run (studio-0015 with the section, ≤ 300 words).
 - **Verify:** `npx vitest run --project webview src/webview/detail src/webview/ui` and `npx vitest run --project node src/adapters/node/webviewBundle.test.ts`
   red (stub), then green; gates 1–4
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-18 · `npx vitest run --project webview src/webview/detail src/webview/ui` and `npx vitest run --project node src/adapters/node/webviewBundle.test.ts` red first (`PlanSection.test.tsx`: 11 of 13 failed against the code without the section), then green (webview 505 of 505, bundle 36 of 36 against the freshly compiled bundle); gates 1–5 green; `npm run test:unit` 2729 passed + 3 skipped (+16 timing)
+- **Notes:** `StepChip` renders the three chip kinds (link, struck link, plain `span` for a step not in the plan) and is shared with the tab's finished stages in T-006; the symbols, words and `chipName` are in `planMapTexts.ts` (`STEP_LOOKS`, `stepLook`). `SpecDetail` takes `onOpenMap`: the side panel passes it outside the tab only, and `SpecDetail` shows the section only when it is given, so the tab's side panel shows the Steps row again (P-13). The 0019 AC-010 word budget on `studio-0015` (Review, section shown) passes with the section.
 
 ### T-006 — The map shows stage rows and step cards, with their keys
 

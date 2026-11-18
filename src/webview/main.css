@@ -1644,3 +1644,60 @@ blockquote.illustration {
     outline: 1px solid var(--vscode-contrastActiveBorder, var(--vscode-focusBorder));
     outline-offset: -1px;
 }
+
+.plan-closing {
+    margin: 4px 0;
+    color: var(--fs-muted);
+    overflow-wrap: break-word;
+}
+
+.plan-stages {
+    margin: 6px 0;
+    padding: 0;
+    list-style: none;
+}
+
+.plan-stage {
+    margin: 2px 0;
+    min-width: 0;
+    overflow-wrap: break-word;
+}
+
+.plan-stage-number {
+    display: inline-block;
+    min-width: 1.4em;
+    color: var(--fs-muted);
+}
+
+.plan-loose-label {
+    color: var(--fs-muted);
+}
+
+.plan-parallel {
+    color: var(--fs-muted);
+    white-space: nowrap;
+}
+
+.plan-sep {
+    color: var(--fs-muted);
+}
+
+.plan-chips {
+    margin: 6px 0;
+}
+
+.step-chip {
+    white-space: nowrap;
+}
+
+.step-chip .chip-symbol {
+    color: var(--fs-muted);
+}
+
+.step-chip s {
+    color: var(--fs-muted);
+}
+
+.plan-map-link {
+    margin: 6px 0 0;
+}

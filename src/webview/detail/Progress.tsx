@@ -87,7 +87,7 @@ function Criteria(props: { criteria: CriteriaProgress; fileResult: FileResult | 
     );
 }
 
-export function Progress(props: { progress: ProgressView; fileResult: FileResult | undefined; onOpen: OpenAt }) {
+export function Progress(props: { progress: ProgressView; fileResult: FileResult | undefined; onOpen: OpenAt; withSteps?: boolean }) {
     const { progress } = props;
     return (
         <PlainSection title={PROGRESS_HEADING}>
@@ -101,7 +101,7 @@ export function Progress(props: { progress: ProgressView; fileResult: FileResult
                 </ul>
             )}
             {progress.noPlan ? <p>{NO_PLAN_TEXT}</p> : null}
-            {progress.steps === undefined ? null : <Steps steps={progress.steps} fileResult={props.fileResult} onOpen={props.onOpen} />}
+            {progress.steps === undefined || props.withSteps === false ? null : <Steps steps={progress.steps} fileResult={props.fileResult} onOpen={props.onOpen} />}
             {progress.criteria === undefined ? null : <Criteria criteria={progress.criteria} fileResult={props.fileResult} onOpen={props.onOpen} />}
         </PlainSection>
     );

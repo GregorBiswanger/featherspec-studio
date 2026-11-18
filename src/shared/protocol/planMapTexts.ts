@@ -57,3 +57,37 @@ export const OPEN_PLAN_LABEL = 'Open plan';
 export function planSaysText(closing: string): string {
     return `The plan says: ${closing}`;
 }
+
+export const PLAN_HEADING = 'Plan';
+
+export const OPEN_PLAN_MAP_LABEL = 'Open plan map';
+
+export const CAN_RUN_PARALLEL_TEXT = '⇉ can run in parallel';
+
+export const NOT_IN_A_STAGE_TEXT = 'Not in a stage';
+
+export interface StepLook {
+    symbol?: string;
+    word: string;
+}
+
+export const STEP_LOOKS = {
+    done: { symbol: '✓', word: 'done' },
+    next: { symbol: '◐', word: 'next' },
+    open: { symbol: '○', word: 'open' },
+    dropped: { word: 'dropped' },
+    returned: { symbol: '↩', word: 'returned' },
+    returnedBlocked: { symbol: '⊘', word: 'returned, blocked' },
+    notFound: { symbol: '?', word: 'not in the steps' },
+} as const satisfies Record<string, StepLook>;
+
+export function stepLook(step: { state: string; returned?: { status: string } }): StepLook {
+    if (step.state === 'returned') {
+        return step.returned?.status === 'blocked' ? STEP_LOOKS.returnedBlocked : STEP_LOOKS.returned;
+    }
+    return step.state in STEP_LOOKS ? STEP_LOOKS[step.state as keyof typeof STEP_LOOKS] : STEP_LOOKS.open;
+}
+
+export function chipName(id: string, title: string, word: string): string {
+    return title === '' ? `${id}, ${word}` : `${id} ${title}, ${word}`;
+}
