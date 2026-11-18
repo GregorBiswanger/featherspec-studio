@@ -43,6 +43,19 @@ suite('FeatherSpec Studio board smoke', function () {
         assert.deepStrictEqual(await snapshotTree(folder.uri.fsPath), before);
     });
 
+    test('0018 AC-016, AC-028: the Done choice writes nothing into the project and a collapsed Done holds no card', async () => {
+        const api = await activateStudio();
+        await api.whenIdle();
+        const folder = (vscode.workspace.workspaceFolders ?? []).find((candidate) => candidate.name === 'fs110-de-active-review');
+        assert.ok(folder, 'fixture folder is part of the workspace');
+        const before = await snapshotTree(folder.uri.fsPath);
+        api.board().setDone(true);
+        api.board().setDone(false);
+        const done = api.board().view()?.columns.find((column) => column.state === 'Done');
+        assert.ok(done !== undefined && done.cards.length === 0);
+        assert.deepStrictEqual(await snapshotTree(folder.uri.fsPath), before);
+    });
+
     test('AC-010, AC-016: Open file opens the spec at the line, a key outside the model opens nothing', async () => {
         const api = await activateStudio();
         await api.whenIdle();

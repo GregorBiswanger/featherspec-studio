@@ -1,10 +1,10 @@
 import type { BoardView, CardView, SortKey } from '../../shared/protocol/board';
-import type { BoardFilter } from '../../shared/protocol/boardFilter';
+import { isFilterSet, type BoardFilter } from '../../shared/protocol/boardFilter';
 import type { DetailView } from '../../shared/protocol/detail';
 import type { HistoryView } from '../lifecycle/statusHistory';
 import type { SelectionSource } from '../ports/board';
 import type { Disposable } from '../ports/host';
-import type { ShellModel, ShellModelSource } from '../ports/shell';
+import type { ShellModel, ShellModelSource, UiMemoryPort } from '../ports/shell';
 import { buildDetail } from './detail';
 import { createBoardUiState } from './boardUiState';
 import { buildBanner, buildCards } from './cards';
@@ -14,6 +14,7 @@ export interface BoardServiceDeps {
     source: ShellModelSource;
     selection: SelectionSource;
     history: { read(): Promise<HistoryView>; onDidChange(listener: () => void): Disposable };
+    memory: UiMemoryPort;
 }
 
 export interface BoardService {
@@ -23,6 +24,7 @@ export interface BoardService {
     onDidChangeDetail(listener: (view: DetailView) => void): Disposable;
     setFilter(filter: BoardFilter): void;
     setSort(sort: SortKey): void;
+    setDone(expanded: boolean): void;
     clearFilters(): void;
     applyNavigationFilter(filter: BoardFilter): void;
     panelClosed(): void;
@@ -37,7 +39,7 @@ interface Built {
 }
 
 export function createBoardService(deps: BoardServiceDeps): BoardService {
-    const ui = createBoardUiState();
+    const ui = createBoardUiState(deps.memory);
     const listeners = new Set<(view: BoardView | undefined) => void>();
     const detailListeners = new Set<(view: DetailView) => void>();
     let history: HistoryView = { available: false, text: 'Status history not available: no store' };
@@ -66,13 +68,11 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
         if (current === undefined) {
             return undefined;
         }
-        return {
-            columns: arrangeBoard(current.cards, ui.filter(), ui.sort()),
-            banner: current.banner,
-            filter: ui.filter(),
-            sort: ui.sort(),
-            noSpecs: current.cards.length === 0,
-        };
+        const columns = arrangeBoard(current.cards, ui.filter(), ui.sort(), ui.doneExpanded());
+        const done = columns.find((column) => column.state === 'Done');
+        const doneHasCards = done !== undefined && !isFilterSet(ui.filter()) && done.count > 0;
+        const base = { columns, banner: current.banner, filter: ui.filter(), sort: ui.sort(), noSpecs: current.cards.length === 0 };
+        return doneHasCards ? { ...base, doneToggle: ui.doneExpanded() ? 'hide' : 'show' } : base;
     }
 
     function detail(): DetailView {
@@ -157,6 +157,7 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
         },
         setFilter: (filter) => changed(() => ui.setFilter(filter)),
         setSort: (sort) => changed(() => ui.setSort(sort)),
+        setDone: (expanded) => changed(() => ui.setDoneExpanded(expanded)),
         clearFilters: () => changed(() => ui.clearFilters()),
         applyNavigationFilter: (filter) => changed(() => ui.applyNavigationFilter(filter)),
         panelClosed: () => changed(() => ui.panelClosed()),

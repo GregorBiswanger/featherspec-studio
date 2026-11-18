@@ -464,6 +464,25 @@ main > h1 {
     text-transform: uppercase;
 }
 
+.done-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    color: inherit;
+    background: none;
+    border: none;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+}
+
+.column[data-narrow] .done-toggle {
+    flex-direction: column;
+}
+
 .column-heading .icon {
     width: 12px;
     height: 12px;

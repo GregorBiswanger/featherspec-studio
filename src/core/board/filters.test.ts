@@ -106,6 +106,16 @@ describe('filters', () => {
         ]);
     });
 
+    it('AC-016: collapsed Done has no cards and counts its own, only while no filter is set and Done holds a card', () => {
+        const done = (columns: ReturnType<typeof arrangeBoard>) => columns.find((column) => column.state === 'Done')!;
+        expect(done(arrangeBoard(NINE, {}, 'number', false))).toMatchObject({ cards: [], count: 2, hidden: 0, narrow: 'collapsed', emptyBeforeFilter: false });
+        expect(done(arrangeBoard(NINE, {}, 'number', true)).cards).toHaveLength(2);
+        expect(done(arrangeBoard(NINE, {}, 'number'))).toMatchObject({ count: 2 });
+        expect(done(arrangeBoard(NINE, { states: ['Done'] }, 'number', false)).cards).toHaveLength(2);
+        expect(done(arrangeBoard(NINE, { states: ['Active'] }, 'number', false))).toMatchObject({ narrow: 'filtered', count: 2 });
+        expect(done(arrangeBoard([card('0001')], {}, 'number', false)).narrow).toBe('empty');
+    });
+
     it('AC-011: the inputs are left unchanged (frozen cards and filter)', () => {
         const frozen = NINE.map((entry) => Object.freeze({ ...entry, blocked: Object.freeze([...entry.blocked]) as string[] }));
         const filter = Object.freeze({ states: Object.freeze(['Active']) as unknown as ['Active'], set: Object.freeze({ label: 'x', stems: Object.freeze(['0003-thing']) as unknown as string[] }) });

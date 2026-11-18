@@ -17,7 +17,7 @@ afterEach(async () => {
     }
 });
 
-describe('AC-016: the board writes no file', () => {
+describe('AC-016, AC-028: the board writes no file', () => {
     it('every board action on a temp copy of the Ready fixture leaves the project tree unchanged', async () => {
         temp = await fs.mkdtemp(path.join(os.tmpdir(), 'board-nowrite-'));
         await fs.cp(fixturePath('fs110-ready-synthetic'), temp, { recursive: true });
@@ -33,6 +33,8 @@ describe('AC-016: the board writes no file', () => {
                 } } });
         world.service.setFilter({ states: ['Ready'] });
         world.service.setSort('lastChange');
+        world.service.setDone(true);
+        world.service.setDone(false);
         world.service.applyNavigationFilter({ set: { label: 'x', stems: ['0001-ready-feature'] } });
         world.service.clearFilters();
         for (const entry of model.lifecycle.entries) {
@@ -40,6 +42,7 @@ describe('AC-016: the board writes no file', () => {
         }
         expect(opened.length).toBeGreaterThan(0);
         expect(await snapshotTree(temp)).toEqual(before);
+        expect(world.memory.writes).toEqual([{ v: 1, done: 'expanded' }, { v: 1, done: 'collapsed' }]);
         world.service.dispose();
     });
 });

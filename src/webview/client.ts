@@ -47,6 +47,7 @@ export interface ShellClient {
     runAction(action: ActionId): void;
     dismissNotice(): void;
     setBoardSort(sort: SortKey): void;
+    setBoardDone(expanded: boolean): void;
     clearBoardFilters(): void;
     setActivityOpen(open: boolean): void;
     openFile(key: string, line?: number): void;
@@ -242,6 +243,9 @@ export function createClient(deps: ClientDeps): ShellClient {
         },
         dismissNotice() {
             send('dismissNotice', {});
+        },
+        setBoardDone(expanded) {
+            send('boardSetDone', { expanded });
         },
         setBoardSort(sort) {
             send('boardSetSort', { sort });

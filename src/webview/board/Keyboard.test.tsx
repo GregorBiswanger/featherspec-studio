@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
 import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
-import { baseView, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
+import { baseView, click, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
 import type { StepView } from '../../shared/protocol/stepView';
 import { boardEvent, boardView, card } from './testing/views';
 
@@ -250,5 +250,82 @@ describe('AC-019: focus stays on the same card across live updates', () => {
         await send(boardEvent(boardView(CARDS.filter((entry) => entry.number !== '0004'))));
         expect(document.activeElement).toBe(outside);
         outside.remove();
+    });
+});
+
+function doneView(mode: 'collapsed' | 'expanded', cards = CARDS) {
+    const others = cards.filter((entry) => entry.state !== 'Done');
+    const done = cards.filter((entry) => entry.state === 'Done');
+    if (mode === 'expanded') {
+        return boardView(cards, { doneToggle: 'hide' });
+    }
+    const view = boardView(others, { doneToggle: 'show', noSpecs: false });
+    view.columns[4] = { state: 'Done', cards: [], hidden: 0, emptyBeforeFilter: false, count: done.length, narrow: 'collapsed' };
+    return view;
+}
+
+describe('0018 AC-024: Left and Right skip narrow columns; the Done toggle is a button in Tab order', () => {
+    it('Right from Backlog lands on Active over the empty Ready strip, and Right from Active does not land on the collapsed Done', async () => {
+        const container = await open(doneView('collapsed'));
+        await focus(cardOf(container, '0001'));
+        await press(document.activeElement!, 'ArrowRight');
+        expect(document.activeElement).toBe(cardOf(container, '0003'));
+        await press(document.activeElement!, 'ArrowRight');
+        expect(document.activeElement).toBe(cardOf(container, '0003'));
+        await press(document.activeElement!, 'ArrowLeft');
+        expect(document.activeElement).toBe(cardOf(container, '0001'));
+    });
+
+    it('the toggle is a native button after the cards of the earlier columns, with aria-expanded and its name', async () => {
+        const container = await open(doneView('collapsed'));
+        const order = [...container.querySelectorAll<HTMLElement>('[data-card], [data-done-toggle]')].map((element) => (element.hasAttribute('data-done-toggle') ? 'toggle' : element.getAttribute('data-card')));
+        expect(order).toEqual([key('0001'), key('0002'), key('0003'), key('0004'), key('0005'), 'toggle']);
+        const toggle = container.querySelector<HTMLButtonElement>('[data-done-toggle]')!;
+        expect(toggle.tagName).toBe('BUTTON');
+        expect(toggle.type).toBe('button');
+        expect(toggle.tabIndex).toBe(0);
+        expect(toggle.getAttribute('aria-expanded')).toBe('false');
+        expect(toggle.getAttribute('aria-label')).toBe('Show Done');
+        expect(toggle.textContent).toContain('Done');
+        expect(toggle.textContent).toContain('1');
+    });
+
+    it('activating the toggle sends the request, and the focus stays on it when the board arrives expanded and collapsed again', async () => {
+        const container = await open(doneView('collapsed'));
+        await focus(container.querySelector<HTMLElement>('[data-done-toggle]')!);
+        await click(document.activeElement!);
+        expect(requests('boardSetDone')).toEqual([{ expanded: true }]);
+        const toggle = container.querySelector<HTMLElement>('[data-done-toggle]')!;
+        await send(boardEvent(doneView('expanded')));
+        expect(container.querySelector('[data-done-toggle]')).toBe(toggle);
+        expect(document.activeElement).toBe(toggle);
+        expect(toggle.getAttribute('aria-expanded')).toBe('true');
+        expect(toggle.getAttribute('aria-label')).toBe('Hide Done');
+        await click(toggle);
+        expect(requests('boardSetDone')).toEqual([{ expanded: true }, { expanded: false }]);
+        await send(boardEvent(doneView('collapsed')));
+        expect(document.activeElement).toBe(toggle);
+    });
+
+    it('every spec Done and collapsed: the toggle is the only tab stop among the columns', async () => {
+        const only = [card('0006', { state: 'Done' })];
+        const container = await open(doneView('collapsed', only));
+        const stops = [...container.querySelectorAll<HTMLElement>('.columns button, .columns [data-card], .columns a[href], .columns select, .columns input')].filter((element) => element.tabIndex >= 0);
+        expect(stops.map((element) => (element.hasAttribute('data-done-toggle') ? 'toggle' : 'other'))).toEqual(['toggle']);
+    });
+
+    it('a focused card that stops showing moves focus to the toggle when no card is left', async () => {
+        const only = [card('0006', { state: 'Done' })];
+        const container = await open(doneView('expanded', only));
+        await focus(cardOf(container, '0006'));
+        await send(boardEvent(doneView('collapsed', only)));
+        expect(document.activeElement).toBe(container.querySelector('[data-done-toggle]'));
+    });
+
+    it('a focused card that stops showing moves focus to the first card of the nearest column when one is left', async () => {
+        const container = await open(doneView('expanded'));
+        await focus(cardOf(container, '0006'));
+        await send(boardEvent(doneView('collapsed')));
+        expect(document.activeElement).toBe(cardOf(container, '0003'));
     });
 });

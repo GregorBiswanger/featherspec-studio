@@ -2,7 +2,7 @@ import { deriveLifecycle } from '../../lifecycle/deriveLifecycle';
 import { readMemory } from '../../lifecycle/testing/projects';
 import type { Disposable } from '../../ports/host';
 import type { HistoryView } from '../../lifecycle/statusHistory';
-import type { ShellModel, ShellModelSource } from '../../ports/shell';
+import type { ShellModel, ShellModelSource, UiMemoryPort } from '../../ports/shell';
 import { createBoardService, type BoardService } from '../boardService';
 
 export async function modelOf(files: Record<string, string>): Promise<ShellModel> {
@@ -89,14 +89,33 @@ export interface BoardWorld {
     history: FakeHistory;
     source: FakeSource;
     service: BoardService;
+    memory: FakeBoardMemory;
     views: string[];
 }
 
-export function createBoardWorld(model: ShellModel | undefined): BoardWorld {
+export interface FakeBoardMemory extends UiMemoryPort {
+    value: unknown;
+    writes: unknown[];
+}
+
+export function createFakeBoardMemory(value?: unknown): FakeBoardMemory {
+    const memory: FakeBoardMemory = {
+        value,
+        writes: [],
+        get: () => memory.value,
+        async set(next) {
+            memory.value = next;
+            memory.writes.push(next);
+        },
+    };
+    return memory;
+}
+
+export function createBoardWorld(model: ShellModel | undefined, memory: FakeBoardMemory = createFakeBoardMemory()): BoardWorld {
     const source = createFakeSource(model);
     const selection = createFakeSelection();
     const history = createFakeHistory();
-    const service = createBoardService({ source, selection: selection.source, history: history.port });
+    const service = createBoardService({ source, selection: selection.source, history: history.port, memory });
     const views: string[] = [];
     service.onDidChangeView((view) => views.push(JSON.stringify(view)));
     return {
@@ -104,6 +123,7 @@ export function createBoardWorld(model: ShellModel | undefined): BoardWorld {
         history,
         source,
         service,
+        memory,
         views,
     };
 }

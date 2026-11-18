@@ -1,5 +1,5 @@
-import { STATE_RULES, type BoardColumn, type CardView } from '../../shared/protocol/board';
-import { columnRuleTooltip, hiddenByFilterText, narrowColumnText } from '../../shared/protocol/texts';
+import { STATE_RULES, type BoardColumn, type BoardView, type CardView } from '../../shared/protocol/board';
+import { columnRuleTooltip, DONE_HIDE_LABEL, DONE_SHOW_LABEL, hiddenByFilterText, narrowColumnText } from '../../shared/protocol/texts';
 import type { CopyResult } from '../ui/CopyButton';
 import { Card } from './Card';
 import { StateIcon } from './icons';
@@ -10,50 +10,55 @@ export function Column(props: {
     tabIndexOf?(card: CardView): number;
     copyResult: CopyResult | undefined;
     onCopy(line: string): void;
+    doneToggle?: BoardView['doneToggle'];
+    onToggleDone?(expanded: boolean): void;
 }) {
     const { column } = props;
     const rule = STATE_RULES[column.state];
     const ruleText = rule === undefined ? undefined : columnRuleTooltip(rule);
-    if (column.narrow !== undefined) {
-        const name = narrowColumnText(column.state, column.narrow, column.count);
-        return (
-            <section
-                className="column"
-                data-column={column.state}
-                data-narrow={column.narrow}
-                aria-label={name}
-                title={ruleText === undefined ? name : `${name} · ${ruleText}`}
-                data-board-state={column.state}
-            >
-                <h2 className="column-heading">
-                    <StateIcon state={column.state} /> <span className="column-name">{column.state}</span> <span className="column-count">{column.count}</span>
-                </h2>
-            </section>
-        );
-    }
+    const narrowName = column.narrow === undefined ? undefined : narrowColumnText(column.state, column.narrow, column.count);
+    const toggle = column.state === 'Done' ? props.doneToggle : undefined;
+    const heading = (
+        <>
+            <StateIcon state={column.state} /> <span className="column-name">{column.state}</span> <span className="column-count">{column.count}</span>
+        </>
+    );
+    const title = narrowName === undefined ? undefined : ruleText === undefined ? narrowName : `${narrowName} · ${ruleText}`;
     return (
         <section
             className="column"
             data-column={column.state}
-            aria-label={column.state}
+            {...(column.narrow === undefined ? {} : { 'data-narrow': column.narrow })}
+            aria-label={narrowName ?? column.state}
+            {...(title === undefined ? {} : { title })}
             data-board-state={column.state}
         >
-            <h2 className="column-heading" {...(ruleText === undefined ? {} : { title: ruleText })}>
-                <StateIcon state={column.state} /> <span className="column-name">{column.state}</span> <span className="column-count">{column.count}</span>
+            <h2 className="column-heading" {...(column.narrow === undefined && ruleText !== undefined ? { title: ruleText } : {})}>
+                {toggle === undefined ? (
+                    heading
+                ) : (
+                    <button type="button" className="done-toggle" data-done-toggle aria-expanded={toggle === 'hide'} aria-label={toggle === 'hide' ? DONE_HIDE_LABEL : DONE_SHOW_LABEL} onClick={() => props.onToggleDone?.(toggle === 'show')}>
+                        {heading}
+                    </button>
+                )}
             </h2>
-            {column.hidden > 0 ? <p className="column-hidden">{hiddenByFilterText(column.hidden)}</p> : null}
-            <ul className="column-cards">
-                {column.cards.map((card) => (
-                    <Card
-                        key={card.key}
-                        card={card}
-                        onOpen={props.onOpen}
-                        copyResult={props.copyResult}
-                        onCopy={props.onCopy}
-                        {...(props.tabIndexOf === undefined ? {} : { tabIndex: props.tabIndexOf(card), copyTabIndex: props.tabIndexOf(card) })}
-                    />
-                ))}
-            </ul>
+            {column.narrow !== undefined ? null : (
+                <>
+                    {column.hidden > 0 ? <p className="column-hidden">{hiddenByFilterText(column.hidden)}</p> : null}
+                    <ul className="column-cards">
+                        {column.cards.map((card) => (
+                            <Card
+                                key={card.key}
+                                card={card}
+                                onOpen={props.onOpen}
+                                copyResult={props.copyResult}
+                                onCopy={props.onCopy}
+                                {...(props.tabIndexOf === undefined ? {} : { tabIndex: props.tabIndexOf(card), copyTabIndex: props.tabIndexOf(card) })}
+                            />
+                        ))}
+                    </ul>
+                </>
+            )}
         </section>
     );
 }

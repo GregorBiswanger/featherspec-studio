@@ -20,7 +20,7 @@ import { createProjectLine } from './core/copyNextStep/projectLine';
 import { createStatusEntry } from './core/copyNextStep/statusEntry';
 import { createStudioTree } from './adapters/vscode/studioTree';
 import { createTrust } from './adapters/vscode/trust';
-import { createUiMemory } from './adapters/vscode/uiMemory';
+import { BOARD_MEMORY_KEY, SHELL_MEMORY_KEY, createUiMemory } from './adapters/vscode/uiMemory';
 import { sameRootFor } from './adapters/vscode/sameRoot';
 import { createStatusItem, type StatusItemInspection } from './adapters/vscode/statusBar';
 import { createStepUi } from './adapters/vscode/stepUi';
@@ -81,6 +81,7 @@ export interface BoardTestApi {
     detail(): DetailView;
     whenIdle(): Promise<void>;
     setFilter(filter: BoardFilter): void;
+    setDone(expanded: boolean): void;
     openFile(key: string, line?: number): Promise<'opened' | 'refused' | 'not-found'>;
 }
 
@@ -158,7 +159,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         source: modelSource,
         folders: createWorkspaceFolders(),
         trust: createTrust(),
-        memory: createUiMemory(context.workspaceState),
+        memory: createUiMemory(context.workspaceState, SHELL_MEMORY_KEY),
         actions: shellActions,
         sameRoot,
     });
@@ -184,6 +185,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         source: modelSource,
         selection,
         history: { read: () => lifecycle.history(), onDidChange: (listener) => lifecycle.onDidChange(() => listener()) },
+        memory: createUiMemory(context.workspaceState, BOARD_MEMORY_KEY),
     });
     const overview = createOverviewService({
         source: modelSource,
@@ -293,6 +295,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             detail: () => board.detail(),
             whenIdle: () => board.whenIdle(),
             setFilter: (filter) => board.setFilter(filter),
+            setDone: (expanded) => board.setDone(expanded),
             openFile: async (key, line) => {
                 const result = await (line === undefined ? openFile.open(key) : openFile.open(key, line));
                 return result.kind === 'opened' ? 'opened' : result.kind;

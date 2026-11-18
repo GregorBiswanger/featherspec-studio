@@ -9,6 +9,7 @@ function setup(overrides: { open?: OpenFileResult; copyFails?: boolean } = {}) {
     const requests = createBoardRequests({
         board: {
             setSort: (sort) => void calls.push(['setSort', sort]),
+            setDone: (expanded) => void calls.push(['setDone', expanded]),
             clearFilters: () => void calls.push(['clearFilters']),
         },
         clipboard: {
@@ -38,8 +39,9 @@ describe('board requests', () => {
         const { requests, calls } = setup();
         expect(Object.keys(requests.handlers)).not.toContain('boardSetFilter');
         await requests.handlers.boardSetSort({ sort: 'title' });
+        await requests.handlers.boardSetDone({ expanded: true });
         await requests.handlers.boardClearFilters({});
-        expect(calls).toEqual([['setSort', 'title'], ['clearFilters']]);
+        expect(calls).toEqual([['setSort', 'title'], ['setDone', true], ['clearFilters']]);
     });
 
     it('AC-010: an open request passes the line, and says nothing when the file opened', async () => {

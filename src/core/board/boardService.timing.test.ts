@@ -48,6 +48,7 @@ describe('board service: freshness on 200 specs (AC-019, core part)', () => {
         const w = createBoardWorld(model);
         disposables.push(w.service);
         await w.service.whenIdle();
+        w.service.setDone(true);
         expect(w.service.view()!.columns.flatMap((column) => column.cards)).toHaveLength(200);
 
         const next = { project: { ...project }, lifecycle: deriveLifecycle(project) };

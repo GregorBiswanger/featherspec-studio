@@ -56,6 +56,7 @@ describe('board requests', () => {
         expect(Object.keys(REQUEST_GUARDS).sort()).toEqual(
             [
                 'boardClearFilters',
+                'boardSetDone',
                 'boardSetSort',
                 'copyText',
                 'dismissNotice',
@@ -71,6 +72,10 @@ describe('board requests', () => {
 
     it('guards accept the payloads the webview sends and reject the rest', () => {
         expect(Object.keys(REQUEST_GUARDS)).not.toContain('boardSetFilter');
+        expect(REQUEST_GUARDS.boardSetDone({ expanded: true })).toBe(true);
+        expect(REQUEST_GUARDS.boardSetDone({ expanded: 'yes' })).toBe(false);
+        expect(REQUEST_GUARDS.boardSetDone({ expanded: true, extra: 1 })).toBe(false);
+        expect(REQUEST_GUARDS.boardSetDone({})).toBe(false);
         expect(REQUEST_GUARDS.boardSetSort({ sort: 'title' })).toBe(true);
         expect(REQUEST_GUARDS.boardSetSort({ sort: 'priority' })).toBe(false);
         expect(isOpenFilePayload({ key: 'k' })).toBe(true);
@@ -102,6 +107,8 @@ describe('board requests', () => {
         expect(isBoardView({ ...view, columns: [{ ...view.columns[0], narrow: 'empty' }] })).toBe(true);
         expect(isBoardView({ ...view, columns: [{ ...view.columns[0], narrow: 'wide' }] })).toBe(false);
         expect(isBoardView({ ...view, columns: [{ state: 'Active', cards: [], hidden: 0, emptyBeforeFilter: false }] })).toBe(false);
+        expect(isBoardView({ ...view, doneToggle: 'show' })).toBe(true);
+        expect(isBoardView({ ...view, doneToggle: 'open' })).toBe(false);
         expect(isBoardView({ ...view, sort: 'priority' })).toBe(false);
         expect(isBoardView({ ...view, banner: [{ where: 'project', reason: 'x' }] })).toBe(false);
         expect(isBoardView({ ...view, banner: { problems: [], notes: [{ where: 'project' }] } })).toBe(false);

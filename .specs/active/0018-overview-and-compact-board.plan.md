@@ -3,7 +3,7 @@
 **Spec:** [0018-overview-and-compact-board.md](0018-overview-and-compact-board.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-006
+**Current step:** T-007
 
 ## Approach
 
@@ -307,8 +307,8 @@ No parallel stage: the Overview and Board steps share `messages.ts`, `client.ts`
   the columns); `SpecBoard.test.tsx` (toggle only while Done holds a card); host `board.smoke` thin
   ("0018 AC-016, AC-028: the Done choice survives a panel close and writes nothing").
 - **Verify:** `npx vitest run src/core/board src/shared/protocol src/webview/board` red, then green; gates 1–5; `npm run compile-tests`
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-18: written with the code in one pass, no separate red run (`doneMemory.test.ts`; `boardService.test.ts` eight Done tests incl. restart over the same memory, damaged memory, `panelClosed`, filter and Clear filters; `filters.test.ts`; `noWrite.test.ts` with the two memory writes; `Keyboard.test.tsx` six tests; `SpecBoard.test.tsx` toggle block; guard and router tests; host `board.smoke` thin test compiles, not run here). `npm run test:unit` 1936 passed, 3 skipped, timing 12 passed; eslint, both `tsc`, `compile`, `compile-tests` clean.
+- **Notes:** `BoardView.doneToggle` is optional (absent instead of `undefined`). The memory is read once when the service is created. One `Column` element tree serves wide, strip and toggle so the toggle button keeps its DOM node and the focus across collapse and expand. `fallbackFocus` is unchanged (first card of the nearest column), so the Keyboard test names that, not "the nearest card". `boardService.timing.test.ts` expands Done before counting 200 cards. The host smoke test cannot close the panel through the test API, so it covers "writes nothing" and the collapsed view; the restart is proven by the service test.
 
 ### T-007 — Board: the three-row card and a date to trust
 

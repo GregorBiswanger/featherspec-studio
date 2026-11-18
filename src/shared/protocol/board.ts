@@ -76,6 +76,7 @@ export interface Banner {
 
 export interface BoardView {
     columns: BoardColumn[];
+    doneToggle?: 'show' | 'hide';
     banner: Banner;
     filter: BoardFilter;
     sort: SortKey;
@@ -147,6 +148,7 @@ export function isBoardView(value: unknown): value is BoardView {
         isBanner(value.banner) &&
         isBoardFilter(value.filter) &&
         isSortKey(value.sort) &&
-        typeof value.noSpecs === 'boolean'
+        typeof value.noSpecs === 'boolean' &&
+        (value.doneToggle === undefined || value.doneToggle === 'show' || value.doneToggle === 'hide')
     );
 }

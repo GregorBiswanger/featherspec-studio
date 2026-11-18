@@ -93,6 +93,10 @@ export interface RunActionPayload {
     action: ActionId;
 }
 
+export interface BoardSetDonePayload {
+    expanded: boolean;
+}
+
 export interface BoardSetSortPayload {
     sort: SortKey;
 }
@@ -121,6 +125,7 @@ export interface ShellRequestPayloads {
 
 export interface BoardRequestPayloads {
     boardSetSort: BoardSetSortPayload;
+    boardSetDone: BoardSetDonePayload;
     boardClearFilters: Record<string, never>;
     openFile: OpenFilePayload;
     copyText: CopyTextPayload;
@@ -203,6 +208,10 @@ export function isEmptyPayload(value: unknown): value is Record<string, never> {
     return value === undefined || (isRecord(value) && Object.keys(value).length === 0);
 }
 
+export function isBoardSetDonePayload(value: unknown): value is BoardSetDonePayload {
+    return isRecord(value) && Object.keys(value).length === 1 && typeof value.expanded === 'boolean';
+}
+
 export function isBoardSetSortPayload(value: unknown): value is BoardSetSortPayload {
     return isRecord(value) && isSortKey(value.sort);
 }
@@ -251,6 +260,7 @@ export const REQUEST_GUARDS: { [Type in RequestType]: (value: unknown) => value 
     runAction: isRunActionPayload,
     dismissNotice: isEmptyPayload,
     boardSetSort: isBoardSetSortPayload,
+    boardSetDone: isBoardSetDonePayload,
     boardClearFilters: isEmptyPayload,
     openFile: isOpenFilePayload,
     copyText: isCopyTextPayload,

@@ -423,3 +423,45 @@ describe('0017 AC-005: Copy on a card', () => {
         expect(requests('navigate')).toEqual([]);
     });
 });
+
+describe('AC-016: the Done toggle', () => {
+    function collapsed(count: number) {
+        const view = boardView([card('0001', { state: 'Backlog' })], { doneToggle: 'show' });
+        view.columns[4] = { state: 'Done', cards: [], hidden: 0, emptyBeforeFilter: false, count, narrow: 'collapsed' };
+        return view;
+    }
+
+    it('collapsed Done is a strip with the count, the §7 name and a Show Done button; no Done card is in the document', async () => {
+        for (const [count, name] of [[1, 'Done: 1 spec, collapsed'], [3, 'Done: 3 specs, collapsed']] as const) {
+            const container = await open(collapsed(count));
+            const strip = container.querySelector('[data-column="Done"]')!;
+            expect(strip.getAttribute('data-narrow')).toBe('collapsed');
+            expect(strip.getAttribute('aria-label')).toBe(name);
+            expect(strip.querySelector('.column-count')?.textContent).toBe(String(count));
+            expect(strip.querySelectorAll('[data-card], ul')).toHaveLength(0);
+            const toggle = strip.querySelector('button')!;
+            expect(toggle.getAttribute('aria-label')).toBe('Show Done');
+            expect(toggle.getAttribute('aria-expanded')).toBe('false');
+            mounted?.unmount();
+        }
+    });
+
+    it('expanded Done keeps its cards and offers Hide Done; a click sends the request', async () => {
+        const container = await open(boardView([card('0006', { state: 'Done' })], { doneToggle: 'hide' }));
+        expect(container.querySelectorAll('[data-column="Done"] [data-card]')).toHaveLength(1);
+        const toggle = container.querySelector<HTMLElement>('[data-column="Done"] button')!;
+        expect(toggle.getAttribute('aria-label')).toBe('Hide Done');
+        expect(toggle.getAttribute('aria-expanded')).toBe('true');
+        await click(toggle);
+        expect(requests('boardSetDone')).toEqual([{ expanded: false }]);
+    });
+
+    it('there is no toggle while the view carries none (no Done spec, or a filter is set), and no other column has one', async () => {
+        const container = await open(boardView([card('0001', { state: 'Done' })]));
+        expect(container.querySelectorAll('[data-done-toggle]')).toHaveLength(0);
+        mounted?.unmount();
+        const withToggle = await open(boardView([card('0001', { state: 'Active' }), card('0002', { state: 'Done' })], { doneToggle: 'hide' }));
+        expect(withToggle.querySelectorAll('[data-done-toggle]')).toHaveLength(1);
+        expect(withToggle.querySelector('[data-done-toggle]')?.closest('[data-column]')?.getAttribute('data-column')).toBe('Done');
+    });
+});

@@ -3,7 +3,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { specText } from '../lifecycle/testing/projects';
 import type { BoardService } from './boardService';
-import { createBoardWorld, modelOf, type BoardWorld } from './testing/boardWorld';
+import { createBoardWorld, createFakeBoardMemory, modelOf, type BoardWorld } from './testing/boardWorld';
 
 const NINE: Record<string, string> = {};
 for (let number = 1; number <= 9; number += 1) {
@@ -119,6 +119,94 @@ describe('board service: filters and sort', () => {
         expect(w.views.length).toBe(before + 1);
         w.service.setSort('title');
         expect(w.views.length).toBe(before + 1);
+    });
+});
+
+const WITH_DONE: Record<string, string> = {
+    '.specs/backlog/0001-a.md': specText(),
+    '.specs/done/0002-b.md': specText({ status: 'Baseline' }),
+    '.specs/done/0003-c.md': specText({ status: 'Baseline' }),
+};
+
+function doneColumn(w: BoardWorld) {
+    return w.service.view()!.columns.find((column) => column.state === 'Done')!;
+}
+
+describe('board service: Done collapsed and remembered', () => {
+    it('AC-016: Done starts collapsed with its count and a Show toggle; no card of it is in the view', async () => {
+        const w = await world(WITH_DONE);
+        expect(doneColumn(w)).toMatchObject({ narrow: 'collapsed', count: 2, cards: [], hidden: 0 });
+        expect(w.service.view()!.doneToggle).toBe('show');
+        expect(shown(w)).toEqual(['0001']);
+    });
+
+    it('AC-016: a toggle expands Done and writes the choice to the memory; a second toggle collapses it', async () => {
+        const w = await world(WITH_DONE);
+        w.service.setDone(true);
+        expect(doneColumn(w).narrow).toBeUndefined();
+        expect(doneColumn(w).cards.map((entry) => entry.number)).toEqual(['0002', '0003']);
+        expect(w.service.view()!.doneToggle).toBe('hide');
+        expect(w.memory.writes).toEqual([{ v: 1, done: 'expanded' }]);
+        w.service.setDone(false);
+        expect(w.service.view()!.doneToggle).toBe('show');
+        expect(w.memory.writes).toEqual([{ v: 1, done: 'expanded' }, { v: 1, done: 'collapsed' }]);
+    });
+
+    it('AC-016: nothing is written without a toggle', async () => {
+        const w = await world(WITH_DONE);
+        w.service.setSort('title');
+        w.service.setFilter({ states: ['Done'] });
+        w.service.clearFilters();
+        w.service.panelClosed();
+        expect(w.memory.writes).toEqual([]);
+    });
+
+    it('AC-016: a new service over the same memory (a restart) keeps the choice; a damaged memory reads collapsed', async () => {
+        const memory = createFakeBoardMemory();
+        const first = createBoardWorld(await modelOf(WITH_DONE), memory);
+        disposables.push(first.service);
+        first.service.setDone(true);
+        const second = createBoardWorld(await modelOf(WITH_DONE), memory);
+        disposables.push(second.service);
+        await second.service.whenIdle();
+        expect(doneColumn(second).cards).toHaveLength(2);
+        const damaged = createBoardWorld(await modelOf(WITH_DONE), createFakeBoardMemory({ v: 9 }));
+        disposables.push(damaged.service);
+        expect(doneColumn(damaged).narrow).toBe('collapsed');
+    });
+
+    it('AC-016: a closed panel keeps the choice', async () => {
+        const w = await world(WITH_DONE);
+        w.service.setDone(true);
+        w.service.panelClosed();
+        expect(doneColumn(w).cards).toHaveLength(2);
+        expect(w.service.view()!.doneToggle).toBe('hide');
+    });
+
+    it('AC-016: while a filter is set Done follows the filter rules and there is no toggle; Clear filters brings the choice back', async () => {
+        const w = await world(WITH_DONE);
+        w.service.setFilter({ states: ['Backlog'] });
+        expect(doneColumn(w)).toMatchObject({ narrow: 'filtered', count: 2 });
+        expect(w.service.view()!.doneToggle).toBeUndefined();
+        w.service.setFilter({ states: ['Done'] });
+        expect(doneColumn(w).cards).toHaveLength(2);
+        expect(w.service.view()!.doneToggle).toBeUndefined();
+        w.service.clearFilters();
+        expect(doneColumn(w).narrow).toBe('collapsed');
+        expect(w.service.view()!.doneToggle).toBe('show');
+    });
+
+    it('AC-016: a project with no Done spec has no toggle, and Done is an empty strip', async () => {
+        const w = await world();
+        expect(w.service.view()!.doneToggle).toBeUndefined();
+        expect(doneColumn(w).narrow).toBe('empty');
+    });
+
+    it('AC-016: when every spec is Done and Done is collapsed, the toggle is the only way in', async () => {
+        const w = await world({ '.specs/done/0001-a.md': specText({ status: 'Baseline' }) });
+        expect(w.service.view()!.doneToggle).toBe('show');
+        expect(shown(w)).toEqual([]);
+        expect(w.service.view()!.noSpecs).toBe(false);
     });
 });
 

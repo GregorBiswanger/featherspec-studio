@@ -52,7 +52,7 @@ export function SpecBoard() {
         if (!hasFocus.current) {
             return;
         }
-        const element = target === undefined ? columnsRef.current : cardElement(columnsRef.current, target);
+        const element = target === undefined ? (columnsRef.current?.querySelector<HTMLElement>('[data-done-toggle]') ?? columnsRef.current) : cardElement(columnsRef.current, target);
         if (element !== null && document.activeElement !== element) {
             element.focus();
         }
@@ -121,6 +121,8 @@ export function SpecBoard() {
                         onOpen={open}
                         copyResult={api.copyResult}
                         onCopy={api.copyText}
+                        {...(board.doneToggle === undefined ? {} : { doneToggle: board.doneToggle })}
+                        onToggleDone={api.setDone}
                         tabIndexOf={(card) => (card.key === tabbable ? 0 : -1)}
                     />
                 ))}

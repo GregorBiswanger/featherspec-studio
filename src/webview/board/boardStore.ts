@@ -11,6 +11,7 @@ export interface BoardApi {
     fileResult: { key: string; text: string } | undefined;
     copyResult: { ok: boolean; text: string } | undefined;
     setSort(sort: SortKey): void;
+    setDone(expanded: boolean): void;
     clearFilters(): void;
     openFile(key: string, line?: number): void;
     copyText(text: string): void;
@@ -28,6 +29,7 @@ export function useBoard(): BoardApi {
         fileResult: snapshot.fileResult,
         copyResult: snapshot.copyResult,
         setSort: client.setBoardSort,
+        setDone: client.setBoardDone,
         clearFilters: client.clearBoardFilters,
         openFile: client.openFile,
         copyText: client.copyText,

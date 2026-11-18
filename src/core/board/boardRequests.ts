@@ -8,7 +8,7 @@ import { copyLine } from './copyLine';
 import type { OpenFile } from './openFile';
 
 export interface BoardRequestsDeps {
-    board: Pick<BoardService, 'setSort' | 'clearFilters'>;
+    board: Pick<BoardService, 'setSort' | 'setDone' | 'clearFilters'>;
     openFile: OpenFile;
     clipboard: ClipboardPort;
 }
@@ -43,6 +43,7 @@ export function createBoardRequests(deps: BoardRequestsDeps): BoardRequests {
     const copyResults = notifier<CopyResultEventPayload>();
     return {
         handlers: {
+            boardSetDone: async (payload) => deps.board.setDone(payload.expanded),
             boardSetSort: async (payload) => deps.board.setSort(payload.sort),
             boardClearFilters: async () => deps.board.clearFilters(),
             copyText: async (payload) => {

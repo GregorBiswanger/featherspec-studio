@@ -1,5 +1,5 @@
 import type { BoardColumn, CardView, SortKey } from '../../shared/protocol/board';
-import { BOARD_STATES, type BoardFilter } from '../../shared/protocol/boardFilter';
+import { BOARD_STATES, isFilterSet, type BoardFilter } from '../../shared/protocol/boardFilter';
 
 function matches(card: CardView, filter: BoardFilter): boolean {
     if (filter.states !== undefined && !filter.states.includes(card.state)) {
@@ -37,11 +37,14 @@ function compareBy(sort: SortKey): (left: CardView, right: CardView) => number {
     }
 }
 
-export function arrangeBoard(cards: readonly CardView[], filter: BoardFilter, sort: SortKey): BoardColumn[] {
+export function arrangeBoard(cards: readonly CardView[], filter: BoardFilter, sort: SortKey, doneExpanded = true): BoardColumn[] {
     const compare = compareBy(sort);
     return BOARD_STATES.map((state) => {
         const own = cards.filter((card) => card.state === state);
         const shown = own.filter((card) => matches(card, filter)).sort(compare);
+        if (state === 'Done' && !doneExpanded && !isFilterSet(filter) && own.length > 0) {
+            return { state, cards: [], hidden: 0, emptyBeforeFilter: false, count: own.length, narrow: 'collapsed' };
+        }
         const column: BoardColumn = { state, cards: shown, hidden: own.length - shown.length, emptyBeforeFilter: own.length === 0, count: shown.length };
         if (shown.length > 0) {
             return column;
