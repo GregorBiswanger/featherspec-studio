@@ -1,6 +1,7 @@
 import type { NavigationRequest } from '../../../shared/protocol/messages';
 import type { McSpecs } from '../../../shared/protocol/missionControl';
 import { StateIcon } from '../../board/icons';
+import { derivedTooltip } from '../../../shared/protocol/texts';
 import { RuleText } from '../../ui/RuleText';
 import { Drill } from './Drill';
 import { stateRequest, totalRequest } from './requests';
@@ -32,7 +33,7 @@ export function SpecFigures(props: { specs: Extract<McSpecs, { kind: 'counts' }>
                             <StateIcon state={entry.state} />
                             {entry.derivedRule === undefined ? null : (
                                 <span className="mc-tile-sub">
-                                    <RuleText text={mcDerived(entry.derivedRule)} id={entry.derivedRule} />
+                                    <RuleText text={mcDerived(entry.derivedRule)} tooltip={derivedTooltip(entry.derivedRule)} />
                                 </span>
                             )}
                             {entry.deprecated === undefined ? null : <span className="mc-tile-sub">{mcDeprecated(entry.deprecated)}</span>}

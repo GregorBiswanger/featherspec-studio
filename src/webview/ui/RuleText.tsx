@@ -1,7 +1,7 @@
-export function RuleText(props: { text: string; id: string }) {
+export function RuleText(props: { text: string; tooltip: string }) {
     return (
-        <span className="rule-text">
-            <span className="rule-sentence">{props.text}</span> <span className="rule-id">{props.id}</span>
+        <span className="rule-text" title={props.tooltip}>
+            <span className="rule-sentence">{props.text}</span>
         </span>
     );
 }

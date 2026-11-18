@@ -44,7 +44,7 @@ afterEach(() => {
 describe('panel states S1 to S9 in the panel UI', () => {
     const cases: { name: string; state: PanelState; text: string[]; actions: string[]; label: string }[] = [
         { name: 'AC-011 S1', state: { id: 'S1' }, text: ['Open a folder to use FeatherSpec Studio.'], actions: ['Open Folder'], label: 'No folder open' },
-        { name: 'AC-012 S2', state: { id: 'S2' }, text: ['No FeatherSpec project found in this workspace.'], actions: ['Set up FeatherSpec', 'Open setup guide', 'Refresh'], label: 'No project found' },
+        { name: 'AC-012 S2', state: { id: 'S2' }, text: ['No FeatherSpec project found in this workspace.', 'Set up FeatherSpec downloads the latest FeatherSpec release from GitHub and adds its files; existing files are never overwritten.'], actions: ['Set up FeatherSpec', 'Open setup guide', 'Refresh'], label: 'No project found' },
         { name: 'AC-013 S3', state: { id: 'S3' }, text: ['Several FeatherSpec projects found. Select one to continue.'], actions: ['Select project'], label: 'Several projects found' },
         {
             name: 'AC-015 S5 discovery',

@@ -68,8 +68,8 @@ describe('AC-010: the seven sections', () => {
         expect(text).toContain('Status');
         expect(text).toContain('In Progress');
         expect(text).toContain('Active');
-        expect(text).toContain('S-ACTIVE');
-        expect(text).toContain('persisted');
+        expect(text).not.toMatch(/S-ACTIVE|persisted/);
+        expect(section(await open(), 'Overview').querySelector('.state-chip')?.getAttribute('title')).toBe('Read from the files · rule S-ACTIVE');
         expect(text).not.toMatch(/Priority|verdict/i);
         expect(text).toContain('Plan has no Verified line');
     });
@@ -340,7 +340,10 @@ describe('0013 AC-012, AC-013, AC-010: collapsible sections, detail header, Over
         const container = await open(detailView({ overview: { ...base, state: 'Review', rule: 'S-REVIEW', persistence: 'derived' } }));
         const overview = section(container, 'Overview');
         const sentences = [...overview.querySelectorAll('.rule-text')].map((rule) => [rule.querySelector('.rule-sentence')?.textContent, rule.querySelector('.rule-id')?.textContent]);
-        expect(sentences).toEqual([['Derived: plan is Done, waiting for review', 'S-REVIEW']]);
+        expect(sentences).toEqual([['Plan done, waiting for review', undefined]]);
+        expect(overview.querySelector('.rule-text')?.getAttribute('title')).toBe('Derived from the files · rule S-REVIEW');
+        expect(overview.querySelector('.state-chip')?.hasAttribute('title')).toBe(false);
+        expect(overview.textContent).not.toMatch(/S-REVIEW|persisted|derived/);
     });
 });
 

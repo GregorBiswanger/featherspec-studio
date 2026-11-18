@@ -97,8 +97,9 @@ describe('AC-007: the Spec Explorer list', () => {
         expect(listed[0]?.textContent).not.toContain('.specs/');
         expect(listed[1]?.textContent).toContain('not available');
         expect(listed[1]?.textContent).toContain('Review');
-        expect(listed[1]?.querySelector('.rule-sentence')?.textContent).toBe('Derived: plan is Done, waiting for review');
-        expect(listed[1]?.querySelector('.rule-id')?.textContent).toBe('S-REVIEW');
+        expect(listed[1]?.querySelector('.rule-sentence')?.textContent).toBe('Plan done, waiting for review');
+        expect(listed[1]?.querySelector('.rule-text')?.getAttribute('title')).toBe('Derived from the files · rule S-REVIEW');
+        expect(listed[1]?.textContent).not.toContain('S-REVIEW');
         expect(listed[2]?.textContent).toContain('.specs/backlog/0004-thing.md');
         expect(listed[3]?.textContent).toContain('.specs/active/0004-thing.md');
         expect(container.querySelector('[role="listbox"]')?.getAttribute('aria-label')).toBe('Specs');

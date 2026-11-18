@@ -58,6 +58,7 @@ describe('AC-001: the S2 welcome text of the navigator', () => {
         expect(S2_WELCOME).toBe(
             [
                 'No FeatherSpec project found in this workspace.',
+                'Set up FeatherSpec downloads the latest FeatherSpec release from GitHub and adds its files; existing files are never overwritten.',
                 '[Set up FeatherSpec](command:featherspec-studio.setup)',
                 '[Open setup guide](command:featherspec-studio.shellAction?%5B%22openSetupGuide%22%5D) · [Refresh](command:featherspec-studio.shellAction?%5B%22refresh%22%5D)',
             ].join('\n'),

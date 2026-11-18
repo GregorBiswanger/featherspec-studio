@@ -3,6 +3,7 @@ import { isBoardState } from "../../shared/protocol/boardFilter";
 import type { SpecRow } from "../../shared/protocol/messages";
 import {
   DERIVED_SENTENCES,
+  derivedTooltip,
   NO_SPECS_TEXT,
   SPEC_LIST_LABEL,
   TITLE_NOT_AVAILABLE,
@@ -68,7 +69,7 @@ export function SpecExplorer() {
                 <span className="spec-derived">
                   <RuleText
                     text={DERIVED_SENTENCES[row.derivedRule]}
-                    id={row.derivedRule}
+                    tooltip={derivedTooltip(row.derivedRule)}
                   />
                 </span>
               )}

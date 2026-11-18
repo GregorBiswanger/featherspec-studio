@@ -115,11 +115,11 @@ describe('AC-001, AC-002, AC-025: spec counts', () => {
         const rows = [...specs.querySelectorAll('[data-state-count]')].map((row) => row.textContent);
         expect(rows).toEqual([
             'Backlog 2',
-            'Ready 1Derived: draft with a plan that has not started S-READY',
+            'Ready 1Plan written, not started yet',
             'Active 1',
-            'Review 1Derived: plan is Done, waiting for review S-REVIEW',
+            'Review 1Plan done, waiting for review',
             'Done 3of which Deprecated: 1',
-            'Blocked 1Derived: plan or return note says Blocked S-BLOCKED',
+            'Blocked 1Plan or return note says Blocked',
         ]);
     });
 
@@ -190,10 +190,10 @@ describe('0013 AC-004, AC-005: stat tiles, distribution bar and progress', () =>
             expect(tile.querySelector('.mc-tile-name')?.textContent).toBe(state);
             expect(tile.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
             expect(tile.querySelector('.mc-tile-count')?.textContent).toMatch(/^\d+$/);
-            const rule = tile.querySelector('.rule-id')?.textContent;
+            const rule = tile.querySelector('.rule-text')?.getAttribute('title')?.replace('Derived from the files · rule ', '');
             expect(rule).toBe(state === 'Ready' ? 'S-READY' : state === 'Review' ? 'S-REVIEW' : state === 'Blocked' ? 'S-BLOCKED' : undefined);
         }
-        expect(tiles[3]?.querySelector('.rule-sentence')?.textContent).toBe('Derived: plan is Done, waiting for review');
+        expect(tiles[3]?.querySelector('.rule-sentence')?.textContent).toBe('Plan done, waiting for review');
         expect(tiles[0]?.querySelector('.mc-tile-count')?.textContent).toBe('5');
     });
 

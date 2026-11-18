@@ -121,7 +121,7 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         expect([...document.querySelectorAll('[data-column]')].map((column) => (column as unknown as { getAttribute(name: string): string | null }).getAttribute('data-column'))).toEqual(['Backlog', 'Ready', 'Active', 'Review', 'Done', 'Blocked']);
         expect(document.querySelectorAll('[data-card]')).toHaveLength(cards.length);
         expect(cards.length).toBeGreaterThan(0);
-        expect(document.querySelector('[data-column="Ready"] [data-card]')?.textContent).toContain('Derived: draft with a plan that has not started');
+        expect(document.querySelector('[data-column="Ready"] [data-card]')?.textContent).toContain('Plan written, not started yet');
         expect(document.querySelector('[data-placeholder]')).toBeNull();
         expect(errors).toEqual([]);
     });

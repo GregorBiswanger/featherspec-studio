@@ -3,6 +3,8 @@ import {
     criteriaText,
     DEPRECATED_MARKER,
     DERIVED_SENTENCES,
+    derivedTooltip,
+    persistedTooltip,
     BANNER_HEADING,
     DETAIL_LABEL,
     HISTORY_NOT_AVAILABLE_TEXT,
@@ -79,14 +81,14 @@ function Sections(props: { detailKey: string; sections: DetailSections; fileResu
                     <div>
                         <dt>{STATE_LABEL}</dt>{' '}
                         <dd className="detail-state">
-                            {isBoardState(overview.state) ? <StateChip state={overview.state} /> : overview.state}{' '}
-                            {overview.persistence === 'derived' && isDerivedRule(overview.rule) ? (
-                                <RuleText text={DERIVED_SENTENCES[overview.rule]} id={overview.rule} />
+                            {isBoardState(overview.state) ? (
+                                <StateChip state={overview.state} tooltip={overview.persistence === 'persisted' ? persistedTooltip(overview.rule) : undefined} />
                             ) : (
-                                <span className="detail-rule">
-                                    {overview.rule} · {overview.persistence}
-                                </span>
-                            )}
+                                <span title={overview.persistence === 'persisted' ? persistedTooltip(overview.rule) : undefined}>{overview.state}</span>
+                            )}{' '}
+                            {overview.persistence === 'derived' && isDerivedRule(overview.rule) ? (
+                                <RuleText text={DERIVED_SENTENCES[overview.rule]} tooltip={derivedTooltip(overview.rule)} />
+                            ) : null}
                             {overview.deprecated ? <span className="detail-flag"> · {DEPRECATED_MARKER}</span> : null}
                         </dd>
                     </div>

@@ -50,7 +50,8 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
         expect(text).toContain('0007');
         expect(text).toContain('Thing 0007');
         expect(text).toContain('Review');
-        expect(text).toContain('Derived: plan is Done, waiting for review');
+        expect(text).toContain('Plan done, waiting for review');
+        expect(text).not.toMatch(/S-REVIEW/);
         expect(text).toContain('A summary.');
         expect(text).toContain('Tasks: 3 of 7');
         expect(text).toContain('Criteria: 1 of 4 verified');
@@ -295,8 +296,8 @@ describe('0013 AC-009, AC-010: card layout', () => {
         expect(entry[1]!.querySelector('.card-need')).toBeNull();
         expect(entry[0]!.querySelector('.card-state [data-marker="deprecated"]')?.textContent?.trim()).toBe('Deprecated');
         const derived = entry[2]!.querySelector('.card-state [data-marker="derived"]')!;
-        expect(derived.querySelector('.rule-sentence')?.textContent).toBe('Derived: plan is Done, waiting for review');
-        expect(derived.querySelector('.rule-id')?.textContent).toBe('S-REVIEW');
+        expect(derived.querySelector('.rule-sentence')?.textContent).toBe('Plan done, waiting for review');
+        expect(derived.querySelector('.rule-text')?.getAttribute('title')).toBe('Derived from the files · rule S-REVIEW');
     });
 });
 

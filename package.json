@@ -116,7 +116,7 @@
     "viewsWelcome": [
       {
         "view": "featherspec-studio.navigator",
-        "contents": "No FeatherSpec project found in this workspace.\n[Set up FeatherSpec](command:featherspec-studio.setup)\n[Open setup guide](command:featherspec-studio.shellAction?%5B%22openSetupGuide%22%5D) · [Refresh](command:featherspec-studio.shellAction?%5B%22refresh%22%5D)",
+        "contents": "No FeatherSpec project found in this workspace.\nSet up FeatherSpec downloads the latest FeatherSpec release from GitHub and adds its files; existing files are never overwritten.\n[Set up FeatherSpec](command:featherspec-studio.setup)\n[Open setup guide](command:featherspec-studio.shellAction?%5B%22openSetupGuide%22%5D) · [Refresh](command:featherspec-studio.shellAction?%5B%22refresh%22%5D)",
         "when": "featherspec-studio.panelState == S2"
       }
     ],

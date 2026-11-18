@@ -1477,17 +1477,6 @@ main > h1 {
     text-decoration: underline;
 }
 
-.rule-id {
-    margin-left: 2px;
-    color: var(--fs-muted);
-    font-family: var(--vscode-editor-font-family);
-    font-size: 0.85em;
-}
-
-.spec-row.selected .rule-id {
-    color: inherit;
-}
-
 .spec-detail code {
     padding: 0 3px;
     border-radius: 3px;

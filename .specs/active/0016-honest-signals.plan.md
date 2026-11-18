@@ -3,7 +3,7 @@
 **Spec:** [0016-honest-signals.md](0016-honest-signals.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-007
+**Current step:** T-008
 
 ## Approach
 
@@ -274,8 +274,8 @@ everything after T-002 shares the text modules, `main.css` or `SpecDetail.tsx` a
   `webviewBundle.test.ts` (Ready card sentence), `panelStateTexts.test.ts`, `PanelStateView.test.tsx`
   (T-20 between the line and Set up), `manifest.test.ts` (`viewsWelcome` equals `S2_WELCOME`).
 - **Verify:** the changed tests red then green; gates 1–5
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** eslint, tsc (node, webview), test:unit 1789 passed + 3 skipped / timing 12, compile green. Rule IDs now only in title tooltips (T-08, T-10); S2 shows the T-20 sentence in panel and viewsWelcome. Tests updated first to literal new texts; production edits preceded the test edits in this step (no separate red run).
+- **Notes:** Proxy: persisted State chip gets the T-10 tooltip, derived rows the T-08 tooltip; .rule-id CSS removed.
 
 ### T-008 — Times and status history as sentences
 

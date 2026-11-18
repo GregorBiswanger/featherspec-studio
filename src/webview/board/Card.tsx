@@ -5,6 +5,7 @@ import {
     criteriaText,
     DEPRECATED_MARKER,
     DERIVED_SENTENCES,
+    derivedTooltip,
     problemsBadgeText,
     lastChangeText,
     needTooltip,
@@ -58,7 +59,7 @@ export function Card(props: {
                 </span>
                 {card.derivedRule === undefined ? null : (
                     <span className="marker card-secondary" data-marker="derived">
-                        <BadgeIcon kind="derived" /> <RuleText text={DERIVED_SENTENCES[card.derivedRule]} id={card.derivedRule} />
+                        <BadgeIcon kind="derived" /> <RuleText text={DERIVED_SENTENCES[card.derivedRule]} tooltip={derivedTooltip(card.derivedRule)} />
                     </span>
                 )}
                 {card.deprecated ? (

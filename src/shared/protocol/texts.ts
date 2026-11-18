@@ -4,10 +4,20 @@ import type { ActionId, PanelState } from './messages';
 import type { DerivedRule } from './missionControl';
 
 export const DERIVED_SENTENCES: Record<DerivedRule, string> = {
-    'S-READY': 'Derived: draft with a plan that has not started',
-    'S-REVIEW': 'Derived: plan is Done, waiting for review',
-    'S-BLOCKED': 'Derived: plan or return note says Blocked',
+    'S-READY': 'Plan written, not started yet',
+    'S-REVIEW': 'Plan done, waiting for review',
+    'S-BLOCKED': 'Plan or return note says Blocked',
 };
+
+export function derivedTooltip(rule: string): string {
+    return `Derived from the files · rule ${rule}`;
+}
+
+export function persistedTooltip(rule: string): string {
+    return `Read from the files · rule ${rule}`;
+}
+
+export const S2_SETUP_SENTENCE = 'Set up FeatherSpec downloads the latest FeatherSpec release from GitHub and adds its files; existing files are never overwritten.';
 
 export function ignoredMessageLine(type: string, reason: string): string {
     return `Ignored a message from the Studio panel: type ${type}, ${reason}.`;
@@ -64,7 +74,7 @@ export function panelStateLines(state: PanelState): string[] {
         case 'S1':
             return ['Open a folder to use FeatherSpec Studio.'];
         case 'S2':
-            return ['No FeatherSpec project found in this workspace.'];
+            return ['No FeatherSpec project found in this workspace.', S2_SETUP_SENTENCE];
         case 'S3':
             return ['Several FeatherSpec projects found. Select one to continue.'];
         case 'S4':
@@ -121,6 +131,7 @@ function shellActionLink(label: string, action: ActionId): string {
 
 export const S2_WELCOME = [
     'No FeatherSpec project found in this workspace.',
+    S2_SETUP_SENTENCE,
     `[${ACTION_LABELS.setUp}](command:${SETUP_COMMAND_ID})`,
     `${shellActionLink(ACTION_LABELS.openSetupGuide, 'openSetupGuide')} · ${shellActionLink(ACTION_LABELS.refresh, 'refresh')}`,
 ].join('\n');
