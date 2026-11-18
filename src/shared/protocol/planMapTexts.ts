@@ -91,3 +91,42 @@ export function stepLook(step: { state: string; returned?: { status: string } })
 export function chipName(id: string, title: string, word: string): string {
     return title === '' ? `${id}, ${word}` : `${id} ${title}, ${word}`;
 }
+
+export const FILES_LABEL = 'Files';
+
+export const COVERS_LABEL = 'Covers';
+
+export const DO_LABEL = 'Do';
+
+export const VERIFY_LABEL = 'Verify';
+
+export const OPEN_IN_PLAN_LABEL = 'Open in plan';
+
+export const STAGES_LABEL = 'Stages';
+
+export function stageHeading(number: number, description: string): string {
+    return description === '' ? `Stage ${number}` : `Stage ${number} — ${description}`;
+}
+
+export const STAGE_KIND_TEXTS = {
+    single: undefined,
+    sequential: '→ in order: each step builds on the one before',
+    parallel: '⇉ can run in parallel: the steps share no file',
+    mixed: '⇉ partly in parallel',
+} as const;
+
+export function returnedText(returned: { status: 'done' | 'blocked' | 'unknown'; reason?: string }): string {
+    if (returned.status === 'done') {
+        return 'Returned · done';
+    }
+    if (returned.status === 'blocked') {
+        return returned.reason === undefined || returned.reason === '' ? 'Returned · blocked' : `Returned · blocked: ${returned.reason}`;
+    }
+    return 'Returned · status unknown';
+}
+
+export function stageReturnedText(n: number, m: number): string {
+    return `${n} of ${m} steps returned`;
+}
+
+export const ALL_RETURNED_TEXT = 'All steps returned: the next step integrates them.';

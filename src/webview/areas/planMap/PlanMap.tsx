@@ -1,7 +1,7 @@
-import { useEffect, useId, useRef } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import type { SpecDetailView } from '../../../shared/protocol/detail';
 import type { PlanSpecView, PlanView } from '../../../shared/protocol/planMap';
-import { NO_SPEC_SELECTED_TEXT, noPlanText, OPEN_PLAN_LABEL, planSaysText, specDoneText, SPECS_WITH_PLAN_HEADING } from '../../../shared/protocol/planMapTexts';
+import { NOT_IN_A_STAGE_TEXT, NO_SPEC_SELECTED_TEXT, noPlanText, OPEN_PLAN_LABEL, planSaysText, specDoneText, SPECS_WITH_PLAN_HEADING } from '../../../shared/protocol/planMapTexts';
 import { NO_STEPS_TEXT, PLAN_UNREADABLE_SENTENCE, problemsBadgeText, STEPS_LABEL, stepsDoneText } from '../../../shared/protocol/texts';
 import { BadgeIcon } from '../../board/icons';
 import { useBoard } from '../../board/boardStore';
@@ -9,7 +9,94 @@ import { useShell } from '../../shell';
 import { FileLink, type FileResult } from '../../ui/FileLink';
 import { InlineText } from '../../ui/InlineText';
 import { ProgressBar } from '../../ui/ProgressBar';
+import { moveFocus, type Direction, type Grid } from '../../board/focusModel';
 import { requestMapFocus, takePendingMapFocus } from './focus';
+import { StageRow } from './StageRow';
+import { StepCard, type CardLinks } from './StepCard';
+
+const ARROWS: Record<string, Direction> = { ArrowUp: 'left', ArrowDown: 'right', ArrowLeft: 'up', ArrowRight: 'down' };
+
+function gridOf(plan: PlanView): Grid {
+    const rows: string[][] = [];
+    for (const stage of plan.stages) {
+        if (!stage.finished) {
+            stage.groups.forEach((group) => rows.push(group.steps.map((step) => step.id)));
+        }
+    }
+    if (plan.staged) {
+        if (plan.loose.length > 0) {
+            rows.push(plan.loose.map((step) => step.id));
+        }
+    } else {
+        plan.loose.forEach((step) => rows.push([step.id]));
+    }
+    return rows.filter((row) => row.length > 0);
+}
+
+function Stages(props: { plan: PlanView; links: CardLinks }) {
+    const { plan, links } = props;
+    const root = useRef<HTMLDivElement>(null);
+    const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
+    const [stop, setStop] = useState<string | undefined>(undefined);
+    const grid = useMemo(() => gridOf(plan), [plan]);
+    const tabStop = stop !== undefined && grid.some((row) => row.includes(stop)) ? stop : grid[0]?.[0];
+    const toggle = useCallback((id: string) => {
+        setExpanded((before) => {
+            const next = new Set(before);
+            if (!next.delete(id)) {
+                next.add(id);
+            }
+            return next;
+        });
+    }, []);
+    const cards = { expanded, tabStop, onToggle: toggle };
+    const onFocus = (event: React.FocusEvent<HTMLElement>): void => {
+        const id = (event.target as HTMLElement).closest<HTMLElement>('[data-step-card]')?.getAttribute('data-step-card');
+        if (id !== null && id !== undefined && id !== stop) {
+            setStop(id);
+        }
+    };
+    const onKeyDown = (event: KeyboardEvent<HTMLElement>): void => {
+        const direction = ARROWS[event.key];
+        const id = (event.target as HTMLElement).closest<HTMLElement>('[data-step-card]')?.getAttribute('data-step-card');
+        if (direction === undefined || id === null || id === undefined || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+            return;
+        }
+        event.preventDefault();
+        const target = moveFocus(grid, id, direction);
+        if (target !== undefined) {
+            setStop(target);
+            root.current?.querySelector<HTMLElement>(`[data-card-toggle="${target}"]`)?.focus();
+        }
+    };
+    return (
+        <div className="plan-stages-map" ref={root} onFocus={onFocus} onKeyDown={onKeyDown}>
+            {plan.stages.map((stage) => (
+                <StageRow key={stage.number} stage={stage} links={links} cards={cards} />
+            ))}
+            {plan.loose.length === 0 ? null : plan.staged ? (
+                <section className="plan-stage-row" data-stage-row="loose">
+                    <h3 className="plan-stage-heading">{NOT_IN_A_STAGE_TEXT}</h3>
+                    <div className="plan-stage-groups">
+                        <div className="plan-group" data-card-row>
+                            {plan.loose.map((step) => (
+                                <StepCard key={step.id} step={step} expanded={expanded.has(step.id)} tabStop={tabStop === step.id} links={links} onToggle={toggle} />
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            ) : (
+                <div className="plan-card-list">
+                    {plan.loose.map((step) => (
+                        <div key={step.id} className="plan-group" data-card-row>
+                            <StepCard step={step} expanded={expanded.has(step.id)} tabStop={tabStop === step.id} links={links} onToggle={toggle} />
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
 
 function ProblemMark(props: { sentences: string[]; id: string }) {
     const text = props.sentences.join('\n');
@@ -120,6 +207,7 @@ export function PlanMap() {
         return (
             <div className="plan-map" data-plan-map>
                 <Header key={shown.key} detail={shown} plan={shown.plan} fileResult={fileResult} onOpen={openFile} />
+                <Stages key={`stages|${shown.key}`} plan={shown.plan} links={{ fileResult, onOpen: openFile }} />
             </div>
         );
     }

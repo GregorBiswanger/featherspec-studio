@@ -895,3 +895,34 @@ describe('0021 AC-001, AC-009, §6.5: the intent stands on its own line and the 
         expect(rule(mutated, '.next-step-intent')).not.toMatch(/flex:\s*1 0 100%/);
     });
 });
+
+describe('0023 AC-008, AC-011: the step cards of the Plan map', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const own = /\.plan-map|\.plan-stage|\.plan-group|\.plan-arrow|\.plan-card-list|\.step-card/;
+    const mapRules = parseRules(css).filter((rule) => rule.selectors.some((selector) => own.test(selector)));
+
+    it('a group wraps its cards and a card is 200 to 360 px wide', () => {
+        expect(rulesFor(css, '.plan-group').some((rule) => /display:\s*flex/.test(rule.body) && /flex-wrap:\s*wrap/.test(rule.body))).toBe(true);
+        const card = rulesFor(css, '.step-card').map((rule) => rule.body).join(';');
+        expect(card).toMatch(/flex:\s*1 1 200px/);
+        expect(card).toMatch(/min-width:\s*200px/);
+        expect(card).toMatch(/max-width:\s*360px/);
+    });
+
+    it('no rule of the map sits in a media query (guideline 12) and the rules exist (negative control)', () => {
+        expect(mapRules.length).toBeGreaterThan(10);
+        expect(mapRules.filter((rule) => rule.media !== undefined)).toEqual([]);
+    });
+
+    it('the map holds no colour literal and takes its colours from theme variables', () => {
+        const body = mapRules.map((rule) => rule.body).join(';');
+        expect(body).not.toMatch(/#[0-9a-fA-F]{3,8}\b|\b(?:rgb|rgba|hsl|hsla)\(/);
+        expect(body).toContain('var(--vscode-');
+    });
+
+    it('the card head has a visible focus outline of the theme and no rule removes it', () => {
+        const focus = rulesFor(css, '.step-card-toggle:focus-visible').map((rule) => rule.body).join(';');
+        expect(focus).toMatch(/outline:\s*2px solid var\(--vscode-contrastActiveBorder, var\(--vscode-focusBorder\)\)/);
+        expect(mapRules.some((rule) => /outline:\s*(none|0)\b/.test(rule.body))).toBe(false);
+    });
+});

@@ -3,7 +3,7 @@
 **Spec:** [0023-plan-map-stages-parallel-work.md](0023-plan-map-stages-parallel-work.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-006
+**Current step:** T-007
 
 ## Approach
 
@@ -342,8 +342,8 @@ orchestrator) at the ends of stages 2 and 3; AC-018 screenshots recorded here.
   stylesheet; no `@media` in the map's rules; theme variables; focus outline on the new controls).
 - **Verify:** `npx vitest run --project webview src/webview/areas/planMap` and `npx vitest run --project node src/adapters/node/webviewCss.test.ts`
   red (stub), then green; gates 1–4
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-18 · `npx vitest run --project webview src/webview/areas/planMap` and `npx vitest run --project node src/adapters/node/webviewCss.test.ts` (new tests of `PlanMap.test.tsx` "0023 AC-008", `Keyboard.test.tsx` "0023 AC-011" and the CSS block written with the stubs absent, then green: 27 and 91 tests passed); gates 1–4: `tsc --noEmit`, `npm run lint`, `npm run compile`, `npm run test:unit` 2746 passed + 3 skipped (+16 timing)
+- **Notes:** `StageRow` renders a finished stage as `StepChip`s and an unfinished one as cards per group (`.plan-group` is the flex row, `→` is a `.plan-arrow` between groups); `PlanMap` holds the expansion (a set of step IDs, reset by `key` on the spec) and the tab stop. The key grid is the card rows in DOM order (each group, the loose row, or each card of a plan without stages) and reuses `moveFocus` of the Board with the axes swapped (Up/Down between rows, Left/Right within a row). Only the tab-stop card's Covers links take `tabIndex 0` (`FileLink` got an optional `tabIndex`); the `Open in plan` link lives in the collapsed panel (`hidden`), so it is out of the tab order until the card is expanded. A modified arrow key (Shift, Alt, Ctrl, Meta) is left alone. Focus fallback after a live update is T-007.
 
 ### T-007 — The current stage offers its ways; the map follows the files; the sweeps
 

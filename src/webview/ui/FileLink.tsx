@@ -13,7 +13,7 @@ function baseName(key: string): string {
     return key.slice(key.lastIndexOf('/') + 1);
 }
 
-export function FileLink(props: { target: LineTarget; fileResult: FileResult | undefined; onOpen(key: string, line: number): void; reason?: string; label?: string; children: ReactNode }) {
+export function FileLink(props: { target: LineTarget; fileResult: FileResult | undefined; onOpen(key: string, line: number): void; reason?: string; label?: string; tabIndex?: number; children: ReactNode }) {
     const { target, fileResult } = props;
     const [activation, setActivation] = useState<{ before: FileResult | undefined; token: object } | undefined>(undefined);
     const descriptionId = useId();
@@ -35,6 +35,7 @@ export function FileLink(props: { target: LineTarget; fileResult: FileResult | u
                 title={tooltip}
                 aria-describedby={descriptionId}
                 {...(props.label === undefined ? {} : { 'aria-label': props.label })}
+                {...(props.tabIndex === undefined ? {} : { tabIndex: props.tabIndex })}
                 onClick={() => {
                     const token = {};
                     latestActivation.set(target.key, token);
