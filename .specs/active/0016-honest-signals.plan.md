@@ -1,9 +1,9 @@
 # Plan — Honest Signals: Diagnostics in Three Tiers, User Language, Readiness as a Need
 
 **Spec:** [0016-honest-signals.md](0016-honest-signals.md)
-**Status:** In Progress
-**Last updated:** 2026-11-17
-**Current step:** T-010
+**Status:** Done
+**Last updated:** 2026-11-18
+**Current step:** —
 
 ## Approach
 
@@ -340,8 +340,40 @@ everything after T-002 shares the text modules, `main.css` or `SpecDetail.tsx` a
   The panel screenshots are taken by the agent with the harness. The S2 sentence in the Activity
   Bar view and the Hands-On on `tip-splitter` are Gregor's, because neither a look nor a native
   VS Code view can be checked by a command here.
-- [ ] **Verified (T-010):** —
-- **Notes:** —
+- [x] **Verified (T-010):** Title audit (1750 baseline, 1869 head, 27 missing all replaced per §5) written into the plan; Memory Bank, AGENTS.md snapshot, .architecture synced; final gates green: eslint, tsc node+webview, test:unit 1805 passed + 3 skipped / timing 12, compile, compile-tests. AC-025 screenshots from the harness (Dark, Light, High Contrast) show the need line, collapsed format-note toggle and S2 sentence; Copy button label change is covered by CopyButton.test.tsx, not by a screenshot.
+- **Notes:** Not provable here: npm test (host), Windows, Gregor's Hands-On.
+
+## Test-title audit
+
+Throwaway script `/tmp/audit/titles.py` (outside the repo): `it`/`test`/`describe` title literals of
+every `src/**/*.ts(x)` file, `.each` included, at the Baseline (`3cdab90`, through `git show`) and at
+the head. Baseline 1750 titles, head 1869; 27 baseline titles are gone, 146 are new. The three
+skipped tests at the Baseline are still skipped. One file was deleted, `areas/missionControl/format.ts`
+(production; its test moved to `whenTexts.test.ts`). Test files added: 7 (`needs`, `problems`,
+`readBaseline`, `tiers`, `whenTexts`, `CopyButton`, `userLanguage`), one helper (`readSnapshot.ts`); the host smoke test changed.
+No test file was deleted. Every missing title is a criterion that spec 0016 §5 changes:
+
+| Missing title (file) | Replaced by (§5 row) |
+| --- | --- |
+| cards: "AC-024: a Backlog card shows the lowest failing readiness check…" | "AC-014 (0016): a Backlog card shows the first applying need…" (0007 AC-024) |
+| cards: "AC-020: a broken plan badges only its own spec…" | "AC-006: fs-broken badges 0002 … and 0003 … with one Problem each" (0007 AC-020) |
+| cards: "AC-020: an orphan plan and an unlinked return note go to the banner…" | "AC-020 (0016 §5): an archived orphan plan goes to the banner…" and "AC-009: an orphan return note is a project-level Problem…" |
+| detail: "AC-005: the Overview says "Priority: not available"…" | "AC-013: the detail carries no priority, verdict, readiness checklist or dependency line" |
+| detail: "AC-024: readiness checks appear for a backlog/ entry only…" | "AC-014: needs appear for a backlog/ entry only…" |
+| detail: "AC-010: a diagnostic carries its reason and opens at its line…" | "AC-006: a Problem carries its reason and opens at its line in its file" |
+| attention: "0015 AC-010: the reasons are Blocked, Diagnostic and Review pending only…" | "0015 AC-010 (0016 T-04): … Blocked, Problem and Review pending only…" |
+| attention: "AC-009 …(d); an unknown-content diagnostic does not" and "AC-008: an unreadable spec file counts as (d)" | same ACs, reason now named Problem (0006 BR-01 (d), T-04) |
+| specFigures: "AC-017 …project-level diagnostic count" and "…an orphan plan counts as a project-level diagnostic" | "AC-017: … and no Problem", "AC-008 (0016): a project-level format note … is no Problem" (0006 AC-017, 0002 AC-006) |
+| specFigures: "A-012: diagnosticStems holds …" | "AC-008: problemStems holds the specs that carry a Problem…" (0006 A-012) |
+| readProject: "AC-006: a plan whose stem matches no spec is an orphan with a diagnostic" | "AC-006 (0016 §5): a sibling plan in active/ … stays in the model with no diagnostic; an archived one is a note" (0002 AC-006) |
+| Drilldown: set "Diagnostics" … | "AC-008: … the named set "Problems" …" (0006 AC-017, T-03) |
+| Drilldown: "OP-9: a count of 0 is still a button…" | "AC-008: while no Problem exists the header shows no problem element at all" (0016 AC-008, 0006 AC-017) |
+| MissionControl: three header titles (model update time / "n project diagnostics" / "0013 AC-006 …") | "…and the problem count", ""n problems" in the plural", "AC-008: with no Problem the header shows no problem element" (0013 AC-006, T-01, T-02) |
+| MissionControl: "formats times as local YYYY-MM-DD HH:mm…" | "T-02: the header time reads Updated HH:MM today…" and `whenTexts.test.ts` (T-02, T-17) |
+| SpecBoard: "the banner lists each diagnostic with its reason" | "AC-009: the banner lists each project-level Problem under the heading Problems" |
+| SpecBoard: "AC-010: the derived sentence and the readiness reason are primary text, rule and check ID secondary…" | "AC-014 (0016): a Backlog card shows its need as text…, the rule only in the tooltip" (0013 AC-010) |
+| SpecDetail: Overview/Verification titles (4) | "…and the format notes behind a toggle", "…the needs, no readiness checklist…", "…no verdict line", "AC-010: … a derived state with its sentence and rule ID" |
+| RuleText: "0013 AC-010 RuleText", "AC-010: shows the sentence as primary text and the rule ID as secondary text only" | "0013 AC-010, 0016 AC-011 RuleText", "AC-011: shows the sentence only; the rule ID is in the tooltip" |
 
 ## Traceability
 
@@ -357,26 +389,26 @@ everything after T-002 shares the text modules, `main.css` or `SpecDetail.tsx` a
 | AC-008 | T-004 | `src/core/missionControl/specFigures.ts`:projectHeader, `src/webview/areas/missionControl/{Header.tsx,requests.ts}` | `specFigures.test.ts`, `Drilldown.test.tsx`, `MissionControl.test.tsx`, `src/test/missionControl.smoke.test.ts` (CI) | verified |
 | AC-009 | T-005 | `src/core/board/cards.ts`:buildBanner, `src/webview/board/Banner.tsx` | `cards.test.ts`, `SpecBoard.test.tsx`, `boardFilter.test.ts` | verified |
 | AC-010 | T-003 | `src/core/lifecycle/readiness.ts` | `src/core/lifecycle/problems.test.ts` | verified |
-| AC-011 | T-007, T-008 | — | — | open |
-| AC-012 | T-007 | — | — | open |
-| AC-013 | T-006 | `src/core/board/detail.ts`, `src/webview/detail/SpecDetail.tsx` | `detail.test.ts`, `SpecDetail.test.tsx` | built |
+| AC-011 | T-007, T-008 | `src/shared/protocol/texts.ts`, `src/webview/ui/RuleText.tsx`, `src/webview/detail/SpecDetail.tsx` | `src/webview/userLanguage.test.tsx`, `RuleText.test.tsx`, `whenTexts.test.ts`, `SpecDetail.test.tsx` | verified |
+| AC-012 | T-007 | `src/shared/protocol/texts.ts`:DERIVED_SENTENCES, `Card.tsx`, `SpecExplorer.tsx`, `SpecFigures.tsx`, `SpecDetail.tsx` | `RuleText.test.tsx`, `SpecBoard.test.tsx`, `areas.test.tsx`, `MissionControl.test.tsx`, `webviewBundle.test.ts` | verified |
+| AC-013 | T-006 | `src/core/board/detail.ts`, `src/webview/detail/SpecDetail.tsx` | `detail.test.ts`, `SpecDetail.test.tsx` | verified |
 | AC-014 | T-006 | `src/core/board/needs.ts`:needsOf, `Card.tsx`, `SpecDetail.tsx` | `needs.test.ts`, `cards.test.ts`, `detail.test.ts`, `SpecBoard.test.tsx` | verified |
-| AC-015 | T-008 | — | — | open |
+| AC-015 | T-008 | `src/shared/protocol/texts.ts`:whenText, updatedText, historyEntryText, historyTooltip; `src/core/board/detail.ts`; `Header.tsx`, `Activity.tsx`, `SpecDetail.tsx` | `src/shared/protocol/whenTexts.test.ts`, `SpecDetail.test.tsx`, `Sections.test.tsx`, `MissionControl.test.tsx`, `detail.test.ts` | verified |
 | AC-016 | T-005 | `src/core/board/idText.ts`:enclosingEmphasis | `idText.test.ts`, `detail.test.ts`, `SpecDetail.test.tsx` | verified |
 | AC-017 | T-002 | `src/webview/main.css` (.copy-button, .secondary-button), `src/webview/board/Announcer.tsx` | `webviewCss.test.ts`, `board/Keyboard.test.tsx` | verified |
 | AC-018 | T-002 | `src/webview/ui/CopyButton.tsx`:CopyButton, `src/webview/detail/NextStep.tsx` | `src/webview/ui/CopyButton.test.tsx`, `detail/SpecDetail.test.tsx` | verified |
 | AC-019 | T-002 | `src/webview/ui/CopyButton.tsx`, `src/webview/main.css` | `CopyButton.test.tsx` (MutationObserver), `webviewCss.test.ts` | verified |
-| AC-020 | T-007 | — | — | open |
-| AC-021 | T-009 | — | — | open |
+| AC-020 | T-007 | `src/shared/protocol/texts.ts`:S2_SETUP_SENTENCE, S2_WELCOME, `package.json` viewsWelcome | `panelStateTexts.test.ts`, `PanelStateView.test.tsx`, `manifest.test.ts` | verified |
+| AC-021 | T-009 | `src/shared/protocol/texts.ts` (all New texts) | `src/adapters/node/sourceScan.test.ts` (AC-021 with negative control) | verified |
 | AC-022 | T-005 | `src/shared/protocol/nextStepTexts.ts` | `SpecDetail.test.tsx` | verified |
-| AC-023 | T-010 | — | — | open |
-| AC-024 | T-009 | — | — | open |
-| AC-025 | T-010 | — | — | open |
+| AC-023 | T-010 | plan section Test-title audit | audit script `/tmp/audit/titles.py` (counts in the plan) | verified |
+| AC-024 | T-009 | `.specs/{active,done}/00{02,03,05,06,07,13,14,15}-*.md`, `docs/product/product-decisions.md` (PD-063), `README.md`, `CHANGELOG.md`, `docs/release-checklist.md` | `ls … | xargs grep -c "Amended by 0016"` ≥ 1 each; `docsScan.test.ts` | verified |
+| AC-025 | T-010 | preview harness (`/home/claude/orch/preview/run.sh`) | screenshots in `/tmp/shots-out`: need line, collapsed format-note toggle, S2 sentence in Dark, Light, High Contrast; Gregor's Hands-On on `tip-splitter` open | built |
 
 ## Session handoff
 
-- **Done so far:** T-001…T-006 verified (stages 1–2, 2026-11-17); unit tests 1788 + 3 skipped, timing 12 (Baseline 1688 + 3).
-- **Next action:** T-007 (stage 3): rule IDs into tooltips, S2 sentence.
+- **Done so far:** T-001…T-010 verified (2026-11-18); unit tests 1805 + 3 skipped, timing 12 (Baseline 1688 + 3).
+- **Next action:** Gregor: `npm test` on Windows and CI, Hands-On on `tip-splitter` (AC-025), then `/sdd-compile` in a fresh session.
 - **Open decisions:** none blocking; Q-1…Q-12 (Research) are proxy readings that Gregor may overrule.
 - **Baseline:** 3cdab90 (code identical to the move commit; unit tests 1688 passed + 3 skipped, timing 12)
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked).

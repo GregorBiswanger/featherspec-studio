@@ -101,3 +101,5 @@ holds the *why*: decisions and patterns.
 
 ## Patterns
 - Two dimensions: the spec lifecycle and the verification status are modelled apart (handoff §6.2; the agent-run lifecycle is gone, PD-055).
+
+- 2026-11-18 (spec 0016, PD-063): a diagnostic's tier (`problem` or `note`) is set where it is emitted, never derived later; compatibility findings (what FeatherSpec itself writes) are not emitted. R-6 fails exactly when the entry carries a Problem. Needs of a Backlog spec live in `core/board/needs.ts` (R-2, R-3, R-4), the readiness checks stay in the model. Copy feedback appears at the button (`ui/CopyButton.tsx`), not in a status line. Rule IDs appear only in `title` tooltips; texts come from `src/shared/protocol/texts.ts`.

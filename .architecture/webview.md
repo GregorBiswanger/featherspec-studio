@@ -7,7 +7,7 @@
 - `areas/registry.tsx` — area registry with placeholders; `areas/<Area>.tsx` or `areas/<area>/`
   (Spec Explorer list, Spec Board, Mission Control); area folders hold `store.ts` and `texts.ts`.
 - `board/`, `detail/` (0007) — Spec Board and spec detail (0015: Next step with Copy).
-- `ui/` (0013) — shared primitives: state chip, rule text, progress bar, inline text formatter.
+- `ui/` (0013) — shared primitives: state chip, rule text, progress bar, inline text formatter, copy button, format-note toggle (0016).
 - `main.css` — the one stylesheet; colours only from VS Code theme variables via `--fs-*` aliases.
 - Specs: 0005, 0007, 0006, 0013, 0015.
 

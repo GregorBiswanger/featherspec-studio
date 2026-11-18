@@ -11,7 +11,7 @@
     source); board (editor, move picks, move result, clipboard); setting;
     setup (release archive, release HTTP, setup target, setup UI).
   - `discovery` (0001) — project verdicts, version line, active-project state, report model, controller, rerun scheduler.
-  - `specs` (0002) — spec repository: file listing, spec and plan parsers, joins, diagnostics, live repository.
+  - `specs` (0002) — spec repository: file listing, spec and plan parsers, joins, diagnostics, live repository; every diagnostic carries a tier, problem or note (0016), set where it is emitted; compatibility findings are not emitted.
   - `lifecycle` (0003) — state derivation, readiness, contradictions, blocking conditions, plan in
     use, verification status, transition check, flow marker, status history, lifecycle service.
   - `runtime` (0004) — runtime store narrowed to the spec status history: writer lock, retention (90 days), store state; earlier run data removal.
@@ -20,7 +20,7 @@
   - `missionControl` (0006) — header, spec figures, progress, attention
     list, recent activity, dashboard service.
   - `board` (0007) — Spec Board and spec detail view models: cards, progress, filters
-    and sorting, board UI state, move requests, open-file guard, detail sections, next step (NS rules, 0015), board service.
+    and sorting, board UI state, move requests, open-file guard, detail sections, next step (NS rules, 0015), needs of a Backlog spec (0016), board service.
   - `setup` (0014) — the only writer and network user: release download and check, file classes, `.gitignore` and
     `settings.json` completions, apply, merge prompt, setup service; `testing/` holds the in-memory target and scripted HTTP.
 

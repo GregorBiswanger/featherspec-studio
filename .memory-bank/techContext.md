@@ -54,6 +54,8 @@ Per implementation step (Definition of Green), in order — zero warnings, zero 
 4. `npm run test:unit`
 5. `npm run compile` — only for steps that touch wiring, adapters, `src/extension.ts`, `package.json` or the bundle (it adds the esbuild bundle to the type check and lint).
 
+- Honest signals (spec 0016): `test/fixtures/read-baseline/` holds one JSON read snapshot per fixture (`readSnapshot` in `src/core/specs/testing`), including `repo-8052f9a` (`git archive 8052f9a .specs`), so a tier change shows as a diff; a test (T-003) reads this repository's own `.specs/` from `process.cwd()` and asserts no Problem (AC-005); `src/webview/userLanguage.test.tsx` sweeps the visible text for rule IDs, "persisted" and ISO times (AC-011); `sourceScan.test.ts` holds the AC-021 search for the old texts.
+
 Pre-done gate (not per step): `npm test` (extension-host tests) runs in CI and on the
 developer's machine before a spec moves to `done/` and before a release, plus the release checklist above.
 
