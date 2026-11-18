@@ -1,6 +1,6 @@
 # Native Spec Tree and a Two-Tab Panel
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0020-native-spec-tree.plan.md](0020-native-spec-tree.plan.md)
 
 Basis: UX audit 2026-11-17 ([docs/ux-audit/](../../docs/ux-audit/)) R-05 (05), concept K-B (04),

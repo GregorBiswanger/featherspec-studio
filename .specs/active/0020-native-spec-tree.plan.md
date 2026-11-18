@@ -1,7 +1,7 @@
 # Plan — Native Spec Tree and a Two-Tab Panel
 
 **Spec:** [0020-native-spec-tree.md](0020-native-spec-tree.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-18
 **Current step:** T-001
 
@@ -406,6 +406,6 @@ and the host smoke, so they stay `→`.
 - **Next action:** Gregor reads the plan; on his start signal the pair moves to `active/`
   (`/sdd-lifecycle`), then T-001.
 - **Open decisions:** none; P-1…P-24 stand unless Gregor changes them.
-- **Baseline:** _(commit before the first step commit; set when work starts)_
+- **Baseline:** `16fc52b` (HEAD before the first step commit; started 2026-11-18 on Gregor's delegated start signal)
 - **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here); the
   0019 fix round (drawer scrolling) is merged before T-006.
