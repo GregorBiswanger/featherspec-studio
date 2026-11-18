@@ -1,7 +1,7 @@
 # Spec Detail as a Situation Picture Beside the Content
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0019-detail-situation-picture.plan.md](0019-detail-situation-picture.plan.md)
 
 Owns R-07 and R-11 of the UX audit (`docs/ux-audit/` 05; K-E, K-I in 04; 03 §5.2, §6; evidence
 02 §3.7, screenshots 06, 19, 19a, 24). Decisions: PD-058, PD-059, PD-061 (2). Guidelines 1, 3, 5–9.
@@ -65,7 +65,7 @@ history and is not edited: PD-058 already supersedes PD-042.
 | 0007 §13 rows "stem disappears … no-selection hint" and "'Open file' on a file that is gone"; AC-028 "hint to select one" | The side panel closes (AC-020); AC-019; the hint applies to the Spec Explorer pane only |
 | 0013 §3.4 detail bullets (header "Open file", sections, per-section Open file, inline Markdown and tidying of file text) | Header per §6.2 row 1; collapsible: Format notes and Status history only; no file text. The safe inline renderer and AC-014 stay for problem and note reasons, which quote file text |
 | 0013 AC-003 list "section 'Open file'", "related-artifact link" | The side panel's close button, links and toggles (AC-021) |
-| 0013 AC-012 | Applies to Format notes and Status history, which start collapsed |
+| 0013 AC-012 | Applies to Status history, which starts collapsed; Format notes follow PD-063 (5): collapsed on every showing, no memory (AC-015) |
 | 0013 AC-013, AC-015 | Void (no per-section "Open file", no full text) |
 | 0013 AC-016; 0015 AC-027; 0016 AC-023; 0017 AC-024; 0018 AC-030 (test audits) | Also except the tests 0019 AC-023 lists against a criterion this table voids or replaces |
 | 0013 AC-017 detail screenshots | Replaced by AC-022 |
@@ -114,7 +114,7 @@ detail until 0020; *Overview row* a Now, Up next or Problems row of a spec (0018
 | 3 | Problems | 0016 §6.2's detail row unchanged: each *Problem* with its reason, no heading, not collapsible; nothing when none; a reason with a file is its link (§6.4) |
 | 4 | Progress | 0016's needs (Backlog) and the Steps and Criteria rows (§6.3) |
 | 5 | Files | "Spec", "Plan", one "Archived plan" per archived plan, one "Return note" per note, each kind by file name; file name as link; rows for absent files are not shown |
-| 6 | Format notes | collapsed; heading 0016's T-07; expanded: each note's reason, a link where it has a file; hidden at zero |
+| 6 | Format notes | collapsed on every showing, no memory (PD-063 (5)); heading 0016's T-07; expanded: each note's reason, a link where it has a file; hidden at zero |
 | 7 | Status history | collapsed; heading "Status history (n)"; expanded: 0016's T-15 label and §6.4 entries in their order; hidden at zero entries; while the history is not available, heading "Status history" with 0003's "Status history not available: <reason>" ("Status history: not available" without a reason) |
 
 ### 6.3 Progress
@@ -220,7 +220,7 @@ at commit `8052f9a` (made by the plan, like `studio-0002`).
 - **AC-012** The Criteria row shall follow §6.3, one entry per row not `verified`: `fs110-ready-synthetic` 0001 shows "0 of 1 verified" and the entry "AC-001 The system shall be ready."; `fs170-brownfield-mixed` 0006 shows "3 of 3 verified" and no list; a plan with no traceability rows shows "not available — the plan has no traceability table"; `studio-0015` shows "28 of 30 verified" and exactly the entries AC-027 and AC-030, in that order, unmarked (AC-027's state is free text); a `built` row ends with " · built"; a cell `M-01, M-02` shows as that text, linked to its plan row.
 - **AC-013** The short title shall follow §6.3: `**AC-001 — Batch size and interval are configurable**` gives "Batch size and interval are configurable"; `**AC-002** — Dispatch is unchanged. More text` gives "Dispatch is unchanged."; a text with `` `OUTBOX_BATCH_SIZE` `` gives `OUTBOX_BATCH_SIZE` without backticks; no short title shall keep a `*` or `_` of emphasis (an intraword `_` stays); the system shall cut a short title over 80 characters at the last space within the first 80, or after 79 characters without such a space, and end it with "…"; a row whose ID the spec does not define shows the ID only.
 - **AC-014** The Files section shall show one row per existing file of §6.2 with its label and file name, each kind by file name, and no row for an absent file: `fs180-en-done-archived` 0001 shows "Spec" and one "Archived plan" and no "Plan".
-- **AC-015** Format notes and Status history shall start collapsed, show the headings of §6.2 and §8, show their entries when expanded, and keep each collapse state per section name while the Studio panel stays open, across closing the side panel and selecting another spec; the system shall show neither section at zero entries.
+- **AC-015** Format notes and Status history shall start collapsed, show the headings of §6.2 and §8 and show their entries when expanded; Status history shall keep its collapse state while the Studio panel stays open, across closing the side panel and selecting another spec; Format notes shall be collapsed again whenever the detail shows a spec anew (another spec, or the same spec after a close) and remember nothing (PD-063 (5)); the system shall show neither section at zero entries.
 - **AC-016** The model shall deliver these lines: `fs110-ready-synthetic` AC-001 → spec line 9, T-001 → plan line 24, its traceability row → plan line 36; `fs170-brownfield-mixed` 0006 AC-001, AC-002, AC-003 → spec lines 13, 17, 21, T-001 → plan line 70, T-004 → plan line 169. A criterion defined twice shall carry the line of its first definition.
 - **AC-017** When the developer activates a link of the side panel (ID, criterion cell, problem, format note, file), the system shall send the open request with the file and line of §6.4, line 1 for a file link; no need, history entry or text without a file shall send one. Each link's accessible name shall be its visible text, and its tooltip and accessible description "Open <file name> at line <n>".
 - **AC-018** When the host receives an open request for a file the model knows inside the active project, it shall call `showTextDocument` with `viewColumn` `Beside`, `preview` false, no `preserveFocus` and a selection at the start of that line; that line shall be in the editor's visible ranges and the Studio panel shall stay in its group; Restricted Mode and a reader window shall change nothing. (adapter unit test; host smoke with the Studio panel open and active: editor column ≠ panel column, cursor and visible line = requested line)
@@ -243,7 +243,7 @@ at commit `8052f9a` (made by the plan, like `studio-0002`).
   Closing needs a way to clear the selection: `select` requires a stem (`isSelectPayload`).
   Reuse `openStep` (`nextStep.ts`, export it), `taskProgress`, `criteriaProgress`,
   `readVerification` (`other` counts free-text states).
-- `SpecBoard.tsx` `open` and `attentionRowRequest`/`activityRequest` (`missionControl/requests.ts`,
+- `SpecBoard.tsx` `open` and `rowRequest`/`activityRequest` (`areas/overview/requests.ts`,
   rebuilt by 0018) send "Spec Explorer, that spec" today; they become `shell.select`. One detail
   component serves pane and side panel; collapse memory stays `sectionMemory.ts`. The 900 px
   switch is a CSS media query. `/sdd-architecture-update` only if a module is added or moved.
@@ -271,6 +271,7 @@ at commit `8052f9a` (made by the plan, like `studio-0002`).
 - OP-001: Gregor's Hands-On on `tip-splitter` checks the audit's task "Which criteria are still open for 0001?" (answer without scrolling) and whether anyone asks for full text; a need found there is a new spec.
 - OP-002: Resolved: the references to 0016–0018 (T-07…T-15, 0016 §6.2–§6.5, 0017 §6.1, 0018 B-6, O-5) match their drafts of 2026-11-17; `/sdd-plan` re-checks them against the implemented code.
 - OP-003: `/sdd-clarify` 2026-11-17: 48 findings resolved in one pass under Gregor's standing answer, none asked (`0019-findings.md`; cross-spec: 0016 AC-016, 0018 AC-031, the test audits). Readings to confirm: one entry per traceability row; only an exact `verified` or `built` counts; focus returns to the opener; A-003, A-011.
+- OP-004: Resolved by `/sdd-plan` 2026-11-18 (proxy, Gregor delegated): PD-063 (5), recorded after this spec's last revision, keeps the format-note toggle collapsed on every showing with no memory; AC-015, §6.2 row 6 and the §5 row on 0013 AC-012 follow it, Status history keeps 0013 AC-012's memory. OP-002's re-check against the implemented 0016–0018 found the named texts as written (T-07 `formatNotesText`, T-08 `derivedTooltip`, T-09 `DERIVED_SENTENCES`, T-10 `persistedTooltip`, T-12 `needTooltip`, B-6 `columnRuleTooltip`); 0018 moved `missionControl/requests.ts` to `areas/overview/requests.ts` (§11 reads so).
 
 ## 14. Definition of Ready / Done
 
