@@ -1,9 +1,27 @@
 import type { CardView } from '../../shared/protocol/board';
 import type { BoardState } from '../../shared/protocol/boardFilter';
 import type { ActionId, PanelState } from '../../shared/protocol/messages';
-import { DEPRECATED_MARKER, GROUP_LABELS, problemsBadgeText } from '../../shared/protocol/texts';
+import { isDerivedRule } from '../../shared/protocol/board';
+import {
+    ACTION_LABELS,
+    badgeTooltip,
+    criteriaShortText,
+    DEPRECATED_MARKER,
+    DERIVED_SENTENCES,
+    GROUP_LABELS,
+    LOADING_TEXT,
+    NEXT_STEP_PREFIX,
+    NO_SPECS_START_TEXT,
+    panelStateActions,
+    panelStateLines,
+    PROBLEM_PREFIX,
+    problemsBadgeText,
+    stepsText,
+} from '../../shared/protocol/texts';
 import { buildCards } from '../board/cards';
+import { nextStep } from '../board/nextStep';
 import { cutAt } from '../board/shortTitle';
+import { escapeMarkdown } from '../copyNextStep/entryView';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { ShellModel } from '../ports/shell';
 
@@ -22,6 +40,7 @@ export interface SpecRowModel {
     line?: string;
     planKey?: string;
     specKey: string;
+    state: BoardState;
 }
 
 export interface GroupModel {
@@ -120,6 +139,43 @@ function contextValueOf(card: CardView, entry: LifecycleEntry): string {
     return ['spec', ...(card.step === undefined ? [] : ['step']), ...(entry.plan === undefined ? [] : ['plan'])].join(' ');
 }
 
+function code(text: string): string {
+    const run = Math.max(0, ...(text.match(/`+/g) ?? []).map((match) => match.length));
+    const fence = '`'.repeat(run + 1);
+    const padded = text.startsWith('`') || text.endsWith('`') ? ` ${text} ` : text;
+    return `${fence}${padded}${fence}`;
+}
+
+function stateLine(card: CardView, entry: LifecycleEntry): string {
+    if (card.deprecated) {
+        return DEPRECATED_MARKER;
+    }
+    return entry.persistence === 'derived' && isDerivedRule(entry.rule) ? `${card.state} — ${DERIVED_SENTENCES[entry.rule]}` : card.state;
+}
+
+function tooltipOf(model: ShellModel, card: CardView, entry: LifecycleEntry, title: string): string {
+    const paragraphs = [`**${escapeMarkdown(`${card.number} ${title}`)}**`, stateLine(card, entry)];
+    const next = nextStep(model, card.key);
+    if (next !== undefined && 'lines' in next) {
+        next.lines.forEach((line, index) => {
+            paragraphs.push(index === 0 ? `${NEXT_STEP_PREFIX}${code(line.text)}` : `${line.label === undefined ? '' : `${line.label} `}${code(line.text)}`);
+        });
+    } else if (next !== undefined) {
+        paragraphs.push(`${NEXT_STEP_PREFIX}${next.text}`);
+    }
+    const figures = [...(card.tasks === undefined ? [] : [stepsText(card.tasks)]), ...(card.criteria === undefined ? [] : [criteriaShortText(card.criteria)])];
+    if (figures.length > 0) {
+        paragraphs.push(figures.join(' · '));
+    }
+    for (const diagnostic of entry.diagnostics) {
+        if (diagnostic.tier === 'problem') {
+            paragraphs.push(`${PROBLEM_PREFIX}${escapeMarkdown(diagnostic.reason)}`);
+        }
+    }
+    paragraphs.push(code(card.key));
+    return paragraphs.join('\n\n');
+}
+
 function rowOf(model: ShellModel, card: CardView, entry: LifecycleEntry, slug: string): SpecRowModel {
     const title = fullTitle(card, slug);
     const description = descriptionOf(card);
@@ -133,13 +189,14 @@ function rowOf(model: ShellModel, card: CardView, entry: LifecycleEntry, slug: s
         icon: style.icon,
         color: style.color,
         accessibleLabel: `${card.number} ${title}, ${description}${problem}`,
-        tooltip: '',
+        tooltip: tooltipOf(model, card, entry, title),
         contextValue: contextValueOf(card, entry),
         stem: card.stem,
         ...(card.path === undefined ? {} : { path: card.path }),
         ...(card.step === undefined ? {} : { line: card.step.line }),
         ...(entry.plan === undefined ? {} : { planKey: entry.plan }),
         specKey: card.key,
+        state: card.state,
     };
 }
 
@@ -165,9 +222,42 @@ function groupsOf(model: ShellModel): GroupModel[] {
     });
 }
 
+function badgeOf(groups: GroupModel[]): SpecTreeModel['badge'] {
+    const rows = groups.flatMap((group) => group.children);
+    const review = rows.filter((row) => row.state === 'Review').length;
+    const blocked = rows.filter((row) => row.state === 'Blocked').length;
+    return review + blocked === 0 ? undefined : { value: review + blocked, tooltip: badgeTooltip(review, blocked) };
+}
+
+const ACTION_ICON = 'play';
+
+function actionRows(state: PanelState): ActionRowModel[] {
+    return panelStateActions(state).map((action) => ({ kind: 'action', label: ACTION_LABELS[action], action, icon: ACTION_ICON }));
+}
+
 export function buildSpecTree(input: SpecTreeInput): SpecTreeModel {
-    if (input.model === undefined) {
-        return { message: undefined, items: [] };
+    if (!input.projectActive) {
+        const state = input.state;
+        if (state === undefined || state.id === 'S6') {
+            return { message: undefined, items: [] };
+        }
+        if (state.id === 'S2') {
+            return { message: undefined, items: [], welcome: 'S2' };
+        }
+        return { message: panelStateLines(state).join(' '), items: actionRows(state) };
     }
-    return { message: undefined, items: groupsOf(input.model) };
+    const description = input.projectCount >= 2 && input.projectName !== undefined ? { description: input.projectName } : {};
+    const state = input.state;
+    if (state?.id === 'S5' && state.reason.cause !== 'protocol') {
+        return { message: panelStateLines(state).join(' '), items: actionRows(state), ...description };
+    }
+    if (input.model === undefined) {
+        return { message: LOADING_TEXT, items: [], ...description };
+    }
+    const groups = groupsOf(input.model);
+    if (groups.length === 0) {
+        return { message: NO_SPECS_START_TEXT, items: [], ...description };
+    }
+    const badge = badgeOf(groups);
+    return { message: undefined, items: groups, ...(badge === undefined ? {} : { badge }), ...description };
 }

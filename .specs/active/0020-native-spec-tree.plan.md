@@ -3,7 +3,7 @@
 **Spec:** [0020-native-spec-tree.md](0020-native-spec-tree.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-002
+**Current step:** T-003
 
 ## Approach
 
@@ -240,8 +240,8 @@ and the host smoke, so they stay `→`.
   tests of `treeModel.test.ts` copied with their titles.
 - **Verify:** `npx vitest run --project node src/core/shell/specTree.test.ts` red (failing
   assertions), then green; gates 1–4
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-18: vitest (node) specTree.test.ts red first (24 of 49 failed on assertions: tooltip, badge, description, states), then green 49/49; mutants (badge count, paragraph separator) fail 9 tests; gates 1-4 green, unit 2182 passed + 3 skipped, timing 12.
+- **Notes:** Own text (state line, T-09 sentence, rule text, step labels) is not escaped; only file text (title, Problem reasons) goes through escapeMarkdown, and code spans are fenced. SpecRowModel gained state (for the badge). The no-project tests of treeModel.test.ts are copied with their titles (describe 'AC-003: the Activity Bar tree model'). No deletions in this step.
 
 ### T-003 — The tree follows every change within 500 ms
 

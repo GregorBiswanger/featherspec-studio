@@ -360,3 +360,12 @@ export function historyHeading(count: number): string {
 }
 
 export const GROUP_LABELS = { inProgress: 'In progress', upNext: 'Up next', backlog: 'Backlog', done: 'Done' } as const;
+
+export const NEXT_STEP_PREFIX = 'Next step: ';
+export const PROBLEM_PREFIX = 'Problem: ';
+
+export function badgeTooltip(review: number, blocked: number): string {
+    const waiting = review + blocked;
+    const parts = [...(review > 0 ? [`${review} in Review`] : []), ...(blocked > 0 ? [`${blocked} Blocked`] : [])];
+    return `${waiting} ${waiting === 1 ? 'spec waits' : 'specs wait'} for you: ${parts.join(', ')}`;
+}

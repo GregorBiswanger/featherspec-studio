@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { modelOf } from '../board/testing/boardWorld';
 import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
 import { readFixture } from '../lifecycle/testing/projects';
+import type { PanelState } from '../../shared/protocol/messages';
 import type { ShellModel } from '../ports/shell';
 import { buildSpecTree, type GroupModel, type SpecRowModel, type SpecTreeModel } from './specTree';
 
@@ -10,7 +11,7 @@ function spec(title: string | undefined, status: string, plan?: string): string 
 }
 
 function plan(status: string): string {
-    return `# Plan\n\n**Status:** ${status}\n\n- [ ] **Verified (T-001):** —\n`;
+    return `# Plan\n\n**Status:** ${status}\n\n### T-001 — A step\n\n- [ ] **Verified (T-001):** —\n`;
 }
 
 function treeOf(model: ShellModel, extra: { projectCount?: number } = {}): SpecTreeModel {
@@ -244,5 +245,212 @@ describe('0020 AC-001, AC-005: a move changes the group', () => {
         const after = treeOf(await modelOf({ '.specs/active/0001-a.md': spec('A', 'In Progress', '0001-a.plan.md'), '.specs/active/0001-a.plan.md': plan('In Progress') }));
         expect(groupOf(before, 'Up next').children.map((row) => row.stem)).toEqual(['0001-a']);
         expect(groupOf(after, 'In progress').children.map((row) => row.stem)).toEqual(['0001-a']);
+    });
+});
+
+describe('0020 AC-006: the tooltip', () => {
+    it('a Review spec shows title, derived state, both step lines, figures, and the path, in this order, one paragraph each', async () => {
+        const tree = treeOf(await modelOf(MIXED));
+        const row = rows(tree).find((candidate) => candidate.stem === '0004-reviewing')!;
+        expect(row.tooltip.split('\n\n')).toEqual([
+            '**0004 Reviewing**',
+            'Review — Plan done, waiting for review',
+            'Next step: `/sdd-compile .specs/active/0004-reviewing.md`',
+            'Then, after a READY verdict: `/sdd-lifecycle .specs/active/0004-reviewing.md`',
+            'Steps 0/1',
+            '`.specs/active/0004-reviewing.md`',
+        ]);
+    });
+
+    it('a state read from the file shows the state alone; a derived state adds the sentence of T-09', async () => {
+        const tree = treeOf(await modelOf(MIXED));
+        const lines = (stem: string) => rows(tree).find((row) => row.stem === stem)!.tooltip.split('\n\n')[1];
+        expect(lines('0003-working')).toBe('Active');
+        expect(lines('0002-planned')).toBe('Ready — Plan written, not started yet');
+        expect(lines('0005-stuck')).toBe('Blocked — Plan or return note says Blocked');
+        expect(lines('0001-idea')).toBe('Backlog');
+    });
+
+    it('a Done spec shows the rule text where no line exists, escaped, and no step lines', async () => {
+        const tree = treeOf(await modelOf(MIXED));
+        const row = rows(tree).find((candidate) => candidate.stem === '0006-finished')!;
+        expect(row.tooltip.split('\n\n')).toEqual(['**0006 Finished**', 'Done', 'Next step: Done — no FeatherSpec step left.', '`.specs/done/0006-finished.md`']);
+        expect(row.contextValue).toBe('spec');
+    });
+
+    it('a deprecated spec reads Deprecated as its state line', async () => {
+        const tree = treeOf(await modelOf(MIXED));
+        const row = rows(tree).find((candidate) => candidate.stem === '0007-old')!;
+        expect(row.tooltip.split('\n\n')[1]).toBe('Deprecated');
+    });
+
+    it('a Problem adds one Problem line per finding with its reason, escaped', async () => {
+        const project = await readFixture('fs-broken');
+        const model = { project, lifecycle: deriveLifecycle(project) };
+        const row = rows(treeOf(model)).find((candidate) => candidate.icon === 'warning')!;
+        const problems = row.tooltip.split('\n\n').filter((paragraph) => paragraph.startsWith('Problem: '));
+        expect(problems.length).toBe(1);
+        const entry = model.lifecycle.entries.find((candidate) => candidate.key === row.specKey)!;
+        const reason = entry.diagnostics.find((diagnostic) => diagnostic.tier === 'problem')!.reason;
+        expect(problems[0]).toBe(`Problem: ${reason.replace(/[!-/:-@[-`{-~]/g, (character) => `\\${character}`)}`);
+    });
+
+    it('two Problems give two lines, a duplicated stem names each path', async () => {
+        const tree = treeOf(await modelOf({ '.specs/backlog/0008-twin.md': spec('Twin', 'Draft'), '.specs/active/0008-twin.md': spec('Twin', 'In Progress') }));
+        const twins = rows(tree).filter((row) => row.stem === '0008-twin');
+        for (const twin of twins) {
+            expect(twin.tooltip.split('\n\n').filter((paragraph) => paragraph.startsWith('Problem: ')).length).toBeGreaterThan(0);
+            expect(twin.tooltip.endsWith(`\`${twin.specKey}\``)).toBe(true);
+        }
+    });
+
+    it('Markdown characters of a title show as written, a backtick in a step line is fenced one backtick longer', async () => {
+        const tree = treeOf(await modelOf({ '.specs/backlog/0001-a.md': spec('A *bold* [x](y) <b>', 'Draft'), '.specs/backlog/0002-b`c.md': spec('B', 'Draft') }));
+        const [first, second] = rows(tree);
+        expect(first!.tooltip.split('\n\n')[0]).toBe('**0001 A \\*bold\\* \\[x\\]\\(y\\) \\<b\\>**');
+        expect(second!.tooltip).toContain('Next step: ``/sdd-clarify .specs/backlog/0002-b`c.md``');
+    });
+
+    it('a figure that is not available is left out, and no line is left empty', async () => {
+        const tree = treeOf(await modelOf({ '.specs/backlog/0001-a.md': spec('A', 'Draft') }));
+        const paragraphs = rows(tree)[0]!.tooltip.split('\n\n');
+        expect(paragraphs.some((paragraph) => paragraph.startsWith('Steps') || paragraph.startsWith('Criteria'))).toBe(false);
+        expect(paragraphs.every((paragraph) => paragraph.length > 0)).toBe(true);
+    });
+
+    it('the figures show steps and criteria joined by a dot, the contextValue names step and plan', async () => {
+        const project = await readFixture('studio-0015');
+        const model = { project, lifecycle: deriveLifecycle(project) };
+        const row = rows(treeOf(model)).find((candidate) => candidate.stem === '0015-focus-on-visibility')!;
+        expect(row.tooltip).toMatch(/\n\nSteps \d+\/\d+ · Criteria 28\/30\n\n/);
+        expect(row.contextValue).toBe('spec step plan');
+        expect(row.planKey).toBe('.specs/active/0015-focus-on-visibility.plan.md');
+        expect(row.line).toBe('/sdd-compile .specs/active/0015-focus-on-visibility.md');
+    });
+});
+
+describe('0020 AC-010: the badge', () => {
+    it('counts the specs in Review and Blocked, with the singular tooltip for one', async () => {
+        const tree = treeOf(await modelOf({ '.specs/active/0004-r.md': spec('R', 'In Progress', '0004-r.plan.md'), '.specs/active/0004-r.plan.md': plan('Done') }));
+        expect(tree.badge).toEqual({ value: 1, tooltip: '1 spec waits for you: 1 in Review' });
+    });
+
+    it('two in Review and one Blocked read as the plural tooltip', async () => {
+        const tree = treeOf(
+            await modelOf({
+                ...MIXED,
+                '.specs/active/0008-r.md': spec('R', 'In Progress', '0008-r.plan.md'),
+                '.specs/active/0008-r.plan.md': plan('Done'),
+            }),
+        );
+        expect(tree.badge).toEqual({ value: 3, tooltip: '3 specs wait for you: 2 in Review, 1 Blocked' });
+    });
+
+    it('one Blocked alone leaves out the zero Review part', async () => {
+        const tree = treeOf(await modelOf({ '.specs/active/0005-s.md': spec('S', 'In Progress', '0005-s.plan.md'), '.specs/active/0005-s.plan.md': plan('Blocked') }));
+        expect(tree.badge).toEqual({ value: 1, tooltip: '1 spec waits for you: 1 Blocked' });
+    });
+
+    it('zero waiting specs give no badge; neither does a message instead of rows', async () => {
+        expect(treeOf(await modelOf({ '.specs/backlog/0001-a.md': spec('A', 'Draft') })).badge).toBeUndefined();
+        expect(treeOf(await modelOf({})).badge).toBeUndefined();
+        expect(buildSpecTree({ projectActive: true, projectName: 'demo', projectCount: 1, state: { id: 'S5', reason: { cause: 'discovery', message: 'x' } }, model: await modelOf(MIXED) }).badge).toBeUndefined();
+    });
+});
+
+describe('0020 AC-011: the view description', () => {
+    it('shows the project name only for two or more projects', async () => {
+        const model = await modelOf(MIXED);
+        expect(treeOf(model, { projectCount: 1 }).description).toBeUndefined();
+        expect(treeOf(model, { projectCount: 2 }).description).toBe('demo');
+        expect(treeOf(model, { projectCount: 3 }).description).toBe('demo');
+    });
+});
+
+describe('0020 AC-012: the states of the view', () => {
+    const discovery: PanelState = { id: 'S5', reason: { cause: 'discovery', message: 'x' } };
+
+    it('a loaded model keeps its groups while Refresh or Retry re-reads (S4)', async () => {
+        const tree = buildSpecTree({ projectActive: true, projectName: 'demo', projectCount: 1, state: { id: 'S4' }, model: await modelOf(MIXED) });
+        expect(tree.message).toBeUndefined();
+        expect(groups(tree)).toHaveLength(4);
+    });
+
+    it('an active project without a loaded model shows Loading project…', () => {
+        const tree = buildSpecTree({ projectActive: true, projectName: 'demo', projectCount: 1, state: { id: 'S4' }, model: undefined });
+        expect(tree).toEqual({ message: 'Loading project…', items: [] });
+        expect(buildSpecTree({ projectActive: true, projectName: 'demo', projectCount: 1, state: undefined, model: undefined })).toEqual({ message: 'Loading project…', items: [] });
+    });
+
+    it('S5 for discovery or listing with a project active shows its line and the rows Show output and Retry, rows of an old model gone', async () => {
+        const tree = buildSpecTree({ projectActive: true, projectName: 'demo', projectCount: 1, state: discovery, model: await modelOf(MIXED) });
+        expect(tree.message).toBe('The project could not be loaded: ' + tree.message?.split(': ')[1]);
+        expect(tree.items.map((item) => (item.kind === 'action' ? item.label : item.kind))).toEqual(['Show output', 'Retry']);
+        const listing = buildSpecTree({ projectActive: true, projectName: 'demo', projectCount: 1, state: { id: 'S5', reason: { cause: 'listing', folder: '.specs', reason: 'denied' } }, model: undefined });
+        expect(listing.items.map((item) => (item.kind === 'action' ? item.label : item.kind))).toEqual(['Show output', 'Retry']);
+    });
+
+    it('S5 caused by the protocol shows what the rows say: groups with a model', async () => {
+        const tree = buildSpecTree({ projectActive: true, projectName: 'demo', projectCount: 1, state: { id: 'S5', reason: { cause: 'protocol' } }, model: await modelOf(MIXED) });
+        expect(groups(tree)).toHaveLength(4);
+    });
+
+    it('zero specs show the message of the Overview and no rows or badge', async () => {
+        const tree = treeOf(await modelOf({}));
+        expect(tree).toEqual({ message: 'No specs yet. Start with /sdd-specify', items: [] });
+    });
+
+    it('S6 and Restricted Mode do not change the rows', async () => {
+        const tree = buildSpecTree({ projectActive: true, projectName: 'demo', projectCount: 1, state: { id: 'S6' }, model: await modelOf(MIXED) });
+        expect(groups(tree)).toHaveLength(4);
+    });
+});
+
+describe('AC-003: the Activity Bar tree model', () => {
+    const none = { projectActive: false, projectName: undefined, projectCount: 0, model: undefined };
+    const cases: [string, PanelState, string, string[]][] = [
+        ['AC-011 S1', { id: 'S1' }, 'Open a folder to use FeatherSpec Studio.', ['Open Folder']],
+        ['AC-013 S3', { id: 'S3' }, 'Several FeatherSpec projects found. Select one to continue.', ['Select project']],
+        ['S4', { id: 'S4' }, 'Loading project…', []],
+        ['S5', { id: 'S5', reason: { cause: 'listing', folder: '.specs', reason: 'denied' } }, 'The project could not be loaded: the lifecycle folders of .specs/ could not be listed (.specs: denied).', ['Show output', 'Retry']],
+        ['AC-026 S8', { id: 'S8', name: 'demo', canSelect: true }, 'FeatherSpec project demo was not found.', ['Select project', 'Refresh']],
+        [
+            'AC-027 S9',
+            { id: 'S9', folders: [{ folder: 'a', markers: ['.specs/ directory'] }, { folder: 'b', markers: ['AGENTS.md with a FeatherSpecVersion: line'] }] },
+            'FeatherSpec project incomplete: a has no .specs/ directory. FeatherSpec project incomplete: b has no AGENTS.md with a FeatherSpecVersion: line.',
+            ['Set up FeatherSpec', 'Open setup guide', 'Refresh'],
+        ],
+        [
+            'AC-015 S9 setup-pending',
+            { id: 'S9', folders: [{ folder: 'a', markers: [], setupPending: true }] },
+            'FeatherSpec setup not finished: a has files to merge.',
+            ['Copy merge prompt', 'Set up FeatherSpec', 'Open setup guide', 'Refresh'],
+        ],
+    ];
+
+    it.each(cases)('without a project, %s shows the state text as the message and its actions as items', (_name, state, message, labels) => {
+        const model = buildSpecTree({ ...none, state });
+        expect(model.message).toBe(message);
+        expect(model.items.map((item) => (item.kind === 'action' ? item.label : item.kind))).toEqual(labels);
+        expect(model.items.every((item) => item.kind === 'action')).toBe(true);
+    });
+
+    it('AC-001: S2 shows no message and no items, so that VS Code draws the welcome content with the Set up FeatherSpec button', () => {
+        expect(buildSpecTree({ ...none, state: { id: 'S2' } })).toEqual({ message: undefined, items: [], welcome: 'S2' });
+    });
+
+    it('AC-001: negative control, no other state asks for the welcome content', async () => {
+        for (const state of [{ id: 'S1' }, { id: 'S3' }, { id: 'S4' }, { id: 'S9', folders: [] }] as PanelState[]) {
+            expect(buildSpecTree({ ...none, state }).welcome).toBeUndefined();
+        }
+        expect(buildSpecTree({ projectActive: true, projectName: 'demo', projectCount: 1, state: { id: 'S2' }, model: await modelOf(MIXED) }).welcome).toBeUndefined();
+    });
+
+    it('never shows S6 or the Restricted Mode note (they appear in the panel only)', () => {
+        expect(buildSpecTree({ ...none, state: { id: 'S6' } })).toEqual({ message: undefined, items: [] });
+    });
+
+    it('without a project and without a state there is nothing to show', () => {
+        expect(buildSpecTree({ ...none, state: undefined })).toEqual({ message: undefined, items: [] });
     });
 });
