@@ -439,18 +439,18 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001, T-007 | `src/webview/main.css`, `src/webview/App.tsx` (no `data-drawer`, no side panel over the area; the container part is T-007) | `webviewCss.test.ts` (0022 AC-001 describe, part) | built |
-| AC-002 | T-007, T-008 | — | — | open |
-| AC-003 | T-007, T-008 | — | — | open |
+| AC-001 | T-001, T-007 | `src/webview/main.css`, `src/webview/App.tsx`, `src/webview/areas/overview/SpecRow.tsx`, `src/webview/testing/css.ts` | `webviewCss.test.ts` (0022 AC-001, AC-003, AC-027, AC-028 describes), `ListOrDetail.test.tsx` | built |
+| AC-002 | T-007, T-008 | `src/webview/main.css`, `src/webview/areas/overview/SpecRow.tsx` (Overview row title; the rest: T-008) | `webviewCss.test.ts` (title rules) | open |
+| AC-003 | T-007, T-008 | `src/webview/main.css` (two-line Problems template from 420 px; sentences: T-008) | `webviewCss.test.ts` (0022 AC-003) | open |
 | AC-004 | T-009 | — | — | open |
 | AC-005 | T-009 | — | — | open |
 | AC-006 | T-010 | — | — | open |
 | AC-007 | T-010 | — | — | open |
 | AC-008 | T-010 | — | — | open |
 | AC-009 | T-010 | — | — | open |
-| AC-010 | T-006 | — | — | open |
-| AC-011 | T-006 | — | — | open |
-| AC-012 | T-006 | — | — | open |
+| AC-010 | T-006 | `src/webview/ui/CopyButton.tsx`, `src/webview/main.css` | `CopyButton.test.tsx`, `webviewCss.test.ts` (0022 AC-010, AC-012) | verified |
+| AC-011 | T-006 | `src/webview/detail/NextStep.tsx`, `src/webview/areas/overview/{Now,Overview,SpecRow}.tsx`, `src/webview/areas/SpecBoard.tsx`, `src/webview/board/Card.tsx` | `src/webview/primaryButtons.test.tsx` | verified |
+| AC-012 | T-006 | `src/webview/ui/CopyButton.tsx`, `src/webview/board/icons.tsx`, `src/webview/main.css` | `CopyButton.test.tsx`, `webviewCss.test.ts` (0022 AC-010, AC-012) | verified |
 | AC-013 | T-005, T-008, T-009 | `src/core/lifecycle/problemSentence.ts`, `src/core/board/{detail,cards}.ts`, `src/core/overview/problems.ts`, protocols `detail.ts`, `board.ts`, `overview.ts` (webview and tree: T-008, T-009) | `problemSentence.test.ts`, `core/board/detail.test.ts`, `cards.test.ts`, `core/overview/problems.test.ts`, protocol tests | built |
 | AC-014 | T-005 | `src/core/lifecycle/problemSentence.ts`, `src/shared/protocol/texts.ts` (X-10…X-24) | `src/core/lifecycle/problemSentence.test.ts` (AC-014 describe) | verified |
 | AC-015 | T-008 | — | — | open |
@@ -465,14 +465,14 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
 | AC-024 | T-002, T-003 | `src/shared/protocol/layout.ts`, `src/core/shell/sidePanelWidth.ts`, `src/core/shell/shellService.ts`, `src/webview/detail/sideWidth.ts`, `src/adapters/vscode/uiMemory.ts` | `layout.test.ts`, `sidePanelWidth.test.ts`, `messages.test.ts`, `client.test.ts`, `Divider.test.tsx` (AC-024) | verified |
 | AC-025 | T-011 | — | manual: orchestrator's harness, then Gregor | open |
 | AC-026 | T-004 | `src/shared/protocol/stateLook.ts`, `src/core/shell/specTree.ts`, `src/webview/board/icons.tsx`, `src/webview/ui/StateChip.tsx`, `src/webview/board/Column.tsx`, `src/webview/main.css` (Overview rows: T-007) | `stateLook.test.ts`, `specTree.test.ts`, `StateChip.test.tsx`, `SpecBoard.test.tsx`, `webviewCss.test.ts` (0022 AC-026) | built |
-| AC-027 | T-007 | — | — | open |
-| AC-028 | T-007 | — | — | open |
+| AC-027 | T-007 | `src/webview/areas/overview/SpecRow.tsx`, `src/webview/main.css` | `Sections.test.tsx`, `webviewCss.test.ts` (0022 AC-027) | verified |
+| AC-028 | T-007 | `src/webview/main.css` | `webviewCss.test.ts` (0022 AC-028) | verified |
 | AC-029 | T-001 | `src/webview/App.tsx`, `src/webview/detail/narrow.ts`, `src/webview/detail/BackButton.tsx`, `src/webview/detail/SidePanel.tsx`, `src/webview/detail/SpecDetail.tsx` | `src/webview/detail/ListOrDetail.test.tsx` | verified |
 
 ## Session handoff
 
-- **Done so far:** stage 1 (T-001…T-003) and stage 2 (T-004, T-005, run in sequence) built and verified 2026-11-18 on branch `ux-round-2`: the state table (`stateLook.ts`, tree, chip, column, icons, `data-tint`) and the problem sentence (`problemSentence.ts`, protocol fields `sentence`, `reasons`). Gates green (unit 2329 passed, 3 skipped, +13 timing).
-- **Next action:** stage 3, T-006 (Copy looks, at most two primary buttons) then T-007 (Overview rows by the list's own width); the orchestrator's preview harness checks stages 1 to 3 after T-007.
+- **Done so far:** stages 1 to 3 (T-001…T-007) built and verified 2026-11-18 on branch `ux-round-2`: list-or-detail frame, remembered side width and divider, state table, problem sentence, Copy looks (at most two primary buttons), Overview rows by container queries with the state icon. Gates green (unit 2358 passed, 3 skipped, +13 timing).
+- **Next action:** stage 4, T-008 (sentences and breaking paths in the webview), T-009 (tree rows), T-010 (Ready rename and Problem hints); the orchestrator's preview harness checks stages 1 to 3 now (layout that jsdom cannot decide).
 - **Open decisions:** none; the proxy decisions P-1…P-22 stand, new ones are in the steps' `Notes:`.
 - **Baseline:** `20a1e68`.
 - **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here); layout is checked in the orchestrator's preview harness.
