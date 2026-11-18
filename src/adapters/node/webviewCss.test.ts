@@ -24,27 +24,16 @@ describe('AC-026: colours come from the theme', () => {
         expect(css).not.toMatch(/\.card-summary|\.card-foot\b|\.card-secondary \.icon \{[^}]*\}\s*\.card-state \.state-chip/);
     });
 
-    it('AC-030: secondary text inside a selected row uses the selection foreground, not the description colour', () => {
-        const rules = rulesFor(css, '.spec-row.selected .spec-derived');
-        const pathRules = rulesFor(css, '.spec-row.selected .spec-path');
-        expect(rules.length).toBeGreaterThan(0);
-        expect(pathRules.length).toBeGreaterThan(0);
-        for (const rule of [...rules, ...pathRules]) {
-            expect(rule.body).toMatch(/color:\s*var\(--vscode-list-activeSelectionForeground\)/);
-            expect(rule.body).not.toContain('descriptionForeground');
-        }
+    it('AC-031: the current navigation item carries the High Contrast active border', () => {
+        const rules = rulesFor(css, '.nav-item.current');
+        expect(rules.some((rule) => /var\(--vscode-contrastActiveBorder/.test(rule.body))).toBe(true);
     });
 
-    it('AC-030 control: outside a selected row the secondary text keeps the description colour', () => {
-        const rules = rulesFor(css, '.spec-derived');
-        expect(rules.some((rule) => rule.body.includes('var(--vscode-descriptionForeground)'))).toBe(true);
-    });
-
-    it('AC-031: a selected row and the current navigation item carry the High Contrast active border', () => {
-        for (const selector of ['.spec-row.selected', '.nav-item.current']) {
-            const rules = rulesFor(css, selector);
-            expect(rules.some((rule) => /var\(--vscode-contrastActiveBorder/.test(rule.body))).toBe(true);
-        }
+    it('0020 AC-018: no rule styles the removed Spec Explorer list (.explorer, .spec-list, .spec-row and the cells of a row)', () => {
+        const removed = /\.explorer\b|\.spec-list\b|\.spec-row\b|\.spec-(?:number|title|meta|state|derived|path)\b/;
+        expect(css.match(removed)).toBeNull();
+        expect(removed.test('.spec-row.selected .spec-derived { color: red; }')).toBe(true);
+        expect(removed.test('.explorer-list { overflow: auto; }')).toBe(true);
     });
 
     it('0018 AC-026: the current navigation item has a 2 px bottom border, the contrast active border and no marker rule', () => {
@@ -108,7 +97,7 @@ describe('AC-026: colours come from the theme', () => {
     });
 
     it('AC-031: the plain borders of rows, navigation items and panels use the contrast border where the theme sets one', () => {
-        for (const selector of ['.nav-item', '.spec-row', '.panel-state']) {
+        for (const selector of ['.nav-item', '.panel-state']) {
             const rules = rulesFor(css, selector);
             expect(rules.some((rule) => /var\(--vscode-contrastBorder/.test(rule.body))).toBe(true);
         }

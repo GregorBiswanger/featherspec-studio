@@ -9,9 +9,9 @@ import type { StudioApi } from '../extension';
 const VIEW_TYPE = 'featherspecStudio.main';
 const WAIT_MS = 20_000;
 
-function panelState(api: StudioApi): { panels: number; tabs: number; area: string; rows: number; helloAt: number | undefined } {
+function panelState(api: StudioApi): { panels: number; tabs: number; area: string; helloAt: number | undefined } {
     const view = api.shell().view();
-    return { panels: api.shell().panelCount(), tabs: studioTabs().length, area: view.area, rows: view.rows.length, helloAt: api.shell().lastHelloAt() };
+    return { panels: api.shell().panelCount(), tabs: studioTabs().length, area: view.area, helloAt: api.shell().lastHelloAt() };
 }
 
 async function activateStudio(): Promise<StudioApi> {

@@ -3,7 +3,7 @@
 **Spec:** [0020-native-spec-tree.md](0020-native-spec-tree.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-007
+**Current step:** T-008
 
 ## Approach
 
@@ -339,8 +339,8 @@ and the host smoke, so they stay `→`.
   reads `view().selection` instead of `rows`; the shell smoke's `panelState` drops `rows`.
 - **Verify:** `npx vitest run --project node src/adapters/node/sourceScan.test.ts src/shared/protocol/messages.test.ts`
   red, then green; gates 1–5; `npm run compile-tests`
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** 2026-11-18: messages.test.ts (PROTOCOL_VERSION 4, a view without rows), webviewCss.test.ts (no list rules), probe.test.ts and client.test.ts (version 4) red on a scratch copy of HEAD (git archive; 3 + 3 failed); sourceScan.test.ts AC-018 is green at once, its negative control plants every term; then green; gates 1-5 green (eslint, both tsc, unit 2199 passed + 3 skipped, timing 13, compile) and compile-tests green.
+- **Notes:** Deletes named at the start of the stage and approved by Gregor's delegation: src/core/shell/specRows.ts and src/core/shell/specRows.test.ts (git rm, nothing else). PROTOCOL_VERSION 4: the six test files carry v: 4; the 'other version' literals of client.test.ts and PanelStateView.test.tsx became v: 5. Texts NO_SPECS_TEXT, SPEC_LIST_LABEL and NO_DETAIL_SELECTION_TEXT went; SpecDetail's hint branch returns null (the side panel never passed it a non-spec detail; its test was retitled in T-006). CSS: .explorer*, .spec-list, .spec-row*, the cells .spec-number/.spec-title/.spec-meta/.spec-state/.spec-derived/.spec-path (nobody else used them: grep) and the 640 px media block are gone; the sourceScan AC-018 search found only the mapping in uiMemory.ts.
 
 ### T-008 — §5 notes, docs, test-title audit, architecture and Memory Bank sync, final gates
 
@@ -394,7 +394,7 @@ and the host smoke, so they stay `→`.
 | AC-015 | T-005, T-006 | package.json (inline Copy only) | manifest.test.ts "AC-011, AC-015 (0020)" | built |
 | AC-016 | T-006, T-007 | src/shared/protocol/areas.ts; src/webview/areas/registry.tsx | messages.test.ts "AC-016"; App.test.tsx "AC-016" | built |
 | AC-017 | T-006 | src/core/shell/uiMemory.ts:parseUiMemory | uiMemory.test.ts "AC-017"; shellService.navigation.test.ts "AC-017" | built |
-| AC-018 | T-007, T-008 | — | — | open |
+| AC-018 | T-007, T-008 | src/core/shell/uiMemory.ts (the one mapping); src/webview/main.css | sourceScan.test.ts "AC-018"; webviewCss.test.ts "AC-018" (docs part: T-008) | built |
 | AC-019 | T-005 | src/extension.ts; src/test/shell.smoke.test.ts | shell.smoke.test.ts "AC-019" (host, CI) | built |
 | AC-020 | T-008 | — | — | open |
 | AC-021 | T-008 | — | — | open |
@@ -402,8 +402,8 @@ and the host smoke, so they stay `→`.
 
 ## Session handoff
 
-- **Done so far:** stage 4 half: T-006 verified and committed (two tabs, the mapping, SpecExplorer.tsx deleted, the Spec Explorer tests per the audit map).
-- **Next action:** T-007 (the list's protocol contract, texts, styles and hint go; PROTOCOL_VERSION 4); deletes src/core/shell/specRows.ts and specRows.test.ts.
+- **Done so far:** stage 4 done: T-006, T-007 verified and committed (two tabs, mapping, protocol 4 without rows, specRows and the list styles deleted).
+- **Next action:** T-008: Amended-by notes in the eight specs and ADR-001, README, release checklist, design brief, CHANGELOG, docsScan, test-title audit, architecture and Memory Bank sync, final gates.
 - **Open decisions:** none; P-1…P-24 stand unless Gregor changes them.
 - **Baseline:** `16fc52b` (HEAD before the first step commit; started 2026-11-18 on Gregor's delegated start signal)
 - **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here); the

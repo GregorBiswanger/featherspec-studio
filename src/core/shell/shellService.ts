@@ -8,7 +8,6 @@ import type { RequestHandlers } from './messageRouter';
 import type { ShellRequestType } from '../../shared/protocol/messages';
 import { derivePanelState, listingFailure } from './panelState';
 import { findSpec, numberOfStem, reconcileSelection } from './selection';
-import { buildSpecRows } from './specRows';
 import { parseUiMemory, serializeUiMemory, type RememberedSelection } from './uiMemory';
 
 export interface ShellServiceDeps {
@@ -118,7 +117,6 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
             target,
             selection: selectedSpec(model),
             notice,
-            rows: buildSpecRows(model, selection),
         };
     }
 

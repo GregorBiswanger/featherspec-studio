@@ -25,9 +25,6 @@ const view: ShellView = {
     target: undefined,
     selection: { stem: '0003-x', number: '0003' },
     notice: undefined,
-    rows: [
-        { stem: '0003-x', path: '.specs/active/0003-x.md', number: '0003', title: undefined, state: 'Active', derivedRule: undefined, showPath: false, selected: true },
-    ],
 };
 
 describe('AC-016, AC-021: envelope', () => {
@@ -52,8 +49,8 @@ describe('AC-016, AC-021: envelope', () => {
     });
 
     it('reads an envelope of another version (the router decides, AC-016)', () => {
-        expect(readEnvelope({ v: 4, kind: 'evt', type: 'shell', payload: {} }).ok).toBe(true);
-        expect(PROTOCOL_VERSION).toBe(3);
+        expect(readEnvelope({ v: 5, kind: 'evt', type: 'shell', payload: {} }).ok).toBe(true);
+        expect(PROTOCOL_VERSION).toBe(4);
     });
 
     it('isJsonValue accepts nested JSON and rejects functions, undefined and NaN', () => {
@@ -125,9 +122,7 @@ describe('host messages: guards accept and reject', () => {
         expect(isShellEventPayload({ view })).toBe(true);
         expect(isShellEventPayload({})).toBe(false);
         expect(isShellView({ ...view, area: 'x' })).toBe(false);
-        expect(isShellView({ ...view, rows: [{ stem: 1 }] })).toBe(false);
-        expect(isShellView({ ...view, rows: [{ ...view.rows[0], derivedRule: 'S-READY' }] })).toBe(true);
-        expect(isShellView({ ...view, rows: [{ ...view.rows[0], derivedRule: 'Derived (rule S-READY)' }] })).toBe(false);
+        expect('rows' in view).toBe(false);
         expect(isShellView({ ...view, restricted: 'no' })).toBe(false);
         expect(isShellView({ ...view, state: { id: 'S42' } })).toBe(false);
         expect(isShellView({ ...view, notice: { number: 3 } })).toBe(false);

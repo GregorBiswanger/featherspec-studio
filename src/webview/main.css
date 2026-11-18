@@ -141,8 +141,7 @@ main > h1 {
 }
 
 .overview,
-.board,
-.explorer {
+.board {
     flex: 1;
     min-height: 0;
 }
@@ -263,87 +262,6 @@ main > h1 {
 
 .placeholder-note {
     color: var(--vscode-descriptionForeground);
-}
-
-.spec-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.spec-row {
-    display: grid;
-    grid-template-columns: 10px max-content minmax(0, 1fr);
-    column-gap: 6px;
-    row-gap: 3px;
-    align-items: baseline;
-    padding: 5px 10px 6px 6px;
-    border-bottom: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
-    cursor: pointer;
-}
-
-.spec-row:hover {
-    background: var(--vscode-list-hoverBackground);
-}
-
-.spec-row.selected {
-    background: var(--vscode-list-activeSelectionBackground);
-    color: var(--vscode-list-activeSelectionForeground);
-    border-color: var(--vscode-contrastActiveBorder, var(--fs-border));
-}
-
-.spec-row [data-marker] {
-    grid-column: 1;
-    grid-row: 1;
-    font-size: 0.8em;
-}
-
-.spec-number {
-    grid-column: 2;
-    grid-row: 1;
-    color: var(--fs-muted);
-    font-family: var(--vscode-editor-font-family);
-    font-size: 0.92em;
-}
-
-.spec-title {
-    grid-column: 3;
-    grid-row: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.spec-meta {
-    grid-column: 2 / 4;
-    grid-row: 2;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-    font-size: 0.92em;
-}
-
-.spec-row.selected .spec-number,
-.spec-row.selected .state-chip {
-    color: inherit;
-}
-
-.spec-state {
-    flex: none;
-}
-
-.spec-derived,
-.spec-path {
-    overflow: hidden;
-    color: var(--vscode-descriptionForeground);
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.spec-row.selected .spec-derived,
-.spec-row.selected .spec-path {
-    color: var(--vscode-list-activeSelectionForeground);
 }
 
 .vscode-dark,
@@ -682,26 +600,6 @@ main > h1 {
     font-family: var(--vscode-editor-font-family);
 }
 
-.explorer {
-    display: grid;
-    grid-template-columns: minmax(260px, 1fr) minmax(0, 2.2fr);
-    grid-template-rows: minmax(0, 1fr);
-    gap: 0;
-    margin: -12px -16px;
-}
-
-.explorer-list {
-    min-height: 0;
-    overflow-y: auto;
-    border-right: 1px solid var(--fs-border);
-    background: var(--fs-lane);
-}
-
-.explorer-list > p {
-    margin: 12px 16px;
-    color: var(--fs-muted);
-}
-
 .spec-detail {
     min-width: 0;
     min-height: 0;
@@ -1018,19 +916,6 @@ main > h1 {
     margin: 2px 0;
 }
 
-@media (max-width: 640px) {
-    .explorer {
-        grid-template-columns: minmax(0, 1fr);
-        grid-template-rows: none;
-    }
-
-    .explorer-list {
-        max-height: 40vh;
-        border-right: none;
-        border-bottom: 1px solid var(--fs-border);
-    }
-}
-
 .overview {
     display: flex;
     flex-direction: column;
@@ -1219,7 +1104,6 @@ blockquote.illustration {
     color: var(--fs-muted);
     font-size: 0.92em;
 }
-.spec-row,
 .ov-row,
 .card,
 .nav-item,

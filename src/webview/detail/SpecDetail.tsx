@@ -10,7 +10,6 @@ import {
     historyEntryText,
     historyTooltip,
     HISTORY_NOT_AVAILABLE_TEXT,
-    NO_DETAIL_SELECTION_TEXT,
     persistedTooltip,
     HISTORY_HEADING,
     historyHeading,
@@ -157,11 +156,7 @@ export function SpecDetail(props: {
     const { detail } = props;
     const frame = { as: props.region === false ? ('div' as const) : ('section' as const), labelled: props.region !== false, onClose: props.onClose, fallback: props.fallback };
     if (detail === undefined || detail.kind === 'none') {
-        return (
-            <DetailFrame {...frame}>
-                <EmptyState icon="info">{NO_DETAIL_SELECTION_TEXT}</EmptyState>
-            </DetailFrame>
-        );
+        return null;
     }
     return (
         <DetailFrame {...frame}>

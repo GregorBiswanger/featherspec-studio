@@ -68,7 +68,7 @@ export function createEntryWorld(): EntryWorld {
         },
     };
     function view(): ShellView {
-        return { state, restricted: false, projectName: snapshot.active?.name, area: 'board', target: undefined, selection, notice: undefined, rows: [] };
+        return { state, restricted: false, projectName: snapshot.active?.name, area: 'board', target: undefined, selection, notice: undefined };
     }
     const shell: Pick<ShellService, 'view' | 'onDidChangeView'> = {
         view,

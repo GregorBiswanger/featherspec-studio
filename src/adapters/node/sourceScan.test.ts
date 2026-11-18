@@ -262,3 +262,28 @@ describe('0018 AC-001, AC-029: the old names and texts are gone from the sources
         expect(hits('const name = "Overview and Board";', OLD_NAMES, true)).toEqual([]);
     });
 });
+
+describe('0020 AC-018: the Spec Explorer is gone from the sources', () => {
+    const TERMS = ['specexplorer', 'spec explorer'] as const;
+    const MAPPING_FILE = 'src/core/shell/uiMemory.ts';
+
+    it('src without test files names the Spec Explorer, in any letter case, only in the mapping of a remembered area', async () => {
+        const files = (await sourceFiles()).filter((file) => !isTestFile(file.name));
+        expect(files.length).toBeGreaterThan(0);
+        const found = files.flatMap((file) => hits(file.text, TERMS, true).map((term) => `${file.name}: ${term}`));
+        expect(found).toEqual([`${MAPPING_FILE}: specexplorer`]);
+    });
+
+    it('the one place left is the mapping: a single quoted area ID that is replaced by the default area', async () => {
+        const mapping = (await sourceFiles()).find((file) => file.name === MAPPING_FILE)!;
+        expect(mapping.text.match(/specExplorer/g)).toHaveLength(1);
+        expect(mapping.text).toContain("value.area === 'specExplorer' ? DEFAULT_AREA : value.area");
+    });
+
+    it('negative control: the scan finds every term, in any letter case, in a planted sample', () => {
+        for (const term of ['specExplorer', 'SpecExplorer', 'openSpecExplorer', 'Spec Explorer', 'OPENSPECEXPLORER']) {
+            expect(hits(`const name = '${term}';`, TERMS, true).length, term).toBeGreaterThan(0);
+        }
+        expect(hits("const name = 'Spec board';", TERMS, true)).toEqual([]);
+    });
+});

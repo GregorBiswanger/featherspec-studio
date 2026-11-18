@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import type { ShellView, SpecRow } from '../shared/protocol/messages';
+import type { ShellView } from '../shared/protocol/messages';
 import { App } from './App';
 import { createClient, type ShellClient } from './client';
 import mainCss from './main.css?raw';

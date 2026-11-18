@@ -44,7 +44,6 @@ export function baseView(overrides: Partial<ShellView> = {}): ShellView {
         target: undefined,
         selection: undefined,
         notice: undefined,
-        rows: [],
         ...overrides,
     };
 }

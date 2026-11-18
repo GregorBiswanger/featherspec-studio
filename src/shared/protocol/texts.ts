@@ -213,11 +213,9 @@ export const S2_WELCOME = [
 
 export const PLACEHOLDER_TEXT = 'Not available in this version of FeatherSpec Studio';
 
-export const NO_SPECS_TEXT = 'This project has no specs yet.';
 
 export const TITLE_NOT_AVAILABLE = 'not available';
 
-export const SPEC_LIST_LABEL = 'Specs';
 
 export const DISMISS_LABEL = 'Dismiss';
 
@@ -296,7 +294,6 @@ export function formatNotesText(count: number): string {
     return count === 1 ? '1 format note — no action needed' : `${count} format notes — no action needed`;
 }
 
-export const NO_DETAIL_SELECTION_TEXT = 'Select a spec in the list to see its details.';
 export const NO_PLAN_TEXT = 'No plan yet';
 export const NEED_CRITERIA_TEXT = 'needs acceptance criteria';
 export const NEED_PLAN_TEXT = 'needs a plan';

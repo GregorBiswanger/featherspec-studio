@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
 import type { NextStepView, SpecDetailView } from '../../shared/protocol/detail';
-import { fileNotFoundText, HISTORY_NOT_AVAILABLE_TEXT, NO_DETAIL_SELECTION_TEXT, NO_PLAN_TEXT } from '../../shared/protocol/texts';
+import { fileNotFoundText, HISTORY_NOT_AVAILABLE_TEXT, NO_PLAN_TEXT } from '../../shared/protocol/texts';
 import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
 import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
@@ -509,7 +509,7 @@ describe('0015 AC-012, 0019 AC-015: Status history', () => {
 describe('AC-028: the selection', () => {
     it('0020: shows no spec content while the detail of the selected spec is not there', async () => {
         const container = await open({ kind: 'none' });
-        expect(container.textContent).not.toContain(NO_DETAIL_SELECTION_TEXT);
+        expect(container.textContent).not.toContain('Select a spec');
         expect(container.querySelectorAll('h3')).toHaveLength(0);
     });
 

@@ -50,17 +50,6 @@ export type PanelState =
     | { id: 'S8'; name: string; canSelect: boolean }
     | { id: 'S9'; folders: IncompleteFolder[] };
 
-export interface SpecRow {
-    stem: string;
-    path: string;
-    number: string;
-    title: string | undefined;
-    state: string;
-    derivedRule: DerivedRule | undefined;
-    showPath: boolean;
-    selected: boolean;
-}
-
 export interface SelectedSpec {
     stem: string;
     path?: string;
@@ -77,7 +66,6 @@ export interface ShellView {
     target: NavigationTarget | undefined;
     selection: SelectedSpec | undefined;
     notice: { number: string } | undefined;
-    rows: SpecRow[];
 }
 
 export interface HelloPayload {
@@ -316,20 +304,6 @@ export function isPanelState(value: unknown): value is PanelState {
     }
 }
 
-export function isSpecRow(value: unknown): value is SpecRow {
-    return (
-        isRecord(value) &&
-        isString(value.stem) &&
-        isString(value.path) &&
-        isString(value.number) &&
-        isOptionalString(value.title) &&
-        isString(value.state) &&
-        (value.derivedRule === undefined || isDerivedRule(value.derivedRule)) &&
-        typeof value.showPath === 'boolean' &&
-        typeof value.selected === 'boolean'
-    );
-}
-
 export function isShellView(value: unknown): value is ShellView {
     if (!isRecord(value)) {
         return false;
@@ -345,9 +319,7 @@ export function isShellView(value: unknown): value is ShellView {
         isAreaId(value.area) &&
         (value.target === undefined || isNavigationTarget(value.target)) &&
         (selection === undefined || (isRecord(selection) && isString(selection.stem) && isOptionalString(selection.path) && isString(selection.number))) &&
-        (notice === undefined || (isRecord(notice) && isString(notice.number))) &&
-        Array.isArray(value.rows) &&
-        value.rows.every(isSpecRow)
+        (notice === undefined || (isRecord(notice) && isString(notice.number)))
     );
 }
 

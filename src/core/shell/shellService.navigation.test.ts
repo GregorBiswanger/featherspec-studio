@@ -71,7 +71,7 @@ describe('0018 AC-002: remembered state of earlier versions', () => {
         current.service.open({ via: 'start' });
         expect(current.service.view().area).toBe('overview');
         expect(current.service.view().selection).toBeUndefined();
-        expect(current.service.view().rows.some((row) => row.selected)).toBe(false);
+        expect(current.service.view().selection).toBeUndefined();
     });
 
     it('control: the remembered area board keeps its selection', async () => {
@@ -87,11 +87,11 @@ describe('AC-008, AC-009: selection', () => {
         const current = await ready();
         await current.service.handlers.select({ stem: '0003-x' });
         expect(current.service.view().selection).toEqual({ stem: '0003-x', number: '0003' });
-        expect(current.service.view().rows.find((row) => row.selected)?.stem).toBe('0003-x');
+        expect(current.service.view().selection?.stem).toBe('0003-x');
         await current.service.handlers.navigate({ area: 'board' });
         await current.service.handlers.navigate({ area: 'overview' });
         expect(current.service.view().selection?.stem).toBe('0003-x');
-        expect(current.service.view().rows.find((row) => row.selected)?.stem).toBe('0003-x');
+        expect(current.service.view().selection?.stem).toBe('0003-x');
     });
 
     it('0019 AC-003: clearSelection removes the selection, the marked row and the remembered value, and keeps the area', async () => {
@@ -100,7 +100,7 @@ describe('AC-008, AC-009: selection', () => {
         await current.service.handlers.navigate({ area: 'board' });
         await current.service.handlers.clearSelection({});
         expect(current.service.view().selection).toBeUndefined();
-        expect(current.service.view().rows.some((row) => row.selected)).toBe(false);
+        expect(current.service.view().selection).toBeUndefined();
         expect(current.service.view().area).toBe('board');
         expect((current.memory.value as { selection?: unknown }).selection).toBeUndefined();
     });
@@ -113,15 +113,6 @@ describe('AC-008, AC-009: selection', () => {
         expect(second.view().selection?.stem).toBe('0003-x');
     });
 
-    it('rows follow a model change without reopening and are ordered by number (AC-007)', async () => {
-        const current = await ready();
-        expect(current.service.view().rows.map((row) => row.number)).toEqual(['0002', '0003']);
-        current.views.length = 0;
-        current.specs.setFile('proj', '.specs/backlog/0001-a.md', SPEC_HEADER('Draft', 'Spec one'));
-        await current.repository.rescan();
-        expect(current.service.view().rows.map((row) => row.number)).toEqual(['0001', '0002', '0003']);
-        expect(current.views.length).toBeGreaterThan(0);
-    });
 
     it('selecting a stem that is not in the project keeps the selection and shows the notice (control: a known stem has none)', async () => {
         const current = await ready();
@@ -152,7 +143,7 @@ describe('AC-010: clearing', () => {
         await current.repository.rescan();
         expect(current.service.view().selection?.stem).toBe('0003-x');
         expect(current.service.view().notice).toBeUndefined();
-        expect(current.service.view().rows.find((row) => row.selected)?.path).toBe('.specs/active/0003-x.md');
+        expect(current.service.view().selection).toEqual({ stem: '0003-x', number: '0003' });
     });
 
     it('the notice stays until dismissed, and Dismiss clears it', async () => {

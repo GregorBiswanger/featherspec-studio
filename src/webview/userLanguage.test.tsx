@@ -8,7 +8,6 @@ import { boardEvent, boardView, card } from './board/testing/views';
 import { overviewEvent } from './testing/dom';
 import { sampleView } from '../shared/protocol/testing/overviewSample';
 import type { AreaId } from '../shared/protocol/areas';
-import type { SpecRow } from '../shared/protocol/messages';
 
 /** 0016 AC-011: the visible text holds no internal vocabulary. */
 const FORBIDDEN = /S-[A-Z]{3,}|R-[1-7]|NS-\d|persisted|Model updated|first observed|no longer observed|not checked|\d{4}-\d{2}-\d{2}T\d{2}:/;
@@ -16,29 +15,16 @@ const FORBIDDEN = /S-[A-Z]{3,}|R-[1-7]|NS-\d|persisted|Model updated|first obser
 let mounted: Mounted | undefined;
 const clients: ShellClient[] = [];
 
-async function textOf(area: AreaId, event: unknown, rows: SpecRow[] = []): Promise<string> {
+async function textOf(area: AreaId, event: unknown): Promise<string> {
     const client = createClient({ post: () => undefined });
     clients.push(client);
     client.start();
     mounted = await mount(<App client={client} />);
-    await send(shellEvent(baseView({ area, rows }), 1));
+    await send(shellEvent(baseView({ area }), 1));
     await send(event);
     return mounted.container.textContent ?? '';
 }
 
-function row(number: string, overrides: Partial<SpecRow> = {}): SpecRow {
-    return {
-        stem: `${number}-thing`,
-        path: `.specs/active/${number}-thing.md`,
-        number,
-        title: `Thing ${number}`,
-        state: 'Active',
-        derivedRule: undefined,
-        showPath: false,
-        selected: false,
-        ...overrides,
-    };
-}
 
 async function visibleText(view = detailView()): Promise<string> {
     const client = createClient({ post: () => undefined });
