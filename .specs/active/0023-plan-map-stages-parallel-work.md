@@ -1,6 +1,6 @@
 # Plan Map: Stages, Parallel Work, Workers
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0023-plan-map-stages-parallel-work.plan.md](0023-plan-map-stages-parallel-work.plan.md)
 
 Basis: review `docs/ux-audit/07-implementation-review.md` §5.4, §6 (K-N); work order `08-spec-handoff.md` §4 (P-1…P-8,

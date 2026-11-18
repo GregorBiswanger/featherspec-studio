@@ -1,7 +1,7 @@
 # Plan — Plan Map: Stages, Parallel Work, Workers
 
 **Spec:** [0023-plan-map-stages-parallel-work.md](0023-plan-map-stages-parallel-work.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-18
 **Current step:** T-001
 
@@ -419,6 +419,6 @@ orchestrator) at the ends of stages 2 and 3; AC-018 screenshots recorded here.
 - **Next action:** Gregor reads the plan; on the start signal `/sdd-lifecycle` moves spec and plan to `active/`, then
   T-001.
 - **Open decisions:** none for Gregor; proxies P-1…P-24 above.
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** 8ce8cb7 (head before the first step commit, 2026-11-18)
 - **Environment:** `npm test` (host smoke, including `src/test/shell.smoke.test.ts`) only on Windows and CI; layout
   checks in the orchestrator's harness.
