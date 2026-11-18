@@ -123,6 +123,8 @@ Terms used below:
   — its scope is the project, or a file linked to no spec, such as an orphan plan (0002 §8,
   0007 §13).
 
+*Amended by 0016 (PD-059, proxy): the term reads *Problem* at project level: only a *Problem* counts (0016 §6.1).*
+
 Rules:
 
 - **BR-01 Needs attention** (Gregor, Q1). A spec needs attention when at least one reason
@@ -390,6 +392,10 @@ error text, prompts or provider payloads (AC-026). It sends no telemetry (handof
   number, spec title and the change. The system shall offer no control that shows more
   entries. *(FR-006.6, PD-046)*
 
+*Amended by 0016 (PD-059, proxy): no *format note* counts as reason (d) (0016 §6.1).*
+
+*Amended by 0016 (PD-059, proxy): the time reads as 0016 T-17 and a spec no longer in the project as T-16 (`no longer in the project`).*
+
 *Amended by 0015 (PD-055/PD-056): Recent activity takes the spec status history entries only.*
 - **AC-011** The system shall not show tool, message, file-change or usage events, nor any
   other event that is not a run status change, in *Recent activity*.
@@ -432,6 +438,8 @@ error text, prompts or provider payloads (AC-026). It sends no telemetry (handof
   Board with the named spec set "Diagnostics", holding the stems of the specs that carry at
   least one diagnostic.
 
+*Amended by 0016 (PD-059, proxy): the header shows 0016 T-01 only while a *Problem* exists; the time reads as T-02; the named set is `Problems` (T-03).*
+
 *Amended by 0015 (PD-055/PD-056): the time is the last spec read the dashboard processed.*
 - **AC-018** If the store is unavailable, then the system shall show the *Running* figure, the
   highlighted runs, the attention reasons (b) and (c) and *Recent activity* as "not available"
@@ -464,6 +472,8 @@ error text, prompts or provider payloads (AC-026). It sends no telemetry (handof
   S-BLOCKED) with the Ready, Review and Blocked counts. *(PD-004)*
 - **AC-026** The system shall show no run error message, prompt or provider payload anywhere on
   the dashboard.
+
+*Amended by 0016 (PD-059, proxy): sentences are 0016 T-09; the rule ID is in the tooltip (T-08).*
 
 *Amended by 0015 (PD-055/PD-056): void.*
 - **AC-027** (OP-6) The system shall not count a run with unreadable history in the *Running*
@@ -546,6 +556,8 @@ on a real project — is a pre-release checklist item for Gregor.
 | A-012 | (p7, new with Gregor's answer to OP-4) "Specs that carry a diagnostic" are the entries whose lifecycle entry holds at least one diagnostic of any kind (own files, contradictions); the header number counts project-level diagnostics only (AC-017), so the set can be empty while the number is above 0 — the board's banner then shows the project-level ones | The header number and the set answer two questions; the banner shows the rest (0007 §13) | The board could open with no card although the number reads above 0 |
 | A-013 | (2026-11-16, after `/sdd-compile`) The header time is the later of two stamps: the repository's own time of its last spec read, and the clock time at which the dashboard processed its last run change. A run change that happens while the panel is closed is not processed, so it does not move the time | The dashboard listens only while the panel is open (A-011); the run store keeps no change time | After a closed panel the time can be older than the newest run, which the run section shows anyway |
 
+*Amended by 0016 (PD-059, proxy): "specs that carry a diagnostic" reads "specs that carry a *Problem*" (0016 §6.1).*
+
 ## 17. Open points
 
 Closed:
@@ -614,6 +626,8 @@ OP-8, OP-9, OP-10 and OP-12 are closed below by Gregor's answers; the plan's rea
   history entries (AC-024).
 - OP-13 (cross-spec, main session): 0005 and 0007 must carry PD-040 and PD-041 as this spec
   uses them; 0004 OP-013's note on "recovery pending" in 0006 is settled.
+
+*Amended by 0016 (PD-059, proxy): only *Problems* count; the other kinds are *format notes* or are not emitted (0016 §6.1).*
 
 ## 18. Definition of Ready
 

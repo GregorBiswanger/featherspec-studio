@@ -131,6 +131,8 @@ The rules use only what 0002 and 0003 deliver; first match wins, top-down:
 | NS-9 | Backlog, no sibling plan | `/sdd-clarify <spec path>`; then `/sdd-plan <spec path>` |
 | NS-10 | Backlog, any other | `/sdd-plan <spec path>` |
 
+*Amended by 0016 (PD-059, proxy): NS-1 reads as 0016 T-18.*
+
 NS-11 sits below NS-2 in the order; IDs are stable, not ordinal. Basis: FeatherSpec 1.10.0
 command files. `/sdd-plan` resumes an existing plan (Mode B: integrates return notes, reports
 what blocks), writes a fresh one for a reactivated spec (Mode C) and names "start T-001" and
@@ -251,6 +253,8 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
 - **AC-028** 0008–0012 shall have status `Deprecated`, stay in `done/` and link this spec as successor; 0003–0007 and 0013 shall carry the amendment notes of §5.
 - **AC-029** The `architecture:` snapshot in `AGENTS.md`, `.architecture/*.md` and `.memory-bank/projectbrief.md` shall name no removed module, no agent run and no provider; the brief's mission shall contain the manifest description of §8 and its success criteria the AC-030 scenario.
 - **AC-030** *(manual, Gregor)* M-1 on `tip-splitter` with the assistant he uses, the Hands-On walkthrough: three areas; a dropped Ready spec shows the NS-7 line, pasted into the chat it starts that step; Active and Review specs show NS-6 and NS-5 lines that the assistant runs as FeatherSpec commands; he checks whether the S7 note reads as noise (PD-057, OP-006) and whether his assistant resolves the project-relative paths (OP-002). Pre-release checklist item.
+
+*Amended by 0016 (PD-059, proxy): feedback appears at the button (0016 §6.5, T-19); Copy is primary, Dismiss secondary.*
 
 ## 11. Technical notes for developers or AI agents
 

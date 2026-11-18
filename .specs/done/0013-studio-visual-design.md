@@ -31,6 +31,8 @@ Marketplace listing. Users: the developer in the Studio panel; Gregor accepts th
      AC-024; 0006's derived markers);
   5. Mission Control header diagnostics wording (0006 AC-017).
 
+*Amended by 0016 (PD-059, proxy): the sentences are 0016 T-09 and T-11; rule and check IDs are in the tooltip only (T-08, T-12).*
+
 ### Out of scope
 
 - New data, protocol messages or model fields — because Gregor limited this spec to
@@ -70,6 +72,8 @@ Marketplace listing. Users: the developer in the Studio panel; Gregor accepts th
 - **Agent runs** and **Recent activity** side by side below it, stacked under 720 px area width.
   This order replaces 0006 §9's layout guidance.
 
+*Amended by 0016 (PD-059, proxy): the header reads as 0016 T-01 and T-02.*
+
 ### 3.3 Spec Board
 
 *Amended by 0015 (PD-055/PD-056): no run status on cards.*
@@ -99,6 +103,8 @@ Marketplace listing. Users: the developer in the Studio panel; Gregor accepts th
   form an aligned label/value grid (D-4).
 
 ### 3.5 Sentences for rules (texts owned by this spec)
+
+*Amended by 0016 (PD-059, proxy): sentences are 0016 T-09 and T-11; rule and check IDs are in the tooltip only (T-08, T-12).*
 
 - S-READY "Derived: draft with a plan that has not started"; S-REVIEW "Derived: plan is Done,
   waiting for review"; S-BLOCKED "Derived: plan or return note says Blocked" — rule ID as
@@ -131,6 +137,8 @@ shall remove an outline.
 state name, state icon and, for Ready, Review and Blocked, the §3.5 sentence with rule ID. When
 the developer activates a tile, the system shall send 0006 BR-08's request for that count.
 
+*Amended by 0016 (PD-059, proxy): sentences read as 0016 T-09; the rule ID is in the tooltip (T-08).*
+
 **AC-005** With at least one spec, Mission Control shall show one bar segment per state with a
 count above 0, with width share = count ÷ total within 1 percentage point and accessible name
 `<state>: <count> of <total>`, and the progress figure with 0006 BR-04's rule as visible
@@ -141,6 +149,8 @@ secondary text and tooltip.
 **AC-006** The header shall read `<n> project-level diagnostics · <m> specs with diagnostics`
 (m = number of `diagnosticStems`, singular for 1); activating it shall send 0006 AC-017's request.
 > **Given** 0 project-level diagnostics, stems 0001, 0002, 0010 **Then** "… · 3 specs with diagnostics".
+
+*Amended by 0016 (PD-059, proxy): the header reads as 0016 T-01 (only while a *Problem* exists) and T-02.*
 
 **AC-007** Each attention row shall show number chip, title and reason as text with an icon; the
 Agent runs and Recent activity panels shall each show, when empty, an icon and 0006's sentence.
@@ -156,9 +166,13 @@ icon and text; summary; a tasks and a criteria `progressbar` with value and figu
 "not available" where 0007 delivers no figure; and a "Move to…" button reachable by Tab from the
 card. The content of 0007 AC-003…AC-007, AC-020, AC-024 and AC-025 stays.
 
+*Amended by 0016 (PD-059, proxy): the last sentence reads 0007 as amended by 0016 (badge for *Problems* only, banner per 0016 AC-009).*
+
 **AC-010** Wherever a card, a list row, Mission Control or the Overview shows a derived state, a
 readiness check or a Blocked condition, the system shall show the §3.5 sentence or 0003's reason
 as primary text and the rule or check ID as secondary text only.
+
+*Amended by 0016 (PD-059, proxy): the sentence is visible; label and rule ID are in the tooltip (0016 T-08, T-12).*
 
 **AC-011** While a card is dragged, the system shall mark the card and the column under the
 pointer, and remove both marks when the drag ends, with or without a drop.

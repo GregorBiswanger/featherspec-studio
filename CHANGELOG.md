@@ -6,6 +6,19 @@ All notable changes to FeatherSpec Studio are documented in this file. The forma
 
 ## [Unreleased]
 
+### Changed
+
+- Honest signals (0016): the Studio shows a problem only when something is wrong. Diagnostics now
+  carry a tier: *Problems* (contradictions, unreadable files, duplicate numbers, links to nothing)
+  show on the card, in the header and in the detail; *format notes* sit behind a collapsed toggle;
+  what FeatherSpec itself writes is no longer reported.
+- A Backlog spec shows what it still needs instead of a readiness checklist; the lines for
+  priority, the `/sdd-compile` verdict and spec dependencies are gone.
+- Rule IDs (`S-READY`, `R-3`, ...) moved into tooltips; derived states read as sentences.
+- Times and the status history read as sentences (`Today 21:56 — first seen as Review`).
+- Copy is a primary button and confirms at the button; Dismiss is secondary.
+- The empty-workspace view says what *Set up FeatherSpec* does.
+
 ## [0.1.0] - 2026-11-17
 
 First release.

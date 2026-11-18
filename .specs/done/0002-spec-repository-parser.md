@@ -115,6 +115,8 @@ the files reaches the model without a manual reload.
 - **BR-09 Facts, not judgements (PD-020).** This layer reports what the files contain and the
   diagnostics listed in §8. It never says whether a spec's lifecycle state is consistent.
 
+*Amended by 0016 (PD-059, proxy): `**Successor:**` joins the closed set of header lines: it is read and raises no diagnostic (compatibility, 0016 §6.1).*
+
 ## 7. Functional requirements
 
 | ID | Requirement | Handoff | Criteria |
@@ -170,6 +172,8 @@ file rather than its content: key and modification time (PD-043).
   unknown content or value · duplicate · orphan (plan or return note) · dangling link ·
   unverified version. Consumers rely on this list; its identifiers are decided in `/sdd-plan`.
 - No sensitive data. The content is the user's own project text and stays local.
+
+*Amended by 0016 (PD-059, proxy): every diagnostic carries a tier, *problem* or *note* (0016 §6.1); an ID that occurs twice stays a diagnostic with the tier *format note*.*
 
 ## 9. Interfaces and integrations
 
@@ -348,6 +352,14 @@ Handoff references in brackets (PD-017).
   beside its content. If a file cannot be read (AC-011), then the system shall return its
   modification time when the file system reported one, and shall mark it absent otherwise
   (AC-019). [PD-043]
+
+*Amended by 0016 (PD-059, proxy): `**Successor:**` is a known header line and raises no diagnostic (0016 §6.1).*
+
+*Amended by 0016 (PD-059, proxy): a plan in `backlog/` or `active/` whose stem matches no spec stays in the model as an orphan, with no diagnostic and no dangling-link diagnostic (compatibility, 0016 §6.1).*
+
+*Amended by 0016 (PD-059, proxy): an orphan plan in `backlog/` or `active/` has no dangling-link diagnostic (compatibility, 0016 §6.1).*
+
+*Amended by 0016 (PD-059, proxy): every diagnostic carries a tier; an ID that occurs twice stays a diagnostic, tier *format note* (0016 §6.1).*
 
 ## 14. Technical notes for developers or AI agents
 

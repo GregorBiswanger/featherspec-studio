@@ -12,13 +12,13 @@ Open Studio from the **FeatherSpec Studio** icon in the Activity Bar or with `Fe
 
 ### Mission Control
 
-A dashboard of the active project: one header line (folder, FeatherSpec version, time of the last project update, diagnostics), six tiles with the number of specs per board state, a distribution bar, a progress figure with its rule in words (done specs with status Implemented or Baseline ÷ all specs without Deprecated), the specs that need attention with their reasons (blocked, diagnostic, review pending) and the ten latest activities. Every count and row opens the matching place in the Spec Board or Spec Explorer. A figure the sources cannot deliver reads "not available".
+A dashboard of the active project: one header line (folder, FeatherSpec version, time of the last project update, problems), six tiles with the number of specs per board state, a distribution bar, a progress figure with its rule in words (done specs with status Implemented or Baseline ÷ all specs without Deprecated), the specs that need attention with their reasons (blocked, problem, review pending) and the ten latest activities. Every count and row opens the matching place in the Spec Board or Spec Explorer. A figure the sources cannot deliver reads "not available".
 
 ### Spec Board
 
 ![Spec Board](media/screenshots/spec-board-dark.png)
 
-Every spec as a card in six columns: Backlog, Ready, Active, Review, Done and Blocked. A card shows number, title, state (with the rule behind a derived state), description, task and criteria progress, diagnostics and the last change. Filter by state or a named set of specs; sort by number, title or last change. The board works with the keyboard: arrow keys move between cards, Enter opens a card, and "Move to…" (also Shift+F10) moves it.
+Every spec as a card in six columns: Backlog, Ready, Active, Review, Done and Blocked. A card shows number, title, state (a derived state reads as a sentence; hover it for the rule behind it), description, task and criteria progress, problems and the last change; a Backlog card shows what the spec still needs. Filter by state or a named set of specs; sort by number, title or last change. The board works with the keyboard: arrow keys move between cards, Enter opens a card, and "Move to…" (also Shift+F10) moves it.
 
 ### Spec Explorer
 
@@ -64,7 +64,7 @@ Studio derives each spec's column from the files, in this order:
 - in `.specs/backlog/` and passing the readiness checks (a draft with a plan that has not started) → **Ready** (derived);
 - otherwise → **Backlog**.
 
-A spec with contradictory or unreadable files stays in the column of its folder and shows the reason. Derived states carry their rule ID (`S-READY`, `S-REVIEW`, `S-BLOCKED`) on the card.
+A spec with contradictory or unreadable files stays in the column of its folder and shows the reason. Derived states read as a sentence on the card; the rule ID (`S-READY`, `S-REVIEW`, `S-BLOCKED`) is in its tooltip. FeatherSpec has no priority, persisted compile verdict or dependency field, so the Studio shows none.
 
 ## Commands
 

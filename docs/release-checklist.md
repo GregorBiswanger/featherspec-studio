@@ -49,6 +49,10 @@ and the expected result. A clear miss reopens the named spec.
 
 - [ ] **AC-030 / M-1**: in a real VS Code window on `tip-splitter`: the panel shows Mission Control, Spec Board and Spec Explorer only; a spec's detail shows **Next step**, **Copy** puts the line on the clipboard and pasting it into the assistant's chat works; moving a Ready spec to Active starts nothing, shows the next step and **Copy**; no command, setting or text offers to start an agent or a run.
 
+## Honest signals (0016)
+
+- [ ] **AC-025 / M-1**: preview harness screenshots in Dark, Light and High Contrast show the primary **Copy** and its label change without shift, the need line on a Backlog card, the collapsed format-note toggle, the problem badge and the S2 sentence in the view and the panel; on `tip-splitter` no problem marker shows without a real problem.
+
 ## Shell (0005)
 
 - [ ] **AC-019 live theme switch**: panel on Spec Explorer with a spec selected; switch Dark Modern → Light

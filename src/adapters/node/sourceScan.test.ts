@@ -155,3 +155,22 @@ describe('0015 AC-022: the host test suite', () => {
         expect(['copilot.smoke.test.ts', 'board.smoke.test.ts'].filter((name) => /agentCenter|agentStart|copilot|orchestrator|providers/i.test(name))).toEqual(['copilot.smoke.test.ts']);
     });
 });
+
+describe('0016 AC-021: the old texts are gone from the panel sources', () => {
+    const OLD_TEXTS = ['Priority: not available', 'verdict: not available', 'Inter-spec dependencies', 'Derived: ', 'Model updated', 'Project diagnostics', 'project-level diagnostic', 'See its diagnostics'] as const;
+
+    it('src/shared and src/webview hold none of the eight strings outside test files (Q-10)', async () => {
+        const files = (await sourceFiles()).filter((file) => (file.name.startsWith('src/shared/') || file.name.startsWith('src/webview/')) && !isTestFile(file.name));
+        expect(files.length).toBeGreaterThan(0);
+        const found = files.flatMap((file) => hits(file.text, OLD_TEXTS, false).map((term) => `${file.name}: ${term}`));
+        expect(found).toEqual([]);
+    });
+
+    it('negative control: the same search finds the model reasons that stay in src/core', async () => {
+        const core = (await sourceFiles()).filter((file) => file.name.startsWith('src/core/') && !isTestFile(file.name));
+        const found = new Set(core.flatMap((file) => hits(file.text, OLD_TEXTS, false)));
+        expect(found.has('verdict: not available')).toBe(true);
+        expect(found.has('Inter-spec dependencies')).toBe(true);
+        expect(hits("const text = 'verdict: not available';", OLD_TEXTS, false)).toEqual(['verdict: not available']);
+    });
+});

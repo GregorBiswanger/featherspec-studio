@@ -3,7 +3,7 @@
 **Spec:** [0016-honest-signals.md](0016-honest-signals.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-009
+**Current step:** T-010
 
 ## Approach
 
@@ -316,8 +316,8 @@ everything after T-002 shares the text modules, `main.css` or `SpecDetail.tsx` a
   green, with the negative control failing when its term is removed;
   `ls .specs/*/00{02,03,05,06,07,13,14,15}-*.md | grep -v '\.plan\.md$' | xargs grep -c "Amended by 0016"`
   ≥ 1 for each of the eight specs; gates 1–4
-- [ ] **Verified (T-009):** —
-- **Notes:** —
+- [x] **Verified (T-009):** sourceScan AC-021 test (with negative control) green; amendment notes in all eight specs (counts 2/2/6/4/4/7/7/7 for 0014,0015,0002,0003,0005,0006,0007,0013); PD-063, README, CHANGELOG, release-checklist written; gates 1-4 green, test:unit 1805 passed + 3 skipped, timing 12.
+- **Notes:** Proxy: notes placed after the statement block (tables: after the table); done/ specs amended in place as 0015 did.
 
 ### T-010 — Test-title audit, Memory Bank, architecture, final gates
 

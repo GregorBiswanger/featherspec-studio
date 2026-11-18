@@ -168,6 +168,8 @@ remembered for this workspace.
   data (ADR-001 §7).
 - Nothing sensitive is read, shown or stored.
 
+*Amended by 0016 (PD-059, proxy): the visible text is the sentence of 0016 T-09; the rule ID is in the tooltip (T-08).*
+
 ## 9. UI/UX requirements
 
 *Amended by 0015 (PD-055/PD-056): three areas; the tree shows three entries with the icons gauge, board layout and list tree, no robot; Mission Control purpose: "See the project at a glance: spec counts, progress, what needs attention and recent activity."*
@@ -241,6 +243,8 @@ The panel states (precedence: BR-05). "Remembered", "project" and "incomplete" a
 | S7 | Restricted Mode | Note: "This workspace is in Restricted Mode. Agent actions are unavailable." (OP-006) | Manage Workspace Trust |
 | S8 | The remembered project is not reported as a project (0001 AC-010) | Names the missing project (PD-037): "FeatherSpec project <name> was not found." | Select project (only while another project is reported) · Refresh |
 | S9 | No remembered project; no folder is a project; at least one is incomplete | Names, per incomplete folder, the missing marker from 0001's diagnostics (PD-037): one line "FeatherSpec project incomplete: <folder> has no <marker>." per folder (Amended by 0014 (PD-049, PD-053): for a setup-pending folder the line "FeatherSpec setup not finished: <folder> has files to merge." takes its place) | Set up FeatherSpec · Copy merge prompt (only with a setup-pending folder; first when every folder is setup-pending) · Open setup guide · Refresh (Amended by 0014 (PD-049, PD-053)) |
+
+*Amended by 0016 (PD-059, proxy): S2 adds the sentence of 0016 T-20 after its first line.*
 
 Actions: *Open Folder* opens VS Code's own folder dialog. *Open setup guide* opens the link of
 0001 A-005. *Refresh* runs 0001's "Refresh Project Discovery". *Select project* runs 0001's
@@ -347,6 +351,10 @@ automated tests.
 - **AC-017** While the workspace is in Restricted Mode, the system shall show the S7 note in
   the panel in addition to whatever the panel shows otherwise. When trust is granted, the note
   shall disappear without the panel being reopened by the user.
+
+*Amended by 0016 (PD-059, proxy): S2 adds the sentence of 0016 T-20 after its first line.*
+
+*Amended by 0016 (PD-059, proxy): the *derived* label and its rule read as the sentence of 0016 T-09 with the rule ID in the tooltip (T-08).*
 
 *Amended by 0015 (PD-055/PD-056): the S7 note text per 0015 §8.*
 - **AC-018** When several panel states apply at once, the system shall show only the one with

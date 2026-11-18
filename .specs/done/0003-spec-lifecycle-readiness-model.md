@@ -142,6 +142,8 @@ Terms used below:
 | R-6 | No lifecycle contradiction (§6.3), no unreadable-file diagnostic on the spec or its sibling plan, no duplicate diagnostic on the spec (PD-019) | such a diagnostic exists |
 | R-7 | Inter-spec dependencies | always *not available*; informational, never fails |
 
+*Amended by 0016 (PD-059, proxy): R-6 fails exactly when the entry carries a *Problem* (0016 §6.1).*
+
 - Each precondition is evaluated on its own, so several can fail at once. R-1 to R-6 are
   *pass* or *fail*; only R-7 is *not available*.
 - Plan approval is not persisted by FeatherSpec. The explicit start confirmation in 0008
@@ -151,6 +153,8 @@ Terms used below:
 *Amended by 0015 (PD-055/PD-056): plan approval stays with the human in the assistant: FeatherSpec's explicit start signal (`/sdd-plan`). Ready still waits for no approval mark.*
 - The other diagnostic kinds of 0002 (unknown content or value, dangling link, unverified
   version, orphan) do not fail R-6. Where they matter for readiness, R-1, R-3 or R-4 fails.
+
+*Amended by 0016 (PD-059, proxy): R-6 fails exactly when the entry carries a *Problem*; format notes and compatibility findings never fail it (0016 §6.1).*
 
 ### 6.3 Lifecycle contradictions (diagnostics, not states)
 
@@ -205,6 +209,8 @@ intermediate state (collapsed jumps, e.g. Backlog → Review in one `git pull`; 
 A-003). An entry with cause *changed while Studio was not running* is *not checked* (OP-005).
 
 ### 6.5 Status history
+
+*Amended by 0016 (PD-059, proxy): the label of the status history reads as T-15 of 0016; the scope it states is unchanged.*
 
 - **Scope statement (binding):** the history contains only state changes Studio observed while
   it was running. It is not a reconstruction of the spec's past. The history view carries
@@ -415,6 +421,8 @@ or file timestamps. This applies only when the history can be read at that deriv
 **AC-016** The model shall append history entries only on the occasions named in AC-014,
 AC-015, AC-017 and AC-026. The history data shall carry, once, the label "Observed by Studio while it
 was running — not a reconstruction" for display.
+
+*Amended by 0016 (PD-059, proxy): the label reads as T-15 of 0016 (`Only changes Studio saw while it was running.`); the scope it states is unchanged.*
 
 **AC-017** When a spec appears whose stem has no last recorded state (§6.5), the model shall
 append one entry with cause *first observed*, no old state and the flow marker *not checked*.
