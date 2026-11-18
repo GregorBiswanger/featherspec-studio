@@ -68,6 +68,7 @@ const REMOVED_TERMS = [
 ];
 const REMOVED_ALLOWED = [
     'src/core/runtime/earlierRunData.ts',
+    'src/core/assistant/offer.test.ts',
     'src/core/runtime/earlierRunData.test.ts',
     'src/adapters/node/earlierRunDataFiles.test.ts',
     'src/adapters/node/earlierRunData.endToEnd.test.ts',
@@ -78,6 +79,7 @@ const REMOVED_ALLOWED = [
     'src/adapters/vscode/manifest.test.ts',
     'src/core/shell/shellService.navigation.test.ts',
     'src/core/shell/uiMemory.test.ts',
+    'src/shared/protocol/assistant.test.ts',
     'src/shared/protocol/messages.test.ts',
     'src/test/runtime.smoke.test.ts',
 ];

@@ -3,7 +3,7 @@
 **Spec:** [0024-send-next-step-to-assistant.md](0024-send-next-step-to-assistant.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-002
+**Current step:** T-003
 
 ## Approach
 
@@ -300,8 +300,8 @@ here.
     - `assistantHost.test.ts`: the four methods map to the API; `extension` returns `undefined` for a missing ID.
 - **Verify:** `npx vitest run --project node src/core/assistant src/shared/protocol/assistant.test.ts src/adapters/vscode/assistantHost.test.ts`
   red (stubs), then green; gates 1–5
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-18 red: `npx vitest run --project node src/core/assistant src/shared/protocol/assistant.test.ts src/adapters/vscode/assistantHost.test.ts` 77 failed + 5 passed (stubs `Not implemented`); green after: 82 passed. Gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 2909 passed + 3 skipped (+16 timing), compile and compile-tests green.
+- **Notes:** The AC-011 file list holds assistants.ts, offer.ts, sendView.ts; send.ts joins in T-003. The source scan (0015 AC-021) meets the unquoted object key `copilot:`: the production keys are quoted (`'copilot':`, masked by P-12) and the two test files that name the lowercase ID or value (offer.test.ts, shared assistant.test.ts) joined REMOVED_ALLOWED, the way earlier test files did. The host adapter's `activate` rejects with `extension <id> not found` for a missing extension.
 
 ### T-003 — Send makes exactly PD-074's calls and falls back to Copy prompt
 
