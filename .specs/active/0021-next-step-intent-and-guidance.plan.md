@@ -1,9 +1,9 @@
 # Plan — Next Step with Intent and Guidance
 
 **Spec:** [0021-next-step-intent-and-guidance.md](0021-next-step-intent-and-guidance.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-18
-**Current step:** T-008 (docs, §5 notes, test-title audit, architecture and Memory Bank sync, final gates)
+**Current step:** none: all 8 steps verified; AC-022–AC-025 manual
 
 ## Approach
 
@@ -332,12 +332,33 @@ ends of stages 1 and 3.
   entry, `activeContext.md`. The orchestrator's preview harness for AC-022 (screenshots recorded here).
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red (docs of the Baseline), then green;
   `grep -c "Amended by 0021 (PD-069)"` per spec ≥ its §5 rows; audit counts; gates 1–5 and `npm run compile-tests`
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** 2026-11-18 · red: the new block "product docs after 0021 (AC-021)" in `docsScan.test.ts` failed 4 tests against the docs of the previous commit (README literals, `**Copy**` and then `continue`, CHANGELOG, checklist section); retargeting the literals then turned five older docs tests red until fixed (README card Copy regex, inline Copy button, 0022 primary-button sentence, CHANGELOG without `featherspec-studio.`, checklist heading order) → green: `npx vitest run --project node --project webview` 157 files, 2625 passed, 3 skipped; timing projects 15 passed; eslint 0 warnings, both `tsc` clean, `npm run compile` and `npm run compile-tests` clean. Audit: baseline 2516 titles (2506 distinct), head 2635 (2623), 18 absent, 0 decreased, each listed in the section above. `grep -c "Amended by 0021 (PD-069)"`: 0006 1, 0007 1, 0013 2, 0015 9, 0016 4, 0017 18, 0018 8, 0019 5, 0020 4.
+- **Notes:** §5 notes by a throwaway script (`/tmp/audit-0021/amend.py`): the catch-all after the last head note of each spec, one note under each statement of the table, table rows after the table, always before any 0022 note; PD-063 is a register entry and is not edited. The README gets a Settings section, a rewritten "The next step everywhere" and Getting started step 3; the tree keeps the command short form, so its example stays `/sdd-compile`. The checklist section 0021 stands between 0020 and 0022 (spec order; the order test lists it) and avoids the assistant vendor's name (the 0015 scan forbids it). Architecture update: `AGENTS.md` snapshot and the three maps `last reconciled` 0021 with the entries named in the step; Memory Bank: `techContext.md`, `systemPatterns.md`, `activeContext.md`. AC-022–AC-025 stay manual (orchestrator's harness and Gregor).
 
 ## Test-title audit
 
-_(T-008: counts and the absent titles with the statement that replaces each.)_
+`python3 -I /tmp/audit-0022/titles.py <git archive 0ef5875> <head>` over every `describe`, `it`, `test` and `suite` literal of every `.ts` and `.tsx` under `src` (`src/test/**` and `testing/*.ts` included), 2026-11-18, T-008: baseline 2516 titles (2506 distinct), head 2635 titles (2623 distinct); absent at the head 18, decreased in count 0. Every other title at the Baseline exists at the head. The 18 absent titles are the ones the expected map named plus the readings that went with them; each is a replaced statement of §5 or retitled:
+
+- `src/core/board/nextStep.test.ts`: "NS-6: an Active spec needs /sdd-plan" → replaced by §5 row 0015 §6.1 NS-6 (0021 §6.2); `0021 AC-005` and `0021 AC-003` describes
+- `src/core/board/nextStep.test.ts`: describe "0017 AC-002: NS-6 names "continue" only while the plan has an open step" → void (§5 0017 §6.2, AC-002; PD-072); replaced by describe `0021 AC-003: an Active spec leads with the single-step prompt of its open step`
+- `src/core/board/nextStep.test.ts`: "0017 AC-002: NS-6 reads the open step from the spec's own plan" → void (§5 0017 AC-002); replaced by `0021 AC-003 … T-003 "Reject money values" is built by Implement T-003 of <plan> …`
+- `src/core/board/nextStep.test.ts`: "an Active spec whose plan has an open step reads /sdd-plan, then "continue" under the same-chat label" → void (§5 0017 §6.2); replaced by `0021 AC-003: T-003 "Reject money values" is built by Implement T-003 of <plan>, then /sdd-plan <spec> under its own intent`
+- `src/core/board/nextStep.test.ts`: "an Active spec whose plan has no step list reads /sdd-plan only" → replaced (§5 0017 §6.2); `0021 AC-005: no step list, all steps ticked or struck, and an unreadable plan read as Resume`
+- `src/core/board/nextStep.test.ts`: "an Active spec whose steps are all ticked or struck reads /sdd-plan only" → replaced by the same `0021 AC-005` title
+- `src/core/board/nextStep.test.ts`: "N8: with two Active specs the one whose plan has an open step gets "continue", the other not, in either order" → replaced by `0021 AC-003: with two Active specs the one with an open step leads with Implement, the other with the report, in either order` (§5 0017 §6.2, AC-002)
+- `src/core/board/nextStep.test.ts`: "AC-001: the lines carry the second line and its label; a line without a label has no label key" → replaced by describe `0021 AC-001: every next step line carries its intent, one fixture per row of §6.1 and §6.2` (§5 0015 §8 Detail, AC-003)
+- `src/core/board/nextStep.test.ts`: "AC-001: shortForm cuts a command at its name, a start at its id, an implement at its verb (control: other text stays)" → replaced by describe `0021 AC-006: the step short form of every case` (§5 0017 §6.1; `Implement <ID>`)
+- `src/shared/protocol/stepView.test.ts`: "accepts a step with one line and a step with a labelled second line" → retitled `0021 AC-001: a line takes exactly text and intent, both strings; a label key or a missing intent is refused` (§5 0015 §8, 0021 §7)
+- `src/core/copyNextStep/statusEntry.test.ts`: "a second line shows under its label, the label first" → replaced by `0021 AC-007: each line shows its intent first and its prompt after it, escaped` (§5 0020 §4.2 Tooltip, 0017 §6.3)
+- `src/webview/detail/SpecDetail.test.tsx`: "AC-003: two lines carry the label of the second one; a rule with text only shows the text and no button" → replaced by `0021 AC-001: each line shows its intent as its own element directly before its prompt and Copy, in DOM order; a rule with text only shows the text and no button` (§5 0015 AC-003)
+- `src/webview/ui/CopyButton.test.tsx`: "AC-018: before any activation the button reads Copy, has no tooltip and its live region is empty and ready" → retitled `… reads Copy prompt …` (§5 0016 AC-018 "Copy again")
+- `src/webview/ui/CopyButton.test.tsx`: "AC-018: 2 s after the activation the label is Copy again, with the tooltip it had before and an empty live region" → retitled `… the label is Copy prompt again …` (§5 0016 AC-018)
+- `src/webview/ui/CopyButton.test.tsx`: "is a text-less button with the copy glyph, the name and the tooltip `Copy: <line>`, an empty live region and none of the primary classes" → retitled `… the tooltip `Copy prompt: <line>` …` (§5 0017 AC-004, AC-012 "Copy: <full first line>")
+- `src/core/copyNextStep/copyNextStep.test.ts`: "with no spec that has a step: the message with "Copy", which copies /sdd-specify; dismissing copies nothing" → retitled `… the message with "Copy prompt" …` (§5 0017 §7 row "Quick pick, message", AC-020)
+- `src/adapters/vscode/manifest.test.ts`: "AC-015 (0015): declares no configuration property" → replaced by `0021 AC-016: contributes the configuration FeatherSpec Studio with exactly the two settings …` (§5 0015 AC-015)
+- `src/adapters/vscode/manifest.test.ts`: "AC-015 (0015): negative control, a manifest with a configuration would be found" → replaced by `0021 AC-016: negative control, a third key, a Markdown description or a scope would be found` (§5 0015 AC-015)
+
+Titles that name the control "Copy" otherwise stay (catch-all of §5): the tests still pass and read `Copy prompt` where they assert the label.
 
 ## Traceability
 
@@ -361,8 +382,8 @@ _(T-008: counts and the absent titles with the statement that replaces each.)_
 | AC-017 | T-006, T-007 | src/core/copyNextStep/noWrite.test.ts (guard), src/adapters/vscode/settings.ts (read-only) | src/core/copyNextStep/noWrite.test.ts 0021 AC-017; src/adapters/vscode/settings.test.ts; src/webview/ui/Toggletip.test.tsx (no message) | verified |
 | AC-018 | T-006 | src/core/board/stepTips.ts, src/core/board/detail.ts (no trust or writer input) | src/core/board/stepTips.test.ts 0021 AC-018 | verified |
 | AC-019 | T-001 | src/shared/protocol/nextStepTexts.ts:continueIntent, startIntent, src/core/board/shortTitle.ts:plainShort | src/core/board/nextStep.test.ts 0021 AC-019 | verified |
-| AC-020 | T-008 | — | — | open |
-| AC-021 | T-008 | — | — | open |
+| AC-020 | T-008 | src/adapters/node/docsScan.test.ts; plan section Test-title audit | plan section Test-title audit (18 absent titles, each with its §5 row or head title); npm run test:unit | verified |
+| AC-021 | T-008 | README.md, CHANGELOG.md, docs/release-checklist.md, the §5 notes in .specs/ | src/adapters/node/docsScan.test.ts product docs after 0021 (AC-021) | verified |
 | AC-022 | T-008 | — | manual: orchestrator's preview harness, then Gregor | open |
 | AC-023 | T-008 | — | manual: Gregor, Settings UI | open |
 | AC-024 | T-008 | — | manual: Gregor on `tip-splitter` | open |
@@ -372,8 +393,8 @@ AC-004 is void (PD-072 chose variant A); no step builds it.
 
 ## Session handoff
 
-- **Done so far:** plan written 2026-11-18; spec revised (P-1); moved to active/ and started on Gregor's delegated start signal; stages 1, 2 and 3 verified and committed (T-001 `db15d7a`, T-002 `c17e064`, T-003 `f8cd8fc`, T-004 `7f583e9`, T-005 `3f17583`, T-006 `cef425f`, T-007 `65a41f6`).
-- **Next action:** T-008 (docs scan test, README, CHANGELOG, checklist, §5 notes, test-title audit, architecture and Memory Bank sync, Status Done after the last step). The harness check of stage 3 is the orchestrator's.
+- **Done so far:** all eight steps verified and committed (T-001 `db15d7a` … T-007 `65a41f6`, stage 3 sync `51260c8`, T-008 in the closing commit); gates green on Linux (`npm test` and the host smoke only on Windows and CI).
+- **Next action:** the orchestrator's preview harness for AC-022 (screenshots into this plan), Gregor's checks AC-023, AC-024, AC-025 on `tip-splitter` (checklist section 0021); then `/sdd-compile` and, after READY, `/sdd-lifecycle`. The spec stays in active/ until then.
 - **Open decisions:** none for Gregor; proxies P-1…P-22 above plus those in the step notes.
 - **Baseline:** `0ef5875` (head before the first step commit; moved to active/ 2026-11-18)
-- **Environment:** `npm test` (host smoke) only on Windows and CI; layout checks in the orchestrator's harness.
+- **Environment:** `npm test` (host smoke, including `src/test/board.smoke.test.ts`) only on Windows and CI; layout checks in the orchestrator's harness.

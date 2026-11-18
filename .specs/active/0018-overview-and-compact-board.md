@@ -3,6 +3,8 @@
 **Status:** In Progress
 **Plan:** [0018-overview-and-compact-board.plan.md](0018-overview-and-compact-board.plan.md)
 
+*Amended by 0021 (PD-069): wherever this spec names the control "Copy" of a prompt (a next step or `/sdd-specify`), read `Copy prompt`, named as 0021 §6.4; the feedback stays; wherever it shows a next step line, 0021 §6.1 gives each line its intent.*
+
 Basis: UX audit 2026-11-17 (`docs/ux-audit/`) R-06, R-10, R-14, R-15 (05); K-C, K-D, K-J (04); 03 §5–§7;
 findings 02 §3.3–§3.5, §3.11 (screenshots 03, 04, 20, 22, 28, 29). Decisions PD-058, PD-062, PD-016,
 PD-036, PD-040, PD-047; guidelines 1–3, 6–10 (`.claude/rules/ux-guidelines.md`). Builds on
@@ -103,10 +105,12 @@ read Overview or Board; the rows below change behaviour.
   *Amended by 0022 (PD-069): O-4 — place and text: each Problem shows as its sentence (0022 §6), the reason is the tooltip; the row cuts nothing (0022 §4.1, §4.5).*
 - **O-5 Spec row.** One line: number, title, state text (the state name; Backlog: 0016's first need (T-11), else `Backlog`; Problems row: each Problem's own reason as the detail shows it, joined by ` · `), 0016's warning icon with T-05 where a Problem applies, then 0017's "Next", short form and Copy (0017 AC-012). Above a panel width of 720 px title and state text are cut by an ellipsis, each with its full text as tooltip; the step and Copy are never cut. At 720 px or less the row takes two lines instead and cuts nothing: line 1 number and title (the title may wrap), line 2 state text, the warning icon, 0017's "Next" with the short form and Copy (PD-065). The step's second line is not shown on the row; 0017's step tooltip carries the full line(s). Activating the row outside Copy sends 0006 AC-014's request — a switch to Spec Explorer until 0019 retargets it (named deviation from guideline 8).
   *Amended by 0019 (PD-058): O-5 — activating the row outside Copy selects its spec in place and shows the side panel (0019 AC-001); Copy selects nothing.*
+  *Amended by 0021 (PD-069): O-5 — the row shows the step short form of 0021 §6.3 and "Copy prompt"; the first Now row also carries the coach line and `?` of 0021 §6.5, §6.6, which are no second step line; their place in the row is 0022's.*
   *Amended by 0022 (PD-069): O-5 — the state shows as its icon (0022 §4.8) with its name visible only on one line; a Problems row lists sentences, not reasons; rows follow the list's own width, one line above 686 px, two from 420 px, three below (0022 §4.1), not a panel width of 720 px.*
 - **O-6 Figures line.** "Total n", then "State n" for Backlog, Ready, Active, Review, Done, Blocked, zeros included, each a control sending 0006 BR-08's request. Tooltip and accessible description: Done "of which Deprecated: n" while n > 0; the progress text of §7 (BR-04's rule) on the line and on "Total n", so Tab reaches it.
 - **O-7 Activity.** 0006 BR-07's entries, collapsed whenever the panel is opened (created), open or closed kept while it stays open, also when hidden and shown again (as 0007 AC-023); no section without entries; while the status history is not available, a heading "Activity" with the reason and no toggle.
 - **O-8 Empty.** Zero specs: "No specs yet. Start with /sdd-specify" with Copy in place of Now, Up next and the figures line; Problems (O-4) and Activity (O-7) as usual. Now empty: "Nothing in progress." Up next empty: "Nothing up next. Start the next spec with /sdd-specify" with Copy. Both Copy put `/sdd-specify` on the clipboard with 0016's feedback.
+  *Amended by 0021 (PD-069): O-8 — the Copy reads "Copy prompt".*
   *Amended by 0022 (PD-069): O-8 — the Copy of "Nothing up next …" is an icon button (0022 §4.4); the zero-spec Copy stays primary (0022 AC-011).*
 
 ### 6.2 Board (R-10, K-D)
@@ -168,6 +172,8 @@ read Overview or Board; the rows below change behaviour.
 
 *Amended by 0020 (PD-058): §7 "tree entry" — void: the tree has no area entries (0020 AC-016).*
 
+*Amended by 0021 (PD-069): §7 rows with `Copy` ("Nothing up next …", "No specs yet …") — the Copy reads `Copy prompt`.*
+
 *Amended by 0022 (PD-069): §7 row "Narrow column, accessible name and tooltip" — plus ` · <n> problems` (0022 X-06) where the strip hides a Problem.*
 
 ## 8. Error cases and edge cases
@@ -198,6 +204,7 @@ marked manual. Fixtures: 0006's and 0007's, `fs170-brownfield-mixed`, one with e
   > **Given** two Ready and four Backlog specs **Then** three rows, "+ 3 more", and a set of six stems.
 - **AC-006** Each Now, Up next and Problems spec row shall show the parts of O-5, on one line above 720 px, and no visible second line of the step (0017's step tooltip shows the full line(s)); the stylesheet shall keep the row on one line above 720 px with title and state text cut by an ellipsis and the step and Copy uncut, and at 720 px or less (media query `max-width: 720px`) wrap it to two lines, number and title first, then the state text, the step and Copy, with no text cut by an ellipsis; the row shall carry the full title and state text as tooltips. Activating the row outside Copy shall send 0006 AC-014's request; Copy shall send none.
   *Amended by 0019 (PD-058): AC-006 "send 0006 AC-014's request" — the row selects its spec in place (0019 AC-001) and sends no navigation request.*
+  *Amended by 0021 (PD-069): AC-006 — the step short form and "Copy prompt" (0021 AC-006, AC-008).*
   *Amended by 0022 (PD-069): AC-006 "on one line above 720 px", "at 720 px or less (media query `max-width: 720px`)" — container rules on the list's width at 686 px and 420 px (0022 AC-001); Problems rows per 0022 AC-003; state per 0022 AC-027.*
 - **AC-007** The Problems section shall show exactly the spec rows and lines of O-4 under "Problems (n)" with n their sum, each spec row's state text the reasons of its Problems; a line tied to no entry shall be no control; activating the heading shall send one request for Board with the named set "Problems"; a Review entry without a *Problem* finding shall have no row.
   > **Given** `fs-broken` (0016 §6.1) **Then** "Problems (2)", rows 0002 and 0003, and 0003's row shows the contradiction's reason.
@@ -207,7 +214,9 @@ marked manual. Fixtures: 0006's and 0007's, `fs170-brownfield-mixed`, one with e
   > **Given** 0006 AC-001's fixture **Then** "Progress 25 % (2 of 8): Done specs with status Implemented or Baseline ÷ (all specs − Deprecated), rounded down".
 - **AC-010** While Activity has entries, the Overview shall show it collapsed (`aria-expanded="false"`) with the heading "Activity (n)" each time the panel is opened; activating the heading shall show or hide the entries, and the choice shall hold while the panel stays open, also after it was hidden and shown again. While it has no entry it shall show no section; while the status history is not available, the heading "Activity" with "Activity not available: <reason>" and no toggle.
 - **AC-011** While the project has no spec, the Overview and the Board shall show "No specs yet. Start with /sdd-specify" and a Copy that copies `/sdd-specify`, and the Overview no Now, Up next or figures line; Problems and Activity per AC-007 and AC-010.
+  *Amended by 0021 (PD-069): AC-011 — the Copy reads `Copy prompt` and still copies `/sdd-specify` (0021 AC-008).*
 - **AC-012** While Now has no entry it shall show "Nothing in progress."; while Up next has none it shall show "Nothing up next. Start the next spec with /sdd-specify" with a Copy of `/sdd-specify`.
+  *Amended by 0021 (PD-069): AC-012 — the Copy reads `Copy prompt` (0021 AC-008).*
   *Amended by 0022 (PD-069): AC-012 — the Copy of "Nothing up next …" is an icon button (0022 §4.4).*
 - **AC-013** Every spec row, Copy, figure, "+ n more" and the Problems and Activity headings shall be reachable with Tab, activated with Enter or Space, and show the focus outline of 0013 AC-003.
 - **AC-014** Each column that shows no card (B-1) shall render with `data-narrow`, its icon, name and count (0 on a strip a filter emptied; the number hidden is in its tooltip and accessible name), no card list and no hint, and the accessible name of §7; every other column shall render without `data-narrow`.
@@ -240,6 +249,7 @@ marked manual. Fixtures: 0006's and 0007's, `fs170-brownfield-mixed`, one with e
 - **AC-030** Every test at the commit before 0018's first change that decides a criterion §5 does not void — 0006's drill-downs (AC-012, AC-014, AC-029) and the host smoke tests of 0001 and 0005 included, with the new IDs — shall exist at the head and pass; the plan shall list every title missing at the head, a renamed one included, with the criterion this spec voids or the head title that replaces it, from a script comparing both commits; `npm run test:unit` and `npm test` shall pass on Windows and in CI.
   *Amended by 0019 (PD-058): AC-030 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*
   *Amended by 0020 (PD-058): AC-030 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
+  *Amended by 0021 (PD-069): AC-030 (test audit) — also except the tests 0021 AC-020 lists against a statement 0021 §5 replaces.*
   *Amended by 0022 (PD-069): AC-030 — also excepts the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
 - **AC-031** *(manual, Gregor or his delegate)* Preview-harness screenshots of Overview and Board for this repository and `fs170-brownfield-mixed`, Dark, Light and High Contrast, panel width 1240 px and 640 px, height 900 px: Now is the first section; rows keep one line at 1240 px and take two lines at 640 px with the state text readable (AC-006); with no spec selected, every column that shows a card is visible without horizontal scrolling at 1240 px, and at 640 px where at most two do; a wide column shows at least six cards when it holds them (R-10); strips, toggle and focus are legible. Verdict in the plan; the real VS Code window is a release-checklist item.
   *Amended by 0019 (PD-058): AC-031 — "visible without horizontal scrolling" holds "with no spec selected"; with the side panel the board scrolls (0019 §9).*

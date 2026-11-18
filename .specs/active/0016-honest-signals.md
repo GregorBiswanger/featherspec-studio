@@ -7,6 +7,8 @@
 
 *Amended by 0018 (PD-062): wherever this spec names Mission Control or the Spec Board as a place, read Overview or Board; the rows of 0018 §5 change behaviour.*
 
+*Amended by 0021 (PD-069): wherever this spec names the control "Copy" of a prompt (a next step or `/sdd-specify`), read `Copy prompt`, named as 0021 §6.4; the feedback stays; wherever it shows a next step line, 0021 §6.1 gives each line its intent.*
+
 Basis: UX audit 2026-11-17 (`docs/ux-audit/` R-01, R-08, R-09, R-12, R-13, R-17, R-18; Q-3, Q-4);
 PD-058, PD-059 (proxy); `.claude/rules/ux-guidelines.md` 3, 6, 8–10; PD-016, PD-013. Gregor is not
 reachable: open questions are decided by audit, PD register and guidelines, marked *(proxy)* (§11).
@@ -177,6 +179,8 @@ else appears, moves or changes colour; the button keeps its size. Success never 
 
 *Amended by 0017 (PD-060/PD-061): the drop result's Copy and Dismiss are void (PD-060); the detail's Copy keeps them; card and row Copy are Copies of a next step here.*
 
+*Amended by 0021 (PD-069): §6.5 and AC-018 — the label reads `Copy prompt` and, after a Copy, `Copied` or `Could not copy` for 2 s, then `Copy prompt`; the accessible name reads `Copy prompt: <line>` (0021 §6.4, AC-008).*
+
 *Amended by 0022 (PD-069): §6.5 — only the Copies of 0022 §4.4 (1) to (3) use the primary style; every further side-panel line is secondary and every list Copy an icon button whose check or warning icon is the feedback, in a fixed box of at least 24 × 24 px (0022 AC-010 to AC-012).*
 
 ## 7. Texts (English, PD-016; all *(proxy)*, starting from audit 04 "Texte und Sprache")
@@ -252,6 +256,7 @@ the repository's own `.specs/`).
   *Amended by 0017 (PD-060/PD-061): "the drop result's" is void (PD-060).*
   *Amended by 0022 (PD-069): AC-017 — the primary colours belong to the Copies of 0022 §4.4 (1) to (3); the others follow 0022 AC-010 and AC-012.*
 - **AC-018** When the developer activates Copy and the clipboard write succeeds, the button shall read `Copied`, carry `Copied to the clipboard.` as tooltip, and the live region shall announce that sentence; if it fails, then they shall read `Could not copy` and `Could not copy to the clipboard.`; 2 s after the last activation the button shall read `Copy` again with its earlier tooltip.
+  *Amended by 0021 (PD-069): AC-018 — "shall read `Copy` again": it shall read `Copy prompt` again (0021 AC-008).*
   *Amended by 0022 (PD-069): AC-018 — on a list Copy the icon turns to a check and the tooltip carries the sentence; the label `Copied` belongs to a Copy with a label (0022 AC-012).*
 - **AC-019** While Copy feedback shows, no element of the panel outside the activated button and the hidden live region shall be added, removed or change text or class; the stylesheet shall give the Copy button a `min-width` of at least `14ch` (the length of `Could not copy`) and no error colour to the success state.
   *Amended by 0022 (PD-069): AC-019 — the `14ch` box holds for a Copy with a label; an icon Copy keeps a fixed box of at least 24 × 24 px (0022 AC-012).*
@@ -264,6 +269,7 @@ the repository's own `.specs/`).
   *Amended by 0018 (PD-062): the test audit also excepts the tests 0018 AC-030 lists against a criterion 0018 §5 voids.*
   *Amended by 0019 (PD-058): AC-023 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*
   *Amended by 0020 (PD-058): AC-023 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
+  *Amended by 0021 (PD-069): AC-023 (test audit) — also except the tests 0021 AC-020 lists against a statement 0021 §5 replaces.*
   *Amended by 0022 (PD-069): AC-023 — also excepts the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
 - **AC-024** The specs of §5 shall carry their amendment notes and the PD register one new entry superseding §5's PD rows, with no note in an older entry; the README shall say once that FeatherSpec has no priority, persisted compile verdict or dependency field, so the Studio shows none; CHANGELOG and `docs/release-checklist.md` shall name the changes and AC-025.
 - **AC-025** *(manual, Gregor or delegate)* Preview harness screenshots in Dark, Light and High Contrast: primary Copy, its label change without shift, the need line, the T-07 toggle, the problem badge and the S2 sentence in view and panel; Gregor's Hands-On on `tip-splitter` shows no problem marker without a real problem.

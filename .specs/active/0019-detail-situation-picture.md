@@ -3,6 +3,8 @@
 **Status:** In Progress
 **Plan:** [0019-detail-situation-picture.plan.md](0019-detail-situation-picture.plan.md)
 
+*Amended by 0021 (PD-069): wherever this spec names the control "Copy" of a prompt (a next step or `/sdd-specify`), read `Copy prompt`, named as 0021 §6.4; the feedback stays; wherever it shows a next step line, 0021 §6.1 gives each line its intent.*
+
 Owns R-07 and R-11 of the UX audit (`docs/ux-audit/` 05; K-E, K-I in 04; 03 §5.2, §6; evidence
 02 §3.7, screenshots 06, 19, 19a, 24). Decisions: PD-058, PD-059, PD-061 (2). Guidelines 1, 3, 5–9.
 Builds on 0016 (tiers, texts, history), 0017 (next step, Copy), 0018 (Overview, compact board),
@@ -105,6 +107,7 @@ detail until 0020; *Overview row* a Now, Up next or Problems row of a spec (0018
 - **Close.** The close button, or Escape inside the side panel, clears the selection; focus moves
   to the card or Overview row that opened the side panel while it is shown, else to the spec's
   first card or Overview row in DOM order, else to the area's first focusable element.
+  *Amended by 0021 (PD-069): §6.1 Close and AC-003 — not while a toggletip is open: that Escape closes only the toggletip, the next closes the side panel (0021 AC-014).*
   *Amended by 0022 (PD-069): §6.1 Close — below 900 px the detail shows alone with a back button in place of the close button; Escape inside the detail does the same (0022 AC-029).*
 - **Focus.** Opening from a card, Overview row or activity entry moves focus to the side panel's
   heading (a screen reader announces it). Tab order: close, then every control in §6.2's section
@@ -127,6 +130,8 @@ detail until 0020; *Overview row* a Now, Up next or Problems row of a spec (0018
 | 5 | Files | "Spec", "Plan", one "Archived plan" per archived plan, one "Return note" per note, each kind by file name; file name as link; rows for absent files are not shown |
 | 6 | Format notes | collapsed on every showing, no memory (PD-063 (5)); heading 0016's T-07; expanded: each note's reason, a link where it has a file; hidden at zero |
 | 7 | Status history | collapsed; heading "Status history (n)"; expanded: 0016's T-15 label and §6.4 entries in their order; hidden at zero entries; while the history is not available, heading "Status history" with 0003's "Status history not available: <reason>" ("Status history: not available" without a reason); that text is a plain section, always visible and not collapsible, so its reason is readable without a click (guideline 3) and AC-015's "collapsed" applies to a history with entries |
+
+*Amended by 0021 (PD-069): §6.2 row 2 — as 0021 leaves the block: intents, one "Copy prompt" per line, the coach line and the `?` (About this step) beside the heading; which Copy prompt is primary: 0022 §4.4.*
 
 *Amended by 0022 (PD-069): §6.2 row 3 — each Problem shows as its sentence, the link where the finding has a file; the reason is its tooltip (0022 §4.5).*
 
@@ -227,6 +232,7 @@ at commit `8052f9a` (made by the plan, like `studio-0002`).
 - **AC-002** While a spec is selected and Overview or Board is shown, the system shall show the side panel with that spec's detail; while none is selected, it shall show no side panel. Switching area by hand shall keep both.
   *Amended by 0022 (PD-069): AC-002 — "and Overview or Board is shown": below 900 px the side panel shows the detail alone (0022 AC-029).*
 - **AC-003** When the developer activates the close button, or presses Escape while focus is inside the side panel, the system shall clear the selection, hide the side panel and move focus to the card or Overview row that opened it while that is shown, else to that spec's first card or Overview row in DOM order, else to the area's first focusable element.
+  *Amended by 0021 (PD-069): AC-003 — Escape with a toggletip open closes only the toggletip (0021 AC-014).*
   *Amended by 0022 (PD-069): AC-003 — below 900 px the back button, or Escape inside the detail, clears the selection and shows the area again (0022 AC-029).*
 - **AC-004** When the side panel opens from a card, Overview row or activity entry, the system shall move focus to its heading; with the keyboard alone the developer shall reach the close button and then every control of the side panel in §6.2's section order — Copy buttons, links, collapse toggles — and operate each with Enter and with Space.
 - **AC-005** While the panel is at least 900 px wide, the side panel shall be 400 px wide beside the area content with its own scroll; while it is narrower, the side panel shall overlay the area from the right edge at min(400 px, the width of the area frame); the Board's content shall keep its width and the Overview's content shall take the width left of the drawer (PD-066). (CSS guard and unit tests on the rules; screenshots in AC-022)
@@ -254,6 +260,7 @@ at commit `8052f9a` (made by the plan, like `studio-0002`).
   *Amended by 0022 (PD-069): AC-022 — "the drawer" is void: below 900 px the detail shows alone (0022 AC-029); the rows follow the list's width (0022 AC-001).*
 - **AC-023** Every test title at the commit before 0019's first implementation commit shall exist at the head and pass, or the plan's *Test-title audit* shall list it with the criterion of this spec or the §5 row that voids or replaces it; a script compares the titles of both commits; `npm run test:unit` and `npm test` shall pass on Windows and in CI.
   *Amended by 0020 (PD-058): AC-023 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
+  *Amended by 0021 (PD-069): AC-023 (test audit) — also except the tests 0021 AC-020 lists against a statement 0021 §5 replaces.*
   *Amended by 0022 (PD-069): AC-023 — also excepts the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
 - **AC-024** 0005, 0006, 0007, 0013, 0015, 0016, 0017 and 0018 shall carry the notes of §5 at the named statements, and the PD register shall hold no edit of an existing entry (PD-066, appended by the fix round of the compile S48, is the one new entry); checked by a grep and a diff in the plan.
 

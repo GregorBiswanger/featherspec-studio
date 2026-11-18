@@ -9,6 +9,8 @@
 
 *Amended by 0017 (PD-060/PD-061): every other statement, criterion, note or open point of this spec about drag and drop, "Move to…", the move command, move requests, the board-requested transition check, an accepted Ready → Active request or the drop result is void; a sentence that also says something else keeps that part.*
 
+*Amended by 0021 (PD-069): wherever this spec names the control "Copy" of a prompt (a next step or `/sdd-specify`), read `Copy prompt`, named as 0021 §6.4; the feedback stays; wherever it shows a next step line, 0021 §6.1 gives each line its intent.*
+
 Basis: Gregor's request of 2026-11-17 after working on `sdd-tip-splitter` with GitHub Copilot
 next to the Studio. Decisions ([product-decisions.md](../../docs/product/product-decisions.md)):
 PD-055 (on Gregor's delegation), PD-056 (proxy, A-001), PD-057 (open points, proxy), PD-016 (English UI),
@@ -143,6 +145,10 @@ The rules use only what 0002 and 0003 deliver; first match wins, top-down:
 
 *Amended by 0016 (PD-059, proxy): §6.1 NS-1 — reads as 0016 T-18.*
 
+*Amended by 0021 (PD-069): §6.1 rows NS-2, NS-4, NS-5, NS-7–NS-10 — the lines stay; each line gets its intent (0021 §6.1).*
+
+*Amended by 0021 (PD-069): §6.1 row NS-6 — 0021 §6.2 (variant A, PD-072): `Implement <ID> of <plan>` under "Continue with <ID> <title>" while a plan step is open, else `/sdd-plan <spec path>` to report where the plan stands; an Active spec without a sibling plan gets `/sdd-plan <spec path>` to write it.*
+
 NS-11 sits below NS-2 in the order; IDs are stable, not ordinal. Basis: FeatherSpec 1.10.0
 command files. `/sdd-plan` resumes an existing plan (Mode B: integrates return notes, reports
 what blocks), writes a fresh one for a reactivated spec (Mode C) and names "start T-001" and
@@ -220,6 +226,7 @@ the Output channel "FeatherSpec Studio" naming what it removed; nothing removed,
   or "Then, after a READY verdict:" (NS-5); after copying "Copied to the clipboard."
   *Amended by 0016 (PD-059, proxy): §8 Detail — Copy is primary; its feedback appears at the button (0016 §6.5, T-19), not as a line below.*
   *Amended by 0017 (PD-060/PD-061): the label under the second line reads "Then, in the same chat, if nothing blocks:" (0017 §6.2).*
+  *Amended by 0021 (PD-069): §8 Detail — each line sits under its intent with a "Copy prompt" button; the coach line and the `?` of 0021 §6.5, §6.6 follow the first line; the texts of 0021 §7 replace the labels "Then:" and "Then, after a READY verdict:".*
 - **Drop result:** "Studio starts no agent. Next step for <number> — paste it into your AI assistant:" plus the line and "Copy".
   *Amended by 0016 (PD-059, proxy): §8 Drop result — Copy is primary, Dismiss secondary (0016 §6.5, T-19).*
   *Amended by 0017 (PD-060/PD-061): void (PD-060).*
@@ -246,10 +253,12 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
 - **AC-002** If the remembered area or a restored panel state names `agentCenter`, then the system shall show Mission Control and no error.
   *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
 - **AC-003** While a spec is selected, the detail view shall show "Next step" above its sections with the line(s) of the first matching rule of §6.1, each with a "Copy" button and a second line under its §8 label, or the rule's text where it names no line.
+  *Amended by 0021 (PD-069): AC-003 — each line under its intent with a "Copy prompt" button; the coach line and `?` per 0021 §6.5, §6.6.*
 - **AC-004** The system shall derive the next step only from the model of 0002 and 0003; for identical snapshots it shall show identical lines. One fixture per rule decides the rule ID and the exact lines.
   > **Given** `.specs/backlog/0007-x.md` is Ready and its plan's first step is `T-001` **When** it is selected **Then** the line reads `Start T-001 of .specs/backlog/0007-x.plan.md`.
 - **AC-005** When the developer activates "Copy" — by pointer, or by Enter or Space after reaching it with Tab — the system shall put exactly that line on the clipboard and show and announce "Copied to the clipboard."
   *Amended by 0016 (PD-059, proxy): AC-005 — feedback appears at the button (0016 §6.5, T-19); Copy is primary.*
+  *Amended by 0021 (PD-069): AC-005 — the button reads `Copy prompt` and is named `Copy prompt: <line>` (0021 AC-008).*
 - **AC-006** When 0003 accepts a Ready → Active request, the board shall start no process, reach no network, change no file, leave the card in Ready, and show and announce the drop result of §8 with the NS-7 line and "Copy".
   *Amended by 0017 (PD-060/PD-061): void (PD-060).*
 - **AC-007** When the detail view receives a model-changed notification, it shall show the new next step within 500 ms (PD-047).
@@ -264,6 +273,7 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
 - **AC-013** The runtime store shall write only `spec-status-history.jsonl`, `lock.json` and `store.json`; a contract test lists the files of a store folder after every scenario.
 - **AC-014** The manifest shall contribute no command `openAgentCenter`, `clearRunHistory`, `stopRun` or `resumeRun` and no command title containing "Agent", "Run History", "Stop Run" or "Resume Run".
 - **AC-015** The manifest shall declare no configuration property.
+  *Amended by 0021 (PD-069): AC-015 — the manifest declares exactly the two settings of 0021 §6.7 (0021 AC-016).*
 - **AC-016** The manifest description shall read as §8 and contain neither "agent" nor "Copilot"; the keywords shall contain none of `agents`, `ai agents` and `github copilot`.
 - **AC-017** `package.json` and `package-lock.json` shall not contain `@github/copilot-sdk`; the esbuild externals shall be `vscode` only.
 - **AC-018** After `npm run package`, `dist/extension.js` shall contain no `child_process` and no `@github/copilot-sdk`; `dist/webview/main.js` shall contain no "Agent Center".
@@ -282,12 +292,14 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
   *Amended by 0018 (PD-062): the test audit also excepts the tests 0018 AC-030 lists against a criterion 0018 §5 voids.*
   *Amended by 0019 (PD-058): AC-027 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*
   *Amended by 0020 (PD-058): AC-027 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
+  *Amended by 0021 (PD-069): AC-027 (test audit) — also except the tests 0021 AC-020 lists against a statement 0021 §5 replaces.*
   *Amended by 0022 (PD-069): AC-027 (test audit) — also except the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
 - **AC-028** 0008–0012 shall have status `Deprecated`, stay in `done/` and link this spec as successor; 0003–0007 and 0013 shall carry the amendment notes of §5.
 - **AC-029** The `architecture:` snapshot in `AGENTS.md`, `.architecture/*.md` and `.memory-bank/projectbrief.md` shall name no removed module, no agent run and no provider; the brief's mission shall contain the manifest description of §8 and its success criteria the AC-030 scenario.
 - **AC-030** *(manual, Gregor)* M-1 on `tip-splitter` with the assistant he uses, the Hands-On walkthrough: three areas; a dropped Ready spec shows the NS-7 line, pasted into the chat it starts that step; Active and Review specs show NS-6 and NS-5 lines that the assistant runs as FeatherSpec commands; he checks whether the S7 note reads as noise (PD-057, OP-006) and whether his assistant resolves the project-relative paths (OP-002). Pre-release checklist item.
   *Amended by 0017 (PD-060/PD-061): "a dropped Ready spec shows the NS-7 line" reads "a Ready card's Copy puts the NS-7 line on the clipboard".*
   *Amended by 0020 (PD-058): AC-030 "three areas" — the panel has Overview and Board; the tree has no area entries; M-1 checks the tree and the two tabs (0020 §5).*
+  *Amended by 0021 (PD-069): AC-030 — NS-6's lines do what 0021 AC-025 checks.*
 
 ## 11. Technical notes for developers or AI agents
 

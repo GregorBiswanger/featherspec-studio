@@ -3,6 +3,8 @@
 **Status:** In Progress
 **Plan:** [0020-native-spec-tree.plan.md](0020-native-spec-tree.plan.md)
 
+*Amended by 0021 (PD-069): wherever this spec names the control "Copy" of a prompt (a next step or `/sdd-specify`), read `Copy prompt`, named as 0021 §6.4; the feedback stays; wherever it shows a next step line, 0021 §6.1 gives each line its intent.*
+
 Basis: UX audit 2026-11-17 ([docs/ux-audit/](../../docs/ux-audit/)) R-05 (05), concept K-B (04),
 target picture B (03 §4), evidence 02 §3.1, §3.6 and screenshots 02, 05, 11. Decisions:
 PD-058 (proxy, on Gregor's delegation), PD-016 (English UI), PD-013 (read-only), PD-060 (no moves).
@@ -77,6 +79,7 @@ from the tree; the panel has two tabs; no test that decides a staying criterion 
   *Amended by 0022 (PD-069): §4.2 Label "longer than 24 characters is cut" — label and description together hold 32 characters; the title is cut to the room, never below 12 characters, and a title that fits is not cut (0022 §4.2, AC-005).*
 - **ID:** the active project's root, the stem and, while the stem is duplicated, the path (PD-039): unique across the tree (VS Code requires it), unchanged by a move between groups, never the same in two projects.
 - **Description:** `<State> · <short form>` (0017 §6.1) for a spec that has a step; `<State>` alone for one that has none (NS-1, NS-3, NS-11); `Deprecated` for a deprecated spec. No rule ID (guideline 6).
+  *Amended by 0021 (PD-069): §4.2 Description and the §6 example `Review · /sdd-compile` — the step short form, e.g. `Verify · /sdd-compile`; the state goes and the budget may drop the intent (0022 §4.2, 0021 §6.3).*
   *Amended by 0022 (PD-069): §4.2 Description "`<State> · `" — the step's short form alone; `<State>` for a spec without a step; `Deprecated` as before (0022 AC-004).*
 - **Icon** (VS Code product icon with a theme colour, the board's motifs and tints):
 
@@ -95,6 +98,7 @@ from the tree; the panel has two tabs; no test that decides a staying criterion 
 - **Accessible label:** `<number> <full title>, <description>`, plus `, ` and 0016's T-05 text (`1 problem`, `<n> problems`).
   *Amended by 0022 (PD-069): §4.2 Accessible label — `<number> <full title>, <State>[, Deprecated][, <step short form>][, <T-05>]` (0022 X-05).*
 - **Tooltip** (Markdown, one line each, a line without data is left out): `**<number> <full title>**` · `<State>`, for a derived state `<State> — <0016 T-09 sentence>` · `Next step: ` + the full first line in code, or the rule's text where it names no line · the second line in code under its label (0017 §6.1) · `Steps <d>/<t> · Criteria <d>/<t>` with 0018 B-5's figures, in every state, a figure that is not available left out · per *Problem* finding `Problem: <its reason>` (0016 §6.2) · the project-relative spec path in code. Text from the files shows as written; the tooltip runs no command link.
+  *Amended by 0021 (PD-069): §4.2 Tooltip — `Next step: ` + the first intent, then the first prompt in code; the second intent, then its prompt in code (0021 §6.3).*
   *Amended by 0022 (PD-069): §4.2 Tooltip "`Problem: <its reason>`" — `Problem: <sentence>` (0022 §4.2, §4.5).*
 - **Click or Enter:** the spec becomes the selected spec (0005 BR-03), so 0019's side panel shows it and 0017's current spec follows (0017 §6.3 (1)). An open panel comes to the front without taking the keyboard focus from the tree (0019 §6.1, A-006) and keeps its tab; a closed panel opens, without the focus, on the start area of 0005 BR-02.
 - **Inline action and context menu:** inline `Copy Next Step` (icon `copy`) only on rows of a spec that has a step (0017 §6.1; guideline 2); it copies the full first line and shows 0017's status-bar feedback (`$(check) Copied` or `$(warning) Could not copy`, 2000 ms, 0017 AC-016) — not at the control, success not announced (0017 §6.3), deviating from guidelines 8 and 9 (A-011); it does not select the spec. Context menu, in this order: `Open Spec`; `Open Plan` only where 0019's Steps row has a plan (sibling, else the archived plan 0003 uses); `Copy Next Step` as the inline rule says. The three are the tree's own commands, hidden from the Command Palette; 0017's `featherspec-studio.copyNextStep` stays the palette's one "Copy Next Step".
@@ -223,6 +227,7 @@ Decided by unit tests on the tree model (core, no `vscode`) and the manifest unl
   *Amended by 0022 (PD-069): AC-019 — the smoke expects the description `/sdd-compile` and the label `0001 Restaurant-Rec…` (0022 AC-004, AC-005).*
 - **AC-020** 0005, 0007, 0013, 0015, 0016, 0017, 0018, 0019 and ADR-001 §2 shall carry the notes of §5 as inline notes "*Amended by 0020 (PD-058): …*"; the PD register is history and is not edited (as in 0018 §5).
 - **AC-021** Every test at the commit on which this spec's implementation starts that decides a criterion not voided in §5 shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI. A script shall compare the test titles of both commits, and the plan shall list every title missing at the head, a renamed one included, with its voided criterion or the head title that replaces it.
+  *Amended by 0021 (PD-069): AC-021 (test audit) — also except the tests 0021 AC-020 lists against a statement 0021 §5 replaces.*
   *Amended by 0022 (PD-069): AC-021 — also excepts the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
 - **AC-022** *(manual; pre-release checklist)* On `tip-splitter` and on this repository, in Dark, Light and High Contrast at a sidebar width of 400 px, Gregor or his delegate shall confirm that every state icon is told apart without colour, the description of every In progress and Up next row is visible and the badge is readable; in the Hands-On he copies a next step from the tree and his assistant runs it.
   *Amended by 0022 (PD-069): AC-022 "Up next row" — a `Ready` row.*

@@ -9,6 +9,8 @@
 
 *Amended by 0015 (PD-055/PD-056): every other statement, requirement, criterion, term, assumption or open point of this spec about agent runs, run events, providers, approvals, the Agent Center, the start workflow, the Clear command or specs 0008–0012 is void; a sentence that also says something else keeps that part. The notes below name what changes in meaning or needs a replacement; see [0015](0015-focus-on-visibility.md) §5.*
 
+*Amended by 0021 (PD-069): wherever this spec names the control "Copy" of a prompt (a next step or `/sdd-specify`), read `Copy prompt`, named as 0021 §6.4; the feedback stays; wherever it shows a next step line, 0021 §6.1 gives each line its intent.*
+
 Handoff reference: FS-006 ([po-handoff.md](../../docs/product/po-handoff.md) §4.1, §10 FS-006,
 §13, §18). Depends on: 0002 (spec entries, diagnostics), 0003 (states, readiness, status
 history), 0004 (runs, run statuses, store state), 0005 (shell, panel-level states, navigation

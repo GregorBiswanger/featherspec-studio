@@ -22,7 +22,7 @@ and the expected result. A clear miss reopens the named spec.
    built extension; open a FeatherSpec project there (e.g. `C:\projects\test\tip-splitter`).
 2. **VSIX**: `npx @vscode/vsce package` → `featherspec-studio-0.1.0.vsix`; install with
    *Extensions: Install from VSIX…* or `code --install-extension featherspec-studio-0.1.0.vsix`.
-3. **Next step**: select a spec in the Specs view, click **Copy** on its next step and paste it into your assistant's chat.
+3. **Next step**: select a spec in the Specs view, read the intent of its next step, click **Copy prompt** and paste the prompt into your assistant's chat.
 
 ## Discovery (0001)
 
@@ -89,15 +89,15 @@ and the expected result. A clear miss reopens the named spec.
 
 ## Focus on visibility (0015)
 
-- [ ] **AC-030 / M-1**: in a real VS Code window on `tip-splitter`: the Specs view lists the specs in its groups and the panel shows Overview and Board only; a spec's detail shows **Next step**, **Copy** puts the line on the clipboard and pasting it into the assistant's chat works; a Ready card's **Copy** puts the NS-7 line on the clipboard (0017); no command, setting or text offers to start an agent or a run.
+- [ ] **AC-030 / M-1**: in a real VS Code window on `tip-splitter`: the Specs view lists the specs in its groups and the panel shows Overview and Board only; a spec's detail shows **Next step**, **Copy prompt** puts the prompt on the clipboard and pasting it into the assistant's chat works; a Ready card's **Copy prompt** puts the NS-7 line on the clipboard (0017); no command, setting or text offers to start an agent or a run.
 
 ## Honest signals (0016)
 
-- [ ] **AC-025 / M-1**: preview harness screenshots in Dark, Light and High Contrast show the primary **Copy** and its label change without shift, the need line on a Backlog card, the collapsed format-note toggle, the problem badge and the S2 sentence in the view and the panel; on `tip-splitter` no problem marker shows without a real problem.
+- [ ] **AC-025 / M-1**: preview harness screenshots in Dark, Light and High Contrast show the primary **Copy prompt** and its label change without shift, the need line on a Backlog card, the collapsed format-note toggle, the problem badge and the S2 sentence in the view and the panel; on `tip-splitter` no problem marker shows without a real problem.
 
 ## The next step everywhere (0017)
 
-- [ ] **AC-026 / M-1**: on `tip-splitter`, Hands-On walkthrough with your assistant, task "start the Ready spec": the Start line copied from the card works with no failed attempt; on an Active spec `/sdd-plan`, then `continue` in the same chat runs one step; the status bar names the spec you work on and its click copies (`Copied` for 2 s); Dark, Light and High Contrast show the card line and the Overview row readable; the card offers no way to move a spec.
+- [ ] **AC-026 / M-1**: on `tip-splitter`, Hands-On walkthrough with your assistant, task "start the Ready spec": the Start line copied from the card works with no failed attempt; on an Active spec the two prompts of the detail do what 0021 AC-025 checks; the status bar names the spec you work on and its click copies (`Copied` for 2 s); Dark, Light and High Contrast show the card line and the Overview row readable; the card offers no way to move a spec.
 
 ## Overview and a compact Board (0018)
 
@@ -133,6 +133,23 @@ and the expected result. A clear miss reopens the named spec.
   Studio is the active tab.
 - [ ] **Keyboard and screen reader**: `FeatherSpec Studio: Focus on Specs View` reaches the view; arrow keys walk
   the rows, Enter selects, Shift+F10 opens a row's context menu with Open Spec, Open Plan and Copy Next Step; the screen reader reads a row as one sentence with the state and the next step.
+
+## Next step with intent and guidance (0021)
+
+- [ ] **AC-022** *(preview harness, orchestrator; guideline 12)*: the detail and the Overview with the first Now row in
+  Dark, Light and High Contrast at 1600 px and 1000 px window width, with the side panel open at its default and at
+  the minimum width: no intent, prompt or coach line is cut; an open **About this step** stays inside its panel and
+  covers no Copy prompt of its step; the `?` shows a visible focus outline. Screenshots in the plan.
+- [ ] **AC-023** *(Gregor)*: both settings appear under "FeatherSpec Studio" in the Settings UI; **Show Step Tips**
+  toggles the coach line and the `?` in the open panel at once; **Model Hints** offers `strong` and `fast` as text
+  fields and the coach line shows the name you entered.
+- [ ] **AC-024** *(Gregor on `tip-splitter`; the draft before `/sdd-plan` was OP-002)*: for each state present
+  (Backlog without and with a plan, Ready, Active with an open step, Review, Blocked where present), say without asking
+  what the copied prompt will do and where to run it; the plan records your answers.
+- [ ] **AC-025** *(Gregor, with each of the two assistants of the spec; PD-072)*: on `tip-splitter`, the first prompt of an
+  Active spec with an open step (`Implement <ID> of <plan>`) copied from the detail into a fresh chat builds exactly
+  that plan step and stops (a test-review stop of the working agreement is allowed); after an interruption (code done,
+  tick missing), the second prompt (`/sdd-plan <spec>`) in a fresh chat reports and brings the tick level.
 
 ## Layout and signal polish (0022)
 

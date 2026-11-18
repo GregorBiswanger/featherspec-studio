@@ -1,5 +1,5 @@
 # Map: src/core (framework-free core)
-# last reconciled: 2026-11-18 (0022)
+# last reconciled: 2026-11-18 (0021)
 
 ## Internal pattern
 - `src/core/<area>/` — one folder per spec; `<area>Service.ts` is the application service where the
@@ -12,6 +12,7 @@
     setup (release archive, release HTTP, setup target, setup UI).
   - `discovery` (0001) — project verdicts, version line, active-project state, report model, controller, rerun scheduler.
   - `specs` (0002) — spec repository: file listing, spec and plan parsers, joins, diagnostics, live repository; every diagnostic carries a tier, problem or note (0016), set where it is emitted; compatibility findings are not emitted.
+  - `settings` (0021) — `parseStepTipSettings` reads `featherspec-studio.showStepTips` and `featherspec-studio.modelHints` (anything else is the default, hints trimmed and cut to 39 characters); `createSettingsSource(ports, parse)` pairs the read-only `SettingPort`s with a change event; the board and Overview services read it per view and recompute on a change, so the detail and the first Now row follow a setting within 500 ms in every window; `testing/fakeTips.ts` is the fake.
   - `lifecycle` (0003) — state derivation, readiness, contradictions, blocking conditions, plan in
     use, verification status, flow marker, status history, lifecycle service; `problemSentence.ts` turns a Problem into its user sentence (0022).
   - `runtime` (0004) — runtime store narrowed to the spec status history: writer lock, retention (90 days), store state; earlier run data removal.
@@ -20,7 +21,7 @@
   - `overview` (0006, 0018) — Now and Up next rows, problems, figures and progress, activity,
     overview service (the open state of Activity lives here, reset with the last listener).
   - `board` (0007) — Board and spec detail view models: cards, progress, narrow columns and Done memory, card date (0018), filters
-    and sorting, board UI state, open-file guard, the detail's situation picture (header, next step, problems, progress with lines, files, notes, history; `detail.ts`, `situation.ts`, `shortTitle.ts`; 0019), next step (NS rules, 0015; step view and short form, 0017), needs of a Backlog spec (0016), copy line, board service.
+    and sorting, board UI state, open-file guard, the detail's situation picture (header, next step, problems, progress with lines, files, notes, history; `detail.ts`, `situation.ts`, `shortTitle.ts`; 0019), next step (NS rules, 0015; step view and short form, 0017), needs of a Backlog spec (0016), copy line, board service; `STEP_GUIDES` cases and intents in `nextStep.ts` and `stepTips.ts` compose the coach line and the four paragraphs of About this step from the case, the two settings and the shared texts (0021).
   - `copyNextStep` (0017) — current spec, project line, status entry view (text, tooltip, accessible text), Copy Next Step behaviour (click and command), quick pick items; `testing/` holds the entry world.
   - `setup` (0014) — the only writer and network user: release download and check, file classes, `.gitignore` and
     `settings.json` completions, apply, merge prompt, setup service; `testing/` holds the in-memory target and scripted HTTP.

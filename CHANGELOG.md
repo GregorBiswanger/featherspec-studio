@@ -21,7 +21,18 @@ First release.
   to paste into the AI assistant you work with. Studio starts no agent. The status bar shows the spec
   you work on (`<number> · <state> · <short form>`); a click copies its next step, and the command
   `FeatherSpec Studio: Copy Next Step` does the same and, without a current spec, offers a list. An
-  Active spec with an open plan step gets a second line, `continue`, for the same chat.
+  Active spec with an open plan step gets two prompts: `Implement <ID> of <plan>` builds exactly that
+  step, `/sdd-plan <spec>` has the agent report where the plan stands.
+- Every next-step line says what it does: each prompt sits under its intent (for example "Have the
+  result verified"), cards, rows and the quick pick show a short intent beside the short form of the
+  prompt, and every tooltip shows the intents with the full prompts. The button is **Copy prompt**; it
+  copies the prompt only. A coach line under the first prompt of the detail and in the first Now row says
+  where to run it and with which kind of model, and **About this step** (`?`) explains the step in four
+  short paragraphs; Escape closes only it.
+- Two settings, under **FeatherSpec Studio** in the Settings UI, apply at once in every window:
+  `showStepTips` (coach line and **About this step**, default on) and
+  `modelHints` (your own names for a `strong` and a `fast` model; Studio ships no
+  model name).
 - The panel with two tabs. The **Overview** lists what is in progress (Now), what comes next (Up next),
   Problems with their reasons, one line of figures and a collapsed Activity. The **Board** shows every
   spec as a card in six columns (Backlog, Ready, Active, Review, Done, Blocked): a column without a card

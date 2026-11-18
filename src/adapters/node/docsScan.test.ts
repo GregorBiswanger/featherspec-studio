@@ -157,7 +157,7 @@ describe('product docs after 0017 (AC-025)', () => {
         expect(readme).toContain('Copy Next Step');
         expect(readme).toContain('status bar');
         expect(readme).toContain('· <state> ·');
-        expect(readme).toMatch(/card[^.]*\*\*Copy\*\*|\*\*Copy\*\*[^.]*card/);
+        expect(readme).toMatch(/card[^.]*\*\*Copy prompt\*\*|\*\*Copy prompt\*\*[^.]*card/);
     });
 
     it('the release checklist carries AC-026', async () => {
@@ -292,7 +292,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         for (const group of ['**In progress**', '**Ready**', '**Backlog**', '**Done**']) {
             expect(section, group).toContain(group);
         }
-        expect(section).toContain('inline **Copy** button');
+        expect(section).toContain('inline **Copy prompt** button');
         expect(section).toContain('**Open Spec**, **Open Plan** and **Copy Next Step**');
         expect(section).toContain('The badge on the Activity Bar icon counts the specs that wait for you (Review and Blocked).');
     });
@@ -358,6 +358,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
             '## Overview and a compact Board (0018)',
             '## The detail as a side panel (0019)',
             '## The native Specs tree (0020)',
+            '## Next step with intent and guidance (0021)',
             '## Layout and signal polish (0022)',
             '## Go',
         ]);
@@ -478,7 +479,7 @@ describe('product docs after 0022 (AC-016, AC-018)', () => {
 
     it('the README names the icon Copy and the two primary buttons', async () => {
         const readme = await read('README.md');
-        expect(readme).toContain('Only the first Now row and the Copy of an empty project are primary buttons');
+        expect(readme).toContain('Only the first Now row and the Copy prompt of an empty project are primary buttons');
     });
 
     it('the three product docs name Ready for the tree and keep "Up next" only for the Overview\'s set', async () => {
@@ -533,6 +534,65 @@ describe('product docs after 0022 (AC-016, AC-018)', () => {
 
     it('negative control: a text without the note has none', () => {
         expect('no note here'.split('Amended by 0022 (PD-069)').length - 1).toBe(0);
+    });
+});
+
+describe('product docs after 0021 (AC-021)', () => {
+    it('the README names Copy prompt, About this step and both settings', async () => {
+        const readme = await read('README.md');
+        for (const literal of ['Copy prompt', 'About this step', 'featherspec-studio.showStepTips', 'featherspec-studio.modelHints']) {
+            expect(readme, literal).toContain(literal);
+        }
+        expect(readme).toContain('\n## Settings\n');
+    });
+
+    it('neither the README nor the release checklist holds **Copy** or then `continue`', async () => {
+        for (const file of ['README.md', 'docs/release-checklist.md']) {
+            const text = await read(file);
+            expect(text, file).not.toContain('**Copy**');
+            expect(text, file).not.toContain('then `continue`');
+        }
+    });
+
+    it('the CHANGELOG names Copy prompt, showStepTips and modelHints under the version in preparation and no second line continue', async () => {
+        const first = firstRelease(await read('CHANGELOG.md'));
+        for (const literal of ['Copy prompt', 'showStepTips', 'modelHints']) {
+            expect(first, literal).toContain(literal);
+        }
+        expect(first).not.toContain('a second line, `continue`');
+    });
+
+    it('the release checklist has the 0021 section with AC-022, AC-023, AC-024 and AC-025', async () => {
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('\n## Next step with intent and guidance (0021)\n');
+        expect(start).toBeGreaterThan(-1);
+        const end = text.indexOf('\n## ', start + 1);
+        const section = text.slice(start, end < 0 ? undefined : end);
+        for (const mark of ['**AC-022**', '**AC-023**', '**AC-024**', '**AC-025**']) {
+            expect(section, mark).toContain(mark);
+        }
+    });
+
+    for (const [file, notes] of [
+        ['.specs/done/0006-mission-control-dashboard.md', 1],
+        ['.specs/done/0007-spec-board-spec-detail.md', 1],
+        ['.specs/done/0013-studio-visual-design.md', 2],
+        ['.specs/active/0015-focus-on-visibility.md', 9],
+        ['.specs/active/0016-honest-signals.md', 4],
+        ['.specs/active/0017-next-step-everywhere.md', 18],
+        ['.specs/active/0018-overview-and-compact-board.md', 8],
+        ['.specs/active/0019-detail-situation-picture.md', 5],
+        ['.specs/active/0020-native-spec-tree.md', 4],
+    ] as const) {
+        it(`${file} carries its ${notes} notes of 0021`, async () => {
+            const text = await read(file);
+            expect(text.split('Amended by 0021 (PD-069)').length - 1).toBeGreaterThanOrEqual(notes);
+            expect(text).toContain('read `Copy prompt`');
+        });
+    }
+
+    it('negative control: a text without the note has none', () => {
+        expect('no note here'.split('Amended by 0021 (PD-069)').length - 1).toBe(0);
     });
 });
 

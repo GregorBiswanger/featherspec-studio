@@ -11,6 +11,8 @@
 
 *Amended by 0017 (PD-060/PD-061): every other statement, criterion, note or open point of this spec about drag and drop, "Move to…", the move command, move requests, the board-requested transition check, an accepted Ready → Active request or the drop result is void; a sentence that also says something else keeps that part.*
 
+*Amended by 0021 (PD-069): wherever this spec names the control "Copy" of a prompt (a next step or `/sdd-specify`), read `Copy prompt`, named as 0021 §6.4; the feedback stays; wherever it shows a next step line, 0021 §6.1 gives each line its intent.*
+
 Handoff reference: FS-007 ([po-handoff.md](../../docs/product/po-handoff.md) §4.2, §4.3, §10,
 §13 *Usability und Accessibility*). Builds on 0002 (parser model), 0003 (states, readiness,
 transitions, history), 0004 (run store) and 0005 (Studio shell). UI surface per
