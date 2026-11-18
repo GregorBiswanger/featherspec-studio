@@ -1,3 +1,4 @@
+import type { StatusHistoryItem } from './detail';
 import type { BoardState } from './boardFilter';
 import type { Progress, SortKey } from './board';
 import type { ActionId, PanelState } from './messages';
@@ -15,6 +16,76 @@ export function derivedTooltip(rule: string): string {
 
 export function persistedTooltip(rule: string): string {
     return `Read from the files · rule ${rule}`;
+}
+
+function two(value: number): string {
+    return String(value).padStart(2, '0');
+}
+
+function dayKey(date: Date): number {
+    return date.getFullYear() * 10000 + date.getMonth() * 100 + date.getDate();
+}
+
+/** T-02, T-17: `Today HH:MM`, `Yesterday HH:MM` (local calendar day), else `YYYY-MM-DD HH:MM`; an unparsable value as stored. */
+export function whenText(iso: string, now: Date): string {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) {
+        return iso;
+    }
+    const time = `${two(date.getHours())}:${two(date.getMinutes())}`;
+    const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    if (dayKey(date) === dayKey(now)) {
+        return `Today ${time}`;
+    }
+    if (dayKey(date) === dayKey(yesterday)) {
+        return `Yesterday ${time}`;
+    }
+    return `${date.getFullYear()}-${two(date.getMonth() + 1)}-${two(date.getDate())} ${time}`;
+}
+
+/** T-02: `Updated HH:MM` today, else `Updated YYYY-MM-DD HH:MM`. */
+export function updatedText(iso: string, now: Date): string {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) {
+        return `Updated ${iso}`;
+    }
+    const time = `${two(date.getHours())}:${two(date.getMinutes())}`;
+    return dayKey(date) === dayKey(now) ? `Updated ${time}` : `Updated ${date.getFullYear()}-${two(date.getMonth() + 1)}-${two(date.getDate())} ${time}`;
+}
+
+export const HISTORY_LABEL = 'Only changes Studio saw while it was running.';
+export const HISTORY_GONE_TEXT = 'no longer in the project';
+export const HISTORY_WHILE_CLOSED_TEXT = '(changed while Studio was not running)';
+export const HISTORY_OUTSIDE_FLOW_TEXT = '(outside the FeatherSpec flow)';
+
+/** T-14, §6.4. */
+export function historyEntryText(item: StatusHistoryItem, now: Date): string {
+    const old = item.old ?? '—';
+    const next = item.new ?? undefined;
+    let change: string;
+    if (next === undefined) {
+        change = `${old} → ${HISTORY_GONE_TEXT}`;
+    } else if (item.cause.kind === 'first-observed' || item.old === null) {
+        change = `first seen as ${next}`;
+    } else if (item.cause.kind === 'changed-while-not-running') {
+        change = `${old} → ${next} ${HISTORY_WHILE_CLOSED_TEXT}`;
+    } else {
+        change = `${old} → ${next}`;
+    }
+    const flow = item.flow === 'outside the FeatherSpec flow' ? ` ${HISTORY_OUTSIDE_FLOW_TEXT}` : '';
+    return `${whenText(item.observedAt, now)} — ${change}${flow}`;
+}
+
+/** Q-2: stored time, rule ID and changed paths; a part with no value is left out. */
+export function historyTooltip(item: StatusHistoryItem): string {
+    const parts = [item.observedAt];
+    if (item.rule !== null) {
+        parts.push(`rule ${item.rule}`);
+    }
+    if (item.cause.kind === 'files' && item.cause.paths.length > 0) {
+        parts.push(item.cause.paths.join(', '));
+    }
+    return parts.join(' · ');
 }
 
 export const S2_SETUP_SENTENCE = 'Set up FeatherSpec downloads the latest FeatherSpec release from GitHub and adds its files; existing files are never overwritten.';
@@ -188,10 +259,6 @@ export const CRITERIA_PROGRESS_LABEL = 'Criteria verified';
 
 export function criteriaText(criteria: Progress | undefined): string {
     return criteria === undefined ? 'Criteria: not available' : `Criteria: ${criteria.done} of ${criteria.total} verified`;
-}
-
-function two(value: number): string {
-    return String(value).padStart(2, '0');
 }
 
 export function formatLastChange(ms: number): string {

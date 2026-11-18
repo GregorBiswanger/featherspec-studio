@@ -7,6 +7,8 @@ import {
     persistedTooltip,
     BANNER_HEADING,
     DETAIL_LABEL,
+    historyEntryText,
+    historyTooltip,
     HISTORY_NOT_AVAILABLE_TEXT,
     NO_DETAIL_SELECTION_TEXT,
     NO_PLAN_TEXT,
@@ -64,6 +66,7 @@ function keysOf(targets: (OpenTarget | undefined)[]): string[] {
 function Sections(props: { detailKey: string; sections: DetailSections; fileResult: { key: string; text: string } | undefined; onOpen: OpenFile }) {
     const { sections, fileResult, onOpen } = props;
     const { overview, requirements, criteria, plan, verification, related, history } = sections;
+    const now = new Date();
     return (
         <>
             <DetailSection title={SECTION_TITLES.overview} open={overview.open} keys={keysOf(overview.notes.map((line) => line.open))} fileResult={fileResult} onOpen={onOpen}>
@@ -209,8 +212,8 @@ function Sections(props: { detailKey: string; sections: DetailSections; fileResu
                         <p>{history.label}</p>
                         <ul className="detail-history">
                             {history.statusHistory.map((item, index) => (
-                                <li key={`${index}|${item.observedAt}`}>
-                                    {item.observedAt} · {item.old ?? '—'} → {item.new ?? '—'} · {item.rule ?? '—'} · {item.cause} · {item.flow}
+                                <li key={`${index}|${item.observedAt}`} title={historyTooltip(item)}>
+                                    {historyEntryText(item, now)}
                                 </li>
                             ))}
                         </ul>

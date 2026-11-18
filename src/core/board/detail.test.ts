@@ -7,7 +7,7 @@ import { nextStepNumberUsedText } from '../../shared/protocol/nextStepTexts';
 import { buildDetail } from './detail';
 import { nextStep } from './nextStep';
 
-const NO_HISTORY: HistoryView = { available: true, label: 'Observed by Studio while it was running — not a reconstruction', entries: [] };
+const NO_HISTORY: HistoryView = { available: true, label: 'Only changes Studio saw while it was running.', entries: [] };
 
 async function modelOf(files: Record<string, string>) {
     const project = await readMemory(files);
@@ -207,8 +207,8 @@ describe('spec detail', () => {
         };
         const view = spec(await detailOf(FILES, { stem: '0001-a' }, history));
         expect(view.sections.history.statusHistory).toHaveLength(1);
-        expect(view.sections.history.statusHistory?.[0]).toMatchObject({ old: 'Active', new: 'Review', cause: '.specs/active/0001-a.plan.md' });
-        expect(view.sections.history.label).toBe('Observed by Studio while it was running — not a reconstruction');
+        expect(view.sections.history.statusHistory?.[0]).toMatchObject({ old: 'Active', new: 'Review', cause: { kind: 'files', paths: ['.specs/active/0001-a.plan.md'] } });
+        expect(view.sections.history.label).toBe('Only changes Studio saw while it was running.');
         expect(view.sections.history.notAvailable).toBeUndefined();
         expect(Object.keys(view.sections.history).sort()).toEqual(['label', 'notAvailable', 'statusHistory']);
     });

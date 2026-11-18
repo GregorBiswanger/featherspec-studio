@@ -1,5 +1,5 @@
 import type { DetailSections, DetailView, DiagnosticLine, HeaderLine, OpenTarget, StatusHistoryItem, StepItem } from '../../shared/protocol/detail';
-import { successorText } from '../../shared/protocol/texts';
+import { HISTORY_LABEL, successorText } from '../../shared/protocol/texts';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { HistoryCause, HistoryView } from '../lifecycle/statusHistory';
 import type { ShellModel } from '../ports/shell';
@@ -42,17 +42,8 @@ function headerLines(spec: SpecEntry): HeaderLine[] {
     return lines;
 }
 
-function causeText(cause: HistoryCause): string {
-    switch (cause.kind) {
-        case 'files':
-            return cause.paths.join(', ');
-        case 'first-observed':
-            return 'first observed';
-        case 'changed-while-not-running':
-            return 'changed while Studio was not running';
-        case 'no-longer-observed':
-            return 'no longer observed';
-    }
+function causeView(cause: HistoryCause): StatusHistoryItem['cause'] {
+    return { kind: cause.kind, paths: cause.kind === 'files' ? [...cause.paths] : [] };
 }
 
 function findEntry(model: ShellModel, selection: { stem: string; path?: string }): LifecycleEntry | undefined {
@@ -109,7 +100,7 @@ export function buildDetail(input: DetailInput): DetailView {
                       old: candidate.old,
                       new: candidate.new,
                       rule: candidate.rule,
-                      cause: causeText(candidate.cause),
+                      cause: causeView(candidate.cause),
                       flow: candidate.flow,
                   }))
             : undefined;
@@ -149,7 +140,7 @@ export function buildDetail(input: DetailInput): DetailView {
             criteria: criteriaProgress(entry.verification),
         },
         related,
-        history: { statusHistory: historyItems, label: input.history.available ? input.history.label : 'Observed by Studio while it was running — not a reconstruction', notAvailable: input.history.available ? undefined : input.history.text },
+        history: { statusHistory: historyItems, label: input.history.available ? input.history.label : HISTORY_LABEL, notAvailable: input.history.available ? undefined : input.history.text },
     };
     return { kind: 'spec', key: entry.key, stem: entry.stem, number: entry.number, title: titleOf(spec) ?? entry.stem, nextStep: next, problems: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').map(diagnosticLine), sections };
 }

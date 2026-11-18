@@ -40,8 +40,8 @@ export function sections(overrides: Partial<DetailSections> = {}): DetailSection
         verification: { open: { key: PLAN_KEY }, openRows: 1, built: 2, verified: 3, other: 0, summary: '3 of 6 rows verified', criteria: { done: 3, total: 6 } },
         related: [{ label: '0007-thing.plan.md', open: { key: PLAN_KEY } }],
         history: {
-            statusHistory: [{ observedAt: '2026-11-16T09:00:00Z', old: 'Ready', new: 'Active', rule: 'S-ACTIVE', cause: 'Observed', flow: 'moved' }],
-            label: 'Observed by Studio while it was running — not a reconstruction',
+            statusHistory: [{ observedAt: '2026-11-16T09:00:00Z', old: 'Ready', new: 'Active', rule: 'S-ACTIVE', cause: { kind: 'files', paths: ['.specs/active/0001-a.plan.md'] }, flow: 'in flow' }],
+            label: 'Only changes Studio saw while it was running.',
             notAvailable: undefined,
         },
         ...overrides,

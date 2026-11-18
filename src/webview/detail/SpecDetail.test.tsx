@@ -212,9 +212,11 @@ describe('AC-010: Open file exactly where a file is named', () => {
 describe('0015 AC-012: Status history', () => {
     it('lists the labelled status history and no run', async () => {
         const text = section(await open(), 'Status history').textContent!;
-        expect(text).toContain('Observed by Studio while it was running — not a reconstruction');
-        expect(text).toContain('Ready');
-        expect(text).toContain('S-ACTIVE');
+        expect(text).toContain('Only changes Studio saw while it was running.');
+        expect(text).toMatch(/— Ready → Active$/);
+        expect(text).not.toMatch(/S-ACTIVE|2026-11-16T|observed|not checked/);
+        const entry = section(await open(), 'Status history').querySelector('li');
+        expect(entry?.getAttribute('title')).toBe('2026-11-16T09:00:00Z · rule S-ACTIVE · .specs/active/0001-a.plan.md');
         expect(text).not.toContain('claude');
         expect(text).not.toContain('Runs: not available');
         expect(text).not.toContain('No run');
@@ -225,7 +227,7 @@ describe('0015 AC-012: Status history', () => {
         const reason = "Status history not available: Another VS Code window holds the write lock for this project's status history.";
         const text = section(await open(detailView({ history: { ...base, statusHistory: undefined, notAvailable: reason } })), 'Status history').textContent!;
         expect(text).toContain(reason);
-        expect(text).not.toContain('Observed by Studio');
+        expect(text).not.toContain('Only changes Studio saw');
     });
 
     it('shows not available even when the reason is missing', async () => {

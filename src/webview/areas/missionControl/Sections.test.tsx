@@ -68,8 +68,8 @@ describe('AC-010, AC-011: recent activity', () => {
         expect(activity.querySelector('h2')?.textContent).toBe('Recent activity');
         const rows = [...activity.querySelectorAll('[data-activity-entry]')].map((row) => row.textContent);
         expect(rows).toHaveLength(2);
-        expect(rows[0]).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} · 0001 A · Backlog → Ready$/);
-        expect(rows[1]).toMatch(/· 0009-gone — spec not found · Done → no longer observed$/);
+        expect(rows[0]).toMatch(/^(Today|Yesterday) \d{2}:\d{2} · 0001 A · Backlog → Ready$|^\d{4}-\d{2}-\d{2} \d{2}:\d{2} · 0001 A · Backlog → Ready$/);
+        expect(rows[1]).toMatch(/· 0009-gone — spec not found · Done → no longer in the project$/);
         expect([...activity.querySelectorAll('button')].filter((button) => !button.hasAttribute('data-drill'))).toHaveLength(0);
         expect(activity.querySelectorAll('button')).toHaveLength(rows.length);
         expect(activity.textContent).not.toMatch(/\bmore\b/i);

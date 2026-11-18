@@ -1,4 +1,4 @@
-import { DERIVED_SENTENCES } from '../../../shared/protocol/texts';
+import { DERIVED_SENTENCES, HISTORY_GONE_TEXT, HISTORY_WHILE_CLOSED_TEXT } from '../../../shared/protocol/texts';
 import type { ActivityChange, AttentionReason, DerivedRule, SpecRef } from '../../../shared/protocol/missionControl';
 
 export const MC_NOT_AVAILABLE = 'not available';
@@ -23,10 +23,6 @@ export function mcFolder(name: string): string {
 
 export function mcVersion(version: string): string {
     return `FeatherSpec ${version}`;
-}
-
-export function mcUpdated(time: string): string {
-    return `Model updated ${time}`;
 }
 
 export function mcProblems(count: number): string {
@@ -65,9 +61,7 @@ export function mcActivityUnavailable(reason: string): string {
 
 export const MC_SPEC_NOT_FOUND = 'spec not found';
 
-export const MC_WHILE_CLOSED = '(changed while Studio was not running)';
-
-export const MC_NO_LONGER_OBSERVED = 'no longer observed';
+export const MC_WHILE_CLOSED = HISTORY_WHILE_CLOSED_TEXT;
 
 export function mcReason(reason: AttentionReason): string {
     return reason;
@@ -82,6 +76,6 @@ export function mcChange(change: ActivityChange): string {
         case 'state':
             return `${change.old} → ${change.new}${change.whileClosed ? ` ${MC_WHILE_CLOSED}` : ''}`;
         case 'gone':
-            return `${change.old} → ${MC_NO_LONGER_OBSERVED}`;
+            return `${change.old} → ${HISTORY_GONE_TEXT}`;
     }
 }

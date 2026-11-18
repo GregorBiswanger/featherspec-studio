@@ -81,7 +81,7 @@ export interface StatusHistoryItem {
     old: string | null;
     new: string | null;
     rule: string | null;
-    cause: string;
+    cause: { kind: 'files' | 'first-observed' | 'changed-while-not-running' | 'no-longer-observed'; paths: string[] };
     flow: string;
 }
 

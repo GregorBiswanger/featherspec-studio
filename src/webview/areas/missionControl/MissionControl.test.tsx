@@ -5,7 +5,6 @@ import { sampleView } from '../../../shared/protocol/testing/missionControlSampl
 import { App } from '../../App';
 import { createClient, type ShellClient } from '../../client';
 import { baseView, click, isKeyboardReachable, missionControlEvent, mount, send, shellEvent, type Mounted } from '../../testing/dom';
-import { formatTime } from './format';
 
 let posted: Envelope[];
 let mounted: Mounted | undefined;
@@ -64,7 +63,7 @@ describe('AC-017, AC-019: header', () => {
         const header = area(await open(view)).querySelector('[data-header]')!;
         expect(header.textContent).toContain('demo');
         expect(header.textContent).toContain('FeatherSpec 1.10.0');
-        expect(header.textContent).toContain('Model updated 2026-11-16 09:05');
+        expect(header.textContent).toContain('Updated 2026-11-16 09:05');
         expect(header.textContent).toContain('1 problem');
         expect(header.textContent).not.toContain('1 problems');
     });
@@ -87,9 +86,12 @@ describe('AC-017, AC-019: header', () => {
         expect(header.textContent).not.toMatch(/problem|diagnostic/i);
     });
 
-    it('formats times as local YYYY-MM-DD HH:mm and leaves an unreadable time as it is', () => {
-        expect(formatTime(new Date(2026, 0, 2, 3, 4).toISOString())).toBe('2026-01-02 03:04');
-        expect(formatTime('not a time')).toBe('not a time');
+    it('T-02: the header time reads Updated HH:MM today, else with the date', async () => {
+        const view = sampleView();
+        view.header.updatedAt = new Date().toISOString();
+        const now = new Date();
+        const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        expect(area(await open(view)).querySelector('.mc-updated')?.textContent).toBe(`Updated ${hhmm}`);
     });
 });
 

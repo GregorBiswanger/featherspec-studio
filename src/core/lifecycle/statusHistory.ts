@@ -1,3 +1,4 @@
+import { HISTORY_LABEL } from '../../shared/protocol/texts';
 import type { ClockPort } from '../ports/host';
 import type { JsonValue, ReadResult, SpecStatusRecord, StoreState } from '../runtime/model';
 import type { ProjectRead } from '../specs/readProject';
@@ -6,7 +7,7 @@ import { classifyFlow } from './flow';
 import type { FlowMarker } from './flow';
 import type { LifecycleModel, LifecycleState, RuleId } from './model';
 
-export const HISTORY_LABEL = 'Observed by Studio while it was running — not a reconstruction';
+export { HISTORY_LABEL };
 
 export interface StatusHistoryStore {
     state(): StoreState;

@@ -1,12 +1,13 @@
 import type { McActivity, ActivityEntry } from '../../../shared/protocol/missionControl';
+import { whenText } from '../../../shared/protocol/texts';
 import { Glyph } from '../../board/icons';
 import { Drill } from './Drill';
-import { formatTime } from './format';
 import { SpecLabel } from './SpecLabel';
 import { MC_ACTIVITY_HEADING, MC_NO_ACTIVITY, mcActivityUnavailable, mcChange } from './texts';
 
 export function Activity(props: { activity: McActivity; onActivate: (entry: ActivityEntry) => void }) {
     const { activity, onActivate } = props;
+    const now = new Date();
     return (
         <section data-activity className="mc-activity mc-panel">
             <h2>{MC_ACTIVITY_HEADING}</h2>
@@ -22,7 +23,7 @@ export function Activity(props: { activity: McActivity; onActivate: (entry: Acti
                     {activity.entries.map((entry, index) => (
                         <li key={`${entry.at}|${index}`} data-activity-entry>
                             <Drill id={`activity:${index}`} className="mc-row" onActivate={() => onActivate(entry)}>
-                                <span className="mc-time">{formatTime(entry.at)}</span>
+                                <span className="mc-time">{whenText(entry.at, now)}</span>
                                 <span className="mc-sep">{' · '}</span>
                                 <SpecLabel spec={entry.spec} />
                                 <span className="mc-sep">{' · '}</span>

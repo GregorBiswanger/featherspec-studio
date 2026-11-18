@@ -62,7 +62,7 @@ describe('AC-019: the detail is in the DOM within 500 ms of the event (PD-047; a
                     steps: Array.from({ length: 150 }, (_, index) => ({ id: `T-${index + 1}`, title: `Step ${index + 1}`, ticked: index % 2 === 0, struck: false, verified: index % 2 === 0 ? 'green' : undefined })),
                 },
                 history: {
-                    statusHistory: Array.from({ length: 100 }, (_, index) => ({ observedAt: `2026-11-16T10:00:${String(index % 60).padStart(2, '0')}Z`, old: 'Ready', new: 'Active', rule: 'S-ACTIVE', cause: 'first observed', flow: 'not checked' })),
+                    statusHistory: Array.from({ length: 100 }, (_, index) => ({ observedAt: `2026-11-16T10:00:${String(index % 60).padStart(2, '0')}Z`, old: 'Ready', new: 'Active', rule: 'S-ACTIVE', cause: { kind: 'first-observed', paths: [] }, flow: 'not checked' })),
                     label: base.history.label,
                     notAvailable: undefined,
                 },

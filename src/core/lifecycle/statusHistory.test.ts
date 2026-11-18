@@ -95,7 +95,7 @@ describe('status history: live changes', () => {
         await w.observe();
         expect(w.store.appendAttempts()).toBe(attempts);
         expect(w.history.label).toBe(HISTORY_LABEL);
-        expect(HISTORY_LABEL).toBe('Observed by Studio while it was running — not a reconstruction');
+        expect(HISTORY_LABEL).toBe('Only changes Studio saw while it was running.');
         const view = await w.history.read();
         expect(view).toEqual({ available: true, label: HISTORY_LABEL, entries: [] });
         expect(JSON.stringify(view).split(HISTORY_LABEL)).toHaveLength(2);

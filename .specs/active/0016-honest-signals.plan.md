@@ -3,7 +3,7 @@
 **Spec:** [0016-honest-signals.md](0016-honest-signals.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-008
+**Current step:** T-009
 
 ## Approach
 
@@ -296,8 +296,8 @@ everything after T-002 shares the text modules, `main.css` or `SpecDetail.tsx` a
   `NS-…`, "persisted", "Model updated", "first observed" or "not checked". Negative control:
   today's history line is caught.
 - **Verify:** the new and changed tests red then green; gates 1–4
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** eslint, tsc (node, webview), test:unit 1803 passed + 3 skipped / timing 12, compile green. New whenTexts.test.ts (fake-free Date injection, midnight, unparsable) and userLanguage.test.tsx (with negative control). Tests and production were written together; no separate red run.
+- **Notes:** Proxy: Q-2 tooltip omits empty parts; header time shows full date for yesterday (T-02 has no Yesterday form); history entries carry a structured cause, the sentence is computed at render; format.ts removed.
 
 ### T-009 — Old texts gone; amendments and product docs
 
