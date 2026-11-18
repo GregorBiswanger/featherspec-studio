@@ -4,7 +4,7 @@ A VS Code panel for projects that use [FeatherSpec](https://github.com/GregorBis
 
 Studio reads your project and starts no agent; the work with your agent stays in your assistant's chat. The one exception to read-only is [Set up FeatherSpec](#set-up-featherspec), which you start and confirm yourself.
 
-![Overview](media/screenshots/mission-control-dark.png)
+![Overview](media/screenshots/overview-dark.png)
 
 ## Feature tour
 
@@ -12,7 +12,7 @@ The **FeatherSpec Studio** icon in the Activity Bar opens the **Specs** view: ev
 
 ### The Specs view
 
-The groups are **In progress** (Blocked, Review, then Active), **Up next** (Ready), **Backlog** and **Done** (collapsed until you open it); each shows its count, and a group without a spec is left out. A row reads `<number> <title>`, with the state and the short form of the next step beside it (for example `Review · /sdd-compile`), an icon and a colour that carry the state. Hover a row for the title, the reason behind a derived state, the next step, the progress (steps and criteria) and any problem; a screen reader hears the same as one sentence. A click selects the spec and shows its detail in the panel (the panel opens if it is closed, without taking focus). A row with a next step has an inline **Copy** button; the context menu offers **Open Spec**, **Open Plan** and **Copy**. The badge on the Activity Bar icon counts the specs that wait for you (Review and Blocked). The toolbar has **Open** and **Refresh**; the view follows every change of your files within half a second. `FeatherSpec Studio: Focus on Specs View` (or Shift+F10 on a row) reaches the view from the keyboard. With several projects in the workspace the view's description names the active one.
+The groups are **In progress** (Blocked, Review, then Active), **Up next** (Ready), **Backlog** and **Done** (collapsed until you open it); each shows its count, and a group without a spec is left out. A row reads `<number> <title>`, with the state and the short form of the next step beside it (for example `Review · /sdd-compile`), an icon and a colour that carry the state. Hover a row for the title, the reason behind a derived state, the next step, the progress (steps and criteria) and any problem; a screen reader hears the same as one sentence. A click selects the spec and shows its detail in the panel (the panel opens if it is closed, without taking focus). A row with a next step has an inline **Copy** button; the context menu offers **Open Spec**, **Open Plan** and **Copy Next Step**. The badge on the Activity Bar icon counts the specs that wait for you (Review and Blocked). The toolbar has **Open** and **Refresh**; the view follows every change of your files within half a second. `FeatherSpec Studio: Focus on Specs View` reaches the view from the keyboard; Shift+F10 on a row opens its context menu. With several projects in the workspace the view's description names the active one.
 
 ### Overview
 
@@ -20,7 +20,7 @@ What is in progress, what comes next and what needs fixing, one line per spec: *
 
 ### Board
 
-![Board](media/screenshots/spec-board-dark.png)
+![Board](media/screenshots/board-dark.png)
 
 Every spec as a card in six columns: Backlog, Ready, Active, Review, Done and Blocked. A column without a card is a narrow strip with its name and count; the other columns share the width, and the board scrolls sideways when they do not fit. **Done** is collapsed until you open it with its toggle, and Studio remembers your choice per workspace. A card has three rows: number and title; what matters in its state (a Backlog card shows what the spec still needs, a Blocked card why, otherwise the steps and criteria progress), a warning with the number of problems and the day of the last change; and the next step. Hover a Ready, Review or Blocked column header for the rule behind the state, and a card for its description. The day comes from the plan's `Last updated:` line, else from the file's modification time; it is left out while all specs show the same day. Opening the Board from the Overview with a filter shows one **Filter: …** chip with **Clear filters**; sort by number, title or last change. The last line of a card is the next step: **Next** and the short form of the command (for example `/sdd-plan`) with a **Copy** button that puts the full line on your clipboard. The board works with the keyboard: arrow keys move between cards, Enter or Space selects a card and shows its detail in the side panel, Tab from the card reaches its **Copy**, Enter or Space copies. The board moves no spec; lifecycle moves belong to FeatherSpec's `/sdd-lifecycle`.
 

@@ -143,5 +143,5 @@ and the expected result. A clear miss reopens the named spec.
   tree (inline Copy), paste it into the assistant's chat and see it work; select a row and see the detail open in the
   panel without taking focus; Open Spec and Open Plan open the file in the active group, beside the Studio when the
   Studio is the active tab.
-- [ ] **Keyboard and screen reader**: arrow keys walk the rows, Enter selects, Shift+F10 opens the context menu
-  with Open Spec, Open Plan and Copy; the screen reader reads a row as one sentence with the state and the next step.
+- [ ] **Keyboard and screen reader**: `FeatherSpec Studio: Focus on Specs View` reaches the view; arrow keys walk
+  the rows, Enter selects, Shift+F10 opens a row's context menu with Open Spec, Open Plan and Copy Next Step; the screen reader reads a row as one sentence with the state and the next step.

@@ -26,7 +26,7 @@ All notable changes to FeatherSpec Studio are documented in this file. The forma
 - The Specs view as a native tree (0020): every spec is a row in four groups (In progress, Up next,
   Backlog, Done collapsed) with number, title, state, the short next step, an icon and a colour per state, a
   tooltip that explains the row, and an inline **Copy**. A click selects the spec and shows its detail in the
-  panel. The context menu offers Open Spec, Open Plan and Copy; the badge counts the specs in Review and
+  panel. The context menu offers Open Spec, Open Plan and Copy Next Step; the badge counts the specs in Review and
   Blocked; the toolbar has Open and Refresh; the tree follows every change within 500 ms. The panel has two
   tabs, Overview and Board.
 

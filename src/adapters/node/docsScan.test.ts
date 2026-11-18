@@ -277,10 +277,37 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         }
     });
 
-    it('the release checklist carries AC-022 of 0020', async () => {
+    async function specsViewSection(): Promise<string> {
+        const readme = await read('README.md');
+        const start = readme.indexOf('### The Specs view');
+        expect(start).toBeGreaterThanOrEqual(0);
+        const end = readme.indexOf('\n### ', start + 1);
+        return readme.slice(start, end);
+    }
+
+    it('the README section names the four groups, the inline Copy, the menu entry Copy Next Step and the badge', async () => {
+        const section = await specsViewSection();
+        for (const group of ['**In progress**', '**Up next**', '**Backlog**', '**Done**']) {
+            expect(section, group).toContain(group);
+        }
+        expect(section).toContain('inline **Copy** button');
+        expect(section).toContain('**Open Spec**, **Open Plan** and **Copy Next Step**');
+        expect(section).toContain('The badge on the Activity Bar icon counts the specs that wait for you (Review and Blocked).');
+    });
+
+    it('the README names the two tabs, and says Focus on Specs View reaches the view while Shift+F10 opens a row\'s context menu', async () => {
+        const readme = await read('README.md');
+        expect(readme).toContain('has two tabs, Overview and Board.');
+        expect(await specsViewSection()).toContain('`FeatherSpec Studio: Focus on Specs View` reaches the view from the keyboard; Shift+F10 on a row opens its context menu.');
+        expect(readme).not.toContain('(or Shift+F10 on a row) reaches the view');
+    });
+
+    it('the release checklist carries AC-022 of 0020 and calls the menu entry Copy Next Step', async () => {
         const text = await read('docs/release-checklist.md');
         expect(text).toContain('(0020)');
         expect(text).toContain('**AC-022**');
+        expect(text).toContain('Open Spec, Open Plan and Copy Next Step');
+        expect(text).toContain('`FeatherSpec Studio: Focus on Specs View` reaches the view');
     });
 
     it('CHANGELOG names the tree and the removal under Unreleased', async () => {
@@ -288,21 +315,22 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         const unreleased = text.slice(text.indexOf('## [Unreleased]'), text.indexOf('## [0.1.0]'));
         expect(unreleased).toContain('(0020)');
         expect(unreleased).toContain('native tree');
+        expect(unreleased).toContain('Open Spec, Open Plan and Copy Next Step');
         expect(unreleased).toContain('Spec Explorer');
     });
 
     for (const [file, note] of [
-        ['.specs/done/0005-studio-shell-navigation.md', 8],
-        ['.specs/done/0007-spec-board-spec-detail.md', 1],
-        ['.specs/done/0013-studio-visual-design.md', 3],
-        ['.specs/active/0015-focus-on-visibility.md', 2],
-        ['.specs/active/0016-honest-signals.md', 3],
+        ['.specs/done/0005-studio-shell-navigation.md', 28],
+        ['.specs/done/0007-spec-board-spec-detail.md', 6],
+        ['.specs/done/0013-studio-visual-design.md', 4],
+        ['.specs/active/0015-focus-on-visibility.md', 3],
+        ['.specs/active/0016-honest-signals.md', 4],
         ['.specs/active/0017-next-step-everywhere.md', 2],
-        ['.specs/active/0018-overview-and-compact-board.md', 4],
-        ['.specs/active/0019-detail-situation-picture.md', 2],
+        ['.specs/active/0018-overview-and-compact-board.md', 5],
+        ['.specs/active/0019-detail-situation-picture.md', 8],
         ['docs/decisions/ADR-001-extension-architecture.md', 1],
     ] as const) {
-        it(`${file} carries at least ${note} notes of 0020`, async () => {
+        it(`${file} carries its ${note} notes of 0020 (the §5 rows, none fewer)`, async () => {
             const count = (await read(file)).split('Amended by 0020 (PD-058)').length - 1;
             expect(count).toBeGreaterThanOrEqual(note);
         });
