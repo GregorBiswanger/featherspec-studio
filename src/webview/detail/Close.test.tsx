@@ -1,5 +1,6 @@
 import { act } from 'react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { DiagnosticLine, OpenCriterion } from '../../shared/protocol/detail';
 import type { Envelope } from '../../shared/protocol/envelope';
 import type { SelectedSpec, SpecRow } from '../../shared/protocol/messages';
 import { NO_DETAIL_SELECTION_TEXT, noticeText } from '../../shared/protocol/texts';
@@ -244,6 +245,73 @@ describe('AC-020: updates keep the focus and the scroll container', () => {
         await focus(link);
         await send(detailEvent(detailView()));
         expect(document.activeElement).toBe(container.querySelector('[data-detail-heading]'));
+    });
+
+    describe('0019 D1, G6: the same control keeps the focus when an earlier entry leaves', () => {
+        const criterion = (id: string, line: number): OpenCriterion => ({ id, text: `The ${id} shall hold.`, built: false, open: { key: SPEC_KEY, line } });
+        const problem = (reason: string, line: number): DiagnosticLine => ({ reason, open: { key: PLAN_KEY, line } });
+        const criteria = (open: OpenCriterion[]) => ({
+            progress: { needs: [], noPlan: false, steps: { kind: 'none' as const }, criteria: { kind: 'criteria' as const, verified: 0, total: 3, open } },
+        });
+        const link = (container: HTMLElement, selector: string, text: string): HTMLElement =>
+            [...container.querySelectorAll<HTMLElement>(`aside.side-panel ${selector}`)].find((element) => element.textContent === text || element.textContent?.includes(text))!;
+
+        async function show(extra: Parameters<typeof detailView>[0], problems: DiagnosticLine[]): Promise<HTMLElement> {
+            const container = await start();
+            await shell('board', SELECTED);
+            await send(boardEvent(boardView(CARDS)));
+            await send(detailEvent(detailView(extra, undefined, problems)));
+            return container;
+        }
+
+        it('an open criterion keeps the focus, and the side panel, the detail frame and the heading stay the same elements, when the criteria before it leave', async () => {
+            const all = [criterion('AC-001', 10), criterion('AC-002', 20), criterion('AC-003', 30)];
+            const container = await show(criteria(all), []);
+            const panel = container.querySelector('aside.side-panel')!;
+            const frame = panel.querySelector('.spec-detail')!;
+            const heading = panel.querySelector('[data-detail-heading]')!;
+            const target = link(container, '.criteria-open .file-link', 'AC-003');
+            await focus(target);
+            await send(detailEvent(detailView(criteria([all[1]!, all[2]!]), undefined, [])));
+            expect(container.querySelectorAll('aside.side-panel .criteria-open li')).toHaveLength(2);
+            expect(link(container, '.criteria-open .file-link', 'AC-003')).toBe(target);
+            expect(document.activeElement).toBe(target);
+            expect(container.querySelector('aside.side-panel')).toBe(panel);
+            expect(panel.querySelector('.spec-detail')).toBe(frame);
+            expect(panel.querySelector('[data-detail-heading]')).toBe(heading);
+        });
+
+        it('a Problem keeps the focus when the Problem before it is gone', async () => {
+            const first = problem('Plan link is broken', 3);
+            const second = problem('Two specs share the number 0007', 5);
+            const container = await show({}, [first, second]);
+            const target = link(container, '.detail-problems .file-link', 'Two specs share');
+            await focus(target);
+            await send(detailEvent(detailView({}, undefined, [second])));
+            expect(container.querySelectorAll('aside.side-panel .detail-problems li')).toHaveLength(1);
+            expect(document.activeElement).toBe(target);
+        });
+
+        it('control: when the focused criterion itself leaves, the heading takes the focus', async () => {
+            const all = [criterion('AC-001', 10), criterion('AC-002', 20)];
+            const container = await show(criteria(all), []);
+            await focus(link(container, '.criteria-open .file-link', 'AC-002'));
+            await send(detailEvent(detailView(criteria([all[0]!]), undefined, [])));
+            expect(document.activeElement).toBe(container.querySelector('[data-detail-heading]'));
+        });
+
+        it('two equal entries stay two entries and raise no duplicate key warning', async () => {
+            const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+            try {
+                const twin = problem('Plan link is broken', 3);
+                const container = await show(criteria([criterion('AC-001', 10), criterion('AC-001', 10)]), [twin, twin]);
+                expect(container.querySelectorAll('aside.side-panel .detail-problems li')).toHaveLength(2);
+                expect(container.querySelectorAll('aside.side-panel .criteria-open li')).toHaveLength(2);
+                expect(spy).not.toHaveBeenCalled();
+            } finally {
+                spy.mockRestore();
+            }
+        });
     });
 
     it('a spec that disappears closes the panel, shows the notice and follows the close rule', async () => {

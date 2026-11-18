@@ -17,6 +17,7 @@ import {
 import { FileLink, type FileResult } from '../ui/FileLink';
 import { ProgressBar } from '../ui/ProgressBar';
 import { PlainSection } from './DetailSection';
+import { identityKeys } from './identityKeys';
 
 type OpenAt = (key: string, line: number) => void;
 
@@ -47,6 +48,7 @@ function Steps(props: { steps: StepsProgress; fileResult: FileResult | undefined
 
 function Criteria(props: { criteria: CriteriaProgress; fileResult: FileResult | undefined; onOpen: OpenAt }) {
     const { criteria } = props;
+    const keys = criteria.kind === 'criteria' ? identityKeys(criteria.open, (item) => `${item.id ?? item.text}|${item.open.key}|${item.open.line}`) : [];
     return (
         <div className="progress-row">
             <span className="progress-label">{CRITERIA_LABEL}</span>
@@ -58,7 +60,7 @@ function Criteria(props: { criteria: CriteriaProgress; fileResult: FileResult | 
                             <p className="progress-open-label">{NOT_VERIFIED_YET_LABEL}</p>
                             <ul className="criteria-open">
                                 {criteria.open.map((item, index) => (
-                                    <li key={`${index}|${item.id ?? item.text}`}>
+                                    <li key={keys[index]}>
                                         {item.id === undefined ? (
                                             <FileLink target={item.open} fileResult={props.fileResult} onOpen={props.onOpen}>
                                                 {item.text}

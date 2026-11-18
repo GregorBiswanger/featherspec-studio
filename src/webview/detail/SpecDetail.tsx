@@ -27,6 +27,7 @@ import { CloseButton } from './CloseButton';
 import { DetailFrame } from './DetailFrame';
 import { DetailSection, PlainSection } from './DetailSection';
 import { takePendingHeadingFocus } from './focus';
+import { identityKeys } from './identityKeys';
 import { NextStep } from './NextStep';
 import { Progress } from './Progress';
 
@@ -99,6 +100,7 @@ function Picture(props: { detail: SpecDetailView; fileResult: FileResult | undef
     const { detail, fileResult, onOpen } = props;
     const now = new Date();
     const headingRef = useRef<HTMLHeadingElement>(null);
+    const problemKeys = identityKeys(detail.problems, (line) => `${line.reason}|${line.open?.key ?? ''}|${line.open?.line ?? ''}`);
     useEffect(() => {
         if (takePendingHeadingFocus(detail.stem)) {
             headingRef.current?.focus();
@@ -111,7 +113,7 @@ function Picture(props: { detail: SpecDetailView; fileResult: FileResult | undef
             {detail.problems.length === 0 ? null : (
                 <ul className="detail-problems" aria-label={BANNER_HEADING}>
                     {detail.problems.map((line, index) => (
-                        <li key={`${index}|${line.reason}`}>
+                        <li key={problemKeys[index]}>
                             <Glyph kind="diagnostic" />
                             <span>
                                 <Reason line={line} fileResult={fileResult} onOpen={onOpen} />

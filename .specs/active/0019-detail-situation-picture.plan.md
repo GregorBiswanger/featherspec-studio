@@ -439,8 +439,8 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
   focus is still on the same link element, the side panel, the detail frame and the heading are the same nodes.
 - **Verify:** `npx vitest run src/webview/detail` red (focus on the heading), then green; gates 1–5; mutant
   (index key restored; detail remounted on every change) dies
-- [ ] **Verified (T-011):**
-- **Notes:**
+- [x] **Verified (T-011):** 2026-11-18 — red: `npx vitest run src/webview/detail/Close.test.tsx` failed 2 of 18 new tests (focus fell to the heading, the focused link was remounted; the "heading when the control itself leaves" and the "two equal entries" controls pass), green after the change (18; `src/webview` 364 passed). Mutants on a scratch copy, all killed: Problems key back to `index|reason`, criteria key back to `index|id`, the side panel's `SpecDetail` remounted on every change (`key={JSON.stringify(detail)}`, the surviving M46 of the compile), the occurrence counter dropped ("two equal entries" dies on the duplicate-key warning). Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2112 passed + 3 skipped (+12 timing), `npm run compile`, `npm run compile-tests` green.
+- **Notes:** `detail/identityKeys.ts` (`identityKeys(items, identity)`) appends an occurrence number, so two equal entries stay distinct; Problem identity = reason + file + line, open criterion = `id ?? text` + file + line. A line that moves is a new identity and takes the heading (a changed target is not the same control). History entries are not focusable and keep their index key.
 
 ### T-012 — Fix D2: the Files "Plan" row lists only the plan beside this spec (AC-014)
 
