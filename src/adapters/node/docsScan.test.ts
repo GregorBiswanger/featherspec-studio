@@ -408,6 +408,23 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         }
     });
 
+    it('the decisions register carries PD-067 as its last row, names what each later decision retires, and leaves the earlier rows as they were', async () => {
+        const rows = (await read('docs/product/product-decisions.md')).split('\n').filter((line) => line.startsWith('| PD-'));
+        const last = rows[rows.length - 1] ?? '';
+        expect(last).toContain('| PD-067 | Register notes for the UX round **(proxy)** |');
+        for (const retired of [
+            'PD-058 supersedes PD-042 and the Spec Explorer parts of PD-048 and PD-054',
+            'PD-060 supersedes PD-057 (4)',
+            'PD-064 A-003 retires PD-059\'s "counts in headers" and PD-063 (4)\'s "the header says `Updated HH:MM`"',
+            'Decided 2026-11-18 by the orchestrator as proxy for Gregor, after the final check',
+        ]) {
+            expect(last, retired).toContain(retired);
+        }
+        expect(rows.map((row) => row.slice(2, 8))).toContain('PD-066');
+        expect(rows.find((row) => row.startsWith('| PD-064 |')) ?? '').toContain('Supersedes nothing; refines PD-062');
+        expect(rows.find((row) => row.startsWith('| PD-060 |')) ?? '').not.toContain('PD-057');
+    });
+
     it('finds the first release section of a changelog and stops at the next one', () => {
         expect(firstRelease('# C\n\n## [1.0.0] - x\nA\n\n## [0.9.0] - y\nB\n')).toBe('## [1.0.0] - x\nA\n');
     });

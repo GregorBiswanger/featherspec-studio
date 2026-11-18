@@ -474,6 +474,14 @@ and the host smoke, so they stay `→`.
 - [x] **Verified (T-020):** 2026-11-18: the new test against the old README: 1 failed of 80; green after the three sentences (80/80); gates 1-4 green (unit 2227 passed + 3 skipped, timing 13).
 - **Notes:** Final-check finding 4. The rule behind a derived state is in the column-header tooltip of the Board (README Board section, unchanged); the sentence now points there instead of claiming a sentence on the card.
 
+### T-021 — PD-067 records which later decision retires which earlier one (final check 6)
+
+- **Covers:** AC-020 (the register agrees with the notes); orchestrator decision, no existing row edited
+- **Do:** `docsScan.test.ts` first: the register's last row is PD-067 and names PD-058 superseding PD-042 and the Spec Explorer parts of PD-048 and PD-054, PD-060 superseding PD-057 (4), PD-064 A-003 retiring PD-059's "counts in headers" and PD-063 (4)'s `Updated HH:MM` header, and the decision date and proxy; PD-066 and PD-064 stay as they were. Then one row appended to `docs/product/product-decisions.md`.
+- **Verify:** docsScan red without the row, then green; `git diff 338a532 -- docs/product/product-decisions.md` shows one added line and no removed line; gates 1–4
+- [x] **Verified (T-021):** 2026-11-18: the test against the old register 1 failed of 81, green with the row (81/81); the diff against 338a532 is one added line, no removed line; gates 1-4 green.
+- **Notes:** Final-check finding 6, decided 2026-11-18 by the orchestrator as proxy for Gregor. No test pinned "register unedited since <baseline>" (the 0019 and 0020 plans only record `git diff <Baseline> -- docs/product/product-decisions.md` as a Verify line of their time): from now on that diff shows PD-066 (0019) and PD-067 (this step) as the only additions after 16fc52b; the new docsScan test pins PD-064 and PD-066 as they were and the last row as PD-067.
+
 ## Test-title audit (0020 AC-021)
 
 Script: `/tmp/audit-0020/titles.py` (throwaway, run with `python3 -I`): every `describe`/`it`/`test`/`suite` literal of every `.ts`/`.tsx` under `src` (including `src/test/**` and `testing/*.ts`) at Baseline `16fc52b` (`git archive`) and at the T-008 head. A title counts as present when the same literal exists in any file at the head.
