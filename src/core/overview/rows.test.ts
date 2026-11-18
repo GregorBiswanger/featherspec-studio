@@ -70,6 +70,25 @@ describe('0018 AC-005: Up next', () => {
         expect(upNext.stems).toEqual(upNext.rows.map((row) => row.spec.stem));
     });
 
+    it('0018 AC-005, boundary: exactly four entries give three rows, "more" 1 and four stems; exactly three give "more" 0', async () => {
+        const four = await project([
+            { number: '0001', kind: 'Ready' },
+            { number: '0002', kind: 'Ready' },
+            { number: '0003', kind: 'Backlog' },
+            { number: '0004', kind: 'Backlog' },
+        ]);
+        expect(four.upNext.rows.map((row) => row.spec.number)).toEqual(['0001', '0002', '0003']);
+        expect(four.upNext.more).toBe(1);
+        expect(four.upNext.stems).toEqual(['0001-thing', '0002-thing', '0003-thing', '0004-thing']);
+        const three = await project([
+            { number: '0001', kind: 'Ready' },
+            { number: '0002', kind: 'Backlog' },
+            { number: '0003', kind: 'Backlog' },
+        ]);
+        expect(three.upNext.rows).toHaveLength(3);
+        expect(three.upNext.more).toBe(0);
+    });
+
     it('a Backlog row names its first need, else Backlog; a Ready row names Ready', async () => {
         const { upNext } = await project([
             { number: '0001', kind: 'Backlog' },

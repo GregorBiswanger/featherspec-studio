@@ -86,11 +86,15 @@ describe('0018 AC-010: Activity, collapsed by default', () => {
         expect(toggle.tabIndex).toBe(0);
     });
 
-    it('while open it shows time, number, title and the change of each entry in the order of the view', async () => {
-        const rows = [...section(await open(activityView(true)), 'activity').querySelectorAll('[data-activity-entry]')].map((row) => row.textContent);
+    it('while open it shows time, number, title and the change of each entry in the order of the view, and no control that shows more (0006 AC-010)', async () => {
+        const activity = section(await open(activityView(true)), 'activity');
+        const rows = [...activity.querySelectorAll('[data-activity-entry]')].map((row) => row.textContent);
         expect(rows).toHaveLength(2);
         expect(rows[0]).toMatch(/^(Today|Yesterday) \d{2}:\d{2} · 0001 A · Backlog → Ready$|^\d{4}-\d{2}-\d{2} \d{2}:\d{2} · 0001 A · Backlog → Ready$/);
         expect(rows[1]).toMatch(/· 0009-gone — spec not found · Done → no longer in the project$/);
+        expect([...activity.querySelectorAll('button')].filter((button) => !button.hasAttribute('data-drill'))).toHaveLength(0);
+        expect(activity.querySelectorAll('button')).toHaveLength(rows.length + 1);
+        expect(activity.textContent).not.toMatch(/\bmore\b/i);
     });
 
     it('names a change that happened while Studio was not running', async () => {
@@ -235,6 +239,18 @@ describe('0018 AC-004, AC-005, AC-012: Now and Up next', () => {
         await click(container.querySelector('[data-drill="more"]')!);
         expect(posted.filter((message) => message.type === 'navigate').map((message) => message.payload)).toEqual([
             { area: 'board', target: { kind: 'boardFilter', filter: { set: { label: 'Up next', stems: ['0003-c', '0004-d', '0005-e', '0006-f', '0007-g'] } } } },
+        ]);
+    });
+
+    it('0018 AC-005, boundary: one more entry shows "+ 1 more" and sends the request with every stem', async () => {
+        const view = withRows();
+        view.upNext.more = 1;
+        view.upNext.stems = ['0003-c', '0004-d', '0005-e'];
+        const container = await open(view);
+        expect(container.querySelector('[data-drill="more"]')?.textContent).toBe('+ 1 more');
+        await click(container.querySelector('[data-drill="more"]')!);
+        expect(posted.filter((message) => message.type === 'navigate').map((message) => message.payload)).toEqual([
+            { area: 'board', target: { kind: 'boardFilter', filter: { set: { label: 'Up next', stems: ['0003-c', '0004-d', '0005-e'] } } } },
         ]);
     });
 

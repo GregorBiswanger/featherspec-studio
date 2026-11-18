@@ -16,6 +16,12 @@ describe('AC-021: the date of a card (L-1)', () => {
         }
     });
 
+    it('the newer of the two file times decides: a spec newer than its plan gives the spec day, a plan newer than its spec the plan day', () => {
+        expect(cardLastChange(undefined, at(2026, 11, 17), at(2026, 11, 16))).toEqual({ day: '2026-11-17', source: 'file' });
+        expect(cardLastChange(undefined, at(2026, 11, 16), at(2026, 11, 17))).toEqual({ day: '2026-11-17', source: 'file' });
+        expect(cardLastChange({ state: 'value', raw: '<date>' }, at(2026, 11, 17), at(2026, 11, 16))).toEqual({ day: '2026-11-17', source: 'file' });
+    });
+
     it('uses the spec file time alone when there is no plan, and nothing when no time is known', () => {
         expect(cardLastChange(undefined, at(2026, 1, 5), undefined)).toEqual({ day: '2026-01-05', source: 'file' });
         expect(cardLastChange(undefined, undefined, undefined)).toBeUndefined();

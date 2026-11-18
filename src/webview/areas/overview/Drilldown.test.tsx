@@ -22,7 +22,7 @@ function drillView(): OverviewView {
     if (view.activity.available) {
         view.activity = { ...view.activity, open: true };
     }
-    view.problems = { rows: [row('0002-x', '0002', 'Backlog', undefined, 1), row('0004-dup', '0004', 'Done', '.specs/done/0004-dup.md', 1)], lines: [{ where: 'project', reason: 'orphan' }] };
+    view.problems = { rows: [row('0002-x', '0002', 'Backlog', undefined, 1), row('0004-dup', '0004', 'Done', '.specs/done/0004-dup.md', 1), row('0004-dup', '0004', 'Review', '.specs/active/0004-dup.md', 1)], lines: [{ where: 'project', reason: 'orphan' }] };
     return view;
 }
 
@@ -165,6 +165,7 @@ describe('AC-022: keyboard', () => {
             'more',
             'problems',
             'row:problems:0002-x',
+            'row:problems:0004-dup',
             'row:problems:0004-dup',
             'total',
             'state:Backlog',
