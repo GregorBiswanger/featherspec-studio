@@ -3,7 +3,7 @@
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-016
+**Current step:** T-017
 
 ## Approach
 
@@ -524,6 +524,14 @@ never on the repository.
 - **Verify:** `npx vitest run --project node src/adapters/node/webviewCss.test.ts` red, then green; mutants on a scratch copy; gates 1–4
 - [x] **Verified (T-016):** 2026-11-18, red first: the new describe against the unchanged heading rule: 1 failed (`.detail-title h2` has no `overflow-wrap`), 78 passed; the two ban tests are gap tests (code already right), so they were proved by the mutants on a scratch copy of the working tree (`/tmp/fix0022/scratch.sh`, `mutant.py`, command `npx vitest run --project node src/adapters/node/webviewCss.test.ts`): M05 (`word-break: break-all` on `.detail-title h2`) red, 1 failed; M05b (`overflow-wrap: anywhere` on `.card-title`) red, 1 failed; M05c (`word-break: break-all` on `.next-step-lines code`) red, 2 failed (this ban and T-015's); removing the heading's new pair red, 1 failed; unmutated green 79 passed. Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2445 passed, 3 skipped (+13 timing).
 - **Notes:** M05, M05b and M05c now die. The ban is global rather than per selector, so a new element cannot slip in; the one exception, `.step-text`, is named in the test.
+
+### T-017 — lostpointercapture alone ends a divider drag (M39)
+
+- **Covers:** AC-023 (a drag ends at `pointerup` and at `lostpointercapture`, P-8)
+- **Do:** `Divider.test.tsx` new test `0022 AC-023: lostpointercapture alone ends the drag …`: pointer down, move, then only `lostpointercapture`: one `setSideWidth`, the drag mark gone, later moves ignored. The staying test "a drag also ends at lostpointercapture, once" is unchanged (it sends `pointerup` afterwards, which is why it let M39 live).
+- **Verify:** `npx vitest run --project webview src/webview/detail/Divider.test.tsx`; mutant M39 on a scratch copy; gates 1–4
+- [x] **Verified (T-017):** 2026-11-18, gap test (code already right, so green at once): 17 passed. Negative control on a scratch copy of the working tree: M39 (`onLostPointerCapture={finish}` removed from `Divider.tsx`) red, 1 failed, 16 passed; unmutated green. Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2446 passed, 3 skipped (+13 timing).
+- **Notes:** M39 now dies.
 
 ## Traceability
 

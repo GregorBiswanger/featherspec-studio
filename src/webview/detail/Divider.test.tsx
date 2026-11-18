@@ -281,6 +281,20 @@ describe('AC-023: pointer', () => {
         expect(widthOf(container)).toBe(800);
     });
 
+    it('0022 AC-023: lostpointercapture alone ends the drag: one fraction, the drag mark gone, later moves ignored, and no pointerup is needed', async () => {
+        const container = await open();
+        const element = divider(container);
+        await pointer(element, 'pointerdown', 857);
+        await pointer(element, 'pointermove', 628);
+        expect(requests('setSideWidth')).toEqual([]);
+        await pointer(element, 'lostpointercapture', 628);
+        expect(requests('setSideWidth')).toEqual([{ fraction: 800 / 1428 }]);
+        expect(element.hasAttribute('data-dragging')).toBe(false);
+        await pointer(element, 'pointermove', 100);
+        expect(widthOf(container)).toBe(800);
+        expect(requests('setSideWidth')).toHaveLength(1);
+    });
+
     it('a press with another button, or a move without a press, changes nothing', async () => {
         const container = await open();
         const element = divider(container);
