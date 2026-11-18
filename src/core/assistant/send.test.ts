@@ -5,8 +5,8 @@ import { createSetupClock } from '../setup/testing/setupClock';
 import { createSend, SEND_TIMEOUT_MS } from './send';
 import { createFakeAssistantHost, type FakeAssistantHost } from './testing/fakeAssistantHost';
 
-const COPILOT = 'GitHub.copilot-chat';
-const CLAUDE = 'anthropic.claude-code';
+const EXTENSION_A = 'GitHub.copilot-chat';
+const EXTENSION_B = 'anthropic.claude-code';
 const LINE = 'Implement T-003 of .specs/active/0001-tip-splitter.plan.md';
 const NEW_CHAT = 'workbench.action.chat.newChat';
 const OPEN = 'workbench.action.chat.open';
@@ -27,8 +27,8 @@ interface World {
 function world(platform = 'win32', options: { commands?: readonly string[]; installed?: boolean; chosen?: AssistantId | undefined } = {}): World {
     const host = createFakeAssistantHost(options.commands ?? ALL_COMMANDS);
     if (options.installed !== false) {
-        host.install(COPILOT);
-        host.install(CLAUDE);
+        host.install(EXTENSION_A);
+        host.install(EXTENSION_B);
     }
     const written: string[] = [];
     const warned: string[] = [];
@@ -64,7 +64,7 @@ function offered(assistant: AssistantId, platform = 'win32', options: { commands
     return world(platform, { ...options, chosen: assistant });
 }
 
-const NAME: Record<AssistantId, string> = { copilot: 'Copilot', claudeCode: 'Claude Code' };
+const NAME: Record<AssistantId, string> = { 'copilot': 'Copilot', claudeCode: 'Claude Code' };
 
 describe('0024 AC-005: Send makes exactly the calls of §6.4, in order, and leaves the clipboard alone', () => {
     it('Copilot, new chat: newChat without an argument, then open with the line and isPartialQuery true', async () => {
@@ -115,9 +115,9 @@ describe('0024 AC-005: Send makes exactly the calls of §6.4, in order, and leav
         await active.send(request('copilot', 'current'));
         expect(active.host.activated).toEqual([]);
         const idle = offered('copilot');
-        idle.host.install(COPILOT, { active: false });
+        idle.host.install(EXTENSION_A, { active: false });
         await idle.send(request('copilot', 'current'));
-        expect(idle.host.activated).toEqual([COPILOT]);
+        expect(idle.host.activated).toEqual([EXTENSION_A]);
         expect(idle.host.calls).toHaveLength(1);
     });
 
@@ -129,7 +129,7 @@ describe('0024 AC-005: Send makes exactly the calls of §6.4, in order, and leav
 });
 
 describe('0024 AC-006: a failed Send copies the line, warns once and writes one Output line with the cause', () => {
-    const OTHER_THAN: Record<AssistantId, string> = { copilot: COPILOT, claudeCode: CLAUDE };
+    const OTHER_THAN: Record<AssistantId, string> = { 'copilot': EXTENSION_A, claudeCode: EXTENSION_B };
 
     interface Cause {
         name: string;
@@ -172,9 +172,9 @@ describe('0024 AC-006: a failed Send copies the line, warns once and writes one 
             calls: [first],
         });
     }
-    causes.push({ name: 'copilot: newChat resolves and open rejects after it', assistant: 'copilot', target: 'new', prepare: (w) => w.host.rejects.set(OPEN, 'no input'), cause: `${OPEN} failed: no input`, calls: [NEW_CHAT, OPEN] });
-    causes.push({ name: 'copilot: current chat, open rejects', assistant: 'copilot', target: 'current', prepare: (w) => w.host.rejects.set(OPEN, 'no input'), cause: `${OPEN} failed: no input`, calls: [OPEN] });
-    causes.push({ name: 'copilot: current chat, only newChat is missing: the row needs no newChat, so it sends', assistant: 'copilot', target: 'current', prepare: (w) => (w.host.available = [OPEN]), cause: '', calls: [OPEN] });
+    causes.push({ name: 'Copilot: newChat resolves and open rejects after it', assistant: 'copilot', target: 'new', prepare: (w) => w.host.rejects.set(OPEN, 'no input'), cause: `${OPEN} failed: no input`, calls: [NEW_CHAT, OPEN] });
+    causes.push({ name: 'Copilot: current chat, open rejects', assistant: 'copilot', target: 'current', prepare: (w) => w.host.rejects.set(OPEN, 'no input'), cause: `${OPEN} failed: no input`, calls: [OPEN] });
+    causes.push({ name: 'Copilot: current chat, only newChat is missing: the row needs no newChat, so it sends', assistant: 'copilot', target: 'current', prepare: (w) => (w.host.available = [OPEN]), cause: '', calls: [OPEN] });
 
     for (const entry of causes) {
         if (entry.cause === '') {
@@ -213,12 +213,12 @@ describe('0024 AC-006: a failed Send copies the line, warns once and writes one 
 
     it('macOS names Cmd+V, every other platform Ctrl+V', async () => {
         const mac = offered('copilot', 'darwin');
-        mac.host.uninstall(COPILOT);
+        mac.host.uninstall(EXTENSION_A);
         await mac.send(request('copilot', 'new'));
         expect(mac.warned).toEqual(["Could not open Copilot's chat. The prompt is copied: paste it there with Cmd+V."]);
         for (const platform of ['win32', 'linux']) {
             const other = offered('claudeCode', platform);
-            other.host.uninstall(CLAUDE);
+            other.host.uninstall(EXTENSION_B);
             await other.send(request('claudeCode', 'new'));
             expect(other.warned).toEqual(["Could not open Claude Code's chat. The prompt is copied: paste it there with Ctrl+V."]);
         }
@@ -243,7 +243,7 @@ describe('0024 AC-006: a failed Send copies the line, warns once and writes one 
         expect(hanging.blocks).toEqual([['Send to Claude Code failed (no result within 5000 ms); the prompt was copied instead.']]);
 
         const idle = offered('copilot');
-        idle.host.install(COPILOT, { active: false, activateNever: true });
+        idle.host.install(EXTENSION_A, { active: false, activateNever: true });
         let second: unknown;
         void idle.send(request('copilot', 'new')).then((result) => (second = result));
         await new Promise((resolve) => setImmediate(resolve));
@@ -278,7 +278,7 @@ describe('0024 AC-006: a failed Send copies the line, warns once and writes one 
 
     it('a failing clipboard gives the second warning and the second Output text and the outcome copyFailed', async () => {
         const w = offered('copilot');
-        w.host.uninstall(COPILOT);
+        w.host.uninstall(EXTENSION_A);
         w.clipboardFails.value = true;
         const result = await w.send(request('copilot', 'new'));
         expect(result).toEqual({ outcome: 'copyFailed', text: 'Could not copy to the clipboard.' });
@@ -326,7 +326,7 @@ describe('0024 AC-006: nothing runs once the 5000 ms fallback has settled, and u
 
     it('an activation that resolves after the 5000 ms: no command list is used and no call is made', async () => {
         const w = offered('copilot');
-        w.host.install(COPILOT, { active: false });
+        w.host.install(EXTENSION_A, { active: false });
         let release: (() => void) | undefined;
         let listed = 0;
         w.host.activate = () =>
@@ -354,7 +354,7 @@ describe('0024 AC-006: nothing runs once the 5000 ms fallback has settled, and u
 
     it('negative control: the same activation resolving before the 5000 ms lists the commands and makes the calls', async () => {
         const w = offered('copilot');
-        w.host.install(COPILOT, { active: false });
+        w.host.install(EXTENSION_A, { active: false });
         let release: (() => void) | undefined;
         w.host.activate = () =>
             new Promise<void>((resolve) => {
@@ -434,8 +434,8 @@ describe('0024 AC-006: nothing runs once the 5000 ms fallback has settled, and u
     });
 
     it.each([
-        { assistant: 'copilot', target: 'new', name: 'Copilot', id: COPILOT },
-        { assistant: 'claudeCode', target: 'new', name: 'Claude Code', id: CLAUDE },
+        { assistant: 'copilot', target: 'new', name: 'Copilot', id: EXTENSION_A },
+        { assistant: 'claudeCode', target: 'new', name: 'Claude Code', id: EXTENSION_B },
     ] as const)('a synchronous throw from the host while looking for the extension ($assistant): the cause is "extension <ID> not found", never the raw message', async (entry) => {
         const w = offered(entry.assistant);
         w.host.extension = () => {

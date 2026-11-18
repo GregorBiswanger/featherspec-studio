@@ -68,10 +68,6 @@ const REMOVED_TERMS = [
 ];
 const REMOVED_ALLOWED = [
     'src/core/runtime/earlierRunData.ts',
-    'src/core/assistant/offer.test.ts',
-    'src/core/assistant/send.test.ts',
-    'src/webview/ui/SendButton.test.tsx',
-    'src/webview/detail/SpecDetail.test.tsx',
     'src/core/runtime/earlierRunData.test.ts',
     'src/adapters/node/earlierRunDataFiles.test.ts',
     'src/adapters/node/earlierRunData.endToEnd.test.ts',
@@ -82,7 +78,6 @@ const REMOVED_ALLOWED = [
     'src/adapters/vscode/manifest.test.ts',
     'src/core/shell/shellService.navigation.test.ts',
     'src/core/shell/uiMemory.test.ts',
-    'src/shared/protocol/assistant.test.ts',
     'src/shared/protocol/messages.test.ts',
     'src/test/runtime.smoke.test.ts',
 ];
@@ -165,6 +160,26 @@ describe("0024 §5: 0015 AC-021 excepts 0024's own names of GitHub Copilot", () 
     it('negative control: every other form is still found', () => {
         for (const sample of ['copilotProvider', 'copilot-agent', 'COPILOT', 'copilot.smoke', 'CopilotAgent', 'Copilot-agent', 'const copilot = 1;', 'github.copilot.chat', 'Copilot.ts', 'xCopilot']) {
             expect(hits(maskAssistantNames(sample), REMOVED_TERMS, true), sample).toEqual(['copilot']);
+        }
+    });
+});
+
+describe('0024 §5, F1: the exemptions stay as narrow as the names of 0024', () => {
+    const FIVE = ['src/core/assistant/offer.test.ts', 'src/core/assistant/send.test.ts', 'src/webview/ui/SendButton.test.tsx', 'src/webview/detail/SpecDetail.test.tsx', 'src/shared/protocol/assistant.test.ts'];
+
+    it('none of the five assistant test files is exempt from the removed terms, and each holds none after the mask', async () => {
+        for (const name of FIVE) {
+            expect(REMOVED_ALLOWED, name).not.toContain(name);
+        }
+        const byName = new Map((await sourceFiles()).map((file) => [file.name, file.text]));
+        for (const name of FIVE) {
+            expect(hits(maskAssistantNames(byName.get(name) ?? ''), REMOVED_TERMS, true), name).toEqual([]);
+        }
+    });
+
+    it('negative control: any other removed term in such a file would be found', () => {
+        for (const term of REMOVED_TERMS.filter((term) => term !== 'copilot')) {
+            expect(hits(maskAssistantNames(`const x = '${term}';`), REMOVED_TERMS, true), term).toEqual([term]);
         }
     });
 });

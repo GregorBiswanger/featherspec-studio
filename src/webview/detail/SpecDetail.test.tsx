@@ -837,14 +837,14 @@ describe('0021 AC-014, AC-015, AC-009, AC-010: the About this step toggletip in 
 });
 
 describe('0024 AC-003, AC-002: the split button at the first next-step line only', () => {
-    const SEND_COPILOT = { assistant: 'copilot', target: 'new', targets: ['new', 'current'] } satisfies SendView;
+    const SEND_A = { assistant: 'copilot', target: 'new', targets: ['new', 'current'] } satisfies SendView;
     const TWO_LINES: NextStepView = {
         rule: 'NS-6',
         lines: [
             { text: 'Implement T-003 of .specs/active/0007-thing.plan.md', intent: 'Continue with T-003' },
             { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Not sure where it stands? Let the agent report first' },
         ],
-        send: SEND_COPILOT,
+        send: SEND_A,
     };
 
     it('the first line shows Send to Copilot and its arrow part; the second line keeps its secondary Copy prompt; one split button in the detail', async () => {
@@ -1053,11 +1053,11 @@ describe('0024 AC-010: focus is decided at the moment of the change, also after 
 });
 
 describe('0024 AC-010, 0019 AC-020: the focus handoff belongs to the place of the split button', () => {
-    const COPILOT_SEND: SendView = { assistant: 'copilot', target: 'new', targets: ['new', 'current'] };
+    const SEND_VIEW_A: SendView = { assistant: 'copilot', target: 'new', targets: ['new', 'current'] };
     const FIRST = { text: 'Implement T-003 of .specs/active/0007-thing.plan.md', intent: 'Continue with T-003' };
     const SECOND = { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Not sure where it stands? Let the agent report first' };
-    const PLAN: NextStepView = { rule: 'NS-6', lines: [{ text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Write the plan' }], send: COPILOT_SEND };
-    const OPEN: NextStepView = { rule: 'NS-6', lines: [FIRST, SECOND], send: COPILOT_SEND };
+    const PLAN: NextStepView = { rule: 'NS-6', lines: [{ text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Write the plan' }], send: SEND_VIEW_A };
+    const OPEN: NextStepView = { rule: 'NS-6', lines: [FIRST, SECOND], send: SEND_VIEW_A };
     const PLAN_WITH_SECOND: NextStepView = OPEN;
     const WITHOUT = (view: NextStepView): NextStepView => ({ ...view, send: undefined }) as NextStepView;
     const TEXT: NextStepView = { rule: 'NS-1', text: 'Nothing to do.' } as NextStepView;
@@ -1082,7 +1082,7 @@ describe('0024 AC-010, 0019 AC-020: the focus handoff belongs to the place of th
 
     it('the offer goes away and a second line appears in the same update: the Copy prompt of the same line takes the focus, not the new one', async () => {
         const container = await open(spec({}, PLAN_WITH_SECOND));
-        const first: NextStepView = { rule: 'NS-6', lines: [FIRST], send: COPILOT_SEND };
+        const first: NextStepView = { rule: 'NS-6', lines: [FIRST], send: SEND_VIEW_A };
         await send(detailEvent(spec({}, first)));
         await focusOn(container.querySelector<HTMLElement>('button.send-main')!);
         await send(detailEvent(spec({}, WITHOUT(PLAN_WITH_SECOND))));

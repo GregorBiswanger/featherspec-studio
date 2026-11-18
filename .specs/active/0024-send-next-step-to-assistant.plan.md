@@ -571,7 +571,8 @@ them all." No step above is renumbered or edited except where its note says so. 
     0024 name (`orchestrator`, `agentprovider`) stays found in each of them (red while the whole-file entries stand).
   - Code: the constants in the five files are renamed (`OFFER_A` and `OFFER_B` as T-004 did); the entries go.
 - **Verify:** `npx vitest run --project node src/adapters/node/sourceScan.test.ts` red, then green; gates 1–4
-- [ ] **Verified (T-012):**
+- [x] **Verified (T-012):** 2026-11-18 red: `npx vitest run --project node src/adapters/node/sourceScan.test.ts` 1 failed (the five files were still in `REMOVED_ALLOWED`); after removing the entries 2 failed (the constants `COPILOT`, `SEND_COPILOT`, `COPILOT_VIEW`, the unquoted keys `copilot:` and lower-case literals); green after the renames: `npx vitest run --project node src/adapters/node/sourceScan.test.ts src/core/assistant src/shared/protocol` 306 passed. Gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 3110 passed + 3 skipped (+18 timing), compile and compile-tests green.
+- **Notes:** The five whole-file entries are gone; every other removed term stays forbidden in those files (the negative control plants each one). Constants are `EXTENSION_A`/`EXTENSION_B`, `VIEW_A`, `SEND_A`, `OPENED_A`; keys are quoted (`'copilot':`), which the mask covers. Only test titles that 0024 itself added changed.
 
 ### T-013 — Plan, Memory Bank, README, project brief and the release checklist agree with the code
 

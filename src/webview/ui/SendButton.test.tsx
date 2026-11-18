@@ -8,10 +8,10 @@ import { SendButton } from './SendButton';
 import { Toggletip } from './Toggletip';
 
 const LINE = 'Implement T-003 of .specs/active/0001-tip-splitter.plan.md';
-const COPILOT_VIEW: SendView = { assistant: 'copilot', target: 'current', targets: ['new', 'current'] };
-const COPILOT_NEW: SendView = { assistant: 'copilot', target: 'new', targets: ['new', 'current'] };
+const VIEW_A: SendView = { assistant: 'copilot', target: 'current', targets: ['new', 'current'] };
+const VIEW_A_NEW: SendView = { assistant: 'copilot', target: 'new', targets: ['new', 'current'] };
 const CLAUDE_VIEW: SendView = { assistant: 'claudeCode', target: 'new', targets: ['new'] };
-const OPENED_COPILOT = "The prompt is in Copilot's chat. Check it, then send it there.";
+const OPENED_A = "The prompt is in Copilot's chat. Check it, then send it there.";
 const OPENED_CLAUDE = "The prompt is in Claude Code's chat. Check it, then send it there.";
 
 let mounted: Mounted | undefined;
@@ -67,7 +67,7 @@ afterEach(() => {
 
 describe('0024 AC-003: the split button, its texts, names, tooltips and menu', () => {
     it('Copilot, current chat: main part, arrow part and the live region, in this order, nothing else, no menu', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         const wrapper = container.querySelector('.send-split')!;
         expect([...wrapper.children].map((child) => `${child.tagName.toLowerCase()}.${child.className}`)).toEqual(['button.copy-button send-main', 'button.send-arrow', 'span.visually-hidden']);
         expect(wrapper.classList.contains('next-step-copy')).toBe(true);
@@ -78,7 +78,7 @@ describe('0024 AC-003: the split button, its texts, names, tooltips and menu', (
     });
 
     it('Copilot, new chat names the new chat; Claude Code names its new chat and its own name', async () => {
-        const fresh = await show(COPILOT_NEW);
+        const fresh = await show(VIEW_A_NEW);
         expect(main(fresh).getAttribute('aria-label')).toBe(`Send to Copilot (new chat): ${LINE}`);
         mounted?.unmount();
         const claude = await show(CLAUDE_VIEW);
@@ -87,7 +87,7 @@ describe('0024 AC-003: the split button, its texts, names, tooltips and menu', (
     });
 
     it('the arrow part has a hidden glyph, its name with the line, the tooltip More actions, aria-haspopup menu and aria-expanded false', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         expect(arrow(container).getAttribute('aria-label')).toBe(`More actions: ${LINE}`);
         expect(arrow(container).getAttribute('title')).toBe('More actions');
         expect(arrow(container).getAttribute('aria-haspopup')).toBe('menu');
@@ -98,7 +98,7 @@ describe('0024 AC-003: the split button, its texts, names, tooltips and menu', (
     });
 
     it('the Copilot menu holds Send to a new chat, Send to the current chat and Copy prompt, in this order, labelled by the arrow part', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         await click(arrow(container));
         expect(arrow(container).getAttribute('aria-expanded')).toBe('true');
         expect(menu(container)?.getAttribute('aria-labelledby')).toBe(arrow(container).id);
@@ -115,7 +115,7 @@ describe('0024 AC-003: the split button, its texts, names, tooltips and menu', (
     });
 
     it('a second click on the arrow part closes the menu', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         await click(arrow(container));
         await click(arrow(container));
         expect(menu(container)).toBeNull();
@@ -125,7 +125,7 @@ describe('0024 AC-003: the split button, its texts, names, tooltips and menu', (
 
 describe('0024 AC-005: the main part and each item send exactly one request', () => {
     it('the main part posts the assistant, the default target and the line; nothing changes while it is pending', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         const before = container.innerHTML;
         await click(main(container));
         expect(sent).toEqual([{ assistant: 'copilot', target: 'current', line: LINE }]);
@@ -136,7 +136,7 @@ describe('0024 AC-005: the main part and each item send exactly one request', ()
     });
 
     it('the Send items post their own target and close the menu; Claude Code posts its new chat', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         await click(arrow(container));
         await click(items(container)[0]!);
         expect(sent).toEqual([{ assistant: 'copilot', target: 'new', line: LINE }]);
@@ -152,13 +152,13 @@ describe('0024 AC-005: the main part and each item send exactly one request', ()
     });
 
     it('opened: the label, the name, the tooltip and the announcement; 2000 ms after the result the main part reads Send to Copilot again', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         await click(main(container));
-        await deliverSend({ outcome: 'opened', text: OPENED_COPILOT });
+        await deliverSend({ outcome: 'opened', text: OPENED_A });
         expect(main(container).textContent).toBe('Opened in Copilot');
         expect(main(container).getAttribute('aria-label')).toBe(`Opened in Copilot: ${LINE}`);
-        expect(main(container).getAttribute('title')).toBe(OPENED_COPILOT);
-        expect(live(container).textContent).toBe(OPENED_COPILOT);
+        expect(main(container).getAttribute('title')).toBe(OPENED_A);
+        expect(live(container).textContent).toBe(OPENED_A);
         await advance(1999);
         expect(main(container).textContent).toBe('Opened in Copilot');
         await advance(1);
@@ -181,12 +181,12 @@ describe('0024 AC-005: the main part and each item send exactly one request', ()
     });
 
     it('a second result restarts the 2000 ms: the feedback runs until 2000 ms after the last result', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         await click(main(container));
         await click(main(container));
-        await deliverSend({ outcome: 'opened', text: OPENED_COPILOT });
+        await deliverSend({ outcome: 'opened', text: OPENED_A });
         await advance(1500);
-        await deliverSend({ outcome: 'opened', text: `${OPENED_COPILOT}` });
+        await deliverSend({ outcome: 'opened', text: `${OPENED_A}` });
         await advance(1999);
         expect(main(container).textContent).toBe('Opened in Copilot');
         await advance(1);
@@ -194,7 +194,7 @@ describe('0024 AC-005: the main part and each item send exactly one request', ()
     });
 
     it('copied and copyFailed results give 0021’s Copied and Could not copy with their sentences', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         await click(main(container));
         await deliverSend({ outcome: 'copied', text: COPIED_TEXT });
         expect(main(container).textContent).toBe(COPIED_LABEL);
@@ -210,7 +210,7 @@ describe('0024 AC-005: the main part and each item send exactly one request', ()
     });
 
     it('the Copy prompt item posts the copy request, not a send, closes the menu and shows 0021’s Copied on the main part', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         await click(arrow(container));
         await click(items(container)[2]!);
         expect(copied).toEqual([LINE]);
@@ -229,7 +229,7 @@ describe('0024 AC-005: the main part and each item send exactly one request', ()
     });
 
     it('negative control: a result that was there before the activation does not set the label', async () => {
-        const container = await show(COPILOT_VIEW, { sendResult: { outcome: 'opened', text: OPENED_COPILOT }, copyResult: { ok: true, text: COPIED_TEXT } });
+        const container = await show(VIEW_A, { sendResult: { outcome: 'opened', text: OPENED_A }, copyResult: { ok: true, text: COPIED_TEXT } });
         expect(main(container).textContent).toBe('Send to Copilot');
         await click(main(container));
         expect(main(container).textContent).toBe('Send to Copilot');
@@ -239,35 +239,35 @@ describe('0024 AC-005: the main part and each item send exactly one request', ()
     });
 
     it('a result nobody asked for (no activation here) is not shown, a later one is shown only once per activation', async () => {
-        const container = await show(COPILOT_VIEW);
-        await deliverSend({ outcome: 'opened', text: OPENED_COPILOT });
+        const container = await show(VIEW_A);
+        await deliverSend({ outcome: 'opened', text: OPENED_A });
         expect(main(container).textContent).toBe('Send to Copilot');
         await click(main(container));
-        await deliverSend({ outcome: 'opened', text: `${OPENED_COPILOT} ` });
+        await deliverSend({ outcome: 'opened', text: `${OPENED_A} ` });
         expect(main(container).textContent).toBe('Opened in Copilot');
         await advance(2000);
-        await deliverSend({ outcome: 'opened', text: `${OPENED_COPILOT}  ` });
+        await deliverSend({ outcome: 'opened', text: `${OPENED_A}  ` });
         expect(main(container).textContent).toBe('Send to Copilot');
     });
 
     it('a dropped result (the detail changed) clears the feedback and the pending activation', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         await click(main(container));
-        await deliverSend({ outcome: 'opened', text: OPENED_COPILOT });
+        await deliverSend({ outcome: 'opened', text: OPENED_A });
         await deliverSend(undefined);
         expect(main(container).textContent).toBe('Send to Copilot');
-        await deliverSend({ outcome: 'opened', text: OPENED_COPILOT });
+        await deliverSend({ outcome: 'opened', text: OPENED_A });
         expect(main(container).textContent).toBe('Send to Copilot');
     });
 });
 
 describe('0024 AC-009: the DOM keeps its elements and their order while the feedback shows', () => {
     it('the tag and class sequence is the same idle, opened and copied', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         const shape = () => [...container.querySelectorAll('*')].map((element) => `${element.tagName}.${element.getAttribute('class') ?? ''}`).join('|');
         const idle = shape();
         await click(main(container));
-        await deliverSend({ outcome: 'opened', text: OPENED_COPILOT });
+        await deliverSend({ outcome: 'opened', text: OPENED_A });
         expect(shape()).toBe(idle);
         await advance(2000);
         await click(main(container));
@@ -290,14 +290,14 @@ async function focus(element: HTMLElement): Promise<void> {
 
 describe('0024 AC-008: the menu keys and pointer rules', () => {
     it('while closed: aria-expanded is false and no role=menu is in the DOM', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         expect(arrow(container).getAttribute('aria-expanded')).toBe('false');
         expect(container.querySelector('[role="menu"]')).toBeNull();
     });
 
     it('Enter, Space and a click on the arrow part open the menu on the first item', async () => {
         for (const how of ['enter', 'space', 'click'] as const) {
-            const container = await show(COPILOT_VIEW);
+            const container = await show(VIEW_A);
             await focus(arrow(container));
             if (how === 'click') {
                 await click(arrow(container));
@@ -312,7 +312,7 @@ describe('0024 AC-008: the menu keys and pointer rules', () => {
     });
 
     it('ArrowDown opens on the first item, ArrowUp on the last; both are prevented', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         await focus(arrow(container));
         expect((await key(arrow(container), 'ArrowDown')).defaultPrevented).toBe(true);
         expect(document.activeElement).toBe(items(container)[0]);
@@ -323,7 +323,7 @@ describe('0024 AC-008: the menu keys and pointer rules', () => {
     });
 
     it('the items are in the menu, not in the tab order, and ArrowDown and ArrowUp wrap', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         await click(arrow(container));
         const all = items(container);
         expect(all).toHaveLength(3);
@@ -341,7 +341,7 @@ describe('0024 AC-008: the menu keys and pointer rules', () => {
     });
 
     it('Home goes to the first item, End to the last', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         await click(arrow(container));
         const all = items(container);
         expect((await key(all[0]!, 'End')).defaultPrevented).toBe(true);
@@ -353,7 +353,7 @@ describe('0024 AC-008: the menu keys and pointer rules', () => {
     it('Enter, Space and a click on an item activate it, close the menu and put focus on the arrow part', async () => {
         for (const how of ['enter', 'space', 'click'] as const) {
             sent = [];
-            const container = await show(COPILOT_VIEW);
+            const container = await show(VIEW_A);
             await click(arrow(container));
             const item = items(container)[1]!;
             await focus(item);
@@ -372,7 +372,7 @@ describe('0024 AC-008: the menu keys and pointer rules', () => {
     });
 
     it('the Copy prompt item copies and closes with focus on the arrow part', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         await click(arrow(container));
         await click(items(container)[2]!);
         expect(copied).toEqual([LINE]);
@@ -381,7 +381,7 @@ describe('0024 AC-008: the menu keys and pointer rules', () => {
     });
 
     it('Escape closes the menu, is prevented, and puts focus on the arrow part, from an item and from the arrow part', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         await click(arrow(container));
         const fromItem = await key(document.activeElement!, 'Escape');
         expect(fromItem.defaultPrevented).toBe(true);
@@ -395,14 +395,14 @@ describe('0024 AC-008: the menu keys and pointer rules', () => {
     });
 
     it('Escape with the menu closed is not prevented', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         await focus(arrow(container));
         expect((await key(arrow(container), 'Escape')).defaultPrevented).toBe(false);
     });
 
     it('Tab and Shift+Tab close the menu and put focus on the arrow part; the key itself is not prevented', async () => {
         for (const shiftKey of [false, true]) {
-            const container = await show(COPILOT_VIEW);
+            const container = await show(VIEW_A);
             await click(arrow(container));
             const event = await key(document.activeElement!, 'Tab', { shiftKey });
             expect(event.defaultPrevented).toBe(false);
@@ -414,7 +414,7 @@ describe('0024 AC-008: the menu keys and pointer rules', () => {
     });
 
     it('a pointer press outside the menu closes it; a press on the arrow part or inside the menu does not', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         await click(arrow(container));
         const press = async (target: Element): Promise<void> => {
             await act(async () => {
@@ -430,7 +430,7 @@ describe('0024 AC-008: the menu keys and pointer rules', () => {
     });
 
     it('a second click on the arrow part closes the menu', async () => {
-        const container = await show(COPILOT_VIEW);
+        const container = await show(VIEW_A);
         await click(arrow(container));
         await click(arrow(container));
         expect(menu(container)).toBeNull();
@@ -438,11 +438,11 @@ describe('0024 AC-008: the menu keys and pointer rules', () => {
     });
 
     it('unmounting with the menu open leaves no open popup: a new split button opens its menu normally and no listener stays', async () => {
-        const first = await show(COPILOT_VIEW);
+        const first = await show(VIEW_A);
         await click(arrow(first));
         mounted?.unmount();
         mounted = undefined;
-        const second = await show(COPILOT_VIEW);
+        const second = await show(VIEW_A);
         expect(menu(second)).toBeNull();
         await click(arrow(second));
         expect(menu(second)).not.toBeNull();
@@ -451,7 +451,7 @@ describe('0024 AC-008: the menu keys and pointer rules', () => {
     it('opening the menu closes an open toggletip; opening a toggletip closes the menu', async () => {
         mounted = await mount(
             <div>
-                <Harness send={COPILOT_VIEW} />
+                <Harness send={VIEW_A} />
                 <Toggletip label="About" glyph="?" paragraphs={['One.']} />
             </div>,
         );
@@ -471,7 +471,7 @@ describe('0024 AC-008: the menu keys and pointer rules', () => {
     it('the assistant changing closes the menu and moves focus from an item to the arrow part; focus elsewhere stays', async () => {
         let change: (next: SendView) => Promise<void> = async () => undefined;
         function Switch() {
-            const [view, setView] = useState<SendView>(COPILOT_VIEW);
+            const [view, setView] = useState<SendView>(VIEW_A);
             change = async (next) => {
                 await act(async () => setView(next));
             };
@@ -493,7 +493,7 @@ describe('0024 AC-008: the menu keys and pointer rules', () => {
         expect(document.activeElement).toBe(arrow(container));
         const elsewhere = container.querySelector<HTMLElement>('[data-id="elsewhere"]')!;
         await focus(elsewhere);
-        await change(COPILOT_VIEW);
+        await change(VIEW_A);
         expect(document.activeElement).toBe(elsewhere);
     });
 
