@@ -14,14 +14,16 @@ function matches(selection: SelectedSpec, detail: ReturnType<typeof useBoard>['d
     return detail?.kind === 'spec' && detail.stem === selection.stem && (selection.path === undefined || detail.key === selection.path);
 }
 
-export function SidePanel(props: { selection: SelectedSpec; back?: AreaId }) {
-    const { selection, back } = props;
+export const SIDE_PANEL_ID = 'side-panel';
+
+export function SidePanel(props: { selection: SelectedSpec; back?: AreaId; width?: number }) {
+    const { selection, back, width } = props;
     const shell = useShell();
     const { detail, fileResult, copyResult, openFile, copyText } = useBoard();
     const close = shell.clearSelection;
     const fallback = () => focusAfterClose(selection.stem);
     return (
-        <aside className="side-panel" role="complementary" aria-label={DETAIL_LABEL}>
+        <aside id={SIDE_PANEL_ID} className="side-panel" role="complementary" aria-label={DETAIL_LABEL} {...(width === undefined ? {} : { style: { width } })}>
             {matches(selection, detail) ? (
                 <SpecDetail detail={detail} fileResult={fileResult} copyResult={copyResult} onOpen={openFile} onCopy={copyText} onClose={close} fallback={fallback} {...(back === undefined ? {} : { back })} />
             ) : (

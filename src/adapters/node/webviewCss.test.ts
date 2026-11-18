@@ -441,14 +441,30 @@ describe('0019 AC-005, AC-021, 0022 AC-001: the side panel beside the area, or t
     const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
     const plain = (selector: string) => rulesFor(css, selector).filter((rule) => rule.media === undefined);
 
-    it('AC-005: the side panel is a 400 px column with its own scroll beside the area content', () => {
+    it('0022 G-2: the side panel gets its width from the divider: no fixed width or basis in the stylesheet, its own scroll, a 1 px left border; the area content takes the rest', () => {
         expect(plain('.area-frame').some((rule) => /display:\s*flex/.test(rule.body) && /position:\s*relative/.test(rule.body))).toBe(true);
         expect(plain('.area-content').some((rule) => /flex:\s*1\b/.test(rule.body) && /min-width:\s*0/.test(rule.body) && /overflow-y:\s*auto/.test(rule.body))).toBe(true);
         const panel = plain('.side-panel').map((rule) => rule.body).join(';');
-        expect(panel).toMatch(/flex:\s*0 0 400px/);
+        expect(panel).toMatch(/flex:\s*none/);
+        expect(panel).not.toMatch(/(?:^|;)\s*(?:min-|max-)?width:|flex-basis|flex:\s*0 0 \d/);
         expect(panel).toMatch(/box-sizing:\s*border-box/);
         expect(panel).toMatch(/overflow-y:\s*auto/);
         expect(panel).toMatch(/border-left:\s*1px solid var\(--vscode-contrastBorder/);
+        expect(css).not.toMatch(/\b400px\b/);
+    });
+
+    it('0022 G-2: the divider has a column-resize cursor, a 4 px hit area, the sash hover colour while hovered or dragged and a focus outline of the theme', () => {
+        const divider = plain('.divider').map((rule) => rule.body).join(';');
+        expect(divider).toMatch(/cursor:\s*col-resize/);
+        expect(divider).toMatch(/width:\s*0\b/);
+        expect(plain('.divider::before').some((rule) => /width:\s*4px/.test(rule.body))).toBe(true);
+        for (const selector of ['.divider:hover::before', '.divider[data-dragging]::before']) {
+            expect(plain(selector).some((rule) => /background:\s*var\(--vscode-sash-hoverBorder\)/.test(rule.body)), selector).toBe(true);
+        }
+        expect(plain('.divider:focus-visible').some((rule) => /outline:\s*2px solid var\(--vscode-contrastActiveBorder, var\(--vscode-focusBorder\)\)/.test(rule.body))).toBe(true);
+        for (const rule of rulesFor(css, '.divider')) {
+            expect(rule.body).not.toMatch(/outline/);
+        }
     });
 
     it('0022 AC-001: no media rule changes the area content, the frame or the board, so the area keeps its width and its scroll position', () => {

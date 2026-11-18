@@ -1245,11 +1245,38 @@ blockquote.illustration {
 
 .side-panel {
     box-sizing: border-box;
-    flex: 0 0 400px;
+    flex: none;
     min-height: 0;
     overflow-y: auto;
     background: var(--vscode-editor-background);
     border-left: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
+}
+
+.divider {
+    position: relative;
+    z-index: 1;
+    flex: none;
+    width: 0;
+    cursor: col-resize;
+}
+
+.divider::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -2px;
+    width: 4px;
+}
+
+.divider:hover::before,
+.divider[data-dragging]::before {
+    background: var(--vscode-sash-hoverBorder);
+}
+
+.divider:focus-visible {
+    outline: 2px solid var(--vscode-contrastActiveBorder, var(--vscode-focusBorder));
+    outline-offset: 1px;
 }
 
 .area-frame[data-layout="detail"] > .area-content {

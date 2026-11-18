@@ -328,6 +328,8 @@ export function successorText(successor: { kind: 'link'; text: string } | { kind
 export const DETAIL_LABEL = 'Spec detail';
 export const CLOSE_DETAIL_LABEL = 'Close spec detail';
 export const CLOSE_DETAIL_TOOLTIP = 'Close (Esc)';
+export const DIVIDER_LABEL = 'Resize the side panel';
+export const DIVIDER_TOOLTIP = 'Drag to resize. Double-click to reset.';
 export const BACK_LABELS: Record<AreaId, string> = { overview: 'Back to Overview', board: 'Back to Board' };
 export const PROGRESS_HEADING = 'Progress';
 export const STEPS_LABEL = 'Steps';

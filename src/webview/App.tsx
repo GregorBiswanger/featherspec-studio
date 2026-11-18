@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { areaInfo, type AreaId } from '../shared/protocol/areas';
 import { projectTooltip } from '../shared/protocol/texts';
 import type { ShellClient } from './client';
@@ -6,7 +6,9 @@ import { AREA_COMPONENTS } from './areas/registry';
 import { Placeholder } from './areas/Placeholder';
 import { useNarrow } from './detail/narrow';
 import { requestHeadingFocus } from './detail/focus';
-import { SidePanel } from './detail/SidePanel';
+import { Divider } from './detail/Divider';
+import { SIDE_PANEL_ID, SidePanel } from './detail/SidePanel';
+import { useSideWidth } from './detail/sideWidth';
 import { Navigation } from './Navigation';
 import { NoticeBar } from './NoticeBar';
 import { PanelStateView } from './PanelStateView';
@@ -24,6 +26,9 @@ function Frame() {
     const sideSelection = shell.area === 'overview' || shell.area === 'board' ? shell.view?.selection : undefined;
     const narrow = useNarrow();
     const detailAlone = narrow && sideSelection !== undefined;
+    const [frameElement, setFrameElement] = useState<HTMLDivElement | null>(null);
+    const side = useSideWidth(frameElement, shell.view?.sideWidth, { set: shell.setSideWidth, reset: shell.resetSideWidth });
+    const beside = !narrow && sideSelection !== undefined && side.frame > 0;
     const contentRef = useRef<HTMLDivElement>(null);
     const wasAlone = useRef(detailAlone);
     useEffect(() => {
@@ -48,11 +53,12 @@ function Frame() {
                 <RestrictedNote />
                 <NoticeBar />
                 {shell.state === undefined ? (
-                    <div className="area-frame" {...(detailAlone ? { 'data-layout': 'detail' } : {})}>
+                    <div className="area-frame" ref={setFrameElement} {...(detailAlone ? { 'data-layout': 'detail' } : {})}>
                         <div className="area-content" ref={contentRef} {...(detailAlone ? { inert: true } : {})}>
                             <AreaContent area={shell.area} />
                         </div>
-                        {sideSelection === undefined ? null : <SidePanel selection={sideSelection} {...(narrow ? { back: shell.area } : {})} />}
+                        {beside ? <Divider side={side} panelId={SIDE_PANEL_ID} /> : null}
+                        {sideSelection === undefined ? null : <SidePanel selection={sideSelection} {...(narrow ? { back: shell.area } : {})} {...(beside ? { width: side.width } : {})} />}
                     </div>
                 ) : (
                     <PanelStateView state={shell.state} />
