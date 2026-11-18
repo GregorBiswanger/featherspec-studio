@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { COPIED_LABEL, COPIED_TEXT, COPY_FAILED_LABEL, COPY_FAILED_TEXT, NEXT_STEP_COPY_LABEL } from '../../shared/protocol/nextStepTexts';
+import { COPIED_LABEL, COPIED_TEXT, COPY_FAILED_LABEL, COPY_FAILED_TEXT, COPY_PROMPT_LABEL } from '../../shared/protocol/nextStepTexts';
 import { click, mount, pressKey, type Mounted } from '../testing/dom';
 import { detailView } from '../detail/testing/views';
 import { SpecDetail } from '../detail/SpecDetail';
@@ -54,11 +54,18 @@ afterEach(() => {
     vi.useRealTimers();
 });
 
+describe('0021 AC-008: the label of every copy control is Copy prompt', () => {
+    it('the constant reads Copy prompt, and the three labels differ from the old Copy', () => {
+        expect(COPY_PROMPT_LABEL).toBe('Copy prompt');
+        expect([COPY_PROMPT_LABEL, COPIED_LABEL, COPY_FAILED_LABEL]).toEqual(['Copy prompt', 'Copied', 'Could not copy']);
+    });
+});
+
 describe('0016 AC-018: Copy confirms at the button', () => {
-    it('AC-018: before any activation the button reads Copy, has no tooltip and its live region is empty and ready', async () => {
+    it('AC-018: before any activation the button reads Copy prompt, has no tooltip and its live region is empty and ready', async () => {
         const container = await show();
-        expect(button(container).textContent).toBe(NEXT_STEP_COPY_LABEL);
-        expect(button(container).getAttribute('aria-label')).toBe(`Copy: ${LINE}`);
+        expect(button(container).textContent).toBe('Copy prompt');
+        expect(button(container).getAttribute('aria-label')).toBe(`Copy prompt: ${LINE}`);
         expect(button(container).hasAttribute('title')).toBe(false);
         expect(live(container).textContent).toBe('');
         expect(live(container).getAttribute('aria-live')).toBe('polite');
@@ -81,6 +88,7 @@ describe('0016 AC-018: Copy confirms at the button', () => {
         await click(button(container));
         await deliver({ ok: false, text: COPY_FAILED_TEXT });
         expect(button(container).textContent).toBe(COPY_FAILED_LABEL);
+        expect(button(container).getAttribute('aria-label')).toBe(`Could not copy: ${LINE}`);
         expect(button(container).getAttribute('title')).toBe('Could not copy to the clipboard.');
         expect(live(container).textContent).toBe('Could not copy to the clipboard.');
     });
@@ -93,16 +101,16 @@ describe('0016 AC-018: Copy confirms at the button', () => {
         expect(button(container).textContent).toBe(COPIED_LABEL);
     });
 
-    it('AC-018: 2 s after the activation the label is Copy again, with the tooltip it had before and an empty live region', async () => {
+    it('AC-018: 2 s after the activation the label is Copy prompt again, with the tooltip it had before and an empty live region', async () => {
         const container = await show();
         await click(button(container));
         await deliver({ ok: true, text: COPIED_TEXT });
         await advance(1999);
         expect(button(container).textContent).toBe(COPIED_LABEL);
         await advance(1);
-        expect(button(container).textContent).toBe(NEXT_STEP_COPY_LABEL);
+        expect(button(container).textContent).toBe('Copy prompt');
         expect(button(container).hasAttribute('title')).toBe(false);
-        expect(button(container).getAttribute('aria-label')).toBe(`Copy: ${LINE}`);
+        expect(button(container).getAttribute('aria-label')).toBe(`Copy prompt: ${LINE}`);
         expect(live(container).textContent).toBe('');
     });
 
@@ -116,15 +124,15 @@ describe('0016 AC-018: Copy confirms at the button', () => {
         await advance(1999);
         expect(button(container).textContent).toBe(COPIED_LABEL);
         await advance(1);
-        expect(button(container).textContent).toBe(NEXT_STEP_COPY_LABEL);
+        expect(button(container).textContent).toBe('Copy prompt');
     });
 
     it('AC-018: a result that was there before the activation does not set the label (negative control)', async () => {
         const container = await show({ ok: true, text: COPIED_TEXT });
-        expect(button(container).textContent).toBe(NEXT_STEP_COPY_LABEL);
+        expect(button(container).textContent).toBe('Copy prompt');
         expect(live(container).textContent).toBe('');
         await click(button(container));
-        expect(button(container).textContent).toBe(NEXT_STEP_COPY_LABEL);
+        expect(button(container).textContent).toBe('Copy prompt');
     });
 
     it('AC-018: a result that arrives after the 2 s do not change a button nobody activated since (negative control)', async () => {
@@ -132,7 +140,7 @@ describe('0016 AC-018: Copy confirms at the button', () => {
         await click(button(container));
         await advance(2000);
         await deliver({ ok: true, text: COPIED_TEXT });
-        expect(button(container).textContent).toBe(NEXT_STEP_COPY_LABEL);
+        expect(button(container).textContent).toBe('Copy prompt');
     });
 
     it('AC-018: unmounting clears the timer', async () => {
@@ -211,14 +219,14 @@ describe('0017 AC-006: the optional tab index', () => {
 describe('0022 AC-012: the icon Copy', () => {
     const icon = (container: HTMLElement): string | null | undefined => container.querySelector('button svg')?.getAttribute('data-icon');
 
-    it('is a text-less button with the copy glyph, the name and the tooltip `Copy: <line>`, an empty live region and none of the primary classes', async () => {
+    it('is a text-less button with the copy glyph, the name and the tooltip `Copy prompt: <line>`, an empty live region and none of the primary classes', async () => {
         const container = await show(undefined, 'icon');
         const element = button(container);
         expect(element.classList.contains('copy-icon')).toBe(true);
         expect(element.classList.contains('copy-button')).toBe(false);
         expect(element.textContent).toBe('');
-        expect(element.getAttribute('aria-label')).toBe(`Copy: ${LINE}`);
-        expect(element.getAttribute('title')).toBe(`Copy: ${LINE}`);
+        expect(element.getAttribute('aria-label')).toBe(`Copy prompt: ${LINE}`);
+        expect(element.getAttribute('title')).toBe(`Copy prompt: ${LINE}`);
         expect(icon(container)).toBe('copy');
         expect(live(container).textContent).toBe('');
     });
@@ -265,8 +273,8 @@ describe('0022 AC-012: the icon Copy', () => {
         expect(icon(container)).toBe('check');
         await advance(1);
         expect(icon(container)).toBe('copy');
-        expect(button(container).getAttribute('aria-label')).toBe(`Copy: ${LINE}`);
-        expect(button(container).getAttribute('title')).toBe(`Copy: ${LINE}`);
+        expect(button(container).getAttribute('aria-label')).toBe(`Copy prompt: ${LINE}`);
+        expect(button(container).getAttribute('title')).toBe(`Copy prompt: ${LINE}`);
         expect(live(container).textContent).toBe('');
     });
 
@@ -294,8 +302,8 @@ describe('0022 AC-010: the secondary Copy', () => {
         const element = button(container);
         expect(element.classList.contains('copy-button')).toBe(true);
         expect(element.classList.contains('copy-secondary')).toBe(true);
-        expect(element.textContent).toBe(NEXT_STEP_COPY_LABEL);
-        expect(element.getAttribute('aria-label')).toBe(`Copy: ${LINE}`);
+        expect(element.textContent).toBe('Copy prompt');
+        expect(element.getAttribute('aria-label')).toBe(`Copy prompt: ${LINE}`);
         await click(element);
         await deliver({ ok: true, text: COPIED_TEXT });
         expect(element.textContent).toBe(COPIED_LABEL);

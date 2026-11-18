@@ -54,6 +54,99 @@ async function settle(): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, 50));
 }
 
+interface ElementLike {
+    textContent: string | null;
+    getAttribute(name: string): string | null;
+}
+
+interface Rendered {
+    where: string;
+    buttons: Array<{ text: string; name: string }>;
+    texts: string[];
+}
+
+function inspect(dom: JSDOM, where: string): Rendered {
+    const document = dom.window.document as unknown as { body: ElementLike; querySelectorAll(selector: string): Iterable<ElementLike> };
+    const buttons = [...document.querySelectorAll('button')].map((button) => ({ text: button.textContent ?? '', name: button.getAttribute('aria-label') ?? '' }));
+    const attributes = [...document.querySelectorAll('[title], [aria-label]')].flatMap((element) => [element.getAttribute('title'), element.getAttribute('aria-label')]).filter((value): value is string => value !== null);
+    return { where, buttons, texts: [document.body.textContent ?? '', ...attributes] };
+}
+
+const SHELL_BOARD = { state: undefined, restricted: false, projectName: 'fixture', area: 'board', target: undefined, selection: undefined, notice: undefined, rows: [] };
+
+async function renderFixture(name: string, tips?: unknown): Promise<Rendered[]> {
+    const project = await readProject(createNodeSpecSource(), fixturePath(name), '1.10.0');
+    const lifecycle = deriveLifecycle(project);
+    const model = { project, lifecycle };
+    const history = { available: true as const, label: 'Observed', entries: [] };
+    const send = (dom: JSDOM, data: unknown) => dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data }));
+    const rendered: Rendered[] = [];
+    const cards = buildCards(project, lifecycle);
+    const board = { columns: arrangeBoard(cards, {}, 'number'), banner: buildBanner(project, lifecycle), filter: {}, sort: 'number', sortKeys: ['number', 'title', 'lastChange'], noSpecs: cards.length === 0 };
+    const boardDom = boot(readFileSync(bundlePath, 'utf8'));
+    await settle();
+    send(boardDom.dom, { v: 5, kind: 'evt', seq: 1, type: 'shell', payload: { view: SHELL_BOARD } });
+    send(boardDom.dom, { v: 5, kind: 'evt', type: 'board', payload: { view: board } });
+    await settle();
+    rendered.push(inspect(boardDom.dom, `${name} board`));
+    expect(boardDom.errors).toEqual([]);
+    const overviewDom = boot(readFileSync(bundlePath, 'utf8'));
+    await settle();
+    send(overviewDom.dom, { v: 5, kind: 'evt', seq: 1, type: 'shell', payload: { view: { ...SHELL_BOARD, area: 'overview' } } });
+    send(overviewDom.dom, { v: 5, kind: 'evt', type: 'overview', payload: { view: buildOverviewView({ model, history, ...(tips === undefined ? {} : { tips }) } as Parameters<typeof buildOverviewView>[0]) } });
+    await settle();
+    rendered.push(inspect(overviewDom.dom, `${name} overview`));
+    expect(overviewDom.errors).toEqual([]);
+    const detailDom = boot(readFileSync(bundlePath, 'utf8'));
+    await settle();
+    for (const entry of lifecycle.entries) {
+        const selection = { stem: entry.stem, number: entry.number };
+        send(detailDom.dom, { v: 5, kind: 'evt', seq: rendered.length + 1, type: 'shell', payload: { view: { ...SHELL_BOARD, selection } } });
+        send(detailDom.dom, { v: 5, kind: 'evt', type: 'board', payload: { view: board } });
+        send(detailDom.dom, { v: 5, kind: 'evt', type: 'detail', payload: { view: buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history, ...(tips === undefined ? {} : { tips }) } as Parameters<typeof buildDetail>[0]) } });
+        await settle();
+        rendered.push(inspect(detailDom.dom, `${name} detail ${entry.key}`));
+    }
+    expect(detailDom.errors).toEqual([]);
+    return rendered;
+}
+
+function oldCopyLabels(rendered: Rendered[]): string[] {
+    return rendered.flatMap((surface) => surface.buttons.filter((button) => button.text === 'Copy' || button.name.startsWith('Copy: ')).map((button) => `${surface.where}: ${button.text} / ${button.name}`));
+}
+
+const SWEPT_FIXTURES = ['fs110-ready-synthetic', 'fs110-de-active-review', 'fs110-parallel-synthetic', 'fs170-brownfield-mixed', 'fs180-de-baselines', 'fs180-en-done-archived', 'studio-0015', 'studio-0002', 'incomplete-specs-only', 'not-fs-agents-only', 'fs-broken'];
+
+describe('0021 AC-008: no rendered surface of any fixture offers the old Copy', () => {
+    beforeAll(() => {
+        execFileSync(process.execPath, ['esbuild.js'], { cwd: root, stdio: 'pipe' });
+    }, 60000);
+
+    it.each(SWEPT_FIXTURES.map((name) => [name]))('%s: Board, Overview and every detail hold no button named Copy or Copy: <line>', async (name) => {
+        const rendered = await renderFixture(name);
+        expect(rendered.length).toBeGreaterThanOrEqual(2);
+        expect(oldCopyLabels(rendered)).toEqual([]);
+    }, 60000);
+
+    it('the empty states, the Board and the Overview of a project with no spec, offer Copy prompt of /sdd-specify', async () => {
+        const rendered = await renderFixture('incomplete-specs-only');
+        const names = rendered.flatMap((surface) => surface.buttons.map((button) => button.name));
+        expect(names.filter((name) => name === 'Copy prompt: /sdd-specify').length).toBeGreaterThanOrEqual(1);
+    }, 60000);
+
+    it('a project with steps offers Copy prompt named with the line on cards, rows and in the detail', async () => {
+        const rendered = await renderFixture('fs110-ready-synthetic');
+        const names = new Set(rendered.flatMap((surface) => surface.buttons.map((button) => button.name)));
+        expect([...names].some((name) => /^Copy prompt: (?:Start|Implement|\/sdd-)/.test(name))).toBe(true);
+        expect(rendered.flatMap((surface) => surface.buttons.map((button) => button.text)).filter((text) => text.startsWith('Copy'))).toContain('Copy prompt');
+    }, 60000);
+
+    it('negative control: the check finds a button that reads Copy and one named Copy: <line>', () => {
+        const stale: Rendered[] = [{ where: 'x', buttons: [{ text: 'Copy', name: 'Copy: /sdd-plan k' }, { text: 'Copy prompt', name: 'Copy prompt: /sdd-plan k' }], texts: [] }];
+        expect(oldCopyLabels(stale)).toEqual(['x: Copy / Copy: /sdd-plan k']);
+    });
+});
+
 describe('built webview bundle in jsdom (a broken bundle or a start-up error turns this red)', () => {
     beforeAll(() => {
         execFileSync(process.execPath, ['esbuild.js'], { cwd: root, stdio: 'pipe' });

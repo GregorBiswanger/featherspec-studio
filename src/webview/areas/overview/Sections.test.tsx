@@ -194,7 +194,7 @@ describe('0018 AC-006: a spec row on one line', () => {
         expect(drill.querySelector('.step-short')?.textContent).toBe('/sdd-plan');
         expect(drill.querySelector('.step-intent')?.textContent).toBe('Plan');
         expect(drill.querySelector('.step-text')?.textContent).toBe('Next Plan · /sdd-plan');
-        expect(row.querySelector('.next-step-copy')?.getAttribute('aria-label')).toBe('Copy: /sdd-plan .specs/active/0001-a.md');
+        expect(row.querySelector('.next-step-copy')?.getAttribute('aria-label')).toBe('Copy prompt: /sdd-plan .specs/active/0001-a.md');
         expect(drill.textContent).not.toContain('continue');
         expect(drill.querySelector('br')).toBeNull();
     });
@@ -311,7 +311,7 @@ describe('0018 AC-004, AC-005, AC-012: Now and Up next', () => {
         const next = container.querySelector('[data-up-next]')!;
         expect(next.textContent).toContain('Nothing up next. Start the next spec with /sdd-specify');
         const copy = next.querySelector<HTMLButtonElement>('.next-step-copy')!;
-        expect(copy.getAttribute('aria-label')).toBe('Copy: /sdd-specify');
+        expect(copy.getAttribute('aria-label')).toBe('Copy prompt: /sdd-specify');
         await click(copy);
         expect(posted.find((message) => message.type === 'copyText')?.payload).toEqual({ text: '/sdd-specify' });
     });

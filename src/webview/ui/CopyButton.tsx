@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Glyph } from '../board/icons';
-import { COPIED_LABEL, COPY_FAILED_LABEL, NEXT_STEP_COPY_LABEL } from '../../shared/protocol/nextStepTexts';
+import { COPIED_LABEL, COPY_FAILED_LABEL, COPY_PROMPT_LABEL } from '../../shared/protocol/nextStepTexts';
 
 export interface CopyResult {
     ok: boolean;
@@ -54,7 +54,7 @@ export function CopyButton(props: { look: CopyLook; line: string; copyResult: Co
         props.onCopy(line);
     };
 
-    const label = shown === undefined ? NEXT_STEP_COPY_LABEL : shown.ok ? COPIED_LABEL : COPY_FAILED_LABEL;
+    const label = shown === undefined ? COPY_PROMPT_LABEL : shown.ok ? COPIED_LABEL : COPY_FAILED_LABEL;
     const name = `${label}: ${line}`;
     const tab = props.tabIndex === undefined ? {} : { tabIndex: props.tabIndex };
     return (

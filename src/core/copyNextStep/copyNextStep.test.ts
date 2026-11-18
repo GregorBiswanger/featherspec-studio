@@ -216,13 +216,13 @@ describe('0017 AC-020: no current spec, the quick pick', () => {
         expect(world.shown).toHaveLength(shownBefore);
     });
 
-    it('with no spec that has a step: the message with "Copy", which copies /sdd-specify; dismissing copies nothing', async () => {
+    it('with no spec that has a step: the message with "Copy prompt", which copies /sdd-specify; dismissing copies nothing', async () => {
         await ready([{ number: '0003', kind: 'Done' }]);
         await command.run();
-        expect(fakes.informed).toEqual([{ text: 'No spec has a next step to copy. Start the next spec with /sdd-specify', action: 'Copy' }]);
+        expect(fakes.informed).toEqual([{ text: 'No spec has a next step to copy. Start the next spec with /sdd-specify', action: 'Copy prompt' }]);
         expect(fakes.asked).toEqual([]);
         expect(fakes.written).toEqual([]);
-        fakes.informAnswer = 'Copy';
+        fakes.informAnswer = 'Copy prompt';
         await command.run();
         expect(fakes.written).toEqual(['/sdd-specify']);
         expect(world.text()).toBe('$(check) Copied');

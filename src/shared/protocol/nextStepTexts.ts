@@ -1,6 +1,6 @@
 export const NEXT_STEP_HEADING = 'Next step';
 
-export const NEXT_STEP_COPY_LABEL = 'Copy';
+export const COPY_PROMPT_LABEL = 'Copy prompt';
 
 export const NEXT_STEP_SHORT_LABEL = 'Next';
 

@@ -534,7 +534,7 @@ describe('0015 AC-003, AC-005, AC-008, AC-009: the next step in the detail', () 
     }
 
     function copyButtons(root: Element): HTMLButtonElement[] {
-        return [...root.querySelectorAll<HTMLButtonElement>('button')].filter((button) => button.textContent === 'Copy');
+        return [...root.querySelectorAll<HTMLButtonElement>('button')].filter((button) => button.textContent === 'Copy prompt');
     }
 
     it('AC-003: "Next step" stands above the other sections with its line and a Copy button', async () => {
@@ -628,7 +628,7 @@ describe('0015 AC-003, AC-005, AC-008, AC-009: the next step in the detail', () 
         await select('0008-other');
         await send(detailEvent({ ...detailView(), key: 'other', stem: '0008-other' } as ReturnType<typeof detailView>));
         expect(nextStepSection(container).textContent).not.toContain('Copied to the clipboard.');
-        expect(nextStepSection(container).querySelector('button')!.textContent).toBe('Copy');
+        expect(nextStepSection(container).querySelector('button')!.textContent).toBe('Copy prompt');
     });
 });
 
@@ -744,7 +744,7 @@ describe('0022 AC-013, AC-015, AC-002, AC-003: sentences and breaking paths in t
         expect(line.textContent).toBe('/sdd-plan .specs/backlog/0007-thing.md');
         expect(line.innerHTML.startsWith('/sdd-plan .')).toBe(true);
         expect(line.querySelectorAll('wbr').length).toBeGreaterThan(0);
-        expect(container.querySelector('.next-step-copy')?.getAttribute('aria-label')).toBe('Copy: /sdd-plan .specs/backlog/0007-thing.md');
+        expect(container.querySelector('.next-step-copy')?.getAttribute('aria-label')).toBe('Copy prompt: /sdd-plan .specs/backlog/0007-thing.md');
     });
 });
 

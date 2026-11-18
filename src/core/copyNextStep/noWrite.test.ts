@@ -56,7 +56,7 @@ describe('0017 AC-023: no Copy, click or command writes a file', () => {
                     asked.push(...items.map((item) => item.key));
                     return answer === 'first' ? items[0] : undefined;
                 },
-                inform: async () => 'Copy',
+                inform: async () => 'Copy prompt',
                 warn: () => undefined,
             },
             actions: { selectProject: async () => void asked.push('select'), openStudio: async () => void asked.push('open') },

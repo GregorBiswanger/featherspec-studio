@@ -241,8 +241,8 @@ ends of stages 1 and 3.
   states included) with a negative control.
 - **Verify:** `npx vitest run --project webview src/webview` and `npx vitest run --project node src/core/copyNextStep src/adapters/node/webviewBundle.test.ts`
   red (failing literals), then green; gates 1–4
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-18 · red: `npx vitest run --project webview src/webview` 23 failed (literals `Copy prompt`, `Copy prompt: <line>`, `COPY_PROMPT_LABEL` missing); sweep negative control: with the label set back to `Copy` 13 tests of the new bundle sweep fail → green: `npx vitest run --project node --project webview` 2507 passed, 3 skipped (incl. the 11-fixture sweep over Board, Overview and every detail, empty states included); eslint 0 warnings, both `tsc` clean, `npm run compile` clean.
+- **Notes:** Run after T-002 (parallel stage in sequence). `NEXT_STEP_COPY_LABEL` became `COPY_PROMPT_LABEL` in the one text module; `CopyButton` and the quick-pick message use it. The sweep helper `renderFixture` in `webviewBundle.test.ts` is reused by T-005 (names, tips). The icon button's tooltip stays its name outside feedback (0022 test unchanged). 0014's setup buttons and the "Copy Next Step" command titles untouched (A-007).
 
 ### T-004 — The Studio contributes and reads two settings
 
