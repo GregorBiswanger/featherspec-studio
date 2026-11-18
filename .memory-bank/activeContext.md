@@ -10,7 +10,8 @@ Current phase: act
 ## Active Spec
 - [0015 spec](../.specs/active/0015-focus-on-visibility.md) / [plan](../.specs/active/0015-focus-on-visibility.plan.md), In Progress, all steps verified (T-016…T-020: fixes from the compile of 2026-11-17).
 - [0014 spec](../.specs/active/0014-setup-featherspec-from-studio.md) / [plan](../.specs/active/0014-setup-featherspec-from-studio.plan.md), In Progress.
-- [0016 spec](../.specs/active/0016-honest-signals.md) / [plan](../.specs/active/0016-honest-signals.plan.md), In Progress, 10 steps, started 2026-11-17 (Baseline 3cdab90); T-001…T-013 verified 2026-11-18 (T-011…T-013: fixes from the compile of S36), plan Done; waits for CI at `870dc63`, Gregor's AC-025 Hands-On and a fresh `/sdd-compile`. 0017 planned 2026-11-18: [plan](../.specs/backlog/0017-next-step-everywhere.plan.md), 9 steps, not reviewed; 0018…0020 in backlog/, specified, unplanned.
+- [0016 spec](../.specs/active/0016-honest-signals.md) / [plan](../.specs/active/0016-honest-signals.plan.md), In Progress, 10 steps, started 2026-11-17 (Baseline 3cdab90); T-001…T-013 verified 2026-11-18 (T-011…T-013: fixes from the compile of S36), plan Done; waits for CI at `870dc63`, Gregor's AC-025 Hands-On and a fresh `/sdd-compile`. 0018…0020 in backlog/, specified, unplanned.
+- [0017 spec](../.specs/active/0017-next-step-everywhere.md) / [plan](../.specs/active/0017-next-step-everywhere.plan.md), In Progress, 9 steps, started 2026-11-18 (Baseline fe0bb37), moved to active/ on Gregor's delegated start signal; proxy decisions P-1…P-15 in the plan.
 - Completed: 0001…0007 and 0013 in [.specs/done/](../.specs/done/) (amended by 0015); 0008…0012 in done/ are Deprecated with a successor link to 0015. Plans frozen in [.specs/plan-archive/](../.specs/plan-archive/).
 
 ## Changed Recently
@@ -32,7 +33,7 @@ Current phase: act
 2. Gregor: 0014 M-2 with the button, then `/sdd-compile` for 0014.
 3. Gregor: work through [docs/release-checklist.md](../docs/release-checklist.md), then Go.
 4. 0016: CI result at `870dc63` (orchestrator), Gregor's AC-025 (Hands-On on `tip-splitter`, S2 sentence in the Activity Bar view, Copy label change, a problem badge), then `/sdd-compile` again in a fresh session; the spec stays in `active/` until then.
-5. Gregor: read the 0017 plan (proxy decisions P-1…P-15 in its Research); the start signal moves it to `active/` and begins T-001.
+5. 0017 in progress: next step is the open one in its plan (*Session handoff*); Gregor reads the proxy decisions P-1…P-15.
 
 ## Validation
 - 0016: unit, lint, both type checks, compile and compile-tests green in the agent sandbox after T-013; `npm test` green on Gregor's Windows 11 machine at `870dc63` on 2026-11-18 (24 + 1 + 1 + 1), `npm run test:unit` there 1801 passed, 7 skipped, 12 timing; CI at `870dc63` not recorded yet (AC-023 open), AC-025 open.

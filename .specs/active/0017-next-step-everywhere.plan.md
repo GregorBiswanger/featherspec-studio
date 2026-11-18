@@ -1,7 +1,7 @@
 # Plan — Next Step Everywhere, No Pseudo-Moves
 
 **Spec:** [0017-next-step-everywhere.md](0017-next-step-everywhere.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-18
 **Current step:** T-001
 
@@ -393,9 +393,9 @@ Stages 4 and 5 cannot: they share `extension.ts`, `package.json`, the protocol a
 
 ## Session handoff
 
-- **Done so far:** plan written 2026-11-18 (S38), not reviewed yet.
-- **Next action:** Gregor reads the plan; on the start signal `/sdd-lifecycle` moves the pair to
+- **Done so far:** plan written 2026-11-18 (S38); moved to `active/` and started 2026-11-18 (S39).
+- **Next action:** T-001.
   `active/`, then T-001.
 - **Open decisions:** proxy decisions P-1…P-15 (Research) await Gregor's reading; spec OP-002 stays his.
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** `fe0bb37` (plan commit, before the first step); unit tests at the Baseline: 1818 passed, 3 skipped (after the lifecycle move).
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked).
