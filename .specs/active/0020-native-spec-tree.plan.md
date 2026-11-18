@@ -377,18 +377,18 @@ and the host smoke, so they stay `→`.
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001 | — | — | open |
-| AC-002 | T-001, T-005 | — | — | open |
-| AC-003 | T-001 | — | — | open |
-| AC-004 | T-001 | — | — | open |
-| AC-005 | T-001 | — | — | open |
-| AC-006 | T-002, T-005 | — | — | open |
+| AC-001 | T-001 | src/core/shell/specTree.ts:buildSpecTree | specTree.test.ts "AC-001: the groups" | built |
+| AC-002 | T-001, T-005 | src/core/shell/specTree.ts:rowId, groupsOf | specTree.test.ts "AC-002: expand state and IDs" | built |
+| AC-003 | T-001 | src/core/shell/specTree.ts:compareRows | specTree.test.ts "AC-003: the order" | built |
+| AC-004 | T-001 | src/core/shell/specTree.ts:rowOf | specTree.test.ts "AC-004: the row texts" | built |
+| AC-005 | T-001 | src/core/shell/specTree.ts:STATE_ICONS | specTree.test.ts "AC-005: icons and colours" | built |
+| AC-006 | T-002, T-005 | src/core/shell/specTree.ts:tooltipOf | specTree.test.ts "AC-006: the tooltip" | built |
 | AC-007 | T-004 | — | — | open |
 | AC-008 | T-004 | — | — | open |
 | AC-009 | T-004, T-005 | — | — | open |
-| AC-010 | T-002, T-005 | — | — | open |
+| AC-010 | T-002, T-005 | src/core/shell/specTree.ts:badgeOf | specTree.test.ts "AC-010: the badge" | built |
 | AC-011 | T-002, T-005 | — | — | open |
-| AC-012 | T-002, T-005 | — | — | open |
+| AC-012 | T-002, T-005 | src/core/shell/specTree.ts:buildSpecTree | specTree.test.ts "AC-012: the states of the view" | built |
 | AC-013 | T-003, T-005 | — | — | open |
 | AC-014 | T-004 | — | — | open |
 | AC-015 | T-005, T-006 | — | — | open |
@@ -402,9 +402,8 @@ and the host smoke, so they stay `→`.
 
 ## Session handoff
 
-- **Done so far:** plan written; spec revised (P-1, P-2).
-- **Next action:** Gregor reads the plan; on his start signal the pair moves to `active/`
-  (`/sdd-lifecycle`), then T-001.
+- **Done so far:** plan started (spec and plan moved to active/, Baseline 16fc52b); stage 1 done: T-001, T-002 verified and committed (core model src/core/shell/specTree.ts).
+- **Next action:** T-003 (tree service), then T-004 (actions), in sequence.
 - **Open decisions:** none; P-1…P-24 stand unless Gregor changes them.
 - **Baseline:** `16fc52b` (HEAD before the first step commit; started 2026-11-18 on Gregor's delegated start signal)
 - **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here); the
