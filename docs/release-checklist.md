@@ -114,9 +114,10 @@ and the expected result. A clear miss reopens the named spec.
 
 - [ ] **AC-022** *(Gregor or his delegate)*: preview-harness screenshots in Dark, Light and High Contrast of
   Board and Overview with the side panel of the `studio-0015` fixture at 1400x900 and 800x900. The side
-  panel is at most 900 px tall with Format notes and Status history closed; at 800 px the drawer covers the
-  right part of the board and a card focused under it by Tab or arrow scrolls clear; in the Overview every
-  row with its next step and Copy and the figures line stay visible left of the drawer; nothing is cut off.
+  panel is at most 900 px tall with Format notes and Status history closed; the drawer of this item is
+  superseded by 0022: below 900 px the detail shows alone with its back button, and the area (Board or
+  Overview) shows alone without a selection; in the Overview every row with its next step and Copy and the
+  figures line stay visible beside the side panel; nothing is cut off.
 - [ ] In a real VS Code window: clicking an ID or a file name in the side panel opens the file beside the
   Studio, at the line of the ID, and the Studio stays visible; a card, an Overview row and an activity entry
   select in place without changing the area; Escape and the close button close the panel and return focus to
@@ -139,14 +140,15 @@ and the expected result. A clear miss reopens the named spec.
   800 px, at window widths 1600 px and 1000 px, a Studio panel of 920 px, at 800 px and at VS Code zoom level 2, with a
   spec selected, on this repository and `fs170-brownfield-mixed`, Overview and Board show: no title word split, every Copy fully visible and
   reachable by Tab, at most two filled buttons, paths broken only after a separator, whole Problem sentences, the warning
-  on the collapsed Done strip, and each state told at a glance. Screenshots and verdict in the plan.
+  on the collapsed Done strip, and each state told at a glance (every icon shape distinct, the Problem warning included, and each state icon in its colour). Screenshots and verdict in the plan.
 - [ ] **AC-020** *(real VS Code)*: at a sidebar width of 300 px in the three themes, on this repository,
   `fs170-brownfield-mixed` and `tip-splitter`, every tree row shows its command uncut, the `Done` group shows its
   Problem hint and the state icons differ by shape.
 - [ ] **AC-021 (build part)** *(Gregor on `tip-splitter`)*: without asking, say which Copy you press first, where a
   Done spec's Problem shows and what `Ready` and `Up next` hold; the plan records the answers.
-- [ ] **AC-025** *(preview harness, then Gregor)*: at 1600 px with 0015 selected, no two vertical scrollbars side by
-  side; a width set by the divider returns after closing and selecting again and after a window reload; a double-click restores the
+- [ ] **AC-025** *(preview harness, then Gregor)*: at 1600 px with 0015 selected the area takes about 60 % of the
+  frame and the side panel about 40 % by default, the area's scrollbar sits at the divider and the side panel's scrollbar at the
+  right edge, so no two vertical scrollbars stand side by side; back returns to the row or card that opened the detail; a width set by the divider returns after closing and selecting again and after a window reload; a double-click restores the
   default; at 800 px and at zoom level 2 the area shows alone, the detail alone with its back button and no divider.
 
 ## Go

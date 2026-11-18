@@ -70,7 +70,7 @@ Studio derives each spec's column from the files, in this order:
 - in `.specs/backlog/` and passing the readiness checks (a draft with a plan that has not started) → **Ready** (derived);
 - otherwise → **Backlog**.
 
-A spec with contradictory or unreadable files stays in the column of its folder and shows the reason. Hover a Ready, Review or Blocked column header on the Board for the rule behind a derived state; the rule ID (`S-READY`, `S-REVIEW`, `S-BLOCKED`) is in its tooltip. FeatherSpec has no priority, persisted compile verdict or dependency field, so the Studio shows none.
+A spec with contradictory or unreadable files stays in the column of its folder and shows a sentence that says what is wrong (the technical reason is in its tooltip). Hover a Ready, Review or Blocked column header on the Board for the rule behind a derived state; the rule ID (`S-READY`, `S-REVIEW`, `S-BLOCKED`) is in its tooltip. FeatherSpec has no priority, persisted compile verdict or dependency field, so the Studio shows none.
 
 ## Commands
 

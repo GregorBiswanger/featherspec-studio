@@ -1,9 +1,9 @@
 # Plan — Layout and Signal Polish
 
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-18
-**Current step:** T-021
+**Current step:** T-022
 
 ## Approach
 
@@ -570,6 +570,14 @@ never on the repository.
 - [x] **Verified (T-021):** 2026-11-18, titles only, so no red run: `grep -rn "0022 AC-008 (P-17)\|AC-007 (X-07)" src` empty before commit; audit rerun: baseline 2330, head 2551, 35 absent, 0 decreased; `npm run test:unit` 2452 passed, 3 skipped (+13 timing) (unchanged: renames only).
 - **Notes:** manual evidence recorded as `manual: orchestrator (Gregor's delegate) 2026-11-18, harness r2check at 7cb4491`: G-1…G-4, PD-075 and AC-028 passed, V1 failed and is fixed in T-014. Still open: AC-019 and AC-025 (the orchestrator's harness round 2), AC-020 and AC-021 (Gregor), AC-017 (CI, at the PR). The compile's edit 8 (T-006 to T-011 `Verified:` lack dates) is historical: those entries were written on 2026-11-18 as the plan's header states; no entry is rewritten.
 
+### T-022 — Docs of the fix round: README, checklist, Memory Bank, notes in older plans and specs
+
+- **Covers:** compile intended document edits 3 to 7; AC-018, AC-016 (the 0018 note names the right criterion)
+- **Do:** README (a Problem "shows a sentence (the technical reason is in its tooltip)"); `docs/release-checklist.md`: the 0019 AC-022 item says the drawer is superseded by 0022 (below 900 px the detail alone with its back button), the 0022 AC-019 item adds "every icon shape distinct, the Problem warning included, and each state icon in its colour", the AC-025 item adds "the area about 60 % and the side panel about 40 %", "the side panel's scrollbar at the right edge" and "back returns to the row or card that opened the detail"; `.memory-bank/activeContext.md` (the 0019 summary no longer says "400 px", "drawer" or "Spec Explorer pane"; 0022 now and validation lines); 0018 spec AC-014 note "(0022 AC-008)" → "(0022 AC-009)"; notes on the 0019 plan row AC-005 and the 0020 plan row AC-005 (the removed `detail/drawer.ts` and `STATE_ICONS`). Edit 8 (dates of T-006…T-011) is a note only, in T-021.
+- **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` stays green; gates
+- [x] **Verified (T-022):** 2026-11-18, docs only, no red run (the staying `docsScan.test.ts` guards the notes, names and checklist order): 98 passed; `npm run test:unit` 2452 passed, 3 skipped (+13 timing); `grep -n "0022 AC-008" .specs/active/0018-overview-and-compact-board.md` empty.
+- **Notes:** the 0018 note count in `docsScan.test.ts` is unchanged (one note edited, none added). The README screenshot stays (orchestrator's call).
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
@@ -606,8 +614,8 @@ never on the repository.
 
 ## Session handoff
 
-- **Done so far:** all 11 steps (T-001…T-011) built and verified 2026-11-18 on branch `ux-round-2`; plan Done, spec stays In Progress. Gates green (eslint 0 warnings, both tsc clean, unit 2418 passed, 3 skipped, +13 timing; compile and compile-tests clean). Test-title audit: 34 absent, 0 decreased, all mapped.
-- **Next action:** the orchestrator's preview harness for AC-019 and AC-025 (layout that jsdom cannot decide), `npm test` on Windows and CI (host smoke AC-019 of 0020 now expects `0001 Restaurant-Rec…` and `/sdd-compile`), Gregor's AC-020 and AC-021 on `tip-splitter`, then `/sdd-compile`.
+- **Done so far:** all 22 steps built and verified 2026-11-18 on branch `ux-round-2` (T-001…T-011 the plan, T-012…T-022 the fix round after the compile S70: D1 glyphs by motif, D2 Problems title uncut, D3 tinted Overview icons, D4 breaking long segments, mutants M05, M05b, M05c, M39, M51, M55 closed, PathText final `<wbr>`, `problemLineText` removed, traceability, retitled tests, docs); plan Done, spec stays In Progress. Gates green (eslint 0 warnings, both tsc clean, unit 2452 passed, 3 skipped, +13 timing; compile and compile-tests clean). Test-title audit: 35 absent, 0 decreased, all mapped.
+- **Next action:** the orchestrator's harness round 2 for AC-019 and AC-025 (V1 is fixed in T-014; also `fs170-brownfield-mixed`, zoom level 2, a long Problems title above 686 px, reload persistence), `npm test` on Windows and CI (host smoke AC-019 of 0020 now expects `0001 Restaurant-Rec…` and `/sdd-compile`), Gregor's AC-020 and AC-021 on `tip-splitter`, then `/sdd-compile`.
 - **Open decisions:** none; the proxy decisions P-1…P-22 stand, new ones are in the steps' `Notes:`.
 - **Baseline:** `20a1e68`.
 - **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here); layout is checked in the orchestrator's preview harness.
