@@ -3,7 +3,7 @@
 **Spec:** [0024-send-next-step-to-assistant.md](0024-send-next-step-to-assistant.md)
 **Status:** Done
 **Last updated:** 2026-11-18
-**Current step:** none (T-001…T-013 verified; manual AC-016 real window and AC-017…AC-019 open)
+**Current step:** T-014 (T-001…T-013 verified; manual AC-016 real window and AC-017…AC-019 open)
 
 ## Approach
 
@@ -487,7 +487,7 @@ them all." No step above is renumbered or edited except where its note says so. 
   Copilot to Claude Code while the item `Send to the current chat` has focus), the layout effect also counts "the menu was open at the last commit and the focus is on `body` now" as inside.
 - P-22 (D3, F3) The handoff is scoped to the place. A place component `StepAction` (`ui/StepAction.tsx`) renders the Send
   button or the primary Copy prompt of the detail's first line and of an Overview row, and owns a `FocusHandoff` created by
-  `useFocusHandoff()` (`ui/popup.ts`). The Send button reports "I leave with focus inside" to its place; the Copy prompt
+  `useFocusHandoff()` (`ui/focusHandoff.ts`). The Send button reports "I leave with focus inside" to its place; the Copy prompt
   that mounts in the same place in the same commit takes the focus; the place clears the handoff in its own layout effect
   after the children's. No module flag, no microtask. A line that changes key remounts its list item, so nothing is handed
   over and 0019 AC-020's rule decides (the heading). A row that leaves the Overview takes its place with it: no other
@@ -587,6 +587,100 @@ them all." No step above is renumbered or edited except where its note says so. 
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green; final gates
 - [x] **Verified (T-013):** 2026-11-18 red: `npx vitest run --project node src/adapters/node/docsScan.test.ts` 3 failed (README Privacy still said "only when you paste it", the checklist's AC-017 did not ask for the NS-6 default, the project brief did not know Send); green after: 150 passed. Gates (final): eslint 0 warnings, both tsc clean, `npm run test:unit` 3113 passed + 3 skipped (+18 timing), `npm run compile`, `npm run compile-tests` green; `git status` clean.
 - **Notes:** F7 (OP-004) stays Gregor's: the NS-6 default for Copilot is unchanged, the checklist asks him to record the draft behaviour and decide. The plan's Status is Done (all steps ticked); the spec stays In Progress in `active/` and is not moved. The AC-016 harness note is recorded in *AC-016 harness evidence*.
+
+## Fix round 2 (after the final check of round 2, 2026-11-19)
+
+Work order: `/home/claude/orch/compile/final-check-r2.md`, findings 1–9 (docs only). Gregor's instruction: "Fix the
+documentation findings of the round-2 final check before the PR: append them as fix steps T-014 onward to the 0024 plan
+(it is the round's last spec) and do them all." No step above is renumbered or edited except where its note says so.
+Finding 10 (the wording "same chat" and "current chat") and OP-004 are Gregor's and are not touched. No product code
+changes; where a docs scan decides a change, the scan is written first and shown red against the old docs on a scratch
+copy (`git archive` of the head into `/tmp`).
+
+### T-014 — The README screenshots show the UI of 5c70dbd; a fourth shows the Plan map
+
+- **Covers:** final check finding 1
+- **Do:**
+  - Replace `media/screenshots/overview-dark.png`, `board-dark.png` and `spec-detail-light.png` with the shots of the
+    preview harness at 5c70dbd (1400×900, real core); add `plan-map-dark.png` (a copy of the fixture
+    `fs110-parallel-synthetic`, stage 2 parallel with its ways). Reference it in the README's Plan map part; each alt
+    text says what its image shows. `.vscodeignore` keeps `media/screenshots/**` as before.
+  - `docsScan.test.ts` first: the README links the four shots, each exists, each has an alt text of its own content,
+    `.vscodeignore` still holds `media/screenshots/**`.
+- **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green
+- [ ] **Verified (T-014):**
+
+### T-015 — `activeContext.md` is a short dashboard again
+
+- **Covers:** final check finding 2 (`AGENTS.md`: max 1–2 screen pages, about 60 lines, in content too)
+- **Do:**
+  - Rewrite to about 6 KB or less: *Now* in 3–5 lines (round 2, 0021–0024 implemented and fixed, waiting for CI at the
+    PR, Gregor's checklist and the fresh compiles), one line per active spec, the last three *Changed Recently* entries
+    one line each, *Validation* as one short pointer to the plans, *Next* renumbered. Every heading and metadata line of
+    `.claude/rules/memory-bank.md` stays.
+  - `docsScan.test.ts` first: the file is at most 7000 bytes and 60 lines, holds the three metadata lines and the seven
+    headings, *Now* is at most five lines, *Changed Recently* has at most three bullets, *Next* starts at 1.
+- **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green
+- [ ] **Verified (T-015):**
+
+### T-016 — The CHANGELOG's 0.1.0 entry agrees with itself and the product
+
+- **Covers:** final check finding 3
+- **Do:** the tree action is **Copy Next Step**; the toolbar has Open, Refresh and the gear; one name for the copy
+  control, **Copy prompt**; three settings (the Send bullet folded into the settings bullet); Problems are sentences; the
+  palette list is complete (Open Plan Map, Copy Next Step, Open Settings). `docsScan.test.ts` first.
+- **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green
+- [ ] **Verified (T-016):**
+
+### T-017 — The README no longer contradicts itself
+
+- **Covers:** final check finding 4
+- **Do:** "The toolbar has **Open**, **Refresh** and the gear (**Open Settings**)"; the new-chat default reads
+  "(verifying a result and challenging a spec)". `docsScan.test.ts` first.
+- **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green
+- [ ] **Verified (T-017):**
+
+### T-018 — The checklist keeps Gregor's real window at 0021 AC-022
+
+- **Covers:** final check finding 5
+- **Do:** the 0021 AC-022 line says "then Gregor in a real window". `docsScan.test.ts` first.
+- **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green
+- [ ] **Verified (T-018):**
+
+### T-019 — §5 lists 0019 AC-020; P-22 names `focusHandoff.ts`
+
+- **Covers:** final check finding 6
+- **Do:** a §5 row "0019 AC-020 — an offer change hands focus to the replacing Copy prompt (0024 AC-010)" and an
+  `*Amended by 0024 (PD-068): …*` note under 0019 AC-020; P-22 says `useFocusHandoff()` lives in `ui/focusHandoff.ts`.
+  `docsScan.test.ts` first (the 0019 count of 0024 notes rises from 5 to 6).
+- **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green
+- [ ] **Verified (T-019):**
+
+### T-020 — The 0021 test-title audit homes the `docsScan.test.ts` rename of 463899b
+
+- **Covers:** final check finding 7
+- **Do:** one row in the 0021 plan's `## Test-title audit`. `docsScan.test.ts` first.
+- **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green
+- [ ] **Verified (T-020):**
+
+### T-021 — The harness rechecks and the Windows runs are recorded in the plans
+
+- **Covers:** final check finding 8 (the evidence that exists; CI and the fresh compiles stay open)
+- **Do:** 0023 plan: harness recheck at d756fa9 (60 views incl. `par-odd`, all pass), Windows at d756fa9 (unit 2812
+  passed, 7 skipped, +16 timing; `npm test` 31+1+1+1). 0024 plan: harness recheck at 5c70dbd (60/60), Windows at
+  5c70dbd (unit 3109 passed, 7 skipped, +18 timing; `npm test` 32+1+1+1). `docsScan.test.ts` first.
+- **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green
+- [ ] **Verified (T-021):**
+
+### T-022 — The `AGENTS.md` snapshot names modules and points to the maps
+
+- **Covers:** final check finding 9
+- **Do:** the module lines of `src/core`, `src/webview` (and the shared line) shrink to module names and the pointer to
+  `.architecture/{core,webview}.md`, which hold the details; no module and no boundary is dropped.
+  `docsScan.test.ts` first: every module the snapshot named still appears in a snapshot line or its map, the lines are
+  at most 600 characters, `AGENTS.md` is smaller.
+- **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green; final gates
+- [ ] **Verified (T-022):**
 
 ## Test-title audit
 
