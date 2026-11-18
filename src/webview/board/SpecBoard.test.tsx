@@ -10,11 +10,11 @@ import { createClient, type ShellClient } from '../client';
 import { baseView, click, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
 import { boardEvent, boardView, card } from './testing/views';
 
-const STEP: StepView = { short: 'Start T-003', line: 'Start T-003 of .specs/backlog/0007-x.plan.md', lines: [{ text: 'Start T-003 of .specs/backlog/0007-x.plan.md' }] };
+const STEP: StepView = { short: 'Start T-003', line: 'Start T-003 of .specs/backlog/0007-x.plan.md', lines: [{ text: 'Start T-003 of .specs/backlog/0007-x.plan.md', intent: 'Write the plan' }] };
 const TWO: StepView = {
     short: '/sdd-plan',
     line: '/sdd-plan .specs/active/0008-y.md',
-    lines: [{ text: '/sdd-plan .specs/active/0008-y.md' }, { text: 'continue', label: 'Then, in the same chat, if nothing blocks:' }],
+    lines: [{ text: '/sdd-plan .specs/active/0008-y.md', intent: 'Write the plan' }, { text: 'continue', intent: 'Not sure where it stands? Let the agent report first' }],
 };
 
 let posted: Envelope[];
@@ -62,7 +62,7 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
     });
 
     it('AC-018: the card is built of the rows head, path, state row and step line in that order, and has no state chip', async () => {
-        const entry = card('0001', { state: 'Active', path: '.specs/active/0001-thing.md', problems: 1, step: { short: '/sdd-plan', line: '/sdd-plan .specs/active/0001-thing.md', lines: [{ text: '/sdd-plan .specs/active/0001-thing.md' }] } });
+        const entry = card('0001', { state: 'Active', path: '.specs/active/0001-thing.md', problems: 1, step: { short: '/sdd-plan', line: '/sdd-plan .specs/active/0001-thing.md', lines: [{ text: '/sdd-plan .specs/active/0001-thing.md', intent: 'Write the plan' }] } });
         const li = (await open(boardView([entry]))).querySelector('[data-card]')!;
         expect([...li.children].map((child) => child.className)).toEqual(['card-head', 'card-path', 'card-state', 'card-step']);
         expect(li.querySelector('.state-chip, [data-marker="derived"], .card-summary, .card-foot')).toBeNull();
@@ -452,7 +452,7 @@ describe('0017 AC-004: the next step on a card', () => {
         expect(entry.lastElementChild).toBe(line);
         expect(line.querySelector('.step-label')?.textContent).toBe('Next');
         expect(line.querySelector('.step-short')?.textContent).toBe('/sdd-plan');
-        expect(line.querySelector('.step-text')?.getAttribute('title')).toBe('/sdd-plan .specs/active/0008-y.md\nThen, in the same chat, if nothing blocks: continue');
+        expect(line.querySelector('.step-text')?.getAttribute('title')).toBe('Write the plan\n/sdd-plan .specs/active/0008-y.md\nNot sure where it stands? Let the agent report first\ncontinue');
         const copy = line.querySelector('button')!;
         expect(copy.className).toContain('copy-icon');
         expect(copy.textContent).toBe('');
@@ -498,12 +498,12 @@ describe('0017 AC-005: Copy on a card', () => {
     it('the feedback shows at that Copy only, as Copied, and as Could not copy after a failure', async () => {
         const container = await open(boardView([card('0007', { state: 'Ready', step: STEP }), card('0008', { step: TWO })]));
         await click(copies(container)[0]!);
-        await send({ v: 4, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
+        await send({ v: 5, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
         expect(copies(container).map((button) => button.getAttribute('aria-label')?.split(':')[0])).toEqual(['Copied', 'Copy']);
         expect(container.querySelectorAll('.card-step [role="status"]')[0]?.textContent).toBe(COPIED_TEXT);
         expect(container.querySelectorAll('.card-step [role="status"]')[1]?.textContent).toBe('');
         await click(copies(container)[1]!);
-        await send({ v: 4, kind: 'evt', type: 'copyResult', payload: { ok: false, text: COPY_FAILED_TEXT } });
+        await send({ v: 5, kind: 'evt', type: 'copyResult', payload: { ok: false, text: COPY_FAILED_TEXT } });
         expect(copies(container)[1]?.getAttribute('aria-label')?.split(':')[0]).toBe('Could not copy');
     });
 

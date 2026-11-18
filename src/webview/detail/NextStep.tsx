@@ -16,8 +16,8 @@ export function NextStep(props: { nextStep: NextStepView; copyResult: { ok: bool
                 ) : (
                     <ul className="next-step-lines">
                         {nextStep.lines.map((line, index) => (
-                            <li key={`${line.label ?? ''}|${line.text}`}>
-                                {line.label === undefined ? null : <span className="next-step-label">{line.label} </span>}
+                            <li key={`${line.intent}|${line.text}`}>
+                                <span className="next-step-intent">{line.intent}</span>
                                 <code>
                                     <PathText command={line.text} />
                                 </code>{' '}

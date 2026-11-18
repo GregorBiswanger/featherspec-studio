@@ -14,7 +14,7 @@ async function stepsOf(inputs: readonly SpecInput[], extra: Record<string, strin
 }
 
 function step(number: string, state: SpecStep['state'], key = `.specs/active/${number}-thing.md`): SpecStep {
-    return { key, stem: `${number}-thing`, number, state, title: 'T', label: `${number} T`, step: { short: '/sdd-plan', line: `/sdd-plan ${key}`, lines: [{ text: `/sdd-plan ${key}` }] } };
+    return { key, stem: `${number}-thing`, number, state, title: 'T', label: `${number} T`, step: { short: '/sdd-plan', line: `/sdd-plan ${key}`, lines: [{ text: `/sdd-plan ${key}`, intent: 'Write the plan' }] } };
 }
 
 describe('0017 AC-013: the current spec', () => {

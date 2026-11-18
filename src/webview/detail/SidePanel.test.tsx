@@ -12,7 +12,7 @@ let posted: Envelope[];
 let mounted: Mounted | undefined;
 const clients: ShellClient[] = [];
 
-const STEP = { short: '/sdd-plan', line: '/sdd-plan .specs/active/0004-thing.md', lines: [{ text: '/sdd-plan .specs/active/0004-thing.md' }] };
+const STEP = { short: '/sdd-plan', line: '/sdd-plan .specs/active/0004-thing.md', lines: [{ text: '/sdd-plan .specs/active/0004-thing.md', intent: 'Write the plan' }] };
 const THREE = [card('0003'), card('0004', { step: STEP }), card('0006')];
 
 function selection(number: string): SelectedSpec {

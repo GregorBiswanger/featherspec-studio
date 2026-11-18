@@ -12,7 +12,7 @@ export function historySection(): HistorySection {
     };
 }
 
-export const NEXT_STEP: NextStepView = { rule: 'NS-6', lines: [{ text: `/sdd-plan ${SPEC_KEY}` }] };
+export const NEXT_STEP: NextStepView = { rule: 'NS-6', lines: [{ text: `/sdd-plan ${SPEC_KEY}`, intent: 'Write the plan' }] };
 
 export function detailView(extra: Partial<SpecDetailView> = {}, nextStep: NextStepView = NEXT_STEP, problems: DiagnosticLine[] = []): DetailView {
     const view: SpecDetailView = {

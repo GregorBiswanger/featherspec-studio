@@ -70,7 +70,7 @@ export function buildDetail(input: DetailInput): DetailView {
         rule: entry.rule,
         persistence: entry.persistence,
         ...(entry.deprecated === undefined ? {} : { successor: successorText(entry.deprecated.successor) }),
-        nextStep: next,
+        nextStep: 'lines' in next ? { rule: next.rule, lines: next.lines.map((line) => ({ text: line.text, intent: line.intent })) } : next,
         problems: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').map(diagnosticLine),
         notes: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'note').map(diagnosticLine),
         ...(progress === undefined ? {} : { progress }),

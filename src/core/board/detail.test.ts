@@ -179,8 +179,9 @@ describe('0015 AC-003, AC-004, AC-008: the next step in the detail view', () => 
     it('AC-003: the view carries the rule and lines of nextStep for the selected spec', async () => {
         const model = await modelOf(FILES);
         const view = spec(buildDetail({ selection: { stem: '0001-a' }, model, history: NO_HISTORY }));
-        expect(view.nextStep).toEqual(nextStep(model, '.specs/active/0001-a.md'));
-        expect(view.nextStep).toEqual({ rule: 'NS-6', lines: [{ text: '/sdd-plan .specs/active/0001-a.md' }] });
+        const next = nextStep(model, '.specs/active/0001-a.md') as { rule: string; lines: unknown[] };
+        expect(view.nextStep).toEqual({ rule: next.rule, lines: next.lines });
+        expect(view.nextStep).toEqual({ rule: 'NS-6', lines: [{ text: '/sdd-plan .specs/active/0001-a.md', intent: 'Let the agent report where the plan stands' }] });
     });
 
     it('AC-003: a rule without a line gives its text', async () => {

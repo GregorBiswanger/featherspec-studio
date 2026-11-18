@@ -44,7 +44,7 @@ function tooltipOf(situation: Exclude<Situation, { kind: 'line' }>, click: strin
         const { spec } = situation;
         paragraphs.push(`**${escapeMarkdown(spec.number)} · ${escapeMarkdown(spec.state)}** ${escapeMarkdown(spec.title)}`);
         for (const line of spec.step.lines) {
-            paragraphs.push(escapeMarkdown(line.label === undefined ? line.text : `${line.label} ${line.text}`));
+            paragraphs.push(escapeMarkdown(line.intent), escapeMarkdown(line.text));
         }
     }
     paragraphs.push(escapeMarkdown(projectLineText(situation.project.name, situation.project.version)));

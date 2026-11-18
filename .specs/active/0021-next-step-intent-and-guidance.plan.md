@@ -201,8 +201,8 @@ ends of stages 1 and 3.
 - **Verify:** `npx vitest run --project node src/core/board/nextStep.test.ts src/shared/protocol src/core/shell/specTree.test.ts src/core/copyNextStep/statusEntry.test.ts`
   and `npx vitest run --project webview src/webview/detail/SpecDetail.test.tsx src/webview/board/SpecBoard.test.tsx src/webview/areas/overview/Sections.test.tsx`
   red (stub, failing literals), then green; gates 1–4
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-18 · red: `npx vitest run --project node src/core/board/nextStep.test.ts` 20 failed of 50 (no `STEP_GUIDES`, no `case`/`intent` keys, NS-6 still `/sdd-plan`) → green after the change: same file 50 passed; `npx vitest run --project node --project webview` 152 files, 2478 passed, 3 skipped; eslint 0 warnings, both `tsc` clean, `npm run compile` clean.
+- **Notes:** NS-9 line 1 reads the §6.1 row literally, `Have the spec challenged, then plan it` (the row's `;` splits line 1 from line 2). `NS-6-plan` is reachable only for an Active spec whose plan link is an archive link (reactivated spec): without any plan the entry is a lifecycle contradiction (NS-2). `buildDetail` maps the line to `{ text, intent }` so `case` never reaches the webview. The old `nextStep.test.ts` AC-004 fixtures stay and now match with `toMatchObject` (prompts unchanged, AC-002). `PROTOCOL_VERSION` 5; "another version" literals in `messages.test.ts`, `client.test.ts`, `PanelStateView.test.tsx` moved to 6. The `shortForm` test left with its describe and returns in T-002.
 
 ### T-002 — Cards, rows, tree and quick pick show the step short form
 

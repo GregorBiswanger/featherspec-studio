@@ -169,7 +169,7 @@ describe('0017 AC-001: the step on a card', () => {
             '.specs/backlog/0007-x.plan.md': `${planText({ status: 'Not started' })}\n## Steps\n\n### T-003 — Step\n\n- [ ] **Verified (T-003):** —\n`,
         });
         expect(cards[0]?.state).toBe('Ready');
-        expect(cards[0]?.step).toEqual({ short: 'Start T-003', line: 'Start T-003 of .specs/backlog/0007-x.plan.md', lines: [{ text: 'Start T-003 of .specs/backlog/0007-x.plan.md' }] });
+        expect(cards[0]?.step).toEqual({ short: 'Start T-003', line: 'Start T-003 of .specs/backlog/0007-x.plan.md', lines: [{ text: 'Start T-003 of .specs/backlog/0007-x.plan.md', intent: 'Start implementing: T-003 Step' }] });
     });
 
     it('a Done card has no step', async () => {

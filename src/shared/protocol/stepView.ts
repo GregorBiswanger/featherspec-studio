@@ -2,7 +2,7 @@ import { isRecord } from './envelope';
 
 export interface StepLineView {
     text: string;
-    label?: string;
+    intent: string;
 }
 
 export interface StepView {
@@ -12,10 +12,10 @@ export interface StepView {
 }
 
 const KEYS: readonly string[] = ['short', 'line', 'lines'];
-const LINE_KEYS: readonly string[] = ['text', 'label'];
+const LINE_KEYS: readonly string[] = ['text', 'intent'];
 
 function isStepLine(value: unknown): value is StepLineView {
-    return isRecord(value) && Object.keys(value).every((key) => LINE_KEYS.includes(key)) && typeof value.text === 'string' && (value.label === undefined || typeof value.label === 'string');
+    return isRecord(value) && Object.keys(value).length === LINE_KEYS.length && LINE_KEYS.every((key) => typeof value[key] === 'string');
 }
 
 export function isStepView(value: unknown): value is StepView {

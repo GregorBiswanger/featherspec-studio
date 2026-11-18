@@ -151,7 +151,7 @@ function rowFor(stem: string, number: string, title: string, state: OverviewView
     return { spec: { stem, number, title, found: true }, state, status: state, problems: 0, ...extra };
 }
 
-const STEP_PLAN = { short: '/sdd-plan', line: '/sdd-plan .specs/active/0001-a.md', lines: [{ text: '/sdd-plan .specs/active/0001-a.md' }, { text: 'continue', label: 'Then, in the same chat, if nothing blocks:' }] };
+const STEP_PLAN = { short: '/sdd-plan', line: '/sdd-plan .specs/active/0001-a.md', lines: [{ text: '/sdd-plan .specs/active/0001-a.md', intent: 'Write the plan' }, { text: 'continue', intent: 'Not sure where it stands? Let the agent report first' }] };
 
 function withRows(): OverviewView {
     const view = sampleView();
@@ -225,7 +225,7 @@ describe('0018 AC-006: a spec row on one line', () => {
         const row = nowRow(await open(withRows()), '0001-a');
         expect(row.querySelector('.ov-title')?.getAttribute('title')).toBe('Alpha');
         expect(row.querySelector('.ov-status')?.getAttribute('title')).toBe('Blocked');
-        expect(row.querySelector('.step-text')?.getAttribute('title')).toBe('/sdd-plan .specs/active/0001-a.md\nThen, in the same chat, if nothing blocks: continue');
+        expect(row.querySelector('.step-text')?.getAttribute('title')).toBe('Write the plan\n/sdd-plan .specs/active/0001-a.md\nNot sure where it stands? Let the agent report first\ncontinue');
     });
 
     it('shows the warning icon with the problem count as text only while the spec has a Problem', async () => {
@@ -254,7 +254,7 @@ describe('0018 AC-006: a spec row on one line', () => {
         expect(sent.filter((type) => type === 'copyText')).toHaveLength(3);
         expect(sent).not.toContain('navigate');
         expect(posted.find((message) => message.type === 'copyText')?.payload).toEqual({ text: '/sdd-plan .specs/active/0001-a.md' });
-        await send({ v: 4, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
+        await send({ v: 5, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
         expect(copy.textContent).toBe('Copied');
     });
 

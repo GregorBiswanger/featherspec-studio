@@ -1,29 +1,40 @@
 import {
+    continueIntent,
     NEXT_STEP_DONE_TEXT,
-    NEXT_STEP_SAME_CHAT_LABEL,
-    NEXT_STEP_THEN_AFTER_READY_LABEL,
-    NEXT_STEP_THEN_LABEL,
     NEXT_STEP_UNREADABLE_TEXT,
     nextStepNumberUsedText,
+    NS2_INTENT,
+    NS4_INTENT,
+    NS5_INTENT,
+    NS5_THEN_INTENT,
+    NS6_REPORT_INTENT,
+    NS6_RESUME_INTENT,
+    NS8_INTENT,
+    NS9_INTENT,
+    NS9_THEN_INTENT,
+    startIntent,
+    type StepCase,
+    WRITE_PLAN_INTENT,
 } from '../../shared/protocol/nextStepTexts';
 import type { StepView } from '../../shared/protocol/stepView';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { ShellModel } from '../ports/shell';
 import type { PlanStep } from '../specs/planSteps';
 import type { SpecEntry } from '../specs/readProject';
+import { plainShort } from './shortTitle';
 
 export const NEXT_STEP_RULE_IDS = ['NS-1', 'NS-2', 'NS-11', 'NS-3', 'NS-4', 'NS-5', 'NS-6', 'NS-7', 'NS-8', 'NS-9', 'NS-10'] as const;
 export type NextStepRuleId = (typeof NEXT_STEP_RULE_IDS)[number];
 
 export interface NextStepLine {
     text: string;
-    label?: string;
+    intent: string;
 }
 
-export type NextStep = { rule: NextStepRuleId; lines: NextStepLine[] } | { rule: NextStepRuleId; text: string };
+export type NextStep = { rule: NextStepRuleId; case: StepCase; lines: NextStepLine[] } | { rule: NextStepRuleId; text: string };
 
-function lines(rule: NextStepRuleId, ...texts: NextStepLine[]): NextStep {
-    return { rule, lines: texts };
+function lines(rule: NextStepRuleId, stepCase: StepCase, ...texts: NextStepLine[]): NextStep {
+    return { rule, case: stepCase, lines: texts };
 }
 
 export function openStep(model: ShellModel, entry: LifecycleEntry): PlanStep | undefined {
@@ -53,7 +64,7 @@ export function nextStep(model: ShellModel, key: string): NextStep | undefined {
     const others = model.project.specs.filter((candidate) => candidate.key !== key);
     const contradiction = entry.diagnostics.some((diagnostic) => diagnostic.kind === 'lifecycle-contradiction');
     if (contradiction || others.some((other) => other.reference === spec.reference)) {
-        return lines('NS-2', { text: `/sdd-lifecycle ${key}` });
+        return lines('NS-2', 'NS-2', { intent: NS2_INTENT, text: `/sdd-lifecycle ${key}` });
     }
     if (others.some((other) => other.number === spec.number && other.slug !== spec.slug)) {
         return { rule: 'NS-11', text: nextStepNumberUsedText(spec.number) };
@@ -62,23 +73,37 @@ export function nextStep(model: ShellModel, key: string): NextStep | undefined {
         case 'Done':
             return { rule: 'NS-3', text: NEXT_STEP_DONE_TEXT };
         case 'Blocked':
-            return lines('NS-4', { text: entry.plan === undefined ? '/sdd-overview' : `/sdd-plan ${key}` });
+            return entry.plan === undefined
+                ? lines('NS-4', 'NS-4', { intent: NS4_INTENT, text: '/sdd-overview' })
+                : lines('NS-4', 'NS-4-plan', { intent: NS4_INTENT, text: `/sdd-plan ${key}` });
         case 'Review':
-            return lines('NS-5', { text: `/sdd-compile ${key}` }, { text: `/sdd-lifecycle ${key}`, label: NEXT_STEP_THEN_AFTER_READY_LABEL });
-        case 'Active':
-            return openStep(model, entry) === undefined
-                ? lines('NS-6', { text: `/sdd-plan ${key}` })
-                : lines('NS-6', { text: `/sdd-plan ${key}` }, { text: 'continue', label: NEXT_STEP_SAME_CHAT_LABEL });
-        case 'Ready':
-            return lines('NS-7', { text: startLine(model, entry) });
+            return lines('NS-5', 'NS-5', { intent: NS5_INTENT, text: `/sdd-compile ${key}` }, { intent: NS5_THEN_INTENT, text: `/sdd-lifecycle ${key}` });
+        case 'Active': {
+            if (entry.plan === undefined) {
+                return lines('NS-6', 'NS-6-plan', { intent: WRITE_PLAN_INTENT, text: `/sdd-plan ${key}` });
+            }
+            const open = openStep(model, entry);
+            return open === undefined
+                ? lines('NS-6', 'NS-6-resume', { intent: NS6_RESUME_INTENT, text: `/sdd-plan ${key}` })
+                : lines(
+                      'NS-6',
+                      'NS-6-open',
+                      { intent: continueIntent(open.id, plainShort(open.title)), text: `Implement ${open.id} of ${entry.plan}` },
+                      { intent: NS6_REPORT_INTENT, text: `/sdd-plan ${key}` },
+                  );
+        }
+        case 'Ready': {
+            const open = openStep(model, entry);
+            return lines('NS-7', 'NS-7', { intent: startIntent(open?.id, plainShort(open?.title ?? '')), text: startLine(model, entry) });
+        }
         case 'Backlog': {
             if (entry.readiness.checks.some((check) => check.id === 'R-2' && check.result === 'fail')) {
-                return lines('NS-8', { text: `/sdd-specify ${key}` });
+                return lines('NS-8', 'NS-8', { intent: NS8_INTENT, text: `/sdd-specify ${key}` });
             }
             if (entry.plan === undefined) {
-                return lines('NS-9', { text: `/sdd-clarify ${key}` }, { text: `/sdd-plan ${key}`, label: NEXT_STEP_THEN_LABEL });
+                return lines('NS-9', 'NS-9', { intent: NS9_INTENT, text: `/sdd-clarify ${key}` }, { intent: NS9_THEN_INTENT, text: `/sdd-plan ${key}` });
             }
-            return lines('NS-10', { text: `/sdd-plan ${key}` });
+            return lines('NS-10', 'NS-10', { intent: WRITE_PLAN_INTENT, text: `/sdd-plan ${key}` });
         }
     }
 }
@@ -101,5 +126,5 @@ export function stepView(model: ShellModel, key: string): StepView | undefined {
         return undefined;
     }
     const first = next.lines[0]!;
-    return { short: shortForm(first.text), line: first.text, lines: next.lines.map((line) => (line.label === undefined ? { text: line.text } : { text: line.text, label: line.label })) };
+    return { short: shortForm(first.text), line: first.text, lines: next.lines.map((line) => ({ text: line.text, intent: line.intent })) };
 }

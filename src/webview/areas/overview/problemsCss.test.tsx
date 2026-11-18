@@ -40,7 +40,7 @@ async function open(): Promise<HTMLElement> {
     await send(shellEvent(baseView({ area: 'overview' }), 1));
     const view = sampleView();
     view.now = [{ spec: { stem: '0001-a', number: '0001', title: PROBLEMS.rows[0]!.spec.title, found: true }, state: 'Active', status: 'Active', problems: 0 }];
-    view.now[0]!.step = { short: '/sdd-plan', line: '/sdd-plan 0001', lines: [{ text: '/sdd-plan 0001' }] };
+    view.now[0]!.step = { short: '/sdd-plan', line: '/sdd-plan 0001', lines: [{ text: '/sdd-plan 0001', intent: 'Write the plan' }] };
     view.problems = PROBLEMS;
     await send(overviewEvent(view));
     return mounted.container;

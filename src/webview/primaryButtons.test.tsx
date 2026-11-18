@@ -24,11 +24,11 @@ afterEach(() => {
 });
 
 const SELECTED: SelectedSpec = { stem: '0001-r', number: '0001' };
-const NS5 = { rule: 'NS-5', lines: [{ text: '/sdd-plan .specs/active/0001-r.md' }, { text: 'continue', label: 'Then, in the same chat, if nothing blocks:' }] };
+const NS5 = { rule: 'NS-5', lines: [{ text: '/sdd-plan .specs/active/0001-r.md', intent: 'Write the plan' }, { text: 'continue', intent: 'Not sure where it stands? Let the agent report first' }] };
 
 function step(n: string): OverviewRow['step'] {
     const line = `/sdd-plan .specs/active/${n}-r.md`;
-    return { short: '/sdd-plan', line, lines: [{ text: line }] };
+    return { short: '/sdd-plan', line, lines: [{ text: line, intent: 'Write the plan' }] };
 }
 
 function row(n: string, withStep = true): OverviewRow {

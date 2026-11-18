@@ -527,7 +527,7 @@ describe('AC-028: the selection', () => {
 });
 
 describe('0015 AC-003, AC-005, AC-008, AC-009: the next step in the detail', () => {
-    const TWO = { rule: 'NS-9', lines: [{ text: '/sdd-clarify .specs/backlog/0007-x.md' }, { text: '/sdd-plan .specs/backlog/0007-x.md', label: 'Then:' }] };
+    const TWO = { rule: 'NS-9', lines: [{ text: '/sdd-clarify .specs/backlog/0007-x.md', intent: 'Have the spec challenged, then plan it' }, { text: '/sdd-plan .specs/backlog/0007-x.md', intent: 'Then: write the plan' }] };
 
     function nextStepSection(container: HTMLElement): HTMLElement {
         return section(container, 'Next step');
@@ -554,15 +554,32 @@ describe('0015 AC-003, AC-005, AC-008, AC-009: the next step in the detail', () 
         expect(button!.classList.contains('secondary-button')).toBe(false);
     });
 
-    it('AC-003: two lines carry the label of the second one; a rule with text only shows the text and no button', async () => {
-        const root = nextStepSection(await open(detailView({}, TWO)));
-        expect(root.textContent).toContain('/sdd-clarify .specs/backlog/0007-x.md');
-        expect(root.textContent).toContain('Then:');
-        expect(copyButtons(root)).toHaveLength(2);
-        const after = nextStepSection(await open(detailView({}, { rule: 'NS-5', lines: [{ text: '/sdd-compile k' }, { text: '/sdd-lifecycle k', label: 'Then, after a READY verdict:' }] })));
-        expect(after.textContent).toContain('Then, after a READY verdict:');
+    it('0021 AC-001: each line shows its intent as its own element directly before its prompt and Copy, in DOM order; a rule with text only shows the text and no button', async () => {
+        const NS5 = { rule: 'NS-5', lines: [{ text: '/sdd-compile k', intent: 'Have the result verified' }, { text: '/sdd-lifecycle k', intent: 'Then, after a READY verdict: close the spec' }] };
+        const NS6 = {
+            rule: 'NS-6',
+            lines: [
+                { text: 'Implement T-003 of .specs/active/0001-a.plan.md', intent: 'Continue with T-003 Reject money values' },
+                { text: '/sdd-plan .specs/active/0001-a.md', intent: 'Not sure where it stands? Let the agent report first' },
+            ],
+        };
+        for (const next of [TWO, NS5, NS6]) {
+            const root = nextStepSection(await open(detailView({}, next)));
+            const items = [...root.querySelectorAll('ul.next-step-lines > li')];
+            expect(items).toHaveLength(2);
+            items.forEach((item, index) => {
+                const intent = item.firstElementChild!;
+                expect(intent.className).toBe('next-step-intent');
+                expect(intent.textContent).toBe(next.lines[index]!.intent);
+                expect(intent.nextElementSibling?.tagName).toBe('CODE');
+                expect(intent.nextElementSibling?.textContent).toBe(next.lines[index]!.text);
+                expect(item.querySelectorAll('button')).toHaveLength(1);
+            });
+            expect(copyButtons(root)).toHaveLength(2);
+        }
         const done = nextStepSection(await open(detailView({}, { rule: 'NS-3', text: NEXT_STEP_DONE_TEXT })));
         expect(done.textContent).toContain('Done — no FeatherSpec step left.');
+        expect(done.querySelector('.next-step-intent')).toBeNull();
         expect(copyButtons(done)).toHaveLength(0);
     });
 
@@ -717,7 +734,7 @@ describe('0022 AC-013, AC-015, AC-002, AC-003: sentences and breaking paths in t
     });
 
     it('AC-002: the detail path, a Files link and the path in a next-step line break after a separator and keep their text', async () => {
-        const container = await open(spec({ path: '.specs/backlog/0007-thing.md' }, { rule: 'NS-5', lines: [{ text: '/sdd-plan .specs/backlog/0007-thing.md' }] }));
+        const container = await open(spec({ path: '.specs/backlog/0007-thing.md' }, { rule: 'NS-5', lines: [{ text: '/sdd-plan .specs/backlog/0007-thing.md', intent: 'Write the plan' }] }));
         const path = container.querySelector('.detail-path')!;
         expect(path.textContent).toBe('.specs/backlog/0007-thing.md');
         expect(path.querySelectorAll('wbr').length).toBeGreaterThan(0);

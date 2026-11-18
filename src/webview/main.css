@@ -776,8 +776,8 @@ main > h1 {
     overflow-wrap: break-word;
 }
 
-.next-step-label {
-    color: var(--vscode-descriptionForeground);
+.next-step-intent {
+    flex: 1 0 100%;
 }
 
 .detail-section {

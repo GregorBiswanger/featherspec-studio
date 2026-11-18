@@ -89,7 +89,7 @@ describe('0017 AC-019: with a current spec the command copies without asking', (
             '.specs/active/0012-thing.plan.md': '# Plan\n\n**Spec:** [0012-thing.md](0012-thing.md)\n**Status:** In Progress\n\n## Steps\n\n### T-001 — A\n\n- [ ] **Verified (T-001):** —\n',
         });
         await command.run();
-        expect(fakes.written).toEqual(['/sdd-plan .specs/active/0012-thing.md']);
+        expect(fakes.written).toEqual(['Implement T-001 of .specs/active/0012-thing.plan.md']);
     });
 
     it('a selected spec is the current spec of the command too', async () => {

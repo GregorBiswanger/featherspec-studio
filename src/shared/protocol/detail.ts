@@ -65,7 +65,7 @@ export interface FileRow {
 
 export interface NextStepLineView {
     text: string;
-    label?: string;
+    intent: string;
 }
 
 export type NextStepView = { rule: string; lines: NextStepLineView[] } | { rule: string; text: string };
@@ -105,7 +105,7 @@ function isNextStepView(value: unknown): value is NextStepView {
     }
     return (
         Array.isArray(value.lines) &&
-        value.lines.every((line) => isRecord(line) && typeof line.text === 'string' && (line.label === undefined || typeof line.label === 'string'))
+        value.lines.every((line) => isRecord(line) && typeof line.text === 'string' && typeof line.intent === 'string')
     );
 }
 

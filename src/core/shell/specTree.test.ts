@@ -327,8 +327,10 @@ describe('0020 AC-006: the tooltip', () => {
         expect(row.tooltip.split('\n\n')).toEqual([
             '**0004 Reviewing**',
             'Review — Plan done, waiting for review',
-            'Next step: `/sdd-compile .specs/active/0004-reviewing.md`',
-            'Then, after a READY verdict: `/sdd-lifecycle .specs/active/0004-reviewing.md`',
+            'Next step: Have the result verified',
+            '`/sdd-compile .specs/active/0004-reviewing.md`',
+            'Then\\, after a READY verdict\\: close the spec',
+            '`/sdd-lifecycle .specs/active/0004-reviewing.md`',
             'Steps 0/1',
             '`.specs/active/0004-reviewing.md`',
         ]);
@@ -381,7 +383,7 @@ describe('0020 AC-006: the tooltip', () => {
         const tree = treeOf(await modelOf({ '.specs/backlog/0001-a.md': spec('A *bold* [x](y) <b>', 'Draft'), '.specs/backlog/0002-b`c.md': spec('B', 'Draft') }));
         const [first, second] = rows(tree);
         expect(first!.tooltip.split('\n\n')[0]).toBe('**0001 A \\*bold\\* \\[x\\]\\(y\\) \\<b\\>**');
-        expect(second!.tooltip).toContain('Next step: ``/sdd-clarify .specs/backlog/0002-b`c.md``');
+        expect(second!.tooltip).toContain('Next step: Have the spec challenged\\, then plan it\n\n``/sdd-clarify .specs/backlog/0002-b`c.md``');
     });
 
     it('a figure that is not available is left out, and no line is left empty', async () => {

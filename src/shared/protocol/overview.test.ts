@@ -62,7 +62,7 @@ describe('0018 Overview rows contract', () => {
 
     it('accepts rows in Now and Up next, with and without a step', () => {
         const view = sampleView();
-        expect(isOverviewView({ ...view, now: [row, { ...row, step: { line: '/sdd-plan 0001', short: '/sdd-plan', lines: [{ text: '/sdd-plan 0001' }] } }] })).toBe(true);
+        expect(isOverviewView({ ...view, now: [row, { ...row, step: { line: '/sdd-plan 0001', short: '/sdd-plan', lines: [{ text: '/sdd-plan 0001', intent: 'Write the plan' }] } }] })).toBe(true);
         expect(isOverviewView({ ...view, upNext: { rows: [row], more: 2, stems: ['0001-a', '0002-b', '0003-c'] } })).toBe(true);
     });
 

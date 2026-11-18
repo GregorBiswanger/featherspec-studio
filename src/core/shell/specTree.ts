@@ -155,7 +155,7 @@ function tooltipOf(model: ShellModel, card: CardView, entry: LifecycleEntry, tit
     const next = nextStep(model, card.key);
     if (next !== undefined && 'lines' in next) {
         next.lines.forEach((line, index) => {
-            paragraphs.push(index === 0 ? `${NEXT_STEP_PREFIX}${code(line.text)}` : `${line.label === undefined ? '' : `${line.label} `}${code(line.text)}`);
+            paragraphs.push(index === 0 ? `${NEXT_STEP_PREFIX}${escapeMarkdown(line.intent)}` : escapeMarkdown(line.intent), code(line.text));
         });
     } else if (next !== undefined) {
         paragraphs.push(`${NEXT_STEP_PREFIX}${next.text}`);

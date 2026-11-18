@@ -13,7 +13,7 @@ function valid(): SpecDetailView {
         state: 'Active',
         rule: 'S-ACTIVE',
         persistence: 'persisted',
-        nextStep: { rule: 'NS-6', lines: [{ text: '/sdd-plan .specs/active/0007-thing.md' }] },
+        nextStep: { rule: 'NS-6', lines: [{ text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Write the plan' }] },
         problems: [{ sentence: 'A sentence', reason: 'a problem', open: { key: '.specs/active/0007-thing.md', line: 3 } }],
         notes: [{ reason: 'a note' }],
         progress: { needs: [], noPlan: false, steps: { kind: 'steps', done: 0, total: 1 }, criteria: { kind: 'criteria', verified: 0, total: 0, open: [] } },
@@ -39,6 +39,8 @@ describe('0019 P-2: the guard of the situation picture', () => {
     it.each<[string, (view: Record<string, unknown>) => void]>([
         ['a missing state', (view) => delete view.state],
         ['a missing rule', (view) => delete view.rule],
+        ['0021 AC-001: a next-step line without its intent', (view) => (view.nextStep = { rule: 'NS-6', lines: [{ text: '/sdd-plan k' }] })],
+        ['0021 AC-001: a next-step line that still carries a label instead of an intent', (view) => (view.nextStep = { rule: 'NS-6', lines: [{ text: '/sdd-plan k', label: 'Then:' }] })],
         ['an unknown persistence', (view) => (view.persistence = 'stored')],
         ['a path that is not text', (view) => (view.path = 4)],
         ['a successor that is not text', (view) => (view.successor = false)],
