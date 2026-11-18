@@ -378,3 +378,50 @@ export const TREE_COMMAND_TITLES = {
     openSpec: 'Open Spec',
     openPlan: 'Open Plan',
 } as const;
+
+export function folderStatusSentence(folder: string, status: string | undefined): string {
+    return status === undefined ? `In the ${folder} folder, but it has no status` : `In the ${folder} folder, but its status is "${status}"`;
+}
+
+export const ACTIVE_WITHOUT_PLAN_SENTENCE = 'Active, but it has no plan';
+export const DONE_WITHOUT_ARCHIVE_SENTENCE = 'Done, but its plan was never archived';
+export const SPEC_UNREADABLE_SENTENCE = 'Studio cannot read this spec';
+export const PLAN_UNREADABLE_SENTENCE = 'Studio cannot read its plan';
+
+export function returnNoteUnreadableSentence(fileName: string): string {
+    return `Studio cannot read its return note ${fileName}`;
+}
+
+export const FOLDER_UNLISTABLE_SENTENCE = 'Studio cannot list this folder';
+
+export function sameSpecTwiceSentence(paths: string): string {
+    return `The same spec also exists in ${paths}`;
+}
+
+export function numberTwiceSentence(number: string, paths: string): string {
+    return `Number ${number} is also used by ${paths}`;
+}
+
+export function planLinkDanglesSentence(target: string): string {
+    return `Its plan ${target} does not exist`;
+}
+
+export function specLinkDanglesSentence(target: string): string {
+    return `Its plan links a spec that does not exist: ${target}`;
+}
+
+export function unknownSpecStatusSentence(value: string): string {
+    return `Its status "${value}" is not a FeatherSpec status`;
+}
+
+export function unknownPlanStatusSentence(value: string): string {
+    return `Its plan's status "${value}" is not a FeatherSpec status`;
+}
+
+export function unknownNoteStatusSentence(value: string): string {
+    return `Its return note's status "${value}" is not DONE or BLOCKED`;
+}
+
+export function orphanNoteSentence(number: string): string {
+    return `This return note belongs to no spec (number ${number})`;
+}

@@ -34,12 +34,26 @@ describe('Overview view contract', () => {
         expect(isOverviewView({ ...view, figures: { ...figures, states: [{ state: 'Ready', count: 0, derivedRule: 'S-READY' }] } })).toBe(false);
     });
 
-    it('0018 AC-007: Problems carry rows and lines; a line takes exactly where and reason', () => {
+    it('0018 AC-007, 0022 AC-013: Problems carry rows and lines; a line takes exactly where, reason and sentence', () => {
         const view = sampleView();
-        expect(isOverviewView({ ...view, problems: { rows: [], lines: [{ where: 'project', reason: 'orphan return note' }] } })).toBe(true);
-        expect(isOverviewView({ ...view, problems: { rows: [], lines: [{ where: 'project' }] } })).toBe(false);
-        expect(isOverviewView({ ...view, problems: { rows: [], lines: [{ where: 'project', reason: 'x', extra: 1 }] } })).toBe(false);
+        expect(isOverviewView({ ...view, problems: { rows: [], lines: [{ where: 'project', reason: 'orphan return note', sentence: 'This return note belongs to no spec (number 0042)' }] } })).toBe(true);
+        expect(isOverviewView({ ...view, problems: { rows: [], lines: [{ where: 'project', reason: 'orphan return note' }] } })).toBe(false);
+        expect(isOverviewView({ ...view, problems: { rows: [], lines: [{ where: 'project', sentence: 's' }] } })).toBe(false);
+        expect(isOverviewView({ ...view, problems: { rows: [], lines: [{ where: 'project', reason: 'x', sentence: 's', extra: 1 }] } })).toBe(false);
         expect(isOverviewView({ ...view, problems: { rows: [] } })).toBe(false);
+    });
+});
+
+describe('0022 AC-013: a Problems row may carry the reasons as its tooltip text', () => {
+    const base = { spec: { stem: '0001-a', number: '0001', title: 'A', found: true }, state: 'Active', status: 'Studio cannot read this spec', problems: 1 };
+
+    it('accepts reasons as text, refuses another type', () => {
+        const view = sampleView();
+        const withRow = (row: unknown) => ({ ...view, problems: { rows: [row], lines: [] } });
+        expect(isOverviewView(withRow({ ...base, reasons: 'not valid UTF-8' }))).toBe(true);
+        expect(isOverviewView(withRow(base))).toBe(true);
+        expect(isOverviewView(withRow({ ...base, reasons: 4 }))).toBe(false);
+        expect(isOverviewView(withRow({ ...base, reason: 'typo' }))).toBe(false);
     });
 });
 

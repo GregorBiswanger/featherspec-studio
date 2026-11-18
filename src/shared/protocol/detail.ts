@@ -11,6 +11,7 @@ export interface NeedLine {
 }
 
 export interface DiagnosticLine {
+    sentence?: string;
     reason: string;
     open?: LineTarget;
 }
@@ -113,7 +114,7 @@ function isLineTarget(value: unknown): value is LineTarget {
 }
 
 function isDiagnosticLine(value: unknown): value is DiagnosticLine {
-    return isRecord(value) && typeof value.reason === 'string' && (value.open === undefined || isLineTarget(value.open));
+    return isRecord(value) && typeof value.reason === 'string' && (value.sentence === undefined || typeof value.sentence === 'string') && (value.open === undefined || isLineTarget(value.open));
 }
 
 function isNeedLine(value: unknown): value is NeedLine {

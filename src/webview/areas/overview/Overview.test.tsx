@@ -120,7 +120,7 @@ describe('0018 AC-007: Problems', () => {
         const view = fullView();
         view.problems = {
             rows: [row('0002-x', '0002', 'Backlog', { status: 'plan link is dead · spec unreadable', problems: 2 })],
-            lines: [{ where: 'project', reason: 'a return note has no spec' }],
+            lines: [{ where: 'project', reason: 'a return note has no spec', sentence: 'a return note has no spec' }],
         };
         const problems = area(await open(view)).querySelector<HTMLElement>('[data-problems]')!;
         expect(problems.querySelector('h2')?.textContent).toBe('Problems (2)');
@@ -143,7 +143,7 @@ describe('0018 AC-007: Problems', () => {
 
     it('with only project-level lines the heading still sends the named set Problems, with no stem', async () => {
         const view = fullView();
-        view.problems = { rows: [], lines: [{ where: 'project', reason: 'orphan' }] };
+        view.problems = { rows: [], lines: [{ where: 'project', reason: 'orphan', sentence: 'orphan' }] };
         const container = await open(view);
         await click(container.querySelector('[data-problems] h2 button')!);
         expect(posted.find((message) => message.type === 'navigate')?.payload).toEqual({ area: 'board', target: { kind: 'boardFilter', filter: { set: { label: 'Problems', stems: [] } } } });

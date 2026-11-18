@@ -100,23 +100,28 @@ describe('spec detail', () => {
         expect([...view.problems, ...view.notes].filter((line) => line.reason.includes('Successor'))).toEqual([]);
     });
 
-    it('AC-006: a Problem carries its reason and opens at its line in its file; the format notes stay out of the Problems', async () => {
+    it('AC-006, 0022 AC-013: a Problem carries its sentence and its reason and opens at its line in its file; the format notes stay out of the Problems', async () => {
         const project = await readFixture('fs-broken');
         const model = { project, lifecycle: deriveLifecycle(project) };
         const broken = model.lifecycle.entries.find((entry) => entry.diagnostics.length > 0)!;
         const view = spec(buildDetail({ selection: { stem: broken.stem, path: broken.key }, model, history: NO_HISTORY }));
         expect(view.problems.length).toBe(broken.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').length);
         expect(view.problems.length).toBeGreaterThan(0);
-        view.problems.forEach((line) => expect(line.reason.length).toBeGreaterThan(0));
+        view.problems.forEach((line) => {
+            expect(line.reason.length).toBeGreaterThan(0);
+            expect(line.sentence?.length).toBeGreaterThan(0);
+            expect(line.sentence).not.toBe(line.reason);
+        });
         expect(view.notes).toEqual([]);
     });
 
-    it('AC-006: the detail of 0003 of fs-broken shows the contradiction reason as its Problem', async () => {
+    it('AC-006, 0022 AC-013: the detail of 0003 of fs-broken shows the contradiction sentence as its Problem, the reason beside it', async () => {
         const project = await readFixture('fs-broken');
         const model = { project, lifecycle: deriveLifecycle(project) };
         const view = spec(buildDetail({ selection: { stem: '0003-also-valid' }, model, history: NO_HISTORY }));
         expect(view.problems).toHaveLength(1);
         expect(view.problems[0]?.reason.length).toBeGreaterThan(0);
+        expect(view.problems[0]?.sentence).toBe('In the done folder, but its status is "Draft"');
         expect(view.problems[0]?.open).toEqual({ key: '.specs/done/0003-also-valid.md', line: 1 });
     });
 
@@ -126,7 +131,10 @@ describe('spec detail', () => {
         const view = spec(buildDetail({ selection: { stem: '0006-outbox-batch-size' }, model, history: NO_HISTORY }));
         expect(view.problems).toEqual([]);
         expect(view.notes).toHaveLength(2);
-        view.notes.forEach((line) => expect(line.reason.length).toBeGreaterThan(0));
+        view.notes.forEach((line) => {
+            expect(line.reason.length).toBeGreaterThan(0);
+            expect(line).not.toHaveProperty('sentence');
+        });
     });
 
     it('0015 AC-012: the status history of the stem under its label, no run list', async () => {

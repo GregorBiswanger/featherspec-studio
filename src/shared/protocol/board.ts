@@ -77,6 +77,7 @@ export interface BoardColumn {
 export interface BannerLine {
     where: string;
     reason: string;
+    sentence?: string;
 }
 
 export interface Banner {
@@ -143,7 +144,7 @@ function isColumn(value: unknown): value is BoardColumn {
 }
 
 function isBannerLines(value: unknown): boolean {
-    return Array.isArray(value) && value.every((line) => isRecord(line) && isString(line.where) && isString(line.reason));
+    return Array.isArray(value) && value.every((line) => isRecord(line) && isString(line.where) && isString(line.reason) && (line.sentence === undefined || isString(line.sentence)));
 }
 
 function isBanner(value: unknown): value is Banner {

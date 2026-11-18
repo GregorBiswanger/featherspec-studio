@@ -103,7 +103,7 @@ describe('0016 AC-011: user language on every surface 0016 touched', () => {
         if (view.activity.available) {
             view.activity = { ...view.activity, open: true };
         }
-        view.problems.lines = [{ where: 'project', reason: 'a return note has no spec' }];
+        view.problems.lines = [{ where: 'project', reason: 'a return note has no spec', sentence: 'a return note has no spec' }];
         const text = await textOf('overview', overviewEvent(view));
         expect(text).toContain('Problems (2)');
         expect(text).toContain('Up next');

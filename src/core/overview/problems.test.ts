@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { problemSentence } from '../lifecycle/problemSentence';
 import { projectProblems } from './problems';
 import { createSpecResolver } from './specRefs';
 import { modelFor, modelOfFixture, type SpecInput } from './testing/projects';
@@ -9,13 +10,15 @@ async function problems(specs: SpecInput[], extraFiles: Record<string, string> =
 }
 
 describe('0018 AC-007: Problems', () => {
-    it('fs-broken gives the rows 0002 (unreadable) and 0003 (contradiction), each with its own reason as the state text', async () => {
+    it('fs-broken gives the rows 0002 (unreadable) and 0003 (contradiction), each with its own sentence as the state text and its reason as the tooltip text', async () => {
         const model = await modelOfFixture('fs-broken');
         const result = projectProblems(model, createSpecResolver(model));
         expect(result.rows.map((row) => row.spec.number)).toEqual(['0002', '0003']);
         expect(result.lines).toEqual([]);
-        const reasons = model.lifecycle.entries.flatMap((entry) => entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').map((diagnostic) => [entry.number, diagnostic.reason]));
-        expect(result.rows.map((row) => [row.spec.number, row.status])).toEqual(reasons.map(([number, reason]) => [number, reason]));
+        const found = model.lifecycle.entries.flatMap((entry) => entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').map((diagnostic) => [entry.number, problemSentence(diagnostic), diagnostic.reason]));
+        expect(result.rows.map((row) => [row.spec.number, row.status])).toEqual(found.map(([number, sentence]) => [number, sentence]));
+        expect(result.rows.map((row) => [row.spec.number, row.reasons])).toEqual(found.map(([number, , reason]) => [number, reason]));
+        expect(result.rows.map((row) => row.status)).toEqual(['Studio cannot read this spec', 'In the done folder, but its status is "Draft"']);
         expect(result.rows.every((row) => row.problems === 1)).toBe(true);
     });
 
@@ -38,13 +41,15 @@ describe('0018 AC-007: Problems', () => {
         expect(result.rows.map((row) => row.spec.number)).toEqual(['0003', '0005', '0009']);
     });
 
-    it('several Problems of one spec give one row, the reasons joined by " · " and the count of the Problems', async () => {
+    it('several Problems of one spec give one row, the sentences joined by " · ", the reasons joined the same way and the count of the Problems', async () => {
         const result = await problems([], {
             '.specs/backlog/0001-two.md': '# Two\n\n**Status:** Half done\n**Plan:** [p](0001-two.plan.md)\n\n## 9. Acceptance criteria\n\n- **AC-001** The system shall work.\n',
         });
         expect(result.rows).toHaveLength(1);
         expect(result.rows[0]?.problems).toBe(3);
         expect(result.rows[0]?.status.split(' · ').length).toBeGreaterThanOrEqual(2);
+        expect(result.rows[0]?.reasons?.split(' · ').length).toBe(result.rows[0]?.status.split(' · ').length);
+        expect(result.rows[0]?.status).not.toBe(result.rows[0]?.reasons);
     });
 
     it('format notes give no row and no line (fs170-brownfield-mixed: only the spec with a Problem, 0016 AC-007)', async () => {
@@ -62,11 +67,12 @@ describe('0018 AC-007: Problems', () => {
         expect(result).toEqual({ rows: [], lines: [] });
     });
 
-    it('an orphan return note gives a line "where" and "reason" and no row', async () => {
+    it('an orphan return note gives a line with "where", "reason" and its sentence and no row', async () => {
         const result = await problems([{ number: '0001', kind: 'Backlog' }], { '.memory-bank/activeContext.0099-T-001.md': '**Status:** DONE\n' });
         expect(result.rows).toEqual([]);
         expect(result.lines).toHaveLength(1);
         expect(result.lines[0]?.reason).toMatch(/\S/);
+        expect(result.lines[0]?.sentence).toBe('This return note belongs to no spec (number 0099)');
         expect(result.lines[0]?.where).toMatch(/\S/);
     });
 

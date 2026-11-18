@@ -3,7 +3,7 @@
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-005
+**Current step:** T-006
 
 ## Approach
 
@@ -315,8 +315,8 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
   guards accept and refuse the new fields.
 - **Verify:** `npx vitest run --project node src/core/lifecycle/problemSentence.test.ts src/core/board/detail.test.ts src/core/board/cards.test.ts src/core/overview/problems.test.ts src/shared/protocol/detail.test.ts src/shared/protocol/overview.test.ts`
   red (stub), then green; `src/core/specs/readBaseline.test.ts` unchanged and green; gates 1–4
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-18, red first: `npx vitest run --project node src/core/lifecycle/problemSentence.test.ts src/core/board/detail.test.ts src/core/board/cards.test.ts src/core/overview/problems.test.ts src/shared/protocol/detail.test.ts src/shared/protocol/overview.test.ts`: `problemSentence.test.ts` 15 failed against the throwing stub (8 passed: the baseline fixtures without a Problem and the negative control), projections 6 failed (no sentence, no reasons); the protocol guard tests against the unchanged HEAD sources (scratch copy via `git archive`): 3 failed. Green: all passed, `src/core/specs/readBaseline.test.ts` unchanged and green. Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2329 passed, 3 skipped (+13 timing).
+- **Notes:** `knownProblemSentence` (returns `undefined` for the fallback) is the sweep's probe, `problemSentence` = known sentence or the reason; the texts are functions and constants in `shared/protocol/texts.ts` (X-10…X-24, `*_SENTENCE`). The sentence is read from the emitters' own reason formats (regexes in `problemSentence.ts`), so reasons and read snapshots are unchanged (0016 AC-003, A-009). `ProblemLine.sentence` is required, `DiagnosticLine.sentence?` and `BannerLine.sentence?` only on Problems, `OverviewRow.reasons?` only on Problems rows; a Problems row's `status` is the sentences deduplicated and joined by ` · `. The webview still shows the reasons: the four fixtures that build a `ProblemLine` got `sentence` equal to their reason until T-008 changes what is shown. The sweep's "memory cases" are the in-test memory projects of `problemSentence.test.ts` (every X-text once) plus `fs-broken` and `fs170-brownfield-mixed` (the only two baseline fixtures with Problems).
 
 ### T-006 — At most two primary buttons; list Copies are icon buttons
 

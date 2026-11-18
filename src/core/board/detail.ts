@@ -1,3 +1,4 @@
+import { problemSentence } from '../lifecycle/problemSentence';
 import type { DetailView, DiagnosticLine, StatusHistoryItem } from '../../shared/protocol/detail';
 import { HISTORY_LABEL, successorText } from '../../shared/protocol/texts';
 import type { LifecycleEntry } from '../lifecycle/model';
@@ -26,7 +27,8 @@ function diagnosticLine(diagnostic: LifecycleEntry['diagnostics'][number]): Diag
     const scope = diagnostic.scope;
     const file = scope === 'project' ? undefined : scope.file;
     const line = scope === 'project' || !('line' in scope) ? undefined : scope.line;
-    return file === undefined ? { reason: diagnostic.reason } : { reason: diagnostic.reason, open: { key: file, line: line === undefined || line < 1 ? 1 : line } };
+    const base = diagnostic.tier === 'problem' ? { sentence: problemSentence(diagnostic), reason: diagnostic.reason } : { reason: diagnostic.reason };
+    return file === undefined ? base : { ...base, open: { key: file, line: line === undefined || line < 1 ? 1 : line } };
 }
 
 export function buildDetail(input: DetailInput): DetailView {
