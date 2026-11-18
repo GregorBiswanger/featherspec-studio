@@ -451,17 +451,6 @@ main > h1 {
     border-radius: 3px;
 }
 
-.board-status {
-    flex: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.board-status:empty {
-    display: none;
-}
-
 .columns {
     flex: 1;
     min-height: 0;
@@ -482,11 +471,6 @@ main > h1 {
     background: var(--fs-lane);
     border: 1px solid var(--fs-border);
     border-radius: 4px;
-}
-
-.column[data-drop-target="true"] {
-    background: var(--vscode-list-dropBackground, var(--fs-lane));
-    border-color: var(--vscode-focusBorder);
 }
 
 .column-heading {
@@ -563,12 +547,6 @@ main > h1 {
 .card[data-focused="true"] {
     outline: 2px solid var(--vscode-focusBorder);
     outline-offset: 1px;
-}
-
-.card[data-dragging="true"] {
-    border-color: var(--vscode-focusBorder);
-    box-shadow: 0 4px 12px var(--vscode-widget-shadow);
-    opacity: 0.85;
 }
 
 .card {
@@ -716,62 +694,6 @@ main > h1 {
     width: 10px;
     height: 10px;
     color: var(--vscode-charts-orange);
-}
-
-.move-menu {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-}
-
-.move-button {
-    padding: 1px 6px;
-    color: var(--fs-muted);
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 3px;
-    cursor: pointer;
-    font: inherit;
-    font-size: 11px;
-}
-
-.move-button:hover,
-.move-button[aria-expanded="true"] {
-    color: var(--vscode-foreground);
-    background: var(--vscode-toolbar-hoverBackground);
-    border-color: var(--vscode-contrastActiveBorder, transparent);
-}
-
-.move-items {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    min-width: 120px;
-    padding: 4px 0;
-    color: var(--vscode-menu-foreground);
-    background: var(--vscode-menu-background);
-    border: 1px solid var(--vscode-menu-border, var(--fs-border));
-    border-radius: 4px;
-    box-shadow: 0 2px 8px var(--vscode-widget-shadow);
-}
-
-.move-items button {
-    padding: 3px 12px;
-    color: inherit;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font: inherit;
-    text-align: left;
-}
-
-.move-items button:hover,
-.move-items button:focus-visible {
-    color: var(--vscode-menu-selectionForeground, var(--vscode-foreground));
-    background: var(--vscode-menu-selectionBackground, var(--vscode-list-hoverBackground));
 }
 
 .explorer {
@@ -1552,8 +1474,7 @@ blockquote.illustration {
 .related-link,
 .open-file,
 .copy-button,
-.secondary-button,
-.move-button {
+.secondary-button {
     transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 

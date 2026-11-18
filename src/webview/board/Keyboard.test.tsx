@@ -1,10 +1,9 @@
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
-import { COPIED_TEXT, moveNextStepText } from '../../shared/protocol/nextStepTexts';
 import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
-import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
+import { baseView, mount, send, shellEvent, type Mounted } from '../testing/dom';
 import { boardEvent, boardView, card } from './testing/views';
 
 let posted: Envelope[];
@@ -100,245 +99,67 @@ describe('AC-017: the board is one tab stop with arrow-key navigation', () => {
         const tabbable = [...container.querySelectorAll<HTMLElement>('[data-card]')].filter((element) => element.tabIndex === 0);
         expect(tabbable.map((element) => element.getAttribute('data-card'))).toEqual([key('0004')]);
     });
-
-    it('sends boardFocus on focus and null on blur', async () => {
-        const container = await open();
-        await focus(cardOf(container, '0003'));
-        expect(requests('boardFocus')).toEqual([{ key: key('0003') }]);
-        await act(async () => cardOf(container, '0003').blur());
-        expect(requests('boardFocus')).toEqual([{ key: key('0003') }, { key: null }]);
-    });
-
-    it('moving focus between cards does not send null in between', async () => {
-        const container = await open();
-        await focus(cardOf(container, '0003'));
-        await press(document.activeElement!, 'ArrowDown');
-        expect(requests('boardFocus')).toEqual([{ key: key('0003') }, { key: key('0004') }]);
-    });
 });
 
-describe('AC-014: move without a mouse', () => {
-    it('Shift+F10 opens the menu with the five other columns and focuses the first', async () => {
+describe('0017 AC-006: Shift+F10 and the context-menu key open no menu of the Studio', () => {
+    it('neither key opens a menu or posts a request, on any card', async () => {
         const container = await open();
         await focus(cardOf(container, '0003'));
+        const before = posted.length;
         await press(document.activeElement!, 'F10', true);
-        const items = [...container.querySelectorAll('[role="menuitem"]')];
-        expect(items.map((item) => item.textContent)).toEqual(['Backlog', 'Ready', 'Review', 'Done', 'Blocked']);
-        expect(document.activeElement).toBe(items[0]);
-    });
-
-    it('the ContextMenu key opens it too, and the button carries the visible label', async () => {
-        const container = await open();
-        await focus(cardOf(container, '0003'));
         await press(document.activeElement!, 'ContextMenu');
-        expect(container.querySelector('[role="menu"]')).not.toBeNull();
-        const button = cardOf(container, '0003').querySelector('button[aria-haspopup="menu"]')!;
-        expect(button.textContent).toBe('Move to…');
-        expect(button.getAttribute('aria-label')).toContain('Move to…');
-        expect(button.getAttribute('aria-expanded')).toBe('true');
-    });
-
-    it('arrows cycle the items, Enter picks one and sends moveRequest, focus returns to the card', async () => {
-        const container = await open();
-        await focus(cardOf(container, '0003'));
-        await press(document.activeElement!, 'F10', true);
-        await press(document.activeElement!, 'ArrowDown');
-        await press(document.activeElement!, 'ArrowDown');
-        expect(document.activeElement?.textContent).toBe('Review');
-        await press(document.activeElement!, 'ArrowUp');
-        await press(document.activeElement!, 'ArrowUp');
-        await press(document.activeElement!, 'ArrowUp');
-        expect(document.activeElement?.textContent).toBe('Blocked');
-        await pressKey(document.activeElement!, 'Enter');
-        expect(requests('moveRequest')).toEqual([{ key: key('0003'), target: 'Blocked' }]);
-        expect(container.querySelector('[role="menu"]')).toBeNull();
+        expect(container.querySelector('[role="menu"], [role="menuitem"]')).toBeNull();
+        expect(posted).toHaveLength(before);
         expect(document.activeElement).toBe(cardOf(container, '0003'));
-    });
-
-    it('Escape closes the menu without a request and returns focus to the card', async () => {
-        const container = await open();
-        await focus(cardOf(container, '0003'));
-        await press(document.activeElement!, 'F10', true);
-        await press(document.activeElement!, 'Escape');
-        expect(container.querySelector('[role="menu"]')).toBeNull();
-        expect(requests('moveRequest')).toEqual([]);
-        expect(document.activeElement).toBe(cardOf(container, '0003'));
-    });
-
-    it('the Move to button with the mouse works and does not open the spec', async () => {
-        const container = await open();
-        await click(cardOf(container, '0003').querySelector('button[aria-haspopup="menu"]')!);
-        await click(container.querySelector('[role="menuitem"]:nth-child(2)')!);
-        expect(requests('moveRequest')).toEqual([{ key: key('0003'), target: 'Ready' }]);
-        expect(requests('navigate')).toEqual([]);
-    });
-
-    it('AC-017: Tab reaches the Move to button of the card that is the board tab stop, right after that card, and no other card button', async () => {
-        const container = await open();
-        const stops = [...container.querySelectorAll<HTMLElement>('[data-card], button[aria-haspopup="menu"]')].filter((element) => element.tabIndex === 0);
-        expect(stops.map((element) => element.getAttribute('data-card') ?? `button of ${element.closest('[data-card]')?.getAttribute('data-card')}`)).toEqual([key('0001'), `button of ${key('0001')}`]);
-    });
-
-    it('AC-017: the button tab stop follows the focused card', async () => {
-        const container = await open();
-        await focus(cardOf(container, '0004'));
-        const buttonOf = (number: string) => cardOf(container, number).querySelector<HTMLElement>('button[aria-haspopup="menu"]')!;
-        expect(buttonOf('0004').tabIndex).toBe(0);
-        expect(buttonOf('0001').tabIndex).toBe(-1);
-    });
-
-    it('AC-017: focus on the Move to button keeps the card focused for the host, Enter opens the menu and Escape closes it', async () => {
-        const container = await open();
-        await focus(cardOf(container, '0003'));
-        const button = cardOf(container, '0003').querySelector<HTMLElement>('button[aria-haspopup="menu"]')!;
-        await focus(button);
-        expect(requests('boardFocus').every((payload) => (payload as { key: string | null }).key === key('0003'))).toBe(true);
-        await pressKey(button, 'Enter');
-        expect(container.querySelector('[role="menu"]')).not.toBeNull();
-        await press(document.activeElement!, 'Escape');
-        expect(container.querySelector('[role="menu"]')).toBeNull();
-        expect(requests('moveRequest')).toEqual([]);
-    });
-
-    it('AC-017: leaving the board from the Move to button sends the null focus', async () => {
-        const container = await open();
-        await focus(cardOf(container, '0003'));
-        const button = cardOf(container, '0003').querySelector<HTMLElement>('button[aria-haspopup="menu"]')!;
-        await focus(button);
-        await act(async () => button.blur());
-        expect(requests('boardFocus').at(-1)).toEqual({ key: null });
     });
 });
 
-describe('AC-014: move by drag and drop (MouseEvents, jsdom has no DragEvent)', () => {
-    it('dropping on another column sends moveRequest', async () => {
+describe('0017 AC-007: a card cannot be dragged and drag events do nothing', () => {
+    it('no card carries draggable="true"', async () => {
         const container = await open();
-        await drag('dragstart', cardOf(container, '0003'));
+        const cards = [...container.querySelectorAll('[data-card]')];
+        expect(cards).toHaveLength(CARDS.length);
+        expect(cards.some((element) => element.getAttribute('draggable') === 'true')).toBe(false);
+    });
+
+    it('dragstart, dragover, drop and dragend on a card and another column post nothing and set no mark', async () => {
+        const container = await open();
+        const seen: string[] = [];
+        container.addEventListener('dragstart', () => seen.push('dragstart'));
+        container.addEventListener('dragover', () => seen.push('dragover'));
+        container.addEventListener('drop', () => seen.push('drop'));
+        container.addEventListener('dragend', () => seen.push('dragend'));
+        const before = posted.length;
         const done = container.querySelector('[data-column="Done"]')!;
-        expect(await drag('dragover', done)).toBe(false);
+        await drag('dragstart', cardOf(container, '0003'));
+        expect(await drag('dragover', done)).toBe(true);
         await drag('drop', done);
-        expect(requests('moveRequest')).toEqual([{ key: key('0003'), target: 'Done' }]);
-    });
-
-    it('cards are draggable', async () => {
-        const container = await open();
-        expect(cardOf(container, '0003').getAttribute('draggable')).toBe('true');
-    });
-
-    it('the own column is not a drop target and a drop there sends nothing', async () => {
-        const container = await open();
-        await drag('dragstart', cardOf(container, '0003'));
-        const active = container.querySelector('[data-column="Active"]')!;
-        expect(await drag('dragover', active)).toBe(true);
-        await drag('drop', active);
-        expect(requests('moveRequest')).toEqual([]);
-    });
-
-    it('a drop outside the columns, and a drop after dragend, send nothing', async () => {
-        const container = await open();
-        await drag('dragstart', cardOf(container, '0003'));
-        await drag('drop', container.querySelector('.board-status')!);
         await drag('dragend', cardOf(container, '0003'));
-        await drag('drop', container.querySelector('[data-column="Done"]')!);
-        expect(requests('moveRequest')).toEqual([]);
-    });
-
-    it('without a drag in progress nothing is a drop target', async () => {
-        const container = await open();
-        expect(await drag('dragover', container.querySelector('[data-column="Done"]')!)).toBe(true);
+        expect(seen).toEqual(['dragstart', 'dragover', 'drop', 'dragend']);
+        expect(posted).toHaveLength(before);
+        expect(marked(container)).toEqual([]);
+        expect(container.querySelector('[data-dragging]')).toBeNull();
+        expect(container.querySelector('[data-drop-target]')).toBeNull();
+        expect(done.querySelector('[data-card]')?.getAttribute('data-card')).toBe(key('0006'));
     });
 });
 
-describe('0013 AC-011: drag marks (MouseEvents, no verdict before the drop)', () => {
-    it('AC-011: while a card is dragged, the card and the column under the pointer are marked; the drop removes both marks', async () => {
+describe('0017 AC-008: the board offers no move control and no status line', () => {
+    it('shows no "Move to…", no menu and no status region above the columns', async () => {
         const container = await open();
-        await drag('dragstart', cardOf(container, '0003'));
-        expect(cardOf(container, '0003').getAttribute('data-dragging')).toBe('true');
-        expect(marked(container)).toEqual([]);
-        await drag('dragover', container.querySelector('[data-column="Done"]')!);
-        expect(marked(container)).toEqual(['Done']);
-        await drag('dragover', container.querySelector('[data-column="Ready"]')!);
-        expect(marked(container)).toEqual(['Ready']);
-        await drag('drop', container.querySelector('[data-column="Ready"]')!);
-        expect(marked(container)).toEqual([]);
-        expect(container.querySelector('[data-dragging="true"]')).toBeNull();
+        expect(container.textContent).not.toContain('Move to');
+        expect(container.querySelector('[role="menu"], [aria-haspopup="menu"], .move-menu')).toBeNull();
+        expect(container.querySelector('.board > [role="status"], .board-status')).toBeNull();
+        expect(container.querySelector('[draggable="true"]')).toBeNull();
     });
 
-    it('AC-011: dragend without a drop removes both marks', async () => {
-        const container = await open();
-        await drag('dragstart', cardOf(container, '0003'));
-        await drag('dragover', container.querySelector('[data-column="Done"]')!);
-        await drag('dragend', cardOf(container, '0003'));
-        expect(marked(container)).toEqual([]);
-        expect(container.querySelector('[data-dragging="true"]')).toBeNull();
-    });
-
-    it('AC-011: leaving the column to outside removes its mark; moving onto a child of the column keeps it', async () => {
-        const container = await open();
-        await drag('dragstart', cardOf(container, '0003'));
-        const done = container.querySelector('[data-column="Done"]')!;
-        await drag('dragover', done);
-        await drag('dragleave', done, done.querySelector('h2'));
-        expect(marked(container)).toEqual(['Done']);
-        await drag('dragleave', done, container.querySelector('.board-status'));
-        expect(marked(container)).toEqual([]);
-    });
-
-    it('control: without a drag in progress dragover marks nothing', async () => {
-        const container = await open();
-        await drag('dragover', container.querySelector('[data-column="Done"]')!);
-        expect(marked(container)).toEqual([]);
-    });
-});
-
-describe('AC-018: the outcome of a move is announced', () => {
-    it('has an empty polite status region before any move', async () => {
-        const container = await open();
-        const status = container.querySelector('[role="status"]')!;
-        expect(status.getAttribute('aria-live')).toBe('polite');
-        expect(status.textContent).toBe('');
-    });
-
-    it('shows a refusal text and the dismiss button clears it', async () => {
+    it('a moveResult event from the host shows nothing on the board', async () => {
         const container = await open();
         await send({ v: 1, kind: 'evt', type: 'moveResult', payload: { result: { kind: 'refused', text: 'Not allowed: spec 0003 is blocked.' } } });
-        expect(container.querySelector('[role="status"]')!.textContent).toContain('Not allowed: spec 0003 is blocked.');
-        await click([...container.querySelectorAll('[role="status"] button')].find((button) => button.textContent === 'Dismiss')!);
-        expect(container.querySelector('[role="status"]')!.textContent).toBe('');
-    });
-
-    it('0015 AC-006: announces the drop result with the line and a Copy button, and Copy asks for exactly that line', async () => {
-        const container = await open();
-        await send({ v: 1, kind: 'evt', type: 'moveResult', payload: { result: { kind: 'nextStep', number: '0003', line: 'Start T-002 of .specs/backlog/0003-a.plan.md' } } });
-        const status = container.querySelector('[role="status"]')!;
-        expect(status.textContent).toContain(moveNextStepText('0003'));
-        expect(moveNextStepText('0003')).toBe('Studio starts no agent. Next step for 0003 — paste it into your AI assistant:');
-        expect(status.textContent).toContain('Start T-002 of .specs/backlog/0003-a.plan.md');
-        await click([...status.querySelectorAll('button')].find((button) => button.textContent === 'Copy')!);
-        expect(posted.filter((message) => message.type === 'copyText').map((message) => message.payload)).toEqual([{ text: 'Start T-002 of .specs/backlog/0003-a.plan.md' }]);
-        await send({ v: 1, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
-        expect(container.querySelector('[role="status"]')!.textContent).toContain('Copied to the clipboard.');
-    });
-
-    it('0016 AC-017: Copy in the drop result is the primary button and Dismiss the secondary one', async () => {
-        const container = await open();
-        await send({ v: 1, kind: 'evt', type: 'moveResult', payload: { result: { kind: 'nextStep', number: '0003', line: '/sdd-plan x' } } });
-        const buttons = [...container.querySelectorAll('[role="status"] button')];
-        expect(buttons.find((button) => button.textContent === 'Copy')!.className).toContain('copy-button');
-        expect(buttons.find((button) => button.textContent === 'Dismiss')!.className).toContain('secondary-button');
-        expect(buttons.find((button) => button.textContent === 'Copy')!.className).not.toContain('open-file');
-    });
-
-    it('0015 AC-006: Copy in the drop result is reachable by Tab and works with Enter and Space', async () => {
-        const container = await open();
-        await send({ v: 1, kind: 'evt', type: 'moveResult', payload: { result: { kind: 'nextStep', number: '0003', line: '/sdd-plan x' } } });
-        const copy = [...container.querySelectorAll('[role="status"] button')].find((button) => button.textContent === 'Copy')!;
-        expect(isKeyboardReachable(copy)).toBe(true);
-        await pressKey(copy, 'Enter');
-        await pressKey(copy, ' ');
-        expect(posted.filter((message) => message.type === 'copyText')).toHaveLength(2);
+        expect(container.textContent).not.toContain('Not allowed');
     });
 });
+
 
 describe('AC-019: focus stays on the same card across live updates', () => {
     it('follows the card to another column', async () => {

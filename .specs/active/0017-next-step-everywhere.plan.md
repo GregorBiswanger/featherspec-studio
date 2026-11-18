@@ -3,7 +3,7 @@
 **Spec:** [0017-next-step-everywhere.md](0017-next-step-everywhere.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-002
+**Current step:** T-003
 
 ## Approach
 
@@ -197,8 +197,8 @@ Stages 4 and 5 cannot: they share `extension.ts`, `package.json`, the protocol a
   loses "Move to…" from its list and title.
 - **Verify:** `npx vitest run src/webview/board src/adapters/node/webviewCss.test.ts` red, then
   green; gates 1–5
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-18 — new tests (AC-006 keys, AC-007 drag, AC-008 no control) run on HEAD~ webview sources in a scratch copy: 5 failed, 8 passed (red); on the changed code green. `npx vitest run src/webview src/adapters/node/webviewCss.test.ts` 309 passed. Gates 1–5: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 1812 passed, 3 skipped, `npm run compile` ok.
+- **Notes:** Removed with their criteria (Keyboard.test.tsx): 'sends boardFocus on focus and null on blur', 'moving focus between cards does not send null in between', the 'AC-014: move without a mouse' block (9 tests), the drag and drop block (5), the drag marks block (4), the 'AC-018: outcome of a move is announced' block (5); webviewCss 'AC-011 dragged card' test. Kept: one tab stop, arrows, tab stop follows focus, AC-019 focus across live updates (Keyboard); click and Enter open (SpecBoard AC-008). `.copy-button` replaces `.move-button` in the CSS guard list (its rules exist since 0016).
 
 ### T-003 — Current spec and the status bar entry
 

@@ -224,11 +224,6 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
         expect(columns.some((rule) => /overflow-x:\s*auto/.test(rule.body))).toBe(true);
     });
 
-    it('AC-011: the dragged card is lifted and the column under the pointer carries a target style from theme variables', () => {
-        expect(rulesFor(css, '.card[data-dragging="true"]').some((rule) => /box-shadow:[^;]*var\(--vscode-widget-shadow\)/.test(rule.body))).toBe(true);
-        expect(rulesFor(css, '.column[data-drop-target="true"]').some((rule) => /var\(--vscode-list-dropBackground/.test(rule.body))).toBe(true);
-    });
-
     it('AC-014: no code under src/webview uses dangerouslySetInnerHTML or innerHTML', () => {
         const root = webviewDir;
         const files = (function walk(dir: string): string[] {
@@ -253,7 +248,7 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
     });
 
     it('AC-003: every control this spec adds or restyles sets no outline of its own, so the shared focus rule with contrastActiveBorder or focusBorder applies', () => {
-        for (const selector of ['.mc-tile', '.mc-drill', '.mc-row', '.section-toggle', '.open-file', '.move-button', '.related-link']) {
+        for (const selector of ['.mc-tile', '.mc-drill', '.mc-row', '.section-toggle', '.open-file', '.copy-button', '.related-link']) {
             const rules = parseRules(css).filter((rule) => rule.selectors.some((candidate) => candidate.startsWith(selector)));
             expect(rules.length, selector).toBeGreaterThan(0);
             for (const rule of rules) {

@@ -1,7 +1,7 @@
 import type { Probe } from './probe';
 import { DEFAULT_AREA, type AreaId } from '../shared/protocol/areas';
 import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../shared/protocol/envelope';
-import type { BoardView, MoveResult, SortKey } from '../shared/protocol/board';
+import type { BoardView, SortKey } from '../shared/protocol/board';
 import type { BoardFilter, BoardState } from '../shared/protocol/boardFilter';
 import { isOpenFileResultPayload, type DetailView } from '../shared/protocol/detail';
 import type { MissionControlView } from '../shared/protocol/missionControl';
@@ -10,7 +10,6 @@ import {
     isCopyResultEventPayload,
     isDetailEventPayload,
     isMissionControlEventPayload,
-    isMoveResultEventPayload,
     isProbePayload,
     isResponsePayload,
     isShellEventPayload,
@@ -30,7 +29,6 @@ export interface ClientSnapshot {
     board: BoardView | undefined;
     detail: DetailView | undefined;
     missionControl: MissionControlView | undefined;
-    move: MoveResult;
     fileResult: { key: string; text: string } | undefined;
     copyResult: CopyResultEventPayload | undefined;
 }
@@ -51,11 +49,8 @@ export interface ShellClient {
     setBoardFilter(filter: BoardFilter): void;
     setBoardSort(sort: SortKey): void;
     clearBoardFilters(): void;
-    focusCard(key: string | null): void;
-    requestMove(key: string, target: BoardState): void;
     openFile(key: string, line?: number): void;
     copyText(text: string): void;
-    dismissMove(): void;
     subscribe(listener: () => void): () => void;
     getSnapshot(): ClientSnapshot;
 }
@@ -78,10 +73,9 @@ export function createClient(deps: ClientDeps): ShellClient {
     let board: BoardView | undefined;
     let detail: DetailView | undefined;
     let missionControl: MissionControlView | undefined;
-    let move: MoveResult = { kind: 'none' };
     let fileResult: { key: string; text: string } | undefined;
     let copyResult: CopyResultEventPayload | undefined;
-    let snapshot: ClientSnapshot = { view: undefined, state: { id: 'S4' }, area: DEFAULT_AREA, board: undefined, detail: undefined, missionControl: undefined, move, fileResult: undefined, copyResult: undefined };
+    let snapshot: ClientSnapshot = { view: undefined, state: { id: 'S4' }, area: DEFAULT_AREA, board: undefined, detail: undefined, missionControl: undefined, fileResult: undefined, copyResult: undefined };
     let unlisten: (() => void) | undefined;
     let mismatch = false;
     let protocolFailure = false;
@@ -106,14 +100,13 @@ export function createClient(deps: ClientDeps): ShellClient {
             snapshot.board === board &&
             snapshot.detail === detail &&
             snapshot.missionControl === missionControl &&
-            snapshot.move === move &&
             snapshot.fileResult === fileResult &&
             snapshot.copyResult === copyResult &&
             JSON.stringify(snapshot.state) === JSON.stringify(state)
         ) {
             return;
         }
-        snapshot = { view, state, area, board, detail, missionControl, move, fileResult, copyResult };
+        snapshot = { view, state, area, board, detail, missionControl, fileResult, copyResult };
         listeners.forEach((listener) => listener());
     }
 
@@ -222,12 +215,6 @@ export function createClient(deps: ClientDeps): ShellClient {
                     missionControl = envelope.payload.view;
                     refresh();
                 }
-            } else if (envelope.kind === 'evt' && envelope.type === 'moveResult') {
-                if (isMoveResultEventPayload(envelope.payload)) {
-                    move = envelope.payload.result;
-                    copyResult = undefined;
-                    refresh();
-                }
             } else if (envelope.kind === 'evt' && envelope.type === 'copyResult') {
                 if (isCopyResultEventPayload(envelope.payload)) {
                     copyResult = envelope.payload;
@@ -265,22 +252,11 @@ export function createClient(deps: ClientDeps): ShellClient {
         clearBoardFilters() {
             send('boardClearFilters', {});
         },
-        focusCard(key) {
-            send('boardFocus', { key });
-        },
-        requestMove(key, target) {
-            send('moveRequest', { key, target });
-        },
         copyText(text) {
             send('copyText', { text });
         },
         openFile(key, line) {
             send('openFile', line === undefined ? { key } : { key, line });
-        },
-        dismissMove() {
-            move = { kind: 'none' };
-            copyResult = undefined;
-            refresh();
         },
         subscribe(listener) {
             listeners.add(listener);

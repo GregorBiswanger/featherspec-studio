@@ -1,4 +1,3 @@
-import type { DragEvent, ReactNode } from 'react';
 import type { CardView, Progress } from '../../shared/protocol/board';
 import {
     CRITERIA_PROGRESS_LABEL,
@@ -26,10 +25,6 @@ export function Card(props: {
     card: CardView;
     onOpen(card: CardView): void;
     tabIndex?: number;
-    dragging?: boolean;
-    onDragStart?(event: DragEvent<HTMLElement>, card: CardView): void;
-    onDragEnd?(): void;
-    menu?: ReactNode;
 }) {
     const { card } = props;
     return (
@@ -38,10 +33,6 @@ export function Card(props: {
             data-card={card.key}
             data-board-state={card.state}
             tabIndex={props.tabIndex ?? 0}
-            draggable={props.onDragStart !== undefined}
-            data-dragging={props.dragging === true ? 'true' : undefined}
-            onDragStart={(event) => props.onDragStart?.(event, card)}
-            onDragEnd={() => props.onDragEnd?.()}
             onClick={() => props.onOpen(card)}
             onKeyDown={(event) => {
                 if (!event.defaultPrevented && event.key === 'Enter' && event.target === event.currentTarget) {
@@ -93,7 +84,6 @@ export function Card(props: {
                 ) : null}
                 <span className="card-change">{lastChangeText(card.lastChangeMs)}</span>
             </div>
-            {props.menu}
         </li>
     );
 }

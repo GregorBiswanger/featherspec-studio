@@ -249,13 +249,12 @@ describe('0013 AC-009, AC-010: card layout', () => {
         return first !== null && second !== null && (first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
     }
 
-    it('AC-009: number and title, one state chip, summary, the tasks and criteria progressbars and Move to… follow in DOM order', async () => {
+    it('AC-009: number and title, one state chip, summary, the tasks and criteria progressbars follow in DOM order', async () => {
         const entry = (await open(boardView([card('0007', { state: 'Review', derivedRule: 'S-REVIEW' })]))).querySelector('[data-card]')!;
         const head = entry.querySelector('.card-head');
         const chips = entry.querySelectorAll('.state-chip');
         const summary = entry.querySelector('.card-summary');
         const bars = [...entry.querySelectorAll('[role="progressbar"]')];
-        const move = entry.querySelector('.move-button');
         expect(head?.textContent).toContain('0007');
         expect(head?.textContent).toContain('Thing 0007');
         expect(chips).toHaveLength(1);
@@ -266,7 +265,6 @@ describe('0013 AC-009, AC-010: card layout', () => {
         expect(follows(chips[0] ?? null, summary)).toBe(true);
         expect(follows(summary, bars[0] ?? null)).toBe(true);
         expect(follows(bars[0] ?? null, bars[1] ?? null)).toBe(true);
-        expect(follows(bars[1] ?? null, move)).toBe(true);
     });
 
     it('AC-009: the progressbars carry value, maximum and the figure text', async () => {
