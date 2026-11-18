@@ -23,7 +23,7 @@ function hintOf(value: unknown): string | undefined {
         return undefined;
     }
     const points = Array.from(text);
-    return points.length > MAX_HINT ? `${points.slice(0, MAX_HINT - 1).join('')}…` : text;
+    return points.length > MAX_HINT ? `${points.slice(0, MAX_HINT - 1).join('').trimEnd()}…` : text;
 }
 
 export function parseStepTipSettings(show: unknown, hints: unknown): StepTipSettings {

@@ -3,7 +3,7 @@
 **Spec:** [0021-next-step-intent-and-guidance.md](0021-next-step-intent-and-guidance.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-014 (fix stage after the compile of S74: `/home/claude/orch/compile/0021.md`)
+**Current step:** T-015 (fix stage after the compile of S74: `/home/claude/orch/compile/0021.md`)
 
 ## Approach
 
@@ -405,7 +405,8 @@ ends of stages 1 and 3.
 - **Do:** `stepTipSettings.ts`: after the cut to 39 code points, trim trailing whitespace, then add `…`. `stepTipSettings.test.ts`
   first: 38 × `x`, space, `yyyy` gives 38 × `x` and `…`; the 40/41 boundary and emoji cases stay.
 - **Verify:** `npx vitest run --project node src/core/settings` red, then green; gates 1–4
-- [ ] **Verified (T-014):**
+- [x] **Verified (T-014):** 2026-11-18 · red: `npx vitest run --project node src/core/settings` 1 failed of 10 against the code without the trim (`38 × x, space, yyyy` gave `… ` before the ellipsis); green with `trimEnd()` after the cut: 10 passed; reverting the trim on a scratch copy fails the same test again; `npm run test:unit` 157 files, 2637 passed, 3 skipped, timing 15 passed; eslint 0 warnings, both `tsc` clean.
+- **Notes:** Proxy decision (S76, exploratory finding of the compile): AC-012's rule stays (40 stay, 41 or more become 39 code points and `…`); the 39 are trimmed at the end before the `…`, so a hint never reads `word …`. A cut that lands in a word is unchanged; whitespace inside a hint is already collapsed to one space.
 
 ### T-015 — `StepText` takes the format from the text module; stale fixtures are brought level (compile exploratory)
 

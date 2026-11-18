@@ -19,6 +19,15 @@ describe('0021 AC-016, AC-012: reading the two settings', () => {
         expect(parseStepTipSettings(true, { fast: 'a\t\nb' }).hints).toEqual({ fast: 'a b' });
     });
 
+    it('a cut never leaves a space before the ellipsis: the 39 code points are trimmed first (proxy decision, AC-012 stays 39 and an ellipsis)', () => {
+        const spaced = `${'x'.repeat(38)} yyyy`;
+        expect(parseStepTipSettings(true, { strong: spaced }).hints.strong).toBe(`${'x'.repeat(38)}…`);
+        const wide = `${'😀'.repeat(38)} 😀😀`;
+        expect(parseStepTipSettings(true, { fast: wide }).hints.fast).toBe(`${'😀'.repeat(38)}…`);
+        expect(parseStepTipSettings(true, { strong: `${'x'.repeat(39)} y` }).hints.strong).toBe(`${'x'.repeat(39)}…`);
+        expect(parseStepTipSettings(true, { strong: `${'x'.repeat(35)} ${'y'.repeat(4)}` }).hints.strong).toBe(`${'x'.repeat(35)} ${'y'.repeat(4)}`);
+    });
+
     it('a hint of 40 characters stays, one of 41 is cut to 39 and an ellipsis, counted in code points', () => {
         const forty = 'x'.repeat(40);
         expect(parseStepTipSettings(true, { strong: forty }).hints.strong).toBe(forty);
