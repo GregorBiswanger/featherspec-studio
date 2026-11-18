@@ -369,6 +369,14 @@ describe('0015 AC-003, AC-005, AC-008, AC-009: the next step in the detail', () 
         expect(copyButtons(root)).toHaveLength(1);
     });
 
+    it('AC-017 (0016): the detail\'s Copy is the primary button and carries no other button class', async () => {
+        const container = await open();
+        const [button] = copyButtons(nextStepSection(container));
+        expect(button!.classList.contains('copy-button')).toBe(true);
+        expect(button!.classList.contains('open-file')).toBe(false);
+        expect(button!.classList.contains('secondary-button')).toBe(false);
+    });
+
     it('AC-003: two lines carry the label of the second one; a rule with text only shows the text and no button', async () => {
         const root = nextStepSection(await open(detailView({}, TWO)));
         expect(root.textContent).toContain('/sdd-clarify .specs/backlog/0007-x.md');

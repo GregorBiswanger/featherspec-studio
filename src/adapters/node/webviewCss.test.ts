@@ -332,6 +332,22 @@ describe('0016 AC-017, AC-019: Copy is the primary button and keeps its size', (
         }
     });
 
+    it('0016 §6.5: the live region stays visually hidden and stays in the accessibility tree (1 px box, clipped, out of the flow, no display:none or visibility:hidden)', () => {
+        const body = rulesFor(css, '.visually-hidden')
+            .map((rule) => rule.body)
+            .join(';');
+        expect(body).toMatch(/position:\s*absolute/);
+        expect(body).toMatch(/width:\s*1px/);
+        expect(body).toMatch(/height:\s*1px/);
+        expect(body).toMatch(/overflow:\s*hidden/);
+        expect(body).toMatch(/clip-path:\s*inset\(50%\)|clip:\s*rect\(0/);
+        expect(body).not.toMatch(/display:\s*none|visibility:\s*hidden|opacity:\s*0\b/);
+    });
+
+    it('0016 §6.5 control: the checked pattern rejects a rule that hides with display:none', () => {
+        expect('display: none').toMatch(/display:\s*none|visibility:\s*hidden|opacity:\s*0\b/);
+    });
+
     it('AC-019: nothing that styles the copy feedback uses the error colour (the old status line is gone)', () => {
         expect(rulesFor(css, '.next-step .detail-status')).toEqual([]);
     });

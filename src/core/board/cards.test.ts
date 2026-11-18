@@ -78,6 +78,11 @@ describe('cards', () => {
         expect(cards[2]?.need).toBeUndefined();
     });
 
+    it('AC-014 (0016): a Backlog spec with two needs shows the first of them on its card, in the order of §6.3', async () => {
+        const { cards } = await cardsOf({ '.specs/backlog/0001-a.md': specText({ criteria: false }) });
+        expect(cards[0]?.need).toEqual({ text: 'needs acceptance criteria', rule: 'R-2' });
+    });
+
     it('AC-014: fs170-brownfield-mixed gives the card of 0003 the need "needs a plan"', async () => {
         const project = await readFixture('fs170-brownfield-mixed');
         const cards = buildCards(project, deriveLifecycle(project));

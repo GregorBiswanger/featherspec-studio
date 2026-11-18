@@ -126,4 +126,13 @@ describe('header', () => {
         expect(header.problems).toBe(1);
         expect(header.problemStems).toHaveLength(1);
     });
+
+    it('AC-008: one spec with several Problems (an unknown status, a dangling plan link and the folder contradiction) counts each, because the header counts Problems and not specs', async () => {
+        const model = await modelFor([], {
+            '.specs/backlog/0001-two.md': '# Two\n\n**Status:** Half done\n**Plan:** [p](0001-two.plan.md)\n\n## 9. Acceptance criteria\n\n- **AC-001** The system shall work.\n',
+        });
+        const header = projectHeader({ name: 'demo', version: '1.10.0' }, model, 'x');
+        expect(header.problemStems).toEqual(['0001-two']);
+        expect(header.problems).toBe(3);
+    });
 });

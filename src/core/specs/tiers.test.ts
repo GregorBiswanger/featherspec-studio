@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Diagnostic } from './diagnostics';
+import { readProjectFiles } from './files';
+import type { ProjectFile } from './files';
 import { readProject } from './readProject';
 import { createMemorySpecSource } from './testing/memorySpecSource';
 import type { MemorySpecSource } from './testing/memorySpecSource';
@@ -45,6 +47,51 @@ describe('diagnostic tiers (0016 AC-001, one test per row of §6.1)', () => {
         });
         expect(diagnostics.map((diagnostic) => diagnostic.kind)).toEqual(['unreadable-file', 'unreadable-file']);
         expect(summary(diagnostics)).toEqual({ problems: 2, notes: 0 });
+    });
+
+    it('AC-001 row "cannot be read, listed or parsed": a reused unreadable file stays a Problem', async () => {
+        const source = createMemorySpecSource();
+        source.setFile(ROOT, '.specs/backlog/0001-a.md', specText());
+        const reuse = (key: string): ProjectFile => ({
+            kind: 'spec',
+            reference: '0001-a',
+            number: '0001',
+            slug: 'a',
+            folder: 'backlog',
+            key,
+            modifiedMs: 1,
+            size: 1,
+            content: { state: 'unreadable', reason: 'not valid UTF-8' },
+        });
+        const { diagnostics } = await readProjectFiles(source, ROOT, reuse);
+        expect(diagnostics.map((diagnostic) => [diagnostic.kind, diagnostic.reason])).toEqual([['unreadable-file', 'not valid UTF-8']]);
+        expect(summary(diagnostics)).toEqual({ problems: 1, notes: 0 });
+    });
+
+    it('AC-001 row "cannot be read, listed or parsed": a symbolic link in place of a lifecycle folder is a Problem', async () => {
+        const diagnostics = await read({ '.specs/active/0002-b.md': specText() }, (source) => {
+            source.setSymlink(ROOT, '.specs/backlog');
+        });
+        expect(diagnostics.map((diagnostic) => [diagnostic.kind, diagnostic.scope])).toEqual([['unreadable-file', { file: '.specs/backlog' }]]);
+        expect(summary(diagnostics)).toEqual({ problems: 1, notes: 0 });
+    });
+
+    it('AC-001 row "cannot be read, listed or parsed": a folder whose stat fails is a Problem', async () => {
+        const source = createMemorySpecSource();
+        source.setFile(ROOT, '.specs/active/0002-b.md', specText());
+        const failing = {
+            ...source,
+            stat: async (root: string, relativePath: string) => {
+                if (relativePath === '.specs/done') {
+                    throw new Error('EIO');
+                }
+                return source.stat(root, relativePath);
+            },
+        };
+        source.setDirectory(ROOT, '.specs/done');
+        const { diagnostics } = await readProjectFiles(failing, ROOT);
+        expect(diagnostics.map((diagnostic) => [diagnostic.kind, diagnostic.scope])).toEqual([['unreadable-file', { file: '.specs/done' }]]);
+        expect(summary(diagnostics)).toEqual({ problems: 1, notes: 0 });
     });
 
     it('AC-001 row "one stem in two folders; one number with two slugs": Problem, one per entry', async () => {
