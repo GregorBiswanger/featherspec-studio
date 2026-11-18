@@ -5,22 +5,23 @@ Current branch: main
 Current phase: act
 
 ## Now
-0015 (Focus the Studio on visibility: no agent runs, a named next step) is implemented, T-001…T-015 and the compile fixes T-016…T-020 verified on `main`; spec stays `In Progress` until Gregor's M-1 and a fresh `/sdd-compile`. [spec](../.specs/active/0015-focus-on-visibility.md) / [plan](../.specs/active/0015-focus-on-visibility.plan.md). Also open: 0014 (Set up FeatherSpec from the Studio), `In Progress` in `active/` until Gregor has tried the button (M-2), then `/sdd-compile` again. 0016 (Honest signals) is built (T-001…T-010 and the compile fixes T-011…T-013 verified); it waits for CI at `870dc63`, Gregor's AC-025 Hands-On and a fresh `/sdd-compile`. 0017 (Next step everywhere) is built with compile fixes T-010…T-012; Windows and CI at `fbdab51` are green; it waits for Gregor's AC-026 and a fresh `/sdd-compile`. Release preparation waits for Gregor's checklist.
+0015 (Focus the Studio on visibility: no agent runs, a named next step) is implemented, T-001…T-015 and the compile fixes T-016…T-020 verified on `main`; spec stays `In Progress` until Gregor's M-1 and a fresh `/sdd-compile`. [spec](../.specs/active/0015-focus-on-visibility.md) / [plan](../.specs/active/0015-focus-on-visibility.plan.md). Also open: 0014 (Set up FeatherSpec from the Studio), `In Progress` in `active/` until Gregor has tried the button (M-2), then `/sdd-compile` again. 0016 (Honest signals) is built (T-001…T-010 and the compile fixes T-011…T-013 verified); it waits for CI at `870dc63`, Gregor's AC-025 Hands-On and a fresh `/sdd-compile`. 0017 (Next step everywhere) is built with compile fixes T-010…T-012; Windows and CI at `fbdab51` are green; it waits for Gregor's AC-026 and a fresh `/sdd-compile`. 0018 (Overview and a compact Board) is built, T-001…T-009 verified in the sandbox (Baseline `a992d08`); it waits for `npm test` on Windows and CI, AC-031 and a fresh `/sdd-compile`. Release preparation waits for Gregor's checklist.
 
 ## Active Spec
 - [0015 spec](../.specs/active/0015-focus-on-visibility.md) / [plan](../.specs/active/0015-focus-on-visibility.plan.md), In Progress, all steps verified (T-016…T-020: fixes from the compile of 2026-11-17).
 - [0014 spec](../.specs/active/0014-setup-featherspec-from-studio.md) / [plan](../.specs/active/0014-setup-featherspec-from-studio.plan.md), In Progress.
-- [0016 spec](../.specs/active/0016-honest-signals.md) / [plan](../.specs/active/0016-honest-signals.plan.md), In Progress, 10 steps, started 2026-11-17 (Baseline 3cdab90); T-001…T-013 verified 2026-11-18 (T-011…T-013: fixes from the compile of S36), plan Done; waits for CI at `870dc63`, Gregor's AC-025 Hands-On and a fresh `/sdd-compile`. 0018…0020 in backlog/, specified, unplanned.
+- [0016 spec](../.specs/active/0016-honest-signals.md) / [plan](../.specs/active/0016-honest-signals.plan.md), In Progress, 10 steps, started 2026-11-17 (Baseline 3cdab90); T-001…T-013 verified 2026-11-18 (T-011…T-013: fixes from the compile of S36), plan Done; waits for CI at `870dc63`, Gregor's AC-025 Hands-On and a fresh `/sdd-compile`. 0019 and 0020 in backlog/, specified, unplanned.
 - [0017 spec](../.specs/active/0017-next-step-everywhere.md) / [plan](../.specs/active/0017-next-step-everywhere.plan.md), In Progress, 9 steps, started 2026-11-18 (Baseline fe0bb37), moved to active/ on Gregor's delegated start signal; proxy decisions P-1…P-15 in the plan.
+- [0018 spec](../.specs/active/0018-overview-and-compact-board.md) / [plan](../.specs/active/0018-overview-and-compact-board.plan.md), In Progress, 9 steps, Baseline a992d08, plan Done; proxy decisions P-1…P-17 (PD-064).
 - Completed: 0001…0007 and 0013 in [.specs/done/](../.specs/done/) (amended by 0015); 0008…0012 in done/ are Deprecated with a successor link to 0015. Plans frozen in [.specs/plan-archive/](../.specs/plan-archive/).
 
 ## Changed Recently
+- 0018 (PD-062, PD-064): Mission Control is the Overview (Now, Up next, Problems, one figures line, collapsed Activity), the Spec Board is the Board (narrow strips, 200–360 px columns, Done collapsed and remembered, filter chip, three-row card with a date); one Refresh command replaces Rescan Project and Refresh Project Discovery; code moved to `core/overview`, `areas/overview`, `protocol/overview.ts` (protocol version 2). §5 notes in 0001, 0003, 0005, 0006, 0007, 0013, 0015, 0016, 0017.
 - 0017 (PD-060/PD-061): the next step shows on every card and Needs-attention row, in the status bar (current spec, state, short form; click copies) and as the command "Copy Next Step"; NS-6 gains `continue`. Gone: drag, "Move to…", the move command, `judgeTransition`, the move messages and result. §5 notes in 0001, 0003, 0006, 0007, 0013, 0015, 0016, ADR-001.
 - 0016 (Honest signals, PD-063): diagnostics carry a tier (Problem or format note, set where each is emitted; R-6 fails on Problems only), the Studio shows Problems and needs instead of rule IDs and a readiness checklist, times and history as sentences, Copy confirms at the button, S2 says what Set up does. Compile fixes: test gaps closed (tiers of the reuse path, symlinked folder and folder stat; header counts Problems; first need; detail Copy class; user-language sweep over every surface; hidden live region), amendment notes named at their statements, PD-063 completed.
 - 0015 compile fixes (T-016…T-020): store opener `createProjectStoreOpener` with 0004 AC-009 tests; board filter and sort tests restored; "Move Spec to…" Copy says Copied / Could not copy (core `createMoveResultPresenter`); ADR-001 §14 note; AC-021 exceptions add AC-025 (OP-008); brief mission, CHANGELOG 0.1.0, systemPatterns, design brief; audit completed.
 - 0015 (PD-055, PD-056): Studio starts no agent. Removed: providers, orchestrator, agent start, Agent Center, run commands and settings, `@github/copilot-sdk`. Added: Next step with Copy in the spec detail, Ready → Active shows the next step, the store keeps only the spec status history, earlier run data is removed at every activation, scan tests for sources, bundle and product docs. Tag `archive/agent-runs-2026-11-17` keeps the old state.
 - PD-054 (Gregor): the panel navigation shows an icon per area, the editor tab shows the logo mark.
-- 0014: Studio can set up a folder from the latest GitHub release (the one write and network exception, PD-049).
 
 ## Decisions in Flight
 - `AGENTS.md` stays 15 lines over its 200-line target: the FeatherSpec 1.10.0 template body alone is 200 lines; the rest is project preferences and the snapshot. Further eviction would edit template wiring — Gregor's call.
@@ -30,6 +31,7 @@ Current phase: act
 - None.
 
 ## Next
+0. 0018: `npm test` on Windows and CI, AC-031 in the preview harness and a real window, Gregor reads PD-064, then `/sdd-compile` in a fresh session.
 1. Gregor: AC-030 / M-1 on `tip-splitter` (release checklist), `npm test` on Windows and CI at the fix head (product code changed in T-016, T-018; pre-done gate, AC-027); then `/sdd-compile` for 0015 in a fresh session.
 2. Gregor: 0014 M-2 with the button, then `/sdd-compile` for 0014.
 3. Gregor: work through [docs/release-checklist.md](../docs/release-checklist.md), then Go.
@@ -37,6 +39,7 @@ Current phase: act
 5. 0017 implemented (T-001…T-009) and fixed (T-010…T-012), spec stays In Progress: Gregor reads the proxy decisions P-1…P-15 and does AC-026 on `tip-splitter`, then `/sdd-compile` in a fresh session.
 
 ## Validation
+- 0018: unit 1983 passed, 3 skipped, 12 timing; eslint, both type checks, compile and compile-tests green in the agent sandbox at the final step; `npm test` not run there; AC-030 and AC-031 open.
 - 0017: Windows 11 at `fbdab51` (2026-11-18): unit 1866 passed, 7 skipped, 12 timing; `npm test` 25 + 1 + 1 + 1; CI run 44232332957 at `fbdab51` green on ubuntu-latest and windows-latest. Fix head: unit, lint, type checks, compile green in the sandbox (1875 passed + 3 skipped); AC-026 open.
 - 0016: unit, lint, both type checks, compile and compile-tests green in the agent sandbox after T-013; `npm test` green on Gregor's Windows 11 machine at `870dc63` on 2026-11-18 (24 + 1 + 1 + 1), `npm run test:unit` there 1801 passed, 7 skipped, 12 timing; CI at `870dc63` not recorded yet (AC-023 open), AC-025 open.
 - 0015: gates 1–5 and compile-tests green in the agent sandbox after T-020 (1688 passed + 3 skipped, 12 timing); `npm test` green on Gregor's Windows at `c4f7a5d`, not yet at the fix head.

@@ -110,6 +110,19 @@ describe('0015 AC-010: no drill-down for runs', () => {
         expect(areas.length).toBeGreaterThan(5);
         expect(areas.every((area) => ['overview', 'board', 'specExplorer'].includes(area))).toBe(true);
     });
+
+    it('all payloads pass the shared navigation guard', async () => {
+        const container = await open(drillView());
+        const ids = [...container.querySelectorAll('[data-drill]')].map((element) => element.getAttribute('data-drill')!).filter((id) => id !== 'activity');
+        for (const id of ids) {
+            await clickAndReturn(container, id);
+        }
+        const requests = posted.filter((message) => message.type === 'navigate');
+        expect(requests.length).toBeGreaterThan(5);
+        for (const request of requests) {
+            expect(isNavigationRequest(request.payload)).toBe(true);
+        }
+    });
 });
 
 describe('AC-014: rows and activity entries', () => {

@@ -191,6 +191,14 @@ describe('product docs after 0018 (AC-001, AC-029)', () => {
         });
     }
 
+    it('.architecture/*.md name neither old area', async () => {
+        const names = (await fs.readdir(path.join(root, '.architecture'))).filter((name) => name.endsWith('.md'));
+        expect(names.length).toBeGreaterThan(0);
+        for (const name of names) {
+            expect(findOldAreaNames(await read(`.architecture/${name}`)), name).toEqual([]);
+        }
+    });
+
     it('the CHANGELOG names the new areas and commands under Unreleased', async () => {
         const changelog = await read('CHANGELOG.md');
         const unreleased = changelog.slice(changelog.indexOf('## [Unreleased]'), changelog.indexOf('\n## [', changelog.indexOf('## [Unreleased]') + 1));

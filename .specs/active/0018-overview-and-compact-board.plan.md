@@ -1,9 +1,9 @@
 # Plan — Overview and a Compact Board
 
 **Spec:** [0018-overview-and-compact-board.md](0018-overview-and-compact-board.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-18
-**Current step:** T-009
+**Current step:** —
 
 ## Approach
 
@@ -381,47 +381,177 @@ No parallel stage: the Overview and Board steps share `messages.ts`, `client.ts`
 - [ ] **Verified (T-009):** —
 - **Notes:** —
 
+## Test-title audit
+
+AC-030, from a throwaway script outside the repo (`/tmp/audit-0018/titles.py`, 2026-11-18): the
+`describe`/`it`/`test`/`suite` title literals of every `.ts`/`.tsx` under `src` at the Baseline
+`a992d08` (`git archive`) and at the head, compared across files (a moved test is no loss;
+`it.each` titles count once as written).
+
+- Baseline: 1,635 test titles (1,632 different); head: 1,721 (the Vitest total is higher because
+  `it.each` expands: `npm run test:unit` at the Baseline 1,875 passed, at the head 1,983 passed, both
+  with 3 skipped; the timing projects pass 12 at both).
+- Absent at the head: 99 test titles, every one listed below with the criterion §5 voids or the head
+  title that replaces it. No title is absent without a row. 25 `describe` group titles also changed:
+  they name the removed tiles, header and attention list or carry the old area names; each held only
+  tests listed below.
+- Kept unchanged by title: all of 0006's drill-down tests that §5 maps (the total, the state counts,
+  the named sets, Enter and Space, the activity entries, the vanished stem) apart from the renames
+  below, the host smoke tests of 0001 and 0005 (renamed with the new IDs where the command or area name is
+  in the title), and every other test of the Baseline.
+
+| # | Baseline title | Baseline file | Disposition |
+| --- | --- | --- | --- |
+| 1 | 0006 AC-022: a Mission Control drill-down button sets no outline of its own, so the generic focus indicator of every button applies | `adapters/node/webviewCss.test.ts` | renamed: head `0006 AC-022: an Overview drill-down button sets no outline …` |
+| 2 | 0015 AC-010 (0016 T-04): the reasons are Blocked, Problem and Review pending only, in that order, and no run reason exists | `core/missionControl/attention.test.ts` | voided by 0018 §5 (0016 T-04, 0015 AC-010 *Needs attention* part: the attention list ends); head `rows.test.ts` Now givens (AC-004) and `problems.test.ts` |
+| 3 | 0015 AC-011: the filters offer board state and named spec set only: one checkbox group, no provider, no "No run" | `webview/board/SpecBoard.test.tsx` | voided by 0018 §5 (0007 AC-012, AC-022: no filter control); head `AC-017: the board offers no checkbox and no filter control of its own, only the sort select` |
+| 4 | 0015 AC-017 (0006): a spec read while open moves the time to that read; a history change alone leaves it (negative control) | `core/missionControl/missionControlService.test.ts` | moved: head `0018 F-1 (0015 AC-017, 0006): the time is the last spec read: a read moves it, a change of …` in `shellService.test.ts` (the time is the project name's tooltip, §5) |
+| 5 | 0015 AC-017 (0006): the time is the last spec read the dashboard processed: a model read at 10:00 shows 10:00 whenever the panel opens | `core/missionControl/missionControlService.test.ts` | moved: head `0018 F-1 (0015 AC-017, 0006): the time is the last spec read …` in `shellService.test.ts` |
+| 6 | 0015 AC-018 (0006): with the history not available Recent activity says so with the reason; the spec figures and the reasons stay | `core/missionControl/missionControlService.test.ts` | renamed: head `0015 AC-018 (0006): with the history not available Activity says so with the reason; the figures and Now stay` |
+| 7 | 0015 §3.2 (0013): Recent activity stands alone in the panel row below the attention list | `webview/areas/missionControl/Sections.test.tsx` | renamed: head `0015 §3.2 (0013): Activity stands alone in the panel row below the figures line` |
+| 8 | 0016 AC-006, AC-007: the badge reads 1 problem for one Problem and is absent at 0 (negative control) | `webview/board/SpecBoard.test.tsx` | replaced: head `AC-019: the Problems badge is the warning icon with its text, and absent at 0 (negative control)` |
+| 9 | 0016 AC-007, AC-008: the fixture project has no Problem, so its header counts none and its attention row names no Problem | `test/missionControl.smoke.test.ts` | renamed: head `0016 AC-007, AC-008 (0018 AC-007): the fixture project has no Problem, so Problems lists none …` |
+| 10 | AC-003: Total and every tile are Tab stops | `webview/areas/missionControl/MissionControl.test.tsx` | replaced: head `every spec row, Copy, figure, "+ n more", the Problems and Activity headings are Tab stops in DOM order` (tiles void, 0013 AC-004–AC-007) |
+| 11 | AC-003: progress shows the percentage, both numbers and the formula text | `webview/areas/missionControl/MissionControl.test.tsx` | replaced by 0018 AC-009: head `the line and "Total n" carry it as tooltip, "Total n" as accessible description` (the visible text goes) |
+| 12 | AC-004, AC-006: no summary and unavailable figures read as text, never as zero | `webview/board/SpecBoard.test.tsx` | voided on the card by 0018 §5 (0007 AC-004, AC-006 card part); head `AC-019: unavailable parts are left out and never read as zero …` and `AC-018: the card tooltip is number and title, a line break, then the description or No summary …` |
+| 13 | AC-004: activating a tile sends the state request of 0006 BR-08 | `webview/areas/missionControl/MissionControl.test.tsx` | retargeted: head `%s sends 0006 BR-08's request (a zero included)` (figures replace tiles) |
+| 14 | AC-004: six tiles in board order, each one native button with count, state name and state icon; Ready, Review and Blocked carry the sentence with the rule ID | `webview/areas/missionControl/MissionControl.test.tsx` | voided by 0018 §5 (0013 AC-004–AC-007); head `shows "Total n" and the six "State n" in board order, zeros included, each one control` |
+| 15 | AC-004: with no divisor progress reads "not available" and shows no percentage | `webview/areas/missionControl/MissionControl.test.tsx` | retargeted: head `without a divisor the text reads "Progress: not available" and shows no percentage` |
+| 16 | AC-005: 5 Backlog and 7 Review give two segments, 41.7 % and 58.3 % wide, named "Backlog: 5 of 12" and "Review: 7 of 12"; no segment for 0 | `webview/areas/missionControl/MissionControl.test.tsx` | voided by 0018 §5 (0013 AC-004–AC-007: no distribution bar) |
+| 17 | AC-005: the progress figure shows 0006 BR-04's rule as visible secondary text and as tooltip | `webview/areas/missionControl/MissionControl.test.tsx` | replaced by 0018 AC-009: head `no visible element shows it: every element holding the text is hidden or a tooltip` |
+| 18 | AC-006: fs-broken lists 0002 (unreadable) and 0003 (contradiction) with the reason Problem | `core/missionControl/attention.test.ts` | retargeted: head `fs-broken gives the rows 0002 (unreadable) and 0003 (contradiction), each with its own reason as the state text` |
+| 19 | AC-007: a spec with format notes only is not listed (fs170-brownfield-mixed: only the spec with a Problem) | `core/missionControl/attention.test.ts` | retargeted: head `format notes give no row and no line (fs170-brownfield-mixed: only the spec with a Problem, 0016 AC-007)` |
+| 20 | AC-007: each attention row shows a number chip, the title and every reason as text with an icon | `webview/areas/missionControl/Sections.test.tsx` | retargeted: head `shows "Problems (n)" with n = rows + lines, each spec row with its reasons, and a line as plain text` (0006 AC-014 attention row → Problems row) |
+| 21 | AC-007: the empty Recent activity panel shows an icon and 0006's sentence | `webview/areas/missionControl/Sections.test.tsx` | voided by 0018 AC-010 (no Activity section without entries); head `without entries there is no Activity section at all` |
+| 22 | AC-008 (0016): a project-level format note (an archived orphan plan) is no Problem and the header counts none | `core/missionControl/specFigures.test.ts` | voided header count (0006 AC-008, AC-009 → AC-004, AC-007, §5); head `a project-level format note (an archived orphan plan) is no line` |
+| 23 | AC-008 control: format notes on a spec count for nothing (fs170 0006) | `core/missionControl/specFigures.test.ts` | voided header count (§5); head `a spec with an unknown header line (a format note) has no row` |
+| 24 | AC-008: Problems at project level only open the Spec Board without a filter, where its banner lists them | `webview/areas/missionControl/Drilldown.test.tsx` | replaced by 0018 AC-007 (heading always sends the named set, also without stems): head `with only project-level lines the heading still sends the named set Problems, with no stem` |
+| 25 | AC-008: a Backlog spec without a plan is not listed, a Review spec is, with the reason "Review pending" | `core/missionControl/attention.test.ts` | retargeted: Review is a Now row (`rows.test.ts`, 0018 AC-004), Backlog is Up next (AC-005); head `a Review entry without a Problem has no row (0016 AC-006 retargeted)` |
+| 26 | AC-008: an unreadable spec file counts as the reason Problem | `core/missionControl/attention.test.ts` | retargeted: head `fs-broken gives the rows 0002 (unreadable) and 0003 (contradiction) …` |
+| 27 | AC-008: no height on a board column, sticky column headers, a scrolling card list, 240 px minimum and a horizontally scrolling board | `adapters/node/webviewCss.test.ts` | replaced: head `AC-015: columns share the width by flexbox (200 to 360 px, strips 32 px, gap 8 px) …` (0013 AC-008 → 0018 AC-015, §5) |
+| 28 | AC-008: one spec with several Problems (an unknown status, a dangling plan link and the folder contradiction) counts each, because the header counts Problems and not specs | `core/missionControl/specFigures.test.ts` | voided header count (§5); head `several Problems of one spec give one row, the reasons joined by " · " and the count of the Problems` |
+| 29 | AC-008: problemStems holds the specs that carry a Problem, sorted, and not a spec with an unknown header line (a note) | `core/missionControl/specFigures.test.ts` | retargeted: head `a duplicated stem carries its path in the row and appears once in the stems` and `shows "Problems (n)" …` |
+| 30 | AC-008: problems counts the Problems on specs plus those at project level (fs-broken: 2; an orphan return note adds one) | `core/missionControl/specFigures.test.ts` | retargeted to 0018 AC-007: head `shows "Problems (n)" with n = rows + lines, each spec row with its reasons, and a line as plain text` |
+| 31 | AC-008: sends one request for the Spec Board with the named set "Problems" and the stems that carry a Problem, and no runAction | `webview/areas/missionControl/Drilldown.test.tsx` | renamed: head `activating the heading sends one request for the Board with the named set Problems and the stems of the rows` and `0018 AC-007: the Problems heading sends the named set "Problems" …` |
+| 32 | AC-008: while no Problem exists the header shows no problem element at all | `webview/areas/missionControl/Drilldown.test.tsx` | replaced: head `shows Problems only while it lists something` (no header, §5) |
+| 33 | AC-008: with no Problem the header shows no problem element and no count | `webview/areas/missionControl/MissionControl.test.tsx` | replaced: head `shows Problems only while it lists something` (no header, §5) |
+| 34 | AC-009: a lifecycle contradiction counts as the reason Problem; an unknown header line (a format note) does not | `core/missionControl/attention.test.ts` | retargeted: head `fs-broken gives the rows …` and `a spec with an unknown header line (a format note) has no row` |
+| 35 | AC-009: number and title, one state chip, summary, the tasks and criteria progressbars and the next-step line follow in DOM order | `webview/board/SpecBoard.test.tsx` | replaced: head `AC-009: number and title, the steps bar, the criteria and the next-step line follow in DOM order …` (0013 AC-009, three-row card) |
+| 36 | AC-009: the progressbars carry value, maximum and the figure text | `webview/board/SpecBoard.test.tsx` | replaced: head `AC-019: the steps bar is named Steps and carries the figure` |
+| 37 | AC-009: where 0007 delivers no figure only "not available" shows, no progressbar | `webview/board/SpecBoard.test.tsx` | replaced: head `AC-009: where 0007 delivers no figure nothing shows for it and no progressbar is drawn` (0007 AC-006 card part) |
+| 38 | AC-011, AC-012, AC-013: filter, sort and clear go to the board state | `core/board/boardRequests.test.ts` | replaced: head `AC-017, AC-013: sort and clear go to the board state, and the board has no request that sets a filter` (0007 AC-012, AC-022: no filter control, §5; P-8) |
+| 39 | AC-013: by last change newest first, ties by stem, a card without the value last | `core/board/filters.test.ts` | replaced: head `AC-023: by last change newest day first, ties by stem then path, a card without a date last` (0007 AC-013 → 0018 L-4) |
+| 40 | AC-014 (0016): a Backlog card shows its need as text without icon, the rule only in the tooltip; the Deprecated marker sits beside the chip | `webview/board/SpecBoard.test.tsx` | renamed: head `… the Deprecated marker shows on a card without a need` (no chip, §5) |
+| 41 | AC-015: the first listener makes the service compute; the view has the four sections and no run figure | `core/missionControl/missionControlService.test.ts` | renamed: head `… the view has the five parts and no run figure` |
+| 42 | AC-017: every filter control is reachable by keyboard | `webview/board/SpecBoard.test.tsx` | replaced: head `AC-024: the chip's Clear filters and the sort control are reachable by keyboard` (0007 AC-017, §5) |
+| 43 | AC-017: name, version as reported ("unknown" included), update time and no Problem | `core/missionControl/specFigures.test.ts` | moved: the project name's tooltip (0018 F-1, AC-025): head `shows the folder name exactly once in the panel and the version and read time as its tooltip`, `a legacy project reads "FeatherSpec unknown"` in `App.test.tsx`; no header (§5) |
+| 44 | AC-018: every state and every badge carries an icon beside its text, hidden from assistive technology | `webview/board/SpecBoard.test.tsx` | replaced: head `AC-018: every badge carries an icon beside its text, hidden from assistive technology` (no state chip on the card) |
+| 45 | AC-023: the current area is marked with aria-current, a visible marker and the area heading, not by colour | `webview/App.test.tsx` | replaced: head `0018 AC-026: the current area is marked with aria-current and the area heading; no marker and no ▸ …` (0005 §9 marker, PD-054, §5) |
+| 46 | AC-024: blocked lines, the readiness line, the Deprecated marker, the diagnostic badge and a duplicated path show as text | `webview/board/SpecBoard.test.tsx` | renamed: head `AC-024: blocked lines, the Deprecated marker, the Problems badge and a duplicated path show as text`; the need is in `AC-019: a Backlog card shows its first need …` |
+| 47 | AC-025: Ready, Review and Blocked carry their rule ID, the other states carry none | `core/missionControl/specFigures.test.ts` | voided by 0018 §5 (0006 AC-025); the rule moves to the column header: head `AC-020: the Ready, Review and Blocked headers carry the sentence and the rule text …`; `0018 AC-003: the figures name no rule …` |
+| 48 | AC-025: a card takes the newer modification time of the spec and its plan | `core/board/progress.test.ts` | replaced: head `AC-021: a card takes the date of L-1 from the spec, its plan and the plan's Last updated line` (0007 AC-025 → 0018 §6.3) |
+| 49 | AC-025: the newer of the times, one time alone, or none | `core/board/progress.test.ts` | replaced: head `lastChange.test.ts` — `uses the spec file time alone when there is no plan, and nothing when no time is known` and `the plan's Last updated line wins …` (0007 AC-025 → 0018 §6.3) |
+| 50 | AC-029 (0005): contributes "FeatherSpec Studio: Rescan Project"; the internal action command stays out of the palette | `adapters/vscode/manifest.test.ts` | voided by 0018 §5 (0005 AC-029: Rescan Project → Refresh); head `0018 AC-001: contributes exactly the commands of the spec with their titles …` |
+| 51 | AC-029: the Rescan command runs while a project is active and changes no file | `test/shell.smoke.test.ts` | replaced: head `0018 AC-027: the Refresh command runs while a project is active and changes no file` (0005 AC-029, §5) |
+| 52 | Copy by pointer, Enter and Space posts copyText only, shows Copied at that Copy and sends no navigation request | `webview/areas/missionControl/Sections.test.tsx` | retargeted to Now rows (0017 AC-012 amended): head `Copy sits outside the row button, is the next Tab stop after it, and posts copyText only` |
+| 53 | Copy sits outside the row button, is the next Tab stop after it and is named with the full first line | `webview/areas/missionControl/Sections.test.tsx` | renamed: head `Copy sits outside the row button, is the next Tab stop after it, and posts copyText only` |
+| 54 | Given Mission Control is shown and spec 0003-x exists When the request "Spec Explorer, spec 0003-x" arrives Then Spec Explorer is shown and 0003 is selected | `core/shell/shellService.navigation.test.ts` | renamed: head `Given Overview is shown and spec 0003-x exists …` |
+| 55 | Mission Control (header, tiles, attention row, activity) shows no rule ID or internal word | `webview/userLanguage.test.tsx` | renamed: head `Overview (Now, Up next, Problems, figures, activity) shows no rule ID or internal word` |
+| 56 | OP-10: rows are ordered by ascending spec number whatever the order of the files | `core/missionControl/attention.test.ts` | renamed: head `rows go by number, whatever the order of the files` |
+| 57 | Refresh runs discovery only, with S4 while it runs | `core/shell/shellService.test.ts` | replaced: head `0018 AC-027: the panel action Refresh runs discovery, then the re-read once, with S4 while …` (0005 *Refresh* action, §5) |
+| 58 | T-02: the header time reads Updated HH:MM today, else with the date | `webview/areas/missionControl/MissionControl.test.tsx` | moved: head `T-02: the time reads Updated HH:MM today` in `App.test.tsx` (the time is the name's tooltip, 0016 T-02, §5) |
+| 59 | a Mission Control row takes a step or no step key, and refuses a bad step | `shared/protocol/stepView.test.ts` | renamed: head `an Overview row takes a step or no step key, and refuses a bad step` |
+| 60 | a column with no card before filtering shows its hint; a column emptied by a filter shows "N hidden by filter" | `webview/board/SpecBoard.test.tsx` | voided by 0018 §5 (0007 §6.8, AC-021: no column hint); head `AC-014: a column that shows no card is a narrow strip …`, `AC-012: a wide column that a filter partly empties still says how many are hidden` |
+| 61 | a damaged remembered value (%s) gives Mission Control and no selection | `core/shell/shellService.navigation.test.ts` | renamed: head `… gives the Overview and no selection` |
+| 62 | a remembered area agentCenter shows Mission Control with no notice and no selection | `core/shell/shellService.navigation.test.ts` | renamed: head `… shows Overview with no notice and no selection` |
+| 63 | a row of a duplicated stem names its path so that the request can pick the entry | `core/missionControl/attention.test.ts` | renamed: head `a row of a duplicated stem names its path; the row carries its next step (0017 AC-012)` |
+| 64 | a row whose spec has a step carries it; a row without a step has no step key | `core/missionControl/attention.test.ts` | renamed: head `a row of a duplicated stem names its path; the row carries its next step (0017 AC-012)` and the contract test `an Overview row takes a step or no step key, and refuses a bad step` |
+| 65 | a row whose spec has no step shows no "Next" and no Copy (negative control) | `webview/areas/missionControl/Sections.test.tsx` | renamed: head `a row whose spec has no step shows no "Next" and no Copy; it has the one row button only` |
+| 66 | a state count sends the Spec Board filtered to that state, once | `webview/areas/missionControl/Drilldown.test.tsx` | renamed: head `a state count sends the Board filtered to that state, once` |
+| 67 | a valid missionControl event fills the area; an invalid one is ignored and the view stays as it was | `webview/areas/missionControl/MissionControl.test.tsx` | renamed: head `a valid overview event fills the area; an invalid one is ignored and the view stays as it was` |
+| 68 | accepts a payload that holds a valid view and refuses anything else (negative control: a board view is no Mission Control view) | `shared/protocol/missionControl.test.ts` | renamed: head `… a board view is no Overview view` in `overview.test.ts` |
+| 69 | activating the rest of the row still sends the request of 0006 AC-014 | `webview/areas/missionControl/Sections.test.tsx` | renamed: head `activating the row outside Copy sends the request of 0006 AC-014` |
+| 70 | an attention row sends Spec Explorer with that spec; a row of a duplicated stem carries its path | `webview/areas/missionControl/Drilldown.test.tsx` | renamed: head `a Now row sends Spec Explorer with that spec; a row of a duplicated stem carries its path` (0006 AC-014, §5) |
+| 71 | an empty list keeps its heading and says so; "not available" shows the reason and no list | `webview/areas/missionControl/Sections.test.tsx` | replaced by 0018 AC-010: head `while the status history is not available it shows the heading "Activity", the reason and no toggle` and `without entries there is no Activity section at all` |
+| 72 | an empty list keeps its heading and says that nothing needs attention | `webview/areas/missionControl/Sections.test.tsx` | voided by 0018 §5/§7 ("Nothing needs attention." removed; Problems shows only while it lists something) |
+| 73 | calls nothing while no project is active | `core/shell/shellService.test.ts` | voided by 0018 §5 (0005 OP-009 Rescan Project; 0001 §9 Refresh Project Discovery); head `runs discovery only while no project is active` (0018 AC-027) |
+| 74 | calls the repository rescan once while a project is active | `core/shell/shellService.test.ts` | voided by 0018 §5 (Rescan Project is gone); head `0018 AC-027` command test: discovery once, then the re-read once while a project is active |
+| 75 | const label = "Spec Board"; | `adapters/node/webviewCss.test.ts` | renamed text of a planted CSS sample: head `const label = "Board";` |
+| 76 | control: a Mission Control event with an extra field is refused and the area stays an empty frame | `adapters/node/webviewBundle.test.ts` | renamed: head `control: a Overview event with an extra field is refused …` |
+| 77 | lists Mission Control, Spec Board and Spec Explorer | `webview/App.test.tsx` | renamed: head `lists Overview, Board and Spec Explorer` |
+| 78 | lists exactly Mission Control, Spec Board and Spec Explorer, in this order | `shared/protocol/messages.test.ts` | renamed: head `lists exactly Overview, Board and Spec Explorer, in this order` |
+| 79 | mounts Mission Control with a snapshot of a fixture project: header, six state counts, progress, the attention list, the activity, no start-up error | `adapters/node/webviewBundle.test.ts` | renamed: head `mounts Overview with a snapshot of a fixture project: Now, Up next, the figures line …`; header, tiles and attention list voided by 0018 §5 (0006 AC-008, AC-009; 0013 AC-004–AC-007) |
+| 80 | mounts the Spec Board with a snapshot of a fixture project: six columns, the cards, no start-up error | `adapters/node/webviewBundle.test.ts` | renamed: head `mounts the Board with a snapshot of a fixture project: six columns, the cards, no start-up error` |
+| 81 | no status element is empty and every marker carries its word | `webview/areas/missionControl/Sections.test.tsx` | retargeted: head `shows number, title, status text, the next step and Copy, and no second step line` (status text per row, no marker) |
+| 82 | removes the data of the tag build, keeps the history and a newer folder, and Recent activity shows the kept entry | `adapters/node/earlierRunData.endToEnd.test.ts` | renamed: head `… and Activity shows the kept entry` |
+| 83 | renders attention and activity within 1000 ms of the message event | `webview/areas/missionControl/Sections.timing.test.tsx` | renamed: head `renders Now and activity within 1000 ms of the message event` |
+| 84 | shows "Next" and the short form after the reasons inside the row button, with the full lines as tooltip | `webview/areas/missionControl/Sections.test.tsx` | retargeted: head `shows number, title, status text, the next step and Copy …` and `title and status carry their full text as tooltip, the step its full lines` |
+| 85 | shows "No specs yet" with the pointer to /sdd-specify in place of counts and progress, and keeps the header | `webview/areas/missionControl/MissionControl.test.tsx` | replaced by 0018 AC-011: head `shows "No specs yet. Start with /sdd-specify" and Copy in place of Now, Up next and the figures; Problems and Activity stay` |
+| 86 | shows "unknown" as the version and "n problems" in the plural | `webview/areas/missionControl/MissionControl.test.tsx` | moved: version in the tooltip (head `a legacy project reads "FeatherSpec unknown"` in `App.test.tsx`); the problem count is the heading's n (0018 AC-007) |
+| 87 | shows folder name, FeatherSpec version, the model update time in local time and the problem count | `webview/areas/missionControl/MissionControl.test.tsx` | moved: head `shows the folder name exactly once in the panel and the version and read time as its tooltip` (0018 AC-025); problem count → Problems (n) |
+| 88 | shows number, title, state text, description, figures and last change | `webview/board/SpecBoard.test.tsx` | replaced: head `AC-018: a card shows number and title, then row 2 with the steps, the criteria and the day …` (state text, description, "Last change:" voided, §5) |
+| 89 | shows the count in the heading and every reason of a row as text | `webview/areas/missionControl/Sections.test.tsx` | retargeted: head `shows "Problems (n)" with n = rows + lines, each spec row with its reasons …` |
+| 90 | shows the total, the six states with their counts as text, "of which Deprecated" and the derived label with the rule ID | `webview/areas/missionControl/MissionControl.test.tsx` | retargeted: head `shows "Total n" and the six "State n" …` and `Done carries "of which Deprecated: n" as tooltip …`; the derived label voided (0018 AC-003, §5) |
+| 91 | shows time, number, title and the change of each entry in the order of the view, and no control that shows more | `webview/areas/missionControl/Sections.test.tsx` | renamed: head `while open it shows time, number, title and the change of each entry in the order of the view` |
+| 92 | the Needs attention heading sends the named set "Needs attention" with the stems of exactly the listed rows, a duplicated stem once | `webview/areas/missionControl/Drilldown.test.tsx` | renamed: head `0018 AC-007: the Problems heading sends the named set "Problems" with the stems of the listed spec rows, a duplicated stem once` (set label per §7) |
+| 93 | the Spec Board card shows no rule ID or internal word, whatever its state, need or Problem | `webview/userLanguage.test.tsx` | renamed: head `the Board card shows no rule ID or internal word, whatever its state, need or Problem` |
+| 94 | the description is limited to two lines | `adapters/node/webviewCss.test.ts` | replaced: head `AC-018: the number and title of a card are limited to two lines …` (0007 AC-004: no description on the card, §5) |
+| 95 | the empty board, the empty Mission Control and the empty Spec Explorer | `webview/states.test.tsx` | renamed: head `the empty board, the empty Overview and the empty Spec Explorer` |
+| 96 | the first open in a workspace shows Mission Control | `core/shell/shellService.navigation.test.ts` | renamed: head `0018 AC-002: the first open in a workspace shows the Overview` |
+| 97 | the message replaces counts, progress and the attention list; the header and the activity stay | `webview/areas/missionControl/Sections.test.tsx` | replaced by 0018 AC-011: head `shows "No specs yet. Start with /sdd-specify" and Copy in place of Now, Up next and the figures …`; header voided (§5) |
+| 98 | the state checkboxes send the full filter; unchecking the last one removes the key | `webview/board/SpecBoard.test.tsx` | voided by 0018 §5 (0007 AC-012, AC-022: no filter control; P-8) |
+| 99 | the total sends the Spec Board without a target | `webview/areas/missionControl/Drilldown.test.tsx` | renamed: head `the total sends the Board without a target` |
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001, T-008, T-009 | — | — | open |
-| AC-002 | T-001 | — | — | open |
-| AC-003 | T-003 | — | — | open |
-| AC-004 | T-002 | — | — | open |
-| AC-005 | T-002 | — | — | open |
-| AC-006 | T-002, T-003 | — | — | open |
-| AC-007 | T-003 | — | — | open |
-| AC-008 | T-003 | — | — | open |
-| AC-009 | T-003 | — | — | open |
-| AC-010 | T-004 | — | — | open |
-| AC-011 | T-002, T-005 | — | — | open |
-| AC-012 | T-002 | — | — | open |
-| AC-013 | T-003 | — | — | open |
-| AC-014 | T-005, T-006 | — | — | open |
-| AC-015 | T-005 | — | — | open |
-| AC-016 | T-006 | — | — | open |
-| AC-017 | T-005 | — | — | open |
-| AC-018 | T-007 | — | — | open |
-| AC-019 | T-007 | — | — | open |
-| AC-020 | T-005 | — | — | open |
-| AC-021 | T-007 | — | — | open |
-| AC-022 | T-007 | — | — | open |
-| AC-023 | T-007 | — | — | open |
-| AC-024 | T-006 | — | — | open |
-| AC-025 | T-001 | — | — | open |
-| AC-026 | T-001 | — | — | open |
-| AC-027 | T-001 | — | — | open |
-| AC-028 | T-006 | — | — | open |
-| AC-029 | T-008 | — | — | open |
-| AC-030 | T-009 | — | — | open |
-| AC-031 | T-008 | — | manual: orchestrator's preview harness after T-009 (verdict here), Gregor in a real window (release checklist) | open |
+| AC-001 | T-001, T-008, T-009 | `src/shared/protocol/areas.ts`, `src/adapters/vscode/commands.ts`, `package.json`, README, CHANGELOG, `docs/` | `manifest.test.ts`, `messages.test.ts`, `sourceScan.test.ts` (0018 AC-001, AC-029), `docsScan.test.ts` (product docs after 0018) | verified |
+| AC-002 | T-001 | `src/shared/protocol/areas.ts` (`parseUiMemory` rejects unknown areas) | `shellService.navigation.test.ts` (remembered `missionControl`, `specBoard`, `agentCenter`; first open) | verified |
+| AC-003 | T-003 | `src/core/overview/figures.ts`, `webview/areas/overview/Figures.tsx` | `figures.test.ts`, `Overview.test.tsx` (figures, tooltips) | verified |
+| AC-004 | T-002 | `src/core/overview/rows.ts`, `src/webview/areas/overview/Now.tsx`, `SpecRow.tsx` | `rows.test.ts`, `Sections.test.tsx` | verified |
+| AC-005 | T-002 | `src/core/overview/rows.ts`, `src/webview/areas/overview/Now.tsx`, `SpecRow.tsx`, `+ n more` request in `requests.ts` | `rows.test.ts`, `Sections.test.tsx`, `Drilldown.test.tsx` | verified |
+| AC-006 | T-002, T-003 | `SpecRow.tsx`, `main.css` (`.ov-row`) | `Sections.test.tsx`, `webviewCss.test.ts` | verified |
+| AC-007 | T-003 | `src/core/overview/problems.ts`, `Problems.tsx` | `problems.test.ts`, `Overview.test.tsx`, `Drilldown.test.tsx` | verified |
+| AC-008 | T-003 | `Figures.tsx`, `requests.ts` | `Overview.test.tsx`, `Drilldown.test.tsx` | verified |
+| AC-009 | T-003 | `Figures.tsx` (tooltip and `aria-describedby`) | `Overview.test.tsx`, `webviewBundle.test.ts` | verified |
+| AC-010 | T-004 | `src/core/overview/overviewService.ts`, `activity.ts`, `Activity.tsx`, `overviewSetActivity` in `messages.ts` | `overviewService.test.ts`, `Sections.test.tsx`, `messageRouter.test.ts` | verified |
+| AC-011 | T-002, T-005 | `NO_SPECS_START_TEXT` in `texts.ts`, `Overview.tsx`, `areas/SpecBoard.tsx` | `Sections.test.tsx`, `SpecBoard.test.tsx`, `states.test.tsx` | verified |
+| AC-012 | T-002 | `Now.tsx` (empty texts) | `Sections.test.tsx` | verified |
+| AC-013 | T-003 | `Drill.tsx`, `Overview.tsx` | `Overview.test.tsx`, `Drilldown.test.tsx`, `Sections.test.tsx` | verified |
+| AC-014 | T-005, T-006 | `src/core/board/filters.ts`, `webview/board/Column.tsx` | `filters.test.ts`, `SpecBoard.test.tsx`, `Keyboard.test.tsx` | verified |
+| AC-015 | T-005 | `src/webview/main.css` (`.columns`, `.column`) | `webviewCss.test.ts` (AC-015) | verified |
+| AC-016 | T-006 | `src/core/board/doneMemory.ts`, `boardUiState.ts`, `boardService.ts`, `src/adapters/vscode/uiMemory.ts`, `Column.tsx` | `doneMemory.test.ts`, `boardService.test.ts`, `filters.test.ts`, `SpecBoard.test.tsx`, `Keyboard.test.tsx`, host `board.smoke.test.ts` | verified |
+| AC-017 | T-005 | `webview/board/FilterBar.tsx`, `messages.ts` (no `boardSetFilter`) | `SpecBoard.test.tsx`, `boardRequests.test.ts`, `boardFilter.test.ts` | verified |
+| AC-018 | T-007 | `webview/board/Card.tsx`, `texts.ts` (`cardTooltip`, `cardName`) | `SpecBoard.test.tsx`, `webviewCss.test.ts`, `userLanguage.test.tsx` | verified |
+| AC-019 | T-007 | `Card.tsx` | `SpecBoard.test.tsx` | verified |
+| AC-020 | T-005 | `Column.tsx`, `texts.ts` (`columnRuleTooltip`) | `SpecBoard.test.tsx`, `webviewBundle.test.ts` | verified |
+| AC-021 | T-007 | `src/core/board/lastChange.ts`, `cards.ts`, `Card.tsx` | `lastChange.test.ts`, `progress.test.ts`, `SpecBoard.test.tsx` | verified |
+| AC-022 | T-007 | `boardService.ts` (L-3), `FilterBar.tsx` | `boardService.test.ts`, `SpecBoard.test.tsx` | verified |
+| AC-023 | T-007 | `src/core/board/filters.ts` | `filters.test.ts`, `boardService.test.ts` | verified |
+| AC-024 | T-006 | `Column.tsx`, `areas/SpecBoard.tsx`, `FilterBar.tsx` | `Keyboard.test.tsx`, `SpecBoard.test.tsx` | verified |
+| AC-025 | T-001 | `src/webview/App.tsx`, `ShellView` in `messages.ts`, `shellService.ts` | `App.test.tsx`, `shellService.test.ts`, `messages.test.ts` | verified |
+| AC-026 | T-001 | `Navigation.tsx`, `main.css` | `App.test.tsx`, `webviewCss.test.ts` | verified |
+| AC-027 | T-001 | `src/core/shell/shellService.ts` (`refresh`), `src/extension.ts`, `commands.ts` | `shellService.test.ts`, host `shell.smoke.test.ts` (compiled, not run here) | verified |
+| AC-028 | T-006 | read-only services (no new writer) | `noWrite.test.ts`, `overviewService.test.ts` (AC-023), host `board.smoke.test.ts` (compiled, not run here) | verified |
+| AC-029 | T-008 | texts in `src/shared/protocol/texts.ts` and `areas/overview/texts.ts` | `sourceScan.test.ts`, `docsScan.test.ts`, literal assertions in the area tests | verified |
+| AC-030 | T-009 | this plan's *Test-title audit*, `/tmp/audit-0018/titles.py` (not in the repo) | audit table above; `npm run test:unit` 1,983 passed; `npm test` on Windows and CI is the pre-done gate (Gregor) | built |
+| AC-031 | T-008 | — | manual: orchestrator's preview harness after T-009 (verdict here), Gregor in a real window (release checklist) | built |
 
 ## Session handoff
 
-- **Done so far:** plan written (9 steps, 4 stages, no parallel stage).
-- **Next action:** Gregor reads the plan (proxy decisions P-1…P-17); on the start signal, the
-  backlog → active move, then T-001.
-- **Open decisions:** OP-002 (Gregor confirms the spec's proxies; PD-064 records them in T-008).
+- **Done so far:** T-001…T-009 verified and committed one by one on the current branch (Baseline
+  `a992d08`); gates 1–5 and `compile-tests` green in the sandbox: 1,983 unit tests passed (Baseline
+  1,875), timing 12. Overview (Now, Up next, Problems, figures line, collapsed Activity with its state
+  in the host), Board (strips, flexbox widths, filter chip, Done collapsed and remembered, three-row
+  card, date from the plan's `Last updated:` line), one Refresh command, the §5 notes, README,
+  CHANGELOG, release checklist, design brief, PD-064, architecture and Memory Bank sync, the
+  test-title audit.
+- **Next action:** `npm test` on Windows and in CI (pre-done gate); AC-031 in the preview harness and
+  in a real window (release checklist); then Gregor reads the proxy decisions (PD-064) and a fresh
+  `/sdd-compile` decides the move to done.
+- **Open decisions:** OP-002 (Gregor confirms the spec's proxies, recorded as PD-064). The Spec
+  Explorer list keeps its `▸` marker for the selected row (0007 AC-023, not amended by §5; the
+  scan names that one file).
 - **Baseline:** `a992d08` (HEAD at the start of implementation).
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked); CI and Gregor's Windows machine run it.
