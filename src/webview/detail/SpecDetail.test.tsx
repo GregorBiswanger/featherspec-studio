@@ -7,7 +7,7 @@ import { createClient, type ShellClient } from '../client';
 import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
 import { resetSectionMemory } from './sectionMemory';
 import { copyResultEvent, detailEvent, detailView, historySection, openFileResultEvent, PLAN_KEY, SPEC_KEY } from './testing/views';
-import { COPIED_TEXT, COPY_FAILED_TEXT, NEXT_STEP_DONE_TEXT } from '../../shared/protocol/nextStepTexts';
+import { ABOUT_STEP_LABEL, COPIED_TEXT, COPY_FAILED_TEXT, NEXT_STEP_DONE_TEXT } from '../../shared/protocol/nextStepTexts';
 
 let posted: Envelope[];
 let mounted: Mounted | undefined;
@@ -783,5 +783,44 @@ describe('0021 AC-009, AC-010: the coach line in the detail', () => {
     it('a rule with text only shows no coach line', async () => {
         const container = await open(detailView({}, { rule: 'NS-3', text: NEXT_STEP_DONE_TEXT }));
         expect(container.querySelector('.step-coach')).toBeNull();
+    });
+});
+
+describe('0021 AC-014, AC-015, AC-009, AC-010: the About this step toggletip in the detail', () => {
+    const ABOUT = ['It checks the work.', 'New chat: the reviewer should not know the build.', 'A strong model reads it best.', 'Nothing changes on disk.'];
+    const TIPS = { coach: 'new chat · strong model, other family', about: ABOUT };
+    const LINES = [
+        { text: '/sdd-compile k', intent: 'Have the result verified' },
+        { text: '/sdd-lifecycle k', intent: 'Then, after a READY verdict: close the spec' },
+    ];
+
+    it('shows one question-mark button in the section head directly after the heading, named About this step', async () => {
+        const container = await open(detailView({}, { rule: 'NS-5', lines: LINES, tips: TIPS }));
+        const head = container.querySelector('.next-step .section-head')!;
+        const toggle = head.querySelector<HTMLButtonElement>('button.toggletip')!;
+        expect(head.querySelector('h3')!.nextElementSibling).toBe(toggle);
+        expect(toggle.textContent).toBe('?');
+        expect(toggle.getAttribute('aria-label')).toBe(ABOUT_STEP_LABEL);
+        expect(toggle.title).toBe(ABOUT_STEP_LABEL);
+        expect(container.querySelectorAll('button.toggletip')).toHaveLength(1);
+    });
+
+    it('opens the four paragraphs literally, in order, in the region directly after the button; Copy prompt buttons stay', async () => {
+        const container = await open(detailView({}, { rule: 'NS-5', lines: LINES, tips: TIPS }));
+        const toggle = container.querySelector<HTMLButtonElement>('button.toggletip')!;
+        await click(toggle);
+        const region = toggle.nextElementSibling!;
+        expect(region.getAttribute('role')).toBe('status');
+        expect([...region.querySelectorAll('p')].map((paragraph) => paragraph.textContent)).toEqual(ABOUT);
+        expect(container.querySelectorAll('button.next-step-copy')).toHaveLength(2);
+        expect(region.querySelectorAll('a, button, input, [tabindex]')).toHaveLength(0);
+    });
+
+    it('shows no question-mark button without tips or for a rule with text only', async () => {
+        const without = await open(detailView({}, { rule: 'NS-5', lines: LINES }));
+        expect(without.querySelector('.toggletip')).toBeNull();
+        mounted!.unmount();
+        const text = await open(detailView({}, { rule: 'NS-3', text: NEXT_STEP_DONE_TEXT }));
+        expect(text.querySelector('.toggletip')).toBeNull();
     });
 });

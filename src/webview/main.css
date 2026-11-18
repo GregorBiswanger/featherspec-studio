@@ -1091,6 +1091,60 @@ main > h1 {
     overflow-wrap: break-word;
 }
 
+.toggletip {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    color: var(--vscode-foreground);
+    font-size: 11px;
+    line-height: 1;
+    background: transparent;
+    border: 1px solid var(--vscode-descriptionForeground);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 120ms ease;
+}
+
+.toggletip:hover,
+.toggletip[aria-expanded="true"] {
+    background: var(--vscode-toolbar-hoverBackground);
+}
+
+.toggletip:focus-visible {
+    outline: 2px solid var(--vscode-contrastActiveBorder, var(--vscode-focusBorder));
+    outline-offset: 1px;
+}
+
+.vscode-high-contrast .toggletip {
+    border-color: var(--vscode-contrastBorder);
+}
+
+.toggletip-region {
+    flex: 1 0 100%;
+    min-width: 0;
+    text-align: start;
+}
+
+.toggletip-region:empty {
+    flex: 0 0 0;
+}
+
+.toggletip-region p {
+    margin: 4px 0 0;
+    color: var(--vscode-foreground);
+    font-size: 11px;
+    overflow-wrap: break-word;
+}
+
+.next-step .section-head {
+    flex-wrap: wrap;
+}
+
 .ov-row .ov-number {
     grid-area: number;
 }

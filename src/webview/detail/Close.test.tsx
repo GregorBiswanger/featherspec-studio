@@ -363,3 +363,25 @@ describe('AC-020: updates keep the focus and the scroll container', () => {
         expect(document.activeElement).toBe(cardOf(container, '0003'));
     });
 });
+
+describe('0021 AC-014: Escape with the About this step toggletip open', () => {
+    async function withTip(): Promise<HTMLElement> {
+        const container = await board(SELECTED);
+        await send(detailEvent(detailView({}, { rule: 'NS-5', lines: [{ text: '/sdd-compile k', intent: 'Have the result verified' }], tips: { coach: 'new chat · strong model', about: ['one', 'two', 'three', 'four'] } })));
+        return container;
+    }
+
+    it('the first Escape closes only the toggletip and keeps the side panel; the second sends clearSelection', async () => {
+        const container = await withTip();
+        const toggle = container.querySelector<HTMLButtonElement>('aside.side-panel button.toggletip')!;
+        await click(toggle);
+        await act(async () => toggle.focus());
+        await escape(toggle);
+        expect(toggle.getAttribute('aria-expanded')).toBe('false');
+        expect(requests('clearSelection')).toEqual([]);
+        expect(container.querySelector('aside.side-panel')).not.toBeNull();
+        expect(document.activeElement).toBe(toggle);
+        await escape(toggle);
+        expect(requests('clearSelection')).toEqual([{}]);
+    });
+});

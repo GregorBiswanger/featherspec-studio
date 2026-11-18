@@ -313,8 +313,8 @@ ends of stages 1 and 3.
   absolute|fixed`).
 - **Verify:** `npx vitest run --project webview src/webview/ui/Toggletip.test.tsx src/webview/detail src/webview/areas/overview`
   and `npx vitest run --project node src/adapters/node/webviewCss.test.ts` red (stub), then green; gates 1–4
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** 2026-11-18 · red: `npx vitest run --project webview src/webview/ui/Toggletip.test.tsx` 12 failed against the `Not implemented` stub, and the CSS test went red by mutation (300 ms transition plus `position: absolute`, 3 failed, restored) → green: `npx vitest run --project node --project webview` 157 files, 2611 passed, 3 skipped; timing projects 15 passed; eslint 0 warnings, both `tsc` clean, `npm run compile` and `npm run compile-tests` clean.
+- **Notes:** `ui/Toggletip.tsx` takes `label`, `glyph`, `paragraphs` (generic for 0024); one open at a time through a module store and `useSyncExternalStore`; the pointerdown listener exists only while open (capture phase). Escape on the button while open calls `preventDefault`, so `DetailFrame` ignores it. Proxy: the Escape tests with `DetailFrame` sit in `Close.test.tsx` (side panel) and `ListOrDetail.test.tsx` (below 900 px), where the existing Escape helpers live, not in `SpecDetail.test.tsx`. The Overview coach text moved into `span.ov-coach-text` so the `?` and its region share the flex line; the region takes a whole line (`flex: 1 0 100%`, `:empty` takes none), the Next step section head wraps. The word-budget test of 0019 AC-010 counts the `?` and still passes.
 
 ### T-008 — §5 notes, docs, test-title audit, architecture and Memory Bank sync, final gates
 

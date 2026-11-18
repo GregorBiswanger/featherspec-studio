@@ -822,3 +822,53 @@ describe('0022 AC-002: no title, heading or path breaks at any character', () =>
         expect(heading.filter((declaration) => declaration.property === 'min-width').map((declaration) => declaration.value)).toEqual(['0']);
     });
 });
+
+describe('0021 AC-014, AC-022: the toggletip uses the theme, shows its focus and stays in the flow', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const own = (): { selector: string; body: string }[] =>
+        parseRules(css)
+            .map((rule) => ({ selector: rule.selectors.join(', '), body: rule.body }))
+            .filter((rule) => /\.toggletip\b/.test(rule.selector));
+
+    it('has rules for the button and its region, and only theme variables for colour', () => {
+        expect(rulesFor(css, '.toggletip').length).toBeGreaterThan(0);
+        expect(rulesFor(css, '.toggletip-region').length).toBeGreaterThan(0);
+        expect(own().length).toBeGreaterThanOrEqual(6);
+        for (const rule of own()) {
+            expect(rule.body, rule.selector).not.toMatch(/#[0-9a-fA-F]{3,8}\b|\b(?:rgb|rgba|hsl|hsla)\(/);
+        }
+        const body = rulesFor(css, '.toggletip').map((rule) => rule.body).join(';');
+        expect(body).toMatch(/color:\s*var\(--vscode-/);
+        expect(body).toMatch(/border:\s*1px solid var\(--vscode-/);
+    });
+
+    it('shows a visible focus outline from the focus variables and never removes it', () => {
+        const rules = rulesFor(css, '.toggletip:focus-visible');
+        expect(rules.some((rule) => /outline:\s*2px solid var\(--vscode-contrastActiveBorder, var\(--vscode-focusBorder\)\)/.test(rule.body))).toBe(true);
+        for (const rule of own()) {
+            expect(rule.body, rule.selector).not.toMatch(/outline:\s*(none|0)\b/);
+        }
+    });
+
+    it('has no transition longer than 150 ms and the High Contrast border', () => {
+        for (const rule of own()) {
+            for (const match of rule.body.matchAll(/transition[^;]*/g)) {
+                for (const time of match[0].matchAll(/(\d+(?:\.\d+)?)(ms|s)\b/g)) {
+                    const ms = time[2] === 's' ? Number(time[1]) * 1000 : Number(time[1]);
+                    expect(ms, rule.selector).toBeLessThanOrEqual(150);
+                }
+            }
+        }
+        expect(rulesFor(css, '.vscode-high-contrast .toggletip').some((rule) => /border-color:\s*var\(--vscode-contrastBorder\)/.test(rule.body))).toBe(true);
+    });
+
+    it('keeps the region in the flow: no absolute or fixed position, no negative margin, and it takes a whole line', () => {
+        for (const rule of own()) {
+            expect(rule.body, rule.selector).not.toMatch(/position:\s*(absolute|fixed)/);
+        }
+        const region = rulesFor(css, '.toggletip-region').map((rule) => rule.body).join(';');
+        expect(region).toMatch(/flex:\s*1 0 100%/);
+        expect(region).not.toMatch(/margin[^;]*-\d/);
+        expect(rulesFor(css, '.next-step .section-head').some((rule) => /flex-wrap:\s*wrap/.test(rule.body))).toBe(true);
+    });
+});

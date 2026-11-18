@@ -1,7 +1,8 @@
 import type { NextStepView } from '../../shared/protocol/detail';
-import { NEXT_STEP_HEADING } from '../../shared/protocol/nextStepTexts';
+import { ABOUT_STEP_GLYPH, ABOUT_STEP_LABEL, NEXT_STEP_HEADING } from '../../shared/protocol/nextStepTexts';
 import { PathText } from '../ui/PathText';
 import { CopyButton } from '../ui/CopyButton';
+import { Toggletip } from '../ui/Toggletip';
 
 export function NextStep(props: { nextStep: NextStepView; copyResult: { ok: boolean; text: string } | undefined; onCopy(text: string): void }) {
     const { nextStep, copyResult } = props;
@@ -10,6 +11,7 @@ export function NextStep(props: { nextStep: NextStepView; copyResult: { ok: bool
         <section className="detail-section next-step">
             <div className="section-head">
                 <h3>{NEXT_STEP_HEADING}</h3>
+                {tips === undefined ? null : <Toggletip label={ABOUT_STEP_LABEL} glyph={ABOUT_STEP_GLYPH} paragraphs={tips.about} />}
             </div>
             <div className="section-body">
                 {'text' in nextStep ? (

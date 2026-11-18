@@ -343,7 +343,7 @@ describe('0021 AC-009, AC-010: the coach line of the first Now row', () => {
         const item = nowRow(container, '0001-a');
         const coach = item.querySelector('div.ov-coach')!;
         expect(coach.parentElement).toBe(item);
-        expect(coach.textContent).toBe('any chat · fast model');
+        expect(coach.querySelector('.ov-coach-text')!.textContent).toBe('any chat · fast model');
         const copy = item.querySelector('button.next-step-copy')!;
         expect(copy.nextElementSibling?.getAttribute('role')).toBe('status');
         expect(copy.nextElementSibling?.nextElementSibling).toBe(coach);
@@ -355,7 +355,44 @@ describe('0021 AC-009, AC-010: the coach line of the first Now row', () => {
         const without = await open(withRows());
         expect(without.querySelector('.ov-coach')).toBeNull();
         const withoutHtml = nowRow(without, '0001-a').innerHTML;
-        const withHtml = nowRow(await open(withTips()), '0001-a').innerHTML.replace(/<div class="ov-coach">.*?<\/div>/, '');
+        const withHtml = nowRow(await open(withTips()), '0001-a').innerHTML.replace(/<div class="ov-coach">.*<\/div>/, '');
         expect(withoutHtml).toBe(withHtml);
+    });
+});
+
+describe('0021 AC-014, AC-009: the About this step toggletip of the first Now row', () => {
+    const ABOUT = ['It builds one step.', 'Same chat: it continues.', 'A fast model is enough.', 'Nothing changes on disk.'];
+    const TIPS = { coach: 'any chat · fast model', about: ABOUT };
+
+    function withTips(): OverviewView {
+        const view = withRows();
+        view.now[0] = { ...view.now[0]!, tips: TIPS };
+        return view;
+    }
+
+    it('shows one question-mark button in the coach line, after the coach text, and no other row, card or Up next row shows one', async () => {
+        const container = await open(withTips());
+        const toggles = container.querySelectorAll('button.toggletip');
+        expect(toggles).toHaveLength(1);
+        const coach = nowRow(container, '0001-a').querySelector('.ov-coach')!;
+        const toggle = coach.querySelector<HTMLButtonElement>('button.toggletip')!;
+        expect(toggle.previousElementSibling?.textContent).toBe('any chat · fast model');
+        expect(toggle.getAttribute('aria-label')).toBe('About this step');
+        expect(nowRow(container, '0002-b').querySelector('.toggletip')).toBeNull();
+        expect(container.querySelector('[data-up-next] .toggletip')).toBeNull();
+    });
+
+    it('opens the four paragraphs in the coach line and a second activation empties them', async () => {
+        const container = await open(withTips());
+        const toggle = container.querySelector<HTMLButtonElement>('button.toggletip')!;
+        await click(toggle);
+        expect([...toggle.nextElementSibling!.querySelectorAll('p')].map((paragraph) => paragraph.textContent)).toEqual(ABOUT);
+        await click(toggle);
+        expect(toggle.nextElementSibling!.textContent).toBe('');
+    });
+
+    it('shows no question-mark button without tips', async () => {
+        const container = await open(withRows());
+        expect(container.querySelector('.toggletip')).toBeNull();
     });
 });

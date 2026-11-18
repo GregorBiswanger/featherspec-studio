@@ -1,9 +1,11 @@
 import type { OverviewRow } from '../../../shared/protocol/overview';
+import { ABOUT_STEP_GLYPH, ABOUT_STEP_LABEL } from '../../../shared/protocol/nextStepTexts';
 import { problemsBadgeText } from '../../../shared/protocol/texts';
 import { BadgeIcon, StateIcon } from '../../board/icons';
 import { useBoard } from '../../board/boardStore';
 import { CopyButton, type CopyLook } from '../../ui/CopyButton';
 import { StepText } from '../../ui/StepText';
+import { Toggletip } from '../../ui/Toggletip';
 import { Drill } from './Drill';
 import { isSelectedSpec } from '../../detail/selected';
 import { useOpenSpec } from '../../detail/useOpenSpec';
@@ -43,7 +45,12 @@ export function SpecRow(props: { row: OverviewRow; group: string; copyLook?: Cop
                 {row.step === undefined ? null : <StepText step={row.step} />}
             </Drill>
             {row.step === undefined ? null : <CopyButton look={props.copyLook ?? 'icon'} line={row.step.line} copyResult={copyResult} onCopy={copyText} />}
-            {row.step === undefined || row.tips === undefined ? null : <div className="ov-coach">{row.tips.coach}</div>}
+            {row.step === undefined || row.tips === undefined ? null : (
+                <div className="ov-coach">
+                    <span className="ov-coach-text">{row.tips.coach}</span>
+                    <Toggletip label={ABOUT_STEP_LABEL} glyph={ABOUT_STEP_GLYPH} paragraphs={row.tips.about} />
+                </div>
+            )}
         </li>
     );
 }
