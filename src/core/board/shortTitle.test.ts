@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { plainShort, shortTitle } from './shortTitle';
+import { cutAt, plainShort, shortTitle } from './shortTitle';
 
 describe('0019 AC-013: the short title of a criterion', () => {
     it.each([
@@ -63,5 +63,21 @@ describe('0019 AC-011: a next open step title is plain and cut like a short titl
     it('removes markers and cuts', () => {
         expect(plainShort('The `feature` with **emphasis**')).toBe('The feature with emphasis');
         expect(plainShort('z'.repeat(85))).toBe(`${'z'.repeat(79)}…`);
+    });
+});
+
+describe('0020 AC-004: cutAt, the shared cut with its limit as a parameter', () => {
+    it.each([
+        ['text up to the limit is not cut', 'a'.repeat(24), 24, 'a'.repeat(24)],
+        ['text of 25 characters is cut at its last space within the first 24', 'Focus the Studio on Visibility', 24, 'Focus the Studio on…'],
+        ['no space in the first 24 characters: after 23 characters', 'x'.repeat(30), 24, `${'x'.repeat(23)}…`],
+        ['a space only at the start does not count', ` ${'y'.repeat(30)}`, 24, ` ${'y'.repeat(22)}…`.trimEnd()],
+        ['the limit is a parameter', 'one two three', 8, 'one two…'],
+    ])('%s', (_name, text, max, expected) => {
+        expect(cutAt(text, max)).toBe(expected);
+    });
+
+    it('the 80-character cut of the picture is unchanged', () => {
+        expect(plainShort(`${'word '.repeat(30)}`)).toBe(`${'word '.repeat(16).trimEnd()}…`);
     });
 });

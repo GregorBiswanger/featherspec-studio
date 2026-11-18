@@ -358,3 +358,5 @@ export const HISTORY_HEADING = 'Status history';
 export function historyHeading(count: number): string {
     return `${HISTORY_HEADING} (${count})`;
 }
+
+export const GROUP_LABELS = { inProgress: 'In progress', upNext: 'Up next', backlog: 'Backlog', done: 'Done' } as const;

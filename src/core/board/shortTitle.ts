@@ -25,13 +25,17 @@ function plain(text: string): string {
         .trim();
 }
 
-function cut(text: string): string {
-    if (text.length <= MAX_LENGTH) {
+export function cutAt(text: string, max: number): string {
+    if (text.length <= max) {
         return text;
     }
-    const window = text.slice(0, MAX_LENGTH);
+    const window = text.slice(0, max);
     const space = window.lastIndexOf(' ');
-    return `${(space > 0 ? window.slice(0, space) : text.slice(0, MAX_LENGTH - 1)).trimEnd()}…`;
+    return `${(space > 0 ? window.slice(0, space) : text.slice(0, max - 1)).trimEnd()}…`;
+}
+
+function cut(text: string): string {
+    return cutAt(text, MAX_LENGTH);
 }
 
 export function plainShort(text: string): string {

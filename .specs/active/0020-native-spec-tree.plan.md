@@ -3,7 +3,7 @@
 **Spec:** [0020-native-spec-tree.md](0020-native-spec-tree.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-001
+**Current step:** T-002
 
 ## Approach
 
@@ -224,8 +224,8 @@ and the host smoke, so they stay `→`.
   roots, group ID for counts 1 and 3, unique IDs, every state icon, a Problem (`fs-broken`).
 - **Verify:** `npx vitest run --project node src/core/shell/specTree.test.ts src/core/board/shortTitle.test.ts`
   red (`Not implemented` stub), then green; gates 1–4
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-18: vitest (node) on specTree.test.ts + shortTitle.test.ts red first (18 failed, `Not implemented`; the 6 cutAt tests green at once, a refactor of the 80-limit cut guarded by the unchanged shortTitle tests), then green 48/48; mutants (rank order, limit 25) fail 3 tests; gates 1-4 green, unit 2151 passed + 3 skipped, timing 12.
+- **Notes:** No deviation. Model types live in specTree.ts (SpecRowModel, GroupModel, ActionRowModel); tooltip is empty until T-002. No deletions in this step.
 
 ### T-002 — Rows explain themselves on hover; the view tells its state; the badge counts what waits
 
