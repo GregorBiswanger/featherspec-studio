@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { isBoardFilter, isFilterSet } from './boardFilter';
 import { isBoardView, isCardView, isSortKey } from './board';
 import {
-    isBoardSetFilterPayload,
     isNavigationRequest,
     isOpenFilePayload,
     REQUEST_GUARDS,
@@ -57,7 +56,6 @@ describe('board requests', () => {
         expect(Object.keys(REQUEST_GUARDS).sort()).toEqual(
             [
                 'boardClearFilters',
-                'boardSetFilter',
                 'boardSetSort',
                 'copyText',
                 'dismissNotice',
@@ -72,8 +70,7 @@ describe('board requests', () => {
     });
 
     it('guards accept the payloads the webview sends and reject the rest', () => {
-        expect(isBoardSetFilterPayload({ filter: {} })).toBe(true);
-        expect(isBoardSetFilterPayload({ filter: { states: ['x'] } })).toBe(false);
+        expect(Object.keys(REQUEST_GUARDS)).not.toContain('boardSetFilter');
         expect(REQUEST_GUARDS.boardSetSort({ sort: 'title' })).toBe(true);
         expect(REQUEST_GUARDS.boardSetSort({ sort: 'priority' })).toBe(false);
         expect(isOpenFilePayload({ key: 'k' })).toBe(true);
@@ -100,8 +97,11 @@ describe('board requests', () => {
         expect(isCardView({ ...card, derivedRule: 'Derived (rule S-REVIEW)' })).toBe(false);
         expect(isCardView({ ...card, need: 'needs a plan' })).toBe(false);
         expect(isCardView({ ...card, need: { text: 'x' } })).toBe(false);
-        const view = { columns: [{ state: 'Active', cards: [card], hidden: 0, emptyBeforeFilter: false }], banner: { problems: [{ where: 'project', reason: 'x' }], notes: [] }, filter: {}, sort: 'number', noSpecs: false };
+        const view = { columns: [{ state: 'Active', cards: [card], hidden: 0, emptyBeforeFilter: false, count: 1 }], banner: { problems: [{ where: 'project', reason: 'x' }], notes: [] }, filter: {}, sort: 'number', noSpecs: false };
         expect(isBoardView(view)).toBe(true);
+        expect(isBoardView({ ...view, columns: [{ ...view.columns[0], narrow: 'empty' }] })).toBe(true);
+        expect(isBoardView({ ...view, columns: [{ ...view.columns[0], narrow: 'wide' }] })).toBe(false);
+        expect(isBoardView({ ...view, columns: [{ state: 'Active', cards: [], hidden: 0, emptyBeforeFilter: false }] })).toBe(false);
         expect(isBoardView({ ...view, sort: 'priority' })).toBe(false);
         expect(isBoardView({ ...view, banner: [{ where: 'project', reason: 'x' }] })).toBe(false);
         expect(isBoardView({ ...view, banner: { problems: [], notes: [{ where: 'project' }] } })).toBe(false);

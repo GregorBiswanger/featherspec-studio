@@ -8,7 +8,6 @@ function setup(overrides: { open?: OpenFileResult; copyFails?: boolean } = {}) {
     const calls: unknown[][] = [];
     const requests = createBoardRequests({
         board: {
-            setFilter: (filter) => void calls.push(['setFilter', filter]),
             setSort: (sort) => void calls.push(['setSort', sort]),
             clearFilters: () => void calls.push(['clearFilters']),
         },
@@ -35,12 +34,12 @@ function setup(overrides: { open?: OpenFileResult; copyFails?: boolean } = {}) {
 }
 
 describe('board requests', () => {
-    it('AC-011, AC-012, AC-013: filter, sort and clear go to the board state', async () => {
+    it('AC-017, AC-013: sort and clear go to the board state, and the board has no request that sets a filter (P-8)', async () => {
         const { requests, calls } = setup();
-        await requests.handlers.boardSetFilter({ filter: { states: ['Active'] } });
+        expect(Object.keys(requests.handlers)).not.toContain('boardSetFilter');
         await requests.handlers.boardSetSort({ sort: 'title' });
         await requests.handlers.boardClearFilters({});
-        expect(calls).toEqual([['setFilter', { states: ['Active'] }], ['setSort', 'title'], ['clearFilters']]);
+        expect(calls).toEqual([['setSort', 'title'], ['clearFilters']]);
     });
 
     it('AC-010: an open request passes the line, and says nothing when the file opened', async () => {

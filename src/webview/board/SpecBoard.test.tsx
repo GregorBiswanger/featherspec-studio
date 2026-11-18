@@ -141,24 +141,32 @@ describe('AC-008: opening a card', () => {
 });
 
 describe('AC-012, AC-022: the filter bar', () => {
-    it('the state checkboxes send the full filter; unchecking the last one removes the key', async () => {
-        const container = await open(boardView([card('0001')], { filter: { states: ['Active'] } }));
-        const boxes = [...container.querySelectorAll<HTMLInputElement>('fieldset:first-of-type input')];
-        expect(boxes.map((box) => box.checked)).toEqual([false, false, true, false, false, false]);
-        await click(boxes[0]!);
-        await click(boxes[2]!);
-        expect(requests('boardSetFilter')).toEqual([{ filter: { states: ['Active', 'Backlog'] } }, { filter: {} }]);
+    it('AC-017: the board offers no checkbox and no filter control of its own, only the sort select', async () => {
+        const container = await open(boardView([card('0001')]));
+        expect(container.querySelectorAll('input, fieldset, legend')).toHaveLength(0);
+        expect(container.querySelectorAll('.filter-bar select')).toHaveLength(1);
+        expect(container.querySelector('.filter-bar')!.textContent).not.toMatch(/Provider|No run|Named set|State/);
     });
 
-    it('0015 AC-011: the filters offer board state and named spec set only: one checkbox group, no provider, no "No run"', async () => {
-        const container = await open(boardView([card('0001')]));
-        expect(container.querySelectorAll('fieldset')).toHaveLength(1);
-        expect(container.querySelector('.filter-bar')!.textContent).not.toMatch(/Provider|No run/);
+    it('AC-017: a state filter from a navigation request shows one chip "Filter: Review" with Clear filters', async () => {
+        const container = await open(boardView([card('0001', { state: 'Review' })], { filter: { states: ['Review'] } }));
+        const chips = container.querySelectorAll('[data-filter-chip]');
+        expect(chips).toHaveLength(1);
+        expect(chips[0]!.textContent).toBe('Filter: Review');
+        expect([...container.querySelectorAll('button')].filter((button) => button.textContent === 'Clear filters')).toHaveLength(1);
+        const wide = [...container.querySelectorAll('[data-column]')].filter((column) => !column.hasAttribute('data-narrow'));
+        expect(wide.map((column) => column.getAttribute('data-column'))).toEqual(['Review']);
+        expect(container.querySelectorAll('[data-narrow]')).toHaveLength(5);
+    });
+
+    it('AC-017: several states are joined by a comma in board order', async () => {
+        const container = await open(boardView([card('0001')], { filter: { states: ['Active', 'Blocked'] } }));
+        expect(container.querySelector('[data-filter-chip]')?.textContent).toBe('Filter: Active, Blocked');
     });
 
     it('a named set is shown under its label as a set filter, and Clear filters sends the request', async () => {
         const container = await open(boardView([card('0001')], { filter: { set: { label: 'Needs attention', stems: ['0001-thing'] } } }));
-        expect(container.querySelector('[data-set-chip]')?.textContent).toContain('Needs attention');
+        expect(container.querySelector('[data-filter-chip]')?.textContent).toBe('Filter: Needs attention');
         const clear = [...container.querySelectorAll('button')].find((button) => button.textContent === 'Clear filters')!;
         await click(clear);
         expect(requests('boardClearFilters')).toEqual([{}]);
@@ -189,10 +197,10 @@ describe('AC-012, AC-022: the filter bar', () => {
         expect(container.textContent?.toLowerCase()).not.toContain('priority');
     });
 
-    it('AC-017: every filter control is reachable by keyboard', async () => {
+    it('AC-024: the chip\'s Clear filters and the sort control are reachable by keyboard', async () => {
         const container = await open(boardView([card('0001')], { filter: { states: ['Done'] } }));
         const controls = [...container.querySelectorAll<HTMLElement>('.filter-bar input, .filter-bar select, .filter-bar button')];
-        expect(controls).toHaveLength(8);
+        expect(controls.map((control) => control.tagName)).toEqual(['BUTTON', 'SELECT']);
         controls.forEach((control) => expect(control.tabIndex).toBeGreaterThanOrEqual(0));
     });
 });
@@ -200,18 +208,54 @@ describe('AC-012, AC-022: the filter bar', () => {
 describe('AC-021, AC-020, AC-012: in-area states', () => {
     it('a project with no specs shows "No specs yet" with the /sdd-specify hint', async () => {
         const container = await open(boardView([]));
-        expect(container.querySelector('.board-empty')?.textContent).toBe('No specs yet. Run /sdd-specify to write the first one.');
+        const empty = container.querySelector('.board-empty')!;
+        expect(empty.textContent).toContain('No specs yet. Start with /sdd-specify');
+        expect(empty.textContent).not.toContain('Run /sdd-specify');
+        await click([...empty.querySelectorAll('button')].find((button) => /Copy/.test(button.textContent ?? ''))!);
+        expect(requests('copyText')).toEqual([{ text: '/sdd-specify' }]);
     });
 
-    it('a column with no card before filtering shows its hint; a column emptied by a filter shows "N hidden by filter"', async () => {
-        const view = boardView([card('0001')]);
-        view.columns[2] = { state: 'Active', cards: [], hidden: 3, emptyBeforeFilter: false };
+    it('AC-014: a column that shows no card is a narrow strip with icon, name, count, no card list and no hint, and the accessible name of the text table', async () => {
+        const view = boardView([card('0001', { state: 'Backlog' }), card('0002', { state: 'Done' })]);
+        view.columns[2] = { state: 'Active', cards: [], hidden: 3, emptyBeforeFilter: false, count: 3, narrow: 'filtered' };
         const container = await open(view);
-        const backlog = container.querySelector('[data-column="Backlog"]')!;
-        expect(backlog.textContent).toContain('No spec in the backlog.');
-        const active = container.querySelector('[data-column="Active"]')!;
-        expect(active.textContent).toContain('3 hidden by filter');
-        expect(active.textContent).not.toContain('No spec is being implemented.');
+        const strips = [...container.querySelectorAll('[data-narrow]')];
+        expect(strips.map((strip) => strip.getAttribute('data-column'))).toEqual(['Ready', 'Active', 'Review', 'Blocked']);
+        expect(strips.map((strip) => strip.getAttribute('aria-label'))).toEqual(['Ready: no spec', 'Active: 3 hidden by filter', 'Review: no spec', 'Blocked: no spec']);
+        for (const strip of strips) {
+            expect(strip.querySelector('svg')).not.toBeNull();
+            expect(strip.querySelector('.column-name')?.textContent).toBe(strip.getAttribute('data-column'));
+            expect(strip.querySelectorAll('ul, li, p, [data-card]')).toHaveLength(0);
+        }
+        expect(strips[1]!.querySelector('.column-count')?.textContent).toBe('3');
+        expect(strips[0]!.querySelector('.column-count')?.textContent).toBe('0');
+        const wide = [...container.querySelectorAll('[data-column]')].filter((column) => !column.hasAttribute('data-narrow'));
+        expect(wide.map((column) => column.getAttribute('data-column'))).toEqual(['Backlog', 'Done']);
+        expect(container.textContent).not.toMatch(/No spec in the backlog|No spec is ready|No spec is being implemented|hidden by filter\s*$/);
+    });
+
+    it('AC-012: a wide column that a filter partly empties still says how many are hidden', async () => {
+        const view = boardView([card('0001')]);
+        view.columns[2] = { state: 'Active', cards: [card('0009')], hidden: 3, emptyBeforeFilter: false, count: 1 };
+        const container = await open(view);
+        expect(container.querySelector('[data-column="Active"]')!.textContent).toContain('3 hidden by filter');
+    });
+
+    it('AC-020: the Ready, Review and Blocked headers carry the sentence and the rule text, a narrow strip its text first, and no other header has a tooltip', async () => {
+        const wide = await open(boardView([card('0001', { state: 'Ready' }), card('0002', { state: 'Review' }), card('0003', { state: 'Blocked' }), card('0004', { state: 'Backlog' }), card('0005'), card('0006', { state: 'Done' })]));
+        const titles = (container: HTMLElement) => [...container.querySelectorAll<HTMLElement>('[data-column]')].map((column) => column.querySelector('.column-heading')?.getAttribute('title') ?? null);
+        expect(titles(wide)).toEqual([null, 'Plan written, not started yet · Derived from the files · rule S-READY', null, 'Plan done, waiting for review · Derived from the files · rule S-REVIEW', null, 'Plan or return note says Blocked · Derived from the files · rule S-BLOCKED']);
+        mounted?.unmount();
+        const narrow = await open(boardView([card('0004', { state: 'Backlog' })]));
+        const strips = [...narrow.querySelectorAll('[data-narrow]')];
+        expect(strips.map((strip) => strip.getAttribute('title'))).toEqual([
+            'Ready: no spec · Plan written, not started yet · Derived from the files · rule S-READY',
+            'Active: no spec',
+            'Review: no spec · Plan done, waiting for review · Derived from the files · rule S-REVIEW',
+            'Done: no spec',
+            'Blocked: no spec · Plan or return note says Blocked · Derived from the files · rule S-BLOCKED',
+        ]);
+        expect(strips.map((strip) => strip.getAttribute('aria-label'))).toEqual(['Ready: no spec', 'Active: no spec', 'Review: no spec', 'Done: no spec', 'Blocked: no spec']);
     });
 
     it('AC-009: the banner lists each project-level Problem under the heading Problems', async () => {

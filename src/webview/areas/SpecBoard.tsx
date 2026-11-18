@@ -1,12 +1,13 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState, type FocusEvent, type KeyboardEvent } from 'react';
 import type { CardView } from '../../shared/protocol/board';
-import { BOARD_LABEL, NO_SPECS_BOARD_TEXT } from '../../shared/protocol/texts';
+import { BOARD_LABEL, NO_SPECS_START_TEXT, SDD_SPECIFY_LINE } from '../../shared/protocol/texts';
 import { useShell } from '../shell';
 import { Banner } from '../board/Banner';
 import { useBoard } from '../board/boardStore';
 import { Column } from '../board/Column';
 import { FilterBar } from '../board/FilterBar';
 import { fallbackFocus, moveFocus, type Direction, type Grid } from '../board/focusModel';
+import { CopyButton } from '../ui/CopyButton';
 import { EmptyState } from '../ui/EmptyState';
 
 const ARROWS: Readonly<Record<string, Direction>> = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
@@ -107,10 +108,11 @@ export function SpecBoard() {
             <Banner banner={board.banner} />
             {board.noSpecs ? (
                 <EmptyState icon="Backlog" className="board-empty">
-                    {NO_SPECS_BOARD_TEXT}
+                    {NO_SPECS_START_TEXT}
+                    <CopyButton line={SDD_SPECIFY_LINE} copyResult={api.copyResult} onCopy={api.copyText} />
                 </EmptyState>
             ) : null}
-            <FilterBar board={board} setFilter={api.setFilter} setSort={api.setSort} clearFilters={api.clearFilters} />
+            <FilterBar board={board} setSort={api.setSort} clearFilters={api.clearFilters} />
             <div className="columns" ref={columnsRef} tabIndex={-1} onFocus={onFocus} onBlur={onBlur} onKeyDown={onKeyDown}>
                 {board.columns.map((column) => (
                     <Column

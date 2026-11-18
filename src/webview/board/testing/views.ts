@@ -28,7 +28,8 @@ export function card(number: string, overrides: Partial<CardView> = {}): CardVie
 export function boardView(cards: CardView[], overrides: Partial<BoardView> = {}): BoardView {
     const columns: BoardColumn[] = BOARD_STATES.map((state) => {
         const own = cards.filter((entry) => entry.state === state);
-        return { state, cards: own, hidden: 0, emptyBeforeFilter: own.length === 0 };
+        const column: BoardColumn = { state, cards: own, hidden: 0, emptyBeforeFilter: own.length === 0, count: own.length };
+        return own.length === 0 ? { ...column, narrow: 'empty' } : column;
     });
     return { columns, banner: { problems: [], notes: [] }, filter: {}, sort: 'number', noSpecs: cards.length === 0, ...overrides };
 }

@@ -241,15 +241,48 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
         expect(rulesFor(css, 'main').some((rule) => /flex:\s*1/.test(rule.body) && /min-height:\s*0/.test(rule.body) && /overflow:\s*auto/.test(rule.body))).toBe(true);
     });
 
-    it('AC-008: no height on a board column, sticky column headers, a scrolling card list, 240 px minimum and a horizontally scrolling board', () => {
+    it('AC-015: columns share the width by flexbox (200 to 360 px, strips 32 px, gap 8 px), headers are sticky, the board scrolls sideways and no media rule touches it', () => {
+        const value = (selector: string, property: string): string | undefined =>
+            rulesFor(css, selector)
+                .flatMap((rule) => declarations(`${selector} {${rule.body}}`))
+                .filter((entry) => entry.property === property)
+                .map((entry) => entry.value)
+                .pop();
+        const pixels = (text: string | undefined): number => Number(/^(\d+)px$/.exec(text ?? '')?.[1] ?? Number.NaN);
+
+        expect(value('.columns', 'display')).toBe('flex');
+        expect(value('.columns', 'flex-direction')).toBe('row');
+        expect(value('.columns', 'overflow-x')).toBe('auto');
+        expect(value('.column', 'box-sizing')).toBe('border-box');
+        expect(value('.column', 'flex')).toBe('1 1 0');
+        expect(pixels(value('.column', 'min-width'))).toBe(200);
+        expect(pixels(value('.column', 'max-width'))).toBe(360);
+        expect(value('.column[data-narrow]', 'flex')).toBe('0 0 32px');
+        expect(pixels(value('.column[data-narrow]', 'min-width'))).toBe(32);
+        expect(pixels(value('.column[data-narrow]', 'max-width'))).toBe(32);
+        expect(value('.column[data-narrow] .column-name', 'writing-mode')).toBe('vertical-rl');
+
+        const gap = pixels(value('.columns', 'gap'));
+        const padding = Number(/^\d+px\s+(\d+)px$/.exec(value('main', 'padding') ?? '')?.[1]);
+        const wide = pixels(value('.column', 'min-width'));
+        const strip = pixels(value('.column[data-narrow]', 'flex-basis') ?? value('.column[data-narrow]', 'min-width'));
+        const need = (wideCount: number, narrowCount: number): number => wideCount * wide + narrowCount * strip + (wideCount + narrowCount - 1) * gap + 2 * padding;
+        expect(need(2, 4)).toBe(2 * 200 + 4 * 32 + 5 * 8 + 2 * 16);
+        expect(need(2, 4)).toBeLessThanOrEqual(640);
+        expect(need(5, 1)).toBe(5 * 200 + 32 + 5 * 8 + 2 * 16);
+        expect(need(5, 1)).toBeLessThanOrEqual(1240);
+
         for (const rule of rulesFor(css, '.column')) {
             expect(rule.body).not.toMatch(/(?:^|[\s;])(?:max-)?height\s*:/);
         }
         expect(rulesFor(css, '.column-heading').some((rule) => /position:\s*sticky/.test(rule.body))).toBe(true);
         expect(rulesFor(css, '.column-cards').some((rule) => /overflow-y:\s*auto/.test(rule.body))).toBe(true);
-        const columns = rulesFor(css, '.columns');
-        expect(columns.some((rule) => /minmax\(240px/.test(rule.body))).toBe(true);
-        expect(columns.some((rule) => /overflow-x:\s*auto/.test(rule.body))).toBe(true);
+        const board = parseRules(css).filter((rule) => rule.media !== undefined && rule.selectors.some((selector) => /\.columns?\b/.test(selector)));
+        expect(board).toEqual([]);
+    });
+
+    it('AC-015: the stylesheet has no grid track for the board and no column hint rule', () => {
+        expect(css).not.toMatch(/grid-auto-columns|minmax\(240px|\.column-hint/);
     });
 
     it('AC-014: no code under src/webview uses dangerouslySetInnerHTML or innerHTML', () => {

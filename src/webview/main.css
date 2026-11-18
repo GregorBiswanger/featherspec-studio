@@ -384,40 +384,6 @@ main > h1 {
     align-items: center;
 }
 
-.filter-bar fieldset {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 2px 10px;
-    margin: 0;
-    padding: 0;
-    border: none;
-}
-
-.filter-bar legend {
-    float: left;
-    margin-right: 2px;
-    padding: 0;
-    color: var(--fs-muted);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-.filter-bar label {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    white-space: nowrap;
-    cursor: pointer;
-}
-
-.filter-bar input[type="checkbox"] {
-    margin: 0;
-    accent-color: var(--vscode-focusBorder);
-}
-
 .filter-bar .sort {
     color: var(--fs-muted);
 }
@@ -447,23 +413,39 @@ main > h1 {
 .columns {
     flex: 1;
     min-height: 0;
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(240px, 1fr);
-    grid-template-rows: minmax(0, 1fr);
+    display: flex;
+    flex-direction: row;
     gap: 8px;
     overflow-x: auto;
     overflow-y: hidden;
 }
 
 .column {
+    box-sizing: border-box;
+    flex: 1 1 0;
+    min-width: 200px;
+    max-width: 360px;
     display: flex;
     flex-direction: column;
     min-height: 0;
-    min-width: 0;
     background: var(--fs-lane);
     border: 1px solid var(--fs-border);
     border-radius: 4px;
+}
+
+.column[data-narrow] {
+    flex: 0 0 32px;
+    min-width: 32px;
+    max-width: 32px;
+}
+
+.column[data-narrow] .column-heading {
+    flex-direction: column;
+    padding: 8px 0 6px;
+}
+
+.column[data-narrow] .column-name {
+    writing-mode: vertical-rl;
 }
 
 .column-heading {
@@ -502,7 +484,6 @@ main > h1 {
     text-align: center;
 }
 
-.column-hint,
 .column-hidden {
     margin: 4px 10px;
     color: var(--fs-muted);

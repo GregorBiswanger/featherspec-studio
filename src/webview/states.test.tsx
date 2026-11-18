@@ -46,7 +46,7 @@ describe('0013 §3.6: empty, placeholder and panel-level states show an icon bes
     it('the empty board, the empty Overview and the empty Spec Explorer', async () => {
         const board = await open(baseView({ area: 'board' }));
         await send(boardEvent(boardView([])));
-        expect(board.querySelector('.board-empty')?.textContent).toBe('No specs yet. Run /sdd-specify to write the first one.');
+        expect(board.querySelector('.board-empty')?.textContent).toBe('No specs yet. Start with /sdd-specifyCopy');
         expect(hasIcon(board.querySelector('.board-empty'))).toBe(true);
         mounted?.unmount();
         const mission = await open(baseView({ area: 'overview' }));

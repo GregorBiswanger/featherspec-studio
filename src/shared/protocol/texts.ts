@@ -1,6 +1,6 @@
 import type { StatusHistoryItem } from './detail';
 import type { BoardState } from './boardFilter';
-import type { Progress, SortKey } from './board';
+import type { ColumnNarrow, Progress, SortKey } from './board';
 import type { ActionId, PanelState } from './messages';
 import type { DerivedRule } from './board';
 
@@ -227,32 +227,35 @@ export function noticeText(number: string): string {
     return `Spec ${number} is no longer in the project`;
 }
 
-export const COLUMN_HINTS: Record<BoardState, string> = {
-    Backlog: 'No spec in the backlog.',
-    Ready: 'No spec is ready.',
-    Active: 'No spec is being implemented.',
-    Review: 'No spec awaits review.',
-    Done: 'No spec is done yet.',
-    Blocked: 'No spec is blocked.',
-};
+export function narrowColumnText(state: BoardState, narrow: ColumnNarrow, count: number): string {
+    switch (narrow) {
+        case 'empty':
+            return `${state}: no spec`;
+        case 'filtered':
+            return `${state}: ${count} hidden by filter`;
+        case 'collapsed':
+            return `${state}: ${count} ${count === 1 ? 'spec' : 'specs'}, collapsed`;
+    }
+}
+
+export function columnRuleTooltip(rule: DerivedRule): string {
+    return `${DERIVED_SENTENCES[rule]} · ${derivedTooltip(rule)}`;
+}
 
 export function hiddenByFilterText(count: number): string {
     return `${count} hidden by filter`;
 }
 
-export const BOARD_LABEL = 'Spec board';
-export const STATE_FILTER_LABEL = 'State';
+export const BOARD_LABEL = 'Board';
 export const CLEAR_FILTERS_LABEL = 'Clear filters';
 export const SORT_LABEL = 'Sort';
-export const SPEC_SET_LABEL = 'Named set';
+export const FILTER_CHIP_LABEL = 'Filter';
 
 export const SORT_LABELS: Record<SortKey, string> = {
     number: 'Number',
     title: 'Title A–Z',
     lastChange: 'Last change (newest first)',
 };
-
-export const NO_SPECS_BOARD_TEXT = 'No specs yet. Run /sdd-specify to write the first one.';
 
 export const NO_SUMMARY_TEXT = 'No summary';
 

@@ -46,7 +46,6 @@ export interface ShellClient {
     select(reference: SpecReference): void;
     runAction(action: ActionId): void;
     dismissNotice(): void;
-    setBoardFilter(filter: BoardFilter): void;
     setBoardSort(sort: SortKey): void;
     clearBoardFilters(): void;
     setActivityOpen(open: boolean): void;
@@ -243,9 +242,6 @@ export function createClient(deps: ClientDeps): ShellClient {
         },
         dismissNotice() {
             send('dismissNotice', {});
-        },
-        setBoardFilter(filter) {
-            send('boardSetFilter', { filter });
         },
         setBoardSort(sort) {
             send('boardSetSort', { sort });

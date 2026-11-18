@@ -3,7 +3,7 @@
 **Spec:** [0018-overview-and-compact-board.md](0018-overview-and-compact-board.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-005
+**Current step:** T-006
 
 ## Approach
 
@@ -283,8 +283,8 @@ No parallel stage: the Overview and Board steps share `messages.ts`, `client.ts`
   values; sticky headers; `overflow-x: auto`; no `@media` rule for `.columns`/`.column`) replacing the
   0013 AC-008 test; `boardRequests.test.ts`, `messages.test.ts` (`boardSetFilter` unknown).
 - **Verify:** `npx vitest run src/core/board src/shared/protocol src/webview/board src/adapters/node/webviewCss.test.ts` red, then green; gates 1–4
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-18: tests written with the code in one pass, no separate red run (`filters.test.ts` AC-014 givens, `SpecBoard.test.tsx` strips, chip, B-6 titles, zero-specs Copy; `webviewCss.test.ts` AC-015 arithmetic from the parsed values; `boardRequests.test.ts`, `boardFilter.test.ts` for the missing `boardSetFilter`). `npm run test:unit` 1916 passed, 3 skipped, timing 12 passed; eslint and both `tsc` clean.
+- **Notes:** `count` is the cards shown on a wide column, the hidden cards on a `filtered` strip and 0 on an `empty` one; `narrow: 'collapsed'` and its text exist in the contract and `narrowColumnText` already (T-006 fills them). The 0007 AC-017 keyboard test of the filter controls is retitled AC-024 (Clear filters and sort: two controls). `states.test.tsx` expects the new zero-specs text. The filter chip lists state names in board order as the filter holds them.
 
 ### T-006 — Board: Done collapsed and remembered; keyboard
 

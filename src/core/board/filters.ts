@@ -42,6 +42,10 @@ export function arrangeBoard(cards: readonly CardView[], filter: BoardFilter, so
     return BOARD_STATES.map((state) => {
         const own = cards.filter((card) => card.state === state);
         const shown = own.filter((card) => matches(card, filter)).sort(compare);
-        return { state, cards: shown, hidden: own.length - shown.length, emptyBeforeFilter: own.length === 0 };
+        const column: BoardColumn = { state, cards: shown, hidden: own.length - shown.length, emptyBeforeFilter: own.length === 0, count: shown.length };
+        if (shown.length > 0) {
+            return column;
+        }
+        return own.length === 0 ? { ...column, narrow: 'empty' } : { ...column, count: own.length, narrow: 'filtered' };
     });
 }

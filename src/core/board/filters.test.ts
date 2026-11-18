@@ -82,6 +82,30 @@ describe('filters', () => {
         ]);
     });
 
+    it('AC-014: a column showing no card is narrow: empty when it has no spec, filtered when a filter hides all of its cards; the others are wide', () => {
+        const columns = arrangeBoard([card('0001', { state: 'Active' }), card('0002', { state: 'Active' }), card('0003', { state: 'Done' })], { states: ['Done'] }, 'number');
+        expect(columns.map((column) => [column.state, column.narrow, column.count, column.cards.length, column.hidden])).toEqual([
+            ['Backlog', 'empty', 0, 0, 0],
+            ['Ready', 'empty', 0, 0, 0],
+            ['Active', 'filtered', 2, 0, 2],
+            ['Review', 'empty', 0, 0, 0],
+            ['Done', undefined, 1, 1, 0],
+            ['Blocked', 'empty', 0, 0, 0],
+        ]);
+    });
+
+    it('AC-014: a wide column counts the cards it shows, also while the filter hides others', () => {
+        const columns = arrangeBoard(NINE, { set: { label: 'x', stems: ['0003-thing', '0006-thing'] } }, 'number');
+        expect(columns.map((column) => [column.state, column.narrow, column.count, column.hidden])).toEqual([
+            ['Backlog', 'filtered', 1, 1],
+            ['Ready', 'filtered', 1, 1],
+            ['Active', undefined, 1, 2],
+            ['Review', 'filtered', 1, 1],
+            ['Done', undefined, 1, 1],
+            ['Blocked', 'filtered', 1, 1],
+        ]);
+    });
+
     it('AC-011: the inputs are left unchanged (frozen cards and filter)', () => {
         const frozen = NINE.map((entry) => Object.freeze({ ...entry, blocked: Object.freeze([...entry.blocked]) as string[] }));
         const filter = Object.freeze({ states: Object.freeze(['Active']) as unknown as ['Active'], set: Object.freeze({ label: 'x', stems: Object.freeze(['0003-thing']) as unknown as string[] }) });

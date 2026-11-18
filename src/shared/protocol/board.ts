@@ -49,11 +49,19 @@ export interface NeedView {
     rule: string;
 }
 
+export type ColumnNarrow = 'empty' | 'filtered' | 'collapsed';
+
+export function isColumnNarrow(value: unknown): value is ColumnNarrow {
+    return value === 'empty' || value === 'filtered' || value === 'collapsed';
+}
+
 export interface BoardColumn {
     state: BoardState;
     cards: CardView[];
     hidden: number;
     emptyBeforeFilter: boolean;
+    count: number;
+    narrow?: ColumnNarrow;
 }
 
 export interface BannerLine {
@@ -117,7 +125,9 @@ function isColumn(value: unknown): value is BoardColumn {
         Array.isArray(value.cards) &&
         value.cards.every(isCardView) &&
         typeof value.hidden === 'number' &&
-        typeof value.emptyBeforeFilter === 'boolean'
+        typeof value.emptyBeforeFilter === 'boolean' &&
+        typeof value.count === 'number' &&
+        (value.narrow === undefined || isColumnNarrow(value.narrow))
     );
 }
 
