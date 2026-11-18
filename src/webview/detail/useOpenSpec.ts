@@ -13,7 +13,7 @@ export function useOpenSpec(): (reference: SpecReference, opener: HTMLElement | 
     const select = shell.select;
     return useCallback(
         (reference, opener) => {
-            rememberOpener(opener);
+            rememberOpener(opener, reference.stem);
             requestHeadingFocus(reference.stem);
             select(reference.path === undefined ? { stem: reference.stem } : { stem: reference.stem, path: reference.path });
         },

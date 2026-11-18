@@ -460,8 +460,8 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
   spec; `focusAfterClose` clears it. Test in `Close.test.tsx` through the host selection path: open 0003 from its
   card, close, the host selects 0007 (`selectSpec`, no opener), close: focus goes to the card of 0007.
 - **Verify:** `npx vitest run src/webview/detail` red, then green; gates 1–5; mutant (stem check dropped) dies
-- [ ] **Verified (T-013):**
-- **Notes:**
+- [x] **Verified (T-013):** 2026-11-18 — red on a scratch copy of the head (`git archive HEAD | tar -x -C /tmp/fs50/red`, new `Close.test.tsx` copied in): `npx vitest run src/webview/detail/Close.test.tsx` failed the new F1 test (focus on the card of 0003, the stale opener); green after the change (20 tests). Mutants on a scratch copy, all killed: stem check dropped in `currentOpener`, `forgetOpener()` removed from `focusAfterClose` (needed a second test with a duplicated stem: the opener is the second card, a later host selection of the same spec must focus the first). Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2115 passed + 3 skipped (+12 timing), `npm run compile`, `npm run compile-tests` green.
+- **Notes:** `detail/opener.ts` keeps the element with the stem it opened (`rememberOpener(element, stem)`, `currentOpener(stem)`, `forgetOpener()`); `focusAfterClose` reads it for the closing spec and forgets it. The host selection path is exercised the way 0020's tree will use it: a shell event with a selection, no `useOpenSpec`.
 
 ### T-014 — Fix F3: the drawer never extends past the frame's left edge (AC-005)
 

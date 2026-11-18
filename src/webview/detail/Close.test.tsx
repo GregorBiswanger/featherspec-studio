@@ -112,6 +112,52 @@ describe('AC-003: closing the side panel', () => {
         expect(document.activeElement).toBe(cardOf(container, '0007'));
     });
 
+    it('0019 F1: the opener of one spec is not used once the host selects another spec, nor after a close', async () => {
+        const container = await board();
+        await openFromCard(container, '0003');
+        await shell('board', SELECTED);
+        await send(detailEvent(detailView()));
+        const heading = container.querySelector<HTMLElement>('aside.side-panel [data-detail-heading]')!;
+        await focus(heading);
+        await escape(heading);
+        await shell('board');
+        expect(document.activeElement).toBe(cardOf(container, '0007'));
+        await shell('board', SELECTED);
+        await send(detailEvent(detailView()));
+        await focus(closeButton(container));
+        await click(closeButton(container));
+        await shell('board');
+        expect(document.activeElement).toBe(cardOf(container, '0007'));
+        await focus(cardOf(container, '0003'));
+        await shell('board', { stem: '0003-thing', number: '0003' });
+        await send(detailEvent(detailView({ stem: '0003-thing', number: '0003', key: '.specs/active/0003-thing.md' })));
+        await focus(closeButton(container));
+        await click(closeButton(container));
+        await shell('board');
+        expect(document.activeElement).toBe(cardOf(container, '0003'));
+    });
+
+    it('0019 F1: the opener is forgotten on close, so a later selection by the host focuses the first card of the spec', async () => {
+        const first = card('0007', { path: '.specs/active/0007-thing.md' });
+        const second = card('0007', { key: '.specs/backlog/0007-thing.md', path: '.specs/backlog/0007-thing.md' });
+        const container = await board(undefined, [first, second]);
+        const cards = () => [...container.querySelectorAll<HTMLElement>('[data-card]')];
+        await focus(cards()[1]!);
+        await pressKey(cards()[1]!, 'Enter');
+        await shell('board', { ...SELECTED, path: second.path! });
+        await send(detailEvent(detailView({ key: second.path! })));
+        await focus(closeButton(container));
+        await click(closeButton(container));
+        await shell('board');
+        expect(document.activeElement).toBe(cards()[1]);
+        await shell('board', SELECTED);
+        await send(detailEvent(detailView()));
+        await focus(closeButton(container));
+        await click(closeButton(container));
+        await shell('board');
+        expect(document.activeElement).toBe(cards()[0]);
+    });
+
     it('without the opener closing focuses the first card of the spec', async () => {
         const container = await board();
         await openFromCard(container, '0007');

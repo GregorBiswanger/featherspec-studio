@@ -1,4 +1,4 @@
-import { currentOpener } from './opener';
+import { currentOpener, forgetOpener } from './opener';
 
 const FOCUSABLE = 'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -38,7 +38,8 @@ function firstFocusable(root: ParentNode | null): HTMLElement | undefined {
 
 export function focusAfterClose(stem: string): void {
     pendingStem = undefined;
-    const opener = currentOpener();
+    const opener = currentOpener(stem);
+    forgetOpener();
     if (opener !== undefined && opener.isConnected) {
         opener.focus();
         return;
