@@ -23,32 +23,38 @@ describe('0023 AC-003: the plan view and the plan spec list are guarded exactly'
         expect(isPlanView({ ...base, extra: 1 })).toBe(false);
         const { staged: _staged, ...withoutStaged } = base;
         expect(isPlanView(withoutStaged)).toBe(false);
-        const edit = (change: (view: Record<string, any>) => void) => {
-            const view = clone(planSample()) as Record<string, any>;
-            change(view);
+        const edit = (path: string, value: unknown): boolean => {
+            const view = clone(planSample());
+            const keys = path.split('.');
+            const last = keys.pop()!;
+            let node = view as Record<string, unknown>;
+            for (const key of keys) {
+                node = node[key] as Record<string, unknown>;
+            }
+            node[last] = value;
             return isPlanView(view);
         };
-        expect(edit((view) => (view.stages[0].extra = 1))).toBe(false);
-        expect(edit((view) => (view.stages[0].number = '1'))).toBe(false);
-        expect(edit((view) => (view.stages[0].kind = 'wide'))).toBe(false);
-        expect(edit((view) => (view.stages[0].groups[1].sep = '‖'))).toBe(false);
-        expect(edit((view) => (view.stages[0].groups[0].steps = []))).toBe(false);
-        expect(edit((view) => (view.stages[0].groups[0].steps[0].state = 'struck'))).toBe(false);
-        expect(edit((view) => (view.stages[0].groups[0].steps[0].extra = 1))).toBe(false);
-        expect(edit((view) => (view.stages[0].groups[0].steps[0].open = { key: '', line: 1 }))).toBe(false);
-        expect(edit((view) => (view.stages[0].groups[0].steps[0].open = { key: 'a', line: 0 }))).toBe(false);
-        expect(edit((view) => (view.stages[0].groups[0].steps[0].files = [1]))).toBe(false);
-        expect(edit((view) => (view.stages[0].groups[0].steps[0].covers = [{ id: 1 }]))).toBe(false);
-        expect(edit((view) => (view.stages[1].ways.prompts = ['a', 'b']))).toBe(false);
-        expect(edit((view) => (view.stages[1].ways.startLines = [1]))).toBe(false);
-        expect(edit((view) => (view.stages[1].ways.stage = '2'))).toBe(false);
-        expect(edit((view) => (view.stages[0].returned = { n: 1 }))).toBe(false);
-        expect(edit((view) => (view.stages[0].groups[0].steps[0].returned = { status: 'maybe' }))).toBe(false);
-        expect(edit((view) => (view.closing = { text: 'a' }))).toBe(false);
-        expect(edit((view) => (view.count = { done: -1, total: 2 }))).toBe(false);
-        expect(edit((view) => (view.plan = { key: 'a' }))).toBe(false);
-        expect(edit((view) => (view.loose = [{}]))).toBe(false);
-        expect(edit(() => undefined)).toBe(true);
+        expect(edit('stages.0.extra', 1)).toBe(false);
+        expect(edit('stages.0.number', '1')).toBe(false);
+        expect(edit('stages.0.kind', 'wide')).toBe(false);
+        expect(edit('stages.0.groups.1.sep', '‖')).toBe(false);
+        expect(edit('stages.0.groups.0.steps', [])).toBe(false);
+        expect(edit('stages.0.groups.0.steps.0.state', 'struck')).toBe(false);
+        expect(edit('stages.0.groups.0.steps.0.extra', 1)).toBe(false);
+        expect(edit('stages.0.groups.0.steps.0.open', { key: '', line: 1 })).toBe(false);
+        expect(edit('stages.0.groups.0.steps.0.open', { key: 'a', line: 0 })).toBe(false);
+        expect(edit('stages.0.groups.0.steps.0.files', [1])).toBe(false);
+        expect(edit('stages.0.groups.0.steps.0.covers', [{ id: 1 }])).toBe(false);
+        expect(edit('stages.1.ways.prompts', ['a', 'b'])).toBe(false);
+        expect(edit('stages.1.ways.startLines', [1])).toBe(false);
+        expect(edit('stages.1.ways.stage', '2')).toBe(false);
+        expect(edit('stages.0.returned', { n: 1 })).toBe(false);
+        expect(edit('stages.0.groups.0.steps.0.returned', { status: 'maybe' })).toBe(false);
+        expect(edit('closing', { text: 'a' })).toBe(false);
+        expect(edit('count', { done: -1, total: 2 })).toBe(false);
+        expect(edit('plan', { key: 'a' })).toBe(false);
+        expect(edit('loose', [{}])).toBe(false);
+        expect(isPlanView(clone(planSample()))).toBe(true);
     });
 
     it('the unreadable view is exactly { kind: unreadable }', () => {

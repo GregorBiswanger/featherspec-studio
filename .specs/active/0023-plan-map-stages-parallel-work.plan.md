@@ -3,7 +3,7 @@
 **Spec:** [0023-plan-map-stages-parallel-work.md](0023-plan-map-stages-parallel-work.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-016
+**Current step:** T-017
 
 ## Approach
 
@@ -490,8 +490,8 @@ Proxy decisions of this round (Gregor delegated; P-25 …), recorded here and in
   without `any`; `PLAN_MAP_COMMAND_TITLE` is asserted against `package.json` in `manifest.test.ts` (the title the user sees
   stays one text, so the constant is kept and pinned).
 - **Verify:** `npx vitest run --project node src/adapters/vscode/manifest.test.ts src/shared/protocol`; M54 red on a scratch copy; gates 1–4
-- [ ] **Verified (T-016):**
-- **Notes:**
+- [x] **Verified (T-016):** 2026-11-18 · `npx vitest run --project node src/adapters/vscode/manifest.test.ts src/shared/protocol` green 168 of 168; M54 (`PLAN_MAP_COMMAND_TITLE` changed to another text) shown red on a scratch copy: `1 failed | 29 passed` in `manifest.test.ts`, green on the head; the comment line of `Keyboard.test.tsx` and the two `any` of `shared/protocol/planMap.test.ts` are gone (a grep over the planMap files, tests included, finds no `any` type and no comment); gates 1–4 green, `npm run test:unit` 2816 passed + 3 skipped (+16 timing)
+- **Notes:** The constant is kept and pinned, not dropped: the title is a text the user sees, so it lives in the text module (guideline 10) and `manifest.test.ts` 0018 AC-001 now asserts `package.json`'s title against it. In `planMap.test.ts` (shared/protocol) the helper `edit` takes a path and a value (`edit('stages.0.groups.1.sep', '‖')`) and walks `Record<string, unknown>`; all 20 refusals and the accepted control stay, with the same values.
 
 ### T-017 — Evidence, notes and docs of the fix round
 

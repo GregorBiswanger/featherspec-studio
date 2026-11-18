@@ -46,7 +46,6 @@ async function press(element: Element, key: string, init: KeyboardEventInit = {}
     return notPrevented;
 }
 
-// Rows: [T-003 T-004 T-005] / [T-006] / [T-007 T-008]; stage 1 is finished and has no cards.
 function plan(): PlanView {
     return planSample({
         stages: [

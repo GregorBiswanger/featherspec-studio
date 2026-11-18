@@ -1,6 +1,7 @@
 import { readFileSync } from 'fs';
 import * as path from 'path';
 import { describe, expect, it } from 'vitest';
+import { PLAN_MAP_COMMAND_TITLE } from '../../shared/protocol/planMapTexts';
 import { OPEN_STUDIO_COMMAND_ID, S2_WELCOME, SELECT_PROJECT_COMMAND_ID, TREE_COMMAND_TITLES } from '../../shared/protocol/texts';
 
 interface Manifest {
@@ -146,6 +147,7 @@ describe('extension manifest', () => {
         expect(commands['featherspec-studio.openOverview']).toBe('FeatherSpec Studio: Open Overview');
         expect(commands['featherspec-studio.openBoard']).toBe('FeatherSpec Studio: Open Board');
         expect(commands['featherspec-studio.openPlanMap']).toBe('FeatherSpec Studio: Open Plan Map');
+        expect(commands['featherspec-studio.openPlanMap']).toBe(PLAN_MAP_COMMAND_TITLE);
         for (const old of ['openMissionControl', 'openSpecBoard', 'rescan', 'refreshDiscovery']) {
             expect(commands[`featherspec-studio.${old}`]).toBeUndefined();
         }
