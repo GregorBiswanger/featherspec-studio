@@ -3,7 +3,7 @@
 **Spec:** [0023-plan-map-stages-parallel-work.md](0023-plan-map-stages-parallel-work.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-009
+**Current step:** T-010
 
 ## Approach
 
@@ -411,8 +411,8 @@ Proxy decisions of this round (Gregor delegated; P-25 …), recorded here and in
   `planMap.test.ts` "0023 AC-009": a Ready spec with a `‖` stage and a return note (`.memory-bank/activeContext.0001-T-009.md`)
   offers no way; the same Ready spec without the note still offers them (negative control).
 - **Verify:** `npx vitest run --project node src/core/planMap` red on a scratch copy of the head, then green; gates 1–4
-- [ ] **Verified (T-009):**
-- **Notes:**
+- [x] **Verified (T-009):** 2026-11-18 · `npx vitest run --project node src/core/planMap` red first on a scratch copy of `be84438` (`git archive`, the new test only: "a Ready spec with a return note offers no way" failed, `expected [[1, [...3], []]] to deeply equal []`), then green 37 of 37; gates 1–4 green, `npm run test:unit` 2793 passed + 3 skipped (+16 timing)
+- **Notes:** The ways condition now reads `!context.noteLies` beside the case of `nextStep()`: for an Active spec a note already turned the case into NS-6-returned, for a Ready spec the case stays NS-7 with a note, which the check closes. The existing Ready test keeps its assertions and shares the fixture builder (`readyParallelModel`) with the new one; the negative control is the same Ready spec without the note, which still offers one way block.
 
 ### T-010 — Cards, grid, tab stop and expansion go by occurrence, not by step ID
 

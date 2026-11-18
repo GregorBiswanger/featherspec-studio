@@ -196,7 +196,7 @@ export function planOf(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry
     const currentIndex = rows.findIndex((row) => context.next !== undefined && row.items.some((item) => item.id === context.next));
     const stages = rows.map((row, index) => stageView(row.stage, row.items, row.description, index === currentIndex, context));
     const next = nextStep(model, entry.key);
-    const waysCase = next !== undefined && 'lines' in next && (next.case === 'NS-6-open' || next.case === 'NS-7');
+    const waysCase = !context.noteLies && next !== undefined && 'lines' in next && (next.case === 'NS-6-open' || next.case === 'NS-7');
     const current = stages[currentIndex];
     if (waysCase && current !== undefined) {
         const ways = waysOf(current, plan.key, entry.state === 'Active', context.next);

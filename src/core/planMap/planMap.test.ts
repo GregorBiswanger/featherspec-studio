@@ -8,6 +8,7 @@ import { modelOf } from '../board/testing/boardWorld';
 import type { ShellModel } from '../ports/shell';
 import { planOf } from './planMap';
 import {
+    type Edit,
     fixtureModel,
     GEN_PLAN,
     GEN_SPEC,
@@ -294,6 +295,19 @@ function waysOf(view: PlanView): Array<[number, string[], string[]]> {
     return view.stages.flatMap((stage) => (stage.ways === undefined ? [] : [[stage.number, [...stage.ways.prompts], stage.ways.startLines] as [number, string[], string[]]]));
 }
 
+const READY_SPEC = '.specs/backlog/0001-ready-feature.md';
+
+function readyParallelModel(...edits: Edit[]): Promise<ShellModel> {
+    return fixtureModel(
+        'fs110-ready-synthetic',
+        (found) => {
+            const plan = '.specs/backlog/0001-ready-feature.plan.md';
+            found[plan] = found[plan]!.replace('1. T-001 — the feature', '1. T-001 ‖ T-002 — the feature').replace('### T-001', '### T-002 — second\n\n- **Covers:** AC-001\n- **Do:** x\n- **Verify:** y\n- [ ] **Verified (T-002):** —\n- **Notes:** —\n\n### T-001');
+        },
+        ...edits,
+    );
+}
+
 describe('0023 AC-009: the current stage offers its ways, and the next step its start lines', () => {
     it('Given fs110-parallel-synthetic without notes and the plan In Progress, stage 2 offers the three prompts and the start lines of T-003 and T-004; stages 1 and 3 offer none', async () => {
         const view = planViewOf(await parallelModel(), PARALLEL_SPEC);
@@ -341,15 +355,23 @@ describe('0023 AC-009: the current stage offers its ways, and the next step its 
     });
 
     it('a Ready spec offers the ways and no start line', async () => {
-        const model = await fixtureModel('fs110-ready-synthetic', (found) => {
-            const plan = '.specs/backlog/0001-ready-feature.plan.md';
-            found[plan] = found[plan]!.replace('1. T-001 — the feature', '1. T-001 ‖ T-002 — the feature').replace('### T-001', '### T-002 — second\n\n- **Covers:** AC-001\n- **Do:** x\n- **Verify:** y\n- [ ] **Verified (T-002):** —\n- **Notes:** —\n\n### T-001');
-        });
-        const view = planViewOf(model, '.specs/backlog/0001-ready-feature.md');
-        expect(model.lifecycle.entries.find((entry) => entry.key === '.specs/backlog/0001-ready-feature.md')?.state).toBe('Ready');
+        const model = await readyParallelModel();
+        const view = planViewOf(model, READY_SPEC);
+        expect(model.lifecycle.entries.find((entry) => entry.key === READY_SPEC)?.state).toBe('Ready');
         expect(waysOf(view)).toHaveLength(1);
         expect(view.stages[0]!.ways?.startLines).toEqual([]);
         expect(view.stages[0]!.ways?.prompts[0]).toBe('Implement the whole stage 1 of .specs/backlog/0001-ready-feature.plan.md in sequence');
+    });
+
+    it('a Ready spec with a return note offers no way, as an Active one does not (§5.4)', async () => {
+        const note = '# Return note — 0001 · T-009\n\n- **Status:** DONE\n- **Files:** —\n- **Verified:** —\n- **Notes:** —\n';
+        const model = await readyParallelModel(setNote('.memory-bank/activeContext.0001-T-009.md', note));
+        const entry = model.lifecycle.entries.find((candidate) => candidate.key === READY_SPEC)!;
+        const spec = model.project.specs.find((candidate) => candidate.key === READY_SPEC)!;
+        expect(entry.state).toBe('Ready');
+        expect(spec.returnNoteKeys).toEqual(['.memory-bank/activeContext.0001-T-009.md']);
+        expect(waysOf(planViewOf(model, READY_SPEC))).toEqual([]);
+        expect(waysOf(planViewOf(await readyParallelModel(), READY_SPEC))).toHaveLength(1);
     });
 
     it('Blocked, Review, a lying note and the Resume case offer none', async () => {
