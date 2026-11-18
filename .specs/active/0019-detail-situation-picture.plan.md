@@ -408,8 +408,8 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
   match, none without a selection.
 - **Verify:** `npx vitest run src/webview/detail/SidePanel.test.tsx` red (no call), then green; gates 1–5;
   a mutant on a scratch copy (call removed; drawer condition dropped) dies; layout: AC-022 round 2 (orchestrator)
-- [ ] **Verified (T-009):**
-- **Notes:**
+- [x] **Verified (T-009):** 2026-11-18 — red: `npx vitest run src/webview/detail/SidePanel.test.tsx` failed 1 of 13 (no `scrollIntoView` call; the three controls pass), green after the change (13). Mutants on a scratch copy (`/tmp/fs50/mut.py`), all killed: `drawer &&` dropped (control "query not matching" dies), options removed (`scrollIntoView()`), whole condition `false` (main test dies). Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2104 passed + 3 skipped (+12 timing), `npm run compile`, `npm run compile-tests` green. The layout effect itself (scrollLeft 0 → 111) is AC-022 round 2 by the orchestrator (jsdom has no layout).
+- **Notes:** The call sits in `SpecBoard.onFocus` for a card and for any control inside a card (`keyOfTarget`), guarded by `typeof scrollIntoView === 'function'` because jsdom has none (a test pins that a missing function breaks nothing). The Board's `data-drawer` padding stays (C43).
 
 ### T-010 — Fix D6: the Overview takes the width left of the drawer (PD-066; compile 0019 D6, AC-022 V2)
 

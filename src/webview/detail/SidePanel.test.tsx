@@ -1,5 +1,5 @@
 import { act } from 'react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
 import { sampleView } from '../../shared/protocol/testing/overviewSample';
 import type { OverviewView } from '../../shared/protocol/overview';
@@ -14,7 +14,8 @@ let posted: Envelope[];
 let mounted: Mounted | undefined;
 const clients: ShellClient[] = [];
 
-const THREE = [card('0003'), card('0004'), card('0006')];
+const STEP = { short: '/sdd-plan', line: '/sdd-plan .specs/active/0004-thing.md', lines: [{ text: '/sdd-plan .specs/active/0004-thing.md' }] };
+const THREE = [card('0003'), card('0004', { step: STEP }), card('0006')];
 
 function selection(number: string): SelectedSpec {
     return { stem: `${number}-thing`, number };
@@ -170,5 +171,60 @@ describe('AC-005: the drawer marks the board', () => {
     it('control: without a selection the narrow board carries no drawer mark', async () => {
         const container = await board();
         expect(container.querySelector('.columns')?.hasAttribute('data-drawer')).toBe(false);
+    });
+});
+
+describe('AC-005, AC-022: a card focused under the drawer is scrolled clear', () => {
+    const original = window.matchMedia;
+    const proto = Element.prototype as { scrollIntoView?: unknown };
+    let matches: boolean;
+    let calls: { target: unknown; options: unknown }[];
+
+    beforeEach(() => {
+        matches = true;
+        calls = [];
+        window.matchMedia = (() => ({ matches, addEventListener: () => undefined, removeEventListener: () => undefined })) as unknown as typeof window.matchMedia;
+        proto.scrollIntoView = vi.fn(function (this: unknown, options: unknown) {
+            calls.push({ target: this, options });
+        });
+    });
+
+    afterEach(() => {
+        window.matchMedia = original;
+        delete proto.scrollIntoView;
+    });
+
+    async function focus(element: HTMLElement): Promise<void> {
+        await act(async () => element.focus());
+    }
+
+    it('focusing a card, and a control inside a card, calls scrollIntoView on the focused element with block and inline nearest', async () => {
+        const container = await board(selection('0006'));
+        const target = cardOf(container, '0004');
+        await focus(target);
+        expect(calls).toEqual([{ target, options: { block: 'nearest', inline: 'nearest' } }]);
+        const copy = target.querySelector<HTMLElement>('button.copy-button')!;
+        await focus(copy);
+        expect(calls).toHaveLength(2);
+        expect(calls[1]).toEqual({ target: copy, options: { block: 'nearest', inline: 'nearest' } });
+    });
+
+    it('control: the drawer query not matching (panel from 900 px) scrolls nothing', async () => {
+        matches = false;
+        const container = await board(selection('0006'));
+        await focus(cardOf(container, '0004'));
+        expect(calls).toEqual([]);
+    });
+
+    it('control: without a selection there is no drawer and nothing scrolls', async () => {
+        const container = await board();
+        await focus(cardOf(container, '0004'));
+        expect(calls).toEqual([]);
+    });
+
+    it('a browser without scrollIntoView does not break focusing a card', async () => {
+        delete proto.scrollIntoView;
+        const container = await board(selection('0006'));
+        await expect(focus(cardOf(container, '0004'))).resolves.toBeUndefined();
     });
 });

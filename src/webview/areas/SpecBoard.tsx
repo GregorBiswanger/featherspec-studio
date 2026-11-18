@@ -73,6 +73,9 @@ export function SpecBoard() {
         }
         hasFocus.current = true;
         setFocusedKey(key);
+        if (drawer && selection !== undefined && typeof event.target.scrollIntoView === 'function') {
+            event.target.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        }
     }
 
     function onBlur(event: FocusEvent<HTMLElement>): void {
