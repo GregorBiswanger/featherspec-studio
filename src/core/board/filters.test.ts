@@ -32,7 +32,7 @@ describe('board contract', () => {
     });
 });
 
-describe('0022 AC-008 (P-17): the Problems a narrow strip stands for', () => {
+describe('0022 AC-009 (P-17): the Problems a narrow strip stands for', () => {
     const withProblems = [card('0006', { state: 'Done', problems: 1 }), card('0007', { state: 'Done', problems: 2 }), card('0008', { state: 'Done' })];
     const done = (columns: ReturnType<typeof arrangeBoard>) => columns.find((column) => column.state === 'Done')!;
 

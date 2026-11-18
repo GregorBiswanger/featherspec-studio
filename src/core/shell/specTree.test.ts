@@ -356,7 +356,7 @@ describe('0020 AC-006: the tooltip', () => {
         expect(row.tooltip.split('\n\n')[1]).toBe('Deprecated');
     });
 
-    it('a Problem adds one Problem line per finding with its reason, escaped', async () => {
+    it('a Problem adds one Problem line per finding with its sentence, escaped', async () => {
         const project = await readFixture('fs-broken');
         const model = { project, lifecycle: deriveLifecycle(project) };
         const row = rows(treeOf(model)).find((candidate) => candidate.icon === 'warning')!;

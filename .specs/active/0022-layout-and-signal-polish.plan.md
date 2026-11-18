@@ -3,7 +3,7 @@
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-020
+**Current step:** T-021
 
 ## Approach
 
@@ -202,6 +202,10 @@ answer: every open choice is decided by the spec, PD-068…PD-075 (newest wins) 
   O-5, AC-007, 0019 §6.2 row 3).
 
 ## Test-title audit
+
+**Fix round (T-021, 2026-11-18, head after T-020).** Rerun with the compile's independent scanner (`python3 -I /tmp/c0022s70/tools/titles.py <git archive 20a1e68> <working tree>`; it also matches `context` and `specify` call forms, so its totals are higher than the T-011 script's below): baseline 2330 titles (2317 distinct), head 2551 (2537 distinct); **35 absent, 0 decreased**. The 34 below are unchanged; the 35th is `src/core/shell/specTree.test.ts` "a Problem adds one Problem line per finding with its reason, escaped" → retitled `… with its sentence, escaped` (§5 0016 §6.2, AC-013; the compile found the title misleading). Head titles this round retitled or replaced (none existed at the Baseline, so none is absent): `Sections.test.tsx` "0022 AC-007 (X-07): the Up next note" → "0022 AC-008 (X-07): …"; `filters.test.ts` "0022 AC-008 (P-17): the Problems a narrow strip stands for" → "0022 AC-009 (P-17): …"; both `SpecBoard.test.tsx` "0022 AC-008: a strip …" and "0022 AC-008: every other strip …" → "0022 AC-009: …"; `PathText.test.tsx` "puts no break after a final separator" → "0022 AC-015: puts a break opportunity after a final separator too, …" (T-019, a decision by AC-015's "each"). New titles of the fix round sit in `board/icons.test.tsx`, `areas/overview/problemsCss.test.tsx`, `areas/overview/rowTint.test.tsx`, `webviewCss.test.ts` (describes 0022 AC-015 §7 g and 0022 AC-002, one AC-028 test), `Divider.test.tsx` and `PathText.test.tsx`; the unit run counts them (2418 → 2452).
+
+**T-011 audit (as recorded then).**
 
 `python3 -I /tmp/audit-0022/titles.py <git archive 20a1e68> <head>` over every `describe`, `it`, `test` and `suite` literal of every `.ts` and `.tsx` under `src` (`src/test/**` and `testing/*.ts` included), 2026-11-18, T-011: baseline 2291 titles (2282 distinct), head 2494 (2484 distinct); **34 absent, 0 decreased** (the 4 `describe`/`describe`-like group titles are among the absent ones and mapped). Every absent title is a voided or retitled statement of §5 or is replaced by the head title named:
 
@@ -558,38 +562,46 @@ never on the repository.
 - [x] **Verified (T-020):** 2026-11-18, `grep -rn "problemLineText" src` before: one hit (the definition), after: none; no test named it, so nothing is red. Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2452 passed, 3 skipped (+13 timing) (unchanged).
 - **Notes:** a deletion with no behaviour has no red run; the compiler is the control (a remaining caller would fail `tsc`).
 
+### T-021 — Traceability, test titles under the right ID, evidence of the harness round 1
+
+- **Covers:** compile blocker 6 (rubric class three), intended document edits 1, 2 and the evidence part of 3; AC-001 and AC-026 `verified`
+- **Do:** traceability rows AC-007, AC-008, AC-009 hold their own code and tests; the group-ID test moves to AC-006; `ui/PathText.tsx` and `PathText.test.tsx` join AC-015; AC-001 and AC-026 read `verified` (D1–D3 fixed, T-012 to T-014); AC-017 reads `built` until CI runs. Test titles under the right ID: `Sections.test.tsx` "0022 AC-007 (X-07)" → AC-008; `filters.test.ts` "0022 AC-008 (P-17)" and both `SpecBoard.test.tsx` "0022 AC-008:" → AC-009; `specTree.test.ts` "… with its reason, escaped" → "… with its sentence, escaped". `## Test-title audit` lists them. Evidence of the orchestrator's harness round 1 in the AC-019 and AC-025 rows.
+- **Verify:** `npm run test:unit` green, `python3 -I /tmp/c0022s70/tools/titles.py` over the Baseline and the tree: 0 decreased; `grep -rn "0022 AC-008 (P-17)\|0022 AC-007 (X-07)" src` empty
+- [x] **Verified (T-021):** 2026-11-18, titles only, so no red run: `grep -rn "0022 AC-008 (P-17)\|AC-007 (X-07)" src` empty before commit; audit rerun: baseline 2330, head 2551, 35 absent, 0 decreased; `npm run test:unit` 2452 passed, 3 skipped (+13 timing) (unchanged: renames only).
+- **Notes:** manual evidence recorded as `manual: orchestrator (Gregor's delegate) 2026-11-18, harness r2check at 7cb4491`: G-1…G-4, PD-075 and AC-028 passed, V1 failed and is fixed in T-014. Still open: AC-019 and AC-025 (the orchestrator's harness round 2), AC-020 and AC-021 (Gregor), AC-017 (CI, at the PR). The compile's edit 8 (T-006 to T-011 `Verified:` lack dates) is historical: those entries were written on 2026-11-18 as the plan's header states; no entry is rewritten.
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001, T-007 | `src/webview/main.css`, `src/webview/App.tsx`, `src/webview/areas/overview/SpecRow.tsx`, `src/webview/testing/css.ts` | `webviewCss.test.ts` (0022 AC-001, AC-003, AC-027, AC-028 describes), `ListOrDetail.test.tsx` | built |
-| AC-002 | T-007, T-008 | `src/webview/main.css`, `src/webview/ui/PathText.tsx`, `src/webview/detail/{SpecDetail,NextStep}.tsx`, `src/webview/board/Card.tsx`, `src/webview/areas/overview/SpecRow.tsx` | `PathText.test.tsx`, `SpecDetail.test.tsx`, `SpecBoard.test.tsx`, `webviewCss.test.ts` (0022 AC-001 and AC-002) | verified |
-| AC-003 | T-007, T-008 | `src/webview/main.css`, `src/webview/detail/SpecDetail.tsx`, `src/webview/board/Banner.tsx`, `src/webview/areas/overview/{Problems,SpecRow}.tsx` | `webviewCss.test.ts` (0022 AC-003), `SpecDetail.test.tsx`, `Overview.test.tsx` | verified |
+| AC-001 | T-001, T-007, T-018 | `src/webview/main.css`, `src/webview/App.tsx`, `src/webview/areas/overview/SpecRow.tsx`, `src/webview/testing/css.ts` | `webviewCss.test.ts` (0022 AC-001, AC-003, AC-027, AC-028 describes), `ListOrDetail.test.tsx`, `areas/overview/problemsCss.test.tsx` (step and Copy never cut, T-018) | verified |
+| AC-002 | T-007, T-008, T-016 | `src/webview/main.css`, `src/webview/ui/PathText.tsx`, `src/webview/detail/{SpecDetail,NextStep}.tsx`, `src/webview/board/Card.tsx`, `src/webview/areas/overview/SpecRow.tsx` | `PathText.test.tsx`, `SpecDetail.test.tsx`, `SpecBoard.test.tsx`, `webviewCss.test.ts` (0022 AC-001 and AC-002, T-016: no `break-all`, `anywhere` only on `.step-text`, the panel heading wraps) | verified |
+| AC-003 | T-007, T-008, T-013 | `src/webview/main.css`, `src/webview/detail/SpecDetail.tsx`, `src/webview/board/Banner.tsx`, `src/webview/areas/overview/{Problems,SpecRow}.tsx` | `webviewCss.test.ts` (0022 AC-003), `areas/overview/problemsCss.test.tsx` (wide container, T-013), `SpecDetail.test.tsx`, `Overview.test.tsx` | verified |
 | AC-004 | T-009 | `src/core/shell/specTree.ts`, `src/shared/protocol/texts.ts` (X-05) | `specTree.test.ts` (0022 AC-004) | verified |
 | AC-005 | T-009 | `src/core/shell/treeLabel.ts`, `src/core/shell/specTree.ts`, `src/test/shell.smoke.test.ts` (AC-019 expectation) | `treeLabel.test.ts`, `specTree.test.ts` (0022 AC-005) | verified |
-| AC-006 | T-010 | `src/core/shell/specTree.ts`, `src/adapters/vscode/studioTree.ts`, `src/shared/protocol/texts.ts` (X-01…X-03) | `specTree.test.ts`, `studioTree.test.ts` | verified |
-| AC-007 | T-010 | `src/core/shell/specTree.ts`, `src/webview/areas/overview/Now.tsx` (X-07) | `specTree.test.ts` (0022 AC-007), `sourceScan.test.ts` (0022 AC-007), `Sections.test.tsx` | verified |
-| AC-008 | T-010 | `src/core/board/filters.ts`, `src/shared/protocol/board.ts`, `src/webview/board/Column.tsx`, `src/webview/main.css` | `filters.test.ts`, `boardFilter.test.ts`, `SpecBoard.test.tsx` | verified |
-| AC-009 | T-010 | `src/core/shell/specTree.ts`, `src/shared/protocol/texts.ts` | `specTree.test.ts` (group IDs hold neither count) | verified |
+| AC-006 | T-010 | `src/core/shell/specTree.ts`, `src/adapters/vscode/studioTree.ts`, `src/shared/protocol/texts.ts` (X-01…X-03) | `specTree.test.ts` (0022 AC-006; group IDs hold neither count), `studioTree.test.ts` | verified |
+| AC-007 | T-010 | `src/core/shell/specTree.ts` | `specTree.test.ts` (0022 AC-007), `sourceScan.test.ts` (0022 AC-007) | verified |
+| AC-008 | T-010 | `src/webview/areas/overview/Now.tsx` (X-07) | `Sections.test.tsx` (0022 AC-008 (X-07)) | verified |
+| AC-009 | T-010 | `src/core/board/filters.ts`, `src/shared/protocol/board.ts`, `src/webview/board/Column.tsx`, `src/webview/main.css` | `filters.test.ts` (0022 AC-009 (P-17)), `boardFilter.test.ts`, `SpecBoard.test.tsx` (0022 AC-009) | verified |
 | AC-010 | T-006 | `src/webview/ui/CopyButton.tsx`, `src/webview/main.css` | `CopyButton.test.tsx`, `webviewCss.test.ts` (0022 AC-010, AC-012) | verified |
 | AC-011 | T-006 | `src/webview/detail/NextStep.tsx`, `src/webview/areas/overview/{Now,Overview,SpecRow}.tsx`, `src/webview/areas/SpecBoard.tsx`, `src/webview/board/Card.tsx` | `src/webview/primaryButtons.test.tsx` | verified |
 | AC-012 | T-006 | `src/webview/ui/CopyButton.tsx`, `src/webview/board/icons.tsx`, `src/webview/main.css` | `CopyButton.test.tsx`, `webviewCss.test.ts` (0022 AC-010, AC-012) | verified |
 | AC-013 | T-005, T-008, T-009 | `src/core/lifecycle/problemSentence.ts`, `src/core/board/{detail,cards}.ts`, `src/core/overview/problems.ts`, `src/core/shell/specTree.ts`, `src/webview/detail/SpecDetail.tsx`, `src/webview/board/Banner.tsx`, `src/webview/areas/overview/{Problems,SpecRow}.tsx` | `problemSentence.test.ts`, `detail.test.ts`, `cards.test.ts`, `problems.test.ts`, `specTree.test.ts`, `SpecDetail.test.tsx`, `Overview.test.tsx`, `SpecBoard.test.tsx`, `userLanguage.test.tsx` | verified |
 | AC-014 | T-005 | `src/core/lifecycle/problemSentence.ts`, `src/shared/protocol/texts.ts` (X-10…X-24) | `src/core/lifecycle/problemSentence.test.ts` (AC-014 describe) | verified |
-| AC-015 | T-008 | `src/webview/ui/FileLink.tsx`, `src/webview/detail/SpecDetail.tsx`, `src/webview/areas/overview/SpecRow.tsx` | `SpecDetail.test.tsx`, `Overview.test.tsx` | verified |
+| AC-015 | T-008, T-015, T-019 | `src/webview/ui/PathText.tsx`, `src/webview/ui/FileLink.tsx`, `src/webview/detail/SpecDetail.tsx`, `src/webview/areas/overview/SpecRow.tsx`, `src/webview/main.css` | `PathText.test.tsx`, `SpecDetail.test.tsx`, `Overview.test.tsx`, `webviewCss.test.ts` (0022 AC-015, §7 g) | verified |
 | AC-016 | T-011 | `.specs/{done,active}/0005, 0007, 0013, 0015–0020` (the §5 notes) | `docsScan.test.ts` (0022 block: 2, 1, 2, 1, 7, 2, 13, 12, 19 notes); PD register unedited by this branch | verified |
-| AC-017 | T-011 | all of `src` (no staying test weakened) | `## Test-title audit` of this plan: 34 absent, 0 decreased, each mapped; `npm run test:unit`; `npm test` on Windows and CI is the pre-done gate | verified |
+| AC-017 | T-011 | all of `src` (no staying test weakened) | `## Test-title audit` of this plan: 35 absent, 0 decreased, each mapped (the fix round adds the retitled `specTree.test.ts` title); `npm run test:unit`; CI on the PR (ubuntu, windows) and `npm test` on Windows are the pre-done gate, open until the PR | built |
 | AC-018 | T-011 | `README.md`, `docs/product/ux-guidelines.md`, `docs/release-checklist.md`, `CHANGELOG.md`, `docs/product/design-brief.md` | `docsScan.test.ts` (0020 group test, 0022 block) | verified |
-| AC-019 | T-011 | `docs/release-checklist.md` (Layout and signal polish (0022)) | manual: orchestrator's harness, then Gregor | open |
+| AC-019 | T-011 | `docs/release-checklist.md` (Layout and signal polish (0022)) | manual: orchestrator (Gregor's delegate) 2026-11-18, harness r2check at 7cb4491 (1600, 1000, 920, 800, 640 px; Dark, Light, High Contrast; Overview with 0015, Board with 0019): G-1…G-4, PD-075 and AC-028 passed; V1 (Overview state icons untinted = D3) failed, fixed in T-014. Open: the orchestrator's harness round 2 after the fixes (`fs170-brownfield-mixed`, zoom level 2, a long Problems title above 686 px, long separator-free segments) | open |
 | AC-020 | T-011 | `docs/release-checklist.md` (Layout and signal polish (0022)) | manual: Gregor or delegate, real VS Code | open |
 | AC-021 | T-011 | `docs/release-checklist.md` (build part) | manual: Gregor on `tip-splitter` (draft part done: PD-073) | open |
 | AC-022 | T-001, T-003 | `src/webview/main.css` (html/body/#root, main, `.area-frame`, `.area-content`, `.side-panel`), `src/webview/App.tsx` | `src/adapters/node/webviewCss.test.ts` (0022 AC-022 describe) | verified |
-| AC-023 | T-003 | `src/webview/detail/Divider.tsx`, `src/webview/detail/sideWidth.ts`, `src/webview/App.tsx` | `src/webview/detail/Divider.test.tsx` (AC-023 describes), `webviewCss.test.ts` (0022 G-2) | verified |
+| AC-023 | T-003, T-017 | `src/webview/detail/Divider.tsx`, `src/webview/detail/sideWidth.ts`, `src/webview/App.tsx` | `src/webview/detail/Divider.test.tsx` (AC-023 describes; lostpointercapture alone, T-017), `webviewCss.test.ts` (0022 G-2) | verified |
 | AC-024 | T-002, T-003 | `src/shared/protocol/layout.ts`, `src/core/shell/sidePanelWidth.ts`, `src/core/shell/shellService.ts`, `src/webview/detail/sideWidth.ts`, `src/adapters/vscode/uiMemory.ts` | `layout.test.ts`, `sidePanelWidth.test.ts`, `messages.test.ts`, `client.test.ts`, `Divider.test.tsx` (AC-024) | verified |
-| AC-025 | T-011 | `docs/release-checklist.md` (Layout and signal polish (0022)) | manual: orchestrator's harness, then Gregor | open |
-| AC-026 | T-004 | `src/shared/protocol/stateLook.ts`, `src/core/shell/specTree.ts`, `src/webview/board/icons.tsx`, `src/webview/ui/StateChip.tsx`, `src/webview/board/Column.tsx`, `src/webview/main.css` (Overview rows: T-007) | `stateLook.test.ts`, `specTree.test.ts`, `StateChip.test.tsx`, `SpecBoard.test.tsx`, `webviewCss.test.ts` (0022 AC-026) | built |
+| AC-025 | T-011 | `docs/release-checklist.md` (Layout and signal polish (0022)) | manual: orchestrator (Gregor's delegate) 2026-11-18, harness r2check at 7cb4491: divider from 900 px, default 640 at 1600 and 400 at 1000 and 920, drag, double-click reset and `aria-valuenow` passed. Open: reload persistence and "back returns to the row or card" in Overview and Board (harness round 2), then Gregor | open |
+| AC-026 | T-004, T-012, T-014 | `src/shared/protocol/stateLook.ts`, `src/core/shell/specTree.ts`, `src/webview/board/icons.tsx` (`MOTIF_PATHS`), `src/webview/ui/StateChip.tsx`, `src/webview/board/Column.tsx`, `src/webview/main.css` (Overview rows: `.ov-state-icon .icon`) | `stateLook.test.ts`, `specTree.test.ts`, `StateChip.test.tsx`, `board/icons.test.tsx` (T-012), `SpecBoard.test.tsx`, `areas/overview/rowTint.test.tsx` (T-014), `webviewCss.test.ts` (0022 AC-026) | verified |
 | AC-027 | T-007 | `src/webview/areas/overview/SpecRow.tsx`, `src/webview/main.css` | `Sections.test.tsx`, `webviewCss.test.ts` (0022 AC-027) | verified |
-| AC-028 | T-007 | `src/webview/main.css` | `webviewCss.test.ts` (0022 AC-028) | verified |
+| AC-028 | T-007, T-018 | `src/webview/main.css` | `webviewCss.test.ts` (0022 AC-028; the widest Copy read from the stylesheet, T-018) | verified |
 | AC-029 | T-001 | `src/webview/App.tsx`, `src/webview/detail/narrow.ts`, `src/webview/detail/BackButton.tsx`, `src/webview/detail/SidePanel.tsx`, `src/webview/detail/SpecDetail.tsx` | `src/webview/detail/ListOrDetail.test.tsx` | verified |
 
 ## Session handoff

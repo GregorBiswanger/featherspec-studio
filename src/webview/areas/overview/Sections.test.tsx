@@ -164,7 +164,7 @@ function nowRow(container: HTMLElement, stem: string): HTMLElement {
     return container.querySelector<HTMLElement>(`[data-row-group="now"][data-spec-row="${stem}"]`)!;
 }
 
-describe('0022 AC-007 (X-07): the Up next note', () => {
+describe('0022 AC-008 (X-07): the Up next note', () => {
     it('shows "Ready first, then backlog" after the Up next heading while rows are listed', async () => {
         const container = await open(withRows());
         const panel = container.querySelector('[data-up-next]')!;

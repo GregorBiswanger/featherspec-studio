@@ -303,7 +303,7 @@ describe('AC-021, AC-020, AC-012: in-area states', () => {
         expect(container.textContent).not.toMatch(/No spec in the backlog|No spec is ready|No spec is being implemented|hidden by filter\s*$/);
     });
 
-    it('0022 AC-008: a strip that stands for a spec with a Problem shows the warning, and its name and tooltip end with the problem count before the rule text', async () => {
+    it('0022 AC-009: a strip that stands for a spec with a Problem shows the warning, and its name and tooltip end with the problem count before the rule text', async () => {
         const view = boardView([card('0001', { state: 'Backlog' })]);
         view.columns[3] = { state: 'Review', cards: [], hidden: 2, emptyBeforeFilter: false, count: 0, narrow: 'filtered', problems: 1 };
         view.columns[4] = { state: 'Done', cards: [], hidden: 0, emptyBeforeFilter: false, count: 3, narrow: 'collapsed', problems: 2 };
@@ -318,7 +318,7 @@ describe('AC-021, AC-020, AC-012: in-area states', () => {
         expect(done.querySelector('.column-problem')).not.toBeNull();
     });
 
-    it('0022 AC-008: every other strip and every wide column is as 0018 AC-014 has it, with no warning', async () => {
+    it('0022 AC-009: every other strip and every wide column is as 0018 AC-014 has it, with no warning', async () => {
         const view = boardView([card('0001', { state: 'Backlog' })]);
         view.columns[3] = { state: 'Review', cards: [], hidden: 2, emptyBeforeFilter: false, count: 0, narrow: 'filtered' };
         const container = await open(view);
