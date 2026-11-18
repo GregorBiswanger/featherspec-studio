@@ -271,10 +271,6 @@ export function criteriaShortText(criteria: Progress): string {
     return `Criteria ${criteria.done}/${criteria.total}`;
 }
 
-export function criteriaText(criteria: Progress | undefined): string {
-    return criteria === undefined ? 'Criteria: not available' : `Criteria: ${criteria.done} of ${criteria.total} verified`;
-}
-
 export function lastChangeTooltip(last: LastChange): string {
     return last.source === 'plan' ? `Last change ${last.day}, from the plan's Last updated line` : `Last change ${last.day}, file modification time`;
 }
@@ -288,8 +284,6 @@ export function cardName(card: { number: string; title: string; state: string })
 }
 
 export const DEPRECATED_MARKER = 'Deprecated';
-export const UNCERTAIN_FLAG = 'uncertain';
-export const STRUCK_FLAG = 'struck';
 
 export function problemsBadgeText(count: number): string {
     return count === 1 ? '1 problem' : `${count} problems`;
@@ -305,7 +299,6 @@ export function formatNotesText(count: number): string {
 }
 
 export const NO_DETAIL_SELECTION_TEXT = 'Select a spec in the list to see its details.';
-export const NO_REQUIREMENTS_TEXT = 'No FR- requirements found';
 export const NO_PLAN_TEXT = 'No plan yet';
 export const NEED_CRITERIA_TEXT = 'needs acceptance criteria';
 export const NEED_PLAN_TEXT = 'needs a plan';
@@ -316,8 +309,6 @@ export const NEED_PLAN_NO_STATUS_TEXT = 'plan has no status';
 export function needTooltip(rule: string): string {
     return `Not Ready yet · rule ${rule}`;
 }
-export const OPEN_FILE_LABEL = 'Open file';
-export const STATE_LABEL = 'State';
 export const HISTORY_NOT_AVAILABLE_TEXT = 'Status history: not available';
 
 export function fileNotFoundText(path: string): string {
@@ -360,13 +351,8 @@ export function openFileTooltip(name: string, line: number): string {
 }
 
 export const FILE_LABELS = { spec: 'Spec', plan: 'Plan', archivedPlan: 'Archived plan', returnNote: 'Return note' } as const;
-export const NO_RELATED_TEXT = 'No related artifacts';
-export const SECTION_TITLES = {
-    overview: 'Overview',
-    requirements: 'Requirements',
-    criteria: 'Acceptance criteria',
-    plan: 'Plan & tasks',
-    verification: 'Verification',
-    related: 'Related artifacts',
-    history: 'Status history',
-} as const;
+export const HISTORY_HEADING = 'Status history';
+
+export function historyHeading(count: number): string {
+    return `${HISTORY_HEADING} (${count})`;
+}

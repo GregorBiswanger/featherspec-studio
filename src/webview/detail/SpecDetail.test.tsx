@@ -6,7 +6,7 @@ import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
 import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
 import { resetSectionMemory } from './sectionMemory';
-import { copyResultEvent, detailEvent, detailView, openFileResultEvent, PLAN_KEY, sections, SPEC_KEY } from './testing/views';
+import { copyResultEvent, detailEvent, detailView, historySection, openFileResultEvent, PLAN_KEY, SPEC_KEY } from './testing/views';
 import { COPIED_TEXT, COPY_FAILED_TEXT, NEXT_STEP_DONE_TEXT } from '../../shared/protocol/nextStepTexts';
 
 let posted: Envelope[];
@@ -26,6 +26,15 @@ async function open(view = detailView()): Promise<HTMLElement> {
 function section(container: HTMLElement, title: string): HTMLElement {
     const heading = [...container.querySelectorAll('h3')].find((candidate) => candidate.textContent === title)!;
     return heading.closest('section')!;
+}
+
+function historyRoot(container: HTMLElement): HTMLElement {
+    const heading = [...container.querySelectorAll('h3')].find((candidate) => candidate.textContent?.startsWith('Status history'))!;
+    return heading.closest('section')!;
+}
+
+function historyToggle(container: HTMLElement): HTMLButtonElement {
+    return historyRoot(container).querySelector<HTMLButtonElement>('h3 > button')!;
 }
 
 function requests(type: string): unknown[] {
@@ -50,7 +59,7 @@ function textOf(root: Element): string {
 }
 
 function spec(overrides: Partial<SpecDetailView>, nextStep?: NextStepView, problems: SpecDetailView['problems'] = []) {
-    return detailView({}, nextStep, problems, overrides);
+    return detailView(overrides, nextStep, problems);
 }
 
 function links(root: Element): HTMLButtonElement[] {
@@ -70,7 +79,7 @@ describe('0019 AC-009: the situation picture in its order', () => {
             section(container, 'Progress'),
             section(container, 'Files'),
             container.querySelector('.format-notes')!,
-            section(container, 'Status history'),
+            historyRoot(container),
         ];
         parts.forEach((part, index) => {
             expect(part, `part ${index}`).not.toBeNull();
@@ -78,7 +87,7 @@ describe('0019 AC-009: the situation picture in its order', () => {
                 expect(parts[index - 1]!.compareDocumentPosition(part) & Node.DOCUMENT_POSITION_FOLLOWING, `part ${index} follows part ${index - 1}`).toBeTruthy();
             }
         });
-        expect([...container.querySelectorAll('h3')].map((heading) => heading.textContent)).toEqual(['Next step', 'Progress', 'Files', 'Status history']);
+        expect([...container.querySelectorAll('h3')].map((heading) => heading.textContent)).toEqual(['Next step', 'Progress', 'Files', 'Status history (1)']);
     });
 
     it('the header holds the number, the title, one state chip and no Open file button', async () => {
@@ -280,10 +289,10 @@ describe('0019 AC-017: every link opens its file at its line', () => {
     it('needs, history entries and texts send nothing', async () => {
         const container = await open(spec({ progress: { needs: [{ text: 'needs a plan', rule: 'R-3' }], noPlan: false } }));
         await click(container.querySelector('.detail-needs li')!);
-        await click(section(container, 'Status history').querySelector('li')!);
+        await click(historyRoot(container).querySelector('li')!);
         await click(container.querySelector('.detail-title h2')!);
         expect(requests('openFile')).toEqual([]);
-        expect(section(container, 'Status history').querySelectorAll('button.file-link')).toHaveLength(0);
+        expect(historyRoot(container).querySelectorAll('button.file-link')).toHaveLength(0);
     });
 
     it('each link has its visible text as name, a tooltip and a description "Open <file name> at line <n>"', async () => {
@@ -364,13 +373,15 @@ describe('0019 AC-019: a file that is gone', () => {
     });
 });
 
-describe('0015 AC-012: Status history', () => {
-    it('lists the labelled status history and no run', async () => {
-        const text = section(await open(), 'Status history').textContent!;
+describe('0015 AC-012, 0019 AC-015: Status history', () => {
+    it('lists the labelled status history and no run once expanded', async () => {
+        const container = await open();
+        await click(historyToggle(container));
+        const text = textOf(historyRoot(container));
         expect(text).toContain('Only changes Studio saw while it was running.');
         expect(text).toMatch(/— Ready → Active$/);
         expect(text).not.toMatch(/S-ACTIVE|2026-11-16T|observed|not checked/);
-        const entry = section(await open(), 'Status history').querySelector('li');
+        const entry = historyRoot(container).querySelector('li');
         expect(entry?.getAttribute('title')).toBe('2026-11-16T09:00:00Z · rule S-ACTIVE · .specs/active/0001-a.plan.md');
         expect(text).not.toContain('claude');
         expect(text).not.toContain('Runs: not available');
@@ -378,17 +389,68 @@ describe('0015 AC-012: Status history', () => {
     });
 
     it('shows not available with the reason while the history is not available', async () => {
-        const base = sections().history;
         const reason = "Status history not available: Another VS Code window holds the write lock for this project's status history.";
-        const text = section(await open(detailView({ history: { ...base, statusHistory: undefined, notAvailable: reason } })), 'Status history').textContent!;
+        const container = await open(detailView({ history: { ...historySection(), statusHistory: undefined, notAvailable: reason } }));
+        const text = textOf(historyRoot(container));
         expect(text).toContain(reason);
         expect(text).not.toContain('Only changes Studio saw');
+        expect([...container.querySelectorAll('h3')].map((heading) => heading.textContent)).toContain('Status history');
     });
 
     it('shows not available even when the reason is missing', async () => {
-        const base = sections().history;
-        const text = section(await open(detailView({ history: { ...base, statusHistory: undefined } })), 'Status history').textContent!;
-        expect(text).toContain(HISTORY_NOT_AVAILABLE_TEXT);
+        const container = await open(detailView({ history: { ...historySection(), statusHistory: undefined } }));
+        expect(textOf(historyRoot(container))).toContain(HISTORY_NOT_AVAILABLE_TEXT);
+    });
+
+    it('starts collapsed under the heading "Status history (n)" and shows its entries when expanded', async () => {
+        const container = await open();
+        const toggle = historyToggle(container);
+        expect(toggle.textContent).toBe('Status history (1)');
+        expect(toggle.getAttribute('aria-expanded')).toBe('false');
+        const body = container.querySelector<HTMLElement>(`#${toggle.getAttribute('aria-controls')!}`)!;
+        expect(body.hidden).toBe(true);
+        await click(toggle);
+        expect(toggle.getAttribute('aria-expanded')).toBe('true');
+        expect(body.hidden).toBe(false);
+        expect(body.querySelectorAll('li')).toHaveLength(1);
+        await pressKey(toggle, 'Enter');
+        expect(toggle.getAttribute('aria-expanded')).toBe('false');
+        await pressKey(toggle, ' ');
+        expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    });
+
+    it('the heading counts the entries of the spec', async () => {
+        const entry = historySection().statusHistory![0]!;
+        const container = await open(detailView({ history: { ...historySection(), statusHistory: [entry, entry, entry] } }));
+        expect(historyToggle(container).textContent).toBe('Status history (3)');
+    });
+
+    it('no section at zero entries, neither for the history nor for the format notes', async () => {
+        const container = await open(detailView({ history: { ...historySection(), statusHistory: [] }, notes: [] }));
+        expect([...container.querySelectorAll('h3')].map((heading) => heading.textContent)).toEqual(['Next step', 'Progress', 'Files']);
+        expect(container.querySelector('.format-notes')).toBeNull();
+    });
+
+    it('keeps its state across another spec and across closing and showing the detail again; the format notes start collapsed again', async () => {
+        const container = await open();
+        await click(historyToggle(container));
+        await click(container.querySelector('.format-notes-toggle')!);
+        expect(container.querySelector('.format-notes-toggle')!.getAttribute('aria-expanded')).toBe('true');
+        await send(detailEvent({ ...detailView(), key: '.specs/active/0008-other.md', stem: '0008-other', title: 'Other 0008' } as ReturnType<typeof detailView>));
+        expect(historyToggle(container).getAttribute('aria-expanded')).toBe('true');
+        expect(container.querySelector('.format-notes-toggle')!.getAttribute('aria-expanded')).toBe('false');
+        await click(container.querySelector('.format-notes-toggle')!);
+        await send(detailEvent({ kind: 'none' }));
+        expect(container.querySelector('.format-notes-toggle')).toBeNull();
+        await send(detailEvent(detailView()));
+        expect(historyToggle(container).getAttribute('aria-expanded')).toBe('true');
+        expect(container.querySelector('.format-notes-toggle')!.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('control: a collapsed history stays collapsed across another spec', async () => {
+        const container = await open();
+        await send(detailEvent({ ...detailView(), key: '.specs/active/0008-other.md', stem: '0008-other' } as ReturnType<typeof detailView>));
+        expect(historyToggle(container).getAttribute('aria-expanded')).toBe('false');
     });
 });
 
@@ -548,9 +610,9 @@ describe('0016 AC-006, AC-007, AC-022: Problems, format notes', () => {
     });
 
     it('AC-007: the plural reads "<n> format notes — no action needed" and no toggle exists at 0 notes', async () => {
-        const many = await open(detailView({}, undefined, [], { notes: [{ reason: 'a' }, { reason: 'b' }, { reason: 'c' }] }));
+        const many = await open(detailView({ notes: [{ reason: 'a' }, { reason: 'b' }, { reason: 'c' }] }));
         expect(notesToggle(many).textContent).toBe('3 format notes — no action needed');
-        const none = await open(detailView({}, undefined, [], { notes: [] }));
+        const none = await open(detailView({ notes: [] }));
         expect(none.querySelector('.format-notes-toggle')).toBeNull();
     });
 

@@ -11,7 +11,8 @@ import {
     HISTORY_NOT_AVAILABLE_TEXT,
     NO_DETAIL_SELECTION_TEXT,
     persistedTooltip,
-    SECTION_TITLES,
+    HISTORY_HEADING,
+    historyHeading,
 } from '../../shared/protocol/texts';
 import { isDerivedRule } from '../../shared/protocol/board';
 import { isBoardState } from '../../shared/protocol/boardFilter';
@@ -63,6 +64,32 @@ function Reason(props: { line: DiagnosticLine; fileResult: FileResult | undefine
     );
 }
 
+function History(props: { history: SpecDetailView['history']; now: Date }) {
+    const { history } = props;
+    if (history.statusHistory === undefined) {
+        return (
+            <PlainSection title={HISTORY_HEADING}>
+                <p>{history.notAvailable ?? HISTORY_NOT_AVAILABLE_TEXT}</p>
+            </PlainSection>
+        );
+    }
+    if (history.statusHistory.length === 0) {
+        return null;
+    }
+    return (
+        <DetailSection title={historyHeading(history.statusHistory.length)} memoryKey={HISTORY_HEADING}>
+            <p>{history.label}</p>
+            <ul className="detail-history">
+                {history.statusHistory.map((item, index) => (
+                    <li key={`${index}|${item.observedAt}`} title={historyTooltip(item)}>
+                        {historyEntryText(item, props.now)}
+                    </li>
+                ))}
+            </ul>
+        </DetailSection>
+    );
+}
+
 function Picture(props: { detail: SpecDetailView; fileResult: FileResult | undefined; copyResult: { ok: boolean; text: string } | undefined; onOpen: OpenAt; onCopy(text: string): void }) {
     const { detail, fileResult, onOpen } = props;
     const now = new Date();
@@ -96,22 +123,7 @@ function Picture(props: { detail: SpecDetailView; fileResult: FileResult | undef
                 </ul>
             </PlainSection>
             <FormatNotes key={detail.key} notes={detail.notes} renderNote={(note) => <Reason line={note} fileResult={fileResult} onOpen={onOpen} />} />
-            <DetailSection title={SECTION_TITLES.history} keys={[]} fileResult={fileResult} onOpen={(key) => onOpen(key)}>
-                {detail.history.statusHistory === undefined ? (
-                    <p>{detail.history.notAvailable ?? HISTORY_NOT_AVAILABLE_TEXT}</p>
-                ) : (
-                    <>
-                        <p>{detail.history.label}</p>
-                        <ul className="detail-history">
-                            {detail.history.statusHistory.map((item, index) => (
-                                <li key={`${index}|${item.observedAt}`} title={historyTooltip(item)}>
-                                    {historyEntryText(item, now)}
-                                </li>
-                            ))}
-                        </ul>
-                    </>
-                )}
-            </DetailSection>
+            <History history={detail.history} now={now} />
             <span className="visually-hidden detail-open-status" role="status" aria-live="polite" aria-atomic="true">
                 {fileResult === undefined ? '' : fileResult.text}
             </span>

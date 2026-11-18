@@ -23,13 +23,6 @@ describe('AC-026: colours come from the theme', () => {
         expect(css).not.toMatch(/\.card-summary|\.card-foot\b|\.card-secondary \.icon \{[^}]*\}\s*\.card-state \.state-chip/);
     });
 
-    it('AC-010: the Overview header lines are a two-column grid, label and value on one row, values without the default indent', () => {
-        const list = rulesFor(css, '.detail-header');
-        expect(list.some((rule) => /display:\s*grid/.test(rule.body) && /grid-template-columns:\s*max-content\s+1fr/.test(rule.body))).toBe(true);
-        expect(rulesFor(css, '.detail-header > div').some((rule) => /display:\s*contents/.test(rule.body))).toBe(true);
-        expect(rulesFor(css, '.detail-header dd').some((rule) => /margin:\s*0/.test(rule.body))).toBe(true);
-    });
-
     it('AC-030: secondary text inside a selected row uses the selection foreground, not the description colour', () => {
         const rules = rulesFor(css, '.spec-row.selected .spec-derived');
         const pathRules = rulesFor(css, '.spec-row.selected .spec-path');
@@ -333,7 +326,7 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
     });
 
     it('AC-003: every control this spec adds or restyles sets no outline of its own, so the shared focus rule with contrastActiveBorder or focusBorder applies', () => {
-        for (const selector of ['.ov-drill', '.ov-row', '.section-toggle', '.open-file', '.copy-button', '.related-link']) {
+        for (const selector of ['.ov-drill', '.ov-row', '.section-toggle', '.file-link', '.copy-button']) {
             const rules = parseRules(css).filter((rule) => rule.selectors.some((candidate) => candidate.startsWith(selector)));
             expect(rules.length, selector).toBeGreaterThan(0);
             for (const rule of rules) {

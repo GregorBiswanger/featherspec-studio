@@ -82,17 +82,19 @@ describe('board service: detail freshness on 200 specs (AC-019, core part for th
         w.service.onDidChangeDetail((view) => seen.push(view));
         const shownCriteria = () => {
             const view = w.service.detail();
-            return view.kind === 'spec' ? view.sections.criteria.items.length : -1;
+            return view.kind === 'spec' && view.progress?.criteria?.kind === 'criteria' ? view.progress.criteria.open.length : -1;
         };
         const before = shownCriteria();
         expect(before).toBeGreaterThanOrEqual(0);
 
+        const targetPlan = model.lifecycle.entries.find((entry) => entry.key === target.key)?.plan;
+        const empty = { state: 'empty' as const, raw: '' };
         const extended = {
             ...project,
-            specs: project.specs.map((spec) =>
-                spec.key === target.key && spec.parsed !== undefined
-                    ? { ...spec, parsed: { ...spec.parsed, criteria: [...spec.parsed.criteria, { id: 'AC-999', text: '**AC-999** added', illustration: undefined, line: 1, uncertain: false, struck: false }] } }
-                    : spec,
+            plans: project.plans.map((plan) =>
+                plan.key === targetPlan && plan.parsed !== undefined
+                    ? { ...plan, parsed: { ...plan.parsed, traceability: [...plan.parsed.traceability, { criterion: 'AC-999', steps: empty, code: empty, test: empty, manual: false, state: 'open', stateKnown: true, line: 99 }] } }
+                    : plan,
             ),
         };
         const extendedModel = { project: extended, lifecycle: deriveLifecycle(extended) };
@@ -116,7 +118,7 @@ describe('board service: detail freshness on 200 specs (AC-019, core part for th
             await w.service.whenIdle();
         });
         const detail = w.service.detail();
-        expect(detail.kind === 'spec' ? detail.sections.history.statusHistory?.map((item) => item.new) : undefined).toEqual(['Active']);
+        expect(detail.kind === 'spec' ? detail.history.statusHistory?.map((item) => item.new) : undefined).toEqual(['Active']);
         expect(seen.length).toBeGreaterThanOrEqual(1);
         expect(historyBest).toBeLessThan(BUDGET_MS.uiFreshness);
     });

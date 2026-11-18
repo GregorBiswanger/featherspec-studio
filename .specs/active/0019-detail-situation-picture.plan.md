@@ -3,7 +3,7 @@
 **Spec:** [0019-detail-situation-picture.md](0019-detail-situation-picture.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-004
+**Current step:** T-005
 
 ## Approach
 
@@ -305,8 +305,8 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
   `progress` (title kept); the voided core detail tests removed (audit map).
 - **Verify:** `npx vitest run src/webview src/core/board src/shared/protocol src/adapters/node` red
   (AC-015 on the expanded history), then green; gates 1–5
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-18 — red: `npx vitest run src/webview/detail/SpecDetail.test.tsx` failed 6 of 51 on the expanded history (heading without count, no collapse, no zero-entries rule, no memory across another spec); green after the change: `src/webview/detail` 53 passed, `src/shared/protocol` + `src/core/board` 340 passed. Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2067 passed + 3 skipped (+12 timing), `npm run compile`, `npm run compile-tests` green.
+- **Notes:** (1) Status history while not available is a plain, always visible section (heading "Status history" and 0003's text), not a toggle: the reason must be readable without a click (guideline 3, honest signals); a toggle exists only with entries. (2) `useCollapsed` now defaults to collapsed for every name (its only user is Status history, memory key `Status history`); the heading is `historyHeading(n)` in `texts.ts`. (3) `DetailSection` lost `open`, `keys`, `fileResult`, `onOpen` and the status line; `OpenButton`, `SECTION_TITLES`, `NO_REQUIREMENTS_TEXT`, `NO_RELATED_TEXT`, `OPEN_FILE_LABEL`, `STATE_LABEL`, `UNCERTAIN_FLAG`, `STRUCK_FLAG`, `criteriaText`, `OpenTarget`, the whole `sections` contract and its guard key list are gone. (4) CSS rules removed: `.detail-grid`, `.detail-header`, `.detail-facts`, `.detail-state`, `.detail-status`, `.detail-steps`, `.step-tick`, `.step-verified`, `.related-link`, `.open-file` (also from the transition list); `.step-text/.step-label/.step-short` stay (next step). `tidy`/`splitCells` in `ui/inlineFormat.ts` have no caller left but their tests are no listed void test, so they stay (a later clean-up, not 0019). (5) `boardService.timing.test.ts` now adds a traceability row to the target's plan and counts `progress.criteria.open`. (6) Voided tests removed with the audit map: the three 0007 AC-009 core tests, AC-010 section tests, 0007 AC-016 bold-title test, the header-grid CSS test; every other title kept or retargeted.
 
 ### T-005 — Selecting keeps the area; the side panel shows while a spec is selected
 

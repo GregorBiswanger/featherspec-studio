@@ -291,7 +291,7 @@ describe('board service: spec detail', () => {
         w.source.set(await modelOf({ '.specs/active/0001-a.md': specText({ status: 'In Progress' }) }));
         await w.service.whenIdle();
         const view = w.service.detail();
-        expect(view.kind === 'spec' && view.sections.overview.state).toBe('Active');
+        expect(view.kind === 'spec' && view.state).toBe('Active');
     });
 
     it('0015 AC-012: a status history notification updates the detail; an unavailable history shows not available with its reason', async () => {
@@ -306,12 +306,12 @@ describe('board service: spec detail', () => {
         w.history.notify();
         await w.service.whenIdle();
         let view = w.service.detail();
-        expect(view.kind === 'spec' && view.sections.history.statusHistory?.map((item) => item.new)).toEqual(['Active']);
+        expect(view.kind === 'spec' && view.history.statusHistory?.map((item) => item.new)).toEqual(['Active']);
         w.history.view = { available: false, text: 'Status history not available: Another VS Code window holds the write lock for this project\'s status history.' };
         w.history.notify();
         await w.service.whenIdle();
         view = w.service.detail();
-        expect(view.kind === 'spec' && view.sections.history.statusHistory).toBeUndefined();
-        expect(view.kind === 'spec' && view.sections.history.notAvailable).toBe('Status history not available: Another VS Code window holds the write lock for this project\'s status history.');
+        expect(view.kind === 'spec' && view.history.statusHistory).toBeUndefined();
+        expect(view.kind === 'spec' && view.history.notAvailable).toBe('Status history not available: Another VS Code window holds the write lock for this project\'s status history.');
     });
 });

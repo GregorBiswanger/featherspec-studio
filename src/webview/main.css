@@ -745,27 +745,6 @@ main > h1 {
     clip-path: inset(50%);
     white-space: nowrap;
 }
-
-.detail-title .open-file {
-    margin-left: auto;
-}
-
-.open-file {
-    flex: none;
-    padding: 1px 8px;
-    color: var(--vscode-button-secondaryForeground, var(--vscode-foreground));
-    background: var(--vscode-button-secondaryBackground, transparent);
-    border: 1px solid var(--vscode-button-border, transparent);
-    border-radius: 2px;
-    cursor: pointer;
-    font: inherit;
-    font-size: 11px;
-}
-
-.open-file:hover {
-    background: var(--vscode-button-secondaryHoverBackground, var(--vscode-toolbar-hoverBackground));
-}
-
 .copy-button {
     flex: none;
     box-sizing: content-box;
@@ -859,15 +838,6 @@ main > h1 {
 .section-toggle[aria-expanded="false"] .icon {
     transform: none;
 }
-
-.detail-status {
-    color: var(--vscode-errorForeground);
-}
-
-.detail-status:empty {
-    display: none;
-}
-
 .section-body {
     padding: 0 0 4px 16px;
 }
@@ -889,48 +859,6 @@ main > h1 {
 .section-body li::marker {
     color: var(--fs-muted);
 }
-
-.detail-grid {
-    display: grid;
-    grid-template-columns: max-content minmax(0, 1fr);
-    column-gap: 16px;
-    row-gap: 4px;
-    margin: 4px 0;
-}
-
-.detail-header {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    column-gap: 12px;
-    margin: 0;
-}
-
-.detail-grid .detail-header,
-.detail-facts {
-    display: contents;
-}
-
-.detail-header > div,
-.detail-facts > div {
-    display: contents;
-}
-
-.detail-grid dt {
-    color: var(--fs-muted);
-}
-
-.detail-header dd,
-.detail-facts dd {
-    margin: 0;
-}
-
-.detail-state {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 4px 8px;
-}
-
 .detail-rule,
 .detail-muted {
     color: var(--fs-muted);
@@ -1064,22 +992,6 @@ main > h1 {
     min-width: 12ch;
     color: var(--fs-muted);
 }
-
-.related-link {
-    padding: 0;
-    color: var(--vscode-textLink-foreground);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font: inherit;
-    text-align: left;
-}
-
-.related-link:hover {
-    color: var(--vscode-textLink-activeForeground);
-    text-decoration: underline;
-}
-
 .illustration {
     white-space: pre-wrap;
     margin: 2px 0;
@@ -1286,50 +1198,13 @@ blockquote.illustration {
     color: var(--fs-muted);
     font-size: 0.92em;
 }
-
-.step-tick {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    color: var(--fs-muted);
-    font-size: 11px;
-}
-
-.step-tick .icon {
-    width: 12px;
-    height: 12px;
-}
-
-.step-tick[data-ticked="true"] .icon {
-    color: var(--vscode-charts-green);
-}
-
-.step-tick[data-ticked="undetermined"] .icon {
-    color: var(--vscode-charts-yellow);
-}
-
-.step-verified {
-    color: var(--fs-muted);
-}
-
-.section-body .detail-steps {
-    padding-left: 0;
-    list-style: none;
-}
-
-.detail-steps li {
-    margin: 6px 0;
-}
 .spec-row,
 .ov-row,
 .card,
 .nav-item,
-.related-link,
-.open-file,
 .copy-button {
     transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
-
 .section-toggle .icon,
 .format-notes-toggle .icon {
     transition: transform 120ms ease;

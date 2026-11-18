@@ -19,16 +19,6 @@ function valid(): SpecDetailView {
         progress: { needs: [], noPlan: false, steps: { kind: 'steps', done: 0, total: 1 }, criteria: { kind: 'criteria', verified: 0, total: 0, open: [] } },
         files: [{ label: 'Spec', name: '0007-thing.md', open: { key: '.specs/active/0007-thing.md', line: 1 } }],
         history,
-        sections: {} as SpecDetailView['sections'],
-    };
-    view.sections = {
-        overview: { open: { key: view.key }, headerLines: [], state: 'Active', rule: 'S-ACTIVE', persistence: 'persisted', deprecated: false, successor: undefined, needs: [], notes: [] },
-        requirements: { open: { key: view.key }, items: [] },
-        criteria: { open: { key: view.key }, items: [] },
-        plan: { open: undefined, stages: [], steps: [] },
-        verification: { open: undefined, openRows: 0, built: 0, verified: 0, other: 0, summary: 'not available', criteria: undefined },
-        related: [],
-        history,
     };
     return JSON.parse(JSON.stringify(view)) as SpecDetailView;
 }
@@ -68,7 +58,7 @@ describe('0019 P-2: the guard of the situation picture', () => {
         ['criteria of an unknown reason', (view) => (view.progress = { needs: [], noPlan: false, criteria: { kind: 'unavailable', reason: 'gone' } })],
         ['an open criterion without a link', (view) => (view.progress = { needs: [], noPlan: false, criteria: { kind: 'criteria', verified: 0, total: 1, open: [{ text: 't', built: false }] } })],
         ['a need without a rule', (view) => (view.progress = { needs: [{ text: 'needs a plan' }], noPlan: false })],
-        ['the old sections missing', (view) => delete view.sections],
+        ['a history that is missing', (view) => delete view.history],
     ])('refuses %s', (_name, damage) => {
         const view = valid() as unknown as Record<string, unknown>;
         damage(view);

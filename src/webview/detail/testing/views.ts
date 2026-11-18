@@ -1,69 +1,32 @@
-import type { DetailSections, DetailView, DiagnosticLine, NextStepView, SpecDetailView } from '../../../shared/protocol/detail';
+import type { DetailView, DiagnosticLine, HistorySection, NextStepView, SpecDetailView } from '../../../shared/protocol/detail';
 import { PROTOCOL_VERSION, type Envelope } from '../../../shared/protocol/envelope';
 
 export const SPEC_KEY = '.specs/active/0007-thing.md';
 export const PLAN_KEY = '.specs/active/0007-thing.plan.md';
 
-export function sections(overrides: Partial<DetailSections> = {}): DetailSections {
+export function historySection(): HistorySection {
     return {
-        overview: {
-            open: { key: SPEC_KEY },
-            headerLines: [
-                { label: 'Status', value: 'In Progress' },
-                { label: 'Plan', value: '0007-thing.plan.md' },
-            ],
-            state: 'Active',
-            rule: 'S-ACTIVE',
-            persistence: 'persisted',
-            deprecated: false,
-            successor: undefined,
-            needs: [],
-            notes: [{ reason: 'Plan has no Verified line', open: { key: SPEC_KEY, line: 12 } }],
-        },
-        requirements: { open: { key: SPEC_KEY }, items: [{ id: 'FR-01', text: 'Show the board', open: { key: SPEC_KEY, line: 30 } }] },
-        criteria: {
-            open: { key: SPEC_KEY },
-            items: [
-                { id: 'AC-001', text: 'The board shall render.', illustration: 'Given a project, when opened, then six columns', uncertain: false, struck: false, open: { key: SPEC_KEY, line: 40 } },
-                { id: 'AC-002', text: 'The board shall sort.', illustration: undefined, uncertain: true, struck: true, open: { key: SPEC_KEY, line: 44 } },
-            ],
-        },
-        plan: {
-            open: { key: PLAN_KEY },
-            stages: ['1. T-001 → T-002'],
-            steps: [
-                { id: 'T-001', title: 'First step', ticked: true, struck: false, verified: 'tests green' },
-                { id: 'T-002', title: 'Second step', ticked: false, struck: false, verified: undefined },
-                { id: 'T-003', title: 'Third step', ticked: 'undetermined', struck: true, verified: undefined },
-            ],
-        },
-        verification: { open: { key: PLAN_KEY }, openRows: 1, built: 2, verified: 3, other: 0, summary: '3 of 6 rows verified', criteria: { done: 3, total: 6 } },
-        related: [{ label: '0007-thing.plan.md', open: { key: PLAN_KEY } }],
-        history: {
-            statusHistory: [{ observedAt: '2026-11-16T09:00:00Z', old: 'Ready', new: 'Active', rule: 'S-ACTIVE', cause: { kind: 'files', paths: ['.specs/active/0001-a.plan.md'] }, flow: 'in flow' }],
-            label: 'Only changes Studio saw while it was running.',
-            notAvailable: undefined,
-        },
-        ...overrides,
+        statusHistory: [{ observedAt: '2026-11-16T09:00:00Z', old: 'Ready', new: 'Active', rule: 'S-ACTIVE', cause: { kind: 'files', paths: ['.specs/active/0001-a.plan.md'] }, flow: 'in flow' }],
+        label: 'Only changes Studio saw while it was running.',
+        notAvailable: undefined,
     };
 }
 
 export const NEXT_STEP: NextStepView = { rule: 'NS-6', lines: [{ text: `/sdd-plan ${SPEC_KEY}` }] };
 
-export function detailView(overrides: Partial<DetailSections> = {}, nextStep: NextStepView = NEXT_STEP, problems: DiagnosticLine[] = [], extra: Partial<SpecDetailView> = {}): DetailView {
-    const built = sections(overrides);
+export function detailView(extra: Partial<SpecDetailView> = {}, nextStep: NextStepView = NEXT_STEP, problems: DiagnosticLine[] = []): DetailView {
     const view: SpecDetailView = {
         kind: 'spec',
         key: SPEC_KEY,
         stem: '0007-thing',
         number: '0007',
         title: 'Thing 0007',
-        state: built.overview.state,
-        rule: built.overview.rule,
-        persistence: built.overview.persistence,
+        state: 'Active',
+        rule: 'S-ACTIVE',
+        persistence: 'persisted',
         nextStep,
         problems,
-        notes: built.overview.notes.map((note) => ({ reason: note.reason, open: { key: note.open?.key ?? SPEC_KEY, line: note.open?.line ?? 1 } })),
+        notes: [{ reason: 'Plan has no Verified line', open: { key: SPEC_KEY, line: 12 } }],
         progress: {
             needs: [],
             noPlan: false,
@@ -79,8 +42,7 @@ export function detailView(overrides: Partial<DetailSections> = {}, nextStep: Ne
             { label: 'Spec', name: '0007-thing.md', open: { key: SPEC_KEY, line: 1 } },
             { label: 'Plan', name: '0007-thing.plan.md', open: { key: PLAN_KEY, line: 1 } },
         ],
-        history: built.history,
-        sections: built,
+        history: historySection(),
         ...extra,
     };
     return view;

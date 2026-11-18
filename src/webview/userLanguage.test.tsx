@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { App } from './App';
 import { createClient, type ShellClient } from './client';
 import { baseView, mount, send, shellEvent, type Mounted } from './testing/dom';
-import { detailEvent, detailView, sections } from './detail/testing/views';
+import { detailEvent, detailView, historySection } from './detail/testing/views';
 import { resetSectionMemory } from './detail/sectionMemory';
 import { boardEvent, boardView, card } from './board/testing/views';
 import { overviewEvent } from './testing/dom';
@@ -63,15 +63,14 @@ describe('0016 AC-011: user language in the detail', () => {
             { observedAt: '2026-11-16T09:00:00Z', old: null, new: 'Review', rule: 'S-REVIEW', cause: { kind: 'first-observed' as const, paths: [] }, flow: 'not checked' },
             { observedAt: '2026-11-16T09:05:00Z', old: 'Review', new: null, rule: null, cause: { kind: 'no-longer-observed' as const, paths: [] }, flow: 'not checked' },
         ];
-        const base = sections().history;
-        const text = await visibleText(detailView({ history: { ...base, statusHistory: history } }));
+        const text = await visibleText(detailView({ history: { ...historySection(), statusHistory: history } }));
         expect(text).not.toMatch(FORBIDDEN);
         expect(text).toContain('first seen as Review');
         expect(text).toContain('Review → no longer in the project');
     });
 
     it('0019: the situation picture (a derived state, needs, steps, open criteria, files, notes) shows no rule ID or internal word', async () => {
-        const view = detailView({}, undefined, [{ reason: 'Folder done/ does not match status "In Progress".', open: { key: '.specs/active/0007-thing.md', line: 4 } }], {
+        const view = detailView({
             state: 'Review',
             rule: 'S-REVIEW',
             persistence: 'derived',
@@ -82,7 +81,7 @@ describe('0016 AC-011: user language in the detail', () => {
                 steps: { kind: 'steps', done: 1, total: 2, next: { id: 'T-002', title: 'Second', open: { key: '.specs/active/0007-thing.plan.md', line: 30 } } },
                 criteria: { kind: 'criteria', verified: 0, total: 1, open: [{ id: 'AC-001', text: 'The board shall render.', built: true, open: { key: '.specs/active/0007-thing.md', line: 9 } }] },
             },
-        });
+        }, undefined, [{ reason: 'Folder done/ does not match status "In Progress".', open: { key: '.specs/active/0007-thing.md', line: 4 } }]);
         const text = await visibleText(view);
         expect(text).not.toMatch(FORBIDDEN);
         expect(text).toContain('Plan done, waiting for review');

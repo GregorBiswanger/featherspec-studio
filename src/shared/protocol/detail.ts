@@ -1,18 +1,8 @@
 import { isRecord } from './envelope';
 
-export interface OpenTarget {
-    key: string;
-    line?: number;
-}
-
 export interface LineTarget {
     key: string;
     line: number;
-}
-
-export interface HeaderLine {
-    label: string;
-    value: string;
 }
 
 export interface NeedLine {
@@ -23,62 +13,6 @@ export interface NeedLine {
 export interface DiagnosticLine {
     reason: string;
     open?: LineTarget;
-}
-
-export interface OverviewSection {
-    open: OpenTarget;
-    headerLines: HeaderLine[];
-    state: string;
-    rule: string;
-    persistence: 'persisted' | 'derived';
-    deprecated: boolean;
-    successor: string | undefined;
-    needs: NeedLine[];
-    notes: DiagnosticLine[];
-}
-
-export interface RequirementItem {
-    id: string;
-    text: string;
-    open: OpenTarget;
-}
-
-export interface CriterionItem {
-    id: string;
-    text: string;
-    illustration: string | undefined;
-    uncertain: boolean;
-    struck: boolean;
-    open: OpenTarget;
-}
-
-export interface StepItem {
-    id: string;
-    title: string;
-    ticked: boolean | 'undetermined';
-    struck: boolean;
-    verified: string | undefined;
-}
-
-export interface PlanSection {
-    open: OpenTarget | undefined;
-    stages: string[];
-    steps: StepItem[];
-}
-
-export interface VerificationSection {
-    open: OpenTarget | undefined;
-    openRows: number;
-    built: number;
-    verified: number;
-    other: number;
-    summary: string;
-    criteria: { done: number; total: number } | undefined;
-}
-
-export interface RelatedItem {
-    label: string;
-    open: OpenTarget;
 }
 
 export interface StatusHistoryItem {
@@ -94,16 +28,6 @@ export interface HistorySection {
     statusHistory: StatusHistoryItem[] | undefined;
     label: string;
     notAvailable: string | undefined;
-}
-
-export interface DetailSections {
-    overview: OverviewSection;
-    requirements: { open: OpenTarget; items: RequirementItem[] };
-    criteria: { open: OpenTarget; items: CriterionItem[] };
-    plan: PlanSection;
-    verification: VerificationSection;
-    related: RelatedItem[];
-    history: HistorySection;
 }
 
 export interface NextOpenStep {
@@ -162,7 +86,6 @@ export interface SpecDetailView {
     progress?: ProgressView;
     files: FileRow[];
     history: HistorySection;
-    sections: DetailSections;
 }
 
 export type DetailView = { kind: 'none' } | SpecDetailView;
@@ -171,8 +94,6 @@ export interface OpenFileResultPayload {
     key: string;
     text: string;
 }
-
-const SECTION_KEYS = ['overview', 'requirements', 'criteria', 'plan', 'verification', 'related', 'history'];
 
 function isNextStepView(value: unknown): value is NextStepView {
     if (!isRecord(value) || typeof value.rule !== 'string') {
@@ -286,9 +207,7 @@ export function isDetailView(value: unknown): value is DetailView {
         (value.progress === undefined || isProgressView(value.progress)) &&
         Array.isArray(value.files) &&
         value.files.every(isFileRow) &&
-        isHistorySection(value.history) &&
-        isRecord(value.sections) &&
-        SECTION_KEYS.every((key) => key in (value.sections as Record<string, unknown>))
+        isHistorySection(value.history)
     );
 }
 

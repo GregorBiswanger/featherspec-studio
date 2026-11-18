@@ -7,7 +7,7 @@ export function resetSectionMemory(): void {
 }
 
 export function useCollapsed(name: string): [boolean, (value: boolean) => void] {
-    const [value, setValue] = useState(() => collapsed.get(name) ?? false);
+    const [value, setValue] = useState(() => collapsed.get(name) ?? true);
     return [
         value,
         (next: boolean) => {

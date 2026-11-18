@@ -5,7 +5,7 @@ import { createClient, type ShellClient } from '../client';
 import { baseView, mount, send, shellEvent, type Mounted } from '../testing/dom';
 import { BUDGET_MS, bestOfThree } from '../../shared/testing/timing';
 import { resetSectionMemory } from './sectionMemory';
-import { detailEvent, detailView, PLAN_KEY, sections, SPEC_KEY } from './testing/views';
+import { detailEvent, detailView, historySection, PLAN_KEY, SPEC_KEY } from './testing/views';
 
 let posted: Envelope[];
 let mounted: Mounted | undefined;
@@ -39,9 +39,8 @@ afterEach(() => {
 
 describe('0019 AC-020: the situation picture is in the DOM within 500 ms of the event (PD-047; a large spec)', () => {
     it('renders the update fast enough: 200 open criteria and 100 history entries', async () => {
-        const base = sections();
         const container = await open();
-        const large = detailView({}, undefined, [], {
+        const large = detailView({
             progress: {
                 needs: [],
                 noPlan: false,
@@ -55,7 +54,7 @@ describe('0019 AC-020: the situation picture is in the DOM within 500 ms of the 
             },
             history: {
                 statusHistory: Array.from({ length: 100 }, (_, index) => ({ observedAt: `2026-11-16T10:00:${String(index % 60).padStart(2, '0')}Z`, old: 'Ready', new: 'Active', rule: 'S-ACTIVE', cause: { kind: 'first-observed', paths: [] }, flow: 'not checked' })),
-                label: base.history.label,
+                label: historySection().label,
                 notAvailable: undefined,
             },
         });
