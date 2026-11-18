@@ -58,32 +58,33 @@ describe('transport and the empty start', () => {
 });
 
 describe('AC-017, AC-019: header', () => {
-    it('shows folder name, FeatherSpec version, the model update time in local time and the diagnostic count', async () => {
+    it('shows folder name, FeatherSpec version, the model update time in local time and the problem count', async () => {
         const view = sampleView();
         view.header.updatedAt = new Date(2026, 10, 16, 9, 5).toISOString();
         const header = area(await open(view)).querySelector('[data-header]')!;
         expect(header.textContent).toContain('demo');
         expect(header.textContent).toContain('FeatherSpec 1.10.0');
         expect(header.textContent).toContain('Model updated 2026-11-16 09:05');
-        expect(header.textContent).toContain('1 project-level diagnostic · 1 spec with diagnostics');
-        expect(header.textContent).not.toContain('1 project-level diagnostics');
+        expect(header.textContent).toContain('1 problem');
+        expect(header.textContent).not.toContain('1 problems');
     });
 
-    it('shows "unknown" as the version and "n project diagnostics" in the plural', async () => {
+    it('shows "unknown" as the version and "n problems" in the plural', async () => {
         const view = sampleView();
         view.header.version = 'unknown';
-        view.header.projectDiagnostics = 2;
+        view.header.problems = 2;
         const header = area(await open(view)).querySelector('[data-header]')!;
         expect(header.textContent).toContain('FeatherSpec unknown');
-        expect(header.textContent).toContain('2 project-level diagnostics');
+        expect(header.querySelector('[data-drill="problems"]')?.textContent).toBe('2 problems');
     });
 
-    it('0013 AC-006: 0 project-level diagnostics and stems 0001, 0002, 0010 read "0 project-level diagnostics · 3 specs with diagnostics" on one control', async () => {
+    it('AC-008: with no Problem the header shows no problem element and no count', async () => {
         const view = sampleView();
-        view.header.projectDiagnostics = 0;
-        view.header.diagnosticStems = ['0001-a', '0002-b', '0010-c'];
+        view.header.problems = 0;
+        view.header.problemStems = [];
         const header = area(await open(view)).querySelector('[data-header]')!;
-        expect(header.querySelector('[data-drill="diagnostics"]')?.textContent).toBe('0 project-level diagnostics · 3 specs with diagnostics');
+        expect(header.querySelector('[data-drill]')).toBeNull();
+        expect(header.textContent).not.toMatch(/problem|diagnostic/i);
     });
 
     it('formats times as local YYYY-MM-DD HH:mm and leaves an unreadable time as it is', () => {

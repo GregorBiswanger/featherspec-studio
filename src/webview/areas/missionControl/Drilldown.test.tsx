@@ -17,7 +17,7 @@ function drillView(): MissionControlView {
         rows: [
             { spec: { stem: '0001-a', number: '0001', title: 'A', found: true }, reasons: ['Blocked'] },
             { spec: { stem: '0004-dup', number: '0004', title: 'D', path: '.specs/active/0004-dup.md', found: true }, reasons: ['Review pending'] },
-            { spec: { stem: '0004-dup', number: '0004', title: 'D', path: '.specs/done/0004-dup.md', found: true }, reasons: ['Diagnostic'] },
+            { spec: { stem: '0004-dup', number: '0004', title: 'D', path: '.specs/done/0004-dup.md', found: true }, reasons: ['Problem'] },
         ],
     };
     return view;
@@ -132,20 +132,29 @@ describe('AC-014: attention rows and activity entries', () => {
 });
 
 describe('AC-017: the diagnostics count', () => {
-    it('sends the Spec Board with the named set "Diagnostics" and the stems that carry a diagnostic, and no runAction', async () => {
-        await click(drill(await open(drillView()), 'diagnostics'));
+    it('AC-008: sends one request for the Spec Board with the named set "Problems" and the stems that carry a Problem, and no runAction', async () => {
+        await click(drill(await open(drillView()), 'problems'));
         expect(sent()).toEqual([
-            { type: 'navigate', payload: { area: 'specBoard', target: { kind: 'boardFilter', filter: { set: { label: 'Diagnostics', stems: ['0002-x'] } } } } },
+            { type: 'navigate', payload: { area: 'specBoard', target: { kind: 'boardFilter', filter: { set: { label: 'Problems', stems: ['0002-x'] } } } } },
         ]);
         expect(posted.some((message) => message.type === 'runAction')).toBe(false);
     });
 
-    it('OP-9: a count of 0 is still a button and sends its request', async () => {
+    it('AC-008: Problems at project level only open the Spec Board without a filter, where its banner lists them', async () => {
         const view = drillView();
-        view.header.projectDiagnostics = 0;
-        view.header.diagnosticStems = [];
-        await click(drill(await open(view), 'diagnostics'));
-        expect(sent()).toEqual([{ type: 'navigate', payload: { area: 'specBoard', target: { kind: 'boardFilter', filter: { set: { label: 'Diagnostics', stems: [] } } } } }]);
+        view.header.problems = 1;
+        view.header.problemStems = [];
+        await click(drill(await open(view), 'problems'));
+        expect(sent()).toEqual([{ type: 'navigate', payload: { area: 'specBoard' } }]);
+    });
+
+    it('AC-008: while no Problem exists the header shows no problem element at all', async () => {
+        const view = drillView();
+        view.header.problems = 0;
+        view.header.problemStems = [];
+        const container = await open(view);
+        expect(container.querySelector('[data-drill="problems"]')).toBeNull();
+        expect(container.querySelector('[data-header]')!.textContent).not.toMatch(/problem|diagnostic/i);
     });
 });
 
@@ -171,7 +180,7 @@ describe('AC-022: keyboard', () => {
         const container = await open(drillView());
         const buttons = [...container.querySelectorAll<HTMLButtonElement>('[data-drill]')];
         expect(buttons.map((button) => button.getAttribute('data-drill'))).toEqual([
-            'diagnostics',
+            'problems',
             'total',
             'state:Backlog',
             'state:Ready',

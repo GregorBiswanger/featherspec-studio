@@ -77,7 +77,7 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
             blocked: ['Blocked: plan status Blocked', 'Blocked: return note activeContext.0001-T-002.md'],
             readiness: { id: 'R-3', reason: 'No sibling plan.' },
             deprecated: true,
-            diagnostics: 2,
+            problems: 2,
             path: '.specs/active/0001-thing.md',
         });
         const text = (await open(boardView([entry]))).querySelector('[data-card]')!.textContent!;
@@ -86,12 +86,20 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
         expect(text).toContain('No sibling plan.');
         expect(text).toContain('R-3');
         expect(text).toContain('Deprecated');
-        expect(text).toContain('2 diagnostics');
+        expect(text).toContain('2 problems');
         expect(text).toContain('.specs/active/0001-thing.md');
     });
 
+    it('0016 AC-006, AC-007: the badge reads 1 problem for one Problem and is absent at 0 (negative control)', async () => {
+        const one = (await open(boardView([card('0001', { problems: 1 })]))).querySelector('[data-card]')!;
+        expect(one.querySelector('[data-marker="problems"]')?.textContent?.trim()).toBe('1 problem');
+        const none = (await open(boardView([card('0002', { problems: 0 })]))).querySelector('[data-card]')!;
+        expect(none.querySelector('[data-marker="problems"]')).toBeNull();
+        expect(none.textContent).not.toMatch(/problem|diagnostic/i);
+    });
+
     it('AC-018: every state and every badge carries an icon beside its text, hidden from assistive technology', async () => {
-        const container = await open(boardView([card('0001', { derivedRule: 'S-REVIEW', deprecated: true, diagnostics: 1 })]));
+        const container = await open(boardView([card('0001', { derivedRule: 'S-REVIEW', deprecated: true, problems: 1 })]));
         const markers = [...container.querySelectorAll('[data-card] .marker')];
         expect(markers).toHaveLength(4);
         markers.forEach((marker) => {

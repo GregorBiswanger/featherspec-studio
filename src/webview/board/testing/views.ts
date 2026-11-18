@@ -13,7 +13,7 @@ export function card(number: string, overrides: Partial<CardView> = {}): CardVie
         state: 'Active',
         derivedRule: undefined,
         deprecated: false,
-        diagnostics: 0,
+        problems: 0,
         blocked: [],
         readiness: undefined,
         summary: 'A summary.',

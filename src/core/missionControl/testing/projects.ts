@@ -1,5 +1,5 @@
 import { deriveLifecycle } from '../../lifecycle/deriveLifecycle';
-import { readMemory } from '../../lifecycle/testing/projects';
+import { readFixture, readMemory } from '../../lifecycle/testing/projects';
 import type { ShellModel } from '../../ports/shell';
 
 export type SpecKind = 'Backlog' | 'Ready' | 'Active' | 'Review' | 'Done' | 'Deprecated' | 'DoneOther' | 'Blocked' | 'Contradicted' | 'Unknown';
@@ -85,6 +85,11 @@ export function filesFor(inputs: readonly SpecInput[]): Record<string, string> {
 
 export async function modelFor(inputs: readonly SpecInput[], extraFiles: Record<string, string> = {}): Promise<ShellModel> {
     const project = await readMemory({ ...filesFor(inputs), ...extraFiles });
+    return { project, lifecycle: deriveLifecycle(project) };
+}
+
+export async function modelOfFixture(name: string): Promise<ShellModel> {
+    const project = await readFixture(name);
     return { project, lifecycle: deriveLifecycle(project) };
 }
 

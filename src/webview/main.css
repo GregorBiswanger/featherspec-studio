@@ -702,14 +702,14 @@ main > h1 {
     font-size: 11px;
 }
 
-.card-diagnostics {
+.card-problems {
     display: inline-flex;
     align-items: center;
     gap: 4px;
     color: var(--vscode-foreground);
 }
 
-.card-diagnostics .icon {
+.card-problems .icon {
     width: 10px;
     height: 10px;
     color: var(--vscode-charts-orange);
@@ -1397,7 +1397,7 @@ main > h1 {
     --fs-tint: var(--vscode-charts-red);
 }
 
-[data-reason-kind="Diagnostic"] {
+[data-reason-kind="Problem"] {
     --fs-tint: var(--vscode-charts-orange);
 }
 

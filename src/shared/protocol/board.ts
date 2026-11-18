@@ -24,7 +24,7 @@ export interface CardView {
     state: BoardState;
     derivedRule: DerivedRule | undefined;
     deprecated: boolean;
-    diagnostics: number;
+    problems: number;
     blocked: string[];
     readiness: ReadinessCheck | undefined;
     summary: string | undefined;
@@ -87,7 +87,7 @@ export function isCardView(value: unknown): value is CardView {
         isBoardState(value.state) &&
         (value.derivedRule === undefined || isDerivedRule(value.derivedRule)) &&
         typeof value.deprecated === 'boolean' &&
-        typeof value.diagnostics === 'number' &&
+        typeof value.problems === 'number' &&
         Array.isArray(value.blocked) &&
         value.blocked.every(isString) &&
         (value.readiness === undefined || (isRecord(value.readiness) && isString(value.readiness.id) && isString(value.readiness.reason))) &&

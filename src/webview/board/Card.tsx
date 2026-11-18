@@ -5,7 +5,7 @@ import {
     criteriaText,
     DEPRECATED_MARKER,
     DERIVED_SENTENCES,
-    diagnosticsBadgeText,
+    problemsBadgeText,
     lastChangeText,
     NO_SUMMARY_TEXT,
     TASKS_PROGRESS_LABEL,
@@ -84,9 +84,9 @@ export function Card(props: {
                 <Figure label={CRITERIA_PROGRESS_LABEL} progress={card.criteria} text={criteriaText(card.criteria)} />
             </div>
             <div className="card-foot">
-                {card.diagnostics > 0 ? (
-                    <span className="marker card-diagnostics" data-marker="diagnostics">
-                        <BadgeIcon kind="diagnostic" /> {diagnosticsBadgeText(card.diagnostics)}
+                {card.problems > 0 ? (
+                    <span className="marker card-problems" data-marker="problems">
+                        <BadgeIcon kind="diagnostic" /> {problemsBadgeText(card.problems)}
                     </span>
                 ) : null}
                 <span className="card-change">{lastChangeText(card.lastChangeMs)}</span>

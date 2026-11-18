@@ -1,6 +1,6 @@
 import { BOARD_STATES } from '../../shared/protocol/boardFilter';
 import type { DerivedRule, McHeader, McProgress, McSpecs, StateCount } from '../../shared/protocol/missionControl';
-import { buildBanner } from '../board/cards';
+import { projectFindings } from '../board/cards';
 import { headerValue } from '../lifecycle/entryContext';
 import type { ShellModel } from '../ports/shell';
 
@@ -36,13 +36,22 @@ export function projectSpecFigures(model: ShellModel): McSpecs {
     return { kind: 'counts', total: entries.length, states, progress };
 }
 
+function problemKey(diagnostic: { scope: 'project' | { file: string; line?: number }; reason: string }): string {
+    return diagnostic.scope === 'project' ? `project|${diagnostic.reason}` : `${diagnostic.scope.file}|${diagnostic.scope.line ?? ''}|${diagnostic.reason}`;
+}
+
 export function projectHeader(active: { name: string; version: string }, model: ShellModel, updatedAt: string): McHeader {
-    const stems = model.lifecycle.entries.filter((entry) => entry.diagnostics.length > 0).map((entry) => entry.stem);
+    const withProblems = model.lifecycle.entries.filter((entry) => entry.diagnostics.some((diagnostic) => diagnostic.tier === 'problem'));
+    const counted = new Set<string>();
+    for (const entry of withProblems) {
+        entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').forEach((diagnostic) => counted.add(problemKey(diagnostic)));
+    }
+    const project = projectFindings(model.project, model.lifecycle).problems.length;
     return {
         name: active.name,
         version: active.version,
         updatedAt,
-        projectDiagnostics: buildBanner(model.project, model.lifecycle).length,
-        diagnosticStems: [...new Set(stems)].sort(),
+        problems: counted.size + project,
+        problemStems: [...new Set(withProblems.map((entry) => entry.stem))].sort(),
     };
 }

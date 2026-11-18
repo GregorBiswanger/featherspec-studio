@@ -3,7 +3,7 @@
 **Spec:** [0016-honest-signals.md](0016-honest-signals.md)
 **Status:** In Progress
 **Last updated:** 2026-11-17
-**Current step:** T-004
+**Current step:** T-005
 
 ## Approach
 
@@ -219,8 +219,8 @@ everything after T-002 shares the text modules, `main.css` or `SpecDetail.tsx` a
   at 0), `Sections.test.tsx`. Host smoke (CI): one test in `src/test/missionControl.smoke.test.ts`
   checks that the fixture's header has `problems` 0 and its card none.
 - **Verify:** the new and changed tests red then green; gates 1–4; `npm run compile-tests`
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-17 — red: `npx vitest run --project node src/core/board/cards.test.ts src/core/missionControl` before the production change: 13 failed (no `problems`, `problemStems`, reason `Problem`); green after. Webview `Drilldown`, `MissionControl`, `Sections`, `SpecBoard` tests rewritten for T-01/T-03/T-04/T-05 and green. Gates 1–4 + `npm run compile-tests`: eslint 0, tsc x2 clean, `npm run test:unit` 1754 passed + 3 skipped, timing 12. Host smoke test added (CI only, not run here).
+- **Notes:** Proxy decision: when only project-level Problems exist (`problemStems` empty) the header drill sends `{ area: 'specBoard' }` with no named set (an empty set would hide every card; AC-008 says the drill opens the board whose banner lists them). `problems` in the header counts distinct Problem diagnostics (key file|line|reason) over all entries plus project-level ones. `projectFindings` added next to `buildBanner` (banner contract changes in T-005). Unknown header lines are notes, so the old 'Unknown' test kind no longer counts as a Problem: tests adapted. The drill id is now `problems`. `.card-diagnostics` CSS class renamed `.card-problems`, data-reason-kind `Problem`.
 
 ### T-005 — Detail and banner: Problems below Next step, format notes collapsed
 

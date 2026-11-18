@@ -63,6 +63,22 @@ suite('FeatherSpec Studio Mission Control smoke', function () {
         }
     });
 
+    test('0016 AC-007, AC-008: the fixture project has no Problem, so its header counts none and its attention row names no Problem', async () => {
+        const api = await activateStudio();
+        await api.whenIdle();
+        const mission = api.missionControl();
+        const listening = mission.listen(() => undefined);
+        try {
+            await waitFor('Mission Control to have a view', () => figures(mission.view()), (state) => state.specs !== undefined, { timeoutMs: 20_000 });
+            const view = mission.view();
+            assert.strictEqual(view?.header.problems, 0);
+            assert.deepStrictEqual(view?.header.problemStems, []);
+            assert.ok(view?.attention.rows.every((row) => !row.reasons.includes('Problem')));
+        } finally {
+            listening.dispose();
+        }
+    });
+
     test('AC-006: the view of the fixture project has the six states and no run section', async () => {
         const api = await activateStudio();
         await api.whenIdle();

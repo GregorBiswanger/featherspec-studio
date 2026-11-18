@@ -8,7 +8,7 @@ import { MC_NOTHING_ATTENTION, mcAttentionHeading, mcReason } from './texts';
 
 const REASON_GLYPHS: Record<AttentionReason, GlyphKind> = {
     Blocked: 'Blocked',
-    Diagnostic: 'diagnostic',
+    Problem: 'diagnostic',
     'Review pending': 'Review',
 };
 

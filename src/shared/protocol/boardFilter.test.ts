@@ -106,7 +106,7 @@ describe('board requests', () => {
     it('card and board views are guarded', () => {
         const card = {
             key: 'k', stem: '0001-a', number: '0001', title: 'A', titleIsStem: false, path: undefined, state: 'Active', derivedRule: undefined, deprecated: false,
-            diagnostics: 0, blocked: [], readiness: undefined, summary: undefined, tasks: { done: 1, total: 2 }, criteria: undefined, lastChangeMs: 5,
+            problems: 0, blocked: [], readiness: undefined, summary: undefined, tasks: { done: 1, total: 2 }, criteria: undefined, lastChangeMs: 5,
         };
         expect(isCardView(card)).toBe(true);
         expect(isCardView({ ...card, state: 'Doing' })).toBe(false);

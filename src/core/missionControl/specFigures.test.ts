@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { McSpecs, StateCount } from '../../shared/protocol/missionControl';
 import { projectHeader, projectSpecFigures } from './specFigures';
-import { AC001_FIXTURE, modelFor } from './testing/projects';
+import { AC001_FIXTURE, modelFor, modelOfFixture } from './testing/projects';
 
 function counts(specs: McSpecs): StateCount[] {
     if (specs.kind !== 'counts') {
@@ -82,31 +82,48 @@ describe('spec figures', () => {
 });
 
 describe('header', () => {
-    it('AC-017: name, version as reported ("unknown" included), update time and the project-level diagnostic count', async () => {
+    it('AC-017: name, version as reported ("unknown" included), update time and no Problem', async () => {
         const model = await modelFor([{ number: '0001', kind: 'Backlog' }]);
         expect(projectHeader({ name: 'demo', version: '1.10.0' }, model, '2026-11-16T10:00:00.000Z')).toMatchObject({
             name: 'demo',
             version: '1.10.0',
             updatedAt: '2026-11-16T10:00:00.000Z',
-            projectDiagnostics: 0,
+            problems: 0,
+            problemStems: [],
         });
         expect(projectHeader({ name: 'demo', version: 'unknown' }, model, 'x').version).toBe('unknown');
     });
 
-    it('AC-017 (0016 §5): an archived orphan plan counts as a project-level diagnostic (attached to no spec)', async () => {
+    it('AC-008 (0016): a project-level format note (an archived orphan plan) is no Problem and the header counts none', async () => {
         const model = await modelFor([{ number: '0001', kind: 'Backlog' }], {
             '.specs/plan-archive/0042-lonely.2026-09-19.plan.md': '# Plan\n\n**Spec:** [x](0042-lonely.md)\n**Status:** Not started\n',
         });
-        expect(projectHeader({ name: 'demo', version: '1.10.0' }, model, 'x').projectDiagnostics).toBeGreaterThan(0);
+        expect(projectHeader({ name: 'demo', version: '1.10.0' }, model, 'x')).toMatchObject({ problems: 0, problemStems: [] });
     });
 
-    it('A-012: diagnosticStems holds the specs that carry any diagnostic, sorted, and not a clean spec', async () => {
+    it('AC-008: problemStems holds the specs that carry a Problem, sorted, and not a spec with an unknown header line (a note)', async () => {
         const model = await modelFor([
             { number: '0001', kind: 'Backlog' },
             { number: '0002', kind: 'Unknown' },
             { number: '0003', kind: 'Contradicted' },
         ]);
         const header = projectHeader({ name: 'demo', version: '1.10.0' }, model, 'x');
-        expect(header.diagnosticStems).toEqual(['0002-thing', '0003-thing']);
+        expect(header.problemStems).toEqual(['0003-thing']);
+        expect(header.problems).toBe(1);
+    });
+
+    it('AC-008: problems counts the Problems on specs plus those at project level (fs-broken: 2; an orphan return note adds one)', async () => {
+        expect(projectHeader({ name: 'demo', version: '1.10.0' }, await modelOfFixture('fs-broken'), 'x')).toMatchObject({
+            problems: 2,
+            problemStems: ['0002-invalid-utf8', '0003-also-valid'],
+        });
+        const model = await modelFor([{ number: '0001', kind: 'Backlog' }], { '.memory-bank/activeContext.0099-T-001.md': '**Status:** DONE\n' });
+        expect(projectHeader({ name: 'demo', version: '1.10.0' }, model, 'x')).toMatchObject({ problems: 1, problemStems: [] });
+    });
+
+    it('AC-008 control: format notes on a spec count for nothing (fs170 0006)', async () => {
+        const header = projectHeader({ name: 'demo', version: '1.7.0' }, await modelOfFixture('fs170-brownfield-mixed'), 'x');
+        expect(header.problems).toBe(1);
+        expect(header.problemStems).toHaveLength(1);
     });
 });

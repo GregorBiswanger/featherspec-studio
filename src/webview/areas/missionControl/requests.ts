@@ -3,7 +3,7 @@ import type { NavigationRequest } from '../../../shared/protocol/messages';
 import type { ActivityEntry, AttentionRow, McHeader } from '../../../shared/protocol/missionControl';
 
 export const ATTENTION_SET_LABEL = 'Needs attention';
-export const DIAGNOSTICS_SET_LABEL = 'Diagnostics';
+export const PROBLEMS_SET_LABEL = 'Problems';
 
 function namedSet(label: string, stems: readonly string[]): NavigationRequest {
     return { area: 'specBoard', target: { kind: 'boardFilter', filter: { set: { label, stems: [...stems] } } } };
@@ -21,8 +21,8 @@ export function attentionRequest(rows: readonly AttentionRow[]): NavigationReque
     return namedSet(ATTENTION_SET_LABEL, [...new Set(rows.map((row) => row.spec.stem))]);
 }
 
-export function diagnosticsRequest(header: McHeader): NavigationRequest {
-    return namedSet(DIAGNOSTICS_SET_LABEL, header.diagnosticStems);
+export function problemsRequest(header: McHeader): NavigationRequest {
+    return header.problemStems.length === 0 ? totalRequest() : namedSet(PROBLEMS_SET_LABEL, header.problemStems);
 }
 
 export function attentionRowRequest(row: AttentionRow): NavigationRequest {

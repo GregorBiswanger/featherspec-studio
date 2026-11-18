@@ -2,7 +2,7 @@ import type { MissionControlView } from '../missionControl';
 
 export function sampleView(): MissionControlView {
     return {
-        header: { name: 'demo', version: '1.10.0', updatedAt: '2026-11-16T10:00:00.000Z', projectDiagnostics: 1, diagnosticStems: ['0002-x'] },
+        header: { name: 'demo', version: '1.10.0', updatedAt: '2026-11-16T10:00:00.000Z', problems: 1, problemStems: ['0002-x'] },
         specs: {
             kind: 'counts',
             total: 2,
@@ -17,7 +17,7 @@ export function sampleView(): MissionControlView {
             progress: { kind: 'value', percent: 50, done: 1, divisor: 2 },
         },
         attention: {
-            rows: [{ spec: { stem: '0001-a', number: '0001', title: null, path: '.specs/active/0001-a.md', found: true }, reasons: ['Blocked', 'Diagnostic'] }],
+            rows: [{ spec: { stem: '0001-a', number: '0001', title: null, path: '.specs/active/0001-a.md', found: true }, reasons: ['Blocked', 'Problem'] }],
         },
         activity: {
             available: true,
@@ -38,14 +38,14 @@ export function bigView(specCount: number, perSpec: number): MissionControlView 
         found: true,
     }));
     return {
-        header: { name: 'big', version: '1.10.0', updatedAt: '2026-11-16T10:00:00.000Z', projectDiagnostics: 3, diagnosticStems: refs.slice(0, 3).map((ref) => ref.stem) },
+        header: { name: 'big', version: '1.10.0', updatedAt: '2026-11-16T10:00:00.000Z', problems: 3, problemStems: refs.slice(0, 3).map((ref) => ref.stem) },
         specs: {
             kind: 'counts',
             total: specCount,
             states: stateWords.map((state) => ({ state, count: Math.floor(specCount / stateWords.length) })),
             progress: { kind: 'value', percent: 16, done: 33, divisor: specCount },
         },
-        attention: { rows: refs.map((spec) => ({ spec, reasons: ['Blocked', 'Diagnostic', 'Review pending'] })) },
+        attention: { rows: refs.map((spec) => ({ spec, reasons: ['Blocked', 'Problem', 'Review pending'] })) },
         activity: {
             available: true,
             entries: refs.slice(0, 10).map((spec, index) => ({

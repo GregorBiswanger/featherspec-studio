@@ -48,7 +48,7 @@ describe('AC-008: the attention list', () => {
     it('shows the count in the heading and every reason of a row as text', async () => {
         const attention = section(await open(sampleView()), 'attention');
         expect(attention.querySelector('h2')?.textContent).toBe('Needs attention (1)');
-        expect([...attention.querySelectorAll('[data-attention-row]')].map((row) => row.textContent)).toEqual(['0001 not available — Blocked, Diagnostic']);
+        expect([...attention.querySelectorAll('[data-attention-row]')].map((row) => row.textContent)).toEqual(['0001 not available — Blocked, Problem']);
         expect(attention.textContent).not.toContain('Run-based reasons not available');
     });
 
@@ -107,7 +107,7 @@ describe('AC-021: every state and reason is text', () => {
         for (const marker of markers) {
             expect(marker.textContent?.trim().length).toBeGreaterThan(0);
         }
-        expect([...container.querySelectorAll('[data-reason]')].map((reason) => reason.textContent)).toEqual(['Blocked', 'Diagnostic']);
+        expect([...container.querySelectorAll('[data-reason]')].map((reason) => reason.textContent)).toEqual(['Blocked', 'Problem']);
     });
 });
 
@@ -138,13 +138,13 @@ describe('0013 AC-007: attention rows and empty panels', () => {
     it('AC-007: each attention row shows a number chip, the title and every reason as text with an icon', async () => {
         const view = sampleView();
         view.attention = {
-            rows: [{ spec: { stem: '0002-y', number: '0002', title: 'Beta', found: true }, reasons: ['Review pending', 'Diagnostic'] }],
+            rows: [{ spec: { stem: '0002-y', number: '0002', title: 'Beta', found: true }, reasons: ['Review pending', 'Problem'] }],
         };
         const row = section(await open(view), 'attention').querySelector('[data-attention-row]')!;
         expect(row.querySelector('.mc-number')?.textContent).toBe('0002');
         expect(row.querySelector('.mc-title')?.textContent).toBe('Beta');
         const reasons = [...row.querySelectorAll('[data-reason]')];
-        expect(reasons.map((reason) => reason.textContent)).toEqual(['Review pending', 'Diagnostic']);
+        expect(reasons.map((reason) => reason.textContent)).toEqual(['Review pending', 'Problem']);
         for (const reason of reasons) {
             expect(reason.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
         }

@@ -48,7 +48,7 @@ export function buildCards(project: ProjectRead, lifecycle: LifecycleModel): Car
             state: entry.state,
             derivedRule: entry.persistence === 'derived' && isDerivedRule(entry.rule) ? entry.rule : undefined,
             deprecated: entry.deprecated !== undefined,
-            diagnostics: entry.diagnostics.length,
+            problems: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').length,
             blocked: blockedLines(entry),
             readiness: readinessLine(entry),
             summary: spec?.parsed === undefined ? undefined : describeSpec(spec.parsed.sections),
@@ -57,6 +57,26 @@ export function buildCards(project: ProjectRead, lifecycle: LifecycleModel): Car
             lastChangeMs: lastChange(spec?.modifiedMs, plan?.modifiedMs),
         };
     });
+}
+
+export interface ProjectFindings {
+    problems: BannerLine[];
+    notes: BannerLine[];
+}
+
+export function projectFindings(project: ProjectRead, lifecycle: LifecycleModel): ProjectFindings {
+    const owned = new Set<string>();
+    project.specs.forEach((spec) => [spec.key, ...spec.planKeys, ...spec.returnNoteKeys].forEach((key) => owned.add(key)));
+    const found: ProjectFindings = { problems: [], notes: [] };
+    for (const diagnostic of lifecycle.projectDiagnostics) {
+        (diagnostic.tier === 'problem' ? found.problems : found.notes).push({ where: 'project', reason: diagnostic.reason });
+    }
+    for (const diagnostic of project.diagnostics) {
+        if (diagnostic.scope !== 'project' && !owned.has(diagnostic.scope.file)) {
+            (diagnostic.tier === 'problem' ? found.problems : found.notes).push({ where: diagnostic.scope.file, reason: diagnostic.reason });
+        }
+    }
+    return found;
 }
 
 export function buildBanner(project: ProjectRead, lifecycle: LifecycleModel): BannerLine[] {

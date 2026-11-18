@@ -7,12 +7,8 @@ function compareText(left: string, right: string): number {
     return left < right ? -1 : left > right ? 1 : 0;
 }
 
-function carriesDiagnostic(entry: LifecycleEntry): boolean {
-    return entry.diagnostics.some(
-        (diagnostic) =>
-            diagnostic.kind === 'lifecycle-contradiction' ||
-            (diagnostic.kind === 'unreadable-file' && diagnostic.scope !== 'project' && diagnostic.scope.file === entry.key),
-    );
+function carriesProblem(entry: LifecycleEntry): boolean {
+    return entry.diagnostics.some((diagnostic) => diagnostic.tier === 'problem');
 }
 
 function reasonsOf(entry: LifecycleEntry): AttentionReason[] {
@@ -20,8 +16,8 @@ function reasonsOf(entry: LifecycleEntry): AttentionReason[] {
     if (entry.state === 'Blocked') {
         reasons.push('Blocked');
     }
-    if (carriesDiagnostic(entry)) {
-        reasons.push('Diagnostic');
+    if (carriesProblem(entry)) {
+        reasons.push('Problem');
     }
     if (entry.state === 'Review') {
         reasons.push('Review pending');

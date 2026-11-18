@@ -83,15 +83,27 @@ describe('cards', () => {
         expect(cards.map((card) => card.deprecated)).toEqual([true, false]);
     });
 
-    it('AC-020: a broken plan badges only its own spec and leaves the other card without a badge', async () => {
+    it('AC-006: fs-broken badges 0002 (unreadable) and 0003 (contradiction) with one Problem each and no other card', async () => {
         const project = await readFixture('fs-broken');
-        const lifecycle = deriveLifecycle(project);
-        const cards = buildCards(project, lifecycle);
-        const badged = cards.filter((card) => card.diagnostics > 0);
-        expect(badged.length).toBeGreaterThan(0);
-        expect(badged.length).toBeLessThan(cards.length + 1);
+        const cards = buildCards(project, deriveLifecycle(project));
+        expect(cards.map((card) => [card.number, card.problems]).sort()).toEqual([
+            ['0001', 0],
+            ['0002', 1],
+            ['0003', 1],
+        ]);
+    });
+
+    it('AC-007: format notes alone never badge a card (fs170-brownfield-mixed: 0006 has two notes, 0002 one Problem)', async () => {
+        const project = await readFixture('fs170-brownfield-mixed');
+        const cards = buildCards(project, deriveLifecycle(project));
+        expect(cards.find((card) => card.number === '0006')?.problems).toBe(0);
+        expect(cards.find((card) => card.number === '0002')?.problems).toBe(1);
+        expect(cards.filter((card) => card.problems > 0)).toHaveLength(1);
+    });
+
+    it('AC-006 control: a clean spec has no Problem', async () => {
         const clean = await cardsOf({ '.specs/backlog/0001-a.md': specText() });
-        expect(clean.cards[0]?.diagnostics).toBe(0);
+        expect(clean.cards[0]?.problems).toBe(0);
     });
 
     it('AC-020 (0016 §5): an archived orphan plan goes to the banner, and no card is badged for them', async () => {
@@ -99,7 +111,7 @@ describe('cards', () => {
             '.specs/backlog/0001-a.md': specText(),
             '.specs/plan-archive/0009-orphan.2026-09-19.plan.md': planText({ status: 'Done' }),
         });
-        expect(cards.map((card) => card.diagnostics)).toEqual([0]);
+        expect(cards.map((card) => card.problems)).toEqual([0]);
         expect(banner.map((line) => line.where)).toContain('.specs/plan-archive/0009-orphan.2026-09-19.plan.md');
         expect(banner.every((line) => line.reason.length > 0)).toBe(true);
     });

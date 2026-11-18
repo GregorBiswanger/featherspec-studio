@@ -196,8 +196,8 @@ export const DEPRECATED_MARKER = 'Deprecated';
 export const UNCERTAIN_FLAG = 'uncertain';
 export const STRUCK_FLAG = 'struck';
 
-export function diagnosticsBadgeText(count: number): string {
-    return count === 1 ? '1 diagnostic' : `${count} diagnostics`;
+export function problemsBadgeText(count: number): string {
+    return count === 1 ? '1 problem' : `${count} problems`;
 }
 
 export const BANNER_HEADING = 'Project diagnostics';

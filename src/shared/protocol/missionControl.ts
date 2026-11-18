@@ -3,7 +3,7 @@ import { isRecord } from './envelope';
 
 export type DerivedRule = 'S-READY' | 'S-REVIEW' | 'S-BLOCKED';
 
-export type AttentionReason = 'Blocked' | 'Diagnostic' | 'Review pending';
+export type AttentionReason = 'Blocked' | 'Problem' | 'Review pending';
 
 export interface SpecRef {
     stem: string;
@@ -17,8 +17,8 @@ export interface McHeader {
     name: string;
     version: string;
     updatedAt: string;
-    projectDiagnostics: number;
-    diagnosticStems: string[];
+    problems: number;
+    problemStems: string[];
 }
 
 export interface StateCount {
@@ -65,7 +65,7 @@ const DERIVED_RULES: readonly string[] = ['S-READY', 'S-REVIEW', 'S-BLOCKED'];
 export function isDerivedRule(value: unknown): value is DerivedRule {
     return typeof value === 'string' && DERIVED_RULES.includes(value);
 }
-const ATTENTION_REASONS: readonly string[] = ['Blocked', 'Diagnostic', 'Review pending'];
+const ATTENTION_REASONS: readonly string[] = ['Blocked', 'Problem', 'Review pending'];
 
 function exactly(value: Record<string, unknown>, required: readonly string[], optional: readonly string[] = []): boolean {
     const keys = Object.keys(value);
@@ -99,13 +99,13 @@ function isSpecRef(value: unknown): value is SpecRef {
 function isHeader(value: unknown): value is McHeader {
     return (
         isRecord(value) &&
-        exactly(value, ['name', 'version', 'updatedAt', 'projectDiagnostics', 'diagnosticStems']) &&
+        exactly(value, ['name', 'version', 'updatedAt', 'problems', 'problemStems']) &&
         isText(value.name) &&
         isText(value.version) &&
         isText(value.updatedAt) &&
-        isCount(value.projectDiagnostics) &&
-        Array.isArray(value.diagnosticStems) &&
-        value.diagnosticStems.every(isText)
+        isCount(value.problems) &&
+        Array.isArray(value.problemStems) &&
+        value.problemStems.every(isText)
     );
 }
 
