@@ -160,6 +160,8 @@ read Overview or Board; the rows below change behaviour.
 | Commands | `FeatherSpec Studio: Open Mission Control`, `… Open Spec Board`, `… Rescan Project`, `… Refresh Project Discovery` | `FeatherSpec Studio: Open Overview`, `… Open Board`, `… Refresh` |
 | Navigation | marker `▸` | — |
 
+*Amended by 0020 (PD-058): §7 "tree entry" — void: the tree has no area entries (0020 AC-016).*
+
 ## 8. Error cases and edge cases
 
 - Unreadable spec or contradiction in `active/` → a Now row with 0016's marker, and a Problems row.
@@ -178,7 +180,9 @@ Decided by automated tests (core, component tests in jsdom, stylesheet, manifest
 marked manual. Fixtures: 0006's and 0007's, `fs170-brownfield-mixed`, one with equal file times.
 
 - **AC-001** The manifest shall contribute the commands of §6.4's right column with those titles and none of the left column; the protocol's area IDs shall be `overview`, `board` and (until 0020) `specExplorer`, and no navigation request shall name `missionControl` or `specBoard`; the navigation, area heading, tree entry labels and purpose texts shall read as §7; a scan of `src` without tests, `package.json`, `README.md`, `docs/release-checklist.md`, `docs/product/design-brief.md` and `.architecture/*.md` shall find neither `Mission Control` nor `Spec Board` in any letter case; `CHANGELOG.md` shall name the renamed areas and commands under the version in preparation.
+  *Amended by 0020 (PD-058): AC-001 "(until 0020) `specExplorer`" and "tree entry labels" — void: no such area ID (0020 AC-016) and no area entries in the tree.*
 - **AC-002** When the panel opens for the first time in a workspace, or the remembered area is one this version does not know (`missionControl` and `specBoard` included), the system shall show the Overview with no remembered selection (0005 §13).
+  *Amended by 0020 (PD-058): AC-002 — for a remembered `specExplorer` the remembered selection stays (0020 AC-017).*
 - **AC-003** While the project has a spec, the Overview shall render in DOM order Now, Up next, Problems, the figures line and Activity, Problems only while O-4 lists something and Activity per AC-010, and no header line, tile, distribution bar or visible progress text.
 - **AC-004** The Now section shall list exactly the entries in Active, Review or Blocked, in the order of O-2, without a cap.
   > **Given** 0003 Active, 0001 Review, 0004 Blocked, 0002 Review **Then** the rows read 0004, 0001, 0002, 0003.
@@ -219,8 +223,10 @@ marked manual. Fixtures: 0006's and 0007's, `fs170-brownfield-mixed`, one with e
 - **AC-027** When "FeatherSpec Studio: Refresh" runs while a project is active, the system shall run discovery once and then the spec repository's re-read once; while none is active, discovery only; the panel shall keep its content until the new model arrives. The panel actions "Refresh" and "Retry" shall run the same steps and show S4 while they run.
 - **AC-028** The Overview, the Board, the Done toggle and Refresh shall create, modify or delete no file in any workspace folder (0005 AC-025, 0007 AC-016); the Done choice shall be kept per workspace outside every workspace folder.
 - **AC-029** Every text in §7's New column shall live in a text module and be asserted literally by a test; a scan of `src` without tests shall find none of the texts of §7's Old column that have no New counterpart, and no `▸` except the selected-row marker of the Spec Explorer list in `src/webview/areas/SpecExplorer.tsx` (0005 AC-023), which stays until 0020 removes that area (PD-065).
+  *Amended by 0020 (PD-058): AC-029 "no `▸` except the selected-row marker … until 0020 removes that area" (PD-065 (3)) — void with the list: no `▸` is left in `src` (0020 AC-018).*
 - **AC-030** Every test at the commit before 0018's first change that decides a criterion §5 does not void — 0006's drill-downs (AC-012, AC-014, AC-029) and the host smoke tests of 0001 and 0005 included, with the new IDs — shall exist at the head and pass; the plan shall list every title missing at the head, a renamed one included, with the criterion this spec voids or the head title that replaces it, from a script comparing both commits; `npm run test:unit` and `npm test` shall pass on Windows and in CI.
   *Amended by 0019 (PD-058): AC-030 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*
+  *Amended by 0020 (PD-058): AC-030 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
 - **AC-031** *(manual, Gregor or his delegate)* Preview-harness screenshots of Overview and Board for this repository and `fs170-brownfield-mixed`, Dark, Light and High Contrast, panel width 1240 px and 640 px, height 900 px: Now is the first section; rows keep one line at 1240 px and take two lines at 640 px with the state text readable (AC-006); with no spec selected, every column that shows a card is visible without horizontal scrolling at 1240 px, and at 640 px where at most two do; a wide column shows at least six cards when it holds them (R-10); strips, toggle and focus are legible. Verdict in the plan; the real VS Code window is a release-checklist item.
   *Amended by 0019 (PD-058): AC-031 — "visible without horizontal scrolling" holds "with no spec selected"; with the side panel the board scrolls (0019 §9).*
 

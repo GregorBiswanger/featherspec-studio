@@ -96,6 +96,8 @@ Marketplace listing. Users: the developer in the Studio panel; Gregor accepts th
 
 ### 3.4 Spec Explorer
 
+*Amended by 0020 (PD-058): §3.4 first bullet — void for the list pane and the selected row; the detail's layout is 0019's (0020 §5).*
+
 *Amended by 0019 (PD-058): §3.4 detail bullets (header "Open file", sections, per-section Open file, inline Markdown and tidying of file text) — header per 0019 §6.2 row 1; collapsible: Format notes and Status history only; no file text. The safe inline renderer and AC-014 stay for problem and note reasons, which quote file text.*
 
 - Two panes (list with own scroll; detail with header: number chip, title, state chip, "Open
@@ -196,6 +198,7 @@ card. The content of 0007 AC-003…AC-007, AC-020, AC-024 and AC-025 stays.
 **AC-010** Wherever a card, a list row, Mission Control or the Overview shows a derived state, a
 readiness check or a Blocked condition, the system shall show the §3.5 sentence or 0003's reason
 as primary text and the rule or check ID as secondary text only.
+*Amended by 0020 (PD-058): AC-010 "a list row" — there is no list; the tree's look is 0020 AC-022.*
 
 *Amended by 0016 (PD-059, proxy): the sentence is visible; label and rule ID are in the tooltip (0016 T-08, T-12).*
 
@@ -231,6 +234,7 @@ its `Verified` text. *(fixture: a copy of this repo's spec 0002 and its plan; D-
 
 **AC-016** Every existing test of 0005–0007 shall stay green; only assertions on wording or
 structure that §2's five deltas change are updated, in the same change set, each named in the plan.
+*Amended by 0020 (PD-058): AC-016 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
 
 *Amended by 0019 (PD-058): AC-016 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*
 
@@ -250,6 +254,7 @@ Light, project state readable at a glance; the verdict is recorded in the plan. 
 2026-11-17 under Gregor's delegation of 2026-11-17: these four checks are made by his delegate
 on the dated screenshot set; the taste verdict of §1 ("fit for a talk or a Marketplace
 listing") is checked by Gregor or his delegate; pre-release checklist item.
+*Amended by 0020 (PD-058): AC-017 "Spec Explorer list" — there is no list; the tree's look is 0020 AC-022.*
 
 *Amended by 0019 (PD-058): AC-017 detail screenshots — replaced by 0019 AC-022.*
 

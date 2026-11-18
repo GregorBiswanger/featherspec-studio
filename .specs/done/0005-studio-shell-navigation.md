@@ -27,6 +27,7 @@ area that a later spec fills, a minimal spec list in Spec Explorer so that a sel
 carried across areas, and the one navigation request through which areas open each other
 (PD-040). It owns every panel-level state and its text (PD-036), follows the VS Code theme, and
 keeps the panel UI away from local files.
+*Amended by 0020 (PD-058): §1 — the view "Specs" is 0020's tree with group counts that follows changes (0020 AC-013); the minimal spec list in Spec Explorer is gone; the panel has two tabs (0018).*
 
 ## 2. Goal and problem
 
@@ -47,10 +48,12 @@ and reloads, and understand every panel state, in a Light, a Dark and a High Con
 
 - Ways in: an Activity Bar view with a tree, the command "FeatherSpec Studio: Open", and one
   command per area (FR-005.1).
+  *Amended by 0020 (PD-058): §4 "Ways in" — the tree has no project, Open Studio or area entries; Open Studio is the toolbar's Open (0020 §4.1).*
 - The command "FeatherSpec Studio: Rescan Project", which re-reads the active project's specs (OP-009).
 - One Studio panel in the editor area with navigation to the four areas (FR-005.2, FR-005.3).
 - A placeholder in Mission Control, Spec Board and Agent Center that says the area is not available in this version.
 - A minimal spec list in Spec Explorer (number, title, board state) to make selection possible.
+  *Amended by 0020 (PD-058): §4 "minimal spec list" — void: there is no Spec Explorer list; the tree of 0020 selects the spec.*
 - A selection context that is kept across areas, panel close and reopen, and a window reload
   (FR-005.4, PD-039).
 - One navigation request for the areas: an area plus an optional target (PD-040).
@@ -67,6 +70,7 @@ and reloads, and understand every panel state, in a Light, a Dark and a High Con
 - Mission Control content (counts, activity, attention list) — because spec 0006 owns it.
 - Board columns, cards, drag and drop, filters, and the spec detail — because spec 0007 owns
   them. The detail lives in the Spec Explorer area beside the list (PD-042).
+  *Amended by 0020 (PD-058): §4 out of scope "The detail lives in the Spec Explorer area" — void: the detail is the side panel of 0019.*
 - Agent Center content (runs, events, approvals) — because spec 0012 owns it.
 - In-area states of those areas (empty after filtering, runtime data not available, per-column
   hints) — because PD-036 gives them to 0006, 0007 and 0012.
@@ -74,6 +78,7 @@ and reloads, and understand every panel state, in a Light, a Dark and a High Con
   only carries the target to the placeholder (PD-040).
 - Showing the diagnostics of 0002 and 0003 (badge, banner) — because 0007 owns them (its AC-020); not in this slice.
 - Per-state counts in the Activity Bar tree — because no spec owns them yet (OP-010); not in this slice.
+  *Amended by 0020 (PD-058): §4 out of scope "Per-state counts in the Activity Bar tree" — resolved: the tree shows group counts and a badge (0020 AC-001, AC-009).*
 - A sidebar webview, or a separate panel per area — because ADR-001 §2 chose one panel plus a native tree; not in the MVP.
 - Any write to FeatherSpec artifacts — because PD-013 keeps Studio read-only; not in the MVP. *Amended by 0014 (PD-049, PD-053): the setup of spec 0014 is the one exception.*
 - Telemetry — because nothing in this slice needs it, and the handoff §13 Privacy allows none with spec content without a product decision.
@@ -85,13 +90,16 @@ and reloads, and understand every panel state, in a Light, a Dark and a High Con
 
 1. The developer opens the "FeatherSpec Studio" view in the Activity Bar and activates "Open
    Studio", or runs "FeatherSpec Studio: Open".
+   *Amended by 0020 (PD-058): §5 step 1 — the developer opens the panel with the toolbar's Open or "FeatherSpec Studio: Open"; no "Open Studio" entry exists (0020 §4.1).*
 2. The Studio panel opens in the editor area. If it is already open, it comes to the front. It
    shows Mission Control the first time, afterwards the area last shown.
 3. While loading, the panel shows the loading state. If no project is active, it shows the
    panel state that applies, with its actions.
 4. The developer switches areas through the navigation, the tree entries or the per-area commands.
+   *Amended by 0020 (PD-058): §5 step 4 — through the two tabs or the two per-area commands; the tree has no area entries (0020 AC-016).*
 5. In Spec Explorer, the developer selects a spec. It stays selected while other areas are
    shown, after closing and reopening the panel, and after a window reload.
+   *Amended by 0020 (PD-058): §5 step 5 — the developer selects a spec in the Specs tree (0020 AC-005); there is no Spec Explorer.*
 6. The selection is cleared when another project becomes active, or when the spec's stem is no
    longer in the project. A spec that is gone gets a notice.
 7. Later areas open each other only by asking the shell: "show this area", optionally with a
@@ -113,6 +121,7 @@ remembered for this workspace.
   a window reload show the area last shown, remembered per workspace. With nothing remembered,
   or a remembered value this version cannot use, they show Mission Control. A per-area command
   or an area's tree entry shows the area it names.
+  *Amended by 0020 (PD-058): BR-02 — no "Open Studio" entry and no area tree entry; Open Studio is the toolbar's Open (0020 §4.1).*
 - **BR-03 Selection (PD-039):** at most one selected spec, in the active project. It is
   identified and remembered by its stem (PD-018), plus its project-relative path while that
   stem is duplicated (PD-019). The number is shown, never used as identity. A move to another
@@ -190,8 +199,10 @@ UI text is in English (PD-016).
   entry each for Mission Control, Spec Board, Spec Explorer and Agent Center. While no project
   is active, the view shows, in place of the entries, the text and actions of the panel state
   that applies among S1–S5, S8 and S9. S6 and S7 appear in the panel only.
+  *Amended by 0020 (PD-058): §9 "Activity Bar view" — the view is "Specs": four groups of spec rows, group counts, a badge and a toolbar; no project, Open Studio or area entries (0020 §4).*
 - **Commands:** "FeatherSpec Studio: Open", "FeatherSpec Studio: Open Mission Control",
   "… Open Spec Board", "… Open Spec Explorer", "… Open Agent Center", and "FeatherSpec Studio: Rescan Project" (OP-009).
+  *Amended by 0020 (PD-058): §9 "Commands" — no "Open Spec Explorer" command; the per-area commands are 0018's "Open Overview" and "Open Board" (0020 AC-016).*
 - **Panel:** titled "FeatherSpec Studio". It has a navigation with the four areas, marks the
   current area in text and for screen readers (not by colour alone), and shows the active
   project's name. A panel state takes the place of the area's content; the navigation stays.
@@ -202,6 +213,7 @@ UI text is in English (PD-016).
   project-relative path. Selecting a row makes it the selected spec, which is marked as
   selected in the list. The list follows changes of the model without reopening (PD-047). The
   name stays "Spec Explorer"; 0007 adds the detail beside the list (PD-042).
+  *Amended by 0020 (PD-058): §9 "Spec Explorer" — void: the list, the area and the command end; the tree's order and labels are 0020 AC-003 and AC-004.*
 - **Placeholders:** BR-04, AC-006.
 - **Theme:** colours, fonts and focus outlines come from the current VS Code theme. A theme
   switch takes effect without reopening the panel.
@@ -233,6 +245,7 @@ UI text is in English (PD-016).
 - Time budget for the frame: AC-024.
 - The navigation stays operable while loading (handoff §13 Performance): AC-014.
 - The spec list follows a model change within the PD-047 budget: AC-007.
+  *Amended by 0020 (PD-058): §12 spec-list bullet — the tree follows a model change within 500 ms (0020 AC-013).*
 
 ## 13. Error cases and edge cases
 
@@ -270,9 +283,11 @@ Edge cases:
 - A per-area command runs while the panel is closed → the panel opens on that area.
 - A window reload while the panel is open → the panel comes back by itself (ADR-001 §7) and shows whatever state applies then.
 - The remembered area or selection cannot be used (unknown area, damaged value) → Mission Control, no selection.
+  *Amended by 0020 (PD-058): §13 edge "remembered area … cannot be used" — a remembered `specExplorer` opens the Overview with the selection kept (0020 AC-017).*
 - Workspace Trust is granted while the panel is open → the S7 note disappears without reopening.
 - "Retry" and "Refresh" cannot run twice at once: they lead to S4, which has no action.
 - Project has zero specs → Spec Explorer shows "This project has no specs yet." (an in-area state, not an error).
+  *Amended by 0020 (PD-058): §13 edge "zero specs" — the view shows the text of 0020 §4.4; the tabs' own zero states are 0018's.*
 
 ## 14. Acceptance criteria
 
@@ -296,14 +311,17 @@ automated tests.
   show, in place of the entries, the text and actions of the panel state that applies among
   S1–S5, S8 and S9.
   *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
+  *Amended by 0020 (PD-058): AC-003 — replaced by 0020 AC-001–AC-012; its no-project part stays as 0020 §4.4 says.*
 - **AC-004** The system shall show a navigation in the panel that lists Mission Control, Spec
   Board, Spec Explorer and Agent Center. Activating an item shall show that area. [AC-005.2]
   *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
+  *Amended by 0020 (PD-058): AC-004 — the navigation has two tabs, Overview and Board (0018, 0020 AC-016).*
 
 *Amended by 0015 (PD-055/PD-056): the navigation lists Mission Control, Spec Board and Spec Explorer.*
 - **AC-005** When the user runs one of the four per-area commands, the system shall show the panel
   on that area, opening the panel first if it is closed.
   *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
+  *Amended by 0020 (PD-058): AC-005 — two per-area commands, 0018's `openOverview` and `openBoard` (0020 AC-016).*
 
 *Amended by 0015 (PD-055/PD-056): three per-area commands.*
 - **AC-006** In this slice the system shall show, for Mission Control, Spec Board and Agent
@@ -314,6 +332,7 @@ automated tests.
   agent runs, their live events and the approvals they wait for." The criterion ends for an area
   when a later spec delivers it.
   > **Given** a project with three specs **When** the user opens Spec Board **Then** the area shows its name, its purpose sentence and "Not available in this version of FeatherSpec Studio", and shows no cards.
+  *Amended by 0020 (PD-058): AC-006 "Spec Explorer" purpose — void: no list (0020 §5).*
 
 *Amended by 0015 (PD-055/PD-056): no Agent Center placeholder or content; the purpose of Mission Control per 0015 §8.*
 - **AC-007** The system shall list every spec entry of the active project in Spec Explorer,
@@ -324,9 +343,11 @@ automated tests.
   change, the list shall show it within 500 ms after the panel UI receives the notification,
   without being reopened by the user (PD-047).
   *Amended by 0019 (PD-058): AC-007 — stays until 0020; the pane beside the list shows 0019 AC-008's detail.*
+  *Amended by 0020 (PD-058): AC-007 — void: there is no list; the tree's order and labels are 0020 AC-003 and AC-004.*
 - **AC-008** When the user selects a spec, switches to any other area and returns to Spec
   Explorer, the system shall still show that spec as selected. [AC-005.3]
   *Amended by 0019 (PD-058): AC-008 — stays; the selection also shows the side panel in Overview and Board (0019 AC-002).*
+  *Amended by 0020 (PD-058): AC-008 — void: there is no Spec Explorer; selection is made in the tree (0020 AC-005).*
 - **AC-009** When the user closes the panel and opens it again with "FeatherSpec Studio: Open" or
   "Open Studio", the system shall show the area last shown and the same selected spec. After a
   window reload, the system shall restore a panel that was open, without user action, on the
@@ -335,6 +356,7 @@ automated tests.
   window reload is checked by Gregor or his delegate; pre-release checklist item (revised
   2026-11-17).
   *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
+  *Amended by 0020 (PD-058): AC-009 — "or 'Open Studio'" is void (the toolbar's Open is the way in); a remembered `specExplorer` maps to the Overview per 0020 AC-017.*
 - **AC-010** When another project becomes active, the system shall clear the selection without
   a notice. If a loaded model of the active project does not contain the selected spec's stem,
   then the system shall clear the selection and show "Spec <number> is no longer in the
@@ -393,10 +415,12 @@ automated tests.
   indicator on the focused element. The tree entries follow VS Code's own tree keys. The focus
   indicator is decided by a component test: every focusable element of the panel is reached by a
   `:focus-visible` rule with a visible outline in a theme colour (revised 2026-11-17).
+  *Amended by 0020 (PD-058): AC-022 — tree rows follow VS Code's tree keys; labels per 0020 AC-004; the list rows end.*
 - **AC-023** The system shall give the current area, the selected spec, every board state and
   every panel state S1–S9 a text label that assistive technology can read. The system shall
   convey no meaning by colour alone. Checked by a component test on the labels, and by Gregor's
   delegate in a High Contrast theme on the screenshot set of 2026-11-17 (revised 2026-11-17).
+  *Amended by 0020 (PD-058): AC-023 — for tree rows the accessible label is 0020 AC-022's; list rows end.*
 - **AC-024** When the user runs "FeatherSpec Studio: Open", the system shall show the panel's frame
   (navigation plus the current area or state) within 1 second, without waiting for project data.
   Checked by an automated host test that measures from the command to the panel UI's first
@@ -419,6 +443,7 @@ automated tests.
   the system shall show the placeholder (PD-040).
   > **Given** Mission Control is shown and spec `0003-x` exists **When** the request "Spec Explorer, spec `0003-x`" arrives **Then** Spec Explorer is shown and 0003 is selected.
   *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
+  *Amended by 0020 (PD-058): AC-028 example — reads "Board, spec `0003-x`" (0020 §5).*
 
 *Amended by 0015 (PD-055/PD-056): the navigation request targets a spec or a board filter, no run.*
 - **AC-029** When the user runs "FeatherSpec Studio: Rescan Project" while a project is active,
@@ -432,6 +457,7 @@ automated tests.
   colour, not in the description colour, so that it stays readable on the selection background
   in a Light theme. Decided by a component test and a style test on the variables used; the
   readability itself stays in Gregor's AC-019 check.
+  *Amended by 0020 (PD-058): AC-030 — void for the list (0020 §5); the tree's text colours are VS Code's.*
 - **AC-031** (added after `/sdd-compile`, 2026-11-16) Where a theme defines the High Contrast
   border colours, the system shall draw the selected spec row and the current navigation item with
   the theme's active contrast border, shall draw the focus indicator of every focusable element
@@ -439,6 +465,7 @@ automated tests.
   theme's contrast border. Where the theme defines none, the system shall keep the previous
   look (focus border, panel border). Decided by a component test and a style test on the
   variables used; Gregor's High Contrast check (AC-023) stays.
+  *Amended by 0020 (PD-058): AC-031 — for the spec row void with the list (0020 §5).*
 
 ## 15. Technical notes for developers or AI agents
 
@@ -487,6 +514,7 @@ Resolved:
 Open, none blocks the work (clarify finding in brackets):
 
 - OP-010 [6.7]: per-state counts in the tree (ADR-001 §2 "compact status of specs and runs") have no owner; 0006 does not contain them. Recommendation: out of the MVP until a spec claims them.
+  *Amended by 0020 (PD-058): OP-010 — resolved: group counts and the badge (0020 AC-001, AC-009).*
 - OP-011 [5.9]: AC-021 writes one line per malformed message, without a limit. Recommendation: repeat lines of one message type are collapsed into a count.
 - OP-012 [2.16]: AC-019 names one High Contrast theme; VS Code has a dark and a light one. Resolved 2026-11-17: the dark one is in the delegate's screenshot set, the light one is a pre-release checklist item (AC-019).
 - OP-013 [6.6, 6.9]: basis. PD-013 and PD-016 are marked "(proxy)", ADR-001 is "Proposed"; OP-001's bulk acceptance does not show which state texts and rules Gregor chose himself. Recommendation: Gregor reads §13 and BR-05 once at the plan review and confirms the two PDs in the register.

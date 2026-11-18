@@ -22,7 +22,7 @@ and the expected result. A clear miss reopens the named spec.
    built extension; open a FeatherSpec project there (e.g. `C:\projects\test\tip-splitter`).
 2. **VSIX**: `npx @vscode/vsce package` → `featherspec-studio-0.1.0.vsix`; install with
    *Extensions: Install from VSIX…* or `code --install-extension featherspec-studio-0.1.0.vsix`.
-3. **Next step**: select a spec in the Spec Explorer, click **Copy** on its next step and paste it into your assistant's chat.
+3. **Next step**: select a spec in the Specs view, click **Copy** on its next step and paste it into your assistant's chat.
 
 ## Discovery (0001)
 
@@ -47,7 +47,7 @@ and the expected result. A clear miss reopens the named spec.
 
 ## Focus on visibility (0015)
 
-- [ ] **AC-030 / M-1**: in a real VS Code window on `tip-splitter`: the panel shows Overview, Board and Spec Explorer only; a spec's detail shows **Next step**, **Copy** puts the line on the clipboard and pasting it into the assistant's chat works; a Ready card's **Copy** puts the NS-7 line on the clipboard (0017); no command, setting or text offers to start an agent or a run.
+- [ ] **AC-030 / M-1**: in a real VS Code window on `tip-splitter`: the Specs view lists the specs in its groups and the panel shows Overview and Board only; a spec's detail shows **Next step**, **Copy** puts the line on the clipboard and pasting it into the assistant's chat works; a Ready card's **Copy** puts the NS-7 line on the clipboard (0017); no command, setting or text offers to start an agent or a run.
 
 ## The next step everywhere (0017)
 
@@ -59,12 +59,12 @@ and the expected result. A clear miss reopens the named spec.
 
 ## Shell (0005)
 
-- [ ] **AC-019 live theme switch**: panel on Spec Explorer with a spec selected; switch Dark Modern → Light
+- [ ] **AC-019 live theme switch**: panel on the Board with a spec selected; switch Dark Modern → Light
   Modern → High Contrast → every part of the panel takes the new colours at once, all text readable.
 - [ ] **AC-019 / OP-012 Light High Contrast**: contrast borders on nav items, rows and state boxes; active
   border on the current area and the selected row.
 - [ ] **AC-009 reload**: panel on Board with 0003 selected → *Reload Window* → panel returns on the
-  Board, Spec Explorer still has 0003 selected.
+  Board, the side panel still shows 0003 selected.
 - [ ] **AC-017 Restricted Mode**: note "This workspace is in Restricted Mode. Setting up FeatherSpec needs a trusted workspace."
   above the area; trust the folder → the note disappears without reopening the panel.
 
@@ -134,3 +134,14 @@ and the expected result. A clear miss reopens the named spec.
   Studio, at the line of the ID, and the Studio stays visible; a card, an Overview row and an activity entry
   select in place without changing the area; Escape and the close button close the panel and return focus to
   the card or row.
+
+## The native Specs tree (0020)
+
+- [ ] **AC-022** *(Gregor or his delegate)*: on `tip-splitter` and on this repository, in Dark, Light and High
+  Contrast at a sidebar width of 400 px, every state icon is told apart without colour, the description of every
+  In progress and Up next row is visible and the badge is readable. In the Hands-On, copy a next step from the
+  tree (inline Copy), paste it into the assistant's chat and see it work; select a row and see the detail open in the
+  panel without taking focus; Open Spec and Open Plan open the file in the active group, beside the Studio when the
+  Studio is the active tab.
+- [ ] **Keyboard and screen reader**: arrow keys walk the rows, Enter selects, Shift+F10 opens the context menu
+  with Open Spec, Open Plan and Copy; the screen reader reads a row as one sentence with the state and the next step.

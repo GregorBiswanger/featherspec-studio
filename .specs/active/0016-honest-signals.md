@@ -53,6 +53,7 @@ Developer (one role, as in 0001–0007); first-time workshop participants.
   files beside (0019) — because PD-058 gives them to those specs.
 - A problem marker on Spec Explorer list rows — because 0020 replaces the list by the tree, which
   marks *Problem* (deviation from guideline 3, named; the detail shows it on selection).
+  *Amended by 0020 (PD-058): §4 out of scope "problem marker on Spec Explorer list rows" — void for the list: the tree shows T-09 in the tooltip and no rule ID in label or description (0020 §4.2).*
 - Diagnostics in the Problems panel (R-20) — because PD-061 (2) builds nothing before validation.
 - Reading a free-text traceability state by its first word — because a guess overstates progress.
 - Rewording single diagnostics' reasons — because they name what the file holds.
@@ -228,9 +229,11 @@ the repository's own `.specs/`).
 - **AC-010** The model shall fail R-6 exactly when the entry carries a Problem.
   > **Given** a `backlog/` Draft spec whose `AC-001` is defined twice and whose linked plan is `Not started` **Then** it is Ready with two format notes.
 - **AC-011** No text the Studio writes itself on cards, list rows, Mission Control, the board banner and the detail — anything not quoted from the project's files — shall contain a rule ID (`S-…`, `R-1`…`R-7`, `NS-…`), "persisted", "Model updated", "first observed" or "not checked"; each rule ID shown before shall be in the tooltip of the element that showed it (T-08, T-10, T-12).
+  *Amended by 0020 (PD-058): AC-011 "list rows" — void for the list; the tree shows T-09 in the tooltip and no rule ID in label or description (0020 §4.2).*
 - **AC-012** Wherever a derived state was shown with its rule at `8052f9a` (card, list row, tile, detail), the system shall show T-09's sentence.
   *Amended by 0018 (PD-062): card and tile: the card shows no derived sentence (0018 B-5); the tile is gone; the column tooltip carries it (0018 B-6).*
   *Amended by 0019 (PD-058): AC-012 detail part — in the detail T-09's sentence is in the state chip's tooltip and in visually hidden text, not visible text (0019 AC-009; audit 03 §5.2, as 0018 B-6).*
+  *Amended by 0020 (PD-058): AC-012 "list row" — void for the list; the tree shows T-09 in the tooltip and no rule ID in label or description (0020 §4.2).*
 - **AC-013** The detail shall show no line of T-13; the model shall keep R-7 and the compile-verdict fact (0003 AC-005, AC-018 unchanged).
 - **AC-014** While a spec is Backlog, its card shall show §6.3's first applying need and its detail every applying need in order, each as text with no icon and the T-12 tooltip; if none applies, then neither shall show a need line; no element shall show a readiness checklist or a failure icon for a readiness check.
   > **Given** `fs170-brownfield-mixed` **Then** the card of 0003 reads `needs a plan`.
@@ -252,6 +255,7 @@ the repository's own `.specs/`).
   *Amended by 0017 (PD-060/PD-061): also except the tests 0017 AC-024 lists against a criterion that 0017 §5 voids.*
   *Amended by 0018 (PD-062): the test audit also excepts the tests 0018 AC-030 lists against a criterion 0018 §5 voids.*
   *Amended by 0019 (PD-058): AC-023 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*
+  *Amended by 0020 (PD-058): AC-023 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
 - **AC-024** The specs of §5 shall carry their amendment notes and the PD register one new entry superseding §5's PD rows, with no note in an older entry; the README shall say once that FeatherSpec has no priority, persisted compile verdict or dependency field, so the Studio shows none; CHANGELOG and `docs/release-checklist.md` shall name the changes and AC-025.
 - **AC-025** *(manual, Gregor or delegate)* Preview harness screenshots in Dark, Light and High Contrast: primary Copy, its label change without shift, the need line, the T-07 toggle, the problem badge and the S2 sentence in view and panel; Gregor's Hands-On on `tip-splitter` shows no problem marker without a real problem.
 

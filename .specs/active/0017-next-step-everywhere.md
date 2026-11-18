@@ -136,6 +136,8 @@ While a project is active (0001), the status bar entry (below: the entry) shows:
 | no current spec and no Ready spec, or specs not read yet | `$(checklist) FeatherSpec` | quick pick (§6.4); the Studio while specs are not read |
 | for 2 s after a click (or the command) that copied | `$(check) Copied` or `$(warning) Could not copy`; a failed copy also shows the warning "Could not copy to the clipboard." | as before the click |
 
+*Amended by 0020 (PD-058): §6.3 row "for 2 s after a click" — also after a Copy from the tree (0020 AC-007).*
+
 Tooltip (Markdown), lines in order: `**<number> · <state>** <title>`; the full line(s) as §6.1;
 `<project name> · FeatherSpec <version>`; "Click to copy the next step." (current spec), "Nothing
 in progress. Click to pick a spec and copy its next step." (none) or "Click to open the Studio."
@@ -237,6 +239,7 @@ Decided by automated tests unless marked manual. Fixtures: one per NS rule (0015
 - **AC-024** Every test at the plan's Baseline commit (before 0017) that decides a criterion not voided in §5 shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI. A script compares the test titles of both commits; every title missing at the head is listed in the plan with its voided criterion or the head title replacing it. A test that decides a voided and a staying criterion stays for the staying one, its move assertions removed (§10).
   *Amended by 0018 (PD-062): the test audit also excepts the tests 0018 AC-030 lists against a criterion 0018 §5 voids.*
   *Amended by 0019 (PD-058): AC-024 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*
+  *Amended by 0020 (PD-058): AC-024 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
 - **AC-025** 0001, 0003, 0006, 0007, 0013, 0015, 0016 and ADR-001 shall carry the notes of §5; a case-insensitive search of `README.md`, `docs/release-checklist.md`, `docs/product/design-brief.md` and `.architecture/*.md` shall find no "Move to…", "Move Spec", "drag", "move request", "move pick", "move result", "transition check" or `FeatherSpec: <name> (<version>)`; the README shall name the card Copy, the status bar with the rule of §6.3 and "Copy Next Step"; the release checklist shall carry AC-026; `CHANGELOG.md` shall name the removal and the new places of the next step under the version in preparation.
 - **AC-026** *(manual, Gregor)* M-1 on `tip-splitter`, Hands-On walkthrough with his assistant: task "start the Ready spec" — the Start line copied from the card with no failed attempt; on an Active spec `/sdd-plan`, then `continue` in the same chat, runs one step; the status bar names the spec he works on and its click copies; Dark, Light and High Contrast show the card line and row readable.
 

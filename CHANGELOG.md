@@ -23,8 +23,18 @@ All notable changes to FeatherSpec Studio are documented in this file. The forma
   that opens the file beside the Studio at the line of the ID. The command `featherspec-studio.selectSpec`
   selects a spec by stem (for the native tree of 0020).
 
+- The Specs view as a native tree (0020): every spec is a row in four groups (In progress, Up next,
+  Backlog, Done collapsed) with number, title, state, the short next step, an icon and a colour per state, a
+  tooltip that explains the row, and an inline **Copy**. A click selects the spec and shows its detail in the
+  panel. The context menu offers Open Spec, Open Plan and Copy; the badge counts the specs in Review and
+  Blocked; the toolbar has Open and Refresh; the tree follows every change within 500 ms. The panel has two
+  tabs, Overview and Board.
+
 ### Removed
 
+- The Spec Explorer area with its spec list and detail pane, the command `Open Spec Explorer`, the "Open
+  Studio", project and area entries of the tree, and the protocol's spec rows (protocol version 4). A
+  remembered Spec Explorer opens the Overview with the selection kept (0020).
 - The text of the files in the detail: requirements and criteria in full, the plan's steps with their
   `Verified` text, the section "Open file" buttons and the foldable Overview, Requirements, Acceptance
   criteria, Plan & tasks, Verification and Related sections (0019). Open the file by its link instead.

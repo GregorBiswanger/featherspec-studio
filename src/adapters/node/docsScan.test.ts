@@ -233,3 +233,78 @@ describe('product docs after 0018 (AC-001, AC-029)', () => {
         expect('# Spec\n\n**Status:** Implemented\n'.includes('Amended by 0018 (PD-062)')).toBe(false);
     });
 });
+
+const GONE_TERMS = ['spec explorer', 'spec-explorer', 'specexplorer'];
+const GONE_SCANNED = ['README.md', 'docs/release-checklist.md', 'docs/product/design-brief.md', 'AGENTS.md'];
+
+export function findGoneTerms(text: string): string[] {
+    const lower = text.toLowerCase();
+    return GONE_TERMS.filter((term) => lower.includes(term));
+}
+
+describe('product docs after 0020 (AC-018, AC-020)', () => {
+    it('finds a gone term in a negative control, in any letter case', () => {
+        expect(findGoneTerms('Open the SPEC EXPLORER')).toEqual(['spec explorer']);
+        expect(findGoneTerms('spec-explorer-detail-light.png')).toEqual(['spec-explorer']);
+        expect(findGoneTerms('the Specs view')).toEqual([]);
+    });
+
+    for (const file of GONE_SCANNED) {
+        it(`${file} names no Spec Explorer`, async () => {
+            expect(findGoneTerms(await read(file))).toEqual([]);
+        });
+    }
+
+    it('.architecture/*.md name no Spec Explorer', async () => {
+        const names = (await fs.readdir(path.join(root, '.architecture'))).filter((name) => name.endsWith('.md'));
+        expect(names.length).toBeGreaterThan(0);
+        for (const name of names) {
+            expect(findGoneTerms(await read(`.architecture/${name}`)), name).toEqual([]);
+        }
+    });
+
+    it('README names the Specs view, its tabs and commands, and links a screenshot that exists', async () => {
+        const readme = await read('README.md');
+        expect(readme).toContain('### The Specs view');
+        expect(readme).toContain('Focus on Specs View');
+        expect(readme).toContain('Open Overview');
+        expect(readme).toContain('Shift+F10');
+        expect(readme).toContain('media/screenshots/spec-detail-light.png');
+        const links = readme.match(/media\/screenshots\/[\w-]+\.png/g) ?? [];
+        expect(links.length).toBeGreaterThanOrEqual(3);
+        for (const link of links) {
+            expect(await exists(link), link).toBe(true);
+        }
+    });
+
+    it('the release checklist carries AC-022 of 0020', async () => {
+        const text = await read('docs/release-checklist.md');
+        expect(text).toContain('(0020)');
+        expect(text).toContain('**AC-022**');
+    });
+
+    it('CHANGELOG names the tree and the removal under Unreleased', async () => {
+        const text = await read('CHANGELOG.md');
+        const unreleased = text.slice(text.indexOf('## [Unreleased]'), text.indexOf('## [0.1.0]'));
+        expect(unreleased).toContain('(0020)');
+        expect(unreleased).toContain('native tree');
+        expect(unreleased).toContain('Spec Explorer');
+    });
+
+    for (const [file, note] of [
+        ['.specs/done/0005-studio-shell-navigation.md', 8],
+        ['.specs/done/0007-spec-board-spec-detail.md', 1],
+        ['.specs/done/0013-studio-visual-design.md', 3],
+        ['.specs/active/0015-focus-on-visibility.md', 2],
+        ['.specs/active/0016-honest-signals.md', 3],
+        ['.specs/active/0017-next-step-everywhere.md', 2],
+        ['.specs/active/0018-overview-and-compact-board.md', 4],
+        ['.specs/active/0019-detail-situation-picture.md', 2],
+        ['docs/decisions/ADR-001-extension-architecture.md', 1],
+    ] as const) {
+        it(`${file} carries at least ${note} notes of 0020`, async () => {
+            const count = (await read(file)).split('Amended by 0020 (PD-058)').length - 1;
+            expect(count).toBeGreaterThanOrEqual(note);
+        });
+    }
+});

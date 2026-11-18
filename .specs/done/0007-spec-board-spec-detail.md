@@ -27,6 +27,7 @@ agent run, all without opening Markdown files. The board offers filters, sorting
 keyboard use. It owns the drag interaction and its keyboard alternative: it rejects every move
 that 0003 refuses, and passes a Ready → Active move on to the start workflow of 0008.
 Everything is read-only. Studio never writes a FeatherSpec file.
+*Amended by 0020 (PD-058): §1 — no Spec Explorer area; the detail is 0019's side panel (0020 §5).*
 
 *Amended by 0019 (PD-058): §1 — the detail is the side panel of 0019 in Overview and Board and the pane of Spec Explorer until 0020; a card selects in place (0019 AC-001).*
 
@@ -62,6 +63,7 @@ without a reload. Every board action can be done without a mouse.
 - Spec detail view with seven detail sections and "Open file" links, shown in the Spec Explorer
   area (§6.4).
   *Amended by 0019 (PD-058): §4 first in-scope bullet — the detail is 0019's situation picture (0019 §6.2), shown as the side panel in Overview and Board and as the Spec Explorer pane until 0020.*
+  *Amended by 0020 (PD-058): §4 "in the Spec Explorer area" — void: no Spec Explorer area; the detail's place is 0019's side panel (0020 §5).*
 - Filters by state, provider and named spec set; sorting; hidden-card counts; "Clear filters";
   a filter handed in through the shell's navigation request (§6.5).
 - Drag interaction, the "Move to…" menu and the command `FeatherSpec: Move Spec to…`.
@@ -94,6 +96,7 @@ without a reload. Every board action can be done without a mouse.
 - The Studio shell, navigation, the spec selection, the Spec Explorer list and every
   panel-level state (no folder, no project, loading, load error, reload needed, Restricted
   Mode) — because 0005 owns them (PD-036, PD-039, PD-040).
+  *Amended by 0020 (PD-058): §4 out of scope "the Spec Explorer list" — void: there is no such list; 0020's tree selects the spec.*
 - Run events in the detail view — because the event stream belongs to the Agent Center (0012);
   the detail lists runs only.
 - Mission Control and the Agent Center — because 0006 and 0012 own them.
@@ -191,6 +194,7 @@ The detail view lives in the Spec Explorer area, beside 0005's spec list, and sh
 selected spec (PD-039, PD-042). The board, Mission Control and the list all reach it through
 the shell's navigation request (PD-040). With no spec selected it shows a one-line hint to
 select one.
+*Amended by 0020 (PD-058): §6.4 "beside 0005's spec list … and the list" — void: no Spec Explorer list or pane; the detail is 0019's side panel (0020 §5).*
 
 *Amended by 0019 (PD-058): §6.4 intro — the detail is the side panel of 0019 in Overview and Board and the pane of Spec Explorer beside 0005's list until 0020; the rest of this paragraph about reaching it through the navigation request is void for the board and the Overview (0019 AC-001).*
 
@@ -354,6 +358,7 @@ and are not repeated here (PD-036, PD-038).
 - UI language English (PD-016). The board fills the Spec Board area, the detail view sits in
   the Spec Explorer area of the Studio panel (0005, PD-042).
   *Amended by 0019 (PD-058): §9 first bullet — the detail view is the side panel of 0019 in Overview and Board and the pane of Spec Explorer until 0020.*
+  *Amended by 0020 (PD-058): §9 first bullet — no Spec Explorer area; the detail is 0019's side panel (0020 §5).*
 - The rules for card content, the detail view, the states and accessibility are in §6.1–§6.8.
   The English texts not fixed there (column hints, the no-selection hint, the hand-off
   announcement, "file not found") are written in the plan.
@@ -635,6 +640,7 @@ store's state is *unavailable*, it shall show *not available* for both.
 **AC-028** When the selected spec moves between lifecycle folders, the detail view shall keep
 showing it. While no spec is selected, the detail view shall show a hint to select one and no
 spec content. *(PD-039)*
+*Amended by 0020 (PD-058): AC-028 hint — void with the pane: the side panel closes while no spec is selected (0020 §5).*
 
 *Amended by 0019 (PD-058): AC-028 — "a hint to select one" applies to the Spec Explorer pane only; the side panel closes while no spec is selected (0019 AC-002, AC-020).*
 

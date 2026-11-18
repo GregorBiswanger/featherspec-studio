@@ -242,6 +242,7 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
 
 - **AC-001** The system shall offer exactly the areas Mission Control, Spec Board and Spec Explorer, in this order, in the panel navigation, the Activity Bar tree and as per-area commands.
   *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
+  *Amended by 0020 (PD-058): AC-001 — panel navigation and per-area commands offer Overview and Board (0018 §6.4); the tree has no area entries (0020 AC-016).*
 - **AC-002** If the remembered area or a restored panel state names `agentCenter`, then the system shall show Mission Control and no error.
   *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
 - **AC-003** While a spec is selected, the detail view shall show "Next step" above its sections with the line(s) of the first matching rule of §6.1, each with a "Copy" button and a second line under its §8 label, or the rule's text where it names no line.
@@ -280,10 +281,12 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
   *Amended by 0017 (PD-060/PD-061): also except the tests 0017 AC-024 lists against a criterion that 0017 §5 voids.*
   *Amended by 0018 (PD-062): the test audit also excepts the tests 0018 AC-030 lists against a criterion 0018 §5 voids.*
   *Amended by 0019 (PD-058): AC-027 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*
+  *Amended by 0020 (PD-058): AC-027 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
 - **AC-028** 0008–0012 shall have status `Deprecated`, stay in `done/` and link this spec as successor; 0003–0007 and 0013 shall carry the amendment notes of §5.
 - **AC-029** The `architecture:` snapshot in `AGENTS.md`, `.architecture/*.md` and `.memory-bank/projectbrief.md` shall name no removed module, no agent run and no provider; the brief's mission shall contain the manifest description of §8 and its success criteria the AC-030 scenario.
 - **AC-030** *(manual, Gregor)* M-1 on `tip-splitter` with the assistant he uses, the Hands-On walkthrough: three areas; a dropped Ready spec shows the NS-7 line, pasted into the chat it starts that step; Active and Review specs show NS-6 and NS-5 lines that the assistant runs as FeatherSpec commands; he checks whether the S7 note reads as noise (PD-057, OP-006) and whether his assistant resolves the project-relative paths (OP-002). Pre-release checklist item.
   *Amended by 0017 (PD-060/PD-061): "a dropped Ready spec shows the NS-7 line" reads "a Ready card's Copy puts the NS-7 line on the clipboard".*
+  *Amended by 0020 (PD-058): AC-030 "three areas" — the panel has Overview and Board; the tree has no area entries; M-1 checks the tree and the two tabs (0020 §5).*
 
 ## 11. Technical notes for developers or AI agents
 

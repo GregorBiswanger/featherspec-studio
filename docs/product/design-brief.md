@@ -42,13 +42,14 @@ Dark, Light and High Contrast, no custom colour palette, no web fonts, no new de
   *Run status: superseded by PD-055 (spec 0015); cards carry no run line.*
 - Readiness and rule references read as sentences for humans; the rule ID is secondary text.
 
-## Spec Explorer
-- Two panes: list left, detail right (until 0020 replaces the list with a native tree).
-- *Superseded by PD-058 and spec 0019:* the detail is a picture of the spec's situation, not its
-  text: header (number, title, state chip, close button), Next step, Problems, Progress (steps,
-  criteria, needs), Files, Format notes and Status history (the last two collapsed). It shows
-  as a 400 px side panel beside Overview and Board (a drawer below 900 px) and as the pane of the
-  Spec Explorer. Selecting a spec keeps the area; Escape or the close button closes it.
+## Specs tree and the detail side panel
+- The Activity Bar view "Specs" is a native tree (spec 0020): four groups (In progress, Up next, Backlog,
+  Done collapsed), a row per spec with number, title, state and short next step, an icon and a colour per
+  state, a tooltip that explains the row, an inline Copy and a badge for what waits. A click selects the spec.
+- The detail is a picture of the spec's situation, not its text (PD-058, spec 0019): header (number, title,
+  state chip, close button), Next step, Problems, Progress (steps, criteria, needs), Files, Format notes and
+  Status history (the last two collapsed). It shows as a 400 px side panel beside Overview and Board (a
+  drawer below 900 px). Selecting a spec keeps the tab; Escape or the close button closes it.
 - Every ID and file name is a link that opens the file beside the Studio at the line of the ID.
   Text that quotes file content (reasons, format notes) is still rendered safely: escaped first,
   small built-in subset, no HTML from the files reaches the DOM.

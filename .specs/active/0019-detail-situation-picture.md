@@ -35,6 +35,7 @@ Developer (one role), as in 0005–0007; workshop participants use the same surf
 - Detail content of §6.2; no full text of requirements, criteria, plan steps or verification logs.
 - A line per ID; every ID and file link opens the file beside the panel at its line.
 - The Spec Explorer area keeps list + detail pane, with the new content, until 0020.
+  *Amended by 0020 (PD-058): §4 in scope "The Spec Explorer area keeps …" — void: no Spec Explorer area, list or pane; the side panel is the only detail (0020 §5).*
 
 ### Out of scope
 
@@ -76,12 +77,15 @@ history and is not edited: PD-058 already supersedes PD-042 (the fix round of th
 | 0018 §2 goal, AC-031 "visible without horizontal scrolling" | Hold with no spec selected; with the side panel the board scrolls (§9) |
 | PD-042 (register not edited) | Superseded in part by PD-058: Board and Overview show the detail as a side panel; 0020 ends the Spec Explorer part |
 
+*Amended by 0020 (PD-058): §5 row "0005 AC-007, AC-008 … stay until 0020" — void: the list ends with 0020 (0020 §5).*
+
 ## 6. Business rules
 
 ### 6.1 Side panel
 
 *Panel* is the Studio panel; *side panel* this detail beside the area; *pane* the Spec Explorer
 detail until 0020; *Overview row* a Now, Up next or Problems row of a spec (0018).
+*Amended by 0020 (PD-058): §6.1 "Spec Explorer until 0020" (the word "pane") — void: no pane; the side panel is the only detail (0020 §5).*
 
 - **Open.** Activating a board card, an Overview row or an Overview activity entry whose spec is
   in the project (click, Enter, Space) selects the spec (0005's select message) and shows the side
@@ -107,6 +111,7 @@ detail until 0020; *Overview row* a Now, Up next or Problems row of a spec (0018
 - **Spec Explorer until 0020.** List and pane stay (0013 §3.4); the pane shows the same detail;
   close and Escape clear the selection, the pane shows its hint and focus moves to the spec's list
   row; no side panel in this area.
+  *Amended by 0020 (PD-058): §6.1 bullet "Spec Explorer until 0020" — void: no Spec Explorer area, list or pane (0020 §5).*
 
 ### 6.2 Detail content (order fixed)
 
@@ -167,6 +172,8 @@ detail until 0020; *Overview row* a Now, Up next or Problems row of a spec (0018
 | FR-04 | A line per ID; files open beside the panel at the line | AC-016–AC-019 |
 | FR-05 | No quality loss; amendments; themes | AC-021–AC-024 |
 
+*Amended by 0020 (PD-058): FR-02 — void: no Spec Explorer area, list or pane (0020 §5).*
+
 ## 8. Texts (English, PD-016; in the text modules, asserted literally)
 
 | New text | Replaces (today) |
@@ -184,6 +191,7 @@ detail until 0020; *Overview row* a Now, Up next or Problems row of a spec (0018
 "No plan yet", "Deprecated", "File not found: <path>", "Spec detail", "Status history not
 available: <reason>", "Status history: not available" and "Select a spec in the list to see its
 details." stay as they are.
+*Amended by 0020 (PD-058): §8 pane hint "stay" — void: the hint ends with the pane (0020 §5).*
 
 ## 9. Error cases and edge cases
 
@@ -216,6 +224,7 @@ at commit `8052f9a` (made by the plan, like `studio-0002`).
 - **AC-006** After a window reload with a spec selected, the system shall show the side panel with that spec on the area last shown, without user action and without moving focus.
 - **AC-007** Every card and Overview row of the selected spec shall carry `aria-current="true"` and the selection background and border (0013 D-12); no other card or row shall.
 - **AC-008** While Spec Explorer is shown, the system shall show the list and, in the pane beside it, the detail of §6.2 and no side panel; close and Escape shall clear the selection, the pane shall show "Select a spec in the list to see its details." and focus shall move to that spec's list row.
+  *Amended by 0020 (PD-058): AC-008 — void: no Spec Explorer area, list or pane; the side panel is the only detail (0020 §5).*
 - **AC-009** The detail shall show the sections of §6.2 in that order, Problems, Format notes and Status history only under §6.2's conditions, Format notes and Status history collapsed when first shown, and the header of §6.2 row 1, the path only for a duplicated stem.
   > **Given** `fs110-ready-synthetic` 0001 **Then** the chip reads "Ready", its tooltip "Plan written, not started yet · Derived from the files · rule S-READY", and the header holds that sentence as visually hidden text.
 - **AC-010** The detail shall show no requirement text, no criterion text other than short titles, no stage or step text other than the next open step's title, no `Verified` text, no spec header line, no readiness check and none of §8's removed texts as a heading or line of its own. For `studio-0015` with both collapsible sections closed, its visible text shall contain no text of any `FR-` row of that spec and at most 300 words (today 3,459).
@@ -232,6 +241,7 @@ at commit `8052f9a` (made by the plan, like `studio-0002`).
 - **AC-021** The side panel's CSS shall use VS Code theme variables only and show a visible focus outline on every control; the CSS guard tests of 0013 shall cover its rules.
 - **AC-022** *(manual, Gregor or his delegate)* Preview-harness screenshots in Dark, Light and High Contrast: Board and Overview with the side panel of `studio-0015` at 1400×900 and 800×900. Checked: the side panel's content is at most 900 px tall with both collapsible sections closed (today 4,952 px); at 800 px the drawer covers the board's right part and a card focused under it by Tab or arrow scrolls clear; in the Overview at 800 px every row with its next step and Copy and the figures line stay visible; nothing is cut off. In real VS Code: an ID opens the file beside the Studio, which stays visible. Pre-release checklist item.
 - **AC-023** Every test title at the commit before 0019's first implementation commit shall exist at the head and pass, or the plan's *Test-title audit* shall list it with the criterion of this spec or the §5 row that voids or replaces it; a script compares the titles of both commits; `npm run test:unit` and `npm test` shall pass on Windows and in CI.
+  *Amended by 0020 (PD-058): AC-023 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
 - **AC-024** 0005, 0006, 0007, 0013, 0015, 0016, 0017 and 0018 shall carry the notes of §5 at the named statements, and the PD register shall hold no edit of an existing entry (PD-066, appended by the fix round of the compile S48, is the one new entry); checked by a grep and a diff in the plan.
 
 ## 11. Technical notes for developers or AI agents

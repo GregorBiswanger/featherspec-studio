@@ -8,7 +8,11 @@ Studio reads your project and starts no agent; the work with your agent stays in
 
 ## Feature tour
 
-Open Studio from the **FeatherSpec Studio** icon in the Activity Bar or with `FeatherSpec Studio: Open`. The panel has three areas.
+The **FeatherSpec Studio** icon in the Activity Bar opens the **Specs** view: every spec as a row in four groups, with the next step on a click away. The panel (the toolbar's **Open** button, or `FeatherSpec Studio: Open`) has two tabs, Overview and Board.
+
+### The Specs view
+
+The groups are **In progress** (Blocked, Review, then Active), **Up next** (Ready), **Backlog** and **Done** (collapsed until you open it); each shows its count, and a group without a spec is left out. A row reads `<number> <title>`, with the state and the short form of the next step beside it (for example `Review · /sdd-compile`), an icon and a colour that carry the state. Hover a row for the title, the reason behind a derived state, the next step, the progress (steps and criteria) and any problem; a screen reader hears the same as one sentence. A click selects the spec and shows its detail in the panel (the panel opens if it is closed, without taking focus). A row with a next step has an inline **Copy** button; the context menu offers **Open Spec**, **Open Plan** and **Copy**. The badge on the Activity Bar icon counts the specs that wait for you (Review and Blocked). The toolbar has **Open** and **Refresh**; the view follows every change of your files within half a second. `FeatherSpec Studio: Focus on Specs View` (or Shift+F10 on a row) reaches the view from the keyboard. With several projects in the workspace the view's description names the active one.
 
 ### Overview
 
@@ -20,21 +24,17 @@ What is in progress, what comes next and what needs fixing, one line per spec: *
 
 Every spec as a card in six columns: Backlog, Ready, Active, Review, Done and Blocked. A column without a card is a narrow strip with its name and count; the other columns share the width, and the board scrolls sideways when they do not fit. **Done** is collapsed until you open it with its toggle, and Studio remembers your choice per workspace. A card has three rows: number and title; what matters in its state (a Backlog card shows what the spec still needs, a Blocked card why, otherwise the steps and criteria progress), a warning with the number of problems and the day of the last change; and the next step. Hover a Ready, Review or Blocked column header for the rule behind the state, and a card for its description. The day comes from the plan's `Last updated:` line, else from the file's modification time; it is left out while all specs show the same day. Opening the Board from the Overview with a filter shows one **Filter: …** chip with **Clear filters**; sort by number, title or last change. The last line of a card is the next step: **Next** and the short form of the command (for example `/sdd-plan`) with a **Copy** button that puts the full line on your clipboard. The board works with the keyboard: arrow keys move between cards, Enter or Space selects a card and shows its detail in the side panel, Tab from the card reaches its **Copy**, Enter or Space copies. The board moves no spec; lifecycle moves belong to FeatherSpec's `/sdd-lifecycle`.
 
-### Spec Explorer
-
-![Spec Explorer: the spec list beside the detail pane](media/screenshots/spec-explorer-detail-light.png)
-
-The list of every spec beside the detail of the selected spec, shown in a pane (described below). The selection survives switching areas, closing the panel and reloading the window.
-
 ### The detail of a spec
 
-Select a spec on the Board or in the Overview (click, Enter or Space) and its detail opens in a **side panel** to the right of the area; the area stays where it is. Below 900 px the panel covers the right part of the area like a drawer: a card you focus under it scrolls clear, and the Overview makes room by narrowing its rows to the left of the drawer. Close it with its close button or Escape; focus returns to the card or row you came from. The panel is a picture of the spec's situation, not a copy of its files: the state, **Next step** (with **Copy**), the **Problems**, **Progress** (steps done and the next open step; criteria verified and the ones still open), the **Files** (spec, plan, archived plans, return notes) and, folded, the **Format notes** and the **Status history**. Every ID and file name is a link: it opens the file in the editor **beside** the Studio, at the line where the ID is defined. A file that is gone reads "File not found: ..." at the link.
+![Board with the detail of a spec in the side panel](media/screenshots/spec-detail-light.png)
+
+Select a spec in the Specs view, on the Board or in the Overview (click, Enter or Space) and its detail opens in a **side panel** to the right of the area; the area stays where it is. Below 900 px the panel covers the right part of the area like a drawer: a card you focus under it scrolls clear, and the Overview makes room by narrowing its rows to the left of the drawer. Close it with its close button or Escape; focus returns to the card or row you came from. The selection survives switching tabs, closing the panel and reloading the window. The panel is a picture of the spec's situation, not a copy of its files: the state, **Next step** (with **Copy**), the **Problems**, **Progress** (steps done and the next open step; criteria verified and the ones still open), the **Files** (spec, plan, archived plans, return notes) and, folded, the **Format notes** and the **Status history**. Every ID and file name is a link: it opens the file in the editor **beside** the Studio, at the line where the ID is defined. A file that is gone reads "File not found: ..." at the link.
 
 ### The next step everywhere
 
 The next step is one line of FeatherSpec, shown in four places and copied with one click: in the detail of a spec, on every Board card, on each row of Now, Up next and Problems in the Overview and in the status bar. Studio starts no agent and changes no file; paste the line into your assistant's chat. On an Active spec with an open plan step the detail adds a second line, `continue`, for the same chat ("Then, in the same chat, if nothing blocks:").
 
-The status bar shows the spec you work on: `<number> · <state> · <short form>`. The current spec is the one selected in the Overview, Board or Spec Explorer; without a selection, the most urgent spec with a step (Blocked, then Review, then Active). A click copies the full line and the entry reads **Copied** for two seconds. Without a current spec the click opens a quick pick of the specs that have a step. The tooltip carries the project name and the FeatherSpec version, an "Open Studio" link and, with several projects, "Switch project".
+The status bar shows the spec you work on: `<number> · <state> · <short form>`. The current spec is the one selected in the Specs view, the Overview or the Board; without a selection, the most urgent spec with a step (Blocked, then Review, then Active). A click copies the full line and the entry reads **Copied** for two seconds. Without a current spec the click opens a quick pick of the specs that have a step. The tooltip carries the project name and the FeatherSpec version, an "Open Studio" link and, with several projects, "Switch project".
 
 ## Requirements
 
@@ -45,12 +45,12 @@ The status bar shows the spec you work on: `<number> · <state> · <short form>`
 ## Getting started
 
 1. Install the extension and open a FeatherSpec project folder. The status bar shows the active project and its FeatherSpec version.
-2. Click the FeatherSpec Studio icon in the Activity Bar, then "Open Studio".
+2. Click the FeatherSpec Studio icon in the Activity Bar. The Specs view lists your specs; select one, or use **Open** in its toolbar for the panel.
 3. Read the **Next** line on a card, an Overview row or in the status bar (or the **Next step** in the detail of a spec), click **Copy** and paste the line into your assistant's chat.
 
 ## Set up FeatherSpec
 
-In a workspace folder without a FeatherSpec project, the Studio view in the Activity Bar offers **Set up FeatherSpec** (also `FeatherSpec Studio: Set Up FeatherSpec` in the Command Palette). It needs a trusted workspace.
+In a workspace folder without a FeatherSpec project, the Specs view in the Activity Bar offers **Set up FeatherSpec** (also `FeatherSpec Studio: Set Up FeatherSpec` in the Command Palette). It needs a trusted workspace.
 
 1. Studio downloads the latest FeatherSpec release from GitHub (`github.com`, no account, no token).
 2. It shows what it would do in the folder and asks you to confirm. Nothing is written before that.
@@ -78,7 +78,8 @@ A spec with contradictory or unreadable files stays in the column of its folder 
 | --- | --- |
 | `FeatherSpec Studio: Set Up FeatherSpec` | Download the latest FeatherSpec release and set it up in a folder without a project, after a confirmation |
 | `FeatherSpec Studio: Open` | Open the panel on the area last shown |
-| `FeatherSpec Studio: Open Overview` / `Open Board` / `Open Spec Explorer` | Open the panel on that area |
+| `FeatherSpec Studio: Open Overview` / `Open Board` | Open the panel on that tab |
+| `FeatherSpec Studio: Focus on Specs View` | Move the keyboard focus into the Specs view |
 | `FeatherSpec Studio: Copy Next Step` | Copy the next step of the current spec (same as a click on the status bar entry); without a current spec, pick a spec from a list |
 | `FeatherSpec Studio: Select Project` | Choose the active project when the workspace has several |
 | `FeatherSpec Studio: Refresh` | Run project discovery again, then read the specs of the active project again |
