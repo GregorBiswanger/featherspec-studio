@@ -1,11 +1,11 @@
 # Next Step with Intent and Guidance
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0021-next-step-intent-and-guidance.plan.md](0021-next-step-intent-and-guidance.plan.md)
 
 Basis: review `docs/ux-audit/07-implementation-review.md` (2026-11-18) N-1, §5.1, §5.2, §6a; work order
-`docs/ux-audit/08-spec-handoff.md` §2 (R-1…R-7, AC drafts, E-1…E-3), §6. Decisions PD-069, PD-072 (V-1), PD-063 (7),
-PD-068, PD-016, PD-047, PD-013; guidelines 1, 6, 9–12 (`.claude/rules/ux-guidelines.md`). Gregor delegated the round
+`docs/ux-audit/08-spec-handoff.md` §2 (R-1…R-7, AC drafts, E-1…E-3), §6. Decisions PD-069, PD-072 (V-1), PD-073 (click
+test), PD-074 (V-1 for Copilot), PD-063 (7), PD-068, PD-016, PD-047, PD-013; guidelines 1, 6, 9–12 (`.claude/rules/ux-guidelines.md`). Gregor delegated the round
 (PD-069): no interview, proxies in §11. 0022 (written in parallel) owns layout, button hierarchy, groups, strips,
 problem texts and paths; 0023 and 0024 build on this spec.
 
@@ -104,7 +104,7 @@ state their intent and get only Copy prompt.
 | NS-10 | Write the plan | Plan | any chat | strong, web search | The agent researches and writes the plan as small, verifiable steps. | You read the plan before anything is built. |
 
 **Proposal:** the Intent, Short intent, Session, Model, Effect and Then columns of §6.1 and §6.2 are a proposal
-(08 R-1); Gregor confirms them in the click test (PD-069, OP-002, AC-024). Sources (FeatherSpec 1.10.0 here):
+(08 R-1); Gregor confirms them in the click test (PD-069, OP-002, AC-024); confirmed 2026-11-18 by PD-073. Sources (FeatherSpec 1.10.0 here):
 `sdd-compile.md` ("a new session with a strong model from another model family than the one that implemented: a judge
 tends to pass what its own family wrote"); `sdd-clarify.md` *Read it as a stranger* ("in-context knowledge cannot be
 unread"); `sdd-plan.md` (web search "is the preferred path"; Mode B, step 3: a working agreement's stop "holds in
@@ -217,7 +217,8 @@ read 2026-11-18). Default scope.
 - The step changes between showing and copying → 0017 §8 (the line behind the text shown).
 - A setting changes while a toggletip is open → it closes when tips go off; a hint change leaves it as it is.
 - A live update while a toggletip is open → it stays open while its content is unchanged, else it closes.
-- AC-025 fails with an assistant (PD-072: Copilot unverified) → the release waits; a revise switches NS-6 to B (OP-001).
+- AC-025 fails with an assistant on the build (V-1 passed with Claude Code, PD-072, and with Copilot, PD-074) → the
+  release waits; a revise switches NS-6 to B (OP-001).
 - Restricted Mode, reader window → everything here works; settings are only read. Clipboard failure → 0016, unchanged.
 
 ## 9. Acceptance criteria
@@ -280,10 +281,10 @@ vocabulary rule of `.claude/rules/specs.md`; it is never a qualifier here.
 
 | ID | Assumption | Why we believe it | What breaks if wrong |
 | --- | --- | --- | --- |
-| A-001 | E-1: NS-6 uses variant A (PD-072, proxy) | V-1 cases 1–3 and 5 passed; 08 E-1 recommends `Implement …`; Copilot unverified | AC-003, AC-025; B is OP-001's fallback |
+| A-001 | E-1: NS-6 uses variant A (PD-072, proxy) | V-1 cases 1–3 and 5 passed; 08 E-1 recommends `Implement …`; Copilot confirmed by PD-074 | AC-003, AC-025; B is OP-001's fallback |
 | A-002 | E-2: coach line only in the detail and the first Now row (proxy) | 08 E-2 (overload), guideline 11 | AC-009 |
 | A-003 | E-3: words `strong model`, `fast model`, `other family`, `allow web search` (proxy) | 08 E-3, R-5 example; guideline 11 classes | §6.5 texts, AC-012 |
-| A-004 | §6.1 and §6.2 proposal columns and short intents hold until the click test (proxy) | 08 R-1 says Gregor confirms them; PD-069 process | Texts of §6.1, §6.2, §7 |
+| A-004 | §6.1 and §6.2 proposal columns and short intents hold until the click test (proxy); confirmed by PD-073 | 08 R-1 says Gregor confirms them; PD-069 process | Texts of §6.1, §6.2, §7 |
 | A-005 | `Continue · Implement T-003` with the ID once, not 08 R-3's `Continue T-003 · Implement T-003`; NS-7 `Build` (proxy) | The ID would repeat; the tree has little width (0022 N-3); `Start · Start T-001` reads as a stutter | AC-003, AC-006 |
 | A-006 | Status bar text keeps the command short form, named deviation from guideline 1 (proxy) | 08 §2 scope lists only its tooltip; status bar text stays short | AC-006 |
 | A-007 | Command titles "Copy Next Step" (palette, tree inline, context menu) stay, named deviation from guideline 1's "Copy prompt" (proxy) | They name the source where no prompt is visible; 0017 AC-009 and 0020 §6 stay valid | Tree and palette texts |
@@ -297,14 +298,17 @@ vocabulary rule of `.claude/rules/specs.md`; it is never a qualifier here.
 ## 12. Open points
 
 - OP-001 V-1 result as a PD (08 §1). Resolved 2026-11-18: PD-072 names variant A (record
-  `docs/decisions/v1-ns6-wording-2026-11-18.md`); Copilot stays for AC-025. Fallback B (08 V-1), if AC-025 fails: line 1
+  `docs/decisions/v1-ns6-wording-2026-11-18.md`); Copilot stays for AC-025. PD-074 (2026-11-18): V-1 passed with Copilot
+  too, variant A holds; AC-025 still checks the build with both assistants. Fallback B (08 V-1), if AC-025 fails: line 1
   `/sdd-plan <spec path>` under `Resume the plan: the agent reports where it stands` (short `Resume`, `any chat · fast`,
   effect "checks the plan against the code and reports what is done, what is next and what blocks; it builds nothing
   yet"), line 2 `continue` under `Then, in the same chat, if nothing blocks: continue with <ID> <title>`.
 - OP-002 Click test on an HTML draft before `/sdd-plan` (PD-069): Gregor confirms §6.1, §6.2, §6.5 and the short
-  intents; a change is a revise. **Blocking for `/sdd-plan`.**
+  intents; a change is a revise. **Blocking for `/sdd-plan`.** Resolved 2026-11-18: PD-073, Gregor accepted the drafts
+  ("gefällt mir"); no text changed, A-004 confirmed.
 - OP-003 NS-5 with a strong hint reads `strong model (X), other family` though X may share the family that built the
-  work. Followed: 08 AC-007 as drafted; a key for the review model is decided in the click test.
+  work. Followed: 08 AC-007 as drafted; a key for the review model is decided in the click test. Resolved 2026-11-18 by
+  PD-073: the accepted drafts carry no review key; §6.5, §6.7 and AC-012 stand.
 - OP-004 Tree width (N-3). Resolved by 0022 §4.2's budget: below 12 characters of title room the description is the
   command short form and the tooltip keeps the intent (deviation from guideline 1; 0022 names it, cross-spec r2).
 - OP-005 FeatherSpec's README (⑤–⑧, "The loop") is not in this repository (`docs/discovery/` has only
@@ -320,4 +324,4 @@ vocabulary rule of `.claude/rules/specs.md`; it is never a qualifier here.
 
 Ready: §6 and §7 literal, §5 listed, OP-002 closed. Clarified on 2026-11-18 (OP-006). Done: AC-001–AC-021 green with
 evidence in the plan, AC-022–AC-025 checked, §5 applied, docs, architecture and Memory Bank synced, `/sdd-compile`
-READY. Next: the click test on an HTML draft (OP-002); then `/sdd-plan`.
+READY. Click test passed (PD-073, OP-002 closed); planned 2026-11-18. Next: Gregor reads the plan, then the start signal.
