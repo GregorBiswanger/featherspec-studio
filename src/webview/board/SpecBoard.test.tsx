@@ -277,7 +277,7 @@ describe('AC-021, AC-020, AC-012: in-area states', () => {
 
     it('AC-014: a column that shows no card is a narrow strip with icon, name, count, no card list and no hint, and the accessible name of the text table', async () => {
         const view = boardView([card('0001', { state: 'Backlog' }), card('0002', { state: 'Done' })]);
-        view.columns[2] = { state: 'Active', cards: [], hidden: 3, emptyBeforeFilter: false, count: 3, narrow: 'filtered' };
+        view.columns[2] = { state: 'Active', cards: [], hidden: 3, emptyBeforeFilter: false, count: 0, narrow: 'filtered' };
         const container = await open(view);
         const strips = [...container.querySelectorAll('[data-narrow]')];
         expect(strips.map((strip) => strip.getAttribute('data-column'))).toEqual(['Ready', 'Active', 'Review', 'Blocked']);
@@ -287,7 +287,8 @@ describe('AC-021, AC-020, AC-012: in-area states', () => {
             expect(strip.querySelector('.column-name')?.textContent).toBe(strip.getAttribute('data-column'));
             expect(strip.querySelectorAll('ul, li, p, [data-card]')).toHaveLength(0);
         }
-        expect(strips[1]!.querySelector('.column-count')?.textContent).toBe('3');
+        expect(strips[1]!.querySelector('.column-count')?.textContent).toBe('0');
+        expect(strips[1]!.getAttribute('title')).toBe('Active: 3 hidden by filter');
         expect(strips[0]!.querySelector('.column-count')?.textContent).toBe('0');
         const wide = [...container.querySelectorAll('[data-column]')].filter((column) => !column.hasAttribute('data-narrow'));
         expect(wide.map((column) => column.getAttribute('data-column'))).toEqual(['Backlog', 'Done']);

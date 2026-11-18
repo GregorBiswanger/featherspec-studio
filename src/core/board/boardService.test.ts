@@ -186,7 +186,7 @@ describe('board service: Done collapsed and remembered', () => {
     it('AC-016: while a filter is set Done follows the filter rules and there is no toggle; Clear filters brings the choice back', async () => {
         const w = await world(WITH_DONE);
         w.service.setFilter({ states: ['Backlog'] });
-        expect(doneColumn(w)).toMatchObject({ narrow: 'filtered', count: 2 });
+        expect(doneColumn(w)).toMatchObject({ narrow: 'filtered', count: 0, hidden: 2 });
         expect(w.service.view()!.doneToggle).toBeUndefined();
         w.service.setFilter({ states: ['Done'] });
         expect(doneColumn(w).cards).toHaveLength(2);

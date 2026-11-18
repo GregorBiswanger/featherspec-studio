@@ -51,6 +51,6 @@ export function arrangeBoard(cards: readonly CardView[], filter: BoardFilter, so
         if (shown.length > 0) {
             return column;
         }
-        return own.length === 0 ? { ...column, narrow: 'empty' } : { ...column, count: own.length, narrow: 'filtered' };
+        return own.length === 0 ? { ...column, narrow: 'empty' } : { ...column, narrow: 'filtered' };
     });
 }

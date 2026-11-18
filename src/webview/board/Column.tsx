@@ -16,7 +16,7 @@ export function Column(props: {
     const { column } = props;
     const rule = STATE_RULES[column.state];
     const ruleText = rule === undefined ? undefined : columnRuleTooltip(rule);
-    const narrowName = column.narrow === undefined ? undefined : narrowColumnText(column.state, column.narrow, column.count);
+    const narrowName = column.narrow === undefined ? undefined : narrowColumnText(column.state, column.narrow, column.narrow === 'filtered' ? column.hidden : column.count);
     const toggle = column.state === 'Done' ? props.doneToggle : undefined;
     const heading = (
         <>

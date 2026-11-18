@@ -82,12 +82,12 @@ describe('filters', () => {
         ]);
     });
 
-    it('AC-014: a column showing no card is narrow: empty when it has no spec, filtered when a filter hides all of its cards; the others are wide', () => {
+    it('AC-014 (B-1): a column showing no card is narrow, and a strip counts the cards it holds, so a filtered one reads 0 while hidden carries the number the filter hides: empty when it has no spec, filtered when a filter hides all of its cards; the others are wide', () => {
         const columns = arrangeBoard([card('0001', { state: 'Active' }), card('0002', { state: 'Active' }), card('0003', { state: 'Done' })], { states: ['Done'] }, 'number');
         expect(columns.map((column) => [column.state, column.narrow, column.count, column.cards.length, column.hidden])).toEqual([
             ['Backlog', 'empty', 0, 0, 0],
             ['Ready', 'empty', 0, 0, 0],
-            ['Active', 'filtered', 2, 0, 2],
+            ['Active', 'filtered', 0, 0, 2],
             ['Review', 'empty', 0, 0, 0],
             ['Done', undefined, 1, 1, 0],
             ['Blocked', 'empty', 0, 0, 0],
@@ -97,12 +97,12 @@ describe('filters', () => {
     it('AC-014: a wide column counts the cards it shows, also while the filter hides others', () => {
         const columns = arrangeBoard(NINE, { set: { label: 'x', stems: ['0003-thing', '0006-thing'] } }, 'number');
         expect(columns.map((column) => [column.state, column.narrow, column.count, column.hidden])).toEqual([
-            ['Backlog', 'filtered', 1, 1],
-            ['Ready', 'filtered', 1, 1],
+            ['Backlog', 'filtered', 0, 1],
+            ['Ready', 'filtered', 0, 1],
             ['Active', undefined, 1, 2],
-            ['Review', 'filtered', 1, 1],
+            ['Review', 'filtered', 0, 1],
             ['Done', undefined, 1, 1],
-            ['Blocked', 'filtered', 1, 1],
+            ['Blocked', 'filtered', 0, 1],
         ]);
     });
 
@@ -112,7 +112,7 @@ describe('filters', () => {
         expect(done(arrangeBoard(NINE, {}, 'number', true)).cards).toHaveLength(2);
         expect(done(arrangeBoard(NINE, {}, 'number'))).toMatchObject({ count: 2 });
         expect(done(arrangeBoard(NINE, { states: ['Done'] }, 'number', false)).cards).toHaveLength(2);
-        expect(done(arrangeBoard(NINE, { states: ['Active'] }, 'number', false))).toMatchObject({ narrow: 'filtered', count: 2 });
+        expect(done(arrangeBoard(NINE, { states: ['Active'] }, 'number', false))).toMatchObject({ narrow: 'filtered', count: 0, hidden: 2 });
         expect(done(arrangeBoard([card('0001')], {}, 'number', false)).narrow).toBe('empty');
     });
 
