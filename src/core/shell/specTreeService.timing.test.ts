@@ -31,7 +31,7 @@ describe('0020 AC-013: the tree on 200 specs (core part)', () => {
         const folder = { root: temp, name: 'perf', verdict: 'project' as const };
         const service = createSpecTreeService({
             shell: {
-                view: () => ({ state: undefined, restricted: false, projectName: 'perf', area: 'overview', target: undefined, selection: undefined, notice: undefined, rows: [] }),
+                view: () => ({ state: undefined, restricted: false, projectName: 'perf', area: 'overview', target: undefined, selection: undefined, notice: undefined }),
                 onDidChangeView: (listener): Disposable => {
                     viewListeners.add(() => listener(undefined as never));
                     return { dispose: () => void viewListeners.clear() };

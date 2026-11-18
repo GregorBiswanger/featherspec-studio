@@ -99,7 +99,7 @@ describe('AC-012: the total, a state count and the named sets', () => {
 });
 
 describe('0015 AC-010: no drill-down for runs', () => {
-    it('the view holds no run drill-down, and every request it can send names one of the three areas', async () => {
+    it('the view holds no run drill-down, and every request it can send names one of the two areas', async () => {
         const container = await open(drillView());
         const ids = [...container.querySelectorAll('[data-drill]')].map((button) => button.getAttribute('data-drill') ?? '');
         expect(ids.some((id) => id === 'running' || id.startsWith('run:'))).toBe(false);

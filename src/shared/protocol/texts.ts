@@ -214,9 +214,6 @@ export const S2_WELCOME = [
 export const PLACEHOLDER_TEXT = 'Not available in this version of FeatherSpec Studio';
 
 
-export const TITLE_NOT_AVAILABLE = 'not available';
-
-
 export const DISMISS_LABEL = 'Dismiss';
 
 export function noticeText(number: string): string {
@@ -364,8 +361,6 @@ export function badgeTooltip(review: number, blocked: number): string {
     const parts = [...(review > 0 ? [`${review} in Review`] : []), ...(blocked > 0 ? [`${blocked} Blocked`] : [])];
     return `${waiting} ${waiting === 1 ? 'spec waits' : 'specs wait'} for you: ${parts.join(', ')}`;
 }
-
-export const VIEW_NAME = 'Specs';
 
 export const TREE_COMMAND_TITLES = {
     select: 'Select Spec',

@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import * as path from 'path';
 import { describe, expect, it } from 'vitest';
-import { OPEN_STUDIO_COMMAND_ID, S2_WELCOME, SELECT_PROJECT_COMMAND_ID } from '../../shared/protocol/texts';
+import { OPEN_STUDIO_COMMAND_ID, S2_WELCOME, SELECT_PROJECT_COMMAND_ID, TREE_COMMAND_TITLES } from '../../shared/protocol/texts';
 
 interface Manifest {
     description?: string;
@@ -243,10 +243,11 @@ describe('extension manifest', () => {
 
     it('AC-011 (0020): contributes the tree\'s own commands with exactly these titles, hidden from the Command Palette', () => {
         const commands = manifest.contributes?.commands ?? [];
-        expect(commands).toContainEqual({ command: 'featherspec-studio.selectSpec', title: 'Select Spec' });
-        expect(commands).toContainEqual({ command: 'featherspec-studio.tree.copyNextStep', title: 'Copy Next Step', icon: '$(copy)' });
-        expect(commands).toContainEqual({ command: 'featherspec-studio.tree.openSpec', title: 'Open Spec' });
-        expect(commands).toContainEqual({ command: 'featherspec-studio.tree.openPlan', title: 'Open Plan' });
+        expect(TREE_COMMAND_TITLES).toEqual({ select: 'Select Spec', copyNextStep: 'Copy Next Step', openSpec: 'Open Spec', openPlan: 'Open Plan' });
+        expect(commands).toContainEqual({ command: 'featherspec-studio.selectSpec', title: TREE_COMMAND_TITLES.select });
+        expect(commands).toContainEqual({ command: 'featherspec-studio.tree.copyNextStep', title: TREE_COMMAND_TITLES.copyNextStep, icon: '$(copy)' });
+        expect(commands).toContainEqual({ command: 'featherspec-studio.tree.openSpec', title: TREE_COMMAND_TITLES.openSpec });
+        expect(commands).toContainEqual({ command: 'featherspec-studio.tree.openPlan', title: TREE_COMMAND_TITLES.openPlan });
         const hidden = (manifest.contributes?.menus?.commandPalette ?? []).filter((entry) => entry.when === 'false').map((entry) => entry.command);
         for (const id of ['selectSpec', 'tree.copyNextStep', 'tree.openSpec', 'tree.openPlan']) {
             expect(hidden).toContain(`featherspec-studio.${id}`);

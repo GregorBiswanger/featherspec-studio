@@ -144,22 +144,17 @@ function Picture(props: { detail: SpecDetailView; fileResult: FileResult | undef
 }
 
 export function SpecDetail(props: {
-    detail: DetailView | undefined;
+    detail: SpecDetailView;
     fileResult: FileResult | undefined;
     copyResult: { ok: boolean; text: string } | undefined;
     onOpen: OpenAt;
     onCopy(text: string): void;
     onClose?: () => void;
     fallback?: () => void;
-    region?: boolean;
 }) {
     const { detail } = props;
-    const frame = { as: props.region === false ? ('div' as const) : ('section' as const), labelled: props.region !== false, onClose: props.onClose, fallback: props.fallback };
-    if (detail === undefined || detail.kind === 'none') {
-        return null;
-    }
     return (
-        <DetailFrame {...frame}>
+        <DetailFrame as="div" labelled={false} onClose={props.onClose} fallback={props.fallback}>
             <Picture key={detail.key} detail={detail} fileResult={props.fileResult} copyResult={props.copyResult} onOpen={props.onOpen} onCopy={props.onCopy} onClose={props.onClose} />
         </DetailFrame>
     );

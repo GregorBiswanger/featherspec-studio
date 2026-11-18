@@ -86,14 +86,14 @@ describe('AC-026: colours come from the theme', () => {
         expect(rulesFor(css, '.ov-row .ov-status').some((rule) => rule.media === undefined && /text-overflow:\s*ellipsis/.test(rule.body))).toBe(true);
     });
 
-    it('AC-031: a focused control and a focused row use the High Contrast active border before the focus border', () => {
-        const rules = rulesFor(css, '[role="option"]:focus-visible');
-        expect(rules.length).toBeGreaterThan(0);
-        for (const rule of rules) {
+    it('AC-031: a focused control uses the High Contrast active border before the focus border, and no rule is left for the removed list rows', () => {
+        const buttons = rulesFor(css, 'button:focus-visible');
+        expect(buttons.length).toBeGreaterThan(0);
+        for (const rule of buttons) {
             expect(rule.body).toMatch(/outline:\s*2px solid var\(--vscode-contrastActiveBorder,\s*var\(--vscode-focusBorder\)\)/);
         }
-        const buttons = rulesFor(css, 'button:focus-visible');
-        expect(buttons.some((rule) => /var\(--vscode-contrastActiveBorder,\s*var\(--vscode-focusBorder\)\)/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '[role="option"]:focus-visible')).toEqual([]);
+        expect(css).not.toContain('[role="option"]');
     });
 
     it('AC-031: the plain borders of rows, navigation items and panels use the contrast border where the theme sets one', () => {

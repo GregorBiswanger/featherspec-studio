@@ -75,7 +75,7 @@ describe('AC-022: the focus indicator', () => {
     });
 
     it('negative control: a stylesheet without the generic focus rule leaves a navigation item without an indicator', async () => {
-        const stripped = (mainCss as string).replace(/button:focus-visible,\s*\[role="option"\]:focus-visible\s*\{[^}]*\}/, '');
+        const stripped = (mainCss as string).replace(/button:focus-visible\s*\{[^}]*\}/, '');
         const container = await open(baseView({ area: 'overview' }));
         const item = container.querySelector('nav button')!;
         expect(focusRulesFor(stripped, item).some(hasVisibleThemeOutline)).toBe(false);
