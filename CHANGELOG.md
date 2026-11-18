@@ -47,7 +47,7 @@ First release.
   `FeatherSpec Studio: Open Plan Map` opens it. The detail of a spec gets a **Plan** section with the same
   stages in short and a link to the map. Returned work (a worker's return note) shows on the step and leads
   to **Integrate the returned steps** as the next step. Studio starts no agent and writes no file.
-- The detail of a spec as a side panel next to the Overview and the Board, with a divider to set its width
+- The detail of a spec as a side panel next to the Overview and the Board, and beside the Plan map from 900 px, with a divider to set its width
   (remembered per workspace; Enter or a double-click resets it); below 900 px the area or the detail shows
   alone and a back button returns. It
   is a picture of the spec's situation: Next step, Problems, Progress (steps and the next open step,

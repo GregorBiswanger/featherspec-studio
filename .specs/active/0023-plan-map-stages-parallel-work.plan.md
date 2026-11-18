@@ -1,9 +1,9 @@
 # Plan — Plan Map: Stages, Parallel Work, Workers
 
 **Spec:** [0023-plan-map-stages-parallel-work.md](0023-plan-map-stages-parallel-work.md)
-**Status:** In Progress
+**Status:** Done
 **Last updated:** 2026-11-18
-**Current step:** T-017
+**Current step:** none
 
 ## Approach
 
@@ -165,8 +165,8 @@ prompts, E-9's two places, E-10's collapsed ways and §6's texts stand as drawn.
   finished stages) are `FileLink`s with a new optional `label` (`aria-label`) = `chipName`, `reason` = the same name;
   a not-found chip is a `span`; a dropped ID sits in `<s>`. No Copy in the section.
 - P-16 Cards: `areas/planMap/StepCard.tsx` = a `div` with a disclosure `button` (`aria-expanded`, `aria-controls`),
-  Files by `PathText`, Covers by `FileLink`, M-09; expanded Do, Verify and `Open in plan`. Expansion per step ID in
-  `PlanMap`, reset by `key={detail.key}` and on mount (every showing). CSS: group `display: flex; flex-wrap: wrap`,
+  Files by `PathText`, Covers by `FileLink`, M-09; expanded Do, Verify and `Open in plan`. Expansion per card occurrence
+  (stage, ID, nth time in the stage; T-010) in `PlanMap`, reset by `key={detail.key}` and on mount (every showing). CSS: group `display: flex; flex-wrap: wrap`,
   card `flex: 1 1 200px; min-width: 200px; max-width: 360px`; no `@media`; theme variables only (0013 guard).
 - P-17 Keys: one tab stop (roving tabindex); grid = card rows in DOM order (a group, or a card of its own); Up/Down →
   `moveFocus(rows, key, 'left' | 'right')`, Left/Right → `'up' | 'down'` (rows as 0007's columns); only the tab-stop
@@ -174,8 +174,9 @@ prompts, E-9's two places, E-10's collapsed ways and §6's texts stand as drawn.
 - P-18 Ways UI: `areas/planMap/Ways.tsx`, a disclosure `Ways to run stage <n>` (chevron) after the current stage's
   cards, collapsed on every showing; prompts in `code` with `PathText command`; Copy prompt `look="secondary"`; M-10
   and start lines with `look="icon"`.
-- P-19 Live updates: expansion by step ID and the ways state by stage number survive a detail update; focus stays on
-  the same card, else `fallbackFocus` over the card rows, else the map heading (AC-012).
+- P-19 Live updates: expansion by card occurrence and the ways state by stage number survive a detail update; focus stays on
+  the same card, else `fallbackFocus` over the card rows, else the map heading; a focused way, Copy or start line that
+  goes hands it to the heading (AC-012, PD-077; T-010, T-011).
 - P-20 Test data: `src/core/planMap/testing/plans.ts` — a fixture read into a memory map with edits (drop notes, set
   the plan status, swap a stage line) and `generatedPlan()` (single, sequential, parallel, mixed with `‖` before and
   after `→`, a struck step, an unknown ID, a step in no stage, no closing); `src/shared/protocol/testing/planSample.ts`
@@ -347,6 +348,7 @@ share `PlanMap.tsx`, the map's test files and this plan.
   red (stub), then green; gates 1–4
 - [x] **Verified (T-006):** 2026-11-18 · `npx vitest run --project webview src/webview/areas/planMap` and `npx vitest run --project node src/adapters/node/webviewCss.test.ts` (new tests of `PlanMap.test.tsx` "0023 AC-008", `Keyboard.test.tsx` "0023 AC-011" and the CSS block written with the stubs absent, then green: 27 and 91 tests passed); gates 1–4: `tsc --noEmit`, `npm run lint`, `npm run compile`, `npm run test:unit` 2746 passed + 3 skipped (+16 timing)
 - **Notes:** `StageRow` renders a finished stage as `StepChip`s and an unfinished one as cards per group (`.plan-group` is the flex row, `→` is a `.plan-arrow` between groups); `PlanMap` holds the expansion (a set of step IDs, reset by `key` on the spec) and the tab stop. The key grid is the card rows in DOM order (each group, the loose row, or each card of a plan without stages) and reuses `moveFocus` of the Board with the axes swapped (Up/Down between rows, Left/Right within a row). Only the tab-stop card's Covers links take `tabIndex 0` (`FileLink` got an optional `tabIndex`); the `Open in plan` link lives in the collapsed panel (`hidden`), so it is out of the tab order until the card is expanded. A modified arrow key (Shift, Alt, Ctrl, Meta) is left alone. Focus fallback after a live update is T-007.
+  *Added in T-017 (compile S78): no red run existed for this step's tests (they were written with the components). The negative control is the mutants now: 27 mutants of T-006's code, 9 survived (M64, M65, M66, M67, M72, M74, M76, M79, M108). M64, M65, M66, M67, M72, M79 (T-014) and M108 (T-015) die; M74 and M76 stay a note (P-27); D2 (an ID twice) was found by the compile's probe and is T-010.*
 
 ### T-007 — The current stage offers its ways; the map follows the files; the sweeps
 
@@ -367,6 +369,7 @@ share `PlanMap.tsx`, the map's test files and this plan.
   red (stub), then green; gates 1–5
 - [x] **Verified (T-007):** 2026-11-18 · `npx vitest run --project webview src/webview` and `npx vitest run --project node src/adapters/node/webviewBundle.test.ts` (new: `PlanMap.test.tsx` "0023 AC-009", "0023 AC-010", "0023 AC-012" 11 tests, `primaryButtons.test.tsx` "0023 AC-010", `userLanguage.test.tsx` "0023 AC-015", `webviewBundle.test.ts` "0023 AC-010, AC-015" 13 tests over the 11 swept fixtures); gates 1–5: eslint `--max-warnings 0`, `tsc --noEmit`, `tsc --noEmit -p src/webview`, `npm run test:unit` 2775 passed + 3 skipped (+16 timing), `npm run compile`. The tests were written after the components, so they were green on first run; a red run against the stub was not done for this step (see Notes).
 - **Notes:** `Ways.tsx` renders the disclosure (collapsed, local state of the stage row, so it survives a model update and resets with another spec) and uses `CopyButton` (`secondary` for the three prompts, `icon` for the start lines, so label, name and 2 s feedback are 0021's and 0022's). The prompts and start lines come from the view (`PlanWaysView`), the lead texts (M-08, M-10) and the heading from `planMapTexts.ts`. The wrapping of prompts uses `PathText command` with `overflow-wrap: break-word`: 0022 AC-002 allows `anywhere` only on step text. Focus after a live update (AC-012): `Stages` remembers the last focused card; when it is gone after an update and the focus left the map's cards, `fallbackFocus` of the Board picks the card at its place, else the map heading. The P-21 sweep renders the Plan map for every spec of the 11 swept fixtures; it scopes the word check to `[data-plan-map]` because the side panel's status tooltip carries a rule ID in the shared `detailView` sample (an existing sample, not the map).
+  *Added in T-017 (compile S78): no red run existed for this step either ("a red run against the stub was not done", above). The negative control is the mutants now: 13 mutants of T-007's code, 2 survived (M105, M107, both the 0022 AC-015 break of prompts); both die since T-015. D3 sat in the focus fallback that these tests never tried; T-011 adds the tests (red first) and PD-077's code.*
 
 ### T-008 — §4 notes, docs, test-title audit, architecture and Memory Bank sync, final gates
 
@@ -501,13 +504,13 @@ Proxy decisions of this round (Gregor delegated; P-25 …), recorded here and in
   negative control now), traceability and handoff; `.memory-bank/activeContext.md` (*Now*, *Changed Recently*, *Validation*);
   `CHANGELOG.md` (the side panel beside the Plan map from 900 px).
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts`; the final gates 1–5 and `npm run compile-tests`
-- [ ] **Verified (T-017):**
-- **Notes:**
+- [x] **Verified (T-017):** 2026-11-18 · `npx vitest run --project node src/adapters/node/docsScan.test.ts` green 130 of 130 (docs scan unchanged, CHANGELOG line extended); the title audit re-run with the compile's scanner: Baseline 2697 → head 2882 titles, the same 7 absent, 0 decreased; final gates `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile && npm run compile-tests` green: `npm run test:unit` 2816 passed + 3 skipped (+16 timing); `git status` clean after the commit
+- **Notes:** Done in this step: the harness evidence under AC-018 (*Manual checks recorded*, from `compile/0023-preview.md`), Windows at `c9845e1` under AC-016, the Baseline note, the T-006 and T-007 notes, traceability rows and handoff, `.memory-bank/activeContext.md` (*Now*, *Active Spec*, *Changed Recently* down to six bullets, *Next*, *Validation*), the CHANGELOG line. Open and kept open: AC-016 (CI at the PR, Windows at the fix head), AC-018's real window, AC-019, AC-020.
 
 ## Test-title audit
 
 Method (0021's): the string literals of `describe`, `it`, `test` and `suite` (with `.each`, `.skip`, `.only`) in every
-`.ts` and `.tsx` under `src`, Baseline `0f3f48a` (the move commit; its code equals `8ce8cb7`) by `git show` against the
+`.ts` and `.tsx` under `src`, Baseline `8ce8cb7` (`src` is identical to `0f3f48a`, the move commit the first run named) by `git show` against the
 head of T-008; titles compared as a multiset (`/tmp/audit-0023/titles.py`, throwaway). Result: Baseline 2672 titles,
 head 2829, **7 absent**, 164 added, none decreased by count. Each absent title is a statement §4 changes; the first
 six are retitled in place, their body kept with three areas, the seventh is a title of the README test.
@@ -522,41 +525,96 @@ six are retitled in place, their body kept with three areas, the seventh is a ti
 | `webviewBundle.test.ts` "starts without a runtime error, renders the frame with the two areas and the loading state, and says hello" | 0020 AC-016 | the same title with "the three areas" |
 | `docsScan.test.ts` "the README names the two tabs, and says Focus on Specs View …" | 0020 §1, README | "the README names the three tabs, and says Focus on Specs View …" |
 
+Re-run at the fix head (T-017, compile S78's scanner `/tmp/c0023s78/tools/titles.js`, built on the TypeScript compiler API and
+counting `context`, `specify` and template titles too): Baseline 2697 titles (2689 distinct) → head 2882 (2873 distinct),
+**the same 7 absent**, 0 decreased, 191 added. The fix round removed and retitled no test: the M64 test keeps its title and
+now expands the card.
+
 Titles kept with changed literals (not absent): `detail.test.ts` "AC-003: the view carries the rule and lines of
 nextStep …" (Integrate), `nextStep.test.ts` "the guide of each case …", `PanelStateView.test.tsx` AC-018.
+
+## Manual checks recorded
+
+**AC-018, the harness part.** `manual: orchestrator (Gregor's delegate) 2026-11-18, harness r4check at c9845e1` (PASS). The
+orchestrator's note `compile/0023-preview.md`, verbatim below; shots and `report-a/b.json` in `preview/r4-0023/` (96 shots, 2
+per view, 48 views). The harness ran at `c9845e1`, the head before this fix round; the fix round changes the keys,
+the focus, the not-found chip and tests, so Gregor's real-window check is the next look at the layout.
+
+> Harness /home/claude/orch/preview (real core at c9845e1), script r4check.mts, shots + report-a/b.json in
+> /home/claude/orch/preview/r4-0023/ (96 shots: 2 per view, 48 views). Projects: `fs110-parallel-synthetic` (as committed: T-004 returned
+> blocked -> spec Blocked), `studio-0015`, and two copies of fs110-parallel-synthetic: `par-open` (plan In Progress, no
+> return notes: stage 2 `‖` current, the three ways with prompts and start lines) and `par-returned` (both steps returned
+> done: "Integrate the returned steps"). Dark, Light, High Contrast; Studio panel 1600 (side panel default 640), 1600 with
+> the divider dragged so the map is 348 px (less than two cards), 1000 (side panel 400), 800 (below 900 px). Per view:
+> the Plan section in the side panel (Overview selection) and the Plan map tab with the spec chosen and the ways opened;
+> a Tab walk of 40 stops from the tab bar.
+>
+> **AC-018 — PASS (delegate)**
+> - No ID, title, prompt, start line, stage heading, closing line or chip row cut in the Plan section or the map
+>   (scrollWidth <= clientWidth) in all 48 views; no `break-all`; the page never scrolls.
+> - `‖` cards: side by side in one row at 1600 (map 928 px, cards 360) and 1000 (map 568, cards 275); at map 348 px they
+>   wrap to two rows of 338 px, uncut, no card wider than its group.
+> - Below 900 px the map shows alone (no side panel, no divider); the Overview selection shows the detail alone with
+>   `Back to Overview`.
+> - Every Copy fully visible (none clipped by its scroller) and reached by Tab in view: par-open 12–14 Copy stops
+>   (`Copy prompt: Implement the whole stage 2 of … in sequence` / `with subagents` / start lines), par-returned the
+>   `/sdd-plan` Integrate prompt; at most two filled buttons in Dark and Light (the detail's first-line Copy and the
+>   Now row's; the map uses secondary and icon Copies only).
+> - Integrate: par-returned shows `Integrate the returned steps` with `/sdd-plan <spec>` in the detail; the stage row says
+>   `All steps returned: the next step integrates them.`; the Blocked fixture shows `Find out what blocks` and no ways.
+>
+> **Observations for Gregor's real-window check (not fails)**
+> - The `next` chip glyph `◐` renders narrow in the harness's headless font; check it reads as "next" in VS Code's font.
+> - Progress keeps `Next open step: T-003` while both stage-2 steps are returned (unticked until the integrate run);
+>   consistent with the plan file, worth a look for wording.
+> - Long ways text: the open stage's "Ways to run stage 2" body is long at 1000 px (scrolls inside the map).
+>
+> **Open**
+> - AC-019 (build part) and AC-020: Gregor on a re-cut tip-splitter with Claude Code and Copilot.
+> - CI at the PR. Windows at c9845e1: unit 2788 passed, 7 skipped, +16 timing; npm test 31+1+1+1 (green).
+
+**Still open (Gregor):** AC-018 in a real window (also the three observations above), AC-019's build part, AC-020 on a
+re-cut `tip-splitter` with both assistants.
 
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001 | `src/core/planMap/planMap.ts`, `src/shared/protocol/planMap.ts`, `planMapTexts.ts` | `planMap.test.ts` (0023 AC-001), `src/shared/protocol/planMap.test.ts` | verified |
-| AC-002 | T-001, T-002 | `src/core/planMap/planMap.ts` | `planMap.test.ts` (0023 AC-002) | verified |
+| AC-001 | T-001, T-013 | `src/core/planMap/planMap.ts`, `src/shared/protocol/planMap.ts`, `planMapTexts.ts` | `planMap.test.ts` (0023 AC-001), `src/shared/protocol/planMap.test.ts` | verified |
+| AC-002 | T-001, T-002, T-013 | `src/core/planMap/planMap.ts` | `planMap.test.ts` (0023 AC-002) | verified |
 | AC-003 | T-003, T-005 | `src/core/board/detail.ts`, `src/core/board/boardService.ts`, `src/webview/detail/PlanSection.tsx`, `src/webview/ui/StepChip.tsx` | `planMap.test.ts`, `detail.test.ts`, `boardService.test.ts`, `PlanSection.test.tsx`, `SpecDetail.test.tsx` (0023 AC-003) | verified |
-| AC-004 | T-005 | `src/webview/detail/PlanSection.tsx`, `src/webview/ui/StepChip.tsx` | `PlanSection.test.tsx` (0023 AC-004) | verified |
+| AC-004 | T-005, T-014 | `src/webview/detail/PlanSection.tsx`, `src/webview/ui/StepChip.tsx` | `PlanSection.test.tsx` (0023 AC-004) | verified |
 | AC-005 | T-005 | `src/webview/detail/PlanSection.tsx`, `src/webview/areas/planMap/focus.ts` | `PlanSection.test.tsx` (0023 AC-005) | verified |
-| AC-006 | T-004 | `src/shared/protocol/areas.ts`, `src/adapters/vscode/commands.ts`, `package.json`, `src/webview/areas/registry.tsx`, `src/webview/board/icons.tsx` | `messages.test.ts`, `App.test.tsx`, `shellService.navigation.test.ts` (0023 AC-006), `manifest.test.ts` | verified |
+| AC-006 | T-004, T-016 | `src/shared/protocol/areas.ts`, `src/adapters/vscode/commands.ts`, `package.json`, `src/webview/areas/registry.tsx`, `src/webview/board/icons.tsx` | `messages.test.ts`, `App.test.tsx`, `shellService.navigation.test.ts` (0023 AC-006), `manifest.test.ts` | verified |
 | AC-007 | T-004 | `src/webview/App.tsx`, `src/webview/areas/planMap/PlanMap.tsx`, `src/core/planMap/planSpecs.ts` | `PlanMap.test.tsx` (0023 AC-007), `SidePanel.test.tsx` | verified |
-| AC-008 | T-004, T-006 | `src/webview/areas/planMap/{PlanMap,StageRow,StepCard}.tsx`, `src/shared/protocol/planMapTexts.ts`, `src/webview/main.css` | `PlanMap.test.tsx` (0023 AC-008), `webviewCss.test.ts` (0023 AC-008, AC-011) | verified |
-| AC-009 | T-002, T-007 | `src/core/planMap/planMap.ts`, `src/webview/areas/planMap/Ways.tsx` | `planMap.test.ts`, `PlanMap.test.tsx` (0023 AC-009) | verified |
+| AC-008 | T-004, T-006, T-010, T-012, T-013, T-014, T-015 | `src/webview/areas/planMap/{PlanMap,StageRow,StepCard}.tsx`, `src/webview/areas/planMap/cardKeys.ts`, `src/shared/protocol/planMapTexts.ts`, `src/webview/main.css` | `PlanMap.test.tsx` (0023 AC-008), `webviewCss.test.ts` (0023 AC-008, AC-011) | verified |
+| AC-009 | T-002, T-007, T-009 | `src/core/planMap/planMap.ts`, `src/webview/areas/planMap/Ways.tsx` | `planMap.test.ts`, `PlanMap.test.tsx` (0023 AC-009) | verified |
 | AC-010 | T-007 | `src/webview/areas/planMap/Ways.tsx`, `src/webview/ui/CopyButton.tsx` | `PlanMap.test.tsx` (0023 AC-010), `primaryButtons.test.tsx`, `webviewBundle.test.ts` (0023 AC-010, AC-015) | verified |
-| AC-011 | T-006 | `src/webview/areas/planMap/PlanMap.tsx`, `src/webview/ui/FileLink.tsx` | `Keyboard.test.tsx` (0023 AC-011), `webviewCss.test.ts` | verified |
-| AC-012 | T-001, T-003, T-007 | `src/core/planMap/planMap.ts`, `src/core/board/boardService.ts`, `src/webview/areas/planMap/PlanMap.tsx` | `planMap.test.ts`, `boardService.timing.test.ts`, `PlanMap.test.tsx` (0023 AC-012) | verified |
+| AC-011 | T-006, T-010, T-014 | `src/webview/areas/planMap/PlanMap.tsx`, `src/webview/ui/FileLink.tsx`, `src/webview/areas/planMap/cardKeys.ts` | `Keyboard.test.tsx` (0023 AC-011), `webviewCss.test.ts` | verified |
+| AC-012 | T-001, T-003, T-007, T-011, T-013 | `src/core/planMap/planMap.ts`, `src/core/board/boardService.ts`, `src/webview/areas/planMap/PlanMap.tsx` | `planMap.test.ts`, `boardService.timing.test.ts`, `PlanMap.test.tsx` (0023 AC-012) | verified |
 | AC-013 | T-002 | `src/core/board/nextStep.ts`, `src/shared/protocol/nextStepTexts.ts` | `nextStep.test.ts`, `stepTips.test.ts` (0023 AC-013) | verified |
 | AC-014 | T-003 | `src/core/planMap/planMap.ts` | `noWrite.test.ts`, `planMap.test.ts` (0023 AC-014) | verified |
 | AC-015 | T-007 | `src/shared/protocol/planMapTexts.ts`, `src/shared/protocol/nextStepTexts.ts` | `userLanguage.test.tsx` (0023 AC-015), `webviewBundle.test.ts` | verified |
-| AC-016 | T-008 | `/tmp/audit-0023/titles.py` (throwaway), this plan's *Test-title audit* | the audit: 7 absent titles, every one listed; `npm run test:unit` green; `npm test` on Windows and CI open | verified (`npm test` open) |
+| AC-016 | T-008, T-017 | `/tmp/audit-0023/titles.py` (throwaway), this plan's *Test-title audit* | the audit: 7 absent titles, every one listed; `npm run test:unit` green; `npm test` on Windows and CI open | open: unit and the audit verified; Windows at `c9845e1` (before the fix round): unit 2788 passed, 7 skipped, +16 timing, `npm test` 31+1+1+1 green; Windows at the fix head and CI at the PR open |
 | AC-017 | T-008 | `README.md`, `CHANGELOG.md`, `docs/release-checklist.md`, `.claude/rules/ux-guidelines.md`, `docs/product/ux-guidelines.md`, §4 notes in 0005, 0013, 0015–0022 and ADR-001 | `docsScan.test.ts` (product docs after 0023) | verified |
-| AC-018 | T-008 | `docs/release-checklist.md` (Plan map (0023)) | manual: orchestrator's preview harness, then Gregor | open |
+| AC-018 | T-008, T-017 | `docs/release-checklist.md` (Plan map (0023)) | manual: orchestrator (Gregor's delegate) 2026-11-18, harness r4check at c9845e1 (PASS, *Manual checks recorded*); then Gregor in a real window | open (Gregor) |
 | AC-019 | T-008 | `docs/release-checklist.md` (Plan map (0023)) | manual: Gregor; draft part answered by PD-076 (*Research*), build part open | open |
 | AC-020 | T-008 | `docs/release-checklist.md` (Plan map (0023)) | manual: Gregor with two assistants on a re-cut `tip-splitter` | open |
 
 ## Session handoff
 
-- **Done so far:** T-001…T-008 verified 2026-11-18, one commit per step; the plan is Done, the spec stays In Progress
-  until AC-018–AC-020 are checked and a fresh `/sdd-compile` reads READY.
-- **Next action:** the orchestrator's preview harness for AC-018, then Gregor: AC-019 (build part) and AC-020 on a
-  re-cut `tip-splitter`; `npm test` on Windows and CI; `/sdd-compile`.
-- **Open decisions:** none for Gregor beyond the manual checks; proxies P-1…P-24 above and those in the step Notes.
-- **Baseline:** 8ce8cb7 (head before the first step commit, 2026-11-18)
+- **Done so far:** T-001…T-008 verified 2026-11-18, one commit per step; the compile S78 found D1…D3 and test gaps; the fix
+  round T-009…T-017 (stage 5) is verified, one commit per step: D1 (the ways need no return note, Ready included), D2
+  (cards, grid, tab stop and expansion by occurrence), D3 (PD-077: a removed way, Copy or start line hands the focus to the
+  heading; AC-012 revised), F1 (a not-found ID is a chip), the survivors M01, M02, M17, M21, M22, M24, M64…M67, M72, M79, M90,
+  M105, M107, M108 and M54 closed, the comment, the `any` and the dead constant gone, the evidence recorded. The plan is Done;
+  the spec stays In Progress until AC-016 (CI), AC-018 (real window), AC-019 and AC-020 are checked and a fresh `/sdd-compile`
+  reads READY.
+- **Next action:** `npm test` on Windows at the fix head and CI at the PR (AC-016); the orchestrator's harness may run
+  again at the fix head; then Gregor: AC-018 in a real window, AC-019 (build part) and AC-020 on a re-cut `tip-splitter`;
+  then `/sdd-compile` in a fresh session. 0024 (planned, `eac4559`) waits for this fix and is not built.
+- **Open decisions:** none for Gregor beyond the manual checks; proxies P-1…P-28 above and those in the step Notes (M74 and
+  M76 are notes only, F3 is not done: P-27, P-28).
+- **Baseline:** 8ce8cb7 (head before the first step commit, 2026-11-18; `src` identical to `0f3f48a`, the move commit)
 - **Environment:** `npm test` (host smoke, including `src/test/shell.smoke.test.ts`) only on Windows and CI; layout
   checks in the orchestrator's harness.
