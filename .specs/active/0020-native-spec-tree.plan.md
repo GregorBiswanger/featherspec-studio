@@ -371,7 +371,7 @@ and the host smoke, so they stay `→`.
   §5 rows; `git diff <Baseline> -- docs/product/product-decisions.md` empty; gates 1–5;
   `npm run compile-tests`; `npm test` on Windows and CI (pre-done gate); AC-022 manual: Gregor or
   his delegate in a real VS Code (no command sees VS Code's native tree drawing)
-- [x] **Verified (T-008):** 2026-11-18, agent sandbox: `docsScan.test.ts` red first on a scratch copy of the T-007 head (17 failed of 72: no Spec Explorer in README, checklist, design brief, AGENTS.md and `.architecture`, the README names, the checklist item, CHANGELOG, the nine `Amended by 0020` counts), then green (72 passed); `grep -c "Amended by 0020"`: 0005 28, 0007 6, 0013 4, 0015 3, 0016 4, 0017 2, 0018 5, 0019 8, ADR-001 1 (each at least its §5 rows); `git diff 16fc52b -- docs/product/product-decisions.md` empty; test-title audit below (44 absent, all explained); eslint, `tsc --noEmit`, `tsc --noEmit -p src/webview` clean; `npm run test:unit` 139 files, 2217 passed + 3 skipped (timing project 13 passed); `npm run compile` and `npm run compile-tests` green. Not run here: `npm test` on Windows and CI (host tests), AC-022 (manual, Gregor or his delegate).
+- [x] **Verified (T-008):** 2026-11-18, agent sandbox: `docsScan.test.ts` red first on a scratch copy of the T-007 head (17 failed of 72: no Spec Explorer in README, checklist, design brief, AGENTS.md and `.architecture`, the README names, the checklist item, CHANGELOG, the nine `Amended by 0020` counts), then green (72 passed); `grep -c "Amended by 0020"`: 0005 28, 0007 6, 0013 4, 0015 3, 0016 4, 0017 2, 0018 5, 0019 8, ADR-001 1 (each at least its §5 rows); `git diff 16fc52b -- docs/product/product-decisions.md` empty; test-title audit below (44 absent, all explained); eslint, `tsc --noEmit`, `tsc --noEmit -p src/webview` clean; `npm run test:unit` 139 files, 2217 passed + 3 skipped (timing project 13 passed); `npm run compile` and `npm run compile-tests` green. Not run here: `npm test` on Windows and CI (host tests), AC-022 (manual, Gregor or his delegate). Recorded later the same day (STATE.md): Windows 11 at `77f585b`: `npm run test:unit` 2213 passed / 7 skipped + 13 timing, `npm test` 30 + 1 + 1 + 1 green; CI run 44277740119 at `77f585b`: success (the host tests AC-009, AC-013, AC-019 ran there). The compile of 2026-11-18 (NOT READY: D1-D3, G1-G5, F1-F9) is answered by T-009…T-016.
 - **Notes:** (1) Deletes: none in this step. (2) The §5 notes are one `*Amended by 0020 (PD-058): …*` line under each named statement (bullet, paragraph, table or heading), inserted by a throwaway script (`/tmp/audit-0020/note.py`); the PD register is untouched. (3) README: the section "The Specs view" replaces "Spec Explorer"; the new `media/screenshots/spec-detail-light.png` is a preview-harness screenshot (Board, side panel of `studio-0015`, Light, 1400x900) taken on a scratch build of the T-007 head; the old `spec-explorer-detail-light.png` is now unreferenced and stays on disk: its deletion is Ask-first and proposed to Gregor. (4) `docsScan.test.ts` got a 0020 describe block (gone terms in README, checklist, design brief, AGENTS.md, `.architecture`; README names and screenshot files; checklist item; CHANGELOG; the nine note counts); CHANGELOG history is exempt. (5) `/sdd-architecture-update` changed exactly the lines the step names (the plan's approval is the confirmation); `adapters.md` also names the tree adapter and the editor's active-group rule. (6) The audit's "present" test is the same literal in any file at the head; template-literal titles are compared as written. (7) Checklist item "Keyboard and screen reader" is added beside AC-022 as a cheap extra for the same manual session.
 
 ### T-009 — Equal numbers are ordered by path (compile D1, G1)
@@ -437,8 +437,8 @@ and the host smoke, so they stay `→`.
 - **Covers:** AC-021, AC-022 (state only; the manual check stays open)
 - **Do:** Traceability rows to `verified` where a passing deciding test ran (AC-001…AC-020 with the Windows run at `77f585b` plus this round's runs; AC-021 after T-015; AC-022 stays `open`, manual). T-008 `Verified:` and the handoff record Windows at `77f585b` (unit 2213 passed / 7 skipped + 13 timing; `npm test` 30+1+1+1) and CI 44277740119. `.memory-bank/activeContext.md` Now / Validation / Next: 0020 implemented, compiled NOT READY, fixed by T-009…T-016; next: Windows and CI at the fix head, Gregor's AC-022, a fresh `/sdd-compile` for 0014–0020. 0019 plan: the orchestrator's harness result on the AC-022 row and T-017 Notes (docs only).
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts`; full gates of `IMPL-UX.md`
-- [ ] **Verified (T-016):**
-- **Notes:**
+- [x] **Verified (T-016):** 2026-11-18: full gates of IMPL-UX at the head of this step: `npx eslint src --max-warnings 0` 0, `npx tsc --noEmit` 0, `npx tsc --noEmit -p src/webview` 0, `npm run test:unit` 138 files passed + 1 skipped, 2221 passed + 3 skipped, timing 10 files, 13 passed, `npm run compile` 0, `npm run compile-tests` 0; `docsScan.test.ts` 74/74; traceability: AC-001…AC-021 verified, AC-022 open (manual); T-008 Verified and the handoff carry Windows at 77f585b (unit 2213 / 7 skipped + 13 timing, `npm test` 30+1+1+1) and CI 44277740119.
+- **Notes:** Docs only in this step. activeContext.md (53 lines): Now, Active Spec, Changed Recently, Next 0a and Validation. The 0019 plan carries the orchestrator's harness result on its AC-022 row and in T-017 Notes (docs only, no 0019 code touched). docs/release-checklist.md: the README-screenshots item names the new files. Windows and CI at the fix head are still to run (Next action).
 
 ## Test-title audit (0020 AC-021)
 
@@ -512,33 +512,33 @@ Not at the Baseline, homed for the record: `areas.timing.test.tsx` describe "002
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001 | src/core/shell/specTree.ts:buildSpecTree | specTree.test.ts "AC-001: the groups" | built |
-| AC-002 | T-001, T-005 | src/core/shell/specTree.ts:rowId, groupsOf | specTree.test.ts "AC-002: expand state and IDs" | built |
-| AC-003 | T-001 | src/core/shell/specTree.ts:compareRows | specTree.test.ts "AC-003: the order" | built |
-| AC-004 | T-001 | src/core/shell/specTree.ts:rowOf | specTree.test.ts "AC-004: the row texts" | built |
-| AC-005 | T-001 | src/core/shell/specTree.ts:STATE_ICONS | specTree.test.ts "AC-005: icons and colours" | built |
-| AC-006 | T-002, T-005 | src/core/shell/specTree.ts:tooltipOf | specTree.test.ts "AC-006: the tooltip" | built |
-| AC-007 | T-004 | src/core/shell/treeActions.ts:copy; src/core/copyNextStep/copyNextStep.ts:copy | treeActions.test.ts "AC-007"; copyNextStep.test.ts "AC-007" | built |
-| AC-008 | T-004 | src/core/shell/treeActions.ts:open; src/adapters/vscode/editor.ts; src/core/board/openFile.ts | treeActions.test.ts "AC-008"; editor.test.ts "AC-008"; openFile.test.ts "AC-008" | built |
-| AC-009 | T-004, T-005 | src/core/shell/treeActions.ts:select | treeActions.test.ts "AC-009" | built |
-| AC-010 | T-002, T-005 | src/core/shell/specTree.ts:badgeOf | specTree.test.ts "AC-010: the badge" | built |
-| AC-011 | T-002, T-005 | package.json; src/adapters/vscode/studioTree.ts; src/adapters/vscode/commands.ts | manifest.test.ts "AC-011 (0020)"; studioTree.test.ts | built |
-| AC-012 | T-002, T-005 | src/core/shell/specTree.ts:buildSpecTree | specTree.test.ts "AC-012: the states of the view" | built |
-| AC-013 | T-003, T-005 | src/core/shell/specTreeService.ts | specTreeService.test.ts, specTreeService.timing.test.ts "AC-013" | built |
-| AC-014 | T-004 | src/core/shell/treeActions.ts | treeActions.test.ts "AC-014" | built |
-| AC-015 | T-005, T-006 | package.json (inline Copy only) | manifest.test.ts "AC-011, AC-015 (0020)" | built |
-| AC-016 | T-006, T-007 | src/shared/protocol/areas.ts; src/webview/areas/registry.tsx | messages.test.ts "AC-016"; App.test.tsx "AC-016" | built |
-| AC-017 | T-006 | src/core/shell/uiMemory.ts:parseUiMemory | uiMemory.test.ts "AC-017"; shellService.navigation.test.ts "AC-017" | built |
-| AC-018 | T-007, T-008 | src/core/shell/uiMemory.ts (the one mapping); src/webview/main.css; README, checklist, design brief, `.architecture` | sourceScan.test.ts "AC-018"; webviewCss.test.ts "AC-018"; docsScan.test.ts "product docs after 0020 (AC-018, AC-020)" | built |
-| AC-019 | T-005 | src/extension.ts; src/test/shell.smoke.test.ts | shell.smoke.test.ts "AC-019" (host, CI) | built |
-| AC-020 | T-008 | the nine files with `Amended by 0020` notes | docsScan.test.ts "carries at least n notes of 0020" (nine) | built |
-| AC-021 | T-008 | `## Test-title audit` in this plan | the audit script; `npm run test:unit` (`npm test` on Windows and CI still to run) | built |
+| AC-001 | T-001 | src/core/shell/specTree.ts:buildSpecTree | specTree.test.ts "AC-001: the groups" | verified |
+| AC-002 | T-001, T-005 | src/core/shell/specTree.ts:rowId, groupsOf | specTree.test.ts "AC-002: expand state and IDs" | verified |
+| AC-003 | T-001, T-009 | src/core/shell/specTree.ts:compareRows | specTree.test.ts "AC-003: the order" (equal numbers by path, entries in model order and reversed) | verified |
+| AC-004 | T-001 | src/core/shell/specTree.ts:rowOf | specTree.test.ts "AC-004: the row texts" | verified |
+| AC-005 | T-001 | src/core/shell/specTree.ts:STATE_ICONS | specTree.test.ts "AC-005: icons and colours" | verified |
+| AC-006 | T-002, T-005 | src/core/shell/specTree.ts:tooltipOf | specTree.test.ts "AC-006: the tooltip" | verified |
+| AC-007 | T-004 | src/core/shell/treeActions.ts:copy; src/core/copyNextStep/copyNextStep.ts:copy | treeActions.test.ts "AC-007"; copyNextStep.test.ts "AC-007" | verified |
+| AC-008 | T-004 | src/core/shell/treeActions.ts:open; src/adapters/vscode/editor.ts; src/core/board/openFile.ts | treeActions.test.ts "AC-008"; editor.test.ts "AC-008"; openFile.test.ts "AC-008" | verified |
+| AC-009 | T-004, T-005, T-010 | src/core/shell/treeActions.ts:select | treeActions.test.ts "AC-009" (incl. the start path: a target set before the panel closed is gone); host "AC-009 (0020)" | verified |
+| AC-010 | T-002, T-005 | src/core/shell/specTree.ts:badgeOf | specTree.test.ts "AC-010: the badge" | verified |
+| AC-011 | T-002, T-005, T-011 | package.json; src/adapters/vscode/studioTree.ts; src/adapters/vscode/commands.ts | manifest.test.ts "AC-011 (0020)"; studioTree.test.ts; specTreeService.test.ts (view description with two projects, one active) | verified |
+| AC-012 | T-002, T-005 | src/core/shell/specTree.ts:buildSpecTree | specTree.test.ts "AC-012: the states of the view" | verified |
+| AC-013 | T-003, T-005 | src/core/shell/specTreeService.ts | specTreeService.test.ts, specTreeService.timing.test.ts "AC-013" | verified |
+| AC-014 | T-004 | src/core/shell/treeActions.ts | treeActions.test.ts "AC-014" | verified |
+| AC-015 | T-005, T-006 | package.json (inline Copy only) | manifest.test.ts "AC-011, AC-015 (0020)" | verified |
+| AC-016 | T-006, T-007 | src/shared/protocol/areas.ts; src/webview/areas/registry.tsx | messages.test.ts "AC-016"; App.test.tsx "AC-016" | verified |
+| AC-017 | T-006 | src/core/shell/uiMemory.ts:parseUiMemory | uiMemory.test.ts "AC-017"; shellService.navigation.test.ts "AC-017" | verified |
+| AC-018 | T-007, T-008, T-013, T-014 | src/core/shell/uiMemory.ts (the one mapping); src/webview/main.css; README, checklist, design brief, `.architecture` | sourceScan.test.ts "AC-018"; webviewCss.test.ts "AC-018"; docsScan.test.ts "product docs after 0020 (AC-018, AC-020)" | verified |
+| AC-019 | T-005 | src/extension.ts; src/test/shell.smoke.test.ts | shell.smoke.test.ts "AC-019" (host, CI) | verified |
+| AC-020 | T-008, T-014, T-015 | the nine files with `Amended by 0020` notes | docsScan.test.ts "carries its n notes of 0020" (nine, the §5 counts) | verified |
+| AC-021 | T-008, T-015 | `## Test-title audit` in this plan | the audit script; `npm run test:unit` (`npm test` on Windows and CI at 77f585b; at the fix head still to run); the re-run at the fix head homes all 50 absent titles (T-015) | verified |
 | AC-022 | T-008 | docs/release-checklist.md "The native Specs tree (0020)" | manual: Gregor or his delegate (pre-release checklist) | open |
 
 ## Session handoff
 
-- **Done so far:** all eight steps verified and committed; the plan is Done. The spec stays `In Progress` in `active/` (no `/sdd-compile`, no move to done).
-- **Next action:** Gregor or his delegate: `npm test` on Windows and CI (host tests AC-009, AC-013, AC-019), AC-022 in a real window on `tip-splitter` (release checklist), read the proxy decisions P-1…P-24 and the step Notes; then `/sdd-compile` in a fresh session. Ask-first: delete `media/screenshots/spec-explorer-detail-light.png` (unreferenced).
-- **Open decisions:** none; P-1…P-24 stand unless Gregor changes them.
-- **Baseline:** `16fc52b` (HEAD before the first step commit; started 2026-11-18 on Gregor's delegated start signal)
+- **Done so far:** T-001…T-008 (the implementation) and T-009…T-016 (the fixes of the compile, NOT READY with D1-D3, G1-G5, F1-F9) verified and committed; the plan is Done. The spec stays `In Progress` in `active/` (no `/sdd-compile`, no move to done). Fixed: equal numbers by path (D1, G1), gap tests for the start path, the view description, the README and the note counts (G2-G5), the timing title and three weak tests (F2, F3), the leftovers of the removal (F4: `RuleText`, `VIEW_NAME`, `TITLE_NOT_AVAILABLE`, a dead selector, `SpecDetail`'s dead branch), the wording (F6), the audit homes, the 0013 note and the 0005 pointers (D2, D3, F1), three outdated or unreferenced screenshots deleted and two current ones added (F9).
+- **Next action:** Windows `npm run test:unit` and `npm test` and CI at the fix head (the host tests are unchanged since `77f585b`, but T-013 touched `SpecDetail`, `SidePanel`, `texts.ts` and the CSS); Gregor's AC-022 on `tip-splitter` (release checklist; the keyboard item too); then a fresh `/sdd-compile` for 0020 (and for 0014…0019).
+- **Open decisions:** none; P-1…P-24 stand unless Gregor changes them. Proxy decisions of the fix round: see the T-009…T-016 notes.
+- **Baseline:** `16fc52b` (HEAD before the first step commit; started 2026-11-18 on Gregor's delegated start signal); fix round from `77f585b`.
 - **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here).

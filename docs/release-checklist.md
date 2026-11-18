@@ -119,9 +119,9 @@ and the expected result. A clear miss reopens the named spec.
   columns as strips, a collapsed Done with its toggle and cards of three rows; everything fits without
   vertical scrolling for the fixture, text stays legible and the panel header's tooltip shows the version and
   the update time. Compare with the screenshots from the preview harness.
-- [ ] **README screenshots**: replace `media/screenshots/mission-control-dark.png` and
-  `spec-board-dark.png` with harness screenshots of the Overview and the Board (the files keep their names;
-  the README headings and alt texts already say Overview and Board).
+- [ ] **README screenshots**: `media/screenshots/overview-dark.png` and `board-dark.png` are harness
+  screenshots of the Overview and the Board taken at `77f585b` (Dark, 1400×900, two tabs, no selection); look
+  at them against the head and retake them if the layout changed since.
 
 ## The detail as a side panel (0019)
 
