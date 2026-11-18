@@ -40,7 +40,7 @@ describe('0024 AC-004: the default target of the step\'s session', () => {
 
 describe('0024 AC-011: the assistant core needs neither trust nor a writer', () => {
     it('the core files that offer and choose name no trust, writer, Restricted Mode or reader window', async () => {
-        for (const file of ['assistants.ts', 'offer.ts', 'sendView.ts']) {
+        for (const file of ['assistants.ts', 'offer.ts', 'sendView.ts', 'send.ts']) {
             const source = await fs.readFile(path.resolve(process.cwd(), 'src', 'core', 'assistant', file), 'utf8');
             expect(source, file).not.toMatch(/trust|writer|restricted|\breader\b/i);
         }

@@ -525,7 +525,8 @@ them all." No step above is renumbered or edited except where its note says so. 
     - `sendView.test.ts` "0024 AC-011": `send.ts` joins the scanned files (M10), with the negative control the scan has.
   - Code: `send.ts` (the `extension()` call inside the guarded part); the scan list.
 - **Verify:** `npx vitest run --project node src/core/assistant` red, then green; gates 1–4
-- [ ] **Verified (T-009):**
+- [x] **Verified (T-009):** 2026-11-18 red: `npx vitest run --project node src/core/assistant` 3 failed (a synchronous throw from `host.extension()` gave the raw message twice, a synchronous throw from `commands()` gave `list failed`); the late-activation, late-list and scan tests were green at once and got their negative controls; mutants against them: no `isSettled()` after the activation (M36), none after `commands()` (M37), a `restricted` name planted in `send.ts` (M10): each 1 failed (killed). Green after: 123 passed. Gates: eslint 0 warnings, both tsc clean, `npm run test:unit` 3091 passed + 3 skipped (+18 timing), compile and compile-tests green.
+- **Notes:** P-20 recorded. A rejecting `commands()` was already "command <first> not found"; now also for a synchronous throw. M63 and M73 stay noted only (equivalent or likely equivalent).
 
 ### T-010 — Focus inside the split button is decided at the moment of the change
 

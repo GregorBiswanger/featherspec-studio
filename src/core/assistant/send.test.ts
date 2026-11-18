@@ -321,6 +321,143 @@ describe('0024 AC-006: a failed Send copies the line, warns once and writes one 
     });
 });
 
+describe('0024 AC-006: nothing runs once the 5000 ms fallback has settled, and unexpected errors map to a §7 cause', () => {
+    const settle = (): Promise<void> => new Promise((resolve) => setImmediate(resolve));
+
+    it('an activation that resolves after the 5000 ms: no command list is used and no call is made', async () => {
+        const w = offered('copilot');
+        w.host.install(COPILOT, { active: false });
+        let release: (() => void) | undefined;
+        let listed = 0;
+        w.host.activate = () =>
+            new Promise<void>((resolve) => {
+                release = resolve;
+            });
+        w.host.commands = async () => {
+            listed += 1;
+            return [...ALL_COMMANDS];
+        };
+        let outcome: unknown;
+        void w.send(request('copilot', 'new')).then((result) => (outcome = result));
+        await settle();
+        w.clock.advance(SEND_TIMEOUT_MS);
+        await settle();
+        expect(outcome).toEqual({ outcome: 'copied', text: 'Copied to the clipboard.' });
+        release?.();
+        await settle();
+        expect(listed).toBe(0);
+        expect(w.host.calls).toEqual([]);
+        expect(w.written).toEqual([LINE]);
+        expect(w.warned).toHaveLength(1);
+        expect(w.blocks).toHaveLength(1);
+    });
+
+    it('negative control: the same activation resolving before the 5000 ms lists the commands and makes the calls', async () => {
+        const w = offered('copilot');
+        w.host.install(COPILOT, { active: false });
+        let release: (() => void) | undefined;
+        w.host.activate = () =>
+            new Promise<void>((resolve) => {
+                release = resolve;
+            });
+        let outcome: unknown;
+        void w.send(request('copilot', 'new')).then((result) => (outcome = result));
+        await settle();
+        w.clock.advance(SEND_TIMEOUT_MS - 1);
+        release?.();
+        await settle();
+        expect((outcome as { outcome: string }).outcome).toBe('opened');
+        expect(w.host.calls.map((call) => call.command)).toEqual([NEW_CHAT, OPEN]);
+    });
+
+    it('a command list that resolves after the 5000 ms: no call is made', async () => {
+        const w = offered('claudeCode');
+        let release: ((commands: readonly string[]) => void) | undefined;
+        w.host.commands = () =>
+            new Promise<readonly string[]>((resolve) => {
+                release = resolve;
+            });
+        let outcome: unknown;
+        void w.send(request('claudeCode', 'new')).then((result) => (outcome = result));
+        await settle();
+        w.clock.advance(SEND_TIMEOUT_MS);
+        await settle();
+        expect(outcome).toEqual({ outcome: 'copied', text: 'Copied to the clipboard.' });
+        release?.([...ALL_COMMANDS]);
+        await settle();
+        expect(w.host.calls).toEqual([]);
+        expect(w.written).toEqual([LINE]);
+        expect(w.warned).toHaveLength(1);
+        expect(w.blocks).toHaveLength(1);
+    });
+
+    it('negative control: the same command list resolving before the 5000 ms makes the call', async () => {
+        const w = offered('claudeCode');
+        let release: ((commands: readonly string[]) => void) | undefined;
+        w.host.commands = () =>
+            new Promise<readonly string[]>((resolve) => {
+                release = resolve;
+            });
+        let outcome: unknown;
+        void w.send(request('claudeCode', 'new')).then((result) => (outcome = result));
+        await settle();
+        w.clock.advance(SEND_TIMEOUT_MS - 1);
+        release?.([...ALL_COMMANDS]);
+        await settle();
+        expect((outcome as { outcome: string }).outcome).toBe('opened');
+        expect(w.host.calls.map((call) => call.command)).toEqual([CLAUDE_OPEN]);
+    });
+
+    it.each([
+        { assistant: 'copilot', target: 'new', name: 'Copilot', first: NEW_CHAT },
+        { assistant: 'copilot', target: 'current', name: 'Copilot', first: OPEN },
+        { assistant: 'claudeCode', target: 'new', name: 'Claude Code', first: CLAUDE_OPEN },
+    ] as const)('a rejecting command list ($assistant, $target): the cause is "command <first command> not found", one warning, one Output block, the line copied', async (entry) => {
+        const w = offered(entry.assistant);
+        w.host.commands = () => Promise.reject(new Error('list failed'));
+        const result = await w.send(request(entry.assistant, entry.target));
+        expect(result.outcome).toBe('copied');
+        expect(w.host.calls).toEqual([]);
+        expect(w.written).toEqual([LINE]);
+        expect(w.warned).toHaveLength(1);
+        expect(w.blocks).toEqual([[`Send to ${entry.name} failed (command ${entry.first} not found); the prompt was copied instead.`]]);
+    });
+
+    it('a command list that throws synchronously gives the same cause', async () => {
+        const w = offered('claudeCode');
+        w.host.commands = () => {
+            throw new Error('list failed');
+        };
+        const result = await w.send(request('claudeCode', 'new'));
+        expect(result.outcome).toBe('copied');
+        expect(w.blocks).toEqual([[`Send to Claude Code failed (command ${CLAUDE_OPEN} not found); the prompt was copied instead.`]]);
+    });
+
+    it.each([
+        { assistant: 'copilot', target: 'new', name: 'Copilot', id: COPILOT },
+        { assistant: 'claudeCode', target: 'new', name: 'Claude Code', id: CLAUDE },
+    ] as const)('a synchronous throw from the host while looking for the extension ($assistant): the cause is "extension <ID> not found", never the raw message', async (entry) => {
+        const w = offered(entry.assistant);
+        w.host.extension = () => {
+            throw new Error('raw host failure');
+        };
+        const result = await w.send(request(entry.assistant, entry.target));
+        expect(result.outcome).toBe('copied');
+        expect(w.host.calls).toEqual([]);
+        expect(w.warned).toHaveLength(1);
+        expect(w.blocks).toEqual([[`Send to ${entry.name} failed (extension ${entry.id} not found); the prompt was copied instead.`]]);
+        expect(JSON.stringify(w.blocks)).not.toContain('raw host failure');
+    });
+
+    it('negative control: with a working host and a command list nothing is copied and nothing is warned', async () => {
+        const w = offered('copilot');
+        const result = await w.send(request('copilot', 'current'));
+        expect(result.outcome).toBe('opened');
+        expect(w.warned).toEqual([]);
+        expect(w.blocks).toEqual([]);
+    });
+});
+
 describe('0024 AC-007: only the three commands run, and every open is partial', () => {
     it('across every assistant, target and failure every executed command is one of the three, and every open carries isPartialQuery true', async () => {
         const executed: { command: string; args: readonly unknown[] }[] = [];

@@ -50,7 +50,12 @@ export function createSend(deps: SendDeps): Send {
     async function run(request: SendPromptPayload, isSettled: () => boolean): Promise<void> {
         const spec = ASSISTANTS[request.assistant];
         const calls = spec.callsFor(request.target, request.line);
-        const found = deps.host.extension(spec.extensionId);
+        let found: ReturnType<AssistantHostPort['extension']>;
+        try {
+            found = deps.host.extension(spec.extensionId);
+        } catch {
+            found = undefined;
+        }
         if (found === undefined) {
             throw new SendFailure(extensionNotFoundCause(spec.extensionId));
         }
@@ -64,7 +69,12 @@ export function createSend(deps: SendDeps): Send {
                 return;
             }
         }
-        const registered = await deps.host.commands().catch(() => [] as readonly string[]);
+        let registered: readonly string[];
+        try {
+            registered = await deps.host.commands();
+        } catch {
+            registered = [];
+        }
         if (isSettled()) {
             return;
         }
