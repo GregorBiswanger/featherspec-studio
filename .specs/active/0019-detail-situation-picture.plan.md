@@ -195,6 +195,7 @@ archived plan, `planKeys` = that one plan only. `repo-8052f9a` 0015: Review, 20/
 3. T-005 → T-006 → T-007 — the side panel: select in place, close and focus, beside or drawer
 4. T-008 — §5 notes, docs, test-title audit, architecture and Memory Bank sync, final gates
 5. T-009 → T-016 — fixes of the compile S48 (NOT READY): D5, D6 (PD-066), D1, D2, F1, F3, the test gaps, docs
+6. T-017 — AC-022 round 3 finding: the selected Overview row shows a marker in High Contrast
 
 Parallel: stage 1 (T-001 touches the editor adapter, panel, shell service, wiring and host smoke;
 T-002 the protocol detail, core board, the test builder and a new fixture; no shared file, each
@@ -379,7 +380,19 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
   "Enter opens the detail view" and "Open file" items reworded), CHANGELOG *Unreleased*. Test-title
   audit: throwaway `/tmp/audit-0019/titles.py` (0018's method: `describe`/`it`/`test`/`suite`
   literals of every `.ts`/`.tsx` under `src`, `src/test/**` and `testing/*.ts` included) at the
-  Baseline (`git archive`) and the head; `## Test-title audit` here lists every absent title with
+  Baseline (`git archive`) and the head; `### T-017 — Fix H1: the selected Overview row shows a marker in every theme (AC-007, AC-022 round 3)
+
+- **Covers:** AC-007, AC-022; ux-guidelines 3 and 9 (theme variables, visible focus)
+- **Do:** `main.css`: `.ov-row[aria-current="true"]` gets `box-shadow: inset 0 0 0 1px var(--vscode-contrastActiveBorder, transparent)`.
+  The row has no border width, so the shared `border-color` shows nothing, and in High Contrast
+  `list-activeSelectionBackground` equals the page colour. The inset shadow needs no border width and sets no
+  outline, so the keyboard focus outline stays. CSS guard in `webviewCss.test.ts` beside G4.
+- **Verify:** `npx vitest run src/adapters/node/webviewCss.test.ts` red on a scratch copy without the rule, then
+  green; mutants (colour changed, rule removed) die; gates 1–5
+- [x] **Verified (T-017):** 2026-11-18 — red on a scratch copy of HEAD with the new test: 1 of 52 failed (no `box-shadow` on the selected row), green after the rule (52). Mutants on a scratch copy, both killed: fallback `transparent` → `#fff` (4 fail, the colour guards too), the rule removed (1 fails). Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2127 passed + 3 skipped (+12 timing), `npm run compile`, `npm run compile-tests` green. The rendered marker in High Contrast is the orchestrator's AC-022 round 3 check; jsdom paints nothing.
+- **Notes:** The fallback is `transparent` (not a colour) so the shadow appears only where the theme defines `contrastActiveBorder` (High Contrast); Dark and Light keep the selection background as their marker. Cards are unchanged (they have a border).
+
+## Test-title audit` here lists every absent title with
   its §5 row or criterion. `/sdd-architecture-update` (confirmation = this plan's approval) changes
   exactly: `last reconciled` → `(0019)`; the `src/core/<area>` line, board part `+ situation picture,
   short title 0019`; the `src/webview` line, `detail with next step` → `detail as side panel in
@@ -579,7 +592,7 @@ Retargeted tests that kept their title are not listed. The PD register carries n
 | AC-004 | T-006 | `detail/{DetailFrame,CloseButton,focus,SpecDetail}.tsx` | `detail/Close.test.tsx`, `detail/SpecDetail.test.tsx` | verified |
 | AC-005 | T-007, T-009, T-010, T-014 | `webview/main.css`, `detail/drawer.ts`, `shared/protocol/layout.ts`, `areas/SpecBoard.tsx` (focus scrolls clear), `areas/overview/Overview.tsx` (PD-066) | `adapters/node/webviewCss.test.ts`, `detail/SidePanel.test.tsx` | verified (CSS guard, unit); layout by AC-022 round 2 |
 | AC-006 | T-005 | `webview/App.tsx`, `detail/{focus,SidePanel}` | `detail/SidePanel.test.tsx`, `detail/Close.test.tsx` | verified |
-| AC-007 | T-005, T-015 | `webview/detail/selected.ts`, `board/Card.tsx`, `areas/overview/SpecRow.tsx`, `webview/main.css` | `detail/SidePanel.test.tsx` (cards, Overview rows G3), `adapters/node/webviewCss.test.ts` (G4) | verified |
+| AC-007 | T-005, T-015, T-017 | `webview/detail/selected.ts`, `board/Card.tsx`, `areas/overview/SpecRow.tsx`, `webview/main.css` | `detail/SidePanel.test.tsx` (cards, Overview rows G3), `adapters/node/webviewCss.test.ts` (G4, T-017 inset shadow of the selected row) | verified (High Contrast marker fixed by T-017; rendered check in AC-022) |
 | AC-008 | T-005, T-006 | `areas/SpecExplorer.tsx`, `detail/SpecDetail.tsx` | `detail/Close.test.tsx`, `detail/SidePanel.test.tsx` | verified |
 | AC-009 | T-002, T-003, T-004 | `core/board/detail.ts`, `shared/protocol/detail.ts`, `webview/detail/SpecDetail.tsx` | `core/board/detail.test.ts`, `detail/SpecDetail.test.tsx`, `shared/protocol/detail.test.ts` | verified |
 | AC-010 | T-003, T-004 | `webview/detail/*`, `core/board/detail.ts` | `detail/SpecDetail.test.tsx`, `core/board/detail.test.ts`, `adapters/node/webviewBundle.test.ts`, `webview/userLanguage.test.tsx` | verified |
@@ -594,13 +607,13 @@ Retargeted tests that kept their title are not listed. The PD register carries n
 | AC-019 | T-003, T-015 | `ui/FileLink.tsx` | `detail/SpecDetail.test.tsx` (incl. G5, F2) | verified |
 | AC-020 | T-003, T-006, T-011 | `detail/{DetailFrame,SpecDetail,Progress,identityKeys}.tsx`, `core/board/boardService.ts` | `detail/Close.test.tsx` (incl. the changed update, G6), `detail/SpecDetail.timing.test.tsx`, `core/board/boardService.timing.test.ts` | verified |
 | AC-021 | T-007 | `webview/main.css` | `adapters/node/webviewCss.test.ts`, `webview/focusIndicator.test.tsx` | verified |
-| AC-022 | T-008, T-009, T-010, T-014 | `docs/release-checklist.md` item; fixes in `areas/SpecBoard.tsx`, `areas/overview/Overview.tsx`, `webview/main.css` | manual: round 1 (orchestrator, `fd74ec7`) passed the height and failed V1 and V2; round 2 after T-009, T-010, T-014 by the orchestrator, then a real VS Code window (Gregor or his delegate) | open |
+| AC-022 | T-008, T-009, T-010, T-014, T-017 | `docs/release-checklist.md` item; fixes in `areas/SpecBoard.tsx`, `areas/overview/Overview.tsx`, `webview/main.css` | manual: round 1 (orchestrator, `fd74ec7`) passed the height and failed V1 and V2; round 2 after T-009, T-010, T-014 by the orchestrator; AC-022 rounds 1–3 by the orchestrator: height 728 px; V1/V2 pass at 98472bf; HC row marker fixed by T-017; real window pending (Gregor or his delegate) | open |
 | AC-023 | T-008, T-016 | `/tmp/audit-0019/titles.py` (throwaway) | section "Test-title audit" above (48 absent titles, all homed); `npm run test:unit`; Windows unit 2096 passed, 7 skipped, +12 timing and `npm test` 28 + 1 + 1 + 1, CI run 44261156444, all green at `fd74ec7` | verified (unit, Windows, CI at `fd74ec7`; unit again at the fix head) |
 | AC-024 | T-008, T-010, T-016 | `.specs/{done,active}/` notes | `grep -c "Amended by 0019"`: 0005 4, 0006 2, 0007 16, 0013 7, 0015 2, 0016 5, 0017 2, 0018 5 (the §5 row "0018 §2 goal, AC-031" has its two notes since T-016); the PD register: one appended row (PD-066), no edit of an existing entry | verified |
 
 ## Session handoff
 
-- **Done so far:** T-001…T-016 verified, plan Done (the compile S48 verdict NOT READY is answered by T-009…T-016); spec
+- **Done so far:** T-001…T-017 verified, plan Done (the compile S48 verdict NOT READY is answered by T-009…T-016); spec
   stays `In Progress` until AC-022 round 2 and a fresh `/sdd-compile`.
 - **Next action:** the orchestrator re-runs AC-022 (all six harness runs and the keyboard walk at 800 px, Board and
   Overview: a card focused under the drawer scrolls clear; every Overview row, its next step, Copy and the figures
@@ -612,4 +625,4 @@ Retargeted tests that kept their title are not listed. The PD register carries n
 - **Baseline:** 20792ca (commit before the first step commit; backlog → active move done 2026-11-18)
 - **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here). Commit messages end with
   `Co-Authored-By: <model of the session>` and `Claude-Session: https://claude.ai/code/session_01Gjx4ug55tnrs2YJYnrBwo6`
-  (T-001…T-008: Claude Opus 5.5; T-009…T-016: Claude Sonnet 5.5).
+  (T-001…T-008: Claude Opus 5.5; T-009…T-017: Claude Sonnet 5.5).

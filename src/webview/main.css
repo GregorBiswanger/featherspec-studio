@@ -1409,6 +1409,10 @@ blockquote.illustration {
     border-color: var(--vscode-contrastActiveBorder, var(--fs-border));
 }
 
+.ov-row[aria-current="true"] {
+    box-shadow: inset 0 0 0 1px var(--vscode-contrastActiveBorder, transparent);
+}
+
 .card[aria-current="true"] .card-number,
 .card[aria-current="true"] .card-path,
 .card[aria-current="true"] .card-secondary,

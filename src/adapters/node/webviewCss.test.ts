@@ -517,6 +517,15 @@ describe('0019 AC-005, AC-021: the side panel beside the area or as a drawer', (
         expect(plain('.nothing[aria-current="true"]')).toEqual([]);
     });
 
+    it('0019 AC-007, AC-022 (T-017): a selected Overview row draws its contrast border as an inset shadow, so it shows without a border width and leaves the focus outline alone', () => {
+        const rules = plain('.ov-row[aria-current="true"]');
+        expect(rules.length).toBeGreaterThan(0);
+        const body = rules.map((rule) => rule.body).join(';');
+        expect(body).toMatch(/box-shadow:\s*inset 0 0 0 1px var\(--vscode-contrastActiveBorder,\s*transparent\)/);
+        expect(body).not.toMatch(/outline/);
+        expect(body).not.toMatch(/#[0-9a-fA-F]{3,8}\b|\b(?:rgb|rgba|hsl|hsla)\(/);
+    });
+
     it('AC-021: every colour of the side panel and its close button is a --vscode-* variable and no rule sets or removes an outline', () => {
         for (const selector of ['.side-panel', '.detail-close', '.detail-close:hover', '.detail-title h2:focus-visible']) {
             const rules = rulesFor(css, selector);
