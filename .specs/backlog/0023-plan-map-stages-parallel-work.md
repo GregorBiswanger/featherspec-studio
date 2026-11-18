@@ -1,13 +1,14 @@
 # Plan Map: Stages, Parallel Work, Workers
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0023-plan-map-stages-parallel-work.plan.md](0023-plan-map-stages-parallel-work.plan.md)
 
 Basis: review `docs/ux-audit/07-implementation-review.md` §5.4, §6 (K-N); work order `08-spec-handoff.md` §4 (P-1…P-8,
-AC drafts, E-8…E-10). PD-069, PD-072, PD-075, PD-070, PD-013, PD-021 (2), PD-047, PD-055, PD-058, PD-016; guidelines
-1–12. Gregor delegated the round (PD-069): no interview, proxies in §10. Builds on **0021** (intents, short form, Copy
-prompt, coach line, `(?)`) and **0022** (button classes, icon button, path breaks, divider, list or detail below
-900 px); Send is **0024**'s. All Draft; this spec refers to them and restates none.
+AC drafts, E-8…E-10). PD-069, PD-072, PD-075, PD-076, PD-070, PD-013, PD-021 (2), PD-047, PD-055, PD-058, PD-016;
+guidelines 1–12. Gregor delegated the round (PD-069): no interview, proxies in §10. Builds on **0021** (intents, short
+form, Copy prompt, coach line, `(?)`) and **0022** (button classes, icon button, path breaks, divider, list or detail
+below 900 px); Send is **0024**'s. 0021 and 0022 are implemented (In Progress), 0024 is a Draft; this spec refers to
+them and restates none.
 
 ## 1. Summary
 
@@ -43,7 +44,8 @@ copy the right prompt (AC-019). User: the developer (0001–0007).
 - `Current step:`, the Session handoff, full Do or Verify text — because ticks and code lead (`plans.md`); guideline 5.
 - A coach line or `(?)` in the Plan map — because guideline 11 (once per view: the side panel's).
 - Send to an assistant for the map's prompts — because 0024 keeps Send at the detail and the first Now row (0024 §3).
-- "Open Plan Map" in the tree's context menu — because 08 §4 does not ask for it; click test decides (OP-005).
+- "Open Plan Map" in the tree's context menu — because 08 §4 does not ask for it; the click test kept it out (OP-005,
+  PD-076).
 - A fixed FeatherSpec phrase for the stage prompts — because that is a FeatherSpec release (08 §7, OP-002).
 
 ## 4. Amendments of other specs
@@ -275,19 +277,21 @@ struck step, an unknown ID, a step in no stage, no closing.
 | A-009 | 08 P-6 "Why not parallel?" is M-02 plus M-06 (proxy) | The reason lives in the closing line; `→` means "builds on" (`sdd-plan.md`) | §5.3 |
 | A-010 | From a 900 px panel the side panel stands beside the map; below, the map alone, no detail (proxy) | 0019 §6.1; PD-075 shows one thing below 900 px, but 0022 G-4's detail in place would hide the map, and its back clears the map's spec | §5.3, AC-007, AC-018 |
 | A-011 | Per-step start-line Copies, not one "Copy 2 lines"; arrow keys as the Board's grid, rows for columns (proxy) | One line per chat (07 §6.4 open question, 08 P-4); 08 AC-007, one grid pattern in the Studio | §5.4, AC-011 |
-| A-012 | Every text of §5 and §6 holds until the click test (proxy) | PD-069 process | §6 |
+| A-012 | Every text of §5 and §6 as the drafts show it (proxy, confirmed by the click test) | PD-069 process; PD-076: the proxies the drafts show stand as drawn | §6 |
 | A-013 | A stage whose steps are all done or dropped shows chips, not cards (proxy) | Guideline 7 "Done is collapsed"; 07 §6.4's sketch expands one stage | AC-008 |
 
 ## 11. Open points
 
-- OP-001 Click test on an HTML draft before `/sdd-plan` (PD-069, AC-019). **Blocking for `/sdd-plan`.**
+- OP-001 Click test on an HTML draft before `/sdd-plan` (PD-069, AC-019). Closed 2026-11-18 by PD-076: passed ("ich
+  finde es super so"), the proxies the drafts show stand as drawn; AC-019's part on the build stays.
 - OP-002 E-8: the stage prompts are proxies; only the start line and the integration via `/sdd-plan` are FeatherSpec's
   own. Followed: §5.4; AC-020 decides; a fixed phrase is a FeatherSpec release (08 §7).
-- OP-003 0021, 0022 and 0024 are Drafts; a change there to NS-6's table, Copy prompt, the button classes, G-4 or Send is
-  followed by reference. Re-checked 2026-11-18 against 0021 §6.2 (variant A, PD-072), 0022 G-4 (PD-075), 0024 §3.
+- OP-003 0021 and 0022 are implemented, 0024 is a Draft; a change there to NS-6's table, Copy prompt, the button
+  classes, G-4 or Send is followed by reference. Re-checked 2026-11-18 against 0021 §6.2 (variant A, PD-072), 0022 G-4
+  (PD-075), 0024 §3, and against their code at `196cf72` (plan *Research*).
 - OP-004 `tip-splitter`'s plan has no `‖` stage (`No parallel stage:`); AC-019 and AC-020 need a re-cut copy or
   `fs110-parallel-synthetic` (recommendation: a re-cut copy, so the prompts meet a real agent).
-- OP-005 Tree context menu "Open Plan Map" (§3): not built; decided in the click test.
+- OP-005 Tree context menu "Open Plan Map" (§3): not built. Closed by PD-076: the drafts showed no tree entry and passed.
 - OP-006 `/sdd-clarify` 2026-11-18 (S66): all findings resolved in one pass at Gregor's standing request (no
   walkthrough; list `0023-findings.md`; cross-spec with 0022 G-4 and 0024). Readings; say so if one is wrong: (a) the
   map alone below 900 px; (b) *next* only while no note lies; (c) start lines only for an Active spec's next parallel
@@ -295,6 +299,6 @@ struck step, an unknown ID, a step in no stage, no closing.
 
 ## 12. Definition of Ready / Done and next steps
 
-Ready: §5, §6 literal, §4 listed, OP-001 closed. Clarified on 2026-11-18 (OP-006). Done: AC-001–AC-017 green with
-evidence, AC-018–AC-020 checked, §4 applied, docs, architecture, Memory Bank synced, `/sdd-compile` READY. Next: the
-click test on an HTML draft (OP-001); then `/sdd-plan`.
+Ready: §5, §6 literal, §4 listed, OP-001 closed (PD-076). Clarified on 2026-11-18 (OP-006). Done: AC-001–AC-017 green
+with evidence, AC-018–AC-020 checked, §4 applied, docs, architecture, Memory Bank synced, `/sdd-compile` READY. Planned
+2026-11-18 ([plan](0023-plan-map-stages-parallel-work.plan.md)); next: Gregor reads the plan, then the start signal.
