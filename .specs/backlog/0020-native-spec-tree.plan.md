@@ -1,0 +1,411 @@
+# Plan — Native Spec Tree and a Two-Tab Panel
+
+**Spec:** [0020-native-spec-tree.md](0020-native-spec-tree.md)
+**Status:** Not started
+**Last updated:** 2026-11-18
+**Current step:** T-001
+
+## Approach
+
+The tree is first a pure core model (`core/shell/specTree.ts`) built beside today's five-entry
+`treeModel.ts`, then made live and given its actions behind ports, so stages 1–2 are proven on
+fakes without `vscode`. T-005 switches the adapter, manifest and host smoke to it in one step (the
+riskiest: VS Code's tree behaviour is proven here only through a mocked `vscode` and the manifest).
+Only then does the Spec Explorer area go — first the area, its tab and command (T-006), then the
+list's contract, texts and styles (T-007) — so every step leaves a working extension; docs, §5
+notes, the test-title audit and the sync come last. Files this task did not create are deleted only
+where a step's **Deletes:** line names them: the implementer names that list at the start of the
+stage and waits for the yes (Ask-first; 0015's practice). Test review once per stage from the tests
+named in each `Do:` (`AGENTS.md` *TDD*). Memory Bank touched in T-008 only: `techContext.md`,
+`systemPatterns.md`, `activeContext.md`.
+
+**Quality gates:** per step (`techContext.md` *Quality gates*): 1 `npx eslint src --max-warnings 0` ·
+2 `npx tsc --noEmit` · 3 `npx tsc --noEmit -p src/webview` · 4 `npm run test:unit` · 5 `npm run compile`
+(steps touching wiring, adapters, `package.json` or the bundle) · `npm run compile-tests` (host-test
+compile) · pre-done gate `npm test` on Windows and CI (host smoke cannot run in the agent sandbox).
+
+## Research
+
+**Checkpoint digest (2026-11-18, `/sdd-plan` under Gregor's delegation).** No question only Gregor
+can answer: every open choice is decided by the spec, PD-058…PD-065 and
+`.claude/rules/ux-guidelines.md`, recorded as proxies P-1…P-24 below. Gregor reads this plan and
+replies with changes or approval.
+
+**Spec revised first (P-1, P-2).** PD-065 (2026-11-18, after the spec's last revision `f6d53c5`,
+2026-11-17 23:19) keeps 0018 AC-029's `▸` exception "until 0020 removes that area": §5 gains a row
+voiding it. OP-004 is resolved (names confirmed at `fd74ec7`), OP-006 records this pass, and AC-011
+and §6 name the row-activation title `Select Spec`.
+
+**Survey (code at `fd74ec7`, 0019 T-008).**
+- Tree today: `core/shell/treeModel.ts` (`project | open | area | action`, `AREA_ICONS`),
+  `adapters/vscode/studioTree.ts` (flat items, `TreeView.message`, context key
+  `featherspec-studio.panelState`; no IDs, menus, badge). `api.shell().tree()` returns that model;
+  `src/test/setup/noProject.test.ts` reads `.welcome` and `.items`.
+- Row data exist: `buildCards` (`core/board/cards.ts`: state, deprecated, Problem count, step,
+  tasks, criteria, path while duplicated; title falls back to the *stem*), `LifecycleEntry`
+  (`persistence`, `rule`, `diagnostics` with tier, `plan` = plan in use), `nextStep()` (text
+  rules NS-1, NS-3, NS-11), `stepView()` (`short`, `line`, `lines`); `shortTitle.ts` has a private
+  `cut` with limit 80; `filters.ts` compares numbers with `Number()` then text.
+- Texts the tree reuses sit in `shared/protocol/texts.ts` (`LOADING_TEXT`, `NO_SPECS_START_TEXT`,
+  `problemsBadgeText` = T-05, `DERIVED_SENTENCES` = T-09, `stepsText`, `criteriaShortText`,
+  `fileNotFoundText`, `DEPRECATED_MARKER`). `escapeMarkdown` (`core/copyNextStep/entryView.ts`)
+  escapes every ASCII punctuation mark, so it cannot be used inside a code span.
+- Selection: `extension.ts` registers `featherspec-studio.selectSpec` (0019 P-6, not contributed):
+  `service.select` + `panel.show({ preserveFocus: true })`; `StudioPanel.show` reveals in the
+  panel's column or creates it with `preserveFocus`; `ShellService.open({via: 'start'})` sets the
+  BR-02 start area from the memory.
+- Copy: `createCopyNextStep`'s private `copy(line)` = `copyLine` + `entry.copied(ok)` (status bar
+  `$(check) Copied` / `$(warning) Could not copy`, `FEEDBACK_MS` 2000) + `ui.warn` on failure.
+- Open: `createOpenFile` refuses keys outside the model's spec, plan and note keys;
+  `EditorPort.open(root, key, line?)`; `editor.ts` always opens `ViewColumn.Beside` (0019);
+  `editor.test.ts` mocks `vscode` with `vi.mock`, the pattern for adapter unit tests.
+- States: `derivePanelState`; `ShellView.state` is S4 while Refresh or Retry runs, model still
+  loaded; `statusEntry.ts` checks the loaded model (active root, `sameRoot`) and counts projects
+  as `result.folders` with verdict `project`.
+- Spec Explorer: `AREA_IDS`/`AREAS` (`protocol/areas.ts`), `AREA_COMMANDS` (`vscode/commands.ts`),
+  `AREA_PATHS` (`webview/board/icons.tsx`), `areas/registry.tsx`, `areas/SpecExplorer.tsx` (only
+  consumer of `ShellView.rows`, `focusSpecListRow`, the `NO_DETAIL_SELECTION_TEXT` hint of
+  `SpecDetail`), `SpecRow`/`isSpecRow` (`messages.ts`), `core/shell/specRows.ts`, CSS `.explorer*`,
+  `.spec-list`, `.spec-row*` and a `@media (max-width: 640px)` block, `package.json`
+  `openSpecExplorer`. `parseUiMemory` drops the whole memory for an unknown area.
+  `PROTOCOL_VERSION` 3; 22 `v: 3` envelope literals in six test files.
+- Manifest tests compare exact `{command, title}` objects (`arrayContaining`, `toContainEqual`), so
+  an added `icon` changes them; "0018 AC-001 …" asserts the exact `commandPalette` list.
+- Host: the `smoke` workspace has one project (`fs110-de-active-review`: `0001-tip-splitter` "Restaurant-Rechnung mit
+  Trinkgeld aufteilen" in `active/`, plan Done → Review, NS-5 `/sdd-compile …`), plus
+  `incomplete-agents-only` and `not-fs-speckit`. The view ID stays, so implicit `onView` activation and
+  `noMarker.test.ts` are unchanged. `shell.smoke.test.ts` uses `openSpecExplorer` and `view.rows`.
+- Docs naming Spec Explorer: README (section, `spec-explorer-detail-light.png`, commands table),
+  `docs/release-checklist.md` (four items), `docs/product/design-brief.md` §Spec Explorer,
+  `.architecture/webview.md`, the snapshot's webview line; `docsScan.test.ts` requires ≥ 3
+  screenshot links in the README.
+- No `Deprecated` candidate: 0005, 0007, 0013, 0015–0019 keep their other criteria; §5 rows become
+  inline notes, as 0015–0019 did.
+- In parallel: a 0019 fix round (drawer scrolling below 900 px) touches `main.css` and webview
+  tests; nothing here depends on it, but T-006/T-007 start on a tree that has it merged.
+
+**VS Code facts (`engines.vscode ^1.146.0`; `@types/vscode` 1.146.0 in `node_modules`, re-read
+2026-11-18).** `TreeItem.id` "has to be unique across tree … used to preserve the selection and
+expansion state"; `contextValue` feeds `viewItem` in `when`; `command` is run "when the tree item
+is selected"; `tooltip: string | MarkdownString`; `accessibilityInformation`; `ThemeIcon(id, color?)`
+colour "only used in TreeItem"; `TreeView.badge` ("To remove the badge, set to undefined"),
+`.description`, `.message`; `TabInputWebview.viewType`; `window.tabGroups.activeTabGroup`. Spec §9's
+sources (API reference, 1.72 notes, UX guidelines: Views) were checked 2026-11-17 and not refetched.
+- [mainThreadWebviewPanels.ts](https://raw.githubusercontent.com/microsoft/vscode/main/src/vs/workbench/api/browser/mainThreadWebviewPanels.ts)
+  — panel view types are stored as `'mainThreadWebview-' + viewType`, so a tab's `viewType` ends
+  with `featherspecStudio.main` (the smoke tests already use `endsWith`) (retrieved 2026-11-18).
+- [mainThreadEditorTabs.ts](https://raw.githubusercontent.com/microsoft/vscode/main/src/vs/workbench/api/browser/mainThreadEditorTabs.ts)
+  — the tab DTO passes `editor.viewType` through unchanged (retrieved 2026-11-18).
+- [viewsService.ts](https://raw.githubusercontent.com/microsoft/vscode/main/src/vs/workbench/services/views/browser/viewsService.ts)
+  — every view gets `${id}.focus`, titled "Focus on {0} View": `featherspec-studio.navigator.focus`
+  "Focus on Specs View" is the keyboard way in (§4.5) (retrieved 2026-11-18).
+- [When clause contexts](https://code.visualstudio.com/api/references/when-clause-contexts) — `=~`
+  takes a regex literal, escaped for JSON; `view` and `viewItem` scope `view/title` and
+  `view/item/context` (retrieved 2026-11-18).
+- [Tree View guide](https://code.visualstudio.com/api/extension-guides/tree-view) — `"group":
+  "navigation"` for title actions, `"group": "inline"` for item actions; welcome content only for "a
+  view that has no `TreeView.message` and an empty tree" (retrieved 2026-11-18).
+
+**Proxy decisions (Gregor delegated; read with the plan).**
+- P-1 Spec revised per PD-065 (3) (above); OP-004 resolved; OP-006 added.
+- P-2 Row activation is 0019's `featherspec-studio.selectSpec`, now contributed with the title
+  `Select Spec` and hidden from the palette (AC-011, §6); its handler becomes the tree's `select`.
+- P-3 Tree commands `featherspec-studio.tree.copyNextStep`, `.tree.openSpec`, `.tree.openPlan`,
+  titles `Copy Next Step`, `Open Spec`, `Open Plan` (menus show the title as is; no `category`);
+  all four hidden by `commandPalette` `when: false`.
+- P-4 In `core/shell` (spec §9): `specTree.ts` (pure `buildSpecTree`), `specTreeService.ts` (live),
+  `treeActions.ts`; `specTree.ts` grows beside `treeModel.ts` until T-005 deletes the old one, as
+  0019 built the picture beside `sections`. The model keeps `message`, `items`, `welcome?` and adds
+  `badge?`, `description?`.
+- P-5 Rows from `buildCards` plus the entry and `nextStep()`; the label falls back to the spec's
+  `slug` (§4.2), not the card's stem, when the title is missing or only spaces.
+- P-6 `cutAt(text, max)` exported from `core/board/shortTitle.ts` (its `cut`, limit as a parameter,
+  80 unchanged for the picture); the tree uses 24.
+- P-7 Row ID `JSON.stringify(['spec', root, stem])`, the path appended while the stem is
+  duplicated; group IDs `group:inProgress`, `group:upNext`, `group:backlog`, `group:done` (no root, so
+  the expand state carries across projects, §7).
+- P-8 `contextValue` tokens `spec` + ` step` (a line to copy) + ` plan` (a plan in use), groups
+  `group`. Menus: inline Copy `view == featherspec-studio.navigator && viewItem =~ /\bstep\b/`;
+  context `Open Spec` (`/^spec\b/`, `spec@1`), `Open Plan` (`/\bplan\b/`, `spec@2`), Copy
+  (`/\bstep\b/`, `spec@3`); group rows get no entry.
+- P-9 Tooltip: Markdown paragraphs joined by a blank line (as the status entry); file text through
+  `escapeMarkdown`; code spans fenced one backtick longer than the longest run inside, unescaped;
+  `MarkdownString` untrusted, no theme icons, no HTML; built with the model (no `resolveTreeItem`).
+  A derived state (`persistence === 'derived'`, `isDerivedRule`) reads `<State> — <T-09>`; a
+  deprecated spec's state line reads `Deprecated`, as its description.
+- P-10 §4.4 reading: project active + S5 → S5's line and rows; project active + loaded model (S4 of
+  Refresh or Retry included) → groups or the zero-spec message; project active + no model →
+  `Loading project…`; no project → today's branch of `buildTreeModel`, unchanged.
+- P-11 Two or more projects = `result.folders` with verdict `project`, as `statusEntry.ts` counts.
+- P-12 The service rebuilds synchronously on the shell view, the model source and discovery, and
+  notifies only when the serialized model changed; AC-013 is timed from `source.set` to the listener.
+- P-13 `select(ref)`: panel closed → `shell.open({via: 'start'})` first (BR-02), then
+  `shell.select(ref)` and `panel.show({ preserveFocus: true })`; open → select and show (area kept).
+  New `StudioPanelPort { isOpen(); show(options) }` in `core/ports/shell.ts`, served by `StudioPanel`.
+- P-14 `CopyNextStep.copy(line)` becomes public; the tree copies the row's first line through it
+  (0017's status feedback and warning), selecting nothing.
+- P-15 `EditorPort.open(root, key, line?, place?)`, `place: 'beside' | 'activeGroup'`, default
+  `beside` (0019); `createOpenFile.open` passes it. `editor.ts` resolves `activeGroup` to `Beside`
+  when the active group's active tab is a `TabInputWebview` whose `viewType` ends with
+  `featherspecStudio.main`, else `Active` (a fact read, unit-tested with fake groups). A `not-found`
+  or `refused` result shows `File not found: <path>` through the step UI's `warn`.
+- P-16 The adapter sets `message`, `badge` and `description` on every change, keeps the S2 context
+  key, and is unit-tested with a mocked `vscode` (`studioTree.test.ts`).
+- P-17 New texts in `shared/protocol/texts.ts` (the shell texts the host tree uses):
+  `VIEW_NAME`, `GROUP_LABELS`, `NEXT_STEP_PREFIX`, `PROBLEM_PREFIX`, `badgeTooltip`,
+  `TREE_COMMAND_TITLES`.
+- P-18 The area goes in T-006, the list's protocol, texts and CSS in T-007; `PROTOCOL_VERSION` 4 once,
+  in T-007 (both unreleased).
+- P-19 `parseUiMemory` maps `specExplorer` to `overview` before the area check and keeps a valid
+  selection; any other unknown area still drops the memory (0018 AC-002). The mapping is the one
+  `specExplorer` left in `src` outside tests (AC-018).
+- P-20 README: the Spec Explorer section and its image go; "The detail of a spec" shows a new
+  `media/screenshots/spec-detail-light.png` (Board with the side panel of `studio-0015`, Light) from
+  the preview harness (`techContext.md`), so three screenshot links stay. The old PNG stays
+  unreferenced; its deletion is Ask-first and proposed in T-008's report.
+- P-21 Deletions named per step (**Deletes:**), confirmed per stage; no move.
+- P-22 Test-title audit by 0018/0019's method in T-008; expected map below.
+- P-23 No `TreeView.reveal`, no `getParent`, no filter action (§3).
+- P-24 Restricted Mode and reader window: no trust or writer input on the tree path; AC-014 by a
+  no-write test on a temp copy.
+
+**Expected test-title audit map (T-008 confirms it against the Baseline).** Absent at the head:
+- `core/shell/treeModel.test.ts` (deleted): the project/Open Studio/area entries test and PD-048's
+  icon test → void (§5 0005 AC-003, PD-048), replaced by AC-001, AC-005; "an active project keeps its
+  entries while … loading or a load error" → AC-012 (groups stay). Its S2 and no-project tests keep
+  their titles in `specTree.test.ts`.
+- `core/shell/specRows.test.ts` (deleted, AC-007 group) → void (§5 0005 AC-007, AC-008, AC-031 row);
+  order → AC-003.
+- `webview/areas/areas.test.tsx` "AC-007: the Spec Explorer list" and "AC-008: selection in the panel
+  UI" (row keys, path, AC-023 marker, AC-030, AC-031, round trip) → void (§5 0005 AC-007, AC-008,
+  AC-022/23 list rows, AC-030, AC-031 row); `areas.timing.test.tsx` AC-007 → void, AC-013.
+- `detail/Close.test.tsx` "AC-008: the Spec Explorer pane" and `SidePanel.test.tsx` "Spec Explorer
+  shows no side panel" → void (§5 0019 FR-02, AC-008).
+- `App.test.tsx` "lists Overview, Board and Spec Explorer", `messages.test.ts` "lists exactly
+  Overview, Board and Spec Explorer, in this order" → AC-016.
+- `states.test.tsx` empty Spec Explorer, `userLanguage.test.tsx` "the Spec Explorer row shows no rule
+  ID", `focusIndicator.test.tsx` "… list row …", `webviewCss.test.ts` AC-030 and the selected-row
+  AC-031 → void for the list (§5 0005, 0013 AC-010, 0016 AC-011/012), retitled where a staying part
+  (nav item, empty board) remains.
+- `sourceScan.test.ts` "the one marker left is the selected row of the Spec Explorer list …" → void
+  (§5 0018 AC-029, P-1), replaced by "no `▸`".
+- `shell.smoke.test.ts` "AC-003, AC-029: the tree shows the project name and the five entries …" →
+  AC-019; `manifest.test.ts` "AC-003 (0005): … the view "FeatherSpec Studio"" → AC-011;
+  `shellService.navigation.test.ts` "… "Spec Explorer, spec 0003-x" …" → "Board, spec 0003-x" (§5
+  0005 AC-028) and "rows follow a model change …" → void (0005 AC-007), AC-013.
+
+## Stages
+
+1. T-001 → T-002 — the tree model in core: groups, rows, tooltip, badge, states
+2. T-003 ‖ T-004 — the live tree service and the row actions (select, copy, open)
+3. T-005 — the Specs view in VS Code: adapter, manifest, wiring, host smoke
+4. T-006 → T-007 — the Spec Explorer area ends: two tabs and the mapping, then the list's contract and styles
+5. T-008 — §5 notes, docs, test-title audit, architecture and Memory Bank sync, final gates
+
+Parallel: stage 2 (T-003 adds only `specTreeService*`; T-004 the actions, two ports, `openFile`,
+`editor` and `copyNextStep`; both only read `specTree.ts`, each `Verify` runs its own tests). Both
+are small: run them in sequence. Stages 3–5 share `package.json`, `manifest.test.ts`, `commands.ts`
+and the host smoke, so they stay `→`.
+
+## Steps
+
+### T-001 — The tree shows four groups of rows with state, step and icon
+
+- **Covers:** AC-001, AC-002, AC-003, AC-004, AC-005
+- **Do:** New `src/core/shell/specTree.ts` with `buildSpecTree(input)` (P-4) for the loaded-model
+  case: groups per §4.1 (empty ones left out, Done collapsed), order per AC-003 (numbers compared
+  as `filters.ts` does), rows from `buildCards` + entry (P-5): label via `cutAt(…, 24)` (P-6), IDs (P-7),
+  description `<State> · <short>` / `<State>` / `Deprecated`, icon table and the `warning` override,
+  accessible label with `problemsBadgeText`, `contextValue` (P-8), the first line and plan key for
+  the actions. `GROUP_LABELS` in `texts.ts`; `cutAt` exported from `shortTitle.ts`. Tests
+  `src/core/shell/specTree.test.ts` on `modelOf` memory projects (`core/board/testing/boardWorld.ts`)
+  and `test/fixtures/studio-0015` (AC-004's Given): group set and counts, Blocked → Review → Active,
+  a 24- and a 25-character title, a title of spaces, a duplicated stem, a backlog → active move, two
+  roots, group ID for counts 1 and 3, unique IDs, every state icon, a Problem (`fs-broken`).
+- **Verify:** `npx vitest run --project node src/core/shell/specTree.test.ts src/core/board/shortTitle.test.ts`
+  red (`Not implemented` stub), then green; gates 1–4
+- [ ] **Verified (T-001):** —
+- **Notes:** —
+
+### T-002 — Rows explain themselves on hover; the view tells its state; the badge counts what waits
+
+- **Covers:** AC-006, AC-010, AC-012 (§4.4; the S2 manifest part in T-005), AC-011 (view description)
+- **Do:** In `specTree.ts`: tooltip per §4.2 and P-9; badge per §4.3; description per P-11; §4.4
+  per P-10 (the no-project branch copied from `buildTreeModel`). Texts `NEXT_STEP_PREFIX`,
+  `PROBLEM_PREFIX`, `badgeTooltip`. Tests in `specTree.test.ts`: a Review spec (two lines, figures,
+  path), a derived state, a Done spec (NS-3 text), Deprecated, two Problems, Markdown characters in a
+  title and a backtick in a line, a figure not available; badge 1 Review, 2 Review + 1 Blocked, zero,
+  absent during a message; description with one and two projects; every §4.4 row (S4 with and
+  without a model, S5 discovery and listing with a project active, zero specs); the four no-project
+  tests of `treeModel.test.ts` copied with their titles.
+- **Verify:** `npx vitest run --project node src/core/shell/specTree.test.ts` red (failing
+  assertions), then green; gates 1–4
+- [ ] **Verified (T-002):** —
+- **Notes:** —
+
+### T-003 — The tree follows every change within 500 ms
+
+- **Covers:** AC-013 (core part)
+- **Files:** `src/core/shell/specTreeService.ts`, `src/core/shell/specTreeService.test.ts`,
+  `src/core/shell/specTreeService.timing.test.ts`
+- **Do:** `createSpecTreeService({ shell, source, discovery, sameRoot })` → `{ model(),
+  onDidChange(listener), dispose() }` (P-12). Tests on the shell world (`core/shell/testing/world.ts`):
+  a spec added shows in Backlog, a state change moves its row, a ticked step changes the description,
+  a second project sets the view description, an unchanged rebuild notifies nobody, dispose stops.
+  Timing on `generateProject(…, 200)` with a fake source and shell, as `boardService.timing.test.ts`:
+  `source.set` → listener sees the change, `bestOfThree` < `BUDGET_MS.uiFreshness`.
+- **Verify:** `npx vitest run --project node src/core/shell/specTreeService.test.ts` and
+  `npx vitest run --project timing-node src/core/shell/specTreeService.timing.test.ts` red (stub),
+  then green; gates 1–4
+- [ ] **Verified (T-003):** —
+- **Notes:** —
+
+### T-004 — Select, copy and open from a row
+
+- **Covers:** AC-007, AC-008, AC-009 (core part), AC-014
+- **Files:** `src/core/shell/treeActions.ts`, `src/core/shell/treeActions.test.ts`,
+  `src/core/ports/shell.ts`, `src/core/ports/board.ts`, `src/core/board/openFile.ts`,
+  `src/core/board/openFile.test.ts`, `src/adapters/vscode/editor.ts`,
+  `src/adapters/vscode/editor.test.ts`, `src/core/copyNextStep/copyNextStep.ts`,
+  `src/core/copyNextStep/copyNextStep.test.ts`
+- **Do:** `createTreeActions({ shell, panel, copy, openFile, warn })` with `select` (P-13), `copy`
+  (P-14), `open(row, 'spec' | 'plan')` (P-15); `StudioPanelPort`; `EditorPort` and `createOpenFile`
+  gain `place`; `CopyNextStep.copy` public. Tests: select with the panel open on Board (area kept,
+  selection set, `preserveFocus: true`) and closed (remembered start area, else Overview), a gone stem
+  (notice); copy puts the first line on a fake clipboard, `copied(true)`, a failing clipboard gives
+  `copied(false)` and the warning, selection unchanged; Open Spec and Open Plan at line 1 with
+  `activeGroup`, panel port untouched, a gone file and a refused key → `File not found: <path>`;
+  `editor.test.ts` fake groups: Studio tab active → `Beside`, a text editor or empty group →
+  `Active`, `preview: false`, 0019's tests unchanged; no-write: tree and actions over a temp copy of
+  `studio-0015` with untrusted fakes leave the snapshot unchanged.
+- **Verify:** `npx vitest run --project node src/core/shell/treeActions.test.ts src/core/board/openFile.test.ts src/adapters/vscode/editor.test.ts src/core/copyNextStep/copyNextStep.test.ts`
+  red (stub, failing placement), then green; gates 1–4
+- [ ] **Verified (T-004):** —
+- **Notes:** —
+
+### T-005 — The Specs view in VS Code: rows, menus, badge, toolbar
+
+- **Covers:** AC-011, AC-012 (S2 welcome unchanged), AC-015 (one inline action), AC-019; host parts
+  of AC-009, AC-013; re-proves the mapping of AC-002, AC-006, AC-010
+- **Deletes:** `src/core/shell/treeModel.ts`, `src/core/shell/treeModel.test.ts`
+- **Do:** `adapters/vscode/studioTree.ts` maps the model (P-16): groups `Expanded`/`Collapsed` with ID
+  and count; rows with ID, description, `ThemeIcon(id, ThemeColor)`, untrusted `MarkdownString`,
+  `accessibilityInformation`, `contextValue`, `command` = `selectSpec {stem, path?}`; action rows as
+  today. New `studioTree.test.ts` (mocked `vscode`). `commands.ts` tree IDs (P-3). `extension.ts`:
+  tree service, tree actions (panel port from `StudioPanel`, `copyNextStep`, `openFile`,
+  `createStepUi().warn`), `selectSpec` → `select`, the three tree commands with an argument guard,
+  `tree()` returns the new model. `package.json`: view `Specs`; icons `$(window)`, `$(refresh)`,
+  `$(copy)`; four commands with P-2/P-3 titles; `view/title` `navigation@1`, `@2`;
+  `view/item/context` (P-8); palette hides. `manifest.test.ts`: AC-011, AC-015 inline count, AC-012
+  S2 literal; adapt "AC-015, AC-016: …" (icons), "0018 AC-001: …" (palette list), "AC-003 (0005): …"
+  (view name). `src/test/shell.smoke.test.ts`: AC-019 replaces "AC-003, AC-029: the tree shows …";
+  AC-009 host (closed panel opens with the spec selected, open panel stays on Board); AC-013 host
+  (a backlog file added shows in Backlog, removed in `finally`).
+- **Verify:** `npx vitest run --project node src/adapters/vscode/studioTree.test.ts src/adapters/vscode/manifest.test.ts`
+  red, then green; gates 1–5; `npm run compile-tests`; host smoke on Windows and CI (pre-done gate)
+- [ ] **Verified (T-005):** —
+- **Notes:** —
+
+### T-006 — The panel has two tabs; a remembered Spec Explorer opens the Overview
+
+- **Covers:** AC-015 (no Spec Explorer command or title), AC-016, AC-017
+- **Deletes:** `src/webview/areas/SpecExplorer.tsx`
+- **Do:** `AREA_IDS`/`AREAS` without `specExplorer`; `AREA_COMMANDS`, `AREA_PATHS`, the registry;
+  `parseUiMemory` mapping (P-19); `package.json` drops `openSpecExplorer`; `focusSpecListRow` goes
+  with its only caller. Tests: `uiMemory.test.ts` and `shellService.navigation.test.ts` for AC-017
+  (the spec's Given; a stem not in the model → cleared with the notice; another unknown area still
+  drops all); `App.test.tsx` and `messages.test.ts` two tabs in order with icons, the navigation
+  requests only `overview` and `board`; `manifest.test.ts` AC-015; the Spec Explorer tests per the
+  expected audit map — voided ones removed, staying ones retargeted to Board (`areas.test.tsx`
+  notice, `Close.test.tsx`, `SidePanel.test.tsx`, `states.test.tsx`, `focusIndicator.test.tsx`,
+  `userLanguage.test.tsx`, `webviewBundle.test.ts`, shell smoke AC-009 and AC-025 via `openBoard`).
+- **Verify:** `npx vitest run --project node src/core/shell/uiMemory.test.ts src/core/shell/shellService.navigation.test.ts src/adapters/vscode/manifest.test.ts`
+  and `npx vitest run --project webview src/webview/App.test.tsx` red, then green; gates 1–5;
+  `npm run compile-tests`
+- [ ] **Verified (T-006):** —
+- **Notes:** —
+
+### T-007 — The list's contract, texts, styles and hint go
+
+- **Covers:** AC-018 (`src` part); re-proves AC-016
+- **Deletes:** `src/core/shell/specRows.ts`, `src/core/shell/specRows.test.ts`
+- **Do:** `ShellView.rows`, `SpecRow`, `isSpecRow`, `buildSpecRows` out; `PROTOCOL_VERSION` 4 with
+  the envelope literals of the six test files (P-18); texts `NO_SPECS_TEXT`, `SPEC_LIST_LABEL`,
+  `NO_DETAIL_SELECTION_TEXT`, the Explorer purpose; `SpecDetail`'s hint branch; CSS `.explorer*`,
+  `.spec-list`, `.spec-row*` and their `@media` block (a rule another component uses stays: grep
+  first); `webviewCss.test.ts` list-row tests per the map, the nav-item part kept. `sourceScan.test.ts`:
+  AC-018's search of `src` without tests, except the mapping in `uiMemory.ts`, with a negative
+  control, and no `▸` at all (replaces the marker-exception test). `shellService.navigation.test.ts`
+  reads `view().selection` instead of `rows`; the shell smoke's `panelState` drops `rows`.
+- **Verify:** `npx vitest run --project node src/adapters/node/sourceScan.test.ts src/shared/protocol/messages.test.ts`
+  red, then green; gates 1–5; `npm run compile-tests`
+- [ ] **Verified (T-007):** —
+- **Notes:** —
+
+### T-008 — §5 notes, docs, test-title audit, architecture and Memory Bank sync, final gates
+
+- **Covers:** AC-018 (docs part), AC-020, AC-021, AC-022 (checklist item); re-proves AC-001…AC-019
+- **Do:** Inline notes "*Amended by 0020 (PD-058): …*" at each §5 statement of 0005, 0007, 0013,
+  0015, 0016, 0017, 0018, 0019 and ADR-001 §2; the PD register stays unedited. README: the view
+  "Specs" (four groups, inline Copy, badge, toolbar, "Focus on Specs View" and Shift+F10), two tabs,
+  commands table, no Spec Explorer section, screenshot per P-20. `docs/release-checklist.md` (Spec
+  Explorer items reworded, a 0020 section with AC-022), `docs/product/design-brief.md` (§Spec
+  Explorer → the tree and the side panel), CHANGELOG *Unreleased*. `docsScan.test.ts`: AC-018's docs
+  search and the README names. Test-title audit: throwaway `/tmp/audit-0020/titles.py`
+  (`describe`/`it`/`test`/`suite` literals of every `.ts`/`.tsx` under `src`, `src/test/**` and
+  `testing/*.ts` included) at the Baseline (`git archive`) and the head; `## Test-title audit` here
+  lists every absent title with its §5 row or replacing title. `/sdd-architecture-update`
+  (confirmation = this plan's approval) changes exactly: `last reconciled` → `<date> (0020)` in
+  `AGENTS.md` and the three module maps; snapshot `src/core/<area>` line `shell 0005` → `shell 0005
+  (+ spec tree, tree service, tree actions 0020)`; `src/adapters` line `vscode/ (thin host ports, no
+  logic)` → `vscode/ (thin host ports, no logic; the Specs tree view 0020)`; `src/webview` line drops
+  `Spec Explorer, ` and `and as the Spec Explorer pane`; `src/shared/protocol` line adds 0020 to its
+  spec list; `.architecture/core.md` shell line (`spec rows, tree model` → `spec tree, tree service,
+  tree actions (0020)`), `adapters.md` (`studioTree.ts`; `editor.ts` active group or beside),
+  `webview.md` (two areas, no pane). Memory Bank: `techContext.md` *Test* (one 0020 line),
+  `systemPatterns.md` (one 0020 entry: native tree from the core model, IDs, menus by
+  `contextValue`, tree actions, the `specExplorer` mapping), `activeContext.md`. Final gates.
+- **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green;
+  audit counts in this plan; `grep -c "Amended by 0020"` on the eight spec files and ADR-001 ≥ their
+  §5 rows; `git diff <Baseline> -- docs/product/product-decisions.md` empty; gates 1–5;
+  `npm run compile-tests`; `npm test` on Windows and CI (pre-done gate); AC-022 manual: Gregor or
+  his delegate in a real VS Code (no command sees VS Code's native tree drawing)
+- [ ] **Verified (T-008):** —
+- **Notes:** —
+
+## Traceability
+
+| Acceptance criterion | Steps | Code / files | Test | State |
+| --- | --- | --- | --- | --- |
+| AC-001 | T-001 | — | — | open |
+| AC-002 | T-001, T-005 | — | — | open |
+| AC-003 | T-001 | — | — | open |
+| AC-004 | T-001 | — | — | open |
+| AC-005 | T-001 | — | — | open |
+| AC-006 | T-002, T-005 | — | — | open |
+| AC-007 | T-004 | — | — | open |
+| AC-008 | T-004 | — | — | open |
+| AC-009 | T-004, T-005 | — | — | open |
+| AC-010 | T-002, T-005 | — | — | open |
+| AC-011 | T-002, T-005 | — | — | open |
+| AC-012 | T-002, T-005 | — | — | open |
+| AC-013 | T-003, T-005 | — | — | open |
+| AC-014 | T-004 | — | — | open |
+| AC-015 | T-005, T-006 | — | — | open |
+| AC-016 | T-006, T-007 | — | — | open |
+| AC-017 | T-006 | — | — | open |
+| AC-018 | T-007, T-008 | — | — | open |
+| AC-019 | T-005 | — | — | open |
+| AC-020 | T-008 | — | — | open |
+| AC-021 | T-008 | — | — | open |
+| AC-022 | T-008 | — | manual: Gregor or his delegate (pre-release checklist) | open |
+
+## Session handoff
+
+- **Done so far:** plan written; spec revised (P-1, P-2).
+- **Next action:** Gregor reads the plan; on his start signal the pair moves to `active/`
+  (`/sdd-lifecycle`), then T-001.
+- **Open decisions:** none; P-1…P-24 stand unless Gregor changes them.
+- **Baseline:** _(commit before the first step commit; set when work starts)_
+- **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here); the
+  0019 fix round (drawer scrolling) is merged before T-006.

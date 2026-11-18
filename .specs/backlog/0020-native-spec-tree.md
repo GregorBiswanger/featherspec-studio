@@ -1,7 +1,7 @@
 # Native Spec Tree and a Two-Tab Panel
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0020-native-spec-tree.plan.md](0020-native-spec-tree.plan.md)
 
 Basis: UX audit 2026-11-17 ([docs/ux-audit/](../../docs/ux-audit/)) R-05 (05), concept K-B (04),
 target picture B (03 §4), evidence 02 §3.1, §3.6 and screenshots 02, 05, 11. Decisions:
@@ -140,6 +140,7 @@ spec list exists (A-007).
 | 0017 §6.3 row "for 2 s after a click" | Also after a Copy from the tree (AC-007) |
 | 0018 AC-001 "(until 0020) `specExplorer`", "tree entry labels"; §7 "tree entry" | Void: no such area ID (AC-016), no area entries in the tree |
 | 0018 AC-002 | For a remembered `specExplorer` the remembered selection stays (AC-017) |
+| 0018 AC-029 "no `▸` except the selected-row marker … until 0020 removes that area" (PD-065 (3)) | Void with the list: no `▸` is left in `src` (AC-018) |
 | 0019 §4 in scope "The Spec Explorer area keeps …"; §5 row "0005 AC-007, AC-008 … stay until 0020"; §6.1 "Spec Explorer until 0020"; §8 pane hint "stay"; FR-02; AC-008 | Void: no Spec Explorer area, list or pane; the side panel is the only detail |
 | 0013 AC-016; 0015 AC-027; 0016 AC-023; 0017 AC-024; 0018 AC-030; 0019 AC-023 (test audits) | Also except the tests 0020 AC-021 lists against a criterion this table voids |
 | PD-042 (register not edited) | Superseded: no Spec Explorer area; the detail is 0019's side panel |
@@ -156,6 +157,7 @@ spec list exists (A-007).
 | Row description, tooltip, accessible label | — | §4.2, e.g. `Review · /sdd-compile`, `Done`, `Deprecated`, `Next step: `, `Steps 4/7 · Criteria 2/5`, `Problem: `, `, 1 problem` |
 | Badge tooltip | — | `1 spec waits for you: 1 in Review`; `3 specs wait for you: 2 in Review, 1 Blocked` |
 | Context menu and inline; open warning | — | `Open Spec`, `Open Plan`, `Copy Next Step`; `File not found: <path>` (0019's text) |
+| Row activation command (hidden, Keyboard Shortcuts only) | — | `Select Spec` (0019's `featherspec-studio.selectSpec`) |
 | View, zero specs | (list) `This project has no specs yet.` | `No specs yet. Start with /sdd-specify` (0018's text) |
 | Command | `FeatherSpec Studio: Open Spec Explorer` | — (removed) |
 | Panel navigation | `Spec Explorer` | — (two tabs per 0018) |
@@ -189,7 +191,7 @@ Decided by unit tests on the tree model (core, no `vscode`) and the manifest unl
 - **AC-008** A spec row's context menu shall offer `Open Spec`, `Open Plan` only where the spec has a plan (§4.2), and `Copy Next Step` per AC-007, in this order. Open Spec and Open Plan shall open that file at line 1, not as preview, in the active editor group, or beside it when that group shows the Studio panel, and shall neither open nor reveal the panel; if the file no longer exists, then the system shall open nothing and show the warning `File not found: <path>`. Group rows shall offer no action. (Unit test on the editor port with fake groups.)
 - **AC-009** When the user activates a spec row by click or Enter, the system shall make that spec the selected spec; with the panel open, it shall reveal the panel keeping the focus where it is, keep the panel's area and show the spec's side panel; with the panel closed, it shall open the panel, without the focus, on the start area of 0005 BR-02 with that side panel. Unit test on the shell and panel port (selection, area, focus option); host smoke: the row command opens a closed panel with that spec selected, and leaves an open panel on Board.
 - **AC-010** While the view shows spec rows, the badge shall be the number of entries in Review or Blocked with the tooltip of §4.3; at zero, and while the view shows no spec rows, there shall be no badge.
-- **AC-011** The manifest shall name the view `Specs`; contribute in its `view/title` group `navigation` `featherspec-studio.open` (icon `$(window)`) and then `featherspec-studio.refresh` (icon `$(refresh)`); contribute the tree's own commands — row activation, `Copy Next Step` (icon `$(copy)`), `Open Spec`, `Open Plan`, with exactly these titles — hidden from the Command Palette; the inline entry shall use group `inline` with a `when` limited to this view and, through `viewItem`, to rows with a line to copy. The view's description shall be the active project's name only while 0001 reports two or more projects.
+- **AC-011** The manifest shall name the view `Specs`; contribute in its `view/title` group `navigation` `featherspec-studio.open` (icon `$(window)`) and then `featherspec-studio.refresh` (icon `$(refresh)`); contribute the tree's own commands — row activation `Select Spec`, `Copy Next Step` (icon `$(copy)`), `Open Spec`, `Open Plan`, with exactly these titles — hidden from the Command Palette; the inline entry shall use group `inline` with a `when` limited to this view and, through `viewItem`, to rows with a line to copy. The view's description shall be the active project's name only while 0001 reports two or more projects.
 - **AC-012** The view shall show, per condition of §4.4, exactly what §4.4 names; the S2 `viewsWelcome` entry shall be byte-identical to the one at AC-021's start commit.
 - **AC-013** When the model changes (a spec added, its state changed, a step ticked), the tree and the badge shall show the change within 500 ms after the model-changed notification reaches the shell (PD-047), measured by a core timing test on the generated 200-spec project (PD-035) as `boardService.timing.test.ts` does (best of three, `BUDGET_MS.uiFreshness`). Host smoke: a backlog spec added to the fixture appears in the group Backlog and goes with its removal in `finally`.
 - **AC-014** The view, its actions and its badge shall change no file in any workspace folder (0005 AC-025); in Restricted Mode and a reader window they shall work as in a trusted one.
@@ -233,7 +235,8 @@ Decided by unit tests on the tree model (core, no `vscode`) and the manifest unl
 - OP-001: interview note. Gregor was not reachable; the orchestrator's split and the audit replaced the interview; decisions marked (proxy) in §10 wait for his confirmation at the plan review.
 - OP-002: the audit's 5-second test (R-05 field 12: 4 of 5 participants name the work in progress and the next command from a screenshot of the view) needs workshop participants; Gregor decides whether it runs before a release.
 - OP-003: resolved (proxy, A-007): S1 and S3 could move to welcome content, S5, S8 and S9 cannot (§4.4); all stay rows until a user reports them as noise.
-- OP-004: names of 0016–0019 (tab IDs, Refresh command, short form, selection message, status-bar feedback, T-05, T-09) are confirmed against their implemented code in `/sdd-plan` (A-001).
+- OP-004: resolved at `/sdd-plan` 2026-11-18 against `fd74ec7` (A-001): tabs `overview`, `board`; `featherspec-studio.refresh`; short form `stepView().short`; selection `select`, `clearSelection` and the command `featherspec-studio.selectSpec`; status-bar feedback `$(check) Copied`, `$(warning) Could not copy`, 2000 ms; T-05 `problemsBadgeText`; T-09 `DERIVED_SENTENCES` — all as §4 uses them.
+- OP-006: `/sdd-plan` 2026-11-18 (proxy, plan P-1, P-2): PD-065 (3), newer than this spec, kept a `▸` exception "until 0020 removes that area" — §5 voids it; the row activation reuses 0019's `featherspec-studio.selectSpec`, contributed hidden with the title `Select Spec` (AC-011, §6).
 - OP-005: `/sdd-clarify` 2026-11-17: 42 findings, 11 blocking, resolved in one pass at Gregor's standing request (no walkthrough); list kept by the orchestrator (`0020-findings.md`). Readings; say so if one is wrong: rows stay during Refresh and S5 shows for both causes (§4.4); row IDs carry the project root (§4.2); the tree's commands are its own (AC-011); timing in core on 200 specs, host tests only in `smoke` (AC-013, AC-019); *Up next* differs from the Overview's (§4.1). New proxies: A-010, A-011.
 
 ## 12. Definition of Ready / Done
