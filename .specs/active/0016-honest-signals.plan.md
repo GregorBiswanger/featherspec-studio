@@ -433,7 +433,8 @@ No test file was deleted. Every missing title is a criterion that spec 0016 §5 
 ## Session handoff
 
 - **Done so far:** T-001…T-013 verified (2026-11-18); T-011…T-013 are the fixes from the compile of S36 (documents, eight test gaps, evidence). Unit tests 1818 + 3 skipped, timing 12 (Baseline 1688 + 3, 12). Windows 11 at `870dc63`: `npm run test:unit` 1801 passed, 7 skipped, 12 timing; `npm test` 24 + 1 + 1 + 1.
-- **Next action:** open: CI at `870dc63` or at the fix head (AC-023's CI part; the orchestrator checks it); AC-025: Gregor's Hands-On on `tip-splitter`, the S2 sentence in the Activity Bar view, Copy's label change without shift and a problem badge in a real window, recorded as `manual: <who> checked <what>, <date>`; then `/sdd-compile` in a fresh session. The spec stays in `active/`.
+- **CI (orchestrator, 2026-11-18):** GitHub Actions run 44216130674 at `870dc63`: ubuntu-latest and windows-latest green (AC-023's CI part).
+- **Next action:** open: AC-025: Gregor's Hands-On on `tip-splitter`, the S2 sentence in the Activity Bar view, Copy's label change without shift and a problem badge in a real window, recorded as `manual: <who> checked <what>, <date>`; then `/sdd-compile` in a fresh session. The spec stays in `active/`.
 - **Open decisions:** none blocking; Q-1…Q-12 (Research) are proxy readings that Gregor may overrule.
 - **Baseline:** 3cdab90 (code identical to the move commit; unit tests 1688 passed + 3 skipped, timing 12)
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked).
