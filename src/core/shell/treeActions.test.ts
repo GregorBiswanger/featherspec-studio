@@ -10,6 +10,7 @@ import { fixturePath } from '../discovery/testing/fixtures';
 import { snapshotTree } from '../discovery/testing/snapshotTree';
 import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
 import type { EditorPort, OpenPlace } from '../ports/board';
+import type { NavigationTarget } from '../../shared/protocol/messages';
 import type { StudioPanelPort } from '../ports/shell';
 import { readProject } from '../specs/readProject';
 import { createTreeActions, type TreeActions } from './treeActions';
@@ -89,6 +90,20 @@ describe('0020 AC-009: select from a row (core part)', () => {
         fresh.actions.select({ stem: '0001-a' });
         expect(fresh.world.service.view().area).toBe('overview');
         expect(fresh.fakes.shown).toEqual([{ preserveFocus: true }]);
+    });
+
+    it('a row reopens a closed panel through the start path: a navigation target set before it closed is gone, while an open panel keeps it', async () => {
+        const target: NavigationTarget = { kind: 'boardFilter', filter: { states: ['Active'] } };
+        const current = await ready({ '.specs/active/0001-a.md': SPEC_HEADER('In Progress') });
+        current.fakes.open = true;
+        await current.world.service.handlers.navigate({ area: 'board', target });
+        current.actions.select({ stem: '0001-a' });
+        expect(current.world.service.view().target).toEqual(target);
+        current.fakes.open = false;
+        current.actions.select({ stem: '0001-a' });
+        expect(current.world.service.view().target).toBeUndefined();
+        expect(current.world.service.view().area).toBe('board');
+        expect(current.world.service.view().selection?.stem).toBe('0001-a');
     });
 
     it('a stem that is gone gives the notice of 0005 BR-03 and no selection', async () => {

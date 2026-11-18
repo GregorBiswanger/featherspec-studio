@@ -387,8 +387,8 @@ and the host smoke, so they stay `→`.
 - **Covers:** AC-009
 - **Do:** A deciding test in `src/core/shell/treeActions.test.ts` ("0020 AC-009"): a navigation target set before the panel closed is gone after a row reopens the panel (BR-02: `shell.open({ via: 'start' })` consumes `target`); with the panel open the target stays. Mutant M40 (the `if (!deps.panel.isOpen()) deps.shell.open({ via: 'start' })` line removed) must die. Code unchanged unless the test shows a defect.
 - **Verify:** `npx vitest run --project node src/core/shell/treeActions.test.ts` green, mutant M40 red; gates 1–4
-- [ ] **Verified (T-010):**
-- **Notes:**
+- [x] **Verified (T-010):** 2026-11-18: `vitest --project node treeActions.test.ts` green 11/11 (the new test passes at once: code unchanged, a gap test); mutants on a scratch copy of HEAD: M40 (the `shell.open({ via: 'start' })` block removed) and its counterpart (open on every select) each fail that test (1 failed, 10 passed); gates 1-4 green, unit 2219 passed + 3 skipped, timing 13.
+- **Notes:** Compile G2: the test sets a board-filter target through `navigate`, selects with the panel open (target stays), closes the panel, selects again (target gone, area and selection as remembered). The shell's area already equals the remembered one, which is why the old tests could not see the start path; `target` is the only thing `open` clears. T-004's `Verified:` claim of this mutant was wrong before this step. No code change, nothing deleted.
 
 ### T-011 — The view description shows the project count while one project is active (compile G3)
 
