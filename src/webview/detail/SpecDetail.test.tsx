@@ -1,3 +1,4 @@
+import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
 import type { SendView } from '../../shared/protocol/assistant';
@@ -891,6 +892,74 @@ describe('0024 AC-003, AC-002: the split button at the first next-step line only
         expect(requests('copyText')).toEqual([{ text: 'Implement T-003 of .specs/active/0007-thing.plan.md' }]);
         await send(copyResultEvent(true, COPIED_TEXT));
         expect(container.querySelector('button.send-main')?.textContent).toBe('Copied');
+    });
+});
+
+describe('0024 AC-010: focus when the offer changes', () => {
+    const WITH: NextStepView = {
+        rule: 'NS-6',
+        lines: [
+            { text: 'Implement T-003 of .specs/active/0007-thing.plan.md', intent: 'Continue with T-003' },
+            { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Not sure where it stands? Let the agent report first' },
+        ],
+        send: { assistant: 'copilot', target: 'new', targets: ['new', 'current'] },
+    };
+    const WITHOUT = { ...WITH, send: undefined } as NextStepView;
+    const OTHER = { ...WITH, send: { assistant: 'claudeCode', target: 'new', targets: ['new'] } } satisfies NextStepView;
+    const focusOn = async (element: HTMLElement): Promise<void> => {
+        await act(async () => element.focus());
+    };
+
+    it('an offer that goes away moves focus from the main part, the arrow part or a menu item to the Copy prompt that replaces it', async () => {
+        for (const place of ['main', 'arrow', 'item'] as const) {
+            const container = await open(spec({}, WITH));
+            const arrow = container.querySelector<HTMLButtonElement>('button.send-arrow')!;
+            if (place === 'main') {
+                await focusOn(container.querySelector<HTMLElement>('button.send-main')!);
+            } else if (place === 'arrow') {
+                await focusOn(arrow);
+            } else {
+                await click(arrow);
+                expect(document.activeElement?.getAttribute('role')).toBe('menuitem');
+            }
+            await send(detailEvent(spec({}, WITHOUT)));
+            const copy = container.querySelector<HTMLElement>('.next-step-lines li button.copy-button')!;
+            expect(container.querySelector('.send-split, [role="menu"]'), place).toBeNull();
+            expect(document.activeElement, place).toBe(copy);
+            expect(copy.textContent, place).toBe('Copy prompt');
+            mounted?.unmount();
+            mounted = undefined;
+            clients.splice(0).forEach((client) => client.stop());
+        }
+    });
+
+    it('an assistant change keeps the split button, closes the menu and moves focus to the arrow part', async () => {
+        const container = await open(spec({}, WITH));
+        await click(container.querySelector('button.send-arrow')!);
+        expect(container.querySelector('[role="menu"]')).not.toBeNull();
+        await send(detailEvent(spec({}, OTHER)));
+        expect(container.querySelector('[role="menu"]')).toBeNull();
+        expect(container.querySelector('button.send-main')?.textContent).toBe('Send to Claude Code');
+        expect(document.activeElement).toBe(container.querySelector('button.send-arrow'));
+    });
+
+    it('focus elsewhere stays when the offer goes away or changes', async () => {
+        const container = await open(spec({}, WITH));
+        const secondary = container.querySelector<HTMLElement>('button.copy-secondary')!;
+        await focusOn(secondary);
+        await send(detailEvent(spec({}, OTHER)));
+        expect(document.activeElement).toBe(secondary);
+        await send(detailEvent(spec({}, WITHOUT)));
+        expect(document.activeElement).toBe(secondary);
+    });
+
+    it('a new offer appearing does not take focus', async () => {
+        const container = await open(spec({}, WITHOUT));
+        const secondary = container.querySelector<HTMLElement>('button.copy-secondary')!;
+        await focusOn(secondary);
+        await send(detailEvent(spec({}, WITH)));
+        expect(container.querySelector('.send-split')).not.toBeNull();
+        expect(document.activeElement).toBe(secondary);
     });
 });
 

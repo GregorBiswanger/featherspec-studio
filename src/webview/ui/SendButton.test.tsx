@@ -2,9 +2,10 @@ import { act, useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SendPromptPayload, SendResultEventPayload, SendView } from '../../shared/protocol/assistant';
 import { COPIED_LABEL, COPIED_TEXT, COPY_FAILED_LABEL, COPY_FAILED_TEXT } from '../../shared/protocol/nextStepTexts';
-import { click, mount, type Mounted } from '../testing/dom';
+import { click, mount, pressKey, type Mounted } from '../testing/dom';
 import type { CopyResult } from './CopyButton';
 import { SendButton } from './SendButton';
+import { Toggletip } from './Toggletip';
 
 const LINE = 'Implement T-003 of .specs/active/0001-tip-splitter.plan.md';
 const COPILOT_VIEW: SendView = { assistant: 'copilot', target: 'current', targets: ['new', 'current'] };
@@ -274,3 +275,236 @@ describe('0024 AC-009: the DOM keeps its elements and their order while the feed
         expect(shape()).toBe(idle);
     });
 });
+
+async function key(element: Element, name: string, init: KeyboardEventInit = {}): Promise<KeyboardEvent> {
+    const event = new KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true, ...init });
+    await act(async () => {
+        element.dispatchEvent(event);
+    });
+    return event;
+}
+
+async function focus(element: HTMLElement): Promise<void> {
+    await act(async () => element.focus());
+}
+
+describe('0024 AC-008: the menu keys and pointer rules', () => {
+    it('while closed: aria-expanded is false and no role=menu is in the DOM', async () => {
+        const container = await show(COPILOT_VIEW);
+        expect(arrow(container).getAttribute('aria-expanded')).toBe('false');
+        expect(container.querySelector('[role="menu"]')).toBeNull();
+    });
+
+    it('Enter, Space and a click on the arrow part open the menu on the first item', async () => {
+        for (const how of ['enter', 'space', 'click'] as const) {
+            const container = await show(COPILOT_VIEW);
+            await focus(arrow(container));
+            if (how === 'click') {
+                await click(arrow(container));
+            } else {
+                await pressKey(arrow(container), how === 'enter' ? 'Enter' : ' ');
+            }
+            expect(arrow(container).getAttribute('aria-expanded'), how).toBe('true');
+            expect(document.activeElement, how).toBe(items(container)[0]);
+            mounted?.unmount();
+            mounted = undefined;
+        }
+    });
+
+    it('ArrowDown opens on the first item, ArrowUp on the last; both are prevented', async () => {
+        const container = await show(COPILOT_VIEW);
+        await focus(arrow(container));
+        expect((await key(arrow(container), 'ArrowDown')).defaultPrevented).toBe(true);
+        expect(document.activeElement).toBe(items(container)[0]);
+        await key(document.activeElement!, 'Escape');
+        expect(menu(container)).toBeNull();
+        expect((await key(arrow(container), 'ArrowUp')).defaultPrevented).toBe(true);
+        expect(document.activeElement).toBe(items(container)[2]);
+    });
+
+    it('the items are in the menu, not in the tab order, and ArrowDown and ArrowUp wrap', async () => {
+        const container = await show(COPILOT_VIEW);
+        await click(arrow(container));
+        const all = items(container);
+        expect(all).toHaveLength(3);
+        expect(all.every((item) => item.tabIndex === -1)).toBe(true);
+        await key(all[0]!, 'ArrowDown');
+        expect(document.activeElement).toBe(all[1]);
+        await key(all[1]!, 'ArrowDown');
+        expect(document.activeElement).toBe(all[2]);
+        await key(all[2]!, 'ArrowDown');
+        expect(document.activeElement).toBe(all[0]);
+        await key(all[0]!, 'ArrowUp');
+        expect(document.activeElement).toBe(all[2]);
+        await key(all[2]!, 'ArrowUp');
+        expect(document.activeElement).toBe(all[1]);
+    });
+
+    it('Home goes to the first item, End to the last', async () => {
+        const container = await show(COPILOT_VIEW);
+        await click(arrow(container));
+        const all = items(container);
+        expect((await key(all[0]!, 'End')).defaultPrevented).toBe(true);
+        expect(document.activeElement).toBe(all[2]);
+        await key(all[2]!, 'Home');
+        expect(document.activeElement).toBe(all[0]);
+    });
+
+    it('Enter, Space and a click on an item activate it, close the menu and put focus on the arrow part', async () => {
+        for (const how of ['enter', 'space', 'click'] as const) {
+            sent = [];
+            const container = await show(COPILOT_VIEW);
+            await click(arrow(container));
+            const item = items(container)[1]!;
+            await focus(item);
+            if (how === 'click') {
+                await click(item);
+            } else {
+                await pressKey(item, how === 'enter' ? 'Enter' : ' ');
+            }
+            expect(sent, how).toEqual([{ assistant: 'copilot', target: 'current', line: LINE }]);
+            expect(menu(container), how).toBeNull();
+            expect(arrow(container).getAttribute('aria-expanded'), how).toBe('false');
+            expect(document.activeElement, how).toBe(arrow(container));
+            mounted?.unmount();
+            mounted = undefined;
+        }
+    });
+
+    it('the Copy prompt item copies and closes with focus on the arrow part', async () => {
+        const container = await show(COPILOT_VIEW);
+        await click(arrow(container));
+        await click(items(container)[2]!);
+        expect(copied).toEqual([LINE]);
+        expect(menu(container)).toBeNull();
+        expect(document.activeElement).toBe(arrow(container));
+    });
+
+    it('Escape closes the menu, is prevented, and puts focus on the arrow part, from an item and from the arrow part', async () => {
+        const container = await show(COPILOT_VIEW);
+        await click(arrow(container));
+        const fromItem = await key(document.activeElement!, 'Escape');
+        expect(fromItem.defaultPrevented).toBe(true);
+        expect(menu(container)).toBeNull();
+        expect(document.activeElement).toBe(arrow(container));
+        await click(arrow(container));
+        await focus(arrow(container));
+        await key(arrow(container), 'Escape');
+        expect(menu(container)).toBeNull();
+        expect(document.activeElement).toBe(arrow(container));
+    });
+
+    it('Escape with the menu closed is not prevented', async () => {
+        const container = await show(COPILOT_VIEW);
+        await focus(arrow(container));
+        expect((await key(arrow(container), 'Escape')).defaultPrevented).toBe(false);
+    });
+
+    it('Tab and Shift+Tab close the menu and put focus on the arrow part; the key itself is not prevented', async () => {
+        for (const shiftKey of [false, true]) {
+            const container = await show(COPILOT_VIEW);
+            await click(arrow(container));
+            const event = await key(document.activeElement!, 'Tab', { shiftKey });
+            expect(event.defaultPrevented).toBe(false);
+            expect(menu(container)).toBeNull();
+            expect(document.activeElement).toBe(arrow(container));
+            mounted?.unmount();
+            mounted = undefined;
+        }
+    });
+
+    it('a pointer press outside the menu closes it; a press on the arrow part or inside the menu does not', async () => {
+        const container = await show(COPILOT_VIEW);
+        await click(arrow(container));
+        const press = async (target: Element): Promise<void> => {
+            await act(async () => {
+                target.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, cancelable: true }));
+            });
+        };
+        await press(menu(container)!);
+        await press(arrow(container));
+        expect(menu(container)).not.toBeNull();
+        await press(document.body);
+        expect(menu(container)).toBeNull();
+        expect(arrow(container).getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('a second click on the arrow part closes the menu', async () => {
+        const container = await show(COPILOT_VIEW);
+        await click(arrow(container));
+        await click(arrow(container));
+        expect(menu(container)).toBeNull();
+        expect(document.activeElement).toBe(arrow(container));
+    });
+
+    it('unmounting with the menu open leaves no open popup: a new split button opens its menu normally and no listener stays', async () => {
+        const first = await show(COPILOT_VIEW);
+        await click(arrow(first));
+        mounted?.unmount();
+        mounted = undefined;
+        const second = await show(COPILOT_VIEW);
+        expect(menu(second)).toBeNull();
+        await click(arrow(second));
+        expect(menu(second)).not.toBeNull();
+    });
+
+    it('opening the menu closes an open toggletip; opening a toggletip closes the menu', async () => {
+        mounted = await mount(
+            <div>
+                <Harness send={COPILOT_VIEW} />
+                <Toggletip label="About" glyph="?" paragraphs={['One.']} />
+            </div>,
+        );
+        const container = mounted.container;
+        const tip = container.querySelector<HTMLButtonElement>('button.toggletip')!;
+        await click(tip);
+        expect(tip.getAttribute('aria-expanded')).toBe('true');
+        await click(arrow(container));
+        expect(tip.getAttribute('aria-expanded')).toBe('false');
+        expect(menu(container)).not.toBeNull();
+        await click(tip);
+        expect(tip.getAttribute('aria-expanded')).toBe('true');
+        expect(menu(container)).toBeNull();
+        expect(arrow(container).getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('the assistant changing closes the menu and moves focus from an item to the arrow part; focus elsewhere stays', async () => {
+        let change: (next: SendView) => Promise<void> = async () => undefined;
+        function Switch() {
+            const [view, setView] = useState<SendView>(COPILOT_VIEW);
+            change = async (next) => {
+                await act(async () => setView(next));
+            };
+            return (
+                <div>
+                    <Harness send={view} />
+                    <button type="button" data-id="elsewhere">
+                        elsewhere
+                    </button>
+                </div>
+            );
+        }
+        mounted = await mount(<Switch />);
+        const container = mounted.container;
+        await click(arrow(container));
+        expect(document.activeElement).toBe(items(container)[0]);
+        await change(CLAUDE_VIEW);
+        expect(menu(container)).toBeNull();
+        expect(document.activeElement).toBe(arrow(container));
+        const elsewhere = container.querySelector<HTMLElement>('[data-id="elsewhere"]')!;
+        await focus(elsewhere);
+        await change(COPILOT_VIEW);
+        expect(document.activeElement).toBe(elsewhere);
+    });
+
+    it('Claude Code, two items: ArrowDown from the last item wraps to the first', async () => {
+        const container = await show(CLAUDE_VIEW);
+        await click(arrow(container));
+        const all = items(container);
+        expect(all).toHaveLength(2);
+        await focus(all[1]!);
+        await key(all[1]!, 'ArrowDown');
+        expect(document.activeElement).toBe(all[0]);
+    });
+});
+

@@ -1,3 +1,4 @@
+import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../../shared/protocol/envelope';
 import type { OverviewView } from '../../../shared/protocol/overview';
@@ -318,6 +319,16 @@ describe('0024 AC-003, AC-002: the split button at the first Now row only', () =
         const noStep = { spec: { stem: '0001-r', number: '0001', title: 'Row 0001', found: true }, state: 'Active', status: 'Active', problems: 0 };
         const container = await open(viewWith([noStep, row('0002')]));
         expect(container.querySelector('.send-split, .send-arrow, [role="menu"]')).toBeNull();
+    });
+
+    it('an offer that goes away moves focus from the split button to the Copy prompt of the row; an assistant change moves it to the arrow part', async () => {
+        const container = await open(viewWith([row('0001', { send: SEND }), row('0002')]));
+        await act(async () => container.querySelector<HTMLElement>('button.send-main')!.focus());
+        await send(overviewEvent(viewWith([row('0001', { send: { assistant: 'copilot', target: 'new', targets: ['new', 'current'] } }), row('0002')])));
+        expect(document.activeElement).toBe(container.querySelector('button.send-arrow'));
+        await send(overviewEvent(viewWith([row('0001'), row('0002')])));
+        expect(container.querySelector('.send-split')).toBeNull();
+        expect(document.activeElement).toBe(container.querySelector('[data-spec-row="0001-r"] button.copy-button'));
     });
 
     it('without send the first Now row renders the 0021 DOM: the Copy prompt in place of the split button', async () => {

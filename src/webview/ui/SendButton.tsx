@@ -1,9 +1,11 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import type { FocusEvent, KeyboardEvent } from 'react';
 import type { SendPromptPayload, SendResultEventPayload, SendView } from '../../shared/protocol/assistant';
 import { ASSISTANT_NAMES, MORE_ACTIONS_TITLE, moreActionsName, SEND_ITEM_TEXT, sendMainLabel, sendMainName, sendOpenedLabel, sendOpenedName } from '../../shared/protocol/assistantTexts';
 import { COPIED_LABEL, COPY_FAILED_LABEL, COPY_PROMPT_LABEL } from '../../shared/protocol/nextStepTexts';
 import { Glyph } from '../board/icons';
 import { FEEDBACK_MS, type CopyResult } from './CopyButton';
+import { closePopup, offerFocusHandoff, setPopup, useIsPopupOpen } from './popup';
 
 export interface SendButtonProps {
     send: SendView;
@@ -24,7 +26,12 @@ export function SendButton(props: SendButtonProps) {
     const { send, line, sendResult, copyResult } = props;
     const name = ASSISTANT_NAMES[send.assistant];
     const arrowId = useId();
-    const [open, setOpen] = useState(false);
+    const open = useIsPopupOpen(arrowId);
+    const root = useRef<HTMLSpanElement>(null);
+    const arrow = useRef<HTMLButtonElement>(null);
+    const menu = useRef<HTMLDivElement>(null);
+    const focusInside = useRef(false);
+    const focusOnOpen = useRef<'first' | 'last' | undefined>(undefined);
     const [shown, setShown] = useState<Shown | undefined>(undefined);
     const pendingSend = useRef(0);
     const pendingCopy = useRef(0);
@@ -90,35 +97,140 @@ export function SendButton(props: SendButtonProps) {
 
     useEffect(() => stopTimer, []);
 
-    const activateSend = (target: SendView['target']): void => {
+    useLayoutEffect(
+        () => () => {
+            closePopup(arrowId);
+            if (focusInside.current) {
+                offerFocusHandoff();
+            }
+        },
+        [],
+    );
+
+    const offerKey = `${send.assistant}|${send.targets.join(',')}`;
+    const lastOffer = useRef(offerKey);
+    useLayoutEffect(() => {
+        if (lastOffer.current !== offerKey) {
+            lastOffer.current = offerKey;
+            closePopup(arrowId);
+            if (focusInside.current) {
+                arrow.current?.focus();
+            }
+        }
+    }, [offerKey]);
+
+    const itemButtons = (): HTMLElement[] => [...(menu.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])];
+
+    useLayoutEffect(() => {
+        if (open && focusOnOpen.current !== undefined) {
+            const all = itemButtons();
+            (focusOnOpen.current === 'first' ? all[0] : all[all.length - 1])?.focus();
+        }
+        focusOnOpen.current = undefined;
+    }, [open]);
+
+    useEffect(() => {
+        if (!open) {
+            return;
+        }
+        const onPointerDown = (event: Event): void => {
+            const target = event.target;
+            if (target instanceof Node && (arrow.current?.contains(target) === true || menu.current?.contains(target) === true)) {
+                return;
+            }
+            closePopup(arrowId);
+        };
+        const onEscape = (event: Event): void => {
+            if (event instanceof globalThis.KeyboardEvent && event.key === 'Escape') {
+                event.preventDefault();
+                closePopup(arrowId);
+                arrow.current?.focus();
+            }
+        };
+        document.addEventListener('pointerdown', onPointerDown, true);
+        document.addEventListener('keydown', onEscape, true);
+        return () => {
+            document.removeEventListener('pointerdown', onPointerDown, true);
+            document.removeEventListener('keydown', onEscape, true);
+        };
+    }, [open]);
+
+    const openMenu = (where: 'first' | 'last'): void => {
+        focusOnOpen.current = where;
+        setPopup(arrowId);
+    };
+
+    const closeToArrow = (): void => {
+        closePopup(arrowId);
+        arrow.current?.focus();
+    };
+
+    const onKeyDown = (event: KeyboardEvent<HTMLElement>): void => {
+        const { key } = event;
+        if (!open) {
+            if (event.target === arrow.current && (key === 'ArrowDown' || key === 'ArrowUp')) {
+                event.preventDefault();
+                openMenu(key === 'ArrowDown' ? 'first' : 'last');
+            }
+            return;
+        }
+        const all = itemButtons();
+        const index = all.indexOf(document.activeElement as HTMLElement);
+        const go = (to: number): void => {
+            event.preventDefault();
+            all[to]?.focus();
+        };
+        if (key === 'ArrowDown') {
+            go(index < 0 ? 0 : (index + 1) % all.length);
+        } else if (key === 'ArrowUp') {
+            go(index < 0 ? all.length - 1 : (index - 1 + all.length) % all.length);
+        } else if (key === 'Home') {
+            go(0);
+        } else if (key === 'End') {
+            go(all.length - 1);
+        } else if (key === 'Tab') {
+            closeToArrow();
+        }
+    };
+
+    const onFocus = (): void => {
+        focusInside.current = true;
+    };
+    const onBlur = (event: FocusEvent<HTMLElement>): void => {
+        focusInside.current = event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget);
+    };
+
+    const activateSend = (target: SendView['target'], fromMenu = false): void => {
         pendingSend.current += 1;
-        setOpen(false);
+        if (fromMenu) {
+            closeToArrow();
+        }
         props.onSend({ assistant: send.assistant, target, line });
     };
 
     const activateCopy = (): void => {
         pendingCopy.current += 1;
-        setOpen(false);
+        closeToArrow();
         props.onCopy(line);
     };
 
     const idleName = sendMainName(name, send.target, line);
     return (
-        <span className="send-split next-step-copy">
+        <span ref={root} className="send-split next-step-copy" onKeyDown={onKeyDown} onFocus={onFocus} onBlur={onBlur}>
             <button type="button" className="copy-button send-main" aria-label={shown?.name ?? idleName} title={shown?.text ?? idleName} onClick={() => activateSend(send.target)}>
                 {shown?.label ?? sendMainLabel(name)}
             </button>
-            <button type="button" id={arrowId} className="send-arrow" aria-label={moreActionsName(line)} title={MORE_ACTIONS_TITLE} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(!open)}>
+            <button ref={arrow} type="button" id={arrowId} className="send-arrow" aria-label={moreActionsName(line)} title={MORE_ACTIONS_TITLE} aria-haspopup="menu" aria-expanded={open} onClick={() => (open ? closeToArrow() : openMenu('first'))}>
                 <Glyph kind="chevronDown" />
             </button>
             {open ? (
-                <div role="menu" aria-labelledby={arrowId} className="send-menu">
+                <div ref={menu} role="menu" aria-labelledby={arrowId} className="send-menu">
                     {send.targets.map((target) => (
-                        <button key={target} type="button" role="menuitem" onClick={() => activateSend(target)}>
+                        <button key={target} type="button" role="menuitem" tabIndex={-1} onClick={() => activateSend(target, true)}>
                             {SEND_ITEM_TEXT[target]}
                         </button>
                     ))}
-                    <button type="button" role="menuitem" onClick={activateCopy}>
+                    <button type="button" role="menuitem" tabIndex={-1} onClick={activateCopy}>
                         {COPY_PROMPT_LABEL}
                     </button>
                 </div>

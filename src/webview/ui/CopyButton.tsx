@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { takeFocusHandoff } from './popup';
 import { Glyph } from '../board/icons';
 import { COPIED_LABEL, COPY_FAILED_LABEL, COPY_PROMPT_LABEL } from '../../shared/protocol/nextStepTexts';
 
@@ -17,6 +18,13 @@ export function CopyButton(props: { look: CopyLook; line: string; copyResult: Co
     const waiting = useRef(false);
     const seen = useRef<CopyResult | undefined>(copyResult);
     const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const button = useRef<HTMLButtonElement>(null);
+
+    useLayoutEffect(() => {
+        if (takeFocusHandoff()) {
+            button.current?.focus();
+        }
+    }, []);
 
     useEffect(() => {
         if (copyResult === undefined) {
@@ -60,11 +68,11 @@ export function CopyButton(props: { look: CopyLook; line: string; copyResult: Co
     return (
         <>
             {props.look === 'icon' ? (
-                <button type="button" className="copy-icon next-step-copy" aria-label={name} title={shown?.text ?? name} onClick={activate} {...tab}>
+                <button ref={button} type="button" className="copy-icon next-step-copy" aria-label={name} title={shown?.text ?? name} onClick={activate} {...tab}>
                     <Glyph kind={shown === undefined ? 'copy' : shown.ok ? 'check' : 'diagnostic'} />
                 </button>
             ) : (
-                <button type="button" className={props.look === 'secondary' ? 'copy-button copy-secondary next-step-copy' : 'copy-button next-step-copy'} aria-label={name} title={shown?.text} onClick={activate} {...tab}>
+                <button ref={button} type="button" className={props.look === 'secondary' ? 'copy-button copy-secondary next-step-copy' : 'copy-button next-step-copy'} aria-label={name} title={shown?.text} onClick={activate} {...tab}>
                     {label}
                 </button>
             )}

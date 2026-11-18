@@ -12,6 +12,7 @@ import { deriveLifecycle } from '../../core/lifecycle/deriveLifecycle';
 import { buildOverviewView } from '../../core/overview/overviewView';
 import { readProject } from '../../core/specs/readProject';
 import { parseStepTipSettings, type StepTipSettings } from '../../core/settings/stepTipSettings';
+import type { Offer } from '../../core/assistant/offer';
 import { createNodeSpecSource } from './nodeSpecSource';
 
 const root = path.resolve(__dirname, '..', '..', '..');
@@ -66,18 +67,26 @@ interface Rendered {
     buttons: Array<{ text: string; name: string }>;
     texts: string[];
     coaches: number;
+    html: string;
+    splits: string[];
+    menus: number;
+    words: number;
 }
 
 function inspect(dom: JSDOM, where: string): Rendered {
-    const document = dom.window.document as unknown as { body: ElementLike; querySelectorAll(selector: string): Iterable<ElementLike> };
+    const document = dom.window.document as unknown as { body: ElementLike & { innerHTML: string }; querySelectorAll(selector: string): Iterable<ElementLike> };
+    const place = (element: ElementLike): string => {
+        const closest = (element as unknown as { closest(selector: string): unknown }).closest.bind(element);
+        return closest('[data-plan-map]') !== null ? 'plan map' : closest('[data-card], [data-board-state]') !== null ? 'board' : closest('[data-up-next]') !== null ? 'up next' : closest('[data-now]') !== null ? 'now' : closest('.spec-detail') !== null ? 'detail' : 'other';
+    };
     const buttons = [...document.querySelectorAll('button')].map((button) => ({ text: button.textContent ?? '', name: button.getAttribute('aria-label') ?? '' }));
     const attributes = [...document.querySelectorAll('[title], [aria-label]')].flatMap((element) => [element.getAttribute('title'), element.getAttribute('aria-label')]).filter((value): value is string => value !== null);
-    return { where, buttons, texts: [document.body.textContent ?? '', ...attributes], coaches: [...document.querySelectorAll('.step-coach, .ov-coach')].length };
+    return { where, buttons, texts: [document.body.textContent ?? '', ...attributes], coaches: [...document.querySelectorAll('.step-coach, .ov-coach')].length, html: document.body.innerHTML, splits: [...document.querySelectorAll('.send-split')].map(place), menus: [...document.querySelectorAll('[role="menu"]')].length, words: (document.body.textContent ?? '').split(/\s+/).filter((word) => word !== '').length };
 }
 
 const SHELL_BOARD = { state: undefined, restricted: false, projectName: 'fixture', area: 'board', target: undefined, selection: undefined, notice: undefined, rows: [] };
 
-async function renderFixture(name: string, tips?: StepTipSettings): Promise<Rendered[]> {
+async function renderFixture(name: string, tips?: StepTipSettings, offer?: Offer): Promise<Rendered[]> {
     const project = await readProject(createNodeSpecSource(), fixturePath(name), '1.10.0');
     const lifecycle = deriveLifecycle(project);
     const model = { project, lifecycle };
@@ -96,7 +105,7 @@ async function renderFixture(name: string, tips?: StepTipSettings): Promise<Rend
     const overviewDom = boot(readFileSync(bundlePath, 'utf8'));
     await settle();
     send(overviewDom.dom, { v: 7, kind: 'evt', seq: 1, type: 'shell', payload: { view: { ...SHELL_BOARD, area: 'overview' } } });
-    send(overviewDom.dom, { v: 7, kind: 'evt', type: 'overview', payload: { view: buildOverviewView({ model, history, ...(tips === undefined ? {} : { tips }) }) } });
+    send(overviewDom.dom, { v: 7, kind: 'evt', type: 'overview', payload: { view: buildOverviewView({ model, history, ...(tips === undefined ? {} : { tips }), ...(offer === undefined ? {} : { offer }) }) } });
     await settle();
     rendered.push(inspect(overviewDom.dom, `${name} overview`));
     expect(overviewDom.errors).toEqual([]);
@@ -106,7 +115,7 @@ async function renderFixture(name: string, tips?: StepTipSettings): Promise<Rend
         const selection = { stem: entry.stem, number: entry.number };
         send(detailDom.dom, { v: 7, kind: 'evt', seq: rendered.length + 1, type: 'shell', payload: { view: { ...SHELL_BOARD, selection } } });
         send(detailDom.dom, { v: 7, kind: 'evt', type: 'board', payload: { view: board } });
-        send(detailDom.dom, { v: 7, kind: 'evt', type: 'detail', payload: { view: buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history, ...(tips === undefined ? {} : { tips }) }) } });
+        send(detailDom.dom, { v: 7, kind: 'evt', type: 'detail', payload: { view: buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history, ...(tips === undefined ? {} : { tips }), ...(offer === undefined ? {} : { offer }) }) } });
         await settle();
         rendered.push(inspect(detailDom.dom, `${name} detail ${entry.key}`));
     }
@@ -145,7 +154,7 @@ describe('0021 AC-008: no rendered surface of any fixture offers the old Copy', 
     }, 60000);
 
     it('negative control: the check finds a button that reads Copy and one named Copy: <line>', () => {
-        const stale: Rendered[] = [{ where: 'x', buttons: [{ text: 'Copy', name: 'Copy: /sdd-plan k' }, { text: 'Copy prompt', name: 'Copy prompt: /sdd-plan k' }], texts: [], coaches: 0 }];
+        const stale: Rendered[] = [{ where: 'x', buttons: [{ text: 'Copy', name: 'Copy: /sdd-plan k' }, { text: 'Copy prompt', name: 'Copy prompt: /sdd-plan k' }], texts: [], coaches: 0, html: '', splits: [], menus: 0, words: 0 }];
         expect(oldCopyLabels(stale)).toEqual(['x: Copy / Copy: /sdd-plan k']);
     });
 });
@@ -196,9 +205,10 @@ interface MapRendered {
     unnamedCopies: string[];
     texts: string[];
     cards: number;
+    splits: number;
 }
 
-async function renderMap(name: string): Promise<MapRendered[]> {
+async function renderMap(name: string, offer?: Offer): Promise<MapRendered[]> {
     const project = await readProject(createNodeSpecSource(), fixturePath(name), '1.10.0');
     const lifecycle = deriveLifecycle(project);
     const model = { project, lifecycle };
@@ -221,6 +231,7 @@ async function renderMap(name: string): Promise<MapRendered[]> {
             unnamedCopies: copies.map((button) => button.getAttribute('aria-label') ?? '').filter((label) => !label.startsWith('Copy prompt: ')),
             texts: [mapText, ...attributes],
             cards: [...document.querySelectorAll('[data-step-card]')].length,
+            splits: [...document.querySelectorAll('[data-plan-map] .send-split, [data-plan-map] .send-arrow, [data-plan-map] [role="menu"]')].length,
         });
     };
     for (const entry of lifecycle.entries) {
@@ -228,7 +239,7 @@ async function renderMap(name: string): Promise<MapRendered[]> {
         const selection = { stem: entry.stem, number: entry.number };
         send(dom.dom, { v: 7, kind: 'evt', seq, type: 'shell', payload: { view: { ...SHELL_BOARD, area: 'planMap', selection } } });
         send(dom.dom, { v: 7, kind: 'evt', type: 'board', payload: { view: board } });
-        send(dom.dom, { v: 7, kind: 'evt', type: 'detail', payload: { view: buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history }) } });
+        send(dom.dom, { v: 7, kind: 'evt', type: 'detail', payload: { view: buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history, ...(offer === undefined ? {} : { offer }) }) } });
         await settle();
         look(`${name} map ${entry.key}`);
     }
@@ -431,5 +442,86 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
     it('control: a script that throws at start-up is reported through the same harness', () => {
         const { errors } = boot('throw new Error("broken bundle");');
         expect(errors.length).toBeGreaterThan(0);
+    });
+});
+
+const OFFERS: Offer[] = [{ assistant: 'copilot' }, { assistant: 'claudeCode' }];
+
+describe('0024 AC-002, AC-003: Send in the rendered bundle, over the fixtures', () => {
+    beforeAll(() => {
+        execFileSync(process.execPath, ['esbuild.js'], { cwd: root, stdio: 'pipe' });
+    }, 60000);
+
+    const stray = (rendered: Rendered[]): string[] => rendered.flatMap((surface) => surface.splits.filter((place) => place !== 'detail' && place !== 'now').map((place) => `${surface.where}: ${place}`));
+
+    it.each(SWEPT_FIXTURES.flatMap((name) => OFFERS.map((offer) => [name, offer.assistant, offer] as const)))('%s with %s: split buttons sit in a detail or the first Now row only, one per surface, none open', async (name, _assistant, offer) => {
+        const rendered = await renderFixture(name, undefined, offer);
+        expect(stray(rendered)).toEqual([]);
+        for (const surface of rendered) {
+            expect(surface.splits.length, surface.where).toBeLessThanOrEqual(1);
+            expect(surface.menus, surface.where).toBe(0);
+            if (surface.where.endsWith('board')) {
+                expect(surface.splits, surface.where).toEqual([]);
+            }
+            if (surface.where.endsWith('overview')) {
+                expect(surface.splits.filter((place) => place === 'detail'), surface.where).toEqual([]);
+            }
+        }
+    }, 60000);
+
+    it.each(OFFERS.map((offer) => [offer.assistant, offer] as const))('the Plan map of the fixtures holds no Send control with %s offered', async (_assistant, offer) => {
+        for (const name of ['studio-0015', 'studio-0002', 'fs110-ready-synthetic']) {
+            const rendered = await renderMap(name, offer);
+            expect(rendered.length, name).toBeGreaterThan(0);
+            expect(rendered.filter((surface) => surface.splits > 0).map((surface) => surface.where), name).toEqual([]);
+        }
+    }, 120000);
+
+    it('a project with steps shows Send to <Name> on the first Now row and in the detail for each assistant', async () => {
+        for (const [offer, label] of [[OFFERS[0]!, 'Send to Copilot'], [OFFERS[1]!, 'Send to Claude Code']] as const) {
+            const rendered = (await Promise.all(['fs110-ready-synthetic', 'fs110-de-active-review', 'studio-0015', 'fs170-brownfield-mixed'].map((name) => renderFixture(name, undefined, offer)))).flat();
+            const buttons = rendered.flatMap((surface) => surface.buttons.map((button) => button.text));
+            expect(buttons, label).toContain(label);
+            expect(rendered.some((surface) => surface.splits.includes('now')), label).toBe(true);
+            expect(rendered.some((surface) => surface.splits.includes('detail')), label).toBe(true);
+        }
+    }, 60000);
+
+    it('with no offer the DOM holds no Send control and equals the render with the offer left out', async () => {
+        for (const name of ['fs110-ready-synthetic', 'studio-0015']) {
+            const plain = await renderFixture(name);
+            const none = await renderFixture(name, undefined, undefined);
+            expect(plain.flatMap((surface) => surface.splits), name).toEqual([]);
+            expect(plain.map((surface) => surface.html), name).toEqual(none.map((surface) => surface.html));
+            expect(plain.flatMap((surface) => surface.buttons.map((button) => `${button.text}|${button.name}`)).filter((text) => /Send to|More actions/.test(text)), name).toEqual([]);
+        }
+    }, 120000);
+
+    it('0019 AC-010 also with Send offered: the detail of spec 0015 holds at most 300 words, closed sections, for each assistant', async () => {
+        for (const offer of OFFERS) {
+            const project = await readProject(createNodeSpecSource(), fixturePath('studio-0015'), '1.10.0');
+            const lifecycle = deriveLifecycle(project);
+            const detail = buildDetail({ selection: { stem: '0015-focus-on-visibility' }, model: { project, lifecycle }, history: { available: true, label: 'Observed', entries: [] }, tips: parseStepTipSettings(true, {}), offer });
+            const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
+            await settle();
+            const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'board', target: undefined, selection: { stem: '0015-focus-on-visibility', number: '0015' }, notice: undefined, rows: [] };
+            dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 7, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+            dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 7, kind: 'evt', type: 'detail', payload: { view: detail } } }));
+            await settle();
+            const section = dom.window.document.querySelector('.spec-detail') as unknown as QueryRoot | null;
+            expect(section).not.toBeNull();
+            const clone = section!.cloneNode(true);
+            const sends = [...clone.querySelectorAll('.send-split')].length;
+            [...clone.querySelectorAll('.visually-hidden, [hidden]')].forEach((hidden) => hidden.remove());
+            const words = (clone.textContent ?? '').replace(/\s+/g, ' ').trim().split(' ').filter((word) => word !== '');
+            expect(sends, offer.assistant).toBeLessThanOrEqual(1);
+            expect(words.length, offer.assistant).toBeLessThanOrEqual(300);
+            expect(errors).toEqual([]);
+        }
+    }, 60000);
+
+    it('negative control: the sweep sees a split button outside the detail and the first Now row', () => {
+        const planted: Rendered[] = [{ where: 'x board', buttons: [], texts: [], coaches: 0, html: '', splits: ['board', 'detail'], menus: 0, words: 0 }];
+        expect(stray(planted)).toEqual(['x board: board']);
     });
 });

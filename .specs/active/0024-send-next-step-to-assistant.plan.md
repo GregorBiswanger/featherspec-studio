@@ -3,7 +3,7 @@
 **Spec:** [0024-send-next-step-to-assistant.md](0024-send-next-step-to-assistant.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-006
+**Current step:** T-007
 
 ## Approach
 
@@ -422,8 +422,8 @@ here.
     - Negative control.
 - **Verify:** `npx vitest run --project webview src/webview` and `npx vitest run --project node src/adapters/node/webviewBundle.test.ts`
   red (stub), then green; gates 1–5
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** eslint, tsc (host+webview), test:unit 3053 passed, compile, compile-tests green; SendButton keys 'AC-008' tests (wrap and Escape/handoff mutations shown red), Close/ListOrDetail Escape, SpecDetail/Overview AC-010 focus, webviewBundle sweeps
+- **Notes:** Proxy: one popup store ui/popup.ts shared by Toggletip and SendButton (Toggletip tests unchanged and green). Focus handoff when an offer goes away: SendButton unmount with focus inside flags a microtask-scoped handoff that the next mounted CopyButton consumes (no wrapper element, so the no-offer DOM stays the 0021 render). Assistant change handled inside SendButton (layout effect, arrow focus). A newly appearing offer takes no focus. Bundle sweep uses four fixtures for the 'shows Send' check because fs110-ready-synthetic has no Now row.
 
 ### T-007 — §5 notes, docs, test-title audit, architecture and Memory Bank sync, final gates
 

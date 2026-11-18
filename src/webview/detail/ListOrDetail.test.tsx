@@ -292,3 +292,20 @@ describe('0021 AC-014: Escape with the About this step toggletip open below 900 
         expect(requests('clearSelection')).toEqual([{}]);
     });
 });
+
+describe('0024 AC-008: Escape with the Send menu open below 900 px', () => {
+    it('the first Escape closes only the menu and keeps the detail; focus is on the arrow part; the second sends clearSelection', async () => {
+        const container = await board(SELECTED);
+        await send(detailEvent(detailView({}, { rule: 'NS-5', lines: [{ text: '/sdd-compile k', intent: 'Have the result verified' }], send: { assistant: 'copilot', target: 'new', targets: ['new', 'current'] } })));
+        const arrow = container.querySelector<HTMLButtonElement>('aside.side-panel button.send-arrow')!;
+        await click(arrow);
+        expect(container.querySelector('aside.side-panel [role="menu"]')).not.toBeNull();
+        await escape(document.activeElement as HTMLElement);
+        expect(container.querySelector('[role="menu"]')).toBeNull();
+        expect(requests('clearSelection')).toEqual([]);
+        expect(back(container)).not.toBeNull();
+        expect(document.activeElement).toBe(arrow);
+        await escape(arrow);
+        expect(requests('clearSelection')).toEqual([{}]);
+    });
+});

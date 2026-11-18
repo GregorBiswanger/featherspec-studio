@@ -1,42 +1,17 @@
-import { useEffect, useId, useRef, useSyncExternalStore } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import type { KeyboardEvent } from 'react';
-
-let openId: string | undefined;
-const listeners = new Set<() => void>();
-
-function setOpen(next: string | undefined): void {
-    if (openId === next) {
-        return;
-    }
-    openId = next;
-    for (const listener of [...listeners]) {
-        listener();
-    }
-}
-
-function subscribe(listener: () => void): () => void {
-    listeners.add(listener);
-    return () => {
-        listeners.delete(listener);
-    };
-}
-
-function snapshot(): string | undefined {
-    return openId;
-}
+import { closePopup, setPopup, useIsPopupOpen } from './popup';
 
 export function Toggletip(props: { label: string; glyph: string; paragraphs: readonly string[] }) {
     const id = useId();
-    const open = useSyncExternalStore(subscribe, snapshot) === id;
+    const open = useIsPopupOpen(id);
     const button = useRef<HTMLButtonElement>(null);
     const region = useRef<HTMLDivElement>(null);
     const content = props.paragraphs.join('\n');
     const lastContent = useRef(content);
 
     const close = (): void => {
-        if (openId === id) {
-            setOpen(undefined);
-        }
+        closePopup(id);
     };
 
     useEffect(() => {
@@ -94,7 +69,7 @@ export function Toggletip(props: { label: string; glyph: string; paragraphs: rea
             close();
             button.current?.focus();
         } else {
-            setOpen(id);
+            setPopup(id);
         }
     };
 
