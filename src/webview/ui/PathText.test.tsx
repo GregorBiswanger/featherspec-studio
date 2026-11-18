@@ -31,9 +31,16 @@ describe('0022 AC-002: a path breaks only after a separator', () => {
         expect(container.textContent).toBe('.specs/active/0022-layout-and-signal.plan.md');
     });
 
-    it('puts no break after a final separator', async () => {
+    it('0022 AC-015: puts a break opportunity after a final separator too, as it says "each", and the text stays whole', async () => {
         const container = await html(<PathText path="folder/" />);
-        expect(breaks(container)).toBe('folder/');
+        expect(breaks(container)).toBe('folder/|');
+        expect(container.textContent).toBe('folder/');
+        expect(breaks(await html(<PathText path="a-b." />))).toBe('a-|b.|');
+        expect(breaks(await html(<PathText command="open .specs/active/" />))).toBe('open .|specs/|active/|');
+    });
+
+    it('0022 AC-015: a path without a separator gets no break opportunity at all', async () => {
+        expect(breaks(await html(<PathText path="readme" />))).toBe('readme');
     });
 
     it('puts breaks into the path arguments of a command and not into the command, a word or a flag', async () => {

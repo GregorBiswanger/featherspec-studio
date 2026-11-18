@@ -3,7 +3,7 @@
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-018
+**Current step:** T-019
 
 ## Approach
 
@@ -540,6 +540,14 @@ never on the repository.
 - **Verify:** `npx vitest run --project node src/adapters/node/webviewCss.test.ts` and `npx vitest run --project webview src/webview/areas/overview/problemsCss.test.tsx`; mutants M51, M55 on a scratch copy; gates 1–4
 - [x] **Verified (T-018):** 2026-11-18, gap tests (code already right, green at once): 80 and 7 passed. Mutants on a scratch copy of the working tree: M51 (`.copy-button { min-width: 60ch }`) red, `webviewCss.test.ts` 1 failed; M55 (`.ov-row .step-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }` in the wide container) red, `problemsCss.test.tsx` 1 failed; extra probe `.copy-button { overflow: hidden }` red, 3 failed (one per container); unmutated green. Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2451 passed, 3 skipped (+13 timing).
 - **Notes:** M51 and M55 now die. The Baseline test "0018 AC-006: a spec row stays on one line …" that carried this guarantee was replaced in T-007; this is its replacement (audit entry in T-022).
+
+### T-019 — `PathText` puts a `<wbr>` after each separator, the final one included (AC-015)
+
+- **Covers:** AC-015 ("a `<wbr>` directly after each `/`, `-` and `.` of its path and no other")
+- **Do:** `ui/PathText.tsx` no longer skips the final separator. `PathText.test.tsx`: the test "puts no break after a final separator" becomes `0022 AC-015: puts a break opportunity after a final separator too …` (`folder/` → `folder/|`, `a-b.` → `a-|b.|`, a command argument ending in `/`; the text content stays whole); new test: a path without a separator gets no `<wbr>`.
+- **Verify:** `npx vitest run --project webview src/webview/ui/PathText.test.tsx` red, then green; gates 1–4
+- [x] **Verified (T-019):** 2026-11-18, red first: the changed test against the unchanged `PathText.tsx`: 1 failed (`Expected "folder/|", Received "folder/"`), 5 passed. Green after the code: 6 passed; `npx vitest run --project webview` 446 passed (no surface test pins a trailing separator); gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2452 passed, 3 skipped (+13 timing).
+- **Notes:** Proxy decision (the compile's exploratory finding, decided by AC-015 and not asked): the criterion says "each" and "no other", so the final separator gets its `<wbr>` and a path without a separator none; the spec text wins over the earlier test, which asserted the opposite. The cost is nil: `<wbr>` adds no character (`textContent` and the clipboard text are unchanged, asserted), and a break after a trailing `/` is still after a separator (§4.6). The old title is listed as retitled in T-022's audit.
 
 ## Traceability
 

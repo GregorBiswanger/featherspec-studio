@@ -3,13 +3,11 @@ import { Fragment, type ReactNode } from 'react';
 const BREAK_AFTER = /([/.-])/;
 
 function breakable(text: string): ReactNode[] {
-    return text.split(BREAK_AFTER).flatMap((part, index, parts) => {
+    return text.split(BREAK_AFTER).flatMap((part, index) => {
         if (part === '') {
             return [];
         }
-        const isSeparator = index % 2 === 1;
-        const last = index === parts.length - 1 || parts.slice(index + 1).every((rest) => rest === '');
-        return isSeparator && !last ? [part, <wbr key={index} />] : [part];
+        return index % 2 === 1 ? [part, <wbr key={index} />] : [part];
     });
 }
 
