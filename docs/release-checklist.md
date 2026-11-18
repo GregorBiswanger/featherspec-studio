@@ -128,7 +128,8 @@ and the expected result. A clear miss reopens the named spec.
 - [ ] **AC-022** *(Gregor or his delegate)*: preview-harness screenshots in Dark, Light and High Contrast of
   Board and Overview with the side panel of the `studio-0015` fixture at 1400x900 and 800x900. The side
   panel is at most 900 px tall with Format notes and Status history closed; at 800 px the drawer covers the
-  right part of the board and a card focused under it by Tab or arrow scrolls clear; nothing is cut off.
+  right part of the board and a card focused under it by Tab or arrow scrolls clear; in the Overview every
+  row with its next step and Copy and the figures line stay visible left of the drawer; nothing is cut off.
 - [ ] In a real VS Code window: clicking an ID or a file name in the side panel opens the file beside the
   Studio, at the line of the ID, and the Studio stays visible; a card, an Overview row and an activity entry
   select in place without changing the area; Escape and the close button close the panel and return focus to

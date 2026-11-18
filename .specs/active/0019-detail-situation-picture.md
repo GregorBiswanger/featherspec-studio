@@ -50,7 +50,7 @@ Developer (one role), as in 0005–0007; workshop participants use the same surf
 
 The plan applies them as inline notes "*Amended by 0019 (PD-058): …*" in the implementing change
 set, as 0015 did. Statements already amended by 0015–0018 are read as amended. The PD register is
-history and is not edited: PD-058 already supersedes PD-042.
+history and is not edited: PD-058 already supersedes PD-042 (the fix round of the compile S48 only appends PD-066).
 
 | Spec · statement | Amendment |
 | --- | --- |
@@ -89,9 +89,12 @@ detail until 0020; *Overview row* a Now, Up next or Problems row of a spec (0018
   side panel shows whenever a spec is selected, whoever set the selection (list, restore, 0020's
   tree); 0017's current spec follows the same selection.
 - **Place.** Panel ≥ 900 px wide: 400 px at the right edge beside the area content, own scroll.
-  Narrower: a drawer over the area from the right edge, min(400 px, panel width) wide; the area
-  keeps its width. Non-modal in both (`role="complementary"`, accessible name "Spec detail").
-  While the drawer is shown, a card or Overview row that receives focus is scrolled clear of it
+  Narrower: a drawer over the area from the right edge, min(400 px, the width of the area frame)
+  wide; the Board's content keeps its width; the Overview's content takes the width left of the
+  drawer (PD-066): its end padding is the drawer's width and its rows take the two-line layout of
+  0018 T-013, so every row with its next step and Copy and the figures line stay visible.
+  Non-modal in both (`role="complementary"`, accessible name "Spec detail").
+  While the drawer is shown, a card, or a control inside a card, that receives focus is scrolled clear of it
   (A-003).
 - **Close.** The close button, or Escape inside the side panel, clears the selection; focus moves
   to the card or Overview row that opened the side panel while it is shown, else to the spec's
@@ -192,7 +195,7 @@ details." stay as they are.
 | Duplicated stem | The selected entry (stem + path, PD-039): its path in the header, its own files |
 | Many open criteria | All listed, no cap; a short title wraps (at most 80 characters) |
 | Board with side panel, panel ≥ 900 px | The board's free width shrinks by 400 px; 0018 B-2's horizontal scrolling applies |
-| Drawer shown, a covered card or Overview row gets focus | Scrolled clear of the drawer (§6.1) |
+| Drawer shown, a covered card or a control in it gets focus | Scrolled clear of the drawer (§6.1); no Overview row is covered (PD-066) |
 | Panel crosses 900 px while open | Switches between beside and drawer; selection and focus stay |
 | File changed since the model read it (unsaved, re-read pending) | Cursor at the delivered line, kept inside the file |
 | Restricted Mode, reader window | Same detail; files open editable (VS Code: "text editing is always supported") |
@@ -209,7 +212,7 @@ at commit `8052f9a` (made by the plan, like `studio-0002`).
 - **AC-002** While a spec is selected and Overview or Board is shown, the system shall show the side panel with that spec's detail; while none is selected, it shall show no side panel. Switching area by hand shall keep both.
 - **AC-003** When the developer activates the close button, or presses Escape while focus is inside the side panel, the system shall clear the selection, hide the side panel and move focus to the card or Overview row that opened it while that is shown, else to that spec's first card or Overview row in DOM order, else to the area's first focusable element.
 - **AC-004** When the side panel opens from a card, Overview row or activity entry, the system shall move focus to its heading; with the keyboard alone the developer shall reach the close button and then every control of the side panel in §6.2's section order — Copy buttons, links, collapse toggles — and operate each with Enter and with Space.
-- **AC-005** While the panel is at least 900 px wide, the side panel shall be 400 px wide beside the area content with its own scroll; while it is narrower, the side panel shall overlay the area from the right edge at min(400 px, panel width) and the area content shall keep its width. (CSS guard test on the rules; screenshots in AC-022)
+- **AC-005** While the panel is at least 900 px wide, the side panel shall be 400 px wide beside the area content with its own scroll; while it is narrower, the side panel shall overlay the area from the right edge at min(400 px, the width of the area frame); the Board's content shall keep its width and the Overview's content shall take the width left of the drawer (PD-066). (CSS guard and unit tests on the rules; screenshots in AC-022)
 - **AC-006** After a window reload with a spec selected, the system shall show the side panel with that spec on the area last shown, without user action and without moving focus.
 - **AC-007** Every card and Overview row of the selected spec shall carry `aria-current="true"` and the selection background and border (0013 D-12); no other card or row shall.
 - **AC-008** While Spec Explorer is shown, the system shall show the list and, in the pane beside it, the detail of §6.2 and no side panel; close and Escape shall clear the selection, the pane shall show "Select a spec in the list to see its details." and focus shall move to that spec's list row.
@@ -227,9 +230,9 @@ at commit `8052f9a` (made by the plan, like `studio-0002`).
 - **AC-019** If the file no longer exists, then the system shall open nothing; the activated link shall keep the focus and read "File not found: <path>" until the next model update or until the side panel shows another spec, and 0016's live region shall announce it.
 - **AC-020** When the side panel receives a model-changed notification, it shall show the new content within 500 ms for the 200-spec fixture (PD-047), keep its scroll position and keep focus on the same control where it still exists, else on its heading. If the selected spec is no longer in the model, then the side panel shall close, focus that was inside it shall move as AC-003 says, and the shell's notice shall appear (0005 AC-010).
 - **AC-021** The side panel's CSS shall use VS Code theme variables only and show a visible focus outline on every control; the CSS guard tests of 0013 shall cover its rules.
-- **AC-022** *(manual, Gregor or his delegate)* Preview-harness screenshots in Dark, Light and High Contrast: Board and Overview with the side panel of `studio-0015` at 1400×900 and 800×900. Checked: the side panel's content is at most 900 px tall with both collapsible sections closed (today 4,952 px); at 800 px the drawer covers the board's right part and a card focused under it by Tab or arrow scrolls clear; nothing is cut off. In real VS Code: an ID opens the file beside the Studio, which stays visible. Pre-release checklist item.
+- **AC-022** *(manual, Gregor or his delegate)* Preview-harness screenshots in Dark, Light and High Contrast: Board and Overview with the side panel of `studio-0015` at 1400×900 and 800×900. Checked: the side panel's content is at most 900 px tall with both collapsible sections closed (today 4,952 px); at 800 px the drawer covers the board's right part and a card focused under it by Tab or arrow scrolls clear; in the Overview at 800 px every row with its next step and Copy and the figures line stay visible; nothing is cut off. In real VS Code: an ID opens the file beside the Studio, which stays visible. Pre-release checklist item.
 - **AC-023** Every test title at the commit before 0019's first implementation commit shall exist at the head and pass, or the plan's *Test-title audit* shall list it with the criterion of this spec or the §5 row that voids or replaces it; a script compares the titles of both commits; `npm run test:unit` and `npm test` shall pass on Windows and in CI.
-- **AC-024** 0005, 0006, 0007, 0013, 0015, 0016, 0017 and 0018 shall carry the notes of §5 at the named statements, and the PD register shall be unedited; checked by a grep in the plan.
+- **AC-024** 0005, 0006, 0007, 0013, 0015, 0016, 0017 and 0018 shall carry the notes of §5 at the named statements, and the PD register shall hold no edit of an existing entry (PD-066, appended by the fix round of the compile S48, is the one new entry); checked by a grep and a diff in the plan.
 
 ## 11. Technical notes for developers or AI agents
 

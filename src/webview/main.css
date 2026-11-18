@@ -1373,6 +1373,35 @@ blockquote.illustration {
     scroll-padding-inline-end: min(400px, 100vw);
 }
 
+.overview[data-drawer] {
+    padding-inline-end: min(400px, 100%);
+}
+
+.overview[data-drawer] .ov-row-item {
+    align-items: flex-end;
+}
+
+.overview[data-drawer] .ov-row {
+    flex-wrap: wrap;
+    row-gap: 2px;
+    white-space: normal;
+}
+
+.overview[data-drawer] .ov-row .ov-title {
+    flex: 1 1 calc(100% - 4em);
+    overflow: visible;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    white-space: normal;
+}
+
+.overview[data-drawer] .ov-row .ov-status {
+    overflow: visible;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    white-space: normal;
+}
+
 .card[aria-current="true"],
 .ov-row[aria-current="true"] {
     background: var(--vscode-list-activeSelectionBackground);

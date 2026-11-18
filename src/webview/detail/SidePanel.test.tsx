@@ -168,6 +168,32 @@ describe('AC-005: the drawer marks the board', () => {
         expect(container.querySelector('.columns')?.hasAttribute('data-drawer')).toBe(true);
     });
 
+    it('0019 PD-066: the Overview carries the drawer mark exactly while a spec is selected and the query matches, and follows the change event', async () => {
+        const container = await start();
+        const overview = (): Element | null => container.querySelector('[data-overview]');
+        await send(shellEvent(baseView({ area: 'overview' }), 1));
+        await send(overviewEvent(sampleView()));
+        expect(overview()?.hasAttribute('data-drawer')).toBe(false);
+        await send(shellEvent(baseView({ area: 'overview', selection: selection('0004') }), 2));
+        expect(overview()?.hasAttribute('data-drawer')).toBe(true);
+        matches = false;
+        await act(async () => listeners.forEach((listener) => listener()));
+        expect(overview()?.hasAttribute('data-drawer')).toBe(false);
+        matches = true;
+        await act(async () => listeners.forEach((listener) => listener()));
+        expect(overview()?.hasAttribute('data-drawer')).toBe(true);
+        await send(shellEvent(baseView({ area: 'overview' }), 3));
+        expect(overview()?.hasAttribute('data-drawer')).toBe(false);
+    });
+
+    it('0019 PD-066: while the Overview shows, exactly one element carries the drawer mark and no board columns are there', async () => {
+        const container = await start();
+        await send(shellEvent(baseView({ area: 'overview', selection: selection('0004') }), 1));
+        await send(overviewEvent(sampleView()));
+        expect(container.querySelectorAll('[data-drawer]')).toHaveLength(1);
+        expect(container.querySelector('.columns')).toBeNull();
+    });
+
     it('control: without a selection the narrow board carries no drawer mark', async () => {
         const container = await board();
         expect(container.querySelector('.columns')?.hasAttribute('data-drawer')).toBe(false);

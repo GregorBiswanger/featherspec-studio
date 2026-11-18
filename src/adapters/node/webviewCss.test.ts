@@ -476,6 +476,28 @@ describe('0019 AC-005, AC-021: the side panel beside the area or as a drawer', (
         expect(rules[0]!.body).toMatch(/scroll-padding-inline-end:\s*min\(400px, 100vw\)/);
     });
 
+    it('0019 PD-066: while the drawer shows, the Overview takes the width left of the drawer: end padding of min(400px, 100%) on the marked Overview and no media rule on it', () => {
+        const rules = plain('.overview[data-drawer]');
+        expect(rules).toHaveLength(1);
+        expect(rules[0]!.body).toMatch(/padding-inline-end:\s*min\(400px, 100%\)/);
+        const media = parseRules(css).filter((rule) => rule.media !== undefined && rule.selectors.some((selector) => /\.overview\b/.test(selector)));
+        expect(media).toEqual([]);
+    });
+
+    it('0019 PD-066: a marked Overview uses the two-line row layout of 0018 T-013 for every property of the 720 px rules, without a media query', () => {
+        const narrow = parseRules(css).filter((rule) => rule.media === '@media (max-width: 720px)');
+        const properties = (selector: string, rules: { selectors: string[]; body: string }[]) =>
+            rules
+                .filter((rule) => rule.selectors.includes(selector))
+                .flatMap((rule) => [...rule.body.matchAll(/([\w-]+):\s*([^;]+);?/g)].map((match) => `${match[1]}:${match[2]!.trim()}`))
+                .sort();
+        for (const selector of ['.ov-row-item', '.ov-row', '.ov-row .ov-title', '.ov-row .ov-status']) {
+            const expected = properties(selector, narrow);
+            expect(expected.length, selector).toBeGreaterThan(0);
+            expect(properties(`.overview[data-drawer] ${selector}`, plain(`.overview[data-drawer] ${selector}`)), selector).toEqual(expected);
+        }
+    });
+
     it('AC-021: every colour of the side panel and its close button is a --vscode-* variable and no rule sets or removes an outline', () => {
         for (const selector of ['.side-panel', '.detail-close', '.detail-close:hover', '.detail-title h2:focus-visible']) {
             const rules = rulesFor(css, selector);
