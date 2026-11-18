@@ -16,11 +16,15 @@ interface Manifest {
         virtualWorkspaces?: unknown;
     };
     contributes?: {
-        commands?: { command: string; title: string }[];
+        commands?: { command: string; title: string; icon?: string }[];
         viewsContainers?: { activitybar?: { id: string; title: string; icon: string }[] };
         views?: Record<string, { id: string; name: string }[]>;
         viewsWelcome?: { view: string; contents: string; when?: string }[];
-        menus?: { commandPalette?: { command: string; when: string }[] };
+        menus?: {
+            commandPalette?: { command: string; when: string }[];
+            'view/title'?: { command: string; when?: string; group?: string }[];
+            'view/item/context'?: { command: string; when?: string; group?: string }[];
+        };
         configuration?: {
             properties?: Record<
                 string,
@@ -59,7 +63,7 @@ describe('extension manifest', () => {
         expect(commands).toEqual(
             expect.arrayContaining([
                 { command: 'featherspec-studio.selectProject', title: 'FeatherSpec Studio: Select Project' },
-                { command: 'featherspec-studio.refresh', title: 'FeatherSpec Studio: Refresh' },
+                { command: 'featherspec-studio.refresh', title: 'FeatherSpec Studio: Refresh', icon: '$(refresh)' },
             ]),
         );
         expect(commands.map((entry) => entry.command)).not.toContain('featherspec-studio.helloWorld');
@@ -84,10 +88,10 @@ describe('extension manifest', () => {
         });
     });
 
-    it('AC-003 (0005): contributes the Activity Bar container with its icon and the view "FeatherSpec Studio"', () => {
+    it('AC-011 (0020): contributes the Activity Bar container with its icon and the view "Specs"', () => {
         const container = manifest.contributes?.viewsContainers?.activitybar?.[0];
         expect(container).toMatchObject({ id: 'featherspec-studio', title: 'FeatherSpec Studio', icon: 'media/studio.svg' });
-        expect(manifest.contributes?.views?.['featherspec-studio']).toEqual([{ id: 'featherspec-studio.navigator', name: 'FeatherSpec Studio' }]);
+        expect(manifest.contributes?.views?.['featherspec-studio']).toEqual([{ id: 'featherspec-studio.navigator', name: 'Specs' }]);
     });
 
     it('AC-001 (0014): contributes the setup command, the hidden merge prompt command and the S2 welcome with the setup link alone on its line', () => {
@@ -157,6 +161,10 @@ describe('extension manifest', () => {
         expect(manifest.contributes?.menus?.commandPalette).toEqual([
             { command: 'featherspec-studio.copyMergePrompt', when: 'false' },
             { command: 'featherspec-studio.shellAction', when: 'false' },
+            { command: 'featherspec-studio.selectSpec', when: 'false' },
+            { command: 'featherspec-studio.tree.copyNextStep', when: 'false' },
+            { command: 'featherspec-studio.tree.openSpec', when: 'false' },
+            { command: 'featherspec-studio.tree.openPlan', when: 'false' },
         ]);
     });
 
@@ -221,5 +229,69 @@ describe('extension manifest', () => {
     it('AC-016 (0015): negative control, the old description and keywords would be found', () => {
         expect('Visual command center for spec-driven development with FeatherSpec: see every spec, control every agent.').toMatch(/agent/i);
         expect(['featherspec', 'agents', 'ai agents'].filter((keyword) => ['agents', 'ai agents', 'github copilot'].includes(keyword))).toHaveLength(2);
+    });
+
+    it('AC-011 (0020): the toolbar of the view holds Open (window) and Refresh (refresh), in this order, in the group navigation, and nothing else', () => {
+        const title = manifest.contributes?.menus?.['view/title'] ?? [];
+        expect(title).toEqual([
+            { command: 'featherspec-studio.open', when: 'view == featherspec-studio.navigator', group: 'navigation@1' },
+            { command: 'featherspec-studio.refresh', when: 'view == featherspec-studio.navigator', group: 'navigation@2' },
+        ]);
+        const commands = manifest.contributes?.commands ?? [];
+        expect(commands).toContainEqual({ command: 'featherspec-studio.open', title: 'FeatherSpec Studio: Open', icon: '$(window)' });
+        expect(commands).toContainEqual({ command: 'featherspec-studio.refresh', title: 'FeatherSpec Studio: Refresh', icon: '$(refresh)' });
+    });
+
+    it('AC-011 (0020): contributes the tree\'s own commands with exactly these titles, hidden from the Command Palette', () => {
+        const commands = manifest.contributes?.commands ?? [];
+        expect(commands).toContainEqual({ command: 'featherspec-studio.selectSpec', title: 'Select Spec' });
+        expect(commands).toContainEqual({ command: 'featherspec-studio.tree.copyNextStep', title: 'Copy Next Step', icon: '$(copy)' });
+        expect(commands).toContainEqual({ command: 'featherspec-studio.tree.openSpec', title: 'Open Spec' });
+        expect(commands).toContainEqual({ command: 'featherspec-studio.tree.openPlan', title: 'Open Plan' });
+        const hidden = (manifest.contributes?.menus?.commandPalette ?? []).filter((entry) => entry.when === 'false').map((entry) => entry.command);
+        for (const id of ['selectSpec', 'tree.copyNextStep', 'tree.openSpec', 'tree.openPlan']) {
+            expect(hidden).toContain(`featherspec-studio.${id}`);
+        }
+        expect(hidden).not.toContain('featherspec-studio.copyNextStep');
+    });
+
+    it('AC-011, AC-015 (0020): the one inline entry is Copy Next Step, limited to this view and to rows with a line to copy; a row carries one inline action', () => {
+        const items = manifest.contributes?.menus?.['view/item/context'] ?? [];
+        const inline = items.filter((entry) => entry.group === 'inline');
+        expect(inline).toEqual([{ command: 'featherspec-studio.tree.copyNextStep', when: 'view == featherspec-studio.navigator && viewItem =~ /\\bstep\\b/', group: 'inline' }]);
+        expect(inline.length).toBeLessThanOrEqual(1);
+    });
+
+    it('AC-008 (0020): the context menu offers Open Spec, Open Plan only for a row with a plan, and Copy Next Step only for a row with a step, in this order; groups get no entry', () => {
+        const items = (manifest.contributes?.menus?.['view/item/context'] ?? []).filter((entry) => entry.group !== 'inline');
+        expect(items).toEqual([
+            { command: 'featherspec-studio.tree.openSpec', when: 'view == featherspec-studio.navigator && viewItem =~ /^spec\\b/', group: 'spec@1' },
+            { command: 'featherspec-studio.tree.openPlan', when: 'view == featherspec-studio.navigator && viewItem =~ /\\bplan\\b/', group: 'spec@2' },
+            { command: 'featherspec-studio.tree.copyNextStep', when: 'view == featherspec-studio.navigator && viewItem =~ /\\bstep\\b/', group: 'spec@3' },
+        ]);
+        const rowTokens: Array<[RegExp, string, boolean]> = [
+            [/^spec\b/, 'spec', true],
+            [/\bplan\b/, 'spec plan', true],
+            [/\bstep\b/, 'spec step', true],
+            [/^spec\b/, 'group', false],
+            [/\bplan\b/, 'spec step', false],
+            [/\bstep\b/, 'spec plan', false],
+            [/\bplan\b/, 'group', false],
+            [/\bstep\b/, 'group', false],
+        ];
+        for (const [pattern, value, expected] of rowTokens) {
+            expect(pattern.test(value), `${pattern} on ${value}`).toBe(expected);
+        }
+    });
+
+    it('AC-012 (0020): the S2 welcome entry is byte-identical to the one at the start of the spec', () => {
+        expect(manifest.contributes?.viewsWelcome).toEqual([
+            {
+                view: 'featherspec-studio.navigator',
+                contents:
+                    'No FeatherSpec project found in this workspace.\nSet up FeatherSpec downloads the latest FeatherSpec release from GitHub and adds its files; existing files are never overwritten.\n[Set up FeatherSpec](command:featherspec-studio.setup)\n[Open setup guide](command:featherspec-studio.shellAction?%5B%22openSetupGuide%22%5D) \u00b7 [Refresh](command:featherspec-studio.shellAction?%5B%22refresh%22%5D)',
+                when: 'featherspec-studio.panelState == S2',
+            },
+        ]);
     });
 });

@@ -53,7 +53,8 @@
     "commands": [
       {
         "command": "featherspec-studio.open",
-        "title": "FeatherSpec Studio: Open"
+        "title": "FeatherSpec Studio: Open",
+        "icon": "$(window)"
       },
       {
         "command": "featherspec-studio.openOverview",
@@ -89,7 +90,25 @@
       },
       {
         "command": "featherspec-studio.refresh",
-        "title": "FeatherSpec Studio: Refresh"
+        "title": "FeatherSpec Studio: Refresh",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "featherspec-studio.selectSpec",
+        "title": "Select Spec"
+      },
+      {
+        "command": "featherspec-studio.tree.copyNextStep",
+        "title": "Copy Next Step",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "featherspec-studio.tree.openSpec",
+        "title": "Open Spec"
+      },
+      {
+        "command": "featherspec-studio.tree.openPlan",
+        "title": "Open Plan"
       }
     ],
     "viewsContainers": {
@@ -105,7 +124,7 @@
       "featherspec-studio": [
         {
           "id": "featherspec-studio.navigator",
-          "name": "FeatherSpec Studio"
+          "name": "Specs"
         }
       ]
     },
@@ -125,6 +144,56 @@
         {
           "command": "featherspec-studio.shellAction",
           "when": "false"
+        },
+        {
+          "command": "featherspec-studio.selectSpec",
+          "when": "false"
+        },
+        {
+          "command": "featherspec-studio.tree.copyNextStep",
+          "when": "false"
+        },
+        {
+          "command": "featherspec-studio.tree.openSpec",
+          "when": "false"
+        },
+        {
+          "command": "featherspec-studio.tree.openPlan",
+          "when": "false"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "featherspec-studio.open",
+          "when": "view == featherspec-studio.navigator",
+          "group": "navigation@1"
+        },
+        {
+          "command": "featherspec-studio.refresh",
+          "when": "view == featherspec-studio.navigator",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "featherspec-studio.tree.copyNextStep",
+          "when": "view == featherspec-studio.navigator && viewItem =~ /\\bstep\\b/",
+          "group": "inline"
+        },
+        {
+          "command": "featherspec-studio.tree.openSpec",
+          "when": "view == featherspec-studio.navigator && viewItem =~ /^spec\\b/",
+          "group": "spec@1"
+        },
+        {
+          "command": "featherspec-studio.tree.openPlan",
+          "when": "view == featherspec-studio.navigator && viewItem =~ /\\bplan\\b/",
+          "group": "spec@2"
+        },
+        {
+          "command": "featherspec-studio.tree.copyNextStep",
+          "when": "view == featherspec-studio.navigator && viewItem =~ /\\bstep\\b/",
+          "group": "spec@3"
         }
       ]
     }

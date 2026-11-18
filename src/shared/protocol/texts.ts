@@ -100,8 +100,6 @@ export function ignoredMessageLine(type: string, reason: string): string {
 
 export const LOADING_TEXT = 'Loading project…';
 
-export const OPEN_STUDIO_LABEL = 'Open Studio';
-
 export const NAVIGATION_LABEL = 'Studio areas';
 
 export type StateId = PanelState['id'] | 'S7';
@@ -369,3 +367,12 @@ export function badgeTooltip(review: number, blocked: number): string {
     const parts = [...(review > 0 ? [`${review} in Review`] : []), ...(blocked > 0 ? [`${blocked} Blocked`] : [])];
     return `${waiting} ${waiting === 1 ? 'spec waits' : 'specs wait'} for you: ${parts.join(', ')}`;
 }
+
+export const VIEW_NAME = 'Specs';
+
+export const TREE_COMMAND_TITLES = {
+    select: 'Select Spec',
+    copyNextStep: 'Copy Next Step',
+    openSpec: 'Open Spec',
+    openPlan: 'Open Plan',
+} as const;

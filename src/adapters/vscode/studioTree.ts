@@ -1,58 +1,74 @@
 import * as vscode from 'vscode';
-import { buildTreeModel, type TreeItemModel, type TreeModel } from '../../core/shell/treeModel';
-import type { ShellService } from '../../core/shell/shellService';
-import { AREA_COMMANDS, NAVIGATOR_VIEW, OPEN_COMMAND, SHELL_ACTION_COMMAND } from './commands';
+import type { SpecTreeService } from '../../core/shell/specTreeService';
+import type { SpecRowModel, SpecTreeModel, TreeItemModel } from '../../core/shell/specTree';
+import { TREE_COMMAND_TITLES } from '../../shared/protocol/texts';
+import { NAVIGATOR_VIEW, SELECT_SPEC_COMMAND, SHELL_ACTION_COMMAND } from './commands';
 
 const PANEL_STATE_CONTEXT = 'featherspec-studio.panelState';
 
 export interface StudioTree extends vscode.Disposable {
-    model(): TreeModel;
+    model(): SpecTreeModel;
 }
 
-function toItem(model: TreeItemModel): vscode.TreeItem {
-    const item = new vscode.TreeItem(model.label, vscode.TreeItemCollapsibleState.None);
-    item.iconPath = new vscode.ThemeIcon(model.icon);
+type Element = TreeItemModel | SpecRowModel;
+
+function toItem(model: Element): vscode.TreeItem {
     switch (model.kind) {
-        case 'project':
-            break;
-        case 'open':
-            item.command = { command: OPEN_COMMAND, title: model.label };
-            break;
-        case 'area':
-            item.command = { command: AREA_COMMANDS[model.area], title: model.label };
-            break;
-        case 'action':
+        case 'group': {
+            const item = new vscode.TreeItem(model.label, model.collapsed ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.Expanded);
+            item.id = model.id;
+            item.description = model.description;
+            return item;
+        }
+        case 'spec': {
+            const item = new vscode.TreeItem(model.label, vscode.TreeItemCollapsibleState.None);
+            item.id = model.id;
+            item.description = model.description;
+            item.iconPath = new vscode.ThemeIcon(model.icon, new vscode.ThemeColor(model.color));
+            const tooltip = new vscode.MarkdownString(model.tooltip);
+            tooltip.isTrusted = false;
+            tooltip.supportThemeIcons = false;
+            tooltip.supportHtml = false;
+            item.tooltip = tooltip;
+            item.accessibilityInformation = { label: model.accessibleLabel };
+            item.contextValue = model.contextValue;
+            item.command = {
+                command: SELECT_SPEC_COMMAND,
+                title: TREE_COMMAND_TITLES.select,
+                arguments: [model.path === undefined ? { stem: model.stem } : { stem: model.stem, path: model.path }],
+            };
+            return item;
+        }
+        case 'action': {
+            const item = new vscode.TreeItem(model.label, vscode.TreeItemCollapsibleState.None);
+            item.iconPath = new vscode.ThemeIcon(model.icon);
             item.command = { command: SHELL_ACTION_COMMAND, title: model.label, arguments: [model.action] };
-            break;
+            return item;
+        }
     }
-    return item;
 }
 
-export function createStudioTree(service: ShellService): StudioTree {
+export function createStudioTree(service: SpecTreeService): StudioTree {
     const changed = new vscode.EventEmitter<void>();
-    const current = (): TreeModel => {
-        const view = service.view();
-        return buildTreeModel({ projectActive: view.projectName !== undefined, projectName: view.projectName, state: view.state });
-    };
-    let model = current();
-    const provider: vscode.TreeDataProvider<TreeItemModel> = {
+    const provider: vscode.TreeDataProvider<Element> = {
         onDidChangeTreeData: changed.event,
         getTreeItem: toItem,
-        getChildren: (element) => (element === undefined ? model.items : []),
-    };
-    const publish = () => {
-        treeView.message = model.message;
-        void vscode.commands.executeCommand('setContext', PANEL_STATE_CONTEXT, model.welcome ?? '');
+        getChildren: (element) => (element === undefined ? service.model().items : element.kind === 'group' ? element.children : []),
     };
     const treeView = vscode.window.createTreeView(NAVIGATOR_VIEW, { treeDataProvider: provider });
-    publish();
-    const subscription = service.onDidChangeView(() => {
-        model = current();
-        publish();
+    const publish = (model: SpecTreeModel) => {
+        treeView.message = model.message;
+        treeView.badge = model.badge;
+        treeView.description = model.description;
+        void vscode.commands.executeCommand('setContext', PANEL_STATE_CONTEXT, model.welcome ?? '');
+    };
+    publish(service.model());
+    const subscription = service.onDidChange((model) => {
+        publish(model);
         changed.fire();
     });
     return {
-        model: () => model,
+        model: () => service.model(),
         dispose() {
             subscription.dispose();
             treeView.dispose();

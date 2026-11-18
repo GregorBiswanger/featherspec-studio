@@ -3,7 +3,7 @@
 **Spec:** [0020-native-spec-tree.md](0020-native-spec-tree.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-005
+**Current step:** T-006
 
 ## Approach
 
@@ -303,8 +303,8 @@ and the host smoke, so they stay `→`.
   (a backlog file added shows in Backlog, removed in `finally`).
 - **Verify:** `npx vitest run --project node src/adapters/vscode/studioTree.test.ts src/adapters/vscode/manifest.test.ts`
   red, then green; gates 1–5; `npm run compile-tests`; host smoke on Windows and CI (pre-done gate)
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-18: studioTree.test.ts (7) and manifest.test.ts (7 failing of 28) red on a scratch copy of HEAD (git archive), then green 7/7 and 28/28 here; gates 1-5 green (eslint, both tsc, unit 2206 passed + 3 skipped, timing 13, compile) and compile-tests green. Host smoke (AC-019, AC-009, AC-013 host parts) written, cannot run in the sandbox; Windows and CI at the pre-done gate.
+- **Notes:** Deletes named at the start of the stage and approved by Gregor's delegation: src/core/shell/treeModel.ts and src/core/shell/treeModel.test.ts (git rm, nothing else). The adapter takes the SpecTreeService (not the ShellService); api.shell().tree() returns the SpecTreeModel (groups, badge, description). The inline and context commands receive the tree element (SpecRowModel) as argument; treeRow guards it. OPEN_STUDIO_LABEL (texts.ts) had no user left and was removed. The AC-013 host test keeps the test's error when its cleanup also fails.
 
 ### T-006 — The panel has two tabs; a remembered Spec Explorer opens the Overview
 
@@ -387,23 +387,23 @@ and the host smoke, so they stay `→`.
 | AC-008 | T-004 | src/core/shell/treeActions.ts:open; src/adapters/vscode/editor.ts; src/core/board/openFile.ts | treeActions.test.ts "AC-008"; editor.test.ts "AC-008"; openFile.test.ts "AC-008" | built |
 | AC-009 | T-004, T-005 | src/core/shell/treeActions.ts:select | treeActions.test.ts "AC-009" | built |
 | AC-010 | T-002, T-005 | src/core/shell/specTree.ts:badgeOf | specTree.test.ts "AC-010: the badge" | built |
-| AC-011 | T-002, T-005 | — | — | open |
+| AC-011 | T-002, T-005 | package.json; src/adapters/vscode/studioTree.ts; src/adapters/vscode/commands.ts | manifest.test.ts "AC-011 (0020)"; studioTree.test.ts | built |
 | AC-012 | T-002, T-005 | src/core/shell/specTree.ts:buildSpecTree | specTree.test.ts "AC-012: the states of the view" | built |
 | AC-013 | T-003, T-005 | src/core/shell/specTreeService.ts | specTreeService.test.ts, specTreeService.timing.test.ts "AC-013" | built |
 | AC-014 | T-004 | src/core/shell/treeActions.ts | treeActions.test.ts "AC-014" | built |
-| AC-015 | T-005, T-006 | — | — | open |
+| AC-015 | T-005, T-006 | package.json (inline Copy only) | manifest.test.ts "AC-011, AC-015 (0020)" | built |
 | AC-016 | T-006, T-007 | — | — | open |
 | AC-017 | T-006 | — | — | open |
 | AC-018 | T-007, T-008 | — | — | open |
-| AC-019 | T-005 | — | — | open |
+| AC-019 | T-005 | src/extension.ts; src/test/shell.smoke.test.ts | shell.smoke.test.ts "AC-019" (host, CI) | built |
 | AC-020 | T-008 | — | — | open |
 | AC-021 | T-008 | — | — | open |
 | AC-022 | T-008 | — | manual: Gregor or his delegate (pre-release checklist) | open |
 
 ## Session handoff
 
-- **Done so far:** stages 1-2 done: T-001..T-004 verified and committed (specTree.ts, specTreeService.ts, treeActions.ts, place on EditorPort/OpenFile, public CopyNextStep.copy).
-- **Next action:** T-005 (the Specs view in VS Code: adapter, manifest, wiring, host smoke); deletes src/core/shell/treeModel.ts and treeModel.test.ts.
+- **Done so far:** stage 3 done: T-005 verified and committed (Specs view adapter, manifest, wiring, host smoke written; treeModel.ts and its test deleted).
+- **Next action:** T-006 (two tabs, specExplorer mapping), then T-007; deletes src/webview/areas/SpecExplorer.tsx in T-006.
 - **Open decisions:** none; P-1…P-24 stand unless Gregor changes them.
 - **Baseline:** `16fc52b` (HEAD before the first step commit; started 2026-11-18 on Gregor's delegated start signal)
 - **Environment:** host smoke runs on Windows and CI only (VS Code download blocked here); the

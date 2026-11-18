@@ -8,7 +8,7 @@ import { resolveStorageLocation } from './adapters/vscode/storageLocation';
 import { createOutputChannel } from './adapters/vscode/outputChannel';
 import { createShellActions } from './adapters/vscode/shellActions';
 import { createStudioPanel, VIEW_TYPE, type StudioPanel, type StudioPanelInspection } from './adapters/vscode/studioPanel';
-import { AREA_COMMANDS, COPY_NEXT_STEP_COMMAND, OPEN_COMMAND, REFRESH_COMMAND, SELECT_SPEC_COMMAND, SHELL_ACTION_COMMAND } from './adapters/vscode/commands';
+import { AREA_COMMANDS, COPY_NEXT_STEP_COMMAND, OPEN_COMMAND, REFRESH_COMMAND, SELECT_SPEC_COMMAND, SHELL_ACTION_COMMAND, TREE_COPY_COMMAND, TREE_OPEN_PLAN_COMMAND, TREE_OPEN_SPEC_COMMAND } from './adapters/vscode/commands';
 import { createFetchReleaseHttp } from './adapters/node/fetchReleaseHttp';
 import { createNodeSetupTarget } from './adapters/node/nodeSetupTarget';
 import { createTarGzArchive } from './adapters/node/tarGzArchive';
@@ -57,7 +57,9 @@ import type { BoardFilter, BoardState } from './shared/protocol/boardFilter';
 import type { DetailView } from './shared/protocol/detail';
 import type { OverviewView } from './shared/protocol/overview';
 import { isRunActionPayload, isSelectPayload, type ProbeOutcome, type ShellView } from './shared/protocol/messages';
-import type { TreeModel } from './core/shell/treeModel';
+import type { SpecTreeModel } from './core/shell/specTree';
+import { createSpecTreeService } from './core/shell/specTreeService';
+import { createTreeActions } from './core/shell/treeActions';
 
 export interface ShellTestApi {
     view(): ShellView;
@@ -69,7 +71,7 @@ export interface ShellTestApi {
     inspect(): StudioPanelInspection | undefined;
     restore(restored: vscode.WebviewPanel): Promise<void>;
     select(stem: string): Promise<void>;
-    tree(): TreeModel;
+    tree(): SpecTreeModel;
 }
 
 export interface StatusEntryTestApi {
@@ -194,10 +196,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     });
     const clipboard = createClipboard();
     const entry = createStatusEntry({ line: projectLine, discovery: controller, shell: service, source: modelSource, item: statusItem, clock: createSystemClock(), sameRoot });
+    const stepUi = createStepUi();
     const copyNextStep = createCopyNextStep({
         entry,
         clipboard,
-        ui: createStepUi(),
+        ui: stepUi,
         actions: {
             selectProject: () => controller.selectProject(),
             openStudio: async () => {
@@ -238,7 +241,19 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         service.open(request);
         panel.show();
     };
-    const tree = createStudioTree(service);
+    const treeService = createSpecTreeService({ shell: service, source: modelSource, discovery: controller, sameRoot });
+    const treeActions = createTreeActions({
+        shell: service,
+        panel: { isOpen: () => panel.panelCount() > 0, show: (options) => panel.show(options) },
+        copy: (line) => copyNextStep.copy(line),
+        openFile,
+        warn: (text) => stepUi.warn(text),
+    });
+    const tree = createStudioTree(treeService);
+    const treeRow = (argument: unknown): { specKey: string; planKey?: string; line?: string } | undefined => {
+        const row = argument as { specKey?: unknown; planKey?: unknown; line?: unknown } | undefined;
+        return typeof row?.specKey === 'string' ? { specKey: row.specKey, ...(typeof row.planKey === 'string' ? { planKey: row.planKey } : {}), ...(typeof row.line === 'string' ? { line: row.line } : {}) } : undefined;
+    };
 
     context.subscriptions.push(
         statusItem,
@@ -247,6 +262,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         navigation,
         { dispose: () => board.dispose() },
         { dispose: () => overview.dispose() },
+        treeService,
         tree,
         panel,
         vscode.window.registerWebviewPanelSerializer(VIEW_TYPE, panel.serializer),
@@ -269,8 +285,19 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
             if (!isSelectPayload(reference)) {
                 return;
             }
-            service.select(reference.path === undefined ? { stem: reference.stem } : { stem: reference.stem, path: reference.path });
-            panel.show({ preserveFocus: true });
+            treeActions.select(reference.path === undefined ? { stem: reference.stem } : { stem: reference.stem, path: reference.path });
+        }),
+        vscode.commands.registerCommand(TREE_COPY_COMMAND, (row: unknown) => {
+            const found = treeRow(row);
+            return found === undefined ? undefined : treeActions.copy(found);
+        }),
+        vscode.commands.registerCommand(TREE_OPEN_SPEC_COMMAND, (row: unknown) => {
+            const found = treeRow(row);
+            return found === undefined ? undefined : treeActions.open(found, 'spec');
+        }),
+        vscode.commands.registerCommand(TREE_OPEN_PLAN_COMMAND, (row: unknown) => {
+            const found = treeRow(row);
+            return found === undefined ? undefined : treeActions.open(found, 'plan');
         }),
         vscode.commands.registerCommand(SELECT_PROJECT_COMMAND_ID, () => controller.selectProject()),
     );
