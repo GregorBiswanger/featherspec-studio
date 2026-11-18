@@ -3,7 +3,7 @@
 **Spec:** [0017-next-step-everywhere.md](0017-next-step-everywhere.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-003
+**Current step:** T-004
 
 ## Approach
 
@@ -224,8 +224,8 @@ Stages 4 and 5 cannot: they share `extension.ts`, `package.json`, the protocol a
   active project never yields `selectProject`; AC-018 a selection change, a state change and a
   step change show at once (P-14); a hostile title is escaped (control: the two links stay links).
 - **Verify:** `npx vitest run src/core/copyNextStep` red, then green; gates 1–4
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-18 — tests written for `currentSpec`, `entryView`/`statusEntry` (28 tests in `src/core/copyNextStep`); red shown by mutation of the finished code (unescaped title: 1 failed; 'Switch project' with one project: 4 failed), green after. Gates 1–4: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 1840 passed, 3 skipped.
+- **Notes:** Quick-pick label is `<number> <title>`, the stem alone where no title is read (reading of §6.4). Tests drive `statusEntry` through hand-built fakes (`testing/entryWorld.ts`): discovery snapshot, shell view and model source; the real shell world joins at T-005 (AC-022). `projectLine` has a `current()` and `onDidChange`; the entry renders on its, discovery's, the shell's and the model's notifications. `OPEN_STUDIO_COMMAND_ID`/`SELECT_PROJECT_COMMAND_ID` live in `texts.ts`; `commands.ts` and `statusBar.ts` alias them.
 
 ### T-004 — Next and Copy on every card and attention row
 

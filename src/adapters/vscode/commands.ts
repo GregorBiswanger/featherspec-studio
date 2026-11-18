@@ -1,6 +1,7 @@
 import type { AreaId } from '../../shared/protocol/areas';
+import { OPEN_STUDIO_COMMAND_ID } from '../../shared/protocol/texts';
 
-export const OPEN_COMMAND = 'featherspec-studio.open';
+export const OPEN_COMMAND = OPEN_STUDIO_COMMAND_ID;
 export const RESCAN_COMMAND = 'featherspec-studio.rescan';
 export const MOVE_COMMAND = 'featherspec-studio.moveSpec';
 export const SHELL_ACTION_COMMAND = 'featherspec-studio.shellAction';

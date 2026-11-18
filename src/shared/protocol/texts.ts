@@ -193,6 +193,8 @@ export function panelStateActions(state: PanelState): ActionId[] {
     }
 }
 
+export const OPEN_STUDIO_COMMAND_ID = 'featherspec-studio.open';
+export const SELECT_PROJECT_COMMAND_ID = 'featherspec-studio.selectProject';
 export const SETUP_COMMAND_ID = 'featherspec-studio.setup';
 export const COPY_MERGE_PROMPT_COMMAND_ID = 'featherspec-studio.copyMergePrompt';
 
