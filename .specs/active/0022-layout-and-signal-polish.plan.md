@@ -3,7 +3,7 @@
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-014
+**Current step:** T-015
 
 ## Approach
 
@@ -508,6 +508,14 @@ never on the repository.
 - **Verify:** `npx vitest run --project webview src/webview/areas/overview/rowTint.test.tsx` red, then green; gates 1–4
 - [x] **Verified (T-014):** 2026-11-18, red first: `npx vitest run --project webview src/webview/areas/overview/rowTint.test.tsx src/webview/areas/overview/problemsCss.test.tsx` against the unchanged stylesheet: 6 failed (every state, `color` undefined), the control and the 3 T-013 tests passed. Green after the rule: 75 passed in `src/webview/areas/overview`; gates: eslint 0 warnings, both `tsc` clean (the helper takes a `{ matches }` shape, not `Element`, because `testing/css.ts` is also compiled by the root project), `npm run test:unit` 2436 passed, 3 skipped (+13 timing).
 - **Notes:** the rule sits on the svg (`.icon`), where `data-tint` already sets `--fs-tint`; no new colour ID, no state name in a selector (0022 AC-026 test keeps passing). The harness round 2 repeats the look in Dark, Light and High Contrast.
+
+### T-015 — A separator-free segment wider than its line breaks inside (D4)
+
+- **Covers:** AC-015 (§4.6 "a segment wider than its whole line is the one case that breaks inside", §7 g)
+- **Do:** `main.css`: `overflow-wrap: break-word` with `min-width: 0` on `.next-step-lines code`, `.file-link`, `.ov-line` and `.banner li` (never `anywhere`, never `break-all`: AC-002). `webviewCss.test.ts` new describe `0022 AC-015, §7 g`: for each of the four selectors exactly one `overflow-wrap: break-word` and one `min-width: 0`, outside every media and container rule; none of the four has `anywhere`, `break-all` or `word-break`; control on a rule without the pair.
+- **Verify:** `npx vitest run --project node src/adapters/node/webviewCss.test.ts` red, then green; gates 1–4
+- [x] **Verified (T-015):** 2026-11-18, red first: `npx vitest run --project node src/adapters/node/webviewCss.test.ts` against the unchanged stylesheet: 4 failed (one per selector: no rule for `.next-step-lines code` and `.banner li`, a rule without the pair for `.file-link` and `.ov-line`), 72 passed. Green after the rules: 76 passed; gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2442 passed, 3 skipped (+13 timing).
+- **Notes:** jsdom computes no layout, so the proof is the rule pair on the four elements the compile named; the visible result (a long segment breaks only when it exceeds the line) is part of the harness round 2 (AC-019).
 
 ## Traceability
 

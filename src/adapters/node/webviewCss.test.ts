@@ -757,3 +757,25 @@ describe('0022 AC-001, AC-003, AC-027, AC-028: Overview rows follow the list wid
         expect(SIDE_MIN).toBeLessThan(AREA_MIN);
     });
 });
+
+describe('0022 AC-015, §7 g: a segment without a separator wider than its whole line breaks inside', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const SELECTORS = ['.next-step-lines code', '.file-link', '.ov-line', '.banner li'];
+
+    it.each(SELECTORS.map((selector) => [selector]))('%s: overflow-wrap is break-word and min-width is 0, in no container or media rule', (selector) => {
+        const own = declarations(css).filter((declaration) => declaration.selectors.includes(selector));
+        expect(own.filter((declaration) => declaration.property === 'overflow-wrap').map((declaration) => declaration.value)).toEqual(['break-word']);
+        expect(own.filter((declaration) => declaration.property === 'min-width').map((declaration) => declaration.value)).toEqual(['0']);
+        expect(own.filter((declaration) => /^(?:overflow-wrap|min-width)$/.test(declaration.property) && (declaration.media !== undefined || declaration.container !== undefined))).toEqual([]);
+    });
+
+    it('no rule of these elements breaks at any character (anywhere, break-all, word-break)', () => {
+        const breaking = declarations(css).filter((declaration) => declaration.selectors.some((selector) => SELECTORS.includes(selector)) && /anywhere|break-all|^word-break$/.test(`${declaration.property} ${declaration.value}`));
+        expect(breaking).toEqual([]);
+    });
+
+    it('control: a rule without the pair is seen', () => {
+        const rule = declarations('.next-step-lines code { color: red }').filter((declaration) => declaration.selectors.includes('.next-step-lines code'));
+        expect(rule.some((declaration) => declaration.property === 'overflow-wrap')).toBe(false);
+    });
+});

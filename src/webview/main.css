@@ -309,6 +309,11 @@ main > h1 {
     padding-left: 20px;
 }
 
+.banner li {
+    min-width: 0;
+    overflow-wrap: break-word;
+}
+
 .filter-bar {
     flex: none;
     display: flex;
@@ -764,6 +769,11 @@ main > h1 {
     padding: 2px 0;
 }
 
+.next-step-lines code {
+    min-width: 0;
+    overflow-wrap: break-word;
+}
+
 .next-step-label {
     color: var(--vscode-descriptionForeground);
 }
@@ -911,6 +921,8 @@ main > h1 {
     border: none;
     cursor: pointer;
     font: inherit;
+    min-width: 0;
+    overflow-wrap: break-word;
     text-align: left;
 }
 
@@ -1360,6 +1372,8 @@ blockquote.illustration {
 }
 
 .ov-line {
+    min-width: 0;
+    overflow-wrap: break-word;
     padding: 5px 12px;
     color: var(--vscode-foreground);
     border-top: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
