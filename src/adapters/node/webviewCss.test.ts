@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { DRAWER_QUERY } from '../../shared/protocol/layout';
+import { NARROW_QUERY } from '../../shared/protocol/layout';
 import { declarations, parseRules, rulesFor } from '../../webview/testing/css';
 
 describe('AC-026: colours come from the theme', () => {
@@ -243,9 +243,9 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
         expect(rulesFor(css, '.vscode-high-contrast .state-chip').some((rule) => /border-color:\s*var\(--vscode-contrastBorder\)/.test(rule.body))).toBe(true);
     });
 
-    it('full-height frame: the studio is a flex column of the viewport height and main scrolls on its own', () => {
+    it('0022 G-1: full-height frame: the studio is a flex column of the viewport height and main fills it without scrolling', () => {
         expect(rulesFor(css, '.studio').some((rule) => /display:\s*flex/.test(rule.body) && /flex-direction:\s*column/.test(rule.body) && /height:\s*100vh/.test(rule.body))).toBe(true);
-        expect(rulesFor(css, 'main').some((rule) => /flex:\s*1/.test(rule.body) && /min-height:\s*0/.test(rule.body) && /overflow:\s*auto/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, 'main').some((rule) => /flex:\s*1/.test(rule.body) && /min-height:\s*0/.test(rule.body) && /overflow:\s*hidden/.test(rule.body))).toBe(true);
     });
 
     it('AC-015: columns share the width by flexbox (200 to 360 px, strips 32 px, gap 8 px), headers are sticky, the board scrolls sideways and no media rule touches it', () => {
@@ -270,7 +270,7 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
         expect(value('.column[data-narrow] .column-name', 'writing-mode')).toBe('vertical-rl');
 
         const gap = pixels(value('.columns', 'gap'));
-        const padding = Number(/^\d+px\s+(\d+)px$/.exec(value('main', 'padding') ?? '')?.[1]);
+        const padding = Number(/^\d+px\s+(\d+)px$/.exec(value('.area-content', 'padding') ?? '')?.[1]);
         const wide = pixels(value('.column', 'min-width'));
         const strip = pixels(value('.column[data-narrow]', 'flex-basis') ?? value('.column[data-narrow]', 'min-width'));
         const need = (wideCount: number, narrowCount: number): number => wideCount * wide + narrowCount * strip + (wideCount + narrowCount - 1) * gap + 2 * padding;
@@ -344,16 +344,16 @@ describe('0005 AC-019: the panel follows the theme without being reopened', () =
     it('no panel UI module reads or caches the theme, so every colour stays a live --vscode-* lookup', () => {
         const offenders = tsxFiles(webviewDir)
             .filter((file) => !file.includes(`${path.sep}testing${path.sep}`))
-            .filter((file) => path.relative(webviewDir, file) !== path.join('detail', 'drawer.ts'))
+            .filter((file) => path.relative(webviewDir, file) !== path.join('detail', 'narrow.ts'))
             .filter((file) => THEME_READS.test(readFileSync(file, 'utf8')))
             .map((file) => path.relative(webviewDir, file));
         expect(offenders).toEqual([]);
     });
 
-    it('0019: the one module that calls matchMedia asks only the width query of the drawer, never a colour scheme', () => {
-        const source = readFileSync(path.join(webviewDir, 'detail', 'drawer.ts'), 'utf8');
-        expect(DRAWER_QUERY).toBe('(max-width: 899px)');
-        expect(source.match(/matchMedia\(([^)]*)\)/g)).toEqual(['matchMedia(DRAWER_QUERY)']);
+    it('0019, 0022 G-4: the one module that calls matchMedia asks only the width query of the list-or-detail switch, never a colour scheme', () => {
+        const source = readFileSync(path.join(webviewDir, 'detail', 'narrow.ts'), 'utf8');
+        expect(NARROW_QUERY).toBe('(max-width: 899px)');
+        expect(source.match(/matchMedia\(([^)]*)\)/g)).toEqual(['matchMedia(NARROW_QUERY)']);
         expect(source).not.toMatch(/prefers-color-scheme|classList|getComputedStyle|getPropertyValue/);
     });
 
@@ -437,13 +437,13 @@ describe('0016 AC-017, AC-019: Copy is the primary button and keeps its size', (
     });
 });
 
-describe('0019 AC-005, AC-021: the side panel beside the area or as a drawer', () => {
+describe('0019 AC-005, AC-021, 0022 AC-001: the side panel beside the area, or the detail alone', () => {
     const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
     const plain = (selector: string) => rulesFor(css, selector).filter((rule) => rule.media === undefined);
 
-    it('AC-005: from the drawer width up the side panel is a 400 px column with its own scroll beside the area content', () => {
+    it('AC-005: the side panel is a 400 px column with its own scroll beside the area content', () => {
         expect(plain('.area-frame').some((rule) => /display:\s*flex/.test(rule.body) && /position:\s*relative/.test(rule.body))).toBe(true);
-        expect(plain('.area-content').some((rule) => /flex:\s*1\b/.test(rule.body) && /min-width:\s*0/.test(rule.body) && /overflow:\s*auto/.test(rule.body))).toBe(true);
+        expect(plain('.area-content').some((rule) => /flex:\s*1\b/.test(rule.body) && /min-width:\s*0/.test(rule.body) && /overflow-y:\s*auto/.test(rule.body))).toBe(true);
         const panel = plain('.side-panel').map((rule) => rule.body).join(';');
         expect(panel).toMatch(/flex:\s*0 0 400px/);
         expect(panel).toMatch(/box-sizing:\s*border-box/);
@@ -451,58 +451,9 @@ describe('0019 AC-005, AC-021: the side panel beside the area or as a drawer', (
         expect(panel).toMatch(/border-left:\s*1px solid var\(--vscode-contrastBorder/);
     });
 
-    it('AC-005: the only media rule is the drawer query of the code, at 899 px, and it overlays the panel from the right edge at min(400px, 100%) of the frame', () => {
-        const limit = Number(/max-width:\s*(\d+)px/.exec(DRAWER_QUERY)?.[1]);
-        expect(limit).toBe(899);
-        const drawer = parseRules(css).filter((rule) => rule.media === `@media ${DRAWER_QUERY}`);
-        expect(drawer.flatMap((rule) => rule.selectors)).toEqual(['.side-panel']);
-        const body = drawer.map((rule) => rule.body).join(';');
-        expect(body).toMatch(/position:\s*absolute/);
-        expect(body).toMatch(/right:\s*0/);
-        expect(body).toMatch(/width:\s*min\(400px, 100%\)/);
-    });
-
-    it('AC-005: no media rule changes the area content, the frame or the board, so the area keeps its width under the drawer', () => {
+    it('0022 AC-001: no media rule changes the area content, the frame or the board, so the area keeps its width and its scroll position', () => {
         const touched = parseRules(css).filter((rule) => rule.media !== undefined && rule.selectors.some((selector) => /\.area-(?:frame|content)\b|\.columns?\b/.test(selector)));
         expect(touched).toEqual([]);
-    });
-
-    it('AC-005: while the drawer shows, the board end padding and scroll padding equal the drawer width', () => {
-        const rules = plain('.columns[data-drawer]');
-        expect(rules).toHaveLength(1);
-        expect(rules[0]!.body).toMatch(/padding-inline-end:\s*min\(400px, 100%\)/);
-        expect(rules[0]!.body).toMatch(/scroll-padding-inline-end:\s*min\(400px, 100%\)/);
-    });
-
-    it('0019 F3: no drawer width or drawer padding is relative to the window (no vw unit), so a panel under 432 px is never overrun at its left edge', () => {
-        const drawerRules = parseRules(css).filter((rule) => rule.selectors.some((selector) => /\.side-panel|\[data-drawer\]/.test(selector)));
-        expect(drawerRules.length).toBeGreaterThanOrEqual(3);
-        for (const rule of drawerRules) {
-            expect(rule.body, rule.selectors.join(',')).not.toMatch(/\d\s*v[wi]\b|\bvmin\b|\bvmax\b/);
-        }
-        expect('width: min(400px, 100vw)').toMatch(/\d\s*v[wi]\b/);
-    });
-
-    it('0019 PD-066: while the drawer shows, the Overview takes the width left of the drawer: end padding of min(400px, 100%) on the marked Overview and no media rule on it', () => {
-        const rules = plain('.overview[data-drawer]');
-        expect(rules).toHaveLength(1);
-        expect(rules[0]!.body).toMatch(/padding-inline-end:\s*min\(400px, 100%\)/);
-        const media = parseRules(css).filter((rule) => rule.media !== undefined && rule.selectors.some((selector) => /\.overview\b/.test(selector)));
-        expect(media).toEqual([]);
-    });
-
-    it('0019 PD-066: a marked Overview uses the two-line row layout of 0018 T-013 for every property of the 720 px rules, without a media query', () => {
-        const narrow = parseRules(css).filter((rule) => rule.media === '@media (max-width: 720px)');
-        const properties = (selector: string, rules: { selectors: string[]; body: string }[]) =>
-            rules
-                .filter((rule) => rule.selectors.includes(selector))
-                .flatMap((rule) => [...rule.body.matchAll(/([\w-]+):\s*([^;]+);?/g)].map((match) => `${match[1]}:${match[2]!.trim()}`))
-                .sort();
-        for (const selector of ['.ov-row-item', '.ov-row', '.ov-row .ov-title', '.ov-row .ov-status']) {
-            const expected = properties(selector, narrow);
-            expect(expected.length, selector).toBeGreaterThan(0);
-            expect(properties(`.overview[data-drawer] ${selector}`, plain(`.overview[data-drawer] ${selector}`)), selector).toEqual(expected);
-        }
     });
 
     it('0019 G4, AC-007: a selected card and a selected Overview row both get the selection background and the contrast active border', () => {
@@ -539,5 +490,92 @@ describe('0019 AC-005, AC-021: the side panel beside the area or as a drawer', (
             expect(rule.body).not.toMatch(/outline/);
         }
         expect(rulesFor(css, '.detail-title h2:focus-visible').some((rule) => /outline:\s*2px solid var\(--vscode-contrastActiveBorder, var\(--vscode-focusBorder\)\)/.test(rule.body))).toBe(true);
+    });
+});
+
+describe('0022 AC-022, AC-001: one scrollbar each, and no drawer', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const SCROLLING = /(?:^|;)\s*overflow(?:-y)?:\s*(?:auto|scroll)\b/;
+    const SCROLLERS = ['.area-content', '.side-panel', '.column-cards', 'main > .panel-state'];
+
+    function scrollers(source: string): string[] {
+        return parseRules(source)
+            .filter((rule) => SCROLLING.test(rule.body))
+            .flatMap((rule) => rule.selectors)
+            .sort();
+    }
+
+    it('AC-022: the page root, main and the area frame never scroll', () => {
+        for (const selector of ['html', 'body', '#root', 'main', '.area-frame']) {
+            const rules = rulesFor(css, selector);
+            expect(rules.length, selector).toBeGreaterThan(0);
+            expect(
+                rules.some((rule) => /(?:^|;)\s*overflow:\s*hidden\b/.test(rule.body)),
+                selector,
+            ).toBe(true);
+        }
+    });
+
+    it('AC-022: within the area frame only the area content, the side panel and the Board card lists scroll vertically, and a panel state has its own box', () => {
+        expect(scrollers(css)).toEqual([...SCROLLERS].sort());
+        expect(rulesFor(css, 'main > .panel-state').some((rule) => /min-height:\s*0/.test(rule.body) && /overflow-y:\s*auto/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.area-content').some((rule) => /overflow-y:\s*auto/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.side-panel').some((rule) => /overflow-y:\s*auto/.test(rule.body))).toBe(true);
+    });
+
+    it('AC-022 control: the scan sees a scrolling spec detail and ignores a hidden one', () => {
+        expect(scrollers('.spec-detail { overflow-y: auto; }')).toEqual(['.spec-detail']);
+        expect(scrollers('.spec-detail { overflow: hidden; } .x { overflow-x: auto; }')).toEqual([]);
+        expect(scrollers('.a { min-height: 0; overflow: auto; }')).toEqual(['.a']);
+    });
+
+    it('AC-022: the detail itself and the side panel child do not scroll on their own', () => {
+        for (const selector of ['.spec-detail', '.side-panel > .spec-detail']) {
+            for (const rule of rulesFor(css, selector)) {
+                expect(rule.body, selector).not.toMatch(/overflow/);
+            }
+        }
+    });
+
+    it('AC-022: no padding, margin or gap stands between the side panel’s right edge and the Studio panel’s', () => {
+        const EDGE = /(?:^|;)\s*(?:(?:padding|margin)(?:-right|-inline|-inline-end)?|(?:column-)?gap):\s*(?!\s)(?!0(?:px)?\s*(?:;|$))/;
+        for (const selector of ['main', '.area-frame', '.side-panel', '.studio', 'body', '#root']) {
+            for (const rule of rulesFor(css, selector)) {
+                expect(rule.body, selector).not.toMatch(EDGE);
+            }
+        }
+        expect(EDGE.test('padding: 12px 16px')).toBe(true);
+        expect(EDGE.test('margin-inline-end: 4px')).toBe(true);
+        expect(EDGE.test('margin: 0;\n padding: 0;\n')).toBe(false);
+        expect(EDGE.test('border-left: 1px solid red')).toBe(false);
+    });
+
+    it('AC-022: the area content and the notes keep the 16 px that main gave up, so the area starts where it did', () => {
+        expect(rulesFor(css, '.area-content').some((rule) => /padding:\s*12px 16px/.test(rule.body))).toBe(true);
+        for (const selector of ['main > .restricted-note', 'main > .notice']) {
+            expect(rulesFor(css, selector).some((rule) => /margin:\s*8px 16px/.test(rule.body)), selector).toBe(true);
+        }
+    });
+
+    it('AC-001: no rule holds data-drawer and no rule of the side panel lays it over the area', () => {
+        expect(css).not.toMatch(/data-drawer/);
+        const panelRules = parseRules(css).filter((rule) => rule.selectors.some((selector) => /\.side-panel/.test(selector)));
+        expect(panelRules.length).toBeGreaterThan(0);
+        for (const rule of panelRules) {
+            expect(rule.body, rule.selectors.join(',')).not.toMatch(/position:\s*(?:absolute|fixed)|z-index/);
+        }
+        expect(/position:\s*(?:absolute|fixed)|z-index/.test('position: absolute')).toBe(true);
+    });
+
+    it('G-4: below 900 px with a selection the area is set aside in place (absolute, hidden, laid out) and the side panel takes the full width, with no media query in the rules', () => {
+        const aside = rulesFor(css, '.area-frame[data-layout="detail"] > .area-content').map((rule) => rule.body).join(';');
+        expect(aside).toMatch(/position:\s*absolute/);
+        expect(aside).toMatch(/inset:\s*0/);
+        expect(aside).toMatch(/visibility:\s*hidden/);
+        expect(aside).not.toMatch(/display:\s*none/);
+        const panel = rulesFor(css, '.area-frame[data-layout="detail"] > .side-panel').map((rule) => rule.body).join(';');
+        expect(panel).toMatch(/flex:\s*1 1 auto/);
+        const touched = parseRules(css).filter((rule) => rule.media !== undefined && rule.selectors.some((selector) => /\.side-panel|data-layout/.test(selector)));
+        expect(touched).toEqual([]);
     });
 });

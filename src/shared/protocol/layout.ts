@@ -1,1 +1,1 @@
-export const DRAWER_QUERY = '(max-width: 899px)';
+export const NARROW_QUERY = '(max-width: 899px)';

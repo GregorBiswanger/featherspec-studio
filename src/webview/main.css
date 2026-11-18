@@ -2,6 +2,7 @@ html,
 body,
 #root {
     height: 100%;
+    overflow: hidden;
 }
 
 :root {
@@ -123,10 +124,20 @@ button:focus-visible {
 main {
     flex: 1;
     min-height: 0;
-    overflow: auto;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    padding: 12px 16px;
+}
+
+main > .restricted-note,
+main > .notice {
+    margin: 8px 16px;
+}
+
+main > .panel-state {
+    width: min(calc(100% - 32px), 440px);
+    min-height: 0;
+    overflow-y: auto;
 }
 
 main > h1 {
@@ -607,7 +618,6 @@ main > h1 {
 .spec-detail {
     min-width: 0;
     min-height: 0;
-    overflow-y: auto;
     padding: 14px 20px 24px;
 }
 
@@ -1219,6 +1229,7 @@ blockquote.illustration {
     display: flex;
     flex: 1;
     min-height: 0;
+    overflow: hidden;
     position: relative;
 }
 
@@ -1228,7 +1239,8 @@ blockquote.illustration {
     flex-direction: column;
     min-width: 0;
     min-height: 0;
-    overflow: auto;
+    padding: 12px 16px;
+    overflow-y: auto;
 }
 
 .side-panel {
@@ -1240,54 +1252,35 @@ blockquote.illustration {
     border-left: 1px solid var(--vscode-contrastBorder, var(--vscode-panel-border));
 }
 
-.side-panel > .spec-detail {
-    overflow: visible;
+.area-frame[data-layout="detail"] > .area-content {
+    position: absolute;
+    inset: 0;
+    visibility: hidden;
 }
 
-@media (max-width: 899px) {
-    .side-panel {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 1;
-        flex: none;
-        width: min(400px, 100%);
-    }
+.area-frame[data-layout="detail"] > .side-panel {
+    flex: 1 1 auto;
+    border-left: 0;
 }
 
-.columns[data-drawer] {
-    padding-inline-end: min(400px, 100%);
-    scroll-padding-inline-end: min(400px, 100%);
+.detail-back {
+    margin: 10px 0 0 20px;
+    padding: 2px 8px;
+    color: var(--vscode-textLink-foreground);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
 }
 
-.overview[data-drawer] {
-    padding-inline-end: min(400px, 100%);
+.detail-back::before {
+    content: "\2039" / "";
+    margin-inline-end: 6px;
 }
 
-.overview[data-drawer] .ov-row-item {
-    align-items: flex-end;
-}
-
-.overview[data-drawer] .ov-row {
-    flex-wrap: wrap;
-    row-gap: 2px;
-    white-space: normal;
-}
-
-.overview[data-drawer] .ov-row .ov-title {
-    flex: 1 1 calc(100% - 4em);
-    overflow: visible;
-    overflow-wrap: anywhere;
-    text-overflow: clip;
-    white-space: normal;
-}
-
-.overview[data-drawer] .ov-row .ov-status {
-    overflow: visible;
-    overflow-wrap: anywhere;
-    text-overflow: clip;
-    white-space: normal;
+.detail-back:hover {
+    color: var(--vscode-textLink-activeForeground);
+    background: var(--vscode-toolbar-hoverBackground);
 }
 
 .card[aria-current="true"],

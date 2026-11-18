@@ -1,11 +1,9 @@
-import { act } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
 import { sampleView, sharedSpecView } from '../../shared/protocol/testing/overviewSample';
 import type { OverviewView } from '../../shared/protocol/overview';
 import type { SelectedSpec } from '../../shared/protocol/messages';
 import { App } from '../App';
-import { DRAWER_QUERY } from '../../shared/protocol/layout';
 import { createClient, type ShellClient } from '../client';
 import { boardEvent, boardView, card } from '../board/testing/views';
 import { baseView, click, mount, overviewEvent, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
@@ -145,129 +143,5 @@ describe('0019 G3, AC-007: the Overview rows of the selected spec are marked', (
         ]);
         await send(shellEvent(baseView({ area: 'overview', selection: undefined }), 2));
         expect(container.querySelectorAll('.ov-row[aria-current]')).toHaveLength(0);
-    });
-});
-
-describe('AC-005: the drawer marks the board', () => {
-    const original = window.matchMedia;
-    let listeners: (() => void)[];
-    let matches: boolean;
-
-    beforeEach(() => {
-        listeners = [];
-        matches = true;
-        window.matchMedia = ((query: string) => ({
-            get matches() {
-                return matches;
-            },
-            media: query,
-            addEventListener: (_type: string, listener: () => void) => void listeners.push(listener),
-            removeEventListener: (_type: string, listener: () => void) => void (listeners = listeners.filter((entry) => entry !== listener)),
-        })) as unknown as typeof window.matchMedia;
-    });
-
-    afterEach(() => {
-        window.matchMedia = original;
-    });
-
-    it('asks the drawer query, marks the columns while a spec is selected and the panel is narrow, and follows the change event', async () => {
-        const asked: string[] = [];
-        const wrapped = window.matchMedia;
-        window.matchMedia = ((query: string) => (asked.push(query), wrapped(query))) as typeof window.matchMedia;
-        const container = await board(selection('0004'));
-        expect(asked).toContain(DRAWER_QUERY);
-        expect(container.querySelector('.columns')?.hasAttribute('data-drawer')).toBe(true);
-        matches = false;
-        await act(async () => listeners.forEach((listener) => listener()));
-        expect(container.querySelector('.columns')?.hasAttribute('data-drawer')).toBe(false);
-        matches = true;
-        await act(async () => listeners.forEach((listener) => listener()));
-        expect(container.querySelector('.columns')?.hasAttribute('data-drawer')).toBe(true);
-    });
-
-    it('0019 PD-066: the Overview carries the drawer mark exactly while a spec is selected and the query matches, and follows the change event', async () => {
-        const container = await start();
-        const overview = (): Element | null => container.querySelector('[data-overview]');
-        await send(shellEvent(baseView({ area: 'overview' }), 1));
-        await send(overviewEvent(sampleView()));
-        expect(overview()?.hasAttribute('data-drawer')).toBe(false);
-        await send(shellEvent(baseView({ area: 'overview', selection: selection('0004') }), 2));
-        expect(overview()?.hasAttribute('data-drawer')).toBe(true);
-        matches = false;
-        await act(async () => listeners.forEach((listener) => listener()));
-        expect(overview()?.hasAttribute('data-drawer')).toBe(false);
-        matches = true;
-        await act(async () => listeners.forEach((listener) => listener()));
-        expect(overview()?.hasAttribute('data-drawer')).toBe(true);
-        await send(shellEvent(baseView({ area: 'overview' }), 3));
-        expect(overview()?.hasAttribute('data-drawer')).toBe(false);
-    });
-
-    it('0019 PD-066: while the Overview shows, exactly one element carries the drawer mark and no board columns are there', async () => {
-        const container = await start();
-        await send(shellEvent(baseView({ area: 'overview', selection: selection('0004') }), 1));
-        await send(overviewEvent(sampleView()));
-        expect(container.querySelectorAll('[data-drawer]')).toHaveLength(1);
-        expect(container.querySelector('.columns')).toBeNull();
-    });
-
-    it('control: without a selection the narrow board carries no drawer mark', async () => {
-        const container = await board();
-        expect(container.querySelector('.columns')?.hasAttribute('data-drawer')).toBe(false);
-    });
-});
-
-describe('AC-005, AC-022: a card focused under the drawer is scrolled clear', () => {
-    const original = window.matchMedia;
-    const proto = Element.prototype as { scrollIntoView?: unknown };
-    let matches: boolean;
-    let calls: { target: unknown; options: unknown }[];
-
-    beforeEach(() => {
-        matches = true;
-        calls = [];
-        window.matchMedia = (() => ({ matches, addEventListener: () => undefined, removeEventListener: () => undefined })) as unknown as typeof window.matchMedia;
-        proto.scrollIntoView = vi.fn(function (this: unknown, options: unknown) {
-            calls.push({ target: this, options });
-        });
-    });
-
-    afterEach(() => {
-        window.matchMedia = original;
-        delete proto.scrollIntoView;
-    });
-
-    async function focus(element: HTMLElement): Promise<void> {
-        await act(async () => element.focus());
-    }
-
-    it('focusing a card, and a control inside a card, calls scrollIntoView on the focused element with block and inline nearest', async () => {
-        const container = await board(selection('0006'));
-        const target = cardOf(container, '0004');
-        await focus(target);
-        expect(calls).toEqual([{ target, options: { block: 'nearest', inline: 'nearest' } }]);
-        const copy = target.querySelector<HTMLElement>('button.copy-button')!;
-        await focus(copy);
-        expect(calls).toHaveLength(2);
-        expect(calls[1]).toEqual({ target: copy, options: { block: 'nearest', inline: 'nearest' } });
-    });
-
-    it('control: the drawer query not matching (panel from 900 px) scrolls nothing', async () => {
-        matches = false;
-        const container = await board(selection('0006'));
-        await focus(cardOf(container, '0004'));
-        expect(calls).toEqual([]);
-    });
-
-    it('control: without a selection there is no drawer and nothing scrolls', async () => {
-        const container = await board();
-        await focus(cardOf(container, '0004'));
-        expect(calls).toEqual([]);
-    });
-
-    it('a browser without scrollIntoView does not break focusing a card', async () => {
-        delete proto.scrollIntoView;
-        const container = await board(selection('0006'));
-        await expect(focus(cardOf(container, '0004'))).resolves.toBeUndefined();
     });
 });

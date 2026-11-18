@@ -3,7 +3,7 @@
 **Spec:** [0022-layout-and-signal-polish.md](0022-layout-and-signal-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-001
+**Current step:** T-002
 
 ## Approach
 
@@ -239,8 +239,8 @@ each `Verify` runs its own tests). Both are small: run them in sequence. Stages 
   `.side-panel`); the matchMedia guard retargeted to `narrow.ts`.
 - **Verify:** `npx vitest run --project webview src/webview/detail` and `npx vitest run --project node src/adapters/node/webviewCss.test.ts`
   red (stub, failing rules), then green; gates 1–4
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-18, red first: `npx vitest run --project webview src/webview/detail/ListOrDetail.test.tsx` with `useNarrow` returning false and a throwing `BackButton` stub: 9 failed (no `data-layout`, no `inert`, no back button, focus not moved), 5 passed (the controls); `npx vitest run --project node src/adapters/node/webviewCss.test.ts`: 11 failed (the new AC-022, AC-001 and G-4 tests and the retargeted ones). Green after the code: eslint 0 warnings, `tsc --noEmit` and `tsc --noEmit -p src/webview` clean, `npm run test:unit` 2247 passed, 3 skipped (+13 timing) (Baseline 2238 + 9: -7 SidePanel drawer tests, -5 CSS tests, +14 ListOrDetail, +7 CSS).
+- **Notes:** Deleted as named: `src/webview/detail/drawer.ts` (`git rm`), `DRAWER_QUERY` (now `NARROW_QUERY`, `detail/narrow.ts`), `data-drawer` on `.columns` and `.overview`, the `scrollIntoView` branch of `SpecBoard.onFocus`, in `main.css` the drawer media rule, `.columns[data-drawer]`, `.overview[data-drawer]` and its four row rules, `.spec-detail`'s `overflow-y: auto` and `.side-panel > .spec-detail`; tests: both drawer describes of `SidePanel.test.tsx` (`AC-005: the drawer marks the board` with 4 tests, `AC-005, AC-022: a card focused under the drawer is scrolled clear` with 4 tests) and five of `webviewCss.test.ts` (drawer media rule, board drawer padding, 0019 F3, both 0019 PD-066). Retitled or retargeted there: "full-height frame …" (now `0022 G-1 …`, `main` is `overflow: hidden`), "AC-005: from the drawer width up the side panel is a 400 px column …" (title without the drawer, `.area-content` is `overflow-y: auto`; T-003 replaces it), "AC-005: no media rule changes … under the drawer" (`0022 AC-001: … keeps its width and its scroll position`), the matchMedia guard (`narrow.ts`, `NARROW_QUERY`), the describe title; "AC-015: columns share the width …" reads the 16 px from `.area-content` (they moved there, G-1). Proxy decisions: the back button is plain text (no glyph in the DOM, a CSS `::before` with an empty alternative text draws the chevron), so its text is its accessible name; `main > .panel-state` takes `width: min(calc(100% - 32px), 440px)` because `main` lost its padding; focus on crossing uses `requestHeadingFocus`, which also covers a detail that has not arrived yet; the same call fires when a click selects a spec at a narrow width (same stem as `useOpenSpec`, harmless). The Overview's own notice stays in the padded area content. The scrollbar position and the look are the orchestrator's harness after stage 3 (jsdom computes none).
 
 ### T-002 — The side panel's width is remembered per workspace
 

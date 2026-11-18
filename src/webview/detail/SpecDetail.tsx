@@ -22,6 +22,8 @@ import { FileLink, type FileResult } from '../ui/FileLink';
 import { FormatNotes } from '../ui/FormatNotes';
 import { InlineText } from '../ui/InlineText';
 import { StateChip } from '../ui/StateChip';
+import type { AreaId } from '../../shared/protocol/areas';
+import { BackButton } from './BackButton';
 import { CloseButton } from './CloseButton';
 import { DetailFrame } from './DetailFrame';
 import { DetailSection, PlainSection } from './DetailSection';
@@ -36,11 +38,12 @@ function stateTooltip(detail: SpecDetailView): string {
     return detail.persistence === 'derived' && isDerivedRule(detail.rule) ? columnRuleTooltip(detail.rule) : persistedTooltip(detail.rule);
 }
 
-function Header(props: { detail: SpecDetailView; onClose: (() => void) | undefined; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
+function Header(props: { detail: SpecDetailView; onClose: (() => void) | undefined; back: AreaId | undefined; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
     const { detail } = props;
     const tooltip = stateTooltip(detail);
     return (
         <>
+            {props.back === undefined || props.onClose === undefined ? null : <BackButton area={props.back} onBack={props.onClose} />}
             <div className="detail-title">
                 <span className="detail-number">{detail.number}</span>
                 <h2 ref={props.headingRef} tabIndex={-1} data-detail-heading data-detail-stem={detail.stem}>
@@ -50,7 +53,7 @@ function Header(props: { detail: SpecDetailView; onClose: (() => void) | undefin
                 {isBoardState(detail.state) ? <StateChip state={detail.state} tooltip={tooltip} /> : <span title={tooltip}>{detail.state}</span>}
                 {detail.persistence === 'derived' && isDerivedRule(detail.rule) ? <span className="visually-hidden">{DERIVED_SENTENCES[detail.rule]}</span> : null}
                 {detail.successor === undefined ? null : <span className="detail-flag">{DEPRECATED_MARKER}</span>}
-                {props.onClose === undefined ? null : <CloseButton onClose={props.onClose} />}
+                {props.onClose === undefined || props.back !== undefined ? null : <CloseButton onClose={props.onClose} />}
             </div>
             {detail.path === undefined ? null : <p className="detail-path">{detail.path}</p>}
             {detail.successor === undefined ? null : <p className="detail-successor">{detail.successor}</p>}
@@ -95,7 +98,7 @@ function History(props: { history: SpecDetailView['history']; now: Date }) {
     );
 }
 
-function Picture(props: { detail: SpecDetailView; fileResult: FileResult | undefined; copyResult: { ok: boolean; text: string } | undefined; onOpen: OpenAt; onCopy(text: string): void; onClose: (() => void) | undefined }) {
+function Picture(props: { detail: SpecDetailView; fileResult: FileResult | undefined; copyResult: { ok: boolean; text: string } | undefined; onOpen: OpenAt; onCopy(text: string): void; onClose: (() => void) | undefined; back: AreaId | undefined }) {
     const { detail, fileResult, onOpen } = props;
     const now = new Date();
     const headingRef = useRef<HTMLHeadingElement>(null);
@@ -107,7 +110,7 @@ function Picture(props: { detail: SpecDetailView; fileResult: FileResult | undef
     }, [detail.stem]);
     return (
         <>
-            <Header detail={detail} onClose={props.onClose} headingRef={headingRef} />
+            <Header detail={detail} onClose={props.onClose} back={props.back} headingRef={headingRef} />
             <NextStep nextStep={detail.nextStep} copyResult={props.copyResult} onCopy={props.onCopy} />
             {detail.problems.length === 0 ? null : (
                 <ul className="detail-problems" aria-label={BANNER_HEADING}>
@@ -150,12 +153,13 @@ export function SpecDetail(props: {
     onOpen: OpenAt;
     onCopy(text: string): void;
     onClose?: () => void;
+    back?: AreaId;
     fallback?: () => void;
 }) {
     const { detail } = props;
     return (
         <DetailFrame as="div" labelled={false} onClose={props.onClose} fallback={props.fallback}>
-            <Picture key={detail.key} detail={detail} fileResult={props.fileResult} copyResult={props.copyResult} onOpen={props.onOpen} onCopy={props.onCopy} onClose={props.onClose} />
+            <Picture key={detail.key} detail={detail} fileResult={props.fileResult} copyResult={props.copyResult} onOpen={props.onOpen} onCopy={props.onCopy} onClose={props.onClose} back={props.back} />
         </DetailFrame>
     );
 }

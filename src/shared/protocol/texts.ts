@@ -1,3 +1,4 @@
+import type { AreaId } from './areas';
 import type { StatusHistoryItem } from './detail';
 import type { BoardState } from './boardFilter';
 import type { ColumnNarrow, LastChange, Progress, SortKey } from './board';
@@ -327,6 +328,7 @@ export function successorText(successor: { kind: 'link'; text: string } | { kind
 export const DETAIL_LABEL = 'Spec detail';
 export const CLOSE_DETAIL_LABEL = 'Close spec detail';
 export const CLOSE_DETAIL_TOOLTIP = 'Close (Esc)';
+export const BACK_LABELS: Record<AreaId, string> = { overview: 'Back to Overview', board: 'Back to Board' };
 export const PROGRESS_HEADING = 'Progress';
 export const STEPS_LABEL = 'Steps';
 export const CRITERIA_LABEL = 'Criteria';
