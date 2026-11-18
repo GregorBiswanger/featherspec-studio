@@ -32,7 +32,7 @@ Select a spec in the Specs view, on the Board or in the Overview (click, Enter o
 
 ### The next step everywhere
 
-The next step is one line of FeatherSpec, shown in four places and copied with one click: in the detail of a spec, on every Board card, on each row of Now, Up next and Problems in the Overview and in the status bar. Studio starts no agent and changes no file; paste the line into your assistant's chat. On an Active spec with an open plan step the detail adds a second line, `continue`, for the same chat ("Then, in the same chat, if nothing blocks:").
+The next step is one line of FeatherSpec, shown in five places and copied with one click: on a row of the Specs view (its inline Copy), in the detail of a spec, on every Board card, on each row of Now, Up next and Problems in the Overview and in the status bar. Studio starts no agent and changes no file; paste the line into your assistant's chat. On an Active spec with an open plan step the detail adds a second line, `continue`, for the same chat ("Then, in the same chat, if nothing blocks:").
 
 The status bar shows the spec you work on: `<number> · <state> · <short form>`. The current spec is the one selected in the Specs view, the Overview or the Board; without a selection, the most urgent spec with a step (Blocked, then Review, then Active). A click copies the full line and the entry reads **Copied** for two seconds. Without a current spec the click opens a quick pick of the specs that have a step. The tooltip carries the project name and the FeatherSpec version, an "Open Studio" link and, with several projects, "Switch project".
 
@@ -44,7 +44,7 @@ The status bar shows the spec you work on: `<number> · <state> · <short form>`
 
 ## Getting started
 
-1. Install the extension and open a FeatherSpec project folder. The status bar shows the active project and its FeatherSpec version.
+1. Install the extension and open a FeatherSpec project folder. The status bar shows the spec you work on (`<number> · <state> · <short form>`); the tooltip names the project and its FeatherSpec version.
 2. Click the FeatherSpec Studio icon in the Activity Bar. The Specs view lists your specs; select one, or use **Open** in its toolbar for the panel.
 3. Read the **Next** line on a card, an Overview row or in the status bar (or the **Next step** in the detail of a spec), click **Copy** and paste the line into your assistant's chat.
 
@@ -70,7 +70,7 @@ Studio derives each spec's column from the files, in this order:
 - in `.specs/backlog/` and passing the readiness checks (a draft with a plan that has not started) → **Ready** (derived);
 - otherwise → **Backlog**.
 
-A spec with contradictory or unreadable files stays in the column of its folder and shows the reason. Derived states read as a sentence on the card; the rule ID (`S-READY`, `S-REVIEW`, `S-BLOCKED`) is in its tooltip. FeatherSpec has no priority, persisted compile verdict or dependency field, so the Studio shows none.
+A spec with contradictory or unreadable files stays in the column of its folder and shows the reason. Hover a Ready, Review or Blocked column header on the Board for the rule behind a derived state; the rule ID (`S-READY`, `S-REVIEW`, `S-BLOCKED`) is in its tooltip. FeatherSpec has no priority, persisted compile verdict or dependency field, so the Studio shows none.
 
 ## Commands
 

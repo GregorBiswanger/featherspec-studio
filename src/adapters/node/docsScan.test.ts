@@ -391,6 +391,23 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         }
     });
 
+    it('the README says what the status bar shows, where a derived state is explained and in how many places the next step shows', async () => {
+        const readme = await read('README.md');
+        const start = readme.indexOf('## Getting started');
+        const gettingStarted = readme.slice(start, readme.indexOf('\n## ', start + 1));
+        expect(gettingStarted).toContain('The status bar shows the spec you work on (`<number> · <state> · <short form>`)');
+        expect(gettingStarted).toContain('the tooltip names the project and its FeatherSpec version');
+        expect(gettingStarted).not.toContain('shows the active project');
+        expect(readme).not.toContain('read as a sentence on the card');
+        expect(readme).toContain('Hover a Ready, Review or Blocked column header on the Board for the rule behind a derived state');
+        expect(readme).toContain('shown in five places');
+        expect(readme).not.toContain('four places');
+        const places = readme.slice(readme.indexOf('shown in five places'), readme.indexOf('Studio starts no agent and changes no file'));
+        for (const place of ['Specs view', 'detail of a spec', 'Board card', 'Overview', 'status bar']) {
+            expect(places, place).toContain(place);
+        }
+    });
+
     it('finds the first release section of a changelog and stops at the next one', () => {
         expect(firstRelease('# C\n\n## [1.0.0] - x\nA\n\n## [0.9.0] - y\nB\n')).toBe('## [1.0.0] - x\nA\n');
     });

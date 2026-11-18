@@ -466,6 +466,14 @@ and the host smoke, so they stay `→`.
 - [x] **Verified (T-019):** 2026-11-18: new tests against the old checklist: the order test red (1 failed of 79); the coverage test is green by construction, so a scratch copy of HEAD with the AC-030 item renamed fails both (2 failed); docsScan 79/79 green here; gates 1-4 green (unit 2226 passed + 3 skipped, timing 13).
 - **Notes:** Final-check findings 2 and 10 (first half). Screenshots stay Gregor's taste call (finding 9): the 0013 taste item now says that `spec-detail-light.png` shows this repository's own specs and that he may keep or retake it on `tip-splitter`. Every manual criterion of 0014 (M-1 … M-3), 0015 (AC-030), 0016 (AC-025), 0017 (AC-026), 0018 (AC-031), 0019 (AC-022) and 0020 (AC-022 and the keyboard item) has its item; the CHANGELOG-date item of T-018 stays in Go.
 
+### T-020 — The README agrees with itself (final check 4)
+
+- **Covers:** AC-018, AC-020 (README says what the view and the status bar are)
+- **Do:** `docsScan.test.ts` first: Getting started says the status bar shows the spec you work on (`<number> · <state> · <short form>`) and that the tooltip names the project and the version, not "shows the active project"; "read as a sentence on the card" is gone and the column-header tooltip is named; the next step is "shown in five places" (the Specs view's inline Copy, the detail, the Board card, the Overview rows, the status bar). Then `README.md`: those three sentences.
+- **Verify:** docsScan red on a scratch copy of HEAD with the new test, then green; gates 1–4
+- [x] **Verified (T-020):** 2026-11-18: the new test against the old README: 1 failed of 80; green after the three sentences (80/80); gates 1-4 green (unit 2227 passed + 3 skipped, timing 13).
+- **Notes:** Final-check finding 4. The rule behind a derived state is in the column-header tooltip of the Board (README Board section, unchanged); the sentence now points there instead of claiming a sentence on the card.
+
 ## Test-title audit (0020 AC-021)
 
 Script: `/tmp/audit-0020/titles.py` (throwaway, run with `python3 -I`): every `describe`/`it`/`test`/`suite` literal of every `.ts`/`.tsx` under `src` (including `src/test/**` and `testing/*.ts`) at Baseline `16fc52b` (`git archive`) and at the T-008 head. A title counts as present when the same literal exists in any file at the head.
