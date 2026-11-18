@@ -1,7 +1,7 @@
 # Plan — Send the Next Step to My Assistant
 
 **Spec:** [0024-send-next-step-to-assistant.md](0024-send-next-step-to-assistant.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-18
 **Current step:** T-001
 
@@ -490,5 +490,5 @@ here.
 - **Next action:** Gregor reads the plan; on the start signal `/sdd-lifecycle` backlog → active, then T-001
 - **Open decisions:** OP-004 (does `open` replace an unsent draft in Copilot's current chat? VS Code's `main` source
   suggests yes; AC-017 records it, and Gregor decides whether "current chat" stays). OP-002 and OP-003 are not blocking.
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** d756fa9 (head before the first step commit; started 2026-11-18 on Gregor's delegated start signal)
 - **Environment:** `npm test` cannot run here (VS Code download blocked); host smoke runs on CI and Windows

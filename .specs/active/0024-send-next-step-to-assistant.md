@@ -1,6 +1,6 @@
 # Send the Next Step to My Assistant
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0024-send-next-step-to-assistant.plan.md](0024-send-next-step-to-assistant.plan.md)
 
 Basis: review `docs/ux-audit/07-implementation-review.md` §6a (2026-11-18) as cut in `docs/ux-audit/08-spec-handoff.md`
