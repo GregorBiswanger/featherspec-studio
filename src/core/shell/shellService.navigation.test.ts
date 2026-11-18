@@ -94,6 +94,17 @@ describe('AC-008, AC-009: selection', () => {
         expect(current.service.view().rows.find((row) => row.selected)?.stem).toBe('0003-x');
     });
 
+    it('0019 AC-003: clearSelection removes the selection, the marked row and the remembered value, and keeps the area', async () => {
+        const current = await ready();
+        await current.service.handlers.select({ stem: '0003-x' });
+        await current.service.handlers.navigate({ area: 'board' });
+        await current.service.handlers.clearSelection({});
+        expect(current.service.view().selection).toBeUndefined();
+        expect(current.service.view().rows.some((row) => row.selected)).toBe(false);
+        expect(current.service.view().area).toBe('board');
+        expect((current.memory.value as { selection?: unknown }).selection).toBeUndefined();
+    });
+
     it('the selection is remembered with the project root and survives a restart with the same project', async () => {
         const current = await ready();
         await current.service.handlers.select({ stem: '0003-x' });

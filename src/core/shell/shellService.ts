@@ -270,6 +270,7 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
             hello: async () => undefined,
             navigate: async (request) => navigate(request),
             select: async (payload) => select(payload.path === undefined ? { stem: payload.stem } : { stem: payload.stem, path: payload.path }),
+            clearSelection: async () => select(undefined),
             runAction: async (payload) => runAction(payload.action),
             dismissNotice: async () => {
                 notice = undefined;

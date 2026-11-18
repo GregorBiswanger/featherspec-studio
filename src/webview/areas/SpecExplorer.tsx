@@ -1,4 +1,4 @@
-import type { KeyboardEvent } from "react";
+import { useRef, type KeyboardEvent } from "react";
 import { isBoardState } from "../../shared/protocol/boardFilter";
 import type { SpecRow } from "../../shared/protocol/messages";
 import {
@@ -9,6 +9,7 @@ import {
   TITLE_NOT_AVAILABLE,
 } from "../../shared/protocol/texts";
 import { useBoard } from "../board/boardStore";
+import { focusSpecListRow } from "../detail/focus";
 import { SpecDetail } from "../detail/SpecDetail";
 import { useShell } from "../shell";
 import { EmptyState } from "../ui/EmptyState";
@@ -19,6 +20,10 @@ export function SpecExplorer() {
   const shell = useShell();
   const rows = shell.view?.rows ?? [];
   const { detail, fileResult, copyResult, openFile, copyText } = useBoard();
+  const lastShown = useRef<{ stem: string; path: string | undefined } | undefined>(undefined);
+  if (detail?.kind === "spec") {
+    lastShown.current = { stem: detail.stem, path: detail.path };
+  }
 
   function choose(row: SpecRow): void {
     shell.select(
@@ -42,6 +47,8 @@ export function SpecExplorer() {
           <li
             key={`${row.stem}|${row.path}`}
             role="option"
+            data-spec-stem={row.stem}
+            data-spec-path={row.path}
             tabIndex={0}
             aria-selected={row.selected}
             className={row.selected ? "spec-row selected" : "spec-row"}
@@ -84,7 +91,19 @@ export function SpecExplorer() {
   return (
     <div className="explorer">
       <div className="explorer-list">{list}</div>
-      <SpecDetail detail={detail} fileResult={fileResult} copyResult={copyResult} onOpen={openFile} onCopy={copyText} />
+      <SpecDetail
+        detail={detail}
+        fileResult={fileResult}
+        copyResult={copyResult}
+        onOpen={openFile}
+        onCopy={copyText}
+        onClose={shell.clearSelection}
+        fallback={() => {
+          if (lastShown.current !== undefined) {
+            focusSpecListRow(lastShown.current.stem, lastShown.current.path);
+          }
+        }}
+      />
     </div>
   );
 }

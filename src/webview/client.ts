@@ -44,6 +44,7 @@ export interface ShellClient {
     receive(raw: unknown): void;
     navigate(request: NavigationRequest): void;
     select(reference: SpecReference): void;
+    clearSelection(): void;
     runAction(action: ActionId): void;
     dismissNotice(): void;
     setBoardSort(sort: SortKey): void;
@@ -237,6 +238,9 @@ export function createClient(deps: ClientDeps): ShellClient {
         },
         select(reference) {
             send('select', reference);
+        },
+        clearSelection() {
+            send('clearSelection', {});
         },
         runAction(action) {
             send('runAction', { action });

@@ -327,6 +327,8 @@ export function successorText(successor: { kind: 'link'; text: string } | { kind
 }
 
 export const DETAIL_LABEL = 'Spec detail';
+export const CLOSE_DETAIL_LABEL = 'Close spec detail';
+export const CLOSE_DETAIL_TOOLTIP = 'Close (Esc)';
 export const PROGRESS_HEADING = 'Progress';
 export const STEPS_LABEL = 'Steps';
 export const CRITERIA_LABEL = 'Criteria';

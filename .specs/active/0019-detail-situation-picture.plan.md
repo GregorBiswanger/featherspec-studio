@@ -3,7 +3,7 @@
 **Spec:** [0019-detail-situation-picture.md](0019-detail-situation-picture.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-006
+**Current step:** T-007
 
 ## Approach
 
@@ -347,8 +347,8 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
   → closed, focus as AC-003, notice shown); guard and router tests for `clearSelection`; version 3.
 - **Verify:** `npx vitest run src/webview src/shared/protocol src/core/shell` red, then green;
   gates 1–5
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-18 — red: with the production edits of this step stashed, `npx vitest run src/webview/detail/Close.test.tsx src/shared/protocol/messages.test.ts src/core/shell` failed 16 tests (no close button, no `clearSelection` guard, handler or client call, version 2); green with them: `src/webview src/shared src/core/shell` 587 + 3 new passed, `Close.test.tsx` 14. Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2091 passed + 3 skipped (+12 timing), `npm run compile`, `npm run compile-tests` green.
+- **Notes:** (1) `PROTOCOL_VERSION` is 3; envelope literals `v: 2` in the webview, bundle and probe tests moved to 3, and the tests that used 3 as "another version" now use 4 (memory versions in `doneMemory`/`uiMemory` tests untouched). (2) New `detail/DetailFrame.tsx` wraps every detail (side panel, pane, placeholder): tracks whether focus is inside, closes on Escape, and when the focused control disappears focuses the heading, else the `fallback` (close rule). `detail/focus.ts` holds the rules: `requestHeadingFocus` (set by `useOpenSpec`, consumed by the matching `Picture`, so a remembered selection never takes focus), `focusAfterClose` (opener while connected, else the spec's first card or Overview row via `data-spec-stem` / `data-spec-row`, else the first focusable of `.area-content`), `focusSpecListRow` (Explorer, `data-spec-stem` and `data-spec-path` on the options). (3) The placeholder shown before the detail event has the number heading and the close button too, so the panel is always closable. (4) The close button is the last element of the title row (`margin-inline-start: auto`), after the chip and flag; its glyph is `aria-hidden` text. (5) Host-cleared selection and a vanished spec use the same path as the button: the panel unmounts with focus inside and the close rule runs in a microtask. (6) The new tests were written after the code, the red run above was taken by stashing the production edits.
 
 ### T-007 — Beside from 900 px, a drawer below; focused cards scroll clear
 

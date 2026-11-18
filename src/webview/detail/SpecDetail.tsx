@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import type { DetailView, DiagnosticLine, SpecDetailView } from '../../shared/protocol/detail';
 import {
     BANNER_HEADING,
@@ -22,7 +23,10 @@ import { FileLink, type FileResult } from '../ui/FileLink';
 import { FormatNotes } from '../ui/FormatNotes';
 import { InlineText } from '../ui/InlineText';
 import { StateChip } from '../ui/StateChip';
+import { CloseButton } from './CloseButton';
+import { DetailFrame } from './DetailFrame';
 import { DetailSection, PlainSection } from './DetailSection';
+import { takePendingHeadingFocus } from './focus';
 import { NextStep } from './NextStep';
 import { Progress } from './Progress';
 
@@ -32,20 +36,21 @@ function stateTooltip(detail: SpecDetailView): string {
     return detail.persistence === 'derived' && isDerivedRule(detail.rule) ? columnRuleTooltip(detail.rule) : persistedTooltip(detail.rule);
 }
 
-function Header(props: { detail: SpecDetailView }) {
+function Header(props: { detail: SpecDetailView; onClose: (() => void) | undefined; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
     const { detail } = props;
     const tooltip = stateTooltip(detail);
     return (
         <>
             <div className="detail-title">
                 <span className="detail-number">{detail.number}</span>
-                <h2>
+                <h2 ref={props.headingRef} tabIndex={-1} data-detail-heading data-detail-stem={detail.stem}>
                     <span className="sr-number">{detail.number} </span>
                     {detail.title}
                 </h2>
                 {isBoardState(detail.state) ? <StateChip state={detail.state} tooltip={tooltip} /> : <span title={tooltip}>{detail.state}</span>}
                 {detail.persistence === 'derived' && isDerivedRule(detail.rule) ? <span className="visually-hidden">{DERIVED_SENTENCES[detail.rule]}</span> : null}
                 {detail.successor === undefined ? null : <span className="detail-flag">{DEPRECATED_MARKER}</span>}
+                {props.onClose === undefined ? null : <CloseButton onClose={props.onClose} />}
             </div>
             {detail.path === undefined ? null : <p className="detail-path">{detail.path}</p>}
             {detail.successor === undefined ? null : <p className="detail-successor">{detail.successor}</p>}
@@ -90,12 +95,18 @@ function History(props: { history: SpecDetailView['history']; now: Date }) {
     );
 }
 
-function Picture(props: { detail: SpecDetailView; fileResult: FileResult | undefined; copyResult: { ok: boolean; text: string } | undefined; onOpen: OpenAt; onCopy(text: string): void }) {
+function Picture(props: { detail: SpecDetailView; fileResult: FileResult | undefined; copyResult: { ok: boolean; text: string } | undefined; onOpen: OpenAt; onCopy(text: string): void; onClose: (() => void) | undefined }) {
     const { detail, fileResult, onOpen } = props;
     const now = new Date();
+    const headingRef = useRef<HTMLHeadingElement>(null);
+    useEffect(() => {
+        if (takePendingHeadingFocus(detail.stem)) {
+            headingRef.current?.focus();
+        }
+    }, [detail.stem]);
     return (
         <>
-            <Header detail={detail} />
+            <Header detail={detail} onClose={props.onClose} headingRef={headingRef} />
             <NextStep nextStep={detail.nextStep} copyResult={props.copyResult} onCopy={props.onCopy} />
             {detail.problems.length === 0 ? null : (
                 <ul className="detail-problems" aria-label={BANNER_HEADING}>
@@ -137,21 +148,22 @@ export function SpecDetail(props: {
     copyResult: { ok: boolean; text: string } | undefined;
     onOpen: OpenAt;
     onCopy(text: string): void;
+    onClose?: () => void;
+    fallback?: () => void;
     region?: boolean;
 }) {
     const { detail } = props;
-    const Wrapper = props.region === false ? 'div' : 'section';
-    const label = props.region === false ? {} : { 'aria-label': DETAIL_LABEL };
+    const frame = { as: props.region === false ? ('div' as const) : ('section' as const), labelled: props.region !== false, onClose: props.onClose, fallback: props.fallback };
     if (detail === undefined || detail.kind === 'none') {
         return (
-            <Wrapper className="spec-detail" {...label}>
+            <DetailFrame {...frame}>
                 <EmptyState icon="info">{NO_DETAIL_SELECTION_TEXT}</EmptyState>
-            </Wrapper>
+            </DetailFrame>
         );
     }
     return (
-        <Wrapper className="spec-detail" {...label}>
-            <Picture key={detail.key} detail={detail} fileResult={props.fileResult} copyResult={props.copyResult} onOpen={props.onOpen} onCopy={props.onCopy} />
-        </Wrapper>
+        <DetailFrame {...frame}>
+            <Picture key={detail.key} detail={detail} fileResult={props.fileResult} copyResult={props.copyResult} onOpen={props.onOpen} onCopy={props.onCopy} onClose={props.onClose} />
+        </DetailFrame>
     );
 }

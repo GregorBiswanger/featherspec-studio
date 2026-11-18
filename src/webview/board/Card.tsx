@@ -84,6 +84,7 @@ export function Card(props: {
         <li
             className="card"
             data-card={card.key}
+            data-spec-stem={card.stem}
             data-board-state={card.state}
             tabIndex={props.tabIndex ?? 0}
             title={cardTooltip(card)}

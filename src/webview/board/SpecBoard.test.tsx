@@ -452,12 +452,12 @@ describe('0017 AC-005: Copy on a card', () => {
     it('the feedback shows at that Copy only, as Copied, and as Could not copy after a failure', async () => {
         const container = await open(boardView([card('0007', { state: 'Ready', step: STEP }), card('0008', { step: TWO })]));
         await click(copies(container)[0]!);
-        await send({ v: 2, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
+        await send({ v: 3, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
         expect(copies(container).map((button) => button.textContent)).toEqual(['Copied', 'Copy']);
         expect(container.querySelectorAll('.card-step [role="status"]')[0]?.textContent).toBe(COPIED_TEXT);
         expect(container.querySelectorAll('.card-step [role="status"]')[1]?.textContent).toBe('');
         await click(copies(container)[1]!);
-        await send({ v: 2, kind: 'evt', type: 'copyResult', payload: { ok: false, text: COPY_FAILED_TEXT } });
+        await send({ v: 3, kind: 'evt', type: 'copyResult', payload: { ok: false, text: COPY_FAILED_TEXT } });
         expect(copies(container)[1]?.textContent).toBe('Could not copy');
     });
 

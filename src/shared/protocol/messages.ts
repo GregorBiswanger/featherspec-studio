@@ -119,6 +119,7 @@ export interface ShellRequestPayloads {
     hello: HelloPayload;
     navigate: NavigationRequest;
     select: SelectPayload;
+    clearSelection: Record<string, never>;
     runAction: RunActionPayload;
     dismissNotice: Record<string, never>;
 }
@@ -257,6 +258,7 @@ export const REQUEST_GUARDS: { [Type in RequestType]: (value: unknown) => value 
     hello: isHelloPayload,
     navigate: isNavigationRequest,
     select: isSelectPayload,
+    clearSelection: isEmptyPayload,
     runAction: isRunActionPayload,
     dismissNotice: isEmptyPayload,
     boardSetSort: isBoardSetSortPayload,

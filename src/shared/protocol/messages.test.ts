@@ -52,8 +52,8 @@ describe('AC-016, AC-021: envelope', () => {
     });
 
     it('reads an envelope of another version (the router decides, AC-016)', () => {
-        expect(readEnvelope({ v: 3, kind: 'evt', type: 'shell', payload: {} }).ok).toBe(true);
-        expect(PROTOCOL_VERSION).toBe(2);
+        expect(readEnvelope({ v: 4, kind: 'evt', type: 'shell', payload: {} }).ok).toBe(true);
+        expect(PROTOCOL_VERSION).toBe(3);
     });
 
     it('isJsonValue accepts nested JSON and rejects functions, undefined and NaN', () => {
@@ -86,6 +86,14 @@ describe('AC-021: request guards accept and reject', () => {
         expect(isNavigationRequest({ area: 'board', target: { kind: 'boardFilter', filter: undefined } })).toBe(false);
         expect(isNavigationRequest({ area: 'board', target: { kind: 'other' } })).toBe(false);
         expect(isNavigationTarget('spec')).toBe(false);
+    });
+
+    it('0019 AC-003: clearSelection has an empty-payload guard, the guard of select stays strict', () => {
+        expect(REQUEST_GUARDS.clearSelection({})).toBe(true);
+        expect(REQUEST_GUARDS.clearSelection(undefined)).toBe(true);
+        expect(REQUEST_GUARDS.clearSelection({ stem: '0003-x' })).toBe(false);
+        expect(REQUEST_GUARDS.clearSelection('')).toBe(false);
+        expect(REQUEST_GUARDS.select({})).toBe(false);
     });
 
     it('select, runAction and dismissNotice', () => {

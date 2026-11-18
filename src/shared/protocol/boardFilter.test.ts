@@ -58,6 +58,7 @@ describe('board requests', () => {
                 'boardClearFilters',
                 'boardSetDone',
                 'boardSetSort',
+                'clearSelection',
                 'copyText',
                 'dismissNotice',
                 'hello',

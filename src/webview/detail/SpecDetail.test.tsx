@@ -97,7 +97,7 @@ describe('0019 AC-009: the situation picture in its order', () => {
         expect(header.querySelector('h2')?.textContent).toContain('Thing 0007');
         expect(header.querySelectorAll('.state-chip')).toHaveLength(1);
         expect(header.querySelector('.state-chip')?.textContent?.trim()).toBe('Active');
-        expect(header.querySelectorAll('button')).toHaveLength(0);
+        expect([...header.querySelectorAll('button')].map((button) => button.getAttribute('aria-label'))).toEqual(['Close spec detail']);
     });
 
     it('a derived state shows its chip tooltip, the sentence as hidden text after the chip and no rule ID as text', async () => {

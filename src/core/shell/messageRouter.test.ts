@@ -10,6 +10,7 @@ function setup(overrides: Partial<RequestHandlers> = {}) {
         hello: async (payload) => void calls.push(`hello:${payload.lastSeq}`),
         navigate: async (payload) => void calls.push(`navigate:${payload.area}`),
         select: async (payload) => void calls.push(`select:${payload.stem}`),
+        clearSelection: async () => void calls.push('clearSelection'),
         runAction: async (payload) => void calls.push(`runAction:${payload.action}`),
         dismissNotice: async () => void calls.push('dismissNotice'),
         boardSetDone: async (payload) => void calls.push(`boardSetDone:${payload.expanded}`),
@@ -37,6 +38,15 @@ describe('AC-021: message router', () => {
         expect(calls).toEqual(['navigate:board']);
         expect(posted).toEqual([{ v: PROTOCOL_VERSION, kind: 'res', id: 'r1', type: 'navigate', payload: { ok: true } }]);
         expect(lines).toEqual([]);
+    });
+
+    it('0019 AC-003: a clearSelection request reaches its handler and a payload with content is ignored', async () => {
+        const { router, calls, lines } = setup();
+        await router.receive(req('clearSelection', {}));
+        expect(calls).toEqual(['clearSelection']);
+        await router.receive(req('clearSelection', { stem: 'x' }));
+        expect(calls).toEqual(['clearSelection']);
+        expect(lines).toEqual([['Ignored a message from the Studio panel: type clearSelection, invalid payload.']]);
     });
 
     it('answers a failing handler with a generic error and never with its message', async () => {

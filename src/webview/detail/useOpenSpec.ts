@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useShell } from '../shell';
+import { requestHeadingFocus } from './focus';
 import { rememberOpener } from './opener';
 
 export interface SpecReference {
@@ -13,6 +14,7 @@ export function useOpenSpec(): (reference: SpecReference, opener: HTMLElement | 
     return useCallback(
         (reference, opener) => {
             rememberOpener(opener);
+            requestHeadingFocus(reference.stem);
             select(reference.path === undefined ? { stem: reference.stem } : { stem: reference.stem, path: reference.path });
         },
         [select],

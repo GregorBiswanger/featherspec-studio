@@ -10,6 +10,7 @@ export interface Shell {
     target: NavigationTarget | undefined;
     navigate(request: NavigationRequest): void;
     select(reference: SpecReference): void;
+    clearSelection(): void;
     runAction(action: ActionId): void;
     dismissNotice(): void;
 }
@@ -33,6 +34,7 @@ export function useShell(): Shell {
         target: snapshot.view?.target,
         navigate: client.navigate,
         select: client.select,
+        clearSelection: client.clearSelection,
         runAction: client.runAction,
         dismissNotice: client.dismissNotice,
     };
