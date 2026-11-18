@@ -93,6 +93,33 @@ describe('0023 AC-001: the plan reads as stages with step states', () => {
         expect(view.stages.map((stage) => stage.kind)).toEqual(['single', 'sequential', 'parallel', 'mixed', 'mixed', 'sequential']);
     });
 
+    it('where ‖ and → both stand between two IDs the pair is parallel (§5.1: ‖ first)', async () => {
+        const model = await generatedModel({ stages: '1. T-004 → ‖ T-005 — arrow first\n2. T-006 ‖ → T-007 — bar first', steps: ['T-004:[ ]', 'T-005:[ ]', 'T-006:[ ]', 'T-007:[ ]'] });
+        const view = planViewOf(model, GEN_SPEC);
+        expect(view.stages.map((stage) => stage.groups.map((group) => [group.sep ?? '', group.steps.map((step) => step.id)]))).toEqual([
+            [['', ['T-004', 'T-005']]],
+            [['', ['T-006', 'T-007']]],
+        ]);
+    });
+
+    it('IDs with no mark between them are not a parallel group: one group each, no separator, no ways', async () => {
+        const model = await generatedModel({ stages: '1. T-004, T-005 — no mark between them', steps: ['T-004:[ ]', 'T-005:[ ]'] });
+        const view = planViewOf(model, GEN_SPEC);
+        expect(view.stages[0]!.groups.map((group) => [group.sep ?? '', group.steps.map((step) => step.id)])).toEqual([
+            ['', ['T-004']],
+            ['', ['T-005']],
+        ]);
+        expect(view.stages[0]!.ways).toBeUndefined();
+    });
+
+    it('a stage whose IDs the plan does not know is not finished: it has no step that could be done (P-26)', async () => {
+        const model = await generatedModel({ stages: '1. T-004 — a step\n2. T-098 → T-099 — nothing of it is in the plan', steps: ['T-004:[ ]'] });
+        const view = planViewOf(model, GEN_SPEC);
+        expect(view.stages[1]!.groups.flatMap((group) => group.steps.map((step) => step.state))).toEqual(['notFound', 'notFound']);
+        expect(view.stages[1]!.finished).toBe(false);
+        expect(view.stages[1]!.returned).toBeUndefined();
+    });
+
     it('a struck step is dropped and not counted; an unknown ID is not found, a chip only, and not counted', async () => {
         const view = planViewOf(await generatedModel(), GEN_SPEC);
         const third = view.stages[1]!.groups[1]!.steps[0]!;
@@ -217,6 +244,16 @@ describe('0023 AC-002: the next marker is the next open step, and none while a r
         expect(stepsOf(planViewOf(model, PARALLEL_SPEC)).some((step) => step.state === 'next')).toBe(false);
     });
 
+    it('a note for another step leaves the open step open too: no step is next while any note of the spec lies', async () => {
+        const model = await generatedModel({}, noteFile('T-006', 'DONE'));
+        const view = planViewOf(model, GEN_SPEC);
+        const steps = stepsOf(view);
+        expect(steps.find((step) => step.id === 'T-006')?.state).toBe('returned');
+        expect(steps.find((step) => step.id === 'T-004')?.state).toBe('open');
+        expect(steps.some((step) => step.state === 'next')).toBe(false);
+        expect(stepsOf(planViewOf(await generatedModel(), GEN_SPEC)).find((step) => step.id === 'T-004')?.state).toBe('next');
+    });
+
     it('an undetermined tick is not done: the first one is next, a later one is open', async () => {
         const model = await generatedModel({
             stages: '1. T-001 → T-002 → T-003 — a',
@@ -275,6 +312,28 @@ describe('0023 AC-012: returned work shows its state and the stage counts', () =
         const view = planViewOf(model, GEN_SPEC);
         expect(view.stages[5]!.groups[1]!.steps[0]!.state).toBe('notFound');
         expect(view.stages[1]!.groups[1]!.steps[0]!.state).toBe('dropped');
+    });
+
+    it('m counts the returned and the unfinished steps of the stage, not its done or dropped ones', async () => {
+        const model = await generatedModel({ stages: '1. T-004 ‖ T-005 ‖ T-006 ‖ T-007 — one done, one dropped', steps: ['T-004:[x]', 'T-005:[ ]', 'T-006:[ ]', 'T-007:~~'] }, noteFile('T-005', 'DONE'));
+        const view = planViewOf(model, GEN_SPEC);
+        expect(stepsOf(view).map((step) => [step.id, step.state])).toEqual([
+            ['T-004', 'done'],
+            ['T-005', 'returned'],
+            ['T-006', 'open'],
+            ['T-007', 'dropped'],
+        ]);
+        expect(view.stages[0]!.returned).toEqual({ n: 1, m: 2 });
+    });
+
+    it('only the notes of this spec count: a note of another spec for the same step ID changes nothing', async () => {
+        const other = '# Return note — 0008 · T-004\n\n- **Status:** DONE\n- **Files:** —\n- **Verified:** —\n- **Notes:** —\n';
+        const model = await generatedModel({}, { '.memory-bank/activeContext.0008-T-004.md': other });
+        expect(model.project.returnNotes.map((note) => note.key)).toEqual(['.memory-bank/activeContext.0008-T-004.md']);
+        const view = planViewOf(model, GEN_SPEC);
+        expect(stepsOf(view).find((step) => step.id === 'T-004')?.state).toBe('next');
+        expect(stepsOf(view).some((step) => step.state === 'returned')).toBe(false);
+        expect(view.stages.every((stage) => stage.returned === undefined)).toBe(true);
     });
 
     it('a stage counts its returned steps against the returned and unfinished ones: n of m', async () => {

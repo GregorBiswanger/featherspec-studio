@@ -3,7 +3,7 @@
 **Spec:** [0023-plan-map-stages-parallel-work.md](0023-plan-map-stages-parallel-work.md)
 **Status:** In Progress
 **Last updated:** 2026-11-18
-**Current step:** T-013
+**Current step:** T-014
 
 ## Approach
 
@@ -458,8 +458,8 @@ Proxy decisions of this round (Gregor delegated; P-25 …), recorded here and in
   (M22 P-26: a stage of only not-found IDs is not finished). No code change; each test is shown red on a scratch copy
   with its mutant (`/tmp/c0023s78/tools/mutants.py` definitions), green on the head.
 - **Verify:** `npx vitest run --project node src/core/planMap`; the six mutants red, one by one on a scratch copy; gates 1–4
-- [ ] **Verified (T-013):**
-- **Notes:**
+- [x] **Verified (T-013):** 2026-11-18 · `npx vitest run --project node src/core/planMap` green 43 of 43 on the head; each of the six new tests shown red against its mutant on a scratch copy of the working tree (`/tmp/c0023s78/tools/mutants.py` definitions applied one at a time, restored after): M01 killed by "where ‖ and → both stand between two IDs the pair is parallel", M02 by "IDs with no mark between them are not a parallel group", M17 by "a note for another step leaves the open step open too", M21 by "m counts the returned and the unfinished steps…", M22 by "a stage whose IDs the plan does not know is not finished", M24 by "only the notes of this spec count" (each `1 failed | 802 passed`); gates 1–4 green, `npm run test:unit` 2807 passed + 3 skipped (+16 timing)
+- **Notes:** Tests only, no code change. Proxy P-26 (M22): *finished* keeps P-5's rule "at least one found step and all found steps done or dropped"; a stage of only not-found IDs has no step that could be done, so it is not shown as done (the spec's §5.1/§7 are silent). M01 needs both marks between two IDs (`T-004 → ‖ T-005`): §5.1 and P-4 say `‖` wins. The M22 test sits in the AC-001 describe beside the other stage-view checks; its title names P-26.
 
 ### T-014 — Webview test gaps: M64, M65, M66, M67, M72, M79, M90
 
