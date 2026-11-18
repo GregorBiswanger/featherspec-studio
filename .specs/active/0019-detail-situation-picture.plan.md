@@ -380,19 +380,7 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
   "Enter opens the detail view" and "Open file" items reworded), CHANGELOG *Unreleased*. Test-title
   audit: throwaway `/tmp/audit-0019/titles.py` (0018's method: `describe`/`it`/`test`/`suite`
   literals of every `.ts`/`.tsx` under `src`, `src/test/**` and `testing/*.ts` included) at the
-  Baseline (`git archive`) and the head; `### T-017 — Fix H1: the selected Overview row shows a marker in every theme (AC-007, AC-022 round 3)
-
-- **Covers:** AC-007, AC-022; ux-guidelines 3 and 9 (theme variables, visible focus)
-- **Do:** `main.css`: `.ov-row[aria-current="true"]` gets `box-shadow: inset 0 0 0 1px var(--vscode-contrastActiveBorder, transparent)`.
-  The row has no border width, so the shared `border-color` shows nothing, and in High Contrast
-  `list-activeSelectionBackground` equals the page colour. The inset shadow needs no border width and sets no
-  outline, so the keyboard focus outline stays. CSS guard in `webviewCss.test.ts` beside G4.
-- **Verify:** `npx vitest run src/adapters/node/webviewCss.test.ts` red on a scratch copy without the rule, then
-  green; mutants (colour changed, rule removed) die; gates 1–5
-- [x] **Verified (T-017):** 2026-11-18 — red on a scratch copy of HEAD with the new test: 1 of 52 failed (no `box-shadow` on the selected row), green after the rule (52). Mutants on a scratch copy, both killed: fallback `transparent` → `#fff` (4 fail, the colour guards too), the rule removed (1 fails). Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2127 passed + 3 skipped (+12 timing), `npm run compile`, `npm run compile-tests` green. The rendered marker in High Contrast is the orchestrator's AC-022 round 3 check; jsdom paints nothing.
-- **Notes:** The fallback is `transparent` (not a colour) so the shadow appears only where the theme defines `contrastActiveBorder` (High Contrast); Dark and Light keep the selection background as their marker. Cards are unchanged (they have a border). Harness part of AC-022 checked by the orchestrator (Gregor's delegate) in rounds 1–4, 2026-11-18: side panel content 728 px with both sections closed; 1400 and 800 px; Dark, Light, High Contrast; Board arrow walk scrolls the focused card clear; Overview Tab walk 0 of 16 stops hidden; HC row marker after T-017; record: /home/claude/orch/compile/0019-ac022.md. Open: Gregor's real-window check.
-
-## Test-title audit` here lists every absent title with
+  Baseline (`git archive`) and the head; `## Test-title audit` here lists every absent title with
   its §5 row or criterion. `/sdd-architecture-update` (confirmation = this plan's approval) changes
   exactly: `last reconciled` → `(0019)`; the `src/core/<area>` line, board part `+ situation picture,
   short title 0019`; the `src/webview` line, `detail with next step` → `detail as side panel in
@@ -517,6 +505,18 @@ contract and share `SpecDetail.tsx`, `App.tsx` and `main.css`.
   on the notes; gates 1–5 once more
 - [x] **Verified (T-016):** 2026-11-18 — docs. Audit: `python3 -I /tmp/fs50/titles.py <git archive 20792ca> <head>` lists ABSENT 48 (40 test titles + the 8 `describe` titles now in the table), DECREASED 0, MOVED 0; the titles of T-009…T-015 are new, none renames a Baseline title. `grep -c "Amended by 0019"`: 0005 4, 0006 2, 0007 16, 0013 7, 0015 2, 0016 5, 0017 2, 0018 5; `git diff 20792ca -- docs/product/product-decisions.md`: one added line (PD-066), none removed. Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2126 passed + 3 skipped (+12 timing), `npm run compile`, `npm run compile-tests` green.
 - **Notes:** (1) D4: the 0018 notes sit under the §2 goal sentence and under AC-031 ("visible without horizontal scrolling" holds with no spec selected; AC-031 already says so inline since `f6d53c5`). (2) F8: the notes under 0005 AC-007, AC-008 and 0006 AC-014 now begin with their statement's ID. (3) F9: 0019 §6.2 row 7 says the not-available text is a plain, always visible section and that AC-015's "collapsed" applies to a history with entries. (4) The T-008 `Verified:` claims ("one per §5 statement", 40 absent titles) are corrected in place. (5) `.architecture/webview.md` names `src/shared/protocol/layout.ts` and the `data-drawer` marks; `activeContext.md`, `systemPatterns.md`, README line 31, the release checklist and the CHANGELOG follow PD-066. (6) AC-024 text allows the one appended PD-066 row; the check is a diff against the Baseline that shows only that row. (7) Not done on purpose: `tidy`/`splitCells` stay (note only), the README's old Spec Explorer screenshot stays until 0020, nothing of 0020 touched except the stale "unplanned" in `activeContext.md`.
+
+### T-017 — Fix H1: the selected Overview row shows a marker in every theme (AC-007, AC-022 round 3)
+
+- **Covers:** AC-007, AC-022; ux-guidelines 3 and 9 (theme variables, visible focus)
+- **Do:** `main.css`: `.ov-row[aria-current="true"]` gets `box-shadow: inset 0 0 0 1px var(--vscode-contrastActiveBorder, transparent)`.
+  The row has no border width, so the shared `border-color` shows nothing, and in High Contrast
+  `list-activeSelectionBackground` equals the page colour. The inset shadow needs no border width and sets no
+  outline, so the keyboard focus outline stays. CSS guard in `webviewCss.test.ts` beside G4.
+- **Verify:** `npx vitest run src/adapters/node/webviewCss.test.ts` red on a scratch copy without the rule, then
+  green; mutants (colour changed, rule removed) die; gates 1–5
+- [x] **Verified (T-017):** 2026-11-18 — red on a scratch copy of HEAD with the new test: 1 of 52 failed (no `box-shadow` on the selected row), green after the rule (52). Mutants on a scratch copy, both killed: fallback `transparent` → `#fff` (4 fail, the colour guards too), the rule removed (1 fails). Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 2127 passed + 3 skipped (+12 timing), `npm run compile`, `npm run compile-tests` green. The rendered marker in High Contrast is the orchestrator's AC-022 round 3 check; jsdom paints nothing.
+- **Notes:** The fallback is `transparent` (not a colour) so the shadow appears only where the theme defines `contrastActiveBorder` (High Contrast); Dark and Light keep the selection background as their marker. Cards are unchanged (they have a border). Harness part of AC-022 checked by the orchestrator (Gregor's delegate) in rounds 1–4, 2026-11-18: side panel content 728 px with both sections closed; 1400 and 800 px; Dark, Light, High Contrast; Board arrow walk scrolls the focused card clear; Overview Tab walk 0 of 16 stops hidden; HC row marker after T-017; record: /home/claude/orch/compile/0019-ac022.md. Open: Gregor's real-window check.
 
 ## Test-title audit
 

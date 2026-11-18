@@ -202,6 +202,7 @@ sources (API reference, 1.72 notes, UX guidelines: Views) were checked 2026-11-1
 4. T-006 → T-007 — the Spec Explorer area ends: two tabs and the mapping, then the list's contract and styles
 5. T-008 — §5 notes, docs, test-title audit, architecture and Memory Bank sync, final gates
 6. T-009 → T-016 — fix round after the 0020 compile (NOT READY: D1–D3, G1–G5, F1–F9): order, gap tests, leftovers, docs, deletions, sync
+7. T-017 → T-025 — Release readiness (final check of the UX round 0016–0020, decided by the orchestrator for Gregor): plan 0019, CHANGELOG, release checklist, README, PD register note, text modules, focus rule, audit sentence, records
 
 Parallel: stage 2 (T-003 adds only `specTreeService*`; T-004 the actions, two ports, `openFile`,
 `editor` and `copyNextStep`; both only read `specTree.ts`, each `Verify` runs its own tests). Both
@@ -439,6 +440,14 @@ and the host smoke, so they stay `→`.
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts`; full gates of `IMPL-UX.md`
 - [x] **Verified (T-016):** 2026-11-18: full gates of IMPL-UX at the head of this step: `npx eslint src --max-warnings 0` 0, `npx tsc --noEmit` 0, `npx tsc --noEmit -p src/webview` 0, `npm run test:unit` 138 files passed + 1 skipped, 2221 passed + 3 skipped, timing 10 files, 13 passed, `npm run compile` 0, `npm run compile-tests` 0; `docsScan.test.ts` 74/74; traceability: AC-001…AC-021 verified, AC-022 open (manual); T-008 Verified and the handoff carry Windows at 77f585b (unit 2213 / 7 skipped + 13 timing, `npm test` 30+1+1+1) and CI 44277740119.
 - **Notes:** Docs only in this step. activeContext.md (53 lines): Now, Active Spec, Changed Recently, Next 0a and Validation. The 0019 plan carries the orchestrator's harness result on its AC-022 row and in T-017 Notes (docs only, no 0019 code touched). docs/release-checklist.md: the README-screenshots item names the new files. Windows and CI at the fix head are still to run (Next action).
+
+### T-017 — Plan 0019 is whole again (final check 3)
+
+- **Covers:** AC-022 (the Studio reads this repository's own plans without a false note), AC-021 (docs)
+- **Do:** `.specs/active/0019-detail-situation-picture.plan.md`: the `### T-017 — Fix H1 …` block, spliced into T-008's **Do** sentence by `16fc52b`, moves after T-016; T-008's sentence reads "`## Test-title audit` here lists every absent title …" again. Nothing else in that plan changes. The stage list below gains this stage; the 0020 step headings T-017 … T-025 are never renumbered.
+- **Verify:** a probe with `readProject` on this repository: the 0019 plan has 17 steps, no "Unknown plan section" note names a sentence of T-008, T-008's Verify and Verified lines sit inside T-008; `git diff` of the 0019 plan shows only the move and the one sentence
+- [x] **Verified (T-017):** 2026-11-18: probe `npx tsx /tmp/s55/probe.ts` (readProject on the repository at the head): `.specs/active/0019-…plan.md steps 17` (was 16); the only note on that plan is `Unknown plan section "Test-title audit"` at line 521, the audit heading every plan of the round carries (0015…0020), no note names a fragment of T-008; T-008's Verify and Verified lines (lines 393-397) sit under its heading; the diff of the 0019 plan is the T-017 block moved and one joined sentence.
+- **Notes:** Docs only (no gates 1-5). Final-check finding 3. T-008's Do sentence is restored word for word from the lines on both sides of the splice.
 
 ## Test-title audit (0020 AC-021)
 
