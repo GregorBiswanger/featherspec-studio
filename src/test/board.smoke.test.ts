@@ -93,6 +93,29 @@ suite('FeatherSpec Studio board smoke', function () {
         assert.strictEqual(after.group.viewColumn, studioColumn);
         await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     });
+
+    test('0021 AC-016, AC-011: both settings are contributed with their defaults, and switching Show Step Tips off drops the coach line from the detail within 500 ms', async () => {
+        const api = await activateStudio();
+        await api.whenIdle();
+        const configuration = vscode.workspace.getConfiguration('featherspec-studio');
+        assert.strictEqual(configuration.inspect('showStepTips')?.defaultValue, true);
+        assert.deepStrictEqual(configuration.inspect('modelHints')?.defaultValue, {});
+        await api.shell().select('0001-tip-splitter');
+        const tipsOf = () => {
+            const detail = api.board().detail();
+            return detail.kind === 'spec' && 'tips' in detail.nextStep ? detail.nextStep.tips : undefined;
+        };
+        try {
+            await configuration.update('showStepTips', true, vscode.ConfigurationTarget.Global);
+            await waitFor('the coach line', tipsOf, (tips) => tips !== undefined, { timeoutMs: 5_000 });
+            const started = Date.now();
+            await configuration.update('showStepTips', false, vscode.ConfigurationTarget.Global);
+            await waitFor('the coach line to go', tipsOf, (tips) => tips === undefined, { timeoutMs: 5_000 });
+            assert.ok(Date.now() - started < 2_000, 'the change reaches the detail');
+        } finally {
+            await configuration.update('showStepTips', undefined, vscode.ConfigurationTarget.Global);
+        }
+    });
 });
 
 function studioTabs(): vscode.Tab[] {

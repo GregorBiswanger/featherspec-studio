@@ -45,6 +45,9 @@ import { createRuntimeSession, type RuntimeSession } from './core/runtime/runtim
 import type { RuntimeStore } from './core/runtime/runtimeStore';
 import { createBoardService } from './core/board/boardService';
 import { createOverviewService } from './core/overview/overviewService';
+import { createSettingsSource } from './core/settings/settingsSource';
+import { MODEL_HINTS_KEY, parseStepTipSettings, SHOW_STEP_TIPS_KEY } from './core/settings/stepTipSettings';
+import { createSettingPort } from './adapters/vscode/settings';
 import { createBoardRequests } from './core/board/boardRequests';
 import { createOpenFile } from './core/board/openFile';
 import { createShellSelection } from './core/board/shellSelection';
@@ -184,16 +187,19 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         studioVersion: String((context.extension.packageJSON as { version?: unknown }).version ?? ''),
     });
     const selection = createShellSelection(service);
+    const tips = createSettingsSource([createSettingPort(SHOW_STEP_TIPS_KEY), createSettingPort(MODEL_HINTS_KEY)], ([show, hints]) => parseStepTipSettings(show, hints));
     const board = createBoardService({
         source: modelSource,
         selection,
         history: { read: () => lifecycle.history(), onDidChange: (listener) => lifecycle.onDidChange(() => listener()) },
         memory: createUiMemory(context.workspaceState, BOARD_MEMORY_KEY),
+        tips,
     });
     const overview = createOverviewService({
         source: modelSource,
         discovery: controller,
         history: { read: () => lifecycle.history(), onDidChange: (listener) => lifecycle.onDidChange(() => listener()) },
+        tips,
     });
     const clipboard = createClipboard();
     const entry = createStatusEntry({ line: projectLine, discovery: controller, shell: service, source: modelSource, item: statusItem, clock: createSystemClock(), sameRoot });

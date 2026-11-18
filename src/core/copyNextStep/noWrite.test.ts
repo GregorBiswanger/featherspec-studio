@@ -8,6 +8,7 @@ import { createBoardWorld } from '../board/testing/boardWorld';
 import { fixturePath } from '../discovery/testing/fixtures';
 import { snapshotTree } from '../discovery/testing/snapshotTree';
 import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
+import { parseStepTipSettings } from '../settings/stepTipSettings';
 import { readProject } from '../specs/readProject';
 import { createCopyNextStep } from './copyNextStep';
 import { createEntryWorld } from './testing/entryWorld';
@@ -81,6 +82,33 @@ describe('0017 AC-023: no Copy, click or command writes a file', () => {
         expect(await snapshotTree(temp)).toEqual(before);
         board.service.dispose();
         world.dispose();
+    });
+
+    it('0021 AC-017: a settings change, a hint change and the Copy prompt of an NS-6 line write no file of the workspace', async () => {
+        temp = await fs.mkdtemp(path.join(os.tmpdir(), 'copy-nowrite-'));
+        await fs.cp(fixturePath('fs110-ready-synthetic'), temp, { recursive: true });
+        const project = await readProject(createNodeSpecSource(), temp, '1.10.0');
+        const model = { project, lifecycle: deriveLifecycle(project) };
+        const before = await snapshotTree(temp);
+        const board = createBoardWorld(model);
+        await board.service.whenIdle();
+        board.selection.set({ stem: model.lifecycle.entries[0]!.stem });
+        const written: string[] = [];
+        const requests = createBoardRequests({
+            board: board.service,
+            openFile: { open: async () => ({ kind: 'opened' }) } as never,
+            clipboard: { writeText: async (text) => void written.push(text) },
+        });
+        board.tips.set(parseStepTipSettings(true, {}));
+        await board.service.whenIdle();
+        board.tips.set(parseStepTipSettings(true, { strong: 'X', fast: 'Y' }));
+        await board.service.whenIdle();
+        await requests.handlers.copyText({ text: 'Implement T-003 of .specs/active/0001-a.plan.md' });
+        board.tips.set(parseStepTipSettings(false, {}));
+        await board.service.whenIdle();
+        expect(written).toEqual(['Implement T-003 of .specs/active/0001-a.plan.md']);
+        expect(await snapshotTree(temp)).toEqual(before);
+        board.service.dispose();
     });
 
     it('control: the snapshot sees a file that appears in the tree', async () => {

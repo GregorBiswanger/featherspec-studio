@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createFakeSource } from '../board/testing/boardWorld';
+import { parseStepTipSettings } from '../settings/stepTipSettings';
+import { createFakeTips } from '../settings/testing/fakeTips';
 import { createOverviewService } from './overviewService';
 import { AC001_FIXTURE, modelFor } from './testing/projects';
 import { createDiscovery, createHistory, createServiceWorld } from './testing/serviceWorld';
@@ -100,7 +102,7 @@ describe('dashboard service', () => {
 
     it('AC-023: the service needs only read members of its sources (these fakes have no write method at all)', async () => {
         const source = createFakeSource(await modelFor(AC001_FIXTURE));
-        const service = createOverviewService({ source, discovery: createDiscovery().port, history: createHistory().port });
+        const service = createOverviewService({ source, discovery: createDiscovery().port, history: createHistory().port, tips: createFakeTips() });
         service.onDidChangeView(() => undefined);
         await service.whenIdle();
         expect(service.view()?.activity).toMatchObject({ available: true });
@@ -183,5 +185,38 @@ describe('0018 AC-010: the open state of Activity lives in the host', () => {
         world.service.setActivityOpen(true);
         await world.service.whenIdle();
         expect(world.service.view()?.activity).toEqual({ available: false, reason: 'locked' });
+    });
+});
+
+describe('0021 AC-011, AC-010: a settings change reaches the Overview', () => {
+    it('turning the tips on adds the coach line to the first Now row, a hint changes it, turning them off removes it, Activity stays open', async () => {
+        const world = createServiceWorld(await modelFor(AC001_FIXTURE));
+        world.listen();
+        await world.service.whenIdle();
+        await world.service.handlers.overviewSetActivity({ open: true });
+        await world.service.whenIdle();
+        expect(current(world).now.some((row) => 'tips' in row)).toBe(false);
+        world.tips.set(parseStepTipSettings(true, {}));
+        await world.service.whenIdle();
+        expect(current(world).now[0]?.tips?.coach).toMatch(/ · (?:strong|fast) model/);
+        expect(current(world).now.filter((row) => 'tips' in row)).toHaveLength(1);
+        const before = current(world).now[0]?.tips?.coach;
+        world.tips.set(parseStepTipSettings(true, { strong: 'X', fast: 'Y' }));
+        await world.service.whenIdle();
+        expect(current(world).now[0]?.tips?.coach).not.toBe(before);
+        expect(current(world).now[0]?.tips?.coach).toMatch(/\((?:X|Y)\)/);
+        world.tips.set(parseStepTipSettings(false, {}));
+        await world.service.whenIdle();
+        expect(current(world).now.some((row) => 'tips' in row)).toBe(false);
+        const activity = current(world).activity;
+        expect(activity.available && activity.open).toBe(true);
+    });
+
+    it('a service nobody listens to computes nothing for a settings change', async () => {
+        const world = createServiceWorld(await modelFor(AC001_FIXTURE));
+        world.tips.set(parseStepTipSettings(true, {}));
+        await world.service.whenIdle();
+        expect(world.service.view()).toBeUndefined();
+        expect(world.views).toHaveLength(0);
     });
 });

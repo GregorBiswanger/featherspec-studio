@@ -295,8 +295,8 @@ ends of stages 1 and 3.
 - **Verify:** `npx vitest run --project node src/adapters/vscode/settings.test.ts src/core/board src/core/overview src/core/copyNextStep/noWrite.test.ts`
   and `npx vitest run --project timing-node src/core/board/boardService.timing.test.ts src/core/overview/overviewService.timing.test.ts`
   red (stub), then green; gates 1–5; `npm run compile-tests`
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-18 · red: new service tests turned red by removing the two `deps.tips.onDidChange(schedule)` subscriptions (3 failed: board detail on/off, hint change, Overview) and restoring them; adapter tests red on the `Not implemented` stub (3 failed) → green: `npx vitest run --project node --project webview` 2588 passed, 3 skipped; `--project timing-node --project timing-webview` 15 passed (settings change within `BUDGET_MS.uiFreshness` on 200 specs, board and Overview); eslint 0 warnings, both `tsc` clean, `npm run compile` and `npm run compile-tests` clean. Host smoke (`src/test/board.smoke.test.ts`) runs on CI only.
+- **Notes:** `tips` is a required dependency of both services (`SettingsSource<StepTipSettings>`); the test worlds take a `FakeTips` (default: tips off, so older service tests are unchanged) from `src/core/settings/testing/fakeTips.ts`. `extension.ts` builds one source from the two `createSettingPort` instances and gives it to both services. AC-018 is decided by a source scan (the tip modules name no trust, writer, Restricted Mode or reader: the services have no such input) plus equal tips for equal input. The host smoke test changes the setting with the Global target (test profile), never the workspace file, and resets it. `noWrite.test.ts` gets a second test beside the 0017 one (a settings change, a hint change and an NS-6 Copy prompt leave the tree unchanged).
 
 ### T-007 — About this step explains the tip and closes as a toggletip does
 

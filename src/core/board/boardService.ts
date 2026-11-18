@@ -5,6 +5,8 @@ import type { HistoryView } from '../lifecycle/statusHistory';
 import type { SelectionSource } from '../ports/board';
 import type { Disposable } from '../ports/host';
 import type { ShellModel, ShellModelSource, UiMemoryPort } from '../ports/shell';
+import type { SettingsSource } from '../settings/settingsSource';
+import type { StepTipSettings } from '../settings/stepTipSettings';
 import { buildDetail } from './detail';
 import { createBoardUiState } from './boardUiState';
 import { buildBanner, buildCards } from './cards';
@@ -16,6 +18,7 @@ export interface BoardServiceDeps {
     selection: SelectionSource;
     history: { read(): Promise<HistoryView>; onDidChange(listener: () => void): Disposable };
     memory: UiMemoryPort;
+    tips: SettingsSource<StepTipSettings>;
 }
 
 export interface BoardService {
@@ -83,7 +86,7 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
     }
 
     function detail(): DetailView {
-        return buildDetail({ selection: deps.selection.selection(), model: deps.source.current(), history });
+        return buildDetail({ selection: deps.selection.selection(), model: deps.source.current(), history, tips: deps.tips.read() });
     }
 
     function emitDetail(): void {
@@ -142,7 +145,7 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
         chain = chain.then(refresh, refresh);
     }
 
-    const subscriptions = [deps.source.onDidChange(schedule), deps.selection.onDidChange(schedule), deps.history.onDidChange(schedule)];
+    const subscriptions = [deps.source.onDidChange(schedule), deps.selection.onDidChange(schedule), deps.history.onDidChange(schedule), deps.tips.onDidChange(schedule)];
     ui.projectChanged(deps.source.current()?.project.root);
     schedule();
 

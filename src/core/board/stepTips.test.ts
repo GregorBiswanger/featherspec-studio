@@ -1,3 +1,5 @@
+import { promises as fs } from 'node:fs';
+import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { STEP_GUIDES, type StepCase } from '../../shared/protocol/nextStepTexts';
 import { parseStepTipSettings } from '../settings/stepTipSettings';
@@ -88,5 +90,21 @@ describe('0021 AC-015: the four paragraphs of About this step', () => {
             expect(about.every((paragraph) => paragraph.length > 0), stepCase).toBe(true);
             expect(`${coach} ${about.join(' ')}`).not.toMatch(/opus|sonnet|haiku|gpt-|gemini|llama|mistral/i);
         }
+    });
+});
+
+describe('0021 AC-018: the tips need neither trust nor a writer', () => {
+    it('the core files that compose and read the tips name no trust, writer, Restricted Mode or reader window', async () => {
+        for (const file of ['src/core/board/stepTips.ts', 'src/core/settings/stepTipSettings.ts', 'src/core/settings/settingsSource.ts']) {
+            const source = await fs.readFile(path.resolve(process.cwd(), ...file.split('/')), 'utf8');
+            expect(source, file).not.toMatch(/trust|writer|restricted|\breader\b/i);
+        }
+        expect('const restricted = true;').toMatch(/trust|writer|restricted|\breader\b/i);
+    });
+
+    it('the same snapshot and settings give equal tips however often and wherever they are built', () => {
+        const first = stepTips('NS-5', NAMED);
+        const second = stepTips('NS-5', parseStepTipSettings(true, { strong: 'X', fast: 'Y' }));
+        expect(second).toEqual(first);
     });
 });

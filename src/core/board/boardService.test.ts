@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import * as os from 'os';
 import * as path from 'path';
 import { planText, specText } from '../lifecycle/testing/projects';
+import { parseStepTipSettings } from '../settings/stepTipSettings';
 import type { BoardService } from './boardService';
 import { createBoardWorld, createFakeBoardMemory, modelOf, type BoardWorld } from './testing/boardWorld';
 
@@ -313,5 +314,53 @@ describe('board service: spec detail', () => {
         view = w.service.detail();
         expect(view.kind === 'spec' && view.history.statusHistory).toBeUndefined();
         expect(view.kind === 'spec' && view.history.notAvailable).toBe('Status history not available: Another VS Code window holds the write lock for this project\'s status history.');
+    });
+});
+
+describe('0021 AC-011, AC-010: a settings change reaches the detail', () => {
+    function tipsOf(w: BoardWorld): { coach: string; about: string[] } | undefined {
+        const view = w.service.detail();
+        return view.kind === 'spec' && 'tips' in view.nextStep ? view.nextStep.tips : undefined;
+    }
+
+    it('turning the tips on adds the coach line to the open detail, turning them off removes it; the selection stays', async () => {
+        const w = await world();
+        w.selection.set({ stem: '0010-act' });
+        await w.service.whenIdle();
+        expect(tipsOf(w)).toBeUndefined();
+        const seen: string[] = [];
+        w.service.onDidChangeDetail((view) => seen.push(view.kind === 'spec' ? `${view.stem}:${tipsOf(w)?.coach ?? 'none'}` : view.kind));
+        w.tips.set(parseStepTipSettings(true, {}));
+        await w.service.whenIdle();
+        expect(tipsOf(w)?.coach).toBe('any chat · fast model');
+        w.tips.set(parseStepTipSettings(false, {}));
+        await w.service.whenIdle();
+        expect(tipsOf(w)).toBeUndefined();
+        expect(w.service.detail().kind === 'spec' && w.service.detail().kind).toBe('spec');
+        expect(seen).toHaveLength(2);
+    });
+
+    it('a hint change re-emits the detail with the hint in the coach line; an unchanged setting emits nothing', async () => {
+        const w = await world();
+        w.selection.set({ stem: '0010-act' });
+        w.tips.set(parseStepTipSettings(true, {}));
+        await w.service.whenIdle();
+        let emitted = 0;
+        w.service.onDidChangeDetail(() => (emitted += 1));
+        w.tips.set(parseStepTipSettings(true, { fast: 'Y' }));
+        await w.service.whenIdle();
+        expect(tipsOf(w)?.coach).toBe('any chat · fast model (Y)');
+        expect(emitted).toBe(1);
+        w.tips.set(parseStepTipSettings(true, { fast: 'Y' }));
+        await w.service.whenIdle();
+        expect(emitted).toBe(1);
+    });
+
+    it('the Board view is not rebuilt by a settings change', async () => {
+        const w = await world();
+        const before = JSON.stringify(w.service.view());
+        w.tips.set(parseStepTipSettings(true, { fast: 'Y' }));
+        await w.service.whenIdle();
+        expect(JSON.stringify(w.service.view())).toBe(before);
     });
 });

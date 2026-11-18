@@ -10,6 +10,7 @@ import { generateProject } from '../specs/testing/generateProject';
 import type { DetailView } from '../../shared/protocol/detail';
 import { BUDGET_MS, bestOfThree } from '../../shared/testing/timing';
 import type { BoardService } from './boardService';
+import { parseStepTipSettings } from '../settings/stepTipSettings';
 import { createBoardWorld, modelOf, type BoardWorld } from './testing/boardWorld';
 
 const NINE: Record<string, string> = {};
@@ -121,5 +122,34 @@ describe('board service: detail freshness on 200 specs (AC-019, core part for th
         expect(detail.kind === 'spec' ? detail.history.statusHistory?.map((item) => item.new) : undefined).toEqual(['Active']);
         expect(seen.length).toBeGreaterThanOrEqual(1);
         expect(historyBest).toBeLessThan(BUDGET_MS.uiFreshness);
+    });
+});
+
+describe('0021 AC-011: a settings change reaches the detail within 500 ms on 200 specs (PD-047)', () => {
+    let temp: string | undefined;
+    afterEach(async () => {
+        if (temp !== undefined) {
+            await fs.rm(temp, { recursive: true, force: true });
+        }
+    });
+
+    it('from the fake port event to the emitted detail', async () => {
+        temp = await fs.mkdtemp(path.join(os.tmpdir(), 'tips-perf-'));
+        await generateProject(temp, 200);
+        const project = await readProject(createNodeSpecSource(), temp, '1.10.0');
+        const model = { project, lifecycle: deriveLifecycle(project) };
+        const w = createBoardWorld(model);
+        disposables.push(w.service);
+        w.selection.set({ stem: model.lifecycle.entries[0]!.stem });
+        await w.service.whenIdle();
+        let on = false;
+        const best = await bestOfThree(async () => {
+            on = !on;
+            w.tips.set(parseStepTipSettings(on, {}));
+            await w.service.whenIdle();
+        });
+        const view = w.service.detail();
+        expect(view.kind === 'spec' && 'tips' in view.nextStep).toBe(on);
+        expect(best).toBeLessThan(BUDGET_MS.uiFreshness);
     });
 });
