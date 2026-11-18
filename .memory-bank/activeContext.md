@@ -5,7 +5,7 @@ Current branch: main
 Current phase: act
 
 ## Now
-0015 (Focus the Studio on visibility: no agent runs, a named next step) is implemented, T-001…T-015 and the compile fixes T-016…T-020 verified on `main`; spec stays `In Progress` until Gregor's M-1 and a fresh `/sdd-compile`. [spec](../.specs/active/0015-focus-on-visibility.md) / [plan](../.specs/active/0015-focus-on-visibility.plan.md). Also open: 0014 (Set up FeatherSpec from the Studio), `In Progress` in `active/` until Gregor has tried the button (M-2), then `/sdd-compile` again. 0016 (Honest signals) is built (T-001…T-010 and the compile fixes T-011…T-013 verified); it waits for CI at `870dc63`, Gregor's AC-025 Hands-On and a fresh `/sdd-compile`. Release preparation waits for Gregor's checklist.
+0015 (Focus the Studio on visibility: no agent runs, a named next step) is implemented, T-001…T-015 and the compile fixes T-016…T-020 verified on `main`; spec stays `In Progress` until Gregor's M-1 and a fresh `/sdd-compile`. [spec](../.specs/active/0015-focus-on-visibility.md) / [plan](../.specs/active/0015-focus-on-visibility.plan.md). Also open: 0014 (Set up FeatherSpec from the Studio), `In Progress` in `active/` until Gregor has tried the button (M-2), then `/sdd-compile` again. 0016 (Honest signals) is built (T-001…T-010 and the compile fixes T-011…T-013 verified); it waits for CI at `870dc63`, Gregor's AC-025 Hands-On and a fresh `/sdd-compile`. 0017 (Next step everywhere) is built with compile fixes T-010…T-012; Windows and CI at `fbdab51` are green; it waits for Gregor's AC-026 and a fresh `/sdd-compile`. Release preparation waits for Gregor's checklist.
 
 ## Active Spec
 - [0015 spec](../.specs/active/0015-focus-on-visibility.md) / [plan](../.specs/active/0015-focus-on-visibility.plan.md), In Progress, all steps verified (T-016…T-020: fixes from the compile of 2026-11-17).
@@ -34,8 +34,9 @@ Current phase: act
 2. Gregor: 0014 M-2 with the button, then `/sdd-compile` for 0014.
 3. Gregor: work through [docs/release-checklist.md](../docs/release-checklist.md), then Go.
 4. 0016: CI result at `870dc63` (orchestrator), Gregor's AC-025 (Hands-On on `tip-splitter`, S2 sentence in the Activity Bar view, Copy label change, a problem badge), then `/sdd-compile` again in a fresh session; the spec stays in `active/` until then.
-5. 0017 implemented (T-001…T-009), spec stays In Progress: Gregor reads the proxy decisions P-1…P-15, runs `npm test` on Windows and CI, AC-026 on `tip-splitter`, then `/sdd-compile` in a fresh session.
+5. 0017 implemented (T-001…T-009) and fixed (T-010…T-012), spec stays In Progress: Gregor reads the proxy decisions P-1…P-15 and does AC-026 on `tip-splitter`, then `/sdd-compile` in a fresh session.
 
 ## Validation
+- 0017: Windows 11 at `fbdab51` (2026-11-18): unit 1866 passed, 7 skipped, 12 timing; `npm test` 25 + 1 + 1 + 1; CI run 44232332957 at `fbdab51` green on ubuntu-latest and windows-latest. Fix head: unit, lint, type checks, compile green in the sandbox (1875 passed + 3 skipped); AC-026 open.
 - 0016: unit, lint, both type checks, compile and compile-tests green in the agent sandbox after T-013; `npm test` green on Gregor's Windows 11 machine at `870dc63` on 2026-11-18 (24 + 1 + 1 + 1), `npm run test:unit` there 1801 passed, 7 skipped, 12 timing; CI at `870dc63` not recorded yet (AC-023 open), AC-025 open.
 - 0015: gates 1–5 and compile-tests green in the agent sandbox after T-020 (1688 passed + 3 skipped, 12 timing); `npm test` green on Gregor's Windows at `c4f7a5d`, not yet at the fix head.

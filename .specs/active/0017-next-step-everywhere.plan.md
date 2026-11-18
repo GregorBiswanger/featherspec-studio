@@ -3,7 +3,7 @@
 **Spec:** [0017-next-step-everywhere.md](0017-next-step-everywhere.md)
 **Status:** Done
 **Last updated:** 2026-11-18
-**Current step:** —
+**Current step:** —  (fix steps T-010…T-012 verified; AC-026 open)
 
 ## Approach
 
@@ -357,15 +357,38 @@ Stages 4 and 5 cannot: they share `extension.ts`, `package.json`, the protocol a
   `activeContext.md`. Final gates.
 - **Verify:** audit counts in the plan; `npx vitest run src/adapters/node/docsScan.test.ts` red, then green;
   gates 1–5; `npm run compile-tests`; `npm test` on Windows and CI (pre-done gate, Gregor)
-- [x] **Verified (T-009):** 2026-11-18 — docsScan AC-025 extended to .architecture red (move request, transition check, drag), then green 29/29; verify: gates 1–5 clean (1870 passed + 3 skipped, 12 timing; baseline 1818 + 3), compile-tests clean; npm test not run (host, Windows/CI)
+- [x] **Verified (T-009):** 2026-11-18 — docsScan AC-025 extended to .architecture red (move request, transition check, drag), then green 29/29; verify: gates 1–5 clean (1870 passed + 3 skipped, 12 timing; baseline 1818 + 3), compile-tests clean; npm test not run in the sandbox (host).
+  Evidence added 2026-11-18 (S41, from Gregor's and the orchestrator's records): Gregor's Windows 11 machine at `fbdab51`: `npm run test:unit` 1866 passed, 7 skipped, 12 timing passed; `npm test` 25 + 1 + 1 + 1 passing (incl. `copyNextStep.smoke`). GitHub Actions run 44232332957 at `fbdab51`: ubuntu-latest and windows-latest green. With both recorded, AC-009, AC-016 and AC-024 are verified.
 - **Notes:** Title audit in this plan: 68 of 1894 baseline titles missing, all voided by §5 or replaced under a head title; no staying behaviour lost. Architecture sync: AGENTS.md snapshot (core, webview, protocol lines), .architecture/{core,adapters,webview}.md, Memory Bank techContext, systemPatterns (drag entries superseded, one 0017 entry), activeContext. last reconciled date stays 2026-11-18 (same day).
+
+### T-010 — Fix: amendment notes name their statements (compile S40, D1, D2)
+
+- **Covers:** AC-025
+- **Do:** 0006 §9: the *Needs attention* layout item carries the 0017 note. 0007 §7 and 0015 §7 name "FR-09 is void" and "FR-03 is void".
+- **Verify:** `npx vitest run src/adapters/node/docsScan.test.ts`; gates 1–4
+- [x] **Verified (T-010):** 2026-11-18 — three notes edited in `.specs/done/0006-mission-control-dashboard.md` (§9), `.specs/done/0007-spec-board-spec-detail.md` and `.specs/active/0015-focus-on-visibility.md` (§7); `npx vitest run src/adapters/node/docsScan.test.ts` green within the final `npm run test:unit` (1875 passed, 3 skipped, 12 timing).
+
+### T-011 — Fix: the move CSS that was left behind (compile S40, D3)
+
+- **Covers:** AC-007, AC-008 (§6.5 "the move CSS goes"); 0016 AC-017's Dismiss clause is void by §5
+- **Do:** Remove `.card-head::before` (it reserved 60 px at the top right of every card head, so every title wrapped early), `.card { position: relative }` (served only the absolutely positioned "Move to…"; the live region of Copy is out of the flow and clipped, it needs no positioned parent), `.secondary-button` with its hover rule and its transition entry, and the two guard tests of the Dismiss clause (titles in the Test-title audit). New guard test in `webviewCss.test.ts` with a negative control.
+- **Verify:** `npx vitest run src/adapters/node/webviewCss.test.ts` red, then green; gates 1–5
+- [x] **Verified (T-011):** 2026-11-18 — new test "0017 §6.5: nothing reserves the corner of a card head…" red on the CSS of `fbdab51` (a `.card-head::before` rule with `width: 60px` found), green after the removal; control test green. Gates: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 1875 passed, 3 skipped, 12 timing passed, `npm run compile` and `npm run compile-tests` ok.
+- **Notes:** The "AC-017 (0016): the detail's Copy … carries no other button class" test in `SpecDetail.test.tsx` stays (it asserts the absence of `secondary-button` on the Copy button, still true).
+
+### T-012 — Fix: five test gaps from the mutation check (compile S40)
+
+- **Covers:** AC-017 (P3), AC-016 (W2, F8), AC-013 / AC-014 (C13), AC-002 (N8)
+- **Do:** P3 `statusEntry.test.ts` (incomplete and not-a-project folders do not count for "Switch project"; `FakeProject.verdict` in `entryWorld.ts`); C13 `statusEntry.test.ts` (a model of another root reads as specs not read); W2 and F8 `copyNextStep.test.ts` (no warning after a success; a failure within 2 s after a success replaces "Copied", restores 2000 ms after the failure); N8 `nextStep.test.ts` (two Active specs, two plans, either order).
+- **Verify:** each test red against its mutant in a scratch edit, restored after; `npx vitest run src/core/copyNextStep src/core/board/nextStep.test.ts`; gates 1–5
+- [x] **Verified (T-012):** 2026-11-18 — red, one mutant each, all restored: P3 (`filter(verdict === 'project')` dropped from the project count) failed "P3: folders that are no project…"; C13 (`sameRoot` check dropped from `loadedModel`) failed "C13: a model of another project root…"; W2 (`if (!outcome.ok)` → `if (true)`) failed "W2…" and "F8…"; F8 (`feedback = feedback ?? { ok }`) failed "F8…" and "a copy that succeeds after a failure replaces the warning text"; N8 (`openStep` reads the first plan that has an open step) failed "N8…". Green on the real code: 77 passed in the four files; final gates as in T-011.
 
 ## Test-title audit
 
 Script `/tmp/audit-0017/titles.py` (outside the repo): the `describe`/`it`/`test`/`suite` title literals of
 every `.ts`/`.tsx` under `src` at the Baseline `fe0bb37` (`git archive`) against the head; titles are
 compared across files, so a moved test is no loss. Baseline 1894 titles (1887 unique), head 1967
-(1959 unique); 68 baseline titles are missing at the head, 140 are new. Every missing title is listed
+(1959 unique); 68 baseline titles were missing at T-009 (70 after fix T-011, see the last two rows of the table), 140 were new (+2 from T-011, +5 from T-012). Every missing title is listed
 here with its reason; none decides behaviour that stays.
 
 | Baseline file | Missing | Reason |
@@ -382,6 +405,7 @@ here with its reason; none decides behaviour that stays.
 | `webview/board/SpecBoard.test.tsx` | 1 | "AC-009: … progressbars and Move to… follow in DOM order" is now "… and the next-step line follow in DOM order" |
 | `adapters/node/webviewCss.test.ts` | 1 | 0013 AC-011 drag marks CSS (void, §5) |
 | `adapters/vscode/manifest.test.ts` | 1 | "contributes the Move Spec command" (void); 0017 AC-009 tests the opposite |
+| `adapters/node/webviewCss.test.ts` (fix T-011) | 2 | "AC-017: .secondary-button uses the secondary button colours and hover" and "AC-017 negative control: the secondary rule does not carry the primary background alone": they decided only the drop result's Dismiss clause of 0016 AC-017, void by 0017 §5 (PD-060); `.secondary-button` had no other consumer and is removed. The new "0017 §6.5: nothing reserves the corner of a card head…" decides that it and `.card-head::before` stay gone; the Copy half of AC-017 stays in ".copy-button uses the primary button colours and hover" |
 
 Staying behaviour named by the task, with a home at the head: keyboard navigation (`Keyboard.test.tsx`
 "arrow keys move focus down, up, right and left", "only one card is tabbable"), Enter opens
@@ -410,21 +434,22 @@ Staying behaviour named by the task, with a home at the head: keyboard navigatio
 | AC-014 | T-003, T-007 | core/copyNextStep/entryView.ts, statusEntry.ts; adapters/vscode/statusBar.ts | statusEntry.test.ts, manifest.test.ts | verified |
 | AC-015 | T-003 | core/copyNextStep/entryView.ts | statusEntry.test.ts | verified |
 | AC-016 | T-005, T-007 | core/copyNextStep/statusEntry.ts, adapters/vscode/statusBar.ts | statusEntry.test.ts, copyNextStep.smoke.test.ts (CI) | verified |
-| AC-017 | T-003 | core/copyNextStep/entryView.ts (escapeMarkdown) | statusEntry.test.ts | verified |
+| AC-017 | T-003, T-012 | core/copyNextStep/entryView.ts (escapeMarkdown), statusEntry.ts | statusEntry.test.ts (incl. P3) | verified |
 | AC-018 | T-003 | core/copyNextStep/entryView.ts (accessibleText) | statusEntry.test.ts | verified |
 | AC-019 | T-005 | core/copyNextStep/copyNextStep.ts | copyNextStep.test.ts | verified |
 | AC-020 | T-005 | core/copyNextStep/copyNextStep.ts | copyNextStep.test.ts | verified |
 | AC-021 | T-005 | core/copyNextStep/copyNextStep.ts | copyNextStep.test.ts | verified |
 | AC-022 | T-005 | core/copyNextStep/copyNextStep.ts | copyNextStep.test.ts (real shell world, trust on and off) | verified |
 | AC-023 | T-005 | core/copyNextStep/copyNextStep.ts | copyNextStep.test.ts, noWrite.test.ts | verified |
-| AC-024 | T-009 (every step keeps staying tests) | — | Test-title audit below (0 staying titles lost) | verified |
+| AC-024 | T-009, T-011 (every step keeps staying tests) | — | Test-title audit below (0 staying titles lost); Windows and CI at `fbdab51` recorded in T-009 | verified |
 | AC-025 | T-008, T-009 | README.md, CHANGELOG.md, docs/, .architecture, §5 notes | docsScan.test.ts | verified |
 | AC-026 | T-008 (checklist) | — | manual: Gregor, M-1 on `tip-splitter` | open |
 
 ## Session handoff
 
-- **Done so far:** plan written 2026-11-18 (S38); moved to `active/`, T-001…T-009 verified 2026-11-18 (S39).
-- **Next action:** Gregor: `npm test` on Windows and CI, AC-026 (M-1 on `tip-splitter`), then `/sdd-compile` in a fresh session; the spec stays In Progress and 0017 moves to done/ only after that (retarget no links: the §5 notes carry none).
-- **Open decisions:** proxy decisions P-1…P-15 (Research) await Gregor's reading; spec OP-002 stays his.
-- **Baseline:** `fe0bb37` (plan commit, before the first step); unit tests at the Baseline: 1818 passed, 3 skipped (after the lifecycle move).
+- **Done so far:** plan written 2026-11-18 (S38); moved to `active/`, T-001…T-009 verified 2026-11-18 (S39); fix steps T-010…T-012 (compile S40 findings D1, D2, D3 and the five test gaps) verified 2026-11-18 (S41).
+- **Recorded evidence at `fbdab51`:** Gregor's Windows 11 machine, 2026-11-18: `npm run test:unit` 1866 passed, 7 skipped, 12 timing passed; `npm test` 25 + 1 + 1 + 1 passing (incl. `copyNextStep.smoke`). GitHub Actions run 44232332957: ubuntu-latest and windows-latest green. The fix steps changed one CSS file and tests only (no host code): `npm test` was not re-run on the fix head.
+- **Next action:** Gregor: AC-026 (M-1 on `tip-splitter`, recorded as `manual: Gregor checked …, <date>`) and reading P-1…P-15; then a fresh `/sdd-compile`, then `/sdd-lifecycle` 0017 → done (retarget no links: the §5 notes carry none). The spec stays In Progress in `active/` until then.
+- **Open decisions:** proxy decisions P-1…P-15 (Research) await Gregor's reading; spec OP-002 stays his. Not covered by any test (host only, real VS Code): `isTrusted` allowlist and `supportHtml = false` in `statusBar.ts`, the `stepUi.ts` mapping, the `openStudio`/`selectProject` actions in `extension.ts`.
+- **Baseline:** `fe0bb37` (plan commit, before the first step); unit tests at the Baseline: 1818 passed, 3 skipped (after the lifecycle move); now 1875 passed, 3 skipped.
 - **Environment:** `npm test` cannot run in the agent sandbox (VS Code download blocked).
