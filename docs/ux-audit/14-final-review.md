@@ -6,7 +6,9 @@ plans, compile reports `orch/compile/{0025…0028}.md` (with re-checks), `docs/r
 `.memory-bank/activeContext.md` and the preview runs `r6-0028`, `r7c-0025`, `r8-0026`, `r9-0027`.
 
 **Limit:** I judged records, tests and harness reports. I read the `report.json` files and opened no real VS Code window.
-The VSIX check (12 F-1) and real sending (12 F-2) are not part of this review.
+12 F-1 was run after this review's first draft: the VSIX of `9b3f787` (13 files, 248.57 KB) passed the host suite unpacked on Windows (34+1+1+1, exit 0), and the webview of the same head passed the harness check `r10check` on nine situations (not a project, brownfield, the five A-3 fixtures, `par-open` with Copilot, this repository) in Dark, Light and High Contrast at 1600, 1000 and 860 px: no cut text, no word broken inside itself, `Back to Overview` under 900 px, every button named, every progress bar with `aria-valuetext`, live regions present, a visible focus ring on every Tab stop, and in the Send menu Enter opens on the first item, ArrowDown moves, Esc closes and returns focus to the arrow (evidence: `orch/preview/r10-f1`). Real sending (12 F-2) stays Gregor's.
+
+**Feature freeze (12 G-1), 2026-11-19:** from now on only fixes; new ideas go to `.specs/backlog/`, not into a round 4.
 
 ## 1 Verdict
 

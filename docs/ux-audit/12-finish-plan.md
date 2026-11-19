@@ -91,64 +91,64 @@ Für alle Specs gilt dasselbe Muster wie in den Runden 1 und 2:
 
 Hängt ab von C (veröffentlichtes 1.11.0) und B (Wortlaut). Ändert PD-072.
 
-- [ ] **D1-1 Version erkennen:**
+- [x] **D1-1 Version erkennen:**
   - `FeatherSpecVersion:` aus `AGENTS.md` lesen.
   - Bei Dateiänderung und nach `/sdd-featherspec-update` neu auswerten.
   - **Ist die Version unbekannt, fehlt sie oder lässt sie sich nicht parsen, gilt das alte Verhalten.** Das ist der sichere Standard.
-- [ ] **D1-2 Weiche nach Version:**
+- [x] **D1-2 Weiche nach Version:**
   - Vor 1.11.0 kommt nach einer Unterbrechung zuerst „Report · /sdd-plan“ und Continue an zweiter Stelle (G-11).
   - Ab 1.11.0 bleibt „Continue · Implement T-00x“ vorn, weil der Schritt selbst nachzieht.
   - Unterbrechung heißt: `Current step` ≠ erster offener Schritt.
-- [ ] **D1-3 Rückläufer gehen immer vor**, unabhängig von der Version (S4).
-- [ ] **D1-4 „Verified ohne Häkchen“:** Hat ein Schritt eine `Verified:`-Zeile, aber kein Häkchen, steht „Report · /sdd-plan“ vorn, **auch ab 1.11.0**. Das fängt den bekannten V1-Fehler des schnellen Modells ab (11 §5). Im `(?)` steht die Begründung, z. B. „T-003 has a Verified line but no tick“.
-- [ ] **D1-5** Die REASON-Texte hängen von der Version ab (B-1 Punkt 2).
-- [ ] **D1-6** Tests für alle fünf Fixtures aus A-3, jeweils in den Next-step-Regeln (`src/core/board/nextStep.ts`) und in der Statusleiste.
+- [x] **D1-3 Rückläufer gehen immer vor**, unabhängig von der Version (S4).
+- [x] **D1-4 „Verified ohne Häkchen“:** Hat ein Schritt eine `Verified:`-Zeile, aber kein Häkchen, steht „Report · /sdd-plan“ vorn, **auch ab 1.11.0**. Das fängt den bekannten V1-Fehler des schnellen Modells ab (11 §5). Im `(?)` steht die Begründung, z. B. „T-003 has a Verified line but no tick“.
+- [x] **D1-5** Die REASON-Texte hängen von der Version ab (B-1 Punkt 2).
+- [x] **D1-6** Tests für alle fünf Fixtures aus A-3, jeweils in den Next-step-Regeln (`src/core/board/nextStep.ts`) und in der Statusleiste.
 
 ### D2 · 0025 Plan map navigation and progress clarity
 
 Ändert 0023, 0019, 0021 und 0022.
 
-- [ ] **D2-1 F-1:**
+- [x] **D2-1 F-1:**
   - Ein Klick auf Schritt-Chip oder „Next open step“ öffnet die Plan map. Die Karte ist dann aufgeklappt, fokussiert und 1,5 s hervorgehoben.
   - Strg/Cmd+Klick öffnet die Datei an der Überschrift.
   - Die Karte zeigt Files, Covers (mit Zustand und Link zur Spec-Zeile), Verified, Do und Verify sowie „Open in plan“.
-- [ ] **D2-2 F-2:** Prozent stehen an jedem Fortschritt:
+- [x] **D2-2 F-2:** Prozent stehen an jedem Fortschritt:
   - in der Seitenleiste, der Plan map, auf den Board-Karten und im Baum-Tooltip;
   - im Format `3 of 7 done · 43%` und `Steps 3/7 · 43%`;
   - mit `title` und `aria-valuetext`; Rundung nach E-13.
-- [ ] **D2-3 G-1:** Die Schritt-Symbole sind Codicons: `check`, `debug-stackframe`, `circle-large-outline`, `reply`, `circle-slash` und `question`. Jedes Symbol hat ein Wort in `aria-label`.
-- [ ] **D2-4 G-2 plus Gruppenblick:**
+- [x] **D2-3 G-1:** Die Schritt-Symbole sind Codicons: `check`, `debug-stackframe`, `circle-large-outline`, `reply`, `circle-slash` und `question`. Jedes Symbol hat ein Wort in `aria-label`.
+- [x] **D2-4 G-2 plus Gruppenblick:**
   - Hat ein Schritt eine Return Note, verschwindet „Next open step“, und es erscheint „N returned, waiting to be integrated“.
   - **Neu:** Bei einer parallelen Gruppe nennt das Studio, wer noch fehlt, z. B. „1 of 2 returned · T-004 not back yet“. Die Gruppe kommt aus der Stage-Zeile (`parsePlan.ts`). Solange jemand fehlt, steht „Integrate“ nicht als Primärknopf da.
-- [ ] **D2-5 G-7:** Wenn die nächste Stufe parallel ist, zeigt der Next step in der Seitenleiste „Stage N can run in parallel · Ways to run it“.
-- [ ] **D2-6 G-10:** Kartentitel auf höchstens zwei Zeilen begrenzen.
-- [ ] **D2-7** „Copy prompt“ erscheint auf einer Karte nur beim Schritt, der jetzt dran ist, und erst, wenn die Karte aufgeklappt ist.
-- [ ] **D2-8** Zeigt die Plan map denselben Spec wie die Seitenleiste, trägt nur der Kopf der Plan map den Next step (G-5).
+- [x] **D2-5 G-7:** Wenn die nächste Stufe parallel ist, zeigt der Next step in der Seitenleiste „Stage N can run in parallel · Ways to run it“.
+- [x] **D2-6 G-10:** Kartentitel auf höchstens zwei Zeilen begrenzen.
+- [x] **D2-7** „Copy prompt“ erscheint auf einer Karte nur beim Schritt, der jetzt dran ist, und erst, wenn die Karte aufgeklappt ist.
+- [x] **D2-8** Zeigt die Plan map denselben Spec wie die Seitenleiste, trägt nur der Kopf der Plan map den Next step (G-5).
 
 ### D3 · 0026 Send defaults and wording
 
 Ändert 0024, 0021, 0018 und 0022.
 
-- [ ] **D3-1 OP-004:** Copilot sendet standardmäßig in einen neuen Chat. Das Menü am Send-Knopf enthält „Send to a new chat“, „Send to the current chat“ und „Copy prompt“; die aktive Wahl ist markiert, wenn B-5 das verlangt.
-- [ ] **D3-2** Nach dem Senden erscheint: „The prompt is in Copilot's chat. Check it, then send it there.“ Das Studio sendet nie selbst.
-- [ ] **D3-3 G-8:** Kurzformen ohne sichtbares „Next“ verwenden; „Next step:“ bleibt für Screenreader:
+- [x] **D3-1 OP-004:** Copilot sendet standardmäßig in einen neuen Chat. Das Menü am Send-Knopf enthält „Send to a new chat“, „Send to the current chat“ und „Copy prompt“; die aktive Wahl ist markiert, wenn B-5 das verlangt.
+- [x] **D3-2** Nach dem Senden erscheint: „The prompt is in Copilot's chat. Check it, then send it there.“ Das Studio sendet nie selbst.
+- [x] **D3-3 G-8:** Kurzformen ohne sichtbares „Next“ verwenden; „Next step:“ bleibt für Screenreader:
   - `Continue`, `Start`, `Report`, `Write plan`, `Integrate`, `Verify`, `Add criteria`, `Find blocker`;
   - der Ersatz für „Put back in line“ aus B-5.
-- [ ] **D3-4 G-3:** Im Ways-Block steht je Weg eine Radio-Zeile mit einem Satz; die Details stehen im `(?)`. „In sequence“ ist als `default` markiert, und die Doppelung von „Other agents“ entfällt.
-- [ ] **D3-5 G-5:** Die Coach-Zeile erscheint nur einmal je Ansicht.
-- [ ] **D3-6 G-9:** Der Bereich „Now“ zeigt höchstens fünf Zeilen, darunter „Show N more“.
-- [ ] **D3-7** Der Text-Abgleich ersetzt jedes „Paste“ neben einem Send-Knopf durch „Send“ und vereinheitlicht „same chat“ zu „current chat“.
+- [x] **D3-4 G-3:** Im Ways-Block steht je Weg eine Radio-Zeile mit einem Satz; die Details stehen im `(?)`. „In sequence“ ist als `default` markiert, und die Doppelung von „Other agents“ entfällt.
+- [x] **D3-5 G-5:** Die Coach-Zeile erscheint nur einmal je Ansicht.
+- [x] **D3-6 G-9:** Der Bereich „Now“ zeigt höchstens fünf Zeilen, darunter „Show N more“.
+- [x] **D3-7** Der Text-Abgleich ersetzt jedes „Paste“ neben einem Send-Knopf durch „Send“ und vereinheitlicht „same chat“ zu „current chat“.
 
 ### D4 · 0027 Attach the spec when sending (zuletzt)
 
 Hängt ab von C-2. Ändert PD-068 und PD-074.
 
-- [ ] **D4-1** Unter Send zeigt ein Datei-Chip `<spec>.md attached when sent`. Der Tooltip lautet „Copy prompt attaches nothing.“
-- [ ] **D4-2 Weiche je Assistent und Version:** Ob angehängt wird, hängt vom **Ergebnis von C-2** ab und nicht nur von der FeatherSpec-Version.
+- [x] **D4-1** Unter Send zeigt ein Datei-Chip `<spec>.md attached when sent`. Der Tooltip lautet „Copy prompt attaches nothing.“
+- [x] **D4-2 Weiche je Assistent und Version:** *(gebaut: Claude Code an, Copilot aus bis C-2; das Umschalten nach C-2 nennt die Checkliste)* Ob angehängt wird, hängt vom **Ergebnis von C-2** ab und nicht nur von der FeatherSpec-Version.
   - Liest ein Assistent eine angehängte Spec trotzdem ein zweites Mal, hängt das Studio für ihn nichts an. Der Chip entfällt dann.
   - Vor 1.11.0 wird nie angehängt. Dann erscheint im `(?)` der Hinweis zu `/sdd-featherspec-update`.
-- [ ] **D4-3** Kein `modelSelector` als Standard: Das Modell wählt der Mensch im Chat (09 §6).
-- [ ] **D4-4** Eine Probe mit einer großen Studio-Spec: Wie viel Kontext kostet der Anhang, und bleibt das Ergebnis gleich gut?
+- [x] **D4-3** Kein `modelSelector` als Standard: Das Modell wählt der Mensch im Chat (09 §6).
+- [ ] **D4-4** *(0027 AC-020, Gregor)* Eine Probe mit einer großen Studio-Spec: Wie viel Kontext kostet der Anhang, und bleibt das Ergebnis gleich gut?
 
 ## E. Copilot-Weg über Februar 2027 absichern (1 Person, parallel zu D)
 
@@ -161,7 +161,7 @@ Hängt ab von C-2. Ändert PD-068 und PD-074.
 
 ## F. Abschlussprüfung (UX + Gregor, 1 Tag)
 
-- [ ] **F-1** Ein VSIX vom Stand nach D4 bauen und in der isolierten Umgebung prüfen:
+- [x] **F-1** Ein VSIX vom Stand nach D4 bauen und in der isolierten Umgebung prüfen:
   - die Lagen S1 bis S4 und die Fixtures aus A-3;
   - Dark, Light und High Contrast;
   - 1600 und 1000 px sowie unter 900 px (Liste oder Detail mit „Back to …“);
@@ -169,12 +169,12 @@ Hängt ab von C-2. Ändert PD-068 und PD-074.
   - die Screenreader-Texte (`aria-label`, `aria-valuetext`, `role=status`).
 - [ ] **F-2** Echtes Senden auf Gregors Rechner, an **Copilot** (neuer und aktueller Chat) und an **Claude Code**. Prüfen, dass nichts automatisch gesendet wird und dass der Anhang so ankommt, wie der Chip es sagt.
 - [ ] **F-3** Einmal komplett auf `C:\projects\test\tip-splitter` durchspielen, von Ready bis Done. Dabei ein paralleler Lauf mit Return Note und eine Unterbrechung. So wurde F-1 gefunden.
-- [ ] **F-4** Die Bewertung schreibt die UX als `docs/ux-audit/14-final-review.md`. Gibt es noch einen P1-Befund, wird er gezielt behoben und nur dieser Punkt erneut geprüft.
+- [x] **F-4** Die Bewertung schreibt die UX als `docs/ux-audit/14-final-review.md`. Gibt es noch einen P1-Befund, wird er gezielt behoben und nur dieser Punkt erneut geprüft.
 
 ## G. Freeze und Aufräumen
 
-- [ ] **G-1** Feature-Freeze ausrufen: ab jetzt nur noch Fehlerbehebungen. Neue Ideen kommen nach `.specs/backlog/` und nicht in eine Runde 4. So bleibt die Linie „Guide, don't crowd“ (Leitlinie) erhalten.
-- [ ] **G-2** Die Audit-Ordner aufräumen. In `docs/ux-audit/README.md` als gültig markieren:
+- [x] **G-1** Feature-Freeze ausrufen: ab jetzt nur noch Fehlerbehebungen. Neue Ideen kommen nach `.specs/backlog/` und nicht in eine Runde 4. So bleibt die Linie „Guide, don't crowd“ (Leitlinie) erhalten.
+- [x] **G-2** Die Audit-Ordner aufräumen. In `docs/ux-audit/README.md` als gültig markieren:
   - Leitlinien: `ux-guidelines.md`;
   - Abschlussstand: Datei 14.
   Alles andere wird als Historie markiert.
