@@ -250,4 +250,4 @@ its plan T-001…T-006 in three stages (g-r2-04), version 1.10.0 unless stated. 
 ## 13. Ready, Done and next steps
 
 Ready: clarified 2026-11-19 (OP-004), OP-002 resolved. Done: AC-001–AC-012, AC-016–AC-021 green on Windows and CI, AC-013…015 in the
-plan, §5's notes, docs synced. Next: review the plan, then start T-001; order 0028 → 0025 → 0026 → 0027.
+plan, §5's notes, docs synced. Next: T-008 preview by the orchestrator, then `npm test` on Windows, then a fresh compile; order 0028 → 0025 → 0026 → 0027.
