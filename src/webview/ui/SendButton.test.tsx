@@ -11,13 +11,16 @@ const LINE = 'Implement T-003 of .specs/active/0001-tip-splitter.plan.md';
 const VIEW_A: SendView = { assistant: 'copilot', target: 'current', targets: ['new', 'current'] };
 const VIEW_A_NEW: SendView = { assistant: 'copilot', target: 'new', targets: ['new', 'current'] };
 const CLAUDE_VIEW: SendView = { assistant: 'claudeCode', target: 'new', targets: ['new'] };
+const TOKEN = expect.stringMatching(/^[A-Za-z0-9-]{1,64}$/);
 const OPENED_A = "The prompt is in Copilot's chat. Check it, then send it there.";
 const OPENED_CLAUDE = "The prompt is in Claude Code's chat. Check it, then send it there.";
 
 let mounted: Mounted | undefined;
 let sent: SendPromptPayload[];
 let copied: string[];
-let deliverSend: (result: SendResultEventPayload | undefined) => Promise<void>;
+type Delivered = Omit<SendResultEventPayload, 'token'> & { token?: string };
+
+let deliverSend: (result: Delivered | undefined) => Promise<void>;
 let deliverCopy: (result: CopyResult | undefined) => Promise<void>;
 
 function Harness(props: { send: SendView; sendResult?: SendResultEventPayload; copyResult?: CopyResult }) {
@@ -25,7 +28,7 @@ function Harness(props: { send: SendView; sendResult?: SendResultEventPayload; c
     const [copyResult, setCopyResult] = useState<CopyResult | undefined>(props.copyResult);
     deliverSend = async (next) => {
         await act(async () => {
-            setSendResult(next);
+            setSendResult(next === undefined ? undefined : { ...next, token: next.token ?? sent[sent.length - 1]?.token ?? 'none-0' });
         });
     };
     deliverCopy = async (next) => {
@@ -128,7 +131,7 @@ describe('0024 AC-005: the main part and each item send exactly one request', ()
         const container = await show(VIEW_A);
         const before = container.innerHTML;
         await click(main(container));
-        expect(sent).toEqual([{ assistant: 'copilot', target: 'current', line: LINE }]);
+        expect(sent).toEqual([{ assistant: 'copilot', target: 'current', line: LINE, token: TOKEN }]);
         expect(copied).toEqual([]);
         await advance(10_000);
         expect(container.innerHTML).toBe(before);
@@ -139,16 +142,16 @@ describe('0024 AC-005: the main part and each item send exactly one request', ()
         const container = await show(VIEW_A);
         await click(arrow(container));
         await click(items(container)[0]!);
-        expect(sent).toEqual([{ assistant: 'copilot', target: 'new', line: LINE }]);
+        expect(sent).toEqual([{ assistant: 'copilot', target: 'new', line: LINE, token: TOKEN }]);
         expect(menu(container)).toBeNull();
         await click(arrow(container));
         await click(items(container)[1]!);
-        expect(sent[1]).toEqual({ assistant: 'copilot', target: 'current', line: LINE });
+        expect(sent[1]).toEqual({ assistant: 'copilot', target: 'current', line: LINE, token: TOKEN });
         mounted?.unmount();
         const claude = await show(CLAUDE_VIEW);
         await click(arrow(claude));
         await click(items(claude)[0]!);
-        expect(sent[2]).toEqual({ assistant: 'claudeCode', target: 'new', line: LINE });
+        expect(sent[2]).toEqual({ assistant: 'claudeCode', target: 'new', line: LINE, token: TOKEN });
     });
 
     it('opened: the label, the name, the tooltip and the announcement; 2000 ms after the result the main part reads Send to Copilot again', async () => {
@@ -184,9 +187,9 @@ describe('0024 AC-005: the main part and each item send exactly one request', ()
         const container = await show(VIEW_A);
         await click(main(container));
         await click(main(container));
-        await deliverSend({ outcome: 'opened', text: OPENED_A });
+        await deliverSend({ outcome: 'opened', text: OPENED_A, token: sent[0]!.token });
         await advance(1500);
-        await deliverSend({ outcome: 'opened', text: `${OPENED_A}` });
+        await deliverSend({ outcome: 'opened', text: `${OPENED_A}`, token: sent[1]!.token });
         await advance(1999);
         expect(main(container).textContent).toBe('Opened in Copilot');
         await advance(1);
@@ -229,7 +232,7 @@ describe('0024 AC-005: the main part and each item send exactly one request', ()
     });
 
     it('negative control: a result that was there before the activation does not set the label', async () => {
-        const container = await show(VIEW_A, { sendResult: { outcome: 'opened', text: OPENED_A }, copyResult: { ok: true, text: COPIED_TEXT } });
+        const container = await show(VIEW_A, { sendResult: { outcome: 'opened', text: OPENED_A, token: 'before-1' }, copyResult: { ok: true, text: COPIED_TEXT } });
         expect(main(container).textContent).toBe('Send to Copilot');
         await click(main(container));
         expect(main(container).textContent).toBe('Send to Copilot');
@@ -258,6 +261,114 @@ describe('0024 AC-005: the main part and each item send exactly one request', ()
         expect(main(container).textContent).toBe('Send to Copilot');
         await deliverSend({ outcome: 'opened', text: OPENED_A });
         expect(main(container).textContent).toBe('Send to Copilot');
+    });
+});
+
+describe('0024 AC-005: a split button shows only the results of its own Sends (PR #1 comment 2)', () => {
+    function Two(props: { second?: string }) {
+        const [result, setResult] = useState<SendResultEventPayload | undefined>(undefined);
+        deliverSend = async (next) => {
+            await act(async () => {
+                setResult(next === undefined ? undefined : { ...next, token: next.token ?? 'none-0' });
+            });
+        };
+        return (
+            <div>
+                <section data-id="row">
+                    <SendButton send={VIEW_A} line={LINE} sendResult={result} onSend={(request) => void sent.push(request)} copyResult={undefined} onCopy={() => undefined} />
+                </section>
+                <section data-id="panel">
+                    <SendButton send={VIEW_A} line={props.second ?? LINE} sendResult={result} onSend={(request) => void sent.push(request)} copyResult={undefined} onCopy={() => undefined} />
+                </section>
+            </div>
+        );
+    }
+
+    const part = (container: HTMLElement, id: 'row' | 'panel') => container.querySelector<HTMLButtonElement>(`[data-id="${id}"] button.send-main`)!;
+    const said = (container: HTMLElement, id: 'row' | 'panel') => container.querySelector<HTMLElement>(`[data-id="${id}"] [role="status"]`)!.textContent;
+
+    it('two Sends pending, one at the row and one at the panel: each result goes to the control that sent it, and a failed Send does not read as opened', async () => {
+        mounted = await mount(<Two />);
+        const container = mounted.container;
+        await click(part(container, 'row'));
+        await click(part(container, 'panel'));
+        expect(sent).toHaveLength(2);
+        expect(sent[0]!.token).not.toBe(sent[1]!.token);
+        await deliverSend({ outcome: 'opened', text: OPENED_A, token: sent[0]!.token });
+        expect(part(container, 'row').textContent).toBe('Opened in Copilot');
+        expect(part(container, 'panel').textContent).toBe('Send to Copilot');
+        expect(said(container, 'panel')).toBe('');
+        await deliverSend({ outcome: 'copied', text: COPIED_TEXT, token: sent[1]!.token });
+        expect(part(container, 'panel').textContent).toBe('Copied');
+        expect(said(container, 'panel')).toBe(COPIED_TEXT);
+        expect(part(container, 'row').textContent).toBe('Opened in Copilot');
+        expect(said(container, 'row')).toBe(OPENED_A);
+    });
+
+    it('the result of the second activation arriving first is not taken by the first control', async () => {
+        mounted = await mount(<Two />);
+        const container = mounted.container;
+        await click(part(container, 'row'));
+        await click(part(container, 'panel'));
+        await deliverSend({ outcome: 'copyFailed', text: COPY_FAILED_TEXT, token: sent[1]!.token });
+        expect(part(container, 'row').textContent).toBe('Send to Copilot');
+        expect(part(container, 'panel').textContent).toBe('Could not copy');
+    });
+
+    it('a result of another token, and a result of a Send of an earlier page, show nothing, and the own result still shows afterwards', async () => {
+        mounted = await mount(<Two />);
+        const container = mounted.container;
+        await click(part(container, 'row'));
+        await deliverSend({ outcome: 'opened', text: OPENED_A, token: 'elsewhere-1' });
+        expect(part(container, 'row').textContent).toBe('Send to Copilot');
+        await deliverSend({ outcome: 'opened', text: `${OPENED_A} `, token: sent[0]!.token });
+        expect(part(container, 'row').textContent).toBe('Opened in Copilot');
+        await advance(2000);
+        await deliverSend({ outcome: 'opened', text: `${OPENED_A}  `, token: sent[0]!.token });
+        expect(part(container, 'row').textContent).toBe('Send to Copilot');
+    });
+
+    it('the step changes while the Send is pending: its late result is not shown at the control that now names another step', async () => {
+        const container = await show(VIEW_A);
+        await click(main(container));
+        const token = sent[0]!.token;
+        mounted?.unmount();
+        mounted = await mount(<Harness send={VIEW_A} />);
+        await click(main(mounted.container));
+        await deliverSend({ outcome: 'opened', text: OPENED_A, token });
+        expect(main(mounted.container).textContent).toBe('Send to Copilot');
+        await deliverSend({ outcome: 'opened', text: `${OPENED_A} `, token: sent[1]!.token });
+        expect(main(mounted.container).textContent).toBe('Opened in Copilot');
+    });
+
+    it('the same control with another line: the result of the Send of the old line is dropped, the one of the new line is shown', async () => {
+        function Changing() {
+            const [line, setLine] = useState(LINE);
+            const [result, setResult] = useState<SendResultEventPayload | undefined>(undefined);
+            deliverSend = async (next) => {
+                await act(async () => {
+                    setResult(next === undefined ? undefined : { ...next, token: next.token ?? 'none-0' });
+                });
+            };
+            return (
+                <div>
+                    <button type="button" data-id="next" onClick={() => setLine(`${LINE} again`)}>
+                        next
+                    </button>
+                    <SendButton send={VIEW_A} line={line} sendResult={result} onSend={(request) => void sent.push(request)} copyResult={undefined} onCopy={() => undefined} />
+                </div>
+            );
+        }
+        mounted = await mount(<Changing />);
+        const container = mounted.container;
+        await click(main(container));
+        await click(container.querySelector('[data-id="next"]')!);
+        await deliverSend({ outcome: 'opened', text: OPENED_A, token: sent[0]!.token });
+        expect(main(container).textContent).toBe('Send to Copilot');
+        await click(main(container));
+        expect(sent[1]!.line).toBe(`${LINE} again`);
+        await deliverSend({ outcome: 'opened', text: `${OPENED_A} `, token: sent[1]!.token });
+        expect(main(container).textContent).toBe('Opened in Copilot');
     });
 });
 
@@ -362,7 +473,7 @@ describe('0024 AC-008: the menu keys and pointer rules', () => {
             } else {
                 await pressKey(item, how === 'enter' ? 'Enter' : ' ');
             }
-            expect(sent, how).toEqual([{ assistant: 'copilot', target: 'current', line: LINE }]);
+            expect(sent, how).toEqual([{ assistant: 'copilot', target: 'current', line: LINE, token: TOKEN }]);
             expect(menu(container), how).toBeNull();
             expect(arrow(container).getAttribute('aria-expanded'), how).toBe('false');
             expect(document.activeElement, how).toBe(arrow(container));

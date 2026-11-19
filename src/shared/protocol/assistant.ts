@@ -38,31 +38,49 @@ export function isSendView(value: unknown): value is SendView {
     return targets.length === own.length && own.every((item, index) => targets[index] === item) && own.includes(target);
 }
 
-export interface SendPromptPayload {
+export interface SendRequest {
     assistant: AssistantId;
     target: AssistantTarget;
     line: string;
 }
 
+export interface SendPromptPayload extends SendRequest {
+    token: string;
+}
+
 export type SendOutcome = 'opened' | 'copied' | 'copyFailed';
 
-export interface SendResultEventPayload {
+export interface SendOutcomeView {
     outcome: SendOutcome;
     text: string;
 }
 
-const SEND_PROMPT_KEYS: readonly string[] = ['assistant', 'target', 'line'];
+export interface SendResultEventPayload extends SendOutcomeView {
+    token: string;
+}
+
+const SEND_PROMPT_KEYS: readonly string[] = ['assistant', 'target', 'line', 'token'];
+const SEND_RESULT_KEYS: readonly string[] = ['outcome', 'text', 'token'];
+const SEND_TOKEN = /^[A-Za-z0-9-]{1,64}$/;
+
+export function isSendToken(value: unknown): value is string {
+    return typeof value === 'string' && SEND_TOKEN.test(value);
+}
 
 export function isSendPromptPayload(value: unknown): value is SendPromptPayload {
     if (!isRecord(value) || Object.keys(value).length !== SEND_PROMPT_KEYS.length || !SEND_PROMPT_KEYS.every((key) => key in value)) {
         return false;
     }
-    const { assistant, target, line } = value;
-    return isAssistantId(assistant) && isAssistantTarget(target) && ASSISTANT_TARGETS[assistant].includes(target) && typeof line === 'string' && line.length > 0;
+    const { assistant, target, line, token } = value;
+    return isAssistantId(assistant) && isAssistantTarget(target) && ASSISTANT_TARGETS[assistant].includes(target) && typeof line === 'string' && line.length > 0 && isSendToken(token);
 }
 
 const SEND_OUTCOMES: readonly string[] = ['opened', 'copied', 'copyFailed'];
 
 export function isSendResultEventPayload(value: unknown): value is SendResultEventPayload {
-    return isRecord(value) && Object.keys(value).length === 2 && typeof value.outcome === 'string' && SEND_OUTCOMES.includes(value.outcome) && typeof value.text === 'string';
+    if (!isRecord(value) || Object.keys(value).length !== SEND_RESULT_KEYS.length || !SEND_RESULT_KEYS.every((key) => key in value)) {
+        return false;
+    }
+    const { outcome, text, token } = value;
+    return typeof outcome === 'string' && SEND_OUTCOMES.includes(outcome) && typeof text === 'string' && isSendToken(token);
 }

@@ -49,7 +49,7 @@ async function clickAndReturn(container: HTMLElement, id: string): Promise<void>
     await click(drill(container, id));
     const request = posted.slice(before).find((message) => message.type === 'navigate');
     if (request?.id !== undefined) {
-        await send({ v: 7, kind: 'res', id: request.id, type: 'navigate', payload: { ok: true } });
+        await send({ v: 8, kind: 'res', id: request.id, type: 'navigate', payload: { ok: true } });
     }
 }
 
@@ -189,7 +189,7 @@ describe('AC-022: keyboard', () => {
     it('Enter and Space activate a drill-down element and send its request', async () => {
         const container = await open(drillView());
         await pressKey(drill(container, 'total'), 'Enter');
-        await send({ v: 7, kind: 'res', id: posted.find((message) => message.type === 'navigate')!.id, type: 'navigate', payload: { ok: true } });
+        await send({ v: 8, kind: 'res', id: posted.find((message) => message.type === 'navigate')!.id, type: 'navigate', payload: { ok: true } });
         await pressKey(drill(container, 'state:Done'), ' ');
         expect(sent().map((message) => message.payload)).toEqual([
             { area: 'board' },

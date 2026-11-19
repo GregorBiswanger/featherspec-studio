@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { AssistantId, SendPromptPayload } from '../../shared/protocol/assistant';
+import type { AssistantId, SendRequest } from '../../shared/protocol/assistant';
 import type { SettingPort } from '../ports/host';
 import { createSetupClock } from '../setup/testing/setupClock';
 import { createFakeAssistantHost } from './testing/fakeAssistantHost';
@@ -30,7 +30,7 @@ function world(value: unknown, installed: readonly string[]) {
     return { host, current, wiring, written, warned, blocks };
 }
 
-function request(assistant: AssistantId): SendPromptPayload {
+function request(assistant: AssistantId): SendRequest {
     return assistant === 'copilot' ? { assistant, target: 'current', line: LINE } : { assistant, target: 'new', line: LINE };
 }
 

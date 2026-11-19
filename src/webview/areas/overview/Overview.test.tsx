@@ -310,8 +310,8 @@ describe('0024 AC-003, AC-002: the split button at the first Now row only', () =
         await click(container.querySelector('button.send-arrow')!);
         await click([...container.querySelectorAll<HTMLElement>('[role="menuitem"]')][0]!);
         expect(posted.filter((message) => message.type === 'sendPrompt').map((message) => message.payload)).toEqual([
-            { assistant: 'claudeCode', target: 'new', line: line('0001') },
-            { assistant: 'claudeCode', target: 'new', line: line('0001') },
+            { assistant: 'claudeCode', target: 'new', line: line('0001'), token: expect.stringMatching(/^[A-Za-z0-9-]{1,64}$/) },
+            { assistant: 'claudeCode', target: 'new', line: line('0001'), token: expect.stringMatching(/^[A-Za-z0-9-]{1,64}$/) },
         ]);
     });
 

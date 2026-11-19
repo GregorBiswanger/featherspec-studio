@@ -60,7 +60,7 @@ export function copyResultEvent(ok: boolean, text: string): Envelope {
     return { v: PROTOCOL_VERSION, kind: 'evt', type: 'copyResult', payload: { ok, text } };
 }
 
-export function sendResultEvent(outcome: 'opened' | 'copied' | 'copyFailed', text: string): Envelope {
-    return { v: PROTOCOL_VERSION, kind: 'evt', type: 'sendResult', payload: { outcome, text } };
+export function sendResultEvent(outcome: 'opened' | 'copied' | 'copyFailed', text: string, token: string): Envelope {
+    return { v: PROTOCOL_VERSION, kind: 'evt', type: 'sendResult', payload: { outcome, text, token } };
 }
 

@@ -874,17 +874,18 @@ describe('0024 AC-003, AC-002: the split button at the first next-step line only
     it('the main part posts one sendPrompt with assistant, default target and the first line; the arrow item posts the other target', async () => {
         const container = await open(spec({}, TWO_LINES));
         await click(container.querySelector('button.send-main')!);
-        expect(requests('sendPrompt')).toEqual([{ assistant: 'copilot', target: 'new', line: 'Implement T-003 of .specs/active/0007-thing.plan.md' }]);
+        expect(requests('sendPrompt')).toEqual([{ assistant: 'copilot', target: 'new', line: 'Implement T-003 of .specs/active/0007-thing.plan.md', token: expect.stringMatching(/^[A-Za-z0-9-]{1,64}$/) }]);
         await click(container.querySelector('button.send-arrow')!);
         await click([...container.querySelectorAll<HTMLElement>('[role="menuitem"]')][1]!);
-        expect(requests('sendPrompt')[1]).toEqual({ assistant: 'copilot', target: 'current', line: 'Implement T-003 of .specs/active/0007-thing.plan.md' });
+        expect(requests('sendPrompt')[1]).toEqual({ assistant: 'copilot', target: 'current', line: 'Implement T-003 of .specs/active/0007-thing.plan.md', token: expect.stringMatching(/^[A-Za-z0-9-]{1,64}$/) });
+        expect((requests('sendPrompt')[1] as { token: string }).token).not.toBe((requests('sendPrompt')[0] as { token: string }).token);
         expect(requests('copyText')).toEqual([]);
     });
 
     it('a sendResult event shows Opened in Copilot at the main part; the Copy prompt item posts copyText and shows Copied there', async () => {
         const container = await open(spec({}, TWO_LINES));
         await click(container.querySelector('button.send-main')!);
-        await send(sendResultEvent('opened', "The prompt is in Copilot's chat. Check it, then send it there."));
+        await send(sendResultEvent('opened', "The prompt is in Copilot's chat. Check it, then send it there.", (requests('sendPrompt')[0] as { token: string }).token));
         expect(container.querySelector('button.send-main')?.textContent).toBe('Opened in Copilot');
         expect(container.querySelector('.send-split [role="status"]')?.textContent).toBe("The prompt is in Copilot's chat. Check it, then send it there.");
         await click(container.querySelector('button.send-arrow')!);

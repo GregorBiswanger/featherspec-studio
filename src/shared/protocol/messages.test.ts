@@ -50,8 +50,8 @@ describe('AC-016, AC-021: envelope', () => {
     });
 
     it('reads an envelope of another version (the router decides, AC-016)', () => {
-        expect(readEnvelope({ v: 8, kind: 'evt', type: 'shell', payload: {} }).ok).toBe(true);
-        expect(PROTOCOL_VERSION).toBe(7);
+        expect(readEnvelope({ v: 9, kind: 'evt', type: 'shell', payload: {} }).ok).toBe(true);
+        expect(PROTOCOL_VERSION).toBe(8);
     });
 
     it('isJsonValue accepts nested JSON and rejects functions, undefined and NaN', () => {
@@ -194,38 +194,56 @@ describe('0015 AC-005, AC-009: copy request and result', () => {
 });
 
 describe('0024 AC-007: the request sendPrompt and the event sendResult', () => {
-    const good = { assistant: 'copilot', target: 'new', line: 'Implement T-003 of .specs/active/0001-a.plan.md' };
+    const good = { assistant: 'copilot', target: 'new', line: 'Implement T-003 of .specs/active/0001-a.plan.md', token: 'k3x9-1' };
 
-    it('sendPrompt takes the assistant, the target and the line, and is a request type', () => {
+    it('sendPrompt takes the assistant, the target, the line and the token, and is a request type', () => {
         expect(isRequestType('sendPrompt')).toBe(true);
         expect(REQUEST_GUARDS.sendPrompt(good)).toBe(true);
         expect(REQUEST_GUARDS.sendPrompt({ ...good, target: 'current' })).toBe(true);
-        expect(REQUEST_GUARDS.sendPrompt({ assistant: 'claudeCode', target: 'new', line: 'x' })).toBe(true);
+        expect(REQUEST_GUARDS.sendPrompt({ assistant: 'claudeCode', target: 'new', line: 'x', token: 'a-1' })).toBe(true);
     });
 
     it('it refuses an extra key, a command name, an unknown assistant, current for Claude Code and an empty line', () => {
         expect(REQUEST_GUARDS.sendPrompt({ ...good, extra: 1 })).toBe(false);
         expect(REQUEST_GUARDS.sendPrompt({ ...good, command: 'workbench.action.chat.open' })).toBe(false);
         expect(REQUEST_GUARDS.sendPrompt({ ...good, assistant: 'codex' })).toBe(false);
-        expect(REQUEST_GUARDS.sendPrompt({ assistant: 'claudeCode', target: 'current', line: 'x' })).toBe(false);
+        expect(REQUEST_GUARDS.sendPrompt({ assistant: 'claudeCode', target: 'current', line: 'x', token: 'a-1' })).toBe(false);
         expect(REQUEST_GUARDS.sendPrompt({ ...good, line: '' })).toBe(false);
         expect(REQUEST_GUARDS.sendPrompt({ ...good, line: 4 })).toBe(false);
-        expect(REQUEST_GUARDS.sendPrompt({ assistant: 'copilot', target: 'new' })).toBe(false);
+        expect(REQUEST_GUARDS.sendPrompt({ assistant: 'copilot', target: 'new', token: 'a-1' })).toBe(false);
         expect(REQUEST_GUARDS.sendPrompt({ ...good, target: 'later' })).toBe(false);
         for (const value of [null, undefined, 'copilot', []]) {
             expect(REQUEST_GUARDS.sendPrompt(value)).toBe(false);
         }
     });
 
-    it('sendResult holds an outcome of the three and a text, nothing else', () => {
-        for (const outcome of ['opened', 'copied', 'copyFailed']) {
-            expect(isSendResultEventPayload({ outcome, text: 't' })).toBe(true);
+    it('PR #1 review: sendPrompt needs a token of 1 to 64 letters, digits and hyphens, and nothing else', () => {
+        const { token: _token, ...without } = good;
+        expect(REQUEST_GUARDS.sendPrompt(without)).toBe(false);
+        for (const token of ['', ' ', 'a b', 'a_b', 'tok\n', 'a'.repeat(65), 7, null, undefined, {}]) {
+            expect(REQUEST_GUARDS.sendPrompt({ ...good, token }), String(token)).toBe(false);
         }
-        expect(isSendResultEventPayload({ outcome: 'sent', text: 't' })).toBe(false);
-        expect(isSendResultEventPayload({ outcome: 'opened' })).toBe(false);
-        expect(isSendResultEventPayload({ outcome: 'opened', text: 1 })).toBe(false);
-        expect(isSendResultEventPayload({ outcome: 'opened', text: 't', extra: 1 })).toBe(false);
+        for (const token of ['a', 'A-9', 'a'.repeat(64)]) {
+            expect(REQUEST_GUARDS.sendPrompt({ ...good, token }), token).toBe(true);
+        }
+    });
+
+    it('sendResult holds an outcome of the three, a text and the token of its Send, nothing else', () => {
+        for (const outcome of ['opened', 'copied', 'copyFailed']) {
+            expect(isSendResultEventPayload({ outcome, text: 't', token: 'k3x9-1' })).toBe(true);
+        }
+        expect(isSendResultEventPayload({ outcome: 'sent', text: 't', token: 'a-1' })).toBe(false);
+        expect(isSendResultEventPayload({ outcome: 'opened', token: 'a-1' })).toBe(false);
+        expect(isSendResultEventPayload({ outcome: 'opened', text: 1, token: 'a-1' })).toBe(false);
+        expect(isSendResultEventPayload({ outcome: 'opened', text: 't', token: 'a-1', extra: 1 })).toBe(false);
         expect(isSendResultEventPayload(null)).toBe(false);
+    });
+
+    it('PR #1 review: a sendResult without a token, or with a token that is not 1 to 64 letters, digits and hyphens, is refused', () => {
+        expect(isSendResultEventPayload({ outcome: 'opened', text: 't' })).toBe(false);
+        for (const token of ['', 'a b', 'a'.repeat(65), 3, null, undefined]) {
+            expect(isSendResultEventPayload({ outcome: 'opened', text: 't', token }), String(token)).toBe(false);
+        }
     });
 });
 

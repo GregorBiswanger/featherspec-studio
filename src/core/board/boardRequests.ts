@@ -1,4 +1,4 @@
-import type { SendPromptPayload, SendResultEventPayload } from '../../shared/protocol/assistant';
+import type { SendOutcomeView, SendRequest, SendResultEventPayload } from '../../shared/protocol/assistant';
 import type { OpenFileResultPayload } from '../../shared/protocol/detail';
 import type { BoardRequestType, CopyResultEventPayload } from '../../shared/protocol/messages';
 import type { ClipboardPort } from '../ports/board';
@@ -12,7 +12,7 @@ export interface BoardRequestsDeps {
     board: Pick<BoardService, 'setSort' | 'setDone' | 'clearFilters'>;
     openFile: OpenFile;
     clipboard: ClipboardPort;
-    send: (request: SendPromptPayload) => Promise<SendResultEventPayload>;
+    send: (request: SendRequest) => Promise<SendOutcomeView>;
 }
 
 export interface BoardRequests {
@@ -54,7 +54,8 @@ export function createBoardRequests(deps: BoardRequestsDeps): BoardRequests {
                 copyResults.emit(await copyLine(deps.clipboard, payload.text));
             },
             sendPrompt: async (payload) => {
-                sendResults.emit(await deps.send(payload));
+                const { token, ...request } = payload;
+                sendResults.emit({ ...(await deps.send(request)), token });
             },
             openFile: async (payload) => {
                 const result = await (payload.line === undefined ? deps.openFile.open(payload.key) : deps.openFile.open(payload.key, payload.line));

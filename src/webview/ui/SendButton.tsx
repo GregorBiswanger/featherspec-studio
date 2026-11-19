@@ -17,6 +17,19 @@ export interface SendButtonProps {
     onLeaveWithFocus?: () => void;
 }
 
+interface Activation {
+    line: string;
+    name: string;
+}
+
+let activations = 0;
+const session = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+function nextToken(): string {
+    activations += 1;
+    return `${session}-${activations}`;
+}
+
 interface Shown {
     label: string;
     name: string;
@@ -36,7 +49,7 @@ export function SendButton(props: SendButtonProps) {
     leave.current = props.onLeaveWithFocus;
     const focusOnOpen = useRef<'first' | 'last' | undefined>(undefined);
     const [shown, setShown] = useState<Shown | undefined>(undefined);
-    const pendingSend = useRef(0);
+    const pendingSend = useRef(new Map<string, Activation>());
     const pendingCopy = useRef(0);
     const seenSend = useRef<SendResultEventPayload | undefined>(sendResult);
     const seenCopy = useRef<CopyResult | undefined>(copyResult);
@@ -65,7 +78,7 @@ export function SendButton(props: SendButtonProps) {
 
     useEffect(() => {
         if (sendResult === undefined) {
-            pendingSend.current = 0;
+            pendingSend.current.clear();
             seenSend.current = undefined;
             stopTimer();
             setShown(undefined);
@@ -73,13 +86,16 @@ export function SendButton(props: SendButtonProps) {
         }
         if (sendResult !== seenSend.current) {
             seenSend.current = sendResult;
-            if (pendingSend.current > 0) {
-                pendingSend.current -= 1;
-                if (sendResult.outcome === 'opened') {
-                    show({ label: sendOpenedLabel(name), name: sendOpenedName(name, line), text: sendResult.text });
-                } else {
-                    const label = sendResult.outcome === 'copied' ? COPIED_LABEL : COPY_FAILED_LABEL;
-                    show({ label, name: `${label}: ${line}`, text: sendResult.text });
+            const own = pendingSend.current.get(sendResult.token);
+            if (own !== undefined) {
+                pendingSend.current.delete(sendResult.token);
+                if (own.line === line && own.name === name) {
+                    if (sendResult.outcome === 'opened') {
+                        show({ label: sendOpenedLabel(name), name: sendOpenedName(name, line), text: sendResult.text });
+                    } else {
+                        const label = sendResult.outcome === 'copied' ? COPIED_LABEL : COPY_FAILED_LABEL;
+                        show({ label, name: `${label}: ${line}`, text: sendResult.text });
+                    }
                 }
             }
         }
@@ -206,11 +222,12 @@ export function SendButton(props: SendButtonProps) {
     };
 
     const activateSend = (target: SendView['target'], fromMenu = false): void => {
-        pendingSend.current += 1;
+        const token = nextToken();
+        pendingSend.current.set(token, { line, name });
         if (fromMenu) {
             closeToArrow();
         }
-        props.onSend({ assistant: send.assistant, target, line });
+        props.onSend({ assistant: send.assistant, target, line, token });
     };
 
     const activateCopy = (): void => {

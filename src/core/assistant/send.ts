@@ -1,5 +1,5 @@
 import { ASSISTANT_NAMES, activatingFailedCause, commandFailedCause, commandNotFoundCause, extensionNotFoundCause, noResultCause, pasteKeyOf, sendOpenedText, sendOutputCopiedText, sendOutputNotCopiedText, sendWarnCopiedText, sendWarnNotCopiedText } from '../../shared/protocol/assistantTexts';
-import type { SendPromptPayload, SendResultEventPayload } from '../../shared/protocol/assistant';
+import type { SendOutcomeView, SendRequest } from '../../shared/protocol/assistant';
 import { copyLine } from '../board/copyLine';
 import type { AssistantHostPort } from '../ports/assistant';
 import type { ClipboardPort } from '../ports/board';
@@ -20,7 +20,7 @@ export interface SendDeps {
 }
 
 export interface Send {
-    send(request: SendPromptPayload): Promise<SendResultEventPayload>;
+    send(request: SendRequest): Promise<SendOutcomeView>;
 }
 
 class SendFailure extends Error {}
@@ -30,12 +30,12 @@ function messageOf(reason: unknown): string {
 }
 
 export function createSend(deps: SendDeps): Send {
-    async function copied(line: string): Promise<SendResultEventPayload> {
+    async function copied(line: string): Promise<SendOutcomeView> {
         const outcome = await copyLine(deps.clipboard, line);
         return { outcome: outcome.ok ? 'copied' : 'copyFailed', text: outcome.text };
     }
 
-    async function fallback(name: string, line: string, cause: string): Promise<SendResultEventPayload> {
+    async function fallback(name: string, line: string, cause: string): Promise<SendOutcomeView> {
         const result = await copied(line);
         if (result.outcome === 'copied') {
             deps.ui.warn(sendWarnCopiedText(name, pasteKeyOf(deps.platform)));
@@ -47,7 +47,7 @@ export function createSend(deps: SendDeps): Send {
         return result;
     }
 
-    async function run(request: SendPromptPayload, isSettled: () => boolean): Promise<void> {
+    async function run(request: SendRequest, isSettled: () => boolean): Promise<void> {
         const spec = ASSISTANTS[request.assistant];
         const calls = spec.callsFor(request.target, request.line);
         let found: ReturnType<AssistantHostPort['extension']>;
@@ -94,7 +94,7 @@ export function createSend(deps: SendDeps): Send {
         }
     }
 
-    function attempt(request: SendPromptPayload): Promise<SendResultEventPayload> {
+    function attempt(request: SendRequest): Promise<SendOutcomeView> {
         const name = ASSISTANT_NAMES[request.assistant];
         return new Promise((resolve) => {
             let settled = false;

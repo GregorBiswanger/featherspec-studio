@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { AssistantId, AssistantTarget, SendPromptPayload } from '../../shared/protocol/assistant';
+import type { AssistantId, AssistantTarget, SendRequest } from '../../shared/protocol/assistant';
 import type { ClipboardPort } from '../ports/board';
 import { createSetupClock } from '../setup/testing/setupClock';
 import { createSend, SEND_TIMEOUT_MS } from './send';
@@ -21,7 +21,7 @@ interface World {
     clock: ReturnType<typeof createSetupClock>;
     chosen: { assistant: AssistantId | undefined };
     clipboardFails: { value: boolean };
-    send(request: SendPromptPayload): ReturnType<ReturnType<typeof createSend>['send']>;
+    send(request: SendRequest): ReturnType<ReturnType<typeof createSend>['send']>;
 }
 
 function world(platform = 'win32', options: { commands?: readonly string[]; installed?: boolean; chosen?: AssistantId | undefined } = {}): World {
@@ -56,7 +56,7 @@ function world(platform = 'win32', options: { commands?: readonly string[]; inst
     return { host, written, warned, blocks, clock, chosen, clipboardFails, send: (request) => sender.send(request) };
 }
 
-function request(assistant: AssistantId, target: AssistantTarget, line = LINE): SendPromptPayload {
+function request(assistant: AssistantId, target: AssistantTarget, line = LINE): SendRequest {
     return { assistant, target, line };
 }
 
