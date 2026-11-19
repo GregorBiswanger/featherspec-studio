@@ -11,6 +11,7 @@ targets. No interview: proxies in §11. Code: `db71223`.
 
 **Changes 2026-11-19** (`docs/ux-audit/12-finish-plan.md` D3; PD-084…PD-089): `Move back to Ready` (PD-086); the menu's
 items named, a check mark open (OP-006); the after-send sentence (AC-020); `Send`, not `Paste`, beside a Send (AC-021).
+Click test (`docs/ux-audit/13-clicktest-results.md` K-2, K-3, K-5): AC-022–AC-024; OP-001, OP-006, OP-007 closed.
 
 ## 1. Summary
 
@@ -55,7 +56,7 @@ register is not edited; PD-064 A-002 ("Now has no cap") is refined here.
 
 | Spec · statement | Amendment |
 | --- | --- |
-| 0024 §6.3 *Main part* "Copilot `new chat` where the first line's session … is `new chat`, else `current chat`"; AC-004; AC-005's example "exactly one executed command: `workbench.action.chat.open`"; A-007; §7 row *Main part* "`Send to <Name> (current chat): <line>`" | `new chat` for both assistants and every step (0026 §6.1, AC-001), so the example records `newChat`, then `open`; A-007 void |
+| 0024 §6.3 *Main part* "Copilot `new chat` where the first line's session … is `new chat`, else `current chat`"; AC-004; AC-005's example "exactly one executed command: `workbench.action.chat.open`"; A-007; §7 row *Main part* "`Send to <Name> (current chat): <line>`" | `new chat` for both assistants and every step (0026 §6.1, AC-001), so the example records `newChat`, then `open`; A-007 void; 0024 §6.3 *Arrow part* "items `role="menuitem"`": the Send items are `menuitemradio`, the active one checked (0026 AC-022) |
 | 0024 §6.3 "0021's 'same chat' continues there" | "0021's coach line calls it current (`current or new chat`, PD-080)" |
 | 0024 §8 "Unsent text in Copilot's current chat … (OP-004)"; OP-004; AC-017 "records whether unsent text in the current chat is kept or replaced (OP-004)" | OP-004 closed by PD-078; `open` replaces a draft only through the menu item `Send to the current chat`; AC-017 records it for that item; the checklist's "decide whether the current chat stays the default target" goes |
 | 0021 §6.5 "`same chat or new chat`"; §6.2 table, case "Open step", Session; §6.6 reasons rows `new chat` ("what this chat knows") and `same chat or new chat`; AC-003 coach | `current or new chat`; the reasons of 0026 §7 |
@@ -65,7 +66,7 @@ register is not edited; PD-064 A-002 ("Now has no cap") is refined here.
 | 0017 §7 rows "Card, last line" (as 0021 amended) and "*Needs attention* row"; AC-004, AC-012 "'Next', the short form"; A-006; 0018 O-5 "then 0017's 'Next', short form and Copy"; 0022 §4.1 table rows 420–686 px and below 420 px "'Next' with the short form" | The step short form without a visible "Next"; a visually hidden `Next step: ` precedes it (0026 §6.3, AC-005) |
 | 0021 §6.5 "and in the first Now row"; AC-009 "the detail and the first Now row shall show §6.5's coach line"; 0018 O-5 (as 0021 amended) "the first Now row also carries the coach line and `?`"; 0022 §4.1 bullet "First Now row … the coach line and `?` follow its Copy prompt"; 0022 AC-001 "in the first Now row 0021's coach line and `?` shall follow" | Only while the side panel does not show that row's spec (0026 §6.4, AC-006) |
 | 0018 O-2 "order Blocked, Review, Active, then number ascending, then path. No cap."; AC-004 "in the order of O-2, without a cap"; A-002; §7 row "Set labels" | 0026 §6.5 (order, five rows, `+ n more`); set label `Now` added |
-| 0022 AC-011 "With seven Now rows"; §3 bullet N-9, A-004 and OP-004 | "seven Now entries (five rows)"; N-9 is decided by 0026 §6.5 (09 G-9) |
+| 0022 AC-011 "With seven Now rows", "exactly two primary buttons … with no spec selected, one and zero"; §3 bullet N-9, A-004 and OP-004; 0022 §4.4 (2) "the Copy of the Overview's first Now row", "at most two per view"; AC-010; 0024 §6.3 *Place* "one primary control" for the first Now row | "seven Now entries (five rows)"; N-9 is decided by 0026 §6.5 (09 G-9); the first Now row's Copy or split button is secondary (0026 §6.5, AC-024; 13 K-5): the Overview holds one primary while the selected spec's next step has a line, none without; the Board as before |
 | 0023 §5.5 then-sentence `Paste it once every worker you started is back.`; AC-013 | While Send is offered: `Send it once …` (0026 §6.2, AC-021) |
 | 0023 §5.4 "Expanded, in order: the lead M-08; then each way as name, effect sentence, prompt … and Copy prompt"; "Under *Other agents* … M-10, then … the start line"; A-006; §6 rows M-08 and "Ways, NS-6 case" (effects); AC-009 "expanded, M-08 and the three ways … with their effect sentences and prompts literally" | 0026 §6.6, AC-009–AC-011: radio group, `(?)` with M-08 and the effects, the checked way's part; Other agents' stage prompt only while no start line shows |
 | 0023 §3 out of scope "A coach line or `(?)` in the Plan map — because guideline 11" | Beside 0025's header, also 0026's `About these ways`, which holds no session or model advice (A-012) |
@@ -76,10 +77,10 @@ register is not edited; PD-064 A-002 ("Now has no cap") is refined here.
 
 ### 6.1 Send target (PD-078)
 
-Every split button's main part (0024 §6.3), wherever a spec places one (0025's Plan map header too), sends to **new
-chat** with both assistants for every step; name and tooltip `Send to <Name> (new chat): <line>`. The menu stays 0024
-§6.3's (A-001; Copilot `Send to a new chat`, `Send to the current chat`, `Copy prompt`, 12 D3-1; a check on the active
-choice: OP-006); `Send to the current chat` keeps its one `open` call, no warning (A-002); 0024 §6.4–§6.6 hold. After a
+Every split button's main part (0024 §6.3), wherever a spec places one (0025's Plan map header too), sends to **new chat**
+with both assistants for every step; name and tooltip `Send to <Name> (new chat): <line>`. The menu stays 0024 §6.3's
+(A-001; Copilot `Send to a new chat`, `Send to the current chat`, `Copy prompt`, 12 D3-1; a check on the active choice:
+OP-006, 13 K-2); `Send to the current chat` keeps its one `open` call, no warning (A-002); 0024 §6.4–§6.6 hold. After a
 Send the main part says `The prompt is in <Name>'s chat. Check it, then send it there.` (0024 §7, 12 D3-2); never submits.
 
 ### 6.2 One term (PD-080)
@@ -117,10 +118,11 @@ a Send control never says `Paste`; returned work's then-sentence is `Send it onc
 
 ### 6.4 One coach line per spec and view (G-5, D-2, guideline 11)
 
-A *view* (the area and the side panel beside it) shows a spec's coach line and `(?)` once. **Overview:** while the side
-panel shows the first Now row's spec (0019 A-002), the detail's wins: the row keeps step text, Copy prompt or split button
-(and 0027 §6.3's line), without coach line and `(?)`; else it shows them (0021 §6.5, §6.6). **Plan map:** the header's
-(D-2; 0025 §5.3). A focused `(?)` that goes hands focus to its row's Copy prompt or split main part; its toggletip closes.
+A *view* (the area and the side panel beside it) shows a spec's coach line, visible without a `(?)` (13 K-3; Verify and
+Review too), and `(?)` once. **Overview:** while the side panel shows the first Now row's spec (0019 A-002), the detail's
+wins: the row keeps step text, Copy prompt or split button (and 0027 §6.3's line), without coach line and `(?)`; else it
+shows them (0021 §6.5, §6.6). **Plan map:** the header's (D-2; 0025 §5.3). A focused `(?)` that goes hands focus to its
+row's Copy prompt or split main part; its toggletip closes.
 
 ### 6.5 Now: at most five rows (G-9)
 
@@ -128,7 +130,7 @@ panel shows the first Now row's spec (0019 A-002), the detail's wins: the row ke
   (0018 A-008), entries without a day last, ties by number then path (A-007); Active, by number then path.
 - **Cap:** the first five. While more exist, `+ n more` (n = the rest, 0018 O-3's text) follows and asks for Board with
   the named set `Now` of every Now entry's stem, as O-3 for Up next (PD-041, A-008). Its first row is 0021's and 0024's
-  "first Now row".
+  "first Now row". No Now row is primary (13 K-5, proxy for 12 F-3): the one primary is the selected spec's Next step.
 
 ### 6.6 Compact ways (G-3)
 
@@ -205,10 +207,13 @@ prose; a stage `T-002 → T-003 ‖ T-004`, T-002 next; Now with five, six and e
 - **AC-015** Every test at the commit on which this spec's implementation starts that decides a statement §5 does not change shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI. A script compares the test titles of both commits; the plan lists every title missing at the head, a renamed one included, with the changed statement or the head title that replaces it.
 - **AC-016** The statements of §5 shall carry their notes and no PD row shall change; `README.md` and, under the version in preparation, `CHANGELOG.md` shall each contain `opens a new chat for every step`, `current or new chat`, `Find blocker`, `Move back to Ready`, `at most five` and `About these ways`; `README.md` shall contain none of `same chat`, `the current chat otherwise`, `**Next**`, `` `Plan · /sdd-plan` ``; `docs/release-checklist.md` shall carry AC-017–AC-019 and 0024 AC-017's line without `stays the default target`; `docs/product/design-brief.md` shall not contain `("Next", short form`.
 - **AC-017** *(manual, preview harness by the orchestrator, then Gregor; guideline 12)* On `fs110-parallel-synthetic` without notes and a project with eight Now entries, Dark, Light and High Contrast at 1600 px and 1000 px window width with the side panel open at its default width: the Overview with the first Now row selected and not selected, and the Plan map with the ways expanded and each way checked. The checker sees no short form, way line, tag or prompt cut; at 1600 px each way takes one line, and the expanded block with In sequence checked is at most half as tall as 0023's expanded block on the same fixture and width (about 400 px in r05); the checker tells the tagged way apart in High Contrast without colour; radios and `(?)` show a visible focus outline; arrow keys move the checked radio; screenshots and verdict in the plan.
-- **AC-018** *(manual, Gregor; click test on an HTML draft before `/sdd-plan`, PD-082, 09 §7)* Task across views: from the Overview of `fs110-parallel-synthetic` without notes, with Copilot chosen, Gregor finds out how stage 2 could run with other agents, copies the start line for T-004, and says without asking which chat Send to Copilot opens for T-003 and what `Continue · Implement T-003` in Now means. It passes when he does all three without asking and without opening a Markdown file. The orchestrator notes each click and its view; Gregor confirms or changes §7's texts; a change is a revise of this spec.
+- **AC-018** *(manual, Gregor; click test on an HTML draft before `/sdd-plan`, PD-082, 09 §7)* Task across views: from the Overview of `fs110-parallel-synthetic` without notes, with Copilot chosen, Gregor finds out how stage 2 could run with other agents, copies the start line for T-004, and says without asking which chat Send to Copilot opens for T-003 and what `Continue · Implement T-003` in Now means. It passes when he does all three without asking and without opening a Markdown file. The orchestrator notes each click and its view; Gregor confirms or changes §7's texts; a change is a revise of this spec. *Run 2026-11-19 (13): tasks 1–3, then ended; K-2, K-3, K-5 → AC-022–AC-024, the rest moves to real use (12 F-3).*
 - **AC-019** *(manual, Gregor, on `tip-splitter` before the spec closes; GitHub Copilot and Claude Code, versions recorded)* From the detail and the first Now row of the Active spec the main part opens a new chat with the prompt in the input, nothing sent, and a draft typed beforehand in the previous Copilot chat is still there; `Send to the current chat` fills the current chat, and Gregor records whether a draft there was kept; with that spec selected the Overview shows one coach line; on 0023's re-cut copy with a `‖` stage (0023 OP-004) the start lines pasted after M-10's commit build their steps, and `/sdd-plan` integrates both without a finding.
 - **AC-020** After the developer activates a Send to Copilot (main part or either Send item), the main part's tooltip and live region shall read `The prompt is in Copilot's chat. Check it, then send it there.` literally, the stub shall record exactly AC-001's calls and none that submits, and no text of the view shall say the prompt was sent; for Claude Code the same with `Claude Code's`.
 - **AC-021** For 0023's returned work with Send offered, the toggletip's then-sentence shall be `Send it once every worker you started is back.`, and with Copy prompt alone `Paste it once every worker you started is back.`; in every render with a Send control, no text in the same step block shall start with `Paste`, and a case-insensitive search of the text modules shall find `paste` only in that Copy-prompt sentence, 0023's Other agents effect (start lines), 0024's `None: Copy prompt` description and its fallback warning.
+- **AC-022** When the developer opens the arrow part's menu, for every fixture and both assistants, `Send to a new chat` shall be a `menuitemradio` with `aria-checked="true"` and a check glyph (`aria-hidden`), Copilot's `Send to the current chat` a `menuitemradio` with `aria-checked="false"` and no glyph, and `Copy prompt` a `menuitem` with neither; names, order and keys shall stay AC-001's and 0024 §6.3's; after a Send through `Send to the current chat` the check shall stay on `Send to a new chat`; the main part's visible text shall stay `Send to Copilot` (`Send to Claude Code`).
+- **AC-023** While `showStepTips` is true, for every case with a line, NS-5 (`Verify`) and 0028's finished plan in Review (D-1) included, the coach line shall render as text not inside a toggletip region, not `hidden` and not visually hidden, before any `(?)` is activated: in the detail after the first line, in 0025's Plan map header, and in the first Now row where §6.4 shows it; once per view (AC-006). *Example:* NS-5 and an all-ticked plan `In Progress` (0028) show `new chat · strong model, other family` in the detail without a click.
+- **AC-024** Every Now row's Copy prompt and both parts of its split button shall render with the secondary colours (first row) or as the icon button (later rows), never primary; the Overview shall hold exactly one primary control while the selected spec's next step has a line (the side panel's, 0022 §4.4 (1)) and none while no spec is selected, the zero-spec state's Copy (0022 §4.4 (3)) apart. *Example:* AC-007's eight entries with 0004 selected: one primary, in the side panel; none selected: none.
 
 ## 10. Technical notes for developers or AI agents
 
@@ -237,23 +242,18 @@ prose; a stage `T-002 → T-003 ‖ T-004`, T-002 next; Now with five, six and e
 | A-010 | Native radios; the choice resets on every showing, survives updates (proxy) | Guideline 4 (native first); 0023 §5.3 resets cards and ways the same way (PD-063 (5) pattern) | AC-009, AC-010 |
 | A-011 | Other agents keeps its stage prompt while no start line shows (proxy) | 09 G-3 removes a duplicate that exists only beside start lines; without them the way would offer nothing (guideline 2) | AC-011 |
 | A-012 | The ways' `(?)` is no session or model advice, so guideline 11's "once per view" does not count it (proxy) | Guideline 11 names session and model advice; its "full reasoning sits behind a `(?)`" fits the moved explanations | 0023 §3, AC-012 |
-| A-013 | §7's texts stand until the click test (proxy); the block shows 0023's prompts and start lines as they are | PD-082 process; FeatherSpec 1.11.0's fixed prompts equal 0023's byte for byte (REPORT.md, OP-004) | AC-018, OP-004 |
+| A-013 | §7's texts stand as proxies after the click test (13); real use reviews them (12 F-3); the block shows 0023's prompts and start lines as they are | PD-082 process; FeatherSpec 1.11.0's fixed prompts equal 0023's byte for byte (REPORT.md, OP-004) | AC-018, OP-004 |
 
 ## 12. Open points
 
-- OP-001 Click test with a task on an HTML draft (AC-018, PD-082); its results (12 B-6,
-  `docs/ux-audit/13-clicktest-results.md`) resolve before `/sdd-plan`. **Blocking for `/sdd-plan`.**
+- OP-001 Closed by the click test (AC-018, `docs/ux-audit/13-clicktest-results.md`): K-2, K-3, K-5 applied; §7 stays proxy.
 - OP-002 (0025's header coach line) closed by D-2 and §6.4 (`cross-spec-r3.md`); OP-003 (0028) closed: it takes `Report` by §6.3, and its `any chat` is no §6.2 word.
-- OP-004 FeatherSpec 1.11.0 (PD-082 change 1, D-3): closed by `/home/claude/orch/featherspec-1.11.0/REPORT.md` — no
-  fixed form for a way, so no tag but `default`; stage prompts and start lines already equal its fixed prompts.
-- OP-005 `/sdd-clarify` 2026-11-19 (S93): 35 findings, resolved by the standing answer and D-1…D-3 (`0026-findings.md`);
-  follow-up: D-4's NS-7 short forms (0028 §6.5) and OP-004 applied.
-- OP-006 Check mark on the active menu choice (12 D3-1), decided by the click test: if task 2 fails (chevron not found, 12
-  B-5), the menu marks the active choice and the label stays `Send to Copilot`.
-- OP-007 `Move back to Ready` (PD-086) names one target, but NS-2's `/sdd-lifecycle` brings folder and status in line in
-  either direction (0021 §6.2): the click test (12 B-5) confirms the word or names the case's real target.
+- OP-004 FeatherSpec 1.11.0 (PD-082 change 1, D-3): closed by `/home/claude/orch/featherspec-1.11.0/REPORT.md` — no fixed form for a way, so no tag but `default`; stage prompts and start lines already equal its fixed prompts.
+- OP-005 `/sdd-clarify` 2026-11-19 (S93): 35 findings, resolved by the standing answer and D-1…D-3 (`0026-findings.md`); follow-up: D-4's NS-7 short forms (0028 §6.5) and OP-004 applied.
+- OP-006 Decided yes (13 K-2; in task 2 the chevron was not looked for, which 12 B-5 counts as not found): the menu checks the active choice, the label stays `Send to Copilot` (§6.1, AC-022).
+- OP-007 Closed (13): `Move back to Ready` (PD-086) stays a proxy; NS-2's `/sdd-lifecycle` aligns folder and status either way (0021 §6.2), so real use on `tip-splitter` (12 F-3) reviews the word.
 
 ## 13. Definition of Ready / Done and next steps
 
-Ready: §6, §7 literal, §5 listed, OP-001 closed. Done: AC-001–AC-016, AC-020, AC-021 green with evidence, AC-017–AC-019
-checked, §5 applied, docs and Memory Bank synced, `/sdd-compile` READY. Next: the click test, then `/sdd-plan` (0028 first).
+Ready: §6, §7 literal, §5 listed, OP-001 closed. Done: AC-001–AC-016, AC-020–AC-024 green with evidence, AC-017–AC-019
+checked, §5 applied, docs and Memory Bank synced, `/sdd-compile` READY. Next: `/sdd-plan` (0028 first).

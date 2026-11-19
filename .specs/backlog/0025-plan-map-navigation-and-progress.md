@@ -5,11 +5,11 @@
 
 Basis: `docs/ux-audit/09-round2-review.md` (F-1, F-2, AC-a…AC-g; G-1, G-2, G-7, G-10; §7, §8); **PD-079**, **PD-081**
 part 2, PD-082, **PD-085**, **PD-088**, PD-040, PD-047, PD-054, PD-077, PD-016; **D-1** (finished plan → Review) and **D-2**
-(one Next step per window); guidelines 1–12. Builds on 0019, 0021–0024 and 0028 (next-step rules, built first); 0026 owns
-short forms, coach lines, Send targets and ways, 0027 the attachment, which this spec only places. No interview: proxies in §10.
+(one Next step per window); guidelines 1–12. Builds on 0019, 0021–0024, 0028 (built first); 0026, 0027: §3. Proxies: §10.
 
 **Changes 2026-11-19** (`docs/ux-audit/12-finish-plan.md` D2; PD-084…PD-089): `43%`, amending PD-079's examples (PD-085);
 the group view, no primary `Integrate` while someone is out (PD-088; §5.6, AC-025, AC-026); D2-7, D2-8 already covered.
+Click test (`docs/ux-audit/13-clicktest-results.md` K-1): step IDs in Next steps, Overview rows link (§5.1, AC-027).
 
 ## 1. Summary
 
@@ -50,7 +50,7 @@ Applied in the implementing change set as notes "*Amended by 0025 (PD-082): …*
 | Spec · statement | Amendment |
 | --- | --- |
 | 0023 §5.2 "A chip is a link that opens the plan at the step's heading (0019 §6.4)", tooltip "then 0019 AC-017's `Open <file name> at line <n>`"; AC-004 "activating a chip shall send the open request …" | A chip is a step link (0025 §5.1): it leads into the Plan map, Ctrl/Cmd opens the plan; tooltip U-02 |
-| 0019 §6.3 Steps "Next open step: <ID> <title>"; AC-017 "a link of the side panel (ID …) shall send the open request", "tooltip … 'Open <file name> at line <n>'" | Its ID is a step link for a map-able spec (0025 §5.1); while a return note lies the line is U-05 (0025 §5.6); AC-017 holds for every other link |
+| 0019 §6.3 Steps "Next open step: <ID> <title>"; AC-017 "a link of the side panel (ID …) shall send the open request", "tooltip … 'Open <file name> at line <n>'"; 0021 §6.1–§6.3 and 0017's step IDs in intents and short forms (plain text) | Its ID is a step link for a map-able spec (0025 §5.1); while a return note lies the line is U-05 (0025 §5.6); AC-017 holds for every other link; those IDs are step links too (13 K-1, 0025 AC-027) |
 | Guideline 5 "IDs and "Open" go to the file at the line, beside the panel (`ViewColumn.Beside`)" (`.claude/rules/ux-guidelines.md`) | "Criterion IDs and "Open" go to the file at the line, beside the panel (`ViewColumn.Beside`); a step ID goes to its card in the Plan map, Ctrl/Cmd+click to the file"; `docs/product/ux-guidelines.md` gains row `5 (2026-11-19)` (F-1, g-r2-01) |
 | 0023 §3 out of scope "A coach line or `(?)` in the Plan map", "Send to an assistant for the map's prompts"; §5.3 *Header* | The header shows the spec's next step (0025 §5.3); ways and start lines keep Copy prompt |
 | 0023 §3 out of scope bullet "Open Plan Map" in the tree's context menu; OP-005 | Built as `Show in Plan Map` (0025 §5.1; 09 F-1 (2), PD-082) |
@@ -74,14 +74,15 @@ Applied in the implementing change set as notes "*Amended by 0025 (PD-082): …*
 
 ### 5.1 Step links lead into the Plan map (F-1 (1)–(3), (5); A-003, A-004, A-005)
 
-- A *map-able* spec is one the Plan map shows a plan for (0023 §5.1: not Done, readable sibling plan). A *step link*
-  is a step chip of the side panel's Plan section, the ID of Progress' next open step of a map-able spec, and a chip of
-  a finished stage in the Plan map. Other IDs keep 0019 §6.4's file link.
-- **Click, Enter or Space:** one navigation request, area `planMap`, target the spec and the step (PD-040). The map shows
-  the spec (0023 §5.3) and the step's card expanded, scrolled into view, focus on its disclosure button, highlighted for
-  1500 ms; a finished stage holding the step shows its cards until the next showing. Selection and side panel stay (0023
-  AC-005). Each activation applies once (A-011): the same link again repeats it; a reload, a model update or a later
-  showing of the tab does not; a target that arrives before its spec shows waits.
+- A *map-able* spec is one the Plan map shows a plan for (0023 §5.1: not Done, readable sibling plan). A *step link* is a
+  step chip of the side panel's Plan section, the ID of Progress' next open step of a map-able spec, a chip of a finished
+  stage in the Plan map, and its step IDs in Next steps and Overview rows (AC-027, 13 K-1). Others: file link or text.
+- **Click, Enter or Space:** one navigation request, area `planMap`, target the spec and the step (PD-040). The map
+  shows the spec (0023 §5.3) and the step's card expanded, scrolled into view, focus on its disclosure button,
+  highlighted for 1500 ms; a finished stage holding the step shows its cards until the next showing. Selection and
+  side panel stay (0023 AC-005); another spec's Overview row selects its spec (PD-042). Each activation applies once
+  (A-011): the same link again repeats it; a reload, a model update or a later showing of the tab does not; a target
+  that arrives before its spec shows waits.
 - **With Ctrl or Cmd held (click, Enter or Space):** 0019 §6.4's open request for the plan at the step's heading.
 - **Name** as today (0023 §5.2; 0019 AC-017); tooltip and description: the name, a break, U-02. **Highlight:** 2 px outline
   in the focus colour (High Contrast: active border); no transition under `prefers-reduced-motion: reduce`, else ≤ 150 ms.
@@ -145,7 +146,7 @@ While the current stage has ways (0023 §5.4), the detail's Next step shows U-06
 after its Copy prompt and status region), before line 2. `Ways to run it` navigates to `planMap`, target the spec's ways:
 that ways block (0026 §6.6) expanded, scrolled into view, focus on `Ways to run stage <n>`, highlighted, applied as §5.1.
 
-## 6. Texts (English, PD-016; in the text modules, asserted literally; proxies, confirmed by the click test AC-023)
+## 6. Texts (English, PD-016; in the text modules, asserted literally; proxies; the click test AC-023 (13) left them standing)
 
 | ID | Place | New | Replaces |
 | --- | --- | --- | --- |
@@ -202,11 +203,12 @@ copy, plan `In Progress` (PD-081; Review by D-1); `fs-partial-return` (stage `T-
 - **AC-020** Every test at the commit on which this spec's implementation starts that decides a statement §4 does not change shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI; a script compares the titles of both commits and the plan lists every missing title with the changed statement or the head title that replaces it.
 - **AC-021** The statements of §4 shall carry their notes and no PD row shall be edited; `.claude/rules/ux-guidelines.md` shall read guidelines 5 and 11 literally as §4 says, and `docs/product/ux-guidelines.md` shall hold the rows `5 (2026-11-19)` and `11 (2026-11-19)`; `README.md` shall contain `Show in Plan Map`, `Ctrl+click`, `4 of 6 done · 67%`, and `Next step` in its *Plan map* section; `CHANGELOG.md` under `[0.1.0]` shall contain `Show in Plan Map` and `4 of 6 done · 67%`, and neither file a digit followed by ` %`; `docs/release-checklist.md` shall carry AC-022–AC-024.
 - **AC-022** *(manual, preview harness by the orchestrator, then Gregor; guideline 12)* Dark, Light and High Contrast at 1600 px and 1000 px window width with the side panel open at its default width, on `fs110-parallel-synthetic` (each variant), `fs-partial-return` and `studio-0015`: header next step, card rows, percentages, U-05, U-06 and U-08 cut nothing; every motif is told apart without colour; the highlight is visible in each theme; an expanded card leaves its `‖` neighbour at its own height; at 1000 px the map alone shows the header's next step; screenshots and verdict in the plan.
-- **AC-023** *(manual, Gregor; click test on an HTML draft before `/sdd-plan`, PD-082, 09 §7)* Task across views, started in the Overview with 0001 of the parallel fixture: "Find out what T-004 does, whether it can run in parallel, how far the spec is, and copy what you would run next." The observer notes every click; it passes when Gregor answers without opening a Markdown file and names the percentage; he confirms or changes §6's texts; the plan records path and answers, a change is a revise of this spec.
+- **AC-023** *(manual, Gregor; click test on an HTML draft before `/sdd-plan`, PD-082, 09 §7)* Task across views, started in the Overview with 0001 of the parallel fixture: "Find out what T-004 does, whether it can run in parallel, how far the spec is, and copy what you would run next." The observer notes every click; it passes when Gregor answers without opening a Markdown file and names the percentage; he confirms or changes §6's texts; the plan records path and answers, a change is a revise of this spec. *Run 2026-11-19 (13): tasks 1–3, then ended; K-1 became AC-027, the rest moves to AC-024.*
 - **AC-024** *(manual, Gregor; real use on `C:\projects\test\tip-splitter` before the spec closes, PD-082, 09 AC-e)* Every step's information is reached without the Markdown file (chip, next open step, tree); Ctrl+click opens the plan at the step; after the agent ticks the last step the map header shows the check and the percentage first reads 100%.
 - **AC-025** While a group (§5.6) has a member out, the Plan section, Progress' Steps row and each Plan map stage row holding a returned step shall show the identical U-08 sentence and no U-05; once every member is returned, ticked or struck, U-05 again; within 500 ms after the model-changed notification when a note arrives (AC-011).
   > **Given** `fs-partial-return` **Then** `1 of 2 returned · T-004 not back yet`. **Given** a BLOCKED note for T-005 instead **Then** `1 of 2 returned, T-005 blocked · T-004 not back yet`. **Given** both notes (`fs110-parallel-synthetic`) **Then** U-05 as AC-015.
 - **AC-026** While U-08 shows and the next step's first line is returned work (`Integrate · /sdd-plan`), the detail, the first Now row and the Plan map header shall render its Copy prompt, or with Send offered both parts of its split button, as secondary, and the view shall hold no primary control; with U-05 the first line is primary again (0022 §4.4, 0024 AC-003).
+- **AC-027** For a map-able spec, every step ID in the intent lines of the Next step in the detail, the Plan map header and the first Now row, and in the step short form of every Now and Up next row of the Overview, shall be a step link: click, Enter or Space shall send exactly one navigation request, area `planMap`, target that spec and step, and show its card as AC-001; with Ctrl or Cmd held, AC-002's open request; tooltip and accessible description as AC-004; its activation shall trigger no other control of the row, and from another spec's row it shall select that spec (PD-042); for a spec that is not map-able these IDs shall stay plain text, as on Board cards, tree items, the quick pick and prompts in code. *Example:* on the no-notes variant, a click on `T-003` in Now's `Continue · Implement T-003` shows 0001 in the Plan map with T-003 expanded, focused and highlighted; Ctrl+click opens the plan at T-003's heading.
 
 ## 9. Technical notes for developers or AI agents
 
@@ -246,13 +248,12 @@ copy, plan `In Progress` (PD-081; Review by D-1); `fs-partial-return` (stage `T-
 
 ## 11. Open points
 
-- OP-001 Click test (AC-023, PD-082): its results (12 B-6, `docs/ux-audit/13-clicktest-results.md`) resolve before
-  `/sdd-plan`; §6 and §10 stand till then. Also 12 D2-6 reads G-10 as "card titles at most two lines"; 09 G-10 and §5.2 say
-  `align-items: start`.
+- OP-001 Closed by the click test (AC-023, 13): K-1 → §5.1, AC-027; §6, §10 stay proxies for real use (12 F-3, AC-024).
+  Still open: 12 D2-6 reads G-10 as "card titles at most two lines"; 09 G-10 and §5.2 say `align-items: start`.
 - OP-002 Closed by D-2 (2026-11-19): beside the map the header's next step is the view's one; 0026 §6.4 cites D-2.
 - OP-003 `/sdd-clarify` 2026-11-19 (S92): 33 findings settled (standing answer; `0025-findings.md`). Readings to object to: no header → side panel keeps its Next step; a target travels once; ways focus the disclosure.
 
 ## 12. Definition of Ready / Done and next steps
 
-Ready: §5, §6 literal, §4 listed, 0028 implemented, OP-001 closed. Done: AC-001–AC-021, AC-025, AC-026 green with evidence,
-AC-022–AC-024 checked, §4 applied, docs and Memory Bank synced, `/sdd-compile` READY. Next: click test (OP-001), `/sdd-plan`.
+Ready: §5, §6 literal, §4 listed, 0028 implemented, OP-001 closed. Done: AC-001–AC-021, AC-025–AC-027 green with
+evidence, AC-022–AC-024 checked, §4 applied, docs and Memory Bank synced, `/sdd-compile` READY. Next: `/sdd-plan`.
