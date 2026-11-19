@@ -266,6 +266,7 @@ Decided by automated tests unless marked manual. Fixtures: one per NS rule (0015
 - **AC-019** When the developer runs "Copy Next Step" while a current spec exists, the system shall copy its full first line without asking and show AC-016's feedback.
 - **AC-020** When the developer runs "Copy Next Step" while no current spec exists, the system shall offer the quick pick of §6.4 in its order and labels; picking shall copy that spec's full first line; cancelling shall copy nothing; with no item it shall show the §6.4 message, whose "Copy" copies `/sdd-specify`; while the specs are not read it shall run "FeatherSpec Studio: Open" instead.
   *Amended by 0021 (PD-069): AC-020 — the message's "Copy" reads "Copy prompt" (0021 AC-008).*
+  *Amended by 0029 (setup not run): AC-020 and §6.4 (no item) — while `/sdd-setup` has not run (0029 §6.1) the message is 0029 §7's `No spec has a next step to copy. Set up this project first with /sdd-setup`, and its button copies `/sdd-setup`.*
 - **AC-021** While no project is active, "Copy Next Step" shall behave as "Select Project" (0001 AC-008, AC-015).
 - **AC-022** While the workspace is in Restricted Mode or the window is a reader, cards, rows, entry and command shall behave as in AC-004–AC-020.
 - **AC-023** No Copy, click or command of this spec shall create, change, move or delete a file of the workspace (0007 AC-016 as amended).

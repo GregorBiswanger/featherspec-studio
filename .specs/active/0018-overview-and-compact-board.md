@@ -116,6 +116,7 @@ read Overview or Board; the rows below change behaviour.
 - **O-7 Activity.** 0006 BR-07's entries, collapsed whenever the panel is opened (created), open or closed kept while it stays open, also when hidden and shown again (as 0007 AC-023); no section without entries; while the status history is not available, a heading "Activity" with the reason and no toggle.
 - **O-8 Empty.** Zero specs: "No specs yet. Start with /sdd-specify" with Copy in place of Now, Up next and the figures line; Problems (O-4) and Activity (O-7) as usual. Now empty: "Nothing in progress." Up next empty: "Nothing up next. Start the next spec with /sdd-specify" with Copy. Both Copy put `/sdd-specify` on the clipboard with 0016's feedback.
   *Amended by 0021 (PD-069): O-8 — the Copy reads "Copy prompt".*
+  *Amended by 0029 (setup not run): O-8 — while `/sdd-setup` has not run (0029 §6.1) the zero-spec text is the welcome of 0029 §6.3, and "Nothing up next …" reads 0029 §7's line with an icon Copy of `/sdd-setup`.*
   *Amended by 0022 (PD-069): O-8 — the Copy of "Nothing up next …" is an icon button (0022 §4.4); the zero-spec Copy stays primary (0022 AC-011).*
 
 ### 6.2 Board (R-10, K-D)
@@ -230,9 +231,11 @@ marked manual. Fixtures: 0006's and 0007's, `fs170-brownfield-mixed`, one with e
 - **AC-010** While Activity has entries, the Overview shall show it collapsed (`aria-expanded="false"`) with the heading "Activity (n)" each time the panel is opened; activating the heading shall show or hide the entries, and the choice shall hold while the panel stays open, also after it was hidden and shown again. While it has no entry it shall show no section; while the status history is not available, the heading "Activity" with "Activity not available: <reason>" and no toggle.
 - **AC-011** While the project has no spec, the Overview and the Board shall show "No specs yet. Start with /sdd-specify" and a Copy that copies `/sdd-specify`, and the Overview no Now, Up next or figures line; Problems and Activity per AC-007 and AC-010.
   *Amended by 0021 (PD-069): AC-011 — the Copy reads `Copy prompt` and still copies `/sdd-specify` (0021 AC-008).*
+  *Amended by 0029 (setup not run): AC-011 — while `/sdd-setup` has not run (0029 §6.1) the Overview and the Board show the welcome of 0029 §6.3 instead.*
 - **AC-012** While Now has no entry it shall show "Nothing in progress."; while Up next has none it shall show "Nothing up next. Start the next spec with /sdd-specify" with a Copy of `/sdd-specify`.
   *Amended by 0021 (PD-069): AC-012 — the Copy reads `Copy prompt` (0021 AC-008).*
   *Amended by 0022 (PD-069): AC-012 — the Copy of "Nothing up next …" is an icon button (0022 §4.4).*
+  *Amended by 0029 (setup not run): AC-012 — while `/sdd-setup` has not run (0029 §6.1) Up next's line is 0029 §7's, its icon Copy copies `/sdd-setup`.*
 - **AC-013** Every spec row, Copy, figure, "+ n more" and the Problems and Activity headings shall be reachable with Tab, activated with Enter or Space, and show the focus outline of 0013 AC-003.
 - **AC-014** Each column that shows no card (B-1) shall render with `data-narrow`, its icon, name and count (0 on a strip a filter emptied; the number hidden is in its tooltip and accessible name), no card list and no hint, and the accessible name of §7; every other column shall render without `data-narrow`.
   > **Given** Review 2, Done 13, the rest empty, no filter, Done collapsed **Then** five narrow columns and one wide.

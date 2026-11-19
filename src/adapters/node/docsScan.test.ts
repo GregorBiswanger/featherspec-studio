@@ -376,6 +376,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
             '## Plan map navigation and progress (0025)',
             '## Send defaults and wording (0026)',
             '## Attach the spec when sending (0027)',
+            '## Onboarding before setup (0029)',
             '## Go',
         ]);
         for (const gone of ['Plan line', 'descriptions cut', 'attention row', 'attention reason', 'filters, sort']) {
@@ -1148,5 +1149,30 @@ describe('product docs after 0027 (AC-015)', () => {
             expect(await read(`.specs/done/${file}.md`), file).toContain('Amended by 0027 (PD-');
         }
         expect('no note here').not.toContain('Amended by 0027 (PD-');
+    });
+
+    it('0029 AC-012: the notes of section 5, PD-090, the README, the CHANGELOG and the checklist section', async () => {
+        const notes: ReadonlyArray<readonly [string, number]> = [
+            ['.specs/done/0006-mission-control-dashboard.md', 1],
+            ['.specs/done/0007-spec-board-spec-detail.md', 1],
+            ['.specs/active/0017-next-step-everywhere.md', 1],
+            ['.specs/active/0018-overview-and-compact-board.md', 3],
+            ['.specs/active/0020-native-spec-tree.md', 1],
+        ];
+        for (const [file, count] of notes) {
+            expect((await read(file)).split('Amended by 0029 (setup not run)').length - 1, file).toBe(count);
+        }
+        expect(await read('docs/product/product-decisions.md')).toMatch(/\| PD-090 \| [^|]*feather[^|]*\|/i);
+        expect(await read('README.md')).toMatch(/Welcome to FeatherSpec[^]*\/sdd-setup|\/sdd-setup[^]*Welcome to FeatherSpec/);
+        expect(await read('CHANGELOG.md')).toContain('Welcome to FeatherSpec');
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('\n## Onboarding before setup (0029)\n');
+        expect(start).toBeGreaterThan(-1);
+        expect(start).toBeLessThan(text.indexOf('\n## Go'));
+        const section = text.slice(start, text.indexOf('\n## ', start + 1));
+        for (const mark of ['**AC-013**', '**AC-014**']) {
+            expect(section, mark).toContain(mark);
+        }
+        expect('no note here').not.toContain('Amended by 0029 (setup not run)');
     });
 });

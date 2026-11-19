@@ -10,6 +10,11 @@ First release.
 
 ### Added
 
+- Onboarding before `/sdd-setup`: in a project where FeatherSpec is installed but `/sdd-setup` has not run (the Memory Bank
+  project brief still `TBD` and the architecture snapshot never reconciled), the empty Overview and Board show
+  `Welcome to FeatherSpec` with the feather mark and offer `/sdd-setup` with Send or Copy prompt; the Specs tree, Up next
+  and Copy Next Step name `/sdd-setup` too. Once setup has run, `No specs yet. Start with /sdd-specify` comes back
+  without a reload.
 - Send attaches the spec: with FeatherSpec 1.11.0 or later, Send puts the spec in the chat as a file, Claude Code through
   an `@` mention, and a line under the button names the file (`0002-x.md attached when sent`). Every step that reads the spec
   attaches it; `/sdd-lifecycle` and `/sdd-overview` do not. Copy prompt attaches nothing, and nothing is submitted. Copilot

@@ -3,7 +3,7 @@
 **Spec:** [0029-onboarding-before-setup.md](0029-onboarding-before-setup.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-006 (T-005 is the orchestrator's)
+**Current step:** T-005 (the orchestrator's; everything else is done)
 
 ## Approach
 
@@ -119,33 +119,33 @@ No parallel stage: T-002 and T-003 share `shared/protocol/texts.ts` and the mode
   `docs/release-checklist.md` section 0029 with AC-013, AC-014; `docsScan.test.ts` "0029 AC-012 …"; title audit (every
   title at the Baseline exists at the head); `activeContext.md`. All gates 1–5.
 - **Verify:** gates 1–5 green; `npx vitest run src/adapters/node/docsScan.test.ts src/core/lifecycle/problems.test.ts`.
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-19 red: `npx vitest run src/adapters/node/docsScan.test.ts` 2 failed (checklist headings, "0029 AC-012"); then `npx vitest run src/adapters/node/docsScan.test.ts src/adapters/node/sourceScan.test.ts src/core/lifecycle/problems.test.ts src/core/discovery/markerWatchPaths.test.ts` green (237 + 3); title audit `python3 /tmp/ta25/titles.py <0982b84 src> src`: 3555 titles at the baseline, 3631 at the head, none missing. Full gate chain at the end of the spec: see the handoff.
+- **Notes:** Staying tests that had to grow with the spec, no title lost: `markerWatchPaths.test.ts` ("are the two markers and the setup folder" now lists the brief as fourth path), the checklist-heading list and the `ALLOWED` list of the "up next" scan in `sourceScan.test.ts` (one entry each). 0027 stays in `active/`. `.architecture/core.md`, `webview.md` and the snapshot stamp of `AGENTS.md` follow the new modules. PD-090 is a proxy: the feather glyph instead of Gregor's 🪶.
 
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
 | AC-001 | T-001 | `src/core/discovery/setupSign.ts:readSetupSign`, `discoverWorkspace.ts` | `setupSign.test.ts`, `discoverWorkspace.test.ts` | verified |
-| AC-002 | T-001 | `setupSign.ts`, `classifyFolder.ts:briefText`, `markerWatchPaths.ts`, `specs/activeProjectFeed.ts` | `setupSign.test.ts`, `activeProjectChanged.test.ts`, `activeProjectFeed.test.ts` | verified |
-| AC-003 | T-002 | — | — | open |
-| AC-004 | T-002, T-003 | — | — | open |
-| AC-005 | T-002 | — | — | open |
-| AC-006 | T-002, T-003, T-004 | — | — | open |
-| AC-007 | T-003 | — | — | open |
-| AC-008 | T-003 | — | — | open |
-| AC-009 | T-004 | — | — | open |
-| AC-010 | T-004 | — | — | open |
-| AC-011 | T-002 | — | — | open |
-| AC-012 | T-006 | — | — | open |
+| AC-002 | T-001 | `setupSign.ts`, `classifyFolder.ts:briefText`, `markerWatchPaths.ts`, `src/core/specs/activeProjectFeed.ts`, `src/adapters/vscode/markerWatch.ts` | `setupSign.test.ts`, `activeProjectChanged.test.ts`, `src/core/specs/activeProjectFeed.test.ts`, `markerWatchPaths.test.ts` | verified |
+| AC-003 | T-002 | `src/core/assistant/welcome.ts:welcomeOf`, `src/core/overview/overviewView.ts`, `src/webview/ui/Welcome.tsx`, `src/webview/areas/overview/Overview.tsx` | `src/core/overview/welcome0029.test.ts`, `src/webview/welcome0029.test.tsx` | verified |
+| AC-004 | T-002, T-003 | `src/core/board/boardService.ts`, `src/webview/areas/SpecBoard.tsx`, `src/core/shell/specTree.ts` | `welcome0029.test.ts`, `welcome0029.test.tsx`, `src/core/shell/specTree.test.ts` | verified |
+| AC-005 | T-002 | `Welcome.tsx` (`StepAction` with `SETUP_LINE`), `src/shared/protocol/texts.ts` | `src/webview/welcome0029.test.tsx` | verified |
+| AC-006 | T-002, T-003, T-004 | all of the above, `sendView.ts:plainSendViewOf` | `welcome0029.test.ts` and `.tsx`, `specTree.test.ts`, `copyNextStep.test.ts`, `src/core/shell/onboarding0029.test.ts` | verified |
+| AC-007 | T-003 | `src/core/overview/rows.ts:projectUpNext`, `src/webview/areas/overview/Now.tsx` | `src/core/overview/upNext0029.test.ts`, `welcome0029.test.tsx`, `specTree.test.ts` | verified |
+| AC-008 | T-003 | `src/core/copyNextStep/copyNextStep.ts`, `statusEntry.ts`, `copyNextStepTexts.ts` | `src/core/copyNextStep/copyNextStep.test.ts` | verified |
+| AC-009 | T-004 | `activeProjectFeed.ts`, `discoveryController.ts:sameActive` | `src/core/shell/onboarding0029.timing.test.ts` | verified |
+| AC-010 | T-004 | — (preserved behaviour) | `src/core/shell/onboarding0029.test.ts` | verified |
+| AC-011 | T-002 | `texts.ts`, `overview/texts.ts`, `copyNextStepTexts.ts`, `src/webview/board/featherPath.ts`, `icons.tsx` | `src/adapters/node/visibleLiterals.test.ts`, `welcome0029.test.tsx` | verified |
+| AC-012 | T-006 | `.specs/` notes, `docs/product/product-decisions.md` PD-090, `README.md`, `CHANGELOG.md`, `docs/release-checklist.md` | `src/adapters/node/docsScan.test.ts` ("0029 AC-012") | verified |
 | AC-013 | T-005 | — | manual: orchestrator, preview harness | open |
-| AC-014 | T-006 (checklist) | — | manual: Gregor, Hands-On on `tip-splitter` | open |
-| AC-015 | T-006 | — | `npm run test:unit`; `npm test` is the orchestrator's | open |
+| AC-014 | T-006 (checklist) | `docs/release-checklist.md` | manual: Gregor, Hands-On on `tip-splitter` | open |
+| AC-015 | T-006 | — | title audit (3555 base, 3631 head, none missing); `npm run test:unit` and `npm test` (orchestrator) | built |
 
 ## Session handoff
 
-- **Done so far:** T-001 (sign read, re-read, carried to the model); T-002 (welcome in Overview and Board).
-- **Next action:** T-006 (T-004 done; T-005 stays open for the orchestrator)
+- **Done so far:** T-001, T-002, T-003, T-004, T-006 built and verified; the final gate chain ran green at the head of this plan (see the commit after it).
+- **Next action:** T-005 (orchestrator: preview harness, add both fixtures as scenarios to `host.mts`), then `npm test` on Windows and AC-014 (Gregor); `/sdd-compile` is the user's command, not run here
 - **Open decisions:** — (OP-001: FeatherSpec 1.11.0 unreleased; the sign rests on `04c569d`)
 - **Baseline:** `0982b84` (head before the first step commit; "the commit on which implementation starts")
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

@@ -1,7 +1,7 @@
 import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { NOTHING_UP_NEXT_TEXT, UP_NEXT_HEADING } from '../../webview/areas/overview/texts';
+import { NOTHING_UP_NEXT_SETUP_TEXT, NOTHING_UP_NEXT_TEXT, UP_NEXT_HEADING } from '../../webview/areas/overview/texts';
 import { UP_NEXT_SET_LABEL } from '../../webview/areas/overview/requests';
 
 const root = path.resolve(__dirname, '..', '..', '..');
@@ -373,7 +373,7 @@ describe('0020 AC-018: the Spec Explorer is gone from the sources', () => {
 });
 
 describe('0022 AC-007: "up next" names one set', () => {
-    const ALLOWED = [UP_NEXT_HEADING, NOTHING_UP_NEXT_TEXT, UP_NEXT_SET_LABEL];
+    const ALLOWED = [UP_NEXT_HEADING, NOTHING_UP_NEXT_TEXT, NOTHING_UP_NEXT_SETUP_TEXT, UP_NEXT_SET_LABEL];
 
     function literalsWithUpNext(text: string): string[] {
         return [...text.matchAll(/'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|`((?:[^`\\]|\\.)*)`/g)].map((match) => match[1] ?? match[2] ?? match[3] ?? '').filter((literal) => /up next/i.test(literal));
@@ -383,9 +383,9 @@ describe('0022 AC-007: "up next" names one set', () => {
         const files = (await sourceFiles()).filter((file) => !isTestFile(file.name));
         const found = files.flatMap((file) => literalsWithUpNext(file.text).map((literal) => `${file.name}: ${literal}`));
         expect(found.sort()).toEqual(
-            [`src/webview/areas/overview/texts.ts: ${UP_NEXT_HEADING}`, `src/webview/areas/overview/texts.ts: ${NOTHING_UP_NEXT_TEXT}`, `src/webview/areas/overview/requests.ts: ${UP_NEXT_SET_LABEL}`].sort(),
+            [`src/webview/areas/overview/texts.ts: ${UP_NEXT_HEADING}`, `src/webview/areas/overview/texts.ts: ${NOTHING_UP_NEXT_TEXT}`, `src/webview/areas/overview/texts.ts: ${NOTHING_UP_NEXT_SETUP_TEXT}`, `src/webview/areas/overview/requests.ts: ${UP_NEXT_SET_LABEL}`].sort(),
         );
-        expect(ALLOWED).toHaveLength(3);
+        expect(ALLOWED).toHaveLength(4);
     });
 
     it('package.json holds no "up next"', async () => {

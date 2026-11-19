@@ -127,6 +127,7 @@ from the tree; the panel has two tabs; no test that decides a staying criterion 
 | --- | --- |
 | Project active, model loaded, ≥ 1 spec | groups (§4.1); they stay while Refresh or Retry re-reads (0005 AC-029) |
 | Project active, model loaded, 0 specs | message `No specs yet. Start with /sdd-specify` (0018's zero-spec text; a message has no button); no rows, no badge |
+| Project active, model loaded, 0 specs, `/sdd-setup` not run (0029 §6.1) | *Amended by 0029 (setup not run): §4.4 row "0 specs" — message 0029 §7's tree message; no rows, no badge* |
 | Project active, first model not loaded | message `Loading project…` |
 | Project active, S5 for discovery or listing | S5's line with rows Show output, Retry (the no-project form below) |
 | No project active: S1, S3, S4, S5, S8, S9 | as today (0005 AC-003): the state's line with one row per action |

@@ -286,6 +286,16 @@ and the expected result. A clear miss reopens the named spec.
   and 0027 §6.2's table; a re-read sets Claude Code to `false` the
   same way (and reopens 0027 A-001, A-003).
 
+## Onboarding before setup (0029)
+
+- [ ] **AC-013** *(preview harness by the orchestrator; guideline 12)*: the Overview and the Board of `fs-setup-not-run`, and
+  the Overview of `fs-setup-done-no-specs`, in Dark, Light and High Contrast at 1600 px and 1000 px window width with the side
+  panel open and Send offered. The feather glyph is visible in each theme, no text or button is cut, no word breaks inside
+  itself, and glyph, heading, body and action stand together in that order in one container. Screenshots go into the plan.
+- [ ] **AC-014** *(Gregor, Hands-On on a fresh `tip-splitter`, with GitHub Copilot and with Claude Code; note the versions)*:
+  after *Set up FeatherSpec* the Studio welcomes you and offers `/sdd-setup`; Send puts it into the assistant; after
+  `/sdd-setup` the empty state reads `No specs yet. Start with /sdd-specify` without a reload.
+
 ## Go
 
 - [ ] **Repository visibility**: the Marketplace page loads the README screenshots from

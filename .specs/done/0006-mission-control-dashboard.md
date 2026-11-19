@@ -473,6 +473,7 @@ error text, prompts or provider payloads (AC-026). It sends no telemetry (handof
 - **AC-020** If the active project has zero specs, then the system shall show "No specs yet"
   with a pointer to `/sdd-specify`. *(PD-036; the panel-level states are 0005's)*
   *Amended by 0018 (PD-062): → 0018 AC-011.*
+  *Amended by 0029 (setup not run): AC-020 — while `/sdd-setup` has not run (0029 §6.1) the welcome of 0029 §6.3 instead.*
 - **AC-021** The system shall show every state, attention reason and highlighted-run status as
   text, with colour only in addition.
 
