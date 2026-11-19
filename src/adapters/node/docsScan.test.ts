@@ -973,6 +973,14 @@ describe('product docs after the final check of round 2 (0024 T-014 to T-022)', 
 
 });
 
+function guardScopedToOldVersions(text: string): boolean {
+    const guard = 'Verified:` line but no tick';
+    return text
+        .split(/\.\s/)
+        .filter((sentence) => sentence.includes(guard))
+        .some((sentence) => /(?:before|below) FeatherSpec\s+1\.11\.0/i.test(sentence.slice(0, sentence.indexOf(guard))));
+}
+
 describe('0028 AC-011: the docs describe the plan-state-aware next step', () => {
     it('README: the Report first intent, the Review line in full, and no leftover sentence of the old report case', async () => {
         const text = await read('README.md');
@@ -997,8 +1005,21 @@ describe('0028 AC-011: the docs describe the plan-state-aware next step', () => 
         }
     });
 
-    it('negative control: a README with the old sentence would be found', () => {
-        expect('without an open step the one prompt lets the agent report where the plan stands').toContain('without an open step the one prompt lets the agent report where the plan stands');
-        expect('so the Review line stays short').not.toContain('every step of its plan ticked or dropped');
+    it('README and CHANGELOG do not scope the Verified-without-tick guard to versions below 1.11.0', async () => {
+        const readme = await read('README.md');
+        const changelog = firstRelease(await read('CHANGELOG.md'));
+        for (const [name, text] of [['README.md', readme], ['CHANGELOG.md', changelog]] as const) {
+            expect(text, name).toContain('Verified:` line but no tick');
+            expect(guardScopedToOldVersions(text), name).toBe(false);
+        }
+    });
+
+    it('negative control: the scope check finds the old wording and passes the right one', () => {
+        const old = 'Before FeatherSpec 1.11.0, when the plan names an unfinished step or a step has a `Verified:` line but no tick, the report comes first.';
+        const oldChangelog = 'Below FeatherSpec 1.11.0, when the plan names an unfinished step or a step has a `Verified:` line but no tick, the prompt comes first.';
+        const right = 'When a step has a `Verified:` line but no tick, and before FeatherSpec 1.11.0 also when the plan names an unfinished step, the report comes first.';
+        expect(guardScopedToOldVersions(old)).toBe(true);
+        expect(guardScopedToOldVersions(oldChangelog)).toBe(true);
+        expect(guardScopedToOldVersions(right)).toBe(false);
     });
 });
