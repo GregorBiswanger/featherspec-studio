@@ -3,7 +3,7 @@
 **Spec:** [0026-send-defaults-and-wording.md](0026-send-defaults-and-wording.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-008
+**Current step:** T-009
 
 ## Approach
 
@@ -282,8 +282,8 @@ Parallel: stages 2 and 3, run in sequence (`PLAN-R3.md`). Stage 1 shares `nextSt
     a planted hex colour gives red).
 - **Verify:** `npx vitest run src/webview/areas/planMap/WaysAbout0026.test.tsx src/adapters/node/webviewCss.test.ts` red
   first (no `(?)`, focus lost to `body`, no tag rule), then `npm run test:unit` green.
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** `WaysAbout0026` 5 tests, PlanMap AC-013 heading case, webviewCss 0026 rule; stage 3 gate chain green (eslint, tsc, tsc webview, test:unit, compile, compile-tests; this also covers stage 2's compile steps).
+- **Notes:** `ABOUT_WAYS_LABEL`, `waysAbout()` (M-08 + three `<name>: <effect>` paragraphs) in `planMapTexts.ts`; `Ways` renders the `Toggletip` between the radio group and the part. The heading hand-off needed no new code: `PlanMap`'s `Stages` already sends focus to the heading when the focused element disappears; a PlanMap test covers a radio and the `(?)`. CSS: `.plan-way-tag` (600 weight, underline: not colour alone), radio `accent-color` and focus outline from theme variables.
 
 ### T-009 — No writes, both modes, user language
 
@@ -370,8 +370,8 @@ Parallel: stages 2 and 3, run in sequence (`PLAN-R3.md`). Stage 1 shares `nextSt
 
 ## Session handoff
 
-- **Done so far:** T-001…T-006 committed on `ux-round-3` (stage 1 gate green at T-004; stage 2 gate run after T-006, result in T-006's commit follow-up).
-- **Next action:** T-008 (About these ways, tag CSS, focus), stage 3 gate, then stage 4.
+- **Done so far:** T-001…T-008 committed on `ux-round-3`; stage 1 and stage 3 gates green.
+- **Next action:** T-009 (no-write and user-language tests), T-010 (preview: orchestrator), T-011 (notes, docs, title audit, final gates).
 - **Open decisions:** — (AC-019's draft check in Copilot's `newChat` is untested, V-3 C4; if it fails, Gregor decides, 09 §3)
 - **Baseline:** `657e87a`
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator. Full vitest takes 3+ minutes here: run it in the background.

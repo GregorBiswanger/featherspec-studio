@@ -738,6 +738,17 @@ describe('0023 AC-012: the map follows the files', () => {
         expect(document.activeElement).toBe(map(container).querySelector('[data-map-heading]'));
     });
 
+    it('0026 AC-013: a focused radio or the (?) of the ways block goes with a return note: the focus goes to the heading of the map', async () => {
+        for (const pick of ['input[type="radio"]', 'button.toggletip']) {
+            const container = await openWays();
+            await act(async () => waysOf(container)!.querySelector<HTMLElement>(pick)!.focus());
+            await update(withoutWays());
+            expect(waysOf(container), pick).toBeNull();
+            expect(document.activeElement, pick).toBe(map(container).querySelector('[data-map-heading]'));
+            await update(planSample());
+        }
+    });
+
     it('PD-077: a start line whose step returns takes the focus to the heading even while the ways block stays', async () => {
         const container = await openWays();
         await click(radioOf(container, 2));

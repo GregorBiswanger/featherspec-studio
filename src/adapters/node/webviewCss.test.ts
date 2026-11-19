@@ -238,6 +238,18 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
         expect(rulesFor(css, '.plan-ways[data-highlight]').some((entry) => entry.body.includes('outline: 2px solid'))).toBe(true);
     });
 
+    it('0026 AC-010: the default tag is marked beyond colour, and the radios of the ways take theme variables only (a planted hex colour is found)', () => {
+        const tag = rulesFor(css, '.plan-way-tag');
+        expect(tag.length).toBeGreaterThan(0);
+        expect(tag.some((entry) => /font-weight:\s*600/.test(entry.body) && /text-decoration:\s*underline/.test(entry.body))).toBe(true);
+        const radios = rulesFor(css, '.plan-way input[type="radio"]');
+        expect(radios.some((entry) => /accent-color:\s*var\(--vscode-/.test(entry.body))).toBe(true);
+        expect(rulesFor(css, '.plan-way input[type="radio"]:focus-visible').some((entry) => /var\(--vscode-contrastActiveBorder, var\(--vscode-focusBorder\)\)/.test(entry.body))).toBe(true);
+        const mine = [...tag, ...radios, ...rulesFor(css, '.plan-way input[type="radio"]:focus-visible')].map((entry) => entry.body).join('\n');
+        expect(mine).not.toMatch(/#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(/);
+        expect('.plan-way-tag { color: #ff0000; }').toMatch(/#[0-9a-fA-F]{3,8}\b/);
+    });
+
     it('0022 AC-026: the chip and the column header icon take their colour from --fs-tint', () => {
         expect(rulesFor(css, '.state-chip .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);
         expect(rulesFor(css, '.column-heading .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);

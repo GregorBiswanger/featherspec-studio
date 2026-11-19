@@ -1,8 +1,10 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { PlanWaysView } from '../../../shared/protocol/planMap';
-import { DEFAULT_TAG_TEXT, DEFAULT_WAY, START_LINES_LEAD_TEXT, WAY_KEYS, WAYS, waysHeading, type WayKey } from '../../../shared/protocol/planMapTexts';
+import { ABOUT_STEP_GLYPH } from '../../../shared/protocol/nextStepTexts';
+import { ABOUT_WAYS_LABEL, DEFAULT_TAG_TEXT, DEFAULT_WAY, START_LINES_LEAD_TEXT, WAY_KEYS, WAYS, waysAbout, waysHeading, type WayKey } from '../../../shared/protocol/planMapTexts';
 import { CopyButton, type CopyResult } from '../../ui/CopyButton';
 import { PathText } from '../../ui/PathText';
+import { Toggletip } from '../../ui/Toggletip';
 import { HIGHLIGHT_MS } from './target';
 
 export function Ways(props: { ways: PlanWaysView; target?: { n: number }; copyResult: CopyResult | undefined; onCopy(text: string): void }) {
@@ -56,6 +58,9 @@ export function Ways(props: { ways: PlanWaysView; target?: { n: number }; copyRe
                             </span>
                         </label>
                     ))}
+                </div>
+                <div className="plan-ways-about">
+                    <Toggletip label={ABOUT_WAYS_LABEL} glyph={ABOUT_STEP_GLYPH} paragraphs={waysAbout()} />
                 </div>
                 {checked === 'otherAgents' && ways.startLines.length > 0 ? (
                     <div className="plan-start-lines">

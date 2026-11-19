@@ -2001,6 +2001,21 @@ blockquote.illustration {
     text-decoration: underline;
 }
 
+.plan-way input[type="radio"] {
+    flex: none;
+    margin: 0;
+    accent-color: var(--vscode-radio-activeBackground, var(--vscode-focusBorder));
+}
+
+.plan-way input[type="radio"]:focus-visible {
+    outline: 1px solid var(--vscode-contrastActiveBorder, var(--vscode-focusBorder));
+    outline-offset: 2px;
+}
+
+.plan-ways-about {
+    margin: 4px 0;
+}
+
 .plan-way-name {
     font-weight: 600;
 }

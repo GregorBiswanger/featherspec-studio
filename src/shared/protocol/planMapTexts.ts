@@ -166,6 +166,12 @@ export function waysHeading(n: number): string {
 export const WAYS_LEAD_TEXT =
     'Steps joined by ‖ share no file and may run in parallel. In sequence is the default; parallel pays off for large steps. Either parallel way runs the quality gates once, on the combined result, before a step is ticked.';
 
+export const ABOUT_WAYS_LABEL = 'About these ways';
+
+export function waysAbout(): string[] {
+    return [WAYS_LEAD_TEXT, ...WAY_KEYS.map((key) => `${WAYS[key].name}: ${WAYS[key].effect}`)];
+}
+
 export const START_LINES_LEAD_TEXT = 'Start lines — commit first: a worktree holds committed files only.';
 
 export function stepLinkTooltip(name: string, id: string, mac: boolean): string {
