@@ -1,4 +1,7 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import { createNodeSpecSource } from '../../../adapters/node/nodeSpecSource';
+import { readVersionLine } from '../../discovery/versionLine';
 import { fixturePath } from '../../discovery/testing/fixtures';
 import { createMemorySpecSource } from '../../specs/testing/memorySpecSource';
 import { readProject } from '../../specs/readProject';
@@ -7,16 +10,21 @@ import type { ProjectRead } from '../../specs/readProject';
 export const ROOT = 'memory://lifecycle';
 export const VERSION = '1.10.0';
 
-export async function readFixture(name: string): Promise<ProjectRead> {
-    return readProject(createNodeSpecSource(), fixturePath(name), VERSION);
+export function fixtureVersion(name: string): string {
+    const agents = path.join(fixturePath(name), 'AGENTS.md');
+    return fs.existsSync(agents) ? readVersionLine(fs.readFileSync(agents, 'utf8')).version : VERSION;
 }
 
-export async function readMemory(files: Record<string, string>): Promise<ProjectRead> {
+export async function readFixture(name: string, version: string = VERSION): Promise<ProjectRead> {
+    return readProject(createNodeSpecSource(), fixturePath(name), version);
+}
+
+export async function readMemory(files: Record<string, string>, version: string = VERSION): Promise<ProjectRead> {
     const source = createMemorySpecSource();
     for (const [relativePath, content] of Object.entries(files)) {
         source.setFile(ROOT, relativePath, content);
     }
-    return readProject(source, ROOT, VERSION);
+    return readProject(source, ROOT, version);
 }
 
 export interface SpecOptions {

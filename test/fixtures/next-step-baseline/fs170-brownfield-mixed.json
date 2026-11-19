@@ -1,0 +1,349 @@
+{
+  ".specs/active/0006-outbox-batch-size.md": {
+    "state": "Review",
+    "rule": "S-REVIEW",
+    "persistence": "derived",
+    "nextStep": {
+      "rule": "NS-5",
+      "case": "NS-5",
+      "lines": [
+        {
+          "intent": "Have the result verified",
+          "text": "/sdd-compile .specs/active/0006-outbox-batch-size.md"
+        },
+        {
+          "intent": "Then, after a READY verdict: close the spec",
+          "text": "/sdd-lifecycle .specs/active/0006-outbox-batch-size.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Verify",
+      "short": "/sdd-compile",
+      "line": "/sdd-compile .specs/active/0006-outbox-batch-size.md",
+      "lines": [
+        {
+          "text": "/sdd-compile .specs/active/0006-outbox-batch-size.md",
+          "intent": "Have the result verified"
+        },
+        {
+          "text": "/sdd-lifecycle .specs/active/0006-outbox-batch-size.md",
+          "intent": "Then, after a READY verdict: close the spec"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model, other family",
+      "about": [
+        "A fresh reviewer checks every acceptance criterion against evidence and gives a verdict. Only after a READY verdict, close the spec with the second prompt.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model from another family than the one that built it: a reviewer tends to pass what its own family wrote.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/backlog/0003-direct-broker-publication.md": {
+    "state": "Backlog",
+    "rule": "S-BACKLOG",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-9",
+      "case": "NS-9",
+      "lines": [
+        {
+          "intent": "Have the spec challenged, then plan it",
+          "text": "/sdd-clarify .specs/backlog/0003-direct-broker-publication.md"
+        },
+        {
+          "intent": "Then: write the plan",
+          "text": "/sdd-plan .specs/backlog/0003-direct-broker-publication.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Challenge",
+      "short": "/sdd-clarify",
+      "line": "/sdd-clarify .specs/backlog/0003-direct-broker-publication.md",
+      "lines": [
+        {
+          "text": "/sdd-clarify .specs/backlog/0003-direct-broker-publication.md",
+          "intent": "Have the spec challenged, then plan it"
+        },
+        {
+          "text": "/sdd-plan .specs/backlog/0003-direct-broker-publication.md",
+          "intent": "Then: write the plan"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model",
+      "about": [
+        "A fresh reader looks for gaps, contradictions and untestable criteria. Then write the plan with the second prompt, in any chat.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model: the step reasons over the whole spec or plan.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/backlog/0004-replace-authorization-service.md": {
+    "state": "Backlog",
+    "rule": "S-BACKLOG",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-9",
+      "case": "NS-9",
+      "lines": [
+        {
+          "intent": "Have the spec challenged, then plan it",
+          "text": "/sdd-clarify .specs/backlog/0004-replace-authorization-service.md"
+        },
+        {
+          "intent": "Then: write the plan",
+          "text": "/sdd-plan .specs/backlog/0004-replace-authorization-service.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Challenge",
+      "short": "/sdd-clarify",
+      "line": "/sdd-clarify .specs/backlog/0004-replace-authorization-service.md",
+      "lines": [
+        {
+          "text": "/sdd-clarify .specs/backlog/0004-replace-authorization-service.md",
+          "intent": "Have the spec challenged, then plan it"
+        },
+        {
+          "text": "/sdd-plan .specs/backlog/0004-replace-authorization-service.md",
+          "intent": "Then: write the plan"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model",
+      "about": [
+        "A fresh reader looks for gaps, contradictions and untestable criteria. Then write the plan with the second prompt, in any chat.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model: the step reasons over the whole spec or plan.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/backlog/0005-rename-order-status-enum.md": {
+    "state": "Backlog",
+    "rule": "S-BACKLOG",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-9",
+      "case": "NS-9",
+      "lines": [
+        {
+          "intent": "Have the spec challenged, then plan it",
+          "text": "/sdd-clarify .specs/backlog/0005-rename-order-status-enum.md"
+        },
+        {
+          "intent": "Then: write the plan",
+          "text": "/sdd-plan .specs/backlog/0005-rename-order-status-enum.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Challenge",
+      "short": "/sdd-clarify",
+      "line": "/sdd-clarify .specs/backlog/0005-rename-order-status-enum.md",
+      "lines": [
+        {
+          "text": "/sdd-clarify .specs/backlog/0005-rename-order-status-enum.md",
+          "intent": "Have the spec challenged, then plan it"
+        },
+        {
+          "text": "/sdd-plan .specs/backlog/0005-rename-order-status-enum.md",
+          "intent": "Then: write the plan"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model",
+      "about": [
+        "A fresh reader looks for gaps, contradictions and untestable criteria. Then write the plan with the second prompt, in any chat.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model: the step reasons over the whole spec or plan.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/backlog/0007-auth-request-logging.md": {
+    "state": "Backlog",
+    "rule": "S-BACKLOG",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-9",
+      "case": "NS-9",
+      "lines": [
+        {
+          "intent": "Have the spec challenged, then plan it",
+          "text": "/sdd-clarify .specs/backlog/0007-auth-request-logging.md"
+        },
+        {
+          "intent": "Then: write the plan",
+          "text": "/sdd-plan .specs/backlog/0007-auth-request-logging.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Challenge",
+      "short": "/sdd-clarify",
+      "line": "/sdd-clarify .specs/backlog/0007-auth-request-logging.md",
+      "lines": [
+        {
+          "text": "/sdd-clarify .specs/backlog/0007-auth-request-logging.md",
+          "intent": "Have the spec challenged, then plan it"
+        },
+        {
+          "text": "/sdd-plan .specs/backlog/0007-auth-request-logging.md",
+          "intent": "Then: write the plan"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model",
+      "about": [
+        "A fresh reader looks for gaps, contradictions and untestable criteria. Then write the plan with the second prompt, in any chat.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model: the step reasons over the whole spec or plan.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/backlog/0008-order-immutability-window.md": {
+    "state": "Backlog",
+    "rule": "S-BACKLOG",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-9",
+      "case": "NS-9",
+      "lines": [
+        {
+          "intent": "Have the spec challenged, then plan it",
+          "text": "/sdd-clarify .specs/backlog/0008-order-immutability-window.md"
+        },
+        {
+          "intent": "Then: write the plan",
+          "text": "/sdd-plan .specs/backlog/0008-order-immutability-window.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Challenge",
+      "short": "/sdd-clarify",
+      "line": "/sdd-clarify .specs/backlog/0008-order-immutability-window.md",
+      "lines": [
+        {
+          "text": "/sdd-clarify .specs/backlog/0008-order-immutability-window.md",
+          "intent": "Have the spec challenged, then plan it"
+        },
+        {
+          "text": "/sdd-plan .specs/backlog/0008-order-immutability-window.md",
+          "intent": "Then: write the plan"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model",
+      "about": [
+        "A fresh reader looks for gaps, contradictions and untestable criteria. Then write the plan with the second prompt, in any chat.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model: the step reasons over the whole spec or plan.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/backlog/0009-billing-rounding.md": {
+    "state": "Backlog",
+    "rule": "S-BACKLOG",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-9",
+      "case": "NS-9",
+      "lines": [
+        {
+          "intent": "Have the spec challenged, then plan it",
+          "text": "/sdd-clarify .specs/backlog/0009-billing-rounding.md"
+        },
+        {
+          "intent": "Then: write the plan",
+          "text": "/sdd-plan .specs/backlog/0009-billing-rounding.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Challenge",
+      "short": "/sdd-clarify",
+      "line": "/sdd-clarify .specs/backlog/0009-billing-rounding.md",
+      "lines": [
+        {
+          "text": "/sdd-clarify .specs/backlog/0009-billing-rounding.md",
+          "intent": "Have the spec challenged, then plan it"
+        },
+        {
+          "text": "/sdd-plan .specs/backlog/0009-billing-rounding.md",
+          "intent": "Then: write the plan"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model",
+      "about": [
+        "A fresh reader looks for gaps, contradictions and untestable criteria. Then write the plan with the second prompt, in any chat.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model: the step reasons over the whole spec or plan.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/done/0001-baseline-orders.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-3",
+      "text": "Done — no FeatherSpec step left."
+    },
+    "stepView": null,
+    "tips": null
+  },
+  ".specs/done/0002-payment-retry.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-2",
+      "case": "NS-2",
+      "lines": [
+        {
+          "intent": "Put folder and status back in line",
+          "text": "/sdd-lifecycle .specs/done/0002-payment-retry.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Fix status",
+      "short": "/sdd-lifecycle",
+      "line": "/sdd-lifecycle .specs/done/0002-payment-retry.md",
+      "lines": [
+        {
+          "text": "/sdd-lifecycle .specs/done/0002-payment-retry.md",
+          "intent": "Put folder and status back in line"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "any chat · fast model",
+      "about": [
+        "The agent compares folder, status and plan (or both copies of the spec) and proposes the move that brings them in line. You confirm the move; the Studio follows the files.",
+        "Any chat: the step reads everything it needs from the files. Fast model: one small, well-described step.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  }
+}

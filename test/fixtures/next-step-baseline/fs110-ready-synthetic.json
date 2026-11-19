@@ -1,0 +1,48 @@
+{
+  ".specs/backlog/0001-ready-feature.md": {
+    "state": "Ready",
+    "rule": "S-READY",
+    "persistence": "derived",
+    "nextStep": {
+      "rule": "NS-7",
+      "case": "NS-7",
+      "lines": [
+        {
+          "intent": "Start implementing: T-001 The feature",
+          "text": "Start T-001 of .specs/backlog/0001-ready-feature.plan.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Build",
+      "short": "Start T-001",
+      "line": "Start T-001 of .specs/backlog/0001-ready-feature.plan.md",
+      "lines": [
+        {
+          "text": "Start T-001 of .specs/backlog/0001-ready-feature.plan.md",
+          "intent": "Start implementing: T-001 The feature"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "any chat · fast model",
+      "about": [
+        "The agent moves the spec to active, builds one step, runs its check, ticks it and stops. When it stops, the Studio shows the next step; a working agreement such as a test review may stop it earlier.",
+        "Any chat: the step reads everything it needs from the files. Fast model: one small, well-described step.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/done/0002-old-feature.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-3",
+      "text": "Done — no FeatherSpec step left."
+    },
+    "stepView": null,
+    "tips": null
+  }
+}

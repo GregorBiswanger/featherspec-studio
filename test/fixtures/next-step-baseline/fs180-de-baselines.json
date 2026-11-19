@@ -1,0 +1,46 @@
+{
+  ".specs/done/0001-einer-handsup-session-beitreten.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-3",
+      "text": "Done — no FeatherSpec step left."
+    },
+    "stepView": null,
+    "tips": null
+  },
+  ".specs/done/0002-laufenden-uebungszustand-verfolgen.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-3",
+      "text": "Done — no FeatherSpec step left."
+    },
+    "stepView": null,
+    "tips": null
+  },
+  ".specs/done/0003-eigenen-uebungsstatus-melden.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-3",
+      "text": "Done — no FeatherSpec step left."
+    },
+    "stepView": null,
+    "tips": null
+  },
+  ".specs/done/0004-handsup-session-verlassen.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-3",
+      "text": "Done — no FeatherSpec step left."
+    },
+    "stepView": null,
+    "tips": null
+  }
+}

@@ -1,0 +1,45 @@
+{
+  ".specs/active/0015-focus-on-visibility.md": {
+    "state": "Review",
+    "rule": "S-REVIEW",
+    "persistence": "derived",
+    "nextStep": {
+      "rule": "NS-5",
+      "case": "NS-5",
+      "lines": [
+        {
+          "intent": "Have the result verified",
+          "text": "/sdd-compile .specs/active/0015-focus-on-visibility.md"
+        },
+        {
+          "intent": "Then, after a READY verdict: close the spec",
+          "text": "/sdd-lifecycle .specs/active/0015-focus-on-visibility.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Verify",
+      "short": "/sdd-compile",
+      "line": "/sdd-compile .specs/active/0015-focus-on-visibility.md",
+      "lines": [
+        {
+          "text": "/sdd-compile .specs/active/0015-focus-on-visibility.md",
+          "intent": "Have the result verified"
+        },
+        {
+          "text": "/sdd-lifecycle .specs/active/0015-focus-on-visibility.md",
+          "intent": "Then, after a READY verdict: close the spec"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model, other family",
+      "about": [
+        "A fresh reviewer checks every acceptance criterion against evidence and gives a verdict. Only after a READY verdict, close the spec with the second prompt.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model from another family than the one that built it: a reviewer tends to pass what its own family wrote.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  }
+}

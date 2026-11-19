@@ -1,0 +1,37 @@
+{
+  ".specs/active/0001-tip-splitter.md": {
+    "state": "Blocked",
+    "rule": "S-BLOCKED",
+    "persistence": "derived",
+    "nextStep": {
+      "rule": "NS-4",
+      "case": "NS-4-plan",
+      "lines": [
+        {
+          "intent": "Find out what blocks",
+          "text": "/sdd-plan .specs/active/0001-tip-splitter.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Unblock",
+      "short": "/sdd-plan",
+      "line": "/sdd-plan .specs/active/0001-tip-splitter.md",
+      "lines": [
+        {
+          "text": "/sdd-plan .specs/active/0001-tip-splitter.md",
+          "intent": "Find out what blocks"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "any chat · strong model",
+      "about": [
+        "The agent takes in returned work, checks the plan against the code and reports what blocks. Once the block is solved, the spec shows its next step again.",
+        "Any chat: the step reads everything it needs from the files. Strong model: the step reasons over the whole spec or plan.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  }
+}

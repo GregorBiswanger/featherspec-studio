@@ -3,7 +3,7 @@
 **Spec:** [0028-plan-state-aware-next-step.md](0028-plan-state-aware-next-step.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-001
+**Current step:** T-002
 
 ## Approach
 
@@ -98,8 +98,8 @@ Parallel: stage 3 (runs in sequence, `PLAN-R3.md`). Stages 1 and 2 share `nextSt
   snapshot with an exception list that is empty here.
 - **Verify:** `npx vitest run --project node src/core/board/nextStepBaseline.test.ts` green on the Baseline; negative
   control: one snapshot value edited by hand gives red, then restored.
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-19 · `npx vitest run --project node src/core/board/nextStepBaseline.test.ts` 4 passed on the Baseline code (snapshots written there with `FEATHERSPEC_WRITE_BASELINE=1`); negative control: `fs-version-1100.json` state edited to `Review` gave red (`expected { state: 'Active' … } to deeply equal { state: 'Review' … }`), restored, green; eslint, tsc ×2 clean.
+- **Notes:** Baseline = `f9cadb4` (the lifecycle move, so 0028's own pair equals in the repo copy `test/fixtures/repo-f9cadb4/.specs`; 45 snapshot files in `test/fixtures/next-step-baseline/`). Case fixtures in `src/core/board/testing/caseFixtures.ts` (`CASE_FIXTURES`, builder `splitterFiles`). Exceptions go into `EXCEPTIONS` of `nextStepBaseline.test.ts`; a stale-exception control is in place.
 
 ### T-002 — A finished plan is Review
 
@@ -244,5 +244,5 @@ Parallel: stage 3 (runs in sequence, `PLAN-R3.md`). Stages 1 and 2 share `nextSt
 - **Next action:** review the plan; on the start signal move the pair to `active/` (`/sdd-lifecycle`), set the
   Baseline, then T-001.
 - **Open decisions:** — (FeatherSpec 1.11.0 release pending, A-011 bounds the risk to T-003's constant)
-- **Baseline:** `8174c51` (head before the first step commit)
+- **Baseline:** `f9cadb4` (lifecycle move; first step commit follows)
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

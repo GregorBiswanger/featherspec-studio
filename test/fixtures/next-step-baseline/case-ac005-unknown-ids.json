@@ -1,0 +1,45 @@
+{
+  ".specs/active/0001-tip-splitter.md": {
+    "state": "Active",
+    "rule": "S-ACTIVE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-6",
+      "case": "NS-6-open",
+      "lines": [
+        {
+          "intent": "Continue with T-003 Reject money values",
+          "text": "Implement T-003 of .specs/active/0001-tip-splitter.plan.md"
+        },
+        {
+          "intent": "Not sure where it stands? Let the agent report first",
+          "text": "/sdd-plan .specs/active/0001-tip-splitter.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Continue",
+      "short": "Implement T-003",
+      "line": "Implement T-003 of .specs/active/0001-tip-splitter.plan.md",
+      "lines": [
+        {
+          "text": "Implement T-003 of .specs/active/0001-tip-splitter.plan.md",
+          "intent": "Continue with T-003 Reject money values"
+        },
+        {
+          "text": "/sdd-plan .specs/active/0001-tip-splitter.md",
+          "intent": "Not sure where it stands? Let the agent report first"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "same chat or new chat · fast model",
+      "about": [
+        "The agent builds this one step, runs its check, ticks it and stops. When it stops, the Studio shows the next step; a working agreement such as a test review may stop it earlier.",
+        "Same chat or new chat: the plan holds the state of the work; after a break, let the agent report first. Fast model: one small, well-described step.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  }
+}
