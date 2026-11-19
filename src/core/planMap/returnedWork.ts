@@ -16,7 +16,6 @@ function statusOf(note: ReturnNoteEntry): 'DONE' | 'BLOCKED' | 'unknown' {
     return raw === 'DONE' || raw === 'BLOCKED' ? raw : 'unknown';
 }
 
-/** Distinct step IDs of the spec's return notes (the first note of an ID decides); an unknown status counts as returned, not blocked. */
 function returnedOf(model: ShellModel, spec: SpecEntry): Returned {
     const ids: string[] = [];
     const blocked = new Set<string>();
@@ -46,7 +45,6 @@ function inPlanOrder(ids: Iterable<string>, order: readonly string[]): string[] 
     return [...known, ...[...wanted].filter((id) => !order.includes(id)).sort()];
 }
 
-/** §5.6: the group view (U-08) while a member of a `‖` group holding a returned step is still out. */
 function groupView(plan: PlanEntry, returned: Returned, order: readonly string[]): string | undefined {
     const parsed = plan.parsed;
     if (parsed === undefined) {
@@ -76,7 +74,6 @@ function groupView(plan: PlanEntry, returned: Returned, order: readonly string[]
 
 export interface ReturnedWork {
     text: string;
-    /** U-08 stands: a member of a `‖` group holding a returned step is still out. */
     group: boolean;
 }
 
@@ -91,12 +88,10 @@ export function returnedWorkViewOf(model: ShellModel, entry: LifecycleEntry, spe
     return group === undefined ? { text: returnedWorkText(returned.ids.length, inPlanOrder(returned.blocked, order), clauseOf(model, entry.key)), group: false } : { text: group, group: true };
 }
 
-/** 0025 §5.6: the one sentence for returned work (U-05, or U-08 while a group member is out); none without a return note. */
 export function returnedWorkOf(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry): string | undefined {
     return returnedWorkViewOf(model, entry, spec)?.text;
 }
 
-/** 0025 AC-026: the `Integrate` line is not primary while U-08 shows. */
 export function integrateIsQuiet(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry): boolean {
     const next = nextStep(model, entry.key);
     return returnedWorkViewOf(model, entry, spec)?.group === true && next !== undefined && 'case' in next && next.case === 'NS-6-returned';

@@ -131,19 +131,16 @@ export function returnedText(returned: { status: 'done' | 'blocked' | 'unknown';
 
 export type ReturnedClause = 'integrates' | 'finds-out' | 'none';
 
-/** U-05: one sentence for returned work, the same in the Plan section, Progress and each stage row. */
 export function returnedWorkText(n: number, blocked: readonly string[], clause: ReturnedClause): string {
     const state = blocked.length === 0 ? ', waiting to be integrated' : `, ${blocked.join(', ')} blocked`;
     const tail = clause === 'integrates' ? ': the next step integrates them' : clause === 'finds-out' ? ': the next step finds out what blocks' : '';
     return `${n} returned${state}${tail}.`;
 }
 
-/** U-08: the group view while a member of a parallel group is still out. */
 export function groupReturnedText(k: number, m: number, blocked: readonly string[], out: readonly string[]): string {
     return `${k} of ${m} returned${blocked.length === 0 ? '' : `, ${blocked.join(', ')} blocked`} · ${out.join(', ')} not back yet`;
 }
 
-/** U-06: the parallel hint of the detail's Next step, before its link. */
 export function parallelHintText(n: number): string {
     return `Stage ${n} can run in parallel · `;
 }
@@ -159,7 +156,6 @@ export const WAYS_LEAD_TEXT =
 
 export const START_LINES_LEAD_TEXT = 'Start lines — commit first: a worktree holds committed files only.';
 
-/** U-02: the tooltip and description of a step link, after the step's name. */
 export function stepLinkTooltip(name: string, id: string, mac: boolean): string {
     return `${name}\nShow ${id} in the plan map · ${mac ? 'Cmd' : 'Ctrl'}+click opens the plan file`;
 }

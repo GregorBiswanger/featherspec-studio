@@ -8,7 +8,6 @@ function onMac(): boolean {
     return /Mac/.test(navigator.platform) || /Mac/.test(navigator.userAgent);
 }
 
-/** 0025 §5.1: a plain activation leads into the Plan map, Ctrl or Cmd opens the plan file at the step. */
 export function StepLink(props: { id: string; target: LineTarget; fileResult: FileResult | undefined; onOpen(key: string, line: number): void; reason?: string; label?: string; tabIndex?: number; spec?: { stem: string; path?: string }; children: ReactNode }) {
     const shell = useShell();
     const selection = props.spec ?? shell.view?.selection;

@@ -33,7 +33,6 @@ export type OpenRequest = { via: 'start' } | { via: 'area'; area: AreaId };
 
 export interface ShellService {
     view(): ShellView;
-    /** The next shell event: the view and, once, a pending focus (0025 A-011). */
     shellEvent(): ShellEventPayload;
     panelReady(): void;
     panelGone(): void;

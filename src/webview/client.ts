@@ -34,7 +34,6 @@ export interface ClientSnapshot {
     fileResult: { key: string; text: string } | undefined;
     copyResult: CopyResultEventPayload | undefined;
     sendResult: SendResultEventPayload | undefined;
-    /** The last one-shot focus the host sent (0025 A-011); a new object only when the host sent one. */
     focus: ShellFocus | undefined;
 }
 

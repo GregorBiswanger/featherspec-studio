@@ -222,7 +222,18 @@ describe('0023 AC-012: a return note reaches the plan of the detail within 500 m
             const plan = view.kind === 'spec' ? view.plan : undefined;
             return plan?.kind === 'plan' ? plan.stages[1]!.groups.flatMap((group) => group.steps).find((entry) => entry.id === 'T-003') : undefined;
         };
+        const sentences = () => {
+            const view = w.service.detail();
+            const plan = view.kind === 'spec' && view.plan?.kind === 'plan' ? view.plan : undefined;
+            const steps = view.kind === 'spec' ? view.progress?.steps : undefined;
+            return {
+                plan: plan?.returned,
+                stage: plan?.stages[1]?.returned,
+                progress: steps?.kind === 'steps' ? steps.returned : undefined,
+            };
+        };
         expect(stageTwo()?.state).not.toBe('returned');
+        expect(sentences()).toEqual({ plan: undefined, stage: undefined, progress: undefined });
 
         const withNote = (status: string) => {
             const key = `.memory-bank/activeContext.${target.number}-T-003.md`;
@@ -250,6 +261,10 @@ describe('0023 AC-012: a return note reaches the plan of the detail within 500 m
             await w.service.whenIdle();
         });
         expect(stageTwo()?.returned).toEqual({ status: 'done' });
+        const appeared = sentences();
+        expect(appeared.plan).toMatch(/^1 returned/);
+        expect(appeared.stage).toBe(appeared.plan);
+        expect(appeared.progress).toBe(appeared.plan);
         expect(appearedBest).toBeLessThan(BUDGET_MS.uiFreshness);
 
         const changes = withNote('BLOCKED');
@@ -258,6 +273,10 @@ describe('0023 AC-012: a return note reaches the plan of the detail within 500 m
             await w.service.whenIdle();
         });
         expect(stageTwo()?.returned?.status).toBe('blocked');
+        const changed = sentences();
+        expect(changed.plan).toMatch(/^1 returned, T-003 blocked/);
+        expect(changed.stage).toBe(changed.plan);
+        expect(changed.progress).toBe(changed.plan);
         expect(changedBest).toBeLessThan(BUDGET_MS.uiFreshness);
 
         const goneBest = await bestOfThree(async () => {
@@ -265,6 +284,7 @@ describe('0023 AC-012: a return note reaches the plan of the detail within 500 m
             await w.service.whenIdle();
         });
         expect(stageTwo()?.returned).toBeUndefined();
+        expect(sentences()).toEqual({ plan: undefined, stage: undefined, progress: undefined });
         expect(goneBest).toBeLessThan(BUDGET_MS.uiFreshness);
     });
 });

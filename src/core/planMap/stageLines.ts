@@ -27,7 +27,6 @@ export function separatorsOf(head: string): StageItem[] {
     });
 }
 
-/** The step IDs of a stage line, grouped by `‖` (a `→` or a plain break starts a new group). */
 export function idGroupsOf(items: readonly StageItem[]): string[][] {
     const groups: string[][] = [];
     for (const item of items) {

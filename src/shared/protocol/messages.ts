@@ -157,7 +157,6 @@ export interface OverviewEventPayload {
     view: OverviewView;
 }
 
-/** 0025 A-011: a one-shot focus request; it reaches the webview in exactly one shell event. */
 export interface ShellFocus {
     n: number;
     stem: string;

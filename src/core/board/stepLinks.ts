@@ -4,7 +4,6 @@ import type { ShellModel } from '../ports/shell';
 
 const STEP_ID = /\bT-\d+\b/g;
 
-/** 0025 §5.1: for a map-able spec (not Done, readable sibling plan), the first plan step a text names. */
 export function stepLinkOf(model: ShellModel, entry: LifecycleEntry, text: string): StepLinkView | undefined {
     if (entry.state === 'Done' || entry.plan === undefined) {
         return undefined;

@@ -10,7 +10,7 @@ Current phase: act
 - Waits for: CI at the PR, Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
 
 ## Active Spec
-- [0025](../.specs/active/0025-plan-map-navigation-and-progress.md) / [plan](../.specs/active/0025-plan-map-navigation-and-progress.plan.md): Plan map navigation and progress, T-001…T-013 and T-015's docs done; T-014 (preview, orchestrator) and the final gates are left.
+- [0025](../.specs/active/0025-plan-map-navigation-and-progress.md) / [plan](../.specs/active/0025-plan-map-navigation-and-progress.plan.md): Plan map navigation and progress, built and verified; only CI on the round-3 PR and Gregor's checks (AC-022 half, AC-024) are open.
 - [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 and OP-004 are Gregor's.
 - [0023](../.specs/active/0023-plan-map-stages-parallel-work.md) / [plan](../.specs/active/0023-plan-map-stages-parallel-work.plan.md): Plan map, T-001…T-017; AC-018 real window, AC-019, AC-020 are Gregor's.
 - [0022](../.specs/active/0022-layout-and-signal-polish.md) / [plan](../.specs/active/0022-layout-and-signal-polish.plan.md): layout and signals, T-001…T-022; AC-020, AC-021 are Gregor's.
@@ -36,10 +36,10 @@ Current phase: act
 - OP-004 (0024, Gregor's): does Copilot's `open` replace an unsent draft in the current chat? If so, he decides whether NS-6 with Copilot defaults to a new chat. Not blocking the PR.
 
 ## Next
-1. Finish 0025 (T-014 preview by the orchestrator, `npm test` on Windows, T-015's gate), then implement 0026 and 0027 (specs and plans are in `.specs/backlog/`; move each to `active/` with `/sdd-lifecycle` when it starts).
+1. Finish 0025 (CI on the round-3 PR, Gregor's AC-022 half and AC-024, then `/sdd-compile`), then implement 0026 and 0027 (specs and plans are in `.specs/backlog/`; move each to `active/` with `/sdd-lifecycle` when it starts).
 2. Open the PR (draft is fine) so CI runs once at the end of round 3: 0021 AC-020, 0022 AC-017, 0023 AC-016, 0024 AC-014, 0028 AC-012.
 3. Gregor: the release checklist in a real window (0028 AC-015 included); record OP-004; decide the wording "same chat" / "current chat" (0024 AC-019).
 4. A fresh `/sdd-compile` per spec 0014…0024, one session each; then the checklist's Go.
 
 ## Validation
-- Gates green at 5c70dbd; Windows: unit 3109 passed, 7 skipped, +18 timing, `npm test` 32+1+1+1. Evidence per spec and the open manual criteria: each plan's traceability and handoff.
+- Windows at 6530890, unit 3412/8 + 28 timing, npm test 33+1+1+1. Evidence per spec and the open manual criteria: each plan's traceability and handoff.
