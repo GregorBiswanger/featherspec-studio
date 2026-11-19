@@ -1,7 +1,7 @@
 # Send Defaults and Wording
 
-**Status:** In Progress
-**Plan:** [0026-send-defaults-and-wording.plan.md](0026-send-defaults-and-wording.plan.md)
+**Status:** Implemented
+**Plan:** [0026-send-defaults-and-wording.2026-11-19.plan.md](../plan-archive/0026-send-defaults-and-wording.2026-11-19.plan.md)
 
 Basis: `docs/ux-audit/09-round2-review.md` §3, §4 (G-3, G-5, G-8, G-9), §7, §8; `screenshots-48d1968/` r01, r02, r05,
 r06. **PD-078**, **PD-080**, **PD-086**, **PD-088**, PD-082, PD-068, PD-074, PD-041, PD-047, PD-063 (5), PD-077, PD-016;
@@ -268,4 +268,8 @@ prose; a stage `T-002 → T-003 ‖ T-004`, T-002 next; Now with five, six and e
 ## 13. Definition of Ready / Done and next steps
 
 Ready: §6, §7 literal, §5 listed, OP-001 closed. Done: AC-001–AC-016, AC-020–AC-024 green with evidence, AC-017–AC-019
-checked, §5 applied, docs and Memory Bank synced, `/sdd-compile` READY. Next: `/sdd-plan` (0028 first).
+checked, §5 applied, docs and Memory Bank synced; `/sdd-compile` READY (manual items: 3) once CI passes. Windows `npm test` at 25c6b92 passed (33+1+1+1, exit 0); Windows unit tests at 856872e: 3502 passed, 8 skipped, plus 28 timing. CI pending on the round-3 PR. Open: AC-017 (Gregor's half), AC-018 (click test 13, recorded), AC-019 (Gregor on `tip-splitter`). Next: 0027 (`/sdd-plan`).
+
+## Plan history
+
+- 2026-11-19 — [0026-send-defaults-and-wording.2026-11-19.plan.md](../plan-archive/0026-send-defaults-and-wording.2026-11-19.plan.md) — 11 steps in 4 stages: Send defaults to the new chat, shorter Now and ways, one place for guidance, texts and docs; compile READY (manual items: 3) once CI passes; Windows `npm test` at 25c6b92 passed; CI pending on the round-3 PR.

@@ -1,9 +1,9 @@
 # Plan — Send Defaults and Wording
 
-**Spec:** [0026-send-defaults-and-wording.md](0026-send-defaults-and-wording.md)
-**Status:** In Progress
+**Spec:** [0026-send-defaults-and-wording.md](../done/0026-send-defaults-and-wording.md)
+**Status:** Done
 **Last updated:** 2026-11-19
-**Current step:** none open (T-001…T-011 done; the compile fixes of 2026-11-19 are in)
+**Current step:** —
 
 ## Approach
 
@@ -382,8 +382,8 @@ Parallel: stages 2 and 3, run in sequence (`PLAN-R3.md`). Stage 1 shares `nextSt
 
 ## Session handoff
 
-- **Done so far:** T-001…T-011 committed on `ux-round-3`; T-010 verified by the orchestrator (3795231); Windows at 25c6b92: unit 3502 / 8 skipped + 28 timing, `npm test` 33+1+1+1; the compile report 0026 (2026-11-19) is worked in: traceability filled, §5 notes completed (D-1), T-011 note corrected (D-2), 0025 AC-026 row added to §5 (F-3).
-- **Next action:** a fresh `/sdd-compile`, then CI on the round-3 PR, then Gregor's AC-017, AC-018 and AC-019. Not moved to done.
+- **Done so far:** T-001…T-011 committed on `ux-round-3`; T-010 verified by the orchestrator (3795231); Windows `npm test` at 25c6b92: 33+1+1+1 passing, exit 0; Windows unit tests at 856872e: 3502 passed, 8 skipped, plus 28 timing; the compile report 0026 (2026-11-19) is worked in: traceability filled, §5 notes completed (D-1), T-011 note corrected (D-2), 0025 AC-026 row added to §5 (F-3).
+- **Next action:** CI on the round-3 PR (pending); Gregor's manual items: AC-017 (Gregor's half), AC-018 (recorded, click test 13), AC-019 (`tip-splitter`) (manual items: 3). Spec in `done/`, plan archived.
 - **Open decisions:** — (AC-019's draft check in Copilot's `newChat` is untested, V-3 C4; if it fails, Gregor decides, 09 §3)
 - **Baseline:** `657e87a`
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator. Full vitest takes 3+ minutes here: run it in the background.

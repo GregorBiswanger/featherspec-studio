@@ -5,12 +5,11 @@ Current branch: ux-round-3
 Current phase: act
 
 ## Now
-- Round 3 on `ux-round-3`: 0026 (Send defaults and wording) is built, T-001…T-011; the compile report's fixes are in (traceability, §5 notes, docs).
+- Round 3 on `ux-round-3`: 0026 (Send defaults and wording) is Implemented 2026-11-19; its plan is archived.
 - 0021–0024 are implemented; their specs stay In Progress in `active/`.
-- Waits for: a fresh `/sdd-compile` of 0026, CI at the PR, Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)).
+- Waits for: CI at the round-3 PR, Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
 
 ## Active Spec
-- [0026](../.specs/active/0026-send-defaults-and-wording.md) / [plan](../.specs/active/0026-send-defaults-and-wording.plan.md): Send defaults and wording, T-001…T-011 done; AC-017 (orchestrator half checked), AC-018, AC-019 are Gregor's.
 - [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 are Gregor's; OP-004 closed by PD-078.
 - [0023](../.specs/active/0023-plan-map-stages-parallel-work.md) / [plan](../.specs/active/0023-plan-map-stages-parallel-work.plan.md): Plan map, T-001…T-017; AC-018 real window, AC-019, AC-020 are Gregor's.
 - [0022](../.specs/active/0022-layout-and-signal-polish.md) / [plan](../.specs/active/0022-layout-and-signal-polish.plan.md): layout and signals, T-001…T-022; AC-020, AC-021 are Gregor's.
@@ -24,21 +23,22 @@ Current phase: act
 - [0014](../.specs/active/0014-setup-featherspec-from-studio.md) / [plan](../.specs/active/0014-setup-featherspec-from-studio.plan.md): setup from the Studio; M-2 with the button is Gregor's.
 - Completed: 0001…0007, 0013 in `done/`; 0008…0012 are Deprecated (successor 0015); plans frozen in `plan-archive/`.
 - Completed 2026-11-19: [0025](../.specs/done/0025-plan-map-navigation-and-progress.md) ([plan](../.specs/plan-archive/0025-plan-map-navigation-and-progress.2026-11-19.plan.md)) and [0028](../.specs/done/0028-plan-state-aware-next-step.md) ([plan](../.specs/plan-archive/0028-plan-state-aware-next-step.2026-11-19.plan.md)).
+- Completed 2026-11-19: [0026](../.specs/done/0026-send-defaults-and-wording.md) ([plan](../.specs/plan-archive/0026-send-defaults-and-wording.2026-11-19.plan.md)).
 
 ## Changed Recently
 - 0025 (PD-082), Implemented 2026-11-19: step IDs link into the Plan map (one-shot focus); `Show in Plan Map` in the tree; next step in the map header; `· 67%`; step motifs; richer cards; one returned-work statement. Windows `npm test` at 7ea11f3 passed.
+- 0026 (PD-078, PD-080, PD-086, PD-088): Send defaults to the new chat; Now stops at five rows; the ways are three radio lines; one place for guidance; texts and docs. `READY (manual items: 3)` once CI passes.
 - 0028 (PD-081, PD-082, PD-087): a plan with every step ticked or struck is Review; below FeatherSpec 1.11.0 the sign puts `/sdd-plan` first, and in every version a `Verified:` line without a tick does; NS-7 is `Implement <ID> of <plan>`; snapshots guard the rest. Done 2026-11-19, `READY (manual items: 1)`.
 ## Decisions in Flight
 - `AGENTS.md` stays above its 200-line target: the template body alone is 200 lines; further eviction would edit template wiring, Gregor's call.
 - Publisher ID `GregorBiswanger` is confirmed (2026-11-17).
 
 ## Blockers / Questions
-- Gregor's manual checks stay in the specs: 0025 AC-022 real window, AC-023, AC-024; 0028 AC-015.
+- Gregor's manual checks stay in the specs: 0025 AC-022 real window, AC-023, AC-024; 0026 AC-017, AC-019; 0028 AC-015.
 
 ## Next
-1. A fresh `/sdd-compile` of 0026, then the round-3 PR so CI runs (0021 AC-020, 0022 AC-017, 0023 AC-016, 0024 AC-014, 0025 AC-020, 0028 AC-012).
-2. Gregor's AC-017, AC-018 and AC-019 for 0026.
-3. Implement 0027 the same way.
+1. Implement 0027 (spec and plan are in `.specs/backlog/`; move them to `active/` with `/sdd-lifecycle` when it starts, after `/sdd-plan`).
+2. Open the round-3 PR (draft is fine) so CI runs: 0021 AC-020, 0022 AC-017, 0023 AC-016, 0024 AC-014, 0025 AC-020, 0026 AC-015, 0028 AC-012.
 
 ## Validation
-- Windows at 25c6b92: unit 3502 passed, 8 skipped, timing 28 passed; `npm test` 33+1+1+1, exit 0. CI pending on the round-3 PR.
+- Windows unit tests at 856872e: 3502 passed, 8 skipped, timing 28 passed; `npm test` at 25c6b92: 33+1+1+1, exit 0. CI pending on the round-3 PR.
