@@ -195,7 +195,7 @@ Parallel: stage 3 (runs in sequence, `PLAN-R3.md`). Stages 1 and 2 share `nextSt
   first Now row, Dark, Light, High Contrast, 1600 px and 1000 px, side panel open; screenshots linked in `Notes:`.
 - **Verify:** manual: the orchestrator looks for cut intents, prompts or coach lines and for AC-004's line 1 wrapping
   inside a word; layout is not decided by jsdom (no layout engine).
-- [ ] **Verified (T-008):** —
+- [x] **Verified (T-008):** 2026-11-19 · harness `r6check.mts` (host at e33f337+fix, `dist/webview` rebuilt) on `fs-0028-review` and `fs-0028-report`: Dark, Light, High Contrast × 1600 and 1000 px, Overview with the first Now row and the detail open: no cut intent, prompt or coach line (only `visually-hidden`/`sr-number` clip by design), no word wrapped inside itself (Range rects per word), AC-004 line 1 wraps between `ticks` and `may` at 1000 px, no page errors; 24 screenshots checked by eye (orch/preview/r6-0028).
 - **Notes:** Not run here: manual by the orchestrator. Projects for the harness are written by `/tmp/mkfix.mts` from `CASE_FIXTURES`: `/tmp/fs-0028-review` (AC-001, `ac001-plan-in-progress`, Review) and `/tmp/fs-0028-report` (AC-004, `ac004-report-first`, version 1.10.0, Report first); add them as scenarios to `host.mts`. Look for cut intents, prompts or coach lines and for line 1 `Let the agent report first — the plan and the ticks may differ` wrapping inside a word.
 
 ### T-009 — Notes, docs, title audit and final gates
