@@ -578,7 +578,7 @@ describe('0024 AC-003, AC-004: the send view of the next step', () => {
         const model = await modelOf({ '.specs/backlog/0002-b.md': specText() });
         const key = '.specs/backlog/0002-b.md';
         const offered = await nextOf(model, key, { offer: OFFER_B, tips: SHOW });
-        expect(offered.tips?.about[2]).toBe('Send to Claude Code puts the prompt into its chat and sends nothing: choose the model there, check the prompt, then send it.');
+        expect(offered.tips?.about[2]).toBe('Send to Claude Code puts the prompt into its chat and sends nothing: choose the model there, check the prompt, then send it. With FeatherSpec 1.11.0 or later, Send also attaches the spec; update with /sdd-featherspec-update.');
         expect(offered.tips?.about[3]).toBe("Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt.");
         const plain = await nextOf(model, key, { tips: SHOW });
         expect(plain.tips?.about[2]).toBe('Choose the chat and the model in your AI assistant before you paste.');

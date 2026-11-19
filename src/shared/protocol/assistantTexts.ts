@@ -53,6 +53,8 @@ export function sendTipText(name: string): string {
     return `Send to ${name} puts the prompt into its chat and sends nothing: choose the model there, check the prompt, then send it.`;
 }
 
+export const ATTACH_UPDATE_TEXT = 'With FeatherSpec 1.11.0 or later, Send also attaches the spec; update with /sdd-featherspec-update.';
+
 export const SEND_TARGET_TEXT: Record<AssistantTarget, string> = { new: 'new chat', current: 'current chat' };
 
 export const SEND_ITEM_TEXT: Record<AssistantTarget, string> = { new: 'Send to a new chat', current: 'Send to the current chat' };

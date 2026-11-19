@@ -10,10 +10,16 @@ export const ASSISTANT_TARGETS: Record<AssistantId, readonly AssistantTarget[]> 
     claudeCode: ['new'],
 };
 
+export interface SendAttachment {
+    name: string;
+    path: string;
+}
+
 export interface SendView {
     assistant: AssistantId;
     target: AssistantTarget;
     targets: AssistantTarget[];
+    attach?: SendAttachment;
 }
 
 export function isAssistantId(value: unknown): value is AssistantId {
@@ -26,8 +32,22 @@ export function isAssistantTarget(value: unknown): value is AssistantTarget {
 
 const SEND_VIEW_KEYS: readonly string[] = ['assistant', 'target', 'targets'];
 
+const ATTACHMENT_KEYS: readonly string[] = ['name', 'path'];
+
+function isSendAttachment(value: unknown): value is SendAttachment {
+    if (!isRecord(value) || Object.keys(value).length !== ATTACHMENT_KEYS.length || !ATTACHMENT_KEYS.every((key) => key in value)) {
+        return false;
+    }
+    const { name, path } = value;
+    return typeof name === 'string' && typeof path === 'string' && name !== '' && path !== '' && path.slice(path.lastIndexOf('/') + 1) === name;
+}
+
 export function isSendView(value: unknown): value is SendView {
-    if (!isRecord(value) || Object.keys(value).length !== SEND_VIEW_KEYS.length || !SEND_VIEW_KEYS.every((key) => key in value)) {
+    if (!isRecord(value) || !SEND_VIEW_KEYS.every((key) => key in value)) {
+        return false;
+    }
+    const withAttach = 'attach' in value;
+    if (Object.keys(value).length !== SEND_VIEW_KEYS.length + (withAttach ? 1 : 0) || (withAttach && !isSendAttachment(value.attach))) {
         return false;
     }
     const { assistant, target, targets } = value;
@@ -42,6 +62,7 @@ export interface SendRequest {
     assistant: AssistantId;
     target: AssistantTarget;
     line: string;
+    attach?: string;
 }
 
 export interface SendPromptPayload extends SendRequest {
@@ -68,7 +89,11 @@ export function isSendToken(value: unknown): value is string {
 }
 
 export function isSendPromptPayload(value: unknown): value is SendPromptPayload {
-    if (!isRecord(value) || Object.keys(value).length !== SEND_PROMPT_KEYS.length || !SEND_PROMPT_KEYS.every((key) => key in value)) {
+    if (!isRecord(value) || !SEND_PROMPT_KEYS.every((key) => key in value)) {
+        return false;
+    }
+    const withAttach = 'attach' in value;
+    if (Object.keys(value).length !== SEND_PROMPT_KEYS.length + (withAttach ? 1 : 0) || (withAttach && (typeof value.attach !== 'string' || value.attach === ''))) {
         return false;
     }
     const { assistant, target, line, token } = value;

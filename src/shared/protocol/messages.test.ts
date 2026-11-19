@@ -50,8 +50,8 @@ describe('AC-016, AC-021: envelope', () => {
     });
 
     it('reads an envelope of another version (the router decides, AC-016)', () => {
-        expect(readEnvelope({ v: 11, kind: 'evt', type: 'shell', payload: {} }).ok).toBe(true);
-        expect(PROTOCOL_VERSION).toBe(10);
+        expect(readEnvelope({ v: 12, kind: 'evt', type: 'shell', payload: {} }).ok).toBe(true);
+        expect(PROTOCOL_VERSION).toBe(11);
     });
 
     it('isJsonValue accepts nested JSON and rejects functions, undefined and NaN', () => {
@@ -298,8 +298,8 @@ describe('0023 AC-006: three areas', () => {
 });
 
 describe('0025 AC-006: the one-shot focus of the shell event', () => {
-    it('0025 AC-006: the protocol is version 10; a focus names a spec and one of step, ways, heading; other shapes are refused', () => {
-        expect(PROTOCOL_VERSION).toBe(10);
+    it('0025 AC-006: the protocol is version 11; a focus names a spec and one of step, ways, heading; other shapes are refused', () => {
+        expect(PROTOCOL_VERSION).toBe(11);
         const view = { restricted: false, area: 'planMap', target: undefined, selection: undefined, notice: undefined, state: undefined, projectName: undefined };
         expect(isShellEventPayload({ view })).toBe(true);
         expect(isShellEventPayload({ view, focus: { n: 1, stem: '0001-a', step: 'T-001' } })).toBe(true);

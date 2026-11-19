@@ -1,5 +1,5 @@
 import type { Offer } from '../assistant/offer';
-import { sendViewOf, tipClosingOf } from '../assistant/sendView';
+import { sendViewOf, tipClosingOf, withheldOf } from '../assistant/sendView';
 import { problemSentence } from '../lifecycle/problemSentence';
 import { integrateIsQuiet } from '../planMap/returnedWork';
 import type { DetailView, DiagnosticLine, NextStepView, StatusHistoryItem } from '../../shared/protocol/detail';
@@ -41,7 +41,7 @@ function diagnosticLine(diagnostic: LifecycleEntry['diagnostics'][number]): Diag
     return file === undefined ? base : { ...base, open: { key: file, line: line === undefined || line < 1 ? 1 : line } };
 }
 
-function nextStepView(next: NextStep, tips: StepTipSettings | undefined, offer: Offer | undefined, version: string, quiet: boolean, link: (intent: string) => StepLinkView | undefined, parallel: number | undefined): NextStepView {
+function nextStepView(next: NextStep, tips: StepTipSettings | undefined, offer: Offer | undefined, version: string, key: string, quiet: boolean, link: (intent: string) => StepLinkView | undefined, parallel: number | undefined): NextStepView {
     if (!('lines' in next)) {
         return next;
     }
@@ -49,11 +49,11 @@ function nextStepView(next: NextStep, tips: StepTipSettings | undefined, offer: 
         const step = link(line.intent);
         return { text: line.text, intent: line.intent, ...(step === undefined ? {} : { step }) };
     });
-    const send = sendViewOf(offer, next.case);
+    const send = sendViewOf(offer, next.case, { version, key });
     return {
         rule: next.rule,
         lines,
-        ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer), { version, ...(send === undefined ? {} : { send: true as const }), ...(next.reason === undefined ? {} : { reason: next.reason }) }) }),
+        ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer, withheldOf(offer, next.case, { version, key })), { version, ...(send === undefined ? {} : { send: true as const }), ...(next.reason === undefined ? {} : { reason: next.reason }) }) }),
         ...(send === undefined ? {} : { send }),
         ...(quiet ? { quiet: true as const } : {}),
         ...(parallel === undefined ? {} : { parallel: { stage: parallel } }),
@@ -100,7 +100,7 @@ export function buildDetail(input: DetailInput): DetailView {
         rule: entry.rule,
         persistence: entry.persistence,
         ...(entry.deprecated === undefined ? {} : { successor: successorText(entry.deprecated.successor) }),
-        nextStep: nextStepView(next, input.tips, input.offer, model.project.version, integrateIsQuiet(model, entry, spec), (intent) => stepLinkOf(model, entry, intent), plan?.kind === 'plan' ? plan.stages.find((stage) => stage.ways !== undefined)?.number : undefined),
+        nextStep: nextStepView(next, input.tips, input.offer, model.project.version, entry.key, integrateIsQuiet(model, entry, spec), (intent) => stepLinkOf(model, entry, intent), plan?.kind === 'plan' ? plan.stages.find((stage) => stage.ways !== undefined)?.number : undefined),
         problems: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').map(diagnosticLine),
         notes: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'note').map(diagnosticLine),
         ...(progress === undefined ? {} : { progress }),

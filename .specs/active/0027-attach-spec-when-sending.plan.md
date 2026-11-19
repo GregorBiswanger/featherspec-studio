@@ -183,8 +183,8 @@ and `send.ts`/`send.test.ts`: no `‖`.
   - 0028's snapshot test stays green with no new exception (no offer there).
 - **Verify:** `npx vitest run --project node src/core/assistant src/shared/protocol src/core/board/nextStepBaseline.test.ts`.
   It is red first (no `attach` in the view, 0024's paragraph), then `npm run test:unit` and `npm run compile` are green.
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-19 · red first (29 failed: no `attach`, 0024's paragraph), then `npx vitest run --project node src/core/assistant src/shared/protocol src/core/board/nextStepBaseline.test.ts` 401 passed; `src/core src/shared` + webviewBundle 2351 passed; tsc (both), eslint, `npm run compile` clean.
+- **Notes:** `sendViewOf(offer, case, context?)` adds `attach` only with a context (existing two-argument callers keep their view); `tipClosingOf(offer, withheld)`; `withheldOf()` beside it. `PROTOCOL_VERSION` 11. Staying tests changed by §5 (title kept, same sentence plus §7's update sentence, never weakened): `detail.test.ts` 'the toggletip closing pair follows the offer …' and `rows.test.ts` 'the send view stays with tips off …' (Claude Code at 1.10.0 is withheld, 0024 §7 row amended). Titles changed: `0025 AC-006 … the protocol is version 10` → `version 11` (messages.test.ts; AC-014 list for T-010). Test world helper `testing/caseWorlds.ts` holds one fixture per StepCase (NS-7 reached with a Not started plan). `webviewBundle.test.ts` envelope literals `v: 10` → `v: 11`.
 
 ### T-003 — The host checks and attaches
 

@@ -234,7 +234,7 @@ describe('0024 AC-003: only the first Now row with a step carries the send view'
         expect(hidden.now[0]?.send).toBeDefined();
         expect('tips' in hidden.now[0]!).toBe(false);
         const shown = await rowsWith([{ number: '0001', kind: 'Review' }], { assistant: 'claudeCode' }, SHOW);
-        expect(shown.now[0]?.tips?.about[2]).toBe('Send to Claude Code puts the prompt into its chat and sends nothing: choose the model there, check the prompt, then send it.');
+        expect(shown.now[0]?.tips?.about[2]).toBe('Send to Claude Code puts the prompt into its chat and sends nothing: choose the model there, check the prompt, then send it. With FeatherSpec 1.11.0 or later, Send also attaches the spec; update with /sdd-featherspec-update.');
     });
 });
 
