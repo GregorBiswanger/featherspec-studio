@@ -1,7 +1,7 @@
 # Plan — Onboarding Before /sdd-setup
 
 **Spec:** [0029-onboarding-before-setup.md](0029-onboarding-before-setup.md)
-**Status:** In progress
+**Status:** In Progress
 **Last updated:** 2026-11-19
 **Current step:** T-003
 
@@ -74,7 +74,7 @@ No parallel stage: T-002 and T-003 share `shared/protocol/texts.ts` and the mode
   (send and copy request carry `/sdd-setup`), "0029 AC-006 …" (`fs-setup-done-no-specs` as today); `visibleLiterals`
   "0029 AC-011 …" (each text once, no `\p{Extended_Pictographic}` in the text modules, glyph without own colour).
 - **Verify:** `npm run test:unit` — red first (today's empty state), then green.
-- [x] **Verified (T-002):** 2026-11-19 red: `npx vitest run src/core/overview/welcome0029.test.ts src/webview/welcome0029.test.tsx src/adapters/node/visibleLiterals.test.ts` 15 + 1 failed (no `welcome` on either view, no glyph, no text); the negative controls passed at once, as meant. Green: `npx vitest run src/webview src/core/overview src/core/board src/adapters/node/visibleLiterals.test.ts src/shared` 108 files, 1540 tests passed after the snapshot fix below; `npx tsc --noEmit` and `-p src/webview` clean.
+- [x] **Verified (T-002):** 2026-11-19 red: `npx vitest run src/core/overview/welcome0029.test.ts src/webview/welcome0029.test.tsx src/adapters/node/visibleLiterals.test.ts` 15 + 1 failed (no `welcome` on either view, no glyph, no text); the negative controls passed at once, as meant. Green: `npx vitest run src/webview src/core/overview src/core/board src/adapters/node/visibleLiterals.test.ts src/shared` 108 files, 1540 tests passed after the snapshot fix below; `npx tsc --noEmit` and `-p src/webview` clean. Stage 1 gate chain (eslint, both tsc, `npm run test:unit` 207 files, 3741 tests, compile, compile-tests) green after two fixes: plan status spelled `In Progress`, test constant renamed (the removed-feature scan matches `copilot` in any case).
 - **Notes:** (1) The plan's survey was wrong on one point: `nextStepBaseline.test.ts` lists snapshots by fixture directory, so each new fixture needs a snapshot file; `test/fixtures/next-step-baseline/fs-setup-not-run.json` and `fs-setup-done-no-specs.json` hold `{}` (no spec). (2) `welcome` is on `OverviewView` and `BoardView` as `WelcomeView { send?: SendView }`, built by `core/assistant/welcome.ts:welcomeOf` (setup not run and no lifecycle entry), with `plainSendViewOf()` split out of `sendViewOf()`; the Overview guard accepts it only with empty figures, the Board guard only with `noSpecs`. (3) The component is `webview/ui/Welcome.tsx` (EmptyState, `data-welcome`, `h2`, `p`, one `StepAction` primary); the glyph path is `webview/board/featherPath.ts`, copied from `media/studio.svg`. (4) The Send menu holds a Copy prompt item with class `copy-button`, so the test asserts one `button.send-main`, not zero copy buttons. (5) AC-011's "each text once" is checked for heading, body and `SETUP_LINE` here; T-003 adds the rest.
 
 ### T-003 — Tree, Up next and Copy next step

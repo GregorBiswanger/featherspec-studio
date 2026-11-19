@@ -12,7 +12,7 @@ const HEADING = 'Welcome to FeatherSpec';
 const BODY =
     'Set up this project first: run /sdd-setup with the AI assistant of your choice. It asks for the language of your docs, fills the Memory Bank and records the architecture snapshot.';
 const CLAUDE: SendView = { assistant: 'claudeCode', target: 'new', targets: ['new'] };
-const COPILOT: SendView = { assistant: 'copilot', target: 'new', targets: ['new', 'current'] };
+const TWO_TARGETS: SendView = { assistant: 'copilot', target: 'new', targets: ['new', 'current'] };
 
 let posted: Envelope[];
 let mounted: Mounted | undefined;
@@ -79,7 +79,7 @@ describe.each([
 
 describe('0029 AC-003, AC-005: Send and Copy prompt of the welcome', () => {
     it('0029 AC-005 Send hands /sdd-setup to the assistant with the default target and no attachment', async () => {
-        const container = await open('overview', overviewEvent(overview({ send: COPILOT })));
+        const container = await open('overview', overviewEvent(overview({ send: TWO_TARGETS })));
         await click(container.querySelector<HTMLButtonElement>('[data-welcome] button.send-main')!);
         expect(requests('sendPrompt')).toEqual([{ assistant: 'copilot', target: 'new', line: '/sdd-setup', token: expect.stringMatching(/^[A-Za-z0-9-]{1,64}$/) }]);
         expect(requests('copyText')).toEqual([]);
