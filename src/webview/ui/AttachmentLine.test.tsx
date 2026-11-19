@@ -6,7 +6,7 @@ import { StepAction } from './StepAction';
 
 const LINE = '/sdd-clarify .specs/backlog/0002-x.md';
 const ATTACH: SendAttachment = { name: '0002-x.md', path: '.specs/backlog/0002-x.md' };
-const COPILOT: SendView = { assistant: 'copilot', target: 'new', targets: ['new', 'current'], attach: ATTACH };
+const CHAT_VIEW: SendView = { assistant: 'copilot', target: 'new', targets: ['new', 'current'], attach: ATTACH };
 const CLAUDE: SendView = { assistant: 'claudeCode', target: 'new', targets: ['new'], attach: ATTACH };
 
 let mounted: Mounted | undefined;
@@ -59,7 +59,7 @@ describe('0027 AC-003: StepAction puts the line after the split button and its s
     const noop = (): void => undefined;
 
     it('the order inside the split button is unchanged; the line follows .send-split; the main part and each Send item are described by it', async () => {
-        mounted = await mount(<StepAction send={COPILOT} look="primary" line={LINE} copyResult={undefined} onCopy={noop} sendResult={undefined} onSend={noop} />);
+        mounted = await mount(<StepAction send={CHAT_VIEW} look="primary" line={LINE} copyResult={undefined} onCopy={noop} sendResult={undefined} onSend={noop} />);
         const container = mounted.container;
         const split = container.querySelector('.send-split')!;
         const line = container.querySelector<HTMLElement>('.send-attach')!;

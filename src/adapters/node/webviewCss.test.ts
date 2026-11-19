@@ -1041,3 +1041,32 @@ describe('0024 AC-009, AC-003: the split button\'s stylesheet', () => {
     });
 });
 
+
+describe('0027 AC-003: the attachment line', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+
+    it('.send-attach and its chip use theme variables only, 11 px like the coach line, and break only at the separators the markup gives', () => {
+        const line = declarations(css).filter((declaration) => declaration.selectors.includes('.send-attach'));
+        expect(line.find((declaration) => declaration.property === 'font-size')?.value).toBe('11px');
+        expect(line.find((declaration) => declaration.property === 'color')?.value).toContain('var(--vscode-');
+        const chip = declarations(css).filter((declaration) => declaration.selectors.includes('.send-attach-chip'));
+        expect(chip.find((declaration) => declaration.property === 'border')?.value).toMatch(/1px solid var\(--vscode-contrastBorder/);
+        expect(chip.length).toBeGreaterThan(0);
+        expect([...line, ...chip].filter((declaration) => /anywhere|break-all|^word-break$/.test(`${declaration.property} ${declaration.value}`))).toEqual([]);
+        expect([...line, ...chip].filter((declaration) => /#[0-9a-fA-F]{3,8}\b|\brgba?\(/.test(declaration.value))).toEqual([]);
+    });
+
+    it('in the Overview row the line spans the row like the coach line, in the three container widths', () => {
+        const rows = declarations(css).filter((declaration) => declaration.selectors.includes('.ov-row-item > .send-attach'));
+        expect(rows.find((declaration) => declaration.property === 'grid-column')?.value).toBe('1 / -1');
+        expect(rows.some((declaration) => declaration.container === undefined)).toBe(true);
+        const narrow = declarations(css).filter((declaration) => declaration.selectors.includes('.ov-row-item > .send-attach') && declaration.container !== undefined);
+        expect(narrow.some((declaration) => /width < 420px/.test(declaration.container ?? '') && declaration.property === 'text-align' && declaration.value === 'left')).toBe(true);
+    });
+
+    it('negative control: the scan finds a planted anywhere break and a colour literal', () => {
+        const planted = declarations('.send-attach { overflow-wrap: anywhere; color: #fff; }');
+        expect(planted.filter((declaration) => /anywhere/.test(declaration.value))).toHaveLength(1);
+        expect(planted.filter((declaration) => /#[0-9a-fA-F]{3,8}\b/.test(declaration.value))).toHaveLength(1);
+    });
+});

@@ -3,7 +3,7 @@
 **Spec:** [0027-attach-spec-when-sending.md](0027-attach-spec-when-sending.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-005
+**Current step:** T-007
 
 ## Approach
 
@@ -286,8 +286,8 @@ and `send.ts`/`send.test.ts`: no `‖`.
 - **Verify:** `npx vitest run --project webview src/webview/attach0027.test.tsx src/webview/userLanguage.test.tsx` and
   `npx vitest run --project node src/adapters/node/webviewCss.test.ts src/adapters/node/webviewBundle.test.ts`. They are
   red first (CSS rules missing), then `npm run test:unit` and `npm run compile` are green.
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-19 · place tests green at once (planned), negative control for the order added; CSS tests red (2 failed) then green; `npx vitest run --project webview src/webview/attach0027.test.tsx src/webview/userLanguage.test.tsx` and `--project node src/adapters/node/webviewCss.test.ts src/adapters/node/webviewBundle.test.ts` green; tsc (both), eslint clean. **Stage 3 gate (full chain) green 2026-11-19:** 204 files, 3680 passed, 4 skipped; timing 13 files, 28 passed; compile and compile-tests clean.
+- **Notes:** `main.css`: `.send-attach` (11 px, description colour, `overflow-wrap: break-word`), `.send-attach-chip` (inline, 1px outline in `--vscode-contrastBorder` so High Contrast tells it apart without colour, `box-decoration-break: clone` so a wrapped name keeps its frame), row rule `.ov-row-item > .send-attach` (spans the row, right-aligned like `.ov-coach`, left below 420 px). The line stays in the first Now row while its spec is selected (0026 removes the coach line, not the button's line, §6.3). `webviewBundle.test.ts` 0027 test: spec 0015's detail at 1.11.0 with Claude Code (a Send with attachment) stays within 300 words. Test names avoid the removed-feature word outside the masked forms (`sourceScan` 0015 AC-021).
 
 ### T-007 — Freshness, no writes, Restricted Mode
 
@@ -373,18 +373,18 @@ and `send.ts`/`send.test.ts`: no `‖`.
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
 | AC-001 | T-001, T-002 | `core/assistant/attachment.ts` (`STEP_ATTACHES`, `attachmentOf`), `sendView.ts`, `core/board/detail.ts`, `core/overview/rows.ts` | `attachment.test.ts` "0027 AC-001 …"; `sendView.test.ts` "0027 AC-001 …" (13 cases × both assistants, first Now row) | green (stage 1 gate) |
-| AC-002 | T-001, T-002, T-006 | `attachment.ts`, `core/specs/version.ts` (`ATTACH_FROM_VERSION`, `attachesFrom`, `NEWEST_KNOWN`) | `attachment.test.ts`, `sendView.test.ts` "0027 AC-002 …", `version.test.ts`, `readProject.test.ts` AC-016; webview half (no line, no description) in T-006 | partial: core green (stage 1 gate); webview part open (T-006) |
-| AC-003 | T-005, T-006 | — | — | open |
-| AC-004 | T-003, T-005, T-008 | `assistants.ts` `callsFor`, `attachment.ts` `createAttachmentCheck`, `send.ts`, `ports/assistant.ts` `fileUri`, `adapters/vscode/assistantHost.ts` | `sendAttach.test.ts` "0027 AC-004 …"; `assistantHost.test.ts` "0027 T-003 …"; webview request in T-005; real `vscode.Uri` in T-008 | partial: core and adapter green (stage 2 gate); webview payload (T-005) and host smoke (T-008) open |
+| AC-002 | T-001, T-002, T-006 | `attachment.ts`, `core/specs/version.ts`, `webview/ui/StepAction.tsx` (no line, no description without `attach`) | `attachment.test.ts`, `sendView.test.ts`, `version.test.ts`, `readProject.test.ts`; `attach0027.test.tsx` "0027 AC-002, AC-003 …" | green (stage 3 gate) |
+| AC-003 | T-005, T-006 | `ui/AttachmentLine.tsx`, `ui/StepAction.tsx`, `ui/SendButton.tsx` (`describedBy`), `board/icons.tsx` (`file`), `main.css` | `AttachmentLine.test.tsx`, `SendButton.test.tsx`, `attach0027.test.tsx` "0027 AC-003 …", `webviewCss.test.ts` "0027 AC-003 …", `webviewBundle.test.ts` "0027 AC-003 …" | green (stage 3 gate) |
+| AC-004 | T-003, T-005, T-008 | `assistants.ts` `callsFor`, `attachment.ts` `createAttachmentCheck`, `send.ts`, `ports/assistant.ts` `fileUri`, `adapters/vscode/assistantHost.ts`, `ui/SendButton.tsx` (payload `attach`) | `sendAttach.test.ts` "0027 AC-004 …"; `SendButton.test.tsx` "0027 AC-004 …"; `assistantHost.test.ts` "0027 T-003 …"; real `vscode.Uri` in T-008 | partial: core, adapter and webview green (stage 3 gate); host smoke open (T-008) |
 | AC-005 | T-003 | `assistants.ts` `callsFor` (Claude Code suffix) | `sendAttach.test.ts` "0027 AC-005 …" | green (stage 2 gate) |
 | AC-006 | T-003 | `send.ts` (no check without `attach` or for a non-attaching assistant) | `sendAttach.test.ts` "0027 AC-006 …" | green (stage 2 gate) |
 | AC-007 | T-002, T-003 | `shared/protocol/assistant.ts`, `assistants.ts` (`attachFiles` once) | `assistant.test.ts` "0027 AC-007 …"; `sendAttach.test.ts` "0027 AC-007 …"; `sourceScan.test.ts` "0027 AC-007 …" and `SEND_FORBIDDEN_TERMS` | green (stage 2 gate) |
-| AC-008 | T-004, T-005 | `send.ts` fallback (unchanged: copies `request.line`) | `sendAttach.test.ts` "0027 AC-008 …"; webview Copy prompt in T-005 | partial: host fallbacks green (stage 2 gate); menu Copy prompt open (T-005) |
+| AC-008 | T-004, T-005 | `send.ts` fallback (copies `request.line`), `ui/SendButton.tsx` (Copy prompt copies `line`) | `sendAttach.test.ts` "0027 AC-008 …"; `SendButton.test.tsx` "0027 AC-008 …" | green (stage 3 gate) |
 | AC-009 | T-004 | `send.ts`, `assistantTexts.ts` (`sendOpenedWithoutText`, `attachMissingOutputText`) | `sendAttach.test.ts` "0027 AC-009 …" (per cause and assistant, hang) | green (stage 2 gate) |
 | AC-010 | T-004 | `attachment.ts` `createAttachmentCheck` (spec entries of the model only) | `sendAttach.test.ts` "0027 AC-010 …" | green (stage 2 gate) |
 | AC-011 | T-002 | `sendView.ts` `tipClosingOf`, `assistantTexts.ts` `ATTACH_UPDATE_TEXT` | `sendView.test.ts` "0027 AC-011 …"; `detail.test.ts`, `rows.test.ts` (amended literals) | green (stage 1 gate) |
 | AC-012 | T-007 | — | — | open |
-| AC-013 | T-006, T-007 | — | — | open |
+| AC-013 | T-006, T-007 | `assistantTexts.ts` (text module), `webview/userLanguage` | `userLanguage.test.tsx` "0027 AC-013 …"; no-write and Restricted Mode in T-007 | partial: user-language sweep green (stage 3 gate); no-write, Restricted Mode open (T-007) |
 | AC-014 | T-008, T-010 | — | — | open |
 | AC-015 | T-010 | — | — | open |
 | AC-016 | T-009 | — | manual: orchestrator, preview harness, then Gregor | open |
@@ -395,8 +395,8 @@ and `send.ts`/`send.test.ts`: no `‖`.
 
 ## Session handoff
 
-- **Done so far:** stages 1 and 2 done (T-001…T-004), both stage gates green (2026-11-19); the host attaches after its check and a missing or foreign file sends without and says so.
-- **Next action:** T-005 (the attachment line, stub first, descriptions, payload `attach`), then T-006; stage 3 gate at the end of T-006.
+- **Done so far:** stages 1 to 3 done (T-001…T-006), all three stage gates green (2026-11-19); the line renders in the detail, the first Now row and the map header.
+- **Next action:** T-007 (freshness, no writes, Restricted Mode: tests only), then T-008 (host smoke test for the real URI); stage 4 gate at the end of T-008.
 - **Open decisions:** OP-006 (C-2: Copilot and the Claude Code extension on 1.11.0) and the FeatherSpec 1.11.0 release.
   Both block closing, not building. A re-read flips one `attachesSpec` entry.
 - **Baseline:** `81dc0aa` (head of `ux-round-3` before the first step commit; title audit base).

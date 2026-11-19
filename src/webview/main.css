@@ -1179,6 +1179,34 @@ main > h1 {
     font-size: 11px;
 }
 
+.send-attach {
+    flex: 1 0 100%;
+    margin: 2px 0 0;
+    color: var(--vscode-descriptionForeground);
+    font-size: 11px;
+    overflow-wrap: break-word;
+}
+
+.send-attach-chip {
+    padding: 0 4px;
+    color: var(--vscode-foreground);
+    border: 1px solid var(--vscode-contrastBorder, var(--vscode-widget-border, var(--vscode-panel-border)));
+    border-radius: 3px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+
+.send-attach-chip .icon {
+    margin-right: 3px;
+}
+
+.ov-row-item > .send-attach {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 0 12px 5px;
+    text-align: right;
+}
+
 .step-coach {
     flex: 1 0 100%;
     margin: 0;
@@ -1502,6 +1530,10 @@ blockquote.illustration {
 @container ov-list (width < 420px) {
     .ov-coach {
         justify-content: flex-start;
+    }
+
+    .ov-row-item > .send-attach {
+        text-align: left;
     }
 
     .ov-row-item {

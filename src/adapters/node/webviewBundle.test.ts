@@ -447,6 +447,33 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         expect(errors).toEqual([]);
     });
 
+    it('0027 AC-003: the same detail at FeatherSpec 1.11.0 with Claude Code (a Send with its attachment line) stays within 300 words', async () => {
+        const project = await readProject(createNodeSpecSource(), fixturePath('studio-0015'), '1.11.0');
+        const lifecycle = deriveLifecycle(project);
+        const detail = buildDetail({
+            selection: { stem: '0015-focus-on-visibility' },
+            model: { project, lifecycle },
+            history: { available: true, label: 'Observed', entries: [] },
+            tips: parseStepTipSettings(true, {}),
+            offer: { assistant: 'claudeCode' },
+        });
+        expect(detail.kind === 'spec' && 'send' in detail.nextStep ? detail.nextStep.send?.attach?.name : undefined).toBe('0015-focus-on-visibility.md');
+        const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
+        await settle();
+        const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'board', target: undefined, selection: { stem: '0015-focus-on-visibility', number: '0015' }, notice: undefined, rows: [] };
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 11, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 11, kind: 'evt', type: 'detail', payload: { view: detail } } }));
+        await settle();
+        const section = dom.window.document.querySelector('.spec-detail') as unknown as QueryRoot | null;
+        expect(section).not.toBeNull();
+        const clone = section!.cloneNode(true);
+        [...clone.querySelectorAll('.visually-hidden, [hidden]')].forEach((hidden) => hidden.remove());
+        const text = (clone.textContent ?? '').replace(/\s+/g, ' ').trim();
+        expect(text).toContain('0015-focus-on-visibility.md attached when sent');
+        expect(text.split(' ').filter((word) => word !== '').length).toBeLessThanOrEqual(300);
+        expect(errors).toEqual([]);
+    });
+
     it('control: a script that throws at start-up is reported through the same harness', () => {
         const { errors } = boot('throw new Error("broken bundle");');
         expect(errors.length).toBeGreaterThan(0);
