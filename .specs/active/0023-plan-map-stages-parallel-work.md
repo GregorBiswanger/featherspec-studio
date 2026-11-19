@@ -46,6 +46,7 @@ copy the right prompt (AC-019). User: the developer (0001–0007).
 - `Current step:`, the Session handoff, full Do or Verify text — because ticks and code lead (`plans.md`); guideline 5.
 - A coach line or `(?)` in the Plan map — because guideline 11 (once per view: the side panel's).
   *Amended by 0025 (PD-082): §3 — the header shows the spec's next step with its coach line and `(?)` (0025 §5.3); ways and start lines keep Copy prompt.*
+  *Amended by 0026 (PD-082): beside 0025's header, also 0026's `About these ways`, which holds no session or model advice (0026 A-012).*
 - Send to an assistant for the map's prompts — because 0024 keeps Send at the detail and the first Now row (0024 §3).
 - "Open Plan Map" in the tree's context menu — because 08 §4 does not ask for it; the click test kept it out (OP-005,
   PD-076).
@@ -160,6 +161,7 @@ the worker's "Check your base first … stop" (guideline 2).
 - Expanded, in order: the lead M-08; then each way as name, effect sentence, prompt in code (breaking as 0022 §4.6)
   and **Copy prompt** (0021 §6.4: label, name, 2 s feedback, the prompt alone on the clipboard), styled secondary
   (0022 §4.4):
+  *Amended by 0026 (PD-082): a radio group with the checked way's part; M-08 and the effects sit behind `About these ways` (0026 §6.6, AC-009–AC-011).*
 
 | Way | Effect (visible) | Prompt |
 | --- | --- | --- |
@@ -183,6 +185,8 @@ the worker's "Check your base first … stop" (guideline 2).
   the return notes.`; then-sentence `Paste it once every worker you started is back.`
   Source: `sdd-plan.md` Mode B step 1 ("A return note … is parallel work that came back and is not integrated yet —
   integrate it first"); `parallel-work.md` *Integrating* 1–3 ("main session only").
+  *Amended by 0026 (PD-088): `Send it once every worker you started is back.` while Send is offered (0026 §6.2, AC-021).*
+  *Amended by 0026 (PD-080): session `current or new chat` (0026 §6.2).*
 - A BLOCKED note makes the spec Blocked (PD-021 (2)): NS-4 applies, unchanged; the card shows the reason. A Review spec
   (plan `Done`, PD-021 (4) before (5)) keeps NS-5; its cards show the return.
 
@@ -248,6 +252,7 @@ struck step, an unknown ID, a step in no stage, no closing.
 - **AC-009** The ways block shall render after the current stage's cards exactly when §5.4's conditions hold: collapsed on every showing; expanded, M-08 and the three ways of §5.4 in order with their effect sentences and prompts literally, `<n>` and `<plan path>` filled; then, for an Active spec whose next step's parallel group holds two or more unfinished steps, M-10 and exactly one start line `Implement <ID> of <plan path> as a parallel worker.` per unfinished step of that group, else none. No other stage, and no spec in another state, shall show a way or a prompt.
   > **Given** `fs110-parallel-synthetic` without notes, plan In Progress **Then** stage 2 offers `Implement the whole stage 2 of .specs/active/0001-parallel-demo.plan.md in sequence` and the start lines for T-003 and T-004; stages 1 and 3 offer none. **Given** a stage `T-002 → T-003 ‖ T-004` with T-002 next **Then** the ways and no start line.
   *Amended by 0028 (PD-082, A-010): AC-009 — no ways while 0028's case "Report first" holds (0028 AC-007).*
+  *Amended by 0026 (PD-082): 0026 §6.6, AC-009–AC-011: radio group, `(?)`, the checked way's part.*
 - **AC-010** Each way's Copy shall follow 0021 AC-008 (label, name, feedback, clipboard holds the prompt alone) as a secondary button; each start line's Copy shall follow 0022 AC-012 as an icon button that copies its start line; the Plan map area shall render no primary button, so the view holds at most one (the side panel's, 0022 §4.4 (1)).
   *Amended by 0024 (PD-068): AC-010 "at most one (the side panel's …)" — the side panel's primary is 0024's split button where Send is offered; it counts once (0024 AC-003).*
   *Amended by 0025 (PD-082): the Plan map header's first line is a primary place while the side panel leaves out its Next step; the map with the side panel beside holds at most one primary, a card's Copy prompt is secondary (0025 §5.3, §5.2, AC-010).*
@@ -255,8 +260,10 @@ struck step, an unknown ID, a step in no stage, no closing.
 - **AC-012** Where a return note exists for a step, the card and chip shall show its state (M-01, M-09: done, blocked with the reason as short text and full as tooltip, unknown), the stage M-16 or M-17; when a note appears, changes or disappears, the Plan map and the side panel shall show it within 500 ms after the model-changed notification (PD-047), keeping expanded cards, the ways block's state and focus where the element still exists; a focused step card that leaves shall hand the focus to the card now at its place (same stage, same position, else the one before it), and when no card is left there, or when the focused element was a way, a Copy or a start line, focus shall go to the map's heading.
   > *Amended by PD-077 (2026-11-18, the orchestrator as Gregor's delegate, after the compile S78 finding D3): the wording read "… and focus where the element still exists, else focus on the map's heading", which sent every removed card to the heading and left a removed way, Copy or start line without a rule. Keeping the keyboard user's place in the grid is kinder than a jump to the top; the side panel's rule (0019 AC-020: its heading) is unchanged.*
   *Amended by 0025 (PD-082): the stage line is the returned-work statement U-05, and U-08 while a member of a parallel group is still out (0025 §5.6, AC-015, AC-025).*
+  *Amended by 0026 (PD-082): "keeping expanded cards, the ways block's state" includes the checked way (0026 AC-013).*
 - **AC-013** While an Active spec has a return note, `nextStep()` shall return NS-6 with the single line `/sdd-plan <spec path>` and the intent, short form `Integrate · /sdd-plan`, coach line `same chat or new chat · fast model`, effect and then-sentence of §5.5 literally; without a note NS-6 shall be as 0021 AC-003 and AC-005; a BLOCKED note shall still give NS-4.
   *Amended by 0028 (PD-082): AC-013 "without a note NS-6 shall be as 0021 AC-003 and AC-005" — as 0028's notes leave them.*
+  *Amended by 0026 (PD-080): coach `current or new chat · fast model` (0026 AC-002).*
 - **AC-014** No chip, link, card, way, Copy or command of this spec shall create, change, move or delete a file of the workspace, start a process or write a setting (0017 AC-023's tests extended); AC-001–AC-013 shall hold in Restricted Mode and a reader window.
 - **AC-015** Every text of §6 and §5.4 shall come from a text module and be asserted literally; 0016's user-language sweep shall cover the Plan section and the Plan map and find no rule ID, `struck`, `sibling`, `kind`, `stem` or `parsing`.
 - **AC-016** Every test at the commit on which this spec's implementation starts that decides a statement §4 does not change shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI; a script compares the titles of both commits and the plan lists every missing title with the changed statement or the head title that replaces it.
@@ -307,6 +314,7 @@ struck step, an unknown ID, a step in no stage, no closing.
 | A-011 | Per-step start-line Copies, not one "Copy 2 lines"; arrow keys as the Board's grid, rows for columns (proxy) | One line per chat (07 §6.4 open question, 08 P-4); 08 AC-007, one grid pattern in the Studio | §5.4, AC-011 |
 | A-012 | Every text of §5 and §6 as the drafts show it (proxy, confirmed by the click test) | PD-069 process; PD-076: the proxies the drafts show stand as drawn | §6 |
 | A-013 | A stage whose steps are all done or dropped shows chips, not cards (proxy) | Guideline 7 "Done is collapsed"; 07 §6.4's sketch expands one stage | AC-008 |
+*Amended by 0026 (PD-080): session `current or new chat` (0026 §6.2).*
 
 *Amended by 0025 (PD-082): except a navigation target and a finished stage whose chip is activated: they show expanded, cards until the next showing (0025 §5.1, §5.7, AC-001, AC-003, AC-016).*
 

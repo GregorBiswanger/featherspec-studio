@@ -10,7 +10,7 @@ Current phase: act
 - Waits for: CI at the PR, Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
 
 ## Active Spec
-- [0026](../.specs/active/0026-send-defaults-and-wording.md) / [plan](../.specs/active/0026-send-defaults-and-wording.plan.md): Send defaults and wording, in progress (T-001…T-011); AC-017…AC-019 are Gregor's.
+- [0026](../.specs/active/0026-send-defaults-and-wording.md) / [plan](../.specs/active/0026-send-defaults-and-wording.plan.md): Send defaults and wording, T-001…T-009 and T-011 built, T-010 (preview) is the orchestrator's; AC-017…AC-019 are Gregor's.
 - [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 and OP-004 are Gregor's.
 - [0023](../.specs/active/0023-plan-map-stages-parallel-work.md) / [plan](../.specs/active/0023-plan-map-stages-parallel-work.plan.md): Plan map, T-001…T-017; AC-018 real window, AC-019, AC-020 are Gregor's.
 - [0022](../.specs/active/0022-layout-and-signal-polish.md) / [plan](../.specs/active/0022-layout-and-signal-polish.plan.md): layout and signals, T-001…T-022; AC-020, AC-021 are Gregor's.

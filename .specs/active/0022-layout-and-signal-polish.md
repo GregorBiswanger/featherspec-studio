@@ -58,6 +58,7 @@ decides a staying criterion is lost (AC-017).
 
 - Step texts, short form, button label "Copy prompt", accessible-name wording, coach line, `(?)`, settings — because 0021 owns them.
 - N-9, one summary row for many equal steps in Now — because it is new function, not polish; E-5 decided "not in 0022", Gregor decides after the click test (A-004, OP-004).
+  *Amended by 0026 (PD-082): decided by 0026 §6.5: Now shows at most five rows (09 G-9).*
 - A dimmed overlay below 900 px (07 N-2 alternative) — because PD-075's list or detail replaces the drawer (A-016).
 - The Board's layout at narrow width — because no finding: it keeps its width and scrolls (0018 B-2).
 - What the parser and lifecycle findings say internally — because 0002/0003 tests assert them; only the shown sentence changes (A-009).
@@ -79,6 +80,7 @@ the viewport:
 | above 686 px | one line, as 0018 O-5 (title and state text cut by an ellipsis, full text as tooltip; step and Copy never cut) |
 | 420–686 px | two lines (PD-065 (5)): number and title; then state icon and text, warning icon, "Next" with the short form, Copy |
 | below 420 px | three lines (08 N-2): number and title; state icon and text and warning icon; "Next" with the short form and Copy |
+*Amended by 0026 (PD-082): the step short form without a visible "Next" (0026 §6.3).*
 
 - 686 px is the list width at PD-065 (5)'s 720 px Studio panel (panel − 34 px), so nothing moves while no side panel is shown (A-005).
 - A list takes the area's width: beside the side panel the area keeps at least 360 px (G-2), below 900 px the whole Studio panel (G-4); the rule covers both and VS Code's zoom. In the two- and three-line layouts number and title share their line with nothing else (g03, AC-028).
@@ -86,6 +88,7 @@ the viewport:
 - Titles wrap only between words; a single word wider than its whole line is the one case that breaks inside. Paths and commands follow §4.6.
 - Every Copy stays fully on screen at every list width (WCAG 2.2 SC 2.4.11).
 - First Now row (0021 §6.5, §6.6): the coach line and `?` follow its Copy prompt as the row's last line, aligned with the step, in every layout; the toggletip text shows under that line inside the row and covers no other row.
+  *Amended by 0026 (PD-082): only while the side panel does not show that row's spec; its Copy or split button is secondary (0026 §6.4, AC-024).*
 
 ### 4.2 Specs tree (N-3, N-4, N-5, E-4)
 
@@ -304,6 +307,7 @@ Decided by unit tests (core, no `vscode`), component tests (jsdom) and styleshee
   *Amended by 0023 (PD-069): AC-011 — the Plan map tab adds no primary button; the view holds at most the side panel's (0023 AC-010).*
   *Amended by 0024 (PD-068): AC-011 — a split button counts as one primary control; with an offer the view still holds at most two (0024 AC-003).*
   *Amended by 0025 (PD-082): the Plan map header's first line is a primary place while the side panel leaves out its Next step; the map with the side panel beside holds at most one primary, a card's Copy prompt is secondary (0025 §5.3, §5.2, AC-010).*
+  *Amended by 0026 (PD-082): "seven Now entries (five rows)"; the Overview holds one primary while the selected spec's next step has a line, none without (0026 AC-024).*
 - **AC-012** When the developer activates an icon Copy by pointer, Enter or Space, the system shall copy the full first line, show the check or warning, 0021 §6.4's name and 0016 T-19's sentence (tooltip and live region) on the same element until 2000 ms after the last activation, then restore it, and select nothing; the stylesheet shall give the icon button a fixed width and height of at least 24 px.
 - **AC-013** Each Problem kind of §6 shall show its sentence literally on each surface of §4.5, and in the webview with the technical reason as tooltip; a problem link's tooltip and accessible description shall be the reason, then 0019 AC-017's text.
 - **AC-014** No sentence X-10…X-24, with every inserted path, value and number replaced by `x`, shall contain `backlog/`, `active/`, `done/`, `**`, `Plan line`, `sibling`, `stem`, `parsing` or `diagnostic`.
@@ -358,6 +362,7 @@ Decided by unit tests (core, no `vscode`), component tests (jsdom) and styleshee
 | A-014 | Where the tree drops the intent, tooltip and accessible label keep it (proxy) | 0021 OP-004; guideline 1 | X-05, AC-004 |
 | A-015 | PD-073's palette (proxy); Review's orange equals the webview's Problem icon colour and differs by shape | PD-073; guideline 7; 0007 §6.7 never colour alone | §4.8, AC-019, AC-026 |
 | A-016 | PD-075's details: the 900 px threshold reused, X-27, back in place of close, 0019's focus rules, focus after a crossing (proxy) | PD-075 names them proxy details; 0019 already switches at 900 px | G-4, AC-029 |
+*Amended by 0026 (PD-082): N-9 is decided by 0026 §6.5.*
 
 ## 11. Open points
 

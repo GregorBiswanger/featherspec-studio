@@ -10,6 +10,12 @@ First release.
 
 ### Added
 
+- Send defaults and wording: the Send button opens a new chat for every step, and the current chat is in the menu, which
+  checks the active choice. The open chat has one name, current or new chat. Short forms start with the first word of
+  their intent (`Find blocker`, `Write plan`, `Start`, `Report`, `Move back to Ready`) without a visible "Next" (a hidden
+  "Next step:" stays for screen readers). Now shows at most five rows, then "+ n more"; the coach line is shown once per
+  spec and view, and the first Now row is no primary button. The ways to run a stage are three radio lines with In
+  sequence as the default, and the explanations sit behind **About these ways**.
 - The **Specs** view in the Activity Bar, a native tree of your specs in four groups: In progress,
   Ready, Backlog and Done (collapsed); a group that holds a problem says so. A row shows number, title
   and the short next step (the state where there is none), within 32 characters for label and

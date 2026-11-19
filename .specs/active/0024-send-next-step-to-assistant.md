@@ -114,6 +114,8 @@ configuration and extension changes (AC-010).
   `new chat` where the first line's session (0021 §6.1, §6.2) is `new chat`, else `current chat`; Claude Code always
   `new chat` (A-007). Name and tooltip `Send to <Name> (<target>): <line>`, `<target>` = `new chat` · `current chat`.
   *Current chat* is the chat Copilot shows now, the one `open` fills (V-2); 0021's "same chat" continues there.
+  *Amended by 0026 (PD-080): 0021's coach line calls it current (`current or new chat`, 0026 §6.2).*
+  *Amended by 0026 (PD-078): `new chat` for both assistants and every step (0026 §6.1, AC-001); the example of AC-005 records `newChat`, then `open`; A-007 is void; the Send items are `menuitemradio`, the active one checked (0026 AC-022).*
 - **Arrow part:** a button with a down-pointing glyph (`aria-hidden`; no icon font, 0021 A-008), name `More actions:
   <line>`, tooltip `More actions`, `aria-haspopup="menu"`, `aria-expanded`. Its menu (`role="menu"`, labelled by the
   arrow part; items `role="menuitem"`, each named by its text; nothing else in it): Copilot `Send to a new chat`, `Send
@@ -196,6 +198,7 @@ While Send is offered the toggletip's third paragraph is §7's Send sentence; th
   the checklist line re-checks it with the VS Code version (AC-015, AC-017); Copy prompt stays in the menu.
 - A hanging activation or call → the fallback after 5000 ms; a chat that opens later holds the prompt too (A-015).
 - Unsent text in Copilot's current chat → what `open` does with it is Copilot's; V-2 did not test it (OP-004).
+  *Amended by 0026 (PD-078): closed: `open` replaces a draft only through the menu item `Send to the current chat` (0026 §6.1, AC-019).*
 - Two activations → two Sends (two new chats for new chat), also while the first is pending (A-015). The step changes
   before activation → 0017 §8; the setting changes assistant before activation → copy, no warning (§6.4).
 - Restricted Mode → the user value (§6.1); Send starts no agent and runs no workspace code (0005 §11 holds); the
@@ -216,6 +219,7 @@ with both assistants of §6.2. A *Send control* is a button or menu item whose t
 - **AC-003** Where Send is offered, the detail's first next-step line and the first Now row, where it has a line, shall render §6.3's split button with §7's texts, names, tooltips and menu items for that assistant in that order, both parts in the primary colours (0016 AC-017); with a first Now row without a line, no Now row shall hold a Send control; no further detail line, Now row, Up next or Problems row, card, plan-map element or empty state shall render a Send control, and tree items, status bar entry and quick pick shall be as with `none`.
   *Amended by 0025 (PD-082): the Plan map header's first line follows this spec's Send rules as the detail's does (0025 §5.3, AC-009, AC-010).*
 - **AC-004** The main part's target shall be, with Copilot, `new chat` for the NS-5 and NS-9 fixtures and `current chat` for NS-2, NS-4, each NS-6 case, NS-7, NS-8 and NS-10; with Claude Code `new chat` for every fixture.
+  *Amended by 0026 (PD-078): the target is `new chat` for every step and both assistants (0026 AC-001).*
 - **AC-005** When the developer activates a Send (main part or menu item), the host shall make, after §6.4's checks, exactly the calls of §6.4's row for that assistant and target, in order, with deep-equal arguments, and write nothing to the clipboard; the main part shall show nothing new while the Send is pending, then §6.3's success feedback until 2000 ms after the last result, then its text again.
   > **Given** Copilot, Active `.specs/active/0001-tip-splitter.md` with T-003 open **When** the developer activates the main part **Then** the stub records exactly one executed command: `workbench.action.chat.open` with `{ query: "Implement T-003 of .specs/active/0001-tip-splitter.plan.md", isPartialQuery: true }`.
 - **AC-006** If, when the developer activates a Send, the extension is missing, activating it rejects, `getCommands()` lacks a command of the row, a call rejects, or checks and calls have not settled 5000 ms after the activation (fake timers), then the system shall make no call after that point, put exactly the line on the clipboard, show `Copied` (or `Could not copy`) on the main part, show the matching warning of §7 once as a warning notification without actions (`Cmd+V` where the platform is `darwin`, else `Ctrl+V`) and write one Output line with the cause of §7 that does not contain the line; a result after the 5000 ms shall change nothing; one fixture per cause and assistant. If the effective value no longer names the assistant the request names, the system shall copy as Copy prompt does, with no warning and no Output line.
@@ -232,6 +236,7 @@ with both assistants of §6.2. A *Send control* is a button or menu item whose t
 - **AC-015** The specs of §5 shall carry its notes; a literal search of `README.md` shall find `featherspec-studio.assistant`, `Send to Copilot`, `Send to Claude Code`, `sends nothing` and `Open Settings`, and of `CHANGELOG.md` under the version in preparation `featherspec-studio.assistant` and `Send to`; `docs/release-checklist.md` shall carry AC-016–AC-019 and one line each for GitHub Copilot, Claude Code (each with the VS Code version, against §6.2's; the releaser re-runs AC-017 on newer ones) and Codex (Copy prompt only; re-check when a Codex version accepts a prompt).
 - **AC-016** *(manual, preview harness by the orchestrator, then Gregor in a real window)* Guideline 12: detail and first Now row with Copilot and with Claude Code chosen, menu closed and open, in Dark, Light and High Contrast at 1600 px and 1000 px window width with the side panel open at its default and at 0022 G-2's minimum width, and at a Studio panel of 800 px (detail alone, 0022 G-4): no text of the split button is cut, the open menu shows fully inside the Studio panel without scrolling, both parts show a visible focus outline, each view holds at most two primary controls; the orchestrator records the screenshots in the plan.
 - **AC-017** *(manual, Gregor, per assistant: GitHub Copilot and Claude Code; he records their and VS Code's versions)* On `tip-splitter`, from the detail of an Active spec (NS-6) and of a Review spec (NS-5), the main part and each Send item open the named chat with the prompt in the input and nothing sent; after Gregor sends it himself, the prompt runs as the FeatherSpec command or plan step it names; with Copilot, Gregor records whether unsent text in the current chat is kept or replaced (OP-004).
+  *Amended by 0026 (PD-078): records the draft for `Send to the current chat`; the checklist's "decide whether the current chat stays the default target" goes (0026 AC-016).*
 - **AC-018** *(manual, Gregor)* Settings UI: "Assistant" under "FeatherSpec Studio" with the three labels, reached by the toolbar gear; with the chosen assistant's extension disabled or with only Codex installed, every surface shows Copy prompt only and nothing names Codex; a workspace value overrides the user value in a trusted workspace and is ignored in Restricted Mode.
 - **AC-019** *(manual, Gregor; PD-069 click test on an HTML draft before `/sdd-plan`)* Gregor says without asking what Send to <Name> does (opens, fills, sends nothing) and which chat it uses, and confirms or changes §7's texts; the plan records his answers.
 
@@ -279,6 +284,7 @@ with both assistants of §6.2. A *Send control* is a button or menu item whose t
 | A-013 | The split button is one primary control, both parts in the primary colours (proxy) | Guideline 8 counts actions, not parts; 0022's count stays | §5, AC-003, AC-016 |
 | A-014 | An assistant outside the Studio's extension host counts as not installed (proxy) | `getExtension` sees that host; the Studio is a workspace extension | Remote windows show Copy prompt |
 | A-015 | A Send not settled after 5000 ms has failed; a second activation while one is pending sends again (proxy) | 08 S-4 "scheitert er: kopieren"; a hang must still end on the clipboard; a later chat merely duplicates the prompt | §6.4, §6.5, AC-006 |
+*Amended by 0026 (PD-078): void: every step defaults to `new chat` (0026 §6.1).*
 
 *Amended by 0025 (PD-082): the Plan map header's first line follows this spec's Send rules as the detail's does (0025 §5.3, AC-009, AC-010).*
 
@@ -294,6 +300,7 @@ with both assistants of §6.2. A *Send control* is a button or menu item whose t
   target; AC-017 records the behaviour; if text is lost, Gregor decides whether the current chat stays. Not blocking.
   VS Code's source (`chatActions.ts`, main, read 2026-11-18) sets the input with `isPartialQuery`, which suggests a
   draft is replaced; the plan's *Research* holds the reading, AC-017 decides.
+  *Amended by 0026 (PD-078): closed by PD-078 (0026 §6.1).*
 - OP-005 `/sdd-clarify` 2026-11-18 (S68): 42 findings, 7 blocking, resolved in one pass at Gregor's standing request
   (`0024-findings.md`; cross-spec with 0023). Readings; say so if one is wrong: (a) the first Now row only where it
   has a line; (b) feedback runs from the result; (c) 5000 ms end a hanging Send (A-015); (d) the warning is a VS Code

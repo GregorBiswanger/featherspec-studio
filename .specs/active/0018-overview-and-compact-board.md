@@ -101,6 +101,7 @@ read Overview or Board; the rows below change behaviour.
 
 - **O-1 Order.** Now · Up next · Problems · figures line · Activity. No header line, tile, distribution bar, rule text or visible progress. 0016's header facts move: version and "Updated" time (T-02) into the tooltip of the panel's project name (F-1); the problem count (T-01) gives way to the Problems heading (O-4).
 - **O-2 Now.** Every entry in Active, Review or Blocked; order Blocked, Review, Active, then number ascending, then path. No cap.
+  *Amended by 0026 (PD-082): order Blocked, Review (oldest last change first), Active; at most five rows, then `+ n more` asking for Board with the set `Now` (0026 §6.5, AC-007).*
 - **O-3 Up next.** Ready entries, then Backlog entries, each by number then path; at most three rows. While more exist, "+ n more" (n = the rest) asks for Board with the named set "Up next" holding the stems of every Up next entry. Up next is what to pick up next; it holds Backlog too because the Overview has no Backlog section, while the Up next group of 0020's tree holds Ready only beside its own Backlog group (0020 §4.1).
   *Amended by 0022 (PD-069): O-3 — the tree group of Ready entries is named `Ready` (0022 §4.2); the section shows "Ready first, then backlog" after its heading while it lists a row (0022 X-07).*
 - **O-4 Problems.** One spec row per entry with a finding of 0016's tier *Problem*, by number then path, then one line per *Problem* finding tied to no entry: its place and text, plain text, no control, no Copy (guideline 2). Review alone is no problem. The heading "Problems (n)", n = spec rows + those lines (its rows, not T-01's findings), asks for Board with the named set "Problems" (stems of the spec rows). Nothing to list → no section.
@@ -110,6 +111,7 @@ read Overview or Board; the rows below change behaviour.
   *Amended by 0021 (PD-069): O-5 — the row shows the step short form of 0021 §6.3 and "Copy prompt"; the first Now row also carries the coach line and `?` of 0021 §6.5, §6.6, which are no second step line; their place in the row is 0022's.*
   *Amended by 0022 (PD-069): O-5 — the state shows as its icon (0022 §4.8) with its name visible only on one line; a Problems row lists sentences, not reasons; rows follow the list's own width, one line above 686 px, two from 420 px, three below (0022 §4.1), not a panel width of 720 px.*
   *Amended by 0024 (PD-068): O-5 — on the first Now row where Send is offered, the Copy prompt is 0024's split button (0024 §6.2, AC-003); every other row keeps its Copy.*
+  *Amended by 0026 (PD-082): the step text shows no visible "Next" (0026 AC-005); the first Now row's coach line and `?` only while the side panel does not show its spec (0026 AC-006); no Now row is primary (0026 AC-024).*
 - **O-6 Figures line.** "Total n", then "State n" for Backlog, Ready, Active, Review, Done, Blocked, zeros included, each a control sending 0006 BR-08's request. Tooltip and accessible description: Done "of which Deprecated: n" while n > 0; the progress text of §7 (BR-04's rule) on the line and on "Total n", so Tab reaches it.
 - **O-7 Activity.** 0006 BR-07's entries, collapsed whenever the panel is opened (created), open or closed kept while it stays open, also when hidden and shown again (as 0007 AC-023); no section without entries; while the status history is not available, a heading "Activity" with the reason and no toggle.
 - **O-8 Empty.** Zero specs: "No specs yet. Start with /sdd-specify" with Copy in place of Now, Up next and the figures line; Problems (O-4) and Activity (O-7) as usual. Now empty: "Nothing in progress." Up next empty: "Nothing up next. Start the next spec with /sdd-specify" with Copy. Both Copy put `/sdd-specify` on the clipboard with 0016's feedback.
@@ -175,6 +177,7 @@ read Overview or Board; the rows below change behaviour.
 | Card | state chip; derived sentence with rule ID; visible description, `No summary` | — (column tooltip; card tooltip `<number> <title>` + description or `No summary`) |
 | Commands | `FeatherSpec Studio: Open Mission Control`, `… Open Spec Board`, `… Rescan Project`, `… Refresh Project Discovery` | `FeatherSpec Studio: Open Overview`, `… Open Board`, `… Refresh` |
 | Navigation | marker `▸` | — |
+*Amended by 0026 (PD-082): set label `Now` added (0026 §6.5).*
 
 *Amended by 0025 (PD-082): rounded half up, at most 99% until all are done, with the formula of 0025 U-04 (PD-079; 0025 §5.4, AC-013).*
 
@@ -209,6 +212,7 @@ marked manual. Fixtures: 0006's and 0007's, `fs170-brownfield-mixed`, one with e
 - **AC-003** While the project has a spec, the Overview shall render in DOM order Now, Up next, Problems, the figures line and Activity, Problems only while O-4 lists something and Activity per AC-010, and no header line, tile, distribution bar or visible progress text.
 - **AC-004** The Now section shall list exactly the entries in Active, Review or Blocked, in the order of O-2, without a cap.
   > **Given** 0003 Active, 0001 Review, 0004 Blocked, 0002 Review **Then** the rows read 0004, 0001, 0002, 0003.
+  *Amended by 0026 (PD-082): the first five entries, then `+ n more` (0026 AC-007).*
 - **AC-005** The Up next section shall list Ready entries, then Backlog entries, each by number then path, at most three; while more exist it shall show "+ n more", and its activation shall send one request for Board with the named set "Up next" holding the stems of every Up next entry.
   > **Given** two Ready and four Backlog specs **Then** three rows, "+ 3 more", and a set of six stems.
 - **AC-006** Each Now, Up next and Problems spec row shall show the parts of O-5, on one line above 720 px, and no visible second line of the step (0017's step tooltip shows the full line(s)); the stylesheet shall keep the row on one line above 720 px with title and state text cut by an ellipsis and the step and Copy uncut, and at 720 px or less (media query `max-width: 720px`) wrap it to two lines, number and title first, then the state text, the step and Copy, with no text cut by an ellipsis; the row shall carry the full title and state text as tooltips. Activating the row outside Copy shall send 0006 AC-014's request; Copy shall send none.

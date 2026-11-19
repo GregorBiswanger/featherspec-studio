@@ -3,7 +3,7 @@
 **Spec:** [0026-send-defaults-and-wording.md](0026-send-defaults-and-wording.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-010
+**Current step:** T-010 (the orchestrator's preview; T-011 is done)
 
 ## Approach
 
@@ -311,8 +311,8 @@ Parallel: stages 2 and 3, run in sequence (`PLAN-R3.md`). Stage 1 shares `nextSt
   at 1600 px, the block at most half the reference height, the tag told apart in High Contrast without colour, a visible
   focus outline on radios and `(?)`, and arrow keys moving the checked radio. jsdom has no layout engine and does not
   move native radios by arrow key.
-- [ ] **Verified (T-010):** —
-- **Notes:** —
+- [ ] **Verified (T-010):** open: the preview harness is the orchestrator's, then Gregor (AC-017).
+- **Notes:** Not run by this session (no harness, no browser). For the orchestrator: the README's `overview-dark.png` alt text still says `the first row with the primary Copy prompt` and the picture shows a primary first Now row; after 0026 that row is secondary and Now has at most five rows, so the Overview and Plan map screenshots need a re-shoot (docsScan pins the alt text; change both together). The Plan map screenshot shows the old three-prompt ways block.
 
 ### T-011 — §5 notes, docs, title audit and final gates
 
@@ -336,8 +336,20 @@ Parallel: stages 2 and 3, run in sequence (`PLAN-R3.md`). Stage 1 shares `nextSt
     snapshot unchanged (no module added, moved or removed).
   - Memory Bank: `techContext.md` *Test* line for 0026 (`WORDING_0026`, `now0026`, `Ways0026`), `activeContext.md`.
 - **Verify:** quality gates 1–5 in order, zero warnings; `npm test` on Windows and CI by the orchestrator, result here.
-- [ ] **Verified (T-011):** —
-- **Notes:** —
+- [x] **Verified (T-011):** stage 4 gate chain (eslint, tsc, tsc webview, test:unit, compile, compile-tests) green, result: all six commands exit 0 (eslint, both tsc, test:unit, compile, compile-tests); `npm test` on Windows and CI is the orchestrator's; AC-017 (T-010), AC-018, AC-019 are open for Gregor.
+- **Notes:** §5 notes written under the statements of 0017, 0018, 0021, 0022, 0023, 0024 (after earlier notes; table-row notes follow their table). The table row for 0013/0015/… test audits has no note (those specs are Implemented; the audit list below carries it). README, CHANGELOG, checklist (section 0026 with AC-017…AC-019), design brief done; `docsScan.test.ts` got a 0026 describe and its 0017, 0022, 0023, 0024 literals were retargeted (titles kept, except the checklist section list now holds `## Send defaults and wording (0026)`). Architecture: `.architecture/core.md` (assistant, overview), `webview.md` (areas, board/detail, ui). Memory Bank: `techContext.md` Test line, `activeContext.md`.
+
+  **Title audit** (`/tmp/ta25/titles.py`, base `657e87a`, `it.each` counted): 15 titles of the base are missing at the head, 0 without a replacement:
+  - `PlanMap.test.tsx` `expanded: the lead, the three ways in order with effect and prompt literally, then the start lines under Other agents` -> `0026 AC-009 (0023 AC-009 retargeted): expanded, the three ways are radios …` (0023 §5.4 / AC-009, changed by 0026 §5).
+  - `PlanMap.test.tsx` `a stage view without start lines (Ready) shows the three ways and no start line` -> `… shows the three ways and, with Other agents checked, its stage prompt and no start line` (0023 AC-009).
+  - `PlanMap.test.tsx` `each way has a secondary Copy prompt that copies the prompt alone and shows the feedback of 0021` -> `each way, once checked, has a secondary Copy prompt …`; `each start line has an icon Copy named "Copy prompt: <line>" that copies the line` -> `… with Other agents checked` (0023 AC-010 against §5.4).
+  - `detail.test.ts` `NS-5 (a Review spec) is a new chat for Copilot; NS-7 (a Ready spec) and NS-6 are the current chat` -> `0026 AC-001: NS-5, NS-7 and NS-6 are all a new chat for Copilot (0024 AC-004 retargeted)` (0024 §6.3 Main part, A-007).
+  - `sendView.test.ts` `0024 AC-004: the default target of the step's session` -> `0024 AC-004 / 0026 AC-001: the default target is the new chat for every step`; `${stepCase}: Copilot sends to the ${fresh ? 'new' : 'current'} chat, with both targets` -> `0026 AC-001 ${stepCase}: Copilot sends to the new chat, with both targets`; `the new target is exactly the cases whose session is new` -> `0026 AC-001: no step case defaults to the current chat, whatever its session` (0024 §6.3, A-007).
+  - `messages.test.ts` `0025 AC-006: the protocol is version 9; …` -> `… version 10; …` (`PROTOCOL_VERSION` is 10 by 0026 §10).
+  - `primaryButtons.test.tsx`: `… seven Now rows … has exactly two: the first Now row and the first line of the side panel` -> `… seven Now entries (five rows) … has exactly one (0026 AC-024) …` (0022 AC-011); `without a selection the Overview has one and the Board none` -> `… has none (0026 AC-024) …`; `with an offer the Overview with a selected spec still has two primaries …` -> `… has one primary (0026 AC-024) …` (0024 *Place*); `0025 AC-026: with U-05 (not quiet), Send offered = %s, the first Now row and the detail are primary again` -> `… the detail is primary again and the first Now row stays secondary (0026 AC-024)`.
+  - `rows.test.ts` `has no cap: seven entries give seven rows` -> `0026 AC-007: seven entries give five rows (0018 O-2 refined: the cap is five)` (0018 O-2, AC-004).
+  - `stepTips.test.ts` `same chat or new chat, fast model; effect, then-sentence and reasons literally` -> `current or new chat, fast model; effect, then-sentence and reasons literally` (0023 AC-013 against 0026 §6.2).
+  Assertion changes with kept titles are listed in T-001…T-009's notes.
 
 ## Traceability
 
@@ -370,8 +382,8 @@ Parallel: stages 2 and 3, run in sequence (`PLAN-R3.md`). Stage 1 shares `nextSt
 
 ## Session handoff
 
-- **Done so far:** T-001…T-008 committed on `ux-round-3`; stage 1 and stage 3 gates green.
-- **Next action:** T-009 (no-write and user-language tests), T-010 (preview: orchestrator), T-011 (notes, docs, title audit, final gates).
+- **Done so far:** T-001…T-009 and T-011 committed on `ux-round-3`; stage 1, 3 and 4 gates green; T-010 open.
+- **Next action:** the orchestrator runs T-010 (preview harness) and `npm test` on Windows; Gregor checks AC-017…AC-019. Not moved to done, no `/sdd-compile`.
 - **Open decisions:** — (AC-019's draft check in Copilot's `newChat` is untested, V-3 C4; if it fails, Gregor decides, 09 §3)
 - **Baseline:** `657e87a`
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator. Full vitest takes 3+ minutes here: run it in the background.
