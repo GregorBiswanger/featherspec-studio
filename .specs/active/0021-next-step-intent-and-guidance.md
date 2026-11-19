@@ -188,6 +188,8 @@ strong → `strong model`; strong, other family → `strong model, other family`
 web search`. With a hint for the class (§6.7): `strong model (<hint>)`, `fast model (<hint>)`. A first Now row without
 a line → no coach line in Now.
 
+*Amended by 0027 (PD-082, PD-083): after 0027 §6.3's attachment line where it shows (0027 AC-003).*
+
 ### 6.6 About this step (R-6)
 
 - A plain (never primary) button `?` beside the heading "Next step" (detail) and after the coach line (first Now row),
@@ -284,6 +286,7 @@ vocabulary rule of `.claude/rules/specs.md`; it is never a qualifier here.
 - **AC-009** While `showStepTips` is true, the detail and the first Now row shall show §6.5's coach line for a step with a line, in the detail directly after the first line's Copy prompt and its status region; no card, other row, tree item, tooltip, status bar entry, quick-pick item or step without a line shall show a coach line or a `(?)`.
   *Amended by 0024 (PD-068): AC-009 — the coach line stays where the split button stands in place of the Copy prompt (0024 AC-003).*
   *Amended by 0025 (PD-082): also the Plan map header; the detail beside it then shows none (0025 §5.3, D-2; guideline 11 reads "detail, first Now row, Plan map header").*
+  *Amended by 0027 (PD-082, PD-083): after 0027 §6.3's attachment line where it shows (0027 AC-003).*
 - **AC-010** Where `showStepTips` is false, no surface shall show a coach line or a `(?)`, and intents, prompts and Copy prompt shall be identical to the true case.
 - **AC-011** When `showStepTips` or `modelHints` changes, the detail and the Overview shall show the result within 500 ms after the host receives VS Code's configuration change event, keeping selection and area (PD-047's budget).
 - **AC-012** Where `modelHints.strong` is `X`, the coach lines shall read `new chat · strong model (X), other family` (NS-5), `any chat · strong model (X), allow web search` (NS-10) and `any chat · strong model (X)` (NS-8); where `modelHints.fast` is `Y`, the NS-7 coach line shall read `any chat · fast model (Y)`; a hint shall be trimmed, inner whitespace runs collapsed, cut to 39 characters and `…` over 40; a non-string hint, one empty after trimming, or a `modelHints` that is not an object shall show no name; other keys shall change nothing; a `showStepTips` that is not a boolean shall act as `true`.
@@ -304,6 +307,7 @@ vocabulary rule of `.claude/rules/specs.md`; it is never a qualifier here.
   *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
   *Amended by 0025 (PD-082): also except the tests 0025 AC-020 lists against a statement 0025 §4 changes.*
   *Amended by 0026 (PD-082): also except the tests 0026 AC-015 lists against a statement 0026 §5 changes.*
+  *Amended by 0027 (PD-082, PD-083): also except the tests 0027 AC-014 lists against a statement 0027 §5 changes.*
 - **AC-021** 0006, 0007, 0013 and 0015–0020 shall carry the notes of §5; a literal search of `README.md` shall find `Copy prompt`, `About this step`, `featherspec-studio.showStepTips` and `featherspec-studio.modelHints`, and of `CHANGELOG.md` under the version in preparation `Copy prompt`, `showStepTips` and `modelHints`; neither `README.md` nor `docs/release-checklist.md` shall contain `**Copy**` or ``then `continue` ``; the checklist shall carry AC-022–AC-025.
 - **AC-022** *(manual, preview harness by the orchestrator, then Gregor in a real window)* Guideline 12: detail and Overview with the first Now row in Dark, Light and High Contrast at 1600 px and 1000 px window width with the side panel open at its default and at 0022 G-2's minimum width: no intent, prompt or coach line is cut; an open toggletip stays inside its panel and covers no Copy prompt of its step; the `(?)` shows a visible focus outline; screenshots recorded in the plan.
 - **AC-023** *(manual, Gregor)* Both settings appear under "FeatherSpec Studio" in the Settings UI; Show Step Tips toggles the tips in the open panel; Model Hints offers `strong` and `fast` as text fields and the coach line shows the entered name.

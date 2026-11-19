@@ -7,10 +7,10 @@ Current phase: act
 ## Now
 - Round 3 on `ux-round-3`: 0026 (Send defaults and wording) is Implemented 2026-11-19; its plan is archived.
 - 0021–0024 are implemented; their specs stay In Progress in `active/`.
-- Waits for: CI at the round-3 PR, Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
+- Waits for: C-2 and Gregor's AC-017 on `tip-splitter` for 0027, CI at the round-3 PR, Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
 
 ## Active Spec
-- [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec (Claude Code first, Copilot after C-2), T-001…T-010 in progress; AC-016…AC-018, AC-020 and OP-006 are Gregor's or the orchestrator's.
+- [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec (Claude Code first, Copilot after C-2), T-001…T-008 and T-010 verified, T-009 (preview) open; AC-016…AC-018, AC-020 and OP-006 (C-2) are Gregor's or the orchestrator's.
 - [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 are Gregor's; OP-004 closed by PD-078.
 - [0023](../.specs/active/0023-plan-map-stages-parallel-work.md) / [plan](../.specs/active/0023-plan-map-stages-parallel-work.plan.md): Plan map, T-001…T-017; AC-018 real window, AC-019, AC-020 are Gregor's.
 - [0022](../.specs/active/0022-layout-and-signal-polish.md) / [plan](../.specs/active/0022-layout-and-signal-polish.plan.md): layout and signals, T-001…T-022; AC-020, AC-021 are Gregor's.
@@ -27,15 +27,15 @@ Current phase: act
 - Completed 2026-11-19: [0026](../.specs/done/0026-send-defaults-and-wording.md) ([plan](../.specs/plan-archive/0026-send-defaults-and-wording.2026-11-19.plan.md)).
 
 ## Changed Recently
-- 0025 (PD-082), Implemented 2026-11-19: step IDs link into the Plan map (one-shot focus); `Show in Plan Map` in the tree; next step in the map header; `· 67%`; step motifs; richer cards; one returned-work statement. Windows `npm test` at 7ea11f3 passed.
-- 0026 (PD-078, PD-080, PD-086, PD-088): Send defaults to the new chat; Now stops at five rows; the ways are three radio lines; one place for guidance; texts and docs. `READY (manual items: 3)` once CI passes.
-- 0028 (PD-081, PD-082, PD-087): a plan with every step ticked or struck is Review; below FeatherSpec 1.11.0 the sign puts `/sdd-plan` first, and in every version a `Verified:` line without a tick does; NS-7 is `Implement <ID> of <plan>`; snapshots guard the rest. Done 2026-11-19, `READY (manual items: 1)`.
+- 0027 (PD-082, PD-083, PD-089), built 2026-11-19, not closed: with FeatherSpec 1.11.0 Send attaches the spec (Claude Code `@<path>`; Copilot `attachFiles` once C-2 allows it) and a line under the button names the file. Closing waits for C-2 (OP-006), AC-017, AC-020.
+- 0025, 0026, 0028 (Implemented 2026-11-19): Plan map links, header next step and percentages; Send opens a new chat, Now stops at five rows, three radio ways; a finished plan is Review. Windows `npm test` passed at 7ea11f3 (0025).
+
 ## Decisions in Flight
 - `AGENTS.md` stays above its 200-line target: the template body alone is 200 lines; further eviction would edit template wiring, Gregor's call.
 - Publisher ID `GregorBiswanger` is confirmed (2026-11-17).
 
 ## Blockers / Questions
-- Gregor's manual checks stay in the specs: 0025 AC-022 real window, AC-023, AC-024; 0026 AC-017, AC-019; 0028 AC-015.
+- Gregor's manual checks stay in the specs: 0025 AC-022 real window, AC-023, AC-024; 0026 AC-017, AC-019; 0028 AC-015; 0027 AC-016, AC-017, AC-020.
 
 ## Next
 1. Finish 0027 (spec and plan are in `.specs/active/`, the plan's handoff names the next step).

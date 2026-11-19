@@ -51,6 +51,7 @@ the files reaches the model without a manual reload.
   on request (ADR-001 §9).
 - Both plan-step dialects. Supported version range 1.7.0–1.10.0; other versions are read by
   the same rules and get a diagnostic (AC-016).
+  *Amended by 0027 (PD-082, PD-083): the supported range reaches 1.11.0, the attach version (0027 §6.2, AC-002); `newer than known` begins above it.*
 
 ### Out of scope
 
@@ -238,6 +239,8 @@ file rather than its content: key and modification time (PD-043).
 | 0001 reports the same project again (same root, same version) | No re-read; the watcher and `rescan()` cover changes under `.specs/` (AC-022) |
 | `.md` file in a watched folder that matches no pattern | No entry (AC-001). Diagnostic: OP-003 |
 
+*Amended by 0027 (PD-082, PD-083): the supported range reaches 1.11.0, the attach version (0027 §6.2, AC-002); `newer than known` begins above it.*
+
 ## 13. Acceptance criteria
 
 Handoff references in brackets (PD-017).
@@ -322,6 +325,7 @@ Handoff references in brackets (PD-017).
   "newer than known". For 1.7.0 to 1.10.0 the system shall return no version diagnostic.
   The system shall compare versions by semantic-version precedence. Apart from this
   diagnostic, the model of a project shall not depend on its version. [R-001; PD-020]
+  *Amended by 0027 (PD-082, PD-083): the supported range reaches 1.11.0, the attach version (0027 §6.2, AC-002); `newer than known` begins above it.*
 - **AC-017** If a spec's `**Plan:**` line, or a sibling plan's `**Spec:**` line, links to a
   file that does not exist inside the project, then the system shall return a dangling-link
   diagnostic and shall still return the spec or plan. If an archived plan's `**Spec:**` line

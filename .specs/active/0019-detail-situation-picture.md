@@ -294,6 +294,7 @@ at commit `8052f9a` (made by the plan, like `studio-0002`).
   *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
   *Amended by 0025 (PD-082): also except the tests 0025 AC-020 lists against a statement 0025 §4 changes.*
   *Amended by 0026 (PD-082): also except the tests 0026 AC-015 lists against a statement 0026 §5 changes.*
+  *Amended by 0027 (PD-082, PD-083): also except the tests 0027 AC-014 lists against a statement 0027 §5 changes.*
 - **AC-024** 0005, 0006, 0007, 0013, 0015, 0016, 0017 and 0018 shall carry the notes of §5 at the named statements, and the PD register shall hold no edit of an existing entry (PD-066, appended by the fix round of the compile S48, is the one new entry); checked by a grep and a diff in the plan.
 
 ## 11. Technical notes for developers or AI agents

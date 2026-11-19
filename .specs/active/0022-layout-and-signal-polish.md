@@ -89,6 +89,7 @@ the viewport:
 - Every Copy stays fully on screen at every list width (WCAG 2.2 SC 2.4.11).
 - First Now row (0021 §6.5, §6.6): the coach line and `?` follow its Copy prompt as the row's last line, aligned with the step, in every layout; the toggletip text shows under that line inside the row and covers no other row.
   *Amended by 0026 (PD-082): only while the side panel does not show that row's spec; its Copy or split button is secondary (0026 §6.4, AC-024).*
+  *Amended by 0027 (PD-082, PD-083): after 0027 §6.3's attachment line where it shows (0027 AC-003).*
 
 ### 4.2 Specs tree (N-3, N-4, N-5, E-4)
 
@@ -147,6 +148,8 @@ B-6's rule tooltip where one applies. Every other strip is unchanged.
 ### 4.6 Paths and commands (N-8)
 
 *Amended by 0023 (PD-069): §4.6 "(this list is complete)" — plus the map's `Files`, way prompts and start lines (0023 §5.3, §5.4).*
+
+*Amended by 0027 (PD-082, PD-083): plus the attachment line's file name (0027 §6.3).*
 
 Every project path and every command line the webview shows — side-panel next-step lines, the
 detail path, a card path, Files links, the place of a project-level problem line (this list is complete) —
@@ -292,6 +295,7 @@ Decided by unit tests (core, no `vscode`), component tests (jsdom) and styleshee
 
 - **AC-001** The stylesheet shall declare each Overview list an inline-size container and set the row layouts of §4.1 only inside `@container` rules on that list's width at 686 px and 420 px; no `@media` rule shall change an Overview row, its title or state text; no rule shall hold `data-drawer` or lay the side panel over the area; in the first Now row 0021's coach line and `?` shall follow the Copy as the row's last elements, on a line of their own in every layout.
   *Amended by 0024 (PD-068): AC-001 — the first Now row's split button is laid out as its Copy prompt was (0024 AC-009).*
+  *Amended by 0027 (PD-082, PD-083): after 0027 §6.3's attachment line where it shows (0027 AC-003).*
 - **AC-002** No rule shall set `overflow-wrap: anywhere` or `word-break: break-all` on an Overview row title, a card title or head, the side panel's heading or an element of §4.6.
 - **AC-003** A Problems row shall hold its full title and every Problem sentence in the DOM; no rule matching a Problems row, a problem line, a banner line or the side panel's problem list shall set `text-overflow: ellipsis`, a line clamp or `white-space: nowrap`; a Problems row shall take the two-line layout at every list width from 420 px.
 - **AC-004** Each tree row with a step shall carry as description 0021's step or command short form (§4.2), each without a step `<State>` or `Deprecated`; no description shall start with a state name followed by ` · `; the accessible label shall be X-05.
@@ -322,6 +326,7 @@ Decided by unit tests (core, no `vscode`), component tests (jsdom) and styleshee
   *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
   *Amended by 0025 (PD-082): also except the tests 0025 AC-020 lists against a statement 0025 §4 changes.*
   *Amended by 0026 (PD-082): also except the tests 0026 AC-015 lists against a statement 0026 §5 changes.*
+  *Amended by 0027 (PD-082, PD-083): also except the tests 0027 AC-014 lists against a statement 0027 §5 changes.*
 - **AC-018** `README.md`, `docs/product/ux-guidelines.md` and `docs/release-checklist.md` shall name the tree groups In progress, Ready, Backlog, Done, and the plan shall list each "Up next" left there as the Overview's set; the README shall name the divider, its reset and the back button below 900 px; `CHANGELOG.md` shall name the changes under the version in preparation; the checklist shall carry AC-019, AC-020, AC-025.
 - **AC-019** *(manual, preview; guideline 12)* In Dark, Light and High Contrast, height 800 px, at window widths 1600 px and 1000 px with VS Code's sidebar open at its default width, at a Studio panel of 920 px, at 800 px and at VS Code zoom level 2, each with a spec selected, on this repository and `fs170-brownfield-mixed`, Overview and Board, Gregor or his delegate shall confirm: no title word split (one wider than its line excepted); every Copy fully visible and reachable by Tab; at most two filled buttons; paths broken only after a separator; whole Problem sentences; the warning on `fs170-brownfield-mixed`'s collapsed Done strip; each state told at a glance, every icon shape distinct, the Problem warning included. Screenshots and verdict in the plan.
   *Amended by 0024 (PD-068): AC-019 "at most two filled buttons" — a split button counts once (0024 AC-003, AC-016).*

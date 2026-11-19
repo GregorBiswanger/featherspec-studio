@@ -375,6 +375,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
             '## Plan-state-aware next step (0028)',
             '## Plan map navigation and progress (0025)',
             '## Send defaults and wording (0026)',
+            '## Attach the spec when sending (0027)',
             '## Go',
         ]);
         for (const gone of ['Plan line', 'descriptions cut', 'attention row', 'attention reason', 'filters, sort']) {
@@ -1115,5 +1116,37 @@ describe('product docs after 0026 (AC-002, AC-016)', () => {
             expect(await read(`.specs/active/${file}.md`), file).toContain('Amended by 0026 (PD-');
         }
         expect('no note here').not.toContain('Amended by 0026 (PD-');
+    });
+});
+
+describe('product docs after 0027 (AC-015)', () => {
+    it('0027 AC-015: README contains the three strings and the CHANGELOG entry in preparation names that Send attaches the spec', async () => {
+        const readme = await read('README.md');
+        for (const text of ['attached when sent', 'FeatherSpec 1.11.0', 'Copy prompt attaches nothing']) {
+            expect(readme, `README ${text}`).toContain(text);
+        }
+        expect(firstRelease(await read('CHANGELOG.md'))).toContain('attaches the spec');
+    });
+
+    it('0027 AC-015: the release checklist carries AC-016 to AC-018 and AC-020, one line per assistant for AC-017 with V-3\'s versions, the attach version line and the C-2 line, before Go', async () => {
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('\n## Attach the spec when sending (0027)\n');
+        expect(start).toBeGreaterThan(-1);
+        expect(start).toBeLessThan(text.indexOf('\n## Go'));
+        const section = text.slice(start, text.indexOf('\n## ', start + 1));
+        for (const mark of ['**AC-016**', '**AC-017**', '**AC-017, GitHub Copilot**', '**AC-018**', '**AC-020**', 'VS Code 1.147.0', 'GitHub Copilot Chat 0.75.0', 'Claude Code 2.1.327', '`ATTACH_FROM_VERSION`', '`NEWEST_KNOWN`', '`attachesSpec`']) {
+            expect(section, mark).toContain(mark);
+        }
+    });
+
+    it('0027 AC-015: each statement of 0027 section 5 carries its note, 0013 in done/ included', async () => {
+        const active = ['0015-focus-on-visibility', '0016-honest-signals', '0017-next-step-everywhere', '0018-overview-and-compact-board', '0019-detail-situation-picture', '0020-native-spec-tree', '0021-next-step-intent-and-guidance', '0022-layout-and-signal-polish', '0023-plan-map-stages-parallel-work', '0024-send-next-step-to-assistant'];
+        for (const file of active) {
+            expect(await read(`.specs/active/${file}.md`), file).toContain('Amended by 0027 (PD-');
+        }
+        for (const file of ['0002-spec-repository-parser', '0013-studio-visual-design', '0025-plan-map-navigation-and-progress', '0026-send-defaults-and-wording', '0028-plan-state-aware-next-step']) {
+            expect(await read(`.specs/done/${file}.md`), file).toContain('Amended by 0027 (PD-');
+        }
+        expect('no note here').not.toContain('Amended by 0027 (PD-');
     });
 });

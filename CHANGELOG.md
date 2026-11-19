@@ -10,6 +10,10 @@ First release.
 
 ### Added
 
+- Send attaches the spec: with FeatherSpec 1.11.0 or later, Send puts the spec in the chat as a file, Claude Code through
+  an `@` mention, and a line under the button names the file (`0002-x.md attached when sent`). Every step that reads the spec
+  attaches it; `/sdd-lifecycle` and `/sdd-overview` do not. Copy prompt attaches nothing, and nothing is submitted. Copilot
+  attaches once it is shown not to read the spec again. On older projects Send stays as it was and its `(?)` names the update.
 - Send defaults and wording: the Send button opens a new chat for every step, and the current chat is in the menu, which
   checks the active choice. The open chat has one name, current or new chat. Short forms start with the first word of
   their intent (`Find blocker`, `Write plan`, `Start`, `Report`, `Move back to Ready`) without a visible "Next" (a hidden

@@ -3,7 +3,7 @@
 **Spec:** [0027-attach-spec-when-sending.md](0027-attach-spec-when-sending.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-009
+**Current step:** T-009 (open: preview, the orchestrator's)
 
 ## Approach
 
@@ -335,7 +335,7 @@ and `send.ts`/`send.test.ts`: no `‖`.
 - **Verify:** manual: the orchestrator, then Gregor, check for cut text, wrapping after a separator, the chip in High
   Contrast without colour, and no shift when feedback shows. jsdom has no layout engine.
 - [ ] **Verified (T-009):** —
-- **Notes:** —
+- **Notes:** Left open on purpose, not guessed. The preview is the orchestrator's (AC-016) and needs two things this session does not own: `/home/claude/orch/preview/host.mts` must build the Copilot session with `createFakeOffer({ assistant: 'copilot' }, { attaching: () => true })` (the shipped table keeps Copilot off until C-2), and the project it serves must carry `FeatherSpecVersion: 1.11.0` (this repository's `AGENTS.md` says 1.10.0, so a copy is needed); Claude Code attaches by the shipped table. Then the scenarios of the Do list. jsdom has no layout engine, so the CSS is proven by rules only (`webviewCss.test.ts`), not by pixels.
 
 ### T-010 — §5 notes, docs, title audit and final gates
 
@@ -365,8 +365,8 @@ and `send.ts`/`send.test.ts`: no `‖`.
       attaches only a spec entry of the current model whose file exists (0027)".
   - Memory Bank: the `techContext.md` *Test* line for 0027; `activeContext.md`.
 - **Verify:** quality gates 1–5 in order, zero warnings; `npm test` on Windows and CI by the orchestrator, result here.
-- [ ] **Verified (T-010):** —
-- **Notes:** —
+- [x] **Verified (T-010):** 2026-11-19 · `docsScan.test.ts` 'product docs after 0027 (AC-015)' (3 tests) green; title audit run; **Final gate chain green 2026-11-19:** eslint, tsc (both), `test:unit` 204 files, 3688 passed, 4 skipped, timing 14 files, 33 passed, `compile`, `compile-tests`. `npm test` (host, Windows and CI): not run here, the orchestrator records its result.
+- **Notes:** §5 notes: 51 lines in 15 specs (0024 ×15, 0025 ×4, 0026 ×3, 0021 ×3, 0022 ×4, 0002 ×3, 0013, 0015…0020, 0023, 0028), each "*Amended by 0027 (PD-082, PD-083): …*" after the earlier notes; `.specs/done/0013-*` included. README, CHANGELOG, checklist section 0027 (AC-016, AC-017 per assistant with V-3's versions, AC-018 not run, AC-020, attach-version line, C-2 flip line), `docsScan.test.ts` order list and 0027 AC-015 tests. Architecture: `.architecture/{core,adapters,webview}.md`, `AGENTS.md` snapshot (reconciled 0027) and boundary; Memory Bank: `techContext.md`, `activeContext.md` (compacted to keep its size test). **Title audit** (`/tmp/ta25/titles.py`, base `81dc0aa` src vs head, `it.each` counted): 3439 base titles, 3555 head, **one missing:** `messages.test.ts | 0025 AC-006: the protocol is version 10; a focus names a spec and one of step, ways, heading; other shapes are refused`, replaced by the same test titled `… the protocol is version 11; …` (statement changed: `PROTOCOL_VERSION` 11 by 0027 T-002, 0027 §10). The planned `AC-016: %s is newer than known` rows keep their title (values retargeted), so they are not missing. Staying tests whose expectation changed with their title kept (statement changed by §5, 0024 §7 toggletip row): `detail.test.ts` 'the toggletip closing pair follows the offer …' and `rows.test.ts` 'the send view stays with tips off …'; envelope literals `v: 10` → `v: 11` in eight webview and bundle tests, and the two 'another version' tests moved to 12.
 
 ## Traceability
 
@@ -385,18 +385,18 @@ and `send.ts`/`send.test.ts`: no `‖`.
 | AC-011 | T-002 | `sendView.ts` `tipClosingOf`, `assistantTexts.ts` `ATTACH_UPDATE_TEXT` | `sendView.test.ts` "0027 AC-011 …"; `detail.test.ts`, `rows.test.ts` (amended literals) | green (stage 1 gate) |
 | AC-012 | T-007 | `attachment.ts`, `sendView.ts` (pure of the model, so a model change recomputes it) | `attach0027.timing.test.ts` "0027 AC-012 …" (board and shell worlds, 500 ms) | green (stage 4 gate) |
 | AC-013 | T-006, T-007 | `assistantTexts.ts` (text module), `attachment.ts` (stat only) | `noWrite.test.ts` "0027 AC-013 …" (2), `restricted.test.ts` "0027 AC-013 …", `userLanguage.test.tsx` "0027 AC-013 …" | green (stage 4 gate) |
-| AC-014 | T-008, T-010 | — | title audit and the `npm test` part in T-010; `src/test/board.smoke.test.ts` written (T-008) | partial: smoke test written, `npm test` by the orchestrator; audit open (T-010) |
-| AC-015 | T-010 | — | — | open |
-| AC-016 | T-009 | — | manual: orchestrator, preview harness, then Gregor | open |
-| AC-017 | T-010 (checklist) | — | manual: Gregor on `tip-splitter`, per assistant, before the spec closes | open |
-| AC-018 | T-010 (record) | — | manual: not run, closed by OP-001 (13); question moves to AC-017 | open |
+| AC-014 | T-008, T-010 | `messages.test.ts`, `detail.test.ts`, `rows.test.ts`, `version.test.ts`, `readProject.test.ts` (changed with their title kept or one title changed, see T-010 Notes); `src/test/board.smoke.test.ts` | `npm run test:unit` green; title audit: one missing title, listed in T-010 Notes; `npm test` on Windows and CI by the orchestrator | partial: unit side green, audit done; `npm test` open (orchestrator) |
+| AC-015 | T-010 | `README.md`, `CHANGELOG.md`, `docs/release-checklist.md`, the notes in 15 specs, `.architecture/*`, `AGENTS.md`, Memory Bank | `docsScan.test.ts` "product docs after 0027 (AC-015)" (3) | green (final gate) |
+| AC-016 | T-009 | `ui/AttachmentLine.tsx`, `main.css` | manual: orchestrator, preview harness, then Gregor (T-009 open: the harness needs `host.mts` to offer Copilot with attaching on and a project stamped 1.11.0) | open |
+| AC-017 | T-010 (checklist) | checklist section 0027 (one line per assistant, V-3 versions) | manual: Gregor on `tip-splitter`, per assistant, before the spec closes | open (Gregor) |
+| AC-018 | T-010 (record) | checklist section 0027 | manual: not run, closed by OP-001 (13); the question moves to AC-017 | open (recorded as not run) |
 | AC-019 | T-001, T-002, T-003 | `assistants.ts` `attachesSpec`, `offer.ts` `attachesOf`, `send.ts` | `attachment.test.ts`, `offer.test.ts`, `sendView.test.ts` "0027 AC-019 …"; `sendAttach.test.ts` (non-attaching assistant: AC-006 calls) | green (stage 2 gate) |
-| AC-020 | T-010 (checklist) | — | manual: Gregor or the orchestrator, before the spec closes | open |
+| AC-020 | T-010 (checklist) | checklist section 0027 | manual: Gregor or the orchestrator with the 43 KB `0022` spec on 1.11.0 | open |
 
 ## Session handoff
 
-- **Done so far:** stages 1 to 4 done (T-001…T-008), all four stage gates green (2026-11-19); `npm test` (host smoke) is the orchestrator's on Windows.
-- **Next action:** T-009 (preview: orchestrator's harness `/home/claude/orch/preview/run.sh`), then T-010 (§5 notes, docs, title audit, architecture, Memory Bank, final gates).
+- **Done so far:** T-001…T-008 and T-010 done; stage gates 1 to 4 and the final chain green (2026-11-19); §5 notes, docs, architecture and Memory Bank synced; title audit has one retitled test (T-010 Notes).
+- **Next action:** T-009: the orchestrator runs the preview (AC-016): `host.mts` must give the Copilot session `createFakeOffer({ assistant: 'copilot' }, { attaching: () => true })` and the project needs `FeatherSpecVersion: 1.11.0` (Claude Code attaches by the shipped table); then Gregor. Then C-2 (OP-006) and AC-017, AC-020 on his machine; a re-read flips one `attachesSpec` entry. `npm test` on Windows. `/sdd-compile` and the move to `done/` only after that.
 - **Open decisions:** OP-006 (C-2: Copilot and the Claude Code extension on 1.11.0) and the FeatherSpec 1.11.0 release.
   Both block closing, not building. A re-read flips one `attachesSpec` entry.
 - **Baseline:** `81dc0aa` (head of `ux-round-3` before the first step commit; title audit base).

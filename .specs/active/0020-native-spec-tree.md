@@ -251,6 +251,7 @@ Decided by unit tests on the tree model (core, no `vscode`) and the manifest unl
   *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
   *Amended by 0025 (PD-082): also except the tests 0025 AC-020 lists against a statement 0025 §4 changes.*
   *Amended by 0026 (PD-082): also except the tests 0026 AC-015 lists against a statement 0026 §5 changes.*
+  *Amended by 0027 (PD-082, PD-083): also except the tests 0027 AC-014 lists against a statement 0027 §5 changes.*
 - **AC-022** *(manual; pre-release checklist)* On `tip-splitter` and on this repository, in Dark, Light and High Contrast at a sidebar width of 400 px, Gregor or his delegate shall confirm that every state icon is told apart without colour, the description of every In progress and Up next row is visible and the badge is readable; in the Hands-On he copies a next step from the tree and his assistant runs it.
   *Amended by 0022 (PD-069): AC-022 "Up next row" — a `Ready` row.*
 
