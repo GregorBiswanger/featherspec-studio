@@ -5,7 +5,7 @@ import type { ShellService, SpecReference } from './shellService';
 import type { SpecRowModel } from './specTree';
 
 export interface TreeActionsDeps {
-    shell: Pick<ShellService, 'open' | 'select'>;
+    shell: Pick<ShellService, 'open' | 'select' | 'navigate'>;
     panel: StudioPanelPort;
     copy: (line: string) => Promise<void>;
     openFile: Pick<OpenFile, 'open'>;
@@ -16,6 +16,7 @@ export interface TreeActions {
     select(reference: SpecReference): void;
     copy(row: Pick<SpecRowModel, 'line'>): Promise<void>;
     open(row: Pick<SpecRowModel, 'specKey' | 'planKey'>, which: 'spec' | 'plan'): Promise<void>;
+    showInPlanMap(row: Pick<SpecRowModel, 'stem' | 'path' | 'mapStep'>): void;
 }
 
 export function createTreeActions(deps: TreeActionsDeps): TreeActions {
@@ -26,6 +27,16 @@ export function createTreeActions(deps: TreeActionsDeps): TreeActions {
             }
             deps.shell.select(reference);
             deps.panel.show({ preserveFocus: true });
+        },
+        showInPlanMap(row) {
+            if (!deps.panel.isOpen()) {
+                deps.shell.open({ via: 'start' });
+            }
+            deps.shell.navigate({
+                area: 'planMap',
+                target: { kind: 'spec', stem: row.stem, ...(row.path === undefined ? {} : { path: row.path }), ...(row.mapStep === undefined ? { heading: true as const } : { step: row.mapStep }) },
+            });
+            deps.panel.show({ preserveFocus: false });
         },
         async copy(row) {
             if (row.line !== undefined) {

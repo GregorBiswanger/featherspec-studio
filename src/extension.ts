@@ -8,7 +8,7 @@ import { resolveStorageLocation } from './adapters/vscode/storageLocation';
 import { createOutputChannel } from './adapters/vscode/outputChannel';
 import { createShellActions } from './adapters/vscode/shellActions';
 import { createStudioPanel, VIEW_TYPE, type StudioPanel, type StudioPanelInspection } from './adapters/vscode/studioPanel';
-import { AREA_COMMANDS, COPY_NEXT_STEP_COMMAND, OPEN_COMMAND, OPEN_SETTINGS_COMMAND, REFRESH_COMMAND, SELECT_SPEC_COMMAND, SHELL_ACTION_COMMAND, TREE_COPY_COMMAND, TREE_OPEN_PLAN_COMMAND, TREE_OPEN_SPEC_COMMAND } from './adapters/vscode/commands';
+import { AREA_COMMANDS, COPY_NEXT_STEP_COMMAND, OPEN_COMMAND, OPEN_SETTINGS_COMMAND, REFRESH_COMMAND, SELECT_SPEC_COMMAND, SHELL_ACTION_COMMAND, TREE_COPY_COMMAND, TREE_OPEN_PLAN_COMMAND, TREE_OPEN_SPEC_COMMAND, TREE_SHOW_IN_PLAN_MAP_COMMAND } from './adapters/vscode/commands';
 import { createFetchReleaseHttp } from './adapters/node/fetchReleaseHttp';
 import { createNodeSetupTarget } from './adapters/node/nodeSetupTarget';
 import { createTarGzArchive } from './adapters/node/tarGzArchive';
@@ -266,9 +266,18 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         warn: (text) => stepUi.warn(text),
     });
     const tree = createStudioTree(treeService);
-    const treeRow = (argument: unknown): { specKey: string; planKey?: string; line?: string } | undefined => {
-        const row = argument as { specKey?: unknown; planKey?: unknown; line?: unknown } | undefined;
-        return typeof row?.specKey === 'string' ? { specKey: row.specKey, ...(typeof row.planKey === 'string' ? { planKey: row.planKey } : {}), ...(typeof row.line === 'string' ? { line: row.line } : {}) } : undefined;
+    const treeRow = (argument: unknown): { specKey: string; planKey?: string; line?: string; stem?: string; path?: string; mapStep?: string } | undefined => {
+        const row = argument as { specKey?: unknown; planKey?: unknown; line?: unknown; stem?: unknown; path?: unknown; mapStep?: unknown } | undefined;
+        return typeof row?.specKey === 'string'
+            ? {
+                  specKey: row.specKey,
+                  ...(typeof row.planKey === 'string' ? { planKey: row.planKey } : {}),
+                  ...(typeof row.line === 'string' ? { line: row.line } : {}),
+                  ...(typeof row.stem === 'string' ? { stem: row.stem } : {}),
+                  ...(typeof row.path === 'string' ? { path: row.path } : {}),
+                  ...(typeof row.mapStep === 'string' ? { mapStep: row.mapStep } : {}),
+              }
+            : undefined;
     };
 
     context.subscriptions.push(
@@ -315,6 +324,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         vscode.commands.registerCommand(TREE_OPEN_PLAN_COMMAND, (row: unknown) => {
             const found = treeRow(row);
             return found === undefined ? undefined : treeActions.open(found, 'plan');
+        }),
+        vscode.commands.registerCommand(TREE_SHOW_IN_PLAN_MAP_COMMAND, (row: unknown) => {
+            const found = treeRow(row);
+            if (found?.stem !== undefined) {
+                treeActions.showInPlanMap({ stem: found.stem, ...(found.path === undefined ? {} : { path: found.path }), ...(found.mapStep === undefined ? {} : { mapStep: found.mapStep }) });
+            }
         }),
         vscode.commands.registerCommand(SELECT_PROJECT_COMMAND_ID, () => controller.selectProject()),
     );

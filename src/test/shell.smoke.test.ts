@@ -179,6 +179,7 @@ suite('FeatherSpec Studio shell smoke', function () {
             'featherspec-studio.tree.copyNextStep',
             'featherspec-studio.tree.openSpec',
             'featherspec-studio.tree.openPlan',
+            'featherspec-studio.tree.showInPlanMap',
             'workbench.trust.manage',
             'vscode.openFolder',
         ]) {
@@ -193,6 +194,14 @@ suite('FeatherSpec Studio shell smoke', function () {
         await vscode.commands.executeCommand('featherspec-studio.selectSpec', { stem: '0001-tip-splitter' });
         await waitFor('one Studio tab with the spec selected', () => ({ ...panelState(api), stem: api.shell().view().selection?.stem }), (state) => state.tabs === 1 && state.stem === '0001-tip-splitter', { timeoutMs: WAIT_MS });
         assert.strictEqual(api.shell().panelCount(), 1);
+    });
+
+    test('AC-005 (0025): Show in Plan Map opens a closed panel on the Plan map with that spec selected', async () => {
+        const api = await activateStudio();
+        await api.whenIdle();
+        await closeStudio(api);
+        await vscode.commands.executeCommand('featherspec-studio.tree.showInPlanMap', { specKey: '.specs/active/0001-tip-splitter.md', stem: '0001-tip-splitter' });
+        await waitFor('one Studio tab on the Plan map with the spec selected', () => ({ ...panelState(api), stem: api.shell().view().selection?.stem, area: api.shell().view().area }), (state) => state.tabs === 1 && state.stem === '0001-tip-splitter' && state.area === 'planMap', { timeoutMs: WAIT_MS });
     });
 
     test('AC-013 (0020): a backlog spec added to the project shows in the group Backlog and goes with its removal', async () => {

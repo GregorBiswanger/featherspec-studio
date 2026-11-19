@@ -399,6 +399,7 @@ export const TREE_COMMAND_TITLES = {
     copyNextStep: 'Copy Next Step',
     openSpec: 'Open Spec',
     openPlan: 'Open Plan',
+    showInPlanMap: 'Show in Plan Map',
 } as const;
 
 export function folderStatusSentence(folder: string, status: string | undefined): string {

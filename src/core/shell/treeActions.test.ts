@@ -175,7 +175,7 @@ describe('0020 AC-014: the tree and its actions write no file', () => {
         const openFile = createOpenFile({ source, editor: { open: async (_root, key) => (opened.push(key), 'opened') } });
         const selected: string[] = [];
         const actions = createTreeActions({
-            shell: { open: () => undefined, select: (reference) => void selected.push(reference?.stem ?? '') },
+            shell: { open: () => undefined, select: (reference) => void selected.push(reference?.stem ?? ''), navigate: () => undefined },
             panel: { isOpen: () => false, show: () => undefined },
             copy: async () => undefined,
             openFile,

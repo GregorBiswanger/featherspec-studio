@@ -9,6 +9,7 @@ export const SELECT_SPEC_COMMAND = 'featherspec-studio.selectSpec';
 export const TREE_COPY_COMMAND = 'featherspec-studio.tree.copyNextStep';
 export const TREE_OPEN_SPEC_COMMAND = 'featherspec-studio.tree.openSpec';
 export const TREE_OPEN_PLAN_COMMAND = 'featherspec-studio.tree.openPlan';
+export const TREE_SHOW_IN_PLAN_MAP_COMMAND = 'featherspec-studio.tree.showInPlanMap';
 export const SHELL_ACTION_COMMAND = 'featherspec-studio.shellAction';
 export const NAVIGATOR_VIEW = 'featherspec-studio.navigator';
 

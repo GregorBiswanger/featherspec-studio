@@ -393,12 +393,12 @@ describe('0020 AC-006: the tooltip', () => {
         expect(paragraphs.every((paragraph) => paragraph.length > 0)).toBe(true);
     });
 
-    it('the figures show steps and criteria joined by a dot, the contextValue names step and plan', async () => {
+    it('the figures show steps and criteria joined by a dot, the contextValue names step, plan and map (0025)', async () => {
         const project = await readFixture('studio-0015');
         const model = { project, lifecycle: deriveLifecycle(project) };
         const row = rows(treeOf(model)).find((candidate) => candidate.stem === '0015-focus-on-visibility')!;
         expect(row.tooltip).toMatch(/\n\nSteps \d+\/\d+ · \d+% · Criteria 28\/30 · 93%\n\n/);
-        expect(row.contextValue).toBe('spec step plan');
+        expect(row.contextValue).toBe('spec step plan map');
         expect(row.planKey).toBe('.specs/active/0015-focus-on-visibility.plan.md');
         expect(row.line).toBe('/sdd-compile .specs/active/0015-focus-on-visibility.md');
     });

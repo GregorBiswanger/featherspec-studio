@@ -43,6 +43,7 @@ export interface ShellService {
     refresh(): Promise<void>;
     open(request: OpenRequest): void;
     select(reference: SpecReference | undefined): void;
+    navigate(request: NavigationRequest): void;
     handlers: Pick<RequestHandlers, ShellRequestType>;
     dispose(): void;
 }
@@ -284,6 +285,7 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
     return {
         open,
         select,
+        navigate,
         view: compute,
         shellEvent() {
             const view = compute();
