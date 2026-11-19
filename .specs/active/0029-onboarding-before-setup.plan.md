@@ -1,9 +1,9 @@
 # Plan — Onboarding Before /sdd-setup
 
 **Spec:** [0029-onboarding-before-setup.md](0029-onboarding-before-setup.md)
-**Status:** Not started
+**Status:** In progress
 **Last updated:** 2026-11-19
-**Current step:** T-001
+**Current step:** T-002
 
 ## Approach
 
@@ -59,8 +59,8 @@ No parallel stage: T-002 and T-003 share `shared/protocol/texts.ts` and the mode
   `MARKER_WATCH_PATHS`. Tests: `setupSign.test.ts` "0029 AC-001 …", "0029 AC-002 …" (each variant, red first);
   `discoverWorkspace.test.ts` for both fixtures.
 - **Verify:** `npx vitest run --project node src/core/discovery/` — red first (no `readSetupSign`), then green; gate 5.
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-19 red: `npx vitest run src/core/discovery/setupSign.test.ts` 25 failed, 1 passed (stub threw `Not implemented`); `npx vitest run src/core/specs/activeProjectFeed.test.ts` 2 failed (no `setupRun` on the model). Green: `npx vitest run src/core/specs src/core/discovery src/adapters/node/docsScan.test.ts` 29 files, 655 tests passed; `npx tsc --noEmit` clean.
+- **Notes:** Proxy decisions: (1) `setupRun` is optional on `DiscoveredFolder`, `ProjectRead` and `RepositoryProject`, so the many test builders and deep-equal snapshots of other projects stay as they are; `discoverWorkspace` always sets it, absent reads as *run or unknown*. (2) `classifyFolder()` returns `briefText`; a brief that cannot be read gives `undefined`, no message (§8). (3) The model gets the sign through `RepositoryProject` (`connectActiveProject` compares it, so a switch re-opens the project and every service re-renders: no new watcher); `buildProject` takes it as a last optional parameter. (4) The VS Code marker watch also listens to `onDidChange` of the brief (`BRIEF_WATCH_PATH`); that adapter has no unit test, tsc only. (5) `activeContext.md` names 0029 now, because `docsScan.test.ts` requires every spec in `active/` on a line; T-006 rewrites it.
 
 ### T-002 — The welcome in the Overview and the Board
 
@@ -126,8 +126,8 @@ No parallel stage: T-002 and T-003 share `shared/protocol/texts.ts` and the mode
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001 | — | — | open |
-| AC-002 | T-001 | — | — | open |
+| AC-001 | T-001 | `src/core/discovery/setupSign.ts:readSetupSign`, `discoverWorkspace.ts` | `setupSign.test.ts`, `discoverWorkspace.test.ts` | verified |
+| AC-002 | T-001 | `setupSign.ts`, `classifyFolder.ts:briefText`, `markerWatchPaths.ts`, `specs/activeProjectFeed.ts` | `setupSign.test.ts`, `activeProjectChanged.test.ts`, `activeProjectFeed.test.ts` | verified |
 | AC-003 | T-002 | — | — | open |
 | AC-004 | T-002, T-003 | — | — | open |
 | AC-005 | T-002 | — | — | open |
@@ -144,8 +144,8 @@ No parallel stage: T-002 and T-003 share `shared/protocol/texts.ts` and the mode
 
 ## Session handoff
 
-- **Done so far:** —
-- **Next action:** T-001
+- **Done so far:** T-001 (sign read, re-read, carried to the model).
+- **Next action:** T-002
 - **Open decisions:** — (OP-001: FeatherSpec 1.11.0 unreleased; the sign rests on `04c569d`)
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** `0982b84` (head before the first step commit; "the commit on which implementation starts")
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

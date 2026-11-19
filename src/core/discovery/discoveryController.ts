@@ -68,7 +68,7 @@ export function createDiscoveryController(deps: DiscoveryControllerDeps): Discov
         if (previous === undefined || next === undefined) {
             return previous === next;
         }
-        return deps.sameRoot(previous.root, next.root) && previous.version === next.version && previous.legacy === next.legacy;
+        return deps.sameRoot(previous.root, next.root) && previous.version === next.version && previous.legacy === next.legacy && previous.setupRun === next.setupRun;
     }
 
     function notifyActiveChanged(): void {

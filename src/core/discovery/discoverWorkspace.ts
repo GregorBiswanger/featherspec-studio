@@ -1,6 +1,7 @@
 import type { WorkspaceFolderInfo } from '../ports/host';
 import type { ReadOnlyFileSystem } from '../ports/readOnlyFileSystem';
 import { classifyFolder, FolderReadError, type FolderVerdict } from './classifyFolder';
+import { readSetupSign, type SetupRun } from './setupSign';
 import { readVersionLine } from './versionLine';
 
 export interface DiscoveredFolder {
@@ -10,6 +11,7 @@ export interface DiscoveredFolder {
     verdict: FolderVerdict;
     legacy: boolean;
     version: string;
+    setupRun?: SetupRun;
     missingMarkers: readonly string[];
     setupPending?: true;
     diagnostics: readonly string[];
@@ -54,6 +56,7 @@ async function discoverFolder(fileSystem: ReadOnlyFileSystem, folder: WorkspaceF
             verdict: classification.verdict,
             legacy: classification.legacy,
             version: reading.version,
+            setupRun: readSetupSign(classification.agentsText, classification.briefText),
             missingMarkers: classification.missingMarkers,
             ...(classification.setupPending ? { setupPending: true as const } : {}),
             diagnostics,
@@ -69,6 +72,7 @@ async function discoverFolder(fileSystem: ReadOnlyFileSystem, folder: WorkspaceF
             verdict: 'not-a-project',
             legacy: false,
             version: 'unknown',
+            setupRun: 'run or unknown',
             missingMarkers: [],
             diagnostics: [`Cannot read ${failedPath}: ${reason}`],
             readError: reason,

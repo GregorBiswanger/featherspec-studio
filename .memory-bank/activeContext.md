@@ -10,6 +10,7 @@ Current phase: act
 - Waits for: C-2 and Gregor's AC-017 on `tip-splitter` for 0027, CI at the round-3 PR, Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
 
 ## Active Spec
+- [0029](../.specs/active/0029-onboarding-before-setup.md) / [plan](../.specs/active/0029-onboarding-before-setup.plan.md): the welcome and `/sdd-setup` before `/sdd-specify` while setup has not run, in progress (T-001 first); AC-013 is the orchestrator's, AC-014 Gregor's.
 - [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec (Claude Code first, Copilot after C-2), T-001…T-010 verified; AC-016…AC-018, AC-020 and OP-006 (C-2) are Gregor's or the orchestrator's.
 - [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 are Gregor's; OP-004 closed by PD-078.
 - [0023](../.specs/active/0023-plan-map-stages-parallel-work.md) / [plan](../.specs/active/0023-plan-map-stages-parallel-work.plan.md): Plan map, T-001…T-017; AC-018 real window, AC-019, AC-020 are Gregor's.

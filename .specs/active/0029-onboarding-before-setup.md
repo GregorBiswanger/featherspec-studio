@@ -1,6 +1,6 @@
 # Onboarding Before /sdd-setup
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0029-onboarding-before-setup.plan.md](0029-onboarding-before-setup.plan.md)
 
 Basis: Gregor's feedback 2026-11-19 (standing answer `orch/SPEC-0029.md`, treated as typed by him); FeatherSpec 1.11.0

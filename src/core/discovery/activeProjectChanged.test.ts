@@ -90,6 +90,28 @@ describe('active project changed notification', () => {
         expect(versions).toEqual(['1.11.0']);
     });
 
+    it('0029 AC-002: a change of the setup sign alone, by the brief or by AGENTS.md, notifies the active project, nothing else does', async () => {
+        const brief = '# Project Brief\n\n## Mission\nTBD\n\n## Primary users\nTBD\n\n## Success criteria\nTBD\n';
+        const { fileSystem, controller } = setup(['a'], (system) => {
+            system.setFile('a', 'AGENTS.md', 'FeatherSpecVersion: 1.11.0\n# last reconciled: never\n');
+            system.setDirectory('a', '.specs');
+            system.setFile('a', '.memory-bank/projectbrief.md', brief);
+        });
+        const signs: (string | undefined)[] = [];
+        controller.onDidChangeActiveProject((active) => signs.push(active?.setupRun));
+        await controller.start();
+        await controller.refresh();
+        expect(signs).toEqual(['not run']);
+        fileSystem.setFile('a', '.memory-bank/projectbrief.md', brief.replace('## Mission\nTBD', '## Mission\nA tip splitter'));
+        await controller.refresh();
+        expect(signs).toEqual(['not run', 'run or unknown']);
+        fileSystem.setFile('a', '.memory-bank/projectbrief.md', brief);
+        await controller.refresh();
+        fileSystem.setFile('a', 'AGENTS.md', 'FeatherSpecVersion: 1.11.0\n# last reconciled: 2026-11-19\n');
+        await controller.refresh();
+        expect(signs).toEqual(['not run', 'run or unknown', 'not run', 'run or unknown']);
+    });
+
     it('AC-023: the status bar and the snapshot already show the result when the subscriber is called', async () => {
         const { host, controller } = setup(['a'], (fileSystem) => addProject(fileSystem, 'a'));
         const seen: { text: string | undefined; active: DiscoveredFolder | undefined; passed: DiscoveredFolder | undefined }[] = [];

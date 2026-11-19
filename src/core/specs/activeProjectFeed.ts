@@ -1,14 +1,14 @@
 import type { DiscoveredFolder } from '../discovery/discoverWorkspace';
 import type { DiscoveryController } from '../discovery/discoveryController';
 import type { Disposable } from '../ports/host';
-import type { SpecRepository } from './specRepository';
+import type { RepositoryProject, SpecRepository } from './specRepository';
 
 export function connectActiveProject(
     controller: Pick<DiscoveryController, 'snapshot' | 'onDidChangeActiveProject'>,
     repository: Pick<SpecRepository, 'open'>,
 ): Disposable {
     let disposed = false;
-    let last: { root: string; version: string } | undefined;
+    let last: RepositoryProject | undefined;
 
     function follow(active: DiscoveredFolder | undefined): void {
         if (disposed) {
@@ -21,10 +21,11 @@ export function connectActiveProject(
             }
             return;
         }
-        if (last?.root === active.root && last.version === active.version) {
+        const setupRun = active.setupRun ?? 'run or unknown';
+        if (last?.root === active.root && last.version === active.version && last.setupRun === setupRun) {
             return;
         }
-        last = { root: active.root, version: active.version };
+        last = { root: active.root, version: active.version, setupRun };
         void repository.open(last).catch(() => undefined);
     }
 

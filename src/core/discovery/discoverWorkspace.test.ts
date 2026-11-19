@@ -30,6 +30,19 @@ describe('discoverWorkspace', () => {
         });
     });
 
+    it('0029 AC-001: the template as installed reads setup not run, the same after a setup reads setup run', async () => {
+        const result = await discoverWorkspace(nodeFileSystem, [folder('fs-setup-not-run'), folder('fs-setup-done-no-specs')], caseSensitive);
+        expect(result.folders.map((entry) => [entry.name, entry.verdict, entry.setupRun])).toEqual([
+            ['fs-setup-not-run', 'project', 'not run'],
+            ['fs-setup-done-no-specs', 'project', 'run or unknown'],
+        ]);
+    });
+
+    it('0029 AC-002: a folder that is read with an error or is no project reads setup run or unknown', async () => {
+        const result = await discoverWorkspace(nodeFileSystem, [folder('not-fs-speckit'), folder('fs-legacy-unstamped')], caseSensitive);
+        expect(result.folders.map((entry) => entry.setupRun)).toEqual(['run or unknown', 'run or unknown']);
+    });
+
     it('AC-004: a legacy project has version "unknown" and a diagnostic recommending /sdd-featherspec-update', async () => {
         const result = await discoverWorkspace(nodeFileSystem, [folder('fs-legacy-unstamped')], caseSensitive);
         expect(result.folders[0]).toMatchObject({ verdict: 'project', legacy: true, version: 'unknown' });
