@@ -101,6 +101,8 @@ export const COVERS_LABEL = 'Covers';
 export const DO_LABEL = 'Do';
 
 export const VERIFY_LABEL = 'Verify';
+export const VERIFIED_LABEL = 'Verified';
+export const REPORTED_LABEL = 'Reported';
 
 export const OPEN_IN_PLAN_LABEL = 'Open in plan';
 

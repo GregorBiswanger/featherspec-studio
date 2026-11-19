@@ -321,7 +321,7 @@ export function PlanMap() {
         return (
             <div className="plan-map" data-plan-map>
                 <Header key={shown.key} detail={shown} plan={shown.plan} fileResult={fileResult} onOpen={openFile} />
-                <Stages key={`stages|${shown.key}`} plan={shown.plan} links={{ fileResult, onOpen: openFile }} copyResult={copyResult} onCopy={copyText} stem={shown.stem} path={shown.path} focus={shell.focus} />
+                <Stages key={`stages|${shown.key}`} plan={shown.plan} links={{ fileResult, onOpen: openFile, copyResult, onCopy: copyText }} copyResult={copyResult} onCopy={copyText} stem={shown.stem} path={shown.path} focus={shell.focus} />
             </div>
         );
     }

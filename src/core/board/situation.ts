@@ -10,7 +10,7 @@ import { openStep } from './nextStep';
 import { criteriaProgress, taskProgress } from './progress';
 import { plainShort, shortTitle } from './shortTitle';
 
-const CRITERION_CELL = /^[`*_~\s]*([A-Z]+-\d+)[`*_~\s]*$/;
+export const CRITERION_CELL = /^[`*_~\s]*([A-Z]+-\d+)[`*_~\s]*$/;
 
 function baseName(key: string): string {
     return key.slice(key.lastIndexOf('/') + 1);

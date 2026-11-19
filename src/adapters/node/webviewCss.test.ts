@@ -224,6 +224,16 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
         expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\s*\* \{\s*transition: none !important;/);
     });
 
+    it('0025 AC-017: a card row aligns its cards to their start, and the card title shows at most two lines', () => {
+        const row = rulesFor(css, '.plan-group').map((entry) => entry.body).join(';');
+        expect(row).toMatch(/align-items:\s*(?:start|flex-start)/);
+        const title = rulesFor(css, '.step-card-title').map((entry) => entry.body).join(';');
+        expect(title).toMatch(/-webkit-line-clamp:\s*2/);
+        expect(title).toMatch(/display:\s*-webkit-box/);
+        expect(title).toMatch(/-webkit-box-orient:\s*vertical/);
+        expect(title).toMatch(/overflow:\s*hidden/);
+    });
+
     it('0025 AC-016: the ways block takes the same highlight rule as a card', () => {
         expect(rulesFor(css, '.plan-ways[data-highlight]').some((entry) => entry.body.includes('outline: 2px solid'))).toBe(true);
     });

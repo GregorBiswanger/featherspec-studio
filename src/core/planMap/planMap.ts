@@ -2,6 +2,7 @@ import type { LineTarget } from '../../shared/protocol/detail';
 import { startLine, stagePrompt } from '../../shared/protocol/planMapTexts';
 import type { PlanGroupView, PlanReturnView, PlanStageKind, PlanStageView, PlanStepState, PlanStepView, PlanUnreadableView, PlanView, PlanWaysView } from '../../shared/protocol/planMap';
 import { plainShort, plainText } from '../board/shortTitle';
+import { CRITERION_CELL } from '../board/situation';
 import { nextStep, openStep } from '../board/nextStep';
 import { taskProgress } from '../board/progress';
 import type { LifecycleEntry } from '../lifecycle/model';
@@ -21,6 +22,8 @@ interface Context {
     next: string | undefined;
     noteLies: boolean;
     returned: string | undefined;
+    copy: { id: string; line: string } | undefined;
+    traceability: ReadonlyArray<{ criterion: string; state: string }>;
 }
 
 function splitList(raw: string): string[] {
@@ -59,6 +62,16 @@ function stateOf(step: PlanStep, context: Context): PlanStepState {
     return !context.noteLies && context.next === step.id ? 'next' : 'open';
 }
 
+function textOf(raw: string | undefined): { short: string; full: string } | undefined {
+    return raw === undefined ? undefined : { short: plainShort(raw), full: plainText(raw) };
+}
+
+function coverState(id: string, context: Context): 'verified' | 'built' | 'open' | undefined {
+    const rows = context.traceability.filter((row) => CRITERION_CELL.exec(row.criterion.trim())?.[1] === id);
+    const state = rows.length === 1 ? rows[0]!.state.trim() : undefined;
+    return state === 'verified' || state === 'built' || state === 'open' ? state : undefined;
+}
+
 function stepView(id: string, context: Context): PlanStepView {
     const step = context.steps.get(id);
     if (step === undefined) {
@@ -78,10 +91,14 @@ function stepView(id: string, context: Context): PlanStepView {
         files: files === undefined ? [] : splitList(files),
         covers: step.coveredCriteria.map((cover) => {
             const criterion = defined.find((candidate) => candidate.id === cover);
-            return criterion === undefined ? { id: cover } : { id: cover, open: { key: context.spec.key, line: criterion.line } };
+            const state = coverState(cover, context);
+            return { id: cover, ...(criterion === undefined ? {} : { open: { key: context.spec.key, line: criterion.line } }), ...(state === undefined ? {} : { state }) };
         }),
         ...(doText === undefined ? {} : { doText: plainShort(doText) }),
         ...(verify === undefined ? {} : { verify: plainShort(verify) }),
+        ...(state !== 'done' || textOf(fieldText(step.verified)) === undefined ? {} : { verified: textOf(fieldText(step.verified))! }),
+        ...(state !== 'returned' || note?.parsed === undefined || textOf(fieldText(note.parsed.verified.value)) === undefined ? {} : { reported: textOf(fieldText(note.parsed.verified.value))! }),
+        ...(context.copy?.id === id && !context.noteLies ? { copy: context.copy.line } : {}),
         ...(note === undefined || state !== 'returned' ? {} : { returned: returnOf(note) }),
     };
 }
@@ -141,6 +158,13 @@ function closingView(raw: string): PlanView['closing'] {
     return { text, short: plainShort(text), full: plainText(text) };
 }
 
+function copyOf(model: ShellModel, entry: LifecycleEntry): { id: string; line: string } | undefined {
+    const next = nextStep(model, entry.key);
+    const line = next !== undefined && 'lines' in next ? next.lines[0]?.text : undefined;
+    const id = line === undefined ? undefined : /^Implement (T-\d+) of /.exec(line)?.[1];
+    return line === undefined || id === undefined ? undefined : { id, line };
+}
+
 export function planOf(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry): PlanView | PlanUnreadableView | undefined {
     if (entry.state === 'Done' || entry.plan === undefined) {
         return undefined;
@@ -166,6 +190,8 @@ export function planOf(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry
         next: openStep(model, entry)?.id,
         noteLies: spec.returnNoteKeys.length > 0,
         returned: returnedWorkOf(model, entry, spec),
+        copy: copyOf(model, entry),
+        traceability: plan.parsed.traceability,
     };
     const rows = plan.parsed.stages.stages
         .map((stage) => {

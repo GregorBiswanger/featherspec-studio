@@ -11,9 +11,17 @@ export interface PlanReturnView {
     reasonFull?: string;
 }
 
+export type CoverState = 'verified' | 'built' | 'open';
+
 export interface PlanCoverView {
     id: string;
     open?: LineTarget;
+    state?: CoverState;
+}
+
+export interface PlanTextView {
+    short: string;
+    full: string;
 }
 
 export interface PlanStepView {
@@ -25,6 +33,9 @@ export interface PlanStepView {
     covers: PlanCoverView[];
     doText?: string;
     verify?: string;
+    verified?: PlanTextView;
+    reported?: PlanTextView;
+    copy?: string;
     returned?: PlanReturnView;
 }
 
@@ -106,7 +117,7 @@ function isLineTarget(value: unknown): value is LineTarget {
 }
 
 function isCover(value: unknown): value is PlanCoverView {
-    return isRecord(value) && keysAre(value, ['id'], ['open']) && isString(value.id) && (value.open === undefined || isLineTarget(value.open));
+    return isRecord(value) && keysAre(value, ['id'], ['open', 'state']) && isString(value.id) && (value.open === undefined || isLineTarget(value.open)) && (value.state === undefined || value.state === 'verified' || value.state === 'built' || value.state === 'open');
 }
 
 function isReturn(value: unknown): value is PlanReturnView {
@@ -119,10 +130,14 @@ function isReturn(value: unknown): value is PlanReturnView {
     );
 }
 
+function isText(value: unknown): value is PlanTextView {
+    return isRecord(value) && keysAre(value, ['short', 'full']) && isString(value.short) && isString(value.full);
+}
+
 function isStep(value: unknown): value is PlanStepView {
     return (
         isRecord(value) &&
-        keysAre(value, ['id', 'state', 'title', 'files', 'covers'], ['open', 'doText', 'verify', 'returned']) &&
+        keysAre(value, ['id', 'state', 'title', 'files', 'covers'], ['open', 'doText', 'verify', 'verified', 'reported', 'copy', 'returned']) &&
         isString(value.id) &&
         isString(value.state) &&
         STEP_STATES.includes(value.state) &&
@@ -134,6 +149,9 @@ function isStep(value: unknown): value is PlanStepView {
         value.covers.every(isCover) &&
         (value.doText === undefined || isString(value.doText)) &&
         (value.verify === undefined || isString(value.verify)) &&
+        (value.verified === undefined || isText(value.verified)) &&
+        (value.reported === undefined || isText(value.reported)) &&
+        (value.copy === undefined || (isString(value.copy) && value.copy.length > 0)) &&
         (value.returned === undefined || isReturn(value.returned))
     );
 }

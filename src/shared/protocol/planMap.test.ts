@@ -28,6 +28,18 @@ describe('0023 AC-003: the plan view and the plan spec list are guarded exactly'
         expect(isPlanView({ ...base, stages: base.stages.map((entry, index) => (index === 0 ? { ...entry, returned: { n: 1, m: 1 } } : entry)) })).toBe(false);
     });
 
+    it('0025 AC-007, AC-008: a step takes verified, reported, copy and a cover state, and refuses anything else', () => {
+        const text = { short: 'a', full: 'a b' };
+        const ok = (overrides: object, covers?: unknown) => isPlanView({ ...planSample(), stages: [stage(1, [{ steps: [{ ...step('T-001', 'done'), ...overrides, ...(covers === undefined ? {} : { covers }) } as never] }])] });
+        expect(ok({ verified: text, reported: text, copy: 'Implement T-001 of p' })).toBe(true);
+        expect(ok({}, [{ id: 'AC-001', state: 'built' }, { id: 'AC-002', state: 'verified' }, { id: 'AC-003', state: 'open' }])).toBe(true);
+        expect(ok({ verified: { short: 'a' } })).toBe(false);
+        expect(ok({ reported: { ...text, extra: 1 } })).toBe(false);
+        expect(ok({ copy: '' })).toBe(false);
+        expect(ok({ copy: 3 })).toBe(false);
+        expect(ok({}, [{ id: 'AC-001', state: 'mostly' }])).toBe(false);
+    });
+
     it('an extra key, a missing key or a wrong type is refused at the plan, a stage, a group, a step and the ways', () => {
         const base = clone(planSample());
         expect(isPlanView({ ...base, extra: 1 })).toBe(false);

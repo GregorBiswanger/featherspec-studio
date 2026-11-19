@@ -1861,6 +1861,7 @@ blockquote.illustration {
 .plan-group {
     display: flex;
     flex-wrap: wrap;
+    align-items: start;
     gap: 8px;
     min-width: 0;
 }
@@ -1888,7 +1889,9 @@ blockquote.illustration {
 }
 
 .step-card-toggle {
-    display: block;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
     width: 100%;
     padding: 0;
     color: var(--vscode-foreground);
@@ -1907,7 +1910,12 @@ blockquote.illustration {
 }
 
 .step-card-title {
+    min-width: 0;
     font-weight: 400;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
 }
 
 .step-card-line,
