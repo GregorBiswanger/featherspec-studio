@@ -1,7 +1,7 @@
 # Send Defaults and Wording
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0026-send-defaults-and-wording.plan.md](0026-send-defaults-and-wording.plan.md)
 
 Basis: `docs/ux-audit/09-round2-review.md` §3, §4 (G-3, G-5, G-8, G-9), §7, §8; `screenshots-48d1968/` r01, r02, r05,
 r06. **PD-078**, **PD-080**, **PD-086**, **PD-088**, PD-082, PD-068, PD-074, PD-041, PD-047, PD-063 (5), PD-077, PD-016;
@@ -12,6 +12,8 @@ targets. No interview: proxies in §11. Code: `db71223`.
 **Changes 2026-11-19** (`docs/ux-audit/12-finish-plan.md` D3; PD-084…PD-089): `Move back to Ready` (PD-086); the menu's
 items named, a check mark open (OP-006); the after-send sentence (AC-020); `Send`, not `Paste`, beside a Send (AC-021).
 Click test (`docs/ux-audit/13-clicktest-results.md` K-2, K-3, K-5): AC-022–AC-024; OP-001, OP-006, OP-007 closed.
+`/sdd-plan` (S98): AC-021's search reads string literals and allows 0021's Copy-only tip closing; AC-024 names 0025's quiet
+`Integrate`; §10 names 0028's snapshot test and the `now` shape.
 
 ## 1. Summary
 
@@ -210,10 +212,10 @@ prose; a stage `T-002 → T-003 ‖ T-004`, T-002 next; Now with five, six and e
 - **AC-018** *(manual, Gregor; click test on an HTML draft before `/sdd-plan`, PD-082, 09 §7)* Task across views: from the Overview of `fs110-parallel-synthetic` without notes, with Copilot chosen, Gregor finds out how stage 2 could run with other agents, copies the start line for T-004, and says without asking which chat Send to Copilot opens for T-003 and what `Continue · Implement T-003` in Now means. It passes when he does all three without asking and without opening a Markdown file. The orchestrator notes each click and its view; Gregor confirms or changes §7's texts; a change is a revise of this spec. *Run 2026-11-19 (13): tasks 1–3, then ended; K-2, K-3, K-5 → AC-022–AC-024, the rest moves to real use (12 F-3).*
 - **AC-019** *(manual, Gregor, on `tip-splitter` before the spec closes; GitHub Copilot and Claude Code, versions recorded)* From the detail and the first Now row of the Active spec the main part opens a new chat with the prompt in the input, nothing sent, and a draft typed beforehand in the previous Copilot chat is still there; `Send to the current chat` fills the current chat, and Gregor records whether a draft there was kept; with that spec selected the Overview shows one coach line; on 0023's re-cut copy with a `‖` stage (0023 OP-004) the start lines pasted after M-10's commit build their steps, and `/sdd-plan` integrates both without a finding.
 - **AC-020** After the developer activates a Send to Copilot (main part or either Send item), the main part's tooltip and live region shall read `The prompt is in Copilot's chat. Check it, then send it there.` literally, the stub shall record exactly AC-001's calls and none that submits, and no text of the view shall say the prompt was sent; for Claude Code the same with `Claude Code's`.
-- **AC-021** For 0023's returned work with Send offered, the toggletip's then-sentence shall be `Send it once every worker you started is back.`, and with Copy prompt alone `Paste it once every worker you started is back.`; in every render with a Send control, no text in the same step block shall start with `Paste`, and a case-insensitive search of the text modules shall find `paste` only in that Copy-prompt sentence, 0023's Other agents effect (start lines), 0024's `None: Copy prompt` description and its fallback warning.
+- **AC-021** For 0023's returned work with Send offered, the toggletip's then-sentence shall be `Send it once every worker you started is back.`, and with Copy prompt alone `Paste it once every worker you started is back.`; in every render with a Send control, no text in the same step block shall start with `Paste`, and a case-insensitive search of the text modules' string literals shall find `paste` only in that Copy-prompt sentence, 0023's Other agents effect (start lines), 0021's tip closing `Choose the chat and the model in your AI assistant before you paste.` (Copy prompt alone; with Send, 0024's `sendTipText` replaces it), 0024's `None: Copy prompt` description and its fallback warning.
 - **AC-022** When the developer opens the arrow part's menu, for every fixture and both assistants, `Send to a new chat` shall be a `menuitemradio` with `aria-checked="true"` and a check glyph (`aria-hidden`), Copilot's `Send to the current chat` a `menuitemradio` with `aria-checked="false"` and no glyph, and `Copy prompt` a `menuitem` with neither; names, order and keys shall stay AC-001's and 0024 §6.3's; after a Send through `Send to the current chat` the check shall stay on `Send to a new chat`; the main part's visible text shall stay `Send to Copilot` (`Send to Claude Code`).
 - **AC-023** While `showStepTips` is true, for every case with a line, NS-5 (`Verify`) and 0028's finished plan in Review (D-1) included, the coach line shall render as text not inside a toggletip region, not `hidden` and not visually hidden, before any `(?)` is activated: in the detail after the first line, in 0025's Plan map header, and in the first Now row where §6.4 shows it; once per view (AC-006). *Example:* NS-5 and an all-ticked plan `In Progress` (0028) show `new chat · strong model, other family` in the detail without a click.
-- **AC-024** Every Now row's Copy prompt and both parts of its split button shall render with the secondary colours (first row) or as the icon button (later rows), never primary; the Overview shall hold exactly one primary control while the selected spec's next step has a line (the side panel's, 0022 §4.4 (1)) and none while no spec is selected, the zero-spec state's Copy (0022 §4.4 (3)) apart. *Example:* AC-007's eight entries with 0004 selected: one primary, in the side panel; none selected: none.
+- **AC-024** Every Now row's Copy prompt and both parts of its split button shall render with the secondary colours (first row) or as the icon button (later rows), never primary; the Overview shall hold exactly one primary control while the selected spec's next step has a line (the side panel's, 0022 §4.4 (1)), none while 0025's U-08 makes that line quiet (0025 AC-026), and none while no spec is selected, the zero-spec state's Copy (0022 §4.4 (3)) apart. *Example:* AC-007's eight entries with 0004 selected: one primary, in the side panel; none selected: none.
 
 ## 10. Technical notes for developers or AI agents
 
@@ -222,6 +224,10 @@ prose; a stage `T-002 → T-003 ‖ T-004`, T-002 next; Now with five, six and e
   `SESSION_WORDS`, `SESSION_REASONS`, `NEXT_STEP_SHORT_LABEL`); `stepTips.ts`; `nextStep.ts` `shortForm()`; `StepText.tsx`.
 - Now: `core/overview/rows.ts` (`NOW_ORDER`, no cap; `projectUpNext` → `{ rows, more, stems }`), `Now.tsx`, `namedSet()`,
   `cardLastChange()`. G-5: `SpecRow.tsx` `isSelectedSpec()`; hiding `.ov-coach` is presentation, the core keeps `tips`.
+- Built first (`/sdd-plan`, 2026-11-19): 0028 freezes `nextStep()`, `stepView()` and the tips as snapshots
+  (`nextStepBaseline.test.ts`, 0028 AC-010); this spec changes `stepView().intent` and the tips' wording only, so that test
+  keeps its title and compares the Baseline after §7's replacements. `OverviewView.now` takes Up next's `{ rows, more, stems }`
+  (guard, `PROTOCOL_VERSION` once more after 0025's); the host smoke `overview.smoke.test.ts` reads `now.rows`.
 - Ways: `areas/planMap/Ways.tsx`, `planMapTexts.ts`, `PlanWaysView`; the tag is static, no new view field. jsdom does not
   move native radios by arrow key, so AC-017 checks the keys. Tests likely touched: `nextStep`, `stepView`, `stepTips`,
   `sendView`, `rows`, `Overview`, `SpecRow`, `Card`, `specTree`, `copyNextStep`, `Ways`, `planMap`, `userLanguage`,
