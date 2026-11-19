@@ -1,7 +1,7 @@
 # Plan — Plan Map Navigation and Progress Clarity
 
 **Spec:** [0025-plan-map-navigation-and-progress.md](0025-plan-map-navigation-and-progress.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-19
 **Current step:** T-001
 
@@ -521,5 +521,5 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
   2. After 0028 is done, on the start signal, move the pair to `active/` (`/sdd-lifecycle`) and set the Baseline.
   3. Then T-001.
 - **Open decisions:** none. If 0028's final surfaces differ from its plan, see *Research*, assumption.
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** `b8e41c7` (commit before the first step commit)
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

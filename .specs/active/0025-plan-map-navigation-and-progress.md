@@ -1,6 +1,6 @@
 # Plan Map Navigation and Progress Clarity
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0025-plan-map-navigation-and-progress.plan.md](0025-plan-map-navigation-and-progress.plan.md)
 
 Basis: `docs/ux-audit/09-round2-review.md` (F-1, F-2, AC-a…AC-g; G-1, G-2, G-7, G-10; §7, §8); **PD-079**, **PD-081**
