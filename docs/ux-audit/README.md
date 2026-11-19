@@ -19,6 +19,8 @@ by Playwright, on five workspaces, in Dark, Light and High Contrast, at two wind
 | [09-round2-review.md](09-round2-review.md) | Review of round 2 (specs 0021–0024) at `48d1968` (2026-11-19): work order 08 checked, the eight deviations judged, findings G-1…G-11, Gregor's feedback F-1 (step → plan map) and F-2 (percent), V3 (spec attached when sending), hand-off for round 3 (0025–0028) |
 | [screenshots-48d1968/](screenshots-48d1968/) | 10 screenshots of `783b067` (`r01`…`r12`) and Gregor's `g-r2-01`, `g-r2-02`, referenced in 09 |
 | [10-team-briefing-round3.md](10-team-briefing-round3.md) | Team briefing for round 3: where everything lives, specs 0025–0028, open decisions, process rules, FeatherSpec update candidates |
+| [11-round3-clicktest-review.md](11-round3-clicktest-review.md) | Review of the round-3 click-test draft (8 confirmation points, 6 tasks), FeatherSpec 1.11.0 from the QA report, answers to the four go questions |
+| [12-finish-plan.md](12-finish-plan.md) | **The one work list until done:** definition of done, order, click test, FeatherSpec 1.11.0 release, specs 0028/0025/0026/0027 with tasks, Copilot-harness safeguard, final review, freeze |
 
 How the product acts on it: decisions PD-058 … PD-062 (audit) and PD-068, PD-069 (review) in
 [product-decisions.md](../product/product-decisions.md), the UX guidelines in
