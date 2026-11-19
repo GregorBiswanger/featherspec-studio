@@ -3,7 +3,7 @@
 **Spec:** [0029-onboarding-before-setup.md](0029-onboarding-before-setup.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-004
+**Current step:** T-006 (T-005 is the orchestrator's)
 
 ## Approach
 
@@ -97,8 +97,8 @@ No parallel stage: T-002 and T-003 share `shared/protocol/texts.ts` and the mode
   `run or unknown`, the one exception `fs180-de-baselines`' Up next line; AC-002's variants read *run or unknown* render
   as today. Negative control: forcing `not run` on `fs-setup-done-no-specs` changes the render.
 - **Verify:** `npx vitest run src/core/shell/onboarding0029.test.ts` and `npx vitest run --project timing-node src/core/shell/onboarding0029.timing.test.ts`
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-19 tests only, so no red run: they pin existing behaviour and carry negative controls (forcing `not run` on `fs-setup-done-no-specs` changes the render; a change of an unrelated brief-folder file switches nothing). `npx vitest run src/core/shell/onboarding0029.test.ts` 24 passed; `npx vitest run --project timing-node src/core/shell/onboarding0029.timing.test.ts` 4 passed, every switch under `BUDGET_MS.uiFreshness`; `npx tsc --noEmit` and eslint on the new files clean.
+- **Notes:** The timing test drives the real discovery controller, repository, board service and tree service in the shell world; the Overview is built from the same model source. `fs180-de-baselines` is the one project whose surfaces differ (Up next flag only). Stage 2 gate not run (cadence v2); the one full chain runs at the end of the spec.
 
 ### T-005 — Preview at two widths and three themes
 
@@ -145,7 +145,7 @@ No parallel stage: T-002 and T-003 share `shared/protocol/texts.ts` and the mode
 ## Session handoff
 
 - **Done so far:** T-001 (sign read, re-read, carried to the model); T-002 (welcome in Overview and Board).
-- **Next action:** T-004 (T-003 done)
+- **Next action:** T-006 (T-004 done; T-005 stays open for the orchestrator)
 - **Open decisions:** — (OP-001: FeatherSpec 1.11.0 unreleased; the sign rests on `04c569d`)
 - **Baseline:** `0982b84` (head before the first step commit; "the commit on which implementation starts")
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.
