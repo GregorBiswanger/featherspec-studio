@@ -261,6 +261,8 @@ structure that §2's five deltas change are updated, in the same change set, eac
 
 *Amended by 0024 (PD-068): AC-016 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
 
+*Amended by 0026 (PD-082): AC-016 (test audit) — also except the tests 0026 AC-015 lists against a statement 0026 §5 changes.*
+
 **AC-017** *(manual, Gregor or his delegate)* Screenshots from the preview harness of Mission Control, Spec Board,
 Spec Explorer list, detail of 0002 (expanded, and with Acceptance criteria collapsed), Agent
 Center and panel states S1 and S2, each in Dark, Light and High Contrast at 1400×900, plus board
