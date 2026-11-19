@@ -1,7 +1,7 @@
 # Onboarding Before /sdd-setup
 
-**Status:** In Progress
-**Plan:** [0029-onboarding-before-setup.plan.md](0029-onboarding-before-setup.plan.md)
+**Status:** Implemented
+**Plan:** [0029-onboarding-before-setup.2026-11-20.plan.md](../plan-archive/0029-onboarding-before-setup.2026-11-20.plan.md)
 
 Basis: Gregor's feedback 2026-11-19 (standing answer `orch/SPEC-0029.md`, treated as typed by him); FeatherSpec 1.11.0
 (branch `feature/1.11.0-studio-prompts`, `04c569d`, unreleased) `.claude/commands/sdd-setup.md` *Session opening* and
@@ -234,4 +234,8 @@ filled, `# last reconciled: 2026-11-19`, `DocLanguage: English`, no spec.
 ## 13. Ready, Done and next steps
 
 Ready: clarified 2026-11-19 (OP-002); planned 2026-11-19, 6 steps in 3 stages. Done per the DoD of `AGENTS.md`; AC-013 by the
-orchestrator, AC-014 by Gregor. Next: Gregor's AC-014 and CI on PR #2 stay open; then `/sdd-lifecycle`.
+orchestrator, AC-014 by Gregor. Closed 2026-11-20 by `/sdd-lifecycle`; AC-014 (Gregor) and CI on PR #2 stay open.
+
+## Plan history
+
+- 2026-11-20 — [0029-onboarding-before-setup.2026-11-20.plan.md](../plan-archive/0029-onboarding-before-setup.2026-11-20.plan.md) — 6 steps in 3 stages: the welcome and `/sdd-setup` before `/sdd-specify` while setup has not run; preview 12 of 12 clean; Windows `npm test` at 48d4056 passed; manual items open: AC-014 (Gregor), CI on PR #2.

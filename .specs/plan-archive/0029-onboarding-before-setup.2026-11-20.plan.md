@@ -1,9 +1,9 @@
 # Plan — Onboarding Before /sdd-setup
 
-**Spec:** [0029-onboarding-before-setup.md](0029-onboarding-before-setup.md)
-**Status:** In Progress
-**Last updated:** 2026-11-19
-**Current step:** T-005 (the orchestrator's; everything else is done)
+**Spec:** [0029-onboarding-before-setup.md](../done/0029-onboarding-before-setup.md)
+**Status:** Done
+**Last updated:** 2026-11-20
+**Current step:** —
 
 ## Approach
 
@@ -119,7 +119,7 @@ No parallel stage: T-002 and T-003 share `shared/protocol/texts.ts` and the mode
   `docs/release-checklist.md` section 0029 with AC-013, AC-014; `docsScan.test.ts` "0029 AC-012 …"; title audit (every
   title at the Baseline exists at the head); `activeContext.md`. All gates 1–5.
 - **Verify:** gates 1–5 green; `npx vitest run src/adapters/node/docsScan.test.ts src/core/lifecycle/problems.test.ts`.
-- [x] **Verified (T-006):** 2026-11-19 red: `npx vitest run src/adapters/node/docsScan.test.ts` 2 failed (checklist headings, "0029 AC-012"); then `npx vitest run src/adapters/node/docsScan.test.ts src/adapters/node/sourceScan.test.ts src/core/lifecycle/problems.test.ts src/core/discovery/markerWatchPaths.test.ts` green (237 + 3); title audit `python3 /tmp/ta25/titles.py <0982b84 src> src`: 3555 titles at the baseline, 3631 at the head, none missing. Full gate chain at the end of the spec: see the handoff.
+- [x] **Verified (T-006):** 2026-11-19 red: `npx vitest run src/adapters/node/docsScan.test.ts` 2 failed (checklist headings, "0029 AC-012"); then `npx vitest run src/adapters/node/docsScan.test.ts src/adapters/node/sourceScan.test.ts src/core/lifecycle/problems.test.ts src/core/discovery/markerWatchPaths.test.ts` green (237 + 3); title audit `python3 /tmp/ta25/titles.py <0982b84 src> src`: 3555 titles at the baseline, 3631 at the head, none missing. Final gate chain at b0764ba, 2026-11-20: `npx eslint src --max-warnings 0`, `npx tsc --noEmit` and `-p src/webview` clean; `npm run test:unit` 3785 passed, 4 skipped plus timing 37 passed.
 - **Notes:** Staying tests that had to grow with the spec, no title lost: `markerWatchPaths.test.ts` ("are the two markers and the setup folder" now lists the brief as fourth path), the checklist-heading list and the `ALLOWED` list of the "up next" scan in `sourceScan.test.ts` (one entry each). 0027 stays in `active/`. `.architecture/core.md`, `webview.md` and the snapshot stamp of `AGENTS.md` follow the new modules. PD-090 is a proxy: the feather glyph instead of Gregor's 🪶.
 
 ## Traceability
@@ -144,8 +144,8 @@ No parallel stage: T-002 and T-003 share `shared/protocol/texts.ts` and the mode
 
 ## Session handoff
 
-- **Done so far:** T-001, T-002, T-003, T-004, T-006 built and verified; the final gate chain ran green at the head of this plan (see the commit after it).
-- **Next action:** T-005 (orchestrator: preview harness, add both fixtures as scenarios to `host.mts`), then `npm test` on Windows and AC-014 (Gregor); `/sdd-compile` is the user's command, not run here
+- **Done so far:** T-001…T-006 verified; T-005 by the orchestrator 2026-11-20 (12 of 12 preview runs clean, heading fix 8732709); Windows at 48d4056: unit tests 3775 passed, 8 skipped, plus 37 timing, `npm test` 34+1+1+1, exit 0; final gate chain green at b0764ba.
+- **Next action:** CI on PR #2 (pending) and Gregor's AC-014 on `tip-splitter` (manual items: 2). Spec in `done/`, plan archived.
 - **Open decisions:** — (OP-001: FeatherSpec 1.11.0 unreleased; the sign rests on `04c569d`)
 - **Baseline:** `0982b84` (head before the first step commit; "the commit on which implementation starts")
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

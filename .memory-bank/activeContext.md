@@ -1,17 +1,16 @@
 # Active Context
 
-Last updated: 2026-11-19
+Last updated: 2026-11-20
 Current branch: ux-round-3
 Current phase: act
 
 ## Now
 - Round 3 on `ux-round-3`: 0026 (Send defaults and wording) is Implemented 2026-11-19; its plan is archived.
-- 0029 (onboarding before setup) is built; T-005 is done, Windows `npm test` passed, CI on PR #2 and Gregor's AC-014 are open.
+- 0029 (onboarding before setup) is Implemented 2026-11-20; its plan is archived.
 - 0021–0024 are implemented; their specs stay In Progress in `active/`.
 - Waits for: C-2 and Gregor's AC-017 on `tip-splitter` for 0027, CI at the round-3 PR, Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
 
 ## Active Spec
-- [0029](../.specs/active/0029-onboarding-before-setup.md) / [plan](../.specs/active/0029-onboarding-before-setup.plan.md): the welcome and `/sdd-setup` before `/sdd-specify` while setup has not run, T-001…T-004 and T-006 verified; T-005 (AC-013) is the orchestrator's, AC-014 Gregor's.
 - [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec (Claude Code first, Copilot after C-2), T-001…T-010 verified; AC-016…AC-018, AC-020 and OP-006 (C-2) are Gregor's or the orchestrator's.
 - [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 are Gregor's; OP-004 closed by PD-078.
 - [0023](../.specs/active/0023-plan-map-stages-parallel-work.md) / [plan](../.specs/active/0023-plan-map-stages-parallel-work.plan.md): Plan map, T-001…T-017; AC-018 real window, AC-019, AC-020 are Gregor's.
@@ -27,6 +26,7 @@ Current phase: act
 - Completed: 0001…0007, 0013 in `done/`; 0008…0012 are Deprecated (successor 0015); plans frozen in `plan-archive/`.
 - Completed 2026-11-19: [0025](../.specs/done/0025-plan-map-navigation-and-progress.md) ([plan](../.specs/plan-archive/0025-plan-map-navigation-and-progress.2026-11-19.plan.md)) and [0028](../.specs/done/0028-plan-state-aware-next-step.md) ([plan](../.specs/plan-archive/0028-plan-state-aware-next-step.2026-11-19.plan.md)).
 - Completed 2026-11-19: [0026](../.specs/done/0026-send-defaults-and-wording.md) ([plan](../.specs/plan-archive/0026-send-defaults-and-wording.2026-11-19.plan.md)).
+- Completed 2026-11-20: [0029](../.specs/done/0029-onboarding-before-setup.md) ([plan](../.specs/plan-archive/0029-onboarding-before-setup.2026-11-20.plan.md)); AC-014 (Gregor) and CI on PR #2 are open.
 
 ## Changed Recently
 - 0029 (PD-090): while `/sdd-setup` has not run, the empty Overview and Board welcome the user and offer `/sdd-setup` through Send or Copy prompt; tree, Up next and Copy next step point to it; once it has run, nothing changes.
@@ -38,7 +38,7 @@ Current phase: act
 - Publisher ID `GregorBiswanger` is confirmed (2026-11-17).
 
 ## Blockers / Questions
-- Gregor's manual checks stay in the specs: 0025 AC-022 real window, AC-023, AC-024; 0026 AC-017, AC-019; 0028 AC-015; 0027 AC-016, AC-017, AC-020.
+- Gregor's manual checks stay in the specs: 0025 AC-022 real window, AC-023, AC-024; 0026 AC-017, AC-019; 0028 AC-015; 0029 AC-014; 0027 AC-016, AC-017, AC-020.
 
 ## Next
 1. Finish 0027 (spec and plan are in `.specs/active/`, the plan's handoff names the next step).
