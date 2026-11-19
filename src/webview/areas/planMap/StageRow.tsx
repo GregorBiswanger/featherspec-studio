@@ -9,6 +9,8 @@ export interface CardState {
     expanded: ReadonlySet<string>;
     tabStop: string | undefined;
     onToggle(key: string): void;
+    highlighted: string | undefined;
+    openFinished: ReadonlySet<number>;
 }
 
 export function StageRow(props: { stage: PlanStageView; links: CardLinks; cards: CardState; ways?: ReactNode }) {
@@ -21,7 +23,7 @@ export function StageRow(props: { stage: PlanStageView; links: CardLinks; cards:
             <h3 className="plan-stage-heading">{stageHeading(stage.number, stage.description)}</h3>
             {kind === undefined ? null : <p className="plan-stage-kind">{kind}</p>}
             {stage.returned === undefined ? null : <p className="plan-stage-returned">{stage.returned}</p>}
-            {stage.finished ? (
+            {stage.finished && !cards.openFinished.has(stage.number) ? (
                 <p className="plan-stage-chips">
                     {steps.map((step) => (
                         <span key={step.id}>
@@ -49,6 +51,7 @@ export function StageRow(props: { stage: PlanStageView; links: CardLinks; cards:
                                             step={step}
                                             expanded={cards.expanded.has(keys[index]![position]!)}
                                             tabStop={cards.tabStop === keys[index]![position]}
+                                            highlighted={cards.highlighted === keys[index]![position]}
                                             links={links}
                                             onToggle={cards.onToggle}
                                         />

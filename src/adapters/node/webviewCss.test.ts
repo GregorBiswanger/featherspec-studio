@@ -217,6 +217,13 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
         expect(css).not.toMatch(/\.step-(?:chip|card)[^{]*\{[^}]*#[0-9a-fA-F]{3,8}/);
     });
 
+    it('0025 AC-017: the highlight is an outline from theme variables, with no transition inside prefers-reduced-motion: reduce', () => {
+        const rule = rulesFor(css, '.step-card[data-highlight]').find((entry) => entry.body.includes('outline'))!;
+        expect(rule.body).toMatch(/outline:\s*2px solid var\(--vscode-contrastActiveBorder, var\(--vscode-focusBorder\)\)/);
+        expect(rule.body).toMatch(/transition:[^;]*\b150ms/);
+        expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\s*\* \{\s*transition: none !important;/);
+    });
+
     it('0022 AC-026: the chip and the column header icon take their colour from --fs-tint', () => {
         expect(rulesFor(css, '.state-chip .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);
         expect(rulesFor(css, '.column-heading .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);

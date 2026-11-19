@@ -1866,6 +1866,12 @@ blockquote.illustration {
     overflow-wrap: break-word;
 }
 
+.step-card[data-highlight] {
+    outline: 2px solid var(--vscode-contrastActiveBorder, var(--vscode-focusBorder));
+    outline-offset: 1px;
+    transition: outline-color 150ms;
+}
+
 .step-card[data-state='next'] {
     border-color: var(--vscode-contrastActiveBorder, var(--vscode-focusBorder));
 }

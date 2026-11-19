@@ -268,8 +268,8 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
     - `webviewCss.test.ts` "0025 AC-017 … highlight".
 - **Verify:** `npx vitest run src/webview/areas/planMap/PlanMap.target.test.tsx src/adapters/node/webviewCss.test.ts` red
   (a focus changes nothing), then `npm run test:unit` green.
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-19. Red: `npx vitest run src/webview/areas/planMap/PlanMap.target.test.tsx` 7 failed (a focus changed nothing). Green: src/webview/areas/planMap and src/adapters/node/webviewCss.test.ts 161 passed; tsc ×2 clean. Full chain at the end of stage 2.
+- **Notes:** AC-006 (b) ways targets are applied in T-010 (the ways block does not exist as a controlled component yet). `target.ts` keeps the last applied n at module level (so a remount of the map, another area and back, or a model update never re-applies); a target for a spec that is not shown stays in the client snapshot and applies on the first render that shows it (risk accepted: a later manual selection of that spec would also apply it once). Reduced motion: the global `* { transition: none !important }` rule covers the highlight (the CSS guard forbids map rules inside media queries).
 
 ### T-007 — Step links in the side panel and finished stages
 

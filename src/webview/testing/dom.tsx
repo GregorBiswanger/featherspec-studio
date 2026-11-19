@@ -1,7 +1,7 @@
 import { act, type ReactElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { PROTOCOL_VERSION, type Envelope } from '../../shared/protocol/envelope';
-import type { ShellView } from '../../shared/protocol/messages';
+import type { ShellFocus, ShellView } from '../../shared/protocol/messages';
 import type { OverviewView } from '../../shared/protocol/overview';
 
 export interface Mounted {
@@ -31,8 +31,8 @@ export async function send(message: unknown): Promise<void> {
     });
 }
 
-export function shellEvent(view: ShellView, seq: number, version: number = PROTOCOL_VERSION): Envelope {
-    return { v: version, kind: 'evt', seq, type: 'shell', payload: { view } };
+export function shellEvent(view: ShellView, seq: number, version: number = PROTOCOL_VERSION, focus?: ShellFocus): Envelope {
+    return { v: version, kind: 'evt', seq, type: 'shell', payload: focus === undefined ? { view } : { view, focus } };
 }
 
 export function baseView(overrides: Partial<ShellView> = {}): ShellView {
