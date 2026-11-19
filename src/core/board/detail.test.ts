@@ -44,7 +44,7 @@ const SPEC_TEXT = [
 
 const FILES = {
     '.specs/active/0001-a.md': SPEC_TEXT,
-    '.specs/active/0001-a.plan.md': `${planText({ status: 'In Progress', rows: [row('AC-001', 'verified'), row('AC-002', 'open')] })}\n## Steps\n\n### T-001 — First\n\n- [x] **Verified (T-001):** 2026-11-16 · green\n\n### ~~T-002 — Dropped~~\n\n- [ ] **Verified (T-002):** —\n`,
+    '.specs/active/0001-a.plan.md': `${planText({ status: 'In Progress', rows: [row('AC-001', 'verified'), row('AC-002', 'open')] })}\n## Steps\n\n### T-001 — First\n\n- [x] **Verified (T-001):** 2026-11-16 · green\n\n### ~~T-002 — Dropped~~\n\n- [ ] **Verified (T-002):** —\n\n### T-003 — Third\n\n- [ ] **Verified (T-003):** —\n`,
     '.memory-bank/activeContext.0001-T-001.md': noteText('DONE'),
 };
 

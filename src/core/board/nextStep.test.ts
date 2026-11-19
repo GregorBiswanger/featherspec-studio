@@ -201,6 +201,10 @@ describe('0017 AC-001, AC-003: the step view', () => {
     });
 });
 
+function struck(steps: Array<[string, string]>, status = 'In Progress'): string {
+    return `${planText({ status })}\n## Steps\n\n${steps.map(([id, title]) => `### ~~${id} — ${title}~~\n\n- [ ] **Verified (${id}):** —\n`).join('\n')}`;
+}
+
 function titled(steps: Array<[string, string, string]>, status = 'In Progress'): string {
     return `${planText({ status })}\n## Steps\n\n${steps.map(([id, title, mark]) => `### ${id} — ${title}\n\n- ${mark} **Verified (${id}):** —\n`).join('\n')}`;
 }
@@ -237,7 +241,7 @@ describe('0021 AC-001: every next step line carries its intent, one fixture per 
         ],
         [
             'NS-6 resume',
-            { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: titled([['T-001', 'Done one', '[x]']]) },
+            { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: struck([['T-001', 'Done one']]) },
             ACTIVE,
             'NS-6-resume',
             [['Let the agent report where the plan stands', `/sdd-plan ${ACTIVE}`]],
@@ -275,7 +279,7 @@ describe('0021 AC-001: every next step line carries its intent, one fixture per 
             'NS-4-plan': { short: 'Unblock', session: 'any', model: 'strong', effect: 'The agent takes in returned work, checks the plan against the code and reports what blocks.', then: 'Once the block is solved, the spec shows its next step again.' },
             'NS-5': { short: 'Verify', session: 'new', model: 'strongOtherFamily', effect: 'A fresh reviewer checks every acceptance criterion against evidence and gives a verdict.', then: 'Only after a READY verdict, close the spec with the second prompt.' },
             'NS-6-open': { short: 'Continue', session: 'sameOrNew', model: 'fast', effect: 'The agent builds this one step, runs its check, ticks it and stops.', then: 'When it stops, the Studio shows the next step; a working agreement such as a test review may stop it earlier.' },
-            'NS-6-resume': { short: 'Resume', session: 'any', model: 'fast', effect: 'The agent checks the plan against the code; with every step ticked it closes the plan and recommends the review.', then: 'The spec then shows Verify.' },
+            'NS-6-resume': { short: 'Resume', session: 'any', model: 'fast', effect: 'The agent checks the plan against the code and reports where it stands.', then: 'The spec then shows its next step.' },
             'NS-6-returned': { short: 'Integrate', session: 'sameOrNew', model: 'fast', effect: 'The agent checks each returned step against its files, runs its check and the quality gates, then ticks the steps and removes the return notes.', then: 'Paste it once every worker you started is back.' },
             'NS-6-plan': { short: 'Plan', session: 'any', model: 'strongWebSearch', effect: 'The agent researches and writes the plan; for a reactivated spec, a fresh plan for the change.', then: 'You read the plan before anything is built.' },
             'NS-7': { short: 'Build', session: 'any', model: 'fast', effect: 'The agent moves the spec to active, builds one step, runs its check, ticks it and stops.', then: 'When it stops, the Studio shows the next step; a working agreement such as a test review may stop it earlier.' },
@@ -317,7 +321,7 @@ describe('0021 AC-003: an Active spec leads with the single-step prompt of its o
     const A = '.specs/active/0001-a.md';
     const B = '.specs/active/0002-b.md';
     const link = (stem: string) => `[${stem}.plan.md](${stem}.plan.md)`;
-    const ticked = `${planText({ status: 'In Progress' })}\n## Steps\n\n### T-001 — A\n\n- [x] **Verified (T-001):** done\n`;
+    const ticked = `${planText({ status: 'In Progress' })}\n## Steps\n\n### ~~T-001 — A~~\n\n- [ ] **Verified (T-001):** —\n`;
     const open = `${planText({ status: 'In Progress' })}\n## Steps\n\n### T-001 — A\n\n- [ ] **Verified (T-001):** —\n`;
 
     it('T-003 "Reject money values" is built by Implement T-003 of <plan>, then /sdd-plan <spec> under its own intent', async () => {
@@ -352,11 +356,11 @@ describe('0021 AC-003: an Active spec leads with the single-step prompt of its o
 });
 
 describe('0021 AC-005: an Active spec without an open step reports, one without a sibling plan writes it', () => {
-    it('no step list, all steps ticked or struck, and an unreadable plan read as Resume', async () => {
+    it('no step list, all steps struck, and an unreadable plan read as Resume', async () => {
         const noList = await model({ [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: planText({ status: 'In Progress' }) });
         const allDone = await model({
             [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }),
-            [ACTIVE_PLAN]: `${planText({ status: 'In Progress' })}\n## Steps\n\n### T-001 — A\n\n- [x] **Verified (T-001):** done\n\n### ~~T-002 — B~~\n\n- [ ] **Verified (T-002):** —\n`,
+            [ACTIVE_PLAN]: `${planText({ status: 'In Progress' })}\n## Steps\n\n### ~~T-001 — A~~\n\n- [ ] **Verified (T-001):** —\n\n### ~~T-002 — B~~\n\n- [ ] **Verified (T-002):** —\n`,
         });
         const unreadable = createMemorySpecSource();
         unreadable.setFile(ROOT, ACTIVE, specText({ status: 'In Progress', plan: ACTIVE_LINK }));
@@ -411,7 +415,7 @@ describe('0021 AC-006: the step short form of every case', () => {
     const cases: Array<[string, Record<string, string>, string, string, string, string]> = [
         ['NS-5', reviewing, ACTIVE, 'Verify', '/sdd-compile', 'Verify · /sdd-compile'],
         ['NS-6 open', { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: titled([['T-003', 'Reject money values', '[ ]']]) }, ACTIVE, 'Continue', 'Implement T-003', 'Continue · Implement T-003'],
-        ['NS-6 resume', { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: titled([['T-003', 'Done', '[x]']]) }, ACTIVE, 'Resume', '/sdd-plan', 'Resume · /sdd-plan'],
+        ['NS-6 resume', { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: struck([['T-003', 'Done']]) }, ACTIVE, 'Resume', '/sdd-plan', 'Resume · /sdd-plan'],
         ['NS-6 plan', { [ACTIVE]: specText({ status: 'In Progress', plan: ARCHIVE }) }, ACTIVE, 'Plan', '/sdd-plan', 'Plan · /sdd-plan'],
         ['NS-7 step', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[ ]']]) }, BACKLOG, 'Build', 'Start T-001', 'Build · Start T-001'],
         ['NS-7 plan', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[x]']]) }, BACKLOG, 'Build', 'Implement', 'Build · Implement'],
@@ -481,7 +485,7 @@ describe('0023 AC-013: returned work is the first case of an Active spec', () =>
 
     it('without a note NS-6 is as 0021 AC-003 and AC-005 say: open, resume, plan', async () => {
         expect(nextStep(await model(base), ACTIVE)).toMatchObject({ case: 'NS-6-open' });
-        expect(nextStep(await model({ ...base, [ACTIVE_PLAN]: titled([['T-001', 'One', '[x]']]) }), ACTIVE)).toMatchObject({ case: 'NS-6-resume' });
+        expect(nextStep(await model({ ...base, [ACTIVE_PLAN]: struck([['T-001', 'One']]) }), ACTIVE)).toMatchObject({ case: 'NS-6-resume' });
         expect(nextStep(await model({ [ACTIVE]: specText({ status: 'In Progress', plan: ARCHIVE }) }), ACTIVE)).toMatchObject({ case: 'NS-6-plan' });
     });
 

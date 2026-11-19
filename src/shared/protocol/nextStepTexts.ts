@@ -78,8 +78,8 @@ export const STEP_GUIDES: Record<StepCase, StepGuide> = {
         short: 'Resume',
         session: 'any',
         model: 'fast',
-        effect: 'The agent checks the plan against the code; with every step ticked it closes the plan and recommends the review.',
-        then: 'The spec then shows Verify.',
+        effect: 'The agent checks the plan against the code and reports where it stands.',
+        then: 'The spec then shows its next step.',
     },
     'NS-6-returned': {
         short: 'Integrate',

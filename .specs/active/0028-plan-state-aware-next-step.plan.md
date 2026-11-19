@@ -3,7 +3,7 @@
 **Spec:** [0028-plan-state-aware-next-step.md](0028-plan-state-aware-next-step.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-002
+**Current step:** T-003
 
 ## Approach
 
@@ -114,8 +114,8 @@ Parallel: stage 3 (runs in sequence, `PLAN-R3.md`). Stages 1 and 2 share `nextSt
   in `Notes:`); *fixture only* tests get an open step. Snapshot exceptions: only AC-010's kinds, each named in the list
   (this repo's copy has none; fixtures as found).
 - **Verify:** `npm run test:unit` — red first on the new assertions (state `Active`, old texts), then green.
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-19 · `npx vitest run --project node src/core/board/finishedPlan0028.test.ts`: red first with `finishedPlan` removed from `decide()` (5 failed: the four AC-001 fixtures and the example; the AC-002 texts were red on the old effect and then before `STEP_GUIDES` changed), then 14 passed; `npm run test:unit` 3170 passed, 4 skipped; the one other red, `problems.test.ts` AC-005, is the other session's `0025` spec linking a plan not yet written (not this change); eslint, tsc ×2 clean.
+- **Notes:** Tests of §10 handled. Replaced by §6.1 (renamed or retargeted, statement replaced: a plan with every step ticked or struck read as Resume, 0021 AC-005): `nextStep.test.ts` "0021 AC-005 … no step list, all steps ticked or struck, and an unreadable plan read as Resume" is now "… no step list, all steps struck, and an unreadable plan read as Resume" (its `allDone` fixture T-001 ticked + T-002 struck is finished, so Review; AC-002 covers struck-only); "0021 AC-001 … the guide of each case" keeps its title, §7's effect and then for `NS-6-resume`. *Fixture only* (title and assertions kept, a struck-only plan instead of the one ticked step): "NS-6 resume: case, intent and prompt of every line, literally" (0021 AC-001), "NS-6 resume: short intent, command short form …" (0021 AC-006), "with two Active specs …" (0021 AC-003), "without a note NS-6 is as 0021 AC-003 and AC-005 say …" (0023 AC-013); in `detail.test.ts` `FILES` got an open step T-003 (four tests, titles unchanged). Snapshot exceptions: `nextStepBaseline.test.ts` `EXCEPTIONS` (four finished-plan fixtures, all fields) and `RESUME_TEXTS` (tips of NS-6-resume under §7); a stale-exception control exists. AC-003's four states are asserted in `finishedPlan0028.test.ts`, their equality to the snapshot by the Baseline test.
 
 ### T-003 — Report first by the sign, below 1.11.0
 

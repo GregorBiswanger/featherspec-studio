@@ -12,19 +12,36 @@ interface Exception {
 }
 
 
-export const EXCEPTIONS: readonly Exception[] = [];
+const SPLITTER = '.specs/active/0001-tip-splitter.md';
+const ALL_FIELDS: Field[] = ['state', 'rule', 'persistence', 'nextStep', 'stepView', 'tips'];
+const FINISHED_NOT_DONE = 'an active/ spec with a finished plan whose status is not Done is Review (0028 §6.1)';
+
+export const EXCEPTIONS: readonly Exception[] = [
+    ...['ac001-plan-in-progress', 'ac001-plan-not-started', 'ac001-plan-no-status', 'ac001-in-progress-with-done-note'].map((name) => ({
+        snapshot: `case-${name}`,
+        key: SPLITTER,
+        fields: ALL_FIELDS,
+        why: FINISHED_NOT_DONE,
+    })),
+];
 
 function read(name: string): ProjectSnapshot {
     return JSON.parse(fs.readFileSync(snapshotFile(name), 'utf8')) as ProjectSnapshot;
 }
 
+const RESUME_TEXTS = 'Plan without open step has the effect and then-sentence of 0028 §7 (AC-002)';
+
+function isResume(value: SpecSnapshot): boolean {
+    return (value.nextStep as { case?: string } | null)?.case === 'NS-6-resume';
+}
+
 function masked(snapshot: string, key: string, value: SpecSnapshot): Partial<SpecSnapshot> {
     const rule = EXCEPTIONS.find((candidate) => candidate.snapshot === snapshot && candidate.key === key);
-    if (rule === undefined) {
-        return value;
-    }
     const copy: Partial<SpecSnapshot> = { ...value };
-    rule.fields.forEach((field) => delete copy[field]);
+    rule?.fields.forEach((field) => delete copy[field]);
+    if (isResume(value)) {
+        delete copy.tips;
+    }
     return copy;
 }
 
@@ -38,7 +55,7 @@ describe('0028 AC-010: every spec of every fixture project and of this repositor
             const actual = snapshotOf(await modelOfBaseline(entry));
             expect(Object.keys(actual).sort(), name).toEqual(Object.keys(expected).sort());
             for (const key of Object.keys(expected)) {
-                expect(masked(name, key, actual[key]!), `${name} ${key}`).toEqual(masked(name, key, expected[key]!));
+                expect(masked(name, key, actual[key]!), `${name} ${key}: ${RESUME_TEXTS}`).toEqual(masked(name, key, expected[key]!));
             }
         }
     });
