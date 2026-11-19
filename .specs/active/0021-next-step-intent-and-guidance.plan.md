@@ -431,6 +431,24 @@ ends of stages 1 and 3.
 - [x] **Verified (T-016):** 2026-11-18 · `npx vitest run --project node src/adapters/node/docsScan.test.ts` green; every path of the traceability table checked with `test -e` (AC-013 now `src/adapters/node/sourceScan.test.ts`); `npm run compile-tests` clean (smoke title changed, assertion `< 2_000` untouched); final gates `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile && npm run compile-tests` clean (unit 158 files, 2638 passed, 3 skipped, timing 15 passed); `git status` clean.
 - **Notes:** Edit 8 of the compile (T-006's reverse red) is a note in T-006; T-010's note on the blur guard is corrected there. AC-022's harness part is in *Manual evidence* with the orchestrator's note (the NS-9 sentence corrected after the compile); AC-022 stays open for Gregor's real window, AC-023, AC-024 and AC-025 for Gregor, AC-020 for CI at the PR.
 
+## PR #1 review
+
+Source: the automated review of PR #1 at `8e94888` (`/home/claude/orch/req/pr1-review.md`), comment 6. Gregor: "Check
+the six review comments of PR #1. For each one that is real, write a failing test first, fix it and append the fix as a
+step to the plan of the spec that owns the code." The comment is a claim of an external model: the test decides.
+
+### T-017 — A toggletip closes when focus moves anywhere else, also after a press on its text (PR #1 comment 6)
+
+- **Covers:** AC-014 (Escape and close), §6.6; 0021 D1 stays
+- **Do:** `ui/Toggletip.tsx`: while open, a document `focusin` listener in the capture phase closes it when the focused
+  element lies outside the `?` and the region, next to the `pointerdown` and `keydown` listeners and removed with them.
+  The button's `onBlur` stays. Test first in `Toggletip.test.tsx`: open it, `pointerdown` on the region's paragraph, blur
+  the button (focus on `body`), focus another control → closed, region empty, and Escape on that control is not handled;
+  negative control: focus back on the `?` keeps it open.
+- **Verify:** `npx vitest run --project webview src/webview/ui/Toggletip.test.tsx` red, then green; gates 1–4
+- [x] **Verified (T-017):** 2026-11-19 red: `npx vitest run --project webview src/webview/ui/Toggletip.test.tsx` 1 failed of 17 (after the press on the text and the blur, focusing another control left `aria-expanded` `true`) → green: 17 passed; `npm run test:unit` 3131 passed + 3 skipped (+18 timing; 3129 before, 2 new tests); eslint 0 warnings, both `tsc` clean. The D1 test of T-009 (Escape on `body` after a press on the text: closed, focus on the `?`, side panel stays) is untouched and passes.
+- **Notes:** the comment is real. `onBlur` only sees the move out of the `?` itself; once focus sat on `body` after a press on the text, a Tab to another control raised no blur on the `?`, so the toggletip stayed open and its global Escape handler kept taking Escape. Focus moving to nothing (`body`) still keeps it open, P-14.
+
 ## Test-title audit
 
 `python3 -I /tmp/audit-0022/titles.py <git archive 0ef5875> <head>` over every `describe`, `it`, `test` and `suite` literal of every `.ts` and `.tsx` under `src` (`src/test/**` and `testing/*.ts` included), 2026-11-18, T-008: baseline 2516 titles (2506 distinct), head 2635 titles (2623 distinct); absent at the head 18, decreased in count 0. Every other title at the Baseline exists at the head. The 18 absent titles are the ones the expected map named plus the readings that went with them; each is a replaced statement of §5 or retitled:

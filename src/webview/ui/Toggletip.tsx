@@ -41,10 +41,18 @@ export function Toggletip(props: { label: string; glyph: string; paragraphs: rea
                 button.current?.focus();
             }
         };
+        const onFocusIn = (event: Event): void => {
+            const target = event.target;
+            if (target instanceof Node && button.current?.contains(target) !== true && region.current?.contains(target) !== true) {
+                close();
+            }
+        };
         document.addEventListener('pointerdown', onPointerDown, true);
+        document.addEventListener('focusin', onFocusIn, true);
         document.addEventListener('keydown', onEscape, true);
         return () => {
             document.removeEventListener('pointerdown', onPointerDown, true);
+            document.removeEventListener('focusin', onFocusIn, true);
             document.removeEventListener('keydown', onEscape, true);
         };
     }, [open]);

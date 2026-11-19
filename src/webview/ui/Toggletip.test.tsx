@@ -190,6 +190,41 @@ describe('0021 AC-014: the toggletip is a button with a status region', () => {
         expect(region(container, 'one').textContent).toBe('');
     });
 
+    it('PR #1 review: after a press on its text left focus on the body, the next focus change to another control closes it and Escape is no longer taken', async () => {
+        const container = await show();
+        const button = toggle(container, 'one');
+        const other = container.querySelector<HTMLButtonElement>('[data-id="other"]')!;
+        await click(button);
+        await pointerdown(region(container, 'one').querySelector('p')!);
+        await act(async () => {
+            button.blur();
+        });
+        expect(button.getAttribute('aria-expanded')).toBe('true');
+        expect(document.activeElement).toBe(document.body);
+        await act(async () => {
+            other.focus();
+        });
+        expect(button.getAttribute('aria-expanded')).toBe('false');
+        expect(region(container, 'one').textContent).toBe('');
+        const event = await press(other, 'Escape');
+        expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('PR #1 review: negative control, focus staying on the body or returning to the button keeps it open', async () => {
+        const container = await show();
+        const button = toggle(container, 'one');
+        await click(button);
+        await pointerdown(region(container, 'one').querySelector('p')!);
+        await act(async () => {
+            button.blur();
+        });
+        await act(async () => {
+            button.focus();
+        });
+        expect(button.getAttribute('aria-expanded')).toBe('true');
+        expect(region(container, 'one').querySelectorAll('p')).toHaveLength(4);
+    });
+
     it('opening one closes the other, so one region is filled at a time', async () => {
         const container = await show();
         await click(toggle(container, 'one'));
