@@ -3,7 +3,7 @@
 **Spec:** [0025-plan-map-navigation-and-progress.md](0025-plan-map-navigation-and-progress.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-009
+**Current step:** T-010
 
 ## Approach
 
@@ -345,8 +345,8 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
     - `primaryButtons.test.tsx` "0025 AC-010 …": map with side panel, at most one primary; exactly one with a line and
       no U-08.
 - **Verify:** `npm run test:unit` — red first (stub header, side panel duplicates), then green.
-- [ ] **Verified (T-009):** —
-- **Notes:** —
+- [x] **Verified (T-009):** 2026-11-19. Red: `npx vitest run src/webview/areas/planMap/PlanMap.header.test.tsx` 5 failed against the `place="map"` stub (header showed no next step). Green: src/webview, header0025.test.ts and webviewCss.test.ts passed; eslint, tsc ×2 clean. Full chain at the end of stage 3.
+- **Notes:** `mapShows()` in `areas/planMap/shows.ts` (used by `PlanMap` and `SidePanel`). `SpecDetail` takes `withNextStep` (false exactly while area is `planMap` and `mapShows`). The webview may not import `core` (lint boundary), so the "each fixture spec" part is split: `core/board/header0025.test.ts` proves the detail's first line equals `nextStep()`'s on the three fixtures and the all-ticked splitter plan gives `/sdd-compile`; `PlanMap.header.test.tsx` renders static views (one line, two lines, tips, verify, Problem mark, narrow, no plan). `NextStep`'s `place` prop is accepted and read in T-010 (U-06 for `detail` only; no U-06 exists yet). Retargeted by title: 0023 AC-010 (PlanMap.test, primaryButtons.test): the one primary now sits in the map header, the side panel has none; the map's secondary Copies are 4 (the header's second line). New primaryButtons AC-010 tests: one primary with a line (with and without Send), none while quiet.
 
 ### T-010 — The parallel hint and the ways target
 
@@ -493,8 +493,8 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
 | AC-006 | T-005, T-006 | shellService.ts:shellEvent, target.ts, PlanMap.tsx | shellService.navigation.test.ts, PlanMap.target.test.tsx (ways part: T-010) | built |
 | AC-007 | T-011 | — | — | open |
 | AC-008 | T-011 | — | — | open |
-| AC-009 | T-009 | — | — | open |
-| AC-010 | T-004, T-009, T-011 | — | — | open |
+| AC-009 | T-009 | areas/planMap/shows.ts, PlanMap.tsx:Header, SpecDetail.tsx | PlanMap.header.test.tsx, header0025.test.ts | verified |
+| AC-010 | T-004, T-009, T-011 | SendButton.tsx, NextStep.tsx, shows.ts (card Copies: T-011) | primaryButtons.test.tsx | built |
 | AC-011 | T-013 | — | — | open |
 | AC-012 | T-001 | shared/protocol/percent.ts | percent.test.ts | verified |
 | AC-013 | T-001 | texts.ts, ProgressBar.tsx, figures.ts | progress0025.test.ts, ProgressBar.test.tsx | verified |
@@ -515,8 +515,8 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
 
 ## Session handoff
 
-- **Done so far:** stages 1 and 2 (T-001…T-007) and T-008 built, verified and committed, one commit per step, stage gate chains green for stages 1 and 2 (2026-11-19). Spec and plan are in `active/`, Baseline `b8e41c7`.
-- **Next action:** stage 3, T-009 (header next step), T-010 (parallel hint and ways target), stage 4 (T-011, T-012), stage 5 (T-013…T-015). Run the stage gate chain at the end of each stage (IMPL-R3 test cadence).
+- **Done so far:** stages 1 and 2 (T-001…T-007) and T-008 and T-009 built, verified and committed, one commit per step, stage gate chains green for stages 1 and 2 (2026-11-19). Spec and plan are in `active/`, Baseline `b8e41c7`.
+- **Next action:** stage 3, T-010 (parallel hint and ways target), stage 4 (T-011, T-012), stage 5 (T-013…T-015). Run the stage gate chain at the end of each stage (IMPL-R3 test cadence).
 - **Open decisions:** none. Proxies recorded in the Notes of T-003 (AC-025 beats AC-015's DONE-only example on `fs110-parallel-synthetic`; U-08's m), T-005 (`heading` target, one-shot focus), T-006 (a focus for a spec not shown waits), T-007 (modifier handling).
 - **Where things are:** `core/planMap/returnedWork.ts` (U-05, U-08, `integrateIsQuiet`), `core/planMap/stageLines.ts`, `shared/protocol/{percent,stepLook}.ts`, `webview/ui/StepLink.tsx`, `webview/areas/planMap/target.ts`; the client snapshot carries `focus`; `ways` targets are accepted by the protocol and the service but the map applies only step and heading targets until T-010.
 - **Baseline:** `b8e41c7`

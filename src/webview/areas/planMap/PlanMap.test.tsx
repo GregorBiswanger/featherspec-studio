@@ -622,9 +622,9 @@ describe('0023 AC-010: the Copy buttons of the map', () => {
         expect(requests('copyText')).toEqual([{ text: 'Implement T-003 of .specs/active/0007-thing.plan.md as a parallel worker.' }]);
     });
 
-    it('the map renders no primary button, with the ways open', async () => {
+    it('the map renders no primary button below its header, with the ways open', async () => {
         const container = await openWays();
-        const primary = [...map(container).querySelectorAll('button.copy-button')].filter((button) => !button.classList.contains('copy-secondary'));
+        const primary = [...map(container).querySelectorAll('button.copy-button')].filter((button) => !button.classList.contains('copy-secondary') && button.closest('.plan-map-header') === null);
         expect(primary).toEqual([]);
     });
 });

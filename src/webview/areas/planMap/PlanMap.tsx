@@ -12,10 +12,12 @@ import { InlineText } from '../../ui/InlineText';
 import { ProgressBar } from '../../ui/ProgressBar';
 import { fallbackFocus, moveFocus, type Direction, type Grid } from '../../board/focusModel';
 import { cardRowsOf, looseCardKeys, stageCardKeys } from './cardKeys';
+import { NextStep } from '../../detail/NextStep';
 import { requestMapFocus, takePendingMapFocus } from './focus';
 import { StageRow } from './StageRow';
 import { StepCard, type CardLinks } from './StepCard';
 import { Ways } from './Ways';
+import { mapShows } from './shows';
 import { focusFor, HIGHLIGHT_MS, markApplied } from './target';
 import type { CopyResult } from '../../ui/CopyButton';
 
@@ -254,6 +256,7 @@ function SpecList(props: { specs: PlanSpecView[]; onSelect(spec: PlanSpecView): 
 
 function Header(props: { detail: SpecDetailView; plan: PlanView; fileResult: FileResult | undefined; onOpen(key: string, line: number): void }) {
     const { detail, plan } = props;
+    const { copyResult, copyText, sendResult, sendPrompt } = useBoard();
     const headingRef = useRef<HTMLHeadingElement>(null);
     const problemId = useId();
     useEffect(() => {
@@ -270,6 +273,7 @@ function Header(props: { detail: SpecDetailView; plan: PlanView; fileResult: Fil
                 </h2>
                 {sentences.length === 0 ? null : <ProblemMark sentences={sentences} id={problemId} />}
             </div>
+            <NextStep place="map" nextStep={detail.nextStep} fileResult={props.fileResult} onOpen={props.onOpen} copyResult={copyResult} onCopy={copyText} sendResult={sendResult} onSend={sendPrompt} />
             {plan.count === undefined ? (
                 <p className="progress-absent">{NO_STEPS_TEXT}</p>
             ) : (
@@ -296,11 +300,13 @@ export function PlanMap() {
     const specs = board?.planSpecs ?? [];
     const shown: SpecDetailView | undefined =
         selection !== undefined && detail?.kind === 'spec' && detail.stem === selection.stem && (selection.path === undefined || detail.key === selection.path) ? detail : undefined;
+    const mapped = mapShows(detail, selection);
     const choose = (spec: PlanSpecView): void => {
         requestMapFocus(spec.stem);
         shell.select(spec.path === undefined ? { stem: spec.stem } : { stem: spec.stem, path: spec.path });
     };
-    if (shown !== undefined && shown.plan?.kind === 'plan' && shown.state !== 'Done') {
+    if (mapped !== undefined) {
+        const shown = mapped;
         return (
             <div className="plan-map" data-plan-map>
                 <Header key={shown.key} detail={shown} plan={shown.plan} fileResult={fileResult} onOpen={openFile} />

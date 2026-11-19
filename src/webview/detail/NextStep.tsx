@@ -34,6 +34,7 @@ export function NextStep(props: {
     onSend(request: SendPromptPayload): void;
     fileResult?: FileResult | undefined;
     onOpen?(key: string, line: number): void;
+    place?: 'detail' | 'map';
 }) {
     const { nextStep, copyResult } = props;
     const send = 'send' in nextStep ? nextStep.send : undefined;

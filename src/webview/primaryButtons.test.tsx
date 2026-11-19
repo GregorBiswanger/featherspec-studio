@@ -162,14 +162,15 @@ describe('0023 AC-010: the Plan map adds no primary button', () => {
         return mounted.container;
     }
 
-    it('with a selected spec the view has one primary button, the first line of the side panel, and the map holds only secondary and icon Copies', async () => {
+    it('with a selected spec the view has one primary button, the first line of the map header (0025 AC-010), and the map below holds only secondary and icon Copies', async () => {
         const container = await openMap(SELECTED);
         const found = primaries(container);
         expect(found).toHaveLength(1);
-        expect(found[0]?.closest('aside.side-panel')).not.toBeNull();
+        expect(found[0]?.closest('.plan-map-header')).not.toBeNull();
+        expect(container.querySelector('aside.side-panel .next-step')).toBeNull();
         const inMap = container.querySelector('[data-plan-map]')!;
-        expect(primaries(inMap as HTMLElement)).toHaveLength(0);
-        expect(inMap.querySelectorAll('button.copy-secondary').length).toBe(3);
+        expect(primaries(inMap as HTMLElement)).toHaveLength(1);
+        expect(inMap.querySelectorAll('button.copy-secondary').length).toBe(4);
         expect(inMap.querySelectorAll('button.copy-icon').length).toBe(2);
     });
 
@@ -224,5 +225,38 @@ describe('0025 AC-026: no primary control while U-08 shows', () => {
     it.each([false, true])('0025 AC-026: with U-05 (not quiet), Send offered = %s, the first Now row and the detail are primary again', async (offered) => {
         const container = await quietView({ quiet: false, send: offered });
         expect(primaries(container)).toHaveLength(2);
+    });
+});
+
+describe('0025 AC-010: the map with its side panel has at most one primary button', () => {
+    const SEND = { assistant: 'copilot', target: 'current', targets: ['new', 'current'] };
+
+    async function openMapWith(nextStep: object): Promise<HTMLElement> {
+        const client = createClient({ post: (message) => void posted.push(message) });
+        clients.push(client);
+        client.start();
+        mounted = await mount(<App client={client} />);
+        await send(shellEvent(baseView({ area: 'planMap', selection: SELECTED }), 1));
+        await send(boardEvent(boardView(CARDS)));
+        const view = detailView({ stem: SELECTED.stem, number: SELECTED.number }, nextStep as never) as SpecDetailView;
+        await send(detailEvent({ ...view, plan: planSample() }));
+        return mounted.container;
+    }
+
+    it('0025 AC-010: with a line and no U-08 the header holds exactly one primary, with or without Send, and the side panel none', async () => {
+        for (const next of [NS6, { ...NS6, send: SEND }]) {
+            const container = await openMapWith(next);
+            const found = primaries(container);
+            expect(found).toHaveLength(1);
+            expect(found[0]?.closest('.plan-map-header')).not.toBeNull();
+            expect(primaries(container.querySelector<HTMLElement>('aside.side-panel')!)).toHaveLength(0);
+            mounted?.unmount();
+            clients.splice(0).forEach((client) => client.stop());
+        }
+    });
+
+    it('0025 AC-010: while someone is out (U-08, quiet) the header holds no primary at all', async () => {
+        const container = await openMapWith({ ...NS6, quiet: true });
+        expect(primaries(container)).toHaveLength(0);
     });
 });
