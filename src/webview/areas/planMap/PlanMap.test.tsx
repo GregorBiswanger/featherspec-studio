@@ -280,7 +280,7 @@ describe('0023 AC-008: stage rows and step cards', () => {
         const container = await show({ selection: selected('0007'), detail: detailWith(planSample()) });
         const card = cardOf(container, 'T-003');
         const toggle = card.querySelector<HTMLButtonElement>('button[data-card-toggle]')!;
-        expect(squeezed(toggle)).toContain('◐ T-003 Step T-003');
+        expect(squeezed(toggle)).toContain('T-003 Step T-003');
         expect(squeezed(card.querySelector('.step-card-files'))).toBe('Files src/add.ts, src/add.test.ts');
         expect(card.querySelector('code')).toBeNull();
         expect(squeezed(card.querySelector('.step-card-covers'))).toContain('Covers AC-001');
@@ -354,14 +354,26 @@ describe('0023 AC-008: stage rows and step cards', () => {
         const heads = ['T-001', 'T-002', 'T-003', 'T-004', 'T-005', 'T-006'].map((id) => cardOf(container, id).querySelector<HTMLElement>('button[data-card-toggle]')!);
         expect(heads.map((head) => head.querySelector('.visually-hidden')?.textContent)).toEqual([', done', ', next', ', open', ', returned, blocked', ', returned', ', dropped']);
         expect(heads.map((head) => squeezed(head))).toEqual([
-            '✓ T-001 Step T-001, done',
-            '◐ T-002 Step T-002, next',
-            '○ T-003 Step T-003, open',
-            '⊘ T-004 Step T-004, returned, blocked',
-            '↩ T-005 Step T-005, returned',
+            'T-001 Step T-001, done',
+            'T-002 Step T-002, next',
+            'T-003 Step T-003, open',
+            'T-004 Step T-004, returned, blocked',
+            'T-005 Step T-005, returned',
             'T-006 Step T-006, dropped',
         ]);
-        expect(heads.slice(0, 5).every((head) => head.querySelector('.chip-symbol')?.getAttribute('aria-hidden') === 'true')).toBe(true);
+        expect(heads.slice(0, 5).every((head) => head.querySelector('svg')?.getAttribute('aria-hidden') === 'true')).toBe(true);
+    });
+
+    it('0025 AC-014: a card draws the motif of its state as an aria-hidden SVG, none of the old symbols, and keeps the state word', async () => {
+        const plan = planSample({
+            stages: [stage(1, [{ steps: [step('T-001', 'done'), step('T-002', 'next'), step('T-003', 'open'), step('T-004', 'returned', { returned: { status: 'blocked' } }), step('T-005', 'returned', { returned: { status: 'done' } }), step('T-006', 'dropped')] }], { current: true })],
+        });
+        const container = await show({ selection: selected('0007'), detail: detailWith(plan) });
+        const heads = ['T-001', 'T-002', 'T-003', 'T-004', 'T-005', 'T-006'].map((id) => cardOf(container, id).querySelector<HTMLElement>('button[data-card-toggle]')!);
+        expect(heads.map((head) => head.querySelector('svg')?.getAttribute('data-motif') ?? null)).toEqual(['check', 'debug-stackframe', 'circle-large-outline', 'circle-slash', 'reply', null]);
+        expect(heads.slice(0, 5).every((head) => head.querySelector('svg')?.getAttribute('aria-hidden') === 'true')).toBe(true);
+        expect(map(container).textContent).not.toMatch(/[✓◐○↩⊘]/);
+        expect(heads.map((head) => head.querySelector('.visually-hidden')?.textContent)).toEqual([', done', ', next', ', open', ', returned, blocked', ', returned', ', dropped']);
     });
 
     it('a dropped step keeps its card with the ID struck through; no other state strikes it', async () => {
@@ -420,7 +432,7 @@ describe('0023 AC-008: stage rows and step cards', () => {
         expect(map(container).querySelectorAll('.step-card-more')).toHaveLength(2);
         const chip = stageRow(container, 1).querySelector<HTMLElement>('[data-step-chip][data-state="notFound"]')!;
         expect(chip.tagName).toBe('SPAN');
-        expect(chip.textContent).toBe('? T-099, not in the steps');
+        expect(chip.textContent).toBe('T-099, not in the steps');
         expect(chip.closest('[data-step-card]')).toBeNull();
         await act(async () => cardOf(container, 'T-003').querySelector<HTMLButtonElement>('button[data-card-toggle]')!.focus());
         await act(async () => {

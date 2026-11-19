@@ -1,6 +1,8 @@
 import type { AreaId } from '../../shared/protocol/areas';
 import { BOARD_STATES, type BoardState } from '../../shared/protocol/boardFilter';
+import type { StepLookKey } from '../../shared/protocol/planMapTexts';
 import { STATE_LOOK } from '../../shared/protocol/stateLook';
+import { STEP_LOOK } from '../../shared/protocol/stepLook';
 
 const MOTIF_PATHS: Record<string, string> = {
     'list-flat': 'M2 3h12v2H2zM2 7h12v2H2zM2 11h8v2H2z',
@@ -53,6 +55,28 @@ export function StateIcon(props: { state: BoardState }) {
     return (
         <svg className="icon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" fillRule="evenodd" aria-hidden="true" focusable="false" data-icon={props.state} data-motif={look.motif} data-tint={look.colour}>
             <path d={MOTIF_PATHS[look.motif]} />
+        </svg>
+    );
+}
+
+const STEP_MOTIF_PATHS: Record<string, string> = {
+    check: MOTIF_PATHS.check!,
+    'circle-slash': MOTIF_PATHS['circle-slash']!,
+    'debug-stackframe': 'M2 5h6V2l6 6-6 6v-3H2z',
+    'circle-large-outline': 'M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 1.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11z',
+    reply: 'M6 2.5L1 7.5l5 5v-3c3.5 0 6 .8 8 3.5-.5-4.5-3-8-8-8.5z',
+    question: 'M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 1.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11zM7.25 10.5h1.5V12h-1.5zM6 6.4C6 5.1 6.9 4.3 8 4.3s2 .8 2 1.9c0 1.4-1.5 1.5-1.5 2.8H7.3c0-1.8 1.2-1.9 1.2-2.8 0-.4-.2-.6-.5-.6s-.5.3-.5.8z',
+};
+
+/** 0025 §5.5: the step's codicon motif, drawn as the panel's glyphs are (PD-054); a dropped step has none. */
+export function StepIcon(props: { look: StepLookKey }) {
+    const look = STEP_LOOK[props.look];
+    if (look.motif === undefined) {
+        return null;
+    }
+    return (
+        <svg className="icon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" fillRule="evenodd" aria-hidden="true" focusable="false" data-icon={`step-${props.look}`} data-motif={look.motif} data-tint={look.colour}>
+            <path d={STEP_MOTIF_PATHS[look.motif]} />
         </svg>
     );
 }

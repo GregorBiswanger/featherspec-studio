@@ -17,6 +17,10 @@ body,
     --fs-tint: var(--vscode-descriptionForeground);
 }
 
+[data-tint="focusBorder"] {
+    --fs-tint: var(--vscode-focusBorder);
+}
+
 [data-tint="charts.blue"] {
     --fs-tint: var(--vscode-charts-blue);
 }
@@ -1765,8 +1769,10 @@ blockquote.illustration {
     white-space: nowrap;
 }
 
-.step-chip .chip-symbol {
-    color: var(--fs-muted);
+.step-chip .icon,
+.step-card-toggle .icon {
+    color: var(--fs-tint);
+    vertical-align: -2px;
 }
 
 .step-chip s {

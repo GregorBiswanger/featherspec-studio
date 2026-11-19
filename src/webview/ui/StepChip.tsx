@@ -1,5 +1,6 @@
 import type { PlanStepView } from '../../shared/protocol/planMap';
 import { chipName, stepLook } from '../../shared/protocol/planMapTexts';
+import { StepIcon } from '../board/icons';
 import { FileLink, type FileResult } from './FileLink';
 
 export function StepChip(props: { step: PlanStepView; fileResult: FileResult | undefined; onOpen(key: string, line: number): void }) {
@@ -7,7 +8,7 @@ export function StepChip(props: { step: PlanStepView; fileResult: FileResult | u
     const look = stepLook(step);
     const name = chipName(step.id, step.title, look.word);
     const label = step.state === 'dropped' ? <s>{step.id}</s> : <>{step.id}</>;
-    const symbol = look.symbol === undefined ? null : <span className="chip-symbol" aria-hidden="true">{look.symbol} </span>;
+    const symbol = <StepIcon look={look.key} />;
     if (step.open === undefined) {
         return (
             <span className="step-chip" data-step-chip data-state={step.state} title={name}>

@@ -131,17 +131,26 @@ describe('0023 AC-004: the chips', () => {
         const container = await open(states);
         const names = chips(sectionOf(container, 'Plan')!).map((chip) => [shown(chip), chip.querySelector('button')?.getAttribute('aria-label') ?? chip.querySelector('.visually-hidden')?.textContent]);
         expect(names).toEqual([
-            ['✓ T-001', 'T-001 Step T-001, done'],
-            ['◐ T-002', 'T-002 Step T-002, next'],
-            ['○ T-003', 'T-003 Step T-003, open'],
+            ['T-001', 'T-001 Step T-001, done'],
+            ['T-002', 'T-002 Step T-002, next'],
+            ['T-003', 'T-003 Step T-003, open'],
             ['T-004', 'T-004 Step T-004, dropped'],
-            ['↩ T-005', 'T-005 Step T-005, returned'],
-            ['⊘ T-006', 'T-006 Step T-006, returned, blocked'],
-            ['? T-007', ', not in the steps'],
+            ['T-005', 'T-005 Step T-005, returned'],
+            ['T-006', 'T-006 Step T-006, returned, blocked'],
+            ['T-007', ', not in the steps'],
         ]);
         const next = chips(sectionOf(container, 'Plan')!)[1]!.querySelector<HTMLButtonElement>('button')!;
         expect(next.title).toBe('T-002 Step T-002, next\nOpen 0007-thing.plan.md at line 42');
         expect(document.getElementById(next.getAttribute('aria-describedby')!)?.textContent).toBe('T-002 Step T-002, next\nOpen 0007-thing.plan.md at line 42');
+    });
+
+    it('0025 AC-014: each chip draws the codicon motif of its state as an aria-hidden SVG and no old symbol', async () => {
+        const container = await open(states);
+        const plan = sectionOf(container, 'Plan')!;
+        expect(chips(plan).map((chip) => chip.querySelector('svg')?.getAttribute('data-motif') ?? null)).toEqual(['check', 'debug-stackframe', 'circle-large-outline', null, 'reply', 'circle-slash', 'question']);
+        expect(chips(plan).map((chip) => chip.querySelector('svg')?.getAttribute('aria-hidden') ?? null)).toEqual(['true', 'true', 'true', null, 'true', 'true', 'true']);
+        expect(chips(plan).map((chip) => chip.querySelector('svg')?.getAttribute('data-tint') ?? null)).toEqual(['descriptionForeground', 'focusBorder', 'descriptionForeground', null, 'descriptionForeground', 'charts.red', 'descriptionForeground']);
+        expect(plan.textContent).not.toMatch(/[✓◐○↩⊘]/);
     });
 
     it('a dropped ID is struck through', async () => {
@@ -201,7 +210,7 @@ describe('0023 AC-004: the chips', () => {
         const container = await open(planSample({ loose: [step('T-009', 'open')] }));
         const last = [...sectionOf(container, 'Plan')!.querySelectorAll('li')].pop()!;
         expect(last.textContent).toContain('Not in a stage');
-        expect(chips(last).map(shown)).toEqual(['○ T-009']);
+        expect(chips(last).map(shown)).toEqual(['T-009']);
         expect(sectionOf(container, 'Plan')!.querySelectorAll('li[data-stage]')).toHaveLength(3);
     });
 
@@ -210,7 +219,7 @@ describe('0023 AC-004: the chips', () => {
         const plan = sectionOf(container, 'Plan')!;
         expect(plan.querySelectorAll('li[data-stage]')).toHaveLength(0);
         expect(plan.querySelector('ol')).toBeNull();
-        expect(chips(plan).map(shown)).toEqual(['✓ T-001', '◐ T-002', '○ T-003']);
+        expect(chips(plan).map(shown)).toEqual(['T-001', 'T-002', 'T-003']);
         expect(plan.textContent).not.toContain('Not in a stage');
     });
 

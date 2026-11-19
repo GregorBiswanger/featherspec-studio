@@ -66,20 +66,22 @@ export const CAN_RUN_PARALLEL_TEXT = '⇉ can run in parallel';
 
 export const NOT_IN_A_STAGE_TEXT = 'Not in a stage';
 
+export type StepLookKey = 'done' | 'next' | 'open' | 'dropped' | 'returned' | 'returnedBlocked' | 'notFound';
+
 export interface StepLook {
-    symbol?: string;
+    key: StepLookKey;
     word: string;
 }
 
 export const STEP_LOOKS = {
-    done: { symbol: '✓', word: 'done' },
-    next: { symbol: '◐', word: 'next' },
-    open: { symbol: '○', word: 'open' },
-    dropped: { word: 'dropped' },
-    returned: { symbol: '↩', word: 'returned' },
-    returnedBlocked: { symbol: '⊘', word: 'returned, blocked' },
-    notFound: { symbol: '?', word: 'not in the steps' },
-} as const satisfies Record<string, StepLook>;
+    done: { key: 'done', word: 'done' },
+    next: { key: 'next', word: 'next' },
+    open: { key: 'open', word: 'open' },
+    dropped: { key: 'dropped', word: 'dropped' },
+    returned: { key: 'returned', word: 'returned' },
+    returnedBlocked: { key: 'returnedBlocked', word: 'returned, blocked' },
+    notFound: { key: 'notFound', word: 'not in the steps' },
+} as const satisfies Record<StepLookKey, StepLook>;
 
 export function stepLook(step: { state: string; returned?: { status: string } }): StepLook {
     if (step.state === 'returned') {

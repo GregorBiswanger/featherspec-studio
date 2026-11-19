@@ -173,8 +173,8 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
     - `webviewCss.test.ts` (theme variables only).
   - Retarget 0023's symbol assertions (titles in `Notes:`).
 - **Verify:** `npm run test:unit` — red first (stub: no SVG, symbols still rendered), then green.
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-19. Red: vitest on PlanSection, PlanMap, icons, stepLook tests, 8 failed (chips and cards drew no SVG, symbols gone). Green: `npm run test:unit` 3294 + 26 timing passed; eslint, tsc ×2 clean.
+- **Notes:** STEP_LOOKS lost its symbols and gained `key`; `stepLook()` returns `{key, word}`. Retargeted by title: 0023 AC-004 and AC-008 chip/card tests (symbol prefixes dropped from the expected strings, the aria-hidden check now reads the SVG). Codicon paths are hand-drawn 16 px approximations in the PD-054 style. `focusBorder` got a `--fs-tint` rule.
 
 ### T-003 — One statement for returned work, with the group view
 

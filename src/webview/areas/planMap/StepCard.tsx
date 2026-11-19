@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import type { PlanStepView } from '../../../shared/protocol/planMap';
 import { COVERS_LABEL, DO_LABEL, FILES_LABEL, OPEN_IN_PLAN_LABEL, returnedText, stepLook, VERIFY_LABEL } from '../../../shared/protocol/planMapTexts';
+import { StepIcon } from '../../board/icons';
 import { FileLink, type FileResult } from '../../ui/FileLink';
 import { PathText } from '../../ui/PathText';
 
@@ -26,11 +27,7 @@ export function StepCard(props: { cardKey: string; step: PlanStepView; expanded:
                 tabIndex={props.tabStop ? 0 : -1}
                 onClick={() => props.onToggle(props.cardKey)}
             >
-                {look.symbol === undefined ? null : (
-                    <span className="chip-symbol" aria-hidden="true">
-                        {look.symbol}{' '}
-                    </span>
-                )}
+                <StepIcon look={look.key} />{' '}
                 <span className="step-card-id">{dropped ? <s>{step.id}</s> : step.id}</span>
                 {step.title === '' ? null : <span className="step-card-title"> {step.title}</span>}
                 <span className="visually-hidden">, {look.word}</span>

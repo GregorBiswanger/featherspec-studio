@@ -210,6 +210,13 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
         expect(parseRules('[data-board-state="Active"] { --fs-tint: red; }').filter((rule) => rule.selectors.some((selector) => /Active/.test(selector)))).toHaveLength(1);
     });
 
+    it('0025 AC-014: the step motifs take next and returned-blocked from theme variables only, through --fs-tint', () => {
+        expect(rulesFor(css, '[data-tint="focusBorder"]').some((rule) => rule.body.includes('--fs-tint: var(--vscode-focusBorder)'))).toBe(true);
+        expect(rulesFor(css, '.step-chip .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.step-card-toggle .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);
+        expect(css).not.toMatch(/\.step-(?:chip|card)[^{]*\{[^}]*#[0-9a-fA-F]{3,8}/);
+    });
+
     it('0022 AC-026: the chip and the column header icon take their colour from --fs-tint', () => {
         expect(rulesFor(css, '.state-chip .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);
         expect(rulesFor(css, '.column-heading .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);
