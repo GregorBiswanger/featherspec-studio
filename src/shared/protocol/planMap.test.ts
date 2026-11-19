@@ -11,11 +11,21 @@ describe('0023 AC-003: the plan view and the plan spec list are guarded exactly'
         expect(isPlanView(planSample())).toBe(true);
         const returned = planSample({
             loose: [step('T-009', 'returned', { returned: { status: 'blocked', reason: 'a question', reasonFull: 'a question' } })],
-            stages: [stage(1, [{ steps: [step('T-001', 'returned', { returned: { status: 'done' } }), step('T-002', 'notFound', { open: undefined, title: '' })] }], { returned: { n: 1, m: 1 } })],
+            stages: [stage(1, [{ steps: [step('T-001', 'returned', { returned: { status: 'done' } }), step('T-002', 'notFound', { open: undefined, title: '' })] }], { returned: '1 returned, waiting to be integrated: the next step integrates them.' })],
         });
         expect(isPlanView(returned)).toBe(true);
         expect(isPlanView(planSample({ staged: false, stages: [], loose: [step('T-001', 'open')] }))).toBe(true);
         expect(isPlanView({ ...planSample(), count: undefined, closing: undefined })).toBe(true);
+    });
+
+    it('0025 AC-015: the returned-work sentence is a non-empty string on the plan and on a stage; anything else is refused', () => {
+        const sentence = '1 returned, waiting to be integrated: the next step integrates them.';
+        expect(isPlanView({ ...planSample(), returned: sentence })).toBe(true);
+        expect(isPlanView({ ...planSample(), returned: '' })).toBe(false);
+        expect(isPlanView({ ...planSample(), returned: { n: 1, m: 1 } })).toBe(false);
+        const base = planSample();
+        expect(isPlanView({ ...base, stages: base.stages.map((entry, index) => (index === 0 ? { ...entry, returned: sentence } : entry)) })).toBe(true);
+        expect(isPlanView({ ...base, stages: base.stages.map((entry, index) => (index === 0 ? { ...entry, returned: { n: 1, m: 1 } } : entry)) })).toBe(false);
     });
 
     it('an extra key, a missing key or a wrong type is refused at the plan, a stage, a group, a step and the ways', () => {

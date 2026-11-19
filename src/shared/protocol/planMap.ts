@@ -46,7 +46,7 @@ export interface PlanStageView {
     parallel: boolean;
     current: boolean;
     finished: boolean;
-    returned?: { n: number; m: number };
+    returned?: string;
     groups: PlanGroupView[];
     ways?: PlanWaysView;
 }
@@ -62,6 +62,7 @@ export interface PlanView {
     plan: LineTarget;
     count?: { done: number; total: number };
     closing?: PlanClosingView;
+    returned?: string;
     staged: boolean;
     stages: PlanStageView[];
     loose: PlanStepView[];
@@ -165,7 +166,7 @@ function isStage(value: unknown): value is PlanStageView {
         typeof value.parallel === 'boolean' &&
         typeof value.current === 'boolean' &&
         typeof value.finished === 'boolean' &&
-        (value.returned === undefined || (isRecord(value.returned) && keysAre(value.returned, ['n', 'm']) && isCount(value.returned.n) && isCount(value.returned.m))) &&
+        (value.returned === undefined || (isString(value.returned) && value.returned.length > 0)) &&
         Array.isArray(value.groups) &&
         value.groups.every(isGroup) &&
         (value.ways === undefined || isWays(value.ways))
@@ -179,11 +180,12 @@ function isClosing(value: unknown): value is PlanClosingView {
 export function isPlanView(value: unknown): value is PlanView {
     return (
         isRecord(value) &&
-        keysAre(value, ['kind', 'plan', 'staged', 'stages', 'loose'], ['count', 'closing']) &&
+        keysAre(value, ['kind', 'plan', 'staged', 'stages', 'loose'], ['count', 'closing', 'returned']) &&
         value.kind === 'plan' &&
         isLineTarget(value.plan) &&
         (value.count === undefined || (isRecord(value.count) && keysAre(value.count, ['done', 'total']) && isCount(value.count.done) && isCount(value.count.total))) &&
         (value.closing === undefined || isClosing(value.closing)) &&
+        (value.returned === undefined || (isString(value.returned) && value.returned.length > 0)) &&
         typeof value.staged === 'boolean' &&
         Array.isArray(value.stages) &&
         value.stages.every(isStage) &&

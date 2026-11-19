@@ -188,6 +188,15 @@ describe('0019 AC-011, AC-012: Progress', () => {
         expect(links(root.querySelector('.progress-next')!).map((link) => link.textContent)).toEqual(['T-002']);
     });
 
+    it('0025 AC-015: while a return note lies, the Steps row shows the one sentence of U-05 and no next open step', async () => {
+        const sentence = '2 returned, T-004 blocked: the next step finds out what blocks.';
+        const container = await open(spec({ progress: { needs: [], noPlan: false, steps: { kind: 'steps', done: 2, total: 5, returned: sentence }, criteria: { kind: 'unavailable', reason: 'no-table' } } }));
+        const root = progressOf(container);
+        expect(root.querySelector('.progress-returned')?.textContent).toBe(sentence);
+        expect(root.querySelector('.progress-next')).toBeNull();
+        expect(textOf(root)).not.toContain('Next open step');
+    });
+
     it('a complete plan shows no next open step; no countable step says so; an unreadable plan says so', async () => {
         const done = await open(spec({ progress: { needs: [], noPlan: false, steps: { kind: 'steps', done: 4, total: 4 }, criteria: { kind: 'criteria', verified: 3, total: 3, open: [] } } }));
         expect(textOf(progressOf(done))).toContain('4 of 4 done');

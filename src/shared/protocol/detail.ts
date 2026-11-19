@@ -40,7 +40,7 @@ export interface NextOpenStep {
     open: LineTarget;
 }
 
-export type StepsProgress = { kind: 'steps'; done: number; total: number; next?: NextOpenStep } | { kind: 'none' } | { kind: 'unavailable' };
+export type StepsProgress = { kind: 'steps'; done: number; total: number; next?: NextOpenStep; returned?: string } | { kind: 'none' } | { kind: 'unavailable' };
 
 export interface OpenCriterion {
     id?: string;
@@ -139,6 +139,9 @@ function isStepsProgress(value: unknown): value is StepsProgress {
         return true;
     }
     if (value.kind !== 'steps' || !isCount(value.done) || !isCount(value.total)) {
+        return false;
+    }
+    if (value.returned !== undefined && (typeof value.returned !== 'string' || value.returned.length === 0)) {
         return false;
     }
     return value.next === undefined || (isRecord(value.next) && typeof value.next.id === 'string' && typeof value.next.title === 'string' && isLineTarget(value.next.open));

@@ -89,6 +89,15 @@ describe('0023 AC-003: the Plan section of the side panel', () => {
         expect(progress.textContent).toContain('Criteria');
     });
 
+    it('0025 AC-015: while a return note lies, the sentence of U-05 stands under the count, once', async () => {
+        const sentence = '1 of 2 returned · T-004 not back yet';
+        const container = await open({ ...planSample(), returned: sentence });
+        const plan = sectionOf(container, 'Plan')!;
+        expect(plan.querySelectorAll('.plan-returned')).toHaveLength(1);
+        expect(plan.querySelector('.plan-returned')?.textContent).toBe(sentence);
+        expect(plan.querySelector('.progress')!.nextElementSibling).toBe(plan.querySelector('.plan-returned'));
+    });
+
     it('is absent without a plan and for an unreadable plan, where Progress keeps its Steps row', async () => {
         const without = await open(undefined);
         expect(sectionOf(without, 'Plan')).toBeUndefined();

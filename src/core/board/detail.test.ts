@@ -295,8 +295,9 @@ describe('0019: the situation picture', () => {
             const model = { project, lifecycle: deriveLifecycle(project) };
             for (const entry of model.lifecycle.entries.filter((candidate) => candidate.plan !== undefined)) {
                 const view = spec(buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history: NO_HISTORY }));
-                const next = view.progress?.steps?.kind === 'steps' ? view.progress.steps.next : undefined;
-                expect(next?.id, `${name} ${entry.key}`).toBe(openStep(model, entry)?.id);
+                const steps = view.progress?.steps?.kind === 'steps' ? view.progress.steps : undefined;
+                // 0025 §5.6: while a return note lies, the statement stands in place of the next open step
+                expect(steps?.next?.id, `${name} ${entry.key}`).toBe(steps?.returned === undefined ? openStep(model, entry)?.id : undefined);
                 compared += 1;
             }
         }

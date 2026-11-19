@@ -6,15 +6,12 @@ import { nextStep, openStep } from '../board/nextStep';
 import { taskProgress } from '../board/progress';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { ShellModel } from '../ports/shell';
-import { STAGE_DELIMITER } from '../specs/parsePlan';
+import { returnedWorkOf } from './returnedWork';
+import { headOf, PARALLEL, SEQUENCE, separatorsOf, STAGE_NUMBER, type StageItem } from './stageLines';
 import type { PlanStage } from '../specs/parsePlan';
 import type { PlanStep } from '../specs/planSteps';
 import type { ReturnNoteEntry, SpecEntry } from '../specs/readProject';
 
-const STEP_ID = /T-\d+/g;
-const STAGE_NUMBER = /^\d+\.[ \t]+/;
-const PARALLEL_MARK = '‖';
-const SEQUENCE_MARK = '→';
 
 interface Context {
     steps: Map<string, PlanStep>;
@@ -23,6 +20,7 @@ interface Context {
     planKey: string;
     next: string | undefined;
     noteLies: boolean;
+    returned: string | undefined;
 }
 
 function splitList(raw: string): string[] {
@@ -88,31 +86,14 @@ function stepView(id: string, context: Context): PlanStepView {
     };
 }
 
-function headOf(line: string): { head: string; description: string } {
-    const delimiter = STAGE_DELIMITER.exec(line);
-    return delimiter === null ? { head: line, description: '' } : { head: line.slice(0, delimiter.index), description: line.slice(delimiter.index + delimiter[0].length) };
-}
-
-function separatorsOf(head: string): Array<{ id: string; sep: '‖' | '→' | undefined }> {
-    const found = [...head.matchAll(STEP_ID)];
-    return found.map((match, index) => {
-        if (index === 0) {
-            return { id: match[0], sep: undefined };
-        }
-        const previous = found[index - 1]!;
-        const between = head.slice(previous.index + previous[0].length, match.index);
-        return { id: match[0], sep: between.includes(PARALLEL_MARK) ? PARALLEL_MARK : between.includes(SEQUENCE_MARK) ? SEQUENCE_MARK : undefined };
-    });
-}
-
-function groupsOf(items: ReturnType<typeof separatorsOf>, context: Context): PlanGroupView[] {
+function groupsOf(items: StageItem[], context: Context): PlanGroupView[] {
     const groups: PlanGroupView[] = [];
     for (const item of items) {
         const last = groups[groups.length - 1];
-        if (last !== undefined && item.sep === PARALLEL_MARK) {
+        if (last !== undefined && item.sep === PARALLEL) {
             last.steps.push(stepView(item.id, context));
         } else {
-            groups.push({ ...(item.sep === SEQUENCE_MARK ? { sep: '→' as const } : {}), steps: [stepView(item.id, context)] });
+            groups.push({ ...(item.sep === SEQUENCE ? { sep: '→' as const } : {}), steps: [stepView(item.id, context)] });
         }
     }
     return groups;
@@ -122,10 +103,10 @@ function unfinished(step: PlanStepView): boolean {
     return step.state === 'next' || step.state === 'open';
 }
 
-function stageView(stage: PlanStage, items: ReturnType<typeof separatorsOf>, description: string, current: boolean, context: Context): PlanStageView {
+function stageView(stage: PlanStage, items: StageItem[], description: string, current: boolean, context: Context): PlanStageView {
     const groups = groupsOf(items, context);
     const steps = groups.flatMap((group) => group.steps).filter((step) => step.state !== 'notFound');
-    const returned = steps.filter((step) => step.state === 'returned').length;
+    const holdsReturned = steps.some((step) => step.state === 'returned');
     const kind: PlanStageKind = stage.kind;
     return {
         number: stage.number,
@@ -134,7 +115,7 @@ function stageView(stage: PlanStage, items: ReturnType<typeof separatorsOf>, des
         parallel: kind === 'parallel' || kind === 'mixed',
         current,
         finished: steps.length > 0 && steps.every((step) => step.state === 'done' || step.state === 'dropped'),
-        ...(returned === 0 ? {} : { returned: { n: returned, m: returned + steps.filter(unfinished).length } }),
+        ...(!holdsReturned || context.returned === undefined ? {} : { returned: context.returned }),
         groups,
     };
 }
@@ -184,6 +165,7 @@ export function planOf(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry
         planKey: plan.key,
         next: openStep(model, entry)?.id,
         noteLies: spec.returnNoteKeys.length > 0,
+        returned: returnedWorkOf(model, entry, spec),
     };
     const rows = plan.parsed.stages.stages
         .map((stage) => {
@@ -213,6 +195,7 @@ export function planOf(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry
         plan: target,
         ...(counted === undefined ? {} : { count: counted }),
         ...(closing === undefined ? {} : { closing: closingView(closing.raw) }),
+        ...(context.returned === undefined ? {} : { returned: context.returned }),
         staged: rows.length > 0,
         stages,
         loose,

@@ -278,7 +278,7 @@ describe('0023 AC-012: returned work shows its state and the stage counts', () =
         const [three, four] = view.stages[1]!.groups[0]!.steps;
         expect(three).toMatchObject({ id: 'T-003', state: 'returned', returned: { status: 'done' } });
         expect(four).toMatchObject({ id: 'T-004', state: 'returned', returned: { status: 'blocked', reason: 'needs a new dependency (Ask first).', reasonFull: 'needs a new dependency (Ask first).' } });
-        expect(view.stages[1]!.returned).toEqual({ n: 2, m: 2 });
+        expect(view.stages[1]!.returned).toBe('2 returned, T-004 blocked: the next step finds out what blocks.');
     });
 
     it('a long reason is cut in its short form and whole in its full form', async () => {
@@ -323,7 +323,7 @@ describe('0023 AC-012: returned work shows its state and the stage counts', () =
             ['T-006', 'open'],
             ['T-007', 'dropped'],
         ]);
-        expect(view.stages[0]!.returned).toEqual({ n: 1, m: 2 });
+        expect(view.stages[0]!.returned).toBe('1 of 3 returned · T-006 not back yet');
     });
 
     it('only the notes of this spec count: a note of another spec for the same step ID changes nothing', async () => {
@@ -339,11 +339,11 @@ describe('0023 AC-012: returned work shows its state and the stage counts', () =
     it('a stage counts its returned steps against the returned and unfinished ones: n of m', async () => {
         const one = await parallelModel(setNote(PARALLEL_NOTE_3, '# Return note — 0001 · T-003\n\n- **Status:** DONE\n- **Files:** —\n- **Verified:** —\n- **Notes:** —\n'));
         const view = planViewOf(one, PARALLEL_SPEC);
-        expect(view.stages[1]!.returned).toEqual({ n: 1, m: 2 });
+        expect(view.stages[1]!.returned).toBe('1 of 2 returned · T-004 not back yet');
         expect(view.stages[0]!.returned).toBeUndefined();
         expect(view.stages[2]!.returned).toBeUndefined();
         const both = planViewOf(await fixtureModel('fs110-parallel-synthetic'), PARALLEL_SPEC);
-        expect(both.stages[1]!.returned).toEqual({ n: 2, m: 2 });
+        expect(both.stages[1]!.returned).toBe('2 returned, T-004 blocked: the next step finds out what blocks.');
         expect(PARALLEL_NOTE_4).toContain('T-004');
     });
 });

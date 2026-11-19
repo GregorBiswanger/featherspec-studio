@@ -70,6 +70,7 @@ export function PlanSection(props: { plan: PlanView; fileResult: FileResult | un
             ) : (
                 <ProgressBar label={STEPS_LABEL} done={plan.count.done} total={plan.count.total} text={stepsDoneText(plan.count.done, plan.count.total)} />
             )}
+            {plan.returned === undefined ? null : <p className="plan-returned">{plan.returned}</p>}
             {plan.closing === undefined ? null : (
                 <p className="plan-closing" title={planSaysText(plan.closing.full)}>
                     {planSaysText(plan.closing.short)}

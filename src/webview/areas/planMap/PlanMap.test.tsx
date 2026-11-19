@@ -325,7 +325,7 @@ describe('0023 AC-008: stage rows and step cards', () => {
                             ],
                         },
                     ],
-                    { current: true, returned: { n: 4, m: 5 } },
+                    { current: true, returned: '4 returned, T-002, T-004 blocked: the next step finds out what blocks.' },
                 ),
             ],
         });
@@ -336,10 +336,25 @@ describe('0023 AC-008: stage rows and step cards', () => {
             'Returned · status unknown',
             'Returned · blocked',
         ]);
-        expect(stageRow(container, 1).querySelector('.plan-stage-returned')?.textContent).toBe('4 of 5 steps returned');
-        const all = planSample({ stages: [stage(1, [{ steps: [step('T-001', 'returned', { returned: { status: 'done' } })] }], { current: true, returned: { n: 1, m: 1 } })] });
+        expect(stageRow(container, 1).querySelector('.plan-stage-returned')?.textContent).toBe('4 returned, T-002, T-004 blocked: the next step finds out what blocks.');
+        const all = planSample({ stages: [stage(1, [{ steps: [step('T-001', 'returned', { returned: { status: 'done' } })] }], { current: true, returned: '1 returned, waiting to be integrated: the next step integrates them.' })] });
         await show({ selection: selected('0007'), detail: detailWith(all) });
-        expect(stageRow(container, 1).querySelector('.plan-stage-returned')?.textContent).toBe('All steps returned: the next step integrates them.');
+        expect(stageRow(container, 1).querySelector('.plan-stage-returned')?.textContent).toBe('1 returned, waiting to be integrated: the next step integrates them.');
+    });
+
+    it('0025 AC-015: each stage row holding a returned step shows the identical sentence and no M-16 or M-17', async () => {
+        const sentence = '2 returned, T-004 blocked: the next step finds out what blocks.';
+        const plan = planSample({
+            returned: sentence,
+            stages: [
+                stage(1, [{ steps: [step('T-001', 'returned', { returned: { status: 'done' } }), step('T-002', 'returned', { returned: { status: 'blocked' } })] }], { current: true, returned: sentence }),
+                stage(2, [{ steps: [step('T-003', 'open')] }]),
+            ],
+        });
+        const container = await show({ selection: selected('0007'), detail: detailWith(plan) });
+        expect(stageRow(container, 1).querySelector('.plan-stage-returned')?.textContent).toBe(sentence);
+        expect(stageRow(container, 2).querySelector('.plan-stage-returned')).toBeNull();
+        expect(map(container).textContent).not.toMatch(/steps returned|All steps returned/);
     });
 
     it('a card says its state in words for assistive technology, and the symbol is left out of the reading', async () => {
@@ -630,7 +645,7 @@ describe('0023 AC-012: the map follows the files', () => {
                     ? entry
                     : {
                           ...entry,
-                          returned: { n: 1, m: 2 },
+                          returned: '1 of 2 returned · T-003 not back yet',
                           groups: [{ steps: [entry.groups[0]!.steps[0]!, { ...entry.groups[0]!.steps[1]!, state: 'returned' as const, returned: { status: 'blocked' as const, reason: 'no access' } }] }],
                       },
             ),
@@ -638,7 +653,7 @@ describe('0023 AC-012: the map follows the files', () => {
         await update(changed);
         expect(cardOf(container, 'T-004').getAttribute('data-state')).toBe('returned');
         expect(cardOf(container, 'T-004').querySelector('.step-card-returned')?.textContent).toBe('Returned · blocked: no access');
-        expect(stageRow(container, 2).querySelector('.plan-stage-returned')?.textContent).toBe('1 of 2 steps returned');
+        expect(stageRow(container, 2).querySelector('.plan-stage-returned')?.textContent).toBe('1 of 2 returned · T-003 not back yet');
         expect(cardOf(container, 'T-004').querySelector('button[data-card-toggle]')?.getAttribute('aria-expanded')).toBe('true');
         expect(waysOf(container)!.querySelector('.plan-ways-toggle')?.getAttribute('aria-expanded')).toBe('true');
         await update(planSample());
@@ -680,7 +695,7 @@ describe('0023 AC-012: the map follows the files', () => {
                 const { ways: _ways, ...rest } = entry;
                 return {
                     ...rest,
-                    returned: { n: 1, m: 2 },
+                    returned: '1 of 2 returned · T-003 not back yet',
                     groups: [{ steps: [entry.groups[0]!.steps[0]!, { ...entry.groups[0]!.steps[1]!, state: 'returned' as const, returned: { status: 'done' as const } }] }],
                 };
             }),

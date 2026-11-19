@@ -4,6 +4,7 @@ import type { LifecycleEntry } from '../lifecycle/model';
 import type { ShellModel } from '../ports/shell';
 import type { PlanEntry, SpecEntry } from '../specs/readProject';
 import { siblingPlanKey } from '../lifecycle/entryContext';
+import { returnedWorkOf } from '../planMap/returnedWork';
 import { needsOf } from './needs';
 import { openStep } from './nextStep';
 import { criteriaProgress, taskProgress } from './progress';
@@ -15,13 +16,17 @@ function baseName(key: string): string {
     return key.slice(key.lastIndexOf('/') + 1);
 }
 
-function stepsOf(model: ShellModel, entry: LifecycleEntry, plan: PlanEntry): StepsProgress {
+function stepsOf(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry, plan: PlanEntry): StepsProgress {
     if (plan.parsed === undefined) {
         return { kind: 'unavailable' };
     }
     const counted = taskProgress(plan);
     if (counted === undefined) {
         return { kind: 'none' };
+    }
+    const returned = returnedWorkOf(model, entry, spec);
+    if (returned !== undefined) {
+        return { kind: 'steps', done: counted.done, total: counted.total, returned };
     }
     const next = openStep(model, entry);
     return next === undefined
@@ -66,7 +71,7 @@ export function progressOf(model: ShellModel, entry: LifecycleEntry, spec: SpecE
         }
         return { needs, noPlan: entry.state !== 'Backlog' || needs.length === 0 };
     }
-    return { needs, noPlan: false, steps: stepsOf(model, entry, plan), criteria: criteriaOf(entry, spec, plan) };
+    return { needs, noPlan: false, steps: stepsOf(model, entry, spec, plan), criteria: criteriaOf(entry, spec, plan) };
 }
 
 export function filesOf(model: ShellModel, spec: SpecEntry): FileRow[] {

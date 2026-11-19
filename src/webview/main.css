@@ -1038,6 +1038,8 @@ main > h1 {
 }
 
 .progress-next,
+.progress-returned,
+.plan-returned,
 .progress-open-label,
 .progress-absent {
     margin: 4px 0;

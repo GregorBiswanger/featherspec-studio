@@ -127,11 +127,19 @@ export function returnedText(returned: { status: 'done' | 'blocked' | 'unknown';
     return 'Returned · status unknown';
 }
 
-export function stageReturnedText(n: number, m: number): string {
-    return `${n} of ${m} steps returned`;
+export type ReturnedClause = 'integrates' | 'finds-out' | 'none';
+
+/** U-05: one sentence for returned work, the same in the Plan section, Progress and each stage row. */
+export function returnedWorkText(n: number, blocked: readonly string[], clause: ReturnedClause): string {
+    const state = blocked.length === 0 ? ', waiting to be integrated' : `, ${blocked.join(', ')} blocked`;
+    const tail = clause === 'integrates' ? ': the next step integrates them' : clause === 'finds-out' ? ': the next step finds out what blocks' : '';
+    return `${n} returned${state}${tail}.`;
 }
 
-export const ALL_RETURNED_TEXT = 'All steps returned: the next step integrates them.';
+/** U-08: the group view while a member of a parallel group is still out. */
+export function groupReturnedText(k: number, m: number, blocked: readonly string[], out: readonly string[]): string {
+    return `${k} of ${m} returned${blocked.length === 0 ? '' : `, ${blocked.join(', ')} blocked`} · ${out.join(', ')} not back yet`;
+}
 
 export function waysHeading(n: number): string {
     return `Ways to run stage ${n}`;

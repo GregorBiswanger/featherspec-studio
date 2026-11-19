@@ -156,7 +156,7 @@ describe('0023 AC-015: user language in the Plan section and the Plan map', () =
             ...returned,
             stages: [
                 ...returned.stages.slice(0, 1),
-                stage(2, [{ steps: [step('T-003', 'returned', { returned: { status: 'blocked', reason: 'no access' } }), step('T-004', 'dropped'), step('T-005', 'notFound', { open: undefined })] }], { current: true, returned: { n: 1, m: 2 }, ways: returned.stages[1]!.ways! }),
+                stage(2, [{ steps: [step('T-003', 'returned', { returned: { status: 'blocked', reason: 'no access' } }), step('T-004', 'dropped'), step('T-005', 'notFound', { open: undefined })] }], { current: true, returned: '1 of 2 returned, T-003 blocked · T-004 not back yet', ways: returned.stages[1]!.ways! }),
             ],
             loose: [step('T-009', 'open')],
         };

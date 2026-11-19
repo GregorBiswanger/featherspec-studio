@@ -29,6 +29,7 @@ function Steps(props: { steps: StepsProgress; fileResult: FileResult | undefined
             {steps.kind === 'steps' ? (
                 <>
                     <ProgressBar label={STEPS_LABEL} done={steps.done} total={steps.total} text={stepsDoneText(steps.done, steps.total)} />
+                    {steps.returned === undefined ? null : <p className="progress-returned">{steps.returned}</p>}
                     {steps.next === undefined ? null : (
                         <p className="progress-next">
                             {NEXT_OPEN_STEP_LABEL}{' '}

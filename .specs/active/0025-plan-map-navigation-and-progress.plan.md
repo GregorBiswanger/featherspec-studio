@@ -202,8 +202,8 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
       three places, no next open step, no M-16/M-17.
   - Replace the M-16/M-17 tests (`Notes:`).
 - **Verify:** `npm run test:unit` — red first (`returnedWorkOf` stub, old M-16 texts), then green.
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-19. Red: `npx vitest run src/core/planMap/returnedWork.test.ts` 9 failed against the stub (returned undefined). Green: `npm run test:unit` 3307 + 26 timing passed; eslint, tsc ×2 clean. Webview tests (PlanSection, SpecDetail, PlanMap) were written after the code; their red is the removed M-16/M-17 texts they replaced.
+- **Notes:** Proxy decision (newest wins): AC-015's example "DONE note only → `1 returned, waiting to be integrated…`" cannot hold on `fs110-parallel-synthetic` once AC-025 applies (T-004 of the `‖` group is out): there U-08 stands (`1 of 2 returned · T-004 not back yet`); the U-05 sentence is asserted on a generated plan without a group member out. U-08's m counts the non-struck members of the groups holding a returned step (a ticked member counts, a struck one does not). Shared stage-line parsing moved to `core/planMap/stageLines.ts` (no behaviour change). `PlanStageView.returned` is now the sentence; M-16/M-17 tests (planMap.test, PlanMap.test, userLanguage.test) retargeted by title; the detail test AC-011 expects no next open step while a note lies. K-1..K-5: K-1 is AC-027 (T-008); K-2, K-3, K-5 are 0026 (Notes only); K-4 is tooling.
 
 ### T-004 — `Integrate` is not primary while someone is out
 
