@@ -59,7 +59,7 @@ describe('BR-02, AC-009: start area and memory', () => {
     it.each([
         ['an unknown area', { v: 1, area: 'settings' }],
         ['the removed area agentCenter', { v: 1, area: 'agentCenter' }],
-        ['another version', { v: 9, area: 'board' }],
+        ['another version', { v: 10, area: 'board' }],
         ['garbage', 'board'],
         ['a damaged selection', { v: 1, area: 'board', selection: { stem: 4 } }],
     ])('a damaged remembered value (%s) gives the Overview and no selection', async (_name, memory) => {

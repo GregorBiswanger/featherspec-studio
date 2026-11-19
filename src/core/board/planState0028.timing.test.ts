@@ -68,7 +68,7 @@ describe('0028 AC-008: a plan file change that switches the state or the case sh
         expect(best).toBeLessThan(BUDGET_MS.uiFreshness);
         expect(nextOf(world.service.detail())).toMatchObject({ rule: 'NS-5', lines: [{ text: `/sdd-compile ${SPLITTER_SPEC}` }, expect.anything()] });
         expect(world.service.view()!.columns.find((column) => column.state === 'Review')!.cards.map((card) => card.number)).toEqual(['0001']);
-        expect(buildOverviewView({ model: done, history }).now[0]).toMatchObject({ state: 'Review' });
+        expect(buildOverviewView({ model: done, history }).now.rows[0]).toMatchObject({ state: 'Review' });
         expect(world.selection.source.selection()).toMatchObject({ stem: STEM });
     });
 

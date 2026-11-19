@@ -59,7 +59,7 @@ describe('AC-016, AC-028: the board writes no file', () => {
         for (const entry of model.lifecycle.entries) {
             buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history });
         }
-        const rows = [...projectNow(model, createSpecResolver(model)), ...projectUpNext(model, createSpecResolver(model)).rows];
+        const rows = [...projectNow(model, createSpecResolver(model)).rows, ...projectUpNext(model, createSpecResolver(model)).rows];
         expect(rows.length).toBeGreaterThan(0);
         expect(await snapshotTree(temp)).toEqual(before);
     });

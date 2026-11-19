@@ -37,10 +37,10 @@ describe('AC-020: the test-mode probe in the panel UI', () => {
         const client = createClient({ post: (message) => void posted.push(message), probe: async (url) => (url.endsWith('AGENTS.md') ? 'failed' : 'loaded') });
         clients.push(client);
         client.start();
-        client.receive({ v: 9, kind: 'evt', type: 'probe', payload: { url: 'vscode-webview://x/AGENTS.md' } });
+        client.receive({ v: 10, kind: 'evt', type: 'probe', payload: { url: 'vscode-webview://x/AGENTS.md' } });
         await vi.advanceTimersByTimeAsync(0);
         const result = posted.find((message) => message.type === 'probeResult');
-        expect(result).toMatchObject({ v: 9, kind: 'req', type: 'probeResult', payload: { outcome: 'failed' } });
+        expect(result).toMatchObject({ v: 10, kind: 'req', type: 'probeResult', payload: { outcome: 'failed' } });
         expect(JSON.stringify(result)).not.toContain('AGENTS.md');
     });
 
@@ -50,7 +50,7 @@ describe('AC-020: the test-mode probe in the panel UI', () => {
         const client = createClient({ post: (message) => void posted.push(message) });
         clients.push(client);
         client.start();
-        client.receive({ v: 9, kind: 'evt', type: 'probe', payload: { url: 'vscode-webview://x/AGENTS.md' } });
+        client.receive({ v: 10, kind: 'evt', type: 'probe', payload: { url: 'vscode-webview://x/AGENTS.md' } });
         await vi.advanceTimersByTimeAsync(0);
         expect(posted.map((message) => message.type)).toEqual(['hello']);
     });
@@ -61,7 +61,7 @@ describe('AC-020: the test-mode probe in the panel UI', () => {
         const client = createClient({ post: (message) => void posted.push(message), probe: async () => 'loaded' });
         clients.push(client);
         client.start();
-        client.receive({ v: 9, kind: 'evt', type: 'probe', payload: { url: 4 } });
+        client.receive({ v: 10, kind: 'evt', type: 'probe', payload: { url: 4 } });
         await vi.advanceTimersByTimeAsync(0);
         expect(posted.map((message) => message.type)).toEqual(['hello']);
     });

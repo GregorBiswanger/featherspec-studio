@@ -147,7 +147,7 @@ describe('0013 §3.2: the panel row', () => {
     });
 });
 
-function rowFor(stem: string, number: string, title: string, state: OverviewView['now'][number]['state'], extra: Partial<OverviewView['now'][number]> = {}): OverviewView['now'][number] {
+function rowFor(stem: string, number: string, title: string, state: OverviewView['now']['rows'][number]['state'], extra: Partial<OverviewView['now']['rows'][number]> = {}): OverviewView['now']['rows'][number] {
     return { spec: { stem, number, title, found: true }, state, status: state, problems: 0, ...extra };
 }
 
@@ -155,7 +155,7 @@ const STEP_PLAN = { intent: 'Continue', short: 'Implement T-003', line: 'Impleme
 
 function withRows(): OverviewView {
     const view = sampleView();
-    view.now = [rowFor('0001-a', '0001', 'Alpha', 'Blocked', { step: STEP_PLAN }), rowFor('0002-b', '0002', 'Beta', 'Active', { problems: 2 })];
+    view.now = { rows: [rowFor('0001-a', '0001', 'Alpha', 'Blocked', { step: STEP_PLAN }), rowFor('0002-b', '0002', 'Beta', 'Active', { problems: 2 })], more: 0, stems: [] };
     view.upNext = { rows: [rowFor('0003-c', '0003', 'Gamma', 'Ready'), rowFor('0004-d', '0004', 'Delta', 'Backlog', { status: 'needs a plan' })], more: 3, stems: ['0003-c', '0004-d', '0005-e', '0006-f', '0007-g'] };
     return view;
 }
@@ -258,7 +258,7 @@ describe('0018 AC-006: a spec row on one line', () => {
         expect(sent.filter((type) => type === 'copyText')).toHaveLength(3);
         expect(sent).not.toContain('navigate');
         expect(posted.find((message) => message.type === 'copyText')?.payload).toEqual({ text: 'Implement T-003 of .specs/active/0001-a.plan.md' });
-        await send({ v: 9, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
+        await send({ v: 10, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
         expect(copy.textContent).toBe('Copied');
     });
 
@@ -334,7 +334,7 @@ describe('0021 AC-009, AC-010: the coach line of the first Now row', () => {
 
     function withTips(): OverviewView {
         const view = withRows();
-        view.now[0] = { ...view.now[0]!, tips: TIPS };
+        view.now.rows[0] = { ...view.now.rows[0]!, tips: TIPS };
         return view;
     }
 
@@ -368,7 +368,7 @@ describe('0021 AC-014, AC-009: the About this step toggletip of the first Now ro
 
     function withTips(): OverviewView {
         const view = withRows();
-        view.now[0] = { ...view.now[0]!, tips: TIPS };
+        view.now.rows[0] = { ...view.now.rows[0]!, tips: TIPS };
         return view;
     }
 

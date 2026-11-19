@@ -172,7 +172,7 @@ describe('board service: Done collapsed and remembered', () => {
         disposables.push(second.service);
         await second.service.whenIdle();
         expect(doneColumn(second).cards).toHaveLength(2);
-        const damaged = createBoardWorld(await modelOf(WITH_DONE), createFakeBoardMemory({ v: 9 }));
+        const damaged = createBoardWorld(await modelOf(WITH_DONE), createFakeBoardMemory({ v: 10 }));
         disposables.push(damaged.service);
         expect(doneColumn(damaged).narrow).toBe('collapsed');
     });

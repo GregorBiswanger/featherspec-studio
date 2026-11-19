@@ -1,5 +1,6 @@
 import type { BoardState } from '../../shared/protocol/boardFilter';
-import type { OverviewRow, OverviewUpNext } from '../../shared/protocol/overview';
+import type { OverviewNow, OverviewRow, OverviewUpNext } from '../../shared/protocol/overview';
+import { lastChangeOf } from '../board/lastChange';
 import { needsOf } from '../board/needs';
 import { nextStep, stepView } from '../board/nextStep';
 import { stepLinkOf } from '../board/stepLinks';
@@ -13,8 +14,8 @@ import { integrateIsQuiet } from '../planMap/returnedWork';
 import type { SpecResolver } from './specRefs';
 
 export const UP_NEXT_LIMIT = 3;
+export const NOW_LIMIT = 5;
 
-const NOW_ORDER: readonly BoardState[] = ['Blocked', 'Review', 'Active'];
 const UP_NEXT_ORDER: readonly BoardState[] = ['Ready', 'Backlog'];
 
 function compareText(left: string, right: string): number {
@@ -23,6 +24,22 @@ function compareText(left: string, right: string): number {
 
 function byNumber(left: LifecycleEntry, right: LifecycleEntry): number {
     return compareText(left.number, right.number) || compareText(left.key, right.key);
+}
+
+function byDayThenNumber(model: ShellModel): (left: LifecycleEntry, right: LifecycleEntry) => number {
+    const day = (entry: LifecycleEntry): string | undefined => lastChangeOf(model.project, entry)?.day;
+    return (left, right) => {
+        const [a, b] = [day(left), day(right)];
+        if (a !== b) {
+            return a === undefined ? 1 : b === undefined ? -1 : compareText(a, b);
+        }
+        return byNumber(left, right);
+    };
+}
+
+function nowOrder(model: ShellModel): LifecycleEntry[] {
+    const ofState = (state: BoardState): LifecycleEntry[] => model.lifecycle.entries.filter((entry) => entry.state === state);
+    return [...ofState('Blocked').sort(byNumber), ...ofState('Review').sort(byDayThenNumber(model)), ...ofState('Active').sort(byNumber)];
 }
 
 function inOrder(model: ShellModel, order: readonly BoardState[]): LifecycleEntry[] {
@@ -68,9 +85,14 @@ function rowOf(model: ShellModel, specs: SpecResolver, entry: LifecycleEntry, fi
     };
 }
 
-export function projectNow(model: ShellModel, specs: SpecResolver, tips?: StepTipSettings, offer?: Offer): OverviewRow[] {
+export function projectNow(model: ShellModel, specs: SpecResolver, tips?: StepTipSettings, offer?: Offer): OverviewNow {
     const first = { ...(tips === undefined ? {} : { tips }), ...(offer === undefined ? {} : { offer }) };
-    return inOrder(model, NOW_ORDER).map((entry, index) => rowOf(model, specs, entry, index === 0 ? first : undefined));
+    const entries = nowOrder(model);
+    return {
+        rows: entries.slice(0, NOW_LIMIT).map((entry, index) => rowOf(model, specs, entry, index === 0 ? first : undefined)),
+        more: Math.max(0, entries.length - NOW_LIMIT),
+        stems: [...new Set(entries.map((entry) => entry.stem))],
+    };
 }
 
 export function projectUpNext(model: ShellModel, specs: SpecResolver): OverviewUpNext {

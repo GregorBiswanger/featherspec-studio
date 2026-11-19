@@ -87,7 +87,7 @@ function surfaces(current: Started): { detail: string; overview: string; tree: s
     const overview = buildOverviewView({ model, history });
     return {
         detail: detail.kind === 'spec' && 'lines' in detail.nextStep ? detail.nextStep.lines.map((line) => line.intent).join(' | ') : '',
-        overview: overview.now[0]?.step?.intent ?? '',
+        overview: overview.now.rows[0]?.step?.intent ?? '',
         tree: current.row(),
         bar: current.bar(),
     };

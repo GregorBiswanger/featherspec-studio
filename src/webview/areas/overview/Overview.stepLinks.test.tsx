@@ -13,13 +13,13 @@ const clients: ShellClient[] = [];
 const PLAN = '.specs/active/0001-a.plan.md';
 const STEP = { intent: 'Continue', short: 'Implement T-003', line: `Implement T-003 of ${PLAN}`, lines: [{ text: `Implement T-003 of ${PLAN}`, intent: 'Continue with T-003 Reject money values' }] };
 
-function row(stem: string, number: string, state: 'Active' | 'Ready', extra: Partial<OverviewView['now'][number]> = {}): OverviewView['now'][number] {
+function row(stem: string, number: string, state: 'Active' | 'Ready', extra: Partial<OverviewView['now']['rows'][number]> = {}): OverviewView['now']['rows'][number] {
     return { spec: { stem, number, title: stem, found: true }, state, status: state, problems: 0, ...extra };
 }
 
 function view(): OverviewView {
     const result = sampleView();
-    result.now = [row('0001-a', '0001', 'Active', { step: STEP, link: { id: 'T-003', open: { key: PLAN, line: 40 } } }), row('0002-b', '0002', 'Active', { step: STEP })];
+    result.now = { rows: [row('0001-a', '0001', 'Active', { step: STEP, link: { id: 'T-003', open: { key: PLAN, line: 40 } } }), row('0002-b', '0002', 'Active', { step: STEP })], more: 0, stems: [] };
     result.upNext = { rows: [row('0003-c', '0003', 'Ready', { step: { ...STEP, short: 'Implement T-001', line: 'Implement T-001 of p3', lines: [{ text: 'Implement T-001 of p3', intent: 'Start implementing: T-001 Step' }] }, link: { id: 'T-001', open: { key: '.specs/backlog/0003-c.plan.md', line: 9 } } })], more: 0, stems: ['0003-c'] };
     return result;
 }

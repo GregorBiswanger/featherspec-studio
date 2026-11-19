@@ -14,10 +14,10 @@ describe('Overview view contract', () => {
     it('0025 AC-026: a Now row may carry quiet: true, with a step, and nothing else', () => {
         const view = sampleView();
         const row = { spec: { stem: '0001-r', number: '0001', title: 'R', found: true }, state: 'Active' as const, status: 'Active', problems: 0, step: { intent: 'Integrate', short: '/sdd-plan', line: '/sdd-plan x', lines: [{ text: '/sdd-plan x', intent: 'Integrate' }] } };
-        expect(isOverviewView({ ...view, now: [{ ...row, quiet: true }] })).toBe(true);
-        expect(isOverviewView({ ...view, now: [{ ...row, quiet: false } as never] })).toBe(false);
+        expect(isOverviewView({ ...view, now: { rows: [{ ...row, quiet: true }], more: 0, stems: [] } })).toBe(true);
+        expect(isOverviewView({ ...view, now: { rows: [{ ...row, quiet: false } as never], more: 0, stems: [] } })).toBe(false);
         const { step: _step, ...bare } = row;
-        expect(isOverviewView({ ...view, now: [{ ...bare, quiet: true } as never] })).toBe(false);
+        expect(isOverviewView({ ...view, now: { rows: [{ ...bare, quiet: true } as never], more: 0, stems: [] } })).toBe(false);
     });
 
     it('AC-026: a view with an extra key anywhere is refused, so no error text can reach the DOM', () => {
@@ -33,7 +33,7 @@ describe('Overview view contract', () => {
         expect(isOverviewView(null)).toBe(false);
         expect(isOverviewView({ ...view, figures: { kind: 'counts', total: 1, states: [{ state: 'Nope', count: 1 }], progress: { kind: 'not available' } } })).toBe(false);
         expect(isOverviewView({ ...view, runs: { available: true, running: 0, highlighted: [], unreadable: 0 } })).toBe(false);
-        expect(isOverviewView({ ...view, now: [{ ...view.problems.rows[0], status: 'Run failed', runReasons: 1 }] })).toBe(false);
+        expect(isOverviewView({ ...view, now: { rows: [{ ...view.problems.rows[0], status: 'Run failed', runReasons: 1 }], more: 0, stems: [] } })).toBe(false);
     });
 
     it('0018 AC-003: the figures name no rule: a state count with a derived rule is refused', () => {
@@ -71,16 +71,16 @@ describe('0018 Overview rows contract', () => {
 
     it('accepts rows in Now and Up next, with and without a step', () => {
         const view = sampleView();
-        expect(isOverviewView({ ...view, now: [row, { ...row, step: { line: '/sdd-plan 0001', intent: 'Plan', short: '/sdd-plan', lines: [{ text: '/sdd-plan 0001', intent: 'Write the plan' }] } }] })).toBe(true);
+        expect(isOverviewView({ ...view, now: { rows: [row, { ...row, step: { line: '/sdd-plan 0001', intent: 'Plan', short: '/sdd-plan', lines: [{ text: '/sdd-plan 0001', intent: 'Write the plan' }] } }], more: 0, stems: [] } })).toBe(true);
         expect(isOverviewView({ ...view, upNext: { rows: [row], more: 2, stems: ['0001-a', '0002-b', '0003-c'] } })).toBe(true);
     });
 
     it('refuses an extra key, a wrong state, a negative count and a missing key in a row or in Up next', () => {
         const view = sampleView();
-        expect(isOverviewView({ ...view, now: [{ ...row, extra: 1 }] })).toBe(false);
-        expect(isOverviewView({ ...view, now: [{ ...row, state: 'Nope' }] })).toBe(false);
-        expect(isOverviewView({ ...view, now: [{ ...row, problems: -1 }] })).toBe(false);
-        expect(isOverviewView({ ...view, now: [{ spec: row.spec, state: 'Active', problems: 0 }] })).toBe(false);
+        expect(isOverviewView({ ...view, now: { rows: [{ ...row, extra: 1 }], more: 0, stems: [] } })).toBe(false);
+        expect(isOverviewView({ ...view, now: { rows: [{ ...row, state: 'Nope' }], more: 0, stems: [] } })).toBe(false);
+        expect(isOverviewView({ ...view, now: { rows: [{ ...row, problems: -1 }], more: 0, stems: [] } })).toBe(false);
+        expect(isOverviewView({ ...view, now: { rows: [{ spec: row.spec, state: 'Active', problems: 0 }], more: 0, stems: [] } })).toBe(false);
         expect(isOverviewView({ ...view, upNext: { rows: [], more: 0 } })).toBe(false);
         expect(isOverviewView({ ...view, upNext: { rows: [], more: 0, stems: [], extra: 1 } })).toBe(false);
         const { now: _now, ...withoutNow } = view;
@@ -104,11 +104,11 @@ describe('0021 AC-009: the tips of a row', () => {
         const view = sampleView();
         const row = view.problems.rows[0]!;
         const step = { intent: 'Plan', short: '/sdd-plan', line: '/sdd-plan 0001', lines: [{ text: '/sdd-plan 0001', intent: 'Write the plan' }] };
-        expect(isOverviewView({ ...view, now: [{ ...row, step, tips: TIPS }] })).toBe(true);
-        expect(isOverviewView({ ...view, now: [{ ...row, step, tips: { ...TIPS, extra: 1 } }] })).toBe(false);
-        expect(isOverviewView({ ...view, now: [{ ...row, step, tips: { coach: 3, about: [] } }] })).toBe(false);
-        expect(isOverviewView({ ...view, now: [{ ...row, step, tips: { coach: 'x', about: [1] } }] })).toBe(false);
-        expect(isOverviewView({ ...view, now: [{ ...row, step, tips: 'x' }] })).toBe(false);
+        expect(isOverviewView({ ...view, now: { rows: [{ ...row, step, tips: TIPS }], more: 0, stems: [] } })).toBe(true);
+        expect(isOverviewView({ ...view, now: { rows: [{ ...row, step, tips: { ...TIPS, extra: 1 } }], more: 0, stems: [] } })).toBe(false);
+        expect(isOverviewView({ ...view, now: { rows: [{ ...row, step, tips: { coach: 3, about: [] } }], more: 0, stems: [] } })).toBe(false);
+        expect(isOverviewView({ ...view, now: { rows: [{ ...row, step, tips: { coach: 'x', about: [1] } }], more: 0, stems: [] } })).toBe(false);
+        expect(isOverviewView({ ...view, now: { rows: [{ ...row, step, tips: 'x' }], more: 0, stems: [] } })).toBe(false);
     });
 });
 
@@ -119,12 +119,12 @@ describe('0024 AC-003: the send view of a row', () => {
     it('a row with a step takes a send view and refuses a bad one or one without a step', () => {
         const view = sampleView();
         const row = view.problems.rows[0]!;
-        expect(isOverviewView({ ...view, now: [{ ...row, step, send: SEND }] })).toBe(true);
-        expect(isOverviewView({ ...view, now: [{ ...row, step, tips: { coach: 'x', about: ['a'] }, send: { assistant: 'copilot', target: 'current', targets: ['new', 'current'] } }] })).toBe(true);
-        expect(isOverviewView({ ...view, now: [{ ...row, step, send: { ...SEND, extra: 1 } }] })).toBe(false);
-        expect(isOverviewView({ ...view, now: [{ ...row, step, send: { ...SEND, target: 'current' } }] })).toBe(false);
-        expect(isOverviewView({ ...view, now: [{ ...row, step, send: 'copilot' }] })).toBe(false);
-        expect(isOverviewView({ ...view, now: [{ ...row, send: SEND }] })).toBe(false);
+        expect(isOverviewView({ ...view, now: { rows: [{ ...row, step, send: SEND }], more: 0, stems: [] } })).toBe(true);
+        expect(isOverviewView({ ...view, now: { rows: [{ ...row, step, tips: { coach: 'x', about: ['a'] }, send: { assistant: 'copilot', target: 'current', targets: ['new', 'current'] } }], more: 0, stems: [] } })).toBe(true);
+        expect(isOverviewView({ ...view, now: { rows: [{ ...row, step, send: { ...SEND, extra: 1 } }], more: 0, stems: [] } })).toBe(false);
+        expect(isOverviewView({ ...view, now: { rows: [{ ...row, step, send: { ...SEND, target: 'current' } }], more: 0, stems: [] } })).toBe(false);
+        expect(isOverviewView({ ...view, now: { rows: [{ ...row, step, send: 'copilot' }], more: 0, stems: [] } })).toBe(false);
+        expect(isOverviewView({ ...view, now: { rows: [{ ...row, send: SEND }], more: 0, stems: [] } })).toBe(false);
     });
 });
 

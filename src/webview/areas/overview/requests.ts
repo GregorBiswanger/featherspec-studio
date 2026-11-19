@@ -4,6 +4,7 @@ import type { OverviewRow, SpecRef } from '../../../shared/protocol/overview';
 
 export const PROBLEMS_SET_LABEL = 'Problems';
 export const UP_NEXT_SET_LABEL = 'Up next';
+export const NOW_SET_LABEL = 'Now';
 
 function namedSet(label: string, stems: readonly string[]): NavigationRequest {
     return { area: 'board', target: { kind: 'boardFilter', filter: { set: { label, stems: [...stems] } } } };
@@ -19,6 +20,10 @@ export function stateRequest(state: BoardState): NavigationRequest {
 
 export function upNextRequest(stems: readonly string[]): NavigationRequest {
     return namedSet(UP_NEXT_SET_LABEL, stems);
+}
+
+export function nowRequest(stems: readonly string[]): NavigationRequest {
+    return namedSet(NOW_SET_LABEL, stems);
 }
 
 export function problemsRequest(rows: readonly OverviewRow[]): NavigationRequest {

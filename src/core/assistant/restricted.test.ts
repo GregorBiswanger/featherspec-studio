@@ -34,7 +34,7 @@ describe('0024 AC-011: the views hold for the value the host returns, in a trust
             const restricted = await views(false, assistant);
             expect(restricted).toEqual(trusted);
             expect(trusted.detail.kind === 'spec' && 'send' in trusted.detail.nextStep).toBe(true);
-            expect(trusted.now[0]?.send?.assistant).toBe(assistant);
+            expect(trusted.now.rows[0]?.send?.assistant).toBe(assistant);
         });
     }
 

@@ -63,8 +63,10 @@ export interface OverviewUpNext {
     stems: string[];
 }
 
+export type OverviewNow = OverviewUpNext;
+
 export interface OverviewView {
-    now: OverviewRow[];
+    now: OverviewNow;
     upNext: OverviewUpNext;
     problems: OverviewProblems;
     figures: OverviewFigures;
@@ -199,7 +201,7 @@ export function isOverviewView(value: unknown): value is OverviewView {
     return (
         isRecord(value) &&
         exactly(value, ['now', 'upNext', 'problems', 'figures', 'activity']) &&
-        isRows(value.now) &&
+        isUpNext(value.now) &&
         isUpNext(value.upNext) &&
         isProblems(value.problems) &&
         isFigures(value.figures) &&

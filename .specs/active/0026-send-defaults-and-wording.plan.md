@@ -211,8 +211,8 @@ Parallel: stages 2 and 3, run in sequence (`PLAN-R3.md`). Stage 1 shares `nextSt
 - **Verify:** `npx vitest run src/core/overview/now0026.test.ts src/webview/areas/overview/Now0026.test.tsx` red first (no
   cap, number order in Review), then `npm run test:unit` and `npm run compile` green; host smoke by the orchestrator in
   T-011.
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** `npx vitest run src` 3494 passed; tsc, tsc webview, eslint green; new `now0026.test.ts` and `Now0026.test.tsx` (the old `0018 AC-004` no-cap test failed first: 7 entries gave 7 rows). `npm run compile` runs in the stage 2 gate; the host smoke is the orchestrator's (T-011).
+- **Notes:** `OverviewView.now` is `OverviewNow` (= `OverviewUpNext`: `{ rows, more, stems }`); `PROTOCOL_VERSION` 10. `lastChangeOf(project, entry)` added to `board/lastChange.ts`; `cards.ts` keeps its map-based `cardLastChange` call (same function underneath; avoids an O(n^2) lookup per card). `Now.tsx` takes `{ now, navigate }`; its drill id is `moreNow` (Up next keeps `more`). Host smoke `overview.smoke.test.ts` edited to `now.rows` (cannot run here). Test edits: every `view.now[...]` / `.now.map(...)` became `.now.rows…` (core overview, assistant restricted, board 0028 tests, webview Overview tests, `overviewSample`); `v: 9` literals became `v: 10` and the two 'another version' tests moved to `v: 11`; retitled `0018 AC-004 has no cap: seven entries give seven rows` -> `0026 AC-007: seven entries give five rows (0018 O-2 refined: the cap is five)`, `0022 AC-011 … seven Now rows …` -> `… seven Now entries (five rows) …`, `0025 AC-006: the protocol is version 9; …` -> `… version 10; …`. `testing/projects.ts` `SpecInput.updated` gives a Review plan its `Last updated`. The `now0026` tests strip file times so `no day` is testable; with file times the card's day is the file's day (A-007).
 
 ### T-006 — The ways as three radio lines
 

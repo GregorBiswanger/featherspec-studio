@@ -81,13 +81,13 @@ function figuresOf(): Extract<OverviewView['figures'], { kind: 'counts' }> {
 
 const FORMULA = 'Done specs with status Implemented or Baseline ÷ (all specs − Deprecated), rounded half up, at most 99% until all are done';
 
-function row(stem: string, number: string, state: OverviewView['now'][number]['state'], extra: Partial<OverviewView['now'][number]> = {}): OverviewView['now'][number] {
+function row(stem: string, number: string, state: OverviewView['now']['rows'][number]['state'], extra: Partial<OverviewView['now']['rows'][number]> = {}): OverviewView['now']['rows'][number] {
     return { spec: { stem, number, title: `Title ${number}`, found: true }, state, status: state, problems: 0, ...extra };
 }
 
 function fullView(): OverviewView {
     const view = sampleView();
-    view.now = [row('0001-a', '0001', 'Blocked')];
+    view.now = { rows: [row('0001-a', '0001', 'Blocked')], more: 0, stems: [] };
     view.upNext = { rows: [row('0003-c', '0003', 'Ready')], more: 0, stems: ['0003-c'] };
     view.figures = figuresOf();
     return view;
@@ -223,7 +223,7 @@ describe('0018 AC-009: the progress text is a tooltip, never visible', () => {
 describe('0018 AC-013: keyboard', () => {
     it('every spec row, Copy, figure, "+ n more", the Problems and Activity headings are Tab stops in DOM order', async () => {
         const view = fullView();
-        view.now = [row('0001-a', '0001', 'Blocked', { step: { intent: 'Plan', short: '/sdd-plan', line: '/sdd-plan 0001', lines: [{ text: '/sdd-plan 0001', intent: 'Write the plan' }] } })];
+        view.now = { rows: [row('0001-a', '0001', 'Blocked', { step: { intent: 'Plan', short: '/sdd-plan', line: '/sdd-plan 0001', lines: [{ text: '/sdd-plan 0001', intent: 'Write the plan' }] } })], more: 0, stems: [] };
         view.upNext = { rows: [row('0003-c', '0003', 'Ready')], more: 2, stems: ['0003-c', '0004-d', '0005-e'] };
         view.problems = { rows: [row('0002-x', '0002', 'Backlog', { problems: 1 })], lines: [] };
         const container = area(await open(view));
@@ -287,7 +287,7 @@ describe('0024 AC-003, AC-002: the split button at the first Now row only', () =
     const SEND = { assistant: 'claudeCode', target: 'new', targets: ['new'] };
 
     function viewWith(now: unknown[]): OverviewView {
-        return { ...sampleView(), now, upNext: { rows: [row('0003'), row('0004')], more: 0, stems: [] } } as OverviewView;
+        return { ...sampleView(), now: { rows: now, more: 0, stems: [] }, upNext: { rows: [row('0003'), row('0004')], more: 0, stems: [] } } as OverviewView;
     }
 
     it('row 0 shows Send to Claude Code with its arrow part; the later rows and Up next keep their icon Copy; one split button in the Overview', async () => {
@@ -349,7 +349,7 @@ describe('0024 AC-003, AC-002: the split button at the first Now row only', () =
     it('a row with focus on Send leaves Now while another spec enters Up next: no other spec\'s row takes the focus', async () => {
         const container = await open(viewWith([row('0001', { send: SEND }), row('0002')]));
         await act(async () => container.querySelector<HTMLElement>('button.send-main')!.focus());
-        const next = { ...sampleView(), now: [row('0002', { send: SEND })], upNext: { rows: [row('0009'), row('0003')], more: 0, stems: [] } } as OverviewView;
+        const next = { ...sampleView(), now: { rows: [row('0002', { send: SEND })], more: 0, stems: [] }, upNext: { rows: [row('0009'), row('0003')], more: 0, stems: [] } } as OverviewView;
         await send(overviewEvent(next));
         const held = document.activeElement?.closest('[data-spec-row]')?.getAttribute('data-spec-row');
         expect(held === undefined || held === null).toBe(true);

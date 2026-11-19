@@ -54,7 +54,7 @@ export function Overview() {
                 </EmptyState>
             ) : (
                 <>
-                    <Now rows={view.now} />
+                    <Now now={view.now} navigate={navigate} />
                     <UpNext upNext={view.upNext} navigate={navigate} />
                 </>
             )}

@@ -19,7 +19,7 @@ function detailQuiet(model: ShellModel, key: string): unknown {
 }
 
 function rowQuiet(model: ShellModel, key: string): unknown {
-    const rows = projectNow(model, createSpecResolver(model));
+    const rows = projectNow(model, createSpecResolver(model)).rows;
     return (rows.find((row) => row.spec.path === key || row.spec.stem === key.slice(key.lastIndexOf('/') + 1, -3)) as { quiet?: boolean } | undefined)?.quiet;
 }
 

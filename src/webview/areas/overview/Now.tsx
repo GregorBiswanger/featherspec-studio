@@ -1,25 +1,33 @@
 import type { NavigationRequest } from '../../../shared/protocol/messages';
-import type { OverviewRow, OverviewUpNext } from '../../../shared/protocol/overview';
+import type { OverviewNow, OverviewUpNext } from '../../../shared/protocol/overview';
 import { SDD_SPECIFY_LINE } from '../../../shared/protocol/texts';
 import { useBoard } from '../../board/boardStore';
 import { CopyButton } from '../../ui/CopyButton';
 import { Drill } from './Drill';
-import { upNextRequest } from './requests';
+import { nowRequest, upNextRequest } from './requests';
 import { SpecRow } from './SpecRow';
 import { moreText, NOTHING_IN_PROGRESS_TEXT, NOTHING_UP_NEXT_TEXT, NOW_HEADING, UP_NEXT_HEADING, UP_NEXT_NOTE } from './texts';
 
-export function Now(props: { rows: readonly OverviewRow[] }) {
+export function Now(props: { now: OverviewNow; navigate: (request: NavigationRequest) => void }) {
+    const { now, navigate } = props;
     return (
         <section data-now className="ov-now ov-panel">
             <h2>{NOW_HEADING}</h2>
-            {props.rows.length === 0 ? (
+            {now.rows.length === 0 ? (
                 <p className="ov-empty">{NOTHING_IN_PROGRESS_TEXT}</p>
             ) : (
                 <ul className="ov-list">
-                    {props.rows.map((row, index) => (
+                    {now.rows.map((row, index) => (
                         <SpecRow key={`${row.spec.stem}|${row.spec.path ?? ''}`} row={row} group="now" copyLook={index === 0 ? 'primary' : 'icon'} />
                     ))}
                 </ul>
+            )}
+            {now.more === 0 ? null : (
+                <p className="ov-more">
+                    <Drill id="moreNow" onActivate={() => navigate(nowRequest(now.stems))}>
+                        {moreText(now.more)}
+                    </Drill>
+                </p>
             )}
         </section>
     );

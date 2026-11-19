@@ -1,5 +1,7 @@
 import type { LastChange } from '../../shared/protocol/board';
+import type { LifecycleEntry } from '../lifecycle/model';
 import type { FieldValue } from '../specs/fieldValue';
+import type { ProjectRead } from '../specs/readProject';
 
 const PLAN_DAY = /^(\d{4})-(\d{2})-(\d{2})(?:\s|$)/;
 
@@ -24,6 +26,12 @@ export function planDay(field: FieldValue | undefined): string | undefined {
 export function localDay(ms: number): string {
     const date = new Date(ms);
     return `${date.getFullYear()}-${two(date.getMonth() + 1)}-${two(date.getDate())}`;
+}
+
+export function lastChangeOf(project: ProjectRead, entry: LifecycleEntry): LastChange | undefined {
+    const spec = project.specs.find((candidate) => candidate.key === entry.key);
+    const plan = entry.plan === undefined ? undefined : project.plans.find((candidate) => candidate.key === entry.plan);
+    return cardLastChange(plan?.parsed?.lastUpdated.value, spec?.modifiedMs, plan?.modifiedMs);
 }
 
 export function cardLastChange(planUpdated: FieldValue | undefined, specMs: number | undefined, planMs: number | undefined): LastChange | undefined {

@@ -57,7 +57,7 @@ describe('0028 AC-006: a finished plan is Review on every surface, a plan with t
             expect(columns.find((column) => column.state === 'Review')!.cards.map((card) => card.key)).toEqual([SPLITTER_SPEC]);
             expect(columns.find((column) => column.state === 'Active')!.cards.map((card) => card.key)).toEqual(['.specs/active/0002-other.md']);
             const overview = buildOverviewView({ model, history: HISTORY });
-            expect(overview.now.map((row) => [row.state, row.step?.short])).toEqual([['Review', '/sdd-compile'], ['Active', 'Implement T-001']]);
+            expect(overview.now.rows.map((row) => [row.state, row.step?.short])).toEqual([['Review', '/sdd-compile'], ['Active', 'Implement T-001']]);
             const row = rowsOf(model).find((candidate) => candidate.specKey === SPLITTER_SPEC)!;
             expect(row.state).toBe('Review');
             expect(row.description).toBe('/sdd-compile');
@@ -83,7 +83,7 @@ describe('0028 AC-006: a finished plan is Review on every surface, a plan with t
         const detail = buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history: HISTORY });
         expect(detail).toMatchObject({ nextStep: { lines: [{ text: `/sdd-plan ${SPLITTER_SPEC}` }, { text: expect.stringContaining('Implement T-003 of') }] } });
         expect(buildCards(model.project, model.lifecycle)[0]!.step).toMatchObject({ intent: 'Report', short: '/sdd-plan' });
-        expect(buildOverviewView({ model, history: HISTORY }).now[0]).toMatchObject({ state: 'Active', step: { intent: 'Report', short: '/sdd-plan' } });
+        expect(buildOverviewView({ model, history: HISTORY }).now.rows[0]).toMatchObject({ state: 'Active', step: { intent: 'Report', short: '/sdd-plan' } });
         expect(rowsOf(model)[0]!.description).toBe('/sdd-plan');
         entryWorld = createEntryWorld();
         entryWorld.setModel(model);

@@ -2,7 +2,7 @@ import type { OverviewView } from '../overview';
 
 export function sampleView(): OverviewView {
     return {
-        now: [],
+        now: { rows: [], more: 0, stems: [] },
         upNext: { rows: [], more: 0, stems: [] },
         problems: {
             rows: [{ spec: { stem: '0002-x', number: '0002', title: 'Beta', found: true }, state: 'Backlog', status: 'unreadable file', problems: 1 }],
@@ -41,7 +41,7 @@ export function bigView(specCount: number, perSpec: number): OverviewView {
         found: true,
     }));
     return {
-        now: refs.map((spec) => ({ spec, state: 'Active' as const, status: 'Active', problems: 0 })),
+        now: { rows: refs.map((spec) => ({ spec, state: 'Active' as const, status: 'Active', problems: 0 })), more: 0, stems: refs.map((spec) => spec.stem) },
         upNext: { rows: [], more: 0, stems: [] },
         problems: { rows: refs.slice(0, 3).map((spec) => ({ spec, state: 'Active' as const, status: 'unreadable file', problems: 1 })), lines: [] },
         figures: {
@@ -67,7 +67,7 @@ export function sharedSpecView(): OverviewView {
     const second = { stem: '0002-x', number: '0002', title: 'Beta', found: true };
     return {
         ...sampleView(),
-        now: [{ spec: first, state: 'Active', status: 'Active', problems: 0 }],
+        now: { rows: [{ spec: first, state: 'Active', status: 'Active', problems: 0 }], more: 0, stems: [first.stem] },
         problems: {
             rows: [
                 { spec: second, state: 'Backlog', status: 'unreadable file', problems: 1 },

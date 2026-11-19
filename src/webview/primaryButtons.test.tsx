@@ -41,7 +41,7 @@ function row(n: string, withStep = true): OverviewRow {
 function fullView(): OverviewView {
     return {
         ...sampleView(),
-        now: ['0001', '0002', '0003', '0004', '0005', '0006', '0007'].map((n) => row(n)),
+        now: { rows: ['0001', '0002', '0003', '0004', '0005'].map((n) => row(n)), more: 2, stems: ['0001', '0002', '0003', '0004', '0005', '0006', '0007'].map((n) => `${n}-r`) },
         upNext: { rows: ['0008', '0009', '0010'].map((n) => row(n)), more: 0, stems: [] },
         problems: { rows: [{ ...row('0011'), problems: 1, status: 'Studio cannot read this spec' }], lines: [] },
     };
@@ -70,7 +70,7 @@ async function open(area: 'overview' | 'board', options: { overview?: OverviewVi
 const CARDS = ['0001', '0002', '0003'].map((n) => card(n, { stem: `${n}-r`, step: step(n)! }));
 
 describe('0022 AC-011: at most two primary buttons per view', () => {
-    it('the Overview with seven Now rows, three Up next rows, a Problems row and a selected NS-5 spec has exactly two: the first Now row and the first line of the side panel', async () => {
+    it('the Overview with seven Now entries (five rows), three Up next rows, a Problems row and a selected NS-5 spec has exactly two: the first Now row and the first line of the side panel', async () => {
         const container = await open('overview', { overview: fullView(), selection: SELECTED });
         const found = primaries(container);
         expect(found).toHaveLength(2);
@@ -78,7 +78,7 @@ describe('0022 AC-011: at most two primary buttons per view', () => {
         expect(found[0]?.closest('[data-now]')).not.toBeNull();
         expect(found[1]?.closest('aside.side-panel')).not.toBeNull();
         const all = [...container.querySelectorAll<HTMLElement>('.ov-row-item button.copy-icon')];
-        expect(all).toHaveLength(6 + 3 + 1);
+        expect(all).toHaveLength(4 + 3 + 1);
         const panel = container.querySelectorAll('aside.side-panel button.next-step-copy');
         expect(panel).toHaveLength(2);
         expect(panel[1]?.classList.contains('copy-secondary')).toBe(true);
@@ -105,7 +105,7 @@ describe('0022 AC-011: at most two primary buttons per view', () => {
     });
 
     it('an Overview whose first Now row has no step has no primary button of its own list; with the side panel open it has one', async () => {
-        const view: OverviewView = { ...fullView(), now: [row('0001', false), row('0002')] };
+        const view: OverviewView = { ...fullView(), now: { rows: [row('0001', false), row('0002')], more: 0, stems: [] } };
         const alone = await open('overview', { overview: view });
         expect(primaries(alone)).toHaveLength(0);
         expect(alone.querySelectorAll('[data-now] .copy-icon')).toHaveLength(1);
@@ -186,7 +186,7 @@ describe('0024 AC-003: a split button counts as one primary action (A-013)', () 
 
     it('with an offer the Overview with a selected spec still has two primaries: the main part of the first Now row and the main part of the detail; the arrow parts are no primary', async () => {
         const view = fullView();
-        view.now[0] = { ...view.now[0]!, send: SEND as never };
+        view.now.rows[0] = { ...view.now.rows[0]!, send: SEND as never };
         const container = await open('overview', { overview: view, selection: SELECTED });
         await send(detailEvent(detailView({ stem: SELECTED.stem, number: SELECTED.number }, NS6_SEND as never)));
         const found = primaries(container);
@@ -206,7 +206,7 @@ describe('0025 AC-026: no primary control while U-08 shows', () => {
 
     async function quietView(options: { quiet: boolean; send: boolean }): Promise<HTMLElement> {
         const view = fullView();
-        view.now[0] = { ...view.now[0]!, ...(options.quiet ? { quiet: true as const } : {}), ...(options.send ? { send: SEND as never } : {}) };
+        view.now.rows[0] = { ...view.now.rows[0]!, ...(options.quiet ? { quiet: true as const } : {}), ...(options.send ? { send: SEND as never } : {}) };
         const container = await open('overview', { overview: view, selection: SELECTED });
         const next = { ...INTEGRATE, ...(options.send ? { send: SEND } : {}), ...(options.quiet ? { quiet: true } : {}) };
         await send(detailEvent(detailView({ stem: SELECTED.stem, number: SELECTED.number }, next as never)));

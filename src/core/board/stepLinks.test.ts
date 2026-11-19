@@ -64,7 +64,7 @@ describe('0025 AC-027: the first plan step ID of a text is a step link for a map
         }
         expect(detail.nextStep.lines[0]?.step?.id).toBe('T-002');
         expect(detail.nextStep.lines[0]?.text).toContain('Implement T-002');
-        const now = projectNow(model, createSpecResolver(model));
+        const now = projectNow(model, createSpecResolver(model)).rows;
         expect(now.find((row) => row.spec.stem === '0007-x')?.link?.id).toBe('T-002');
         expect(now.find((row) => row.spec.stem === '0007-x')?.step?.short).toBe('Implement T-002');
         expect(projectUpNext(model, createSpecResolver(model)).rows.find((row) => row.spec.stem === '0008-y')?.link?.id).toBe('T-001');
@@ -77,7 +77,7 @@ describe('0025 AC-027: the first plan step ID of a text is a step link for a map
             throw new Error('expected lines');
         }
         expect(detail.nextStep.lines.slice(1).every((line) => line.step === undefined || /\bT-\d+\b/.test(line.intent))).toBe(true);
-        const row = projectNow(model, createSpecResolver(model)).find((candidate) => candidate.spec.stem === '0007-x')!;
+        const row = projectNow(model, createSpecResolver(model)).rows.find((candidate) => candidate.spec.stem === '0007-x')!;
         expect(Object.keys(row.step!).sort()).toEqual(['intent', 'line', 'lines', 'short']);
     });
 });

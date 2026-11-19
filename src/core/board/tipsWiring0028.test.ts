@@ -29,7 +29,7 @@ function detailAbout(model: ShellModel, selection: { stem: string }): string[] {
 }
 
 function nowAbout(model: ShellModel): string[] {
-    const about = projectNow(model, createSpecResolver(model), SHOW)[0]?.tips?.about;
+    const about = projectNow(model, createSpecResolver(model), SHOW).rows[0]?.tips?.about;
     if (about === undefined) {
         throw new Error('expected tips on the first Now row');
     }
