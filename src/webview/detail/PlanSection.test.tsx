@@ -8,7 +8,8 @@ import { boardEvent, boardView, card } from '../board/testing/views';
 import { createClient, type ShellClient } from '../client';
 import { baseView, click, mount, send, shellEvent, type Mounted } from '../testing/dom';
 import { resetSectionMemory } from './sectionMemory';
-import { detailEvent, detailView, PLAN_KEY } from './testing/views';
+import { fileNotFoundText } from '../../shared/protocol/texts';
+import { detailEvent, detailView, openFileResultEvent, PLAN_KEY } from './testing/views';
 
 let posted: Envelope[];
 let mounted: Mounted | undefined;
@@ -156,6 +157,21 @@ describe('0023 AC-004: the chips', () => {
         expect(requests('openFile')).toEqual([{ key: PLAN_KEY, line: 42 }]);
         expect(all[6]!.querySelector('button')).toBeNull();
         expect(all[6]!.tagName).toBe('SPAN');
+    });
+
+    it('PR #1 review: a chip whose file is gone reads the failure text and is named by it, not by the step; the other chips keep their names', async () => {
+        const container = await open(states);
+        const all = chips(sectionOf(container, 'Plan')!);
+        const button = all[1]!.querySelector<HTMLButtonElement>('button')!;
+        const before = button.getAttribute('aria-label');
+        expect(before).toContain('T-002');
+        await click(button);
+        await send(openFileResultEvent(PLAN_KEY, fileNotFoundText(PLAN_KEY)));
+        expect(button.textContent).toBe(fileNotFoundText(PLAN_KEY));
+        const name = button.getAttribute('aria-label') ?? button.textContent;
+        expect(name).toBe(fileNotFoundText(PLAN_KEY));
+        expect(all[0]!.querySelector('button')?.getAttribute('aria-label')).toContain('T-001');
+        expect(all[2]!.querySelector('button')?.getAttribute('aria-label')).toContain('T-003');
     });
 
     it('M-04 follows exactly the stages that hold ‖; the separators between chips are shown', async () => {

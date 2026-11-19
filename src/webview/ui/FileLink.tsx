@@ -34,7 +34,7 @@ export function FileLink(props: { target: LineTarget; fileResult: FileResult | u
                 className="file-link"
                 title={tooltip}
                 aria-describedby={descriptionId}
-                {...(props.label === undefined ? {} : { 'aria-label': props.label })}
+                {...(props.label === undefined || failed ? {} : { 'aria-label': props.label })}
                 {...(props.tabIndex === undefined ? {} : { tabIndex: props.tabIndex })}
                 onClick={() => {
                     const token = {};

@@ -507,6 +507,24 @@ Proxy decisions of this round (Gregor delegated; P-25 …), recorded here and in
 - [x] **Verified (T-017):** 2026-11-18 · `npx vitest run --project node src/adapters/node/docsScan.test.ts` green 130 of 130 (docs scan unchanged, CHANGELOG line extended); the title audit re-run with the compile's scanner: Baseline 2697 → head 2882 titles, the same 7 absent, 0 decreased; final gates `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile && npm run compile-tests` green: `npm run test:unit` 2816 passed + 3 skipped (+16 timing); `git status` clean after the commit
 - **Notes:** Done in this step: the harness evidence under AC-018 (*Manual checks recorded*, from `compile/0023-preview.md`), Windows at `c9845e1` under AC-016, the Baseline note, the T-006 and T-007 notes, traceability rows and handoff, `.memory-bank/activeContext.md` (*Now*, *Active Spec*, *Changed Recently* down to six bullets, *Next*, *Validation*), the CHANGELOG line. Open and kept open: AC-016 (CI at the PR, Windows at the fix head), AC-018's real window, AC-019, AC-020.
 
+## PR #1 review
+
+Source: the automated review of PR #1 at `8e94888` (`/home/claude/orch/req/pr1-review.md`), comment 5. Gregor: "Check
+the six review comments of PR #1. For each one that is real, write a failing test first, fix it and append the fix as a
+step to the plan of the spec that owns the code." The comment is a claim of an external model: the test decides.
+`StepChip` and its `label` were added by 0023 T-005 (`e242bad`).
+
+### T-018 — A chip whose file is gone is named by the failure text, not by its step (PR #1 comment 5)
+
+- **Covers:** AC-004 (the chips); 0019 AC-019 (a file that is gone)
+- **Do:** `ui/FileLink.tsx` leaves the supplied `label` (the `aria-label`) out while the link shows the failure text, so
+  the accessible name is the visible "File not found: …"; before the failure and for every link without a `label` nothing
+  changes. Test first in `PlanSection.test.tsx`: activate the chip of T-002, send the not-found result for the plan key →
+  the button reads the failure text and its name is that text, the chips of T-001 and T-003 keep their step names.
+- **Verify:** `npx vitest run --project webview src/webview/detail/PlanSection.test.tsx` red, then green; gates 1–4
+- [x] **Verified (T-018):** 2026-11-19 red: `npx vitest run --project webview src/webview/detail/PlanSection.test.tsx` 1 failed of 15 (the button read "File not found: …" while its `aria-label` was still "T-002 Step T-002, next") → green: 15 passed; `npm run test:unit` 3140 passed + 3 skipped (+18 timing; 3139 before, 1 new test); eslint 0 warnings, both `tsc` clean.
+- **Notes:** the comment is real, and `StepChip` is the only caller that passes a `label`, so a screen reader announced the step while the eye read the failure. The fix is in `FileLink` (one place), not in the chip: any later caller with a `label` gets the same honesty. The 0019 AC-019 tests (the failure text, the focus, the live region, the activation token) stay green.
+
 ## Test-title audit
 
 Method (0021's): the string literals of `describe`, `it`, `test` and `suite` (with `.each`, `.skip`, `.only`) in every
