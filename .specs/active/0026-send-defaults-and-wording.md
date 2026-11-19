@@ -69,11 +69,14 @@ register is not edited; PD-064 A-002 ("Now has no cap") is refined here.
 | 0021 §6.5 "and in the first Now row"; AC-009 "the detail and the first Now row shall show §6.5's coach line"; 0018 O-5 (as 0021 amended) "the first Now row also carries the coach line and `?`"; 0022 §4.1 bullet "First Now row … the coach line and `?` follow its Copy prompt"; 0022 AC-001 "in the first Now row 0021's coach line and `?` shall follow" | Only while the side panel does not show that row's spec (0026 §6.4, AC-006) |
 | 0018 O-2 "order Blocked, Review, Active, then number ascending, then path. No cap."; AC-004 "in the order of O-2, without a cap"; A-002; §7 row "Set labels" | 0026 §6.5 (order, five rows, `+ n more`); set label `Now` added |
 | 0022 AC-011 "With seven Now rows", "exactly two primary buttons … with no spec selected, one and zero"; §3 bullet N-9, A-004 and OP-004; 0022 §4.4 (2) "the Copy of the Overview's first Now row", "at most two per view"; AC-010; 0024 §6.3 *Place* "one primary control" for the first Now row | "seven Now entries (five rows)"; N-9 is decided by 0026 §6.5 (09 G-9); the first Now row's Copy or split button is secondary (0026 §6.5, AC-024; 13 K-5): the Overview holds one primary while the selected spec's next step has a line, none without; the Board as before |
+| 0025 AC-026 "with U-05 the first line is primary again" (the detail, the first Now row) | The detail's first line is primary again; the first Now row stays secondary (0026 AC-024) |
 | 0023 §5.5 then-sentence `Paste it once every worker you started is back.`; AC-013 | While Send is offered: `Send it once …` (0026 §6.2, AC-021) |
 | 0023 §5.4 "Expanded, in order: the lead M-08; then each way as name, effect sentence, prompt … and Copy prompt"; "Under *Other agents* … M-10, then … the start line"; A-006; §6 rows M-08 and "Ways, NS-6 case" (effects); AC-009 "expanded, M-08 and the three ways … with their effect sentences and prompts literally" | 0026 §6.6, AC-009–AC-011: radio group, `(?)` with M-08 and the effects, the checked way's part; Other agents' stage prompt only while no start line shows |
 | 0023 §3 out of scope "A coach line or `(?)` in the Plan map — because guideline 11" | Beside 0025's header, also 0026's `About these ways`, which holds no session or model advice (A-012) |
 | 0023 AC-012 "keeping expanded cards, the ways block's state" | The ways block's state includes the checked way; a radio counts as "a way" (0026 AC-013) |
 | 0013 AC-016; 0015 AC-027; 0016 AC-023; 0017 AC-024; 0018 AC-030; 0019 AC-023; 0020 AC-021; 0021 AC-020; 0022 AC-017; 0023 AC-016; 0024 AC-014; the test audits of 0025 and 0028 | Also except the tests 0026 AC-015 lists against a statement this table changes |
+
+*Amended 2026-11-19 after compile: added the row for 0025 AC-026 (its test `primaryButtons` was retitled, F-3); AC-016 notes completed under every statement of this table.*
 
 ## 6. Business rules
 

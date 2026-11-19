@@ -18,8 +18,10 @@ import {
     noteFile,
     PARALLEL_NOTE_3,
     PARALLEL_NOTE_4,
+    PARALLEL_PLAN,
     PARALLEL_SPEC,
     parallelModel,
+    replaceIn,
     setNote,
 } from './testing/plans';
 
@@ -444,6 +446,24 @@ describe('0023 AC-009: the current stage offers its ways, and the next step its 
         expect(waysOf(planViewOf(noted, GEN_SPEC))).toEqual([]);
         const resume = await generatedModel({ stages: '1. T-004 ‖ T-005 — a', steps: ['T-004:[x]', 'T-005:[x]'] });
         expect(waysOf(planViewOf(resume, GEN_SPEC))).toEqual([]);
+    });
+
+    it('0026 AC-010: whatever the closing line of the plan says, the ways view is equal (D-3)', async () => {
+        const closing = 'Parallel: stage 2 (add vs. subtract: separate files).';
+        const reference = await parallelModel();
+        const expected = waysOf(planViewOf(reference, PARALLEL_SPEC));
+        expect(expected.length).toBeGreaterThan(0);
+        for (const variant of [
+            'Recommended: in sequence, since both steps are small.',
+            'Recommended: subagents.',
+            'Do not use subagents; other agents or subagents both work.',
+            'Parallel: none.',
+            'Nicht parallel: ein Chat reicht.',
+            '',
+        ]) {
+            const model = await parallelModel(replaceIn(PARALLEL_PLAN, closing, variant));
+            expect(waysOf(planViewOf(model, PARALLEL_SPEC))).toEqual(expected);
+        }
     });
 
     it('the start line is the wording of parallel-work.md, byte for byte', async () => {

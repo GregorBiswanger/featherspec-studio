@@ -3,7 +3,7 @@
 **Spec:** [0026-send-defaults-and-wording.md](0026-send-defaults-and-wording.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-010 (the orchestrator's preview; T-011 is done)
+**Current step:** none open (T-001…T-011 done; the compile fixes of 2026-11-19 are in)
 
 ## Approach
 
@@ -337,7 +337,7 @@ Parallel: stages 2 and 3, run in sequence (`PLAN-R3.md`). Stage 1 shares `nextSt
   - Memory Bank: `techContext.md` *Test* line for 0026 (`WORDING_0026`, `now0026`, `Ways0026`), `activeContext.md`.
 - **Verify:** quality gates 1–5 in order, zero warnings; `npm test` on Windows and CI by the orchestrator, result here.
 - [x] **Verified (T-011):** stage 4 gate chain (eslint, tsc, tsc webview, test:unit, compile, compile-tests) green, result: all six commands exit 0 (eslint, both tsc, test:unit, compile, compile-tests); `npm test` on Windows and CI is the orchestrator's; AC-017 (T-010), AC-018, AC-019 are open for Gregor.
-- **Notes:** §5 notes written under the statements of 0017, 0018, 0021, 0022, 0023, 0024 (after earlier notes; table-row notes follow their table). The table row for 0013/0015/… test audits has no note (those specs are Implemented; the audit list below carries it). README, CHANGELOG, checklist (section 0026 with AC-017…AC-019), design brief done; `docsScan.test.ts` got a 0026 describe and its 0017, 0022, 0023, 0024 literals were retargeted (titles kept, except the checklist section list now holds `## Send defaults and wording (0026)`). Architecture: `.architecture/core.md` (assistant, overview), `webview.md` (areas, board/detail, ui). Memory Bank: `techContext.md` Test line, `activeContext.md`.
+- **Notes:** §5 notes written under the statements of 0017, 0018, 0021, 0022, 0023, 0024 (after earlier notes; table-row notes follow their table). The table row for the test audits carries a note under each audit AC of 0015–0024 (added after the first compile; those specs are In Progress in `active/`, only 0013 is in `done/`; the audit list below carries the titles). README, CHANGELOG, checklist (section 0026 with AC-017…AC-019), design brief done; `docsScan.test.ts` got a 0026 describe and its 0017, 0022, 0023, 0024 literals were retargeted (titles kept, except the checklist section list now holds `## Send defaults and wording (0026)`). Architecture: `.architecture/core.md` (assistant, overview), `webview.md` (areas, board/detail, ui). Memory Bank: `techContext.md` Test line, `activeContext.md`.
 
   **Title audit** (`/tmp/ta25/titles.py`, base `657e87a`, `it.each` counted): 15 titles of the base are missing at the head, 0 without a replacement:
   - `PlanMap.test.tsx` `expanded: the lead, the three ways in order with effect and prompt literally, then the start lines under Other agents` -> `0026 AC-009 (0023 AC-009 retargeted): expanded, the three ways are radios …` (0023 §5.4 / AC-009, changed by 0026 §5).
@@ -355,35 +355,35 @@ Parallel: stages 2 and 3, run in sequence (`PLAN-R3.md`). Stage 1 shares `nextSt
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001 | — | — | open |
-| AC-002 | T-002, T-011 | — | — | open |
-| AC-003 | T-003 | — | — | open |
-| AC-004 | T-003 | — | — | open |
-| AC-005 | T-004 | — | — | open |
-| AC-006 | T-007 | — | — | open |
-| AC-007 | T-005 | — | — | open |
-| AC-008 | T-005 | — | — | open |
-| AC-009 | T-006 | — | — | open |
-| AC-010 | T-006, T-008 | — | — | open |
-| AC-011 | T-006 | — | — | open |
-| AC-012 | T-008 | — | — | open |
-| AC-013 | T-008 | — | — | open |
-| AC-014 | T-009 | — | — | open |
-| AC-015 | T-011 | — | — | open |
-| AC-016 | T-011 | — | — | open |
-| AC-017 | T-010 | — | manual: orchestrator, preview harness, then Gregor | open |
-| AC-018 | T-011 (record) | — | manual: Gregor, click test 2026-11-19 (13), tasks 1–3 | open |
-| AC-019 | T-011 (checklist) | — | manual: Gregor on `tip-splitter`, before the spec closes | open |
-| AC-020 | T-001 | — | — | open |
-| AC-021 | T-002, T-011 | — | — | open |
-| AC-022 | T-001 | — | — | open |
-| AC-023 | T-007 | — | — | open |
-| AC-024 | T-007 | — | — | open |
+| AC-001 | T-001 | core/assistant/sendView.ts, webview/ui/SendButton.tsx, core/board/detail.ts | sendView.test.ts, send.test.ts, SendButton.test.tsx, detail.test.ts | verified |
+| AC-002 | T-002, T-011 | shared/protocol/nextStepTexts.ts, core/board/stepTips.ts, shared/protocol/nextStepTexts.ts | stepTips.test.ts, sourceScan.test.ts | verified |
+| AC-003 | T-003 | shared/protocol/nextStepTexts.ts | nextStep.test.ts, stepView.test.ts | verified |
+| AC-004 | T-003 | shared/protocol/nextStepTexts.ts | nextStep.test.ts | verified |
+| AC-005 | T-004 | webview/ui/StepText.tsx | StepText.test.tsx, SpecBoard.test.tsx, Sections.test.tsx | verified |
+| AC-006 | T-007 | webview/areas/overview/SpecRow.tsx, Overview.tsx | coach0026.test.tsx | verified |
+| AC-007 | T-005 | core/overview/rows.ts, webview/areas/overview/Now.tsx | now0026.test.ts, rows.test.ts, Now0026.test.tsx | verified |
+| AC-008 | T-005 | core/overview/rows.ts, webview/areas/overview/Now.tsx, requests.ts | now0026.test.ts, Now0026.test.tsx | verified |
+| AC-009 | T-006 | webview/areas/planMap/Ways.tsx, shared/protocol/planMapTexts.ts | Ways0026.test.tsx, PlanMap.test.tsx | verified |
+| AC-010 | T-006, T-008 | webview/areas/planMap/Ways.tsx, webview/main.css | Ways0026.test.tsx, webviewCss.test.ts, planMap.test.ts | verified |
+| AC-011 | T-006 | webview/areas/planMap/Ways.tsx, shared/protocol/planMapTexts.ts | Ways0026.test.tsx, PlanMap.test.tsx | verified |
+| AC-012 | T-008 | webview/areas/planMap/Ways.tsx, ui/Toggletip.tsx | WaysAbout0026.test.tsx, PlanMap.test.tsx | verified |
+| AC-013 | T-008 | webview/areas/planMap/Ways.tsx, Toggletip.tsx | WaysAbout0026.test.tsx, PlanMap.test.tsx | verified |
+| AC-014 | T-009 | no new write path; shared/protocol text modules | board/noWrite.test.ts, restricted.test.ts, userLanguage.test.tsx, sourceScan.test.ts | verified |
+| AC-015 | T-011 | the retargeted tests of T-001…T-009 | title audit (T-011 Notes), `npm run test:unit`, `npm test` on Windows at 25c6b92; CI pending | verified |
+| AC-016 | T-011 | README.md, CHANGELOG.md, docs/, spec §4 notes of 0013…0024 | docsScan.test.ts | verified |
+| AC-017 | T-010 | — | manual: orchestrator checked the preview harness (60 shots), 2026-11-19 (T-010); Gregor open | open |
+| AC-018 | T-011 (record) | docs/release-checklist.md | manual: Gregor, click test 13, 2026-11-19 | built |
+| AC-019 | T-011 (checklist) | docs/release-checklist.md | manual: Gregor on `tip-splitter`, before the spec closes | open |
+| AC-020 | T-001 | webview/ui/SendButton.tsx | SendButton.test.tsx | verified |
+| AC-021 | T-002, T-011 | core/board/stepTips.ts, shared/protocol/nextStepTexts.ts | stepTips.test.ts, sourceScan.test.ts | verified |
+| AC-022 | T-001 | webview/ui/SendButton.tsx | SendButton.test.tsx | verified |
+| AC-023 | T-007 | webview/ui/Toggletip.tsx, SpecRow.tsx | coach0026.test.tsx | verified |
+| AC-024 | T-007 | webview/ui/SendButton.tsx, areas/overview/SpecRow.tsx | primaryButtons.test.tsx, coach0026.test.tsx | verified |
 
 ## Session handoff
 
-- **Done so far:** T-001…T-009 and T-011 committed on `ux-round-3`; stage 1, 3 and 4 gates green; T-010 open.
-- **Next action:** the orchestrator runs T-010 (preview harness) and `npm test` on Windows; Gregor checks AC-017…AC-019. Not moved to done, no `/sdd-compile`.
+- **Done so far:** T-001…T-011 committed on `ux-round-3`; T-010 verified by the orchestrator (3795231); Windows at 25c6b92: unit 3502 / 8 skipped + 28 timing, `npm test` 33+1+1+1; the compile report 0026 (2026-11-19) is worked in: traceability filled, §5 notes completed (D-1), T-011 note corrected (D-2), 0025 AC-026 row added to §5 (F-3).
+- **Next action:** a fresh `/sdd-compile`, then CI on the round-3 PR, then Gregor's AC-017, AC-018 and AC-019. Not moved to done.
 - **Open decisions:** — (AC-019's draft check in Copilot's `newChat` is untested, V-3 C4; if it fails, Gregor decides, 09 §3)
 - **Baseline:** `657e87a`
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator. Full vitest takes 3+ minutes here: run it in the background.

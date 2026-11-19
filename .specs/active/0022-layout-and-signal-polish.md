@@ -121,6 +121,7 @@ B-6's rule tooltip where one applies. Every other strip is unchanged.
   of the Overview's first Now row; (3) the one Copy of the zero-spec state (0018 O-8, Overview and
   Board), alone on its screen (A-007). Hence at most two per view.
   *Amended by 0024 (PD-068): §4.4 (1), (2) — where Send is offered, the Copy of (1) and (2) is 0024's split button: both parts are primary and count once (0024 AC-003).*
+  *Amended by 0026 (PD-082): (2) — the first Now row's Copy or split button is secondary; the Overview holds one primary while the selected spec's next step has a line, none without (0026 §6.5, AC-024).*
 - **Secondary text button:** the side panel's Copy of every further line (NS-5, NS-6 with an open plan step
   (PD-072), NS-9); the buttons of the Restricted Mode note and the notice (0005 S7, BR-03; A-013).
 - **Icon button** (copy icon, no text): every other next-step Copy — Now rows after the first, Up next
@@ -303,6 +304,7 @@ Decided by unit tests (core, no `vscode`), component tests (jsdom) and styleshee
   *Amended by 0023 (PD-069): AC-010 — also the Plan map tab: no primary button there (0023 AC-010).*
   *Amended by 0024 (PD-068): AC-010 — the split button's two parts are the primary style of (1) and (2) (0024 AC-003).*
   *Amended by 0025 (PD-082): the Plan map header's first line is a primary place while the side panel leaves out its Next step; the map with the side panel beside holds at most one primary, a card's Copy prompt is secondary (0025 §5.3, §5.2, AC-010).*
+  *Amended by 0026 (PD-082): AC-010 — the first Now row's Copy or split button is secondary, not primary (0026 §6.5, AC-024).*
 - **AC-011** With seven Now rows, three Up next rows, a Problems row and a selected NS-5 spec, the Overview shall render exactly two primary buttons and the Board exactly one; with no spec selected, one and zero.
   *Amended by 0023 (PD-069): AC-011 — the Plan map tab adds no primary button; the view holds at most the side panel's (0023 AC-010).*
   *Amended by 0024 (PD-068): AC-011 — a split button counts as one primary control; with an offer the view still holds at most two (0024 AC-003).*
@@ -319,6 +321,7 @@ Decided by unit tests (core, no `vscode`), component tests (jsdom) and styleshee
   *Amended by 0024 (PD-068): AC-017 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
   *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
   *Amended by 0025 (PD-082): also except the tests 0025 AC-020 lists against a statement 0025 §4 changes.*
+  *Amended by 0026 (PD-082): also except the tests 0026 AC-015 lists against a statement 0026 §5 changes.*
 - **AC-018** `README.md`, `docs/product/ux-guidelines.md` and `docs/release-checklist.md` shall name the tree groups In progress, Ready, Backlog, Done, and the plan shall list each "Up next" left there as the Overview's set; the README shall name the divider, its reset and the back button below 900 px; `CHANGELOG.md` shall name the changes under the version in preparation; the checklist shall carry AC-019, AC-020, AC-025.
 - **AC-019** *(manual, preview; guideline 12)* In Dark, Light and High Contrast, height 800 px, at window widths 1600 px and 1000 px with VS Code's sidebar open at its default width, at a Studio panel of 920 px, at 800 px and at VS Code zoom level 2, each with a spec selected, on this repository and `fs170-brownfield-mixed`, Overview and Board, Gregor or his delegate shall confirm: no title word split (one wider than its line excepted); every Copy fully visible and reachable by Tab; at most two filled buttons; paths broken only after a separator; whole Problem sentences; the warning on `fs170-brownfield-mixed`'s collapsed Done strip; each state told at a glance, every icon shape distinct, the Problem warning included. Screenshots and verdict in the plan.
   *Amended by 0024 (PD-068): AC-019 "at most two filled buttons" — a split button counts once (0024 AC-003, AC-016).*

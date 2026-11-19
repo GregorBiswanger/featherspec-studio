@@ -94,16 +94,6 @@ describe('0026 AC-010: In sequence is the one tagged way and starts checked', ()
         expect(container.textContent?.toLowerCase()).not.toContain('recommended');
     });
 
-    it('whatever the closing text of the plan says, nothing in the view carries a way: In sequence stays the default (D-3)', async () => {
-        for (const _prose of ['Recommended: in sequence, since both steps are small.', 'Parallel: stage 2 (add vs. subtract: separate files).', 'Do not use subagents; other agents or subagents both work.', '']) {
-            const container = await show();
-            await expand(container);
-            expect(checkedWay(container)).toBe('sequence');
-            mounted?.unmount();
-            mounted = undefined;
-        }
-    });
-
     it('another checked way survives a model update; a new showing (a new mount) checks In sequence again', async () => {
         const container = await show();
         await expand(container);

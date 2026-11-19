@@ -5,13 +5,13 @@ Current branch: ux-round-3
 Current phase: act
 
 ## Now
-- Round 2 (0021–0024) is implemented and fixed on `ux-round-2`; the plans are Done, the specs stay In Progress in `active/`.
-- The final check of round 2 (045b354..5c70dbd) found docs only; its fixes, 0024 T-014…T-022, are done.
-- Waits for: CI at the PR, Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
+- Round 3 on `ux-round-3`: 0026 (Send defaults and wording) is built, T-001…T-011; the compile report's fixes are in (traceability, §5 notes, docs).
+- 0021–0024 are implemented; their specs stay In Progress in `active/`.
+- Waits for: a fresh `/sdd-compile` of 0026, CI at the PR, Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)).
 
 ## Active Spec
-- [0026](../.specs/active/0026-send-defaults-and-wording.md) / [plan](../.specs/active/0026-send-defaults-and-wording.plan.md): Send defaults and wording, T-001…T-009 and T-011 built, T-010 (preview) is the orchestrator's; AC-017…AC-019 are Gregor's.
-- [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 and OP-004 are Gregor's.
+- [0026](../.specs/active/0026-send-defaults-and-wording.md) / [plan](../.specs/active/0026-send-defaults-and-wording.plan.md): Send defaults and wording, T-001…T-011 done; AC-017 (orchestrator half checked), AC-018, AC-019 are Gregor's.
+- [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 are Gregor's; OP-004 closed by PD-078.
 - [0023](../.specs/active/0023-plan-map-stages-parallel-work.md) / [plan](../.specs/active/0023-plan-map-stages-parallel-work.plan.md): Plan map, T-001…T-017; AC-018 real window, AC-019, AC-020 are Gregor's.
 - [0022](../.specs/active/0022-layout-and-signal-polish.md) / [plan](../.specs/active/0022-layout-and-signal-polish.plan.md): layout and signals, T-001…T-022; AC-020, AC-021 are Gregor's.
 - [0021](../.specs/active/0021-next-step-intent-and-guidance.md) / [plan](../.specs/active/0021-next-step-intent-and-guidance.plan.md): intent and guidance, T-001…T-016; AC-022 real window, AC-023…AC-025 are Gregor's.
@@ -33,13 +33,12 @@ Current phase: act
 - Publisher ID `GregorBiswanger` is confirmed (2026-11-17).
 
 ## Blockers / Questions
-- OP-004 (0024, Gregor's): does Copilot's `open` replace an unsent draft in the current chat? If so, he decides whether NS-6 with Copilot defaults to a new chat. Not blocking the PR.
 - Gregor's manual checks stay in the specs: 0025 AC-022 real window, AC-023, AC-024; 0028 AC-015.
 
 ## Next
-1. Implement 0026 (in `.specs/active/`, started on `ux-round-3`).
-2. Implement 0027 the same way.
-3. Open the PR (draft is fine) so CI runs once at the end of round 3: 0021 AC-020, 0022 AC-017, 0023 AC-016, 0024 AC-014, 0025 AC-020, 0028 AC-012.
+1. A fresh `/sdd-compile` of 0026, then the round-3 PR so CI runs (0021 AC-020, 0022 AC-017, 0023 AC-016, 0024 AC-014, 0025 AC-020, 0028 AC-012).
+2. Gregor's AC-017, AC-018 and AC-019 for 0026.
+3. Implement 0027 the same way.
 
 ## Validation
-- Windows `npm test` at 7ea11f3: unit 3412 passed, 8 skipped, timing 28 passed; `npm test` 33+1+1+1, exit 0. CI pending on the round-3 PR.
+- Windows at 25c6b92: unit 3502 passed, 8 skipped, timing 28 passed; `npm test` 33+1+1+1, exit 0. CI pending on the round-3 PR.

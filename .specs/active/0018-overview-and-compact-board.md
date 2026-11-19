@@ -271,6 +271,7 @@ marked manual. Fixtures: 0006's and 0007's, `fs170-brownfield-mixed`, one with e
   *Amended by 0024 (PD-068): AC-030 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
   *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
   *Amended by 0025 (PD-082): also except the tests 0025 AC-020 lists against a statement 0025 §4 changes.*
+  *Amended by 0026 (PD-082): also except the tests 0026 AC-015 lists against a statement 0026 §5 changes.*
 - **AC-031** *(manual, Gregor or his delegate)* Preview-harness screenshots of Overview and Board for this repository and `fs170-brownfield-mixed`, Dark, Light and High Contrast, panel width 1240 px and 640 px, height 900 px: Now is the first section; rows keep one line at 1240 px and take two lines at 640 px with the state text readable (AC-006); with no spec selected, every column that shows a card is visible without horizontal scrolling at 1240 px, and at 640 px where at most two do; a wide column shows at least six cards when it holds them (R-10); strips, toggle and focus are legible. Verdict in the plan; the real VS Code window is a release-checklist item.
   *Amended by 0019 (PD-058): AC-031 — "visible without horizontal scrolling" holds "with no spec selected"; with the side panel the board scrolls (0019 §9).*
 
@@ -302,6 +303,7 @@ As-is (read 2026-11-17, before 0016/0017; re-check in `/sdd-plan`):
 | A-011 | (proxy) One Refresh does both discovery and re-read | Users cannot tell the two apart (02 §3.11); "Retry" already does both | A re-read costs a second on a 200-spec project |
 | A-012 | "Spec Board" becomes "Board" with ID `board` | PD-058 names the two tabs "Overview, Board" and publishes nothing, so IDs change without migration | Only names change |
 | A-013 | (proxy) Problems also lists *Problem* findings tied to no spec | Guideline 3: a problem shows wherever it applies | Such findings show only in the board banner |
+*Amended by 0026 (PD-082): A-002 — Now shows at most five rows, then `+ n more`; the order is Blocked, Review, Active (0026 §6.5, AC-007).*
 
 ## 12. Open points
 

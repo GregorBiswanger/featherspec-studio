@@ -110,6 +110,7 @@ configuration and extension changes (AC-010).
   §6.5, 0022 §4.4 (2)), show a split button instead of 0021's Copy prompt: main part and arrow part side by side, one
   primary control (A-013).
   *Amended by 0025 (PD-082): not on returned work's `Integrate` line while U-08 shows: it is secondary (0025 §5.6, AC-026).*
+  *Amended by 0026 (PD-082): the first Now row's split button is secondary; the detail's first line holds the one primary control (0026 §6.5, AC-024).*
 - **Main part:** text `Send to <Name>` (`Copilot`, `Claude Code`; A-011). It sends to the default target: Copilot
   `new chat` where the first line's session (0021 §6.1, §6.2) is `new chat`, else `current chat`; Claude Code always
   `new chat` (A-007). Name and tooltip `Send to <Name> (<target>): <line>`, `<target>` = `new chat` · `current chat`.
@@ -187,6 +188,7 @@ While Send is offered the toggletip's third paragraph is §7's Send sentence; th
 | Toggletip `Send to <Name> puts the prompt into its chat and sends nothing: choose the model there, check the prompt, then send it.` | 0021 §6.6 paragraph 3, while Send is offered |
 | Toggletip `Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt.` | 0021 §6.6 paragraph 4 |
 | Command `FeatherSpec Studio: Open Settings` | — |
+*Amended by 0026 (PD-078): row Main part — name and tooltip `Send to <Name> (new chat): <line>` for every step; `(current chat)` names no main part any more (0026 §6.1, AC-001).*
 
 ## 8. Error cases and edge cases
 
@@ -233,6 +235,7 @@ with both assistants of §6.2. A *Send control* is a button or menu item whose t
 - **AC-014** Every test at the commit on which this spec's implementation starts that decides a statement §5 does not replace shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI. A script compares the test titles of both commits; the plan lists every title missing at the head, a renamed one included, with the replaced statement or the head title that replaces it.
   *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
   *Amended by 0025 (PD-082): also except the tests 0025 AC-020 lists against a statement 0025 §4 changes.*
+  *Amended by 0026 (PD-082): also except the tests 0026 AC-015 lists against a statement 0026 §5 changes.*
 - **AC-015** The specs of §5 shall carry its notes; a literal search of `README.md` shall find `featherspec-studio.assistant`, `Send to Copilot`, `Send to Claude Code`, `sends nothing` and `Open Settings`, and of `CHANGELOG.md` under the version in preparation `featherspec-studio.assistant` and `Send to`; `docs/release-checklist.md` shall carry AC-016–AC-019 and one line each for GitHub Copilot, Claude Code (each with the VS Code version, against §6.2's; the releaser re-runs AC-017 on newer ones) and Codex (Copy prompt only; re-check when a Codex version accepts a prompt).
 - **AC-016** *(manual, preview harness by the orchestrator, then Gregor in a real window)* Guideline 12: detail and first Now row with Copilot and with Claude Code chosen, menu closed and open, in Dark, Light and High Contrast at 1600 px and 1000 px window width with the side panel open at its default and at 0022 G-2's minimum width, and at a Studio panel of 800 px (detail alone, 0022 G-4): no text of the split button is cut, the open menu shows fully inside the Studio panel without scrolling, both parts show a visible focus outline, each view holds at most two primary controls; the orchestrator records the screenshots in the plan.
 - **AC-017** *(manual, Gregor, per assistant: GitHub Copilot and Claude Code; he records their and VS Code's versions)* On `tip-splitter`, from the detail of an Active spec (NS-6) and of a Review spec (NS-5), the main part and each Send item open the named chat with the prompt in the input and nothing sent; after Gregor sends it himself, the prompt runs as the FeatherSpec command or plan step it names; with Copilot, Gregor records whether unsent text in the current chat is kept or replaced (OP-004).

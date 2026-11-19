@@ -270,6 +270,7 @@ struck step, an unknown ID, a step in no stage, no closing.
   *Amended by 0024 (PD-068): AC-016 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
   *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
   *Amended by 0025 (PD-082): also except the tests 0025 AC-020 lists against a statement 0025 §4 changes.*
+  *Amended by 0026 (PD-082): also except the tests 0026 AC-015 lists against a statement 0026 §5 changes.*
 - **AC-017** The statements of §4 shall carry their notes, no PD row shall be edited, `.claude/rules/ux-guidelines.md` shall read guideline 4 and `docs/product/ux-guidelines.md` its Panel row as §4 says, `README.md` shall name the Plan map tab, the three ways and "Integrate the returned steps" and hold no "two tabs", `CHANGELOG.md` shall name the Plan section and the Plan map under the version in preparation, and `docs/release-checklist.md` shall carry AC-018–AC-020 and no line saying the panel shows "Overview and Board only".
 - **AC-018** *(manual, preview harness by the orchestrator, then Gregor; guideline 12)* Dark, Light and High Contrast at 1600 px and 1000 px window width on `fs110-parallel-synthetic` and `studio-0015`, at 1600 px with the side panel at its default width: the Plan section and Plan map cut no ID, prompt or start line; `‖` cards sit side by side and wrap, uncut, once the divider leaves the map less than two cards' width; at 1000 px (Studio panel below 900 px) the map shows alone; every Copy is fully visible and reachable by Tab; screenshots and verdict in the plan.
 - **AC-019** *(manual, Gregor; PD-069 click test on an HTML draft before `/sdd-plan`, then on the build)* On a project with a `‖` stage, Gregor says without the plan file which stages could run in parallel, why or why not, and which prompt he would copy; he confirms or changes E-8's prompts, E-9's two places, E-10's collapsed ways and §6's texts; the plan records the answers, a change is a revise of this spec.
@@ -315,6 +316,7 @@ struck step, an unknown ID, a step in no stage, no closing.
 | A-012 | Every text of §5 and §6 as the drafts show it (proxy, confirmed by the click test) | PD-069 process; PD-076: the proxies the drafts show stand as drawn | §6 |
 | A-013 | A stage whose steps are all done or dropped shows chips, not cards (proxy) | Guideline 7 "Done is collapsed"; 07 §6.4's sketch expands one stage | AC-008 |
 *Amended by 0026 (PD-080): session `current or new chat` (0026 §6.2).*
+*Amended by 0026 (PD-082): A-006 — Other agents' main-session stage prompt shows only while no start line shows, with M-10 and the start lines otherwise (0026 §6.6, AC-011).*
 
 *Amended by 0025 (PD-082): except a navigation target and a finished stage whose chip is activated: they show expanded, cards until the next showing (0025 §5.1, §5.7, AC-001, AC-003, AC-016).*
 
