@@ -1,6 +1,6 @@
 # Attach the Spec When Sending
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0027-attach-spec-when-sending.plan.md](0027-attach-spec-when-sending.plan.md)
 
 Basis: `docs/ux-audit/09-round2-review.md` §6 (V3), §8; `docs/decisions/v3-attach-spike-2026-11-19.md`. **PD-082**

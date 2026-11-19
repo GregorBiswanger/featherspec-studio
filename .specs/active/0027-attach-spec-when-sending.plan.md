@@ -1,7 +1,7 @@
 # Plan — Attach the Spec When Sending
 
 **Spec:** [0027-attach-spec-when-sending.md](0027-attach-spec-when-sending.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-19
 **Current step:** T-001
 
@@ -401,5 +401,5 @@ and `send.ts`/`send.test.ts`: no `‖`.
   `active/` (`/sdd-lifecycle`), set the Baseline, then T-001.
 - **Open decisions:** OP-006 (C-2: Copilot and the Claude Code extension on 1.11.0) and the FeatherSpec 1.11.0 release.
   Both block closing, not building. A re-read flips one `attachesSpec` entry.
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** `81dc0aa` (head of `ux-round-3` before the first step commit; title audit base).
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.
