@@ -1099,6 +1099,14 @@ main > h1 {
     text-transform: uppercase;
 }
 
+.overview [data-welcome] h2 {
+    margin: 0.83em 0;
+    font-size: 1.5em;
+    font-weight: 700;
+    letter-spacing: normal;
+    text-transform: none;
+}
+
 .ov-panels {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
