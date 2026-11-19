@@ -23,6 +23,11 @@ First release.
   `FeatherSpec Studio: Copy Next Step` does the same and, without a current spec, offers a list. An
   Active spec with an open plan step gets two prompts: `Implement <ID> of <plan>` builds exactly that
   step, `/sdd-plan <spec>` has the agent report where the plan stands.
+- The next step follows the plan: a spec whose plan has every step ticked is Review with `/sdd-compile` as its
+  next step, whatever the plan's status line says. Below FeatherSpec 1.11.0, when the plan's `Current step` names
+  an unfinished step other than the open one, or a step has a `Verified:` line but no tick, the prompt
+  `/sdd-plan <spec>` comes first, under "Let the agent report first — the plan and the ticks may differ", and the
+  step to continue with second. A Ready spec starts with `Implement <ID> of <plan>`.
 - Every next-step line says what it does: each prompt sits under its intent (for example "Have the
   result verified"), cards, rows and the quick pick show a short intent beside the short form of the
   prompt, and every tooltip shows the intents with the full prompts. The button is **Copy prompt**; it

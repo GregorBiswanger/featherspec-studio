@@ -372,6 +372,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
             '## Layout and signal polish (0022)',
             '## Plan map (0023)',
             '## Send to the assistant (0024)',
+            '## Plan-state-aware next step (0028)',
             '## Go',
         ]);
         for (const gone of ['Plan line', 'descriptions cut', 'attention row', 'attention reason', 'filters, sort']) {
@@ -970,4 +971,34 @@ describe('product docs after the final check of round 2 (0024 T-014 to T-022)', 
         }
     });
 
+});
+
+describe('0028 AC-011: the docs describe the plan-state-aware next step', () => {
+    it('README: the Report first intent, the Review line in full, and no leftover sentence of the old report case', async () => {
+        const text = await read('README.md');
+        expect(text).toContain('Let the agent report first — the plan and the ticks may differ');
+        const review = text.split('\n').find((line) => line.includes('→ **Review** (derived)'));
+        expect(review).toContain('every step of its plan ticked or dropped');
+        expect(review).toContain("whatever the plan's status line says");
+        expect(text).not.toContain('without an open step the one prompt lets the agent report where the plan stands');
+    });
+
+    it('CHANGELOG: the 0.1.0 entry names Let the agent report first and every step ticked', async () => {
+        const first = firstRelease(await read('CHANGELOG.md'));
+        expect(first).toContain('Let the agent report first');
+        expect(first).toContain('every step ticked');
+    });
+
+    it('the release checklist holds AC-013, AC-014 and AC-015 of 0028', async () => {
+        const text = await read('docs/release-checklist.md');
+        const section = text.slice(text.indexOf('## Plan-state-aware next step (0028)'), text.indexOf('## Go'));
+        for (const id of ['AC-013', 'AC-014', 'AC-015']) {
+            expect(section, id).toContain(`**${id}**`);
+        }
+    });
+
+    it('negative control: a README with the old sentence would be found', () => {
+        expect('without an open step the one prompt lets the agent report where the plan stands').toContain('without an open step the one prompt lets the agent report where the plan stands');
+        expect('so the Review line stays short').not.toContain('every step of its plan ticked or dropped');
+    });
 });

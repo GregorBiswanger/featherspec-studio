@@ -124,6 +124,7 @@ Marketplace listing. Users: the developer in the Studio panel; Gregor accepts th
 - S-READY "Derived: draft with a plan that has not started"; S-REVIEW "Derived: plan is Done,
   waiting for review"; S-BLOCKED "Derived: plan or return note says Blocked" — rule ID as
   secondary text. The rules stay 0003's (PD-004, featherspec-format §5.2); only wording is here.
+  *Amended by 0028 (PD-081, D-1): Review includes a finished plan (0028 §6.1); the texts stay.*
 - Readiness: 0003's reason as primary text, check ID (`R-3`) secondary — on Backlog cards and in
   the Overview.
 
@@ -237,6 +238,8 @@ its `Verified` text. *(fixture: a copy of this repo's spec 0002 and its plan; D-
 **AC-016** Every existing test of 0005–0007 shall stay green; only assertions on wording or
 structure that §2's five deltas change are updated, in the same change set, each named in the plan.
 *Amended by 0020 (PD-058): AC-016 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
+
+*Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
 
 *Amended by 0019 (PD-058): AC-016 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*
 

@@ -111,6 +111,8 @@ sentence that also says something else keeps that part. The rows name what needs
   spec is named first (audit R-03 field 4, K-G; deviation from guideline 1 "before anything else", named).
 - A spec without a step shows no step line on its card or row (problems show per 0016).
 
+*Amended by 0028 (D-4): `Start <ID> of <plan path>` → `Implement <ID>` and `Implement <plan path>` falls away; without an open step `/sdd-plan <spec path>` with the texts of "Plan without open step" (0028 §6.5).*
+
 ### 6.2 NS-6 (Active) completed (R-16, PD-061 (1))
 
 | Rule | Entry | Line(s) |
@@ -233,6 +235,7 @@ Decided by automated tests unless marked manual. Fixtures: one per NS rule (0015
 - **AC-001** The system shall show on cards, rows, status bar and quick pick the short form of §6.1 of the first line of the next step the detail shows, and Copy shall put exactly that first line, path included, on the clipboard.
   > **Given** Ready `.specs/backlog/0007-x.md` whose plan's first open step is `T-003` **Then** the card shows `Start T-003` and Copy copies `Start T-003 of .specs/backlog/0007-x.plan.md`.
   *Amended by 0021 (PD-069): AC-001 — the step short form of 0021 AC-006 on cards, rows and quick pick.*
+  *Amended by 0028 (D-4): NS-7's line is `Implement <ID> of <plan path>`, the command short form `Implement <ID>`; without an open step `/sdd-plan <spec path>` with the texts of "Plan without open step" (0028 §6.5).*
 - **AC-002** Where NS-6 is the first matching rule (Active), the next step shall be `/sdd-plan <spec path>`, followed, only while its sibling plan has an open plan step (0015 NS-7), by `continue` under "Then, in the same chat, if nothing blocks:"; one fixture per NS-6 row decides it.
   *Amended by 0021 (PD-069): AC-002 — void: 0021 AC-003, AC-005 (variant A, PD-072).*
 - **AC-003** For identical snapshots and the same selection the system shall show identical short forms, current spec and quick-pick order.
@@ -271,6 +274,7 @@ Decided by automated tests unless marked manual. Fixtures: one per NS rule (0015
   *Amended by 0022 (PD-069): AC-024 — also excepts the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
   *Amended by 0023 (PD-069): AC-024 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
   *Amended by 0024 (PD-068): AC-024 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
+  *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
 - **AC-025** 0001, 0003, 0006, 0007, 0013, 0015, 0016 and ADR-001 shall carry the notes of §5; a case-insensitive search of `README.md`, `docs/release-checklist.md`, `docs/product/design-brief.md` and `.architecture/*.md` shall find no "Move to…", "Move Spec", "drag", "move request", "move pick", "move result", "transition check" or `FeatherSpec: <name> (<version>)`; the README shall name the card Copy, the status bar with the rule of §6.3 and "Copy Next Step"; the release checklist shall carry AC-026; `CHANGELOG.md` shall name the removal and the new places of the next step under the version in preparation.
 - **AC-026** *(manual, Gregor)* M-1 on `tip-splitter`, Hands-On walkthrough with his assistant: task "start the Ready spec" — the Start line copied from the card with no failed attempt; on an Active spec `/sdd-plan`, then `continue` in the same chat, runs one step; the status bar names the spec he works on and its click copies; Dark, Light and High Contrast show the card line and row readable.
   *Amended by 0021 (PD-069): AC-026 — the run of 0021 AC-025.*

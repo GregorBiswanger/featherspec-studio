@@ -3,7 +3,7 @@
 **Spec:** [0028-plan-state-aware-next-step.md](0028-plan-state-aware-next-step.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-008
+**Current step:** T-008 (the orchestrator's preview; T-009 is done)
 
 ## Approach
 
@@ -196,7 +196,7 @@ Parallel: stage 3 (runs in sequence, `PLAN-R3.md`). Stages 1 and 2 share `nextSt
 - **Verify:** manual: the orchestrator looks for cut intents, prompts or coach lines and for AC-004's line 1 wrapping
   inside a word; layout is not decided by jsdom (no layout engine).
 - [ ] **Verified (T-008):** —
-- **Notes:** —
+- **Notes:** Not run here: manual by the orchestrator. Projects for the harness are written by `/tmp/mkfix.mts` from `CASE_FIXTURES`: `/tmp/fs-0028-review` (AC-001, `ac001-plan-in-progress`, Review) and `/tmp/fs-0028-report` (AC-004, `ac004-report-first`, version 1.10.0, Report first); add them as scenarios to `host.mts`. Look for cut intents, prompts or coach lines and for line 1 `Let the agent report first — the plan and the ticks may differ` wrapping inside a word.
 
 ### T-009 — Notes, docs, title audit and final gates
 
@@ -209,40 +209,39 @@ Parallel: stage 3 (runs in sequence, `PLAN-R3.md`). Stages 1 and 2 share `nextSt
   green. Memory Bank: `techContext.md` *Test* line for 0028 (snapshots, `caseFixtures`, `fiveFixtures`);
   `activeContext.md`. No `architecture:` entry changes (no module added, moved or removed).
 - **Verify:** quality gates 1–5 in order, zero warnings; `npm test` on Windows and CI by the orchestrator, result here.
-- [ ] **Verified (T-009):** —
-- **Notes:** —
+- [x] **Verified (T-009):** 2026-11-19 · `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile && npm run compile-tests`: all clean; `npm run test:unit` 3268 passed, 4 skipped, timing 26 passed, one red outside this change: `problems.test.ts` AC-005 ("this repository's own .specs/ carry no Problem") names `0027-attach-spec-when-sending.md`, whose plan link points to a plan that another session has not written yet (it was `0025` earlier in the run and went green when that plan landed); `docsScan.test.ts` 170 passed with the new 0028 AC-011 block. `npm test` (host, Windows and CI) is the orchestrator's, not run here.
+- **Notes:** §5 notes (`*Amended by 0028 …*`) are in 0003, 0013, 0015, 0016–0024 (test audit ACs; 0017, 0021, 0023 also per statement), 0026 (reason, AC-002); no PD row changed. README (*How board states are derived*, the Next step paragraph), CHANGELOG 0.1.0 *Added*, `docs/release-checklist.md` section 0028 with AC-013…AC-015 (AC-014 as closed by OP-002). Title audit (0021's method: `describe`/`it`/`test` literals under `src`, Baseline `f9cadb4` by `git archive`): four titles missing at the head, all replaced: (1) `nextStep.test.ts` "NS-7 negative control: a Ready spec without an open step reads Implement <plan path>" → "… reads /sdd-plan <spec path>" (0015 §6.1 row NS-7, 0028 §6.5); (2) "no step list, all steps ticked or struck, and an unreadable plan read as Resume" → "no step list, all steps struck, and an unreadable plan read as Resume" (0021 §6.2 "Plan without open step", 0028 §6.1); (3) "shortForm cuts a command at its name, a start at its id, an implement of a step at its id, a plan implement at its verb (control: other text stays)" → "shortForm cuts a command at its name and an implement of a step at its id (control: other text stays)" (0017 §6.1, 0021 §6.3, 0028 §6.5); (4) `sendView.test.ts` "there are twelve step cases, and no offer gives no send view" → "there are thirteen step cases, …" (the case `NS-6-report`). The Baseline `EXCEPTIONS` list holds only the kinds of AC-010 (finished plan, NS-7's line, the sign, the guard) and the repository copy has none; `RESUME_TEXTS` masks the tips of NS-6-resume (AC-002's texts). `techContext.md` *Test* line and `activeContext.md` updated; no `architecture:` entry changes.
 
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-002 | — | — | open |
-| AC-002 | T-002, T-005 | — | — | open |
-| AC-003 | T-001, T-002 | — | — | open |
-| AC-004 | T-003 | — | — | open |
-| AC-005 | T-001, T-003 | — | — | open |
-| AC-006 | T-006 | — | — | open |
-| AC-007 | T-006 | — | — | open |
-| AC-008 | T-007 | — | — | open |
-| AC-009 | T-003, T-004 | — | — | open |
-| AC-010 | T-001, T-009 | — | — | open |
-| AC-011 | T-009 | — | — | open |
-| AC-012 | T-002, T-005, T-009 | — | — | open |
+| AC-001 | T-002 | `src/core/lifecycle/deriveLifecycle.ts:finishedPlan` | `src/core/board/finishedPlan0028.test.ts` "0028 AC-001 …" | verified |
+| AC-002 | T-002, T-005 | `src/core/board/nextStep.ts:nextStep`, `src/shared/protocol/nextStepTexts.ts:STEP_GUIDES` | `finishedPlan0028.test.ts` "0028 AC-002 …"; `nextStep.test.ts` "0028 AC-016 …" | verified |
+| AC-003 | T-001, T-002 | `deriveLifecycle.ts:decide` (order unchanged) | `finishedPlan0028.test.ts` "0028 AC-003 …"; `nextStepBaseline.test.ts` | verified |
+| AC-004 | T-003 | `nextStep.ts:reportSign`, `nextStepTexts.ts:NS-6-report` | `nextStep.test.ts` "0028 AC-004 …" | verified |
+| AC-005 | T-001, T-003 | `nextStep.ts:reportSign` | `nextStep.test.ts` "0028 AC-005 …" | verified |
+| AC-006 | T-006 | (tests only) | `surfaces0028.test.ts`, `src/adapters/node/surfaces0028.bundle.test.ts` | verified |
+| AC-007 | T-006 | (tests only; `planMap.ts:waysCase` unchanged) | `src/core/planMap/planMap0028.test.ts` | verified |
+| AC-008 | T-007 | (tests only) | `planState0028.timing.test.ts` | verified |
+| AC-009 | T-003, T-004 | `src/core/specs/version.ts:levelsOnImplement` | `nextStep.test.ts` "0028 AC-009 …"; `version.test.ts` | verified |
+| AC-010 | T-001, T-009 | `src/core/board/testing/nextStepSnapshot.ts`, `test/fixtures/next-step-baseline/` | `nextStepBaseline.test.ts` "0028 AC-010 …" | verified |
+| AC-011 | T-009 | `README.md`, `CHANGELOG.md`, `docs/release-checklist.md`, the §5 notes | `src/adapters/node/docsScan.test.ts` "0028 AC-011 …" | verified |
+| AC-012 | T-002, T-005, T-009 | (title audit in T-009 Notes) | `npm run test:unit`; `npm test` is the orchestrator's | built |
 | AC-013 | T-008 | — | manual: orchestrator, preview harness | open |
 | AC-014 | — | — | manual: not run, closed by OP-002 (13); tasks in AC-015 | open |
 | AC-015 | T-009 (checklist) | — | manual: Gregor on `tip-splitter`, before the spec closes | open |
-| AC-016 | T-001, T-005 | — | — | open |
-| AC-017 | T-004 | — | — | open |
-| AC-018 | T-004 | — | — | open |
-| AC-019 | T-007 | — | — | open |
-| AC-020 | T-004 | — | — | open |
-| AC-021 | T-003, T-004 | — | — | open |
+| AC-016 | T-001, T-005 | `nextStep.ts:nextStep` (Ready case) | `nextStep.test.ts` "0028 AC-016 …" | verified |
+| AC-017 | T-004 | `nextStep.ts:verifiedWithoutTick` | `nextStep.test.ts` "0028 AC-017 …" | verified |
+| AC-018 | T-004 | `nextStep.ts:nextStep` (returned work first) | `nextStep.test.ts` "0028 AC-018 …" | verified |
+| AC-019 | T-007 | (tests only) | `src/core/shell/version0028.timing.test.ts` | verified |
+| AC-020 | T-004 | `src/core/board/stepTips.ts:stepTips`, `nextStepTexts.ts:SAME_OR_NEW_REASON_LEVELLED` | `stepTips.test.ts` "0028 AC-020 …" | verified |
+| AC-021 | T-003, T-004 | `nextStep.ts`, `fixtureVersion()` in `lifecycle/testing/projects.ts` | `src/core/board/fiveFixtures.test.ts` "0028 AC-021 …" | verified |
 
 ## Session handoff
 
-- **Done so far:** plan written; spec OP-002, OP-005 resolved and OP-006 added (2026-11-19).
-- **Next action:** review the plan; on the start signal move the pair to `active/` (`/sdd-lifecycle`), set the
-  Baseline, then T-001.
-- **Open decisions:** — (FeatherSpec 1.11.0 release pending, A-011 bounds the risk to T-003's constant)
-- **Baseline:** `f9cadb4` (lifecycle move; first step commit follows)
+- **Done so far:** T-001…T-007 and T-009 verified and committed on `ux-round-3` (2026-11-19); all production code, the Baseline snapshots, the tests of AC-001…AC-012, AC-016…AC-021, the §5 notes, README, CHANGELOG, checklist, title audit and Memory Bank.
+- **Next action:** T-008, the orchestrator's preview (AC-013; projects `/tmp/fs-0028-review`, `/tmp/fs-0028-report`, see its Notes); then `npm test` on Windows and CI (AC-012); AC-015 is Gregor's. Then `/sdd-compile` in a new session, never here. The plan stays `In Progress` until T-008 is ticked.
+- **Open decisions:** — (FeatherSpec 1.11.0 release pending, A-011 bounds the risk to `LEVELLING_SINCE` in `version.ts`). `problems.test.ts` AC-005 is red while another session's spec links a plan not yet written (0027 at the end of this run).
+- **Baseline:** `f9cadb4` (the lifecycle move of the pair; its `.specs` is `test/fixtures/repo-f9cadb4/.specs`).
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

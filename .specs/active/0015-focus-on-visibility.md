@@ -144,6 +144,12 @@ The rules use only what 0002 and 0003 deliver; first match wins, top-down:
 | NS-9 | Backlog, no sibling plan | `/sdd-clarify <spec path>`; then `/sdd-plan <spec path>` |
 | NS-10 | Backlog, any other | `/sdd-plan <spec path>` |
 
+*Amended by 0028 (D-4): §6.1 row NS-7 — `Start <ID> of <plan path>` becomes `Implement <ID> of <plan path>`; where there is no open step `/sdd-plan <spec path>` (0028 §6.5).*
+
+*Amended by 0028 (PD-082): §6.1 row NS-6 (as 0017, 0021 and 0023 amended it) — 0028 §6.2's case "Report first" comes before 0021's case "Open step".*
+
+*Amended by 0028 (PD-081, D-1): §6.1 row NS-5 "Review": Review includes a finished plan (0028 §6.1); the texts stay.*
+
 *Amended by 0017 (PD-060/PD-061): NS-6 per 0017 §6.2: a second line "continue" under "Then, in the same chat, if nothing blocks:" while the plan has an open step.*
 
 *Amended by 0016 (PD-059, proxy): §6.1 NS-1 — reads as 0016 T-18.*
@@ -306,6 +312,7 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
   *Amended by 0022 (PD-069): AC-027 (test audit) — also except the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
   *Amended by 0023 (PD-069): AC-027 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
   *Amended by 0024 (PD-068): AC-027 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
+  *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
 - **AC-028** 0008–0012 shall have status `Deprecated`, stay in `done/` and link this spec as successor; 0003–0007 and 0013 shall carry the amendment notes of §5.
 - **AC-029** The `architecture:` snapshot in `AGENTS.md`, `.architecture/*.md` and `.memory-bank/projectbrief.md` shall name no removed module, no agent run and no provider; the brief's mission shall contain the manifest description of §8 and its success criteria the AC-030 scenario.
 - **AC-030** *(manual, Gregor)* M-1 on `tip-splitter` with the assistant he uses, the Hands-On walkthrough: three areas; a dropped Ready spec shows the NS-7 line, pasted into the chat it starts that step; Active and Review specs show NS-6 and NS-5 lines that the assistant runs as FeatherSpec commands; he checks whether the S7 note reads as noise (PD-057, OP-006) and whether his assistant resolves the project-relative paths (OP-002). Pre-release checklist item.

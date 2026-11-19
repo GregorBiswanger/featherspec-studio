@@ -82,6 +82,8 @@ named as 0021 §6.4; feedback stays.
 | 0020 §4.2 *Tooltip* "`Next step: ` + the full first line in code … the second line in code under its label" | `Next step: ` + the first intent, then the first prompt in code; the second intent, then its prompt in code (§6.3) |
 | 0013 AC-016; 0015 AC-027; 0016 AC-023; 0017 AC-024; 0018 AC-030; 0019 AC-023; 0020 AC-021 (test audits) | Also except the tests 0021 AC-020 lists against a statement this table replaces |
 
+*Amended by 0028 (D-4): §5 row NS-7–NS-10: also NS-7 — its line is `Implement <ID> of <plan path>`, the command short form `Implement <ID>`; without an open step `/sdd-plan <spec path>` with the texts of "Plan without open step" (0028 §6.5).*
+
 ## 6. Business rules
 
 ### 6.1 Intent per step (R-1)
@@ -105,6 +107,8 @@ state their intent and get only Copy prompt.
 | NS-9 | Have the spec challenged, then plan it; Then: write the plan | Challenge | new chat | strong | A fresh reader looks for gaps, contradictions and untestable criteria. | Then write the plan with the second prompt, in any chat. |
 | NS-10 | Write the plan | Plan | any chat | strong, web search | The agent researches and writes the plan as small, verifiable steps. | You read the plan before anything is built. |
 
+*Amended by 0028 (D-4): NS-7's line is `Implement <ID> of <plan path>`, the command short form `Implement <ID>`; without an open step `/sdd-plan <spec path>` with the texts of "Plan without open step" (0028 §6.5).*
+
 **Proposal:** the Intent, Short intent, Session, Model, Effect and Then columns of §6.1 and §6.2 are a proposal
 (08 R-1); Gregor confirms them in the click test (PD-069, OP-002, AC-024); confirmed 2026-11-18 by PD-073. Sources (FeatherSpec 1.10.0 here):
 `sdd-compile.md` ("a new session with a strong model from another model family than the one that implemented: a judge
@@ -124,6 +128,10 @@ Open step = the plan step NS-7's function finds (0015 NS-7). PD-072 (V-1, record
 | Plan without open step | Let the agent report where the plan stands · `/sdd-plan <spec path>` | — | Resume | any chat · fast | The agent checks the plan against the code; with every step ticked it closes the plan and recommends the review. | The spec then shows Verify. |
 | No sibling plan | Write the plan · `/sdd-plan <spec path>` | — | Plan | any chat · strong, web search | The agent researches and writes the plan; for a reactivated spec, a fresh plan for the change. | You read the plan before anything is built. |
 
+*Amended by 0028 (PD-081, D-1): row "Plan without open step" and AC-005 — an Active spec has no finished plan (0028 §6.1); the effect and then-sentence of 0028 §7 (the short intent is 0026's).*
+
+*Amended by 0028 (PD-082): row "Open step" and AC-003 hold only while 0028's case "Report first" does not (0028 AC-004, AC-005).*
+
 *Amended by 0023 (PD-069): §6.2 table — a new first case "returned work" (0023 §5.5, NS-6 returned): while an Active spec has a return note, `/sdd-plan <spec path>` under `Integrate the returned steps`; the rows above hold while no return note of the spec lies.*
 
 Sources: open step — PD-072 (V-1 cases 1–3 passed; case 4: line 1 does not bring missing ticks level after a break,
@@ -142,6 +150,8 @@ the worker suffix. Without open step — `sdd-plan.md` Mode B steps 2 and 4. No 
   shows a step (cards, rows: plain text; tree, status bar: Markdown paragraphs, the intent escaped, the prompt as each
   shows it today).
 - Copy prompt copies the prompt only, never an intent, coach line or other text.
+
+*Amended by 0028 (D-4): §6.3: `Build · Start T-001` reads `Build · Implement T-001`; without an open step `/sdd-plan <spec path>` with the texts of "Plan without open step" (0028 §6.5).*
 
 ### 6.4 Copy prompt (R-4)
 
@@ -243,12 +253,15 @@ vocabulary rule of `.claude/rules/specs.md`; it is never a qualifier here.
   > **Given** Review `.specs/active/0019-x.md` **Then** `Have the result verified` over `/sdd-compile .specs/active/0019-x.md`, `Then, after a READY verdict: close the spec` over `/sdd-lifecycle .specs/active/0019-x.md`, short form `Verify · /sdd-compile`, coach `new chat · strong model, other family`.
   *Amended by 0024 (PD-068): AC-001 — the Copy prompt of the first line is, where Send is offered, 0024's split button (0024 AC-003).*
 - **AC-002** For every fixture of 0015 AC-004 whose rule is not NS-6, the rule ID and the prompts shall be byte-identical to those `nextStep()` returns at the commit on which this spec's implementation starts.
+  *Amended by 0028 (D-4): AC-002 "whose rule is not NS-6": also NS-7 — its line is `Implement <ID> of <plan path>`, the command short form `Implement <ID>`; without an open step `/sdd-plan <spec path>` with the texts of "Plan without open step" (0028 §6.5).*
 - **AC-003** An Active spec whose sibling plan's open step is `<ID>` shall show `Implement <ID> of <plan path>` under `Continue with <ID> <title>`, then `/sdd-plan <spec path>` under `Not sure where it stands? Let the agent report first`, short form `Continue · Implement <ID>`, coach `same chat or new chat · fast model`.
   > **Given** Active `.specs/active/0001-tip-splitter.md`, T-001 and T-002 ticked, T-003 "Reject money values" open **Then** `Continue with T-003 Reject money values` over `Implement T-003 of .specs/active/0001-tip-splitter.plan.md`.
   *Amended by 0023 (PD-069): AC-003 — holds while no return note of the spec lies; with one, 0023 AC-013 gives the returned-work line first.*
+  *Amended by 0028 (PD-082): AC-003 holds only while 0028's case "Report first" does not (0028 AC-004, AC-005).*
 - **AC-004** *(void: PD-072 chose variant A; B is OP-001's fallback)*
 - **AC-005** An Active spec whose sibling plan has no open step shall show `/sdd-plan <spec path>` under `Let the agent report where the plan stands` (short form `Resume · /sdd-plan`, coach `any chat · fast model`), and one without a sibling plan the same prompt under `Write the plan` (short form `Plan · /sdd-plan`, coach `any chat · strong model, allow web search`).
   *Amended by 0023 (PD-069): AC-005 — holds while no return note of the spec lies; with one, 0023 AC-013 gives the returned-work line first.*
+  *Amended by 0028 (PD-081, D-1): AC-005 "whose sibling plan has no open step" — an Active spec has no finished plan (0028 §6.1); the effect and then-sentence of 0028 §7.*
 - **AC-006** Every card and Overview row whose spec has a step and the quick-pick description shall show the step short form of §6.3, the tree row's description the step short form or, where 0022 §4.2's budget drops the intent, the command short form; the status bar text shall keep the command short form (0017 AC-014 unchanged); `Implement <ID> of <plan path>` shall shorten to `Implement <ID>`, `Implement <plan path>` to `Implement`; identical snapshots shall give identical short forms.
 - **AC-007** Every tooltip that shows a next step (card, Overview row, tree row, status bar entry) shall show the full form of §6.3, each line's intent on its own line before its prompt, in line order; the tree tooltip's step part shall start with `Next step: <intent>`; text from the files shall appear escaped, as text.
 - **AC-008** Every Copy prompt of §6.4 in the webview shall be named `Copy prompt: <line>`, for 2000 ms after activation `Copied: <line>` or `Could not copy: <line>`, then `Copy prompt: <line>` again, and put exactly the prompt on the clipboard, no intent or coach text; a text button shall read `Copy prompt`, `Copied` or `Could not copy` at the same times; rendering the detail, Board and Overview of every fixture, the empty states included, shall find no button whose text is `Copy` or whose name starts with `Copy: `; the quick-pick message's action shall be `Copy prompt`.
@@ -271,6 +284,7 @@ vocabulary rule of `.claude/rules/specs.md`; it is never a qualifier here.
 - **AC-020** Every test at the commit on which this spec's implementation starts that decides a statement §5 does not replace shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI. A script compares the test titles of both commits; the plan lists every title missing at the head, a renamed one included, with the replaced statement or the head title that replaces it.
   *Amended by 0023 (PD-069): AC-020 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
   *Amended by 0024 (PD-068): AC-020 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
+  *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
 - **AC-021** 0006, 0007, 0013 and 0015–0020 shall carry the notes of §5; a literal search of `README.md` shall find `Copy prompt`, `About this step`, `featherspec-studio.showStepTips` and `featherspec-studio.modelHints`, and of `CHANGELOG.md` under the version in preparation `Copy prompt`, `showStepTips` and `modelHints`; neither `README.md` nor `docs/release-checklist.md` shall contain `**Copy**` or ``then `continue` ``; the checklist shall carry AC-022–AC-025.
 - **AC-022** *(manual, preview harness by the orchestrator, then Gregor in a real window)* Guideline 12: detail and Overview with the first Now row in Dark, Light and High Contrast at 1600 px and 1000 px window width with the side panel open at its default and at 0022 G-2's minimum width: no intent, prompt or coach line is cut; an open toggletip stays inside its panel and covers no Copy prompt of its step; the `(?)` shows a visible focus outline; screenshots recorded in the plan.
 - **AC-023** *(manual, Gregor)* Both settings appear under "FeatherSpec Studio" in the Settings UI; Show Step Tips toggles the tips in the open panel; Model Hints offers `strong` and `fast` as text fields and the coach line shows the entered name.
@@ -316,6 +330,8 @@ vocabulary rule of `.claude/rules/specs.md`; it is never a qualifier here.
 | A-011 | Coach line advises the first line; the toggletip covers the step (proxy) | Guideline 11 "once per view"; the first line is what cards copy | AC-009, AC-015 |
 | A-012 | Hints are plain text, at most 40 characters, default scope (proxy) | Display only; a workspace value cannot run anything | AC-012 |
 | A-013 | NS-7's and NS-6's then-sentence name a working agreement's earlier stop (proxy) | V-1 case 1 stopped for the test review; 07 §6a "bei TDD Test-Review abwarten"; `sdd-plan.md` Mode B step 3 | §6.1, §6.2 texts |
+
+*Amended by 0028 (D-4): A-005 — the stutter reason `Start · Start T-001` lapses, NS-7 reads `Build · Implement T-001` (0026 owns the short form).*
 
 ## 12. Open points
 

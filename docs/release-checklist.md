@@ -205,6 +205,21 @@ and the expected result. A clear miss reopens the named spec.
 - [ ] **AC-019** *(Gregor)*: say without asking what Send to <Name> does (opens, fills, sends nothing) and which chat it
   uses; confirm or change the texts. The draft part passed (PD-076); the build part is AC-017.
 
+## Plan-state-aware next step (0028)
+
+- [ ] **AC-013** *(preview harness by the orchestrator; guideline 12)*: the detail and the first Now row of a spec whose plan
+  is finished (Review, `/sdd-compile`) and of a spec showing Report first (below 1.11.0, `Current step` names an unfinished
+  step other than the open one), in Dark, Light and High Contrast at 1600 px and 1000 px window width with the side panel
+  open: no intent, prompt or coach line is cut, and the intent `Let the agent report first — the plan and the ticks may
+  differ` wraps only between words. Screenshots in the plan.
+- [ ] **AC-014** *(not run; closed by OP-002, tasks in AC-015)*: the two tasks across views are covered by AC-015.
+- [ ] **AC-015** *(Gregor, on `tip-splitter` with GitHub Copilot and Claude Code, before the spec closes; record the versions)*:
+  (a) an agent ticks the last step: whatever the status line says, the Board shows Review, and the tree, the Overview, the
+  detail and the status bar show `/sdd-compile`; the prompt runs it in a new chat. (b) `Current step` names an unfinished
+  step after the open one: on FeatherSpec 1.10.0 the report comes first and `/sdd-plan` levels the plan; on 1.11.0 the
+  continue line comes first and `Implement <ID>` levels it. (c) On both, a Ready spec's `Implement T-001 of <plan path>`
+  moves the pair to active and builds only T-001.
+
 ## Go
 
 - [ ] **Repository visibility**: the Marketplace page loads the README screenshots from
