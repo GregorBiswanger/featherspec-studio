@@ -3,7 +3,7 @@
 **Spec:** [0027-attach-spec-when-sending.md](0027-attach-spec-when-sending.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-007
+**Current step:** T-009
 
 ## Approach
 
@@ -305,8 +305,8 @@ and `send.ts`/`send.test.ts`: no `‖`.
   - Each file gets a negative control (a change that crosses nothing switches nothing; a planted write gives red).
 - **Verify:** `npx vitest run --project timing-node src/core/assistant/attach0027.timing.test.ts` and
   `npx vitest run --project node src/core/copyNextStep/noWrite.test.ts src/core/assistant/restricted.test.ts`
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** 2026-11-19 · tests only, green at once as the step says; `npx vitest run --project timing-node src/core/assistant/attach0027.timing.test.ts` 5 passed; `--project node src/core/copyNextStep/noWrite.test.ts src/core/assistant/restricted.test.ts` 18 passed; tsc and eslint clean.
+- **Notes:** Files: new `src/core/assistant/attach0027.timing.test.ts` (board world with a model swap for version and for backlog-to-active, shell world for the AGENTS.md line; selection and area stay; negative control 1.10.0 to 1.10.1), `noWrite.test.ts` (real temp copy; spec source sees only `stat`; planted-write control is the existing `control:` test; source scan of the check and the line), `restricted.test.ts` (trusted equals Restricted, the spec attached, negative control without the table). The Plan map header takes the detail's next step (0025 D-2), so the detail view stands for it in the timing test.
 
 ### T-008 — The real URI in the host
 
@@ -319,8 +319,8 @@ and `send.ts`/`send.test.ts`: no `‖`.
   - No chat command runs. `waitFor` uses long waits, and every message names the path and the received value.
 - **Verify:** `npm run compile` here (it compiles and lints the host tests). `npm test` runs on Windows and in CI through
   the orchestrator, and its result is recorded here.
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** 2026-11-19 · `npm run compile` (type check, lint, bundle) clean here; the host test needs `vscode-test`: **not run here, the orchestrator runs `npm test` on Windows and records the result.** **Stage 4 gate (full chain) green 2026-11-19:** 204 files, 3685 passed, 4 skipped; timing 14 files, 33 passed; compile and compile-tests clean.
+- **Notes:** One test in `src/test/board.smoke.test.ts`: the probe `featherspec-studio.test.attachProbe` receives `{ query, isPartialQuery, attachFiles: [host.fileUri(root, key)] }` through `createAssistantHost().execute`; asserts a `vscode.Uri` instance, the exact three keys, `vscode.workspace.fs.stat` kind File and the path suffix (separator-neutral for Windows). No chat command runs. Messages name the path and the received value.
 
 ### T-009 — Preview at two widths and three themes
 
@@ -375,7 +375,7 @@ and `send.ts`/`send.test.ts`: no `‖`.
 | AC-001 | T-001, T-002 | `core/assistant/attachment.ts` (`STEP_ATTACHES`, `attachmentOf`), `sendView.ts`, `core/board/detail.ts`, `core/overview/rows.ts` | `attachment.test.ts` "0027 AC-001 …"; `sendView.test.ts` "0027 AC-001 …" (13 cases × both assistants, first Now row) | green (stage 1 gate) |
 | AC-002 | T-001, T-002, T-006 | `attachment.ts`, `core/specs/version.ts`, `webview/ui/StepAction.tsx` (no line, no description without `attach`) | `attachment.test.ts`, `sendView.test.ts`, `version.test.ts`, `readProject.test.ts`; `attach0027.test.tsx` "0027 AC-002, AC-003 …" | green (stage 3 gate) |
 | AC-003 | T-005, T-006 | `ui/AttachmentLine.tsx`, `ui/StepAction.tsx`, `ui/SendButton.tsx` (`describedBy`), `board/icons.tsx` (`file`), `main.css` | `AttachmentLine.test.tsx`, `SendButton.test.tsx`, `attach0027.test.tsx` "0027 AC-003 …", `webviewCss.test.ts` "0027 AC-003 …", `webviewBundle.test.ts` "0027 AC-003 …" | green (stage 3 gate) |
-| AC-004 | T-003, T-005, T-008 | `assistants.ts` `callsFor`, `attachment.ts` `createAttachmentCheck`, `send.ts`, `ports/assistant.ts` `fileUri`, `adapters/vscode/assistantHost.ts`, `ui/SendButton.tsx` (payload `attach`) | `sendAttach.test.ts` "0027 AC-004 …"; `SendButton.test.tsx` "0027 AC-004 …"; `assistantHost.test.ts` "0027 T-003 …"; real `vscode.Uri` in T-008 | partial: core, adapter and webview green (stage 3 gate); host smoke open (T-008) |
+| AC-004 | T-003, T-005, T-008 | `assistants.ts`, `attachment.ts`, `send.ts`, `ports/assistant.ts`, `adapters/vscode/assistantHost.ts` (`fileUri`), `ui/SendButton.tsx` | `sendAttach.test.ts` "0027 AC-004 …"; `SendButton.test.tsx`; `assistantHost.test.ts`; `src/test/board.smoke.test.ts` "0027 AC-004 …" (host, orchestrator on Windows) | green here (stage 4 gate); host smoke written, `npm test` by the orchestrator |
 | AC-005 | T-003 | `assistants.ts` `callsFor` (Claude Code suffix) | `sendAttach.test.ts` "0027 AC-005 …" | green (stage 2 gate) |
 | AC-006 | T-003 | `send.ts` (no check without `attach` or for a non-attaching assistant) | `sendAttach.test.ts` "0027 AC-006 …" | green (stage 2 gate) |
 | AC-007 | T-002, T-003 | `shared/protocol/assistant.ts`, `assistants.ts` (`attachFiles` once) | `assistant.test.ts` "0027 AC-007 …"; `sendAttach.test.ts` "0027 AC-007 …"; `sourceScan.test.ts` "0027 AC-007 …" and `SEND_FORBIDDEN_TERMS` | green (stage 2 gate) |
@@ -383,9 +383,9 @@ and `send.ts`/`send.test.ts`: no `‖`.
 | AC-009 | T-004 | `send.ts`, `assistantTexts.ts` (`sendOpenedWithoutText`, `attachMissingOutputText`) | `sendAttach.test.ts` "0027 AC-009 …" (per cause and assistant, hang) | green (stage 2 gate) |
 | AC-010 | T-004 | `attachment.ts` `createAttachmentCheck` (spec entries of the model only) | `sendAttach.test.ts` "0027 AC-010 …" | green (stage 2 gate) |
 | AC-011 | T-002 | `sendView.ts` `tipClosingOf`, `assistantTexts.ts` `ATTACH_UPDATE_TEXT` | `sendView.test.ts` "0027 AC-011 …"; `detail.test.ts`, `rows.test.ts` (amended literals) | green (stage 1 gate) |
-| AC-012 | T-007 | — | — | open |
-| AC-013 | T-006, T-007 | `assistantTexts.ts` (text module), `webview/userLanguage` | `userLanguage.test.tsx` "0027 AC-013 …"; no-write and Restricted Mode in T-007 | partial: user-language sweep green (stage 3 gate); no-write, Restricted Mode open (T-007) |
-| AC-014 | T-008, T-010 | — | — | open |
+| AC-012 | T-007 | `attachment.ts`, `sendView.ts` (pure of the model, so a model change recomputes it) | `attach0027.timing.test.ts` "0027 AC-012 …" (board and shell worlds, 500 ms) | green (stage 4 gate) |
+| AC-013 | T-006, T-007 | `assistantTexts.ts` (text module), `attachment.ts` (stat only) | `noWrite.test.ts` "0027 AC-013 …" (2), `restricted.test.ts` "0027 AC-013 …", `userLanguage.test.tsx` "0027 AC-013 …" | green (stage 4 gate) |
+| AC-014 | T-008, T-010 | — | title audit and the `npm test` part in T-010; `src/test/board.smoke.test.ts` written (T-008) | partial: smoke test written, `npm test` by the orchestrator; audit open (T-010) |
 | AC-015 | T-010 | — | — | open |
 | AC-016 | T-009 | — | manual: orchestrator, preview harness, then Gregor | open |
 | AC-017 | T-010 (checklist) | — | manual: Gregor on `tip-splitter`, per assistant, before the spec closes | open |
@@ -395,8 +395,8 @@ and `send.ts`/`send.test.ts`: no `‖`.
 
 ## Session handoff
 
-- **Done so far:** stages 1 to 3 done (T-001…T-006), all three stage gates green (2026-11-19); the line renders in the detail, the first Now row and the map header.
-- **Next action:** T-007 (freshness, no writes, Restricted Mode: tests only), then T-008 (host smoke test for the real URI); stage 4 gate at the end of T-008.
+- **Done so far:** stages 1 to 4 done (T-001…T-008), all four stage gates green (2026-11-19); `npm test` (host smoke) is the orchestrator's on Windows.
+- **Next action:** T-009 (preview: orchestrator's harness `/home/claude/orch/preview/run.sh`), then T-010 (§5 notes, docs, title audit, architecture, Memory Bank, final gates).
 - **Open decisions:** OP-006 (C-2: Copilot and the Claude Code extension on 1.11.0) and the FeatherSpec 1.11.0 release.
   Both block closing, not building. A re-read flips one `attachesSpec` entry.
 - **Baseline:** `81dc0aa` (head of `ux-round-3` before the first step commit; title audit base).

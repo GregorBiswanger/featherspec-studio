@@ -13,6 +13,8 @@ import { readProject } from '../specs/readProject';
 import { createCopyNextStep } from './copyNextStep';
 import { createFakeAssistantHost } from '../assistant/testing/fakeAssistantHost';
 import { createSend } from '../assistant/send';
+import { createAttachmentCheck } from '../assistant/attachment';
+import type { SpecSourcePort } from '../ports/specSource';
 import { openSettings } from '../settings/openSettings';
 import { createSetupClock } from '../setup/testing/setupClock';
 import { createEntryWorld } from './testing/entryWorld';
@@ -279,6 +281,60 @@ describe('0017 AC-023: no Copy, click or command writes a file', () => {
             expect(source, file).not.toMatch(/\.update\(|\.inspect\(|writeFile|appendFile|mkdir|unlink|rename\(|rmSync|fs\.|child_process|spawn\(|exec\(|executeCommand/);
         }
         expect("child_process.spawn('x')").toMatch(/child_process/);
+    });
+
+    it('0027 AC-013: an attaching Send, a Send whose file is missing and a Send with a foreign path leave a temp copy of fs110-ready-synthetic unchanged; the spec source sees only stat', async () => {
+        temp = await fs.mkdtemp(path.join(os.tmpdir(), 'attach-nowrite-'));
+        await fs.cp(fixturePath('fs110-ready-synthetic'), temp, { recursive: true });
+        const nodeSource = createNodeSpecSource();
+        const project = await readProject(nodeSource, temp, '1.11.0');
+        const model = { project, lifecycle: deriveLifecycle(project) };
+        const key = '.specs/backlog/0001-ready-feature.md';
+        expect(project.specs.map((spec) => spec.key)).toContain(key);
+        const before = await snapshotTree(temp);
+        const used: string[] = [];
+        const specs: Pick<SpecSourcePort, 'stat'> = {
+            stat: (root, relative) => {
+                used.push('stat');
+                return nodeSource.stat(root, relative);
+            },
+        };
+        const host = createFakeAssistantHost(['workbench.action.chat.newChat', 'workbench.action.chat.open', 'claude-vscode.editor.open']);
+        host.install('GitHub.copilot-chat');
+        host.install('anthropic.claude-code');
+        const board = createBoardWorld(model);
+        const sender = createSend({
+            host,
+            clipboard: { writeText: async () => undefined },
+            ui: { warn: () => undefined },
+            output: { appendBlock: () => undefined },
+            clock: createSetupClock(),
+            platform: 'linux',
+            chosen: { read: () => 'claudeCode' },
+            attachment: createAttachmentCheck({ source: board.source, specs, host }),
+            attaching: () => true,
+        });
+        const line = `/sdd-clarify ${key}`;
+        const attached = await sender.send({ assistant: 'claudeCode', target: 'new', line, attach: key });
+        await fs.rm(path.join(temp, ...key.split('/')));
+        const missingBefore = await snapshotTree(temp);
+        const missing = await sender.send({ assistant: 'claudeCode', target: 'new', line, attach: key });
+        const foreign = await sender.send({ assistant: 'claudeCode', target: 'new', line, attach: 'AGENTS.md' });
+        expect([attached.outcome, missing.outcome, foreign.outcome]).toEqual(['opened', 'opened', 'opened']);
+        expect(missing.text).toContain('the file was not found');
+        expect(host.calls[0]?.args[1]).toBe(`${line} @${key}`);
+        expect(used).toEqual(['stat', 'stat']);
+        expect(await snapshotTree(temp)).toEqual(missingBefore);
+        expect(before).not.toEqual(missingBefore);
+        board.service.dispose();
+    });
+
+    it('0027 AC-013: the attachment check and the call shapes call no configuration update, no file API and no network', async () => {
+        for (const file of ['src/core/assistant/attachment.ts', 'src/core/assistant/assistants.ts', 'src/core/assistant/send.ts', 'src/webview/ui/AttachmentLine.tsx']) {
+            const source = await fs.readFile(path.resolve(process.cwd(), ...file.split('/')), 'utf8');
+            expect(source, file).not.toMatch(/\.update\(|\.inspect\(|writeFile|appendFile|mkdir|unlink|rename\(|rmSync|fs\.|fetch\(|https?:\/\/|readBytes|\.list\(/);
+        }
+        expect("source.readBytes(root, key)").toMatch(/readBytes/);
     });
 
     it('control: the snapshot sees a file that appears in the tree', async () => {
