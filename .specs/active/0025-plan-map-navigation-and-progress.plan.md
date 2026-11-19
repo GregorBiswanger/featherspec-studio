@@ -244,8 +244,8 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
     - `messages.test.ts` (guard, version).
 - **Verify:** `npx vitest run src/core/shell/shellService.navigation.test.ts src/shared/protocol/messages.test.ts` red
   (no `focus`), then `npm run test:unit` and `npm run compile` green.
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-19. Red: `npx vitest run src/core/shell/shellService.navigation.test.ts src/shared/protocol/messages.test.ts` 7 failed (no shellEvent/panelReady, version 8). Green: same files plus src/core/shell, src/shared/protocol, src/adapters, src/webview, tsc ×2 clean. Full chain at the end of stage 2.
+- **Notes:** Proxy decisions: a spec target aims by exactly one of `step`, `ways` or `heading` (new, for the tree's spec-alone case: heading focus); a plain spec target (Overview drill) carries no focus. `shellEvent()` replaces `view()` in the panel's push; `open()` and `panelGone()` drop a pending focus. The client snapshot keeps the last focus (`focus`, same object until the host sends another). `v:` literals in tests moved 8 to 9, 'other version' literals 9 to 10.
 
 ### T-006 — The Plan map applies a target
 

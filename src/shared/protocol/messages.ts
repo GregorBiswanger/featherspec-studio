@@ -23,7 +23,7 @@ export const ACTION_IDS = [
 export type ActionId = (typeof ACTION_IDS)[number];
 
 export type NavigationTarget =
-    | { kind: 'spec'; stem: string; path?: string }
+    | { kind: 'spec'; stem: string; path?: string; step?: string; ways?: true; heading?: true }
     | { kind: 'boardFilter'; filter: BoardFilter };
 
 export interface NavigationRequest {
@@ -157,8 +157,19 @@ export interface OverviewEventPayload {
     view: OverviewView;
 }
 
+/** 0025 A-011: a one-shot focus request; it reaches the webview in exactly one shell event. */
+export interface ShellFocus {
+    n: number;
+    stem: string;
+    path?: string;
+    step?: string;
+    ways?: true;
+    heading?: true;
+}
+
 export interface ShellEventPayload {
     view: ShellView;
+    focus?: ShellFocus;
 }
 
 export interface ResponsePayload {
@@ -179,7 +190,16 @@ export function isNavigationTarget(value: unknown): value is NavigationTarget {
         return false;
     }
     if (value.kind === 'spec') {
-        return isString(value.stem) && value.stem.length > 0 && isOptionalString(value.path);
+        const aims = [value.step !== undefined, value.ways !== undefined, value.heading !== undefined].filter(Boolean).length;
+        return (
+            isString(value.stem) &&
+            value.stem.length > 0 &&
+            isOptionalString(value.path) &&
+            aims <= 1 &&
+            (value.step === undefined || (isString(value.step) && value.step.length > 0)) &&
+            (value.ways === undefined || value.ways === true) &&
+            (value.heading === undefined || value.heading === true)
+        );
     }
     if (value.kind === 'boardFilter') {
         return isBoardFilter(value.filter);
@@ -341,8 +361,15 @@ export function isShellView(value: unknown): value is ShellView {
     );
 }
 
+function isShellFocus(value: unknown): value is ShellFocus {
+    if (!isRecord(value) || !Object.keys(value).every((key) => ['n', 'stem', 'path', 'step', 'ways', 'heading'].includes(key))) {
+        return false;
+    }
+    return typeof value.n === 'number' && Number.isInteger(value.n) && value.n >= 1 && isNavigationTarget({ kind: 'spec', ...value, n: undefined });
+}
+
 export function isShellEventPayload(value: unknown): value is ShellEventPayload {
-    return isRecord(value) && isShellView(value.view);
+    return isRecord(value) && isShellView(value.view) && (value.focus === undefined || isShellFocus(value.focus));
 }
 
 export function isResponsePayload(value: unknown): value is ResponsePayload {
