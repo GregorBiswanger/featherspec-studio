@@ -679,8 +679,19 @@ describe('0022 AC-001, AC-003, AC-027, AC-028: Overview rows follow the list wid
         expect(rule).toMatch(/grid-template-rows:\s*subgrid/);
         expect(rule).toMatch(/grid-column:\s*1 \/ -1/);
         expect(rulesFor(css, '.ov-row-item > .next-step-copy').map((entry) => entry.body).join(';')).toMatch(/grid-area:\s*copy/);
-        for (const [selector, area] of [['.ov-row .ov-number', 'number'], ['.ov-row .ov-title', 'title'], ['.ov-state', 'state'], ['.ov-row .ov-problem', 'problem'], ['.ov-row .step-text', 'step']] as const) {
+        for (const [selector, area] of [['.ov-row .ov-number', 'number'], ['.ov-row .ov-title', 'title'], ['.ov-state', 'state'], ['.ov-row .ov-problem', 'problem'], ['.ov-row-item > .step-text', 'step']] as const) {
             expect(rulesFor(css, selector).map((entry) => entry.body).join(';'), selector).toMatch(new RegExp(`grid-area:\\s*${area}\\b`));
+        }
+    });
+
+    it('0025 AC-027: the step text is a grid item beside the row button, inert except for its link, with the left inset in the narrow layout', () => {
+        const rule = rulesFor(css, '.ov-row-item > .step-text').map((entry) => entry.body).join(';');
+        expect(rule).toMatch(/grid-area:\s*step/);
+        expect(rule).toMatch(/pointer-events:\s*none/);
+        expect(rulesFor(css, '.ov-row-item > .step-text .file-link').map((entry) => entry.body).join(';')).toMatch(/pointer-events:\s*auto/);
+        expect(rulesFor(css, '.ov-row-item > .step-text').some((entry) => entry.container === NARROW && /padding-left:\s*12px/.test(entry.body))).toBe(true);
+        for (const condition of [WIDE, MIDDLE, NARROW]) {
+            expect(areasOf(condition, '.ov-row-item').flat(), condition).toContain('step');
         }
     });
 

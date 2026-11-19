@@ -7,7 +7,7 @@ import { fileNotFoundText, HISTORY_NOT_AVAILABLE_TEXT, NO_PLAN_TEXT } from '../.
 import { planSample } from '../../shared/protocol/testing/planSample';
 import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
-import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
+import { baseView, click, ctrlClick, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
 import { resetSectionMemory } from './sectionMemory';
 import { copyResultEvent, detailEvent, detailView, historySection, openFileResultEvent, PLAN_KEY, sendResultEvent, SPEC_KEY } from './testing/views';
 import { ABOUT_STEP_LABEL, COPIED_TEXT, COPY_FAILED_TEXT, NEXT_STEP_DONE_TEXT } from '../../shared/protocol/nextStepTexts';
@@ -213,6 +213,24 @@ describe('0019 AC-011, AC-012: Progress', () => {
         await send(detailEvent(spec({ progress, state: 'Done' })));
         const plain = links(mounted.container.querySelector('.progress-next')!)[0]!;
         expect(plain.title).toBe('Open 0007-thing.plan.md at line 20');
+    });
+
+    it('0025 AC-027: the ID in an intent line of the Next step is a step link; Ctrl opens the plan; without a link the intent stays text', async () => {
+        const step = { id: 'T-002', open: { key: PLAN_KEY, line: 20 } };
+        const lines = [{ text: 'Implement T-002 of p', intent: 'Continue with T-002 Second step', step }, { text: '/sdd-plan s', intent: 'Not sure where it stands? Let the agent report first' }];
+        const root = await open(spec({}, { rule: 'NS-6', lines }));
+        const next = root.querySelector('.next-step')!;
+        const link = links(next)[0]!;
+        expect(link.textContent).toBe('T-002');
+        expect(link.title).toBe('T-002\nShow T-002 in the plan map · Ctrl+click opens the plan file');
+        expect(textOf(next.querySelector('.next-step-intent')!)).toBe('Continue with T-002 Second step');
+        await click(link);
+        expect(posted.filter((message) => message.type === 'navigate').map((message) => message.payload)).toEqual([{ area: 'planMap', target: { kind: 'spec', stem: '0007-thing', step: 'T-002' } }]);
+        await ctrlClick(link);
+        expect(posted.filter((message) => message.type === 'openFile')).toHaveLength(1);
+        expect(links(next).filter((candidate) => candidate.classList.contains('file-link')).map((candidate) => candidate.textContent)).toEqual(['T-002']);
+        const plain = await open(spec({}, { rule: 'NS-6', lines: [{ text: 'Implement T-002 of p', intent: 'Continue with T-002 Second step' }] }));
+        expect(links(plain.querySelector('.next-step')!)).toEqual([]);
     });
 
     it('a complete plan shows no next open step; no countable step says so; an unreadable plan says so', async () => {

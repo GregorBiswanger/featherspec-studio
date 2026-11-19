@@ -1,5 +1,27 @@
 import { isRecord } from './envelope';
 
+export interface StepLinkView {
+    id: string;
+    open: { key: string; line: number };
+}
+
+export function isStepLinkView(value: unknown): value is StepLinkView {
+    return (
+        isRecord(value) &&
+        Object.keys(value).length === 2 &&
+        typeof value.id === 'string' &&
+        isRecord(value.open) &&
+        Object.keys(value.open).length === 2 &&
+        typeof value.open.key === 'string' &&
+        typeof value.open.line === 'number'
+    );
+}
+
+export function splitAtId(text: string, id: string): { before: string; after: string } | undefined {
+    const match = new RegExp(`\\b${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).exec(text);
+    return match === null ? undefined : { before: text.slice(0, match.index), after: text.slice(match.index + id.length) };
+}
+
 export interface StepLineView {
     text: string;
     intent: string;

@@ -1265,8 +1265,14 @@ main > h1 {
     grid-area: problem;
 }
 
-.ov-row .step-text {
+.ov-row-item > .step-text {
     grid-area: step;
+    padding: 5px 0;
+    pointer-events: none;
+}
+
+.ov-row-item > .step-text .file-link {
+    pointer-events: auto;
 }
 
 .ov-status {
@@ -1500,6 +1506,10 @@ blockquote.illustration {
             "step step step step copy";
     }
 
+    .ov-row-item > .step-text {
+        padding-left: 12px;
+    }
+
     .ov-row .ov-title {
         overflow-wrap: break-word;
         white-space: normal;
@@ -1655,8 +1665,8 @@ blockquote.illustration {
 .card[aria-current="true"] .step-label,
 .ov-row[aria-current="true"] .ov-number,
 .ov-row[aria-current="true"] .ov-status,
-.ov-row[aria-current="true"] .step-text,
-.ov-row[aria-current="true"] .step-label {
+.ov-row[aria-current="true"] + .step-text,
+.ov-row[aria-current="true"] + .step-text .step-label {
     color: var(--vscode-list-activeSelectionForeground);
 }
 

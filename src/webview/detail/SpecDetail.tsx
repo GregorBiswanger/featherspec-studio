@@ -138,7 +138,7 @@ function Picture(props: {
     return (
         <>
             <Header detail={detail} onClose={props.onClose} back={props.back} headingRef={headingRef} />
-            <NextStep nextStep={detail.nextStep} copyResult={props.copyResult} onCopy={props.onCopy} sendResult={props.sendResult} onSend={props.onSend} />
+            <NextStep nextStep={detail.nextStep} fileResult={fileResult} onOpen={onOpen} copyResult={props.copyResult} onCopy={props.onCopy} sendResult={props.sendResult} onSend={props.onSend} />
             {detail.problems.length === 0 ? null : (
                 <ul className="detail-problems" aria-label={BANNER_HEADING}>
                     {detail.problems.map((line, index) => (

@@ -3,6 +3,7 @@ import { sendViewOf, tipClosingOf } from '../assistant/sendView';
 import { problemSentence } from '../lifecycle/problemSentence';
 import { integrateIsQuiet } from '../planMap/returnedWork';
 import type { DetailView, DiagnosticLine, NextStepView, StatusHistoryItem } from '../../shared/protocol/detail';
+import type { StepLinkView } from '../../shared/protocol/stepView';
 import { HISTORY_LABEL, successorText } from '../../shared/protocol/texts';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { HistoryCause, HistoryView } from '../lifecycle/statusHistory';
@@ -13,6 +14,7 @@ import { nextStep, type NextStep } from './nextStep';
 import { stepTips } from './stepTips';
 import { filesOf, progressOf } from './situation';
 import { planOf } from '../planMap/planMap';
+import { stepLinkOf } from './stepLinks';
 
 export interface DetailInput {
     selection: { stem: string; path?: string } | undefined;
@@ -39,11 +41,14 @@ function diagnosticLine(diagnostic: LifecycleEntry['diagnostics'][number]): Diag
     return file === undefined ? base : { ...base, open: { key: file, line: line === undefined || line < 1 ? 1 : line } };
 }
 
-function nextStepView(next: NextStep, tips: StepTipSettings | undefined, offer: Offer | undefined, version: string, quiet: boolean): NextStepView {
+function nextStepView(next: NextStep, tips: StepTipSettings | undefined, offer: Offer | undefined, version: string, quiet: boolean, link: (intent: string) => StepLinkView | undefined): NextStepView {
     if (!('lines' in next)) {
         return next;
     }
-    const lines = next.lines.map((line) => ({ text: line.text, intent: line.intent }));
+    const lines = next.lines.map((line) => {
+        const step = link(line.intent);
+        return { text: line.text, intent: line.intent, ...(step === undefined ? {} : { step }) };
+    });
     const send = sendViewOf(offer, next.case);
     return {
         rule: next.rule,
@@ -94,7 +99,7 @@ export function buildDetail(input: DetailInput): DetailView {
         rule: entry.rule,
         persistence: entry.persistence,
         ...(entry.deprecated === undefined ? {} : { successor: successorText(entry.deprecated.successor) }),
-        nextStep: nextStepView(next, input.tips, input.offer, model.project.version, integrateIsQuiet(model, entry, spec)),
+        nextStep: nextStepView(next, input.tips, input.offer, model.project.version, integrateIsQuiet(model, entry, spec), (intent) => stepLinkOf(model, entry, intent)),
         problems: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').map(diagnosticLine),
         notes: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'note').map(diagnosticLine),
         ...(progress === undefined ? {} : { progress }),

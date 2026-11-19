@@ -5,6 +5,7 @@ import { BadgeIcon, StateIcon } from '../../board/icons';
 import { useBoard } from '../../board/boardStore';
 import type { CopyLook } from '../../ui/CopyButton';
 import { StepAction } from '../../ui/StepAction';
+import { StepLink } from '../../ui/StepLink';
 import { StepText } from '../../ui/StepText';
 import { Toggletip } from '../../ui/Toggletip';
 import { Drill } from './Drill';
@@ -18,7 +19,7 @@ export function SpecRow(props: { row: OverviewRow; group: string; copyLook?: Cop
     const { row, group } = props;
     const openSpec = useOpenSpec();
     const selection = useShell().view?.selection;
-    const { copyResult, copyText, sendResult, sendPrompt } = useBoard();
+    const { copyResult, copyText, sendResult, sendPrompt, fileResult, openFile } = useBoard();
     const { spec } = row;
     const named = row.status === row.state;
     const title = spec.found ? (spec.title ?? NOT_AVAILABLE_TEXT) : specLabelText(spec);
@@ -43,8 +44,24 @@ export function SpecRow(props: { row: OverviewRow; group: string; copyLook?: Cop
                         <BadgeIcon kind="diagnostic" />
                     </span>
                 ) : null}
-                {row.step === undefined ? null : <StepText step={row.step} />}
             </Drill>
+            {row.step === undefined ? null : (
+                <StepText
+                    step={row.step}
+                    {...(row.link === undefined
+                        ? {}
+                        : {
+                              link: {
+                                  id: row.link.id,
+                                  render: () => (
+                                      <StepLink id={row.link!.id} target={row.link!.open} spec={{ stem: spec.stem, ...(spec.path === undefined ? {} : { path: spec.path }) }} fileResult={fileResult} onOpen={openFile}>
+                                          {row.link!.id}
+                                      </StepLink>
+                                  ),
+                              },
+                          })}
+                />
+            )}
             {row.step === undefined ? null : (
                 <StepAction send={row.send} look={row.quiet === true && props.copyLook === 'primary' ? 'secondary' : (props.copyLook ?? 'icon')} line={row.step.line} sendResult={sendResult} onSend={sendPrompt} copyResult={copyResult} onCopy={copyText} />
             )}

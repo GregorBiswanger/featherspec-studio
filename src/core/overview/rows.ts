@@ -2,6 +2,7 @@ import type { BoardState } from '../../shared/protocol/boardFilter';
 import type { OverviewRow, OverviewUpNext } from '../../shared/protocol/overview';
 import { needsOf } from '../board/needs';
 import { nextStep, stepView } from '../board/nextStep';
+import { stepLinkOf } from '../board/stepLinks';
 import { stepTips } from '../board/stepTips';
 import type { Offer } from '../assistant/offer';
 import { sendViewOf, tipClosingOf } from '../assistant/sendView';
@@ -48,16 +49,19 @@ function rowOf(model: ShellModel, specs: SpecResolver, entry: LifecycleEntry, fi
     if (step === undefined) {
         return row;
     }
+    const linked = stepLinkOf(model, entry, step.short);
+    const link = linked === undefined ? {} : { link: linked };
     const tips = first?.tips;
     const offer = first?.offer;
     const next = (tips === undefined || !tips.show) && offer === undefined ? undefined : nextStep(model, entry.key);
     if (next === undefined || !('case' in next)) {
-        return { ...row, step, ...quietOf(model, entry) };
+        return { ...row, step, ...link, ...quietOf(model, entry) };
     }
     const send = sendViewOf(offer, next.case);
     return {
         ...row,
         step,
+        ...link,
         ...quietOf(model, entry),
         ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer), { version: model.project.version, ...(next.reason === undefined ? {} : { reason: next.reason }) }) }),
         ...(send === undefined ? {} : { send }),

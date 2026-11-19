@@ -190,10 +190,11 @@ describe('0018 AC-006: a spec row on one line', () => {
         expect(drill.querySelector('.ov-number')?.textContent).toBe('0001');
         expect(drill.querySelector('.ov-title')?.textContent).toBe('Alpha');
         expect(drill.querySelector('.ov-status')?.textContent).toBe('Blocked');
-        expect(drill.querySelector('.step-label')?.textContent).toBe('Next');
-        expect(drill.querySelector('.step-short')?.textContent).toBe('Implement T-003');
-        expect(drill.querySelector('.step-intent')?.textContent).toBe('Continue');
-        expect(drill.querySelector('.step-text')?.textContent).toBe('Next Continue · Implement T-003');
+        expect(row.querySelector('.step-label')?.textContent).toBe('Next');
+        expect(row.querySelector('.step-short')?.textContent).toBe('Implement T-003');
+        expect(row.querySelector('.step-intent')?.textContent).toBe('Continue');
+        expect(row.querySelector('.step-text')?.textContent).toBe('Next Continue · Implement T-003');
+        expect(drill.querySelector('.step-text')).toBeNull();
         expect(row.querySelector('.next-step-copy')?.getAttribute('aria-label')).toBe('Copy prompt: Implement T-003 of .specs/active/0001-a.plan.md');
         expect(drill.textContent).not.toContain('continue');
         expect(drill.querySelector('br')).toBeNull();
@@ -248,7 +249,8 @@ describe('0018 AC-006: a spec row on one line', () => {
         const row = nowRow(container, '0001-a');
         const copy = row.querySelector<HTMLButtonElement>('.next-step-copy')!;
         expect(row.querySelector('.ov-row')?.contains(copy)).toBe(false);
-        expect(row.querySelector('.ov-row')?.nextElementSibling).toBe(copy);
+        expect(row.querySelector('.ov-row')?.nextElementSibling).toBe(row.querySelector('.step-text'));
+        expect(row.querySelector('.step-text')?.nextElementSibling).toBe(copy);
         await click(copy);
         await pressKey(copy, 'Enter');
         await pressKey(copy, ' ');

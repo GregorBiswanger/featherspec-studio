@@ -3,7 +3,7 @@
 **Spec:** [0025-plan-map-navigation-and-progress.md](0025-plan-map-navigation-and-progress.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-008
+**Current step:** T-009
 
 ## Approach
 
@@ -319,8 +319,8 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
     - `webviewCss.test.ts` (row area, all three container widths).
   - Existing Board and tree tests stay green.
 - **Verify:** `npm run test:unit` — red first (StepText ignores the link, ID plain), then green.
-- [ ] **Verified (T-008):** —
-- **Notes:** —
+- [x] **Verified (T-008):** 2026-11-19. Red: `npx vitest run src/core/board/stepLinks.test.ts` 4 failed against the stub (Not implemented, no `step`/`link`). Green: src/core, src/shared, src/webview and webviewCss.test.ts passed; eslint, tsc ×2 clean. Full chain at the end of stage 3.
+- **Notes:** `StepLinkView {id, open}` and `splitAtId` live in `shared/protocol/stepView.ts` (guard `isStepLinkView`); `NextStepLineView.step?` links the ID in the line's intent (the prompt line stays plain), `OverviewRow.link?` the ID in `step.short` (guard: only with a step). `stepView()` and `nextStep()` untouched (baseline tests green). `StepLink` takes an optional `spec` (the row's spec, so another spec's row selects it by the navigate target); `StepText` takes an optional `link`. `SpecRow` renders the step text as a sibling after the row button; the retargeted 0018 AC-006 tests now read the step text beside the button (accessible name of the row button no longer holds the step text; Copy stays the next Tab stop after the link). Navigating leaves the Overview at once (the client switches the area), so tests use one activation per mount. CSS: `.ov-row-item > .step-text` (grid area step, `pointer-events: none`, link `auto`, 12 px left inset in the narrow layout); the selected-row colour follows with `.ov-row[aria-current] + .step-text`.
 
 ### T-009 — The Plan map header carries the next step
 
@@ -511,12 +511,12 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
 | AC-024 | T-015 (checklist) | — | manual: Gregor on `tip-splitter`, before the spec closes | open |
 | AC-025 | T-003 | core/planMap/returnedWork.ts | returnedWork.test.ts | verified |
 | AC-026 | T-004 | returnedWork.ts:integrateIsQuiet, SendButton.tsx | quiet0025.test.ts, primaryButtons.test.tsx, SendButton.test.tsx | verified |
-| AC-027 | T-008 | — | — | open |
+| AC-027 | T-008 | core/board/stepLinks.ts, NextStep.tsx, SpecRow.tsx, StepText.tsx | stepLinks.test.ts, Overview.stepLinks.test.tsx, SpecDetail.test.tsx, webviewCss.test.ts | verified |
 
 ## Session handoff
 
-- **Done so far:** stages 1 and 2 (T-001…T-007) built, verified and committed, one commit per step, stage gate chains green (2026-11-19). Spec and plan are in `active/`, Baseline `b8e41c7`.
-- **Next action:** stage 3, T-008 (step IDs in Next steps and Overview rows are links), then T-009 (header next step), T-010 (parallel hint and ways target), stage 4 (T-011, T-012), stage 5 (T-013…T-015). Run the stage gate chain at the end of each stage (IMPL-R3 test cadence).
+- **Done so far:** stages 1 and 2 (T-001…T-007) and T-008 built, verified and committed, one commit per step, stage gate chains green for stages 1 and 2 (2026-11-19). Spec and plan are in `active/`, Baseline `b8e41c7`.
+- **Next action:** stage 3, T-009 (header next step), T-010 (parallel hint and ways target), stage 4 (T-011, T-012), stage 5 (T-013…T-015). Run the stage gate chain at the end of each stage (IMPL-R3 test cadence).
 - **Open decisions:** none. Proxies recorded in the Notes of T-003 (AC-025 beats AC-015's DONE-only example on `fs110-parallel-synthetic`; U-08's m), T-005 (`heading` target, one-shot focus), T-006 (a focus for a spec not shown waits), T-007 (modifier handling).
 - **Where things are:** `core/planMap/returnedWork.ts` (U-05, U-08, `integrateIsQuiet`), `core/planMap/stageLines.ts`, `shared/protocol/{percent,stepLook}.ts`, `webview/ui/StepLink.tsx`, `webview/areas/planMap/target.ts`; the client snapshot carries `focus`; `ways` targets are accepted by the protocol and the service but the map applies only step and heading targets until T-010.
 - **Baseline:** `b8e41c7`

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isCardView } from './board';
 import { isOverviewView } from './overview';
-import { isStepView } from './stepView';
+import { isStepLinkView, isStepView, splitAtId } from './stepView';
 import { sampleView } from './testing/overviewSample';
 
 const STEP = { intent: 'Build', short: 'Start T-003', line: 'Start T-003 of p', lines: [{ text: 'Start T-003 of p', intent: 'Start implementing: T-003 Step' }] };
@@ -49,5 +49,31 @@ describe('0017 AC-001: the step view guard', () => {
         expect(isOverviewView({ ...view, now: [{ ...row, step: STEP }] })).toBe(true);
         expect(isOverviewView({ ...view, now: [{ ...row, step: { ...STEP, extra: 1 } }] })).toBe(false);
         expect(isOverviewView({ ...view, now: [{ ...row, other: 1 }] })).toBe(false);
+    });
+});
+
+describe('0025 AC-027: step link view and the split at an ID', () => {
+    const LINK = { id: 'T-003', open: { key: '.specs/active/0001-a.plan.md', line: 12 } };
+
+    it('splitAtId cuts the text around the first whole ID and gives nothing for a partial one', () => {
+        expect(splitAtId('Implement T-003', 'T-003')).toEqual({ before: 'Implement ', after: '' });
+        expect(splitAtId('Continue with T-003 Reject money', 'T-003')).toEqual({ before: 'Continue with ', after: ' Reject money' });
+        expect(splitAtId('Continue with T-0031', 'T-003')).toBeUndefined();
+        expect(splitAtId('/sdd-compile', 'T-003')).toBeUndefined();
+    });
+
+    it('the guard takes exactly an ID and a line target', () => {
+        expect(isStepLinkView(LINK)).toBe(true);
+        expect(isStepLinkView({ ...LINK, extra: 1 })).toBe(false);
+        expect(isStepLinkView({ id: 'T-003' })).toBe(false);
+        expect(isStepLinkView({ ...LINK, open: { key: 'p', line: '1' } })).toBe(false);
+    });
+
+    it('an Overview row takes a link only with a step', () => {
+        const view = sampleView();
+        const row = view.problems.rows[0]!;
+        expect(isOverviewView({ ...view, now: [{ ...row, step: STEP, link: LINK }] })).toBe(true);
+        expect(isOverviewView({ ...view, now: [{ ...row, link: LINK }] })).toBe(false);
+        expect(isOverviewView({ ...view, now: [{ ...row, step: STEP, link: { id: 'T-003' } }] })).toBe(false);
     });
 });

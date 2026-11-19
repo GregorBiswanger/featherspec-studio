@@ -1,7 +1,7 @@
 import { isSendView, type SendView } from './assistant';
 import { isRecord } from './envelope';
 import { isPlanUnreadableView, isPlanView, type PlanUnreadableView, type PlanView } from './planMap';
-import { isStepTipsView, type StepTipsView } from './stepView';
+import { isStepLinkView, isStepTipsView, type StepLinkView, type StepTipsView } from './stepView';
 
 export interface LineTarget {
     key: string;
@@ -69,6 +69,7 @@ export interface FileRow {
 export interface NextStepLineView {
     text: string;
     intent: string;
+    step?: StepLinkView;
 }
 
 export type NextStepView = { rule: string; lines: NextStepLineView[]; tips?: StepTipsView; send?: SendView; quiet?: true } | { rule: string; text: string };
@@ -109,7 +110,7 @@ function isNextStepView(value: unknown): value is NextStepView {
     }
     return (
         Array.isArray(value.lines) &&
-        value.lines.every((line) => isRecord(line) && typeof line.text === 'string' && typeof line.intent === 'string') &&
+        value.lines.every((line) => isRecord(line) && typeof line.text === 'string' && typeof line.intent === 'string' && (line.step === undefined || isStepLinkView(line.step))) &&
         (value.tips === undefined || isStepTipsView(value.tips)) &&
         (value.send === undefined || isSendView(value.send)) &&
         (value.quiet === undefined || value.quiet === true)
