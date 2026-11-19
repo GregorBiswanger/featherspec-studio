@@ -150,8 +150,8 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
     `Notes:`.
 - **Verify:** `npx vitest run src/shared/protocol/percent.test.ts src/webview/ui/ProgressBar.test.tsx src/core/board/progress0025.test.ts`
   red (stub, missing `title`, old texts), then `npm run test:unit` green.
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-19. Red: `npx vitest run src/shared/protocol/percent.test.ts src/webview/ui/ProgressBar.test.tsx` 11 failed (stub threw Not implemented; no `title`). Green: `npm run test:unit` 3289 + 26 timing passed; eslint, tsc ×2 clean.
+- **Notes:** Changed statements (titles kept): the literal texts in SpecBoard, Overview, PlanMap, PlanSection and specTree tests now read U-04 (` · <p>%`, `rounded half up, at most 99% until all are done`, `Progress 25% (`). `docsScan` needs 0025 in activeContext.md, added. The tree tooltip joins the two figures as `Steps 3/7 · 43% · Criteria 28/30 · 93%` (proxy: the dot join of 0020 stays). A total of 0 carries no percent (`0 of 0 done`).
 
 ### T-002 — Codicon motifs from one step-look table
 

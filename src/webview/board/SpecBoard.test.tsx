@@ -57,7 +57,7 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
 
     it('AC-018: a card shows number and title, then row 2 with the steps, the criteria and the day, and no chip, sentence, rule ID, description or old label', async () => {
         const text = (await open(boardView([card('0007', { state: 'Review' })]))).querySelector('[data-card]')!.textContent!;
-        expect(text).toBe('0007 Thing 0007Steps 3/7·Criteria 1/42026-11-16');
+        expect(text).toBe('0007 Thing 0007Steps 3/7 · 43%·Criteria 1/4 · 25%2026-11-16');
         expect(text).not.toMatch(/Plan done, waiting for review|S-REVIEW|A summary|Tasks:|Criteria:|Last change:|No summary/);
     });
 
@@ -103,7 +103,7 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
         expect(rows['0001']).toBe('needs a plan2026-11-16');
         expect(rows['0002']).toBe('Blocked: plan status BlockedBlocked: return note n.md2026-11-16');
         expect(rows['0003']).toBe('Deprecated2026-11-16');
-        expect(rows['0004']).toBe('Steps 3/7·Criteria 1/42026-11-16');
+        expect(rows['0004']).toBe('Steps 3/7 · 43%·Criteria 1/4 · 25%2026-11-16');
         expect(container.textContent).not.toContain('R-3');
     });
 
@@ -116,8 +116,8 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
             ]),
         );
         const [only, steps, none] = [...container.querySelectorAll('[data-card]')];
-        expect(only!.querySelector('.card-state')?.textContent).toBe('Criteria 1/4');
-        expect(steps!.querySelector('.card-state')?.textContent).toBe('Steps 3/7');
+        expect(only!.querySelector('.card-state')?.textContent).toBe('Criteria 1/4 · 25%');
+        expect(steps!.querySelector('.card-state')?.textContent).toBe('Steps 3/7 · 43%');
         expect(none!.querySelector('.card-state')).toBeNull();
         expect(none!.hasAttribute('aria-describedby')).toBe(false);
         expect(container.textContent).not.toMatch(/not available|0\/0/);
@@ -128,7 +128,7 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
         expect(bar.getAttribute('aria-label')).toBe('Steps');
         expect(bar.getAttribute('aria-valuenow')).toBe('3');
         expect(bar.getAttribute('aria-valuemax')).toBe('7');
-        expect(bar.getAttribute('aria-valuetext')).toBe('Steps 3/7');
+        expect(bar.getAttribute('aria-valuetext')).toBe('Steps 3/7 · 43%');
     });
 
     it('AC-019: the Problems badge is the warning icon with its text, and absent at 0 (negative control)', async () => {

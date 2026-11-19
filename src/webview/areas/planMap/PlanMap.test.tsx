@@ -163,7 +163,7 @@ describe('0023 AC-008: the header of the Plan map', () => {
         const container = await show({ selection: selected('0007'), detail: detailWith(plan) });
         const header = map(container).querySelector<HTMLElement>('.plan-map-header')!;
         expect(header.querySelector('h2')?.textContent).toBe('0007 Thing 0007');
-        expect(header.querySelector('.progress-text')?.textContent).toBe('2 of 5 done');
+        expect(header.querySelector('.progress-text')?.textContent).toBe('2 of 5 done · 40%');
         expect(header.querySelector('[role="progressbar"]')?.getAttribute('aria-valuenow')).toBe('2');
         expect(header.querySelector('.plan-map-closing')?.textContent).toBe(`The plan says: ${closing}`);
         const link = [...header.querySelectorAll<HTMLButtonElement>('button.file-link')].find((button) => button.textContent === 'Open plan')!;

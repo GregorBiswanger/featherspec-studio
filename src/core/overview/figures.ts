@@ -1,4 +1,5 @@
 import { BOARD_STATES } from '../../shared/protocol/boardFilter';
+import { percentOf } from '../../shared/protocol/percent';
 import type { McProgress, OverviewFigures, StateCount } from '../../shared/protocol/overview';
 import { headerValue } from '../lifecycle/entryContext';
 import type { ShellModel } from '../ports/shell';
@@ -21,6 +22,6 @@ export function projectFigures(model: ShellModel): OverviewFigures {
     });
     const done = entries.filter((entry) => entry.state === 'Done' && entry.deprecated === undefined && FINISHED_STATUSES.has(statusOf.get(entry.key) ?? '')).length;
     const divisor = entries.length - deprecated;
-    const progress: McProgress = divisor === 0 ? { kind: 'not available' } : { kind: 'value', percent: Math.floor((100 * done) / divisor), done, divisor };
+    const progress: McProgress = divisor === 0 ? { kind: 'not available' } : { kind: 'value', percent: percentOf(done, divisor) ?? 0, done, divisor };
     return { kind: 'counts', total: entries.length, states, progress };
 }

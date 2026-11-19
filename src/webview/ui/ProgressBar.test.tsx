@@ -28,3 +28,13 @@ describe('0013 AC-009 ProgressBar', () => {
         expect(mounted.container.querySelector<HTMLElement>('.progress-fill')!.style.width).toBe('0%');
     });
 });
+
+describe('0025 AC-013 ProgressBar text', () => {
+    it('0025 AC-013: the visible text is also the title and the aria-valuetext', async () => {
+        mounted = await mount(<ProgressBar label="Steps" done={3} total={7} text="3 of 7 done · 43%" />);
+        const bar = mounted.container.querySelector('[role="progressbar"]')!;
+        expect(bar.getAttribute('title')).toBe('3 of 7 done · 43%');
+        expect(bar.getAttribute('aria-valuetext')).toBe('3 of 7 done · 43%');
+        expect(mounted.container.querySelector('.progress-text')!.textContent).toBe('3 of 7 done · 43%');
+    });
+});

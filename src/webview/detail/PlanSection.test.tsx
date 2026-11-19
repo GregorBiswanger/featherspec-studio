@@ -83,7 +83,7 @@ describe('0023 AC-003: the Plan section of the side panel', () => {
         expect(follows(next, problems)).toBe(true);
         expect(follows(problems, plan)).toBe(true);
         expect(follows(plan, progress)).toBe(true);
-        expect(plan.querySelector('.progress-text')?.textContent).toBe('2 of 5 done');
+        expect(plan.querySelector('.progress-text')?.textContent).toBe('2 of 5 done · 40%');
         expect(progress.textContent).not.toContain('Steps');
         expect(progress.textContent).not.toContain('Next open step');
         expect(progress.textContent).toContain('Criteria');

@@ -79,7 +79,7 @@ function figuresOf(): Extract<OverviewView['figures'], { kind: 'counts' }> {
     };
 }
 
-const FORMULA = 'Done specs with status Implemented or Baseline ÷ (all specs − Deprecated), rounded down';
+const FORMULA = 'Done specs with status Implemented or Baseline ÷ (all specs − Deprecated), rounded half up, at most 99% until all are done';
 
 function row(stem: string, number: string, state: OverviewView['now'][number]['state'], extra: Partial<OverviewView['now'][number]> = {}): OverviewView['now'][number] {
     return { spec: { stem, number, title: `Title ${number}`, found: true }, state, status: state, problems: 0, ...extra };
@@ -106,7 +106,7 @@ describe('0018 AC-003: the order of the parts and what is gone', () => {
     it('shows no header line, tile, distribution bar, visible progress text or derived sentence', async () => {
         const container = area(await open(fullView()));
         expect(container.querySelector('[data-header], [data-attention], [data-specs], .ov-tile, .ov-distribution, [data-progress]')).toBeNull();
-        expect(visibleText(container)).not.toMatch(/Progress|rounded down|Plan written|S-READY|S-REVIEW|S-BLOCKED|Needs attention|Specs by state/);
+        expect(visibleText(container)).not.toMatch(/Progress|rounded half up|Plan written|S-READY|S-REVIEW|S-BLOCKED|Needs attention|Specs by state/);
     });
 
     it('shows Problems only while it lists something', async () => {
@@ -194,7 +194,7 @@ describe('0018 AC-008: the figures line', () => {
 describe('0018 AC-009: the progress text is a tooltip, never visible', () => {
     it('the line and "Total n" carry it as tooltip, "Total n" as accessible description', async () => {
         const container = area(await open(fullView()));
-        const text = `Progress 25 % (2 of 8): ${FORMULA}`;
+        const text = `Progress 25% (2 of 8): ${FORMULA}`;
         expect(container.querySelector('[data-figures]')?.getAttribute('title')).toBe(text);
         const total = container.querySelector<HTMLElement>('[data-drill="total"]')!;
         expect(total.getAttribute('title')).toBe(text);

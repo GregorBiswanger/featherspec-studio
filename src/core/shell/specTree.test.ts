@@ -331,7 +331,7 @@ describe('0020 AC-006: the tooltip', () => {
             '`/sdd-compile .specs/active/0004-reviewing.md`',
             'Then\\, after a READY verdict\\: close the spec',
             '`/sdd-lifecycle .specs/active/0004-reviewing.md`',
-            'Steps 0/1',
+            'Steps 0/1 · 0%',
             '`.specs/active/0004-reviewing.md`',
         ]);
     });
@@ -397,7 +397,7 @@ describe('0020 AC-006: the tooltip', () => {
         const project = await readFixture('studio-0015');
         const model = { project, lifecycle: deriveLifecycle(project) };
         const row = rows(treeOf(model)).find((candidate) => candidate.stem === '0015-focus-on-visibility')!;
-        expect(row.tooltip).toMatch(/\n\nSteps \d+\/\d+ · Criteria 28\/30\n\n/);
+        expect(row.tooltip).toMatch(/\n\nSteps \d+\/\d+ · \d+% · Criteria 28\/30 · 93%\n\n/);
         expect(row.contextValue).toBe('spec step plan');
         expect(row.planKey).toBe('.specs/active/0015-focus-on-visibility.plan.md');
         expect(row.line).toBe('/sdd-compile .specs/active/0015-focus-on-visibility.md');

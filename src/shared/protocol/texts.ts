@@ -1,3 +1,4 @@
+import { percentSuffix } from './percent';
 import type { DetailAreaId } from './areas';
 import type { StatusHistoryItem } from './detail';
 import type { BoardState } from './boardFilter';
@@ -264,11 +265,11 @@ export const NO_SUMMARY_TEXT = 'No summary';
 export const STEPS_PROGRESS_LABEL = 'Steps';
 
 export function stepsText(steps: Progress): string {
-    return `Steps ${steps.done}/${steps.total}`;
+    return `Steps ${steps.done}/${steps.total}${percentSuffix(steps.done, steps.total)}`;
 }
 
 export function criteriaShortText(criteria: Progress): string {
-    return `Criteria ${criteria.done}/${criteria.total}`;
+    return `Criteria ${criteria.done}/${criteria.total}${percentSuffix(criteria.done, criteria.total)}`;
 }
 
 export function lastChangeTooltip(last: LastChange): string {
@@ -343,11 +344,11 @@ export const CRITERIA_NO_TABLE_TEXT = 'not available — the plan has no traceab
 export const PLAN_UNREADABLE_TEXT = 'not available — Studio cannot read the plan';
 
 export function stepsDoneText(done: number, total: number): string {
-    return `${done} of ${total} done`;
+    return `${done} of ${total} done${percentSuffix(done, total)}`;
 }
 
 export function criteriaVerifiedText(verified: number, total: number): string {
-    return `${verified} of ${total} verified`;
+    return `${verified} of ${total} verified${percentSuffix(verified, total)}`;
 }
 
 export function openFileTooltip(name: string, line: number): string {

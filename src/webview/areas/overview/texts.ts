@@ -32,12 +32,12 @@ export function deprecatedText(count: number): string {
     return `of which Deprecated: ${count}`;
 }
 
-export const FORMULA_TEXT = 'Done specs with status Implemented or Baseline ÷ (all specs − Deprecated), rounded down';
+export const FORMULA_TEXT = 'Done specs with status Implemented or Baseline ÷ (all specs − Deprecated), rounded half up, at most 99% until all are done';
 
 export const PROGRESS_UNAVAILABLE_TEXT = 'Progress: not available';
 
 export function progressText(percent: number, done: number, divisor: number): string {
-    return `Progress ${percent} % (${done} of ${divisor}): ${FORMULA_TEXT}`;
+    return `Progress ${percent}% (${done} of ${divisor}): ${FORMULA_TEXT}`;
 }
 
 export const FIGURES_LABEL = 'Figures';
