@@ -442,7 +442,6 @@ describe('0026 AC-002: one term for the open chat in the shipped sources', () =>
 describe('0026 AC-021: Send, not Paste, in the text modules', () => {
     const ALLOWED = [
         'Paste it once every worker you started is back.',
-        'Paste each into another chat, tool or worktree',
         'before you paste.',
         'paste it there with',
     ];
@@ -451,7 +450,7 @@ describe('0026 AC-021: Send, not Paste, in the text modules', () => {
         return stringLiterals(text).filter((literal) => /paste/i.test(literal) && !ALLOWED.some((allowed) => literal.includes(allowed)));
     }
 
-    it('the string literals of src without test files hold paste only in the four allowed sentences', async () => {
+    it('the string literals of src without test files hold paste only in the three allowed sentences', async () => {
         const files = (await sourceFiles()).filter((file) => !isTestFile(file.name) && /\.tsx?$/.test(file.name));
         expect(files.map((file) => [file.name, offenders(file.text)] as const).filter(([, found]) => found.length > 0)).toEqual([]);
     });
@@ -459,7 +458,7 @@ describe('0026 AC-021: Send, not Paste, in the text modules', () => {
     it('each allowed sentence is still needed: a literal of the shipped sources holds it', async () => {
         const files = (await sourceFiles()).filter((file) => !isTestFile(file.name) && /\.tsx?$/.test(file.name));
         const all = files.flatMap((file) => stringLiterals(file.text)).filter((literal) => /paste/i.test(literal));
-        for (const allowed of ALLOWED.slice(0, 1).concat(ALLOWED.slice(2))) {
+        for (const allowed of ALLOWED) {
             expect(
                 all.some((literal) => literal.includes(allowed)),
                 allowed,

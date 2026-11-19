@@ -236,8 +236,8 @@ Parallel: stages 2 and 3, run in sequence (`PLAN-R3.md`). Stage 1 shares `nextSt
   - Retarget 0023 AC-009's expanded-block assertions in `PlanMap.test.tsx` (titles in `Notes:`).
 - **Verify:** `npx vitest run src/webview/areas/planMap/Ways0026.test.tsx` red first (all three ways and M-08 rendered,
   no radios), then `npm run test:unit` green.
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** `Ways0026.test.tsx` 9 tests; `npx vitest run src/webview src/adapters` green after retargeting; tsc webview, eslint.
+- **Notes:** `WAYS[key]` gained `line`; `WAYS.otherAgents.effect` now holds §7's new Other agents paragraph (used by T-008's `(?)`), so 0023's `Paste each into another chat …` sentence is gone from `src` and `sourceScan` AC-021 allows three literals (not four). `DEFAULT_WAY`, `DEFAULT_TAG_TEXT`, `wayLabel()` added; `WAYS_LEAD_TEXT` (M-08) stays for T-008. Checked way is local state beside `open` (same lifetime: resets on remount = new spec or new showing, survives model updates). Retargeted in `PlanMap.test.tsx` (titles listed): `0023 AC-009 expanded: the lead, the three ways in order with effect and prompt literally, then the start lines under Other agents` -> `0026 AC-009 (0023 AC-009 retargeted): expanded, the three ways are radios …`; `0023 AC-010 each way has a secondary Copy prompt …` -> `each way, once checked, has a secondary Copy prompt …`; `each start line has an icon Copy …` -> `… with Other agents checked`; `a stage view without start lines (Ready) shows the three ways and no start line` -> `… and, with Other agents checked, its stage prompt and no start line`; AC-012 start-line focus tests click Other agents first; 0022 AC-015 path breaks click through the radios; `primaryButtons.test` 0023 AC-010 counts 2 secondary + 0 icon, then 1 + 2 with Other agents. Basic radio CSS added now; the tag/focus CSS and its guard are T-008.
 
 ### T-007 — One coach line per view, and quiet Now rows
 

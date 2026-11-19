@@ -170,7 +170,11 @@ describe('0023 AC-010: the Plan map adds no primary button', () => {
         expect(container.querySelector('aside.side-panel .next-step')).toBeNull();
         const inMap = container.querySelector('[data-plan-map]')!;
         expect(primaries(inMap as HTMLElement)).toHaveLength(1);
-        expect(inMap.querySelectorAll('button.copy-secondary').length).toBe(4);
+        expect(inMap.querySelectorAll('button.copy-secondary').length).toBe(2);
+        expect(inMap.querySelectorAll('button.copy-icon').length).toBe(0);
+        await click(inMap.querySelectorAll<HTMLInputElement>('input[type="radio"]')[2]!);
+        expect(primaries(inMap as HTMLElement)).toHaveLength(1);
+        expect(inMap.querySelectorAll('button.copy-secondary').length).toBe(1);
         expect(inMap.querySelectorAll('button.copy-icon').length).toBe(2);
     });
 

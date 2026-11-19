@@ -4,6 +4,7 @@ export const WAY_KEYS: readonly WayKey[] = ['sequence', 'subagents', 'otherAgent
 
 export interface WayText {
     name: string;
+    line: string;
     effect: string;
     suffix: string;
 }
@@ -11,20 +12,31 @@ export interface WayText {
 export const WAYS: Record<WayKey, WayText> = {
     sequence: {
         name: 'In sequence',
+        line: 'One chat builds the steps one after another.',
         effect: 'One chat builds the steps one after another and stops at the stage end and at every test review on the way.',
         suffix: 'in sequence',
     },
     subagents: {
         name: 'Subagents',
+        line: 'The chat hands each step to a subagent; subagents cannot ask you.',
         effect: "Where a working agreement asks for a test review, the chat first writes the stage's tests and stops for it; then it hands each step to a subagent. Subagents cannot ask you; there is no steering in between.",
         suffix: 'with subagents',
     },
     otherAgents: {
         name: 'Other agents',
-        effect: 'The chat proposes the commit a worktree needs and prints one start line per step. Paste each into another chat, tool or worktree; each worker builds its step and leaves a return note.',
+        line: 'Each step runs in another chat or worktree from its start line.',
+        effect: 'Each step runs from its own start line in another chat, tool or worktree and leaves a return note; a worktree holds committed files only, so commit first. Until start lines show here, the stage prompt has the chat propose that commit and print them. Once every worker is back, the next step integrates the returned steps.',
         suffix: 'with other agents',
     },
 };
+
+export const DEFAULT_WAY: WayKey = 'sequence';
+
+export const DEFAULT_TAG_TEXT = 'default';
+
+export function wayLabel(key: WayKey): string {
+    return `${WAYS[key].name}${key === DEFAULT_WAY ? ` · ${DEFAULT_TAG_TEXT}` : ''} — ${WAYS[key].line}`;
+}
 
 export function stagePrompt(way: WayKey, stage: number, plan: string): string {
     return `Implement the whole stage ${stage} of ${plan} ${WAYS[way].suffix}`;
