@@ -64,12 +64,6 @@ export function reportSign(plan: ParsedPlan | undefined, open: PlanStep): boolea
     return unfinished.length > 0 && !unfinished.some((step) => step.id === open.id);
 }
 
-export function startLine(model: ShellModel, entry: LifecycleEntry): string {
-    const plan = entry.plan ?? '';
-    const id = openStep(model, entry)?.id;
-    return id === undefined ? `Implement ${plan}` : `Start ${id} of ${plan}`;
-}
-
 function readable(spec: SpecEntry): boolean {
     return spec.readable && spec.parsed !== undefined;
 }
@@ -127,7 +121,9 @@ export function nextStep(model: ShellModel, key: string): NextStep | undefined {
         }
         case 'Ready': {
             const open = openStep(model, entry);
-            return lines('NS-7', 'NS-7', { intent: startIntent(open?.id, plainShort(open?.title ?? '')), text: startLine(model, entry) });
+            return open === undefined
+                ? lines('NS-7', 'NS-6-resume', { intent: NS6_RESUME_INTENT, text: `/sdd-plan ${key}` })
+                : lines('NS-7', 'NS-7', { intent: startIntent(open.id, plainShort(open.title)), text: `Implement ${open.id} of ${entry.plan}` });
         }
         case 'Backlog': {
             if (entry.readiness.checks.some((check) => check.id === 'R-2' && check.result === 'fail')) {
@@ -146,15 +142,11 @@ export function shortForm(line: string): string {
     if (command !== null) {
         return command[0];
     }
-    const start = /^Start (\S+) of /.exec(line);
-    if (start !== null) {
-        return `Start ${start[1]}`;
-    }
     const implement = /^Implement (\S+) of /.exec(line);
     if (implement !== null) {
         return `Implement ${implement[1]}`;
     }
-    return line.startsWith('Implement ') ? 'Implement' : line;
+    return line;
 }
 
 export function stepView(model: ShellModel, key: string): StepView | undefined {

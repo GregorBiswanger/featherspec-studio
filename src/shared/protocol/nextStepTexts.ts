@@ -144,8 +144,6 @@ export const NS9_INTENT = 'Have the spec challenged, then plan it';
 
 export const NS9_THEN_INTENT = 'Then: write the plan';
 
-export const START_PLAN_INTENT = 'Start implementing the plan';
-
 function withTitle(lead: string, id: string, title: string): string {
     return title === '' ? `${lead}${id}` : `${lead}${id} ${title}`;
 }
@@ -154,8 +152,8 @@ export function continueIntent(id: string, title: string): string {
     return withTitle('Continue with ', id, title);
 }
 
-export function startIntent(id: string | undefined, title: string): string {
-    return id === undefined ? START_PLAN_INTENT : withTitle('Start implementing: ', id, title);
+export function startIntent(id: string, title: string): string {
+    return withTitle('Start implementing: ', id, title);
 }
 
 export const SESSION_WORDS: Record<SessionKey, string> = {

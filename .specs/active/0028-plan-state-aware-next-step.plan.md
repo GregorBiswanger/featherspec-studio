@@ -3,7 +3,7 @@
 **Spec:** [0028-plan-state-aware-next-step.md](0028-plan-state-aware-next-step.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-005
+**Current step:** T-006
 
 ## Approach
 
@@ -158,8 +158,8 @@ Parallel: stage 3 (runs in sequence, `PLAN-R3.md`). Stages 1 and 2 share `nextSt
   fixture result: no line starts with `Start ` or equals `Implement <plan path>`). Replace the 14 tests §10 names (list
   in `Notes:`); `planMap.test.ts` stays green (ways for NS-7 unchanged).
 - **Verify:** `npm run test:unit` — red first (`Start T-001 of …`), then green.
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-19 · `npx vitest run --project node`: red first (16 failed with the production change in: `Start T-001 of …` where `Implement T-001 of …` is expected and the Ready no-step line), then the replaced tests and the new "0028 AC-016 …" tests green; `npm run test:unit` 3250 passed, 4 skipped, timing 18 passed; eslint, tsc ×2 clean.
+- **Notes:** `startLine()`, `START_PLAN_INTENT`, `shortForm()`'s `Start` and bare-`Implement` branches removed (idle; `startIntent(id, title)` takes an ID now). Replaced tests (statement: NS-7's `Start <ID> of <plan path>` / `Implement <plan path>`, 0015 §6.1, 0017 §6.1, 0021 §6.1 and §6.3; titles kept unless named): `nextStep.test.ts` "NS-7 negative control: a Ready spec without an open step reads Implement <plan path>" is now "… reads /sdd-plan <spec path>"; "shortForm cuts a command at its name, a start at its id, an implement of a step at its id, a plan implement at its verb (control: other text stays)" is now "shortForm cuts a command at its name and an implement of a step at its id (control: other text stays)"; the rows "NS-7 step", "NS-7 no step", "NS-7" (0021 AC-001, AC-002, AC-006, 0017 AC-001) take the new lines; `cards.test.ts` "a Ready card carries the short form and the full first line with the plan path" and `copyNextStep.test.ts` (two) and `statusEntry.test.ts` (one) take `Implement T-003`, `/sdd-plan <spec>` and `Ready · Resume · /sdd-plan`. `SpecBoard.test.tsx` (webview) keeps its own sample `StepView` with `Start T-003`: it tests the component with given data, not the rule. Baseline `EXCEPTIONS` gain `fs110-ready-synthetic` and the three `ac016` cases (NS-7). The repository copy has no exception. `planMap.test.ts` stays green.
 
 ### T-006 — Every surface shows Review and Report first
 

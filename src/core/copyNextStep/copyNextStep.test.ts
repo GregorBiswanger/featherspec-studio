@@ -96,7 +96,7 @@ describe('0017 AC-019: with a current spec the command copies without asking', (
         await ready([...BLOCKED_ACTIVE, { number: '0007', kind: 'Ready' }]);
         world.select({ stem: '0007-thing' });
         await command.run();
-        expect(fakes.written).toEqual(['Implement .specs/backlog/0007-thing.plan.md']);
+        expect(fakes.written).toEqual(['/sdd-plan .specs/backlog/0007-thing.md']);
     });
 });
 
@@ -192,7 +192,7 @@ describe('0017 AC-020: no current spec, the quick pick', () => {
         expect(fakes.asked).toHaveLength(1);
         expect(fakes.asked[0]?.placeholder).toBe('Select a spec to copy its next step');
         expect(fakes.asked[0]?.items).toEqual([
-            { key: '.specs/backlog/0007-thing.md', label: '0007 Thing 0007', description: 'Ready · Build · Implement' },
+            { key: '.specs/backlog/0007-thing.md', label: '0007 Thing 0007', description: 'Ready · Resume · /sdd-plan' },
             { key: '.specs/backlog/0003-thing.md', label: '0003-thing', description: 'Backlog · Challenge · /sdd-clarify' },
             { key: '.specs/backlog/0008-thing.md', label: '0008 Thing 0008', description: 'Backlog · Challenge · /sdd-clarify' },
         ]);
