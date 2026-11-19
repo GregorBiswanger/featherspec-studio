@@ -215,3 +215,63 @@ describe('0023 AC-015: user language in the Plan section and the Plan map', () =
         expect('Returned · blocked: no access').not.toMatch(INTERNAL);
     });
 });
+
+describe('0025 AC-019: user language in the header, the card rows, U-05, U-06 and U-08', () => {
+    const INTERNAL = /S-[A-Z]{3,}|R-[1-7]|NS-\d|\btraceability\b|\bstruck\b|\bsibling\b|\bkind\b|\bstem\b|\bparsing\b/;
+    const U05 = '1 returned, waiting to be integrated: the next step integrates them.';
+    const U08 = '1 of 2 returned · T-004 not back yet';
+
+    function rich(): PlanView {
+        const base = planSample();
+        return {
+            ...base,
+            returned: U08,
+            stages: [
+                stage(1, [{ steps: [step('T-001', 'done', { verified: { short: '2026-11-09 · npm test green', full: '2026-11-09 · npm test green' }, covers: [{ id: 'AC-001', state: 'built' }] })] }], { finished: false }),
+                stage(2, [{ steps: [step('T-003', 'returned', { returned: { status: 'done' }, reported: { short: '2026-11-10 · red → green', full: '2026-11-10 · red → green' } }), step('T-004', 'open', { copy: 'Implement T-004 of p' })] }], { current: true, returned: U08, ways: base.stages[1]!.ways! }),
+            ],
+            loose: [],
+        };
+    }
+
+    const NEXT = { rule: 'NS-6', lines: [{ text: 'Implement T-004 of p', intent: 'Continue with T-004 Step', step: { id: 'T-004', open: { key: 'p', line: 5 } } }], parallel: { stage: 2 } };
+
+    async function whole(area: 'planMap' | 'board'): Promise<string> {
+        const client = createClient({ post: () => undefined });
+        clients.push(client);
+        client.start();
+        mounted = await mount(<App client={client} />);
+        await send(shellEvent(baseView({ area, selection: { stem: '0007-thing', number: '0007' } }), 1));
+        await send(boardEvent(boardView([card('0007')])));
+        await send(detailEvent({ ...(detailView({}, NEXT as never) as SpecDetailView), plan: rich() }));
+        for (const head of mounted.container.querySelectorAll<HTMLButtonElement>('[data-card-toggle]')) {
+            await click(head);
+        }
+        const scoped = [...mounted.container.querySelectorAll<HTMLElement>(area === 'planMap' ? '[data-plan-map]' : '.next-step')];
+        const attributes = scoped.flatMap((root) => [root, ...root.querySelectorAll('[title], [aria-label]')]).flatMap((element) => [element.getAttribute('title'), element.getAttribute('aria-label')]);
+        return [...scoped.map((root) => root.textContent ?? ''), ...attributes].join('\n');
+    }
+
+    it('0025 AC-019: the Plan map with the header, the card rows, U-05 and U-08 holds no rule ID and no internal word', async () => {
+        const text = await whole('planMap');
+        for (const wanted of ['Continue with T-004', 'Verified', 'Reported', 'AC-001 built', U08]) {
+            expect(text, wanted).toContain(wanted);
+        }
+        expect(text).not.toMatch(INTERNAL);
+        expect(text).not.toMatch(FORBIDDEN);
+    });
+
+    it('0025 AC-019: the side panel beside the Board with the parallel hint (U-06) holds no rule ID and no internal word', async () => {
+        const text = await whole('board');
+        expect(text).toContain('Stage 2 can run in parallel · Ways to run it');
+        expect(text.match(INTERNAL)?.[0]).toBeUndefined();
+        expect(text).not.toMatch(FORBIDDEN);
+    });
+
+    it('negative control: the pattern finds a rule ID, traceability, struck and stem', () => {
+        for (const word of ['NS-6', 'R-3', 'the traceability row', 'a struck step', 'the stem']) {
+            expect(word).toMatch(INTERNAL);
+        }
+        expect(`${U05}\n${U08}`).not.toMatch(INTERNAL);
+    });
+});

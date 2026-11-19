@@ -3,7 +3,7 @@
 **Spec:** [0025-plan-map-navigation-and-progress.md](0025-plan-map-navigation-and-progress.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-013
+**Current step:** T-014
 
 ## Approach
 
@@ -435,8 +435,8 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
 - **Verify:** `npx vitest run --project timing-webview src/webview/areas/planMap/PlanMap0025.timing.test.tsx` and
   `npx vitest run src/core/board/noWrite.test.ts src/core/copyNextStep/noWrite.test.ts src/webview/userLanguage.test.tsx`
   green; negative controls red, then restored.
-- [ ] **Verified (T-013):** —
-- **Notes:** —
+- [x] **Verified (T-013):** 2026-11-19. Tests only, written after the code they check (all green at the first run): `npx vitest run --project timing-webview src/webview/areas/planMap/PlanMap0025.timing.test.tsx` 2 passed; `npx vitest run src/core/board/noWrite.test.ts src/core/copyNextStep/noWrite.test.ts src/webview/userLanguage.test.tsx` passed; eslint, tsc ×2 clean. Negative controls are in the files (timing: no update keeps the old state; noWrite: a forbidden call pattern; userLanguage: the forbidden words). Full chain at the end of stage 5.
+- **Notes:** Freshness is asserted for the header's next step and percentage (`BUDGET_MS.uiFreshness`); the returned-work sentence is not in the header (it sits in the Plan section, Progress and stage rows), its freshness is covered by 0023 AC-012's timing. Restricted Mode and a reader window: no host API of the new paths can differ there, shown by the static source scan (no file API, no configuration update, no process) plus the temp-copy tests; the host smoke test of T-012 runs in the orchestrator's host.
 
 ### T-014 — Preview at two widths and three themes
 
@@ -495,15 +495,15 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
 | AC-008 | T-011 | planMap.ts:copyOf, StepCard.tsx | cardRows0025.test.ts, StepCard.test.tsx | verified |
 | AC-009 | T-009 | areas/planMap/shows.ts, PlanMap.tsx:Header, SpecDetail.tsx | PlanMap.header.test.tsx, header0025.test.ts | verified |
 | AC-010 | T-004, T-009, T-011 | SendButton.tsx, NextStep.tsx, shows.ts, StepCard.tsx (card Copies secondary) | primaryButtons.test.tsx, StepCard.test.tsx | verified |
-| AC-011 | T-013 | — | — | open |
+| AC-011 | T-013 | areas/planMap/PlanMap.tsx:Header | PlanMap0025.timing.test.tsx | verified |
 | AC-012 | T-001 | shared/protocol/percent.ts | percent.test.ts | verified |
 | AC-013 | T-001 | texts.ts, ProgressBar.tsx, figures.ts | progress0025.test.ts, ProgressBar.test.tsx | verified |
 | AC-014 | T-002 | shared/protocol/stepLook.ts, board/icons.tsx:StepIcon | stepLook.test.ts, icons.test.tsx, PlanSection.test.tsx, PlanMap.test.tsx | verified |
 | AC-015 | T-003 | core/planMap/returnedWork.ts | returnedWork.test.ts, PlanSection/SpecDetail/PlanMap tests | verified |
 | AC-016 | T-010 | detail/ParallelHint.tsx, Ways.tsx, detail.ts:parallel | SpecDetail.test.tsx, parallel0025.test.ts, PlanMap.target.test.tsx, webviewCss.test.ts | verified |
 | AC-017 | T-006, T-011 | main.css:.step-card[data-highlight], .plan-group, .step-card-title | webviewCss.test.ts, StepCard.test.tsx | verified |
-| AC-018 | T-013 | — | — | open |
-| AC-019 | T-013 (each step asserts its texts literally) | — | — | open |
+| AC-018 | T-013 | stepLinks.ts, ParallelHint.tsx, treeActions.ts | copyNextStep/noWrite.test.ts, board/noWrite.test.ts | verified |
+| AC-019 | T-013 (each step asserts its texts literally) | planMapTexts.ts | userLanguage.test.tsx | verified |
 | AC-020 | T-015 | — | — | open |
 | AC-021 | T-015 | — | — | open |
 | AC-022 | T-014 | — | manual: orchestrator, preview harness, then Gregor | open |
@@ -515,8 +515,8 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
 
 ## Session handoff
 
-- **Done so far:** stages 1 and 2 (T-001…T-007) and T-008 and T-009 built, verified and committed, one commit per step, stage gate chains green for stages 1 to 4 (2026-11-19). Spec and plan are in `active/`, Baseline `b8e41c7`.
-- **Next action:** stage 5 (T-013 sweeps, T-014 preview, T-015 notes, docs, title audit and final gates). Run the stage gate chain at the end of each stage (IMPL-R3 test cadence).
+- **Done so far:** stages 1 to 4 and T-013 (T-001…T-013) built, verified and committed, one commit per step, stage gate chains green for stages 1 to 4 (2026-11-19). Spec and plan are in `active/`, Baseline `b8e41c7`.
+- **Next action:** stage 5: T-014 (preview, the orchestrator's manual run; nothing to build) and T-015 (§4 notes, rules, docs, title audit, architecture entries, Memory Bank, final gates). Run the stage gate chain at the end of each stage (IMPL-R3 test cadence).
 - **Open decisions:** none. Proxies recorded in the Notes of T-003 (AC-025 beats AC-015's DONE-only example on `fs110-parallel-synthetic`; U-08's m), T-005 (`heading` target, one-shot focus), T-006 (a focus for a spec not shown waits), T-007 (modifier handling).
 - **Where things are:** `core/planMap/returnedWork.ts` (U-05, U-08, `integrateIsQuiet`), `core/planMap/stageLines.ts`, `shared/protocol/{percent,stepLook}.ts`, `webview/ui/StepLink.tsx`, `webview/areas/planMap/target.ts`; the client snapshot carries `focus`; the map applies step, ways and heading targets; `core/board/stepLinks.ts` (`stepLinkOf`), `webview/detail/ParallelHint.tsx`, `areas/planMap/shows.ts` are new in stage 3.
 - **Baseline:** `b8e41c7`

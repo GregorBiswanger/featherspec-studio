@@ -9,6 +9,9 @@ import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
 import { readProject } from '../specs/readProject';
 import { createOpenFile } from './openFile';
 import { createBoardWorld } from './testing/boardWorld';
+import { buildDetail } from './detail';
+import { projectNow, projectUpNext } from '../overview/rows';
+import { createSpecResolver } from '../overview/specRefs';
 
 let temp: string | undefined;
 afterEach(async () => {
@@ -44,5 +47,20 @@ describe('AC-016, AC-028: the board writes no file', () => {
         expect(await snapshotTree(temp)).toEqual(before);
         expect(world.memory.writes).toEqual([{ v: 1, done: 'expanded' }, { v: 1, done: 'collapsed' }]);
         world.service.dispose();
+    });
+
+    it('0025 AC-018: the detail with its step links, the header and the hint, and the Overview rows with their links, write nothing on a temp copy of fs110-parallel-synthetic', async () => {
+        temp = await fs.mkdtemp(path.join(os.tmpdir(), 'board-nowrite-0025-'));
+        await fs.cp(fixturePath('fs110-parallel-synthetic'), temp, { recursive: true });
+        const project = await readProject(createNodeSpecSource(), temp, '1.10.0');
+        const model = { project, lifecycle: deriveLifecycle(project) };
+        const before = await snapshotTree(temp);
+        const history = { available: true as const, label: '', entries: [] };
+        for (const entry of model.lifecycle.entries) {
+            buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history });
+        }
+        const rows = [...projectNow(model, createSpecResolver(model)), ...projectUpNext(model, createSpecResolver(model)).rows];
+        expect(rows.length).toBeGreaterThan(0);
+        expect(await snapshotTree(temp)).toEqual(before);
     });
 });
