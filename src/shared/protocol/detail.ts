@@ -1,4 +1,7 @@
+import { isSendView, type SendView } from './assistant';
 import { isRecord } from './envelope';
+import { isPlanUnreadableView, isPlanView, type PlanUnreadableView, type PlanView } from './planMap';
+import { isStepTipsView, type StepTipsView } from './stepView';
 
 export interface LineTarget {
     key: string;
@@ -11,6 +14,7 @@ export interface NeedLine {
 }
 
 export interface DiagnosticLine {
+    sentence?: string;
     reason: string;
     open?: LineTarget;
 }
@@ -64,10 +68,10 @@ export interface FileRow {
 
 export interface NextStepLineView {
     text: string;
-    label?: string;
+    intent: string;
 }
 
-export type NextStepView = { rule: string; lines: NextStepLineView[] } | { rule: string; text: string };
+export type NextStepView = { rule: string; lines: NextStepLineView[]; tips?: StepTipsView; send?: SendView } | { rule: string; text: string };
 
 export interface SpecDetailView {
     kind: 'spec';
@@ -84,6 +88,7 @@ export interface SpecDetailView {
     problems: DiagnosticLine[];
     notes: DiagnosticLine[];
     progress?: ProgressView;
+    plan?: PlanView | PlanUnreadableView;
     files: FileRow[];
     history: HistorySection;
 }
@@ -104,7 +109,9 @@ function isNextStepView(value: unknown): value is NextStepView {
     }
     return (
         Array.isArray(value.lines) &&
-        value.lines.every((line) => isRecord(line) && typeof line.text === 'string' && (line.label === undefined || typeof line.label === 'string'))
+        value.lines.every((line) => isRecord(line) && typeof line.text === 'string' && typeof line.intent === 'string') &&
+        (value.tips === undefined || isStepTipsView(value.tips)) &&
+        (value.send === undefined || isSendView(value.send))
     );
 }
 
@@ -113,7 +120,7 @@ function isLineTarget(value: unknown): value is LineTarget {
 }
 
 function isDiagnosticLine(value: unknown): value is DiagnosticLine {
-    return isRecord(value) && typeof value.reason === 'string' && (value.open === undefined || isLineTarget(value.open));
+    return isRecord(value) && typeof value.reason === 'string' && (value.sentence === undefined || typeof value.sentence === 'string') && (value.open === undefined || isLineTarget(value.open));
 }
 
 function isNeedLine(value: unknown): value is NeedLine {
@@ -205,6 +212,7 @@ export function isDetailView(value: unknown): value is DetailView {
         Array.isArray(value.notes) &&
         value.notes.every(isDiagnosticLine) &&
         (value.progress === undefined || isProgressView(value.progress)) &&
+        (value.plan === undefined || isPlanView(value.plan) || isPlanUnreadableView(value.plan)) &&
         Array.isArray(value.files) &&
         value.files.every(isFileRow) &&
         isHistorySection(value.history)

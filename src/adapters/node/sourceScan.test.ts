@@ -1,6 +1,8 @@
 import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { NOTHING_UP_NEXT_TEXT, UP_NEXT_HEADING } from '../../webview/areas/overview/texts';
+import { UP_NEXT_SET_LABEL } from '../../webview/areas/overview/requests';
 
 const root = path.resolve(__dirname, '..', '..', '..');
 
@@ -23,6 +25,12 @@ function relative(file: string): string {
 
 function isTestFile(name: string): boolean {
     return /\.test\.tsx?$/.test(name) || name.includes('/testing/');
+}
+
+const ASSISTANT_NAME_FORMS: readonly RegExp[] = [/GitHub\.copilot-chat/g, /GitHub Copilot/g, /'copilot'/g, /"copilot"/g, /\bCopilot(?![A-Za-z0-9.-])/g];
+
+export function maskAssistantNames(text: string): string {
+    return ASSISTANT_NAME_FORMS.reduce((rest, form) => rest.replace(form, ''), text);
 }
 
 export function hits(text: string, terms: readonly string[], caseInsensitive: boolean): string[] {
@@ -123,7 +131,7 @@ describe('0015 AC-021: the removed features leave no name behind', () => {
         const extra = await Promise.all(
             ['.vscode-test.mjs', 'esbuild.js', 'package.json'].map(async (name) => ({ name, text: await fs.readFile(path.join(root, name), 'utf8') })),
         );
-        const offenders = [...(await sourceFiles()), ...extra].filter((file) => hits(file.text, REMOVED_TERMS, true).length > 0).map((file) => file.name);
+        const offenders = [...(await sourceFiles()), ...extra].filter((file) => hits(maskAssistantNames(file.text), REMOVED_TERMS, true).length > 0).map((file) => file.name);
         expect(offenders.filter((name) => !REMOVED_ALLOWED.includes(name))).toEqual([]);
     });
 
@@ -139,6 +147,76 @@ describe('0015 AC-021: the removed features leave no name behind', () => {
             expect(hits(`const name = '${term.toUpperCase()}';`, REMOVED_TERMS, true)).toContain(term);
         }
         expect(hits('const name = "spec board";', REMOVED_TERMS, true)).toEqual([]);
+    });
+});
+
+describe("0024 §5: 0015 AC-021 excepts 0024's own names of GitHub Copilot", () => {
+    it('the extension ID, the product name, the quoted setting value and the capitalised word are masked', () => {
+        const sample = "const id = 'GitHub.copilot-chat'; const v = 'copilot'; const w = \"copilot\"; // GitHub Copilot, Copilot's chat, Copilot";
+        expect(hits(maskAssistantNames(sample), REMOVED_TERMS, true)).toEqual([]);
+        expect(hits(sample, REMOVED_TERMS, true)).toEqual(['copilot']);
+    });
+
+    it('negative control: every other form is still found', () => {
+        for (const sample of ['copilotProvider', 'copilot-agent', 'COPILOT', 'copilot.smoke', 'CopilotAgent', 'Copilot-agent', 'const copilot = 1;', 'github.copilot.chat', 'Copilot.ts', 'xCopilot']) {
+            expect(hits(maskAssistantNames(sample), REMOVED_TERMS, true), sample).toEqual(['copilot']);
+        }
+    });
+});
+
+describe('0024 §5, F1: the exemptions stay as narrow as the names of 0024', () => {
+    const FIVE = ['src/core/assistant/offer.test.ts', 'src/core/assistant/send.test.ts', 'src/webview/ui/SendButton.test.tsx', 'src/webview/detail/SpecDetail.test.tsx', 'src/shared/protocol/assistant.test.ts'];
+
+    it('none of the five assistant test files is exempt from the removed terms, and each holds none after the mask', async () => {
+        for (const name of FIVE) {
+            expect(REMOVED_ALLOWED, name).not.toContain(name);
+        }
+        const byName = new Map((await sourceFiles()).map((file) => [file.name, file.text]));
+        for (const name of FIVE) {
+            expect(hits(maskAssistantNames(byName.get(name) ?? ''), REMOVED_TERMS, true), name).toEqual([]);
+        }
+    });
+
+    it('negative control: any other removed term in such a file would be found', () => {
+        for (const term of REMOVED_TERMS.filter((term) => term !== 'copilot')) {
+            expect(hits(maskAssistantNames(`const x = '${term}';`), REMOVED_TERMS, true), term).toEqual([term]);
+        }
+    });
+});
+
+const SEND_FORBIDDEN_TERMS = ['submit', 'acceptInput', 'sendToNewChat', 'autoSend', 'isPartialQuery: false', 'chatgpt', 'github.copilot.', 'inlineChat', 'editorChat', 'vscode.lm', 'vscode://'];
+const SEND_COMMANDS = ['workbench.action.chat.newChat', 'workbench.action.chat.open', 'claude-vscode.editor.open'];
+
+export function chatCommandStrings(text: string): string[] {
+    return [...text.matchAll(/(?:workbench\.action\.chat\.|claude-vscode\.)[A-Za-z.]*/g)].map((match) => match[0]);
+}
+
+describe('0024 AC-007: the Studio never submits a chat and names no other chat command', () => {
+    async function productionFiles(): Promise<{ name: string; text: string }[]> {
+        const extra = await fs.readFile(path.join(root, 'package.json'), 'utf8');
+        return [...(await sourceFiles()).filter((file) => !isTestFile(file.name)), { name: 'package.json', text: extra }];
+    }
+
+    it('src without test files and package.json hold none of the forbidden terms, in any letter case', async () => {
+        const offenders = (await productionFiles()).filter((file) => hits(file.text, SEND_FORBIDDEN_TERMS, true).length > 0).map((file) => `${file.name}: ${hits(file.text, SEND_FORBIDDEN_TERMS, true).join(', ')}`);
+        expect(offenders).toEqual([]);
+    });
+
+    it('workbench.action.chat.open occurs exactly once, and every chat or Claude Code command string is one of the three', async () => {
+        const files = await productionFiles();
+        const strings = files.flatMap((file) => chatCommandStrings(file.text));
+        expect(strings.filter((text) => text === 'workbench.action.chat.open')).toHaveLength(1);
+        expect([...new Set(strings)].sort()).toEqual([...SEND_COMMANDS].sort());
+        expect(files.filter((file) => file.text.includes('workbench.action.chat.open')).map((file) => file.name)).toEqual(['src/core/assistant/assistants.ts']);
+    });
+
+    it('negative control: the scan finds each term, any letter case, and a command that is not one of the three', () => {
+        for (const term of SEND_FORBIDDEN_TERMS) {
+            expect(hits(`call ${term.toUpperCase()} here`, SEND_FORBIDDEN_TERMS, true), term).toContain(term);
+        }
+        expect(hits('const open = 1;', SEND_FORBIDDEN_TERMS, true)).toEqual([]);
+        expect(chatCommandStrings("run('workbench.action.chat.submit'); run('claude-vscode.sidebar.open')")).toEqual(['workbench.action.chat.submit', 'claude-vscode.sidebar.open']);
+        expect(chatCommandStrings('workbench.action.chat.open workbench.action.chat.open')).toHaveLength(2);
     });
 });
 
@@ -285,5 +363,55 @@ describe('0020 AC-018: the Spec Explorer is gone from the sources', () => {
             expect(hits(`const name = '${term}';`, TERMS, true).length, term).toBeGreaterThan(0);
         }
         expect(hits("const name = 'Spec board';", TERMS, true)).toEqual([]);
+    });
+});
+
+describe('0022 AC-007: "up next" names one set', () => {
+    const ALLOWED = [UP_NEXT_HEADING, NOTHING_UP_NEXT_TEXT, UP_NEXT_SET_LABEL];
+
+    function literalsWithUpNext(text: string): string[] {
+        return [...text.matchAll(/'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|`((?:[^`\\]|\\.)*)`/g)].map((match) => match[1] ?? match[2] ?? match[3] ?? '').filter((literal) => /up next/i.test(literal));
+    }
+
+    it('every literal of src without tests that holds "up next" is the Overview heading, its empty line or the named set', async () => {
+        const files = (await sourceFiles()).filter((file) => !isTestFile(file.name));
+        const found = files.flatMap((file) => literalsWithUpNext(file.text).map((literal) => `${file.name}: ${literal}`));
+        expect(found.sort()).toEqual(
+            [`src/webview/areas/overview/texts.ts: ${UP_NEXT_HEADING}`, `src/webview/areas/overview/texts.ts: ${NOTHING_UP_NEXT_TEXT}`, `src/webview/areas/overview/requests.ts: ${UP_NEXT_SET_LABEL}`].sort(),
+        );
+        expect(ALLOWED).toHaveLength(3);
+    });
+
+    it('package.json holds no "up next"', async () => {
+        expect(await fs.readFile(path.join(root, 'package.json'), 'utf8')).not.toMatch(/up next/i);
+    });
+
+    it('negative control: the scan finds a group label and a tooltip that say up next, and passes the allowed texts', () => {
+        expect(literalsWithUpNext("const GROUP = { upNext: 'Up next' };").filter((literal) => !ALLOWED.includes(literal))).toEqual([]);
+        expect(literalsWithUpNext("const GROUP = 'Up next group';")).toEqual(['Up next group']);
+        expect(literalsWithUpNext('const TIP = `The up next list`;')).toEqual(['The up next list']);
+        expect(literalsWithUpNext("const x = 'Ready';")).toEqual([]);
+    });
+});
+
+
+describe('0021 AC-013: the product names no model', () => {
+    const MODEL_NAMES = ['Opus', 'Sonnet', 'Haiku', 'GPT-', 'Gemini', 'Llama', 'Mistral'];
+
+    it('a case-insensitive search of src without test files and of package.json finds none of the model names', async () => {
+        const files = (await sourceFiles()).filter((file) => !isTestFile(file.name));
+        const offenders = files.map((file) => [file.name, hits(file.text, MODEL_NAMES, true)] as const).filter(([, found]) => found.length > 0);
+        expect(offenders).toEqual([]);
+        const manifest = await fs.readFile(path.join(root, 'package.json'), 'utf8');
+        expect(hits(manifest, MODEL_NAMES, true)).toEqual([]);
+        expect(files.length).toBeGreaterThan(50);
+    });
+
+    it('negative control: the scan finds each name in any case', () => {
+        for (const name of MODEL_NAMES) {
+            expect(hits(`const model = '${name.toUpperCase()}';`, MODEL_NAMES, true)).toEqual([name]);
+            expect(hits(`const model = '${name.toLowerCase()}';`, MODEL_NAMES, true)).toEqual([name]);
+        }
+        expect(hits('const model = "strong model";', MODEL_NAMES, true)).toEqual([]);
     });
 });

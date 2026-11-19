@@ -12,7 +12,7 @@ let mounted: Mounted | undefined;
 const clients: ShellClient[] = [];
 
 function stepOf(number: string): StepView {
-    return { short: '/sdd-plan', line: `/sdd-plan .specs/active/${number}-thing.md`, lines: [{ text: `/sdd-plan .specs/active/${number}-thing.md` }] };
+    return { intent: 'Plan', short: '/sdd-plan', line: `/sdd-plan .specs/active/${number}-thing.md`, lines: [{ text: `/sdd-plan .specs/active/${number}-thing.md`, intent: 'Write the plan' }] };
 }
 
 const CARDS = [

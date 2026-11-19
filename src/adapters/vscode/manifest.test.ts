@@ -1,6 +1,7 @@
 import { readFileSync } from 'fs';
 import * as path from 'path';
 import { describe, expect, it } from 'vitest';
+import { PLAN_MAP_COMMAND_TITLE } from '../../shared/protocol/planMapTexts';
 import { OPEN_STUDIO_COMMAND_ID, S2_WELCOME, SELECT_PROJECT_COMMAND_ID, TREE_COMMAND_TITLES } from '../../shared/protocol/texts';
 
 interface Manifest {
@@ -12,7 +13,7 @@ interface Manifest {
     activationEvents?: string[];
     extensionKind?: string[];
     capabilities?: {
-        untrustedWorkspaces?: { supported?: unknown; description?: string };
+        untrustedWorkspaces?: { supported?: unknown; description?: string; restrictedConfigurations?: string[] };
         virtualWorkspaces?: unknown;
     };
     contributes?: {
@@ -25,14 +26,24 @@ interface Manifest {
             'view/title'?: { command: string; when?: string; group?: string }[];
             'view/item/context'?: { command: string; when?: string; group?: string }[];
         };
-        configuration?: {
-            properties?: Record<
-                string,
-                { type?: string; default?: unknown; minimum?: number; scope?: string; description?: string; enum?: string[]; enumDescriptions?: string[] }
-            >;
-        };
+        configuration?: unknown;
     };
 }
+
+const ASSISTANT_PROPERTY = {
+    type: 'string',
+    default: 'none',
+    enum: ['none', 'copilot', 'claudeCode'],
+    enumItemLabels: ['None: Copy prompt', 'GitHub Copilot', 'Claude Code'],
+    enumDescriptions: [
+        'Copy the prompt and paste it into any assistant.',
+        "Open Copilot's chat with the prompt in its input. Needs the GitHub Copilot Chat extension.",
+        'Open a Claude Code tab with the prompt in its input. Needs the Claude Code extension.',
+    ],
+    description:
+        "Your AI assistant for the next step. Send opens its chat with the prompt in the input and sends nothing; Copy prompt stays in the button's menu. Only assistants whose input the Studio can fill are listed.",
+    scope: 'window',
+};
 
 const manifest = JSON.parse(readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8')) as Manifest;
 
@@ -78,12 +89,13 @@ describe('extension manifest', () => {
 
 
 
-    it('AC-001, AC-005 (0005): contributes the Open command and one command per area (Overview and Board) with their titles', () => {
+    it('AC-001, AC-005 (0005): contributes the Open command and one command per area (Overview, Board and Plan map) with their titles', () => {
         const commands = Object.fromEntries((manifest.contributes?.commands ?? []).map((command) => [command.command, command.title]));
         expect(commands).toMatchObject({
             'featherspec-studio.open': 'FeatherSpec Studio: Open',
             'featherspec-studio.openOverview': 'FeatherSpec Studio: Open Overview',
             'featherspec-studio.openBoard': 'FeatherSpec Studio: Open Board',
+            'featherspec-studio.openPlanMap': 'FeatherSpec Studio: Open Plan Map',
         });
     });
 
@@ -149,6 +161,9 @@ describe('extension manifest', () => {
         expect(commands['featherspec-studio.refresh']).toBe('FeatherSpec Studio: Refresh');
         expect(commands['featherspec-studio.openOverview']).toBe('FeatherSpec Studio: Open Overview');
         expect(commands['featherspec-studio.openBoard']).toBe('FeatherSpec Studio: Open Board');
+        expect(commands['featherspec-studio.openPlanMap']).toBe('FeatherSpec Studio: Open Plan Map');
+        expect(commands['featherspec-studio.openPlanMap']).toBe(PLAN_MAP_COMMAND_TITLE);
+        expect(commands['featherspec-studio.openSettings']).toBe('FeatherSpec Studio: Open Settings');
         for (const old of ['openMissionControl', 'openSpecBoard', 'rescan', 'refreshDiscovery']) {
             expect(commands[`featherspec-studio.${old}`]).toBeUndefined();
         }
@@ -208,13 +223,64 @@ describe('extension manifest', () => {
         expect(['FeatherSpec Studio: Open Agent Center', 'FeatherSpec Studio: Clear Run History', 'FeatherSpec Studio: Stop Run', 'FeatherSpec Studio: Resume Run'].filter((title) => /Agent|Run History|Stop Run|Resume Run/.test(title))).toHaveLength(4);
     });
 
-    it('AC-015 (0015): declares no configuration property', () => {
-        expect(manifest.contributes?.configuration).toBeUndefined();
+    it('0021 AC-016, amended by 0024 (PD-068): contributes the configuration FeatherSpec Studio with exactly the three settings, their types, defaults, properties and descriptions', () => {
+        const configuration = manifest.contributes?.configuration;
+        expect(configuration).toEqual({
+            title: 'FeatherSpec Studio',
+            properties: {
+                'featherspec-studio.showStepTips': {
+                    type: 'boolean',
+                    default: true,
+                    description: 'Show the session and model tip under the next step and the ? button that explains it.',
+                },
+                'featherspec-studio.modelHints': {
+                    type: 'object',
+                    default: {},
+                    description: 'Names of your own models, shown in the tip. The Studio names no model itself.',
+                    properties: {
+                        strong: { type: 'string', description: 'Your strong model: for specify, clarify, writing a plan, compile and finding a block.' },
+                        fast: { type: 'string', description: 'Your fast model: for one plan step, a plan report, lifecycle moves and the workflow overview.' },
+                    },
+                    additionalProperties: false,
+                },
+                'featherspec-studio.assistant': ASSISTANT_PROPERTY,
+            },
+        });
     });
 
-    it('AC-015 (0015): negative control, a manifest with a configuration would be found', () => {
-        const withConfiguration: Manifest = { contributes: { configuration: { properties: {} } } };
-        expect(withConfiguration.contributes?.configuration).toBeDefined();
+    it('0021 AC-016, amended by 0024: negative control, a fourth key, a Markdown description or a scope on another key would be found', () => {
+        const properties = (manifest.contributes?.configuration as { properties?: Record<string, unknown> } | undefined)?.properties ?? {};
+        expect(Object.keys(properties)).toEqual(['featherspec-studio.showStepTips', 'featherspec-studio.modelHints', 'featherspec-studio.assistant']);
+        expect(JSON.stringify(properties)).not.toContain('markdownDescription');
+        expect(JSON.stringify(properties).match(/"scope"/g)).toHaveLength(1);
+        const extended = { ...properties, 'featherspec-studio.other': { type: 'string' } };
+        expect(Object.keys(extended)).not.toEqual(Object.keys(properties));
+        expect(JSON.stringify({ x: { markdownDescription: 'a' } })).toContain('markdownDescription');
+    });
+
+    it('0024 AC-001: the assistant setting has the type, default, enum, labels, descriptions, description and scope of §6.1 and §7 literally', () => {
+        const properties = (manifest.contributes?.configuration as { properties?: Record<string, unknown> } | undefined)?.properties ?? {};
+        const assistant = properties['featherspec-studio.assistant'] as Record<string, unknown>;
+        expect(assistant).toEqual(ASSISTANT_PROPERTY);
+        expect(Object.keys(assistant)).toEqual(['type', 'default', 'enum', 'enumItemLabels', 'enumDescriptions', 'description', 'scope']);
+    });
+
+    it('0024 AC-001: restrictedConfigurations is exactly the assistant key; the other untrusted-workspace fields stay', () => {
+        const untrusted = manifest.capabilities?.untrustedWorkspaces;
+        expect(untrusted?.restrictedConfigurations).toEqual(['featherspec-studio.assistant']);
+        expect(untrusted?.supported).toBe('limited');
+    });
+
+    it('0024 AC-001: the manifest names none of codex, chatgpt, openai in any letter case', () => {
+        expect(readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8').toLowerCase()).not.toMatch(/codex|chatgpt|openai/);
+    });
+
+    it('0024 AC-001: negative control, the search finds each name in any letter case and a manifest that offered it', () => {
+        for (const name of ['Codex', 'ChatGPT', 'OpenAI']) {
+            expect(`"enum": ["none", "${name}"]`.toLowerCase()).toMatch(/codex|chatgpt|openai/);
+        }
+        const withCodex = { ...ASSISTANT_PROPERTY, enum: [...ASSISTANT_PROPERTY.enum, 'codex'] };
+        expect(withCodex).not.toEqual(ASSISTANT_PROPERTY);
     });
 
     it('AC-016 (0015): the description reads as the product text and names no agent or Copilot; the keywords drop agents, ai agents and github copilot', () => {
@@ -230,15 +296,30 @@ describe('extension manifest', () => {
         expect(['featherspec', 'agents', 'ai agents'].filter((keyword) => ['agents', 'ai agents', 'github copilot'].includes(keyword))).toHaveLength(2);
     });
 
-    it('AC-011 (0020): the toolbar of the view holds Open (window) and Refresh (refresh), in this order, in the group navigation, and nothing else', () => {
+    it('AC-011 (0020), amended by 0024 (PD-068): the toolbar of the view holds Open (window), Refresh (refresh) and Open Settings (gear), in this order, in the group navigation, and nothing else', () => {
         const title = manifest.contributes?.menus?.['view/title'] ?? [];
         expect(title).toEqual([
             { command: 'featherspec-studio.open', when: 'view == featherspec-studio.navigator', group: 'navigation@1' },
             { command: 'featherspec-studio.refresh', when: 'view == featherspec-studio.navigator', group: 'navigation@2' },
+            { command: 'featherspec-studio.openSettings', when: 'view == featherspec-studio.navigator', group: 'navigation@3' },
         ]);
         const commands = manifest.contributes?.commands ?? [];
         expect(commands).toContainEqual({ command: 'featherspec-studio.open', title: 'FeatherSpec Studio: Open', icon: '$(window)' });
         expect(commands).toContainEqual({ command: 'featherspec-studio.refresh', title: 'FeatherSpec Studio: Refresh', icon: '$(refresh)' });
+    });
+
+    it('0024 AC-013: contributes featherspec-studio.openSettings with the title and the gear icon, not hidden from the Command Palette', () => {
+        const commands = manifest.contributes?.commands ?? [];
+        expect(commands).toContainEqual({ command: 'featherspec-studio.openSettings', title: 'FeatherSpec Studio: Open Settings', icon: '$(gear)' });
+        const hidden = (manifest.contributes?.menus?.commandPalette ?? []).map((entry) => entry.command);
+        expect(hidden).not.toContain('featherspec-studio.openSettings');
+    });
+
+    it('0024 AC-013: negative control, a toolbar without the gear or with it before Refresh would differ', () => {
+        const title = manifest.contributes?.menus?.['view/title'] ?? [];
+        const order = title.map((entry) => entry.command);
+        expect(order.indexOf('featherspec-studio.openSettings')).toBe(order.indexOf('featherspec-studio.refresh') + 1);
+        expect([...order].reverse()).not.toEqual(order);
     });
 
     it('AC-011 (0020): contributes the tree\'s own commands with exactly these titles, hidden from the Command Palette', () => {
@@ -299,7 +380,7 @@ describe('extension manifest', () => {
         const commands = manifest.contributes?.commands ?? [];
         expect(commands.map((entry) => entry.command)).not.toContain('featherspec-studio.openSpecExplorer');
         expect(commands.filter((entry) => /spec explorer/i.test(entry.title))).toEqual([]);
-        expect(commands.map((entry) => entry.command).filter((id) => /openOverview|openBoard/.test(id)).sort()).toEqual(['featherspec-studio.openBoard', 'featherspec-studio.openOverview']);
+        expect(commands.map((entry) => entry.command).filter((id) => /openOverview|openBoard|openPlanMap/.test(id)).sort()).toEqual(['featherspec-studio.openBoard', 'featherspec-studio.openOverview', 'featherspec-studio.openPlanMap']);
     });
 
     it('0020 AC-015: negative control, the matcher finds a Spec Explorer title', () => {

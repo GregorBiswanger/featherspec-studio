@@ -34,12 +34,26 @@ describe('Overview view contract', () => {
         expect(isOverviewView({ ...view, figures: { ...figures, states: [{ state: 'Ready', count: 0, derivedRule: 'S-READY' }] } })).toBe(false);
     });
 
-    it('0018 AC-007: Problems carry rows and lines; a line takes exactly where and reason', () => {
+    it('0018 AC-007, 0022 AC-013: Problems carry rows and lines; a line takes exactly where, reason and sentence', () => {
         const view = sampleView();
-        expect(isOverviewView({ ...view, problems: { rows: [], lines: [{ where: 'project', reason: 'orphan return note' }] } })).toBe(true);
-        expect(isOverviewView({ ...view, problems: { rows: [], lines: [{ where: 'project' }] } })).toBe(false);
-        expect(isOverviewView({ ...view, problems: { rows: [], lines: [{ where: 'project', reason: 'x', extra: 1 }] } })).toBe(false);
+        expect(isOverviewView({ ...view, problems: { rows: [], lines: [{ where: 'project', reason: 'orphan return note', sentence: 'This return note belongs to no spec (number 0042)' }] } })).toBe(true);
+        expect(isOverviewView({ ...view, problems: { rows: [], lines: [{ where: 'project', reason: 'orphan return note' }] } })).toBe(false);
+        expect(isOverviewView({ ...view, problems: { rows: [], lines: [{ where: 'project', sentence: 's' }] } })).toBe(false);
+        expect(isOverviewView({ ...view, problems: { rows: [], lines: [{ where: 'project', reason: 'x', sentence: 's', extra: 1 }] } })).toBe(false);
         expect(isOverviewView({ ...view, problems: { rows: [] } })).toBe(false);
+    });
+});
+
+describe('0022 AC-013: a Problems row may carry the reasons as its tooltip text', () => {
+    const base = { spec: { stem: '0001-a', number: '0001', title: 'A', found: true }, state: 'Active', status: 'Studio cannot read this spec', problems: 1 };
+
+    it('accepts reasons as text, refuses another type', () => {
+        const view = sampleView();
+        const withRow = (row: unknown) => ({ ...view, problems: { rows: [row], lines: [] } });
+        expect(isOverviewView(withRow({ ...base, reasons: 'not valid UTF-8' }))).toBe(true);
+        expect(isOverviewView(withRow(base))).toBe(true);
+        expect(isOverviewView(withRow({ ...base, reasons: 4 }))).toBe(false);
+        expect(isOverviewView(withRow({ ...base, reason: 'typo' }))).toBe(false);
     });
 });
 
@@ -48,7 +62,7 @@ describe('0018 Overview rows contract', () => {
 
     it('accepts rows in Now and Up next, with and without a step', () => {
         const view = sampleView();
-        expect(isOverviewView({ ...view, now: [row, { ...row, step: { line: '/sdd-plan 0001', short: '/sdd-plan', lines: [{ text: '/sdd-plan 0001' }] } }] })).toBe(true);
+        expect(isOverviewView({ ...view, now: [row, { ...row, step: { line: '/sdd-plan 0001', intent: 'Plan', short: '/sdd-plan', lines: [{ text: '/sdd-plan 0001', intent: 'Write the plan' }] } }] })).toBe(true);
         expect(isOverviewView({ ...view, upNext: { rows: [row], more: 2, stems: ['0001-a', '0002-b', '0003-c'] } })).toBe(true);
     });
 
@@ -73,3 +87,35 @@ describe('Overview event payload', () => {
         expect(isOverviewEventPayload({})).toBe(false);
     });
 });
+
+describe('0021 AC-009: the tips of a row', () => {
+    const TIPS = { coach: 'new chat · strong model', about: ['a', 'b', 'c', 'd'] };
+
+    it('a row takes tips with a coach line and a list of paragraphs, and refuses a bad one', () => {
+        const view = sampleView();
+        const row = view.problems.rows[0]!;
+        const step = { intent: 'Plan', short: '/sdd-plan', line: '/sdd-plan 0001', lines: [{ text: '/sdd-plan 0001', intent: 'Write the plan' }] };
+        expect(isOverviewView({ ...view, now: [{ ...row, step, tips: TIPS }] })).toBe(true);
+        expect(isOverviewView({ ...view, now: [{ ...row, step, tips: { ...TIPS, extra: 1 } }] })).toBe(false);
+        expect(isOverviewView({ ...view, now: [{ ...row, step, tips: { coach: 3, about: [] } }] })).toBe(false);
+        expect(isOverviewView({ ...view, now: [{ ...row, step, tips: { coach: 'x', about: [1] } }] })).toBe(false);
+        expect(isOverviewView({ ...view, now: [{ ...row, step, tips: 'x' }] })).toBe(false);
+    });
+});
+
+describe('0024 AC-003: the send view of a row', () => {
+    const SEND = { assistant: 'claudeCode', target: 'new', targets: ['new'] };
+    const step = { intent: 'Plan', short: '/sdd-plan', line: '/sdd-plan 0001', lines: [{ text: '/sdd-plan 0001', intent: 'Write the plan' }] };
+
+    it('a row with a step takes a send view and refuses a bad one or one without a step', () => {
+        const view = sampleView();
+        const row = view.problems.rows[0]!;
+        expect(isOverviewView({ ...view, now: [{ ...row, step, send: SEND }] })).toBe(true);
+        expect(isOverviewView({ ...view, now: [{ ...row, step, tips: { coach: 'x', about: ['a'] }, send: { assistant: 'copilot', target: 'current', targets: ['new', 'current'] } }] })).toBe(true);
+        expect(isOverviewView({ ...view, now: [{ ...row, step, send: { ...SEND, extra: 1 } }] })).toBe(false);
+        expect(isOverviewView({ ...view, now: [{ ...row, step, send: { ...SEND, target: 'current' } }] })).toBe(false);
+        expect(isOverviewView({ ...view, now: [{ ...row, step, send: 'copilot' }] })).toBe(false);
+        expect(isOverviewView({ ...view, now: [{ ...row, send: SEND }] })).toBe(false);
+    });
+});
+

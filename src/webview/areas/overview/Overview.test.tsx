@@ -1,3 +1,4 @@
+import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../../shared/protocol/envelope';
 import type { OverviewView } from '../../../shared/protocol/overview';
@@ -120,13 +121,14 @@ describe('0018 AC-007: Problems', () => {
         const view = fullView();
         view.problems = {
             rows: [row('0002-x', '0002', 'Backlog', { status: 'plan link is dead · spec unreadable', problems: 2 })],
-            lines: [{ where: 'project', reason: 'a return note has no spec' }],
+            lines: [{ where: 'project', reason: 'a return note has no spec', sentence: 'a return note has no spec' }],
         };
         const problems = area(await open(view)).querySelector<HTMLElement>('[data-problems]')!;
         expect(problems.querySelector('h2')?.textContent).toBe('Problems (2)');
         expect(problems.querySelector('[data-spec-row="0002-x"] .ov-status')?.textContent).toBe('plan link is dead · spec unreadable');
         const line = problems.querySelector('[data-problem-line]')!;
         expect(line.textContent).toBe('project: a return note has no spec');
+        expect(line.querySelector('[title]')).toBeNull();
         expect(line.querySelector('button')).toBeNull();
         expect(line.hasAttribute('tabindex')).toBe(false);
     });
@@ -143,7 +145,7 @@ describe('0018 AC-007: Problems', () => {
 
     it('with only project-level lines the heading still sends the named set Problems, with no stem', async () => {
         const view = fullView();
-        view.problems = { rows: [], lines: [{ where: 'project', reason: 'orphan' }] };
+        view.problems = { rows: [], lines: [{ where: 'project', reason: 'orphan', sentence: 'orphan' }] };
         const container = await open(view);
         await click(container.querySelector('[data-problems] h2 button')!);
         expect(posted.find((message) => message.type === 'navigate')?.payload).toEqual({ area: 'board', target: { kind: 'boardFilter', filter: { set: { label: 'Problems', stems: [] } } } });
@@ -221,7 +223,7 @@ describe('0018 AC-009: the progress text is a tooltip, never visible', () => {
 describe('0018 AC-013: keyboard', () => {
     it('every spec row, Copy, figure, "+ n more", the Problems and Activity headings are Tab stops in DOM order', async () => {
         const view = fullView();
-        view.now = [row('0001-a', '0001', 'Blocked', { step: { short: '/sdd-plan', line: '/sdd-plan 0001', lines: [{ text: '/sdd-plan 0001' }] } })];
+        view.now = [row('0001-a', '0001', 'Blocked', { step: { intent: 'Plan', short: '/sdd-plan', line: '/sdd-plan 0001', lines: [{ text: '/sdd-plan 0001', intent: 'Write the plan' }] } })];
         view.upNext = { rows: [row('0003-c', '0003', 'Ready')], more: 2, stems: ['0003-c', '0004-d', '0005-e'] };
         view.problems = { rows: [row('0002-x', '0002', 'Backlog', { problems: 1 })], lines: [] };
         const container = area(await open(view));
@@ -255,3 +257,116 @@ describe('0018 AC-011: zero specs', () => {
         expect(area(await open(sampleView())).textContent).not.toContain('No specs yet');
     });
 });
+
+describe('0022 AC-013, AC-002, AC-003: Problems as sentences', () => {
+    it('a Problems row shows the sentences and carries the technical reasons as tooltip', async () => {
+        const view = fullView();
+        view.problems = {
+            rows: [row('0002-x', '0002', 'Backlog', { status: 'The plan link points to a missing file · The spec cannot be read', reasons: 'plan link is dead · spec unreadable', problems: 2 })],
+            lines: [],
+        };
+        const status = area(await open(view)).querySelector('[data-problems] [data-spec-row="0002-x"] .ov-status')!;
+        expect(status.textContent).toBe('The plan link points to a missing file · The spec cannot be read');
+        expect(status.getAttribute('title')).toBe('plan link is dead · spec unreadable');
+    });
+
+    it('a project-level line shows the place with break opportunities, then the sentence, and the reason as tooltip', async () => {
+        const view = fullView();
+        view.problems = { rows: [], lines: [{ where: '.memory-bank/activeContext.0099-T-001.md', reason: 'return note matches no spec', sentence: 'This return note belongs to no spec.' }] };
+        const line = area(await open(view)).querySelector('[data-problem-line]')!;
+        expect(line.textContent).toBe('.memory-bank/activeContext.0099-T-001.md: This return note belongs to no spec.');
+        expect(line.querySelectorAll('wbr').length).toBeGreaterThan(0);
+        expect(line.getAttribute('title')).toBe('return note matches no spec');
+    });
+});
+
+describe('0024 AC-003, AC-002: the split button at the first Now row only', () => {
+    const line = (n: string) => `/sdd-plan .specs/active/${n}-r.md`;
+    const step = (n: string) => ({ intent: 'Plan', short: '/sdd-plan', line: line(n), lines: [{ text: line(n), intent: 'Write the plan' }] });
+    const row = (n: string, extra: Record<string, unknown> = {}) => ({ spec: { stem: `${n}-r`, number: n, title: `Row ${n}`, found: true }, state: 'Active', status: 'Active', problems: 0, step: step(n), ...extra });
+    const SEND = { assistant: 'claudeCode', target: 'new', targets: ['new'] };
+
+    function viewWith(now: unknown[]): OverviewView {
+        return { ...sampleView(), now, upNext: { rows: [row('0003'), row('0004')], more: 0, stems: [] } } as OverviewView;
+    }
+
+    it('row 0 shows Send to Claude Code with its arrow part; the later rows and Up next keep their icon Copy; one split button in the Overview', async () => {
+        const container = await open(viewWith([row('0001', { send: SEND }), row('0002')]));
+        const splits = container.querySelectorAll('.send-split');
+        expect(splits).toHaveLength(1);
+        expect(splits[0]!.closest('[data-spec-row]')?.getAttribute('data-spec-row')).toBe('0001-r');
+        expect(splits[0]!.closest('li')?.parentElement?.closest('[data-now]')).not.toBeNull();
+        expect(splits[0]!.querySelector('button.send-main')?.textContent).toBe('Send to Claude Code');
+        expect(splits[0]!.querySelector('button.send-main')?.getAttribute('aria-label')).toBe(`Send to Claude Code (new chat): ${line('0001')}`);
+        const second = container.querySelector('[data-spec-row="0002-r"]')!;
+        expect(second.querySelector('button.copy-icon')).not.toBeNull();
+        expect(second.querySelector('.send-split')).toBeNull();
+        expect(container.querySelectorAll('[data-up-next] button.copy-icon')).toHaveLength(2);
+    });
+
+    it('a menu item and the main part post sendPrompt with the line of row 0', async () => {
+        const container = await open(viewWith([row('0001', { send: SEND })]));
+        await click(container.querySelector('button.send-main')!);
+        await click(container.querySelector('button.send-arrow')!);
+        await click([...container.querySelectorAll<HTMLElement>('[role="menuitem"]')][0]!);
+        expect(posted.filter((message) => message.type === 'sendPrompt').map((message) => message.payload)).toEqual([
+            { assistant: 'claudeCode', target: 'new', line: line('0001'), token: expect.stringMatching(/^[A-Za-z0-9-]{1,64}$/) },
+            { assistant: 'claudeCode', target: 'new', line: line('0001'), token: expect.stringMatching(/^[A-Za-z0-9-]{1,64}$/) },
+        ]);
+    });
+
+    it('a first Now row without a step holds no Send control; no row of any group does', async () => {
+        const noStep = { spec: { stem: '0001-r', number: '0001', title: 'Row 0001', found: true }, state: 'Active', status: 'Active', problems: 0 };
+        const container = await open(viewWith([noStep, row('0002')]));
+        expect(container.querySelector('.send-split, .send-arrow, [role="menu"]')).toBeNull();
+    });
+
+    it('an offer that goes away moves focus from the split button to the Copy prompt of the row; an assistant change moves it to the arrow part', async () => {
+        const container = await open(viewWith([row('0001', { send: SEND }), row('0002')]));
+        await act(async () => container.querySelector<HTMLElement>('button.send-main')!.focus());
+        await send(overviewEvent(viewWith([row('0001', { send: { assistant: 'copilot', target: 'new', targets: ['new', 'current'] } }), row('0002')])));
+        expect(document.activeElement).toBe(container.querySelector('button.send-arrow'));
+        await send(overviewEvent(viewWith([row('0001'), row('0002')])));
+        expect(container.querySelector('.send-split')).toBeNull();
+        expect(document.activeElement).toBe(container.querySelector('[data-spec-row="0001-r"] button.copy-button'));
+    });
+
+    it('after a window blur (focusout without a related target, the active element unchanged) the same moves hold', async () => {
+        const container = await open(viewWith([row('0001', { send: SEND }), row('0002')]));
+        const main = container.querySelector<HTMLElement>('button.send-main')!;
+        await act(async () => main.focus());
+        await act(async () => {
+            main.dispatchEvent(new FocusEvent('blur', { relatedTarget: null }));
+            main.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+            await Promise.resolve();
+        });
+        expect(document.activeElement).toBe(main);
+        await send(overviewEvent(viewWith([row('0001'), row('0002')])));
+        expect(container.querySelector('.send-split')).toBeNull();
+        expect(document.activeElement).toBe(container.querySelector('[data-spec-row="0001-r"] button.copy-button'));
+    });
+
+    it('a row with focus on Send leaves Now while another spec enters Up next: no other spec\'s row takes the focus', async () => {
+        const container = await open(viewWith([row('0001', { send: SEND }), row('0002')]));
+        await act(async () => container.querySelector<HTMLElement>('button.send-main')!.focus());
+        const next = { ...sampleView(), now: [row('0002', { send: SEND })], upNext: { rows: [row('0009'), row('0003')], more: 0, stems: [] } } as OverviewView;
+        await send(overviewEvent(next));
+        const held = document.activeElement?.closest('[data-spec-row]')?.getAttribute('data-spec-row');
+        expect(held === undefined || held === null).toBe(true);
+        expect(document.activeElement?.classList.contains('copy-icon')).toBe(false);
+    });
+
+    it('the row stays first and its offer goes away: its own Copy prompt takes the focus, and a Copy that mounts in another row in the same update does not', async () => {
+        const container = await open(viewWith([row('0001', { send: SEND }), row('0002')]));
+        await act(async () => container.querySelector<HTMLElement>('button.send-main')!.focus());
+        await send(overviewEvent(viewWith([row('0001'), row('0002'), row('0005')])));
+        expect(document.activeElement).toBe(container.querySelector('[data-spec-row="0001-r"] button.copy-button'));
+    });
+
+    it('without send the first Now row renders the 0021 DOM: the Copy prompt in place of the split button', async () => {
+        const container = await open(viewWith([row('0001'), row('0002')]));
+        expect(container.querySelector('[data-spec-row="0001-r"] button.copy-icon, [data-spec-row="0001-r"] button.copy-button')).not.toBeNull();
+        expect(container.querySelector('.send-split')).toBeNull();
+    });
+});
+

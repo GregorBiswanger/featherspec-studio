@@ -5,6 +5,9 @@ import type { Disposable } from '../ports/host';
 import type { RequestHandlers } from '../shell/messageRouter';
 import type { OverviewRequestType } from '../../shared/protocol/messages';
 import type { ShellModelSource } from '../ports/shell';
+import type { Offer } from '../assistant/offer';
+import type { SettingsSource } from '../settings/settingsSource';
+import type { StepTipSettings } from '../settings/stepTipSettings';
 import { buildOverviewView } from './overviewView';
 import { historyUnavailableText } from '../lifecycle/historyTexts';
 
@@ -12,6 +15,8 @@ export interface OverviewServiceDeps {
     source: ShellModelSource;
     discovery: Pick<DiscoveryController, 'snapshot' | 'onDidUpdate'>;
     history: { read(): Promise<HistoryView>; onDidChange(listener: () => void): Disposable };
+    tips: SettingsSource<StepTipSettings>;
+    assistant: SettingsSource<Offer | undefined>;
 }
 
 export interface OverviewService {
@@ -71,7 +76,8 @@ export function createOverviewService(deps: OverviewServiceDeps): OverviewServic
         if (disposed || listeners.size === 0) {
             return;
         }
-        setView(buildOverviewView({ model, history, activityOpen }));
+        const offer = deps.assistant.read();
+        setView(buildOverviewView({ model, history, activityOpen, tips: deps.tips.read(), ...(offer === undefined ? {} : { offer }) }));
     }
 
     function schedule(): void {
@@ -112,6 +118,8 @@ export function createOverviewService(deps: OverviewServiceDeps): OverviewServic
             deps.source.onDidChange(schedule),
             deps.history.onDidChange(schedule),
             deps.discovery.onDidUpdate(schedule),
+            deps.tips.onDidChange(schedule),
+            deps.assistant.onDidChange(schedule),
         ];
     }
 

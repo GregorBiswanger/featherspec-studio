@@ -1,8 +1,9 @@
 import { STATE_RULES, type BoardColumn, type BoardView, type CardView } from '../../shared/protocol/board';
-import { columnRuleTooltip, DONE_HIDE_LABEL, DONE_SHOW_LABEL, hiddenByFilterText, narrowColumnText } from '../../shared/protocol/texts';
+import { STATE_LOOK } from '../../shared/protocol/stateLook';
+import { columnRuleTooltip, DONE_HIDE_LABEL, DONE_SHOW_LABEL, hiddenByFilterText, narrowColumnText, withProblemCount } from '../../shared/protocol/texts';
 import type { CopyResult } from '../ui/CopyButton';
 import { Card } from './Card';
-import { StateIcon } from './icons';
+import { BadgeIcon, StateIcon } from './icons';
 
 export function Column(props: {
     column: BoardColumn;
@@ -17,11 +18,17 @@ export function Column(props: {
     const { column } = props;
     const rule = STATE_RULES[column.state];
     const ruleText = rule === undefined ? undefined : columnRuleTooltip(rule);
-    const narrowName = column.narrow === undefined ? undefined : narrowColumnText(column.state, column.narrow, column.narrow === 'filtered' ? column.hidden : column.count);
+    const narrowName = column.narrow === undefined ? undefined : withProblemCount(narrowColumnText(column.state, column.narrow, column.narrow === 'filtered' ? column.hidden : column.count), column.problems);
+    const strandedProblem = column.narrow !== undefined && (column.problems ?? 0) > 0;
     const toggle = column.state === 'Done' ? props.doneToggle : undefined;
     const heading = (
         <>
             <StateIcon state={column.state} /> <span className="column-name">{column.state}</span> <span className="column-count">{column.count}</span>
+            {strandedProblem ? (
+                <span className="column-problem">
+                    <BadgeIcon kind="diagnostic" />
+                </span>
+            ) : null}
         </>
     );
     const title = narrowName === undefined ? undefined : ruleText === undefined ? narrowName : `${narrowName} · ${ruleText}`;
@@ -33,6 +40,7 @@ export function Column(props: {
             aria-label={narrowName ?? column.state}
             {...(title === undefined ? {} : { title })}
             data-board-state={column.state}
+            data-tint={STATE_LOOK[column.state].colour}
         >
             <h2 className="column-heading" {...(column.narrow === undefined && ruleText !== undefined ? { title: ruleText } : {})}>
                 {toggle === undefined ? (

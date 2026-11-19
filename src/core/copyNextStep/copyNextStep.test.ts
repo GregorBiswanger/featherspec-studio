@@ -89,7 +89,7 @@ describe('0017 AC-019: with a current spec the command copies without asking', (
             '.specs/active/0012-thing.plan.md': '# Plan\n\n**Spec:** [0012-thing.md](0012-thing.md)\n**Status:** In Progress\n\n## Steps\n\n### T-001 — A\n\n- [ ] **Verified (T-001):** —\n',
         });
         await command.run();
-        expect(fakes.written).toEqual(['/sdd-plan .specs/active/0012-thing.md']);
+        expect(fakes.written).toEqual(['Implement T-001 of .specs/active/0012-thing.plan.md']);
     });
 
     it('a selected spec is the current spec of the command too', async () => {
@@ -192,9 +192,9 @@ describe('0017 AC-020: no current spec, the quick pick', () => {
         expect(fakes.asked).toHaveLength(1);
         expect(fakes.asked[0]?.placeholder).toBe('Select a spec to copy its next step');
         expect(fakes.asked[0]?.items).toEqual([
-            { key: '.specs/backlog/0007-thing.md', label: '0007 Thing 0007', description: 'Ready · Implement' },
-            { key: '.specs/backlog/0003-thing.md', label: '0003-thing', description: 'Backlog · /sdd-clarify' },
-            { key: '.specs/backlog/0008-thing.md', label: '0008 Thing 0008', description: 'Backlog · /sdd-clarify' },
+            { key: '.specs/backlog/0007-thing.md', label: '0007 Thing 0007', description: 'Ready · Build · Implement' },
+            { key: '.specs/backlog/0003-thing.md', label: '0003-thing', description: 'Backlog · Challenge · /sdd-clarify' },
+            { key: '.specs/backlog/0008-thing.md', label: '0008 Thing 0008', description: 'Backlog · Challenge · /sdd-clarify' },
         ]);
         expect(fakes.written).toEqual([]);
     });
@@ -216,13 +216,13 @@ describe('0017 AC-020: no current spec, the quick pick', () => {
         expect(world.shown).toHaveLength(shownBefore);
     });
 
-    it('with no spec that has a step: the message with "Copy", which copies /sdd-specify; dismissing copies nothing', async () => {
+    it('with no spec that has a step: the message with "Copy prompt", which copies /sdd-specify; dismissing copies nothing', async () => {
         await ready([{ number: '0003', kind: 'Done' }]);
         await command.run();
-        expect(fakes.informed).toEqual([{ text: 'No spec has a next step to copy. Start the next spec with /sdd-specify', action: 'Copy' }]);
+        expect(fakes.informed).toEqual([{ text: 'No spec has a next step to copy. Start the next spec with /sdd-specify', action: 'Copy prompt' }]);
         expect(fakes.asked).toEqual([]);
         expect(fakes.written).toEqual([]);
-        fakes.informAnswer = 'Copy';
+        fakes.informAnswer = 'Copy prompt';
         await command.run();
         expect(fakes.written).toEqual(['/sdd-specify']);
         expect(world.text()).toBe('$(check) Copied');

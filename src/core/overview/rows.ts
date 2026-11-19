@@ -1,7 +1,11 @@
 import type { BoardState } from '../../shared/protocol/boardFilter';
 import type { OverviewRow, OverviewUpNext } from '../../shared/protocol/overview';
 import { needsOf } from '../board/needs';
-import { stepView } from '../board/nextStep';
+import { nextStep, stepView } from '../board/nextStep';
+import { stepTips } from '../board/stepTips';
+import type { Offer } from '../assistant/offer';
+import { sendViewOf, tipClosingOf } from '../assistant/sendView';
+import type { StepTipSettings } from '../settings/stepTipSettings';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { ShellModel } from '../ports/shell';
 import type { SpecResolver } from './specRefs';
@@ -27,7 +31,7 @@ function statusOf(model: ShellModel, entry: LifecycleEntry): string {
     return entry.state === 'Backlog' ? (needsOf(model.project, entry)[0]?.text ?? 'Backlog') : entry.state;
 }
 
-function rowOf(model: ShellModel, specs: SpecResolver, entry: LifecycleEntry): OverviewRow {
+function rowOf(model: ShellModel, specs: SpecResolver, entry: LifecycleEntry, first?: { tips?: StepTipSettings; offer?: Offer }): OverviewRow {
     const step = stepView(model, entry.key);
     const row: OverviewRow = {
         spec: specs.forEntry(entry),
@@ -35,11 +39,27 @@ function rowOf(model: ShellModel, specs: SpecResolver, entry: LifecycleEntry): O
         status: statusOf(model, entry),
         problems: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').length,
     };
-    return step === undefined ? row : { ...row, step };
+    if (step === undefined) {
+        return row;
+    }
+    const tips = first?.tips;
+    const offer = first?.offer;
+    const next = (tips === undefined || !tips.show) && offer === undefined ? undefined : nextStep(model, entry.key);
+    if (next === undefined || !('case' in next)) {
+        return { ...row, step };
+    }
+    const send = sendViewOf(offer, next.case);
+    return {
+        ...row,
+        step,
+        ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer)) }),
+        ...(send === undefined ? {} : { send }),
+    };
 }
 
-export function projectNow(model: ShellModel, specs: SpecResolver): OverviewRow[] {
-    return inOrder(model, NOW_ORDER).map((entry) => rowOf(model, specs, entry));
+export function projectNow(model: ShellModel, specs: SpecResolver, tips?: StepTipSettings, offer?: Offer): OverviewRow[] {
+    const first = { ...(tips === undefined ? {} : { tips }), ...(offer === undefined ? {} : { offer }) };
+    return inOrder(model, NOW_ORDER).map((entry, index) => rowOf(model, specs, entry, index === 0 ? first : undefined));
 }
 
 export function projectUpNext(model: ShellModel, specs: SpecResolver): OverviewUpNext {

@@ -1,5 +1,7 @@
 import type { BannerLine, CardView } from '../../shared/protocol/board';
 import type { LifecycleEntry, LifecycleModel } from '../lifecycle/model';
+import { problemSentence } from '../lifecycle/problemSentence';
+import type { Diagnostic } from '../specs/diagnostics';
 import type { ProjectRead, SpecEntry } from '../specs/readProject';
 import { describeSpec } from './description';
 import { needsOf } from './needs';
@@ -58,16 +60,20 @@ export interface ProjectFindings {
     notes: BannerLine[];
 }
 
+function bannerLine(where: string, diagnostic: Diagnostic): BannerLine {
+    return diagnostic.tier === 'problem' ? { where, reason: diagnostic.reason, sentence: problemSentence(diagnostic) } : { where, reason: diagnostic.reason };
+}
+
 export function projectFindings(project: ProjectRead, lifecycle: LifecycleModel): ProjectFindings {
     const owned = new Set<string>();
     project.specs.forEach((spec) => [spec.key, ...spec.planKeys, ...spec.returnNoteKeys].forEach((key) => owned.add(key)));
     const found: ProjectFindings = { problems: [], notes: [] };
     for (const diagnostic of lifecycle.projectDiagnostics) {
-        (diagnostic.tier === 'problem' ? found.problems : found.notes).push({ where: 'project', reason: diagnostic.reason });
+        found[diagnostic.tier === 'problem' ? 'problems' : 'notes'].push(bannerLine('project', diagnostic));
     }
     for (const diagnostic of project.diagnostics) {
         if (diagnostic.scope !== 'project' && !owned.has(diagnostic.scope.file)) {
-            (diagnostic.tier === 'problem' ? found.problems : found.notes).push({ where: diagnostic.scope.file, reason: diagnostic.reason });
+            found[diagnostic.tier === 'problem' ? 'problems' : 'notes'].push(bannerLine(diagnostic.scope.file, diagnostic));
         }
     }
     return found;

@@ -12,7 +12,7 @@ export function historySection(): HistorySection {
     };
 }
 
-export const NEXT_STEP: NextStepView = { rule: 'NS-6', lines: [{ text: `/sdd-plan ${SPEC_KEY}` }] };
+export const NEXT_STEP: NextStepView = { rule: 'NS-6', lines: [{ text: `/sdd-plan ${SPEC_KEY}`, intent: 'Write the plan' }] };
 
 export function detailView(extra: Partial<SpecDetailView> = {}, nextStep: NextStepView = NEXT_STEP, problems: DiagnosticLine[] = []): DetailView {
     const view: SpecDetailView = {
@@ -59,3 +59,8 @@ export function openFileResultEvent(key: string, text: string): Envelope {
 export function copyResultEvent(ok: boolean, text: string): Envelope {
     return { v: PROTOCOL_VERSION, kind: 'evt', type: 'copyResult', payload: { ok, text } };
 }
+
+export function sendResultEvent(outcome: 'opened' | 'copied' | 'copyFailed', text: string, token: string): Envelope {
+    return { v: PROTOCOL_VERSION, kind: 'evt', type: 'sendResult', payload: { outcome, text, token } };
+}
+

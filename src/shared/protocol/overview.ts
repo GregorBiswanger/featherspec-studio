@@ -1,6 +1,7 @@
+import { isSendView, type SendView } from './assistant';
 import { isBoardState, type BoardState } from './boardFilter';
 import { isRecord } from './envelope';
-import { isStepView, type StepView } from './stepView';
+import { isStepTipsView, isStepView, type StepTipsView, type StepView } from './stepView';
 
 export interface SpecRef {
     stem: string;
@@ -23,6 +24,7 @@ export type OverviewFigures = { kind: 'empty' } | { kind: 'counts'; total: numbe
 export interface ProblemLine {
     where: string;
     reason: string;
+    sentence: string;
 }
 
 export interface OverviewProblems {
@@ -47,7 +49,10 @@ export interface OverviewRow {
     state: BoardState;
     status: string;
     problems: number;
+    reasons?: string;
     step?: StepView;
+    tips?: StepTipsView;
+    send?: SendView;
 }
 
 export interface OverviewUpNext {
@@ -158,12 +163,15 @@ function isActivity(value: unknown): value is McActivity {
 function isRow(value: unknown): value is OverviewRow {
     return (
         isRecord(value) &&
-        exactly(value, ['spec', 'state', 'status', 'problems'], ['step']) &&
+        exactly(value, ['spec', 'state', 'status', 'problems'], ['step', 'reasons', 'tips', 'send']) &&
         isSpecRef(value.spec) &&
         isBoardState(value.state) &&
         isText(value.status) &&
         isCount(value.problems) &&
-        (value.step === undefined || isStepView(value.step))
+        (value.reasons === undefined || isText(value.reasons)) &&
+        (value.step === undefined || isStepView(value.step)) &&
+        (value.tips === undefined || isStepTipsView(value.tips)) &&
+        (value.send === undefined || (value.step !== undefined && isSendView(value.send)))
     );
 }
 
@@ -176,7 +184,7 @@ function isUpNext(value: unknown): value is OverviewUpNext {
 }
 
 function isProblemLine(value: unknown): value is ProblemLine {
-    return isRecord(value) && exactly(value, ['where', 'reason']) && isText(value.where) && isText(value.reason);
+    return isRecord(value) && exactly(value, ['where', 'reason', 'sentence']) && isText(value.where) && isText(value.reason) && isText(value.sentence);
 }
 
 function isProblems(value: unknown): value is OverviewProblems {

@@ -164,6 +164,19 @@ describe('0020: the Specs view adapter', () => {
         expect(item.tooltip.supportThemeIcons).toBe(false);
     });
 
+    it('0022 AC-006: a group with a Problem hint maps to the warning icon in the problems colour, the tooltip and the accessible label; one without has none of them', () => {
+        const hinted = { kind: 'group' as const, id: 'group:done', label: 'Done', description: '2 · 1 problem', collapsed: true, children: [], icon: 'warning', color: 'problemsWarningIcon.foreground', tooltip: 'Done: 2 specs · 1 problem', accessibleLabel: 'Done: 2 specs · 1 problem' };
+        const plain = { kind: 'group' as const, id: 'group:backlog', label: 'Backlog', description: '2', collapsed: false, children: [] };
+        createStudioTree(fakeService({ message: undefined, items: [hinted, plain] }));
+        const withHint = providerOf().getTreeItem(hinted) as Record<string, unknown> & { iconPath: { id: string; color: { id: string } } };
+        expect(withHint.iconPath.id).toBe('warning');
+        expect(withHint.iconPath.color.id).toBe('problemsWarningIcon.foreground');
+        expect(withHint.tooltip).toBe('Done: 2 specs · 1 problem');
+        expect(withHint.accessibilityInformation).toEqual({ label: 'Done: 2 specs · 1 problem' });
+        const without = providerOf().getTreeItem(plain) as Record<string, unknown>;
+        expect([without.iconPath, without.tooltip, without.accessibilityInformation]).toEqual([undefined, undefined, undefined]);
+    });
+
     it('AC-009: activating a row runs Select Spec with the stem, and the path only while the stem is duplicated', () => {
         createStudioTree(fakeService(WITH_ROWS));
         const plain = providerOf().getTreeItem(ROW).command;

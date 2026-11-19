@@ -9,7 +9,6 @@ import { useBoard } from '../board/boardStore';
 import { Column } from '../board/Column';
 import { FilterBar } from '../board/FilterBar';
 import { fallbackFocus, moveFocus, type Direction, type Grid } from '../board/focusModel';
-import { useDrawer } from '../detail/drawer';
 import { CopyButton } from '../ui/CopyButton';
 import { EmptyState } from '../ui/EmptyState';
 
@@ -62,9 +61,8 @@ export function SpecBoard() {
     }, [grid, focusedKey]);
 
     const openSpec = useOpenSpec();
-    const open = useCallback((card: CardView, opener: HTMLElement): void => openSpec({ stem: card.stem, path: card.path }, opener), [openSpec]);
     const selection = shell.view?.selection;
-    const drawer = useDrawer();
+    const open = useCallback((card: CardView, opener: HTMLElement): void => openSpec({ stem: card.stem, path: card.path }, opener), [openSpec]);
 
     function onFocus(event: FocusEvent<HTMLElement>): void {
         const key = keyOfTarget(event.target);
@@ -73,9 +71,6 @@ export function SpecBoard() {
         }
         hasFocus.current = true;
         setFocusedKey(key);
-        if (drawer && selection !== undefined && typeof event.target.scrollIntoView === 'function') {
-            event.target.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-        }
     }
 
     function onBlur(event: FocusEvent<HTMLElement>): void {
@@ -113,11 +108,11 @@ export function SpecBoard() {
             {board.noSpecs ? (
                 <EmptyState icon="Backlog" className="board-empty">
                     {NO_SPECS_START_TEXT}
-                    <CopyButton line={SDD_SPECIFY_LINE} copyResult={api.copyResult} onCopy={api.copyText} />
+                    <CopyButton look="primary" line={SDD_SPECIFY_LINE} copyResult={api.copyResult} onCopy={api.copyText} />
                 </EmptyState>
             ) : null}
             <FilterBar board={board} setSort={api.setSort} clearFilters={api.clearFilters} />
-            <div className="columns" ref={columnsRef} tabIndex={-1} {...(drawer && selection !== undefined ? { 'data-drawer': '' } : {})} onFocus={onFocus} onBlur={onBlur} onKeyDown={onKeyDown}>
+            <div className="columns" ref={columnsRef} tabIndex={-1} onFocus={onFocus} onBlur={onBlur} onKeyDown={onKeyDown}>
                 {board.columns.map((column) => (
                     <Column
                         key={column.state}

@@ -8,6 +8,8 @@ import type { RequestHandlers } from './messageRouter';
 import type { ShellRequestType } from '../../shared/protocol/messages';
 import { derivePanelState, listingFailure } from './panelState';
 import { findSpec, numberOfStem, reconcileSelection } from './selection';
+import { isSideFraction } from '../../shared/protocol/layout';
+import { parseSideWidth, serializeSideWidth } from './sidePanelWidth';
 import { parseUiMemory, serializeUiMemory, type RememberedSelection } from './uiMemory';
 
 export interface ShellServiceDeps {
@@ -17,6 +19,7 @@ export interface ShellServiceDeps {
     folders: Pick<WorkspaceFoldersPort, 'list' | 'onDidChange'>;
     trust: TrustPort;
     memory: UiMemoryPort;
+    sideMemory: UiMemoryPort;
     actions: ShellActionsPort;
     sameRoot: (first: string, second: string) => boolean;
 }
@@ -47,6 +50,7 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
     const remembered = parseUiMemory(deps.memory.get());
     let area: AreaId = remembered?.area ?? DEFAULT_AREA;
     let selection: RememberedSelection | undefined = remembered?.selection;
+    let sideWidth: number | undefined = parseSideWidth(deps.sideMemory.get());
     let notice: { number: string } | undefined;
     let target: NavigationTarget | undefined;
     let lastNotified = '';
@@ -117,7 +121,14 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
             target,
             selection: selectedSpec(model),
             notice,
+            ...(sideWidth === undefined ? {} : { sideWidth }),
         };
+    }
+
+    function rememberSideWidth(fraction: number | undefined): void {
+        sideWidth = fraction;
+        void deps.sideMemory.set(fraction === undefined ? undefined : serializeSideWidth(fraction)).catch(() => undefined);
+        recompute();
     }
 
     function recompute(): void {
@@ -270,6 +281,12 @@ export function createShellService(deps: ShellServiceDeps): ShellService {
             select: async (payload) => select(payload.path === undefined ? { stem: payload.stem } : { stem: payload.stem, path: payload.path }),
             clearSelection: async () => select(undefined),
             runAction: async (payload) => runAction(payload.action),
+            setSideWidth: async (payload) => {
+                if (isSideFraction(payload.fraction)) {
+                    rememberSideWidth(payload.fraction);
+                }
+            },
+            resetSideWidth: async () => rememberSideWidth(undefined),
             dismissNotice: async () => {
                 notice = undefined;
                 recompute();

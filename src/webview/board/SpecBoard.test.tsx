@@ -1,6 +1,8 @@
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
+import { BOARD_STATES } from '../../shared/protocol/boardFilter';
+import { STATE_LOOK } from '../../shared/protocol/stateLook';
 import { COPIED_TEXT, COPY_FAILED_TEXT } from '../../shared/protocol/nextStepTexts';
 import type { StepView } from '../../shared/protocol/stepView';
 import { App } from '../App';
@@ -8,11 +10,11 @@ import { createClient, type ShellClient } from '../client';
 import { baseView, click, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
 import { boardEvent, boardView, card } from './testing/views';
 
-const STEP: StepView = { short: 'Start T-003', line: 'Start T-003 of .specs/backlog/0007-x.plan.md', lines: [{ text: 'Start T-003 of .specs/backlog/0007-x.plan.md' }] };
+const STEP: StepView = { intent: 'Build', short: 'Start T-003', line: 'Start T-003 of .specs/backlog/0007-x.plan.md', lines: [{ text: 'Start T-003 of .specs/backlog/0007-x.plan.md', intent: 'Write the plan' }] };
 const TWO: StepView = {
-    short: '/sdd-plan',
-    line: '/sdd-plan .specs/active/0008-y.md',
-    lines: [{ text: '/sdd-plan .specs/active/0008-y.md' }, { text: 'continue', label: 'Then, in the same chat, if nothing blocks:' }],
+    intent: 'Continue', short: 'Implement T-003',
+    line: 'Implement T-003 of .specs/active/0008-y.plan.md',
+    lines: [{ text: 'Implement T-003 of .specs/active/0008-y.plan.md', intent: 'Continue with T-003 Reject money values' }, { text: '/sdd-plan .specs/active/0008-y.md', intent: 'Not sure where it stands? Let the agent report first' }],
 };
 
 let posted: Envelope[];
@@ -60,7 +62,7 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
     });
 
     it('AC-018: the card is built of the rows head, path, state row and step line in that order, and has no state chip', async () => {
-        const entry = card('0001', { state: 'Active', path: '.specs/active/0001-thing.md', problems: 1, step: { short: '/sdd-plan', line: '/sdd-plan .specs/active/0001-thing.md', lines: [{ text: '/sdd-plan .specs/active/0001-thing.md' }] } });
+        const entry = card('0001', { state: 'Active', path: '.specs/active/0001-thing.md', problems: 1, step: { intent: 'Plan', short: '/sdd-plan', line: '/sdd-plan .specs/active/0001-thing.md', lines: [{ text: '/sdd-plan .specs/active/0001-thing.md', intent: 'Write the plan' }] } });
         const li = (await open(boardView([entry]))).querySelector('[data-card]')!;
         expect([...li.children].map((child) => child.className)).toEqual(['card-head', 'card-path', 'card-state', 'card-step']);
         expect(li.querySelector('.state-chip, [data-marker="derived"], .card-summary, .card-foot')).toBeNull();
@@ -301,6 +303,29 @@ describe('AC-021, AC-020, AC-012: in-area states', () => {
         expect(container.textContent).not.toMatch(/No spec in the backlog|No spec is ready|No spec is being implemented|hidden by filter\s*$/);
     });
 
+    it('0022 AC-009: a strip that stands for a spec with a Problem shows the warning, and its name and tooltip end with the problem count before the rule text', async () => {
+        const view = boardView([card('0001', { state: 'Backlog' })]);
+        view.columns[3] = { state: 'Review', cards: [], hidden: 2, emptyBeforeFilter: false, count: 0, narrow: 'filtered', problems: 1 };
+        view.columns[4] = { state: 'Done', cards: [], hidden: 0, emptyBeforeFilter: false, count: 3, narrow: 'collapsed', problems: 2 };
+        const container = await open(view);
+        const review = container.querySelector('[data-column="Review"]')!;
+        expect(review.getAttribute('aria-label')).toBe('Review: 2 hidden by filter · 1 problem');
+        expect(review.getAttribute('title')).toBe('Review: 2 hidden by filter · 1 problem · Plan done, waiting for review · Derived from the files · rule S-REVIEW');
+        expect(review.querySelector('.column-problem svg')?.getAttribute('data-icon')).toBe('diagnostic');
+        const done = container.querySelector('[data-column="Done"]')!;
+        expect(done.getAttribute('aria-label')).toBe('Done: 3 specs, collapsed · 2 problems');
+        expect(done.getAttribute('title')).toBe('Done: 3 specs, collapsed · 2 problems');
+        expect(done.querySelector('.column-problem')).not.toBeNull();
+    });
+
+    it('0022 AC-009: every other strip and every wide column is as 0018 AC-014 has it, with no warning', async () => {
+        const view = boardView([card('0001', { state: 'Backlog' })]);
+        view.columns[3] = { state: 'Review', cards: [], hidden: 2, emptyBeforeFilter: false, count: 0, narrow: 'filtered' };
+        const container = await open(view);
+        expect(container.querySelector('[data-column="Review"]')?.getAttribute('aria-label')).toBe('Review: 2 hidden by filter');
+        expect(container.querySelector('.column-problem')).toBeNull();
+    });
+
     it('AC-012: a wide column that a filter partly empties still says how many are hidden', async () => {
         const view = boardView([card('0001')]);
         view.columns[2] = { state: 'Active', cards: [card('0009')], hidden: 3, emptyBeforeFilter: false, count: 1 };
@@ -334,6 +359,21 @@ describe('AC-021, AC-020, AC-012: in-area states', () => {
         expect(banner.textContent).toContain('.specs/backlog: could not be listed');
         expect(banner.getAttribute('aria-label')).toBe('Problems');
         expect(banner.querySelector('.format-notes')).toBeNull();
+    });
+
+    it('0022 AC-013, AC-002: a banner line shows the place with break opportunities, the sentence, and the reason as tooltip; without a sentence the reason', async () => {
+        const container = await open(boardView([card('0001')], { banner: { problems: [{ where: '.specs/backlog', reason: 'could not be listed', sentence: 'Studio could not read the backlog folder.' }, { where: 'project', reason: 'plain reason' }], notes: [] } }));
+        const lines = [...container.querySelectorAll('[data-banner] li')];
+        expect(lines.map((line) => line.textContent)).toEqual(['.specs/backlog: Studio could not read the backlog folder.', 'project: plain reason']);
+        expect(lines.map((line) => line.getAttribute('title'))).toEqual(['could not be listed', null]);
+        expect(lines[0]!.querySelectorAll('wbr').length).toBeGreaterThan(0);
+    });
+
+    it('0022 AC-002: the path of a card breaks after a separator and keeps its text', async () => {
+        const container = await open(boardView([card('0001', { path: '.specs/active/0001-thing.md' })]));
+        const path = container.querySelector('.card-path')!;
+        expect(path.textContent).toBe('.specs/active/0001-thing.md');
+        expect(path.querySelectorAll('wbr').length).toBeGreaterThan(0);
     });
 
     it('AC-009: project-level format notes sit behind a collapsed toggle; the banner is named by it while no Problem exists', async () => {
@@ -411,11 +451,16 @@ describe('0017 AC-004: the next step on a card', () => {
         const line = entry.querySelector('.card-step')!;
         expect(entry.lastElementChild).toBe(line);
         expect(line.querySelector('.step-label')?.textContent).toBe('Next');
-        expect(line.querySelector('.step-short')?.textContent).toBe('/sdd-plan');
-        expect(line.querySelector('.step-text')?.getAttribute('title')).toBe('/sdd-plan .specs/active/0008-y.md\nThen, in the same chat, if nothing blocks: continue');
+        expect(line.querySelector('.step-short')?.textContent).toBe('Implement T-003');
+        expect(line.querySelector('.step-intent')?.textContent).toBe('Continue');
+        expect(line.querySelector('.step-text')?.textContent).toBe('Next Continue · Implement T-003');
+        expect(line.querySelector('code.step-short')).not.toBeNull();
+        expect(line.querySelector('.step-intent')?.tagName).toBe('SPAN');
+        expect(line.querySelector('.step-text')?.getAttribute('title')).toBe('Continue with T-003 Reject money values\nImplement T-003 of .specs/active/0008-y.plan.md\nNot sure where it stands? Let the agent report first\n/sdd-plan .specs/active/0008-y.md');
         const copy = line.querySelector('button')!;
-        expect(copy.textContent).toBe('Copy');
-        expect(copy.getAttribute('aria-label')).toBe('Copy: /sdd-plan .specs/active/0008-y.md');
+        expect(copy.className).toContain('copy-icon');
+        expect(copy.textContent).toBe('');
+        expect(copy.getAttribute('aria-label')).toBe('Copy prompt: Implement T-003 of .specs/active/0008-y.plan.md');
         expect(entry.textContent).not.toContain('continue');
     });
 
@@ -449,7 +494,7 @@ describe('0017 AC-005: Copy on a card', () => {
         await act(async () => copy.focus());
         await pressKey(copy, 'Enter');
         await pressKey(copy, ' ');
-        expect(requests('copyText')).toEqual([{ text: '/sdd-plan .specs/active/0008-y.md' }, { text: '/sdd-plan .specs/active/0008-y.md' }]);
+        expect(requests('copyText')).toEqual([{ text: 'Implement T-003 of .specs/active/0008-y.plan.md' }, { text: 'Implement T-003 of .specs/active/0008-y.plan.md' }]);
         expect(requests('navigate')).toEqual([]);
         expect(requests('select')).toEqual([]);
     });
@@ -457,13 +502,13 @@ describe('0017 AC-005: Copy on a card', () => {
     it('the feedback shows at that Copy only, as Copied, and as Could not copy after a failure', async () => {
         const container = await open(boardView([card('0007', { state: 'Ready', step: STEP }), card('0008', { step: TWO })]));
         await click(copies(container)[0]!);
-        await send({ v: 4, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
-        expect(copies(container).map((button) => button.textContent)).toEqual(['Copied', 'Copy']);
+        await send({ v: 8, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
+        expect(copies(container).map((button) => button.getAttribute('aria-label')?.split(':')[0])).toEqual(['Copied', 'Copy prompt']);
         expect(container.querySelectorAll('.card-step [role="status"]')[0]?.textContent).toBe(COPIED_TEXT);
         expect(container.querySelectorAll('.card-step [role="status"]')[1]?.textContent).toBe('');
         await click(copies(container)[1]!);
-        await send({ v: 4, kind: 'evt', type: 'copyResult', payload: { ok: false, text: COPY_FAILED_TEXT } });
-        expect(copies(container)[1]?.textContent).toBe('Could not copy');
+        await send({ v: 8, kind: 'evt', type: 'copyResult', payload: { ok: false, text: COPY_FAILED_TEXT } });
+        expect(copies(container)[1]?.getAttribute('aria-label')?.split(':')[0]).toBe('Could not copy');
     });
 
     it('the card does not open, even when the click lands on the step text next to Copy', async () => {
@@ -512,5 +557,22 @@ describe('AC-016: the Done toggle', () => {
         const withToggle = await open(boardView([card('0001', { state: 'Active' }), card('0002', { state: 'Done' })], { doneToggle: 'hide' }));
         expect(withToggle.querySelectorAll('[data-done-toggle]')).toHaveLength(1);
         expect(withToggle.querySelector('[data-done-toggle]')?.closest('[data-column]')?.getAttribute('data-column')).toBe('Done');
+    });
+});
+
+describe('0022 AC-026: column headers and strips take motif and colour from the one table', () => {
+    it('every column, wide or narrow, carries the colour ID and its heading icon the motif of STATE_LOOK', async () => {
+        const container = await open(boardView([card('0004', { state: 'Active' }), card('0005', { state: 'Review' })]));
+        const columns = [...container.querySelectorAll<HTMLElement>('[data-column]')];
+        expect(columns.map((column) => column.getAttribute('data-column'))).toEqual([...BOARD_STATES]);
+        expect(columns.some((column) => column.hasAttribute('data-narrow'))).toBe(true);
+        expect(columns.some((column) => !column.hasAttribute('data-narrow'))).toBe(true);
+        for (const column of columns) {
+            const state = column.getAttribute('data-column') as (typeof BOARD_STATES)[number];
+            expect(column.getAttribute('data-tint'), state).toBe(STATE_LOOK[state].colour);
+            const icon = column.querySelector('.column-heading svg');
+            expect(icon?.getAttribute('data-motif'), state).toBe(STATE_LOOK[state].motif);
+            expect(icon?.getAttribute('data-tint'), state).toBe(STATE_LOOK[state].colour);
+        }
     });
 });

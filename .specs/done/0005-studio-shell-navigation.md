@@ -29,6 +29,8 @@ carried across areas, and the one navigation request through which areas open ea
 keeps the panel UI away from local files.
 *Amended by 0020 (PD-058): §1 — the view "Specs" is 0020's tree with group counts that follows changes (0020 AC-013); the minimal spec list in Spec Explorer is gone; the panel has two tabs (0018).*
 
+*Amended by 0023 (PD-069): §1 — the areas are Overview, Board and Plan map (`planMap`), with `featherspec-studio.openPlanMap` (0023 AC-006).*
+
 ## 2. Goal and problem
 
 Developers need one consistent place to reach the Studio areas, with no hunting for commands and
@@ -97,6 +99,7 @@ and reloads, and understand every panel state, in a Light, a Dark and a High Con
    panel state that applies, with its actions.
 4. The developer switches areas through the navigation, the tree entries or the per-area commands.
    *Amended by 0020 (PD-058): §5 step 4 — through the two tabs or the two per-area commands; the tree has no area entries (0020 AC-016).*
+  *Amended by 0023 (PD-069): §5 step 4 — three areas: Overview, Board and Plan map (0023 AC-006).*
 5. In Spec Explorer, the developer selects a spec. It stays selected while other areas are
    shown, after closing and reopening the panel, and after a window reload.
    *Amended by 0020 (PD-058): §5 step 5 — the developer selects a spec in the Specs tree (0020 AC-009); there is no Spec Explorer.*
@@ -181,6 +184,7 @@ remembered for this workspace.
 - **Remembered per workspace (UI state only):** the area last shown; the selected spec's stem,
   plus its path while the stem is duplicated. Kept outside every workspace folder. Never domain
   data (ADR-001 §7).
+  *Amended by 0022 (PD-069): §8 — also the side panel's width as a fraction of the panel, in its own memory key (0022 §4.7 G-3).*
 - Nothing sensitive is read, shown or stored.
 
 *Amended by 0016 (PD-059, proxy): the visible text is the sentence of 0016 T-09; the rule ID is in the tooltip (T-08).*
@@ -318,12 +322,14 @@ automated tests.
   *Amended by 0020 (PD-058): AC-004 — the navigation has two tabs, Overview and Board (0018, 0020 AC-016).*
 
 *Amended by 0015 (PD-055/PD-056): the navigation lists Mission Control, Spec Board and Spec Explorer.*
+  *Amended by 0023 (PD-069): AC-004 (as 0018 and 0020 amended it) — the navigation has three tabs: Overview, Board and Plan map (0023 AC-006).*
 - **AC-005** When the user runs one of the four per-area commands, the system shall show the panel
   on that area, opening the panel first if it is closed.
   *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
   *Amended by 0020 (PD-058): AC-005 — two per-area commands, 0018's `openOverview` and `openBoard` (0020 AC-016).*
 
 *Amended by 0015 (PD-055/PD-056): three per-area commands.*
+  *Amended by 0023 (PD-069): AC-005 (as 0018 and 0020 amended it) — three per-area commands: `openOverview`, `openBoard` and `featherspec-studio.openPlanMap` · `FeatherSpec Studio: Open Plan Map` (0023 AC-006).*
 - **AC-006** In this slice the system shall show, for Mission Control, Spec Board and Agent
   Center, the area's name, one sentence on its purpose, and "Not available in this version of
   FeatherSpec Studio", and shall show no sample data (BR-04). The purpose sentences are: Mission
@@ -498,6 +504,8 @@ automated tests.
 | A-004 | Restricted Mode changes nothing in this slice but the S7 note | This slice has no agent actions; ADR-001 §14 hides agent start and provider setup only | The specs that add agent actions (0008 onwards) must hide their own |
 
 *Amended by 0015 (PD-055/PD-056): A-004 is void.*
+
+*Amended by 0022 (PD-069): A-003 — the remembered state also holds the side panel width (0022 §4.7 G-3).*
 
 ## 17. Open points
 

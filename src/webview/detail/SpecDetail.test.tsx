@@ -1,13 +1,16 @@
+import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Envelope } from '../../shared/protocol/envelope';
+import type { SendView } from '../../shared/protocol/assistant';
 import type { NextStepView, SpecDetailView } from '../../shared/protocol/detail';
 import { fileNotFoundText, HISTORY_NOT_AVAILABLE_TEXT, NO_PLAN_TEXT } from '../../shared/protocol/texts';
+import { planSample } from '../../shared/protocol/testing/planSample';
 import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
 import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
 import { resetSectionMemory } from './sectionMemory';
-import { copyResultEvent, detailEvent, detailView, historySection, openFileResultEvent, PLAN_KEY, SPEC_KEY } from './testing/views';
-import { COPIED_TEXT, COPY_FAILED_TEXT, NEXT_STEP_DONE_TEXT } from '../../shared/protocol/nextStepTexts';
+import { copyResultEvent, detailEvent, detailView, historySection, openFileResultEvent, PLAN_KEY, sendResultEvent, SPEC_KEY } from './testing/views';
+import { ABOUT_STEP_LABEL, COPIED_TEXT, COPY_FAILED_TEXT, NEXT_STEP_DONE_TEXT } from '../../shared/protocol/nextStepTexts';
 
 let posted: Envelope[];
 let mounted: Mounted | undefined;
@@ -96,6 +99,14 @@ describe('0019 AC-009: the situation picture in its order', () => {
             }
         });
         expect([...container.querySelectorAll('h3')].map((heading) => heading.textContent)).toEqual(['Next step', 'Progress', 'Files', 'Status history (1)']);
+    });
+
+    it('0023 AC-003: with a plan the Plan section comes after Problems and before Progress; the samples without a plan keep their sections', async () => {
+        const planned = await open(spec({ plan: planSample() }, undefined, [{ reason: 'A problem', open: { key: SPEC_KEY, line: 3 } }]));
+        expect([...planned.querySelectorAll('h3')].map((heading) => heading.textContent)).toEqual(['Next step', 'Plan', 'Progress', 'Files', 'Status history (1)']);
+        expect(planned.querySelector('.detail-problems')!.compareDocumentPosition(section(planned, 'Plan')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        const sample = await open(spec({}));
+        expect([...sample.querySelectorAll('h3')].map((heading) => heading.textContent)).toEqual(['Next step', 'Progress', 'Files', 'Status history (1)']);
     });
 
     it('the header holds the number, the title, one state chip and no Open file button', async () => {
@@ -527,14 +538,14 @@ describe('AC-028: the selection', () => {
 });
 
 describe('0015 AC-003, AC-005, AC-008, AC-009: the next step in the detail', () => {
-    const TWO = { rule: 'NS-9', lines: [{ text: '/sdd-clarify .specs/backlog/0007-x.md' }, { text: '/sdd-plan .specs/backlog/0007-x.md', label: 'Then:' }] };
+    const TWO = { rule: 'NS-9', lines: [{ text: '/sdd-clarify .specs/backlog/0007-x.md', intent: 'Have the spec challenged, then plan it' }, { text: '/sdd-plan .specs/backlog/0007-x.md', intent: 'Then: write the plan' }] };
 
     function nextStepSection(container: HTMLElement): HTMLElement {
         return section(container, 'Next step');
     }
 
     function copyButtons(root: Element): HTMLButtonElement[] {
-        return [...root.querySelectorAll<HTMLButtonElement>('button')].filter((button) => button.textContent === 'Copy');
+        return [...root.querySelectorAll<HTMLButtonElement>('button')].filter((button) => button.textContent === 'Copy prompt');
     }
 
     it('AC-003: "Next step" stands above the other sections with its line and a Copy button', async () => {
@@ -554,15 +565,32 @@ describe('0015 AC-003, AC-005, AC-008, AC-009: the next step in the detail', () 
         expect(button!.classList.contains('secondary-button')).toBe(false);
     });
 
-    it('AC-003: two lines carry the label of the second one; a rule with text only shows the text and no button', async () => {
-        const root = nextStepSection(await open(detailView({}, TWO)));
-        expect(root.textContent).toContain('/sdd-clarify .specs/backlog/0007-x.md');
-        expect(root.textContent).toContain('Then:');
-        expect(copyButtons(root)).toHaveLength(2);
-        const after = nextStepSection(await open(detailView({}, { rule: 'NS-5', lines: [{ text: '/sdd-compile k' }, { text: '/sdd-lifecycle k', label: 'Then, after a READY verdict:' }] })));
-        expect(after.textContent).toContain('Then, after a READY verdict:');
+    it('0021 AC-001: each line shows its intent as its own element directly before its prompt and Copy, in DOM order; a rule with text only shows the text and no button', async () => {
+        const NS5 = { rule: 'NS-5', lines: [{ text: '/sdd-compile k', intent: 'Have the result verified' }, { text: '/sdd-lifecycle k', intent: 'Then, after a READY verdict: close the spec' }] };
+        const NS6 = {
+            rule: 'NS-6',
+            lines: [
+                { text: 'Implement T-003 of .specs/active/0001-a.plan.md', intent: 'Continue with T-003 Reject money values' },
+                { text: '/sdd-plan .specs/active/0001-a.md', intent: 'Not sure where it stands? Let the agent report first' },
+            ],
+        };
+        for (const next of [TWO, NS5, NS6]) {
+            const root = nextStepSection(await open(detailView({}, next)));
+            const items = [...root.querySelectorAll('ul.next-step-lines > li')];
+            expect(items).toHaveLength(2);
+            items.forEach((item, index) => {
+                const intent = item.firstElementChild!;
+                expect(intent.className).toBe('next-step-intent');
+                expect(intent.textContent).toBe(next.lines[index]!.intent);
+                expect(intent.nextElementSibling?.tagName).toBe('CODE');
+                expect(intent.nextElementSibling?.textContent).toBe(next.lines[index]!.text);
+                expect(item.querySelectorAll('button')).toHaveLength(1);
+            });
+            expect(copyButtons(root)).toHaveLength(2);
+        }
         const done = nextStepSection(await open(detailView({}, { rule: 'NS-3', text: NEXT_STEP_DONE_TEXT })));
         expect(done.textContent).toContain('Done — no FeatherSpec step left.');
+        expect(done.querySelector('.next-step-intent')).toBeNull();
         expect(copyButtons(done)).toHaveLength(0);
     });
 
@@ -611,7 +639,7 @@ describe('0015 AC-003, AC-005, AC-008, AC-009: the next step in the detail', () 
         await select('0008-other');
         await send(detailEvent({ ...detailView(), key: 'other', stem: '0008-other' } as ReturnType<typeof detailView>));
         expect(nextStepSection(container).textContent).not.toContain('Copied to the clipboard.');
-        expect(nextStepSection(container).querySelector('button')!.textContent).toBe('Copy');
+        expect(nextStepSection(container).querySelector('button')!.textContent).toBe('Copy prompt');
     });
 });
 
@@ -680,5 +708,404 @@ describe('0016 AC-006, AC-007, AC-022: Problems, format notes', () => {
         const container = await open(detailView({}, { rule: 'NS-1', text: 'Studio cannot read this spec. See the problem below.' }, [PROBLEM]));
         expect(section(container, 'Next step').textContent).toContain('Studio cannot read this spec. See the problem below.');
         expect(container.querySelector('.detail-problems')?.textContent).toContain(PROBLEM.reason);
+    });
+});
+
+describe('0022 AC-013, AC-015, AC-002, AC-003: sentences and breaking paths in the detail', () => {
+    const REASON = 'Folder done/ does not match status "In Progress".';
+    const SENTENCE = 'The spec sits in the done folder, but its status says it is still in progress.';
+
+    it('AC-013: a Problem with a file shows its sentence as the link; the tooltip and description hold the reason, then the open text on its own line', async () => {
+        const container = await open(spec({}, undefined, [{ reason: REASON, sentence: SENTENCE, open: { key: SPEC_KEY, line: 1 } }]));
+        const item = container.querySelector('.detail-problems li')!;
+        const link = item.querySelector<HTMLButtonElement>('button.file-link')!;
+        expect(link.textContent).toBe(SENTENCE);
+        expect(link.getAttribute('title')).toBe(`${REASON}\nOpen 0007-thing.md at line 1`);
+        expect(item.querySelector('.visually-hidden')?.textContent).toBe(`${REASON}\nOpen 0007-thing.md at line 1`);
+        expect(textOf(item)).toBe(SENTENCE);
+    });
+
+    it('AC-013: a Problem without a file shows its sentence with the reason as tooltip', async () => {
+        const container = await open(spec({}, undefined, [{ reason: REASON, sentence: SENTENCE }]));
+        const item = container.querySelector('.detail-problems li')!;
+        expect(item.querySelector('button')).toBeNull();
+        expect(item.querySelector('[title]')?.getAttribute('title')).toBe(REASON);
+        expect(textOf(item)).toBe(SENTENCE);
+    });
+
+    it('AC-013: a Problem with no sentence shows its reason', async () => {
+        const container = await open(spec({}, undefined, [{ reason: REASON }]));
+        expect(textOf(container.querySelector('.detail-problems li')!)).toBe(REASON);
+    });
+
+    it('AC-003: a Problem keeps its full text in the DOM, however long', async () => {
+        const long = `${SENTENCE} `.repeat(6).trim();
+        const container = await open(spec({}, undefined, [{ reason: REASON, sentence: long }]));
+        expect(textOf(container.querySelector('.detail-problems li')!)).toBe(long);
+    });
+
+    it('AC-002: the detail path, a Files link and the path in a next-step line break after a separator and keep their text', async () => {
+        const container = await open(spec({ path: '.specs/backlog/0007-thing.md' }, { rule: 'NS-5', lines: [{ text: '/sdd-plan .specs/backlog/0007-thing.md', intent: 'Write the plan' }] }));
+        const path = container.querySelector('.detail-path')!;
+        expect(path.textContent).toBe('.specs/backlog/0007-thing.md');
+        expect(path.querySelectorAll('wbr').length).toBeGreaterThan(0);
+        const file = section(container, 'Files').querySelector('button.file-link')!;
+        expect(file.querySelectorAll('wbr').length).toBeGreaterThan(0);
+        const line = container.querySelector('.next-step-lines code')!;
+        expect(line.textContent).toBe('/sdd-plan .specs/backlog/0007-thing.md');
+        expect(line.innerHTML.startsWith('/sdd-plan .')).toBe(true);
+        expect(line.querySelectorAll('wbr').length).toBeGreaterThan(0);
+        expect(container.querySelector('.next-step-copy')?.getAttribute('aria-label')).toBe('Copy prompt: /sdd-plan .specs/backlog/0007-thing.md');
+    });
+});
+
+
+describe('0021 AC-009, AC-010: the coach line in the detail', () => {
+    const TIPS = { coach: 'new chat · strong model, other family', about: ['one', 'two', 'three', 'four'] };
+    const LINES = [
+        { text: '/sdd-compile k', intent: 'Have the result verified' },
+        { text: '/sdd-lifecycle k', intent: 'Then, after a READY verdict: close the spec' },
+    ];
+
+    function items(container: HTMLElement): HTMLElement[] {
+        return [...container.querySelectorAll<HTMLElement>('.next-step ul.next-step-lines > li')];
+    }
+
+    it('shows one coach line, in the first line, directly after its Copy prompt and the status region of the Copy', async () => {
+        const container = await open(detailView({}, { rule: 'NS-5', lines: LINES, tips: TIPS }));
+        const [first, second] = items(container);
+        const coach = first!.querySelector('p.step-coach')!;
+        expect(coach.textContent).toBe('new chat · strong model, other family');
+        const copy = first!.querySelector('button.next-step-copy')!;
+        expect(copy.nextElementSibling?.getAttribute('role')).toBe('status');
+        expect(copy.nextElementSibling?.nextElementSibling).toBe(coach);
+        expect(second!.querySelector('.step-coach')).toBeNull();
+        expect(container.querySelectorAll('.step-coach')).toHaveLength(1);
+    });
+
+    it('shows no coach line without tips, and the intents, prompts and Copy buttons equal those of the true case', async () => {
+        const withTips = await open(detailView({}, { rule: 'NS-5', lines: LINES, tips: TIPS }));
+        const withHtml = items(withTips).map((item) => item.innerHTML.replace(/<p class="step-coach">.*?<\/p>/, ''));
+        const without = await open(detailView({}, { rule: 'NS-5', lines: LINES }));
+        expect(without.querySelector('.step-coach')).toBeNull();
+        expect(items(without).map((item) => item.innerHTML)).toEqual(withHtml);
+    });
+
+    it('a rule with text only shows no coach line', async () => {
+        const container = await open(detailView({}, { rule: 'NS-3', text: NEXT_STEP_DONE_TEXT }));
+        expect(container.querySelector('.step-coach')).toBeNull();
+    });
+});
+
+describe('0021 AC-014, AC-015, AC-009, AC-010: the About this step toggletip in the detail', () => {
+    const ABOUT = ['It checks the work.', 'New chat: the reviewer should not know the build.', 'A strong model reads it best.', 'Nothing changes on disk.'];
+    const TIPS = { coach: 'new chat · strong model, other family', about: ABOUT };
+    const LINES = [
+        { text: '/sdd-compile k', intent: 'Have the result verified' },
+        { text: '/sdd-lifecycle k', intent: 'Then, after a READY verdict: close the spec' },
+    ];
+
+    it('shows one question-mark button in the section head directly after the heading, named About this step', async () => {
+        const container = await open(detailView({}, { rule: 'NS-5', lines: LINES, tips: TIPS }));
+        const head = container.querySelector('.next-step .section-head')!;
+        const toggle = head.querySelector<HTMLButtonElement>('button.toggletip')!;
+        expect(head.querySelector('h3')!.nextElementSibling).toBe(toggle);
+        expect(toggle.textContent).toBe('?');
+        expect(toggle.getAttribute('aria-label')).toBe(ABOUT_STEP_LABEL);
+        expect(toggle.title).toBe(ABOUT_STEP_LABEL);
+        expect(container.querySelectorAll('button.toggletip')).toHaveLength(1);
+    });
+
+    it('opens the four paragraphs literally, in order, in the region directly after the button; Copy prompt buttons stay', async () => {
+        const container = await open(detailView({}, { rule: 'NS-5', lines: LINES, tips: TIPS }));
+        const toggle = container.querySelector<HTMLButtonElement>('button.toggletip')!;
+        await click(toggle);
+        const region = toggle.nextElementSibling!;
+        expect(region.getAttribute('role')).toBe('status');
+        expect([...region.querySelectorAll('p')].map((paragraph) => paragraph.textContent)).toEqual(ABOUT);
+        expect(container.querySelectorAll('button.next-step-copy')).toHaveLength(2);
+        expect(region.querySelectorAll('a, button, input, [tabindex]')).toHaveLength(0);
+    });
+
+    it('shows no question-mark button without tips or for a rule with text only', async () => {
+        const without = await open(detailView({}, { rule: 'NS-5', lines: LINES }));
+        expect(without.querySelector('.toggletip')).toBeNull();
+        mounted!.unmount();
+        const text = await open(detailView({}, { rule: 'NS-3', text: NEXT_STEP_DONE_TEXT }));
+        expect(text.querySelector('.toggletip')).toBeNull();
+    });
+});
+
+describe('0024 AC-003, AC-002: the split button at the first next-step line only', () => {
+    const SEND_A = { assistant: 'copilot', target: 'new', targets: ['new', 'current'] } satisfies SendView;
+    const TWO_LINES: NextStepView = {
+        rule: 'NS-6',
+        lines: [
+            { text: 'Implement T-003 of .specs/active/0007-thing.plan.md', intent: 'Continue with T-003' },
+            { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Not sure where it stands? Let the agent report first' },
+        ],
+        send: SEND_A,
+    };
+
+    it('the first line shows Send to Copilot and its arrow part; the second line keeps its secondary Copy prompt; one split button in the detail', async () => {
+        const container = await open(spec({}, TWO_LINES));
+        const next = section(container, 'Next step');
+        expect(next.querySelectorAll('.send-split')).toHaveLength(1);
+        const lines = [...next.querySelectorAll('.next-step-lines li')];
+        expect(lines[0]!.querySelector('.send-split button.send-main')?.textContent).toBe('Send to Copilot');
+        expect(lines[0]!.querySelector('button.copy-button:not(.send-main)')).toBeNull();
+        expect(lines[0]!.querySelector('.send-arrow')?.getAttribute('aria-label')).toBe('More actions: Implement T-003 of .specs/active/0007-thing.plan.md');
+        expect(lines[1]!.querySelector('.send-split')).toBeNull();
+        expect(lines[1]!.querySelector('button.copy-secondary')?.textContent).toBe('Copy prompt');
+        expect(container.querySelectorAll('.send-split')).toHaveLength(1);
+    });
+
+    it('without a send view the DOM is the 0021 render: a primary Copy prompt on the first line and no Send control anywhere', async () => {
+        const container = await open(spec({}, { ...TWO_LINES, send: undefined } as NextStepView));
+        const next = section(container, 'Next step');
+        expect(next.querySelector('.send-split, .send-arrow, [role="menu"]')).toBeNull();
+        expect(next.querySelector('li button.copy-button')?.textContent).toBe('Copy prompt');
+        expect([...container.querySelectorAll('button')].filter((button) => /^(Send|More actions)/.test(button.textContent ?? '') || /^(Send|More actions)/.test(button.getAttribute('aria-label') ?? ''))).toEqual([]);
+        const text = spec({}, { rule: 'NS-3', text: 'Nothing to do.' });
+        const textOnly = await open(text);
+        expect(textOnly.querySelector('.send-split')).toBeNull();
+    });
+
+    it('the main part posts one sendPrompt with assistant, default target and the first line; the arrow item posts the other target', async () => {
+        const container = await open(spec({}, TWO_LINES));
+        await click(container.querySelector('button.send-main')!);
+        expect(requests('sendPrompt')).toEqual([{ assistant: 'copilot', target: 'new', line: 'Implement T-003 of .specs/active/0007-thing.plan.md', token: expect.stringMatching(/^[A-Za-z0-9-]{1,64}$/) }]);
+        await click(container.querySelector('button.send-arrow')!);
+        await click([...container.querySelectorAll<HTMLElement>('[role="menuitem"]')][1]!);
+        expect(requests('sendPrompt')[1]).toEqual({ assistant: 'copilot', target: 'current', line: 'Implement T-003 of .specs/active/0007-thing.plan.md', token: expect.stringMatching(/^[A-Za-z0-9-]{1,64}$/) });
+        expect((requests('sendPrompt')[1] as { token: string }).token).not.toBe((requests('sendPrompt')[0] as { token: string }).token);
+        expect(requests('copyText')).toEqual([]);
+    });
+
+    it('a sendResult event shows Opened in Copilot at the main part; the Copy prompt item posts copyText and shows Copied there', async () => {
+        const container = await open(spec({}, TWO_LINES));
+        await click(container.querySelector('button.send-main')!);
+        await send(sendResultEvent('opened', "The prompt is in Copilot's chat. Check it, then send it there.", (requests('sendPrompt')[0] as { token: string }).token));
+        expect(container.querySelector('button.send-main')?.textContent).toBe('Opened in Copilot');
+        expect(container.querySelector('.send-split [role="status"]')?.textContent).toBe("The prompt is in Copilot's chat. Check it, then send it there.");
+        await click(container.querySelector('button.send-arrow')!);
+        await click([...container.querySelectorAll<HTMLElement>('[role="menuitem"]')][2]!);
+        expect(requests('copyText')).toEqual([{ text: 'Implement T-003 of .specs/active/0007-thing.plan.md' }]);
+        await send(copyResultEvent(true, COPIED_TEXT));
+        expect(container.querySelector('button.send-main')?.textContent).toBe('Copied');
+    });
+});
+
+describe('0024 AC-010: focus when the offer changes', () => {
+    const WITH: NextStepView = {
+        rule: 'NS-6',
+        lines: [
+            { text: 'Implement T-003 of .specs/active/0007-thing.plan.md', intent: 'Continue with T-003' },
+            { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Not sure where it stands? Let the agent report first' },
+        ],
+        send: { assistant: 'copilot', target: 'new', targets: ['new', 'current'] },
+    };
+    const WITHOUT = { ...WITH, send: undefined } as NextStepView;
+    const OTHER = { ...WITH, send: { assistant: 'claudeCode', target: 'new', targets: ['new'] } } satisfies NextStepView;
+    const focusOn = async (element: HTMLElement): Promise<void> => {
+        await act(async () => element.focus());
+    };
+
+    it('an offer that goes away moves focus from the main part, the arrow part or a menu item to the Copy prompt that replaces it', async () => {
+        for (const place of ['main', 'arrow', 'item'] as const) {
+            const container = await open(spec({}, WITH));
+            const arrow = container.querySelector<HTMLButtonElement>('button.send-arrow')!;
+            if (place === 'main') {
+                await focusOn(container.querySelector<HTMLElement>('button.send-main')!);
+            } else if (place === 'arrow') {
+                await focusOn(arrow);
+            } else {
+                await click(arrow);
+                expect(document.activeElement?.getAttribute('role')).toBe('menuitem');
+            }
+            await send(detailEvent(spec({}, WITHOUT)));
+            const copy = container.querySelector<HTMLElement>('.next-step-lines li button.copy-button')!;
+            expect(container.querySelector('.send-split, [role="menu"]'), place).toBeNull();
+            expect(document.activeElement, place).toBe(copy);
+            expect(copy.textContent, place).toBe('Copy prompt');
+            mounted?.unmount();
+            mounted = undefined;
+            clients.splice(0).forEach((client) => client.stop());
+        }
+    });
+
+    it('an assistant change keeps the split button, closes the menu and moves focus to the arrow part', async () => {
+        const container = await open(spec({}, WITH));
+        await click(container.querySelector('button.send-arrow')!);
+        expect(container.querySelector('[role="menu"]')).not.toBeNull();
+        await send(detailEvent(spec({}, OTHER)));
+        expect(container.querySelector('[role="menu"]')).toBeNull();
+        expect(container.querySelector('button.send-main')?.textContent).toBe('Send to Claude Code');
+        expect(document.activeElement).toBe(container.querySelector('button.send-arrow'));
+    });
+
+    it('focus elsewhere stays when the offer goes away or changes', async () => {
+        const container = await open(spec({}, WITH));
+        const secondary = container.querySelector<HTMLElement>('button.copy-secondary')!;
+        await focusOn(secondary);
+        await send(detailEvent(spec({}, OTHER)));
+        expect(document.activeElement).toBe(secondary);
+        await send(detailEvent(spec({}, WITHOUT)));
+        expect(document.activeElement).toBe(secondary);
+    });
+
+    it('a new offer appearing does not take focus', async () => {
+        const container = await open(spec({}, WITHOUT));
+        const secondary = container.querySelector<HTMLElement>('button.copy-secondary')!;
+        await focusOn(secondary);
+        await send(detailEvent(spec({}, WITH)));
+        expect(container.querySelector('.send-split')).not.toBeNull();
+        expect(document.activeElement).toBe(secondary);
+    });
+});
+
+describe('0024 AC-010: focus is decided at the moment of the change, also after the webview lost the window focus', () => {
+    const WITH: NextStepView = {
+        rule: 'NS-6',
+        lines: [
+            { text: 'Implement T-003 of .specs/active/0007-thing.plan.md', intent: 'Continue with T-003' },
+            { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Not sure where it stands? Let the agent report first' },
+        ],
+        send: { assistant: 'copilot', target: 'new', targets: ['new', 'current'] },
+    };
+    const WITHOUT = { ...WITH, send: undefined } as NextStepView;
+    const OTHER = { ...WITH, send: { assistant: 'claudeCode', target: 'new', targets: ['new'] } } satisfies NextStepView;
+    const focusOn = async (element: HTMLElement): Promise<void> => {
+        await act(async () => element.focus());
+    };
+    const windowBlur = async (element: HTMLElement): Promise<void> => {
+        await act(async () => {
+            element.dispatchEvent(new FocusEvent('blur', { relatedTarget: null }));
+            element.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+            await Promise.resolve();
+        });
+    };
+    const reset = (): void => {
+        mounted?.unmount();
+        mounted = undefined;
+        clients.splice(0).forEach((client) => client.stop());
+    };
+
+    it.each(['main', 'arrow', 'item'] as const)('the offer goes away after a window blur with focus on the %s part: focus goes to the Copy prompt that replaces it', async (place) => {
+        const container = await open(spec({}, WITH));
+        const arrow = container.querySelector<HTMLButtonElement>('button.send-arrow')!;
+        if (place === 'main') {
+            await focusOn(container.querySelector<HTMLElement>('button.send-main')!);
+        } else if (place === 'arrow') {
+            await focusOn(arrow);
+        } else {
+            await click(arrow);
+        }
+        const held = document.activeElement as HTMLElement;
+        await windowBlur(held);
+        expect(document.activeElement).toBe(held);
+        await send(detailEvent(spec({}, WITHOUT)));
+        expect(document.activeElement).toBe(container.querySelector('.next-step-lines li button.copy-button'));
+        reset();
+    });
+
+    it.each(['main', 'arrow', 'first item', 'item that leaves'] as const)('the assistant changes after a window blur with focus on the %s: focus goes to the arrow part and the menu closes', async (place) => {
+        const container = await open(spec({}, WITH));
+        if (place === 'main') {
+            await focusOn(container.querySelector<HTMLElement>('button.send-main')!);
+        } else if (place === 'arrow') {
+            await focusOn(container.querySelector<HTMLElement>('button.send-arrow')!);
+        } else {
+            await click(container.querySelector('button.send-arrow')!);
+            if (place === 'item that leaves') {
+                await focusOn([...container.querySelectorAll<HTMLElement>('[role="menuitem"]')][1]!);
+            }
+        }
+        await windowBlur(document.activeElement as HTMLElement);
+        await send(detailEvent(spec({}, OTHER)));
+        expect(container.querySelector('[role="menu"]')).toBeNull();
+        expect(document.activeElement).toBe(container.querySelector('button.send-arrow'));
+        reset();
+    });
+
+    it('focus elsewhere stays: a pointer press on the second line while the menu is open, then the offer goes away or changes', async () => {
+        for (const next of [WITHOUT, OTHER]) {
+            const container = await open(spec({}, WITH));
+            await click(container.querySelector('button.send-arrow')!);
+            const secondary = container.querySelector<HTMLElement>('button.copy-secondary')!;
+            await act(async () => {
+                secondary.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, cancelable: true }));
+            });
+            await focusOn(secondary);
+            await send(detailEvent(spec({}, next)));
+            expect(document.activeElement).toBe(secondary);
+            reset();
+        }
+    });
+
+    it('focus on the second line stays after a window blur when the offer goes away', async () => {
+        const container = await open(spec({}, WITH));
+        const secondary = container.querySelector<HTMLElement>('button.copy-secondary')!;
+        await focusOn(secondary);
+        await windowBlur(secondary);
+        await send(detailEvent(spec({}, WITHOUT)));
+        expect(document.activeElement).toBe(secondary);
+    });
+});
+
+describe('0024 AC-010, 0019 AC-020: the focus handoff belongs to the place of the split button', () => {
+    const SEND_VIEW_A: SendView = { assistant: 'copilot', target: 'new', targets: ['new', 'current'] };
+    const FIRST = { text: 'Implement T-003 of .specs/active/0007-thing.plan.md', intent: 'Continue with T-003' };
+    const SECOND = { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Not sure where it stands? Let the agent report first' };
+    const PLAN: NextStepView = { rule: 'NS-6', lines: [{ text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Write the plan' }], send: SEND_VIEW_A };
+    const OPEN: NextStepView = { rule: 'NS-6', lines: [FIRST, SECOND], send: SEND_VIEW_A };
+    const PLAN_WITH_SECOND: NextStepView = OPEN;
+    const WITHOUT = (view: NextStepView): NextStepView => ({ ...view, send: undefined }) as NextStepView;
+    const TEXT: NextStepView = { rule: 'NS-1', text: 'Nothing to do.' } as NextStepView;
+    const focusOn = async (element: HTMLElement): Promise<void> => {
+        await act(async () => element.focus());
+    };
+
+    it('the first line changes key and a second line appears while focus is on Send: focus goes to the heading, not to the new second Copy prompt', async () => {
+        const container = await open(spec({}, PLAN));
+        await focusOn(container.querySelector<HTMLElement>('button.send-main')!);
+        await send(detailEvent(spec({}, OPEN)));
+        expect(document.activeElement?.hasAttribute('data-detail-heading')).toBe(true);
+        expect(document.activeElement?.classList.contains('copy-secondary')).toBe(false);
+    });
+
+    it('negative control: without any offer the same update lands on the heading too', async () => {
+        const container = await open(spec({}, WITHOUT(PLAN)));
+        await focusOn(container.querySelector<HTMLElement>('.next-step-lines button.copy-button')!);
+        await send(detailEvent(spec({}, WITHOUT(OPEN))));
+        expect(document.activeElement?.hasAttribute('data-detail-heading')).toBe(true);
+    });
+
+    it('the offer goes away and a second line appears in the same update: the Copy prompt of the same line takes the focus, not the new one', async () => {
+        const container = await open(spec({}, PLAN_WITH_SECOND));
+        const first: NextStepView = { rule: 'NS-6', lines: [FIRST], send: SEND_VIEW_A };
+        await send(detailEvent(spec({}, first)));
+        await focusOn(container.querySelector<HTMLElement>('button.send-main')!);
+        await send(detailEvent(spec({}, WITHOUT(PLAN_WITH_SECOND))));
+        const copies = [...container.querySelectorAll<HTMLElement>('.next-step-lines button.copy-button')];
+        expect(copies).toHaveLength(2);
+        expect(document.activeElement).toBe(copies[0]);
+    });
+
+    it('a Send that leaves with focus inside while no Copy prompt takes its place hands nothing over to a Copy prompt that mounts later', async () => {
+        const container = await open(spec({}, PLAN));
+        await focusOn(container.querySelector<HTMLElement>('button.send-main')!);
+        await send(detailEvent(spec({}, TEXT)));
+        expect(container.querySelector('.send-split, button.copy-button')).toBeNull();
+        await send(detailEvent(spec({}, WITHOUT(OPEN))));
+        expect(container.querySelectorAll('.next-step-lines button.copy-button')).toHaveLength(2);
+        expect(document.activeElement?.classList.contains('copy-button')).toBe(false);
+    });
+
+    it('the offer goes away at the same line: the Copy prompt of that line takes the focus (kept)', async () => {
+        const container = await open(spec({}, PLAN));
+        await focusOn(container.querySelector<HTMLElement>('button.send-main')!);
+        await send(detailEvent(spec({}, WITHOUT(PLAN))));
+        expect(document.activeElement).toBe(container.querySelector('.next-step-lines button.copy-button'));
     });
 });

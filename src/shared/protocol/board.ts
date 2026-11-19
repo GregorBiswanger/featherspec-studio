@@ -1,5 +1,6 @@
 import { isBoardFilter, isBoardState, type BoardFilter, type BoardState } from './boardFilter';
 import { isRecord } from './envelope';
+import { isPlanSpecView, type PlanSpecView } from './planMap';
 import { isStepView, type StepView } from './stepView';
 
 export type DerivedRule = 'S-READY' | 'S-REVIEW' | 'S-BLOCKED';
@@ -72,11 +73,13 @@ export interface BoardColumn {
     emptyBeforeFilter: boolean;
     count: number;
     narrow?: ColumnNarrow;
+    problems?: number;
 }
 
 export interface BannerLine {
     where: string;
     reason: string;
+    sentence?: string;
 }
 
 export interface Banner {
@@ -92,6 +95,7 @@ export interface BoardView {
     filter: BoardFilter;
     sort: SortKey;
     noSpecs: boolean;
+    planSpecs: PlanSpecView[];
 }
 
 function isString(value: unknown): value is string {
@@ -138,12 +142,13 @@ function isColumn(value: unknown): value is BoardColumn {
         typeof value.hidden === 'number' &&
         typeof value.emptyBeforeFilter === 'boolean' &&
         typeof value.count === 'number' &&
-        (value.narrow === undefined || isColumnNarrow(value.narrow))
+        (value.narrow === undefined || isColumnNarrow(value.narrow)) &&
+        (value.problems === undefined || typeof value.problems === 'number')
     );
 }
 
 function isBannerLines(value: unknown): boolean {
-    return Array.isArray(value) && value.every((line) => isRecord(line) && isString(line.where) && isString(line.reason));
+    return Array.isArray(value) && value.every((line) => isRecord(line) && isString(line.where) && isString(line.reason) && (line.sentence === undefined || isString(line.sentence)));
 }
 
 function isBanner(value: unknown): value is Banner {
@@ -163,6 +168,8 @@ export function isBoardView(value: unknown): value is BoardView {
         value.sortKeys.every(isSortKey) &&
         value.sortKeys.includes(value.sort) &&
         typeof value.noSpecs === 'boolean' &&
+        Array.isArray(value.planSpecs) &&
+        value.planSpecs.every(isPlanSpecView) &&
         (value.doneToggle === undefined || value.doneToggle === 'show' || value.doneToggle === 'hide')
     );
 }

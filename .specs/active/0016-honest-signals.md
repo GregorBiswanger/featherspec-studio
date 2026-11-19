@@ -7,6 +7,8 @@
 
 *Amended by 0018 (PD-062): wherever this spec names Mission Control or the Spec Board as a place, read Overview or Board; the rows of 0018 §5 change behaviour.*
 
+*Amended by 0021 (PD-069): wherever this spec names the control "Copy" of a prompt (a next step or `/sdd-specify`), read `Copy prompt`, named as 0021 §6.4; the feedback stays; wherever it shows a next step line, 0021 §6.1 gives each line its intent.*
+
 Basis: UX audit 2026-11-17 (`docs/ux-audit/` R-01, R-08, R-09, R-12, R-13, R-17, R-18; Q-3, Q-4);
 PD-058, PD-059 (proxy); `.claude/rules/ux-guidelines.md` 3, 6, 8–10; PD-016, PD-013. Gregor is not
 reachable: open questions are decided by audit, PD register and guidelines, marked *(proxy)* (§11).
@@ -139,6 +141,8 @@ FeatherSpec 1.10.0 writes none of `Added`, `Deletes`, `Open evidence`, `Evidence
 
 *Amended by 0019 (PD-058): §6.2 detail row "toggle T-07 in Overview" — no Overview section: T-07 heads section 6, Format notes, collapsed on every showing (0019 §6.2, AC-015).*
 
+*Amended by 0022 (PD-069): §6.2 Detail row — each Problem shows its sentence (0022 §6), the reason is its tooltip (0022 §4.5).*
+
 Compatibility shows nowhere. A `**Successor:**` line is read in every spec; only a Deprecated
 spec's is used, and its successor appears once in its detail. NS-2 and NS-11 stay as 0015 defines them.
 
@@ -174,6 +178,12 @@ is the button's tooltip meanwhile; its accessible name reads `<label>: <line>` t
 else appears, moves or changes colour; the button keeps its size. Success never uses the error colour.
 
 *Amended by 0017 (PD-060/PD-061): the drop result's Copy and Dismiss are void (PD-060); the detail's Copy keeps them; card and row Copy are Copies of a next step here.*
+
+*Amended by 0021 (PD-069): §6.5 and AC-018 — the label reads `Copy prompt` and, after a Copy, `Copied` or `Could not copy` for 2 s, then `Copy prompt`; the accessible name reads `Copy prompt: <line>` (0021 §6.4, AC-008).*
+
+*Amended by 0022 (PD-069): §6.5 — only the Copies of 0022 §4.4 (1) to (3) use the primary style; every further side-panel line is secondary and every list Copy an icon button whose check or warning icon is the feedback, in a fixed box of at least 24 × 24 px (0022 AC-010 to AC-012).*
+
+*Amended by 0024 (PD-068): §6.5 "Nothing else appears, moves or changes colour" — except 0024 §6.5's warning notification after a Send that copies.*
 
 ## 7. Texts (English, PD-016; all *(proxy)*, starting from audit 04 "Texte und Sprache")
 
@@ -221,6 +231,7 @@ the repository's own `.specs/`).
 - **AC-006** While a spec carries a Problem, the system shall show the warning icon with T-05 on its card, the reason T-04 in its *Needs attention* row, and each Problem with the warning icon and its reason directly below the detail's "Next step"; while it carries none, none of these shall appear.
   > **Given** `fs-broken` **When** the board, Mission Control and the detail of 0003 render **Then** 0003's card reads `1 problem`, its attention row `Problem`, and its detail shows the contradiction's reason.
   *Amended by 0018 (PD-062): the *Needs attention* row is a Problems row (0018 O-4).*
+  *Amended by 0022 (PD-069): AC-006 — the detail shows each Problem's sentence; the reason is its tooltip (0022 §4.5).*
 - **AC-007** If a spec carries format notes and no Problem, then its card, attention row and the header shall show nothing for them, and its detail shall show the T-07 toggle collapsed (`aria-expanded="false"`); when the developer activates it by pointer, or by Enter or Space after reaching it with Tab, the system shall show each note's reason and set `aria-expanded="true"`.
   *Amended by 0018 (PD-062): attention row and header → the Problems heading and rows (0018 AC-007).*
 - **AC-008** While at least one Problem exists, the Mission Control header shall show T-01 with n = the Problems on specs plus those at project level; when the developer activates it, the system shall send one navigation request for the Spec Board with the named set T-03 holding exactly those specs' stems. While none exists, the header shall show no problem element.
@@ -245,8 +256,12 @@ the repository's own `.specs/`).
   *Amended by 0019 (PD-058): AC-016 is void in the detail with the full text: criteria show as plain short titles, no `*` or `_` left (0019 AC-013).*
 - **AC-017** Every Copy of a next step, the drop result's included, shall use the primary button colours (`--vscode-button-background`, `--vscode-button-foreground`), and the drop result's Dismiss `--vscode-button-secondaryBackground` and `--vscode-button-secondaryForeground`; a stylesheet guard decides it.
   *Amended by 0017 (PD-060/PD-061): "the drop result's" is void (PD-060).*
+  *Amended by 0022 (PD-069): AC-017 — the primary colours belong to the Copies of 0022 §4.4 (1) to (3); the others follow 0022 AC-010 and AC-012.*
 - **AC-018** When the developer activates Copy and the clipboard write succeeds, the button shall read `Copied`, carry `Copied to the clipboard.` as tooltip, and the live region shall announce that sentence; if it fails, then they shall read `Could not copy` and `Could not copy to the clipboard.`; 2 s after the last activation the button shall read `Copy` again with its earlier tooltip.
+  *Amended by 0021 (PD-069): AC-018 — "shall read `Copy` again": it shall read `Copy prompt` again (0021 AC-008).*
+  *Amended by 0022 (PD-069): AC-018 — on a list Copy the icon turns to a check and the tooltip carries the sentence; the label `Copied` belongs to a Copy with a label (0022 AC-012).*
 - **AC-019** While Copy feedback shows, no element of the panel outside the activated button and the hidden live region shall be added, removed or change text or class; the stylesheet shall give the Copy button a `min-width` of at least `14ch` (the length of `Could not copy`) and no error colour to the success state.
+  *Amended by 0022 (PD-069): AC-019 — the `14ch` box holds for a Copy with a label; an icon Copy keeps a fixed box of at least 24 × 24 px (0022 AC-012).*
 - **AC-020** While S2 holds, the Activity Bar view and the panel shall show T-20 after "No FeatherSpec project found in this workspace." and before "Set up FeatherSpec"; the manifest's `viewsWelcome` contents shall equal the shared text.
 - **AC-021** Every New text of §7 shall come from a text module and be asserted literally by a test; a search of `src/shared` and `src/webview` without test files shall find none of `Priority: not available`, `verdict: not available`, `Inter-spec dependencies`, `Derived: `, `Model updated`, `Project diagnostics`, `project-level diagnostic` and `See its diagnostics`, with a negative control (the model's reasons in `src/core` stay, AC-013).
 - **AC-022** NS-1 shall show T-18; every other next-step line and text of 0015 §6.1 shall stay unchanged.
@@ -256,6 +271,10 @@ the repository's own `.specs/`).
   *Amended by 0018 (PD-062): the test audit also excepts the tests 0018 AC-030 lists against a criterion 0018 §5 voids.*
   *Amended by 0019 (PD-058): AC-023 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*
   *Amended by 0020 (PD-058): AC-023 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
+  *Amended by 0021 (PD-069): AC-023 (test audit) — also except the tests 0021 AC-020 lists against a statement 0021 §5 replaces.*
+  *Amended by 0022 (PD-069): AC-023 — also excepts the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
+  *Amended by 0023 (PD-069): AC-023 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
+  *Amended by 0024 (PD-068): AC-023 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
 - **AC-024** The specs of §5 shall carry their amendment notes and the PD register one new entry superseding §5's PD rows, with no note in an older entry; the README shall say once that FeatherSpec has no priority, persisted compile verdict or dependency field, so the Studio shows none; CHANGELOG and `docs/release-checklist.md` shall name the changes and AC-025.
 - **AC-025** *(manual, Gregor or delegate)* Preview harness screenshots in Dark, Light and High Contrast: primary Copy, its label change without shift, the need line, the T-07 toggle, the problem badge and the S2 sentence in view and panel; Gregor's Hands-On on `tip-splitter` shows no problem marker without a real problem.
 

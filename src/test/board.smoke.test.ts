@@ -2,6 +2,7 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { snapshotTree } from '../core/discovery/testing/snapshotTree';
 import { waitFor } from '../core/discovery/testing/waitFor';
+import { createAssistantHost } from '../adapters/vscode/assistantHost';
 import type { StudioApi } from '../extension';
 
 async function activateStudio(): Promise<StudioApi> {
@@ -92,6 +93,63 @@ suite('FeatherSpec Studio board smoke', function () {
         assert.ok(after, 'the Studio tab is still open');
         assert.strictEqual(after.group.viewColumn, studioColumn);
         await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+    });
+
+    test('0021 AC-016, AC-011: both settings are contributed with their defaults, and switching Show Step Tips off drops the coach line from the detail promptly, within 2 s including the settings write (the 500 ms budget is decided by the timing tests)', async () => {
+        const api = await activateStudio();
+        await api.whenIdle();
+        const configuration = vscode.workspace.getConfiguration('featherspec-studio');
+        assert.strictEqual(configuration.inspect('showStepTips')?.defaultValue, true);
+        assert.deepStrictEqual(configuration.inspect('modelHints')?.defaultValue, {});
+        await api.shell().select('0001-tip-splitter');
+        const tipsOf = () => {
+            const detail = api.board().detail();
+            return detail.kind === 'spec' && 'tips' in detail.nextStep ? detail.nextStep.tips : undefined;
+        };
+        try {
+            await configuration.update('showStepTips', true, vscode.ConfigurationTarget.Global);
+            await waitFor('the coach line', tipsOf, (tips) => tips !== undefined, { timeoutMs: 5_000 });
+            const started = Date.now();
+            await configuration.update('showStepTips', false, vscode.ConfigurationTarget.Global);
+            await waitFor('the coach line to go', tipsOf, (tips) => tips === undefined, { timeoutMs: 5_000 });
+            assert.ok(Date.now() - started < 2_000, 'the change reaches the detail');
+        } finally {
+            await configuration.update('showStepTips', undefined, vscode.ConfigurationTarget.Global);
+        }
+    });
+
+    test('0024 AC-001, AC-002, AC-013: the assistant setting is contributed with default none; choosing an assistant that is not installed offers no Send; Open Settings resolves; the real host sees its own extension and not another', async () => {
+        const api = await activateStudio();
+        await api.whenIdle();
+        const configuration = vscode.workspace.getConfiguration('featherspec-studio');
+        assert.strictEqual(configuration.inspect('assistant')?.defaultValue, 'none');
+        assert.ok((await vscode.commands.getCommands(true)).includes('featherspec-studio.openSettings'));
+        await vscode.commands.executeCommand('featherspec-studio.openSettings');
+        await api.shell().select('0001-tip-splitter');
+        const sendOf = () => {
+            const detail = api.board().detail();
+            return detail.kind === 'spec' && 'send' in detail.nextStep ? detail.nextStep.send : undefined;
+        };
+        const host = createAssistantHost();
+        assert.strictEqual(host.extension('GitHub.copilot-chat'), undefined, 'the test host has no chat extension');
+        assert.notStrictEqual(host.extension('GregorBiswanger.featherspec-studio'), undefined);
+        try {
+            await configuration.update('assistant', 'copilot', vscode.ConfigurationTarget.Global);
+            await api.whenIdle();
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            assert.strictEqual(sendOf(), undefined);
+        } finally {
+            await configuration.update('assistant', undefined, vscode.ConfigurationTarget.Global);
+        }
+        const received: unknown[][] = [];
+        const registration = vscode.commands.registerCommand('featherspec-studio.test.assistantProbe', (...args: unknown[]) => void received.push(args));
+        try {
+            assert.ok((await host.commands()).includes('featherspec-studio.test.assistantProbe'));
+            await host.execute('featherspec-studio.test.assistantProbe', [undefined, 'line']);
+            assert.deepStrictEqual(received, [[undefined, 'line']]);
+        } finally {
+            registration.dispose();
+        }
     });
 });
 

@@ -15,6 +15,8 @@
    - An ESLint `no-restricted-imports` rule bans `vscode` in `core/` and `shared/`, and bans `node:*` in `webview/`. Each layer gets its own tsconfig (core: no DOM, no vscode types; webview: DOM).
 2. **UI surface.** One singleton `WebviewPanel` in the editor area ("FeatherSpec Studio") hosts Mission Control, Spec Board, Spec Detail and Agent Center through in-app routing. The entry point is an Activity Bar view container holding one **native TreeView**: a navigation shortcut plus a compact status of specs and runs, and a `viewsWelcome` message when no FeatherSpec project is found. There is no sidebar `WebviewView` in the MVP; it can be reconsidered for a live Agent Center view after the MVP.
    *Amended by 0020 (PD-058): §2 — superseded in part by 0020 (PD-058): the TreeView is the status surface (spec rows in four groups with next step and badge); the panel hosts Overview and Board with the detail as a side panel.*
+
+*Amended by 0023 (PD-069): §2 (as 0020 noted it) — the panel hosts Overview, Board and Plan map, with the detail as a side panel (0023 AC-006).*
 3. **Webview UI: React 19 (19.3.1).**
    - Plain semantic HTML styled only with `--vscode-*` CSS variables, plus the body classes `vscode-light`, `vscode-dark` and `vscode-high-contrast`.
    - `@vscode-elements/elements` 2.5.1 (Lit web components) only for complex controls such as tabs, tree and collapsible, consumed directly because React 19 supports custom elements.

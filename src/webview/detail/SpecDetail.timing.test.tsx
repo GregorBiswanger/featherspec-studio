@@ -72,7 +72,7 @@ describe('0019 AC-020: the situation picture is in the DOM within 500 ms of the 
 describe('0015 AC-007: a new next step is in the DOM within 500 ms of the event (PD-047)', () => {
     it('shows the line of the new detail view', async () => {
         const container = await open();
-        const next = detailView({}, { rule: 'NS-5', lines: [{ text: '/sdd-compile k' }, { text: '/sdd-lifecycle k', label: 'Then, after a READY verdict:' }] });
+        const next = detailView({}, { rule: 'NS-5', lines: [{ text: '/sdd-compile k', intent: 'Have the result verified' }, { text: '/sdd-lifecycle k', intent: 'Then, after a READY verdict: close the spec' }] });
         const best = await bestOfThree(
             () => send(detailEvent(next)),
             () => send(detailEvent(detailView())),

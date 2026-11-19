@@ -43,6 +43,7 @@ Dark, Light and High Contrast, no custom colour palette, no web fonts, no new de
 - Readiness and rule references read as sentences for humans; the rule ID is secondary text.
 
 ## Specs tree and the detail side panel
+- *Superseded by spec 0022 (PD-069): the group is `Ready`, the description is the step alone, and a group says when it holds a problem.*
 - The Activity Bar view "Specs" is a native tree (spec 0020): four groups (In progress, Up next, Backlog,
   Done collapsed), a row per spec with number, title, state and short next step, an icon and a colour per
   state, a tooltip that explains the row, an inline Copy and a badge for what waits. A click selects the spec.
@@ -50,6 +51,7 @@ Dark, Light and High Contrast, no custom colour palette, no web fonts, no new de
   state chip, close button), Next step, Problems, Progress (steps, criteria, needs), Files, Format notes and
   Status history (the last two collapsed). It shows as a 400 px side panel beside Overview and Board (a
   drawer below 900 px). Selecting a spec keeps the tab; Escape or the close button closes it.
+  *Superseded by spec 0022 (PD-069, PD-075): the width is set by a divider and remembered, there is no drawer: below 900 px the area or the detail shows alone, with a back button.*
 - Every ID and file name is a link that opens the file beside the Studio at the line of the ID.
   Text that quotes file content (reasons, format notes) is still rendered safely: escaped first,
   small built-in subset, no HTML from the files reaches the DOM.

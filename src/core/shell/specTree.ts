@@ -2,6 +2,7 @@ import type { CardView } from '../../shared/protocol/board';
 import type { BoardState } from '../../shared/protocol/boardFilter';
 import type { ActionId, PanelState } from '../../shared/protocol/messages';
 import { isDerivedRule } from '../../shared/protocol/board';
+import { STATE_LOOK } from '../../shared/protocol/stateLook';
 import {
     ACTION_LABELS,
     badgeTooltip,
@@ -9,6 +10,8 @@ import {
     DEPRECATED_MARKER,
     DERIVED_SENTENCES,
     GROUP_LABELS,
+    groupProblemDescription,
+    groupProblemLabel,
     LOADING_TEXT,
     NEXT_STEP_PREFIX,
     NO_SPECS_START_TEXT,
@@ -17,13 +20,16 @@ import {
     PROBLEM_PREFIX,
     problemsBadgeText,
     stepsText,
+    treeRowAccessibleLabel,
 } from '../../shared/protocol/texts';
+import { stepShortForm } from '../../shared/protocol/nextStepTexts';
 import { buildCards } from '../board/cards';
 import { nextStep } from '../board/nextStep';
-import { cutAt } from '../board/shortTitle';
 import { escapeMarkdown } from '../copyNextStep/entryView';
 import type { LifecycleEntry } from '../lifecycle/model';
+import { problemSentence } from '../lifecycle/problemSentence';
 import type { ShellModel } from '../ports/shell';
+import { treeLabel } from './treeLabel';
 
 export interface SpecRowModel {
     kind: 'spec';
@@ -50,6 +56,10 @@ export interface GroupModel {
     description: string;
     collapsed: boolean;
     children: SpecRowModel[];
+    icon?: string;
+    color?: string;
+    tooltip?: string;
+    accessibleLabel?: string;
 }
 
 export interface ActionRowModel {
@@ -77,31 +87,20 @@ export interface SpecTreeInput {
     model: ShellModel | undefined;
 }
 
-const LABEL_MAX = 24;
-
 type GroupKey = keyof typeof GROUP_LABELS;
 
-const STATE_GROUP: Record<BoardState, GroupKey> = {
+export const STATE_GROUP: Record<BoardState, GroupKey> = {
     Blocked: 'inProgress',
     Review: 'inProgress',
     Active: 'inProgress',
-    Ready: 'upNext',
+    Ready: 'ready',
     Backlog: 'backlog',
     Done: 'done',
 };
 
-const GROUP_ORDER: readonly GroupKey[] = ['inProgress', 'upNext', 'backlog', 'done'];
+export const GROUP_ORDER: readonly GroupKey[] = ['inProgress', 'ready', 'backlog', 'done'];
 
 const IN_PROGRESS_RANK: Partial<Record<BoardState, number>> = { Blocked: 0, Review: 1, Active: 2 };
-
-const STATE_ICONS: Record<BoardState, { icon: string; color: string }> = {
-    Backlog: { icon: 'list-flat', color: 'descriptionForeground' },
-    Ready: { icon: 'pass', color: 'charts.blue' },
-    Active: { icon: 'play', color: 'charts.purple' },
-    Review: { icon: 'eye', color: 'charts.yellow' },
-    Done: { icon: 'check', color: 'charts.green' },
-    Blocked: { icon: 'circle-slash', color: 'charts.red' },
-};
 
 const PROBLEM_ICON = { icon: 'warning', color: 'problemsWarningIcon.foreground' };
 
@@ -109,7 +108,7 @@ function compareText(left: string, right: string): number {
     return left < right ? -1 : left > right ? 1 : 0;
 }
 
-function compareRows(left: CardView, right: CardView): number {
+export function compareRows(left: CardView, right: CardView): number {
     return (
         (IN_PROGRESS_RANK[left.state] ?? 0) - (IN_PROGRESS_RANK[right.state] ?? 0) ||
         Number(left.number) - Number(right.number) ||
@@ -131,7 +130,7 @@ function descriptionOf(card: CardView): string {
     if (card.deprecated) {
         return DEPRECATED_MARKER;
     }
-    return card.step === undefined ? card.state : `${card.state} · ${card.step.short}`;
+    return card.step === undefined ? card.state : stepShortForm(card.step);
 }
 
 function contextValueOf(card: CardView, entry: LifecycleEntry): string {
@@ -157,7 +156,7 @@ function tooltipOf(model: ShellModel, card: CardView, entry: LifecycleEntry, tit
     const next = nextStep(model, card.key);
     if (next !== undefined && 'lines' in next) {
         next.lines.forEach((line, index) => {
-            paragraphs.push(index === 0 ? `${NEXT_STEP_PREFIX}${code(line.text)}` : `${line.label === undefined ? '' : `${line.label} `}${code(line.text)}`);
+            paragraphs.push(index === 0 ? `${NEXT_STEP_PREFIX}${escapeMarkdown(line.intent)}` : escapeMarkdown(line.intent), code(line.text));
         });
     } else if (next !== undefined) {
         paragraphs.push(`${NEXT_STEP_PREFIX}${next.text}`);
@@ -168,7 +167,7 @@ function tooltipOf(model: ShellModel, card: CardView, entry: LifecycleEntry, tit
     }
     for (const diagnostic of entry.diagnostics) {
         if (diagnostic.tier === 'problem') {
-            paragraphs.push(`${PROBLEM_PREFIX}${escapeMarkdown(diagnostic.reason)}`);
+            paragraphs.push(`${PROBLEM_PREFIX}${escapeMarkdown(problemSentence(diagnostic))}`);
         }
     }
     paragraphs.push(code(card.key));
@@ -177,17 +176,16 @@ function tooltipOf(model: ShellModel, card: CardView, entry: LifecycleEntry, tit
 
 function rowOf(model: ShellModel, card: CardView, entry: LifecycleEntry, slug: string): SpecRowModel {
     const title = fullTitle(card, slug);
-    const description = descriptionOf(card);
-    const style = card.problems > 0 ? PROBLEM_ICON : STATE_ICONS[card.state];
-    const problem = card.problems > 0 ? `, ${problemsBadgeText(card.problems)}` : '';
+    const shown = treeLabel({ number: card.number, title, description: descriptionOf(card), ...(card.step === undefined || card.deprecated ? {} : { command: card.step.short }) });
+    const style = card.problems > 0 ? PROBLEM_ICON : { icon: STATE_LOOK[card.state].motif, color: STATE_LOOK[card.state].colour };
     return {
         kind: 'spec',
         id: rowId(model.project.root, card),
-        label: `${card.number} ${cutAt(title, LABEL_MAX)}`,
-        description,
+        label: shown.label,
+        description: shown.description,
         icon: style.icon,
         color: style.color,
-        accessibleLabel: `${card.number} ${title}, ${description}${problem}`,
+        accessibleLabel: treeRowAccessibleLabel({ number: card.number, title, state: card.state, deprecated: card.deprecated, step: card.step === undefined ? undefined : stepShortForm(card.step), problems: card.problems }),
         tooltip: tooltipOf(model, card, entry, title),
         contextValue: contextValueOf(card, entry),
         stem: card.stem,
@@ -208,14 +206,25 @@ function groupsOf(model: ShellModel): GroupModel[] {
         if (own.length === 0) {
             return [];
         }
+        const problems = own.reduce((sum, card) => sum + card.problems, 0);
+        const hint =
+            problems === 0
+                ? { description: String(own.length) }
+                : {
+                      description: groupProblemDescription(own.length, problems),
+                      icon: PROBLEM_ICON.icon,
+                      color: PROBLEM_ICON.color,
+                      tooltip: groupProblemLabel(GROUP_LABELS[key], own.length, problems),
+                      accessibleLabel: groupProblemLabel(GROUP_LABELS[key], own.length, problems),
+                  };
         return [
             {
                 kind: 'group' as const,
                 id: `group:${key}`,
                 label: GROUP_LABELS[key],
-                description: String(own.length),
                 collapsed: key === 'done',
                 children: own.map((card) => rowOf(model, card, entries.get(card.key)!, slugs.get(card.key) ?? card.stem)),
+                ...hint,
             },
         ];
     });

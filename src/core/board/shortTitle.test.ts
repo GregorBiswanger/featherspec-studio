@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cutAt, plainShort, shortTitle } from './shortTitle';
+import { cutAt, plainShort, plainText, shortTitle } from './shortTitle';
 
 describe('0019 AC-013: the short title of a criterion', () => {
     it.each([
@@ -79,5 +79,14 @@ describe('0020 AC-004: cutAt, the shared cut with its limit as a parameter', () 
 
     it('the 80-character cut of the picture is unchanged', () => {
         expect(plainShort(`${'word '.repeat(30)}`)).toBe(`${'word '.repeat(16).trimEnd()}…`);
+    });
+});
+
+describe('0023 plainText: plain text without a cut', () => {
+    it('keeps the whole length, drops links, emphasis and code marks, and joins lines', () => {
+        const long = `${'word '.repeat(30)}end`;
+        expect(plainText(`**Bold** [a link](x.md) \`code\`\n${long}`)).toBe(`Bold a link code ${long}`);
+        expect(plainText(long).length).toBe(long.length);
+        expect(plainShort(long).length).toBeLessThan(long.length);
     });
 });

@@ -11,6 +11,7 @@ import {
     stepsText,
 } from '../../shared/protocol/texts';
 import { ProgressBar } from '../ui/ProgressBar';
+import { PathText } from '../ui/PathText';
 import { CopyButton, type CopyResult } from '../ui/CopyButton';
 import { StepText } from '../ui/StepText';
 import { BadgeIcon, Glyph } from './icons';
@@ -102,7 +103,9 @@ export function Card(props: {
             <div className="card-head">
                 <span className="card-number">{card.number}</span> <span className="card-title">{card.title}</span>
             </div>
-            {card.path === undefined ? null : <div className="card-path">{card.path}</div>}
+            {card.path === undefined ? null : <div className="card-path">
+                    <PathText path={card.path} />
+                </div>}
             {hasDetail ? (
                 <div className="card-state" id={detailId}>
                     {card.problems > 0 ? (
@@ -121,7 +124,7 @@ export function Card(props: {
             {card.step === undefined ? null : (
                 <div className="card-step" onClick={(event) => event.stopPropagation()}>
                     <StepText step={card.step} />
-                    <CopyButton line={card.step.line} copyResult={props.copyResult} onCopy={props.onCopy} {...(props.copyTabIndex === undefined ? {} : { tabIndex: props.copyTabIndex })} />
+                    <CopyButton look="icon" line={card.step.line} copyResult={props.copyResult} onCopy={props.onCopy} {...(props.copyTabIndex === undefined ? {} : { tabIndex: props.copyTabIndex })} />
                 </div>
             )}
         </li>

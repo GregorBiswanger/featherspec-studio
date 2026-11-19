@@ -39,7 +39,10 @@
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": "limited",
-      "description": "FeatherSpec Studio only reads files in Restricted Mode: it detects FeatherSpec projects and shows their status, and it never runs workspace code or changes a file."
+      "description": "FeatherSpec Studio only reads files in Restricted Mode: it detects FeatherSpec projects and shows their status, and it never runs workspace code or changes a file.",
+      "restrictedConfigurations": [
+        "featherspec-studio.assistant"
+      ]
     },
     "virtualWorkspaces": false
   },
@@ -50,6 +53,53 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "FeatherSpec Studio",
+      "properties": {
+        "featherspec-studio.showStepTips": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the session and model tip under the next step and the ? button that explains it."
+        },
+        "featherspec-studio.modelHints": {
+          "type": "object",
+          "default": {},
+          "description": "Names of your own models, shown in the tip. The Studio names no model itself.",
+          "properties": {
+            "strong": {
+              "type": "string",
+              "description": "Your strong model: for specify, clarify, writing a plan, compile and finding a block."
+            },
+            "fast": {
+              "type": "string",
+              "description": "Your fast model: for one plan step, a plan report, lifecycle moves and the workflow overview."
+            }
+          },
+          "additionalProperties": false
+        },
+        "featherspec-studio.assistant": {
+          "type": "string",
+          "default": "none",
+          "enum": [
+            "none",
+            "copilot",
+            "claudeCode"
+          ],
+          "enumItemLabels": [
+            "None: Copy prompt",
+            "GitHub Copilot",
+            "Claude Code"
+          ],
+          "enumDescriptions": [
+            "Copy the prompt and paste it into any assistant.",
+            "Open Copilot's chat with the prompt in its input. Needs the GitHub Copilot Chat extension.",
+            "Open a Claude Code tab with the prompt in its input. Needs the Claude Code extension."
+          ],
+          "description": "Your AI assistant for the next step. Send opens its chat with the prompt in the input and sends nothing; Copy prompt stays in the button's menu. Only assistants whose input the Studio can fill are listed.",
+          "scope": "window"
+        }
+      }
+    },
     "commands": [
       {
         "command": "featherspec-studio.open",
@@ -63,6 +113,10 @@
       {
         "command": "featherspec-studio.openBoard",
         "title": "FeatherSpec Studio: Open Board"
+      },
+      {
+        "command": "featherspec-studio.openPlanMap",
+        "title": "FeatherSpec Studio: Open Plan Map"
       },
       {
         "command": "featherspec-studio.copyNextStep",
@@ -88,6 +142,11 @@
         "command": "featherspec-studio.refresh",
         "title": "FeatherSpec Studio: Refresh",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "featherspec-studio.openSettings",
+        "title": "FeatherSpec Studio: Open Settings",
+        "icon": "$(gear)"
       },
       {
         "command": "featherspec-studio.selectSpec",
@@ -168,6 +227,11 @@
           "command": "featherspec-studio.refresh",
           "when": "view == featherspec-studio.navigator",
           "group": "navigation@2"
+        },
+        {
+          "command": "featherspec-studio.openSettings",
+          "when": "view == featherspec-studio.navigator",
+          "group": "navigation@3"
         }
       ],
       "view/item/context": [

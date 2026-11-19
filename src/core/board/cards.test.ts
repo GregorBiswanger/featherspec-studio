@@ -132,6 +132,17 @@ describe('cards', () => {
         expect(banner.problems).toEqual([]);
     });
 
+    it('0022 AC-013: a project-level Problem of the banner carries its sentence and its reason, a format note only its reason', async () => {
+        const { banner } = await cardsOf({
+            '.specs/backlog/0001-a.md': specText(),
+            '.memory-bank/activeContext.0042-T-001.md': noteText('DONE'),
+            '.specs/plan-archive/0009-orphan.2026-09-19.plan.md': planText({ status: 'Done' }),
+        });
+        expect(banner.problems).toEqual([{ where: '.memory-bank/activeContext.0042-T-001.md', reason: 'return note matches no spec (number 0042)', sentence: 'This return note belongs to no spec (number 0042)' }]);
+        expect(banner.notes.length).toBeGreaterThan(0);
+        banner.notes.forEach((line) => expect(line).not.toHaveProperty('sentence'));
+    });
+
     it('AC-020: a project with no diagnostic has an empty banner (negative control)', async () => {
         const { banner } = await cardsOf({ '.specs/backlog/0001-a.md': specText() });
         expect(banner).toEqual({ problems: [], notes: [] });
@@ -158,7 +169,7 @@ describe('0017 AC-001: the step on a card', () => {
             '.specs/backlog/0007-x.plan.md': `${planText({ status: 'Not started' })}\n## Steps\n\n### T-003 — Step\n\n- [ ] **Verified (T-003):** —\n`,
         });
         expect(cards[0]?.state).toBe('Ready');
-        expect(cards[0]?.step).toEqual({ short: 'Start T-003', line: 'Start T-003 of .specs/backlog/0007-x.plan.md', lines: [{ text: 'Start T-003 of .specs/backlog/0007-x.plan.md' }] });
+        expect(cards[0]?.step).toEqual({ intent: 'Build', short: 'Start T-003', line: 'Start T-003 of .specs/backlog/0007-x.plan.md', lines: [{ text: 'Start T-003 of .specs/backlog/0007-x.plan.md', intent: 'Start implementing: T-003 Step' }] });
     });
 
     it('a Done card has no step', async () => {

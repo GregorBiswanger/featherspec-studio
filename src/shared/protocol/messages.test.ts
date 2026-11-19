@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { AREAS, AREA_IDS, isAreaId } from './areas';
 import { RESTRICTED_TEXT } from './texts';
+import { isSendResultEventPayload } from './assistant';
 import { PROTOCOL_VERSION, isJsonValue, readEnvelope } from './envelope';
 import {
     isHelloPayload,
@@ -49,8 +50,8 @@ describe('AC-016, AC-021: envelope', () => {
     });
 
     it('reads an envelope of another version (the router decides, AC-016)', () => {
-        expect(readEnvelope({ v: 5, kind: 'evt', type: 'shell', payload: {} }).ok).toBe(true);
-        expect(PROTOCOL_VERSION).toBe(4);
+        expect(readEnvelope({ v: 9, kind: 'evt', type: 'shell', payload: {} }).ok).toBe(true);
+        expect(PROTOCOL_VERSION).toBe(8);
     });
 
     it('isJsonValue accepts nested JSON and rejects functions, undefined and NaN', () => {
@@ -116,6 +117,32 @@ describe('AC-021: request guards accept and reject', () => {
     });
 });
 
+describe('0022 AC-024: the side panel width requests', () => {
+    it('setSideWidth accepts exactly one fraction above 0 and below 1', () => {
+        expect(REQUEST_GUARDS.setSideWidth({ fraction: 0.6 })).toBe(true);
+        expect(REQUEST_GUARDS.setSideWidth({ fraction: 0.001 })).toBe(true);
+        for (const value of [{}, { fraction: 0 }, { fraction: 1 }, { fraction: -0.2 }, { fraction: Number.NaN }, { fraction: Number.POSITIVE_INFINITY }, { fraction: '0.5' }, { fraction: 0.5, extra: 1 }, undefined, 0.5, null]) {
+            expect(REQUEST_GUARDS.setSideWidth(value), JSON.stringify(value)).toBe(false);
+        }
+    });
+
+    it('resetSideWidth accepts an empty payload and nothing else', () => {
+        expect(REQUEST_GUARDS.resetSideWidth({})).toBe(true);
+        expect(REQUEST_GUARDS.resetSideWidth(undefined)).toBe(true);
+        expect(REQUEST_GUARDS.resetSideWidth({ fraction: 0.5 })).toBe(false);
+        expect(isRequestType('setSideWidth')).toBe(true);
+        expect(isRequestType('resetSideWidth')).toBe(true);
+    });
+
+    it('a shell view tolerates the width fraction and refuses an invalid one; without it the view is as before', () => {
+        expect(isShellView({ ...view, sideWidth: 0.6 })).toBe(true);
+        expect(isShellView(view)).toBe(true);
+        for (const value of [0, 1, -1, Number.NaN, '0.5', null]) {
+            expect(isShellView({ ...view, sideWidth: value }), String(value)).toBe(false);
+        }
+    });
+});
+
 describe('host messages: guards accept and reject', () => {
     it('accepts a complete shell view and rejects broken ones', () => {
         expect(isShellView(view)).toBe(true);
@@ -166,6 +193,60 @@ describe('0015 AC-005, AC-009: copy request and result', () => {
     });
 });
 
+describe('0024 AC-007: the request sendPrompt and the event sendResult', () => {
+    const good = { assistant: 'copilot', target: 'new', line: 'Implement T-003 of .specs/active/0001-a.plan.md', token: 'k3x9-1' };
+
+    it('sendPrompt takes the assistant, the target, the line and the token, and is a request type', () => {
+        expect(isRequestType('sendPrompt')).toBe(true);
+        expect(REQUEST_GUARDS.sendPrompt(good)).toBe(true);
+        expect(REQUEST_GUARDS.sendPrompt({ ...good, target: 'current' })).toBe(true);
+        expect(REQUEST_GUARDS.sendPrompt({ assistant: 'claudeCode', target: 'new', line: 'x', token: 'a-1' })).toBe(true);
+    });
+
+    it('it refuses an extra key, a command name, an unknown assistant, current for Claude Code and an empty line', () => {
+        expect(REQUEST_GUARDS.sendPrompt({ ...good, extra: 1 })).toBe(false);
+        expect(REQUEST_GUARDS.sendPrompt({ ...good, command: 'workbench.action.chat.open' })).toBe(false);
+        expect(REQUEST_GUARDS.sendPrompt({ ...good, assistant: 'codex' })).toBe(false);
+        expect(REQUEST_GUARDS.sendPrompt({ assistant: 'claudeCode', target: 'current', line: 'x', token: 'a-1' })).toBe(false);
+        expect(REQUEST_GUARDS.sendPrompt({ ...good, line: '' })).toBe(false);
+        expect(REQUEST_GUARDS.sendPrompt({ ...good, line: 4 })).toBe(false);
+        expect(REQUEST_GUARDS.sendPrompt({ assistant: 'copilot', target: 'new', token: 'a-1' })).toBe(false);
+        expect(REQUEST_GUARDS.sendPrompt({ ...good, target: 'later' })).toBe(false);
+        for (const value of [null, undefined, 'copilot', []]) {
+            expect(REQUEST_GUARDS.sendPrompt(value)).toBe(false);
+        }
+    });
+
+    it('PR #1 review: sendPrompt needs a token of 1 to 64 letters, digits and hyphens, and nothing else', () => {
+        const { token: _token, ...without } = good;
+        expect(REQUEST_GUARDS.sendPrompt(without)).toBe(false);
+        for (const token of ['', ' ', 'a b', 'a_b', 'tok\n', 'a'.repeat(65), 7, null, undefined, {}]) {
+            expect(REQUEST_GUARDS.sendPrompt({ ...good, token }), String(token)).toBe(false);
+        }
+        for (const token of ['a', 'A-9', 'a'.repeat(64)]) {
+            expect(REQUEST_GUARDS.sendPrompt({ ...good, token }), token).toBe(true);
+        }
+    });
+
+    it('sendResult holds an outcome of the three, a text and the token of its Send, nothing else', () => {
+        for (const outcome of ['opened', 'copied', 'copyFailed']) {
+            expect(isSendResultEventPayload({ outcome, text: 't', token: 'k3x9-1' })).toBe(true);
+        }
+        expect(isSendResultEventPayload({ outcome: 'sent', text: 't', token: 'a-1' })).toBe(false);
+        expect(isSendResultEventPayload({ outcome: 'opened', token: 'a-1' })).toBe(false);
+        expect(isSendResultEventPayload({ outcome: 'opened', text: 1, token: 'a-1' })).toBe(false);
+        expect(isSendResultEventPayload({ outcome: 'opened', text: 't', token: 'a-1', extra: 1 })).toBe(false);
+        expect(isSendResultEventPayload(null)).toBe(false);
+    });
+
+    it('PR #1 review: a sendResult without a token, or with a token that is not 1 to 64 letters, digits and hyphens, is refused', () => {
+        expect(isSendResultEventPayload({ outcome: 'opened', text: 't' })).toBe(false);
+        for (const token of ['', 'a b', 'a'.repeat(65), 3, null, undefined]) {
+            expect(isSendResultEventPayload({ outcome: 'opened', text: 't', token }), String(token)).toBe(false);
+        }
+    });
+});
+
 describe('0018 AC-010: the request overviewSetActivity', () => {
     it('is a known request with a boolean open and nothing else', () => {
         expect(isRequestType('overviewSetActivity')).toBe(true);
@@ -185,11 +266,14 @@ describe('0015 AC-026: the Overview purpose and the Restricted Mode note', () =>
     });
 });
 
-describe('0020 AC-016: two areas', () => {
-    it('0020 AC-016: lists exactly Overview and Board, in this order, and no area specExplorer', () => {
-        expect(AREAS.map((area) => area.title)).toEqual(['Overview', 'Board']);
-        expect(AREA_IDS).toEqual(['overview', 'board']);
+describe('0023 AC-006: three areas', () => {
+    it('0023 AC-006: lists exactly Overview, Board and Plan map, in this order, and no area specExplorer', () => {
+        expect(AREAS.map((area) => area.title)).toEqual(['Overview', 'Board', 'Plan map']);
+        expect(AREA_IDS).toEqual(['overview', 'board', 'planMap']);
+        expect(AREAS[2]).toEqual({ id: 'planMap', title: 'Plan map', purpose: 'See a plan\'s stages, what can run in parallel and how to start it.', placeholder: false });
         expect(isAreaId('specExplorer')).toBe(false);
+        expect(isAreaId('planmap')).toBe(false);
+        expect(isNavigationRequest({ area: 'planMap' })).toBe(true);
     });
 
     it('0018 AC-001: missionControl and specBoard are no area and no navigation request', () => {

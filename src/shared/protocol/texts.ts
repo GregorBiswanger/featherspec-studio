@@ -1,3 +1,4 @@
+import type { DetailAreaId } from './areas';
 import type { StatusHistoryItem } from './detail';
 import type { BoardState } from './boardFilter';
 import type { ColumnNarrow, LastChange, Progress, SortKey } from './board';
@@ -327,6 +328,9 @@ export function successorText(successor: { kind: 'link'; text: string } | { kind
 export const DETAIL_LABEL = 'Spec detail';
 export const CLOSE_DETAIL_LABEL = 'Close spec detail';
 export const CLOSE_DETAIL_TOOLTIP = 'Close (Esc)';
+export const DIVIDER_LABEL = 'Resize the side panel';
+export const DIVIDER_TOOLTIP = 'Drag to resize. Double-click to reset.';
+export const BACK_LABELS: Record<DetailAreaId, string> = { overview: 'Back to Overview', board: 'Back to Board' };
 export const PROGRESS_HEADING = 'Progress';
 export const STEPS_LABEL = 'Steps';
 export const CRITERIA_LABEL = 'Criteria';
@@ -357,10 +361,31 @@ export function historyHeading(count: number): string {
     return `${HISTORY_HEADING} (${count})`;
 }
 
-export const GROUP_LABELS = { inProgress: 'In progress', upNext: 'Up next', backlog: 'Backlog', done: 'Done' } as const;
+export const GROUP_LABELS = { inProgress: 'In progress', ready: 'Ready', backlog: 'Backlog', done: 'Done' } as const;
+
+function specCountText(count: number): string {
+    return count === 1 ? '1 spec' : `${count} specs`;
+}
+
+export function groupProblemDescription(count: number, problems: number): string {
+    return `${count} · ${problemsBadgeText(problems)}`;
+}
+
+export function groupProblemLabel(group: string, count: number, problems: number): string {
+    return `${group}: ${specCountText(count)} · ${problemsBadgeText(problems)}`;
+}
+
+export function withProblemCount(text: string, problems: number | undefined): string {
+    return problems === undefined || problems === 0 ? text : `${text} · ${problemsBadgeText(problems)}`;
+}
 
 export const NEXT_STEP_PREFIX = 'Next step: ';
 export const PROBLEM_PREFIX = 'Problem: ';
+
+export function treeRowAccessibleLabel(row: { number: string; title: string; state: string; deprecated: boolean; step: string | undefined; problems: number }): string {
+    const parts = [`${row.number} ${row.title}`, row.state, ...(row.deprecated ? [DEPRECATED_MARKER] : []), ...(row.step === undefined ? [] : [row.step]), ...(row.problems > 0 ? [problemsBadgeText(row.problems)] : [])];
+    return parts.join(', ');
+}
 
 export function badgeTooltip(review: number, blocked: number): string {
     const waiting = review + blocked;
@@ -374,3 +399,50 @@ export const TREE_COMMAND_TITLES = {
     openSpec: 'Open Spec',
     openPlan: 'Open Plan',
 } as const;
+
+export function folderStatusSentence(folder: string, status: string | undefined): string {
+    return status === undefined ? `In the ${folder} folder, but it has no status` : `In the ${folder} folder, but its status is "${status}"`;
+}
+
+export const ACTIVE_WITHOUT_PLAN_SENTENCE = 'Active, but it has no plan';
+export const DONE_WITHOUT_ARCHIVE_SENTENCE = 'Done, but its plan was never archived';
+export const SPEC_UNREADABLE_SENTENCE = 'Studio cannot read this spec';
+export const PLAN_UNREADABLE_SENTENCE = 'Studio cannot read its plan';
+
+export function returnNoteUnreadableSentence(fileName: string): string {
+    return `Studio cannot read its return note ${fileName}`;
+}
+
+export const FOLDER_UNLISTABLE_SENTENCE = 'Studio cannot list this folder';
+
+export function sameSpecTwiceSentence(paths: string): string {
+    return `The same spec also exists in ${paths}`;
+}
+
+export function numberTwiceSentence(number: string, paths: string): string {
+    return `Number ${number} is also used by ${paths}`;
+}
+
+export function planLinkDanglesSentence(target: string): string {
+    return `Its plan ${target} does not exist`;
+}
+
+export function specLinkDanglesSentence(target: string): string {
+    return `Its plan links a spec that does not exist: ${target}`;
+}
+
+export function unknownSpecStatusSentence(value: string): string {
+    return `Its status "${value}" is not a FeatherSpec status`;
+}
+
+export function unknownPlanStatusSentence(value: string): string {
+    return `Its plan's status "${value}" is not a FeatherSpec status`;
+}
+
+export function unknownNoteStatusSentence(value: string): string {
+    return `Its return note's status "${value}" is not DONE or BLOCKED`;
+}
+
+export function orphanNoteSentence(number: string): string {
+    return `This return note belongs to no spec (number ${number})`;
+}

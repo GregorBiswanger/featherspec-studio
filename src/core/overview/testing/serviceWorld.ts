@@ -4,6 +4,8 @@ import type { HistoryView } from '../../lifecycle/statusHistory';
 import type { Disposable } from '../../ports/host';
 import type { ShellModel } from '../../ports/shell';
 import { createFakeSource, type FakeSource } from '../../board/testing/boardWorld';
+import { createFakeOffer, type FakeOffer } from '../../assistant/testing/fakeOffer';
+import { createFakeTips, type FakeTips } from '../../settings/testing/fakeTips';
 import { createOverviewService, type OverviewService } from '../overviewService';
 import type { OverviewView } from '../../../shared/protocol/overview';
 
@@ -70,21 +72,25 @@ export interface ServiceWorld {
     source: FakeSource;
     history: FakeHistory;
     discovery: FakeDiscovery;
+    tips: FakeTips;
+    assistant: FakeOffer;
     service: OverviewService;
     views: OverviewView[];
     listen(): Disposable;
 }
 
-export function createServiceWorld(model: ShellModel | undefined): ServiceWorld {
+export function createServiceWorld(model: ShellModel | undefined, tips: FakeTips = createFakeTips(), assistant: FakeOffer = createFakeOffer()): ServiceWorld {
     const source = createFakeSource(model);
     const history = createHistory();
     const discovery = createDiscovery();
-    const service = createOverviewService({ source, discovery: discovery.port, history: history.port });
+    const service = createOverviewService({ source, discovery: discovery.port, history: history.port, tips, assistant });
     const views: OverviewView[] = [];
     return {
         source,
         history,
         discovery,
+        tips,
+        assistant,
         service,
         views,
         listen: () =>

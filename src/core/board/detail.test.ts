@@ -5,7 +5,11 @@ import { noteText, planText, readFixture, readMemory, row, specText } from '../l
 import { buildCards } from './cards';
 import { nextStepNumberUsedText } from '../../shared/protocol/nextStepTexts';
 import { buildDetail } from './detail';
+import { parseStepTipSettings } from '../settings/stepTipSettings';
+import { stepTips } from './stepTips';
 import { nextStep, openStep } from './nextStep';
+import { planOf } from '../planMap/planMap';
+import { fixtureModel, GEN_PLAN, GEN_SPEC, generatedFiles, modelWithUnreadable, PARALLEL_SPEC } from '../planMap/testing/plans';
 
 const NO_HISTORY: HistoryView = { available: true, label: 'Only changes Studio saw while it was running.', entries: [] };
 
@@ -100,23 +104,28 @@ describe('spec detail', () => {
         expect([...view.problems, ...view.notes].filter((line) => line.reason.includes('Successor'))).toEqual([]);
     });
 
-    it('AC-006: a Problem carries its reason and opens at its line in its file; the format notes stay out of the Problems', async () => {
+    it('AC-006, 0022 AC-013: a Problem carries its sentence and its reason and opens at its line in its file; the format notes stay out of the Problems', async () => {
         const project = await readFixture('fs-broken');
         const model = { project, lifecycle: deriveLifecycle(project) };
         const broken = model.lifecycle.entries.find((entry) => entry.diagnostics.length > 0)!;
         const view = spec(buildDetail({ selection: { stem: broken.stem, path: broken.key }, model, history: NO_HISTORY }));
         expect(view.problems.length).toBe(broken.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').length);
         expect(view.problems.length).toBeGreaterThan(0);
-        view.problems.forEach((line) => expect(line.reason.length).toBeGreaterThan(0));
+        view.problems.forEach((line) => {
+            expect(line.reason.length).toBeGreaterThan(0);
+            expect(line.sentence?.length).toBeGreaterThan(0);
+            expect(line.sentence).not.toBe(line.reason);
+        });
         expect(view.notes).toEqual([]);
     });
 
-    it('AC-006: the detail of 0003 of fs-broken shows the contradiction reason as its Problem', async () => {
+    it('AC-006, 0022 AC-013: the detail of 0003 of fs-broken shows the contradiction sentence as its Problem, the reason beside it', async () => {
         const project = await readFixture('fs-broken');
         const model = { project, lifecycle: deriveLifecycle(project) };
         const view = spec(buildDetail({ selection: { stem: '0003-also-valid' }, model, history: NO_HISTORY }));
         expect(view.problems).toHaveLength(1);
         expect(view.problems[0]?.reason.length).toBeGreaterThan(0);
+        expect(view.problems[0]?.sentence).toBe('In the done folder, but its status is "Draft"');
         expect(view.problems[0]?.open).toEqual({ key: '.specs/done/0003-also-valid.md', line: 1 });
     });
 
@@ -126,7 +135,10 @@ describe('spec detail', () => {
         const view = spec(buildDetail({ selection: { stem: '0006-outbox-batch-size' }, model, history: NO_HISTORY }));
         expect(view.problems).toEqual([]);
         expect(view.notes).toHaveLength(2);
-        view.notes.forEach((line) => expect(line.reason.length).toBeGreaterThan(0));
+        view.notes.forEach((line) => {
+            expect(line.reason.length).toBeGreaterThan(0);
+            expect(line).not.toHaveProperty('sentence');
+        });
     });
 
     it('0015 AC-012: the status history of the stem under its label, no run list', async () => {
@@ -171,8 +183,9 @@ describe('0015 AC-003, AC-004, AC-008: the next step in the detail view', () => 
     it('AC-003: the view carries the rule and lines of nextStep for the selected spec', async () => {
         const model = await modelOf(FILES);
         const view = spec(buildDetail({ selection: { stem: '0001-a' }, model, history: NO_HISTORY }));
-        expect(view.nextStep).toEqual(nextStep(model, '.specs/active/0001-a.md'));
-        expect(view.nextStep).toEqual({ rule: 'NS-6', lines: [{ text: '/sdd-plan .specs/active/0001-a.md' }] });
+        const next = nextStep(model, '.specs/active/0001-a.md') as { rule: string; lines: unknown[] };
+        expect(view.nextStep).toEqual({ rule: next.rule, lines: next.lines });
+        expect(view.nextStep).toEqual({ rule: 'NS-6', lines: [{ text: '/sdd-plan .specs/active/0001-a.md', intent: 'Integrate the returned steps' }] });
     });
 
     it('AC-003: a rule without a line gives its text', async () => {
@@ -413,3 +426,163 @@ describe('0019: the situation picture', () => {
         expect(view.problems[0]?.open).toEqual({ key: '.specs/done/0003-also-valid.md', line: 1 });
     });
 });
+
+describe('0021 AC-009, AC-010: the tips of the detail', () => {
+    const SHOW = parseStepTipSettings(true, {});
+    const HIDE = parseStepTipSettings(false, { strong: 'X' });
+    const BACKLOG_FILES = { '.specs/backlog/0002-b.md': specText() };
+
+    async function nextOf(files: Record<string, string>, stem: string, tips?: ReturnType<typeof parseStepTipSettings>) {
+        const model = await modelOf(files);
+        const view = spec(buildDetail({ selection: { stem }, model, history: NO_HISTORY, ...(tips === undefined ? {} : { tips }) }));
+        return view.nextStep as { rule: string; lines?: Array<{ text: string; intent: string }>; tips?: { coach: string; about: string[] }; text?: string };
+    }
+
+    it('a step with lines carries the coach line and the four paragraphs of its case, from the one table', async () => {
+        const next = await nextOf(BACKLOG_FILES, '0002-b', SHOW);
+        expect(next.rule).toBe('NS-9');
+        expect(next.tips).toEqual(stepTips('NS-9', SHOW));
+        expect(next.tips?.coach).toBe('new chat · strong model');
+        expect(next.tips?.about).toHaveLength(4);
+    });
+
+    it('a hint reaches the coach line of the case', async () => {
+        const next = await nextOf(BACKLOG_FILES, '0002-b', parseStepTipSettings(true, { strong: 'X' }));
+        expect(next.tips?.coach).toBe('new chat · strong model (X)');
+    });
+
+    it('without a tips input, and with show false, the view has no tips key and the lines are the same', async () => {
+        const without = await nextOf(BACKLOG_FILES, '0002-b');
+        const hidden = await nextOf(BACKLOG_FILES, '0002-b', HIDE);
+        const shown = await nextOf(BACKLOG_FILES, '0002-b', SHOW);
+        expect('tips' in without).toBe(false);
+        expect('tips' in hidden).toBe(false);
+        expect(hidden).toEqual(without);
+        expect(shown.lines).toEqual(without.lines);
+        expect(shown.rule).toBe(without.rule);
+    });
+
+    it('NS-1, NS-3 and NS-11 carry no tips even while they are on', async () => {
+        const twins = await nextOf({ '.specs/backlog/0002-b.md': specText(), '.specs/backlog/0002-c.md': specText() }, '0002-b', SHOW);
+        expect(twins.rule).toBe('NS-11');
+        expect('tips' in twins).toBe(false);
+        const done = await nextOf({ '.specs/done/0003-d.md': specText({ status: 'Implemented', plan: '[0003-d.2026-11-01.plan.md](../plan-archive/0003-d.2026-11-01.plan.md)' }) }, '0003-d', SHOW);
+        expect(done.rule).toBe('NS-3');
+        expect('tips' in done).toBe(false);
+    });
+
+    it('NS-6 coach and paragraphs come from the case of the open step', async () => {
+        const next = await nextOf(FILES, '0001-a', SHOW);
+        expect(next.rule).toBe('NS-6');
+        expect(next.tips).toEqual(stepTips('NS-6-returned', SHOW));
+    });
+});
+
+describe('0023 AC-003: the detail carries the plan view of a spec that has a readable sibling plan', () => {
+    const detail = async (model: Awaited<ReturnType<typeof modelOf>>, key: string) => {
+        const entry = model.lifecycle.entries.find((candidate) => candidate.key === key)!;
+        return spec(buildDetail({ selection: { stem: entry.stem }, model, history: NO_HISTORY }));
+    };
+
+    it('an Active spec with a Blocked plan, a Review spec and a Ready spec each carry a plan view', async () => {
+        const blocked = await fixtureModel('fs110-parallel-synthetic');
+        const view = (await detail(blocked, PARALLEL_SPEC)).plan;
+        expect(view).toMatchObject({ kind: 'plan', staged: true, plan: { key: '.specs/active/0001-parallel-demo.plan.md', line: 1 } });
+        const review = await fixtureModel('studio-0015');
+        const reviewKey = review.lifecycle.entries[0]!.key;
+        expect(review.lifecycle.entries[0]!.state).toBe('Review');
+        expect((await detail(review, reviewKey)).plan).toMatchObject({ kind: 'plan', staged: true });
+        const ready = await fixtureModel('fs110-ready-synthetic');
+        expect((await detail(ready, '.specs/backlog/0001-ready-feature.md')).plan).toMatchObject({ kind: 'plan' });
+    });
+
+    it('the plan view of the detail is the one planOf gives', async () => {
+        const model = await fixtureModel('fs110-parallel-synthetic');
+        const entry = model.lifecycle.entries[0]!;
+        expect((await detail(model, entry.key)).plan).toEqual(planOf(model, entry, model.project.specs[0]!));
+    });
+
+    it('a Done spec, a spec without a plan and a reactivated spec with an archive link carry none', async () => {
+        const done = await fixtureModel('fs110-ready-synthetic');
+        expect('plan' in (await detail(done, '.specs/done/0002-old-feature.md'))).toBe(false);
+        const none = await modelOf({ '.specs/backlog/0004-a.md': specText() });
+        expect('plan' in (await detail(none, '.specs/backlog/0004-a.md'))).toBe(false);
+        const archive = '[0007-x.2026-11-01.plan.md](../plan-archive/0007-x.2026-11-01.plan.md)';
+        const reactivated = await modelOf({ '.specs/active/0007-x.md': specText({ status: 'In Progress', plan: archive }), '.specs/plan-archive/0007-x.2026-11-01.plan.md': planText({ status: 'Done' }) });
+        expect('plan' in (await detail(reactivated, '.specs/active/0007-x.md'))).toBe(false);
+    });
+
+    it('an unreadable plan gives the unreadable view', async () => {
+        const model = await modelWithUnreadable(generatedFiles(), [GEN_PLAN]);
+        expect((await detail(model, GEN_SPEC)).plan).toEqual({ kind: 'unreadable' });
+    });
+});
+
+describe('0024 AC-003, AC-004: the send view of the next step', () => {
+    const SHOW = parseStepTipSettings(true, {});
+    const OFFER_A = { assistant: 'copilot' } as const;
+    const OFFER_B = { assistant: 'claudeCode' } as const;
+
+    async function nextOf(model: Awaited<ReturnType<typeof modelOf>>, key: string, extra: { offer?: typeof OFFER_A | typeof OFFER_B; tips?: typeof SHOW } = {}) {
+        const entry = model.lifecycle.entries.find((candidate) => candidate.key === key)!;
+        const view = spec(buildDetail({ selection: { stem: entry.stem }, model, history: NO_HISTORY, ...extra }));
+        return view.nextStep as { rule: string; lines?: unknown[]; send?: unknown; tips?: { about: string[] }; text?: string };
+    }
+
+    it('NS-9 (a backlog spec): Copilot sends to a new chat, Claude Code to a new chat', async () => {
+        const model = await modelOf({ '.specs/backlog/0002-b.md': specText() });
+        const key = '.specs/backlog/0002-b.md';
+        expect((await nextOf(model, key, { offer: OFFER_A })).send).toEqual({ assistant: 'copilot', target: 'new', targets: ['new', 'current'] });
+        expect((await nextOf(model, key, { offer: OFFER_B })).send).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
+    });
+
+    it('NS-5 (a Review spec) is a new chat for Copilot; NS-7 (a Ready spec) and NS-6 are the current chat', async () => {
+        const review = await fixtureModel('studio-0015');
+        const reviewNext = await nextOf(review, review.lifecycle.entries[0]!.key, { offer: OFFER_A });
+        expect(reviewNext.rule).toBe('NS-5');
+        expect(reviewNext.send).toEqual({ assistant: 'copilot', target: 'new', targets: ['new', 'current'] });
+        const ready = await fixtureModel('fs110-ready-synthetic');
+        const readyNext = await nextOf(ready, '.specs/backlog/0001-ready-feature.md', { offer: OFFER_A });
+        expect(readyNext.rule).toBe('NS-7');
+        expect(readyNext.send).toEqual({ assistant: 'copilot', target: 'current', targets: ['new', 'current'] });
+        const active = await modelOf(FILES);
+        const activeNext = await nextOf(active, '.specs/active/0001-a.md', { offer: OFFER_A });
+        expect(activeNext.rule).toBe('NS-6');
+        expect(activeNext.send).toEqual({ assistant: 'copilot', target: 'current', targets: ['new', 'current'] });
+        expect((await nextOf(active, '.specs/active/0001-a.md', { offer: OFFER_B })).send).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
+    });
+
+    it('no offer: no send key and the view equals the view without the input; with tips off the send view stays', async () => {
+        const model = await modelOf({ '.specs/backlog/0002-b.md': specText() });
+        const key = '.specs/backlog/0002-b.md';
+        const plain = await nextOf(model, key);
+        expect('send' in plain).toBe(false);
+        const withTipsOff = await nextOf(model, key, { offer: OFFER_A, tips: parseStepTipSettings(false, {}) });
+        expect(withTipsOff.send).toBeDefined();
+        expect('tips' in withTipsOff).toBe(false);
+        expect({ ...withTipsOff, send: undefined }).toEqual({ ...plain, send: undefined });
+    });
+
+    it('a text-only next step (NS-1, NS-3, NS-11) carries no send view even with an offer', async () => {
+        const twins = await modelOf({ '.specs/backlog/0002-b.md': specText(), '.specs/backlog/0002-c.md': specText() });
+        const next = await nextOf(twins, '.specs/backlog/0002-b.md', { offer: OFFER_A });
+        expect(next.rule).toBe('NS-11');
+        expect('send' in next).toBe(false);
+        const done = await modelOf({ '.specs/done/0003-d.md': specText({ status: 'Implemented', plan: '[0003-d.2026-11-01.plan.md](../plan-archive/0003-d.2026-11-01.plan.md)' }) });
+        const doneNext = await nextOf(done, '.specs/done/0003-d.md', { offer: OFFER_B });
+        expect(doneNext.rule).toBe('NS-3');
+        expect('send' in doneNext).toBe(false);
+    });
+
+    it('the toggletip closing pair follows the offer: Send sentence third, settings sentence fourth; without it 0021\'s third', async () => {
+        const model = await modelOf({ '.specs/backlog/0002-b.md': specText() });
+        const key = '.specs/backlog/0002-b.md';
+        const offered = await nextOf(model, key, { offer: OFFER_B, tips: SHOW });
+        expect(offered.tips?.about[2]).toBe('Send to Claude Code puts the prompt into its chat and sends nothing: choose the model there, check the prompt, then send it.');
+        expect(offered.tips?.about[3]).toBe("Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt.");
+        const plain = await nextOf(model, key, { tips: SHOW });
+        expect(plain.tips?.about[2]).toBe('Choose the chat and the model in your AI assistant before you paste.');
+        expect(plain.tips?.about[3]).toBe(offered.tips?.about[3]);
+    });
+});
+

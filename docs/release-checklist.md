@@ -22,7 +22,7 @@ and the expected result. A clear miss reopens the named spec.
    built extension; open a FeatherSpec project there (e.g. `C:\projects\test\tip-splitter`).
 2. **VSIX**: `npx @vscode/vsce package` → `featherspec-studio-0.1.0.vsix`; install with
    *Extensions: Install from VSIX…* or `code --install-extension featherspec-studio-0.1.0.vsix`.
-3. **Next step**: select a spec in the Specs view, click **Copy** on its next step and paste it into your assistant's chat.
+3. **Next step**: select a spec in the Specs view, read the intent of its next step, click **Copy prompt** and paste the prompt into your assistant's chat.
 
 ## Discovery (0001)
 
@@ -44,8 +44,9 @@ and the expected result. A clear miss reopens the named spec.
 
 ## Overview (0006, 0018)
 
-- [ ] **AC-021 / §9**: in High Contrast, Light and Dark every state and every reason under Problems reads as a
-  word (icon and colour only in addition); Now, Up next and Problems above the figures line, Activity collapsed below.
+- [ ] **AC-021 / §9**: in High Contrast, Light and Dark every state is told apart by its icon shape without colour
+  (its name is the icon's tooltip in the narrower rows) and every Problem under Problems reads as a sentence; Now,
+  Up next and Problems above the figures line, Activity collapsed below.
 - [ ] **AC-022**: Tab, Enter and Space only → every figure, row, the "+ n more" link, the Problems and
   Activity headings and every activity entry shows a focus outline; Enter and Space each open the target area.
 - [ ] **OP-12 (AC-016, AC-024)**: on a real project with many specs the content shows within about 1 s of
@@ -88,15 +89,15 @@ and the expected result. A clear miss reopens the named spec.
 
 ## Focus on visibility (0015)
 
-- [ ] **AC-030 / M-1**: in a real VS Code window on `tip-splitter`: the Specs view lists the specs in its groups and the panel shows Overview and Board only; a spec's detail shows **Next step**, **Copy** puts the line on the clipboard and pasting it into the assistant's chat works; a Ready card's **Copy** puts the NS-7 line on the clipboard (0017); no command, setting or text offers to start an agent or a run.
+- [ ] **AC-030 / M-1**: in a real VS Code window on `tip-splitter`: the Specs view lists the specs in its groups and the panel shows Overview, Board and Plan map; a spec's detail shows **Next step**, **Copy prompt** puts the prompt on the clipboard and pasting it into the assistant's chat works; a Ready card's **Copy prompt** puts the NS-7 line on the clipboard (0017); no command, setting or text offers to start an agent or a run.
 
 ## Honest signals (0016)
 
-- [ ] **AC-025 / M-1**: preview harness screenshots in Dark, Light and High Contrast show the primary **Copy** and its label change without shift, the need line on a Backlog card, the collapsed format-note toggle, the problem badge and the S2 sentence in the view and the panel; on `tip-splitter` no problem marker shows without a real problem.
+- [ ] **AC-025 / M-1**: preview harness screenshots in Dark, Light and High Contrast show the primary **Copy prompt** and its label change without shift, the need line on a Backlog card, the collapsed format-note toggle, the problem badge and the S2 sentence in the view and the panel; on `tip-splitter` no problem marker shows without a real problem.
 
 ## The next step everywhere (0017)
 
-- [ ] **AC-026 / M-1**: on `tip-splitter`, Hands-On walkthrough with your assistant, task "start the Ready spec": the Start line copied from the card works with no failed attempt; on an Active spec `/sdd-plan`, then `continue` in the same chat runs one step; the status bar names the spec you work on and its click copies (`Copied` for 2 s); Dark, Light and High Contrast show the card line and the Overview row readable; the card offers no way to move a spec.
+- [ ] **AC-026 / M-1**: on `tip-splitter`, Hands-On walkthrough with your assistant, task "start the Ready spec": the Start line copied from the card works with no failed attempt; on an Active spec the two prompts of the detail do what 0021 AC-025 checks; the status bar names the spec you work on and its click copies (`Copied` for 2 s); Dark, Light and High Contrast show the card line and the Overview row readable; the card offers no way to move a spec.
 
 ## Overview and a compact Board (0018)
 
@@ -113,9 +114,10 @@ and the expected result. A clear miss reopens the named spec.
 
 - [ ] **AC-022** *(Gregor or his delegate)*: preview-harness screenshots in Dark, Light and High Contrast of
   Board and Overview with the side panel of the `studio-0015` fixture at 1400x900 and 800x900. The side
-  panel is at most 900 px tall with Format notes and Status history closed; at 800 px the drawer covers the
-  right part of the board and a card focused under it by Tab or arrow scrolls clear; in the Overview every
-  row with its next step and Copy and the figures line stay visible left of the drawer; nothing is cut off.
+  panel is at most 900 px tall with Format notes and Status history closed; the drawer of this item is
+  superseded by 0022: below 900 px the detail shows alone with its back button, and the area (Board or
+  Overview) shows alone without a selection; in the Overview every row with its next step and Copy and the
+  figures line stay visible beside the side panel; nothing is cut off.
 - [ ] In a real VS Code window: clicking an ID or a file name in the side panel opens the file beside the
   Studio, at the line of the ID, and the Studio stays visible; a card, an Overview row and an activity entry
   select in place without changing the area; Escape and the close button close the panel and return focus to
@@ -125,12 +127,83 @@ and the expected result. A clear miss reopens the named spec.
 
 - [ ] **AC-022** *(Gregor or his delegate)*: on `tip-splitter` and on this repository, in Dark, Light and High
   Contrast at a sidebar width of 400 px, every state icon is told apart without colour, the description of every
-  In progress and Up next row is visible and the badge is readable. In the Hands-On, copy a next step from the
+  In progress and Ready row is visible and the badge is readable. In the Hands-On, copy a next step from the
   tree (inline Copy), paste it into the assistant's chat and see it work; select a row and see the detail open in the
   panel without taking focus; Open Spec and Open Plan open the file in the active group, beside the Studio when the
   Studio is the active tab.
 - [ ] **Keyboard and screen reader**: `FeatherSpec Studio: Focus on Specs View` reaches the view; arrow keys walk
   the rows, Enter selects, Shift+F10 opens a row's context menu with Open Spec, Open Plan and Copy Next Step; the screen reader reads a row as one sentence with the state and the next step.
+
+## Next step with intent and guidance (0021)
+
+- [ ] **AC-022** *(preview harness, orchestrator, then Gregor in a real window; guideline 12)*: the detail and the Overview with the first Now row in
+  Dark, Light and High Contrast at 1600 px and 1000 px window width, with the side panel open at its default and at
+  the minimum width: no intent, prompt or coach line is cut; an open **About this step** stays inside its panel and
+  covers no Copy prompt of its step; the `?` shows a visible focus outline. Screenshots in the plan.
+- [ ] **AC-023** *(Gregor)*: both settings appear under "FeatherSpec Studio" in the Settings UI; **Show Step Tips**
+  toggles the coach line and the `?` in the open panel at once; **Model Hints** offers `strong` and `fast` as text
+  fields and the coach line shows the name you entered.
+- [ ] **AC-024** *(Gregor on `tip-splitter`; the draft before `/sdd-plan` was OP-002)*: for each state present
+  (Backlog without and with a plan, Ready, Active with an open step, Review, Blocked where present), say without asking
+  what the copied prompt will do and where to run it; the plan records your answers.
+- [ ] **AC-025** *(Gregor, with each of the two assistants of the spec; PD-072)*: on `tip-splitter`, the first prompt of an
+  Active spec with an open step (`Implement <ID> of <plan>`) copied from the detail into a fresh chat builds exactly
+  that plan step and stops (a test-review stop of the working agreement is allowed); after an interruption (code done,
+  tick missing), the second prompt (`/sdd-plan <spec>`) in a fresh chat reports and brings the tick level.
+
+## Layout and signal polish (0022)
+
+- [ ] **AC-019** *(preview harness, Gregor or his delegate; guideline 12)*: in Dark, Light and High Contrast, height
+  800 px, at window widths 1600 px and 1000 px, a Studio panel of 920 px, at 800 px and at VS Code zoom level 2, with a
+  spec selected, on this repository and `fs170-brownfield-mixed`, Overview and Board show: no title word split, every Copy fully visible and
+  reachable by Tab, at most two filled buttons, paths broken only after a separator, whole Problem sentences, the warning
+  on the collapsed Done strip, and each state told at a glance (every icon shape distinct, the Problem warning included, and each state icon in its colour). Screenshots and verdict in the plan.
+- [ ] **AC-020** *(real VS Code)*: at a sidebar width of 300 px in the three themes, on this repository,
+  `fs170-brownfield-mixed` and `tip-splitter`, every tree row shows its command uncut, the `Done` group shows its
+  Problem hint and the state icons differ by shape.
+- [ ] **AC-021 (build part)** *(Gregor on `tip-splitter`)*: without asking, say which Copy you press first, where a
+  Done spec's Problem shows and what `Ready` and `Up next` hold; the plan records the answers.
+- [ ] **AC-025** *(preview harness, then Gregor)*: at 1600 px with 0015 selected the area takes about 60 % of the
+  frame and the side panel about 40 % by default, the area's scrollbar sits at the divider and the side panel's scrollbar at the
+  right edge, so no two vertical scrollbars stand side by side; back returns to the row or card that opened the detail; a width set by the divider returns after closing and selecting again and after a window reload; a double-click restores the
+  default; at 800 px and at zoom level 2 the area shows alone, the detail alone with its back button and no divider.
+
+## Plan map (0023)
+
+- [ ] **AC-018** *(preview harness by the orchestrator, then Gregor; guideline 12)*: in Dark, Light and High Contrast at
+  1600 px and 1000 px window width on `fs110-parallel-synthetic` and `studio-0015`, at 1600 px with the side panel at its
+  default width: the Plan section and the Plan map cut no ID, prompt or start line; `‖` cards sit side by side and wrap,
+  uncut, once the divider leaves the map less than two cards' width; at 1000 px (Studio panel below 900 px) the map shows
+  alone; every Copy is fully visible and reachable by Tab. Screenshots and verdict in the plan.
+- [ ] **AC-019 (build part)** *(Gregor, on a project with a `‖` stage)*: without the plan file, say which stages could run
+  in parallel, why or why not, and which prompt you would copy; confirm or change the three ways, the two places and the
+  texts; the plan records the answers.
+- [ ] **AC-020** *(Gregor, with the assistants he uses)*: on a copy of `tip-splitter` re-cut with a `‖` stage, each stage
+  prompt copied into a fresh chat does what its effect says and keeps the test-review stop; a start line in a second chat
+  builds exactly its step and writes its return note; `/sdd-plan` then integrates it; the next-step line of a step of that
+  stage builds only that step. A prompt that fails is replaced by the wording that worked.
+
+## Send to the assistant (0024)
+
+- [ ] **AC-016** *(preview harness by the orchestrator, then Gregor; guideline 12)*: the detail and the first Now row with
+  GitHub Copilot and with Claude Code chosen, menu closed and open, in Dark, Light and High Contrast at 1600 px and
+  1000 px window width, the side panel at its default and at its minimum width, and a Studio panel of 800 px: no text of
+  the split button is cut, the open menu shows fully inside the panel without scrolling, both parts show a visible focus
+  outline, each view holds at most two primary controls. Screenshots in the plan.
+- [ ] **AC-017** *(Gregor, per assistant; record the versions)*: on `tip-splitter`, from the detail of an Active spec
+  (NS-6) and of a Review spec (NS-5), the main part and each Send item open the named chat with the prompt in the input
+  and nothing sent; after you send it yourself it runs as the FeatherSpec command or plan step it names; with GitHub Copilot
+  record whether an unsent draft in the current chat is kept or replaced (OP-004); if it is replaced, decide whether the
+  current chat stays the default target of NS-6 with GitHub Copilot; the Studio does not change it until you decide.
+  - [ ] GitHub Copilot: VS Code 1.147.0, GitHub Copilot Chat 0.75.0 (`GitHub.copilot-chat`). Re-run on a newer version before the release.
+  - [ ] Claude Code: VS Code 1.147.0, Claude Code 2.1.327 (`anthropic.claude-code`). Re-run on a newer version before the release.
+  - [ ] Codex: Copy prompt only, no Send; re-check when a Codex version accepts a prompt.
+- [ ] **AC-018** *(Gregor)*: Settings UI shows "Assistant" under "FeatherSpec Studio" with its three labels and is reached
+  by the gear of the Specs view; with the chosen assistant's extension disabled, or only Codex installed, every surface
+  shows Copy prompt only and nothing names Codex; a workspace value overrides the user value in a trusted workspace and is
+  ignored in Restricted Mode.
+- [ ] **AC-019** *(Gregor)*: say without asking what Send to <Name> does (opens, fills, sends nothing) and which chat it
+  uses; confirm or change the texts. The draft part passed (PD-076); the build part is AC-017.
 
 ## Go
 

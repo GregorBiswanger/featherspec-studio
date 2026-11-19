@@ -5,7 +5,6 @@ import { DISMISS_LABEL, noticeText } from '../../../shared/protocol/texts';
 import { useShell } from '../../shell';
 import { Activity } from './Activity';
 import { specReference } from './requests';
-import { useDrawer } from '../../detail/drawer';
 import { useOpenSpec } from '../../detail/useOpenSpec';
 import { Figures } from './Figures';
 import { Problems } from './Problems';
@@ -22,7 +21,6 @@ export function Overview() {
     const shell = useShell();
     const actions = useOverviewActions();
     const openSpec = useOpenSpec();
-    const drawer = useDrawer();
     const [notice, setNotice] = useState<string | undefined>(undefined);
     if (view === undefined) {
         return <div data-overview-empty className="overview" />;
@@ -40,7 +38,7 @@ export function Overview() {
         openSpec(specReference(entry.spec), element);
     };
     return (
-        <div data-overview className="overview" {...(drawer && shell.view?.selection !== undefined ? { 'data-drawer': '' } : {})}>
+        <div data-overview className="overview">
             {notice === undefined ? null : (
                 <div data-ov-notice role="status" className="notice">
                     <span>{noticeText(notice)}</span>
@@ -52,7 +50,7 @@ export function Overview() {
             {view.figures.kind === 'empty' ? (
                 <EmptyState icon="Backlog" data-zero-specs>
                     {NO_SPECS_START_TEXT}
-                    <CopyButton line={SDD_SPECIFY_LINE} copyResult={copyResult} onCopy={copyText} />
+                    <CopyButton look="primary" line={SDD_SPECIFY_LINE} copyResult={copyResult} onCopy={copyText} />
                 </EmptyState>
             ) : (
                 <>

@@ -590,7 +590,7 @@ Not at the Baseline, homed for the record: `areas.timing.test.tsx` describe "002
 | AC-002 | T-001, T-005 | src/core/shell/specTree.ts:rowId, groupsOf | specTree.test.ts "AC-002: expand state and IDs" | verified |
 | AC-003 | T-001, T-009 | src/core/shell/specTree.ts:compareRows | specTree.test.ts "AC-003: the order" (equal numbers by path, entries in model order and reversed) | verified |
 | AC-004 | T-001 | src/core/shell/specTree.ts:rowOf | specTree.test.ts "AC-004: the row texts" | verified |
-| AC-005 | T-001 | src/core/shell/specTree.ts:STATE_ICONS | specTree.test.ts "AC-005: icons and colours" | verified |
+| AC-005 | T-001 | src/core/shell/specTree.ts:STATE_ICONS | specTree.test.ts "AC-005: icons and colours" | verified. Note (0022): `STATE_ICONS` was removed by 0022 T-004; icon and colour now come from `shared/protocol/stateLook.ts` (`STATE_LOOK`) |
 | AC-006 | T-002, T-005 | src/core/shell/specTree.ts:tooltipOf | specTree.test.ts "AC-006: the tooltip" | verified |
 | AC-007 | T-004 | src/core/shell/treeActions.ts:copy; src/core/copyNextStep/copyNextStep.ts:copy | treeActions.test.ts "AC-007"; copyNextStep.test.ts "AC-007" | verified |
 | AC-008 | T-004 | src/core/shell/treeActions.ts:open; src/adapters/vscode/editor.ts; src/core/board/openFile.ts | treeActions.test.ts "AC-008"; editor.test.ts "AC-008"; openFile.test.ts "AC-008" | verified |

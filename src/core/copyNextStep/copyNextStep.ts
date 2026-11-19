@@ -1,4 +1,4 @@
-import { COPY_FAILED_TEXT, NEXT_STEP_COPY_LABEL } from '../../shared/protocol/nextStepTexts';
+import { COPY_FAILED_TEXT, COPY_PROMPT_LABEL, stepShortForm } from '../../shared/protocol/nextStepTexts';
 import { copyLine } from '../board/copyLine';
 import type { StepPickItem, StepUiPort } from '../ports/copyNextStep';
 import type { ClipboardPort } from '../ports/board';
@@ -45,13 +45,13 @@ export function createCopyNextStep(deps: CopyNextStepDeps): CopyNextStep {
                 return;
             case 'none': {
                 if (situation.steps.length === 0) {
-                    const chosen = await deps.ui.inform(NO_STEP_MESSAGE, NEXT_STEP_COPY_LABEL);
-                    if (chosen === NEXT_STEP_COPY_LABEL) {
+                    const chosen = await deps.ui.inform(NO_STEP_MESSAGE, COPY_PROMPT_LABEL);
+                    if (chosen === COPY_PROMPT_LABEL) {
                         await copy(NO_STEP_COPY_LINE);
                     }
                     return;
                 }
-                const items: StepPickItem[] = situation.steps.map((spec) => ({ key: spec.key, label: spec.label, description: `${spec.state} · ${spec.step.short}` }));
+                const items: StepPickItem[] = situation.steps.map((spec) => ({ key: spec.key, label: spec.label, description: `${spec.state} · ${stepShortForm(spec.step)}` }));
                 const picked = await deps.ui.pick(items, PICK_PLACEHOLDER);
                 const spec = picked === undefined ? undefined : situation.steps.find((candidate) => candidate.key === picked.key);
                 if (spec !== undefined) {

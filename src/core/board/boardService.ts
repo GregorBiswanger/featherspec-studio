@@ -5,9 +5,14 @@ import type { HistoryView } from '../lifecycle/statusHistory';
 import type { SelectionSource } from '../ports/board';
 import type { Disposable } from '../ports/host';
 import type { ShellModel, ShellModelSource, UiMemoryPort } from '../ports/shell';
+import type { Offer } from '../assistant/offer';
+import type { SettingsSource } from '../settings/settingsSource';
+import type { StepTipSettings } from '../settings/stepTipSettings';
 import { buildDetail } from './detail';
 import { createBoardUiState } from './boardUiState';
 import { buildBanner, buildCards } from './cards';
+import { buildPlanSpecs } from '../planMap/planSpecs';
+import type { PlanSpecView } from '../../shared/protocol/planMap';
 import { arrangeBoard } from './filters';
 import { HISTORY_REASON_UNREADABLE, historyUnavailableText } from '../lifecycle/historyTexts';
 
@@ -16,6 +21,8 @@ export interface BoardServiceDeps {
     selection: SelectionSource;
     history: { read(): Promise<HistoryView>; onDidChange(listener: () => void): Disposable };
     memory: UiMemoryPort;
+    tips: SettingsSource<StepTipSettings>;
+    assistant: SettingsSource<Offer | undefined>;
 }
 
 export interface BoardService {
@@ -38,6 +45,7 @@ interface Built {
     cards: CardView[];
     banner: BoardView['banner'];
     sortKeys: SortKey[];
+    planSpecs: PlanSpecView[];
 }
 
 export function createBoardService(deps: BoardServiceDeps): BoardService {
@@ -62,7 +70,7 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
             const all = buildCards(model.project, model.lifecycle);
             const datesVary = new Set(all.flatMap((card) => (card.lastChange === undefined ? [] : [card.lastChange.day]))).size >= 2;
             const cards = datesVary ? all : all.map((card) => ({ ...card, lastChange: undefined }));
-            built = { model, cards, banner: buildBanner(model.project, model.lifecycle), sortKeys: datesVary ? [...SORT_KEYS] : SORT_KEYS.filter((key) => key !== 'lastChange') };
+            built = { model, cards, banner: buildBanner(model.project, model.lifecycle), planSpecs: buildPlanSpecs(model, cards), sortKeys: datesVary ? [...SORT_KEYS] : SORT_KEYS.filter((key) => key !== 'lastChange') };
         }
         return built;
     }
@@ -78,12 +86,17 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
         const columns = arrangeBoard(current.cards, ui.filter(), ui.sort(), ui.doneExpanded());
         const done = columns.find((column) => column.state === 'Done');
         const doneHasCards = done !== undefined && !isFilterSet(ui.filter()) && done.count > 0;
-        const base = { columns, banner: current.banner, filter: ui.filter(), sort: ui.sort(), sortKeys: current.sortKeys, noSpecs: current.cards.length === 0 };
+        const base = { columns, banner: current.banner, filter: ui.filter(), sort: ui.sort(), sortKeys: current.sortKeys, noSpecs: current.cards.length === 0, planSpecs: current.planSpecs };
         return doneHasCards ? { ...base, doneToggle: ui.doneExpanded() ? 'hide' : 'show' } : base;
     }
 
+    function offerOf(): { offer?: Offer } {
+        const offer = deps.assistant.read();
+        return offer === undefined ? {} : { offer };
+    }
+
     function detail(): DetailView {
-        return buildDetail({ selection: deps.selection.selection(), model: deps.source.current(), history });
+        return buildDetail({ selection: deps.selection.selection(), model: deps.source.current(), history, tips: deps.tips.read(), ...offerOf() });
     }
 
     function emitDetail(): void {
@@ -142,7 +155,7 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
         chain = chain.then(refresh, refresh);
     }
 
-    const subscriptions = [deps.source.onDidChange(schedule), deps.selection.onDidChange(schedule), deps.history.onDidChange(schedule)];
+    const subscriptions = [deps.source.onDidChange(schedule), deps.selection.onDidChange(schedule), deps.history.onDidChange(schedule), deps.tips.onDidChange(schedule), deps.assistant.onDidChange(schedule)];
     ui.projectChanged(deps.source.current()?.project.root);
     schedule();
 

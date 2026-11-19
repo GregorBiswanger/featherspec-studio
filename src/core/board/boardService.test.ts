@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import * as os from 'os';
 import * as path from 'path';
 import { planText, specText } from '../lifecycle/testing/projects';
+import { modelWithUnreadable } from '../planMap/testing/plans';
+import { parseStepTipSettings } from '../settings/stepTipSettings';
 import type { BoardService } from './boardService';
 import { createBoardWorld, createFakeBoardMemory, modelOf, type BoardWorld } from './testing/boardWorld';
 
@@ -45,7 +47,7 @@ describe('board service: view', () => {
         const w = await world();
         const view = w.service.view()!;
         expect(JSON.stringify(view)).not.toMatch(/"run"|"providers"/);
-        expect(Object.keys(view).sort()).toEqual(['banner', 'columns', 'filter', 'noSpecs', 'sort', 'sortKeys']);
+        expect(Object.keys(view).sort()).toEqual(['banner', 'columns', 'filter', 'noSpecs', 'planSpecs', 'sort', 'sortKeys']);
     });
 });
 
@@ -313,5 +315,161 @@ describe('board service: spec detail', () => {
         view = w.service.detail();
         expect(view.kind === 'spec' && view.history.statusHistory).toBeUndefined();
         expect(view.kind === 'spec' && view.history.notAvailable).toBe('Status history not available: Another VS Code window holds the write lock for this project\'s status history.');
+    });
+});
+
+describe('0021 AC-011, AC-010: a settings change reaches the detail', () => {
+    function tipsOf(w: BoardWorld): { coach: string; about: string[] } | undefined {
+        const view = w.service.detail();
+        return view.kind === 'spec' && 'tips' in view.nextStep ? view.nextStep.tips : undefined;
+    }
+
+    it('turning the tips on adds the coach line to the open detail, turning them off removes it; the selection stays', async () => {
+        const w = await world();
+        w.selection.set({ stem: '0010-act' });
+        await w.service.whenIdle();
+        expect(tipsOf(w)).toBeUndefined();
+        const seen: string[] = [];
+        w.service.onDidChangeDetail((view) => seen.push(view.kind === 'spec' ? `${view.stem}:${tipsOf(w)?.coach ?? 'none'}` : view.kind));
+        w.tips.set(parseStepTipSettings(true, {}));
+        await w.service.whenIdle();
+        expect(tipsOf(w)?.coach).toBe('any chat · fast model');
+        w.tips.set(parseStepTipSettings(false, {}));
+        await w.service.whenIdle();
+        expect(tipsOf(w)).toBeUndefined();
+        expect(w.service.detail().kind === 'spec' && w.service.detail().kind).toBe('spec');
+        expect(seen).toHaveLength(2);
+    });
+
+    it('a hint change re-emits the detail with the hint in the coach line; an unchanged setting emits nothing', async () => {
+        const w = await world();
+        w.selection.set({ stem: '0010-act' });
+        w.tips.set(parseStepTipSettings(true, {}));
+        await w.service.whenIdle();
+        let emitted = 0;
+        w.service.onDidChangeDetail(() => (emitted += 1));
+        w.tips.set(parseStepTipSettings(true, { fast: 'Y' }));
+        await w.service.whenIdle();
+        expect(tipsOf(w)?.coach).toBe('any chat · fast model (Y)');
+        expect(emitted).toBe(1);
+        w.tips.set(parseStepTipSettings(true, { fast: 'Y' }));
+        await w.service.whenIdle();
+        expect(emitted).toBe(1);
+    });
+
+    it('the Board view is not rebuilt by a settings change', async () => {
+        const w = await world();
+        const before = JSON.stringify(w.service.view());
+        w.tips.set(parseStepTipSettings(true, { fast: 'Y' }));
+        await w.service.whenIdle();
+        expect(JSON.stringify(w.service.view())).toBe(before);
+    });
+});
+
+describe('0024 AC-010: an offer change reaches the detail', () => {
+    function sendOf(w: BoardWorld): unknown {
+        const view = w.service.detail();
+        return view.kind === 'spec' && 'send' in view.nextStep ? view.nextStep.send : undefined;
+    }
+
+    it('choosing an assistant adds the send view to the open detail, a change of assistant replaces it, removing it takes it away; the selection stays', async () => {
+        const w = await world();
+        w.selection.set({ stem: '0010-act' });
+        await w.service.whenIdle();
+        expect(sendOf(w)).toBeUndefined();
+        const seen: string[] = [];
+        w.service.onDidChangeDetail((view) => seen.push(view.kind === 'spec' ? view.stem : view.kind));
+        w.assistant.set({ assistant: 'copilot' });
+        await w.service.whenIdle();
+        expect(sendOf(w)).toEqual({ assistant: 'copilot', target: 'current', targets: ['new', 'current'] });
+        w.assistant.set({ assistant: 'claudeCode' });
+        await w.service.whenIdle();
+        expect(sendOf(w)).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
+        w.assistant.set(undefined);
+        await w.service.whenIdle();
+        expect(sendOf(w)).toBeUndefined();
+        expect(seen).toEqual(['0010-act', '0010-act', '0010-act']);
+        expect(w.service.detail().kind).toBe('spec');
+    });
+
+    it('an extension that arrives or goes changes the offer; an unchanged offer emits nothing; the Board view is not rebuilt', async () => {
+        const w = await world();
+        w.selection.set({ stem: '0010-act' });
+        w.assistant.choose('copilot');
+        await w.service.whenIdle();
+        expect(sendOf(w)).toBeUndefined();
+        let emitted = 0;
+        w.service.onDidChangeDetail(() => (emitted += 1));
+        const board = JSON.stringify(w.service.view());
+        w.assistant.install('copilot');
+        await w.service.whenIdle();
+        expect(sendOf(w)).toMatchObject({ assistant: 'copilot' });
+        expect(emitted).toBe(1);
+        w.assistant.choose('copilot');
+        await w.service.whenIdle();
+        expect(emitted).toBe(1);
+        w.assistant.uninstall('copilot');
+        await w.service.whenIdle();
+        expect(sendOf(w)).toBeUndefined();
+        expect(emitted).toBe(2);
+        expect(JSON.stringify(w.service.view())).toBe(board);
+    });
+});
+
+describe('0023 AC-003: the board view lists the specs that have a plan for the Plan map', () => {
+    const link = (stem: string) => `[${stem}.plan.md](${stem}.plan.md)`;
+    const files = (): Record<string, string> => ({
+        '.specs/active/0005-blocked.md': specText({ status: 'In Progress', plan: link('0005-blocked') }),
+        '.specs/active/0005-blocked.plan.md': planText({ status: 'Blocked' }),
+        '.specs/active/0003-active.md': specText({ status: 'In Progress', plan: link('0003-active') }),
+        '.specs/active/0003-active.plan.md': planText({ status: 'In Progress' }),
+        '.specs/active/0002-review.md': specText({ status: 'In Progress', plan: link('0002-review') }),
+        '.specs/active/0002-review.plan.md': planText({ status: 'Done' }),
+        '.specs/backlog/0004-ready.md': specText({ plan: link('0004-ready') }),
+        '.specs/backlog/0004-ready.plan.md': planText({ status: 'Not started' }),
+        '.specs/backlog/0001-backlog.md': specText({ plan: link('0001-backlog') }),
+        '.specs/backlog/0001-backlog.plan.md': planText({ status: 'In Progress' }),
+        '.specs/backlog/0009-no-plan.md': specText(),
+        '.specs/done/0006-done.md': specText({ status: 'Implemented', plan: '[0006-done.2026-11-01.plan.md](../plan-archive/0006-done.2026-11-01.plan.md)' }),
+        '.specs/plan-archive/0006-done.2026-11-01.plan.md': planText({ status: 'Done' }),
+    });
+
+    it('In progress (Blocked, Review, Active), then Ready, then Backlog, by number inside; Done and a spec without a plan are left out', async () => {
+        const w = await world(files());
+        expect(w.service.view()!.planSpecs.map((item) => item.number)).toEqual(['0005', '0002', '0003', '0004', '0001']);
+        expect(w.service.view()!.planSpecs[0]).toEqual({ stem: '0005-blocked', number: '0005', title: 'Spec', problems: [] });
+    });
+
+    it('a spec with an unreadable plan is left out', async () => {
+        const all = files();
+        const model = await modelWithUnreadable(all, ['.specs/active/0003-active.plan.md']);
+        const created = createBoardWorld(model);
+        disposables.push(created.service);
+        await created.service.whenIdle();
+        expect(created.service.view()!.planSpecs.map((item) => item.number)).toEqual(['0005', '0002', '0004', '0001']);
+    });
+
+    it('a Problem of the spec shows as its sentence and reason, the same as the detail gives', async () => {
+        const all = { ...files(), '.specs/active/0003-active.md': specText({ status: 'Draft', plan: link('0003-active') }) };
+        const w = await world(all);
+        const item = w.service.view()!.planSpecs.find((candidate) => candidate.number === '0003')!;
+        expect(item.problems.length).toBeGreaterThan(0);
+        w.selection.set({ stem: '0003-active' });
+        await w.service.whenIdle();
+        const detail = w.service.detail();
+        expect(detail.kind === 'spec' ? detail.problems.map((problem) => ({ sentence: problem.sentence, reason: problem.reason })) : []).toEqual(item.problems);
+    });
+
+    it('the plan of the detail follows the selection', async () => {
+        const w = await world(files());
+        expect('plan' in (w.service.detail() as object)).toBe(false);
+        w.selection.set({ stem: '0003-active' });
+        await w.service.whenIdle();
+        const first = w.service.detail();
+        expect(first.kind === 'spec' ? first.plan?.kind : undefined).toBe('plan');
+        w.selection.set({ stem: '0009-no-plan' });
+        await w.service.whenIdle();
+        const second = w.service.detail();
+        expect(second.kind === 'spec' && 'plan' in second).toBe(false);
     });
 });

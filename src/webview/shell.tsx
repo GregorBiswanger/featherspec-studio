@@ -11,6 +11,8 @@ export interface Shell {
     navigate(request: NavigationRequest): void;
     select(reference: SpecReference): void;
     clearSelection(): void;
+    setSideWidth(fraction: number): void;
+    resetSideWidth(): void;
     runAction(action: ActionId): void;
     dismissNotice(): void;
 }
@@ -35,6 +37,8 @@ export function useShell(): Shell {
         navigate: client.navigate,
         select: client.select,
         clearSelection: client.clearSelection,
+        setSideWidth: client.setSideWidth,
+        resetSideWidth: client.resetSideWidth,
         runAction: client.runAction,
         dismissNotice: client.dismissNotice,
     };

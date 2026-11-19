@@ -30,7 +30,7 @@ export function boardView(cards: CardView[], overrides: Partial<BoardView> = {})
         const column: BoardColumn = { state, cards: own, hidden: 0, emptyBeforeFilter: own.length === 0, count: own.length };
         return own.length === 0 ? { ...column, narrow: 'empty' } : column;
     });
-    return { columns, banner: { problems: [], notes: [] }, filter: {}, sort: 'number', sortKeys: ['number', 'title', 'lastChange'], noSpecs: cards.length === 0, ...overrides };
+    return { columns, banner: { problems: [], notes: [] }, filter: {}, sort: 'number', sortKeys: ['number', 'title', 'lastChange'], noSpecs: cards.length === 0, planSpecs: [], ...overrides };
 }
 
 export function boardEvent(view: BoardView): Envelope {

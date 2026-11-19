@@ -11,6 +11,8 @@
 
 *Amended by 0017 (PD-060/PD-061): every other statement, criterion, note or open point of this spec about drag and drop, "Move to…", the move command, move requests, the board-requested transition check, an accepted Ready → Active request or the drop result is void; a sentence that also says something else keeps that part.*
 
+*Amended by 0021 (PD-069): wherever this spec names the control "Copy" of a prompt (a next step or `/sdd-specify`), read `Copy prompt`, named as 0021 §6.4; the feedback stays; wherever it shows a next step line, 0021 §6.1 gives each line its intent.*
+
 Depends on: 0005, 0006, 0007. Input: [design-brief.md](../../docs/product/design-brief.md), Gregor's interview answers
 for this spec. `D-n` = defect n of the UI preview report of 2026-11-16.
 
@@ -63,6 +65,7 @@ Marketplace listing. Users: the developer in the Studio panel; Gregor accepts th
   state colour tints only an icon, a chip border or edge and a bar segment; text stays
   `--vscode-foreground` or `--vscode-descriptionForeground` (fixes D-6). Every state also shows
   its icon and name (0007 §6.7).
+  *Amended by 0022 (PD-069): §3.1 State colours and "Every state also shows its icon and name" — 0022 §4.8's one table (Backlog and Done `descriptionForeground`, Ready `charts.blue`, Active `charts.green`, Review `charts.orange`, Blocked `charts.red`); in two- and three-line Overview rows the name is the icon's tooltip and in the row's accessible name.*
 - High Contrast: borders of chips, tiles, cards, panels and sections fall back to
   `--vscode-contrastBorder`; focus and selection use `--vscode-contrastActiveBorder` first, as
   0005 AC-031 does. Motion and focus per AC-002, AC-003.
@@ -244,6 +247,14 @@ structure that §2's five deltas change are updated, in the same change set, eac
 *Amended by 0016 (PD-059, proxy): AC-016 (test audit) — also excepted: the tests 0016 AC-023 lists against a criterion that 0016 §5 changes.*
 
 *Amended by 0015 (PD-055/PD-056): excepts the tests that 0015 AC-027 removes.*
+
+*Amended by 0021 (PD-069): AC-016 (test audit) — also except the tests 0021 AC-020 lists against a statement 0021 §5 replaces.*
+
+*Amended by 0022 (PD-069): AC-016 (test audit) — also except the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
+
+*Amended by 0023 (PD-069): AC-016 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
+
+*Amended by 0024 (PD-068): AC-016 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
 
 **AC-017** *(manual, Gregor or his delegate)* Screenshots from the preview harness of Mission Control, Spec Board,
 Spec Explorer list, detail of 0002 (expanded, and with Acceptance criteria collapsed), Agent

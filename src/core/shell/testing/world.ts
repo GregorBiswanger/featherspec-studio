@@ -35,6 +35,7 @@ export interface ShellWorld {
     repository: SpecRepository;
     trust: FakeTrust;
     memory: FakeMemory;
+    sideMemory: FakeMemory;
     actions: FakeActions;
     service: ShellService;
     views: string[];
@@ -48,6 +49,7 @@ export interface WorldOptions {
     rememberedRoot?: string;
     trusted?: boolean;
     memory?: unknown;
+    sideMemory?: unknown;
 }
 
 export function createShellWorld(options: WorldOptions = {}): ShellWorld {
@@ -82,15 +84,20 @@ export function createShellWorld(options: WorldOptions = {}): ShellWorld {
             [...grantListeners].forEach((listener) => listener());
         },
     };
-    const memory: FakeMemory = {
-        value: options.memory,
-        writes: [],
-        get: () => memory.value,
-        async set(value) {
-            memory.value = value;
-            memory.writes.push(value);
-        },
+    const fakeMemory = (value: unknown): FakeMemory => {
+        const fake: FakeMemory = {
+            value,
+            writes: [],
+            get: () => fake.value,
+            async set(next) {
+                fake.value = next;
+                fake.writes.push(next);
+            },
+        };
+        return fake;
     };
+    const memory = fakeMemory(options.memory);
+    const sideMemory = fakeMemory(options.sideMemory);
     const actions: FakeActions = {
         calls: [],
         async openFolder() {
@@ -124,6 +131,7 @@ export function createShellWorld(options: WorldOptions = {}): ShellWorld {
             folders: host.folders,
             trust,
             memory,
+            sideMemory,
             actions,
             sameRoot,
         });
@@ -141,6 +149,7 @@ export function createShellWorld(options: WorldOptions = {}): ShellWorld {
         repository,
         trust,
         memory,
+        sideMemory,
         actions,
         service,
         views,

@@ -1,7 +1,8 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { DRAWER_QUERY } from '../../shared/protocol/layout';
+import { AREA_MIN, defaultSideWidth, NARROW_QUERY, SIDE_MIN } from '../../shared/protocol/layout';
+import { STATE_LOOK } from '../../shared/protocol/stateLook';
 import { declarations, parseRules, rulesFor } from '../../webview/testing/css';
 
 describe('AC-026: colours come from the theme', () => {
@@ -49,41 +50,6 @@ describe('AC-026: colours come from the theme', () => {
             expect(rulesFor(css, gone), gone).toEqual([]);
         }
         expect(rulesFor(css, '.ov-figure-list').length).toBeGreaterThan(0);
-    });
-
-    it('0018 AC-006: a spec row stays on one line: title and status cut by an ellipsis, number, step, warning icon and Copy never cut', () => {
-        const row = rulesFor(css, '.ov-row');
-        expect(row.some((rule) => /white-space:\s*nowrap/.test(rule.body))).toBe(true);
-        for (const selector of ['.ov-row .ov-title', '.ov-row .ov-status']) {
-            const rules = rulesFor(css, selector);
-            expect(rules.some((rule) => /flex:\s*0 1 auto/.test(rule.body))).toBe(true);
-        }
-        expect(rulesFor(css, '.ov-row .ov-status').some((rule) => /text-overflow:\s*ellipsis/.test(rule.body))).toBe(true);
-        expect(rulesFor(css, '.ov-title').some((rule) => /text-overflow:\s*ellipsis/.test(rule.body))).toBe(true);
-        expect(rulesFor(css, '.ov-row .step-text').some((rule) => /flex:\s*none/.test(rule.body))).toBe(true);
-        expect(rulesFor(css, '.ov-row-item .copy-button').some((rule) => /flex:\s*none/.test(rule.body))).toBe(true);
-    });
-
-    it('0018 AC-006 (V1): at 720 px or less a spec row wraps to two lines, number and title first, then the status, the step and Copy, with no text cut by an ellipsis', () => {
-        const narrow = (selector: string) => rulesFor(css, selector).filter((rule) => rule.media !== undefined && /max-width:\s*720px/.test(rule.media));
-        expect(narrow('.ov-row').some((rule) => /flex-wrap:\s*wrap/.test(rule.body) && /white-space:\s*normal/.test(rule.body))).toBe(true);
-        expect(narrow('.ov-row-item').some((rule) => /align-items:\s*flex-end/.test(rule.body))).toBe(true);
-        const title = narrow('.ov-row .ov-title');
-        expect(title.some((rule) => /flex:\s*1 1 calc\(100% - [\d.]+em\)/.test(rule.body) && /white-space:\s*normal/.test(rule.body))).toBe(true);
-        const status = narrow('.ov-row .ov-status');
-        expect(status.some((rule) => /white-space:\s*normal/.test(rule.body) && /overflow:\s*visible/.test(rule.body))).toBe(true);
-        for (const rule of [...title, ...status]) {
-            expect(rule.body).not.toMatch(/text-overflow:\s*ellipsis/);
-            expect(rule.body).not.toMatch(/white-space:\s*nowrap/);
-        }
-        for (const selector of ['.ov-row .step-text', '.ov-row-item .copy-button', '.ov-row .ov-number']) {
-            expect(narrow(selector).filter((rule) => /flex:\s*(?!none)/.test(rule.body) || /flex-shrink:\s*[1-9]/.test(rule.body)), selector).toEqual([]);
-        }
-    });
-
-    it('0018 AC-006 (V1) control: the wide row rules sit outside every media query, so above 720 px the row stays on one line', () => {
-        expect(rulesFor(css, '.ov-row').some((rule) => rule.media === undefined && /white-space:\s*nowrap/.test(rule.body))).toBe(true);
-        expect(rulesFor(css, '.ov-row .ov-status').some((rule) => rule.media === undefined && /text-overflow:\s*ellipsis/.test(rule.body))).toBe(true);
     });
 
     it('AC-031: a focused control uses the High Contrast active border before the focus border, and no rule is left for the removed list rows', () => {
@@ -220,19 +186,34 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
         }
     });
 
-    it('§3.1: one state-colour mapping, each state tinting through --fs-tint from its theme variable', () => {
+    it('0022 AC-026: each colour ID of the state table maps to its theme variable through --fs-tint, and no rule that names a state sets a colour', () => {
         const expected: Record<string, string> = {
-            Backlog: 'var(--vscode-descriptionForeground)',
-            Ready: 'var(--vscode-charts-blue)',
-            Active: 'var(--vscode-charts-purple)',
-            Review: 'var(--vscode-charts-yellow)',
-            Done: 'var(--vscode-charts-green)',
-            Blocked: 'var(--vscode-charts-red)',
+            descriptionForeground: 'var(--vscode-descriptionForeground)',
+            'charts.blue': 'var(--vscode-charts-blue)',
+            'charts.green': 'var(--vscode-charts-green)',
+            'charts.orange': 'var(--vscode-charts-orange)',
+            'charts.red': 'var(--vscode-charts-red)',
         };
-        for (const [state, variable] of Object.entries(expected)) {
-            const rules = rulesFor(css, `[data-board-state="${state}"]`);
-            expect(rules.some((rule) => rule.body.includes(`--fs-tint: ${variable}`)), state).toBe(true);
+        expect([...new Set(Object.values(STATE_LOOK).map((look) => look.colour))].sort()).toEqual(Object.keys(expected).sort());
+        for (const [id, variable] of Object.entries(expected)) {
+            const rules = rulesFor(css, `[data-tint="${id}"]`);
+            expect(rules.some((rule) => rule.body.includes(`--fs-tint: ${variable}`)), id).toBe(true);
         }
+        const COLOURING = /--fs-tint|(?:^|;)\s*(?:color|background(?:-color)?|border(?:-[a-z]+)*|outline(?:-color)?|fill|stroke)\s*:/;
+        const naming = parseRules(css).filter((rule) => rule.selectors.some((selector) => /\b(?:Backlog|Ready|Active|Review|Done|Blocked)\b/.test(selector)));
+        for (const rule of naming) {
+            expect(rule.body, rule.selectors.join(',')).not.toMatch(COLOURING);
+        }
+        expect(COLOURING.test('--fs-tint: red')).toBe(true);
+        expect(COLOURING.test('width: 3px; color: red')).toBe(true);
+        expect(COLOURING.test('flex: 0 0 32px')).toBe(false);
+        expect(parseRules('[data-board-state="Active"] { --fs-tint: red; }').filter((rule) => rule.selectors.some((selector) => /Active/.test(selector)))).toHaveLength(1);
+    });
+
+    it('0022 AC-026: the chip and the column header icon take their colour from --fs-tint', () => {
+        expect(rulesFor(css, '.state-chip .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.column-heading .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.state-chip').some((rule) => /border[^;]*var\(--fs-tint\)/.test(rule.body))).toBe(true);
     });
 
     it('§3.1: a state chip keeps its text in the foreground colour, tints only icon and border, and falls back to the contrast border', () => {
@@ -243,9 +224,9 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
         expect(rulesFor(css, '.vscode-high-contrast .state-chip').some((rule) => /border-color:\s*var\(--vscode-contrastBorder\)/.test(rule.body))).toBe(true);
     });
 
-    it('full-height frame: the studio is a flex column of the viewport height and main scrolls on its own', () => {
+    it('0022 G-1: full-height frame: the studio is a flex column of the viewport height and main fills it without scrolling', () => {
         expect(rulesFor(css, '.studio').some((rule) => /display:\s*flex/.test(rule.body) && /flex-direction:\s*column/.test(rule.body) && /height:\s*100vh/.test(rule.body))).toBe(true);
-        expect(rulesFor(css, 'main').some((rule) => /flex:\s*1/.test(rule.body) && /min-height:\s*0/.test(rule.body) && /overflow:\s*auto/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, 'main').some((rule) => /flex:\s*1/.test(rule.body) && /min-height:\s*0/.test(rule.body) && /overflow:\s*hidden/.test(rule.body))).toBe(true);
     });
 
     it('AC-015: columns share the width by flexbox (200 to 360 px, strips 32 px, gap 8 px), headers are sticky, the board scrolls sideways and no media rule touches it', () => {
@@ -270,7 +251,7 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
         expect(value('.column[data-narrow] .column-name', 'writing-mode')).toBe('vertical-rl');
 
         const gap = pixels(value('.columns', 'gap'));
-        const padding = Number(/^\d+px\s+(\d+)px$/.exec(value('main', 'padding') ?? '')?.[1]);
+        const padding = Number(/^\d+px\s+(\d+)px$/.exec(value('.area-content', 'padding') ?? '')?.[1]);
         const wide = pixels(value('.column', 'min-width'));
         const strip = pixels(value('.column[data-narrow]', 'flex-basis') ?? value('.column[data-narrow]', 'min-width'));
         const need = (wideCount: number, narrowCount: number): number => wideCount * wide + narrowCount * strip + (wideCount + narrowCount - 1) * gap + 2 * padding;
@@ -344,16 +325,16 @@ describe('0005 AC-019: the panel follows the theme without being reopened', () =
     it('no panel UI module reads or caches the theme, so every colour stays a live --vscode-* lookup', () => {
         const offenders = tsxFiles(webviewDir)
             .filter((file) => !file.includes(`${path.sep}testing${path.sep}`))
-            .filter((file) => path.relative(webviewDir, file) !== path.join('detail', 'drawer.ts'))
+            .filter((file) => path.relative(webviewDir, file) !== path.join('detail', 'narrow.ts'))
             .filter((file) => THEME_READS.test(readFileSync(file, 'utf8')))
             .map((file) => path.relative(webviewDir, file));
         expect(offenders).toEqual([]);
     });
 
-    it('0019: the one module that calls matchMedia asks only the width query of the drawer, never a colour scheme', () => {
-        const source = readFileSync(path.join(webviewDir, 'detail', 'drawer.ts'), 'utf8');
-        expect(DRAWER_QUERY).toBe('(max-width: 899px)');
-        expect(source.match(/matchMedia\(([^)]*)\)/g)).toEqual(['matchMedia(DRAWER_QUERY)']);
+    it('0019, 0022 G-4: the one module that calls matchMedia asks only the width query of the list-or-detail switch, never a colour scheme', () => {
+        const source = readFileSync(path.join(webviewDir, 'detail', 'narrow.ts'), 'utf8');
+        expect(NARROW_QUERY).toBe('(max-width: 899px)');
+        expect(source.match(/matchMedia\(([^)]*)\)/g)).toEqual(['matchMedia(NARROW_QUERY)']);
         expect(source).not.toMatch(/prefers-color-scheme|classList|getComputedStyle|getPropertyValue/);
     });
 
@@ -437,72 +418,39 @@ describe('0016 AC-017, AC-019: Copy is the primary button and keeps its size', (
     });
 });
 
-describe('0019 AC-005, AC-021: the side panel beside the area or as a drawer', () => {
+describe('0019 AC-005, AC-021, 0022 AC-001: the side panel beside the area, or the detail alone', () => {
     const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
     const plain = (selector: string) => rulesFor(css, selector).filter((rule) => rule.media === undefined);
 
-    it('AC-005: from the drawer width up the side panel is a 400 px column with its own scroll beside the area content', () => {
+    it('0022 G-2: the side panel gets its width from the divider: no fixed width or basis in the stylesheet, its own scroll, a 1 px left border; the area content takes the rest', () => {
         expect(plain('.area-frame').some((rule) => /display:\s*flex/.test(rule.body) && /position:\s*relative/.test(rule.body))).toBe(true);
-        expect(plain('.area-content').some((rule) => /flex:\s*1\b/.test(rule.body) && /min-width:\s*0/.test(rule.body) && /overflow:\s*auto/.test(rule.body))).toBe(true);
+        expect(plain('.area-content').some((rule) => /flex:\s*1\b/.test(rule.body) && /min-width:\s*0/.test(rule.body) && /overflow-y:\s*auto/.test(rule.body))).toBe(true);
         const panel = plain('.side-panel').map((rule) => rule.body).join(';');
-        expect(panel).toMatch(/flex:\s*0 0 400px/);
+        expect(panel).toMatch(/flex:\s*none/);
+        expect(panel).not.toMatch(/(?:^|;)\s*(?:min-|max-)?width:|flex-basis|flex:\s*0 0 \d/);
         expect(panel).toMatch(/box-sizing:\s*border-box/);
         expect(panel).toMatch(/overflow-y:\s*auto/);
         expect(panel).toMatch(/border-left:\s*1px solid var\(--vscode-contrastBorder/);
+        expect(css).not.toMatch(/\b400px\b/);
     });
 
-    it('AC-005: the only media rule is the drawer query of the code, at 899 px, and it overlays the panel from the right edge at min(400px, 100%) of the frame', () => {
-        const limit = Number(/max-width:\s*(\d+)px/.exec(DRAWER_QUERY)?.[1]);
-        expect(limit).toBe(899);
-        const drawer = parseRules(css).filter((rule) => rule.media === `@media ${DRAWER_QUERY}`);
-        expect(drawer.flatMap((rule) => rule.selectors)).toEqual(['.side-panel']);
-        const body = drawer.map((rule) => rule.body).join(';');
-        expect(body).toMatch(/position:\s*absolute/);
-        expect(body).toMatch(/right:\s*0/);
-        expect(body).toMatch(/width:\s*min\(400px, 100%\)/);
+    it('0022 G-2: the divider has a column-resize cursor, a 4 px hit area, the sash hover colour while hovered or dragged and a focus outline of the theme', () => {
+        const divider = plain('.divider').map((rule) => rule.body).join(';');
+        expect(divider).toMatch(/cursor:\s*col-resize/);
+        expect(divider).toMatch(/width:\s*0\b/);
+        expect(plain('.divider::before').some((rule) => /width:\s*4px/.test(rule.body))).toBe(true);
+        for (const selector of ['.divider:hover::before', '.divider[data-dragging]::before']) {
+            expect(plain(selector).some((rule) => /background:\s*var\(--vscode-sash-hoverBorder\)/.test(rule.body)), selector).toBe(true);
+        }
+        expect(plain('.divider:focus-visible').some((rule) => /outline:\s*2px solid var\(--vscode-contrastActiveBorder, var\(--vscode-focusBorder\)\)/.test(rule.body))).toBe(true);
+        for (const rule of rulesFor(css, '.divider')) {
+            expect(rule.body).not.toMatch(/outline/);
+        }
     });
 
-    it('AC-005: no media rule changes the area content, the frame or the board, so the area keeps its width under the drawer', () => {
+    it('0022 AC-001: no media rule changes the area content, the frame or the board, so the area keeps its width and its scroll position', () => {
         const touched = parseRules(css).filter((rule) => rule.media !== undefined && rule.selectors.some((selector) => /\.area-(?:frame|content)\b|\.columns?\b/.test(selector)));
         expect(touched).toEqual([]);
-    });
-
-    it('AC-005: while the drawer shows, the board end padding and scroll padding equal the drawer width', () => {
-        const rules = plain('.columns[data-drawer]');
-        expect(rules).toHaveLength(1);
-        expect(rules[0]!.body).toMatch(/padding-inline-end:\s*min\(400px, 100%\)/);
-        expect(rules[0]!.body).toMatch(/scroll-padding-inline-end:\s*min\(400px, 100%\)/);
-    });
-
-    it('0019 F3: no drawer width or drawer padding is relative to the window (no vw unit), so a panel under 432 px is never overrun at its left edge', () => {
-        const drawerRules = parseRules(css).filter((rule) => rule.selectors.some((selector) => /\.side-panel|\[data-drawer\]/.test(selector)));
-        expect(drawerRules.length).toBeGreaterThanOrEqual(3);
-        for (const rule of drawerRules) {
-            expect(rule.body, rule.selectors.join(',')).not.toMatch(/\d\s*v[wi]\b|\bvmin\b|\bvmax\b/);
-        }
-        expect('width: min(400px, 100vw)').toMatch(/\d\s*v[wi]\b/);
-    });
-
-    it('0019 PD-066: while the drawer shows, the Overview takes the width left of the drawer: end padding of min(400px, 100%) on the marked Overview and no media rule on it', () => {
-        const rules = plain('.overview[data-drawer]');
-        expect(rules).toHaveLength(1);
-        expect(rules[0]!.body).toMatch(/padding-inline-end:\s*min\(400px, 100%\)/);
-        const media = parseRules(css).filter((rule) => rule.media !== undefined && rule.selectors.some((selector) => /\.overview\b/.test(selector)));
-        expect(media).toEqual([]);
-    });
-
-    it('0019 PD-066: a marked Overview uses the two-line row layout of 0018 T-013 for every property of the 720 px rules, without a media query', () => {
-        const narrow = parseRules(css).filter((rule) => rule.media === '@media (max-width: 720px)');
-        const properties = (selector: string, rules: { selectors: string[]; body: string }[]) =>
-            rules
-                .filter((rule) => rule.selectors.includes(selector))
-                .flatMap((rule) => [...rule.body.matchAll(/([\w-]+):\s*([^;]+);?/g)].map((match) => `${match[1]}:${match[2]!.trim()}`))
-                .sort();
-        for (const selector of ['.ov-row-item', '.ov-row', '.ov-row .ov-title', '.ov-row .ov-status']) {
-            const expected = properties(selector, narrow);
-            expect(expected.length, selector).toBeGreaterThan(0);
-            expect(properties(`.overview[data-drawer] ${selector}`, plain(`.overview[data-drawer] ${selector}`)), selector).toEqual(expected);
-        }
     });
 
     it('0019 G4, AC-007: a selected card and a selected Overview row both get the selection background and the contrast active border', () => {
@@ -541,3 +489,504 @@ describe('0019 AC-005, AC-021: the side panel beside the area or as a drawer', (
         expect(rulesFor(css, '.detail-title h2:focus-visible').some((rule) => /outline:\s*2px solid var\(--vscode-contrastActiveBorder, var\(--vscode-focusBorder\)\)/.test(rule.body))).toBe(true);
     });
 });
+
+describe('0022 AC-022, AC-001: one scrollbar each, and no drawer', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const SCROLLING = /(?:^|;)\s*overflow(?:-y)?:\s*(?:auto|scroll)\b/;
+    const SCROLLERS = ['.area-content', '.side-panel', '.column-cards', 'main > .panel-state'];
+
+    function scrollers(source: string): string[] {
+        return parseRules(source)
+            .filter((rule) => SCROLLING.test(rule.body))
+            .flatMap((rule) => rule.selectors)
+            .sort();
+    }
+
+    it('AC-022: the page root, main and the area frame never scroll', () => {
+        for (const selector of ['html', 'body', '#root', 'main', '.area-frame']) {
+            const rules = rulesFor(css, selector);
+            expect(rules.length, selector).toBeGreaterThan(0);
+            expect(
+                rules.some((rule) => /(?:^|;)\s*overflow:\s*hidden\b/.test(rule.body)),
+                selector,
+            ).toBe(true);
+        }
+    });
+
+    it('AC-022: within the area frame only the area content, the side panel and the Board card lists scroll vertically, and a panel state has its own box', () => {
+        expect(scrollers(css)).toEqual([...SCROLLERS].sort());
+        expect(rulesFor(css, 'main > .panel-state').some((rule) => /min-height:\s*0/.test(rule.body) && /overflow-y:\s*auto/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.area-content').some((rule) => /overflow-y:\s*auto/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.side-panel').some((rule) => /overflow-y:\s*auto/.test(rule.body))).toBe(true);
+    });
+
+    it('AC-022 control: the scan sees a scrolling spec detail and ignores a hidden one', () => {
+        expect(scrollers('.spec-detail { overflow-y: auto; }')).toEqual(['.spec-detail']);
+        expect(scrollers('.spec-detail { overflow: hidden; } .x { overflow-x: auto; }')).toEqual([]);
+        expect(scrollers('.a { min-height: 0; overflow: auto; }')).toEqual(['.a']);
+    });
+
+    it('AC-022: the detail itself and the side panel child do not scroll on their own', () => {
+        for (const selector of ['.spec-detail', '.side-panel > .spec-detail']) {
+            for (const rule of rulesFor(css, selector)) {
+                expect(rule.body, selector).not.toMatch(/overflow/);
+            }
+        }
+    });
+
+    it('AC-022: no padding, margin or gap stands between the side panel’s right edge and the Studio panel’s', () => {
+        const EDGE = /(?:^|;)\s*(?:(?:padding|margin)(?:-right|-inline|-inline-end)?|(?:column-)?gap):\s*(?!\s)(?!0(?:px)?\s*(?:;|$))/;
+        for (const selector of ['main', '.area-frame', '.side-panel', '.studio', 'body', '#root']) {
+            for (const rule of rulesFor(css, selector)) {
+                expect(rule.body, selector).not.toMatch(EDGE);
+            }
+        }
+        expect(EDGE.test('padding: 12px 16px')).toBe(true);
+        expect(EDGE.test('margin-inline-end: 4px')).toBe(true);
+        expect(EDGE.test('margin: 0;\n padding: 0;\n')).toBe(false);
+        expect(EDGE.test('border-left: 1px solid red')).toBe(false);
+    });
+
+    it('AC-022: the area content and the notes keep the 16 px that main gave up, so the area starts where it did', () => {
+        expect(rulesFor(css, '.area-content').some((rule) => /padding:\s*12px 16px/.test(rule.body))).toBe(true);
+        for (const selector of ['main > .restricted-note', 'main > .notice']) {
+            expect(rulesFor(css, selector).some((rule) => /margin:\s*8px 16px/.test(rule.body)), selector).toBe(true);
+        }
+    });
+
+    it('AC-001: no rule holds data-drawer and no rule of the side panel lays it over the area', () => {
+        expect(css).not.toMatch(/data-drawer/);
+        const panelRules = parseRules(css).filter((rule) => rule.selectors.some((selector) => /\.side-panel/.test(selector)));
+        expect(panelRules.length).toBeGreaterThan(0);
+        for (const rule of panelRules) {
+            expect(rule.body, rule.selectors.join(',')).not.toMatch(/position:\s*(?:absolute|fixed)|z-index/);
+        }
+        expect(/position:\s*(?:absolute|fixed)|z-index/.test('position: absolute')).toBe(true);
+    });
+
+    it('G-4: below 900 px with a selection the area is set aside in place (absolute, hidden, laid out) and the side panel takes the full width, with no media query in the rules', () => {
+        const aside = rulesFor(css, '.area-frame[data-layout="detail"] > .area-content').map((rule) => rule.body).join(';');
+        expect(aside).toMatch(/position:\s*absolute/);
+        expect(aside).toMatch(/inset:\s*0/);
+        expect(aside).toMatch(/visibility:\s*hidden/);
+        expect(aside).not.toMatch(/display:\s*none/);
+        const panel = rulesFor(css, '.area-frame[data-layout="detail"] > .side-panel').map((rule) => rule.body).join(';');
+        expect(panel).toMatch(/flex:\s*1 1 auto/);
+        const touched = parseRules(css).filter((rule) => rule.media !== undefined && rule.selectors.some((selector) => /\.side-panel|data-layout/.test(selector)));
+        expect(touched).toEqual([]);
+    });
+});
+
+describe('0022 AC-010, AC-012: only three Copies are primary, the icon button has a fixed box', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const secondary = (rule: { body: string }): boolean =>
+        /color:\s*var\(--vscode-button-secondaryForeground/.test(rule.body) && /background:\s*var\(--vscode-button-secondaryBackground/.test(rule.body);
+
+    it('AC-010: .copy-secondary, the Restricted Mode note button and the notice button use the secondary button colours; the panel-state button stays primary', () => {
+        for (const selector of ['.copy-secondary', '.restricted-note button', '.notice button']) {
+            const rules = rulesFor(css, selector);
+            expect(rules.some(secondary), selector).toBe(true);
+            for (const rule of rules) {
+                expect(rule.body, selector).not.toMatch(/background:\s*var\(--vscode-button-background\)/);
+            }
+        }
+        expect(rulesFor(css, '.copy-secondary:hover').some((rule) => rule.body.includes('var(--vscode-button-secondaryHoverBackground'))).toBe(true);
+        expect(rulesFor(css, '.panel-state button').some((rule) => /background:\s*var\(--vscode-button-background\)/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.copy-button').some((rule) => /background:\s*var\(--vscode-button-background\)/.test(rule.body))).toBe(true);
+        expect(secondary({ body: 'color: var(--vscode-button-foreground); background: var(--vscode-button-background)' })).toBe(false);
+    });
+
+    it('AC-012: .copy-icon has a fixed border-box of 24 by 24 px, no text colour of the primary button, no outline of its own and a contrast border in High Contrast', () => {
+        const rules = rulesFor(css, '.copy-icon');
+        const body = rules.map((rule) => rule.body).join(';');
+        expect(body).toMatch(/box-sizing:\s*border-box/);
+        expect(Number(/(?:^|;)\s*width:\s*(\d+)px/.exec(body)?.[1])).toBeGreaterThanOrEqual(24);
+        expect(Number(/(?:^|;)\s*height:\s*(\d+)px/.exec(body)?.[1])).toBeGreaterThanOrEqual(24);
+        expect(body).not.toMatch(/outline/);
+        expect(body).not.toMatch(/--vscode-button-background|--vscode-button-foreground/);
+        expect(body).toMatch(/user-select:\s*none/);
+        expect(rulesFor(css, '.copy-icon:hover').some((rule) => rule.body.includes('var(--vscode-toolbar-hoverBackground)'))).toBe(true);
+        expect(rulesFor(css, '.vscode-high-contrast .copy-icon').some((rule) => /border-color:\s*var\(--vscode-contrastBorder\)/.test(rule.body))).toBe(true);
+    });
+
+    it('AC-012: the icon button keeps its box while the glyph changes: nothing sized by content', () => {
+        const body = rulesFor(css, '.copy-icon').map((rule) => rule.body).join(';');
+        expect(body).not.toMatch(/(?:^|;)\s*(?:min-|max-)?width:\s*(?:auto|\d+ch|fit-content)/);
+        expect(body).toMatch(/flex:\s*none/);
+    });
+});
+
+describe('0022 AC-001, AC-003, AC-027, AC-028: Overview rows follow the list width', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const WIDE = 'ov-list (width > 686px)';
+    const MIDDLE = 'ov-list (420px <= width <= 686px)';
+    const NARROW = 'ov-list (width < 420px)';
+    const inside = (condition: string) => parseRules(css).filter((rule) => rule.container === condition);
+    const body = (condition: string, selector: string) =>
+        inside(condition)
+            .filter((rule) => rule.selectors.includes(selector))
+            .map((rule) => rule.body)
+            .join(';');
+    const areasOf = (condition: string, selector: string) => [...body(condition, selector).matchAll(/"([^"]+)"/g)].map((match) => match[1]!.trim().split(/\s+/));
+
+    it('the parser reads a container rule with its condition and keeps media rules apart', () => {
+        const rules = parseRules('@container box (width > 5px) { .a { color: red } } @media (x) { .b { color: blue } } .c { color: green }');
+        expect(rules.map((rule) => [rule.selectors[0], rule.container, rule.media])).toEqual([
+            ['.a', 'box (width > 5px)', undefined],
+            ['.b', undefined, '@media (x)'],
+            ['.c', undefined, undefined],
+        ]);
+    });
+
+    it('AC-001: every Overview list is an inline-size container named ov-list', () => {
+        expect(declarations(css).filter((declaration) => declaration.selectors.includes('.ov-list') && declaration.property === 'container').map((declaration) => declaration.value)).toEqual(['ov-list / inline-size']);
+    });
+
+    it('AC-001: exactly three container conditions exist, at 686 px and 420 px, and each lays out .ov-row-item with named areas', () => {
+        const conditions = [...new Set(parseRules(css).map((rule) => rule.container).filter((condition) => condition !== undefined))];
+        expect(conditions.sort()).toEqual([MIDDLE, NARROW, WIDE].sort());
+        for (const condition of [WIDE, MIDDLE, NARROW]) {
+            expect(body(condition, '.ov-row-item'), condition).toMatch(/grid-template-areas:/);
+            expect(body(condition, '.ov-row-item'), condition).toMatch(/grid-template-columns:/);
+        }
+    });
+
+    it('AC-001: no media rule touches an Overview row selector, and no row layout sits outside a container rule', () => {
+        const media = parseRules(css).filter((rule) => rule.media !== undefined && rule.selectors.some((selector) => /\.ov-/.test(selector)));
+        expect(media).toEqual([]);
+        const outside = declarations(css).filter((declaration) => declaration.container === undefined && declaration.selectors.some((selector) => /\.ov-row-item|\.ov-row\b/.test(selector)));
+        expect(outside.filter((declaration) => /grid-template-areas|white-space/.test(declaration.property))).toEqual([]);
+        expect(outside.some((declaration) => declaration.property === 'text-overflow')).toBe(false);
+    });
+
+    it('AC-001: the row button spans the item on subgrid rows and columns, so the Copy beside it takes its own area', () => {
+        const rule = rulesFor(css, '.ov-row-item > .ov-row').map((entry) => entry.body).join(';');
+        expect(rule).toMatch(/grid-template-columns:\s*subgrid/);
+        expect(rule).toMatch(/grid-template-rows:\s*subgrid/);
+        expect(rule).toMatch(/grid-column:\s*1 \/ -1/);
+        expect(rulesFor(css, '.ov-row-item > .next-step-copy').map((entry) => entry.body).join(';')).toMatch(/grid-area:\s*copy/);
+        for (const [selector, area] of [['.ov-row .ov-number', 'number'], ['.ov-row .ov-title', 'title'], ['.ov-state', 'state'], ['.ov-row .ov-problem', 'problem'], ['.ov-row .step-text', 'step']] as const) {
+            expect(rulesFor(css, selector).map((entry) => entry.body).join(';'), selector).toMatch(new RegExp(`grid-area:\\s*${area}\\b`));
+        }
+    });
+
+    it('AC-001: the coach line and its toggle take the last line of the item in every layout', () => {
+        expect(rulesFor(css, '.ov-row-item > .ov-coach').some((rule) => rule.container === undefined && /grid-column:\s*1 \/ -1/.test(rule.body))).toBe(true);
+    });
+
+    it('AC-028: in the two- and three-line layouts number and title share their first line with nothing else, and the title is not nowrap', () => {
+        for (const condition of [MIDDLE, NARROW]) {
+            const first = areasOf(condition, '.ov-row-item')[0]!;
+            expect([...new Set(first)].sort(), condition).toEqual(['number', 'title']);
+            expect(first[0]).toBe('number');
+        }
+        expect(areasOf(MIDDLE, '.ov-row-item')).toHaveLength(2);
+        expect(areasOf(NARROW, '.ov-row-item')).toHaveLength(3);
+        expect(areasOf(WIDE, '.ov-row-item')).toHaveLength(1);
+        for (const condition of [MIDDLE, NARROW]) {
+            expect(body(condition, '.ov-row .ov-title'), condition).not.toMatch(/white-space:\s*nowrap|text-overflow/);
+            expect(body(condition, '.ov-row .ov-title'), condition).toMatch(/overflow-wrap:\s*break-word/);
+        }
+        const nowrapTitles = declarations(css).filter((declaration) => declaration.selectors.some((selector) => /\.ov-row/.test(selector) && /\.ov-title/.test(selector)) && declaration.property === 'white-space' && declaration.value === 'nowrap');
+        expect(nowrapTitles.every((declaration) => declaration.container === WIDE)).toBe(true);
+        expect(nowrapTitles.length).toBeGreaterThan(0);
+    });
+
+    it('AC-002: the card head, the card path and the detail path wrap at words and separators and never at any character', () => {
+        for (const selector of ['.card-head', '.card-path', '.detail-path']) {
+            const wraps = declarations(css).filter((declaration) => declaration.selectors.includes(selector) && declaration.property === 'overflow-wrap');
+            expect(wraps.map((declaration) => declaration.value), selector).toEqual(['break-word']);
+        }
+        expect(declarations(css).filter((declaration) => /\.(?:card-path|detail-path|card-head|detail-heading|file-link)/.test(declaration.selectors.join(' ')) && /anywhere|break-all/.test(declaration.value))).toEqual([]);
+    });
+
+    it('AC-003: no rule of a problem line, the banner or the detail list cuts, clamps or keeps its text on one line', () => {
+        const lists = declarations(css).filter((declaration) => declaration.selectors.some((selector) => /^\.(?:banner|detail-problems)\b/.test(selector)));
+        expect(lists.filter((declaration) => /^(?:text-overflow|-webkit-line-clamp)$/.test(declaration.property) || (declaration.property === 'white-space' && declaration.value === 'nowrap'))).toEqual([]);
+        expect(declarations(css).filter((declaration) => declaration.selectors.includes('.ov-line') && /^(?:text-overflow|-webkit-line-clamp)$/.test(declaration.property))).toEqual([]);
+    });
+
+    it('AC-001: no rule breaks a title anywhere or at every character', () => {
+        const titles = declarations(css).filter((declaration) => declaration.selectors.some((selector) => /\.ov-title/.test(selector)));
+        expect(titles.filter((declaration) => /anywhere|break-all/.test(declaration.value))).toEqual([]);
+    });
+
+    it('AC-003: a Problems row takes the two-line template from 420 px up, and nothing there cuts, clamps or keeps its text on one line', () => {
+        expect(areasOf(WIDE, '.ov-problems .ov-row-item')).toEqual(areasOf(MIDDLE, '.ov-row-item'));
+        const problems = declarations(css).filter((declaration) => declaration.selectors.some((selector) => /\.ov-problems|\.ov-line|\.problem-line|\.banner-line|\.detail-problems/.test(selector)));
+        expect(problems.filter((declaration) => /text-overflow|line-clamp|white-space/.test(declaration.property) && !/^(normal|pre-line|pre-wrap)$/.test(declaration.value) && !/^(clip|unset)$/.test(declaration.value))).toEqual([]);
+        expect(body(WIDE, '.ov-problems .ov-status')).toMatch(/white-space:\s*normal/);
+        expect(body(WIDE, '.ov-problems .ov-status')).toMatch(/overflow:\s*visible/);
+    });
+
+    it('AC-027: the state name hides visually inside the two narrower blocks only', () => {
+        const hiding = declarations(css).filter((declaration) => declaration.selectors.includes('.ov-state-name'));
+        expect(hiding.length).toBeGreaterThan(0);
+        expect(hiding.every((declaration) => declaration.container === MIDDLE || declaration.container === NARROW)).toBe(true);
+        for (const condition of [MIDDLE, NARROW]) {
+            expect(body(condition, '.ov-state-name'), condition).toMatch(/clip-path:\s*inset\(50%\)/);
+            expect(body(condition, '.ov-state-name'), condition).toMatch(/position:\s*absolute/);
+        }
+        expect(declarations(css).filter((declaration) => declaration.selectors.some((selector) => /\.ov-status|\.ov-problem|\.ov-problems/.test(selector)) && /display:\s*none|visibility:\s*hidden|clip-path/.test(`${declaration.property}: ${declaration.value}`))).toEqual([]);
+    });
+
+    it('AC-028: at 920 px with the side panel at its default width the list selects the two-line layout; beside it at 360 px the list holds 12ch of title and the widest Copy', () => {
+        const value = (selector: string, property: string) => {
+            const found = declarations(css).filter((declaration) => declaration.selectors.includes(selector) && declaration.property === property && declaration.container === undefined);
+            return found[found.length - 1]!.value;
+        };
+        const px = (text: string) => Number(/(-?\d+(?:\.\d+)?)px/.exec(text)![1]);
+        const areaPadding = px(value('.area-content', 'padding').split(/\s+/)[1]!) * 2;
+        const panelPadding = px(value('.ov-panel', 'padding').split(/\s+/)[1]!) * 2;
+        const panelBorder = px(value('.ov-panel', 'border')) * 2;
+        const listMargin = -px(value('.ov-list', 'margin').split(/\s+/)[1]!) * 2;
+        const listAt = (area: number) => area - areaPadding - panelPadding - panelBorder + listMargin;
+        const side = defaultSideWidth(920);
+        expect(listAt(920 - side)).toBeGreaterThanOrEqual(420);
+        expect(listAt(920 - side)).toBeLessThanOrEqual(686);
+        const narrow = listAt(AREA_MIN);
+        expect(narrow).toBeLessThan(420);
+        const rowPadding = px(value('.ov-row', 'padding').split(/\s+/)[1]!) * 2;
+        const content = narrow - rowPadding;
+        const number = 4 * 0.6 * 13 * 0.92;
+        const gap = px(value('.ov-row-item', 'column-gap'));
+        const title = 12 * 0.6 * 13;
+        const copy = 4 * 0.6 * 11 + 24;
+        expect(content).toBeGreaterThanOrEqual(number + gap + title);
+        expect(content).toBeGreaterThanOrEqual(copy);
+        expect(SIDE_MIN).toBeLessThan(AREA_MIN);
+    });
+
+    it('AC-028: the widest Copy is read from the stylesheet (.copy-button: its min-width, padding and border at 11 px) and fits the row content at an area of 360 px', () => {
+        const value = (selector: string, property: string) => {
+            const found = declarations(css).filter((declaration) => declaration.selectors.includes(selector) && declaration.property === property && declaration.container === undefined && declaration.media === undefined);
+            return found[found.length - 1]!.value;
+        };
+        const px = (text: string) => Number(/(-?\d+(?:\.\d+)?)px/.exec(text)![1]);
+        const ch = (text: string) => Number(/(\d+(?:\.\d+)?)ch/.exec(text)![1]);
+        const fontSize = px(value('.copy-button', 'font-size'));
+        const copy = ch(value('.copy-button', 'min-width')) * 0.6 * fontSize + px(value('.copy-button', 'padding').split(/\s+/)[1]!) * 2 + px(value('.copy-button', 'border')) * 2;
+        const areaPadding = px(value('.area-content', 'padding').split(/\s+/)[1]!) * 2;
+        const panelPadding = px(value('.ov-panel', 'padding').split(/\s+/)[1]!) * 2;
+        const panelBorder = px(value('.ov-panel', 'border')) * 2;
+        const listMargin = -px(value('.ov-list', 'margin').split(/\s+/)[1]!) * 2;
+        const rowPadding = px(value('.ov-row', 'padding').split(/\s+/)[1]!) * 2;
+        const content = AREA_MIN - areaPadding - panelPadding - panelBorder + listMargin - rowPadding;
+        expect(copy).toBeGreaterThan(100);
+        expect(content).toBeGreaterThanOrEqual(copy);
+    });
+});
+
+describe('0022 AC-015, §7 g: a segment without a separator wider than its whole line breaks inside', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const SELECTORS = ['.next-step-lines code', '.file-link', '.ov-line', '.banner li'];
+
+    it.each(SELECTORS.map((selector) => [selector]))('%s: overflow-wrap is break-word and min-width is 0, in no container or media rule', (selector) => {
+        const own = declarations(css).filter((declaration) => declaration.selectors.includes(selector));
+        expect(own.filter((declaration) => declaration.property === 'overflow-wrap').map((declaration) => declaration.value)).toEqual(['break-word']);
+        expect(own.filter((declaration) => declaration.property === 'min-width').map((declaration) => declaration.value)).toEqual(['0']);
+        expect(own.filter((declaration) => /^(?:overflow-wrap|min-width)$/.test(declaration.property) && (declaration.media !== undefined || declaration.container !== undefined))).toEqual([]);
+    });
+
+    it('no rule of these elements breaks at any character (anywhere, break-all, word-break)', () => {
+        const breaking = declarations(css).filter((declaration) => declaration.selectors.some((selector) => SELECTORS.includes(selector)) && /anywhere|break-all|^word-break$/.test(`${declaration.property} ${declaration.value}`));
+        expect(breaking).toEqual([]);
+    });
+
+    it('control: a rule without the pair is seen', () => {
+        const rule = declarations('.next-step-lines code { color: red }').filter((declaration) => declaration.selectors.includes('.next-step-lines code'));
+        expect(rule.some((declaration) => declaration.property === 'overflow-wrap')).toBe(false);
+    });
+});
+
+describe('0022 AC-002: no title, heading or path breaks at any character', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const breaking = (source: string) => declarations(source).filter((declaration) => /^(?:overflow-wrap|word-break)$/.test(declaration.property) && /anywhere|break-all/.test(declaration.value));
+
+    it('no rule of the stylesheet sets break-all, and anywhere is set only on the step text of a row or card', () => {
+        const found = breaking(css);
+        expect(found.filter((declaration) => /break-all/.test(declaration.value))).toEqual([]);
+        expect(found.filter((declaration) => !declaration.selectors.every((selector) => selector === '.step-text')).map((declaration) => declaration.selectors.join(','))).toEqual([]);
+    });
+
+    it('control: the scan sees break-all on the side panel heading, anywhere on a card title and break-all on a next-step command', () => {
+        for (const rule of ['.detail-title h2 { word-break: break-all }', '.card-title { overflow-wrap: anywhere }', '.next-step-lines code { word-break: break-all }']) {
+            expect(breaking(rule)).toHaveLength(1);
+        }
+        expect(breaking('.step-text { overflow-wrap: anywhere }').every((declaration) => declaration.selectors.every((selector) => selector === '.step-text'))).toBe(true);
+    });
+
+    it('the side panel heading wraps at word boundaries and breaks inside a single word only when it is wider than the panel', () => {
+        const heading = declarations(css).filter((declaration) => declaration.selectors.includes('.detail-title h2'));
+        expect(heading.filter((declaration) => declaration.property === 'overflow-wrap').map((declaration) => declaration.value)).toEqual(['break-word']);
+        expect(heading.filter((declaration) => declaration.property === 'min-width').map((declaration) => declaration.value)).toEqual(['0']);
+    });
+});
+
+describe('0021 AC-014, AC-022: the toggletip uses the theme, shows its focus and stays in the flow', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const own = (): { selector: string; body: string }[] =>
+        parseRules(css)
+            .map((rule) => ({ selector: rule.selectors.join(', '), body: rule.body }))
+            .filter((rule) => /\.toggletip\b/.test(rule.selector));
+
+    it('has rules for the button and its region, and only theme variables for colour', () => {
+        expect(rulesFor(css, '.toggletip').length).toBeGreaterThan(0);
+        expect(rulesFor(css, '.toggletip-region').length).toBeGreaterThan(0);
+        expect(own().length).toBeGreaterThanOrEqual(6);
+        for (const rule of own()) {
+            expect(rule.body, rule.selector).not.toMatch(/#[0-9a-fA-F]{3,8}\b|\b(?:rgb|rgba|hsl|hsla)\(/);
+        }
+        const body = rulesFor(css, '.toggletip').map((rule) => rule.body).join(';');
+        expect(body).toMatch(/color:\s*var\(--vscode-/);
+        expect(body).toMatch(/border:\s*1px solid var\(--vscode-/);
+    });
+
+    it('shows a visible focus outline from the focus variables and never removes it', () => {
+        const rules = rulesFor(css, '.toggletip:focus-visible');
+        expect(rules.some((rule) => /outline:\s*2px solid var\(--vscode-contrastActiveBorder, var\(--vscode-focusBorder\)\)/.test(rule.body))).toBe(true);
+        for (const rule of own()) {
+            expect(rule.body, rule.selector).not.toMatch(/outline:\s*(none|0)\b/);
+        }
+    });
+
+    it('has no transition longer than 150 ms and the High Contrast border', () => {
+        for (const rule of own()) {
+            for (const match of rule.body.matchAll(/transition[^;]*/g)) {
+                for (const time of match[0].matchAll(/(\d+(?:\.\d+)?)(ms|s)\b/g)) {
+                    const ms = time[2] === 's' ? Number(time[1]) * 1000 : Number(time[1]);
+                    expect(ms, rule.selector).toBeLessThanOrEqual(150);
+                }
+            }
+        }
+        expect(rulesFor(css, '.vscode-high-contrast .toggletip').some((rule) => /border-color:\s*var\(--vscode-contrastBorder\)/.test(rule.body))).toBe(true);
+    });
+
+    it('keeps the region in the flow: no absolute or fixed position, no negative margin, and it takes a whole line', () => {
+        for (const rule of own()) {
+            expect(rule.body, rule.selector).not.toMatch(/position:\s*(absolute|fixed)/);
+        }
+        const region = rulesFor(css, '.toggletip-region').map((rule) => rule.body).join(';');
+        expect(region).toMatch(/flex:\s*1 0 100%/);
+        expect(region).not.toMatch(/margin[^;]*-\d/);
+        expect(rulesFor(css, '.next-step .section-head').some((rule) => /flex-wrap:\s*wrap/.test(rule.body))).toBe(true);
+    });
+});
+
+describe('0021 AC-001, AC-009, §6.5: the intent stands on its own line and the coach line is a description', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const body = (selector: string): string => rulesFor(css, selector).map((rule) => rule.body).join(';');
+
+    it('the intent of a line takes the whole row of its flex line, before the prompt and Copy', () => {
+        expect(body('.next-step-intent')).toMatch(/flex:\s*1 0 100%/);
+    });
+
+    it('the coach line of the detail and of the Overview row use the description colour and no literal colour', () => {
+        for (const selector of ['.step-coach', '.ov-coach']) {
+            expect(body(selector), selector).toMatch(/(?:^|;)\s*color:\s*var\(--vscode-descriptionForeground\)/);
+            expect(body(selector), selector).not.toMatch(/#[0-9a-fA-F]{3,8}\b|\b(?:rgb|rgba|hsl|hsla)\(/);
+        }
+    });
+
+    it('negative control: a rule that sets another colour or a shorter basis would be found', () => {
+        const mutated = css.replace(/(\.step-coach \{[^}]*?)color: var\(--vscode-descriptionForeground\)/, '$1color: var(--vscode-foreground)').replace(/(\.next-step-intent \{\s*)flex: 1 0 100%/, '$1flex: none');
+        const rule = (text: string, selector: string): string => rulesFor(text, selector).map((entry) => entry.body).join(';');
+        expect(rule(mutated, '.step-coach')).not.toMatch(/color:\s*var\(--vscode-descriptionForeground\)/);
+        expect(rule(mutated, '.next-step-intent')).not.toMatch(/flex:\s*1 0 100%/);
+    });
+});
+
+describe('0023 AC-008, AC-011: the step cards of the Plan map', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const own = /\.plan-map|\.plan-stage|\.plan-group|\.plan-arrow|\.plan-card-list|\.step-card/;
+    const mapRules = parseRules(css).filter((rule) => rule.selectors.some((selector) => own.test(selector)));
+
+    it('a group wraps its cards and a card is 200 to 360 px wide', () => {
+        expect(rulesFor(css, '.plan-group').some((rule) => /display:\s*flex/.test(rule.body) && /flex-wrap:\s*wrap/.test(rule.body))).toBe(true);
+        const card = rulesFor(css, '.step-card').map((rule) => rule.body).join(';');
+        expect(card).toMatch(/flex:\s*1 1 200px/);
+        expect(card).toMatch(/min-width:\s*200px/);
+        expect(card).toMatch(/max-width:\s*360px/);
+    });
+
+    it('no rule of the map sits in a media query (guideline 12) and the rules exist (negative control)', () => {
+        expect(mapRules.length).toBeGreaterThan(10);
+        expect(mapRules.filter((rule) => rule.media !== undefined)).toEqual([]);
+    });
+
+    it('the map holds no colour literal and takes its colours from theme variables', () => {
+        const body = mapRules.map((rule) => rule.body).join(';');
+        expect(body).not.toMatch(/#[0-9a-fA-F]{3,8}\b|\b(?:rgb|rgba|hsl|hsla)\(/);
+        expect(body).toContain('var(--vscode-');
+    });
+
+    it('0022 AC-015 as §4 amends it: ways, start lines and card lines break at any width and no rule of the map forbids a break', () => {
+        for (const selector of ['.plan-way-prompt code', '.plan-start-lines code', '.step-card-line']) {
+            const body = rulesFor(css, selector).map((rule) => rule.body).join(';');
+            expect(body, selector).toMatch(/overflow-wrap:\s*break-word/);
+            expect(body, selector).not.toMatch(/white-space:\s*(nowrap|pre)\b/);
+        }
+        const planRules = parseRules(css).filter((rule) => rule.selectors.some((selector) => /\.plan-(?:ways?|start|stage|group)|\.step-card/.test(selector)));
+        expect(planRules.length).toBeGreaterThan(10);
+        expect(planRules.filter((rule) => /white-space:\s*(nowrap|pre)\b/.test(rule.body))).toEqual([]);
+    });
+
+    it('the card head has a visible focus outline of the theme and no rule removes it', () => {
+        const focus = rulesFor(css, '.step-card-toggle:focus-visible').map((rule) => rule.body).join(';');
+        expect(focus).toMatch(/outline:\s*2px solid var\(--vscode-contrastActiveBorder, var\(--vscode-focusBorder\)\)/);
+        expect(mapRules.some((rule) => /outline:\s*(none|0)\b/.test(rule.body))).toBe(false);
+    });
+});
+
+describe('0024 AC-009, AC-003: the split button\'s stylesheet', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const value = (selector: string, property: string) => {
+        const found = declarations(css).filter((declaration) => declaration.selectors.includes(selector) && declaration.property === property && declaration.container === undefined && declaration.media === undefined);
+        return found[found.length - 1]?.value;
+    };
+    const px = (text: string | undefined) => Number(/(-?\d+(?:\.\d+)?)px/.exec(text ?? '')?.[1]);
+
+    it('the main part has min-width 22ch, the arrow part at least 24 by 24 px, the menu is absolutely positioned', () => {
+        expect(value('.send-main', 'min-width')).toBe('22ch');
+        expect(px(value('.send-arrow', 'width'))).toBeGreaterThanOrEqual(24);
+        expect(px(value('.send-arrow', 'height'))).toBeGreaterThanOrEqual(24);
+        expect(value('.send-menu', 'position')).toBe('absolute');
+        expect(value('.send-split', 'position')).toBe('relative');
+    });
+
+    it('both parts use the primary button variables, the menu the menu variables; theme variables only, no outline of their own', () => {
+        const parts = ['.send-main', '.copy-button', '.send-arrow'].flatMap((selector) => rulesFor(css, selector).map((rule) => rule.body)).join(';');
+        expect(parts).toContain('var(--vscode-button-background)');
+        expect(parts).toContain('var(--vscode-button-foreground)');
+        expect(rulesFor(css, '.send-arrow').some((rule) => /background:\s*var\(--vscode-button-background\)/.test(rule.body) && /color:\s*var\(--vscode-button-foreground\)/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.send-arrow:hover').some((rule) => rule.body.includes('var(--vscode-button-hoverBackground'))).toBe(true);
+        const own = parseRules(css).filter((rule) => rule.selectors.some((selector) => /^\.send-/.test(selector)));
+        expect(own.length).toBeGreaterThan(5);
+        const body = own.map((rule) => rule.body).join(';');
+        expect(body).toContain('var(--vscode-menu-background');
+        expect(body).toContain('var(--vscode-menu-foreground');
+        expect(body).not.toMatch(/#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(/);
+        expect(body).not.toMatch(/outline/);
+        expect(rulesFor(css, '.vscode-high-contrast .send-menu').some((rule) => /border-color:\s*var\(--vscode-contrastBorder\)/.test(rule.body))).toBe(true);
+    });
+
+    it('the split button (main part at 22ch, padding, border, and the 24 px arrow part) fits the row content at an area of 360 px (0022 AC-028\'s arithmetic)', () => {
+        const fontSize = px(value('.copy-button', 'font-size'));
+        const main = 22 * 0.6 * fontSize + px(value('.copy-button', 'padding')?.split(/\s+/)[1]) * 2 + px(value('.copy-button', 'border')) * 2;
+        const split = main + px(value('.send-arrow', 'width'));
+        const areaPadding = px(value('.area-content', 'padding')?.split(/\s+/)[1]) * 2;
+        const panelPadding = px(value('.ov-panel', 'padding')?.split(/\s+/)[1]) * 2;
+        const panelBorder = px(value('.ov-panel', 'border')) * 2;
+        const listMargin = -px(value('.ov-list', 'margin')?.split(/\s+/)[1]) * 2;
+        const rowPadding = px(value('.ov-row', 'padding')?.split(/\s+/)[1]) * 2;
+        const content = AREA_MIN - areaPadding - panelPadding - panelBorder + listMargin - rowPadding;
+        expect(split).toBeGreaterThan(150);
+        expect(content).toBeGreaterThanOrEqual(split);
+    });
+
+    it('control: a stylesheet without the menu position is seen', () => {
+        const own = declarations('.send-menu { color: red }').filter((declaration) => declaration.selectors.includes('.send-menu'));
+        expect(own.some((declaration) => declaration.property === 'position')).toBe(false);
+    });
+});
+

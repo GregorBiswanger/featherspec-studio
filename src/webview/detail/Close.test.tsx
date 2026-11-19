@@ -363,3 +363,61 @@ describe('AC-020: updates keep the focus and the scroll container', () => {
         expect(document.activeElement).toBe(cardOf(container, '0003'));
     });
 });
+
+describe('0021 AC-014: Escape with the About this step toggletip open', () => {
+    async function withTip(): Promise<HTMLElement> {
+        const container = await board(SELECTED);
+        await send(detailEvent(detailView({}, { rule: 'NS-5', lines: [{ text: '/sdd-compile k', intent: 'Have the result verified' }], tips: { coach: 'new chat · strong model', about: ['one', 'two', 'three', 'four'] } })));
+        return container;
+    }
+
+    it('the first Escape closes only the toggletip and keeps the side panel; the second sends clearSelection', async () => {
+        const container = await withTip();
+        const toggle = container.querySelector<HTMLButtonElement>('aside.side-panel button.toggletip')!;
+        await click(toggle);
+        await act(async () => toggle.focus());
+        await escape(toggle);
+        expect(toggle.getAttribute('aria-expanded')).toBe('false');
+        expect(requests('clearSelection')).toEqual([]);
+        expect(container.querySelector('aside.side-panel')).not.toBeNull();
+        expect(document.activeElement).toBe(toggle);
+        await escape(toggle);
+        expect(requests('clearSelection')).toEqual([{}]);
+    });
+
+    it('after a press on the text of the open toggletip focus is on the body: Escape there closes only the toggletip and keeps the side panel; the second Escape sends clearSelection', async () => {
+        const container = await withTip();
+        const toggle = container.querySelector<HTMLButtonElement>('aside.side-panel button.toggletip')!;
+        await click(toggle);
+        await act(async () => {
+            container.querySelector('aside.side-panel [role="status"] p')!.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, cancelable: true }));
+            toggle.focus();
+            toggle.blur();
+        });
+        expect(toggle.getAttribute('aria-expanded')).toBe('true');
+        await escape(document.body);
+        expect(toggle.getAttribute('aria-expanded')).toBe('false');
+        expect(requests('clearSelection')).toEqual([]);
+        expect(container.querySelector('aside.side-panel')).not.toBeNull();
+        expect(document.activeElement).toBe(toggle);
+        await escape(toggle);
+        expect(requests('clearSelection')).toEqual([{}]);
+    });
+});
+
+describe('0024 AC-008: Escape with the Send menu open', () => {
+    it('the first Escape closes only the menu and keeps the side panel; focus is on the arrow part; the second sends clearSelection', async () => {
+        const container = await board(SELECTED);
+        await send(detailEvent(detailView({}, { rule: 'NS-5', lines: [{ text: '/sdd-compile k', intent: 'Have the result verified' }], send: { assistant: 'copilot', target: 'new', targets: ['new', 'current'] } })));
+        const arrow = container.querySelector<HTMLButtonElement>('aside.side-panel button.send-arrow')!;
+        await click(arrow);
+        expect(container.querySelector('aside.side-panel [role="menu"]')).not.toBeNull();
+        await escape(document.activeElement as HTMLElement);
+        expect(container.querySelector('[role="menu"]')).toBeNull();
+        expect(requests('clearSelection')).toEqual([]);
+        expect(container.querySelector('aside.side-panel')).not.toBeNull();
+        expect(document.activeElement).toBe(arrow);
+        await escape(arrow);
+        expect(requests('clearSelection')).toEqual([{}]);
+    });
+});

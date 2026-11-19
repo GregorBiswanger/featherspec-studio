@@ -65,6 +65,7 @@ describe('0017 AC-014: text, tooltip and accessible label of the current spec', 
         expect(markdown()).toBe(
             [
                 '**0020 · Blocked** Thing 0020',
+                'Find out what blocks',
                 '\\/sdd\\-plan \\.specs\\/active\\/0020\\-thing\\.md',
                 'proj · FeatherSpec 1\\.10\\.0',
                 'Click to copy the next step\\.',
@@ -73,13 +74,18 @@ describe('0017 AC-014: text, tooltip and accessible label of the current spec', 
         );
     });
 
-    it('a second line shows under its label, the label first', async () => {
+    it('0021 AC-007: each line shows its intent first and its prompt after it, escaped', async () => {
         await ready([{ number: '0012', kind: 'Active' }], [{ name: 'proj' }], {
             '.specs/active/0012-thing.plan.md': '# Plan\n\n**Spec:** [0012-thing.md](0012-thing.md)\n**Status:** In Progress\n\n## Steps\n\n### T-001 — A\n\n- [ ] **Verified (T-001):** —\n',
         });
         const lines = markdown().split('\n\n');
-        expect(lines[1]).toBe('\\/sdd\\-plan \\.specs\\/active\\/0012\\-thing\\.md');
-        expect(lines[2]).toBe('Then, in the same chat, if nothing blocks: continue'.replace(/[!-/:-@[-`{-~]/g, (character) => `\\${character}`));
+        const escape = (text: string): string => text.replace(/[!-/:-@[-`{-~]/g, (character) => `\\${character}`);
+        expect(lines.slice(1, 5)).toEqual([
+            escape('Continue with T-001 A'),
+            escape('Implement T-001 of .specs/active/0012-thing.plan.md'),
+            escape('Not sure where it stands? Let the agent report first'),
+            escape('/sdd-plan .specs/active/0012-thing.md'),
+        ]);
     });
 
     it('the accessible label is the text without icon, with commas, then the click sentence; no Markdown, no link', async () => {

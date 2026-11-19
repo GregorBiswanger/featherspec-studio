@@ -6,6 +6,7 @@ export const NOT_AVAILABLE_TEXT = 'not available';
 export const NOW_HEADING = 'Now';
 
 export const UP_NEXT_HEADING = 'Up next';
+export const UP_NEXT_NOTE = 'Ready first, then backlog';
 
 export const NOTHING_IN_PROGRESS_TEXT = 'Nothing in progress.';
 
@@ -17,10 +18,6 @@ export function moreText(count: number): string {
 
 export function problemsHeading(count: number): string {
     return `Problems (${count})`;
-}
-
-export function problemLineText(where: string, reason: string): string {
-    return `${where}: ${reason}`;
 }
 
 export function totalText(count: number): string {

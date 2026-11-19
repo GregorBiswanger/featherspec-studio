@@ -11,6 +11,8 @@
 
 *Amended by 0017 (PD-060/PD-061): every other statement, criterion, note or open point of this spec about drag and drop, "Move to…", the move command, move requests, the board-requested transition check, an accepted Ready → Active request or the drop result is void; a sentence that also says something else keeps that part.*
 
+*Amended by 0021 (PD-069): wherever this spec names the control "Copy" of a prompt (a next step or `/sdd-specify`), read `Copy prompt`, named as 0021 §6.4; the feedback stays; wherever it shows a next step line, 0021 §6.1 gives each line its intent.*
+
 Handoff reference: FS-007 ([po-handoff.md](../../docs/product/po-handoff.md) §4.2, §4.3, §10,
 §13 *Usability und Accessibility*). Builds on 0002 (parser model), 0003 (states, readiness,
 transitions, history), 0004 (run store) and 0005 (Studio shell). UI surface per
@@ -289,6 +291,7 @@ select one.
 - Board state, run status, verification summary, every marker, every refusal and every "not
   available" message is conveyed as text; board states and diagnostic badges also carry an
   icon. Nothing is conveyed by colour alone.
+  *Amended by 0022 (PD-069): §6.7 "board states … carry an icon" — one state table gives every state its icon, tint and name (0022 §4.8); in two- and three-line Overview rows the name is the icon's tooltip and part of the row's accessible name.*
 - The result of a move request (refusal with its reason, or the hand-off to the start
   workflow) is announced to screen readers.
   *Amended by 0017 (PD-060/PD-061): void; Copy feedback is announced per 0016.*

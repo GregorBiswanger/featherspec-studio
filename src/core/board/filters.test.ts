@@ -32,6 +32,25 @@ describe('board contract', () => {
     });
 });
 
+describe('0022 AC-009 (P-17): the Problems a narrow strip stands for', () => {
+    const withProblems = [card('0006', { state: 'Done', problems: 1 }), card('0007', { state: 'Done', problems: 2 }), card('0008', { state: 'Done' })];
+    const done = (columns: ReturnType<typeof arrangeBoard>) => columns.find((column) => column.state === 'Done')!;
+
+    it('a collapsed Done strip carries the sum of its specs Problems', () => {
+        expect(done(arrangeBoard(withProblems, {}, 'number', false))).toMatchObject({ narrow: 'collapsed', problems: 3 });
+    });
+
+    it('a strip a filter emptied carries the Problems of the specs it hides', () => {
+        expect(done(arrangeBoard(withProblems, { states: ['Active'] }, 'number', true))).toMatchObject({ narrow: 'filtered', problems: 3 });
+    });
+
+    it('a strip with no Problem, an empty strip and a wide column carry no problems field', () => {
+        expect('problems' in done(arrangeBoard([card('0006', { state: 'Done' })], {}, 'number', false))).toBe(false);
+        expect('problems' in done(arrangeBoard([], {}, 'number', false))).toBe(false);
+        expect('problems' in done(arrangeBoard(withProblems, {}, 'number', true))).toBe(false);
+    });
+});
+
 describe('filters', () => {
     it('AC-022: with no filter every card is shown in the column of its state, six columns in order', () => {
         const columns = arrangeBoard(NINE, {}, 'number');

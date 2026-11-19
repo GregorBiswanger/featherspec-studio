@@ -3,6 +3,10 @@
 **Status:** In Progress
 **Plan:** [0018-overview-and-compact-board.plan.md](0018-overview-and-compact-board.plan.md)
 
+*Amended by 0021 (PD-069): wherever this spec names the control "Copy" of a prompt (a next step or `/sdd-specify`), read `Copy prompt`, named as 0021 §6.4; the feedback stays; wherever it shows a next step line, 0021 §6.1 gives each line its intent.*
+
+*Amended by 0024 (PD-068): where Send is offered (0024 §6.2), the Copy prompt of the detail's first next-step line and of the first Now row is 0024's split button `Send to <Name>` — for its place, what follows it, its width ("every Copy", "the widest Copy") and the primary count (once, both parts primary); its menu holds Copy prompt (0024 §6.3, AC-002, AC-003).*
+
 Basis: UX audit 2026-11-17 (`docs/ux-audit/`) R-06, R-10, R-14, R-15 (05); K-C, K-D, K-J (04); 03 §5–§7;
 findings 02 §3.3–§3.5, §3.11 (screenshots 03, 04, 20, 22, 28, 29). Decisions PD-058, PD-062, PD-016,
 PD-036, PD-040, PD-047; guidelines 1–3, 6–10 (`.claude/rules/ux-guidelines.md`). Builds on
@@ -98,21 +102,30 @@ read Overview or Board; the rows below change behaviour.
 - **O-1 Order.** Now · Up next · Problems · figures line · Activity. No header line, tile, distribution bar, rule text or visible progress. 0016's header facts move: version and "Updated" time (T-02) into the tooltip of the panel's project name (F-1); the problem count (T-01) gives way to the Problems heading (O-4).
 - **O-2 Now.** Every entry in Active, Review or Blocked; order Blocked, Review, Active, then number ascending, then path. No cap.
 - **O-3 Up next.** Ready entries, then Backlog entries, each by number then path; at most three rows. While more exist, "+ n more" (n = the rest) asks for Board with the named set "Up next" holding the stems of every Up next entry. Up next is what to pick up next; it holds Backlog too because the Overview has no Backlog section, while the Up next group of 0020's tree holds Ready only beside its own Backlog group (0020 §4.1).
+  *Amended by 0022 (PD-069): O-3 — the tree group of Ready entries is named `Ready` (0022 §4.2); the section shows "Ready first, then backlog" after its heading while it lists a row (0022 X-07).*
 - **O-4 Problems.** One spec row per entry with a finding of 0016's tier *Problem*, by number then path, then one line per *Problem* finding tied to no entry: its place and text, plain text, no control, no Copy (guideline 2). Review alone is no problem. The heading "Problems (n)", n = spec rows + those lines (its rows, not T-01's findings), asks for Board with the named set "Problems" (stems of the spec rows). Nothing to list → no section.
+  *Amended by 0022 (PD-069): O-4 — place and text: each Problem shows as its sentence (0022 §6), the reason is the tooltip; the row cuts nothing (0022 §4.1, §4.5).*
 - **O-5 Spec row.** One line: number, title, state text (the state name; Backlog: 0016's first need (T-11), else `Backlog`; Problems row: each Problem's own reason as the detail shows it, joined by ` · `), 0016's warning icon with T-05 where a Problem applies, then 0017's "Next", short form and Copy (0017 AC-012). Above a panel width of 720 px title and state text are cut by an ellipsis, each with its full text as tooltip; the step and Copy are never cut. At 720 px or less the row takes two lines instead and cuts nothing: line 1 number and title (the title may wrap), line 2 state text, the warning icon, 0017's "Next" with the short form and Copy (PD-065). The step's second line is not shown on the row; 0017's step tooltip carries the full line(s). Activating the row outside Copy sends 0006 AC-014's request — a switch to Spec Explorer until 0019 retargets it (named deviation from guideline 8).
   *Amended by 0019 (PD-058): O-5 — activating the row outside Copy selects its spec in place and shows the side panel (0019 AC-001); Copy selects nothing.*
+  *Amended by 0021 (PD-069): O-5 — the row shows the step short form of 0021 §6.3 and "Copy prompt"; the first Now row also carries the coach line and `?` of 0021 §6.5, §6.6, which are no second step line; their place in the row is 0022's.*
+  *Amended by 0022 (PD-069): O-5 — the state shows as its icon (0022 §4.8) with its name visible only on one line; a Problems row lists sentences, not reasons; rows follow the list's own width, one line above 686 px, two from 420 px, three below (0022 §4.1), not a panel width of 720 px.*
+  *Amended by 0024 (PD-068): O-5 — on the first Now row where Send is offered, the Copy prompt is 0024's split button (0024 §6.2, AC-003); every other row keeps its Copy.*
 - **O-6 Figures line.** "Total n", then "State n" for Backlog, Ready, Active, Review, Done, Blocked, zeros included, each a control sending 0006 BR-08's request. Tooltip and accessible description: Done "of which Deprecated: n" while n > 0; the progress text of §7 (BR-04's rule) on the line and on "Total n", so Tab reaches it.
 - **O-7 Activity.** 0006 BR-07's entries, collapsed whenever the panel is opened (created), open or closed kept while it stays open, also when hidden and shown again (as 0007 AC-023); no section without entries; while the status history is not available, a heading "Activity" with the reason and no toggle.
 - **O-8 Empty.** Zero specs: "No specs yet. Start with /sdd-specify" with Copy in place of Now, Up next and the figures line; Problems (O-4) and Activity (O-7) as usual. Now empty: "Nothing in progress." Up next empty: "Nothing up next. Start the next spec with /sdd-specify" with Copy. Both Copy put `/sdd-specify` on the clipboard with 0016's feedback.
+  *Amended by 0021 (PD-069): O-8 — the Copy reads "Copy prompt".*
+  *Amended by 0022 (PD-069): O-8 — the Copy of "Nothing up next …" is an icon button (0022 §4.4); the zero-spec Copy stays primary (0022 AC-011).*
 
 ### 6.2 Board (R-10, K-D)
 
 - **B-1 Narrow column.** The six columns stay in board order. A column **shows no card** when no entry has its state, a filter hides all its cards, or it is Done and collapsed; it is then a 32 px strip with icon, vertical name and count (the cards it holds: 0, or Done's cards while collapsed), without card list or hint. The number a filter hides goes into the strip's tooltip and accessible name (§7), never into the count (PD-065).
+  *Amended by 0022 (PD-069): B-1 — a narrow strip that stands for a spec with a Problem also shows the warning icon under its count (0022 §4.3, X-06).*
 - **B-2 Widths.** A column that shows cards is 200–360 px wide, sharing the free width equally; gap 8 px; horizontal scrolling when columns at 200 px do not fit; sticky headers; no other layout at 640 px. 2 wide + 4 narrow need 568 px + 32 px padding ≤ 640; 5 wide + 1 narrow need 1,072 + 32 ≤ 1,240.
 - **B-3 Done.** Collapsed until the developer expands it; the toggle sits in Done's header, offered only while Done holds a card; the choice is remembered per workspace. While a filter is set, Done behaves like every column (B-1) without toggle; after "Clear filters" the remembered choice applies again.
 - **B-4 Filter.** No checkbox and no filter control. A filter arrives only with a navigation request (state or named set, 0007 AC-022) and shows as one chip "Filter: label" with "Clear filters"; label = the set's label or the state names joined by ", ". 0007 AC-023 holds.
 - **B-5 Card.** Rows in order: (1) number and title, clamped to two lines; (1a) the project-relative path, only for a duplicated stem; (2) 0016's warning icon with T-05; the state part — Backlog: 0016's first need (T-11); Blocked: each S-BLOCKED condition (0007 §6.1); a Deprecated spec: "Deprecated"; else a steps progress bar with "Steps d/t" and "Criteria d/t", each left out while not available; the date of §6.3, right-aligned, secondary colour; row 2 is absent without parts; (3) 0017's next-step line. Card tooltip: number, full title, then the description (PD-043) or "No summary". The card's accessible name ends with its state name, so the state stays readable without the chip (0005 AC-023).
 - **B-6 Column header.** Icon, name, count. Ready, Review and Blocked carry as tooltip 0016's sentence (T-09) and its rule text (T-08), joined by ` · `; no card shows either. A narrow strip's tooltip is its §7 text, for these three followed by ` · ` and that tooltip; its accessible name is the §7 text alone.
+  *Amended by 0022 (PD-069): B-6 — a narrow strip's accessible name is its §7 text followed by ` · ` and the problem count where it hides a Problem (0022 X-06); the rule tooltip follows it.*
 - **B-7 Keyboard.** 0007 §6.7 as amended by 0017. Left and Right go to the nearest column in that direction that shows a card, skipping narrow ones (collapsed Done included). The Done toggle is a button in DOM order; Enter or Space toggles; focus stays on it. When the focused card stops showing after a live update (its spec moved into collapsed Done), focus moves to the nearest shown card in its column, else in the nearest column; with none, to the Done toggle (guideline 8).
 
 ### 6.3 Times (R-14, K-J options 3 and 1)
@@ -134,6 +147,8 @@ read Overview or Board; the rows below change behaviour.
 | `featherspec-studio.openSpecBoard` · FeatherSpec Studio: Open Spec Board | `featherspec-studio.openBoard` · FeatherSpec Studio: Open Board |
 | `featherspec-studio.rescan` · FeatherSpec Studio: Rescan Project; `featherspec-studio.refreshDiscovery` · FeatherSpec Studio: Refresh Project Discovery | `featherspec-studio.refresh` · FeatherSpec Studio: Refresh |
 | Area IDs `missionControl`, `specBoard` | `overview`, `board` |
+
+*Amended by 0023 (PD-069): §6.4 command table — plus area `planMap` and `featherspec-studio.openPlanMap` · `FeatherSpec Studio: Open Plan Map` (0023 AC-006).*
 
 ## 7. Visible texts (English, PD-016)
 
@@ -162,6 +177,10 @@ read Overview or Board; the rows below change behaviour.
 
 *Amended by 0020 (PD-058): §7 "tree entry" — void: the tree has no area entries (0020 AC-016).*
 
+*Amended by 0021 (PD-069): §7 rows with `Copy` ("Nothing up next …", "No specs yet …") — the Copy reads `Copy prompt`.*
+
+*Amended by 0022 (PD-069): §7 row "Narrow column, accessible name and tooltip" — plus ` · <n> problems` (0022 X-06) where the strip hides a Problem.*
+
 ## 8. Error cases and edge cases
 
 - Unreadable spec or contradiction in `active/` → a Now row with 0016's marker, and a Problems row.
@@ -181,6 +200,7 @@ marked manual. Fixtures: 0006's and 0007's, `fs170-brownfield-mixed`, one with e
 
 - **AC-001** The manifest shall contribute the commands of §6.4's right column with those titles and none of the left column; the protocol's area IDs shall be `overview`, `board` and (until 0020) `specExplorer`, and no navigation request shall name `missionControl` or `specBoard`; the navigation, area heading, tree entry labels and purpose texts shall read as §7; a scan of `src` without tests, `package.json`, `README.md`, `docs/release-checklist.md`, `docs/product/design-brief.md` and `.architecture/*.md` shall find neither `Mission Control` nor `Spec Board` in any letter case; `CHANGELOG.md` shall name the renamed areas and commands under the version in preparation.
   *Amended by 0020 (PD-058): AC-001 "(until 0020) `specExplorer`" and "tree entry labels" — void: no such area ID (0020 AC-016) and no area entries in the tree.*
+  *Amended by 0023 (PD-069): AC-001 "area IDs shall be `overview`, `board`" — plus `planMap` and `featherspec-studio.openPlanMap` (0023 AC-006).*
 - **AC-002** When the panel opens for the first time in a workspace, or the remembered area is one this version does not know (`missionControl` and `specBoard` included), the system shall show the Overview with no remembered selection (0005 §13).
   *Amended by 0020 (PD-058): AC-002 — for a remembered `specExplorer` the remembered selection stays (0020 AC-017).*
 - **AC-003** While the project has a spec, the Overview shall render in DOM order Now, Up next, Problems, the figures line and Activity, Problems only while O-4 lists something and Activity per AC-010, and no header line, tile, distribution bar or visible progress text.
@@ -190,17 +210,25 @@ marked manual. Fixtures: 0006's and 0007's, `fs170-brownfield-mixed`, one with e
   > **Given** two Ready and four Backlog specs **Then** three rows, "+ 3 more", and a set of six stems.
 - **AC-006** Each Now, Up next and Problems spec row shall show the parts of O-5, on one line above 720 px, and no visible second line of the step (0017's step tooltip shows the full line(s)); the stylesheet shall keep the row on one line above 720 px with title and state text cut by an ellipsis and the step and Copy uncut, and at 720 px or less (media query `max-width: 720px`) wrap it to two lines, number and title first, then the state text, the step and Copy, with no text cut by an ellipsis; the row shall carry the full title and state text as tooltips. Activating the row outside Copy shall send 0006 AC-014's request; Copy shall send none.
   *Amended by 0019 (PD-058): AC-006 "send 0006 AC-014's request" — the row selects its spec in place (0019 AC-001) and sends no navigation request.*
+  *Amended by 0021 (PD-069): AC-006 — the step short form and "Copy prompt" (0021 AC-006, AC-008).*
+  *Amended by 0022 (PD-069): AC-006 "on one line above 720 px", "at 720 px or less (media query `max-width: 720px`)" — container rules on the list's width at 686 px and 420 px (0022 AC-001); Problems rows per 0022 AC-003; state per 0022 AC-027.*
+  *Amended by 0024 (PD-068): AC-006 — the first Now row's split button belongs to the one line above 720 px as the Copy did (0024 AC-003, AC-009).*
 - **AC-007** The Problems section shall show exactly the spec rows and lines of O-4 under "Problems (n)" with n their sum, each spec row's state text the reasons of its Problems; a line tied to no entry shall be no control; activating the heading shall send one request for Board with the named set "Problems"; a Review entry without a *Problem* finding shall have no row.
   > **Given** `fs-broken` (0016 §6.1) **Then** "Problems (2)", rows 0002 and 0003, and 0003's row shows the contradiction's reason.
+  *Amended by 0022 (PD-069): AC-007 — each Problem shows as its sentence, the reasons are the tooltip (0022 §4.5).*
 - **AC-008** The figures line shall show "Total n" and the six "State n" in board order, zeros included, each one control sending 0006 BR-08's request (a 0 included), and the Done figure the tooltip and accessible description "of which Deprecated: n" while n > 0.
 - **AC-009** The figures line and its "Total n" control shall carry the progress text of §7 as tooltip, and "Total n" as accessible description; no other element shall show it.
   > **Given** 0006 AC-001's fixture **Then** "Progress 25 % (2 of 8): Done specs with status Implemented or Baseline ÷ (all specs − Deprecated), rounded down".
 - **AC-010** While Activity has entries, the Overview shall show it collapsed (`aria-expanded="false"`) with the heading "Activity (n)" each time the panel is opened; activating the heading shall show or hide the entries, and the choice shall hold while the panel stays open, also after it was hidden and shown again. While it has no entry it shall show no section; while the status history is not available, the heading "Activity" with "Activity not available: <reason>" and no toggle.
 - **AC-011** While the project has no spec, the Overview and the Board shall show "No specs yet. Start with /sdd-specify" and a Copy that copies `/sdd-specify`, and the Overview no Now, Up next or figures line; Problems and Activity per AC-007 and AC-010.
+  *Amended by 0021 (PD-069): AC-011 — the Copy reads `Copy prompt` and still copies `/sdd-specify` (0021 AC-008).*
 - **AC-012** While Now has no entry it shall show "Nothing in progress."; while Up next has none it shall show "Nothing up next. Start the next spec with /sdd-specify" with a Copy of `/sdd-specify`.
+  *Amended by 0021 (PD-069): AC-012 — the Copy reads `Copy prompt` (0021 AC-008).*
+  *Amended by 0022 (PD-069): AC-012 — the Copy of "Nothing up next …" is an icon button (0022 §4.4).*
 - **AC-013** Every spec row, Copy, figure, "+ n more" and the Problems and Activity headings shall be reachable with Tab, activated with Enter or Space, and show the focus outline of 0013 AC-003.
 - **AC-014** Each column that shows no card (B-1) shall render with `data-narrow`, its icon, name and count (0 on a strip a filter emptied; the number hidden is in its tooltip and accessible name), no card list and no hint, and the accessible name of §7; every other column shall render without `data-narrow`.
   > **Given** Review 2, Done 13, the rest empty, no filter, Done collapsed **Then** five narrow columns and one wide.
+  *Amended by 0022 (PD-069): AC-014 — a strip that stands for a spec with a Problem also carries the warning icon and the problem count in its name (0022 AC-009).*
 - **AC-015** The stylesheet shall give a narrow column a width of 32 px, every other column a minimum of 200 px and a maximum of 360 px, a gap of 8 px, sticky headers and horizontal scrolling; a stylesheet test shall compute from these values and `main`'s padding at most 640 px for 2 wide and 4 narrow columns and at most 1,240 px for 5 wide and 1 narrow.
 - **AC-016** While no filter is set, Done shall be collapsed until the developer expands it; its toggle (`aria-expanded`, accessible name "Show Done" or "Hide Done") shall exist only while Done holds a card; the choice shall be the same after the panel was closed and reopened and after a restart of VS Code, and a damaged remembered value shall count as collapsed. While a filter is set, Done shall follow B-1 with no toggle; after "Clear filters" the remembered choice shall apply.
 - **AC-017** The board shall offer no checkbox and no filter control of its own; while a navigation request's filter is set, it shall show one chip "Filter: label" per B-4 and "Clear filters".
@@ -210,6 +238,7 @@ marked manual. Fixtures: 0006's and 0007's, `fs170-brownfield-mixed`, one with e
   > **Given** an Active spec with 3 of 7 steps and no traceability table **Then** row 2 reads "Steps 3/7" with a progress bar named "Steps" and no criteria part. **Given** a Deprecated Done spec **Then** "Deprecated".
 - **AC-020** The Ready, Review and Blocked column headers, and no other, shall carry the tooltip of B-6, a narrow strip after its §7 text.
   > **Given** the Review column **Then** its tooltip reads "Plan done, waiting for review · Derived from the files · rule S-REVIEW"; narrow and empty, "Review: no spec · Plan done, waiting for review · Derived from the files · rule S-REVIEW".
+  *Amended by 0022 (PD-069): AC-020 — a narrow strip's tooltip is its §7 text, the problem count where it applies (0022 X-06), then the rule tooltip.*
 - **AC-021** The card date shall follow L-1 and L-2.
   > **Given** a plan with `**Last updated:** 2026-11-10` and both files changed 2026-11-17 **Then** "2026-11-10" with the tooltip "Last change 2026-11-10, from the plan's Last updated line". **Given** the plan says `<date>` **Then** "2026-11-17", "file modification time".
 - **AC-022** While L-3's condition holds, no card shall show a date, the sort control shall offer only "Number" and "Title A–Z", and a sort by last change shall become Number.
@@ -227,6 +256,10 @@ marked manual. Fixtures: 0006's and 0007's, `fs170-brownfield-mixed`, one with e
 - **AC-030** Every test at the commit before 0018's first change that decides a criterion §5 does not void — 0006's drill-downs (AC-012, AC-014, AC-029) and the host smoke tests of 0001 and 0005 included, with the new IDs — shall exist at the head and pass; the plan shall list every title missing at the head, a renamed one included, with the criterion this spec voids or the head title that replaces it, from a script comparing both commits; `npm run test:unit` and `npm test` shall pass on Windows and in CI.
   *Amended by 0019 (PD-058): AC-030 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*
   *Amended by 0020 (PD-058): AC-030 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
+  *Amended by 0021 (PD-069): AC-030 (test audit) — also except the tests 0021 AC-020 lists against a statement 0021 §5 replaces.*
+  *Amended by 0022 (PD-069): AC-030 — also excepts the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
+  *Amended by 0023 (PD-069): AC-030 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
+  *Amended by 0024 (PD-068): AC-030 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
 - **AC-031** *(manual, Gregor or his delegate)* Preview-harness screenshots of Overview and Board for this repository and `fs170-brownfield-mixed`, Dark, Light and High Contrast, panel width 1240 px and 640 px, height 900 px: Now is the first section; rows keep one line at 1240 px and take two lines at 640 px with the state text readable (AC-006); with no spec selected, every column that shows a card is visible without horizontal scrolling at 1240 px, and at 640 px where at most two do; a wide column shows at least six cards when it holds them (R-10); strips, toggle and focus are legible. Verdict in the plan; the real VS Code window is a release-checklist item.
   *Amended by 0019 (PD-058): AC-031 — "visible without horizontal scrolling" holds "with no spec selected"; with the side panel the board scrolls (0019 §9).*
 

@@ -96,22 +96,23 @@ run the `/sdd-architecture-update` workflow yourself, in the same change set, ex
 the user had typed it (its body lives in `.claude/commands/sdd-architecture-update.md`).
 
 ```yaml
-# last reconciled: 2026-11-18 (0020) · last deep scan: never · module maps: .architecture/{core,adapters,webview}.md
+# last reconciled: 2026-11-19 (0024) · last deep scan: never · module maps: .architecture/{core,adapters,webview}.md
 architecture:
   style: 'Hexagonal (ports & adapters): framework-free core (domain + application) behind ports; adapters for VS Code host, storage, file system; webview as a separate UI bundle'
   entrypoints:
     - 'src/extension.ts — composition root; activates on workspaceContains:AGENTS.md, workspaceContains:.specs, onWebviewPanel:featherspecStudio.main and Studio commands and views; bundled by esbuild to dist/extension.js'
     - 'src/webview/main.tsx — Studio panel UI (React 19); bundled by esbuild to dist/webview/main.js and main.css; no Node.js or file access'
   modules:
-    - 'src/core/<area> — one folder per spec: discovery 0001, specs 0002 (+ diagnostic tiers 0016), lifecycle 0003, runtime 0004 (status history only), shell 0005 (+ spec tree, tree service, tree actions 0020), overview 0006, 0018, board 0007 (+ next step 0015, needs 0016, step view 0017; narrow columns, Done memory, card date 0018; situation picture, short title 0019), copyNextStep 0017 — current spec, status entry, Copy Next Step, setup 0014; ports/ holds every port (.architecture/core.md)'
-    - 'src/adapters — node/ (Node fs, spec source, runtime medium, IDs, release download (fetch), tar.gz reader, setup target writer, earlier run data removal), vscode/ (thin host ports, no logic; the Specs tree view 0020) (.architecture/adapters.md)'
-    - 'src/webview — panel UI: protocol client, shell, area registry, Board and Overview areas (strips, Done toggle, Now, Up next, Problems, figures, Activity; 0018), detail as side panel in Overview and Board (0019), cards and rows with next step and Copy (0017); primitives in ui/ (.architecture/webview.md); src/test — extension-host smoke tests (Mocha, CI only); test/fixtures — fixture projects and setup archives in test/fixtures/setup; media — packaged assets'
+    - 'src/core/<area> — one folder per spec, framework-free: discovery 0001, specs 0002, lifecycle 0003, runtime 0004, shell 0005, overview 0006, board 0007, planMap 0023, copyNextStep 0017, settings 0021, assistant 0024, setup 0014; ports/ holds every port; what each area holds: .architecture/core.md'
+    - 'src/adapters — node/ (Node fs, spec source, runtime medium, IDs, release download (fetch), tar.gz reader, setup target writer, earlier run data removal), vscode/ (thin host ports, no logic; the Specs tree view 0020; settings 0021; the assistant host 0024) (.architecture/adapters.md)'
+    - 'src/webview — panel UI: protocol client, shell, area registry, three tabs (Overview, Board, Plan map; areas/<area>/), the detail as side panel (detail/), primitives in ui/; inside view: .architecture/webview.md; src/test — extension-host smoke tests (Mocha, CI only); test/fixtures — fixture projects and setup archives in test/fixtures/setup; media — packaged assets'
   shared:
-    - 'src/shared/protocol — versioned message protocol, areas, board view and filter contract, Overview view, next step and step view, detail picture, UI texts; imported by extension and webview, imports nothing (specs 0005, 0007, 0006, 0013, 0015, 0016, 0017, 0018, 0019, 0020); src/shared/testing — timing budgets for tests'
+    - 'src/shared/protocol — versioned message protocol and the views and texts both sides share (areas, board, Overview, next step, step guides and tips, plan view, assistant view and send, detail picture, state look, side panel layout, UI texts); imported by extension and webview, imports nothing; src/shared/testing — timing budgets for tests'
   boundaries:
     - 'Domain and application code never import vscode and reach the outside only through ports; webview and extension host communicate only through typed messages, and the webview has no file-system or Node.js access'
     - 'Only the setup (0014) writes into a workspace folder or reaches the network, through SetupTargetPort and ReleaseHttpPort, after the user started it in a trusted workspace'
     - 'src/shared imports neither vscode nor Node.js; src/webview imports only src/shared and its own files'
+    - 'No webview message names a command; the Studio runs another extension\'s or the chat\'s commands only from src/core/assistant/assistants.ts, after the developer activated a Send, and never submits (0024)'
 ```
 
 ## Memory Bank (SDD Working Set)

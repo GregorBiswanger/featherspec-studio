@@ -13,8 +13,8 @@ function valid(): SpecDetailView {
         state: 'Active',
         rule: 'S-ACTIVE',
         persistence: 'persisted',
-        nextStep: { rule: 'NS-6', lines: [{ text: '/sdd-plan .specs/active/0007-thing.md' }] },
-        problems: [{ reason: 'a problem', open: { key: '.specs/active/0007-thing.md', line: 3 } }],
+        nextStep: { rule: 'NS-6', lines: [{ text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Write the plan' }] },
+        problems: [{ sentence: 'A sentence', reason: 'a problem', open: { key: '.specs/active/0007-thing.md', line: 3 } }],
         notes: [{ reason: 'a note' }],
         progress: { needs: [], noPlan: false, steps: { kind: 'steps', done: 0, total: 1 }, criteria: { kind: 'criteria', verified: 0, total: 0, open: [] } },
         files: [{ label: 'Spec', name: '0007-thing.md', open: { key: '.specs/active/0007-thing.md', line: 1 } }],
@@ -24,6 +24,12 @@ function valid(): SpecDetailView {
 }
 
 describe('0019 P-2: the guard of the situation picture', () => {
+    it('0021 AC-009: accepts a next step with tips', () => {
+        const view = valid();
+        view.nextStep = { rule: 'NS-6', lines: [{ text: 'a', intent: 'b' }], tips: { coach: 'any chat · fast model', about: ['one', 'two', 'three', 'four'] } };
+        expect(isDetailView(view)).toBe(true);
+    });
+
     it('accepts the picture of a spec, with and without its optional parts', () => {
         expect(isDetailView({ kind: 'none' })).toBe(true);
         const view = valid();
@@ -39,10 +45,16 @@ describe('0019 P-2: the guard of the situation picture', () => {
     it.each<[string, (view: Record<string, unknown>) => void]>([
         ['a missing state', (view) => delete view.state],
         ['a missing rule', (view) => delete view.rule],
+        ['0021 AC-009: tips that are not a record', (view) => (view.nextStep = { rule: 'NS-6', lines: [{ text: 'a', intent: 'b' }], tips: 'x' })],
+        ['0021 AC-009: tips with an extra key', (view) => (view.nextStep = { rule: 'NS-6', lines: [{ text: 'a', intent: 'b' }], tips: { coach: 'c', about: [], extra: 1 } })],
+        ['0021 AC-009: tips whose paragraphs are not text', (view) => (view.nextStep = { rule: 'NS-6', lines: [{ text: 'a', intent: 'b' }], tips: { coach: 'c', about: [1] } })],
+        ['0021 AC-001: a next-step line without its intent', (view) => (view.nextStep = { rule: 'NS-6', lines: [{ text: '/sdd-plan k' }] })],
+        ['0021 AC-001: a next-step line that still carries a label instead of an intent', (view) => (view.nextStep = { rule: 'NS-6', lines: [{ text: '/sdd-plan k', label: 'Then:' }] })],
         ['an unknown persistence', (view) => (view.persistence = 'stored')],
         ['a path that is not text', (view) => (view.path = 4)],
         ['a successor that is not text', (view) => (view.successor = false)],
         ['notes that are not a list', (view) => (view.notes = 'none')],
+        ['a problem whose sentence is not a string', (view) => (view.problems = [{ reason: 'r', sentence: 4 as unknown as string }])],
         ['a note without a reason', (view) => (view.notes = [{ open: { key: 'a.md', line: 1 } }])],
         ['a note that opens line 0', (view) => (view.notes = [{ reason: 'r', open: { key: 'a.md', line: 0 } }])],
         ['a problem that opens without a line', (view) => (view.problems = [{ reason: 'r', open: { key: 'a.md' } }])],
@@ -73,3 +85,21 @@ describe('0019 P-2: the guard of the situation picture', () => {
         expect(isDetailView(progress({ kind: 'steps', done: 0, total: 1 }, { kind: 'criteria', verified: 0, total: 0, open: [] }))).toBe(true);
     });
 });
+
+describe('0024 AC-003: the send view of the next step', () => {
+    const SEND = { assistant: 'copilot', target: 'new', targets: ['new', 'current'] };
+
+    it('accepts a next step with a send view and refuses a bad one', () => {
+        const view = valid();
+        const lines = [{ text: 'a', intent: 'b' }];
+        view.nextStep = { rule: 'NS-9', lines, send: SEND } as never;
+        expect(isDetailView(view)).toBe(true);
+        view.nextStep = { rule: 'NS-9', lines, send: { assistant: 'claudeCode', target: 'new', targets: ['new'] } } as never;
+        expect(isDetailView(view)).toBe(true);
+        for (const send of [{ ...SEND, extra: 1 }, { ...SEND, assistant: 'codex' }, { assistant: 'claudeCode', target: 'current', targets: ['new'] }, { ...SEND, targets: ['new'] }, 'copilot', null]) {
+            view.nextStep = { rule: 'NS-9', lines, send } as never;
+            expect(isDetailView(view), JSON.stringify(send)).toBe(false);
+        }
+    });
+});
+

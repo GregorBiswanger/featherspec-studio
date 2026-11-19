@@ -41,7 +41,7 @@ describe('AC-016, AC-024: timing', () => {
     it('AC-016: a new event is in the DOM within 500 ms of the message event', async () => {
         const container = await open(sampleView());
         const next = sampleView();
-        next.problems = { rows: [], lines: Array.from({ length: 5 }, (_, index) => ({ where: 'project', reason: `reason ${index}` })) };
+        next.problems = { rows: [], lines: Array.from({ length: 5 }, (_, index) => ({ where: 'project', reason: `reason ${index}`, sentence: `reason ${index}` })) };
         const best = await bestOfThree(
             () => send(overviewEvent(next)),
             () => send(overviewEvent(sampleView())),

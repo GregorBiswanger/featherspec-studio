@@ -65,8 +65,11 @@ describe('board requests', () => {
                 'navigate',
                 'openFile',
                 'overviewSetActivity',
+                'resetSideWidth',
                 'runAction',
                 'select',
+                'sendPrompt',
+                'setSideWidth',
             ].sort(),
         );
     });
@@ -105,11 +108,13 @@ describe('board requests', () => {
         expect(isCardView({ ...card, lastChange: 5 })).toBe(false);
         expect(isCardView({ ...card, need: 'needs a plan' })).toBe(false);
         expect(isCardView({ ...card, need: { text: 'x' } })).toBe(false);
-        const view = { columns: [{ state: 'Active', cards: [card], hidden: 0, emptyBeforeFilter: false, count: 1 }], banner: { problems: [{ where: 'project', reason: 'x' }], notes: [] }, filter: {}, sort: 'number', sortKeys: ['number', 'title'], noSpecs: false };
+        const view = { columns: [{ state: 'Active', cards: [card], hidden: 0, emptyBeforeFilter: false, count: 1 }], banner: { problems: [{ where: 'project', reason: 'x' }], notes: [] }, filter: {}, sort: 'number', sortKeys: ['number', 'title'], noSpecs: false, planSpecs: [] };
         expect(isBoardView(view)).toBe(true);
         expect(isBoardView({ ...view, columns: [{ ...view.columns[0], narrow: 'empty' }] })).toBe(true);
         expect(isBoardView({ ...view, columns: [{ ...view.columns[0], narrow: 'wide' }] })).toBe(false);
         expect(isBoardView({ ...view, columns: [{ state: 'Active', cards: [], hidden: 0, emptyBeforeFilter: false }] })).toBe(false);
+        expect(isBoardView({ ...view, columns: [{ ...view.columns[0], narrow: 'collapsed', problems: 2 }] })).toBe(true);
+        expect(isBoardView({ ...view, columns: [{ ...view.columns[0], narrow: 'collapsed', problems: '2' }] })).toBe(false);
         expect(isBoardView({ ...view, doneToggle: 'show' })).toBe(true);
         expect(isBoardView({ ...view, doneToggle: 'open' })).toBe(false);
         expect(isBoardView({ ...view, sortKeys: [] })).toBe(false);

@@ -1,16 +1,24 @@
-import type { DetailView, DiagnosticLine, StatusHistoryItem } from '../../shared/protocol/detail';
+import type { Offer } from '../assistant/offer';
+import { sendViewOf, tipClosingOf } from '../assistant/sendView';
+import { problemSentence } from '../lifecycle/problemSentence';
+import type { DetailView, DiagnosticLine, NextStepView, StatusHistoryItem } from '../../shared/protocol/detail';
 import { HISTORY_LABEL, successorText } from '../../shared/protocol/texts';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { HistoryCause, HistoryView } from '../lifecycle/statusHistory';
 import type { ShellModel } from '../ports/shell';
 import { titleOf } from './cards';
-import { nextStep } from './nextStep';
+import type { StepTipSettings } from '../settings/stepTipSettings';
+import { nextStep, type NextStep } from './nextStep';
+import { stepTips } from './stepTips';
 import { filesOf, progressOf } from './situation';
+import { planOf } from '../planMap/planMap';
 
 export interface DetailInput {
     selection: { stem: string; path?: string } | undefined;
     model: ShellModel | undefined;
     history: HistoryView;
+    tips?: StepTipSettings;
+    offer?: Offer;
 }
 
 function causeView(cause: HistoryCause): StatusHistoryItem['cause'] {
@@ -26,7 +34,22 @@ function diagnosticLine(diagnostic: LifecycleEntry['diagnostics'][number]): Diag
     const scope = diagnostic.scope;
     const file = scope === 'project' ? undefined : scope.file;
     const line = scope === 'project' || !('line' in scope) ? undefined : scope.line;
-    return file === undefined ? { reason: diagnostic.reason } : { reason: diagnostic.reason, open: { key: file, line: line === undefined || line < 1 ? 1 : line } };
+    const base = diagnostic.tier === 'problem' ? { sentence: problemSentence(diagnostic), reason: diagnostic.reason } : { reason: diagnostic.reason };
+    return file === undefined ? base : { ...base, open: { key: file, line: line === undefined || line < 1 ? 1 : line } };
+}
+
+function nextStepView(next: NextStep, tips: StepTipSettings | undefined, offer: Offer | undefined): NextStepView {
+    if (!('lines' in next)) {
+        return next;
+    }
+    const lines = next.lines.map((line) => ({ text: line.text, intent: line.intent }));
+    const send = sendViewOf(offer, next.case);
+    return {
+        rule: next.rule,
+        lines,
+        ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer)) }),
+        ...(send === undefined ? {} : { send }),
+    };
 }
 
 export function buildDetail(input: DetailInput): DetailView {
@@ -57,6 +80,7 @@ export function buildDetail(input: DetailInput): DetailView {
         : undefined;
     const duplicated = model.lifecycle.entries.filter((candidate) => candidate.stem === entry.stem).length > 1;
     const progress = progressOf(model, entry, spec);
+    const plan = planOf(model, entry, spec);
     return {
         kind: 'spec',
         key: entry.key,
@@ -68,10 +92,11 @@ export function buildDetail(input: DetailInput): DetailView {
         rule: entry.rule,
         persistence: entry.persistence,
         ...(entry.deprecated === undefined ? {} : { successor: successorText(entry.deprecated.successor) }),
-        nextStep: next,
+        nextStep: nextStepView(next, input.tips, input.offer),
         problems: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').map(diagnosticLine),
         notes: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'note').map(diagnosticLine),
         ...(progress === undefined ? {} : { progress }),
+        ...(plan === undefined ? {} : { plan }),
         files: filesOf(model, spec),
         history: { statusHistory: historyItems, label: input.history.available ? input.history.label : HISTORY_LABEL, notAvailable: input.history.available ? undefined : input.history.text },
     };

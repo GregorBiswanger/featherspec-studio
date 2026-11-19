@@ -18,6 +18,15 @@ function toItem(model: Element): vscode.TreeItem {
             const item = new vscode.TreeItem(model.label, model.collapsed ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.Expanded);
             item.id = model.id;
             item.description = model.description;
+            if (model.icon !== undefined) {
+                item.iconPath = new vscode.ThemeIcon(model.icon, model.color === undefined ? undefined : new vscode.ThemeColor(model.color));
+            }
+            if (model.tooltip !== undefined) {
+                item.tooltip = model.tooltip;
+            }
+            if (model.accessibleLabel !== undefined) {
+                item.accessibilityInformation = { label: model.accessibleLabel };
+            }
             return item;
         }
         case 'spec': {

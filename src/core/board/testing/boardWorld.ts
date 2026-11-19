@@ -3,6 +3,8 @@ import { readMemory } from '../../lifecycle/testing/projects';
 import type { Disposable } from '../../ports/host';
 import type { HistoryView } from '../../lifecycle/statusHistory';
 import type { ShellModel, ShellModelSource, UiMemoryPort } from '../../ports/shell';
+import { createFakeOffer, type FakeOffer } from '../../assistant/testing/fakeOffer';
+import { createFakeTips, type FakeTips } from '../../settings/testing/fakeTips';
 import { createBoardService, type BoardService } from '../boardService';
 
 export async function modelOf(files: Record<string, string>): Promise<ShellModel> {
@@ -90,6 +92,8 @@ export interface BoardWorld {
     source: FakeSource;
     service: BoardService;
     memory: FakeBoardMemory;
+    tips: FakeTips;
+    assistant: FakeOffer;
     views: string[];
 }
 
@@ -111,11 +115,11 @@ export function createFakeBoardMemory(value?: unknown): FakeBoardMemory {
     return memory;
 }
 
-export function createBoardWorld(model: ShellModel | undefined, memory: FakeBoardMemory = createFakeBoardMemory()): BoardWorld {
+export function createBoardWorld(model: ShellModel | undefined, memory: FakeBoardMemory = createFakeBoardMemory(), tips: FakeTips = createFakeTips(), assistant: FakeOffer = createFakeOffer()): BoardWorld {
     const source = createFakeSource(model);
     const selection = createFakeSelection();
     const history = createFakeHistory();
-    const service = createBoardService({ source, selection: selection.source, history: history.port, memory });
+    const service = createBoardService({ source, selection: selection.source, history: history.port, memory, tips, assistant });
     const views: string[] = [];
     service.onDidChangeView((view) => views.push(JSON.stringify(view)));
     return {
@@ -124,6 +128,8 @@ export function createBoardWorld(model: ShellModel | undefined, memory: FakeBoar
         source,
         service,
         memory,
+        tips,
+        assistant,
         views,
     };
 }

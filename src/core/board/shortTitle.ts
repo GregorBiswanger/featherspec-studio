@@ -16,7 +16,7 @@ function withoutEmphasis(part: string): string {
         .replace(/(?<![A-Za-z0-9])_+|_+(?![A-Za-z0-9])/g, '');
 }
 
-function plain(text: string): string {
+export function plainText(text: string): string {
     const parts = text.replace(LINK, '$1').split(CODE_SPAN);
     return parts
         .map((part, index) => (index % 2 === 1 ? part : withoutEmphasis(part)))
@@ -39,15 +39,15 @@ function cut(text: string): string {
 }
 
 export function plainShort(text: string): string {
-    return cut(plain(text));
+    return cut(plainText(text));
 }
 
 export function shortTitle(text: string, id: string): string {
     const first = withoutListMarker(text.split('\n')[0] ?? '');
     const bold = new RegExp(`^\\s*(\\*{2,3}|_{2,3})\\s*(?:~~)?\\s*(?:\\[Uncertain\\]\\s*)?${escaped(id)}\\s*(?:~~)?\\s*[—–:|-]\\s*(?![*_\\s])(.+?)\\s*\\1`).exec(first);
     if (bold?.[2] !== undefined) {
-        return cut(plain(bold[2]));
+        return cut(plainText(bold[2]));
     }
-    const rest = plain(withoutLeadingId(text, id));
+    const rest = plainText(withoutLeadingId(text, id));
     return cut(SENTENCE.exec(rest)?.[1] ?? rest);
 }

@@ -137,7 +137,7 @@ describe('panel states S1 to S9 in the panel UI', () => {
 
     it('AC-016 S6: shows its text and the Reload action, and Reload sends runAction reload', async () => {
         const container = await open();
-        await send({ v: 5, kind: 'evt', type: 'shell', seq: 1, payload: {} });
+        await send({ v: 9, kind: 'evt', type: 'shell', seq: 1, payload: {} });
         const region = container.querySelector('section[role="status"]');
         expect(region?.getAttribute('aria-label')).toBe('Reload needed');
         expect(region?.textContent).toContain('FeatherSpec Studio was updated. Reload to continue.');
@@ -147,13 +147,13 @@ describe('panel states S1 to S9 in the panel UI', () => {
 
     it('AC-016 S6 wins over every state the host reports', async () => {
         const container = await show({ id: 'S1' });
-        await send({ v: 5, kind: 'evt', type: 'shell', seq: 2, payload: {} });
+        await send({ v: 9, kind: 'evt', type: 'shell', seq: 2, payload: {} });
         expect(container.querySelector('section[role="status"]')?.getAttribute('aria-label')).toBe('Reload needed');
     });
 
     it('AC-018: the navigation stays while a state is shown, and the state takes the place of the area content', async () => {
         const container = await show({ id: 'S2' });
-        expect(container.querySelectorAll('nav button')).toHaveLength(2);
+        expect(container.querySelectorAll('nav button')).toHaveLength(3);
         expect(container.querySelectorAll('section[role="status"]')).toHaveLength(1);
     });
 

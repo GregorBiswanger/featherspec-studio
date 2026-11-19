@@ -9,6 +9,10 @@
 
 *Amended by 0017 (PD-060/PD-061): every other statement, criterion, note or open point of this spec about drag and drop, "Move to…", the move command, move requests, the board-requested transition check, an accepted Ready → Active request or the drop result is void; a sentence that also says something else keeps that part.*
 
+*Amended by 0021 (PD-069): wherever this spec names the control "Copy" of a prompt (a next step or `/sdd-specify`), read `Copy prompt`, named as 0021 §6.4; the feedback stays; wherever it shows a next step line, 0021 §6.1 gives each line its intent.*
+
+*Amended by 0024 (PD-068): where Send is offered (0024 §6.2), the Copy prompt of the detail's first next-step line and of the first Now row is 0024's split button `Send to <Name>` — for its place, what follows it, its width ("every Copy", "the widest Copy") and the primary count (once, both parts primary); its menu holds Copy prompt (0024 §6.3, AC-002, AC-003).*
+
 Basis: Gregor's request of 2026-11-17 after working on `sdd-tip-splitter` with GitHub Copilot
 next to the Studio. Decisions ([product-decisions.md](../../docs/product/product-decisions.md)):
 PD-055 (on Gregor's delegation), PD-056 (proxy, A-001), PD-057 (open points, proxy), PD-016 (English UI),
@@ -54,6 +58,7 @@ other that runs FeatherSpec commands) receives the copied line; the Studio never
 
 - Opening, filling or driving a chat (Copilot, Claude Code, any other) — because the Studio
   stays assistant-neutral and the human runs the step (PD-056); copying is the hand-over.
+  *Amended by 0024 (PD-068): §4 out of scope "Opening, filling or driving a chat" — opening the chosen assistant's chat and filling its input is 0024 (PD-068; 0024 AC-017, AC-019 validate it); submitting stays out.*
 - Observing, listing or starting sessions of VS Code's Agent Host or Agents window — because
   VS Code offers that natively and names no extension API for it (VS Code 1.144 and 1.146
   release notes, retrieved 2026-11-17).
@@ -143,6 +148,12 @@ The rules use only what 0002 and 0003 deliver; first match wins, top-down:
 
 *Amended by 0016 (PD-059, proxy): §6.1 NS-1 — reads as 0016 T-18.*
 
+*Amended by 0021 (PD-069): §6.1 rows NS-2, NS-4, NS-5, NS-7–NS-10 — the lines stay; each line gets its intent (0021 §6.1).*
+
+*Amended by 0021 (PD-069): §6.1 row NS-6 — 0021 §6.2 (variant A, PD-072): `Implement <ID> of <plan>` under "Continue with <ID> <title>" while a plan step is open, else `/sdd-plan <spec path>` to report where the plan stands; an Active spec without a sibling plan gets `/sdd-plan <spec path>` to write it.*
+
+*Amended by 0023 (PD-069): §6.1 row NS-6 (as 0017 and 0021 amended it) — plus 0023 §5.5's case "returned work", checked first: `/sdd-plan <spec path>` under `Integrate the returned steps` while a return note lies.*
+
 NS-11 sits below NS-2 in the order; IDs are stable, not ordinal. Basis: FeatherSpec 1.10.0
 command files. `/sdd-plan` resumes an existing plan (Mode B: integrates return notes, reports
 what blocks), writes a fresh one for a reactivated spec (Mode C) and names "start T-001" and
@@ -220,6 +231,7 @@ the Output channel "FeatherSpec Studio" naming what it removed; nothing removed,
   or "Then, after a READY verdict:" (NS-5); after copying "Copied to the clipboard."
   *Amended by 0016 (PD-059, proxy): §8 Detail — Copy is primary; its feedback appears at the button (0016 §6.5, T-19), not as a line below.*
   *Amended by 0017 (PD-060/PD-061): the label under the second line reads "Then, in the same chat, if nothing blocks:" (0017 §6.2).*
+  *Amended by 0021 (PD-069): §8 Detail — each line sits under its intent with a "Copy prompt" button; the coach line and the `?` of 0021 §6.5, §6.6 follow the first line; the texts of 0021 §7 replace the labels "Then:" and "Then, after a READY verdict:".*
 - **Drop result:** "Studio starts no agent. Next step for <number> — paste it into your AI assistant:" plus the line and "Copy".
   *Amended by 0016 (PD-059, proxy): §8 Drop result — Copy is primary, Dismiss secondary (0016 §6.5, T-19).*
   *Amended by 0017 (PD-060/PD-061): void (PD-060).*
@@ -243,13 +255,17 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
 - **AC-001** The system shall offer exactly the areas Mission Control, Spec Board and Spec Explorer, in this order, in the panel navigation, the Activity Bar tree and as per-area commands.
   *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
   *Amended by 0020 (PD-058): AC-001 — panel navigation and per-area commands offer Overview and Board (0018 §6.4); the tree has no area entries (0020 AC-016).*
+  *Amended by 0023 (PD-069): AC-001 (as 0020 amended it) — Overview, Board and Plan map (0023 AC-006).*
 - **AC-002** If the remembered area or a restored panel state names `agentCenter`, then the system shall show Mission Control and no error.
   *Amended by 0018 (PD-062): the areas are Overview (`overview`, default) and Board (`board`) with the commands and purposes of 0018 §6.4 and §7; a remembered area this version does not know shows the Overview with no selection (0018 AC-001, AC-002).*
 - **AC-003** While a spec is selected, the detail view shall show "Next step" above its sections with the line(s) of the first matching rule of §6.1, each with a "Copy" button and a second line under its §8 label, or the rule's text where it names no line.
+  *Amended by 0021 (PD-069): AC-003 — each line under its intent with a "Copy prompt" button; the coach line and `?` per 0021 §6.5, §6.6.*
+  *Amended by 0024 (PD-068): AC-003 — where Send is offered (0024 §6.2) the first line's Copy prompt is 0024's split button; its menu holds Copy prompt (0024 AC-002, AC-003).*
 - **AC-004** The system shall derive the next step only from the model of 0002 and 0003; for identical snapshots it shall show identical lines. One fixture per rule decides the rule ID and the exact lines.
   > **Given** `.specs/backlog/0007-x.md` is Ready and its plan's first step is `T-001` **When** it is selected **Then** the line reads `Start T-001 of .specs/backlog/0007-x.plan.md`.
 - **AC-005** When the developer activates "Copy" — by pointer, or by Enter or Space after reaching it with Tab — the system shall put exactly that line on the clipboard and show and announce "Copied to the clipboard."
   *Amended by 0016 (PD-059, proxy): AC-005 — feedback appears at the button (0016 §6.5, T-19); Copy is primary.*
+  *Amended by 0021 (PD-069): AC-005 — the button reads `Copy prompt` and is named `Copy prompt: <line>` (0021 AC-008).*
 - **AC-006** When 0003 accepts a Ready → Active request, the board shall start no process, reach no network, change no file, leave the card in Ready, and show and announce the drop result of §8 with the NS-7 line and "Copy".
   *Amended by 0017 (PD-060/PD-061): void (PD-060).*
 - **AC-007** When the detail view receives a model-changed notification, it shall show the new next step within 500 ms (PD-047).
@@ -264,17 +280,21 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
 - **AC-013** The runtime store shall write only `spec-status-history.jsonl`, `lock.json` and `store.json`; a contract test lists the files of a store folder after every scenario.
 - **AC-014** The manifest shall contribute no command `openAgentCenter`, `clearRunHistory`, `stopRun` or `resumeRun` and no command title containing "Agent", "Run History", "Stop Run" or "Resume Run".
 - **AC-015** The manifest shall declare no configuration property.
+  *Amended by 0021 (PD-069): AC-015 — the manifest declares exactly the two settings of 0021 §6.7 (0021 AC-016).*
+  *Amended by 0024 (PD-068): AC-015 (as 0021 amends it) — plus `featherspec-studio.assistant` (0024 §6.1).*
 - **AC-016** The manifest description shall read as §8 and contain neither "agent" nor "Copilot"; the keywords shall contain none of `agents`, `ai agents` and `github copilot`.
 - **AC-017** `package.json` and `package-lock.json` shall not contain `@github/copilot-sdk`; the esbuild externals shall be `vscode` only.
 - **AC-018** After `npm run package`, `dist/extension.js` shall contain no `child_process` and no `@github/copilot-sdk`; `dist/webview/main.js` shall contain no "Agent Center".
 - **AC-019** A search of `src` without test files shall find no `child_process`, `worker_threads`, `createTerminal`, `ShellExecution`, `ProcessExecution` and `executeTask`.
 - **AC-020** A search of `src` without test files for `fetch(`, `node:http`, `node:https`, `node:net`, `node:tls` and `WebSocket` shall find only the release adapter of 0014 and the webview's test-mode probe of 0005 in `src/webview/main.tsx`.
 - **AC-021** The folders `src/core/{agentCenter,agentStart,orchestrator,providers}`, `src/adapters/providers` and `src/webview/{areas/agentCenter,agentStart}` shall not exist, nor `test/fixtures/copilot`, and a search of `src`, `.vscode-test.mjs`, `esbuild.js` and `package.json` shall find none of `agentcenter`, `agent center`, `agentstart`, `orchestrator`, `copilot`, `fakeprovider`, `agentprovider`, `runhistory`, `stoprun`, `resumerun`, `waitingforapproval` — except in the earlier-data removal module (it names `copilot-home` and the `agentCenter` state key) and in the tests that decide AC-002, AC-014–AC-021, AC-023 and AC-025.
+  *Amended by 0024 (PD-068): AC-021 — `copilot` in `src` and `package.json` stays forbidden except 0024's own names of GitHub Copilot (the value, the extension ID, §7's texts, AC-015's lines); every other term, `provider` included, stays forbidden.*
 - **AC-022** The host test suite shall contain no `agentCenter`, `agentStart`, `copilot`, `orchestrator` or `providers` smoke test and no opt-in Copilot runner.
 - **AC-023** At every activation, the system shall remove what exists of the paths and the key §6.3 names and nothing else, count a path already gone as removed, leave every path §6.3 never touches byte-identical except where the age cap prunes the status history, and, when it removed anything, write one line to the Output channel "FeatherSpec Studio" naming what it removed (PD-057).
   > **Given** a global storage written by the build at tag `archive/agent-runs-2026-11-17`, and one project folder whose `store.json` names format version 99 **When** this build activates **Then** `copilot-home/` is gone, every other project folder holds only `store.json`, `lock.json` and `spec-status-history.jsonl`, the version-99 folder is byte-identical, and *Recent activity* shows the kept entries BR-07 selects.
 - **AC-024** If a path of AC-023 cannot be removed, then the system shall keep it, keep working, write one line per such path to the Output channel "FeatherSpec Studio" naming the path and the reason, and try again at the next activation.
 - **AC-025** `media/screenshots/agent-center-dark.png`, `docs/agent-provider-port.md` and `docs/security/secret-patterns.md` shall not exist; a search of `README.md`, `docs/release-checklist.md` and `docs/runtime-data.md` shall find no "Agent Center", "provider", "Copilot", "Clear Run History", "Stop Run" or "Resume Run" — except "GitHub Copilot" in the README opening of §8 and the folder name `copilot-home` in `docs/runtime-data.md`; `docs/runtime-data.md` shall describe the status history, the earlier-data removal and deletion by hand; ADR-003 shall carry the status *Superseded (PD-055)*; ADR-001 (at its §14) and ADR-002 shall carry the note "superseded in part by 0015 (PD-055)" (PD-057).
+  *Amended by 0024 (PD-068): AC-025 — "Copilot" in `README.md` and `docs/release-checklist.md` stays forbidden except 0024's own names of GitHub Copilot (§7's texts, AC-015's lines).*
 - **AC-026** The S7 note, the reader reason and the Mission Control purpose shall read as §8.
 - **AC-027** Every test at tag `archive/agent-runs-2026-11-17` that decides a criterion of 0001–0007, 0013 or 0014 not voided in §5 shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI. A script compares the test titles of both commits; every title of the tag missing at the head, a renamed one included, is listed in the plan with its voided criterion or with the head title that replaces it.
   *Amended by 0016 (PD-059, proxy): AC-027 (test audit) — also excepted: the tests 0016 AC-023 lists against a criterion that 0016 §5 changes are excepted.*
@@ -282,11 +302,17 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
   *Amended by 0018 (PD-062): the test audit also excepts the tests 0018 AC-030 lists against a criterion 0018 §5 voids.*
   *Amended by 0019 (PD-058): AC-027 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*
   *Amended by 0020 (PD-058): AC-027 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
+  *Amended by 0021 (PD-069): AC-027 (test audit) — also except the tests 0021 AC-020 lists against a statement 0021 §5 replaces.*
+  *Amended by 0022 (PD-069): AC-027 (test audit) — also except the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
+  *Amended by 0023 (PD-069): AC-027 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
+  *Amended by 0024 (PD-068): AC-027 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
 - **AC-028** 0008–0012 shall have status `Deprecated`, stay in `done/` and link this spec as successor; 0003–0007 and 0013 shall carry the amendment notes of §5.
 - **AC-029** The `architecture:` snapshot in `AGENTS.md`, `.architecture/*.md` and `.memory-bank/projectbrief.md` shall name no removed module, no agent run and no provider; the brief's mission shall contain the manifest description of §8 and its success criteria the AC-030 scenario.
 - **AC-030** *(manual, Gregor)* M-1 on `tip-splitter` with the assistant he uses, the Hands-On walkthrough: three areas; a dropped Ready spec shows the NS-7 line, pasted into the chat it starts that step; Active and Review specs show NS-6 and NS-5 lines that the assistant runs as FeatherSpec commands; he checks whether the S7 note reads as noise (PD-057, OP-006) and whether his assistant resolves the project-relative paths (OP-002). Pre-release checklist item.
   *Amended by 0017 (PD-060/PD-061): "a dropped Ready spec shows the NS-7 line" reads "a Ready card's Copy puts the NS-7 line on the clipboard".*
   *Amended by 0020 (PD-058): AC-030 "three areas" — the panel has Overview and Board; the tree has no area entries; M-1 checks the tree and the two tabs (0020 §5).*
+  *Amended by 0021 (PD-069): AC-030 — NS-6's lines do what 0021 AC-025 checks.*
+  *Amended by 0023 (PD-069): AC-030 (as 0020 amended it) — the panel has three tabs, Overview, Board and Plan map (0023 AC-006).*
 
 ## 11. Technical notes for developers or AI agents
 

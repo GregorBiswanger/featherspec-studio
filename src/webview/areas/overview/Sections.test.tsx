@@ -151,7 +151,7 @@ function rowFor(stem: string, number: string, title: string, state: OverviewView
     return { spec: { stem, number, title, found: true }, state, status: state, problems: 0, ...extra };
 }
 
-const STEP_PLAN = { short: '/sdd-plan', line: '/sdd-plan .specs/active/0001-a.md', lines: [{ text: '/sdd-plan .specs/active/0001-a.md' }, { text: 'continue', label: 'Then, in the same chat, if nothing blocks:' }] };
+const STEP_PLAN = { intent: 'Continue', short: 'Implement T-003', line: 'Implement T-003 of .specs/active/0001-a.plan.md', lines: [{ text: 'Implement T-003 of .specs/active/0001-a.plan.md', intent: 'Continue with T-003 Reject money values' }, { text: '/sdd-plan .specs/active/0001-a.md', intent: 'Not sure where it stands? Let the agent report first' }] };
 
 function withRows(): OverviewView {
     const view = sampleView();
@@ -164,6 +164,24 @@ function nowRow(container: HTMLElement, stem: string): HTMLElement {
     return container.querySelector<HTMLElement>(`[data-row-group="now"][data-spec-row="${stem}"]`)!;
 }
 
+describe('0022 AC-008 (X-07): the Up next note', () => {
+    it('shows "Ready first, then backlog" after the Up next heading while rows are listed', async () => {
+        const container = await open(withRows());
+        const panel = container.querySelector('[data-up-next]')!;
+        const note = panel.querySelector('p.ov-note')!;
+        expect(note.textContent).toBe('Ready first, then backlog');
+        expect(panel.querySelector('h2')?.nextElementSibling).toBe(note);
+    });
+
+    it('shows no note while the section lists no row', async () => {
+        const view = withRows();
+        view.upNext = { rows: [], more: 0, stems: [] };
+        const panel = (await open(view)).querySelector('[data-up-next]')!;
+        expect(panel.querySelector('.ov-note')).toBeNull();
+        expect(panel.textContent).toContain('Nothing up next');
+    });
+});
+
 describe('0018 AC-006: a spec row on one line', () => {
     it('shows number, title, status text, the next step and Copy, and no second step line', async () => {
         const container = await open(withRows());
@@ -173,17 +191,43 @@ describe('0018 AC-006: a spec row on one line', () => {
         expect(drill.querySelector('.ov-title')?.textContent).toBe('Alpha');
         expect(drill.querySelector('.ov-status')?.textContent).toBe('Blocked');
         expect(drill.querySelector('.step-label')?.textContent).toBe('Next');
-        expect(drill.querySelector('.step-short')?.textContent).toBe('/sdd-plan');
-        expect(row.querySelector('.next-step-copy')?.getAttribute('aria-label')).toBe('Copy: /sdd-plan .specs/active/0001-a.md');
+        expect(drill.querySelector('.step-short')?.textContent).toBe('Implement T-003');
+        expect(drill.querySelector('.step-intent')?.textContent).toBe('Continue');
+        expect(drill.querySelector('.step-text')?.textContent).toBe('Next Continue · Implement T-003');
+        expect(row.querySelector('.next-step-copy')?.getAttribute('aria-label')).toBe('Copy prompt: Implement T-003 of .specs/active/0001-a.plan.md');
         expect(drill.textContent).not.toContain('continue');
         expect(drill.querySelector('br')).toBeNull();
+    });
+
+    it('0022 AC-027: every row shows its state icon before its text, the state as tooltip, and the state name once in the row name', async () => {
+        const container = await open(withRows());
+        const row = nowRow(container, '0001-a');
+        const icon = row.querySelector('.ov-state-icon')!;
+        const status = row.querySelector('.ov-status')!;
+        expect(icon.getAttribute('title')).toBe('Blocked');
+        expect(icon.querySelector('svg')?.getAttribute('data-icon')).toBe('Blocked');
+        expect(icon.compareDocumentPosition(status) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(status.classList.contains('ov-state-name')).toBe(true);
+        expect(icon.getAttribute('role')).toBeNull();
+        expect(icon.getAttribute('aria-label')).toBeNull();
+    });
+
+    it('0022 AC-027: a row whose text is a need or a sentence names its state on the icon and hides nothing', async () => {
+        const container = await open(withRows());
+        const rows = [...container.querySelectorAll('[data-row-group="upNext"]')];
+        const needs = rows.find((row) => row.querySelector('.ov-status')?.textContent === 'needs a plan')!;
+        expect(needs.querySelector('.ov-status')?.classList.contains('ov-state-name')).toBe(false);
+        expect(needs.querySelector('.ov-state-icon')?.getAttribute('role')).toBe('img');
+        expect(needs.querySelector('.ov-state-icon')?.getAttribute('aria-label')).toBe(needs.querySelector('.ov-state-icon')?.getAttribute('title'));
+        const name = needs.querySelector('.ov-row')!.textContent!;
+        expect(name.split(needs.querySelector('.ov-state-icon')!.getAttribute('title')!).length - 1).toBe(0);
     });
 
     it('title and status carry their full text as tooltip, the step its full lines', async () => {
         const row = nowRow(await open(withRows()), '0001-a');
         expect(row.querySelector('.ov-title')?.getAttribute('title')).toBe('Alpha');
         expect(row.querySelector('.ov-status')?.getAttribute('title')).toBe('Blocked');
-        expect(row.querySelector('.step-text')?.getAttribute('title')).toBe('/sdd-plan .specs/active/0001-a.md\nThen, in the same chat, if nothing blocks: continue');
+        expect(row.querySelector('.step-text')?.getAttribute('title')).toBe('Continue with T-003 Reject money values\nImplement T-003 of .specs/active/0001-a.plan.md\nNot sure where it stands? Let the agent report first\n/sdd-plan .specs/active/0001-a.md');
     });
 
     it('shows the warning icon with the problem count as text only while the spec has a Problem', async () => {
@@ -211,8 +255,8 @@ describe('0018 AC-006: a spec row on one line', () => {
         const sent = posted.filter((message) => message.type !== 'hello' && message.type !== 'ready').map((message) => message.type);
         expect(sent.filter((type) => type === 'copyText')).toHaveLength(3);
         expect(sent).not.toContain('navigate');
-        expect(posted.find((message) => message.type === 'copyText')?.payload).toEqual({ text: '/sdd-plan .specs/active/0001-a.md' });
-        await send({ v: 4, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
+        expect(posted.find((message) => message.type === 'copyText')?.payload).toEqual({ text: 'Implement T-003 of .specs/active/0001-a.plan.md' });
+        await send({ v: 8, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
         expect(copy.textContent).toBe('Copied');
     });
 
@@ -267,7 +311,7 @@ describe('0018 AC-004, AC-005, AC-012: Now and Up next', () => {
         const next = container.querySelector('[data-up-next]')!;
         expect(next.textContent).toContain('Nothing up next. Start the next spec with /sdd-specify');
         const copy = next.querySelector<HTMLButtonElement>('.next-step-copy')!;
-        expect(copy.getAttribute('aria-label')).toBe('Copy: /sdd-specify');
+        expect(copy.getAttribute('aria-label')).toBe('Copy prompt: /sdd-specify');
         await click(copy);
         expect(posted.find((message) => message.type === 'copyText')?.payload).toEqual({ text: '/sdd-specify' });
     });
@@ -280,5 +324,75 @@ describe('0018 AC-004, AC-005, AC-012: Now and Up next', () => {
         expect(container.querySelector('[data-now], [data-up-next], [data-total]')).toBeNull();
         await click(container.querySelector<HTMLButtonElement>('[data-zero-specs] .next-step-copy')!);
         expect(posted.find((message) => message.type === 'copyText')?.payload).toEqual({ text: '/sdd-specify' });
+    });
+});
+
+describe('0021 AC-009, AC-010: the coach line of the first Now row', () => {
+    const TIPS = { coach: 'any chat · fast model', about: ['one', 'two', 'three', 'four'] };
+
+    function withTips(): OverviewView {
+        const view = withRows();
+        view.now[0] = { ...view.now[0]!, tips: TIPS };
+        return view;
+    }
+
+    it('shows one coach line, in the first Now row, after its Copy; no other row, no Up next row shows one', async () => {
+        const container = await open(withTips());
+        const coaches = container.querySelectorAll('.ov-coach');
+        expect(coaches).toHaveLength(1);
+        const item = nowRow(container, '0001-a');
+        const coach = item.querySelector('div.ov-coach')!;
+        expect(coach.parentElement).toBe(item);
+        expect(coach.querySelector('.ov-coach-text')!.textContent).toBe('any chat · fast model');
+        const copy = item.querySelector('button.next-step-copy')!;
+        expect(copy.nextElementSibling?.getAttribute('role')).toBe('status');
+        expect(copy.nextElementSibling?.nextElementSibling).toBe(coach);
+        expect(nowRow(container, '0002-b').querySelector('.ov-coach')).toBeNull();
+        expect(container.querySelector('[data-up-next] .ov-coach')).toBeNull();
+    });
+
+    it('shows no coach line without tips, and the row is the same otherwise', async () => {
+        const without = await open(withRows());
+        expect(without.querySelector('.ov-coach')).toBeNull();
+        const withoutHtml = nowRow(without, '0001-a').innerHTML;
+        const withHtml = nowRow(await open(withTips()), '0001-a').innerHTML.replace(/<div class="ov-coach">.*<\/div>/, '');
+        expect(withoutHtml).toBe(withHtml);
+    });
+});
+
+describe('0021 AC-014, AC-009: the About this step toggletip of the first Now row', () => {
+    const ABOUT = ['It builds one step.', 'Same chat: it continues.', 'A fast model is enough.', 'Nothing changes on disk.'];
+    const TIPS = { coach: 'any chat · fast model', about: ABOUT };
+
+    function withTips(): OverviewView {
+        const view = withRows();
+        view.now[0] = { ...view.now[0]!, tips: TIPS };
+        return view;
+    }
+
+    it('shows one question-mark button in the coach line, after the coach text, and no other row, card or Up next row shows one', async () => {
+        const container = await open(withTips());
+        const toggles = container.querySelectorAll('button.toggletip');
+        expect(toggles).toHaveLength(1);
+        const coach = nowRow(container, '0001-a').querySelector('.ov-coach')!;
+        const toggle = coach.querySelector<HTMLButtonElement>('button.toggletip')!;
+        expect(toggle.previousElementSibling?.textContent).toBe('any chat · fast model');
+        expect(toggle.getAttribute('aria-label')).toBe('About this step');
+        expect(nowRow(container, '0002-b').querySelector('.toggletip')).toBeNull();
+        expect(container.querySelector('[data-up-next] .toggletip')).toBeNull();
+    });
+
+    it('opens the four paragraphs in the coach line and a second activation empties them', async () => {
+        const container = await open(withTips());
+        const toggle = container.querySelector<HTMLButtonElement>('button.toggletip')!;
+        await click(toggle);
+        expect([...toggle.nextElementSibling!.querySelectorAll('p')].map((paragraph) => paragraph.textContent)).toEqual(ABOUT);
+        await click(toggle);
+        expect(toggle.nextElementSibling!.textContent).toBe('');
+    });
+
+    it('shows no question-mark button without tips', async () => {
+        const container = await open(withRows());
+        expect(container.querySelector('.toggletip')).toBeNull();
     });
 });

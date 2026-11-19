@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..', '..', '..');
 
 const SCANNED = ['README.md', 'docs/release-checklist.md', 'docs/runtime-data.md'];
 const FORBIDDEN = ['agent center', 'provider', 'copilot', 'clear run history', 'stop run', 'resume run'];
-const ALLOWED = ['GitHub Copilot, Claude Code or any other', 'copilot-home'];
+const ALLOWED = ['GitHub Copilot, Claude Code or any other', 'copilot-home', 'GitHub.copilot-chat', 'GitHub Copilot', 'Send to Copilot', '`copilot`', "Copilot's chat"];
 
 export function findForbidden(text: string): string[] {
     let rest = text;
@@ -51,6 +51,16 @@ describe('product docs after 0015 (AC-025)', () => {
         expect(findForbidden('Open the Agent Center')).toEqual(['agent center']);
         expect(findForbidden('a Copilot provider')).toEqual(['provider', 'copilot']);
         expect(findForbidden('GitHub Copilot, Claude Code or any other')).toEqual([]);
+    });
+
+    it("0024 §5: 0015 AC-025 excepts 0024's names of GitHub Copilot and keeps every other term", () => {
+        for (const allowed of ['GitHub Copilot', 'Send to Copilot', 'set `copilot` here', 'GitHub.copilot-chat', "Copilot's chat"]) {
+            expect(findForbidden(allowed), allowed).toEqual([]);
+        }
+        for (const forbidden of ['copilot', 'a Copilot provider', 'Copilot agent', 'the provider of GitHub Copilot', 'COPILOT', 'Copilot']) {
+            expect(findForbidden(forbidden).length, forbidden).toBeGreaterThan(0);
+        }
+        expect(findForbidden('a Copilot provider')).toEqual(['provider', 'copilot']);
     });
 
     for (const file of SCANNED) {
@@ -157,7 +167,7 @@ describe('product docs after 0017 (AC-025)', () => {
         expect(readme).toContain('Copy Next Step');
         expect(readme).toContain('status bar');
         expect(readme).toContain('· <state> ·');
-        expect(readme).toMatch(/card[^.]*\*\*Copy\*\*|\*\*Copy\*\*[^.]*card/);
+        expect(readme).toMatch(/card[^.]*\*\*Copy prompt\*\*|\*\*Copy prompt\*\*[^.]*card/);
     });
 
     it('the release checklist carries AC-026', async () => {
@@ -289,17 +299,17 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
 
     it('the README section names the four groups, the inline Copy, the menu entry Copy Next Step and the badge', async () => {
         const section = await specsViewSection();
-        for (const group of ['**In progress**', '**Up next**', '**Backlog**', '**Done**']) {
+        for (const group of ['**In progress**', '**Ready**', '**Backlog**', '**Done**']) {
             expect(section, group).toContain(group);
         }
-        expect(section).toContain('inline **Copy** button');
+        expect(section).toContain('inline **Copy Next Step** button');
         expect(section).toContain('**Open Spec**, **Open Plan** and **Copy Next Step**');
         expect(section).toContain('The badge on the Activity Bar icon counts the specs that wait for you (Review and Blocked).');
     });
 
-    it('the README names the two tabs, and says Focus on Specs View reaches the view while Shift+F10 opens a row\'s context menu', async () => {
+    it('the README names the three tabs, and says Focus on Specs View reaches the view while Shift+F10 opens a row\'s context menu', async () => {
         const readme = await read('README.md');
-        expect(readme).toContain('has two tabs, Overview and Board.');
+        expect(readme).toContain('has three tabs, Overview, Board and Plan map.');
         expect(await specsViewSection()).toContain('`FeatherSpec Studio: Focus on Specs View` reaches the view from the keyboard; Shift+F10 on a row opens its context menu.');
         expect(readme).not.toContain('(or Shift+F10 on a row) reaches the view');
     });
@@ -325,7 +335,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         expect(text.match(/^## \[/gm)).toEqual(['## [']);
         expect(text).toContain('\n## [0.1.0] - Unreleased\n');
         expect(text).not.toContain('## [Unreleased]');
-        const lower = text.toLowerCase();
+        const lower = text.toLowerCase().split('featherspec-studio.assistant').join('');
         for (const gone of ['drag', 'move to', 'mission control', 'spec explorer', 'spec board', 'rescan', 'needs attention', 'featherspec-studio.']) {
             expect(lower, gone).not.toContain(gone);
         }
@@ -358,6 +368,10 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
             '## Overview and a compact Board (0018)',
             '## The detail as a side panel (0019)',
             '## The native Specs tree (0020)',
+            '## Next step with intent and guidance (0021)',
+            '## Layout and signal polish (0022)',
+            '## Plan map (0023)',
+            '## Send to the assistant (0024)',
             '## Go',
         ]);
         for (const gone of ['Plan line', 'descriptions cut', 'attention row', 'attention reason', 'filters, sort']) {
@@ -383,6 +397,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
             ['Overview and a compact Board (0018)', ['**AC-031 / M-1**']],
             ['The detail as a side panel (0019)', ['**AC-022**']],
             ['The native Specs tree (0020)', ['**AC-022**', '**Keyboard and screen reader**']],
+            ['Layout and signal polish (0022)', ['**AC-019**', '**AC-020**', '**AC-021 (build part)**', '**AC-025**']],
         ];
         for (const [title, marks] of items) {
             for (const mark of marks) {
@@ -408,9 +423,10 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         }
     });
 
-    it('the decisions register carries PD-067 as its last row, names what each later decision retires, and leaves the earlier rows as they were', async () => {
+    it('the decisions register carries PD-067 after PD-066, names what each later decision retires, and leaves the earlier rows as they were', async () => {
         const rows = (await read('docs/product/product-decisions.md')).split('\n').filter((line) => line.startsWith('| PD-'));
-        const last = rows[rows.length - 1] ?? '';
+        const last = rows.find((row) => row.startsWith('| PD-067 |')) ?? '';
+        expect(rows.findIndex((row) => row.startsWith('| PD-067 |'))).toBe(rows.findIndex((row) => row.startsWith('| PD-066 |')) + 1);
         expect(last).toContain('| PD-067 | Register notes for the UX round **(proxy)** |');
         for (const retired of [
             'PD-058 supersedes PD-042 and the Spec Explorer parts of PD-048 and PD-054',
@@ -459,4 +475,499 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
             expect(count).toBeGreaterThanOrEqual(note);
         });
     }
+});
+
+describe('product docs after 0022 (AC-016, AC-018)', () => {
+    it('the README names the tree groups with Ready, the divider with its reset, the width memory and the back button below 900 px', async () => {
+        const readme = await read('README.md');
+        expect(readme).toContain('**In progress** (Blocked, Review, then Active), **Ready**, **Backlog** and **Done**');
+        expect(readme).not.toContain('**Up next** (Ready)');
+        expect(readme).toContain('**divider**');
+        expect(readme).toContain('Enter or a double click resets it');
+        expect(readme).toContain('Studio remembers it for the workspace');
+        expect(readme).toContain('a back button at the top of the detail returns to the area');
+        expect(readme).not.toContain('like a drawer');
+    });
+
+    it('the README names the icon Copy and the two primary buttons', async () => {
+        const readme = await read('README.md');
+        expect(readme).toContain('Only the first Now row and the Copy prompt of an empty project are primary buttons');
+    });
+
+    it('the three product docs name Ready for the tree and keep "Up next" only for the Overview\'s set', async () => {
+        const guidelines = await read('docs/product/ux-guidelines.md');
+        const checklist = await read('docs/release-checklist.md');
+        expect(guidelines).toContain('In progress · Ready · Backlog · Done');
+        expect(guidelines).not.toContain('In progress · Up next · Backlog · Done');
+        expect(checklist).toContain('every\n  In progress and Ready row is visible');
+        expect(checklist).not.toContain('In progress and Up next row');
+    });
+
+    it('the release checklist has the 0022 section with AC-019, AC-020, AC-021 (build part) and AC-025', async () => {
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('\n## Layout and signal polish (0022)\n');
+        expect(start).toBeGreaterThan(-1);
+        const section = text.slice(start, text.indexOf('\n## ', start + 1));
+        for (const mark of ['**AC-019**', '**AC-020**', '**AC-021 (build part)**', '**AC-025**']) {
+            expect(section, mark).toContain(mark);
+        }
+    });
+
+    it('the design brief marks its tree groups, 400 px and drawer superseded by 0022', async () => {
+        const text = await read('docs/product/design-brief.md');
+        expect(text.split('Superseded by spec 0022 (PD-069').length - 1).toBeGreaterThanOrEqual(2);
+    });
+
+    it('the CHANGELOG names the 0022 changes under the version in preparation', async () => {
+        const first = firstRelease(await read('CHANGELOG.md'));
+        expect(first).toContain('Ready, Backlog and Done');
+        expect(first).toContain('divider');
+        expect(first).toContain('a back button returns');
+        expect(first).toContain('Layout and signals:');
+        expect(first).not.toContain('(a drawer below 900 px)');
+    });
+
+    for (const [file, note] of [
+        ['.specs/done/0005-studio-shell-navigation.md', 2],
+        ['.specs/done/0007-spec-board-spec-detail.md', 1],
+        ['.specs/done/0013-studio-visual-design.md', 2],
+        ['.specs/active/0015-focus-on-visibility.md', 1],
+        ['.specs/active/0016-honest-signals.md', 7],
+        ['.specs/active/0017-next-step-everywhere.md', 2],
+        ['.specs/active/0018-overview-and-compact-board.md', 13],
+        ['.specs/active/0019-detail-situation-picture.md', 12],
+        ['.specs/active/0020-native-spec-tree.md', 19],
+    ] as const) {
+        it(`${file} carries its ${note} notes of 0022`, async () => {
+            const count = (await read(file)).split('Amended by 0022 (PD-069)').length - 1;
+            expect(count).toBeGreaterThanOrEqual(note);
+        });
+    }
+
+    it('negative control: a text without the note has none', () => {
+        expect('no note here'.split('Amended by 0022 (PD-069)').length - 1).toBe(0);
+    });
+});
+
+describe('product docs after 0021 (AC-021)', () => {
+    it('the README names Copy prompt, About this step and both settings', async () => {
+        const readme = await read('README.md');
+        for (const literal of ['Copy prompt', 'About this step', 'featherspec-studio.showStepTips', 'featherspec-studio.modelHints']) {
+            expect(readme, literal).toContain(literal);
+        }
+        expect(readme).toContain('\n## Settings\n');
+    });
+
+    it('the README names the inline action of the Specs view Copy Next Step (A-007) and the step short form in the Overview and on the Board', async () => {
+        const readme = await read('README.md');
+        expect(readme).toContain('(its inline **Copy Next Step**)');
+        expect(readme).not.toContain('inline **Copy prompt**');
+        expect(readme).toContain('the spec\'s next step ("Next" and the step short form, for example `Verify · /sdd-compile`) with its own **Copy prompt**');
+        expect(readme).toContain('**Next**, the short intent and the short form of the prompt (for example `Plan · /sdd-plan`) with a **Copy prompt** button');
+        expect(readme).not.toContain('**Next** and the short form of the command');
+    });
+
+    it('neither the README nor the release checklist holds **Copy** or then `continue`', async () => {
+        for (const file of ['README.md', 'docs/release-checklist.md']) {
+            const text = await read(file);
+            expect(text, file).not.toContain('**Copy**');
+            expect(text, file).not.toContain('then `continue`');
+        }
+    });
+
+    it('the CHANGELOG names Copy prompt, showStepTips and modelHints under the version in preparation and no second line continue', async () => {
+        const first = firstRelease(await read('CHANGELOG.md'));
+        for (const literal of ['Copy prompt', 'showStepTips', 'modelHints']) {
+            expect(first, literal).toContain(literal);
+        }
+        expect(first).not.toContain('a second line, `continue`');
+    });
+
+    it('the release checklist has the 0021 section with AC-022, AC-023, AC-024 and AC-025', async () => {
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('\n## Next step with intent and guidance (0021)\n');
+        expect(start).toBeGreaterThan(-1);
+        const end = text.indexOf('\n## ', start + 1);
+        const section = text.slice(start, end < 0 ? undefined : end);
+        for (const mark of ['**AC-022**', '**AC-023**', '**AC-024**', '**AC-025**']) {
+            expect(section, mark).toContain(mark);
+        }
+    });
+
+    for (const [file, notes] of [
+        ['.specs/done/0006-mission-control-dashboard.md', 1],
+        ['.specs/done/0007-spec-board-spec-detail.md', 1],
+        ['.specs/done/0013-studio-visual-design.md', 2],
+        ['.specs/active/0015-focus-on-visibility.md', 9],
+        ['.specs/active/0016-honest-signals.md', 4],
+        ['.specs/active/0017-next-step-everywhere.md', 18],
+        ['.specs/active/0018-overview-and-compact-board.md', 8],
+        ['.specs/active/0019-detail-situation-picture.md', 5],
+        ['.specs/active/0020-native-spec-tree.md', 4],
+    ] as const) {
+        it(`${file} carries its ${notes} notes of 0021`, async () => {
+            const text = await read(file);
+            expect(text.split('Amended by 0021 (PD-069)').length - 1).toBeGreaterThanOrEqual(notes);
+            expect(text).toContain('read `Copy prompt`');
+        });
+    }
+
+    it('negative control: a text without the note has none', () => {
+        expect('no note here'.split('Amended by 0021 (PD-069)').length - 1).toBe(0);
+    });
+});
+
+
+describe('product docs after 0023 (AC-017)', () => {
+    it('the README names the Plan map tab, the three ways and "Integrate the returned steps", and no "two tabs"', async () => {
+        const readme = await read('README.md');
+        expect(readme).toContain('### Plan map');
+        expect(readme).toContain('Ways to run stage 2');
+        for (const way of ['in sequence', 'with subagents', 'with other agents']) {
+            expect(readme, way).toContain(way);
+        }
+        expect(readme).toContain('Integrate the returned steps');
+        expect(readme).not.toMatch(/two tabs/i);
+        expect(readme).toContain('Open Plan Map');
+    });
+
+    it('the CHANGELOG names the Plan section and the Plan map under the version in preparation', async () => {
+        const first = firstRelease(await read('CHANGELOG.md'));
+        expect(first).toContain('The **Plan map**');
+        expect(first).toContain('**Plan** section');
+        expect(first).toContain('FeatherSpec Studio: Open Plan Map');
+        expect(first).toContain('Integrate the returned steps');
+        expect(first).not.toContain('The panel with two tabs');
+    });
+
+    it('the release checklist has the 0023 section with AC-018, AC-019 (build part) and AC-020, and says no more that the panel shows "Overview and Board only"', async () => {
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('\n## Plan map (0023)\n');
+        expect(start).toBeGreaterThan(-1);
+        const section = text.slice(start, text.indexOf('\n## ', start + 1));
+        for (const mark of ['**AC-018**', '**AC-019 (build part)**', '**AC-020**']) {
+            expect(section, mark).toContain(mark);
+        }
+        expect(text).not.toContain('Overview and Board only');
+    });
+
+    it('guideline 4 and the Panel row name the Plan map', async () => {
+        expect(await read('.claude/rules/ux-guidelines.md')).toContain('The webview is for overview, board and plan map.');
+        const guidelines = await read('docs/product/ux-guidelines.md');
+        expect(guidelines).toContain('three tabs: Overview');
+        expect(guidelines).toContain('Plan map (a spec\'s stages');
+        expect(guidelines).not.toContain('two tabs: Overview');
+    });
+
+    for (const [file, notes] of [
+        ['.specs/done/0005-studio-shell-navigation.md', 4],
+        ['.specs/done/0013-studio-visual-design.md', 1],
+        ['.specs/active/0015-focus-on-visibility.md', 4],
+        ['.specs/active/0016-honest-signals.md', 1],
+        ['.specs/active/0017-next-step-everywhere.md', 1],
+        ['.specs/active/0018-overview-and-compact-board.md', 3],
+        ['.specs/active/0019-detail-situation-picture.md', 12],
+        ['.specs/active/0020-native-spec-tree.md', 7],
+        ['.specs/active/0021-next-step-intent-and-guidance.md', 5],
+        ['.specs/active/0022-layout-and-signal-polish.md', 8],
+        ['docs/decisions/ADR-001-extension-architecture.md', 1],
+    ] as const) {
+        it(`${file} carries its ${notes} notes of 0023`, async () => {
+            const text = await read(file);
+            expect(text.split('Amended by 0023 (PD-069)').length - 1).toBeGreaterThanOrEqual(notes);
+        });
+    }
+
+    it('no row of the PD register names 0023 as its editor', async () => {
+        const register = await read('docs/product/product-decisions.md').catch(() => '');
+        expect(register).not.toContain('Amended by 0023');
+    });
+
+    it('negative control: a text without the note has none', () => {
+        expect('no note here'.split('Amended by 0023 (PD-069)').length - 1).toBe(0);
+    });
+});
+
+describe('product docs after 0024 (AC-015)', () => {
+    it('the README names the setting, both Send buttons, "sends nothing" and Open Settings', async () => {
+        const readme = await read('README.md');
+        for (const literal of ['featherspec-studio.assistant', 'Send to Copilot', 'Send to Claude Code', 'sends nothing', 'Open Settings']) {
+            expect(readme, literal).toContain(literal);
+        }
+    });
+
+    it('the CHANGELOG names the setting and Send under the version in preparation', async () => {
+        const first = firstRelease(await read('CHANGELOG.md'));
+        expect(first).toContain('featherspec-studio.assistant');
+        expect(first).toContain('Send to');
+    });
+
+    it('the release checklist has the 0024 section with AC-016 to AC-019 and one line each for GitHub Copilot, Claude Code and Codex', async () => {
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('\n## Send to the assistant (0024)\n');
+        expect(start).toBeGreaterThan(-1);
+        expect(start).toBeLessThan(text.indexOf('\n## Go'));
+        const section = text.slice(start, text.indexOf('\n## ', start + 1));
+        for (const mark of ['**AC-016**', '**AC-017**', '**AC-018**', '**AC-019**']) {
+            expect(section, mark).toContain(mark);
+        }
+        const lines = section.split('\n');
+        const copilot = lines.find((line) => line.includes('GitHub Copilot: '));
+        const claude = lines.find((line) => line.includes('Claude Code: '));
+        const codex = lines.find((line) => line.includes('Codex: '));
+        expect(copilot).toContain('VS Code 1.147.0, GitHub Copilot Chat 0.75.0');
+        expect(claude).toContain('VS Code 1.147.0, Claude Code 2.1.327');
+        expect(codex).toContain('Copy prompt only');
+    });
+
+    it('the README Privacy says the next step reaches the assistant by paste or by Send, and that Send fills the input and sends nothing', async () => {
+        const readme = await read('README.md');
+        const privacy = readme.slice(readme.indexOf('## Privacy and stored data'), readme.indexOf('## Known limitations')).replace(/\s+/g, ' ');
+        expect(privacy).toContain('it reaches your assistant only when you paste it, or when you choose Send to Copilot or Send to Claude Code, which fill the chat input and send nothing');
+        expect(privacy).not.toContain('it reaches your assistant only when you paste it.');
+    });
+
+    it('the checklist asks Gregor to record whether an unsent draft in the current chat of Copilot is kept or replaced, and to decide the default of NS-6 if it is replaced', async () => {
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('\n## Send to the assistant (0024)\n');
+        const section = text.slice(start, text.indexOf('\n## ', start + 1)).replace(/\s+/g, ' ');
+        expect(section).toContain('record whether an unsent draft in the current chat is kept or replaced (OP-004)');
+        expect(section).toContain('if it is replaced, decide whether the current chat stays the default target of NS-6 with GitHub Copilot; the Studio does not change it until you decide');
+    });
+
+    it('the project brief says that Send can put the prompt into the chosen assistant, and that the Studio never sends it', async () => {
+        const brief = (await read('.memory-bank/projectbrief.md')).replace(/\s+/g, ' ');
+        expect(brief).toContain('Send (PD-068) can put the prompt into the input of the assistant you chose');
+        expect(brief).toContain('Studio never sends it');
+    });
+
+    for (const [file, notes] of [
+        ['.specs/done/0013-studio-visual-design.md', 1],
+        ['.specs/active/0015-focus-on-visibility.md', 7],
+        ['.specs/active/0016-honest-signals.md', 2],
+        ['.specs/active/0017-next-step-everywhere.md', 3],
+        ['.specs/active/0018-overview-and-compact-board.md', 4],
+        ['.specs/active/0019-detail-situation-picture.md', 6],
+        ['.specs/active/0020-native-spec-tree.md', 4],
+        ['.specs/active/0021-next-step-intent-and-guidance.md', 12],
+        ['.specs/active/0022-layout-and-signal-polish.md', 11],
+        ['.specs/active/0023-plan-map-stages-parallel-work.md', 3],
+    ] as const) {
+        it(`${file} carries its ${notes} notes of 0024`, async () => {
+            const text = await read(file);
+            expect(text.split('Amended by 0024 (PD-068)').length - 1).toBeGreaterThanOrEqual(notes);
+        });
+    }
+
+    it('the catch-all note heads 0015, 0018, 0019, 0021, 0022 and 0023', async () => {
+        for (const name of ['0015-focus-on-visibility', '0018-overview-and-compact-board', '0019-detail-situation-picture', '0021-next-step-intent-and-guidance', '0022-layout-and-signal-polish', '0023-plan-map-stages-parallel-work']) {
+            const text = await read(`.specs/active/${name}.md`);
+            const head = text.slice(0, text.indexOf('\n## '));
+            expect(head, name).toContain('Amended by 0024 (PD-068): where Send is offered');
+        }
+    });
+
+    it('no row of the PD register names 0024 as its editor', async () => {
+        const register = await read('docs/product/product-decisions.md').catch(() => '');
+        expect(register).not.toContain('Amended by 0024');
+    });
+
+    it('negative control: a text without the note has none', () => {
+        expect('no note here'.split('Amended by 0024 (PD-068)').length - 1).toBe(0);
+    });
+});
+
+
+describe('product docs after the final check of round 2 (0024 T-014 to T-022)', () => {
+    const SHOTS = [
+        ['overview-dark', 'Overview in the dark theme: Now lists the specs in Review, the first row with the primary Copy prompt and its coach line, then Up next and the figures'],
+        ['board-dark', 'Board in the dark theme: six columns, the Review column open with cards that show the next step and an icon Copy prompt'],
+        ['plan-map-dark', 'Plan map in the dark theme: a plan as stages, stage 2 can run in parallel with two step cards and the ways to run it, the side panel beside the map'],
+        ['spec-detail-light', 'Board in the light theme with the detail of a spec in the side panel: Next step with Copy prompt, Plan and Progress'],
+    ] as const;
+
+    function pngSize(bytes: Buffer): [number, number] {
+        return [bytes.readUInt32BE(16), bytes.readUInt32BE(20)];
+    }
+
+    it('the README links the four shots with the alt text of what each shows, and each is a 1400 by 900 PNG', async () => {
+        const readme = await read('README.md');
+        const images = [...readme.matchAll(/!\[([^\]]*)\]\((media\/screenshots\/[\w-]+\.png)\)/g)].map((match) => [match[2], match[1]]);
+        expect(images).toEqual(SHOTS.map(([name, alt]) => [`media/screenshots/${name}.png`, alt]));
+        for (const [name] of SHOTS) {
+            const bytes = await fs.readFile(path.join(root, 'media', 'screenshots', `${name}.png`));
+            expect(pngSize(bytes), name).toEqual([1400, 900]);
+        }
+    });
+
+    it('the Plan map shot stands in the README part about the Plan map', async () => {
+        const readme = await read('README.md');
+        const start = readme.indexOf('\n### Plan map\n');
+        expect(start).toBeGreaterThan(-1);
+        const part = readme.slice(start, readme.indexOf('\n### ', start + 1));
+        expect(part).toContain('media/screenshots/plan-map-dark.png');
+    });
+
+    it('.vscodeignore still keeps the screenshots out of the VSIX', async () => {
+        expect((await read('.vscodeignore')).split('\n')).toContain('media/screenshots/**');
+    });
+    async function section(text: string, heading: string): Promise<string[]> {
+        const start = text.indexOf(`\n## ${heading}\n`);
+        expect(start, heading).toBeGreaterThan(-1);
+        const end = text.indexOf('\n## ', start + 1);
+        return text.slice(start + heading.length + 5, end < 0 ? undefined : end).split('\n').filter((line) => line.trim() !== '');
+    }
+
+    it('activeContext.md is a short dashboard in content, not only in lines', async () => {
+        const text = await read('.memory-bank/activeContext.md');
+        expect(Buffer.byteLength(text)).toBeLessThanOrEqual(7000);
+        expect(text.split('\n').length).toBeLessThanOrEqual(60);
+        const lines = text.split('\n');
+        expect(lines[0]).toBe('# Active Context');
+        expect(lines.filter((line) => /^(Last updated|Current branch|Current phase): \S/.test(line)).map((line) => line.split(':')[0])).toEqual(['Last updated', 'Current branch', 'Current phase']);
+        expect(lines.filter((line) => line.startsWith('## '))).toEqual(['## Now', '## Active Spec', '## Changed Recently', '## Decisions in Flight', '## Blockers / Questions', '## Next', '## Validation']);
+        for (const line of lines) {
+            expect(line.length, line.slice(0, 60)).toBeLessThanOrEqual(330);
+        }
+    });
+
+    it('activeContext.md: Now is at most five lines, Changed Recently at most three, Next is numbered from 1, Validation is one pointer', async () => {
+        const text = await read('.memory-bank/activeContext.md');
+        expect((await section(text, 'Now')).length).toBeLessThanOrEqual(5);
+        expect((await section(text, 'Changed Recently')).length).toBeLessThanOrEqual(3);
+        const next = await section(text, 'Next');
+        expect(next.map((line) => line.split('.')[0])).toEqual(next.map((_, index) => String(index + 1)));
+        expect((await section(text, 'Validation')).length).toBe(1);
+    });
+
+    it('activeContext.md names every spec in active/ on one line of its own, and the plan beside it', async () => {
+        const text = await read('.memory-bank/activeContext.md');
+        const lines = await section(text, 'Active Spec');
+        const active = (await fs.readdir(path.join(root, '.specs', 'active'))).filter((name) => name.endsWith('.md') && !name.endsWith('.plan.md'));
+        expect(active.length).toBeGreaterThan(0);
+        for (const name of active) {
+            const own = lines.filter((line) => line.includes(`(../.specs/active/${name})`));
+            expect(own, name).toHaveLength(1);
+            expect(own[0], name).toContain(`(../.specs/active/${name.replace(/\.md$/, '.plan.md')})`);
+        }
+    });
+    it('the CHANGELOG entry names the tree action Copy Next Step, the gear in the toolbar, one copy control, three settings and Problems as sentences', async () => {
+        const first = firstRelease(await read('CHANGELOG.md'));
+        expect(first).toContain('an inline **Copy Next Step** and the context menu (Open Spec, Open Plan and Copy Next Step)');
+        expect(first).toContain('the toolbar has **Open**, **Refresh** and the gear (**Open Settings**)');
+        expect(first).not.toContain('**Copy**');
+        expect(first).toContain('as one line with a **Copy prompt** button');
+        expect(first).toContain('Three settings, under **FeatherSpec Studio**');
+        expect(first).not.toContain('Two settings');
+        expect(first).not.toContain('**Send to your assistant**');
+        expect(first).toContain('`featherspec-studio.assistant`');
+        expect(first).toContain('Problems as sentences');
+        expect(first).not.toContain('Problems with their reasons');
+    });
+
+    it('the CHANGELOG lists every command of the Command Palette', async () => {
+        const first = firstRelease(await read('CHANGELOG.md'));
+        for (const name of ['Open', 'Open Overview', 'Open Board', 'Open Plan Map', 'Focus on Specs View', 'Copy Next Step', 'Set Up FeatherSpec', 'Select Project', 'Refresh', 'Open Settings']) {
+            expect(first, name).toContain(`\`FeatherSpec Studio: ${name}\``);
+        }
+    });
+
+    it('the README names the gear in the toolbar and the two cases of a new chat', async () => {
+        const readme = await read('README.md');
+        expect(readme).toContain('The toolbar has **Open**, **Refresh** and the gear (**Open Settings**)');
+        expect(readme).not.toContain('The toolbar has **Open** and **Refresh**');
+        expect(readme).toContain('where the step wants a fresh session (verifying a result and challenging a spec)');
+        expect(readme).not.toContain('(the verification and the review)');
+    });
+
+    it('the checklist keeps Gregor\'s real window at 0021 AC-022', async () => {
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('\n## Next step with intent and guidance (0021)\n');
+        const section = text.slice(start, text.indexOf('\n## ', start + 1));
+        const line = section.split('\n').find((row) => row.includes('**AC-022**'));
+        expect(line).toContain('*(preview harness, orchestrator, then Gregor in a real window; guideline 12)*');
+    });
+
+    it('0024 §5 lists 0019 AC-020, the note stands under it, and P-22 places useFocusHandoff in ui/focusHandoff.ts', async () => {
+        const spec = await read('.specs/active/0024-send-next-step-to-assistant.md');
+        expect(spec).toContain('| 0019 AC-020 — an offer change hands focus to the replacing Copy prompt (0024 AC-010) |');
+        const lines = (await read('.specs/active/0019-detail-situation-picture.md')).split('\n');
+        const at = lines.findIndex((line) => line.startsWith('- **AC-020**'));
+        expect(at).toBeGreaterThan(-1);
+        expect(lines[at + 1]).toContain('*Amended by 0024 (PD-068): AC-020 — ');
+        expect(lines[at + 1]).toContain('0024 AC-010');
+        const plan = await read('.specs/active/0024-send-next-step-to-assistant.plan.md');
+        expect(plan).toContain('`useFocusHandoff()` (`ui/focusHandoff.ts`)');
+        expect(plan).not.toContain('`useFocusHandoff()` (`ui/popup.ts`)');
+    });
+
+    it('the 0021 audit homes the docsScan rename of 463899b, and the old and new titles are as the commit made them', async () => {
+        const plan = await read('.specs/active/0021-next-step-intent-and-guidance.plan.md');
+        const audit = plan.slice(plan.indexOf('\n## Test-title audit\n'), plan.indexOf('\n## Traceability\n'));
+        const row = audit.split('\n').find((line) => line.includes('as its last row')) ?? '';
+        expect(row).toContain('`src/adapters/node/docsScan.test.ts`');
+        expect(row).toContain('the decisions register carries PD-067 as its last row, names what each later decision retires, and leaves the earlier rows as they were');
+        expect(row).toContain('after PD-066');
+        expect(row).toContain('463899b');
+        expect(await read('src/adapters/node/docsScan.test.ts')).toContain("it('the decisions register carries PD-067 after PD-066, names what each later decision retires, and leaves the earlier rows as they were'");
+    });
+
+    it('the 0023 and 0024 plans record the harness recheck and Windows at their fix heads', async () => {
+        const plan23 = (await read('.specs/active/0023-plan-map-stages-parallel-work.plan.md')).replace(/\s+/g, ' ');
+        expect(plan23).toContain("manual: orchestrator (Gregor's delegate) 2026-11-18, harness recheck at d756fa9");
+        expect(plan23).toContain('60 views');
+        expect(plan23).toContain('`par-odd`');
+        expect(plan23).toContain('Windows at d756fa9: unit 2812 passed, 7 skipped, +16 timing; `npm test` 31+1+1+1');
+        const plan24 = (await read('.specs/active/0024-send-next-step-to-assistant.plan.md')).replace(/\s+/g, ' ');
+        expect(plan24).toContain("manual: orchestrator (Gregor's delegate) 2026-11-19, harness recheck at 5c70dbd");
+        expect(plan24).toContain('60/60 pass');
+        expect(plan24).toContain('Windows at 5c70dbd: unit 3109 passed, 7 skipped, +18 timing; `npm test` 32+1+1+1');
+    });
+
+    it('the AGENTS.md snapshot names its modules and points to the maps that hold what they contain', async () => {
+        const agents = await read('AGENTS.md');
+        const modules = agents.split('\n').filter((line) => /^ {4}- 'src\/(core\/<area>|adapters|webview) — /.test(line));
+        expect(modules).toHaveLength(3);
+        for (const line of modules) {
+            expect(line.length, line.slice(0, 40)).toBeLessThanOrEqual(600);
+        }
+        const [core, adapters, webview] = modules;
+        for (const area of ['discovery', 'specs', 'lifecycle', 'runtime', 'shell', 'overview', 'board', 'planMap', 'copyNextStep', 'settings', 'assistant', 'setup', 'ports/']) {
+            expect(core, area).toContain(area);
+        }
+        expect(core).toContain('.architecture/core.md');
+        expect(adapters).toContain('.architecture/adapters.md');
+        for (const part of ['protocol client', 'shell', 'area registry', 'Overview, Board, Plan map', 'detail/', 'ui/', 'src/test', 'test/fixtures', 'media']) {
+            expect(webview, part).toContain(part);
+        }
+        expect(webview).toContain('.architecture/webview.md');
+        expect(Buffer.byteLength(agents)).toBeLessThanOrEqual(15000);
+    });
+
+    it('the maps hold what the snapshot lines no longer list, and the webview map counts three areas', async () => {
+        const maps = (await read('.architecture/core.md')) + (await read('.architecture/webview.md'));
+        for (const term of ['coach line', 'Toggletip', 'split button', 'BackButton', 'Divider', 'planMap', 'copyNextStep', 'problemSentence', 'sidePanelWidth', 'treeLabel']) {
+            expect(maps, term).toContain(term);
+        }
+        const webview = await read('.architecture/webview.md');
+        expect(webview).toContain('The panel has three areas, Overview, Board and Plan map');
+        expect(webview).not.toContain('two areas');
+    });
+
+    it('the snapshot keeps its entrypoints, shared line and four boundaries', async () => {
+        const agents = await read('AGENTS.md');
+        for (const kept of [
+            "src/extension.ts — composition root",
+            "src/webview/main.tsx — Studio panel UI",
+            "src/shared/protocol",
+            "src/shared/testing",
+            'Domain and application code never import vscode',
+            'Only the setup (0014) writes into a workspace folder',
+            'src/shared imports neither vscode nor Node.js',
+            "No webview message names a command",
+        ]) {
+            expect(agents, kept).toContain(kept);
+        }
+    });
+
 });
