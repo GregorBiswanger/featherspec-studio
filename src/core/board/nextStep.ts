@@ -17,6 +17,7 @@ import {
     startIntent,
     STEP_GUIDES,
     type StepCase,
+    verifiedWithoutTickReason,
     WRITE_PLAN_INTENT,
 } from '../../shared/protocol/nextStepTexts';
 import type { StepView } from '../../shared/protocol/stepView';
@@ -36,7 +37,7 @@ export interface NextStepLine {
     intent: string;
 }
 
-export type NextStep = { rule: NextStepRuleId; case: StepCase; lines: NextStepLine[] } | { rule: NextStepRuleId; text: string };
+export type NextStep = { rule: NextStepRuleId; case: StepCase; lines: NextStepLine[]; reason?: string } | { rule: NextStepRuleId; text: string };
 
 function lines(rule: NextStepRuleId, stepCase: StepCase, ...texts: NextStepLine[]): NextStep {
     return { rule, case: stepCase, lines: texts };
@@ -45,6 +46,10 @@ function lines(rule: NextStepRuleId, stepCase: StepCase, ...texts: NextStepLine[
 export function openStep(model: ShellModel, entry: LifecycleEntry): PlanStep | undefined {
     const plan = model.project.plans.find((candidate) => candidate.key === entry.plan);
     return (plan?.parsed?.steps ?? []).find((step) => step.ticked !== true && !step.struck);
+}
+
+export function verifiedWithoutTick(plan: ParsedPlan | undefined): PlanStep | undefined {
+    return (plan?.steps ?? []).find((step) => !step.struck && step.ticked !== true && step.verified.state === 'value');
 }
 
 const STEP_TOKEN = /\bT-\d+\b/g;
@@ -108,6 +113,13 @@ export function nextStep(model: ShellModel, key: string): NextStep | undefined {
             }
             const continueLine = { intent: continueIntent(open.id, plainShort(open.title)), text: `Implement ${open.id} of ${entry.plan}` };
             const plan = model.project.plans.find((candidate) => candidate.key === entry.plan)?.parsed;
+            const untouched = verifiedWithoutTick(plan);
+            if (untouched !== undefined) {
+                return {
+                    ...lines('NS-6', 'NS-6-report', { intent: NS6_REPORT_FIRST_INTENT, text: `/sdd-plan ${key}` }, continueLine),
+                    reason: verifiedWithoutTickReason(untouched.id),
+                } as NextStep;
+            }
             if (reportSign(plan, open) && !levelsOnImplement(model.project.version)) {
                 return lines('NS-6', 'NS-6-report', { intent: NS6_REPORT_FIRST_INTENT, text: `/sdd-plan ${key}` }, continueLine);
             }

@@ -52,7 +52,7 @@ function rowOf(model: ShellModel, specs: SpecResolver, entry: LifecycleEntry, fi
     return {
         ...row,
         step,
-        ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer)) }),
+        ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer), { version: model.project.version, ...(next.reason === undefined ? {} : { reason: next.reason }) }) }),
         ...(send === undefined ? {} : { send }),
     };
 }

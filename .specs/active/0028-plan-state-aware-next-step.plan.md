@@ -3,7 +3,7 @@
 **Spec:** [0028-plan-state-aware-next-step.md](0028-plan-state-aware-next-step.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-004
+**Current step:** T-005
 
 ## Approach
 
@@ -145,8 +145,8 @@ Parallel: stage 3 (runs in sequence, `PLAN-R3.md`). Stages 1 and 2 share `nextSt
   `fs-partial-return` variants deep-equal but the reason); `stepTips.test.ts` "0028 AC-020 …" (versions both ways, each
   reason once in the text modules); `fiveFixtures.test.ts` gains `fs-verified-no-tick`.
 - **Verify:** `npm run test:unit` — red first (no guard, one reason), then green.
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-19 · `npx vitest run --project node src/core/board/nextStep.test.ts src/core/board/stepTips.test.ts`: red first (14 failed: no guard, one session reason, `stepTips` ignoring the context), then green; `npm run test:unit` 3245 passed, 4 skipped, timing 18 passed; eslint, tsc ×2 clean.
+- **Notes:** `stepTips(case, settings, closing, { version, reason })` (fourth parameter optional, so existing calls and tests stand); `NextStep` carries `reason?` only for the guard; `verifiedWithoutTick()` beside `reportSign()`; texts `verifiedWithoutTickReason()` and `SAME_OR_NEW_REASON_LEVELLED` in `nextStepTexts.ts`, each reason once. §7's 1.11.0 reason opens `Current or new chat:` literally (the coach line still says `same chat or new chat` until 0026, OP-006). The snapshot helper now passes version and reason to `stepTips`, so the session reason is part of the AC-010 comparison; exceptions for `fs-verified-no-tick`, `case-ac004-verified-no-tick` (guard), `fs-version-1110`, `fs-partial-return` (tips: reason). `fiveFixtures.test.ts` has all five fixtures. Fixed one own test: the AC-001 negative control now unticks T-006 with `—` (a filled Verified line would be the guard).
 
 ### T-005 — NS-7 starts with Implement
 

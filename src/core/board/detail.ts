@@ -38,7 +38,7 @@ function diagnosticLine(diagnostic: LifecycleEntry['diagnostics'][number]): Diag
     return file === undefined ? base : { ...base, open: { key: file, line: line === undefined || line < 1 ? 1 : line } };
 }
 
-function nextStepView(next: NextStep, tips: StepTipSettings | undefined, offer: Offer | undefined): NextStepView {
+function nextStepView(next: NextStep, tips: StepTipSettings | undefined, offer: Offer | undefined, version: string): NextStepView {
     if (!('lines' in next)) {
         return next;
     }
@@ -47,7 +47,7 @@ function nextStepView(next: NextStep, tips: StepTipSettings | undefined, offer: 
     return {
         rule: next.rule,
         lines,
-        ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer)) }),
+        ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer), { version, ...(next.reason === undefined ? {} : { reason: next.reason }) }) }),
         ...(send === undefined ? {} : { send }),
     };
 }
@@ -92,7 +92,7 @@ export function buildDetail(input: DetailInput): DetailView {
         rule: entry.rule,
         persistence: entry.persistence,
         ...(entry.deprecated === undefined ? {} : { successor: successorText(entry.deprecated.successor) }),
-        nextStep: nextStepView(next, input.tips, input.offer),
+        nextStep: nextStepView(next, input.tips, input.offer, model.project.version),
         problems: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').map(diagnosticLine),
         notes: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'note').map(diagnosticLine),
         ...(progress === undefined ? {} : { progress }),

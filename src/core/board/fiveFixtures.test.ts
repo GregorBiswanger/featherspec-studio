@@ -24,6 +24,7 @@ const ROWS: Row[] = [
     { fixture: 'fs-version-missing', case: 'NS-6-report', ...REPORT },
     { fixture: 'fs-version-1100', case: 'NS-6-report', ...REPORT },
     { fixture: 'fs-version-1110', case: 'NS-6-open', first: `Implement T-003 of ${PLAN}`, second: `/sdd-plan ${KEY}`, short: 'Continue · Implement T-003', bar: '$(checklist) 0001 · Active · Implement T-003' },
+    { fixture: 'fs-verified-no-tick', case: 'NS-6-report', ...REPORT },
     { fixture: 'fs-partial-return', case: 'NS-6-returned', first: `/sdd-plan ${KEY}`, short: 'Integrate · /sdd-plan', bar: '$(checklist) 0001 · Active · /sdd-plan' },
 ];
 

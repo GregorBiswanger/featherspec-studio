@@ -150,3 +150,31 @@ describe('0024 AC-013: the toggletip names Send and the settings', () => {
     });
 });
 
+
+describe('0028 AC-020: the session reason of the current or new chat follows the version, the reason of a guard opens paragraph 1', () => {
+    const OLD = 'Same chat or new chat: the plan holds the state of the work; after a break, let the agent report first. Fast model: one small, well-described step.';
+    const LEVELLED = 'Same chat or new chat: the plan holds the state of the work; after a break, the step first brings the plan up to date. Fast model: one small, well-described step.';
+
+    it.each(['1.11.0', '1.11.1', '1.12.0'])('%s: the 1.11.0 reason, literally', (version) => {
+        expect(stepTips('NS-6-open', NONE, undefined, { version }).about[1]).toBe(LEVELLED.replace('Same chat or new chat:', 'Current or new chat:'));
+        expect(stepTips('NS-6-returned', NONE, undefined, { version }).about[1]).toBe(LEVELLED.replace('Same chat or new chat:', 'Current or new chat:'));
+    });
+
+    it.each(['1.10.0', '1.11.0-rc.1', 'next', 'unknown'])('%s: the earlier reason, literally', (version) => {
+        expect(stepTips('NS-6-open', NONE, undefined, { version }).about[1]).toBe(OLD);
+    });
+
+    it('without a version the earlier reason; other sessions and models do not change; each reason is in the text modules once', async () => {
+        expect(stepTips('NS-6-open', NONE).about[1]).toBe(OLD);
+        expect(stepTips('NS-5', NONE, undefined, { version: '1.12.0' }).about[1]).toBe(stepTips('NS-5', NONE).about[1]);
+        const text = await fs.readFile(path.join(process.cwd(), 'src', 'shared', 'protocol', 'nextStepTexts.ts'), 'utf8');
+        for (const reason of ['after a break, let the agent report first.', 'after a break, the step first brings the plan up to date.']) {
+            expect(text.split(reason).length - 1, reason).toBe(1);
+        }
+    });
+
+    it('a reason opens paragraph 1, then one space and the effect; none leaves paragraph 1 as it was', () => {
+        const withReason = stepTips('NS-6-report', NONE, undefined, { reason: 'T-003 has a Verified line but no tick.' }).about[0];
+        expect(withReason).toBe(`T-003 has a Verified line but no tick. ${stepTips('NS-6-report', NONE).about[0]}`);
+    });
+});

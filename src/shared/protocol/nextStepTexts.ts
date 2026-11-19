@@ -170,6 +170,12 @@ export const SESSION_REASONS: Record<SessionKey, string> = {
     any: 'Any chat: the step reads everything it needs from the files.',
 };
 
+export const SAME_OR_NEW_REASON_LEVELLED = 'Current or new chat: the plan holds the state of the work; after a break, the step first brings the plan up to date.';
+
+export function verifiedWithoutTickReason(id: string): string {
+    return `${id} has a Verified line but no tick.`;
+}
+
 export const MODEL_WORDS: Record<ModelKey, { base: 'fast model' | 'strong model'; suffix: string }> = {
     fast: { base: 'fast model', suffix: '' },
     strong: { base: 'strong model', suffix: '' },

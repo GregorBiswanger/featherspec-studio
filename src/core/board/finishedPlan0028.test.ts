@@ -59,7 +59,7 @@ describe('0028 AC-001: a finished plan is Review whatever its status line says',
     });
 
     it('negative control: with one step not ticked the same plan stays Active with an open step', async () => {
-        const files = { ...CASE_FIXTURES['ac001-plan-in-progress']!, [SECOND]: CASE_FIXTURES['ac001-plan-in-progress']![SECOND]!.replace('- [x] **Verified (T-006):**', '- [ ] **Verified (T-006):**') };
+        const files = { ...CASE_FIXTURES['ac001-plan-in-progress']!, [SECOND]: CASE_FIXTURES['ac001-plan-in-progress']![SECOND]!.replace('- [x] **Verified (T-006):** 2026-11-19 · npm test green', '- [ ] **Verified (T-006):** —') };
         const model = await modelOf(files);
         expect(model.lifecycle.entries[0]).toMatchObject({ state: 'Active', rule: 'S-ACTIVE' });
         expect(nextStep(model, SPLITTER_SPEC)).toMatchObject({ case: 'NS-6-open' });

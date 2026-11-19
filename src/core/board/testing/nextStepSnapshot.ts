@@ -40,7 +40,7 @@ export function snapshotOf(model: ShellModel): ProjectSnapshot {
             persistence: entry.persistence,
             nextStep: plain(next),
             stepView: plain(stepView(model, entry.key)),
-            tips: next !== undefined && 'case' in next ? plain(stepTips(next.case, DEFAULT_SETTINGS)) : null,
+            tips: next !== undefined && 'case' in next ? plain(stepTips(next.case, DEFAULT_SETTINGS, undefined, { version: model.project.version, ...(next.reason === undefined ? {} : { reason: next.reason }) })) : null,
         };
     }
     return result;

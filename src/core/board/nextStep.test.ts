@@ -8,8 +8,9 @@ import { readProject } from '../specs/readProject';
 import type { ShellModel } from '../ports/shell';
 import { parseStepTipSettings } from '../settings/stepTipSettings';
 import { modelOf } from './testing/boardWorld';
-import { CASE_FIXTURES, CURRENT_STEP_VALUES } from './testing/caseFixtures';
-import { modelOfCase, snapshotFile, snapshotOf, type ProjectSnapshot } from './testing/nextStepSnapshot';
+import { fixturePath } from '../discovery/testing/fixtures';
+import { CASE_FIXTURES, CURRENT_STEP_VALUES, splitterFiles } from './testing/caseFixtures';
+import { modelOfCase, modelOfFixture, snapshotFile, snapshotOf, type ProjectSnapshot } from './testing/nextStepSnapshot';
 import { stepTips } from './stepTips';
 import { nextStep, shortForm, stepView } from './nextStep';
 
@@ -589,4 +590,86 @@ describe('0028 AC-009: only the report first of the sign reads the version', () 
             results.forEach((result) => expect(result).toEqual(results[0]));
         },
     );
+});
+
+describe('0028 AC-017: a step with a Verified line but no tick puts the report first, in every version', () => {
+    const KEY = '.specs/active/0001-tip-splitter.md';
+    const PLAN = '.specs/active/0001-tip-splitter.plan.md';
+    const VERSIONS = ['1.7.0', '1.10.0', '1.11.0-rc.1', 'next', 'unknown', '1.11.0', '1.12.0'];
+    const FILLED = '2026-11-19 · npm test green';
+
+    async function modelWith(options: Parameters<typeof splitterFiles>[0], version: string): Promise<ShellModel> {
+        return readMemory(splitterFiles(options), version).then((project) => ({ project, lifecycle: deriveLifecycle(project) }));
+    }
+
+    it.each(VERSIONS)('%s: with and without the sign the lines are AC-004\'s, and paragraph 1 opens with the reason', async (version) => {
+        for (const currentStep of ['T-003', 'T-004']) {
+            const m = await modelWith({ ticked: ['T-001', 'T-002'], currentStep, verified: { 'T-003': FILLED, 'T-004': FILLED } }, version);
+            expect(nextStep(m, KEY), `${version} ${currentStep}`).toEqual({
+                rule: 'NS-6',
+                case: 'NS-6-report',
+                reason: 'T-003 has a Verified line but no tick.',
+                lines: [
+                    { intent: 'Let the agent report first — the plan and the ticks may differ', text: `/sdd-plan ${KEY}` },
+                    { intent: 'Continue with T-003 Reject money values', text: `Implement T-003 of ${PLAN}` },
+                ],
+            });
+            expect(stepShortForm(stepView(m, KEY)!)).toBe('Report · /sdd-plan');
+        }
+    });
+
+    it('the reason names the first such step in plan order; a struck step, a ticked step and the three placeholders give no guard', async () => {
+        const guard = (m: ShellModel) => (nextStep(m, KEY) as { reason?: string }).reason;
+        expect(guard(await modelWith({ ticked: ['T-001'], verified: { 'T-004': FILLED, 'T-002': FILLED } }, '1.12.0'))).toBe('T-002 has a Verified line but no tick.');
+        expect(guard(await modelWith({ ticked: ['T-001', 'T-002'], struck: ['T-003'], verified: { 'T-003': FILLED } }, '1.12.0'))).toBeUndefined();
+        expect(guard(await modelWith({ ticked: ['T-001', 'T-002'], verified: { 'T-003': '—' } }, '1.12.0'))).toBeUndefined();
+        expect(guard(await modelWith({ ticked: ['T-001', 'T-002'], verified: { 'T-003': '' } }, '1.12.0'))).toBeUndefined();
+        const absent = splitterFiles({ ticked: ['T-001', 'T-002'] });
+        absent[PLAN] = absent[PLAN]!.replace('- [ ] **Verified (T-003):** —\n', '');
+        const project = await readMemory(absent, '1.12.0');
+        expect(guard({ project, lifecycle: deriveLifecycle(project) })).toBeUndefined();
+        expect(nextStep({ project, lifecycle: deriveLifecycle(project) }, KEY)).toMatchObject({ case: 'NS-6-open' });
+    });
+
+    it('the fixture fs-verified-no-tick: /sdd-plan first, and the reason opens the toggletip', async () => {
+        const m = await modelOfFixture('fs-verified-no-tick');
+        const key = '.specs/active/0001-fixture-demo.md';
+        expect(nextStep(m, key)).toMatchObject({ case: 'NS-6-report', reason: 'T-003 has a Verified line but no tick.', lines: [{ text: `/sdd-plan ${key}` }, { text: 'Implement T-003 of .specs/active/0001-fixture-demo.plan.md' }] });
+        const tips = stepTips('NS-6-report', parseStepTipSettings(true, {}), undefined, { version: m.project.version, reason: 'T-003 has a Verified line but no tick.' });
+        expect(tips.about[0]!.startsWith('T-003 has a Verified line but no tick. The agent checks the plan against the code')).toBe(true);
+    });
+
+    it('returned work comes before the guard', async () => {
+        const m = await modelWith({ ticked: ['T-001', 'T-002'], verified: { 'T-003': FILLED }, note: 'DONE' }, '1.10.0');
+        expect(nextStep(m, KEY)).toMatchObject({ case: 'NS-6-returned' });
+        expect('reason' in (nextStep(m, KEY) as object)).toBe(false);
+    });
+});
+
+describe('0028 AC-018: returned work reads the same in every version, apart from the session reason', () => {
+    const KEY = '.specs/active/0001-fixture-demo.md';
+
+    function fixtureFiles(root: string, relative = ''): Record<string, string> {
+        const files: Record<string, string> = {};
+        for (const entry of fs.readdirSync(`${root}/${relative}`, { withFileTypes: true })) {
+            const child = relative === '' ? entry.name : `${relative}/${entry.name}`;
+            if (entry.isDirectory()) {
+                Object.assign(files, fixtureFiles(root, child));
+            } else {
+                files[child] = fs.readFileSync(`${root}/${child}`, 'utf8');
+            }
+        }
+        return files;
+    }
+
+    it('1.11.0, 1.10.0, no version line and T-004 with a filled Verified without tick: four deep-equal results', async () => {
+        const files = fixtureFiles(fixturePath('fs-partial-return'));
+        const filled = { ...files, '.specs/active/0001-fixture-demo.plan.md': files['.specs/active/0001-fixture-demo.plan.md']!.replace('- [ ] **Verified (T-004):** —', '- [ ] **Verified (T-004):** 2026-11-19 · npm test green') };
+        expect(filled['.specs/active/0001-fixture-demo.plan.md']).not.toBe(files['.specs/active/0001-fixture-demo.plan.md']);
+        const models = [await readMemory(files, '1.11.0'), await readMemory(files, '1.10.0'), await readMemory(files, 'unknown'), await readMemory(filled, '1.11.0')].map((project) => ({ project, lifecycle: deriveLifecycle(project) }));
+        const results = models.map((m) => ({ next: nextStep(m, KEY), view: stepView(m, KEY) }));
+        results.forEach((result) => expect(result).toEqual(results[0]));
+        expect(results[0]!.next).toMatchObject({ rule: 'NS-6', case: 'NS-6-returned', lines: [{ text: `/sdd-plan ${KEY}` }] });
+        expect('reason' in (results[0]!.next as object)).toBe(false);
+    });
 });

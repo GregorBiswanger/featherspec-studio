@@ -17,9 +17,15 @@ const ALL_FIELDS: Field[] = ['state', 'rule', 'persistence', 'nextStep', 'stepVi
 const DEMO = '.specs/active/0001-fixture-demo.md';
 const STEP_FIELDS: Field[] = ['nextStep', 'stepView', 'tips'];
 const SIGN_OLD = 'Report first: the sign of 0028 §6.2 below FeatherSpec 1.11.0 (AC-004, AC-009)';
+const GUARD = 'Report first: a step with a Verified line but no tick (0028 §6.6, AC-017)';
+const REASON = "the session reason of the current or new chat from 1.11.0 (0028 §6.4, AC-020)";
 const FINISHED_NOT_DONE = 'an active/ spec with a finished plan whose status is not Done is Review (0028 §6.1)';
 
 export const EXCEPTIONS: readonly Exception[] = [
+    { snapshot: 'fs-verified-no-tick', key: DEMO, fields: STEP_FIELDS, why: GUARD },
+    { snapshot: 'case-ac004-verified-no-tick', key: SPLITTER, fields: STEP_FIELDS, why: GUARD },
+    { snapshot: 'fs-version-1110', key: DEMO, fields: ['tips'], why: REASON },
+    { snapshot: 'fs-partial-return', key: DEMO, fields: ['tips'], why: REASON },
     { snapshot: 'fs-version-missing', key: DEMO, fields: STEP_FIELDS, why: SIGN_OLD },
     { snapshot: 'fs-version-1100', key: DEMO, fields: STEP_FIELDS, why: SIGN_OLD },
     { snapshot: 'case-ac004-report-first', key: SPLITTER, fields: STEP_FIELDS, why: SIGN_OLD },
