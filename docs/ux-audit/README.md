@@ -16,6 +16,9 @@ by Playwright, on five workspaces, in Dark, Light and High Contrast, at two wind
 | [07-implementation-review.md](07-implementation-review.md) | Review of the round 0016–0020 at `045b354` (2026-11-18): audit recommendations checked, new findings N-1…N-9, Gregor's feedback, concept K-N plan map (§6), assistant choice and guidance (§6a) |
 | [08-spec-handoff.md](08-spec-handoff.md) | Work order for specs 0021–0024: order, preconditions V-1 and V-2, rules, texts, draft criteria, open decisions E-1…E-12, guideline changes |
 | [screenshots-045b354/](screenshots-045b354/) | 23 screenshots of `045b354` (`n01`…`n22`) and Gregor's `g01`, referenced in 07 and 08 |
+| [09-round2-review.md](09-round2-review.md) | Review of round 2 (specs 0021–0024) at `48d1968` (2026-11-19): work order 08 checked, the eight deviations judged, findings G-1…G-11, Gregor's feedback F-1 (step → plan map) and F-2 (percent), V3 (spec attached when sending), hand-off for round 3 (0025–0028) |
+| [screenshots-48d1968/](screenshots-48d1968/) | 10 screenshots of `783b067` (`r01`…`r12`) and Gregor's `g-r2-01`, `g-r2-02`, referenced in 09 |
+| [10-team-briefing-round3.md](10-team-briefing-round3.md) | Team briefing for round 3: where everything lives, specs 0025–0028, open decisions, process rules, FeatherSpec update candidates |
 
 How the product acts on it: decisions PD-058 … PD-062 (audit) and PD-068, PD-069 (review) in
 [product-decisions.md](../product/product-decisions.md), the UX guidelines in
