@@ -4,7 +4,7 @@ A VS Code panel for projects that use [FeatherSpec](https://github.com/GregorBis
 
 Studio reads your project and starts no agent; the work with your agent stays in your assistant's chat. The one exception to read-only is [Set up FeatherSpec](#set-up-featherspec), which you start and confirm yourself.
 
-![Overview in the dark theme: Now lists the specs in Review, the first row with the primary Copy prompt and its coach line, then Up next and the figures](media/screenshots/overview-dark.png)
+![Overview in the dark theme: Now lists five specs in Review and + 7 more, the first row with Copy prompt and its coach line, then Up next and the figures](media/screenshots/overview-dark.png)
 
 ## Feature tour
 
@@ -26,7 +26,7 @@ Every spec as a card in six columns: Backlog, Ready, Active, Review, Done and Bl
 
 ### Plan map
 
-![Plan map in the dark theme: a plan as stages, stage 2 can run in parallel with two step cards and the ways to run it, the side panel beside the map](media/screenshots/plan-map-dark.png)
+![Plan map in the dark theme: a plan as stages with the next step in its header, stage 2 can run in parallel with two step cards and the ways to run it as three choices, the side panel beside the map](media/screenshots/plan-map-dark.png)
 
 The third tab shows one spec's plan as stages. Select a spec that has a plan (in the tab's own list, the Specs view, the Overview or the Board) and each stage is a row: `Stage 2 — add and subtract`, with a line that says whether its steps run in order or can run in parallel because they share no file. Steps are cards with their files and the acceptance criteria they cover, side by side where they can run together; open a card for what to do and how it is verified. A finished stage folds to the step IDs. The side panel stands beside the map from 900 px; below that the map shows alone.
 

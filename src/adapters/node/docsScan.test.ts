@@ -785,9 +785,9 @@ describe('product docs after 0024 (AC-015)', () => {
 
 describe('product docs after the final check of round 2 (0024 T-014 to T-022)', () => {
     const SHOTS = [
-        ['overview-dark', 'Overview in the dark theme: Now lists the specs in Review, the first row with the primary Copy prompt and its coach line, then Up next and the figures'],
+        ['overview-dark', 'Overview in the dark theme: Now lists five specs in Review and + 7 more, the first row with Copy prompt and its coach line, then Up next and the figures'],
         ['board-dark', 'Board in the dark theme: six columns, the Review column open with cards that show the next step and an icon Copy prompt'],
-        ['plan-map-dark', 'Plan map in the dark theme: a plan as stages, stage 2 can run in parallel with two step cards and the ways to run it, the side panel beside the map'],
+        ['plan-map-dark', 'Plan map in the dark theme: a plan as stages with the next step in its header, stage 2 can run in parallel with two step cards and the ways to run it as three choices, the side panel beside the map'],
         ['spec-detail-light', 'Board in the light theme with the detail of a spec in the side panel: Next step with Copy prompt, Plan and Progress'],
     ] as const;
 
