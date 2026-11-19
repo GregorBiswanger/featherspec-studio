@@ -234,4 +234,4 @@ filled, `# last reconciled: 2026-11-19`, `DocLanguage: English`, no spec.
 ## 13. Ready, Done and next steps
 
 Ready: clarified 2026-11-19 (OP-002); planned 2026-11-19, 6 steps in 3 stages. Done per the DoD of `AGENTS.md`; AC-013 by the
-orchestrator, AC-014 by Gregor. Next: `/sdd-clarify`, then `/sdd-plan`.
+orchestrator, AC-014 by Gregor. Next: Gregor's AC-014 and CI on PR #2 stay open; then `/sdd-lifecycle`.

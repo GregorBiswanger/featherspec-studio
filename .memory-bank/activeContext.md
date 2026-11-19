@@ -6,6 +6,7 @@ Current phase: act
 
 ## Now
 - Round 3 on `ux-round-3`: 0026 (Send defaults and wording) is Implemented 2026-11-19; its plan is archived.
+- 0029 (onboarding before setup) is built; T-005 is done, Windows `npm test` passed, CI on PR #2 and Gregor's AC-014 are open.
 - 0021–0024 are implemented; their specs stay In Progress in `active/`.
 - Waits for: C-2 and Gregor's AC-017 on `tip-splitter` for 0027, CI at the round-3 PR, Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
 
@@ -28,6 +29,7 @@ Current phase: act
 - Completed 2026-11-19: [0026](../.specs/done/0026-send-defaults-and-wording.md) ([plan](../.specs/plan-archive/0026-send-defaults-and-wording.2026-11-19.plan.md)).
 
 ## Changed Recently
+- 0029 (PD-090): while `/sdd-setup` has not run, the empty Overview and Board welcome the user and offer `/sdd-setup` through Send or Copy prompt; tree, Up next and Copy next step point to it; once it has run, nothing changes.
 - 0027 (PD-082, PD-083, PD-089), built 2026-11-19, not closed: with FeatherSpec 1.11.0 Send attaches the spec (Claude Code `@<path>`; Copilot `attachFiles` once C-2 allows it) and a line under the button names the file. Closing waits for C-2 (OP-006), AC-017, AC-020.
 - 0025, 0026, 0028 (Implemented 2026-11-19): Plan map links, header next step and percentages; Send opens a new chat, Now stops at five rows, three radio ways; a finished plan is Review. Windows `npm test` passed at 7ea11f3 (0025).
 
@@ -40,7 +42,7 @@ Current phase: act
 
 ## Next
 1. Finish 0027 (spec and plan are in `.specs/active/`, the plan's handoff names the next step).
-2. Open the round-3 PR (draft is fine) so CI runs: 0021 AC-020, 0022 AC-017, 0023 AC-016, 0024 AC-014, 0025 AC-020, 0026 AC-015, 0028 AC-012.
+2. 0029: CI on PR #2, then Gregor's AC-014; the other specs' CI items run on the same PR.
 
 ## Validation
-- Windows unit tests at 856872e: 3502 passed, 8 skipped, timing 28 passed; `npm test` at 25c6b92: 33+1+1+1, exit 0. CI pending on the round-3 PR.
+- Windows at 48d4056: unit tests 3775 passed, 8 skipped, timing 37 passed; `npm test` 34+1+1+1, exit 0. CI pending on PR #2.

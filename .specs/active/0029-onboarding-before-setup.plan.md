@@ -108,8 +108,8 @@ No parallel stage: T-002 and T-003 share `shared/protocol/texts.ts` and the mode
   add both as scenarios to `host.mts`; screenshots linked in `Notes:`.
 - **Verify:** manual: the orchestrator looks for the glyph in each theme, cut text or buttons, words broken inside
   themselves, and glyph, heading, body, action in one container in that order; jsdom has no layout engine.
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** manual: orchestrator, 2026-11-20. Harness `r11check.mts` at 8732709 on `fs-setup-not-run` (Overview and Board) and `fs-setup-done-no-specs` (Overview), Dark, Light and High Contrast at 1600 and 1000 px: 12 of 12 clean, no cut text, no word broken inside itself, no page errors. Glyph, heading, body and Send action are in one container in that order. The setup-done run shows "No specs yet. Start with /sdd-specify".
+- **Notes:** The preview found one fix, 8732709: the Overview's welcome heading took the section-label style (11 px uppercase); it now matches the Board, 19.5 px / 700, measured. Screenshots: `/home/claude/orch/preview/r11-0029`. The compile's finding 1 is closed by two assertions per area in `welcome0029.test.tsx` (Send menu: new chat checked, current chat, Copy prompt; feedback at the control for Send and for Copy prompt).
 
 ### T-006 — Notes, docs, PD-090 and final gates
 
@@ -138,9 +138,9 @@ No parallel stage: T-002 and T-003 share `shared/protocol/texts.ts` and the mode
 | AC-010 | T-004 | — (preserved behaviour) | `src/core/shell/onboarding0029.test.ts` | verified |
 | AC-011 | T-002 | `texts.ts`, `overview/texts.ts`, `copyNextStepTexts.ts`, `src/webview/board/featherPath.ts`, `icons.tsx` | `src/adapters/node/visibleLiterals.test.ts`, `welcome0029.test.tsx` | verified |
 | AC-012 | T-006 | `.specs/` notes, `docs/product/product-decisions.md` PD-090, `README.md`, `CHANGELOG.md`, `docs/release-checklist.md` | `src/adapters/node/docsScan.test.ts` ("0029 AC-012") | verified |
-| AC-013 | T-005 | — | manual: orchestrator, preview harness | open |
+| AC-013 | T-005 | — | manual: orchestrator, preview harness (T-005, 2026-11-20) | verified (manual) |
 | AC-014 | T-006 (checklist) | `docs/release-checklist.md` | manual: Gregor, Hands-On on `tip-splitter` | open |
-| AC-015 | T-006 | — | title audit (3555 base, 3631 head, none missing); `npm run test:unit` and `npm test` (orchestrator) | built |
+| AC-015 | T-006 | — | title audit (3555 base, 3631 head, none missing); `npm run test:unit` and `npm test` (orchestrator) | verified; CI on PR #2 open |
 
 ## Session handoff
 

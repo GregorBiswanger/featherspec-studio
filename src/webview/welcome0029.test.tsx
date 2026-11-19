@@ -3,6 +3,7 @@ import type { Envelope } from '../shared/protocol/envelope';
 import type { OverviewView } from '../shared/protocol/overview';
 import type { SendView } from '../shared/protocol/assistant';
 import { sampleView } from '../shared/protocol/testing/overviewSample';
+import { PROTOCOL_VERSION } from '../shared/protocol/envelope';
 import { App } from './App';
 import { createClient, type ShellClient } from './client';
 import { boardEvent, boardView } from './board/testing/views';
@@ -102,6 +103,36 @@ describe('0029 AC-003, AC-005: Send and Copy prompt of the welcome', () => {
         const container = await open('board', boardEvent(boardView([], { welcome: {} })));
         await click(container.querySelector<HTMLButtonElement>('.board-empty button.copy-button')!);
         expect(requests('copyText')).toEqual([{ text: '/sdd-setup' }]);
+    });
+});
+
+describe.each([
+    ['Overview', () => open('overview', overviewEvent(overview({ send: TWO_TARGETS }))), '[data-welcome]'],
+    ['Board', () => open('board', boardEvent(boardView([], { welcome: { send: TWO_TARGETS } }))), '.board-empty[data-welcome]'],
+] as const)('0029 AC-003, AC-005: the Send menu and the feedback at the control in the %s', (_name, render, selector) => {
+    it('0029 AC-003 the menu offers the new chat (checked), the current chat and Copy prompt', async () => {
+        const container = await render();
+        await click(container.querySelector<HTMLButtonElement>(`${selector} button.send-arrow`)!);
+        const items = [...container.querySelectorAll<HTMLElement>(`${selector} [role^="menuitem"]`)];
+        expect(items.map((item) => item.textContent)).toEqual(['Send to a new chat', 'Send to the current chat', 'Copy prompt']);
+        expect(items.map((item) => item.getAttribute('aria-checked'))).toEqual(['true', 'false', null]);
+    });
+
+    it('0029 AC-005 after Send the status is shown at the control inside the welcome', async () => {
+        const container = await render();
+        await click(container.querySelector<HTMLButtonElement>(`${selector} button.send-main`)!);
+        const token = (requests('sendPrompt')[0] as { token: string }).token;
+        await send({ v: PROTOCOL_VERSION, kind: 'evt', type: 'sendResult', payload: { outcome: 'opened', text: 'The prompt is in Copilot\'s chat. Check it, then send it there.', token } });
+        expect(container.querySelector(`${selector} .send-split button.send-main`)?.textContent).toBe('Opened in Copilot');
+    });
+
+    it('0029 AC-005 after Copy prompt from the menu the status Copied is shown at the control inside the welcome', async () => {
+        const container = await render();
+        await click(container.querySelector<HTMLButtonElement>(`${selector} button.send-arrow`)!);
+        await click(container.querySelector<HTMLButtonElement>(`${selector} [role="menuitem"]`)!);
+        await send({ v: PROTOCOL_VERSION, kind: 'evt', type: 'copyResult', payload: { ok: true, text: 'Copied /sdd-setup.' } });
+        expect(requests('copyText')).toEqual([{ text: '/sdd-setup' }]);
+        expect(container.querySelector(`${selector} .send-split button.send-main`)?.textContent).toBe('Copied');
     });
 });
 
