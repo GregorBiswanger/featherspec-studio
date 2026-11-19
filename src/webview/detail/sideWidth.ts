@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { clampSideWidth, isSideFraction, maxSideWidth, sideWidthOf } from '../../shared/protocol/layout';
 
 export interface SideWidth {
@@ -39,13 +39,28 @@ function useFrameWidth(element: HTMLElement | null): number {
 export function useSideWidth(frameElement: HTMLElement | null, remembered: number | undefined, requests: SideWidthRequests): SideWidth {
     const frame = useFrameWidth(frameElement);
     const [local, setLocal] = useState<{ fraction: number | undefined } | undefined>(undefined);
-    useEffect(() => setLocal(undefined), [remembered]);
+    const pending = useRef<(number | undefined)[]>([]);
+    const previewing = useRef(false);
+    useEffect(() => {
+        const index = pending.current.indexOf(remembered);
+        if (index < 0) {
+            pending.current = [];
+            previewing.current = false;
+            setLocal(undefined);
+            return;
+        }
+        pending.current = pending.current.slice(index + 1);
+        if (pending.current.length === 0 && !previewing.current) {
+            setLocal(undefined);
+        }
+    }, [remembered]);
     const width = sideWidthOf(local === undefined ? remembered : local.fraction, frame);
     const { set, reset: sendReset } = requests;
     const preview = useCallback(
         (next: number): void => {
             const fraction = clampSideWidth(next, frame) / frame;
             if (isSideFraction(fraction)) {
+                previewing.current = true;
                 setLocal({ fraction });
             }
         },
@@ -55,6 +70,8 @@ export function useSideWidth(frameElement: HTMLElement | null, remembered: numbe
         (next: number): void => {
             const fraction = clampSideWidth(next, frame) / frame;
             if (isSideFraction(fraction)) {
+                previewing.current = false;
+                pending.current.push(fraction);
                 setLocal({ fraction });
                 set(fraction);
             }
@@ -62,6 +79,8 @@ export function useSideWidth(frameElement: HTMLElement | null, remembered: numbe
         [frame, set],
     );
     const reset = useCallback((): void => {
+        previewing.current = false;
+        pending.current.push(undefined);
         setLocal({ fraction: undefined });
         sendReset();
     }, [sendReset]);

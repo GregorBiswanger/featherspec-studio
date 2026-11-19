@@ -600,6 +600,20 @@ decides. Steps above are not renumbered.
 - [x] **Verified (T-023):** 2026-11-19 red: `npx vitest run --project webview src/webview/DividerCrossing.test.tsx` 2 failed of 5 (Board and Plan map: after the crossing `document.activeElement` is `body`) → green: 5 passed; `npm run test:unit` 3136 passed + 3 skipped (+18 timing; 3131 before, 5 new tests); eslint 0 warnings, both `tsc` clean.
 - **Notes:** the comment is real: the crossing effect only looked at focus inside `.area-content`, and the divider is its sibling, so a keyboard user who had just resized the panel lost the place on the crossing (a browser zoom crosses 900 px in the same way). The first version read `narrow` in the handler's own render and stayed red: the divider is not rendered again when it leaves, so its handler is the one of the last wide render; the ref carries the latest values. The handoff goes to the heading the existing crossing already uses (Board and Overview: the detail heading of the detail alone; Plan map: the map heading, as 0023 T-011 does for removed ways).
 
+### T-024 — A delayed host echo no longer clears newer width input or a drag preview (PR #1 comment 4)
+
+- **Covers:** AC-023, AC-024 (the remembered fraction applies; the host echo keeps the shown width)
+- **Do:** `detail/sideWidth.ts` keeps the commits sent and not yet echoed (`pending`, in order, a reset as `undefined`)
+  and whether a drag preview is showing. An echo that equals a pending commit drops it and every commit before it; the
+  local width is cleared only when none is pending and no preview shows. An echo that equals no pending commit (a reset
+  or a change from elsewhere) clears everything, as before. A commit ends the preview. Tests first in `Divider.test.tsx`
+  (AC-024 block): Left, Left (603), the echo of 587 → still 603 and the next Left sends 619/1428; the echoes of 587 and
+  603 in order end on 603 and a later 700 is followed; a drag preview (728) survives the echo of 587 and its release
+  sends 728/1428. The staying test "the host echo of a change keeps the shown width, and a host reset shows the default" is untouched.
+- **Verify:** `npx vitest run --project webview src/webview/detail/Divider.test.tsx` red, then green; gates 1–4
+- [x] **Verified (T-024):** 2026-11-19 red: `npx vitest run --project webview src/webview/detail/Divider.test.tsx` 2 failed of 20 (after the echo of 587 the width read 587, not 603; during the drag the preview of 728 read 587); the in-order control passed already → green: 20 passed; `npm run test:unit` 3139 passed + 3 skipped (+18 timing; 3136 before, 3 new tests); eslint 0 warnings, both `tsc` clean.
+- **Notes:** the comment is real: the hook cleared `local` on every change of the remembered fraction, so the echo of an earlier commit discarded the later ones (the next press computed from the old width) and an active preview. The host's echo is the value the webview sent, so the match is by equality of the fraction; a commit the host never echoes stays in the list until a later echo drops it with its successors, and the shown width equals the remembered one then anyway. A drag that ends without a change leaves the preview flag set until the next commit or the next echo that matches no pending commit (the width is the same value in the meantime).
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |

@@ -332,6 +332,50 @@ describe('AC-024: the remembered fraction applies', () => {
         expect(widthOf(container)).toBe(640);
     });
 
+    it('PR #1 review: a delayed echo of an earlier change leaves the newer input standing, and the next key press goes on from it', async () => {
+        const container = await open();
+        const handle = divider(container);
+        await key(handle, 'ArrowLeft');
+        await key(handle, 'ArrowLeft');
+        expect(widthOf(container)).toBe(603);
+        seq += 1;
+        await send(shellEvent(baseView({ area: 'board', selection: SELECTED, sideWidth: 587 / 1428 }), seq));
+        expect(widthOf(container)).toBe(603);
+        await key(handle, 'ArrowLeft');
+        expect(widthOf(container)).toBe(619);
+        expect(requests('setSideWidth')).toEqual([{ fraction: 587 / 1428 }, { fraction: 603 / 1428 }, { fraction: 619 / 1428 }]);
+    });
+
+    it('PR #1 review: the echoes of all changes in order end on the host value, and a later host value is followed', async () => {
+        const container = await open();
+        const handle = divider(container);
+        await key(handle, 'ArrowLeft');
+        await key(handle, 'ArrowLeft');
+        for (const width of [587, 603]) {
+            seq += 1;
+            await send(shellEvent(baseView({ area: 'board', selection: SELECTED, sideWidth: width / 1428 }), seq));
+        }
+        expect(widthOf(container)).toBe(603);
+        seq += 1;
+        await send(shellEvent(baseView({ area: 'board', selection: SELECTED, sideWidth: 700 / 1428 }), seq));
+        expect(widthOf(container)).toBe(700);
+    });
+
+    it('PR #1 review: an echo of an earlier change does not overwrite the preview of a drag in progress', async () => {
+        const container = await open();
+        const handle = divider(container);
+        await key(handle, 'ArrowLeft');
+        await pointer(handle, 'pointerdown', 841);
+        await pointer(handle, 'pointermove', 700);
+        const shown = widthOf(container);
+        expect(shown).toBe(728);
+        seq += 1;
+        await send(shellEvent(baseView({ area: 'board', selection: SELECTED, sideWidth: 587 / 1428 }), seq));
+        expect(widthOf(container)).toBe(shown);
+        await pointer(handle, 'pointerup', 700);
+        expect(requests('setSideWidth')).toEqual([{ fraction: 587 / 1428 }, { fraction: 728 / 1428 }]);
+    });
+
     it('the host echo of a change keeps the shown width, and a host reset shows the default', async () => {
         const container = await open();
         await key(divider(container), 'ArrowLeft');
