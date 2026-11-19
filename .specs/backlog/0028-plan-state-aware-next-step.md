@@ -1,7 +1,7 @@
 # Plan-State-Aware Next Step
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0028-plan-state-aware-next-step.plan.md](0028-plan-state-aware-next-step.plan.md)
 
 Basis: review `docs/ux-audit/09-round2-review.md` G-11, §8; PD-081 (`screenshots-48d1968/g-r2-03…05`), PD-082, PD-072,
 PD-021, PD-013, PD-016, PD-047; round 3's D-1, D-4 (orchestrator for Gregor, 2026-11-19); FeatherSpec 1.11.0 (branch,
@@ -176,7 +176,7 @@ its plan T-001…T-006 in three stages (g-r2-04), version 1.10.0 unless stated. 
 - **AC-011** The specs of §5 shall carry its notes; no PD row shall change. `README.md` shall contain `Let the agent report first — the plan and the ticks may differ`, in its *How board states are derived* Review line `every step of its plan ticked or dropped` and `whatever the plan's status line says`, and not `without an open step the one prompt lets the agent report where the plan stands`; `CHANGELOG.md` `Let the agent report first`, `every step ticked`; the checklist AC-013…015.
 - **AC-012** Every test at the commit on which this spec's implementation starts that decides a statement §5 does not replace shall exist at the head and pass; one §10 marks *fixture only* shall keep title and assertions, its spec an open step. `npm run test:unit` and `npm test` shall pass on Windows and in CI. A script compares both commits' test titles; the plan lists every title missing at the head, renamed ones included, with the statement it replaced or the title replacing it.
 - **AC-013** *(manual, preview harness, by the orchestrator)* Guideline 12: the detail and the first Now row for the fixtures of AC-001 and AC-004, in Dark, Light and High Contrast, at 1600 px and 1000 px window width with the side panel open; no intent, prompt or coach line is cut, and AC-004's line 1 intent wraps only between words. Screenshots go into the plan.
-- **AC-014** *(manual, Gregor, on an HTML draft before `/sdd-plan`; PD-069, PD-082, 09 §7)* Two tasks across views. Gregor starts each from the Specs tree; the orchestrator notes every click. (a) On AC-001's state: "The agent says T-006 is done. Where does the spec stand, what do you do next, in which chat, with which model?" (b) On AC-004's state: "You come back after a break. What does the Studio want first, and why?" Passed: (a) Review and `/sdd-compile` in a new chat with a strong model of another family, (b) the report first with its reason, no Markdown file opened. The plan records path and words.
+- **AC-014** *(manual; not run, closed by OP-002, its tasks in AC-015; PD-069, PD-082, 09 §7)* Two tasks across views. Gregor starts each from the Specs tree; the orchestrator notes every click. (a) On AC-001's state: "The agent says T-006 is done. Where does the spec stand, what do you do next, in which chat, with which model?" (b) On AC-004's state: "You come back after a break. What does the Studio want first, and why?" Passed: (a) Review and `/sdd-compile` in a new chat with a strong model of another family, (b) the report first with its reason, no Markdown file opened. The plan records path and words.
 - **AC-015** *(manual, Gregor, on `tip-splitter` with GitHub Copilot and Claude Code, before the spec closes; PD-082)* (a) An agent ticks the last step: whatever the status line says, the Board shows Review, tree, Overview, detail and status bar `/sdd-compile` in their AC-006 form, and the prompt runs it in a new chat. (b) `Current step` names an unfinished step after the open one: on 1.10.0 the report first, and `/sdd-plan` levels; on 1.11.0 variant A, and `Implement <ID>` levels. (c) On both, a Ready spec's `Implement T-001 of <plan path>` moves the pair to active, builds only T-001. He notes versions.
 - **AC-016** For a Ready spec whose open step is `<ID>`, `nextStep()` shall return NS-7 with the one line `Implement <ID> of <plan path>`, command short form `Implement <ID>` and every other field as at the commit on which this spec's implementation starts; without an open step, `/sdd-plan <spec path>` with AC-002's intent, coach, effect and then-sentence. No next step shall have a line that starts with `Start ` or equals `Implement <plan path>`.
 - **AC-017** While an Active spec has no return note and a plan step neither ticked nor struck has a `Verified:` value that is not a placeholder, `nextStep()` shall return AC-004's lines, short form `Report · /sdd-plan` and coach line for every version value of AC-009, `1.11.0` and `1.12.0` included, with or without §6.2's sign; the toggletip's first paragraph shall be §7's `<ID> has a Verified line but no tick.` for the first such step in plan order, one space, then §7's effect and then-sentence. A placeholder value (`—`, empty, absent) shall give no guard.
@@ -230,8 +230,9 @@ its plan T-001…T-006 in three stages (g-r2-04), version 1.10.0 unless stated. 
 ## 12. Open points
 
 - OP-001 The state of a finished plan. Resolved 2026-11-19 by D-1: Review on every surface (A-002).
-- OP-002 Click test (AC-014; PD-082): Gregor confirms §7, D-4, A-001, A-004, A-009, A-012 and A-013. The click-test results
-  (12 B-6, `docs/ux-audit/13-clicktest-results.md`) resolve before `/sdd-plan`; blocks `/sdd-plan`.
+- OP-002 Click test (AC-014; PD-082). Resolved 2026-11-19 by `docs/ux-audit/13-clicktest-results.md`: tasks 1–3 run, 4–6
+  and confirmation points 1–8 not; "0028: no change from the test". §7, D-4, A-001, A-004, A-009, A-012 and A-013 stay as
+  proxies; AC-014's two tasks go to real use (12 F-3), checked by AC-015 (b) and (a).
 - OP-003 FeatherSpec wording. Resolved 2026-11-19 by the 1.11.0 report (branch, unreleased): the Studio's prompts equal
   `plans.md` *Prompts* (its §7); levelling on `Implement <ID>` bounds Report first (§6.4, A-011); NS-7 per D-4 (§6.5).
 - OP-004 `/sdd-clarify` 2026-11-19 (S91): 44 findings, 4 blocking, resolved in one pass at Gregor's standing request
@@ -239,9 +240,14 @@ its plan T-001…T-006 in three stages (g-r2-04), version 1.10.0 unless stated. 
   (b) only `Blocked` overrides the ticks; (c) tests meant for Active get an open step; (d) no readable version → Report first.
 - OP-005 `fs-version-missing` has neither the version line nor `.claude/commands/sdd-*.md`, so discovery (0001) reads it as
   incomplete, not legacy, and the status bar shows no step. The fixture gains a command file, or AC-021's status-bar part
-  expects 0001's incomplete state; `/sdd-plan` decides. Not blocking.
+  expects 0001's incomplete state. Resolved 2026-11-19 (`/sdd-plan`): `496f9fe` added `.claude/commands/sdd-plan.md`, so
+  the fixture is legacy and AC-021 stands as written.
+- OP-006 Order with 0026 (`/sdd-plan`, 2026-11-19, proxy). 0028 lands first: until 0026, the old reason of §6.4 is the
+  text module's one `Same chat or new chat: … let the agent report first.`, which 0026 §7 rewrites; AC-020 asserts that
+  one text. From 1.11.0 the reason opens `Current or new chat:` while the coach line still says `same chat or new chat`
+  until 0026; accepted on the unreleased branch.
 
 ## 13. Ready, Done and next steps
 
 Ready: clarified 2026-11-19 (OP-004), OP-002 resolved. Done: AC-001–AC-012, AC-016–AC-021 green on Windows and CI, AC-013…015 in the
-plan, §5's notes, docs synced. Next: the click test (OP-002), `/sdd-plan`; order 0028 → 0025 → 0026 → 0027.
+plan, §5's notes, docs synced. Next: review the plan, then start T-001; order 0028 → 0025 → 0026 → 0027.
