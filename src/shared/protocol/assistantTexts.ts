@@ -63,6 +63,12 @@ export function sendTipText(name: string): string {
 
 export const ATTACH_UPDATE_TEXT = 'With FeatherSpec 1.11.0 or later, Send also attaches the spec; update with /sdd-featherspec-update.';
 
+export const ATTACHED_WHEN_SENT = 'attached when sent';
+
+export function attachTooltipText(path: string, name: string): string {
+    return `Send attaches ${path} to ${name}'s chat as context. Copy prompt attaches nothing.`;
+}
+
 export const SEND_TARGET_TEXT: Record<AssistantTarget, string> = { new: 'new chat', current: 'current chat' };
 
 export const SEND_ITEM_TEXT: Record<AssistantTarget, string> = { new: 'Send to a new chat', current: 'Send to the current chat' };

@@ -259,8 +259,8 @@ and `send.ts`/`send.test.ts`: no `‖`.
     - "0027 AC-008 …": Copy prompt in the menu copies exactly the line and sends no request.
 - **Verify:** `npx vitest run --project webview src/webview/ui`. It is red with the stub (no line, no description), then
   `npm run test:unit` is green.
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-19 · red with the stub (7 failed: no line, no description, no `attach` in the payload), then `npx vitest run --project webview src/webview/ui` 146 passed; `src/webview src/shared` 928 passed; tsc (both) and eslint clean.
+- **Notes:** Tests: `ui/AttachmentLine.test.tsx` (line, chip, tooltip, StepAction order and descriptions) and `ui/SendButton.test.tsx` (describedby, payload `attach`, Copy prompt). Text module: `ATTACHED_WHEN_SENT`, `attachTooltipText` in `assistantTexts.ts`. The `file` glyph is a hand-drawn page with a folded corner (codicon motif). The arrow part carries no description (the spec names the main part and each Send item). The line is a `<p>` that follows `.send-split` inside `StepAction`'s fragment; CSS is T-006.
 
 ### T-006 — The line in every place
 
