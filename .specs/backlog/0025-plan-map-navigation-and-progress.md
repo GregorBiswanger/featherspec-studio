@@ -1,7 +1,7 @@
 # Plan Map Navigation and Progress Clarity
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0025-plan-map-navigation-and-progress.plan.md](0025-plan-map-navigation-and-progress.plan.md)
 
 Basis: `docs/ux-audit/09-round2-review.md` (F-1, F-2, AC-a…AC-g; G-1, G-2, G-7, G-10; §7, §8); **PD-079**, **PD-081**
 part 2, PD-082, **PD-085**, **PD-088**, PD-040, PD-047, PD-054, PD-077, PD-016; **D-1** (finished plan → Review) and **D-2**
@@ -10,6 +10,8 @@ part 2, PD-082, **PD-085**, **PD-088**, PD-040, PD-047, PD-054, PD-077, PD-016; 
 **Changes 2026-11-19** (`docs/ux-audit/12-finish-plan.md` D2; PD-084…PD-089): `43%`, amending PD-079's examples (PD-085);
 the group view, no primary `Integrate` while someone is out (PD-088; §5.6, AC-025, AC-026); D2-7, D2-8 already covered.
 Click test (`docs/ux-audit/13-clicktest-results.md` K-1): step IDs in Next steps, Overview rows link (§5.1, AC-027).
+`/sdd-plan` 2026-11-19 (standing answer): OP-001's rest decided by 12 D2-6 (card titles at most two lines, §5.2, AC-017);
+the Overview tooltip drops its space before `%` (PD-085, §5.4, U-04).
 
 ## 1. Summary
 
@@ -99,7 +101,8 @@ Rows added to 0023 §5.3's card, in this order; rows a step lacks are left out:
 - After each `Covers` ID its state word `verified`, `built` or `open` where exactly one traceability row's cell is that ID and its trimmed `State` exactly that word (0019 §6.3); else no word (0016: no guess).
 - In the expanded part, after `Open in plan`: **Copy prompt** (0021 §6.4, secondary) on the card of the step that the
   first line of the spec's next step names (0021: NS-6 "Open step", NS-7), copying that line; on no other card.
-- **G-10:** a card row aligns its cards to their start (09: `align-items: start`); an expanded card stretches no neighbour.
+- **G-10:** a card row aligns its cards to their start (09: `align-items: start`); an expanded card stretches no neighbour;
+  a card's title shows at most two lines, the full `<ID> <title>` as the disclosure's tooltip (12 D2-6).
 
 ### 5.3 The next step in the Plan map header (PD-081 part 2; A-001, A-002)
 
@@ -119,7 +122,8 @@ Rows added to 0023 §5.3's card, in this order; rows a step lacks are left out:
   where the total is 0 or the figure is not available.
 - Every progress text ends in ` · <p>%`, no space before `%` (U-04, PD-085): Steps and Criteria rows (0019 §6.3), Plan
   section and Plan map counts (0023 §5.1), the Board card's Steps and Criteria parts (0018 B-5), the tree tooltip's
-  figures (0020 §4.2). The Overview's figures-line tooltip keeps its form and takes this rounding (U-04's formula).
+  figures (0020 §4.2). The Overview's figures-line tooltip keeps its form, without the space before `%` (PD-085),
+  and takes this rounding (U-04's formula): `Progress <p>% (<d> of <n>): <formula>`.
 - Every progress bar carries its visible text as `title` and `aria-valuetext` (PD-079).
 
 ### 5.5 Step motifs (G-1; A-008)
@@ -153,7 +157,7 @@ that ways block (0026 §6.6) expanded, scrolled into view, focus on `Ways to run
 | U-01 | Step motifs (§5.5) | done `check` · next `debug-stackframe` · open `circle-large-outline` · returned `reply` · returned, blocked `circle-slash` · not in the steps `question` (codicon names; M-01's words unchanged) | M-01's `✓` `◐` `○` `↩` `⊘` `?` |
 | U-02 | Step link tooltip after the name | `Show <ID> in the plan map · Ctrl+click opens the plan file` (macOS: `Cmd+click`) | `Open <file name> at line <n>` on step links |
 | U-03 | Tree context menu | `Show in Plan Map` | — |
-| U-04 | Progress | `<d> of <t> done · <p>%` · `<v> of <t> verified · <p>%` · `Steps <d>/<t> · <p>%` · `Criteria <d>/<t> · <p>%`; formula `Done specs with status Implemented or Baseline ÷ (all specs − Deprecated), rounded half up, at most 99% until all are done` | the same without ` · <p>%`; formula ending `rounded down` |
+| U-04 | Progress | `<d> of <t> done · <p>%` · `<v> of <t> verified · <p>%` · `Steps <d>/<t> · <p>%` · `Criteria <d>/<t> · <p>%`; formula `Done specs with status Implemented or Baseline ÷ (all specs − Deprecated), rounded half up, at most 99% until all are done` | the same without ` · <p>%`; formula ending `rounded down`; `Progress <p> % (` |
 | U-05 | Returned work | `<n> returned` + (`, <IDs> blocked`, IDs joined by `, ` · else `, waiting to be integrated`) + (`: the next step integrates them` · `: the next step finds out what blocks` · nothing) + `.` | M-16, M-17; `Next open step: <ID> <title>` while a note lies |
 | U-06 | Parallel hint (detail) | `Stage <n> can run in parallel · ` and the link `Ways to run it` | — |
 | U-07 | Card rows | labels `Verified`, `Reported`; state words `verified` · `built` · `open`; the card's Copy prompt as 0021 §6.4 | — |
@@ -197,7 +201,7 @@ copy, plan `In Progress` (PD-081; Review by D-1); `fs-partial-return` (stage `T-
   > **Given** both notes (Blocked, NS-4) **Then** `2 returned, T-004 blocked: the next step finds out what blocks.` **Given** the DONE note only (NS-6 returned work) **Then** `1 returned, waiting to be integrated: the next step integrates them.`
 - **AC-016** While the current stage has ways, the detail's Next step shall show U-06 after the first line's coach line (tips off: after its Copy prompt and status region) and before line 2; activating `Ways to run it` shall send one navigation request for `planMap` targeting the spec's ways, and the map shall show that ways block expanded, scrolled into view (stubbed), focus on its disclosure button and highlighted as AC-001; no Now row, card, tree item or map header shall show U-06.
   > **Given** the no-notes variant **Then** `Stage 2 can run in parallel · Ways to run it`; **Given** both notes **Then** none.
-- **AC-017** The stylesheet's card-row rule shall set `align-items` to `start` or `flex-start`, and the highlight rule an outline from theme variables with no transition inside `prefers-reduced-motion: reduce`.
+- **AC-017** The stylesheet's card-row rule shall set `align-items` to `start` or `flex-start`, the card title rule clamp it to two lines (`-webkit-line-clamp: 2`), each card's disclosure carry `<ID> <title>` as `title`, and the highlight rule an outline from theme variables with no transition inside `prefers-reduced-motion: reduce`.
 - **AC-018** No step link, tree command, card Copy, header control or hint link shall create, change, move or delete a workspace file, start a process or write a setting (0017 AC-023's and 0023 AC-014's tests extended); AC-001–AC-016 shall hold in Restricted Mode and a reader window.
 - **AC-019** Every text of §6 shall come from a text module and be asserted literally; 0016's user-language sweep shall cover the header, the new card rows, U-05 and U-06 and find no rule ID, `NS-`, `traceability`, `struck` or `stem`.
 - **AC-020** Every test at the commit on which this spec's implementation starts that decides a statement §4 does not change shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI; a script compares the titles of both commits and the plan lists every missing title with the changed statement or the head title that replaces it.
@@ -249,7 +253,8 @@ copy, plan `In Progress` (PD-081; Review by D-1); `fs-partial-return` (stage `T-
 ## 11. Open points
 
 - OP-001 Closed by the click test (AC-023, 13): K-1 → §5.1, AC-027; §6, §10 stay proxies for real use (12 F-3, AC-024).
-  Still open: 12 D2-6 reads G-10 as "card titles at most two lines"; 09 G-10 and §5.2 say `align-items: start`.
+  Its rest closed at `/sdd-plan` (2026-11-19): 12 D2-6 (titles at most two lines) and 09 G-10 (`align-items: start`)
+  both hold (§5.2, AC-017); all other proxies stay as §10 recommends.
 - OP-002 Closed by D-2 (2026-11-19): beside the map the header's next step is the view's one; 0026 §6.4 cites D-2.
 - OP-003 `/sdd-clarify` 2026-11-19 (S92): 33 findings settled (standing answer; `0025-findings.md`). Readings to object to: no header → side panel keeps its Next step; a target travels once; ways focus the disclosure.
 
