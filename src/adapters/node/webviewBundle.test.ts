@@ -202,6 +202,8 @@ describe('0021 AC-009, AC-010, AC-013: the coach line in the rendered bundle, ov
 interface MapRendered {
     where: string;
     primaries: number;
+    headerPrimaries: number;
+    headerSends: number;
     unnamedCopies: string[];
     texts: string[];
     cards: number;
@@ -225,13 +227,18 @@ async function renderMap(name: string, offer?: Offer): Promise<MapRendered[]> {
         const copies = [...document.querySelectorAll('[data-plan-map] button.copy-button, [data-plan-map] button.copy-icon')];
         const attributes = [...document.querySelectorAll('[data-plan-map] [title], [data-plan-map] [aria-label]')].flatMap((element) => [element.getAttribute('title'), element.getAttribute('aria-label')]).filter((value): value is string => value !== null);
         const mapText = [...document.querySelectorAll('[data-plan-map]')].map((element) => element.textContent ?? '').join('\n');
+        const isPrimary = (button: ElementLike & { classList: { contains(name: string): boolean } }): boolean => button.classList.contains('copy-button') && !button.classList.contains('copy-secondary');
+        const header = [...document.querySelectorAll('[data-plan-map] .plan-map-header button.copy-button, [data-plan-map] .plan-map-header button.copy-icon')];
+        const headerSplit = [...document.querySelectorAll('[data-plan-map] .plan-map-header .send-split, [data-plan-map] .plan-map-header .send-arrow, [data-plan-map] .plan-map-header [role="menu"]')].length;
         rendered.push({
             where,
-            primaries: copies.filter((button) => button.classList.contains('copy-button') && !button.classList.contains('copy-secondary')).length,
+            primaries: copies.filter(isPrimary).length - header.filter(isPrimary).length,
+            headerPrimaries: header.filter(isPrimary).length,
+            headerSends: headerSplit,
             unnamedCopies: copies.map((button) => button.getAttribute('aria-label') ?? '').filter((label) => !label.startsWith('Copy prompt: ')),
             texts: [mapText, ...attributes],
             cards: [...document.querySelectorAll('[data-step-card]')].length,
-            splits: [...document.querySelectorAll('[data-plan-map] .send-split, [data-plan-map] .send-arrow, [data-plan-map] [role="menu"]')].length,
+            splits: [...document.querySelectorAll('[data-plan-map] .send-split, [data-plan-map] .send-arrow, [data-plan-map] [role="menu"]')].length - headerSplit,
         });
     };
     for (const entry of lifecycle.entries) {
@@ -258,11 +265,12 @@ describe('0023 AC-010, AC-015: the rendered Plan map over the fixtures', () => {
         execFileSync(process.execPath, ['esbuild.js'], { cwd: root, stdio: 'pipe' });
     }, 60000);
 
-    it.each(SWEPT_FIXTURES.map((name) => [name]))('%s: no primary button, every Copy named "Copy prompt: <line>", and no rule ID or internal word in any text or title', async (name) => {
+    it.each(SWEPT_FIXTURES.map((name) => [name]))('%s: no primary button below the header (0025 AC-010: at most one in it), every Copy named "Copy prompt: <line>", and no rule ID or internal word in any text or title', async (name) => {
         const rendered = await renderMap(name);
         expect(rendered.length).toBeGreaterThanOrEqual(1);
         for (const surface of rendered) {
             expect(surface.primaries, surface.where).toBe(0);
+            expect(surface.headerPrimaries, surface.where).toBeLessThanOrEqual(1);
             expect(surface.unnamedCopies, surface.where).toEqual([]);
             for (const text of surface.texts) {
                 expect(text, surface.where).not.toMatch(MAP_FORBIDDEN);
@@ -469,11 +477,12 @@ describe('0024 AC-002, AC-003: Send in the rendered bundle, over the fixtures', 
         }
     }, 60000);
 
-    it.each(OFFERS.map((offer) => [offer.assistant, offer] as const))('the Plan map of the fixtures holds no Send control with %s offered', async (_assistant, offer) => {
+    it.each(OFFERS.map((offer) => [offer.assistant, offer] as const))('the Plan map of the fixtures holds no Send control below its header, and at most one in it (0025 AC-010), with %s offered', async (_assistant, offer) => {
         for (const name of ['studio-0015', 'studio-0002', 'fs110-ready-synthetic']) {
             const rendered = await renderMap(name, offer);
             expect(rendered.length, name).toBeGreaterThan(0);
             expect(rendered.filter((surface) => surface.splits > 0).map((surface) => surface.where), name).toEqual([]);
+            expect(rendered.every((surface) => surface.headerSends <= 3), name).toBe(true);
         }
     }, 120000);
 

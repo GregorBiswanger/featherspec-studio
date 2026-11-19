@@ -83,7 +83,7 @@ describe('0025 AC-009: the Plan map header carries the next step', () => {
         const expected = (next as { lines: Array<{ intent: string; text: string }> }).lines[0]!;
         expect(firstLine(header)).toEqual({ intent: expected.intent, text: expected.text });
         expect(header.querySelectorAll('.next-step-lines li')).toHaveLength((next as { lines: unknown[] }).lines.length);
-        expect(visible(header)).not.toMatch(/can run in parallel/);
+        expect(visible(header)).not.toMatch(/Stage \d+ can run in parallel/);
         expect(container.querySelectorAll('.next-step')).toHaveLength(1);
         expect(container.querySelector('.side-panel .next-step')).toBeNull();
         if ('tips' in next) {
@@ -96,6 +96,13 @@ describe('0025 AC-009: the Plan map header carries the next step', () => {
         const header = container.querySelector('.plan-map-header')!;
         expect(header.querySelector('.plan-map-title .card-problems')).not.toBeNull();
         expect(names(header).slice(0, 2)).toEqual(['title', 'next']);
+    });
+
+    it('0025 AC-016: the map header never shows the parallel hint, the side panel does not either while the header shows the next step', async () => {
+        const container = await render(planned({ ...(TWO as object), parallel: { stage: 2 } } as NextStepView));
+        expect(container.querySelector('.parallel-hint')).toBeNull();
+        expect(container.textContent).not.toMatch(/Stage \d+ can run in parallel/);
+        expect(container.textContent).not.toContain('Ways to run it');
     });
 
     it('0025 AC-009: below 900 px the map shows alone, with the header\'s next step and no side panel', async () => {

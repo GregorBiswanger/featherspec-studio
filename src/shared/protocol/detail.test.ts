@@ -100,6 +100,19 @@ describe('0024 AC-003: the send view of the next step', () => {
         }
     });
 
+    it('0025 AC-016/AC-027: a next step takes a parallel stage and a step link on a line, and refuses a bad one', () => {
+        const view = valid();
+        const link = { id: 'T-003', open: { key: 'p', line: 4 } };
+        view.nextStep = { rule: 'NS-6', lines: [{ text: 'a', intent: 'b T-003', step: link }], parallel: { stage: 2 } } as never;
+        expect(isDetailView(view)).toBe(true);
+        for (const parallel of [{ stage: 0 }, { stage: '2' }, { stage: 2, extra: 1 }, 2]) {
+            view.nextStep = { rule: 'NS-6', lines: [{ text: 'a', intent: 'b' }], parallel } as never;
+            expect(isDetailView(view), JSON.stringify(parallel)).toBe(false);
+        }
+        view.nextStep = { rule: 'NS-6', lines: [{ text: 'a', intent: 'b', step: { id: 'T-003' } }] } as never;
+        expect(isDetailView(view)).toBe(false);
+    });
+
     it('accepts a next step with a send view and refuses a bad one', () => {
         const view = valid();
         const lines = [{ text: 'a', intent: 'b' }];

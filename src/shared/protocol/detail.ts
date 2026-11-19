@@ -72,7 +72,7 @@ export interface NextStepLineView {
     step?: StepLinkView;
 }
 
-export type NextStepView = { rule: string; lines: NextStepLineView[]; tips?: StepTipsView; send?: SendView; quiet?: true } | { rule: string; text: string };
+export type NextStepView = { rule: string; lines: NextStepLineView[]; tips?: StepTipsView; send?: SendView; quiet?: true; parallel?: { stage: number } } | { rule: string; text: string };
 
 export interface SpecDetailView {
     kind: 'spec';
@@ -113,7 +113,8 @@ function isNextStepView(value: unknown): value is NextStepView {
         value.lines.every((line) => isRecord(line) && typeof line.text === 'string' && typeof line.intent === 'string' && (line.step === undefined || isStepLinkView(line.step))) &&
         (value.tips === undefined || isStepTipsView(value.tips)) &&
         (value.send === undefined || isSendView(value.send)) &&
-        (value.quiet === undefined || value.quiet === true)
+        (value.quiet === undefined || value.quiet === true) &&
+        (value.parallel === undefined || (isRecord(value.parallel) && Object.keys(value.parallel).length === 1 && typeof value.parallel.stage === 'number' && Number.isInteger(value.parallel.stage) && value.parallel.stage > 0))
     );
 }
 

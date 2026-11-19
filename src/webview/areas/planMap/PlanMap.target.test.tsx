@@ -166,3 +166,46 @@ function stageCount(container: HTMLElement): number {
 
 void stage;
 void step;
+
+describe('0025 AC-016 (ways target): the ways block opens, scrolls, takes focus and is highlighted', () => {
+    const waysOf = (container: HTMLElement) => container.querySelector<HTMLElement>('[data-ways]');
+    const waysToggle = (container: HTMLElement) => container.querySelector<HTMLButtonElement>('[data-ways] .plan-ways-toggle')!;
+
+    it('0025 AC-016: a ways target expands the block, scrolls it, focuses its disclosure button and highlights it for 1500 ms', async () => {
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        const container = await showMap(planSample(), { n: 1, stem: '0007-thing', ways: true });
+        expect(waysToggle(container).getAttribute('aria-expanded')).toBe('true');
+        expect(waysToggle(container).textContent).toBe('Ways to run stage 2');
+        expect(scrolled).toContain(waysOf(container));
+        expect(document.activeElement).toBe(waysToggle(container));
+        expect(waysOf(container)!.hasAttribute('data-highlight')).toBe(true);
+        await act(async () => void vi.advanceTimersByTime(1501));
+        expect(waysOf(container)!.hasAttribute('data-highlight')).toBe(false);
+        expect(waysToggle(container).getAttribute('aria-expanded')).toBe('true');
+    });
+
+    it('0025 AC-016: a later message without a target changes nothing, a second with the same target applies again', async () => {
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        const container = await showMap(planSample(), { n: 1, stem: '0007-thing', ways: true });
+        await act(async () => void vi.advanceTimersByTime(1600));
+        await click(waysToggle(container));
+        expect(waysToggle(container).getAttribute('aria-expanded')).toBe('false');
+        (document.activeElement as HTMLElement | null)?.blur();
+        await shell();
+        await send(detailEvent(detailOf()));
+        expect(waysToggle(container).getAttribute('aria-expanded')).toBe('false');
+        expect(waysOf(container)!.hasAttribute('data-highlight')).toBe(false);
+        await shell({ n: 2, stem: '0007-thing', ways: true });
+        expect(waysToggle(container).getAttribute('aria-expanded')).toBe('true');
+        expect(document.activeElement).toBe(waysToggle(container));
+        expect(waysOf(container)!.hasAttribute('data-highlight')).toBe(true);
+    });
+
+    it('0025 AC-016: a plan without a ways block focuses the heading', async () => {
+        const base = planSample();
+        const plain = planSample({ stages: base.stages.map(({ ways: _ways, ...rest }) => rest) });
+        const container = await showMap(plain, { n: 1, stem: '0007-thing', ways: true });
+        expect(waysOf(container)).toBeNull();
+        expect(document.activeElement).toBe(container.querySelector('[data-map-heading]'));
+    });
+});

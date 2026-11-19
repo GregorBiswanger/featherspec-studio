@@ -4,6 +4,7 @@ import { ABOUT_STEP_GLYPH, ABOUT_STEP_LABEL, NEXT_STEP_HEADING } from '../../sha
 import { splitAtId } from '../../shared/protocol/stepView';
 import { StepLink } from '../ui/StepLink';
 import type { FileResult } from '../ui/FileLink';
+import { ParallelHint } from './ParallelHint';
 import { PathText } from '../ui/PathText';
 import type { SendPromptPayload, SendResultEventPayload } from '../../shared/protocol/assistant';
 import { CopyButton } from '../ui/CopyButton';
@@ -40,6 +41,7 @@ export function NextStep(props: {
     const send = 'send' in nextStep ? nextStep.send : undefined;
     const tips = 'tips' in nextStep ? nextStep.tips : undefined;
     const quiet = 'quiet' in nextStep && nextStep.quiet === true;
+    const parallel = 'parallel' in nextStep ? nextStep.parallel : undefined;
     return (
         <section className="detail-section next-step">
             <div className="section-head">
@@ -63,6 +65,7 @@ export function NextStep(props: {
                                     <CopyButton look="secondary" line={line.text} copyResult={copyResult} onCopy={props.onCopy} />
                                 )}
                                 {index === 0 && tips !== undefined ? <p className="step-coach">{tips.coach}</p> : null}
+                                {index === 0 && parallel !== undefined && props.place !== 'map' ? <ParallelHint stage={parallel.stage} /> : null}
                             </li>
                         ))}
                     </ul>

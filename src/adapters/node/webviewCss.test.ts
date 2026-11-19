@@ -224,6 +224,10 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
         expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\s*\* \{\s*transition: none !important;/);
     });
 
+    it('0025 AC-016: the ways block takes the same highlight rule as a card', () => {
+        expect(rulesFor(css, '.plan-ways[data-highlight]').some((entry) => entry.body.includes('outline: 2px solid'))).toBe(true);
+    });
+
     it('0022 AC-026: the chip and the column header icon take their colour from --fs-tint', () => {
         expect(rulesFor(css, '.state-chip .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);
         expect(rulesFor(css, '.column-heading .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);

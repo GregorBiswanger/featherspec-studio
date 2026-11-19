@@ -3,7 +3,7 @@
 **Spec:** [0025-plan-map-navigation-and-progress.md](0025-plan-map-navigation-and-progress.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-010
+**Current step:** T-011
 
 ## Approach
 
@@ -365,8 +365,8 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
       run it`; both notes none; tips off; no Now row, card, tree item or map header shows it.
     - `PlanMap.target.test.tsx` (ways target).
 - **Verify:** `npm run test:unit` — red first (stub hint, ways closed), then green.
-- [ ] **Verified (T-010):** —
-- **Notes:** —
+- [x] **Verified (T-010):** 2026-11-19. Red: stub `ParallelHint` (renders nothing) failed the two SpecDetail AC-016 tests; ways target tests failed before `Ways` took a target. Green: src/webview, src/shared, webviewCss.test.ts, parallel0025.test.ts passed; eslint, tsc ×2 clean. Stage 3 gate chain (2026-11-19): eslint, tsc ×2, test:unit (3382 + 26 timing), compile, compile-tests all green.
+- **Notes:** `NextStepView.parallel?: {stage}` set while a stage of the plan view has ways (so never under a return note); guard accepts only a positive integer `stage`. `ParallelHint` (button `file-link` in `p.parallel-hint`) sits in line 1's `li` after the coach line (tips off: after the Copy/Send action), `place="map"` never renders it. Ways target: `Stages` passes `{n}` to the `Ways` of the current stage; `Ways` opens, scrolls, focuses its toggle and sets `data-highlight` (1500 ms; CSS rule shared with the card). Without a ways block the heading takes focus. Retargeted by title: 0023 AC-010/AC-015 and 0024 AC-002/AC-003 bundle tests over the fixtures (`webviewBundle.test.ts`): below the header no primary and no Send control, the header holds at most one primary and one Send control (0025 AC-010).
 
 ### T-011 — Richer cards
 
@@ -490,7 +490,7 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
 | AC-003 | T-006, T-007 | PlanMap.tsx:Stages, Progress.tsx | PlanMap.target.test.tsx, SpecDetail.test.tsx | verified |
 | AC-004 | T-007 | StepLink.tsx, planMapTexts.ts:stepLinkTooltip | StepLink.test.tsx | verified |
 | AC-005 | T-012 | — | — | open |
-| AC-006 | T-005, T-006 | shellService.ts:shellEvent, target.ts, PlanMap.tsx | shellService.navigation.test.ts, PlanMap.target.test.tsx (ways part: T-010) | built |
+| AC-006 | T-005, T-006 | shellService.ts:shellEvent, target.ts, PlanMap.tsx | shellService.navigation.test.ts, PlanMap.target.test.tsx PlanMap.target.test.tsx (ways) | verified |
 | AC-007 | T-011 | — | — | open |
 | AC-008 | T-011 | — | — | open |
 | AC-009 | T-009 | areas/planMap/shows.ts, PlanMap.tsx:Header, SpecDetail.tsx | PlanMap.header.test.tsx, header0025.test.ts | verified |
@@ -500,7 +500,7 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
 | AC-013 | T-001 | texts.ts, ProgressBar.tsx, figures.ts | progress0025.test.ts, ProgressBar.test.tsx | verified |
 | AC-014 | T-002 | shared/protocol/stepLook.ts, board/icons.tsx:StepIcon | stepLook.test.ts, icons.test.tsx, PlanSection.test.tsx, PlanMap.test.tsx | verified |
 | AC-015 | T-003 | core/planMap/returnedWork.ts | returnedWork.test.ts, PlanSection/SpecDetail/PlanMap tests | verified |
-| AC-016 | T-010 | — | — | open |
+| AC-016 | T-010 | detail/ParallelHint.tsx, Ways.tsx, detail.ts:parallel | SpecDetail.test.tsx, parallel0025.test.ts, PlanMap.target.test.tsx, webviewCss.test.ts | verified |
 | AC-017 | T-006, T-011 | main.css:.step-card[data-highlight] (card row and title clamp: T-011) | webviewCss.test.ts | built |
 | AC-018 | T-013 | — | — | open |
 | AC-019 | T-013 (each step asserts its texts literally) | — | — | open |
@@ -515,9 +515,9 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
 
 ## Session handoff
 
-- **Done so far:** stages 1 and 2 (T-001…T-007) and T-008 and T-009 built, verified and committed, one commit per step, stage gate chains green for stages 1 and 2 (2026-11-19). Spec and plan are in `active/`, Baseline `b8e41c7`.
-- **Next action:** stage 3, T-010 (parallel hint and ways target), stage 4 (T-011, T-012), stage 5 (T-013…T-015). Run the stage gate chain at the end of each stage (IMPL-R3 test cadence).
+- **Done so far:** stages 1 and 2 (T-001…T-007) and T-008 and T-009 built, verified and committed, one commit per step, stage gate chains green for stages 1, 2 and 3 (2026-11-19). Spec and plan are in `active/`, Baseline `b8e41c7`.
+- **Next action:** stage 4 (T-011 richer cards, then T-012 tree command), stage 5 (T-013…T-015). Run the stage gate chain at the end of each stage (IMPL-R3 test cadence).
 - **Open decisions:** none. Proxies recorded in the Notes of T-003 (AC-025 beats AC-015's DONE-only example on `fs110-parallel-synthetic`; U-08's m), T-005 (`heading` target, one-shot focus), T-006 (a focus for a spec not shown waits), T-007 (modifier handling).
-- **Where things are:** `core/planMap/returnedWork.ts` (U-05, U-08, `integrateIsQuiet`), `core/planMap/stageLines.ts`, `shared/protocol/{percent,stepLook}.ts`, `webview/ui/StepLink.tsx`, `webview/areas/planMap/target.ts`; the client snapshot carries `focus`; `ways` targets are accepted by the protocol and the service but the map applies only step and heading targets until T-010.
+- **Where things are:** `core/planMap/returnedWork.ts` (U-05, U-08, `integrateIsQuiet`), `core/planMap/stageLines.ts`, `shared/protocol/{percent,stepLook}.ts`, `webview/ui/StepLink.tsx`, `webview/areas/planMap/target.ts`; the client snapshot carries `focus`; the map applies step, ways and heading targets; `core/board/stepLinks.ts` (`stepLinkOf`), `webview/detail/ParallelHint.tsx`, `areas/planMap/shows.ts` are new in stage 3.
 - **Baseline:** `b8e41c7`
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

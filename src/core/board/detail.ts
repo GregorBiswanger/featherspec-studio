@@ -41,7 +41,7 @@ function diagnosticLine(diagnostic: LifecycleEntry['diagnostics'][number]): Diag
     return file === undefined ? base : { ...base, open: { key: file, line: line === undefined || line < 1 ? 1 : line } };
 }
 
-function nextStepView(next: NextStep, tips: StepTipSettings | undefined, offer: Offer | undefined, version: string, quiet: boolean, link: (intent: string) => StepLinkView | undefined): NextStepView {
+function nextStepView(next: NextStep, tips: StepTipSettings | undefined, offer: Offer | undefined, version: string, quiet: boolean, link: (intent: string) => StepLinkView | undefined, parallel: number | undefined): NextStepView {
     if (!('lines' in next)) {
         return next;
     }
@@ -56,6 +56,7 @@ function nextStepView(next: NextStep, tips: StepTipSettings | undefined, offer: 
         ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer), { version, ...(next.reason === undefined ? {} : { reason: next.reason }) }) }),
         ...(send === undefined ? {} : { send }),
         ...(quiet ? { quiet: true as const } : {}),
+        ...(parallel === undefined ? {} : { parallel: { stage: parallel } }),
     };
 }
 
@@ -99,7 +100,7 @@ export function buildDetail(input: DetailInput): DetailView {
         rule: entry.rule,
         persistence: entry.persistence,
         ...(entry.deprecated === undefined ? {} : { successor: successorText(entry.deprecated.successor) }),
-        nextStep: nextStepView(next, input.tips, input.offer, model.project.version, integrateIsQuiet(model, entry, spec), (intent) => stepLinkOf(model, entry, intent)),
+        nextStep: nextStepView(next, input.tips, input.offer, model.project.version, integrateIsQuiet(model, entry, spec), (intent) => stepLinkOf(model, entry, intent), plan?.kind === 'plan' ? plan.stages.find((stage) => stage.ways !== undefined)?.number : undefined),
         problems: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').map(diagnosticLine),
         notes: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'note').map(diagnosticLine),
         ...(progress === undefined ? {} : { progress }),

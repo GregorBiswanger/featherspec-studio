@@ -141,6 +141,13 @@ export function groupReturnedText(k: number, m: number, blocked: readonly string
     return `${k} of ${m} returned${blocked.length === 0 ? '' : `, ${blocked.join(', ')} blocked`} · ${out.join(', ')} not back yet`;
 }
 
+/** U-06: the parallel hint of the detail's Next step, before its link. */
+export function parallelHintText(n: number): string {
+    return `Stage ${n} can run in parallel · `;
+}
+
+export const WAYS_TO_RUN_IT_LABEL = 'Ways to run it';
+
 export function waysHeading(n: number): string {
     return `Ways to run stage ${n}`;
 }

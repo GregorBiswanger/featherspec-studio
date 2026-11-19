@@ -1876,7 +1876,8 @@ blockquote.illustration {
     overflow-wrap: break-word;
 }
 
-.step-card[data-highlight] {
+.step-card[data-highlight],
+.plan-ways[data-highlight] {
     outline: 2px solid var(--vscode-contrastActiveBorder, var(--vscode-focusBorder));
     outline-offset: 1px;
     transition: outline-color 150ms;

@@ -233,6 +233,31 @@ describe('0019 AC-011, AC-012: Progress', () => {
         expect(links(plain.querySelector('.next-step')!)).toEqual([]);
     });
 
+    it('0025 AC-016: the parallel hint follows line 1 (after the coach line when tips show), precedes line 2, and Ways to run it navigates to the ways target', async () => {
+        const lines = [{ text: 'Implement T-003 of p', intent: 'Continue with T-003 Step' }, { text: '/sdd-plan s', intent: 'Not sure where it stands? Let the agent report first' }];
+        const withTips: NextStepView = { rule: 'NS-6', lines, parallel: { stage: 2 }, tips: { coach: 'Run this in your agent chat.', about: ['One step.'] } } as NextStepView;
+        const root = await open(spec({}, withTips));
+        const items = [...root.querySelectorAll('.next-step-lines > li')];
+        const hint = items[0]!.querySelector('.parallel-hint')!;
+        expect(textOf(hint)).toBe('Stage 2 can run in parallel · Ways to run it');
+        expect(items[1]!.querySelector('.parallel-hint')).toBeNull();
+        expect(items[0]!.querySelector('.step-coach')!.compareDocumentPosition(hint) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        const button = hint.querySelector<HTMLButtonElement>('button')!;
+        expect(button.textContent).toBe('Ways to run it');
+        await click(button);
+        expect(posted.filter((message) => message.type === 'navigate').map((message) => message.payload)).toEqual([{ area: 'planMap', target: { kind: 'spec', stem: '0007-thing', ways: true } }]);
+    });
+
+    it('0025 AC-016: tips off the hint sits after the Copy prompt; without a parallel stage there is none', async () => {
+        const lines = [{ text: 'Implement T-003 of p', intent: 'Continue with T-003 Step' }];
+        const root = await open(spec({}, { rule: 'NS-6', lines, parallel: { stage: 3 } } as NextStepView));
+        const first = root.querySelector('.next-step-lines > li')!;
+        expect(textOf(first.querySelector('.parallel-hint')!)).toBe('Stage 3 can run in parallel · Ways to run it');
+        expect(first.querySelector('.copy-button')!.compareDocumentPosition(first.querySelector('.parallel-hint')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        const none = await open(spec({}, { rule: 'NS-6', lines } as NextStepView));
+        expect(none.querySelector('.parallel-hint')).toBeNull();
+    });
+
     it('a complete plan shows no next open step; no countable step says so; an unreadable plan says so', async () => {
         const done = await open(spec({ progress: { needs: [], noPlan: false, steps: { kind: 'steps', done: 4, total: 4 }, criteria: { kind: 'criteria', verified: 3, total: 3, open: [] } } }));
         expect(textOf(progressOf(done))).toContain('4 of 4 done');

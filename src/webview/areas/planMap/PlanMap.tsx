@@ -65,6 +65,7 @@ function Stages(props: { plan: PlanView; links: CardLinks; copyResult: CopyResul
     }, []);
     const [openFinished, setOpenFinished] = useState<ReadonlySet<number>>(() => new Set());
     const [highlight, setHighlight] = useState<{ key: string; n: number } | undefined>(undefined);
+    const [waysTarget, setWaysTarget] = useState<{ n: number } | undefined>(undefined);
     const aim = useRef<{ key: string } | undefined>(undefined);
     const pending = focusFor(props.focus, props.stem, props.path);
     useEffect(() => {
@@ -72,6 +73,16 @@ function Stages(props: { plan: PlanView; links: CardLinks; copyResult: CopyResul
             return;
         }
         markApplied(pending);
+        if (pending.ways === true) {
+            aim.current = undefined;
+            setHighlight(undefined);
+            if (plan.stages.some((stage) => stage.ways !== undefined)) {
+                setWaysTarget({ n: pending.n });
+            } else {
+                root.current?.closest<HTMLElement>('[data-plan-map]')?.querySelector<HTMLElement>('[data-map-heading]')?.focus();
+            }
+            return;
+        }
         const found = pending.step === undefined ? undefined : cardKeyForStep(plan, pending.step);
         if (found === undefined) {
             aim.current = undefined;
@@ -170,7 +181,7 @@ function Stages(props: { plan: PlanView; links: CardLinks; copyResult: CopyResul
                     stage={stage}
                     links={links}
                     cards={cards}
-                    {...(stage.ways === undefined ? {} : { ways: <Ways ways={stage.ways} copyResult={props.copyResult} onCopy={props.onCopy} /> })}
+                    {...(stage.ways === undefined ? {} : { ways: <Ways ways={stage.ways} {...(waysTarget === undefined ? {} : { target: waysTarget })} copyResult={props.copyResult} onCopy={props.onCopy} /> })}
                 />
             ))}
             {plan.loose.length === 0 ? null : plan.staged ? (
