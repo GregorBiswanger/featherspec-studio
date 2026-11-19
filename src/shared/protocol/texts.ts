@@ -293,6 +293,11 @@ export function problemsBadgeText(count: number): string {
 export const NO_SPECS_START_TEXT = 'No specs yet. Start with /sdd-specify';
 export const SDD_SPECIFY_LINE = '/sdd-specify';
 
+export const WELCOME_HEADING = 'Welcome to FeatherSpec';
+export const WELCOME_BODY =
+    'Set up this project first: run /sdd-setup with the AI assistant of your choice. It asks for the language of your docs, fills the Memory Bank and records the architecture snapshot.';
+export const SETUP_LINE = '/sdd-setup';
+
 export const BANNER_HEADING = 'Problems';
 
 export function formatNotesText(count: number): string {

@@ -11,6 +11,7 @@ import { FilterBar } from '../board/FilterBar';
 import { fallbackFocus, moveFocus, type Direction, type Grid } from '../board/focusModel';
 import { CopyButton } from '../ui/CopyButton';
 import { EmptyState } from '../ui/EmptyState';
+import { Welcome } from '../ui/Welcome';
 
 const ARROWS: Readonly<Record<string, Direction>> = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
 
@@ -105,7 +106,9 @@ export function SpecBoard() {
     return (
         <div className="board" aria-label={BOARD_LABEL}>
             <Banner banner={board.banner} />
-            {board.noSpecs ? (
+            {board.noSpecs && board.welcome !== undefined ? (
+                <Welcome welcome={board.welcome} className="board-empty" />
+            ) : board.noSpecs ? (
                 <EmptyState icon="Backlog" className="board-empty">
                     {NO_SPECS_START_TEXT}
                     <CopyButton look="primary" line={SDD_SPECIFY_LINE} copyResult={api.copyResult} onCopy={api.copyText} />

@@ -14,6 +14,7 @@ import { NO_SPECS_START_TEXT, SDD_SPECIFY_LINE } from '../../../shared/protocol/
 import { useBoard } from '../../board/boardStore';
 import { CopyButton } from '../../ui/CopyButton';
 import { Now, UpNext } from './Now';
+import { Welcome } from '../../ui/Welcome';
 
 export function Overview() {
     const view = useOverview();
@@ -47,7 +48,9 @@ export function Overview() {
                     </button>
                 </div>
             )}
-            {view.figures.kind === 'empty' ? (
+            {view.figures.kind === 'empty' && view.welcome !== undefined ? (
+                <Welcome welcome={view.welcome} />
+            ) : view.figures.kind === 'empty' ? (
                 <EmptyState icon="Backlog" data-zero-specs>
                     {NO_SPECS_START_TEXT}
                     <CopyButton look="primary" line={SDD_SPECIFY_LINE} copyResult={copyResult} onCopy={copyText} />

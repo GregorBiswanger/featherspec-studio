@@ -6,6 +6,8 @@ import type { SelectionSource } from '../ports/board';
 import type { Disposable } from '../ports/host';
 import type { ShellModel, ShellModelSource, UiMemoryPort } from '../ports/shell';
 import type { Offer } from '../assistant/offer';
+import { welcomeOf } from '../assistant/welcome';
+import type { WelcomeView } from '../../shared/protocol/overview';
 import type { SettingsSource } from '../settings/settingsSource';
 import type { StepTipSettings } from '../settings/stepTipSettings';
 import { buildDetail } from './detail';
@@ -86,8 +88,13 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
         const columns = arrangeBoard(current.cards, ui.filter(), ui.sort(), ui.doneExpanded());
         const done = columns.find((column) => column.state === 'Done');
         const doneHasCards = done !== undefined && !isFilterSet(ui.filter()) && done.count > 0;
-        const base = { columns, banner: current.banner, filter: ui.filter(), sort: ui.sort(), sortKeys: current.sortKeys, noSpecs: current.cards.length === 0, planSpecs: current.planSpecs };
+        const base = { columns, banner: current.banner, filter: ui.filter(), sort: ui.sort(), sortKeys: current.sortKeys, noSpecs: current.cards.length === 0, ...welcomeField(current), planSpecs: current.planSpecs };
         return doneHasCards ? { ...base, doneToggle: ui.doneExpanded() ? 'hide' : 'show' } : base;
+    }
+
+    function welcomeField(current: Built): { welcome?: WelcomeView } {
+        const welcome = current.cards.length === 0 ? welcomeOf(current.model, deps.assistant.read()) : undefined;
+        return welcome === undefined ? {} : { welcome };
     }
 
     function offerOf(): { offer?: Offer } {

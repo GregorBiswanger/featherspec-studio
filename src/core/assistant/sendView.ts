@@ -12,11 +12,15 @@ export function tipClosingOf(offer: Offer | undefined, withheld = false): readon
     return [withheld ? `${send} ${ATTACH_UPDATE_TEXT}` : send, TIP_CLOSING[1]];
 }
 
+export function plainSendViewOf(offer: Offer | undefined): SendView | undefined {
+    return offer === undefined ? undefined : { assistant: offer.assistant, target: 'new', targets: [...ASSISTANT_TARGETS[offer.assistant]] };
+}
+
 export function sendViewOf(offer: Offer | undefined, stepCase: StepCase, context?: AttachmentContext): SendView | undefined {
-    if (offer === undefined) {
+    const view = plainSendViewOf(offer);
+    if (view === undefined || offer === undefined) {
         return undefined;
     }
-    const view: SendView = { assistant: offer.assistant, target: 'new', targets: [...ASSISTANT_TARGETS[offer.assistant]] };
     const attach = context === undefined ? undefined : attachmentOf(offer, stepCase, context).attach;
     return attach === undefined ? view : { ...view, attach };
 }

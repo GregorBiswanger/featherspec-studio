@@ -65,7 +65,12 @@ export interface OverviewUpNext {
 
 export type OverviewNow = OverviewUpNext;
 
+export interface WelcomeView {
+    send?: SendView;
+}
+
 export interface OverviewView {
+    welcome?: WelcomeView;
     now: OverviewNow;
     upNext: OverviewUpNext;
     problems: OverviewProblems;
@@ -197,10 +202,15 @@ function isProblems(value: unknown): value is OverviewProblems {
     return isRecord(value) && exactly(value, ['rows', 'lines']) && isRows(value.rows) && Array.isArray(value.lines) && value.lines.every(isProblemLine);
 }
 
+export function isWelcomeView(value: unknown): value is WelcomeView {
+    return isRecord(value) && exactly(value, [], ['send']) && (value.send === undefined || isSendView(value.send));
+}
+
 export function isOverviewView(value: unknown): value is OverviewView {
     return (
         isRecord(value) &&
-        exactly(value, ['now', 'upNext', 'problems', 'figures', 'activity']) &&
+        exactly(value, ['now', 'upNext', 'problems', 'figures', 'activity'], ['welcome']) &&
+        (value.welcome === undefined || (isRecord(value.figures) && value.figures.kind === 'empty' && isWelcomeView(value.welcome))) &&
         isUpNext(value.now) &&
         isUpNext(value.upNext) &&
         isProblems(value.problems) &&

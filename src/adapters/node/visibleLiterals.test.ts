@@ -51,4 +51,32 @@ describe('final check 7 (ux-guidelines 10, 6): visible literals live in the text
         }
         expect(offenders).toEqual([]);
     });
+
+    it('0029 AC-011 each welcome text exists exactly once in production code, in a text module', async () => {
+        const wanted = [
+            'Welcome to FeatherSpec',
+            'Set up this project first: run /sdd-setup with the AI assistant of your choice. It asks for the language of your docs, fills the Memory Bank and records the architecture snapshot.',
+            "export const SETUP_LINE = '/sdd-setup';",
+        ];
+        const files = await productionFiles(path.join(root, 'src'));
+        const texts = await Promise.all(files.map(async (file) => ({ name: path.relative(root, file).split(path.sep).join('/'), text: await fs.readFile(file, 'utf8') })));
+        for (const literal of wanted) {
+            const holders = texts.filter((file) => file.text.includes(literal)).map((file) => file.name);
+            expect(holders, literal).toEqual(['src/shared/protocol/texts.ts']);
+            expect(texts.filter((file) => file.name === 'src/shared/protocol/texts.ts')[0]!.text.split(literal)).toHaveLength(2);
+        }
+    });
+
+    it('0029 AC-011 no text module contains a character of the Unicode property Extended_Pictographic, the feather emoji included', async () => {
+        const modules = (await productionFiles(path.join(root, 'src'))).filter((file) => /(?:^|[/\\])[A-Za-z0-9]*[Tt]exts?\.ts$/.test(file));
+        expect(modules.length).toBeGreaterThan(5);
+        const offenders: string[] = [];
+        for (const file of modules) {
+            if (/\p{Extended_Pictographic}/u.test(await fs.readFile(file, 'utf8'))) {
+                offenders.push(path.relative(root, file));
+            }
+        }
+        expect(offenders).toEqual([]);
+        expect(/\p{Extended_Pictographic}/u.test('\u{1FAB6}')).toBe(true);
+    });
 });

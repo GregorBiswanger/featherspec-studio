@@ -3,6 +3,7 @@ import { BOARD_STATES, type BoardState } from '../../shared/protocol/boardFilter
 import type { StepLookKey } from '../../shared/protocol/planMapTexts';
 import { STATE_LOOK } from '../../shared/protocol/stateLook';
 import { STEP_LOOK } from '../../shared/protocol/stepLook';
+import { FEATHER_PATH, FEATHER_VIEW_BOX } from './featherPath';
 
 const MOTIF_PATHS: Record<string, string> = {
     'list-flat': 'M2 3h12v2H2zM2 7h12v2H2zM2 11h8v2H2z',
@@ -33,19 +34,19 @@ const PATHS: Record<string, string> = {
     empty: 'M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 1.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11zM5 7.25h6v1.5H5z',
 };
 
-export type GlyphKind = 'diagnostic' | 'derived' | 'deprecated' | 'failed' | 'interrupted' | 'waiting' | 'empty' | 'ticked' | 'unticked' | 'undetermined' | 'chevron' | 'chevronDown' | 'folder' | 'info' | 'copy' | 'check' | 'file' | BoardState;
+export type GlyphKind = 'diagnostic' | 'derived' | 'deprecated' | 'failed' | 'interrupted' | 'waiting' | 'empty' | 'ticked' | 'unticked' | 'undetermined' | 'chevron' | 'chevronDown' | 'folder' | 'info' | 'copy' | 'check' | 'file' | 'feather' | BoardState;
 
 function isState(kind: GlyphKind): kind is BoardState {
     return (BOARD_STATES as readonly string[]).includes(kind);
 }
 
 function pathOf(kind: GlyphKind): string | undefined {
-    return isState(kind) ? MOTIF_PATHS[STATE_LOOK[kind].motif] : PATHS[kind];
+    return isState(kind) ? MOTIF_PATHS[STATE_LOOK[kind].motif] : kind === 'feather' ? FEATHER_PATH : PATHS[kind];
 }
 
 export function Glyph(props: { kind: GlyphKind }) {
     return (
-        <svg className="icon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" fillRule="evenodd" aria-hidden="true" focusable="false" data-icon={props.kind}>
+        <svg className="icon" width="14" height="14" viewBox={props.kind === 'feather' ? FEATHER_VIEW_BOX : '0 0 16 16'} fill="currentColor" fillRule="evenodd" aria-hidden="true" focusable="false" data-icon={props.kind}>
             <path d={pathOf(props.kind)} />
         </svg>
     );
