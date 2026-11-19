@@ -1,14 +1,25 @@
-import { useEffect, useId, useRef } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef } from 'react';
 import type { KeyboardEvent } from 'react';
 import { closePopup, setPopup, useIsPopupOpen } from './popup';
 
-export function Toggletip(props: { label: string; glyph: string; paragraphs: readonly string[] }) {
+export function Toggletip(props: { label: string; glyph: string; paragraphs: readonly string[]; onLeaveWithFocus?: () => void }) {
     const id = useId();
     const open = useIsPopupOpen(id);
     const button = useRef<HTMLButtonElement>(null);
     const region = useRef<HTMLDivElement>(null);
     const content = props.paragraphs.join('\n');
     const lastContent = useRef(content);
+    const leave = useRef(props.onLeaveWithFocus);
+    leave.current = props.onLeaveWithFocus;
+
+    useLayoutEffect(
+        () => () => {
+            if (document.activeElement === button.current) {
+                leave.current?.();
+            }
+        },
+        [],
+    );
 
     const close = (): void => {
         closePopup(id);

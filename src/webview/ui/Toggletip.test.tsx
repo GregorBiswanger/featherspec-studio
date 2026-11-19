@@ -316,3 +316,31 @@ describe('0021 AC-014: the toggletip is a button with a status region', () => {
         delete (window as unknown as { acquireVsCodeApi?: unknown }).acquireVsCodeApi;
     });
 });
+
+describe('0026 AC-006: a toggletip that goes away with focus tells its owner', () => {
+    function Holder(props: { onLeave: () => void }) {
+        const [shown, setShown] = useState(true);
+        return (
+            <div>
+                {shown ? <Toggletip label={LABEL} glyph="?" paragraphs={PARAGRAPHS} onLeaveWithFocus={props.onLeave} /> : null}
+                <button type="button" data-id="hide" onClick={() => setShown(false)}>
+                    hide
+                </button>
+            </div>
+        );
+    }
+
+    it('unmounting while its button has focus calls the callback once; unmounting without focus does not', async () => {
+        const leave = vi.fn();
+        mounted = await mount(<Holder onLeave={leave} />);
+        const tip = mounted.container.querySelector<HTMLButtonElement>('button.toggletip')!;
+        await act(async () => tip.focus());
+        await act(async () => mounted!.container.querySelector<HTMLButtonElement>('[data-id="hide"]')!.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+        expect(leave).toHaveBeenCalledTimes(1);
+        mounted.unmount();
+        const quiet = vi.fn();
+        mounted = await mount(<Holder onLeave={quiet} />);
+        await act(async () => mounted!.container.querySelector<HTMLButtonElement>('[data-id="hide"]')!.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+        expect(quiet).not.toHaveBeenCalled();
+    });
+});

@@ -70,13 +70,13 @@ async function open(area: 'overview' | 'board', options: { overview?: OverviewVi
 const CARDS = ['0001', '0002', '0003'].map((n) => card(n, { stem: `${n}-r`, step: step(n)! }));
 
 describe('0022 AC-011: at most two primary buttons per view', () => {
-    it('the Overview with seven Now entries (five rows), three Up next rows, a Problems row and a selected NS-5 spec has exactly two: the first Now row and the first line of the side panel', async () => {
+    it('the Overview with seven Now entries (five rows), three Up next rows, a Problems row and a selected NS-5 spec has exactly one (0026 AC-024): the first line of the side panel; the first Now row is secondary', async () => {
         const container = await open('overview', { overview: fullView(), selection: SELECTED });
         const found = primaries(container);
-        expect(found).toHaveLength(2);
-        expect(found[0]?.closest('[data-spec-row]')?.getAttribute('data-spec-row')).toBe('0001-r');
-        expect(found[0]?.closest('[data-now]')).not.toBeNull();
-        expect(found[1]?.closest('aside.side-panel')).not.toBeNull();
+        expect(found).toHaveLength(1);
+        expect(found[0]?.closest('aside.side-panel')).not.toBeNull();
+        const first = container.querySelector('[data-now] [data-spec-row="0001-r"] button.copy-button')!;
+        expect(first.classList.contains('copy-secondary')).toBe(true);
         const all = [...container.querySelectorAll<HTMLElement>('.ov-row-item button.copy-icon')];
         expect(all).toHaveLength(4 + 3 + 1);
         const panel = container.querySelectorAll('aside.side-panel button.next-step-copy');
@@ -93,9 +93,9 @@ describe('0022 AC-011: at most two primary buttons per view', () => {
         expect(container.querySelectorAll('.card .copy-button')).toHaveLength(0);
     });
 
-    it('without a selection the Overview has one and the Board none', async () => {
+    it('without a selection the Overview has none (0026 AC-024) and the Board none', async () => {
         const overview = await open('overview', { overview: fullView() });
-        expect(primaries(overview)).toHaveLength(1);
+        expect(primaries(overview)).toHaveLength(0);
         mounted?.unmount();
         mounted = undefined;
         clients.splice(0).forEach((client) => client.stop());
@@ -188,16 +188,16 @@ describe('0024 AC-003: a split button counts as one primary action (A-013)', () 
     const SEND = { assistant: 'copilot', target: 'current', targets: ['new', 'current'] };
     const NS6_SEND = { ...NS6, send: SEND };
 
-    it('with an offer the Overview with a selected spec still has two primaries: the main part of the first Now row and the main part of the detail; the arrow parts are no primary', async () => {
+    it('with an offer the Overview with a selected spec has one primary (0026 AC-024): the main part of the detail; the first Now row split button is secondary; no arrow part is primary', async () => {
         const view = fullView();
         view.now.rows[0] = { ...view.now.rows[0]!, send: SEND as never };
         const container = await open('overview', { overview: view, selection: SELECTED });
         await send(detailEvent(detailView({ stem: SELECTED.stem, number: SELECTED.number }, NS6_SEND as never)));
         const found = primaries(container);
-        expect(found).toHaveLength(2);
+        expect(found).toHaveLength(1);
         expect(found.every((button) => button.classList.contains('send-main'))).toBe(true);
-        expect(found[0]?.closest('[data-now]')).not.toBeNull();
-        expect(found[1]?.closest('aside.side-panel')).not.toBeNull();
+        expect(found[0]?.closest('aside.side-panel')).not.toBeNull();
+        expect(container.querySelector('[data-now] button.send-main')?.classList.contains('copy-secondary')).toBe(true);
         expect(container.querySelectorAll('button.send-arrow')).toHaveLength(2);
         expect([...container.querySelectorAll('button.send-arrow')].every((button) => !button.classList.contains('copy-button'))).toBe(true);
     });
@@ -226,9 +226,10 @@ describe('0025 AC-026: no primary control while U-08 shows', () => {
         }
     });
 
-    it.each([false, true])('0025 AC-026: with U-05 (not quiet), Send offered = %s, the first Now row and the detail are primary again', async (offered) => {
+    it.each([false, true])('0025 AC-026: with U-05 (not quiet), Send offered = %s, the detail is primary again and the first Now row stays secondary (0026 AC-024)', async (offered) => {
         const container = await quietView({ quiet: false, send: offered });
-        expect(primaries(container)).toHaveLength(2);
+        expect(primaries(container)).toHaveLength(1);
+        expect(primaries(container)[0]?.closest('aside.side-panel')).not.toBeNull();
     });
 });
 
@@ -262,5 +263,32 @@ describe('0025 AC-010: the map with its side panel has at most one primary butto
     it('0025 AC-010: while someone is out (U-08, quiet) the header holds no primary at all', async () => {
         const container = await openMapWith({ ...NS6, quiet: true });
         expect(primaries(container)).toHaveLength(0);
+    });
+});
+
+describe('0026 AC-024: no Now row is primary; the Overview holds one primary at most', () => {
+    const EIGHT = fullView();
+    EIGHT.now = { ...EIGHT.now, rows: EIGHT.now.rows.map((entry, index) => (index === 0 ? { ...entry, send: { assistant: 'copilot', target: 'new', targets: ['new', 'current'] } as never } : entry)), more: 3 };
+
+    it('Given eight entries and 0004 selected: one primary, in the side panel; no Now Copy or split part is primary', async () => {
+        const container = await open('overview', { overview: EIGHT, selection: { stem: '0004-r', number: '0004' } });
+        const found = primaries(container);
+        expect(found).toHaveLength(1);
+        expect(found[0]?.closest('aside.side-panel')).not.toBeNull();
+        expect(primaries(container.querySelector<HTMLElement>('[data-now]')!)).toHaveLength(0);
+        expect(container.querySelector('[data-now] button.send-main')?.classList.contains('copy-secondary')).toBe(true);
+        expect(container.querySelector('[data-now] button.send-arrow')?.classList.contains('send-arrow-secondary')).toBe(true);
+    });
+
+    it('none selected: none; the first Now row is a secondary split button and every later row an icon', async () => {
+        const container = await open('overview', { overview: EIGHT });
+        expect(primaries(container)).toHaveLength(0);
+        expect(container.querySelectorAll('[data-now] [data-spec-row]:not(:first-child) button.copy-icon')).toHaveLength(4);
+    });
+
+    it('negative control: a primary Now Copy would be counted', () => {
+        const host = document.createElement('div');
+        host.innerHTML = '<section data-now><button class="copy-button"></button></section>';
+        expect(primaries(host)).toHaveLength(1);
     });
 });

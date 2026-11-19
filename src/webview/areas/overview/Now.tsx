@@ -18,7 +18,7 @@ export function Now(props: { now: OverviewNow; navigate: (request: NavigationReq
             ) : (
                 <ul className="ov-list">
                     {now.rows.map((row, index) => (
-                        <SpecRow key={`${row.spec.stem}|${row.spec.path ?? ''}`} row={row} group="now" copyLook={index === 0 ? 'primary' : 'icon'} />
+                        <SpecRow key={`${row.spec.stem}|${row.spec.path ?? ''}`} row={row} group="now" copyLook={index === 0 ? 'secondary' : 'icon'} />
                     ))}
                 </ul>
             )}

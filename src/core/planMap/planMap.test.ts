@@ -464,7 +464,7 @@ describe('0023 AC-009: the current stage offers its ways, and the next step its 
             'Where a working agreement asks for a test review, the chat first writes the stage\'s tests and stops for it; then it hands each step to a subagent. Subagents cannot ask you; there is no steering in between.',
         );
         expect(WAYS.otherAgents.effect).toBe(
-            'The chat proposes the commit a worktree needs and prints one start line per step. Paste each into another chat, tool or worktree; each worker builds its step and leaves a return note.',
+            'Each step runs from its own start line in another chat, tool or worktree and leaves a return note; a worktree holds committed files only, so commit first. Until start lines show here, the stage prompt has the chat propose that commit and print them. Once every worker is back, the next step integrates the returned steps.',
         );
     });
 });

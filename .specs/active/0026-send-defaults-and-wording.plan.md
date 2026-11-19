@@ -3,7 +3,7 @@
 **Spec:** [0026-send-defaults-and-wording.md](0026-send-defaults-and-wording.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-001
+**Current step:** T-008
 
 ## Approach
 
@@ -260,8 +260,8 @@ Parallel: stages 2 and 3, run in sequence (`PLAN-R3.md`). Stage 1 shares `nextSt
   - Retarget 0022 AC-011's "exactly two primary buttons" and 0024 *Place* "one primary control" tests (`Notes:`).
 - **Verify:** `npx vitest run src/webview/coach0026.test.tsx src/webview/primaryButtons.test.tsx src/webview/ui/Toggletip.test.tsx`
   red first (coach shown while selected, primary first row), then `npm run test:unit` green.
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** `npx vitest run src/webview` 742 passed; red first: after the code change the old primary-count tests failed (5), the new `coach0026` focus/quiet cases and `Toggletip` callback are new; tsc webview, eslint webview. Stage 2 gate (run after T-006, over a tree that already held T-007's edits): eslint, tsc and every test green except the five `primaryButtons` tests this step retargets; compile steps are re-run in the stage 3 gate.
+- **Notes:** `Toggletip` gained `onLeaveWithFocus` (layout-effect cleanup, checks `document.activeElement`); `SpecRow` hides `.ov-coach` while `isSelectedSpec`, hands focus to the row's `button.send-main, button.copy-button`. `Now.tsx` row 0 `copyLook 'secondary'` (`StepAction` already maps secondary to the split button's secondary look). K-2 (check mark: T-001), K-3 (coach line visible without `(?)`: AC-023 green already, tests added), K-5 (one primary: this step) applied. Retargeted in `primaryButtons.test.tsx`: `0022 AC-011 … has exactly two …` -> `… exactly one (0026 AC-024) …`; `without a selection the Overview has one …` -> `… has none (0026 AC-024) …`; `0024 AC-003 … still has two primaries …` -> `… has one primary (0026 AC-024) …`; `0025 AC-026 … U-05 … are primary again` -> `… the detail is primary again and the first Now row stays secondary (0026 AC-024)`. Also fixed `planMap.test.ts` (0023 AC-009) for the new Other agents effect text.
 
 ### T-008 — About these ways, the tag's style, and focus
 
@@ -370,9 +370,8 @@ Parallel: stages 2 and 3, run in sequence (`PLAN-R3.md`). Stage 1 shares `nextSt
 
 ## Session handoff
 
-- **Done so far:** plan written; spec revised (AC-021, AC-024, §10, `**Plan:**` link), 2026-11-19.
-- **Next action:** review the plan; after 0028 and 0025 are done, on the start signal move the pair to `active/`
-  (`/sdd-lifecycle`), set the Baseline, then T-001.
+- **Done so far:** T-001…T-006 committed on `ux-round-3` (stage 1 gate green at T-004; stage 2 gate run after T-006, result in T-006's commit follow-up).
+- **Next action:** T-008 (About these ways, tag CSS, focus), stage 3 gate, then stage 4.
 - **Open decisions:** — (AC-019's draft check in Copilot's `newChat` is untested, V-3 C4; if it fails, Gregor decides, 09 §3)
 - **Baseline:** `657e87a`
-- **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.
+- **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator. Full vitest takes 3+ minutes here: run it in the background.
