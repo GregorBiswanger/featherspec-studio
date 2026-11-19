@@ -10,6 +10,7 @@ Current phase: act
 - Waits for: CI at the round-3 PR, Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
 
 ## Active Spec
+- [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec (Claude Code first, Copilot after C-2), T-001…T-010 in progress; AC-016…AC-018, AC-020 and OP-006 are Gregor's or the orchestrator's.
 - [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 are Gregor's; OP-004 closed by PD-078.
 - [0023](../.specs/active/0023-plan-map-stages-parallel-work.md) / [plan](../.specs/active/0023-plan-map-stages-parallel-work.plan.md): Plan map, T-001…T-017; AC-018 real window, AC-019, AC-020 are Gregor's.
 - [0022](../.specs/active/0022-layout-and-signal-polish.md) / [plan](../.specs/active/0022-layout-and-signal-polish.plan.md): layout and signals, T-001…T-022; AC-020, AC-021 are Gregor's.
@@ -37,7 +38,7 @@ Current phase: act
 - Gregor's manual checks stay in the specs: 0025 AC-022 real window, AC-023, AC-024; 0026 AC-017, AC-019; 0028 AC-015.
 
 ## Next
-1. Implement 0027 (spec and plan are in `.specs/backlog/`; move them to `active/` with `/sdd-lifecycle` when it starts, after `/sdd-plan`).
+1. Finish 0027 (spec and plan are in `.specs/active/`, the plan's handoff names the next step).
 2. Open the round-3 PR (draft is fine) so CI runs: 0021 AC-020, 0022 AC-017, 0023 AC-016, 0024 AC-014, 0025 AC-020, 0026 AC-015, 0028 AC-012.
 
 ## Validation

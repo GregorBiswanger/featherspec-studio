@@ -56,9 +56,9 @@ describe('0024 AC-011: the assistant core needs neither trust nor a writer', () 
 const SHOW = parseStepTipSettings(true, {});
 const NO_HISTORY = { available: true, entries: [], label: '' } as never;
 const NO_ATTACH: StepCase[] = ['NS-2', 'NS-4'];
-const copilotAttaching = (): Offer => createFakeOffer({ assistant: 'copilot' }, { attaching: () => true }).read()!;
+const attachingOffer = (): Offer => createFakeOffer({ assistant: 'copilot' }, { attaching: () => true }).read()!;
 const claudeShipped: Offer = { assistant: 'claudeCode' };
-const copilotShipped: Offer = { assistant: 'copilot' };
+const plainOffer: Offer = { assistant: 'copilot' };
 
 function detailOf(model: Awaited<ReturnType<typeof caseModel>>, key: string, offer: Offer) {
     const entry = model.lifecycle.entries.find((candidate) => candidate.key === key)!;
@@ -73,7 +73,7 @@ describe('0027 AC-001: the Send view carries the spec exactly for the cases §6.
     for (const stepCase of CASES) {
         const { key } = CASE_WORLDS[stepCase];
         const name = key.slice(key.lastIndexOf('/') + 1);
-        for (const [label, offer] of [['Claude Code', claudeShipped], ['Copilot (attaching)', copilotAttaching()]] as const) {
+        for (const [label, offer] of [['Claude Code', claudeShipped], ['Copilot (attaching)', attachingOffer()]] as const) {
             it(`0027 AC-001 ${stepCase} ${label}: the detail's Send view ${NO_ATTACH.includes(stepCase) ? 'carries no attachment' : 'carries ' + name}`, async () => {
                 const model = await caseModel(stepCase, '1.11.0');
                 const next = detailOf(model, key, offer);
@@ -126,8 +126,8 @@ describe('0027 AC-011: the toggletip names the update only where the gate withho
         expect(detailOf(model, CASE_WORLDS['NS-9'].key, claudeShipped).tips?.about[2]).toBe(sendTipText('Claude Code'));
         const old = await caseModel('NS-2', '1.10.0');
         expect(detailOf(old, CASE_WORLDS['NS-2'].key, claudeShipped).tips?.about[2]).toBe(sendTipText('Claude Code'));
-        const copilotOld = await caseModel('NS-9', '1.10.0');
-        expect(detailOf(copilotOld, CASE_WORLDS['NS-9'].key, copilotShipped).tips?.about[2]).toBe(sendTipText('Copilot'));
+        const oldModel = await caseModel('NS-9', '1.10.0');
+        expect(detailOf(oldModel, CASE_WORLDS['NS-9'].key, plainOffer).tips?.about[2]).toBe(sendTipText('Copilot'));
     });
 
     it('the first Now row\'s toggletip follows the same rule', async () => {
@@ -141,7 +141,7 @@ describe('0027 AC-019: the shipped table gives Copilot no attachment and no upda
     it.each(['1.10.0', '1.11.0', '2.0.0', 'unknown'])('%s: Copilot\'s view has no attach and its toggletip no update sentence in every case', async (version) => {
         for (const stepCase of CASES) {
             const model = await caseModel(stepCase, version);
-            const next = detailOf(model, CASE_WORLDS[stepCase].key, copilotShipped);
+            const next = detailOf(model, CASE_WORLDS[stepCase].key, plainOffer);
             expect(next.send?.attach, stepCase).toBeUndefined();
             expect(JSON.stringify(next.tips), stepCase).not.toContain('attaches the spec');
         }
@@ -151,6 +151,6 @@ describe('0027 AC-019: the shipped table gives Copilot no attachment and no upda
         const model = await caseModel('NS-9', '1.11.0');
         const key = CASE_WORLDS['NS-9'].key;
         expect(detailOf(model, key, claudeShipped).send?.attach).toEqual({ name: '0007-x.md', path: key });
-        expect(detailOf(model, key, copilotShipped).send?.attach).toBeUndefined();
+        expect(detailOf(model, key, plainOffer).send?.attach).toBeUndefined();
     });
 });

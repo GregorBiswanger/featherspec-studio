@@ -52,10 +52,10 @@ async function render(files: Record<string, string>): Promise<string[]> {
     for (const area of ['board', 'overview', 'planMap']) {
         const { dom, errors } = boot();
         await settle();
-        send(dom, { v: 10, kind: 'evt', seq: 1, type: 'shell', payload: { view: { ...SHELL, area, selection: area === 'board' ? selection : undefined } } });
-        send(dom, { v: 10, kind: 'evt', type: 'board', payload: { view: board } });
-        send(dom, { v: 10, kind: 'evt', type: 'overview', payload: { view: buildOverviewView({ model, history: HISTORY, tips }) } });
-        send(dom, { v: 10, kind: 'evt', type: 'detail', payload: { view: buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history: HISTORY, tips }) } });
+        send(dom, { v: 11, kind: 'evt', seq: 1, type: 'shell', payload: { view: { ...SHELL, area, selection: area === 'board' ? selection : undefined } } });
+        send(dom, { v: 11, kind: 'evt', type: 'board', payload: { view: board } });
+        send(dom, { v: 11, kind: 'evt', type: 'overview', payload: { view: buildOverviewView({ model, history: HISTORY, tips }) } });
+        send(dom, { v: 11, kind: 'evt', type: 'detail', payload: { view: buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history: HISTORY, tips }) } });
         await settle();
         texts.push(textOf(dom));
         expect(errors).toEqual([]);

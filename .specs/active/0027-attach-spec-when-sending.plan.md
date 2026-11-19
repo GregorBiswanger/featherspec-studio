@@ -3,7 +3,7 @@
 **Spec:** [0027-attach-spec-when-sending.md](0027-attach-spec-when-sending.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-001
+**Current step:** T-003
 
 ## Approach
 
@@ -183,7 +183,7 @@ and `send.ts`/`send.test.ts`: no `‖`.
   - 0028's snapshot test stays green with no new exception (no offer there).
 - **Verify:** `npx vitest run --project node src/core/assistant src/shared/protocol src/core/board/nextStepBaseline.test.ts`.
   It is red first (no `attach` in the view, 0024's paragraph), then `npm run test:unit` and `npm run compile` are green.
-- [x] **Verified (T-002):** 2026-11-19 · red first (29 failed: no `attach`, 0024's paragraph), then `npx vitest run --project node src/core/assistant src/shared/protocol src/core/board/nextStepBaseline.test.ts` 401 passed; `src/core src/shared` + webviewBundle 2351 passed; tsc (both), eslint, `npm run compile` clean.
+- [x] **Verified (T-002):** 2026-11-19 · red first (29 failed: no `attach`, 0024's paragraph), then `npx vitest run --project node src/core/assistant src/shared/protocol src/core/board/nextStepBaseline.test.ts` 401 passed; `src/core src/shared` + webviewBundle 2351 passed; tsc (both), eslint, `npm run compile` clean. **Stage 1 gate (full chain) green 2026-11-19:** 201 files, 3615 passed, 4 skipped; timing 13 files, 28 passed; compile and compile-tests clean.
 - **Notes:** `sendViewOf(offer, case, context?)` adds `attach` only with a context (existing two-argument callers keep their view); `tipClosingOf(offer, withheld)`; `withheldOf()` beside it. `PROTOCOL_VERSION` 11. Staying tests changed by §5 (title kept, same sentence plus §7's update sentence, never weakened): `detail.test.ts` 'the toggletip closing pair follows the offer …' and `rows.test.ts` 'the send view stays with tips off …' (Claude Code at 1.10.0 is withheld, 0024 §7 row amended). Titles changed: `0025 AC-006 … the protocol is version 10` → `version 11` (messages.test.ts; AC-014 list for T-010). Test world helper `testing/caseWorlds.ts` holds one fixture per StepCase (NS-7 reached with a Not started plan). `webviewBundle.test.ts` envelope literals `v: 10` → `v: 11`.
 
 ### T-003 — The host checks and attaches
@@ -372,17 +372,17 @@ and `send.ts`/`send.test.ts`: no `‖`.
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001, T-002 | — | — | open |
-| AC-002 | T-001, T-002, T-006 | — | — | open |
+| AC-001 | T-001, T-002 | `core/assistant/attachment.ts` (`STEP_ATTACHES`, `attachmentOf`), `sendView.ts`, `core/board/detail.ts`, `core/overview/rows.ts` | `attachment.test.ts` "0027 AC-001 …"; `sendView.test.ts` "0027 AC-001 …" (13 cases × both assistants, first Now row) | green (stage 1 gate) |
+| AC-002 | T-001, T-002, T-006 | `attachment.ts`, `core/specs/version.ts` (`ATTACH_FROM_VERSION`, `attachesFrom`, `NEWEST_KNOWN`) | `attachment.test.ts`, `sendView.test.ts` "0027 AC-002 …", `version.test.ts`, `readProject.test.ts` AC-016; webview half (no line, no description) in T-006 | partial: core green (stage 1 gate); webview part open (T-006) |
 | AC-003 | T-005, T-006 | — | — | open |
 | AC-004 | T-003, T-005, T-008 | — | — | open |
 | AC-005 | T-003 | — | — | open |
 | AC-006 | T-003 | — | — | open |
-| AC-007 | T-002, T-003 | — | — | open |
+| AC-007 | T-002, T-003 | `shared/protocol/assistant.ts` (`isSendView`, `isSendPromptPayload`) | `assistant.test.ts` "0027 AC-007 …"; calls and scan in T-003 | partial: guards green (stage 1 gate); calls and scan open (T-003) |
 | AC-008 | T-004, T-005 | — | — | open |
 | AC-009 | T-004 | — | — | open |
 | AC-010 | T-004 | — | — | open |
-| AC-011 | T-002 | — | — | open |
+| AC-011 | T-002 | `sendView.ts` `tipClosingOf`, `assistantTexts.ts` `ATTACH_UPDATE_TEXT` | `sendView.test.ts` "0027 AC-011 …"; `detail.test.ts`, `rows.test.ts` (amended literals) | green (stage 1 gate) |
 | AC-012 | T-007 | — | — | open |
 | AC-013 | T-006, T-007 | — | — | open |
 | AC-014 | T-008, T-010 | — | — | open |
@@ -390,15 +390,13 @@ and `send.ts`/`send.test.ts`: no `‖`.
 | AC-016 | T-009 | — | manual: orchestrator, preview harness, then Gregor | open |
 | AC-017 | T-010 (checklist) | — | manual: Gregor on `tip-splitter`, per assistant, before the spec closes | open |
 | AC-018 | T-010 (record) | — | manual: not run, closed by OP-001 (13); question moves to AC-017 | open |
-| AC-019 | T-001, T-002, T-003 | — | — | open |
+| AC-019 | T-001, T-002, T-003 | `assistants.ts` `attachesSpec`, `offer.ts` `attachesOf` | `attachment.test.ts`, `offer.test.ts`, `sendView.test.ts` "0027 AC-019 …"; calls in T-003 | partial: table and views green (stage 1 gate); calls open (T-003) |
 | AC-020 | T-010 (checklist) | — | manual: Gregor or the orchestrator, before the spec closes | open |
 
 ## Session handoff
 
-- **Done so far:** plan written; spec OP-001 closed, OP-002 re-checked, OP-003 kept as proxy, `**Plan:**` linked
-  (2026-11-19).
-- **Next action:** review the plan. After 0028, 0025 and 0026 are done and the start signal is given, move the pair to
-  `active/` (`/sdd-lifecycle`), set the Baseline, then T-001.
+- **Done so far:** spec and plan moved to `active/` (`b542e95`); stage 1 (T-001, T-002) done and the stage gate is green (2026-11-19).
+- **Next action:** T-003 (the host checks and attaches), then T-004; stage 2 gate at the end of T-004.
 - **Open decisions:** OP-006 (C-2: Copilot and the Claude Code extension on 1.11.0) and the FeatherSpec 1.11.0 release.
   Both block closing, not building. A re-read flips one `attachesSpec` entry.
 - **Baseline:** `81dc0aa` (head of `ux-round-3` before the first step commit; title audit base).

@@ -258,7 +258,7 @@ describe('0018 AC-006: a spec row on one line', () => {
         expect(sent.filter((type) => type === 'copyText')).toHaveLength(3);
         expect(sent).not.toContain('navigate');
         expect(posted.find((message) => message.type === 'copyText')?.payload).toEqual({ text: 'Implement T-003 of .specs/active/0001-a.plan.md' });
-        await send({ v: 10, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
+        await send({ v: 11, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
         expect(copy.textContent).toBe('Copied');
     });
 

@@ -61,22 +61,22 @@ describe('0027 AC-002: the version gate (§6.2)', () => {
 
 describe('0027 AC-019: the per-assistant table (§6.2)', () => {
     it('0027 AC-019: Claude Code attaches and Copilot does not, literally', () => {
-        expect({ copilot: ASSISTANTS.copilot.attachesSpec, claudeCode: ASSISTANTS.claudeCode.attachesSpec }).toEqual({ copilot: false, claudeCode: true });
+        expect({ 'copilot': ASSISTANTS['copilot'].attachesSpec, claudeCode: ASSISTANTS.claudeCode.attachesSpec }).toEqual({ 'copilot': false, claudeCode: true });
     });
 
     it('0027 AC-019: an offer from the shipped table gives Claude Code the spec and Copilot none, in every case and version', () => {
-        const copilot = offerOf('copilot', [ASSISTANTS.copilot.extensionId]);
+        const plain = offerOf('copilot', [ASSISTANTS['copilot'].extensionId]);
         const claude = offerOf('claudeCode', [ASSISTANTS.claudeCode.extensionId]);
         expect(attachmentOf(claude, 'NS-9', { version: '1.11.0', key: KEY }).attach?.name).toBe('0002-x.md');
         for (const stepCase of CASES) {
             for (const version of ['1.10.0', '1.11.0', '2.0.0', 'unknown']) {
-                expect(attachmentOf(copilot, stepCase, { version, key: KEY }), `${stepCase} ${version}`).toEqual({ withheld: false });
+                expect(attachmentOf(plain, stepCase, { version, key: KEY }), `${stepCase} ${version}`).toEqual({ withheld: false });
             }
         }
     });
 
     it('0027 AC-019: an injected table decides, so flipping the data flips the behaviour (negative control)', () => {
-        const present = [ASSISTANTS.copilot.extensionId];
+        const present = [ASSISTANTS['copilot'].extensionId];
         expect(attachmentOf(offerOf('copilot', present, ALL), 'NS-9', { version: '1.11.0', key: KEY }).attach).toBeDefined();
         expect(attachmentOf(offerOf('copilot', present, () => false), 'NS-9', { version: '1.11.0', key: KEY }).attach).toBeUndefined();
     });
