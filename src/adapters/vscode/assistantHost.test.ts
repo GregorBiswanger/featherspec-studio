@@ -12,6 +12,10 @@ const host = vi.hoisted(() => ({
 }));
 
 vi.mock('vscode', () => ({
+    Uri: {
+        parse: (value: string) => ({ parsed: value, parts: [] as string[] }),
+        joinPath: (base: { parsed: string; parts: string[] }, ...segments: string[]) => ({ parsed: base.parsed, parts: [...base.parts, ...segments] }),
+    },
     commands: {
         executeCommand: (...args: unknown[]) => {
             host.executed.push(args);
@@ -101,5 +105,18 @@ describe('0024 T-001: the assistant host executes a command', () => {
         expect(calls).toBe(1);
         subscription.dispose();
         expect(host.disposed).toBe(1);
+    });
+});
+
+describe('0027 T-003: the host builds the file URI for an attachment', () => {
+    it('joins the project root URI with each segment of the spec path, as the spec source does', () => {
+        const uri = createAssistantHost().fileUri('file:///c%3A/projects/test/tip-splitter', '.specs/active/0001-tip-splitter.md');
+        expect(uri).toEqual({ parsed: 'file:///c%3A/projects/test/tip-splitter', parts: ['.specs', 'active', '0001-tip-splitter.md'] });
+    });
+
+    it('executes nothing and activates nothing', () => {
+        host.executed.length = 0;
+        createAssistantHost().fileUri('file:///x', 'a/b.md');
+        expect(host.executed).toEqual([]);
     });
 });

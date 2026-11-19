@@ -17,6 +17,13 @@ export interface FakeAssistantHost extends AssistantHostPort {
     uninstall(id: string): void;
     fireExtensionsChanged(): void;
     listeners(): number;
+    uriRequests: Array<{ root: string; key: string }>;
+}
+
+export interface FakeUri {
+    fake: 'uri';
+    root: string;
+    key: string;
 }
 
 export function createFakeAssistantHost(commands: readonly string[] = []): FakeAssistantHost {
@@ -74,6 +81,11 @@ export function createFakeAssistantHost(commands: readonly string[] = []): FakeA
             [...listeners].forEach((listener) => listener());
         },
         listeners: () => listeners.size,
+        uriRequests: [],
+        fileUri(root, key): FakeUri {
+            host.uriRequests.push({ root, key });
+            return { fake: 'uri', root, key };
+        },
     };
     return host;
 }

@@ -5,7 +5,9 @@ import type { AssistantHostPort } from '../ports/assistant';
 import type { ClipboardPort } from '../ports/board';
 import type { StepUiPort } from '../ports/copyNextStep';
 import type { ClockPort, OutputPort } from '../ports/host';
+import type { AssistantId } from '../../shared/protocol/assistant';
 import { ASSISTANTS } from './assistants';
+import type { AttachmentCheck } from './attachment';
 
 export const SEND_TIMEOUT_MS = 5000;
 
@@ -17,6 +19,8 @@ export interface SendDeps {
     clock: ClockPort;
     platform: string;
     chosen: { read(): unknown };
+    attachment?: AttachmentCheck;
+    attaching?: (id: AssistantId) => boolean;
 }
 
 export interface Send {
@@ -49,7 +53,7 @@ export function createSend(deps: SendDeps): Send {
 
     async function run(request: SendRequest, isSettled: () => boolean): Promise<void> {
         const spec = ASSISTANTS[request.assistant];
-        const calls = spec.callsFor(request.target, request.line);
+        const plain = spec.callsFor(request.target, request.line);
         let found: ReturnType<AssistantHostPort['extension']>;
         try {
             found = deps.host.extension(spec.extensionId);
@@ -78,9 +82,19 @@ export function createSend(deps: SendDeps): Send {
         if (isSettled()) {
             return;
         }
-        const missing = calls.find((call) => !registered.includes(call.command));
+        const missing = plain.find((call) => !registered.includes(call.command));
         if (missing !== undefined) {
             throw new SendFailure(commandNotFoundCause(missing.command));
+        }
+        let calls = plain;
+        if (request.attach !== undefined && (deps.attaching?.(request.assistant) ?? spec.attachesSpec)) {
+            const target = deps.attachment === undefined ? undefined : await deps.attachment(request.attach);
+            if (isSettled()) {
+                return;
+            }
+            if (target !== undefined) {
+                calls = spec.callsFor(request.target, request.line, target);
+            }
         }
         for (const call of calls) {
             try {

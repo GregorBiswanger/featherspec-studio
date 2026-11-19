@@ -1,5 +1,8 @@
 import type { StepCase } from '../../shared/protocol/nextStepTexts';
 import { attachesFrom } from '../specs/version';
+import type { AssistantHostPort } from '../ports/assistant';
+import type { ShellModelSource } from '../ports/shell';
+import type { SpecSourcePort } from '../ports/specSource';
 import { attachesOf, type Offer } from './offer';
 
 export const STEP_ATTACHES: Record<StepCase, boolean> = {
@@ -46,4 +49,27 @@ export function attachmentOf(offer: Offer | undefined, stepCase: StepCase, conte
         return { withheld: false };
     }
     return { attach: { name: context.key.slice(context.key.lastIndexOf('/') + 1), path: context.key }, withheld: false };
+}
+
+export interface AttachmentTarget {
+    uri: unknown;
+    path: string;
+}
+
+export type AttachmentCheck = (path: string) => Promise<AttachmentTarget | undefined>;
+
+export function createAttachmentCheck(deps: { source: ShellModelSource; specs: Pick<SpecSourcePort, 'stat'>; host: Pick<AssistantHostPort, 'fileUri'> }): AttachmentCheck {
+    return async (path) => {
+        const model = deps.source.current();
+        if (model === undefined || !model.project.specs.some((spec) => spec.key === path)) {
+            return undefined;
+        }
+        let found: Awaited<ReturnType<typeof deps.specs.stat>>;
+        try {
+            found = await deps.specs.stat(model.project.root, path);
+        } catch {
+            return undefined;
+        }
+        return found?.kind === 'file' ? { uri: deps.host.fileUri(model.project.root, path), path } : undefined;
+    };
 }

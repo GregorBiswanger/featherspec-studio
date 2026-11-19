@@ -215,8 +215,8 @@ and `send.ts`/`send.test.ts`: no `‖`.
     - `assistantHost.test.ts` (mocked `vscode`): `fileUri`.
 - **Verify:** `npx vitest run --project node src/core/assistant src/adapters/node/sourceScan.test.ts src/adapters/vscode/assistantHost.test.ts`.
   It is red first (no `attachFiles`, no suffix), then `npm run test:unit` and `npm run compile` are green.
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-19 · red first (10 failed: `createAttachmentCheck` stub `Not implemented`, no `attachFiles`, no suffix), then `npx vitest run --project node src/core/assistant src/adapters/node/sourceScan.test.ts src/adapters/vscode/assistantHost.test.ts` 284 passed; `src/core src/adapters` 2710 passed; tsc (both), eslint, `npm run compile` clean. `npm test` (host) not run here: orchestrator on Windows.
+- **Notes:** Tests are in the new file `src/core/assistant/sendAttach.test.ts` (AC-004…AC-007 "0027 …"), not in `send.test.ts`, which stays untouched. `createSend` deps `attachment?` and `attaching?` are optional so 0024's world builds unchanged; `createAssistantWiring` requires `source` and `specs` (wiring.test.ts gets the two ports). The attach decision at send time: `request.attach` set and `attaching(id) ?? ASSISTANTS[id].attachesSpec`; a failed check currently sends 0024's calls without attachment (T-004 adds the sentence and the Output line). Whitespace for Claude Code is dropped in `callsFor` too. `extension.ts` hoists `specSource`. `sourceScan.test.ts`: `preserveInput`, `modelSelector` in `SEND_FORBIDDEN_TERMS`, new test `attachFiles` exactly once, in `assistants.ts`. The fake host records `uriRequests` and returns `{ fake: 'uri', root, key }`.
 
 ### T-004 — A missing or foreign file sends without and says so
 

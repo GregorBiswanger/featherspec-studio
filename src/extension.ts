@@ -131,8 +131,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         sameRoot: sameRootFor(process.platform),
     });
 
+    const specSource = createVscodeSpecSource();
     const repository = createSpecRepository({
-        source: createVscodeSpecSource(),
+        source: specSource,
         watch: createFileWatch(process.platform),
         clock: createSystemClock(),
         caseInsensitiveEvents: isCaseInsensitivePlatform(process.platform),
@@ -195,7 +196,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     const assistantHost = createAssistantHost();
     const clipboard = createClipboard();
     const stepUi = createStepUi();
-    const assistant = createAssistantWiring({ setting: createSettingPort(ASSISTANT_KEY), host: assistantHost, clipboard, ui: stepUi, output, clock: createSystemClock(), platform: process.platform });
+    const assistant = createAssistantWiring({ setting: createSettingPort(ASSISTANT_KEY), host: assistantHost, clipboard, ui: stepUi, output, clock: createSystemClock(), platform: process.platform, source: modelSource, specs: specSource });
     const board = createBoardService({
         source: modelSource,
         selection,

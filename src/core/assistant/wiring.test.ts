@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { AssistantId, SendRequest } from '../../shared/protocol/assistant';
 import type { SettingPort } from '../ports/host';
+import { createFakeSource } from '../board/testing/boardWorld';
+import { createMemorySpecSource } from '../specs/testing/memorySpecSource';
 import { createSetupClock } from '../setup/testing/setupClock';
 import { createFakeAssistantHost } from './testing/fakeAssistantHost';
 import { createAssistantWiring } from './wiring';
@@ -26,6 +28,8 @@ function world(value: unknown, installed: readonly string[]) {
         output: { appendBlock: (lines) => void blocks.push([...lines]) },
         clock: createSetupClock(),
         platform: 'win32',
+        source: createFakeSource(),
+        specs: createMemorySpecSource(),
     });
     return { host, current, wiring, written, warned, blocks };
 }

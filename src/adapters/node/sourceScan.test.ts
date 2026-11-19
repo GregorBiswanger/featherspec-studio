@@ -184,7 +184,7 @@ describe('0024 §5, F1: the exemptions stay as narrow as the names of 0024', () 
     });
 });
 
-const SEND_FORBIDDEN_TERMS = ['submit', 'acceptInput', 'sendToNewChat', 'autoSend', 'isPartialQuery: false', 'chatgpt', 'github.copilot.', 'inlineChat', 'editorChat', 'vscode.lm', 'vscode://'];
+const SEND_FORBIDDEN_TERMS = ['submit', 'acceptInput', 'sendToNewChat', 'autoSend', 'isPartialQuery: false', 'chatgpt', 'github.copilot.', 'inlineChat', 'editorChat', 'vscode.lm', 'vscode://', 'preserveInput', 'modelSelector'];
 const SEND_COMMANDS = ['workbench.action.chat.newChat', 'workbench.action.chat.open', 'claude-vscode.editor.open'];
 
 export function chatCommandStrings(text: string): string[] {
@@ -208,6 +208,12 @@ describe('0024 AC-007: the Studio never submits a chat and names no other chat c
         expect(strings.filter((text) => text === 'workbench.action.chat.open')).toHaveLength(1);
         expect([...new Set(strings)].sort()).toEqual([...SEND_COMMANDS].sort());
         expect(files.filter((file) => file.text.includes('workbench.action.chat.open')).map((file) => file.name)).toEqual(['src/core/assistant/assistants.ts']);
+    });
+
+    it('0027 AC-007: attachFiles occurs exactly once in src without test files and package.json, in the file that owns the chat commands', async () => {
+        const files = await productionFiles();
+        expect(files.flatMap((file) => file.text.match(/attachFiles/g) ?? [])).toHaveLength(1);
+        expect(files.filter((file) => file.text.includes('attachFiles')).map((file) => file.name)).toEqual(['src/core/assistant/assistants.ts']);
     });
 
     it('negative control: the scan finds each term, any letter case, and a command that is not one of the three', () => {
