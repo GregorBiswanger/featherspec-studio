@@ -1,7 +1,7 @@
 # Plan Map Navigation and Progress Clarity
 
-**Status:** In Progress
-**Plan:** [0025-plan-map-navigation-and-progress.plan.md](0025-plan-map-navigation-and-progress.plan.md)
+**Status:** Implemented
+**Plan:** [0025-plan-map-navigation-and-progress.2026-11-19.plan.md](../plan-archive/0025-plan-map-navigation-and-progress.2026-11-19.plan.md)
 
 Basis: `docs/ux-audit/09-round2-review.md` (F-1, F-2, AC-a…AC-g; G-1, G-2, G-7, G-10; §7, §8); **PD-079**, **PD-081**
 part 2, PD-082, **PD-085**, **PD-088**, PD-040, PD-047, PD-054, PD-077, PD-016; **D-1** (finished plan → Review) and **D-2**
@@ -261,5 +261,8 @@ copy, plan `In Progress` (PD-081; Review by D-1); `fs-partial-return` (stage `T-
 
 ## 12. Definition of Ready / Done and next steps
 
-Ready: §5, §6 literal, §4 listed, 0028 implemented, OP-001 closed. Done: AC-001–AC-021, AC-025–AC-027 green with
-evidence, AC-022–AC-024 checked, §4 applied, docs and Memory Bank synced, `/sdd-compile` READY. Next: `/sdd-plan`.
+Ready: §5, §6 literal, §4 listed, 0028 implemented, OP-001 closed. Done: AC-001–AC-021, AC-025–AC-027 green with evidence, AC-022–AC-024 checked, §4 applied, docs and Memory Bank synced; `/sdd-compile` READY (manual items: 3) once Windows and CI pass; `npm test` on Windows at 7ea11f3 passed. CI pending on the round-3 PR. Open: AC-022 (real-window half), AC-023 and AC-024 are Gregor's, on `tip-splitter`. Order 0028 → 0025 → 0026 → 0027.
+
+## Plan history
+
+- 2026-11-19 — [0025-plan-map-navigation-and-progress.2026-11-19.plan.md](../plan-archive/0025-plan-map-navigation-and-progress.2026-11-19.plan.md) — 15 steps in 5 stages: step links into the Plan map (one-shot focus), `Show in Plan Map`, next step in the map header, `· 67%` percentages, step motifs, richer cards, one returned-work statement; re-check READY (manual items: 3) once Windows and CI pass; Windows `npm test` at 7ea11f3 passed; CI pending on the round-3 PR.
