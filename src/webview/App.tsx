@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { areaInfo, type AreaId } from '../shared/protocol/areas';
 import { projectTooltip } from '../shared/protocol/texts';
 import type { ShellClient } from './client';
@@ -7,6 +7,7 @@ import { Placeholder } from './areas/Placeholder';
 import { useNarrow } from './detail/narrow';
 import { requestHeadingFocus } from './detail/focus';
 import { Divider } from './detail/Divider';
+import { requestMapFocus } from './areas/planMap/focus';
 import { SIDE_PANEL_ID, SidePanel } from './detail/SidePanel';
 import { useSideWidth } from './detail/sideWidth';
 import { Navigation } from './Navigation';
@@ -39,6 +40,18 @@ function Frame() {
             requestHeadingFocus(sideSelection.stem);
         }
     }, [detailAlone, sideSelection]);
+    const latest = useRef({ narrow, area: shell.area, selected: shell.view?.selection });
+    latest.current = { narrow, area: shell.area, selected: shell.view?.selection };
+    const leaveDivider = useCallback((): void => {
+        const { narrow: isNarrow, area, selected } = latest.current;
+        if (isNarrow && selected !== undefined) {
+            if (area === 'planMap') {
+                requestMapFocus(selected.stem);
+            } else {
+                requestHeadingFocus(selected.stem);
+            }
+        }
+    }, []);
     return (
         <div className="studio">
             <header className="studio-header">
@@ -58,7 +71,7 @@ function Frame() {
                         <div className="area-content" ref={contentRef} {...(detailAlone ? { inert: true } : {})}>
                             <AreaContent area={shell.area} />
                         </div>
-                        {beside ? <Divider side={side} panelId={SIDE_PANEL_ID} /> : null}
+                        {beside ? <Divider side={side} panelId={SIDE_PANEL_ID} onLeaveWithFocus={leaveDivider} /> : null}
                         {sideSelection === undefined ? null : <SidePanel selection={sideSelection} {...(narrow && detailArea !== undefined ? { back: detailArea } : {})} {...(beside ? { width: side.width } : {})} />}
                     </div>
                 ) : (

@@ -578,6 +578,28 @@ never on the repository.
 - [x] **Verified (T-022):** 2026-11-18, docs only, no red run (the staying `docsScan.test.ts` guards the notes, names and checklist order): 98 passed; `npm run test:unit` 2452 passed, 3 skipped (+13 timing); `grep -n "0022 AC-008" .specs/active/0018-overview-and-compact-board.md` empty.
 - **Notes:** the 0018 note count in `docsScan.test.ts` is unchanged (one note edited, none added). The README screenshot stays (orchestrator's call).
 
+## PR #1 review
+
+Source: the automated review of PR #1 at `8e94888` (`/home/claude/orch/req/pr1-review.md`), comments 3 and 4. Gregor:
+"Check the six review comments of PR #1. For each one that is real, write a failing test first, fix it and append the
+fix as a step to the plan of the spec that owns the code." The comments are claims of an external model: the test
+decides. Steps above are not renumbered.
+
+### T-023 — A divider that holds the focus hands it to the heading when 900 px is crossed (PR #1 comment 3)
+
+- **Covers:** AC-029 (crossing 900 px), PD-077 (map focus), 0019 AC-020 (side panel focus)
+- **Do:** `detail/Divider.tsx` takes an optional `onLeaveWithFocus`; its layout-effect cleanup calls it when the
+  divider itself is the active element as it leaves (the `SendButton` pattern). `App.tsx` passes a stable handler that
+  reads the latest render's narrow flag, area and selection from a ref: below 900 px with a selection it asks for the
+  detail heading (`requestHeadingFocus`) and, in the Plan map, for the map heading (`requestMapFocus`); a divider that
+  leaves for another reason (the selection cleared) hands nothing. The crossing effect for the area content stays.
+  Test first in the new `src/webview/DividerCrossing.test.tsx` (frame stubbed to 1428 px, a `matchMedia` with
+  listeners): the divider focused, then narrow → Board: the detail heading of the side panel; Plan map: the map
+  heading; controls: focus on the detail heading stays, nothing focused moves nothing, no crossing keeps the divider's focus.
+- **Verify:** `npx vitest run --project webview src/webview/DividerCrossing.test.tsx` red, then green; gates 1–4
+- [x] **Verified (T-023):** 2026-11-19 red: `npx vitest run --project webview src/webview/DividerCrossing.test.tsx` 2 failed of 5 (Board and Plan map: after the crossing `document.activeElement` is `body`) → green: 5 passed; `npm run test:unit` 3136 passed + 3 skipped (+18 timing; 3131 before, 5 new tests); eslint 0 warnings, both `tsc` clean.
+- **Notes:** the comment is real: the crossing effect only looked at focus inside `.area-content`, and the divider is its sibling, so a keyboard user who had just resized the panel lost the place on the crossing (a browser zoom crosses 900 px in the same way). The first version read `narrow` in the handler's own render and stayed red: the divider is not rendered again when it leaves, so its handler is the one of the last wide render; the ref carries the latest values. The handoff goes to the heading the existing crossing already uses (Board and Overview: the detail heading of the detail alone; Plan map: the map heading, as 0023 T-011 does for removed ways).
+
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |

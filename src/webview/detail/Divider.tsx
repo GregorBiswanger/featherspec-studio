@@ -1,10 +1,21 @@
-import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { SIDE_MIN, SIDE_STEP, SIDE_STEP_LARGE, clampSideWidth } from '../../shared/protocol/layout';
 import { DIVIDER_LABEL, DIVIDER_TOOLTIP } from '../../shared/protocol/texts';
 import type { SideWidth } from './sideWidth';
 
-export function Divider(props: { side: SideWidth; panelId: string }) {
+export function Divider(props: { side: SideWidth; panelId: string; onLeaveWithFocus?: () => void }) {
     const { side } = props;
+    const self = useRef<HTMLDivElement>(null);
+    const leave = useRef(props.onLeaveWithFocus);
+    leave.current = props.onLeaveWithFocus;
+    useLayoutEffect(
+        () => () => {
+            if (self.current !== null && document.activeElement === self.current) {
+                leave.current?.();
+            }
+        },
+        [],
+    );
     const [dragging, setDragging] = useState(false);
     const drag = useRef<{ start: number; last: number } | undefined>(undefined);
 
@@ -73,6 +84,7 @@ export function Divider(props: { side: SideWidth; panelId: string }) {
 
     return (
         <div
+            ref={self}
             className="divider"
             role="separator"
             tabIndex={0}
