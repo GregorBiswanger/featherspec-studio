@@ -1,4 +1,4 @@
-import { MODEL_REASONS, MODEL_WORDS, SAME_OR_NEW_REASON_LEVELLED, SESSION_REASONS, SESSION_WORDS, STEP_GUIDES, TIP_CLOSING, type StepCase } from '../../shared/protocol/nextStepTexts';
+import { INTEGRATE_SEND_THEN, MODEL_REASONS, MODEL_WORDS, SAME_OR_NEW_REASON_LEVELLED, SESSION_REASONS, SESSION_WORDS, STEP_GUIDES, TIP_CLOSING, type StepCase } from '../../shared/protocol/nextStepTexts';
 import type { StepTipsView } from '../../shared/protocol/stepView';
 import type { StepTipSettings } from '../settings/stepTipSettings';
 import { levelsOnImplement } from '../specs/version';
@@ -6,6 +6,7 @@ import { levelsOnImplement } from '../specs/version';
 export interface StepTipContext {
     version?: string;
     reason?: string;
+    send?: true;
 }
 
 export function stepTips(stepCase: StepCase, settings: StepTipSettings, closing: readonly [string, string] = TIP_CLOSING, context: StepTipContext = {}): StepTipsView {
@@ -15,7 +16,8 @@ export function stepTips(stepCase: StepCase, settings: StepTipSettings, closing:
     const model = `${words.base}${hint === undefined ? '' : ` (${hint})`}${words.suffix}`;
     const levelled = guide.session === 'sameOrNew' && context.version !== undefined && levelsOnImplement(context.version);
     const session = levelled ? SAME_OR_NEW_REASON_LEVELLED : SESSION_REASONS[guide.session];
-    const effect = `${guide.effect} ${guide.then}`;
+    const then = stepCase === 'NS-6-returned' && context.send === true ? INTEGRATE_SEND_THEN : guide.then;
+    const effect = `${guide.effect} ${then}`;
     return {
         coach: `${SESSION_WORDS[guide.session]} · ${model}`,
         about: [context.reason === undefined ? effect : `${context.reason} ${effect}`, `${session} ${MODEL_REASONS[guide.model]}`, closing[0], closing[1]],

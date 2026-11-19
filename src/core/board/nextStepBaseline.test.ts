@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { describe, expect, it } from 'vitest';
-import { allBaselineNames, modelOfBaseline, snapshotFile, snapshotOf, type ProjectSnapshot, type SpecSnapshot } from './testing/nextStepSnapshot';
+import { allBaselineNames, modelOfBaseline, readBaseline, snapshotFile, snapshotOf, translated, type ProjectSnapshot, type SpecSnapshot } from './testing/nextStepSnapshot';
 
 type Field = keyof SpecSnapshot;
 
@@ -44,7 +44,7 @@ export const EXCEPTIONS: readonly Exception[] = [
 ];
 
 function read(name: string): ProjectSnapshot {
-    return JSON.parse(fs.readFileSync(snapshotFile(name), 'utf8')) as ProjectSnapshot;
+    return readBaseline(name);
 }
 
 const RESUME_TEXTS = 'Plan without open step has the effect and then-sentence of 0028 §7 (AC-002)';
@@ -76,6 +76,14 @@ describe('0028 AC-010: every spec of every fixture project and of this repositor
                 expect(masked(name, key, actual[key]!), `${name} ${key}: ${RESUME_TEXTS}`).toEqual(masked(name, key, expected[key]!));
             }
         }
+    });
+
+    it('0026 negative control: one old wording left in a head value is found, and the translation covers every session wording of the Baseline', () => {
+        const old = { coach: 'same chat or new chat · fast model', about: ['Same chat or new chat: x. what this chat knows'] };
+        expect(translated(old)).toEqual({ coach: 'current or new chat · fast model', about: ['Current or new chat: x. what the current chat knows'] });
+        expect(translated(old)).not.toEqual(old);
+        const baseline = fs.readdirSync(snapshotFile('x').replace(/x\.json$/, '')).map((file) => fs.readFileSync(snapshotFile(file.replace(/\.json$/, '')), 'utf8')).join('');
+        expect(baseline).toMatch(/same chat or new chat/i);
     });
 
     it('negative control: one snapshot value edited by hand is found', async () => {

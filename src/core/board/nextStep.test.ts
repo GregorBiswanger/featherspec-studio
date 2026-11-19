@@ -10,7 +10,7 @@ import { parseStepTipSettings } from '../settings/stepTipSettings';
 import { modelOf } from './testing/boardWorld';
 import { fixturePath } from '../discovery/testing/fixtures';
 import { CASE_FIXTURES, CURRENT_STEP_VALUES, splitterFiles } from './testing/caseFixtures';
-import { allBaselineNames, modelOfBaseline, modelOfCase, modelOfFixture, snapshotFile, snapshotOf, type ProjectSnapshot } from './testing/nextStepSnapshot';
+import { allBaselineNames, modelOfBaseline, modelOfCase, modelOfFixture, readBaseline, snapshotFile, snapshotOf, type ProjectSnapshot } from './testing/nextStepSnapshot';
 import { stepTips } from './stepTips';
 import { nextStep, shortForm, stepView } from './nextStep';
 
@@ -559,7 +559,7 @@ describe('0028 AC-005: every other Current step value keeps variant A as at the 
     const names = Object.keys(CURRENT_STEP_VALUES).map((name) => `ac005-${name}`);
 
     it.each(names)('%s: deep-equal to its snapshot (next step and step view)', async (name) => {
-        const expected = JSON.parse(fs.readFileSync(snapshotFile(`case-${name}`), 'utf8')) as ProjectSnapshot;
+        const expected = readBaseline(`case-${name}`);
         const actual = snapshotOf(await modelOfCase(name));
         expect(actual).toEqual(expected);
         expect(Object.values(actual)[0]!.nextStep).toMatchObject({ case: 'NS-6-open' });

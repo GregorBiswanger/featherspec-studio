@@ -68,6 +68,25 @@ export async function modelOfCase(name: string, version?: string): Promise<Shell
     return { project, lifecycle: deriveLifecycle(project) };
 }
 
+export const WORDING_0026: ReadonlyArray<readonly [string, string]> = [
+    ['same chat or new chat', 'current or new chat'],
+    ['Same chat or new chat:', 'Current or new chat:'],
+    ['what this chat knows', 'what the current chat knows'],
+];
+
+export function translated(value: unknown): unknown {
+    return JSON.parse(WORDING_0026.reduce((text, [from, to]) => text.split(from).join(to), JSON.stringify(value)));
+}
+
+export function readBaseline(name: string): ProjectSnapshot {
+    const raw = JSON.parse(fs.readFileSync(snapshotFile(name), 'utf8')) as ProjectSnapshot;
+    const result: ProjectSnapshot = {};
+    for (const [key, value] of Object.entries(raw)) {
+        result[key] = { ...value, stepView: translated(value.stepView), tips: translated(value.tips) };
+    }
+    return result;
+}
+
 export function snapshotFile(name: string): string {
     return path.resolve(process.cwd(), SNAPSHOT_DIR, `${name}.json`);
 }

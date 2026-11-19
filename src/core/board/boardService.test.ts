@@ -381,7 +381,7 @@ describe('0024 AC-010: an offer change reaches the detail', () => {
         w.service.onDidChangeDetail((view) => seen.push(view.kind === 'spec' ? view.stem : view.kind));
         w.assistant.set({ assistant: 'copilot' });
         await w.service.whenIdle();
-        expect(sendOf(w)).toEqual({ assistant: 'copilot', target: 'current', targets: ['new', 'current'] });
+        expect(sendOf(w)).toEqual({ assistant: 'copilot', target: 'new', targets: ['new', 'current'] });
         w.assistant.set({ assistant: 'claudeCode' });
         await w.service.whenIdle();
         expect(sendOf(w)).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });

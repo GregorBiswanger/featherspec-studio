@@ -53,7 +53,7 @@ function nextStepView(next: NextStep, tips: StepTipSettings | undefined, offer: 
     return {
         rule: next.rule,
         lines,
-        ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer), { version, ...(next.reason === undefined ? {} : { reason: next.reason }) }) }),
+        ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer), { version, ...(send === undefined ? {} : { send: true as const }), ...(next.reason === undefined ? {} : { reason: next.reason }) }) }),
         ...(send === undefined ? {} : { send }),
         ...(quiet ? { quiet: true as const } : {}),
         ...(parallel === undefined ? {} : { parallel: { stage: parallel } }),

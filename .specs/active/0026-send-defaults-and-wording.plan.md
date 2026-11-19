@@ -143,8 +143,8 @@ Parallel: stages 2 and 3, run in sequence (`PLAN-R3.md`). Stage 1 shares `nextSt
   - Update literal assertions of the old words (0021, 0023, 0028 AC-020's old reason; titles kept, list in `Notes:`).
 - **Verify:** `npx vitest run src/core/board/stepTips.test.ts src/adapters/node/sourceScan.test.ts src/core/board/nextStepBaseline.test.ts`
   red first (old words, `Paste` with Send), then `npm run test:unit` green.
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** old wording asserted against new code failed 12 tests first (stepTips); green: stepTips, detail, nextStep, nextStepBaseline, boardService, rows, sourceScan, core, webview, shared; tsc, eslint.
+- **Notes:** `WORDING_0026`, `translated()` and `readBaseline()` live in `core/board/testing/nextStepSnapshot.ts` (shared by `nextStepBaseline.test.ts` and 0028 AC-005's per-case test in `nextStep.test.ts`, which also compared raw snapshots); the Baseline test keeps its title, no new EXCEPTIONS entry; a 0026 negative control proves the translation changes old wording. `StepTipContext.send` set by `detail.ts` and `rows.ts` exactly when a SendView exists. 0024 AC-004 tests retargeted: `boardService` AC-010 and `rows` first-row send expect `new`; `detail.test` title `NS-5 (a Review spec) is a new chat for Copilot; NS-7 (a Ready spec) and NS-6 are the current chat` replaced by `0026 AC-001: NS-5, NS-7 and NS-6 are all a new chat for Copilot (0024 AC-004 retargeted)`. `stepTips.test` literals of 0021 AC-009/AC-015, 0023 AC-013, 0028 AC-020 changed to `current or new chat`/`Current or new chat:`/`what the current chat knows` (titles keep, except `same chat or new chat, fast model; effect …` -> `current or new chat, fast model; effect …`). AC-021 scan allows four literals (Copy-only then-sentence, 0023's Other agents effect `Paste each into another chat`, TIP_CLOSING[0], fallback warning); `None: Copy prompt` description lives in `package.json`, not in `src`.
 
 ### T-003 — Short forms start with their intent's first word
 

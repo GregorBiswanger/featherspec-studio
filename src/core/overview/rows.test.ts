@@ -204,7 +204,7 @@ describe('0024 AC-003: only the first Now row with a step carries the send view'
         const claude = await rowsWith([{ number: '0001', kind: 'Review' }], { assistant: 'claudeCode' });
         expect(claude.now[0]?.send).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
         const active = await rowsWith([{ number: '0001', kind: 'Active' }], OFFER_A);
-        expect(active.now[0]?.send).toMatchObject({ assistant: 'copilot', target: 'current' });
+        expect(active.now[0]?.send).toMatchObject({ assistant: 'copilot', target: 'new' });
     });
 
     it('without an offer no row carries send and the rows equal the rows of the earlier build', async () => {

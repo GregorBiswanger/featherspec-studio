@@ -536,7 +536,7 @@ describe('0024 AC-003, AC-004: the send view of the next step', () => {
         expect((await nextOf(model, key, { offer: OFFER_B })).send).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
     });
 
-    it('NS-5 (a Review spec) is a new chat for Copilot; NS-7 (a Ready spec) and NS-6 are the current chat', async () => {
+    it('0026 AC-001: NS-5, NS-7 and NS-6 are all a new chat for Copilot (0024 AC-004 retargeted)', async () => {
         const review = await fixtureModel('studio-0015');
         const reviewNext = await nextOf(review, review.lifecycle.entries[0]!.key, { offer: OFFER_A });
         expect(reviewNext.rule).toBe('NS-5');
@@ -544,11 +544,11 @@ describe('0024 AC-003, AC-004: the send view of the next step', () => {
         const ready = await fixtureModel('fs110-ready-synthetic');
         const readyNext = await nextOf(ready, '.specs/backlog/0001-ready-feature.md', { offer: OFFER_A });
         expect(readyNext.rule).toBe('NS-7');
-        expect(readyNext.send).toEqual({ assistant: 'copilot', target: 'current', targets: ['new', 'current'] });
+        expect(readyNext.send).toEqual({ assistant: 'copilot', target: 'new', targets: ['new', 'current'] });
         const active = await modelOf(FILES);
         const activeNext = await nextOf(active, '.specs/active/0001-a.md', { offer: OFFER_A });
         expect(activeNext.rule).toBe('NS-6');
-        expect(activeNext.send).toEqual({ assistant: 'copilot', target: 'current', targets: ['new', 'current'] });
+        expect(activeNext.send).toEqual({ assistant: 'copilot', target: 'new', targets: ['new', 'current'] });
         expect((await nextOf(active, '.specs/active/0001-a.md', { offer: OFFER_B })).send).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
     });
 
@@ -586,3 +586,20 @@ describe('0024 AC-003, AC-004: the send view of the next step', () => {
     });
 });
 
+
+describe('0026 AC-021: the detail says Send, not Paste, when a Send is offered', () => {
+    async function aboutOf(offer: { assistant: 'copilot' | 'claudeCode' } | undefined): Promise<string[]> {
+        const model = await modelOf(FILES);
+        const view = spec(buildDetail({ selection: { stem: '0001-a' }, model, history: NO_HISTORY, tips: parseStepTipSettings(true, {}), ...(offer === undefined ? {} : { offer }) }));
+        return view.nextStep !== undefined && 'tips' in view.nextStep ? (view.nextStep.tips?.about ?? []) : [];
+    }
+
+    it('returned work: with Copilot or Claude Code the then-sentence is Send it once …, with none it stays Paste it once …', async () => {
+        for (const offer of [{ assistant: 'copilot' as const }, { assistant: 'claudeCode' as const }]) {
+            const about = await aboutOf(offer);
+            expect(about[0], offer.assistant).toMatch(/ Send it once every worker you started is back\.$/);
+            expect(about[0]).not.toMatch(/Paste/);
+        }
+        expect((await aboutOf(undefined))[0]).toMatch(/ Paste it once every worker you started is back\.$/);
+    });
+});

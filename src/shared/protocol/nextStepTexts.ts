@@ -158,15 +158,17 @@ export function startIntent(id: string, title: string): string {
 
 export const SESSION_WORDS: Record<SessionKey, string> = {
     new: 'new chat',
-    sameOrNew: 'same chat or new chat',
+    sameOrNew: 'current or new chat',
     any: 'any chat',
 };
 
 export const SESSION_REASONS: Record<SessionKey, string> = {
-    new: 'New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread.',
-    sameOrNew: 'Same chat or new chat: the plan holds the state of the work; after a break, let the agent report first.',
+    new: 'New chat: a fresh session reads the files as a stranger would; what the current chat knows cannot be unread.',
+    sameOrNew: 'Current or new chat: the plan holds the state of the work; after a break, let the agent report first.',
     any: 'Any chat: the step reads everything it needs from the files.',
 };
+
+export const INTEGRATE_SEND_THEN = 'Send it once every worker you started is back.';
 
 export const SAME_OR_NEW_REASON_LEVELLED = 'Current or new chat: the plan holds the state of the work; after a break, the step first brings the plan up to date.';
 

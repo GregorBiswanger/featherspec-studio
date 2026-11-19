@@ -415,3 +415,62 @@ describe('0021 AC-013: the product names no model', () => {
         expect(hits('const model = "strong model";', MODEL_NAMES, true)).toEqual([]);
     });
 });
+
+export function stringLiterals(text: string): string[] {
+    return [...text.matchAll(/'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`/g)].map((match) => match[0]);
+}
+
+describe('0026 AC-002: one term for the open chat in the shipped sources', () => {
+    const OLD_TERMS = ['same chat', 'this chat'];
+
+    it('src without test files, package.json, README.md and docs/release-checklist.md hold neither same chat nor this chat, in any letter case', async () => {
+        const files = (await sourceFiles()).filter((file) => !isTestFile(file.name));
+        const offenders = files.map((file) => [file.name, hits(file.text, OLD_TERMS, true)] as const).filter(([, found]) => found.length > 0);
+        expect(offenders).toEqual([]);
+        for (const doc of ['package.json']) {
+            expect(hits(await fs.readFile(path.join(root, doc), 'utf8'), OLD_TERMS, true), doc).toEqual([]);
+        }
+    });
+
+    it('negative control: the scan finds each term in any case', () => {
+        expect(hits("const a = 'SAME CHAT or new chat';", OLD_TERMS, true)).toEqual(['same chat']);
+        expect(hits("const a = 'What This Chat knows';", OLD_TERMS, true)).toEqual(['this chat']);
+        expect(hits("const a = 'the current chat';", OLD_TERMS, true)).toEqual([]);
+    });
+});
+
+describe('0026 AC-021: Send, not Paste, in the text modules', () => {
+    const ALLOWED = [
+        'Paste it once every worker you started is back.',
+        'Paste each into another chat, tool or worktree',
+        'before you paste.',
+        'paste it there with',
+    ];
+
+    function offenders(text: string): string[] {
+        return stringLiterals(text).filter((literal) => /paste/i.test(literal) && !ALLOWED.some((allowed) => literal.includes(allowed)));
+    }
+
+    it('the string literals of src without test files hold paste only in the four allowed sentences', async () => {
+        const files = (await sourceFiles()).filter((file) => !isTestFile(file.name) && /\.tsx?$/.test(file.name));
+        expect(files.map((file) => [file.name, offenders(file.text)] as const).filter(([, found]) => found.length > 0)).toEqual([]);
+    });
+
+    it('each allowed sentence is still needed: a literal of the shipped sources holds it', async () => {
+        const files = (await sourceFiles()).filter((file) => !isTestFile(file.name) && /\.tsx?$/.test(file.name));
+        const all = files.flatMap((file) => stringLiterals(file.text)).filter((literal) => /paste/i.test(literal));
+        for (const allowed of ALLOWED.slice(0, 1).concat(ALLOWED.slice(2))) {
+            expect(
+                all.some((literal) => literal.includes(allowed)),
+                allowed,
+            ).toBe(true);
+        }
+    });
+
+    it('negative control: a planted literal with Paste is found, an identifier and an allowed sentence are not', () => {
+        expect(offenders("const a = 'Paste it now';")).toEqual(["'Paste it now'"]);
+        expect(offenders('const a = `Then paste ${x}`;')).toHaveLength(1);
+        expect(offenders('const pasteKey = pasteKeyOf(platform);')).toEqual([]);
+        expect(offenders("const a = 'Paste it once every worker you started is back.';")).toEqual([]);
+    });
+});
