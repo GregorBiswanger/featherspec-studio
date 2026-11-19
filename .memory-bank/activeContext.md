@@ -25,7 +25,7 @@ Current phase: act
 - Completed: 0001…0007 and 0013 in [.specs/done/](../.specs/done/); 0008…0012 there are Deprecated (successor 0015); plans frozen in [.specs/plan-archive/](../.specs/plan-archive/).
 
 ## Changed Recently
-- 0028 (PD-081, PD-082, PD-087): a plan with every step ticked or struck is Review; below FeatherSpec 1.11.0 the sign or a `Verified:` line without a tick puts `/sdd-plan` first; NS-7 is `Implement <ID> of <plan>`; snapshots guard the rest. T-008 (preview, AC-013) waits for the orchestrator.
+- 0028 (PD-081, PD-082, PD-087): a plan with every step ticked or struck is Review; below FeatherSpec 1.11.0 the sign puts `/sdd-plan` first, and in every version a `Verified:` line without a tick does; NS-7 is `Implement <ID> of <plan>`; snapshots guard the rest. T-008 (preview, AC-013) waits for the orchestrator.
 - Final check of round 2, docs only (0024 T-014…T-022): README shots retaken plus a Plan map shot; `activeContext.md` and the `AGENTS.md` module lines shortened; CHANGELOG, README, checklist, §5 and the plans made consistent.
 - 0024 fix round (compile S82, T-008…T-013): Send decides its silent copy by the effective setting; nothing runs after the 5 s fallback; focus handoff belongs to the place (`StepAction`); scan exemptions shrink to 0024's names.
 ## Decisions in Flight
