@@ -14,9 +14,15 @@ interface Exception {
 
 const SPLITTER = '.specs/active/0001-tip-splitter.md';
 const ALL_FIELDS: Field[] = ['state', 'rule', 'persistence', 'nextStep', 'stepView', 'tips'];
+const DEMO = '.specs/active/0001-fixture-demo.md';
+const STEP_FIELDS: Field[] = ['nextStep', 'stepView', 'tips'];
+const SIGN_OLD = 'Report first: the sign of 0028 §6.2 below FeatherSpec 1.11.0 (AC-004, AC-009)';
 const FINISHED_NOT_DONE = 'an active/ spec with a finished plan whose status is not Done is Review (0028 §6.1)';
 
 export const EXCEPTIONS: readonly Exception[] = [
+    { snapshot: 'fs-version-missing', key: DEMO, fields: STEP_FIELDS, why: SIGN_OLD },
+    { snapshot: 'fs-version-1100', key: DEMO, fields: STEP_FIELDS, why: SIGN_OLD },
+    { snapshot: 'case-ac004-report-first', key: SPLITTER, fields: STEP_FIELDS, why: SIGN_OLD },
     ...['ac001-plan-in-progress', 'ac001-plan-not-started', 'ac001-plan-no-status', 'ac001-in-progress-with-done-note'].map((name) => ({
         snapshot: `case-${name}`,
         key: SPLITTER,

@@ -30,7 +30,7 @@ export function stepShortForm(step: { intent: string; short: string }): string {
     return `${step.intent}${STEP_SHORT_SEPARATOR}${step.short}`;
 }
 
-export type StepCase = 'NS-2' | 'NS-4' | 'NS-4-plan' | 'NS-5' | 'NS-6-open' | 'NS-6-resume' | 'NS-6-returned' | 'NS-6-plan' | 'NS-7' | 'NS-8' | 'NS-9' | 'NS-10';
+export type StepCase = 'NS-2' | 'NS-4' | 'NS-4-plan' | 'NS-5' | 'NS-6-open' | 'NS-6-report' | 'NS-6-resume' | 'NS-6-returned' | 'NS-6-plan' | 'NS-7' | 'NS-8' | 'NS-9' | 'NS-10';
 
 export type SessionKey = 'new' | 'sameOrNew' | 'any';
 
@@ -74,6 +74,13 @@ export const STEP_GUIDES: Record<StepCase, StepGuide> = {
         then: 'Only after a READY verdict, close the spec with the second prompt.',
     },
     'NS-6-open': { short: 'Continue', session: 'sameOrNew', model: 'fast', effect: 'The agent builds this one step, runs its check, ticks it and stops.', then: BUILD_THEN },
+    'NS-6-report': {
+        short: 'Report',
+        session: 'any',
+        model: 'fast',
+        effect: 'The agent checks the plan against the code, brings the ticks and the handoff level and reports where the work stands; it builds nothing yet.',
+        then: 'When the plan and the ticks agree, the Studio shows the step to continue with.',
+    },
     'NS-6-resume': {
         short: 'Resume',
         session: 'any',
@@ -122,6 +129,8 @@ export const NS5_INTENT = 'Have the result verified';
 export const NS5_THEN_INTENT = 'Then, after a READY verdict: close the spec';
 
 export const NS6_REPORT_INTENT = 'Not sure where it stands? Let the agent report first';
+
+export const NS6_REPORT_FIRST_INTENT = 'Let the agent report first — the plan and the ticks may differ';
 
 export const NS6_RESUME_INTENT = 'Let the agent report where the plan stands';
 

@@ -73,3 +73,12 @@ export function checkVersion(version: string): Diagnostic | undefined {
     }
     return undefined;
 }
+
+export const LEVELLING_SINCE = '1.11.0';
+
+const LEVELLING = parseSemanticVersion(LEVELLING_SINCE);
+
+export function levelsOnImplement(version: string): boolean {
+    const parsed = parseSemanticVersion(version);
+    return parsed !== undefined && LEVELLING !== undefined && compareVersions(parsed, LEVELLING) >= 0;
+}

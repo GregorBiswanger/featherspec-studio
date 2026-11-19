@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import { describe, expect, it } from 'vitest';
 import { NEXT_STEP_DONE_TEXT, NEXT_STEP_UNREADABLE_TEXT, nextStepNumberUsedText, STEP_GUIDES, stepShortForm } from '../../shared/protocol/nextStepTexts';
 import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
@@ -5,7 +6,11 @@ import { planText, readMemory, ROOT, specText, VERSION } from '../lifecycle/test
 import { createMemorySpecSource } from '../specs/testing/memorySpecSource';
 import { readProject } from '../specs/readProject';
 import type { ShellModel } from '../ports/shell';
+import { parseStepTipSettings } from '../settings/stepTipSettings';
 import { modelOf } from './testing/boardWorld';
+import { CASE_FIXTURES, CURRENT_STEP_VALUES } from './testing/caseFixtures';
+import { modelOfCase, snapshotFile, snapshotOf, type ProjectSnapshot } from './testing/nextStepSnapshot';
+import { stepTips } from './stepTips';
 import { nextStep, shortForm, stepView } from './nextStep';
 
 const BACKLOG = '.specs/backlog/0007-x.md';
@@ -279,6 +284,7 @@ describe('0021 AC-001: every next step line carries its intent, one fixture per 
             'NS-4-plan': { short: 'Unblock', session: 'any', model: 'strong', effect: 'The agent takes in returned work, checks the plan against the code and reports what blocks.', then: 'Once the block is solved, the spec shows its next step again.' },
             'NS-5': { short: 'Verify', session: 'new', model: 'strongOtherFamily', effect: 'A fresh reviewer checks every acceptance criterion against evidence and gives a verdict.', then: 'Only after a READY verdict, close the spec with the second prompt.' },
             'NS-6-open': { short: 'Continue', session: 'sameOrNew', model: 'fast', effect: 'The agent builds this one step, runs its check, ticks it and stops.', then: 'When it stops, the Studio shows the next step; a working agreement such as a test review may stop it earlier.' },
+            'NS-6-report': { short: 'Report', session: 'any', model: 'fast', effect: 'The agent checks the plan against the code, brings the ticks and the handoff level and reports where the work stands; it builds nothing yet.', then: 'When the plan and the ticks agree, the Studio shows the step to continue with.' },
             'NS-6-resume': { short: 'Resume', session: 'any', model: 'fast', effect: 'The agent checks the plan against the code and reports where it stands.', then: 'The spec then shows its next step.' },
             'NS-6-returned': { short: 'Integrate', session: 'sameOrNew', model: 'fast', effect: 'The agent checks each returned step against its files, runs its check and the quality gates, then ticks the steps and removes the return notes.', then: 'Paste it once every worker you started is back.' },
             'NS-6-plan': { short: 'Plan', session: 'any', model: 'strongWebSearch', effect: 'The agent researches and writes the plan; for a reactivated spec, a fresh plan for the change.', then: 'You read the plan before anything is built.' },
@@ -504,4 +510,83 @@ describe('0023 AC-013: returned work is the first case of an Active spec', () =>
         });
         expect(nextStep(ready, BACKLOG)).toMatchObject({ rule: 'NS-7', case: 'NS-7' });
     });
+});
+
+describe('0028 AC-004: below 1.11.0 the sign puts the report first', () => {
+    const KEY = '.specs/active/0001-tip-splitter.md';
+    const PLAN = '.specs/active/0001-tip-splitter.plan.md';
+
+    it('T-001 and T-002 ticked, open T-003, Current step T-004: /sdd-plan first, the continue line second, literally', async () => {
+        const m = await modelOfCase('ac004-report-first');
+        expect(nextStep(m, KEY)).toEqual({
+            rule: 'NS-6',
+            case: 'NS-6-report',
+            lines: [
+                { intent: 'Let the agent report first — the plan and the ticks may differ', text: `/sdd-plan ${KEY}` },
+                { intent: 'Continue with T-003 Reject money values', text: `Implement T-003 of ${PLAN}` },
+            ],
+        });
+    });
+
+    it('short form Report · /sdd-plan, coach line any chat · fast model, toggletip paragraph 1 is the effect and then-sentence', async () => {
+        const m = await modelOfCase('ac004-report-first');
+        const view = stepView(m, KEY)!;
+        expect(stepShortForm(view)).toBe('Report · /sdd-plan');
+        expect(view.line).toBe(`/sdd-plan ${KEY}`);
+        const tips = stepTips('NS-6-report', parseStepTipSettings(true, {}));
+        expect(tips.coach).toBe('any chat · fast model');
+        expect(tips.about[0]).toBe(
+            'The agent checks the plan against the code, brings the ticks and the handoff level and reports where the work stands; it builds nothing yet. When the plan and the ticks agree, the Studio shows the step to continue with.',
+        );
+        expect(STEP_GUIDES['NS-6-report']).toEqual({
+            short: 'Report',
+            session: 'any',
+            model: 'fast',
+            effect: 'The agent checks the plan against the code, brings the ticks and the handoff level and reports where the work stands; it builds nothing yet.',
+            then: 'When the plan and the ticks agree, the Studio shows the step to continue with.',
+        });
+    });
+
+    it('negative control: the sign needs an unfinished step other than the open one (T-003 alone, T-002 ticked, T-099 unknown give variant A)', async () => {
+        for (const name of ['ac005-open-alone', 'ac005-ticked-only', 'ac005-unknown-ids']) {
+            expect(nextStep(await modelOfCase(name), KEY), name).toMatchObject({ case: 'NS-6-open' });
+        }
+    });
+});
+
+describe('0028 AC-005: every other Current step value keeps variant A as at the Baseline', () => {
+    const names = Object.keys(CURRENT_STEP_VALUES).map((name) => `ac005-${name}`);
+
+    it.each(names)('%s: deep-equal to its snapshot (next step and step view)', async (name) => {
+        const expected = JSON.parse(fs.readFileSync(snapshotFile(`case-${name}`), 'utf8')) as ProjectSnapshot;
+        const actual = snapshotOf(await modelOfCase(name));
+        expect(actual).toEqual(expected);
+        expect(Object.values(actual)[0]!.nextStep).toMatchObject({ case: 'NS-6-open' });
+    });
+});
+
+describe('0028 AC-009: only the report first of the sign reads the version', () => {
+    const SIGN = ['1.7.0', '1.10.0', '1.11.0-rc.1', 'next', 'unknown'];
+    const LEVELLED = ['1.11.0', '1.12.0'];
+    const KEY = '.specs/active/0001-tip-splitter.md';
+
+    it.each(SIGN)('%s: the sign gives Report first', async (version) => {
+        expect(nextStep(await modelOfCase('ac004-report-first', version), KEY)).toMatchObject({ case: 'NS-6-report' });
+    });
+
+    it.each(LEVELLED)('%s: the sign gives variant A', async (version) => {
+        expect(nextStep(await modelOfCase('ac004-report-first', version), KEY)).toMatchObject({ case: 'NS-6-open' });
+    });
+
+    it.each(['ac001-plan-in-progress', 'ac005-absent', 'ac005-open-with-parallel', 'ac016-ready-with-step', 'ac016-ready-without-step'])(
+        '%s: state and next step are equal for 1.7.0, 1.10.0, 1.11.0, 1.12.0 and no version line',
+        async (name) => {
+            const results: unknown[] = [];
+            for (const version of ['1.7.0', '1.10.0', '1.11.0', '1.12.0', 'unknown']) {
+                const m = await modelOfCase(name, version);
+                results.push({ lifecycle: m.lifecycle.entries.map((entry) => ({ state: entry.state, rule: entry.rule })), next: nextStep(m, Object.keys(CASE_FIXTURES[name]!)[0]!) });
+            }
+            results.forEach((result) => expect(result).toEqual(results[0]));
+        },
+    );
 });

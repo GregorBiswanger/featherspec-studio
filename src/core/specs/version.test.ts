@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkVersion, compareVersions, parseSemanticVersion } from './version';
+import { checkVersion, compareVersions, levelsOnImplement, parseSemanticVersion } from './version';
 
 describe('checkVersion', () => {
     it.each(['1.7.0', '1.8.0', '1.9.3', '1.10.0', '1.8.0-rc3', '1.10.0-rc1', '1.10.0+build.5', '1.7.0+x'])(
@@ -47,5 +47,15 @@ describe('compareVersions', () => {
 
     it('AC-016: build metadata is ignored', () => {
         expect(order('1.0.0+a', '1.0.0+b')).toBe(0);
+    });
+});
+
+describe('0028 AC-009: levelsOnImplement', () => {
+    it.each(['1.11.0', '1.11.1', '1.12.0', '2.0.0', '1.11.0+build.5'])('%s levels the plan on Implement', (version) => {
+        expect(levelsOnImplement(version)).toBe(true);
+    });
+
+    it.each(['1.7.0', '1.10.0', '1.10.9', '1.11.0-rc.1', 'next', 'unknown', '', '1.11', 'v1.11.0'])('%s does not (old, pre-release, unknown or not a version)', (version) => {
+        expect(levelsOnImplement(version)).toBe(false);
     });
 });

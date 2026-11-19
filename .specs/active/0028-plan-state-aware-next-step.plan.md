@@ -3,7 +3,7 @@
 **Spec:** [0028-plan-state-aware-next-step.md](0028-plan-state-aware-next-step.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-003
+**Current step:** T-004
 
 ## Approach
 
@@ -130,8 +130,8 @@ Parallel: stage 3 (runs in sequence, `PLAN-R3.md`). Stages 1 and 2 share `nextSt
   its snapshot), "0028 AC-009 …" (version table); `version.test.ts` for `levelsOnImplement`; `fiveFixtures.test.ts`
   "0028 AC-021 …" `nextStep()` and status bar (`statusEntry`) for four fixtures.
 - **Verify:** `npm run test:unit` — red first (variant A where Report first is expected), then green.
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-19 · `npx vitest run --project node src/core/specs/version.test.ts src/core/board/nextStep.test.ts`: red first (21 failed: variant A where Report first is expected, `levelsOnImplement is not a function`), then green; `fiveFixtures.test.ts` red with the sign switched off (11 failed over both files), green with it; `npm run test:unit` 3223 passed, 4 skipped, timing green; eslint, tsc ×2 clean.
+- **Notes:** `reportSign(plan, open)` and `NS-6-report` as planned; `levelsOnImplement()` and `LEVELLING_SINCE` in `version.ts`. Tests added in `nextStep.test.ts` (AC-004, AC-005 as snapshot equality, AC-009), `version.test.ts`, new `src/core/board/fiveFixtures.test.ts` (four fixtures; `fs-verified-no-tick` joins in T-004). Existing tests extended for the new case, not weakened: `stepTips.test.ts` `COACH` and `NAMED_COACH` gain `NS-6-report`; 0021 AC-001's guide record gains it; `sendView.test.ts` "there are twelve step cases …" is now "there are thirteen step cases …" (count 13; title replaced for the new case). Baseline `EXCEPTIONS` gain `fs-version-missing`, `fs-version-1100`, `case-ac004-report-first` (Report first, STEP_FIELDS).
 
 ### T-004 — Verified without tick and the session reason by version
 

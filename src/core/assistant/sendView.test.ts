@@ -7,8 +7,8 @@ import { sendViewOf } from './sendView';
 const CASES = Object.keys(STEP_GUIDES) as StepCase[];
 
 describe('0024 AC-004: the default target of the step\'s session', () => {
-    it('there are twelve step cases, and no offer gives no send view', () => {
-        expect(CASES).toHaveLength(12);
+    it('there are thirteen step cases, and no offer gives no send view', () => {
+        expect(CASES).toHaveLength(13);
         for (const stepCase of CASES) {
             expect(sendViewOf(undefined, stepCase), stepCase).toBeUndefined();
         }

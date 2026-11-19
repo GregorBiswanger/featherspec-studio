@@ -8,6 +8,7 @@ import {
     NS4_INTENT,
     NS5_INTENT,
     NS5_THEN_INTENT,
+    NS6_REPORT_FIRST_INTENT,
     NS6_REPORT_INTENT,
     NS6_RESUME_INTENT,
     NS8_INTENT,
@@ -21,8 +22,10 @@ import {
 import type { StepView } from '../../shared/protocol/stepView';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { ShellModel } from '../ports/shell';
+import type { ParsedPlan } from '../specs/parsePlan';
 import type { PlanStep } from '../specs/planSteps';
 import type { SpecEntry } from '../specs/readProject';
+import { levelsOnImplement } from '../specs/version';
 import { plainShort } from './shortTitle';
 
 export const NEXT_STEP_RULE_IDS = ['NS-1', 'NS-2', 'NS-11', 'NS-3', 'NS-4', 'NS-5', 'NS-6', 'NS-7', 'NS-8', 'NS-9', 'NS-10'] as const;
@@ -42,6 +45,18 @@ function lines(rule: NextStepRuleId, stepCase: StepCase, ...texts: NextStepLine[
 export function openStep(model: ShellModel, entry: LifecycleEntry): PlanStep | undefined {
     const plan = model.project.plans.find((candidate) => candidate.key === entry.plan);
     return (plan?.parsed?.steps ?? []).find((step) => step.ticked !== true && !step.struck);
+}
+
+const STEP_TOKEN = /\bT-\d+\b/g;
+
+export function reportSign(plan: ParsedPlan | undefined, open: PlanStep): boolean {
+    const field = plan?.currentStep.value;
+    if (plan === undefined || field?.state !== 'value') {
+        return false;
+    }
+    const named = new Set(field.raw.match(STEP_TOKEN) ?? []);
+    const unfinished = plan.steps.filter((step) => named.has(step.id) && step.ticked !== true && !step.struck);
+    return unfinished.length > 0 && !unfinished.some((step) => step.id === open.id);
 }
 
 export function startLine(model: ShellModel, entry: LifecycleEntry): string {
@@ -88,14 +103,15 @@ export function nextStep(model: ShellModel, key: string): NextStep | undefined {
                 return lines('NS-6', 'NS-6-plan', { intent: WRITE_PLAN_INTENT, text: `/sdd-plan ${key}` });
             }
             const open = openStep(model, entry);
-            return open === undefined
-                ? lines('NS-6', 'NS-6-resume', { intent: NS6_RESUME_INTENT, text: `/sdd-plan ${key}` })
-                : lines(
-                      'NS-6',
-                      'NS-6-open',
-                      { intent: continueIntent(open.id, plainShort(open.title)), text: `Implement ${open.id} of ${entry.plan}` },
-                      { intent: NS6_REPORT_INTENT, text: `/sdd-plan ${key}` },
-                  );
+            if (open === undefined) {
+                return lines('NS-6', 'NS-6-resume', { intent: NS6_RESUME_INTENT, text: `/sdd-plan ${key}` });
+            }
+            const continueLine = { intent: continueIntent(open.id, plainShort(open.title)), text: `Implement ${open.id} of ${entry.plan}` };
+            const plan = model.project.plans.find((candidate) => candidate.key === entry.plan)?.parsed;
+            if (reportSign(plan, open) && !levelsOnImplement(model.project.version)) {
+                return lines('NS-6', 'NS-6-report', { intent: NS6_REPORT_FIRST_INTENT, text: `/sdd-plan ${key}` }, continueLine);
+            }
+            return lines('NS-6', 'NS-6-open', continueLine, { intent: NS6_REPORT_INTENT, text: `/sdd-plan ${key}` });
         }
         case 'Ready': {
             const open = openStep(model, entry);
