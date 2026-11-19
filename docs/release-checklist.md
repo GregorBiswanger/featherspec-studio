@@ -281,8 +281,9 @@ and the expected result. A clear miss reopens the named spec.
   release that carries the sentence "a file attached in full counts as read: no re-read", and 0002's newest known version
   (`NEWEST_KNOWN`) is not below it.
 - [ ] **C-2, how a result flips the switch**: if GitHub Copilot or the Claude Code extension does not read the attached spec again
-  on 1.11.0, set `attachesSpec` of that assistant in `src/core/assistant/assistants.ts` (GitHub Copilot to `true`), change AC-019's
-  expected row in `attachment.test.ts` and 0027 §6.2's table, and nothing else; a re-read sets Claude Code to `false` the
+  on 1.11.0, set `attachesSpec` of that assistant in `src/core/assistant/assistants.ts` (GitHub Copilot to `true`), update the expected rows
+  of the tests that pin the shipped table (`attachment.test.ts`, `offer.test.ts`, `restricted.test.ts`, `sendView.test.ts`)
+  and 0027 §6.2's table; a re-read sets Claude Code to `false` the
   same way (and reopens 0027 A-001, A-003).
 
 ## Go
