@@ -60,11 +60,11 @@ Der Entwurf liegt im Artifact `2HPSzmxus6hhKPkuGm47wp`, Boards `Studio window` u
 - [x] **B-3** Die Erfassung je Aufgabe ergänzen:
   - gelöst ja / nein / mit Hilfe;
   - Leichtigkeit von 1 (sehr schwer) bis 7 (sehr leicht).
-- [ ] **B-4** Den Test mit Gregor durchführen, nach Möglichkeit mit einer zweiten Person, die das Studio nicht kennt.
-- [ ] **B-5** Die Ergebnisse auswerten, zuerst **Aufgabe 2** (current chat) und **Aufgabe 5** (Rückläufer). Es gelten diese Regeln:
+- [x] **B-4** (teilweise, Aufgaben 1–3; Rest über F-3) Den Test mit Gregor durchführen, nach Möglichkeit mit einer zweiten Person, die das Studio nicht kennt.
+- [x] **B-5** Die Ergebnisse auswerten, zuerst **Aufgabe 2** (current chat) und **Aufgabe 5** (Rückläufer). Es gelten diese Regeln:
   - **Aufgabe 2** gilt als nicht gelöst, wenn der Chevron nicht gefunden wird. Dann zeigt das Menü die aktive Wahl mit Häkchen, und die Beschriftung bleibt „Send to Copilot“.
   - **Aufgabe 6** gilt nur als halb gelöst, wenn der Plan über „Open plan“ oben statt bei T-006 geöffnet wird. Dann „Open in plan“ in der Karte sichtbarer machen.
-- [ ] **B-6** Das Ergebnis als `docs/ux-audit/13-clicktest-results.md` ablegen. Die Specs D1 bis D4 zitieren daraus.
+- [x] **B-6** Das Ergebnis als `docs/ux-audit/13-clicktest-results.md` ablegen. Die Specs D1 bis D4 zitieren daraus.
 
 ## C. FeatherSpec 1.11.0 veröffentlichen (Gregor + FeatherSpec-Agent, im FeatherSpec-Repo)
 
