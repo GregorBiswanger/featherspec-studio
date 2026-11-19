@@ -1,7 +1,7 @@
 # Attach the Spec When Sending
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0027-attach-spec-when-sending.plan.md](0027-attach-spec-when-sending.plan.md)
 
 Basis: `docs/ux-audit/09-round2-review.md` §6 (V3), §8; `docs/decisions/v3-attach-spike-2026-11-19.md`. **PD-082**
 (Gregor's must), **PD-083** (V-3), **PD-089** (per assistant), PD-068, PD-074, PD-078, PD-080, PD-018, PD-031–PD-033,
@@ -10,6 +10,8 @@ PD-047, PD-016; guidelines 1–3, 6, 8–12. Builds on 0024 as 0026 amends it, 0
 
 **Changes 2026-11-19** (`docs/ux-audit/12-finish-plan.md` D4; PD-084…PD-089): per assistant by V3 (PD-089; §6.2, AC-019),
 Copilot open until C-2 (OP-006); a large-spec probe (AC-020); no `modelSelector` and `Copy prompt attaches nothing.` stay.
+`/sdd-plan` (S99, standing answer `PLAN-R3.md`): OP-001 closed by 13, OP-002 re-checked at the branch head, OP-003 kept as
+proxy; no criterion changed.
 
 ## 1. Summary
 
@@ -236,13 +238,16 @@ Copilot and Claude Code, stamped `1.11.0` unless a criterion names another; the 
 
 ## 12. Open points
 
-- OP-001 Click test with a task on an HTML draft (AC-018, PD-082); its results (12 B-6,
-  `docs/ux-audit/13-clicktest-results.md`) resolve before `/sdd-plan`. **Blocking for `/sdd-plan`.**
+- OP-001 Closed 2026-11-19 by `docs/ux-audit/13-clicktest-results.md`: the click test was partly run (tasks 1–3, none on
+  the attachment) and ended; "0027: no change"; confirmation points 1–8 unanswered, so the attachment line and §7's texts
+  stay proxies. AC-018 is recorded as not run; its question (which file goes along) moves to the real use, AC-017 (12 F-3).
 - OP-002 The release with the sentence (PD-082, PD-083; `/home/claude/orch/featherspec-1.11.0/REPORT.md`): 1.11.0 MINOR;
-  `AGENTS.md`'s Memory Bank section: "A file attached in full — a Copilot chip, an `@` mention in Claude Code — counts as
-  read: use it, do not read it again."; formats unchanged; `/sdd-plan` re-checks at the branch head. The release (after QA
+  formats unchanged. Re-checked 2026-11-19 at the branch head `04c569d` (`feature/1.11.0-studio-prompts`, after audit A1):
+  `AGENTS.md`'s Memory Bank section, so every session, reads "A file attached in full to the current message — a Copilot
+  chip, an `@` mention in Claude Code — counts as read: no re-read."; stamp `1.11.0`. A-003 holds. The release (after QA
   V3 and Gregor's Go) is **blocking for closing** this spec (AC-017), not for planning or building.
-- OP-003 Gregor confirms the gate (A-002) and the `Implement` row (A-001). Recommendation as written; not blocking.
+- OP-003 The gate (A-002) and the `Implement` row (A-001) stay as recommended (proxy; standing answer `PLAN-R3.md`, Gregor
+  not reachable); AC-017 can still flip either as data. Not blocking.
 - OP-004 Closed (OP-005): 1.11.0 keeps 0002's formats (OP-002); the newest known version rises to it (§6.2, §5, AC-002).
 - OP-005 `/sdd-clarify` 2026-11-19 (S94): 32 findings, 7 blocking, resolved in one pass (`/home/claude/orch/clarify/
   0027-findings.md`); D-4 and the report applied. Readings to object to: (a) the human *submits*, the Studio *sends*; (b) a
@@ -256,4 +261,4 @@ Copilot and Claude Code, stamped `1.11.0` unless a criterion names another; the 
 
 Ready: §6 and §7 literal, §5 listed, OP-001 closed, OP-002 re-checked, 0024 and 0026 as base (order 0028 → 0025 → 0026 →
 0027). Clarified 2026-11-19 (OP-005). Done: AC-001–AC-015, AC-019 green, AC-016–AC-018, AC-020 checked, OP-006 settled, §5
-applied, docs and Memory Bank synced, `/sdd-compile` READY, FeatherSpec 1.11.0 released. Next: click test, `/sdd-plan`.
+applied, docs and Memory Bank synced, `/sdd-compile` READY, FeatherSpec 1.11.0 released. Next: review the plan; implement after 0028, 0025 and 0026.
