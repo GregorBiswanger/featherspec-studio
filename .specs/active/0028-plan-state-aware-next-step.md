@@ -1,6 +1,6 @@
 # Plan-State-Aware Next Step
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0028-plan-state-aware-next-step.plan.md](0028-plan-state-aware-next-step.plan.md)
 
 Basis: review `docs/ux-audit/09-round2-review.md` G-11, §8; PD-081 (`screenshots-48d1968/g-r2-03…05`), PD-082, PD-072,

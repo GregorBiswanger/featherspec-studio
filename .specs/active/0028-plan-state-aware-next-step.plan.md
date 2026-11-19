@@ -1,7 +1,7 @@
 # Plan — Plan-State-Aware Next Step
 
 **Spec:** [0028-plan-state-aware-next-step.md](0028-plan-state-aware-next-step.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-19
 **Current step:** T-001
 
@@ -244,5 +244,5 @@ Parallel: stage 3 (runs in sequence, `PLAN-R3.md`). Stages 1 and 2 share `nextSt
 - **Next action:** review the plan; on the start signal move the pair to `active/` (`/sdd-lifecycle`), set the
   Baseline, then T-001.
 - **Open decisions:** — (FeatherSpec 1.11.0 release pending, A-011 bounds the risk to T-003's constant)
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** `8174c51` (head before the first step commit)
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.
