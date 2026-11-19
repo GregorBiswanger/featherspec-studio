@@ -149,7 +149,7 @@ export function SendButton(props: SendButtonProps) {
         menuWasOpen.current = menu.current !== null;
     });
 
-    const itemButtons = (): HTMLElement[] => [...(menu.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])];
+    const itemButtons = (): HTMLElement[] => [...(menu.current?.querySelectorAll<HTMLElement>('[role="menuitem"], [role="menuitemradio"]') ?? [])];
 
     useLayoutEffect(() => {
         if (open && focusOnOpen.current !== undefined) {
@@ -250,11 +250,13 @@ export function SendButton(props: SendButtonProps) {
             {open ? (
                 <div ref={menu} role="menu" aria-labelledby={arrowId} className="send-menu">
                     {send.targets.map((target) => (
-                        <button key={target} type="button" role="menuitem" tabIndex={-1} onClick={() => activateSend(target, true)}>
+                        <button key={target} type="button" role="menuitemradio" aria-checked={target === send.target} tabIndex={-1} onClick={() => activateSend(target, true)}>
+                            <span className="send-check">{target === send.target ? <Glyph kind="check" /> : null}</span>
                             {SEND_ITEM_TEXT[target]}
                         </button>
                     ))}
                     <button type="button" role="menuitem" tabIndex={-1} onClick={activateCopy}>
+                        <span className="send-check" />
                         {COPY_PROMPT_LABEL}
                     </button>
                 </div>

@@ -1,7 +1,7 @@
 # Plan — Send Defaults and Wording
 
 **Spec:** [0026-send-defaults-and-wording.md](0026-send-defaults-and-wording.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-19
 **Current step:** T-001
 
@@ -118,8 +118,8 @@ Parallel: stages 2 and 3, run in sequence (`PLAN-R3.md`). Stage 1 shares `nextSt
   - Retarget the 0024 AC-004/AC-005 tests that expect `current` (titles and the replacing head titles in `Notes:`).
 - **Verify:** `npx vitest run src/core/assistant/sendView.test.ts src/core/assistant/send.test.ts src/webview/ui/SendButton.test.tsx`
   red first (`current` on NS-6, `menuitem` roles), then `npm run test:unit` green.
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** red first (15 failures: `current` targets, `menuitem` roles); green: sendView, send, SendButton, SpecDetail, Overview tests, tsc both, eslint on touched dirs.
+- **Notes:** `sendViewOf(offer, stepCase)` keeps its signature (callers unchanged; the case no longer matters). Retargeted 0024 AC-004's per-case titles: `N: Copilot sends to the new chat` (old `… the current chat`/`new chat` by session; replaced by `0026 AC-001 <case>: Copilot sends to the new chat, with both targets`), `the new target is exactly the cases whose session is new` (replaced by `0026 AC-001: no step case defaults to the current chat, whatever its session`). Menu selectors `[role="menuitem"]` became `[role^="menuitem"]` in SpecDetail/Overview/SendButton tests; SpecDetail 0024 AC-010 focus role assertion now matches `^menuitem`. Check glyph sits in a fixed-width `.send-check` span so labels align.
 
 ### T-002 — One term for the open chat, and Send beside a Send
 
@@ -374,5 +374,5 @@ Parallel: stages 2 and 3, run in sequence (`PLAN-R3.md`). Stage 1 shares `nextSt
 - **Next action:** review the plan; after 0028 and 0025 are done, on the start signal move the pair to `active/`
   (`/sdd-lifecycle`), set the Baseline, then T-001.
 - **Open decisions:** — (AC-019's draft check in Copilot's `newChat` is untested, V-3 C4; if it fails, Gregor decides, 09 §3)
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** `657e87a`
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

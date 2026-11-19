@@ -1,6 +1,6 @@
 # Send Defaults and Wording
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0026-send-defaults-and-wording.plan.md](0026-send-defaults-and-wording.plan.md)
 
 Basis: `docs/ux-audit/09-round2-review.md` §3, §4 (G-3, G-5, G-8, G-9), §7, §8; `screenshots-48d1968/` r01, r02, r05,

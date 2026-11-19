@@ -785,7 +785,8 @@ main > h1 {
     box-shadow: 0 2px 8px var(--vscode-widget-shadow, transparent);
 }
 
-.send-menu [role="menuitem"] {
+.send-menu [role="menuitem"],
+.send-menu [role="menuitemradio"] {
     padding: 4px 12px;
     color: inherit;
     background: transparent;
@@ -798,9 +799,18 @@ main > h1 {
 }
 
 .send-menu [role="menuitem"]:hover,
-.send-menu [role="menuitem"]:focus-visible {
+.send-menu [role="menuitem"]:focus-visible,
+.send-menu [role="menuitemradio"]:hover,
+.send-menu [role="menuitemradio"]:focus-visible {
     color: var(--vscode-menu-selectionForeground, var(--vscode-foreground));
     background: var(--vscode-menu-selectionBackground, var(--vscode-toolbar-hoverBackground));
+}
+
+.send-check {
+    display: inline-block;
+    width: 16px;
+    margin-right: 4px;
+    vertical-align: middle;
 }
 
 .vscode-high-contrast .send-menu {

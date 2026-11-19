@@ -47,7 +47,7 @@ async function show(send: SendView, extra: { sendResult?: SendResultEventPayload
 const main = (container: HTMLElement) => container.querySelector<HTMLButtonElement>('button.send-main')!;
 const arrow = (container: HTMLElement) => container.querySelector<HTMLButtonElement>('button.send-arrow')!;
 const menu = (container: HTMLElement) => container.querySelector<HTMLElement>('[role="menu"]');
-const items = (container: HTMLElement) => [...container.querySelectorAll<HTMLElement>('[role="menuitem"]')];
+const items = (container: HTMLElement) => [...container.querySelectorAll<HTMLElement>('[role^="menuitem"]')];
 const live = (container: HTMLElement) => container.querySelector<HTMLElement>('[role="status"]')!;
 
 async function advance(ms: number): Promise<void> {
@@ -631,5 +631,70 @@ describe('0025 AC-026: the secondary look of the split button', () => {
         mounted = await mount(<SendButton {...props} />);
         expect(mounted.container.querySelector('button.send-main')!.classList.contains('copy-secondary')).toBe(false);
         expect(mounted.container.querySelector('button.send-arrow')!.classList.contains('send-arrow-secondary')).toBe(false);
+    });
+});
+
+describe('0026 AC-022: the menu checks the active target', () => {
+    it('Send to a new chat is a checked menuitemradio with a hidden check glyph; Send to the current chat is unchecked without a glyph; Copy prompt is a plain menuitem', async () => {
+        const container = await show(VIEW_A_NEW);
+        await click(arrow(container));
+        const [fresh, current, copy] = items(container);
+        expect(fresh?.getAttribute('role')).toBe('menuitemradio');
+        expect(fresh?.getAttribute('aria-checked')).toBe('true');
+        expect(fresh?.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+        expect(current?.getAttribute('role')).toBe('menuitemradio');
+        expect(current?.getAttribute('aria-checked')).toBe('false');
+        expect(current?.querySelector('svg')).toBeNull();
+        expect(copy?.getAttribute('role')).toBe('menuitem');
+        expect(copy?.hasAttribute('aria-checked')).toBe(false);
+        expect(copy?.querySelector('svg')).toBeNull();
+        expect(items(container).map((item) => item.textContent)).toEqual(['Send to a new chat', 'Send to the current chat', 'Copy prompt']);
+    });
+
+    it('Claude Code: its one Send item is checked', async () => {
+        const container = await show(CLAUDE_VIEW);
+        await click(arrow(container));
+        expect(items(container)[0]?.getAttribute('aria-checked')).toBe('true');
+        expect(items(container)[1]?.getAttribute('role')).toBe('menuitem');
+    });
+
+    it('after a Send through Send to the current chat the check stays on Send to a new chat and the label stays', async () => {
+        const container = await show(VIEW_A_NEW);
+        await click(arrow(container));
+        await click(items(container)[1]!);
+        expect(sent).toEqual([{ assistant: 'copilot', target: 'current', line: LINE, token: TOKEN }]);
+        await click(arrow(container));
+        expect(items(container)[0]?.getAttribute('aria-checked')).toBe('true');
+        expect(items(container)[1]?.getAttribute('aria-checked')).toBe('false');
+        expect(main(container).textContent).not.toBe('');
+        mounted?.unmount();
+        const claude = await show(CLAUDE_VIEW);
+        expect(main(claude).textContent).toBe('Send to Claude Code');
+    });
+
+    it('the idle label stays Send to Copilot', async () => {
+        const container = await show(VIEW_A_NEW);
+        expect(main(container).textContent).toBe('Send to Copilot');
+    });
+});
+
+describe('0026 AC-020: after a Send the tooltip and live region say the prompt is in the chat, never that it was sent', () => {
+    it('Copilot and Claude Code: the sentence literally in title, name and live region; the main part never reads sent', async () => {
+        for (const [view, sentence] of [[VIEW_A_NEW, OPENED_A], [CLAUDE_VIEW, OPENED_CLAUDE]] as const) {
+            const container = await show(view);
+            await click(main(container));
+            await deliverSend({ outcome: 'opened', text: sentence });
+            expect(main(container).getAttribute('title')).toBe(sentence);
+            expect(container.querySelector('[role="status"]')?.textContent).toBe(sentence);
+            expect(container.textContent).not.toMatch(/\bwas sent\b|\bSent\b/);
+            mounted?.unmount();
+        }
+    });
+
+    it('negative control: a result text that differs is shown as it is, so the literal assertion would fail', async () => {
+        const container = await show(VIEW_A_NEW);
+        await click(main(container));
+        await deliverSend({ outcome: 'opened', text: 'Sent.' });
+        expect(main(container).getAttribute('title')).not.toBe(OPENED_A);
     });
 });

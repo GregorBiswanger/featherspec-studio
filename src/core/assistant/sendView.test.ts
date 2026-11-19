@@ -6,7 +6,7 @@ import { sendViewOf } from './sendView';
 
 const CASES = Object.keys(STEP_GUIDES) as StepCase[];
 
-describe('0024 AC-004: the default target of the step\'s session', () => {
+describe('0024 AC-004 / 0026 AC-001: the default target is the new chat for every step', () => {
     it('there are thirteen step cases, and no offer gives no send view', () => {
         expect(CASES).toHaveLength(13);
         for (const stepCase of CASES) {
@@ -15,9 +15,8 @@ describe('0024 AC-004: the default target of the step\'s session', () => {
     });
 
     for (const stepCase of CASES) {
-        const fresh = stepCase === 'NS-5' || stepCase === 'NS-9';
-        it(`${stepCase}: Copilot sends to the ${fresh ? 'new' : 'current'} chat, with both targets`, () => {
-            expect(sendViewOf({ assistant: 'copilot' }, stepCase)).toEqual({ assistant: 'copilot', target: fresh ? 'new' : 'current', targets: ['new', 'current'] });
+        it(`0026 AC-001 ${stepCase}: Copilot sends to the new chat, with both targets`, () => {
+            expect(sendViewOf({ assistant: 'copilot' }, stepCase)).toEqual({ assistant: 'copilot', target: 'new', targets: ['new', 'current'] });
         });
 
         it(`${stepCase}: Claude Code always sends to a new chat, the only target`, () => {
@@ -25,10 +24,9 @@ describe('0024 AC-004: the default target of the step\'s session', () => {
         });
     }
 
-    it('the new target is exactly the cases whose session is new', () => {
-        const fresh = CASES.filter((stepCase) => sendViewOf({ assistant: 'copilot' }, stepCase)?.target === 'new');
-        expect(fresh).toEqual(CASES.filter((stepCase) => STEP_GUIDES[stepCase].session === 'new'));
-        expect(fresh).toEqual(['NS-5', 'NS-9']);
+    it('0026 AC-001: no step case defaults to the current chat, whatever its session', () => {
+        const current = CASES.filter((stepCase) => sendViewOf({ assistant: 'copilot' }, stepCase)?.target === 'current');
+        expect(current).toEqual([]);
     });
 
     it('a returned send view does not share its targets array between calls', () => {
