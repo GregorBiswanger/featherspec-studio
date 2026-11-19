@@ -3,7 +3,7 @@
 **Spec:** [0028-plan-state-aware-next-step.md](0028-plan-state-aware-next-step.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-006
+**Current step:** T-008
 
 ## Approach
 
@@ -172,8 +172,8 @@ Parallel: stage 3 (runs in sequence, `PLAN-R3.md`). Stages 1 and 2 share `nextSt
   0023 AC-009's disclosure. Immediately green: each file gets a negative control (plan `Not started` with an open step
   → Active, ways shown).
 - **Verify:** `npx vitest run src/core/board/surfaces0028.test.ts src/adapters/node/surfaces0028.bundle.test.ts src/core/planMap/planMap0028.test.ts`
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-19 · `npx vitest run src/core/board/surfaces0028.test.ts src/adapters/node/surfaces0028.bundle.test.ts src/core/planMap/planMap0028.test.ts`: 15 passed (7 + 3 + 5); every file carries negative controls (plan Not started with an open step is Active with ways; struck-only plan still renders `Let the agent report where the plan stands`); eslint, tsc ×2 clean. Tests only, immediately green by design (the code of T-002…T-005 holds), so no red run; the controls prove the checks can fail.
+- **Notes:** Surfaces covered in `surfaces0028.test.ts`: detail, Board card and column, Overview Now row and order, tree row (state, description, tooltip), badge (1), status bar text and tooltip (`$(checklist) 0001 · Review · /sdd-compile`, the AC-006 example with an Active `0002` beside), and the quick pick's source `situation().steps` (descriptions `Review · Verify · /sdd-compile`, `Active · Continue · Implement T-001`): the pick itself opens only when no spec is Review, Active or Blocked, so an Active or Review spec shows there only as a step of the situation. The tree row's description is the short form without the intent (0020 AC-004). Bundle test mounts Board with detail, Overview and Plan map in jsdom. `TipSplitterOptions` gained `stages`.
 
 ### T-007 — Plan and version changes show within 500 ms
 
@@ -185,8 +185,8 @@ Parallel: stage 3 (runs in sequence, `PLAN-R3.md`). Stages 1 and 2 share `nextSt
   bar switch AC-004's fixture between Report first and variant A. Negative control: a change that switches nothing adds
   no history entry.
 - **Verify:** `npx vitest run --project timing-node src/core/board/planState0028.timing.test.ts src/core/shell/version0028.timing.test.ts`
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** 2026-11-19 · `npx vitest run --project timing-node src/core/board/planState0028.timing.test.ts src/core/shell/version0028.timing.test.ts`: 8 passed (5 + 3), each switch within 500 ms (`BUDGET_MS.uiFreshness`, best of three); `npm run test:unit` 3265 passed, 4 skipped, timing 26 passed; eslint, tsc ×2 clean.
+- **Notes:** Board world: last open step ticked, a tick removed, `Current step` edited (both ways); detail, Overview and Board read after each notification, selection kept. History on the lifecycle service with a memory store: Active → Review → Active adds one `in flow` entry each; a change that switches nothing adds none. Shell world: `AGENTS.md` rewritten (both memory sources), the marker watch fired, 200 ms of the fake clock, `settle()`; detail, Overview, tree row and status bar switch between Report first and variant A for 1.10.0, 1.11.0, `next`, 1.12.0 and no line; selection and area unchanged. Tests only, green on first run, with a negative control each.
 
 ### T-008 — Preview at two widths and three themes
 

@@ -19,6 +19,7 @@ export interface TipSplitterOptions {
     specStatus?: string;
     note?: string;
     steps?: ReadonlyArray<readonly [string, string]>;
+    stages?: string;
 }
 
 export const SPLITTER_SPEC = '.specs/active/0001-tip-splitter.md';
@@ -43,7 +44,7 @@ export function splitterPlan(options: TipSplitterOptions = {}): string {
     if (options.currentStep !== null && options.currentStep !== undefined) {
         header.push(`**Current step:** ${options.currentStep}`);
     }
-    const stages = '## Stages\n\n1. T-001 → T-002\n2. T-003 → T-004\n3. T-005 → T-006\n';
+    const stages = `## Stages\n\n${options.stages ?? '1. T-001 → T-002\n2. T-003 → T-004\n3. T-005 → T-006'}\n`;
     const body = steps.map(([id, title]) => stepBlock(id, title, options)).join('\n');
     return `${header.join('\n')}\n\n${stages}\n## Steps\n\n${body}`;
 }
