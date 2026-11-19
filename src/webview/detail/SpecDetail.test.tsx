@@ -197,6 +197,24 @@ describe('0019 AC-011, AC-012: Progress', () => {
         expect(textOf(root)).not.toContain('Next open step');
     });
 
+    it('0025 AC-003: the ID of the next open step of a map-able spec is a step link; for a spec that is not map-able it keeps 0019 AC-017', async () => {
+        const progress = { needs: [], noPlan: false, steps: { kind: 'steps' as const, done: 1, total: 3, next: { id: 'T-002', title: 'Second step', open: { key: PLAN_KEY, line: 20 } } }, criteria: { kind: 'unavailable' as const, reason: 'no-table' as const } };
+        const client = createClient({ post: (message) => void posted.push(message) });
+        clients.push(client);
+        client.start();
+        mounted = await mount(<App client={client} />);
+        await send(shellEvent(baseView({ area: 'planMap', selection: { stem: '0007-thing', number: '0007' } }), 1));
+        await send(detailEvent(spec({ progress, plan: planSample() })));
+        const link = links(mounted.container.querySelector('.progress-next')!)[0]!;
+        expect(link.title).toBe('T-002 Second step\nShow T-002 in the plan map · Ctrl+click opens the plan file');
+        await click(link);
+        expect(posted.filter((message) => message.type === 'navigate').map((message) => message.payload)).toEqual([{ area: 'planMap', target: { kind: 'spec', stem: '0007-thing', step: 'T-002' } }]);
+        expect(posted.filter((message) => message.type === 'openFile')).toEqual([]);
+        await send(detailEvent(spec({ progress, state: 'Done' })));
+        const plain = links(mounted.container.querySelector('.progress-next')!)[0]!;
+        expect(plain.title).toBe('Open 0007-thing.plan.md at line 20');
+    });
+
     it('a complete plan shows no next open step; no countable step says so; an unreadable plan says so', async () => {
         const done = await open(spec({ progress: { needs: [], noPlan: false, steps: { kind: 'steps', done: 4, total: 4 }, criteria: { kind: 'criteria', verified: 3, total: 3, open: [] } } }));
         expect(textOf(progressOf(done))).toContain('4 of 4 done');

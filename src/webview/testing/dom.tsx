@@ -54,6 +54,12 @@ export async function click(element: Element): Promise<void> {
     });
 }
 
+export async function ctrlClick(element: Element): Promise<void> {
+    await act(async () => {
+        element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true, detail: 1 }));
+    });
+}
+
 export async function pressKey(element: Element, key: 'Enter' | ' '): Promise<void> {
     await act(async () => {
         const target = element as HTMLElement;

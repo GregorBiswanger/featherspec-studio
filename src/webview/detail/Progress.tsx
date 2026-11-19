@@ -14,6 +14,7 @@ import {
     STEPS_LABEL,
     stepsDoneText,
 } from '../../shared/protocol/texts';
+import { StepLink } from '../ui/StepLink';
 import { FileLink, type FileResult } from '../ui/FileLink';
 import { ProgressBar } from '../ui/ProgressBar';
 import { PlainSection } from './DetailSection';
@@ -21,7 +22,7 @@ import { identityKeys } from './identityKeys';
 
 type OpenAt = (key: string, line: number) => void;
 
-function Steps(props: { steps: StepsProgress; fileResult: FileResult | undefined; onOpen: OpenAt }) {
+function Steps(props: { steps: StepsProgress; fileResult: FileResult | undefined; onOpen: OpenAt; mapable: boolean }) {
     const { steps } = props;
     return (
         <div className="progress-row">
@@ -33,9 +34,15 @@ function Steps(props: { steps: StepsProgress; fileResult: FileResult | undefined
                     {steps.next === undefined ? null : (
                         <p className="progress-next">
                             {NEXT_OPEN_STEP_LABEL}{' '}
-                            <FileLink target={steps.next.open} fileResult={props.fileResult} onOpen={props.onOpen}>
-                                {steps.next.id}
-                            </FileLink>{' '}
+                            {props.mapable ? (
+                                <StepLink id={steps.next.id} target={steps.next.open} fileResult={props.fileResult} onOpen={props.onOpen} reason={`${steps.next.id} ${steps.next.title}`}>
+                                    {steps.next.id}
+                                </StepLink>
+                            ) : (
+                                <FileLink target={steps.next.open} fileResult={props.fileResult} onOpen={props.onOpen}>
+                                    {steps.next.id}
+                                </FileLink>
+                            )}{' '}
                             {steps.next.title}
                         </p>
                     )}
@@ -88,7 +95,7 @@ function Criteria(props: { criteria: CriteriaProgress; fileResult: FileResult | 
     );
 }
 
-export function Progress(props: { progress: ProgressView; fileResult: FileResult | undefined; onOpen: OpenAt; withSteps?: boolean }) {
+export function Progress(props: { progress: ProgressView; fileResult: FileResult | undefined; onOpen: OpenAt; withSteps?: boolean; mapable?: boolean }) {
     const { progress } = props;
     return (
         <PlainSection title={PROGRESS_HEADING}>
@@ -102,7 +109,7 @@ export function Progress(props: { progress: ProgressView; fileResult: FileResult
                 </ul>
             )}
             {progress.noPlan ? <p>{NO_PLAN_TEXT}</p> : null}
-            {progress.steps === undefined || props.withSteps === false ? null : <Steps steps={progress.steps} fileResult={props.fileResult} onOpen={props.onOpen} />}
+            {progress.steps === undefined || props.withSteps === false ? null : <Steps steps={progress.steps} fileResult={props.fileResult} onOpen={props.onOpen} mapable={props.mapable === true} />}
             {progress.criteria === undefined ? null : <Criteria criteria={progress.criteria} fileResult={props.fileResult} onOpen={props.onOpen} />}
         </PlainSection>
     );

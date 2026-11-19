@@ -3,7 +3,7 @@
 **Spec:** [0025-plan-map-navigation-and-progress.md](0025-plan-map-navigation-and-progress.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-001
+**Current step:** T-008
 
 ## Approach
 
@@ -293,8 +293,8 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
       "0025 AC-003 …": one navigation request, no open request, selection unchanged; not map-able keeps 0019.
   - Retarget the 0019 AC-017 and 0023 AC-004 chip tests (`Notes:`).
 - **Verify:** `npm run test:unit` — red first (stub opens the file), then green.
-- [ ] **Verified (T-007):** —
-- **Notes:** —
+- [x] **Verified (T-007):** 2026-11-19. Red: StepLink stub (FileLink) failed the AC-001 and AC-004 tests (2 failed). Green: src/webview 672 passed, tsc ×2 clean. Stage 2 gate chain (2026-11-19): eslint, tsc ×2, test:unit (3342 + 26 timing), compile, compile-tests all green.
+- **Notes:** FileLink got an optional `activate` (tooltip, onPlain): plain click, Enter and Space call it; Ctrl or Cmd opens the file (keyboard with a modifier is handled on keydown, a mouse click by `detail > 0`, so a browser-synthesised click is not counted twice). `StepLink` reads the selection from the shell for the navigation target; the name in the tooltip is the chip name (chips) or `<ID> <title>` (Progress). Progress gets `mapable` from SpecDetail (plan is a plan and state is not Done). Retargeted by title: 0023 AC-004 chip tests (tooltip U-02; open request now with Ctrl via new `ctrlClick` test helper).
 
 ### T-008 — Step IDs in Next steps and Overview rows are links
 
@@ -485,23 +485,23 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-006, T-007 | — | — | open |
-| AC-002 | T-007 | — | — | open |
-| AC-003 | T-006, T-007 | — | — | open |
-| AC-004 | T-007 | — | — | open |
+| AC-001 | T-006, T-007 | PlanMap.tsx:Stages, StepLink.tsx | PlanMap.target.test.tsx, StepLink.test.tsx, PlanSection.test.tsx | verified |
+| AC-002 | T-007 | StepLink.tsx, FileLink.tsx | StepLink.test.tsx | verified |
+| AC-003 | T-006, T-007 | PlanMap.tsx:Stages, Progress.tsx | PlanMap.target.test.tsx, SpecDetail.test.tsx | verified |
+| AC-004 | T-007 | StepLink.tsx, planMapTexts.ts:stepLinkTooltip | StepLink.test.tsx | verified |
 | AC-005 | T-012 | — | — | open |
-| AC-006 | T-005, T-006 | — | — | open |
+| AC-006 | T-005, T-006 | shellService.ts:shellEvent, target.ts, PlanMap.tsx | shellService.navigation.test.ts, PlanMap.target.test.tsx (ways part: T-010) | built |
 | AC-007 | T-011 | — | — | open |
 | AC-008 | T-011 | — | — | open |
 | AC-009 | T-009 | — | — | open |
 | AC-010 | T-004, T-009, T-011 | — | — | open |
 | AC-011 | T-013 | — | — | open |
-| AC-012 | T-001 | — | — | open |
-| AC-013 | T-001 | — | — | open |
-| AC-014 | T-002 | — | — | open |
-| AC-015 | T-003 | — | — | open |
+| AC-012 | T-001 | shared/protocol/percent.ts | percent.test.ts | verified |
+| AC-013 | T-001 | texts.ts, ProgressBar.tsx, figures.ts | progress0025.test.ts, ProgressBar.test.tsx | verified |
+| AC-014 | T-002 | shared/protocol/stepLook.ts, board/icons.tsx:StepIcon | stepLook.test.ts, icons.test.tsx, PlanSection.test.tsx, PlanMap.test.tsx | verified |
+| AC-015 | T-003 | core/planMap/returnedWork.ts | returnedWork.test.ts, PlanSection/SpecDetail/PlanMap tests | verified |
 | AC-016 | T-010 | — | — | open |
-| AC-017 | T-006, T-011 | — | — | open |
+| AC-017 | T-006, T-011 | main.css:.step-card[data-highlight] (card row and title clamp: T-011) | webviewCss.test.ts | built |
 | AC-018 | T-013 | — | — | open |
 | AC-019 | T-013 (each step asserts its texts literally) | — | — | open |
 | AC-020 | T-015 | — | — | open |
@@ -509,17 +509,15 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
 | AC-022 | T-014 | — | manual: orchestrator, preview harness, then Gregor | open |
 | AC-023 | T-015 (record) | — | manual: Gregor, click test 2026-11-19 (13), tasks 1–3 | open |
 | AC-024 | T-015 (checklist) | — | manual: Gregor on `tip-splitter`, before the spec closes | open |
-| AC-025 | T-003 | — | — | open |
-| AC-026 | T-004 | — | — | open |
+| AC-025 | T-003 | core/planMap/returnedWork.ts | returnedWork.test.ts | verified |
+| AC-026 | T-004 | returnedWork.ts:integrateIsQuiet, SendButton.tsx | quiet0025.test.ts, primaryButtons.test.tsx, SendButton.test.tsx | verified |
 | AC-027 | T-008 | — | — | open |
 
 ## Session handoff
 
-- **Done so far:** plan written. Spec revised (2026-11-19): OP-001's rest decided (12 D2-6), Overview tooltip `%` (PD-085).
-- **Next action:**
-  1. Review the plan.
-  2. After 0028 is done, on the start signal, move the pair to `active/` (`/sdd-lifecycle`) and set the Baseline.
-  3. Then T-001.
-- **Open decisions:** none. If 0028's final surfaces differ from its plan, see *Research*, assumption.
-- **Baseline:** `b8e41c7` (commit before the first step commit)
+- **Done so far:** stages 1 and 2 (T-001…T-007) built, verified and committed, one commit per step, stage gate chains green (2026-11-19). Spec and plan are in `active/`, Baseline `b8e41c7`.
+- **Next action:** stage 3, T-008 (step IDs in Next steps and Overview rows are links), then T-009 (header next step), T-010 (parallel hint and ways target), stage 4 (T-011, T-012), stage 5 (T-013…T-015). Run the stage gate chain at the end of each stage (IMPL-R3 test cadence).
+- **Open decisions:** none. Proxies recorded in the Notes of T-003 (AC-025 beats AC-015's DONE-only example on `fs110-parallel-synthetic`; U-08's m), T-005 (`heading` target, one-shot focus), T-006 (a focus for a spec not shown waits), T-007 (modifier handling).
+- **Where things are:** `core/planMap/returnedWork.ts` (U-05, U-08, `integrateIsQuiet`), `core/planMap/stageLines.ts`, `shared/protocol/{percent,stepLook}.ts`, `webview/ui/StepLink.tsx`, `webview/areas/planMap/target.ts`; the client snapshot carries `focus`; `ways` targets are accepted by the protocol and the service but the map applies only step and heading targets until T-010.
+- **Baseline:** `b8e41c7`
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

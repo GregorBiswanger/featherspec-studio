@@ -152,7 +152,7 @@ function Picture(props: {
                 </ul>
             )}
             {plan === undefined ? null : <PlanSection plan={plan} fileResult={fileResult} onOpen={onOpen} onOpenMap={props.onOpenMap ?? noop} />}
-            {detail.progress === undefined ? null : <Progress progress={detail.progress} fileResult={fileResult} onOpen={onOpen} withSteps={plan === undefined} />}
+            {detail.progress === undefined ? null : <Progress progress={detail.progress} fileResult={fileResult} onOpen={onOpen} withSteps={plan === undefined} mapable={detail.plan?.kind === 'plan' && detail.state !== 'Done'} />}
             <PlainSection title={FILES_HEADING}>
                 <ul className="detail-files">
                     {detail.files.map((file) => (

@@ -6,7 +6,7 @@ import { planSample, stage, step } from '../../shared/protocol/testing/planSampl
 import { App } from '../App';
 import { boardEvent, boardView, card } from '../board/testing/views';
 import { createClient, type ShellClient } from '../client';
-import { baseView, click, mount, send, shellEvent, type Mounted } from '../testing/dom';
+import { baseView, click, ctrlClick, mount, send, shellEvent, type Mounted } from '../testing/dom';
 import { resetSectionMemory } from './sectionMemory';
 import { fileNotFoundText } from '../../shared/protocol/texts';
 import { detailEvent, detailView, openFileResultEvent, PLAN_KEY } from './testing/views';
@@ -149,8 +149,8 @@ describe('0023 AC-004: the chips', () => {
             ['T-007', ', not in the steps'],
         ]);
         const next = chips(sectionOf(container, 'Plan')!)[1]!.querySelector<HTMLButtonElement>('button')!;
-        expect(next.title).toBe('T-002 Step T-002, next\nOpen 0007-thing.plan.md at line 42');
-        expect(document.getElementById(next.getAttribute('aria-describedby')!)?.textContent).toBe('T-002 Step T-002, next\nOpen 0007-thing.plan.md at line 42');
+        expect(next.title).toBe('T-002 Step T-002, next\nShow T-002 in the plan map · Ctrl+click opens the plan file');
+        expect(document.getElementById(next.getAttribute('aria-describedby')!)?.textContent).toBe('T-002 Step T-002, next\nShow T-002 in the plan map · Ctrl+click opens the plan file');
     });
 
     it('0025 AC-014: each chip draws the codicon motif of its state as an aria-hidden SVG and no old symbol', async () => {
@@ -168,10 +168,18 @@ describe('0023 AC-004: the chips', () => {
         expect(dropped.querySelector('s')?.textContent).toBe('T-004');
     });
 
-    it('activating a chip sends the open request for the plan at the heading line of its step; a not-found chip is no button', async () => {
+    it('0025 AC-001: a plain activation of a chip sends one navigation request for the Plan map with the step and no open request', async () => {
         const container = await open(states);
         const all = chips(sectionOf(container, 'Plan')!);
         await click(all[1]!.querySelector('button')!);
+        expect(requests('navigate')).toEqual([{ area: 'planMap', target: { kind: 'spec', stem: '0007-thing', step: 'T-002' } }]);
+        expect(requests('openFile')).toEqual([]);
+    });
+
+    it('activating a chip with Ctrl sends the open request for the plan at the heading line of its step; a not-found chip is no button', async () => {
+        const container = await open(states);
+        const all = chips(sectionOf(container, 'Plan')!);
+        await ctrlClick(all[1]!.querySelector('button')!);
         expect(requests('openFile')).toEqual([{ key: PLAN_KEY, line: 42 }]);
         expect(all[6]!.querySelector('button')).toBeNull();
         expect(all[6]!.tagName).toBe('SPAN');
@@ -183,7 +191,7 @@ describe('0023 AC-004: the chips', () => {
         const button = all[1]!.querySelector<HTMLButtonElement>('button')!;
         const before = button.getAttribute('aria-label');
         expect(before).toContain('T-002');
-        await click(button);
+        await ctrlClick(button);
         await send(openFileResultEvent(PLAN_KEY, fileNotFoundText(PLAN_KEY)));
         expect(button.textContent).toBe(fileNotFoundText(PLAN_KEY));
         const name = button.getAttribute('aria-label') ?? button.textContent;

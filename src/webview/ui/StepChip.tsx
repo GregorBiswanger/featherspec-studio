@@ -1,7 +1,8 @@
 import type { PlanStepView } from '../../shared/protocol/planMap';
 import { chipName, stepLook } from '../../shared/protocol/planMapTexts';
 import { StepIcon } from '../board/icons';
-import { FileLink, type FileResult } from './FileLink';
+import type { FileResult } from './FileLink';
+import { StepLink } from './StepLink';
 
 export function StepChip(props: { step: PlanStepView; fileResult: FileResult | undefined; onOpen(key: string, line: number): void }) {
     const { step } = props;
@@ -20,10 +21,10 @@ export function StepChip(props: { step: PlanStepView; fileResult: FileResult | u
     }
     return (
         <span className="step-chip" data-step-chip data-state={step.state}>
-            <FileLink target={step.open} fileResult={props.fileResult} onOpen={props.onOpen} label={name} reason={name}>
+            <StepLink id={step.id} target={step.open} fileResult={props.fileResult} onOpen={props.onOpen} label={name} reason={name}>
                 {symbol}
                 {label}
-            </FileLink>
+            </StepLink>
         </span>
     );
 }

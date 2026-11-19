@@ -149,3 +149,8 @@ export const WAYS_LEAD_TEXT =
     'Steps joined by ‖ share no file and may run in parallel. In sequence is the default; parallel pays off for large steps. Either parallel way runs the quality gates once, on the combined result, before a step is ticked.';
 
 export const START_LINES_LEAD_TEXT = 'Start lines — commit first: a worktree holds committed files only.';
+
+/** U-02: the tooltip and description of a step link, after the step's name. */
+export function stepLinkTooltip(name: string, id: string, mac: boolean): string {
+    return `${name}\nShow ${id} in the plan map · ${mac ? 'Cmd' : 'Ctrl'}+click opens the plan file`;
+}
