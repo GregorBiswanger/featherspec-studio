@@ -29,6 +29,8 @@ carried across areas, and the one navigation request through which areas open ea
 keeps the panel UI away from local files.
 *Amended by 0020 (PD-058): §1 — the view "Specs" is 0020's tree with group counts that follows changes (0020 AC-013); the minimal spec list in Spec Explorer is gone; the panel has two tabs (0018).*
 
+*Amended by 0025 (PD-082): a spec target may name a step or the ways of its current stage, delivered once (0025 A-011, AC-006); the register is not edited.*
+
 *Amended by 0023 (PD-069): §1 — the areas are Overview, Board and Plan map (`planMap`), with `featherspec-studio.openPlanMap` (0023 AC-006).*
 
 ## 2. Goal and problem

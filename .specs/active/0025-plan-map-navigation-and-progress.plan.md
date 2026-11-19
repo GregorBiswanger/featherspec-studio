@@ -3,7 +3,7 @@
 **Spec:** [0025-plan-map-navigation-and-progress.md](0025-plan-map-navigation-and-progress.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-014
+**Current step:** T-014 (orchestrator's preview; T-001…T-013 and T-015 are done)
 
 ## Approach
 
@@ -449,8 +449,8 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
 - **Verify:** manual: the orchestrator looks for cut text in the header next step, card rows, percentages, U-05, U-06
   and U-08. He also checks that motifs are told apart without colour, that the highlight is visible, that a `‖`
   neighbour keeps its height and that the 1000 px map shows the header's next step. jsdom has no layout engine.
-- [ ] **Verified (T-014):** —
-- **Notes:** —
+- [ ] **Verified (T-014):** — (open: the preview harness is the orchestrator's; nothing to build here)
+- **Notes:** The built webview (`dist/webview`) carries stages 1 to 5; run `/home/claude/orch/preview/run.sh` on `fs110-parallel-synthetic` (each variant), `fs-partial-return` and `studio-0015`, record screenshots and the verdict here, then tick. Items to look at: cut text in the header next step, card rows (the title now clamps to two lines beside the ID in a flex toggle), percentages, U-05, U-06, U-08; the motifs without colour; the highlight in each theme; a `‖` neighbour's height next to an expanded card; the 1000 px map showing the header's next step; an Overview row's step text beside the row button (narrow layout keeps a 12 px inset).
 
 ### T-015 — §4 notes, docs, title audit and final gates
 
@@ -478,8 +478,8 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
       - The Overview-rows sentence: the step text is beside the row button, with a step link.
   - Memory Bank: `techContext.md` *Test* line for 0025, and `activeContext.md`.
 - **Verify:** quality gates 1–5 in order, zero warnings; `npm test` on Windows and CI by the orchestrator, result here.
-- [ ] **Verified (T-015):** —
-- **Notes:** —
+- [x] **Verified (T-015):** 2026-11-19. Gates in order, zero warnings: `npx eslint src --max-warnings 0`, `npx tsc --noEmit`, `npx tsc --noEmit -p src/webview`, `npm run test:unit` (3416 + 28 timing passed), `npm run compile`, `npm run compile-tests`. Red first for AC-021: the checklist-order test in `docsScan.test.ts` failed until its list took the 0025 section, and `activeContext.md` limits failed until Changed Recently held three lines. `npm test` (Windows, CI) and the host smoke test: the orchestrator's run, result to be recorded here.
+- **Notes:** §4's notes: one "*Amended by 0025 (PD-082): …*" under each named statement of 0023, 0019, 0021, 0017, 0022, 0024, 0020, 0018, 0015, 0016, 0005, 0006 and 0013 (test-audit notes on each AC listed in §4's last row); no PD row edited. `.claude/rules/ux-guidelines.md` 5 and 11 read as §4 says; `docs/product/ux-guidelines.md` rows `5 (2026-11-19)` and `11 (2026-11-19)`; README *Plan map* section, CHANGELOG `[0.1.0]` and the checklist section 0025 (AC-022…AC-024) written; `docsScan.test.ts` "0025 AC-021 …". AC-023: recorded in the checklist and spec (run 2026-11-19 by 13, tasks 1–3; K-1 became AC-027, the rest is AC-024). Title audit (Baseline `b8e41c7`, 3169 titles, 5 missing): `manifest.test.ts` "AC-008 (0020): the context menu offers Open Spec, Open Plan only … in this order; groups get no entry" → head title now "AC-008 (0020), 0025 AC-005: the context menu offers Show in Plan Map first for a row that names map, Open Spec, …" (statement changed by §4 row 17); `specTree.test.ts` "the figures show steps and criteria joined by a dot, the contextValue names step and plan" → "… names step, plan and map (0025)" (contextValue gained `map`); `PlanMap.test.tsx` "the map renders no primary button, with the ways open" → "… no primary button below its header, with the ways open" (§4 row 8); `PlanSection.test.tsx` "activating a chip sends the open request for the plan at the heading line of its step; a not-found chip is no button" → "activating a chip with Ctrl sends the open request …" and "0025 AC-001: a plain activation of a chip sends one navigation request …" (§4 row 1); `primaryButtons.test.tsx` "with a selected spec the view has one primary button, the first line of the side panel, and the map holds only secondary and icon Copies" → "… the first line of the map header (0025 AC-010) …" (§4 row 8). `/sdd-architecture-update` entries: `AGENTS.md` shared line (step look, percentages) and snapshot date, `.architecture/core.md` (planMap, shell, board), `.architecture/webview.md` (areas, `ui/`, Overview row), Memory Bank `techContext.md` Test line and `activeContext.md` (Changed Recently kept at three lines; the 0024 fix-round line left it, its detail is in 0024's plan).
 
 ## Traceability
 
@@ -504,20 +504,20 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
 | AC-017 | T-006, T-011 | main.css:.step-card[data-highlight], .plan-group, .step-card-title | webviewCss.test.ts, StepCard.test.tsx | verified |
 | AC-018 | T-013 | stepLinks.ts, ParallelHint.tsx, treeActions.ts | copyNextStep/noWrite.test.ts, board/noWrite.test.ts | verified |
 | AC-019 | T-013 (each step asserts its texts literally) | planMapTexts.ts | userLanguage.test.tsx | verified |
-| AC-020 | T-015 | — | — | open |
-| AC-021 | T-015 | — | — | open |
+| AC-020 | T-015 | spec §4 notes in 0005, 0006, 0013, 0015…0024 | the retargeted tests, audit in T-015 Notes | verified |
+| AC-021 | T-015 | README.md, CHANGELOG.md, docs/, .claude/rules/ux-guidelines.md | docsScan.test.ts | verified |
 | AC-022 | T-014 | — | manual: orchestrator, preview harness, then Gregor | open |
-| AC-023 | T-015 (record) | — | manual: Gregor, click test 2026-11-19 (13), tasks 1–3 | open |
-| AC-024 | T-015 (checklist) | — | manual: Gregor on `tip-splitter`, before the spec closes | open |
+| AC-023 | T-015 (record) | docs/release-checklist.md | manual: Gregor, click test 2026-11-19 (13), tasks 1–3 | built |
+| AC-024 | T-015 (checklist) | docs/release-checklist.md | manual: Gregor on `tip-splitter`, before the spec closes | built |
 | AC-025 | T-003 | core/planMap/returnedWork.ts | returnedWork.test.ts | verified |
 | AC-026 | T-004 | returnedWork.ts:integrateIsQuiet, SendButton.tsx | quiet0025.test.ts, primaryButtons.test.tsx, SendButton.test.tsx | verified |
 | AC-027 | T-008 | core/board/stepLinks.ts, NextStep.tsx, SpecRow.tsx, StepText.tsx | stepLinks.test.ts, Overview.stepLinks.test.tsx, SpecDetail.test.tsx, webviewCss.test.ts | verified |
 
 ## Session handoff
 
-- **Done so far:** stages 1 to 4 and T-013 (T-001…T-013) built, verified and committed, one commit per step, stage gate chains green for stages 1 to 4 (2026-11-19). Spec and plan are in `active/`, Baseline `b8e41c7`.
-- **Next action:** stage 5: T-014 (preview, the orchestrator's manual run; nothing to build) and T-015 (§4 notes, rules, docs, title audit, architecture entries, Memory Bank, final gates). Run the stage gate chain at the end of each stage (IMPL-R3 test cadence).
-- **Open decisions:** none. Proxies recorded in the Notes of T-003 (AC-025 beats AC-015's DONE-only example on `fs110-parallel-synthetic`; U-08's m), T-005 (`heading` target, one-shot focus), T-006 (a focus for a spec not shown waits), T-007 (modifier handling).
-- **Where things are:** `core/planMap/returnedWork.ts` (U-05, U-08, `integrateIsQuiet`), `core/planMap/stageLines.ts`, `shared/protocol/{percent,stepLook}.ts`, `webview/ui/StepLink.tsx`, `webview/areas/planMap/target.ts`; the client snapshot carries `focus`; the map applies step, ways and heading targets; `core/board/stepLinks.ts` (`stepLinkOf`), `webview/detail/ParallelHint.tsx`, `areas/planMap/shows.ts` are new in stage 3.
+- **Done so far:** T-001…T-013 and T-015 built, verified and committed (one commit per step; stage gate chains green for stages 1 to 4; the final chain after T-015 green, 2026-11-19). Spec and plan are in `active/`, Baseline `b8e41c7`.
+- **Next action:** T-014 (preview at two widths and three themes: the orchestrator, Notes of T-014 list what to look at), then `npm test` on Windows and CI (host smoke `AC-005 (0025)` in `shell.smoke.test.ts`), then Gregor's AC-023/AC-024 checks. Then `/sdd-compile`.
+- **Open decisions:** none. Proxies recorded in the Notes of T-003, T-005, T-006, T-007, T-008 (step text beside the row button: the row button's accessible name no longer holds it), T-009 (core/webview split of the header test), T-012 (`ShellService.navigate` made public).
+- **Where things are:** `core/board/stepLinks.ts`, `core/planMap/{returnedWork,stageLines}.ts`, `shared/protocol/{percent,stepLook}.ts`, `webview/ui/StepLink.tsx`, `webview/detail/ParallelHint.tsx`, `webview/areas/planMap/{target,shows}.ts`; the tree command in `core/shell/{specTree,treeActions}.ts` and `package.json`.
 - **Baseline:** `b8e41c7`
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

@@ -239,6 +239,8 @@ its `Verified` text. *(fixture: a copy of this repo's spec 0002 and its plan; D-
 structure that §2's five deltas change are updated, in the same change set, each named in the plan.
 *Amended by 0020 (PD-058): AC-016 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
 
+*Amended by 0025 (PD-082): also except the tests 0025 AC-020 lists against a statement 0025 §4 changes.*
+
 *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
 
 *Amended by 0019 (PD-058): AC-016 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*

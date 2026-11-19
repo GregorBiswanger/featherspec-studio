@@ -276,6 +276,7 @@ the repository's own `.specs/`).
   *Amended by 0023 (PD-069): AC-023 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
   *Amended by 0024 (PD-068): AC-023 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
   *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
+  *Amended by 0025 (PD-082): also except the tests 0025 AC-020 lists against a statement 0025 §4 changes.*
 - **AC-024** The specs of §5 shall carry their amendment notes and the PD register one new entry superseding §5's PD rows, with no note in an older entry; the README shall say once that FeatherSpec has no priority, persisted compile verdict or dependency field, so the Studio shows none; CHANGELOG and `docs/release-checklist.md` shall name the changes and AC-025.
 - **AC-025** *(manual, Gregor or delegate)* Preview harness screenshots in Dark, Light and High Contrast: primary Copy, its label change without shift, the need line, the T-07 toggle, the problem badge and the S2 sentence in view and panel; Gregor's Hands-On on `tip-splitter` shows no problem marker without a real problem.
 

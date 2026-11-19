@@ -165,6 +165,7 @@ Rules:
   rounded down, together with both numbers and the formula text. A `done/` entry with any other
   status (a contradiction, PD-021) counts in the divisor only. When the divisor is 0, progress
   is "not available".
+  *Amended by 0025 (PD-082): rounded half up, at most 99% until all are done, with the formula of 0025 U-04 (PD-079; 0025 §5.4, AC-013).*
 - **BR-05 Running** (Gregor, Q3). The *Running* figure counts the runs of the active project
   whose current status is an open state. There is no "recovery pending" figure (PD-024): a run
   left open by an earlier session arrives as `Interrupted` (0004 BR-004) and falls under BR-06.

@@ -107,6 +107,7 @@ sentence that also says something else keeps that part. The rows name what needs
   style and feedback.
   *Amended by 0021 (PD-069): §6.1 — cards, rows and the quick pick show the step short form of 0021 §6.3 (command short form with `Implement <ID>`); the status bar text keeps the command short form; the detail and every tooltip show each line under its intent; the Copy is "Copy prompt".*
   *Amended by 0022 (PD-069): §6.1 "Card and row Copy take 0016 §6.5's style and feedback" — they are the icon button of 0022 §4.4 with that feedback.*
+  *Amended by 0025 (PD-082): a step ID is a step link for a map-able spec: a plain activation leads into the Plan map, Ctrl or Cmd opens the plan at the step (0025 §5.1, AC-001–AC-004, AC-027); tooltip 0025 U-02.*
 - The step is the card's last line, follows a row's reasons and ends the status bar text: the
   spec is named first (audit R-03 field 4, K-G; deviation from guideline 1 "before anything else", named).
 - A spec without a step shows no step line on its card or row (problems show per 0016).
@@ -275,6 +276,7 @@ Decided by automated tests unless marked manual. Fixtures: one per NS rule (0015
   *Amended by 0023 (PD-069): AC-024 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
   *Amended by 0024 (PD-068): AC-024 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
   *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
+  *Amended by 0025 (PD-082): also except the tests 0025 AC-020 lists against a statement 0025 §4 changes.*
 - **AC-025** 0001, 0003, 0006, 0007, 0013, 0015, 0016 and ADR-001 shall carry the notes of §5; a case-insensitive search of `README.md`, `docs/release-checklist.md`, `docs/product/design-brief.md` and `.architecture/*.md` shall find no "Move to…", "Move Spec", "drag", "move request", "move pick", "move result", "transition check" or `FeatherSpec: <name> (<version>)`; the README shall name the card Copy, the status bar with the rule of §6.3 and "Copy Next Step"; the release checklist shall carry AC-026; `CHANGELOG.md` shall name the removal and the new places of the next step under the version in preparation.
 - **AC-026** *(manual, Gregor)* M-1 on `tip-splitter`, Hands-On walkthrough with his assistant: task "start the Ready spec" — the Start line copied from the card with no failed attempt; on an Active spec `/sdd-plan`, then `continue` in the same chat, runs one step; the status bar names the spec he works on and its click copies; Dark, Light and High Contrast show the card line and row readable.
   *Amended by 0021 (PD-069): AC-026 — the run of 0021 AC-025.*

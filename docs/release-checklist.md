@@ -220,6 +220,21 @@ and the expected result. A clear miss reopens the named spec.
   continue line comes first and `Implement <ID>` levels it. (c) On both, a Ready spec's `Implement T-001 of <plan path>`
   moves the pair to active and builds only T-001.
 
+## Plan map navigation and progress (0025)
+
+- [ ] **AC-022** *(preview harness by the orchestrator, then Gregor; guideline 12)*: Dark, Light and High Contrast at 1600 px
+  and 1000 px window width with the side panel open at its default width, on `fs110-parallel-synthetic` (each variant),
+  `fs-partial-return` and `studio-0015`: the header's Next step, the card rows, the percentages and the returned-work
+  statements are cut nowhere; the step motifs are told apart without colour; the highlight is visible in each theme; an
+  expanded card leaves its `‖` neighbour at its own height; at 1000 px the map alone shows the header's Next step.
+  Screenshots and verdict in the plan.
+- [ ] **AC-023** *(Gregor, click test; run 2026-11-19, tasks 1–3, K-1 became AC-027)*: starting in the Overview with 0001 of the
+  parallel fixture: "Find out what T-004 does, whether it can run in parallel, how far the spec is, and copy what you would
+  run next." Passes when you answer without opening a Markdown file and name the percentage; confirm or change the texts.
+- [ ] **AC-024** *(Gregor, real use on `C:\projects\test\tip-splitter` before the spec closes)*: every step's information is
+  reached without the Markdown file (chip, next open step, tree); Ctrl+click opens the plan at the step; after the agent
+  ticks the last step the map header shows the check and the percentage first reads 100%.
+
 ## Go
 
 - [ ] **Repository visibility**: the Marketplace page loads the README screenshots from

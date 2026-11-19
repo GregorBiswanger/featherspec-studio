@@ -10,7 +10,7 @@ Current phase: act
 - Waits for: CI at the PR, Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
 
 ## Active Spec
-- [0025](../.specs/active/0025-plan-map-navigation-and-progress.md) / [plan](../.specs/active/0025-plan-map-navigation-and-progress.plan.md): Plan map navigation and progress, T-001…T-015 in progress.
+- [0025](../.specs/active/0025-plan-map-navigation-and-progress.md) / [plan](../.specs/active/0025-plan-map-navigation-and-progress.plan.md): Plan map navigation and progress, T-001…T-013 and T-015's docs done; T-014 (preview, orchestrator) and the final gates are left.
 - [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 and OP-004 are Gregor's.
 - [0023](../.specs/active/0023-plan-map-stages-parallel-work.md) / [plan](../.specs/active/0023-plan-map-stages-parallel-work.plan.md): Plan map, T-001…T-017; AC-018 real window, AC-019, AC-020 are Gregor's.
 - [0022](../.specs/active/0022-layout-and-signal-polish.md) / [plan](../.specs/active/0022-layout-and-signal-polish.plan.md): layout and signals, T-001…T-022; AC-020, AC-021 are Gregor's.
@@ -25,9 +25,9 @@ Current phase: act
 - Completed: 0001…0007, 0013 and [0028](../.specs/done/0028-plan-state-aware-next-step.md) ([plan](../.specs/plan-archive/0028-plan-state-aware-next-step.2026-11-19.plan.md)) in `done/`; 0008…0012 are Deprecated (successor 0015); plans frozen in `plan-archive/`.
 
 ## Changed Recently
+- 0025 (PD-082): step IDs link into the Plan map (one-shot focus from the host; Ctrl/Cmd+click opens the plan), `Show in Plan Map` in the tree, the map header shows the next step, percentages `· 67%`, codicon step motifs, richer cards, one returned-work statement; plan Notes per step.
 - 0028 (PD-081, PD-082, PD-087): a plan with every step ticked or struck is Review; below FeatherSpec 1.11.0 the sign puts `/sdd-plan` first, and in every version a `Verified:` line without a tick does; NS-7 is `Implement <ID> of <plan>`; snapshots guard the rest. Done 2026-11-19, `READY (manual items: 1)`.
 - Final check of round 2, docs only (0024 T-014…T-022): README shots retaken plus a Plan map shot; `activeContext.md` and the `AGENTS.md` module lines shortened; CHANGELOG, README, checklist, §5 and the plans made consistent.
-- 0024 fix round (compile S82, T-008…T-013): Send decides its silent copy by the effective setting; nothing runs after the 5 s fallback; focus handoff belongs to the place (`StepAction`); scan exemptions shrink to 0024's names.
 ## Decisions in Flight
 - `AGENTS.md` stays above its 200-line target: the template body alone is 200 lines; further eviction would edit template wiring, Gregor's call.
 - Publisher ID `GregorBiswanger` is confirmed (2026-11-17).
@@ -36,7 +36,7 @@ Current phase: act
 - OP-004 (0024, Gregor's): does Copilot's `open` replace an unsent draft in the current chat? If so, he decides whether NS-6 with Copilot defaults to a new chat. Not blocking the PR.
 
 ## Next
-1. Implement 0025, then 0026, then 0027 (specs and plans are in `.specs/backlog/`; move each to `active/` with `/sdd-lifecycle` when it starts).
+1. Finish 0025 (T-014 preview by the orchestrator, `npm test` on Windows, T-015's gate), then implement 0026 and 0027 (specs and plans are in `.specs/backlog/`; move each to `active/` with `/sdd-lifecycle` when it starts).
 2. Open the PR (draft is fine) so CI runs once at the end of round 3: 0021 AC-020, 0022 AC-017, 0023 AC-016, 0024 AC-014, 0028 AC-012.
 3. Gregor: the release checklist in a real window (0028 AC-015 included); record OP-004; decide the wording "same chat" / "current chat" (0024 AC-019).
 4. A fresh `/sdd-compile` per spec 0014…0024, one session each; then the checklist's Go.

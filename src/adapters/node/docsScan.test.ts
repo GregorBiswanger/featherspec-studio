@@ -373,6 +373,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
             '## Plan map (0023)',
             '## Send to the assistant (0024)',
             '## Plan-state-aware next step (0028)',
+            '## Plan map navigation and progress (0025)',
             '## Go',
         ]);
         for (const gone of ['Plan line', 'descriptions cut', 'attention row', 'attention reason', 'filters, sort']) {
@@ -1021,5 +1022,53 @@ describe('0028 AC-011: the docs describe the plan-state-aware next step', () => 
         expect(guardScopedToOldVersions(old)).toBe(true);
         expect(guardScopedToOldVersions(oldChangelog)).toBe(true);
         expect(guardScopedToOldVersions(right)).toBe(false);
+    });
+});
+
+describe('product docs after 0025 (AC-021)', () => {
+    it('0025 AC-021: the README Plan map section names Show in Plan Map, Ctrl+click, 4 of 6 done · 67% and Next step', async () => {
+        const readme = await read('README.md');
+        const section = readme.slice(readme.indexOf('### Plan map'), readme.indexOf('### The detail of a spec'));
+        for (const literal of ['Show in Plan Map', 'Ctrl+click', '4 of 6 done · 67%', 'Next step']) {
+            expect(section, literal).toContain(literal);
+        }
+    });
+
+    it('0025 AC-021: the CHANGELOG names Show in Plan Map and 4 of 6 done · 67% under the version in preparation; no document holds a digit followed by " %"', async () => {
+        const first = firstRelease(await read('CHANGELOG.md'));
+        expect(first).toContain('Show in Plan Map');
+        expect(first).toContain('4 of 6 done · 67%');
+        for (const file of ['README.md', 'CHANGELOG.md']) {
+            expect(await read(file), file).not.toMatch(/\d %/);
+        }
+        expect('Progress 67 %').toMatch(/\d %/);
+    });
+
+    it('0025 AC-021: the release checklist carries AC-022 to AC-024 before Go', async () => {
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('\n## Plan map navigation and progress (0025)\n');
+        expect(start).toBeGreaterThan(-1);
+        expect(start).toBeLessThan(text.indexOf('\n## Go'));
+        const section = text.slice(start, text.indexOf('\n## ', start + 1));
+        for (const mark of ['**AC-022**', '**AC-023**', '**AC-024**']) {
+            expect(section, mark).toContain(mark);
+        }
+    });
+
+    it('0025 AC-021: the guidelines read as the amendment says, and the rationale table has the two rows', async () => {
+        const rules = (await read('.claude/rules/ux-guidelines.md')).replace(/\s+/g, ' ');
+        expect(rules).toContain('Criterion IDs and "Open" go to the file at the line, beside the panel (`ViewColumn.Beside`); a step ID goes to its card in the Plan map, Ctrl/Cmd+click to the file.');
+        expect(rules).toContain('once per view (detail, first Now row, Plan map header)');
+        const table = await read('docs/product/ux-guidelines.md');
+        expect(table).toContain('| 5 (2026-11-19) |');
+        expect(table).toContain('| 11 (2026-11-19) |');
+    });
+
+    it('0025 AC-021: each statement of 0025 section 4 carries its note, and no PD row of the register names 0025 as an editor', async () => {
+        const files = ['.specs/active/0023-plan-map-stages-parallel-work.md', '.specs/active/0019-detail-situation-picture.md', '.specs/active/0021-next-step-intent-and-guidance.md', '.specs/active/0022-layout-and-signal-polish.md', '.specs/active/0024-send-next-step-to-assistant.md', '.specs/active/0020-native-spec-tree.md', '.specs/active/0018-overview-and-compact-board.md', '.specs/done/0005-studio-shell-navigation.md', '.specs/done/0006-mission-control-dashboard.md', '.specs/done/0013-studio-visual-design.md'];
+        for (const file of files) {
+            expect(await read(file), file).toContain('Amended by 0025 (PD-082)');
+        }
+        expect('no note here'.split('Amended by 0025 (PD-082)').length - 1).toBe(0);
     });
 });

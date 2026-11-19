@@ -57,6 +57,11 @@ First release.
   `FeatherSpec Studio: Open Plan Map` opens it. The detail of a spec gets a **Plan** section with the same
   stages in short and a link to the map. Returned work (a worker's return note) shows on the step and leads
   to **Integrate the returned steps** as the next step. Studio starts no agent and writes no file.
+- Plan map navigation and progress: a step ID in the side panel, in a Next step and in an Overview row is a link to its
+  card in the Plan map (Ctrl or Cmd+click opens the plan file), **Show in Plan Map** in the Specs view's context menu does
+  the same for the spec's next step, and the map's header shows the spec's Next step. Progress reads like `4 of 6 done · 67%`
+  everywhere, step states have their own icon shapes, cards show what was verified or reported, and while a parallel
+  worker is still out the `Integrate` line is not the primary button.
 - The detail of a spec as a side panel next to the Overview and the Board, and beside the Plan map from 900 px, with a divider to set its width
   (remembered per workspace; Enter or a double-click resets it); below 900 px the area or the detail shows
   alone and a back button returns. It

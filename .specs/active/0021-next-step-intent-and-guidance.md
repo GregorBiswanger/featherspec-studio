@@ -88,6 +88,8 @@ named as 0021 §6.4; feedback stays.
 
 ### 6.1 Intent per step (R-1)
 
+*Amended by 0025 (PD-082): a step ID is a step link for a map-able spec: a plain activation leads into the Plan map, Ctrl or Cmd opens the plan at the step (0025 §5.1, AC-001–AC-004, AC-027); tooltip 0025 U-02.*
+
 Prompts stay those of `nextStep()` (0015 §6.1 as 0017 left it), except NS-6 (§6.2). Each line gets an intent; the
 step gets a short intent, the coach line of its first line (§6.5), and an effect and a then-sentence for the toggletip
 (§6.6). `<title>` is the open plan step's title as 0019 §6.3 shows it (plain, at most 80 characters); without one,
@@ -140,6 +142,8 @@ the worker suffix. Without open step — `sdd-plan.md` Mode B steps 2 and 4. No 
 
 ### 6.3 Short form and full form (R-3)
 
+*Amended by 0025 (PD-082): a step ID is a step link for a map-able spec: a plain activation leads into the Plan map, Ctrl or Cmd opens the plan at the step (0025 §5.1, AC-001–AC-004, AC-027); tooltip 0025 U-02.*
+
 - **Command short form:** 0017 §6.1, plus `Implement <ID> of <plan path>` → `Implement <ID>`.
 - **Step short form:** `<short intent> · <command short form>` of the first line: `Verify · /sdd-compile`, `Continue ·
   Implement T-003`, `Build · Start T-001`. Cards and Overview rows show it after 0017's "Next", the tree where 0020
@@ -155,6 +159,8 @@ the worker suffix. Without open step — `sdd-plan.md` Mode B steps 2 and 4. No 
 
 ### 6.4 Copy prompt (R-4)
 
+*Amended by 0025 (PD-082): a card also shows `Verified`, `Reported`, the state word after each covered criterion and, on the step due now, a Copy prompt (0025 §5.2, AC-007, AC-008).*
+
 Every control that copies a next step's prompt or the `/sdd-specify` of 0018 O-8 — per line in the detail, on cards
 and Overview rows, in O-8's empty states, the action of 0017 §6.4's message (label only) — is a **Copy prompt**. A
 text button reads `Copy prompt`, during feedback `Copied` · `Could not copy` (0016 §6.5: 2 s, T-19 announced), and keeps
@@ -167,6 +173,8 @@ feedback.
 *Amended by 0024 (PD-068): §6.4 — where Send is offered, the first line's Copy prompt in the detail and on the first Now row is 0024's split button; its menu item reads `Copy prompt` and copies as this section states (0024 §6.3).*
 
 ### 6.5 Coach line (R-5, guideline 11)
+
+*Amended by 0025 (PD-082): also the Plan map header; the detail beside it then shows none (0025 §5.3, D-2; guideline 11 reads "detail, first Now row, Plan map header").*
 
 For a step with a line, one line in the description colour, in the detail directly under the first line's Copy prompt
 and in the first Now row (its place there is 0022's); nowhere else. Text `<session> · <model>` of the first line.
@@ -267,6 +275,7 @@ vocabulary rule of `.claude/rules/specs.md`; it is never a qualifier here.
 - **AC-008** Every Copy prompt of §6.4 in the webview shall be named `Copy prompt: <line>`, for 2000 ms after activation `Copied: <line>` or `Could not copy: <line>`, then `Copy prompt: <line>` again, and put exactly the prompt on the clipboard, no intent or coach text; a text button shall read `Copy prompt`, `Copied` or `Could not copy` at the same times; rendering the detail, Board and Overview of every fixture, the empty states included, shall find no button whose text is `Copy` or whose name starts with `Copy: `; the quick-pick message's action shall be `Copy prompt`.
 - **AC-009** While `showStepTips` is true, the detail and the first Now row shall show §6.5's coach line for a step with a line, in the detail directly after the first line's Copy prompt and its status region; no card, other row, tree item, tooltip, status bar entry, quick-pick item or step without a line shall show a coach line or a `(?)`.
   *Amended by 0024 (PD-068): AC-009 — the coach line stays where the split button stands in place of the Copy prompt (0024 AC-003).*
+  *Amended by 0025 (PD-082): also the Plan map header; the detail beside it then shows none (0025 §5.3, D-2; guideline 11 reads "detail, first Now row, Plan map header").*
 - **AC-010** Where `showStepTips` is false, no surface shall show a coach line or a `(?)`, and intents, prompts and Copy prompt shall be identical to the true case.
 - **AC-011** When `showStepTips` or `modelHints` changes, the detail and the Overview shall show the result within 500 ms after the host receives VS Code's configuration change event, keeping selection and area (PD-047's budget).
 - **AC-012** Where `modelHints.strong` is `X`, the coach lines shall read `new chat · strong model (X), other family` (NS-5), `any chat · strong model (X), allow web search` (NS-10) and `any chat · strong model (X)` (NS-8); where `modelHints.fast` is `Y`, the NS-7 coach line shall read `any chat · fast model (Y)`; a hint shall be trimmed, inner whitespace runs collapsed, cut to 39 characters and `…` over 40; a non-string hint, one empty after trimming, or a `modelHints` that is not an object shall show no name; other keys shall change nothing; a `showStepTips` that is not a boolean shall act as `true`.
@@ -285,6 +294,7 @@ vocabulary rule of `.claude/rules/specs.md`; it is never a qualifier here.
   *Amended by 0023 (PD-069): AC-020 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
   *Amended by 0024 (PD-068): AC-020 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
   *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
+  *Amended by 0025 (PD-082): also except the tests 0025 AC-020 lists against a statement 0025 §4 changes.*
 - **AC-021** 0006, 0007, 0013 and 0015–0020 shall carry the notes of §5; a literal search of `README.md` shall find `Copy prompt`, `About this step`, `featherspec-studio.showStepTips` and `featherspec-studio.modelHints`, and of `CHANGELOG.md` under the version in preparation `Copy prompt`, `showStepTips` and `modelHints`; neither `README.md` nor `docs/release-checklist.md` shall contain `**Copy**` or ``then `continue` ``; the checklist shall carry AC-022–AC-025.
 - **AC-022** *(manual, preview harness by the orchestrator, then Gregor in a real window)* Guideline 12: detail and Overview with the first Now row in Dark, Light and High Contrast at 1600 px and 1000 px window width with the side panel open at its default and at 0022 G-2's minimum width: no intent, prompt or coach line is cut; an open toggletip stays inside its panel and covers no Copy prompt of its step; the `(?)` shows a visible focus outline; screenshots recorded in the plan.
 - **AC-023** *(manual, Gregor)* Both settings appear under "FeatherSpec Studio" in the Settings UI; Show Step Tips toggles the tips in the open panel; Model Hints offers `strong` and `fast` as text fields and the coach line shows the entered name.
@@ -330,6 +340,8 @@ vocabulary rule of `.claude/rules/specs.md`; it is never a qualifier here.
 | A-011 | Coach line advises the first line; the toggletip covers the step (proxy) | Guideline 11 "once per view"; the first line is what cards copy | AC-009, AC-015 |
 | A-012 | Hints are plain text, at most 40 characters, default scope (proxy) | Display only; a workspace value cannot run anything | AC-012 |
 | A-013 | NS-7's and NS-6's then-sentence name a working agreement's earlier stop (proxy) | V-1 case 1 stopped for the test review; 07 §6a "bei TDD Test-Review abwarten"; `sdd-plan.md` Mode B step 3 | §6.1, §6.2 texts |
+
+*Amended by 0025 (PD-082): also the Plan map header; the detail beside it then shows none (0025 §5.3, D-2; guideline 11 reads "detail, first Now row, Plan map header").*
 
 *Amended by 0028 (D-4): A-005 — the stutter reason `Start · Start T-001` lapses, NS-7 reads `Build · Implement T-001` (0026 owns the short form).*
 

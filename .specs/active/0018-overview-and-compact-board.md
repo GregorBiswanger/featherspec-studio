@@ -124,6 +124,7 @@ read Overview or Board; the rows below change behaviour.
 - **B-3 Done.** Collapsed until the developer expands it; the toggle sits in Done's header, offered only while Done holds a card; the choice is remembered per workspace. While a filter is set, Done behaves like every column (B-1) without toggle; after "Clear filters" the remembered choice applies again.
 - **B-4 Filter.** No checkbox and no filter control. A filter arrives only with a navigation request (state or named set, 0007 AC-022) and shows as one chip "Filter: label" with "Clear filters"; label = the set's label or the state names joined by ", ". 0007 AC-023 holds.
 - **B-5 Card.** Rows in order: (1) number and title, clamped to two lines; (1a) the project-relative path, only for a duplicated stem; (2) 0016's warning icon with T-05; the state part — Backlog: 0016's first need (T-11); Blocked: each S-BLOCKED condition (0007 §6.1); a Deprecated spec: "Deprecated"; else a steps progress bar with "Steps d/t" and "Criteria d/t", each left out while not available; the date of §6.3, right-aligned, secondary colour; row 2 is absent without parts; (3) 0017's next-step line. Card tooltip: number, full title, then the description (PD-043) or "No summary". The card's accessible name ends with its state name, so the state stays readable without the chip (0005 AC-023).
+  *Amended by 0025 (PD-082): the progress texts end in ` · <p>%` (U-04) and every bar carries its text as `title` and `aria-valuetext` (0025 §5.4, AC-012, AC-013).*
 - **B-6 Column header.** Icon, name, count. Ready, Review and Blocked carry as tooltip 0016's sentence (T-09) and its rule text (T-08), joined by ` · `; no card shows either. A narrow strip's tooltip is its §7 text, for these three followed by ` · ` and that tooltip; its accessible name is the §7 text alone.
   *Amended by 0022 (PD-069): B-6 — a narrow strip's accessible name is its §7 text followed by ` · ` and the problem count where it hides a Problem (0022 X-06); the rule tooltip follows it.*
 - **B-7 Keyboard.** 0007 §6.7 as amended by 0017. Left and Right go to the nearest column in that direction that shows a card, skipping narrow ones (collapsed Done included). The Done toggle is a button in DOM order; Enter or Space toggles; focus stays on it. When the focused card stops showing after a live update (its spec moved into collapsed Done), focus moves to the nearest shown card in its column, else in the nearest column; with none, to the Done toggle (guideline 8).
@@ -175,6 +176,8 @@ read Overview or Board; the rows below change behaviour.
 | Commands | `FeatherSpec Studio: Open Mission Control`, `… Open Spec Board`, `… Rescan Project`, `… Refresh Project Discovery` | `FeatherSpec Studio: Open Overview`, `… Open Board`, `… Refresh` |
 | Navigation | marker `▸` | — |
 
+*Amended by 0025 (PD-082): rounded half up, at most 99% until all are done, with the formula of 0025 U-04 (PD-079; 0025 §5.4, AC-013).*
+
 *Amended by 0020 (PD-058): §7 "tree entry" — void: the tree has no area entries (0020 AC-016).*
 
 *Amended by 0021 (PD-069): §7 rows with `Copy` ("Nothing up next …", "No specs yet …") — the Copy reads `Copy prompt`.*
@@ -219,6 +222,7 @@ marked manual. Fixtures: 0006's and 0007's, `fs170-brownfield-mixed`, one with e
 - **AC-008** The figures line shall show "Total n" and the six "State n" in board order, zeros included, each one control sending 0006 BR-08's request (a 0 included), and the Done figure the tooltip and accessible description "of which Deprecated: n" while n > 0.
 - **AC-009** The figures line and its "Total n" control shall carry the progress text of §7 as tooltip, and "Total n" as accessible description; no other element shall show it.
   > **Given** 0006 AC-001's fixture **Then** "Progress 25 % (2 of 8): Done specs with status Implemented or Baseline ÷ (all specs − Deprecated), rounded down".
+  *Amended by 0025 (PD-082): rounded half up, at most 99% until all are done, with the formula of 0025 U-04 (PD-079; 0025 §5.4, AC-013).*
 - **AC-010** While Activity has entries, the Overview shall show it collapsed (`aria-expanded="false"`) with the heading "Activity (n)" each time the panel is opened; activating the heading shall show or hide the entries, and the choice shall hold while the panel stays open, also after it was hidden and shown again. While it has no entry it shall show no section; while the status history is not available, the heading "Activity" with "Activity not available: <reason>" and no toggle.
 - **AC-011** While the project has no spec, the Overview and the Board shall show "No specs yet. Start with /sdd-specify" and a Copy that copies `/sdd-specify`, and the Overview no Now, Up next or figures line; Problems and Activity per AC-007 and AC-010.
   *Amended by 0021 (PD-069): AC-011 — the Copy reads `Copy prompt` and still copies `/sdd-specify` (0021 AC-008).*
@@ -236,6 +240,7 @@ marked manual. Fixtures: 0006's and 0007's, `fs170-brownfield-mixed`, one with e
 - **AC-018** Every card shall render the rows of B-5 in that order and no state chip, derived sentence, rule ID, description, "Tasks:", "Criteria:" or "Last change:" text, carry the card tooltip of B-5, and have an accessible name that ends with its state name.
 - **AC-019** Row 2 shall hold the parts of B-5 for the card's state.
   > **Given** an Active spec with 3 of 7 steps and no traceability table **Then** row 2 reads "Steps 3/7" with a progress bar named "Steps" and no criteria part. **Given** a Deprecated Done spec **Then** "Deprecated".
+  *Amended by 0025 (PD-082): the progress texts end in ` · <p>%` (U-04) and every bar carries its text as `title` and `aria-valuetext` (0025 §5.4, AC-012, AC-013).*
 - **AC-020** The Ready, Review and Blocked column headers, and no other, shall carry the tooltip of B-6, a narrow strip after its §7 text.
   > **Given** the Review column **Then** its tooltip reads "Plan done, waiting for review · Derived from the files · rule S-REVIEW"; narrow and empty, "Review: no spec · Plan done, waiting for review · Derived from the files · rule S-REVIEW".
   *Amended by 0022 (PD-069): AC-020 — a narrow strip's tooltip is its §7 text, the problem count where it applies (0022 X-06), then the rule tooltip.*
@@ -261,6 +266,7 @@ marked manual. Fixtures: 0006's and 0007's, `fs170-brownfield-mixed`, one with e
   *Amended by 0023 (PD-069): AC-030 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
   *Amended by 0024 (PD-068): AC-030 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
   *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
+  *Amended by 0025 (PD-082): also except the tests 0025 AC-020 lists against a statement 0025 §4 changes.*
 - **AC-031** *(manual, Gregor or his delegate)* Preview-harness screenshots of Overview and Board for this repository and `fs170-brownfield-mixed`, Dark, Light and High Contrast, panel width 1240 px and 640 px, height 900 px: Now is the first section; rows keep one line at 1240 px and take two lines at 640 px with the state text readable (AC-006); with no spec selected, every column that shows a card is visible without horizontal scrolling at 1240 px, and at 640 px where at most two do; a wide column shows at least six cards when it holds them (R-10); strips, toggle and focus are legible. Verdict in the plan; the real VS Code window is a release-checklist item.
   *Amended by 0019 (PD-058): AC-031 — "visible without horizontal scrolling" holds "with no spec selected"; with the side panel the board scrolls (0019 §9).*
 

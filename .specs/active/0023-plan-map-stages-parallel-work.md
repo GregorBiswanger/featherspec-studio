@@ -45,9 +45,11 @@ copy the right prompt (AC-019). User: the developer (0001–0007).
 - Shared-file marking between `→` steps (08 P-6 option) — because `Files:` is written only on `‖` steps (`sdd-plan.md`).
 - `Current step:`, the Session handoff, full Do or Verify text — because ticks and code lead (`plans.md`); guideline 5.
 - A coach line or `(?)` in the Plan map — because guideline 11 (once per view: the side panel's).
+  *Amended by 0025 (PD-082): §3 — the header shows the spec's next step with its coach line and `(?)` (0025 §5.3); ways and start lines keep Copy prompt.*
 - Send to an assistant for the map's prompts — because 0024 keeps Send at the detail and the first Now row (0024 §3).
 - "Open Plan Map" in the tree's context menu — because 08 §4 does not ask for it; the click test kept it out (OP-005,
   PD-076).
+  *Amended by 0025 (PD-082): built as `Show in Plan Map` in the tree's context menu (0025 §5.1, AC-005; 09 F-1 (2)).*
 - A fixed FeatherSpec phrase for the stage prompts — because that is a FeatherSpec release (08 §7, OP-002).
 
 ## 4. Amendments of other specs
@@ -96,6 +98,7 @@ Only a readable sibling plan of a spec not Done counts; otherwise no Plan sectio
 - **Returned** carries the note's status: done, blocked with its `Blocked on` text as short text (full in the
   tooltip), or unknown (unreadable note or another value; its Problem stays 0016's and 0022's).
 - **Count:** 0019 §6.3's "<done> of <total> done" over non-struck steps.
+  *Amended by 0025 (PD-082): the progress texts end in ` · <p>%` (U-04) and every bar carries its text as `title` and `aria-valuetext` (0025 §5.4, AC-012, AC-013).*
 - **Current stage:** the first stage whose line holds the next open step; none when no stage holds it.
 
 ### 5.2 Plan section in the side panel (P-1, P-7, P-8)
@@ -108,9 +111,11 @@ Only a readable sibling plan of a spec not Done counts; otherwise no Plan sectio
 - A chip is a link that opens the plan at the step's heading (0019 §6.4); a *not found* chip is plain text. Name
   `<ID> <title>, <state word>` (§6; title as short text); tooltip and accessible description: that name, then 0019
   AC-017's `Open <file name> at line <n>` on its own line.
+  *Amended by 0025 (PD-082): a chip is a step link: it leads into the Plan map, Ctrl or Cmd opens the plan at the heading; its tooltip is 0025 U-02 (0025 §5.1, AC-001–AC-004).*
 - Link M-03 sends a navigation request to area `planMap` with the spec as target (PD-040); selection and side panel
   stay; focus moves to the map's heading.
 - No Copy, coach line or way in this section. While the Plan map tab is shown, the side panel leaves this section out.
+  *Amended by 0025 (PD-082): also its Next step section, while the map's header shows the spec the side panel shows (0025 §5.3, D-2, AC-009).*
 
 ### 5.3 Plan map tab (P-2, P-3, P-6, P-7)
 
@@ -202,6 +207,10 @@ the worker's "Check your base first … stop" (guideline 2).
 | — | Ways, NS-6 case | §5.4 table, `Ways to run stage <n>`, card labels `Files` `Covers` `Do` `Verify` `Open in plan` `Open plan`; §5.5's intent, short intent, effect, then-sentence | — |
 | — | Side panel Steps row | the count heads the Plan section | Progress' Steps row and "Next open step: …" while the section shows |
 
+*Amended by 0025 (PD-082): the stage line is the returned-work statement U-05, and U-08 while a member of a parallel group is still out (0025 §5.6, AC-015, AC-025).*
+
+*Amended by 0025 (PD-082): the symbols are replaced by codicon motifs from one step-state table; state words unchanged (0025 §5.5, U-01, AC-014).*
+
 ## 7. Error cases and edge cases
 
 - Closing line absent → no M-02; the ways still show where §5.4 holds. Closing contradicts the `‖` marks → both as
@@ -230,18 +239,22 @@ struck step, an unknown ID, a step in no stage, no closing.
 - **AC-002** While no return note of the spec lies, the *next* marker shall be exactly 0019's next open step, and while one lies no step shall be marked; for every fixture whose next step is NS-6's case "Open step" or NS-7 with a step ID the marked ID shall equal the ID in its first line.
 - **AC-003** The side panel shall show the Plan section of §5.2 directly after Problems and before Progress for every spec with a readable sibling plan whose state is not Done, and none otherwise; while it shows, Progress shall have no Steps row and no "Next open step"; M-02 shall be the closing line as short text with the full text as tooltip, absent without a closing line.
 - **AC-004** Each chip shall carry the symbol of M-01, the name `<ID> <title>, <state word>`, and as tooltip and accessible description that name, then `Open <file name> at line <n>`; activating a chip shall send the open request for the plan at that step's heading line (0019 AC-017); a *not found* chip shall be no link; M-04 shall follow exactly the stages that hold `‖`; the section shall contain no button that copies.
+  *Amended by 0025 (PD-082): a chip is a step link: it leads into the Plan map, Ctrl or Cmd opens the plan at the heading; its tooltip is 0025 U-02 (0025 §5.1, AC-001–AC-004).*
 - **AC-005** When the developer activates M-03, the system shall send one navigation request for area `planMap` with the spec as target, keep the selection and side panel and move focus to the map's heading; the Plan map shall then show that spec, and the side panel no Plan section.
 - **AC-006** The panel navigation shall list exactly Overview, Board and Plan map in this order, each with its icon (A-003's motif for Plan map); the manifest shall contribute `featherspec-studio.openPlanMap` titled M-11; running it shall show the Plan map tab; a remembered `planMap` area shall be restored after a reload (0005 AC-009).
 - **AC-007** The Plan map shall show, first match, M-12 with no spec selected, M-14 for a Done spec, M-13 for one without a sibling plan and `<number>: ` with 0022's X-14 for an unreadable plan, each followed by M-15 and the buttons of §5.3 in their order, no M-15 without a button; activating one shall select its spec, keep the tab and focus the map's heading; when the selection changes in the tree, the Overview or the Board, the tab shall show the new spec; below a 900 px Studio panel (query stubbed) the tab shall show no detail and no back button, from 900 px the side panel beside it.
 - **AC-008** For a spec with a plan the Plan map shall show the header (with 0016's warning while the spec has a Problem), M-02 with the full closing line, one stage row per §5.3 with M-05, M-06 and its cards side by side per parallel group, and for a stage whose steps are all done or dropped its chips instead of cards; a card shall show symbol, ID, title, `Files` without code marks, `Covers` IDs as links and M-09 for a returned step; activating a card by pointer, Enter or Space shall toggle `aria-expanded` and the `Do`, `Verify` short texts and `Open in plan`; cards shall be collapsed whenever the tab shows another spec or becomes visible again; no rendered text shall hold a Do or Verify text beyond its short text.
+  *Amended by 0025 (PD-082): a card also shows `Verified`, `Reported`, the state word after each covered criterion and, on the step due now, a Copy prompt (0025 §5.2, AC-007, AC-008).*
 - **AC-009** The ways block shall render after the current stage's cards exactly when §5.4's conditions hold: collapsed on every showing; expanded, M-08 and the three ways of §5.4 in order with their effect sentences and prompts literally, `<n>` and `<plan path>` filled; then, for an Active spec whose next step's parallel group holds two or more unfinished steps, M-10 and exactly one start line `Implement <ID> of <plan path> as a parallel worker.` per unfinished step of that group, else none. No other stage, and no spec in another state, shall show a way or a prompt.
   > **Given** `fs110-parallel-synthetic` without notes, plan In Progress **Then** stage 2 offers `Implement the whole stage 2 of .specs/active/0001-parallel-demo.plan.md in sequence` and the start lines for T-003 and T-004; stages 1 and 3 offer none. **Given** a stage `T-002 → T-003 ‖ T-004` with T-002 next **Then** the ways and no start line.
   *Amended by 0028 (PD-082, A-010): AC-009 — no ways while 0028's case "Report first" holds (0028 AC-007).*
 - **AC-010** Each way's Copy shall follow 0021 AC-008 (label, name, feedback, clipboard holds the prompt alone) as a secondary button; each start line's Copy shall follow 0022 AC-012 as an icon button that copies its start line; the Plan map area shall render no primary button, so the view holds at most one (the side panel's, 0022 §4.4 (1)).
   *Amended by 0024 (PD-068): AC-010 "at most one (the side panel's …)" — the side panel's primary is 0024's split button where Send is offered; it counts once (0024 AC-003).*
+  *Amended by 0025 (PD-082): the Plan map header's first line is a primary place while the side panel leaves out its Next step; the map with the side panel beside holds at most one primary, a card's Copy prompt is secondary (0025 §5.3, §5.2, AC-010).*
 - **AC-011** In the Plan map one card shall be the tab stop; Up and Down shall move focus to the previous or next card row and Left and Right within one (§5.3), focus staying at an end; Tab from the focused card shall reach its links, then the next control outside the cards; every control shall show the theme's focus outline (0013's CSS guard covers the new rules).
 - **AC-012** Where a return note exists for a step, the card and chip shall show its state (M-01, M-09: done, blocked with the reason as short text and full as tooltip, unknown), the stage M-16 or M-17; when a note appears, changes or disappears, the Plan map and the side panel shall show it within 500 ms after the model-changed notification (PD-047), keeping expanded cards, the ways block's state and focus where the element still exists; a focused step card that leaves shall hand the focus to the card now at its place (same stage, same position, else the one before it), and when no card is left there, or when the focused element was a way, a Copy or a start line, focus shall go to the map's heading.
   > *Amended by PD-077 (2026-11-18, the orchestrator as Gregor's delegate, after the compile S78 finding D3): the wording read "… and focus where the element still exists, else focus on the map's heading", which sent every removed card to the heading and left a removed way, Copy or start line without a rule. Keeping the keyboard user's place in the grid is kinder than a jump to the top; the side panel's rule (0019 AC-020: its heading) is unchanged.*
+  *Amended by 0025 (PD-082): the stage line is the returned-work statement U-05, and U-08 while a member of a parallel group is still out (0025 §5.6, AC-015, AC-025).*
 - **AC-013** While an Active spec has a return note, `nextStep()` shall return NS-6 with the single line `/sdd-plan <spec path>` and the intent, short form `Integrate · /sdd-plan`, coach line `same chat or new chat · fast model`, effect and then-sentence of §5.5 literally; without a note NS-6 shall be as 0021 AC-003 and AC-005; a BLOCKED note shall still give NS-4.
   *Amended by 0028 (PD-082): AC-013 "without a note NS-6 shall be as 0021 AC-003 and AC-005" — as 0028's notes leave them.*
 - **AC-014** No chip, link, card, way, Copy or command of this spec shall create, change, move or delete a file of the workspace, start a process or write a setting (0017 AC-023's tests extended); AC-001–AC-013 shall hold in Restricted Mode and a reader window.
@@ -249,6 +262,7 @@ struck step, an unknown ID, a step in no stage, no closing.
 - **AC-016** Every test at the commit on which this spec's implementation starts that decides a statement §4 does not change shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI; a script compares the titles of both commits and the plan lists every missing title with the changed statement or the head title that replaces it.
   *Amended by 0024 (PD-068): AC-016 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
   *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
+  *Amended by 0025 (PD-082): also except the tests 0025 AC-020 lists against a statement 0025 §4 changes.*
 - **AC-017** The statements of §4 shall carry their notes, no PD row shall be edited, `.claude/rules/ux-guidelines.md` shall read guideline 4 and `docs/product/ux-guidelines.md` its Panel row as §4 says, `README.md` shall name the Plan map tab, the three ways and "Integrate the returned steps" and hold no "two tabs", `CHANGELOG.md` shall name the Plan section and the Plan map under the version in preparation, and `docs/release-checklist.md` shall carry AC-018–AC-020 and no line saying the panel shows "Overview and Board only".
 - **AC-018** *(manual, preview harness by the orchestrator, then Gregor; guideline 12)* Dark, Light and High Contrast at 1600 px and 1000 px window width on `fs110-parallel-synthetic` and `studio-0015`, at 1600 px with the side panel at its default width: the Plan section and Plan map cut no ID, prompt or start line; `‖` cards sit side by side and wrap, uncut, once the divider leaves the map less than two cards' width; at 1000 px (Studio panel below 900 px) the map shows alone; every Copy is fully visible and reachable by Tab; screenshots and verdict in the plan.
 - **AC-019** *(manual, Gregor; PD-069 click test on an HTML draft before `/sdd-plan`, then on the build)* On a project with a `‖` stage, Gregor says without the plan file which stages could run in parallel, why or why not, and which prompt he would copy; he confirms or changes E-8's prompts, E-9's two places, E-10's collapsed ways and §6's texts; the plan records the answers, a change is a revise of this spec.
@@ -294,6 +308,8 @@ struck step, an unknown ID, a step in no stage, no closing.
 | A-012 | Every text of §5 and §6 as the drafts show it (proxy, confirmed by the click test) | PD-069 process; PD-076: the proxies the drafts show stand as drawn | §6 |
 | A-013 | A stage whose steps are all done or dropped shows chips, not cards (proxy) | Guideline 7 "Done is collapsed"; 07 §6.4's sketch expands one stage | AC-008 |
 
+*Amended by 0025 (PD-082): except a navigation target and a finished stage whose chip is activated: they show expanded, cards until the next showing (0025 §5.1, §5.7, AC-001, AC-003, AC-016).*
+
 ## 11. Open points
 
 - OP-001 Click test on an HTML draft before `/sdd-plan` (PD-069, AC-019). Closed 2026-11-18 by PD-076: passed ("ich
@@ -306,6 +322,7 @@ struck step, an unknown ID, a step in no stage, no closing.
 - OP-004 `tip-splitter`'s plan has no `‖` stage (`No parallel stage:`); AC-019 and AC-020 need a re-cut copy or
   `fs110-parallel-synthetic` (recommendation: a re-cut copy, so the prompts meet a real agent).
 - OP-005 Tree context menu "Open Plan Map" (§3): not built. Closed by PD-076: the drafts showed no tree entry and passed.
+  *Amended by 0025 (PD-082): built as `Show in Plan Map` in the tree's context menu (0025 §5.1, AC-005; 09 F-1 (2)).*
 - OP-006 `/sdd-clarify` 2026-11-18 (S66): all findings resolved in one pass at Gregor's standing request (no
   walkthrough; list `0023-findings.md`; cross-spec with 0022 G-4 and 0024). Readings; say so if one is wrong: (a) the
   map alone below 900 px; (b) *next* only while no note lies; (c) start lines only for an Active spec's next parallel

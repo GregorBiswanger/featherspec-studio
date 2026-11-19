@@ -96,7 +96,7 @@ run the `/sdd-architecture-update` workflow yourself, in the same change set, ex
 the user had typed it (its body lives in `.claude/commands/sdd-architecture-update.md`).
 
 ```yaml
-# last reconciled: 2026-11-19 (0024) · last deep scan: never · module maps: .architecture/{core,adapters,webview}.md
+# last reconciled: 2026-11-19 (0025) · last deep scan: never · module maps: .architecture/{core,adapters,webview}.md
 architecture:
   style: 'Hexagonal (ports & adapters): framework-free core (domain + application) behind ports; adapters for VS Code host, storage, file system; webview as a separate UI bundle'
   entrypoints:
@@ -107,7 +107,7 @@ architecture:
     - 'src/adapters — node/ (Node fs, spec source, runtime medium, IDs, release download (fetch), tar.gz reader, setup target writer, earlier run data removal), vscode/ (thin host ports, no logic; the Specs tree view 0020; settings 0021; the assistant host 0024) (.architecture/adapters.md)'
     - 'src/webview — panel UI: protocol client, shell, area registry, three tabs (Overview, Board, Plan map; areas/<area>/), the detail as side panel (detail/), primitives in ui/; inside view: .architecture/webview.md; src/test — extension-host smoke tests (Mocha, CI only); test/fixtures — fixture projects and setup archives in test/fixtures/setup; media — packaged assets'
   shared:
-    - 'src/shared/protocol — versioned message protocol and the views and texts both sides share (areas, board, Overview, next step, step guides and tips, plan view, assistant view and send, detail picture, state look, side panel layout, UI texts); imported by extension and webview, imports nothing; src/shared/testing — timing budgets for tests'
+    - 'src/shared/protocol — versioned message protocol and the views and texts both sides share (areas, board, Overview, next step, step guides and tips, step look, percentages, plan view, assistant view and send, detail picture, state look, side panel layout, UI texts); imported by extension and webview, imports nothing; src/shared/testing — timing budgets for tests'
   boundaries:
     - 'Domain and application code never import vscode and reach the outside only through ports; webview and extension host communicate only through typed messages, and the webview has no file-system or Node.js access'
     - 'Only the setup (0014) writes into a workspace folder or reaches the network, through SetupTargetPort and ReleaseHttpPort, after the user started it in a trusted workspace'

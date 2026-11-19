@@ -32,6 +32,8 @@ The third tab shows one spec's plan as stages. Select a spec that has a plan (in
 
 For the stage you are on, **Ways to run stage 2** offers three prompts to copy: in sequence (one chat builds the steps one after another), with subagents, or with other agents (one start line per step for a second chat, tool or worktree; commit first). A worker leaves a return note; once steps have returned, the next step is **Integrate the returned steps** and the map shows `Returned · done` or `Returned · blocked` on the cards. The Plan section in the detail gives the same picture in short, with a link to the map. Studio only shows and copies: it starts no agent and writes no file.
 
+The map's header shows the **Next step** of the spec you look at, with its Copy prompt, so the side panel beside the map leaves its own out. Progress reads like `4 of 6 done · 67%`. A step ID is a link: click it in the side panel, in a Next step or in an Overview row and the map shows that step's card, expanded and briefly highlighted; **Ctrl+click** (Cmd+click on macOS) opens the plan file at the step instead. In the Specs view, **Show in Plan Map** in a row's context menu opens the map on the spec's next step. A card of a done step shows what was verified, a returned step what its worker reported, and each covered criterion its state; when the stage you are on can run in parallel, the Next step says so and **Ways to run it** leads to the ways.
+
 ### The detail of a spec
 
 ![Board in the light theme with the detail of a spec in the side panel: Next step with Copy prompt, Plan and Progress](media/screenshots/spec-detail-light.png)
