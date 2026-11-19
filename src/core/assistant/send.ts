@@ -1,4 +1,4 @@
-import { ASSISTANT_NAMES, activatingFailedCause, commandFailedCause, commandNotFoundCause, extensionNotFoundCause, noResultCause, pasteKeyOf, sendOpenedText, sendOutputCopiedText, sendOutputNotCopiedText, sendWarnCopiedText, sendWarnNotCopiedText } from '../../shared/protocol/assistantTexts';
+import { ASSISTANT_NAMES, activatingFailedCause, attachMissingOutputText, commandFailedCause, commandNotFoundCause, extensionNotFoundCause, noResultCause, pasteKeyOf, sendOpenedText, sendOpenedWithoutText, sendOutputCopiedText, sendOutputNotCopiedText, sendWarnCopiedText, sendWarnNotCopiedText } from '../../shared/protocol/assistantTexts';
 import type { SendOutcomeView, SendRequest } from '../../shared/protocol/assistant';
 import { copyLine } from '../board/copyLine';
 import type { AssistantHostPort } from '../ports/assistant';
@@ -51,7 +51,7 @@ export function createSend(deps: SendDeps): Send {
         return result;
     }
 
-    async function run(request: SendRequest, isSettled: () => boolean): Promise<void> {
+    async function run(request: SendRequest, isSettled: () => boolean): Promise<string | undefined> {
         const spec = ASSISTANTS[request.assistant];
         const plain = spec.callsFor(request.target, request.line);
         let found: ReturnType<AssistantHostPort['extension']>;
@@ -70,7 +70,7 @@ export function createSend(deps: SendDeps): Send {
                 throw new SendFailure(activatingFailedCause(spec.extensionId, messageOf(reason)));
             }
             if (isSettled()) {
-                return;
+                return undefined;
             }
         }
         let registered: readonly string[];
@@ -80,19 +80,22 @@ export function createSend(deps: SendDeps): Send {
             registered = [];
         }
         if (isSettled()) {
-            return;
+            return undefined;
         }
         const missing = plain.find((call) => !registered.includes(call.command));
         if (missing !== undefined) {
             throw new SendFailure(commandNotFoundCause(missing.command));
         }
         let calls = plain;
+        let unattached: string | undefined;
         if (request.attach !== undefined && (deps.attaching?.(request.assistant) ?? spec.attachesSpec)) {
             const target = deps.attachment === undefined ? undefined : await deps.attachment(request.attach);
             if (isSettled()) {
-                return;
+                return undefined;
             }
-            if (target !== undefined) {
+            if (target === undefined) {
+                unattached = request.attach;
+            } else {
                 calls = spec.callsFor(request.target, request.line, target);
             }
         }
@@ -103,9 +106,10 @@ export function createSend(deps: SendDeps): Send {
                 throw new SendFailure(commandFailedCause(call.command, messageOf(reason)));
             }
             if (isSettled()) {
-                return;
+                return undefined;
             }
         }
+        return unattached;
     }
 
     function attempt(request: SendRequest): Promise<SendOutcomeView> {
@@ -122,13 +126,18 @@ export function createSend(deps: SendDeps): Send {
             };
             const timer = deps.clock.setTimeout(() => fail(noResultCause(SEND_TIMEOUT_MS)), SEND_TIMEOUT_MS);
             run(request, () => settled).then(
-                () => {
+                (unattached) => {
                     if (settled) {
                         return;
                     }
                     settled = true;
                     timer.dispose();
-                    resolve({ outcome: 'opened', text: sendOpenedText(name) });
+                    if (unattached === undefined) {
+                        resolve({ outcome: 'opened', text: sendOpenedText(name) });
+                        return;
+                    }
+                    deps.output.appendBlock([attachMissingOutputText(name, unattached)]);
+                    resolve({ outcome: 'opened', text: sendOpenedWithoutText(name, unattached.slice(unattached.lastIndexOf('/') + 1)) });
                 },
                 (reason: unknown) => fail(reason instanceof SendFailure ? reason.message : messageOf(reason)),
             );

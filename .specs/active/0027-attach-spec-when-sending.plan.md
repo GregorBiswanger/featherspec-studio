@@ -3,7 +3,7 @@
 **Spec:** [0027-attach-spec-when-sending.md](0027-attach-spec-when-sending.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-003
+**Current step:** T-005
 
 ## Approach
 
@@ -235,8 +235,8 @@ and `send.ts`/`send.test.ts`: no `‖`.
       ` @<path>`, and the Output line does not contain the line.
 - **Verify:** `npx vitest run --project node src/core/assistant/send.test.ts`. It is red first (0024's success sentence, no
   Output line), then `npm run test:unit` is green.
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-19 · red first (18 failed: 0024's success sentence, no Output line), then `npx vitest run --project node src/core/assistant` 259 passed; tsc and eslint clean. **Stage 2 gate (full chain) green 2026-11-19:** 202 files, 3654 passed, 4 skipped; timing 13 files, 28 passed; compile and compile-tests clean.
+- **Notes:** Tests in `sendAttach.test.ts` (AC-008, AC-009, AC-010 "0027 …"). Proxy decision: a path the model does not hold is never statted (the stat recorder stays empty for AC-010's paths); a symlink or directory entry counts as not found (`kind` must be `file`, plan survey). The hang case needs no new code: the 0024 timer covers `run()` including the check.
 
 ### T-005 — The attachment line and its descriptions
 
@@ -375,13 +375,13 @@ and `send.ts`/`send.test.ts`: no `‖`.
 | AC-001 | T-001, T-002 | `core/assistant/attachment.ts` (`STEP_ATTACHES`, `attachmentOf`), `sendView.ts`, `core/board/detail.ts`, `core/overview/rows.ts` | `attachment.test.ts` "0027 AC-001 …"; `sendView.test.ts` "0027 AC-001 …" (13 cases × both assistants, first Now row) | green (stage 1 gate) |
 | AC-002 | T-001, T-002, T-006 | `attachment.ts`, `core/specs/version.ts` (`ATTACH_FROM_VERSION`, `attachesFrom`, `NEWEST_KNOWN`) | `attachment.test.ts`, `sendView.test.ts` "0027 AC-002 …", `version.test.ts`, `readProject.test.ts` AC-016; webview half (no line, no description) in T-006 | partial: core green (stage 1 gate); webview part open (T-006) |
 | AC-003 | T-005, T-006 | — | — | open |
-| AC-004 | T-003, T-005, T-008 | — | — | open |
-| AC-005 | T-003 | — | — | open |
-| AC-006 | T-003 | — | — | open |
-| AC-007 | T-002, T-003 | `shared/protocol/assistant.ts` (`isSendView`, `isSendPromptPayload`) | `assistant.test.ts` "0027 AC-007 …"; calls and scan in T-003 | partial: guards green (stage 1 gate); calls and scan open (T-003) |
-| AC-008 | T-004, T-005 | — | — | open |
-| AC-009 | T-004 | — | — | open |
-| AC-010 | T-004 | — | — | open |
+| AC-004 | T-003, T-005, T-008 | `assistants.ts` `callsFor`, `attachment.ts` `createAttachmentCheck`, `send.ts`, `ports/assistant.ts` `fileUri`, `adapters/vscode/assistantHost.ts` | `sendAttach.test.ts` "0027 AC-004 …"; `assistantHost.test.ts` "0027 T-003 …"; webview request in T-005; real `vscode.Uri` in T-008 | partial: core and adapter green (stage 2 gate); webview payload (T-005) and host smoke (T-008) open |
+| AC-005 | T-003 | `assistants.ts` `callsFor` (Claude Code suffix) | `sendAttach.test.ts` "0027 AC-005 …" | green (stage 2 gate) |
+| AC-006 | T-003 | `send.ts` (no check without `attach` or for a non-attaching assistant) | `sendAttach.test.ts` "0027 AC-006 …" | green (stage 2 gate) |
+| AC-007 | T-002, T-003 | `shared/protocol/assistant.ts`, `assistants.ts` (`attachFiles` once) | `assistant.test.ts` "0027 AC-007 …"; `sendAttach.test.ts` "0027 AC-007 …"; `sourceScan.test.ts` "0027 AC-007 …" and `SEND_FORBIDDEN_TERMS` | green (stage 2 gate) |
+| AC-008 | T-004, T-005 | `send.ts` fallback (unchanged: copies `request.line`) | `sendAttach.test.ts` "0027 AC-008 …"; webview Copy prompt in T-005 | partial: host fallbacks green (stage 2 gate); menu Copy prompt open (T-005) |
+| AC-009 | T-004 | `send.ts`, `assistantTexts.ts` (`sendOpenedWithoutText`, `attachMissingOutputText`) | `sendAttach.test.ts` "0027 AC-009 …" (per cause and assistant, hang) | green (stage 2 gate) |
+| AC-010 | T-004 | `attachment.ts` `createAttachmentCheck` (spec entries of the model only) | `sendAttach.test.ts` "0027 AC-010 …" | green (stage 2 gate) |
 | AC-011 | T-002 | `sendView.ts` `tipClosingOf`, `assistantTexts.ts` `ATTACH_UPDATE_TEXT` | `sendView.test.ts` "0027 AC-011 …"; `detail.test.ts`, `rows.test.ts` (amended literals) | green (stage 1 gate) |
 | AC-012 | T-007 | — | — | open |
 | AC-013 | T-006, T-007 | — | — | open |
@@ -390,13 +390,13 @@ and `send.ts`/`send.test.ts`: no `‖`.
 | AC-016 | T-009 | — | manual: orchestrator, preview harness, then Gregor | open |
 | AC-017 | T-010 (checklist) | — | manual: Gregor on `tip-splitter`, per assistant, before the spec closes | open |
 | AC-018 | T-010 (record) | — | manual: not run, closed by OP-001 (13); question moves to AC-017 | open |
-| AC-019 | T-001, T-002, T-003 | `assistants.ts` `attachesSpec`, `offer.ts` `attachesOf` | `attachment.test.ts`, `offer.test.ts`, `sendView.test.ts` "0027 AC-019 …"; calls in T-003 | partial: table and views green (stage 1 gate); calls open (T-003) |
+| AC-019 | T-001, T-002, T-003 | `assistants.ts` `attachesSpec`, `offer.ts` `attachesOf`, `send.ts` | `attachment.test.ts`, `offer.test.ts`, `sendView.test.ts` "0027 AC-019 …"; `sendAttach.test.ts` (non-attaching assistant: AC-006 calls) | green (stage 2 gate) |
 | AC-020 | T-010 (checklist) | — | manual: Gregor or the orchestrator, before the spec closes | open |
 
 ## Session handoff
 
-- **Done so far:** spec and plan moved to `active/` (`b542e95`); stage 1 (T-001, T-002) done and the stage gate is green (2026-11-19).
-- **Next action:** T-003 (the host checks and attaches), then T-004; stage 2 gate at the end of T-004.
+- **Done so far:** stages 1 and 2 done (T-001…T-004), both stage gates green (2026-11-19); the host attaches after its check and a missing or foreign file sends without and says so.
+- **Next action:** T-005 (the attachment line, stub first, descriptions, payload `attach`), then T-006; stage 3 gate at the end of T-006.
 - **Open decisions:** OP-006 (C-2: Copilot and the Claude Code extension on 1.11.0) and the FeatherSpec 1.11.0 release.
   Both block closing, not building. A re-read flips one `attachesSpec` entry.
 - **Baseline:** `81dc0aa` (head of `ux-round-3` before the first step commit; title audit base).

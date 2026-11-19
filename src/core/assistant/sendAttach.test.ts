@@ -177,3 +177,125 @@ describe('0027 AC-007: the open argument holds exactly its keys, and no call sub
         expect(JSON.stringify(all)).not.toMatch(/preserveInput|modelSelector|"mode"/);
     });
 });
+
+const WITHOUT = (name: string) => `The prompt is in ${name}'s chat, without 0002-x.md: the file was not found. Check it, then send it there.`;
+const OUTPUT = (name: string) => `Send to ${name}: ${KEY} was not found, so it was not attached.`;
+const NAMES: Record<AssistantId, string> = { 'copilot': 'Copilot', claudeCode: 'Claude Code' };
+
+function plainCalls(assistant: AssistantId): Array<{ command: string; args: unknown[] }> {
+    return assistant === 'copilot' ? [{ command: NEW_CHAT, args: [] }, { command: OPEN, args: [{ query: CLARIFY, isPartialQuery: true }] }] : [{ command: CLAUDE_OPEN, args: [undefined, CLARIFY] }];
+}
+
+describe('0027 AC-009: a missing spec file sends without the attachment and says so', () => {
+    const CAUSES: Array<[string, (assistant: AssistantId) => Promise<World>]> = [
+        ['stat gives nothing', (assistant) => world(assistant, { noFile: true })],
+        ['stat rejects', (assistant) => world(assistant, { stat: () => Promise.reject(new Error('EACCES')) })],
+        ['the entry is a symlink', async (assistant) => {
+            const w = await world(assistant, { noFile: true });
+            w.source.setSymlink(w.root, KEY);
+            return w;
+        }],
+        ['the path is no spec entry of the model', (assistant) => world(assistant, { files: { '.specs/backlog/0003-y.md': specText() } })],
+    ];
+
+    for (const assistant of ['copilot', 'claudeCode'] as const) {
+        for (const [cause, make] of CAUSES) {
+            it(`0027 AC-009 ${assistant}: ${cause}`, async () => {
+                const w = await make(assistant);
+                const result = await w.send(request(assistant, 'new', CLARIFY, KEY));
+                expect(w.host.calls).toEqual(plainCalls(assistant));
+                expect(result).toEqual({ outcome: 'opened', text: WITHOUT(NAMES[assistant]) });
+                expect(w.blocks).toEqual([[OUTPUT(NAMES[assistant])]]);
+                expect(w.warned).toEqual([]);
+                expect(w.written).toEqual([]);
+                expect(w.host.uriRequests).toEqual([]);
+            });
+        }
+    }
+
+    it('0027 AC-009: a stat not settled 5000 ms after the activation ends in 0024\'s fallback (fake timers)', async () => {
+        const w = await world('copilot', { stat: () => new Promise(() => undefined) });
+        const pending = w.send(request('copilot', 'new', CLARIFY, KEY));
+        await Promise.resolve();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        w.clock.advance(5000);
+        const result = await pending;
+        expect(result.outcome).toBe('copied');
+        expect(w.written).toEqual([CLARIFY]);
+        expect(w.warned).toHaveLength(1);
+        expect(w.blocks).toEqual([['Send to Copilot failed (no result within 5000 ms); the prompt was copied instead.']]);
+        expect(w.host.calls).toEqual([]);
+    });
+
+    it('0027 AC-009 control: with the file present the same Send attaches, says 0024\'s sentence and writes no Output line', async () => {
+        const w = await world('copilot');
+        const result = await w.send(request('copilot', 'new', CLARIFY, KEY));
+        expect(result).toEqual({ outcome: 'opened', text: "The prompt is in Copilot's chat. Check it, then send it there." });
+        expect(w.blocks).toEqual([]);
+    });
+});
+
+describe('0027 AC-010: the host attaches only a spec entry of the current model', () => {
+    const FILES = {
+        [KEY]: specText({ plan: '[0002-x.plan.md](0002-x.plan.md)' }),
+        '.specs/backlog/0002-x.plan.md': '# Plan\n\n**Status:** Not started\n',
+        '.memory-bank/activeContext.0002-T-001.md': '# Return note\n\n- **Status:** DONE\n',
+        'AGENTS.md': '# Agents',
+    };
+
+    it.each(['.specs/backlog/0002-x.plan.md', '.memory-bank/activeContext.0002-T-001.md', 'AGENTS.md', '.env', '../x.md', '/etc/passwd', 'C:\\Users\\x\\secret.md', '.specs/backlog/../backlog/0002-x.md', '.specs/backlog/0002-x.md/', '...'])('%j: no call carries it, and the Send goes as AC-009 says', async (attach) => {
+        for (const assistant of ['copilot', 'claudeCode'] as const) {
+            const w = await world(assistant, { files: FILES });
+            const result = await w.send(request(assistant, 'new', CLARIFY, attach));
+            expect(w.host.calls).toEqual(plainCalls(assistant));
+            expect(JSON.stringify(w.host.calls)).not.toContain('attachFiles');
+            expect(JSON.stringify(w.host.calls)).not.toContain(' @');
+            expect(w.stats).toEqual([]);
+            expect(result.outcome).toBe('opened');
+            expect(result.text).toContain('the file was not found');
+            expect(w.blocks).toHaveLength(1);
+        }
+    });
+
+    it('negative control: the spec entry itself attaches in the same world', async () => {
+        const w = await world('claudeCode', { files: FILES });
+        await w.send(request('claudeCode', 'new', CLARIFY, KEY));
+        expect(JSON.stringify(w.host.calls)).toContain(`@${KEY}`);
+    });
+});
+
+describe('0027 AC-008: the fallback copies exactly the line, never the suffix, and the Output line holds no line', () => {
+    const CAUSES: Array<[string, (w: World) => void]> = [
+        ['the extension is missing', (w) => w.host.uninstall(EXTENSION_A)],
+        ['activating rejects', (w) => w.host.install(EXTENSION_A, { active: false, activateRejects: 'boom' })],
+        ['the command is missing', (w) => void (w.host.available = [])],
+        ['the command rejects', (w) => w.host.rejects.set(OPEN, 'refused')],
+    ];
+
+    it.each(CAUSES)('Copilot, %s', async (_cause, arrange) => {
+        const w = await world('copilot');
+        arrange(w);
+        const result = await w.send(request('copilot', 'current', CLARIFY, KEY));
+        expect(result.outcome).toBe('copied');
+        expect(w.written).toEqual([CLARIFY]);
+        expect(w.written.join('')).not.toContain(' @');
+        expect(w.blocks.flat().join('\n')).not.toContain(CLARIFY);
+    });
+
+    it('Claude Code: the command rejects after the suffix was built; the clipboard still holds the line alone', async () => {
+        const w = await world('claudeCode');
+        w.host.rejects.set(CLAUDE_OPEN, 'refused');
+        const result = await w.send(request('claudeCode', 'new', CLARIFY, KEY));
+        expect(result.outcome).toBe('copied');
+        expect(w.written).toEqual([CLARIFY]);
+        expect(w.blocks.flat().join('\n')).not.toContain(CLARIFY);
+        expect(w.blocks.flat().join('\n')).not.toContain(`@${KEY}`);
+    });
+
+    it('a Send that is not the chosen assistant copies the line alone as 0024 says', async () => {
+        const w = await world('claudeCode');
+        const result = await w.send(request('copilot', 'new', CLARIFY, KEY));
+        expect(result.outcome).toBe('copied');
+        expect(w.written).toEqual([CLARIFY]);
+    });
+});

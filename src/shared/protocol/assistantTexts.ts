@@ -9,6 +9,14 @@ export function sendOpenedText(name: string): string {
     return `The prompt is in ${name}'s chat. Check it, then send it there.`;
 }
 
+export function sendOpenedWithoutText(name: string, file: string): string {
+    return `The prompt is in ${name}'s chat, without ${file}: the file was not found. Check it, then send it there.`;
+}
+
+export function attachMissingOutputText(name: string, path: string): string {
+    return `Send to ${name}: ${path} was not found, so it was not attached.`;
+}
+
 export function pasteKeyOf(platform: string): string {
     return platform === 'darwin' ? 'Cmd+V' : 'Ctrl+V';
 }
