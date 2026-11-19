@@ -626,10 +626,6 @@ main > h1 {
     font-size: 11px;
 }
 
-.step-label {
-    color: var(--fs-muted);
-}
-
 .step-short {
     font-family: var(--vscode-editor-font-family);
 }
@@ -1672,11 +1668,9 @@ blockquote.illustration {
 .card[aria-current="true"] .card-change,
 .card[aria-current="true"] .card-criteria,
 .card[aria-current="true"] .step-text,
-.card[aria-current="true"] .step-label,
 .ov-row[aria-current="true"] .ov-number,
 .ov-row[aria-current="true"] .ov-status,
-.ov-row[aria-current="true"] + .step-text,
-.ov-row[aria-current="true"] + .step-text .step-label {
+.ov-row[aria-current="true"] + .step-text {
     color: var(--vscode-list-activeSelectionForeground);
 }
 

@@ -2,7 +2,7 @@ export const NEXT_STEP_HEADING = 'Next step';
 
 export const COPY_PROMPT_LABEL = 'Copy prompt';
 
-export const NEXT_STEP_SHORT_LABEL = 'Next';
+export const NEXT_STEP_HIDDEN_LABEL = 'Next step: ';
 
 export const NEXT_STEP_UNREADABLE_TEXT = 'Studio cannot read this spec. See the problem below.';
 

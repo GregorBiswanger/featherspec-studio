@@ -63,7 +63,7 @@ describe('0025 AC-027: step IDs in Overview rows are step links', () => {
         const container = await open();
         const item = rowOf(container, '0001-a');
         const link = item.querySelector<HTMLButtonElement>('.step-text button.file-link')!;
-        expect(textOf(item.querySelector('.step-text')!)).toBe('Next Continue · Implement T-003');
+        expect(textOf(item.querySelector('.step-text')!)).toBe('Continue · Implement T-003');
         expect(link.textContent).toBe('T-003');
         expect(link.title).toBe('T-003\nShow T-003 in the plan map · Ctrl+click opens the plan file');
         expect(item.querySelector('.ov-row')?.contains(link)).toBe(false);
@@ -91,7 +91,7 @@ describe('0025 AC-027: step IDs in Overview rows are step links', () => {
         const container = await open();
         const plain = rowOf(container, '0002-b');
         expect(plain.querySelector('.step-text button')).toBeNull();
-        expect(textOf(plain.querySelector('.step-text')!)).toBe('Next Continue · Implement T-003');
+        expect(textOf(plain.querySelector('.step-text')!)).toBe('Continue · Implement T-003');
         await click(rowOf(container, '0003-c').querySelector<HTMLButtonElement>('.step-text button.file-link')!);
         expect(navigations()).toEqual([{ area: 'planMap', target: { kind: 'spec', stem: '0003-c', step: 'T-001' } }]);
     });

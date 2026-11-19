@@ -450,10 +450,10 @@ describe('0017 AC-004: the next step on a card', () => {
         const entry = container.querySelector('[data-card]')!;
         const line = entry.querySelector('.card-step')!;
         expect(entry.lastElementChild).toBe(line);
-        expect(line.querySelector('.step-label')?.textContent).toBe('Next');
+        expect(line.querySelector('.step-text > .visually-hidden')?.textContent).toBe('Next step: ');
         expect(line.querySelector('.step-short')?.textContent).toBe('Implement T-003');
         expect(line.querySelector('.step-intent')?.textContent).toBe('Continue');
-        expect(line.querySelector('.step-text')?.textContent).toBe('Next Continue · Implement T-003');
+        expect(line.querySelector('.step-text')?.textContent).toBe('Next step: Continue · Implement T-003');
         expect(line.querySelector('code.step-short')).not.toBeNull();
         expect(line.querySelector('.step-intent')?.tagName).toBe('SPAN');
         expect(line.querySelector('.step-text')?.getAttribute('title')).toBe('Continue with T-003 Reject money values\nImplement T-003 of .specs/active/0008-y.plan.md\nNot sure where it stands? Let the agent report first\n/sdd-plan .specs/active/0008-y.md');

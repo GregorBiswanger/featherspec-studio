@@ -183,8 +183,8 @@ Parallel: stages 2 and 3, run in sequence (`PLAN-R3.md`). Stage 1 shares `nextSt
   - Update `step-label` assertions (0017 AC-004, AC-012; 0018 O-5; 0022 §4.1; titles in `Notes:`).
 - **Verify:** `npx vitest run src/webview/ui/StepText.test.tsx` red first (visible `Next`, no hidden span), then
   `npm run test:unit` green.
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** StepText hidden-label tests; webview 715 green; stage 1 gate chain green (eslint, tsc, tsc webview, test:unit, compile, compile-tests).
+- **Notes:** `NEXT_STEP_SHORT_LABEL` (`Next`) is replaced by `NEXT_STEP_HIDDEN_LABEL` (`Next step: `); the `.step-label` class and its two CSS rules are gone (the span is `.visually-hidden`). `textOf()` in webview tests skips visually hidden text, so 0025 AC-027's `Continue · Implement T-003` assertions stayed. Retargeted `SpecBoard.test` 0017 AC-004 and `Sections.test` 0018 AC-006 (`.step-label` -> `.step-text > .visually-hidden`, `Next Continue · …` -> `Next step: Continue · …`; titles kept).
 
 ### T-005 — Now stops at five rows
 

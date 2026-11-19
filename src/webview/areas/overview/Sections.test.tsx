@@ -190,10 +190,10 @@ describe('0018 AC-006: a spec row on one line', () => {
         expect(drill.querySelector('.ov-number')?.textContent).toBe('0001');
         expect(drill.querySelector('.ov-title')?.textContent).toBe('Alpha');
         expect(drill.querySelector('.ov-status')?.textContent).toBe('Blocked');
-        expect(row.querySelector('.step-label')?.textContent).toBe('Next');
+        expect(row.querySelector('.step-text > .visually-hidden')?.textContent).toBe('Next step: ');
         expect(row.querySelector('.step-short')?.textContent).toBe('Implement T-003');
         expect(row.querySelector('.step-intent')?.textContent).toBe('Continue');
-        expect(row.querySelector('.step-text')?.textContent).toBe('Next Continue · Implement T-003');
+        expect(row.querySelector('.step-text')?.textContent).toBe('Next step: Continue · Implement T-003');
         expect(drill.querySelector('.step-text')).toBeNull();
         expect(row.querySelector('.next-step-copy')?.getAttribute('aria-label')).toBe('Copy prompt: Implement T-003 of .specs/active/0001-a.plan.md');
         expect(drill.textContent).not.toContain('continue');
@@ -396,5 +396,23 @@ describe('0021 AC-014, AC-009: the About this step toggletip of the first Now ro
     it('shows no question-mark button without tips', async () => {
         const container = await open(withRows());
         expect(container.querySelector('.toggletip')).toBeNull();
+    });
+});
+
+describe('0026 AC-005: every Overview row with a step hides its Next step: label', () => {
+    it('Now, Up next and Problems rows: the step text starts with the visually hidden label and shows no Next', async () => {
+        const view = withRows();
+        view.upNext = { rows: [rowFor('0003-c', '0003', 'Gamma', 'Ready', { step: STEP_PLAN })], more: 0, stems: ['0003-c'] };
+        const container = await open(view);
+        const texts = [...container.querySelectorAll<HTMLElement>('.step-text')];
+        expect(texts.length).toBeGreaterThanOrEqual(2);
+        for (const text of texts) {
+            expect(text.firstElementChild?.className).toBe('visually-hidden');
+            expect(text.firstElementChild?.textContent).toBe('Next step: ');
+            const visible = text.cloneNode(true) as HTMLElement;
+            visible.querySelectorAll('.visually-hidden').forEach((hidden) => hidden.remove());
+            expect(visible.textContent).not.toMatch(/Next/);
+        }
+        expect(container.querySelector('[data-row-group="upNext"] .step-text, [data-up-next] .step-text')).not.toBeNull();
     });
 });
