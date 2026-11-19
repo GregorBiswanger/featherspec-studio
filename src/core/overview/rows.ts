@@ -8,6 +8,7 @@ import { sendViewOf, tipClosingOf } from '../assistant/sendView';
 import type { StepTipSettings } from '../settings/stepTipSettings';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { ShellModel } from '../ports/shell';
+import { integrateIsQuiet } from '../planMap/returnedWork';
 import type { SpecResolver } from './specRefs';
 
 export const UP_NEXT_LIMIT = 3;
@@ -31,6 +32,11 @@ function statusOf(model: ShellModel, entry: LifecycleEntry): string {
     return entry.state === 'Backlog' ? (needsOf(model.project, entry)[0]?.text ?? 'Backlog') : entry.state;
 }
 
+function quietOf(model: ShellModel, entry: LifecycleEntry): { quiet?: true } {
+    const spec = model.project.specs.find((candidate) => candidate.key === entry.key);
+    return spec !== undefined && integrateIsQuiet(model, entry, spec) ? { quiet: true } : {};
+}
+
 function rowOf(model: ShellModel, specs: SpecResolver, entry: LifecycleEntry, first?: { tips?: StepTipSettings; offer?: Offer }): OverviewRow {
     const step = stepView(model, entry.key);
     const row: OverviewRow = {
@@ -46,12 +52,13 @@ function rowOf(model: ShellModel, specs: SpecResolver, entry: LifecycleEntry, fi
     const offer = first?.offer;
     const next = (tips === undefined || !tips.show) && offer === undefined ? undefined : nextStep(model, entry.key);
     if (next === undefined || !('case' in next)) {
-        return { ...row, step };
+        return { ...row, step, ...quietOf(model, entry) };
     }
     const send = sendViewOf(offer, next.case);
     return {
         ...row,
         step,
+        ...quietOf(model, entry),
         ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer), { version: model.project.version, ...(next.reason === undefined ? {} : { reason: next.reason }) }) }),
         ...(send === undefined ? {} : { send }),
     };

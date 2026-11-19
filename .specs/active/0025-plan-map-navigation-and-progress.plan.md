@@ -220,8 +220,8 @@ Parallel: stage 4. It runs in sequence (`PLAN-R3.md`). Stages 1–3 share text m
     - `primaryButtons.test.tsx` "0025 AC-026 …": detail and first Now row with and without Send offered, no primary
       under U-08, primary again under U-05.
 - **Verify:** `npm run test:unit` — red first (primary rendered under U-08), then green.
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-19. Red: `npx vitest run src/core/board/quiet0025.test.ts src/webview/ui/SendButton.test.tsx` 2 failed (no `quiet`, no secondary look). Green: `npm run test:unit` 3318 + 26 timing passed; eslint, tsc ×2 clean.
+- **Notes:** `quiet?: true` lives on `NextStepView` and `OverviewRow` (guards accept only `true`; on a row only with a step); `nextStep()` and `stepView()` unchanged. `SendButton` secondary look: main part gets `copy-secondary`, arrow part `send-arrow-secondary` (theme variables). primaryButtons test covers detail and first Now row, with and without Send, quiet and not.
 
 ### T-005 — A step or ways target travels once
 

@@ -11,6 +11,15 @@ describe('Overview view contract', () => {
         expect(isOverviewView({ ...view, figures: { kind: 'empty' } })).toBe(true);
     });
 
+    it('0025 AC-026: a Now row may carry quiet: true, with a step, and nothing else', () => {
+        const view = sampleView();
+        const row = { spec: { stem: '0001-r', number: '0001', title: 'R', found: true }, state: 'Active' as const, status: 'Active', problems: 0, step: { intent: 'Integrate', short: '/sdd-plan', line: '/sdd-plan x', lines: [{ text: '/sdd-plan x', intent: 'Integrate' }] } };
+        expect(isOverviewView({ ...view, now: [{ ...row, quiet: true }] })).toBe(true);
+        expect(isOverviewView({ ...view, now: [{ ...row, quiet: false } as never] })).toBe(false);
+        const { step: _step, ...bare } = row;
+        expect(isOverviewView({ ...view, now: [{ ...bare, quiet: true } as never] })).toBe(false);
+    });
+
     it('AC-026: a view with an extra key anywhere is refused, so no error text can reach the DOM', () => {
         const view = sampleView();
         expect(isOverviewView({ ...view, extra: 1 })).toBe(false);

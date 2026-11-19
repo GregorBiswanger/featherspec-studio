@@ -16,6 +16,7 @@ export function NextStep(props: {
     const { nextStep, copyResult } = props;
     const send = 'send' in nextStep ? nextStep.send : undefined;
     const tips = 'tips' in nextStep ? nextStep.tips : undefined;
+    const quiet = 'quiet' in nextStep && nextStep.quiet === true;
     return (
         <section className="detail-section next-step">
             <div className="section-head">
@@ -34,7 +35,7 @@ export function NextStep(props: {
                                     <PathText command={line.text} />
                                 </code>{' '}
                                 {index === 0 ? (
-                                    <StepAction send={send} look="primary" line={line.text} sendResult={props.sendResult} onSend={props.onSend} copyResult={copyResult} onCopy={props.onCopy} />
+                                    <StepAction send={send} look={quiet ? 'secondary' : 'primary'} line={line.text} sendResult={props.sendResult} onSend={props.onSend} copyResult={copyResult} onCopy={props.onCopy} />
                                 ) : (
                                     <CopyButton look="secondary" line={line.text} copyResult={copyResult} onCopy={props.onCopy} />
                                 )}

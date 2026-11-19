@@ -71,7 +71,7 @@ export interface NextStepLineView {
     intent: string;
 }
 
-export type NextStepView = { rule: string; lines: NextStepLineView[]; tips?: StepTipsView; send?: SendView } | { rule: string; text: string };
+export type NextStepView = { rule: string; lines: NextStepLineView[]; tips?: StepTipsView; send?: SendView; quiet?: true } | { rule: string; text: string };
 
 export interface SpecDetailView {
     kind: 'spec';
@@ -111,7 +111,8 @@ function isNextStepView(value: unknown): value is NextStepView {
         Array.isArray(value.lines) &&
         value.lines.every((line) => isRecord(line) && typeof line.text === 'string' && typeof line.intent === 'string') &&
         (value.tips === undefined || isStepTipsView(value.tips)) &&
-        (value.send === undefined || isSendView(value.send))
+        (value.send === undefined || isSendView(value.send)) &&
+        (value.quiet === undefined || value.quiet === true)
     );
 }
 

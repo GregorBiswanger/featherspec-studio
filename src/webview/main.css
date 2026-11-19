@@ -759,6 +759,15 @@ main > h1 {
     background: var(--vscode-button-hoverBackground, var(--vscode-button-background));
 }
 
+.send-arrow-secondary {
+    color: var(--vscode-button-secondaryForeground, var(--vscode-button-foreground));
+    background: var(--vscode-button-secondaryBackground, var(--vscode-button-background));
+}
+
+.send-arrow-secondary:hover {
+    background: var(--vscode-button-secondaryHoverBackground, var(--vscode-button-secondaryBackground));
+}
+
 .send-menu {
     position: absolute;
     top: 100%;

@@ -198,3 +198,31 @@ describe('0024 AC-003: a split button counts as one primary action (A-013)', () 
     });
 });
 
+
+describe('0025 AC-026: no primary control while U-08 shows', () => {
+    const SEND = { assistant: 'copilot', target: 'current', targets: ['new', 'current'] };
+    const INTEGRATE = { rule: 'NS-6', lines: [{ text: '/sdd-plan .specs/active/0001-r.md', intent: 'Integrate the returned work' }] };
+
+    async function quietView(options: { quiet: boolean; send: boolean }): Promise<HTMLElement> {
+        const view = fullView();
+        view.now[0] = { ...view.now[0]!, ...(options.quiet ? { quiet: true as const } : {}), ...(options.send ? { send: SEND as never } : {}) };
+        const container = await open('overview', { overview: view, selection: SELECTED });
+        const next = { ...INTEGRATE, ...(options.send ? { send: SEND } : {}), ...(options.quiet ? { quiet: true } : {}) };
+        await send(detailEvent(detailView({ stem: SELECTED.stem, number: SELECTED.number }, next as never)));
+        return container;
+    }
+
+    it.each([false, true])('0025 AC-026: with Send offered = %s, the first Now row and the detail hold no primary and every Copy or split part is secondary', async (offered) => {
+        const container = await quietView({ quiet: true, send: offered });
+        expect(primaries(container)).toHaveLength(0);
+        if (offered) {
+            expect(container.querySelectorAll('button.send-main.copy-secondary')).toHaveLength(2);
+            expect(container.querySelectorAll('button.send-arrow.send-arrow-secondary')).toHaveLength(2);
+        }
+    });
+
+    it.each([false, true])('0025 AC-026: with U-05 (not quiet), Send offered = %s, the first Now row and the detail are primary again', async (offered) => {
+        const container = await quietView({ quiet: false, send: offered });
+        expect(primaries(container)).toHaveLength(2);
+    });
+});

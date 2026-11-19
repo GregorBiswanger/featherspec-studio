@@ -46,7 +46,7 @@ export function SpecRow(props: { row: OverviewRow; group: string; copyLook?: Cop
                 {row.step === undefined ? null : <StepText step={row.step} />}
             </Drill>
             {row.step === undefined ? null : (
-                <StepAction send={row.send} look={props.copyLook ?? 'icon'} line={row.step.line} sendResult={sendResult} onSend={sendPrompt} copyResult={copyResult} onCopy={copyText} />
+                <StepAction send={row.send} look={row.quiet === true && props.copyLook === 'primary' ? 'secondary' : (props.copyLook ?? 'icon')} line={row.step.line} sendResult={sendResult} onSend={sendPrompt} copyResult={copyResult} onCopy={copyText} />
             )}
             {row.step === undefined || row.tips === undefined ? null : (
                 <div className="ov-coach">

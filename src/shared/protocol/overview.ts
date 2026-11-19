@@ -53,6 +53,7 @@ export interface OverviewRow {
     step?: StepView;
     tips?: StepTipsView;
     send?: SendView;
+    quiet?: true;
 }
 
 export interface OverviewUpNext {
@@ -163,7 +164,7 @@ function isActivity(value: unknown): value is McActivity {
 function isRow(value: unknown): value is OverviewRow {
     return (
         isRecord(value) &&
-        exactly(value, ['spec', 'state', 'status', 'problems'], ['step', 'reasons', 'tips', 'send']) &&
+        exactly(value, ['spec', 'state', 'status', 'problems'], ['step', 'reasons', 'tips', 'send', 'quiet']) &&
         isSpecRef(value.spec) &&
         isBoardState(value.state) &&
         isText(value.status) &&
@@ -171,7 +172,8 @@ function isRow(value: unknown): value is OverviewRow {
         (value.reasons === undefined || isText(value.reasons)) &&
         (value.step === undefined || isStepView(value.step)) &&
         (value.tips === undefined || isStepTipsView(value.tips)) &&
-        (value.send === undefined || (value.step !== undefined && isSendView(value.send)))
+        (value.send === undefined || (value.step !== undefined && isSendView(value.send))) &&
+        (value.quiet === undefined || (value.step !== undefined && value.quiet === true))
     );
 }
 

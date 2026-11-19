@@ -74,8 +74,13 @@ function groupView(plan: PlanEntry, returned: Returned, order: readonly string[]
     return out.length === 0 ? undefined : groupReturnedText(k, m, inPlanOrder(blocked, order), inPlanOrder(out, order));
 }
 
-/** 0025 §5.6: the one sentence for returned work (U-05, or U-08 while a group member is out); none without a return note. */
-export function returnedWorkOf(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry): string | undefined {
+export interface ReturnedWork {
+    text: string;
+    /** U-08 stands: a member of a `‖` group holding a returned step is still out. */
+    group: boolean;
+}
+
+export function returnedWorkViewOf(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry): ReturnedWork | undefined {
     const returned = returnedOf(model, spec);
     if (returned.ids.length === 0) {
         return undefined;
@@ -83,5 +88,16 @@ export function returnedWorkOf(model: ShellModel, entry: LifecycleEntry, spec: S
     const plan = model.project.plans.find((candidate) => candidate.key === entry.plan);
     const order = (plan?.parsed?.steps ?? []).map((step) => step.id);
     const group = plan === undefined ? undefined : groupView(plan, returned, order);
-    return group ?? returnedWorkText(returned.ids.length, inPlanOrder(returned.blocked, order), clauseOf(model, entry.key));
+    return group === undefined ? { text: returnedWorkText(returned.ids.length, inPlanOrder(returned.blocked, order), clauseOf(model, entry.key)), group: false } : { text: group, group: true };
+}
+
+/** 0025 §5.6: the one sentence for returned work (U-05, or U-08 while a group member is out); none without a return note. */
+export function returnedWorkOf(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry): string | undefined {
+    return returnedWorkViewOf(model, entry, spec)?.text;
+}
+
+/** 0025 AC-026: the `Integrate` line is not primary while U-08 shows. */
+export function integrateIsQuiet(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry): boolean {
+    const next = nextStep(model, entry.key);
+    return returnedWorkViewOf(model, entry, spec)?.group === true && next !== undefined && 'case' in next && next.case === 'NS-6-returned';
 }

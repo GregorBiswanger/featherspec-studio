@@ -89,6 +89,17 @@ describe('0019 P-2: the guard of the situation picture', () => {
 describe('0024 AC-003: the send view of the next step', () => {
     const SEND = { assistant: 'copilot', target: 'new', targets: ['new', 'current'] };
 
+    it('0025 AC-026: a next step may carry quiet: true and nothing else', () => {
+        const view = valid();
+        const lines = [{ text: 'a', intent: 'b' }];
+        view.nextStep = { rule: 'NS-6', lines, quiet: true } as never;
+        expect(isDetailView(view)).toBe(true);
+        for (const quiet of [false, 1, 'yes', null]) {
+            view.nextStep = { rule: 'NS-6', lines, quiet } as never;
+            expect(isDetailView(view), String(quiet)).toBe(false);
+        }
+    });
+
     it('accepts a next step with a send view and refuses a bad one', () => {
         const view = valid();
         const lines = [{ text: 'a', intent: 'b' }];

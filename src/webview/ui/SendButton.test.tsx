@@ -619,3 +619,17 @@ describe('0024 AC-008: the menu keys and pointer rules', () => {
     });
 });
 
+
+describe('0025 AC-026: the secondary look of the split button', () => {
+    it('look secondary makes the main part secondary and the arrow part carry the secondary class; the default stays primary', async () => {
+        const send = { assistant: 'copilot' as const, target: 'new' as const, targets: ['new' as const, 'current' as const] };
+        const props = { send, line: '/sdd-plan x', sendResult: undefined, onSend: () => undefined, copyResult: undefined, onCopy: () => undefined };
+        mounted = await mount(<SendButton {...props} look="secondary" />);
+        expect(mounted.container.querySelector('button.send-main')!.classList.contains('copy-secondary')).toBe(true);
+        expect(mounted.container.querySelector('button.send-arrow')!.classList.contains('send-arrow-secondary')).toBe(true);
+        mounted.unmount();
+        mounted = await mount(<SendButton {...props} />);
+        expect(mounted.container.querySelector('button.send-main')!.classList.contains('copy-secondary')).toBe(false);
+        expect(mounted.container.querySelector('button.send-arrow')!.classList.contains('send-arrow-secondary')).toBe(false);
+    });
+});
