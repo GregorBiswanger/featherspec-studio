@@ -13,7 +13,11 @@ export interface FakeOffer extends SettingsSource<Offer | undefined> {
     set(next: Offer | undefined): void;
 }
 
-export function createFakeOffer(initial: Offer | undefined = undefined): FakeOffer {
+export interface FakeOfferOptions {
+    attaching?: (id: AssistantId) => boolean;
+}
+
+export function createFakeOffer(initial: Offer | undefined = undefined, options: FakeOfferOptions = {}): FakeOffer {
     const host = createFakeAssistantHost();
     const listeners = new Set<() => void>();
     let value: unknown = 'none';
@@ -24,7 +28,7 @@ export function createFakeOffer(initial: Offer | undefined = undefined): FakeOff
             return { dispose: () => void listeners.delete(listener) };
         },
     };
-    const source = createSettingsSource([setting, extensionPresence(host)], ([chosen, present]) => offerOf(chosen, present as readonly string[]));
+    const source = createSettingsSource([setting, extensionPresence(host)], ([chosen, present]) => offerOf(chosen, present as readonly string[], options.attaching));
     const fake: FakeOffer = {
         host,
         read: () => source.read(),

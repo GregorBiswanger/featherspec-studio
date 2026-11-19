@@ -158,8 +158,8 @@ and `send.ts`/`send.test.ts`: no `‖`.
 - **Verify:** `npx vitest run --project node src/core/assistant src/core/specs/version.test.ts src/core/specs/readProject.test.ts`.
   It is red first (`attachmentOf` stub `Not implemented`, `1.11.0` still newer than known), then `npm run test:unit` is
   green.
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-19 · red first (`attachmentOf` stub `Not implemented`: 43 failed), then `npx vitest run --project node src/core/assistant src/core/specs/version.test.ts src/core/specs/readProject.test.ts` 261 passed; `src/core/{planMap,board,shell,overview}` 863 passed; tsc and eslint clean.
+- **Notes:** Proxy decision: `Offer` holds only `assistant` unless a table is injected (`offerOf(value, present, attaching?)` then adds `attaches`); `attachesOf(offer)` reads `offer.attaches ?? ASSISTANTS[id].attachesSpec`. The plan's always-set `attaches: true` would make 0024's staying `offerOf(...).toEqual({ assistant })` tests fail, and a staying test is never weakened. `createFakeOffer(initial, { attaching })` takes a function. `attachmentOf(offer, case, { version, key })` gives `withheld` only for a case that attaches, an attaching assistant and a closed gate; whitespace for Claude Code gives neither. `AC-016: %s is newer than known` keeps its title (rows retargeted to 1.11.1, 2.0.0, 1.11.1-rc1, 10.0.0); `readProject.test.ts` AC-016 uses 1.11.1.
 
 ### T-002 — The view carries the file, the toggletip names the update
 

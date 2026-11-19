@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { SettingPort } from '../ports/host';
 import { createSettingsSource } from '../settings/settingsSource';
-import { ASSISTANT_KEY, extensionPresence, offerOf } from './offer';
+import { ASSISTANT_KEY, attachesOf, extensionPresence, offerOf } from './offer';
 import { createFakeAssistantHost } from './testing/fakeAssistantHost';
 
 const EXTENSION_A = 'GitHub.copilot-chat';
@@ -140,5 +140,17 @@ describe('0024 AC-002: the offer source re-reads on a setting change and on an e
         w.host.fireExtensionsChanged();
         expect(w.source.read()).toBeUndefined();
         expect(calls).toBe(4);
+    });
+});
+
+describe('0027 AC-019: the attach switch rides on the offer', () => {
+    it('an offer made without a table holds only the assistant and reads the shipped table', () => {
+        expect(attachesOf(offerOf('claudeCode', [EXTENSION_B])!)).toBe(true);
+        expect(attachesOf(offerOf('copilot', [EXTENSION_A])!)).toBe(false);
+    });
+
+    it('an injected table is carried on the offer and wins over the shipped one', () => {
+        expect(offerOf('copilot', [EXTENSION_A], () => true)).toEqual({ assistant: 'copilot', attaches: true });
+        expect(attachesOf(offerOf('claudeCode', [EXTENSION_B], () => false)!)).toBe(false);
     });
 });
