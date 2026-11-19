@@ -3,7 +3,7 @@
 **Spec:** [0029-onboarding-before-setup.md](0029-onboarding-before-setup.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-003
+**Current step:** T-004
 
 ## Approach
 
@@ -85,8 +85,8 @@ No parallel stage: T-002 and T-003 share `shared/protocol/texts.ts` and the mode
   AC-004 …", `Now.test`/`Sections.test.tsx` "0029 AC-007 …" (specs exist: no welcome, Up next line only without rows),
   `copyNextStep.test.ts` "0029 AC-008 …", each with the `setupRun` negative control.
 - **Verify:** `npm run test:unit` — red first, then green.
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-19 red: `npx vitest run src/core/shell/specTree.test.ts src/core/copyNextStep/copyNextStep.test.ts src/core/overview/upNext0029.test.ts src/webview/welcome0029.test.tsx` 4 failed (tree and command still say `/sdd-specify`, no `setup` flag on Up next), the negative controls green. Green: the same plus `src/core/copyNextStep src/core/overview src/webview/areas/overview src/shared` 510 tests passed, `src/adapters/node/visibleLiterals.test.ts` 5 passed (all six §7 texts once); `npx tsc --noEmit` and `-p src/webview` clean.
+- **Notes:** Up next carries `setup?: true` on `OverviewUpNext` (set only with specs, no row, setup not run); the Situation `none` of *Copy next step* carries `setupRun?: 'not run'`; the tree reads the model's sign. Texts: tree in `shared/protocol/texts.ts`, Up next line in `webview/areas/overview/texts.ts`, command message in `copyNextStepTexts.ts`. Cadence v2 (Gregor): no full chain at stage ends; the stage 1 chain had already run green.
 
 ### T-004 — Live switch and the unchanged rest
 
@@ -145,7 +145,7 @@ No parallel stage: T-002 and T-003 share `shared/protocol/texts.ts` and the mode
 ## Session handoff
 
 - **Done so far:** T-001 (sign read, re-read, carried to the model); T-002 (welcome in Overview and Board).
-- **Next action:** T-003
+- **Next action:** T-004 (T-003 done)
 - **Open decisions:** — (OP-001: FeatherSpec 1.11.0 unreleased; the sign rests on `04c569d`)
 - **Baseline:** `0982b84` (head before the first step commit; "the commit on which implementation starts")
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

@@ -297,6 +297,7 @@ export const WELCOME_HEADING = 'Welcome to FeatherSpec';
 export const WELCOME_BODY =
     'Set up this project first: run /sdd-setup with the AI assistant of your choice. It asks for the language of your docs, fills the Memory Bank and records the architecture snapshot.';
 export const SETUP_LINE = '/sdd-setup';
+export const WELCOME_TREE_MESSAGE = 'Welcome to FeatherSpec. Set up this project first: run /sdd-setup with the AI assistant of your choice.';
 
 export const BANNER_HEADING = 'Problems';
 

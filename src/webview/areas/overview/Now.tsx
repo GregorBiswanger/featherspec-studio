@@ -1,12 +1,12 @@
 import type { NavigationRequest } from '../../../shared/protocol/messages';
 import type { OverviewNow, OverviewUpNext } from '../../../shared/protocol/overview';
-import { SDD_SPECIFY_LINE } from '../../../shared/protocol/texts';
+import { SDD_SPECIFY_LINE, SETUP_LINE } from '../../../shared/protocol/texts';
 import { useBoard } from '../../board/boardStore';
 import { CopyButton } from '../../ui/CopyButton';
 import { Drill } from './Drill';
 import { nowRequest, upNextRequest } from './requests';
 import { SpecRow } from './SpecRow';
-import { moreText, NOTHING_IN_PROGRESS_TEXT, NOTHING_UP_NEXT_TEXT, NOW_HEADING, UP_NEXT_HEADING, UP_NEXT_NOTE } from './texts';
+import { moreText, NOTHING_IN_PROGRESS_TEXT, NOTHING_UP_NEXT_SETUP_TEXT, NOTHING_UP_NEXT_TEXT, NOW_HEADING, UP_NEXT_HEADING, UP_NEXT_NOTE } from './texts';
 
 export function Now(props: { now: OverviewNow; navigate: (request: NavigationRequest) => void }) {
     const { now, navigate } = props;
@@ -42,8 +42,8 @@ export function UpNext(props: { upNext: OverviewUpNext; navigate: (request: Navi
             {upNext.rows.length === 0 ? null : <p className="ov-note">{UP_NEXT_NOTE}</p>}
             {upNext.rows.length === 0 ? (
                 <p className="ov-empty" data-nothing-up-next>
-                    <span>{NOTHING_UP_NEXT_TEXT}</span>
-                    <CopyButton look="icon" line={SDD_SPECIFY_LINE} copyResult={copyResult} onCopy={copyText} />
+                    <span>{upNext.setup === true ? NOTHING_UP_NEXT_SETUP_TEXT : NOTHING_UP_NEXT_TEXT}</span>
+                    <CopyButton look="icon" line={upNext.setup === true ? SETUP_LINE : SDD_SPECIFY_LINE} copyResult={copyResult} onCopy={copyText} />
                 </p>
             ) : (
                 <ul className="ov-list">

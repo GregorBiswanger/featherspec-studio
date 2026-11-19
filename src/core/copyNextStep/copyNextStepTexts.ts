@@ -38,4 +38,6 @@ export const NO_STEP_MESSAGE = 'No spec has a next step to copy. Start the next 
 
 export const NO_STEP_COPY_LINE = '/sdd-specify';
 
+export const NO_STEP_SETUP_MESSAGE = 'No spec has a next step to copy. Set up this project first with /sdd-setup';
+
 export const FEEDBACK_MS = 2000;

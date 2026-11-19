@@ -120,3 +120,27 @@ describe('0029 AC-006: without a welcome the empty states are as before', () => 
         expect(container.querySelector('.board-empty')?.textContent).toContain('No specs yet. Start with /sdd-specify');
     });
 });
+
+describe('0029 AC-007: the Up next line while setup has not run and specs exist', () => {
+    function withSpecs(setup: boolean): OverviewView {
+        const view = sampleView();
+        view.upNext = { rows: [], more: 0, stems: [], ...(setup ? { setup: true as const } : {}) };
+        return view;
+    }
+
+    it('0029 AC-007 shows the line of 0029 with an icon Copy of /sdd-setup and no welcome', async () => {
+        const container = await open('overview', overviewEvent(withSpecs(true)));
+        const next = container.querySelector('[data-up-next]')!;
+        expect(next.querySelector('[data-nothing-up-next] span')?.textContent).toBe('Nothing up next. Set up this project first with /sdd-setup');
+        expect(container.querySelector('[data-welcome]')).toBeNull();
+        const copy = next.querySelector<HTMLButtonElement>('.next-step-copy')!;
+        expect(copy.getAttribute('aria-label')).toBe('Copy prompt: /sdd-setup');
+        await click(copy);
+        expect(requests('copyText')).toEqual([{ text: '/sdd-setup' }]);
+    });
+
+    it('0029 AC-006 negative control: without the flag the line of today stays, copying /sdd-specify', async () => {
+        const container = await open('overview', overviewEvent(withSpecs(false)));
+        expect(container.querySelector('[data-nothing-up-next] span')?.textContent).toBe('Nothing up next. Start the next spec with /sdd-specify');
+    });
+});

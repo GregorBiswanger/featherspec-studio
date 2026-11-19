@@ -228,6 +228,34 @@ describe('0017 AC-020: no current spec, the quick pick', () => {
         expect(world.text()).toBe('$(check) Copied');
     });
 
+    it('0029 AC-008 with no spec and setup not run: the message names /sdd-setup and its button copies /sdd-setup', async () => {
+        await ready([]);
+        const model = (world.source.current())!;
+        world.setModel({ ...model, project: { ...model.project, setupRun: 'not run' } });
+        await command.run();
+        expect(fakes.informed).toEqual([{ text: 'No spec has a next step to copy. Set up this project first with /sdd-setup', action: 'Copy prompt' }]);
+        fakes.informAnswer = 'Copy prompt';
+        await command.run();
+        expect(fakes.written).toEqual(['/sdd-setup']);
+    });
+
+    it('0029 AC-008 negative control: setup not run with a spec that has a step still copies that step, no message', async () => {
+        await ready(BLOCKED_ACTIVE);
+        const model = (world.source.current())!;
+        world.setModel({ ...model, project: { ...model.project, setupRun: 'not run' } });
+        await command.run();
+        expect(fakes.informed).toEqual([]);
+        expect(fakes.written).toEqual([BLOCKED_LINE]);
+    });
+
+    it('0029 AC-006 negative control: setup run or unknown keeps the message of today', async () => {
+        await ready([{ number: '0003', kind: 'Done' }]);
+        const model = (world.source.current())!;
+        world.setModel({ ...model, project: { ...model.project, setupRun: 'run or unknown' } });
+        await command.run();
+        expect(fakes.informed[0]?.text).toBe('No spec has a next step to copy. Start the next spec with /sdd-specify');
+    });
+
     it('while the specs are not read (S4 or S5) it runs "Open" instead of copying or asking', async () => {
         await ready(BLOCKED_ACTIVE);
         world.setPanelState({ id: 'S4' });

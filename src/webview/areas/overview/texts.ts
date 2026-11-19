@@ -12,6 +12,8 @@ export const NOTHING_IN_PROGRESS_TEXT = 'Nothing in progress.';
 
 export const NOTHING_UP_NEXT_TEXT = 'Nothing up next. Start the next spec with /sdd-specify';
 
+export const NOTHING_UP_NEXT_SETUP_TEXT = 'Nothing up next. Set up this project first with /sdd-setup';
+
 export function moreText(count: number): string {
     return `+ ${count} more`;
 }

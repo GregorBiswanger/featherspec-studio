@@ -49,7 +49,7 @@ export function createStatusEntry(deps: StatusEntryDeps): StatusEntry {
         }
         const steps = pickOrder(specsWithStep(model));
         const spec = currentSpec(steps, view.selection === undefined ? undefined : { stem: view.selection.stem, path: view.selection.path });
-        return spec === undefined ? { kind: 'none', project, projects, ready: readyCount(model), steps } : { kind: 'current', project, projects, spec, steps };
+        return spec === undefined ? { kind: 'none', project, projects, ready: readyCount(model), steps, ...(model.project.setupRun === 'not run' ? { setupRun: 'not run' as const } : {}) } : { kind: 'current', project, projects, spec, steps };
     }
 
     function render(): void {

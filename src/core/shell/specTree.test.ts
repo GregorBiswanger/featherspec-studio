@@ -475,6 +475,24 @@ describe('0020 AC-012: the states of the view', () => {
         expect(tree).toEqual({ message: 'No specs yet. Start with /sdd-specify', items: [] });
     });
 
+    it('0029 AC-004 zero specs while setup has not run show the welcome message as text and no row', async () => {
+        const base = await modelOf({});
+        const tree = treeOf({ ...base, project: { ...base.project, setupRun: 'not run' } });
+        expect(tree).toEqual({ message: 'Welcome to FeatherSpec. Set up this project first: run /sdd-setup with the AI assistant of your choice.', items: [] });
+    });
+
+    it('0029 AC-006 negative control: setup run or unknown keeps the message of today', async () => {
+        const base = await modelOf({});
+        expect(treeOf({ ...base, project: { ...base.project, setupRun: 'run or unknown' } }).message).toBe('No specs yet. Start with /sdd-specify');
+    });
+
+    it('0029 AC-007 negative control: with specs and setup not run the tree has its groups and no message', async () => {
+        const base = await modelOf(MIXED);
+        const tree = treeOf({ ...base, project: { ...base.project, setupRun: 'not run' } });
+        expect(tree.message).toBeUndefined();
+        expect(groups(tree)).toHaveLength(4);
+    });
+
     it('S6 and Restricted Mode do not change the rows', async () => {
         const tree = buildSpecTree({ projectActive: true, projectName: 'demo', projectCount: 1, state: { id: 'S6' }, model: await modelOf(MIXED) });
         expect(groups(tree)).toHaveLength(4);

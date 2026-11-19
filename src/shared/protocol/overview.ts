@@ -58,6 +58,7 @@ export interface OverviewRow {
 }
 
 export interface OverviewUpNext {
+    setup?: true;
     rows: OverviewRow[];
     more: number;
     stems: string[];
@@ -191,7 +192,7 @@ function isRows(value: unknown): value is OverviewRow[] {
 }
 
 function isUpNext(value: unknown): value is OverviewUpNext {
-    return isRecord(value) && exactly(value, ['rows', 'more', 'stems']) && isRows(value.rows) && isCount(value.more) && Array.isArray(value.stems) && value.stems.every(isText);
+    return isRecord(value) && exactly(value, ['rows', 'more', 'stems'], ['setup']) && (value.setup === undefined || (value.setup === true && Array.isArray(value.rows) && value.rows.length === 0)) && isRows(value.rows) && isCount(value.more) && Array.isArray(value.stems) && value.stems.every(isText);
 }
 
 function isProblemLine(value: unknown): value is ProblemLine {

@@ -52,18 +52,22 @@ describe('final check 7 (ux-guidelines 10, 6): visible literals live in the text
         expect(offenders).toEqual([]);
     });
 
-    it('0029 AC-011 each welcome text exists exactly once in production code, in a text module', async () => {
-        const wanted = [
-            'Welcome to FeatherSpec',
-            'Set up this project first: run /sdd-setup with the AI assistant of your choice. It asks for the language of your docs, fills the Memory Bank and records the architecture snapshot.',
-            "export const SETUP_LINE = '/sdd-setup';",
+    it('0029 AC-011 each text of 0029 exists exactly once in production code, in its text module', async () => {
+        const TEXTS = 'src/shared/protocol/texts.ts';
+        const wanted: ReadonlyArray<readonly [string, string]> = [
+            ['Welcome to FeatherSpec\'', TEXTS],
+            ['Set up this project first: run /sdd-setup with the AI assistant of your choice. It asks for the language of your docs, fills the Memory Bank and records the architecture snapshot.', TEXTS],
+            ["export const SETUP_LINE = '/sdd-setup';", TEXTS],
+            ['Welcome to FeatherSpec. Set up this project first: run /sdd-setup with the AI assistant of your choice.', TEXTS],
+            ['Nothing up next. Set up this project first with /sdd-setup', 'src/webview/areas/overview/texts.ts'],
+            ['No spec has a next step to copy. Set up this project first with /sdd-setup', 'src/core/copyNextStep/copyNextStepTexts.ts'],
         ];
         const files = await productionFiles(path.join(root, 'src'));
         const texts = await Promise.all(files.map(async (file) => ({ name: path.relative(root, file).split(path.sep).join('/'), text: await fs.readFile(file, 'utf8') })));
-        for (const literal of wanted) {
-            const holders = texts.filter((file) => file.text.includes(literal)).map((file) => file.name);
-            expect(holders, literal).toEqual(['src/shared/protocol/texts.ts']);
-            expect(texts.filter((file) => file.name === 'src/shared/protocol/texts.ts')[0]!.text.split(literal)).toHaveLength(2);
+        for (const [literal, module] of wanted) {
+            const holders = texts.filter((file) => file.text.includes(literal));
+            expect(holders.map((file) => file.name), literal).toEqual([module]);
+            expect(holders[0]!.text.split(literal), literal).toHaveLength(2);
         }
     });
 

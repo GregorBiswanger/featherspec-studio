@@ -99,6 +99,7 @@ export function projectNow(model: ShellModel, specs: SpecResolver, tips?: StepTi
 export function projectUpNext(model: ShellModel, specs: SpecResolver): OverviewUpNext {
     const entries = inOrder(model, UP_NEXT_ORDER);
     return {
+        ...(entries.length === 0 && model.lifecycle.entries.length > 0 && model.project.setupRun === 'not run' ? { setup: true as const } : {}),
         rows: entries.slice(0, UP_NEXT_LIMIT).map((entry) => rowOf(model, specs, entry)),
         more: Math.max(0, entries.length - UP_NEXT_LIMIT),
         stems: [...new Set(entries.map((entry) => entry.stem))],

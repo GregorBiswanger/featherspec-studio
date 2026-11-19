@@ -15,6 +15,7 @@ import {
     LOADING_TEXT,
     NEXT_STEP_PREFIX,
     NO_SPECS_START_TEXT,
+    WELCOME_TREE_MESSAGE,
     panelStateActions,
     panelStateLines,
     PROBLEM_PREFIX,
@@ -283,7 +284,7 @@ export function buildSpecTree(input: SpecTreeInput): SpecTreeModel {
     }
     const groups = groupsOf(input.model);
     if (groups.length === 0) {
-        return { message: NO_SPECS_START_TEXT, items: [], ...description };
+        return { message: input.model.project.setupRun === 'not run' ? WELCOME_TREE_MESSAGE : NO_SPECS_START_TEXT, items: [], ...description };
     }
     const badge = badgeOf(groups);
     return { message: undefined, items: groups, ...(badge === undefined ? {} : { badge }), ...description };
