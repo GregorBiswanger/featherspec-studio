@@ -52,15 +52,15 @@ const PLAN_THEN = 'You read the plan before anything is built.';
 
 export const STEP_GUIDES: Record<StepCase, StepGuide> = {
     'NS-2': {
-        short: 'Fix status',
+        short: 'Move back to Ready',
         session: 'any',
         model: 'fast',
         effect: 'The agent compares folder, status and plan (or both copies of the spec) and proposes the move that brings them in line.',
         then: 'You confirm the move; the Studio follows the files.',
     },
-    'NS-4': { short: 'Unblock', session: 'any', model: 'fast', effect: 'The agent shows the workflow and where every spec stands.', then: BLOCK_THEN },
+    'NS-4': { short: 'Find blocker', session: 'any', model: 'fast', effect: 'The agent shows the workflow and where every spec stands.', then: BLOCK_THEN },
     'NS-4-plan': {
-        short: 'Unblock',
+        short: 'Find blocker',
         session: 'any',
         model: 'strong',
         effect: 'The agent takes in returned work, checks the plan against the code and reports what blocks.',
@@ -82,7 +82,7 @@ export const STEP_GUIDES: Record<StepCase, StepGuide> = {
         then: 'When the plan and the ticks agree, the Studio shows the step to continue with.',
     },
     'NS-6-resume': {
-        short: 'Resume',
+        short: 'Report',
         session: 'any',
         model: 'fast',
         effect: 'The agent checks the plan against the code and reports where it stands.',
@@ -96,14 +96,14 @@ export const STEP_GUIDES: Record<StepCase, StepGuide> = {
         then: 'Paste it once every worker you started is back.',
     },
     'NS-6-plan': {
-        short: 'Plan',
+        short: 'Write plan',
         session: 'any',
         model: 'strongWebSearch',
         effect: 'The agent researches and writes the plan; for a reactivated spec, a fresh plan for the change.',
         then: PLAN_THEN,
     },
     'NS-7': {
-        short: 'Build',
+        short: 'Start',
         session: 'any',
         model: 'fast',
         effect: 'The agent moves the spec to active, builds one step, runs its check, ticks it and stops.',
@@ -117,7 +117,7 @@ export const STEP_GUIDES: Record<StepCase, StepGuide> = {
         effect: 'A fresh reader looks for gaps, contradictions and untestable criteria.',
         then: 'Then write the plan with the second prompt, in any chat.',
     },
-    'NS-10': { short: 'Plan', session: 'any', model: 'strongWebSearch', effect: 'The agent researches and writes the plan as small, verifiable steps.', then: PLAN_THEN },
+    'NS-10': { short: 'Write plan', session: 'any', model: 'strongWebSearch', effect: 'The agent researches and writes the plan as small, verifiable steps.', then: PLAN_THEN },
 };
 
 export const NS2_INTENT = 'Put folder and status back in line';

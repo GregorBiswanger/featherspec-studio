@@ -76,7 +76,7 @@ describe('0028 AC-002: a plan without a ticked step is not finished', () => {
         const { entry, next, details } = await viewsOf(name);
         expect(entry.state).toBe('Active');
         expect(next).toEqual({ rule: 'NS-6', case: 'NS-6-resume', lines: [{ intent: 'Let the agent report where the plan stands', text: `/sdd-plan ${SPLITTER_SPEC}` }] });
-        expect(STEP_GUIDES['NS-6-resume']).toMatchObject({ short: 'Resume', ...TEXTS });
+        expect(STEP_GUIDES['NS-6-resume']).toMatchObject({ short: 'Report', ...TEXTS });
         expect((details[0] as { nextStep: { tips: { about: string[] } } }).nextStep.tips.about[0]).toBe(`${TEXTS.effect} ${TEXTS.then}`);
     });
 

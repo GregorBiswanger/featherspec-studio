@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { describe, expect, it } from 'vitest';
-import { NEXT_STEP_DONE_TEXT, NEXT_STEP_UNREADABLE_TEXT, nextStepNumberUsedText, STEP_GUIDES, stepShortForm } from '../../shared/protocol/nextStepTexts';
+import { continueIntent, INTEGRATE_INTENT, NEXT_STEP_DONE_TEXT, NEXT_STEP_UNREADABLE_TEXT, nextStepNumberUsedText, NS2_INTENT, NS4_INTENT, NS5_INTENT, NS6_REPORT_FIRST_INTENT, NS6_RESUME_INTENT, NS8_INTENT, NS9_INTENT, startIntent, STEP_GUIDES, stepShortForm, type StepCase, WRITE_PLAN_INTENT } from '../../shared/protocol/nextStepTexts';
 import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
 import { planText, readMemory, ROOT, specText, VERSION } from '../lifecycle/testing/projects';
 import { createMemorySpecSource } from '../specs/testing/memorySpecSource';
@@ -280,19 +280,19 @@ describe('0021 AC-001: every next step line carries its intent, one fixture per 
 
     it('the guide of each case: short intent, session, model, effect and then-sentence literally (§6.1, §6.2)', () => {
         expect(STEP_GUIDES).toEqual({
-            'NS-2': { short: 'Fix status', session: 'any', model: 'fast', effect: 'The agent compares folder, status and plan (or both copies of the spec) and proposes the move that brings them in line.', then: 'You confirm the move; the Studio follows the files.' },
-            'NS-4': { short: 'Unblock', session: 'any', model: 'fast', effect: 'The agent shows the workflow and where every spec stands.', then: 'Once the block is solved, the spec shows its next step again.' },
-            'NS-4-plan': { short: 'Unblock', session: 'any', model: 'strong', effect: 'The agent takes in returned work, checks the plan against the code and reports what blocks.', then: 'Once the block is solved, the spec shows its next step again.' },
+            'NS-2': { short: 'Move back to Ready', session: 'any', model: 'fast', effect: 'The agent compares folder, status and plan (or both copies of the spec) and proposes the move that brings them in line.', then: 'You confirm the move; the Studio follows the files.' },
+            'NS-4': { short: 'Find blocker', session: 'any', model: 'fast', effect: 'The agent shows the workflow and where every spec stands.', then: 'Once the block is solved, the spec shows its next step again.' },
+            'NS-4-plan': { short: 'Find blocker', session: 'any', model: 'strong', effect: 'The agent takes in returned work, checks the plan against the code and reports what blocks.', then: 'Once the block is solved, the spec shows its next step again.' },
             'NS-5': { short: 'Verify', session: 'new', model: 'strongOtherFamily', effect: 'A fresh reviewer checks every acceptance criterion against evidence and gives a verdict.', then: 'Only after a READY verdict, close the spec with the second prompt.' },
             'NS-6-open': { short: 'Continue', session: 'sameOrNew', model: 'fast', effect: 'The agent builds this one step, runs its check, ticks it and stops.', then: 'When it stops, the Studio shows the next step; a working agreement such as a test review may stop it earlier.' },
             'NS-6-report': { short: 'Report', session: 'any', model: 'fast', effect: 'The agent checks the plan against the code, brings the ticks and the handoff level and reports where the work stands; it builds nothing yet.', then: 'When the plan and the ticks agree, the Studio shows the step to continue with.' },
-            'NS-6-resume': { short: 'Resume', session: 'any', model: 'fast', effect: 'The agent checks the plan against the code and reports where it stands.', then: 'The spec then shows its next step.' },
+            'NS-6-resume': { short: 'Report', session: 'any', model: 'fast', effect: 'The agent checks the plan against the code and reports where it stands.', then: 'The spec then shows its next step.' },
             'NS-6-returned': { short: 'Integrate', session: 'sameOrNew', model: 'fast', effect: 'The agent checks each returned step against its files, runs its check and the quality gates, then ticks the steps and removes the return notes.', then: 'Paste it once every worker you started is back.' },
-            'NS-6-plan': { short: 'Plan', session: 'any', model: 'strongWebSearch', effect: 'The agent researches and writes the plan; for a reactivated spec, a fresh plan for the change.', then: 'You read the plan before anything is built.' },
-            'NS-7': { short: 'Build', session: 'any', model: 'fast', effect: 'The agent moves the spec to active, builds one step, runs its check, ticks it and stops.', then: 'When it stops, the Studio shows the next step; a working agreement such as a test review may stop it earlier.' },
+            'NS-6-plan': { short: 'Write plan', session: 'any', model: 'strongWebSearch', effect: 'The agent researches and writes the plan; for a reactivated spec, a fresh plan for the change.', then: 'You read the plan before anything is built.' },
+            'NS-7': { short: 'Start', session: 'any', model: 'fast', effect: 'The agent moves the spec to active, builds one step, runs its check, ticks it and stops.', then: 'When it stops, the Studio shows the next step; a working agreement such as a test review may stop it earlier.' },
             'NS-8': { short: 'Add criteria', session: 'any', model: 'strong', effect: 'The agent goes through the spec with you and adds testable acceptance criteria.', then: 'Then the spec is challenged and planned.' },
             'NS-9': { short: 'Challenge', session: 'new', model: 'strong', effect: 'A fresh reader looks for gaps, contradictions and untestable criteria.', then: 'Then write the plan with the second prompt, in any chat.' },
-            'NS-10': { short: 'Plan', session: 'any', model: 'strongWebSearch', effect: 'The agent researches and writes the plan as small, verifiable steps.', then: 'You read the plan before anything is built.' },
+            'NS-10': { short: 'Write plan', session: 'any', model: 'strongWebSearch', effect: 'The agent researches and writes the plan as small, verifiable steps.', then: 'You read the plan before anything is built.' },
         });
     });
 
@@ -422,14 +422,14 @@ describe('0021 AC-006: the step short form of every case', () => {
     const cases: Array<[string, Record<string, string>, string, string, string, string]> = [
         ['NS-5', reviewing, ACTIVE, 'Verify', '/sdd-compile', 'Verify · /sdd-compile'],
         ['NS-6 open', { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: titled([['T-003', 'Reject money values', '[ ]']]) }, ACTIVE, 'Continue', 'Implement T-003', 'Continue · Implement T-003'],
-        ['NS-6 resume', { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: struck([['T-003', 'Done']]) }, ACTIVE, 'Resume', '/sdd-plan', 'Resume · /sdd-plan'],
-        ['NS-6 plan', { [ACTIVE]: specText({ status: 'In Progress', plan: ARCHIVE }) }, ACTIVE, 'Plan', '/sdd-plan', 'Plan · /sdd-plan'],
-        ['NS-7 step', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[ ]']]) }, BACKLOG, 'Build', 'Implement T-001', 'Build · Implement T-001'],
-        ['NS-7 plan', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[x]']]) }, BACKLOG, 'Resume', '/sdd-plan', 'Resume · /sdd-plan'],
+        ['NS-6 resume', { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: struck([['T-003', 'Done']]) }, ACTIVE, 'Report', '/sdd-plan', 'Report · /sdd-plan'],
+        ['NS-6 plan', { [ACTIVE]: specText({ status: 'In Progress', plan: ARCHIVE }) }, ACTIVE, 'Write plan', '/sdd-plan', 'Write plan · /sdd-plan'],
+        ['NS-7 step', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[ ]']]) }, BACKLOG, 'Start', 'Implement T-001', 'Start · Implement T-001'],
+        ['NS-7 plan', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[x]']]) }, BACKLOG, 'Report', '/sdd-plan', 'Report · /sdd-plan'],
         ['NS-8', { [BACKLOG]: specText({ criteria: false }) }, BACKLOG, 'Add criteria', '/sdd-specify', 'Add criteria · /sdd-specify'],
         ['NS-9', { [BACKLOG]: specText() }, BACKLOG, 'Challenge', '/sdd-clarify', 'Challenge · /sdd-clarify'],
-        ['NS-10', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: planText({ status: 'In Progress' }) }, BACKLOG, 'Plan', '/sdd-plan', 'Plan · /sdd-plan'],
-        ['NS-2', { [ACTIVE]: specText({ status: 'Draft', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: planText({ status: 'In Progress' }) }, ACTIVE, 'Fix status', '/sdd-lifecycle', 'Fix status · /sdd-lifecycle'],
+        ['NS-10', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: planText({ status: 'In Progress' }) }, BACKLOG, 'Write plan', '/sdd-plan', 'Write plan · /sdd-plan'],
+        ['NS-2', { [ACTIVE]: specText({ status: 'Draft', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: planText({ status: 'In Progress' }) }, ACTIVE, 'Move back to Ready', '/sdd-lifecycle', 'Move back to Ready · /sdd-lifecycle'],
     ];
 
     it.each(cases)('%s: short intent, command short form and the joined step short form', async (_name, files, key, intent, short, joined) => {
@@ -681,11 +681,11 @@ describe('0028 AC-016: a Ready spec starts with FeatherSpec\'s fixed prompt', ()
     const oldStartLine = (text: string, plan: string | undefined): boolean => text.startsWith('Start ') || (plan !== undefined && text === `Implement ${plan}`);
 
     it('with an open step: one line Implement <ID> of <plan path>, short form Implement <ID>, everything else as at the Baseline', async () => {
-        const snapshot = (JSON.parse(fs.readFileSync(snapshotFile('case-ac016-ready-with-step'), 'utf8')) as ProjectSnapshot)[KEY]!;
+        const snapshot = readBaseline('case-ac016-ready-with-step')[KEY]!;
         const m = await modelOfCase('ac016-ready-with-step');
         const next = nextStep(m, KEY);
         expect(next).toEqual({ rule: 'NS-7', case: 'NS-7', lines: [{ intent: 'Start implementing: T-003 Reject money values', text: `Implement T-003 of ${PLAN}` }] });
-        expect(stepShortForm(stepView(m, KEY)!)).toBe('Build · Implement T-003');
+        expect(stepShortForm(stepView(m, KEY)!)).toBe('Start · Implement T-003');
         const old = snapshot.nextStep as { rule: string; case: string; lines: Array<{ intent: string; text: string }> };
         expect(old.lines[0]!.text).toBe(`Start T-003 of ${PLAN}`);
         expect({ ...old, lines: old.lines.map((line) => ({ ...line, text: line.text.replace(/^Start /, 'Implement ') })) }).toEqual(next);
@@ -697,7 +697,7 @@ describe('0028 AC-016: a Ready spec starts with FeatherSpec\'s fixed prompt', ()
     it.each(['ac016-ready-without-step', 'ac016-ready-all-struck'])('%s: /sdd-plan <spec path> with the intent, coach, effect and then of Plan without open step', async (name) => {
         const m = await modelOfCase(name);
         expect(nextStep(m, KEY)).toEqual({ rule: 'NS-7', case: 'NS-6-resume', lines: [{ intent: 'Let the agent report where the plan stands', text: `/sdd-plan ${KEY}` }] });
-        expect(stepView(m, KEY)).toMatchObject({ intent: 'Resume', short: '/sdd-plan', line: `/sdd-plan ${KEY}` });
+        expect(stepView(m, KEY)).toMatchObject({ intent: 'Report', short: '/sdd-plan', line: `/sdd-plan ${KEY}` });
         expect(stepTips('NS-6-resume', settings).coach).toBe('any chat · fast model');
         expect(STEP_GUIDES['NS-6-resume'].effect).toBe('The agent checks the plan against the code and reports where it stands.');
         expect(STEP_GUIDES['NS-6-resume'].then).toBe('The spec then shows its next step.');
@@ -722,5 +722,61 @@ describe('0028 AC-016: a Ready spec starts with FeatherSpec\'s fixed prompt', ()
         expect(oldStartLine('Start T-003 of .specs/backlog/0001-x.plan.md', '.specs/backlog/0001-x.plan.md')).toBe(true);
         expect(oldStartLine('Implement .specs/backlog/0001-x.plan.md', '.specs/backlog/0001-x.plan.md')).toBe(true);
         expect(oldStartLine('Implement T-003 of .specs/backlog/0001-x.plan.md', '.specs/backlog/0001-x.plan.md')).toBe(false);
+    });
+});
+
+describe('0026 AC-003, AC-004: a short intent starts with the first word of its first line\'s intent', () => {
+    const FIRST_INTENT: Record<StepCase, string> = {
+        'NS-2': NS2_INTENT,
+        'NS-4': NS4_INTENT,
+        'NS-4-plan': NS4_INTENT,
+        'NS-5': NS5_INTENT,
+        'NS-6-open': continueIntent('T-003', 'Reject money values'),
+        'NS-6-report': NS6_REPORT_FIRST_INTENT,
+        'NS-6-resume': NS6_RESUME_INTENT,
+        'NS-6-returned': INTEGRATE_INTENT,
+        'NS-6-plan': WRITE_PLAN_INTENT,
+        'NS-7': startIntent('T-001', 'Step'),
+        'NS-8': NS8_INTENT,
+        'NS-9': NS9_INTENT,
+        'NS-10': WRITE_PLAN_INTENT,
+    };
+    const VERB_OF: Record<string, string> = { 'Have the ': 'Verify', 'Let the agent ': 'Report' };
+    const CASES = Object.keys(STEP_GUIDES) as StepCase[];
+
+    function expectedShort(stepCase: StepCase): string {
+        const intent = FIRST_INTENT[stepCase];
+        if (stepCase === 'NS-2') {
+            return 'Move back to Ready';
+        }
+        if (stepCase === 'NS-9') {
+            return 'Challenge';
+        }
+        const lead = Object.keys(VERB_OF).find((prefix) => intent.startsWith(prefix));
+        return lead === undefined ? (STEP_GUIDES[stepCase].short.split(' ')[0] === intent.split(' ')[0] ? STEP_GUIDES[stepCase].short : `first word of ${intent}`) : VERB_OF[lead]!;
+    }
+
+    it.each(CASES)('0026 AC-004 %s: the short intent is non-empty and follows the first word of the first line\'s intent', (stepCase) => {
+        const short = STEP_GUIDES[stepCase].short;
+        expect(short).not.toBe('');
+        expect(short).toBe(expectedShort(stepCase));
+        if (stepCase !== 'NS-2' && !/^(Have the |Let the agent )/.test(FIRST_INTENT[stepCase])) {
+            expect(short.split(' ')[0]).toBe(FIRST_INTENT[stepCase].split(' ')[0]);
+        }
+    });
+
+    it('0026 AC-004 negative control: a planted short intent that starts with another word is found', () => {
+        expect('Next Continue'.split(' ')[0]).not.toBe(FIRST_INTENT['NS-6-open'].split(' ')[0]);
+        expect('Unblock'.split(' ')[0]).not.toBe(FIRST_INTENT['NS-4'].split(' ')[0]);
+        expect(CASES.every((stepCase) => !/^Next /.test(STEP_GUIDES[stepCase].short))).toBe(true);
+    });
+
+    it('0026 AC-003: the step short form of the table, per case, joined with the command short form', async () => {
+        const reviewing = { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: planText({ status: 'Done' }) };
+        const joined = async (files: Record<string, string>, key: string) => stepShortForm(stepView(await model(files), key)!);
+        expect(await joined(reviewing, ACTIVE)).toBe('Verify · /sdd-compile');
+        expect(await joined({ [ACTIVE]: specText({ status: 'Draft', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: planText({ status: 'In Progress' }) }, ACTIVE)).toBe('Move back to Ready · /sdd-lifecycle');
+        expect(await joined({ [BACKLOG]: specText({ criteria: false }) }, BACKLOG)).toBe('Add criteria · /sdd-specify');
+        expect(await joined({ [BACKLOG]: specText() }, BACKLOG)).toBe('Challenge · /sdd-clarify');
     });
 });

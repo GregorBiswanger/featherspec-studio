@@ -10,6 +10,7 @@ Current phase: act
 - Waits for: CI at the PR, Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
 
 ## Active Spec
+- [0026](../.specs/active/0026-send-defaults-and-wording.md) / [plan](../.specs/active/0026-send-defaults-and-wording.plan.md): Send defaults and wording, in progress (T-001…T-011); AC-017…AC-019 are Gregor's.
 - [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 and OP-004 are Gregor's.
 - [0023](../.specs/active/0023-plan-map-stages-parallel-work.md) / [plan](../.specs/active/0023-plan-map-stages-parallel-work.plan.md): Plan map, T-001…T-017; AC-018 real window, AC-019, AC-020 are Gregor's.
 - [0022](../.specs/active/0022-layout-and-signal-polish.md) / [plan](../.specs/active/0022-layout-and-signal-polish.plan.md): layout and signals, T-001…T-022; AC-020, AC-021 are Gregor's.
@@ -36,7 +37,7 @@ Current phase: act
 - Gregor's manual checks stay in the specs: 0025 AC-022 real window, AC-023, AC-024; 0028 AC-015.
 
 ## Next
-1. Implement 0026 (spec and plan are in `.specs/backlog/`; move them to `active/` with `/sdd-lifecycle` when it starts, after `/sdd-plan`).
+1. Implement 0026 (in `.specs/active/`, started on `ux-round-3`).
 2. Implement 0027 the same way.
 3. Open the PR (draft is fine) so CI runs once at the end of round 3: 0021 AC-020, 0022 AC-017, 0023 AC-016, 0024 AC-014, 0025 AC-020, 0028 AC-012.
 

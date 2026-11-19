@@ -74,6 +74,23 @@ export const WORDING_0026: ReadonlyArray<readonly [string, string]> = [
     ['what this chat knows', 'what the current chat knows'],
 ];
 
+export const SHORT_INTENTS_0026: Readonly<Record<string, string>> = {
+    'NS-2': 'Move back to Ready',
+    'NS-4': 'Find blocker',
+    'NS-4-plan': 'Find blocker',
+    'NS-6-resume': 'Report',
+    'NS-6-plan': 'Write plan',
+    'NS-10': 'Write plan',
+    'NS-7': 'Start',
+};
+
+function withShortIntent(value: SpecSnapshot): unknown {
+    const stepCase = (value.nextStep as { case?: string } | null)?.case;
+    const short = stepCase === undefined ? undefined : SHORT_INTENTS_0026[stepCase];
+    const view = translated(value.stepView) as { intent?: string } | null;
+    return short === undefined || view === null ? view : { ...view, intent: short };
+}
+
 export function translated(value: unknown): unknown {
     return JSON.parse(WORDING_0026.reduce((text, [from, to]) => text.split(from).join(to), JSON.stringify(value)));
 }
@@ -82,7 +99,7 @@ export function readBaseline(name: string): ProjectSnapshot {
     const raw = JSON.parse(fs.readFileSync(snapshotFile(name), 'utf8')) as ProjectSnapshot;
     const result: ProjectSnapshot = {};
     for (const [key, value] of Object.entries(raw)) {
-        result[key] = { ...value, stepView: translated(value.stepView), tips: translated(value.tips) };
+        result[key] = { ...value, stepView: withShortIntent(value), tips: translated(value.tips) };
     }
     return result;
 }

@@ -167,8 +167,8 @@ Parallel: stages 2 and 3, run in sequence (`PLAN-R3.md`). Stage 1 shares `nextSt
     titles kept, changed statements in `Notes:`).
 - **Verify:** `npx vitest run --project node src/core/board/nextStep.test.ts src/core/board/nextStepBaseline.test.ts`
   red first (`Fix status`, `Unblock`, `Resume`, `Plan`, `Build`), then `npm run test:unit` green.
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** red first (17 failures in 7 files after the text module change); green: `npx vitest run src` (3479 passed), tsc, eslint.
+- **Notes:** `SHORT_INTENTS_0026` in `testing/nextStepSnapshot.ts` translates the Baseline's `stepView.intent` per case (per case, not per word). Literal short intents changed in `nextStep.test.ts` (0021 AC-001 guide table, AC-006 table, 0028 AC-016), `cards.test` (0017 AC-001), `copyNextStep.test` (quick-pick `Ready · Report · /sdd-plan`), `currentSpec.test`, `finishedPlan0028.test`; titles kept. The tree (0022 §4.2) and status bar read the same string, so their tests needed no edit. `activeContext.md` names 0026 under *Active Spec* now (docsScan requires it for a spec in `active/`).
 
 ### T-004 — No visible "Next" before a short form
 

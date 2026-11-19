@@ -20,7 +20,7 @@ function step(number: string, state: SpecStep['state'], key = `.specs/active/${n
 describe('0017 AC-013: the current spec', () => {
     it('with no selection the most urgent state wins: Blocked 0020 before Review 0015 before Active 0012', async () => {
         const { steps } = await stepsOf(URGENT);
-        expect(currentSpec(steps, undefined)).toMatchObject({ number: '0020', state: 'Blocked', step: { intent: 'Unblock', short: '/sdd-plan' } });
+        expect(currentSpec(steps, undefined)).toMatchObject({ number: '0020', state: 'Blocked', step: { intent: 'Find blocker', short: '/sdd-plan' } });
         expect(currentSpec(steps.filter((entry) => entry.number !== '0020'), undefined)?.number).toBe('0015');
         expect(currentSpec(steps.filter((entry) => entry.state === 'Active'), undefined)?.number).toBe('0012');
     });
