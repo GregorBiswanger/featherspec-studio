@@ -31,13 +31,13 @@ E Copilot-harness-Spike (parallel zu D, vor F fertig)
 
 ## A. Vorbereitung (Team, ½ Tag)
 
-- [ ] **A-1** Die Dateien `docs/ux-audit/11-…` und `12-…` sowie `README.md` auf `ux-round-3` committen. Das ganze Team arbeitet von diesem Stand.
-- [ ] **A-2** Die Entscheidungen, die der Klicktest-Entwurf schon voraussetzt, als PD in `docs/product/product-decisions.md` festhalten:
+- [x] **A-1** Die Dateien `docs/ux-audit/11-…` und `12-…` sowie `README.md` auf `ux-round-3` committen. Das ganze Team arbeitet von diesem Stand.
+- [x] **A-2** Die Entscheidungen, die der Klicktest-Entwurf schon voraussetzt, als PD in `docs/product/product-decisions.md` festhalten:
   - **OP-004:** Copilot sendet standardmäßig in einen **neuen Chat**.
   - **E-13:** Prozent werden kaufmännisch gerundet und zeigen höchstens 99 %, solange etwas offen ist.
   - **Wortwahl:** überall „**current chat**“.
   - **V1-11:** Ein roter Schritt beim Nachziehen heißt **anhalten und fragen** (11 §6 Frage 3).
-- [ ] **A-3** Neue Testdaten unter `test/fixtures/` anlegen. Ohne sie lassen sich D1, D2 und F nicht prüfen.
+- [x] **A-3** Neue Testdaten unter `test/fixtures/` anlegen. Ohne sie lassen sich D1, D2 und F nicht prüfen.
 
 | Fixture | Inhalt | Für |
 | --- | --- | --- |
@@ -51,13 +51,13 @@ E Copilot-harness-Spike (parallel zu D, vor F fertig)
 
 Der Entwurf liegt im Artifact `2HPSzmxus6hhKPkuGm47wp`, Boards `Studio window` und `Tasks`.
 
-- [ ] **B-1** Die vier Korrekturen aus 11 §3 in den Entwurf einbauen:
+- [x] **B-1** Die vier Korrekturen aus 11 §3 in den Entwurf einbauen:
   1. S4: „Paste it …“ durch „**Send** it once …“ ersetzen. Dazu anzeigen, wer noch fehlt: „1 of 2 returned · T-004 not back yet“.
   2. Die Begründung bei „current or new chat“ hängt von der Version ab. Ab 1.11.0 lautet sie: „after a break, the step first brings the plan up to date“.
   3. Prozentwerte ohne Leerzeichen schreiben: `43%`.
   4. „Put back in line“ durch den Zielzustand ersetzen, z. B. „Move back to Ready“.
-- [ ] **B-2** Den Wortlaut von Bestätigungspunkt 4 in `Tasks` ändern: „vor 1.11.0 (z. B. 1.10.0)“ statt „unter 1.11.0“.
-- [ ] **B-3** Die Erfassung je Aufgabe ergänzen:
+- [x] **B-2** Den Wortlaut von Bestätigungspunkt 4 in `Tasks` ändern: „vor 1.11.0 (z. B. 1.10.0)“ statt „unter 1.11.0“.
+- [x] **B-3** Die Erfassung je Aufgabe ergänzen:
   - gelöst ja / nein / mit Hilfe;
   - Leichtigkeit von 1 (sehr schwer) bis 7 (sehr leicht).
 - [ ] **B-4** Den Test mit Gregor durchführen, nach Möglichkeit mit einer zweiten Person, die das Studio nicht kennt.
@@ -154,10 +154,10 @@ Hängt ab von C-2. Ändert PD-068 und PD-074.
 
 **Hintergrund (11 §6 Frage 4):** VS Code entfernt im Februar 2027 den Local harness. Der Copilot harness lädt keine `*.prompt.md`, und genau darauf läuft heute der Copilot-Weg von FeatherSpec. FeatherSpec zieht deshalb in 1.12 auf Skills um.
 
-- [ ] **E-1 Spike V-4:** Prüfen, ob `workbench.action.chat.open` mit `query`, `isPartialQuery` und `attachFiles` in einer **Copilot-harness-Sitzung** genauso vorbefüllt wie heute. Das Ergebnis als `docs/decisions/v4-copilot-harness-spike.md` ablegen. Fällt das Vorbefüllen weg, braucht es einen Ersatz, z. B. Copy prompt als Rückfall mit klarem Hinweis.
-- [ ] **E-2** Sicherstellen, dass das Studio nirgends prüft, ob `.github/prompts/` oder `.claude/commands/` existieren. Es darf nur von den Befehlsnamen `/sdd-*` abhängen.
+- [ ] **E-1 Spike V-4** (vorbereitet, `docs/decisions/v4-copilot-harness-spike.md`, wartet auf Gregor): Prüfen, ob `workbench.action.chat.open` mit `query`, `isPartialQuery` und `attachFiles` in einer **Copilot-harness-Sitzung** genauso vorbefüllt wie heute. Das Ergebnis als `docs/decisions/v4-copilot-harness-spike.md` ablegen. Fällt das Vorbefüllen weg, braucht es einen Ersatz, z. B. Copy prompt als Rückfall mit klarem Hinweis.
+- [x] **E-2** Sicherstellen, dass das Studio nirgends prüft, ob `.github/prompts/` oder `.claude/commands/` existieren. Es darf nur von den Befehlsnamen `/sdd-*` abhängen.
 - [ ] **E-3** Ein FeatherSpec-1.12-Branch, in dem die Befehle als Skills mit gleichen Namen und `disable-model-invocation: true` laufen: Laufen alle Studio-Prompts unverändert? Das muss vor dem FeatherSpec-Release geprüft sein.
-- [ ] **E-4** In FeatherSpec ein eigenes Vorhaben „1.12.0 Skills statt Prompt-Dateien“ anlegen, mit Frist **Januar 2027**. Dazu klären, ob das nach der Releasing-Seite MAJOR ist (Wiring-Dateien werden verschoben).
+- [x] **E-4** In FeatherSpec ein eigenes Vorhaben „1.12.0 Skills statt Prompt-Dateien“ anlegen, mit Frist **Januar 2027**. Dazu klären, ob das nach der Releasing-Seite MAJOR ist (Wiring-Dateien werden verschoben).
 
 ## F. Abschlussprüfung (UX + Gregor, 1 Tag)
 
