@@ -6,11 +6,11 @@ Current phase: act
 
 ## Now
 - Round 2 (0021–0024) is implemented and fixed on `ux-round-2`; the plans are Done, the specs stay In Progress in `active/`.
-- The final check of round 2 (045b354..5c70dbd) found docs only; its fixes are 0024 T-014…T-022.
+- The final check of round 2 (045b354..5c70dbd) found docs only; its fixes, 0024 T-014…T-022, are done.
 - Waits for: CI at the PR, Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
 
 ## Active Spec
-- [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-013 verified, T-014…T-022 docs fixes; AC-016…AC-019 and OP-004 are Gregor's.
+- [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 and OP-004 are Gregor's.
 - [0023](../.specs/active/0023-plan-map-stages-parallel-work.md) / [plan](../.specs/active/0023-plan-map-stages-parallel-work.plan.md): Plan map, T-001…T-017; AC-018 real window, AC-019, AC-020 are Gregor's.
 - [0022](../.specs/active/0022-layout-and-signal-polish.md) / [plan](../.specs/active/0022-layout-and-signal-polish.plan.md): layout and signals, T-001…T-022; AC-020, AC-021 are Gregor's.
 - [0021](../.specs/active/0021-next-step-intent-and-guidance.md) / [plan](../.specs/active/0021-next-step-intent-and-guidance.plan.md): intent and guidance, T-001…T-016; AC-022 real window, AC-023…AC-025 are Gregor's.
@@ -24,9 +24,9 @@ Current phase: act
 - Completed: 0001…0007 and 0013 in [.specs/done/](../.specs/done/); 0008…0012 there are Deprecated (successor 0015); plans frozen in [.specs/plan-archive/](../.specs/plan-archive/).
 
 ## Changed Recently
+- Final check of round 2, docs only (0024 T-014…T-022): README shots retaken plus a Plan map shot; `activeContext.md` and the `AGENTS.md` module lines shortened; CHANGELOG, README, checklist, §5 and the plans made consistent.
 - 0024 fix round (compile S82, T-008…T-013): Send decides its silent copy by the effective setting; nothing runs after the 5 s fallback; focus handoff belongs to the place (`StepAction`); scan exemptions shrink to 0024's names.
 - 0024 (PD-068, PD-074, PD-076): setting `featherspec-studio.assistant` (`none`, `copilot`, `claudeCode`); split button `Send to <Name>` at the detail's first line and the first Now row; Open Settings gear; Send never submits.
-- 0023 fix round (compile S78, PD-077): the ways need a spec without a return note; cards go by occurrence; a focus on a way that goes lands on the map's heading.
 
 ## Decisions in Flight
 - `AGENTS.md` stays above its 200-line target: the template body alone is 200 lines; further eviction would edit template wiring, Gregor's call.

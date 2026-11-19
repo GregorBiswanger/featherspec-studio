@@ -924,4 +924,50 @@ describe('product docs after the final check of round 2 (0024 T-014 to T-022)', 
         expect(plan24).toContain('Windows at 5c70dbd: unit 3109 passed, 7 skipped, +18 timing; `npm test` 32+1+1+1');
     });
 
+    it('the AGENTS.md snapshot names its modules and points to the maps that hold what they contain', async () => {
+        const agents = await read('AGENTS.md');
+        const modules = agents.split('\n').filter((line) => /^ {4}- 'src\/(core\/<area>|adapters|webview) — /.test(line));
+        expect(modules).toHaveLength(3);
+        for (const line of modules) {
+            expect(line.length, line.slice(0, 40)).toBeLessThanOrEqual(600);
+        }
+        const [core, adapters, webview] = modules;
+        for (const area of ['discovery', 'specs', 'lifecycle', 'runtime', 'shell', 'overview', 'board', 'planMap', 'copyNextStep', 'settings', 'assistant', 'setup', 'ports/']) {
+            expect(core, area).toContain(area);
+        }
+        expect(core).toContain('.architecture/core.md');
+        expect(adapters).toContain('.architecture/adapters.md');
+        for (const part of ['protocol client', 'shell', 'area registry', 'Overview, Board, Plan map', 'detail/', 'ui/', 'src/test', 'test/fixtures', 'media']) {
+            expect(webview, part).toContain(part);
+        }
+        expect(webview).toContain('.architecture/webview.md');
+        expect(Buffer.byteLength(agents)).toBeLessThanOrEqual(15000);
+    });
+
+    it('the maps hold what the snapshot lines no longer list, and the webview map counts three areas', async () => {
+        const maps = (await read('.architecture/core.md')) + (await read('.architecture/webview.md'));
+        for (const term of ['coach line', 'Toggletip', 'split button', 'BackButton', 'Divider', 'planMap', 'copyNextStep', 'problemSentence', 'sidePanelWidth', 'treeLabel']) {
+            expect(maps, term).toContain(term);
+        }
+        const webview = await read('.architecture/webview.md');
+        expect(webview).toContain('The panel has three areas, Overview, Board and Plan map');
+        expect(webview).not.toContain('two areas');
+    });
+
+    it('the snapshot keeps its entrypoints, shared line and four boundaries', async () => {
+        const agents = await read('AGENTS.md');
+        for (const kept of [
+            "src/extension.ts — composition root",
+            "src/webview/main.tsx — Studio panel UI",
+            "src/shared/protocol",
+            "src/shared/testing",
+            'Domain and application code never import vscode',
+            'Only the setup (0014) writes into a workspace folder',
+            'src/shared imports neither vscode nor Node.js',
+            "No webview message names a command",
+        ]) {
+            expect(agents, kept).toContain(kept);
+        }
+    });
+
 });

@@ -3,7 +3,7 @@
 **Spec:** [0024-send-next-step-to-assistant.md](0024-send-next-step-to-assistant.md)
 **Status:** Done
 **Last updated:** 2026-11-18
-**Current step:** T-022 (T-001…T-013 verified; manual AC-016 real window and AC-017…AC-019 open)
+**Current step:** none (T-001…T-022 verified; manual AC-016 real window and AC-017…AC-019 open)
 
 ## Approach
 
@@ -688,7 +688,8 @@ copy (`git archive` of the head into `/tmp`).
   `docsScan.test.ts` first: every module the snapshot named still appears in a snapshot line or its map, the lines are
   at most 600 characters, `AGENTS.md` is smaller.
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts` red, then green; final gates
-- [ ] **Verified (T-022):**
+- [x] **Verified (T-022):** 2026-11-19 red: the two new `docsScan.test.ts` tests against a `git archive` of 5c70dbd failed (module lines of 1,050 and 952 characters with no pointer to their map, the webview map still counting two areas); green after: `npx vitest run --project node src/adapters/node/docsScan.test.ts` 166 passed. `AGENTS.md` 16,157 → 14,677 bytes; the core line 1,050 → 337 characters, the webview line 952 → 380. Final gates: eslint 0 warnings, `npx tsc --noEmit` and `-p src/webview` clean, `npm run test:unit` 3129 passed + 3 skipped (+18 timing; 3113 before, 16 new docs-scan tests), `npm run compile` and `npm run compile-tests` green; `git status` clean after the commit.
+- **Notes:** the `src/core` and `src/webview` lines (and the shared line) name modules, spec numbers and the pointer to `.architecture/{core,webview}.md`, which already held every detail; no module, entrypoint or boundary is dropped (the third new test pins the entrypoints, the shared line and the four boundaries). No scan pinned the long wording, so no literal was changed. One drift in a map is fixed because the snapshot now points to it: `.architecture/webview.md` said "two areas, Overview and Board" and now says three, with Plan map; its and the snapshot's `# last reconciled:` dates are 2026-11-19. The Windows figures of T-021 come from the orchestrator's STATE.md (the work order); `activeContext.md` gets this round's *Changed Recently* entry. Finding 10 (same chat or current chat) and OP-004 are Gregor's and untouched.
 
 ## Test-title audit
 
@@ -781,7 +782,7 @@ keyboard walk onto both parts, Escape.
 
 ## Session handoff
 
-- **Done so far:** T-001…T-007 verified 2026-11-18 (f50bc4c, f0b011d, abf1925, 42e9cda, d683b82, de5a1cc, 7c6d975); the fix round after the compile S82, T-008…T-013, verified 2026-11-18 (D1 Send by the effective value, D2 focus decided at the moment of the change, D3 the handoff scoped to the place, F1 narrow scan exemptions, F2 comments, F4, F6 causes, M10, M36, M37, M72, M78 closed; M63 and M73 noted only). Plan Done; the spec stays In Progress in `active/`.
+- **Done so far:** the fix round 2 after the final check of round 2, T-014…T-022, verified 2026-11-19, docs only (README shots and Plan map shot, `activeContext.md`, CHANGELOG, README text, checklist line, §5 row and 0019 note, the 0021 audit row, the evidence of the 0023 and 0024 plans, the `AGENTS.md` snapshot). T-001…T-007 verified 2026-11-18 (f50bc4c, f0b011d, abf1925, 42e9cda, d683b82, de5a1cc, 7c6d975); the fix round after the compile S82, T-008…T-013, verified 2026-11-18 (D1 Send by the effective value, D2 focus decided at the moment of the change, D3 the handoff scoped to the place, F1 narrow scan exemptions, F2 comments, F4, F6 causes, M10, M36, M37, M72, M78 closed; M63 and M73 noted only). Plan Done; the spec stays In Progress in `active/`.
 - **Next action:** CI at the PR (AC-014; Windows at the fix head `5c70dbd` is recorded); Gregor's AC-016 real window, AC-017 per assistant (with OP-004), AC-018, AC-019 build part; then a fresh `/sdd-compile 0024`.
 - **Open decisions:** OP-004 / F7 (Gregor's, AC-017): does Copilot's `open` replace an unsent draft in the current chat? If it does, Gregor decides whether the current chat stays NS-6's default target with Copilot; the default is not changed. OP-002 and OP-003 are not blocking.
 - **Baseline:** d756fa9 (head before the first step commit; started 2026-11-18 on Gregor's delegated start signal); compile S82 at 7c6d975.
