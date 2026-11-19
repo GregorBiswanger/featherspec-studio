@@ -691,6 +691,29 @@ copy (`git archive` of the head into `/tmp`).
 - [x] **Verified (T-022):** 2026-11-19 red: the two new `docsScan.test.ts` tests against a `git archive` of 5c70dbd failed (module lines of 1,050 and 952 characters with no pointer to their map, the webview map still counting two areas); green after: `npx vitest run --project node src/adapters/node/docsScan.test.ts` 166 passed. `AGENTS.md` 16,157 → 14,677 bytes; the core line 1,050 → 337 characters, the webview line 952 → 380. Final gates: eslint 0 warnings, `npx tsc --noEmit` and `-p src/webview` clean, `npm run test:unit` 3129 passed + 3 skipped (+18 timing; 3113 before, 16 new docs-scan tests), `npm run compile` and `npm run compile-tests` green; `git status` clean after the commit.
 - **Notes:** the `src/core` and `src/webview` lines (and the shared line) name modules, spec numbers and the pointer to `.architecture/{core,webview}.md`, which already held every detail; no module, entrypoint or boundary is dropped (the third new test pins the entrypoints, the shared line and the four boundaries). No scan pinned the long wording, so no literal was changed. One drift in a map is fixed because the snapshot now points to it: `.architecture/webview.md` said "two areas, Overview and Board" and now says three, with Plan map; its and the snapshot's `# last reconciled:` dates are 2026-11-19. The Windows figures of T-021 come from the orchestrator's STATE.md (the work order); `activeContext.md` gets this round's *Changed Recently* entry. Finding 10 (same chat or current chat) and OP-004 are Gregor's and untouched.
 
+## PR #1 review
+
+Source: the automated review of PR #1 at `8e94888` (`/home/claude/orch/req/pr1-review.md`), comments 1 and 2. Gregor:
+"Check the six review comments of PR #1. For each one that is real, write a failing test first, fix it and append the
+fix as a step to the plan of the spec that owns the code." The comments are claims of an external model: the test
+decides. Steps above are not renumbered.
+
+### T-023 — Whole Send sequences never interleave (PR #1 comment 1)
+
+- **Covers:** AC-005 (the calls of §6.4 in order), AC-006 (5000 ms and fallback per Send), A-015
+- **Do:** `core/assistant/send.ts`: `createSend` runs each Send (Copilot and Claude Code, new chat and current chat) as
+  one turn of a queue: the next Send starts when the one before it has settled, that is, opened or finished its
+  fallback. A Send's 5000 ms timer starts with its turn, never earlier; fallback, causes, warning and Output text are
+  per Send and unchanged. A Send that only copies (the offer names another assistant, or none) is not queued. Tests
+  first in `send.test.ts` (new block "whole Send sequences never interleave"): two new-chat Sends together →
+  `newChat, open(A), newChat, open(B)`; a current-chat Send behind a new-chat Send opens after it; two Claude Code Sends
+  call one after the other; a queued Send gets its full 5000 ms after the Send before it settled (4999 ms: pending,
+  5000 ms: copied) and does not time out in the queue; a queued Send runs after the fallback of the one before it; a
+  failure does not block the queue; control: a Send alone starts at once and a copy-only Send passes a pending one.
+- **Verify:** `npx vitest run --project node src/core/assistant/send.test.ts` red, then green; gates 1–4
+- [x] **Verified (T-023):** 2026-11-19 red: `npx vitest run --project node src/core/assistant/send.test.ts` 6 failed of 46 (the calls of two Sends alternated, the second Claude Code call was made while the first was pending, a queued Send did not wait for the one before it); the negative control passed already → green: 130 of 130 in `src/core/assistant`; `npm run test:unit` 3147 passed + 3 skipped (+18 timing; 3140 before, 7 new tests); eslint 0 warnings, both `tsc` clean.
+- **Notes:** the comment is real: each Send ran its calls with `await` between them, so two Sends started together alternated at every await. Proxy decision (spec §6.5 and A-015 are silent on a Send that has to wait): the 5000 ms of a Send counts from the start of its turn, not from the activation, so a Send behind a hanging one is not failed for the other's hang; the cost is that the second of two Sends behind a hanging host can show its result up to 10 s after its activation. The staying test "two activations make two Sends, also while the first is pending" keeps every assertion (two Sends, the calls `newChat, newChat, open`, the second `opened`) and gains two lines: the second Send's call is not made before the first has settled, so the test advances the clock by 5000 ms to let the hanging first one fall back (A-015: "a second activation while one is pending sends again" holds, after the first has settled). The chosen-assistant check stays at the activation (D1), not at the turn.
+
 ## Test-title audit
 
 Method (0021's): the string literals of `describe`, `it`, `test` and `suite` (with `.each`, `.skip`, `.only`) in every

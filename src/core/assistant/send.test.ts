@@ -315,9 +315,136 @@ describe('0024 AC-006: a failed Send copies the line, warns once and writes one 
         void w.send(request('copilot', 'new'));
         await new Promise((resolve) => setImmediate(resolve));
         w.host.never.delete(NEW_CHAT);
-        const second = await w.send(request('copilot', 'new'));
+        const pending = w.send(request('copilot', 'new'));
+        await new Promise((resolve) => setImmediate(resolve));
+        expect(w.host.calls.map((call) => call.command)).toEqual([NEW_CHAT]);
+        w.clock.advance(SEND_TIMEOUT_MS);
+        const second = await pending;
         expect(second.outcome).toBe('opened');
         expect(w.host.calls.map((call) => call.command)).toEqual([NEW_CHAT, NEW_CHAT, OPEN]);
+    });
+});
+
+describe('0024 AC-005: whole Send sequences never interleave (PR #1 comment 1)', () => {
+    const settle = (): Promise<void> => new Promise((resolve) => setImmediate(resolve));
+    const OTHER_LINE = 'Implement T-004 of .specs/active/0001-tip-splitter.plan.md';
+
+    it('two Copilot Sends of new chat started together make newChat, open, newChat, open, each open with its own line', async () => {
+        const w = offered('copilot');
+        const first = w.send(request('copilot', 'new'));
+        const second = w.send(request('copilot', 'new', OTHER_LINE));
+        expect((await first).outcome).toBe('opened');
+        expect((await second).outcome).toBe('opened');
+        expect(w.host.calls).toEqual([
+            { command: NEW_CHAT, args: [] },
+            { command: OPEN, args: [{ query: LINE, isPartialQuery: true }] },
+            { command: NEW_CHAT, args: [] },
+            { command: OPEN, args: [{ query: OTHER_LINE, isPartialQuery: true }] },
+        ]);
+        expect(w.written).toEqual([]);
+        expect(w.warned).toEqual([]);
+    });
+
+    it('a current-chat Send started while a new-chat Send runs waits for its open', async () => {
+        const w = offered('copilot');
+        const first = w.send(request('copilot', 'new'));
+        const second = w.send(request('copilot', 'current', OTHER_LINE));
+        await Promise.all([first, second]);
+        expect(w.host.calls.map((call) => call.command)).toEqual([NEW_CHAT, OPEN, OPEN]);
+        expect((w.host.calls[1]?.args[0] as { query: string }).query).toBe(LINE);
+        expect((w.host.calls[2]?.args[0] as { query: string }).query).toBe(OTHER_LINE);
+    });
+
+    it('two Claude Code Sends: the second call is made only after the first Send has settled', async () => {
+        const w = offered('claudeCode');
+        let release: (() => void) | undefined;
+        let first = true;
+        w.host.execute = (command, args) => {
+            w.host.calls.push({ command, args });
+            if (first) {
+                first = false;
+                return new Promise<void>((resolve) => {
+                    release = resolve;
+                });
+            }
+            return Promise.resolve();
+        };
+        const one = w.send(request('claudeCode', 'new'));
+        const two = w.send(request('claudeCode', 'new', OTHER_LINE));
+        await settle();
+        expect(w.host.calls).toHaveLength(1);
+        release?.();
+        expect((await one).outcome).toBe('opened');
+        expect((await two).outcome).toBe('opened');
+        expect(w.host.calls.map((call) => call.args[1])).toEqual([LINE, OTHER_LINE]);
+    });
+
+    it('a Send waiting in the queue does not count its own 5000 ms before it starts: it gets a full 5000 ms after the Send before it settled', async () => {
+        const w = offered('copilot');
+        w.host.execute = (command, args) => {
+            w.host.calls.push({ command, args });
+            return new Promise<void>(() => undefined);
+        };
+        const outcomes: string[] = [];
+        void w.send(request('copilot', 'new')).then((result) => outcomes.push(`first ${result.outcome}`));
+        void w.send(request('copilot', 'new', OTHER_LINE)).then((result) => outcomes.push(`second ${result.outcome}`));
+        await settle();
+        w.clock.advance(SEND_TIMEOUT_MS);
+        await settle();
+        expect(outcomes).toEqual(['first copied']);
+        expect(w.written).toEqual([LINE]);
+        w.clock.advance(SEND_TIMEOUT_MS - 1);
+        await settle();
+        expect(outcomes).toEqual(['first copied']);
+        w.clock.advance(1);
+        await settle();
+        expect(outcomes).toEqual(['first copied', 'second copied']);
+        expect(w.written).toEqual([LINE, OTHER_LINE]);
+        expect(w.warned).toHaveLength(2);
+        expect(w.clock.pendingTimers()).toBe(0);
+    });
+
+    it('a queued Send starts after the fallback of the Send before it and then opens normally', async () => {
+        const w = offered('copilot');
+        let first = true;
+        w.host.execute = (command, args) => {
+            w.host.calls.push({ command, args });
+            if (first) {
+                first = false;
+                return new Promise<void>(() => undefined);
+            }
+            return Promise.resolve();
+        };
+        const one = w.send(request('copilot', 'new'));
+        const two = w.send(request('copilot', 'new', OTHER_LINE));
+        await settle();
+        expect(w.host.calls).toHaveLength(1);
+        w.clock.advance(SEND_TIMEOUT_MS);
+        expect((await one).outcome).toBe('copied');
+        expect((await two).outcome).toBe('opened');
+        expect(w.host.calls.map((call) => call.command)).toEqual([NEW_CHAT, NEW_CHAT, OPEN]);
+        expect(w.written).toEqual([LINE]);
+        expect(w.clock.pendingTimers()).toBe(0);
+    });
+
+    it('a failing Send does not block the queue: the Send behind it runs and opens', async () => {
+        const w = offered('copilot');
+        w.host.rejects.set(OPEN, 'no input');
+        const one = w.send(request('copilot', 'current'));
+        const two = w.send(request('copilot', 'current', OTHER_LINE));
+        expect((await one).outcome).toBe('copied');
+        w.host.rejects.delete(OPEN);
+        expect((await two).outcome).toBe('opened');
+    });
+
+    it('negative control: a Send alone starts at once, and a Send that only copies is not queued behind a pending Send', async () => {
+        const w = offered('copilot');
+        w.host.never.add(NEW_CHAT);
+        void w.send(request('copilot', 'new'));
+        await settle();
+        const other = await w.send(request('claudeCode', 'new', OTHER_LINE));
+        expect(other).toEqual({ outcome: 'copied', text: 'Copied to the clipboard.' });
+        expect(w.written).toEqual([OTHER_LINE]);
     });
 });
 

@@ -94,35 +94,43 @@ export function createSend(deps: SendDeps): Send {
         }
     }
 
-    return {
-        send(request) {
-            if (deps.chosen.read() !== request.assistant) {
-                return copied(request.line);
-            }
-            const name = ASSISTANT_NAMES[request.assistant];
-            return new Promise((resolve) => {
-                let settled = false;
-                const fail = (cause: string): void => {
+    function attempt(request: SendPromptPayload): Promise<SendResultEventPayload> {
+        const name = ASSISTANT_NAMES[request.assistant];
+        return new Promise((resolve) => {
+            let settled = false;
+            const fail = (cause: string): void => {
+                if (settled) {
+                    return;
+                }
+                settled = true;
+                timer.dispose();
+                void fallback(name, request.line, cause).then(resolve);
+            };
+            const timer = deps.clock.setTimeout(() => fail(noResultCause(SEND_TIMEOUT_MS)), SEND_TIMEOUT_MS);
+            run(request, () => settled).then(
+                () => {
                     if (settled) {
                         return;
                     }
                     settled = true;
                     timer.dispose();
-                    void fallback(name, request.line, cause).then(resolve);
-                };
-                const timer = deps.clock.setTimeout(() => fail(noResultCause(SEND_TIMEOUT_MS)), SEND_TIMEOUT_MS);
-                run(request, () => settled).then(
-                    () => {
-                        if (settled) {
-                            return;
-                        }
-                        settled = true;
-                        timer.dispose();
-                        resolve({ outcome: 'opened', text: sendOpenedText(name) });
-                    },
-                    (reason: unknown) => fail(reason instanceof SendFailure ? reason.message : messageOf(reason)),
-                );
-            });
+                    resolve({ outcome: 'opened', text: sendOpenedText(name) });
+                },
+                (reason: unknown) => fail(reason instanceof SendFailure ? reason.message : messageOf(reason)),
+            );
+        });
+    }
+
+    let tail: Promise<unknown> = Promise.resolve();
+
+    return {
+        send(request) {
+            if (deps.chosen.read() !== request.assistant) {
+                return copied(request.line);
+            }
+            const turn = tail.then(() => attempt(request));
+            tail = turn.catch(() => undefined);
+            return turn;
         },
     };
 }
