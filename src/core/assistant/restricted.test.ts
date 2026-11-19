@@ -42,3 +42,15 @@ describe('0024 AC-011: the views hold for the value the host returns, in a trust
         expect(await views(true, 'copilot')).not.toEqual(await views(true, 'claudeCode'));
     });
 });
+
+describe('0026 AC-014: Now and the Send target need neither trust nor a writer', () => {
+    it('the core files of the cap, the order, the day and the target name no trust, writer, Restricted Mode or reader window', async () => {
+        const { promises: fs } = await import('node:fs');
+        const path = await import('node:path');
+        for (const file of ['overview/rows.ts', 'board/lastChange.ts', 'assistant/sendView.ts']) {
+            const source = await fs.readFile(path.resolve(process.cwd(), 'src', 'core', ...file.split('/')), 'utf8');
+            expect(source, file).not.toMatch(/trust|writer|restricted|\breader\b/i);
+        }
+        expect('const restricted = true;').toMatch(/restricted/i);
+    });
+});

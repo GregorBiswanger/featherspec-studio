@@ -473,3 +473,17 @@ describe('0026 AC-021: Send, not Paste, in the text modules', () => {
         expect(offenders("const a = 'Paste it once every worker you started is back.';")).toEqual([]);
     });
 });
+
+describe('0026 AC-014: every text of §7 comes from a text module', () => {
+    const SEVEN = ['current or new chat', 'Find blocker', 'Move back to Ready', 'Write plan', 'Next step: ', 'About these ways', 'One chat builds the steps', 'Send it once every worker', 'Send to a new chat'];
+
+    it('no component or core file outside the text modules holds a §7 literal', async () => {
+        const files = (await sourceFiles()).filter((file) => !isTestFile(file.name) && /\.tsx?$/.test(file.name) && !/(?:^|\/)(?:\w*[tT]exts?|texts)\.ts$/.test(file.name));
+        const offenders = files.flatMap((file) => stringLiterals(file.text).filter((literal) => SEVEN.some((text) => literal.includes(text))).map((literal) => `${file.name}: ${literal}`));
+        expect(offenders).toEqual([]);
+    });
+
+    it('negative control: a planted component literal is found', () => {
+        expect(stringLiterals("const label = 'About these ways';").some((literal) => SEVEN.some((text) => literal.includes(text)))).toBe(true);
+    });
+});

@@ -3,7 +3,7 @@
 **Spec:** [0026-send-defaults-and-wording.md](0026-send-defaults-and-wording.md)
 **Status:** In Progress
 **Last updated:** 2026-11-19
-**Current step:** T-009
+**Current step:** T-010
 
 ## Approach
 
@@ -296,8 +296,8 @@ Parallel: stages 2 and 3, run in sequence (`PLAN-R3.md`). Stage 1 shares `nextSt
   test gets a negative control.
 - **Verify:** `npx vitest run src/core/board/noWrite.test.ts src/core/copyNextStep/noWrite.test.ts src/webview/userLanguage.test.tsx src/adapters/node/sourceScan.test.ts`
   green; negative controls red, then restored.
-- [ ] **Verified (T-009):** —
-- **Notes:** —
+- [x] **Verified (T-009):** `npx vitest run` on noWrite, restricted, userLanguage, sourceScan green (24 + 42 tests), negative controls included; eslint, tsc.
+- **Notes:** Tests only. Restricted Mode and reader window: the core files of the cap, order, day and target name no trust/writer/reader (scan in `restricted.test.ts`), so the views are equal by construction (0024 AC-011's pattern); the Send itself is covered by the existing equality test. `copyNextStep/noWrite.test.ts` was not extended: the new `board/noWrite.test.ts` case runs both Send targets and the named set `Now` on a temp copy of `fs110-parallel-synthetic`.
 
 ### T-010 — Preview at two widths and three themes
 

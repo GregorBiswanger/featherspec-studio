@@ -275,3 +275,33 @@ describe('0025 AC-019: user language in the header, the card rows, U-05, U-06 an
         expect(`${U05}\n${U08}`).not.toMatch(INTERNAL);
     });
 });
+
+describe('0026 AC-014: user language in the ways block, its (?) and the Now list', () => {
+    it('each way checked, the (?) text and the Now list with + n more hold no rule ID and no internal word', async () => {
+        const client = createClient({ post: () => undefined });
+        clients.push(client);
+        client.start();
+        mounted = await mount(<App client={client} />);
+        await send(shellEvent(baseView({ area: 'planMap', selection: { stem: '0007-thing', number: '0007' } }), 1));
+        await send(boardEvent(boardView([card('0007')])));
+        await send(detailEvent({ ...(detailView() as SpecDetailView), plan: planSample() }));
+        await click(mounted.container.querySelector<HTMLButtonElement>('[data-ways] .plan-ways-toggle')!);
+        await click(mounted.container.querySelector<HTMLButtonElement>('[data-ways] button.toggletip')!);
+        for (const radio of mounted.container.querySelectorAll<HTMLInputElement>('[data-ways] input[type="radio"]')) {
+            await click(radio);
+            const text = mounted.container.querySelector('[data-ways]')?.textContent ?? '';
+            expect(text.length).toBeGreaterThan(0);
+            expect(text).not.toMatch(FORBIDDEN);
+        }
+        mounted.unmount();
+        const view = sampleView();
+        view.now = { rows: [{ spec: { stem: '0001-a', number: '0001', title: 'A', found: true }, state: 'Review', status: 'Review', problems: 0 }], more: 4, stems: ['0001-a'] };
+        const now = await textOf('overview', overviewEvent(view));
+        expect(now).toContain('+ 4 more');
+        expect(now).not.toMatch(FORBIDDEN);
+    });
+
+    it('negative control: the pattern finds a rule ID in a way line', () => {
+        expect('In sequence — NS-6 builds one step').toMatch(FORBIDDEN);
+    });
+});
