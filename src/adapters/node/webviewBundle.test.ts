@@ -469,7 +469,7 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         const clone = section!.cloneNode(true);
         [...clone.querySelectorAll('.visually-hidden, [hidden]')].forEach((hidden) => hidden.remove());
         const text = (clone.textContent ?? '').replace(/\s+/g, ' ').trim();
-        expect(text).toContain('0015-focus-on-visibility.md attached when sent');
+        expect(text).not.toContain('attached when sent');
         expect(text.split(' ').filter((word) => word !== '').length).toBeLessThanOrEqual(300);
         expect(errors).toEqual([]);
     });

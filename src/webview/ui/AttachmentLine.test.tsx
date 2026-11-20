@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { SendAttachment, SendView } from '../../shared/protocol/assistant';
 import { mount, type Mounted } from '../testing/dom';
-import { AttachmentLine } from './AttachmentLine';
 import { StepAction } from './StepAction';
 
 const LINE = '/sdd-clarify .specs/backlog/0002-x.md';
@@ -16,65 +15,55 @@ afterEach(() => {
     mounted = undefined;
 });
 
-const FOCUSABLE = 'a[href], button, input, select, textarea, [tabindex], [contenteditable]';
+const noop = (): void => undefined;
+
+async function shown(send: SendView) {
+    mounted = await mount(<StepAction send={send} look="primary" line={LINE} copyResult={undefined} onCopy={noop} sendResult={undefined} onSend={noop} />);
+    return mounted.container;
+}
 
 describe('0027 AC-003: the attachment line', () => {
     it('0027 AC-003 Given: Copilot, Backlog .specs/backlog/0002-x.md: the line reads `0002-x.md attached when sent` with the tooltip, literally', async () => {
-        mounted = await mount(<AttachmentLine id="a1" attach={ATTACH} assistant="copilot" />);
-        const line = mounted.container.querySelector<HTMLElement>('#a1')!;
-        expect(line.tagName).toBe('P');
-        expect(line.className).toBe('send-attach');
-        expect(line.textContent).toBe('0002-x.md attached when sent');
-        expect(line.getAttribute('title')).toBe("Send attaches .specs/backlog/0002-x.md to Copilot's chat as context. Copy prompt attaches nothing.");
+        const container = await shown(CHAT_VIEW);
+        expect(container.querySelector('.send-attach')).toBeNull();
+        expect(container.textContent).not.toContain('attached when sent');
+        expect(container.querySelector('button.send-main')!.getAttribute('title')).toBe(`Send to Copilot (new chat): ${LINE}. Attaches 0002-x.md.`);
     });
 
     it('0027 AC-003: Claude Code names itself in the tooltip, the same line text', async () => {
-        mounted = await mount(<AttachmentLine id="a1" attach={ATTACH} assistant="claudeCode" />);
-        const line = mounted.container.querySelector<HTMLElement>('#a1')!;
-        expect(line.textContent).toBe('0002-x.md attached when sent');
-        expect(line.getAttribute('title')).toBe("Send attaches .specs/backlog/0002-x.md to Claude Code's chat as context. Copy prompt attaches nothing.");
+        const container = await shown(CLAUDE);
+        expect(container.querySelector('.send-attach')).toBeNull();
+        expect(container.querySelector('button.send-main')!.getAttribute('title')).toBe(`Send to Claude Code (new chat): ${LINE}. Attaches 0002-x.md.`);
     });
 
     it('0027 AC-003: the chip holds the aria-hidden file glyph and the file name; no control, no tab stop', async () => {
-        mounted = await mount(<AttachmentLine id="a1" attach={ATTACH} assistant="copilot" />);
-        const line = mounted.container.querySelector<HTMLElement>('#a1')!;
-        const chip = line.querySelector<HTMLElement>('.send-attach-chip')!;
-        const glyph = chip.querySelector('svg')!;
-        expect(glyph.getAttribute('data-icon')).toBe('file');
-        expect(glyph.getAttribute('aria-hidden')).toBe('true');
-        expect(chip.textContent).toBe('0002-x.md');
-        expect(line.querySelectorAll(FOCUSABLE)).toHaveLength(0);
-        expect(line.hasAttribute('tabindex')).toBe(false);
-        expect(line.hasAttribute('role')).toBe(false);
+        const container = await shown(CHAT_VIEW);
+        expect(container.querySelector('.send-attach-chip')).toBeNull();
+        expect(container.querySelector('[data-icon="file"]')).toBeNull();
+        expect(container.querySelectorAll('button')).toHaveLength(2);
     });
 
     it('0027 AC-003: a long name may wrap after a separator (0022 §4.6): the name carries break opportunities', async () => {
-        mounted = await mount(<AttachmentLine id="a1" attach={{ name: '0024-send-next-step-to-assistant.md', path: '.specs/active/0024-send-next-step-to-assistant.md' }} assistant="copilot" />);
-        expect(mounted.container.querySelectorAll('.send-attach-chip wbr').length).toBeGreaterThan(3);
-        expect(mounted.container.querySelector('.send-attach')!.textContent).toBe('0024-send-next-step-to-assistant.md attached when sent');
+        const container = await shown({ ...CHAT_VIEW, attach: { name: '0024-send-next-step-to-assistant.md', path: '.specs/active/0024-send-next-step-to-assistant.md' } });
+        expect(container.querySelectorAll('wbr')).toHaveLength(0);
+        expect(container.querySelector('button.send-main')!.getAttribute('aria-label')).toContain('Attaches 0024-send-next-step-to-assistant.md.');
     });
 });
 
 describe('0027 AC-003: StepAction puts the line after the split button and its status region', () => {
-    const noop = (): void => undefined;
-
     it('the order inside the split button is unchanged; the line follows .send-split; the main part and each Send item are described by it', async () => {
-        mounted = await mount(<StepAction send={CHAT_VIEW} look="primary" line={LINE} copyResult={undefined} onCopy={noop} sendResult={undefined} onSend={noop} />);
-        const container = mounted.container;
+        const container = await shown(CHAT_VIEW);
         const split = container.querySelector('.send-split')!;
-        const line = container.querySelector<HTMLElement>('.send-attach')!;
-        expect(split.nextElementSibling).toBe(line);
         expect([...split.children].map((child) => child.className)).toEqual(['copy-button send-main', 'send-arrow', 'visually-hidden']);
-        expect(container.querySelector('button.send-main')!.getAttribute('aria-describedby')).toBe(line.id);
-        expect(line.id).not.toBe('');
-        expect(container.querySelector('button.send-arrow')!.hasAttribute('aria-describedby')).toBe(false);
+        expect(split.nextElementSibling).toBeNull();
+        expect(container.querySelector('[aria-describedby]')).toBeNull();
     });
 
     it('a view without attachment renders no line and no description', async () => {
         const { attach: _attach, ...plain } = CLAUDE;
-        mounted = await mount(<StepAction send={plain} look="primary" line={LINE} copyResult={undefined} onCopy={noop} sendResult={undefined} onSend={noop} />);
-        expect(mounted.container.querySelector('.send-attach')).toBeNull();
-        expect(mounted.container.querySelector('[aria-describedby]')).toBeNull();
+        const container = await shown(plain);
+        expect(container.querySelector('.send-attach')).toBeNull();
+        expect(container.querySelector('[aria-describedby]')).toBeNull();
     });
 
     it('a Copy prompt without an offer renders no line', async () => {

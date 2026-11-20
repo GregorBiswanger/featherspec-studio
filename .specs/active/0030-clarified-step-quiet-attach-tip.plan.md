@@ -3,7 +3,7 @@
 **Spec:** [0030-clarified-step-quiet-attach-tip.md](0030-clarified-step-quiet-attach-tip.md)
 **Status:** In progress
 **Last updated:** 2026-11-20
-**Current step:** T-003
+**Current step:** T-004
 
 ## Approach
 
@@ -93,8 +93,8 @@ No parallel stage: T-003 and T-004 both change the detail and Now-row render tes
   the new name (spec AC-014). New `quiet0030.test.tsx` "0030 AC-006 …", "0030 AC-007 …" (with and without attachment; the
   send request's `attach` unchanged).
 - **Verify:** `npx vitest run src/webview src/core/assistant` — red first (the line still renders), then green.
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-20 red: `npx vitest run src/webview/quiet0030.test.tsx` 6 of 7 failed (line still rendered, name without `Attaches`, menu items described); green after the change: 7 passed; `npx vitest run src/webview src/core/assistant src/core/copyNextStep/noWrite.test.ts src/adapters/node/webviewBundle.test.ts` 66 files, 1151 tests passed; `npx tsc --noEmit` and `-p src/webview` clean.
+- **Notes:** Staying 0027 tests keep their titles; bodies assert the line's absence and the new name (§5). `AttachmentLine.test.tsx` stays as a file and now mounts `StepAction`. `describedBy` is removed from `SendButton`. `webviewBundle.test.ts` asserts absence of the old text; it reads the built bundle, so the final `compile` decides it.
 
 ### T-004 — The Tip sentence
 

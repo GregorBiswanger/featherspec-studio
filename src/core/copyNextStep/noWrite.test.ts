@@ -330,7 +330,7 @@ describe('0017 AC-023: no Copy, click or command writes a file', () => {
     });
 
     it('0027 AC-013: the attachment check and the call shapes call no configuration update, no file API and no network', async () => {
-        for (const file of ['src/core/assistant/attachment.ts', 'src/core/assistant/assistants.ts', 'src/core/assistant/send.ts', 'src/webview/ui/AttachmentLine.tsx']) {
+        for (const file of ['src/core/assistant/attachment.ts', 'src/core/assistant/assistants.ts', 'src/core/assistant/send.ts']) {
             const source = await fs.readFile(path.resolve(process.cwd(), ...file.split('/')), 'utf8');
             expect(source, file).not.toMatch(/\.update\(|\.inspect\(|writeFile|appendFile|mkdir|unlink|rename\(|rmSync|fs\.|fetch\(|https?:\/\/|readBytes|\.list\(/);
         }

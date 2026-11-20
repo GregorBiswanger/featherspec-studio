@@ -16,7 +16,6 @@ export interface SendButtonProps {
     onCopy(line: string): void;
     onLeaveWithFocus?: () => void;
     look?: 'primary' | 'secondary';
-    describedBy?: string;
 }
 
 interface Activation {
@@ -239,10 +238,10 @@ export function SendButton(props: SendButtonProps) {
         props.onCopy(line);
     };
 
-    const idleName = sendMainName(name, send.target, line);
+    const idleName = sendMainName(name, send.target, line, send.attach?.name);
     return (
         <span ref={root} className="send-split next-step-copy" onKeyDown={onKeyDown}>
-            <button type="button" className={secondary ? 'copy-button copy-secondary send-main' : 'copy-button send-main'} aria-label={shown?.name ?? idleName} title={shown?.text ?? idleName} aria-describedby={props.describedBy} onClick={() => activateSend(send.target)}>
+            <button type="button" className={secondary ? 'copy-button copy-secondary send-main' : 'copy-button send-main'} aria-label={shown?.name ?? idleName} title={shown?.text ?? idleName} onClick={() => activateSend(send.target)}>
                 {shown?.label ?? sendMainLabel(name)}
             </button>
             <button ref={arrow} type="button" id={arrowId} className={secondary ? 'send-arrow send-arrow-secondary' : 'send-arrow'} aria-label={moreActionsName(line)} title={MORE_ACTIONS_TITLE} aria-haspopup="menu" aria-expanded={open} onClick={() => (open ? closeToArrow() : openMenu('first'))}>
@@ -251,7 +250,7 @@ export function SendButton(props: SendButtonProps) {
             {open ? (
                 <div ref={menu} role="menu" aria-labelledby={arrowId} className="send-menu">
                     {send.targets.map((target) => (
-                        <button key={target} type="button" role="menuitemradio" aria-checked={target === send.target} tabIndex={-1} aria-describedby={props.describedBy} onClick={() => activateSend(target, true)}>
+                        <button key={target} type="button" role="menuitemradio" aria-checked={target === send.target} tabIndex={-1} onClick={() => activateSend(target, true)}>
                             <span className="send-check">{target === send.target ? <Glyph kind="check" /> : null}</span>
                             {SEND_ITEM_TEXT[target]}
                         </button>

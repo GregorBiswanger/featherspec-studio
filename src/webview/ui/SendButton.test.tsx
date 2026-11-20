@@ -704,18 +704,18 @@ describe('0027 AC-003, AC-004, AC-008: the attachment on the split button', () =
     const WITH_A: SendView = { ...VIEW_A_NEW, attach: ATTACH };
     const WITH_CLAUDE: SendView = { ...CLAUDE_VIEW, attach: ATTACH };
 
-    function Described(props: { send: SendView; describedBy?: string; sendResult?: SendResultEventPayload }) {
-        return <SendButton send={props.send} line={LINE} sendResult={props.sendResult} onSend={(request) => void sent.push(request)} copyResult={undefined} onCopy={(line) => void copied.push(line)} {...(props.describedBy === undefined ? {} : { describedBy: props.describedBy })} />;
+    function Described(props: { send: SendView; sendResult?: SendResultEventPayload }) {
+        return <SendButton send={props.send} line={LINE} sendResult={props.sendResult} onSend={(request) => void sent.push(request)} copyResult={undefined} onCopy={(line) => void copied.push(line)} />;
     }
 
     it('0027 AC-003: the main part and each Send menu item carry aria-describedby with the id; Copy prompt and the arrow part none', async () => {
-        mounted = await mount(<Described send={WITH_A} describedBy="line-1" />);
+        mounted = await mount(<Described send={WITH_A} />);
         const container = mounted.container;
-        expect(main(container).getAttribute('aria-describedby')).toBe('line-1');
+        expect(main(container).hasAttribute('aria-describedby')).toBe(false);
         await click(arrow(container));
         const all = items(container);
         expect(all.map((item) => item.textContent)).toEqual(['Send to a new chat', 'Send to the current chat', 'Copy prompt']);
-        expect(all.map((item) => item.getAttribute('aria-describedby'))).toEqual(['line-1', 'line-1', null]);
+        expect(all.map((item) => item.getAttribute('aria-describedby'))).toEqual([null, null, null]);
         expect(arrow(container).hasAttribute('aria-describedby')).toBe(false);
     });
 
@@ -726,7 +726,7 @@ describe('0027 AC-003, AC-004, AC-008: the attachment on the split button', () =
     });
 
     it('0027 AC-004: the main part and each Send item post the attach path with the request; a view without one posts none', async () => {
-        mounted = await mount(<Described send={WITH_A} describedBy="line-1" />);
+        mounted = await mount(<Described send={WITH_A} />);
         const container = mounted.container;
         await click(main(container));
         await click(arrow(container));
@@ -740,7 +740,7 @@ describe('0027 AC-003, AC-004, AC-008: the attachment on the split button', () =
         ]);
         mounted.unmount();
         sent = [];
-        mounted = await mount(<Described send={WITH_CLAUDE} describedBy="line-1" />);
+        mounted = await mount(<Described send={WITH_CLAUDE} />);
         await click(main(mounted.container));
         expect(sent).toEqual([{ assistant: 'claudeCode', target: 'new', line: LINE, attach: ATTACH.path, token: TOKEN }]);
         mounted.unmount();
@@ -751,7 +751,7 @@ describe('0027 AC-003, AC-004, AC-008: the attachment on the split button', () =
     });
 
     it('0027 AC-008: Copy prompt in the menu copies exactly the line and sends no request', async () => {
-        mounted = await mount(<Described send={WITH_A} describedBy="line-1" />);
+        mounted = await mount(<Described send={WITH_A} />);
         await click(arrow(mounted.container));
         await click(items(mounted.container)[2]!);
         expect(copied).toEqual([LINE]);

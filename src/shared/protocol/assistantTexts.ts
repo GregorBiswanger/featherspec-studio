@@ -61,12 +61,6 @@ export function sendTipText(name: string): string {
     return `Send to ${name} puts the prompt into its chat and sends nothing: choose the model there, check the prompt, then send it.`;
 }
 
-export const ATTACHED_WHEN_SENT = 'attached when sent';
-
-export function attachTooltipText(path: string, name: string): string {
-    return `Send attaches ${path} to ${name}'s chat as context. Copy prompt attaches nothing.`;
-}
-
 export const SEND_TARGET_TEXT: Record<AssistantTarget, string> = { new: 'new chat', current: 'current chat' };
 
 export const SEND_ITEM_TEXT: Record<AssistantTarget, string> = { new: 'Send to a new chat', current: 'Send to the current chat' };
@@ -77,8 +71,9 @@ export function sendMainLabel(name: string): string {
     return `Send to ${name}`;
 }
 
-export function sendMainName(name: string, target: AssistantTarget, line: string): string {
-    return `Send to ${name} (${SEND_TARGET_TEXT[target]}): ${line}`;
+export function sendMainName(name: string, target: AssistantTarget, line: string, attachName?: string): string {
+    const plain = `Send to ${name} (${SEND_TARGET_TEXT[target]}): ${line}`;
+    return attachName === undefined ? plain : `${plain}. Attaches ${attachName}.`;
 }
 
 export function sendOpenedLabel(name: string): string {
