@@ -87,7 +87,7 @@ A step case not in this table that gains a follow-up line later gets no attachme
 
 Where a follow-up line shows a Send and the coach line is shown (`showStepTips`, 0021 §6.5), a Tip sentence (0030 §6.4,
 §7) sits directly under its split button, built from its own case of §6.2: the `/sdd-plan` line of NS-9 reads
-`Tip: Use any chat with a strong model, and allow web search.` (NS-10's session and model). Between a line item and the next line item (AC-013) (`Then: …`) the detail and the Plan map header keep a
+`Tip: Use any chat with a strong model, and allow web search.` (NS-10's session and model). Between a line item and the next line item (`Then: …`, AC-013) the detail and the Plan map header keep a
 vertical gap of at least 1em and at most 1.5em, measured in the line's font size; with Copy prompt only the gap is the
 same.
 
