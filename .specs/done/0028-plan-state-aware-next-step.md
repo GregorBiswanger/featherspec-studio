@@ -21,6 +21,8 @@ step, whatever the plan's `Status:` line says (PD-081, D-1). **Report first:** b
 version, a step with a filled `Verified:` but no tick puts the report first too, and returned work comes before both
 (PD-087). **Start prompt:** NS-7 uses FeatherSpec's fixed `Implement <ID> of <plan path>` (D-4).
 
+*Amended by 0033 (PD-096): a Ready spec's next step is the start step `/sdd-lifecycle <spec> In Progress`, which moves spec and plan to `active/`; `Implement <ID> of <plan path>` follows in `active/` (0033 §6.1, §6.2).*
+
 ## 2. Goal and problem
 
 On `sdd-tip-splitter` the agent ticked T-006 but left `Status: In Progress`: the spec stayed Active with "Let the agent
@@ -123,6 +125,8 @@ NS-7's line is `Implement <ID> of <plan path>`: 1.11.0's start prompt (`plans.md
 start signal") and 1.10.0's start signal "implement" (`sdd-plan.md` *Always*). Intent and texts stay (0021 §6.1); the
 command short form is `Implement <ID>` (0021 §6.3). A Ready spec without an open step gets `/sdd-plan <spec path>` with the
 texts of "Plan without open step" (A-012).
+
+*Amended by 0033 (PD-096): D-4's start signal no longer carries the move backlog → active; a Ready spec without a tick shows `/sdd-lifecycle <spec> In Progress` first, NS-7's `Implement` line serves `active/` (0033 §6.1, §6.2).*
 
 ### 6.6 Verified without tick (12 D1-4, PD-087; 11 §5, QA 1.11.0 V1)
 

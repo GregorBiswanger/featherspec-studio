@@ -70,6 +70,7 @@ where 0025 §5.6 makes it quiet). Without an offer a follow-up line shows today'
 (A-004). The `?` and the parallel hint stay with the first line only.
 
 *Amended by 0032 (0032 §6.6): every line's Send split button stands on its own row under its prompt, whatever the prompt's length and the view's width.*
+*Amended by 0033 (0033 §6.4): each line is a column; the prompt is as wide as its text and at most as wide as the column, Send stands under it, left-aligned. A follow-up line that shows `Implement <ID> of <plan>` attaches the plan only (0033 §6.3).*
 
 ### 6.2 Attachment of a follow-up line
 

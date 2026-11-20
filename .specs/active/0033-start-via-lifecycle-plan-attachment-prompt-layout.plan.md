@@ -3,7 +3,7 @@
 **Spec:** [0033-start-via-lifecycle-plan-attachment-prompt-layout.md](0033-start-via-lifecycle-plan-attachment-prompt-layout.md)
 **Status:** In Progress
 **Last updated:** 2026-11-20
-**Current step:** T-001
+**Current step:** T-005
 
 ## Approach
 
@@ -52,8 +52,8 @@ No parallel stage: T-001 and T-002 share `StepCase` and `STEP_ATTACHES`; T-003 r
   `/sdd-lifecycle <spec> In Progress`; `active/` without a tick → NS-7 (A-001, A-002 unchanged). Move the literal tests;
   new `core/board/start0033.test.ts` "0033 AC-001 …" (single line, no follow-up, texts), "AC-002 …".
 - **Verify:** `npx vitest run src/core/board src/shared/protocol` — red first, then green.
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-20 · `npx vitest run src/core/board/start0033.test.ts` 7 passed (the stub was skipped: impl and test written together, so no red run); with the literal tests of §5 moved, `src/core src/shared` green
+- **Notes:** Active without a tick serves NS-7 (one line, no `Or:` line), after NS-6-report's guards; a Ready spec with a tick keeps NS-7 (A-002). Short intent `Start`, command short form `Set active` (`shortForm()`), joined `Start · Set active`. Tests moved by §5: fixtures that expected `Continue with`/`Or:` or `Implement` for an untouched plan got a ticked first step (stepLinks, surfaces0028, statusEntry, planMap ready model, followUp0031, cards, polish0032); `NS-7-start` rows added to the literal tables; baseline exceptions `NS7` extended to tips and `NS7_ACTIVE` added for `repo-f9cadb4` 0028. Proxy: the planMap offers no ways for the start step (it would Implement in `backlog/`).
 
 ### T-002 — The attachment follows the prompt
 
@@ -64,8 +64,8 @@ No parallel stage: T-001 and T-002 share `StepCase` and `STEP_ATTACHES`; T-003 r
   every attached file. Tests `core/assistant/attach0033.test.ts` "0033 AC-003 …" (start, continue, `Then:` line),
   "AC-004 …" (both assistants, whitespace per path, current chat, one missing file A-003).
 - **Verify:** `npx vitest run src/core/assistant src/shared src/webview/ui/SendButton.test.tsx` — red first, then green.
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-20 · `npx vitest run src/core/assistant/attach0033.test.ts` 10 passed; host adapter level: Copilot `attachFiles: [spec, plan]` / `[plan]`, Claude Code `… @spec @plan` / `… @plan`, whitespace per path, current chat none, A-003 one missing file; `src/core/assistant` green
+- **Notes:** Protocol: `SendView.attach` is the first file, new optional `attachAlso` the others; `SendRequest.attach` + `attachAlso: string[]`; `STEP_FILES` per case (`STEP_ATTACHES` derived); `callsFor` accepts one attachment or a list; `AttachmentContext.plan`; the check accepts plan keys (0027 AC-010's plan-key row removed from the refused list, §5). `sendMainName` unchanged, the webview joins names with ` and `. Without the plan key (no plan) an Implement case attaches nothing.
 
 ### T-003 — Prompt column, path breaks, indent, Up next glyph
 
@@ -75,8 +75,8 @@ No parallel stage: T-001 and T-002 share `StepCase` and `STEP_ATTACHES`; T-003 r
   `<wbr>` after each `/` in the display only. Tests `webview/layout0033.test.tsx` "0033 AC-006 …" (`<wbr>` after `/`,
   copied and sent text unchanged), "AC-008 …"; `webviewCss.test.ts` "0033 AC-005 …", "AC-007 …" (A-004).
 - **Verify:** `npx vitest run src/webview src/adapters/node/webviewCss.test.ts` — red first, then green.
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-20 · `npx vitest run src/webview src/adapters/node/webviewCss.test.ts` 933 passed; AC-007's edge test is the stylesheet assertion (A-004), the orchestrator's T-005 measures `getBoundingClientRect`
+- **Notes:** `<wbr>` after `/` only through `PathText after="slash"` in the Next step prompt; the default of `PathText` (after `/`, `.`, `-`) stays for cards, banner and Ways, because 0022's tests pin it (proxy: AC-006 scoped to the Next step prompt, the one of 17 screenshot 1). Overview narrow layouts: areas `state number title … problem` / `step … copy` (two lines in both, was two and three); 0018 AC-028's test moved accordingly (not listed in §5). `.next-step-intent` keeps `flex: 1 0 100%` (0021 pins it).
 
 ### T-004 — Notes, PDs, docs and final gates
 
@@ -85,8 +85,8 @@ No parallel stage: T-001 and T-002 share `StepCase` and `STEP_ATTACHES`; T-003 r
   `README.md`, `CHANGELOG.md`; title audit (every test title at the Baseline exists at the head); `activeContext.md`.
   All gates 1–5.
 - **Verify:** gates 1–5 green; `npx vitest run src/adapters/node/docsScan.test.ts src/core/lifecycle/problems.test.ts`.
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-20 · `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile` all green (3900 passed + 4 skipped, timing 35 passed); `docsScan` and `problems` green
+- **Notes:** §5 notes added in 0028 (two places), 0021, 0031, 0032; **not in 0027** (the orchestrator said not to touch it: its §6.1 attachment table and PD-091 note is still open). PD-096 and PD-097 in `product-decisions.md`; README, CHANGELOG, `activeContext.md`. The title audit by hand: no test title was renamed, only literals and fixtures moved (titles kept even where their wording is older, e.g. `thirteen step cases`). `compile-tests` and `npm test` (host) not run, per cadence v2; the orchestrator runs them on Windows.
 
 ### T-005 — Preview of 17 §5 *Prüfen*
 
@@ -113,19 +113,19 @@ No parallel stage: T-001 and T-002 share `StepCase` and `STEP_ATTACHES`; T-003 r
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001, T-005 | — | — | open |
-| AC-002 | T-001, T-005 | — | — | open |
-| AC-003 | T-002, T-005 | — | — | open |
-| AC-004 | T-002, T-005 | — | — | open |
-| AC-005 | T-003, T-005 | — | — | open |
-| AC-006 | T-003, T-005 | — | — | open |
-| AC-007 | T-003, T-005 | — | — | open |
-| AC-008 | T-003, T-005 | — | — | open |
+| AC-001 | T-001, T-005 | `nextStep.ts`, `nextStepTexts.ts` | `core/board/start0033.test.ts` | built; preview open |
+| AC-002 | T-001, T-005 | `nextStep.ts`, `nextStepTexts.ts` | `core/board/start0033.test.ts` | built; preview open |
+| AC-003 | T-002, T-005 | `attachment.ts`, `assistants.ts`, `send.ts` | `core/assistant/attach0033.test.ts` | built; preview open |
+| AC-004 | T-002, T-005 | `attachment.ts`, `assistants.ts`, `send.ts`, `SendButton.tsx` | `core/assistant/attach0033.test.ts`, `webview/layout0033.test.tsx` | built; preview open |
+| AC-005 | T-003, T-005 | `main.css` | `adapters/node/webviewCss.test.ts` | built; preview open |
+| AC-006 | T-003, T-005 | `PathText.tsx`, `NextStep.tsx` | `webview/layout0033.test.tsx` | built; preview open |
+| AC-007 | T-003, T-005 | `main.css` | `adapters/node/webviewCss.test.ts` (stylesheet, A-004) | built; preview open |
+| AC-008 | T-003, T-005 | `main.css` | `adapters/node/webviewCss.test.ts` | built; preview open |
 
 ## Session handoff
 
-- **Done so far:** —
-- **Next action:** `/sdd-lifecycle` (backlog → active), then T-001
-- **Open decisions:** —
-- **Baseline:** _(set when work starts)_
+- **Done so far:** T-001…T-004 (pair moved to `active/`, status In Progress; commits on `release-polish`).
+- **Next action:** T-005 (orchestrator's preview of 17 §5 *Prüfen*), then T-006 (evidence in `docs/release-checklist.md` section "0033", fresh `/sdd-compile`, `npm test` on Windows, VSIX).
+- **Open decisions:** the 0027 §5 note is missing (told not to touch 0027); PD-096/PD-097 are in the register.
+- **Baseline:** `995305c` (spec and plan in `backlog/`).
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

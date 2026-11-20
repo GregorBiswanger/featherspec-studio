@@ -10,6 +10,11 @@ First release.
 
 ### Added
 
+- Start via lifecycle (0033): a Ready spec offers `/sdd-lifecycle <spec> In Progress` first, under `Start: move the spec
+  and its plan to active` (PD-096), and `Start implementing: T-001 …` once the pair sits in `active/`; Send attaches the
+  files its prompt names, the start step spec and plan, `Implement <ID> of <plan>` the plan only (PD-097); the prompt
+  block is as wide as its text with Send under it, a path breaks only after a `/`, the Next step lines up with Plan,
+  Progress and Files, and an Up next row keeps its status glyph on the title line.
 - Release polish (0032): the onboarding's Send arrow is 14 px again and the welcome shows `Tip: Use a new chat with a
   strong model.` under its button with a body of at most 65 characters per line; where a step writes a plan the Tip reads
   `Tip: Use a new chat with a strong model, and allow web search.` (PD-093); every follow-up line starts with `Then:` or

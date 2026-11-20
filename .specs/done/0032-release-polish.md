@@ -152,6 +152,7 @@ Node or jsdom tests decide every criterion; where a criterion names a width, the
   integrate the returned steps`; the Integrate button shall stay grey as today.
 - **AC-006** In the detail and the Plan map header, the Send split button shall stand on its own row under its prompt,
   whatever the prompt's length, for the first and every follow-up line; checked at 1000 px and 1600 px.
+  *Amended by 0033 (0033 §6.4): the line is a column; the prompt is as wide as its text and at most as wide as the column, Send stands under it, left-aligned; the stretching rule `li > code:has(+ .send-split)` is gone.*
 - **AC-007** Under the onboarding's Send split button shall stand `Tip: Use a new chat with a strong model.`, and no Tip
   where `showStepTips` is off; the explanation sentence shall have `max-width: 65ch` and stay centred.
 - **AC-008** For Copilot with target `current`, Send shall call `workbench.action.chat.open` without `attachFiles`, and

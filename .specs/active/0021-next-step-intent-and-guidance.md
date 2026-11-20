@@ -113,6 +113,7 @@ state their intent and get only Copy prompt.
 *Amended by 0032 (PD-093, 0032 §6.3): NS-10 has session new, `Tip: Use a new chat with a strong model, and allow web search.`; NS-9's first line reads `Have the spec challenged` (PD-095, 0032 §6.4).*
 
 *Amended by 0028 (D-4): NS-7's line is `Implement <ID> of <plan path>`, the command short form `Implement <ID>`; without an open step `/sdd-plan <spec path>` with the texts of "Plan without open step" (0028 §6.5).*
+*Amended by 0033 (PD-096, 0033 §6.2): NS-7 serves `active/` without a tick; its effect reads `The agent builds one step, runs its check, ticks it and stops.` and no longer names the move to active; the start step has its own row (0033 §6.1: `Start: move the spec and its plan to active`, short form `Start · Set active`, `The agent moves spec and plan to active and sets the status to In Progress. Afterwards the Studio offers T-001.`).*
 
 **Proposal:** the Intent, Short intent, Session, Model, Effect and Then columns of §6.1 and §6.2 are a proposal
 (08 R-1); Gregor confirms them in the click test (PD-069, OP-002, AC-024); confirmed 2026-11-18 by PD-073. Sources (FeatherSpec 1.10.0 here):
