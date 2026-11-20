@@ -43,7 +43,7 @@ class SpikeProbeAction : AnAction() {
         for ((fragment, slug) in themes) {
             ApplicationManager.getApplication().invokeAndWait {
                 val theme = LafManager.getInstance().installedThemes.first { it.name.contains(fragment, ignoreCase = true) }
-                LafManager.getInstance().setCurrentLookAndFeel(theme)
+                LafManager.getInstance().setCurrentLookAndFeel(theme, false)
                 LafManager.getInstance().updateUI()
                 opened?.let { FileEditorManager.getInstance(project).closeFile(it) }
                 val file = SpikeEditorProvider.newFile()
