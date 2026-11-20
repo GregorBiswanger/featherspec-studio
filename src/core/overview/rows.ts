@@ -74,7 +74,7 @@ function rowOf(model: ShellModel, specs: SpecResolver, entry: LifecycleEntry, fi
     if (next === undefined || !('case' in next)) {
         return { ...row, step, ...link, ...quietOf(model, entry) };
     }
-    const send = sendViewOf(offer, next.case, { key: entry.key });
+    const send = sendViewOf(offer, next.case, { key: entry.key, ...(entry.plan === undefined ? {} : { plan: entry.plan }) });
     return {
         ...row,
         step,

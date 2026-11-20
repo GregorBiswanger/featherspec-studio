@@ -30,7 +30,7 @@ export function stepShortForm(step: { intent: string; short: string }): string {
     return `${step.intent}${STEP_SHORT_SEPARATOR}${step.short}`;
 }
 
-export type StepCase = 'NS-2' | 'NS-4' | 'NS-4-plan' | 'NS-5' | 'NS-6-open' | 'NS-6-report' | 'NS-6-resume' | 'NS-6-returned' | 'NS-6-plan' | 'NS-7' | 'NS-8' | 'NS-9' | 'NS-10';
+export type StepCase = 'NS-2' | 'NS-4' | 'NS-4-plan' | 'NS-5' | 'NS-6-open' | 'NS-6-report' | 'NS-6-resume' | 'NS-6-returned' | 'NS-6-plan' | 'NS-7' | 'NS-7-start' | 'NS-8' | 'NS-9' | 'NS-10';
 
 export type SessionKey = 'new' | 'sameOrNew' | 'any';
 
@@ -106,8 +106,15 @@ export const STEP_GUIDES: Record<StepCase, StepGuide> = {
         short: 'Start',
         session: 'any',
         model: 'fast',
-        effect: 'The agent moves the spec to active, builds one step, runs its check, ticks it and stops.',
+        effect: 'The agent builds one step, runs its check, ticks it and stops.',
         then: BUILD_THEN,
+    },
+    'NS-7-start': {
+        short: 'Start',
+        session: 'any',
+        model: 'fast',
+        effect: 'The agent moves spec and plan to active and sets the status to In Progress. Afterwards the Studio offers T-001.',
+        then: 'The spec then shows its first step to implement.',
     },
     'NS-8': { short: 'Add criteria', session: 'any', model: 'strong', effect: 'The agent goes through the spec with you and adds testable acceptance criteria.', then: 'Then the spec is challenged and planned.' },
     'NS-9': {
@@ -142,6 +149,10 @@ export function waitingIntegrateIntent(ids: readonly string[]): string {
 }
 
 export const WRITE_PLAN_INTENT = 'Write the plan';
+
+export const START_LIFECYCLE_INTENT = 'Start: move the spec and its plan to active';
+
+export const START_SHORT_FORM = 'Set active';
 
 export const NS8_INTENT = 'Add acceptance criteria';
 

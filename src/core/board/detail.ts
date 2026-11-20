@@ -42,18 +42,18 @@ function diagnosticLine(diagnostic: LifecycleEntry['diagnostics'][number]): Diag
     return file === undefined ? base : { ...base, open: { key: file, line: line === undefined || line < 1 ? 1 : line } };
 }
 
-function nextStepView(next: NextStep, tips: StepTipSettings | undefined, offer: Offer | undefined, version: string, key: string, quiet: boolean, waiting: string | undefined, link: (intent: string) => StepLinkView | undefined, parallel: number | undefined): NextStepView {
+function nextStepView(next: NextStep, tips: StepTipSettings | undefined, offer: Offer | undefined, version: string, key: string, planKey: string | undefined, quiet: boolean, waiting: string | undefined, link: (intent: string) => StepLinkView | undefined, parallel: number | undefined): NextStepView {
     if (!('lines' in next)) {
         return next;
     }
     const lines = next.lines.map((line, index) => {
         const step = link(line.intent);
         const own = followUpCaseOf(next.case, index);
-        const followSend = own === undefined ? undefined : sendViewOf(offer, own, { key });
+        const followSend = own === undefined ? undefined : sendViewOf(offer, own, { key, ...(planKey === undefined ? {} : { plan: planKey }) });
         const coach = followSend === undefined || own === undefined || tips === undefined || !tips.show ? undefined : stepTips(own, tips, tipClosingOf(offer), { version, send: true, ...(followSend?.attach === undefined ? {} : { attaches: true as const }) }).coach;
         return { text: line.text, intent: waiting !== undefined && index === 0 ? waiting : line.intent, ...(step === undefined ? {} : { step }), ...(followSend === undefined ? {} : { send: followSend }), ...(coach === undefined ? {} : { coach }) };
     });
-    const send = sendViewOf(offer, next.case, { key });
+    const send = sendViewOf(offer, next.case, { key, ...(planKey === undefined ? {} : { plan: planKey }) });
     return {
         rule: next.rule,
         lines,
@@ -104,7 +104,7 @@ export function buildDetail(input: DetailInput): DetailView {
         rule: entry.rule,
         persistence: entry.persistence,
         ...(entry.deprecated === undefined ? {} : { successor: successorText(entry.deprecated.successor) }),
-        nextStep: nextStepView(next, input.tips, input.offer, model.project.version, entry.key, integrateIsQuiet(model, entry, spec), waitingIntentOf(model, entry, spec), (intent) => stepLinkOf(model, entry, intent), plan?.kind === 'plan' ? plan.stages.find((stage) => stage.ways !== undefined)?.number : undefined),
+        nextStep: nextStepView(next, input.tips, input.offer, model.project.version, entry.key, entry.plan, integrateIsQuiet(model, entry, spec), waitingIntentOf(model, entry, spec), (intent) => stepLinkOf(model, entry, intent), plan?.kind === 'plan' ? plan.stages.find((stage) => stage.ways !== undefined)?.number : undefined),
         problems: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'problem').map(diagnosticLine),
         notes: entry.diagnostics.filter((diagnostic) => diagnostic.tier === 'note').map(diagnosticLine),
         ...(progress === undefined ? {} : { progress }),

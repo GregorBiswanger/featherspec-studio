@@ -15,6 +15,8 @@ import {
     NS8_INTENT,
     NS9_INTENT,
     NS9_THEN_INTENT,
+    START_LIFECYCLE_INTENT,
+    START_SHORT_FORM,
     startIntent,
     STEP_GUIDES,
     type StepCase,
@@ -52,6 +54,10 @@ export function openStep(model: ShellModel, entry: LifecycleEntry): PlanStep | u
 
 export function verifiedWithoutTick(plan: ParsedPlan | undefined): PlanStep | undefined {
     return (plan?.steps ?? []).find((step) => !step.struck && step.ticked !== true && step.verified.state === 'value');
+}
+
+function anyTick(plan: ParsedPlan | undefined): boolean {
+    return (plan?.steps ?? []).some((step) => step.ticked === true);
 }
 
 const STEP_TOKEN = /\bT-\d+\b/g;
@@ -120,13 +126,20 @@ export function nextStep(model: ShellModel, key: string): NextStep | undefined {
             if (reportSign(plan, open) && !levelsOnImplement(model.project.version)) {
                 return lines('NS-6', 'NS-6-report', { intent: NS6_REPORT_FIRST_INTENT, text: `/sdd-plan ${key}` }, thenLine);
             }
+            if (!anyTick(plan)) {
+                return lines('NS-7', 'NS-7', { intent: startIntent(open.id, plainShort(open.title)), text: continueLine.text });
+            }
             return lines('NS-6', 'NS-6-open', continueLine, { intent: NS6_REPORT_INTENT, text: `/sdd-plan ${key}` });
         }
         case 'Ready': {
             const open = openStep(model, entry);
-            return open === undefined
-                ? lines('NS-7', 'NS-6-resume', { intent: NS6_RESUME_INTENT, text: `/sdd-plan ${key}` })
-                : lines('NS-7', 'NS-7', { intent: startIntent(open.id, plainShort(open.title)), text: `Implement ${open.id} of ${entry.plan}` });
+            if (open === undefined) {
+                return lines('NS-7', 'NS-6-resume', { intent: NS6_RESUME_INTENT, text: `/sdd-plan ${key}` });
+            }
+            const readyPlan = model.project.plans.find((candidate) => candidate.key === entry.plan)?.parsed;
+            return anyTick(readyPlan)
+                ? lines('NS-7', 'NS-7', { intent: startIntent(open.id, plainShort(open.title)), text: `Implement ${open.id} of ${entry.plan}` })
+                : lines('NS-7', 'NS-7-start', { intent: START_LIFECYCLE_INTENT, text: `/sdd-lifecycle ${key} In Progress` });
         }
         case 'Backlog': {
             if (entry.readiness.checks.some((check) => check.id === 'R-2' && check.result === 'fail')) {
@@ -144,6 +157,9 @@ export function nextStep(model: ShellModel, key: string): NextStep | undefined {
 }
 
 export function shortForm(line: string): string {
+    if (/^\/sdd-lifecycle \S+ In Progress$/.test(line)) {
+        return START_SHORT_FORM;
+    }
     const command = /^\/sdd-[a-z-]+/.exec(line);
     if (command !== null) {
         return command[0];

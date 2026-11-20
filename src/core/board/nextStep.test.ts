@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { describe, expect, it } from 'vitest';
-import { continueIntent, INTEGRATE_INTENT, NEXT_STEP_DONE_TEXT, NEXT_STEP_UNREADABLE_TEXT, nextStepNumberUsedText, NS2_INTENT, NS4_INTENT, NS5_INTENT, NS6_REPORT_FIRST_INTENT, NS6_RESUME_INTENT, NS8_INTENT, NS9_INTENT, startIntent, STEP_GUIDES, stepShortForm, type StepCase, WRITE_PLAN_INTENT } from '../../shared/protocol/nextStepTexts';
+import { continueIntent, INTEGRATE_INTENT, NEXT_STEP_DONE_TEXT, NEXT_STEP_UNREADABLE_TEXT, nextStepNumberUsedText, NS2_INTENT, NS4_INTENT, NS5_INTENT, NS6_REPORT_FIRST_INTENT, NS6_RESUME_INTENT, NS8_INTENT, NS9_INTENT, START_LIFECYCLE_INTENT, startIntent, STEP_GUIDES, stepShortForm, type StepCase, WRITE_PLAN_INTENT } from '../../shared/protocol/nextStepTexts';
 import { deriveLifecycle } from '../lifecycle/deriveLifecycle';
 import { planText, readMemory, ROOT, specText, VERSION } from '../lifecycle/testing/projects';
 import { createMemorySpecSource } from '../specs/testing/memorySpecSource';
@@ -30,9 +30,9 @@ async function model(files: Record<string, string>): Promise<ShellModel> {
 
 describe('AC-004: the next step is derived from the model, one fixture per rule', () => {
     it('NS-7: a Ready spec starts the first step that is neither ticked nor struck', async () => {
-        const m = await model({ [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[ ]'], ['T-002', '[ ]']]) });
+        const m = await model({ [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[x]'], ['T-002', '[ ]'], ['T-003', '[ ]']]) });
         expect(deriveLifecycle(m.project).entries[0].state).toBe('Ready');
-        expect(nextStep(m, BACKLOG)).toMatchObject({ rule: 'NS-7', lines: [{ text: 'Implement T-001 of .specs/backlog/0007-x.plan.md' }] });
+        expect(nextStep(m, BACKLOG)).toMatchObject({ rule: 'NS-7', lines: [{ text: 'Implement T-002 of .specs/backlog/0007-x.plan.md' }] });
     });
 
     it('NS-7: ticked and struck steps are skipped; an undetermined tick counts as not ticked', async () => {
@@ -164,7 +164,7 @@ describe('AC-004: determinism and unknown keys', () => {
 describe('0017 AC-001, AC-003: the step view', () => {
     it('AC-001: the short form of the first line of every rule, and line is the detail\'s first line with its path', async () => {
         const cases: Array<[string, Record<string, string>, string, string, string]> = [
-            ['NS-7', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-003', '[ ]']]) }, BACKLOG, 'Implement T-003', 'Implement T-003 of .specs/backlog/0007-x.plan.md'],
+            ['NS-7', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[x]'], ['T-003', '[ ]']]) }, BACKLOG, 'Implement T-003', 'Implement T-003 of .specs/backlog/0007-x.plan.md'],
             ['NS-7', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[x]']]) }, BACKLOG, '/sdd-plan', `/sdd-plan ${BACKLOG}`],
             ['NS-8', { [BACKLOG]: specText({ criteria: false }) }, BACKLOG, '/sdd-specify', `/sdd-specify ${BACKLOG}`],
             ['NS-9', { [BACKLOG]: specText() }, BACKLOG, '/sdd-clarify', `/sdd-clarify ${BACKLOG}`],
@@ -255,10 +255,17 @@ describe('0021 AC-001: every next step line carries its intent, one fixture per 
         ['NS-6 plan', noPlan, ACTIVE, 'NS-6-plan', [['Write the plan', `/sdd-plan ${ACTIVE}`]]],
         [
             'NS-7 step',
+            { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: plan([['T-001', '[ ]']]) },
+            ACTIVE,
+            'NS-7',
+            [['Start implementing: T-001 Step', `Implement T-001 of ${ACTIVE_PLAN}`]],
+        ],
+        [
+            'NS-7 start',
             { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[ ]']]) },
             BACKLOG,
-            'NS-7',
-            [['Start implementing: T-001 Step', `Implement T-001 of ${BACKLOG_PLAN}`]],
+            'NS-7-start',
+            [['Start: move the spec and its plan to active', `/sdd-lifecycle ${BACKLOG} In Progress`]],
         ],
         ['NS-7 no step', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[x]']]) }, BACKLOG, 'NS-6-resume', [['Let the agent report where the plan stands', `/sdd-plan ${BACKLOG}`]]],
         ['NS-8', { [BACKLOG]: specText({ criteria: false }) }, BACKLOG, 'NS-8', [['Add acceptance criteria', `/sdd-specify ${BACKLOG}`]]],
@@ -289,7 +296,8 @@ describe('0021 AC-001: every next step line carries its intent, one fixture per 
             'NS-6-resume': { short: 'Report', session: 'any', model: 'fast', effect: 'The agent checks the plan against the code and reports where it stands.', then: 'The spec then shows its next step.' },
             'NS-6-returned': { short: 'Integrate', session: 'sameOrNew', model: 'fast', effect: 'The agent checks each returned step against its files, runs its check and the quality gates, then ticks the steps and removes the return notes.', then: 'Paste it once every worker you started is back.' },
             'NS-6-plan': { short: 'Write plan', session: 'new', model: 'strongWebSearch', effect: 'The agent researches and writes the plan; for a reactivated spec, a fresh plan for the change.', then: 'You read the plan before anything is built.' },
-            'NS-7': { short: 'Start', session: 'any', model: 'fast', effect: 'The agent moves the spec to active, builds one step, runs its check, ticks it and stops.', then: 'When it stops, the Studio shows the next step; a working agreement such as a test review may stop it earlier.' },
+            'NS-7': { short: 'Start', session: 'any', model: 'fast', effect: 'The agent builds one step, runs its check, ticks it and stops.', then: 'When it stops, the Studio shows the next step; a working agreement such as a test review may stop it earlier.' },
+            'NS-7-start': { short: 'Start', session: 'any', model: 'fast', effect: 'The agent moves spec and plan to active and sets the status to In Progress. Afterwards the Studio offers T-001.', then: 'The spec then shows its first step to implement.' },
             'NS-8': { short: 'Add criteria', session: 'any', model: 'strong', effect: 'The agent goes through the spec with you and adds testable acceptance criteria.', then: 'Then the spec is challenged and planned.' },
             'NS-9': { short: 'Challenge', session: 'new', model: 'strong', effect: 'A fresh reader looks for gaps, contradictions and untestable criteria.', then: 'Then write the plan with the second prompt, in any chat.' },
             'NS-10': { short: 'Write plan', session: 'new', model: 'strongWebSearch', effect: 'The agent researches and writes the plan as small, verifiable steps.', then: 'You read the plan before anything is built.' },
@@ -306,7 +314,8 @@ describe('0021 AC-001: every next step line carries its intent, one fixture per 
 
 describe('0021 AC-002: the prompts of every rule but NS-6 are those of the baseline', () => {
     const cases: Array<[string, Record<string, string>, string, string[]]> = [
-        ['NS-7', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[ ]']]) }, BACKLOG, [`Implement T-001 of ${BACKLOG_PLAN}`]],
+        ['NS-7', { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: plan([['T-001', '[ ]']]) }, ACTIVE, [`Implement T-001 of ${ACTIVE_PLAN}`]],
+        ['NS-7', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[ ]']]) }, BACKLOG, [`/sdd-lifecycle ${BACKLOG} In Progress`]],
         ['NS-7', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[x]']]) }, BACKLOG, [`/sdd-plan ${BACKLOG}`]],
         ['NS-8', { [BACKLOG]: specText({ criteria: false }) }, BACKLOG, [`/sdd-specify ${BACKLOG}`]],
         ['NS-9', { [BACKLOG]: specText() }, BACKLOG, [`/sdd-clarify ${BACKLOG}`, `/sdd-plan ${BACKLOG}`]],
@@ -356,8 +365,8 @@ describe('0021 AC-003: an Active spec leads with the single-step prompt of its o
                 '.specs/active/0002-b.plan.md': planB,
             });
             const firsts = (key: string) => (nextStep(m, key) as { lines: Array<{ text: string }> }).lines.map((line) => line.text);
-            expect(firsts(A)).toEqual(planA === open ? ['Implement T-001 of .specs/active/0001-a.plan.md', `/sdd-plan ${A}`] : [`/sdd-plan ${A}`]);
-            expect(firsts(B)).toEqual(planB === open ? ['Implement T-001 of .specs/active/0002-b.plan.md', `/sdd-plan ${B}`] : [`/sdd-plan ${B}`]);
+            expect(firsts(A)).toEqual(planA === open ? ['Implement T-001 of .specs/active/0001-a.plan.md'] : [`/sdd-plan ${A}`]);
+            expect(firsts(B)).toEqual(planB === open ? ['Implement T-001 of .specs/active/0002-b.plan.md'] : [`/sdd-plan ${B}`]);
         }
     });
 });
@@ -394,13 +403,15 @@ describe('0021 AC-005: an Active spec without an open step reports, one without 
 });
 
 describe('0021 AC-019: the title of an open step in an intent', () => {
-    const open = (title: string) => model({ [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: titled([['T-004', title, '[ ]']]) });
+    const open = (title: string) => model({ [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: titled([['T-003', 'Done', '[x]'], ['T-004', title, '[ ]']]) });
     const first = (next: ReturnType<typeof nextStep>) => (next as { lines: Array<{ intent: string }> }).lines[0]!.intent;
 
     it('no title gives the ID alone, no trailing space, in NS-6 and NS-7', async () => {
         expect(first(nextStep(await open(''), ACTIVE))).toBe('Continue with T-004');
         const ready = await model({ [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: titled([['T-004', '', '[ ]']], 'Not started') });
-        expect(first(nextStep(ready, BACKLOG))).toBe('Start implementing: T-004');
+        const started = await model({ [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: titled([['T-004', '', '[ ]']]) });
+        expect(first(nextStep(started, ACTIVE))).toBe('Start implementing: T-004');
+        expect(first(nextStep(ready, BACKLOG))).toBe('Start: move the spec and its plan to active');
     });
 
     it('Markdown and a link are shown as plain text; over 80 characters the title is cut at a word with an ellipsis', async () => {
@@ -421,10 +432,11 @@ describe('0021 AC-006: the step short form of every case', () => {
     const reviewing = { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: planText({ status: 'Done' }) };
     const cases: Array<[string, Record<string, string>, string, string, string, string]> = [
         ['NS-5', reviewing, ACTIVE, 'Verify', '/sdd-compile', 'Verify · /sdd-compile'],
-        ['NS-6 open', { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: titled([['T-003', 'Reject money values', '[ ]']]) }, ACTIVE, 'Continue', 'Implement T-003', 'Continue · Implement T-003'],
+        ['NS-6 open', { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: titled([['T-002', 'Done', '[x]'], ['T-003', 'Reject money values', '[ ]']]) }, ACTIVE, 'Continue', 'Implement T-003', 'Continue · Implement T-003'],
         ['NS-6 resume', { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: struck([['T-003', 'Done']]) }, ACTIVE, 'Report', '/sdd-plan', 'Report · /sdd-plan'],
         ['NS-6 plan', { [ACTIVE]: specText({ status: 'In Progress', plan: ARCHIVE }) }, ACTIVE, 'Write plan', '/sdd-plan', 'Write plan · /sdd-plan'],
-        ['NS-7 step', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[ ]']]) }, BACKLOG, 'Start', 'Implement T-001', 'Start · Implement T-001'],
+        ['NS-7 step', { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: plan([['T-001', '[ ]']]) }, ACTIVE, 'Start', 'Implement T-001', 'Start · Implement T-001'],
+        ['NS-7 start', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[ ]']]) }, BACKLOG, 'Start', 'Set active', 'Start · Set active'],
         ['NS-7 plan', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: plan([['T-001', '[x]']]) }, BACKLOG, 'Report', '/sdd-plan', 'Report · /sdd-plan'],
         ['NS-8', { [BACKLOG]: specText({ criteria: false }) }, BACKLOG, 'Add criteria', '/sdd-specify', 'Add criteria · /sdd-specify'],
         ['NS-9', { [BACKLOG]: specText() }, BACKLOG, 'Challenge', '/sdd-clarify', 'Challenge · /sdd-clarify'],
@@ -506,7 +518,7 @@ describe('0023 AC-013: returned work is the first case of an Active spec', () =>
     it('a Ready or Backlog spec with a note is not an Active case: NS-7 keeps its line', async () => {
         const ready = await model({
             [BACKLOG]: specText({ plan: LINK }),
-            [BACKLOG_PLAN]: plan([['T-001', '[ ]']]),
+            [BACKLOG_PLAN]: plan([['T-000', '[x]'], ['T-001', '[ ]']]),
             '.memory-bank/activeContext.0007-T-001.md': noteLines('DONE'),
         });
         expect(nextStep(ready, BACKLOG)).toMatchObject({ rule: 'NS-7', case: 'NS-7' });
@@ -691,7 +703,7 @@ describe('0028 AC-016: a Ready spec starts with FeatherSpec\'s fixed prompt', ()
         expect({ ...old, lines: old.lines.map((line) => ({ ...line, text: line.text.replace(/^Start /, 'Implement ') })) }).toEqual(next);
         const view = snapshot.stepView as { short: string; line: string; lines: Array<{ text: string }> };
         expect(JSON.stringify(stepView(m, KEY))).toBe(JSON.stringify(view).replaceAll('Start T-003', 'Implement T-003'));
-        expect(stepTips('NS-7', settings, undefined, { version: m.project.version })).toEqual(snapshot.tips);
+        expect(JSON.stringify(stepTips('NS-7', settings, undefined, { version: m.project.version }))).toBe(JSON.stringify(snapshot.tips).replace('The agent moves the spec to active, builds one step', 'The agent builds one step'));
     });
 
     it.each(['ac016-ready-without-step', 'ac016-ready-all-struck'])('%s: /sdd-plan <spec path> with the intent, coach, effect and then of Plan without open step', async (name) => {
@@ -737,6 +749,7 @@ describe('0026 AC-003, AC-004: a short intent starts with the first word of its 
         'NS-6-returned': INTEGRATE_INTENT,
         'NS-6-plan': WRITE_PLAN_INTENT,
         'NS-7': startIntent('T-001', 'Step'),
+        'NS-7-start': START_LIFECYCLE_INTENT,
         'NS-8': NS8_INTENT,
         'NS-9': NS9_INTENT,
         'NS-10': WRITE_PLAN_INTENT,
@@ -752,6 +765,9 @@ describe('0026 AC-003, AC-004: a short intent starts with the first word of its 
         if (stepCase === 'NS-9') {
             return 'Challenge';
         }
+        if (stepCase === 'NS-7-start') {
+            return 'Start';
+        }
         const lead = Object.keys(VERB_OF).find((prefix) => intent.startsWith(prefix));
         return lead === undefined ? (STEP_GUIDES[stepCase].short.split(' ')[0] === intent.split(' ')[0] ? STEP_GUIDES[stepCase].short : `first word of ${intent}`) : VERB_OF[lead]!;
     }
@@ -760,7 +776,7 @@ describe('0026 AC-003, AC-004: a short intent starts with the first word of its 
         const short = STEP_GUIDES[stepCase].short;
         expect(short).not.toBe('');
         expect(short).toBe(expectedShort(stepCase));
-        if (stepCase !== 'NS-2' && !/^(Have the |Let the agent )/.test(FIRST_INTENT[stepCase])) {
+        if (stepCase !== 'NS-2' && stepCase !== 'NS-7-start' && !/^(Have the |Let the agent )/.test(FIRST_INTENT[stepCase])) {
             expect(short.split(' ')[0]).toBe(FIRST_INTENT[stepCase].split(' ')[0]);
         }
     });

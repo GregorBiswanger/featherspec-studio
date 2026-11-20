@@ -7,6 +7,10 @@ import { Glyph } from '../board/icons';
 import { FEEDBACK_MS, type CopyResult } from './CopyButton';
 import { closePopup, setPopup, useIsPopupOpen } from './popup';
 
+function attachNamesOf(send: SendView): string | undefined {
+    return send.attach === undefined ? undefined : [send.attach, ...(send.attachAlso ?? [])].map((file) => file.name).join(' and ');
+}
+
 export interface SendButtonProps {
     send: SendView;
     line: string;
@@ -229,7 +233,7 @@ export function SendButton(props: SendButtonProps) {
         if (fromMenu) {
             closeToArrow();
         }
-        props.onSend({ assistant: send.assistant, target, line, ...(send.attach === undefined || !attachesInTarget(send.assistant, target) ? {} : { attach: send.attach.path }), token });
+        props.onSend({ assistant: send.assistant, target, line, ...(send.attach === undefined || !attachesInTarget(send.assistant, target) ? {} : { attach: send.attach.path, ...(send.attachAlso === undefined ? {} : { attachAlso: send.attachAlso.map((file) => file.path) }) }), token });
     };
 
     const activateCopy = (): void => {
@@ -238,7 +242,7 @@ export function SendButton(props: SendButtonProps) {
         props.onCopy(line);
     };
 
-    const idleName = sendMainName(name, send.target, line, attachesInTarget(send.assistant, send.target) ? send.attach?.name : undefined);
+    const idleName = sendMainName(name, send.target, line, attachesInTarget(send.assistant, send.target) ? attachNamesOf(send) : undefined);
     return (
         <span ref={root} className="send-split next-step-copy" onKeyDown={onKeyDown}>
             <button type="button" className={secondary ? 'copy-button copy-secondary send-main' : 'copy-button send-main'} aria-label={shown?.name ?? idleName} title={shown?.text ?? idleName} onClick={() => activateSend(send.target)}>

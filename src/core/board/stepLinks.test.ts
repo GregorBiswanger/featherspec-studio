@@ -23,7 +23,7 @@ async function world(extra: Record<string, string> = {}): Promise<ShellModel> {
         [ACTIVE]: specText({ status: 'In Progress', plan: '[0007-x.plan.md](0007-x.plan.md)' }),
         [ACTIVE_PLAN]: plan([['T-001', '[x]'], ['T-002', '[ ]'], ['T-003', '[ ]']]),
         [READY]: specText({ plan: '[0008-y.plan.md](0008-y.plan.md)' }),
-        [READY_PLAN]: plan([['T-001', '[ ]']], 'Not started'),
+        [READY_PLAN]: plan([['T-000', '[x]'], ['T-001', '[ ]']], 'Not started'),
         [DONE]: specText({ status: 'Implemented' }),
         ...extra,
     });

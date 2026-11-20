@@ -13,7 +13,11 @@ export interface AssistantAttachment {
 export interface AssistantSpec {
     extensionId: string;
     attachesSpec: boolean;
-    callsFor(target: AssistantTarget, line: string, attachment?: AssistantAttachment): AssistantCall[];
+    callsFor(target: AssistantTarget, line: string, attachment?: AssistantAttachment | readonly AssistantAttachment[]): AssistantCall[];
+}
+
+function listOf(attachment: AssistantAttachment | readonly AssistantAttachment[] | undefined): readonly AssistantAttachment[] {
+    return attachment === undefined ? [] : 'path' in attachment ? [attachment] : attachment;
 }
 
 export const ASSISTANTS: Record<AssistantId, AssistantSpec> = {
@@ -21,7 +25,8 @@ export const ASSISTANTS: Record<AssistantId, AssistantSpec> = {
         extensionId: 'GitHub.copilot-chat',
         attachesSpec: true,
         callsFor(target, line, attachment) {
-            const open: AssistantCall = { command: 'workbench.action.chat.open', args: [{ query: line, isPartialQuery: true, ...(attachment === undefined ? {} : { attachFiles: [attachment.uri] }) }] };
+            const files = listOf(attachment);
+            const open: AssistantCall = { command: 'workbench.action.chat.open', args: [{ query: line, isPartialQuery: true, ...(files.length === 0 ? {} : { attachFiles: files.map((file) => file.uri) }) }] };
             return target === 'new' ? [{ command: 'workbench.action.chat.newChat', args: [] }, open] : [open];
         },
     },
@@ -29,8 +34,8 @@ export const ASSISTANTS: Record<AssistantId, AssistantSpec> = {
         extensionId: 'anthropic.claude-code',
         attachesSpec: true,
         callsFor(_target, line, attachment) {
-            const suffixed = attachment !== undefined && !/\s/.test(attachment.path);
-            return [{ command: 'claude-vscode.editor.open', args: [undefined, suffixed ? `${line} @${attachment.path}` : line] }];
+            const mentions = listOf(attachment).filter((file) => !/\s/.test(file.path)).map((file) => ` @${file.path}`);
+            return [{ command: 'claude-vscode.editor.open', args: [undefined, `${line}${mentions.join('')}`] }];
         },
     },
 };

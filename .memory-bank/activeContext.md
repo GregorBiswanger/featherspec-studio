@@ -11,6 +11,7 @@ Current phase: act
 - Waits for: CI on PR #3, Gregor's practice check (16 §4.1) and AC-017 on `tip-splitter` for 0027 (C-2 not needed, PD-091), Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
 
 ## Active Spec
+- [0033](../.specs/active/0033-start-via-lifecycle-plan-attachment-prompt-layout.md) / [plan](../.specs/active/0033-start-via-lifecycle-plan-attachment-prompt-layout.plan.md): start via `/sdd-lifecycle`, attachment follows the prompt, prompt layout (PD-096, PD-097); T-001…T-004 built; T-005, T-006 are the orchestrator's.
 - [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec for Copilot and Claude Code in every version (PD-091), T-001…T-011 verified; AC-016, AC-017, AC-020 are Gregor's or the orchestrator's.
 - [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 are Gregor's; OP-004 closed by PD-078.
 - [0023](../.specs/active/0023-plan-map-stages-parallel-work.md) / [plan](../.specs/active/0023-plan-map-stages-parallel-work.plan.md): Plan map, T-001…T-017; AC-018 real window, AC-019, AC-020 are Gregor's.

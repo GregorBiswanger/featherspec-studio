@@ -25,6 +25,7 @@ export interface SendView {
     target: AssistantTarget;
     targets: AssistantTarget[];
     attach?: SendAttachment;
+    attachAlso?: SendAttachment[];
 }
 
 export function isAssistantId(value: unknown): value is AssistantId {
@@ -52,7 +53,11 @@ export function isSendView(value: unknown): value is SendView {
         return false;
     }
     const withAttach = 'attach' in value;
-    if (Object.keys(value).length !== SEND_VIEW_KEYS.length + (withAttach ? 1 : 0) || (withAttach && !isSendAttachment(value.attach))) {
+    const withAlso = 'attachAlso' in value;
+    if (Object.keys(value).length !== SEND_VIEW_KEYS.length + (withAttach ? 1 : 0) + (withAlso ? 1 : 0) || (withAttach && !isSendAttachment(value.attach))) {
+        return false;
+    }
+    if (withAlso && (!withAttach || !Array.isArray(value.attachAlso) || value.attachAlso.length === 0 || !value.attachAlso.every(isSendAttachment))) {
         return false;
     }
     const { assistant, target, targets } = value;
@@ -68,6 +73,7 @@ export interface SendRequest {
     target: AssistantTarget;
     line: string;
     attach?: string;
+    attachAlso?: string[];
 }
 
 export interface SendPromptPayload extends SendRequest {
@@ -98,7 +104,11 @@ export function isSendPromptPayload(value: unknown): value is SendPromptPayload 
         return false;
     }
     const withAttach = 'attach' in value;
-    if (Object.keys(value).length !== SEND_PROMPT_KEYS.length + (withAttach ? 1 : 0) || (withAttach && (typeof value.attach !== 'string' || value.attach === ''))) {
+    const withAlso = 'attachAlso' in value;
+    if (Object.keys(value).length !== SEND_PROMPT_KEYS.length + (withAttach ? 1 : 0) + (withAlso ? 1 : 0) || (withAttach && (typeof value.attach !== 'string' || value.attach === ''))) {
+        return false;
+    }
+    if (withAlso && (!withAttach || !Array.isArray(value.attachAlso) || value.attachAlso.length === 0 || !value.attachAlso.every((path) => typeof path === 'string' && path !== ''))) {
         return false;
     }
     const { assistant, target, line, token } = value;

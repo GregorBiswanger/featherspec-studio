@@ -544,7 +544,7 @@ describe('0024 AC-003, AC-004: the send view of the next step', () => {
         const ready = await fixtureModel('fs110-ready-synthetic');
         const readyNext = await nextOf(ready, '.specs/backlog/0001-ready-feature.md', { offer: OFFER_A });
         expect(readyNext.rule).toBe('NS-7');
-        expect(readyNext.send).toEqual({ assistant: 'copilot', attach: { name: '0001-ready-feature.md', path: '.specs/backlog/0001-ready-feature.md' }, target: 'new', targets: ['new', 'current'] });
+        expect(readyNext.send).toEqual({ assistant: 'copilot', attach: { name: '0001-ready-feature.md', path: '.specs/backlog/0001-ready-feature.md' }, attachAlso: [{ name: '0001-ready-feature.plan.md', path: '.specs/backlog/0001-ready-feature.plan.md' }], target: 'new', targets: ['new', 'current'] });
         const active = await modelOf(FILES);
         const activeNext = await nextOf(active, '.specs/active/0001-a.md', { offer: OFFER_A });
         expect(activeNext.rule).toBe('NS-6');

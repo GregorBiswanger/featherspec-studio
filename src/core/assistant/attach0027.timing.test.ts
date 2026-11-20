@@ -11,6 +11,8 @@ import { createFakeOffer } from './testing/fakeOffer';
 
 const STEM = '0001-tip-splitter';
 const BACKLOG_SPEC = '.specs/backlog/0001-tip-splitter.md';
+const BACKLOG_PLAN = '.specs/backlog/0001-tip-splitter.plan.md';
+const SPLITTER_PLAN = '.specs/active/0001-tip-splitter.plan.md';
 const history = { available: true as const, label: 'Observed', entries: [] };
 const TWO = ['T-001', 'T-002'];
 
@@ -58,18 +60,18 @@ describe('0027 AC-012: the attachment state follows the version and the spec pat
     it('PD-091: a FeatherSpecVersion change switches nothing, the attachment is there in 1.10.0 and 1.11.0 alike', async () => {
         const { world, best } = await measure(await modelWith('1.10.0'), await modelWith('1.11.0'));
         expect(best).toBeLessThan(BUDGET_MS.uiFreshness);
-        expect(attachesOf(world, await modelWith('1.11.0'))).toEqual({ detail: SPLITTER_SPEC, overview: SPLITTER_SPEC });
-        expect(attachesOf(world, await modelWith('1.10.0'))).toEqual({ detail: SPLITTER_SPEC, overview: SPLITTER_SPEC });
+        expect(attachesOf(world, await modelWith('1.11.0'))).toEqual({ detail: SPLITTER_PLAN, overview: SPLITTER_PLAN });
+        expect(attachesOf(world, await modelWith('1.10.0'))).toEqual({ detail: SPLITTER_PLAN, overview: SPLITTER_PLAN });
     });
 
     it('the spec moves from backlog/ to active/: the new path is the one attached', async () => {
         const { world, best } = await measure(await modelWith('1.11.0', 'backlog'), await modelWith('1.11.0'));
         expect(best).toBeLessThan(BUDGET_MS.uiFreshness);
-        expect(attachesOf(world, await modelWith('1.11.0'))).toEqual({ detail: SPLITTER_SPEC, overview: SPLITTER_SPEC });
+        expect(attachesOf(world, await modelWith('1.11.0'))).toEqual({ detail: SPLITTER_PLAN, overview: SPLITTER_PLAN });
         const backlog = createBoardWorld(await modelWith('1.11.0', 'backlog'), undefined, undefined, createFakeOffer({ assistant: 'claudeCode' }));
         disposables.push(backlog.service);
         backlog.selection.set({ stem: STEM, path: BACKLOG_SPEC });
         await backlog.service.whenIdle();
-        expect(attachesOf(backlog, await modelWith('1.11.0', 'backlog')).detail).toBe(BACKLOG_SPEC);
+        expect(attachesOf(backlog, await modelWith('1.11.0', 'backlog')).detail).toBe(BACKLOG_PLAN);
     });
 });

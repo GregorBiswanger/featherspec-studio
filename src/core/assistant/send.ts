@@ -8,7 +8,7 @@ import type { StepUiPort } from '../ports/copyNextStep';
 import type { ClockPort, OutputPort } from '../ports/host';
 import type { AssistantId } from '../../shared/protocol/assistant';
 import { ASSISTANTS } from './assistants';
-import type { AttachmentCheck } from './attachment';
+import type { AttachmentCheck, AttachmentTarget } from './attachment';
 import type { HandOverPort } from './handOver';
 
 export const SEND_TIMEOUT_MS = 5000;
@@ -54,7 +54,7 @@ export function createSend(deps: SendDeps): Send {
         return result;
     }
 
-    async function run(request: SendRequest, isSettled: () => boolean): Promise<string | undefined> {
+    async function run(request: SendRequest, isSettled: () => boolean): Promise<string[] | undefined> {
         const spec = ASSISTANTS[request.assistant];
         const plain = spec.callsFor(request.target, request.line);
         let found: ReturnType<AssistantHostPort['extension']>;
@@ -90,16 +90,22 @@ export function createSend(deps: SendDeps): Send {
             throw new SendFailure(commandNotFoundCause(missing.command));
         }
         let calls = plain;
-        let unattached: string | undefined;
+        const unattached: string[] = [];
         if (request.attach !== undefined && attachesInTarget(request.assistant, request.target) && (deps.attaching?.(request.assistant) ?? spec.attachesSpec)) {
-            const target = deps.attachment === undefined ? undefined : await deps.attachment(request.attach);
-            if (isSettled()) {
-                return undefined;
+            const found: AttachmentTarget[] = [];
+            for (const path of [request.attach, ...(request.attachAlso ?? [])]) {
+                const target = deps.attachment === undefined ? undefined : await deps.attachment(path);
+                if (isSettled()) {
+                    return undefined;
+                }
+                if (target === undefined) {
+                    unattached.push(path);
+                } else {
+                    found.push(target);
+                }
             }
-            if (target === undefined) {
-                unattached = request.attach;
-            } else {
-                calls = spec.callsFor(request.target, request.line, target);
+            if (found.length > 0) {
+                calls = spec.callsFor(request.target, request.line, found);
             }
         }
         for (const call of calls) {
@@ -135,12 +141,12 @@ export function createSend(deps: SendDeps): Send {
                     }
                     settled = true;
                     timer.dispose();
-                    if (unattached === undefined) {
+                    if (unattached === undefined || unattached.length === 0) {
                         resolve({ outcome: 'opened', text: sendOpenedText(name) });
                         return;
                     }
-                    deps.output.appendBlock([attachMissingOutputText(name, unattached)]);
-                    resolve({ outcome: 'opened', text: sendOpenedWithoutText(name, unattached.slice(unattached.lastIndexOf('/') + 1)) });
+                    deps.output.appendBlock(unattached.map((path) => attachMissingOutputText(name, path)));
+                    resolve({ outcome: 'opened', text: sendOpenedWithoutText(name, unattached.map((path) => path.slice(path.lastIndexOf('/') + 1)).join(', ')) });
                 },
                 (reason: unknown) => fail(reason instanceof SendFailure ? reason.message : messageOf(reason)),
             );

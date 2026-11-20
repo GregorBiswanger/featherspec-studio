@@ -18,14 +18,15 @@ const DEMO = '.specs/active/0001-fixture-demo.md';
 const STEP_FIELDS: Field[] = ['nextStep', 'stepView', 'tips'];
 const SIGN_OLD = 'Report first: the sign of 0028 §6.2 below FeatherSpec 1.11.0 (AC-004, AC-009)';
 const READY = '.specs/backlog/0001-tip-splitter.md';
-const NS7 = 'NS-7 starts with Implement <ID> of <plan path>; without an open step with /sdd-plan (0028 §6.5, AC-016)';
+const NS7 = 'NS-7 starts with Implement <ID> of <plan path>; without an open step with /sdd-plan (0028 §6.5, AC-016); a Ready spec without a tick starts with /sdd-lifecycle <spec> In Progress, Implement follows in active/ (0033 §6.1, §6.2)';
+const NS7_ACTIVE = 'an active/ spec with no tick starts with Start implementing, one line (0033 §6.2, AC-002)';
 const GUARD = 'Report first: a step with a Verified line but no tick (0028 §6.6, AC-017)';
 const REASON = "the session reason of the current or new chat from 1.11.0 (0028 §6.4, AC-020)";
 const FINISHED_NOT_DONE = 'an active/ spec with a finished plan whose status is not Done is Review (0028 §6.1)';
 
 export const EXCEPTIONS: readonly Exception[] = [
-    { snapshot: 'fs110-ready-synthetic', key: '.specs/backlog/0001-ready-feature.md', fields: ['nextStep', 'stepView'], why: NS7 },
-    { snapshot: 'case-ac016-ready-with-step', key: READY, fields: ['nextStep', 'stepView'], why: NS7 },
+    { snapshot: 'fs110-ready-synthetic', key: '.specs/backlog/0001-ready-feature.md', fields: STEP_FIELDS, why: NS7 },
+    { snapshot: 'case-ac016-ready-with-step', key: READY, fields: STEP_FIELDS, why: NS7 },
     { snapshot: 'case-ac016-ready-without-step', key: READY, fields: STEP_FIELDS, why: NS7 },
     { snapshot: 'case-ac016-ready-all-struck', key: READY, fields: STEP_FIELDS, why: NS7 },
     { snapshot: 'fs-verified-no-tick', key: DEMO, fields: STEP_FIELDS, why: GUARD },
@@ -35,6 +36,7 @@ export const EXCEPTIONS: readonly Exception[] = [
     { snapshot: 'fs-version-missing', key: DEMO, fields: STEP_FIELDS, why: SIGN_OLD },
     { snapshot: 'fs-version-1100', key: DEMO, fields: STEP_FIELDS, why: SIGN_OLD },
     { snapshot: 'case-ac004-report-first', key: SPLITTER, fields: STEP_FIELDS, why: SIGN_OLD },
+    { snapshot: 'repo-f9cadb4', key: '.specs/active/0028-plan-state-aware-next-step.md', fields: STEP_FIELDS, why: NS7_ACTIVE },
     ...['ac001-plan-in-progress', 'ac001-plan-not-started', 'ac001-plan-no-status', 'ac001-in-progress-with-done-note'].map((name) => ({
         snapshot: `case-${name}`,
         key: SPLITTER,

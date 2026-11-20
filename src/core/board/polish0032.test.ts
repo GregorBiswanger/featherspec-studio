@@ -65,7 +65,7 @@ describe('0032 AC-004: Then and Or on every follow-up line', () => {
     });
 
     it('0032 AC-004 NS-6-open keeps Continue with on line 1 and Or: on line 2; NS-9 line 1 has no then-plan', async () => {
-        const open = nextStep(await modelOf({ [ACTIVE]: specText({ status: 'In Progress', plan: PLAN_LINK }), [PLAN]: STEPS('Reject money') }), ACTIVE) as { case: string; lines: Array<{ intent: string }> };
+        const open = nextStep(await modelOf({ [ACTIVE]: specText({ status: 'In Progress', plan: PLAN_LINK }), [PLAN]: STEPS('Reject money').replace('### T-001', '### T-000 — Done\n\n- [x] **Verified (T-000):** done\n\n### T-001') }), ACTIVE) as { case: string; lines: Array<{ intent: string }> };
         expect(open.case).toBe('NS-6-open');
         expect(open.lines.map((line) => line.intent)).toEqual(['Continue with T-001 Reject money', NS6_REPORT_INTENT]);
         const nine = nextStep(await modelOf({ [BACKLOG]: specText() }), BACKLOG) as { case: string; lines: Array<{ intent: string }> };

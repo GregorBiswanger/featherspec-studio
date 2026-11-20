@@ -15,7 +15,7 @@ const CASES = Object.keys(STEP_GUIDES) as StepCase[];
 
 describe('0024 AC-004 / 0026 AC-001: the default target is the new chat for every step', () => {
     it('there are thirteen step cases, and no offer gives no send view', () => {
-        expect(CASES).toHaveLength(13);
+        expect(CASES).toHaveLength(14);
         for (const stepCase of CASES) {
             expect(sendViewOf(undefined, stepCase), stepCase).toBeUndefined();
         }
@@ -56,6 +56,7 @@ describe('0024 AC-011: the assistant core needs neither trust nor a writer', () 
 const SHOW = parseStepTipSettings(true, {});
 const NO_HISTORY = { available: true, entries: [], label: '' } as never;
 const NO_ATTACH: StepCase[] = ['NS-2', 'NS-4'];
+const PLAN_OF: Record<string, string> = { 'NS-6-open': '.specs/active/0007-x.plan.md', 'NS-7': '.specs/active/0007-x.plan.md', 'NS-7-start': '.specs/backlog/0007-x.plan.md' };
 const attachingOffer = (): Offer => createFakeOffer({ assistant: 'copilot' }, { attaching: () => true }).read()!;
 const claudeShipped: Offer = { assistant: 'claudeCode' };
 const plainOffer: Offer = { assistant: 'copilot' };
@@ -73,13 +74,16 @@ describe('0027 AC-001: the Send view carries the spec exactly for the cases §6.
     for (const stepCase of CASES) {
         const { key } = CASE_WORLDS[stepCase];
         const name = key.slice(key.lastIndexOf('/') + 1);
+        const attachedOf = (stepCase: StepCase) => (stepCase === 'NS-6-open' || stepCase === 'NS-7' ? [PLAN_OF[stepCase]] : stepCase === 'NS-7-start' ? [key, PLAN_OF[stepCase]] : [key]);
         for (const [label, offer] of [['Claude Code', claudeShipped], ['Copilot (attaching)', attachingOffer()]] as const) {
             it(`0027 AC-001 ${stepCase} ${label}: the detail's Send view ${NO_ATTACH.includes(stepCase) ? 'carries no attachment' : 'carries ' + name}`, async () => {
                 const model = await caseModel(stepCase, '1.11.0');
                 const next = detailOf(model, key, offer);
                 expect(next.send?.assistant).toBe(offer.assistant);
-                expect(next.send?.attach).toEqual(NO_ATTACH.includes(stepCase) ? undefined : { name, path: key });
-                expect(next.send === undefined || NO_ATTACH.includes(stepCase) ? true : Object.keys(next.send).sort()).toEqual(NO_ATTACH.includes(stepCase) ? true : ['assistant', 'attach', 'target', 'targets']);
+                const files = attachedOf(stepCase).map((path) => ({ name: path.slice(path.lastIndexOf('/') + 1), path }));
+                expect(next.send?.attach).toEqual(NO_ATTACH.includes(stepCase) ? undefined : files[0]);
+                expect(next.send?.attachAlso).toEqual(files.length > 1 && !NO_ATTACH.includes(stepCase) ? files.slice(1) : undefined);
+                expect(next.send === undefined || NO_ATTACH.includes(stepCase) ? true : Object.keys(next.send).sort()).toEqual(NO_ATTACH.includes(stepCase) ? true : files.length > 1 ? ['assistant', 'attach', 'attachAlso', 'target', 'targets'] : ['assistant', 'attach', 'target', 'targets']);
             });
         }
     }
@@ -121,7 +125,8 @@ describe('0027 AC-019 (amended by PD-091): the shipped table gives Copilot the a
             const model = await caseModel(stepCase, version);
             const { key } = CASE_WORLDS[stepCase];
             const next = detailOf(model, key, plainOffer);
-            expect(next.send?.attach, stepCase).toEqual(NO_ATTACH.includes(stepCase) ? undefined : { name: key.slice(key.lastIndexOf('/') + 1), path: key });
+            const first = stepCase === 'NS-6-open' || stepCase === 'NS-7' ? PLAN_OF[stepCase]! : key;
+            expect(next.send?.attach, stepCase).toEqual(NO_ATTACH.includes(stepCase) ? undefined : { name: first.slice(first.lastIndexOf('/') + 1), path: first });
             expect(JSON.stringify(next.tips), stepCase).not.toContain('attaches the spec');
         }
     });
