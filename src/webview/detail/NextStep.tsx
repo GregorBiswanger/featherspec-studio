@@ -61,10 +61,13 @@ export function NextStep(props: {
                                 </code>{' '}
                                 {index === 0 ? (
                                     <StepAction send={send} look={quiet ? 'secondary' : 'primary'} line={line.text} sendResult={props.sendResult} onSend={props.onSend} copyResult={copyResult} onCopy={props.onCopy} />
-                                ) : (
+                                ) : line.send === undefined ? (
                                     <CopyButton look="secondary" line={line.text} copyResult={copyResult} onCopy={props.onCopy} />
+                                ) : (
+                                    <StepAction send={line.send} look="secondary" line={line.text} sendResult={props.sendResult} onSend={props.onSend} copyResult={copyResult} onCopy={props.onCopy} />
                                 )}
                                 {index === 0 && tips !== undefined ? <p className="step-coach">{tips.coach}</p> : null}
+                                {index > 0 && line.send !== undefined && line.coach !== undefined ? <p className="step-coach">{line.coach}</p> : null}
                                 {index === 0 && parallel !== undefined && props.place !== 'map' ? <ParallelHint stage={parallel.stage} /> : null}
                             </li>
                         ))}

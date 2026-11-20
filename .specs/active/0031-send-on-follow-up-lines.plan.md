@@ -3,7 +3,7 @@
 **Spec:** [0031-send-on-follow-up-lines.md](0031-send-on-follow-up-lines.md)
 **Status:** In progress
 **Last updated:** 2026-11-20
-**Current step:** T-002
+**Current step:** T-003
 
 ## Approach
 
@@ -76,8 +76,8 @@ No parallel stage: T-002 renders T-001's protocol fields; T-004's docs describe 
   `PlanMap` header; `webviewCss.test.ts` "0031 AC-013 …".
 - **Verify:** `npx vitest run src/webview src/adapters/node/webviewCss.test.ts` — red first (follow-up still Copy only, no
   gap rule), then green.
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-20 red first (9 of 12 new webview tests failed: follow-up still Copy only), then green: `npx vitest run src/webview src/adapters/node/webviewCss.test.ts` 919 passed; `npx tsc --noEmit` and `-p src/webview` clean.
+- **Notes:** A follow-up line without its own `send` keeps the plain `CopyButton` (no focus handoff), so its markup is the baseline's (AC-004). The gap rule is `.next-step-lines li + li { margin-top: 1.25em }`; one rule serves the detail and the Plan map header because both render `NextStep.tsx`. The follow-up Tip renders only where the line has a Send and a `coach`.
 
 ### T-003 — Preview at two widths and three themes
 
@@ -104,24 +104,24 @@ No parallel stage: T-002 renders T-001's protocol fields; T-004's docs describe 
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-002 | — | — | open |
+| AC-001 | T-002 | `webview/detail/NextStep.tsx` | `webview/followUp0031.test.tsx` | covered |
 | AC-002 | T-001 | `core/assistant/attachment.ts` (`FOLLOW_UP_CASE`), `core/board/detail.ts`, `shared/protocol/detail.ts` | `core/board/followUp0031.test.ts` | covered |
-| AC-003 | T-002 | — | — | open |
-| AC-004 | T-002 | — | — | open |
-| AC-005 | T-001, T-002 | — | — | open |
-| AC-006 | T-001, T-004 | — | — | open |
+| AC-003 | T-002 | `webview/detail/NextStep.tsx` | `webview/followUp0031.test.tsx` | covered |
+| AC-004 | T-002 | `webview/detail/NextStep.tsx` | `webview/followUp0031.test.tsx` | covered |
+| AC-005 | T-001, T-002 | `core/board/detail.ts`, `webview/detail/NextStep.tsx` | `core/board/followUp0031.test.ts`, `webview/followUp0031.test.tsx` | covered |
+| AC-006 | T-001, T-004 | `core/board/nextStep.ts` untouched | `core/board/followUp0031.test.ts`, `core/board/nextStepBaseline.test.ts` | covered |
 | AC-007 | T-004 | — | — | open |
 | AC-008 | T-003 | — | — | open |
 | AC-009 | T-004 (checklist) | — | — | open |
 | AC-010 | T-004 | — | — | open |
-| AC-011 | T-001, T-002 | — | — | open |
-| AC-012 | T-002 | — | — | open |
-| AC-013 | T-002 | — | — | open |
+| AC-011 | T-001, T-002 | `core/board/detail.ts`, `webview/detail/NextStep.tsx` | `core/board/followUp0031.test.ts`, `webview/followUp0031.test.tsx` | covered |
+| AC-012 | T-002 | `webview/detail/NextStep.tsx` | `webview/followUp0031.test.tsx` | covered |
+| AC-013 | T-002 | `webview/main.css` | `adapters/node/webviewCss.test.ts` | covered |
 
 ## Session handoff
 
-- **Done so far:** T-001
-- **Next action:** T-002
+- **Done so far:** T-001, T-002
+- **Next action:** T-003 (orchestrator, preview), then T-004
 - **Open decisions:** — (spec OP-001: no change to 0030's detection, flippable by Gregor)
 - **Baseline:** a383cc6
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

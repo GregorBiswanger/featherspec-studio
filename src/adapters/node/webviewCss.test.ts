@@ -1061,3 +1061,32 @@ describe('0027 AC-003: the attachment line', () => {
         expect(planted.filter((declaration) => /#[0-9a-fA-F]{3,8}\b/.test(declaration.value))).toHaveLength(1);
     });
 });
+
+describe('0031 AC-013: the gap between two prompt lines of a Next step', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const GAP = /^(\d+(?:\.\d+)?)em$/;
+
+    function gapOf(source: string): number | undefined {
+        const found = declarations(source).filter((declaration) => declaration.selectors.includes('.next-step-lines li + li') && declaration.property === 'margin-top');
+        const value = GAP.exec(found[found.length - 1]?.value ?? '');
+        return value === null ? undefined : Number(value[1]);
+    }
+
+    it('0031 AC-013 the line items are separated by 1em through 1.5em, for the detail and the Plan map header alike', () => {
+        const gap = gapOf(css);
+        expect(gap).toBeGreaterThanOrEqual(1);
+        expect(gap).toBeLessThanOrEqual(1.5);
+        expect(declarations(css).filter((declaration) => declaration.selectors.some((selector) => selector.includes('next-step-lines li') && selector !== '.next-step-lines li + li' && /margin/.test(declaration.property)))).toEqual([]);
+    });
+
+    it('0031 AC-013 the gap inside an item (button to Tip) stays 6px', () => {
+        const inside = declarations(css).filter((declaration) => declaration.selectors.includes('.next-step-lines li') && declaration.property === 'gap');
+        expect(inside.map((declaration) => declaration.value)).toEqual(['6px']);
+    });
+
+    it('negative control: a gap of 0.5em or 2em is found out of range, a missing rule is undefined', () => {
+        expect(gapOf('.next-step-lines li + li { margin-top: 0.5em; }')).toBe(0.5);
+        expect(gapOf('.next-step-lines li + li { margin-top: 2em; }')).toBe(2);
+        expect(gapOf('.next-step-lines li { margin-top: 1.25em; }')).toBeUndefined();
+    });
+});
