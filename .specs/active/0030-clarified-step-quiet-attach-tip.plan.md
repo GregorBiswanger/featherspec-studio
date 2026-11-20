@@ -1,9 +1,9 @@
 # Plan — Clarified Next Step, Quiet Attachment, Tip Sentence
 
 **Spec:** [0030-clarified-step-quiet-attach-tip.md](0030-clarified-step-quiet-attach-tip.md)
-**Status:** Not started
+**Status:** In progress
 **Last updated:** 2026-11-20
-**Current step:** T-001
+**Current step:** T-002
 
 ## Approach
 
@@ -64,7 +64,7 @@ No parallel stage: T-003 and T-004 both change the detail and Now-row render tes
   when it holds. Tests `core/board/clarified0030.test.ts`: "0030 AC-002 …" (time differs, size differs), "0030 AC-003 …"
   (no entry, equal entry: deep-equal to NS-9), "0030 AC-004 …" (other key, plan present, R-2 fails, malformed entry).
 - **Verify:** `npx vitest run src/core/board/` — red first (no `clarifiedOf`), then green, `nextStepBaseline.test.ts` included.
-- [ ] **Verified (T-001):** —
+- [x] **Verified (T-001):** 2026-11-20 `npx vitest run src/core/board/clarified0030.test.ts`: red (2 failed: AC-002 returned NS-9 with no rule change), green after `clarifiedOf` + NS-9/NS-10 branch (8 passed); `npx vitest run src/core/board/` 500 passed, `nextStepBaseline.test.ts` included; `npx tsc --noEmit` clean.
 - **Notes:** —
 
 ### T-002 — Hand-over memory, writers and live switch
@@ -153,5 +153,5 @@ No parallel stage: T-003 and T-004 both change the detail and Now-row render tes
 - **Done so far:** — (spec written, clarified and planned 2026-11-20)
 - **Next action:** T-001
 - **Open decisions:** — (OP-001 decided here: workspace state; OP-002 PD-092 `Tip:`; both flippable by Gregor)
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** 111fdb0
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

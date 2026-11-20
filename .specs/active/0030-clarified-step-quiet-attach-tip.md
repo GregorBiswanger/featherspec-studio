@@ -1,6 +1,6 @@
 # Clarified Next Step, Quiet Attachment, Tip Sentence
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0030-clarified-step-quiet-attach-tip.plan.md](0030-clarified-step-quiet-attach-tip.plan.md)
 
 Basis: Gregor's feedback 2026-11-20 (standing answer `orch/SPEC-0030.md`, treated as typed by him; screenshot of backlog

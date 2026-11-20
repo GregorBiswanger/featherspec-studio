@@ -27,6 +27,7 @@ import type { ParsedPlan } from '../specs/parsePlan';
 import type { PlanStep } from '../specs/planSteps';
 import type { SpecEntry } from '../specs/readProject';
 import { levelsOnImplement } from '../specs/version';
+import { clarifiedOf } from './clarified';
 import { plainShort } from './shortTitle';
 
 export const NEXT_STEP_RULE_IDS = ['NS-1', 'NS-2', 'NS-11', 'NS-3', 'NS-4', 'NS-5', 'NS-6', 'NS-7', 'NS-8', 'NS-9', 'NS-10'] as const;
@@ -128,6 +129,9 @@ export function nextStep(model: ShellModel, key: string): NextStep | undefined {
         case 'Backlog': {
             if (entry.readiness.checks.some((check) => check.id === 'R-2' && check.result === 'fail')) {
                 return lines('NS-8', 'NS-8', { intent: NS8_INTENT, text: `/sdd-specify ${key}` });
+            }
+            if (entry.plan === undefined && clarifiedOf(model, key)) {
+                return lines('NS-9', 'NS-10', { intent: WRITE_PLAN_INTENT, text: `/sdd-plan ${key}` });
             }
             if (entry.plan === undefined) {
                 return lines('NS-9', 'NS-9', { intent: NS9_INTENT, text: `/sdd-clarify ${key}` }, { intent: NS9_THEN_INTENT, text: `/sdd-plan ${key}` });
