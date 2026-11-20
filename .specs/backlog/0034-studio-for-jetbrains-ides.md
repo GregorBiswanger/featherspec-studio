@@ -1,7 +1,7 @@
 # FeatherSpec Studio for JetBrains IDEs
 
 **Status:** Draft
-**Plan:** _none yet_
+**Plan:** [0034-studio-for-jetbrains-ides.plan.md](0034-studio-for-jetbrains-ides.plan.md)
 
 Basis: the agreed analysis *FeatherSpec Studio für JetBrains IDEs – Analyse und Schritt-für-Schritt-Plan* (2026-11-20,
 owner's project notes, not in the repository) at `3bc615c` (release 0.1.0); Gregor's decisions E1 (monorepo in this
@@ -46,11 +46,12 @@ discovered as in 0001; an IDE project can hold several, chosen as with 0001's *S
 - The theme bridge (§6.6): the 59 `--vscode-*` variables and the 3 body classes from the IDE look and feel, Light, Darcula,
   High Contrast and Islands, live switch.
 - The fallback when the IDE cannot show an embedded browser (§10, AC-030).
-- Send to assistant with Copy prompt as the default and a handover only where proven (§6.7).
+- Send to assistant with Copy prompt as the default (§6.7); an offered handover is spec 0035 (OP-024).
 - The parity matrix `docs/jetbrains/parity.md` (§6.2) and the conformance proof (§6.4).
 - The host vocabulary (§6.8), and the shared TypeScript changes the host needs: a host-neutral composition, an embedded
   entry bundle, the vocabulary — each under the VS Code protection of §6.9.
-- Packaging, signing, Plugin Verifier, a separate release line (§6.10), README and release checklist sections.
+- Packaging, Plugin Verifier, README and release checklist sections (§6.10); signing and the separate release line are
+  spec 0036 (OP-024).
 
 ### Out of scope
 
@@ -175,8 +176,8 @@ Default in JetBrains: the offer is *none* (0024 AC-002), so every step action is
 S-3 tests three handovers — Claude Code (its JetBrains plugin and CLI in the terminal), GitHub Copilot's plugin, JetBrains
 AI Assistant — and records per handover: *prefills without sending*, *only with sending*, *not possible*. Only a handover
 that puts the prompt into the assistant's input without sending, through a documented or stable entry point, is offered;
-then 0024, 0026, 0027 and 0033 apply to it, with the attachment only where the handover attaches files. A handover proven
-by gate G1 joins this spec; one proven later gets its own spec (OP-010). While none is offered, the Assistant setting is
+then 0024, 0026, 0027 and 0033 apply to it, with the attachment only where the handover attaches files. Every handover,
+proven by gate G1 or later, is implemented by spec 0035 (OP-010, OP-024); this spec ships none. While none is offered, the Assistant setting is
 hidden and every step action is Copy prompt; once one is, the setting lists only offered assistants.
 
 ### 6.8 Host vocabulary
@@ -205,11 +206,12 @@ is a *deliberately different* row.
 - since-build: the build of IntelliJ Platform 2025.3.1; no until-build; depends only on `com.intellij.modules.platform` and
   `com.intellij.modules.jcef`. Local IDE only.
 - Marketplace name *FeatherSpec Studio*, plugin ID `com.gregorbiswanger.featherspec.studio`, vendor Gregor Biswanger.
-- Signed ZIP; Plugin Verifier over Rider, WebStorm, IntelliJ IDEA and PyCharm at the since-build release and the latest
+- ZIP (signed in spec 0036, OP-024); Plugin Verifier over Rider, WebStorm, IntelliJ IDEA and PyCharm at the since-build release and the latest
   stable release of each, plus the verifier's recommended set (OP-021); plugin structure verified.
 - Own release line from 0.1.0: tag `jetbrains-v<version>` (first `jetbrains-v0.1.0`), own workflow started by hand with
   `confirm=publish`; the VS Code line is never triggered by it. Gregor sets up the Marketplace vendor, the signing
-  certificate and the CI secrets and makes the first upload by hand (OP-014).
+  certificate and the CI secrets and makes the first upload by hand (OP-014). This bullet is implemented by spec 0036
+  (OP-024).
 - Release docs: a JetBrains section in `docs/release-checklist.md` (this spec); the wiki note at release (OP-015).
 
 ### 6.11 Where builds and tests run
@@ -383,17 +385,17 @@ WebStorm by hand in AC-040 and AC-041.
   shall report no plugin error.
 - **AC-031** While no handover of §6.7 is proven, every step action in the panel shall be Copy prompt, the settings page
   shall not show the Assistant setting, and no text shall name Send.
-- **AC-032** Where a handover is offered, its Send shall put the prompt into that assistant's input and never submit it;
+- ~~**AC-032** Where a handover is offered, its Send shall put the prompt into that assistant's input and never submit it;
   every failed check, call or 5 s timeout shall fall back to Copy prompt with one warning and one log line without the
-  prompt (0024 AC-005, AC-006, PD-068), and attach only as §6.7 allows.
+  prompt (0024 AC-005, AC-006, PD-068), and attach only as §6.7 allows.~~ — moved to spec 0035 on 2026-11-20 (OP-024).
 - **AC-033** `plugin.xml` shall carry the ID, name and vendor of §6.10, since-build of 2025.3.1, no until-build, and depend on
   exactly `com.intellij.modules.platform` and `com.intellij.modules.jcef`.
 - **AC-034** The Plugin Verifier shall report no compatibility problem for Rider, WebStorm, IntelliJ IDEA and PyCharm at
   since-build and at the latest stable release, nor for its recommended set; the structure check shall report no error.
-- **AC-035** The release ZIP shall be signed and pass signature verification; it shall be at most 60 MB; no key or token shall
-  be in the repository.
-- **AC-036** The JetBrains release workflow shall run only when started by hand with `confirm=publish`, tag
-  `jetbrains-v<version>`, and neither run nor change `publish.yml`.
+- **AC-035** The plugin ZIP shall be at most 60 MB; no key or token shall be in the repository. (Changed 2026-11-20,
+  OP-024: "signed and pass signature verification" moved to spec 0036.)
+- ~~**AC-036** The JetBrains release workflow shall run only when started by hand with `confirm=publish`, tag
+  `jetbrains-v<version>`, and neither run nor change `publish.yml`.~~ — moved to spec 0036 on 2026-11-20 (OP-024).
 
 **Protection of the VS Code extension**
 
@@ -482,10 +484,18 @@ None open. Each decision below stands where its ID is cited.
 - OP-021 Verifier at since-build and the latest stable release of each IDE; AC-034's wording wins (§6.10) (proxy, 2026-11-20 — Gregor confirms or overrides).
 - OP-022 AC-040/AC-041's pass rule: a difference needs a *deliberately different* or *n-a* row, then a re-run (proxy, 2026-11-20 — Gregor confirms or overrides).
 - OP-023 No IDE licence secret in v0.1; Starter/Driver smoke in IntelliJ IDEA's free tier (§4, §11) (proxy, 2026-11-20 — Gregor confirms or overrides).
+- OP-024 `/sdd-plan` 2026-11-20 applied OP-001's split: the plan exceeded about 30 steps, so the Send handover (AC-032, the
+  offer side of §6.7) moves to **0035 — Send to assistant in JetBrains IDEs**, and signing, the release workflow, the
+  listing and the first upload (AC-035's signing part, AC-036, §6.10's release-line bullet) move to **0036 — JetBrains
+  Marketplace release**; both are to be specified with `/sdd-specify`. S-3 is still measured here and recorded in ADR-004.
+  The plan still has 37 small steps; a further split at gate G3 is offered to Gregor in the plan (proxy, 2026-11-20 —
+  Gregor confirms or overrides).
 
 ## 15. Definition of Ready, Done and next steps
 
-Ready: clarified 2026-11-20 (OP-017–OP-023); no open point; OP-019–OP-023 are proxies Gregor confirms or overrides. Done
-per the DoD of `AGENTS.md`: AC-001–AC-039 and AC-043 proven, AC-040–AC-042 checked by Gregor, the parity matrix fully
-categorised, VS Code CI and `.vsix` unchanged. Next: `/sdd-plan` with the spikes as the first stage; split per OP-001 if
-the plan exceeds about 30 steps.
+Ready: clarified 2026-11-20 (OP-017–OP-023); no open point; OP-019–OP-024 are proxies Gregor confirms or overrides. Done
+per the DoD of `AGENTS.md`: AC-001–AC-031, AC-033–AC-035, AC-037–AC-039 and AC-043 proven (AC-032 and AC-036 moved,
+OP-024), AC-040–AC-042 checked by Gregor, the parity matrix fully categorised, VS Code CI and `.vsix` unchanged. Next:
+Gregor reads the plan [0034-studio-for-jetbrains-ides.plan.md](0034-studio-for-jetbrains-ides.plan.md) (37 steps,
+spikes first, split per OP-024); then `/sdd-lifecycle` to `active/`. Follow-up specs: 0035 *Send to assistant in
+JetBrains IDEs*, 0036 *JetBrains Marketplace release*.
