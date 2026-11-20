@@ -104,7 +104,7 @@ describe('0031 AC-011: the follow-up Tip is the Tip of its own case', () => {
 
     it('0031 AC-011 NS-9\'s /sdd-plan line reads NS-10\'s sentence, and its first line keeps NS-9\'s', async () => {
         const { next } = await detailOf(CASES[0]!.files, BACKLOG, { offer: OFFER_B, tips: SHOW });
-        expect(next.lines[1]!.coach).toBe('Tip: Use any chat with a strong model, and allow web search.');
+        expect(next.lines[1]!.coach).toBe('Tip: Use a new chat with a strong model, and allow web search.');
         expect(next.tips?.coach).toBe('Tip: Use a new chat with a strong model.');
     });
 

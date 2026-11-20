@@ -1,5 +1,6 @@
 import {
     continueIntent,
+    thenContinueIntent,
     INTEGRATE_INTENT,
     NEXT_STEP_DONE_TEXT,
     NEXT_STEP_UNREADABLE_TEXT,
@@ -108,15 +109,16 @@ export function nextStep(model: ShellModel, key: string): NextStep | undefined {
             }
             const continueLine = { intent: continueIntent(open.id, plainShort(open.title)), text: `Implement ${open.id} of ${entry.plan}` };
             const plan = model.project.plans.find((candidate) => candidate.key === entry.plan)?.parsed;
+            const thenLine = { intent: thenContinueIntent(open.id, plainShort(open.title)), text: continueLine.text };
             const untouched = verifiedWithoutTick(plan);
             if (untouched !== undefined) {
                 return {
-                    ...lines('NS-6', 'NS-6-report', { intent: NS6_REPORT_FIRST_INTENT, text: `/sdd-plan ${key}` }, continueLine),
+                    ...lines('NS-6', 'NS-6-report', { intent: NS6_REPORT_FIRST_INTENT, text: `/sdd-plan ${key}` }, thenLine),
                     reason: verifiedWithoutTickReason(untouched.id),
                 } as NextStep;
             }
             if (reportSign(plan, open) && !levelsOnImplement(model.project.version)) {
-                return lines('NS-6', 'NS-6-report', { intent: NS6_REPORT_FIRST_INTENT, text: `/sdd-plan ${key}` }, continueLine);
+                return lines('NS-6', 'NS-6-report', { intent: NS6_REPORT_FIRST_INTENT, text: `/sdd-plan ${key}` }, thenLine);
             }
             return lines('NS-6', 'NS-6-open', continueLine, { intent: NS6_REPORT_INTENT, text: `/sdd-plan ${key}` });
         }

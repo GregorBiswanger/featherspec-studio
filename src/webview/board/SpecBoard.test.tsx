@@ -14,7 +14,7 @@ const STEP: StepView = { intent: 'Build', short: 'Start T-003', line: 'Start T-0
 const TWO: StepView = {
     intent: 'Continue', short: 'Implement T-003',
     line: 'Implement T-003 of .specs/active/0008-y.plan.md',
-    lines: [{ text: 'Implement T-003 of .specs/active/0008-y.plan.md', intent: 'Continue with T-003 Reject money values' }, { text: '/sdd-plan .specs/active/0008-y.md', intent: 'Not sure where it stands? Let the agent report first' }],
+    lines: [{ text: 'Implement T-003 of .specs/active/0008-y.plan.md', intent: 'Continue with T-003 Reject money values' }, { text: '/sdd-plan .specs/active/0008-y.md', intent: 'Or: not sure where it stands? Let the agent report first' }],
 };
 
 let posted: Envelope[];
@@ -456,7 +456,7 @@ describe('0017 AC-004: the next step on a card', () => {
         expect(line.querySelector('.step-text')?.textContent).toBe('Next step: Continue · Implement T-003');
         expect(line.querySelector('code.step-short')).not.toBeNull();
         expect(line.querySelector('.step-intent')?.tagName).toBe('SPAN');
-        expect(line.querySelector('.step-text')?.getAttribute('title')).toBe('Continue with T-003 Reject money values\nImplement T-003 of .specs/active/0008-y.plan.md\nNot sure where it stands? Let the agent report first\n/sdd-plan .specs/active/0008-y.md');
+        expect(line.querySelector('.step-text')?.getAttribute('title')).toBe('Continue with T-003 Reject money values\nImplement T-003 of .specs/active/0008-y.plan.md\nOr: not sure where it stands? Let the agent report first\n/sdd-plan .specs/active/0008-y.md');
         const copy = line.querySelector('button')!;
         expect(copy.className).toContain('copy-icon');
         expect(copy.textContent).toBe('');

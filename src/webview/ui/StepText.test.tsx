@@ -14,7 +14,7 @@ afterEach(() => {
 const STEPS: StepView[] = [
     { intent: STEP_GUIDES['NS-5'].short, short: '/sdd-compile', line: '/sdd-compile .specs/active/0001-a.md', lines: [{ text: '/sdd-compile .specs/active/0001-a.md', intent: 'Have the result verified' }] },
     { intent: STEP_GUIDES['NS-6-open'].short, short: 'Implement T-003', line: 'Implement T-003 of .specs/active/0001-a.plan.md', lines: [{ text: 'Implement T-003 of .specs/active/0001-a.plan.md', intent: 'Continue with T-003 Reject money values' }] },
-    { intent: STEP_GUIDES['NS-9'].short, short: '/sdd-clarify', line: '/sdd-clarify .specs/backlog/0002-b.md', lines: [{ text: '/sdd-clarify .specs/backlog/0002-b.md', intent: 'Have the spec challenged, then plan it' }] },
+    { intent: STEP_GUIDES['NS-9'].short, short: '/sdd-clarify', line: '/sdd-clarify .specs/backlog/0002-b.md', lines: [{ text: '/sdd-clarify .specs/backlog/0002-b.md', intent: 'Have the spec challenged' }] },
 ];
 
 describe('0021 AC-006, guideline 10: the step short form comes from the text module', () => {

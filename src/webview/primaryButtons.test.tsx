@@ -26,7 +26,7 @@ afterEach(() => {
 });
 
 const SELECTED: SelectedSpec = { stem: '0001-r', number: '0001' };
-const NS6 = { rule: 'NS-6', lines: [{ text: 'Implement T-003 of .specs/active/0001-r.plan.md', intent: 'Continue with T-003 Reject money values' }, { text: '/sdd-plan .specs/active/0001-r.md', intent: 'Not sure where it stands? Let the agent report first' }] };
+const NS6 = { rule: 'NS-6', lines: [{ text: 'Implement T-003 of .specs/active/0001-r.plan.md', intent: 'Continue with T-003 Reject money values' }, { text: '/sdd-plan .specs/active/0001-r.md', intent: 'Or: not sure where it stands? Let the agent report first' }] };
 
 function step(n: string): OverviewRow['step'] {
     const line = `/sdd-plan .specs/active/${n}-r.md`;

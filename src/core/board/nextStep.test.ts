@@ -243,7 +243,7 @@ describe('0021 AC-001: every next step line carries its intent, one fixture per 
             { [ACTIVE]: specText({ status: 'In Progress', plan: ACTIVE_LINK }), [ACTIVE_PLAN]: titled([['T-001', 'Done one', '[x]'], ['T-002', 'Reject money values', '[ ]']]) },
             ACTIVE,
             'NS-6-open',
-            [['Continue with T-002 Reject money values', `Implement T-002 of ${ACTIVE_PLAN}`], ['Not sure where it stands? Let the agent report first', `/sdd-plan ${ACTIVE}`]],
+            [['Continue with T-002 Reject money values', `Implement T-002 of ${ACTIVE_PLAN}`], ['Or: not sure where it stands? Let the agent report first', `/sdd-plan ${ACTIVE}`]],
         ],
         [
             'NS-6 resume',
@@ -267,7 +267,7 @@ describe('0021 AC-001: every next step line carries its intent, one fixture per 
             { [BACKLOG]: specText() },
             BACKLOG,
             'NS-9',
-            [['Have the spec challenged, then plan it', `/sdd-clarify ${BACKLOG}`], ['Then: write the plan', `/sdd-plan ${BACKLOG}`]],
+            [['Have the spec challenged', `/sdd-clarify ${BACKLOG}`], ['Then: write the plan', `/sdd-plan ${BACKLOG}`]],
         ],
         ['NS-10', { [BACKLOG]: specText({ plan: LINK }), [BACKLOG_PLAN]: planText({ status: 'In Progress' }) }, BACKLOG, 'NS-10', [['Write the plan', `/sdd-plan ${BACKLOG}`]]],
     ];
@@ -288,11 +288,11 @@ describe('0021 AC-001: every next step line carries its intent, one fixture per 
             'NS-6-report': { short: 'Report', session: 'any', model: 'fast', effect: 'The agent checks the plan against the code, brings the ticks and the handoff level and reports where the work stands; it builds nothing yet.', then: 'When the plan and the ticks agree, the Studio shows the step to continue with.' },
             'NS-6-resume': { short: 'Report', session: 'any', model: 'fast', effect: 'The agent checks the plan against the code and reports where it stands.', then: 'The spec then shows its next step.' },
             'NS-6-returned': { short: 'Integrate', session: 'sameOrNew', model: 'fast', effect: 'The agent checks each returned step against its files, runs its check and the quality gates, then ticks the steps and removes the return notes.', then: 'Paste it once every worker you started is back.' },
-            'NS-6-plan': { short: 'Write plan', session: 'any', model: 'strongWebSearch', effect: 'The agent researches and writes the plan; for a reactivated spec, a fresh plan for the change.', then: 'You read the plan before anything is built.' },
+            'NS-6-plan': { short: 'Write plan', session: 'new', model: 'strongWebSearch', effect: 'The agent researches and writes the plan; for a reactivated spec, a fresh plan for the change.', then: 'You read the plan before anything is built.' },
             'NS-7': { short: 'Start', session: 'any', model: 'fast', effect: 'The agent moves the spec to active, builds one step, runs its check, ticks it and stops.', then: 'When it stops, the Studio shows the next step; a working agreement such as a test review may stop it earlier.' },
             'NS-8': { short: 'Add criteria', session: 'any', model: 'strong', effect: 'The agent goes through the spec with you and adds testable acceptance criteria.', then: 'Then the spec is challenged and planned.' },
             'NS-9': { short: 'Challenge', session: 'new', model: 'strong', effect: 'A fresh reader looks for gaps, contradictions and untestable criteria.', then: 'Then write the plan with the second prompt, in any chat.' },
-            'NS-10': { short: 'Write plan', session: 'any', model: 'strongWebSearch', effect: 'The agent researches and writes the plan as small, verifiable steps.', then: 'You read the plan before anything is built.' },
+            'NS-10': { short: 'Write plan', session: 'new', model: 'strongWebSearch', effect: 'The agent researches and writes the plan as small, verifiable steps.', then: 'You read the plan before anything is built.' },
         });
     });
 
@@ -342,7 +342,7 @@ describe('0021 AC-003: an Active spec leads with the single-step prompt of its o
             case: 'NS-6-open',
             lines: [
                 { intent: 'Continue with T-003 Reject money values', text: 'Implement T-003 of .specs/active/0001-tip-splitter.plan.md' },
-                { intent: 'Not sure where it stands? Let the agent report first', text: `/sdd-plan ${key}` },
+                { intent: 'Or: not sure where it stands? Let the agent report first', text: `/sdd-plan ${key}` },
             ],
         });
     });
@@ -524,7 +524,7 @@ describe('0028 AC-004: below 1.11.0 the sign puts the report first', () => {
             case: 'NS-6-report',
             lines: [
                 { intent: 'Let the agent report first — the plan and the ticks may differ', text: `/sdd-plan ${KEY}` },
-                { intent: 'Continue with T-003 Reject money values', text: `Implement T-003 of ${PLAN}` },
+                { intent: 'Then: continue with T-003 Reject money values', text: `Implement T-003 of ${PLAN}` },
             ],
         });
     });
@@ -611,7 +611,7 @@ describe('0028 AC-017: a step with a Verified line but no tick puts the report f
                 reason: 'T-003 has a Verified line but no tick.',
                 lines: [
                     { intent: 'Let the agent report first — the plan and the ticks may differ', text: `/sdd-plan ${KEY}` },
-                    { intent: 'Continue with T-003 Reject money values', text: `Implement T-003 of ${PLAN}` },
+                    { intent: 'Then: continue with T-003 Reject money values', text: `Implement T-003 of ${PLAN}` },
                 ],
             });
             expect(stepShortForm(stepView(m, KEY)!)).toBe('Report · /sdd-plan');

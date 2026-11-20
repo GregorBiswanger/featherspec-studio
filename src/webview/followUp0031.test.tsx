@@ -27,7 +27,7 @@ const ATTACH = { name: '0002-x.md', path: KEY };
 const FIRST: SendView = { assistant: 'copilot', target: 'new', targets: ['new', 'current'], attach: ATTACH };
 const FOLLOW: SendView = { assistant: 'copilot', target: 'new', targets: ['new', 'current'], attach: ATTACH };
 const FOLLOW_CLAUDE: SendView = { assistant: 'claudeCode', target: 'new', targets: ['new'], attach: ATTACH };
-const COACH = 'Tip: Use any chat with a strong model, and allow web search.';
+const COACH = 'Tip: Use a new chat with a strong model, and allow web search.';
 const FIRST_COACH = 'Tip: Use a new chat with a strong model.';
 const noop = (): void => undefined;
 
@@ -35,7 +35,7 @@ function twoLines(options: { first?: SendView; follow?: SendView; coach?: string
     return {
         rule: 'NS-9',
         lines: [
-            { text: CLARIFY, intent: 'Have the spec challenged, then plan it' },
+            { text: CLARIFY, intent: 'Have the spec challenged' },
             { text: PLAN, intent: 'Then: write the plan', ...(options.follow === undefined ? {} : { send: options.follow }), ...(options.coach === undefined ? {} : { coach: options.coach }) },
         ],
         ...(options.first === undefined ? {} : { send: options.first, tips: { coach: FIRST_COACH, about: ['a', 'b', 'c', 'd'] } }),

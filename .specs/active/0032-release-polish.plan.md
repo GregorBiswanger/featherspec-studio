@@ -1,9 +1,9 @@
 # Plan — Release Polish
 
 **Spec:** [0032-release-polish.md](0032-release-polish.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-20
-**Current step:** T-001
+**Current step:** T-002
 
 ## Approach
 
@@ -53,8 +53,8 @@ No parallel stage: T-001…T-003 share `nextStepTexts.ts` and the detail protoco
   new `core/board/polish0032.test.ts` "0032 AC-002 …", "AC-003 …" (NS-10, NS-6-plan, NS-9 follow-up; Mode B unchanged),
   "AC-004 …" (incl. untitled).
 - **Verify:** `npx vitest run src/core/board src/shared/protocol` — red first, then green.
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** `npx vitest run src/core/board src/shared/protocol` red first (37 failing after the text change), then green 698 passed; new `core/board/polish0032.test.ts` 6 tests. 2026-11-20
+- **Notes:** Baseline snapshots stay frozen; `readBaseline` got a 0032 translation (`translated0032`) beside 0026's and 0030's. Literal tests of `Not sure where…`, `then plan it`, `one,`, `Use any chat` (NS-10, NS-6-plan only) moved.
 
 ### T-002 — Partial-return intent and current-chat attachment
 

@@ -97,7 +97,7 @@ export const STEP_GUIDES: Record<StepCase, StepGuide> = {
     },
     'NS-6-plan': {
         short: 'Write plan',
-        session: 'any',
+        session: 'new',
         model: 'strongWebSearch',
         effect: 'The agent researches and writes the plan; for a reactivated spec, a fresh plan for the change.',
         then: PLAN_THEN,
@@ -117,7 +117,7 @@ export const STEP_GUIDES: Record<StepCase, StepGuide> = {
         effect: 'A fresh reader looks for gaps, contradictions and untestable criteria.',
         then: 'Then write the plan with the second prompt, in any chat.',
     },
-    'NS-10': { short: 'Write plan', session: 'any', model: 'strongWebSearch', effect: 'The agent researches and writes the plan as small, verifiable steps.', then: PLAN_THEN },
+    'NS-10': { short: 'Write plan', session: 'new', model: 'strongWebSearch', effect: 'The agent researches and writes the plan as small, verifiable steps.', then: PLAN_THEN },
 };
 
 export const NS2_INTENT = 'Put folder and status back in line';
@@ -128,7 +128,7 @@ export const NS5_INTENT = 'Have the result verified';
 
 export const NS5_THEN_INTENT = 'Then, after a READY verdict: close the spec';
 
-export const NS6_REPORT_INTENT = 'Not sure where it stands? Let the agent report first';
+export const NS6_REPORT_INTENT = 'Or: not sure where it stands? Let the agent report first';
 
 export const NS6_REPORT_FIRST_INTENT = 'Let the agent report first — the plan and the ticks may differ';
 
@@ -140,7 +140,7 @@ export const WRITE_PLAN_INTENT = 'Write the plan';
 
 export const NS8_INTENT = 'Add acceptance criteria';
 
-export const NS9_INTENT = 'Have the spec challenged, then plan it';
+export const NS9_INTENT = 'Have the spec challenged';
 
 export const NS9_THEN_INTENT = 'Then: write the plan';
 
@@ -152,6 +152,10 @@ export function continueIntent(id: string, title: string): string {
     return withTitle('Continue with ', id, title);
 }
 
+export function thenContinueIntent(id: string, title: string): string {
+    return withTitle('Then: continue with ', id, title);
+}
+
 export function startIntent(id: string, title: string): string {
     return withTitle('Start implementing: ', id, title);
 }
@@ -160,7 +164,7 @@ export const COACH_TIP_PREFIX = 'Tip:';
 
 export const SESSION_PHRASES: Record<SessionKey, string> = {
     new: 'a new chat',
-    sameOrNew: 'the current chat or a new one,',
+    sameOrNew: 'the current chat or a new one',
     any: 'any chat',
 };
 

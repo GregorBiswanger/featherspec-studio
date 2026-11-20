@@ -83,7 +83,7 @@ describe('0017 AC-014: text, tooltip and accessible label of the current spec', 
         expect(lines.slice(1, 5)).toEqual([
             escape('Continue with T-001 A'),
             escape('Implement T-001 of .specs/active/0012-thing.plan.md'),
-            escape('Not sure where it stands? Let the agent report first'),
+            escape('Or: not sure where it stands? Let the agent report first'),
             escape('/sdd-plan .specs/active/0012-thing.md'),
         ]);
     });
