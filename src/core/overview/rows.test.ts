@@ -195,14 +195,14 @@ describe('0024 AC-003: only the first Now row with a step carries the send view'
             ],
             OFFER_A,
         );
-        expect(now[0]?.send).toEqual({ assistant: 'copilot', target: 'new', targets: ['new', 'current'] });
+        expect(now[0]?.send).toEqual({ assistant: 'copilot', attach: { name: '0001-thing.md', path: '.specs/active/0001-thing.md' }, target: 'new', targets: ['new', 'current'] });
         expect('send' in now[1]!).toBe(false);
         expect(upNext.rows.every((row) => !('send' in row))).toBe(true);
     });
 
     it('Claude Code gives a new chat only; the Active case of Copilot is the current chat', async () => {
         const claude = await rowsWith([{ number: '0001', kind: 'Review' }], { assistant: 'claudeCode' });
-        expect(claude.now[0]?.send).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
+        expect(claude.now[0]?.send).toEqual({ assistant: 'claudeCode', attach: { name: '0001-thing.md', path: '.specs/active/0001-thing.md' }, target: 'new', targets: ['new'] });
         const active = await rowsWith([{ number: '0001', kind: 'Active' }], OFFER_A);
         expect(active.now[0]?.send).toMatchObject({ assistant: 'copilot', target: 'new' });
     });
@@ -234,7 +234,7 @@ describe('0024 AC-003: only the first Now row with a step carries the send view'
         expect(hidden.now[0]?.send).toBeDefined();
         expect('tips' in hidden.now[0]!).toBe(false);
         const shown = await rowsWith([{ number: '0001', kind: 'Review' }], { assistant: 'claudeCode' }, SHOW);
-        expect(shown.now[0]?.tips?.about[2]).toBe('Send to Claude Code puts the prompt into its chat and sends nothing: choose the model there, check the prompt, then send it. With FeatherSpec 1.11.0 or later, Send also attaches the spec; update with /sdd-featherspec-update.');
+        expect(shown.now[0]?.tips?.about[2]).toBe('Send to Claude Code puts the prompt into its chat and sends nothing: choose the model there, check the prompt, then send it.');
     });
 });
 

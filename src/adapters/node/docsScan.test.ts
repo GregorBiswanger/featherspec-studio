@@ -1129,13 +1129,13 @@ describe('product docs after 0027 (AC-015)', () => {
         expect(firstRelease(await read('CHANGELOG.md'))).toContain('attaches the spec');
     });
 
-    it('0027 AC-015: the release checklist carries AC-016 to AC-018 and AC-020, one line per assistant for AC-017 with V-3\'s versions, the attach version line and the C-2 line, before Go', async () => {
+    it('0027 AC-015: the release checklist carries AC-016 to AC-018 and AC-020, one line per assistant for AC-017 with V-3\'s versions, and the C-2 line (not needed, PD-091), before Go', async () => {
         const text = await read('docs/release-checklist.md');
         const start = text.indexOf('\n## Attach the spec when sending (0027)\n');
         expect(start).toBeGreaterThan(-1);
         expect(start).toBeLessThan(text.indexOf('\n## Go'));
         const section = text.slice(start, text.indexOf('\n## ', start + 1));
-        for (const mark of ['**AC-016**', '**AC-017**', '**AC-017, GitHub Copilot**', '**AC-018**', '**AC-020**', 'VS Code 1.147.0', 'GitHub Copilot Chat 0.75.0', 'Claude Code 2.1.327', '`ATTACH_FROM_VERSION`', '`NEWEST_KNOWN`', '`attachesSpec`']) {
+        for (const mark of ['**AC-016**', '**AC-017**', '**AC-017, GitHub Copilot**', '**AC-018**', '**AC-020**', 'VS Code 1.147.0', 'GitHub Copilot Chat 0.75.0', 'Claude Code 2.1.327', '**C-2, not needed**', '`attachesSpec`']) {
             expect(section, mark).toContain(mark);
         }
     });

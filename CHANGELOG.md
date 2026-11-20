@@ -15,10 +15,11 @@ First release.
   `Welcome to FeatherSpec` with the feather mark and offer `/sdd-setup` with Send or Copy prompt; the Specs tree, Up next
   and Copy Next Step name `/sdd-setup` too. Once setup has run, `No specs yet. Start with /sdd-specify` comes back
   without a reload.
-- Send attaches the spec: with FeatherSpec 1.11.0 or later, Send puts the spec in the chat as a file, Claude Code through
-  an `@` mention, and a line under the button names the file (`0002-x.md attached when sent`). Every step that reads the spec
-  attaches it; `/sdd-lifecycle` and `/sdd-overview` do not. Copy prompt attaches nothing, and nothing is submitted. Copilot
-  attaches once it is shown not to read the spec again. On older projects Send stays as it was and its `(?)` names the update.
+- Send attaches the spec: Send puts the spec in the chat as a file, for GitHub Copilot through `attachFiles` and for Claude
+  Code through an `@` mention, in every FeatherSpec version, and a line under the button names the file (`0002-x.md attached
+  when sent`). Every step that reads the spec attaches it; `/sdd-lifecycle` and `/sdd-overview` do not. FeatherSpec 1.11.0
+  tells agents that an attached spec counts as read; an older version may read it a second time (PD-091). Copy prompt
+  attaches nothing, and nothing is submitted.
 - Send defaults and wording: the Send button opens a new chat for every step, and the current chat is in the menu, which
   checks the active choice. The open chat has one name, current or new chat. Short forms start with the first word of
   their intent (`Find blocker`, `Write plan`, `Start`, `Report`, `Move back to Ready`) without a visible "Next" (a hidden

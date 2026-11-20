@@ -82,12 +82,3 @@ export function levelsOnImplement(version: string): boolean {
     const parsed = parseSemanticVersion(version);
     return parsed !== undefined && LEVELLING !== undefined && compareVersions(parsed, LEVELLING) >= 0;
 }
-
-export const ATTACH_FROM_VERSION = '1.11.0';
-
-const ATTACHING = parseSemanticVersion(ATTACH_FROM_VERSION);
-
-export function attachesFrom(version: string): boolean {
-    const parsed = parseSemanticVersion(version);
-    return parsed !== undefined && ATTACHING !== undefined && compareVersions(parsed, ATTACHING) >= 0;
-}

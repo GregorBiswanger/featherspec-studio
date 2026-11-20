@@ -236,7 +236,7 @@ describe('0024 AC-010: an offer change reaches the Overview', () => {
         expect(current(world).now.rows.filter((row) => 'send' in row)).toHaveLength(1);
         world.assistant.set({ assistant: 'claudeCode' });
         await world.service.whenIdle();
-        expect(current(world).now.rows[0]?.send).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
+        expect(current(world).now.rows[0]?.send).toEqual({ assistant: 'claudeCode', attach: { name: '0009-thing.md', path: '.specs/active/0009-thing.md' }, target: 'new', targets: ['new'] });
         world.assistant.uninstall('claudeCode');
         await world.service.whenIdle();
         expect(current(world).now.rows.some((row) => 'send' in row)).toBe(false);

@@ -8,10 +8,10 @@ Current phase: act
 - Round 3 on `ux-round-3`: 0026 (Send defaults and wording) is Implemented 2026-11-19; its plan is archived.
 - 0029 (onboarding before setup) is Implemented 2026-11-20; its plan is archived.
 - 0021–0024 are implemented; their specs stay In Progress in `active/`.
-- Waits for: C-2 and Gregor's AC-017 on `tip-splitter` for 0027, CI at the round-3 PR, Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
+- Waits for: Gregor's AC-017 on `tip-splitter` for 0027 (C-2 not needed, PD-091), CI at the round-3 PR, Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
 
 ## Active Spec
-- [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec (Claude Code first, Copilot after C-2), T-001…T-010 verified; AC-016…AC-018, AC-020 and OP-006 (C-2) are Gregor's or the orchestrator's.
+- [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec for Copilot and Claude Code in every version (PD-091), T-001…T-011 verified; AC-016, AC-017, AC-020 are Gregor's or the orchestrator's.
 - [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 are Gregor's; OP-004 closed by PD-078.
 - [0023](../.specs/active/0023-plan-map-stages-parallel-work.md) / [plan](../.specs/active/0023-plan-map-stages-parallel-work.plan.md): Plan map, T-001…T-017; AC-018 real window, AC-019, AC-020 are Gregor's.
 - [0022](../.specs/active/0022-layout-and-signal-polish.md) / [plan](../.specs/active/0022-layout-and-signal-polish.plan.md): layout and signals, T-001…T-022; AC-020, AC-021 are Gregor's.
@@ -30,7 +30,7 @@ Current phase: act
 
 ## Changed Recently
 - 0029 (PD-090): while `/sdd-setup` has not run, the empty Overview and Board welcome the user and offer `/sdd-setup` through Send or Copy prompt; tree, Up next and Copy next step point to it; once it has run, nothing changes.
-- 0027 (PD-082, PD-083, PD-089), built 2026-11-19, not closed: with FeatherSpec 1.11.0 Send attaches the spec (Claude Code `@<path>`; Copilot `attachFiles` once C-2 allows it) and a line under the button names the file. Closing waits for C-2 (OP-006), AC-017, AC-020.
+- 0027 (PD-082, PD-083, PD-089), built 2026-11-19, not closed: Send attaches the spec in every version (Claude Code `@<path>`, Copilot `attachFiles`; PD-091 dropped the gate and C-2) and a line under the button names the file. Closing waits for AC-017, AC-020.
 - 0025, 0026, 0028 (Implemented 2026-11-19): Plan map links, header next step and percentages; Send opens a new chat, Now stops at five rows, three radio ways; a finished plan is Review. Windows `npm test` passed at 7ea11f3 (0025).
 
 ## Decisions in Flight

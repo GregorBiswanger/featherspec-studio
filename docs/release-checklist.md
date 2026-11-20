@@ -262,13 +262,13 @@ and the expected result. A clear miss reopens the named spec.
   and 1000 px window width with the side panel open at its default width, and the detail alone at 800 px. No text is cut,
   the long name wraps after a separator, the chip is told apart in High Contrast without colour, nothing moves when the
   feedback shows. Screenshots and verdict in the plan.
-- [ ] **AC-017** *(Gregor, on `C:\projects\test\tip-splitter` before the spec closes; GitHub Copilot: only after C-2 switched it on; record each version against V-3's: VS Code 1.147.0, GitHub Copilot Chat 0.75.0, Claude Code 2.1.327, and FeatherSpec's)*:
-  with FeatherSpec 1.11.0 and Claude Code, for a Backlog spec (`/sdd-clarify`) and the Active spec (`Implement T-00x`): the
+- [ ] **AC-017** *(Gregor, on `C:\projects\test\tip-splitter` before the spec closes; with each assistant set, GitHub Copilot and Claude Code; record each version against V-3's: VS Code 1.147.0, GitHub Copilot Chat 0.75.0, Claude Code 2.1.327, and FeatherSpec's)*:
+  with FeatherSpec 1.11.0 and the assistant set, for a Backlog spec (`/sdd-clarify`) and the Active spec (`Implement T-00x`): the
   main part and each Send item open the chat with the prompt in the input and a chip with the file name the line named,
   nothing submitted; after you submit, the agent's tool calls show no read of the spec file; Copy prompt pastes the line
-  without `@`. On a copy at FeatherSpec 1.10.0: no line, no chip, the toggletip names the update.
-- [ ] **AC-017, GitHub Copilot** *(same run, with GitHub Copilot; repeat the AC-017 steps once `attachesSpec` for GitHub Copilot is true)*:
-  the chip, nothing submitted, no re-read of the spec after you submit. A re-read keeps GitHub Copilot without attachment.
+  without `@`. On a copy at FeatherSpec 1.10.0 the chip is there too (PD-091: attached in every version).
+- [ ] **AC-017, GitHub Copilot** *(same run, with GitHub Copilot; PD-091 sets `attachesSpec` to true for it)*:
+  the chip, nothing submitted; a re-read of the spec after you submit is accepted (PD-091), note it.
 - [ ] **AC-018** *(not run: the click test ended before it, 13; the question moves to AC-017)*: starting in the Overview, find
   out which file goes along when you use Send to Copilot on the next step of 0002, what goes along when you copy the prompt, and
   whether the Plan map's header sends the same.
@@ -277,14 +277,9 @@ and the expected result. A clear miss reopens the named spec.
   `/sdd-clarify` in a new chat once by Send with the attachment and once by Copy prompt; record both runs' context use and
   tool calls. It passes when the attached run reads the spec file not at all, uses no more context than the other, and its
   findings hold every blocking finding of the other; else that assistant goes to no attachment.
-- [ ] **Attach version**: the attach version (`ATTACH_FROM_VERSION` in `src/core/specs/version.ts`) equals the FeatherSpec
-  release that carries the sentence "a file attached in full counts as read: no re-read", and 0002's newest known version
-  (`NEWEST_KNOWN`) is not below it.
-- [ ] **C-2, how a result flips the switch**: if GitHub Copilot or the Claude Code extension does not read the attached spec again
-  on 1.11.0, set `attachesSpec` of that assistant in `src/core/assistant/assistants.ts` (GitHub Copilot to `true`), update the expected rows
-  of the tests that pin the shipped table (`attachment.test.ts`, `offer.test.ts`, `restricted.test.ts`, `sendView.test.ts`)
-  and 0027 §6.2's table; a re-read sets Claude Code to `false` the
-  same way (and reopens 0027 A-001, A-003).
+- [x] **C-2, not needed** (PD-091, Gregor 2026-11-20): GitHub Copilot and Claude Code both attach in every FeatherSpec version
+  (`attachesSpec` is true for both in `src/core/assistant/assistants.ts`; there is no attach version and no gate). The
+  double-load risk with a FeatherSpec older than 1.11.0 is accepted; `NEWEST_KNOWN` (0002) stays as it is.
 
 ## Onboarding before setup (0029)
 

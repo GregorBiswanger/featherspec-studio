@@ -3,7 +3,7 @@
 **Spec:** [0027-attach-spec-when-sending.md](0027-attach-spec-when-sending.md)
 **Status:** Done
 **Last updated:** 2026-11-19
-**Current step:** — (T-001…T-010 verified)
+**Current step:** — (T-001…T-011 verified)
 
 ## Approach
 
@@ -367,6 +367,19 @@ and `send.ts`/`send.test.ts`: no `‖`.
 - **Verify:** quality gates 1–5 in order, zero warnings; `npm test` on Windows and CI by the orchestrator, result here.
 - [x] **Verified (T-010):** 2026-11-19 · `docsScan.test.ts` 'product docs after 0027 (AC-015)' (3 tests) green; title audit run; **Final gate chain green 2026-11-19:** eslint, tsc (both), `test:unit` 204 files, 3688 passed, 4 skipped, timing 14 files, 33 passed, `compile`, `compile-tests`. `npm test` (host, Windows and CI): not run here, the orchestrator records its result.
 - **Notes:** §5 notes: 51 lines in 15 specs (0024 ×15, 0025 ×4, 0026 ×3, 0021 ×3, 0022 ×4, 0002 ×3, 0013, 0015…0020, 0023, 0028), each "*Amended by 0027 (PD-082, PD-083): …*" after the earlier notes; `.specs/done/0013-*` included. README, CHANGELOG, checklist section 0027 (AC-016, AC-017 per assistant with V-3's versions, AC-018 not run, AC-020, attach-version line, C-2 flip line), `docsScan.test.ts` order list and 0027 AC-015 tests. Architecture: `.architecture/{core,adapters,webview}.md`, `AGENTS.md` snapshot (reconciled 0027) and boundary; Memory Bank: `techContext.md`, `activeContext.md` (compacted to keep its size test). **Title audit** (`/tmp/ta25/titles.py`, base `81dc0aa` src vs head, `it.each` counted): 3439 base titles, 3555 head, **one missing:** `messages.test.ts | 0025 AC-006: the protocol is version 10; a focus names a spec and one of step, ways, heading; other shapes are refused`, replaced by the same test titled `… the protocol is version 11; …` (statement changed: `PROTOCOL_VERSION` 11 by 0027 T-002, 0027 §10). The planned `AC-016: %s is newer than known` rows keep their title (values retargeted), so they are not missing. Staying tests whose expectation changed with their title kept (statement changed by §5, 0024 §7 toggletip row): `detail.test.ts` 'the toggletip closing pair follows the offer …' and `rows.test.ts` 'the send view stays with tips off …'; envelope literals `v: 10` → `v: 11` in eight webview and bundle tests, and the two 'another version' tests moved to 12.
+
+### T-011 — Amendment PD-091: always attach, both assistants
+
+- **Covers:** AC-002, AC-011, AC-012, AC-019 as amended 2026-11-20 by PD-091; re-proves AC-001, AC-013
+- **Do:**
+  - `assistants.ts`: `attachesSpec` true for Copilot.
+  - `attachment.ts`: no `attachesFrom` gate, no `withheld`; `AttachmentContext` is `{ key }`; the Claude Code whitespace exception stays.
+  - Remove `ATTACH_FROM_VERSION`, `attachesFrom`, `withheldOf`, the `withheld` parameter of `tipClosingOf` and `ATTACH_UPDATE_TEXT`.
+  - Tests of the shipped table: `attachment.test.ts`, `offer.test.ts`, `restricted.test.ts`, `sendView.test.ts`, plus `detail.test.ts`, `rows.test.ts`, `overviewService.test.ts`, `version.test.ts`, `attach0027.timing.test.ts`, `docsScan.test.ts`.
+  - PD-091, spec amendment notes, checklist (C-2 not needed), README, CHANGELOG, architecture, Memory Bank.
+- **Verify:** quality gates 1–5 in order, zero warnings.
+- [x] **Verified (T-011):** 2026-11-20 · affected test files green, then the full chain (eslint, both tsc, `test:unit`, `compile`).
+- **Notes:** Visible text: the toggletip's update sentence is gone (it only showed below 1.11.0); Copilot's Send now shows the attachment line and chip. No other text changed. A grep finds no remaining use of `attachesFrom`, `ATTACH_FROM_VERSION`, `withheld` or `ATTACH_UPDATE_TEXT` in `src`.
 
 ## Traceability
 

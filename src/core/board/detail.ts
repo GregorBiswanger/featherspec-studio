@@ -1,5 +1,5 @@
 import type { Offer } from '../assistant/offer';
-import { sendViewOf, tipClosingOf, withheldOf } from '../assistant/sendView';
+import { sendViewOf, tipClosingOf } from '../assistant/sendView';
 import { problemSentence } from '../lifecycle/problemSentence';
 import { integrateIsQuiet } from '../planMap/returnedWork';
 import type { DetailView, DiagnosticLine, NextStepView, StatusHistoryItem } from '../../shared/protocol/detail';
@@ -49,11 +49,11 @@ function nextStepView(next: NextStep, tips: StepTipSettings | undefined, offer: 
         const step = link(line.intent);
         return { text: line.text, intent: line.intent, ...(step === undefined ? {} : { step }) };
     });
-    const send = sendViewOf(offer, next.case, { version, key });
+    const send = sendViewOf(offer, next.case, { key });
     return {
         rule: next.rule,
         lines,
-        ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer, withheldOf(offer, next.case, { version, key })), { version, ...(send === undefined ? {} : { send: true as const }), ...(next.reason === undefined ? {} : { reason: next.reason }) }) }),
+        ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer), { version, ...(send === undefined ? {} : { send: true as const }), ...(next.reason === undefined ? {} : { reason: next.reason }) }) }),
         ...(send === undefined ? {} : { send }),
         ...(quiet ? { quiet: true as const } : {}),
         ...(parallel === undefined ? {} : { parallel: { stage: parallel } }),

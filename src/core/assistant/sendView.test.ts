@@ -2,7 +2,7 @@ import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { STEP_GUIDES, type StepCase } from '../../shared/protocol/nextStepTexts';
-import { ATTACH_UPDATE_TEXT, sendTipText } from '../../shared/protocol/assistantTexts';
+import { sendTipText } from '../../shared/protocol/assistantTexts';
 import { buildDetail } from '../board/detail';
 import { projectNow } from '../overview/rows';
 import { parseStepTipSettings } from '../settings/stepTipSettings';
@@ -102,55 +102,34 @@ describe('0027 AC-001: the Send view carries the spec exactly for the cases §6.
     });
 });
 
-describe('0027 AC-002: below the gate the view holds exactly assistant, target and targets', () => {
-    it.each(['1.10.0', '1.9.9', '1.11.0-rc.1', '1.11', 'v1.11.0', 'unknown'])('%s: NS-9, detail and first Now row', async (version) => {
+describe('0027 AC-002 (amended by PD-091): no version gate on the view or the toggletip', () => {
+    it.each(['1.10.0', '1.9.9', '1.11.0-rc.1', 'unknown'])('%s: NS-9 and the first Now row carry the attachment, the third tip paragraph is 0024\'s alone', async (version) => {
         const model = await caseModel('NS-9', version);
         const next = detailOf(model, CASE_WORLDS['NS-9'].key, claudeShipped);
-        expect(Object.keys(next.send ?? {}).sort()).toEqual(['assistant', 'target', 'targets']);
+        expect(Object.keys(next.send ?? {}).sort()).toEqual(['assistant', 'attach', 'target', 'targets']);
+        expect(next.tips?.about[2]).toBe(sendTipText('Claude Code'));
         const active = await caseModel('NS-6-open', version);
         const row = projectNow(active, { forEntry: (entry: { key: string }) => ({ key: entry.key }) } as never, SHOW, claudeShipped).rows[0];
-        expect(Object.keys(row?.send ?? {}).sort()).toEqual(['assistant', 'target', 'targets']);
+        expect(Object.keys(row?.send ?? {}).sort()).toEqual(['assistant', 'attach', 'target', 'targets']);
+        expect(row?.tips?.about[2]).toBe(sendTipText('Claude Code'));
     });
 });
 
-describe('0027 AC-011: the toggletip names the update only where the gate withholds the attachment', () => {
-    it('below the gate, the third paragraph is 0024\'s Send sentence, one space and the update sentence, literally', async () => {
-        const model = await caseModel('NS-9', '1.10.0');
-        const next = detailOf(model, CASE_WORLDS['NS-9'].key, claudeShipped);
-        expect(next.tips?.about[2]).toBe(`${sendTipText('Claude Code')} With FeatherSpec 1.11.0 or later, Send also attaches the spec; update with /sdd-featherspec-update.`);
-        expect(ATTACH_UPDATE_TEXT).toBe('With FeatherSpec 1.11.0 or later, Send also attaches the spec; update with /sdd-featherspec-update.');
-    });
-
-    it('at 1.11.0, in a case that never attaches and for Copilot (shipped table) it is 0024\'s alone', async () => {
-        const model = await caseModel('NS-9', '1.11.0');
-        expect(detailOf(model, CASE_WORLDS['NS-9'].key, claudeShipped).tips?.about[2]).toBe(sendTipText('Claude Code'));
-        const old = await caseModel('NS-2', '1.10.0');
-        expect(detailOf(old, CASE_WORLDS['NS-2'].key, claudeShipped).tips?.about[2]).toBe(sendTipText('Claude Code'));
-        const oldModel = await caseModel('NS-9', '1.10.0');
-        expect(detailOf(oldModel, CASE_WORLDS['NS-9'].key, plainOffer).tips?.about[2]).toBe(sendTipText('Copilot'));
-    });
-
-    it('the first Now row\'s toggletip follows the same rule', async () => {
-        const model = await caseModel('NS-6-open', '1.10.0');
-        const row = projectNow(model, { forEntry: (entry: { key: string }) => ({ key: entry.key }) } as never, SHOW, claudeShipped).rows[0];
-        expect(row?.tips?.about[2]).toBe(`${sendTipText('Claude Code')} ${ATTACH_UPDATE_TEXT}`);
-    });
-});
-
-describe('0027 AC-019: the shipped table gives Copilot no attachment and no update sentence', () => {
-    it.each(['1.10.0', '1.11.0', '2.0.0', 'unknown'])('%s: Copilot\'s view has no attach and its toggletip no update sentence in every case', async (version) => {
+describe('0027 AC-019 (amended by PD-091): the shipped table gives Copilot the attachment too', () => {
+    it.each(['1.10.0', '1.11.0', '2.0.0', 'unknown'])('%s: Copilot\'s view carries the attachment in every case that attaches, its toggletip is 0024\'s alone', async (version) => {
         for (const stepCase of CASES) {
             const model = await caseModel(stepCase, version);
-            const next = detailOf(model, CASE_WORLDS[stepCase].key, plainOffer);
-            expect(next.send?.attach, stepCase).toBeUndefined();
+            const { key } = CASE_WORLDS[stepCase];
+            const next = detailOf(model, key, plainOffer);
+            expect(next.send?.attach, stepCase).toEqual(NO_ATTACH.includes(stepCase) ? undefined : { name: key.slice(key.lastIndexOf('/') + 1), path: key });
             expect(JSON.stringify(next.tips), stepCase).not.toContain('attaches the spec');
         }
     });
 
-    it('Claude Code attaches NS-9 at 1.11.0 and Copilot does not (the example)', async () => {
+    it('Claude Code and Copilot both attach NS-9 (the example)', async () => {
         const model = await caseModel('NS-9', '1.11.0');
         const key = CASE_WORLDS['NS-9'].key;
         expect(detailOf(model, key, claudeShipped).send?.attach).toEqual({ name: '0007-x.md', path: key });
-        expect(detailOf(model, key, plainOffer).send?.attach).toBeUndefined();
+        expect(detailOf(model, key, plainOffer).send?.attach).toEqual({ name: '0007-x.md', path: key });
     });
 });

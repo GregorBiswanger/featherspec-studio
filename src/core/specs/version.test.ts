@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ATTACH_FROM_VERSION, NEWEST_KNOWN, attachesFrom, checkVersion, compareVersions, levelsOnImplement, parseSemanticVersion } from './version';
+import { NEWEST_KNOWN, checkVersion, compareVersions, levelsOnImplement, parseSemanticVersion } from './version';
 
 describe('checkVersion', () => {
     it.each(['1.7.0', '1.8.0', '1.9.3', '1.10.0', '1.8.0-rc3', '1.10.0-rc1', '1.10.0+build.5', '1.7.0+x'])(
@@ -61,20 +61,5 @@ describe('0028 AC-009: levelsOnImplement', () => {
 
     it.each(['1.7.0', '1.10.0', '1.10.9', '1.11.0-rc.1', 'next', 'unknown', '', '1.11', 'v1.11.0'])('%s does not (old, pre-release, unknown or not a version)', (version) => {
         expect(levelsOnImplement(version)).toBe(false);
-    });
-});
-
-describe('0027 AC-002: attachesFrom', () => {
-    it.each(['1.11.0', '1.11.1', '1.12.0', '2.0.0', '1.11.0+build.5'])('%s attaches', (version) => {
-        expect(attachesFrom(version)).toBe(true);
-    });
-
-    it.each(['1.7.0', '1.10.0', '1.9.9', '1.11.0-rc.1', 'unknown', '', '1.11', 'v1.11.0'])('%s does not', (version) => {
-        expect(attachesFrom(version)).toBe(false);
-    });
-
-    it('the attach version is 1.11.0 and the newest known version is not below it (checklist line)', () => {
-        expect(ATTACH_FROM_VERSION).toBe('1.11.0');
-        expect(NEWEST_KNOWN).toBe(ATTACH_FROM_VERSION);
     });
 });

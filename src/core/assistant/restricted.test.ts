@@ -112,7 +112,7 @@ describe('0027 AC-013: the attachment holds in a trusted and in a Restricted win
         });
     }
 
-    it('negative control: without the attaching table Copilot attaches nothing in the same world', async () => {
+    it('negative control: with the attaching table switched off Copilot attaches nothing in the same world', async () => {
         const world = createShellWorld();
         try {
             addProject(world, 'proj', { '.specs/backlog/0002-b.md': SPEC_HEADER('Draft') });
@@ -121,7 +121,7 @@ describe('0027 AC-013: the attachment holds in a trusted and in a Restricted win
             await world.controller.start();
             await world.settle();
             const model = createModelSource(world.repository).current()!;
-            const detail = buildDetail({ selection: { stem: '0002-b' }, model, history: { available: true, label: 'x', entries: [] }, offer: { assistant: 'copilot' } });
+            const detail = buildDetail({ selection: { stem: '0002-b' }, model, history: { available: true, label: 'x', entries: [] }, offer: { assistant: 'copilot', attaches: false } });
             expect(detail.kind === 'spec' && 'send' in detail.nextStep ? detail.nextStep.send?.attach : 'x').toBeUndefined();
         } finally {
             world.dispose();

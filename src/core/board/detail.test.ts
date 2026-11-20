@@ -532,24 +532,24 @@ describe('0024 AC-003, AC-004: the send view of the next step', () => {
     it('NS-9 (a backlog spec): Copilot sends to a new chat, Claude Code to a new chat', async () => {
         const model = await modelOf({ '.specs/backlog/0002-b.md': specText() });
         const key = '.specs/backlog/0002-b.md';
-        expect((await nextOf(model, key, { offer: OFFER_A })).send).toEqual({ assistant: 'copilot', target: 'new', targets: ['new', 'current'] });
-        expect((await nextOf(model, key, { offer: OFFER_B })).send).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
+        expect((await nextOf(model, key, { offer: OFFER_A })).send).toEqual({ assistant: 'copilot', attach: { name: '0002-b.md', path: '.specs/backlog/0002-b.md' }, target: 'new', targets: ['new', 'current'] });
+        expect((await nextOf(model, key, { offer: OFFER_B })).send).toEqual({ assistant: 'claudeCode', attach: { name: '0002-b.md', path: '.specs/backlog/0002-b.md' }, target: 'new', targets: ['new'] });
     });
 
     it('0026 AC-001: NS-5, NS-7 and NS-6 are all a new chat for Copilot (0024 AC-004 retargeted)', async () => {
         const review = await fixtureModel('studio-0015');
         const reviewNext = await nextOf(review, review.lifecycle.entries[0]!.key, { offer: OFFER_A });
         expect(reviewNext.rule).toBe('NS-5');
-        expect(reviewNext.send).toEqual({ assistant: 'copilot', target: 'new', targets: ['new', 'current'] });
+        expect(reviewNext.send).toEqual({ assistant: 'copilot', attach: { name: '0015-focus-on-visibility.md', path: '.specs/active/0015-focus-on-visibility.md' }, target: 'new', targets: ['new', 'current'] });
         const ready = await fixtureModel('fs110-ready-synthetic');
         const readyNext = await nextOf(ready, '.specs/backlog/0001-ready-feature.md', { offer: OFFER_A });
         expect(readyNext.rule).toBe('NS-7');
-        expect(readyNext.send).toEqual({ assistant: 'copilot', target: 'new', targets: ['new', 'current'] });
+        expect(readyNext.send).toEqual({ assistant: 'copilot', attach: { name: '0001-ready-feature.md', path: '.specs/backlog/0001-ready-feature.md' }, target: 'new', targets: ['new', 'current'] });
         const active = await modelOf(FILES);
         const activeNext = await nextOf(active, '.specs/active/0001-a.md', { offer: OFFER_A });
         expect(activeNext.rule).toBe('NS-6');
-        expect(activeNext.send).toEqual({ assistant: 'copilot', target: 'new', targets: ['new', 'current'] });
-        expect((await nextOf(active, '.specs/active/0001-a.md', { offer: OFFER_B })).send).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
+        expect(activeNext.send).toEqual({ assistant: 'copilot', attach: { name: '0001-a.md', path: '.specs/active/0001-a.md' }, target: 'new', targets: ['new', 'current'] });
+        expect((await nextOf(active, '.specs/active/0001-a.md', { offer: OFFER_B })).send).toEqual({ assistant: 'claudeCode', attach: { name: '0001-a.md', path: '.specs/active/0001-a.md' }, target: 'new', targets: ['new'] });
     });
 
     it('no offer: no send key and the view equals the view without the input; with tips off the send view stays', async () => {
@@ -578,7 +578,7 @@ describe('0024 AC-003, AC-004: the send view of the next step', () => {
         const model = await modelOf({ '.specs/backlog/0002-b.md': specText() });
         const key = '.specs/backlog/0002-b.md';
         const offered = await nextOf(model, key, { offer: OFFER_B, tips: SHOW });
-        expect(offered.tips?.about[2]).toBe('Send to Claude Code puts the prompt into its chat and sends nothing: choose the model there, check the prompt, then send it. With FeatherSpec 1.11.0 or later, Send also attaches the spec; update with /sdd-featherspec-update.');
+        expect(offered.tips?.about[2]).toBe('Send to Claude Code puts the prompt into its chat and sends nothing: choose the model there, check the prompt, then send it.');
         expect(offered.tips?.about[3]).toBe("Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt.");
         const plain = await nextOf(model, key, { tips: SHOW });
         expect(plain.tips?.about[2]).toBe('Choose the chat and the model in your AI assistant before you paste.');

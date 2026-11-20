@@ -146,11 +146,11 @@ describe('0024 AC-002: the offer source re-reads on a setting change and on an e
 describe('0027 AC-019: the attach switch rides on the offer', () => {
     it('an offer made without a table holds only the assistant and reads the shipped table', () => {
         expect(attachesOf(offerOf('claudeCode', [EXTENSION_B])!)).toBe(true);
-        expect(attachesOf(offerOf('copilot', [EXTENSION_A])!)).toBe(false);
+        expect(attachesOf(offerOf('copilot', [EXTENSION_A])!)).toBe(true);
     });
 
     it('an injected table is carried on the offer and wins over the shipped one', () => {
-        expect(offerOf('copilot', [EXTENSION_A], () => true)).toEqual({ assistant: 'copilot', attaches: true });
+        expect(offerOf('copilot', [EXTENSION_A], () => false)).toEqual({ assistant: 'copilot', attaches: false });
         expect(attachesOf(offerOf('claudeCode', [EXTENSION_B], () => false)!)).toBe(false);
     });
 });

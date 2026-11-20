@@ -6,7 +6,7 @@ import { nextStep, stepView } from '../board/nextStep';
 import { stepLinkOf } from '../board/stepLinks';
 import { stepTips } from '../board/stepTips';
 import type { Offer } from '../assistant/offer';
-import { sendViewOf, tipClosingOf, withheldOf } from '../assistant/sendView';
+import { sendViewOf, tipClosingOf } from '../assistant/sendView';
 import type { StepTipSettings } from '../settings/stepTipSettings';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { ShellModel } from '../ports/shell';
@@ -74,14 +74,13 @@ function rowOf(model: ShellModel, specs: SpecResolver, entry: LifecycleEntry, fi
     if (next === undefined || !('case' in next)) {
         return { ...row, step, ...link, ...quietOf(model, entry) };
     }
-    const context = { version: model.project.version, key: entry.key };
-    const send = sendViewOf(offer, next.case, context);
+    const send = sendViewOf(offer, next.case, { key: entry.key });
     return {
         ...row,
         step,
         ...link,
         ...quietOf(model, entry),
-        ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer, withheldOf(offer, next.case, context)), { version: model.project.version, ...(send === undefined ? {} : { send: true as const }), ...(next.reason === undefined ? {} : { reason: next.reason }) }) }),
+        ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer), { version: model.project.version, ...(send === undefined ? {} : { send: true as const }), ...(next.reason === undefined ? {} : { reason: next.reason }) }) }),
         ...(send === undefined ? {} : { send }),
     };
 }

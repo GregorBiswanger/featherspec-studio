@@ -19,7 +19,7 @@ export interface AssistantSpec {
 export const ASSISTANTS: Record<AssistantId, AssistantSpec> = {
     'copilot': {
         extensionId: 'GitHub.copilot-chat',
-        attachesSpec: false,
+        attachesSpec: true,
         callsFor(target, line, attachment) {
             const open: AssistantCall = { command: 'workbench.action.chat.open', args: [{ query: line, isPartialQuery: true, ...(attachment === undefined ? {} : { attachFiles: [attachment.uri] }) }] };
             return target === 'new' ? [{ command: 'workbench.action.chat.newChat', args: [] }, open] : [open];

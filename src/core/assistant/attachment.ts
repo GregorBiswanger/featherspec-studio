@@ -1,5 +1,4 @@
 import type { StepCase } from '../../shared/protocol/nextStepTexts';
-import { attachesFrom } from '../specs/version';
 import type { AssistantHostPort } from '../ports/assistant';
 import type { ShellModelSource } from '../ports/shell';
 import type { SpecSourcePort } from '../ports/specSource';
@@ -27,28 +26,23 @@ export interface Attachment {
 }
 
 export interface AttachmentContext {
-    version: string;
     key: string;
 }
 
 export interface AttachmentDecision {
     attach?: Attachment;
-    withheld: boolean;
 }
 
 const WHITESPACE = /\s/;
 
 export function attachmentOf(offer: Offer | undefined, stepCase: StepCase, context: AttachmentContext): AttachmentDecision {
     if (offer === undefined || !STEP_ATTACHES[stepCase] || !attachesOf(offer)) {
-        return { withheld: false };
-    }
-    if (!attachesFrom(context.version)) {
-        return { withheld: true };
+        return {};
     }
     if (offer.assistant === 'claudeCode' && WHITESPACE.test(context.key)) {
-        return { withheld: false };
+        return {};
     }
-    return { attach: { name: context.key.slice(context.key.lastIndexOf('/') + 1), path: context.key }, withheld: false };
+    return { attach: { name: context.key.slice(context.key.lastIndexOf('/') + 1), path: context.key } };
 }
 
 export interface AttachmentTarget {
