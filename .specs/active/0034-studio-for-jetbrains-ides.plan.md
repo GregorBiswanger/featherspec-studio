@@ -280,8 +280,8 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
   `TextDecoder is not defined`).
 - **Verify:** `local: node jetbrains/spikes/core/check.mjs` prints `identical: 27/27` (26 fixtures + generated) and
   exits 0.
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** 2026-11-20 · local: `node jetbrains/spikes/core/check.mjs` → `identical: 27/27`, `bundle: 88538 bytes`, exit 0. Red first (`polyfills.mjs` as empty stub): `ReferenceError: TextDecoder is not defined` in the bare context. Also: generated-200 read 200 specs; posix helpers equal `node:path` posix on 20 inputs.
+- **Notes:** Implementer (2026-11-20, uncommitted): (1) esbuild `alias` rejects relative targets (`Could not resolve "./pathPosix.mjs"`), so `build.mjs` maps `path`/`node:path` with an `onResolve` plugin to the same file. (2) `entry.mjs` decodes base64 by hand (the Do named no decoder; bare GraalJS-like contexts lack `atob`/`Buffer`). (3) The "main context" run is `vm.runInThisContext` of the same bundle, so only the globals differ. (4) Version: `AGENTS.md` `FeatherSpecVersion:` else `1.10.0` (plan wording; core would read `unknown` for unstamped fixtures). (5) Directories are not carried into the memory source (the files map has files only); identical result says it does not matter for these inputs. Uncertain: UTF-8 fatal and replacement paths are exercised only through the fixtures, not by a dedicated differential test.
 
 ### T-004 — S-1 (JVM side): GraalJS measurements on the CI runners
 
