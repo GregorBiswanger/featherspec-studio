@@ -721,7 +721,8 @@ main > h1 {
     background: var(--vscode-button-secondaryBackground, var(--vscode-button-background));
 }
 
-.copy-secondary:hover {
+.copy-secondary:hover,
+.copy-button.copy-secondary:hover {
     background: var(--vscode-button-secondaryHoverBackground, var(--vscode-button-secondaryBackground));
 }
 

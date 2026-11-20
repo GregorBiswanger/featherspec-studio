@@ -14,6 +14,11 @@ describe('AC-026: colours come from the theme', () => {
         expect(css).toContain('var(--vscode-');
     });
 
+    it('0033: a grey (secondary) Send or Copy keeps its grey hover; the generic .copy-button:hover cannot repaint it in the primary blue', () => {
+        const hover = rulesFor(css, '.copy-button.copy-secondary:hover');
+        expect(hover.some((rule) => /background:\s*var\(--vscode-button-secondaryHoverBackground/.test(rule.body))).toBe(true);
+    });
+
     it('the focus outline of a card and of a control is set and is not removed (negative control: the rule exists)', () => {
         expect(css).toMatch(/\.card:focus-visible[^{]*\{[^}]*outline: 2px solid var\(--vscode-focusBorder\)/);
         expect(css).not.toMatch(/outline:\s*(none|0)\b/);
