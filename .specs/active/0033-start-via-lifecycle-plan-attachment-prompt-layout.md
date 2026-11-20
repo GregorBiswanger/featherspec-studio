@@ -180,6 +180,7 @@ The criteria keep 17 §5's literal wording (German, as Gregor wrote it); §6 is 
 | A-003 | When one of two attached files fails 0024's check, the other is still attached (proxy) | 0024 drops a missing attachment without failing the Send | AC-004 |
 | A-004 | AC-007's `getBoundingClientRect` test runs where a layout engine exists (the preview harness); the unit suite adds a stylesheet assertion for `.section-body .next-step-lines { padding-left: 0 }` (proxy) | jsdom returns zero rects | AC-007 |
 | A-005 | `<spec>` in the start prompt is the spec's repository path, as in `/sdd-plan <spec>` (proxy) | Every other prompt uses the key | AC-001 |
+| A-006 | A single path segment wider than its column (a file name longer than about 40 characters below about 320 px) wraps inside as the last resort instead of being cut (proxy, compile re-check 2026-11-20) | 17 orders breaks only after `/`; cutting or a horizontal scrollbar would hide the name | AC-006 at very narrow widths |
 
 ## 11. Open points
 

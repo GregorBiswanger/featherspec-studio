@@ -14,6 +14,10 @@ describe('AC-026: colours come from the theme', () => {
         expect(css).toContain('var(--vscode-');
     });
 
+    it('0033 AC-006: a path segment between slashes is one unit (.path-seg is inline-block, so the browser breaks only at the <wbr> after a slash)', () => {
+        expect(rulesFor(css, '.path-seg').some((rule) => /display:\s*inline-block/.test(rule.body))).toBe(true);
+    });
+
     it('0033: a grey (secondary) Send or Copy keeps its grey hover; the generic .copy-button:hover cannot repaint it in the primary blue', () => {
         const hover = rulesFor(css, '.copy-button.copy-secondary:hover');
         expect(hover.some((rule) => /background:\s*var\(--vscode-button-secondaryHoverBackground/.test(rule.body))).toBe(true);
