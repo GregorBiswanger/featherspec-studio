@@ -3,7 +3,7 @@
 **Spec:** [0030-clarified-step-quiet-attach-tip.md](0030-clarified-step-quiet-attach-tip.md)
 **Status:** In Progress
 **Last updated:** 2026-11-20
-**Current step:** T-005 (orchestrator), then T-006
+**Current step:** T-005 (orchestrator)
 
 ## Approach
 
@@ -126,32 +126,32 @@ No parallel stage: T-003 and T-004 both change the detail and Now-row render tes
   (`Write the plan`, `Tip:`), `docs/release-checklist.md` section 0030 with AC-012, AC-013; `docsScan.test.ts`
   "0030 AC-011 …"; title audit (every title at the Baseline exists at the head); `activeContext.md`. All gates 1–5.
 - **Verify:** gates 1–5 green; `npx vitest run src/adapters/node/docsScan.test.ts src/core/lifecycle/problems.test.ts`.
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-20 `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile && npm run compile-tests`: exit 0, test:unit 213 files / 3796 passed (4 skipped), second run after fixing `webviewCss.test.ts` (2 failed on the removed `.send-attach` rules; bodies now assert their absence, titles kept); title audit `/tmp/ta25/titles.py` 111fdb0 vs head: 3620 vs 3667, none missing; `docsScan.test.ts` "0030 AC-011" green.
+- **Notes:** Notes under 0015 (NS-9 row), 0017, 0021, 0023, 0026, 0027, 0028; 0024, 0022, 0025 keep their 0027 notes about the line (it is gone, 0027's notes now say so). `npm test` (Windows) is the orchestrator's. T-005 stays open for the orchestrator; 0027 stays in active/.
 
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-002 | — | — | open |
-| AC-002 | T-001, T-002 | — | — | open |
-| AC-003 | T-001 | — | — | open |
-| AC-004 | T-001 | — | — | open |
-| AC-005 | T-002 | — | — | open |
-| AC-006 | T-003 | — | — | open |
-| AC-007 | T-003 | — | — | open |
-| AC-008 | T-004 | — | — | open |
-| AC-009 | T-004 | — | — | open |
-| AC-010 | T-006 | — | — | open |
-| AC-011 | T-006 | — | — | open |
+| AC-001 | T-002 | src/core/assistant/handOver.ts:createHandOverMemory; hooks in `send.ts`, `boardRequests.ts`, `copyNextStep.ts`; `extension.ts` | `handOver0030.test.ts` ("0030 AC-001 …") | verified |
+| AC-002 | T-001, T-002 | `src/core/board/clarified.ts:clarifiedOf`, `nextStep.ts` Backlog branch, `cards.ts:buildCards` | `clarified0030.test.ts`, `clarifiedSurfaces0030.test.ts` ("0030 AC-002 …", Send attach for both assistants) | verified |
+| AC-003 | T-001 | `src/core/board/clarified.ts` | `clarified0030.test.ts` ("0030 AC-003 …"), `nextStepBaseline.test.ts` | verified |
+| AC-004 | T-001 | `src/core/board/clarified.ts` | `clarified0030.test.ts`, `clarifiedSurfaces0030.test.ts` ("0030 AC-004 …") | verified |
+| AC-005 | T-002 | `src/core/shell/modelSource.ts:createModelSource` | `clarified0030.timing.test.ts` ("0030 AC-005 …") | verified |
+| AC-006 | T-003 | `src/webview/ui/StepAction.tsx`; `AttachmentLine.tsx` and `.send-attach*` removed | `quiet0030.test.tsx` ("0030 AC-006 …") | verified |
+| AC-007 | T-003 | `src/shared/protocol/assistantTexts.ts:sendMainName`, `src/webview/ui/SendButton.tsx` | `quiet0030.test.tsx` ("0030 AC-007 …") | verified |
+| AC-008 | T-004 | `src/core/board/stepTips.ts`, `src/shared/protocol/nextStepTexts.ts` (`SESSION_PHRASES`, `MODEL_PHRASES`) | `stepTips.test.ts` ("0030 AC-008 …") | verified |
+| AC-009 | T-004 | `COACH_TIP_PREFIX` in `nextStepTexts.ts` | `visibleLiterals.test.ts` ("0030 AC-009 …") | verified |
+| AC-010 | T-006 | — | `nextStepBaseline.test.ts` (coach translated by `coachTranslated0030`), the unchanged surface tests; full `npm run test:unit` | verified |
+| AC-011 | T-006 | `.specs/*` notes, `docs/product/product-decisions.md` PD-092, `README.md`, `CHANGELOG.md`, `docs/release-checklist.md` | `docsScan.test.ts` ("0030 AC-011 …") | verified |
 | AC-012 | T-005 | — | manual: orchestrator, preview harness | open |
 | AC-013 | T-006 (checklist) | — | manual: Gregor, Hands-On on `tip-splitter` | open |
-| AC-014 | T-006 | — | — | open |
+| AC-014 | T-006 | title audit `/tmp/ta25/titles.py` at 111fdb0 vs head: no title missing | full gate chain (T-006 Verified) | verified |
 
 ## Session handoff
 
-- **Done so far:** — (spec written, clarified and planned 2026-11-20)
-- **Next action:** T-001
-- **Open decisions:** — (OP-001 decided here: workspace state; OP-002 PD-092 `Tip:`; both flippable by Gregor)
+- **Done so far:** T-001…T-004 and T-006 verified (final gate chain green, 213 files, 3796 tests); notes, docs, PD-092, checklist, activeContext done.
+- **Next action:** T-005 (orchestrator, preview harness at two widths and three themes); then Gregor's AC-013; `npm test` on Windows; then `/sdd-compile` in a new session.
+- **Open decisions:** — (OP-001 workspace state; OP-002 PD-092 `Tip:`; both flippable by Gregor)
 - **Baseline:** 111fdb0
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

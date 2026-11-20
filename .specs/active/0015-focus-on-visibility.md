@@ -144,6 +144,8 @@ The rules use only what 0002 and 0003 deliver; first match wins, top-down:
 | NS-9 | Backlog, no sibling plan | `/sdd-clarify <spec path>`; then `/sdd-plan <spec path>` |
 | NS-10 | Backlog, any other | `/sdd-plan <spec path>` |
 
+*Amended by 0030 (PD-092): while the spec counts as clarified (0030 §6.2), NS-9 is the one line `Write the plan` · `/sdd-plan <spec path>` of case NS-10, with no `/sdd-clarify` line.*
+
 *Amended by 0028 (D-4): §6.1 row NS-7 — `Start <ID> of <plan path>` becomes `Implement <ID> of <plan path>`; where there is no open step `/sdd-plan <spec path>` (0028 §6.5).*
 
 *Amended by 0028 (PD-082): §6.1 row NS-6 (as 0017, 0021 and 0023 amended it) — 0028 §6.2's case "Report first" comes before 0021's case "Open step".*

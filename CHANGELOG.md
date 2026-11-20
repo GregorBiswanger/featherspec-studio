@@ -10,14 +10,18 @@ First release.
 
 ### Added
 
+- After you hand `/sdd-clarify` over (Send, Copy prompt or Copy Next Step) and the spec file then changes, a Backlog
+  spec's next step is `Write the plan` · `/sdd-plan <spec>`, with Send attaching the spec, instead of the challenge
+  again. The Studio remembers the hand-over per workspace, survives a reload and reads no text of the spec. The coach line
+  is one sentence, for example `Tip: Use a new chat with a strong model.` (PD-092).
 - Onboarding before `/sdd-setup`: in a project where FeatherSpec is installed but `/sdd-setup` has not run (the Memory Bank
   project brief still `TBD` and the architecture snapshot never reconciled), the empty Overview and Board show
   `Welcome to FeatherSpec` with the feather mark and offer `/sdd-setup` with Send or Copy prompt; the Specs tree, Up next
   and Copy Next Step name `/sdd-setup` too. Once setup has run, `No specs yet. Start with /sdd-specify` comes back
   without a reload.
 - Send attaches the spec: Send puts the spec in the chat as a file, for GitHub Copilot through `attachFiles` and for Claude
-  Code through an `@` mention, in every FeatherSpec version, and a line under the button names the file (`0002-x.md attached
-  when sent`). Every step that reads the spec attaches it; `/sdd-lifecycle` and `/sdd-overview` do not. FeatherSpec 1.11.0
+  Code through an `@` mention, in every FeatherSpec version, and the button's tooltip and accessible name name the file
+  (`Attaches 0002-x.md.`); no line shows under it. Every step that reads the spec attaches it; `/sdd-lifecycle` and `/sdd-overview` do not. FeatherSpec 1.11.0
   tells agents that an attached spec counts as read; an older version may read it a second time (PD-091). Copy prompt
   attaches nothing, and nothing is submitted.
 - Send defaults and wording: the Send button opens a new chat for every step, and the current chat is in the menu, which

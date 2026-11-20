@@ -377,6 +377,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
             '## Send defaults and wording (0026)',
             '## Attach the spec when sending (0027)',
             '## Onboarding before setup (0029)',
+            '## Clarified step, quiet attachment, Tip sentence (0030)',
             '## Go',
         ]);
         for (const gone of ['Plan line', 'descriptions cut', 'attention row', 'attention reason', 'filters, sort']) {
@@ -1123,9 +1124,10 @@ describe('product docs after 0026 (AC-002, AC-016)', () => {
 describe('product docs after 0027 (AC-015)', () => {
     it('0027 AC-015: README contains the three strings and the CHANGELOG entry in preparation names that Send attaches the spec', async () => {
         const readme = await read('README.md');
-        for (const text of ['attached when sent', 'FeatherSpec 1.11.0', 'Copy prompt attaches nothing']) {
+        for (const text of ['FeatherSpec 1.11.0', 'Copy prompt attaches nothing']) {
             expect(readme, `README ${text}`).toContain(text);
         }
+        expect(readme).not.toContain('attached when sent');
         expect(firstRelease(await read('CHANGELOG.md'))).toContain('attaches the spec');
     });
 
@@ -1174,5 +1176,28 @@ describe('product docs after 0027 (AC-015)', () => {
             expect(section, mark).toContain(mark);
         }
         expect('no note here').not.toContain('Amended by 0029 (setup not run)');
+    });
+
+    it('0030 AC-011: the notes of section 5, PD-092, the README, the CHANGELOG and the checklist section', async () => {
+        const notes = ['.specs/active/0017-next-step-everywhere.md', '.specs/active/0021-next-step-intent-and-guidance.md', '.specs/done/0026-send-defaults-and-wording.md', '.specs/active/0027-attach-spec-when-sending.md'];
+        for (const file of notes) {
+            expect(await read(file), file).toContain('Amended by 0030 (PD-092)');
+        }
+        expect(await read('docs/product/product-decisions.md')).toMatch(/\| PD-092 \| [^|]*`Tip:`[^|]*\|/);
+        const readme = await read('README.md');
+        expect(readme).toContain('Tip: Use');
+        expect(readme).not.toContain('attached when sent');
+        const changelog = firstRelease(await read('CHANGELOG.md'));
+        expect(changelog).toContain('Write the plan');
+        expect(changelog).toContain('Tip:');
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('(0030)\n');
+        expect(start).toBeGreaterThan(-1);
+        expect(start).toBeLessThan(text.indexOf('\n## Go'));
+        const section = text.slice(start, text.indexOf('\n## ', start));
+        for (const mark of ['**AC-012**', '**AC-013**']) {
+            expect(section, mark).toContain(mark);
+        }
+        expect('no note here').not.toContain('Amended by 0030 (PD-092)');
     });
 });

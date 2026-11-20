@@ -146,6 +146,7 @@ such step in plan order (A-013). It catches the known V1 miss of the fast model 
 | Session reason from 1.11.0: `Current or new chat: the plan holds the state of the work; after a break, the step first brings the plan up to date.` (12 B-1 (2)) | 0026 §7's `… after a break, let the agent report first.`, kept while the version is old |
 
 Reused unchanged: line 2's `Continue with <ID> <title>`, the coach line `any chat · fast model` and its reasons (0021 §6.6).
+*Amended by 0030 (PD-092): the coach line `any chat · fast model` reads `Tip: Use any chat with a fast model.` (0030 §7, AC-008).*
 
 ## 8. Error cases and edge cases
 

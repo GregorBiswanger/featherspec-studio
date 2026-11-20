@@ -111,6 +111,7 @@ sentence that also says something else keeps that part. The rows name what needs
 - The step is the card's last line, follows a row's reasons and ends the status bar text: the
   spec is named first (audit R-03 field 4, K-G; deviation from guideline 1 "before anything else", named).
 - A spec without a step shows no step line on its card or row (problems show per 0016).
+*Amended by 0030 (PD-092): while the spec counts as clarified (0030 §6.2), NS-9 is the one line `Write the plan` · `/sdd-plan <spec path>` of case NS-10, with no `/sdd-clarify` line.*
 
 *Amended by 0028 (D-4): `Start <ID> of <plan path>` → `Implement <ID>` and `Implement <plan path>` falls away; without an open step `/sdd-plan <spec path>` with the texts of "Plan without open step" (0028 §6.5).*
 

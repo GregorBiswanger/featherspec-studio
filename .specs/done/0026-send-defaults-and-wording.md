@@ -97,6 +97,8 @@ replaces 0021's session `same chat or new chat` (NS-6 "Open step", 0023's return
 `the current chat` replaces "this chat" in 0021's new-chat reason (§7). **Send, not Paste** (12 D3-7, PD-088): text beside
 a Send control never says `Paste`; returned work's then-sentence is `Send it once …` with Send, `Paste it once …` without.
 
+*Amended by 0030 (PD-092): the coach line is the sentence `Tip: Use <session> with <model>.` of 0030 §7 (0030 §6.4, AC-008); the session phrase of `current or new chat` is `the current chat or a new one,`.*
+
 ### 6.3 Short-form vocabulary (G-8)
 
 - **Rule.** A short intent starts with the first word of its first line's intent (0021 §6.1, §6.2, 0023 §5.5); the
@@ -200,6 +202,7 @@ prose; a stage `T-002 → T-003 ‖ T-004`, T-002 next; Now with five, six and e
   *Amended by 0027 (PD-082, PD-083): where the Send view carries an attachment, the calls are 0027 §6.4's (Copilot's `open` argument adds `attachFiles: [<spec URI>]`, Claude Code's text adds ` @<spec path>`); otherwise unchanged (0027 AC-004, AC-005, AC-006).*
 - **AC-002** The coach line of NS-6 "Open step" and of 0023's returned work shall read `current or new chat · fast model`, and the toggletip's session paragraph shall be §7's reason literally, for NS-5 and NS-9 §7's new-chat reason; a case-insensitive search of `src` without test files, `package.json`, `README.md` and `docs/release-checklist.md` shall find neither `same chat` nor `this chat`.
   *Amended by 0028 (PD-087): AC-002 "§7's reason literally" — below 1.11.0 or without a readable version; from 1.11.0 0028 §7's reason (0028 AC-020).*
+  *Amended by 0030 (PD-092): the coach line is the sentence `Tip: Use <session> with <model>.` of 0030 §7 (0030 §6.4, AC-008); the session phrase of `current or new chat` is `the current chat or a new one,`.*
 - **AC-003** For each fixture the step short form shall be the one §6.3's table gives for its case, the same string on the card, the Overview row, the tree description where 0022 §4.2's budget keeps the intent, and after `<state> · ` in the quick-pick description.
 - **AC-004** For every step case of the text module, one fixture each, the short intent shall be non-empty and its first word shall equal the first word of the first line's intent, except the cases whose intent starts with `Have the ` or `Let the agent `, whose short intent shall be §6.3's verb (`Verify`, `Challenge`, `Report`), and NS-2, whose short intent shall be `Move back to Ready`.
 - **AC-005** Every card and Overview row with a step shall render its step text as the visually hidden `Next step: `, then the short intent, ` · ` and the command short form in code; with its `.visually-hidden` elements removed the step text shall not contain `Next`; its tooltip shall stay 0021 AC-007's full form.

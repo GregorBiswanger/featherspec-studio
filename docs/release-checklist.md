@@ -291,6 +291,16 @@ and the expected result. A clear miss reopens the named spec.
   after *Set up FeatherSpec* the Studio welcomes you and offers `/sdd-setup`; Send puts it into the assistant; after
   `/sdd-setup` the empty state reads `No specs yet. Start with /sdd-specify` without a reload.
 
+## Clarified step, quiet attachment, Tip sentence (0030)
+
+- [ ] **AC-012** *(preview harness by the orchestrator; guideline 12)*: the detail and the first Now row of a Backlog spec,
+  before and after the clarify switch, with Send and the attachment offered, in Dark, Light and High Contrast at 1600 px and
+  1000 px window width with the side panel open. No attachment line shows, no text or button is cut, no word breaks inside
+  itself, and the Tip sentence wraps only between words. Screenshots go into the plan.
+- [ ] **AC-013** *(Gregor, Hands-On on a fresh `tip-splitter`, with GitHub Copilot and with Claude Code; note the versions)*:
+  after Send of `/sdd-clarify` and the challenge, the Next step reads `Write the plan` · `/sdd-plan …` without a reload, as
+  a Send that attaches the spec; no attachment line shows; the coach reads as a Tip sentence.
+
 ## Go
 
 - [ ] **Repository visibility**: the Marketplace page loads the README screenshots from
