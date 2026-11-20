@@ -15,9 +15,18 @@ repositories {
     }
 }
 
+sourceSets {
+    create("integrationTest") {
+        compileClasspath += sourceSets.main.get().output
+        runtimeClasspath += sourceSets.main.get().output
+    }
+}
+
 val integrationTestImplementation by configurations.getting {
     extendsFrom(configurations.testImplementation.get())
 }
+
+val integrationTestRuntimeOnly by configurations.getting
 
 dependencies {
     intellijPlatform {
@@ -30,6 +39,7 @@ dependencies {
     integrationTestImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
     integrationTestImplementation("org.kodein.di:kodein-di-jvm:7.20.2")
     integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.1")
+    integrationTestRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
 }
 
 kotlin {
@@ -37,13 +47,6 @@ kotlin {
     compilerOptions {
         languageVersion = KotlinVersion.KOTLIN_2_2
         apiVersion = KotlinVersion.KOTLIN_2_2
-    }
-}
-
-sourceSets {
-    create("integrationTest") {
-        compileClasspath += sourceSets.main.get().output
-        runtimeClasspath += sourceSets.main.get().output
     }
 }
 
@@ -62,13 +65,12 @@ tasks.processResources {
     }
 }
 
-val integrationTest by intellijPlatformTesting.testIdeUi.registering {
-    task {
-        testClassesDirs = sourceSets.getByName("integrationTest").output.classesDirs
-        classpath = sourceSets.getByName("integrationTest").runtimeClasspath
-        useJUnitPlatform()
-        dependsOn(tasks.buildPlugin)
-        systemProperty("path.to.build.plugin", tasks.buildPlugin.get().archiveFile.get().asFile.absolutePath)
-        systemProperty("spike.fixture", rootProject.file("../../test/fixtures/studio-0015").absolutePath)
-    }
+val integrationTest by tasks.registering(Test::class) {
+    val integrationTestSourceSet = sourceSets.getByName("integrationTest")
+    testClassesDirs = integrationTestSourceSet.output.classesDirs
+    classpath = integrationTestSourceSet.runtimeClasspath
+    systemProperty("path.to.build.plugin", tasks.prepareSandbox.get().pluginDirectory.get().asFile)
+    systemProperty("spike.fixture", rootProject.file("../../test/fixtures/studio-0015").absolutePath)
+    useJUnitPlatform()
+    dependsOn(tasks.prepareSandbox)
 }
