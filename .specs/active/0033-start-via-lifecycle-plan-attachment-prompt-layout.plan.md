@@ -1,7 +1,7 @@
 # Plan — Start via lifecycle, plan attachment, prompt layout
 
 **Spec:** [0033-start-via-lifecycle-plan-attachment-prompt-layout.md](0033-start-via-lifecycle-plan-attachment-prompt-layout.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-20
 **Current step:** T-001
 

@@ -1,6 +1,6 @@
 # Start via lifecycle, plan attachment, prompt layout
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0033-start-via-lifecycle-plan-attachment-prompt-layout.plan.md](0033-start-via-lifecycle-plan-attachment-prompt-layout.plan.md)
 
 Basis: Gregor's practice feedback after 0032, `docs/ux-audit/17-start-lifecycle-feedback.md` (addendum to 16), treated
