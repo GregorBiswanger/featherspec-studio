@@ -1,9 +1,9 @@
 # Plan — Clarified Next Step, Quiet Attachment, Tip Sentence
 
-**Spec:** [0030-clarified-step-quiet-attach-tip.md](0030-clarified-step-quiet-attach-tip.md)
-**Status:** In Progress
+**Spec:** [0030-clarified-step-quiet-attach-tip.md](../done/0030-clarified-step-quiet-attach-tip.md)
+**Status:** Done
 **Last updated:** 2026-11-20
-**Current step:** none; T-001…T-006 verified
+**Current step:** —
 
 ## Approach
 
@@ -150,8 +150,8 @@ No parallel stage: T-003 and T-004 both change the detail and Now-row render tes
 
 ## Session handoff
 
-- **Done so far:** T-001…T-004 and T-006 verified (final gate chain green, 213 files, 3796 tests); notes, docs, PD-092, checklist, activeContext done.
-- **Next action:** T-005 (orchestrator, preview harness at two widths and three themes); then Gregor's AC-013; `npm test` on Windows; then `/sdd-compile` in a new session.
+- **Done so far:** T-001…T-006 verified; the spec is closed (Implemented 2026-11-20).
+- **Next action:** — (open outside the plan: AC-013, Gregor; CI on PR #2).
 - **Open decisions:** — (OP-001 workspace state; OP-002 PD-092 `Tip:`; both flippable by Gregor)
 - **Baseline:** 111fdb0
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

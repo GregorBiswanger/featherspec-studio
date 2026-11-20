@@ -11,7 +11,6 @@ Current phase: act
 - Waits for: Gregor's AC-017 on `tip-splitter` for 0027 (C-2 not needed, PD-091), CI at the round-3 PR, Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
 
 ## Active Spec
-- [0030](../.specs/active/0030-clarified-step-quiet-attach-tip.md) / [plan](../.specs/active/0030-clarified-step-quiet-attach-tip.plan.md): clarified next step, quiet attachment, Tip sentence (PD-092); T-001…T-004 and T-006 built, T-005 (preview) is the orchestrator's, AC-013 is Gregor's.
 - [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec for Copilot and Claude Code in every version (PD-091), T-001…T-011 verified; AC-016, AC-017, AC-020 are Gregor's or the orchestrator's.
 - [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 are Gregor's; OP-004 closed by PD-078.
 - [0023](../.specs/active/0023-plan-map-stages-parallel-work.md) / [plan](../.specs/active/0023-plan-map-stages-parallel-work.plan.md): Plan map, T-001…T-017; AC-018 real window, AC-019, AC-020 are Gregor's.
@@ -27,6 +26,7 @@ Current phase: act
 - Completed: 0001…0007, 0013 in `done/`; 0008…0012 are Deprecated (successor 0015); plans frozen in `plan-archive/`.
 - Completed 2026-11-19: [0025](../.specs/done/0025-plan-map-navigation-and-progress.md) ([plan](../.specs/plan-archive/0025-plan-map-navigation-and-progress.2026-11-19.plan.md)) and [0028](../.specs/done/0028-plan-state-aware-next-step.md) ([plan](../.specs/plan-archive/0028-plan-state-aware-next-step.2026-11-19.plan.md)).
 - Completed 2026-11-19: [0026](../.specs/done/0026-send-defaults-and-wording.md) ([plan](../.specs/plan-archive/0026-send-defaults-and-wording.2026-11-19.plan.md)).
+- Completed 2026-11-20: [0030](../.specs/done/0030-clarified-step-quiet-attach-tip.md) ([plan](../.specs/plan-archive/0030-clarified-step-quiet-attach-tip.2026-11-20.plan.md)); AC-013 (Gregor) and CI on PR #2 are open.
 - Completed 2026-11-20: [0029](../.specs/done/0029-onboarding-before-setup.md) ([plan](../.specs/plan-archive/0029-onboarding-before-setup.2026-11-20.plan.md)); AC-014 (Gregor) and CI on PR #2 are open.
 
 ## Changed Recently
@@ -39,11 +39,11 @@ Current phase: act
 - Publisher ID `GregorBiswanger` is confirmed (2026-11-17).
 
 ## Blockers / Questions
-- Gregor's manual checks stay in the specs: 0025 AC-022 real window, AC-023, AC-024; 0026 AC-017, AC-019; 0028 AC-015; 0029 AC-014; 0027 AC-016, AC-017, AC-020.
+- Gregor's manual checks stay in the specs: 0025 AC-022 real window, AC-023, AC-024; 0026 AC-017, AC-019; 0028 AC-015; 0029 AC-014; 0030 AC-013; 0027 AC-016, AC-017, AC-020.
 
 ## Next
 1. Finish 0027 (spec and plan are in `.specs/active/`, the plan's handoff names the next step).
-2. 0029: CI on PR #2, then Gregor's AC-014; the other specs' CI items run on the same PR.
+2. 0029 and 0030: CI on PR #2, then Gregor's AC-014 and AC-013; the other specs' CI items run on the same PR.
 
 ## Validation
-- Windows at 48d4056: unit tests 3775 passed, 8 skipped, timing 37 passed; `npm test` 34+1+1+1, exit 0. CI pending on PR #2.
+- Windows at d218f0c: unit tests 3792 passed, 8 skipped, timing 35 passed; `npm test` 34+1+1+1, exit 0; VSIX 258.22 KB. CI pending on PR #2.

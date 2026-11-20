@@ -1,7 +1,7 @@
 # Clarified Next Step, Quiet Attachment, Tip Sentence
 
-**Status:** In Progress
-**Plan:** [0030-clarified-step-quiet-attach-tip.plan.md](0030-clarified-step-quiet-attach-tip.plan.md)
+**Status:** Implemented
+**Plan:** [0030-clarified-step-quiet-attach-tip.2026-11-20.plan.md](../plan-archive/0030-clarified-step-quiet-attach-tip.2026-11-20.plan.md)
 
 Basis: Gregor's feedback 2026-11-20 (standing answer `orch/SPEC-0030.md`, treated as typed by him; screenshot of backlog
 spec 0001 right after `/sdd-clarify` ran in Copilot, +98 −36); FeatherSpec `.claude/commands/sdd-clarify.md` (revise mode,
@@ -201,4 +201,8 @@ Node or jsdom tests decide every criterion unless marked manual.
 
 ## 13. Ready, Done and next steps
 
-Ready: clarified 2026-11-20 (OP-004); planned 2026-11-20, 6 steps in 3 stages. Done per the DoD of `AGENTS.md`; AC-012 by the orchestrator, AC-013 by Gregor. Next: implement T-001.
+Ready: clarified 2026-11-20 (OP-004); planned 2026-11-20, 6 steps in 3 stages. Done per the DoD of `AGENTS.md`; AC-012 by the orchestrator, AC-013 by Gregor. Closed 2026-11-20 by `/sdd-lifecycle`; AC-013 (Gregor) and CI on PR #2 stay open.
+
+## Plan history
+
+- 2026-11-20 — [0030-clarified-step-quiet-attach-tip.2026-11-20.plan.md](../plan-archive/0030-clarified-step-quiet-attach-tip.2026-11-20.plan.md) — 6 steps in 3 stages: the clarified next step, quiet attachment, Tip sentence; preview 24 of 24 clean; Windows `npm test` at d218f0c passed; manual items open: AC-013 (Gregor), CI on PR #2.
