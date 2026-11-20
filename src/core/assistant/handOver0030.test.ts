@@ -86,11 +86,27 @@ describe('0030 AC-001: hand-overs of /sdd-clarify are remembered with the time a
 
     it('0030 AC-001 a spec that changes before Send settles keeps the start time, so it counts as clarified', async () => {
         const { world, send } = await sendWorld({ chosen: 'copilot' });
+        const changed = await projectOf({ [KEY]: specText() }, { modifiedMs: 9_000, size: 140 });
         const pending = send(CLARIFY);
-        world.repository.set(await projectOf({ [KEY]: specText() }, { modifiedMs: 9_000, size: 140 }));
+        world.repository.set(changed);
         await pending;
         const root = world.source.current()!.project.root;
         expect(stored(world.memory)).toEqual({ v: 1, roots: { [root]: { [KEY]: START } } });
+        expect(nextStep(world.source.current()!, KEY)).toMatchObject({ rule: 'NS-9', case: 'NS-10' });
+    });
+
+    it('0030 AC-005 a memory write alone refreshes the model when the file changed before the commit', async () => {
+        const project = await projectOf({ [KEY]: specText() }, START);
+        const world = createHandOverWorld(project);
+        const handOver = world.handOvers.begin(CLARIFY)!;
+        world.repository.set(await projectOf({ [KEY]: specText() }, { modifiedMs: 9_000, size: 140 }));
+        const changes: number[] = [];
+        world.source.onDidChange(() => changes.push(changes.length));
+        expect(nextStep(world.source.current()!, KEY)).toMatchObject({ rule: 'NS-9', case: 'NS-9' });
+        const seen = world.source.current()!.project;
+        await handOver.commit();
+        expect(changes).toHaveLength(1);
+        expect(world.source.current()!.project).toBe(seen);
         expect(nextStep(world.source.current()!, KEY)).toMatchObject({ rule: 'NS-9', case: 'NS-10' });
     });
 

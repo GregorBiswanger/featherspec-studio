@@ -293,7 +293,7 @@ and the expected result. A clear miss reopens the named spec.
 
 ## Clarified step, quiet attachment, Tip sentence (0030)
 
-- [ ] **AC-012** *(preview harness by the orchestrator; guideline 12)*: the detail and the first Now row of a Backlog spec,
+- [ ] **AC-012** *(preview harness by the orchestrator; guideline 12)*: the detail and the Up next row of a Backlog spec,
   before and after the clarify switch, with Send and the attachment offered, in Dark, Light and High Contrast at 1600 px and
   1000 px window width with the side panel open. No attachment line shows, no text or button is cut, no word breaks inside
   itself, and the Tip sentence wraps only between words. Screenshots go into the plan.

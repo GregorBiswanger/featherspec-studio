@@ -96,7 +96,7 @@ run the `/sdd-architecture-update` workflow yourself, in the same change set, ex
 the user had typed it (its body lives in `.claude/commands/sdd-architecture-update.md`).
 
 ```yaml
-# last reconciled: 2026-11-19 (0029) · last deep scan: never · module maps: .architecture/{core,adapters,webview}.md
+# last reconciled: 2026-11-20 (0030) · last deep scan: never · module maps: .architecture/{core,adapters,webview}.md
 architecture:
   style: 'Hexagonal (ports & adapters): framework-free core (domain + application) behind ports; adapters for VS Code host, storage, file system; webview as a separate UI bundle'
   entrypoints:

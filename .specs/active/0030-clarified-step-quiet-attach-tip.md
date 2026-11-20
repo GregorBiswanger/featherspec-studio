@@ -123,7 +123,7 @@ Node or jsdom tests decide every criterion unless marked manual.
   a write shall drop entries of keys that name no spec.
 - **AC-002** While a Backlog spec with criteria and without a plan has an entry whose modification time or size differs
   from the spec's current one, `nextStep()` shall return exactly one line, intent `Write the plan`, text
-  `/sdd-plan <spec>`, rule NS-9, case NS-10; the detail, the first Now row, the Board card, the tree and *Copy next step* shall show
+  `/sdd-plan <spec>`, rule NS-9, case NS-10; the detail, the Up next row, the Board card, the tree and *Copy next step* shall show
   that step and no text containing `/sdd-clarify`. Where an assistant is offered (0024), that line is the Send to <assistant> primary and its Send view
   carries the spec's path as `attach`, for Copilot and for Claude Code (0027; `STEP_ATTACHES['NS-10']` is true).
 - **AC-003** If the spec has no entry, or its entry equals its current modification time and size, then `nextStep()` shall
@@ -146,7 +146,7 @@ Node or jsdom tests decide every criterion unless marked manual.
   text (AC-008), the attachment line (AC-006) and the Send name and tooltip (AC-007).
 - **AC-011** The specs of §5 shall carry its notes; `docs/product/product-decisions.md` PD-092 (`Tip:` instead of
   `Info:`); `README.md` shall contain `Tip: Use` and not `attached when sent`; `CHANGELOG.md` `Write the plan` and `Tip:`; `docs/release-checklist.md` a 0030 section with AC-012, AC-013.
-- **AC-012** *(manual, preview harness, by the orchestrator)* The detail and the first Now row of a Backlog spec, before and
+- **AC-012** *(manual, preview harness, by the orchestrator)* The detail and the Up next row of a Backlog spec, before and
   after the clarify switch, with Send and attachment offered, in Dark, Light and High Contrast at 1600 px and 1000 px with
   the side panel open: no attachment line, no text or button cut, no word broken inside itself, the Tip sentence
   wraps only between words.
@@ -196,6 +196,8 @@ Node or jsdom tests decide every criterion unless marked manual.
   decidable for the Now row, now "wraps only between words"; AC-011's CHANGELOG literal fixed; a hand edit after a copy
   (A-004) and the watcher lag before a hand-over (the file changed less than 500 ms before it: the old time is stored, so
   the next read counts as clarified) kept as proxies; A-001 kept with OP-001.
+- OP-005 Amendment 2026-11-20 (orchestrator's proxy decision after `/sdd-compile`, Gregor can flip it): a Backlog spec never sits
+  in the Now rows, so AC-002 and AC-012 now name the Up next row instead of the first Now row; the checklist follows.
 
 ## 13. Ready, Done and next steps
 
