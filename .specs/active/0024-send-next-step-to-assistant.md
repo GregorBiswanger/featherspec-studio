@@ -113,6 +113,7 @@ configuration and extension changes (AC-010).
   *Amended by 0025 (PD-082): not on returned work's `Integrate` line while U-08 shows: it is secondary (0025 §5.6, AC-026).*
   *Amended by 0026 (PD-082): the first Now row's split button is secondary; the detail's first line holds the one primary control (0026 §6.5, AC-024).*
   *Amended by 0027 (PD-082, PD-083): followed by 0027 §6.3's attachment line where the view carries one; it stays during feedback (0027 AC-003).*
+  *Amended by 0031 (follow-up Send): also each follow-up line of the detail and the Plan map header, as a secondary split button (0031 §6.1).*
 - **Main part:** text `Send to <Name>` (`Copilot`, `Claude Code`; A-011). It sends to the default target: Copilot
   `new chat` where the first line's session (0021 §6.1, §6.2) is `new chat`, else `current chat`; Claude Code always
   `new chat` (A-007). Name and tooltip `Send to <Name> (<target>): <line>`, `<target>` = `new chat` · `current chat`.
@@ -308,6 +309,7 @@ with both assistants of §6.2. A *Send control* is a button or menu item whose t
 | A-014 | An assistant outside the Studio's extension host counts as not installed (proxy) | `getExtension` sees that host; the Studio is a workspace extension | Remote windows show Copy prompt |
 | A-015 | A Send not settled after 5000 ms has failed; a second activation while one is pending sends again (proxy) | 08 S-4 "scheitert er: kopieren"; a hang must still end on the clipboard; a later chat merely duplicates the prompt | §6.4, §6.5, AC-006 |
 *Amended by 0026 (PD-078): void: every step defaults to `new chat` (0026 §6.1).*
+*Amended by 0031 (follow-up Send): A-005 — Send is also offered on each follow-up line of the detail and the Plan map header, as a secondary split button (0031 §6.1).*
 
 *Amended by 0025 (PD-082): the Plan map header's first line follows this spec's Send rules as the detail's does (0025 §5.3, AC-009, AC-010).*
 

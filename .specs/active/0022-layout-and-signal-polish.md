@@ -125,6 +125,7 @@ B-6's rule tooltip where one applies. Every other strip is unchanged.
   *Amended by 0026 (PD-082): (2) — the first Now row's Copy or split button is secondary; the Overview holds one primary while the selected spec's next step has a line, none without (0026 §6.5, AC-024).*
 - **Secondary text button:** the side panel's Copy of every further line (NS-5, NS-6 with an open plan step
   (PD-072), NS-9); the buttons of the Restricted Mode note and the notice (0005 S7, BR-03; A-013).
+  *Amended by 0031 (follow-up Send): where Send is offered, the Copy of a further line in the detail or the Plan map header is a secondary split button; without an offer as today (0031 §6.1, AC-001, AC-004).*
 - **Icon button** (copy icon, no text): every other next-step Copy — Now rows after the first, Up next
   rows and its empty line, Problems rows, board cards (07 §5.2, A-008).
 - The icon button keeps 0016 §6.5's action and feedback, its name and tooltip as 0021 §6.4 states them:
@@ -309,6 +310,7 @@ Decided by unit tests (core, no `vscode`), component tests (jsdom) and styleshee
   *Amended by 0024 (PD-068): AC-010 — the split button's two parts are the primary style of (1) and (2) (0024 AC-003).*
   *Amended by 0025 (PD-082): the Plan map header's first line is a primary place while the side panel leaves out its Next step; the map with the side panel beside holds at most one primary, a card's Copy prompt is secondary (0025 §5.3, §5.2, AC-010).*
   *Amended by 0026 (PD-082): AC-010 — the first Now row's Copy or split button is secondary, not primary (0026 §6.5, AC-024).*
+  *Amended by 0031 (follow-up Send): AC-010 — where Send is offered, a further line of the detail or the Plan map header shows a secondary split button, not the secondary Copy; without an offer as today (0031 §6.1, AC-003).*
 - **AC-011** With seven Now rows, three Up next rows, a Problems row and a selected NS-5 spec, the Overview shall render exactly two primary buttons and the Board exactly one; with no spec selected, one and zero.
   *Amended by 0023 (PD-069): AC-011 — the Plan map tab adds no primary button; the view holds at most the side panel's (0023 AC-010).*
   *Amended by 0024 (PD-068): AC-011 — a split button counts as one primary control; with an offer the view still holds at most two (0024 AC-003).*

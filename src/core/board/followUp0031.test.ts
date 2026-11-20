@@ -19,8 +19,8 @@ import { TIP_CLOSING, type StepCase } from '../../shared/protocol/nextStepTexts'
 const NO_HISTORY: HistoryView = { available: true, label: 'Only changes Studio saw while it was running.', entries: [] };
 const SHOW = parseStepTipSettings(true, {});
 const OFF = parseStepTipSettings(false, {});
-const COPILOT = { assistant: 'copilot' } as const;
-const CLAUDE = { assistant: 'claudeCode' } as const;
+const OFFER_A = { assistant: 'copilot' } as const;
+const OFFER_B = { assistant: 'claudeCode' } as const;
 
 const BACKLOG = '.specs/backlog/0007-x.md';
 const ACTIVE = '.specs/active/0007-x.md';
@@ -45,7 +45,7 @@ const CASES: Case[] = [
     { name: 'NS-5', files: 'studio-0015', key: '.specs/active/0015-focus-on-visibility.md', first: 'NS-5', own: 'NS-2', attaches: false },
 ];
 
-async function detailOf(files: Record<string, string> | string, key: string, extra: { offer?: typeof COPILOT | typeof CLAUDE; tips?: typeof SHOW } = {}) {
+async function detailOf(files: Record<string, string> | string, key: string, extra: { offer?: typeof OFFER_A | typeof OFFER_B; tips?: typeof SHOW } = {}) {
     const model = typeof files === 'string' ? await fixtureModel(files) : await modelOf(files);
     const entry = model.lifecycle.entries.find((candidate) => candidate.key === key)!;
     const view = buildDetail({ selection: { stem: entry.stem }, model, history: NO_HISTORY, ...extra }) as SpecDetailView;
@@ -55,7 +55,7 @@ async function detailOf(files: Record<string, string> | string, key: string, ext
 
 describe('0031 AC-002: each follow-up line carries its own Send view, attaching by its own case', () => {
     for (const row of CASES) {
-        for (const offer of [COPILOT, CLAUDE]) {
+        for (const offer of [OFFER_A, OFFER_B]) {
             it(`0031 AC-002 ${row.name} with ${offer.assistant}: the follow-up line's send view is that of its own case`, async () => {
                 const { model, next } = await detailOf(row.files, row.key, { offer });
                 const step = nextStep(model, row.key) as { case: StepCase };
@@ -77,8 +77,8 @@ describe('0031 AC-002: each follow-up line carries its own Send view, attaching 
     it('0031 AC-002 Claude Code attaches nothing for a path with whitespace, Copilot still does', async () => {
         const key = '.specs/backlog/0007-x y.md';
         const files = { [key]: specText() };
-        expect((await detailOf(files, key, { offer: CLAUDE })).next.lines[1]!.send).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
-        expect((await detailOf(files, key, { offer: COPILOT })).next.lines[1]!.send).toMatchObject({ attach: { name: '0007-x y.md', path: key } });
+        expect((await detailOf(files, key, { offer: OFFER_B })).next.lines[1]!.send).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
+        expect((await detailOf(files, key, { offer: OFFER_A })).next.lines[1]!.send).toMatchObject({ attach: { name: '0007-x y.md', path: key } });
     });
 
     it('0031 AC-002 without an offer no line carries a send view', async () => {
@@ -88,34 +88,34 @@ describe('0031 AC-002: each follow-up line carries its own Send view, attaching 
     });
 
     it('0031 AC-002 the view-level send stays the first line\'s', async () => {
-        const { next } = await detailOf(CASES[0]!.files, BACKLOG, { offer: COPILOT });
-        expect(next.send).toEqual(sendViewOf(COPILOT, 'NS-9', { key: BACKLOG }));
+        const { next } = await detailOf(CASES[0]!.files, BACKLOG, { offer: OFFER_A });
+        expect(next.send).toEqual(sendViewOf(OFFER_A, 'NS-9', { key: BACKLOG }));
     });
 });
 
 describe('0031 AC-011: the follow-up Tip is the Tip of its own case', () => {
     for (const row of CASES) {
         it(`0031 AC-011 ${row.name}: the coach equals that of the own case's first line`, async () => {
-            const { next } = await detailOf(row.files, row.key, { offer: COPILOT, tips: SHOW });
+            const { next } = await detailOf(row.files, row.key, { offer: OFFER_A, tips: SHOW });
             expect(next.lines[1]!.coach).toBe(stepTips(row.own!, SHOW, TIP_CLOSING, { version: '1.0.0', send: true }).coach);
             expect(next.lines[0]!.coach).toBeUndefined();
         });
     }
 
     it('0031 AC-011 NS-9\'s /sdd-plan line reads NS-10\'s sentence, and its first line keeps NS-9\'s', async () => {
-        const { next } = await detailOf(CASES[0]!.files, BACKLOG, { offer: CLAUDE, tips: SHOW });
+        const { next } = await detailOf(CASES[0]!.files, BACKLOG, { offer: OFFER_B, tips: SHOW });
         expect(next.lines[1]!.coach).toBe('Tip: Use any chat with a strong model, and allow web search.');
         expect(next.tips?.coach).toBe('Tip: Use a new chat with a strong model.');
     });
 
     it('0031 AC-011 with tips off no follow-up coach exists, the send view stays', async () => {
-        const { next } = await detailOf(CASES[0]!.files, BACKLOG, { offer: COPILOT, tips: OFF });
+        const { next } = await detailOf(CASES[0]!.files, BACKLOG, { offer: OFFER_A, tips: OFF });
         expect(next.lines[1]!.coach).toBeUndefined();
         expect(next.lines[1]!.send).toBeDefined();
     });
 
     it('0031 AC-011 without tips settings no coach exists', async () => {
-        const { next } = await detailOf(CASES[0]!.files, BACKLOG, { offer: COPILOT });
+        const { next } = await detailOf(CASES[0]!.files, BACKLOG, { offer: OFFER_A });
         expect(next.lines[1]!.coach).toBeUndefined();
     });
 });
@@ -163,7 +163,7 @@ describe('0031 AC-006: one-line surfaces and nextStep() are unchanged', () => {
     });
 
     it('0031 AC-006 a one-line step gets no per-line fields', async () => {
-        const { next } = await detailOf({ [BACKLOG]: specText({ criteria: false }) }, BACKLOG, { offer: COPILOT, tips: SHOW });
+        const { next } = await detailOf({ [BACKLOG]: specText({ criteria: false }) }, BACKLOG, { offer: OFFER_A, tips: SHOW });
         expect(next.lines).toHaveLength(1);
         expect(next.lines[0]!.send).toBeUndefined();
         expect(next.lines[0]!.coach).toBeUndefined();

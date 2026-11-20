@@ -493,7 +493,8 @@ describe('0024 AC-002, AC-003: Send in the rendered bundle, over the fixtures', 
         const rendered = await renderFixture(name, undefined, offer);
         expect(stray(rendered)).toEqual([]);
         for (const surface of rendered) {
-            expect(surface.splits.length, surface.where).toBeLessThanOrEqual(1);
+            // 0031 §6.1 (amends 0024 §6.3): a detail may hold the first line's split button and one for its follow-up line.
+            expect(surface.splits.length, surface.where).toBeLessThanOrEqual(surface.where.includes(' detail ') ? 2 : 1);
             expect(surface.menus, surface.where).toBe(0);
             if (surface.where.endsWith('board')) {
                 expect(surface.splits, surface.where).toEqual([]);
@@ -509,7 +510,8 @@ describe('0024 AC-002, AC-003: Send in the rendered bundle, over the fixtures', 
             const rendered = await renderMap(name, offer);
             expect(rendered.length, name).toBeGreaterThan(0);
             expect(rendered.filter((surface) => surface.splits > 0).map((surface) => surface.where), name).toEqual([]);
-            expect(rendered.every((surface) => surface.headerSends <= 3), name).toBe(true);
+            // 0031 §6.1: a split button counts its main/arrow wrapper and its arrow; the header may hold one for the first line and one for a follow-up line.
+            expect(rendered.every((surface) => surface.headerSends <= 6), name).toBe(true);
         }
     }, 120000);
 
@@ -550,7 +552,7 @@ describe('0024 AC-002, AC-003: Send in the rendered bundle, over the fixtures', 
             const sends = [...clone.querySelectorAll('.send-split')].length;
             [...clone.querySelectorAll('.visually-hidden, [hidden]')].forEach((hidden) => hidden.remove());
             const words = (clone.textContent ?? '').replace(/\s+/g, ' ').trim().split(' ').filter((word) => word !== '');
-            expect(sends, offer.assistant).toBeLessThanOrEqual(1);
+            expect(sends, offer.assistant).toBeLessThanOrEqual(2);
             expect(words.length, offer.assistant).toBeLessThanOrEqual(300);
             expect(errors).toEqual([]);
         }

@@ -92,6 +92,7 @@ their `aria-describedby`; without an attachment everything is as today.
 
 Where 0021, 0025 and 0026 show a coach line, it shows §7's sentence for the first line's session and model, with the
 model hint (0021 §6.7) after the word `model`. One sentence; place, colour, `showStepTips` and the `?` stay unchanged.
+*Amended by 0031 (follow-up Send): also under each follow-up line's Send, for its own case (0031 §6.3, AC-011).*
 
 ## 7. Texts (English, PD-016; in the text modules, asserted literally; proxies, A-003)
 

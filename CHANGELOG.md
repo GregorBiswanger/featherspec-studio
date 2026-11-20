@@ -10,6 +10,11 @@ First release.
 
 ### Added
 
+- Send on the follow-up line: where an assistant is chosen, the second prompt of a Next step (`Then: write the plan`
+  after `/sdd-clarify`, the report and continue lines of an Active spec, `/sdd-lifecycle` after `/sdd-compile`) offers its
+  own secondary Send to Copilot or Claude Code, with the same menu, its own Tip sentence and the spec attached where its
+  step reads it, in the detail and in the Plan map header; the two steps are separated by about one line of space. Without
+  an assistant the line keeps its Copy prompt.
 - After you hand `/sdd-clarify` over (Send, Copy prompt or Copy Next Step) and the spec file then changes, a Backlog
   spec's next step is `Write the plan` · `/sdd-plan <spec>`, with Send attaching the spec, instead of the challenge
   again. The Studio remembers the hand-over per workspace, survives a reload and reads no text of the spec. The coach line

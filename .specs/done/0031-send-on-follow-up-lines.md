@@ -1,7 +1,7 @@
 # Send on the Follow-up Line
 
-**Status:** In Progress
-**Plan:** [0031-send-on-follow-up-lines.plan.md](0031-send-on-follow-up-lines.plan.md)
+**Status:** Implemented
+**Plan:** [0031-send-on-follow-up-lines.2026-11-20.plan.md](../plan-archive/0031-send-on-follow-up-lines.2026-11-20.plan.md)
 
 Basis: Gregor's feedback 2026-11-20 (standing answer `orch/SPEC-0031.md`, treated as typed by him; screenshot of a Backlog
 spec's Next step: `/sdd-clarify` with a blue Send to Copilot, under it `Then: write the plan` · `/sdd-plan <spec>` with
@@ -87,7 +87,7 @@ A step case not in this table that gains a follow-up line later gets no attachme
 
 Where a follow-up line shows a Send and the coach line is shown (`showStepTips`, 0021 §6.5), a Tip sentence (0030 §6.4,
 §7) sits directly under its split button, built from its own case of §6.2: the `/sdd-plan` line of NS-9 reads
-`Tip: Use a new chat with a strong model.` (NS-10's session and model). Between the first line's block (its Tip, or its
+`Tip: Use any chat with a strong model, and allow web search.` (NS-10's session and model). Between the first line's block (its Tip, or its
 button where no Tip shows) and the next follow-up line's intent (`Then: …`) the detail and the Plan map header keep a
 vertical gap of at least 1em and at most 1.5em, measured in the line's font size; with Copy prompt only the gap is the
 same.
@@ -138,13 +138,13 @@ Node or jsdom tests decide every criterion unless marked manual.
   `Then: …`, no text or button cut, no word broken inside itself.
 - **AC-009** *(manual, Gregor, Hands-On on a fresh `tip-splitter`, with GitHub Copilot and Claude Code)* On the Backlog
   spec, `Then: write the plan` offers a grey Send that opens a chat with `/sdd-plan …` and the spec attached, its menu
-  holds new chat, current chat (Copilot) and Copy prompt, its Tip reads `Tip: Use a new chat with a strong model.`, and
+  holds new chat, current chat (Copilot) and Copy prompt, its Tip reads `Tip: Use any chat with a strong model, and allow web search.`, and
   the two steps read as separate blocks. He notes the versions.
 - **AC-010** Every test at the commit on which implementation starts shall exist at the head and pass, adjusted only
   where §5 changes its statement; `npm run test:unit` and `npm test` shall pass on Windows and in CI.
 - **AC-011** Where an assistant is offered and the coach line is shown, each follow-up line of NS-9, NS-5, NS-6-open and
   NS-6-report shall show, directly under its split button, the Tip sentence of its own case of §6.2, deep-equal to that
-  case's first-line Tip; NS-9's `/sdd-plan` line shall read `Tip: Use a new chat with a strong model.`; with
+  case's first-line Tip; NS-9's `/sdd-plan` line shall read `Tip: Use any chat with a strong model, and allow web search.`; with
   `showStepTips` off no follow-up Tip shall render.
 - **AC-012** Each item of a follow-up line's menu shall do what the same item does on the first line, with the follow-up
   line's prompt: `Send to a new chat` and (Copilot) `Send to the current chat` make 0024's and 0027's calls for that
@@ -191,8 +191,13 @@ Node or jsdom tests decide every criterion unless marked manual.
   against the Tip, now names 0030's sentences; AC-013's "first-line block" had no edge a stylesheet can decide, now the
   gap between line items; the Overview's first Now row was checked and shows one line (A-001); NS-6's own-case swap kept
   as proxy (A-002).
+- OP-003 Implementation 2026-11-20 (proxy, Gregor not reachable): the first draft named `Tip: Use a new chat with a strong model.` for NS-9's `/sdd-plan` line, but NS-10's guide is `any` chat with a strong model and web search (0030 §7), and §6.3 and AC-011 say "its own case, deep-equal"; the literal sentences of §6.3, AC-009 and AC-011 are corrected to NS-10's. Gregor can flip it.
 
 ## 12. Ready, Done and next steps
 
 Ready: clarified 2026-11-20 (OP-002); planned 2026-11-20, 4 steps in 2 stages. Done per the DoD of `AGENTS.md`; AC-008 by the orchestrator, AC-009 by Gregor.
-Next: `/sdd-clarify`, then `/sdd-plan`.
+Closed 2026-11-20 by `/sdd-lifecycle`; T-003 / AC-008 (preview, orchestrator), AC-009 (Gregor) and CI on PR #2 stay open.
+
+## Plan history
+
+- 2026-11-20 — [0031-send-on-follow-up-lines.2026-11-20.plan.md](../plan-archive/0031-send-on-follow-up-lines.2026-11-20.plan.md) — 4 steps in 2 stages: follow-up Send view and Tip, render and gap, preview (open), notes and docs; unit gates green; manual items open: T-003 (orchestrator), AC-009 (Gregor), `npm test` on Windows and CI on PR #2.

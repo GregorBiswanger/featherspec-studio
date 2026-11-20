@@ -111,6 +111,7 @@ Rows added to 0023 §5.3's card, in this order; rows a step lacks are left out:
   split button where Send is offered, its target 0026 §6.1), then the count, `Open plan` and M-02. Source: the detail
   view's `nextStep()` (guideline 1); texts 0021, 0026, 0027.
   *Amended by 0027 (PD-082, PD-083): followed by 0027 §6.3's attachment line where the view carries one; it stays during feedback (0027 AC-003).*
+  *Amended by 0031 (follow-up Send): also each follow-up line of the header shows a secondary split button where Send is offered (0031 §6.1).*
 - **One next step per window (D-2).** Map and side panel both show the selection (0023 §5.3, 0019 A-002). Exactly while
   the header shows the spec the side panel shows, the side panel leaves out its Next step section, as its Plan section
   (0023 §5.2): one next step, coach line and primary per view (guidelines 8, 11). While the map shows a state of 0023 §5.3

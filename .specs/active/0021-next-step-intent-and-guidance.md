@@ -182,6 +182,7 @@ feedback.
 
 For a step with a line, one line in the description colour, in the detail directly under the first line's Copy prompt
 and in the first Now row (its place there is 0022's); nowhere else. Text `<session> · <model>` of the first line.
+*Amended by 0031 (follow-up Send): also under each follow-up line's Send, for that line's own case (0031 §6.3, AC-011).*
 *Amended by 0026 (PD-082): only while the side panel does not show that row's spec (0026 §6.4, AC-006).*
 Session as the tables say: `new chat` · `same chat or new chat` · `any chat`. Model column → text: fast → `fast model`;
 *Amended by 0026 (PD-080): `current or new chat` replaces `same chat or new chat` (0026 §6.2); the reasons of 0026 §7 replace the two rows below.*

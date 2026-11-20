@@ -1,9 +1,9 @@
 # Plan — Send on the Follow-up Line
 
-**Spec:** [0031-send-on-follow-up-lines.md](0031-send-on-follow-up-lines.md)
-**Status:** In progress
+**Spec:** [0031-send-on-follow-up-lines.md](../done/0031-send-on-follow-up-lines.md)
+**Status:** Done
 **Last updated:** 2026-11-20
-**Current step:** T-003
+**Current step:** —
 
 ## Approach
 
@@ -86,8 +86,8 @@ No parallel stage: T-002 renders T-001's protocol fields; T-004's docs describe 
   Code, Dark, Light, High Contrast at 1600 px and 1000 px, side panel open; screenshots in `Notes:`.
 - **Verify:** manual: the orchestrator looks for one blue primary, equal-size split buttons each with its Tip, about one
   line of space before `Then: …`, no cut text or button, no word broken inside itself; jsdom has no layout engine.
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [ ] **Verified (T-003):** — open: the preview at two widths and three themes is the orchestrator's (AC-008).
+- **Notes:** Left open on purpose; nothing in the code waits for it.
 
 ### T-004 — Notes, docs and final gates
 
@@ -97,8 +97,8 @@ No parallel stage: T-002 renders T-001's protocol fields; T-004's docs describe 
   `docs/release-checklist.md` section 0031 with AC-008, AC-009; `docsScan.test.ts` "0031 AC-007 …" with a negative
   control; title audit (every title at the Baseline exists at the head); `activeContext.md`. All gates 1–5.
 - **Verify:** gates 1–5 green; `npx vitest run src/adapters/node/docsScan.test.ts src/core/lifecycle/problems.test.ts`.
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-20 final chain once at the end: eslint (0 warnings), `tsc --noEmit`, `tsc --noEmit -p src/webview` clean; `npm run test:unit` 215 files, 3835 passed after the fixes below (first run: 13 failed, all staying tests that state 0024's one split button per detail or header, the 300-word detail and the removed-feature scan on identifiers named `COPILOT`); docsScan, problems and sourceScan rerun green; `npm run compile` and `compile-tests` ok. `npm test` on Windows and CI are open.
+- **Notes:** Staying tests adjusted only where spec section 5 changes their statement (0024 §6.3): `webviewBundle.test.ts` allows two split buttons in a detail (header: six split elements) and `detail.test.ts` ignores the per-line `send`; no test weakened otherwise. Spec corrected at closing: the NS-9 follow-up Tip literal is NS-10's (OP-003).
 
 ## Traceability
 
@@ -110,18 +110,18 @@ No parallel stage: T-002 renders T-001's protocol fields; T-004's docs describe 
 | AC-004 | T-002 | `webview/detail/NextStep.tsx` | `webview/followUp0031.test.tsx` | covered |
 | AC-005 | T-001, T-002 | `core/board/detail.ts`, `webview/detail/NextStep.tsx` | `core/board/followUp0031.test.ts`, `webview/followUp0031.test.tsx` | covered |
 | AC-006 | T-001, T-004 | `core/board/nextStep.ts` untouched | `core/board/followUp0031.test.ts`, `core/board/nextStepBaseline.test.ts` | covered |
-| AC-007 | T-004 | — | — | open |
-| AC-008 | T-003 | — | — | open |
-| AC-009 | T-004 (checklist) | — | — | open |
-| AC-010 | T-004 | — | — | open |
+| AC-007 | T-004 | `README.md`, `CHANGELOG.md`, `docs/release-checklist.md`, the notes of spec section 5 | `adapters/node/docsScan.test.ts` | covered |
+| AC-008 | T-003 | — (preview harness) | manual, orchestrator | open |
+| AC-009 | T-004 (checklist) | `docs/release-checklist.md` | manual, Gregor | open |
+| AC-010 | T-004 | the staying tests, adjusted in `core/board/detail.test.ts` and `adapters/node/webviewBundle.test.ts` only where spec section 5 changes their statement | `npm run test:unit` green; `npm test` on Windows and CI open | covered (unit); Windows and CI open |
 | AC-011 | T-001, T-002 | `core/board/detail.ts`, `webview/detail/NextStep.tsx` | `core/board/followUp0031.test.ts`, `webview/followUp0031.test.tsx` | covered |
 | AC-012 | T-002 | `webview/detail/NextStep.tsx` | `webview/followUp0031.test.tsx` | covered |
 | AC-013 | T-002 | `webview/main.css` | `adapters/node/webviewCss.test.ts` | covered |
 
 ## Session handoff
 
-- **Done so far:** T-001, T-002
-- **Next action:** T-003 (orchestrator, preview), then T-004
+- **Done so far:** T-001, T-002, T-004 verified; the spec is closed (Implemented 2026-11-20).
+- **Next action:** — (open outside the plan: T-003 preview, orchestrator; AC-009, Gregor; CI on PR #2).
 - **Open decisions:** — (spec OP-001: no change to 0030's detection, flippable by Gregor)
 - **Baseline:** a383cc6
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

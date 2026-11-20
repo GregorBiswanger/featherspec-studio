@@ -301,6 +301,18 @@ and the expected result. A clear miss reopens the named spec.
   after Send of `/sdd-clarify` and the challenge, the Next step reads `Write the plan` · `/sdd-plan …` without a reload, as
   a Send that attaches the spec; no attachment line shows; the coach reads as a Tip sentence.
 
+## Send on the follow-up line (0031)
+
+- [ ] **AC-008** *(preview harness by the orchestrator; guideline 12)*: the detail of a Backlog spec (NS-9) and of an Active
+  spec with an open step (NS-6-open) and the Plan map header of the latter, with GitHub Copilot and Claude Code, in Dark,
+  Light and High Contrast at 1600 px and 1000 px window width with the side panel open. One blue primary, two split buttons
+  of the same size, each with its Tip, a visible gap of about one line before `Then: ...`, no text or button cut, no word
+  broken inside itself. Screenshots go into the plan.
+- [ ] **AC-009** *(Gregor, Hands-On on a fresh `tip-splitter`, with GitHub Copilot and with Claude Code; note the versions)*:
+  on the Backlog spec, `Then: write the plan` offers a grey Send that opens a chat with `/sdd-plan ...` and the spec
+  attached; its menu holds new chat, current chat (GitHub Copilot) and Copy prompt; its Tip reads as a sentence under it; the
+  two steps read as separate blocks.
+
 ## Go
 
 - [ ] **Repository visibility**: the Marketplace page loads the README screenshots from

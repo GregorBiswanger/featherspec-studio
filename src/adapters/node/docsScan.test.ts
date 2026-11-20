@@ -378,6 +378,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
             '## Attach the spec when sending (0027)',
             '## Onboarding before setup (0029)',
             '## Clarified step, quiet attachment, Tip sentence (0030)',
+            '## Send on the follow-up line (0031)',
             '## Go',
         ]);
         for (const gone of ['Plan line', 'descriptions cut', 'attention row', 'attention reason', 'filters, sort']) {
@@ -1199,5 +1200,32 @@ describe('product docs after 0027 (AC-015)', () => {
             expect(section, mark).toContain(mark);
         }
         expect('no note here').not.toContain('Amended by 0030 (PD-092)');
+    });
+
+    it('0031 AC-007: the notes of section 5, the README, the CHANGELOG and the checklist section', async () => {
+        const notes = [
+            '.specs/active/0021-next-step-intent-and-guidance.md',
+            '.specs/active/0022-layout-and-signal-polish.md',
+            '.specs/active/0024-send-next-step-to-assistant.md',
+            '.specs/done/0025-plan-map-navigation-and-progress.md',
+            '.specs/active/0027-attach-spec-when-sending.md',
+            '.specs/done/0030-clarified-step-quiet-attach-tip.md',
+        ];
+        for (const file of notes) {
+            expect(await read(file), file).toContain('Amended by 0031 (follow-up Send)');
+        }
+        const readme = await read('README.md');
+        expect(readme).toContain('further prompts of the detail and of the Plan map header offer a secondary **Send**');
+        const changelog = firstRelease(await read('CHANGELOG.md'));
+        expect(changelog).toContain('Send on the follow-up line');
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('(0031)\n');
+        expect(start).toBeGreaterThan(-1);
+        expect(start).toBeLessThan(text.indexOf('\n## Go'));
+        const section = text.slice(start, text.indexOf('\n## ', start));
+        for (const mark of ['**AC-008**', '**AC-009**']) {
+            expect(section, mark).toContain(mark);
+        }
+        expect('no note here').not.toContain('Amended by 0031 (follow-up Send)');
     });
 });
