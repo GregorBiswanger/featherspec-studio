@@ -240,7 +240,6 @@ main > h1 {
     height: 24px;
 }
 
-/* 0032 AC-007: the welcome's explanation stays a readable line length. */
 .empty-state .welcome-body {
     max-width: 65ch;
     margin-inline: auto;
@@ -872,12 +871,10 @@ main > h1 {
     padding: 2px 0;
 }
 
-/* 0033 AC-005: every line is a column; the prompt is as wide as its text and at most as wide as the column, Send stands under it. */
 .next-step-lines li > code {
     max-width: 100%;
 }
 
-/* 0033 AC-007: the Next step starts at the left edge of Plan, Progress and Files. */
 .section-body .next-step-lines {
     padding-left: 0;
 }
@@ -889,6 +886,13 @@ main > h1 {
 
 .next-step-lines code {
     min-width: 0;
+    overflow-wrap: break-word;
+}
+
+.path-seg {
+    display: inline-block;
+    max-width: 100%;
+    white-space: normal;
     overflow-wrap: break-word;
 }
 

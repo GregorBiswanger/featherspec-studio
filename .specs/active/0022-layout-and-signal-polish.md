@@ -84,6 +84,8 @@ the viewport:
 
 - 686 px is the list width at PD-065 (5)'s 720 px Studio panel (panel − 34 px), so nothing moves while no side panel is shown (A-005).
 - A list takes the area's width: beside the side panel the area keeps at least 360 px (G-2), below 900 px the whole Studio panel (G-4); the rule covers both and VS Code's zoom. In the two- and three-line layouts number and title share their line with nothing else (g03, AC-028).
+
+*Amended by 0033 (AC-008): in the two-line layouts the status glyph, number, title and Problem badge share the first line; the narrow layout has two lines.*
 - A Problems row cuts nothing at any width: two lines from 420 px, three below (§4.5).
 - Titles wrap only between words; a single word wider than its whole line is the one case that breaks inside. Paths and commands follow §4.6.
 - Every Copy stays fully on screen at every list width (WCAG 2.2 SC 2.4.11).
@@ -321,6 +323,7 @@ Decided by unit tests (core, no `vscode`), component tests (jsdom) and styleshee
 - **AC-014** No sentence X-10…X-24, with every inserted path, value and number replaced by `x`, shall contain `backlog/`, `active/`, `done/`, `**`, `Plan line`, `sibling`, `stem`, `parsing` or `diagnostic`.
 - **AC-015** Every element of §4.6 shall render a `<wbr>` directly after each `/`, `-` and `.` of its path and no other `<wbr>`; its text content and its Copy's clipboard text shall equal the path or line unchanged.
   *Amended by 0023 (PD-069): AC-015 — also the Plan map's `Files`, way prompts and start lines (0023 §5.3, §5.4).*
+  *Amended by 0033 (AC-006): a `<wbr>` after each `/` only, never after `-` or `.`; every path segment between slashes is one unbreakable unit.*
 - **AC-016** The statements of §5 shall carry their notes directly beneath them; the implementation shall edit no existing row of the PD register.
 - **AC-017** Every test at the commit on which this spec's implementation starts that decides a criterion not changed in §5 shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI; a script shall compare the test titles of both commits, and the plan shall list every missing title with the changed statement or the head title that replaces it.
   *Amended by 0023 (PD-069): AC-017 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
@@ -342,6 +345,7 @@ Decided by unit tests (core, no `vscode`), component tests (jsdom) and styleshee
 - **AC-027** Every Overview row shall render its spec's state icon (§4.8) before its state text with the state's name as tooltip, and the row's accessible name shall hold that name exactly once; where the state text is that name, the stylesheet shall hide it, visually only, inside the container rules below 686 px and nowhere else; no rule shall hide a need or a Problem sentence. (component and stylesheet tests)
 - **AC-028** With the Studio panel at 920 px, the side panel beside it at its default width and 0001 selected, the list width computed from G-2's default and the stylesheet's paddings shall select the two-line layout; at the narrowest list beside the side panel (area 360 px) the computed width shall hold a title line of 12 characters (`12ch`) and the widest Copy; in the two- and three-line layouts the stylesheet shall put number and title on a line of their own and set no `white-space: nowrap` on the title. (unit and stylesheet tests; AC-019 previews it)
   *Amended by 0024 (PD-068): AC-028 — "every Copy", "the widest Copy": the split button of the first Now row is the widest control of its row (0024 AC-009).*
+  *Amended by 0033 (AC-008): in the two-line layouts the status glyph, number, title and Problem badge share the first line; the narrow layout has two lines.*
 - **AC-029** While the Studio panel is narrower than 900 px (query stubbed), the webview shall show the area alone with no spec selected and, with one selected, the detail alone with X-27 for the current area at its top left and no close button or divider; when the developer activates the back button or presses Escape inside the detail, the system shall clear the selection, show the area with its earlier scroll position and move focus as 0019 AC-003; when the width crosses 900 px, the selection shall stay, side by side from 900 px and the detail alone below, focus where it was while that stays shown, else on the detail's heading. (component tests)
   *Amended by 0024 (PD-068): AC-029 — Escape inside the detail does not leave it while 0024's Send menu is open (0024 AC-008).*
 

@@ -814,16 +814,16 @@ describe('0022 AC-013, AC-015, AC-002, AC-003: sentences and breaking paths in t
         expect(textOf(container.querySelector('.detail-problems li')!)).toBe(long);
     });
 
-    it('AC-002: the detail path, a Files link and the path in a next-step line break after a separator and keep their text', async () => {
+    it('AC-002: the detail path, a Files link and the path in a next-step line break after a slash and keep their text', async () => {
         const container = await open(spec({ path: '.specs/backlog/0007-thing.md' }, { rule: 'NS-5', lines: [{ text: '/sdd-plan .specs/backlog/0007-thing.md', intent: 'Write the plan' }] }));
         const path = container.querySelector('.detail-path')!;
         expect(path.textContent).toBe('.specs/backlog/0007-thing.md');
         expect(path.querySelectorAll('wbr').length).toBeGreaterThan(0);
         const file = section(container, 'Files').querySelector('button.file-link')!;
-        expect(file.querySelectorAll('wbr').length).toBeGreaterThan(0);
+        expect(file.querySelectorAll('wbr')).toHaveLength(0);
         const line = container.querySelector('.next-step-lines code')!;
         expect(line.textContent).toBe('/sdd-plan .specs/backlog/0007-thing.md');
-        expect(line.innerHTML.startsWith('/sdd-plan .')).toBe(true);
+        expect(line.innerHTML.startsWith('/sdd-plan <span')).toBe(true);
         expect(line.querySelectorAll('wbr').length).toBeGreaterThan(0);
         expect(container.querySelector('.next-step-copy')?.getAttribute('aria-label')).toBe('Copy prompt: /sdd-plan .specs/backlog/0007-thing.md');
     });

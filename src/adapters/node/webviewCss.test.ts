@@ -1105,7 +1105,6 @@ describe('0032: onboarding arrow, Send row and line length', () => {
     });
 
     it('0032 AC-006 a prompt that has a Send split button takes a whole row, so Send stands under it', () => {
-        // Amended by 0033 (§5): the line is a column, so Send stands under its prompt without a stretching rule.
         expect(rulesFor(css, '.next-step-lines li > code:has(+ .send-split)')).toEqual([]);
         expect(rulesFor(css, '.next-step-lines li').some((rule) => /flex-direction:\s*column/.test(rule.body))).toBe(true);
     });

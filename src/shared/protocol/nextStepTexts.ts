@@ -41,7 +41,7 @@ export interface StepGuide {
     session: SessionKey;
     model: ModelKey;
     effect: string;
-    then: string;
+    then?: string;
 }
 
 const BUILD_THEN = 'When it stops, the Studio shows the next step; a working agreement such as a test review may stop it earlier.';
@@ -114,7 +114,6 @@ export const STEP_GUIDES: Record<StepCase, StepGuide> = {
         session: 'any',
         model: 'fast',
         effect: 'The agent moves spec and plan to active and sets the status to In Progress. Afterwards the Studio offers T-001.',
-        then: 'The spec then shows its first step to implement.',
     },
     'NS-8': { short: 'Add criteria', session: 'any', model: 'strong', effect: 'The agent goes through the spec with you and adds testable acceptance criteria.', then: 'Then the spec is challenged and planned.' },
     'NS-9': {

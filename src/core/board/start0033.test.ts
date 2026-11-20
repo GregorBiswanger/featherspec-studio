@@ -29,6 +29,7 @@ describe('0033 AC-001: a Ready spec in backlog/ starts via /sdd-lifecycle', () =
         const view = stepView(model, BACKLOG)!;
         expect(stepShortForm(view)).toBe('Start · Set active');
         expect(STEP_GUIDES['NS-7-start'].short).toBe('Start');
+        expect(STEP_GUIDES['NS-7-start'].then).toBeUndefined();
         expect(STEP_GUIDES['NS-7-start'].effect).toBe('The agent moves spec and plan to active and sets the status to In Progress. Afterwards the Studio offers T-001.');
         expect(stepTips('NS-7-start', SHOW).coach).toBe('Tip: Use any chat with a fast model.');
     });

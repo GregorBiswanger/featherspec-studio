@@ -63,6 +63,9 @@ The implementing change set adds a note under each statement, "*Amended by 0033 
 | 0028 D-4 (start signal: Implement includes backlog → active) | A Ready spec's next step is the start step `/sdd-lifecycle <spec> In Progress`; Implement follows in `active/` (PD-096, 0033 §6.1, §6.2) |
 | 0021 §6.1 NS-7 row (short form `Start`, effect `The agent moves the spec to active, builds one step, …`) | NS-7 serves `active/` without a tick; its effect no longer names the move (0033 §6.2); the start step has its own row (§6.1) |
 | 0027 §6.1 (attachment table, a yes/no per case) and PD-091 | Each case attaches the files its prompt names: start → spec and plan, Implement → plan only (PD-097, 0033 §6.3) |
+| 0022 AC-028 (§4.1 rule; number and title share the first line in the two- and three-line layouts) | In the two-line layouts the status glyph, number, title and Problem badge share the first line; the narrow layout has two lines (0033 AC-008) |
+| 0022 AC-015 (a `<wbr>` after each `/`, `-` and `.` of every displayed path) | A `<wbr>` after each `/` only; each segment between slashes is one unbreakable unit, in every displayed path (0033 AC-006) |
+| 0027 AC-010 (a plan path is refused) | A plan entry of the current model whose file exists is accepted (PD-097, 0033 §6.3); every other plan path stays refused |
 | 0031 §6.1 and 0032 AC-006 (`li > code:has(+ .send-split)` at full width) | The line is a column; the prompt is as wide as its text, Send under it, left-aligned (0033 §6.4) |
 
 ## 6. Business rules
@@ -107,7 +110,7 @@ most as wide as the column; Send stands under it, left-aligned. At 1000 px and 1
 
 ### 6.5 Path breaks
 
-A displayed path breaks only after `/` (a `<wbr>` after each `/`). The copied and the sent text are unchanged.
+A displayed path breaks only after `/` (a `<wbr>` after each `/`), never after `-` or `.` and never inside a word. Every segment between slashes is one unbreakable unit; a segment longer than its column overflow-wraps as the last resort. This holds for every displayed path (Next step prompts, Ways prompts, detail path, Files, cards, banners, problems). The copied and the sent text are unchanged.
 
 ### 6.6 Next step indent
 

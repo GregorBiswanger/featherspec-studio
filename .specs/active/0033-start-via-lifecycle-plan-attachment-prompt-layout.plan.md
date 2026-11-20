@@ -53,6 +53,7 @@ No parallel stage: T-001 and T-002 share `StepCase` and `STEP_ATTACHES`; T-003 r
   new `core/board/start0033.test.ts` "0033 AC-001 …" (single line, no follow-up, texts), "AC-002 …".
 - **Verify:** `npx vitest run src/core/board src/shared/protocol` — red first, then green.
 - [x] **Verified (T-001):** 2026-11-20 · `npx vitest run src/core/board/start0033.test.ts` 7 passed (the stub was skipped: impl and test written together, so no red run); with the literal tests of §5 moved, `src/core src/shared` green
+- **Process deviation:** no red run was recorded for T-001, T-002 or T-003 (AGENTS.md TDD rule: red via a `Not implemented` stub); the compile review's mutation spot-checks show the new tests can fail.
 - **Notes:** Active without a tick serves NS-7 (one line, no `Or:` line), after NS-6-report's guards; a Ready spec with a tick keeps NS-7 (A-002). Short intent `Start`, command short form `Set active` (`shortForm()`), joined `Start · Set active`. Tests moved by §5: fixtures that expected `Continue with`/`Or:` or `Implement` for an untouched plan got a ticked first step (stepLinks, surfaces0028, statusEntry, planMap ready model, followUp0031, cards, polish0032); `NS-7-start` rows added to the literal tables; baseline exceptions `NS7` extended to tips and `NS7_ACTIVE` added for `repo-f9cadb4` 0028. Proxy: the planMap offers no ways for the start step (it would Implement in `backlog/`).
 
 ### T-002 — The attachment follows the prompt
@@ -76,7 +77,7 @@ No parallel stage: T-001 and T-002 share `StepCase` and `STEP_ATTACHES`; T-003 r
   copied and sent text unchanged), "AC-008 …"; `webviewCss.test.ts` "0033 AC-005 …", "AC-007 …" (A-004).
 - **Verify:** `npx vitest run src/webview src/adapters/node/webviewCss.test.ts` — red first, then green.
 - [x] **Verified (T-003):** 2026-11-20 · `npx vitest run src/webview src/adapters/node/webviewCss.test.ts` 933 passed; AC-007's edge test is the stylesheet assertion (A-004), the orchestrator's T-005 measures `getBoundingClientRect`
-- **Notes:** `<wbr>` after `/` only through `PathText after="slash"` in the Next step prompt; the default of `PathText` (after `/`, `.`, `-`) stays for cards, banner and Ways, because 0022's tests pin it (proxy: AC-006 scoped to the Next step prompt, the one of 17 screenshot 1). Overview narrow layouts: areas `state number title … problem` / `step … copy` (two lines in both, was two and three); 0018 AC-028's test moved accordingly (not listed in §5). `.next-step-intent` keeps `flex: 1 0 100%` (0021 pins it).
+- **Notes:** `<wbr>` after `/` only through `PathText after="slash"` in the Next step prompt; superseded in the compile fix: `PathText` breaks after `/` only everywhere and wraps each segment between slashes in a nowrap-able `.path-seg` (a segment wider than its column overflow-wraps as the last resort); no scope proxy remains, 0022 AC-015 carries an amendment note. Overview narrow layouts: areas `state number title … problem` / `step … copy` (two lines in both, was two and three); 0018 AC-028's test moved accordingly (not listed in §5). `.next-step-intent` keeps `flex: 1 0 100%` (0021 pins it).
 
 ### T-004 — Notes, PDs, docs and final gates
 
@@ -86,7 +87,7 @@ No parallel stage: T-001 and T-002 share `StepCase` and `STEP_ATTACHES`; T-003 r
   All gates 1–5.
 - **Verify:** gates 1–5 green; `npx vitest run src/adapters/node/docsScan.test.ts src/core/lifecycle/problems.test.ts`.
 - [x] **Verified (T-004):** 2026-11-20 · `npx eslint src --max-warnings 0 && npx tsc --noEmit && npx tsc --noEmit -p src/webview && npm run test:unit && npm run compile` all green (3900 passed + 4 skipped, timing 35 passed); `docsScan` and `problems` green
-- **Notes:** §5 notes added in 0028 (two places), 0021, 0031, 0032; **not in 0027** (the orchestrator said not to touch it: its §6.1 attachment table and PD-091 note is still open). PD-096 and PD-097 in `product-decisions.md`; README, CHANGELOG, `activeContext.md`. The title audit by hand: no test title was renamed, only literals and fixtures moved (titles kept even where their wording is older, e.g. `thirteen step cases`). `compile-tests` and `npm test` (host) not run, per cadence v2; the orchestrator runs them on Windows.
+- **Notes:** §5 notes added in 0028 (two places), 0021, 0031, 0032; 0027 (§6.1 and AC-010) and 0022 (AC-015, AC-028) in the compile fix, PD-091 "Refined by PD-097". PD-096 and PD-097 in `product-decisions.md`; README, CHANGELOG, `activeContext.md`. The title audit by hand: 24 baseline (`995305c`) test titles are absent at the head, all by §5: 22 × `0027 AC-001 {copilot,claudeCode} NS-*: the spec name and path` retitled `…: the file names and paths of 0033 §6.3` (`attachment.test.ts`); 1 × `0027 AC-010 …` the plan-key row removed from the refused list in `sendAttach.test.ts` (plan keys are accepted by PD-097; §5 row added); 1 × `0022 … AC-028: in the two- and three-line layouts number and title share their first line…` retitled `…in the two-line layouts the status glyph, number and title share their first line (0033 AC-008)…` (`webviewCss.test.ts`; §5 row added). Finding from the orchestrator's preview, kept (`f253885`): the generic `.copy-button:hover` painted secondary buttons primary blue, giving light-theme contrast of about 2:1; `.copy-button.copy-secondary:hover` keeps the grey hover. The start step's `(?)` carries doc 17's wording only (`then` is optional in `StepGuide`). `compile-tests` and `npm test` (host) not run, per cadence v2; the orchestrator runs them on Windows.
 
 ### T-005 — Preview of 17 §5 *Prüfen*
 
@@ -118,7 +119,7 @@ No parallel stage: T-001 and T-002 share `StepCase` and `STEP_ATTACHES`; T-003 r
 | AC-003 | T-002, T-005 | `attachment.ts`, `assistants.ts`, `send.ts` | `core/assistant/attach0033.test.ts` | built; preview open |
 | AC-004 | T-002, T-005 | `attachment.ts`, `assistants.ts`, `send.ts`, `SendButton.tsx` | `core/assistant/attach0033.test.ts`, `webview/layout0033.test.tsx` | built; preview open |
 | AC-005 | T-003, T-005 | `main.css` | `adapters/node/webviewCss.test.ts` | built; preview open |
-| AC-006 | T-003, T-005 | `PathText.tsx`, `NextStep.tsx` | `webview/layout0033.test.tsx` | built; preview open |
+| AC-006 | T-003, T-005 | `PathText.tsx`, `main.css` | `webview/layout0033.test.tsx`, `webview/ui/PathText.test.tsx` | built; preview open |
 | AC-007 | T-003, T-005 | `main.css` | `adapters/node/webviewCss.test.ts` (stylesheet, A-004) | built; preview open |
 | AC-008 | T-003, T-005 | `main.css` | `adapters/node/webviewCss.test.ts` | built; preview open |
 

@@ -95,6 +95,8 @@ its row, as 0028's do here. A step *attaches* when it reads this spec's text.
 
 Copy-only prompts (line 2, ways, start lines, card Copies) never attach (§4).
 
+*Amended by 0033 (PD-097, 0033 §6.3): each case attaches the files its prompt names: start → spec and plan, Implement → plan only; the host also accepts a plan entry of the current model whose file exists.*
+
 *Amended by 0032 (PD-094, 0032 §6.8): Copilot's current chat attaches nothing; Send calls `workbench.action.chat.open` with `{ query, isPartialQuery: true }` and no `attachFiles`, and the name and tooltip carry no `Attaches …` there; target `new` keeps attaching.*
 
 ### 6.2 Version gate and assistants (A-002…A-004, A-012)
@@ -200,6 +202,7 @@ Copilot and Claude Code, stamped `1.11.0` unless a criterion names another; the 
 - **AC-008** With an attaching view, Copy prompt in the menu and the fallback of each 0024 AC-006 cause shall put exactly the line on the clipboard, and the fallback's Output line shall not contain the line; in none of these runs shall the clipboard hold ` @<spec path>`.
 - **AC-009** If at send time the spec source finds no file at the spec path (stat gives nothing or rejects), or the current model holds no spec entry with that path, then the host shall make exactly 0024 §6.4's calls as AC-006 states them, the main part shall show `Opened in <Name>` with §7's sentence without the spec as tooltip and in its live region, the Output shall get §7's line once, and no notification shall show; one fixture per cause and assistant. A `stat` not settled 5000 ms after the activation shall end in 0024 AC-006's fallback (fake timers).
 - **AC-010** If a send request's `attach` names no spec entry of the active project — a plan, a return note, `AGENTS.md`, `.env`, `../x.md`, an absolute path — then no call shall carry it, in `attachFiles` or after `@`, and the Send shall go as AC-009 states.
+  *Amended by 0033 (PD-097, 0033 §6.3): a plan entry of the current model whose file exists is accepted too; any other plan path is still refused.*
 - **AC-011** *(Amended 2026-11-20 by PD-091: no update sentence exists; the toggletip's third paragraph is always 0024's. The text below is the earlier criterion.)* While Send is offered and §6.1 marks the case *yes* but §6.2's version gate withholds the attachment, the toggletip's third paragraph shall be 0024's Send sentence, one space and §7's update sentence, literally; in every other case it shall be 0024's (0024 AC-013).
 - **AC-012** *(Amended 2026-11-20 by PD-091: only a change of the spec's path moves the attachment; the version crossing no longer does.)* When the `FeatherSpecVersion:` value crosses the attach version or the spec's path changes, the detail, the Overview and the Plan map shall show the new attachment state within 500 ms after the model-changed notification (PD-047, timing test), keeping selection, area and focus as 0024 AC-010 states.
 - **AC-013** No Send, attachment check or line shall create, change, move or delete a workspace file, write a setting or reach the network (0024 AC-012's tests extended), and the host shall call the spec source with `stat` only; AC-001–AC-012 shall hold in Restricted Mode and a reader window; §7's texts shall come from a text module; 0016's user-language sweep shall cover the line.

@@ -99,7 +99,6 @@ export function integrateIsQuiet(model: ShellModel, entry: LifecycleEntry, spec:
     return returnedWorkViewOf(model, entry, spec)?.group === true && next !== undefined && 'case' in next && next.case === 'NS-6-returned';
 }
 
-/** 0032 §6.5: the intent of the quiet Integrate names the members that are not back; undefined once all are back. */
 export function waitingIntentOf(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry): string | undefined {
     if (!integrateIsQuiet(model, entry, spec)) {
         return undefined;

@@ -19,7 +19,7 @@ export function stepTips(stepCase: StepCase, settings: StepTipSettings, closing:
     const session = levelled ? SAME_OR_NEW_REASON_LEVELLED : SESSION_REASONS[guide.session];
     const then = stepCase === 'NS-6-returned' && context.send === true ? INTEGRATE_SEND_THEN : guide.then;
     const update = context.attaches === true && (context.version === undefined || !levelsOnImplement(context.version)) ? ` ${UPDATE_ATTACH_TEXT}` : '';
-    const effect = `${guide.effect}${update} ${then}`;
+    const effect = then === undefined ? `${guide.effect}${update}` : `${guide.effect}${update} ${then}`;
     return {
         coach: `${COACH_TIP_PREFIX} Use ${SESSION_PHRASES[guide.session]} with ${model}.`,
         about: [context.reason === undefined ? effect : `${context.reason} ${effect}`, `${session} ${MODEL_REASONS[guide.model]}`, closing[0], closing[1]],

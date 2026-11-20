@@ -10,7 +10,6 @@ export const ASSISTANT_TARGETS: Record<AssistantId, readonly AssistantTarget[]> 
     claudeCode: ['new'],
 };
 
-/** 0032 §6.8 (PD-094): Copilot's current chat has the spec in its context already, so only a new chat attaches it. */
 export function attachesInTarget(assistant: AssistantId, target: AssistantTarget): boolean {
     return !(assistant === 'copilot' && target === 'current');
 }

@@ -11,7 +11,6 @@ const KEY = '.specs/backlog/0002-x.md';
 const PLAN = '.specs/backlog/0002-x.plan.md';
 const SPEC_FILE = { name: '0002-x.md', path: KEY };
 const PLAN_FILE = { name: '0002-x.plan.md', path: PLAN };
-/** 0033 §6.3: Implement attaches the plan, the start step the spec and the plan, every other case the spec. */
 const FILES_OF = (stepCase: StepCase) => (stepCase === 'NS-6-open' || stepCase === 'NS-7' ? [PLAN_FILE] : stepCase === 'NS-7-start' ? [SPEC_FILE, PLAN_FILE] : [SPEC_FILE]);
 const ALL = (): boolean => true;
 const offerFor = (assistant: AssistantId) => ({ assistant, attaches: true });

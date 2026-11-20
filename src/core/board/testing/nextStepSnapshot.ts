@@ -119,7 +119,6 @@ function replaceAll0032(value: unknown, pairs: ReadonlyArray<readonly [string, s
     return JSON.parse(pairs.reduce((text, [from, to]) => text.split(from).join(to), JSON.stringify(value)));
 }
 
-/** 0032 §5: the Baseline's texts that 0032 changes, read as the head writes them. */
 function translated0032(value: SpecSnapshot): SpecSnapshot {
     const stepCase = (value.nextStep as { case?: string } | null)?.case;
     let result = replaceAll0032(value, WORDING_0032_ANY) as SpecSnapshot;

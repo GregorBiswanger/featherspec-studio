@@ -17,13 +17,13 @@ async function html(node: React.ReactElement): Promise<HTMLElement> {
 }
 
 function breaks(container: HTMLElement): string {
-    return container.innerHTML.replace(/<wbr>/g, '|');
+    return container.innerHTML.replace(/<span class="path-seg">([^<]*)<\/span>/g, '$1').replace(/<wbr>/g, '|');
 }
 
-describe('0022 AC-002: a path breaks only after a separator', () => {
-    it('puts a break opportunity after each slash, hyphen and dot of a path and nowhere else', async () => {
+describe('0022 AC-002: a path breaks only after a slash', () => {
+    it('puts a break opportunity after each slash of a path and never after a hyphen or a dot', async () => {
         const container = await html(<PathText path=".specs/active/0022-layout-and-signal.plan.md" />);
-        expect(breaks(container)).toBe('.|specs/|active/|0022-|layout-|and-|signal.|plan.|md');
+        expect(breaks(container)).toBe('.specs/|active/|0022-layout-and-signal.plan.md');
     });
 
     it('keeps the text content as it was', async () => {
@@ -35,8 +35,8 @@ describe('0022 AC-002: a path breaks only after a separator', () => {
         const container = await html(<PathText path="folder/" />);
         expect(breaks(container)).toBe('folder/|');
         expect(container.textContent).toBe('folder/');
-        expect(breaks(await html(<PathText path="a-b." />))).toBe('a-|b.|');
-        expect(breaks(await html(<PathText command="open .specs/active/" />))).toBe('open .|specs/|active/|');
+        expect(breaks(await html(<PathText path="a-b." />))).toBe('a-b.');
+        expect(breaks(await html(<PathText command="open .specs/active/" />))).toBe('open .specs/|active/|');
     });
 
     it('0022 AC-015: a path without a separator gets no break opportunity at all', async () => {
@@ -45,8 +45,15 @@ describe('0022 AC-002: a path breaks only after a separator', () => {
 
     it('puts breaks into the path arguments of a command and not into the command, a word or a flag', async () => {
         const container = await html(<PathText command="/sdd-plan .specs/active/0001-a.md" />);
-        expect(breaks(container)).toBe('/sdd-plan .|specs/|active/|0001-|a.|md');
+        expect(breaks(container)).toBe('/sdd-plan .specs/|active/|0001-a.md');
         expect(container.textContent).toBe('/sdd-plan .specs/active/0001-a.md');
+    });
+
+    it('0033 AC-006: every slash-free segment is one nowrap-able unit, so a hyphenated file name has no break opportunity', async () => {
+        const container = await html(<PathText command="Implement T-001 of .specs/active/0001-restaurant-rechnung-aufteilen.plan.md" />);
+        expect([...container.querySelectorAll('.path-seg')].map((unit) => unit.textContent)).toEqual(['.specs/', 'active/', '0001-restaurant-rechnung-aufteilen.plan.md']);
+        expect(container.querySelectorAll('wbr')).toHaveLength(2);
+        expect(container.textContent).toBe('Implement T-001 of .specs/active/0001-restaurant-rechnung-aufteilen.plan.md');
     });
 
     it('leaves a command without a path argument whole', async () => {

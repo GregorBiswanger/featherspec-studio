@@ -6,7 +6,6 @@ import { attachesOf, type Offer } from './offer';
 
 export type AttachedFile = 'spec' | 'plan';
 
-/** 0033 §6.3 (PD-097): each case attaches the files its prompt names, in this order. */
 export const STEP_FILES: Record<StepCase, readonly AttachedFile[]> = {
     'NS-2': [],
     'NS-4': [],
@@ -51,7 +50,6 @@ export interface AttachmentContext {
     plan?: string;
 }
 
-/** `attach` is the first file, `attachAlso` the others in table order (0033 §6.3). */
 export interface AttachmentDecision {
     attach?: Attachment;
     attachAlso?: Attachment[];
