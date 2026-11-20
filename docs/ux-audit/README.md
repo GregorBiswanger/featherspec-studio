@@ -28,7 +28,7 @@ by Playwright, on five workspaces, in Dark, Light and High Contrast, at two wind
 | [15-post-round3-review.md](15-post-round3-review.md) | Review of the post-round-3 fixes 0029–0031 and PD-090–092 at `fbf8830` (2026-11-20): all seven wishes met, findings H-1…H-9, answers to the open questions (plan Tip, 0027, merge PR #2, Gregor's checks) |
 | [screenshots-fbf8830/](screenshots-fbf8830/) | 11 screenshots of the VSIX at `3773816` (`x01`…`x15`), referenced in 15 |
 | [16-release-handoff.md](16-release-handoff.md) | **Last work order before release:** decisions PD-093–PD-095, spec 0032 "Release polish" (AC-001…AC-008), checks, release steps, clean-up |
-| [17-start-lifecycle-feedback.md](17-start-lifecycle-feedback.md) | Addendum to 16 before the release: start via `/sdd-lifecycle`, attachment follows the prompt, prompt layout (spec 0033) |
+| [17-start-step-and-prompt-layout.md](17-start-step-and-prompt-layout.md) | Gregor's field feedback after 0032 (2026-11-20): start via `/sdd-lifecycle`, attach what the prompt names, prompt width, indentation; spec 0033 (AC-001…AC-008), PD-096/PD-097 |
 
 How the product acts on it: decisions PD-058 … PD-062 (audit) and PD-068, PD-069 (review) in
 [product-decisions.md](../product/product-decisions.md), the UX guidelines in

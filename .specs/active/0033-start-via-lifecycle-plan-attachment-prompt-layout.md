@@ -3,7 +3,7 @@
 **Status:** In Progress
 **Plan:** [0033-start-via-lifecycle-plan-attachment-prompt-layout.plan.md](0033-start-via-lifecycle-plan-attachment-prompt-layout.plan.md)
 
-Basis: Gregor's practice feedback after 0032, `docs/ux-audit/17-start-lifecycle-feedback.md` (addendum to 16), treated
+Basis: Gregor's practice feedback after 0032, `docs/ux-audit/17-start-step-and-prompt-layout.md` (addendum to 16), treated
 as typed by him and binding before the release. Rules from 17 §2–§4, criteria from 17 §5, PD-096 and PD-097 new.
 Feature freeze of 16 holds: only these eight points. No interview: every answer comes from 17; open items became proxies
 (§10, §11).
