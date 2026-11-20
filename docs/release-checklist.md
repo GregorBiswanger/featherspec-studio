@@ -7,11 +7,11 @@ and the expected result. A clear miss reopens the named spec.
 
 - [x] **Publisher ID**: `package.json` → `"publisher": "GregorBiswanger"` is Gregor's existing Marketplace
   publisher (publisher management page, confirmed by Gregor on 2026-11-17; it already owns three extensions).
-- [ ] **Icon**: `media/icon.png` is the FeatherSpec logo (from the template's `featherspec-logo.png`, padded to
+- [x] **Icon** (Gregor, 2026-11-20 Go): `media/icon.png` is the FeatherSpec logo (from the template's `featherspec-logo.png`, padded to
   256 × 256) — confirm it may be used for Studio or replace it.
 - [x] **Screenshots and links**: push `media/screenshots/` and `docs/` to the default branch of
   `GregorBiswanger/featherspec-studio` first; vsce rewrites the README's relative links to that repository. (`main` has them since PR #2.)
-- [ ] **Gallery banner, categories, keywords** in `package.json` read right to you.
+- [x] **Gallery banner, categories, keywords** (Gregor, 2026-11-20 Go; keywords and description per PD-098) in `package.json` read right to you.
 - [x] **Host suite** green on Windows at the release commit: `npm test`. Repeat only if the head moved. (Green at 77eebc9, 2026-11-20: 34+1+1+1, exit 0.)
 - [x] **Universal VSIX**: `npx @vscode/vsce ls` → only `dist/`, `media/` (icon, Activity Bar icon, the two tab icons), `package.json`,
   README, CHANGELOG, LICENSE; no `node_modules/`, no `.node` file. (At 77eebc9: 11 files — CHANGELOG, LICENSE, package.json, README, `dist/extension.js`, `dist/webview/main.css` and `main.js`, `media/icon.png` and three `.svg`; no `node_modules/`.)
@@ -345,15 +345,15 @@ Evidence for `docs/ux-audit/17-start-step-and-prompt-layout.md` §5 *Prüfen*, s
 
 ## Go
 
-- [ ] **Repository visibility**: the Marketplace page loads the README screenshots from
+- [x] **Repository visibility** (public, 2026-11-20): the Marketplace page loads the README screenshots from
   `GregorBiswanger/featherspec-studio`. While the repository is private they do not show — make it public
   before the publish, or accept a page without pictures.
-- [ ] **Trusted Publishing policy** (once): Marketplace publisher management → your publisher → *Trusted
+- [x] **Trusted Publishing policy** (once; "Release workflow", active 2026-11-20): Marketplace publisher management → your publisher → *Trusted
   Publishing* → *Create*: repository owner `GregorBiswanger`, repository `featherspec-studio`, workflow
   `publish.yml`, no environment. For a private repository the workflow must run within 48 hours after that.
   Azure DevOps tokens (PAT) stop working for publishing on 2026-12-01, so no token is used here.
 - [x] **CHANGELOG date** (2026-11-20, Gregor's Go): set the date of the 0.1.0 entry in CHANGELOG.md (`## [0.1.0] - Unreleased` becomes
   `## [0.1.0] - <release day>`) and commit it before the publish.
-- [ ] All boxes ticked → Go → `gh workflow run publish.yml -f confirm=publish` (the workflow runs the unit
+- [x] **Published 2026-11-20** by Gregor's Go: run 44761333126 on `main` `bf236fc`, Marketplace `GregorBiswanger.featherspec-studio` 0.1.0, Visualization and AI; README images load from the public repository. All boxes ticked → Go → `gh workflow run publish.yml -f confirm=publish` (the workflow runs the unit
   suite and `npx @vscode/vsce publish --oidc`). Alternative without the workflow: `npx @vscode/vsce package`
   and upload the `.vsix` by hand on the publisher management page.

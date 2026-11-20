@@ -1,6 +1,6 @@
 # UX/UI audit of FeatherSpec Studio 0.1.0 (2026-11-17)
 
-**Valid now (2026-11-19):** the guidelines in [ux-guidelines.md](../product/ux-guidelines.md) and the closing state in [14-final-review.md](14-final-review.md). Files 01–13 are history: they record how the product got there and are not to be acted on again.
+**Valid now (2026-11-20, after the release of 0.1.0):** the guidelines in [ux-guidelines.md](../product/ux-guidelines.md), the closing state in [14-final-review.md](14-final-review.md), the post-round-3 review [15-post-round3-review.md](15-post-round3-review.md), the release order [16-release-handoff.md](16-release-handoff.md) and its addendum [17-start-step-and-prompt-layout.md](17-start-step-and-prompt-layout.md). Files 01–13 are history: they record how the product got there and are not to be acted on again.
 
 Source document, kept as delivered (German), like `docs/product/po-handoff.md`. It was made on
 commit `3c2b8b7` with the real VSIX in an isolated code-server 4.145.2 (VS Code 1.145.2), driven
