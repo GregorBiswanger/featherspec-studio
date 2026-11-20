@@ -158,11 +158,12 @@ export function createSend(deps: SendDeps): Send {
                 return result;
             };
             if (deps.chosen.read() !== request.assistant) {
-                return copied(request.line).then(settle);
+                const result = copied(request.line);
+                return handOver === undefined ? result : result.then(settle);
             }
             const turn = tail.then(() => attempt(request));
             tail = turn.catch(() => undefined);
-            return turn.then(settle);
+            return handOver === undefined ? turn : turn.then(settle);
         },
     };
 }
