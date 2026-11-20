@@ -134,6 +134,7 @@ Open step = the plan step NS-7's function finds (0015 NS-7). PD-072 (V-1, record
 | No sibling plan | Write the plan · `/sdd-plan <spec path>` | — | Plan | any chat · strong, web search | The agent researches and writes the plan; for a reactivated spec, a fresh plan for the change. | You read the plan before anything is built. |
 *Amended by 0026 (PD-082): short intent `Report` (0026 §6.3, AC-003).*
 *Amended by 0032 (PD-095, 0032 §6.4): line 2 of the open-step row reads `Or: not sure where it stands? Let the agent report first`.*
+*Amended by 0032 (PD-093, 0032 §6.3): the "No sibling plan" row has session new, Tip: Use a new chat with a strong model, and allow web search.*
 
 *Amended by 0028 (PD-081, D-1): row "Plan without open step" and AC-005 — an Active spec has no finished plan (0028 §6.1); the effect and then-sentence of 0028 §7 (the short intent is 0026's).*
 

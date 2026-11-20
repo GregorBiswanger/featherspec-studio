@@ -1,9 +1,9 @@
 # Plan — Release Polish
 
-**Spec:** [0032-release-polish.md](0032-release-polish.md)
-**Status:** In Progress
+**Spec:** [0032-release-polish.md](../done/0032-release-polish.md)
+**Status:** Done
 **Last updated:** 2026-11-20
-**Current step:** T-005
+**Current step:** —
 
 ## Approach
 
@@ -97,8 +97,8 @@ No parallel stage: T-001…T-003 share `nextStepTexts.ts` and the detail protoco
   chat (attachment) and the current chat (no attachment). Screenshots and the stub log in `Notes:`.
 - **Verify:** manual: the orchestrator looks for a 14 px arrow, the Tips, Send on its own row, the waiting sentence, no
   cut text and the two call logs; jsdom has no layout engine and the stub runs outside the tests.
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** orchestrator, 2026-11-20 — harness `r15check.mts` at 77eebc9, Copilot, Dark/Light/HC × 1600/1000 px, 24 of 24 clean; AC-006 `manual: orchestrator checked …, 2026-11-20` (recorded in spec §12)
+- **Notes:** x01 arrow 14×14, explanation `max-width` 65ch (533 px), Tip `Tip: Use a new chat with a strong model.`; x04 `Have the spec challenged`, `Then: write the plan` with Tip `Tip: Use a new chat with a strong model, and allow web search.`, every Send below its prompt; x07 Tip `Tip: Use the current chat or a new one with a fast model.`, `Or: not sure where it stands? Let the agent report first`, Send below at 1000 px; x09 `When T-004 is back: integrate the returned steps`, Send below. Stub send (Copilot): new chat carries `attach`, current chat carries none, menu `Send to a new chat` / `Send to the current chat` / `Copy prompt`. Windows at 77eebc9: unit 3858/8 + 35 timing; `npm test` 34+1+1+1, exit 0. Screenshots `/home/claude/orch/preview/r15-0032`.
 
 ### T-006 — Release checklist evidence
 
@@ -106,26 +106,26 @@ No parallel stage: T-001…T-003 share `nextStepTexts.ts` and the detail protoco
 - **Do:** `docs/release-checklist.md` section "Release polish (0032)": T-005's evidence, the fresh `/sdd-compile`
   verdict, `npm test` on Windows, the VSIX rebuild for Gregor.
 - **Verify:** `npx vitest run src/adapters/node/docsScan.test.ts src/core/lifecycle/problems.test.ts`.
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** `npx vitest run src/adapters/node/docsScan.test.ts src/core/lifecycle/problems.test.ts` green; section "Release polish (0032)" in `docs/release-checklist.md`. 2026-11-20
+- **Notes:** VSIX 259.36 KB, `vsce ls` 11 files; the fresh `/sdd-compile` after the D-1 fix and Gregor's practice check (16 §4.1) stay open there.
 
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-003, T-005 | `webview/ui/EmptyState.tsx`, `webview/board/icons.tsx`, `webview/main.css` | `webview/polish0032.test.tsx` "0032 AC-001"; `webviewCss.test.ts` "0032 AC-001" | built; preview open |
+| AC-001 | T-003, T-005 | `webview/ui/EmptyState.tsx`, `webview/board/icons.tsx`, `webview/main.css` | `webview/polish0032.test.tsx` "0032 AC-001"; `webviewCss.test.ts` "0032 AC-001" | verified; preview 2026-11-20 |
 | AC-002 | T-001 | `shared/protocol/nextStepTexts.ts` | `core/board/polish0032.test.ts` "0032 AC-002" | built |
 | AC-003 | T-001 | `shared/protocol/nextStepTexts.ts` (`STEP_GUIDES`) | `core/board/polish0032.test.ts` "0032 AC-003" | built |
 | AC-004 | T-001 | `shared/protocol/nextStepTexts.ts`, `core/board/nextStep.ts` | `core/board/polish0032.test.ts` "0032 AC-004" | built |
-| AC-005 | T-002, T-005 | `core/planMap/returnedWork.ts`, `core/board/detail.ts`, `nextStepTexts.ts` | `core/planMap/polish0032.test.ts` "0032 AC-005" | built; preview open |
-| AC-006 | T-003, T-005 | `webview/main.css` | `webviewCss.test.ts` "0032 AC-006" | built; preview open |
-| AC-007 | T-003, T-005 | `core/assistant/welcome.ts`, `shared/protocol/overview.ts`, `webview/ui/Welcome.tsx`, `main.css` | `webview/polish0032.test.tsx` "0032 AC-007"; `core/assistant/welcome0032.test.ts`; `webviewCss.test.ts` "0032 AC-007" | built; preview open |
-| AC-008 | T-002, T-005 | `shared/protocol/assistant.ts` (`attachesInTarget`), `core/assistant/send.ts`, `webview/ui/SendButton.tsx`, `core/board/stepTips.ts` | `core/assistant/sendAttach.test.ts` "0032 AC-008"; `core/board/polish0032.test.ts` "0032 AC-008"; `webview/ui/SendButton.test.tsx` "0032 AC-008" | built; preview open |
+| AC-005 | T-002, T-005 | `core/planMap/returnedWork.ts`, `core/board/detail.ts`, `nextStepTexts.ts` | `core/planMap/polish0032.test.ts` "0032 AC-005" | verified; preview 2026-11-20 |
+| AC-006 | T-003, T-005 | `webview/main.css` | `webviewCss.test.ts` "0032 AC-006" | verified; preview 2026-11-20 |
+| AC-007 | T-003, T-005 | `core/assistant/welcome.ts`, `shared/protocol/overview.ts`, `webview/ui/Welcome.tsx`, `main.css` | `webview/polish0032.test.tsx` "0032 AC-007"; `core/assistant/welcome0032.test.ts`; `webviewCss.test.ts` "0032 AC-007" | verified; preview 2026-11-20 |
+| AC-008 | T-002, T-005 | `shared/protocol/assistant.ts` (`attachesInTarget`), `core/assistant/send.ts`, `webview/ui/SendButton.tsx`, `core/board/stepTips.ts` | `core/assistant/sendAttach.test.ts` "0032 AC-008"; `core/board/polish0032.test.ts` "0032 AC-008"; `webview/ui/SendButton.test.tsx` "0032 AC-008" | verified; preview 2026-11-20 |
 
 ## Session handoff
 
-- **Done so far:** T-001…T-004 built and committed (T-004 once the final chain is green); T-005 preview and T-006 evidence belong to the orchestrator.
-- **Next action:** T-005 (orchestrator preview of 16 §3), then T-006; the orchestrator closes the spec
+- **Done so far:** T-001…T-006 done; T-005 and T-006 recorded 2026-11-20.
+- **Next action:** — (closed 2026-11-20 by `/sdd-lifecycle`; open: fresh `/sdd-compile`, Gregor's practice check 16 §4.1, CI)
 - **Open decisions:** spec OP-001 (NS-9's then-sentence, proxy unchanged)
 - **Baseline:** `d4b9656` (docs(0032): spec and plan)
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

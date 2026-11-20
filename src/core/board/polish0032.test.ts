@@ -5,6 +5,12 @@ import { modelOf } from './testing/boardWorld';
 import { NS5_THEN_INTENT, NS6_REPORT_INTENT, NS9_INTENT, NS9_THEN_INTENT, SESSION_PHRASES, STEP_GUIDES, thenContinueIntent } from '../../shared/protocol/nextStepTexts';
 import { nextStep } from './nextStep';
 import { stepTips } from './stepTips';
+import { buildDetail } from './detail';
+import { createSpecResolver } from '../overview/specRefs';
+import { projectNow } from '../overview/rows';
+import { modelFor } from '../overview/testing/projects';
+import type { SpecDetailView } from '../../shared/protocol/detail';
+import type { HistoryView } from '../lifecycle/statusHistory';
 
 const SHOW = parseStepTipSettings(true, {});
 const ACTIVE = '.specs/active/0007-x.md';
@@ -82,5 +88,29 @@ describe('0032 AC-008: the (?) asks for the update where Send attaches below 1.1
 
     it('0032 AC-008 where Send attaches nothing there is no update sentence', () => {
         expect(about('1.10.0', false)).not.toContain(UPDATE);
+    });
+});
+
+describe('0032 AC-008: the real surfaces carry the update sentence', () => {
+    const UPDATE = 'Update to FeatherSpec 1.11.0 with /sdd-featherspec-update so the attached spec is not read twice.';
+    const NO_HISTORY: HistoryView = { available: true, label: '', entries: [] };
+
+    it('0032 AC-008 the detail (?) of a Backlog spec sent with Copilot holds the update sentence, without an offer it does not', async () => {
+        const model = await modelOf({ [BACKLOG]: specText() });
+        const entry = model.lifecycle.entries.find((candidate) => candidate.key === BACKLOG)!;
+        const aboutOf = (offer?: { assistant: 'copilot' }): string => {
+            const view = buildDetail({ selection: { stem: entry.stem }, model, history: NO_HISTORY, tips: SHOW, ...(offer === undefined ? {} : { offer }) }) as SpecDetailView;
+            return (view.nextStep as { tips: { about: string[] } }).tips.about[0]!;
+        };
+        expect(aboutOf({ assistant: 'copilot' })).toContain(UPDATE);
+        expect(aboutOf()).not.toContain(UPDATE);
+    });
+
+    it('0032 AC-008 the first Now row sent with Copilot holds the update sentence in its (?), without an offer it does not', async () => {
+        const model = await modelFor([{ number: '0001', kind: 'Review' }]);
+        const resolver = createSpecResolver(model);
+        const aboutOf = (offer?: { assistant: 'copilot' }): string => projectNow(model, resolver, SHOW, offer).rows[0]!.tips!.about[0]!;
+        expect(aboutOf({ assistant: 'copilot' })).toContain(UPDATE);
+        expect(aboutOf()).not.toContain(UPDATE);
     });
 });

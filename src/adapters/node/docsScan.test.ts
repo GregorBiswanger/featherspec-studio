@@ -379,6 +379,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
             '## Onboarding before setup (0029)',
             '## Clarified step, quiet attachment, Tip sentence (0030)',
             '## Send on the follow-up line (0031)',
+            '## Release polish (0032)',
             '## Go',
         ]);
         for (const gone of ['Plan line', 'descriptions cut', 'attention row', 'attention reason', 'filters, sort']) {

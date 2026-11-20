@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { waitingIntegrateIntent } from '../../shared/protocol/nextStepTexts';
 import { buildDetail } from '../board/detail';
-import { fixtureModel, setNote } from './testing/plans';
+import { fixtureModel, replaceIn, setNote } from './testing/plans';
 
 const PARTIAL = '.specs/active/0001-fixture-demo.md';
+const PARTIAL_PLAN = '.specs/active/0001-fixture-demo.plan.md';
 const NO_HISTORY = { available: true as const, label: '', entries: [] };
 const NOTE_4 = '.memory-bank/activeContext.0001-T-004.md';
 const note = (id: string, status: string) => `# Return note — 0001 · ${id}\n\n- **Status:** ${status}\n- **Files:** —\n- **Verified:** —\n- **Notes:** —\n`;
@@ -35,5 +36,10 @@ describe('0032 AC-005: the quiet Integrate names the members that are not back',
     it('0032 AC-005 once every member is back the intent is Integrate the returned steps again', async () => {
         const model = await fixtureModel('fs-partial-return', setNote(NOTE_4, note('T-004', 'DONE')));
         expect(await intentOf(model)).toEqual({ intent: 'Integrate the returned steps', quiet: false });
+    });
+
+    it('0032 AC-005 two members out of a three-member group: the detail names both in plan order', async () => {
+        const model = await fixtureModel('fs-partial-return', replaceIn(PARTIAL_PLAN, '2. T-004 ‖ T-005 — separate modules', '2. T-004 ‖ T-005 ‖ T-006 — separate modules'));
+        expect(await intentOf(model)).toEqual({ intent: 'When T-004 and T-006 are back: integrate the returned steps', quiet: true });
     });
 });

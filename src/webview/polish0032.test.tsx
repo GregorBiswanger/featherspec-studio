@@ -4,6 +4,7 @@ import type { OverviewView } from '../shared/protocol/overview';
 import type { SendView } from '../shared/protocol/assistant';
 import { sampleView } from '../shared/protocol/testing/overviewSample';
 import { App } from './App';
+import { EmptyState } from './ui/EmptyState';
 import { createClient, type ShellClient } from './client';
 import { baseView, mount, overviewEvent, send, shellEvent, type Mounted } from './testing/dom';
 
@@ -37,6 +38,13 @@ describe('0032 AC-001: the Send arrow in the onboarding is 14 x 14 px', () => {
         const arrow = container.querySelector<SVGElement>('[data-welcome] .send-arrow svg')!;
         expect(arrow.getAttribute('class')).toBe('icon');
         expect([arrow.getAttribute('width'), arrow.getAttribute('height')]).toEqual(['14', '14']);
+    });
+});
+
+describe('0032 AC-001: every other empty-state glyph keeps its size', () => {
+    it('0032 AC-001 only the feather carries empty-state-feather', async () => {
+        mounted = await mount(<EmptyState icon="empty">Nothing here</EmptyState>);
+        expect(mounted.container.querySelector('.empty-state svg')?.getAttribute('class')).toBe('icon');
     });
 });
 

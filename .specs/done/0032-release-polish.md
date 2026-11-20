@@ -1,7 +1,7 @@
 # Release Polish
 
-**Status:** In Progress
-**Plan:** [0032-release-polish.plan.md](0032-release-polish.plan.md)
+**Status:** Implemented
+**Plan:** [0032-release-polish.2026-11-20.plan.md](../plan-archive/0032-release-polish.2026-11-20.plan.md)
 
 Basis: Gregor's last order before the release, `docs/ux-audit/16-release-handoff.md` §1 (PD-093…PD-095) and §2 (eight
 points), treated as typed by him and binding; evidence from `docs/ux-audit/15-post-round3-review.md` (H-1…H-9, screenshots
@@ -207,3 +207,9 @@ implementation starts exists at the head and passes, adjusted only where §5 cha
 and `npm test` pass on Windows and in CI; a fresh `/sdd-compile` gives READY with 0 deviations; the preview of 16 §3 is
 recorded in `docs/release-checklist.md` under "Release polish (0032)"; README, CHANGELOG and PD-093…PD-095 updated.
 Acceptor: Gregor (practice check, 16 §4).
+Closed 2026-11-20 by `/sdd-lifecycle` on the `Verified:` lines of T-001…T-006 and the compile brief of this date, whose only blocker (D-1, the 0021 §6.2 note) was fixed in this run; a fresh `/sdd-compile` and CI stay open; manual item: Gregor's practice check (16 §4.1).
+manual: orchestrator checked AC-006, 2026-11-20 — harness r15check.mts at 77eebc9, Copilot, Dark/Light/HC × 1600/1000 px: 24 of 24 clean (no cut text, no word broken, no page errors); x01 onboarding: arrow 14×14, explanation max-width 65ch (533 px), Tip `Tip: Use a new chat with a strong model.`; x04 clarify detail: `Have the spec challenged`, Tip new chat strong; `Then: write the plan` with Tip `Tip: Use a new chat with a strong model, and allow web search.`; every Send below its prompt; x07 Plan map: `Tip: Use the current chat or a new one with a fast model.`, `Or: not sure where it stands? Let the agent report first`, Send below the prompt at 1000 px; x09 partial return: `When T-004 is back: integrate the returned steps`, Send below; stub send (Copilot): a new chat carries `attach`, the current chat request carries no `attach`, the menu reads `Send to a new chat` / `Send to the current chat` / `Copy prompt`; screenshots /home/claude/orch/preview/r15-0032
+
+## Plan history
+
+- 2026-11-20 — [0032-release-polish.2026-11-20.plan.md](../plan-archive/0032-release-polish.2026-11-20.plan.md) — 6 steps in 3 stages: texts, partial-return intent and current-chat attachment, onboarding and Send row, notes and gates, preview (orchestrator, 24 of 24 clean), checklist evidence; manual item: Gregor's practice check (16 §4.1).

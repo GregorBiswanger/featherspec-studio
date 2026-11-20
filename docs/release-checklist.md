@@ -9,12 +9,12 @@ and the expected result. A clear miss reopens the named spec.
   publisher (publisher management page, confirmed by Gregor on 2026-11-17; it already owns three extensions).
 - [ ] **Icon**: `media/icon.png` is the FeatherSpec logo (from the template's `featherspec-logo.png`, padded to
   256 × 256) — confirm it may be used for Studio or replace it.
-- [ ] **Screenshots and links**: push `media/screenshots/` and `docs/` to the default branch of
-  `GregorBiswanger/featherspec-studio` first; vsce rewrites the README's relative links to that repository.
+- [x] **Screenshots and links**: push `media/screenshots/` and `docs/` to the default branch of
+  `GregorBiswanger/featherspec-studio` first; vsce rewrites the README's relative links to that repository. (`main` has them since PR #2.)
 - [ ] **Gallery banner, categories, keywords** in `package.json` read right to you.
-- [ ] **Host suite** green on Windows at the release commit: `npm test`. Repeat only if the head moved.
-- [ ] **Universal VSIX**: `npx @vscode/vsce ls` → only `dist/`, `media/` (icon, Activity Bar icon, the two tab icons), `package.json`,
-  README, CHANGELOG, LICENSE; no `node_modules/`, no `.node` file.
+- [x] **Host suite** green on Windows at the release commit: `npm test`. Repeat only if the head moved. (Green at 77eebc9, 2026-11-20: 34+1+1+1, exit 0.)
+- [x] **Universal VSIX**: `npx @vscode/vsce ls` → only `dist/`, `media/` (icon, Activity Bar icon, the two tab icons), `package.json`,
+  README, CHANGELOG, LICENSE; no `node_modules/`, no `.node` file. (At 77eebc9: 11 files — CHANGELOG, LICENSE, package.json, README, `dist/extension.js`, `dist/webview/main.css` and `main.js`, `media/icon.png` and three `.svg`; no `node_modules/`.)
 
 ## Trying the extension locally
 
@@ -312,6 +312,21 @@ and the expected result. A clear miss reopens the named spec.
   on the Backlog spec, `Then: write the plan` offers a grey Send that opens a chat with `/sdd-plan ...` and the spec
   attached; its menu holds new chat, current chat (GitHub Copilot) and Copy prompt; its Tip reads `Tip: Use any chat with a strong model, and allow web search.` (OP-003, confirm or flip); the
   two steps read as separate blocks.
+
+## Release polish (0032)
+
+Evidence for `docs/ux-audit/16-release-handoff.md` §3, head 77eebc9, 2026-11-20.
+
+- [ ] **Fresh `/sdd-compile`**: READY, 0 deviations. The first run found D-1 (0021 §6.2 note), fixed afterwards; run it again.
+- [x] **`npm test` on Windows** at 77eebc9: unit 3858/8 + 35 timing; `npm test` 34+1+1+1, exit 0.
+- [x] **Preview** *(orchestrator, harness `r15check.mts`, GitHub Copilot, Dark / Light / High Contrast × 1600 / 1000 px)*: 24 of 24 clean — no cut text, no word broken, no page errors. Screenshots in `/home/claude/orch/preview/r15-0032`; AC-006 is recorded as `manual: orchestrator checked …, 2026-11-20` in the spec's §12.
+  - x01 onboarding: arrow 14×14, explanation `max-width` 65ch (533 px), Tip `Tip: Use a new chat with a strong model.`
+  - x04 clarify detail: `Have the spec challenged` with Tip new chat strong; `Then: write the plan` with Tip `Tip: Use a new chat with a strong model, and allow web search.`; every Send below its prompt.
+  - x07 Plan map: `Tip: Use the current chat or a new one with a fast model.`, `Or: not sure where it stands? Let the agent report first`, Send below the prompt at 1000 px.
+  - x09 partial return: `When T-004 is back: integrate the returned steps`, Send below.
+- [x] **Stub send (GitHub Copilot)**: a new chat carries `attach`; the current chat request carries no `attach`; the menu reads `Send to a new chat` / `Send to the current chat` / `Copy prompt`.
+- [x] **VSIX rebuilt** at 77eebc9: 259.36 KB, `vsce ls` lists 11 files (see Before publishing).
+- [ ] **Practice check** *(Gregor, 16 §4.1, new VSIX on `tip-splitter`)*: send a Backlog spec to `/sdd-clarify` and, once clarify ran, `Write the plan` appears; send once to a new chat (attachment visible) and once to the current chat (no attachment) with GitHub Copilot; nothing is sent automatically.
 
 ## Go
 
