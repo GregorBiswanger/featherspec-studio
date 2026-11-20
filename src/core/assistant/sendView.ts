@@ -21,6 +21,6 @@ export function sendViewOf(offer: Offer | undefined, stepCase: StepCase, context
     if (view === undefined || offer === undefined) {
         return undefined;
     }
-    const attach = context === undefined ? undefined : attachmentOf(offer, stepCase, context).attach;
-    return attach === undefined ? view : { ...view, attach };
+    const decision = context === undefined ? {} : attachmentOf(offer, stepCase, context);
+    return decision.attach === undefined ? view : { ...view, attach: decision.attach, ...(decision.attachAlso === undefined ? {} : { attachAlso: decision.attachAlso }) };
 }

@@ -95,7 +95,7 @@ export function translated(value: unknown): unknown {
     return JSON.parse(WORDING_0026.reduce((text, [from, to]) => text.split(from).join(to), JSON.stringify(value)));
 }
 
-const SESSION_0030: Readonly<Record<string, string>> = { 'new chat': 'a new chat', 'current or new chat': 'the current chat or a new one,', 'any chat': 'any chat' };
+const SESSION_0030: Readonly<Record<string, string>> = { 'new chat': 'a new chat', 'current or new chat': 'the current chat or a new one', 'any chat': 'any chat' };
 const MODEL_SUFFIX_0030: Readonly<Record<string, string>> = { '': '', ', other family': ' from another model family', ', allow web search': ', and allow web search' };
 
 export function coachTranslated0030(value: unknown): unknown {
@@ -105,11 +105,46 @@ export function coachTranslated0030(value: unknown): unknown {
     return JSON.parse(text);
 }
 
+const WORDING_0032_ANY: ReadonlyArray<readonly [string, string]> = [
+    ['Not sure where it stands? Let the agent report first', 'Or: not sure where it stands? Let the agent report first'],
+    ['Have the spec challenged, then plan it', 'Have the spec challenged'],
+];
+const WRITES_PLAN_0032 = new Set(['NS-10', 'NS-6-plan']);
+const PLAN_TIP_0032: ReadonlyArray<readonly [string, string]> = [
+    ['Use any chat with a strong model', 'Use a new chat with a strong model'],
+    ['Any chat: the step reads everything it needs from the files.', 'New chat: a fresh session reads the files as a stranger would; what the current chat knows cannot be unread.'],
+];
+
+function replaceAll0032(value: unknown, pairs: ReadonlyArray<readonly [string, string]>): unknown {
+    return JSON.parse(pairs.reduce((text, [from, to]) => text.split(from).join(to), JSON.stringify(value)));
+}
+
+function translated0032(value: SpecSnapshot): SpecSnapshot {
+    const stepCase = (value.nextStep as { case?: string } | null)?.case;
+    let result = replaceAll0032(value, WORDING_0032_ANY) as SpecSnapshot;
+    if (stepCase === 'NS-6-report') {
+        const next = result.nextStep as { lines: Array<{ intent: string }> };
+        const view = result.stepView as { lines?: Array<{ intent: string }> } | null;
+        for (const line of [next.lines[1], view?.lines?.[1]]) {
+            if (line !== undefined && line.intent.startsWith('Continue with ')) {
+                line.intent = `Then: continue with ${line.intent.slice('Continue with '.length)}`;
+            }
+        }
+    }
+    if (stepCase !== undefined && WRITES_PLAN_0032.has(stepCase)) {
+        result = { ...result, tips: replaceAll0032(result.tips, PLAN_TIP_0032) };
+    }
+    if (stepCase === 'NS-9') {
+        result = { ...result, tips: replaceAll0032(result.tips, PLAN_TIP_0032) };
+    }
+    return result;
+}
+
 export function readBaseline(name: string): ProjectSnapshot {
     const raw = JSON.parse(fs.readFileSync(snapshotFile(name), 'utf8')) as ProjectSnapshot;
     const result: ProjectSnapshot = {};
     for (const [key, value] of Object.entries(raw)) {
-        result[key] = { ...value, stepView: withShortIntent(value), tips: coachTranslated0030(translated(value.tips)) };
+        result[key] = translated0032({ ...value, stepView: withShortIntent(value), tips: coachTranslated0030(translated(value.tips)) });
     }
     return result;
 }

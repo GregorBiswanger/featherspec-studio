@@ -1,7 +1,7 @@
 {
   "name": "featherspec-studio",
   "displayName": "FeatherSpec Studio",
-  "description": "Visual command center for spec-driven development with FeatherSpec: see every spec, know its next step.",
+  "description": "Spec-driven development for GitHub Copilot and Claude Code: see every spec, its plan and next step, and send it to your agent.",
   "version": "0.1.0",
   "publisher": "GregorBiswanger",
   "license": "MIT",
@@ -30,8 +30,28 @@
     "featherspec",
     "spec-driven development",
     "sdd",
+    "spec",
     "specs",
-    "kanban"
+    "specification",
+    "requirements",
+    "acceptance criteria",
+    "plan",
+    "planning",
+    "kanban",
+    "board",
+    "ai",
+    "ai agent",
+    "coding agent",
+    "agentic coding",
+    "GitHub Copilot",
+    "copilot",
+    "claude code",
+    "claude",
+    "context engineering",
+    "memory bank",
+    "prompt",
+    "workflow",
+    "project management"
   ],
   "extensionKind": [
     "workspace"
@@ -308,5 +328,10 @@
   "overrides": {
     "diff": "^8.0.4",
     "serialize-javascript": "^7.0.6"
+  },
+  "pricing": "Free",
+  "qna": "marketplace",
+  "author": {
+    "name": "Gregor Biswanger"
   }
 }

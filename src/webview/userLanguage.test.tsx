@@ -308,7 +308,7 @@ describe('0026 AC-014: user language in the ways block, its (?) and the Now list
 
 describe('0027 AC-013: user language in the attachment line', () => {
     it('the detail with an attached spec shows the line and no internal vocabulary', async () => {
-        const next = { rule: 'NS-9', lines: [{ text: '/sdd-clarify .specs/backlog/0002-x.md', intent: 'Have the spec challenged, then plan it' }], send: { assistant: 'claudeCode', target: 'new', targets: ['new'], attach: { name: '0002-x.md', path: '.specs/backlog/0002-x.md' } } } as never;
+        const next = { rule: 'NS-9', lines: [{ text: '/sdd-clarify .specs/backlog/0002-x.md', intent: 'Have the spec challenged' }], send: { assistant: 'claudeCode', target: 'new', targets: ['new'], attach: { name: '0002-x.md', path: '.specs/backlog/0002-x.md' } } } as never;
         const text = await visibleText(detailView({}, next));
         expect(text).not.toContain('attached when sent');
         expect(text).not.toMatch(FORBIDDEN);

@@ -30,7 +30,7 @@ afterEach(reset);
 
 const KEY = '.specs/backlog/0002-x.md';
 const LINE = `/sdd-clarify ${KEY}`;
-const STEP = { intent: 'Challenge', short: '/sdd-clarify', line: LINE, lines: [{ text: LINE, intent: 'Have the spec challenged, then plan it' }] };
+const STEP = { intent: 'Challenge', short: '/sdd-clarify', line: LINE, lines: [{ text: LINE, intent: 'Have the spec challenged' }] };
 const FIRST: SelectedSpec = { stem: '0002-x', number: '0002' };
 const ATTACH = { name: '0002-x.md', path: KEY };
 const WITH: SendView = { assistant: 'copilot', target: 'new', targets: ['new', 'current'], attach: ATTACH };
@@ -40,7 +40,7 @@ const NAME_WITH = `Send to Copilot (new chat): ${LINE}. Attaches 0002-x.md.`;
 const NAME_WITHOUT = `Send to Copilot (new chat): ${LINE}`;
 
 function nextStepOf(sendView: SendView | undefined): NextStepView {
-    return { rule: 'NS-9', lines: [{ text: LINE, intent: 'Have the spec challenged, then plan it' }], ...(sendView === undefined ? {} : { send: sendView }) } as NextStepView;
+    return { rule: 'NS-9', lines: [{ text: LINE, intent: 'Have the spec challenged' }], ...(sendView === undefined ? {} : { send: sendView }) } as NextStepView;
 }
 
 function overview(sendView: SendView): OverviewView {

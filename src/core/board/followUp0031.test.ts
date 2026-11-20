@@ -40,7 +40,7 @@ interface Case {
 
 const CASES: Case[] = [
     { name: 'NS-9', files: { [BACKLOG]: specText() }, key: BACKLOG, first: 'NS-9', own: 'NS-10', attaches: true },
-    { name: 'NS-6-open', files: { [ACTIVE]: specText({ status: 'In Progress', plan: PLAN_LINK }), [PLAN]: STEPS('- [ ] **Verified (T-001):** —') }, key: ACTIVE, first: 'NS-6-open', own: 'NS-6-report', attaches: true },
+    { name: 'NS-6-open', files: { [ACTIVE]: specText({ status: 'In Progress', plan: PLAN_LINK }), [PLAN]: STEPS('- [x] **Verified (T-001):** done 2026-11-20', '- [ ] **Verified (T-002):** —') }, key: ACTIVE, first: 'NS-6-open', own: 'NS-6-report', attaches: true },
     { name: 'NS-6-report', files: { [ACTIVE]: specText({ status: 'In Progress', plan: PLAN_LINK }), [PLAN]: STEPS('- [ ] **Verified (T-001):** done 2026-11-20', '- [ ] **Verified (T-002):** —') }, key: ACTIVE, first: 'NS-6-report', own: 'NS-6-open', attaches: true },
     { name: 'NS-5', files: 'studio-0015', key: '.specs/active/0015-focus-on-visibility.md', first: 'NS-5', own: 'NS-2', attaches: false },
 ];
@@ -62,12 +62,13 @@ describe('0031 AC-002: each follow-up line carries its own Send view, attaching 
                 expect(step.case).toBe(row.first);
                 expect(next.lines).toHaveLength(2);
                 expect(next.lines[0]!.send).toBeUndefined();
-                const expected = sendViewOf(offer, row.own!, { key: row.key });
+                const expected = sendViewOf(offer, row.own!, { key: row.key, plan: PLAN });
                 expect(next.lines[1]!.send).toEqual(expected);
                 const attach = (next.lines[1]!.send as { attach?: { name: string; path: string } }).attach;
                 expect(attach !== undefined).toBe(row.attaches);
                 if (row.attaches) {
-                    expect(attach).toEqual({ name: row.key.slice(row.key.lastIndexOf('/') + 1), path: row.key });
+                    const path = row.own === 'NS-6-open' ? PLAN : row.key;
+                    expect(attach).toEqual({ name: path.slice(path.lastIndexOf('/') + 1), path });
                 }
                 expect(STEP_ATTACHES[row.own!]).toBe(row.attaches);
             });
@@ -104,7 +105,7 @@ describe('0031 AC-011: the follow-up Tip is the Tip of its own case', () => {
 
     it('0031 AC-011 NS-9\'s /sdd-plan line reads NS-10\'s sentence, and its first line keeps NS-9\'s', async () => {
         const { next } = await detailOf(CASES[0]!.files, BACKLOG, { offer: OFFER_B, tips: SHOW });
-        expect(next.lines[1]!.coach).toBe('Tip: Use any chat with a strong model, and allow web search.');
+        expect(next.lines[1]!.coach).toBe('Tip: Use a new chat with a strong model, and allow web search.');
         expect(next.tips?.coach).toBe('Tip: Use a new chat with a strong model.');
     });
 

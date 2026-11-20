@@ -112,6 +112,8 @@ The heading carries no emoji. FeatherSpec's banner uses 🪶, but an emoji paint
 Studio's logo mark (`media/studio.svg`, PD-048) as a glyph in `currentColor` before the heading, hidden from screen
 readers; the tree message is text only. PD-090 records this deviation from Gregor's "🪶".
 
+*Amended by 0032 (0032 §6.1, §6.7): the 24 px icon rule holds for the feather glyph only; the Send arrow is 14 × 14 px; the welcome shows a Tip and a 65ch body.*
+
 ## 7. Texts (English, PD-016; in the text modules, asserted literally; proxies, A-003)
 
 | New | Replaces, while setup has not run |

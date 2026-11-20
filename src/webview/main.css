@@ -235,9 +235,14 @@ main > h1 {
     text-align: center;
 }
 
-.empty-state .icon {
+.empty-state .empty-state-feather {
     width: 24px;
     height: 24px;
+}
+
+.empty-state .welcome-body {
+    max-width: 65ch;
+    margin-inline: auto;
 }
 
 .restricted-note {
@@ -715,7 +720,8 @@ main > h1 {
     background: var(--vscode-button-secondaryBackground, var(--vscode-button-background));
 }
 
-.copy-secondary:hover {
+.copy-secondary:hover,
+.copy-button.copy-secondary:hover {
     background: var(--vscode-button-secondaryHoverBackground, var(--vscode-button-secondaryBackground));
 }
 
@@ -859,10 +865,18 @@ main > h1 {
 
 .next-step-lines li {
     display: flex;
-    align-items: center;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 6px;
     padding: 2px 0;
+}
+
+.next-step-lines li > code {
+    max-width: 100%;
+}
+
+.section-body .next-step-lines {
+    padding-left: 0;
 }
 
 /* 0031 AC-013: about one line of space between two prompt lines; the gap inside a line stays 6px. */
@@ -872,6 +886,13 @@ main > h1 {
 
 .next-step-lines code {
     min-width: 0;
+    overflow-wrap: break-word;
+}
+
+.path-seg {
+    display: inline-block;
+    max-width: 100%;
+    white-space: normal;
     overflow-wrap: break-word;
 }
 
@@ -1451,10 +1472,10 @@ blockquote.illustration {
     }
 
     .ov-problems .ov-row-item {
-        grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+        grid-template-columns: auto auto minmax(0, 1fr) auto auto;
         grid-template-areas:
-            "number title title title title"
-            "state state problem step copy";
+            "state number title title problem"
+            "step step step step copy";
     }
 
     .ov-row .ov-title {
@@ -1486,10 +1507,10 @@ blockquote.illustration {
 
 @container ov-list (420px <= width <= 686px) {
     .ov-row-item {
-        grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+        grid-template-columns: auto auto minmax(0, 1fr) auto auto;
         grid-template-areas:
-            "number title title title title"
-            "state state problem step copy";
+            "state number title title problem"
+            "step step step step copy";
     }
 
     .ov-row .ov-title {
@@ -1518,10 +1539,9 @@ blockquote.illustration {
     }
 
     .ov-row-item {
-        grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+        grid-template-columns: auto auto minmax(0, 1fr) auto auto;
         grid-template-areas:
-            "number title title title title"
-            "state state state state problem"
+            "state number title title problem"
             "step step step step copy";
     }
 

@@ -146,6 +146,8 @@ step's case (0023 §5.5's returned work → integrates; NS-4 → finds out what 
 *out* while neither ticked, struck nor returned. Then U-08 takes U-05's places (k returned of m members, out IDs in plan
 order), and the `Integrate` line (0023 §5.5) shows no primary: its Copy prompt or split button is secondary (0022 §4.4).
 
+*Amended by 0032 (0032 §6.5): while a member is out, the intent of the quiet Integrate reads `When <IDs> is/are back: integrate the returned steps` (IDs in plan order) in the detail and the Plan map header.*
+
 ### 5.7 Parallel stage hint (G-7; A-010)
 
 While the current stage has ways (0023 §5.4), the detail's Next step shows U-06 right after line 1's coach line (tips off:

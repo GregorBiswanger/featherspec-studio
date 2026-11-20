@@ -9,12 +9,12 @@ and the expected result. A clear miss reopens the named spec.
   publisher (publisher management page, confirmed by Gregor on 2026-11-17; it already owns three extensions).
 - [ ] **Icon**: `media/icon.png` is the FeatherSpec logo (from the template's `featherspec-logo.png`, padded to
   256 × 256) — confirm it may be used for Studio or replace it.
-- [ ] **Screenshots and links**: push `media/screenshots/` and `docs/` to the default branch of
-  `GregorBiswanger/featherspec-studio` first; vsce rewrites the README's relative links to that repository.
+- [x] **Screenshots and links**: push `media/screenshots/` and `docs/` to the default branch of
+  `GregorBiswanger/featherspec-studio` first; vsce rewrites the README's relative links to that repository. (`main` has them since PR #2.)
 - [ ] **Gallery banner, categories, keywords** in `package.json` read right to you.
-- [ ] **Host suite** green on Windows at the release commit: `npm test`. Repeat only if the head moved.
-- [ ] **Universal VSIX**: `npx @vscode/vsce ls` → only `dist/`, `media/` (icon, Activity Bar icon, the two tab icons), `package.json`,
-  README, CHANGELOG, LICENSE; no `node_modules/`, no `.node` file.
+- [x] **Host suite** green on Windows at the release commit: `npm test`. Repeat only if the head moved. (Green at 77eebc9, 2026-11-20: 34+1+1+1, exit 0.)
+- [x] **Universal VSIX**: `npx @vscode/vsce ls` → only `dist/`, `media/` (icon, Activity Bar icon, the two tab icons), `package.json`,
+  README, CHANGELOG, LICENSE; no `node_modules/`, no `.node` file. (At 77eebc9: 11 files — CHANGELOG, LICENSE, package.json, README, `dist/extension.js`, `dist/webview/main.css` and `main.js`, `media/icon.png` and three `.svg`; no `node_modules/`.)
 
 ## Trying the extension locally
 
@@ -313,6 +313,36 @@ and the expected result. A clear miss reopens the named spec.
   attached; its menu holds new chat, current chat (GitHub Copilot) and Copy prompt; its Tip reads `Tip: Use any chat with a strong model, and allow web search.` (OP-003, confirm or flip); the
   two steps read as separate blocks.
 
+## Release polish (0032)
+
+Evidence for `docs/ux-audit/16-release-handoff.md` §3, head 77eebc9, 2026-11-20.
+
+- [x] **Fresh `/sdd-compile`**: READY (manual items: 1), 0 deviations at 3e09514 (re-check 2026-11-20; the first run found D-1, the 0021 §6.2 note, fixed in 3e09514).
+- [x] **`npm test` on Windows** at 77eebc9: unit 3858/8 + 35 timing; `npm test` 34+1+1+1, exit 0.
+- [x] **Preview** *(orchestrator, harness `r15check.mts`, GitHub Copilot, Dark / Light / High Contrast × 1600 / 1000 px)*: 24 of 24 clean — no cut text, no word broken, no page errors. Screenshots in `/home/claude/orch/preview/r15-0032`; AC-006 is recorded as `manual: orchestrator checked …, 2026-11-20` in the spec's §12.
+  - x01 onboarding: arrow 14×14, explanation `max-width` 65ch (533 px), Tip `Tip: Use a new chat with a strong model.`
+  - x04 clarify detail: `Have the spec challenged` with Tip new chat strong; `Then: write the plan` with Tip `Tip: Use a new chat with a strong model, and allow web search.`; every Send below its prompt.
+  - x07 Plan map: `Tip: Use the current chat or a new one with a fast model.`, `Or: not sure where it stands? Let the agent report first`, Send below the prompt at 1000 px.
+  - x09 partial return: `When T-004 is back: integrate the returned steps`, Send below.
+- [x] **Stub send (GitHub Copilot)**: a new chat carries `attach`; the current chat request carries no `attach`; the menu reads `Send to a new chat` / `Send to the current chat` / `Copy prompt`.
+- [x] **VSIX rebuilt** at 77eebc9: 259.36 KB, `vsce ls` lists 11 files (see Before publishing).
+- [ ] **Practice check** *(Gregor, 16 §4.1, new VSIX on `tip-splitter`)*: send a Backlog spec to `/sdd-clarify` and, once clarify ran, `Write the plan` appears; send once to a new chat (attachment visible) and once to the current chat (no attachment) with GitHub Copilot; nothing is sent automatically.
+
+## Start, plan attachment and prompt layout (0033)
+
+Evidence for `docs/ux-audit/17-start-step-and-prompt-layout.md` §5 *Prüfen*, spec 0033 AC-001…AC-008, head 956c0c0, 2026-11-20.
+
+- [x] **Fresh `/sdd-compile`**: READY, 0 deviations after the re-check edits; the last blocker, the title count, was fixed in 956c0c0.
+- [x] **`npm test` on Windows** at 4304f86: unit 3900/8 + 35 timing; `npm test` 34+1+1+1, exit 0. 956c0c0 changes one spec line, the plan and one CSS test.
+- [x] **Preview** *(orchestrator, harnesses `r16check.mts` at 692809e and `r17check.mts` at 4304f86, project fs-0033, GitHub Copilot and Claude Code, Dark / Light / High Contrast × 1600 / 1000 / 820 px)*: all runs clean — no cut text, no page errors. Screenshots in `/home/claude/orch/preview/r16-0033` and `r17-0033`; AC-007 is recorded as `manual: orchestrator checked …, 2026-11-20` in the spec's §12.
+  - States: Ready (0007, 0009), Active without a tick (0008), Active with ticks (0001).
+  - Start step: `/sdd-lifecycle .specs/backlog/<spec>.md In Progress`, with spec and plan attached; the current chat attaches nothing.
+  - Implement: `Implement T-001 of …plan.md`, plan attached only.
+  - Layout: the prompt is as wide as its text; paths break only after `/` (`0009-restaurant-rechnung-aufteilen.md` stays whole at 1000 px); the Next step text starts at the same x as Plan and Progress (997 px at 1600); the Up next glyph sits on the title line.
+  - Finding, fixed in f253885: a grey Send or Copy button kept the primary blue hover (light theme contrast about 2:1).
+- [x] **VSIX rebuilt** at 4304f86: 260.37 KB.
+- [ ] **Practice check** *(Gregor, 17 §5 *Prüfen*, `C:\projects\test`)*: Ready → Set active → T-001, with the new VSIX.
+
 ## Go
 
 - [ ] **Repository visibility**: the Marketplace page loads the README screenshots from
@@ -322,7 +352,7 @@ and the expected result. A clear miss reopens the named spec.
   Publishing* → *Create*: repository owner `GregorBiswanger`, repository `featherspec-studio`, workflow
   `publish.yml`, no environment. For a private repository the workflow must run within 48 hours after that.
   Azure DevOps tokens (PAT) stop working for publishing on 2026-12-01, so no token is used here.
-- [ ] **CHANGELOG date**: set the date of the 0.1.0 entry in CHANGELOG.md (`## [0.1.0] - Unreleased` becomes
+- [x] **CHANGELOG date** (2026-11-20, Gregor's Go): set the date of the 0.1.0 entry in CHANGELOG.md (`## [0.1.0] - Unreleased` becomes
   `## [0.1.0] - <release day>`) and commit it before the publish.
 - [ ] All boxes ticked → Go → `gh workflow run publish.yml -f confirm=publish` (the workflow runs the unit
   suite and `npx @vscode/vsce publish --oidc`). Alternative without the workflow: `npx @vscode/vsce package`

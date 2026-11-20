@@ -76,14 +76,14 @@ describe('0017 AC-014: text, tooltip and accessible label of the current spec', 
 
     it('0021 AC-007: each line shows its intent first and its prompt after it, escaped', async () => {
         await ready([{ number: '0012', kind: 'Active' }], [{ name: 'proj' }], {
-            '.specs/active/0012-thing.plan.md': '# Plan\n\n**Spec:** [0012-thing.md](0012-thing.md)\n**Status:** In Progress\n\n## Steps\n\n### T-001 — A\n\n- [ ] **Verified (T-001):** —\n',
+            '.specs/active/0012-thing.plan.md': '# Plan\n\n**Spec:** [0012-thing.md](0012-thing.md)\n**Status:** In Progress\n\n## Steps\n\n### T-000 — Z\n\n- [x] **Verified (T-000):** done\n\n### T-001 — A\n\n- [ ] **Verified (T-001):** —\n',
         });
         const lines = markdown().split('\n\n');
         const escape = (text: string): string => text.replace(/[!-/:-@[-`{-~]/g, (character) => `\\${character}`);
         expect(lines.slice(1, 5)).toEqual([
             escape('Continue with T-001 A'),
             escape('Implement T-001 of .specs/active/0012-thing.plan.md'),
-            escape('Not sure where it stands? Let the agent report first'),
+            escape('Or: not sure where it stands? Let the agent report first'),
             escape('/sdd-plan .specs/active/0012-thing.md'),
         ]);
     });

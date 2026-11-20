@@ -17,7 +17,7 @@ const OLD_TEXT = 'Let the agent report where the plan stands';
 const HISTORY = { available: true as const, label: 'Observed', entries: [] };
 const OTHER = {
     '.specs/active/0002-other.md': specText({ status: 'In Progress', plan: '[0002-other.plan.md](0002-other.plan.md)' }),
-    '.specs/active/0002-other.plan.md': `${planText({ status: 'In Progress' })}\n## Steps\n\n### T-001 — Open\n\n- [ ] **Verified (T-001):** —\n`,
+    '.specs/active/0002-other.plan.md': `${planText({ status: 'In Progress' })}\n## Steps\n\n### T-000 — Done\n\n- [x] **Verified (T-000):** done\n\n### T-001 — Open\n\n- [ ] **Verified (T-001):** —\n`,
 };
 
 async function world(name: string, extra: Record<string, string> = OTHER): Promise<ShellModel> {

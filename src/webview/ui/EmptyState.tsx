@@ -5,7 +5,7 @@ export function EmptyState(props: { icon: GlyphKind; className?: string; childre
     const { icon, className, children, ...data } = props;
     return (
         <div className={className === undefined ? 'empty-state' : `empty-state ${className}`} {...data}>
-            <Glyph kind={icon} />
+            <Glyph kind={icon} {...(icon === 'feather' ? { className: 'empty-state-feather' } : {})} />
             {children}
         </div>
     );

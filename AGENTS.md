@@ -96,7 +96,7 @@ run the `/sdd-architecture-update` workflow yourself, in the same change set, ex
 the user had typed it (its body lives in `.claude/commands/sdd-architecture-update.md`).
 
 ```yaml
-# last reconciled: 2026-11-20 (0030) · last deep scan: never · module maps: .architecture/{core,adapters,webview}.md
+# last reconciled: 2026-11-20 (0033) · last deep scan: never · module maps: .architecture/{core,adapters,webview}.md
 architecture:
   style: 'Hexagonal (ports & adapters): framework-free core (domain + application) behind ports; adapters for VS Code host, storage, file system; webview as a separate UI bundle'
   entrypoints:
@@ -112,7 +112,7 @@ architecture:
     - 'Domain and application code never import vscode and reach the outside only through ports; webview and extension host communicate only through typed messages, and the webview has no file-system or Node.js access'
     - 'Only the setup (0014) writes into a workspace folder or reaches the network, through SetupTargetPort and ReleaseHttpPort, after the user started it in a trusted workspace'
     - 'src/shared imports neither vscode nor Node.js; src/webview imports only src/shared and its own files'
-    - 'No webview message names a command; the Studio runs another extension\'s or the chat\'s commands only from src/core/assistant/assistants.ts, after the developer activated a Send, and never submits (0024); a send request may name a spec path, and the host attaches only a spec entry of the current model whose file exists (0027)'
+    - 'No webview message names a command; the Studio runs another extension\'s or the chat\'s commands only from src/core/assistant/assistants.ts, after the developer activated a Send, and never submits (0024); a send request may name a spec path and its plan path, and the host attaches only a spec or plan entry of the current model whose file exists (0027, 0033)'
 ```
 
 ## Memory Bank (SDD Working Set)

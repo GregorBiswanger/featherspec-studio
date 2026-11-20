@@ -1,25 +1,31 @@
 import { Fragment, type ReactNode } from 'react';
 
-const BREAK_AFTER = /([/.-])/;
-
-function breakable(text: string): ReactNode[] {
-    return text.split(BREAK_AFTER).flatMap((part, index) => {
-        if (part === '') {
-            return [];
-        }
-        return index % 2 === 1 ? [part, <wbr key={index} />] : [part];
-    });
+function segments(text: string): ReactNode[] {
+    if (!text.includes('/')) {
+        return [text];
+    }
+    return text
+        .split(/(?<=\/)/)
+        .filter((part) => part !== '')
+        .flatMap((part, index) => {
+            const unit = (
+                <span key={`s${index}`} className="path-seg">
+                    {part}
+                </span>
+            );
+            return part.endsWith('/') ? [unit, <wbr key={`w${index}`} />] : [unit];
+        });
 }
 
 export function PathText(props: { path: string } | { command: string }) {
     if ('path' in props) {
-        return <>{breakable(props.path)}</>;
+        return <>{segments(props.path)}</>;
     }
     const tokens = props.command.split(/(\s+)/);
     return (
         <>
             {tokens.map((token, index) => (
-                <Fragment key={index}>{token.includes('/') && !token.startsWith('/') ? breakable(token) : token}</Fragment>
+                <Fragment key={index}>{token.includes('/') && !token.startsWith('/') ? segments(token) : token}</Fragment>
             ))}
         </>
     );

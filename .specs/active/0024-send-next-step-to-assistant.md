@@ -137,6 +137,7 @@ configuration and extension changes (AC-010).
   the texts, names and announcements of 0021 §6.4 and 0016 T-19. The main part keeps `min-width: 22ch`; the arrow
   part's target is at least 24 × 24 px (WCAG 2.2 SC 2.5.8).
   *Amended by 0027 (PD-082, PD-083): for a Send whose attachment 0027 §6.5 drops, 0027 §7's sentence without the spec as tooltip and announcement (0027 AC-009).*
+*Amended by 0032 (0032 §6.6): every line's Send split button stands on its own row under its prompt, whatever the prompt's length and the view's width.*
 
 ### 6.4 Send (S-4, PD-074: exactly these calls; A-006)
 

@@ -1,14 +1,14 @@
 # Active Context
 
 Last updated: 2026-11-20
-Current branch: ux-round-3
+Current branch: release-polish
 Current phase: act
 
 ## Now
-- Round 3 on `ux-round-3`: 0026 (Send defaults and wording) is Implemented 2026-11-19; its plan is archived.
+- Release polish on `release-polish` (fix PR after PR #2): 0033 is Implemented 2026-11-20, its plan is archived; 0032 is Implemented 2026-11-20, its plan is archived. Round 3: 0026 (Send defaults and wording) is Implemented 2026-11-19; its plan is archived.
 - 0029 (onboarding before setup) is Implemented 2026-11-20; its plan is archived.
 - 0021–0024 are implemented; their specs stay In Progress in `active/`.
-- Waits for: Gregor's AC-017 on `tip-splitter` for 0027 (C-2 not needed, PD-091), CI at the round-3 PR, Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
+- Waits for: CI on PR #3, Gregor's practice checks (17 §5 for 0033, 16 §4.1 for 0032) and AC-017 on `tip-splitter` for 0027 (C-2 not needed, PD-091), Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
 
 ## Active Spec
 - [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec for Copilot and Claude Code in every version (PD-091), T-001…T-011 verified; AC-016, AC-017, AC-020 are Gregor's or the orchestrator's.
@@ -26,26 +26,30 @@ Current phase: act
 - Completed: 0001…0007, 0013 in `done/`; 0008…0012 are Deprecated (successor 0015); plans frozen in `plan-archive/`.
 - Completed 2026-11-19: [0025](../.specs/done/0025-plan-map-navigation-and-progress.md) ([plan](../.specs/plan-archive/0025-plan-map-navigation-and-progress.2026-11-19.plan.md)) and [0028](../.specs/done/0028-plan-state-aware-next-step.md) ([plan](../.specs/plan-archive/0028-plan-state-aware-next-step.2026-11-19.plan.md)).
 - Completed 2026-11-19: [0026](../.specs/done/0026-send-defaults-and-wording.md) ([plan](../.specs/plan-archive/0026-send-defaults-and-wording.2026-11-19.plan.md)).
+- Completed 2026-11-20: [0033](../.specs/done/0033-start-via-lifecycle-plan-attachment-prompt-layout.md) ([plan](../.specs/plan-archive/0033-start-via-lifecycle-plan-attachment-prompt-layout.2026-11-20.plan.md)); Gregor's practice check (17 §5 *Prüfen*), a fresh `/sdd-compile` and CI are open.
+- Completed 2026-11-20: [0032](../.specs/done/0032-release-polish.md) ([plan](../.specs/plan-archive/0032-release-polish.2026-11-20.plan.md)); Gregor's practice check (16 §4.1), the compile (READY at 3e09514) and CI are open.
 - Completed 2026-11-20: [0031](../.specs/done/0031-send-on-follow-up-lines.md) ([plan](../.specs/plan-archive/0031-send-on-follow-up-lines.2026-11-20.plan.md)); T-003 (preview, orchestrator), AC-009 (Gregor) and CI on PR #2 are open.
 - Completed 2026-11-20: [0030](../.specs/done/0030-clarified-step-quiet-attach-tip.md) ([plan](../.specs/plan-archive/0030-clarified-step-quiet-attach-tip.2026-11-20.plan.md)); AC-013 (Gregor) and CI on PR #2 are open.
 - Completed 2026-11-20: [0029](../.specs/done/0029-onboarding-before-setup.md) ([plan](../.specs/plan-archive/0029-onboarding-before-setup.2026-11-20.plan.md)); AC-014 (Gregor) and CI on PR #2 are open.
 
 ## Changed Recently
+- 0033 (PD-096, PD-097): Start step `/sdd-lifecycle <spec> In Progress` for a Ready spec in `backlog/`, spec and plan attached; Implement attaches the plan only; paths break after `/` only. Windows at 4304f86 green; preview clean.
+- 0032 (PD-093…PD-095): Tip `Use a new chat with a strong model, and allow web search.` where a step writes a plan, `Then:`/`Or:` on follow-up lines, `When T-004 is back: …` for a partial return, no attachment for Copilot's current chat (update sentence in the `(?)` below 1.11.0), Send on its own row.
 - 0030 (PD-092): a hand-over of `/sdd-clarify` plus a changed spec file makes the Backlog next step `Write the plan`; no attachment line; coach reads `Tip: Use …`. 0031: each follow-up line (NS-9, NS-5, NS-6) has its own secondary Send, Tip and attachment (`FOLLOW_UP_CASE`).
-- 0027 (PD-082, PD-083, PD-089), built 2026-11-19, not closed: Send attaches the spec in every version (Claude Code `@<path>`, Copilot `attachFiles`; PD-091 dropped the gate and C-2) and the line under the button was replaced by 0030 with Send's name and tooltip. Closing waits for AC-017, AC-020.
-- 0025, 0026, 0028 (Implemented 2026-11-19): Plan map links, header next step and percentages; Send opens a new chat, Now stops at five rows, three radio ways; a finished plan is Review. Windows `npm test` passed at 7ea11f3 (0025).
 
 ## Decisions in Flight
 - `AGENTS.md` stays above its 200-line target: the template body alone is 200 lines; further eviction would edit template wiring, Gregor's call.
 - Publisher ID `GregorBiswanger` is confirmed (2026-11-17).
 
 ## Blockers / Questions
-- Gregor's manual checks stay in the specs: 0025 AC-022 real window, AC-023, AC-024; 0026 AC-017, AC-019; 0028 AC-015; 0029 AC-014; 0030 AC-013; 0031 AC-009; 0027 AC-016, AC-017, AC-020.
+- Gregor's manual checks stay in the specs: 0025 AC-022 real window, AC-023, AC-024; 0026 AC-017, AC-019; 0028 AC-015; 0029 AC-014; 0030 AC-013; 0031 AC-009; 0032 practice check (16 §4.1); 0033 practice check (17 §5); 0027 AC-016, AC-017, AC-020.
 
 ## Next
-1. Finish 0027 (spec and plan are in `.specs/active/`, the plan's handoff names the next step).
-2. 0029 and 0030: CI on PR #2, then Gregor's AC-014 and AC-013; the other specs' CI items run on the same PR.
-3. 0031: T-003 preview (orchestrator) → record in spec §12; AC-009 Gregor; CI on PR #2
+1. 0033: Gregor's practice check on `C:\projects\test` (Ready → Set active → T-001, new VSIX), then a fresh `/sdd-compile` and CI.
+2. 0032: compile READY at 3e09514; CI on PR #3, VSIX to Gregor for 16 §4.1, then the release checklist.
+3. Finish 0027 (spec and plan are in `.specs/active/`, the plan's handoff names the next step).
+4. 0029 and 0030: CI on PR #2, then Gregor's AC-014 and AC-013; the other specs' CI items run on the same PR.
+5. 0031: AC-009 Gregor; CI on PR #2
 
 ## Validation
-- Windows at 3773816: unit 3831/8 + 35 timing, npm test 34+1+1+1
+- Windows at 4304f86: unit 3900/8 + 35 timing, npm test 34+1+1+1, exit 0; VSIX 260.37 KB.

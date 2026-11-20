@@ -217,7 +217,7 @@ describe('0019 AC-011, AC-012: Progress', () => {
 
     it('0025 AC-027: the ID in an intent line of the Next step is a step link; Ctrl opens the plan; without a link the intent stays text', async () => {
         const step = { id: 'T-002', open: { key: PLAN_KEY, line: 20 } };
-        const lines = [{ text: 'Implement T-002 of p', intent: 'Continue with T-002 Second step', step }, { text: '/sdd-plan s', intent: 'Not sure where it stands? Let the agent report first' }];
+        const lines = [{ text: 'Implement T-002 of p', intent: 'Continue with T-002 Second step', step }, { text: '/sdd-plan s', intent: 'Or: not sure where it stands? Let the agent report first' }];
         const root = await open(spec({}, { rule: 'NS-6', lines }));
         const next = root.querySelector('.next-step')!;
         const link = links(next)[0]!;
@@ -234,7 +234,7 @@ describe('0019 AC-011, AC-012: Progress', () => {
     });
 
     it('0025 AC-016: the parallel hint follows line 1 (after the coach line when tips show), precedes line 2, and Ways to run it navigates to the ways target', async () => {
-        const lines = [{ text: 'Implement T-003 of p', intent: 'Continue with T-003 Step' }, { text: '/sdd-plan s', intent: 'Not sure where it stands? Let the agent report first' }];
+        const lines = [{ text: 'Implement T-003 of p', intent: 'Continue with T-003 Step' }, { text: '/sdd-plan s', intent: 'Or: not sure where it stands? Let the agent report first' }];
         const withTips: NextStepView = { rule: 'NS-6', lines, parallel: { stage: 2 }, tips: { coach: 'Run this in your agent chat.', about: ['One step.'] } } as NextStepView;
         const root = await open(spec({}, withTips));
         const items = [...root.querySelectorAll('.next-step-lines > li')];
@@ -608,7 +608,7 @@ describe('AC-028: the selection', () => {
 });
 
 describe('0015 AC-003, AC-005, AC-008, AC-009: the next step in the detail', () => {
-    const TWO = { rule: 'NS-9', lines: [{ text: '/sdd-clarify .specs/backlog/0007-x.md', intent: 'Have the spec challenged, then plan it' }, { text: '/sdd-plan .specs/backlog/0007-x.md', intent: 'Then: write the plan' }] };
+    const TWO = { rule: 'NS-9', lines: [{ text: '/sdd-clarify .specs/backlog/0007-x.md', intent: 'Have the spec challenged' }, { text: '/sdd-plan .specs/backlog/0007-x.md', intent: 'Then: write the plan' }] };
 
     function nextStepSection(container: HTMLElement): HTMLElement {
         return section(container, 'Next step');
@@ -641,7 +641,7 @@ describe('0015 AC-003, AC-005, AC-008, AC-009: the next step in the detail', () 
             rule: 'NS-6',
             lines: [
                 { text: 'Implement T-003 of .specs/active/0001-a.plan.md', intent: 'Continue with T-003 Reject money values' },
-                { text: '/sdd-plan .specs/active/0001-a.md', intent: 'Not sure where it stands? Let the agent report first' },
+                { text: '/sdd-plan .specs/active/0001-a.md', intent: 'Or: not sure where it stands? Let the agent report first' },
             ],
         };
         for (const next of [TWO, NS5, NS6]) {
@@ -814,16 +814,16 @@ describe('0022 AC-013, AC-015, AC-002, AC-003: sentences and breaking paths in t
         expect(textOf(container.querySelector('.detail-problems li')!)).toBe(long);
     });
 
-    it('AC-002: the detail path, a Files link and the path in a next-step line break after a separator and keep their text', async () => {
+    it('AC-002: the detail path, a Files link and the path in a next-step line break after a slash and keep their text', async () => {
         const container = await open(spec({ path: '.specs/backlog/0007-thing.md' }, { rule: 'NS-5', lines: [{ text: '/sdd-plan .specs/backlog/0007-thing.md', intent: 'Write the plan' }] }));
         const path = container.querySelector('.detail-path')!;
         expect(path.textContent).toBe('.specs/backlog/0007-thing.md');
         expect(path.querySelectorAll('wbr').length).toBeGreaterThan(0);
         const file = section(container, 'Files').querySelector('button.file-link')!;
-        expect(file.querySelectorAll('wbr').length).toBeGreaterThan(0);
+        expect(file.querySelectorAll('wbr')).toHaveLength(0);
         const line = container.querySelector('.next-step-lines code')!;
         expect(line.textContent).toBe('/sdd-plan .specs/backlog/0007-thing.md');
-        expect(line.innerHTML.startsWith('/sdd-plan .')).toBe(true);
+        expect(line.innerHTML.startsWith('/sdd-plan <span')).toBe(true);
         expect(line.querySelectorAll('wbr').length).toBeGreaterThan(0);
         expect(container.querySelector('.next-step-copy')?.getAttribute('aria-label')).toBe('Copy prompt: /sdd-plan .specs/backlog/0007-thing.md');
     });
@@ -912,7 +912,7 @@ describe('0024 AC-003, AC-002: the split button at the first next-step line only
         rule: 'NS-6',
         lines: [
             { text: 'Implement T-003 of .specs/active/0007-thing.plan.md', intent: 'Continue with T-003' },
-            { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Not sure where it stands? Let the agent report first' },
+            { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Or: not sure where it stands? Let the agent report first' },
         ],
         send: SEND_A,
     };
@@ -971,7 +971,7 @@ describe('0024 AC-010: focus when the offer changes', () => {
         rule: 'NS-6',
         lines: [
             { text: 'Implement T-003 of .specs/active/0007-thing.plan.md', intent: 'Continue with T-003' },
-            { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Not sure where it stands? Let the agent report first' },
+            { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Or: not sure where it stands? Let the agent report first' },
         ],
         send: { assistant: 'copilot', target: 'new', targets: ['new', 'current'] },
     };
@@ -1039,7 +1039,7 @@ describe('0024 AC-010: focus is decided at the moment of the change, also after 
         rule: 'NS-6',
         lines: [
             { text: 'Implement T-003 of .specs/active/0007-thing.plan.md', intent: 'Continue with T-003' },
-            { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Not sure where it stands? Let the agent report first' },
+            { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Or: not sure where it stands? Let the agent report first' },
         ],
         send: { assistant: 'copilot', target: 'new', targets: ['new', 'current'] },
     };
@@ -1126,7 +1126,7 @@ describe('0024 AC-010: focus is decided at the moment of the change, also after 
 describe('0024 AC-010, 0019 AC-020: the focus handoff belongs to the place of the split button', () => {
     const SEND_VIEW_A: SendView = { assistant: 'copilot', target: 'new', targets: ['new', 'current'] };
     const FIRST = { text: 'Implement T-003 of .specs/active/0007-thing.plan.md', intent: 'Continue with T-003' };
-    const SECOND = { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Not sure where it stands? Let the agent report first' };
+    const SECOND = { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Or: not sure where it stands? Let the agent report first' };
     const PLAN: NextStepView = { rule: 'NS-6', lines: [{ text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Write the plan' }], send: SEND_VIEW_A };
     const OPEN: NextStepView = { rule: 'NS-6', lines: [FIRST, SECOND], send: SEND_VIEW_A };
     const PLAN_WITH_SECOND: NextStepView = OPEN;

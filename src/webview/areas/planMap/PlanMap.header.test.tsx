@@ -49,7 +49,7 @@ async function render(detail: SpecDetailView | ReturnType<typeof detailView>): P
 }
 
 const ONE: NextStepView = { rule: 'NS-6', lines: [{ text: 'Implement T-003 of .specs/active/0007-thing.plan.md', intent: 'Continue with T-003 Reject money values' }] };
-const TWO: NextStepView = { rule: 'NS-6', lines: [...(ONE as { lines: Array<{ text: string; intent: string }> }).lines, { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Not sure where it stands? Let the agent report first' }] };
+const TWO: NextStepView = { rule: 'NS-6', lines: [...(ONE as { lines: Array<{ text: string; intent: string }> }).lines, { text: '/sdd-plan .specs/active/0007-thing.md', intent: 'Or: not sure where it stands? Let the agent report first' }] };
 const TIPS: NextStepView = { ...(TWO as object), tips: { coach: 'Run this in your agent chat.', about: ['One step at a time.'] } } as NextStepView;
 const COMPILE: NextStepView = { rule: 'NS-5', lines: [{ text: '/sdd-compile .specs/active/0007-thing.md', intent: 'Have the result verified' }] };
 

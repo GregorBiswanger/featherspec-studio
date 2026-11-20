@@ -291,6 +291,8 @@ of the named files; tests included unless said otherwise. **Test files:** `*.tes
   *Amended by 0021 (PD-069): AC-015 — the manifest declares exactly the two settings of 0021 §6.7 (0021 AC-016).*
   *Amended by 0024 (PD-068): AC-015 (as 0021 amends it) — plus `featherspec-studio.assistant` (0024 §6.1).*
 - **AC-016** The manifest description shall read as §8 and contain neither "agent" nor "Copilot"; the keywords shall contain none of `agents`, `ai agents` and `github copilot`.
+
+  *Amended by PD-098 (2026-11-20, release): since 0024 Studio sends to GitHub Copilot and Claude Code, so the Marketplace description and keywords name them for discovery. The description is `Spec-driven development for GitHub Copilot and Claude Code: see every spec, its plan and next step, and send it to your agent.`; the removed agent features of 0015 stay removed, and Studio still starts no agent.*
 - **AC-017** `package.json` and `package-lock.json` shall not contain `@github/copilot-sdk`; the esbuild externals shall be `vscode` only.
 - **AC-018** After `npm run package`, `dist/extension.js` shall contain no `child_process` and no `@github/copilot-sdk`; `dist/webview/main.js` shall contain no "Agent Center".
 - **AC-019** A search of `src` without test files shall find no `child_process`, `worker_threads`, `createTerminal`, `ShellExecution`, `ProcessExecution` and `executeTask`.

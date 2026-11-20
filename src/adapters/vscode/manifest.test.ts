@@ -284,12 +284,13 @@ describe('extension manifest', () => {
         expect(withCodex).not.toEqual(ASSISTANT_PROPERTY);
     });
 
-    it('AC-016 (0015): the description reads as the product text and names no agent or Copilot; the keywords drop agents, ai agents and github copilot', () => {
-        expect(manifest.description).toBe('Visual command center for spec-driven development with FeatherSpec: see every spec, know its next step.');
-        expect(manifest.description ?? '').not.toMatch(/agent|copilot/i);
-        for (const removed of ['agents', 'ai agents', 'github copilot']) {
+    it('AC-016 (0015), amended by PD-098: the description names the assistants Studio sends to and the keywords help discovery, while the removed agent features stay out', () => {
+        expect(manifest.description).toBe('Spec-driven development for GitHub Copilot and Claude Code: see every spec, its plan and next step, and send it to your agent.');
+        expect(manifest.description ?? '').not.toMatch(/orchestrat|agent center|control every agent/i);
+        for (const removed of ['agents', 'ai agents']) {
             expect(manifest.keywords ?? []).not.toContain(removed);
         }
+        expect((manifest.keywords ?? []).length).toBeLessThanOrEqual(30);
     });
 
     it('AC-016 (0015): negative control, the old description and keywords would be found', () => {

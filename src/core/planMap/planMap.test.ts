@@ -363,7 +363,7 @@ function readyParallelModel(...edits: Edit[]): Promise<ShellModel> {
         'fs110-ready-synthetic',
         (found) => {
             const plan = '.specs/backlog/0001-ready-feature.plan.md';
-            found[plan] = found[plan]!.replace('1. T-001 — the feature', '1. T-001 ‖ T-002 — the feature').replace('### T-001', '### T-002 — second\n\n- **Covers:** AC-001\n- **Do:** x\n- **Verify:** y\n- [ ] **Verified (T-002):** —\n- **Notes:** —\n\n### T-001');
+            found[plan] = found[plan]!.replace('1. T-001 — the feature', '1. T-001 ‖ T-002 — the feature').replace('### T-001', '### T-000 — started\n\n- [x] **Verified (T-000):** done\n\n### T-002 — second\n\n- **Covers:** AC-001\n- **Do:** x\n- **Verify:** y\n- [ ] **Verified (T-002):** —\n- **Notes:** —\n\n### T-001');
         },
         ...edits,
     );
@@ -493,7 +493,7 @@ describe('0023 AC-002: the marked step is the one the next step names', () => {
     it('for every fixture and variant whose case is NS-6-open or NS-7 with an ID, the next marker equals the ID of its first line', async () => {
         const models: Array<[string, ShellModel]> = [
             ['parallel without notes', await parallelModel()],
-            ['ready', await fixtureModel('fs110-ready-synthetic')],
+            ['ready', await readyParallelModel()],
             ['generated', await generatedModel()],
             ['generated, first two stages done', await generatedModel({ steps: ['T-001:[x]', 'T-002:[x]', 'T-003:[x]', 'T-004:[x]', 'T-005:[ ]', 'T-006:[ ]'] })],
         ];

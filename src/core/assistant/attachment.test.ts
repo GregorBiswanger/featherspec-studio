@@ -8,6 +8,10 @@ import { offerOf } from './offer';
 const CASES = Object.keys(STEP_GUIDES) as StepCase[];
 const NO: StepCase[] = ['NS-2', 'NS-4'];
 const KEY = '.specs/backlog/0002-x.md';
+const PLAN = '.specs/backlog/0002-x.plan.md';
+const SPEC_FILE = { name: '0002-x.md', path: KEY };
+const PLAN_FILE = { name: '0002-x.plan.md', path: PLAN };
+const FILES_OF = (stepCase: StepCase) => (stepCase === 'NS-6-open' || stepCase === 'NS-7' ? [PLAN_FILE] : stepCase === 'NS-7-start' ? [SPEC_FILE, PLAN_FILE] : [SPEC_FILE]);
 const ALL = (): boolean => true;
 const offerFor = (assistant: AssistantId) => ({ assistant, attaches: true });
 
@@ -19,9 +23,10 @@ describe('0027 AC-001: which steps attach (§6.1)', () => {
 
     for (const assistant of ['copilot', 'claudeCode'] as const) {
         for (const stepCase of CASES) {
-            it(`0027 AC-001 ${assistant} ${stepCase}: ${NO.includes(stepCase) ? 'no attachment' : 'the spec name and path'}`, () => {
-                const decision = attachmentOf(offerFor(assistant), stepCase, { key: KEY });
-                expect(decision).toEqual(NO.includes(stepCase) ? {} : { attach: { name: '0002-x.md', path: KEY } });
+            it(`0027 AC-001 ${assistant} ${stepCase}: ${NO.includes(stepCase) ? 'no attachment' : 'the file names and paths of 0033 §6.3'}`, () => {
+                const decision = attachmentOf(offerFor(assistant), stepCase, { key: KEY, plan: PLAN });
+                const [first, ...rest] = FILES_OF(stepCase);
+                expect(decision).toEqual(NO.includes(stepCase) ? {} : { attach: first, ...(rest.length === 0 ? {} : { attachAlso: rest }) });
             });
         }
     }
@@ -61,7 +66,7 @@ describe('0027 AC-019: the per-assistant table (§6.2)', () => {
         const claude = offerOf('claudeCode', [ASSISTANTS.claudeCode.extensionId]);
         for (const offer of [plain, claude]) {
             for (const stepCase of CASES) {
-                expect(attachmentOf(offer, stepCase, { key: KEY }).attach?.name, stepCase).toBe(NO.includes(stepCase) ? undefined : '0002-x.md');
+                expect(attachmentOf(offer, stepCase, { key: KEY, plan: PLAN }).attach?.name, stepCase).toBe(NO.includes(stepCase) ? undefined : FILES_OF(stepCase)[0]!.name);
             }
         }
     });

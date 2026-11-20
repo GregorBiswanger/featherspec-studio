@@ -151,7 +151,7 @@ function rowFor(stem: string, number: string, title: string, state: OverviewView
     return { spec: { stem, number, title, found: true }, state, status: state, problems: 0, ...extra };
 }
 
-const STEP_PLAN = { intent: 'Continue', short: 'Implement T-003', line: 'Implement T-003 of .specs/active/0001-a.plan.md', lines: [{ text: 'Implement T-003 of .specs/active/0001-a.plan.md', intent: 'Continue with T-003 Reject money values' }, { text: '/sdd-plan .specs/active/0001-a.md', intent: 'Not sure where it stands? Let the agent report first' }] };
+const STEP_PLAN = { intent: 'Continue', short: 'Implement T-003', line: 'Implement T-003 of .specs/active/0001-a.plan.md', lines: [{ text: 'Implement T-003 of .specs/active/0001-a.plan.md', intent: 'Continue with T-003 Reject money values' }, { text: '/sdd-plan .specs/active/0001-a.md', intent: 'Or: not sure where it stands? Let the agent report first' }] };
 
 function withRows(): OverviewView {
     const view = sampleView();
@@ -228,7 +228,7 @@ describe('0018 AC-006: a spec row on one line', () => {
         const row = nowRow(await open(withRows()), '0001-a');
         expect(row.querySelector('.ov-title')?.getAttribute('title')).toBe('Alpha');
         expect(row.querySelector('.ov-status')?.getAttribute('title')).toBe('Blocked');
-        expect(row.querySelector('.step-text')?.getAttribute('title')).toBe('Continue with T-003 Reject money values\nImplement T-003 of .specs/active/0001-a.plan.md\nNot sure where it stands? Let the agent report first\n/sdd-plan .specs/active/0001-a.md');
+        expect(row.querySelector('.step-text')?.getAttribute('title')).toBe('Continue with T-003 Reject money values\nImplement T-003 of .specs/active/0001-a.plan.md\nOr: not sure where it stands? Let the agent report first\n/sdd-plan .specs/active/0001-a.md');
     });
 
     it('shows the warning icon with the problem count as text only while the spec has a Problem', async () => {

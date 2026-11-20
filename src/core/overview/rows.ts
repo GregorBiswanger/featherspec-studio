@@ -74,13 +74,13 @@ function rowOf(model: ShellModel, specs: SpecResolver, entry: LifecycleEntry, fi
     if (next === undefined || !('case' in next)) {
         return { ...row, step, ...link, ...quietOf(model, entry) };
     }
-    const send = sendViewOf(offer, next.case, { key: entry.key });
+    const send = sendViewOf(offer, next.case, { key: entry.key, ...(entry.plan === undefined ? {} : { plan: entry.plan }) });
     return {
         ...row,
         step,
         ...link,
         ...quietOf(model, entry),
-        ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer), { version: model.project.version, ...(send === undefined ? {} : { send: true as const }), ...(next.reason === undefined ? {} : { reason: next.reason }) }) }),
+        ...(tips === undefined || !tips.show ? {} : { tips: stepTips(next.case, tips, tipClosingOf(offer), { version: model.project.version, ...(send === undefined ? {} : { send: true as const }), ...(send?.attach === undefined ? {} : { attaches: true as const }), ...(next.reason === undefined ? {} : { reason: next.reason }) }) }),
         ...(send === undefined ? {} : { send }),
     };
 }

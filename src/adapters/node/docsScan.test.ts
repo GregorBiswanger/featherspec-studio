@@ -330,10 +330,10 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         expect(text).not.toContain('(0020)');
     });
 
-    it('CHANGELOG is one first release, undated until the release, and describes the product as it ships', async () => {
+    it('CHANGELOG is one first release, dated on the release day (2026-11-20), and describes the product as it ships', async () => {
         const text = await read('CHANGELOG.md');
         expect(text.match(/^## \[/gm)).toEqual(['## [']);
-        expect(text).toContain('\n## [0.1.0] - Unreleased\n');
+        expect(text).toContain('\n## [0.1.0] - 2026-11-20\n');
         expect(text).not.toContain('## [Unreleased]');
         const lower = text.toLowerCase().split('featherspec-studio.assistant').join('');
         for (const gone of ['drag', 'move to', 'mission control', 'spec explorer', 'spec board', 'rescan', 'needs attention', 'featherspec-studio.']) {
@@ -379,6 +379,8 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
             '## Onboarding before setup (0029)',
             '## Clarified step, quiet attachment, Tip sentence (0030)',
             '## Send on the follow-up line (0031)',
+            '## Release polish (0032)',
+            '## Start, plan attachment and prompt layout (0033)',
             '## Go',
         ]);
         for (const gone of ['Plan line', 'descriptions cut', 'attention row', 'attention reason', 'filters, sort']) {

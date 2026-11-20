@@ -18,7 +18,8 @@ describe('0025 AC-009: the detail the map header shows carries nextStep()\'s lin
             if (view.kind !== 'spec' || next === undefined || !('lines' in next) || !('lines' in view.nextStep)) {
                 continue;
             }
-            expect(view.nextStep.lines[0]).toMatchObject({ text: next.lines[0]!.text, intent: next.lines[0]!.intent });
+            const quiet = 'quiet' in view.nextStep && view.nextStep.quiet === true;
+            expect(view.nextStep.lines[0]).toMatchObject(quiet ? { text: next.lines[0]!.text, intent: expect.stringMatching(/^When T-\d+( and T-\d+)* (is|are) back: integrate the returned steps$/) } : { text: next.lines[0]!.text, intent: next.lines[0]!.intent });
         }
     });
 

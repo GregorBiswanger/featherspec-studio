@@ -31,7 +31,7 @@ const COACH = 'Tip: Use a new chat with a strong model from another model family
 const KEY = '.specs/backlog/0002-x.md';
 const LINE = `/sdd-clarify ${KEY}`;
 const TIPS = { coach: COACH, about: ['Effect.', 'Reasons.', 'Choose.', 'Settings.'] };
-const STEP = { intent: 'Challenge', short: '/sdd-clarify', line: LINE, lines: [{ text: LINE, intent: 'Have the spec challenged, then plan it' }] };
+const STEP = { intent: 'Challenge', short: '/sdd-clarify', line: LINE, lines: [{ text: LINE, intent: 'Have the spec challenged' }] };
 const FIRST: SelectedSpec = { stem: '0002-x', number: '0002' };
 const ATTACH = { name: '0002-x.md', path: KEY };
 const WITH: SendView = { assistant: 'copilot', target: 'new', targets: ['new', 'current'], attach: ATTACH };
@@ -41,7 +41,7 @@ const NAME_WITH = `Send to Copilot (new chat): ${LINE}. Attaches 0002-x.md.`;
 const GONE = 'attached when sent';
 
 function nextStepOf(sendView: SendView | undefined, tips = true): NextStepView {
-    return { rule: 'NS-9', lines: [{ text: LINE, intent: 'Have the spec challenged, then plan it' }], ...(tips ? { tips: TIPS } : {}), ...(sendView === undefined ? {} : { send: sendView }) } as NextStepView;
+    return { rule: 'NS-9', lines: [{ text: LINE, intent: 'Have the spec challenged' }], ...(tips ? { tips: TIPS } : {}), ...(sendView === undefined ? {} : { send: sendView }) } as NextStepView;
 }
 
 function row(sendView: SendView | undefined, tips = true): OverviewRow {

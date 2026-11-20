@@ -4,21 +4,26 @@ import type { ShellModelSource } from '../ports/shell';
 import type { SpecSourcePort } from '../ports/specSource';
 import { attachesOf, type Offer } from './offer';
 
-export const STEP_ATTACHES: Record<StepCase, boolean> = {
-    'NS-2': false,
-    'NS-4': false,
-    'NS-4-plan': true,
-    'NS-5': true,
-    'NS-6-open': true,
-    'NS-6-report': true,
-    'NS-6-resume': true,
-    'NS-6-returned': true,
-    'NS-6-plan': true,
-    'NS-7': true,
-    'NS-8': true,
-    'NS-9': true,
-    'NS-10': true,
+export type AttachedFile = 'spec' | 'plan';
+
+export const STEP_FILES: Record<StepCase, readonly AttachedFile[]> = {
+    'NS-2': [],
+    'NS-4': [],
+    'NS-4-plan': ['spec'],
+    'NS-5': ['spec'],
+    'NS-6-open': ['plan'],
+    'NS-6-report': ['spec'],
+    'NS-6-resume': ['spec'],
+    'NS-6-returned': ['spec'],
+    'NS-6-plan': ['spec'],
+    'NS-7': ['plan'],
+    'NS-7-start': ['spec', 'plan'],
+    'NS-8': ['spec'],
+    'NS-9': ['spec'],
+    'NS-10': ['spec'],
 };
+
+export const STEP_ATTACHES: Record<StepCase, boolean> = Object.fromEntries(Object.entries(STEP_FILES).map(([stepCase, files]) => [stepCase, files.length > 0])) as Record<StepCase, boolean>;
 
 /**
  * 0031 §6.2: a follow-up line (index 1) is sent and attached like the step case that shows the same prompt as its first line.
@@ -42,10 +47,12 @@ export interface Attachment {
 
 export interface AttachmentContext {
     key: string;
+    plan?: string;
 }
 
 export interface AttachmentDecision {
     attach?: Attachment;
+    attachAlso?: Attachment[];
 }
 
 const WHITESPACE = /\s/;
@@ -54,10 +61,12 @@ export function attachmentOf(offer: Offer | undefined, stepCase: StepCase, conte
     if (offer === undefined || !STEP_ATTACHES[stepCase] || !attachesOf(offer)) {
         return {};
     }
-    if (offer.assistant === 'claudeCode' && WHITESPACE.test(context.key)) {
-        return {};
-    }
-    return { attach: { name: context.key.slice(context.key.lastIndexOf('/') + 1), path: context.key } };
+    const files = STEP_FILES[stepCase]
+        .map((file) => (file === 'spec' ? context.key : context.plan))
+        .filter((path): path is string => path !== undefined && !(offer.assistant === 'claudeCode' && WHITESPACE.test(path)))
+        .map((path) => ({ name: path.slice(path.lastIndexOf('/') + 1), path }));
+    const [first, ...rest] = files;
+    return first === undefined ? {} : { attach: first, ...(rest.length === 0 ? {} : { attachAlso: rest }) };
 }
 
 export interface AttachmentTarget {
@@ -70,7 +79,7 @@ export type AttachmentCheck = (path: string) => Promise<AttachmentTarget | undef
 export function createAttachmentCheck(deps: { source: ShellModelSource; specs: Pick<SpecSourcePort, 'stat'>; host: Pick<AssistantHostPort, 'fileUri'> }): AttachmentCheck {
     return async (path) => {
         const model = deps.source.current();
-        if (model === undefined || !model.project.specs.some((spec) => spec.key === path)) {
+        if (model === undefined || !(model.project.specs.some((spec) => spec.key === path) || model.project.plans.some((plan) => plan.key === path))) {
             return undefined;
         }
         let found: Awaited<ReturnType<typeof deps.specs.stat>>;
