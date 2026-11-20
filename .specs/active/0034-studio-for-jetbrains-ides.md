@@ -1,6 +1,6 @@
 # FeatherSpec Studio for JetBrains IDEs
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0034-studio-for-jetbrains-ides.plan.md](0034-studio-for-jetbrains-ides.plan.md)
 
 Basis: the agreed analysis *FeatherSpec Studio für JetBrains IDEs – Analyse und Schritt-für-Schritt-Plan* (2026-11-20,
@@ -479,21 +479,21 @@ None open. Each decision below stands where its ID is cited.
 - OP-017 `/sdd-clarify` 2026-11-20 (delegated stranger pass): 14 findings, 1 blocking; 8 resolved by OP-001–OP-016 and
   Gregor's decision that builds and tests run in CI only (§6.11, A-001, AC-007, AC-040, §9, §12); 6 settled as OP-018–OP-023.
 - OP-018 Spikes S-1–S-4 and gates G1–G4 were named but undefined — resolved from the agreed analysis (§5): §6.12.
-- OP-019 S7 label `Safe Mode`; "this project" for "this workspace"; VS Code texts unchanged (§6.8) (proxy, 2026-11-20 — Gregor confirms or overrides).
-- OP-020 *IDE project* and *FeatherSpec project* (§3), used throughout (proxy, 2026-11-20 — Gregor confirms or overrides).
-- OP-021 Verifier at since-build and the latest stable release of each IDE; AC-034's wording wins (§6.10) (proxy, 2026-11-20 — Gregor confirms or overrides).
-- OP-022 AC-040/AC-041's pass rule: a difference needs a *deliberately different* or *n-a* row, then a re-run (proxy, 2026-11-20 — Gregor confirms or overrides).
-- OP-023 No IDE licence secret in v0.1; Starter/Driver smoke in IntelliJ IDEA's free tier (§4, §11) (proxy, 2026-11-20 — Gregor confirms or overrides).
+- OP-019 S7 label `Safe Mode`; "this project" for "this workspace"; VS Code texts unchanged (§6.8) (confirmed by Gregor 2026-11-20).
+- OP-020 *IDE project* and *FeatherSpec project* (§3), used throughout (confirmed by Gregor 2026-11-20).
+- OP-021 Verifier at since-build and the latest stable release of each IDE; AC-034's wording wins (§6.10) (confirmed by Gregor 2026-11-20).
+- OP-022 AC-040/AC-041's pass rule: a difference needs a *deliberately different* or *n-a* row, then a re-run (confirmed by Gregor 2026-11-20).
+- OP-023 No IDE licence secret in v0.1; Starter/Driver smoke in IntelliJ IDEA's free tier (§4, §11) (confirmed by Gregor 2026-11-20).
 - OP-024 `/sdd-plan` 2026-11-20 applied OP-001's split: the plan exceeded about 30 steps, so the Send handover (AC-032, the
   offer side of §6.7) moves to **0035 — Send to assistant in JetBrains IDEs**, and signing, the release workflow, the
   listing and the first upload (AC-035's signing part, AC-036, §6.10's release-line bullet) move to **0036 — JetBrains
   Marketplace release**; both are to be specified with `/sdd-specify`. S-3 is still measured here and recorded in ADR-004.
-  The plan still has 37 small steps; a further split at gate G3 is offered to Gregor in the plan (proxy, 2026-11-20 —
-  Gregor confirms or overrides).
+  The plan still has 37 small steps; a further split at gate G3 is offered to Gregor in the plan (confirmed by Gregor
+  2026-11-20).
 
 ## 15. Definition of Ready, Done and next steps
 
-Ready: clarified 2026-11-20 (OP-017–OP-023); no open point; OP-019–OP-024 are proxies Gregor confirms or overrides. Done
+Ready: clarified 2026-11-20 (OP-017–OP-023); no open point; OP-019–OP-024 confirmed by Gregor 2026-11-20. Done
 per the DoD of `AGENTS.md`: AC-001–AC-031, AC-033–AC-035, AC-037–AC-039 and AC-043 proven (AC-032 and AC-036 moved,
 OP-024), AC-040–AC-042 checked by Gregor, the parity matrix fully categorised, VS Code CI and `.vsix` unchanged. Next:
 Gregor reads the plan [0034-studio-for-jetbrains-ides.plan.md](0034-studio-for-jetbrains-ides.plan.md) (37 steps,

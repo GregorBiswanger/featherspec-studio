@@ -1,7 +1,7 @@
 # Plan — FeatherSpec Studio for JetBrains IDEs
 
 **Spec:** [0034-studio-for-jetbrains-ides.md](0034-studio-for-jetbrains-ides.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-20
 **Current step:** T-001
 
@@ -60,7 +60,7 @@ the implementer cannot write a binary; CI uses `gradle/actions/setup-gradle@v6` 
 2025.3 is 2.2.20; `kotlin.stdlib.default.dependency=false`); JUnit Jupiter 5.13.4 (+ `junit-platform-launcher`);
 `org.graalvm.polyglot:polyglot` and `org.graalvm.polyglot:js` (type pom) 25.0.4 (T-004, T-021); Starter/Driver via
 `testFramework(TestFrameworkType.Starter)`, `org.kodein.di:kodein-di-jvm` 7.20.2, `kotlinx-coroutines-core-jvm` 1.10.1
-in the `integrationTest` source set only (T-006). No new npm package.
+in the `integrationTest` source set only (T-006). No new npm package. Approved by Gregor 2026-11-20.
 
 ### Contracts later steps rely on
 
@@ -454,7 +454,7 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
   OP-012); PD-101 no inline tree action (OP-008); PD-102 settings application-level only (OP-009); PD-103 folders =
   base directory plus content roots outside it (OP-004); PD-104 separate status-history stores (OP-005); PD-105 Copy
   prompt only until a handover is proven, handovers in 0035 (§6.7, OP-024); PD-106 external change on screen within
-  2 s of the write (OP-003); PD-107 Escape with nothing to close returns focus to the last editor (OP-011).
+  2 s of the write (OP-003); PD-107 Escape with nothing to close returns focus to the last editor (OP-011). Approved by Gregor 2026-11-20.
 - **Tests first:** `parity.test.ts` red against a `Not implemented` stub of every export.
 - **Verify:** `local: npx vitest run src/adapters/node/parity.test.ts src/adapters/node/docsScan.test.ts` green, then
   the four local gates (`eslint`, `tsc` ×2, `npm run test:unit`).
@@ -1050,11 +1050,11 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
 ## Session handoff
 
 - **Done so far:** plan written (Mode A); spec revised with OP-024 (split) and the `**Plan:**` link.
-- **Next action:** Gregor reads the plan; one yes for the dependencies listed in *Approach* and for pushing
-  `jetbrains-host`; on the start signal `/sdd-lifecycle` moves the pair to `active/`, then T-001.
+- **Next action:** Gregor's yes to the dependencies (2026-11-20) and the start signal are done; the pair is in
+  `active/`. Next: T-001. Pushing `jetbrains-host` (via the studio bridge) approved by Gregor 2026-11-20.
 - **Open decisions:** (1) Gregor confirms OP-024's split (0035 Send, 0036 Marketplace release) and whether to split
   further at G3 (37 steps vs. the ~30 guideline). (2) G1: runtime V1/V2 and the handover list (ADR-004). (3) The
-  proxies OP-019–OP-023 and PD-099…PD-107.
+  proxies OP-019–OP-023 and PD-099…PD-107: confirmed by Gregor 2026-11-20 (done).
 - **Baseline:** _(commit hash before the first step commit; set when work starts; also `START_COMMIT` in `jetbrains.yml`)_
 - **Environment:** every Gradle/Kotlin/JVM/IDE check runs only in GitHub Actions (`jetbrains.yml`,
   `jetbrains-spikes.yml`); the sandbox has no Maven/Gradle/JetBrains access (proxy 403). `ci.yml` does not run on
