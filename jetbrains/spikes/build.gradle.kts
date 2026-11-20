@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     kotlin("jvm") version "2.4.21"
+    id("org.jetbrains.intellij.platform") version "2.20.1" apply false
 }
 
 repositories {

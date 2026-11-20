@@ -25,7 +25,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: node esbuild.js
       - run: node jetbrains/spikes/core/check.mjs
+      - run: node jetbrains/spikes/core/reply.mjs
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -33,7 +35,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: 9.7.0
-      - run: gradle -p jetbrains/spikes test
+      - run: gradle -p jetbrains/spikes test :ide:buildPlugin
       - uses: actions/upload-artifact@v4
         if: always()
         with:
