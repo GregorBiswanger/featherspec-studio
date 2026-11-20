@@ -20,6 +20,21 @@ export const STEP_ATTACHES: Record<StepCase, boolean> = {
     'NS-10': true,
 };
 
+/**
+ * 0031 §6.2: a follow-up line (index 1) is sent and attached like the step case that shows the same prompt as its first line.
+ * A step case that is not listed gets no Send on its follow-up line until a spec adds its row (A-002).
+ */
+export const FOLLOW_UP_CASE: Partial<Record<StepCase, StepCase>> = {
+    'NS-9': 'NS-10',
+    'NS-6-open': 'NS-6-report',
+    'NS-6-report': 'NS-6-open',
+    'NS-5': 'NS-2',
+};
+
+export function followUpCaseOf(stepCase: StepCase, index: number): StepCase | undefined {
+    return index === 1 ? FOLLOW_UP_CASE[stepCase] : undefined;
+}
+
 export interface Attachment {
     name: string;
     path: string;

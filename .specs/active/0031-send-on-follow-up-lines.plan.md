@@ -1,9 +1,9 @@
 # Plan — Send on the Follow-up Line
 
 **Spec:** [0031-send-on-follow-up-lines.md](0031-send-on-follow-up-lines.md)
-**Status:** Not started
+**Status:** In progress
 **Last updated:** 2026-11-20
-**Current step:** T-001
+**Current step:** T-002
 
 ## Approach
 
@@ -61,8 +61,8 @@ No parallel stage: T-002 renders T-001's protocol fields; T-004's docs describe 
   (`nextStep()` and one-line surfaces deep-equal, `nextStepBaseline.test.ts` stays green).
 - **Verify:** `npx vitest run src/core/board src/core/assistant src/shared/protocol` — red first (no per-line `send`), then
   green.
-- [ ] **Verified (T-001):** —
-- **Notes:** —
+- [x] **Verified (T-001):** 2026-11-20 red first (15 of 22 new tests failed: no per-line `send`), then green: `npx vitest run src/core/board src/core/assistant src/shared/protocol` 54 files, 961 passed, 1 skipped; `npx tsc --noEmit` clean.
+- **Notes:** Proxy decision (Gregor not reachable): spec §6.3, AC-009 and AC-011 name `Tip: Use a new chat with a strong model.` for NS-9's `/sdd-plan` line as "NS-10's session and model", but NS-10's guide is `any` session with `strongWebSearch`, so its own-case Tip is `Tip: Use any chat with a strong model, and allow web search.` The rule "own case, deep-equal to that case's first-line Tip" wins over the literal (a new chat would also contradict NS-9's own `then`: "in any chat"); the literal is corrected in the spec at closing. `detail.test.ts` (0024 AC-003) adjusted only to ignore per-line `send` (0031 §6.1).
 
 ### T-002 — Render the follow-up split button, its Tip and the gap
 
@@ -105,7 +105,7 @@ No parallel stage: T-002 renders T-001's protocol fields; T-004's docs describe 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
 | AC-001 | T-002 | — | — | open |
-| AC-002 | T-001 | — | — | open |
+| AC-002 | T-001 | `core/assistant/attachment.ts` (`FOLLOW_UP_CASE`), `core/board/detail.ts`, `shared/protocol/detail.ts` | `core/board/followUp0031.test.ts` | covered |
 | AC-003 | T-002 | — | — | open |
 | AC-004 | T-002 | — | — | open |
 | AC-005 | T-001, T-002 | — | — | open |
@@ -120,8 +120,8 @@ No parallel stage: T-002 renders T-001's protocol fields; T-004's docs describe 
 
 ## Session handoff
 
-- **Done so far:** —
-- **Next action:** T-001
+- **Done so far:** T-001
+- **Next action:** T-002
 - **Open decisions:** — (spec OP-001: no change to 0030's detection, flippable by Gregor)
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
+- **Baseline:** a383cc6
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

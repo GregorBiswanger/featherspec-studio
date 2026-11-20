@@ -1,5 +1,6 @@
 import type { Offer } from '../assistant/offer';
 import { sendViewOf, tipClosingOf } from '../assistant/sendView';
+import { followUpCaseOf } from '../assistant/attachment';
 import { problemSentence } from '../lifecycle/problemSentence';
 import { integrateIsQuiet } from '../planMap/returnedWork';
 import type { DetailView, DiagnosticLine, NextStepView, StatusHistoryItem } from '../../shared/protocol/detail';
@@ -45,9 +46,12 @@ function nextStepView(next: NextStep, tips: StepTipSettings | undefined, offer: 
     if (!('lines' in next)) {
         return next;
     }
-    const lines = next.lines.map((line) => {
+    const lines = next.lines.map((line, index) => {
         const step = link(line.intent);
-        return { text: line.text, intent: line.intent, ...(step === undefined ? {} : { step }) };
+        const own = followUpCaseOf(next.case, index);
+        const followSend = own === undefined ? undefined : sendViewOf(offer, own, { key });
+        const coach = followSend === undefined || own === undefined || tips === undefined || !tips.show ? undefined : stepTips(own, tips, tipClosingOf(offer), { version, send: true }).coach;
+        return { text: line.text, intent: line.intent, ...(step === undefined ? {} : { step }), ...(followSend === undefined ? {} : { send: followSend }), ...(coach === undefined ? {} : { coach }) };
     });
     const send = sendViewOf(offer, next.case, { key });
     return {

@@ -1,6 +1,6 @@
 # Send on the Follow-up Line
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0031-send-on-follow-up-lines.plan.md](0031-send-on-follow-up-lines.plan.md)
 
 Basis: Gregor's feedback 2026-11-20 (standing answer `orch/SPEC-0031.md`, treated as typed by him; screenshot of a Backlog

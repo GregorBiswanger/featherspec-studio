@@ -70,6 +70,8 @@ export interface NextStepLineView {
     text: string;
     intent: string;
     step?: StepLinkView;
+    send?: SendView;
+    coach?: string;
 }
 
 export type NextStepView = { rule: string; lines: NextStepLineView[]; tips?: StepTipsView; send?: SendView; quiet?: true; parallel?: { stage: number } } | { rule: string; text: string };
@@ -110,7 +112,7 @@ function isNextStepView(value: unknown): value is NextStepView {
     }
     return (
         Array.isArray(value.lines) &&
-        value.lines.every((line) => isRecord(line) && typeof line.text === 'string' && typeof line.intent === 'string' && (line.step === undefined || isStepLinkView(line.step))) &&
+        value.lines.every((line) => isRecord(line) && typeof line.text === 'string' && typeof line.intent === 'string' && (line.step === undefined || isStepLinkView(line.step)) && (line.send === undefined || isSendView(line.send)) && (line.coach === undefined || typeof line.coach === 'string')) &&
         (value.tips === undefined || isStepTipsView(value.tips)) &&
         (value.send === undefined || isSendView(value.send)) &&
         (value.quiet === undefined || value.quiet === true) &&

@@ -560,7 +560,9 @@ describe('0024 AC-003, AC-004: the send view of the next step', () => {
         const withTipsOff = await nextOf(model, key, { offer: OFFER_A, tips: parseStepTipSettings(false, {}) });
         expect(withTipsOff.send).toBeDefined();
         expect('tips' in withTipsOff).toBe(false);
-        expect({ ...withTipsOff, send: undefined }).toEqual({ ...plain, send: undefined });
+        // 0031 §6.1: a follow-up line carries its own send view; it is the one difference besides the view-level send.
+        const bare = (view: typeof plain) => ({ ...view, send: undefined, lines: view.lines?.map((line) => ({ ...(line as object), send: undefined })) });
+        expect(bare(withTipsOff)).toEqual(bare(plain));
     });
 
     it('a text-only next step (NS-1, NS-3, NS-11) carries no send view even with an offer', async () => {
