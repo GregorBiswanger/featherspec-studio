@@ -152,4 +152,30 @@ describe('connectActiveProject', () => {
         await repository.whenIdle();
         expect(repository.snapshot()).toBeUndefined();
     });
+
+    it('0029 AC-002: the sign of the active project reaches the repository and a change of it re-opens the project', async () => {
+        const { fileSystem, controller, repository } = setup(['a']);
+        const brief = '# Project Brief\n\n## Mission\nTBD\n\n## Primary users\nTBD\n\n## Success criteria\nTBD\n';
+        fileSystem.setFile('a', 'AGENTS.md', 'FeatherSpecVersion: 1.11.0\n# last reconciled: never\n');
+        fileSystem.setFile('a', '.memory-bank/projectbrief.md', brief);
+        connectActiveProject(controller, repository);
+        await controller.start();
+        await repository.whenIdle();
+        expect(repository.snapshot()?.setupRun).toBe('not run');
+        const changes: string[] = [];
+        repository.onDidChange((change) => changes.push(change.cause));
+        fileSystem.setFile('a', 'AGENTS.md', 'FeatherSpecVersion: 1.11.0\n# last reconciled: 2026-11-19\n');
+        await controller.refresh();
+        await repository.whenIdle();
+        expect(repository.snapshot()?.setupRun).toBe('run or unknown');
+        expect(changes).toEqual(['project']);
+    });
+
+    it('0029 AC-006: negative control, a project that is not at setup not run carries no sign that reads not run', async () => {
+        const { controller, repository } = setup(['a']);
+        connectActiveProject(controller, repository);
+        await controller.start();
+        await repository.whenIdle();
+        expect(repository.snapshot()?.setupRun).not.toBe('not run');
+    });
 });

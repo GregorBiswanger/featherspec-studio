@@ -8,6 +8,7 @@ import {
     NS4_INTENT,
     NS5_INTENT,
     NS5_THEN_INTENT,
+    NS6_REPORT_FIRST_INTENT,
     NS6_REPORT_INTENT,
     NS6_RESUME_INTENT,
     NS8_INTENT,
@@ -16,13 +17,17 @@ import {
     startIntent,
     STEP_GUIDES,
     type StepCase,
+    verifiedWithoutTickReason,
     WRITE_PLAN_INTENT,
 } from '../../shared/protocol/nextStepTexts';
 import type { StepView } from '../../shared/protocol/stepView';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { ShellModel } from '../ports/shell';
+import type { ParsedPlan } from '../specs/parsePlan';
 import type { PlanStep } from '../specs/planSteps';
 import type { SpecEntry } from '../specs/readProject';
+import { levelsOnImplement } from '../specs/version';
+import { clarifiedOf } from './clarified';
 import { plainShort } from './shortTitle';
 
 export const NEXT_STEP_RULE_IDS = ['NS-1', 'NS-2', 'NS-11', 'NS-3', 'NS-4', 'NS-5', 'NS-6', 'NS-7', 'NS-8', 'NS-9', 'NS-10'] as const;
@@ -33,7 +38,7 @@ export interface NextStepLine {
     intent: string;
 }
 
-export type NextStep = { rule: NextStepRuleId; case: StepCase; lines: NextStepLine[] } | { rule: NextStepRuleId; text: string };
+export type NextStep = { rule: NextStepRuleId; case: StepCase; lines: NextStepLine[]; reason?: string } | { rule: NextStepRuleId; text: string };
 
 function lines(rule: NextStepRuleId, stepCase: StepCase, ...texts: NextStepLine[]): NextStep {
     return { rule, case: stepCase, lines: texts };
@@ -44,10 +49,20 @@ export function openStep(model: ShellModel, entry: LifecycleEntry): PlanStep | u
     return (plan?.parsed?.steps ?? []).find((step) => step.ticked !== true && !step.struck);
 }
 
-export function startLine(model: ShellModel, entry: LifecycleEntry): string {
-    const plan = entry.plan ?? '';
-    const id = openStep(model, entry)?.id;
-    return id === undefined ? `Implement ${plan}` : `Start ${id} of ${plan}`;
+export function verifiedWithoutTick(plan: ParsedPlan | undefined): PlanStep | undefined {
+    return (plan?.steps ?? []).find((step) => !step.struck && step.ticked !== true && step.verified.state === 'value');
+}
+
+const STEP_TOKEN = /\bT-\d+\b/g;
+
+export function reportSign(plan: ParsedPlan | undefined, open: PlanStep): boolean {
+    const field = plan?.currentStep.value;
+    if (plan === undefined || field?.state !== 'value') {
+        return false;
+    }
+    const named = new Set(field.raw.match(STEP_TOKEN) ?? []);
+    const unfinished = plan.steps.filter((step) => named.has(step.id) && step.ticked !== true && !step.struck);
+    return unfinished.length > 0 && !unfinished.some((step) => step.id === open.id);
 }
 
 function readable(spec: SpecEntry): boolean {
@@ -88,22 +103,35 @@ export function nextStep(model: ShellModel, key: string): NextStep | undefined {
                 return lines('NS-6', 'NS-6-plan', { intent: WRITE_PLAN_INTENT, text: `/sdd-plan ${key}` });
             }
             const open = openStep(model, entry);
-            return open === undefined
-                ? lines('NS-6', 'NS-6-resume', { intent: NS6_RESUME_INTENT, text: `/sdd-plan ${key}` })
-                : lines(
-                      'NS-6',
-                      'NS-6-open',
-                      { intent: continueIntent(open.id, plainShort(open.title)), text: `Implement ${open.id} of ${entry.plan}` },
-                      { intent: NS6_REPORT_INTENT, text: `/sdd-plan ${key}` },
-                  );
+            if (open === undefined) {
+                return lines('NS-6', 'NS-6-resume', { intent: NS6_RESUME_INTENT, text: `/sdd-plan ${key}` });
+            }
+            const continueLine = { intent: continueIntent(open.id, plainShort(open.title)), text: `Implement ${open.id} of ${entry.plan}` };
+            const plan = model.project.plans.find((candidate) => candidate.key === entry.plan)?.parsed;
+            const untouched = verifiedWithoutTick(plan);
+            if (untouched !== undefined) {
+                return {
+                    ...lines('NS-6', 'NS-6-report', { intent: NS6_REPORT_FIRST_INTENT, text: `/sdd-plan ${key}` }, continueLine),
+                    reason: verifiedWithoutTickReason(untouched.id),
+                } as NextStep;
+            }
+            if (reportSign(plan, open) && !levelsOnImplement(model.project.version)) {
+                return lines('NS-6', 'NS-6-report', { intent: NS6_REPORT_FIRST_INTENT, text: `/sdd-plan ${key}` }, continueLine);
+            }
+            return lines('NS-6', 'NS-6-open', continueLine, { intent: NS6_REPORT_INTENT, text: `/sdd-plan ${key}` });
         }
         case 'Ready': {
             const open = openStep(model, entry);
-            return lines('NS-7', 'NS-7', { intent: startIntent(open?.id, plainShort(open?.title ?? '')), text: startLine(model, entry) });
+            return open === undefined
+                ? lines('NS-7', 'NS-6-resume', { intent: NS6_RESUME_INTENT, text: `/sdd-plan ${key}` })
+                : lines('NS-7', 'NS-7', { intent: startIntent(open.id, plainShort(open.title)), text: `Implement ${open.id} of ${entry.plan}` });
         }
         case 'Backlog': {
             if (entry.readiness.checks.some((check) => check.id === 'R-2' && check.result === 'fail')) {
                 return lines('NS-8', 'NS-8', { intent: NS8_INTENT, text: `/sdd-specify ${key}` });
+            }
+            if (entry.plan === undefined && clarifiedOf(model, key)) {
+                return lines('NS-9', 'NS-10', { intent: WRITE_PLAN_INTENT, text: `/sdd-plan ${key}` });
             }
             if (entry.plan === undefined) {
                 return lines('NS-9', 'NS-9', { intent: NS9_INTENT, text: `/sdd-clarify ${key}` }, { intent: NS9_THEN_INTENT, text: `/sdd-plan ${key}` });
@@ -118,15 +146,11 @@ export function shortForm(line: string): string {
     if (command !== null) {
         return command[0];
     }
-    const start = /^Start (\S+) of /.exec(line);
-    if (start !== null) {
-        return `Start ${start[1]}`;
-    }
     const implement = /^Implement (\S+) of /.exec(line);
     if (implement !== null) {
         return `Implement ${implement[1]}`;
     }
-    return line.startsWith('Implement ') ? 'Implement' : line;
+    return line;
 }
 
 export function stepView(model: ShellModel, key: string): StepView | undefined {

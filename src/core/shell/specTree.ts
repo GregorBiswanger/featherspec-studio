@@ -15,6 +15,7 @@ import {
     LOADING_TEXT,
     NEXT_STEP_PREFIX,
     NO_SPECS_START_TEXT,
+    WELCOME_TREE_MESSAGE,
     panelStateActions,
     panelStateLines,
     PROBLEM_PREFIX,
@@ -29,6 +30,7 @@ import { escapeMarkdown } from '../copyNextStep/entryView';
 import type { LifecycleEntry } from '../lifecycle/model';
 import { problemSentence } from '../lifecycle/problemSentence';
 import type { ShellModel } from '../ports/shell';
+import { stepLinkOf } from '../board/stepLinks';
 import { treeLabel } from './treeLabel';
 
 export interface SpecRowModel {
@@ -45,6 +47,7 @@ export interface SpecRowModel {
     path?: string;
     line?: string;
     planKey?: string;
+    mapStep?: string;
     specKey: string;
     state: BoardState;
 }
@@ -133,8 +136,23 @@ function descriptionOf(card: CardView): string {
     return card.step === undefined ? card.state : stepShortForm(card.step);
 }
 
-function contextValueOf(card: CardView, entry: LifecycleEntry): string {
-    return ['spec', ...(card.step === undefined ? [] : ['step']), ...(entry.plan === undefined ? [] : ['plan'])].join(' ');
+function mapable(model: ShellModel, entry: LifecycleEntry): boolean {
+    return entry.state !== 'Done' && entry.plan !== undefined && model.project.plans.find((plan) => plan.key === entry.plan)?.parsed !== undefined;
+}
+
+function mapStepOf(model: ShellModel, entry: LifecycleEntry): string | undefined {
+    const next = mapable(model, entry) ? nextStep(model, entry.key) : undefined;
+    for (const line of next !== undefined && 'lines' in next ? next.lines : []) {
+        const link = stepLinkOf(model, entry, `${line.intent} ${line.text}`);
+        if (link !== undefined) {
+            return link.id;
+        }
+    }
+    return undefined;
+}
+
+function contextValueOf(card: CardView, entry: LifecycleEntry, model: ShellModel): string {
+    return ['spec', ...(card.step === undefined ? [] : ['step']), ...(entry.plan === undefined ? [] : ['plan']), ...(mapable(model, entry) ? ['map'] : [])].join(' ');
 }
 
 function code(text: string): string {
@@ -177,6 +195,7 @@ function tooltipOf(model: ShellModel, card: CardView, entry: LifecycleEntry, tit
 function rowOf(model: ShellModel, card: CardView, entry: LifecycleEntry, slug: string): SpecRowModel {
     const title = fullTitle(card, slug);
     const shown = treeLabel({ number: card.number, title, description: descriptionOf(card), ...(card.step === undefined || card.deprecated ? {} : { command: card.step.short }) });
+    const mapStep = mapStepOf(model, entry);
     const style = card.problems > 0 ? PROBLEM_ICON : { icon: STATE_LOOK[card.state].motif, color: STATE_LOOK[card.state].colour };
     return {
         kind: 'spec',
@@ -187,18 +206,19 @@ function rowOf(model: ShellModel, card: CardView, entry: LifecycleEntry, slug: s
         color: style.color,
         accessibleLabel: treeRowAccessibleLabel({ number: card.number, title, state: card.state, deprecated: card.deprecated, step: card.step === undefined ? undefined : stepShortForm(card.step), problems: card.problems }),
         tooltip: tooltipOf(model, card, entry, title),
-        contextValue: contextValueOf(card, entry),
+        contextValue: contextValueOf(card, entry, model),
         stem: card.stem,
         ...(card.path === undefined ? {} : { path: card.path }),
         ...(card.step === undefined ? {} : { line: card.step.line }),
         ...(entry.plan === undefined ? {} : { planKey: entry.plan }),
+        ...(mapStep === undefined ? {} : { mapStep }),
         specKey: card.key,
         state: card.state,
     };
 }
 
 function groupsOf(model: ShellModel): GroupModel[] {
-    const cards = buildCards(model.project, model.lifecycle);
+    const cards = buildCards(model.project, model.lifecycle, model.handOvers);
     const entries = new Map(model.lifecycle.entries.map((entry) => [entry.key, entry]));
     const slugs = new Map(model.project.specs.map((spec) => [spec.key, spec.slug]));
     return GROUP_ORDER.flatMap((key) => {
@@ -264,7 +284,7 @@ export function buildSpecTree(input: SpecTreeInput): SpecTreeModel {
     }
     const groups = groupsOf(input.model);
     if (groups.length === 0) {
-        return { message: NO_SPECS_START_TEXT, items: [], ...description };
+        return { message: input.model.project.setupRun === 'not run' ? WELCOME_TREE_MESSAGE : NO_SPECS_START_TEXT, items: [], ...description };
     }
     const badge = badgeOf(groups);
     return { message: undefined, items: groups, ...(badge === undefined ? {} : { badge }), ...description };

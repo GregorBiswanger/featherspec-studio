@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import type { OverviewRow } from '../../../shared/protocol/overview';
 import { ABOUT_STEP_GLYPH, ABOUT_STEP_LABEL } from '../../../shared/protocol/nextStepTexts';
 import { problemsBadgeText } from '../../../shared/protocol/texts';
@@ -5,6 +6,7 @@ import { BadgeIcon, StateIcon } from '../../board/icons';
 import { useBoard } from '../../board/boardStore';
 import type { CopyLook } from '../../ui/CopyButton';
 import { StepAction } from '../../ui/StepAction';
+import { StepLink } from '../../ui/StepLink';
 import { StepText } from '../../ui/StepText';
 import { Toggletip } from '../../ui/Toggletip';
 import { Drill } from './Drill';
@@ -18,13 +20,18 @@ export function SpecRow(props: { row: OverviewRow; group: string; copyLook?: Cop
     const { row, group } = props;
     const openSpec = useOpenSpec();
     const selection = useShell().view?.selection;
-    const { copyResult, copyText, sendResult, sendPrompt } = useBoard();
+    const { copyResult, copyText, sendResult, sendPrompt, fileResult, openFile } = useBoard();
     const { spec } = row;
+    const item = useRef<HTMLLIElement>(null);
+    const selected = isSelectedSpec(selection, row.spec);
+    const toAction = (): void => {
+        item.current?.querySelector<HTMLElement>('button.send-main, button.copy-button')?.focus();
+    };
     const named = row.status === row.state;
     const title = spec.found ? (spec.title ?? NOT_AVAILABLE_TEXT) : specLabelText(spec);
     return (
-        <li className="ov-row-item" data-spec-row={spec.stem} data-row-group={group}>
-            <Drill id={`row:${group}:${spec.stem}`} className="ov-row" state={row.state} current={isSelectedSpec(selection, row.spec)}
+        <li ref={item} className="ov-row-item" data-spec-row={spec.stem} data-row-group={group}>
+            <Drill id={`row:${group}:${spec.stem}`} className="ov-row" state={row.state} current={selected}
                 onActivate={(element) => openSpec(specReference(row.spec), element)}>
                 <span className="ov-number">{spec.number}</span>
                 <span className="ov-title" title={title}>
@@ -43,15 +50,31 @@ export function SpecRow(props: { row: OverviewRow; group: string; copyLook?: Cop
                         <BadgeIcon kind="diagnostic" />
                     </span>
                 ) : null}
-                {row.step === undefined ? null : <StepText step={row.step} />}
             </Drill>
             {row.step === undefined ? null : (
-                <StepAction send={row.send} look={props.copyLook ?? 'icon'} line={row.step.line} sendResult={sendResult} onSend={sendPrompt} copyResult={copyResult} onCopy={copyText} />
+                <StepText
+                    step={row.step}
+                    {...(row.link === undefined
+                        ? {}
+                        : {
+                              link: {
+                                  id: row.link.id,
+                                  render: () => (
+                                      <StepLink id={row.link!.id} target={row.link!.open} spec={{ stem: spec.stem, ...(spec.path === undefined ? {} : { path: spec.path }) }} fileResult={fileResult} onOpen={openFile}>
+                                          {row.link!.id}
+                                      </StepLink>
+                                  ),
+                              },
+                          })}
+                />
             )}
-            {row.step === undefined || row.tips === undefined ? null : (
+            {row.step === undefined ? null : (
+                <StepAction send={row.send} look={row.quiet === true && props.copyLook === 'primary' ? 'secondary' : (props.copyLook ?? 'icon')} line={row.step.line} sendResult={sendResult} onSend={sendPrompt} copyResult={copyResult} onCopy={copyText} />
+            )}
+            {row.step === undefined || row.tips === undefined || selected ? null : (
                 <div className="ov-coach">
                     <span className="ov-coach-text">{row.tips.coach}</span>
-                    <Toggletip label={ABOUT_STEP_LABEL} glyph={ABOUT_STEP_GLYPH} paragraphs={row.tips.about} />
+                    <Toggletip label={ABOUT_STEP_LABEL} glyph={ABOUT_STEP_GLYPH} paragraphs={row.tips.about} onLeaveWithFocus={toAction} />
                 </div>
             )}
         </li>

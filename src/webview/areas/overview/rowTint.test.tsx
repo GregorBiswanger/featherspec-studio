@@ -39,7 +39,7 @@ async function open(): Promise<HTMLElement> {
     mounted = await mount(<App client={client} />);
     await send(shellEvent(baseView({ area: 'overview' }), 1));
     const view: OverviewView = sampleView();
-    view.now = [row('0001', 'Active'), row('0002', 'Review'), row('0003', 'Blocked')];
+    view.now = { rows: [row('0001', 'Active'), row('0002', 'Review'), row('0003', 'Blocked')], more: 0, stems: [] };
     view.upNext = { rows: [row('0004', 'Ready'), row('0005', 'Backlog')], more: 0, stems: ['0004-x', '0005-x'] };
     view.problems = { rows: [row('0006', 'Done'), row('0007', 'Review')], lines: [] };
     await send(overviewEvent(view));

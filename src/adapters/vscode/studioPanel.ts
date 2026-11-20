@@ -116,7 +116,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
 
     function pushView(floor = 0): void {
         seq = Math.max(seq, floor) + 1;
-        post({ v: PROTOCOL_VERSION, kind: 'evt', seq, type: 'shell', payload: { view: deps.service.view() } });
+        post({ v: PROTOCOL_VERSION, kind: 'evt', seq, type: 'shell', payload: deps.service.shellEvent() });
     }
 
     function pushBoard(view: BoardView | undefined): void {
@@ -142,6 +142,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
             ...deps.overview.handlers,
             hello: async (payload) => {
                 helloAt = Date.now();
+                deps.service.panelReady();
                 pushView(payload.lastSeq);
                 pushBoard(deps.board.view());
                 pushOverview(deps.overview.view());
@@ -184,6 +185,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
                 subscriptions.forEach((subscription) => subscription.dispose());
                 subscriptions = [];
                 panel = undefined;
+                deps.service.panelGone();
                 probeChannel.markNotReady();
                 deps.board.panelClosed();
             }),

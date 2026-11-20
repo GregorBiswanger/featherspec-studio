@@ -372,6 +372,13 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
             '## Layout and signal polish (0022)',
             '## Plan map (0023)',
             '## Send to the assistant (0024)',
+            '## Plan-state-aware next step (0028)',
+            '## Plan map navigation and progress (0025)',
+            '## Send defaults and wording (0026)',
+            '## Attach the spec when sending (0027)',
+            '## Onboarding before setup (0029)',
+            '## Clarified step, quiet attachment, Tip sentence (0030)',
+            '## Send on the follow-up line (0031)',
             '## Go',
         ]);
         for (const gone of ['Plan line', 'descriptions cut', 'attention row', 'attention reason', 'filters, sort']) {
@@ -491,7 +498,8 @@ describe('product docs after 0022 (AC-016, AC-018)', () => {
 
     it('the README names the icon Copy and the two primary buttons', async () => {
         const readme = await read('README.md');
-        expect(readme).toContain('Only the first Now row and the Copy prompt of an empty project are primary buttons');
+        expect(readme).toContain('The one primary button of the Overview is the next step of the spec you select');
+        expect(readme).toContain('the first Now row has a secondary Copy prompt');
     });
 
     it('the three product docs name Ready for the tree and keep "Up next" only for the Overview\'s set', async () => {
@@ -562,8 +570,8 @@ describe('product docs after 0021 (AC-021)', () => {
         const readme = await read('README.md');
         expect(readme).toContain('(its inline **Copy Next Step**)');
         expect(readme).not.toContain('inline **Copy prompt**');
-        expect(readme).toContain('the spec\'s next step ("Next" and the step short form, for example `Verify · /sdd-compile`) with its own **Copy prompt**');
-        expect(readme).toContain('**Next**, the short intent and the short form of the prompt (for example `Plan · /sdd-plan`) with a **Copy prompt** button');
+        expect(readme).toContain('the spec\'s next step (the step short form, for example `Verify · /sdd-compile`) with its own **Copy prompt**');
+        expect(readme).toContain('the short intent and the short form of the prompt (for example `Write plan · /sdd-plan`) with a **Copy prompt** button');
         expect(readme).not.toContain('**Next** and the short form of the command');
     });
 
@@ -623,7 +631,7 @@ describe('product docs after 0023 (AC-017)', () => {
         const readme = await read('README.md');
         expect(readme).toContain('### Plan map');
         expect(readme).toContain('Ways to run stage 2');
-        for (const way of ['in sequence', 'with subagents', 'with other agents']) {
+        for (const way of ['In sequence', 'Subagents', 'Other agents']) {
             expect(readme, way).toContain(way);
         }
         expect(readme).toContain('Integrate the returned steps');
@@ -731,8 +739,8 @@ describe('product docs after 0024 (AC-015)', () => {
         const text = await read('docs/release-checklist.md');
         const start = text.indexOf('\n## Send to the assistant (0024)\n');
         const section = text.slice(start, text.indexOf('\n## ', start + 1)).replace(/\s+/g, ' ');
-        expect(section).toContain('record whether an unsent draft in the current chat is kept or replaced (OP-004)');
-        expect(section).toContain('if it is replaced, decide whether the current chat stays the default target of NS-6 with GitHub Copilot; the Studio does not change it until you decide');
+        expect(section).toContain('record whether an unsent draft in the current chat is kept or replaced when you use **Send to the current chat** (OP-004)');
+        expect(section).not.toContain('stays the default target');
     });
 
     it('the project brief says that Send can put the prompt into the chosen assistant, and that the Studio never sends it', async () => {
@@ -780,9 +788,9 @@ describe('product docs after 0024 (AC-015)', () => {
 
 describe('product docs after the final check of round 2 (0024 T-014 to T-022)', () => {
     const SHOTS = [
-        ['overview-dark', 'Overview in the dark theme: Now lists the specs in Review, the first row with the primary Copy prompt and its coach line, then Up next and the figures'],
+        ['overview-dark', 'Overview in the dark theme: Now lists five specs in Review and + 7 more, the first row with Copy prompt and its coach line, then Up next and the figures'],
         ['board-dark', 'Board in the dark theme: six columns, the Review column open with cards that show the next step and an icon Copy prompt'],
-        ['plan-map-dark', 'Plan map in the dark theme: a plan as stages, stage 2 can run in parallel with two step cards and the ways to run it, the side panel beside the map'],
+        ['plan-map-dark', 'Plan map in the dark theme: a plan as stages with the next step in its header, stage 2 can run in parallel with two step cards and the ways to run it as three choices, the side panel beside the map'],
         ['spec-detail-light', 'Board in the light theme with the detail of a spec in the side panel: Next step with Copy prompt, Plan and Progress'],
     ] as const;
 
@@ -876,7 +884,7 @@ describe('product docs after the final check of round 2 (0024 T-014 to T-022)', 
         const readme = await read('README.md');
         expect(readme).toContain('The toolbar has **Open**, **Refresh** and the gear (**Open Settings**)');
         expect(readme).not.toContain('The toolbar has **Open** and **Refresh**');
-        expect(readme).toContain('where the step wants a fresh session (verifying a result and challenging a spec)');
+        expect(readme).toContain('opens a new chat for every step');
         expect(readme).not.toContain('(the verification and the review)');
     });
 
@@ -970,4 +978,254 @@ describe('product docs after the final check of round 2 (0024 T-014 to T-022)', 
         }
     });
 
+});
+
+function guardScopedToOldVersions(text: string): boolean {
+    const guard = 'Verified:` line but no tick';
+    return text
+        .split(/\.\s/)
+        .filter((sentence) => sentence.includes(guard))
+        .some((sentence) => /(?:before|below) FeatherSpec\s+1\.11\.0/i.test(sentence.slice(0, sentence.indexOf(guard))));
+}
+
+describe('0028 AC-011: the docs describe the plan-state-aware next step', () => {
+    it('README: the Report first intent, the Review line in full, and no leftover sentence of the old report case', async () => {
+        const text = await read('README.md');
+        expect(text).toContain('Let the agent report first — the plan and the ticks may differ');
+        const review = text.split('\n').find((line) => line.includes('→ **Review** (derived)'));
+        expect(review).toContain('every step of its plan ticked or dropped');
+        expect(review).toContain("whatever the plan's status line says");
+        expect(text).not.toContain('without an open step the one prompt lets the agent report where the plan stands');
+    });
+
+    it('CHANGELOG: the 0.1.0 entry names Let the agent report first and every step ticked', async () => {
+        const first = firstRelease(await read('CHANGELOG.md'));
+        expect(first).toContain('Let the agent report first');
+        expect(first).toContain('every step ticked');
+    });
+
+    it('the release checklist holds AC-013, AC-014 and AC-015 of 0028', async () => {
+        const text = await read('docs/release-checklist.md');
+        const section = text.slice(text.indexOf('## Plan-state-aware next step (0028)'), text.indexOf('## Go'));
+        for (const id of ['AC-013', 'AC-014', 'AC-015']) {
+            expect(section, id).toContain(`**${id}**`);
+        }
+    });
+
+    it('README and CHANGELOG do not scope the Verified-without-tick guard to versions below 1.11.0', async () => {
+        const readme = await read('README.md');
+        const changelog = firstRelease(await read('CHANGELOG.md'));
+        for (const [name, text] of [['README.md', readme], ['CHANGELOG.md', changelog]] as const) {
+            expect(text, name).toContain('Verified:` line but no tick');
+            expect(guardScopedToOldVersions(text), name).toBe(false);
+        }
+    });
+
+    it('negative control: the scope check finds the old wording and passes the right one', () => {
+        const old = 'Before FeatherSpec 1.11.0, when the plan names an unfinished step or a step has a `Verified:` line but no tick, the report comes first.';
+        const oldChangelog = 'Below FeatherSpec 1.11.0, when the plan names an unfinished step or a step has a `Verified:` line but no tick, the prompt comes first.';
+        const right = 'When a step has a `Verified:` line but no tick, and before FeatherSpec 1.11.0 also when the plan names an unfinished step, the report comes first.';
+        expect(guardScopedToOldVersions(old)).toBe(true);
+        expect(guardScopedToOldVersions(oldChangelog)).toBe(true);
+        expect(guardScopedToOldVersions(right)).toBe(false);
+    });
+});
+
+describe('product docs after 0025 (AC-021)', () => {
+    it('0025 AC-021: the README Plan map section names Show in Plan Map, Ctrl+click, 4 of 6 done · 67% and Next step', async () => {
+        const readme = await read('README.md');
+        const section = readme.slice(readme.indexOf('### Plan map'), readme.indexOf('### The detail of a spec'));
+        for (const literal of ['Show in Plan Map', 'Ctrl+click', '4 of 6 done · 67%', 'Next step']) {
+            expect(section, literal).toContain(literal);
+        }
+    });
+
+    it('0025 AC-021: the CHANGELOG names Show in Plan Map and 4 of 6 done · 67% under the version in preparation; no document holds a digit followed by " %"', async () => {
+        const first = firstRelease(await read('CHANGELOG.md'));
+        expect(first).toContain('Show in Plan Map');
+        expect(first).toContain('4 of 6 done · 67%');
+        for (const file of ['README.md', 'CHANGELOG.md']) {
+            expect(await read(file), file).not.toMatch(/\d %/);
+        }
+        expect('Progress 67 %').toMatch(/\d %/);
+    });
+
+    it('0025 AC-021: the release checklist carries AC-022 to AC-024 before Go', async () => {
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('\n## Plan map navigation and progress (0025)\n');
+        expect(start).toBeGreaterThan(-1);
+        expect(start).toBeLessThan(text.indexOf('\n## Go'));
+        const section = text.slice(start, text.indexOf('\n## ', start + 1));
+        for (const mark of ['**AC-022**', '**AC-023**', '**AC-024**']) {
+            expect(section, mark).toContain(mark);
+        }
+    });
+
+    it('0025 AC-021: the guidelines read as the amendment says, and the rationale table has the two rows', async () => {
+        const rules = (await read('.claude/rules/ux-guidelines.md')).replace(/\s+/g, ' ');
+        expect(rules).toContain('Criterion IDs and "Open" go to the file at the line, beside the panel (`ViewColumn.Beside`); a step ID goes to its card in the Plan map, Ctrl/Cmd+click to the file.');
+        expect(rules).toContain('once per view (detail, first Now row, Plan map header)');
+        const table = await read('docs/product/ux-guidelines.md');
+        expect(table).toContain('| 5 (2026-11-19) |');
+        expect(table).toContain('| 11 (2026-11-19) |');
+    });
+
+    it('0025 AC-021: each statement of 0025 section 4 carries its note, and no PD row of the register names 0025 as an editor', async () => {
+        const files = ['.specs/active/0023-plan-map-stages-parallel-work.md', '.specs/active/0019-detail-situation-picture.md', '.specs/active/0021-next-step-intent-and-guidance.md', '.specs/active/0022-layout-and-signal-polish.md', '.specs/active/0024-send-next-step-to-assistant.md', '.specs/active/0020-native-spec-tree.md', '.specs/active/0018-overview-and-compact-board.md', '.specs/done/0005-studio-shell-navigation.md', '.specs/done/0006-mission-control-dashboard.md', '.specs/done/0013-studio-visual-design.md'];
+        for (const file of files) {
+            expect(await read(file), file).toContain('Amended by 0025 (PD-082)');
+        }
+        expect('no note here'.split('Amended by 0025 (PD-082)').length - 1).toBe(0);
+    });
+});
+
+describe('product docs after 0026 (AC-002, AC-016)', () => {
+    const STRINGS = ['opens a new chat for every step', 'current or new chat', 'Find blocker', 'Move back to Ready', 'at most five', 'About these ways'];
+
+    it('0026 AC-016: README and the CHANGELOG entry in preparation each contain the six strings', async () => {
+        const readme = await read('README.md');
+        const first = firstRelease(await read('CHANGELOG.md'));
+        for (const text of STRINGS) {
+            expect(readme, `README ${text}`).toContain(text);
+            expect(first, `CHANGELOG ${text}`).toContain(text);
+        }
+    });
+
+    it('0026 AC-016, AC-002: the README holds no same chat, no the current chat otherwise, no **Next**, no `Plan · /sdd-plan`; the checklist and the brief no old line', async () => {
+        const readme = await read('README.md');
+        for (const old of ['same chat', 'the current chat otherwise', '**Next**', '`Plan · /sdd-plan`']) {
+            expect(readme, old).not.toContain(old);
+        }
+        expect(readme.toLowerCase()).not.toContain('this chat');
+        expect(await read('docs/release-checklist.md')).not.toContain('stays the default target');
+        expect(await read('docs/product/design-brief.md')).not.toContain('("Next", short form');
+        expect('the current chat otherwise **Next**').toContain('**Next**');
+    });
+
+    it('0026 AC-016: the release checklist carries AC-017 to AC-019 of 0026 before Go', async () => {
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('\n## Send defaults and wording (0026)\n');
+        expect(start).toBeGreaterThan(-1);
+        expect(start).toBeLessThan(text.indexOf('\n## Go'));
+        const section = text.slice(start, text.indexOf('\n## ', start + 1));
+        for (const mark of ['**AC-017**', '**AC-018**', '**AC-019**']) {
+            expect(section, mark).toContain(mark);
+        }
+    });
+
+    it('0026 AC-016: each statement of 0026 section 5 carries its note in the six specs it amends', async () => {
+        const files = ['0017-next-step-everywhere', '0018-overview-and-compact-board', '0021-next-step-intent-and-guidance', '0022-layout-and-signal-polish', '0023-plan-map-stages-parallel-work', '0024-send-next-step-to-assistant'];
+        for (const file of files) {
+            expect(await read(`.specs/active/${file}.md`), file).toContain('Amended by 0026 (PD-');
+        }
+        expect('no note here').not.toContain('Amended by 0026 (PD-');
+    });
+});
+
+describe('product docs after 0027 (AC-015)', () => {
+    it('0027 AC-015: README contains the three strings and the CHANGELOG entry in preparation names that Send attaches the spec', async () => {
+        const readme = await read('README.md');
+        for (const text of ['FeatherSpec 1.11.0', 'Copy prompt attaches nothing']) {
+            expect(readme, `README ${text}`).toContain(text);
+        }
+        expect(readme).not.toContain('attached when sent');
+        expect(firstRelease(await read('CHANGELOG.md'))).toContain('attaches the spec');
+    });
+
+    it('0027 AC-015: the release checklist carries AC-016 to AC-018 and AC-020, one line per assistant for AC-017 with V-3\'s versions, and the C-2 line (not needed, PD-091), before Go', async () => {
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('\n## Attach the spec when sending (0027)\n');
+        expect(start).toBeGreaterThan(-1);
+        expect(start).toBeLessThan(text.indexOf('\n## Go'));
+        const section = text.slice(start, text.indexOf('\n## ', start + 1));
+        for (const mark of ['**AC-016**', '**AC-017**', '**AC-017, GitHub Copilot**', '**AC-018**', '**AC-020**', 'VS Code 1.147.0', 'GitHub Copilot Chat 0.75.0', 'Claude Code 2.1.327', '**C-2, not needed**', '`attachesSpec`']) {
+            expect(section, mark).toContain(mark);
+        }
+    });
+
+    it('0027 AC-015: each statement of 0027 section 5 carries its note, 0013 in done/ included', async () => {
+        const active = ['0015-focus-on-visibility', '0016-honest-signals', '0017-next-step-everywhere', '0018-overview-and-compact-board', '0019-detail-situation-picture', '0020-native-spec-tree', '0021-next-step-intent-and-guidance', '0022-layout-and-signal-polish', '0023-plan-map-stages-parallel-work', '0024-send-next-step-to-assistant'];
+        for (const file of active) {
+            expect(await read(`.specs/active/${file}.md`), file).toContain('Amended by 0027 (PD-');
+        }
+        for (const file of ['0002-spec-repository-parser', '0013-studio-visual-design', '0025-plan-map-navigation-and-progress', '0026-send-defaults-and-wording', '0028-plan-state-aware-next-step']) {
+            expect(await read(`.specs/done/${file}.md`), file).toContain('Amended by 0027 (PD-');
+        }
+        expect('no note here').not.toContain('Amended by 0027 (PD-');
+    });
+
+    it('0029 AC-012: the notes of section 5, PD-090, the README, the CHANGELOG and the checklist section', async () => {
+        const notes: ReadonlyArray<readonly [string, number]> = [
+            ['.specs/done/0006-mission-control-dashboard.md', 1],
+            ['.specs/done/0007-spec-board-spec-detail.md', 1],
+            ['.specs/active/0017-next-step-everywhere.md', 1],
+            ['.specs/active/0018-overview-and-compact-board.md', 3],
+            ['.specs/active/0020-native-spec-tree.md', 1],
+        ];
+        for (const [file, count] of notes) {
+            expect((await read(file)).split('Amended by 0029 (setup not run)').length - 1, file).toBe(count);
+        }
+        expect(await read('docs/product/product-decisions.md')).toMatch(/\| PD-090 \| [^|]*feather[^|]*\|/i);
+        expect(await read('README.md')).toMatch(/Welcome to FeatherSpec[^]*\/sdd-setup|\/sdd-setup[^]*Welcome to FeatherSpec/);
+        expect(await read('CHANGELOG.md')).toContain('Welcome to FeatherSpec');
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('\n## Onboarding before setup (0029)\n');
+        expect(start).toBeGreaterThan(-1);
+        expect(start).toBeLessThan(text.indexOf('\n## Go'));
+        const section = text.slice(start, text.indexOf('\n## ', start + 1));
+        for (const mark of ['**AC-013**', '**AC-014**']) {
+            expect(section, mark).toContain(mark);
+        }
+        expect('no note here').not.toContain('Amended by 0029 (setup not run)');
+    });
+
+    it('0030 AC-011: the notes of section 5, PD-092, the README, the CHANGELOG and the checklist section', async () => {
+        const notes = ['.specs/active/0017-next-step-everywhere.md', '.specs/active/0021-next-step-intent-and-guidance.md', '.specs/done/0026-send-defaults-and-wording.md', '.specs/active/0027-attach-spec-when-sending.md'];
+        for (const file of notes) {
+            expect(await read(file), file).toContain('Amended by 0030 (PD-092)');
+        }
+        expect(await read('docs/product/product-decisions.md')).toMatch(/\| PD-092 \| [^|]*`Tip:`[^|]*\|/);
+        const readme = await read('README.md');
+        expect(readme).toContain('Tip: Use');
+        expect(readme).not.toContain('attached when sent');
+        const changelog = firstRelease(await read('CHANGELOG.md'));
+        expect(changelog).toContain('Write the plan');
+        expect(changelog).toContain('Tip:');
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('(0030)\n');
+        expect(start).toBeGreaterThan(-1);
+        expect(start).toBeLessThan(text.indexOf('\n## Go'));
+        const section = text.slice(start, text.indexOf('\n## ', start));
+        for (const mark of ['**AC-012**', '**AC-013**']) {
+            expect(section, mark).toContain(mark);
+        }
+        expect('no note here').not.toContain('Amended by 0030 (PD-092)');
+    });
+
+    it('0031 AC-007: the notes of section 5, the README, the CHANGELOG and the checklist section', async () => {
+        const notes = [
+            '.specs/active/0021-next-step-intent-and-guidance.md',
+            '.specs/active/0022-layout-and-signal-polish.md',
+            '.specs/active/0024-send-next-step-to-assistant.md',
+            '.specs/done/0025-plan-map-navigation-and-progress.md',
+            '.specs/active/0027-attach-spec-when-sending.md',
+            '.specs/done/0030-clarified-step-quiet-attach-tip.md',
+        ];
+        for (const file of notes) {
+            expect(await read(file), file).toContain('Amended by 0031 (follow-up Send)');
+        }
+        const readme = await read('README.md');
+        expect(readme).toContain('further prompts of the detail and of the Plan map header offer a secondary **Send**');
+        const changelog = firstRelease(await read('CHANGELOG.md'));
+        expect(changelog).toContain('Send on the follow-up line');
+        const text = await read('docs/release-checklist.md');
+        const start = text.indexOf('(0031)\n');
+        expect(start).toBeGreaterThan(-1);
+        expect(start).toBeLessThan(text.indexOf('\n## Go'));
+        const section = text.slice(start, text.indexOf('\n## ', start));
+        for (const mark of ['**AC-008**', '**AC-009**']) {
+            expect(section, mark).toContain(mark);
+        }
+        expect('no note here').not.toContain('Amended by 0031 (follow-up Send)');
+    });
 });

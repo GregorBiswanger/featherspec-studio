@@ -193,8 +193,7 @@ and the expected result. A clear miss reopens the named spec.
 - [ ] **AC-017** *(Gregor, per assistant; record the versions)*: on `tip-splitter`, from the detail of an Active spec
   (NS-6) and of a Review spec (NS-5), the main part and each Send item open the named chat with the prompt in the input
   and nothing sent; after you send it yourself it runs as the FeatherSpec command or plan step it names; with GitHub Copilot
-  record whether an unsent draft in the current chat is kept or replaced (OP-004); if it is replaced, decide whether the
-  current chat stays the default target of NS-6 with GitHub Copilot; the Studio does not change it until you decide.
+  record whether an unsent draft in the current chat is kept or replaced when you use **Send to the current chat** (OP-004).
   - [ ] GitHub Copilot: VS Code 1.147.0, GitHub Copilot Chat 0.75.0 (`GitHub.copilot-chat`). Re-run on a newer version before the release.
   - [ ] Claude Code: VS Code 1.147.0, Claude Code 2.1.327 (`anthropic.claude-code`). Re-run on a newer version before the release.
   - [ ] Codex: Copy prompt only, no Send; re-check when a Codex version accepts a prompt.
@@ -204,6 +203,115 @@ and the expected result. A clear miss reopens the named spec.
   ignored in Restricted Mode.
 - [ ] **AC-019** *(Gregor)*: say without asking what Send to <Name> does (opens, fills, sends nothing) and which chat it
   uses; confirm or change the texts. The draft part passed (PD-076); the build part is AC-017.
+
+## Plan-state-aware next step (0028)
+
+- [ ] **AC-013** *(preview harness by the orchestrator; guideline 12)*: the detail and the first Now row of a spec whose plan
+  is finished (Review, `/sdd-compile`) and of a spec showing Report first (below 1.11.0, `Current step` names an unfinished
+  step other than the open one), in Dark, Light and High Contrast at 1600 px and 1000 px window width with the side panel
+  open: no intent, prompt or coach line is cut, and the intent `Let the agent report first — the plan and the ticks may
+  differ` wraps only between words. Screenshots in the plan.
+- [ ] **AC-014** *(not run; closed by OP-002, tasks in AC-015)*: the two tasks across views are covered by AC-015.
+- [ ] **AC-015** *(Gregor, on `tip-splitter` with GitHub Copilot and Claude Code, before the spec closes; record the versions)*:
+  (a) an agent ticks the last step: whatever the status line says, the Board shows Review, and the tree, the Overview, the
+  detail and the status bar show `/sdd-compile`; the prompt runs it in a new chat. (b) `Current step` names an unfinished
+  step after the open one: on FeatherSpec 1.10.0 the report comes first and `/sdd-plan` levels the plan; on 1.11.0 the
+  continue line comes first and `Implement <ID>` levels it. (c) On both, a Ready spec's `Implement T-001 of <plan path>`
+  moves the pair to active and builds only T-001.
+
+## Plan map navigation and progress (0025)
+
+- [ ] **AC-022** *(preview harness by the orchestrator, then Gregor; guideline 12)*: Dark, Light and High Contrast at 1600 px
+  and 1000 px window width with the side panel open at its default width, on `fs110-parallel-synthetic` (each variant),
+  `fs-partial-return` and `studio-0015`: the header's Next step, the card rows, the percentages and the returned-work
+  statements are cut nowhere; the step motifs are told apart without colour; the highlight is visible in each theme; an
+  expanded card leaves its `‖` neighbour at its own height; at 1000 px the map alone shows the header's Next step.
+  Screenshots and verdict in the plan.
+- [ ] **AC-023** *(Gregor, click test; run 2026-11-19, tasks 1–3, K-1 became AC-027)*: starting in the Overview with 0001 of the
+  parallel fixture: "Find out what T-004 does, whether it can run in parallel, how far the spec is, and copy what you would
+  run next." Passes when you answer without opening a Markdown file and name the percentage; confirm or change the texts.
+- [ ] **AC-024** *(Gregor, real use on `C:\projects\test\tip-splitter` before the spec closes)*: every step's information is
+  reached without the Markdown file (chip, next open step, tree); Ctrl+click opens the plan at the step; after the agent
+  ticks the last step the map header shows the check and the percentage first reads 100%.
+
+## Send defaults and wording (0026)
+
+- [ ] **AC-017** *(preview harness by the orchestrator, then Gregor; guideline 12)*: on `fs110-parallel-synthetic` without
+  notes and a project with eight Now entries, Dark, Light and High Contrast at 1600 px and 1000 px window width with the
+  side panel open at its default width: the Overview with the first Now row selected and not selected, and the Plan map
+  with the ways expanded and each way checked. No short form, way line, tag or prompt is cut; at 1600 px each way takes one
+  line; the expanded block with In sequence checked is at most half as tall as 0023's (about 400 px); the tagged way is told
+  apart in High Contrast without colour; radios and `(?)` show a visible focus outline; arrow keys move the checked radio.
+  Screenshots and verdict in the plan.
+- [ ] **AC-018** *(Gregor, click test; run 2026-11-19, tasks 1–3, then ended; K-2, K-3, K-5 became AC-022–AC-024)*: from the
+  Overview of `fs110-parallel-synthetic` without notes, with GitHub Copilot chosen: find out how stage 2 could run with other
+  agents, copy the start line for T-004, and say which chat Send to Copilot opens for T-003 and what
+  `Continue · Implement T-003` in Now means, without asking and without opening a Markdown file.
+- [ ] **AC-019** *(Gregor, on `C:\projects\test\tip-splitter` before the spec closes; GitHub Copilot and Claude Code, record the versions)*:
+  from the detail and the first Now row of the Active spec the main part opens a new chat with the prompt in the input and
+  nothing sent, and a draft typed beforehand in the previous GitHub Copilot chat is still there (if not, tell Claude: the default
+  target is decided again, 09 §3); `Send to the current chat` fills the current chat, record whether a draft there was kept;
+  with that spec selected the Overview shows one coach line; on 0023's re-cut copy with a `‖` stage the start lines pasted
+  after M-10's commit build their steps, and `/sdd-plan` integrates both without a finding.
+
+## Attach the spec when sending (0027)
+
+- [ ] **AC-016** *(preview harness by the orchestrator, then Gregor; guideline 12)*: the attachment line in the detail, the
+  first Now row and the Plan map header, with GitHub Copilot (attaching switched on for the preview) and with Claude Code, for
+  `0002-x.md` and `0024-send-next-step-to-assistant.md`, menu closed and open, in Dark, Light and High Contrast at 1600 px
+  and 1000 px window width with the side panel open at its default width, and the detail alone at 800 px. No text is cut,
+  the long name wraps after a separator, the chip is told apart in High Contrast without colour, nothing moves when the
+  feedback shows. Screenshots and verdict in the plan.
+- [ ] **AC-017** *(Gregor, on `C:\projects\test\tip-splitter` before the spec closes; with each assistant set, GitHub Copilot and Claude Code; record each version against V-3's: VS Code 1.147.0, GitHub Copilot Chat 0.75.0, Claude Code 2.1.327, and FeatherSpec's)*:
+  with FeatherSpec 1.11.0 and the assistant set, for a Backlog spec (`/sdd-clarify`) and the Active spec (`Implement T-00x`): the
+  main part and each Send item open the chat with the prompt in the input and a chip with the file name the line named,
+  nothing submitted; after you submit, the agent's tool calls show no read of the spec file; Copy prompt pastes the line
+  without `@`. On a copy at FeatherSpec 1.10.0 the chip is there too (PD-091: attached in every version).
+- [ ] **AC-017, GitHub Copilot** *(same run, with GitHub Copilot; PD-091 sets `attachesSpec` to true for it)*:
+  the chip, nothing submitted; a re-read of the spec after you submit is accepted (PD-091), note it.
+- [ ] **AC-018** *(not run: the click test ended before it, 13; the question moves to AC-017)*: starting in the Overview, find
+  out which file goes along when you use Send to Copilot on the next step of 0002, what goes along when you copy the prompt, and
+  whether the Plan map's header sends the same.
+- [ ] **AC-020** *(Gregor or the orchestrator, before the spec closes; 12 D4-4)*: with the largest spec of this repository's
+  `.specs/` (`0022-layout-and-signal-polish.md`, about 43 KB) on FeatherSpec 1.11.0 and each attaching assistant, run
+  `/sdd-clarify` in a new chat once by Send with the attachment and once by Copy prompt; record both runs' context use and
+  tool calls. It passes when the attached run reads the spec file not at all, uses no more context than the other, and its
+  findings hold every blocking finding of the other; else that assistant goes to no attachment.
+- [x] **C-2, not needed** (PD-091, Gregor 2026-11-20): GitHub Copilot and Claude Code both attach in every FeatherSpec version
+  (`attachesSpec` is true for both in `src/core/assistant/assistants.ts`; there is no attach version and no gate). The
+  double-load risk with a FeatherSpec older than 1.11.0 is accepted; `NEWEST_KNOWN` (0002) stays as it is.
+
+## Onboarding before setup (0029)
+
+- [ ] **AC-013** *(preview harness by the orchestrator; guideline 12)*: the Overview and the Board of `fs-setup-not-run`, and
+  the Overview of `fs-setup-done-no-specs`, in Dark, Light and High Contrast at 1600 px and 1000 px window width with the side
+  panel open and Send offered. The feather glyph is visible in each theme, no text or button is cut, no word breaks inside
+  itself, and glyph, heading, body and action stand together in that order in one container. Screenshots go into the plan.
+- [ ] **AC-014** *(Gregor, Hands-On on a fresh `tip-splitter`, with GitHub Copilot and with Claude Code; note the versions)*:
+  after *Set up FeatherSpec* the Studio welcomes you and offers `/sdd-setup`; Send puts it into the assistant; after
+  `/sdd-setup` the empty state reads `No specs yet. Start with /sdd-specify` without a reload.
+
+## Clarified step, quiet attachment, Tip sentence (0030)
+
+- [ ] **AC-012** *(preview harness by the orchestrator; guideline 12)*: the detail and the Up next row of a Backlog spec,
+  before and after the clarify switch, with Send and the attachment offered, in Dark, Light and High Contrast at 1600 px and
+  1000 px window width with the side panel open. No attachment line shows, no text or button is cut, no word breaks inside
+  itself, and the Tip sentence wraps only between words. Screenshots go into the plan.
+- [ ] **AC-013** *(Gregor, Hands-On on a fresh `tip-splitter`, with GitHub Copilot and with Claude Code; note the versions)*:
+  after Send of `/sdd-clarify` and the challenge, the Next step reads `Write the plan` · `/sdd-plan …` without a reload, as
+  a Send that attaches the spec; no attachment line shows; the coach reads as a Tip sentence.
+
+## Send on the follow-up line (0031)
+
+- [ ] **AC-008** *(preview harness by the orchestrator; guideline 12)*: the detail of a Backlog spec (NS-9) and of an Active
+  spec with an open step (NS-6-open) and the Plan map header of the latter, with GitHub Copilot and Claude Code, in Dark,
+  Light and High Contrast at 1600 px and 1000 px window width with the side panel open. One blue primary, two split buttons
+  of the same size, each with its Tip, a visible gap of about one line before `Then: ...`, no text or button cut, no word
+  broken inside itself. Screenshots go into `orch/compile/0031-preview.md`; record `manual: orchestrator checked …, <date>` in the spec's §12 (the plan is archived and frozen).
+- [ ] **AC-009** *(Gregor, Hands-On on a fresh `tip-splitter`, with GitHub Copilot and with Claude Code; note the versions)*:
+  on the Backlog spec, `Then: write the plan` offers a grey Send that opens a chat with `/sdd-plan ...` and the spec
+  attached; its menu holds new chat, current chat (GitHub Copilot) and Copy prompt; its Tip reads `Tip: Use any chat with a strong model, and allow web search.` (OP-003, confirm or flip); the
+  two steps read as separate blocks.
 
 ## Go
 

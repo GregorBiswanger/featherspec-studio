@@ -3,7 +3,7 @@ export function ProgressBar(props: { label: string; done: number; total: number;
     return (
         <div className="progress">
             <span className="progress-text">{props.text}</span>
-            <div className="progress-track" role="progressbar" aria-label={props.label} aria-valuemin={0} aria-valuemax={props.total} aria-valuenow={props.done} aria-valuetext={props.text}>
+            <div className="progress-track" role="progressbar" aria-label={props.label} aria-valuemin={0} aria-valuemax={props.total} aria-valuenow={props.done} aria-valuetext={props.text} title={props.text}>
                 <span className="progress-fill" style={{ width: `${share}%` }} />
             </div>
         </div>

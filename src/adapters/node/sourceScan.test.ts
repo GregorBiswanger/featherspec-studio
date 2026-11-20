@@ -1,7 +1,7 @@
 import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { NOTHING_UP_NEXT_TEXT, UP_NEXT_HEADING } from '../../webview/areas/overview/texts';
+import { NOTHING_UP_NEXT_SETUP_TEXT, NOTHING_UP_NEXT_TEXT, UP_NEXT_HEADING } from '../../webview/areas/overview/texts';
 import { UP_NEXT_SET_LABEL } from '../../webview/areas/overview/requests';
 
 const root = path.resolve(__dirname, '..', '..', '..');
@@ -184,7 +184,7 @@ describe('0024 §5, F1: the exemptions stay as narrow as the names of 0024', () 
     });
 });
 
-const SEND_FORBIDDEN_TERMS = ['submit', 'acceptInput', 'sendToNewChat', 'autoSend', 'isPartialQuery: false', 'chatgpt', 'github.copilot.', 'inlineChat', 'editorChat', 'vscode.lm', 'vscode://'];
+const SEND_FORBIDDEN_TERMS = ['submit', 'acceptInput', 'sendToNewChat', 'autoSend', 'isPartialQuery: false', 'chatgpt', 'github.copilot.', 'inlineChat', 'editorChat', 'vscode.lm', 'vscode://', 'preserveInput', 'modelSelector'];
 const SEND_COMMANDS = ['workbench.action.chat.newChat', 'workbench.action.chat.open', 'claude-vscode.editor.open'];
 
 export function chatCommandStrings(text: string): string[] {
@@ -208,6 +208,12 @@ describe('0024 AC-007: the Studio never submits a chat and names no other chat c
         expect(strings.filter((text) => text === 'workbench.action.chat.open')).toHaveLength(1);
         expect([...new Set(strings)].sort()).toEqual([...SEND_COMMANDS].sort());
         expect(files.filter((file) => file.text.includes('workbench.action.chat.open')).map((file) => file.name)).toEqual(['src/core/assistant/assistants.ts']);
+    });
+
+    it('0027 AC-007: attachFiles occurs exactly once in src without test files and package.json, in the file that owns the chat commands', async () => {
+        const files = await productionFiles();
+        expect(files.flatMap((file) => file.text.match(/attachFiles/g) ?? [])).toHaveLength(1);
+        expect(files.filter((file) => file.text.includes('attachFiles')).map((file) => file.name)).toEqual(['src/core/assistant/assistants.ts']);
     });
 
     it('negative control: the scan finds each term, any letter case, and a command that is not one of the three', () => {
@@ -367,7 +373,7 @@ describe('0020 AC-018: the Spec Explorer is gone from the sources', () => {
 });
 
 describe('0022 AC-007: "up next" names one set', () => {
-    const ALLOWED = [UP_NEXT_HEADING, NOTHING_UP_NEXT_TEXT, UP_NEXT_SET_LABEL];
+    const ALLOWED = [UP_NEXT_HEADING, NOTHING_UP_NEXT_TEXT, NOTHING_UP_NEXT_SETUP_TEXT, UP_NEXT_SET_LABEL];
 
     function literalsWithUpNext(text: string): string[] {
         return [...text.matchAll(/'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|`((?:[^`\\]|\\.)*)`/g)].map((match) => match[1] ?? match[2] ?? match[3] ?? '').filter((literal) => /up next/i.test(literal));
@@ -377,9 +383,9 @@ describe('0022 AC-007: "up next" names one set', () => {
         const files = (await sourceFiles()).filter((file) => !isTestFile(file.name));
         const found = files.flatMap((file) => literalsWithUpNext(file.text).map((literal) => `${file.name}: ${literal}`));
         expect(found.sort()).toEqual(
-            [`src/webview/areas/overview/texts.ts: ${UP_NEXT_HEADING}`, `src/webview/areas/overview/texts.ts: ${NOTHING_UP_NEXT_TEXT}`, `src/webview/areas/overview/requests.ts: ${UP_NEXT_SET_LABEL}`].sort(),
+            [`src/webview/areas/overview/texts.ts: ${UP_NEXT_HEADING}`, `src/webview/areas/overview/texts.ts: ${NOTHING_UP_NEXT_TEXT}`, `src/webview/areas/overview/texts.ts: ${NOTHING_UP_NEXT_SETUP_TEXT}`, `src/webview/areas/overview/requests.ts: ${UP_NEXT_SET_LABEL}`].sort(),
         );
-        expect(ALLOWED).toHaveLength(3);
+        expect(ALLOWED).toHaveLength(4);
     });
 
     it('package.json holds no "up next"', async () => {
@@ -413,5 +419,77 @@ describe('0021 AC-013: the product names no model', () => {
             expect(hits(`const model = '${name.toLowerCase()}';`, MODEL_NAMES, true)).toEqual([name]);
         }
         expect(hits('const model = "strong model";', MODEL_NAMES, true)).toEqual([]);
+    });
+});
+
+export function stringLiterals(text: string): string[] {
+    return [...text.matchAll(/'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`/g)].map((match) => match[0]);
+}
+
+describe('0026 AC-002: one term for the open chat in the shipped sources', () => {
+    const OLD_TERMS = ['same chat', 'this chat'];
+
+    it('src without test files, package.json, README.md and docs/release-checklist.md hold neither same chat nor this chat, in any letter case', async () => {
+        const files = (await sourceFiles()).filter((file) => !isTestFile(file.name));
+        const offenders = files.map((file) => [file.name, hits(file.text, OLD_TERMS, true)] as const).filter(([, found]) => found.length > 0);
+        expect(offenders).toEqual([]);
+        for (const doc of ['package.json']) {
+            expect(hits(await fs.readFile(path.join(root, doc), 'utf8'), OLD_TERMS, true), doc).toEqual([]);
+        }
+    });
+
+    it('negative control: the scan finds each term in any case', () => {
+        expect(hits("const a = 'SAME CHAT or new chat';", OLD_TERMS, true)).toEqual(['same chat']);
+        expect(hits("const a = 'What This Chat knows';", OLD_TERMS, true)).toEqual(['this chat']);
+        expect(hits("const a = 'the current chat';", OLD_TERMS, true)).toEqual([]);
+    });
+});
+
+describe('0026 AC-021: Send, not Paste, in the text modules', () => {
+    const ALLOWED = [
+        'Paste it once every worker you started is back.',
+        'before you paste.',
+        'paste it there with',
+    ];
+
+    function offenders(text: string): string[] {
+        return stringLiterals(text).filter((literal) => /paste/i.test(literal) && !ALLOWED.some((allowed) => literal.includes(allowed)));
+    }
+
+    it('the string literals of src without test files hold paste only in the three allowed sentences', async () => {
+        const files = (await sourceFiles()).filter((file) => !isTestFile(file.name) && /\.tsx?$/.test(file.name));
+        expect(files.map((file) => [file.name, offenders(file.text)] as const).filter(([, found]) => found.length > 0)).toEqual([]);
+    });
+
+    it('each allowed sentence is still needed: a literal of the shipped sources holds it', async () => {
+        const files = (await sourceFiles()).filter((file) => !isTestFile(file.name) && /\.tsx?$/.test(file.name));
+        const all = files.flatMap((file) => stringLiterals(file.text)).filter((literal) => /paste/i.test(literal));
+        for (const allowed of ALLOWED) {
+            expect(
+                all.some((literal) => literal.includes(allowed)),
+                allowed,
+            ).toBe(true);
+        }
+    });
+
+    it('negative control: a planted literal with Paste is found, an identifier and an allowed sentence are not', () => {
+        expect(offenders("const a = 'Paste it now';")).toEqual(["'Paste it now'"]);
+        expect(offenders('const a = `Then paste ${x}`;')).toHaveLength(1);
+        expect(offenders('const pasteKey = pasteKeyOf(platform);')).toEqual([]);
+        expect(offenders("const a = 'Paste it once every worker you started is back.';")).toEqual([]);
+    });
+});
+
+describe('0026 AC-014: every text of §7 comes from a text module', () => {
+    const SEVEN = ['current or new chat', 'Find blocker', 'Move back to Ready', 'Write plan', 'Next step: ', 'About these ways', 'One chat builds the steps', 'Send it once every worker', 'Send to a new chat'];
+
+    it('no component or core file outside the text modules holds a §7 literal', async () => {
+        const files = (await sourceFiles()).filter((file) => !isTestFile(file.name) && /\.tsx?$/.test(file.name) && !/(?:^|\/)(?:\w*[tT]exts?|texts)\.ts$/.test(file.name));
+        const offenders = files.flatMap((file) => stringLiterals(file.text).filter((literal) => SEVEN.some((text) => literal.includes(text))).map((literal) => `${file.name}: ${literal}`));
+        expect(offenders).toEqual([]);
+    });
+
+    it('negative control: a planted component literal is found', () => {
+        expect(stringLiterals("const label = 'About these ways';").some((literal) => SEVEN.some((text) => literal.includes(text)))).toBe(true);
     });
 });

@@ -4,6 +4,7 @@ export const WAY_KEYS: readonly WayKey[] = ['sequence', 'subagents', 'otherAgent
 
 export interface WayText {
     name: string;
+    line: string;
     effect: string;
     suffix: string;
 }
@@ -11,20 +12,31 @@ export interface WayText {
 export const WAYS: Record<WayKey, WayText> = {
     sequence: {
         name: 'In sequence',
+        line: 'One chat builds the steps one after another.',
         effect: 'One chat builds the steps one after another and stops at the stage end and at every test review on the way.',
         suffix: 'in sequence',
     },
     subagents: {
         name: 'Subagents',
+        line: 'The chat hands each step to a subagent; subagents cannot ask you.',
         effect: "Where a working agreement asks for a test review, the chat first writes the stage's tests and stops for it; then it hands each step to a subagent. Subagents cannot ask you; there is no steering in between.",
         suffix: 'with subagents',
     },
     otherAgents: {
         name: 'Other agents',
-        effect: 'The chat proposes the commit a worktree needs and prints one start line per step. Paste each into another chat, tool or worktree; each worker builds its step and leaves a return note.',
+        line: 'Each step runs in another chat or worktree from its start line.',
+        effect: 'Each step runs from its own start line in another chat, tool or worktree and leaves a return note; a worktree holds committed files only, so commit first. Until start lines show here, the stage prompt has the chat propose that commit and print them. Once every worker is back, the next step integrates the returned steps.',
         suffix: 'with other agents',
     },
 };
+
+export const DEFAULT_WAY: WayKey = 'sequence';
+
+export const DEFAULT_TAG_TEXT = 'default';
+
+export function wayLabel(key: WayKey): string {
+    return `${WAYS[key].name}${key === DEFAULT_WAY ? ` · ${DEFAULT_TAG_TEXT}` : ''} — ${WAYS[key].line}`;
+}
 
 export function stagePrompt(way: WayKey, stage: number, plan: string): string {
     return `Implement the whole stage ${stage} of ${plan} ${WAYS[way].suffix}`;
@@ -66,20 +78,22 @@ export const CAN_RUN_PARALLEL_TEXT = '⇉ can run in parallel';
 
 export const NOT_IN_A_STAGE_TEXT = 'Not in a stage';
 
+export type StepLookKey = 'done' | 'next' | 'open' | 'dropped' | 'returned' | 'returnedBlocked' | 'notFound';
+
 export interface StepLook {
-    symbol?: string;
+    key: StepLookKey;
     word: string;
 }
 
 export const STEP_LOOKS = {
-    done: { symbol: '✓', word: 'done' },
-    next: { symbol: '◐', word: 'next' },
-    open: { symbol: '○', word: 'open' },
-    dropped: { word: 'dropped' },
-    returned: { symbol: '↩', word: 'returned' },
-    returnedBlocked: { symbol: '⊘', word: 'returned, blocked' },
-    notFound: { symbol: '?', word: 'not in the steps' },
-} as const satisfies Record<string, StepLook>;
+    done: { key: 'done', word: 'done' },
+    next: { key: 'next', word: 'next' },
+    open: { key: 'open', word: 'open' },
+    dropped: { key: 'dropped', word: 'dropped' },
+    returned: { key: 'returned', word: 'returned' },
+    returnedBlocked: { key: 'returnedBlocked', word: 'returned, blocked' },
+    notFound: { key: 'notFound', word: 'not in the steps' },
+} as const satisfies Record<StepLookKey, StepLook>;
 
 export function stepLook(step: { state: string; returned?: { status: string } }): StepLook {
     if (step.state === 'returned') {
@@ -99,6 +113,8 @@ export const COVERS_LABEL = 'Covers';
 export const DO_LABEL = 'Do';
 
 export const VERIFY_LABEL = 'Verify';
+export const VERIFIED_LABEL = 'Verified';
+export const REPORTED_LABEL = 'Reported';
 
 export const OPEN_IN_PLAN_LABEL = 'Open in plan';
 
@@ -125,11 +141,23 @@ export function returnedText(returned: { status: 'done' | 'blocked' | 'unknown';
     return 'Returned · status unknown';
 }
 
-export function stageReturnedText(n: number, m: number): string {
-    return `${n} of ${m} steps returned`;
+export type ReturnedClause = 'integrates' | 'finds-out' | 'none';
+
+export function returnedWorkText(n: number, blocked: readonly string[], clause: ReturnedClause): string {
+    const state = blocked.length === 0 ? ', waiting to be integrated' : `, ${blocked.join(', ')} blocked`;
+    const tail = clause === 'integrates' ? ': the next step integrates them' : clause === 'finds-out' ? ': the next step finds out what blocks' : '';
+    return `${n} returned${state}${tail}.`;
 }
 
-export const ALL_RETURNED_TEXT = 'All steps returned: the next step integrates them.';
+export function groupReturnedText(k: number, m: number, blocked: readonly string[], out: readonly string[]): string {
+    return `${k} of ${m} returned${blocked.length === 0 ? '' : `, ${blocked.join(', ')} blocked`} · ${out.join(', ')} not back yet`;
+}
+
+export function parallelHintText(n: number): string {
+    return `Stage ${n} can run in parallel · `;
+}
+
+export const WAYS_TO_RUN_IT_LABEL = 'Ways to run it';
 
 export function waysHeading(n: number): string {
     return `Ways to run stage ${n}`;
@@ -138,4 +166,14 @@ export function waysHeading(n: number): string {
 export const WAYS_LEAD_TEXT =
     'Steps joined by ‖ share no file and may run in parallel. In sequence is the default; parallel pays off for large steps. Either parallel way runs the quality gates once, on the combined result, before a step is ticked.';
 
+export const ABOUT_WAYS_LABEL = 'About these ways';
+
+export function waysAbout(): string[] {
+    return [WAYS_LEAD_TEXT, ...WAY_KEYS.map((key) => `${WAYS[key].name}: ${WAYS[key].effect}`)];
+}
+
 export const START_LINES_LEAD_TEXT = 'Start lines — commit first: a worktree holds committed files only.';
+
+export function stepLinkTooltip(name: string, id: string, mac: boolean): string {
+    return `${name}\nShow ${id} in the plan map · ${mac ? 'Cmd' : 'Ctrl'}+click opens the plan file`;
+}

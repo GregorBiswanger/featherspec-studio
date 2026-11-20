@@ -1,7 +1,7 @@
 import { isSendView, type SendView } from './assistant';
 import { isRecord } from './envelope';
 import { isPlanUnreadableView, isPlanView, type PlanUnreadableView, type PlanView } from './planMap';
-import { isStepTipsView, type StepTipsView } from './stepView';
+import { isStepLinkView, isStepTipsView, type StepLinkView, type StepTipsView } from './stepView';
 
 export interface LineTarget {
     key: string;
@@ -40,7 +40,7 @@ export interface NextOpenStep {
     open: LineTarget;
 }
 
-export type StepsProgress = { kind: 'steps'; done: number; total: number; next?: NextOpenStep } | { kind: 'none' } | { kind: 'unavailable' };
+export type StepsProgress = { kind: 'steps'; done: number; total: number; next?: NextOpenStep; returned?: string } | { kind: 'none' } | { kind: 'unavailable' };
 
 export interface OpenCriterion {
     id?: string;
@@ -69,9 +69,12 @@ export interface FileRow {
 export interface NextStepLineView {
     text: string;
     intent: string;
+    step?: StepLinkView;
+    send?: SendView;
+    coach?: string;
 }
 
-export type NextStepView = { rule: string; lines: NextStepLineView[]; tips?: StepTipsView; send?: SendView } | { rule: string; text: string };
+export type NextStepView = { rule: string; lines: NextStepLineView[]; tips?: StepTipsView; send?: SendView; quiet?: true; parallel?: { stage: number } } | { rule: string; text: string };
 
 export interface SpecDetailView {
     kind: 'spec';
@@ -109,9 +112,11 @@ function isNextStepView(value: unknown): value is NextStepView {
     }
     return (
         Array.isArray(value.lines) &&
-        value.lines.every((line) => isRecord(line) && typeof line.text === 'string' && typeof line.intent === 'string') &&
+        value.lines.every((line) => isRecord(line) && typeof line.text === 'string' && typeof line.intent === 'string' && (line.step === undefined || isStepLinkView(line.step)) && (line.send === undefined || isSendView(line.send)) && (line.coach === undefined || typeof line.coach === 'string')) &&
         (value.tips === undefined || isStepTipsView(value.tips)) &&
-        (value.send === undefined || isSendView(value.send))
+        (value.send === undefined || isSendView(value.send)) &&
+        (value.quiet === undefined || value.quiet === true) &&
+        (value.parallel === undefined || (isRecord(value.parallel) && Object.keys(value.parallel).length === 1 && typeof value.parallel.stage === 'number' && Number.isInteger(value.parallel.stage) && value.parallel.stage > 0))
     );
 }
 
@@ -139,6 +144,9 @@ function isStepsProgress(value: unknown): value is StepsProgress {
         return true;
     }
     if (value.kind !== 'steps' || !isCount(value.done) || !isCount(value.total)) {
+        return false;
+    }
+    if (value.returned !== undefined && (typeof value.returned !== 'string' || value.returned.length === 0)) {
         return false;
     }
     return value.next === undefined || (isRecord(value.next) && typeof value.next.id === 'string' && typeof value.next.title === 'string' && isLineTarget(value.next.open));

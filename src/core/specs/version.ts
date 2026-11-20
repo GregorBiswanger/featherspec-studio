@@ -1,7 +1,7 @@
 import type { Diagnostic } from './diagnostics';
 
 export const OLDEST_KNOWN = '1.7.0';
-export const NEWEST_KNOWN = '1.10.0';
+export const NEWEST_KNOWN = '1.11.0';
 
 export interface SemanticVersion {
     major: number;
@@ -72,4 +72,13 @@ export function checkVersion(version: string): Diagnostic | undefined {
         return { kind: 'unverified-version', tier: 'note', scope: 'project', reason: 'newer than known' };
     }
     return undefined;
+}
+
+export const LEVELLING_SINCE = '1.11.0';
+
+const LEVELLING = parseSemanticVersion(LEVELLING_SINCE);
+
+export function levelsOnImplement(version: string): boolean {
+    const parsed = parseSemanticVersion(version);
+    return parsed !== undefined && LEVELLING !== undefined && compareVersions(parsed, LEVELLING) >= 0;
 }

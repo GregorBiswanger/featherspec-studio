@@ -9,6 +9,7 @@ export interface SpecInput {
     slug?: string;
     kind: SpecKind;
     title?: string | null;
+    updated?: string;
 }
 
 export function stemOf(input: SpecInput): string {
@@ -29,8 +30,8 @@ function specFile(input: SpecInput, status: string, plan: string, extra = '', he
     return lines.join('\n');
 }
 
-function planFile(stem: string, status: string, folder: string): string {
-    return ['# Plan', '', `**Spec:** [${stem}.md](${stem}.md)`, `**Status:** ${status}`, ''].join('\n') + `\n(${folder})\n`;
+function planFile(stem: string, status: string, folder: string, updated?: string): string {
+    return ['# Plan', '', `**Spec:** [${stem}.md](${stem}.md)`, `**Status:** ${status}`, ...(updated === undefined ? [] : [`**Last updated:** ${updated}`]), ''].join('\n') + `\n(${folder})\n`;
 }
 
 export function filesFor(inputs: readonly SpecInput[]): Record<string, string> {
@@ -53,7 +54,7 @@ export function filesFor(inputs: readonly SpecInput[]): Record<string, string> {
                 break;
             case 'Review':
                 files[`.specs/active/${stem}.md`] = specFile(input, 'In Progress', link);
-                files[`.specs/active/${stem}.plan.md`] = planFile(stem, 'Done', 'active');
+                files[`.specs/active/${stem}.plan.md`] = planFile(stem, 'Done', 'active', input.updated);
                 break;
             case 'Blocked':
                 files[`.specs/active/${stem}.md`] = specFile(input, 'In Progress', link);

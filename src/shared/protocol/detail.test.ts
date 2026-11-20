@@ -26,7 +26,7 @@ function valid(): SpecDetailView {
 describe('0019 P-2: the guard of the situation picture', () => {
     it('0021 AC-009: accepts a next step with tips', () => {
         const view = valid();
-        view.nextStep = { rule: 'NS-6', lines: [{ text: 'a', intent: 'b' }], tips: { coach: 'any chat · fast model', about: ['one', 'two', 'three', 'four'] } };
+        view.nextStep = { rule: 'NS-6', lines: [{ text: 'a', intent: 'b' }], tips: { coach: 'Tip: Use any chat with a fast model.', about: ['one', 'two', 'three', 'four'] } };
         expect(isDetailView(view)).toBe(true);
     });
 
@@ -88,6 +88,30 @@ describe('0019 P-2: the guard of the situation picture', () => {
 
 describe('0024 AC-003: the send view of the next step', () => {
     const SEND = { assistant: 'copilot', target: 'new', targets: ['new', 'current'] };
+
+    it('0025 AC-026: a next step may carry quiet: true and nothing else', () => {
+        const view = valid();
+        const lines = [{ text: 'a', intent: 'b' }];
+        view.nextStep = { rule: 'NS-6', lines, quiet: true } as never;
+        expect(isDetailView(view)).toBe(true);
+        for (const quiet of [false, 1, 'yes', null]) {
+            view.nextStep = { rule: 'NS-6', lines, quiet } as never;
+            expect(isDetailView(view), String(quiet)).toBe(false);
+        }
+    });
+
+    it('0025 AC-016/AC-027: a next step takes a parallel stage and a step link on a line, and refuses a bad one', () => {
+        const view = valid();
+        const link = { id: 'T-003', open: { key: 'p', line: 4 } };
+        view.nextStep = { rule: 'NS-6', lines: [{ text: 'a', intent: 'b T-003', step: link }], parallel: { stage: 2 } } as never;
+        expect(isDetailView(view)).toBe(true);
+        for (const parallel of [{ stage: 0 }, { stage: '2' }, { stage: 2, extra: 1 }, 2]) {
+            view.nextStep = { rule: 'NS-6', lines: [{ text: 'a', intent: 'b' }], parallel } as never;
+            expect(isDetailView(view), JSON.stringify(parallel)).toBe(false);
+        }
+        view.nextStep = { rule: 'NS-6', lines: [{ text: 'a', intent: 'b', step: { id: 'T-003' } }] } as never;
+        expect(isDetailView(view)).toBe(false);
+    });
 
     it('accepts a next step with a send view and refuses a bad one', () => {
         const view = valid();

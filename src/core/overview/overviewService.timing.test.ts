@@ -46,7 +46,7 @@ describe('0021 AC-011: a settings change reaches the Overview within 500 ms (PD-
             world.tips.set(parseStepTipSettings(on, { strong: 'X' }));
             await world.service.whenIdle();
         });
-        expect(current(world).now.some((row) => 'tips' in row)).toBe(on && current(world).now.length > 0);
+        expect(current(world).now.rows.some((row) => 'tips' in row)).toBe(on && current(world).now.rows.length > 0);
         expect(best).toBeLessThan(BUDGET_MS.uiFreshness);
         world.service.dispose();
     });
@@ -70,7 +70,7 @@ describe('0024 AC-010: a setting change and an extensions change reach the Overv
             }
             await world.service.whenIdle();
         });
-        expect(current(world).now.some((row) => 'send' in row)).toBe(installed && current(world).now.length > 0);
+        expect(current(world).now.rows.some((row) => 'send' in row)).toBe(installed && current(world).now.rows.length > 0);
         expect(best).toBeLessThan(BUDGET_MS.uiFreshness);
         world.assistant.install('copilot');
         let chosen = true;
@@ -79,7 +79,7 @@ describe('0024 AC-010: a setting change and an extensions change reach the Overv
             world.assistant.choose(chosen ? 'copilot' : 'none');
             await world.service.whenIdle();
         });
-        expect(current(world).now.some((row) => 'send' in row)).toBe(chosen && current(world).now.length > 0);
+        expect(current(world).now.rows.some((row) => 'send' in row)).toBe(chosen && current(world).now.rows.length > 0);
         expect(settingBest).toBeLessThan(BUDGET_MS.uiFreshness);
         world.service.dispose();
     });

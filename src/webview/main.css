@@ -17,6 +17,10 @@ body,
     --fs-tint: var(--vscode-descriptionForeground);
 }
 
+[data-tint="focusBorder"] {
+    --fs-tint: var(--vscode-focusBorder);
+}
+
 [data-tint="charts.blue"] {
     --fs-tint: var(--vscode-charts-blue);
 }
@@ -622,10 +626,6 @@ main > h1 {
     font-size: 11px;
 }
 
-.step-label {
-    color: var(--fs-muted);
-}
-
 .step-short {
     font-family: var(--vscode-editor-font-family);
 }
@@ -755,6 +755,15 @@ main > h1 {
     background: var(--vscode-button-hoverBackground, var(--vscode-button-background));
 }
 
+.send-arrow-secondary {
+    color: var(--vscode-button-secondaryForeground, var(--vscode-button-foreground));
+    background: var(--vscode-button-secondaryBackground, var(--vscode-button-background));
+}
+
+.send-arrow-secondary:hover {
+    background: var(--vscode-button-secondaryHoverBackground, var(--vscode-button-secondaryBackground));
+}
+
 .send-menu {
     position: absolute;
     top: 100%;
@@ -772,7 +781,8 @@ main > h1 {
     box-shadow: 0 2px 8px var(--vscode-widget-shadow, transparent);
 }
 
-.send-menu [role="menuitem"] {
+.send-menu [role="menuitem"],
+.send-menu [role="menuitemradio"] {
     padding: 4px 12px;
     color: inherit;
     background: transparent;
@@ -785,9 +795,18 @@ main > h1 {
 }
 
 .send-menu [role="menuitem"]:hover,
-.send-menu [role="menuitem"]:focus-visible {
+.send-menu [role="menuitem"]:focus-visible,
+.send-menu [role="menuitemradio"]:hover,
+.send-menu [role="menuitemradio"]:focus-visible {
     color: var(--vscode-menu-selectionForeground, var(--vscode-foreground));
     background: var(--vscode-menu-selectionBackground, var(--vscode-toolbar-hoverBackground));
+}
+
+.send-check {
+    display: inline-block;
+    width: 16px;
+    margin-right: 4px;
+    vertical-align: middle;
 }
 
 .vscode-high-contrast .send-menu {
@@ -844,6 +863,11 @@ main > h1 {
     flex-wrap: wrap;
     gap: 6px;
     padding: 2px 0;
+}
+
+/* 0031 AC-013: about one line of space between two prompt lines; the gap inside a line stays 6px. */
+.next-step-lines li + li {
+    margin-top: 1.25em;
 }
 
 .next-step-lines code {
@@ -1034,6 +1058,8 @@ main > h1 {
 }
 
 .progress-next,
+.progress-returned,
+.plan-returned,
 .progress-open-label,
 .progress-absent {
     margin: 4px 0;
@@ -1076,6 +1102,14 @@ main > h1 {
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+}
+
+.overview [data-welcome] h2 {
+    margin: 0.83em 0;
+    font-size: 1.5em;
+    font-weight: 700;
+    letter-spacing: normal;
+    text-transform: none;
 }
 
 .ov-panels {
@@ -1250,8 +1284,14 @@ main > h1 {
     grid-area: problem;
 }
 
-.ov-row .step-text {
+.ov-row-item > .step-text {
     grid-area: step;
+    padding: 5px 0;
+    pointer-events: none;
+}
+
+.ov-row-item > .step-text .file-link {
+    pointer-events: auto;
 }
 
 .ov-status {
@@ -1485,6 +1525,10 @@ blockquote.illustration {
             "step step step step copy";
     }
 
+    .ov-row-item > .step-text {
+        padding-left: 12px;
+    }
+
     .ov-row .ov-title {
         overflow-wrap: break-word;
         white-space: normal;
@@ -1637,11 +1681,9 @@ blockquote.illustration {
 .card[aria-current="true"] .card-change,
 .card[aria-current="true"] .card-criteria,
 .card[aria-current="true"] .step-text,
-.card[aria-current="true"] .step-label,
 .ov-row[aria-current="true"] .ov-number,
 .ov-row[aria-current="true"] .ov-status,
-.ov-row[aria-current="true"] .step-text,
-.ov-row[aria-current="true"] .step-label {
+.ov-row[aria-current="true"] + .step-text {
     color: var(--vscode-list-activeSelectionForeground);
 }
 
@@ -1765,8 +1807,10 @@ blockquote.illustration {
     white-space: nowrap;
 }
 
-.step-chip .chip-symbol {
-    color: var(--fs-muted);
+.step-chip .icon,
+.step-card-toggle .icon {
+    color: var(--fs-tint);
+    vertical-align: -2px;
 }
 
 .step-chip s {
@@ -1834,6 +1878,7 @@ blockquote.illustration {
 .plan-group {
     display: flex;
     flex-wrap: wrap;
+    align-items: start;
     gap: 8px;
     min-width: 0;
 }
@@ -1849,12 +1894,21 @@ blockquote.illustration {
     overflow-wrap: break-word;
 }
 
+.step-card[data-highlight],
+.plan-ways[data-highlight] {
+    outline: 2px solid var(--vscode-contrastActiveBorder, var(--vscode-focusBorder));
+    outline-offset: 1px;
+    transition: outline-color 150ms;
+}
+
 .step-card[data-state='next'] {
     border-color: var(--vscode-contrastActiveBorder, var(--vscode-focusBorder));
 }
 
 .step-card-toggle {
-    display: block;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
     width: 100%;
     padding: 0;
     color: var(--vscode-foreground);
@@ -1873,7 +1927,12 @@ blockquote.illustration {
 }
 
 .step-card-title {
+    min-width: 0;
     font-weight: 400;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
 }
 
 .step-card-line,
@@ -1938,12 +1997,39 @@ blockquote.illustration {
 }
 
 .plan-way {
-    margin: 8px 0;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 4px 0;
     min-width: 0;
 }
 
-.plan-way-name {
+.plan-way-text {
+    min-width: 0;
+    overflow-wrap: break-word;
+}
+
+.plan-way-tag {
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.plan-way input[type="radio"] {
+    flex: none;
     margin: 0;
+    accent-color: var(--vscode-radio-activeBackground, var(--vscode-focusBorder));
+}
+
+.plan-way input[type="radio"]:focus-visible {
+    outline: 1px solid var(--vscode-contrastActiveBorder, var(--vscode-focusBorder));
+    outline-offset: 2px;
+}
+
+.plan-ways-about {
+    margin: 4px 0;
+}
+
+.plan-way-name {
     font-weight: 600;
 }
 

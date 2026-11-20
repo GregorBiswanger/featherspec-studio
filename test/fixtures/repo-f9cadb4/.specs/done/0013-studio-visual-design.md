@@ -1,0 +1,324 @@
+# Studio Visual Design
+
+**Status:** Implemented
+**Plan:** [0013-studio-visual-design.2026-11-17.plan.md](../plan-archive/0013-studio-visual-design.2026-11-17.plan.md)
+
+*Amended by 0018 (PD-062): §3.2 (as 0006 §9 layout) and §3.3: Overview §6.1 and the three-row card (0018 B-5).*
+
+*Amended by 0018 (PD-062): wherever this spec names Mission Control or the Spec Board as a place, read Overview or Board; the rows of 0018 §5 change behaviour.*
+
+*Amended by 0015 (PD-055/PD-056): every other statement, requirement, criterion, term, assumption or open point of this spec about agent runs, run events, providers, approvals, the Agent Center, the start workflow, the Clear command or specs 0008–0012 is void; a sentence that also says something else keeps that part. The notes below name what changes in meaning or needs a replacement; see [0015](0015-focus-on-visibility.md) §5.*
+
+*Amended by 0017 (PD-060/PD-061): every other statement, criterion, note or open point of this spec about drag and drop, "Move to…", the move command, move requests, the board-requested transition check, an accepted Ready → Active request or the drop result is void; a sentence that also says something else keeps that part.*
+
+*Amended by 0021 (PD-069): wherever this spec names the control "Copy" of a prompt (a next step or `/sdd-specify`), read `Copy prompt`, named as 0021 §6.4; the feedback stays; wherever it shows a next step line, 0021 §6.1 gives each line its intent.*
+
+Depends on: 0005, 0006, 0007. Input: [design-brief.md](../../docs/product/design-brief.md), Gregor's interview answers
+for this spec. `D-n` = defect n of the UI preview report of 2026-11-16.
+
+## 1. Summary and goal
+
+The preview shows correct data as unstyled HTML (D-1…D-12); handoff P1 "Visual First" is not
+met. Goal: a calm, dense, native VS Code tool whose project state reads in two seconds. Success:
+Gregor accepts screenshots of every area in Dark, Light and High Contrast as fit for a talk or a
+Marketplace listing. Users: the developer in the Studio panel; Gregor accepts the look.
+
+## 2. Scope
+
+*Amended by 0015 (PD-055/PD-056): "four areas" becomes three areas; no Agent Center content.*
+
+### In scope
+
+- Layout, typography, spacing, icons, chips, bars and motion of the four areas and of 0005's
+  panel-level states, with `--vscode-*` theme variables only.
+- Five behaviour deltas Gregor named, each refining the cited criterion:
+  1. inline Markdown in file text of the detail view (0007 AC-009);
+  2. collapsible detail sections (0007 §6.4);
+  3. one "Open file" per detail section instead of per item (0007 AC-010);
+  4. sentences for derived-state rules and readiness checks, ID as secondary text (0007 AC-003,
+     AC-024; 0006's derived markers);
+  5. Mission Control header diagnostics wording (0006 AC-017).
+
+*Amended by 0016 (PD-059, proxy): the sentences are 0016 T-09 and T-11; rule and check IDs are in the tooltip only (T-08, T-12).*
+
+### Out of scope
+
+- New data, protocol messages or model fields — because Gregor limited this spec to
+  presentation; carried data may be reshaped (a string split into ID + text), not added.
+- Drill-down targets, filters, moves, transition check, keyboard model, panel-level texts —
+  because 0005–0007 own them and they work (PD-036).
+- Custom palette, web fonts, a Markdown or UI library, any new dependency — because the brief
+  demands a native look from VS Code variables only.
+- Block-level Markdown (headings, tables, nested lists, images, HTML) — because the brief names a
+  small inline subset; block quotes and list markers are only tidied (§3.4).
+- Agent Center content (0012) and parser diagnostics (D-5, PD-020) — because others own them.
+
+## 3. Design rules
+
+### 3.1 Native theme
+
+- Colour only from `--vscode-*` variables (or `currentColor`, `transparent`, `inherit`); fonts
+  only `--vscode-font-family` and `--vscode-editor-font-family` (IDs, code).
+- **State colours**, one mapping for chips, tiles, bar segments and column headers: Backlog
+  `--vscode-descriptionForeground`, Ready `--vscode-charts-blue`, Active `--vscode-charts-purple`,
+  Review `--vscode-charts-yellow`, Done `--vscode-charts-green`, Blocked `--vscode-charts-red`. A
+  state colour tints only an icon, a chip border or edge and a bar segment; text stays
+  `--vscode-foreground` or `--vscode-descriptionForeground` (fixes D-6). Every state also shows
+  its icon and name (0007 §6.7).
+  *Amended by 0022 (PD-069): §3.1 State colours and "Every state also shows its icon and name" — 0022 §4.8's one table (Backlog and Done `descriptionForeground`, Ready `charts.blue`, Active `charts.green`, Review `charts.orange`, Blocked `charts.red`); in two- and three-line Overview rows the name is the icon's tooltip and in the row's accessible name.*
+- High Contrast: borders of chips, tiles, cards, panels and sections fall back to
+  `--vscode-contrastBorder`; focus and selection use `--vscode-contrastActiveBorder` first, as
+  0005 AC-031 does. Motion and focus per AC-002, AC-003.
+
+### 3.2 Mission Control
+
+*Amended by 0015 (PD-055/PD-056): Recent activity alone below the attention list; the run panel is void.*
+
+- **Header**, one quiet line: name · `FeatherSpec <version>` · `Updated <time>` · diagnostics (AC-006).
+- **Stat tiles** (AC-004), the Done tile with the Deprecated sub-count as secondary text;
+  **distribution bar** in §3.1 colours with "Total <n>" (0006's Total element) and progress
+  (AC-005); **Needs attention** as compact rows (AC-007).
+- **Agent runs** and **Recent activity** side by side below it, stacked under 720 px area width.
+  This order replaces 0006 §9's layout guidance.
+
+*Amended by 0016 (PD-059, proxy): the header reads as 0016 T-01 and T-02.*
+
+### 3.3 Spec Board
+
+*Amended by 0015 (PD-055/PD-056): no run status on cards.*
+
+- Board fills the area height (D-8); columns per AC-008, header with icon, name, count badge.
+- **Card** per AC-009: the state chip is followed by the §3.5 sentence or Deprecated marker as
+  secondary text; Blocked conditions and readiness sit below the summary; diagnostics badge, run
+  status and last change at the bottom; "Move to…" small, top-right corner.
+- **Drag feedback**: the dragged card is visibly lifted; the column under the pointer is marked
+  as target. No valid/invalid marking before the drop; a refusal shows after the drop as today (OP-1 (a)).
+  *Amended by 0017 (PD-060/PD-061): void (PD-060).*
+
+*Amended by 0017 (PD-060/PD-061): "Move to…" small, top-right corner: the next-step line is the card's last line (0017 AC-004).*
+
+### 3.4 Spec Explorer
+
+*Amended by 0019 (PD-058): §3.4 detail bullets (header "Open file", sections, per-section Open file, inline Markdown and tidying of file text) — header per 0019 §6.2 row 1; collapsible: Format notes and Status history only; no file text. The safe inline renderer and AC-014 stay for problem and note reasons, which quote file text.*
+
+- Two panes (list with own scroll; detail with header: number chip, title, state chip, "Open
+  file"), stacked under 640 px; selected row by background and border (D-12), no wrap (D-11).
+  *Amended by 0020 (PD-058): §3.4 first bullet — void for the list pane and the selected row; the detail's layout is 0019's (0020 §5).*
+- **Sections** (0007 §6.4 names): the heading is a button that collapses or expands the body;
+  all start expanded; the choice is kept per section name across selections while the panel is
+  open. **Open file**: one per section in its heading row, opening 0007's file at the top;
+  Related artifacts: each file name is itself the link.
+- **Inline Markdown** in all file text: `**b**`, `__b__`, `*i*`, `_i_`, `` `code` ``,
+  `[text](target)` as text plus target in secondary text (not a link). Escaped first: only these
+  become elements; everything else, HTML included, is literal text.
+- **Tidying**: a block quote loses `> ` and shows as a quote (Given/When/Then); a list marker
+  (`- `, `* `, `1. `) is dropped where the item is already a list item (D-2). A text that starts
+  with its own item's ID (bare or bold, then `|`, `-`, `—` or `:`) loses that repeat; a
+  requirement's other table cells show as secondary text joined by ` · `. Overview header lines
+  form an aligned label/value grid (D-4).
+
+### 3.5 Sentences for rules (texts owned by this spec)
+
+*Amended by 0016 (PD-059, proxy): sentences are 0016 T-09 and T-11; rule and check IDs are in the tooltip only (T-08, T-12).*
+
+- S-READY "Derived: draft with a plan that has not started"; S-REVIEW "Derived: plan is Done,
+  waiting for review"; S-BLOCKED "Derived: plan or return note says Blocked" — rule ID as
+  secondary text. The rules stay 0003's (PD-004, featherspec-format §5.2); only wording is here.
+- Readiness: 0003's reason as primary text, check ID (`R-3`) secondary — on Backlog cards and in
+  the Overview.
+
+### 3.6 Empty, placeholder and panel-level states
+
+Centred: icon, one sentence, the action where one exists; texts stay with 0005/0006/0007.
+
+## 4. Acceptance criteria
+
+Decided by component tests (jsdom) or stylesheet tests in plain Node unless marked *manual*.
+
+**AC-001** The Studio stylesheet and every inline style shall express colour only through
+`--vscode-*` variables, `currentColor`, `transparent` or `inherit`, and font families only
+through `--vscode-font-family` and `--vscode-editor-font-family`, with no `@font-face` and no
+`@import`.
+
+**AC-002** Every `transition` in the stylesheet shall last at most 150 ms, and a
+`prefers-reduced-motion: reduce` block shall set all transitions to none.
+
+**AC-003** Every control this spec adds or restyles (stat tile, Total, attention row, section
+toggle, section "Open file", "Move to…", related-artifact link) shall be reachable with Tab and
+show a focus outline from `--vscode-contrastActiveBorder` or `--vscode-focusBorder`; no rule
+shall remove an outline.
+
+*Amended by 0019 (PD-058): AC-003 list "section 'Open file'" and "related-artifact link" — the side panel's close button, links and toggles (0019 AC-021).*
+
+*Amended by 0018 (PD-062): control list: figures, rows, "+ n more", Problems and Activity headings, Done toggle, filter chip.*
+
+*Amended by 0017 (PD-060/PD-061): "Move to…" reads "card and row Copy".*
+
+**AC-004** Mission Control shall show six stat tiles in board order, each one control with count,
+state name, state icon and, for Ready, Review and Blocked, the §3.5 sentence with rule ID. When
+the developer activates a tile, the system shall send 0006 BR-08's request for that count.
+*Amended by 0018 (PD-062): void (no tiles, bar, header, attention panel).*
+
+*Amended by 0016 (PD-059, proxy): sentences read as 0016 T-09; the rule ID is in the tooltip (T-08).*
+
+**AC-005** With at least one spec, Mission Control shall show one bar segment per state with a
+count above 0, with width share = count ÷ total within 1 percentage point and accessible name
+`<state>: <count> of <total>`, and the progress figure with 0006 BR-04's rule as visible
+secondary text and tooltip.
+> **Given** 5 Backlog and 7 Review specs **When** Mission Control renders **Then** two segments,
+> 41.7 % and 58.3 % wide, are named "Backlog: 5 of 12" and "Review: 7 of 12".
+*Amended by 0018 (PD-062): void (no tiles, bar, header, attention panel).*
+
+**AC-006** The header shall read `<n> project-level diagnostics · <m> specs with diagnostics`
+(m = number of `diagnosticStems`, singular for 1); activating it shall send 0006 AC-017's request.
+> **Given** 0 project-level diagnostics, stems 0001, 0002, 0010 **Then** "… · 3 specs with diagnostics".
+*Amended by 0018 (PD-062): void (no tiles, bar, header, attention panel).*
+
+*Amended by 0016 (PD-059, proxy): the header reads as 0016 T-01 (only while a *Problem* exists) and T-02.*
+
+**AC-007** Each attention row shall show number chip, title and reason as text with an icon; the
+Agent runs and Recent activity panels shall each show, when empty, an icon and 0006's sentence.
+*Amended by 0018 (PD-062): void (no tiles, bar, header, attention panel).*
+
+*Amended by 0015 (PD-055/PD-056): no run row; Needs attention rows carry the reasons Blocked, Diagnostic and Review pending.*
+
+**AC-008** The stylesheet shall set no height or max-height on a board column, make each column
+header `position: sticky`, let each column's card list scroll vertically, and give columns a
+minimum width of 240 px with horizontal scrolling of the board.
+*Amended by 0018 (PD-062): widths of 0018 §6.2 B-2 (0018 AC-015).*
+
+**AC-009** Every card shall render in DOM order: number and title; exactly one state chip with
+icon and text; summary; a tasks and a criteria `progressbar` with value and figure text, or only
+"not available" where 0007 delivers no figure; and a "Move to…" button reachable by Tab from the
+card. The content of 0007 AC-003…AC-007, AC-020, AC-024 and AC-025 stays.
+*Amended by 0018 (PD-062): three-row card (0018 B-5).*
+
+*Amended by 0017 (PD-060/PD-061): the clause "a 'Move to…' button reachable by Tab" reads "the next-step line of 0017 AC-004 last, its Copy reachable by Tab"; the rest is 0018's.*
+
+*Amended by 0016 (PD-059, proxy): the last sentence reads 0007 as amended by 0016 (badge for *Problems* only, banner per 0016 AC-009).*
+
+**AC-010** Wherever a card, a list row, Mission Control or the Overview shows a derived state, a
+readiness check or a Blocked condition, the system shall show the §3.5 sentence or 0003's reason
+as primary text and the rule or check ID as secondary text only.
+*Amended by 0020 (PD-058): AC-010 "a list row" — there is no list; the tree's look is 0020 AC-022.*
+
+*Amended by 0016 (PD-059, proxy): the sentence is visible; label and rule ID are in the tooltip (0016 T-08, T-12).*
+
+**AC-011** While a card is dragged, the system shall mark the card and the column under the
+pointer, and remove both marks when the drag ends, with or without a drop.
+
+*Amended by 0017 (PD-060/PD-061): void (PD-060).*
+
+**AC-012** When the developer activates a section heading in the detail view, the system shall
+hide or show that section's body and set `aria-expanded`; the state shall survive selecting
+another spec while the panel stays open.
+
+*Amended by 0019 (PD-058): AC-012 applies to Status history, which starts collapsed; Format notes follow PD-063 (5): collapsed on every showing, no memory (0019 AC-015).*
+
+**AC-013** The detail view shall offer exactly one "Open file" per section that 0007 §6.4 gives a
+source file (Related artifacts: one link per listed file), none per requirement, criterion or
+diagnostic, and none where 0007 AC-010 forbids one; activating it shall send 0007's open request
+for that file without a line.
+
+*Amended by 0019 (PD-058): AC-013 is void: no per-section "Open file" (0019 AC-017).*
+
+**AC-014** When file text contains the §3.4 subset, the detail view shall render `strong`, `em`,
+`code` and text-plus-target elements for it. If file text contains HTML such as
+`<img src=x onerror=alert(1)>` or `<b>`, then the system shall show it literally and create no
+element from it; no code under `src/webview` shall use `dangerouslySetInnerHTML` or `innerHTML`.
+
+**AC-015** The detail view shall show each requirement, criterion and plan-step ID once per item,
+drop a block quote's `> ` and a duplicated list marker, and show the Plan line's link as text plus
+target; each plan step shows a ticked, unticked or undetermined icon with its text label and
+its `Verified` text. *(fixture: a copy of this repo's spec 0002 and its plan; D-1, D-2)*
+
+*Amended by 0019 (PD-058): AC-015 is void: the detail carries no full text (0019 AC-010).*
+
+**AC-016** Every existing test of 0005–0007 shall stay green; only assertions on wording or
+structure that §2's five deltas change are updated, in the same change set, each named in the plan.
+*Amended by 0020 (PD-058): AC-016 — also except the tests 0020 AC-021 lists against a criterion 0020 §5 voids.*
+
+*Amended by 0019 (PD-058): AC-016 — also excepts the tests 0019 AC-023 lists against a criterion 0019 §5 voids or replaces.*
+
+*Amended by 0018 (PD-062): the test audit also excepts the tests 0018 AC-030 lists against a criterion 0018 §5 voids.*
+
+*Amended by 0017 (PD-060/PD-061): also except the tests 0017 AC-024 lists against a criterion that 0017 §5 voids.*
+
+*Amended by 0016 (PD-059, proxy): AC-016 (test audit) — also excepted: the tests 0016 AC-023 lists against a criterion that 0016 §5 changes.*
+
+*Amended by 0015 (PD-055/PD-056): excepts the tests that 0015 AC-027 removes.*
+
+*Amended by 0021 (PD-069): AC-016 (test audit) — also except the tests 0021 AC-020 lists against a statement 0021 §5 replaces.*
+
+*Amended by 0022 (PD-069): AC-016 (test audit) — also except the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
+
+*Amended by 0023 (PD-069): AC-016 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
+
+*Amended by 0024 (PD-068): AC-016 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
+
+**AC-017** *(manual, Gregor or his delegate)* Screenshots from the preview harness of Mission Control, Spec Board,
+Spec Explorer list, detail of 0002 (expanded, and with Acceptance criteria collapsed), Agent
+Center and panel states S1 and S2, each in Dark, Light and High Contrast at 1400×900, plus board
+and detail at 900 px width. Checked: no cut-off card, no raw Markdown, readable contrast in
+Light, project state readable at a glance; the verdict is recorded in the plan. Revised
+2026-11-17 under Gregor's delegation of 2026-11-17: these four checks are made by his delegate
+on the dated screenshot set; the taste verdict of §1 ("fit for a talk or a Marketplace
+listing") is checked by Gregor or his delegate; pre-release checklist item.
+*Amended by 0020 (PD-058): AC-017 "Spec Explorer list" — there is no list; the tree's look is 0020 AC-022.*
+
+*Amended by 0019 (PD-058): AC-017 detail screenshots — replaced by 0019 AC-022.*
+
+*Amended by 0018 (PD-062): screenshot list: "Overview" and "Board" for the old names, plus both at 640 px (0018 AC-031).*
+
+*Amended by 0015 (PD-055/PD-056): no Agent Center screenshot.*
+
+**AC-018** *(manual, Gregor or his delegate)* One pass in real VS Code with a Dark, a Light and a High Contrast
+theme plus one live theme switch: colours, borders and focus match the screenshots. Revised
+2026-11-17 under Gregor's delegation of 2026-11-17: only a person in a real VS Code can judge
+this; checked by Gregor or his delegate; pre-release checklist item. The parts a test can decide
+stay decided by AC-001 and AC-003 and by 0005 AC-019 (no panel module reads or caches the theme).
+
+## 5. Technical notes
+
+- `src/webview/main.css` (70vh rule ~l.221); extend the guard `src/adapters/node/webviewCss.test.ts`
+  for AC-001…003, AC-008; add icons to `src/webview/board/icons.tsx` as inline SVG.
+- Detail text arrives raw (PD-034, `src/shared/protocol/detail.ts`), except that the core already drops a
+  repeated leading ID and list marker of requirements, criteria and stages (`src/core/board/idText.ts`, 0007
+  T-013) — that stays; the inline subset and the remaining tidying go into one pure, tested formatter in
+  `src/webview`.
+  Section-level `open` targets already exist in the detail protocol.
+- `CardView.readiness` (`"R-3: <reason>"`) and `derivedLabel` may split into ID + text — a reshape,
+  not new data; sentences live in `src/shared/protocol/texts.ts` and Mission Control's `texts.ts`.
+- Screenshots: preview harness outside the repo (`/home/claude/orch/preview/run.sh`), no repo
+  dependency; its theme values approximate VS Code, hence AC-018. Plan after the 0006/0007 fixes.
+
+## 6. Assumptions
+
+| ID | Assumption | Why | If wrong |
+| --- | --- | --- | --- |
+| A-001 | The brief's taste proposals are Gregor's decisions | He said so in the command | Revise the changed points |
+| A-002 | Related artifacts keep one link per listed file | Each item is another file; one section button cannot choose | AC-013 changes |
+| A-003 | Sections start expanded; collapse state per section name, panel lifetime only | Brief names collapsing, not defaults; no new persistence | Detail long by default |
+| A-004 | Breakpoints 720 px, 640 px, 240 px column | Fit 1400 px and a half-width editor group | Layout tweak only. Observed 2026-11-16 (plan T-005): at 1400 px the sixth column sits partly behind the board's horizontal scroll, because AC-008's 240 px minimum wins; recorded as accepted 2026-11-17 (closing compile, Gregor's delegation), Gregor's taste check on the pre-release checklist |
+| A-005 | Brief's "History" is 0007's "Agent history"; the name stays | Renaming is not a named delta | Label change only |
+| A-006 | Section "Open file" opens at the top, not an item's line | Per-item jumps leave with per-item buttons | Small navigation loss |
+
+*Amended by 0015 (PD-055/PD-056): A-005: the section is named "Status history".*
+
+## 7. Open points
+
+- ~~**OP-1** Valid/invalid drop marking~~ — resolved 2026-11-16 by Gregor (`/sdd-plan`): (a) mark only the
+  dragged card and the column under the pointer; a refusal shows after the drop as today (AC-011). (b) and (c)
+  are not done.
+  *Amended by 0017 (PD-060/PD-061): (a) drop marking is void (PD-060).*
+
+## 8. Definition of Ready / Done
+
+Ready: OP-1 decided, 0006/0007 fixes landed, `/sdd-clarify` passed — waived by Gregor on 2026-11-16
+(presentation only, judged by screenshots). Done: AC-001…AC-016 green,
+dependencies unchanged, AC-017 checked by Gregor's delegate (2026-11-17) with the taste verdict and
+AC-018 on the pre-release checklist, `techContext.md` manual checks updated.
+
+## Plan history
+
+- 2026-11-17 — [0013-studio-visual-design.2026-11-17.plan.md](../plan-archive/0013-studio-visual-design.2026-11-17.plan.md) — tokens, Mission Control tiles and bar, board layout, safe inline Markdown and collapsible detail, states and motion in 10 steps; closing `/sdd-compile` READY (manual items: 2).

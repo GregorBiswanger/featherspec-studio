@@ -13,9 +13,13 @@ import { readProject } from '../specs/readProject';
 import { createCopyNextStep } from './copyNextStep';
 import { createFakeAssistantHost } from '../assistant/testing/fakeAssistantHost';
 import { createSend } from '../assistant/send';
+import { createAttachmentCheck } from '../assistant/attachment';
+import type { SpecSourcePort } from '../ports/specSource';
 import { openSettings } from '../settings/openSettings';
 import { createSetupClock } from '../setup/testing/setupClock';
 import { createEntryWorld } from './testing/entryWorld';
+import { createTreeActions } from '../shell/treeActions';
+import { buildSpecTree, type GroupModel, type SpecRowModel } from '../shell/specTree';
 
 let temp: string | undefined;
 
@@ -224,6 +228,113 @@ describe('0017 AC-023: no Copy, click or command writes a file', () => {
             expect(source, file).not.toMatch(/\.update\(|\.inspect\(|writeFile|appendFile|mkdir|unlink|rename\(|rmSync|fs\./);
         }
         expect("config.update('assistant', 'copilot')").toMatch(/\.update\(/);
+    });
+
+    it('0025 AC-018: a step link, Ways to run it, Show in Plan Map and the card Copy leave a temp copy of fs110-parallel-synthetic unchanged and only navigate or copy', async () => {
+        temp = await fs.mkdtemp(path.join(os.tmpdir(), 'map-nowrite-'));
+        await fs.cp(fixturePath('fs110-parallel-synthetic'), temp, { recursive: true });
+        await fs.rm(path.join(temp, '.memory-bank', 'activeContext.0001-T-003.md'));
+        await fs.rm(path.join(temp, '.memory-bank', 'activeContext.0001-T-004.md'));
+        const planFile = path.join(temp, '.specs', 'active', '0001-parallel-demo.plan.md');
+        await fs.writeFile(planFile, (await fs.readFile(planFile, 'utf8')).replace('**Status:** Blocked', '**Status:** In Progress'));
+        const project = await readProject(createNodeSpecSource(), temp, '1.10.0');
+        const model = { project, lifecycle: deriveLifecycle(project) };
+        const before = await snapshotTree(temp);
+        const board = createBoardWorld(model);
+        board.selection.set({ stem: '0001-parallel-demo' });
+        await board.service.whenIdle();
+        const detail = board.service.detail();
+        const plan = detail.kind === 'spec' ? detail.plan : undefined;
+        const copyLine = plan?.kind === 'plan' ? plan.stages.flatMap((entry) => entry.groups.flatMap((group) => group.steps)).find((entry) => entry.copy !== undefined)?.copy : undefined;
+        expect(copyLine).toMatch(/^Implement T-003 of /);
+        expect(detail.kind === 'spec' && 'parallel' in detail.nextStep ? detail.nextStep.parallel : undefined).toEqual({ stage: 2 });
+        const written: string[] = [];
+        const requests = createBoardRequests({
+            send: async () => ({ outcome: 'copied', text: 'Copied to the clipboard.' }),
+            board: board.service,
+            openFile: { open: async () => ({ kind: 'opened' }) } as never,
+            clipboard: { writeText: async (text) => void written.push(text) },
+        });
+        await requests.handlers.copyText({ text: copyLine! });
+        const calls: string[] = [];
+        const actions = createTreeActions({
+            shell: { open: () => void calls.push('open'), select: () => void calls.push('select'), navigate: (request) => void calls.push(`navigate ${JSON.stringify(request.target)}`) },
+            panel: { isOpen: () => false, show: () => void calls.push('show') },
+            copy: async () => undefined,
+            openFile: { open: async () => ({ kind: 'opened' }) } as never,
+            warn: () => undefined,
+        });
+        const tree = buildSpecTree({ projectActive: true, projectName: 'x', projectCount: 1, state: undefined, model });
+        const row = tree.items.filter((item): item is GroupModel => item.kind === 'group').flatMap((group) => group.children).find((candidate): candidate is SpecRowModel => candidate.stem === '0001-parallel-demo')!;
+        actions.showInPlanMap(row);
+        expect(written).toEqual([copyLine]);
+        expect(calls[0]).toBe('open');
+        expect(calls.slice(1)).toEqual([expect.stringMatching(/^navigate .*"step":"T-003"/), 'show']);
+        expect(await snapshotTree(temp)).toEqual(before);
+        board.service.dispose();
+    });
+
+    it('0025 AC-018: the sources of the step link, the ways link, the target and the Show in Plan Map action call no file API, no configuration update and start no process', async () => {
+        const files = ['src/core/board/stepLinks.ts', 'src/core/planMap/returnedWork.ts', 'src/core/shell/treeActions.ts', 'src/webview/ui/StepLink.tsx', 'src/webview/detail/ParallelHint.tsx', 'src/webview/areas/planMap/target.ts', 'src/webview/areas/planMap/shows.ts'];
+        for (const file of files) {
+            const source = await fs.readFile(path.resolve(process.cwd(), ...file.split('/')), 'utf8');
+            expect(source, file).not.toMatch(/\.update\(|\.inspect\(|writeFile|appendFile|mkdir|unlink|rename\(|rmSync|fs\.|child_process|spawn\(|exec\(|executeCommand/);
+        }
+        expect("child_process.spawn('x')").toMatch(/child_process/);
+    });
+
+    it('0027 AC-013: an attaching Send, a Send whose file is missing and a Send with a foreign path leave a temp copy of fs110-ready-synthetic unchanged; the spec source sees only stat', async () => {
+        temp = await fs.mkdtemp(path.join(os.tmpdir(), 'attach-nowrite-'));
+        await fs.cp(fixturePath('fs110-ready-synthetic'), temp, { recursive: true });
+        const nodeSource = createNodeSpecSource();
+        const project = await readProject(nodeSource, temp, '1.11.0');
+        const model = { project, lifecycle: deriveLifecycle(project) };
+        const key = '.specs/backlog/0001-ready-feature.md';
+        expect(project.specs.map((spec) => spec.key)).toContain(key);
+        const before = await snapshotTree(temp);
+        const used: string[] = [];
+        const specs: Pick<SpecSourcePort, 'stat'> = {
+            stat: (root, relative) => {
+                used.push('stat');
+                return nodeSource.stat(root, relative);
+            },
+        };
+        const host = createFakeAssistantHost(['workbench.action.chat.newChat', 'workbench.action.chat.open', 'claude-vscode.editor.open']);
+        host.install('GitHub.copilot-chat');
+        host.install('anthropic.claude-code');
+        const board = createBoardWorld(model);
+        const sender = createSend({
+            host,
+            clipboard: { writeText: async () => undefined },
+            ui: { warn: () => undefined },
+            output: { appendBlock: () => undefined },
+            clock: createSetupClock(),
+            platform: 'linux',
+            chosen: { read: () => 'claudeCode' },
+            attachment: createAttachmentCheck({ source: board.source, specs, host }),
+            attaching: () => true,
+        });
+        const line = `/sdd-clarify ${key}`;
+        const attached = await sender.send({ assistant: 'claudeCode', target: 'new', line, attach: key });
+        await fs.rm(path.join(temp, ...key.split('/')));
+        const missingBefore = await snapshotTree(temp);
+        const missing = await sender.send({ assistant: 'claudeCode', target: 'new', line, attach: key });
+        const foreign = await sender.send({ assistant: 'claudeCode', target: 'new', line, attach: 'AGENTS.md' });
+        expect([attached.outcome, missing.outcome, foreign.outcome]).toEqual(['opened', 'opened', 'opened']);
+        expect(missing.text).toContain('the file was not found');
+        expect(host.calls[0]?.args[1]).toBe(`${line} @${key}`);
+        expect(used).toEqual(['stat', 'stat']);
+        expect(await snapshotTree(temp)).toEqual(missingBefore);
+        expect(before).not.toEqual(missingBefore);
+        board.service.dispose();
+    });
+
+    it('0027 AC-013: the attachment check and the call shapes call no configuration update, no file API and no network', async () => {
+        for (const file of ['src/core/assistant/attachment.ts', 'src/core/assistant/assistants.ts', 'src/core/assistant/send.ts']) {
+            const source = await fs.readFile(path.resolve(process.cwd(), ...file.split('/')), 'utf8');
+            expect(source, file).not.toMatch(/\.update\(|\.inspect\(|writeFile|appendFile|mkdir|unlink|rename\(|rmSync|fs\.|fetch\(|https?:\/\/|readBytes|\.list\(/);
+        }
+        expect("source.readBytes(root, key)").toMatch(/readBytes/);
     });
 
     it('control: the snapshot sees a file that appears in the tree', async () => {

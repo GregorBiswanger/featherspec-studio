@@ -1,7 +1,7 @@
 import { isSendView, type SendView } from './assistant';
 import { isBoardState, type BoardState } from './boardFilter';
 import { isRecord } from './envelope';
-import { isStepTipsView, isStepView, type StepTipsView, type StepView } from './stepView';
+import { isStepLinkView, isStepTipsView, isStepView, type StepLinkView, type StepTipsView, type StepView } from './stepView';
 
 export interface SpecRef {
     stem: string;
@@ -51,18 +51,28 @@ export interface OverviewRow {
     problems: number;
     reasons?: string;
     step?: StepView;
+    link?: StepLinkView;
     tips?: StepTipsView;
     send?: SendView;
+    quiet?: true;
 }
 
 export interface OverviewUpNext {
+    setup?: true;
     rows: OverviewRow[];
     more: number;
     stems: string[];
 }
 
+export type OverviewNow = OverviewUpNext;
+
+export interface WelcomeView {
+    send?: SendView;
+}
+
 export interface OverviewView {
-    now: OverviewRow[];
+    welcome?: WelcomeView;
+    now: OverviewNow;
     upNext: OverviewUpNext;
     problems: OverviewProblems;
     figures: OverviewFigures;
@@ -163,15 +173,17 @@ function isActivity(value: unknown): value is McActivity {
 function isRow(value: unknown): value is OverviewRow {
     return (
         isRecord(value) &&
-        exactly(value, ['spec', 'state', 'status', 'problems'], ['step', 'reasons', 'tips', 'send']) &&
+        exactly(value, ['spec', 'state', 'status', 'problems'], ['step', 'link', 'reasons', 'tips', 'send', 'quiet']) &&
         isSpecRef(value.spec) &&
         isBoardState(value.state) &&
         isText(value.status) &&
         isCount(value.problems) &&
         (value.reasons === undefined || isText(value.reasons)) &&
         (value.step === undefined || isStepView(value.step)) &&
+        (value.link === undefined || (value.step !== undefined && isStepLinkView(value.link))) &&
         (value.tips === undefined || isStepTipsView(value.tips)) &&
-        (value.send === undefined || (value.step !== undefined && isSendView(value.send)))
+        (value.send === undefined || (value.step !== undefined && isSendView(value.send))) &&
+        (value.quiet === undefined || (value.step !== undefined && value.quiet === true))
     );
 }
 
@@ -180,7 +192,7 @@ function isRows(value: unknown): value is OverviewRow[] {
 }
 
 function isUpNext(value: unknown): value is OverviewUpNext {
-    return isRecord(value) && exactly(value, ['rows', 'more', 'stems']) && isRows(value.rows) && isCount(value.more) && Array.isArray(value.stems) && value.stems.every(isText);
+    return isRecord(value) && exactly(value, ['rows', 'more', 'stems'], ['setup']) && (value.setup === undefined || (value.setup === true && Array.isArray(value.rows) && value.rows.length === 0)) && isRows(value.rows) && isCount(value.more) && Array.isArray(value.stems) && value.stems.every(isText);
 }
 
 function isProblemLine(value: unknown): value is ProblemLine {
@@ -191,11 +203,16 @@ function isProblems(value: unknown): value is OverviewProblems {
     return isRecord(value) && exactly(value, ['rows', 'lines']) && isRows(value.rows) && Array.isArray(value.lines) && value.lines.every(isProblemLine);
 }
 
+export function isWelcomeView(value: unknown): value is WelcomeView {
+    return isRecord(value) && exactly(value, [], ['send']) && (value.send === undefined || isSendView(value.send));
+}
+
 export function isOverviewView(value: unknown): value is OverviewView {
     return (
         isRecord(value) &&
-        exactly(value, ['now', 'upNext', 'problems', 'figures', 'activity']) &&
-        isRows(value.now) &&
+        exactly(value, ['now', 'upNext', 'problems', 'figures', 'activity'], ['welcome']) &&
+        (value.welcome === undefined || (isRecord(value.figures) && value.figures.kind === 'empty' && isWelcomeView(value.welcome))) &&
+        isUpNext(value.now) &&
         isUpNext(value.upNext) &&
         isProblems(value.problems) &&
         isFigures(value.figures) &&

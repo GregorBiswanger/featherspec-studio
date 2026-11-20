@@ -170,13 +170,13 @@ describe('readProject', () => {
         const source = createMemorySpecSource();
         source.setFile(ROOT, '.specs/active/0001-a.md', spec('_none yet_'));
         const unknown = await readProject(source, ROOT, 'unknown');
-        const newer = await readProject(source, ROOT, '1.10.1');
+        const newer = await readProject(source, ROOT, '1.11.1');
         const known = await readProject(source, ROOT, '1.8.0-rc3');
         expect(unknown.diagnostics).toEqual([{ kind: 'unverified-version', tier: 'note', scope: 'project', reason: 'version not verified' }]);
         expect(newer.diagnostics).toEqual([{ kind: 'unverified-version', tier: 'note', scope: 'project', reason: 'newer than known' }]);
         expect(known.diagnostics).toEqual([]);
         expect(unknown.specs).toEqual(known.specs);
-        expect(newer.version).toBe('1.10.1');
+        expect(newer.version).toBe('1.11.1');
     });
 
     it('AC-017: a Plan link and a sibling plan Spec link to missing files are dangling; the archived plan Spec link is exempt', async () => {

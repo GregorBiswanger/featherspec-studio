@@ -9,6 +9,14 @@ export function sendOpenedText(name: string): string {
     return `The prompt is in ${name}'s chat. Check it, then send it there.`;
 }
 
+export function sendOpenedWithoutText(name: string, file: string): string {
+    return `The prompt is in ${name}'s chat, without ${file}: the file was not found. Check it, then send it there.`;
+}
+
+export function attachMissingOutputText(name: string, path: string): string {
+    return `Send to ${name}: ${path} was not found, so it was not attached.`;
+}
+
 export function pasteKeyOf(platform: string): string {
     return platform === 'darwin' ? 'Cmd+V' : 'Ctrl+V';
 }
@@ -63,8 +71,9 @@ export function sendMainLabel(name: string): string {
     return `Send to ${name}`;
 }
 
-export function sendMainName(name: string, target: AssistantTarget, line: string): string {
-    return `Send to ${name} (${SEND_TARGET_TEXT[target]}): ${line}`;
+export function sendMainName(name: string, target: AssistantTarget, line: string, attachName?: string): string {
+    const plain = `Send to ${name} (${SEND_TARGET_TEXT[target]}): ${line}`;
+    return attachName === undefined ? plain : `${plain}. Attaches ${attachName}.`;
 }
 
 export function sendOpenedLabel(name: string): string {

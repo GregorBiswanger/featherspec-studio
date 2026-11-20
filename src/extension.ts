@@ -8,7 +8,7 @@ import { resolveStorageLocation } from './adapters/vscode/storageLocation';
 import { createOutputChannel } from './adapters/vscode/outputChannel';
 import { createShellActions } from './adapters/vscode/shellActions';
 import { createStudioPanel, VIEW_TYPE, type StudioPanel, type StudioPanelInspection } from './adapters/vscode/studioPanel';
-import { AREA_COMMANDS, COPY_NEXT_STEP_COMMAND, OPEN_COMMAND, OPEN_SETTINGS_COMMAND, REFRESH_COMMAND, SELECT_SPEC_COMMAND, SHELL_ACTION_COMMAND, TREE_COPY_COMMAND, TREE_OPEN_PLAN_COMMAND, TREE_OPEN_SPEC_COMMAND } from './adapters/vscode/commands';
+import { AREA_COMMANDS, COPY_NEXT_STEP_COMMAND, OPEN_COMMAND, OPEN_SETTINGS_COMMAND, REFRESH_COMMAND, SELECT_SPEC_COMMAND, SHELL_ACTION_COMMAND, TREE_COPY_COMMAND, TREE_OPEN_PLAN_COMMAND, TREE_OPEN_SPEC_COMMAND, TREE_SHOW_IN_PLAN_MAP_COMMAND } from './adapters/vscode/commands';
 import { createFetchReleaseHttp } from './adapters/node/fetchReleaseHttp';
 import { createNodeSetupTarget } from './adapters/node/nodeSetupTarget';
 import { createTarGzArchive } from './adapters/node/tarGzArchive';
@@ -20,7 +20,7 @@ import { createProjectLine } from './core/copyNextStep/projectLine';
 import { createStatusEntry } from './core/copyNextStep/statusEntry';
 import { createStudioTree } from './adapters/vscode/studioTree';
 import { createTrust } from './adapters/vscode/trust';
-import { BOARD_MEMORY_KEY, SHELL_MEMORY_KEY, SIDE_PANEL_MEMORY_KEY, createUiMemory } from './adapters/vscode/uiMemory';
+import { BOARD_MEMORY_KEY, HAND_OVER_MEMORY_KEY, SHELL_MEMORY_KEY, SIDE_PANEL_MEMORY_KEY, createUiMemory } from './adapters/vscode/uiMemory';
 import { sameRootFor } from './adapters/vscode/sameRoot';
 import { createStatusItem, type StatusItemInspection } from './adapters/vscode/statusBar';
 import { createStepUi } from './adapters/vscode/stepUi';
@@ -56,6 +56,7 @@ import { createBoardRequests } from './core/board/boardRequests';
 import { createOpenFile } from './core/board/openFile';
 import { createShellSelection } from './core/board/shellSelection';
 import { createLifecycleService, type LifecycleService } from './core/lifecycle/lifecycleService';
+import { createHandOverMemory } from './core/assistant/handOver';
 import { createModelSource } from './core/shell/modelSource';
 import { createShellService, type OpenRequest } from './core/shell/shellService';
 import { AREA_IDS } from './shared/protocol/areas';
@@ -131,8 +132,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         sameRoot: sameRootFor(process.platform),
     });
 
+    const specSource = createVscodeSpecSource();
     const repository = createSpecRepository({
-        source: createVscodeSpecSource(),
+        source: specSource,
         watch: createFileWatch(process.platform),
         clock: createSystemClock(),
         caseInsensitiveEvents: isCaseInsensitivePlatform(process.platform),
@@ -157,7 +159,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
 
     const sameRoot = sameRootFor(process.platform);
     let studio: StudioPanel | undefined;
-    const modelSource = createModelSource(repository);
+    const handOvers = createHandOverMemory(createUiMemory(context.workspaceState, HAND_OVER_MEMORY_KEY), () => modelSource.current()?.project);
+    const modelSource = createModelSource(repository, handOvers);
     const shellActions = createShellActions({
         showOutput: () => output.show(),
         reloadPanel: () => studio?.reload(),
@@ -195,7 +198,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     const assistantHost = createAssistantHost();
     const clipboard = createClipboard();
     const stepUi = createStepUi();
-    const assistant = createAssistantWiring({ setting: createSettingPort(ASSISTANT_KEY), host: assistantHost, clipboard, ui: stepUi, output, clock: createSystemClock(), platform: process.platform });
+    const assistant = createAssistantWiring({ setting: createSettingPort(ASSISTANT_KEY), host: assistantHost, clipboard, ui: stepUi, output, clock: createSystemClock(), platform: process.platform, source: modelSource, specs: specSource, handOver: handOvers });
     const board = createBoardService({
         source: modelSource,
         selection,
@@ -216,6 +219,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         entry,
         clipboard,
         ui: stepUi,
+        handOver: handOvers,
         actions: {
             selectProject: () => controller.selectProject(),
             openStudio: async () => {
@@ -224,7 +228,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         },
     });
     const openFile = createOpenFile({ source: modelSource, editor: createEditor() });
-    const requests = createBoardRequests({ board, openFile, clipboard, send: (request) => assistant.send.send(request) });
+    const requests = createBoardRequests({ board, openFile, clipboard, send: (request) => assistant.send.send(request), handOver: handOvers });
     const navigation = service.onDidNavigate((request) => {
         if (request.target?.kind === 'boardFilter') {
             board.applyNavigationFilter(request.target.filter);
@@ -266,9 +270,18 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         warn: (text) => stepUi.warn(text),
     });
     const tree = createStudioTree(treeService);
-    const treeRow = (argument: unknown): { specKey: string; planKey?: string; line?: string } | undefined => {
-        const row = argument as { specKey?: unknown; planKey?: unknown; line?: unknown } | undefined;
-        return typeof row?.specKey === 'string' ? { specKey: row.specKey, ...(typeof row.planKey === 'string' ? { planKey: row.planKey } : {}), ...(typeof row.line === 'string' ? { line: row.line } : {}) } : undefined;
+    const treeRow = (argument: unknown): { specKey: string; planKey?: string; line?: string; stem?: string; path?: string; mapStep?: string } | undefined => {
+        const row = argument as { specKey?: unknown; planKey?: unknown; line?: unknown; stem?: unknown; path?: unknown; mapStep?: unknown } | undefined;
+        return typeof row?.specKey === 'string'
+            ? {
+                  specKey: row.specKey,
+                  ...(typeof row.planKey === 'string' ? { planKey: row.planKey } : {}),
+                  ...(typeof row.line === 'string' ? { line: row.line } : {}),
+                  ...(typeof row.stem === 'string' ? { stem: row.stem } : {}),
+                  ...(typeof row.path === 'string' ? { path: row.path } : {}),
+                  ...(typeof row.mapStep === 'string' ? { mapStep: row.mapStep } : {}),
+              }
+            : undefined;
     };
 
     context.subscriptions.push(
@@ -315,6 +328,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         vscode.commands.registerCommand(TREE_OPEN_PLAN_COMMAND, (row: unknown) => {
             const found = treeRow(row);
             return found === undefined ? undefined : treeActions.open(found, 'plan');
+        }),
+        vscode.commands.registerCommand(TREE_SHOW_IN_PLAN_MAP_COMMAND, (row: unknown) => {
+            const found = treeRow(row);
+            if (found?.stem !== undefined) {
+                treeActions.showInPlanMap({ stem: found.stem, ...(found.path === undefined ? {} : { path: found.path }), ...(found.mapStep === undefined ? {} : { mapStep: found.mapStep }) });
+            }
         }),
         vscode.commands.registerCommand(SELECT_PROJECT_COMMAND_ID, () => controller.selectProject()),
     );

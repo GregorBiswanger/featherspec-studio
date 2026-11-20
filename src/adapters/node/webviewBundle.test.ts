@@ -97,15 +97,15 @@ async function renderFixture(name: string, tips?: StepTipSettings, offer?: Offer
     const board = { columns: arrangeBoard(cards, {}, 'number'), banner: buildBanner(project, lifecycle), filter: {}, sort: 'number', sortKeys: ['number', 'title', 'lastChange'], noSpecs: cards.length === 0, planSpecs: [] };
     const boardDom = boot(readFileSync(bundlePath, 'utf8'));
     await settle();
-    send(boardDom.dom, { v: 8, kind: 'evt', seq: 1, type: 'shell', payload: { view: SHELL_BOARD } });
-    send(boardDom.dom, { v: 8, kind: 'evt', type: 'board', payload: { view: board } });
+    send(boardDom.dom, { v: 11, kind: 'evt', seq: 1, type: 'shell', payload: { view: SHELL_BOARD } });
+    send(boardDom.dom, { v: 11, kind: 'evt', type: 'board', payload: { view: board } });
     await settle();
     rendered.push(inspect(boardDom.dom, `${name} board`));
     expect(boardDom.errors).toEqual([]);
     const overviewDom = boot(readFileSync(bundlePath, 'utf8'));
     await settle();
-    send(overviewDom.dom, { v: 8, kind: 'evt', seq: 1, type: 'shell', payload: { view: { ...SHELL_BOARD, area: 'overview' } } });
-    send(overviewDom.dom, { v: 8, kind: 'evt', type: 'overview', payload: { view: buildOverviewView({ model, history, ...(tips === undefined ? {} : { tips }), ...(offer === undefined ? {} : { offer }) }) } });
+    send(overviewDom.dom, { v: 11, kind: 'evt', seq: 1, type: 'shell', payload: { view: { ...SHELL_BOARD, area: 'overview' } } });
+    send(overviewDom.dom, { v: 11, kind: 'evt', type: 'overview', payload: { view: buildOverviewView({ model, history, ...(tips === undefined ? {} : { tips }), ...(offer === undefined ? {} : { offer }) }) } });
     await settle();
     rendered.push(inspect(overviewDom.dom, `${name} overview`));
     expect(overviewDom.errors).toEqual([]);
@@ -113,9 +113,9 @@ async function renderFixture(name: string, tips?: StepTipSettings, offer?: Offer
     await settle();
     for (const entry of lifecycle.entries) {
         const selection = { stem: entry.stem, number: entry.number };
-        send(detailDom.dom, { v: 8, kind: 'evt', seq: rendered.length + 1, type: 'shell', payload: { view: { ...SHELL_BOARD, selection } } });
-        send(detailDom.dom, { v: 8, kind: 'evt', type: 'board', payload: { view: board } });
-        send(detailDom.dom, { v: 8, kind: 'evt', type: 'detail', payload: { view: buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history, ...(tips === undefined ? {} : { tips }), ...(offer === undefined ? {} : { offer }) }) } });
+        send(detailDom.dom, { v: 11, kind: 'evt', seq: rendered.length + 1, type: 'shell', payload: { view: { ...SHELL_BOARD, selection } } });
+        send(detailDom.dom, { v: 11, kind: 'evt', type: 'board', payload: { view: board } });
+        send(detailDom.dom, { v: 11, kind: 'evt', type: 'detail', payload: { view: buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history, ...(tips === undefined ? {} : { tips }), ...(offer === undefined ? {} : { offer }) }) } });
         await settle();
         rendered.push(inspect(detailDom.dom, `${name} detail ${entry.key}`));
     }
@@ -202,6 +202,8 @@ describe('0021 AC-009, AC-010, AC-013: the coach line in the rendered bundle, ov
 interface MapRendered {
     where: string;
     primaries: number;
+    headerPrimaries: number;
+    headerSends: number;
     unnamedCopies: string[];
     texts: string[];
     cards: number;
@@ -225,26 +227,31 @@ async function renderMap(name: string, offer?: Offer): Promise<MapRendered[]> {
         const copies = [...document.querySelectorAll('[data-plan-map] button.copy-button, [data-plan-map] button.copy-icon')];
         const attributes = [...document.querySelectorAll('[data-plan-map] [title], [data-plan-map] [aria-label]')].flatMap((element) => [element.getAttribute('title'), element.getAttribute('aria-label')]).filter((value): value is string => value !== null);
         const mapText = [...document.querySelectorAll('[data-plan-map]')].map((element) => element.textContent ?? '').join('\n');
+        const isPrimary = (button: ElementLike & { classList: { contains(name: string): boolean } }): boolean => button.classList.contains('copy-button') && !button.classList.contains('copy-secondary');
+        const header = [...document.querySelectorAll('[data-plan-map] .plan-map-header button.copy-button, [data-plan-map] .plan-map-header button.copy-icon')];
+        const headerSplit = [...document.querySelectorAll('[data-plan-map] .plan-map-header .send-split, [data-plan-map] .plan-map-header .send-arrow, [data-plan-map] .plan-map-header [role="menu"]')].length;
         rendered.push({
             where,
-            primaries: copies.filter((button) => button.classList.contains('copy-button') && !button.classList.contains('copy-secondary')).length,
+            primaries: copies.filter(isPrimary).length - header.filter(isPrimary).length,
+            headerPrimaries: header.filter(isPrimary).length,
+            headerSends: headerSplit,
             unnamedCopies: copies.map((button) => button.getAttribute('aria-label') ?? '').filter((label) => !label.startsWith('Copy prompt: ')),
             texts: [mapText, ...attributes],
             cards: [...document.querySelectorAll('[data-step-card]')].length,
-            splits: [...document.querySelectorAll('[data-plan-map] .send-split, [data-plan-map] .send-arrow, [data-plan-map] [role="menu"]')].length,
+            splits: [...document.querySelectorAll('[data-plan-map] .send-split, [data-plan-map] .send-arrow, [data-plan-map] [role="menu"]')].length - headerSplit,
         });
     };
     for (const entry of lifecycle.entries) {
         seq += 1;
         const selection = { stem: entry.stem, number: entry.number };
-        send(dom.dom, { v: 8, kind: 'evt', seq, type: 'shell', payload: { view: { ...SHELL_BOARD, area: 'planMap', selection } } });
-        send(dom.dom, { v: 8, kind: 'evt', type: 'board', payload: { view: board } });
-        send(dom.dom, { v: 8, kind: 'evt', type: 'detail', payload: { view: buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history, ...(offer === undefined ? {} : { offer }) }) } });
+        send(dom.dom, { v: 11, kind: 'evt', seq, type: 'shell', payload: { view: { ...SHELL_BOARD, area: 'planMap', selection } } });
+        send(dom.dom, { v: 11, kind: 'evt', type: 'board', payload: { view: board } });
+        send(dom.dom, { v: 11, kind: 'evt', type: 'detail', payload: { view: buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history, ...(offer === undefined ? {} : { offer }) }) } });
         await settle();
         look(`${name} map ${entry.key}`);
     }
     seq += 1;
-    send(dom.dom, { v: 8, kind: 'evt', seq, type: 'shell', payload: { view: { ...SHELL_BOARD, area: 'planMap' } } });
+    send(dom.dom, { v: 11, kind: 'evt', seq, type: 'shell', payload: { view: { ...SHELL_BOARD, area: 'planMap' } } });
     await settle();
     look(`${name} map without selection`);
     expect(dom.errors).toEqual([]);
@@ -258,11 +265,12 @@ describe('0023 AC-010, AC-015: the rendered Plan map over the fixtures', () => {
         execFileSync(process.execPath, ['esbuild.js'], { cwd: root, stdio: 'pipe' });
     }, 60000);
 
-    it.each(SWEPT_FIXTURES.map((name) => [name]))('%s: no primary button, every Copy named "Copy prompt: <line>", and no rule ID or internal word in any text or title', async (name) => {
+    it.each(SWEPT_FIXTURES.map((name) => [name]))('%s: no primary button below the header (0025 AC-010: at most one in it), every Copy named "Copy prompt: <line>", and no rule ID or internal word in any text or title', async (name) => {
         const rendered = await renderMap(name);
         expect(rendered.length).toBeGreaterThanOrEqual(1);
         for (const surface of rendered) {
             expect(surface.primaries, surface.where).toBe(0);
+            expect(surface.headerPrimaries, surface.where).toBeLessThanOrEqual(1);
             expect(surface.unnamedCopies, surface.where).toEqual([]);
             for (const text of surface.texts) {
                 expect(text, surface.where).not.toMatch(MAP_FORBIDDEN);
@@ -312,7 +320,7 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
             'Plan map',
         ]);
         expect(document.body.textContent).toContain('Loading project…');
-        expect(posted[0]).toMatchObject({ v: 8, kind: 'req', type: 'hello' });
+        expect(posted[0]).toMatchObject({ v: 11, kind: 'req', type: 'hello' });
         expect(errors).toEqual([]);
     });
 
@@ -329,7 +337,7 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
             notice: undefined,
             rows: [],
         };
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 8, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 11, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
         await settle();
         expect(dom.window.document.body.textContent).not.toContain('Loading project…');
         expect(dom.window.document.querySelector('h1')?.textContent).toBe('Board');
@@ -344,8 +352,8 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
         await settle();
         const view = { state: undefined, restricted: false, projectName: 'demo', area: 'board', target: undefined, selection: undefined, notice: undefined, rows: [] };
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 8, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 8, kind: 'evt', type: 'board', payload: { view: board } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 11, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 11, kind: 'evt', type: 'board', payload: { view: board } } }));
         await settle();
         const document = dom.window.document;
         expect(document.querySelector('h1')?.textContent).toBe('Board');
@@ -369,8 +377,8 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
         await settle();
         const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'overview', target: undefined, selection: undefined, notice: undefined, rows: [] };
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 8, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 8, kind: 'evt', type: 'overview', payload: { view: mission } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 11, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 11, kind: 'evt', type: 'overview', payload: { view: mission } } }));
         await settle();
         const document = dom.window.document;
         expect(document.querySelector('h1')?.textContent).toBe('Overview');
@@ -394,8 +402,8 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
         await settle();
         const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'overview', target: undefined, selection: undefined, notice: undefined, rows: [] };
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 8, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 8, kind: 'evt', type: 'overview', payload: { view: { header: {}, extra: 1 } } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 11, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 11, kind: 'evt', type: 'overview', payload: { view: { header: {}, extra: 1 } } } }));
         await settle();
         expect(dom.window.document.querySelector('[data-overview]')).toBeNull();
         expect(dom.window.document.querySelector('[data-overview-empty]')).not.toBeNull();
@@ -415,8 +423,8 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
         await settle();
         const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'board', target: undefined, selection: { stem: '0015-focus-on-visibility', number: '0015' }, notice: undefined, rows: [] };
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 8, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 8, kind: 'evt', type: 'detail', payload: { view: detail } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 11, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 11, kind: 'evt', type: 'detail', payload: { view: detail } } }));
         await settle();
         const section = dom.window.document.querySelector('.spec-detail') as unknown as QueryRoot | null;
         expect(section).not.toBeNull();
@@ -439,6 +447,33 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         expect(errors).toEqual([]);
     });
 
+    it('0027 AC-003: the same detail at FeatherSpec 1.11.0 with Claude Code (a Send with its attachment line) stays within 300 words', async () => {
+        const project = await readProject(createNodeSpecSource(), fixturePath('studio-0015'), '1.11.0');
+        const lifecycle = deriveLifecycle(project);
+        const detail = buildDetail({
+            selection: { stem: '0015-focus-on-visibility' },
+            model: { project, lifecycle },
+            history: { available: true, label: 'Observed', entries: [] },
+            tips: parseStepTipSettings(true, {}),
+            offer: { assistant: 'claudeCode' },
+        });
+        expect(detail.kind === 'spec' && 'send' in detail.nextStep ? detail.nextStep.send?.attach?.name : undefined).toBe('0015-focus-on-visibility.md');
+        const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
+        await settle();
+        const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'board', target: undefined, selection: { stem: '0015-focus-on-visibility', number: '0015' }, notice: undefined, rows: [] };
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 11, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 11, kind: 'evt', type: 'detail', payload: { view: detail } } }));
+        await settle();
+        const section = dom.window.document.querySelector('.spec-detail') as unknown as QueryRoot | null;
+        expect(section).not.toBeNull();
+        const clone = section!.cloneNode(true);
+        [...clone.querySelectorAll('.visually-hidden, [hidden]')].forEach((hidden) => hidden.remove());
+        const text = (clone.textContent ?? '').replace(/\s+/g, ' ').trim();
+        expect(text).not.toContain('attached when sent');
+        expect(text.split(' ').filter((word) => word !== '').length).toBeLessThanOrEqual(300);
+        expect(errors).toEqual([]);
+    });
+
     it('control: a script that throws at start-up is reported through the same harness', () => {
         const { errors } = boot('throw new Error("broken bundle");');
         expect(errors.length).toBeGreaterThan(0);
@@ -458,7 +493,8 @@ describe('0024 AC-002, AC-003: Send in the rendered bundle, over the fixtures', 
         const rendered = await renderFixture(name, undefined, offer);
         expect(stray(rendered)).toEqual([]);
         for (const surface of rendered) {
-            expect(surface.splits.length, surface.where).toBeLessThanOrEqual(1);
+            // 0031 §6.1 (amends 0024 §6.3): a detail may hold the first line's split button and one for its follow-up line.
+            expect(surface.splits.length, surface.where).toBeLessThanOrEqual(surface.where.includes(' detail ') ? 2 : 1);
             expect(surface.menus, surface.where).toBe(0);
             if (surface.where.endsWith('board')) {
                 expect(surface.splits, surface.where).toEqual([]);
@@ -469,11 +505,13 @@ describe('0024 AC-002, AC-003: Send in the rendered bundle, over the fixtures', 
         }
     }, 60000);
 
-    it.each(OFFERS.map((offer) => [offer.assistant, offer] as const))('the Plan map of the fixtures holds no Send control with %s offered', async (_assistant, offer) => {
+    it.each(OFFERS.map((offer) => [offer.assistant, offer] as const))('the Plan map of the fixtures holds no Send control below its header, and at most one in it (0025 AC-010), with %s offered', async (_assistant, offer) => {
         for (const name of ['studio-0015', 'studio-0002', 'fs110-ready-synthetic']) {
             const rendered = await renderMap(name, offer);
             expect(rendered.length, name).toBeGreaterThan(0);
             expect(rendered.filter((surface) => surface.splits > 0).map((surface) => surface.where), name).toEqual([]);
+            // 0031 §6.1: a split button counts its main/arrow wrapper and its arrow; the header may hold one for the first line and one for a follow-up line.
+            expect(rendered.every((surface) => surface.headerSends <= 6), name).toBe(true);
         }
     }, 120000);
 
@@ -505,8 +543,8 @@ describe('0024 AC-002, AC-003: Send in the rendered bundle, over the fixtures', 
             const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
             await settle();
             const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'board', target: undefined, selection: { stem: '0015-focus-on-visibility', number: '0015' }, notice: undefined, rows: [] };
-            dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 8, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
-            dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 8, kind: 'evt', type: 'detail', payload: { view: detail } } }));
+            dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 11, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+            dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 11, kind: 'evt', type: 'detail', payload: { view: detail } } }));
             await settle();
             const section = dom.window.document.querySelector('.spec-detail') as unknown as QueryRoot | null;
             expect(section).not.toBeNull();
@@ -514,7 +552,7 @@ describe('0024 AC-002, AC-003: Send in the rendered bundle, over the fixtures', 
             const sends = [...clone.querySelectorAll('.send-split')].length;
             [...clone.querySelectorAll('.visually-hidden, [hidden]')].forEach((hidden) => hidden.remove());
             const words = (clone.textContent ?? '').replace(/\s+/g, ' ').trim().split(' ').filter((word) => word !== '');
-            expect(sends, offer.assistant).toBeLessThanOrEqual(1);
+            expect(sends, offer.assistant).toBeLessThanOrEqual(2);
             expect(words.length, offer.assistant).toBeLessThanOrEqual(300);
             expect(errors).toEqual([]);
         }

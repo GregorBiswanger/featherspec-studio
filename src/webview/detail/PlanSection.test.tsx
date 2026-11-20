@@ -6,7 +6,7 @@ import { planSample, stage, step } from '../../shared/protocol/testing/planSampl
 import { App } from '../App';
 import { boardEvent, boardView, card } from '../board/testing/views';
 import { createClient, type ShellClient } from '../client';
-import { baseView, click, mount, send, shellEvent, type Mounted } from '../testing/dom';
+import { baseView, click, ctrlClick, mount, send, shellEvent, type Mounted } from '../testing/dom';
 import { resetSectionMemory } from './sectionMemory';
 import { fileNotFoundText } from '../../shared/protocol/texts';
 import { detailEvent, detailView, openFileResultEvent, PLAN_KEY } from './testing/views';
@@ -83,10 +83,19 @@ describe('0023 AC-003: the Plan section of the side panel', () => {
         expect(follows(next, problems)).toBe(true);
         expect(follows(problems, plan)).toBe(true);
         expect(follows(plan, progress)).toBe(true);
-        expect(plan.querySelector('.progress-text')?.textContent).toBe('2 of 5 done');
+        expect(plan.querySelector('.progress-text')?.textContent).toBe('2 of 5 done · 40%');
         expect(progress.textContent).not.toContain('Steps');
         expect(progress.textContent).not.toContain('Next open step');
         expect(progress.textContent).toContain('Criteria');
+    });
+
+    it('0025 AC-015: while a return note lies, the sentence of U-05 stands under the count, once', async () => {
+        const sentence = '1 of 2 returned · T-004 not back yet';
+        const container = await open({ ...planSample(), returned: sentence });
+        const plan = sectionOf(container, 'Plan')!;
+        expect(plan.querySelectorAll('.plan-returned')).toHaveLength(1);
+        expect(plan.querySelector('.plan-returned')?.textContent).toBe(sentence);
+        expect(plan.querySelector('.progress')!.nextElementSibling).toBe(plan.querySelector('.plan-returned'));
     });
 
     it('is absent without a plan and for an unreadable plan, where Progress keeps its Steps row', async () => {
@@ -131,17 +140,26 @@ describe('0023 AC-004: the chips', () => {
         const container = await open(states);
         const names = chips(sectionOf(container, 'Plan')!).map((chip) => [shown(chip), chip.querySelector('button')?.getAttribute('aria-label') ?? chip.querySelector('.visually-hidden')?.textContent]);
         expect(names).toEqual([
-            ['✓ T-001', 'T-001 Step T-001, done'],
-            ['◐ T-002', 'T-002 Step T-002, next'],
-            ['○ T-003', 'T-003 Step T-003, open'],
+            ['T-001', 'T-001 Step T-001, done'],
+            ['T-002', 'T-002 Step T-002, next'],
+            ['T-003', 'T-003 Step T-003, open'],
             ['T-004', 'T-004 Step T-004, dropped'],
-            ['↩ T-005', 'T-005 Step T-005, returned'],
-            ['⊘ T-006', 'T-006 Step T-006, returned, blocked'],
-            ['? T-007', ', not in the steps'],
+            ['T-005', 'T-005 Step T-005, returned'],
+            ['T-006', 'T-006 Step T-006, returned, blocked'],
+            ['T-007', ', not in the steps'],
         ]);
         const next = chips(sectionOf(container, 'Plan')!)[1]!.querySelector<HTMLButtonElement>('button')!;
-        expect(next.title).toBe('T-002 Step T-002, next\nOpen 0007-thing.plan.md at line 42');
-        expect(document.getElementById(next.getAttribute('aria-describedby')!)?.textContent).toBe('T-002 Step T-002, next\nOpen 0007-thing.plan.md at line 42');
+        expect(next.title).toBe('T-002 Step T-002, next\nShow T-002 in the plan map · Ctrl+click opens the plan file');
+        expect(document.getElementById(next.getAttribute('aria-describedby')!)?.textContent).toBe('T-002 Step T-002, next\nShow T-002 in the plan map · Ctrl+click opens the plan file');
+    });
+
+    it('0025 AC-014: each chip draws the codicon motif of its state as an aria-hidden SVG and no old symbol', async () => {
+        const container = await open(states);
+        const plan = sectionOf(container, 'Plan')!;
+        expect(chips(plan).map((chip) => chip.querySelector('svg')?.getAttribute('data-motif') ?? null)).toEqual(['check', 'debug-stackframe', 'circle-large-outline', null, 'reply', 'circle-slash', 'question']);
+        expect(chips(plan).map((chip) => chip.querySelector('svg')?.getAttribute('aria-hidden') ?? null)).toEqual(['true', 'true', 'true', null, 'true', 'true', 'true']);
+        expect(chips(plan).map((chip) => chip.querySelector('svg')?.getAttribute('data-tint') ?? null)).toEqual(['descriptionForeground', 'focusBorder', 'descriptionForeground', null, 'descriptionForeground', 'charts.red', 'descriptionForeground']);
+        expect(plan.textContent).not.toMatch(/[✓◐○↩⊘]/);
     });
 
     it('a dropped ID is struck through', async () => {
@@ -150,10 +168,18 @@ describe('0023 AC-004: the chips', () => {
         expect(dropped.querySelector('s')?.textContent).toBe('T-004');
     });
 
-    it('activating a chip sends the open request for the plan at the heading line of its step; a not-found chip is no button', async () => {
+    it('0025 AC-001: a plain activation of a chip sends one navigation request for the Plan map with the step and no open request', async () => {
         const container = await open(states);
         const all = chips(sectionOf(container, 'Plan')!);
         await click(all[1]!.querySelector('button')!);
+        expect(requests('navigate')).toEqual([{ area: 'planMap', target: { kind: 'spec', stem: '0007-thing', step: 'T-002' } }]);
+        expect(requests('openFile')).toEqual([]);
+    });
+
+    it('activating a chip with Ctrl sends the open request for the plan at the heading line of its step; a not-found chip is no button', async () => {
+        const container = await open(states);
+        const all = chips(sectionOf(container, 'Plan')!);
+        await ctrlClick(all[1]!.querySelector('button')!);
         expect(requests('openFile')).toEqual([{ key: PLAN_KEY, line: 42 }]);
         expect(all[6]!.querySelector('button')).toBeNull();
         expect(all[6]!.tagName).toBe('SPAN');
@@ -165,7 +191,7 @@ describe('0023 AC-004: the chips', () => {
         const button = all[1]!.querySelector<HTMLButtonElement>('button')!;
         const before = button.getAttribute('aria-label');
         expect(before).toContain('T-002');
-        await click(button);
+        await ctrlClick(button);
         await send(openFileResultEvent(PLAN_KEY, fileNotFoundText(PLAN_KEY)));
         expect(button.textContent).toBe(fileNotFoundText(PLAN_KEY));
         const name = button.getAttribute('aria-label') ?? button.textContent;
@@ -201,7 +227,7 @@ describe('0023 AC-004: the chips', () => {
         const container = await open(planSample({ loose: [step('T-009', 'open')] }));
         const last = [...sectionOf(container, 'Plan')!.querySelectorAll('li')].pop()!;
         expect(last.textContent).toContain('Not in a stage');
-        expect(chips(last).map(shown)).toEqual(['○ T-009']);
+        expect(chips(last).map(shown)).toEqual(['T-009']);
         expect(sectionOf(container, 'Plan')!.querySelectorAll('li[data-stage]')).toHaveLength(3);
     });
 
@@ -210,7 +236,7 @@ describe('0023 AC-004: the chips', () => {
         const plan = sectionOf(container, 'Plan')!;
         expect(plan.querySelectorAll('li[data-stage]')).toHaveLength(0);
         expect(plan.querySelector('ol')).toBeNull();
-        expect(chips(plan).map(shown)).toEqual(['✓ T-001', '◐ T-002', '○ T-003']);
+        expect(chips(plan).map(shown)).toEqual(['T-001', 'T-002', 'T-003']);
         expect(plan.textContent).not.toContain('Not in a stage');
     });
 

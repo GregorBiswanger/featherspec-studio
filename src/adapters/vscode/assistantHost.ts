@@ -18,6 +18,7 @@ export function createAssistantHost(): AssistantHostPort {
         async commands() {
             return vscode.commands.getCommands(true);
         },
+        fileUri: (root, key) => vscode.Uri.joinPath(vscode.Uri.parse(root), ...key.split('/')),
         onDidChangeExtensions: (listener) => vscode.extensions.onDidChange(listener),
     };
 }

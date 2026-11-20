@@ -128,6 +128,8 @@ Terms used below:
 | S-READY | Ready | derived | `backlog/` and readiness check passes (§6.2) |
 | S-BACKLOG | Backlog | persisted | `backlog/` and none of the above |
 
+*Amended by 0028 (PD-081, D-1): sibling plan `Done` or finished (0028 §6.1: readable, at least one step ticked, every step ticked or struck); the rule ID stays S-REVIEW.*
+
 - A `done/` entry whose status is not `Implemented`, `Baseline` or `Deprecated` is Done and
   carries a contradiction diagnostic (§6.3).
 - `Deprecated` is Done with a *Deprecated* marker and the successor read from the spec: the
@@ -387,6 +389,8 @@ it whatever run state an agent run of that spec enters, including Completed.
 whose sibling plan is `Done`, and Done only for a spec in `done/`. It shall report such an
 `active/` spec as Review, not Done, also when every traceability row is `verified` or a run of
 it is Completed. *(AC-003.5)*
+
+*Amended by 0028 (PD-081, D-1): sibling plan `Done` or finished (0028 §6.1: readable, at least one step ticked, every step ticked or struck); the rule ID stays S-REVIEW.*
 
 *Amended by 0015 (PD-055/PD-056): drop "or a run of it is Completed".*
 

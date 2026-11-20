@@ -53,7 +53,7 @@ describe('0017 AC-013: the text names the current spec', () => {
         world.select({ stem: '0003-thing' });
         expect(world.text()).toBe('$(checklist) 0020 · Blocked · /sdd-plan');
         world.select({ stem: '0007-thing' });
-        expect(world.text()).toBe('$(checklist) 0007 · Ready · Implement');
+        expect(world.text()).toBe('$(checklist) 0007 · Ready · /sdd-plan');
         world.select(undefined);
         expect(world.text()).toBe('$(checklist) 0020 · Blocked · /sdd-plan');
     });

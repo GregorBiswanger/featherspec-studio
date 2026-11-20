@@ -41,7 +41,7 @@ function row(n: string, withStep = true): OverviewRow {
 function fullView(): OverviewView {
     return {
         ...sampleView(),
-        now: ['0001', '0002', '0003', '0004', '0005', '0006', '0007'].map((n) => row(n)),
+        now: { rows: ['0001', '0002', '0003', '0004', '0005'].map((n) => row(n)), more: 2, stems: ['0001', '0002', '0003', '0004', '0005', '0006', '0007'].map((n) => `${n}-r`) },
         upNext: { rows: ['0008', '0009', '0010'].map((n) => row(n)), more: 0, stems: [] },
         problems: { rows: [{ ...row('0011'), problems: 1, status: 'Studio cannot read this spec' }], lines: [] },
     };
@@ -70,15 +70,15 @@ async function open(area: 'overview' | 'board', options: { overview?: OverviewVi
 const CARDS = ['0001', '0002', '0003'].map((n) => card(n, { stem: `${n}-r`, step: step(n)! }));
 
 describe('0022 AC-011: at most two primary buttons per view', () => {
-    it('the Overview with seven Now rows, three Up next rows, a Problems row and a selected NS-5 spec has exactly two: the first Now row and the first line of the side panel', async () => {
+    it('the Overview with seven Now entries (five rows), three Up next rows, a Problems row and a selected NS-5 spec has exactly one (0026 AC-024): the first line of the side panel; the first Now row is secondary', async () => {
         const container = await open('overview', { overview: fullView(), selection: SELECTED });
         const found = primaries(container);
-        expect(found).toHaveLength(2);
-        expect(found[0]?.closest('[data-spec-row]')?.getAttribute('data-spec-row')).toBe('0001-r');
-        expect(found[0]?.closest('[data-now]')).not.toBeNull();
-        expect(found[1]?.closest('aside.side-panel')).not.toBeNull();
+        expect(found).toHaveLength(1);
+        expect(found[0]?.closest('aside.side-panel')).not.toBeNull();
+        const first = container.querySelector('[data-now] [data-spec-row="0001-r"] button.copy-button')!;
+        expect(first.classList.contains('copy-secondary')).toBe(true);
         const all = [...container.querySelectorAll<HTMLElement>('.ov-row-item button.copy-icon')];
-        expect(all).toHaveLength(6 + 3 + 1);
+        expect(all).toHaveLength(4 + 3 + 1);
         const panel = container.querySelectorAll('aside.side-panel button.next-step-copy');
         expect(panel).toHaveLength(2);
         expect(panel[1]?.classList.contains('copy-secondary')).toBe(true);
@@ -93,9 +93,9 @@ describe('0022 AC-011: at most two primary buttons per view', () => {
         expect(container.querySelectorAll('.card .copy-button')).toHaveLength(0);
     });
 
-    it('without a selection the Overview has one and the Board none', async () => {
+    it('without a selection the Overview has none (0026 AC-024) and the Board none', async () => {
         const overview = await open('overview', { overview: fullView() });
-        expect(primaries(overview)).toHaveLength(1);
+        expect(primaries(overview)).toHaveLength(0);
         mounted?.unmount();
         mounted = undefined;
         clients.splice(0).forEach((client) => client.stop());
@@ -105,7 +105,7 @@ describe('0022 AC-011: at most two primary buttons per view', () => {
     });
 
     it('an Overview whose first Now row has no step has no primary button of its own list; with the side panel open it has one', async () => {
-        const view: OverviewView = { ...fullView(), now: [row('0001', false), row('0002')] };
+        const view: OverviewView = { ...fullView(), now: { rows: [row('0001', false), row('0002')], more: 0, stems: [] } };
         const alone = await open('overview', { overview: view });
         expect(primaries(alone)).toHaveLength(0);
         expect(alone.querySelectorAll('[data-now] .copy-icon')).toHaveLength(1);
@@ -162,14 +162,19 @@ describe('0023 AC-010: the Plan map adds no primary button', () => {
         return mounted.container;
     }
 
-    it('with a selected spec the view has one primary button, the first line of the side panel, and the map holds only secondary and icon Copies', async () => {
+    it('with a selected spec the view has one primary button, the first line of the map header (0025 AC-010), and the map below holds only secondary and icon Copies', async () => {
         const container = await openMap(SELECTED);
         const found = primaries(container);
         expect(found).toHaveLength(1);
-        expect(found[0]?.closest('aside.side-panel')).not.toBeNull();
+        expect(found[0]?.closest('.plan-map-header')).not.toBeNull();
+        expect(container.querySelector('aside.side-panel .next-step')).toBeNull();
         const inMap = container.querySelector('[data-plan-map]')!;
-        expect(primaries(inMap as HTMLElement)).toHaveLength(0);
-        expect(inMap.querySelectorAll('button.copy-secondary').length).toBe(3);
+        expect(primaries(inMap as HTMLElement)).toHaveLength(1);
+        expect(inMap.querySelectorAll('button.copy-secondary').length).toBe(2);
+        expect(inMap.querySelectorAll('button.copy-icon').length).toBe(0);
+        await click(inMap.querySelectorAll<HTMLInputElement>('input[type="radio"]')[2]!);
+        expect(primaries(inMap as HTMLElement)).toHaveLength(1);
+        expect(inMap.querySelectorAll('button.copy-secondary').length).toBe(1);
         expect(inMap.querySelectorAll('button.copy-icon').length).toBe(2);
     });
 
@@ -183,18 +188,107 @@ describe('0024 AC-003: a split button counts as one primary action (A-013)', () 
     const SEND = { assistant: 'copilot', target: 'current', targets: ['new', 'current'] };
     const NS6_SEND = { ...NS6, send: SEND };
 
-    it('with an offer the Overview with a selected spec still has two primaries: the main part of the first Now row and the main part of the detail; the arrow parts are no primary', async () => {
+    it('with an offer the Overview with a selected spec has one primary (0026 AC-024): the main part of the detail; the first Now row split button is secondary; no arrow part is primary', async () => {
         const view = fullView();
-        view.now[0] = { ...view.now[0]!, send: SEND as never };
+        view.now.rows[0] = { ...view.now.rows[0]!, send: SEND as never };
         const container = await open('overview', { overview: view, selection: SELECTED });
         await send(detailEvent(detailView({ stem: SELECTED.stem, number: SELECTED.number }, NS6_SEND as never)));
         const found = primaries(container);
-        expect(found).toHaveLength(2);
+        expect(found).toHaveLength(1);
         expect(found.every((button) => button.classList.contains('send-main'))).toBe(true);
-        expect(found[0]?.closest('[data-now]')).not.toBeNull();
-        expect(found[1]?.closest('aside.side-panel')).not.toBeNull();
+        expect(found[0]?.closest('aside.side-panel')).not.toBeNull();
+        expect(container.querySelector('[data-now] button.send-main')?.classList.contains('copy-secondary')).toBe(true);
         expect(container.querySelectorAll('button.send-arrow')).toHaveLength(2);
         expect([...container.querySelectorAll('button.send-arrow')].every((button) => !button.classList.contains('copy-button'))).toBe(true);
     });
 });
 
+
+describe('0025 AC-026: no primary control while U-08 shows', () => {
+    const SEND = { assistant: 'copilot', target: 'current', targets: ['new', 'current'] };
+    const INTEGRATE = { rule: 'NS-6', lines: [{ text: '/sdd-plan .specs/active/0001-r.md', intent: 'Integrate the returned work' }] };
+
+    async function quietView(options: { quiet: boolean; send: boolean }): Promise<HTMLElement> {
+        const view = fullView();
+        view.now.rows[0] = { ...view.now.rows[0]!, ...(options.quiet ? { quiet: true as const } : {}), ...(options.send ? { send: SEND as never } : {}) };
+        const container = await open('overview', { overview: view, selection: SELECTED });
+        const next = { ...INTEGRATE, ...(options.send ? { send: SEND } : {}), ...(options.quiet ? { quiet: true } : {}) };
+        await send(detailEvent(detailView({ stem: SELECTED.stem, number: SELECTED.number }, next as never)));
+        return container;
+    }
+
+    it.each([false, true])('0025 AC-026: with Send offered = %s, the first Now row and the detail hold no primary and every Copy or split part is secondary', async (offered) => {
+        const container = await quietView({ quiet: true, send: offered });
+        expect(primaries(container)).toHaveLength(0);
+        if (offered) {
+            expect(container.querySelectorAll('button.send-main.copy-secondary')).toHaveLength(2);
+            expect(container.querySelectorAll('button.send-arrow.send-arrow-secondary')).toHaveLength(2);
+        }
+    });
+
+    it.each([false, true])('0025 AC-026: with U-05 (not quiet), Send offered = %s, the detail is primary again and the first Now row stays secondary (0026 AC-024)', async (offered) => {
+        const container = await quietView({ quiet: false, send: offered });
+        expect(primaries(container)).toHaveLength(1);
+        expect(primaries(container)[0]?.closest('aside.side-panel')).not.toBeNull();
+    });
+});
+
+describe('0025 AC-010: the map with its side panel has at most one primary button', () => {
+    const SEND = { assistant: 'copilot', target: 'current', targets: ['new', 'current'] };
+
+    async function openMapWith(nextStep: object): Promise<HTMLElement> {
+        const client = createClient({ post: (message) => void posted.push(message) });
+        clients.push(client);
+        client.start();
+        mounted = await mount(<App client={client} />);
+        await send(shellEvent(baseView({ area: 'planMap', selection: SELECTED }), 1));
+        await send(boardEvent(boardView(CARDS)));
+        const view = detailView({ stem: SELECTED.stem, number: SELECTED.number }, nextStep as never) as SpecDetailView;
+        await send(detailEvent({ ...view, plan: planSample() }));
+        return mounted.container;
+    }
+
+    it('0025 AC-010: with a line and no U-08 the header holds exactly one primary, with or without Send, and the side panel none', async () => {
+        for (const next of [NS6, { ...NS6, send: SEND }]) {
+            const container = await openMapWith(next);
+            const found = primaries(container);
+            expect(found).toHaveLength(1);
+            expect(found[0]?.closest('.plan-map-header')).not.toBeNull();
+            expect(primaries(container.querySelector<HTMLElement>('aside.side-panel')!)).toHaveLength(0);
+            mounted?.unmount();
+            clients.splice(0).forEach((client) => client.stop());
+        }
+    });
+
+    it('0025 AC-010: while someone is out (U-08, quiet) the header holds no primary at all', async () => {
+        const container = await openMapWith({ ...NS6, quiet: true });
+        expect(primaries(container)).toHaveLength(0);
+    });
+});
+
+describe('0026 AC-024: no Now row is primary; the Overview holds one primary at most', () => {
+    const EIGHT = fullView();
+    EIGHT.now = { ...EIGHT.now, rows: EIGHT.now.rows.map((entry, index) => (index === 0 ? { ...entry, send: { assistant: 'copilot', target: 'new', targets: ['new', 'current'] } as never } : entry)), more: 3 };
+
+    it('Given eight entries and 0004 selected: one primary, in the side panel; no Now Copy or split part is primary', async () => {
+        const container = await open('overview', { overview: EIGHT, selection: { stem: '0004-r', number: '0004' } });
+        const found = primaries(container);
+        expect(found).toHaveLength(1);
+        expect(found[0]?.closest('aside.side-panel')).not.toBeNull();
+        expect(primaries(container.querySelector<HTMLElement>('[data-now]')!)).toHaveLength(0);
+        expect(container.querySelector('[data-now] button.send-main')?.classList.contains('copy-secondary')).toBe(true);
+        expect(container.querySelector('[data-now] button.send-arrow')?.classList.contains('send-arrow-secondary')).toBe(true);
+    });
+
+    it('none selected: none; the first Now row is a secondary split button and every later row an icon', async () => {
+        const container = await open('overview', { overview: EIGHT });
+        expect(primaries(container)).toHaveLength(0);
+        expect(container.querySelectorAll('[data-now] [data-spec-row]:not(:first-child) button.copy-icon')).toHaveLength(4);
+    });
+
+    it('negative control: a primary Now Copy would be counted', () => {
+        const host = document.createElement('div');
+        host.innerHTML = '<section data-now><button class="copy-button"></button></section>';
+        expect(primaries(host)).toHaveLength(1);
+    });
+});

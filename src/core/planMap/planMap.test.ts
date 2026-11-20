@@ -18,8 +18,10 @@ import {
     noteFile,
     PARALLEL_NOTE_3,
     PARALLEL_NOTE_4,
+    PARALLEL_PLAN,
     PARALLEL_SPEC,
     parallelModel,
+    replaceIn,
     setNote,
 } from './testing/plans';
 
@@ -278,7 +280,7 @@ describe('0023 AC-012: returned work shows its state and the stage counts', () =
         const [three, four] = view.stages[1]!.groups[0]!.steps;
         expect(three).toMatchObject({ id: 'T-003', state: 'returned', returned: { status: 'done' } });
         expect(four).toMatchObject({ id: 'T-004', state: 'returned', returned: { status: 'blocked', reason: 'needs a new dependency (Ask first).', reasonFull: 'needs a new dependency (Ask first).' } });
-        expect(view.stages[1]!.returned).toEqual({ n: 2, m: 2 });
+        expect(view.stages[1]!.returned).toBe('2 returned, T-004 blocked: the next step finds out what blocks.');
     });
 
     it('a long reason is cut in its short form and whole in its full form', async () => {
@@ -323,7 +325,7 @@ describe('0023 AC-012: returned work shows its state and the stage counts', () =
             ['T-006', 'open'],
             ['T-007', 'dropped'],
         ]);
-        expect(view.stages[0]!.returned).toEqual({ n: 1, m: 2 });
+        expect(view.stages[0]!.returned).toBe('1 of 3 returned · T-006 not back yet');
     });
 
     it('only the notes of this spec count: a note of another spec for the same step ID changes nothing', async () => {
@@ -339,11 +341,11 @@ describe('0023 AC-012: returned work shows its state and the stage counts', () =
     it('a stage counts its returned steps against the returned and unfinished ones: n of m', async () => {
         const one = await parallelModel(setNote(PARALLEL_NOTE_3, '# Return note — 0001 · T-003\n\n- **Status:** DONE\n- **Files:** —\n- **Verified:** —\n- **Notes:** —\n'));
         const view = planViewOf(one, PARALLEL_SPEC);
-        expect(view.stages[1]!.returned).toEqual({ n: 1, m: 2 });
+        expect(view.stages[1]!.returned).toBe('1 of 2 returned · T-004 not back yet');
         expect(view.stages[0]!.returned).toBeUndefined();
         expect(view.stages[2]!.returned).toBeUndefined();
         const both = planViewOf(await fixtureModel('fs110-parallel-synthetic'), PARALLEL_SPEC);
-        expect(both.stages[1]!.returned).toEqual({ n: 2, m: 2 });
+        expect(both.stages[1]!.returned).toBe('2 returned, T-004 blocked: the next step finds out what blocks.');
         expect(PARALLEL_NOTE_4).toContain('T-004');
     });
 });
@@ -446,6 +448,24 @@ describe('0023 AC-009: the current stage offers its ways, and the next step its 
         expect(waysOf(planViewOf(resume, GEN_SPEC))).toEqual([]);
     });
 
+    it('0026 AC-010: whatever the closing line of the plan says, the ways view is equal (D-3)', async () => {
+        const closing = 'Parallel: stage 2 (add vs. subtract: separate files).';
+        const reference = await parallelModel();
+        const expected = waysOf(planViewOf(reference, PARALLEL_SPEC));
+        expect(expected.length).toBeGreaterThan(0);
+        for (const variant of [
+            'Recommended: in sequence, since both steps are small.',
+            'Recommended: subagents.',
+            'Do not use subagents; other agents or subagents both work.',
+            'Parallel: none.',
+            'Nicht parallel: ein Chat reicht.',
+            '',
+        ]) {
+            const model = await parallelModel(replaceIn(PARALLEL_PLAN, closing, variant));
+            expect(waysOf(planViewOf(model, PARALLEL_SPEC))).toEqual(expected);
+        }
+    });
+
     it('the start line is the wording of parallel-work.md, byte for byte', async () => {
         const rule = await readFile(path.resolve(process.cwd(), '.claude', 'rules', 'parallel-work.md'), 'utf8');
         expect(rule).toContain(`\`${startLine('T-00x', '<plan path>')}\``);
@@ -464,7 +484,7 @@ describe('0023 AC-009: the current stage offers its ways, and the next step its 
             'Where a working agreement asks for a test review, the chat first writes the stage\'s tests and stops for it; then it hands each step to a subagent. Subagents cannot ask you; there is no steering in between.',
         );
         expect(WAYS.otherAgents.effect).toBe(
-            'The chat proposes the commit a worktree needs and prints one start line per step. Paste each into another chat, tool or worktree; each worker builds its step and leaves a return note.',
+            'Each step runs from its own start line in another chat, tool or worktree and leaves a return note; a worktree holds committed files only, so commit first. Until start lines show here, the stage prompt has the chat propose that commit and print them. Once every worker is back, the next step integrates the returned steps.',
         );
     });
 });

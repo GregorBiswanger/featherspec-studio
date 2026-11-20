@@ -9,6 +9,7 @@ import { parseSpec } from './parseSpec';
 import type { ParsedSpec } from './parseSpec';
 import { parseReturnNote } from './returnNote';
 import type { ParsedReturnNote } from './returnNote';
+import type { SetupRun } from '../discovery/setupSign';
 import { checkVersion } from './version';
 
 export interface EntryFacts {
@@ -52,6 +53,7 @@ export interface ReturnNoteEntry extends EntryFacts {
 export interface ProjectRead {
     root: string;
     version: string;
+    setupRun?: SetupRun;
     specs: SpecEntry[];
     plans: PlanEntry[];
     returnNotes: ReturnNoteEntry[];
@@ -154,6 +156,7 @@ export async function buildProject(
     version: string,
     read: ProjectFiles,
     parsers: Parsers = DEFAULT_PARSERS,
+    setupRun?: SetupRun,
 ): Promise<ProjectRead> {
     const diagnostics: Diagnostic[] = [];
     const versionDiagnostic = checkVersion(version);
@@ -271,5 +274,5 @@ export async function buildProject(
             });
         }
     }
-    return { root, version, specs, plans, returnNotes, diagnostics };
+    return { root, version, ...(setupRun === undefined ? {} : { setupRun }), specs, plans, returnNotes, diagnostics };
 }

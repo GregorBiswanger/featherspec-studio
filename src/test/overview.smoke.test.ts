@@ -43,8 +43,8 @@ suite('FeatherSpec Studio Overview smoke', function () {
             await waitFor('Overview to show spec counts', () => figures(mission.view()), (state) => state.specs !== undefined, { timeoutMs: 20_000 });
             const first = mission.view();
             assert.strictEqual(totalOf(first), 1);
-            assert.strictEqual(first?.now[0]?.spec.stem, '0001-tip-splitter');
-            assert.strictEqual(first?.now[0]?.state, 'Review');
+            assert.strictEqual(first?.now.rows[0]?.spec.stem, '0001-tip-splitter');
+            assert.strictEqual(first?.now.rows[0]?.state, 'Review');
             const before = await snapshotTree(root);
 
             await fs.writeFile(extra, '# Extra thing\n\n**Status:** Draft\n**Plan:** _none yet_\n');
@@ -71,7 +71,7 @@ suite('FeatherSpec Studio Overview smoke', function () {
             await waitFor('Overview to have a view', () => figures(mission.view()), (state) => state.specs !== undefined, { timeoutMs: 20_000 });
             const view = mission.view();
             assert.deepStrictEqual(view?.problems, { rows: [], lines: [] });
-            assert.ok(view?.now.every((row) => row.problems === 0));
+            assert.ok(view?.now.rows.every((row) => row.problems === 0));
         } finally {
             listening.dispose();
         }

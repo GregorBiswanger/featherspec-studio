@@ -1,6 +1,9 @@
 import type { AreaId } from '../../shared/protocol/areas';
 import { BOARD_STATES, type BoardState } from '../../shared/protocol/boardFilter';
+import type { StepLookKey } from '../../shared/protocol/planMapTexts';
 import { STATE_LOOK } from '../../shared/protocol/stateLook';
+import { STEP_LOOK } from '../../shared/protocol/stepLook';
+import { FEATHER_PATH, FEATHER_VIEW_BOX } from './featherPath';
 
 const MOTIF_PATHS: Record<string, string> = {
     'list-flat': 'M2 3h12v2H2zM2 7h12v2H2zM2 11h8v2H2z',
@@ -24,25 +27,26 @@ const PATHS: Record<string, string> = {
     chevron: 'M5.7 3.3L10.4 8l-4.7 4.7-1.1-1.1L8.2 8 4.6 4.4z',
     chevronDown: 'M3.3 5.7L8 10.4l4.7-4.7 1.1 1.1L8 12.6 2.2 6.8z',
     folder: 'M1.5 2.5h5l1.5 1.5h6.5v9.5h-13zM3 5.5v6.5h10V5.5z',
+    file: 'M3 1.5h6.5L13 5v9.5H3zM4.5 3v10h7V6H9V3z',
     copy: 'M5.5 1.5h8v9h-2v-7.5h-6zM2.5 4.5h8v10h-8zm1.5 1.5v7h5v-7z',
     check: MOTIF_PATHS.check!,
     info: 'M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 1.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11zM7.25 7h1.5v4.5h-1.5zM7.25 4.5h1.5V6h-1.5z',
     empty: 'M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 1.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11zM5 7.25h6v1.5H5z',
 };
 
-export type GlyphKind = 'diagnostic' | 'derived' | 'deprecated' | 'failed' | 'interrupted' | 'waiting' | 'empty' | 'ticked' | 'unticked' | 'undetermined' | 'chevron' | 'chevronDown' | 'folder' | 'info' | 'copy' | 'check' | BoardState;
+export type GlyphKind = 'diagnostic' | 'derived' | 'deprecated' | 'failed' | 'interrupted' | 'waiting' | 'empty' | 'ticked' | 'unticked' | 'undetermined' | 'chevron' | 'chevronDown' | 'folder' | 'info' | 'copy' | 'check' | 'file' | 'feather' | BoardState;
 
 function isState(kind: GlyphKind): kind is BoardState {
     return (BOARD_STATES as readonly string[]).includes(kind);
 }
 
 function pathOf(kind: GlyphKind): string | undefined {
-    return isState(kind) ? MOTIF_PATHS[STATE_LOOK[kind].motif] : PATHS[kind];
+    return isState(kind) ? MOTIF_PATHS[STATE_LOOK[kind].motif] : kind === 'feather' ? FEATHER_PATH : PATHS[kind];
 }
 
 export function Glyph(props: { kind: GlyphKind }) {
     return (
-        <svg className="icon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" fillRule="evenodd" aria-hidden="true" focusable="false" data-icon={props.kind}>
+        <svg className="icon" width="14" height="14" viewBox={props.kind === 'feather' ? FEATHER_VIEW_BOX : '0 0 16 16'} fill="currentColor" fillRule="evenodd" aria-hidden="true" focusable="false" data-icon={props.kind}>
             <path d={pathOf(props.kind)} />
         </svg>
     );
@@ -53,6 +57,27 @@ export function StateIcon(props: { state: BoardState }) {
     return (
         <svg className="icon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" fillRule="evenodd" aria-hidden="true" focusable="false" data-icon={props.state} data-motif={look.motif} data-tint={look.colour}>
             <path d={MOTIF_PATHS[look.motif]} />
+        </svg>
+    );
+}
+
+const STEP_MOTIF_PATHS: Record<string, string> = {
+    check: MOTIF_PATHS.check!,
+    'circle-slash': MOTIF_PATHS['circle-slash']!,
+    'debug-stackframe': 'M2 5h6V2l6 6-6 6v-3H2z',
+    'circle-large-outline': 'M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 1.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11z',
+    reply: 'M6 2.5L1 7.5l5 5v-3c3.5 0 6 .8 8 3.5-.5-4.5-3-8-8-8.5z',
+    question: 'M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 1.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11zM7.25 10.5h1.5V12h-1.5zM6 6.4C6 5.1 6.9 4.3 8 4.3s2 .8 2 1.9c0 1.4-1.5 1.5-1.5 2.8H7.3c0-1.8 1.2-1.9 1.2-2.8 0-.4-.2-.6-.5-.6s-.5.3-.5.8z',
+};
+
+export function StepIcon(props: { look: StepLookKey }) {
+    const look = STEP_LOOK[props.look];
+    if (look.motif === undefined) {
+        return null;
+    }
+    return (
+        <svg className="icon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" fillRule="evenodd" aria-hidden="true" focusable="false" data-icon={`step-${props.look}`} data-motif={look.motif} data-tint={look.colour}>
+            <path d={STEP_MOTIF_PATHS[look.motif]} />
         </svg>
     );
 }

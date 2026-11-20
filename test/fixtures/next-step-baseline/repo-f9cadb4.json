@@ -1,0 +1,790 @@
+{
+  ".specs/active/0014-setup-featherspec-from-studio.md": {
+    "state": "Review",
+    "rule": "S-REVIEW",
+    "persistence": "derived",
+    "nextStep": {
+      "rule": "NS-5",
+      "case": "NS-5",
+      "lines": [
+        {
+          "intent": "Have the result verified",
+          "text": "/sdd-compile .specs/active/0014-setup-featherspec-from-studio.md"
+        },
+        {
+          "intent": "Then, after a READY verdict: close the spec",
+          "text": "/sdd-lifecycle .specs/active/0014-setup-featherspec-from-studio.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Verify",
+      "short": "/sdd-compile",
+      "line": "/sdd-compile .specs/active/0014-setup-featherspec-from-studio.md",
+      "lines": [
+        {
+          "text": "/sdd-compile .specs/active/0014-setup-featherspec-from-studio.md",
+          "intent": "Have the result verified"
+        },
+        {
+          "text": "/sdd-lifecycle .specs/active/0014-setup-featherspec-from-studio.md",
+          "intent": "Then, after a READY verdict: close the spec"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model, other family",
+      "about": [
+        "A fresh reviewer checks every acceptance criterion against evidence and gives a verdict. Only after a READY verdict, close the spec with the second prompt.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model from another family than the one that built it: a reviewer tends to pass what its own family wrote.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/active/0015-focus-on-visibility.md": {
+    "state": "Review",
+    "rule": "S-REVIEW",
+    "persistence": "derived",
+    "nextStep": {
+      "rule": "NS-5",
+      "case": "NS-5",
+      "lines": [
+        {
+          "intent": "Have the result verified",
+          "text": "/sdd-compile .specs/active/0015-focus-on-visibility.md"
+        },
+        {
+          "intent": "Then, after a READY verdict: close the spec",
+          "text": "/sdd-lifecycle .specs/active/0015-focus-on-visibility.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Verify",
+      "short": "/sdd-compile",
+      "line": "/sdd-compile .specs/active/0015-focus-on-visibility.md",
+      "lines": [
+        {
+          "text": "/sdd-compile .specs/active/0015-focus-on-visibility.md",
+          "intent": "Have the result verified"
+        },
+        {
+          "text": "/sdd-lifecycle .specs/active/0015-focus-on-visibility.md",
+          "intent": "Then, after a READY verdict: close the spec"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model, other family",
+      "about": [
+        "A fresh reviewer checks every acceptance criterion against evidence and gives a verdict. Only after a READY verdict, close the spec with the second prompt.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model from another family than the one that built it: a reviewer tends to pass what its own family wrote.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/active/0016-honest-signals.md": {
+    "state": "Review",
+    "rule": "S-REVIEW",
+    "persistence": "derived",
+    "nextStep": {
+      "rule": "NS-5",
+      "case": "NS-5",
+      "lines": [
+        {
+          "intent": "Have the result verified",
+          "text": "/sdd-compile .specs/active/0016-honest-signals.md"
+        },
+        {
+          "intent": "Then, after a READY verdict: close the spec",
+          "text": "/sdd-lifecycle .specs/active/0016-honest-signals.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Verify",
+      "short": "/sdd-compile",
+      "line": "/sdd-compile .specs/active/0016-honest-signals.md",
+      "lines": [
+        {
+          "text": "/sdd-compile .specs/active/0016-honest-signals.md",
+          "intent": "Have the result verified"
+        },
+        {
+          "text": "/sdd-lifecycle .specs/active/0016-honest-signals.md",
+          "intent": "Then, after a READY verdict: close the spec"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model, other family",
+      "about": [
+        "A fresh reviewer checks every acceptance criterion against evidence and gives a verdict. Only after a READY verdict, close the spec with the second prompt.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model from another family than the one that built it: a reviewer tends to pass what its own family wrote.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/active/0017-next-step-everywhere.md": {
+    "state": "Review",
+    "rule": "S-REVIEW",
+    "persistence": "derived",
+    "nextStep": {
+      "rule": "NS-5",
+      "case": "NS-5",
+      "lines": [
+        {
+          "intent": "Have the result verified",
+          "text": "/sdd-compile .specs/active/0017-next-step-everywhere.md"
+        },
+        {
+          "intent": "Then, after a READY verdict: close the spec",
+          "text": "/sdd-lifecycle .specs/active/0017-next-step-everywhere.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Verify",
+      "short": "/sdd-compile",
+      "line": "/sdd-compile .specs/active/0017-next-step-everywhere.md",
+      "lines": [
+        {
+          "text": "/sdd-compile .specs/active/0017-next-step-everywhere.md",
+          "intent": "Have the result verified"
+        },
+        {
+          "text": "/sdd-lifecycle .specs/active/0017-next-step-everywhere.md",
+          "intent": "Then, after a READY verdict: close the spec"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model, other family",
+      "about": [
+        "A fresh reviewer checks every acceptance criterion against evidence and gives a verdict. Only after a READY verdict, close the spec with the second prompt.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model from another family than the one that built it: a reviewer tends to pass what its own family wrote.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/active/0018-overview-and-compact-board.md": {
+    "state": "Review",
+    "rule": "S-REVIEW",
+    "persistence": "derived",
+    "nextStep": {
+      "rule": "NS-5",
+      "case": "NS-5",
+      "lines": [
+        {
+          "intent": "Have the result verified",
+          "text": "/sdd-compile .specs/active/0018-overview-and-compact-board.md"
+        },
+        {
+          "intent": "Then, after a READY verdict: close the spec",
+          "text": "/sdd-lifecycle .specs/active/0018-overview-and-compact-board.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Verify",
+      "short": "/sdd-compile",
+      "line": "/sdd-compile .specs/active/0018-overview-and-compact-board.md",
+      "lines": [
+        {
+          "text": "/sdd-compile .specs/active/0018-overview-and-compact-board.md",
+          "intent": "Have the result verified"
+        },
+        {
+          "text": "/sdd-lifecycle .specs/active/0018-overview-and-compact-board.md",
+          "intent": "Then, after a READY verdict: close the spec"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model, other family",
+      "about": [
+        "A fresh reviewer checks every acceptance criterion against evidence and gives a verdict. Only after a READY verdict, close the spec with the second prompt.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model from another family than the one that built it: a reviewer tends to pass what its own family wrote.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/active/0019-detail-situation-picture.md": {
+    "state": "Review",
+    "rule": "S-REVIEW",
+    "persistence": "derived",
+    "nextStep": {
+      "rule": "NS-5",
+      "case": "NS-5",
+      "lines": [
+        {
+          "intent": "Have the result verified",
+          "text": "/sdd-compile .specs/active/0019-detail-situation-picture.md"
+        },
+        {
+          "intent": "Then, after a READY verdict: close the spec",
+          "text": "/sdd-lifecycle .specs/active/0019-detail-situation-picture.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Verify",
+      "short": "/sdd-compile",
+      "line": "/sdd-compile .specs/active/0019-detail-situation-picture.md",
+      "lines": [
+        {
+          "text": "/sdd-compile .specs/active/0019-detail-situation-picture.md",
+          "intent": "Have the result verified"
+        },
+        {
+          "text": "/sdd-lifecycle .specs/active/0019-detail-situation-picture.md",
+          "intent": "Then, after a READY verdict: close the spec"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model, other family",
+      "about": [
+        "A fresh reviewer checks every acceptance criterion against evidence and gives a verdict. Only after a READY verdict, close the spec with the second prompt.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model from another family than the one that built it: a reviewer tends to pass what its own family wrote.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/active/0020-native-spec-tree.md": {
+    "state": "Review",
+    "rule": "S-REVIEW",
+    "persistence": "derived",
+    "nextStep": {
+      "rule": "NS-5",
+      "case": "NS-5",
+      "lines": [
+        {
+          "intent": "Have the result verified",
+          "text": "/sdd-compile .specs/active/0020-native-spec-tree.md"
+        },
+        {
+          "intent": "Then, after a READY verdict: close the spec",
+          "text": "/sdd-lifecycle .specs/active/0020-native-spec-tree.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Verify",
+      "short": "/sdd-compile",
+      "line": "/sdd-compile .specs/active/0020-native-spec-tree.md",
+      "lines": [
+        {
+          "text": "/sdd-compile .specs/active/0020-native-spec-tree.md",
+          "intent": "Have the result verified"
+        },
+        {
+          "text": "/sdd-lifecycle .specs/active/0020-native-spec-tree.md",
+          "intent": "Then, after a READY verdict: close the spec"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model, other family",
+      "about": [
+        "A fresh reviewer checks every acceptance criterion against evidence and gives a verdict. Only after a READY verdict, close the spec with the second prompt.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model from another family than the one that built it: a reviewer tends to pass what its own family wrote.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/active/0021-next-step-intent-and-guidance.md": {
+    "state": "Review",
+    "rule": "S-REVIEW",
+    "persistence": "derived",
+    "nextStep": {
+      "rule": "NS-5",
+      "case": "NS-5",
+      "lines": [
+        {
+          "intent": "Have the result verified",
+          "text": "/sdd-compile .specs/active/0021-next-step-intent-and-guidance.md"
+        },
+        {
+          "intent": "Then, after a READY verdict: close the spec",
+          "text": "/sdd-lifecycle .specs/active/0021-next-step-intent-and-guidance.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Verify",
+      "short": "/sdd-compile",
+      "line": "/sdd-compile .specs/active/0021-next-step-intent-and-guidance.md",
+      "lines": [
+        {
+          "text": "/sdd-compile .specs/active/0021-next-step-intent-and-guidance.md",
+          "intent": "Have the result verified"
+        },
+        {
+          "text": "/sdd-lifecycle .specs/active/0021-next-step-intent-and-guidance.md",
+          "intent": "Then, after a READY verdict: close the spec"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model, other family",
+      "about": [
+        "A fresh reviewer checks every acceptance criterion against evidence and gives a verdict. Only after a READY verdict, close the spec with the second prompt.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model from another family than the one that built it: a reviewer tends to pass what its own family wrote.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/active/0022-layout-and-signal-polish.md": {
+    "state": "Review",
+    "rule": "S-REVIEW",
+    "persistence": "derived",
+    "nextStep": {
+      "rule": "NS-5",
+      "case": "NS-5",
+      "lines": [
+        {
+          "intent": "Have the result verified",
+          "text": "/sdd-compile .specs/active/0022-layout-and-signal-polish.md"
+        },
+        {
+          "intent": "Then, after a READY verdict: close the spec",
+          "text": "/sdd-lifecycle .specs/active/0022-layout-and-signal-polish.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Verify",
+      "short": "/sdd-compile",
+      "line": "/sdd-compile .specs/active/0022-layout-and-signal-polish.md",
+      "lines": [
+        {
+          "text": "/sdd-compile .specs/active/0022-layout-and-signal-polish.md",
+          "intent": "Have the result verified"
+        },
+        {
+          "text": "/sdd-lifecycle .specs/active/0022-layout-and-signal-polish.md",
+          "intent": "Then, after a READY verdict: close the spec"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model, other family",
+      "about": [
+        "A fresh reviewer checks every acceptance criterion against evidence and gives a verdict. Only after a READY verdict, close the spec with the second prompt.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model from another family than the one that built it: a reviewer tends to pass what its own family wrote.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/active/0023-plan-map-stages-parallel-work.md": {
+    "state": "Review",
+    "rule": "S-REVIEW",
+    "persistence": "derived",
+    "nextStep": {
+      "rule": "NS-5",
+      "case": "NS-5",
+      "lines": [
+        {
+          "intent": "Have the result verified",
+          "text": "/sdd-compile .specs/active/0023-plan-map-stages-parallel-work.md"
+        },
+        {
+          "intent": "Then, after a READY verdict: close the spec",
+          "text": "/sdd-lifecycle .specs/active/0023-plan-map-stages-parallel-work.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Verify",
+      "short": "/sdd-compile",
+      "line": "/sdd-compile .specs/active/0023-plan-map-stages-parallel-work.md",
+      "lines": [
+        {
+          "text": "/sdd-compile .specs/active/0023-plan-map-stages-parallel-work.md",
+          "intent": "Have the result verified"
+        },
+        {
+          "text": "/sdd-lifecycle .specs/active/0023-plan-map-stages-parallel-work.md",
+          "intent": "Then, after a READY verdict: close the spec"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model, other family",
+      "about": [
+        "A fresh reviewer checks every acceptance criterion against evidence and gives a verdict. Only after a READY verdict, close the spec with the second prompt.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model from another family than the one that built it: a reviewer tends to pass what its own family wrote.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/active/0024-send-next-step-to-assistant.md": {
+    "state": "Review",
+    "rule": "S-REVIEW",
+    "persistence": "derived",
+    "nextStep": {
+      "rule": "NS-5",
+      "case": "NS-5",
+      "lines": [
+        {
+          "intent": "Have the result verified",
+          "text": "/sdd-compile .specs/active/0024-send-next-step-to-assistant.md"
+        },
+        {
+          "intent": "Then, after a READY verdict: close the spec",
+          "text": "/sdd-lifecycle .specs/active/0024-send-next-step-to-assistant.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Verify",
+      "short": "/sdd-compile",
+      "line": "/sdd-compile .specs/active/0024-send-next-step-to-assistant.md",
+      "lines": [
+        {
+          "text": "/sdd-compile .specs/active/0024-send-next-step-to-assistant.md",
+          "intent": "Have the result verified"
+        },
+        {
+          "text": "/sdd-lifecycle .specs/active/0024-send-next-step-to-assistant.md",
+          "intent": "Then, after a READY verdict: close the spec"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model, other family",
+      "about": [
+        "A fresh reviewer checks every acceptance criterion against evidence and gives a verdict. Only after a READY verdict, close the spec with the second prompt.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model from another family than the one that built it: a reviewer tends to pass what its own family wrote.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/active/0028-plan-state-aware-next-step.md": {
+    "state": "Active",
+    "rule": "S-ACTIVE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-6",
+      "case": "NS-6-open",
+      "lines": [
+        {
+          "intent": "Continue with T-001 Freeze the Baseline as snapshots",
+          "text": "Implement T-001 of .specs/active/0028-plan-state-aware-next-step.plan.md"
+        },
+        {
+          "intent": "Not sure where it stands? Let the agent report first",
+          "text": "/sdd-plan .specs/active/0028-plan-state-aware-next-step.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Continue",
+      "short": "Implement T-001",
+      "line": "Implement T-001 of .specs/active/0028-plan-state-aware-next-step.plan.md",
+      "lines": [
+        {
+          "text": "Implement T-001 of .specs/active/0028-plan-state-aware-next-step.plan.md",
+          "intent": "Continue with T-001 Freeze the Baseline as snapshots"
+        },
+        {
+          "text": "/sdd-plan .specs/active/0028-plan-state-aware-next-step.md",
+          "intent": "Not sure where it stands? Let the agent report first"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "same chat or new chat · fast model",
+      "about": [
+        "The agent builds this one step, runs its check, ticks it and stops. When it stops, the Studio shows the next step; a working agreement such as a test review may stop it earlier.",
+        "Same chat or new chat: the plan holds the state of the work; after a break, let the agent report first. Fast model: one small, well-described step.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/backlog/0025-plan-map-navigation-and-progress.md": {
+    "state": "Backlog",
+    "rule": "S-BACKLOG",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-9",
+      "case": "NS-9",
+      "lines": [
+        {
+          "intent": "Have the spec challenged, then plan it",
+          "text": "/sdd-clarify .specs/backlog/0025-plan-map-navigation-and-progress.md"
+        },
+        {
+          "intent": "Then: write the plan",
+          "text": "/sdd-plan .specs/backlog/0025-plan-map-navigation-and-progress.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Challenge",
+      "short": "/sdd-clarify",
+      "line": "/sdd-clarify .specs/backlog/0025-plan-map-navigation-and-progress.md",
+      "lines": [
+        {
+          "text": "/sdd-clarify .specs/backlog/0025-plan-map-navigation-and-progress.md",
+          "intent": "Have the spec challenged, then plan it"
+        },
+        {
+          "text": "/sdd-plan .specs/backlog/0025-plan-map-navigation-and-progress.md",
+          "intent": "Then: write the plan"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model",
+      "about": [
+        "A fresh reader looks for gaps, contradictions and untestable criteria. Then write the plan with the second prompt, in any chat.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model: the step reasons over the whole spec or plan.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/backlog/0026-send-defaults-and-wording.md": {
+    "state": "Backlog",
+    "rule": "S-BACKLOG",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-9",
+      "case": "NS-9",
+      "lines": [
+        {
+          "intent": "Have the spec challenged, then plan it",
+          "text": "/sdd-clarify .specs/backlog/0026-send-defaults-and-wording.md"
+        },
+        {
+          "intent": "Then: write the plan",
+          "text": "/sdd-plan .specs/backlog/0026-send-defaults-and-wording.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Challenge",
+      "short": "/sdd-clarify",
+      "line": "/sdd-clarify .specs/backlog/0026-send-defaults-and-wording.md",
+      "lines": [
+        {
+          "text": "/sdd-clarify .specs/backlog/0026-send-defaults-and-wording.md",
+          "intent": "Have the spec challenged, then plan it"
+        },
+        {
+          "text": "/sdd-plan .specs/backlog/0026-send-defaults-and-wording.md",
+          "intent": "Then: write the plan"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model",
+      "about": [
+        "A fresh reader looks for gaps, contradictions and untestable criteria. Then write the plan with the second prompt, in any chat.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model: the step reasons over the whole spec or plan.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/backlog/0027-attach-spec-when-sending.md": {
+    "state": "Backlog",
+    "rule": "S-BACKLOG",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-9",
+      "case": "NS-9",
+      "lines": [
+        {
+          "intent": "Have the spec challenged, then plan it",
+          "text": "/sdd-clarify .specs/backlog/0027-attach-spec-when-sending.md"
+        },
+        {
+          "intent": "Then: write the plan",
+          "text": "/sdd-plan .specs/backlog/0027-attach-spec-when-sending.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Challenge",
+      "short": "/sdd-clarify",
+      "line": "/sdd-clarify .specs/backlog/0027-attach-spec-when-sending.md",
+      "lines": [
+        {
+          "text": "/sdd-clarify .specs/backlog/0027-attach-spec-when-sending.md",
+          "intent": "Have the spec challenged, then plan it"
+        },
+        {
+          "text": "/sdd-plan .specs/backlog/0027-attach-spec-when-sending.md",
+          "intent": "Then: write the plan"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "new chat · strong model",
+      "about": [
+        "A fresh reader looks for gaps, contradictions and untestable criteria. Then write the plan with the second prompt, in any chat.",
+        "New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread. Strong model: the step reasons over the whole spec or plan.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  },
+  ".specs/done/0001-workspace-discovery-project-recognition.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-3",
+      "text": "Done — no FeatherSpec step left."
+    },
+    "stepView": null,
+    "tips": null
+  },
+  ".specs/done/0002-spec-repository-parser.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-3",
+      "text": "Done — no FeatherSpec step left."
+    },
+    "stepView": null,
+    "tips": null
+  },
+  ".specs/done/0003-spec-lifecycle-readiness-model.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-3",
+      "text": "Done — no FeatherSpec step left."
+    },
+    "stepView": null,
+    "tips": null
+  },
+  ".specs/done/0004-runtime-persistence-event-model.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-3",
+      "text": "Done — no FeatherSpec step left."
+    },
+    "stepView": null,
+    "tips": null
+  },
+  ".specs/done/0005-studio-shell-navigation.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-3",
+      "text": "Done — no FeatherSpec step left."
+    },
+    "stepView": null,
+    "tips": null
+  },
+  ".specs/done/0006-mission-control-dashboard.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-3",
+      "text": "Done — no FeatherSpec step left."
+    },
+    "stepView": null,
+    "tips": null
+  },
+  ".specs/done/0007-spec-board-spec-detail.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-3",
+      "text": "Done — no FeatherSpec step left."
+    },
+    "stepView": null,
+    "tips": null
+  },
+  ".specs/done/0008-spec-activation-agent-start.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-3",
+      "text": "Done — no FeatherSpec step left."
+    },
+    "stepView": null,
+    "tips": null
+  },
+  ".specs/done/0009-agent-provider-abstraction.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-3",
+      "text": "Done — no FeatherSpec step left."
+    },
+    "stepView": null,
+    "tips": null
+  },
+  ".specs/done/0010-first-agent-provider-copilot.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-3",
+      "text": "Done — no FeatherSpec step left."
+    },
+    "stepView": null,
+    "tips": null
+  },
+  ".specs/done/0011-agent-orchestrator-run-lifecycle.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-3",
+      "text": "Done — no FeatherSpec step left."
+    },
+    "stepView": null,
+    "tips": null
+  },
+  ".specs/done/0012-live-agent-activity-monitoring.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-3",
+      "text": "Done — no FeatherSpec step left."
+    },
+    "stepView": null,
+    "tips": null
+  },
+  ".specs/done/0013-studio-visual-design.md": {
+    "state": "Done",
+    "rule": "S-DONE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-3",
+      "text": "Done — no FeatherSpec step left."
+    },
+    "stepView": null,
+    "tips": null
+  }
+}

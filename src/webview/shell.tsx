@@ -1,6 +1,6 @@
 import { createContext, useContext, useSyncExternalStore, type ReactNode } from 'react';
 import type { AreaId } from '../shared/protocol/areas';
-import type { ActionId, NavigationRequest, NavigationTarget, PanelState, ShellView } from '../shared/protocol/messages';
+import type { ActionId, NavigationRequest, NavigationTarget, PanelState, ShellFocus, ShellView } from '../shared/protocol/messages';
 import type { ClientSnapshot, ShellClient, SpecReference } from './client';
 
 export interface Shell {
@@ -8,6 +8,7 @@ export interface Shell {
     state: PanelState | undefined;
     area: AreaId;
     target: NavigationTarget | undefined;
+    focus: ShellFocus | undefined;
     navigate(request: NavigationRequest): void;
     select(reference: SpecReference): void;
     clearSelection(): void;
@@ -34,6 +35,7 @@ export function useShell(): Shell {
         state: snapshot.state,
         area: snapshot.area,
         target: snapshot.view?.target,
+        focus: snapshot.focus,
         navigate: client.navigate,
         select: client.select,
         clearSelection: client.clearSelection,

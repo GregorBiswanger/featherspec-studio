@@ -57,7 +57,7 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
 
     it('AC-018: a card shows number and title, then row 2 with the steps, the criteria and the day, and no chip, sentence, rule ID, description or old label', async () => {
         const text = (await open(boardView([card('0007', { state: 'Review' })]))).querySelector('[data-card]')!.textContent!;
-        expect(text).toBe('0007 Thing 0007Steps 3/7·Criteria 1/42026-11-16');
+        expect(text).toBe('0007 Thing 0007Steps 3/7 · 43%·Criteria 1/4 · 25%2026-11-16');
         expect(text).not.toMatch(/Plan done, waiting for review|S-REVIEW|A summary|Tasks:|Criteria:|Last change:|No summary/);
     });
 
@@ -103,7 +103,7 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
         expect(rows['0001']).toBe('needs a plan2026-11-16');
         expect(rows['0002']).toBe('Blocked: plan status BlockedBlocked: return note n.md2026-11-16');
         expect(rows['0003']).toBe('Deprecated2026-11-16');
-        expect(rows['0004']).toBe('Steps 3/7·Criteria 1/42026-11-16');
+        expect(rows['0004']).toBe('Steps 3/7 · 43%·Criteria 1/4 · 25%2026-11-16');
         expect(container.textContent).not.toContain('R-3');
     });
 
@@ -116,8 +116,8 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
             ]),
         );
         const [only, steps, none] = [...container.querySelectorAll('[data-card]')];
-        expect(only!.querySelector('.card-state')?.textContent).toBe('Criteria 1/4');
-        expect(steps!.querySelector('.card-state')?.textContent).toBe('Steps 3/7');
+        expect(only!.querySelector('.card-state')?.textContent).toBe('Criteria 1/4 · 25%');
+        expect(steps!.querySelector('.card-state')?.textContent).toBe('Steps 3/7 · 43%');
         expect(none!.querySelector('.card-state')).toBeNull();
         expect(none!.hasAttribute('aria-describedby')).toBe(false);
         expect(container.textContent).not.toMatch(/not available|0\/0/);
@@ -128,7 +128,7 @@ describe('AC-008, AC-003: the board renders every field of a card as text', () =
         expect(bar.getAttribute('aria-label')).toBe('Steps');
         expect(bar.getAttribute('aria-valuenow')).toBe('3');
         expect(bar.getAttribute('aria-valuemax')).toBe('7');
-        expect(bar.getAttribute('aria-valuetext')).toBe('Steps 3/7');
+        expect(bar.getAttribute('aria-valuetext')).toBe('Steps 3/7 · 43%');
     });
 
     it('AC-019: the Problems badge is the warning icon with its text, and absent at 0 (negative control)', async () => {
@@ -450,10 +450,10 @@ describe('0017 AC-004: the next step on a card', () => {
         const entry = container.querySelector('[data-card]')!;
         const line = entry.querySelector('.card-step')!;
         expect(entry.lastElementChild).toBe(line);
-        expect(line.querySelector('.step-label')?.textContent).toBe('Next');
+        expect(line.querySelector('.step-text > .visually-hidden')?.textContent).toBe('Next step: ');
         expect(line.querySelector('.step-short')?.textContent).toBe('Implement T-003');
         expect(line.querySelector('.step-intent')?.textContent).toBe('Continue');
-        expect(line.querySelector('.step-text')?.textContent).toBe('Next Continue · Implement T-003');
+        expect(line.querySelector('.step-text')?.textContent).toBe('Next step: Continue · Implement T-003');
         expect(line.querySelector('code.step-short')).not.toBeNull();
         expect(line.querySelector('.step-intent')?.tagName).toBe('SPAN');
         expect(line.querySelector('.step-text')?.getAttribute('title')).toBe('Continue with T-003 Reject money values\nImplement T-003 of .specs/active/0008-y.plan.md\nNot sure where it stands? Let the agent report first\n/sdd-plan .specs/active/0008-y.md');
@@ -502,12 +502,12 @@ describe('0017 AC-005: Copy on a card', () => {
     it('the feedback shows at that Copy only, as Copied, and as Could not copy after a failure', async () => {
         const container = await open(boardView([card('0007', { state: 'Ready', step: STEP }), card('0008', { step: TWO })]));
         await click(copies(container)[0]!);
-        await send({ v: 8, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
+        await send({ v: 11, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
         expect(copies(container).map((button) => button.getAttribute('aria-label')?.split(':')[0])).toEqual(['Copied', 'Copy prompt']);
         expect(container.querySelectorAll('.card-step [role="status"]')[0]?.textContent).toBe(COPIED_TEXT);
         expect(container.querySelectorAll('.card-step [role="status"]')[1]?.textContent).toBe('');
         await click(copies(container)[1]!);
-        await send({ v: 8, kind: 'evt', type: 'copyResult', payload: { ok: false, text: COPY_FAILED_TEXT } });
+        await send({ v: 11, kind: 'evt', type: 'copyResult', payload: { ok: false, text: COPY_FAILED_TEXT } });
         expect(copies(container)[1]?.getAttribute('aria-label')?.split(':')[0]).toBe('Could not copy');
     });
 

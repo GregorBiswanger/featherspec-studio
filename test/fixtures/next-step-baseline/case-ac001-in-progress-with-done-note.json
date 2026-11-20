@@ -1,0 +1,37 @@
+{
+  ".specs/active/0001-tip-splitter.md": {
+    "state": "Active",
+    "rule": "S-ACTIVE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-6",
+      "case": "NS-6-returned",
+      "lines": [
+        {
+          "intent": "Integrate the returned steps",
+          "text": "/sdd-plan .specs/active/0001-tip-splitter.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Integrate",
+      "short": "/sdd-plan",
+      "line": "/sdd-plan .specs/active/0001-tip-splitter.md",
+      "lines": [
+        {
+          "text": "/sdd-plan .specs/active/0001-tip-splitter.md",
+          "intent": "Integrate the returned steps"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "same chat or new chat · fast model",
+      "about": [
+        "The agent checks each returned step against its files, runs its check and the quality gates, then ticks the steps and removes the return notes. Paste it once every worker you started is back.",
+        "Same chat or new chat: the plan holds the state of the work; after a break, let the agent report first. Fast model: one small, well-described step.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  }
+}

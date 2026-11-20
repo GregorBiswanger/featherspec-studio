@@ -22,9 +22,15 @@ export interface ShellActionsPort {
     copyMergePrompt(): Promise<void>;
 }
 
+export interface HandOverEntry {
+    modifiedMs?: number;
+    size?: number;
+}
+
 export interface ShellModel {
     project: ProjectRead;
     lifecycle: LifecycleModel;
+    handOvers?: Readonly<Record<string, HandOverEntry>>;
 }
 
 export interface ShellModelSource {

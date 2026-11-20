@@ -210,6 +210,46 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
         expect(parseRules('[data-board-state="Active"] { --fs-tint: red; }').filter((rule) => rule.selectors.some((selector) => /Active/.test(selector)))).toHaveLength(1);
     });
 
+    it('0025 AC-014: the step motifs take next and returned-blocked from theme variables only, through --fs-tint', () => {
+        expect(rulesFor(css, '[data-tint="focusBorder"]').some((rule) => rule.body.includes('--fs-tint: var(--vscode-focusBorder)'))).toBe(true);
+        expect(rulesFor(css, '.step-chip .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);
+        expect(rulesFor(css, '.step-card-toggle .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);
+        expect(css).not.toMatch(/\.step-(?:chip|card)[^{]*\{[^}]*#[0-9a-fA-F]{3,8}/);
+    });
+
+    it('0025 AC-017: the highlight is an outline from theme variables, with no transition inside prefers-reduced-motion: reduce', () => {
+        const rule = rulesFor(css, '.step-card[data-highlight]').find((entry) => entry.body.includes('outline'))!;
+        expect(rule.body).toMatch(/outline:\s*2px solid var\(--vscode-contrastActiveBorder, var\(--vscode-focusBorder\)\)/);
+        expect(rule.body).toMatch(/transition:[^;]*\b150ms/);
+        expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\s*\* \{\s*transition: none !important;/);
+    });
+
+    it('0025 AC-017: a card row aligns its cards to their start, and the card title shows at most two lines', () => {
+        const row = rulesFor(css, '.plan-group').map((entry) => entry.body).join(';');
+        expect(row).toMatch(/align-items:\s*(?:start|flex-start)/);
+        const title = rulesFor(css, '.step-card-title').map((entry) => entry.body).join(';');
+        expect(title).toMatch(/-webkit-line-clamp:\s*2/);
+        expect(title).toMatch(/display:\s*-webkit-box/);
+        expect(title).toMatch(/-webkit-box-orient:\s*vertical/);
+        expect(title).toMatch(/overflow:\s*hidden/);
+    });
+
+    it('0025 AC-016: the ways block takes the same highlight rule as a card', () => {
+        expect(rulesFor(css, '.plan-ways[data-highlight]').some((entry) => entry.body.includes('outline: 2px solid'))).toBe(true);
+    });
+
+    it('0026 AC-010: the default tag is marked beyond colour, and the radios of the ways take theme variables only (a planted hex colour is found)', () => {
+        const tag = rulesFor(css, '.plan-way-tag');
+        expect(tag.length).toBeGreaterThan(0);
+        expect(tag.some((entry) => /font-weight:\s*600/.test(entry.body) && /text-decoration:\s*underline/.test(entry.body))).toBe(true);
+        const radios = rulesFor(css, '.plan-way input[type="radio"]');
+        expect(radios.some((entry) => /accent-color:\s*var\(--vscode-/.test(entry.body))).toBe(true);
+        expect(rulesFor(css, '.plan-way input[type="radio"]:focus-visible').some((entry) => /var\(--vscode-contrastActiveBorder, var\(--vscode-focusBorder\)\)/.test(entry.body))).toBe(true);
+        const mine = [...tag, ...radios, ...rulesFor(css, '.plan-way input[type="radio"]:focus-visible')].map((entry) => entry.body).join('\n');
+        expect(mine).not.toMatch(/#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(/);
+        expect('.plan-way-tag { color: #ff0000; }').toMatch(/#[0-9a-fA-F]{3,8}\b/);
+    });
+
     it('0022 AC-026: the chip and the column header icon take their colour from --fs-tint', () => {
         expect(rulesFor(css, '.state-chip .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);
         expect(rulesFor(css, '.column-heading .icon').some((rule) => /color:\s*var\(--fs-tint\)/.test(rule.body))).toBe(true);
@@ -665,8 +705,19 @@ describe('0022 AC-001, AC-003, AC-027, AC-028: Overview rows follow the list wid
         expect(rule).toMatch(/grid-template-rows:\s*subgrid/);
         expect(rule).toMatch(/grid-column:\s*1 \/ -1/);
         expect(rulesFor(css, '.ov-row-item > .next-step-copy').map((entry) => entry.body).join(';')).toMatch(/grid-area:\s*copy/);
-        for (const [selector, area] of [['.ov-row .ov-number', 'number'], ['.ov-row .ov-title', 'title'], ['.ov-state', 'state'], ['.ov-row .ov-problem', 'problem'], ['.ov-row .step-text', 'step']] as const) {
+        for (const [selector, area] of [['.ov-row .ov-number', 'number'], ['.ov-row .ov-title', 'title'], ['.ov-state', 'state'], ['.ov-row .ov-problem', 'problem'], ['.ov-row-item > .step-text', 'step']] as const) {
             expect(rulesFor(css, selector).map((entry) => entry.body).join(';'), selector).toMatch(new RegExp(`grid-area:\\s*${area}\\b`));
+        }
+    });
+
+    it('0025 AC-027: the step text is a grid item beside the row button, inert except for its link, with the left inset in the narrow layout', () => {
+        const rule = rulesFor(css, '.ov-row-item > .step-text').map((entry) => entry.body).join(';');
+        expect(rule).toMatch(/grid-area:\s*step/);
+        expect(rule).toMatch(/pointer-events:\s*none/);
+        expect(rulesFor(css, '.ov-row-item > .step-text .file-link').map((entry) => entry.body).join(';')).toMatch(/pointer-events:\s*auto/);
+        expect(rulesFor(css, '.ov-row-item > .step-text').some((entry) => entry.container === NARROW && /padding-left:\s*12px/.test(entry.body))).toBe(true);
+        for (const condition of [WIDE, MIDDLE, NARROW]) {
+            expect(areasOf(condition, '.ov-row-item').flat(), condition).toContain('step');
         }
     });
 
@@ -990,3 +1041,52 @@ describe('0024 AC-009, AC-003: the split button\'s stylesheet', () => {
     });
 });
 
+
+describe('0027 AC-003: the attachment line', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+
+    it('.send-attach and its chip use theme variables only, 11 px like the coach line, and break only at the separators the markup gives', () => {
+        expect(declarations(css).filter((declaration) => declaration.selectors.some((selector) => selector.includes('.send-attach')))).toEqual([]);
+        expect(css).not.toContain('send-attach');
+    });
+
+    it('in the Overview row the line spans the row like the coach line, in the three container widths', () => {
+        expect(declarations(css).filter((declaration) => declaration.selectors.includes('.ov-row-item > .send-attach'))).toEqual([]);
+        expect(declarations(css).some((declaration) => declaration.selectors.includes('.ov-row-item') && declaration.property === 'grid-template-columns')).toBe(true);
+    });
+
+    it('negative control: the scan finds a planted anywhere break and a colour literal', () => {
+        const planted = declarations('.send-attach { overflow-wrap: anywhere; color: #fff; }');
+        expect(planted.filter((declaration) => /anywhere/.test(declaration.value))).toHaveLength(1);
+        expect(planted.filter((declaration) => /#[0-9a-fA-F]{3,8}\b/.test(declaration.value))).toHaveLength(1);
+    });
+});
+
+describe('0031 AC-013: the gap between two prompt lines of a Next step', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const GAP = /^(\d+(?:\.\d+)?)em$/;
+
+    function gapOf(source: string): number | undefined {
+        const found = declarations(source).filter((declaration) => declaration.selectors.includes('.next-step-lines li + li') && declaration.property === 'margin-top');
+        const value = GAP.exec(found[found.length - 1]?.value ?? '');
+        return value === null ? undefined : Number(value[1]);
+    }
+
+    it('0031 AC-013 the line items are separated by 1em through 1.5em, for the detail and the Plan map header alike', () => {
+        const gap = gapOf(css);
+        expect(gap).toBeGreaterThanOrEqual(1);
+        expect(gap).toBeLessThanOrEqual(1.5);
+        expect(declarations(css).filter((declaration) => declaration.selectors.some((selector) => selector.includes('next-step-lines li') && selector !== '.next-step-lines li + li' && /margin/.test(declaration.property)))).toEqual([]);
+    });
+
+    it('0031 AC-013 the gap inside an item (button to Tip) stays 6px', () => {
+        const inside = declarations(css).filter((declaration) => declaration.selectors.includes('.next-step-lines li') && declaration.property === 'gap');
+        expect(inside.map((declaration) => declaration.value)).toEqual(['6px']);
+    });
+
+    it('negative control: a gap of 0.5em or 2em is found out of range, a missing rule is undefined', () => {
+        expect(gapOf('.next-step-lines li + li { margin-top: 0.5em; }')).toBe(0.5);
+        expect(gapOf('.next-step-lines li + li { margin-top: 2em; }')).toBe(2);
+        expect(gapOf('.next-step-lines li { margin-top: 1.25em; }')).toBeUndefined();
+    });
+});

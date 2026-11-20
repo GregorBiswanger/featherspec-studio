@@ -59,7 +59,7 @@ describe('BR-02, AC-009: start area and memory', () => {
     it.each([
         ['an unknown area', { v: 1, area: 'settings' }],
         ['the removed area agentCenter', { v: 1, area: 'agentCenter' }],
-        ['another version', { v: 9, area: 'board' }],
+        ['another version', { v: 10, area: 'board' }],
         ['garbage', 'board'],
         ['a damaged selection', { v: 1, area: 'board', selection: { stem: 4 } }],
     ])('a damaged remembered value (%s) gives the Overview and no selection', async (_name, memory) => {
@@ -372,5 +372,89 @@ describe('0020 AC-017: a remembered Spec Explorer shows Overview', () => {
         expect(current.service.view().area).toBe('overview');
         expect(current.service.view().selection).toBeUndefined();
         expect(current.service.view().notice).toBeUndefined();
+    });
+});
+
+describe('0025 AC-006 (a): a step or ways target travels once', () => {
+    interface FakePanel {
+        messages: Array<{ view: unknown; focus?: { n: number; stem: string; step?: string; ways?: true; heading?: true } }>;
+        hello(): void;
+        close(): void;
+    }
+
+    function panelOf(current: ShellWorld): FakePanel {
+        const messages: FakePanel['messages'] = [];
+        const push = (): void => void messages.push(current.service.shellEvent());
+        const subscription = current.service.onDidChangeView(push);
+        return {
+            messages,
+            hello() {
+                current.service.panelReady();
+                push();
+            },
+            close() {
+                subscription.dispose();
+                current.service.panelGone();
+            },
+        };
+    }
+
+    const step = { area: 'planMap' as const, target: { kind: 'spec' as const, stem: '0002-b', step: 'T-003' } };
+
+    it('0025 AC-006 (a): an activation reaches the webview in exactly one message; a model update, a reloaded hello and a change of area carry none', async () => {
+        const current = await ready();
+        const panel = panelOf(current);
+        panel.hello();
+        panel.messages.length = 0;
+        await current.service.handlers.navigate(step);
+        expect(panel.messages.map((message) => message.focus)).toEqual([{ n: 1, stem: '0002-b', step: 'T-003' }]);
+        panel.messages.length = 0;
+        await current.service.refresh();
+        await current.service.handlers.navigate({ area: 'board' });
+        panel.hello();
+        await current.service.handlers.setSideWidth({ fraction: 0.4 });
+        expect(panel.messages.length).toBeGreaterThan(0);
+        expect(panel.messages.every((message) => message.focus === undefined)).toBe(true);
+    });
+
+    it('0025 AC-006 (a): two activations of one link give two messages with focus, n counting up', async () => {
+        const current = await ready();
+        const panel = panelOf(current);
+        panel.hello();
+        panel.messages.length = 0;
+        await current.service.handlers.navigate(step);
+        await current.service.handlers.navigate(step);
+        expect(panel.messages.map((message) => message.focus?.n)).toEqual([1, 2]);
+    });
+
+    it('0025 AC-006 (a): an activation that opens the panel reaches it in the first message after hello, and in none before', async () => {
+        const current = await ready();
+        current.service.open({ via: 'start' });
+        await current.service.handlers.navigate({ area: 'planMap', target: { kind: 'spec', stem: '0002-b', ways: true } });
+        const panel = panelOf(current);
+        expect(panel.messages).toEqual([]);
+        panel.hello();
+        panel.hello();
+        expect(panel.messages.map((message) => message.focus)).toEqual([{ n: 1, stem: '0002-b', ways: true }, undefined]);
+    });
+
+    it('0025 AC-006 (a): a spec target without step or ways carries no focus; heading asks for the heading; the stored target keeps no step', async () => {
+        const current = await ready();
+        const panel = panelOf(current);
+        panel.hello();
+        panel.messages.length = 0;
+        await current.service.handlers.navigate({ area: 'planMap', target: { kind: 'spec', stem: '0002-b' } });
+        await current.service.handlers.navigate({ area: 'planMap', target: { kind: 'spec', stem: '0002-b', heading: true } });
+        expect(panel.messages.map((message) => message.focus)).toEqual([undefined, { n: 1, stem: '0002-b', heading: true }]);
+        expect(current.service.view().target).toEqual({ kind: 'spec', stem: '0002-b' });
+    });
+
+    it('0025 AC-006 (a): a focus pending while no panel is open is dropped by a plain open', async () => {
+        const current = await ready();
+        await current.service.handlers.navigate(step);
+        current.service.open({ via: 'start' });
+        const panel = panelOf(current);
+        panel.hello();
+        expect(panel.messages.map((message) => message.focus)).toEqual([undefined]);
     });
 });

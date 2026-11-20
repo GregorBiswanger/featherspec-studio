@@ -165,6 +165,7 @@ Rules:
   rounded down, together with both numbers and the formula text. A `done/` entry with any other
   status (a contradiction, PD-021) counts in the divisor only. When the divisor is 0, progress
   is "not available".
+  *Amended by 0025 (PD-082): rounded half up, at most 99% until all are done, with the formula of 0025 U-04 (PD-079; 0025 §5.4, AC-013).*
 - **BR-05 Running** (Gregor, Q3). The *Running* figure counts the runs of the active project
   whose current status is an open state. There is no "recovery pending" figure (PD-024): a run
   left open by an earlier session arrives as `Interrupted` (0004 BR-004) and falls under BR-06.
@@ -472,6 +473,7 @@ error text, prompts or provider payloads (AC-026). It sends no telemetry (handof
 - **AC-020** If the active project has zero specs, then the system shall show "No specs yet"
   with a pointer to `/sdd-specify`. *(PD-036; the panel-level states are 0005's)*
   *Amended by 0018 (PD-062): → 0018 AC-011.*
+  *Amended by 0029 (setup not run): AC-020 — while `/sdd-setup` has not run (0029 §6.1) the welcome of 0029 §6.3 instead.*
 - **AC-021** The system shall show every state, attention reason and highlighted-run status as
   text, with colour only in addition.
 

@@ -7,11 +7,19 @@ export const ASSISTANT_KEY = 'assistant';
 
 export interface Offer {
     assistant: AssistantId;
+    attaches?: boolean;
 }
 
-export function offerOf(value: unknown, present: readonly string[]): Offer | undefined {
+export function attachesOf(offer: Offer): boolean {
+    return offer.attaches ?? ASSISTANTS[offer.assistant].attachesSpec;
+}
+
+export function offerOf(value: unknown, present: readonly string[], attaching?: (id: AssistantId) => boolean): Offer | undefined {
     const assistant = ASSISTANT_IDS.find((id) => id === value);
-    return assistant !== undefined && present.includes(ASSISTANTS[assistant].extensionId) ? { assistant } : undefined;
+    if (assistant === undefined || !present.includes(ASSISTANTS[assistant].extensionId)) {
+        return undefined;
+    }
+    return attaching === undefined ? { assistant } : { assistant, attaches: attaching(assistant) };
 }
 
 export function extensionPresence(host: AssistantHostPort): SettingPort {

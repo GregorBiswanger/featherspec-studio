@@ -164,6 +164,10 @@
       {
         "command": "featherspec-studio.tree.openPlan",
         "title": "Open Plan"
+      },
+      {
+        "command": "featherspec-studio.tree.showInPlanMap",
+        "title": "Show in Plan Map"
       }
     ],
     "viewsContainers": {
@@ -215,6 +219,10 @@
         {
           "command": "featherspec-studio.tree.openPlan",
           "when": "false"
+        },
+        {
+          "command": "featherspec-studio.tree.showInPlanMap",
+          "when": "false"
         }
       ],
       "view/title": [
@@ -239,6 +247,11 @@
           "command": "featherspec-studio.tree.copyNextStep",
           "when": "view == featherspec-studio.navigator && viewItem =~ /\\bstep\\b/",
           "group": "inline"
+        },
+        {
+          "command": "featherspec-studio.tree.showInPlanMap",
+          "when": "view == featherspec-studio.navigator && viewItem =~ /\\bmap\\b/",
+          "group": "spec@0"
         },
         {
           "command": "featherspec-studio.tree.openSpec",

@@ -9,7 +9,7 @@ import { AC001_FIXTURE, modelFor, type SpecInput } from './testing/projects';
 async function project(specs: SpecInput[], extraFiles: Record<string, string> = {}) {
     const model = await modelFor(specs, extraFiles);
     const resolver = createSpecResolver(model);
-    return { now: projectNow(model, resolver), upNext: projectUpNext(model, resolver) };
+    return { now: projectNow(model, resolver).rows, upNext: projectUpNext(model, resolver) };
 }
 
 describe('0018 AC-004: Now', () => {
@@ -26,9 +26,9 @@ describe('0018 AC-004: Now', () => {
         expect(now.map((row) => row.state)).toEqual(['Blocked', 'Review', 'Review', 'Active']);
     });
 
-    it('has no cap: seven entries give seven rows', async () => {
+    it('0026 AC-007: seven entries give five rows (0018 O-2 refined: the cap is five)', async () => {
         const { now } = await project(Array.from({ length: 7 }, (_, index) => ({ number: String(index + 1).padStart(4, '0'), kind: 'Active' as const })));
-        expect(now).toHaveLength(7);
+        expect(now).toHaveLength(5);
     });
 
     it('a row carries state text, the title, the next step and no problem for a healthy spec', async () => {
@@ -134,7 +134,7 @@ describe('0021 AC-009, AC-010: the coach line of the first Now row', () => {
     async function rowsWith(specs: SpecInput[], tips?: ReturnType<typeof parseStepTipSettings>) {
         const model = await modelFor(specs);
         const resolver = createSpecResolver(model);
-        return { now: projectNow(model, resolver, tips), upNext: projectUpNext(model, resolver) };
+        return { now: projectNow(model, resolver, tips).rows, upNext: projectUpNext(model, resolver) };
     }
 
     it('only now[0] carries tips, those of its case; the other Now rows and Up next carry none', async () => {
@@ -183,7 +183,7 @@ describe('0024 AC-003: only the first Now row with a step carries the send view'
     async function rowsWith(specs: SpecInput[], offer?: typeof OFFER_A | { assistant: 'claudeCode' }, tips: ReturnType<typeof parseStepTipSettings> | undefined = undefined) {
         const model = await modelFor(specs);
         const resolver = createSpecResolver(model);
-        return { now: projectNow(model, resolver, tips, offer), upNext: projectUpNext(model, resolver) };
+        return { now: projectNow(model, resolver, tips, offer).rows, upNext: projectUpNext(model, resolver) };
     }
 
     it('now[0] carries send with the default target of its case; later Now rows and Up next carry none', async () => {
@@ -195,16 +195,16 @@ describe('0024 AC-003: only the first Now row with a step carries the send view'
             ],
             OFFER_A,
         );
-        expect(now[0]?.send).toEqual({ assistant: 'copilot', target: 'new', targets: ['new', 'current'] });
+        expect(now[0]?.send).toEqual({ assistant: 'copilot', attach: { name: '0001-thing.md', path: '.specs/active/0001-thing.md' }, target: 'new', targets: ['new', 'current'] });
         expect('send' in now[1]!).toBe(false);
         expect(upNext.rows.every((row) => !('send' in row))).toBe(true);
     });
 
     it('Claude Code gives a new chat only; the Active case of Copilot is the current chat', async () => {
         const claude = await rowsWith([{ number: '0001', kind: 'Review' }], { assistant: 'claudeCode' });
-        expect(claude.now[0]?.send).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
+        expect(claude.now[0]?.send).toEqual({ assistant: 'claudeCode', attach: { name: '0001-thing.md', path: '.specs/active/0001-thing.md' }, target: 'new', targets: ['new'] });
         const active = await rowsWith([{ number: '0001', kind: 'Active' }], OFFER_A);
-        expect(active.now[0]?.send).toMatchObject({ assistant: 'copilot', target: 'current' });
+        expect(active.now[0]?.send).toMatchObject({ assistant: 'copilot', target: 'new' });
     });
 
     it('without an offer no row carries send and the rows equal the rows of the earlier build', async () => {

@@ -88,6 +88,16 @@ describe('0024 AC-005: Send makes exactly the calls of §6.4, in order, and leav
         expect(w.written).toEqual([]);
     });
 
+    it('0026 AC-001 Given: Copilot, Active 0001-tip-splitter with T-003 open, the main part records newChat, then open', async () => {
+        const w = offered('copilot');
+        await w.send(request('copilot', 'new', 'Implement T-003 of .specs/active/0001-tip-splitter.plan.md'));
+        expect(w.host.calls).toEqual([
+            { command: 'workbench.action.chat.newChat', args: [] },
+            { command: 'workbench.action.chat.open', args: [{ query: 'Implement T-003 of .specs/active/0001-tip-splitter.plan.md', isPartialQuery: true }] },
+        ]);
+        expect(w.host.calls.some((call) => /submit|accept/i.test(call.command))).toBe(false);
+    });
+
     it('Claude Code, new chat: claude-vscode.editor.open with undefined and the line', async () => {
         const w = offered('claudeCode');
         const result = await w.send(request('claudeCode', 'new'));

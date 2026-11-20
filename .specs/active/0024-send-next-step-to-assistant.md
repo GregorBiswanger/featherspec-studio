@@ -43,10 +43,13 @@ Developer, one role (0001–0007), with Copilot, Claude Code or any other assist
 
 ### Out of scope
 
+*Amended by 0025 (PD-082): the Plan map header's first line follows this spec's Send rules as the detail's does (0025 §5.3, AC-009, AC-010).*
+
 - Codex — because it cannot be prefilled (PD-074); by PD-068 it is not offered and stays Copy prompt (A-003, OP-002).
 - Submitting, choosing a model or mode, reading the answer — because the human submits (PD-068) and PD-055.
 - A "current chat" target for Claude Code — because V-2 verified only the new tab (OP-003).
 - Prompt wording per assistant (08 S-5) — because both assistants run 0021's prompts as they are (PD-072, PD-074).
+  *Amended by 0027 (PD-082, PD-083): the prompt stays the line; only Claude Code's prefilled text adds ` @<spec path>`; the clipboard and Copy prompt carry the line alone (0027 §6.4, §6.6).*
 - A quick pick on the first click (08 S-1) — because PD-068 keeps Copy prompt until the user chooses (A-002).
 - Send on further detail lines, other rows, cards, tree, status bar, quick pick, the zero-spec state, the plan map
   (0023), 0014's setup copies — because only the two places show the session advice (0021 A-002; A-005).
@@ -107,10 +110,16 @@ configuration and extension changes (AC-010).
 - **Place:** where Send is offered, the detail's first next-step line and the first Now row, where it has a line (0021
   §6.5, 0022 §4.4 (2)), show a split button instead of 0021's Copy prompt: main part and arrow part side by side, one
   primary control (A-013).
+  *Amended by 0025 (PD-082): not on returned work's `Integrate` line while U-08 shows: it is secondary (0025 §5.6, AC-026).*
+  *Amended by 0026 (PD-082): the first Now row's split button is secondary; the detail's first line holds the one primary control (0026 §6.5, AC-024).*
+  *Amended by 0027 (PD-082, PD-083): followed by 0027 §6.3's attachment line where the view carries one; it stays during feedback (0027 AC-003).*
+  *Amended by 0031 (follow-up Send): also each follow-up line of the detail and the Plan map header, as a secondary split button (0031 §6.1).*
 - **Main part:** text `Send to <Name>` (`Copilot`, `Claude Code`; A-011). It sends to the default target: Copilot
   `new chat` where the first line's session (0021 §6.1, §6.2) is `new chat`, else `current chat`; Claude Code always
   `new chat` (A-007). Name and tooltip `Send to <Name> (<target>): <line>`, `<target>` = `new chat` · `current chat`.
   *Current chat* is the chat Copilot shows now, the one `open` fills (V-2); 0021's "same chat" continues there.
+  *Amended by 0026 (PD-080): 0021's coach line calls it current (`current or new chat`, 0026 §6.2).*
+  *Amended by 0026 (PD-078): `new chat` for both assistants and every step (0026 §6.1, AC-001); the example of AC-005 records `newChat`, then `open`; A-007 is void; the Send items are `menuitemradio`, the active one checked (0026 AC-022).*
 - **Arrow part:** a button with a down-pointing glyph (`aria-hidden`; no icon font, 0021 A-008), name `More actions:
   <line>`, tooltip `More actions`, `aria-haspopup="menu"`, `aria-expanded`. Its menu (`role="menu"`, labelled by the
   arrow part; items `role="menuitem"`, each named by its text; nothing else in it): Copilot `Send to a new chat`, `Send
@@ -127,6 +136,7 @@ configuration and extension changes (AC-010).
   `Opened in <Name>: <line>`, §7's sentence as tooltip and announced in its live region; Copy prompt item and fallback —
   the texts, names and announcements of 0021 §6.4 and 0016 T-19. The main part keeps `min-width: 22ch`; the arrow
   part's target is at least 24 × 24 px (WCAG 2.2 SC 2.5.8).
+  *Amended by 0027 (PD-082, PD-083): for a Send whose attachment 0027 §6.5 drops, 0027 §7's sentence without the spec as tooltip and announcement (0027 AC-009).*
 
 ### 6.4 Send (S-4, PD-074: exactly these calls; A-006)
 
@@ -136,6 +146,8 @@ configuration and extension changes (AC-010).
 | Copilot · current chat | `workbench.action.chat.open` with `{ query: <line>, isPartialQuery: true }` |
 | Claude Code · new chat | `claude-vscode.editor.open` with the arguments `undefined`, `<line>` |
 
+*Amended by 0027 (PD-082, PD-083): where the Send view carries an attachment, the calls are 0027 §6.4's (Copilot's `open` argument adds `attachFiles: [<spec URI>]`, Claude Code's text adds ` @<spec path>`); otherwise unchanged (0027 AC-004, AC-005, AC-006).*
+
 The request names the assistant and target the control shows and its line. If the effective value no longer names
 that assistant (none, or the other one), the host copies as Copy prompt does, with no warning and no Output line.
 Otherwise, before the first call, it checks in order: `getExtension` returns the assistant's extension; it is active,
@@ -143,6 +155,10 @@ else the host activates it (A-008); `vscode.commands.getCommands()` holds every 
 and calls have not all settled 5000 ms after its activation has failed; a later result changes nothing (A-015).
 `<line>` is the full prompt the control shows (0021 §6.3, 0017 §8), never intent or coach text; Send leaves the
 clipboard alone.
+
+*Amended by 0027 (PD-082, PD-083): the prompt stays the line; only Claude Code's prefilled text adds ` @<spec path>`; the clipboard and Copy prompt carry the line alone (0027 §6.4, §6.6).*
+
+*Amended by 0027 (PD-082, PD-083): then 0027 §6.5's check: the spec path is a spec entry of the current model and the file exists, within the same 5000 ms (0027 AC-009, AC-010).*
 
 ### 6.5 Fallback (S-4)
 
@@ -158,6 +174,8 @@ The Studio calls no command that submits a chat input, never calls `workbench.ac
 command: the host takes the calls from §6.4's table only. Send, the menu and Open Settings create, change, move or
 delete no workspace file, write no setting and reach no network.
 
+*Amended by 0027 (PD-082, PD-083): the send request may also hold `attach`, a spec path; the host attaches nothing else (0027 §6.5); the search adds `preserveInput`, `modelSelector` (0027 AC-007).*
+
 ### 6.7 Open Settings (S-1)
 
 Command `featherspec-studio.openSettings`, title `FeatherSpec Studio: Open Settings`, icon `$(gear)`, third in the
@@ -167,6 +185,8 @@ Specs view's toolbar (group `navigation`, after 0020's Open and Refresh) and in 
 ### 6.8 About this step (0021 §6.6)
 
 While Send is offered the toggletip's third paragraph is §7's Send sentence; the fourth is §7's settings sentence always.
+
+*Amended by 0027 (PD-082, PD-083): followed by 0027 §7's update sentence where 0027 §6.2's version gate withholds an attachment (0027 AC-011).*
 
 ## 7. Texts (English, PD-016; text modules and manifest, asserted literally; confirmed by the click test, PD-076)
 
@@ -182,6 +202,8 @@ While Send is offered the toggletip's third paragraph is §7's Send sentence; th
 | Toggletip `Send to <Name> puts the prompt into its chat and sends nothing: choose the model there, check the prompt, then send it.` | 0021 §6.6 paragraph 3, while Send is offered |
 | Toggletip `Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt.` | 0021 §6.6 paragraph 4 |
 | Command `FeatherSpec Studio: Open Settings` | — |
+*Amended by 0026 (PD-078): row Main part — name and tooltip `Send to <Name> (new chat): <line>` for every step; `(current chat)` names no main part any more (0026 §6.1, AC-001).*
+*Amended by 0027 (PD-082, PD-083): followed by 0027 §7's update sentence where 0027 §6.2's version gate withholds an attachment (0027 AC-011).*
 
 ## 8. Error cases and edge cases
 
@@ -193,6 +215,7 @@ While Send is offered the toggletip's third paragraph is §7's Send sentence; th
   the checklist line re-checks it with the VS Code version (AC-015, AC-017); Copy prompt stays in the menu.
 - A hanging activation or call → the fallback after 5000 ms; a chat that opens later holds the prompt too (A-015).
 - Unsent text in Copilot's current chat → what `open` does with it is Copilot's; V-2 did not test it (OP-004).
+  *Amended by 0026 (PD-078): closed: `open` replaces a draft only through the menu item `Send to the current chat` (0026 §6.1, AC-019).*
 - Two activations → two Sends (two new chats for new chat), also while the first is pending (A-015). The step changes
   before activation → 0017 §8; the setting changes assistant before activation → copy, no warning (§6.4).
 - Restricted Mode → the user value (§6.1); Send starts no agent and runs no workspace code (0005 §11 holds); the
@@ -211,21 +234,33 @@ with both assistants of §6.2. A *Send control* is a button or menu item whose t
 - **AC-001** The manifest shall contribute `featherspec-studio.assistant` in 0021's configuration with the type, default, enum, labels, descriptions, description and scope of §6.1 and §7 literally; `capabilities.untrustedWorkspaces.restrictedConfigurations` shall be exactly `["featherspec-studio.assistant"]`; a case-insensitive search of the manifest shall find none of `codex`, `chatgpt`, `openai`.
 - **AC-002** For each value `none`, `copilot`, `claudeCode`, `codex`, `""`, `42` and unset, each with `GitHub.copilot-chat`, `anthropic.claude-code`, `openai.chatgpt` all present, with none, and (for `copilot`, `claudeCode`) with only the other assistant's, the system shall offer Send exactly for `copilot` and `claudeCode` with their own extension present; in every other case the detail and the Overview shall render the same DOM as with `none` and hold no Send control.
 - **AC-003** Where Send is offered, the detail's first next-step line and the first Now row, where it has a line, shall render §6.3's split button with §7's texts, names, tooltips and menu items for that assistant in that order, both parts in the primary colours (0016 AC-017); with a first Now row without a line, no Now row shall hold a Send control; no further detail line, Now row, Up next or Problems row, card, plan-map element or empty state shall render a Send control, and tree items, status bar entry and quick pick shall be as with `none`.
+  *Amended by 0025 (PD-082): the Plan map header's first line follows this spec's Send rules as the detail's does (0025 §5.3, AC-009, AC-010).*
+  *Amended by 0027 (PD-082, PD-083): followed by 0027 §6.3's attachment line where the view carries one; it stays during feedback (0027 AC-003).*
 - **AC-004** The main part's target shall be, with Copilot, `new chat` for the NS-5 and NS-9 fixtures and `current chat` for NS-2, NS-4, each NS-6 case, NS-7, NS-8 and NS-10; with Claude Code `new chat` for every fixture.
+  *Amended by 0026 (PD-078): the target is `new chat` for every step and both assistants (0026 AC-001).*
 - **AC-005** When the developer activates a Send (main part or menu item), the host shall make, after §6.4's checks, exactly the calls of §6.4's row for that assistant and target, in order, with deep-equal arguments, and write nothing to the clipboard; the main part shall show nothing new while the Send is pending, then §6.3's success feedback until 2000 ms after the last result, then its text again.
   > **Given** Copilot, Active `.specs/active/0001-tip-splitter.md` with T-003 open **When** the developer activates the main part **Then** the stub records exactly one executed command: `workbench.action.chat.open` with `{ query: "Implement T-003 of .specs/active/0001-tip-splitter.plan.md", isPartialQuery: true }`.
+  *Amended by 0027 (PD-082, PD-083): where the Send view carries an attachment, the calls are 0027 §6.4's (Copilot's `open` argument adds `attachFiles: [<spec URI>]`, Claude Code's text adds ` @<spec path>`); otherwise unchanged (0027 AC-004, AC-005, AC-006).*
 - **AC-006** If, when the developer activates a Send, the extension is missing, activating it rejects, `getCommands()` lacks a command of the row, a call rejects, or checks and calls have not settled 5000 ms after the activation (fake timers), then the system shall make no call after that point, put exactly the line on the clipboard, show `Copied` (or `Could not copy`) on the main part, show the matching warning of §7 once as a warning notification without actions (`Cmd+V` where the platform is `darwin`, else `Ctrl+V`) and write one Output line with the cause of §7 that does not contain the line; a result after the 5000 ms shall change nothing; one fixture per cause and assistant. If the effective value no longer names the assistant the request names, the system shall copy as Copy prompt does, with no warning and no Output line.
 - **AC-007** Across every Send of AC-005 and AC-006 each executed command shall be one of `workbench.action.chat.newChat`, `workbench.action.chat.open`, `claude-vscode.editor.open`, and each `workbench.action.chat.open` call shall carry `isPartialQuery: true`; the protocol's guard shall reject a send request that holds a key outside assistant, target and line, or a target §6.2 does not list for that assistant. A case-insensitive search of `src` without test files and of `package.json` shall find none of `submit`, `acceptInput`, `sendToNewChat`, `autoSend`, `isPartialQuery: false`, `chatgpt`, `github.copilot.`, `inlineChat`, `editorChat`, `vscode.lm`, `vscode://`; `workbench.action.chat.open` shall occur exactly once there, and each string starting with `workbench.action.chat.` or `claude-vscode.` shall be one of those three.
+  *Amended by 0027 (PD-082, PD-083): the send request may also hold `attach`, a spec path; the host attaches nothing else (0027 §6.5); the search adds `preserveInput`, `modelSelector` (0027 AC-007).*
 - **AC-008** The arrow part and its menu shall follow §6.3's keys and pointer rules, each rule a test; an Escape in the open menu shall leave the side panel open, and below 900 px the detail shown (0022 G-4); opening the menu shall close an open toggletip and opening a toggletip shall close the menu; while closed, `aria-expanded` shall be `false` and no `role="menu"` element shall be in the DOM.
 - **AC-009** The stylesheet shall give the main part `min-width: 22ch`, the arrow part a width and height of at least 24 px, and the menu `position: absolute`; while the feedback shows, the split button's DOM shall keep its elements and order.
+  *Amended by 0027 (PD-082, PD-083): followed by 0027 §6.3's attachment line where the view carries one; it stays during feedback (0027 AC-003).*
 - **AC-010** When the setting changes or VS Code's extensions change event fires, the detail and the Overview shall show the new offer within 500 ms after the host receives the event (PD-047), keeping selection and area; an open menu shall close when the offer changes; focus in the menu or on a split button shall move to the Copy prompt that replaces it, or to the arrow part where the split button stays; focus elsewhere shall stay.
 - **AC-011** While the workspace is in Restricted Mode or the window is a reader, AC-002–AC-009 shall hold for the value VS Code returns for the setting.
 - **AC-012** No Send, menu item, Open Settings or offer change shall create, change, move or delete a workspace file or write a setting (0017 AC-023's test, 0021 AC-017 extended); 0015 AC-020's network scan shall pass unchanged.
 - **AC-013** The manifest shall contribute `featherspec-studio.openSettings` with §6.7's title and icon in the Specs view's `view/title` group `navigation` after `featherspec-studio.refresh`; executing it shall make exactly the call `workbench.action.openSettings` with `@ext:GregorBiswanger.featherspec-studio`; the toggletip shall show §7's two sentences literally as §6.8 places them, with and without an offer.
+  *Amended by 0027 (PD-082, PD-083): followed by 0027 §7's update sentence where 0027 §6.2's version gate withholds an attachment (0027 AC-011).*
 - **AC-014** Every test at the commit on which this spec's implementation starts that decides a statement §5 does not replace shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI. A script compares the test titles of both commits; the plan lists every title missing at the head, a renamed one included, with the replaced statement or the head title that replaces it.
+  *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
+  *Amended by 0025 (PD-082): also except the tests 0025 AC-020 lists against a statement 0025 §4 changes.*
+  *Amended by 0026 (PD-082): also except the tests 0026 AC-015 lists against a statement 0026 §5 changes.*
+  *Amended by 0027 (PD-082, PD-083): also except the tests 0027 AC-014 lists against a statement 0027 §5 changes.*
 - **AC-015** The specs of §5 shall carry its notes; a literal search of `README.md` shall find `featherspec-studio.assistant`, `Send to Copilot`, `Send to Claude Code`, `sends nothing` and `Open Settings`, and of `CHANGELOG.md` under the version in preparation `featherspec-studio.assistant` and `Send to`; `docs/release-checklist.md` shall carry AC-016–AC-019 and one line each for GitHub Copilot, Claude Code (each with the VS Code version, against §6.2's; the releaser re-runs AC-017 on newer ones) and Codex (Copy prompt only; re-check when a Codex version accepts a prompt).
 - **AC-016** *(manual, preview harness by the orchestrator, then Gregor in a real window)* Guideline 12: detail and first Now row with Copilot and with Claude Code chosen, menu closed and open, in Dark, Light and High Contrast at 1600 px and 1000 px window width with the side panel open at its default and at 0022 G-2's minimum width, and at a Studio panel of 800 px (detail alone, 0022 G-4): no text of the split button is cut, the open menu shows fully inside the Studio panel without scrolling, both parts show a visible focus outline, each view holds at most two primary controls; the orchestrator records the screenshots in the plan.
 - **AC-017** *(manual, Gregor, per assistant: GitHub Copilot and Claude Code; he records their and VS Code's versions)* On `tip-splitter`, from the detail of an Active spec (NS-6) and of a Review spec (NS-5), the main part and each Send item open the named chat with the prompt in the input and nothing sent; after Gregor sends it himself, the prompt runs as the FeatherSpec command or plan step it names; with Copilot, Gregor records whether unsent text in the current chat is kept or replaced (OP-004).
+  *Amended by 0026 (PD-078): records the draft for `Send to the current chat`; the checklist's "decide whether the current chat stays the default target" goes (0026 AC-016).*
 - **AC-018** *(manual, Gregor)* Settings UI: "Assistant" under "FeatherSpec Studio" with the three labels, reached by the toolbar gear; with the chosen assistant's extension disabled or with only Codex installed, every surface shows Copy prompt only and nothing names Codex; a workspace value overrides the user value in a trusted workspace and is ignored in Restricted Mode.
 - **AC-019** *(manual, Gregor; PD-069 click test on an HTML draft before `/sdd-plan`)* Gregor says without asking what Send to <Name> does (opens, fills, sends nothing) and which chat it uses, and confirms or changes §7's texts; the plan records his answers.
 
@@ -273,6 +308,10 @@ with both assistants of §6.2. A *Send control* is a button or menu item whose t
 | A-013 | The split button is one primary control, both parts in the primary colours (proxy) | Guideline 8 counts actions, not parts; 0022's count stays | §5, AC-003, AC-016 |
 | A-014 | An assistant outside the Studio's extension host counts as not installed (proxy) | `getExtension` sees that host; the Studio is a workspace extension | Remote windows show Copy prompt |
 | A-015 | A Send not settled after 5000 ms has failed; a second activation while one is pending sends again (proxy) | 08 S-4 "scheitert er: kopieren"; a hang must still end on the clipboard; a later chat merely duplicates the prompt | §6.4, §6.5, AC-006 |
+*Amended by 0026 (PD-078): void: every step defaults to `new chat` (0026 §6.1).*
+*Amended by 0031 (follow-up Send): A-005 — Send is also offered on each follow-up line of the detail and the Plan map header, as a secondary split button (0031 §6.1).*
+
+*Amended by 0025 (PD-082): the Plan map header's first line follows this spec's Send rules as the detail's does (0025 §5.3, AC-009, AC-010).*
 
 ## 12. Open points
 
@@ -286,6 +325,7 @@ with both assistants of §6.2. A *Send control* is a button or menu item whose t
   target; AC-017 records the behaviour; if text is lost, Gregor decides whether the current chat stays. Not blocking.
   VS Code's source (`chatActions.ts`, main, read 2026-11-18) sets the input with `isPartialQuery`, which suggests a
   draft is replaced; the plan's *Research* holds the reading, AC-017 decides.
+  *Amended by 0026 (PD-078): closed by PD-078 (0026 §6.1).*
 - OP-005 `/sdd-clarify` 2026-11-18 (S68): 42 findings, 7 blocking, resolved in one pass at Gregor's standing request
   (`0024-findings.md`; cross-spec with 0023). Readings; say so if one is wrong: (a) the first Now row only where it
   has a line; (b) feedback runs from the result; (c) 5000 ms end a hanging Send (A-015); (d) the warning is a VS Code

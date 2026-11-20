@@ -367,7 +367,7 @@ describe('AC-020: updates keep the focus and the scroll container', () => {
 describe('0021 AC-014: Escape with the About this step toggletip open', () => {
     async function withTip(): Promise<HTMLElement> {
         const container = await board(SELECTED);
-        await send(detailEvent(detailView({}, { rule: 'NS-5', lines: [{ text: '/sdd-compile k', intent: 'Have the result verified' }], tips: { coach: 'new chat · strong model', about: ['one', 'two', 'three', 'four'] } })));
+        await send(detailEvent(detailView({}, { rule: 'NS-5', lines: [{ text: '/sdd-compile k', intent: 'Have the result verified' }], tips: { coach: 'Tip: Use a new chat with a strong model.', about: ['one', 'two', 'three', 'four'] } })));
         return container;
     }
 

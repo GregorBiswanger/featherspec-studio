@@ -24,7 +24,7 @@ export type Situation =
     | { kind: 'line'; line: ProjectLineState }
     | { kind: 'notRead'; project: ProjectInfo; projects: number }
     | { kind: 'current'; project: ProjectInfo; projects: number; spec: SpecStep; steps: SpecStep[] }
-    | { kind: 'none'; project: ProjectInfo; projects: number; ready: number; steps: SpecStep[] };
+    | { kind: 'none'; project: ProjectInfo; projects: number; ready: number; steps: SpecStep[]; setupRun?: 'not run' };
 
 export function escapeMarkdown(text: string): string {
     return text.replace(/[\r\n]+/g, ' ').replace(/[!-/:-@[-`{-~]/g, (character) => `\\${character}`);

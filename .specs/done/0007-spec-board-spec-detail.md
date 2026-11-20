@@ -594,6 +594,7 @@ run `/sdd-specify`. While a column holds no card before filtering, it shall show
 hint. The board and the detail view shall show no loading state and no load-error state of
 their own. *(PD-036)*
 *Amended by 0018 (PD-062): no column hint; narrow strip (0018 AC-014); zero specs per 0018 AC-011.*
+*Amended by 0029 (setup not run): AC-021 — while `/sdd-setup` has not run (0029 §6.1) the board shows the welcome of 0029 §6.3 instead of "No specs yet".*
 
 **AC-022** The board shall show exactly the cards that match every filter that is set: the
 board state, the provider of the latest run ("No run" included), and a named spec set by its

@@ -147,7 +147,7 @@ describe('0013 §3.2: the panel row', () => {
     });
 });
 
-function rowFor(stem: string, number: string, title: string, state: OverviewView['now'][number]['state'], extra: Partial<OverviewView['now'][number]> = {}): OverviewView['now'][number] {
+function rowFor(stem: string, number: string, title: string, state: OverviewView['now']['rows'][number]['state'], extra: Partial<OverviewView['now']['rows'][number]> = {}): OverviewView['now']['rows'][number] {
     return { spec: { stem, number, title, found: true }, state, status: state, problems: 0, ...extra };
 }
 
@@ -155,7 +155,7 @@ const STEP_PLAN = { intent: 'Continue', short: 'Implement T-003', line: 'Impleme
 
 function withRows(): OverviewView {
     const view = sampleView();
-    view.now = [rowFor('0001-a', '0001', 'Alpha', 'Blocked', { step: STEP_PLAN }), rowFor('0002-b', '0002', 'Beta', 'Active', { problems: 2 })];
+    view.now = { rows: [rowFor('0001-a', '0001', 'Alpha', 'Blocked', { step: STEP_PLAN }), rowFor('0002-b', '0002', 'Beta', 'Active', { problems: 2 })], more: 0, stems: [] };
     view.upNext = { rows: [rowFor('0003-c', '0003', 'Gamma', 'Ready'), rowFor('0004-d', '0004', 'Delta', 'Backlog', { status: 'needs a plan' })], more: 3, stems: ['0003-c', '0004-d', '0005-e', '0006-f', '0007-g'] };
     return view;
 }
@@ -190,10 +190,11 @@ describe('0018 AC-006: a spec row on one line', () => {
         expect(drill.querySelector('.ov-number')?.textContent).toBe('0001');
         expect(drill.querySelector('.ov-title')?.textContent).toBe('Alpha');
         expect(drill.querySelector('.ov-status')?.textContent).toBe('Blocked');
-        expect(drill.querySelector('.step-label')?.textContent).toBe('Next');
-        expect(drill.querySelector('.step-short')?.textContent).toBe('Implement T-003');
-        expect(drill.querySelector('.step-intent')?.textContent).toBe('Continue');
-        expect(drill.querySelector('.step-text')?.textContent).toBe('Next Continue · Implement T-003');
+        expect(row.querySelector('.step-text > .visually-hidden')?.textContent).toBe('Next step: ');
+        expect(row.querySelector('.step-short')?.textContent).toBe('Implement T-003');
+        expect(row.querySelector('.step-intent')?.textContent).toBe('Continue');
+        expect(row.querySelector('.step-text')?.textContent).toBe('Next step: Continue · Implement T-003');
+        expect(drill.querySelector('.step-text')).toBeNull();
         expect(row.querySelector('.next-step-copy')?.getAttribute('aria-label')).toBe('Copy prompt: Implement T-003 of .specs/active/0001-a.plan.md');
         expect(drill.textContent).not.toContain('continue');
         expect(drill.querySelector('br')).toBeNull();
@@ -248,7 +249,8 @@ describe('0018 AC-006: a spec row on one line', () => {
         const row = nowRow(container, '0001-a');
         const copy = row.querySelector<HTMLButtonElement>('.next-step-copy')!;
         expect(row.querySelector('.ov-row')?.contains(copy)).toBe(false);
-        expect(row.querySelector('.ov-row')?.nextElementSibling).toBe(copy);
+        expect(row.querySelector('.ov-row')?.nextElementSibling).toBe(row.querySelector('.step-text'));
+        expect(row.querySelector('.step-text')?.nextElementSibling).toBe(copy);
         await click(copy);
         await pressKey(copy, 'Enter');
         await pressKey(copy, ' ');
@@ -256,7 +258,7 @@ describe('0018 AC-006: a spec row on one line', () => {
         expect(sent.filter((type) => type === 'copyText')).toHaveLength(3);
         expect(sent).not.toContain('navigate');
         expect(posted.find((message) => message.type === 'copyText')?.payload).toEqual({ text: 'Implement T-003 of .specs/active/0001-a.plan.md' });
-        await send({ v: 8, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
+        await send({ v: 11, kind: 'evt', type: 'copyResult', payload: { ok: true, text: COPIED_TEXT } });
         expect(copy.textContent).toBe('Copied');
     });
 
@@ -328,11 +330,11 @@ describe('0018 AC-004, AC-005, AC-012: Now and Up next', () => {
 });
 
 describe('0021 AC-009, AC-010: the coach line of the first Now row', () => {
-    const TIPS = { coach: 'any chat · fast model', about: ['one', 'two', 'three', 'four'] };
+    const TIPS = { coach: 'Tip: Use any chat with a fast model.', about: ['one', 'two', 'three', 'four'] };
 
     function withTips(): OverviewView {
         const view = withRows();
-        view.now[0] = { ...view.now[0]!, tips: TIPS };
+        view.now.rows[0] = { ...view.now.rows[0]!, tips: TIPS };
         return view;
     }
 
@@ -343,7 +345,7 @@ describe('0021 AC-009, AC-010: the coach line of the first Now row', () => {
         const item = nowRow(container, '0001-a');
         const coach = item.querySelector('div.ov-coach')!;
         expect(coach.parentElement).toBe(item);
-        expect(coach.querySelector('.ov-coach-text')!.textContent).toBe('any chat · fast model');
+        expect(coach.querySelector('.ov-coach-text')!.textContent).toBe('Tip: Use any chat with a fast model.');
         const copy = item.querySelector('button.next-step-copy')!;
         expect(copy.nextElementSibling?.getAttribute('role')).toBe('status');
         expect(copy.nextElementSibling?.nextElementSibling).toBe(coach);
@@ -362,11 +364,11 @@ describe('0021 AC-009, AC-010: the coach line of the first Now row', () => {
 
 describe('0021 AC-014, AC-009: the About this step toggletip of the first Now row', () => {
     const ABOUT = ['It builds one step.', 'Same chat: it continues.', 'A fast model is enough.', 'Nothing changes on disk.'];
-    const TIPS = { coach: 'any chat · fast model', about: ABOUT };
+    const TIPS = { coach: 'Tip: Use any chat with a fast model.', about: ABOUT };
 
     function withTips(): OverviewView {
         const view = withRows();
-        view.now[0] = { ...view.now[0]!, tips: TIPS };
+        view.now.rows[0] = { ...view.now.rows[0]!, tips: TIPS };
         return view;
     }
 
@@ -376,7 +378,7 @@ describe('0021 AC-014, AC-009: the About this step toggletip of the first Now ro
         expect(toggles).toHaveLength(1);
         const coach = nowRow(container, '0001-a').querySelector('.ov-coach')!;
         const toggle = coach.querySelector<HTMLButtonElement>('button.toggletip')!;
-        expect(toggle.previousElementSibling?.textContent).toBe('any chat · fast model');
+        expect(toggle.previousElementSibling?.textContent).toBe('Tip: Use any chat with a fast model.');
         expect(toggle.getAttribute('aria-label')).toBe('About this step');
         expect(nowRow(container, '0002-b').querySelector('.toggletip')).toBeNull();
         expect(container.querySelector('[data-up-next] .toggletip')).toBeNull();
@@ -394,5 +396,23 @@ describe('0021 AC-014, AC-009: the About this step toggletip of the first Now ro
     it('shows no question-mark button without tips', async () => {
         const container = await open(withRows());
         expect(container.querySelector('.toggletip')).toBeNull();
+    });
+});
+
+describe('0026 AC-005: every Overview row with a step hides its Next step: label', () => {
+    it('Now, Up next and Problems rows: the step text starts with the visually hidden label and shows no Next', async () => {
+        const view = withRows();
+        view.upNext = { rows: [rowFor('0003-c', '0003', 'Gamma', 'Ready', { step: STEP_PLAN })], more: 0, stems: ['0003-c'] };
+        const container = await open(view);
+        const texts = [...container.querySelectorAll<HTMLElement>('.step-text')];
+        expect(texts.length).toBeGreaterThanOrEqual(2);
+        for (const text of texts) {
+            expect(text.firstElementChild?.className).toBe('visually-hidden');
+            expect(text.firstElementChild?.textContent).toBe('Next step: ');
+            const visible = text.cloneNode(true) as HTMLElement;
+            visible.querySelectorAll('.visually-hidden').forEach((hidden) => hidden.remove());
+            expect(visible.textContent).not.toMatch(/Next/);
+        }
+        expect(container.querySelector('[data-row-group="upNext"] .step-text, [data-up-next] .step-text')).not.toBeNull();
     });
 });

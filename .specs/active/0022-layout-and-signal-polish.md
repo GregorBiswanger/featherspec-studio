@@ -58,6 +58,7 @@ decides a staying criterion is lost (AC-017).
 
 - Step texts, short form, button label "Copy prompt", accessible-name wording, coach line, `(?)`, settings — because 0021 owns them.
 - N-9, one summary row for many equal steps in Now — because it is new function, not polish; E-5 decided "not in 0022", Gregor decides after the click test (A-004, OP-004).
+  *Amended by 0026 (PD-082): decided by 0026 §6.5: Now shows at most five rows (09 G-9).*
 - A dimmed overlay below 900 px (07 N-2 alternative) — because PD-075's list or detail replaces the drawer (A-016).
 - The Board's layout at narrow width — because no finding: it keeps its width and scrolls (0018 B-2).
 - What the parser and lifecycle findings say internally — because 0002/0003 tests assert them; only the shown sentence changes (A-009).
@@ -79,6 +80,7 @@ the viewport:
 | above 686 px | one line, as 0018 O-5 (title and state text cut by an ellipsis, full text as tooltip; step and Copy never cut) |
 | 420–686 px | two lines (PD-065 (5)): number and title; then state icon and text, warning icon, "Next" with the short form, Copy |
 | below 420 px | three lines (08 N-2): number and title; state icon and text and warning icon; "Next" with the short form and Copy |
+*Amended by 0026 (PD-082): the step short form without a visible "Next" (0026 §6.3).*
 
 - 686 px is the list width at PD-065 (5)'s 720 px Studio panel (panel − 34 px), so nothing moves while no side panel is shown (A-005).
 - A list takes the area's width: beside the side panel the area keeps at least 360 px (G-2), below 900 px the whole Studio panel (G-4); the rule covers both and VS Code's zoom. In the two- and three-line layouts number and title share their line with nothing else (g03, AC-028).
@@ -86,6 +88,8 @@ the viewport:
 - Titles wrap only between words; a single word wider than its whole line is the one case that breaks inside. Paths and commands follow §4.6.
 - Every Copy stays fully on screen at every list width (WCAG 2.2 SC 2.4.11).
 - First Now row (0021 §6.5, §6.6): the coach line and `?` follow its Copy prompt as the row's last line, aligned with the step, in every layout; the toggletip text shows under that line inside the row and covers no other row.
+  *Amended by 0026 (PD-082): only while the side panel does not show that row's spec; its Copy or split button is secondary (0026 §6.4, AC-024).*
+  *Amended by 0027 (PD-082, PD-083): after 0027 §6.3's attachment line where it shows (0027 AC-003).*
 
 ### 4.2 Specs tree (N-3, N-4, N-5, E-4)
 
@@ -108,14 +112,20 @@ B-6's rule tooltip where one applies. Every other strip is unchanged.
 
 ### 4.4 Button hierarchy (N-6, guideline 8)
 
+*Amended by 0025 (PD-082): not on returned work's `Integrate` line while U-08 shows: it is secondary (0025 §5.6, AC-026).*
+
+*Amended by 0025 (PD-082): the Plan map header's first line is a primary place while the side panel leaves out its Next step; the map with the side panel beside holds at most one primary, a card's Copy prompt is secondary (0025 §5.3, §5.2, AC-010).*
+
 *Amended by 0023 (PD-069): §4.4 classes — also the Plan map tab: way Copies are secondary text buttons, start-line Copies icon buttons, no primary button (0023 AC-010).*
 
 - **Primary** (0016 AC-017's colours), and only these: (1) the side panel's Copy of the next step's first line; (2) the Copy
   of the Overview's first Now row; (3) the one Copy of the zero-spec state (0018 O-8, Overview and
   Board), alone on its screen (A-007). Hence at most two per view.
   *Amended by 0024 (PD-068): §4.4 (1), (2) — where Send is offered, the Copy of (1) and (2) is 0024's split button: both parts are primary and count once (0024 AC-003).*
+  *Amended by 0026 (PD-082): (2) — the first Now row's Copy or split button is secondary; the Overview holds one primary while the selected spec's next step has a line, none without (0026 §6.5, AC-024).*
 - **Secondary text button:** the side panel's Copy of every further line (NS-5, NS-6 with an open plan step
   (PD-072), NS-9); the buttons of the Restricted Mode note and the notice (0005 S7, BR-03; A-013).
+  *Amended by 0031 (follow-up Send): where Send is offered, the Copy of a further line in the detail or the Plan map header is a secondary split button; without an offer as today (0031 §6.1, AC-001, AC-004).*
 - **Icon button** (copy icon, no text): every other next-step Copy — Now rows after the first, Up next
   rows and its empty line, Problems rows, board cards (07 §5.2, A-008).
 - The icon button keeps 0016 §6.5's action and feedback, its name and tooltip as 0021 §6.4 states them:
@@ -139,6 +149,8 @@ B-6's rule tooltip where one applies. Every other strip is unchanged.
 ### 4.6 Paths and commands (N-8)
 
 *Amended by 0023 (PD-069): §4.6 "(this list is complete)" — plus the map's `Files`, way prompts and start lines (0023 §5.3, §5.4).*
+
+*Amended by 0027 (PD-082, PD-083): plus the attachment line's file name (0027 §6.3).*
 
 Every project path and every command line the webview shows — side-panel next-step lines, the
 detail path, a card path, Files links, the place of a project-level problem line (this list is complete) —
@@ -180,6 +192,8 @@ side at the right edge — the side panel's and `main`'s — and a fixed 400 px 
   *Amended by 0024 (PD-068): G-4 — an Escape in an open Send menu closes only the menu; the detail stays shown (0024 AC-008).*
 
 ### 4.8 State at a glance (Gregor's click test, PD-073)
+
+*Amended by 0025 (PD-082): the symbols are replaced by codicon motifs from one step-state table; state words unchanged (0025 §5.5, U-01, AC-014).*
 
 One table gives each state its motif and colour; no surface maps a state itself. Colour is never the
 only cue: each state has its own shape (A-015).
@@ -282,6 +296,7 @@ Decided by unit tests (core, no `vscode`), component tests (jsdom) and styleshee
 
 - **AC-001** The stylesheet shall declare each Overview list an inline-size container and set the row layouts of §4.1 only inside `@container` rules on that list's width at 686 px and 420 px; no `@media` rule shall change an Overview row, its title or state text; no rule shall hold `data-drawer` or lay the side panel over the area; in the first Now row 0021's coach line and `?` shall follow the Copy as the row's last elements, on a line of their own in every layout.
   *Amended by 0024 (PD-068): AC-001 — the first Now row's split button is laid out as its Copy prompt was (0024 AC-009).*
+  *Amended by 0027 (PD-082, PD-083): after 0027 §6.3's attachment line where it shows (0027 AC-003).*
 - **AC-002** No rule shall set `overflow-wrap: anywhere` or `word-break: break-all` on an Overview row title, a card title or head, the side panel's heading or an element of §4.6.
 - **AC-003** A Problems row shall hold its full title and every Problem sentence in the DOM; no rule matching a Problems row, a problem line, a banner line or the side panel's problem list shall set `text-overflow: ellipsis`, a line clamp or `white-space: nowrap`; a Problems row shall take the two-line layout at every list width from 420 px.
 - **AC-004** Each tree row with a step shall carry as description 0021's step or command short form (§4.2), each without a step `<State>` or `Deprecated`; no description shall start with a state name followed by ` · `; the accessible label shall be X-05.
@@ -293,9 +308,14 @@ Decided by unit tests (core, no `vscode`), component tests (jsdom) and styleshee
 - **AC-010** The webview shall style as primary (0016 AC-017's colours) only the Copies of §4.4 (1)–(3); every other next-step Copy shall be the icon button in a list and the secondary button (`--vscode-button-secondaryBackground`, `--vscode-button-secondaryForeground`) in the side panel, as shall the buttons of the Restricted Mode note and the notice.
   *Amended by 0023 (PD-069): AC-010 — also the Plan map tab: no primary button there (0023 AC-010).*
   *Amended by 0024 (PD-068): AC-010 — the split button's two parts are the primary style of (1) and (2) (0024 AC-003).*
+  *Amended by 0025 (PD-082): the Plan map header's first line is a primary place while the side panel leaves out its Next step; the map with the side panel beside holds at most one primary, a card's Copy prompt is secondary (0025 §5.3, §5.2, AC-010).*
+  *Amended by 0026 (PD-082): AC-010 — the first Now row's Copy or split button is secondary, not primary (0026 §6.5, AC-024).*
+  *Amended by 0031 (follow-up Send): AC-010 — where Send is offered, a further line of the detail or the Plan map header shows a secondary split button, not the secondary Copy; without an offer as today (0031 §6.1, AC-003).*
 - **AC-011** With seven Now rows, three Up next rows, a Problems row and a selected NS-5 spec, the Overview shall render exactly two primary buttons and the Board exactly one; with no spec selected, one and zero.
   *Amended by 0023 (PD-069): AC-011 — the Plan map tab adds no primary button; the view holds at most the side panel's (0023 AC-010).*
   *Amended by 0024 (PD-068): AC-011 — a split button counts as one primary control; with an offer the view still holds at most two (0024 AC-003).*
+  *Amended by 0025 (PD-082): the Plan map header's first line is a primary place while the side panel leaves out its Next step; the map with the side panel beside holds at most one primary, a card's Copy prompt is secondary (0025 §5.3, §5.2, AC-010).*
+  *Amended by 0026 (PD-082): "seven Now entries (five rows)"; the Overview holds one primary while the selected spec's next step has a line, none without (0026 AC-024).*
 - **AC-012** When the developer activates an icon Copy by pointer, Enter or Space, the system shall copy the full first line, show the check or warning, 0021 §6.4's name and 0016 T-19's sentence (tooltip and live region) on the same element until 2000 ms after the last activation, then restore it, and select nothing; the stylesheet shall give the icon button a fixed width and height of at least 24 px.
 - **AC-013** Each Problem kind of §6 shall show its sentence literally on each surface of §4.5, and in the webview with the technical reason as tooltip; a problem link's tooltip and accessible description shall be the reason, then 0019 AC-017's text.
 - **AC-014** No sentence X-10…X-24, with every inserted path, value and number replaced by `x`, shall contain `backlog/`, `active/`, `done/`, `**`, `Plan line`, `sibling`, `stem`, `parsing` or `diagnostic`.
@@ -305,6 +325,10 @@ Decided by unit tests (core, no `vscode`), component tests (jsdom) and styleshee
 - **AC-017** Every test at the commit on which this spec's implementation starts that decides a criterion not changed in §5 shall exist at the head and pass; `npm run test:unit` and `npm test` shall pass on Windows and in CI; a script shall compare the test titles of both commits, and the plan shall list every missing title with the changed statement or the head title that replaces it.
   *Amended by 0023 (PD-069): AC-017 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
   *Amended by 0024 (PD-068): AC-017 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
+  *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
+  *Amended by 0025 (PD-082): also except the tests 0025 AC-020 lists against a statement 0025 §4 changes.*
+  *Amended by 0026 (PD-082): also except the tests 0026 AC-015 lists against a statement 0026 §5 changes.*
+  *Amended by 0027 (PD-082, PD-083): also except the tests 0027 AC-014 lists against a statement 0027 §5 changes.*
 - **AC-018** `README.md`, `docs/product/ux-guidelines.md` and `docs/release-checklist.md` shall name the tree groups In progress, Ready, Backlog, Done, and the plan shall list each "Up next" left there as the Overview's set; the README shall name the divider, its reset and the back button below 900 px; `CHANGELOG.md` shall name the changes under the version in preparation; the checklist shall carry AC-019, AC-020, AC-025.
 - **AC-019** *(manual, preview; guideline 12)* In Dark, Light and High Contrast, height 800 px, at window widths 1600 px and 1000 px with VS Code's sidebar open at its default width, at a Studio panel of 920 px, at 800 px and at VS Code zoom level 2, each with a spec selected, on this repository and `fs170-brownfield-mixed`, Overview and Board, Gregor or his delegate shall confirm: no title word split (one wider than its line excepted); every Copy fully visible and reachable by Tab; at most two filled buttons; paths broken only after a separator; whole Problem sentences; the warning on `fs170-brownfield-mixed`'s collapsed Done strip; each state told at a glance, every icon shape distinct, the Problem warning included. Screenshots and verdict in the plan.
   *Amended by 0024 (PD-068): AC-019 "at most two filled buttons" — a split button counts once (0024 AC-003, AC-016).*
@@ -348,6 +372,7 @@ Decided by unit tests (core, no `vscode`), component tests (jsdom) and styleshee
 | A-014 | Where the tree drops the intent, tooltip and accessible label keep it (proxy) | 0021 OP-004; guideline 1 | X-05, AC-004 |
 | A-015 | PD-073's palette (proxy); Review's orange equals the webview's Problem icon colour and differs by shape | PD-073; guideline 7; 0007 §6.7 never colour alone | §4.8, AC-019, AC-026 |
 | A-016 | PD-075's details: the 900 px threshold reused, X-27, back in place of close, 0019's focus rules, focus after a crossing (proxy) | PD-075 names them proxy details; 0019 already switches at 900 px | G-4, AC-029 |
+*Amended by 0026 (PD-082): N-9 is decided by 0026 §6.5.*
 
 ## 11. Open points
 

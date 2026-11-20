@@ -331,7 +331,7 @@ describe('0020 AC-006: the tooltip', () => {
             '`/sdd-compile .specs/active/0004-reviewing.md`',
             'Then\\, after a READY verdict\\: close the spec',
             '`/sdd-lifecycle .specs/active/0004-reviewing.md`',
-            'Steps 0/1',
+            'Steps 0/1 · 0%',
             '`.specs/active/0004-reviewing.md`',
         ]);
     });
@@ -393,12 +393,12 @@ describe('0020 AC-006: the tooltip', () => {
         expect(paragraphs.every((paragraph) => paragraph.length > 0)).toBe(true);
     });
 
-    it('the figures show steps and criteria joined by a dot, the contextValue names step and plan', async () => {
+    it('the figures show steps and criteria joined by a dot, the contextValue names step, plan and map (0025)', async () => {
         const project = await readFixture('studio-0015');
         const model = { project, lifecycle: deriveLifecycle(project) };
         const row = rows(treeOf(model)).find((candidate) => candidate.stem === '0015-focus-on-visibility')!;
-        expect(row.tooltip).toMatch(/\n\nSteps \d+\/\d+ · Criteria 28\/30\n\n/);
-        expect(row.contextValue).toBe('spec step plan');
+        expect(row.tooltip).toMatch(/\n\nSteps \d+\/\d+ · \d+% · Criteria 28\/30 · 93%\n\n/);
+        expect(row.contextValue).toBe('spec step plan map');
         expect(row.planKey).toBe('.specs/active/0015-focus-on-visibility.plan.md');
         expect(row.line).toBe('/sdd-compile .specs/active/0015-focus-on-visibility.md');
     });
@@ -473,6 +473,24 @@ describe('0020 AC-012: the states of the view', () => {
     it('zero specs show the message of the Overview and no rows or badge', async () => {
         const tree = treeOf(await modelOf({}));
         expect(tree).toEqual({ message: 'No specs yet. Start with /sdd-specify', items: [] });
+    });
+
+    it('0029 AC-004 zero specs while setup has not run show the welcome message as text and no row', async () => {
+        const base = await modelOf({});
+        const tree = treeOf({ ...base, project: { ...base.project, setupRun: 'not run' } });
+        expect(tree).toEqual({ message: 'Welcome to FeatherSpec. Set up this project first: run /sdd-setup with the AI assistant of your choice.', items: [] });
+    });
+
+    it('0029 AC-006 negative control: setup run or unknown keeps the message of today', async () => {
+        const base = await modelOf({});
+        expect(treeOf({ ...base, project: { ...base.project, setupRun: 'run or unknown' } }).message).toBe('No specs yet. Start with /sdd-specify');
+    });
+
+    it('0029 AC-007 negative control: with specs and setup not run the tree has its groups and no message', async () => {
+        const base = await modelOf(MIXED);
+        const tree = treeOf({ ...base, project: { ...base.project, setupRun: 'not run' } });
+        expect(tree.message).toBeUndefined();
+        expect(groups(tree)).toHaveLength(4);
     });
 
     it('S6 and Restricted Mode do not change the rows', async () => {

@@ -30,8 +30,9 @@ A spec may deviate only by naming the guideline.
 4. **Native first.** Prefer TreeView, status bar, quick pick, Problems over the webview.
    Tree rows are items with state, not command buttons. The webview is for overview, board and plan map.
 5. **Do not duplicate the editor.** Show the state of a spec (next step, progress, open
-   criteria, next open step, files), not its full text; IDs and "Open" go to the file at the
-   line, beside the panel (`ViewColumn.Beside`).
+   criteria, next open step, files), not its full text; Criterion IDs and "Open" go to the file at the
+   line, beside the panel (`ViewColumn.Beside`); a step ID goes to its card in the Plan map,
+   Ctrl/Cmd+click to the file.
 6. **User language.** No rule IDs (`S-READY`, `R-3`, `NS-7`), no implementation words
    ("model", "persisted", "first observed") in visible text; they may sit in a tooltip.
    Absences that can never be filled (priority, compile verdict, dependencies) are not shown.
@@ -44,7 +45,7 @@ A spec may deviate only by naming the guideline.
    focus, full keyboard path, `aria-live` feedback, empty and error states with a way out.
 10. **Texts** live in the text modules and are asserted literally by tests (English, PD-016).
 11. **Guide, don't crowd.** Session and model advice appears once per view (detail, first Now
-    row), in model classes, never as product-bundled model names; the full reasoning sits
+    row, Plan map header), in model classes, never as product-bundled model names; the full reasoning sits
     behind a `(?)` toggletip that keyboard users reach.
 12. **Check at narrow width.** Every layout change is previewed in Dark, Light and High
     Contrast at 1600 px and 1000 px window width with the side panel open; containers adapt to

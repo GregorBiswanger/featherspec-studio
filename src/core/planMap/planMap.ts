@@ -2,19 +2,17 @@ import type { LineTarget } from '../../shared/protocol/detail';
 import { startLine, stagePrompt } from '../../shared/protocol/planMapTexts';
 import type { PlanGroupView, PlanReturnView, PlanStageKind, PlanStageView, PlanStepState, PlanStepView, PlanUnreadableView, PlanView, PlanWaysView } from '../../shared/protocol/planMap';
 import { plainShort, plainText } from '../board/shortTitle';
+import { CRITERION_CELL } from '../board/situation';
 import { nextStep, openStep } from '../board/nextStep';
 import { taskProgress } from '../board/progress';
 import type { LifecycleEntry } from '../lifecycle/model';
 import type { ShellModel } from '../ports/shell';
-import { STAGE_DELIMITER } from '../specs/parsePlan';
+import { returnedWorkOf } from './returnedWork';
+import { headOf, PARALLEL, SEQUENCE, separatorsOf, STAGE_NUMBER, type StageItem } from './stageLines';
 import type { PlanStage } from '../specs/parsePlan';
 import type { PlanStep } from '../specs/planSteps';
 import type { ReturnNoteEntry, SpecEntry } from '../specs/readProject';
 
-const STEP_ID = /T-\d+/g;
-const STAGE_NUMBER = /^\d+\.[ \t]+/;
-const PARALLEL_MARK = '‖';
-const SEQUENCE_MARK = '→';
 
 interface Context {
     steps: Map<string, PlanStep>;
@@ -23,6 +21,9 @@ interface Context {
     planKey: string;
     next: string | undefined;
     noteLies: boolean;
+    returned: string | undefined;
+    copy: { id: string; line: string } | undefined;
+    traceability: ReadonlyArray<{ criterion: string; state: string }>;
 }
 
 function splitList(raw: string): string[] {
@@ -61,6 +62,16 @@ function stateOf(step: PlanStep, context: Context): PlanStepState {
     return !context.noteLies && context.next === step.id ? 'next' : 'open';
 }
 
+function textOf(raw: string | undefined): { short: string; full: string } | undefined {
+    return raw === undefined ? undefined : { short: plainShort(raw), full: plainText(raw) };
+}
+
+function coverState(id: string, context: Context): 'verified' | 'built' | 'open' | undefined {
+    const rows = context.traceability.filter((row) => CRITERION_CELL.exec(row.criterion.trim())?.[1] === id);
+    const state = rows.length === 1 ? rows[0]!.state.trim() : undefined;
+    return state === 'verified' || state === 'built' || state === 'open' ? state : undefined;
+}
+
 function stepView(id: string, context: Context): PlanStepView {
     const step = context.steps.get(id);
     if (step === undefined) {
@@ -80,39 +91,26 @@ function stepView(id: string, context: Context): PlanStepView {
         files: files === undefined ? [] : splitList(files),
         covers: step.coveredCriteria.map((cover) => {
             const criterion = defined.find((candidate) => candidate.id === cover);
-            return criterion === undefined ? { id: cover } : { id: cover, open: { key: context.spec.key, line: criterion.line } };
+            const state = coverState(cover, context);
+            return { id: cover, ...(criterion === undefined ? {} : { open: { key: context.spec.key, line: criterion.line } }), ...(state === undefined ? {} : { state }) };
         }),
         ...(doText === undefined ? {} : { doText: plainShort(doText) }),
         ...(verify === undefined ? {} : { verify: plainShort(verify) }),
+        ...(state !== 'done' || textOf(fieldText(step.verified)) === undefined ? {} : { verified: textOf(fieldText(step.verified))! }),
+        ...(state !== 'returned' || note?.parsed === undefined || textOf(fieldText(note.parsed.verified.value)) === undefined ? {} : { reported: textOf(fieldText(note.parsed.verified.value))! }),
+        ...(context.copy?.id === id && !context.noteLies ? { copy: context.copy.line } : {}),
         ...(note === undefined || state !== 'returned' ? {} : { returned: returnOf(note) }),
     };
 }
 
-function headOf(line: string): { head: string; description: string } {
-    const delimiter = STAGE_DELIMITER.exec(line);
-    return delimiter === null ? { head: line, description: '' } : { head: line.slice(0, delimiter.index), description: line.slice(delimiter.index + delimiter[0].length) };
-}
-
-function separatorsOf(head: string): Array<{ id: string; sep: '‖' | '→' | undefined }> {
-    const found = [...head.matchAll(STEP_ID)];
-    return found.map((match, index) => {
-        if (index === 0) {
-            return { id: match[0], sep: undefined };
-        }
-        const previous = found[index - 1]!;
-        const between = head.slice(previous.index + previous[0].length, match.index);
-        return { id: match[0], sep: between.includes(PARALLEL_MARK) ? PARALLEL_MARK : between.includes(SEQUENCE_MARK) ? SEQUENCE_MARK : undefined };
-    });
-}
-
-function groupsOf(items: ReturnType<typeof separatorsOf>, context: Context): PlanGroupView[] {
+function groupsOf(items: StageItem[], context: Context): PlanGroupView[] {
     const groups: PlanGroupView[] = [];
     for (const item of items) {
         const last = groups[groups.length - 1];
-        if (last !== undefined && item.sep === PARALLEL_MARK) {
+        if (last !== undefined && item.sep === PARALLEL) {
             last.steps.push(stepView(item.id, context));
         } else {
-            groups.push({ ...(item.sep === SEQUENCE_MARK ? { sep: '→' as const } : {}), steps: [stepView(item.id, context)] });
+            groups.push({ ...(item.sep === SEQUENCE ? { sep: '→' as const } : {}), steps: [stepView(item.id, context)] });
         }
     }
     return groups;
@@ -122,10 +120,10 @@ function unfinished(step: PlanStepView): boolean {
     return step.state === 'next' || step.state === 'open';
 }
 
-function stageView(stage: PlanStage, items: ReturnType<typeof separatorsOf>, description: string, current: boolean, context: Context): PlanStageView {
+function stageView(stage: PlanStage, items: StageItem[], description: string, current: boolean, context: Context): PlanStageView {
     const groups = groupsOf(items, context);
     const steps = groups.flatMap((group) => group.steps).filter((step) => step.state !== 'notFound');
-    const returned = steps.filter((step) => step.state === 'returned').length;
+    const holdsReturned = steps.some((step) => step.state === 'returned');
     const kind: PlanStageKind = stage.kind;
     return {
         number: stage.number,
@@ -134,7 +132,7 @@ function stageView(stage: PlanStage, items: ReturnType<typeof separatorsOf>, des
         parallel: kind === 'parallel' || kind === 'mixed',
         current,
         finished: steps.length > 0 && steps.every((step) => step.state === 'done' || step.state === 'dropped'),
-        ...(returned === 0 ? {} : { returned: { n: returned, m: returned + steps.filter(unfinished).length } }),
+        ...(!holdsReturned || context.returned === undefined ? {} : { returned: context.returned }),
         groups,
     };
 }
@@ -158,6 +156,13 @@ function closingView(raw: string): PlanView['closing'] {
         .map((line) => line.trim())
         .join(' ');
     return { text, short: plainShort(text), full: plainText(text) };
+}
+
+function copyOf(model: ShellModel, entry: LifecycleEntry): { id: string; line: string } | undefined {
+    const next = nextStep(model, entry.key);
+    const line = next !== undefined && 'lines' in next ? next.lines[0]?.text : undefined;
+    const id = line === undefined ? undefined : /^Implement (T-\d+) of /.exec(line)?.[1];
+    return line === undefined || id === undefined ? undefined : { id, line };
 }
 
 export function planOf(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry): PlanView | PlanUnreadableView | undefined {
@@ -184,6 +189,9 @@ export function planOf(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry
         planKey: plan.key,
         next: openStep(model, entry)?.id,
         noteLies: spec.returnNoteKeys.length > 0,
+        returned: returnedWorkOf(model, entry, spec),
+        copy: copyOf(model, entry),
+        traceability: plan.parsed.traceability,
     };
     const rows = plan.parsed.stages.stages
         .map((stage) => {
@@ -213,6 +221,7 @@ export function planOf(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry
         plan: target,
         ...(counted === undefined ? {} : { count: counted }),
         ...(closing === undefined ? {} : { closing: closingView(closing.raw) }),
+        ...(context.returned === undefined ? {} : { returned: context.returned }),
         staged: rows.length > 0,
         stages,
         loose,

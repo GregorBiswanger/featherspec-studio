@@ -2,7 +2,7 @@ export const NEXT_STEP_HEADING = 'Next step';
 
 export const COPY_PROMPT_LABEL = 'Copy prompt';
 
-export const NEXT_STEP_SHORT_LABEL = 'Next';
+export const NEXT_STEP_HIDDEN_LABEL = 'Next step: ';
 
 export const NEXT_STEP_UNREADABLE_TEXT = 'Studio cannot read this spec. See the problem below.';
 
@@ -30,7 +30,7 @@ export function stepShortForm(step: { intent: string; short: string }): string {
     return `${step.intent}${STEP_SHORT_SEPARATOR}${step.short}`;
 }
 
-export type StepCase = 'NS-2' | 'NS-4' | 'NS-4-plan' | 'NS-5' | 'NS-6-open' | 'NS-6-resume' | 'NS-6-returned' | 'NS-6-plan' | 'NS-7' | 'NS-8' | 'NS-9' | 'NS-10';
+export type StepCase = 'NS-2' | 'NS-4' | 'NS-4-plan' | 'NS-5' | 'NS-6-open' | 'NS-6-report' | 'NS-6-resume' | 'NS-6-returned' | 'NS-6-plan' | 'NS-7' | 'NS-8' | 'NS-9' | 'NS-10';
 
 export type SessionKey = 'new' | 'sameOrNew' | 'any';
 
@@ -52,15 +52,15 @@ const PLAN_THEN = 'You read the plan before anything is built.';
 
 export const STEP_GUIDES: Record<StepCase, StepGuide> = {
     'NS-2': {
-        short: 'Fix status',
+        short: 'Move back to Ready',
         session: 'any',
         model: 'fast',
         effect: 'The agent compares folder, status and plan (or both copies of the spec) and proposes the move that brings them in line.',
         then: 'You confirm the move; the Studio follows the files.',
     },
-    'NS-4': { short: 'Unblock', session: 'any', model: 'fast', effect: 'The agent shows the workflow and where every spec stands.', then: BLOCK_THEN },
+    'NS-4': { short: 'Find blocker', session: 'any', model: 'fast', effect: 'The agent shows the workflow and where every spec stands.', then: BLOCK_THEN },
     'NS-4-plan': {
-        short: 'Unblock',
+        short: 'Find blocker',
         session: 'any',
         model: 'strong',
         effect: 'The agent takes in returned work, checks the plan against the code and reports what blocks.',
@@ -74,12 +74,19 @@ export const STEP_GUIDES: Record<StepCase, StepGuide> = {
         then: 'Only after a READY verdict, close the spec with the second prompt.',
     },
     'NS-6-open': { short: 'Continue', session: 'sameOrNew', model: 'fast', effect: 'The agent builds this one step, runs its check, ticks it and stops.', then: BUILD_THEN },
-    'NS-6-resume': {
-        short: 'Resume',
+    'NS-6-report': {
+        short: 'Report',
         session: 'any',
         model: 'fast',
-        effect: 'The agent checks the plan against the code; with every step ticked it closes the plan and recommends the review.',
-        then: 'The spec then shows Verify.',
+        effect: 'The agent checks the plan against the code, brings the ticks and the handoff level and reports where the work stands; it builds nothing yet.',
+        then: 'When the plan and the ticks agree, the Studio shows the step to continue with.',
+    },
+    'NS-6-resume': {
+        short: 'Report',
+        session: 'any',
+        model: 'fast',
+        effect: 'The agent checks the plan against the code and reports where it stands.',
+        then: 'The spec then shows its next step.',
     },
     'NS-6-returned': {
         short: 'Integrate',
@@ -89,14 +96,14 @@ export const STEP_GUIDES: Record<StepCase, StepGuide> = {
         then: 'Paste it once every worker you started is back.',
     },
     'NS-6-plan': {
-        short: 'Plan',
+        short: 'Write plan',
         session: 'any',
         model: 'strongWebSearch',
         effect: 'The agent researches and writes the plan; for a reactivated spec, a fresh plan for the change.',
         then: PLAN_THEN,
     },
     'NS-7': {
-        short: 'Build',
+        short: 'Start',
         session: 'any',
         model: 'fast',
         effect: 'The agent moves the spec to active, builds one step, runs its check, ticks it and stops.',
@@ -110,7 +117,7 @@ export const STEP_GUIDES: Record<StepCase, StepGuide> = {
         effect: 'A fresh reader looks for gaps, contradictions and untestable criteria.',
         then: 'Then write the plan with the second prompt, in any chat.',
     },
-    'NS-10': { short: 'Plan', session: 'any', model: 'strongWebSearch', effect: 'The agent researches and writes the plan as small, verifiable steps.', then: PLAN_THEN },
+    'NS-10': { short: 'Write plan', session: 'any', model: 'strongWebSearch', effect: 'The agent researches and writes the plan as small, verifiable steps.', then: PLAN_THEN },
 };
 
 export const NS2_INTENT = 'Put folder and status back in line';
@@ -122,6 +129,8 @@ export const NS5_INTENT = 'Have the result verified';
 export const NS5_THEN_INTENT = 'Then, after a READY verdict: close the spec';
 
 export const NS6_REPORT_INTENT = 'Not sure where it stands? Let the agent report first';
+
+export const NS6_REPORT_FIRST_INTENT = 'Let the agent report first — the plan and the ticks may differ';
 
 export const NS6_RESUME_INTENT = 'Let the agent report where the plan stands';
 
@@ -135,8 +144,6 @@ export const NS9_INTENT = 'Have the spec challenged, then plan it';
 
 export const NS9_THEN_INTENT = 'Then: write the plan';
 
-export const START_PLAN_INTENT = 'Start implementing the plan';
-
 function withTitle(lead: string, id: string, title: string): string {
     return title === '' ? `${lead}${id}` : `${lead}${id} ${title}`;
 }
@@ -145,27 +152,37 @@ export function continueIntent(id: string, title: string): string {
     return withTitle('Continue with ', id, title);
 }
 
-export function startIntent(id: string | undefined, title: string): string {
-    return id === undefined ? START_PLAN_INTENT : withTitle('Start implementing: ', id, title);
+export function startIntent(id: string, title: string): string {
+    return withTitle('Start implementing: ', id, title);
 }
 
-export const SESSION_WORDS: Record<SessionKey, string> = {
-    new: 'new chat',
-    sameOrNew: 'same chat or new chat',
+export const COACH_TIP_PREFIX = 'Tip:';
+
+export const SESSION_PHRASES: Record<SessionKey, string> = {
+    new: 'a new chat',
+    sameOrNew: 'the current chat or a new one,',
     any: 'any chat',
 };
 
 export const SESSION_REASONS: Record<SessionKey, string> = {
-    new: 'New chat: a fresh session reads the files as a stranger would; what this chat knows cannot be unread.',
-    sameOrNew: 'Same chat or new chat: the plan holds the state of the work; after a break, let the agent report first.',
+    new: 'New chat: a fresh session reads the files as a stranger would; what the current chat knows cannot be unread.',
+    sameOrNew: 'Current or new chat: the plan holds the state of the work; after a break, let the agent report first.',
     any: 'Any chat: the step reads everything it needs from the files.',
 };
 
-export const MODEL_WORDS: Record<ModelKey, { base: 'fast model' | 'strong model'; suffix: string }> = {
-    fast: { base: 'fast model', suffix: '' },
-    strong: { base: 'strong model', suffix: '' },
-    strongOtherFamily: { base: 'strong model', suffix: ', other family' },
-    strongWebSearch: { base: 'strong model', suffix: ', allow web search' },
+export const INTEGRATE_SEND_THEN = 'Send it once every worker you started is back.';
+
+export const SAME_OR_NEW_REASON_LEVELLED = 'Current or new chat: the plan holds the state of the work; after a break, the step first brings the plan up to date.';
+
+export function verifiedWithoutTickReason(id: string): string {
+    return `${id} has a Verified line but no tick.`;
+}
+
+export const MODEL_PHRASES: Record<ModelKey, { base: 'a fast model' | 'a strong model'; suffix: string }> = {
+    fast: { base: 'a fast model', suffix: '' },
+    strong: { base: 'a strong model', suffix: '' },
+    strongOtherFamily: { base: 'a strong model', suffix: ' from another model family' },
+    strongWebSearch: { base: 'a strong model', suffix: ', and allow web search' },
 };
 
 export const MODEL_REASONS: Record<ModelKey, string> = {

@@ -44,7 +44,7 @@ const SPEC_TEXT = [
 
 const FILES = {
     '.specs/active/0001-a.md': SPEC_TEXT,
-    '.specs/active/0001-a.plan.md': `${planText({ status: 'In Progress', rows: [row('AC-001', 'verified'), row('AC-002', 'open')] })}\n## Steps\n\n### T-001 — First\n\n- [x] **Verified (T-001):** 2026-11-16 · green\n\n### ~~T-002 — Dropped~~\n\n- [ ] **Verified (T-002):** —\n`,
+    '.specs/active/0001-a.plan.md': `${planText({ status: 'In Progress', rows: [row('AC-001', 'verified'), row('AC-002', 'open')] })}\n## Steps\n\n### T-001 — First\n\n- [x] **Verified (T-001):** 2026-11-16 · green\n\n### ~~T-002 — Dropped~~\n\n- [ ] **Verified (T-002):** —\n\n### T-003 — Third\n\n- [ ] **Verified (T-003):** —\n`,
     '.memory-bank/activeContext.0001-T-001.md': noteText('DONE'),
 };
 
@@ -295,8 +295,8 @@ describe('0019: the situation picture', () => {
             const model = { project, lifecycle: deriveLifecycle(project) };
             for (const entry of model.lifecycle.entries.filter((candidate) => candidate.plan !== undefined)) {
                 const view = spec(buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history: NO_HISTORY }));
-                const next = view.progress?.steps?.kind === 'steps' ? view.progress.steps.next : undefined;
-                expect(next?.id, `${name} ${entry.key}`).toBe(openStep(model, entry)?.id);
+                const steps = view.progress?.steps?.kind === 'steps' ? view.progress.steps : undefined;
+                expect(steps?.next?.id, `${name} ${entry.key}`).toBe(steps?.returned === undefined ? openStep(model, entry)?.id : undefined);
                 compared += 1;
             }
         }
@@ -442,13 +442,13 @@ describe('0021 AC-009, AC-010: the tips of the detail', () => {
         const next = await nextOf(BACKLOG_FILES, '0002-b', SHOW);
         expect(next.rule).toBe('NS-9');
         expect(next.tips).toEqual(stepTips('NS-9', SHOW));
-        expect(next.tips?.coach).toBe('new chat · strong model');
+        expect(next.tips?.coach).toBe('Tip: Use a new chat with a strong model.');
         expect(next.tips?.about).toHaveLength(4);
     });
 
     it('a hint reaches the coach line of the case', async () => {
         const next = await nextOf(BACKLOG_FILES, '0002-b', parseStepTipSettings(true, { strong: 'X' }));
-        expect(next.tips?.coach).toBe('new chat · strong model (X)');
+        expect(next.tips?.coach).toBe('Tip: Use a new chat with a strong model (X).');
     });
 
     it('without a tips input, and with show false, the view has no tips key and the lines are the same', async () => {
@@ -532,24 +532,24 @@ describe('0024 AC-003, AC-004: the send view of the next step', () => {
     it('NS-9 (a backlog spec): Copilot sends to a new chat, Claude Code to a new chat', async () => {
         const model = await modelOf({ '.specs/backlog/0002-b.md': specText() });
         const key = '.specs/backlog/0002-b.md';
-        expect((await nextOf(model, key, { offer: OFFER_A })).send).toEqual({ assistant: 'copilot', target: 'new', targets: ['new', 'current'] });
-        expect((await nextOf(model, key, { offer: OFFER_B })).send).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
+        expect((await nextOf(model, key, { offer: OFFER_A })).send).toEqual({ assistant: 'copilot', attach: { name: '0002-b.md', path: '.specs/backlog/0002-b.md' }, target: 'new', targets: ['new', 'current'] });
+        expect((await nextOf(model, key, { offer: OFFER_B })).send).toEqual({ assistant: 'claudeCode', attach: { name: '0002-b.md', path: '.specs/backlog/0002-b.md' }, target: 'new', targets: ['new'] });
     });
 
-    it('NS-5 (a Review spec) is a new chat for Copilot; NS-7 (a Ready spec) and NS-6 are the current chat', async () => {
+    it('0026 AC-001: NS-5, NS-7 and NS-6 are all a new chat for Copilot (0024 AC-004 retargeted)', async () => {
         const review = await fixtureModel('studio-0015');
         const reviewNext = await nextOf(review, review.lifecycle.entries[0]!.key, { offer: OFFER_A });
         expect(reviewNext.rule).toBe('NS-5');
-        expect(reviewNext.send).toEqual({ assistant: 'copilot', target: 'new', targets: ['new', 'current'] });
+        expect(reviewNext.send).toEqual({ assistant: 'copilot', attach: { name: '0015-focus-on-visibility.md', path: '.specs/active/0015-focus-on-visibility.md' }, target: 'new', targets: ['new', 'current'] });
         const ready = await fixtureModel('fs110-ready-synthetic');
         const readyNext = await nextOf(ready, '.specs/backlog/0001-ready-feature.md', { offer: OFFER_A });
         expect(readyNext.rule).toBe('NS-7');
-        expect(readyNext.send).toEqual({ assistant: 'copilot', target: 'current', targets: ['new', 'current'] });
+        expect(readyNext.send).toEqual({ assistant: 'copilot', attach: { name: '0001-ready-feature.md', path: '.specs/backlog/0001-ready-feature.md' }, target: 'new', targets: ['new', 'current'] });
         const active = await modelOf(FILES);
         const activeNext = await nextOf(active, '.specs/active/0001-a.md', { offer: OFFER_A });
         expect(activeNext.rule).toBe('NS-6');
-        expect(activeNext.send).toEqual({ assistant: 'copilot', target: 'current', targets: ['new', 'current'] });
-        expect((await nextOf(active, '.specs/active/0001-a.md', { offer: OFFER_B })).send).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
+        expect(activeNext.send).toEqual({ assistant: 'copilot', attach: { name: '0001-a.md', path: '.specs/active/0001-a.md' }, target: 'new', targets: ['new', 'current'] });
+        expect((await nextOf(active, '.specs/active/0001-a.md', { offer: OFFER_B })).send).toEqual({ assistant: 'claudeCode', attach: { name: '0001-a.md', path: '.specs/active/0001-a.md' }, target: 'new', targets: ['new'] });
     });
 
     it('no offer: no send key and the view equals the view without the input; with tips off the send view stays', async () => {
@@ -560,7 +560,9 @@ describe('0024 AC-003, AC-004: the send view of the next step', () => {
         const withTipsOff = await nextOf(model, key, { offer: OFFER_A, tips: parseStepTipSettings(false, {}) });
         expect(withTipsOff.send).toBeDefined();
         expect('tips' in withTipsOff).toBe(false);
-        expect({ ...withTipsOff, send: undefined }).toEqual({ ...plain, send: undefined });
+        // 0031 §6.1: a follow-up line carries its own send view; it is the one difference besides the view-level send.
+        const bare = (view: typeof plain) => ({ ...view, send: undefined, lines: view.lines?.map((line) => ({ ...(line as object), send: undefined })) });
+        expect(bare(withTipsOff)).toEqual(bare(plain));
     });
 
     it('a text-only next step (NS-1, NS-3, NS-11) carries no send view even with an offer', async () => {
@@ -586,3 +588,20 @@ describe('0024 AC-003, AC-004: the send view of the next step', () => {
     });
 });
 
+
+describe('0026 AC-021: the detail says Send, not Paste, when a Send is offered', () => {
+    async function aboutOf(offer: { assistant: 'copilot' | 'claudeCode' } | undefined): Promise<string[]> {
+        const model = await modelOf(FILES);
+        const view = spec(buildDetail({ selection: { stem: '0001-a' }, model, history: NO_HISTORY, tips: parseStepTipSettings(true, {}), ...(offer === undefined ? {} : { offer }) }));
+        return view.nextStep !== undefined && 'tips' in view.nextStep ? (view.nextStep.tips?.about ?? []) : [];
+    }
+
+    it('returned work: with Copilot or Claude Code the then-sentence is Send it once …, with none it stays Paste it once …', async () => {
+        for (const offer of [{ assistant: 'copilot' as const }, { assistant: 'claudeCode' as const }]) {
+            const about = await aboutOf(offer);
+            expect(about[0], offer.assistant).toMatch(/ Send it once every worker you started is back\.$/);
+            expect(about[0]).not.toMatch(/Paste/);
+        }
+        expect((await aboutOf(undefined))[0]).toMatch(/ Paste it once every worker you started is back\.$/);
+    });
+});

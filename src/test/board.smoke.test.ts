@@ -151,6 +151,28 @@ suite('FeatherSpec Studio board smoke', function () {
             registration.dispose();
         }
     });
+
+    test('0027 AC-004: the file URI the host builds survives executeCommand as a real vscode.Uri and names a file that exists', async () => {
+        const folder = (vscode.workspace.workspaceFolders ?? []).find((candidate) => candidate.name === 'fs110-de-active-review');
+        assert.ok(folder, 'the test workspace holds the fs110-de-active-review folder');
+        const host = createAssistantHost();
+        const received: unknown[][] = [];
+        const registration = vscode.commands.registerCommand('featherspec-studio.test.attachProbe', (...args: unknown[]) => void received.push(args));
+        try {
+            const uri = host.fileUri(folder.uri.toString(), SPEC_KEY);
+            await host.execute('featherspec-studio.test.attachProbe', [{ query: `/sdd-clarify ${SPEC_KEY}`, isPartialQuery: true, attachFiles: [uri] }]);
+            await waitFor('the probe to receive the call', () => received.length, (count) => count === 1, { timeoutMs: 10_000 });
+            const argument = received[0]?.[0] as { query?: string; isPartialQuery?: boolean; attachFiles?: unknown[] } | undefined;
+            const seen = argument?.attachFiles?.[0];
+            assert.ok(seen instanceof vscode.Uri, `the probe received ${JSON.stringify(seen)} for ${SPEC_KEY}, not a vscode.Uri`);
+            assert.deepStrictEqual(Object.keys(argument ?? {}).sort(), ['attachFiles', 'isPartialQuery', 'query'], `the probe received the keys of ${JSON.stringify(argument)}`);
+            const stat = await vscode.workspace.fs.stat(seen);
+            assert.strictEqual(stat.type, vscode.FileType.File, `${seen.fsPath} is not a file: ${JSON.stringify(stat)}`);
+            assert.ok(seen.fsPath.replace(/\\/g, '/').endsWith(SPEC_KEY), `${seen.fsPath} does not end with ${SPEC_KEY}`);
+        } finally {
+            registration.dispose();
+        }
+    });
 });
 
 function studioTabs(): vscode.Tab[] {

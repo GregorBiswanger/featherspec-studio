@@ -1,6 +1,7 @@
 import type { SendOutcomeView, SendRequest, SendResultEventPayload } from '../../shared/protocol/assistant';
 import type { OpenFileResultPayload } from '../../shared/protocol/detail';
 import type { BoardRequestType, CopyResultEventPayload } from '../../shared/protocol/messages';
+import type { HandOverPort } from '../assistant/handOver';
 import type { ClipboardPort } from '../ports/board';
 import type { Disposable } from '../ports/host';
 import type { RequestHandlers } from '../shell/messageRouter';
@@ -13,6 +14,7 @@ export interface BoardRequestsDeps {
     openFile: OpenFile;
     clipboard: ClipboardPort;
     send: (request: SendRequest) => Promise<SendOutcomeView>;
+    handOver?: HandOverPort;
 }
 
 export interface BoardRequests {
@@ -51,7 +53,12 @@ export function createBoardRequests(deps: BoardRequestsDeps): BoardRequests {
             boardSetSort: async (payload) => deps.board.setSort(payload.sort),
             boardClearFilters: async () => deps.board.clearFilters(),
             copyText: async (payload) => {
-                copyResults.emit(await copyLine(deps.clipboard, payload.text));
+                const handOver = deps.handOver?.begin(payload.text);
+                const outcome = await copyLine(deps.clipboard, payload.text);
+                if (outcome.ok) {
+                    await handOver?.commit();
+                }
+                copyResults.emit(outcome);
             },
             sendPrompt: async (payload) => {
                 const { token, ...request } = payload;

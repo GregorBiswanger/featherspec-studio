@@ -102,7 +102,7 @@ describe('0016 AC-011: user language on every surface 0016 touched', () => {
 
     it('Overview (Now, Up next, Problems, figures, activity) shows no rule ID or internal word', async () => {
         const view = sampleView();
-        view.now = [{ spec: { stem: '0002-b', number: '0002', title: 'B', path: '.specs/active/0002-b.md', found: true }, state: 'Review', status: 'Review', problems: 1 }];
+        view.now = { rows: [{ spec: { stem: '0002-b', number: '0002', title: 'B', path: '.specs/active/0002-b.md', found: true }, state: 'Review', status: 'Review', problems: 1 }], more: 0, stems: [] };
         view.upNext = { rows: [{ spec: { stem: '0003-c', number: '0003', title: 'C', found: true }, state: 'Backlog', status: 'needs a plan', problems: 0 }], more: 1, stems: ['0003-c', '0004-d'] };
         if (view.activity.available) {
             view.activity = { ...view.activity, open: true };
@@ -156,7 +156,7 @@ describe('0023 AC-015: user language in the Plan section and the Plan map', () =
             ...returned,
             stages: [
                 ...returned.stages.slice(0, 1),
-                stage(2, [{ steps: [step('T-003', 'returned', { returned: { status: 'blocked', reason: 'no access' } }), step('T-004', 'dropped'), step('T-005', 'notFound', { open: undefined })] }], { current: true, returned: { n: 1, m: 2 }, ways: returned.stages[1]!.ways! }),
+                stage(2, [{ steps: [step('T-003', 'returned', { returned: { status: 'blocked', reason: 'no access' } }), step('T-004', 'dropped'), step('T-005', 'notFound', { open: undefined })] }], { current: true, returned: '1 of 2 returned, T-003 blocked · T-004 not back yet', ways: returned.stages[1]!.ways! }),
             ],
             loose: [step('T-009', 'open')],
         };
@@ -213,5 +213,105 @@ describe('0023 AC-015: user language in the Plan section and the Plan map', () =
             expect(word).toMatch(INTERNAL);
         }
         expect('Returned · blocked: no access').not.toMatch(INTERNAL);
+    });
+});
+
+describe('0025 AC-019: user language in the header, the card rows, U-05, U-06 and U-08', () => {
+    const INTERNAL = /S-[A-Z]{3,}|R-[1-7]|NS-\d|\btraceability\b|\bstruck\b|\bsibling\b|\bkind\b|\bstem\b|\bparsing\b/;
+    const U05 = '1 returned, waiting to be integrated: the next step integrates them.';
+    const U08 = '1 of 2 returned · T-004 not back yet';
+
+    function rich(): PlanView {
+        const base = planSample();
+        return {
+            ...base,
+            returned: U08,
+            stages: [
+                stage(1, [{ steps: [step('T-001', 'done', { verified: { short: '2026-11-09 · npm test green', full: '2026-11-09 · npm test green' }, covers: [{ id: 'AC-001', state: 'built' }] })] }], { finished: false }),
+                stage(2, [{ steps: [step('T-003', 'returned', { returned: { status: 'done' }, reported: { short: '2026-11-10 · red → green', full: '2026-11-10 · red → green' } }), step('T-004', 'open', { copy: 'Implement T-004 of p' })] }], { current: true, returned: U08, ways: base.stages[1]!.ways! }),
+            ],
+            loose: [],
+        };
+    }
+
+    const NEXT = { rule: 'NS-6', lines: [{ text: 'Implement T-004 of p', intent: 'Continue with T-004 Step', step: { id: 'T-004', open: { key: 'p', line: 5 } } }], parallel: { stage: 2 } };
+
+    async function whole(area: 'planMap' | 'board'): Promise<string> {
+        const client = createClient({ post: () => undefined });
+        clients.push(client);
+        client.start();
+        mounted = await mount(<App client={client} />);
+        await send(shellEvent(baseView({ area, selection: { stem: '0007-thing', number: '0007' } }), 1));
+        await send(boardEvent(boardView([card('0007')])));
+        await send(detailEvent({ ...(detailView({}, NEXT as never) as SpecDetailView), plan: rich() }));
+        for (const head of mounted.container.querySelectorAll<HTMLButtonElement>('[data-card-toggle]')) {
+            await click(head);
+        }
+        const scoped = [...mounted.container.querySelectorAll<HTMLElement>(area === 'planMap' ? '[data-plan-map]' : '.next-step')];
+        const attributes = scoped.flatMap((root) => [root, ...root.querySelectorAll('[title], [aria-label]')]).flatMap((element) => [element.getAttribute('title'), element.getAttribute('aria-label')]);
+        return [...scoped.map((root) => root.textContent ?? ''), ...attributes].join('\n');
+    }
+
+    it('0025 AC-019: the Plan map with the header, the card rows, U-05 and U-08 holds no rule ID and no internal word', async () => {
+        const text = await whole('planMap');
+        for (const wanted of ['Continue with T-004', 'Verified', 'Reported', 'AC-001 built', U08]) {
+            expect(text, wanted).toContain(wanted);
+        }
+        expect(text).not.toMatch(INTERNAL);
+        expect(text).not.toMatch(FORBIDDEN);
+    });
+
+    it('0025 AC-019: the side panel beside the Board with the parallel hint (U-06) holds no rule ID and no internal word', async () => {
+        const text = await whole('board');
+        expect(text).toContain('Stage 2 can run in parallel · Ways to run it');
+        expect(text.match(INTERNAL)?.[0]).toBeUndefined();
+        expect(text).not.toMatch(FORBIDDEN);
+    });
+
+    it('negative control: the pattern finds a rule ID, traceability, struck and stem', () => {
+        for (const word of ['NS-6', 'R-3', 'the traceability row', 'a struck step', 'the stem']) {
+            expect(word).toMatch(INTERNAL);
+        }
+        expect(`${U05}\n${U08}`).not.toMatch(INTERNAL);
+    });
+});
+
+describe('0026 AC-014: user language in the ways block, its (?) and the Now list', () => {
+    it('each way checked, the (?) text and the Now list with + n more hold no rule ID and no internal word', async () => {
+        const client = createClient({ post: () => undefined });
+        clients.push(client);
+        client.start();
+        mounted = await mount(<App client={client} />);
+        await send(shellEvent(baseView({ area: 'planMap', selection: { stem: '0007-thing', number: '0007' } }), 1));
+        await send(boardEvent(boardView([card('0007')])));
+        await send(detailEvent({ ...(detailView() as SpecDetailView), plan: planSample() }));
+        await click(mounted.container.querySelector<HTMLButtonElement>('[data-ways] .plan-ways-toggle')!);
+        await click(mounted.container.querySelector<HTMLButtonElement>('[data-ways] button.toggletip')!);
+        for (const radio of mounted.container.querySelectorAll<HTMLInputElement>('[data-ways] input[type="radio"]')) {
+            await click(radio);
+            const text = mounted.container.querySelector('[data-ways]')?.textContent ?? '';
+            expect(text.length).toBeGreaterThan(0);
+            expect(text).not.toMatch(FORBIDDEN);
+        }
+        mounted.unmount();
+        const view = sampleView();
+        view.now = { rows: [{ spec: { stem: '0001-a', number: '0001', title: 'A', found: true }, state: 'Review', status: 'Review', problems: 0 }], more: 4, stems: ['0001-a'] };
+        const now = await textOf('overview', overviewEvent(view));
+        expect(now).toContain('+ 4 more');
+        expect(now).not.toMatch(FORBIDDEN);
+    });
+
+    it('negative control: the pattern finds a rule ID in a way line', () => {
+        expect('In sequence — NS-6 builds one step').toMatch(FORBIDDEN);
+    });
+});
+
+describe('0027 AC-013: user language in the attachment line', () => {
+    it('the detail with an attached spec shows the line and no internal vocabulary', async () => {
+        const next = { rule: 'NS-9', lines: [{ text: '/sdd-clarify .specs/backlog/0002-x.md', intent: 'Have the spec challenged, then plan it' }], send: { assistant: 'claudeCode', target: 'new', targets: ['new'], attach: { name: '0002-x.md', path: '.specs/backlog/0002-x.md' } } } as never;
+        const text = await visibleText(detailView({}, next));
+        expect(text).not.toContain('attached when sent');
+        expect(text).not.toMatch(FORBIDDEN);
+        expect(text).not.toMatch(/\battach(?:ment)?\b/i);
     });
 });

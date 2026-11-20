@@ -7,7 +7,7 @@ import { fileNotFoundText, HISTORY_NOT_AVAILABLE_TEXT, NO_PLAN_TEXT } from '../.
 import { planSample } from '../../shared/protocol/testing/planSample';
 import { App } from '../App';
 import { createClient, type ShellClient } from '../client';
-import { baseView, click, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
+import { baseView, click, ctrlClick, isKeyboardReachable, mount, pressKey, send, shellEvent, type Mounted } from '../testing/dom';
 import { resetSectionMemory } from './sectionMemory';
 import { copyResultEvent, detailEvent, detailView, historySection, openFileResultEvent, PLAN_KEY, sendResultEvent, SPEC_KEY } from './testing/views';
 import { ABOUT_STEP_LABEL, COPIED_TEXT, COPY_FAILED_TEXT, NEXT_STEP_DONE_TEXT } from '../../shared/protocol/nextStepTexts';
@@ -186,6 +186,76 @@ describe('0019 AC-011, AC-012: Progress', () => {
         expect(textOf(root)).toContain('1 of 3 done');
         expect(textOf(root.querySelector('.progress-next')!)).toBe('Next open step: T-002 Second step');
         expect(links(root.querySelector('.progress-next')!).map((link) => link.textContent)).toEqual(['T-002']);
+    });
+
+    it('0025 AC-015: while a return note lies, the Steps row shows the one sentence of U-05 and no next open step', async () => {
+        const sentence = '2 returned, T-004 blocked: the next step finds out what blocks.';
+        const container = await open(spec({ progress: { needs: [], noPlan: false, steps: { kind: 'steps', done: 2, total: 5, returned: sentence }, criteria: { kind: 'unavailable', reason: 'no-table' } } }));
+        const root = progressOf(container);
+        expect(root.querySelector('.progress-returned')?.textContent).toBe(sentence);
+        expect(root.querySelector('.progress-next')).toBeNull();
+        expect(textOf(root)).not.toContain('Next open step');
+    });
+
+    it('0025 AC-003: the ID of the next open step of a map-able spec is a step link; for a spec that is not map-able it keeps 0019 AC-017', async () => {
+        const progress = { needs: [], noPlan: false, steps: { kind: 'steps' as const, done: 1, total: 3, next: { id: 'T-002', title: 'Second step', open: { key: PLAN_KEY, line: 20 } } }, criteria: { kind: 'unavailable' as const, reason: 'no-table' as const } };
+        const client = createClient({ post: (message) => void posted.push(message) });
+        clients.push(client);
+        client.start();
+        mounted = await mount(<App client={client} />);
+        await send(shellEvent(baseView({ area: 'planMap', selection: { stem: '0007-thing', number: '0007' } }), 1));
+        await send(detailEvent(spec({ progress, plan: planSample() })));
+        const link = links(mounted.container.querySelector('.progress-next')!)[0]!;
+        expect(link.title).toBe('T-002 Second step\nShow T-002 in the plan map · Ctrl+click opens the plan file');
+        await click(link);
+        expect(posted.filter((message) => message.type === 'navigate').map((message) => message.payload)).toEqual([{ area: 'planMap', target: { kind: 'spec', stem: '0007-thing', step: 'T-002' } }]);
+        expect(posted.filter((message) => message.type === 'openFile')).toEqual([]);
+        await send(detailEvent(spec({ progress, state: 'Done' })));
+        const plain = links(mounted.container.querySelector('.progress-next')!)[0]!;
+        expect(plain.title).toBe('Open 0007-thing.plan.md at line 20');
+    });
+
+    it('0025 AC-027: the ID in an intent line of the Next step is a step link; Ctrl opens the plan; without a link the intent stays text', async () => {
+        const step = { id: 'T-002', open: { key: PLAN_KEY, line: 20 } };
+        const lines = [{ text: 'Implement T-002 of p', intent: 'Continue with T-002 Second step', step }, { text: '/sdd-plan s', intent: 'Not sure where it stands? Let the agent report first' }];
+        const root = await open(spec({}, { rule: 'NS-6', lines }));
+        const next = root.querySelector('.next-step')!;
+        const link = links(next)[0]!;
+        expect(link.textContent).toBe('T-002');
+        expect(link.title).toBe('T-002\nShow T-002 in the plan map · Ctrl+click opens the plan file');
+        expect(textOf(next.querySelector('.next-step-intent')!)).toBe('Continue with T-002 Second step');
+        await click(link);
+        expect(posted.filter((message) => message.type === 'navigate').map((message) => message.payload)).toEqual([{ area: 'planMap', target: { kind: 'spec', stem: '0007-thing', step: 'T-002' } }]);
+        await ctrlClick(link);
+        expect(posted.filter((message) => message.type === 'openFile')).toHaveLength(1);
+        expect(links(next).filter((candidate) => candidate.classList.contains('file-link')).map((candidate) => candidate.textContent)).toEqual(['T-002']);
+        const plain = await open(spec({}, { rule: 'NS-6', lines: [{ text: 'Implement T-002 of p', intent: 'Continue with T-002 Second step' }] }));
+        expect(links(plain.querySelector('.next-step')!)).toEqual([]);
+    });
+
+    it('0025 AC-016: the parallel hint follows line 1 (after the coach line when tips show), precedes line 2, and Ways to run it navigates to the ways target', async () => {
+        const lines = [{ text: 'Implement T-003 of p', intent: 'Continue with T-003 Step' }, { text: '/sdd-plan s', intent: 'Not sure where it stands? Let the agent report first' }];
+        const withTips: NextStepView = { rule: 'NS-6', lines, parallel: { stage: 2 }, tips: { coach: 'Run this in your agent chat.', about: ['One step.'] } } as NextStepView;
+        const root = await open(spec({}, withTips));
+        const items = [...root.querySelectorAll('.next-step-lines > li')];
+        const hint = items[0]!.querySelector('.parallel-hint')!;
+        expect(textOf(hint)).toBe('Stage 2 can run in parallel · Ways to run it');
+        expect(items[1]!.querySelector('.parallel-hint')).toBeNull();
+        expect(items[0]!.querySelector('.step-coach')!.compareDocumentPosition(hint) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        const button = hint.querySelector<HTMLButtonElement>('button')!;
+        expect(button.textContent).toBe('Ways to run it');
+        await click(button);
+        expect(posted.filter((message) => message.type === 'navigate').map((message) => message.payload)).toEqual([{ area: 'planMap', target: { kind: 'spec', stem: '0007-thing', ways: true } }]);
+    });
+
+    it('0025 AC-016: tips off the hint sits after the Copy prompt; without a parallel stage there is none', async () => {
+        const lines = [{ text: 'Implement T-003 of p', intent: 'Continue with T-003 Step' }];
+        const root = await open(spec({}, { rule: 'NS-6', lines, parallel: { stage: 3 } } as NextStepView));
+        const first = root.querySelector('.next-step-lines > li')!;
+        expect(textOf(first.querySelector('.parallel-hint')!)).toBe('Stage 3 can run in parallel · Ways to run it');
+        expect(first.querySelector('.copy-button')!.compareDocumentPosition(first.querySelector('.parallel-hint')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        const none = await open(spec({}, { rule: 'NS-6', lines } as NextStepView));
+        expect(none.querySelector('.parallel-hint')).toBeNull();
     });
 
     it('a complete plan shows no next open step; no countable step says so; an unreadable plan says so', async () => {
@@ -761,7 +831,7 @@ describe('0022 AC-013, AC-015, AC-002, AC-003: sentences and breaking paths in t
 
 
 describe('0021 AC-009, AC-010: the coach line in the detail', () => {
-    const TIPS = { coach: 'new chat · strong model, other family', about: ['one', 'two', 'three', 'four'] };
+    const TIPS = { coach: 'Tip: Use a new chat with a strong model from another model family.', about: ['one', 'two', 'three', 'four'] };
     const LINES = [
         { text: '/sdd-compile k', intent: 'Have the result verified' },
         { text: '/sdd-lifecycle k', intent: 'Then, after a READY verdict: close the spec' },
@@ -775,7 +845,7 @@ describe('0021 AC-009, AC-010: the coach line in the detail', () => {
         const container = await open(detailView({}, { rule: 'NS-5', lines: LINES, tips: TIPS }));
         const [first, second] = items(container);
         const coach = first!.querySelector('p.step-coach')!;
-        expect(coach.textContent).toBe('new chat · strong model, other family');
+        expect(coach.textContent).toBe('Tip: Use a new chat with a strong model from another model family.');
         const copy = first!.querySelector('button.next-step-copy')!;
         expect(copy.nextElementSibling?.getAttribute('role')).toBe('status');
         expect(copy.nextElementSibling?.nextElementSibling).toBe(coach);
@@ -799,7 +869,7 @@ describe('0021 AC-009, AC-010: the coach line in the detail', () => {
 
 describe('0021 AC-014, AC-015, AC-009, AC-010: the About this step toggletip in the detail', () => {
     const ABOUT = ['It checks the work.', 'New chat: the reviewer should not know the build.', 'A strong model reads it best.', 'Nothing changes on disk.'];
-    const TIPS = { coach: 'new chat · strong model, other family', about: ABOUT };
+    const TIPS = { coach: 'Tip: Use a new chat with a strong model from another model family.', about: ABOUT };
     const LINES = [
         { text: '/sdd-compile k', intent: 'Have the result verified' },
         { text: '/sdd-lifecycle k', intent: 'Then, after a READY verdict: close the spec' },
@@ -876,7 +946,7 @@ describe('0024 AC-003, AC-002: the split button at the first next-step line only
         await click(container.querySelector('button.send-main')!);
         expect(requests('sendPrompt')).toEqual([{ assistant: 'copilot', target: 'new', line: 'Implement T-003 of .specs/active/0007-thing.plan.md', token: expect.stringMatching(/^[A-Za-z0-9-]{1,64}$/) }]);
         await click(container.querySelector('button.send-arrow')!);
-        await click([...container.querySelectorAll<HTMLElement>('[role="menuitem"]')][1]!);
+        await click([...container.querySelectorAll<HTMLElement>('[role^="menuitem"]')][1]!);
         expect(requests('sendPrompt')[1]).toEqual({ assistant: 'copilot', target: 'current', line: 'Implement T-003 of .specs/active/0007-thing.plan.md', token: expect.stringMatching(/^[A-Za-z0-9-]{1,64}$/) });
         expect((requests('sendPrompt')[1] as { token: string }).token).not.toBe((requests('sendPrompt')[0] as { token: string }).token);
         expect(requests('copyText')).toEqual([]);
@@ -889,7 +959,7 @@ describe('0024 AC-003, AC-002: the split button at the first next-step line only
         expect(container.querySelector('button.send-main')?.textContent).toBe('Opened in Copilot');
         expect(container.querySelector('.send-split [role="status"]')?.textContent).toBe("The prompt is in Copilot's chat. Check it, then send it there.");
         await click(container.querySelector('button.send-arrow')!);
-        await click([...container.querySelectorAll<HTMLElement>('[role="menuitem"]')][2]!);
+        await click([...container.querySelectorAll<HTMLElement>('[role^="menuitem"]')][2]!);
         expect(requests('copyText')).toEqual([{ text: 'Implement T-003 of .specs/active/0007-thing.plan.md' }]);
         await send(copyResultEvent(true, COPIED_TEXT));
         expect(container.querySelector('button.send-main')?.textContent).toBe('Copied');
@@ -921,7 +991,7 @@ describe('0024 AC-010: focus when the offer changes', () => {
                 await focusOn(arrow);
             } else {
                 await click(arrow);
-                expect(document.activeElement?.getAttribute('role')).toBe('menuitem');
+                expect(document.activeElement?.getAttribute('role')).toMatch(/^menuitem/);
             }
             await send(detailEvent(spec({}, WITHOUT)));
             const copy = container.querySelector<HTMLElement>('.next-step-lines li button.copy-button')!;
@@ -1018,7 +1088,7 @@ describe('0024 AC-010: focus is decided at the moment of the change, also after 
         } else {
             await click(container.querySelector('button.send-arrow')!);
             if (place === 'item that leaves') {
-                await focusOn([...container.querySelectorAll<HTMLElement>('[role="menuitem"]')][1]!);
+                await focusOn([...container.querySelectorAll<HTMLElement>('[role^="menuitem"]')][1]!);
             }
         }
         await windowBlur(document.activeElement as HTMLElement);

@@ -12,6 +12,11 @@ interface Verdict {
     persistence: Persistence;
 }
 
+export function finishedPlan(plan: EntryContext['siblingPlan']): boolean {
+    const steps = plan !== undefined && plan.readable ? (plan.parsed?.steps ?? []) : [];
+    return steps.some((step) => step.ticked === true) && steps.every((step) => step.ticked === true || step.struck);
+}
+
 function decide(context: EntryContext, readiness: ReadinessResult): Verdict {
     const { folder } = context.entry;
     if (folder === 'done') {
@@ -23,7 +28,7 @@ function decide(context: EntryContext, readiness: ReadinessResult): Verdict {
     if (context.contradictions.length > 0 || !context.specReadable) {
         return { state: folder === 'active' ? 'Active' : 'Backlog', rule: 'S-FOLDER', persistence: 'persisted' };
     }
-    if (folder === 'active' && context.status === 'In Progress' && context.planStatus === 'Done') {
+    if (folder === 'active' && context.status === 'In Progress' && (context.planStatus === 'Done' || finishedPlan(context.siblingPlan))) {
         return { state: 'Review', rule: 'S-REVIEW', persistence: 'derived' };
     }
     if (folder === 'active') {

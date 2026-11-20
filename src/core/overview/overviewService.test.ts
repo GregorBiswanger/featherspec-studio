@@ -34,7 +34,7 @@ describe('dashboard service', () => {
         world.source.set(await modelFor([{ number: '0001', kind: 'Backlog' }, { number: '0002', kind: 'Review' }]));
         await world.service.whenIdle();
         expect(current(world).figures).toMatchObject({ total: 2 });
-        expect(current(world).now.map((row) => row.spec.number)).toEqual(['0002']);
+        expect(current(world).now.rows.map((row) => row.spec.number)).toEqual(['0002']);
         const count = world.views.length;
         world.history.view = {
             available: true,
@@ -55,7 +55,7 @@ describe('dashboard service', () => {
         const view = current(world);
         expect(view.activity).toEqual({ available: false, reason: 'Another VS Code window holds the write lock for this project\'s status history.' });
         expect(view.figures).toMatchObject({ kind: 'counts', total: 9 });
-        expect(view.now.map((row) => row.spec.number)).toEqual(['0009', '0005', '0004']);
+        expect(view.now.rows.map((row) => row.spec.number)).toEqual(['0009', '0005', '0004']);
     });
 
     it('A-011: with no listener the service reads nothing; the last listener leaving stops it again', async () => {
@@ -196,19 +196,19 @@ describe('0021 AC-011, AC-010: a settings change reaches the Overview', () => {
         await world.service.whenIdle();
         await world.service.handlers.overviewSetActivity({ open: true });
         await world.service.whenIdle();
-        expect(current(world).now.some((row) => 'tips' in row)).toBe(false);
+        expect(current(world).now.rows.some((row) => 'tips' in row)).toBe(false);
         world.tips.set(parseStepTipSettings(true, {}));
         await world.service.whenIdle();
-        expect(current(world).now[0]?.tips?.coach).toMatch(/ · (?:strong|fast) model/);
-        expect(current(world).now.filter((row) => 'tips' in row)).toHaveLength(1);
-        const before = current(world).now[0]?.tips?.coach;
+        expect(current(world).now.rows[0]?.tips?.coach).toMatch(/^Tip: Use .* with a (?:strong|fast) model/);
+        expect(current(world).now.rows.filter((row) => 'tips' in row)).toHaveLength(1);
+        const before = current(world).now.rows[0]?.tips?.coach;
         world.tips.set(parseStepTipSettings(true, { strong: 'X', fast: 'Y' }));
         await world.service.whenIdle();
-        expect(current(world).now[0]?.tips?.coach).not.toBe(before);
-        expect(current(world).now[0]?.tips?.coach).toMatch(/\((?:X|Y)\)/);
+        expect(current(world).now.rows[0]?.tips?.coach).not.toBe(before);
+        expect(current(world).now.rows[0]?.tips?.coach).toMatch(/ model \((?:X|Y)\)/);
         world.tips.set(parseStepTipSettings(false, {}));
         await world.service.whenIdle();
-        expect(current(world).now.some((row) => 'tips' in row)).toBe(false);
+        expect(current(world).now.rows.some((row) => 'tips' in row)).toBe(false);
         const activity = current(world).activity;
         expect(activity.available && activity.open).toBe(true);
     });
@@ -229,17 +229,17 @@ describe('0024 AC-010: an offer change reaches the Overview', () => {
         await world.service.whenIdle();
         await world.service.handlers.overviewSetActivity({ open: true });
         await world.service.whenIdle();
-        expect(current(world).now.some((row) => 'send' in row)).toBe(false);
+        expect(current(world).now.rows.some((row) => 'send' in row)).toBe(false);
         world.assistant.set({ assistant: 'copilot' });
         await world.service.whenIdle();
-        expect(current(world).now[0]?.send).toMatchObject({ assistant: 'copilot' });
-        expect(current(world).now.filter((row) => 'send' in row)).toHaveLength(1);
+        expect(current(world).now.rows[0]?.send).toMatchObject({ assistant: 'copilot' });
+        expect(current(world).now.rows.filter((row) => 'send' in row)).toHaveLength(1);
         world.assistant.set({ assistant: 'claudeCode' });
         await world.service.whenIdle();
-        expect(current(world).now[0]?.send).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });
+        expect(current(world).now.rows[0]?.send).toEqual({ assistant: 'claudeCode', attach: { name: '0009-thing.md', path: '.specs/active/0009-thing.md' }, target: 'new', targets: ['new'] });
         world.assistant.uninstall('claudeCode');
         await world.service.whenIdle();
-        expect(current(world).now.some((row) => 'send' in row)).toBe(false);
+        expect(current(world).now.rows.some((row) => 'send' in row)).toBe(false);
         const activity = current(world).activity;
         expect(activity.available && activity.open).toBe(true);
     });

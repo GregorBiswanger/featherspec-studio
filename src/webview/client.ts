@@ -14,6 +14,7 @@ import {
     isProbePayload,
     isResponsePayload,
     isShellEventPayload,
+    type ShellFocus,
     type ActionId,
     type CopyResultEventPayload,
     type NavigationRequest,
@@ -33,6 +34,7 @@ export interface ClientSnapshot {
     fileResult: { key: string; text: string } | undefined;
     copyResult: CopyResultEventPayload | undefined;
     sendResult: SendResultEventPayload | undefined;
+    focus: ShellFocus | undefined;
 }
 
 export interface SpecReference {
@@ -80,10 +82,11 @@ export function createClient(deps: ClientDeps): ShellClient {
     let board: BoardView | undefined;
     let detail: DetailView | undefined;
     let overview: OverviewView | undefined;
+    let focus: ShellFocus | undefined;
     let fileResult: { key: string; text: string } | undefined;
     let copyResult: CopyResultEventPayload | undefined;
     let sendResult: SendResultEventPayload | undefined;
-    let snapshot: ClientSnapshot = { view: undefined, state: { id: 'S4' }, area: DEFAULT_AREA, board: undefined, detail: undefined, overview: undefined, fileResult: undefined, copyResult: undefined, sendResult: undefined };
+    let snapshot: ClientSnapshot = { view: undefined, state: { id: 'S4' }, area: DEFAULT_AREA, board: undefined, detail: undefined, overview: undefined, fileResult: undefined, copyResult: undefined, sendResult: undefined, focus: undefined };
     let unlisten: (() => void) | undefined;
     let mismatch = false;
     let protocolFailure = false;
@@ -111,11 +114,12 @@ export function createClient(deps: ClientDeps): ShellClient {
             snapshot.fileResult === fileResult &&
             snapshot.copyResult === copyResult &&
             snapshot.sendResult === sendResult &&
+            snapshot.focus === focus &&
             JSON.stringify(snapshot.state) === JSON.stringify(state)
         ) {
             return;
         }
-        snapshot = { view, state, area, board, detail, overview, fileResult, copyResult, sendResult };
+        snapshot = { view, state, area, board, detail, overview, fileResult, copyResult, sendResult, focus };
         listeners.forEach((listener) => listener());
     }
 
@@ -141,6 +145,9 @@ export function createClient(deps: ClientDeps): ShellClient {
         const previous = lastSeq;
         lastSeq = envelope.seq;
         view = envelope.payload.view;
+        if (envelope.payload.focus !== undefined) {
+            focus = envelope.payload.focus;
+        }
         refresh();
         if (gap) {
             send('hello', { lastSeq: previous });

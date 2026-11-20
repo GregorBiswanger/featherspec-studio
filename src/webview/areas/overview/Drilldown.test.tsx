@@ -11,13 +11,13 @@ let posted: Envelope[];
 let mounted: Mounted | undefined;
 const clients: ShellClient[] = [];
 
-function row(stem: string, number: string, state: OverviewView['now'][number]['state'], path?: string, problems = 0): OverviewView['now'][number] {
+function row(stem: string, number: string, state: OverviewView['now']['rows'][number]['state'], path?: string, problems = 0): OverviewView['now']['rows'][number] {
     return { spec: { stem, number, title: stem.slice(5), ...(path === undefined ? {} : { path }), found: true }, state, status: state, problems };
 }
 
 function drillView(): OverviewView {
     const view = sampleView();
-    view.now = [row('0001-a', '0001', 'Blocked'), row('0004-dup', '0004', 'Review', '.specs/active/0004-dup.md')];
+    view.now = { rows: [row('0001-a', '0001', 'Blocked'), row('0004-dup', '0004', 'Review', '.specs/active/0004-dup.md')], more: 0, stems: [] };
     view.upNext = { rows: [row('0003-c', '0003', 'Ready')], more: 2, stems: ['0003-c', '0005-e', '0006-f'] };
     if (view.activity.available) {
         view.activity = { ...view.activity, open: true };
@@ -49,7 +49,7 @@ async function clickAndReturn(container: HTMLElement, id: string): Promise<void>
     await click(drill(container, id));
     const request = posted.slice(before).find((message) => message.type === 'navigate');
     if (request?.id !== undefined) {
-        await send({ v: 8, kind: 'res', id: request.id, type: 'navigate', payload: { ok: true } });
+        await send({ v: 11, kind: 'res', id: request.id, type: 'navigate', payload: { ok: true } });
     }
 }
 
@@ -189,7 +189,7 @@ describe('AC-022: keyboard', () => {
     it('Enter and Space activate a drill-down element and send its request', async () => {
         const container = await open(drillView());
         await pressKey(drill(container, 'total'), 'Enter');
-        await send({ v: 8, kind: 'res', id: posted.find((message) => message.type === 'navigate')!.id, type: 'navigate', payload: { ok: true } });
+        await send({ v: 11, kind: 'res', id: posted.find((message) => message.type === 'navigate')!.id, type: 'navigate', payload: { ok: true } });
         await pressKey(drill(container, 'state:Done'), ' ');
         expect(sent().map((message) => message.payload)).toEqual([
             { area: 'board' },

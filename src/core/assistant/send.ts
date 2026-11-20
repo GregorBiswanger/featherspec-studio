@@ -1,11 +1,14 @@
-import { ASSISTANT_NAMES, activatingFailedCause, commandFailedCause, commandNotFoundCause, extensionNotFoundCause, noResultCause, pasteKeyOf, sendOpenedText, sendOutputCopiedText, sendOutputNotCopiedText, sendWarnCopiedText, sendWarnNotCopiedText } from '../../shared/protocol/assistantTexts';
+import { ASSISTANT_NAMES, activatingFailedCause, attachMissingOutputText, commandFailedCause, commandNotFoundCause, extensionNotFoundCause, noResultCause, pasteKeyOf, sendOpenedText, sendOpenedWithoutText, sendOutputCopiedText, sendOutputNotCopiedText, sendWarnCopiedText, sendWarnNotCopiedText } from '../../shared/protocol/assistantTexts';
 import type { SendOutcomeView, SendRequest } from '../../shared/protocol/assistant';
 import { copyLine } from '../board/copyLine';
 import type { AssistantHostPort } from '../ports/assistant';
 import type { ClipboardPort } from '../ports/board';
 import type { StepUiPort } from '../ports/copyNextStep';
 import type { ClockPort, OutputPort } from '../ports/host';
+import type { AssistantId } from '../../shared/protocol/assistant';
 import { ASSISTANTS } from './assistants';
+import type { AttachmentCheck } from './attachment';
+import type { HandOverPort } from './handOver';
 
 export const SEND_TIMEOUT_MS = 5000;
 
@@ -17,6 +20,9 @@ export interface SendDeps {
     clock: ClockPort;
     platform: string;
     chosen: { read(): unknown };
+    attachment?: AttachmentCheck;
+    attaching?: (id: AssistantId) => boolean;
+    handOver?: HandOverPort;
 }
 
 export interface Send {
@@ -47,9 +53,9 @@ export function createSend(deps: SendDeps): Send {
         return result;
     }
 
-    async function run(request: SendRequest, isSettled: () => boolean): Promise<void> {
+    async function run(request: SendRequest, isSettled: () => boolean): Promise<string | undefined> {
         const spec = ASSISTANTS[request.assistant];
-        const calls = spec.callsFor(request.target, request.line);
+        const plain = spec.callsFor(request.target, request.line);
         let found: ReturnType<AssistantHostPort['extension']>;
         try {
             found = deps.host.extension(spec.extensionId);
@@ -66,7 +72,7 @@ export function createSend(deps: SendDeps): Send {
                 throw new SendFailure(activatingFailedCause(spec.extensionId, messageOf(reason)));
             }
             if (isSettled()) {
-                return;
+                return undefined;
             }
         }
         let registered: readonly string[];
@@ -76,11 +82,24 @@ export function createSend(deps: SendDeps): Send {
             registered = [];
         }
         if (isSettled()) {
-            return;
+            return undefined;
         }
-        const missing = calls.find((call) => !registered.includes(call.command));
+        const missing = plain.find((call) => !registered.includes(call.command));
         if (missing !== undefined) {
             throw new SendFailure(commandNotFoundCause(missing.command));
+        }
+        let calls = plain;
+        let unattached: string | undefined;
+        if (request.attach !== undefined && (deps.attaching?.(request.assistant) ?? spec.attachesSpec)) {
+            const target = deps.attachment === undefined ? undefined : await deps.attachment(request.attach);
+            if (isSettled()) {
+                return undefined;
+            }
+            if (target === undefined) {
+                unattached = request.attach;
+            } else {
+                calls = spec.callsFor(request.target, request.line, target);
+            }
         }
         for (const call of calls) {
             try {
@@ -89,9 +108,10 @@ export function createSend(deps: SendDeps): Send {
                 throw new SendFailure(commandFailedCause(call.command, messageOf(reason)));
             }
             if (isSettled()) {
-                return;
+                return undefined;
             }
         }
+        return unattached;
     }
 
     function attempt(request: SendRequest): Promise<SendOutcomeView> {
@@ -108,13 +128,18 @@ export function createSend(deps: SendDeps): Send {
             };
             const timer = deps.clock.setTimeout(() => fail(noResultCause(SEND_TIMEOUT_MS)), SEND_TIMEOUT_MS);
             run(request, () => settled).then(
-                () => {
+                (unattached) => {
                     if (settled) {
                         return;
                     }
                     settled = true;
                     timer.dispose();
-                    resolve({ outcome: 'opened', text: sendOpenedText(name) });
+                    if (unattached === undefined) {
+                        resolve({ outcome: 'opened', text: sendOpenedText(name) });
+                        return;
+                    }
+                    deps.output.appendBlock([attachMissingOutputText(name, unattached)]);
+                    resolve({ outcome: 'opened', text: sendOpenedWithoutText(name, unattached.slice(unattached.lastIndexOf('/') + 1)) });
                 },
                 (reason: unknown) => fail(reason instanceof SendFailure ? reason.message : messageOf(reason)),
             );
@@ -125,12 +150,20 @@ export function createSend(deps: SendDeps): Send {
 
     return {
         send(request) {
+            const handOver = deps.handOver?.begin(request.line);
+            const settle = async (result: SendOutcomeView): Promise<SendOutcomeView> => {
+                if (result.outcome !== 'copyFailed') {
+                    await handOver?.commit();
+                }
+                return result;
+            };
             if (deps.chosen.read() !== request.assistant) {
-                return copied(request.line);
+                const result = copied(request.line);
+                return handOver === undefined ? result : result.then(settle);
             }
             const turn = tail.then(() => attempt(request));
             tail = turn.catch(() => undefined);
-            return turn;
+            return handOver === undefined ? turn : turn.then(settle);
         },
     };
 }

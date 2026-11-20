@@ -179,6 +179,7 @@ describe('extension manifest', () => {
             { command: 'featherspec-studio.tree.copyNextStep', when: 'false' },
             { command: 'featherspec-studio.tree.openSpec', when: 'false' },
             { command: 'featherspec-studio.tree.openPlan', when: 'false' },
+            { command: 'featherspec-studio.tree.showInPlanMap', when: 'false' },
         ]);
     });
 
@@ -324,13 +325,14 @@ describe('extension manifest', () => {
 
     it('AC-011 (0020): contributes the tree\'s own commands with exactly these titles, hidden from the Command Palette', () => {
         const commands = manifest.contributes?.commands ?? [];
-        expect(TREE_COMMAND_TITLES).toEqual({ select: 'Select Spec', copyNextStep: 'Copy Next Step', openSpec: 'Open Spec', openPlan: 'Open Plan' });
+        expect(TREE_COMMAND_TITLES).toEqual({ select: 'Select Spec', copyNextStep: 'Copy Next Step', openSpec: 'Open Spec', openPlan: 'Open Plan', showInPlanMap: 'Show in Plan Map' });
         expect(commands).toContainEqual({ command: 'featherspec-studio.selectSpec', title: TREE_COMMAND_TITLES.select });
         expect(commands).toContainEqual({ command: 'featherspec-studio.tree.copyNextStep', title: TREE_COMMAND_TITLES.copyNextStep, icon: '$(copy)' });
         expect(commands).toContainEqual({ command: 'featherspec-studio.tree.openSpec', title: TREE_COMMAND_TITLES.openSpec });
         expect(commands).toContainEqual({ command: 'featherspec-studio.tree.openPlan', title: TREE_COMMAND_TITLES.openPlan });
+        expect(commands).toContainEqual({ command: 'featherspec-studio.tree.showInPlanMap', title: 'Show in Plan Map' });
         const hidden = (manifest.contributes?.menus?.commandPalette ?? []).filter((entry) => entry.when === 'false').map((entry) => entry.command);
-        for (const id of ['selectSpec', 'tree.copyNextStep', 'tree.openSpec', 'tree.openPlan']) {
+        for (const id of ['selectSpec', 'tree.copyNextStep', 'tree.openSpec', 'tree.openPlan', 'tree.showInPlanMap']) {
             expect(hidden).toContain(`featherspec-studio.${id}`);
         }
         expect(hidden).not.toContain('featherspec-studio.copyNextStep');
@@ -343,9 +345,10 @@ describe('extension manifest', () => {
         expect(inline.length).toBeLessThanOrEqual(1);
     });
 
-    it('AC-008 (0020): the context menu offers Open Spec, Open Plan only for a row with a plan, and Copy Next Step only for a row with a step, in this order; groups get no entry', () => {
+    it('AC-008 (0020), 0025 AC-005: the context menu offers Show in Plan Map first for a row that names map, Open Spec, Open Plan only for a row with a plan, and Copy Next Step only for a row with a step, in this order; groups get no entry', () => {
         const items = (manifest.contributes?.menus?.['view/item/context'] ?? []).filter((entry) => entry.group !== 'inline');
         expect(items).toEqual([
+            { command: 'featherspec-studio.tree.showInPlanMap', when: 'view == featherspec-studio.navigator && viewItem =~ /\\bmap\\b/', group: 'spec@0' },
             { command: 'featherspec-studio.tree.openSpec', when: 'view == featherspec-studio.navigator && viewItem =~ /^spec\\b/', group: 'spec@1' },
             { command: 'featherspec-studio.tree.openPlan', when: 'view == featherspec-studio.navigator && viewItem =~ /\\bplan\\b/', group: 'spec@2' },
             { command: 'featherspec-studio.tree.copyNextStep', when: 'view == featherspec-studio.navigator && viewItem =~ /\\bstep\\b/', group: 'spec@3' },
@@ -358,6 +361,9 @@ describe('extension manifest', () => {
             [/\bplan\b/, 'spec step', false],
             [/\bstep\b/, 'spec plan', false],
             [/\bplan\b/, 'group', false],
+            [/\bmap\b/, 'spec step plan map', true],
+            [/\bmap\b/, 'spec step plan', false],
+            [/\bmap\b/, 'group', false],
             [/\bstep\b/, 'group', false],
         ];
         for (const [pattern, value, expected] of rowTokens) {

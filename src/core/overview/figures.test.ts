@@ -57,6 +57,17 @@ describe('spec figures', () => {
         expect(specs).toMatchObject({ progress: { kind: 'value', percent: 33, done: 1, divisor: 3 } });
     });
 
+    it('0025 AC-013: the percentage rounds half up (2 of 3 reads 67)', async () => {
+        const specs = projectFigures(
+            await modelFor([
+                { number: '0001', kind: 'Done' },
+                { number: '0002', kind: 'Done' },
+                { number: '0003', kind: 'Active' },
+            ]),
+        );
+        expect(specs).toMatchObject({ progress: { kind: 'value', percent: 67, done: 2, divisor: 3 } });
+    });
+
     it('AC-003: a done/ spec with another status counts in the divisor only (PD-021)', async () => {
         const specs = projectFigures(
             await modelFor([

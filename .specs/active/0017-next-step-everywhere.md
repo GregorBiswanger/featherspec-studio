@@ -107,9 +107,13 @@ sentence that also says something else keeps that part. The rows name what needs
   style and feedback.
   *Amended by 0021 (PD-069): §6.1 — cards, rows and the quick pick show the step short form of 0021 §6.3 (command short form with `Implement <ID>`); the status bar text keeps the command short form; the detail and every tooltip show each line under its intent; the Copy is "Copy prompt".*
   *Amended by 0022 (PD-069): §6.1 "Card and row Copy take 0016 §6.5's style and feedback" — they are the icon button of 0022 §4.4 with that feedback.*
+  *Amended by 0025 (PD-082): a step ID is a step link for a map-able spec: a plain activation leads into the Plan map, Ctrl or Cmd opens the plan at the step (0025 §5.1, AC-001–AC-004, AC-027); tooltip 0025 U-02.*
 - The step is the card's last line, follows a row's reasons and ends the status bar text: the
   spec is named first (audit R-03 field 4, K-G; deviation from guideline 1 "before anything else", named).
 - A spec without a step shows no step line on its card or row (problems show per 0016).
+*Amended by 0030 (PD-092): while the spec counts as clarified (0030 §6.2), NS-9 is the one line `Write the plan` · `/sdd-plan <spec path>` of case NS-10, with no `/sdd-clarify` line.*
+
+*Amended by 0028 (D-4): `Start <ID> of <plan path>` → `Implement <ID>` and `Implement <plan path>` falls away; without an open step `/sdd-plan <spec path>` with the texts of "Plan without open step" (0028 §6.5).*
 
 ### 6.2 NS-6 (Active) completed (R-16, PD-061 (1))
 
@@ -206,6 +210,7 @@ move-request API goes; the lifecycle model keeps deriving states.
 | Command | "FeatherSpec: Move Spec to…" | "FeatherSpec Studio: Copy Next Step" |
 | Quick pick, message | "Select a spec to move", "Move spec <number> to…" | "Select a spec to copy its next step"; "No spec has a next step to copy. Start the next spec with /sdd-specify" + "Copy" |
 | Detail, NS-6 | — | "Then, in the same chat, if nothing blocks:" `continue` |
+*Amended by 0026 (PD-082): the step short form without a visible "Next"; a visually hidden `Next step: ` precedes it (0026 §6.3, AC-005).*
 
 *Amended by 0021 (PD-069): §7 row "Card, last line" — "Next" `<step short form>` "Copy prompt" (aria "Copy prompt: <full first line>"); tooltip: each line's intent, then its prompt.*
 
@@ -233,11 +238,13 @@ Decided by automated tests unless marked manual. Fixtures: one per NS rule (0015
 - **AC-001** The system shall show on cards, rows, status bar and quick pick the short form of §6.1 of the first line of the next step the detail shows, and Copy shall put exactly that first line, path included, on the clipboard.
   > **Given** Ready `.specs/backlog/0007-x.md` whose plan's first open step is `T-003` **Then** the card shows `Start T-003` and Copy copies `Start T-003 of .specs/backlog/0007-x.plan.md`.
   *Amended by 0021 (PD-069): AC-001 — the step short form of 0021 AC-006 on cards, rows and quick pick.*
+  *Amended by 0028 (D-4): NS-7's line is `Implement <ID> of <plan path>`, the command short form `Implement <ID>`; without an open step `/sdd-plan <spec path>` with the texts of "Plan without open step" (0028 §6.5).*
 - **AC-002** Where NS-6 is the first matching rule (Active), the next step shall be `/sdd-plan <spec path>`, followed, only while its sibling plan has an open plan step (0015 NS-7), by `continue` under "Then, in the same chat, if nothing blocks:"; one fixture per NS-6 row decides it.
   *Amended by 0021 (PD-069): AC-002 — void: 0021 AC-003, AC-005 (variant A, PD-072).*
 - **AC-003** For identical snapshots and the same selection the system shall show identical short forms, current spec and quick-pick order.
 - **AC-004** The board shall show on every card whose spec has a step, as its last line, "Next", the short form with the full line(s) as tooltip, and a "Copy" named "Copy: <full first line>"; a card of a spec without a step shall show no such line.
   *Amended by 0021 (PD-069): AC-004 — the Copy reads "Copy prompt", named `Copy prompt: <full first line>` (0021 AC-008).*
+  *Amended by 0026 (PD-082): no visible "Next" (0026 AC-005).*
 - **AC-005** When the developer activates a card's Copy by pointer, or by Enter or Space after reaching it with Tab, the system shall copy the full first line, show 0016's feedback at that Copy only, and not open the detail or change the selection, the area or the card's column.
 - **AC-006** Tab from the card that is the board's tab stop shall reach that card's Copy next and no other card's Copy; arrows and Enter shall work as 0007 AC-017; Shift+F10 and the context-menu key on a card shall open no menu of the Studio.
 - **AC-007** No card shall carry `draggable="true"`; when dragstart, dragover, drop and dragend are dispatched on a card and another column, the webview shall send no message and set no mark.
@@ -249,6 +256,7 @@ Decided by automated tests unless marked manual. Fixtures: one per NS rule (0015
   *Amended by 0018 (PD-062): *Needs attention* rows: the rows of Now, Up next and Problems carry that next step and Copy (0018 O-5).*
   *Amended by 0019 (PD-058): AC-012 — activating such a row outside Copy selects its spec in place (0019 AC-001); Copy selects nothing (0019 AC-001, 0017 AC-005).*
   *Amended by 0021 (PD-069): AC-012 — the Copy reads "Copy prompt", named `Copy prompt: <full first line>` (0021 AC-008).*
+  *Amended by 0026 (PD-082): no visible "Next" (0026 AC-005).*
 - **AC-013** The system shall choose the current spec by §6.3 (1)–(3).
   > **Given** no selection, Review `0015`, Active `0012`, Blocked `0020` with a plan **Then** the entry reads `$(checklist) 0020 · Blocked · /sdd-plan`. **Given** the selection is Done `0003` **Then** the same.
 - **AC-014** While a project is active and a current spec exists, the entry shall read `$(checklist) <number> · <state> · <short form>` with the tooltip lines of §6.3 in order and the accessible label of §6.3.
@@ -259,6 +267,7 @@ Decided by automated tests unless marked manual. Fixtures: one per NS rule (0015
 - **AC-019** When the developer runs "Copy Next Step" while a current spec exists, the system shall copy its full first line without asking and show AC-016's feedback.
 - **AC-020** When the developer runs "Copy Next Step" while no current spec exists, the system shall offer the quick pick of §6.4 in its order and labels; picking shall copy that spec's full first line; cancelling shall copy nothing; with no item it shall show the §6.4 message, whose "Copy" copies `/sdd-specify`; while the specs are not read it shall run "FeatherSpec Studio: Open" instead.
   *Amended by 0021 (PD-069): AC-020 — the message's "Copy" reads "Copy prompt" (0021 AC-008).*
+  *Amended by 0029 (setup not run): AC-020 and §6.4 (no item) — while `/sdd-setup` has not run (0029 §6.1) the message is 0029 §7's `No spec has a next step to copy. Set up this project first with /sdd-setup`, and its button copies `/sdd-setup`.*
 - **AC-021** While no project is active, "Copy Next Step" shall behave as "Select Project" (0001 AC-008, AC-015).
 - **AC-022** While the workspace is in Restricted Mode or the window is a reader, cards, rows, entry and command shall behave as in AC-004–AC-020.
 - **AC-023** No Copy, click or command of this spec shall create, change, move or delete a file of the workspace (0007 AC-016 as amended).
@@ -271,6 +280,10 @@ Decided by automated tests unless marked manual. Fixtures: one per NS rule (0015
   *Amended by 0022 (PD-069): AC-024 — also excepts the tests 0022 AC-017 lists against a statement 0022 §5 changes.*
   *Amended by 0023 (PD-069): AC-024 (test audit) — also except the tests 0023 AC-016 lists against a statement 0023 §4 changes.*
   *Amended by 0024 (PD-068): AC-024 (test audit) — also except the tests 0024 AC-014 lists against a statement 0024 §5 replaces.*
+  *Amended by 0028: also excepts the tests 0028 AC-012 lists against a statement 0028 §5 replaces.*
+  *Amended by 0025 (PD-082): also except the tests 0025 AC-020 lists against a statement 0025 §4 changes.*
+  *Amended by 0026 (PD-082): also except the tests 0026 AC-015 lists against a statement 0026 §5 changes.*
+  *Amended by 0027 (PD-082, PD-083): also except the tests 0027 AC-014 lists against a statement 0027 §5 changes.*
 - **AC-025** 0001, 0003, 0006, 0007, 0013, 0015, 0016 and ADR-001 shall carry the notes of §5; a case-insensitive search of `README.md`, `docs/release-checklist.md`, `docs/product/design-brief.md` and `.architecture/*.md` shall find no "Move to…", "Move Spec", "drag", "move request", "move pick", "move result", "transition check" or `FeatherSpec: <name> (<version>)`; the README shall name the card Copy, the status bar with the rule of §6.3 and "Copy Next Step"; the release checklist shall carry AC-026; `CHANGELOG.md` shall name the removal and the new places of the next step under the version in preparation.
 - **AC-026** *(manual, Gregor)* M-1 on `tip-splitter`, Hands-On walkthrough with his assistant: task "start the Ready spec" — the Start line copied from the card with no failed attempt; on an Active spec `/sdd-plan`, then `continue` in the same chat, runs one step; the status bar names the spec he works on and its click copies; Dark, Light and High Contrast show the card line and row readable.
   *Amended by 0021 (PD-069): AC-026 — the run of 0021 AC-025.*
@@ -313,6 +326,7 @@ Decided by automated tests unless marked manual. Fixtures: one per NS rule (0015
 | A-008 | 0016 is implemented first and provides Copy feedback at the control | Order 0016 → 0017 in the split | AC-005, AC-012 refer to it |
 | A-009 | Status bar: plain accessible label; success visual only; a failure also warns (proxy) | No live region in the status bar, notifications are announced (§10); a toast per copy is noise; OP-001's advice | AC-014–AC-016 |
 | A-010 | No spec with a step → Copy `/sdd-specify`; specs not read → the Studio (proxy) | Guideline 9 "a way out"; 0018 O-8, 0006 zero specs; S4/S5 explain loading | AC-020 |
+*Amended by 0026 (PD-082): no visible "Next"; a hidden `Next step: ` stays (0026 A-005).*
 
 *Amended by 0021 (PD-069): A-001 — void (PD-072): NS-6 has no `continue` line.*
 

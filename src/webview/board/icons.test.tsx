@@ -2,8 +2,9 @@ import type { ReactElement } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { BOARD_STATES, type BoardState } from '../../shared/protocol/boardFilter';
 import { STATE_LOOK, type StateLook } from '../../shared/protocol/stateLook';
+import { STEP_LOOK } from '../../shared/protocol/stepLook';
 import { mount, type Mounted } from '../testing/dom';
-import { Glyph, StateIcon } from './icons';
+import { Glyph, StateIcon, StepIcon } from './icons';
 
 let mounted: Mounted | undefined;
 const original: Record<BoardState, StateLook> = { ...STATE_LOOK };
@@ -53,5 +54,24 @@ describe('0022 AC-026: a state glyph follows the motif of the one table, not the
         mounted = await mount(<StateIcon state="Review" />);
         expect(mounted.container.querySelector('svg')?.getAttribute('data-motif')).toBe('eye');
         expect(mounted.container.querySelector('path')?.getAttribute('d')).toBe(await pathOf(<Glyph kind="Review" />));
+    });
+});
+
+describe('0025 AC-014: StepIcon', () => {
+    it('draws every motif of the step table as an aria-hidden SVG with its own path; a dropped step draws none', async () => {
+        const paths = new Set<string>();
+        for (const key of ['done', 'next', 'open', 'returned', 'returnedBlocked', 'notFound'] as const) {
+            mounted = await mount(<StepIcon look={key} />);
+            const svg = mounted.container.querySelector('svg')!;
+            expect(svg.getAttribute('aria-hidden')).toBe('true');
+            expect(svg.getAttribute('data-motif')).toBe(STEP_LOOK[key].motif);
+            expect(svg.getAttribute('data-tint')).toBe(STEP_LOOK[key].colour);
+            paths.add(svg.querySelector('path')!.getAttribute('d')!);
+            mounted.unmount();
+            mounted = undefined;
+        }
+        expect(paths.size).toBe(6);
+        mounted = await mount(<StepIcon look="dropped" />);
+        expect(mounted.container.querySelector('svg')).toBeNull();
     });
 });

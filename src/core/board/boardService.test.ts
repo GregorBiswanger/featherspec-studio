@@ -172,7 +172,7 @@ describe('board service: Done collapsed and remembered', () => {
         disposables.push(second.service);
         await second.service.whenIdle();
         expect(doneColumn(second).cards).toHaveLength(2);
-        const damaged = createBoardWorld(await modelOf(WITH_DONE), createFakeBoardMemory({ v: 9 }));
+        const damaged = createBoardWorld(await modelOf(WITH_DONE), createFakeBoardMemory({ v: 10 }));
         disposables.push(damaged.service);
         expect(doneColumn(damaged).narrow).toBe('collapsed');
     });
@@ -333,7 +333,7 @@ describe('0021 AC-011, AC-010: a settings change reaches the detail', () => {
         w.service.onDidChangeDetail((view) => seen.push(view.kind === 'spec' ? `${view.stem}:${tipsOf(w)?.coach ?? 'none'}` : view.kind));
         w.tips.set(parseStepTipSettings(true, {}));
         await w.service.whenIdle();
-        expect(tipsOf(w)?.coach).toBe('any chat · fast model');
+        expect(tipsOf(w)?.coach).toBe('Tip: Use any chat with a fast model.');
         w.tips.set(parseStepTipSettings(false, {}));
         await w.service.whenIdle();
         expect(tipsOf(w)).toBeUndefined();
@@ -350,7 +350,7 @@ describe('0021 AC-011, AC-010: a settings change reaches the detail', () => {
         w.service.onDidChangeDetail(() => (emitted += 1));
         w.tips.set(parseStepTipSettings(true, { fast: 'Y' }));
         await w.service.whenIdle();
-        expect(tipsOf(w)?.coach).toBe('any chat · fast model (Y)');
+        expect(tipsOf(w)?.coach).toBe('Tip: Use any chat with a fast model (Y).');
         expect(emitted).toBe(1);
         w.tips.set(parseStepTipSettings(true, { fast: 'Y' }));
         await w.service.whenIdle();
@@ -381,7 +381,7 @@ describe('0024 AC-010: an offer change reaches the detail', () => {
         w.service.onDidChangeDetail((view) => seen.push(view.kind === 'spec' ? view.stem : view.kind));
         w.assistant.set({ assistant: 'copilot' });
         await w.service.whenIdle();
-        expect(sendOf(w)).toEqual({ assistant: 'copilot', target: 'current', targets: ['new', 'current'] });
+        expect(sendOf(w)).toEqual({ assistant: 'copilot', target: 'new', targets: ['new', 'current'] });
         w.assistant.set({ assistant: 'claudeCode' });
         await w.service.whenIdle();
         expect(sendOf(w)).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['new'] });

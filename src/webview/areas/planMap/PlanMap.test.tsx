@@ -163,7 +163,7 @@ describe('0023 AC-008: the header of the Plan map', () => {
         const container = await show({ selection: selected('0007'), detail: detailWith(plan) });
         const header = map(container).querySelector<HTMLElement>('.plan-map-header')!;
         expect(header.querySelector('h2')?.textContent).toBe('0007 Thing 0007');
-        expect(header.querySelector('.progress-text')?.textContent).toBe('2 of 5 done');
+        expect(header.querySelector('.progress-text')?.textContent).toBe('2 of 5 done · 40%');
         expect(header.querySelector('[role="progressbar"]')?.getAttribute('aria-valuenow')).toBe('2');
         expect(header.querySelector('.plan-map-closing')?.textContent).toBe(`The plan says: ${closing}`);
         const link = [...header.querySelectorAll<HTMLButtonElement>('button.file-link')].find((button) => button.textContent === 'Open plan')!;
@@ -280,7 +280,7 @@ describe('0023 AC-008: stage rows and step cards', () => {
         const container = await show({ selection: selected('0007'), detail: detailWith(planSample()) });
         const card = cardOf(container, 'T-003');
         const toggle = card.querySelector<HTMLButtonElement>('button[data-card-toggle]')!;
-        expect(squeezed(toggle)).toContain('◐ T-003 Step T-003');
+        expect(squeezed(toggle)).toContain('T-003 Step T-003');
         expect(squeezed(card.querySelector('.step-card-files'))).toBe('Files src/add.ts, src/add.test.ts');
         expect(card.querySelector('code')).toBeNull();
         expect(squeezed(card.querySelector('.step-card-covers'))).toContain('Covers AC-001');
@@ -325,7 +325,7 @@ describe('0023 AC-008: stage rows and step cards', () => {
                             ],
                         },
                     ],
-                    { current: true, returned: { n: 4, m: 5 } },
+                    { current: true, returned: '4 returned, T-002, T-004 blocked: the next step finds out what blocks.' },
                 ),
             ],
         });
@@ -336,10 +336,25 @@ describe('0023 AC-008: stage rows and step cards', () => {
             'Returned · status unknown',
             'Returned · blocked',
         ]);
-        expect(stageRow(container, 1).querySelector('.plan-stage-returned')?.textContent).toBe('4 of 5 steps returned');
-        const all = planSample({ stages: [stage(1, [{ steps: [step('T-001', 'returned', { returned: { status: 'done' } })] }], { current: true, returned: { n: 1, m: 1 } })] });
+        expect(stageRow(container, 1).querySelector('.plan-stage-returned')?.textContent).toBe('4 returned, T-002, T-004 blocked: the next step finds out what blocks.');
+        const all = planSample({ stages: [stage(1, [{ steps: [step('T-001', 'returned', { returned: { status: 'done' } })] }], { current: true, returned: '1 returned, waiting to be integrated: the next step integrates them.' })] });
         await show({ selection: selected('0007'), detail: detailWith(all) });
-        expect(stageRow(container, 1).querySelector('.plan-stage-returned')?.textContent).toBe('All steps returned: the next step integrates them.');
+        expect(stageRow(container, 1).querySelector('.plan-stage-returned')?.textContent).toBe('1 returned, waiting to be integrated: the next step integrates them.');
+    });
+
+    it('0025 AC-015: each stage row holding a returned step shows the identical sentence and no M-16 or M-17', async () => {
+        const sentence = '2 returned, T-004 blocked: the next step finds out what blocks.';
+        const plan = planSample({
+            returned: sentence,
+            stages: [
+                stage(1, [{ steps: [step('T-001', 'returned', { returned: { status: 'done' } }), step('T-002', 'returned', { returned: { status: 'blocked' } })] }], { current: true, returned: sentence }),
+                stage(2, [{ steps: [step('T-003', 'open')] }]),
+            ],
+        });
+        const container = await show({ selection: selected('0007'), detail: detailWith(plan) });
+        expect(stageRow(container, 1).querySelector('.plan-stage-returned')?.textContent).toBe(sentence);
+        expect(stageRow(container, 2).querySelector('.plan-stage-returned')).toBeNull();
+        expect(map(container).textContent).not.toMatch(/steps returned|All steps returned/);
     });
 
     it('a card says its state in words for assistive technology, and the symbol is left out of the reading', async () => {
@@ -354,14 +369,26 @@ describe('0023 AC-008: stage rows and step cards', () => {
         const heads = ['T-001', 'T-002', 'T-003', 'T-004', 'T-005', 'T-006'].map((id) => cardOf(container, id).querySelector<HTMLElement>('button[data-card-toggle]')!);
         expect(heads.map((head) => head.querySelector('.visually-hidden')?.textContent)).toEqual([', done', ', next', ', open', ', returned, blocked', ', returned', ', dropped']);
         expect(heads.map((head) => squeezed(head))).toEqual([
-            '✓ T-001 Step T-001, done',
-            '◐ T-002 Step T-002, next',
-            '○ T-003 Step T-003, open',
-            '⊘ T-004 Step T-004, returned, blocked',
-            '↩ T-005 Step T-005, returned',
+            'T-001 Step T-001, done',
+            'T-002 Step T-002, next',
+            'T-003 Step T-003, open',
+            'T-004 Step T-004, returned, blocked',
+            'T-005 Step T-005, returned',
             'T-006 Step T-006, dropped',
         ]);
-        expect(heads.slice(0, 5).every((head) => head.querySelector('.chip-symbol')?.getAttribute('aria-hidden') === 'true')).toBe(true);
+        expect(heads.slice(0, 5).every((head) => head.querySelector('svg')?.getAttribute('aria-hidden') === 'true')).toBe(true);
+    });
+
+    it('0025 AC-014: a card draws the motif of its state as an aria-hidden SVG, none of the old symbols, and keeps the state word', async () => {
+        const plan = planSample({
+            stages: [stage(1, [{ steps: [step('T-001', 'done'), step('T-002', 'next'), step('T-003', 'open'), step('T-004', 'returned', { returned: { status: 'blocked' } }), step('T-005', 'returned', { returned: { status: 'done' } }), step('T-006', 'dropped')] }], { current: true })],
+        });
+        const container = await show({ selection: selected('0007'), detail: detailWith(plan) });
+        const heads = ['T-001', 'T-002', 'T-003', 'T-004', 'T-005', 'T-006'].map((id) => cardOf(container, id).querySelector<HTMLElement>('button[data-card-toggle]')!);
+        expect(heads.map((head) => head.querySelector('svg')?.getAttribute('data-motif') ?? null)).toEqual(['check', 'debug-stackframe', 'circle-large-outline', 'circle-slash', 'reply', null]);
+        expect(heads.slice(0, 5).every((head) => head.querySelector('svg')?.getAttribute('aria-hidden') === 'true')).toBe(true);
+        expect(map(container).textContent).not.toMatch(/[✓◐○↩⊘]/);
+        expect(heads.map((head) => head.querySelector('.visually-hidden')?.textContent)).toEqual([', done', ', next', ', open', ', returned, blocked', ', returned', ', dropped']);
     });
 
     it('a dropped step keeps its card with the ID struck through; no other state strikes it', async () => {
@@ -420,7 +447,7 @@ describe('0023 AC-008: stage rows and step cards', () => {
         expect(map(container).querySelectorAll('.step-card-more')).toHaveLength(2);
         const chip = stageRow(container, 1).querySelector<HTMLElement>('[data-step-chip][data-state="notFound"]')!;
         expect(chip.tagName).toBe('SPAN');
-        expect(chip.textContent).toBe('? T-099, not in the steps');
+        expect(chip.textContent).toBe('T-099, not in the steps');
         expect(chip.closest('[data-step-card]')).toBeNull();
         await act(async () => cardOf(container, 'T-003').querySelector<HTMLButtonElement>('button[data-card-toggle]')!.focus());
         await act(async () => {
@@ -479,6 +506,8 @@ function waysOf(container: HTMLElement, number: number | string = 2): HTMLElemen
     return stageRow(container, number).querySelector<HTMLElement>('[data-ways]');
 }
 
+const radioOf = (container: HTMLElement, index: number): HTMLInputElement => waysOf(container)!.querySelectorAll<HTMLInputElement>('input[type="radio"]')[index]!;
+
 const SEQUENCE = 'Implement the whole stage 2 of .specs/active/0007-thing.plan.md in sequence';
 const SUBAGENTS = 'Implement the whole stage 2 of .specs/active/0007-thing.plan.md with subagents';
 const OTHERS = 'Implement the whole stage 2 of .specs/active/0007-thing.plan.md with other agents';
@@ -501,37 +530,35 @@ describe('0023 AC-009: the ways of the current stage', () => {
         expect(waysOf(container)!.querySelector('.plan-ways-toggle')?.getAttribute('aria-expanded')).toBe('false');
     });
 
-    it('expanded: the lead, the three ways in order with effect and prompt literally, then the start lines under Other agents', async () => {
+    it('0026 AC-009 (0023 AC-009 retargeted): expanded, the three ways are radios with their lines and the checked way\'s prompt; the start lines come with Other agents', async () => {
         const container = await show({ selection: selected('0007'), detail: detailWith(planSample()) });
         const block = waysOf(container)!;
         await click(block.querySelector<HTMLButtonElement>('.plan-ways-toggle')!);
-        expect(block.querySelector('.plan-ways-lead')?.textContent).toBe(
-            'Steps joined by ‖ share no file and may run in parallel. In sequence is the default; parallel pays off for large steps. Either parallel way runs the quality gates once, on the combined result, before a step is ticked.',
-        );
-        const ways = [...block.querySelectorAll<HTMLElement>('.plan-way')];
-        expect(ways.map((way) => way.querySelector('.plan-way-name')?.textContent)).toEqual(['In sequence', 'Subagents', 'Other agents']);
-        expect(ways.map((way) => way.querySelector('.plan-way-effect')?.textContent)).toEqual([
-            'One chat builds the steps one after another and stops at the stage end and at every test review on the way.',
-            "Where a working agreement asks for a test review, the chat first writes the stage's tests and stops for it; then it hands each step to a subagent. Subagents cannot ask you; there is no steering in between.",
-            'The chat proposes the commit a worktree needs and prints one start line per step. Paste each into another chat, tool or worktree; each worker builds its step and leaves a return note.',
+        expect(block.querySelector('.plan-ways-lead')).toBeNull();
+        expect([...block.querySelectorAll('label.plan-way')].map((way) => way.textContent)).toEqual([
+            'In sequence · default — One chat builds the steps one after another.',
+            'Subagents — The chat hands each step to a subagent; subagents cannot ask you.',
+            'Other agents — Each step runs in another chat or worktree from its start line.',
         ]);
-        expect(ways.map((way) => way.querySelector('.plan-way-prompt code')?.textContent)).toEqual([SEQUENCE, SUBAGENTS, OTHERS]);
-        expect(ways[0]!.querySelector('.plan-start-lines')).toBeNull();
-        expect(ways[1]!.querySelector('.plan-start-lines')).toBeNull();
-        expect(ways[2]!.querySelector('.plan-start-lead')?.textContent).toBe('Start lines — commit first: a worktree holds committed files only.');
-        expect([...ways[2]!.querySelectorAll('.plan-start-lines code')].map((code) => code.textContent)).toEqual([
+        expect([...block.querySelectorAll('.plan-way-prompt code')].map((code) => code.textContent)).toEqual([SEQUENCE]);
+        expect(block.querySelector('.plan-start-lines')).toBeNull();
+        await click(radioOf(container, 2));
+        expect(block.querySelector('.plan-start-lead')?.textContent).toBe('Start lines — commit first: a worktree holds committed files only.');
+        expect([...block.querySelectorAll('.plan-start-lines code')].map((code) => code.textContent)).toEqual([
             'Implement T-003 of .specs/active/0007-thing.plan.md as a parallel worker.',
             'Implement T-004 of .specs/active/0007-thing.plan.md as a parallel worker.',
         ]);
     });
 
-    it('a stage view without start lines (Ready) shows the three ways and no start line', async () => {
+    it('a stage view without start lines (Ready) shows the three ways and, with Other agents checked, its stage prompt and no start line', async () => {
         const base = planSample();
         const plan = planSample({ stages: base.stages.map((entry) => (entry.ways === undefined ? entry : { ...entry, ways: { ...entry.ways, startLines: [] } })) });
         const container = await show({ selection: selected('0007'), detail: detailWith(plan) });
         await click(waysOf(container)!.querySelector<HTMLButtonElement>('.plan-ways-toggle')!);
         expect(waysOf(container)!.querySelectorAll('.plan-way')).toHaveLength(3);
+        await click(radioOf(container, 2));
         expect(waysOf(container)!.querySelector('.plan-start-lines')).toBeNull();
+        expect(waysOf(container)!.querySelector('.plan-way-prompt code')?.textContent).toBe(OTHERS);
         expect(map(container).textContent).not.toContain('parallel worker');
     });
 
@@ -548,11 +575,17 @@ describe('0022 AC-015 as 0023 §4 amends it: the map breaks long paths', () => {
     it('a way\'s prompt and a start line may break after a path separator, and their text stays whole', async () => {
         const container = await show({ selection: selected('0007'), detail: detailWith(planSample()) });
         await click(waysOf(container)!.querySelector<HTMLButtonElement>('.plan-ways-toggle')!);
-        const prompts = [...waysOf(container)!.querySelectorAll<HTMLElement>('.plan-way-prompt code')];
+        const prompts: Array<{ text: string | null; breaks: boolean }> = [];
+        for (const index of [0, 1]) {
+            await click(radioOf(container, index));
+            const code = waysOf(container)!.querySelector<HTMLElement>('.plan-way-prompt code')!;
+            prompts.push({ text: code.textContent, breaks: code.querySelectorAll('wbr').length > 0 });
+        }
+        await click(radioOf(container, 2));
         const lines = [...waysOf(container)!.querySelectorAll<HTMLElement>('.plan-start-lines code')];
-        expect(prompts.map((code) => code.textContent)).toEqual([SEQUENCE, SUBAGENTS, OTHERS]);
+        expect(prompts.map((entry) => entry.text)).toEqual([SEQUENCE, SUBAGENTS]);
         expect(lines.map((code) => code.textContent)).toEqual(['Implement T-003 of .specs/active/0007-thing.plan.md as a parallel worker.', 'Implement T-004 of .specs/active/0007-thing.plan.md as a parallel worker.']);
-        expect([...prompts, ...lines].map((code) => code.querySelectorAll('wbr').length > 0)).toEqual([true, true, true, true, true]);
+        expect([...prompts.map((entry) => entry.breaks), ...lines.map((code) => code.querySelectorAll('wbr').length > 0)]).toEqual([true, true, true, true]);
     });
 
     it('the Files of a card may break after a path separator, and the paths stay whole', async () => {
@@ -570,22 +603,23 @@ describe('0023 AC-010: the Copy buttons of the map', () => {
         return container;
     }
 
-    it('each way has a secondary Copy prompt that copies the prompt alone and shows the feedback of 0021', async () => {
+    it('each way, once checked, has a secondary Copy prompt that copies the prompt alone and shows the feedback of 0021', async () => {
         const container = await openWays();
+        await click(radioOf(container, 1));
         const buttons = [...waysOf(container)!.querySelectorAll<HTMLButtonElement>('.plan-way-prompt > button.copy-button')];
-        expect(buttons.map((button) => button.getAttribute('aria-label'))).toEqual([`Copy prompt: ${SEQUENCE}`, `Copy prompt: ${SUBAGENTS}`, `Copy prompt: ${OTHERS}`]);
+        expect(buttons.map((button) => button.getAttribute('aria-label'))).toEqual([`Copy prompt: ${SUBAGENTS}`]);
         expect(buttons.every((button) => button.classList.contains('copy-secondary'))).toBe(true);
-        expect(buttons[1]!.textContent).toBe('Copy prompt');
-        await click(buttons[1]!);
+        expect(buttons[0]!.textContent).toBe('Copy prompt');
+        await click(buttons[0]!);
         expect(requests('copyText')).toEqual([{ text: SUBAGENTS }]);
         await send(copyResultEvent(true, COPIED_TEXT));
-        expect(buttons[1]!.textContent).toBe('Copied');
-        expect(buttons[0]!.textContent).toBe('Copy prompt');
-        expect(buttons[1]!.parentElement!.querySelector('[role="status"]')?.textContent).toBe('Copied to the clipboard.');
+        expect(buttons[0]!.textContent).toBe('Copied');
+        expect(buttons[0]!.parentElement!.querySelector('[role="status"]')?.textContent).toBe('Copied to the clipboard.');
     });
 
-    it('each start line has an icon Copy named "Copy prompt: <line>" that copies the line', async () => {
+    it('each start line has an icon Copy named "Copy prompt: <line>" that copies the line, with Other agents checked', async () => {
         const container = await openWays();
+        await click(radioOf(container, 2));
         const icons = [...waysOf(container)!.querySelectorAll<HTMLButtonElement>('.plan-start-lines button.copy-icon')];
         expect(icons.map((button) => button.getAttribute('aria-label'))).toEqual([
             'Copy prompt: Implement T-003 of .specs/active/0007-thing.plan.md as a parallel worker.',
@@ -595,9 +629,9 @@ describe('0023 AC-010: the Copy buttons of the map', () => {
         expect(requests('copyText')).toEqual([{ text: 'Implement T-003 of .specs/active/0007-thing.plan.md as a parallel worker.' }]);
     });
 
-    it('the map renders no primary button, with the ways open', async () => {
+    it('the map renders no primary button below its header, with the ways open', async () => {
         const container = await openWays();
-        const primary = [...map(container).querySelectorAll('button.copy-button')].filter((button) => !button.classList.contains('copy-secondary'));
+        const primary = [...map(container).querySelectorAll('button.copy-button')].filter((button) => !button.classList.contains('copy-secondary') && button.closest('.plan-map-header') === null);
         expect(primary).toEqual([]);
     });
 });
@@ -618,7 +652,7 @@ describe('0023 AC-012: the map follows the files', () => {
                     ? entry
                     : {
                           ...entry,
-                          returned: { n: 1, m: 2 },
+                          returned: '1 of 2 returned · T-003 not back yet',
                           groups: [{ steps: [entry.groups[0]!.steps[0]!, { ...entry.groups[0]!.steps[1]!, state: 'returned' as const, returned: { status: 'blocked' as const, reason: 'no access' } }] }],
                       },
             ),
@@ -626,7 +660,7 @@ describe('0023 AC-012: the map follows the files', () => {
         await update(changed);
         expect(cardOf(container, 'T-004').getAttribute('data-state')).toBe('returned');
         expect(cardOf(container, 'T-004').querySelector('.step-card-returned')?.textContent).toBe('Returned · blocked: no access');
-        expect(stageRow(container, 2).querySelector('.plan-stage-returned')?.textContent).toBe('1 of 2 steps returned');
+        expect(stageRow(container, 2).querySelector('.plan-stage-returned')?.textContent).toBe('1 of 2 returned · T-003 not back yet');
         expect(cardOf(container, 'T-004').querySelector('button[data-card-toggle]')?.getAttribute('aria-expanded')).toBe('true');
         expect(waysOf(container)!.querySelector('.plan-ways-toggle')?.getAttribute('aria-expanded')).toBe('true');
         await update(planSample());
@@ -668,7 +702,7 @@ describe('0023 AC-012: the map follows the files', () => {
                 const { ways: _ways, ...rest } = entry;
                 return {
                     ...rest,
-                    returned: { n: 1, m: 2 },
+                    returned: '1 of 2 returned · T-003 not back yet',
                     groups: [{ steps: [entry.groups[0]!.steps[0]!, { ...entry.groups[0]!.steps[1]!, state: 'returned' as const, returned: { status: 'done' as const } }] }],
                 };
             }),
@@ -683,6 +717,7 @@ describe('0023 AC-012: the map follows the files', () => {
 
     it('PD-077: a focused start-line Copy whose ways block goes with a return note hands the focus to the heading of the map', async () => {
         const container = await openWays();
+        await click(radioOf(container, 2));
         const copy = waysOf(container)!.querySelector<HTMLButtonElement>('.plan-start-lines button.copy-icon')!;
         await act(async () => copy.focus());
         expect(document.activeElement).toBe(copy);
@@ -703,8 +738,20 @@ describe('0023 AC-012: the map follows the files', () => {
         expect(document.activeElement).toBe(map(container).querySelector('[data-map-heading]'));
     });
 
+    it('0026 AC-013: a focused radio or the (?) of the ways block goes with a return note: the focus goes to the heading of the map', async () => {
+        for (const pick of ['input[type="radio"]', 'button.toggletip']) {
+            const container = await openWays();
+            await act(async () => waysOf(container)!.querySelector<HTMLElement>(pick)!.focus());
+            await update(withoutWays());
+            expect(waysOf(container), pick).toBeNull();
+            expect(document.activeElement, pick).toBe(map(container).querySelector('[data-map-heading]'));
+            await update(planSample());
+        }
+    });
+
     it('PD-077: a start line whose step returns takes the focus to the heading even while the ways block stays', async () => {
         const container = await openWays();
+        await click(radioOf(container, 2));
         const lines = [...waysOf(container)!.querySelectorAll<HTMLButtonElement>('.plan-start-lines button.copy-icon')];
         await act(async () => lines[1]!.focus());
         const base = planSample();
@@ -721,6 +768,7 @@ describe('0023 AC-012: the map follows the files', () => {
 
     it('a focused Copy that still exists keeps the focus through an update, and the ways stay open', async () => {
         const container = await openWays();
+        await click(radioOf(container, 2));
         await act(async () => waysOf(container)!.querySelector<HTMLButtonElement>('.plan-start-lines button.copy-icon')!.focus());
         await update(planSample({ count: { done: 3, total: 5 } }));
         expect(document.activeElement).toBe(waysOf(container)!.querySelector('.plan-start-lines button.copy-icon'));

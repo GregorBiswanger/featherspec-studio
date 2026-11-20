@@ -20,6 +20,6 @@ export function StepAction(props: {
     return props.send === undefined ? (
         <CopyButton look={props.look} line={props.line} copyResult={props.copyResult} onCopy={props.onCopy} handoff={handoff} />
     ) : (
-        <SendButton send={props.send} line={props.line} sendResult={props.sendResult} onSend={props.onSend} copyResult={props.copyResult} onCopy={props.onCopy} onLeaveWithFocus={handoff.offer} />
+        <SendButton look={props.look === 'secondary' ? 'secondary' : 'primary'} send={props.send} line={props.line} sendResult={props.sendResult} onSend={props.onSend} copyResult={props.copyResult} onCopy={props.onCopy} onLeaveWithFocus={handoff.offer} />
     );
 }

@@ -10,6 +10,31 @@ First release.
 
 ### Added
 
+- Send on the follow-up line: where an assistant is chosen, the second prompt of a Next step (`Then: write the plan`
+  after `/sdd-clarify`, the report and continue lines of an Active spec, `/sdd-lifecycle` after `/sdd-compile`) offers its
+  own secondary Send to Copilot or Claude Code, with the same menu, its own Tip sentence and the spec attached where its
+  step reads it, in the detail and in the Plan map header; the two steps are separated by about one line of space. Without
+  an assistant the line keeps its Copy prompt.
+- After you hand `/sdd-clarify` over (Send, Copy prompt or Copy Next Step) and the spec file then changes, a Backlog
+  spec's next step is `Write the plan` · `/sdd-plan <spec>`, with Send attaching the spec, instead of the challenge
+  again. The Studio remembers the hand-over per workspace, survives a reload and reads no text of the spec. The coach line
+  is one sentence, for example `Tip: Use a new chat with a strong model.` (PD-092).
+- Onboarding before `/sdd-setup`: in a project where FeatherSpec is installed but `/sdd-setup` has not run (the Memory Bank
+  project brief still `TBD` and the architecture snapshot never reconciled), the empty Overview and Board show
+  `Welcome to FeatherSpec` with the feather mark and offer `/sdd-setup` with Send or Copy prompt; the Specs tree, Up next
+  and Copy Next Step name `/sdd-setup` too. Once setup has run, `No specs yet. Start with /sdd-specify` comes back
+  without a reload.
+- Send attaches the spec: Send puts the spec in the chat as a file, for GitHub Copilot through `attachFiles` and for Claude
+  Code through an `@` mention, in every FeatherSpec version, and the button's tooltip and accessible name name the file
+  (`Attaches 0002-x.md.`); no line shows under it. Every step that reads the spec attaches it; `/sdd-lifecycle` and `/sdd-overview` do not. FeatherSpec 1.11.0
+  tells agents that an attached spec counts as read; an older version may read it a second time (PD-091). Copy prompt
+  attaches nothing, and nothing is submitted.
+- Send defaults and wording: the Send button opens a new chat for every step, and the current chat is in the menu, which
+  checks the active choice. The open chat has one name, current or new chat. Short forms start with the first word of
+  their intent (`Find blocker`, `Write plan`, `Start`, `Report`, `Move back to Ready`) without a visible "Next" (a hidden
+  "Next step:" stays for screen readers). Now shows at most five rows, then "+ n more"; the coach line is shown once per
+  spec and view, and the first Now row is no primary button. The ways to run a stage are three radio lines with In
+  sequence as the default, and the explanations sit behind **About these ways**.
 - The **Specs** view in the Activity Bar, a native tree of your specs in four groups: In progress,
   Ready, Backlog and Done (collapsed); a group that holds a problem says so. A row shows number, title
   and the short next step (the state where there is none), within 32 characters for label and
@@ -23,6 +48,11 @@ First release.
   `FeatherSpec Studio: Copy Next Step` does the same and, without a current spec, offers a list. An
   Active spec with an open plan step gets two prompts: `Implement <ID> of <plan>` builds exactly that
   step, `/sdd-plan <spec>` has the agent report where the plan stands.
+- The next step follows the plan: a spec whose plan has every step ticked is Review with `/sdd-compile` as its
+  next step, whatever the plan's status line says. When a step has a `Verified:` line but no tick, and below
+  FeatherSpec 1.11.0 also when the plan's `Current step` names an unfinished step other than the open one, the
+  prompt `/sdd-plan <spec>` comes first, under "Let the agent report first — the plan and the ticks may differ", and the
+  step to continue with second. A Ready spec starts with `Implement <ID> of <plan>`.
 - Every next-step line says what it does: each prompt sits under its intent (for example "Have the
   result verified"), cards, rows and the quick pick show a short intent beside the short form of the
   prompt, and every tooltip shows the intents with the full prompts. The button is **Copy prompt**; it
@@ -52,6 +82,11 @@ First release.
   `FeatherSpec Studio: Open Plan Map` opens it. The detail of a spec gets a **Plan** section with the same
   stages in short and a link to the map. Returned work (a worker's return note) shows on the step and leads
   to **Integrate the returned steps** as the next step. Studio starts no agent and writes no file.
+- Plan map navigation and progress: a step ID in the side panel, in a Next step and in an Overview row is a link to its
+  card in the Plan map (Ctrl or Cmd+click opens the plan file), **Show in Plan Map** in the Specs view's context menu does
+  the same for the spec's next step, and the map's header shows the spec's Next step. Progress reads like `4 of 6 done · 67%`
+  everywhere, step states have their own icon shapes, cards show what was verified or reported, and while a parallel
+  worker is still out the `Integrate` line is not the primary button.
 - The detail of a spec as a side panel next to the Overview and the Board, and beside the Plan map from 900 px, with a divider to set its width
   (remembered per workspace; Enter or a double-click resets it); below 900 px the area or the detail shows
   alone and a back button returns. It

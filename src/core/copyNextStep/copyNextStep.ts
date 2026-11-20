@@ -1,8 +1,10 @@
 import { COPY_FAILED_TEXT, COPY_PROMPT_LABEL, stepShortForm } from '../../shared/protocol/nextStepTexts';
+import { SETUP_LINE } from '../../shared/protocol/texts';
+import type { HandOverPort } from '../assistant/handOver';
 import { copyLine } from '../board/copyLine';
 import type { StepPickItem, StepUiPort } from '../ports/copyNextStep';
 import type { ClipboardPort } from '../ports/board';
-import { NO_STEP_COPY_LINE, NO_STEP_MESSAGE, PICK_PLACEHOLDER } from './copyNextStepTexts';
+import { NO_STEP_COPY_LINE, NO_STEP_MESSAGE, NO_STEP_SETUP_MESSAGE, PICK_PLACEHOLDER } from './copyNextStepTexts';
 import type { StatusEntry } from './statusEntry';
 
 export interface CopyNextStepActions {
@@ -15,6 +17,7 @@ export interface CopyNextStepDeps {
     clipboard: ClipboardPort;
     ui: StepUiPort;
     actions: CopyNextStepActions;
+    handOver?: HandOverPort;
 }
 
 export interface CopyNextStep {
@@ -24,7 +27,11 @@ export interface CopyNextStep {
 
 export function createCopyNextStep(deps: CopyNextStepDeps): CopyNextStep {
     async function copy(line: string): Promise<void> {
+        const handOver = deps.handOver?.begin(line);
         const outcome = await copyLine(deps.clipboard, line);
+        if (outcome.ok) {
+            await handOver?.commit();
+        }
         deps.entry.copied(outcome.ok);
         if (!outcome.ok) {
             deps.ui.warn(COPY_FAILED_TEXT);
@@ -45,9 +52,10 @@ export function createCopyNextStep(deps: CopyNextStepDeps): CopyNextStep {
                 return;
             case 'none': {
                 if (situation.steps.length === 0) {
-                    const chosen = await deps.ui.inform(NO_STEP_MESSAGE, COPY_PROMPT_LABEL);
+                    const setup = situation.setupRun === 'not run';
+                    const chosen = await deps.ui.inform(setup ? NO_STEP_SETUP_MESSAGE : NO_STEP_MESSAGE, COPY_PROMPT_LABEL);
                     if (chosen === COPY_PROMPT_LABEL) {
-                        await copy(NO_STEP_COPY_LINE);
+                        await copy(setup ? SETUP_LINE : NO_STEP_COPY_LINE);
                     }
                     return;
                 }

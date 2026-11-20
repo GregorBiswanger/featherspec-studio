@@ -11,9 +11,17 @@ export interface PlanReturnView {
     reasonFull?: string;
 }
 
+export type CoverState = 'verified' | 'built' | 'open';
+
 export interface PlanCoverView {
     id: string;
     open?: LineTarget;
+    state?: CoverState;
+}
+
+export interface PlanTextView {
+    short: string;
+    full: string;
 }
 
 export interface PlanStepView {
@@ -25,6 +33,9 @@ export interface PlanStepView {
     covers: PlanCoverView[];
     doText?: string;
     verify?: string;
+    verified?: PlanTextView;
+    reported?: PlanTextView;
+    copy?: string;
     returned?: PlanReturnView;
 }
 
@@ -46,7 +57,7 @@ export interface PlanStageView {
     parallel: boolean;
     current: boolean;
     finished: boolean;
-    returned?: { n: number; m: number };
+    returned?: string;
     groups: PlanGroupView[];
     ways?: PlanWaysView;
 }
@@ -62,6 +73,7 @@ export interface PlanView {
     plan: LineTarget;
     count?: { done: number; total: number };
     closing?: PlanClosingView;
+    returned?: string;
     staged: boolean;
     stages: PlanStageView[];
     loose: PlanStepView[];
@@ -105,7 +117,7 @@ function isLineTarget(value: unknown): value is LineTarget {
 }
 
 function isCover(value: unknown): value is PlanCoverView {
-    return isRecord(value) && keysAre(value, ['id'], ['open']) && isString(value.id) && (value.open === undefined || isLineTarget(value.open));
+    return isRecord(value) && keysAre(value, ['id'], ['open', 'state']) && isString(value.id) && (value.open === undefined || isLineTarget(value.open)) && (value.state === undefined || value.state === 'verified' || value.state === 'built' || value.state === 'open');
 }
 
 function isReturn(value: unknown): value is PlanReturnView {
@@ -118,10 +130,14 @@ function isReturn(value: unknown): value is PlanReturnView {
     );
 }
 
+function isText(value: unknown): value is PlanTextView {
+    return isRecord(value) && keysAre(value, ['short', 'full']) && isString(value.short) && isString(value.full);
+}
+
 function isStep(value: unknown): value is PlanStepView {
     return (
         isRecord(value) &&
-        keysAre(value, ['id', 'state', 'title', 'files', 'covers'], ['open', 'doText', 'verify', 'returned']) &&
+        keysAre(value, ['id', 'state', 'title', 'files', 'covers'], ['open', 'doText', 'verify', 'verified', 'reported', 'copy', 'returned']) &&
         isString(value.id) &&
         isString(value.state) &&
         STEP_STATES.includes(value.state) &&
@@ -133,6 +149,9 @@ function isStep(value: unknown): value is PlanStepView {
         value.covers.every(isCover) &&
         (value.doText === undefined || isString(value.doText)) &&
         (value.verify === undefined || isString(value.verify)) &&
+        (value.verified === undefined || isText(value.verified)) &&
+        (value.reported === undefined || isText(value.reported)) &&
+        (value.copy === undefined || (isString(value.copy) && value.copy.length > 0)) &&
         (value.returned === undefined || isReturn(value.returned))
     );
 }
@@ -165,7 +184,7 @@ function isStage(value: unknown): value is PlanStageView {
         typeof value.parallel === 'boolean' &&
         typeof value.current === 'boolean' &&
         typeof value.finished === 'boolean' &&
-        (value.returned === undefined || (isRecord(value.returned) && keysAre(value.returned, ['n', 'm']) && isCount(value.returned.n) && isCount(value.returned.m))) &&
+        (value.returned === undefined || (isString(value.returned) && value.returned.length > 0)) &&
         Array.isArray(value.groups) &&
         value.groups.every(isGroup) &&
         (value.ways === undefined || isWays(value.ways))
@@ -179,11 +198,12 @@ function isClosing(value: unknown): value is PlanClosingView {
 export function isPlanView(value: unknown): value is PlanView {
     return (
         isRecord(value) &&
-        keysAre(value, ['kind', 'plan', 'staged', 'stages', 'loose'], ['count', 'closing']) &&
+        keysAre(value, ['kind', 'plan', 'staged', 'stages', 'loose'], ['count', 'closing', 'returned']) &&
         value.kind === 'plan' &&
         isLineTarget(value.plan) &&
         (value.count === undefined || (isRecord(value.count) && keysAre(value.count, ['done', 'total']) && isCount(value.count.done) && isCount(value.count.total))) &&
         (value.closing === undefined || isClosing(value.closing)) &&
+        (value.returned === undefined || (isString(value.returned) && value.returned.length > 0)) &&
         typeof value.staged === 'boolean' &&
         Array.isArray(value.stages) &&
         value.stages.every(isStage) &&

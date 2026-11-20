@@ -1,17 +1,26 @@
 import { ASSISTANT_TARGETS, type SendView } from '../../shared/protocol/assistant';
 import { ASSISTANT_NAMES, sendTipText } from '../../shared/protocol/assistantTexts';
-import { STEP_GUIDES, TIP_CLOSING, type StepCase } from '../../shared/protocol/nextStepTexts';
+import { TIP_CLOSING, type StepCase } from '../../shared/protocol/nextStepTexts';
+import { attachmentOf, type AttachmentContext } from './attachment';
 import type { Offer } from './offer';
 
 export function tipClosingOf(offer: Offer | undefined): readonly [string, string] {
-    return offer === undefined ? TIP_CLOSING : [sendTipText(ASSISTANT_NAMES[offer.assistant]), TIP_CLOSING[1]];
+    if (offer === undefined) {
+        return TIP_CLOSING;
+    }
+    const send = sendTipText(ASSISTANT_NAMES[offer.assistant]);
+    return [send, TIP_CLOSING[1]];
 }
 
-export function sendViewOf(offer: Offer | undefined, stepCase: StepCase): SendView | undefined {
-    if (offer === undefined) {
+export function plainSendViewOf(offer: Offer | undefined): SendView | undefined {
+    return offer === undefined ? undefined : { assistant: offer.assistant, target: 'new', targets: [...ASSISTANT_TARGETS[offer.assistant]] };
+}
+
+export function sendViewOf(offer: Offer | undefined, stepCase: StepCase, context?: AttachmentContext): SendView | undefined {
+    const view = plainSendViewOf(offer);
+    if (view === undefined || offer === undefined) {
         return undefined;
     }
-    const targets = [...ASSISTANT_TARGETS[offer.assistant]];
-    const current = offer.assistant === 'copilot' && STEP_GUIDES[stepCase].session !== 'new';
-    return { assistant: offer.assistant, target: current ? 'current' : 'new', targets };
+    const attach = context === undefined ? undefined : attachmentOf(offer, stepCase, context).attach;
+    return attach === undefined ? view : { ...view, attach };
 }

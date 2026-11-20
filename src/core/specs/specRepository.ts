@@ -1,6 +1,7 @@
 import type { FileWatchPort } from '../ports/fileWatch';
 import type { ClockPort, Disposable } from '../ports/host';
 import type { SpecSourcePort } from '../ports/specSource';
+import type { SetupRun } from '../discovery/setupSign';
 import { createRerunScheduler } from '../discovery/rerunScheduler';
 import { readProjectFiles } from './files';
 import type { ProjectFile } from './files';
@@ -10,6 +11,7 @@ import type { ProjectRead } from './readProject';
 export interface RepositoryProject {
     root: string;
     version: string;
+    setupRun?: SetupRun;
 }
 
 export interface SpecChange {
@@ -166,7 +168,7 @@ export function createSpecRepository(options: SpecRepositoryOptions): SpecReposi
             }
             return known;
         });
-        const model = await buildProject(options.source, project.root, project.version, files);
+        const model = await buildProject(options.source, project.root, project.version, files, undefined, project.setupRun);
         return { project, files: files.files, model, readAt: options.clock.now() };
     }
 

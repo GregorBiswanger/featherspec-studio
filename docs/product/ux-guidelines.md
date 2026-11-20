@@ -40,6 +40,8 @@ the content · 0020 native spec tree, Spec Explorer area folded into tree and si
 | 9 | Kept from 0.1.0 | Theme fidelity, keyboard model, empty and error states were rated excellent (02 §5). |
 | 1 (2026-11-18) | Intent before command, "Copy prompt" | For an Active spec the step showed `/sdd-plan`; Gregor read it as "write a new plan" although the plan existed (review 07 N-1, §5.1). "Copy" did not say what lands on the clipboard. |
 | 8 (2026-11-18) | At most two primary buttons per view | Every row and card carried a filled Copy button, ten on one screen; the buttons were louder than the titles (07 N-6). |
+| 5 (2026-11-19) | A step ID leads to its card | In the click test a step ID in the Next step and in the map's chips opened a Markdown file the developer then had to read (F-1, g-r2-01); criterion IDs and `Open` keep opening the file, a step ID goes to its card in the Plan map and Ctrl/Cmd+click opens the plan (0025). |
+| 11 (2026-11-19) | One next step per window | The Plan map showed no next step while the side panel beside it did, so the developer scrolled to the one place that told what to do next (PD-081, g-r2-04); the advice appears in the detail, the first Now row and the Plan map header, and the detail beside the map leaves it out (0025). |
 | 11 | Guide, don't crowd | FeatherSpec's advice on session and model (a new chat for `/sdd-compile` with another model family, a new chat for `/sdd-clarify`, a strong model with web search for `/sdd-plan`) sat only in its README (07 §6a). Model names age in weeks, so the product speaks in classes. |
 | 12 | Check at narrow width | With the side panel open below 900 px the Overview kept about 250 px and broke titles mid-word; unit tests could not see it (07 N-2). |
 

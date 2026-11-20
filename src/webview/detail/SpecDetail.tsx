@@ -124,6 +124,7 @@ function Picture(props: {
     onClose: (() => void) | undefined;
     back: DetailAreaId | undefined;
     onOpenMap: (() => void) | undefined;
+    withNextStep: boolean;
 }) {
     const { detail, fileResult, onOpen } = props;
     const now = new Date();
@@ -138,7 +139,7 @@ function Picture(props: {
     return (
         <>
             <Header detail={detail} onClose={props.onClose} back={props.back} headingRef={headingRef} />
-            <NextStep nextStep={detail.nextStep} copyResult={props.copyResult} onCopy={props.onCopy} sendResult={props.sendResult} onSend={props.onSend} />
+            {props.withNextStep ? <NextStep nextStep={detail.nextStep} fileResult={fileResult} onOpen={onOpen} copyResult={props.copyResult} onCopy={props.onCopy} sendResult={props.sendResult} onSend={props.onSend} /> : null}
             {detail.problems.length === 0 ? null : (
                 <ul className="detail-problems" aria-label={BANNER_HEADING}>
                     {detail.problems.map((line, index) => (
@@ -152,7 +153,7 @@ function Picture(props: {
                 </ul>
             )}
             {plan === undefined ? null : <PlanSection plan={plan} fileResult={fileResult} onOpen={onOpen} onOpenMap={props.onOpenMap ?? noop} />}
-            {detail.progress === undefined ? null : <Progress progress={detail.progress} fileResult={fileResult} onOpen={onOpen} withSteps={plan === undefined} />}
+            {detail.progress === undefined ? null : <Progress progress={detail.progress} fileResult={fileResult} onOpen={onOpen} withSteps={plan === undefined} mapable={detail.plan?.kind === 'plan' && detail.state !== 'Done'} />}
             <PlainSection title={FILES_HEADING}>
                 <ul className="detail-files">
                     {detail.files.map((file) => (
@@ -186,11 +187,12 @@ export function SpecDetail(props: {
     back?: DetailAreaId;
     fallback?: () => void;
     onOpenMap?: () => void;
+    withNextStep?: boolean;
 }) {
     const { detail } = props;
     return (
         <DetailFrame as="div" labelled={false} onClose={props.onClose} fallback={props.fallback}>
-            <Picture key={detail.key} detail={detail} fileResult={props.fileResult} copyResult={props.copyResult} sendResult={props.sendResult} onOpen={props.onOpen} onCopy={props.onCopy} onSend={props.onSend} onClose={props.onClose} back={props.back} onOpenMap={props.onOpenMap} />
+            <Picture key={detail.key} detail={detail} fileResult={props.fileResult} copyResult={props.copyResult} sendResult={props.sendResult} onOpen={props.onOpen} onCopy={props.onCopy} onSend={props.onSend} onClose={props.onClose} back={props.back} onOpenMap={props.onOpenMap} withNextStep={props.withNextStep !== false} />
         </DetailFrame>
     );
 }
