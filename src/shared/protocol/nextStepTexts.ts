@@ -136,6 +136,11 @@ export const NS6_RESUME_INTENT = 'Let the agent report where the plan stands';
 
 export const INTEGRATE_INTENT = 'Integrate the returned steps';
 
+export function waitingIntegrateIntent(ids: readonly string[]): string {
+    const names = ids.length < 2 ? ids.join('') : `${ids.slice(0, -1).join(', ')} and ${ids[ids.length - 1]}`;
+    return `When ${names} ${ids.length < 2 ? 'is' : 'are'} back: integrate the returned steps`;
+}
+
 export const WRITE_PLAN_INTENT = 'Write the plan';
 
 export const NS8_INTENT = 'Add acceptance criteria';
@@ -159,6 +164,8 @@ export function thenContinueIntent(id: string, title: string): string {
 export function startIntent(id: string, title: string): string {
     return withTitle('Start implementing: ', id, title);
 }
+
+export const UPDATE_ATTACH_TEXT = 'Update to FeatherSpec 1.11.0 with /sdd-featherspec-update so the attached spec is not read twice.';
 
 export const COACH_TIP_PREFIX = 'Tip:';
 

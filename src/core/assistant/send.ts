@@ -1,3 +1,4 @@
+import { attachesInTarget } from '../../shared/protocol/assistant';
 import { ASSISTANT_NAMES, activatingFailedCause, attachMissingOutputText, commandFailedCause, commandNotFoundCause, extensionNotFoundCause, noResultCause, pasteKeyOf, sendOpenedText, sendOpenedWithoutText, sendOutputCopiedText, sendOutputNotCopiedText, sendWarnCopiedText, sendWarnNotCopiedText } from '../../shared/protocol/assistantTexts';
 import type { SendOutcomeView, SendRequest } from '../../shared/protocol/assistant';
 import { copyLine } from '../board/copyLine';
@@ -90,7 +91,7 @@ export function createSend(deps: SendDeps): Send {
         }
         let calls = plain;
         let unattached: string | undefined;
-        if (request.attach !== undefined && (deps.attaching?.(request.assistant) ?? spec.attachesSpec)) {
+        if (request.attach !== undefined && attachesInTarget(request.assistant, request.target) && (deps.attaching?.(request.assistant) ?? spec.attachesSpec)) {
             const target = deps.attachment === undefined ? undefined : await deps.attachment(request.attach);
             if (isSettled()) {
                 return undefined;

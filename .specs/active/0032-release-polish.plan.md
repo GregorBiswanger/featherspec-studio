@@ -3,7 +3,7 @@
 **Spec:** [0032-release-polish.md](0032-release-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-20
-**Current step:** T-002
+**Current step:** T-003
 
 ## Approach
 
@@ -65,8 +65,8 @@ No parallel stage: T-001…T-003 share `nextStepTexts.ts` and the detail protoco
   "0032 AC-005 …" (one, two, three out; blocked; all back), "0032 AC-008 …" (calls per target, names, 1.10.0, 1.11.0,
   `unknown`).
 - **Verify:** `npx vitest run src/core/board src/core/planMap src/core/assistant` — red first, then green.
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** `npx vitest run src/core/board src/core/planMap src/core/assistant src/core/overview` red first, then green 961 passed; `npx tsc --noEmit` clean. 2026-11-20
+- **Notes:** Update sentence stands in paragraph 1 between effect and then-sentence (keeps the `Send it once …$` literal). A BLOCKED member makes the next step NS-4, so no waiting sentence (A-002 holds: counted as back). `attachesInTarget()` in `shared/protocol/assistant.ts` serves core and webview.
 
 ### T-003 — Onboarding and Send row
 

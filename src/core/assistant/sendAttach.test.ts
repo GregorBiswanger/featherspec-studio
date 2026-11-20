@@ -104,15 +104,15 @@ describe('0027 AC-004: Copilot attaches the spec on its one open call', () => {
         expect(w.written).toEqual([]);
     });
 
-    it('0027 AC-004: Send to the current chat records only the open call, with the attachment', async () => {
+    it('0027 AC-004: Send to the current chat records only the open call, without the attachment (0032 §6.8)', async () => {
         const w = await world('copilot');
         await w.send(request('copilot', 'current', CLARIFY, KEY));
-        expect(w.host.calls).toEqual([{ command: OPEN, args: [{ query: CLARIFY, isPartialQuery: true, attachFiles: [uriOf(w, KEY)] }] }]);
+        expect(w.host.calls).toEqual([{ command: OPEN, args: [{ query: CLARIFY, isPartialQuery: true }] }]);
     });
 
     it('0027 AC-004: attachFiles holds exactly the URI the host port gives for the project root and the spec path, asked once', async () => {
         const w = await world('copilot');
-        await w.send(request('copilot', 'current', CLARIFY, KEY));
+        await w.send(request('copilot', 'new', CLARIFY, KEY));
         expect(w.host.uriRequests).toEqual([{ root: w.root, key: KEY }]);
     });
 });
@@ -297,5 +297,23 @@ describe('0027 AC-008: the fallback copies exactly the line, never the suffix, a
         const result = await w.send(request('copilot', 'new', CLARIFY, KEY));
         expect(result.outcome).toBe('copied');
         expect(w.written).toEqual([CLARIFY]);
+    });
+});
+
+describe('0032 AC-008: Copilot attaches only in a new chat (PD-094)', () => {
+    it('0032 AC-008 current chat: open without attachFiles, even when the request carries the spec; the file check is not asked', async () => {
+        const w = await world('copilot');
+        await w.send(request('copilot', 'current', CLARIFY, KEY));
+        expect(w.host.calls).toEqual([{ command: OPEN, args: [{ query: CLARIFY, isPartialQuery: true }] }]);
+        expect(w.host.uriRequests).toEqual([]);
+    });
+
+    it('0032 AC-008 new chat keeps attaching; Claude Code is unchanged', async () => {
+        const w = await world('copilot');
+        await w.send(request('copilot', 'new', CLARIFY, KEY));
+        expect(w.host.calls).toEqual([{ command: NEW_CHAT, args: [] }, { command: OPEN, args: [{ query: CLARIFY, isPartialQuery: true, attachFiles: [uriOf(w, KEY)] }] }]);
+        const claude = await world('claudeCode');
+        await claude.send(request('claudeCode', 'new', CLARIFY, KEY));
+        expect(claude.host.calls).toEqual([{ command: CLAUDE_OPEN, args: [undefined, `${CLARIFY} @${KEY}`] }]);
     });
 });

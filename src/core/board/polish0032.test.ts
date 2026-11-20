@@ -67,3 +67,20 @@ describe('0032 AC-004: Then and Or on every follow-up line', () => {
         expect(nine.lines.map((line) => line.intent)).toEqual(['Have the spec challenged', 'Then: write the plan']);
     });
 });
+
+describe('0032 AC-008: the (?) asks for the update where Send attaches below 1.11.0', () => {
+    const UPDATE = 'Update to FeatherSpec 1.11.0 with /sdd-featherspec-update so the attached spec is not read twice.';
+    const about = (version: string, attaches: boolean): string => stepTips('NS-9', SHOW, undefined, { version, send: true, ...(attaches ? { attaches: true as const } : {}) }).about[0]!;
+
+    it.each(['1.10.0', '1.11.0-rc.1', 'unknown', 'next'])('0032 AC-008 %s: the update sentence stands in the first paragraph', (version) => {
+        expect(about(version, true)).toContain(UPDATE);
+    });
+
+    it.each(['1.11.0', '1.12.0'])('0032 AC-008 %s: no update sentence', (version) => {
+        expect(about(version, true)).not.toContain(UPDATE);
+    });
+
+    it('0032 AC-008 where Send attaches nothing there is no update sentence', () => {
+        expect(about('1.10.0', false)).not.toContain(UPDATE);
+    });
+});

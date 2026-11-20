@@ -1,3 +1,4 @@
+import { waitingIntegrateIntent } from '../../shared/protocol/nextStepTexts';
 import { groupReturnedText, returnedWorkText, type ReturnedClause } from '../../shared/protocol/planMapTexts';
 import { nextStep } from '../board/nextStep';
 import type { LifecycleEntry } from '../lifecycle/model';
@@ -45,7 +46,7 @@ function inPlanOrder(ids: Iterable<string>, order: readonly string[]): string[] 
     return [...known, ...[...wanted].filter((id) => !order.includes(id)).sort()];
 }
 
-function groupView(plan: PlanEntry, returned: Returned, order: readonly string[]): string | undefined {
+function groupView(plan: PlanEntry, returned: Returned, order: readonly string[]): { text: string; out: string[] } | undefined {
     const parsed = plan.parsed;
     if (parsed === undefined) {
         return undefined;
@@ -69,12 +70,13 @@ function groupView(plan: PlanEntry, returned: Returned, order: readonly string[]
             out.push(...members.filter((id) => !returned.ids.includes(id) && steps.get(id)!.ticked !== true));
         }
     }
-    return out.length === 0 ? undefined : groupReturnedText(k, m, inPlanOrder(blocked, order), inPlanOrder(out, order));
+    return out.length === 0 ? undefined : { text: groupReturnedText(k, m, inPlanOrder(blocked, order), inPlanOrder(out, order)), out: inPlanOrder(out, order) };
 }
 
 export interface ReturnedWork {
     text: string;
     group: boolean;
+    out?: string[];
 }
 
 export function returnedWorkViewOf(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry): ReturnedWork | undefined {
@@ -85,7 +87,7 @@ export function returnedWorkViewOf(model: ShellModel, entry: LifecycleEntry, spe
     const plan = model.project.plans.find((candidate) => candidate.key === entry.plan);
     const order = (plan?.parsed?.steps ?? []).map((step) => step.id);
     const group = plan === undefined ? undefined : groupView(plan, returned, order);
-    return group === undefined ? { text: returnedWorkText(returned.ids.length, inPlanOrder(returned.blocked, order), clauseOf(model, entry.key)), group: false } : { text: group, group: true };
+    return group === undefined ? { text: returnedWorkText(returned.ids.length, inPlanOrder(returned.blocked, order), clauseOf(model, entry.key)), group: false } : { text: group.text, group: true, out: group.out };
 }
 
 export function returnedWorkOf(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry): string | undefined {
@@ -95,4 +97,13 @@ export function returnedWorkOf(model: ShellModel, entry: LifecycleEntry, spec: S
 export function integrateIsQuiet(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry): boolean {
     const next = nextStep(model, entry.key);
     return returnedWorkViewOf(model, entry, spec)?.group === true && next !== undefined && 'case' in next && next.case === 'NS-6-returned';
+}
+
+/** 0032 §6.5: the intent of the quiet Integrate names the members that are not back; undefined once all are back. */
+export function waitingIntentOf(model: ShellModel, entry: LifecycleEntry, spec: SpecEntry): string | undefined {
+    if (!integrateIsQuiet(model, entry, spec)) {
+        return undefined;
+    }
+    const out = returnedWorkViewOf(model, entry, spec)?.out;
+    return out === undefined || out.length === 0 ? undefined : waitingIntegrateIntent(out);
 }
