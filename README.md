@@ -6,6 +6,23 @@ Studio reads your project and starts no agent; the work with your agent stays in
 
 ![Overview in the dark theme: Now lists five specs in Review and + 7 more, the first row with Copy prompt and its coach line, then Up next and the figures](media/screenshots/overview-dark.png)
 
+**Spec-driven development for GitHub Copilot and Claude Code, at a glance.** See every spec, its plan and its next step — and hand that step to your AI agent with one click.
+
+## Why FeatherSpec Studio
+
+- **See where every spec stands.** An Overview of what is in progress and what comes next, a Board with six columns, and a Plan map that shows a plan as stages, with the steps that can run in parallel side by side.
+- **Always know the next step.** Studio names the exact FeatherSpec prompt for each spec — challenge it, plan it, start it, build the next step, verify it — and one sentence says which chat and which kind of model to use.
+- **One click to your agent.** With GitHub Copilot or Claude Code, **Send** opens a chat with the prompt already in it and the files that step works on attached. It never sends for you: you read the prompt and press Enter.
+- **Plans you can follow.** Progress in steps and percent, step IDs that jump to their card, returned work from parallel workers, and the ways to run a stage.
+- **Local and read-only.** No account and no telemetry. Studio reads your project files and starts no agent; its only network call is the FeatherSpec download you start yourself with **Set up FeatherSpec**.
+
+## Get started
+
+1. **Install FeatherSpec** in your project ([FeatherSpec on GitHub](https://github.com/GregorBiswanger/featherspec)) — or open an empty folder and click **Set up FeatherSpec** in the Studio.
+2. **Run `/sdd-setup`.** Studio greets a new project with *Welcome to FeatherSpec* and offers the prompt; your agent sets the language, the Memory Bank and the architecture snapshot.
+3. **Choose your assistant** with the setting `featherspec-studio.assistant` (`copilot` or `claudeCode`) and follow the **Next step** from spec to plan to done.
+
+
 ## Feature tour
 
 The **FeatherSpec Studio** icon in the Activity Bar opens the **Specs** view: every spec as a row in four groups, with the next step on a click away. The panel (the toolbar's **Open** button, or `FeatherSpec Studio: Open`) has three tabs, Overview, Board and Plan map.

@@ -4,7 +4,7 @@ All notable changes to FeatherSpec Studio are documented in this file. The forma
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
-## [0.1.0] - Unreleased
+## [0.1.0] - 2026-11-20
 
 First release.
 
