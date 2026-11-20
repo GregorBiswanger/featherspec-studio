@@ -317,7 +317,7 @@ and the expected result. A clear miss reopens the named spec.
 
 Evidence for `docs/ux-audit/16-release-handoff.md` §3, head 77eebc9, 2026-11-20.
 
-- [ ] **Fresh `/sdd-compile`**: READY, 0 deviations. The first run found D-1 (0021 §6.2 note), fixed afterwards; run it again.
+- [x] **Fresh `/sdd-compile`**: READY (manual items: 1), 0 deviations at 3e09514 (re-check 2026-11-20; the first run found D-1, the 0021 §6.2 note, fixed in 3e09514).
 - [x] **`npm test` on Windows** at 77eebc9: unit 3858/8 + 35 timing; `npm test` 34+1+1+1, exit 0.
 - [x] **Preview** *(orchestrator, harness `r15check.mts`, GitHub Copilot, Dark / Light / High Contrast × 1600 / 1000 px)*: 24 of 24 clean — no cut text, no word broken, no page errors. Screenshots in `/home/claude/orch/preview/r15-0032`; AC-006 is recorded as `manual: orchestrator checked …, 2026-11-20` in the spec's §12.
   - x01 onboarding: arrow 14×14, explanation `max-width` 65ch (533 px), Tip `Tip: Use a new chat with a strong model.`

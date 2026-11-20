@@ -8,7 +8,7 @@ Current phase: act
 - Release polish on `release-polish` (fix PR after PR #2): 0032 is Implemented 2026-11-20, its plan is archived. Round 3: 0026 (Send defaults and wording) is Implemented 2026-11-19; its plan is archived.
 - 0029 (onboarding before setup) is Implemented 2026-11-20; its plan is archived.
 - 0021–0024 are implemented; their specs stay In Progress in `active/`.
-- Waits for: a fresh `/sdd-compile` of 0032 (READY), CI, Gregor's practice check (16 §4.1) and AC-017 on `tip-splitter` for 0027 (C-2 not needed, PD-091), Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
+- Waits for: CI on PR #3, Gregor's practice check (16 §4.1) and AC-017 on `tip-splitter` for 0027 (C-2 not needed, PD-091), Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
 
 ## Active Spec
 - [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec for Copilot and Claude Code in every version (PD-091), T-001…T-011 verified; AC-016, AC-017, AC-020 are Gregor's or the orchestrator's.
@@ -26,7 +26,7 @@ Current phase: act
 - Completed: 0001…0007, 0013 in `done/`; 0008…0012 are Deprecated (successor 0015); plans frozen in `plan-archive/`.
 - Completed 2026-11-19: [0025](../.specs/done/0025-plan-map-navigation-and-progress.md) ([plan](../.specs/plan-archive/0025-plan-map-navigation-and-progress.2026-11-19.plan.md)) and [0028](../.specs/done/0028-plan-state-aware-next-step.md) ([plan](../.specs/plan-archive/0028-plan-state-aware-next-step.2026-11-19.plan.md)).
 - Completed 2026-11-19: [0026](../.specs/done/0026-send-defaults-and-wording.md) ([plan](../.specs/plan-archive/0026-send-defaults-and-wording.2026-11-19.plan.md)).
-- Completed 2026-11-20: [0032](../.specs/done/0032-release-polish.md) ([plan](../.specs/plan-archive/0032-release-polish.2026-11-20.plan.md)); Gregor's practice check (16 §4.1), a fresh `/sdd-compile` and CI are open.
+- Completed 2026-11-20: [0032](../.specs/done/0032-release-polish.md) ([plan](../.specs/plan-archive/0032-release-polish.2026-11-20.plan.md)); Gregor's practice check (16 §4.1), the compile (READY at 3e09514) and CI are open.
 - Completed 2026-11-20: [0031](../.specs/done/0031-send-on-follow-up-lines.md) ([plan](../.specs/plan-archive/0031-send-on-follow-up-lines.2026-11-20.plan.md)); T-003 (preview, orchestrator), AC-009 (Gregor) and CI on PR #2 are open.
 - Completed 2026-11-20: [0030](../.specs/done/0030-clarified-step-quiet-attach-tip.md) ([plan](../.specs/plan-archive/0030-clarified-step-quiet-attach-tip.2026-11-20.plan.md)); AC-013 (Gregor) and CI on PR #2 are open.
 - Completed 2026-11-20: [0029](../.specs/done/0029-onboarding-before-setup.md) ([plan](../.specs/plan-archive/0029-onboarding-before-setup.2026-11-20.plan.md)); AC-014 (Gregor) and CI on PR #2 are open.
@@ -44,7 +44,7 @@ Current phase: act
 - Gregor's manual checks stay in the specs: 0025 AC-022 real window, AC-023, AC-024; 0026 AC-017, AC-019; 0028 AC-015; 0029 AC-014; 0030 AC-013; 0031 AC-009; 0032 practice check (16 §4.1); 0027 AC-016, AC-017, AC-020.
 
 ## Next
-1. 0032: re-run `/sdd-compile`, CI on the fix PR, VSIX to Gregor for 16 §4.1, then the release checklist.
+1. 0032: compile READY at 3e09514; CI on PR #3, VSIX to Gregor for 16 §4.1, then the release checklist.
 2. Finish 0027 (spec and plan are in `.specs/active/`, the plan's handoff names the next step).
 3. 0029 and 0030: CI on PR #2, then Gregor's AC-014 and AC-013; the other specs' CI items run on the same PR.
 4. 0031: AC-009 Gregor; CI on PR #2
