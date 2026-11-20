@@ -725,14 +725,14 @@ describe('0022 AC-001, AC-003, AC-027, AC-028: Overview rows follow the list wid
         expect(rulesFor(css, '.ov-row-item > .ov-coach').some((rule) => rule.container === undefined && /grid-column:\s*1 \/ -1/.test(rule.body))).toBe(true);
     });
 
-    it('AC-028: in the two- and three-line layouts number and title share their first line with nothing else, and the title is not nowrap', () => {
+    it('AC-028: in the two-line layouts the status glyph, number and title share their first line (0033 AC-008), and the title is not nowrap', () => {
         for (const condition of [MIDDLE, NARROW]) {
             const first = areasOf(condition, '.ov-row-item')[0]!;
-            expect([...new Set(first)].sort(), condition).toEqual(['number', 'title']);
-            expect(first[0]).toBe('number');
+            expect([...new Set(first)].sort(), condition).toEqual(['number', 'problem', 'state', 'title']);
+            expect(first.slice(0, 2)).toEqual(['state', 'number']);
         }
         expect(areasOf(MIDDLE, '.ov-row-item')).toHaveLength(2);
-        expect(areasOf(NARROW, '.ov-row-item')).toHaveLength(3);
+        expect(areasOf(NARROW, '.ov-row-item')).toHaveLength(2);
         expect(areasOf(WIDE, '.ov-row-item')).toHaveLength(1);
         for (const condition of [MIDDLE, NARROW]) {
             expect(body(condition, '.ov-row .ov-title'), condition).not.toMatch(/white-space:\s*nowrap|text-overflow/);
@@ -1100,11 +1100,39 @@ describe('0032: onboarding arrow, Send row and line length', () => {
     });
 
     it('0032 AC-006 a prompt that has a Send split button takes a whole row, so Send stands under it', () => {
-        expect(rulesFor(css, '.next-step-lines li > code:has(+ .send-split)').some((rule) => /flex:\s*1 0 100%/.test(rule.body))).toBe(true);
+        // Amended by 0033 (§5): the line is a column, so Send stands under its prompt without a stretching rule.
+        expect(rulesFor(css, '.next-step-lines li > code:has(+ .send-split)')).toEqual([]);
+        expect(rulesFor(css, '.next-step-lines li').some((rule) => /flex-direction:\s*column/.test(rule.body))).toBe(true);
     });
 
     it('0032 AC-007 the welcome body has max-width 65ch and stays centred', () => {
         const rules = rulesFor(css, '.empty-state .welcome-body');
         expect(rules.some((rule) => /max-width:\s*65ch/.test(rule.body) && /margin-inline:\s*auto/.test(rule.body))).toBe(true);
+    });
+});
+
+describe('0033: prompt column and Next step indent', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const bodyOf = (selector: string) => rulesFor(css, selector).map((rule) => rule.body).join(';');
+
+    it('0033 AC-005 each Next step line is a left-aligned column, the prompt is as wide as its text and at most as wide as the column', () => {
+        expect(bodyOf('.next-step-lines li')).toMatch(/flex-direction:\s*column/);
+        expect(bodyOf('.next-step-lines li')).toMatch(/align-items:\s*flex-start/);
+        expect(bodyOf('.next-step-lines li > code')).toMatch(/max-width:\s*100%/);
+        expect(css).not.toMatch(/flex:\s*1 0 100%[^}]*\}\s*[^{]*\.send-split/);
+        expect(declarations(css).filter((declaration) => declaration.selectors.some((selector) => selector.includes('code:has(+ .send-split)')))).toEqual([]);
+    });
+
+    it('0033 AC-007 the Next step list takes no left padding inside a section body, like Plan, Progress and Files (A-004)', () => {
+        expect(bodyOf('.section-body .next-step-lines')).toMatch(/padding-left:\s*0/);
+        expect(bodyOf('.section-body ul')).toMatch(/padding-left:\s*18px/);
+    });
+
+    it('0033 AC-008 the status glyph of an Overview row is the first area of the title line in both narrower layouts, before the number', () => {
+        const container = (condition: string) => parseRules(css).filter((rule) => rule.container === condition && rule.selectors.includes('.ov-row-item')).map((rule) => rule.body).join(';');
+        for (const condition of ['ov-list (420px <= width <= 686px)', 'ov-list (width < 420px)']) {
+            const first = /"([^"]+)"/.exec(container(condition))![1]!.trim().split(/\s+/);
+            expect(first.slice(0, 3), condition).toEqual(['state', 'number', 'title']);
+        }
     });
 });

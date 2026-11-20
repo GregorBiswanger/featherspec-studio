@@ -57,7 +57,7 @@ export function NextStep(props: {
                             <li key={`${line.intent}|${line.text}`}>
                                 <span className="next-step-intent">{intentOf(line, props.fileResult, props.onOpen)}</span>
                                 <code>
-                                    <PathText command={line.text} />
+                                    <PathText command={line.text} after="slash" />
                                 </code>{' '}
                                 {index === 0 ? (
                                     <StepAction send={send} look={quiet ? 'secondary' : 'primary'} line={line.text} sendResult={props.sendResult} onSend={props.onSend} copyResult={copyResult} onCopy={props.onCopy} />
