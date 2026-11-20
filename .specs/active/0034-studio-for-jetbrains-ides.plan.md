@@ -230,7 +230,7 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
   that is T-005's call; not here.
 - **Tests first:** none in Kotlin (empty plugin); the `unzip` check is the decision (red until the ZIP has the right XML).
 - **Verify:** `CI: jetbrains.yml › plugin` green on ubuntu, windows, macos; artifact `plugin-zip` present.
-- [ ] **Verified (T-001):** —
+- [x] **Verified (T-001):** 2026-11-20 · CI: `jetbrains.yml › plugin` green on ubuntu, windows, macos at `6fdc067` (run 44832785218); artifact `plugin-zip` uploaded (Ubuntu).
 - **Notes:** Implementer (2026-11-20, uncommitted): local checks green (docsScan 186 passed; test:unit 35 + 186 passed; plugin.xml, pluginIcon.svg and jetbrains.yml parse). Deviations/choices: `build.gradle.kts` imports `org.jetbrains.kotlin.gradle.dsl.KotlinVersion` for `compilerOptions`; `junit-platform-launcher` pinned to 1.13.4 (matches Jupiter 5.13.4, plan gave no version); `plugin` job `timeout-minutes: 60` (plan gave none); `pluginIcon.svg` is `media/studio.svg`'s path scaled by `scale(0.05291005)` in a 40×40 viewBox, comment dropped, `fill="currentColor"` kept (check rendering on dark themes in T-005/T-027). `vsce` not installed locally, so the `.vsix` list check was skipped. Uncertain Gradle DSL names (not run): `intellijIdea(...)`, `pluginConfiguration { vendor { name } ideaVersion { sinceBuild, untilBuild } }`, `compilerOptions { languageVersion/apiVersion }`.
 
 ### T-002 — Context hygiene and architecture entries for `jetbrains/`
@@ -250,8 +250,8 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
   `techContext.md`: a section *JetBrains host (0034)* with the `plugin` job and "no local Gradle".
 - **Tests first:** — (docs only)
 - **Verify:** `local: npx vitest run src/adapters/node/docsScan.test.ts` green and `npm run test:unit` green.
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-20 · local: `npx vitest run src/adapters/node/docsScan.test.ts` → 186 passed; `npm run test:unit` → 35 passed (16 files), no failures.
+- **Notes:** Snapshot line shortened to fit the 15000-byte AGENTS.md limit of docsScan: the orchestrator-decided line is 130 bytes incl. newline (AGENTS.md 14857 → 14987 bytes); `# last reconciled:` set to `2026-11-20 (0034)`; the `module maps:` list on that header line is unchanged. `jetbrains/AGENTS.md` is 27 lines; `.architecture/jetbrains.md` 23 lines; `jetbrains/CLAUDE.md` is `@AGENTS.md`. Plan header `Current step` left at T-001 (rules move it at stage end only; T-001 is not ticked, CI-verified). Per-step gates (eslint, tsc) not run: doc-only step.
 
 ### T-003 — S-1 (TS side): spike core bundle and a Node-vs-bare-context check
 

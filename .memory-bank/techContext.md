@@ -59,6 +59,11 @@
 - Attach the spec when sending (spec 0027): `src/core/assistant/testing/caseWorlds.ts` (`CASE_WORLDS`, `caseModel`) holds one memory fixture per step case; `attachment.test.ts`, `sendView.test.ts`, `sendAttach.test.ts` (calls, check, missing and foreign paths), `attach0027.timing.test.ts` (500 ms), `src/webview/attach0027.test.tsx` (the line in three places); the shipped per-assistant switch is `attachesSpec` in `assistants.ts` (true for Claude Code and Copilot, PD-091), tests inject their own table through `offerOf(…, attaching)` and `createFakeOffer(…, { attaching })`; `src/test/board.smoke.test.ts` probes the real `vscode.Uri` (host, `npm test`).
 - Manual checks nothing automates: one list for the release, [docs/release-checklist.md](../docs/release-checklist.md) (assembled from the specs' manual criteria; real VS Code, screen reader, High Contrast, the next step and Copy in a real window).
 
+## JetBrains host (0034)
+- `jetbrains/` — Gradle (Kotlin JVM, IntelliJ Platform plugin); no local Gradle, no Gradle wrapper JAR committed.
+- Every Gradle, Kotlin and JVM check runs in CI only: `.github/workflows/jetbrains.yml`, job `plugin` (Ubuntu, Windows, macOS: `npm run package`, then `gradle -p jetbrains build buildPlugin verifyPluginStructure`, `plugin.xml` guard).
+- Local gates stay as above; the sandbox cannot reach Maven or the Gradle portal.
+
 ## Quality gates
 Per implementation step (Definition of Green), in order — zero warnings, zero errors:
 1. `npx eslint src --max-warnings 0`
