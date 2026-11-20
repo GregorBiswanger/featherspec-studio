@@ -304,7 +304,7 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
 - **Tests first:** the equality test runs red first with an intentionally empty `node-expected` comparison (CI run 1),
   then green.
 - **Verify:** `CI: jetbrains-spikes.yml › spike-s1` green on 3 OS; three `s1-results-*` artifacts.
-- [ ] **Verified (T-004):** —
+- [x] **Verified (T-004):** 2026-11-20 · CI: `jetbrains-spikes.yml › spike-s1` green on ubuntu, windows, macos at `5a92fba` (run 44835557884): 27/27 fixtures byte-identical to Node under GraalJS 25.0.4. Measured (V1, interpreter on stock JDK 21): cold start 683 / 1179 / 1598 ms (mac / linux / win); 200 specs first read 3784 / 7014 / 8397 ms, second 2760 / 4085 / 4730 ms; slowest fixture 6027–8657 ms; polyglot JARs 64,939,002 bytes uncompressed. **V1 misses R-2 (0002 AC-018 < 2 s) and R-5 (cold start < 1 s) on every runner → T-038 (V2) appended per Stage 2.**
 - **Notes:** Implementer (2026-11-20, uncommitted, no Gradle run): (1) Test working directory of Gradle is `jetbrains/spikes`, so `../build` of the Do would be wrong; Gradle passes the absolute `build` path as system property `spike.build`. (2) `run()` is `async` in `entry.mjs` (returns a Promise), so the Kotlin runner wraps it in a JS helper that stores `value`/`error`/`done` on an object and Kotlin reads it after `execute`; relies on GraalJS draining promise jobs at the end of `execute` (uncertain, unmeasured). (3) Inputs are `build/inputs/<name>.json` = `{version, files}`; the helper re-stringifies `files` (byte-identical to check.mjs's `filesJson`). (4) `gen200First/SecondMs` are two runs of `generated-200` before the equality loop; `perFixture` times all 27 in the loop. (5) Results are written before the equality assertion, so `s1-results` exists even on a mismatch; the upload uses `if: always()` with `if-no-files-found: warn`. (6) No `kotlin.stdlib.default.dependency=false` in `spikes/gradle.properties` (for plain JVM it would remove the stdlib). (7) Versions are hard-coded (the spikes build does not read `jetbrains/gradle/libs.versions.toml`). (8) Gradle DSL/API uncertainty: `layout.buildDirectory`, `configurations.testRuntimeClasspath.map { incoming.artifacts.artifacts }`, `ModuleComponentIdentifier.group`, `systemProperty` with `.get()`; `org.graalvm.polyglot:js:25.0.4` as a plain (pom-only) coordinate, not `@pom`. (9) GraalVM API used: `Context.newBuilder("js").allowHostAccess(HostAccess.NONE).option("engine.WarnInterpreterOnly", "false").build()`, `Source.newBuilder("js", File).build()`, `Context.eval("js", String)`, `Value.execute/getMember/asString/asBoolean/isNull`. (10) Red-first: no red run was made (no CI here); the orchestrator decides whether CI run 1 must be red (e.g. a temporary wrong expectation) before green. (11) `spikes/.gitignore` (`build/`) was left unchanged; `.gradle/` is covered by `jetbrains/.gitignore`.
 
 ### T-005 — S-2: the unchanged webview bundle in a JCEF tab (spike plugin)
@@ -384,6 +384,28 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
 - **Tests first:** `SpikeVfsTest` asserts `s4-results.json` has 10 timed events; red until the action exists.
 - **Verify:** `CI: jetbrains-spikes.yml › spike-ide` green on ubuntu; `s4-results.json` uploaded for each OS that ran.
 - [ ] **Verified (T-007):** —
+- **Notes:** —
+
+### T-038 — S-1 V2: the shared core in a hidden JCEF browser (appended 2026-11-20, V1 missed R-2/R-5)
+
+- **Covers:** AC-009 (S-1 for candidate V2)
+- **Files:** `jetbrains/spikes/ide/src/main/kotlin/com/gregorbiswanger/featherspec/spike/SpikeV2Action.kt`,
+  `jetbrains/spikes/ide/src/main/resources/META-INF/plugin.xml`,
+  `jetbrains/spikes/ide/src/integrationTest/kotlin/com/gregorbiswanger/featherspec/spike/SpikeV2Test.kt`,
+  `jetbrains/spikes/ide/build.gradle.kts` (resources), `.github/workflows/jetbrains-spikes.yml`
+- **Do:** `SpikeV2Action` (id `FeatherSpecSpike.V2`): builds an off-screen browser that is never added to a Swing
+  parent — `JBCefBrowser.createBuilder().setOffScreenRendering(true).build()`, then `createImmediately()` — and loads
+  `https://studio.featherspec.invalid/core.html` through `SpikeResources` (T-005), a page that only loads
+  `core-spike.js` (T-003 bundle, copied into resources like the webview files). Through one `JBCefJSQuery` it runs the
+  same 27 inputs and the generated-200 input as T-004's `GraalCoreSpikeTest` (read the inputs the same way; the
+  expected bytes are `node-expected/<name>.json`), one call per input, and measures: cold start (browser created →
+  bundle evaluated), each fixture, generated-200 first and second; plus timer fidelity while hidden: 10 × a JS
+  `setTimeout(…, 100)` inside the hidden page, recording the actual delay. Writes `s1v2-results.json` with the same
+  keys as `s1-results.json` plus `identical` (count), `timerDelaysMs`. `SpikeV2Test` mirrors `SpikeIdeTest` and
+  invokes `FeatherSpecSpike.V2`.
+- **Tests first:** `SpikeV2Test` asserts `s1v2-results.json` reports `identical: 27`; red until the action exists.
+- **Verify:** `CI: jetbrains-spikes.yml › spike-ide` green on ubuntu; `s1v2-results.json` uploaded for each OS that ran.
+- [ ] **Verified (T-038):** —
 - **Notes:** —
 
 ### T-008 — ADR-004: record the spike results; Gregor decides
