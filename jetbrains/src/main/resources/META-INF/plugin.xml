@@ -1,0 +1,8 @@
+<idea-plugin>
+    <id>com.gregorbiswanger.featherspec.studio</id>
+    <name>FeatherSpec Studio</name>
+    <vendor>Gregor Biswanger</vendor>
+    <description>FeatherSpec Studio brings the spec-driven development view of a FeatherSpec project into JetBrains IDEs.</description>
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.jcef</depends>
+</idea-plugin>

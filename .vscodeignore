@@ -25,3 +25,6 @@ vitest.config.mjs
 media/screenshots/**
 package-lock.json
 .gitattributes
+jetbrains/**
+dist/embedded/**
+**/*.kts

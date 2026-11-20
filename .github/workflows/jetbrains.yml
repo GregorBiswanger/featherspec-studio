@@ -1,0 +1,62 @@
+name: JetBrains
+
+on:
+  push:
+    branches: [jetbrains-host, 'jetbrains-**']
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: jetbrains-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  plugin:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - name: Keep line endings as committed (Windows)
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run package
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: 9.7.0
+      - run: gradle -p jetbrains build buildPlugin verifyPluginStructure
+      - name: Check the plugin.xml of the built plugin (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          set -euo pipefail
+          zip=$(ls jetbrains/build/distributions/*.zip)
+          work=$(mktemp -d)
+          unzip -q "$zip" -d "$work"
+          jar=$(ls "$work"/*/lib/featherspec-studio*.jar | head -n 1)
+          xml=$(unzip -p "$jar" META-INF/plugin.xml)
+          echo "$xml" | grep -F 'since-build="253.29346"'
+          if echo "$xml" | grep -F 'until-build'; then
+            echo "until-build must not be set" >&2
+            exit 1
+          fi
+          test "$(echo "$xml" | grep -c '<depends>')" -eq 2
+          echo "$xml" | grep -F '<depends>com.intellij.modules.platform</depends>'
+          echo "$xml" | grep -F '<depends>com.intellij.modules.jcef</depends>'
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'Linux'
+        with:
+          name: plugin-zip
+          path: jetbrains/build/distributions/*.zip
+          if-no-files-found: error
