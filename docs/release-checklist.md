@@ -328,6 +328,21 @@ Evidence for `docs/ux-audit/16-release-handoff.md` §3, head 77eebc9, 2026-11-20
 - [x] **VSIX rebuilt** at 77eebc9: 259.36 KB, `vsce ls` lists 11 files (see Before publishing).
 - [ ] **Practice check** *(Gregor, 16 §4.1, new VSIX on `tip-splitter`)*: send a Backlog spec to `/sdd-clarify` and, once clarify ran, `Write the plan` appears; send once to a new chat (attachment visible) and once to the current chat (no attachment) with GitHub Copilot; nothing is sent automatically.
 
+## Start, plan attachment and prompt layout (0033)
+
+Evidence for `docs/ux-audit/17-start-step-and-prompt-layout.md` §5 *Prüfen*, spec 0033 AC-001…AC-008, head 956c0c0, 2026-11-20.
+
+- [x] **Fresh `/sdd-compile`**: READY, 0 deviations after the re-check edits; the last blocker, the title count, was fixed in 956c0c0.
+- [x] **`npm test` on Windows** at 4304f86: unit 3900/8 + 35 timing; `npm test` 34+1+1+1, exit 0. 956c0c0 changes one spec line, the plan and one CSS test.
+- [x] **Preview** *(orchestrator, harnesses `r16check.mts` at 692809e and `r17check.mts` at 4304f86, project fs-0033, GitHub Copilot and Claude Code, Dark / Light / High Contrast × 1600 / 1000 / 820 px)*: all runs clean — no cut text, no page errors. Screenshots in `/home/claude/orch/preview/r16-0033` and `r17-0033`; AC-007 is recorded as `manual: orchestrator checked …, 2026-11-20` in the spec's §12.
+  - States: Ready (0007, 0009), Active without a tick (0008), Active with ticks (0001).
+  - Start step: `/sdd-lifecycle .specs/backlog/<spec>.md In Progress`, with spec and plan attached; the current chat attaches nothing.
+  - Implement: `Implement T-001 of …plan.md`, plan attached only.
+  - Layout: the prompt is as wide as its text; paths break only after `/` (`0009-restaurant-rechnung-aufteilen.md` stays whole at 1000 px); the Next step text starts at the same x as Plan and Progress (997 px at 1600); the Up next glyph sits on the title line.
+  - Finding, fixed in f253885: a grey Send or Copy button kept the primary blue hover (light theme contrast about 2:1).
+- [x] **VSIX rebuilt** at 4304f86: 260.37 KB.
+- [ ] **Practice check** *(Gregor, 17 §5 *Prüfen*, `C:\projects\test`)*: Ready → Set active → T-001, with the new VSIX.
+
 ## Go
 
 - [ ] **Repository visibility**: the Marketplace page loads the README screenshots from

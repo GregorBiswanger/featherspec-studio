@@ -1,9 +1,9 @@
 # Plan — Start via lifecycle, plan attachment, prompt layout
 
-**Spec:** [0033-start-via-lifecycle-plan-attachment-prompt-layout.md](0033-start-via-lifecycle-plan-attachment-prompt-layout.md)
-**Status:** In Progress
+**Spec:** [0033-start-via-lifecycle-plan-attachment-prompt-layout.md](../done/0033-start-via-lifecycle-plan-attachment-prompt-layout.md)
+**Status:** Done
 **Last updated:** 2026-11-20
-**Current step:** T-005
+**Current step:** none (closed 2026-11-20)
 
 ## Approach
 
@@ -98,8 +98,8 @@ No parallel stage: T-001 and T-002 share `StepCase` and `STEP_ATTACHES`; T-003 r
   sidebar. Screenshots and the stub log in `Notes:`.
 - **Verify:** manual: the orchestrator looks at the lines, prompt width, Send under the prompt, breaks after `/`, the
   aligned edges, the Up next glyph and the stub log; jsdom has no layout engine and the stub runs outside the tests.
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-20 · orchestrator's preview, harness `r16check.mts` at 692809e and `r17check.mts` at 4304f86, project fs-0033 (Ready 0007/0009, Active without a tick 0008, Active with ticks 0001); Copilot and Claude Code × Dark / Light / High Contrast × 1600 / 1000 / 820 px: all runs clean (no cut text, no page errors)
+- **Notes:** Start: `/sdd-lifecycle .specs/backlog/<spec>.md In Progress`, with attachments spec and plan; in the current chat there is no attachment. Implement: `Implement T-001 of …plan.md`, attachment plan only. Layout: the prompt is as wide as its text; paths break only after `/` (`0009-restaurant-rechnung-aufteilen.md` stays whole at 1000 px); the Next step text starts at the same x as Plan and Progress (997 px at 1600); the Up next glyph is on the title line. Grey-hover finding fixed in f253885. Screenshots in `/home/claude/orch/preview/r16-0033` and `r17-0033`. Windows at 4304f86: unit 3900/8 + 35 timing, `npm test` 34+1+1+1, exit 0, VSIX 260.37 KB.
 
 ### T-006 — Release checklist evidence
 
@@ -107,26 +107,26 @@ No parallel stage: T-001 and T-002 share `StepCase` and `STEP_ATTACHES`; T-003 r
 - **Do:** `docs/release-checklist.md` section "0033": T-005's evidence, the fresh `/sdd-compile` verdict, `npm test` on
   Windows, the VSIX rebuild for Gregor's check (Ready → Set active → T-001).
 - **Verify:** `npx vitest run src/adapters/node/docsScan.test.ts src/core/lifecycle/problems.test.ts`.
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-20 · `docs/release-checklist.md` section "Start, plan attachment and prompt layout (0033)": fresh `/sdd-compile` READY, 0 deviations after the re-check edits (last blocker, the title count, fixed in 956c0c0); `npm test` on Windows at 4304f86 exit 0; VSIX 260.37 KB; T-005's preview evidence; Gregor's practice check open
+- **Notes:** The checklist item for Gregor's practice check (17 §5 *Prüfen*: Ready → Set active → T-001) is the one open item; it is recorded in the spec's §12 closure and the Memory Bank.
 
 ## Traceability
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-001, T-005 | `nextStep.ts`, `nextStepTexts.ts` | `core/board/start0033.test.ts` | built; preview open |
-| AC-002 | T-001, T-005 | `nextStep.ts`, `nextStepTexts.ts` | `core/board/start0033.test.ts` | built; preview open |
-| AC-003 | T-002, T-005 | `attachment.ts`, `assistants.ts`, `send.ts` | `core/assistant/attach0033.test.ts` | built; preview open |
-| AC-004 | T-002, T-005 | `attachment.ts`, `assistants.ts`, `send.ts`, `SendButton.tsx` | `core/assistant/attach0033.test.ts`, `webview/layout0033.test.tsx` | built; preview open |
-| AC-005 | T-003, T-005 | `main.css` | `adapters/node/webviewCss.test.ts` | built; preview open |
-| AC-006 | T-003, T-005 | `PathText.tsx`, `main.css` | `webview/layout0033.test.tsx`, `webview/ui/PathText.test.tsx` | built; preview open |
-| AC-007 | T-003, T-005 | `main.css` | `adapters/node/webviewCss.test.ts` (stylesheet, A-004) | built; preview open |
-| AC-008 | T-003, T-005 | `main.css` | `adapters/node/webviewCss.test.ts` | built; preview open |
+| AC-001 | T-001, T-005 | `nextStep.ts`, `nextStepTexts.ts` | `core/board/start0033.test.ts` | built; preview checked |
+| AC-002 | T-001, T-005 | `nextStep.ts`, `nextStepTexts.ts` | `core/board/start0033.test.ts` | built; preview checked |
+| AC-003 | T-002, T-005 | `attachment.ts`, `assistants.ts`, `send.ts` | `core/assistant/attach0033.test.ts` | built; preview checked |
+| AC-004 | T-002, T-005 | `attachment.ts`, `assistants.ts`, `send.ts`, `SendButton.tsx` | `core/assistant/attach0033.test.ts`, `webview/layout0033.test.tsx` | built; preview checked |
+| AC-005 | T-003, T-005 | `main.css` | `adapters/node/webviewCss.test.ts` | built; preview checked |
+| AC-006 | T-003, T-005 | `PathText.tsx`, `main.css` | `webview/layout0033.test.tsx`, `webview/ui/PathText.test.tsx` | built; preview checked |
+| AC-007 | T-003, T-005 | `main.css` | `adapters/node/webviewCss.test.ts` (stylesheet, A-004) | built; preview checked; manual line in spec §12 |
+| AC-008 | T-003, T-005 | `main.css` | `adapters/node/webviewCss.test.ts` | built; preview checked |
 
 ## Session handoff
 
-- **Done so far:** T-001…T-004 (pair moved to `active/`, status In Progress; commits on `release-polish`).
-- **Next action:** T-005 (orchestrator's preview of 17 §5 *Prüfen*), then T-006 (evidence in `docs/release-checklist.md` section "0033", fresh `/sdd-compile`, `npm test` on Windows, VSIX).
+- **Done so far:** T-001…T-006 (spec and plan moved to `done/` and `plan-archive/` on 2026-11-20; status Implemented).
+- **Next action:** Gregor's practice check (17 §5 *Prüfen*: Ready → Set active → T-001 on `C:\projects\test`); then a fresh `/sdd-compile` and CI.
 - **Open decisions:** the 0027 §5 note is missing (told not to touch 0027); PD-096/PD-097 are in the register.
 - **Baseline:** `995305c` (spec and plan in `backlog/`).
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

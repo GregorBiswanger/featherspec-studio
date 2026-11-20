@@ -1,7 +1,7 @@
 # Start via lifecycle, plan attachment, prompt layout
 
-**Status:** In Progress
-**Plan:** [0033-start-via-lifecycle-plan-attachment-prompt-layout.plan.md](0033-start-via-lifecycle-plan-attachment-prompt-layout.plan.md)
+**Status:** Implemented
+**Plan:** [0033-start-via-lifecycle-plan-attachment-prompt-layout.2026-11-20.plan.md](../plan-archive/0033-start-via-lifecycle-plan-attachment-prompt-layout.2026-11-20.plan.md)
 
 Basis: Gregor's practice feedback after 0032, `docs/ux-audit/17-start-step-and-prompt-layout.md` (addendum to 16), treated
 as typed by him and binding before the release. Rules from 17 §2–§4, criteria from 17 §5, PD-096 and PD-097 new.
@@ -196,3 +196,9 @@ at the commit on which implementation starts exists at the head and passes, adju
 `npm run test:unit` and `npm test` pass on Windows and in CI; a fresh `/sdd-compile` gives READY with 0 deviations; the
 preview of 17 §5 *Prüfen* is recorded in `docs/release-checklist.md` under "0033"; README, CHANGELOG, PD-096 and PD-097
 updated. Acceptor: Gregor (practice check on `C:\projects\test`: Ready → Set active → T-001).
+Closed 2026-11-20 by `/sdd-lifecycle` on the `Verified:` lines of T-001…T-006 and the compile brief of this date (READY, 0 deviations after the re-check edits; the last blocker, the title count, fixed in 956c0c0); a fresh `/sdd-compile` and CI stay open; manual item: Gregor's practice check (17 §5 *Prüfen*).
+manual: orchestrator checked AC-007, 2026-11-20 — harnesses `r16check.mts` (692809e) and `r17check.mts` (4304f86), project fs-0033 (Ready 0007/0009, Active without a tick 0008, Active with ticks 0001), Copilot and Claude Code, Dark / Light / High Contrast × 1600 / 1000 / 820 px: all runs clean (no cut text, no page errors); the Next step text starts at the same x as Plan and Progress (997 px at 1600); screenshots `/home/claude/orch/preview/r16-0033` and `r17-0033`.
+
+## Plan history
+
+- 2026-11-20 — [0033-start-via-lifecycle-plan-attachment-prompt-layout.2026-11-20.plan.md](../plan-archive/0033-start-via-lifecycle-plan-attachment-prompt-layout.2026-11-20.plan.md) — 6 steps in 3 stages: start step and NS-7 after the move, plan attached with the prompt, prompt column and path breaks, notes and gates, preview (orchestrator, Copilot and Claude Code, three themes and widths), checklist evidence; manual item: Gregor's practice check (17 §5 *Prüfen*).
