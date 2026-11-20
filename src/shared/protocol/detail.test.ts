@@ -26,7 +26,7 @@ function valid(): SpecDetailView {
 describe('0019 P-2: the guard of the situation picture', () => {
     it('0021 AC-009: accepts a next step with tips', () => {
         const view = valid();
-        view.nextStep = { rule: 'NS-6', lines: [{ text: 'a', intent: 'b' }], tips: { coach: 'any chat · fast model', about: ['one', 'two', 'three', 'four'] } };
+        view.nextStep = { rule: 'NS-6', lines: [{ text: 'a', intent: 'b' }], tips: { coach: 'Tip: Use any chat with a fast model.', about: ['one', 'two', 'three', 'four'] } };
         expect(isDetailView(view)).toBe(true);
     });
 

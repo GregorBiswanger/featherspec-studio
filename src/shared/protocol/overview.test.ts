@@ -98,7 +98,7 @@ describe('Overview event payload', () => {
 });
 
 describe('0021 AC-009: the tips of a row', () => {
-    const TIPS = { coach: 'new chat · strong model', about: ['a', 'b', 'c', 'd'] };
+    const TIPS = { coach: 'Tip: Use a new chat with a strong model.', about: ['a', 'b', 'c', 'd'] };
 
     it('a row takes tips with a coach line and a list of paragraphs, and refuses a bad one', () => {
         const view = sampleView();

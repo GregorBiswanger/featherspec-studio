@@ -156,9 +156,11 @@ export function startIntent(id: string, title: string): string {
     return withTitle('Start implementing: ', id, title);
 }
 
-export const SESSION_WORDS: Record<SessionKey, string> = {
-    new: 'new chat',
-    sameOrNew: 'current or new chat',
+export const COACH_TIP_PREFIX = 'Tip:';
+
+export const SESSION_PHRASES: Record<SessionKey, string> = {
+    new: 'a new chat',
+    sameOrNew: 'the current chat or a new one,',
     any: 'any chat',
 };
 
@@ -176,11 +178,11 @@ export function verifiedWithoutTickReason(id: string): string {
     return `${id} has a Verified line but no tick.`;
 }
 
-export const MODEL_WORDS: Record<ModelKey, { base: 'fast model' | 'strong model'; suffix: string }> = {
-    fast: { base: 'fast model', suffix: '' },
-    strong: { base: 'strong model', suffix: '' },
-    strongOtherFamily: { base: 'strong model', suffix: ', other family' },
-    strongWebSearch: { base: 'strong model', suffix: ', allow web search' },
+export const MODEL_PHRASES: Record<ModelKey, { base: 'a fast model' | 'a strong model'; suffix: string }> = {
+    fast: { base: 'a fast model', suffix: '' },
+    strong: { base: 'a strong model', suffix: '' },
+    strongOtherFamily: { base: 'a strong model', suffix: ' from another model family' },
+    strongWebSearch: { base: 'a strong model', suffix: ', and allow web search' },
 };
 
 export const MODEL_REASONS: Record<ModelKey, string> = {

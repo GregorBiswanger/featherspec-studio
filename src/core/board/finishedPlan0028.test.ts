@@ -55,7 +55,7 @@ describe('0028 AC-001: a finished plan is Review whatever its status line says',
         });
         expect(step?.short).toBe('/sdd-compile');
         expect(step?.intent).toBe('Verify');
-        expect(details[0]).toMatchObject({ nextStep: { tips: { coach: 'new chat · strong model, other family' } } });
+        expect(details[0]).toMatchObject({ nextStep: { tips: { coach: 'Tip: Use a new chat with a strong model from another model family.' } } });
     });
 
     it('negative control: with one step not ticked the same plan stays Active with an open step', async () => {

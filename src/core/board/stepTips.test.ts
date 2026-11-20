@@ -10,35 +10,35 @@ const NONE = parseStepTipSettings(true, {});
 const NAMED = parseStepTipSettings(true, { strong: 'X', fast: 'Y' });
 
 const COACH: Record<StepCase, string> = {
-    'NS-2': 'any chat · fast model',
-    'NS-4': 'any chat · fast model',
-    'NS-4-plan': 'any chat · strong model',
-    'NS-5': 'new chat · strong model, other family',
-    'NS-6-open': 'current or new chat · fast model',
-    'NS-6-report': 'any chat · fast model',
-    'NS-6-resume': 'any chat · fast model',
-    'NS-6-returned': 'current or new chat · fast model',
-    'NS-6-plan': 'any chat · strong model, allow web search',
-    'NS-7': 'any chat · fast model',
-    'NS-8': 'any chat · strong model',
-    'NS-9': 'new chat · strong model',
-    'NS-10': 'any chat · strong model, allow web search',
+    'NS-2': 'Tip: Use any chat with a fast model.',
+    'NS-4': 'Tip: Use any chat with a fast model.',
+    'NS-4-plan': 'Tip: Use any chat with a strong model.',
+    'NS-5': 'Tip: Use a new chat with a strong model from another model family.',
+    'NS-6-open': 'Tip: Use the current chat or a new one, with a fast model.',
+    'NS-6-report': 'Tip: Use any chat with a fast model.',
+    'NS-6-resume': 'Tip: Use any chat with a fast model.',
+    'NS-6-returned': 'Tip: Use the current chat or a new one, with a fast model.',
+    'NS-6-plan': 'Tip: Use any chat with a strong model, and allow web search.',
+    'NS-7': 'Tip: Use any chat with a fast model.',
+    'NS-8': 'Tip: Use any chat with a strong model.',
+    'NS-9': 'Tip: Use a new chat with a strong model.',
+    'NS-10': 'Tip: Use any chat with a strong model, and allow web search.',
 };
 
 const NAMED_COACH: Record<StepCase, string> = {
-    'NS-2': 'any chat · fast model (Y)',
-    'NS-4': 'any chat · fast model (Y)',
-    'NS-4-plan': 'any chat · strong model (X)',
-    'NS-5': 'new chat · strong model (X), other family',
-    'NS-6-open': 'current or new chat · fast model (Y)',
-    'NS-6-report': 'any chat · fast model (Y)',
-    'NS-6-resume': 'any chat · fast model (Y)',
-    'NS-6-returned': 'current or new chat · fast model (Y)',
-    'NS-6-plan': 'any chat · strong model (X), allow web search',
-    'NS-7': 'any chat · fast model (Y)',
-    'NS-8': 'any chat · strong model (X)',
-    'NS-9': 'new chat · strong model (X)',
-    'NS-10': 'any chat · strong model (X), allow web search',
+    'NS-2': 'Tip: Use any chat with a fast model (Y).',
+    'NS-4': 'Tip: Use any chat with a fast model (Y).',
+    'NS-4-plan': 'Tip: Use any chat with a strong model (X).',
+    'NS-5': 'Tip: Use a new chat with a strong model (X) from another model family.',
+    'NS-6-open': 'Tip: Use the current chat or a new one, with a fast model (Y).',
+    'NS-6-report': 'Tip: Use any chat with a fast model (Y).',
+    'NS-6-resume': 'Tip: Use any chat with a fast model (Y).',
+    'NS-6-returned': 'Tip: Use the current chat or a new one, with a fast model (Y).',
+    'NS-6-plan': 'Tip: Use any chat with a strong model (X), and allow web search.',
+    'NS-7': 'Tip: Use any chat with a fast model (Y).',
+    'NS-8': 'Tip: Use any chat with a strong model (X).',
+    'NS-9': 'Tip: Use a new chat with a strong model (X).',
+    'NS-10': 'Tip: Use any chat with a strong model (X), and allow web search.',
 };
 
 describe('0021 AC-009, AC-012: the coach line of every case', () => {
@@ -53,7 +53,7 @@ describe('0021 AC-009, AC-012: the coach line of every case', () => {
     it('a hint for the other class changes nothing; hints are plain text', () => {
         expect(stepTips('NS-5', parseStepTipSettings(true, { fast: 'Y' })).coach).toBe(COACH['NS-5']);
         expect(stepTips('NS-7', parseStepTipSettings(true, { strong: 'X' })).coach).toBe(COACH['NS-7']);
-        expect(stepTips('NS-7', parseStepTipSettings(true, { fast: '<b>x</b>' })).coach).toBe('any chat · fast model (<b>x</b>)');
+        expect(stepTips('NS-7', parseStepTipSettings(true, { fast: '<b>x</b>' })).coach).toBe('Tip: Use any chat with a fast model (<b>x</b>).');
     });
 });
 
@@ -116,8 +116,8 @@ describe('0021 AC-018: the tips need neither trust nor a writer', () => {
 
 describe('0023 AC-013: the coach line and the paragraphs of the integrate case', () => {
     it('current or new chat, fast model; effect, then-sentence and reasons literally', () => {
-        expect(stepTips('NS-6-returned', NONE).coach).toBe('current or new chat · fast model');
-        expect(stepTips('NS-6-returned', NAMED).coach).toBe('current or new chat · fast model (Y)');
+        expect(stepTips('NS-6-returned', NONE).coach).toBe('Tip: Use the current chat or a new one, with a fast model.');
+        expect(stepTips('NS-6-returned', NAMED).coach).toBe('Tip: Use the current chat or a new one, with a fast model (Y).');
         expect(stepTips('NS-6-returned', NONE).about[0]).toBe(
             'The agent checks each returned step against its files, runs its check and the quality gates, then ticks the steps and removes the return notes. Paste it once every worker you started is back.',
         );
@@ -181,8 +181,8 @@ describe('0028 AC-020: the session reason of the current or new chat follows the
 
 describe('0026 AC-002: one term for the open chat', () => {
     it('the coach line of NS-6 open and of returned work reads current or new chat · fast model', () => {
-        expect(stepTips('NS-6-open', NONE).coach).toBe('current or new chat · fast model');
-        expect(stepTips('NS-6-returned', NONE).coach).toBe('current or new chat · fast model');
+        expect(stepTips('NS-6-open', NONE).coach).toBe('Tip: Use the current chat or a new one, with a fast model.');
+        expect(stepTips('NS-6-returned', NONE).coach).toBe('Tip: Use the current chat or a new one, with a fast model.');
     });
 
     it('the reasons are 0026 §7 literally: new-chat reason for NS-5 and NS-9, the current or new chat reason below 1.11.0', () => {
@@ -218,5 +218,36 @@ describe('0026 AC-021: Send, not Paste, beside a Send', () => {
                 expect(stepTips(stepCase, NONE, undefined, { send: true }).about[0], stepCase).toBe(stepTips(stepCase, NONE).about[0]);
             }
         }
+    });
+});
+
+describe('0030 AC-008: the coach line is one Tip sentence', () => {
+    const SESSIONS = { new: 'a new chat', sameOrNew: 'the current chat or a new one,', any: 'any chat' } as const;
+    const MODELS = {
+        fast: (hint: string) => `a fast model${hint}`,
+        strong: (hint: string) => `a strong model${hint}`,
+        strongOtherFamily: (hint: string) => `a strong model${hint} from another model family`,
+        strongWebSearch: (hint: string) => `a strong model${hint}, and allow web search`,
+    } as const;
+
+    it('0030 AC-008 every step case, with and without a model hint, reads Tip: Use <session> with <model>.', () => {
+        for (const stepCase of Object.keys(STEP_GUIDES) as StepCase[]) {
+            const guide = STEP_GUIDES[stepCase];
+            const fast = guide.model === 'fast';
+            expect(stepTips(stepCase, NONE).coach, stepCase).toBe(`Tip: Use ${SESSIONS[guide.session]} with ${MODELS[guide.model]('')}.`);
+            expect(stepTips(stepCase, NAMED).coach, stepCase).toBe(`Tip: Use ${SESSIONS[guide.session]} with ${MODELS[guide.model](fast ? ' (Y)' : ' (X)')}.`);
+        }
+    });
+
+    it('0030 AC-008 the four examples of the spec, literally', () => {
+        expect(stepTips('NS-9', NONE).coach).toBe('Tip: Use a new chat with a strong model.');
+        expect(stepTips('NS-6-open', NONE).coach).toBe('Tip: Use the current chat or a new one, with a fast model.');
+        expect(stepTips('NS-5', NONE).coach).toBe('Tip: Use a new chat with a strong model from another model family.');
+        expect(stepTips('NS-10', NONE).coach).toBe('Tip: Use any chat with a strong model, and allow web search.');
+    });
+
+    it('0030 AC-008 the hint stands after the word model', () => {
+        expect(stepTips('NS-5', NAMED).coach).toBe('Tip: Use a new chat with a strong model (X) from another model family.');
+        expect(stepTips('NS-10', NAMED).coach).toBe('Tip: Use any chat with a strong model (X), and allow web search.');
     });
 });

@@ -1,9 +1,9 @@
 # Plan — Clarified Next Step, Quiet Attachment, Tip Sentence
 
 **Spec:** [0030-clarified-step-quiet-attach-tip.md](0030-clarified-step-quiet-attach-tip.md)
-**Status:** In progress
+**Status:** In Progress
 **Last updated:** 2026-11-20
-**Current step:** T-004
+**Current step:** T-005 (orchestrator), then T-006
 
 ## Approach
 
@@ -105,8 +105,8 @@ No parallel stage: T-003 and T-004 both change the detail and Now-row render tes
   "0030 AC-008 …" (3 sessions × 4 models × hint or none, §7's four examples literally); `visibleLiterals.test.ts`
   "0030 AC-009 …" (each §7 text once, one `Tip:` constant).
 - **Verify:** `npx vitest run src/core/board src/webview src/adapters/node/visibleLiterals.test.ts` — red first, then green.
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** 2026-11-20 red: `npx vitest run src/core/board/stepTips.test.ts src/adapters/node/visibleLiterals.test.ts` 4 failed (old `session · model` text, no `COACH_TIP_PREFIX`); green after the change; `npx vitest run src/core src/shared src/webview src/adapters/node/visibleLiterals.test.ts` 207 files passed (after adjusting 17 test files' coach literals); `npx tsc --noEmit` clean. AC-002 attach for Copilot and Claude Code on the clarified line asserted in `clarifiedSurfaces0030.test.ts` (STEP_ATTACHES NS-10 true).
+- **Notes:** Spec AC-002 gained the Send/attach sentence (coordinator request, Gregor). Baseline snapshots stay as written; `readBaseline` maps their old coach strings through `coachTranslated0030` (the 0026 translation test is untouched). Test titles containing old coach words were left unchanged.
 
 ### T-005 — Preview at two widths and three themes
 

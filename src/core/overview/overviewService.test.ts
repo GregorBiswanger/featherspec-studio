@@ -199,13 +199,13 @@ describe('0021 AC-011, AC-010: a settings change reaches the Overview', () => {
         expect(current(world).now.rows.some((row) => 'tips' in row)).toBe(false);
         world.tips.set(parseStepTipSettings(true, {}));
         await world.service.whenIdle();
-        expect(current(world).now.rows[0]?.tips?.coach).toMatch(/ · (?:strong|fast) model/);
+        expect(current(world).now.rows[0]?.tips?.coach).toMatch(/^Tip: Use .* with a (?:strong|fast) model/);
         expect(current(world).now.rows.filter((row) => 'tips' in row)).toHaveLength(1);
         const before = current(world).now.rows[0]?.tips?.coach;
         world.tips.set(parseStepTipSettings(true, { strong: 'X', fast: 'Y' }));
         await world.service.whenIdle();
         expect(current(world).now.rows[0]?.tips?.coach).not.toBe(before);
-        expect(current(world).now.rows[0]?.tips?.coach).toMatch(/\((?:X|Y)\)/);
+        expect(current(world).now.rows[0]?.tips?.coach).toMatch(/ model \((?:X|Y)\)/);
         world.tips.set(parseStepTipSettings(false, {}));
         await world.service.whenIdle();
         expect(current(world).now.rows.some((row) => 'tips' in row)).toBe(false);

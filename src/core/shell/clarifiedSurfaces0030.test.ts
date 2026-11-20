@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { createHandOverWorld, projectOf, type HandOverWorld } from '../assistant/testing/handOverWorld';
+import { STEP_ATTACHES } from '../assistant/attachment';
 import { buildCards } from '../board/cards';
 import { buildDetail } from '../board/detail';
 import { arrangeBoard } from '../board/filters';
@@ -70,6 +71,23 @@ describe('0030 AC-002: a clarified spec shows the plan step and no /sdd-clarify 
         const world = createHandOverWorld(await projectOf({ [KEY]: specText() }, START));
         await world.handOvers.begin(`/sdd-clarify ${KEY}`)?.commit();
         expect(surfaces(world.source.current()!).all).toContain('/sdd-clarify');
+    });
+});
+
+describe('0030 AC-002: the clarified plan line is a Send that attaches the spec', () => {
+    it.each(['copilot', 'claudeCode'] as const)('0030 AC-002 %s: the one /sdd-plan line carries a send view whose attach is the spec path', async (assistant) => {
+        const { model } = await clarified();
+        const detail = buildDetail({ selection: { stem: STEM, path: KEY }, model, history: HISTORY, offer: { assistant } });
+        expect(detail.kind).toBe('spec');
+        const next = detail.kind === 'spec' ? detail.nextStep : undefined;
+        expect(next && 'lines' in next ? next.lines.map((line) => line.text) : []).toEqual([`/sdd-plan ${KEY}`]);
+        expect(next && 'send' in next ? next.send : undefined).toMatchObject({ assistant, target: 'new', attach: { name: '0007-x.md', path: KEY } });
+        const now = buildOverviewView({ model, history: HISTORY, offer: { assistant } });
+        expect(JSON.stringify(now)).not.toContain('/sdd-clarify');
+    });
+
+    it('0030 AC-002 the plan case attaches for both assistants (STEP_ATTACHES NS-10 is true)', () => {
+        expect(STEP_ATTACHES['NS-10']).toBe(true);
     });
 });
 

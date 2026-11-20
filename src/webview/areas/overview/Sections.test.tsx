@@ -330,7 +330,7 @@ describe('0018 AC-004, AC-005, AC-012: Now and Up next', () => {
 });
 
 describe('0021 AC-009, AC-010: the coach line of the first Now row', () => {
-    const TIPS = { coach: 'any chat · fast model', about: ['one', 'two', 'three', 'four'] };
+    const TIPS = { coach: 'Tip: Use any chat with a fast model.', about: ['one', 'two', 'three', 'four'] };
 
     function withTips(): OverviewView {
         const view = withRows();
@@ -345,7 +345,7 @@ describe('0021 AC-009, AC-010: the coach line of the first Now row', () => {
         const item = nowRow(container, '0001-a');
         const coach = item.querySelector('div.ov-coach')!;
         expect(coach.parentElement).toBe(item);
-        expect(coach.querySelector('.ov-coach-text')!.textContent).toBe('any chat · fast model');
+        expect(coach.querySelector('.ov-coach-text')!.textContent).toBe('Tip: Use any chat with a fast model.');
         const copy = item.querySelector('button.next-step-copy')!;
         expect(copy.nextElementSibling?.getAttribute('role')).toBe('status');
         expect(copy.nextElementSibling?.nextElementSibling).toBe(coach);
@@ -364,7 +364,7 @@ describe('0021 AC-009, AC-010: the coach line of the first Now row', () => {
 
 describe('0021 AC-014, AC-009: the About this step toggletip of the first Now row', () => {
     const ABOUT = ['It builds one step.', 'Same chat: it continues.', 'A fast model is enough.', 'Nothing changes on disk.'];
-    const TIPS = { coach: 'any chat · fast model', about: ABOUT };
+    const TIPS = { coach: 'Tip: Use any chat with a fast model.', about: ABOUT };
 
     function withTips(): OverviewView {
         const view = withRows();
@@ -378,7 +378,7 @@ describe('0021 AC-014, AC-009: the About this step toggletip of the first Now ro
         expect(toggles).toHaveLength(1);
         const coach = nowRow(container, '0001-a').querySelector('.ov-coach')!;
         const toggle = coach.querySelector<HTMLButtonElement>('button.toggletip')!;
-        expect(toggle.previousElementSibling?.textContent).toBe('any chat · fast model');
+        expect(toggle.previousElementSibling?.textContent).toBe('Tip: Use any chat with a fast model.');
         expect(toggle.getAttribute('aria-label')).toBe('About this step');
         expect(nowRow(container, '0002-b').querySelector('.toggletip')).toBeNull();
         expect(container.querySelector('[data-up-next] .toggletip')).toBeNull();

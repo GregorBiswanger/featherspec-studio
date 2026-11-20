@@ -333,7 +333,7 @@ describe('0021 AC-011, AC-010: a settings change reaches the detail', () => {
         w.service.onDidChangeDetail((view) => seen.push(view.kind === 'spec' ? `${view.stem}:${tipsOf(w)?.coach ?? 'none'}` : view.kind));
         w.tips.set(parseStepTipSettings(true, {}));
         await w.service.whenIdle();
-        expect(tipsOf(w)?.coach).toBe('any chat · fast model');
+        expect(tipsOf(w)?.coach).toBe('Tip: Use any chat with a fast model.');
         w.tips.set(parseStepTipSettings(false, {}));
         await w.service.whenIdle();
         expect(tipsOf(w)).toBeUndefined();
@@ -350,7 +350,7 @@ describe('0021 AC-011, AC-010: a settings change reaches the detail', () => {
         w.service.onDidChangeDetail(() => (emitted += 1));
         w.tips.set(parseStepTipSettings(true, { fast: 'Y' }));
         await w.service.whenIdle();
-        expect(tipsOf(w)?.coach).toBe('any chat · fast model (Y)');
+        expect(tipsOf(w)?.coach).toBe('Tip: Use any chat with a fast model (Y).');
         expect(emitted).toBe(1);
         w.tips.set(parseStepTipSettings(true, { fast: 'Y' }));
         await w.service.whenIdle();

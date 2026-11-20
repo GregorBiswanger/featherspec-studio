@@ -95,11 +95,21 @@ export function translated(value: unknown): unknown {
     return JSON.parse(WORDING_0026.reduce((text, [from, to]) => text.split(from).join(to), JSON.stringify(value)));
 }
 
+const SESSION_0030: Readonly<Record<string, string>> = { 'new chat': 'a new chat', 'current or new chat': 'the current chat or a new one,', 'any chat': 'any chat' };
+const MODEL_SUFFIX_0030: Readonly<Record<string, string>> = { '': '', ', other family': ' from another model family', ', allow web search': ', and allow web search' };
+
+export function coachTranslated0030(value: unknown): unknown {
+    const text = JSON.stringify(value).replace(/"coach":"(new chat|current or new chat|any chat) · (fast|strong) model((?: \([^)]*\))?)(, other family|, allow web search)?"/g, (_all, session: string, model: string, hint: string, suffix: string | undefined) => {
+        return `"coach":"Tip: Use ${SESSION_0030[session]} with a ${model} model${hint}${MODEL_SUFFIX_0030[suffix ?? '']}."`;
+    });
+    return JSON.parse(text);
+}
+
 export function readBaseline(name: string): ProjectSnapshot {
     const raw = JSON.parse(fs.readFileSync(snapshotFile(name), 'utf8')) as ProjectSnapshot;
     const result: ProjectSnapshot = {};
     for (const [key, value] of Object.entries(raw)) {
-        result[key] = { ...value, stepView: withShortIntent(value), tips: translated(value.tips) };
+        result[key] = { ...value, stepView: withShortIntent(value), tips: coachTranslated0030(translated(value.tips)) };
     }
     return result;
 }

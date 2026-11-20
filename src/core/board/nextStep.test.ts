@@ -535,7 +535,7 @@ describe('0028 AC-004: below 1.11.0 the sign puts the report first', () => {
         expect(stepShortForm(view)).toBe('Report · /sdd-plan');
         expect(view.line).toBe(`/sdd-plan ${KEY}`);
         const tips = stepTips('NS-6-report', parseStepTipSettings(true, {}));
-        expect(tips.coach).toBe('any chat · fast model');
+        expect(tips.coach).toBe('Tip: Use any chat with a fast model.');
         expect(tips.about[0]).toBe(
             'The agent checks the plan against the code, brings the ticks and the handoff level and reports where the work stands; it builds nothing yet. When the plan and the ticks agree, the Studio shows the step to continue with.',
         );
@@ -698,7 +698,7 @@ describe('0028 AC-016: a Ready spec starts with FeatherSpec\'s fixed prompt', ()
         const m = await modelOfCase(name);
         expect(nextStep(m, KEY)).toEqual({ rule: 'NS-7', case: 'NS-6-resume', lines: [{ intent: 'Let the agent report where the plan stands', text: `/sdd-plan ${KEY}` }] });
         expect(stepView(m, KEY)).toMatchObject({ intent: 'Report', short: '/sdd-plan', line: `/sdd-plan ${KEY}` });
-        expect(stepTips('NS-6-resume', settings).coach).toBe('any chat · fast model');
+        expect(stepTips('NS-6-resume', settings).coach).toBe('Tip: Use any chat with a fast model.');
         expect(STEP_GUIDES['NS-6-resume'].effect).toBe('The agent checks the plan against the code and reports where it stands.');
         expect(STEP_GUIDES['NS-6-resume'].then).toBe('The spec then shows its next step.');
     });

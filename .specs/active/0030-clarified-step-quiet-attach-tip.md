@@ -124,7 +124,8 @@ Node or jsdom tests decide every criterion unless marked manual.
 - **AC-002** While a Backlog spec with criteria and without a plan has an entry whose modification time or size differs
   from the spec's current one, `nextStep()` shall return exactly one line, intent `Write the plan`, text
   `/sdd-plan <spec>`, rule NS-9, case NS-10; the detail, the first Now row, the Board card, the tree and *Copy next step* shall show
-  that step and no text containing `/sdd-clarify`.
+  that step and no text containing `/sdd-clarify`. Where an assistant is offered (0024), that line is the Send to <assistant> primary and its Send view
+  carries the spec's path as `attach`, for Copilot and for Claude Code (0027; `STEP_ATTACHES['NS-10']` is true).
 - **AC-003** If the spec has no entry, or its entry equals its current modification time and size, then `nextStep()` shall
   return today's NS-9 deep-equal to the baseline.
 - **AC-004** If the spec is moved or renamed, gets a plan, loses its criteria, or the memory cannot be read, then the

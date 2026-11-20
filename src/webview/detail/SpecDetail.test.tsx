@@ -831,7 +831,7 @@ describe('0022 AC-013, AC-015, AC-002, AC-003: sentences and breaking paths in t
 
 
 describe('0021 AC-009, AC-010: the coach line in the detail', () => {
-    const TIPS = { coach: 'new chat · strong model, other family', about: ['one', 'two', 'three', 'four'] };
+    const TIPS = { coach: 'Tip: Use a new chat with a strong model from another model family.', about: ['one', 'two', 'three', 'four'] };
     const LINES = [
         { text: '/sdd-compile k', intent: 'Have the result verified' },
         { text: '/sdd-lifecycle k', intent: 'Then, after a READY verdict: close the spec' },
@@ -845,7 +845,7 @@ describe('0021 AC-009, AC-010: the coach line in the detail', () => {
         const container = await open(detailView({}, { rule: 'NS-5', lines: LINES, tips: TIPS }));
         const [first, second] = items(container);
         const coach = first!.querySelector('p.step-coach')!;
-        expect(coach.textContent).toBe('new chat · strong model, other family');
+        expect(coach.textContent).toBe('Tip: Use a new chat with a strong model from another model family.');
         const copy = first!.querySelector('button.next-step-copy')!;
         expect(copy.nextElementSibling?.getAttribute('role')).toBe('status');
         expect(copy.nextElementSibling?.nextElementSibling).toBe(coach);
@@ -869,7 +869,7 @@ describe('0021 AC-009, AC-010: the coach line in the detail', () => {
 
 describe('0021 AC-014, AC-015, AC-009, AC-010: the About this step toggletip in the detail', () => {
     const ABOUT = ['It checks the work.', 'New chat: the reviewer should not know the build.', 'A strong model reads it best.', 'Nothing changes on disk.'];
-    const TIPS = { coach: 'new chat · strong model, other family', about: ABOUT };
+    const TIPS = { coach: 'Tip: Use a new chat with a strong model from another model family.', about: ABOUT };
     const LINES = [
         { text: '/sdd-compile k', intent: 'Have the result verified' },
         { text: '/sdd-lifecycle k', intent: 'Then, after a READY verdict: close the spec' },

@@ -83,4 +83,25 @@ describe('final check 7 (ux-guidelines 10, 6): visible literals live in the text
         expect(offenders).toEqual([]);
         expect(/\p{Extended_Pictographic}/u.test('\u{1FAB6}')).toBe(true);
     });
+
+    it('0030 AC-009 each coach and Send-name text of 0030 §7 exists once, in a text module, and Tip: is one constant', async () => {
+        const files = await productionFiles(path.join(root, 'src'));
+        const texts = await Promise.all(files.map(async (file) => ({ name: path.relative(root, file).split(path.sep).join('/'), text: await fs.readFile(file, 'utf8') })));
+        const wanted: ReadonlyArray<readonly [string, string]> = [
+            ["export const COACH_TIP_PREFIX = 'Tip:';", 'src/shared/protocol/nextStepTexts.ts'],
+            ["'a new chat'", 'src/shared/protocol/nextStepTexts.ts'],
+            ["'the current chat or a new one,'", 'src/shared/protocol/nextStepTexts.ts'],
+            ["'any chat'", 'src/shared/protocol/nextStepTexts.ts'],
+            ["fast: { base: 'a fast model', suffix: '' },", 'src/shared/protocol/nextStepTexts.ts'],
+            ["' from another model family'", 'src/shared/protocol/nextStepTexts.ts'],
+            ["', and allow web search'", 'src/shared/protocol/nextStepTexts.ts'],
+            ['. Attaches ${attachName}.', 'src/shared/protocol/assistantTexts.ts'],
+        ];
+        for (const [literal, module] of wanted) {
+            const holders = texts.filter((file) => file.text.includes(literal));
+            expect(holders.map((file) => file.name), literal).toEqual([module]);
+            expect(holders[0]!.text.split(literal), literal).toHaveLength(2);
+        }
+        expect(texts.filter((file) => /['"`]Tip:/.test(file.text)).map((file) => file.name)).toEqual(['src/shared/protocol/nextStepTexts.ts']);
+    });
 });

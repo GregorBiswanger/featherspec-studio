@@ -442,13 +442,13 @@ describe('0021 AC-009, AC-010: the tips of the detail', () => {
         const next = await nextOf(BACKLOG_FILES, '0002-b', SHOW);
         expect(next.rule).toBe('NS-9');
         expect(next.tips).toEqual(stepTips('NS-9', SHOW));
-        expect(next.tips?.coach).toBe('new chat · strong model');
+        expect(next.tips?.coach).toBe('Tip: Use a new chat with a strong model.');
         expect(next.tips?.about).toHaveLength(4);
     });
 
     it('a hint reaches the coach line of the case', async () => {
         const next = await nextOf(BACKLOG_FILES, '0002-b', parseStepTipSettings(true, { strong: 'X' }));
-        expect(next.tips?.coach).toBe('new chat · strong model (X)');
+        expect(next.tips?.coach).toBe('Tip: Use a new chat with a strong model (X).');
     });
 
     it('without a tips input, and with show false, the view has no tips key and the lines are the same', async () => {

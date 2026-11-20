@@ -82,7 +82,7 @@ describe('0026 AC-008: five entries show no more, six one, none Nothing in progr
     });
 
     it('the first row carries the coach line, (?) and the split button; every later row only an icon Copy', async () => {
-        const container = await open(withNow(3, 3, { step: STEP, send: SEND, tips: { coach: 'current or new chat · fast model', about: ['a', 'b', 'c', 'd'] } }));
+        const container = await open(withNow(3, 3, { step: STEP, send: SEND, tips: { coach: 'Tip: Use the current chat or a new one, with a fast model.', about: ['a', 'b', 'c', 'd'] } }));
         const rows = [...container.querySelectorAll('[data-now] [data-spec-row]')];
         expect(rows[0]?.querySelector('.send-split')).not.toBeNull();
         expect(rows[0]?.querySelector('.ov-coach')).not.toBeNull();

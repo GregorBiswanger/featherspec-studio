@@ -28,7 +28,7 @@ afterEach(() => {
     mounted = undefined;
 });
 
-const COACH = 'new chat · strong model, other family';
+const COACH = 'Tip: Use a new chat with a strong model from another model family.';
 const LINE = '/sdd-compile .specs/active/0001-r.md';
 const TIPS = { coach: COACH, about: ['Effect.', 'Reasons.', 'Choose.', 'Settings.'] };
 const STEP = { intent: 'Verify', short: '/sdd-compile', line: LINE, lines: [{ text: LINE, intent: 'Have the result verified' }] };
