@@ -93,7 +93,7 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
     }
 
     function welcomeField(current: Built): { welcome?: WelcomeView } {
-        const welcome = current.cards.length === 0 ? welcomeOf(current.model, deps.assistant.read()) : undefined;
+        const welcome = current.cards.length === 0 ? welcomeOf(current.model, deps.assistant.read(), deps.tips.read()) : undefined;
         return welcome === undefined ? {} : { welcome };
     }
 

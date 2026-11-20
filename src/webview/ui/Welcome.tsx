@@ -9,9 +9,10 @@ export function Welcome(props: { welcome: WelcomeView; className?: string }) {
     return (
         <EmptyState icon="feather" data-welcome {...(props.className === undefined ? {} : { className: props.className })}>
             <h2>{WELCOME_HEADING}</h2>
-            <p>{WELCOME_BODY}</p>
+            <p className="welcome-body">{WELCOME_BODY}</p>
             <div className="welcome-action">
                 <StepAction send={props.welcome.send} look="primary" line={SETUP_LINE} sendResult={sendResult} onSend={sendPrompt} copyResult={copyResult} onCopy={copyText} />
+                {props.welcome.coach === undefined ? null : <p className="step-coach">{props.welcome.coach}</p>}
             </div>
         </EmptyState>
     );

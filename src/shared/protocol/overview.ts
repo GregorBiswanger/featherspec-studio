@@ -68,6 +68,7 @@ export type OverviewNow = OverviewUpNext;
 
 export interface WelcomeView {
     send?: SendView;
+    coach?: string;
 }
 
 export interface OverviewView {
@@ -204,7 +205,7 @@ function isProblems(value: unknown): value is OverviewProblems {
 }
 
 export function isWelcomeView(value: unknown): value is WelcomeView {
-    return isRecord(value) && exactly(value, [], ['send']) && (value.send === undefined || isSendView(value.send));
+    return isRecord(value) && exactly(value, [], ['send', 'coach']) && (value.send === undefined || isSendView(value.send)) && (value.coach === undefined || typeof value.coach === 'string');
 }
 
 export function isOverviewView(value: unknown): value is OverviewView {

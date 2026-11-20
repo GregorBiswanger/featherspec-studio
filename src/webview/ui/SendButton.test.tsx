@@ -719,6 +719,17 @@ describe('0027 AC-003, AC-004, AC-008: the attachment on the split button', () =
         expect(arrow(container).hasAttribute('aria-describedby')).toBe(false);
     });
 
+    it('0032 AC-008: the main part names and posts the attachment for a new chat, and neither for Copilot\'s current chat', async () => {
+        mounted = await mount(<Described send={WITH_A} />);
+        expect(main(mounted.container).getAttribute('title')).toBe(`Send to Copilot (new chat): ${LINE}. Attaches ${ATTACH.name}.`);
+        mounted.unmount();
+        mounted = await mount(<Described send={{ ...WITH_A, target: 'current' }} />);
+        expect(main(mounted.container).getAttribute('title')).toBe(`Send to Copilot (current chat): ${LINE}`);
+        expect(main(mounted.container).getAttribute('aria-label')).not.toContain('Attaches');
+        await click(main(mounted.container));
+        expect(sent.map((request) => 'attach' in request)).toEqual([false]);
+    });
+
     it('0027 AC-003: without a describedBy nothing is described', async () => {
         mounted = await mount(<Described send={VIEW_A_NEW} />);
         await click(arrow(mounted.container));
@@ -735,7 +746,7 @@ describe('0027 AC-003, AC-004, AC-008: the attachment on the split button', () =
         await click(items(container)[0]!);
         expect(sent).toEqual([
             { assistant: 'copilot', target: 'new', line: LINE, attach: ATTACH.path, token: TOKEN },
-            { assistant: 'copilot', target: 'current', line: LINE, attach: ATTACH.path, token: TOKEN },
+            { assistant: 'copilot', target: 'current', line: LINE, token: TOKEN },
             { assistant: 'copilot', target: 'new', line: LINE, attach: ATTACH.path, token: TOKEN },
         ]);
         mounted.unmount();

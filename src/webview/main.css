@@ -235,9 +235,15 @@ main > h1 {
     text-align: center;
 }
 
-.empty-state .icon {
+.empty-state .empty-state-feather {
     width: 24px;
     height: 24px;
+}
+
+/* 0032 AC-007: the welcome's explanation stays a readable line length. */
+.empty-state .welcome-body {
+    max-width: 65ch;
+    margin-inline: auto;
 }
 
 .restricted-note {
@@ -863,6 +869,11 @@ main > h1 {
     flex-wrap: wrap;
     gap: 6px;
     padding: 2px 0;
+}
+
+/* 0032 AC-006: Send always stands on its own row under its prompt, whatever the prompt's length. */
+.next-step-lines li > code:has(+ .send-split) {
+    flex: 1 0 100%;
 }
 
 /* 0031 AC-013: about one line of space between two prompt lines; the gap inside a line stays 6px. */

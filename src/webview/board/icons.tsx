@@ -44,9 +44,9 @@ function pathOf(kind: GlyphKind): string | undefined {
     return isState(kind) ? MOTIF_PATHS[STATE_LOOK[kind].motif] : kind === 'feather' ? FEATHER_PATH : PATHS[kind];
 }
 
-export function Glyph(props: { kind: GlyphKind }) {
+export function Glyph(props: { kind: GlyphKind; className?: string }) {
     return (
-        <svg className="icon" width="14" height="14" viewBox={props.kind === 'feather' ? FEATHER_VIEW_BOX : '0 0 16 16'} fill="currentColor" fillRule="evenodd" aria-hidden="true" focusable="false" data-icon={props.kind}>
+        <svg className={props.className === undefined ? 'icon' : `icon ${props.className}`} width="14" height="14" viewBox={props.kind === 'feather' ? FEATHER_VIEW_BOX : '0 0 16 16'} fill="currentColor" fillRule="evenodd" aria-hidden="true" focusable="false" data-icon={props.kind}>
             <path d={pathOf(props.kind)} />
         </svg>
     );

@@ -22,7 +22,7 @@ export function buildOverviewView(input: ViewInput): OverviewView {
     const { model, history } = input;
     const specs = createSpecResolver(model);
     const figures = projectFigures(model);
-    const welcome = figures.kind === 'empty' ? welcomeOf(model, input.offer) : undefined;
+    const welcome = figures.kind === 'empty' ? welcomeOf(model, input.offer, input.tips) : undefined;
     return {
         ...(welcome === undefined ? {} : { welcome }),
         now: projectNow(model, specs, input.tips, input.offer),

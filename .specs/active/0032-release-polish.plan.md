@@ -3,7 +3,7 @@
 **Spec:** [0032-release-polish.md](0032-release-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-20
-**Current step:** T-003
+**Current step:** T-004
 
 ## Approach
 
@@ -77,8 +77,8 @@ No parallel stage: T-001…T-003 share `nextStepTexts.ts` and the detail protoco
   `webview/polish0032.test.tsx` "0032 AC-001 …" (arrow 14 × 14 in the empty state), "AC-007 …" (Tip, tips off);
   `webviewCss.test.ts` "0032 AC-001 …", "AC-006 …", "AC-007 …".
 - **Verify:** `npx vitest run src/webview src/core/overview src/adapters/node/webviewCss.test.ts` — red first, then green.
-- [ ] **Verified (T-003):** —
-- **Notes:** —
+- [x] **Verified (T-003):** `npx vitest run src/webview src/core/overview src/adapters/node/webviewCss.test.ts src/shared` red first, then green 1188 passed; both `tsc` clean. 2026-11-20
+- **Notes:** `Glyph` got an optional `className`; the Send row is `li > code:has(+ .send-split)` taking a full row (Copy prompt without an offer keeps its place). `WelcomeView.coach` is derived from `stepTips('NS-9')`, so Model Hints apply as everywhere.
 
 ### T-004 — Notes, PDs, docs and final gates
 

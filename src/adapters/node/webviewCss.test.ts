@@ -1090,3 +1090,21 @@ describe('0031 AC-013: the gap between two prompt lines of a Next step', () => {
         expect(gapOf('.next-step-lines li { margin-top: 1.25em; }')).toBeUndefined();
     });
 });
+
+describe('0032: onboarding arrow, Send row and line length', () => {
+    const css = readFileSync(path.resolve(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+
+    it('0032 AC-001 24px sizes only the feather glyph of an empty state, never every glyph', () => {
+        expect(rulesFor(css, '.empty-state .icon')).toEqual([]);
+        expect(rulesFor(css, '.empty-state .empty-state-feather').some((rule) => /width:\s*24px/.test(rule.body) && /height:\s*24px/.test(rule.body))).toBe(true);
+    });
+
+    it('0032 AC-006 a prompt that has a Send split button takes a whole row, so Send stands under it', () => {
+        expect(rulesFor(css, '.next-step-lines li > code:has(+ .send-split)').some((rule) => /flex:\s*1 0 100%/.test(rule.body))).toBe(true);
+    });
+
+    it('0032 AC-007 the welcome body has max-width 65ch and stays centred', () => {
+        const rules = rulesFor(css, '.empty-state .welcome-body');
+        expect(rules.some((rule) => /max-width:\s*65ch/.test(rule.body) && /margin-inline:\s*auto/.test(rule.body))).toBe(true);
+    });
+});
