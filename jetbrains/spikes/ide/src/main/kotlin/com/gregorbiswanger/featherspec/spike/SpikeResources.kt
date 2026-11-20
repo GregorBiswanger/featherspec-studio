@@ -28,7 +28,7 @@ class SpikeResources(private val postRequest: String, private val themeClass: St
             "/index.html" -> SpikeResource("text/html", spikeHtml(newNonce(), themeClass, postRequest).toByteArray(Charsets.UTF_8))
             "/main.js" -> file("main.js", "text/javascript")
             "/main.css" -> file("main.css", "text/css")
-            "/theme.css" -> SpikeResource("text/css", ByteArray(0))
+            "/theme.css" -> SpikeResource("text/css", SpikeTheme.css().toByteArray(Charsets.UTF_8))
             else -> null
         }
     }

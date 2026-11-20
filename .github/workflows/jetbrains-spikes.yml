@@ -42,3 +42,48 @@ jobs:
           name: s1-results-${{ matrix.os }}
           path: jetbrains/spikes/build/s1-results.json
           if-no-files-found: warn
+  spike-ide:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.os == 'windows-latest' }}
+    timeout-minutes: 60
+    steps:
+      - name: Keep line endings as committed (Windows)
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node esbuild.js
+      - run: node jetbrains/spikes/core/check.mjs
+      - run: node jetbrains/spikes/core/reply.mjs
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: 9.7.0
+      - name: Install Xvfb (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+      - name: Run the Starter probe (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a gradle -p jetbrains/spikes :ide:integrationTest
+      - name: Run the Starter probe (Windows)
+        if: runner.os == 'Windows'
+        run: gradle -p jetbrains/spikes :ide:integrationTest
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: spike-ide-${{ matrix.os }}
+          path: |
+            jetbrains/spikes/ide/build/spike-out/**
+            **/out/ide-tests/**
+          if-no-files-found: warn

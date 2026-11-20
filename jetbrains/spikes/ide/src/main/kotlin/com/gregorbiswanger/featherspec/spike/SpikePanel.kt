@@ -10,7 +10,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
-import com.intellij.ui.JBColor
 import com.intellij.ui.jcef.JBCefBrowser
 import com.intellij.ui.jcef.JBCefJSQuery
 import java.beans.PropertyChangeListener
@@ -41,7 +40,7 @@ class SpikeEditor : UserDataHolderBase(), FileEditor {
     private val query = JBCefJSQuery.create(browser)
     private val resources = SpikeResources(
         query.inject("request"),
-        if (JBColor.isBright()) "vscode-light" else "vscode-dark",
+        SpikeTheme.bodyClass(),
     )
 
     init {

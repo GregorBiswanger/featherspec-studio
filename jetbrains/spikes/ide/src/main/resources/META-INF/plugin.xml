@@ -12,5 +12,6 @@
         <action id="FeatherSpecSpike.Open" class="com.gregorbiswanger.featherspec.spike.OpenSpikeAction" text="Open FeatherSpec Spike">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
+        <action id="FeatherSpecSpike.Probe" class="com.gregorbiswanger.featherspec.spike.SpikeProbeAction" text="Run FeatherSpec Spike Probe"/>
     </actions>
 </idea-plugin>
