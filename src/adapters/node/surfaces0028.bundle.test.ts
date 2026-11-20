@@ -83,7 +83,7 @@ describe('0028 AC-006: the rendered bundle shows Review and Report first, never 
         const texts = await render(CASE_FIXTURES['ac004-report-first']!);
         expect(texts[0]).toContain(REPORT);
         expect(texts[1]).toContain(REPORT);
-        expect(texts[0]).toContain('Continue with T-003 Reject money values');
+        expect(texts[0]).toContain('Then: continue with T-003 Reject money values');
         for (const text of texts) {
             expect(text).not.toContain(OLD_TEXT);
         }

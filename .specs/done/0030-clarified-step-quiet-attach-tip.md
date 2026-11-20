@@ -93,6 +93,7 @@ their `aria-describedby`; without an attachment everything is as today.
 Where 0021, 0025 and 0026 show a coach line, it shows §7's sentence for the first line's session and model, with the
 model hint (0021 §6.7) after the word `model`. One sentence; place, colour, `showStepTips` and the `?` stay unchanged.
 *Amended by 0031 (follow-up Send): also under each follow-up line's Send, for its own case (0031 §6.3, AC-011).*
+*Amended by 0032 (PD-093, 0032 §6.3): the Tip of NS-10, and so of NS-9's `Then: write the plan` line, reads `Tip: Use a new chat with a strong model, and allow web search.`*
 
 ## 7. Texts (English, PD-016; in the text modules, asserted literally; proxies, A-003)
 
@@ -104,6 +105,8 @@ model hint (0021 §6.7) after the word `model`. One sentence; place, colour, `sh
 
 Examples: `Tip: Use a new chat with a strong model.` · `Tip: Use the current chat or a new one, with a fast model.` ·
 `Tip: Use a new chat with a strong model from another model family.` · `Tip: Use any chat with a strong model, and allow web search.`
+
+*Amended by 0032 (0032 §6.2): the session phrase for current or new chat is `the current chat or a new one`, without comma; the example reads `Tip: Use the current chat or a new one with a fast model.`*
 
 ## 8. Error cases and edge cases
 

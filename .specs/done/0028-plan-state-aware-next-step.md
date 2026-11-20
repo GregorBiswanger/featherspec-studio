@@ -97,6 +97,8 @@ rule), coach line `any chat · fast model` (0026 §6.2 keeps `any chat`), and th
 
 Naming only ticked or struck steps is the normal lag inside a stage: no sign (A-004). A return note is 0023's case (A-006).
 
+*Amended by 0032 (PD-095, 0032 §6.4): line 2 reads `Then: continue with <ID> <title>`.*
+
 ### 6.3 Order of an Active spec's cases (first match wins)
 
 (1) A return note lies → returned work (0023 §5.5), in every version and before (4) and (5) (12 D1-3, PD-087); (2) no
@@ -167,6 +169,8 @@ its plan T-001…T-006 in three stages (g-r2-04), version 1.10.0 unless stated. 
 - **AC-003** For a spec with a finished plan, `deriveLifecycle()` and `nextStep()` shall return what they return at the commit on which this spec's implementation starts when its plan says `Blocked` or a note BLOCKED (NS-4), when the spec in `active/` says `Draft` (S-FOLDER, NS-2), and when the pair sits in `backlog/`.
 - **AC-004** While an Active spec has no return note, its sibling plan's open step is `<ID>` and the plan shows the sign of §6.2, `nextStep()` shall return rule `NS-6`, line 1 `/sdd-plan <spec path>` under `Let the agent report first — the plan and the ticks may differ`, line 2 `Implement <ID> of <plan path>` under `Continue with <ID> <title>`, short form `Report · /sdd-plan`, coach line `any chat · fast model`, and as the toggletip's first paragraph §7's effect and then-sentence.
   > **Given** T-001 and T-002 ticked, T-003 "Reject money values" and T-004 open, `**Current step:** T-004` **Then** `Let the agent report first — the plan and the ticks may differ` over `/sdd-plan .specs/active/0001-tip-splitter.md`, then `Continue with T-003 Reject money values` over `Implement T-003 of .specs/active/0001-tip-splitter.plan.md`.
+
+  *Amended by 0032 (PD-095, 0032 §6.4): the continue line under Report first reads `Then: continue with <ID> <title>` (without title `Then: continue with <ID>`).*
 - **AC-005** `nextStep()` shall return 0021 AC-003's variant A, deep-equal to its result at the commit on which this spec's implementation starts, for each of these `Current step` values, one fixture each: absent; empty; `—`; `none (all steps ticked)`; the open step alone (`T-003`) or with other steps (`T-003 ‖ T-004`, `T-003 and T-005`); only ticked or struck steps (`T-002` after T-002's tick, inside a stage); only IDs the plan lacks (`T-099`).
 - **AC-006** For the fixtures of AC-001 and AC-004, each in the form 0021 §6.3 and 0022 §4.2 give it, these shall show that step and the state `Review` or `Active`: the detail, the Board card and column, the Now row and its place in the order, the tree row (group, icon, description, tooltip), the badge count, the status bar (text, tooltip) and the quick pick. No rendered text shall contain `Let the agent report where the plan stands`.
   > **Given** AC-001's spec, an Active `0002` with an open step, no selection **Then** the status bar reads `$(checklist) 0001 · Review · /sdd-compile` and the badge is 1.

@@ -69,6 +69,8 @@ own line, and the same function per item. It is always secondary; the first line
 where 0025 §5.6 makes it quiet). Without an offer a follow-up line shows today's secondary Copy prompt and no Tip
 (A-004). The `?` and the parallel hint stay with the first line only.
 
+*Amended by 0032 (0032 §6.6): every line's Send split button stands on its own row under its prompt, whatever the prompt's length and the view's width.*
+
 ### 6.2 Attachment of a follow-up line
 
 A follow-up line attaches the spec exactly when the step case that shows the same prompt as its first line attaches
@@ -83,6 +85,8 @@ A follow-up line attaches the spec exactly when the step case that shows the sam
 
 A step case not in this table that gains a follow-up line later gets no attachment until a spec adds its row (A-002).
 
+*Amended by 0032 (PD-093, PD-095, 0032 §6.3, §6.4): the follow-up line texts are those of 0032 §6.4 (`Or: not sure where it stands? Let the agent report first`, `Then: continue with <ID> <title>`, `Then: write the plan`); the attachment is unchanged.*
+
 ### 6.3 Tip sentence and spacing of a follow-up line
 
 Where a follow-up line shows a Send and the coach line is shown (`showStepTips`, 0021 §6.5), a Tip sentence (0030 §6.4,
@@ -90,6 +94,8 @@ Where a follow-up line shows a Send and the coach line is shown (`showStepTips`,
 `Tip: Use any chat with a strong model, and allow web search.` (NS-10's session and model). Between a line item and the next line item (`Then: …`, AC-013) the detail and the Plan map header keep a
 vertical gap of at least 1em and at most 1.5em, measured in the line's font size; with Copy prompt only the gap is the
 same.
+
+*Amended by 0032 (PD-093, 0032 §6.3): NS-9's `/sdd-plan` line reads `Tip: Use a new chat with a strong model, and allow web search.`*
 
 ### 6.4 Hand-over
 
@@ -118,6 +124,8 @@ Node or jsdom tests decide every criterion unless marked manual.
 - **AC-002** For each row of §6.2, with Copilot and with Claude Code, the follow-up line's Send view shall carry the spec's
   file name and path as `attach` exactly where the row says yes; activating its main part shall make 0027's calls with
   that line; NS-5's `/sdd-lifecycle` line shall carry no attachment and make 0024's calls.
+
+  *Amended by 0032 (PD-095, 0032 §6.4): the follow-up line texts are those of 0032 §6.4; the attachment is unchanged.*
 - **AC-003** With an assistant offered, each view shall have the same number of primary-styled controls as at the commit
   on which implementation starts (0026 AC-024); every follow-up split button shall be secondary.
 - **AC-004** Where no assistant is offered, the follow-up lines shall render deep-equal (markup) to the commit on which
@@ -139,12 +147,16 @@ Node or jsdom tests decide every criterion unless marked manual.
   spec, `Then: write the plan` offers a grey Send that opens a chat with `/sdd-plan …` and the spec attached, its menu
   holds new chat, current chat (Copilot) and Copy prompt, its Tip reads `Tip: Use any chat with a strong model, and allow web search.`, and
   the two steps read as separate blocks. He notes the versions.
+
+  *Amended by 0032 (PD-093, 0032 §6.3): the `Tip: Use any chat with a strong model, and allow web search.` of NS-9's follow-up line reads `Tip: Use a new chat with a strong model, and allow web search.`*
 - **AC-010** Every test at the commit on which implementation starts shall exist at the head and pass, adjusted only
   where §5 changes its statement; `npm run test:unit` and `npm test` shall pass on Windows and in CI.
 - **AC-011** Where an assistant is offered and the coach line is shown, each follow-up line of NS-9, NS-5, NS-6-open and
   NS-6-report shall show, directly under its split button, the Tip sentence of its own case of §6.2, deep-equal to that
   case's first-line Tip; NS-9's `/sdd-plan` line shall read `Tip: Use any chat with a strong model, and allow web search.`; with
   `showStepTips` off no follow-up Tip shall render.
+
+  *Amended by 0032 (PD-093, 0032 §6.3): NS-9's `/sdd-plan` line reads `Tip: Use a new chat with a strong model, and allow web search.`*
 - **AC-012** Each item of a follow-up line's menu shall do what the same item does on the first line, with the follow-up
   line's prompt: `Send to a new chat` and (Copilot) `Send to the current chat` make 0024's and 0027's calls for that
   target, `Copy prompt` copies the line and attaches nothing.

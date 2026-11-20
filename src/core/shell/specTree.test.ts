@@ -383,7 +383,7 @@ describe('0020 AC-006: the tooltip', () => {
         const tree = treeOf(await modelOf({ '.specs/backlog/0001-a.md': spec('A *bold* [x](y) <b>', 'Draft'), '.specs/backlog/0002-b`c.md': spec('B', 'Draft') }));
         const [first, second] = rows(tree);
         expect(first!.tooltip.split('\n\n')[0]).toBe('**0001 A \\*bold\\* \\[x\\]\\(y\\) \\<b\\>**');
-        expect(second!.tooltip).toContain('Next step: Have the spec challenged\\, then plan it\n\n``/sdd-clarify .specs/backlog/0002-b`c.md``');
+        expect(second!.tooltip).toContain('Next step: Have the spec challenged\n\n``/sdd-clarify .specs/backlog/0002-b`c.md``');
     });
 
     it('a figure that is not available is left out, and no line is left empty', async () => {

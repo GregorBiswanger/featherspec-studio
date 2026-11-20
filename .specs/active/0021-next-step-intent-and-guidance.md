@@ -110,6 +110,7 @@ state their intent and get only Copy prompt.
 | NS-10 | Write the plan | Plan | any chat | strong, web search | The agent researches and writes the plan as small, verifiable steps. | You read the plan before anything is built. |
 *Amended by 0030 (PD-092): while the spec counts as clarified (0030 §6.2), NS-9 is the one line `Write the plan` · `/sdd-plan <spec path>` of case NS-10, with no `/sdd-clarify` line.*
 *Amended by 0026 (PD-082): short intents follow 0026 §6.3's table: `Move back to Ready`, `Find blocker`, `Report`, `Write plan`, `Start`.*
+*Amended by 0032 (PD-093, 0032 §6.3): NS-10 has session new, `Tip: Use a new chat with a strong model, and allow web search.`; NS-9's first line reads `Have the spec challenged` (PD-095, 0032 §6.4).*
 
 *Amended by 0028 (D-4): NS-7's line is `Implement <ID> of <plan path>`, the command short form `Implement <ID>`; without an open step `/sdd-plan <spec path>` with the texts of "Plan without open step" (0028 §6.5).*
 
@@ -132,6 +133,7 @@ Open step = the plan step NS-7's function finds (0015 NS-7). PD-072 (V-1, record
 | Plan without open step | Let the agent report where the plan stands · `/sdd-plan <spec path>` | — | Resume | any chat · fast | The agent checks the plan against the code; with every step ticked it closes the plan and recommends the review. | The spec then shows Verify. |
 | No sibling plan | Write the plan · `/sdd-plan <spec path>` | — | Plan | any chat · strong, web search | The agent researches and writes the plan; for a reactivated spec, a fresh plan for the change. | You read the plan before anything is built. |
 *Amended by 0026 (PD-082): short intent `Report` (0026 §6.3, AC-003).*
+*Amended by 0032 (PD-095, 0032 §6.4): line 2 of the open-step row reads `Or: not sure where it stands? Let the agent report first`.*
 
 *Amended by 0028 (PD-081, D-1): row "Plan without open step" and AC-005 — an Active spec has no finished plan (0028 §6.1); the effect and then-sentence of 0028 §7 (the short intent is 0026's).*
 
@@ -280,6 +282,7 @@ vocabulary rule of `.claude/rules/specs.md`; it is never a qualifier here.
   *Amended by 0028 (PD-082): AC-003 holds only while 0028's case "Report first" does not (0028 AC-004, AC-005).*
   *Amended by 0026 (PD-080): coach `current or new chat · fast model` (0026 AC-002).*
   *Amended by 0030 (PD-092): the coach line is `Tip: Use the current chat or a new one, with a fast model.` (0030 AC-008).*
+  *Amended by 0032 (PD-095, 0032 §6.4): AC-003's second line reads `Or: not sure where it stands? Let the agent report first`.*
 - **AC-004** *(void: PD-072 chose variant A; B is OP-001's fallback)*
 - **AC-005** An Active spec whose sibling plan has no open step shall show `/sdd-plan <spec path>` under `Let the agent report where the plan stands` (short form `Resume · /sdd-plan`, coach `any chat · fast model`), and one without a sibling plan the same prompt under `Write the plan` (short form `Plan · /sdd-plan`, coach `any chat · strong model, allow web search`).
   *Amended by 0023 (PD-069): AC-005 — holds while no return note of the spec lies; with one, 0023 AC-013 gives the returned-work line first.*

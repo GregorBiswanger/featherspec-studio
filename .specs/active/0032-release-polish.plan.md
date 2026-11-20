@@ -3,7 +3,7 @@
 **Spec:** [0032-release-polish.md](0032-release-polish.md)
 **Status:** In Progress
 **Last updated:** 2026-11-20
-**Current step:** T-004
+**Current step:** T-005
 
 ## Approach
 
@@ -86,8 +86,8 @@ No parallel stage: T-001…T-003 share `nextStepTexts.ts` and the detail protoco
 - **Do:** spec §5's notes; PD-093…PD-095 in `docs/product/product-decisions.md`; `README.md`, `CHANGELOG.md`; title audit
   (every test title at the Baseline exists at the head); `activeContext.md`. All gates 1–5.
 - **Verify:** gates 1–5 green; `npx vitest run src/adapters/node/docsScan.test.ts src/core/lifecycle/problems.test.ts`.
-- [ ] **Verified (T-004):** —
-- **Notes:** —
+- [x] **Verified (T-004):** `npx vitest run src/adapters/node/docsScan.test.ts src/core/lifecycle/problems.test.ts` 196 passed; full chain once at the end: eslint 0 warnings, both `tsc` clean, `npm run test:unit` 3862 passed + 35 timing, `compile`, `compile-tests` clean. 2026-11-20
+- **Notes:** §5 notes in 0021, 0024, 0025, 0026, 0027 (status untouched), 0028–0031; PD-093…PD-095; README, CHANGELOG, `activeContext.md`. One test title moved with its statement: 0027 AC-004 "Send to the current chat records only the open call, without the attachment (0032 §6.8)". Literal tests in `specTree`, `visibleLiterals`, `surfaces0028.bundle` moved late (found by the end chain).
 
 ### T-005 — Preview of 16 §3
 
@@ -113,19 +113,19 @@ No parallel stage: T-001…T-003 share `nextStepTexts.ts` and the detail protoco
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-003, T-005 | — | — | open |
-| AC-002 | T-001 | — | — | open |
-| AC-003 | T-001 | — | — | open |
-| AC-004 | T-001 | — | — | open |
-| AC-005 | T-002, T-005 | — | — | open |
-| AC-006 | T-003, T-005 | — | — | open |
-| AC-007 | T-003, T-005 | — | — | open |
-| AC-008 | T-002, T-005 | — | — | open |
+| AC-001 | T-003, T-005 | `webview/ui/EmptyState.tsx`, `webview/board/icons.tsx`, `webview/main.css` | `webview/polish0032.test.tsx` "0032 AC-001"; `webviewCss.test.ts` "0032 AC-001" | built; preview open |
+| AC-002 | T-001 | `shared/protocol/nextStepTexts.ts` | `core/board/polish0032.test.ts` "0032 AC-002" | built |
+| AC-003 | T-001 | `shared/protocol/nextStepTexts.ts` (`STEP_GUIDES`) | `core/board/polish0032.test.ts` "0032 AC-003" | built |
+| AC-004 | T-001 | `shared/protocol/nextStepTexts.ts`, `core/board/nextStep.ts` | `core/board/polish0032.test.ts` "0032 AC-004" | built |
+| AC-005 | T-002, T-005 | `core/planMap/returnedWork.ts`, `core/board/detail.ts`, `nextStepTexts.ts` | `core/planMap/polish0032.test.ts` "0032 AC-005" | built; preview open |
+| AC-006 | T-003, T-005 | `webview/main.css` | `webviewCss.test.ts` "0032 AC-006" | built; preview open |
+| AC-007 | T-003, T-005 | `core/assistant/welcome.ts`, `shared/protocol/overview.ts`, `webview/ui/Welcome.tsx`, `main.css` | `webview/polish0032.test.tsx` "0032 AC-007"; `core/assistant/welcome0032.test.ts`; `webviewCss.test.ts` "0032 AC-007" | built; preview open |
+| AC-008 | T-002, T-005 | `shared/protocol/assistant.ts` (`attachesInTarget`), `core/assistant/send.ts`, `webview/ui/SendButton.tsx`, `core/board/stepTips.ts` | `core/assistant/sendAttach.test.ts` "0032 AC-008"; `core/board/polish0032.test.ts` "0032 AC-008"; `webview/ui/SendButton.test.tsx` "0032 AC-008" | built; preview open |
 
 ## Session handoff
 
-- **Done so far:** —
-- **Next action:** T-001
+- **Done so far:** T-001…T-004 built and committed (T-004 once the final chain is green); T-005 preview and T-006 evidence belong to the orchestrator.
+- **Next action:** T-005 (orchestrator preview of 16 §3), then T-006; the orchestrator closes the spec
 - **Open decisions:** spec OP-001 (NS-9's then-sentence, proxy unchanged)
-- **Baseline:** _(set when work starts)_
+- **Baseline:** `d4b9656` (docs(0032): spec and plan)
 - **Environment:** `npm test` only on Gregor's Windows machine and CI, through the orchestrator.

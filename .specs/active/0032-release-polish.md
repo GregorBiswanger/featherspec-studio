@@ -1,6 +1,6 @@
 # Release Polish
 
-**Status:** Draft
+**Status:** In Progress
 **Plan:** [0032-release-polish.plan.md](0032-release-polish.plan.md)
 
 Basis: Gregor's last order before the release, `docs/ux-audit/16-release-handoff.md` §1 (PD-093…PD-095) and §2 (eight

@@ -10,6 +10,12 @@ First release.
 
 ### Added
 
+- Release polish (0032): the onboarding's Send arrow is 14 px again and the welcome shows `Tip: Use a new chat with a
+  strong model.` under its button with a body of at most 65 characters per line; where a step writes a plan the Tip reads
+  `Tip: Use a new chat with a strong model, and allow web search.` (PD-093); every follow-up line starts with `Then:` or
+  `Or:` (PD-095); while a parallel step is out, Integrate says `When T-004 is back: integrate the returned steps`; Send
+  always stands on its own row under its prompt; and Send to Copilot's current chat attaches nothing (PD-094), with the
+  update sentence back in the `(?)` for projects below FeatherSpec 1.11.0.
 - Send on the follow-up line: where an assistant is chosen, the second prompt of a Next step (`Then: write the plan`
   after `/sdd-clarify`, the report and continue lines of an Active spec, `/sdd-lifecycle` after `/sdd-compile`) offers its
   own secondary Send to Copilot or Claude Code, with the same menu, its own Tip sentence and the spec attached where its

@@ -120,6 +120,8 @@ a Send control never says `Paste`; returned work's then-sentence is `Send it onc
 | NS-8 | Add acceptance criteria | `Add criteria` | `Add criteria · /sdd-specify` |
 | NS-9 | Have the spec challenged, then plan it | `Challenge` | `Challenge · /sdd-clarify` |
 
+*Amended by 0032 (PD-095, 0032 §6.4): NS-9's intent reads `Have the spec challenged`.*
+
 - **Step short form:** `<short intent> · <command short form>` (0021 §6.3) for every case; cards, Overview rows, tree and
   quick pick show the same string (0021 AC-006).
 - **No "Next".** Cards and Overview rows show the step short form without a visible `Next` before it (a row's place says

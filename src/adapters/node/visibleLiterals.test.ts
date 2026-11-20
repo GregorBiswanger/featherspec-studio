@@ -90,7 +90,7 @@ describe('final check 7 (ux-guidelines 10, 6): visible literals live in the text
         const wanted: ReadonlyArray<readonly [string, string]> = [
             ["export const COACH_TIP_PREFIX = 'Tip:';", 'src/shared/protocol/nextStepTexts.ts'],
             ["'a new chat'", 'src/shared/protocol/nextStepTexts.ts'],
-            ["'the current chat or a new one,'", 'src/shared/protocol/nextStepTexts.ts'],
+            ["'the current chat or a new one'", 'src/shared/protocol/nextStepTexts.ts'],
             ["'any chat'", 'src/shared/protocol/nextStepTexts.ts'],
             ["fast: { base: 'a fast model', suffix: '' },", 'src/shared/protocol/nextStepTexts.ts'],
             ["' from another model family'", 'src/shared/protocol/nextStepTexts.ts'],

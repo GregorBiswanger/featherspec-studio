@@ -95,6 +95,8 @@ its row, as 0028's do here. A step *attaches* when it reads this spec's text.
 
 Copy-only prompts (line 2, ways, start lines, card Copies) never attach (§4).
 
+*Amended by 0032 (PD-094, 0032 §6.8): Copilot's current chat attaches nothing; Send calls `workbench.action.chat.open` with `{ query, isPartialQuery: true }` and no `attachFiles`, and the name and tooltip carry no `Attaches …` there; target `new` keeps attaching.*
+
 ### 6.2 Version gate and assistants (A-002…A-004, A-012)
 
 > **Amended 2026-11-20 by PD-091:** there is no version gate and no per-assistant exception. Claude Code and Copilot both *attach*; a step attaches when §6.1 says yes, an assistant is set, and §6.4 allows it (Claude Code: no whitespace in the path), in every version and for `unknown`. The attach version, the update sentence and C-2 are not needed. The text below is the earlier decision.
@@ -108,6 +110,8 @@ no update sentence, in any version. One table: Claude Code *attaches* (CLI 2.1.2
 does not until C-2 (OP-006). A Send view *carries an attachment* when §6.1 says yes, the gate is open, the assistant
 attaches and §6.4 allows it. Discovery and the read model stay version-free (0001 §4, 0002 AC-016); `nextStep()` reads it
 only by 0028 §6.4. 0002's newest known version rises to the attach version (§5): no "newer than known" note (guideline 3).
+
+*Amended by 0032 (PD-094, 0032 §6.8): the update sentence returns: where a step's Send attaches and the project's `FeatherSpecVersion:` is below 1.11.0, `unknown` or has no semantic version, the `(?)` holds `Update to FeatherSpec 1.11.0 with /sdd-featherspec-update so the attached spec is not read twice.`*
 
 ### 6.3 Attachment line (09 §6)
 
@@ -134,6 +138,8 @@ only by 0028 §6.4. 0002's newest known version rises to the attach version (§5
 it. The suffix is one space, `@` and the path, at the end (a leading `@` is not attached, V-3 K1); a path holding
 whitespace gives Claude Code no attachment (A-009). Without an attachment: 0024 §6.4 as 0026 §6.1 amends it. Checks,
 5000 ms and fallback stay 0024 §6.4, §6.5.
+
+*Amended by 0032 (PD-094, 0032 §6.8): Copilot's current chat attaches nothing; Send calls `workbench.action.chat.open` with `{ query, isPartialQuery: true }` and no `attachFiles`, and the name and tooltip carry no `Attaches …` there; target `new` keeps attaching.*
 
 ### 6.5 Check at send time (A-006, A-007)
 
