@@ -1,6 +1,7 @@
 import type { BannerLine, CardView } from '../../shared/protocol/board';
 import type { LifecycleEntry, LifecycleModel } from '../lifecycle/model';
 import { problemSentence } from '../lifecycle/problemSentence';
+import type { ShellModel } from '../ports/shell';
 import type { Diagnostic } from '../specs/diagnostics';
 import type { ProjectRead, SpecEntry } from '../specs/readProject';
 import { describeSpec } from './description';
@@ -24,12 +25,12 @@ function blockedLines(entry: LifecycleEntry): string[] {
     ];
 }
 
-export function buildCards(project: ProjectRead, lifecycle: LifecycleModel): CardView[] {
+export function buildCards(project: ProjectRead, lifecycle: LifecycleModel, handOvers?: ShellModel['handOvers']): CardView[] {
     const plans = new Map(project.plans.map((plan) => [plan.key, plan]));
     const entries = new Map(project.specs.map((spec) => [spec.key, spec]));
     const stems = new Map<string, number>();
     lifecycle.entries.forEach((entry) => stems.set(entry.stem, (stems.get(entry.stem) ?? 0) + 1));
-    const model = { project, lifecycle };
+    const model: ShellModel = { project, lifecycle, ...(handOvers === undefined ? {} : { handOvers }) };
     return lifecycle.entries.map((entry) => {
         const spec = entries.get(entry.key);
         const title = spec === undefined ? undefined : titleOf(spec);

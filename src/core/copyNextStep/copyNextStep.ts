@@ -1,5 +1,6 @@
 import { COPY_FAILED_TEXT, COPY_PROMPT_LABEL, stepShortForm } from '../../shared/protocol/nextStepTexts';
 import { SETUP_LINE } from '../../shared/protocol/texts';
+import type { HandOverPort } from '../assistant/handOver';
 import { copyLine } from '../board/copyLine';
 import type { StepPickItem, StepUiPort } from '../ports/copyNextStep';
 import type { ClipboardPort } from '../ports/board';
@@ -16,6 +17,7 @@ export interface CopyNextStepDeps {
     clipboard: ClipboardPort;
     ui: StepUiPort;
     actions: CopyNextStepActions;
+    handOver?: HandOverPort;
 }
 
 export interface CopyNextStep {
@@ -25,7 +27,11 @@ export interface CopyNextStep {
 
 export function createCopyNextStep(deps: CopyNextStepDeps): CopyNextStep {
     async function copy(line: string): Promise<void> {
+        const handOver = deps.handOver?.begin(line);
         const outcome = await copyLine(deps.clipboard, line);
+        if (outcome.ok) {
+            await handOver?.commit();
+        }
         deps.entry.copied(outcome.ok);
         if (!outcome.ok) {
             deps.ui.warn(COPY_FAILED_TEXT);

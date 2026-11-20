@@ -69,7 +69,7 @@ export function createBoardService(deps: BoardServiceDeps): BoardService {
             return undefined;
         }
         if (built === undefined || built.model !== model) {
-            const all = buildCards(model.project, model.lifecycle);
+            const all = buildCards(model.project, model.lifecycle, model.handOvers);
             const datesVary = new Set(all.flatMap((card) => (card.lastChange === undefined ? [] : [card.lastChange.day]))).size >= 2;
             const cards = datesVary ? all : all.map((card) => ({ ...card, lastChange: undefined }));
             built = { model, cards, banner: buildBanner(model.project, model.lifecycle), planSpecs: buildPlanSpecs(model, cards), sortKeys: datesVary ? [...SORT_KEYS] : SORT_KEYS.filter((key) => key !== 'lastChange') };

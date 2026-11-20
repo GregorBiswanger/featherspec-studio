@@ -8,6 +8,7 @@ import type { ClockPort, OutputPort } from '../ports/host';
 import type { AssistantId } from '../../shared/protocol/assistant';
 import { ASSISTANTS } from './assistants';
 import type { AttachmentCheck } from './attachment';
+import type { HandOverPort } from './handOver';
 
 export const SEND_TIMEOUT_MS = 5000;
 
@@ -21,6 +22,7 @@ export interface SendDeps {
     chosen: { read(): unknown };
     attachment?: AttachmentCheck;
     attaching?: (id: AssistantId) => boolean;
+    handOver?: HandOverPort;
 }
 
 export interface Send {
@@ -148,12 +150,19 @@ export function createSend(deps: SendDeps): Send {
 
     return {
         send(request) {
+            const handOver = deps.handOver?.begin(request.line);
+            const settle = async (result: SendOutcomeView): Promise<SendOutcomeView> => {
+                if (result.outcome !== 'copyFailed') {
+                    await handOver?.commit();
+                }
+                return result;
+            };
             if (deps.chosen.read() !== request.assistant) {
-                return copied(request.line);
+                return copied(request.line).then(settle);
             }
             const turn = tail.then(() => attempt(request));
             tail = turn.catch(() => undefined);
-            return turn;
+            return turn.then(settle);
         },
     };
 }

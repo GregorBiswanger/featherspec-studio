@@ -218,7 +218,7 @@ function rowOf(model: ShellModel, card: CardView, entry: LifecycleEntry, slug: s
 }
 
 function groupsOf(model: ShellModel): GroupModel[] {
-    const cards = buildCards(model.project, model.lifecycle);
+    const cards = buildCards(model.project, model.lifecycle, model.handOvers);
     const entries = new Map(model.lifecycle.entries.map((entry) => [entry.key, entry]));
     const slugs = new Map(model.project.specs.map((spec) => [spec.key, spec.slug]));
     return GROUP_ORDER.flatMap((key) => {

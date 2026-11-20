@@ -20,7 +20,7 @@ import { createProjectLine } from './core/copyNextStep/projectLine';
 import { createStatusEntry } from './core/copyNextStep/statusEntry';
 import { createStudioTree } from './adapters/vscode/studioTree';
 import { createTrust } from './adapters/vscode/trust';
-import { BOARD_MEMORY_KEY, SHELL_MEMORY_KEY, SIDE_PANEL_MEMORY_KEY, createUiMemory } from './adapters/vscode/uiMemory';
+import { BOARD_MEMORY_KEY, HAND_OVER_MEMORY_KEY, SHELL_MEMORY_KEY, SIDE_PANEL_MEMORY_KEY, createUiMemory } from './adapters/vscode/uiMemory';
 import { sameRootFor } from './adapters/vscode/sameRoot';
 import { createStatusItem, type StatusItemInspection } from './adapters/vscode/statusBar';
 import { createStepUi } from './adapters/vscode/stepUi';
@@ -56,6 +56,7 @@ import { createBoardRequests } from './core/board/boardRequests';
 import { createOpenFile } from './core/board/openFile';
 import { createShellSelection } from './core/board/shellSelection';
 import { createLifecycleService, type LifecycleService } from './core/lifecycle/lifecycleService';
+import { createHandOverMemory } from './core/assistant/handOver';
 import { createModelSource } from './core/shell/modelSource';
 import { createShellService, type OpenRequest } from './core/shell/shellService';
 import { AREA_IDS } from './shared/protocol/areas';
@@ -158,7 +159,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
 
     const sameRoot = sameRootFor(process.platform);
     let studio: StudioPanel | undefined;
-    const modelSource = createModelSource(repository);
+    const handOvers = createHandOverMemory(createUiMemory(context.workspaceState, HAND_OVER_MEMORY_KEY), () => modelSource.current()?.project);
+    const modelSource = createModelSource(repository, handOvers);
     const shellActions = createShellActions({
         showOutput: () => output.show(),
         reloadPanel: () => studio?.reload(),
@@ -196,7 +198,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
     const assistantHost = createAssistantHost();
     const clipboard = createClipboard();
     const stepUi = createStepUi();
-    const assistant = createAssistantWiring({ setting: createSettingPort(ASSISTANT_KEY), host: assistantHost, clipboard, ui: stepUi, output, clock: createSystemClock(), platform: process.platform, source: modelSource, specs: specSource });
+    const assistant = createAssistantWiring({ setting: createSettingPort(ASSISTANT_KEY), host: assistantHost, clipboard, ui: stepUi, output, clock: createSystemClock(), platform: process.platform, source: modelSource, specs: specSource, handOver: handOvers });
     const board = createBoardService({
         source: modelSource,
         selection,
@@ -217,6 +219,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         entry,
         clipboard,
         ui: stepUi,
+        handOver: handOvers,
         actions: {
             selectProject: () => controller.selectProject(),
             openStudio: async () => {
@@ -225,7 +228,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Studio
         },
     });
     const openFile = createOpenFile({ source: modelSource, editor: createEditor() });
-    const requests = createBoardRequests({ board, openFile, clipboard, send: (request) => assistant.send.send(request) });
+    const requests = createBoardRequests({ board, openFile, clipboard, send: (request) => assistant.send.send(request), handOver: handOvers });
     const navigation = service.onDidNavigate((request) => {
         if (request.target?.kind === 'boardFilter') {
             board.applyNavigationFilter(request.target.filter);

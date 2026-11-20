@@ -3,7 +3,7 @@
 **Spec:** [0030-clarified-step-quiet-attach-tip.md](0030-clarified-step-quiet-attach-tip.md)
 **Status:** In progress
 **Last updated:** 2026-11-20
-**Current step:** T-002
+**Current step:** T-003
 
 ## Approach
 
@@ -80,8 +80,8 @@ No parallel stage: T-003 and T-004 both change the detail and Now-row render tes
   `clarified0030.timing.test.ts` "0030 AC-005 …" (`BUDGET_MS.uiFreshness`, selection kept).
 - **Verify:** `npx vitest run src/core/assistant/handOver0030.test.ts src/core/shell/clarifiedSurfaces0030.test.ts` and
   `npx vitest run --project timing-node src/core/shell/clarified0030.timing.test.ts` — red first, then green; gate 5.
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-20 red: `npx vitest run src/core/assistant/handOver0030.test.ts` 7 failed with the hand-over hooks removed, `clarifiedSurfaces0030.test.ts` 1 failed (tree row still /sdd-clarify: `buildCards` built its own model without the memory); green: handOver0030 10 passed, clarifiedSurfaces0030 3 passed, `npx vitest run --project timing-node src/core/shell/clarified0030.timing.test.ts` passed; `npx vitest run src/core/{shell,board,assistant,copyNextStep}` all passed; `npx tsc --noEmit` clean.
+- **Notes:** Deviation: `buildCards` got an optional third argument `handOvers` (Board and tree pass `model.handOvers`) because it built its own model. Memory shape `{ v: 1, roots: { <root>: { <key>: { modifiedMs, size } } } }` under key `featherspec-studio.handOvers`; the wrapper is `createModelSource(repository, handOvers)`. Compile deferred to the end (cadence v2).
 
 ### T-003 — Quiet attachment
 
