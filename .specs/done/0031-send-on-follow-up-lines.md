@@ -87,8 +87,7 @@ A step case not in this table that gains a follow-up line later gets no attachme
 
 Where a follow-up line shows a Send and the coach line is shown (`showStepTips`, 0021 §6.5), a Tip sentence (0030 §6.4,
 §7) sits directly under its split button, built from its own case of §6.2: the `/sdd-plan` line of NS-9 reads
-`Tip: Use any chat with a strong model, and allow web search.` (NS-10's session and model). Between the first line's block (its Tip, or its
-button where no Tip shows) and the next follow-up line's intent (`Then: …`) the detail and the Plan map header keep a
+`Tip: Use any chat with a strong model, and allow web search.` (NS-10's session and model). Between a line item and the next line item (AC-013) (`Then: …`) the detail and the Plan map header keep a
 vertical gap of at least 1em and at most 1.5em, measured in the line's font size; with Copy prompt only the gap is the
 same.
 
@@ -195,8 +194,9 @@ Node or jsdom tests decide every criterion unless marked manual.
 
 ## 12. Ready, Done and next steps
 
-Ready: clarified 2026-11-20 (OP-002); planned 2026-11-20, 4 steps in 2 stages. Done per the DoD of `AGENTS.md`; AC-008 by the orchestrator, AC-009 by Gregor.
+Ready: clarified 2026-11-20 (OP-002); planned 2026-11-20, 4 steps in 2 stages. Done by the evidence gate of `/sdd-lifecycle`; closed before T-003 by the implementing session, without a compile brief (L-1); AC-008 by the orchestrator, AC-009 by Gregor.
 Closed 2026-11-20 by `/sdd-lifecycle`; T-003 / AC-008 (preview, orchestrator), AC-009 (Gregor) and CI on PR #2 stay open.
+manual: orchestrator checked AC-008, 2026-11-20 — harness r14check at 3773816, fs-0030 backlog spec, Copilot and Claude Code × Dark/Light/HC × 1600/1000 px: 24 of 24 clean (no cut text, no word broken, no page errors); every follow-up line has the grey split Send with its menu and its own Tip; gap Tip → "Then:" 20 px; both sends carry attach; screenshots /home/claude/orch/preview/r14-0031
 
 ## Plan history
 

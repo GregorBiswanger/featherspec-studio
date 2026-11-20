@@ -307,10 +307,10 @@ and the expected result. A clear miss reopens the named spec.
   spec with an open step (NS-6-open) and the Plan map header of the latter, with GitHub Copilot and Claude Code, in Dark,
   Light and High Contrast at 1600 px and 1000 px window width with the side panel open. One blue primary, two split buttons
   of the same size, each with its Tip, a visible gap of about one line before `Then: ...`, no text or button cut, no word
-  broken inside itself. Screenshots go into the plan.
+  broken inside itself. Screenshots go into `orch/compile/0031-preview.md`; record `manual: orchestrator checked …, <date>` in the spec's §12 (the plan is archived and frozen).
 - [ ] **AC-009** *(Gregor, Hands-On on a fresh `tip-splitter`, with GitHub Copilot and with Claude Code; note the versions)*:
   on the Backlog spec, `Then: write the plan` offers a grey Send that opens a chat with `/sdd-plan ...` and the spec
-  attached; its menu holds new chat, current chat (GitHub Copilot) and Copy prompt; its Tip reads as a sentence under it; the
+  attached; its menu holds new chat, current chat (GitHub Copilot) and Copy prompt; its Tip reads `Tip: Use any chat with a strong model, and allow web search.` (OP-003, confirm or flip); the
   two steps read as separate blocks.
 
 ## Go

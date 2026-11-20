@@ -45,6 +45,7 @@ Current phase: act
 ## Next
 1. Finish 0027 (spec and plan are in `.specs/active/`, the plan's handoff names the next step).
 2. 0029 and 0030: CI on PR #2, then Gregor's AC-014 and AC-013; the other specs' CI items run on the same PR.
+3. 0031: T-003 preview (orchestrator) → record in spec §12; AC-009 Gregor; CI on PR #2
 
 ## Validation
-- Windows at d218f0c: unit tests 3792 passed, 8 skipped, timing 35 passed; `npm test` 34+1+1+1, exit 0; VSIX 258.22 KB. CI pending on PR #2.
+- Windows at 3773816: unit 3831/8 + 35 timing, npm test 34+1+1+1
