@@ -7,5 +7,6 @@
     <depends>com.intellij.modules.jcef</depends>
     <extensions defaultExtensionNs="com.intellij">
         <postStartupActivity implementation="com.gregorbiswanger.featherspec.studio.StudioStartup"/>
+        <postStartupActivity implementation="com.gregorbiswanger.featherspec.studio.probe.ProbeAutoRun"/>
     </extensions>
 </idea-plugin>
