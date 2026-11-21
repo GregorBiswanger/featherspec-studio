@@ -2,14 +2,15 @@
 
 **Spec:** [0034-studio-for-jetbrains-ides.md](0034-studio-for-jetbrains-ides.md)
 **Status:** In Progress
-**Last updated:** 2026-11-20
-**Current step:** T-001
+**Last updated:** 2026-11-21
+**Current step:** T-009
 
 ## Approach
 
 Spikes first (G1), then guards and the parity matrix (G2), then the shared TypeScript changes under the strictest gate
 (G3), then the Kotlin host, then packaging (G4). The shared core runs unchanged as one esbuild bundle
-(`dist/embedded/core.js`) in GraalJS inside the IDE (hypothesis V1; ADR-004 decides at G1), behind a JSON bridge; the
+(`dist/embedded/core.js`) in a hidden off-screen JCEF browser per IDE project (V2; ADR-004 accepted by Gregor
+2026-11-21), started at project open off the EDT, behind a JSON bridge; the
 unchanged webview bundle runs in a JCEF editor tab; tree, status bar, actions, settings and notifications are native
 Swing/IntelliJ components. `src/core/` does not change at all (that is how AC-006 and "VS Code identical" are proven
 cheaply: `git diff --exit-code <Baseline> -- src/core`). Memory Bank files the implementation touches: `techContext.md`
@@ -23,6 +24,13 @@ of AC-035, AC-036, the release workflow, listing, vendor, certificate, secrets, 
 has 37 steps — above the ~30 guideline because every step is cut for a small implementer model (≤ ~200 changed lines).
 The next split candidate, if Gregor wants one, is the stage boundary at G3 (host stages 4a–5 as their own spec); not
 applied, because AC-040's walkthrough needs host and setup together. Open decision for Gregor (see handoff).
+
+**G1 re-plan (2026-11-21, ADR-004 accepted, spec OP-025):** the bridge has no synchronous call (the host pushes copies of
+settings, trust, folders and memory), the core page uses Chromium's own Web APIs and timers (no polyfills), conformance
+and budgets run inside a Starter IDE (job `ide-tests`), the plugin watches the FeatherSpec roots itself, and without
+JCEF only the settings page works. Re-planned: T-014 (JetBrains-only texts), T-015…T-019, T-021…T-030, T-032, T-034…T-037.
+Appended: T-039 (core runtime glue, split from T-021), T-040 (AC-030 in a real IDE), T-041 (setup end to end in a real
+IDE, was T-034's GraalJS JUnit run). The plan now has 41 steps (T-001…T-041).
 
 ### Execution model (binding for every step)
 
@@ -45,9 +53,10 @@ applied, because AC-040's walkthrough needs host and setup together. Open decisi
 - **Code conventions** (from `AGENTS.md`, restated for the implementer; `AGENTS.md` wins): no comments in generated
   code (TS and Kotlin); TypeScript strict, no `any`, no default exports, English identifiers; never create a `.ts` file
   outside `src/` (the root `tsconfig.json` has no `include` and `rootDir: src`, so a `.ts` elsewhere breaks
-  `npx tsc --noEmit`) — scripts outside `src/` are plain `.mjs`; no new npm dependency (polyfills and shims are written
-  by hand). Kotlin: logic in pure classes with no `com.intellij` import, tested by plain JUnit 5; platform glue thin and
-  covered by the Starter smoke (T-035). Kotlin root package `com.gregorbiswanger.featherspec.studio`; paths below use
+  `npx tsc --noEmit`) — scripts outside `src/` are plain `.mjs`; no new npm dependency (shims are written by hand).
+  Kotlin: logic in pure classes with no `com.intellij` import, tested by plain JUnit 5; platform glue thin and covered
+  by the Starter tests of job `ide-tests` (T-022, T-035, T-040, T-041). JSON in Kotlin: the platform-bundled Gson
+  (`com.google.gson`); no JSON library is added. Kotlin root package `com.gregorbiswanger.featherspec.studio`; paths below use
   `<pkg>/` = `jetbrains/src/main/kotlin/com/gregorbiswanger/featherspec/studio/`, `<test>/` =
   `jetbrains/src/test/kotlin/com/gregorbiswanger/featherspec/studio/`, `<it>/` =
   `jetbrains/src/integrationTest/kotlin/com/gregorbiswanger/featherspec/studio/`.
@@ -58,39 +67,61 @@ applied, because AC-040's walkthrough needs host and setup together. Open decisi
 the implementer cannot write a binary; CI uses `gradle/actions/setup-gradle@v6` with `gradle-version: 9.7.0`);
 `org.jetbrains.intellij.platform` 2.20.1; Kotlin JVM plugin 2.4.21 with `languageVersion`/`apiVersion` 2.2 (stdlib of
 2025.3 is 2.2.20; `kotlin.stdlib.default.dependency=false`); JUnit Jupiter 5.13.4 (+ `junit-platform-launcher`);
-`org.graalvm.polyglot:polyglot` and `org.graalvm.polyglot:js` (type pom) 25.0.4 (T-004, T-021); Starter/Driver via
-`testFramework(TestFrameworkType.Starter)`, `org.kodein.di:kodein-di-jvm` 7.20.2, `kotlinx-coroutines-core-jvm` 1.10.1
-in the `integrationTest` source set only (T-006). No new npm package. Approved by Gregor 2026-11-20.
+Starter/Driver via `testFramework(TestFrameworkType.Starter)`, `org.kodein.di:kodein-di-jvm` 7.20.2,
+`kotlinx-coroutines-core-jvm` 1.10.1 in the `integrationTest` source set only (spikes T-006; product build from T-022).
+No new npm package. Approved by Gregor 2026-11-20. GraalJS (`org.graalvm.polyglot:polyglot`, `:js` 25.0.4) is no
+longer approved for the product: G1 chose V2 (ADR-004); it stays only in `jetbrains/spikes/` until T-037 deletes them.
+V2 needs no new dependency.
 
 ### Contracts later steps rely on
 
-**Bridge (TS `src/hosts/embedded/contract.ts`, T-016; Kotlin mirror `<pkg>/runtime/HostContract.kt`, T-021).** All
-values cross as JSON strings; bytes as base64. Kotlin installs global `__featherspecHost` with
-`call(name, argsJson): string` (sync, returns `{"ok":…}` or `{"error":"…"}`), `callAsync(name, argsJson, id)`,
-`emit(channel, payloadJson)`, `setTimer(id, ms)`, `clearTimer(id)`. The bundle defines global `FeatherSpecHost` with
-`start(configJson)`, `resolve(id, resultJson)`, `fire(id)`, `dispatch(event, payloadJson)`, `invoke(command, argsJson)`
-(returns a Promise of a JSON string) and `conformance(…)` (T-019). Every JS entry runs on one Kotlin thread.
-- sync `call`: `settings.read`, `trust.isTrusted`, `folders.list`, `memory.get`, `assistant.extension` (always `null`
-  in 0034).
-- async `callAsync`: `source.list|stat|readBytes`, `fs.stat|readText|readDirectory`,
-  `medium.open|read|lines|append|replace|createExclusive|remove|list`, `memory.set`,
-  `target.kind|readBytes|listDirectory|createExclusive|replaceIfUnchanged|clearSetupFolder`, `http.get`,
-  `archive.read`, `ui.pick|notify|confirm|progressStart|openExternal`, `clipboard.write`, `editor.open`,
+**Bridge (TS `src/hosts/embedded/contract.ts`, T-015; Kotlin mirror `<pkg>/runtime/HostContract.kt`, T-021; V2 per
+ADR-004).** The core bundle runs in a hidden off-screen JCEF browser per IDE project, on the page
+`https://studio.featherspec.invalid/core.html` (`CorePage`, T-021). All values cross as JSON strings; bytes as base64.
+There is **no synchronous call**: JS → Kotlin is asynchronous only (`JBCefJSQuery`).
+- JS → Kotlin: `core.html`'s nonce'd inline script defines `window.__featherspecNative(frame)` from
+  `JBCefJSQuery.inject("frame")` before `core.js` loads. Frames, one JSON object each: `{"k":"call","id","name","args"}`,
+  `{"k":"emit","channel","payload"}`, `{"k":"reply","id","ok"}` or `{"k":"reply","id","error"}` (answer to `invoke`,
+  `conformance`, `setupConformance`), `{"k":"ready"}` (once `start` finished), `{"k":"failed","error"}` (start threw).
+- Kotlin → JS: `cefBrowser.executeJavaScript("FeatherSpecHost.<fn>(<args as JS string literals>);", CORE_URL, 0)`. The
+  bundle defines global `FeatherSpecHost` with `start(configJson)`, `resolve(id, resultJson)` (`{"ok":…}` or
+  `{"error":"…"}`), `dispatch(event, payloadJson)`, `invoke(id, command, argsJson)`, `conformance(id, inputJson)` and
+  `setupConformance(id, archiveJson)` (T-018).
+- Copies instead of sync calls (R-3): `start`'s config is `{host:'jetbrains', platform, studioVersion, settings:
+  {<key>: value}, trusted, folders: [{root, name, displayPath?}], memory: {<key>: string}}`. The page serves
+  `SettingPort.read`, `TrustPort.isTrusted`, `WorkspaceFoldersPort.list`, `WorkspaceStatePort.get`, the UI memory `get`
+  and `EarlierRunDataStatePort.has` from these copies; a change event replaces the copy, then fires the port's listener.
+  A memory write updates the copy first, then goes out as `memory.set` (`null` removes). `AssistantHostPort.extension`
+  → `undefined` (0034). `ClockPort`, `RuntimeClock` (`setTimeout`), `Date.now` and `newId` (`crypto.randomUUID()`) are
+  the page's own; no timer crosses the bridge.
+- async `call`: `source.list|stat|readBytes`, `fs.stat|readText|readDirectory`,
+  `medium.open|read|lines|append|replace|createExclusive|remove|list`, `memory.set`, `watch.add|remove {root, kind:
+  'files'|'markers'}`, `target.kind|readBytes|listDirectory|createExclusive|replaceIfUnchanged|clearSetupFolder`,
+  `http.get`, `archive.read`, `ui.pick|notify|confirm|progressStart|openExternal`, `clipboard.write`, `editor.open`,
   `actions.openSetupGuide|manageTrust|openStudio|reloadPanel`.
 - `emit` channels: `panel` (one envelope), `tree` (spec tree model), `status` (status entry view or `null`), `log`
   (lines), `warn` (text), `progressEnd` (id), `showOutput`.
 - `dispatch` events: `panelMessage`, `panelOpened`, `panelClosed`, `fileChanged {root, path}`, `markerChanged {root}`,
-  `foldersChanged`, `trustGranted`, `settingsChanged {key}`, `progressCancelled {id}`.
+  `foldersChanged {folders}`, `trustGranted {}`, `settingsChanged {key, value}`, `progressCancelled {id}`.
 - `invoke` commands: `open {via, area?}`, `refresh`, `copyNextStep`, `setup`, `copyMergePrompt`, `selectProject`,
   `shellAction {action}`, `tree.select|copy|openSpec|openPlan|showInPlanMap {row}`,
-  `panelHtml {nonce, cspSource, scriptUri, styleUri, reloaded}`.
+  `panelHtml {nonce, cspSource, scriptUri, styleUri, reloaded}`, `diagnostics` (→ `{jsHeapBytes}`, T-022).
+- Kotlin side: the query handler does no work itself; it hands each frame to the project's single-thread queue
+  (`AppExecutorUtil.createBoundedApplicationPoolExecutor("FeatherSpec core", 1)`), so frames keep their order; file I/O
+  answers later with `resolve`. Nothing blocks the EDT.
 
 **Roots** are file URIs written exactly as VS Code's `Uri.file(p).toString()` (`C:\projects\test` →
 `file:///c%3A/projects/test`, `/home/u/a b` → `file:///home/u/a%20b`), so the core's root identity and display rules
 hold unchanged (T-023 `FileUris`).
 
-**JCEF panel (S-2, T-005, T-026).** Origin `https://studio.featherspec.invalid/` served by a `CefRequestHandler` /
-`CefResourceRequestHandler` (reference: platform `JCefImageViewer`); every other URL is cancelled (AC-015). The HTML is
+**JCEF (S-2, T-005, T-021, T-039, T-026; shared per ADR-004).** One `JBCefClient` per IDE project
+(`JBCefApp.getInstance().createClient()`, owned and disposed by `StudioProjectService`); the hidden core browser and the
+panel tab are both built with `JBCefBrowser.createBuilder().setClient(client)` (core also `.setOffScreenRendering(true)`,
+`createImmediately()`, never added to a Swing parent), so JCEF starts once per IDE session. Origin
+`https://studio.featherspec.invalid/` served by one `PluginRequestHandler` (`CefRequestHandlerAdapter` /
+`CefResourceRequestHandlerAdapter`, T-039; reference: platform `JCefImageViewer`, spike `SpikeResources`) over the pure
+allow-list `PluginResources` (T-021: `core.html`, `core.js`; T-026 adds `index.html`, `main.js`, `main.css`,
+`theme.css`); every other URL is cancelled (AC-015). The panel HTML is
 `buildWebviewHtml` (via `invoke('panelHtml')`, so the CSP is the VS Code one with `cspSource` = the origin) plus two
 tags with the same nonce/origin inserted after `<div id="root"></div>`: a `theme.css` link before `main.css` is loaded
 first (theme before first paint; CSP forbids inline styles) and a nonce'd shim script defining `acquireVsCodeApi` over a
@@ -98,7 +129,7 @@ first (theme before first paint; CSP forbids inline styles) and a nonce'd shim s
 ",'*')", origin, 0)`. Live theme switch: one `executeJavaScript` that sets every variable through
 `document.documentElement.style.setProperty` and swaps the body class in the same task (no mixed frame, AC-028).
 
-**Host vocabulary (§6.8, T-015, T-017).** One table in `src/shared/protocol/vocabulary.ts`: pairs of exact VS Code
+**Host vocabulary (§6.8, T-014, T-016).** One table in `src/shared/protocol/vocabulary.ts`: pairs of exact VS Code
 strings and JetBrains strings, `translateTerms(text, host)` (identity for `vscode`, so VS Code is byte-identical by
 construction). The webview reads `document.body.dataset.host` (`buildWebviewHtml` gets an optional `host`; omitted →
 HTML unchanged); the embedded host passes every outbound UI string (notifications, actions, tree message, log, status)
@@ -110,15 +141,38 @@ workspace.` → `… trusted project.`; `Every folder of this workspace …`, `N
 `No folder of this workspace has files to merge.` → `this project`; `Another VS Code window holds the write lock …` →
 `Another IDE window holds the write lock …`; `the Studio panel and the extension could not exchange data` → `… the
 plugin …` (found by the survey, not in §6.8's list; covered by §6.8's rule "no VS Code-only term"; a PD row in T-010).
-Assistant causes with extension IDs stay n-a while no handover exists (0035).
+Assistant causes with extension IDs stay n-a while no handover exists (0035). JetBrains-only texts the host needs
+without the core (no-JCEF notices, *Open help*, status unavailable, help URL) are `JETBRAINS_TEXTS` in the same file
+(T-014); `<pkg>/HostTexts.kt` (T-025) mirrors them plus `LOADING_TEXT`, `STATE_LABELS.S5` and `ACTION_LABELS.showOutput`
+of `src/shared/protocol/texts.ts`, checked against the TS sources by `HostTextsTest`.
+
+**Starter harness (T-006/T-038 lessons; binding for T-022, T-035, T-040, T-041).** Mirror
+`jetbrains/spikes/ide/build.gradle.kts`, `SpikeAutoRun.kt` and `SpikeV2Test.kt`: source set `integrationTest` and a plain
+`Test` task `integrationTest` (not `testIdeUi`) with `systemProperty("path.to.build.plugin",
+tasks.prepareSandbox.get().pluginDirectory.get().asFile)` and `dependsOn(tasks.prepareSandbox)`; the test calls
+`Starter.newContext(name, TestCase(IdeProductProvider.IU, LocalProjectInfo(<fixture copy>)).withVersion("2025.3.1"))`,
+`context.applyVMOptionsPatch { addSystemProperty(…) }` (`idea.trust.all.projects=true`,
+`ide.show.tips.on.startup.default.value=false`, the probe properties), `PluginConfigurator(context).installPluginFromDir(…)`,
+`runIdeWithDriver().useDriverAndCloseIde { waitForIndicators(5.minutes); <poll for the result file> }`, and asserts after
+the IDE closed. **No Driver UI API** (`ideFrame`, `invokeAction`): the work runs inside the IDE in
+`<pkg>/probe/ProbeAutoRun` (a `<postStartupActivity>` that returns at once unless system property `featherspec.probe.out`
+is set; `featherspec.probe` names the probe) and writes JSON under `featherspec.probe.out`. Editor providers are
+`DumbAware`; theme switches use `LafManager.getInstance().setCurrentLookAndFeel(theme, false)` plus `updateUI()` on the
+EDT. Job `ide-tests` (T-022) in `jetbrains.yml`: matrix ubuntu, windows, macos, `fail-fast: false`; Windows
+`core.autocrlf false`; node 22 + `npm ci` + `npm run package` + `node jetbrains/scripts/conformanceExpected.mjs`; Java 21;
+Gradle 9.7.0; Linux: install `xvfb`, `sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0` (JCEF is suspended
+without it), `xvfb-run -a gradle -p jetbrains integrationTest`; others `gradle -p jetbrains integrationTest`; always print
+the result JSON and `idea.log` excerpts and upload `jetbrains/build/probe-out/**` plus IDE logs (mirror
+`jetbrains-spikes.yml › spike-ide`).
 
 **Quality gates:** local — `npx eslint src --max-warnings 0` · `npx tsc --noEmit` · `npx tsc --noEmit -p src/webview` ·
 `npm run test:unit` · `npm run compile` (steps touching wiring, adapters, `src/extension.ts`, `esbuild.js`,
 `package.json` or a bundle) · `node --test jetbrains/guards/` (from T-009) ; CI (`.github/workflows/jetbrains.yml`) —
-`plugin` (Ubuntu, Windows, macOS: Gradle `build buildPlugin verifyPluginStructure`, JUnit incl. conformance from
-T-022), `vscode-mirror` (Ubuntu, Windows: exactly `ci.yml`'s steps incl. `npm test`; `ci.yml` itself only runs on
-`main` and on PRs), `vscode-guards` (AC-037, AC-038, workflows unchanged), `shared-guard` (AC-039, AC-006, from T-020),
-`ide-smoke` (Starter, 3 OS, from T-035), `verify` (Plugin Verifier, from T-036); `jetbrains-spikes.yml` — `spike-s1`,
+`plugin` (Ubuntu, Windows, macOS: Gradle `build buildPlugin verifyPluginStructure`, plain JUnit), `vscode-mirror`
+(Ubuntu, Windows: exactly `ci.yml`'s steps incl. `npm test`; `ci.yml` itself only runs on `main` and on PRs),
+`vscode-guards` (AC-037, AC-038, workflows unchanged), `shared-guard` (AC-039, AC-006, from T-020), `ide-tests`
+(Starter, 3 OS: conformance and budgets from T-022, smoke T-035, no JCEF T-040, setup T-041), `verify` (Plugin
+Verifier, from T-036); `jetbrains-spikes.yml` — `spike-s1`,
 `spike-ide` (Stage 1 only; removed in T-037). `npm test` is the pre-done gate (in `vscode-mirror`).
 
 ## Research
@@ -158,6 +212,13 @@ T-022), `vscode-mirror` (Ubuntu, Windows: exactly `ci.yml`'s steps incl. `npm te
 - [Trusted projects](https://plugins.jetbrains.com/docs/intellij/trusted-projects.html) — `Project.isTrusted()`, application listener `TrustStateListener.onProjectTrusted()`, `TrustedProjects.whenProjectTrusted()`; "Trust Project" link of the editor notification; no documented programmatic "ask to trust" call → the `Trust Project` action opens the IDE's project-security help if no API is found (T-032 Notes); retrieved 2026-11-20.
 - S-3 (desk research, recorded in ADR-004 by T-008; the handover itself is 0035): **Claude Code** — [JetBrains plugin](https://code.claude.com/docs/en/jetbrains) runs `claude` in the IDE terminal, no public action/API for other plugins; [deep links](https://code.claude.com/docs/en/deep-links.md) `claude-cli://open?cwd=<abs>&q=<url-encoded, ≤ 5,000 chars>` open a new terminal window with the prompt **pre-filled, not sent** (documented; handler registered after the first interactive prompt; opens outside the IDE) → *prefills without sending* (external terminal). **GitHub Copilot for JetBrains** — [docs](https://docs.github.com/en/copilot/concepts/agents/copilot-in-jetbrains) and 2026 changelogs show no documented entry point to open chat with a prompt → *not possible* (no documented API). **JetBrains AI Assistant** — [ACP](https://www.jetbrains.com/help/ai-assistant/acp.html) connects external agents; prompts are typed and sent by hand, no API for other plugins → *not possible*. Retrieved 2026-11-20.
 - [gradle/actions releases](https://github.com/gradle/actions/releases) — v6.4.1 latest; retrieved 2026-11-20.
+- G1 (2026-11-21): ADR-004 accepted by Gregor, V2 (spec OP-025). [Embedded Browser (JCEF)](https://plugins.jetbrains.com/docs/intellij/embedded-browser-jcef.html)
+  re-read: one `JBCefClient` may be shared by several browsers and a custom client is disposed explicitly;
+  `JBCefBrowser.createBuilder().setClient(…)`; `CefLoadHandlerAdapter.onLoadEnd`; `JBCefApp.isSupported()` is false with
+  a JDK without JCEF or an incompatible JCEF; the page documents neither JCEF's "suspended" state (ADR-004 S-2, Ubuntu
+  AppArmor) nor a registry key that disables JCEF → T-029 detects suspension by `core.html` not loading, T-040 records
+  which system property disables JCEF; the threading of `JBCefJSQuery` handlers is not documented → hand off at once.
+  Retrieved 2026-11-21.
 
 ## Stages
 
@@ -167,7 +228,7 @@ T-022), `vscode-mirror` (Ubuntu, Windows: exactly `ci.yml`'s steps incl. `npm te
    `spike-s1` (3 OS), `spike-ide` and `plugin` green; local gates green (no `src/` change); ADR-004 records R-1…R-6 per
    candidate, the S-2 screenshots (Light, Darcula, High Contrast), S-3 and S-4; **Gregor's decision stands in ADR-004
    (AC-009) — no later stage starts before it.** If S-1 V1 misses R-1…R-6, the orchestrator appends T-038 (V2 hidden
-   JCEF spike, same shape as T-004) before T-008.
+   JCEF spike, same shape as T-004) before T-008. **Passed 2026-11-21: V2 (ADR-004 accepted by Gregor).**
 3. T-009 ‖ T-010, then T-011 — VS Code guards, parity generator, categorisation. **Gate G2:** local gates incl.
    `npm run compile` and `node --test jetbrains/guards/`; CI `plugin`, `vscode-mirror`, `vscode-guards` green; `.vsix`
    list identical to the snapshot (AC-037); `docs/jetbrains/parity-source.json` has `"pending": []`.
@@ -181,14 +242,18 @@ T-022), `vscode-mirror` (Ubuntu, Windows: exactly `ci.yml`'s steps incl. `npm te
    and Windows), `vscode-guards`, `shared-guard`, `plugin` green; baselines and golden file unchanged, no new
    `EXCEPTIONS`; `src/core` unchanged; **an independent `/sdd-compile` READY** (orchestrator, fresh session, another
    model family) before stage 7 starts.
-7. T-021 → T-022 → T-023 → T-024 → T-025 — runtime, JVM conformance, host ports, project service. Gate: local gates;
-   CI `plugin` (incl. conformance + budgets on 3 OS), `vscode-*`, `shared-guard` green.
-8. T-026 → T-027 — Studio tab and theme bridge. Gate: as stage 7, plus a CI-artifact ZIP Gregor may install by hand.
-9. T-028 → T-029 → T-030 — tree, actions, status bar and editor. Gate: as stage 7.
-10. T-031 → T-032 → T-033 → T-034 — notifications and log view, settings and trust, setup. Gate: as stage 7.
-11. T-035 — Starter smoke on 3 OS. Gate: as stage 7 plus CI `ide-smoke` green.
+7. T-021 → T-039 → T-023 → T-024 → T-025 → T-022 — bridge parts, core runtime in a hidden JCEF browser, host ports,
+   project service (core starts at project open), then conformance and budgets in a Starter IDE (T-022 runs last: it
+   needs the core started by T-025). Gate: local gates; CI `plugin`, `ide-tests` (conformance + budgets on 3 OS),
+   `vscode-*`, `shared-guard` green.
+8. T-026 → T-027 — Studio tab (shared JCEF) and theme bridge. Gate: as stage 7, plus a CI-artifact ZIP Gregor may
+   install by hand.
+9. T-028 → T-029 → T-030 — tree, actions and the no-JCEF surfaces, status bar and editor. Gate: as stage 7.
+10. T-031 → T-032 → T-033 → T-034 → T-041 → T-040 — notifications and log view, settings and trust, setup, setup end to
+    end in an IDE, AC-030 in an IDE (T-040 last: it needs the settings page and Set up). Gate: as stage 7.
+11. T-035 — Starter smoke on 3 OS. Gate: as stage 7 (`ide-tests` incl. the smoke).
 12. T-036 → T-037 — Verifier and packaging checks, docs sync, spike removal, final gates. **Gate G4:** every local
-    gate; every CI job (`plugin`, `vscode-mirror`, `vscode-guards`, `shared-guard`, `ide-smoke`, `verify`) green on the
+    gate; every CI job (`plugin`, `vscode-mirror`, `vscode-guards`, `shared-guard`, `ide-tests`, `verify`) green on the
     same commit; parity matrix fully categorised; `/sdd-compile` READY. Then Gregor: AC-040–AC-042.
 
 Parallel: stage 3 (T-009 ‖ T-010: CI guards vs. parity tooling, disjoint files) and stage 5 (T-014 ‖ T-015). Stage 4
@@ -196,8 +261,8 @@ and stages 6–12 stay `→`: the Kotlin steps share `plugin.xml` and the host r
 entry steps share `src/hosts/embedded/main.ts`.
 
 Manual-only, not implementer steps (last open evidence): AC-040 (Rider), AC-041 (WebStorm), AC-042 (keyboard, screen
-reader, JCEF off) by Gregor on a fresh `C:\projects\test\tip-splitter` with the ZIP from the CI artifact; Gregor's G1
-decision in ADR-004; Marketplace vendor, certificate, secrets and first upload belong to 0036.
+reader, JCEF off) by Gregor on a fresh `C:\projects\test\tip-splitter` with the ZIP from the CI artifact (AC-040/AC-041
+also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision in ADR-004 (given 2026-11-21); Marketplace vendor, certificate, secrets and first upload belong to 0036.
 
 ## Steps
 
@@ -425,8 +490,8 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
 - **Tests first:** — (doc)
 - **Verify:** `local: npx vitest run src/adapters/node/docsScan.test.ts` green; `manual: Gregor reads ADR-004 and writes
   his decision into it` — no command can make a product decision.
-- [ ] **Verified (T-008):** —
-- **Notes:** 2026-11-21: draft `docs/decisions/ADR-004-jetbrains-host.md` written (recommends V2 hidden JCEF; Decision field open for Gregor at G1; S-2 PNGs added under `docs/decisions/adr-004/`).
+- [x] **Verified (T-008):** 2026-11-21 · manual: Gregor accepted ADR-004 at gate G1 (decision by Gregor 2026-11-21: runtime V2, R-5 → core ready ≤ 12 s at project open, no-JCEF notice with only the settings page working, Copy prompt only with the Claude Code deep link as 0035's candidate); ADR-004 `Status: Accepted`, Decision field filled. local: `npx vitest run src/adapters/node/docsScan.test.ts` → 186 passed.
+- **Notes:** 2026-11-21: draft `docs/decisions/ADR-004-jetbrains-host.md` written (recommends V2 hidden JCEF; Decision field open for Gregor at G1; S-2 PNGs added under `docs/decisions/adr-004/`). Decision recorded the same day; spec amended (OP-025); plan re-planned (*Approach* › G1 re-plan); `systemPatterns.md` decision line added.
 
 ### T-009 — VS Code guards in CI (`.vsix` list, JetBrains-only byte identity, workflows unchanged, mirror job)
 
@@ -552,7 +617,7 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
 
 ### T-014 — Host vocabulary: one table, the webview reads the host
 
-- **Covers:** §6.8, AC-019 (S7 note wording), AC-039 (VS Code texts unchanged)
+- **Covers:** §6.8, AC-019 (S7 note wording), AC-030 (texts), AC-039 (VS Code texts unchanged)
 - **Files:** `src/shared/protocol/vocabulary.ts`, `src/shared/protocol/vocabulary.test.ts`, `src/adapters/node/vocabularySources.test.ts`,
   `src/webview/hostKind.ts`, `src/webview/RestrictedNote.tsx`, `src/webview/PanelStateView.tsx`,
   `src/webview/hostVocabulary.test.tsx`, `src/adapters/vscode/webviewHtml.ts`, `src/adapters/vscode/webviewHtml.test.ts`
@@ -563,7 +628,13 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
   VS Code string by its pair). `hostKind.ts`: `export function hostKind(): HostKind` reads `document.body.dataset.host`
   once. `RestrictedNote.tsx` and `PanelStateView.tsx`: wrap every rendered label/line/S5 reason in
   `translateTerms(…, hostKind())`. `webviewHtml.ts`: optional `host?: 'jetbrains'` → `data-host="jetbrains"` on
-  `<body>` only when given. Tests: vocabulary pure cases; `vocabularySources.test.ts` asserts every VS Code string of
+  `<body>` only when given. `vocabulary.ts` also exports `JETBRAINS_TEXTS` (JetBrains-only; the host needs them without
+  the core, AC-030; proposed wording, Gregor confirms it at this stage's test review): `jcefUnsupported: 'FeatherSpec
+  Studio needs the embedded browser (JCEF), which this IDE does not support.'`, `jcefSuspended: 'FeatherSpec Studio
+  needs the embedded browser (JCEF), which the operating system's sandbox has suspended.'`, `openHelp: 'Open help'`,
+  `statusUnavailable: 'FeatherSpec unavailable'`, `helpUrl:
+  'https://github.com/GregorBiswanger/featherspec-studio#jetbrains-ides'` (README section of T-037). Tests: vocabulary
+  pure cases, and no `JETBRAINS_TEXTS` value contains a VS Code string of `TERM_PAIRS`; `vocabularySources.test.ts` asserts every VS Code string of
   `TERM_PAIRS` occurs verbatim in `src/shared/protocol/texts.ts`, `src/core/setup/setupTexts.ts` or
   `src/core/runtime/notices.ts` (drift guard); webview: S7 and S2 render JetBrains strings with `data-host="jetbrains"`
   and the unchanged VS Code strings without it; HTML: unchanged output without `host` (existing test), attribute with
@@ -576,45 +647,63 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
 - [ ] **Verified (T-014):** —
 - **Notes:** —
 
-### T-015 — Embedded bridge client and the bridge contract
+### T-015 — Embedded bridge client, copies of the sync ports and the bridge contract
 
-- **Covers:** AC-006 (no port signature change), R-3 (sync ports served synchronously)
+- **Covers:** AC-006 (no port signature change), R-3 (sync ports served from host-pushed copies)
 - **Files:** `src/hosts/embedded/contract.ts`, `src/hosts/embedded/bridge.ts`, `src/hosts/embedded/bridge.test.ts`,
-  `src/hosts/embedded/ports.ts`, `src/hosts/embedded/ports.test.ts`, `eslint.config.mjs`
+  `src/hosts/embedded/mirrors.ts`, `src/hosts/embedded/mirrors.test.ts`, `src/hosts/embedded/ports.ts`,
+  `src/hosts/embedded/ports.test.ts`, `eslint.config.mjs`
 - **Do:** `contract.ts`: string-literal unions and `as const` arrays of every name of *Contracts › Bridge*
-  (`SYNC_CALLS`, `ASYNC_CALLS`, `EMIT_CHANNELS`, `DISPATCH_EVENTS`, `INVOKE_COMMANDS`) and `interface NativeHost {
-  call(name, argsJson): string; callAsync(name, argsJson, id): void; emit(channel, payloadJson): void; setTimer(id, ms):
-  void; clearTimer(id): void }`. `bridge.ts`: `createBridge(native)` → `{ call<T>(name, args): T` (throws on
-  `{error}`), `callAsync<T>(name, args): Promise<T>`, `resolve(id, json)`, `setTimeout(cb, ms): Disposable`,
-  `fire(id)`, `emit(channel, payload)` }; `toBase64/fromBase64` (hand-written, no `Buffer`/`atob`). `ports.ts`:
-  `createEmbeddedPorts(bridge, config): Omit<HostPorts, 'panel' | 'openStore' | 'shellActions' | 'openStudio'>` —
-  every member a thin proxy to one contract name (bytes base64, `AsyncIterable` bodies from one base64 chunk);
-  `ClockPort.now()` = `new Date().toISOString()` in JS. ESLint: a block for `src/hosts/embedded/**/*.ts` banning
-  `vscode` and every Node built-in (mirror the `src/shared` block). Tests: fake `NativeHost` in Node; sync call result
-  and error; async resolve order; timer fire and dispose; base64 round trip on random bytes vs `Buffer`; each port
-  proxy sends the expected name and args.
-- **Tests first:** both test files red against stubs.
-- **Verify:** `local: npx vitest run src/hosts/embedded/bridge.test.ts src/hosts/embedded/ports.test.ts` green (own
-  tests only, `‖` rule); the stage gate runs the five gates on the combined tree.
+  (`ASYNC_CALLS`, `EMIT_CHANNELS`, `DISPATCH_EVENTS`, `INVOKE_COMMANDS`, `FRAME_KINDS` = `call|emit|reply|ready|failed`),
+  `interface CoreConfig` (the `start` config) and `interface NativeHost { send(frame: string): void }` — no sync call,
+  no timer names. `bridge.ts`: `createBridge(native)` → `{ callAsync<T>(name, args): Promise<T>` (sends a `call` frame
+  with a fresh id, rejects on `{error}`), `resolve(id, resultJson)`, `emit(channel, payload)`, `reply(id, result:
+  {ok} | {error})`, `ready()`, `failed(error)` }; `toBase64/fromBase64` (hand-written, no `Buffer`/`atob`).
+  `mirrors.ts`: `createMirrors(config: CoreConfig)` → `{ settings(), trusted(), folders(), memoryGet(key),
+  memorySet(key, value | undefined), apply(event, payload): boolean, onSettings(l), onTrust(l), onFolders(l) }`;
+  `apply` handles `settingsChanged {key, value}`, `trustGranted`, `foldersChanged {folders}` and returns `false` for
+  every other event. `ports.ts`: `createEmbeddedPorts(bridge, mirrors, config): Omit<HostPorts, 'panel' | 'openStore' |
+  'shellActions' | 'openStudio'>`: the sync members read the mirrors (`setting(key).read`, `trust().isTrusted`,
+  `folders.list`, `workspaceState.get`, `uiMemory(key).get`, `earlierRunData.state.has`); memory writes call
+  `mirrors.memorySet` first, then `callAsync('memory.set')`; `fileWatch.watch`/`markerWatch.watch` keep the listener
+  locally and send `watch.add {root, kind}` (`watch.remove` on dispose); every other async member is a thin proxy to one
+  contract name (bytes base64, `AsyncIterable` bodies from one base64 chunk); `clock`/`runtimeClock` use `new Date()`,
+  `Date.now()`, `globalThis.setTimeout/clearTimeout`; `ids.newId` = `crypto.randomUUID()`;
+  `assistantHost.extension` → `undefined`. ESLint: a block for `src/hosts/embedded/**/*.ts` (ignores `**/*.test.ts` and
+  `src/hosts/embedded/testing/**`) banning `vscode` and every Node built-in (mirror the `src/shared` block). Tests: fake
+  `NativeHost` collecting frames; async resolve order and error; `reply`, `ready`, `failed` frames; base64 round trip on
+  random bytes vs `Buffer`; mirrors: initial values, each change event replaces its copy and fires its listener once, an
+  unknown event returns `false`; each async port proxy sends the expected name and args; no sync port sends a frame.
+- **Tests first:** the three test files red against stubs.
+- **Verify:** `local: npx vitest run src/hosts/embedded/bridge.test.ts src/hosts/embedded/mirrors.test.ts
+  src/hosts/embedded/ports.test.ts` green (own tests only, `‖` rule); the stage gate runs the five gates on the
+  combined tree.
 - [ ] **Verified (T-015):** —
-- **Notes:** —
+- **Notes:** Re-planned 2026-11-21 for V2 (ADR-004): no sync `call`, no `setTimer`/`clearTimer`/`fire`.
 
 ### T-016 — Embedded entry: start, dispatch, invoke, panel, tree and status out, terms translated
 
 - **Covers:** AC-008 (core runs without the tab), AC-019, AC-023 (texts), AC-031 (no offer), §6.8
 - **Files:** `src/hosts/embedded/main.ts`, `src/hosts/embedded/terms.ts`, `src/hosts/embedded/main.test.ts`, `src/hosts/embedded/terms.test.ts`
-- **Do:** `main.ts` exports `createEmbeddedHost(native)` → `{ start(configJson), resolve, fire, dispatch(event, json),
-  invoke(command, json): Promise<string> }`: builds ports (T-015), `openStore` via `openRuntimeStore` from
+- **Do:** `main.ts` exports `createEmbeddedHost(native)` → `{ start(configJson), resolve(id, json), dispatch(event,
+  json), invoke(id, command, json), conformance, setupConformance }` (the last two from T-018): `start` parses the
+  `CoreConfig`, builds mirrors and ports (T-015), `openStore` via `openRuntimeStore` from
   `src/core/runtime/runtimeStore` over a medium proxy (`medium.*` calls keyed by project root), `shellActions` and
   `openStudio` as `actions.*` calls, `panel` from `panelOpened/panelClosed` events; calls `composeStudio`; subscribes
   `treeService` → `emit('tree', model)`, status item port → `emit('status', view|null)`, output → `emit('log', lines)`;
-  a `createPanelSession` (T-013) whose `post` emits `panel`; `dispatch` routes the events of the contract to the
-  listeners the proxies registered; `invoke` runs the commands (mirror the command bodies of `extension.ts`;
-  `panelHtml` = `buildWebviewHtml({...args, host: 'jetbrains', test: false})`). `assistant.extension` always
+  a `createPanelSession` (T-013) whose `post` emits `panel`; awaits `studio.start()` and then sends one `ready` frame
+  (on a throw: a `log` emit and a `failed` frame with the message); `dispatch` first offers the event to
+  `mirrors.apply`, then routes the remaining events of the contract to the listeners the proxies registered; `invoke`
+  runs the command and answers with `reply(id, {ok} | {error})` (mirror the command bodies of `extension.ts`;
+  `panelHtml` = `buildWebviewHtml({...args, host: 'jetbrains', test: false})`; `diagnostics` → `{jsHeapBytes:
+  performance.memory?.usedJSHeapSize ?? null}` through a typed cast, no `any`). `assistant.extension` always
   `undefined` → offer none. `terms.ts`: `withTerms(ports)` wraps `ui`, `setupUi`, `stepUi`, `runtimeUi`, `output`, the
   tree model's `message`/action labels and the status tooltip with `translateTerms(…, 'jetbrains')`, mapping the chosen
-  label back. Tests (Node, fake native host, memory spec source with a fixture): start → `tree` and `status` emitted
-  without any panel; `panelMessage` hello → `panel` envelopes; an untrusted project → setup notification reads `Setting
+  label back. Tests (Node, fake native host answering `call` frames through `resolve`, memory spec source with a
+  fixture): start → `tree` and `status` emitted without any panel, then exactly one `ready` frame; a throwing start →
+  `failed`; `settingsChanged {key: 'featherspec-studio.showStepTips', value: false}` → the next detail view has no tips
+  without any host call; `foldersChanged` with a second folder → `tree` emitted again; `invoke` of an unknown command →
+  `reply` with `error`; `panelMessage` hello → `panel` envelopes; an untrusted project → setup notification reads `Setting
   up FeatherSpec needs a trusted project.` with action `Trust Project`, choosing it calls `actions.manageTrust`; no
   emitted string of a full fixture run contains `workspace`, `Restricted Mode`, `VS Code` or `extension`
   (except spec content); no `Send` in emitted views.
@@ -623,30 +712,33 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
 - [ ] **Verified (T-016):** —
 - **Notes:** —
 
-### T-017 — Embedded bundle: polyfills, path shim, third esbuild target
+### T-017 — Embedded bundle: browser target, path shim, third esbuild target
 
 - **Covers:** R-1, R-6, AC-006, AC-038 precondition (`dist/extension.js` unchanged)
-- **Files:** `src/hosts/embedded/polyfills.ts`, `src/hosts/embedded/polyfills.test.ts`, `src/hosts/embedded/pathPosix.ts`,
-  `src/hosts/embedded/pathPosix.test.ts`, `src/hosts/embedded/global.ts`, `esbuild.js`, `src/hosts/embedded/bundle.test.ts`, `AGENTS.md` (snapshot)
-- **Do:** Port the spike polyfills of T-003 to TS (`TextDecoder` incl. `fatal`/`ignoreBOM`/U+FFFD, `TextEncoder`,
-  `AbortController`/`AbortSignal` with `aborted`, `addEventListener/removeEventListener('abort', l, {once})`, a WHATWG
-  `URL` subset with `protocol`, `hostname`, `username`, `password`, `pathname`, `href`, relative resolution against an
-  `https:` base, throwing on anything outside the tested subset — fails closed for `resolveAllowed`), installed only
-  when missing; `pathPosix.ts` = T-003's shim. `global.ts`: assigns `globalThis.FeatherSpecHost` built from
-  `createEmbeddedHost(globalThis.__featherspecHost)`. `esbuild.js`: a third context, entry `src/hosts/embedded/global.ts`,
-  `format: 'iife'`, `platform: 'neutral'`, `target: 'es2022'`, `alias` `path`/`node:path` → `pathPosix.ts`, `inject`
-  polyfills, `minify: production`, `outfile: 'dist/embedded/core.js'`; `hostBuildOptions` and the two existing contexts
-  unchanged. Tests: polyfills vs Node natives on generated corpora (random bytes, overlong/surrogate sequences, BOM
-  cases; URLs from the GitHub redirect shapes plus attack strings with `\`, `@`, `%2e`, userinfo); path shim vs
-  `node:path`.posix on generated segments; `bundle.test.ts` runs `node esbuild.js`, loads `dist/embedded/core.js` in
-  `vm.createContext({ __featherspecHost: fake })` (no Node globals), calls `start` and sees `tree` emitted; and checks
-  `dist/extension.js` SHA-256 equals the digest of a build of the same commit without the third target (build both in
-  the test via the esbuild API). Snapshot `entrypoints:` add exactly `'src/hosts/embedded/global.ts — JetBrains host
-  entry; bundled by esbuild to dist/embedded/core.js (IIFE, global FeatherSpecHost) and run in GraalJS (0034)'`.
-- **Tests first:** the four test files red against stubs.
+- **Files:** `src/hosts/embedded/pathPosix.ts`, `src/hosts/embedded/pathPosix.test.ts`, `src/hosts/embedded/global.ts`,
+  `src/hosts/embedded/testing/browserContext.ts`, `esbuild.js`, `src/hosts/embedded/bundle.test.ts`, `AGENTS.md` (snapshot)
+- **Do:** No polyfills: Chromium in JCEF has `TextDecoder` (`fatal`, `ignoreBOM`), `TextEncoder`, `URL`,
+  `AbortController`, `queueMicrotask`, `crypto.randomUUID` and timers (ADR-004 V2; T-038 ran the core 27/27
+  byte-identical without any). `pathPosix.ts` = T-003's `jetbrains/spikes/core/pathPosix.mjs` in TS. `global.ts`:
+  declares the global `__featherspecNative: (frame: string) => void` and assigns `globalThis.FeatherSpecHost =
+  createEmbeddedHost({ send: (frame) => globalThis.__featherspecNative(frame) })`. `testing/browserContext.ts`:
+  `browserContext(extra)` → a `vm.createContext` holding only `TextDecoder`, `TextEncoder`, `URL`, `AbortController`,
+  `AbortSignal`, `setTimeout`, `clearTimeout`, `queueMicrotask`, `crypto` (`globalThis.crypto`), `console` and `extra` —
+  the Web APIs the core page gets from Chromium, nothing from Node. `esbuild.js`: a third context, entry
+  `src/hosts/embedded/global.ts`, `bundle: true`, `format: 'iife'`, `platform: 'browser'`, `target: 'es2022'`,
+  `path`/`node:path` → `pathPosix.ts` through an `onResolve` plugin (esbuild's `alias` rejects relative targets, T-003
+  Notes), `minify: production`, `outfile: 'dist/embedded/core.js'`; the two existing contexts unchanged. Tests: path shim
+  vs `node:path`.posix on generated segments; `bundle.test.ts` runs `node esbuild.js`, loads `dist/embedded/core.js` in
+  `browserContext({ __featherspecNative: fake })`, calls `FeatherSpecHost.start(config)` with `folders: []` and sees a
+  `tree` emit and a `ready` frame; the bundle text contains no `require(` and no reference to `process`, `Buffer` or
+  `__dirname`; `dist/extension.js` SHA-256 equals the digest of a build of the same commit without the third target
+  (build both in the test via the esbuild API). Snapshot `entrypoints:` add exactly `'src/hosts/embedded/global.ts —
+  JetBrains host entry; bundled by esbuild to dist/embedded/core.js (IIFE, global FeatherSpecHost), run in a hidden JCEF
+  browser (0034)'` (keep `AGENTS.md` ≤ 15,000 bytes, `docsScan.test.ts`; shorten only this line if needed).
+- **Tests first:** the two test files red against stubs.
 - **Verify:** `local:` five gates incl. `npm run compile`.
 - [ ] **Verified (T-017):** —
-- **Notes:** —
+- **Notes:** Re-planned 2026-11-21 for V2: `polyfills.ts` and its test are dropped (Chromium has the Web APIs).
 
 ### T-018 — Conformance oracle: every fixture's outputs from the embedded bundle
 
@@ -660,8 +752,9 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
   (keys sorted). The second runs `checkRelease` + the file classes and apply of `src/core/setup` on a memory target
   (mirror `src/core/setup/testing/setupWorld.ts`) and returns `{ mergePrompt: buildMergePrompt('/work/tip-splitter',
   ['.vscode/settings.json','AGENTS.md','CLAUDE.md']), classes, writes }`. `global.ts` exposes both as
-  `FeatherSpecHost.conformance` / `.setupConformance`. Test: for every fixture folder (baseline and setup folders aside)
-  the bundle in a bare `vm` context returns the same string as `runConformance` called in-process; its `read`/`next`
+  `FeatherSpecHost.conformance(id, inputJson)` / `.setupConformance(id, archiveJson)`, each answering with a `reply`
+  frame. Test: for every fixture folder (baseline and setup folders aside) the bundle in `browserContext()` (T-017)
+  returns the same string as `runConformance` called in-process; its `read`/`next`
   parts equal the result of `readSnapshot`/`snapshotOf` over `readFixture` (memory vs fs mtime-free fields); setup:
   `mergePrompt` equals `src/core/setup/mergePrompt.golden.txt` byte for byte, classes/writes equal the in-process run.
 - **Tests first:** `conformance.test.ts` red against stubs.
@@ -671,11 +764,13 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
 
 ### T-019 — Node side of the JVM conformance: expected outputs for CI
 
-- **Covers:** AC-004, AC-005 (oracle files for T-022)
+- **Covers:** AC-004, AC-005 (oracle files for T-022, T-041)
 - **Files:** `jetbrains/scripts/conformanceExpected.mjs`, `jetbrains/scripts/conformanceExpected.test.mjs`
-- **Do:** Script: loads `dist/embedded/core.js` in a bare `vm` context with a no-op native host, for each fixture folder
-  writes `jetbrains/build/conformance/inputs/<name>.json` (`{files, version}`) and `.../expected/<name>.json`
-  (`FeatherSpecHost.conformance` result), plus `setup-input.json` (base64 of
+- **Do:** Script: loads `dist/embedded/core.js` in a `vm` context with the globals of `browserContext` (T-017; listed
+  inline, the script is `.mjs`) and a native host that collects `reply` frames; for each fixture folder, plus `gen-200`
+  (200 specs from `generateProject` of `src/core/specs/testing/generateProject.ts`, bundled for Node by esbuild as
+  `jetbrains/spikes/core/check.mjs` does), writes `jetbrains/build/conformance/inputs/<name>.json` (`{files, version}`)
+  and `.../expected/<name>.json` (the `FeatherSpecHost.conformance` reply), plus `setup-input.json` (base64 of
   `test/fixtures/setup/featherspec-1.10.0.tar.gz`) and `setup-expected.json`. `node:test`: the script writes one file
   per fixture and every expected file parses as JSON.
 - **Tests first:** `conformanceExpected.test.mjs` red (script missing).
@@ -701,62 +796,131 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
 - [ ] **Verified (T-020):** —
 - **Notes:** —
 
-### T-021 — Core runtime in the IDE (GraalJS per ADR-004)
+### T-021 — Core runtime, part 1: contract mirror, frames, core page and resource allow-list (pure Kotlin)
 
-- **Covers:** R-3, R-4, R-6, AC-006
-- **Files:** `jetbrains/build.gradle.kts`, `jetbrains/gradle/libs.versions.toml`, `<pkg>/runtime/HostContract.kt`,
-  `<pkg>/runtime/CoreRuntime.kt`, `<pkg>/runtime/HostHandler.kt`, `<test>/runtime/CoreRuntimeTest.kt`, `<test>/runtime/HostContractTest.kt`
-- **Do:** Gradle: GraalJS deps (as T-004); `processResources` copies `../dist/embedded/core.js` → `embedded/core.js`
-  and `../dist/webview/` → `webview/`. `HostContract.kt`: the contract names as constants. `HostHandler`
-  interface: `call(name, args: String): String`, `callAsync(name, args: String, reply: (String) -> Unit)`,
-  `emit(channel, payload: String)`. `CoreRuntime(handler, scriptLoader)`: one single-thread executor `FeatherSpec JS`
-  owns a `Context` (`HostAccess.EXPLICIT`, `engine.WarnInterpreterOnly=false`, context class loader = plugin's while
-  building); installs `__featherspecHost` (a Kotlin object with `@HostAccess.Export` methods `call`, `callAsync`,
-  `emit`, `setTimer`, `clearTimer`; timers on a `ScheduledExecutorService` that posts `fire(id)` back to the JS thread);
-  public `start(configJson)`, `dispatch(event, json)`, `invoke(command, json): CompletableFuture<String>`, `dispose()`.
-  Every entry into JS is submitted to the JS executor; `callAsync` replies are posted back the same way. Tests (plain
-  JUnit 5, the real `core.js` from `../dist/embedded`): start with a fake handler whose `folders.list` returns one
-  memory-less folder → a `tree` emit arrives; a `callAsync` reply resolves; a timer fires; `HostContractTest` reads
-  `../src/hosts/embedded/contract.ts` and asserts every quoted name exists in `HostContract.kt`.
-- **Tests first:** both tests red against `TODO()` bodies (CI run 1).
+- **Covers:** R-3, AC-006, AC-015 (core page part)
+- **Files:** `jetbrains/build.gradle.kts`, `<pkg>/runtime/HostContract.kt`, `<pkg>/runtime/BridgeFrames.kt`,
+  `<pkg>/runtime/CorePage.kt`, `<pkg>/jcef/PluginResources.kt`, `<test>/runtime/HostContractTest.kt`,
+  `<test>/runtime/BridgeFramesTest.kt`, `<test>/runtime/CorePageTest.kt`, `<test>/jcef/PluginResourcesTest.kt`
+- **Do:** Gradle: `processResources` copies `../dist/embedded/core.js` → `embedded/core.js` and `../dist/webview/` →
+  `webview/` (the `plugin` job's `npm run package` builds both before Gradle); `intellijPlatform {
+  bundledPlugin("com.intellij.modules.jcef") }` as in `jetbrains/spikes/ide/build.gradle.kts`; no GraalJS, no new
+  dependency. `HostContract.kt`: the names of *Contracts › Bridge* as constants (`ASYNC_CALLS`, `EMIT_CHANNELS`,
+  `DISPATCH_EVENTS`, `INVOKE_COMMANDS`, `FRAME_KINDS`). `BridgeFrames` (pure, Gson): `parse(frame: String): Frame` —
+  sealed `Call(id, name, args)`, `Emit(channel, payload)`, `Reply(id, ok: String?, error: String?)`, `Ready`,
+  `Failed(error)`, `Invalid(text)`; `jsString(text)` → a JS string literal (escapes `\`, `"`, control characters,
+  U+2028, U+2029; mirror the spike's `quoteJson` in `SpikeV2Action.kt`); `script(fn, vararg args)` →
+  `FeatherSpecHost.<fn>(<jsString…>);`. `CorePage` (pure): `CORE_URL = "https://studio.featherspec.invalid/core.html"`;
+  `html(nonce, injectJs)` → `<!DOCTYPE html>`, CSP meta `default-src 'none'; script-src 'nonce-<nonce>'`, one nonce'd
+  inline script `window.__featherspecNative = function (frame) { <injectJs> };`, then `<script nonce="<nonce>"
+  src="https://studio.featherspec.invalid/core.js"></script>`, nothing else. `PluginResources` (pure): `resolve(url):
+  Resource?` with `Resource(path, mimeType)`; allows exactly `…/core.html` (path `core.html`, filled by `CorePage`) and
+  `…/core.js` → `embedded/core.js`; everything else `null`; the allow-list is one map that T-026 extends. Tests:
+  `HostContractTest` reads `../src/hosts/embedded/contract.ts` and asserts every quoted name of its `as const` arrays
+  exists in `HostContract.kt` and vice versa; frames round-trip, malformed JSON and unknown `k` → `Invalid`; `jsString`
+  on quotes, backslashes, newlines, U+2028, emoji (the result parsed back by Gson equals the input); `CorePage`: exact
+  CSP, the inline script comes before the core script, both carry the nonce; `PluginResources` table: allowed, `file:`,
+  `http:`, `..`, other host, query, fragment, `core.js?x`.
+- **Tests first:** four test files red against `TODO()` bodies (CI run 1).
 - **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS.
 - [ ] **Verified (T-021):** —
+- **Notes:** Re-planned 2026-11-21 for V2 (ADR-004): GraalJS dropped; the browser glue is T-039.
+
+### T-039 — Core runtime, part 2: hidden JCEF browser, transport and readiness (appended 2026-11-21, split from T-021 at G1)
+
+- **Covers:** R-3, R-4, R-5 (start and readiness), AC-008 precondition
+- **Files:** `<pkg>/runtime/HostHandler.kt`, `<pkg>/runtime/CoreState.kt`, `<pkg>/runtime/CoreRuntime.kt`,
+  `<pkg>/jcef/PluginRequestHandler.kt`, `<test>/runtime/CoreStateTest.kt`
+- **Do:** Mirror `jetbrains/spikes/ide/src/main/kotlin/com/gregorbiswanger/featherspec/spike/SpikeV2Action.kt` (T-038)
+  and `SpikeResources.kt`. `HostHandler`: `call(id: String, name: String, args: String)` (answers later through
+  `CoreRuntime.resolve`), `emit(channel: String, payload: String)`. `CoreState` (pure): sealed `Loading`, `Ready`,
+  `Failed(reason)`, `Unavailable(kind)` with `UnavailableKind.UNSUPPORTED|SUSPENDED`; `CoreStateHolder`: `value`,
+  `set(next)` (never from `Ready` back to `Loading`; `Failed` and `Unavailable` are final for the session),
+  `onChange(listener): () -> Unit` (returns the removal), each listener called once per change. `PluginRequestHandler`
+  (glue): `CefRequestHandlerAdapter.getResourceRequestHandler` → `CefResourceRequestHandlerAdapter.getResourceHandler`
+  serving `PluginResources.resolve(url)` from the plugin class loader (`javaClass.getResourceAsStream`), `core.html`
+  from a supplier; `onBeforeBrowse` and `onBeforeResourceLoad` return `true` (cancel) when `resolve` gives `null`.
+  `CoreRuntime(client: JBCefClient, handler: HostHandler, state: CoreStateHolder, parent: Disposable)`:
+  `start(configJson)` — only the construction runs on the EDT, in one `ApplicationManager.getApplication().invokeLater`:
+  `JBCefBrowser.createBuilder().setClient(client).setOffScreenRendering(true).build()`, `createImmediately()`,
+  `JBCefJSQuery.create(browser)` with `addHandler { frame -> queue.execute { onFrame(frame) }; null }`,
+  `client.addRequestHandler(PluginRequestHandler(…), browser.cefBrowser)`, a `CefLoadHandlerAdapter` whose `onLoadEnd`
+  for `CORE_URL` records `loadedAtNanos` and runs `BridgeFrames.script("start", configJson)`, then
+  `browser.loadURL(CORE_URL)`; `queue` = `AppExecutorUtil.createBoundedApplicationPoolExecutor("FeatherSpec core", 1)`.
+  `onFrame`: `Call` → `handler.call`, `Emit` → `handler.emit`, `Reply` → completes the pending future, `Ready` →
+  `readyAtNanos` and `state.set(Ready)`, `Failed` → `state.set(Failed(error))`, `Invalid` → one `thisLogger().warn`.
+  Public: `startedAtNanos` (set by the caller, T-025), `loadedAtNanos`, `readyAtNanos`, `resolve(id, resultJson)`,
+  `dispatch(event, payloadJson)` (buffered until `start` ran, then flushed in order), `invoke(command, argsJson)`,
+  `conformance(inputJson)`, `setupConformance(archiveJson)` — the last three return `CompletableFuture<String>` keyed by
+  id in a `ConcurrentHashMap` (as the spike) — and `dispose()` (disposes query and browser on the EDT, completes pending
+  futures exceptionally). No `ready` within `READY_TIMEOUT_MS = 60_000` → `Failed("core not ready within 60 s")`. Every
+  `executeJavaScript` passes `CORE_URL` and line 0. Nothing waits on the EDT; nothing logs at `error` level (an IDE
+  plugin error, AC-030). Test: `CoreStateTest` (transitions, final states, listener once per change, removal).
+- **Tests first:** `CoreStateTest` red against `TODO()`.
+- **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS (compiles; `CoreStateTest`); the browser glue is proven inside
+  an IDE by T-022.
+- [ ] **Verified (T-039):** —
 - **Notes:** —
 
-### T-022 — JVM conformance and budgets on three OS
+### T-022 — Conformance, core readiness and budgets inside a Starter IDE on three OS
 
-- **Covers:** AC-004, AC-005, AC-007 (read, update, cold start), R-1, R-2, R-5
-- **Files:** `<test>/runtime/ConformanceTest.kt`, `<test>/runtime/BudgetTest.kt`, `.github/workflows/jetbrains.yml`
-- **Do:** Workflow `plugin`: before Gradle, `node jetbrains/scripts/conformanceExpected.mjs`. `ConformanceTest`: for
-  each `jetbrains/build/conformance/inputs/*.json`, `CoreRuntime` evaluates `FeatherSpecHost.conformance(input)` and
-  the string equals `expected/<name>.json` byte for byte; setup likewise. `BudgetTest`: cold start (`CoreRuntime`
-  construct + start) < 1,000 ms; the 200-spec input (generate it in the script as `gen-200`) read < 2,000 ms, a second
-  conformance call after changing one file < 1,000 ms; best of three per budget (mirror `src/shared/testing/timing.ts`
-  `bestOfThree` idea); print measured values.
-- **Tests first:** red until the script step exists (CI run 1).
-- **Verify:** `CI: jetbrains.yml › plugin` green on ubuntu, windows, macos.
+- **Covers:** AC-004, AC-005, AC-007 (core ready, read, update), R-1, R-2, R-5, R-6
+- **Files:** `jetbrains/build.gradle.kts` (`integrationTest` source set and task), `jetbrains/gradle/libs.versions.toml`,
+  `<pkg>/probe/ProbeAutoRun.kt`, `<pkg>/probe/ConformanceProbe.kt`, `jetbrains/src/main/resources/META-INF/plugin.xml`,
+  `<it>/CoreIdeTest.kt`, `.github/workflows/jetbrains.yml`
+- **Do:** Follow *Contracts › Starter harness*. Gradle: source set and task `integrationTest`;
+  `testFramework(TestFrameworkType.Starter, configurationName = "integrationTestImplementation")`, Kodein, coroutines,
+  JUnit with the approved versions in the TOML; the task also passes `featherspec.conformance` = absolute
+  `jetbrains/build/conformance` and `featherspec.fixture` = absolute `test/fixtures/studio-0015`. `ProbeAutoRun`
+  (`<postStartupActivity>`): returns unless `featherspec.probe.out` is set; else on a pooled thread waits (≤ 5 min) for
+  `StudioProjectService.state` to become `Ready` (T-025) and runs the probe named by `featherspec.probe`
+  (`conformance` here; T-035, T-040, T-041 add theirs). `ConformanceProbe`: for each `<conformance>/inputs/*.json`
+  calls `runtime.conformance(input)` and writes the reply to `<out>/actual/<name>.json`; the setup pair likewise
+  (`setup-actual.json`); then `<out>/budgets.json` with `coreReadyMs` (`readyAtNanos − startedAtNanos`: StudioStartup
+  entry → `ready`), `gen200ReadMs` (best of three `conformance(gen-200)`), `gen200UpdateMs` (best of three after
+  changing one file of that input), `coreReadyWarmMs` (a second `CoreRuntime` on the same client, JCEF already up,
+  started and disposed by the probe) and `jsHeapBytes` (`invoke('diagnostics')`). Workflow: job `ide-tests` exactly as
+  the harness. `CoreIdeTest` (fixture copy of `studio-0015`, `featherspec.probe=conformance`): after the IDE closed,
+  every `actual/<name>.json` equals `expected/<name>.json` byte for byte, and the setup pair; `coreReadyMs ≤ 12,000`
+  (R-5), `gen200ReadMs < 2,000` and `gen200UpdateMs < 1,000` (R-2, 0002 AC-018); prints `budgets.json` (warm start and
+  heap are recorded, not asserted; ADR-004 risk 1).
+- **Tests first:** `CoreIdeTest` red on CI run 1 (no probe yet → no `actual/`).
+- **Verify:** `CI: jetbrains.yml › ide-tests` green on ubuntu, windows, macos; `› plugin` green.
 - [ ] **Verified (T-022):** —
-- **Notes:** —
+- **Notes:** Re-planned 2026-11-21 for V2: plain JUnit cannot host JCEF; runs after T-025 (stage 7 order).
 
-### T-023 — File ports: URIs, spec source, folders, watching, frame activation
+### T-023 — File ports: URIs, spec source, folders, own watcher, VFS events, frame activation
 
-- **Covers:** AC-020, AC-021 (refresh on activation), H-10, H-11
-- **Files:** `<pkg>/ports/FileUris.kt`, `<pkg>/ports/FilePorts.kt`, `<pkg>/ports/ProjectFolders.kt`, `<pkg>/ports/SpecWatch.kt`,
-  `<test>/ports/FileUrisTest.kt`, `<test>/ports/FilePortsTest.kt`, `<test>/ports/ProjectFoldersTest.kt`
+- **Covers:** AC-020, AC-021 (own watcher, refresh on activation), H-10, H-11
+- **Files:** `<pkg>/ports/FileUris.kt`, `<pkg>/ports/FilePorts.kt`, `<pkg>/ports/ProjectFolders.kt`,
+  `<pkg>/ports/RootWatcher.kt`, `<pkg>/ports/SpecWatch.kt`, `<test>/ports/FileUrisTest.kt`,
+  `<test>/ports/FilePortsTest.kt`, `<test>/ports/ProjectFoldersTest.kt`, `<test>/ports/RootWatcherTest.kt`
 - **Do:** `FileUris`: `toUri(path: java.nio.file.Path, windows: Boolean): String` and `toPath(uri)` with the vectors of
   *Contracts › Roots*. `FilePorts` (pure over `java.nio.file`): `list`, `stat` (kind incl. `symlink` via
   `LinkOption.NOFOLLOW_LINKS`, mtime ms, size), `readBytes`, `readText`, `readDirectory` — answers for `source.*` and
   `fs.*` (mirror `src/adapters/node/nodeSpecSource.ts`, `nodeFileSystem.ts`). `ProjectFolders`: pure function
   `folders(basePath, contentRoots): List<Folder>` (base directory first, then content roots not inside it; name = last
-  segment; Rider: solution folder = base path). `SpecWatch` (glue): subscribes `VirtualFileManager.VFS_CHANGES`
-  (`BulkFileListener.after`) on the project message bus, calls `LocalFileSystem.addRootToWatch(root, true)`, forwards
-  `fileChanged {root, path}` for paths inside a root (pure helper `relativeInside(root, path)` tested) and
-  `markerChanged` for `AGENTS.md`/`.specs`/`.memory-bank/projectbrief.md`; subscribes
-  `ApplicationActivationListener.TOPIC` → `VfsUtil.markDirtyAndRefresh(true, true, true, <root>/.specs)`.
-- **Tests first:** three test files red against `TODO()`.
-- **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS.
+  segment; Rider: solution folder = base path). `RootWatcher` (pure `java.nio.file`, no `com.intellij`):
+  `RootWatcher(onChange: (root: Path, relative: String) -> Unit)` with `watch(root)`, `unwatch(root)`, `close()`; one
+  `FileSystems.getDefault().newWatchService()`; registers the root itself (for `AGENTS.md`) and every directory under
+  `<root>/.specs` and `<root>/.memory-bank` (`Files.walkFileTree`) for `ENTRY_CREATE`, `ENTRY_MODIFY`, `ENTRY_DELETE`
+  with `com.sun.nio.file.SensitivityWatchEventModifier.HIGH` (the stock macOS service polls); registers a directory
+  created later; reports only paths under `.specs/`, `.memory-bank/projectbrief.md` and `AGENTS.md`; `OVERFLOW` → one
+  report with `relative = ""`; a daemon thread `FeatherSpec watcher` takes the keys. `SpecWatch` (glue): answers
+  `watch.add|remove {root, kind}` (counted per root; root = `FileUris.toPath`); feeds `RootWatcher` events and the IDE's
+  `VirtualFileManager.VFS_CHANGES` (`BulkFileListener.after`, application bus, as T-007) for paths inside a watched
+  root (pure helper `relativeInside(root, path)`, tested) into `dispatch('fileChanged', {root, path})`, plus
+  `markerChanged {root}` for `AGENTS.md`, `.specs` and `.memory-bank/projectbrief.md`; after a `RootWatcher` event also
+  `VfsUtil.markDirtyAndRefresh(true, false, false, <file>)` so the IDE's editors see it;
+  `ApplicationActivationListener.TOPIC` → `VfsUtil.markDirtyAndRefresh(true, true, true, <root>/.specs)` per watched root.
+  Tests: vectors as before; `RootWatcherTest` on `@TempDir`: a write to `.specs/backlog/x.md` is reported within 5 s
+  and the measured delay is printed (`ROOTWATCHER-MS <os> <ms>`; the `plugin` job runs it on macOS too — AC-021's
+  2 s is decided inside the IDE by T-035); a file in a new subdirectory is reported; a file outside the watched parts is
+  not; `close()` ends the thread.
+- **Tests first:** four test files red against `TODO()`.
+- **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS; the `ROOTWATCHER-MS` lines of all three logs copied into Notes.
 - [ ] **Verified (T-023):** —
-- **Notes:** —
+- **Notes:** Re-planned 2026-11-21 (ADR-004 recommendation 4, S-4: the IDE watcher alone missed 2 s on every runner).
 
 ### T-024 — Store and memory ports outside the project folders
 
@@ -769,7 +933,8 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
   `storeDir(systemPath, rootUri, windows)` = `<systemPath>/featherspec-studio/projects/<sha256(windows ? root.lowercase
   : root) hex[0:16]>` (mirror `projectStoreDirectory`). `UiMemoryState`: application-level `@Service`
   `PersistentStateComponent` `@State(name = "FeatherSpecStudioMemory", storages = [Storage("featherspec-studio-memory.xml")])`
-  holding `Map<String, String>` keyed by `<project base path>|<key>` (answers `memory.get/set`; JSON values). Tests:
+  holding `Map<String, String>` keyed by `<project base path>|<key>` (gives the IDE project's entries for `start`'s
+  `memory` copy and answers `memory.set`, `null` removes; JSON values). Tests:
   the medium on a JUnit `@TempDir` (append/replace/exclusive/lines/list cases of
   `src/core/runtime/testing/contract*.ts`, picked one per method); `StoreLocation` vectors (Windows lowercasing).
 - **Tests first:** both test files red.
@@ -777,54 +942,71 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
 - [ ] **Verified (T-024):** —
 - **Notes:** —
 
-### T-025 — Project service: start the core per IDE project and route the bridge
+### T-025 — Project service: start the core at project open and route the bridge
 
-- **Covers:** AC-008, R-4, AC-019 (untrusted works), AC-031 (offer none)
-- **Files:** `<pkg>/StudioProjectService.kt`, `<pkg>/StudioStartup.kt`, `<pkg>/HostRouter.kt`, `<test>/HostRouterTest.kt`,
+- **Covers:** AC-008, R-4, R-5 (start at project open, off the EDT), AC-019 (untrusted works), AC-031 (offer none)
+- **Files:** `<pkg>/StudioProjectService.kt`, `<pkg>/StudioStartup.kt`, `<pkg>/HostRouter.kt`, `<pkg>/CoreConfig.kt`,
+  `<pkg>/HostTexts.kt`, `<test>/HostRouterTest.kt`, `<test>/CoreConfigTest.kt`, `<test>/HostTextsTest.kt`,
   `jetbrains/src/main/resources/META-INF/plugin.xml`
-- **Do:** `StudioProjectService` (`@Service(Service.Level.PROJECT)`, `Disposable`): owns one `CoreRuntime`; `start()`
-  from `StudioStartup` (`ProjectActivity`, `<postStartupActivity>`), config `{host:'jetbrains', platform, studioVersion
-  from PluginManagerCore}`. `HostRouter` (pure where possible) implements `HostHandler`: maps every contract name to
-  T-023/T-024 ports (file I/O on `executeOnPooledThread`), `trust.isTrusted` → cached `project.isTrusted()`,
-  `settings.read` → `null` until T-032, `assistant.extension` → `null`, `ui.*`/`clipboard.*`/`editor.*`/`actions.*` →
-  `{"error":"not yet"}` placeholders replaced in later steps; collects `tree`/`status`/`log` emits into observable
-  holders for the UI steps. Unknown names answer `{"error":"unknown <name>"}`. Test: router answers `folders.list` from a
-  fake folder provider, unknown names error, `assistant.extension` null.
-- **Tests first:** `HostRouterTest` red.
+- **Do:** `StudioProjectService` (`@Service(Service.Level.PROJECT)`, `Disposable`): owns the project's `JBCefClient`
+  (`JBCefApp.getInstance().createClient()`, `Disposer.register(this, client)`), one `CoreStateHolder` and one
+  `CoreRuntime` (T-039); `start()` returns at once. `StudioStartup` (`ProjectActivity`, `<postStartupActivity>`) sets
+  `startedAtNanos` and calls `start()` — the core starts at project open, not on *Open*; if `!JBCefApp.isSupported()`
+  → `state.set(Unavailable(UNSUPPORTED))` and no runtime (T-029 adds the suspended case and the surfaces). Config via
+  `CoreConfig.json(platform, studioVersion, settings, trusted, folders, memory)` (pure, Gson): `host: 'jetbrains'`,
+  `platform` `win32|darwin|linux`, `studioVersion` from `PluginManagerCore`, `settings: {}` until T-032,
+  `trusted = project.isTrusted()`, `folders` from `ProjectFolders` (T-023), `memory` from `UiMemoryState` (T-024).
+  `ModuleRootListener.TOPIC` → `dispatch('foldersChanged', {folders})`. `HostRouter` implements `HostHandler`: maps
+  every async call name to the T-023/T-024 ports (file I/O on `executeOnPooledThread`) and answers with
+  `runtime.resolve(id, …)`; `ui.*`, `clipboard.*`, `editor.*`, `actions.*` → `{"error":"not yet"}` placeholders that
+  later steps replace; unknown names → `{"error":"unknown <name>"}`; collects `tree`, `status`, `log` emits into
+  observable holders for the UI steps. `HostTexts`: constants mirrored from `LOADING_TEXT`, `STATE_LABELS.S5`,
+  `ACTION_LABELS.showOutput` (`src/shared/protocol/texts.ts`) and `JETBRAINS_TEXTS` (`vocabulary.ts`, T-014). Tests:
+  the router answers `source.list` from a fake provider through a fake resolver, `memory.set` writes the state, an
+  unknown name errors; `CoreConfig` JSON for two folders, untrusted, Windows; `HostTextsTest` reads both TS files and
+  asserts each constant equals its source string.
+- **Tests first:** the three test files red.
 - **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS.
 - [ ] **Verified (T-025):** —
-- **Notes:** —
+- **Notes:** Re-planned 2026-11-21 for V2: no sync calls in the router (copies in `start`).
 
-### T-026 — Studio editor tab in JCEF
+### T-026 — Studio editor tab in JCEF, sharing the project's JCEF client
 
-- **Covers:** AC-013, AC-014 (message sequence, Reload), AC-015
+- **Covers:** AC-013, AC-014 (message sequence, Reload), AC-015, AC-007 (loading state before the core is ready)
 - **Files:** `<pkg>/panel/StudioFile.kt`, `<pkg>/panel/StudioEditorProvider.kt`, `<pkg>/panel/StudioEditor.kt`,
-  `<pkg>/panel/PanelResources.kt`, `<pkg>/panel/PanelShim.kt`, `<test>/panel/PanelResourcesTest.kt`,
+  `<pkg>/panel/PanelShim.kt`, `<pkg>/jcef/PluginResources.kt`, `<test>/jcef/PluginResourcesTest.kt`,
   `<test>/panel/PanelShimTest.kt`, `plugin.xml`
-- **Do:** Mirror `jetbrains/spikes/ide/.../SpikePanel.kt` and `SpikeResources.kt` (T-005). `StudioFile`: one
-  `LightVirtualFile("FeatherSpec Studio")` per project (kept by the service). Provider `accept = file is StudioFile`,
-  `FileEditorPolicy.HIDE_DEFAULT_EDITOR`. `StudioEditor`: `JBCefBrowser`, `JBCefJSQuery` → `dispatch('panelMessage')`;
-  `emit('panel')` → `executeJavaScript`; `panelOpened/panelClosed` on create/dispose; HTML from
-  `invoke('panelHtml', {nonce, cspSource: origin, scriptUri, styleUri, reloaded})` plus the two inserted tags
-  (`PanelShim.insert(html, nonce, bodyClass)`); Reload → reload only this browser. `PanelResources.resolve(url): Resource?`
-  (pure): only `https://studio.featherspec.invalid/` + `main.js|main.css|theme.css|index.html`; anything else `null`
-  (→ cancel). Tests: allowed/denied URL table (internet, `file:`, `..`, other host, query tricks); shim insertion keeps
-  the CSP meta byte-identical and puts the tags after `<div id="root"></div>`.
+- **Do:** Mirror `jetbrains/spikes/ide/.../SpikePanel.kt` (T-005). `StudioFile`: one `LightVirtualFile("FeatherSpec
+  Studio")` per project (kept by the service). Provider: `accept = file is StudioFile`,
+  `FileEditorPolicy.HIDE_DEFAULT_EDITOR`, `DumbAware` (else the tab opens as a text editor, T-006). `StudioEditor`:
+  shares JCEF — `JBCefBrowser.createBuilder().setClient(service.client).build()`, never its own `JBCefApp` or client —
+  and adds the T-039 `PluginRequestHandler` for this browser; a `JBLoadingPanel` with `HostTexts.LOADING` shows at once
+  while `service.state` is `Loading` (AC-007: within 1 s of *Open*) and the browser when `Ready`; `Failed` → a
+  `JBPanelWithEmptyText` with `HostTexts.S5` and a *Show output* link; `JBCefJSQuery` → `dispatch('panelMessage')`;
+  `emit('panel')` → `executeJavaScript`; `panelOpened/panelClosed` on create/dispose; HTML from `invoke('panelHtml',
+  {nonce, cspSource: origin, scriptUri, styleUri, reloaded})` plus `PanelShim.insert(html, nonce, bodyClass)`; Reload →
+  reload only this browser. `PluginResources`: add `index.html`, `main.js`, `main.css` (from `webview/`) and
+  `theme.css` (T-027). Tests: the allow-list table extended (internet, `file:`, `..`, other host, query tricks;
+  `core.js` still allowed); shim insertion keeps the CSP meta byte-identical and puts the tags after `<div
+  id="root"></div>`.
 - **Tests first:** both tests red.
 - **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS.
 - [ ] **Verified (T-026):** —
-- **Notes:** —
+- **Notes:** Re-planned 2026-11-21 (ADR-004 recommendation 2: JCEF is initialised once per IDE session).
 
 ### T-027 — Theme bridge
 
 - **Covers:** AC-026, AC-027, AC-028
 - **Files:** `<pkg>/theme/ThemeMapping.kt`, `<pkg>/theme/ThemeBridge.kt`, `<test>/theme/ThemeMappingTest.kt`, `plugin.xml`
-- **Do:** Mirror `SpikeTheme.kt` (T-006). `ThemeMapping` (pure): one table row per CSS variable `(cssVar, ideKeys:
+- **Do:** Mirror `SpikeTheme.kt` (T-006), which maps only about 20 of the 59 variables and paints the rest grey
+  (ADR-004 S-2): here **each of the 59** `--vscode-*` variables of `src/webview/main.css` gets its row, the chart, state
+  and focus colours and the fonts included. `ThemeMapping` (pure): one table row per CSS variable `(cssVar, ideKeys:
   List<String>, fallbackLight, fallbackDark, fallbackHighContrast)`; `fun variables(lookup: (String) -> java.awt.Color?,
   kind: ThemeKind): Map<String, String>` (never empty values); `ThemeKind.of(isDark, idOrName)` → `vscode-light`,
   `vscode-dark`, `vscode-high-contrast`; fonts from `UIUtil.getLabelFont()` / editor font scheme passed in as strings.
-  `ThemeBridge` (glue): `LafManagerListener.TOPIC` → one `executeJavaScript` with all `setProperty` calls and the body
-  class swap; `theme.css` content for first paint; `JBCefScrollbarsHelper.buildScrollbarsStyle()` appended. Test: reads
+  `ThemeBridge` (glue): `LafManagerListener.TOPIC` → one `executeJavaScript` into the panel browser only (the hidden
+  core page has no UI) with all `setProperty` calls and the body class swap; `theme.css` content for first paint
+  (served through `PluginResources`, T-026); `JBCefScrollbarsHelper.buildScrollbarsStyle()` appended. Test: reads
   `../src/webview/main.css`, derives every `--vscode-*` name by regex, fails when the table lacks one (AC-026); every
   value non-empty for an all-null lookup; kind table for Light, Darcula, High Contrast, Islands Light, Islands Dark.
 - **Tests first:** `ThemeMappingTest` red.
@@ -834,7 +1016,7 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
 
 ### T-028 — Tool window with the Specs tree
 
-- **Covers:** AC-010, AC-011, AC-012, H-1, H-2, H-3
+- **Covers:** AC-010, AC-011, AC-012, AC-007 (loading state), H-1, H-2, H-3
 - **Files:** `<pkg>/tree/SpecTreeMapping.kt`, `<pkg>/tree/StudioToolWindowFactory.kt`, `<pkg>/tree/SpecTreePanel.kt`,
   `<test>/tree/SpecTreeMappingTest.kt`, `plugin.xml`
 - **Do:** `SpecTreeMapping` (pure): parses the `tree` emit JSON (shape of `src/core/shell/specTree.ts`
@@ -847,37 +1029,52 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
   listener)`; `toolWindow.setTitleActions(Open, Refresh, Open Settings, Copy Next Step)` (selected row);
   `PopupHandler.installPopupMenu(tree, "featherspec.studio.TreePopup", place)`; row activation → `invoke('tree.select')`
   without focus change; badge: title `FeatherSpec Studio (<n>)` and `ExecutionUtil.getLiveIndicator(icon)` while n ≥ 1.
-  Actions referenced here are registered in T-029.
+  While `service.state` is `Loading` the empty text is `HostTexts.LOADING`; `Failed` → `HostTexts.S5` with a *Show
+  output* link; `Unavailable` → T-029's notice. Actions referenced here are registered in T-029.
 - **Tests first:** `SpecTreeMappingTest` with the tree JSON of two conformance fixtures (`jetbrains/build/conformance/expected`) red.
 - **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS.
 - [ ] **Verified (T-028):** —
 - **Notes:** —
 
-### T-029 — Actions for Find Action and the JCEF fallback
+### T-029 — Actions for Find Action and the no-JCEF case (notice instead of the tree, notifications)
 
-- **Covers:** AC-017, AC-030, AC-013 (Open Overview/Board/Plan Map), H-7
-- **Files:** `<pkg>/actions/StudioActions.kt`, `<pkg>/actions/ActionTable.kt`, `<test>/actions/ActionTableTest.kt`, `plugin.xml`
+- **Covers:** AC-017, AC-030 (notice, notifications, suspended detection), AC-013 (Open Overview/Board/Plan Map), H-7
+- **Files:** `<pkg>/actions/StudioActions.kt`, `<pkg>/actions/ActionTable.kt`, `<pkg>/jcef/JcefAvailability.kt`,
+  `<pkg>/tree/UnavailableNotice.kt`, `<pkg>/StudioProjectService.kt`, `<test>/actions/ActionTableTest.kt`,
+  `<test>/jcef/JcefAvailabilityTest.kt`, `plugin.xml`
 - **Do:** `ActionTable` (pure): rows `(actionId, title, invokeCommand)` for every command of `package.json`
   `contributes.commands` except `shellAction` and `selectSpec`; IDs `featherspec.studio.<camelName>`, titles exactly as
   the manifest. `StudioActions`: one `AnAction` subclass taking the row (`ActionUpdateThread.BGT`), registered in
   `plugin.xml` `<actions>` with the same `text`; group `featherspec.studio.TreePopup` with Open Spec, Open Plan, Show in
-  Plan Map, Copy Next Step (enabled by the row flags). Open: if `!JBCefApp.isSupported()` → balloon of group
-  `FeatherSpec Studio` naming the reason with *Open help* (`BrowserUtil.browse`), no exception; else open the
-  `StudioFile`. Test: reads `../package.json`, asserts the table equals its commands minus the two (IDs, titles).
-- **Tests first:** `ActionTableTest` red.
-- **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS.
+  Plan Map, Copy Next Step (enabled by the row flags). `JcefAvailability` (pure): `decide(supported: Boolean,
+  loadedAfterMs: Long?, waitedMs: Long)` → `AVAILABLE` (loaded), `UNSUPPORTED` (`!supported`), `SUSPENDED` (supported,
+  `core.html` not loaded after `SUSPENDED_AFTER_MS = 30_000`: the page never loads while the OS sandbox suspends JCEF,
+  ADR-004 S-2; no platform flag is documented, *Research* 2026-11-21), else `PENDING`. Service: 30 s after
+  `CoreRuntime.start` with no `loadedAtNanos` → `state.set(Unavailable(SUSPENDED))` and dispose the runtime. While
+  `state` is `Unavailable(kind)`: the tool window shows `UnavailableNotice` (a `JBPanelWithEmptyText` with
+  `JETBRAINS_TEXTS.jcefUnsupported` or `.jcefSuspended` and an *Open help* link → `BrowserUtil.browse(helpUrl)`)
+  instead of the Specs tree; Open, Copy Next Step and Set up FeatherSpec show one balloon of group `FeatherSpec Studio`
+  (register `<notificationGroup id="FeatherSpec Studio" displayType="BALLOON"/>` here; T-031 reuses it) with the same
+  reason and the *Open help* action (`NotificationAction.createSimpleExpiring`) and do nothing else; nothing throws or
+  logs at `error` level (that is an IDE plugin error); the settings page needs no core (T-032). Tests: the table equals
+  `../package.json`'s commands minus the two (IDs, titles); `JcefAvailability` vectors (supported and loaded at 9 s →
+  available; unsupported; supported, not loaded at 30 s → suspended; not loaded at 10 s → pending).
+- **Tests first:** both tests red.
+- **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS; the IDE-level proof is T-040.
 - [ ] **Verified (T-029):** —
-- **Notes:** —
+- **Notes:** Re-planned 2026-11-21 (G1 decision 3): without JCEF only the settings page works.
 
 ### T-030 — Status bar widget, clipboard and opening files
 
-- **Covers:** AC-016, AC-024, H-6, H-15, H-16
+- **Covers:** AC-016, AC-024, AC-030 (status part), AC-007 (loading state), H-6, H-15, H-16
 - **Files:** `<pkg>/status/StatusEntryMapping.kt`, `<pkg>/status/StudioStatusWidget.kt`, `<pkg>/ports/EditorOpen.kt`,
   `<test>/status/StatusEntryMappingTest.kt`, `plugin.xml`, `<pkg>/HostRouter.kt`
 - **Do:** `StatusEntryMapping` (pure): `status` JSON (`StatusEntryView` of `src/core/ports/copyNextStep.ts`) → text
   with `$(codicon)` replaced by an icon id, plain tooltip lines (Markdown → plain), accessible name, command. Widget:
   `StatusBarWidgetFactory` (`<statusBarWidgetFactory id="featherspec.studio.status" …/>`) with a `CustomStatusBarWidget`
-  (`JBLabel`, `accessibleContext.accessibleName`), hidden while `null`; click → `invoke('copyNextStep')`.
+  (`JBLabel`, `accessibleContext.accessibleName`), hidden while `null`; click → `invoke('copyNextStep')`. While
+  `service.state` is `Loading` it shows `AnimatedIcon.Default` with the tooltip `HostTexts.LOADING`; `Unavailable` →
+  the text `JETBRAINS_TEXTS.statusUnavailable` with the reason as tooltip, click → T-029's balloon (AC-030).
   Router: `clipboard.write` → `CopyPasteManager.getInstance().setContents(StringSelection(text))`; `editor.open` →
   `OpenFileDescriptor(project, vfile, line - 1, 0)`; `place = beside` opens in a vertical split next to the Studio tab
   (`FileEditorManagerEx.getInstanceEx(project)`, `EditorWindow.split(...)`), `activeGroup` in the current window;
@@ -894,7 +1091,7 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
 - **Do:** `UiRequests` (pure): parse/serialise the `ui.*` argument and reply JSON (notify level/message/actions →
   chosen label or null; pick items → index or null; confirm model → boolean; progress title → id). `HostUi` (glue, on
   EDT via `invokeLater`): `NotificationGroupManager.getInstance().getNotificationGroup("FeatherSpec Studio")`
-  (`<notificationGroup id="FeatherSpec Studio" displayType="BALLOON"/>`) with `NotificationAction.createSimpleExpiring`
+  (group registered in T-029) with `NotificationAction.createSimpleExpiring`
   per action in order; pick → `JBPopupFactory.getInstance().createPopupChooserBuilder(...)`; confirm →
   `MessageDialogBuilder.okCancel(title, message).yesText(confirmLabel).ask(project)`; progress →
   `ProgressManager.getInstance().run(Task.Backgroundable(project, title, true))` ending on `progressEnd`, Cancel →
@@ -908,19 +1105,21 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
 
 ### T-032 — Settings page, settings port and project trust
 
-- **Covers:** AC-018, AC-019, AC-031, H-8, H-9
+- **Covers:** AC-018, AC-019, AC-031, AC-030 (settings page without JCEF), H-8, H-9
 - **Files:** `<pkg>/settings/StudioSettings.kt`, `<pkg>/settings/StudioConfigurable.kt`, `<pkg>/settings/SettingsTable.kt`,
   `<test>/settings/SettingsTableTest.kt`, `<pkg>/TrustWatch.kt`, `plugin.xml`, `<pkg>/HostRouter.kt`
 - **Do:** `SettingsTable` (pure): keys, defaults, labels, descriptions of `featherspec-studio.showStepTips` and
   `featherspec-studio.modelHints` read from `../package.json` `contributes.configuration` at test time and kept as
   constants in code; `assistant` excluded (AC-031). `StudioSettings`: application `@Service` `PersistentStateComponent`
   `@State(name = "FeatherSpecStudioSettings", storages = [Storage("featherspec-studio.xml")])`; change →
-  `dispatch('settingsChanged', {key})` on every open project's runtime. `StudioConfigurable`: `BoundConfigurable` with
+  `dispatch('settingsChanged', {key, value})` on every open project's runtime, and `CoreConfig.settings` gets the
+  current values (replaces T-025's `{}`). `StudioConfigurable` (reads and writes only `StudioSettings`, never the
+  runtime, so it works without JCEF, AC-030): `BoundConfigurable` with
   Kotlin UI DSL (`checkBox(label).bindSelected`, comment = description, model hints as `textField`),
   `<applicationConfigurable parentId="tools" id="featherspec.studio.settings" displayName="FeatherSpec Studio"
   instance=…/>`; Open Settings → `ShowSettingsUtil.getInstance().showSettingsDialog(project,
-  StudioConfigurable::class.java)`. Router `settings.read` → the state. `TrustWatch`: application listener
-  `TrustStateListener.onProjectTrusted(project)` → `dispatch('trustGranted')`; `actions.manageTrust` → the platform's
+  StudioConfigurable::class.java)`. `TrustWatch`: application listener `TrustStateListener.onProjectTrusted(project)` →
+  `dispatch('trustGranted', {})` (the page's trust copy turns true); `actions.manageTrust` → the platform's
   trust prompt if a public API exists, else `BrowserUtil.browse("https://www.jetbrains.com/help/idea/project-security.html")`
   (record which in Notes). Test: table equals the manifest entries.
 - **Tests first:** `SettingsTableTest` red.
@@ -948,43 +1147,100 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
 ### T-034 — Setup host part 2: the setup target with no-overwrite writes
 
 - **Covers:** AC-022 (writes fail rather than replace, 0014 AC-010), AC-005 (classes and writes on a temp target)
-- **Files:** `<pkg>/setup/SetupTarget.kt`, `<test>/setup/SetupTargetTest.kt`, `<test>/setup/SetupConformanceTest.kt`, `<pkg>/HostRouter.kt`
+- **Files:** `<pkg>/setup/SetupTarget.kt`, `<test>/setup/SetupTargetTest.kt`, `<pkg>/HostRouter.kt`
 - **Do:** `SetupTarget`: port of `src/adapters/node/nodeSetupTarget.ts` (`kind`, `readBytes`, `listDirectory`,
   `createExclusive` with `CREATE_NEW` → `created|exists`, `replaceIfUnchanged` via temp file + atomic move with retry,
   `clearSetupFolder` limited to `.featherspec-setup`). Router `target.*`. Tests: on `@TempDir` (exists → `exists`,
-  changed → `changed`, Windows-safe rename retry); `SetupConformanceTest`: `CoreRuntime` runs
-  `FeatherSpecHost.setupConformance(setup-input)` and equals `setup-expected.json`; a full setup run through the router
-  on a temp folder with the archive served by a local `HttpServer` writes the same files as the Node run.
-- **Tests first:** both tests red.
+  changed → `changed`, Windows-safe rename retry). Re-planned 2026-11-21 (V2): plain JUnit cannot host the core, so
+  the setup conformance runs in T-022's `CoreIdeTest` and the full setup run through the router is T-041.
+- **Tests first:** `SetupTargetTest` red.
 - **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS.
 - [ ] **Verified (T-034):** —
 - **Notes:** —
 
+### T-041 — Setup end to end in a Starter IDE (appended 2026-11-21; was T-034's JUnit run on GraalJS)
+
+- **Covers:** AC-022 (the host's setup run end to end), AC-005 (same writes as Node)
+- **Files:** `<pkg>/probe/SetupProbe.kt`, `<pkg>/probe/ProbeAutoRun.kt`, `<pkg>/setup/ReleaseHttp.kt`,
+  `<pkg>/ui/HostUi.kt`, `<it>/SetupIdeTest.kt`
+- **Do:** Harness per *Contracts › Starter harness*. Test hooks, active only while `featherspec.probe=setup` (else no
+  change in behaviour): `ReleaseHttp` answers the three routes of `src/core/setup/testing/setupWorld.ts` — `LATEST`
+  → 302 to `TAG_URL`, `archiveUrl('v1.10.0')` → 302 to `CODELOAD`, `CODELOAD` → 200 with the bytes of the file named
+  by `featherspec.probe.releaseArchive`; `HostUi` answers `ui.confirm` with yes, `ui.pick` with the first item and
+  `ui.notify` with no action. `SetupProbe`: after `Ready`, `runtime.invoke('setup', '{}')`, waits for its reply, then
+  writes `<out>/setup-files.json` (every file under the project dir except `.idea/`, relative path and base64 bytes).
+  `SetupIdeTest`: project = a new empty directory `jetbrains/build/ide-project/setup-empty` (the same start as T-018's
+  memory target), `featherspec.probe.releaseArchive` =
+  `Path.of("../test/fixtures/setup/featherspec-1.10.0.tar.gz").toAbsolutePath()` (the test task's working directory is
+  `jetbrains/`); asserts that `setup-files.json` equals the `writes` of `build/conformance/setup-expected.json` (paths and
+  bytes as T-018 records them) and that no request left the IDE (the fake answered all three routes).
+- **Tests first:** `SetupIdeTest` red on CI run 1.
+- **Verify:** `CI: jetbrains.yml › ide-tests` green on ubuntu, windows, macos.
+- [ ] **Verified (T-041):** —
+- **Notes:** —
+
+### T-040 — No JCEF in a real IDE: unsupported and suspended (appended 2026-11-21, G1 decision 3)
+
+- **Covers:** AC-030
+- **Files:** `<pkg>/probe/NoJcefProbe.kt`, `<pkg>/probe/ProbeAutoRun.kt`, `<it>/NoJcefIdeTest.kt`,
+  `jetbrains/build.gradle.kts`, `.github/workflows/jetbrains.yml`
+- **Do:** Harness per *Contracts › Starter harness*. `NoJcefProbe` (`featherspec.probe=nojcef`; `ProbeAutoRun` waits
+  for `Unavailable` instead of `Ready`, ≤ 60 s): records the state kind, the tool window content's class name and
+  empty-text lines, the status widget's text (`WindowManager.getInstance().getStatusBar(project).getWidget(
+  "featherspec.studio.status")`), the balloons (subscribe `Notifications.TOPIC`) after running Open, Copy Next Step and
+  Set up FeatherSpec through `ActionManager.getInstance().getAction(id)` and `ActionUtil.invokeAction(action,
+  SimpleDataContext.getProjectContext(project), "FeatherSpecProbe", null, null)`, and whether
+  `StudioConfigurable().createComponent()` returns a component; writes `<out>/nojcef.json`. `NoJcefIdeTest` runs only
+  when `featherspec.nojcef` is `unsupported` or `suspended` (`Assumptions.assumeTrue`); `unsupported` adds
+  `ide.browser.jcef.enabled=false` to the VM options. Asserts: the expected `Unavailable` kind; the notice instead of the
+  tree with the reason and *Open help*; the status text `JETBRAINS_TEXTS.statusUnavailable`; three balloons with the
+  reason and *Open help*; the settings component exists; no `ERROR` or `SEVERE` line naming `featherspec` in the run's
+  `idea.log` (found under `out/ide-tests`, as the spike workflow finds it). Workflow `ide-tests`: two more Linux
+  entries via `include:` — `nojcef: unsupported`, and `nojcef: suspended`, which skips the `sysctl` step so Ubuntu's
+  AppArmor restriction suspends JCEF (ADR-004 S-2); both run `xvfb-run -a gradle -p jetbrains integrationTest --tests
+  '*NoJcefIdeTest' -Pfeatherspec.nojcef=<entry>`; the `integrationTest` task forwards it with
+  `systemProperty("featherspec.nojcef", providers.gradleProperty("featherspec.nojcef").getOrElse(""))`. If `ide.browser.jcef.enabled=false` does
+  not make `JBCefApp.isSupported()` false, record it in Notes: then `JcefAvailabilityTest` (T-029) and AC-042 (manual)
+  decide the unsupported branch.
+- **Tests first:** `NoJcefIdeTest` red on CI run 1 (no probe yet).
+- **Verify:** `CI: jetbrains.yml › ide-tests` green on both no-JCEF entries (ubuntu).
+- [ ] **Verified (T-040):** —
+- **Notes:** —
+
 ### T-035 — Starter smoke on three OS
 
-- **Covers:** AC-007 (frame ≤ 1 s, freshness ≤ 500 ms), AC-008, AC-013, AC-020, AC-021, AC-025, AC-027, AC-028, AC-029
-- **Files:** `jetbrains/build.gradle.kts` (integrationTest source set), `<it>/StudioSmokeTest.kt`, `<it>/ThemeContrastTest.kt`,
-  `<pkg>/theme/Contrast.kt`, `<test>/theme/ContrastTest.kt`, `<pkg>/actions/SmokeProbeAction.kt`, `.github/workflows/jetbrains.yml`
-- **Do:** Mirror `jetbrains/spikes/ide/build.gradle.kts` and `SpikeIdeTest.kt` (T-006/T-007). `Contrast` (pure): WCAG
-  relative luminance and ratio; contrast table pairs (panel text, secondary text, link, button text on their
-  backgrounds; focus outline) → ≥ 4.5 / ≥ 3.0. `SmokeProbeAction` (id `featherspec.studio.smokeProbe`, registered only
-  when system property `featherspec.smoke=true`): dumps tree model, status text, open-tab state, mapped theme values per
-  theme, a list of files under the project dir with mtimes, timestamps of open → first `panel` hello reply, and of a
-  model change → tree/status/panel update, to `<out>/smoke.json`. `StudioSmokeTest` (fixture copy of `studio-0015`):
-  waits for indicators; Open (frame < 1 s); closes the tab, writes a spec externally via NIO (tree/status update ≤
-  2 s, AC-021) and inside the IDE via `WriteAction` (≤ 500 ms after the VFS event); reopens (area/selection restored);
-  asserts no file in the project dir changed except the test's own writes (AC-025). `ThemeContrastTest`: for Light,
-  Darcula, High Contrast, Islands Light, Islands Dark → body class and `Contrast` pairs pass; switch while open → new
-  values within 500 ms. Job `ide-smoke` (3 OS; macOS and Windows UI-permission failures reported, Ubuntu required),
-  uploads `**/out/ide-tests/**` and `smoke.json`. `ContrastTest`: known pairs (black/white = 21, equal = 1).
+- **Covers:** AC-007 (loading state and frame ≤ 1 s, freshness ≤ 500 ms), AC-008, AC-013, AC-020, AC-021, AC-025,
+  AC-027, AC-028, AC-029
+- **Files:** `<it>/StudioSmokeTest.kt`, `<it>/ThemeContrastTest.kt`, `<pkg>/theme/Contrast.kt`, `<test>/theme/ContrastTest.kt`,
+  `<pkg>/probe/SmokeProbe.kt`, `<pkg>/probe/ProbeAutoRun.kt`
+- **Do:** Harness per *Contracts › Starter harness* and T-022's `CoreIdeTest` (job `ide-tests` exists). `Contrast`
+  (pure): WCAG relative luminance and ratio; contrast table pairs (panel text, secondary text, link, button text on
+  their backgrounds; focus outline) → ≥ 4.5 / ≥ 3.0. `SmokeProbe` (`featherspec.probe=smoke`; `ProbeAutoRun` starts it
+  at once, not after `Ready`): (1) before `Ready`, opens the Studio tab (`FileEditorManager.getInstance(project)
+  .openFile(service.studioFile, true)` on the EDT) and records ms until the loading panel shows; (2) after `Ready`,
+  closes and reopens the tab and records ms to the first `panel` emit after `hello`; (3) closes the tab, writes
+  `.specs/backlog/smoke-ext.md` with `Files.writeString` (external, no VFS) and records ms until the tree and status
+  holders change; (4) changes a spec inside the IDE (`WriteAction.runAndWait` + `VfsUtil.saveText`) and records ms
+  from the VFS event to the tree, status and panel update; (5) reopens (area and selection restored); (6) for Light,
+  Darcula, High Contrast, Islands Light, Islands Dark: `LafManager.getInstance().setCurrentLookAndFeel(theme, false)` +
+  `updateUI()` on the EDT, records the body class, the mapped values and ms until the panel shows them; (7) lists the
+  files under the project dir with mtimes before and after (`.idea/` is the IDE's own and excluded). Writes
+  `<out>/smoke.json`. `StudioSmokeTest` (fixture copy of `studio-0015`): loading ≤ 1,000 ms and frame ≤ 1,000 ms
+  (AC-007); external change ≤ 2,000 ms (AC-021) on ubuntu, windows **and macos** — the IDE's own watcher needed
+  13,987 ms on macOS in S-4; a miss stops the plan: report the measured value to Gregor, never loosen the budget;
+  in-IDE change ≤ 500 ms; area and selection restored; no project file created or changed except the test's own writes
+  (AC-025). `ThemeContrastTest`: per theme the body class and the `Contrast` pairs; a switch while open shows the new
+  values within 500 ms in one `executeJavaScript` (no mixed frame, AC-028). `ContrastTest`: known pairs (black/white =
+  21, equal = 1).
 - **Tests first:** `ContrastTest` red; smoke tests red on the first CI run.
-- **Verify:** `CI: jetbrains.yml › ide-smoke` green on ubuntu (windows, macos green or recorded in Notes), `› plugin` green.
+- **Verify:** `CI: jetbrains.yml › ide-tests` green on ubuntu, windows, macos (a UI-permission failure on windows or
+  macos goes into Notes with its log excerpt; AC-021 on macOS is not waived), `› plugin` green.
 - [ ] **Verified (T-035):** —
-- **Notes:** —
+- **Notes:** Re-planned 2026-11-21 for V2 and the T-006 lessons (no Driver UI API; probe via `ProbeAutoRun`).
 
 ### T-036 — Plugin Verifier, manifest, ZIP size and webview byte identity
 
-- **Covers:** AC-014 (bytes), AC-033, AC-034, AC-035 (size, no key in the repo)
+- **Covers:** AC-014 (bytes), AC-033, AC-034, AC-035 (size, no key in the repo, no GraalJS)
 - **Files:** `jetbrains/build.gradle.kts`, `.github/workflows/jetbrains.yml`, `jetbrains/guards/pluginZip.mjs`, `jetbrains/guards/pluginZip.test.mjs`
 - **Do:** `pluginVerification { ides { recommended(); create(IntelliJPlatformType.IntellijIdea, "2025.3.1");
   create(IntelliJPlatformType.WebStorm, "2025.3.1"); create(IntelliJPlatformType.Rider, "2025.3.1");
@@ -992,7 +1248,8 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
   `IntelliJPlatformType` enum; fix in Notes if they differ). Job `verify` (ubuntu, matrix over product so each job
   downloads at most two IDEs; free disk first), `gradle -p jetbrains verifyPlugin -Pverify.product=<p>`.
   `pluginZip.mjs` (ubuntu, after `buildPlugin`): ZIP ≤ 60 MB; SHA-256 of the `webview/main.js` and `main.css` inside
-  the plugin JAR equal `dist/webview/*` of the same `npm run package`; plugin.xml check of T-001 moved here; a scan of
+  the plugin JAR equal `dist/webview/*` of the same `npm run package`; no GraalJS in the ZIP (no entry and no JAR name
+  matching `graal|truffle|polyglot|icu4j`, ADR-004); plugin.xml check of T-001 moved here; a scan of
   the repo tree for PEM headers and `PUBLISH_TOKEN=`-style assignments finds nothing. `node:test` for its pure parts.
 - **Tests first:** `pluginZip.test.mjs` red.
 - **Verify:** `local: node --test jetbrains/guards/`; `CI: jetbrains.yml › verify` (all products) and `› plugin` green.
@@ -1004,22 +1261,30 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
 - **Covers:** AC-042 (checklist section), AC-043, every criterion the gates re-prove (AC-001–AC-031, AC-033–AC-035,
   AC-037–AC-039)
 - **Files:** `README.md`, `docs/release-checklist.md`, `.architecture/jetbrains.md`, `.architecture/adapters.md`, `AGENTS.md`
-  (snapshot), `.memory-bank/techContext.md`, `.memory-bank/systemPatterns.md`, `.memory-bank/activeContext.md`,
-  `jetbrains/spikes/**` (delete), `.github/workflows/jetbrains-spikes.yml` (delete), `CHANGELOG.md` (JetBrains section)
-- **Do:** README: a *JetBrains IDEs* section (install from disk/Marketplace once 0036 ships, supported IDEs = every
-  IntelliJ-based IDE from 2025.3.1, Rider and WebStorm tested, Copy prompt as the default, local only, no split mode).
+  (snapshot), `jetbrains/AGENTS.md`, `.memory-bank/techContext.md`, `.memory-bank/systemPatterns.md`,
+  `.memory-bank/activeContext.md`, `jetbrains/spikes/**` (delete), `.github/workflows/jetbrains-spikes.yml` (delete),
+  `CHANGELOG.md` (JetBrains section)
+- **Do:** README: a *JetBrains IDEs* section, heading exactly `## JetBrains IDEs` (the anchor `#jetbrains-ides` is
+  `JETBRAINS_TEXTS.helpUrl`): install from disk/Marketplace once 0036 ships, supported IDEs = every IntelliJ-based IDE
+  from 2025.3.1, Rider and WebStorm tested, Copy prompt as the default, local only, no split mode, and *Without the
+  embedded browser* (JCEF not supported, or suspended by the OS sandbox, e.g. AppArmor on Ubuntu 24.04+: only the
+  settings page works; the IDE's own *Embedded Browser is suspended* notification offers the fix).
   Release checklist: a *JetBrains (manual)* section listing AC-040, AC-041, AC-042 with their steps. `.architecture/
   jetbrains.md` final (≤ 40 lines); `adapters.md` one line for `parity.ts`. Snapshot entries — confirm or reconcile
   exactly these (added in T-002, T-012, T-017): the `jetbrains/` module line, the `src/hosts` module line, the
   `src/hosts/embedded/global.ts` entrypoint line; add to `boundaries:` exactly `'src/hosts never imports vscode;
-  src/hosts/embedded imports no Node.js built-in (it runs in GraalJS); src/core is shared unchanged by both hosts'`;
+  src/hosts/embedded imports no Node.js built-in (it runs in a browser page); src/core is shared unchanged by both
+  hosts'`;
   `shared:` append `the host vocabulary (vocabulary.ts, 0034)` to the `src/shared/protocol` line; `# last reconciled:`
   date. Memory Bank: techContext (JetBrains jobs, how to read CI), systemPatterns (bridge, vocabulary, store keys),
-  activeContext (stage state). Delete the spike folder and workflow (created by this plan). Then run every gate.
+  activeContext (stage state). Delete the spike folder and workflow (created by this plan) — the last GraalJS code;
+  the GraalJS mentions in `AGENTS.md`, `jetbrains/AGENTS.md` and `.architecture/jetbrains.md` were replaced on
+  2026-11-21 (G1), so `grep -rniE 'graal|truffle|polyglot'` outside `.specs/`, `docs/decisions/`, `node_modules/` and
+  `jetbrains/guards/pluginZip*.mjs` (T-036's own check) must find nothing. Then run every gate.
 - **Tests first:** — (docs; gates decide)
 - **Verify:** `local:` five gates incl. `npm run compile`, `node --test jetbrains/guards/ jetbrains/scripts/`,
-  `npx vitest run src/adapters/node/docsScan.test.ts src/adapters/node/parity.test.ts`; `CI:` every job of
-  `jetbrains.yml` green on one commit.
+  `npx vitest run src/adapters/node/docsScan.test.ts src/adapters/node/parity.test.ts`, the `grep` above empty; `CI:`
+  every job of `jetbrains.yml` green on one commit.
 - [ ] **Verified (T-037):** —
 - **Notes:** —
 
@@ -1031,24 +1296,24 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
 | AC-002 | T-010 | — | — | open |
 | AC-003 | T-010, T-011 | — | — | open |
 | AC-004 | T-018, T-019, T-022 | — | — | open |
-| AC-005 | T-018, T-019, T-022, T-033, T-034 | — | — | open |
+| AC-005 | T-018, T-019, T-022, T-033, T-034, T-041 | — | — | open |
 | AC-006 | T-012, T-015, T-017, T-020, T-021 | — | — | open |
-| AC-007 | T-022, T-035 | — | — | open |
-| AC-008 | T-016, T-025, T-035 | — | — | open |
-| AC-009 | T-003…T-008 | — | — | open |
+| AC-007 | T-022, T-026, T-028, T-030, T-035 | — | — | open |
+| AC-008 | T-016, T-039, T-025, T-035 | — | — | open |
+| AC-009 | T-003…T-008, T-038 | `docs/decisions/ADR-004-jetbrains-host.md`, `docs/decisions/adr-004/` | CI `jetbrains-spikes.yml` runs 44835557884, 44844442596, 44846550133; manual: Gregor's decision 2026-11-21 | verified |
 | AC-010 | T-028 | — | — | open |
 | AC-011 | T-028, T-029 | — | — | open |
 | AC-012 | T-028 | — | — | open |
 | AC-013 | T-026, T-029, T-035 | — | — | open |
 | AC-014 | T-013, T-026, T-036 | — | — | open |
-| AC-015 | T-026 | — | — | open |
+| AC-015 | T-021, T-026 | — | — | open |
 | AC-016 | T-030 | — | — | open |
 | AC-017 | T-029 | — | — | open |
 | AC-018 | T-032 | — | — | open |
 | AC-019 | T-014, T-016, T-025, T-032 | — | — | open |
 | AC-020 | T-023, T-035 | — | — | open |
 | AC-021 | T-007, T-023, T-035 | — | — | open |
-| AC-022 | T-033, T-034 | — | — | open |
+| AC-022 | T-033, T-034, T-041 | — | — | open |
 | AC-023 | T-016, T-031 | — | — | open |
 | AC-024 | T-030 | — | — | open |
 | AC-025 | T-024, T-035 | — | — | open |
@@ -1056,29 +1321,31 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
 | AC-027 | T-027, T-035 | — | — | open |
 | AC-028 | T-027, T-035 | — | — | open |
 | AC-029 | T-035 | — | — | open |
-| AC-030 | T-029 | — | — | open |
+| AC-030 | T-014, T-029, T-030, T-032, T-040 | — | — | open |
 | AC-031 | T-016, T-025, T-032 | — | — | open |
 | AC-032 | — (moved to 0035, OP-024) | — | — | n-a here |
-| AC-033 | T-001, T-036 | — | — | open |
+| AC-033 | T-001, T-036 | `jetbrains/src/main/resources/META-INF/plugin.xml` (T-001) | CI `jetbrains.yml › plugin` plugin.xml check | open |
 | AC-034 | T-036 | — | — | open |
-| AC-035 | T-036 (size, no key; signing → 0036) | — | — | open |
+| AC-035 | T-036 (size, no key, no GraalJS; signing → 0036) | — | — | open |
 | AC-036 | — (moved to 0036, OP-024) | — | — | n-a here |
-| AC-037 | T-001, T-009 | — | — | open |
+| AC-037 | T-001, T-009 | `.vscodeignore` (T-001) | — | open |
 | AC-038 | T-009, T-017 | — | — | open |
 | AC-039 | T-009, T-012, T-013, T-014, T-020 | — | — | open |
 | AC-040 | manual: Gregor, Rider | — | — | open |
 | AC-041 | manual: Gregor, WebStorm | — | — | open |
 | AC-042 | T-037 (checklist section); manual: Gregor | — | — | open |
-| AC-043 | T-002, T-037 | — | — | open |
+| AC-043 | T-002, T-037 | `.architecture/jetbrains.md`, `AGENTS.md` (T-002) | `src/adapters/node/docsScan.test.ts` | open |
 
 ## Session handoff
 
-- **Done so far:** plan written (Mode A); spec revised with OP-024 (split) and the `**Plan:**` link.
-- **Next action:** Gregor's yes to the dependencies (2026-11-20) and the start signal are done; the pair is in
-  `active/`. Next: T-001. Pushing `jetbrains-host` (via the studio bridge) approved by Gregor 2026-11-20.
-- **Open decisions:** (1) Gregor confirms OP-024's split (0035 Send, 0036 Marketplace release) and whether to split
-  further at G3 (37 steps vs. the ~30 guideline). (2) G1: runtime V1/V2 and the handover list (ADR-004). (3) The
-  proxies OP-019–OP-023 and PD-099…PD-107: confirmed by Gregor 2026-11-20 (done).
+- **Done so far:** stages 1–2 verified (T-001…T-008, T-038). Gate G1 passed 2026-11-21: Gregor accepted ADR-004
+  (runtime V2: hidden off-screen JCEF browser per IDE project; core ready ≤ 12 s at project open; without JCEF only the
+  settings page works; Copy prompt only, Claude Code deep link → 0035). Spec amended (OP-025); plan re-planned for V2
+  (*Approach* › G1 re-plan; T-039, T-040, T-041 appended; 41 steps).
+- **Next action:** stage 3, T-009 ‖ T-010 (then T-011): ask once how to run the `‖` steps (in sequence is the default).
+- **Open decisions:** (1) Whether to split further at G3 (41 steps vs. the ~30 guideline) — Gregor. (2) The proposed
+  wording of `JETBRAINS_TEXTS` (T-014) — Gregor at the stage-5 test review. (3) R-5's 12 s re-measured on Gregor's
+  machine at AC-040/AC-041. (4) If T-035 measures AC-021 above 2 s on macOS, Gregor decides (native watcher or a PD).
 - **Baseline:** _(commit hash before the first step commit; set when work starts; also `START_COMMIT` in `jetbrains.yml`)_
 - **Environment:** every Gradle/Kotlin/JVM/IDE check runs only in GitHub Actions (`jetbrains.yml`,
   `jetbrains-spikes.yml`); the sandbox has no Maven/Gradle/JetBrains access (proxy 403). `ci.yml` does not run on

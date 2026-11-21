@@ -125,7 +125,7 @@ renumbered criterion in any spec appears as an uncategorised row and fails the c
 | H-8 | `contributes.configuration`, Settings UI | Settings › Tools › FeatherSpec Studio, application level only (OP-009), same keys, defaults and labels | 0021 AC-016, AC-011, 0024 AC-001 |
 | H-9 | Workspace Trust, Restricted Mode | The IDE project's trusted state (untrusted = Safe Mode) | 0001 AC-022, 0005 AC-017, 0014 AC-004, 0017 AC-022 |
 | H-10 | Workspace folders (multi-root) | The IDE project's base directory plus every content root outside it (OP-004) | 0001 AC-001–AC-013 |
-| H-11 | File system watcher | IDE virtual-file-system events plus a refresh of the watched paths on frame activation | 0002 AC-012, PD-047, 0029 AC-009 |
+| H-11 | File system watcher | The plugin's own file watcher on the FeatherSpec roots, IDE virtual-file-system events, and a refresh of the watched paths on frame activation (OP-025) | 0002 AC-012, PD-047, 0029 AC-009 |
 | H-12 | `workspaceState`, `globalStorageUri` | Plugin state outside the IDE project's directories; the store per FeatherSpec project root under the IDE's system path (ADR-002 shape), separate from VS Code's (OP-005) | 0004 AC-011, AC-023, AC-026, 0005 AC-009, 0018 Done memory |
 | H-13 | Quick pick, notification, modal, progress, `openExternal` | IDE popup, balloon notification of group *FeatherSpec Studio*, modal dialog, background progress with Cancel, the system browser | 0001 AC-008, AC-015, 0014 AC-003, AC-005, AC-008, AC-021, 0017 AC-020 |
 | H-14 | Output channel "FeatherSpec Studio" | A log view *FeatherSpec Studio* that "Show output" opens, same lines | 0001 AC-016, 0005 AC-015, 0014 AC-023, 0024 AC-006 |
@@ -147,20 +147,23 @@ and then for both hosts.
 
 ### 6.5 Embedded core runtime
 
-The runtime choice is not final. Requirements (R) the choice must meet:
+Requirements (R) the runtime must meet (R-4, R-5, R-6 changed 2026-11-21, OP-025):
 
 - R-1 Same outputs: §6.4 holds with the core bundle built from unchanged `src/core` and `src/shared` sources.
 - R-2 Budgets: 0002 AC-018 (200 specs read under 2 s, update under 1 s), 0001 AC-018 (discovery under 2 s), 0005 AC-024
   (frame under 1 s), UI freshness 500 ms after the change event reaches the plugin (PD-047).
 - R-3 The core's synchronous port calls (`SettingPort.read`, `TrustPort.isTrusted`, `WorkspaceFoldersPort.list` and the
   other non-`Promise` methods of `src/core/ports`) are served without a signature change.
-- R-4 The core runs while the Studio tab is closed and while JCEF is unavailable, so tree and status entry stay live.
-- R-5 Engine cold start under 1 s; the plugin ZIP at most 60 MB (OP-002).
-- R-6 Testable headless in CI.
+- R-4 The core runs while the Studio tab is closed, so tree and status entry stay live; without JCEF, AC-030 applies.
+- R-5 The core starts when the IDE project opens, off the EDT, and is ready within 12 s of the project opening on the CI
+  runners (§6.11); until then tab, tree and status entry show their loading state; re-measured on Gregor's machine at
+  AC-040/AC-041. The plugin ZIP is at most 60 MB (OP-002).
+- R-6 Testable in CI: conformance and budgets inside an IDE started by Starter (Xvfb on Linux); plain JUnit only for pure Kotlin.
 
-Preferred hypothesis: GraalJS inside the IDE process. Fallback: a hidden JCEF browser (fails R-4 without JCEF; needs
-mirrored caches for R-3). A Node sidecar or a Kotlin port are plan C only. Spike S-1 (§6.12) decides; Gregor records the
-choice in `docs/decisions/ADR-004-jetbrains-host.md` at gate G1.
+Decided at gate G1 (`docs/decisions/ADR-004-jetbrains-host.md`, accepted by Gregor 2026-11-21, OP-025): the core runs in a
+hidden off-screen JCEF browser, one per IDE project, sharing the IDE's JCEF with the panel (V2). R-3 holds through copies:
+the host pushes settings, trust, folders and memory with the start and with every change event. GraalJS (V1) is rejected:
+it failed R-1 inside the plugin class loader and missed R-2 and R-5 on every runner (A-005).
 
 ### 6.6 Theme bridge
 
@@ -216,8 +219,9 @@ is a *deliberately different* row.
 
 ### 6.11 Where builds and tests run
 
-Gregor installs no Java, Gradle or other toolchain. Every Gradle build, Kotlin compile, JVM unit and conformance test, the
-Plugin Verifier and the Starter/Driver IDE tests run only in GitHub Actions (Ubuntu, Windows and macOS runners). The agent
+Gregor installs no Java, Gradle or other toolchain. Every Gradle build, Kotlin compile, plain JUnit test (pure Kotlin only),
+the conformance and budget tests (inside an IDE started by Starter, OP-025), the Plugin Verifier and the Starter/Driver IDE
+tests run only in GitHub Actions (Ubuntu, Windows and macOS runners). The agent
 cannot run Gradle in its sandbox (A-001): it pushes the branch (a git write, asked first per `AGENTS.md`) and reads the CI
 results. TypeScript work — shared core, bridge, the Node side of the conformance oracle — the agent verifies locally with
 the existing npm gates (`.memory-bank/techContext.md`). Gregor installs intermediate plugin ZIPs from the CI artifact by
@@ -238,7 +242,7 @@ Spikes, the first stage; results in ADR-004 (AC-009):
 Gates, each passed only when all its items hold; the plan orders the stages (OP-018):
 
 - G1 after the spikes: S-1 passes with V1 or V2, S-2 shows the UI in the three themes, S-3 and S-4 recorded; Gregor decides
-  runtime and handovers in ADR-004.
+  runtime and handovers in ADR-004 (passed 2026-11-21: V2, OP-025).
 - G2 repository guards: VS Code CI unchanged and green, the `.vsix` file-list snapshot identical (AC-037), the JetBrains CI
   job green with an empty plugin.
 - G3 shared TypeScript changes, before host work builds on them: AC-039 with `npm test` in CI on Ubuntu and Windows,
@@ -263,11 +267,11 @@ directories (H-12), so `.idea/` receives nothing from it; signing keys come from
 
 ## 9. Non-functional requirements
 
-Budgets of R-2 on the CI runners of §6.11; external change visibility of AC-021; the plugin ZIP limit of R-5.
+Budgets of R-2 and the core-ready budget of R-5 on the CI runners of §6.11; external change visibility of AC-021; the plugin ZIP limit of R-5.
 
 ## 10. Error cases and edge cases
 
-- The IDE cannot show an embedded browser: AC-030.
+- JCEF is not supported, or the OS sandbox suspends it (AppArmor on Ubuntu 24.04+): AC-030.
 - The embedded runtime fails to start or throws: the tab shows S5 with its reason and *Show output* (0005 AC-015); tree and
   status entry show the failure state; no IDE-internal error balloon.
 - A file changed by a CLI agent while the IDE is not focused: AC-021 (refresh on frame activation).
@@ -305,10 +309,11 @@ WebStorm by hand in AC-040 and AC-041.
 - **AC-006** The core bundle the plugin runs shall be built from `src/core` and `src/shared` with no JetBrains-specific
   branch and no changed port signature; a scan shall find no host check in `src/core` and the port signatures equal to the
   start commit's.
-- **AC-007** In the embedded runtime the budgets of R-2 shall hold: the 0002 AC-018 fixture read under 2 s and updated under
-  1 s, discovery of up to 5 roots under 2 s, the Studio frame shown within 1 s of *Open*, and tree, status entry and panel
-  showing a model change within 500 ms after the change event reaches the plugin; measured on the Windows, macOS and Linux
-  CI runners (§6.11).
+- **AC-007** In the embedded runtime the budgets of R-2 and R-5 shall hold: the core ready within 12 s of the IDE project
+  opening, the 0002 AC-018 fixture read under 2 s and updated under 1 s, discovery of up to 5 roots under 2 s, the Studio
+  frame shown within 1 s of *Open* once the core is ready and, before that, the loading state within 1 s of *Open*, and
+  tree, status entry and panel showing a model change within 500 ms after the change event reaches the plugin; measured
+  on the Windows, macOS and Linux CI runners (§6.11). (Changed 2026-11-21, OP-025: core-ready budget and loading state.)
 - **AC-008** While the Studio tab is closed, tree and status entry shall follow a model change as 0020 AC-013 and 0017
   AC-018 state.
 - **AC-009** `docs/decisions/ADR-004-jetbrains-host.md` shall record the measured R-1–R-6 values of spike S-1 per candidate
@@ -351,8 +356,9 @@ WebStorm by hand in AC-040 and AC-041.
 - **AC-020** When the developer or the IDE creates, changes, renames or deletes a spec, plan, return note, `AGENTS.md` or
   `.memory-bank/projectbrief.md` inside the IDE, tree, status entry and panel shall show the change within the budget of AC-007.
 - **AC-021** When an external process writes such a file, the change shall show on screen within 2 s of the write (OP-003),
-  with the IDE focused and with another application focused, on Windows, macOS and Linux; whenever the IDE window is
-  activated, the plugin shall refresh `.specs/`.
+  with the IDE focused and with another application focused, on Windows, macOS and Linux; the plugin shall watch the
+  FeatherSpec roots with its own file watcher in addition to the IDE's file events, and whenever the IDE window is
+  activated, it shall refresh `.specs/`. (Changed 2026-11-21, OP-025: own watcher.)
 - **AC-022** Set up FeatherSpec shall behave as 0014 AC-001–AC-025 with H-13 and H-18: the same targets, dialog, files, merge
   prompt, messages and log block; a write shall fail rather than replace an existing path (0014 AC-010); requests shall use
   the IDE's proxy settings and carry no credentials, cookies or workspace path (0014 AC-025).
@@ -380,9 +386,11 @@ WebStorm by hand in AC-040 and AC-041.
 
 **Fallback, send, packaging**
 
-- **AC-030** If the IDE cannot show an embedded browser, then *Open* shall show a notification that names the reason and offers
-  *Open help*; tree, status entry, Copy Next Step, the settings page and Set up FeatherSpec shall keep working, and the IDE
-  shall report no plugin error.
+- **AC-030** If the IDE cannot run the embedded browser — JCEF not supported, or suspended by the operating system's sandbox —
+  then the Specs tool window shall show, instead of the tree, a notice that names the reason and offers *Open help*; the
+  status entry shall show unavailable; *Open*, Copy Next Step and Set up FeatherSpec shall show a notification with the
+  same reason and *Open help*; the settings page shall keep working; and the IDE shall report no plugin error. (Changed
+  2026-11-21, OP-025: the core runs in JCEF, so tree, status entry, Copy Next Step and Set up no longer work without it.)
 - **AC-031** While no handover of §6.7 is proven, every step action in the panel shall be Copy prompt, the settings page
   shall not show the Assistant setting, and no text shall name Send.
 - ~~**AC-032** Where a handover is offered, its Send shall put the prompt into that assistant's input and never submit it;
@@ -431,7 +439,8 @@ As-is at `3bc615c` (digest, from the code):
 
 - `src/core` imports no `vscode` and no Node module but `path.posix` (`board/openFile.ts`, `specs/readProject.ts`,
   `lifecycle/verification.ts`); timers only through `ClockPort`. Web APIs used: strict `TextDecoder` (`fatal: true`),
-  `TextEncoder`, `URL`, `queueMicrotask`, `performance.now` — GraalJS needs polyfills for some (S-1).
+  `TextEncoder`, `URL`, `queueMicrotask`, `performance.now` — Chromium in JCEF provides all of them, so the embedded bundle
+  needs no polyfills (V2, OP-025).
 - 14 port files in `src/core/ports`; non-`Promise` methods include `SettingPort.read`, `TrustPort.isTrusted`,
   `WorkspaceFoldersPort.list`, `ClockPort.now`, `AssistantHostPort.extension` and `fileUri` (returns a VS Code `Uri` for
   Copilot's attach; n-a until a handover attaches).
@@ -462,10 +471,10 @@ As-is at `3bc615c` (digest, from the code):
 | A-002 | Frontend-only plugins work in Rider; the Studio needs no ReSharper part | JetBrains docs: tool windows and actions run in Rider's frontend | Rider needs a backend module (AC-040) |
 | A-003 | The webview bundle needs no change for JCEF beyond §6.8 | it reaches the host only through `vscodeApi.ts` and uses only CSS variables and body classes | AC-014's byte-identity fails; the shim grows |
 | A-004 | `com.intellij.modules.jcef` exists from 2025.3.1 | the IntelliJ Platform JCEF page, November 2026 | since-build moves; AC-033 |
-| A-005 | GraalJS meets R-1–R-6 | same bundle, Java interop for sync ports; IntelliJ's HTTP Client embeds GraalJS | fallback to a hidden JCEF browser (§6.5), R-3/R-4 get harder |
+| A-005 | ~~GraalJS meets R-1–R-6~~ Disproven by S-1 (ADR-004, OP-025): it fails R-1 inside the plugin class loader and misses R-2 and R-5 | same bundle, Java interop for sync ports; IntelliJ's HTTP Client embeds GraalJS | it broke: the core runs in a hidden JCEF browser (§6.5), R-3 through host-pushed copies, R-4 without JCEF per AC-030 |
 | A-006 | No documented API opens a JetBrains assistant chat with a prefilled prompt | research for the analysis found none for Copilot, Claude Code or AI Assistant | §6.7 may offer Send sooner; AC-031 changes |
 | A-007 | Settings are application-level, like VS Code user settings | the three settings are personal preferences (0021, 0024); confirmed by Gregor (OP-009) | a project override is needed (OP-009) |
-| A-008 | 60 MB is an acceptable ZIP limit | the analysis' target, confirmed by Gregor (OP-002); GraalJS JARs are the main weight | AC-035 |
+| A-008 | 60 MB is an acceptable ZIP limit | the analysis' target, confirmed by Gregor (OP-002); the V2 runtime adds no JARs (ADR-004) | AC-035 |
 | A-009 | The 0.1.0 VS Code release stays the reference behaviour while this spec is built | released 2026-11-20 at `3bc615c` | parity rows shift; the matrix check catches it |
 
 ## 14. Open points
@@ -490,12 +499,18 @@ None open. Each decision below stands where its ID is cited.
   Marketplace release**; both are to be specified with `/sdd-specify`. S-3 is still measured here and recorded in ADR-004.
   The plan still has 37 small steps; a further split at gate G3 is offered to Gregor in the plan (confirmed by Gregor
   2026-11-20).
+- OP-025 G1 decision, Gregor 2026-11-21: ADR-004 accepted with all four recommendations — runtime V2 (hidden off-screen
+  JCEF browser per IDE project; GraalJS rejected); R-5 replaced by "core ready within 12 s of project open on the CI
+  runners, loading state until then, re-measured at AC-040/AC-041"; without JCEF (not supported, or suspended by the OS
+  sandbox) only the settings page works and the tool window shows a notice; Send stays Copy prompt only, the Claude Code
+  deep link `claude-cli://open?q=` is the candidate for 0035. Applied as ADR-004 proposes: H-11, R-4, R-5, R-6, §6.5's
+  closing paragraph, A-005 (and A-008's reason), §12, AC-007, AC-021, AC-030, §6.11, §9, §10; no AC ID changed.
 
 ## 15. Definition of Ready, Done and next steps
 
 Ready: clarified 2026-11-20 (OP-017–OP-023); no open point; OP-019–OP-024 confirmed by Gregor 2026-11-20. Done
 per the DoD of `AGENTS.md`: AC-001–AC-031, AC-033–AC-035, AC-037–AC-039 and AC-043 proven (AC-032 and AC-036 moved,
 OP-024), AC-040–AC-042 checked by Gregor, the parity matrix fully categorised, VS Code CI and `.vsix` unchanged. Next:
-Gregor reads the plan [0034-studio-for-jetbrains-ides.plan.md](0034-studio-for-jetbrains-ides.plan.md) (37 steps,
-spikes first, split per OP-024); then `/sdd-lifecycle` to `active/`. Follow-up specs: 0035 *Send to assistant in
+Gregor reads the plan [0034-studio-for-jetbrains-ides.plan.md](0034-studio-for-jetbrains-ides.plan.md) (41 steps
+after the G1 re-plan of 2026-11-21, spikes first, split per OP-024); then `/sdd-lifecycle` to `active/`. Follow-up specs: 0035 *Send to assistant in
 JetBrains IDEs*, 0036 *JetBrains Marketplace release*.

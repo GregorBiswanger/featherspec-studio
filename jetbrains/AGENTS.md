@@ -19,7 +19,7 @@ Read `AGENTS.md` first. This folder is the IntelliJ Platform plugin of FeatherSp
 - No comments in generated code. No new dependency without the owner's yes.
 
 ## Shared core
-- Never edit `src/core`. The core runs unchanged in GraalJS through the JSON bridge.
+- Never edit `src/core`. The core runs unchanged in a hidden JCEF browser per IDE project through the JSON bridge (ADR-004).
 - Bridge contract: `src/hosts/embedded/contract.ts` (from T-016). Its Kotlin mirror is `<pkg>/runtime/HostContract.kt` (T-021).
 - Host vocabulary: `src/shared/protocol/vocabulary.ts` (T-014); the webview reads it, the host does not invent UI strings.
 

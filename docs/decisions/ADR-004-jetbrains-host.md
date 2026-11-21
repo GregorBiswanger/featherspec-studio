@@ -1,15 +1,20 @@
 # ADR-004: JetBrains host — core runtime, webview, file watching, handovers (spikes S-1–S-4)
 
-- Status: Proposed (awaiting Gregor at gate G1); Date: 2026-11-21
+- Status: Accepted (Gregor, gate G1, 2026-11-21); Date: 2026-11-21
 - Scope: how the JetBrains plugin of spec 0034 runs the unchanged shared core and webview bundle (§6.5, §6.12, AC-009).
 - Related: spec 0034 (R-1–R-6, §6.7, AC-007, AC-021, AC-030), plan 0034 (T-003–T-007, T-038), ADR-001 (ports), ADR-002 (store shape)
 - Evidence: CI runs of `jetbrains-spikes.yml` on GitHub-hosted runners — `spike-s1` run 44835557884 at `5a92fba`; `spike-ide` runs 44844442596 at `c936947` and 44846550133 at `fae8eb2` (Linux, Windows, macOS).
 
 ## Decision
 
-**Proposed, awaiting Gregor.** Gregor fills in this field; no stage after the spikes starts before it is filled (AC-009):
+**Accepted by Gregor on 2026-11-21 at gate G1: runtime V2.** All four recommendations stand (AC-009):
 
-> Gregor: runtime `<V1 | V2>`; R-5 core-ready budget `<N s>`; no-JCEF fallback `<as proposed | other>`; handovers → spec 0035 · Date: `<YYYY-MM-DD>`
+1. **Runtime V2.** The shared core runs in a hidden off-screen JCEF browser, one per IDE project. V1 (GraalJS) is rejected.
+2. **R-5 replaced.** The core starts at project open, off the EDT, and is ready within **12 s** on the CI runners. Until then the panel shows its loading state. The budget is measured again on Gregor's machine at AC-040/AC-041. The plugin ZIP stays at most 60 MB.
+3. **Without JCEF** (not supported, or suspended by the OS sandbox, such as AppArmor on Ubuntu 24.04+): the Specs tool window shows a notice instead of the tree, and the status entry shows unavailable. Copy Next Step and Set up FeatherSpec show a notification. Only the settings page works, and there is no plugin error. R-4 and AC-030 change.
+4. **Send.** Spec 0034 offers Copy prompt only. The Claude Code deep link `claude-cli://open?q=` is the candidate for spec 0035.
+
+The spec amendments of *Consequences* were applied to spec 0034 on 2026-11-21 (OP-025).
 
 ## Recommendation
 
@@ -80,7 +85,7 @@ The IDE's file watcher alone does not meet AC-021's 2 s; an explicit refresh doe
 
 ## Consequences
 
-**Spec amendments needed** (via `/sdd-clarify`, after Gregor's yes; this ADR changes no spec text):
+**Spec amendments** (applied to spec 0034 on 2026-11-21 as OP-025, after Gregor's yes):
 
 1. §6.5 R-4: "The core runs while the Studio tab is closed, so tree and status entry stay live; without JCEF, AC-030 applies."
 2. §6.5 R-5: "The core is ready within **12 s** of the IDE project opening on the CI runners, started off the EDT. Until then tab, tree and status entry show their loading state. The plugin ZIP is at most 60 MB." The measured worst case is 9.6 s, so 10 s would leave no margin on CI. Re-measured on Gregor's machine at AC-040/AC-041.

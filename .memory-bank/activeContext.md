@@ -1,6 +1,6 @@
 # Active Context
 
-Last updated: 2026-11-20
+Last updated: 2026-11-21
 Current branch: jetbrains-host
 Current phase: act
 
@@ -11,7 +11,7 @@ Current phase: act
 - Waits for: CI on PR #3, Gregor's practice checks (17 §5 for 0033, 16 §4.1 for 0032) and AC-017 on `tip-splitter` for 0027 (C-2 not needed, PD-091), Gregor's checklist ([docs/release-checklist.md](../docs/release-checklist.md)), then a fresh `/sdd-compile` per spec.
 
 ## Active Spec
-- [0034](../.specs/active/0034-studio-for-jetbrains-ides.md) / [plan](../.specs/active/0034-studio-for-jetbrains-ides.plan.md): JetBrains IDEs, T-001 next.
+- [0034](../.specs/active/0034-studio-for-jetbrains-ides.md) / [plan](../.specs/active/0034-studio-for-jetbrains-ides.plan.md): JetBrains IDEs, G1 passed (ADR-004 V2), T-009 next.
 - [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec for Copilot and Claude Code in every version (PD-091), T-001…T-011 verified; AC-016, AC-017, AC-020 are Gregor's or the orchestrator's.
 - [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 are Gregor's; OP-004 closed by PD-078.
 - [0023](../.specs/active/0023-plan-map-stages-parallel-work.md) / [plan](../.specs/active/0023-plan-map-stages-parallel-work.plan.md): Plan map, T-001…T-017; AC-018 real window, AC-019, AC-020 are Gregor's.
@@ -34,9 +34,9 @@ Current phase: act
 - Completed 2026-11-20: [0029](../.specs/done/0029-onboarding-before-setup.md) ([plan](../.specs/plan-archive/0029-onboarding-before-setup.2026-11-20.plan.md)); AC-014 (Gregor) and CI on PR #2 are open.
 
 ## Changed Recently
+- 0034 G1 (2026-11-21): ADR-004 accepted by Gregor (V2, hidden JCEF); spec OP-025; plan re-planned, 41 steps.
 - 0034 start (2026-11-20): spec and plan in `active/`, both In Progress (staged `git mv`).
 - 0033 (PD-096, PD-097): Start step `/sdd-lifecycle <spec> In Progress` for a Ready spec in `backlog/`, spec and plan attached; Implement attaches the plan only; paths break after `/` only. Windows at 4304f86 green; preview clean.
-- 0032 (PD-093…PD-095): Tip `Use a new chat with a strong model, and allow web search.` where a step writes a plan, `Then:`/`Or:` on follow-up lines, `When T-004 is back: …` for a partial return, no attachment for Copilot's current chat (update sentence in the `(?)` below 1.11.0), Send on its own row.
 
 ## Decisions in Flight
 - `AGENTS.md` stays above its 200-line target: the template body alone is 200 lines; further eviction would edit template wiring, Gregor's call.
@@ -46,7 +46,7 @@ Current phase: act
 - Gregor's manual checks stay in the specs: 0025 AC-022 real window, AC-023, AC-024; 0026 AC-017, AC-019; 0028 AC-015; 0029 AC-014; 0030 AC-013; 0031 AC-009; 0032 practice check (16 §4.1); 0033 practice check (17 §5); 0027 AC-016, AC-017, AC-020.
 
 ## Next
-1. 0034: T-001; the push of `jetbrains-host` needs Gregor's yes.
+1. 0034: T-009 ‖ T-010 (stage 3).
 2. 0033: Gregor's practice check on `C:\projects\test` (Ready → Set active → T-001, new VSIX), then a fresh `/sdd-compile` and CI.
 3. 0032: compile READY at 3e09514; CI on PR #3, VSIX to Gregor for 16 §4.1, then the release checklist.
 4. Finish 0027 (spec and plan are in `.specs/active/`, the plan's handoff names the next step).

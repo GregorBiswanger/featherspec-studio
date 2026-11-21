@@ -1,12 +1,12 @@
 # Map: jetbrains (IntelliJ Platform host)
-# last reconciled: 2026-11-20 (0034)
+# last reconciled: 2026-11-21 (0034, ADR-004)
 
 ## Internal pattern
 - `jetbrains/src/main/kotlin/com/gregorbiswanger/featherspec/studio/` — root package; pure logic in plain classes, platform glue
-  (`com.intellij` imports) only in thin classes; `runtime/` holds the GraalJS bridge (`HostContract.kt`, T-021).
+  (`com.intellij` imports) only in thin classes; `runtime/` holds the bridge to the hidden JCEF core page (`HostContract.kt`, T-021).
 - `jetbrains/src/main/resources/META-INF/` — `plugin.xml` (id, `since-build`, `<depends>` lines), `pluginIcon.svg`.
 - `jetbrains/src/test/kotlin/…` — plain JUnit 5 on pure classes; `jetbrains/src/integrationTest/kotlin/…` — Starter smoke and conformance.
-- The core runs unchanged as `dist/embedded/core.js` in GraalJS; the webview bundle runs unchanged in JCEF. Neither is edited here.
+- The core runs unchanged as `dist/embedded/core.js` in a hidden JCEF browser per IDE project (ADR-004); the webview bundle runs unchanged in JCEF. Neither is edited here.
 
 ## Entry points
 - `jetbrains/src/main/resources/META-INF/plugin.xml` — the only manifest; extensions are added per step.
