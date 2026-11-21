@@ -64,7 +64,10 @@ export async function runConformance(input: ConformanceInput): Promise<string> {
     await studio.controller.whenIdle();
     await studio.repository.whenIdle();
     await studio.board.whenIdle();
+    const overviewListener = studio.overview.onDidChangeView(() => undefined);
+    await studio.overview.whenIdle();
     const board = studio.board.view();
+    const overview = studio.overview.view();
     const details: Record<string, unknown> = {};
     for (const entry of model.lifecycle.entries) {
         studio.service.select({ stem: entry.stem });
@@ -74,12 +77,13 @@ export async function runConformance(input: ConformanceInput): Promise<string> {
         read: readSnapshot(project),
         next: nextSnapshot(model),
         board,
-        overview: studio.overview.view(),
+        overview,
         planSpecs: board?.planSpecs ?? null,
         details,
         tree: studio.treeService.model(),
         status: studio.entry.situation(),
     });
+    overviewListener.dispose();
     studio.navigation.dispose();
     studio.feed.dispose();
     studio.board.dispose();

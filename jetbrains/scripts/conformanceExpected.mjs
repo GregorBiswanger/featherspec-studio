@@ -22,8 +22,7 @@ const GEN_COUNT = 200;
 const HELPERS = `
 export { generateProject } from ${JSON.stringify(path.join(repo, 'src', 'core', 'specs', 'testing', 'generateProject.ts'))};
 export { createTarGzArchive } from ${JSON.stringify(path.join(repo, 'src', 'adapters', 'node', 'tarGzArchive.ts'))};
-export { readVersionLine } from ${JSON.stringify(path.join(repo, 'src', 'core', 'discovery', 'versionLine.ts'))};
-export { VERSION } from ${JSON.stringify(path.join(repo, 'src', 'core', 'lifecycle', 'testing', 'projects.ts'))};
+export { conformanceInput } from ${JSON.stringify(path.join(repo, 'src', 'hosts', 'embedded', 'testing', 'conformanceInput.ts'))};
 `;
 
 async function loadHelpers(tmp) {
@@ -125,7 +124,7 @@ function openHost(bundle, archive) {
 async function main() {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'conformance-expected-'));
     try {
-        const { generateProject, createTarGzArchive, readVersionLine, VERSION } = await loadHelpers(tmp);
+        const { generateProject, createTarGzArchive, conformanceInput } = await loadHelpers(tmp);
         const generated = path.join(tmp, GEN_NAME);
         fs.mkdirSync(generated);
         await generateProject(generated, GEN_COUNT);
@@ -138,17 +137,14 @@ async function main() {
                 .map((name) => ({ name, root: path.join(fixturesRoot, name) })),
             { name: GEN_NAME, root: generated },
         ];
-        const versionOf = (root) => {
-            const agents = path.join(root, 'AGENTS.md');
-            return fs.existsSync(agents) ? readVersionLine(fs.readFileSync(agents, 'utf8')).version : VERSION;
-        };
+        const syntheticAgents = fs.readFileSync(path.join(fixturesRoot, 'fs-version-1110', 'AGENTS.md')).toString('base64');
         fs.rmSync(inputsDir, { recursive: true, force: true });
         fs.rmSync(expectedDir, { recursive: true, force: true });
         fs.mkdirSync(inputsDir, { recursive: true });
         fs.mkdirSync(expectedDir, { recursive: true });
         const { host, waitFor } = openHost(await embeddedBundle(), createTarGzArchive());
         for (const target of targets) {
-            const inputJson = JSON.stringify({ files: collect(target.root), version: versionOf(target.root) });
+            const inputJson = JSON.stringify(conformanceInput(target.name, collect(target.root), syntheticAgents));
             fs.writeFileSync(path.join(inputsDir, `${target.name}.json`), inputJson);
             const reply = waitFor(target.name);
             host.conformance(target.name, inputJson);

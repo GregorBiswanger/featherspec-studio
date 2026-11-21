@@ -1,4 +1,5 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import * as os from 'node:os';
 import { createRequire } from 'node:module';
 import * as path from 'node:path';
 import * as vm from 'node:vm';
@@ -6,11 +7,14 @@ import { build, type BuildOptions } from 'esbuild';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { snapshotOf } from '../../core/board/testing/nextStepSnapshot';
 import { deriveLifecycle } from '../../core/lifecycle/deriveLifecycle';
-import { fixtureVersion, readFixture } from '../../core/lifecycle/testing/projects';
+import { readProject } from '../../core/specs/readProject';
+import { createNodeSpecSource } from '../../adapters/node/nodeSpecSource';
+import { generateProject } from '../../core/specs/testing/generateProject';
+import { WEAK_INPUTS, conformanceInput } from './testing/conformanceInput';
 import { readSnapshot } from '../../core/specs/testing/readSnapshot';
 import { createTarGzArchive } from '../../adapters/node/tarGzArchive';
 import type { ArchiveReadResult } from '../../core/ports/releaseArchive';
-import { fromBase64, toBase64 } from './bridge';
+import { fromBase64, isRecord, toBase64 } from './bridge';
 import { runConformance, runSetupConformance } from './conformance';
 import { browserContext } from './testing/browserContext';
 
@@ -49,6 +53,19 @@ interface Loaded {
 interface Parts {
     read: unknown;
     next: unknown;
+    board: unknown;
+    overview: unknown;
+    planSpecs: unknown;
+    details: Record<string, unknown>;
+    tree: unknown;
+    status: unknown;
+}
+
+const SYNTHETIC_AGENTS = readFileSync(path.join(fixturesRoot, 'fs-version-1110', 'AGENTS.md')).toString('base64');
+const NOT_ACTIVE = ['incomplete-agents-only', 'incomplete-specs-only', 'nested-project', 'not-fs-agents-only', 'not-fs-claude-md-only', 'not-fs-memory-bank-only', 'not-fs-speckit'];
+
+function inputOf(name: string): ReturnType<typeof conformanceInput> {
+    return conformanceInput(name, collect(path.join(fixturesRoot, name)), SYNTHETIC_AGENTS);
 }
 
 interface SetupParts {
@@ -114,7 +131,7 @@ async function replyOf(frames: Frame[], id: string): Promise<unknown> {
     }
 }
 
-describe('embedded conformance oracle (0034 T-018, AC-004, AC-005, R-1)', () => {
+describe('embedded conformance oracle (0034 T-018, AC-004, AC-005)', () => {
     beforeAll(async () => {
         const built = await build({ ...embeddedOptions, write: false, logLevel: 'silent', plugins: embeddedOptions.plugins?.filter((plugin) => plugin.name === 'embedded-path-shim') ?? [] });
         bundleText = built.outputFiles?.[0]?.text ?? '';
@@ -123,20 +140,56 @@ describe('embedded conformance oracle (0034 T-018, AC-004, AC-005, R-1)', () => 
     it('AC-004: the bundle answers every fixture with the same string as the in-process run', async () => {
         const { host, frames } = load(bundleText);
         for (const name of fixtures) {
-            const input = { files: collect(path.join(fixturesRoot, name)), version: fixtureVersion(name) };
+            const input = inputOf(name);
             const id = `conformance-${name}`;
             host.conformance(id, JSON.stringify(input));
             expect(await replyOf(frames, id), name).toBe(await runConformance(input));
         }
     }, 600_000);
 
-    it('AC-005: the in-process conformance reports every fixture as readSnapshot and snapshotOf do', async () => {
+    it('AC-004: the in-process conformance reports every fixture as readSnapshot and snapshotOf do', async () => {
         for (const name of fixtures) {
-            const version = fixtureVersion(name);
-            const parts = JSON.parse(await runConformance({ files: collect(path.join(fixturesRoot, name)), version })) as Parts;
-            const project = await readFixture(name, version);
-            expect(parts.read, name).toEqual(readSnapshot(project));
-            expect(parts.next, name).toEqual(snapshotOf({ project, lifecycle: deriveLifecycle(project) }));
+            const input = inputOf(name);
+            const parts = JSON.parse(await runConformance(input)) as Parts;
+            const copy = mkdtempSync(path.join(os.tmpdir(), 'conformance-'));
+            try {
+                cpSync(path.join(fixturesRoot, name), copy, { recursive: true });
+                writeFileSync(path.join(copy, 'AGENTS.md'), fromBase64(input.files['AGENTS.md'] ?? ''));
+                const project = await readProject(createNodeSpecSource(), copy, input.version);
+                expect(parts.read, name).toEqual(readSnapshot(project));
+                expect(parts.next, name).toEqual(snapshotOf({ project, lifecycle: deriveLifecycle(project) }));
+            } finally {
+                rmSync(copy, { recursive: true, force: true });
+            }
+        }
+    }, 600_000);
+
+    it('AC-004: every FeatherSpec fixture output has board, overview, plan map, tree and status entry; the weak inputs have a board and details', async () => {
+        for (const name of fixtures) {
+            const parts = JSON.parse(await runConformance(inputOf(name))) as Parts;
+            expect(parts.tree, name).toBeDefined();
+            expect(parts.status, name).toBeDefined();
+            for (const key of ['board', 'overview', 'planSpecs'] as const) {
+                if (NOT_ACTIVE.includes(name)) {
+                    expect(parts[key] ?? null, `${name} ${key}`).toBeNull();
+                } else {
+                    expect(parts[key], `${name} ${key}`).toBeTruthy();
+                }
+            }
+        }
+        const generated = mkdtempSync(path.join(os.tmpdir(), 'conformance-gen-'));
+        try {
+            await generateProject(generated, 200);
+            for (const name of WEAK_INPUTS) {
+                const files = collect(name === 'gen-200' ? generated : path.join(fixturesRoot, name));
+                const parts = JSON.parse(await runConformance(conformanceInput(name, files, SYNTHETIC_AGENTS))) as Parts;
+                const details = Object.values(parts.details);
+                expect(parts.board, name).toBeTruthy();
+                expect(details.length, name).toBeGreaterThan(0);
+                expect(details.every((detail) => isRecord(detail) && detail.kind !== 'none'), name).toBe(true);
+            }
+        } finally {
+            rmSync(generated, { recursive: true, force: true });
         }
     }, 600_000);
 

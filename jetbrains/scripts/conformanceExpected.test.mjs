@@ -55,3 +55,16 @@ test('AC-005 the setup input is the JSON string of the base64 archive and the se
     const setupExpected = JSON.parse(fs.readFileSync(path.join(outDir, 'expected', 'setup-expected.json'), 'utf8'));
     assert.equal(setupExpected.mergePrompt, fs.readFileSync(golden, 'utf8'));
 });
+
+test('AC-004 the weak inputs carry the synthetic AGENTS.md and every FeatherSpec output has board and overview', () => {
+    const synthetic = fs.readFileSync(path.join(fixturesRoot, 'fs-version-1110', 'AGENTS.md')).toString('base64');
+    for (const name of ['gen-200', 'repo-8052f9a', 'repo-f9cadb4']) {
+        const input = JSON.parse(fs.readFileSync(path.join(outDir, 'inputs', `${name}.json`), 'utf8'));
+        assert.equal(input.files['AGENTS.md'], synthetic, name);
+        const expected = JSON.parse(fs.readFileSync(path.join(outDir, 'expected', `${name}.json`), 'utf8'));
+        assert.ok(expected.board && expected.overview && expected.planSpecs, name);
+        assert.ok(Object.keys(expected.details).length > 0, name);
+    }
+    const expected = JSON.parse(fs.readFileSync(path.join(outDir, 'expected', 'fs-version-1110.json'), 'utf8'));
+    assert.ok(expected.board && expected.overview, 'fs-version-1110');
+});

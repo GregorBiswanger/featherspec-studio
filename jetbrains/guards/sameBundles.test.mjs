@@ -17,6 +17,33 @@ test('AC-038 a path that only shares the prefix text is not JetBrains-only', () 
     assert.equal(isJetBrainsOnly(['jetbrains-notes/todo.md']), false);
 });
 
+test('AC-038 spec, memory-bank, architecture, docs and agent-file changes are neutral', () => {
+    assert.equal(
+        isJetBrainsOnly([
+            'jetbrains/build.gradle.kts',
+            '.specs/active/0034-x.plan.md',
+            '.memory-bank/progress.md',
+            '.architecture/hosts.md',
+            'docs/overview.md',
+            'AGENTS.md',
+            'CLAUDE.md',
+            '.github/workflows/jetbrains-extra.yml',
+            '.github/instructions/jetbrains.instructions.md',
+        ]),
+        true,
+    );
+});
+
+test('AC-038 a push of only neutral paths is JetBrains-only so the byte check runs', () => {
+    assert.equal(isJetBrainsOnly(['.specs/active/0034-x.plan.md']), true);
+});
+
+test('AC-038 negative control: a VS Code path beside neutral paths is not JetBrains-only', () => {
+    assert.equal(isJetBrainsOnly(['.specs/active/0034-x.plan.md', 'src/webview/App.tsx']), false);
+    assert.equal(isJetBrainsOnly(['.github/workflows/ci.yml', 'AGENTS.md']), false);
+    assert.equal(isJetBrainsOnly(['package.json', '.memory-bank/progress.md']), false);
+});
+
 test('AC-038 an empty change list is not JetBrains-only', () => {
     assert.equal(isJetBrainsOnly([]), false);
 });

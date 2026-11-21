@@ -5,10 +5,22 @@ import { pathToFileURL } from 'node:url';
 
 export const BUNDLE_PATHS = ['dist/extension.js', 'dist/webview/main.js', 'dist/webview/main.css'];
 
-const JETBRAINS_PREFIXES = ['jetbrains/', 'docs/jetbrains/', '.github/workflows/jetbrains'];
+const NEUTRAL_PREFIXES = [
+    'jetbrains/',
+    '.specs/',
+    '.memory-bank/',
+    '.architecture/',
+    'docs/',
+    '.github/workflows/jetbrains',
+    '.github/instructions/jetbrains.instructions.md',
+];
 
-export const isJetBrainsOnly = (paths) =>
-    paths.length > 0 && paths.every((path) => JETBRAINS_PREFIXES.some((prefix) => path.startsWith(prefix)));
+const NEUTRAL_FILES = ['AGENTS.md', 'CLAUDE.md'];
+
+const isNeutralOrJetBrains = (path) =>
+    NEUTRAL_FILES.includes(path) || NEUTRAL_PREFIXES.some((prefix) => path.startsWith(prefix));
+
+export const isJetBrainsOnly = (paths) => paths.length > 0 && paths.every(isNeutralOrJetBrains);
 
 export const compareDigests = (a, b) => {
     const names = [...new Set([...Object.keys(a), ...Object.keys(b)])].sort();
