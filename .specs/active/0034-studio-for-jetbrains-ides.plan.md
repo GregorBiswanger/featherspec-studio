@@ -1151,8 +1151,8 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
   HTTP against a local `com.sun.net.httpserver.HttpServer`: a 302 is returned, not followed; no `Cookie`/`Authorization` header sent.
 - **Tests first:** both tests red.
 - **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS.
-- [ ] **Verified (T-033):** —
-- **Notes:** —
+- [x] **Verified (T-033):** 2026-11-21 · CI at `87aada1` (run 44886640991): `ide-tests` green on 3 OS with the STRICT setup pair (`setup-actual.json` byte-equal to `setup-expected.json`; the "not yet" exemption is gone); `plugin` ubuntu/macos green, windows red on a real Windows difference (`CREATE_NEW` on an existing folder throws access denied) → fixed in `1fba001` (answers `exists`, never deletes what it did not create), green at `1fba001`. Local pre-check: kotlinc 2.0.21 (preinstalled) + stubs, 66/66; the Kotlin `archive.read` reply equals the Node reader's (84 entries). Deviation: tests written alongside the code.
+- **Notes:** (1) `setup/TarGzArchive.kt` line-for-line port of `tarGzArchive.ts` (cap, Node error texts, pax/ustar, base-256). (2) `setup/ReleaseHttp.kt`: `java.net.http.HttpClient`, IDE default `ProxySelector`, `Redirect.NEVER`, no authenticator/cookies, 200 body capped at 20 MiB + 1; the core's abort/idle timers are not forwarded — host timeouts 30 s (headers) and 120 s (body). (3) `setup/SetupCalls.kt` wire adapter; Group SETUP; `DEFERRED_PREFIXES` is now `actions.` only. (4) `archive-expected.json` in `build/conformance/`; the `plugin` job runs `conformanceExpected.mjs` before Gradle. (5) Target error texts normalised ("no such file or directory", "permission denied"); `..` and escaping paths refused.
 
 ### T-034 — Setup host part 2: the setup target with no-overwrite writes
 
@@ -1165,8 +1165,8 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
   the setup conformance runs in T-022's `CoreIdeTest` and the full setup run through the router is T-041.
 - **Tests first:** `SetupTargetTest` red.
 - **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS.
-- [ ] **Verified (T-034):** —
-- **Notes:** —
+- [x] **Verified (T-034):** 2026-11-21 · built inside T-033 (the router had to answer every `target.*` name): `SetupTargetTest` 16 tests on `@TempDir` (exists → `exists`, changed → `changed`, Windows-style rename retry via an injected mover) green in `plugin` on 3 OS at `1fba001` (run 44887620680, after the Windows `CREATE_NEW` fix). Deviation: tests written alongside the code.
+- **Notes:** `SetupTarget` (`kind`, `readBytes`, `listDirectory`, `createExclusive` with `CREATE_NEW`, `replaceIfUnchanged` via `toRealPath` + sibling temp + atomic move with 5 retries, `clearSetupFolder` limited to `.featherspec-setup`). AC-022: a path that already exists is never replaced or deleted.
 
 ### T-041 — Setup end to end in a Starter IDE (appended 2026-11-21; was T-034's JUnit run on GraalJS)
 
@@ -1186,8 +1186,8 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
   bytes as T-018 records them) and that no request left the IDE (the fake answered all three routes).
 - **Tests first:** `SetupIdeTest` red on CI run 1.
 - **Verify:** `CI: jetbrains.yml › ide-tests` green on ubuntu, windows, macos.
-- [ ] **Verified (T-041):** —
-- **Notes:** —
+- [x] **Verified (T-041):** 2026-11-21 · CI at `1fba001` (run 44887620680): `ide-tests` green on ubuntu, windows, macos incl. `SetupIdeTest` (`setup-files.json` equals the `writes.files` of `setup-expected.json` by path and bytes; the fake served LATEST, archive, CODELOAD, nothing refused); `plugin` 3 OS (SetupHooksTest, SetupFilesTest) green after the watcher fix at `d1168a1`. Deviation: tests written alongside the code.
+- **Notes:** (1) Hooks are inert unless `featherspec.probe=setup`: `ReleaseHttp(canned = ProbeHooks.routes)`, `HostUi(scripted = ProbeHooks.uiAnswers)`; `SetupHooksTest` proves the off state. (2) `FakeReleaseRoutes` refuses any other URL. (3) Output `build/probe-out-setup`. (4) `outcome` of `setup-expected.json` is not compared, only the writes. (5) `ide-tests` timeout 60 → 75 → 90 min (T-035).
 
 ### T-040 — No JCEF in a real IDE: unsupported and suspended (appended 2026-11-21, G1 decision 3)
 
