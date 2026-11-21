@@ -2,7 +2,7 @@ import type { HostPorts } from '../compose';
 import type { ArchiveEntryKind, ArchiveReadResult, ReleaseArchivePort } from '../../core/ports/releaseArchive';
 import type { Disposable, WorkspaceFolderInfo } from '../../core/ports/host';
 import type { EntryKind, ReadOnlyFileSystem } from '../../core/ports/readOnlyFileSystem';
-import type { SourceEntry, SourceStat, SpecSourcePort } from '../../core/ports/specSource';
+import type { SourceEntry, SourceEntryKind, SourceStat, SpecSourcePort } from '../../core/ports/specSource';
 import type { HttpResponse, ReleaseHttpPort } from '../../core/ports/releaseHttp';
 import type { CreateOutcome, ReplaceOutcome, SetupTargetPort, TargetEntryKind } from '../../core/ports/setupTarget';
 import type { NotificationAction, SelectItem, UiPort } from '../../core/ports/host';
@@ -29,6 +29,32 @@ export type EmbeddedPorts = Omit<HostPorts, 'openStore' | 'shellActions' | 'open
 };
 
 const ACTIVE_PROJECT_KEY = 'featherspec-studio.activeProject';
+const SCAN_DIRS: readonly string[] = ['.specs', '.memory-bank'];
+const SCAN_FRESH_MS = 100;
+
+interface ScanEntry {
+    kind: SourceEntryKind;
+    mtimeMs: number | undefined;
+    size: number | undefined;
+    children?: SourceEntry[];
+}
+
+type ScanEntries = Record<string, ScanEntry>;
+
+interface ScanState {
+    generation: number;
+    pending: Promise<ScanEntries | undefined> | undefined;
+    settled: { entries: ScanEntries | undefined; at: number } | undefined;
+}
+
+function scanKey(relativePath: string): string | undefined {
+    const parts = relativePath.split('/').filter((part) => part !== '' && part !== '.');
+    if (parts.includes('..')) {
+        return undefined;
+    }
+    const key = parts.join('/');
+    return SCAN_DIRS.some((dir) => key === dir || key.startsWith(`${dir}/`)) ? key : undefined;
+}
 
 interface WireArchiveEntry {
     path: string;
@@ -95,6 +121,7 @@ export function createEmbeddedPorts(bridge: Bridge, mirrors: Mirrors, config: Co
                 }
                 disposed = true;
                 listeners.delete(listener);
+                dropScan(root);
                 bridge.callAsync<void>('watch.remove', { root, kind }).catch(() => undefined);
             },
         };
@@ -115,9 +142,85 @@ export function createEmbeddedPorts(bridge: Bridge, mirrors: Mirrors, config: Co
         readDirectory: (root, relativePath) => nullToUndefined<string[]>(bridge.callAsync('fs.readDirectory', { root, relativePath })),
     };
 
+    const scanStates = new Map<string, ScanState>();
+
+    const dropScan = (root: string): void => {
+        const state = scanStates.get(root);
+        if (state !== undefined) {
+            state.generation += 1;
+            state.pending = undefined;
+            state.settled = undefined;
+        }
+    };
+
+    const scanOf = (root: string): Promise<ScanEntries | undefined> => {
+        const state = scanStates.get(root) ?? { generation: 0, pending: undefined, settled: undefined };
+        scanStates.set(root, state);
+        if (state.settled !== undefined && Date.now() - state.settled.at <= SCAN_FRESH_MS) {
+            return Promise.resolve(state.settled.entries);
+        }
+        if (state.pending !== undefined) {
+            return state.pending;
+        }
+        const generation = state.generation;
+        const pending = bridge
+            .callAsync<{ entries?: ScanEntries } | null>('source.scan', { root, dirs: [...SCAN_DIRS] })
+            .then((reply) => (typeof reply?.entries === 'object' && reply.entries !== null ? reply.entries : undefined))
+            .catch(() => undefined)
+            .then((entries) => {
+                if (state.generation === generation) {
+                    state.pending = undefined;
+                    state.settled = { entries, at: Date.now() };
+                }
+                return entries;
+            });
+        state.pending = pending;
+        return pending;
+    };
+
+    const scanned = async (root: string, relativePath: string): Promise<{ entry: ScanEntry | undefined } | undefined> => {
+        const key = scanKey(relativePath);
+        if (key === undefined) {
+            return undefined;
+        }
+        const entries = await scanOf(root);
+        if (entries === undefined) {
+            return undefined;
+        }
+        const parts = key.split('/');
+        for (let length = 1; length < parts.length; length += 1) {
+            if (entries[parts.slice(0, length).join('/')]?.kind === 'symlink') {
+                return undefined;
+            }
+        }
+        return { entry: entries[key] };
+    };
+
     const specSource: SpecSourcePort = {
-        list: (root, relativePath) => nullToUndefined<SourceEntry[]>(bridge.callAsync('source.list', { root, relativePath })),
-        stat: (root, relativePath) => nullToUndefined<SourceStat>(bridge.callAsync('source.stat', { root, relativePath })),
+        list: async (root, relativePath) => {
+            const answer = await scanned(root, relativePath);
+            if (answer !== undefined) {
+                const entry = answer.entry;
+                if (entry === undefined) {
+                    return undefined;
+                }
+                if (entry.kind === 'directory' && entry.children !== undefined) {
+                    return entry.children;
+                }
+                if (entry.kind !== 'directory' && entry.kind !== 'symlink') {
+                    return undefined;
+                }
+            }
+            return nullToUndefined<SourceEntry[]>(bridge.callAsync('source.list', { root, relativePath }));
+        },
+        stat: async (root, relativePath) => {
+            const answer = await scanned(root, relativePath);
+            if (answer !== undefined) {
+                const entry = answer.entry;
+                return entry === undefined ? undefined : { kind: entry.kind, mtimeMs: entry.mtimeMs, size: entry.size };
+            }
+            return nullToUndefined<SourceStat>(bridge.callAsync('source.stat', { root, relativePath }));
+        },
         readBytes: async (root, relativePath) => fromBase64(await bridge.callAsync<string>('source.readBytes', { root, relativePath })),
     };
 
@@ -136,18 +239,26 @@ export function createEmbeddedPorts(bridge: Bridge, mirrors: Mirrors, config: Co
 
     const archive = archivePortOf(bridge);
 
+    const settledThenDrop = async <T>(root: string, pending: Promise<T>): Promise<T> => {
+        try {
+            return await pending;
+        } finally {
+            dropScan(root);
+        }
+    };
+
     const setupTarget: SetupTargetPort = {
         kind: (root, relativePath) => nullToUndefined<TargetEntryKind>(bridge.callAsync('target.kind', { root, relativePath })),
         readBytes: async (root, relativePath) => fromBase64(await bridge.callAsync<string>('target.readBytes', { root, relativePath })),
         listDirectory: (root, relativePath) => nullToUndefined<string[]>(bridge.callAsync('target.listDirectory', { root, relativePath })),
-        createExclusive: (root, relativePath, bytes) => bridge.callAsync<CreateOutcome>('target.createExclusive', { root, relativePath, bytes: toBase64(bytes) }),
-        replaceIfUnchanged: (root, relativePath, expected, next) => bridge.callAsync<ReplaceOutcome>('target.replaceIfUnchanged', {
+        createExclusive: (root, relativePath, bytes) => settledThenDrop(root, bridge.callAsync<CreateOutcome>('target.createExclusive', { root, relativePath, bytes: toBase64(bytes) })),
+        replaceIfUnchanged: (root, relativePath, expected, next) => settledThenDrop(root, bridge.callAsync<ReplaceOutcome>('target.replaceIfUnchanged', {
             root,
             relativePath,
             expected: toBase64(expected),
             next: toBase64(next),
-        }),
-        clearSetupFolder: (root) => bridge.callAsync<void>('target.clearSetupFolder', { root }),
+        })),
+        clearSetupFolder: (root) => settledThenDrop(root, bridge.callAsync<void>('target.clearSetupFolder', { root })),
     };
 
     const setupUi: SetupUiPort = {
@@ -259,9 +370,11 @@ export function createEmbeddedPorts(bridge: Bridge, mirrors: Mirrors, config: Co
         },
         routes: {
             fileChanged: (root, relativePath) => {
+                dropScan(root);
                 fileListeners.get(root)?.forEach((listener) => listener(relativePath));
             },
             markerChanged: (root) => {
+                dropScan(root);
                 markerListeners.get(root)?.forEach((listener) => listener());
             },
             progressCancelled: (id) => {

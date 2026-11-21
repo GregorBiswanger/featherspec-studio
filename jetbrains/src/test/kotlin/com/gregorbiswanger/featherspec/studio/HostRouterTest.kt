@@ -119,6 +119,26 @@ class HostRouterTest {
     }
 
     @Test
+    fun `source scan is answered from the real file ports through the host router`(@TempDir temp: Path) {
+        Files.createDirectories(temp.resolve(".specs/backlog"))
+        Files.writeString(temp.resolve(".specs/backlog/a.md"), "# A\n")
+        val root = FileUris.toUri(temp, HostOs.windows)
+        val resolved = ArrayList<Pair<String, String>>()
+        val host = HostRouter(
+            router = CallRouter(FilePorts()::answer, fakePort("medium"), fakePort("memory"), fakePort("watch")),
+            resolve = { id, json -> resolved.add(id to json) },
+            execute = { it() },
+        )
+        val args = JsonParser.parseString("""{"root":"$root","dirs":[".specs",".memory-bank"]}""").toString()
+        host.call("c-2", "source.scan", args)
+        assertEquals(1, resolved.size)
+        assertEquals("c-2", resolved[0].first)
+        val entries = parsed(resolved[0].second).getAsJsonObject("ok").getAsJsonObject("entries")
+        assertEquals(setOf(".specs", ".specs/backlog", ".specs/backlog/a.md"), entries.keySet())
+        assertEquals(CallRouter.Group.FILES, CallRouter.ROUTED["source.scan"])
+    }
+
+    @Test
     fun `memory set writes the state and null removes it`() {
         val memory = UiMemory(HashMap())
         val router = CallRouter(

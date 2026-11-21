@@ -23,6 +23,8 @@ class FilePorts(private val rootOf: (String) -> Path = { FileUris.toPath(it) }) 
 
     data class Stat(val kind: String, val mtimeMs: Long, val size: Long)
 
+    data class ScanEntry(val stat: Stat, val children: List<Entry>?)
+
     fun list(root: String, relativePath: String): List<Entry>? {
         val directory = resolve(root, relativePath)
         return try {
@@ -41,6 +43,28 @@ class FilePorts(private val rootOf: (String) -> Path = { FileUris.toPath(it) }) 
             Stat(kindOf(attributes), attributes.lastModifiedTime().toMillis(), attributes.size())
         } catch (failure: IOException) {
             if (isAbsent(failure)) null else throw failure
+        }
+    }
+
+    fun scan(root: String, dirs: List<String>): Map<String, ScanEntry> {
+        val entries = LinkedHashMap<String, ScanEntry>()
+        dirs.forEach { scanInto(root, it, entries, 0) }
+        return entries
+    }
+
+    private fun scanInto(root: String, relativePath: String, entries: MutableMap<String, ScanEntry>, depth: Int) {
+        if (depth > MAX_SCAN_DEPTH) {
+            throw IOException("Scan is nested deeper than $MAX_SCAN_DEPTH levels: $relativePath")
+        }
+        val stat = stat(root, relativePath) ?: return
+        if (stat.kind != "directory") {
+            entries[relativePath] = ScanEntry(stat, null)
+            return
+        }
+        val children = list(root, relativePath) ?: return
+        entries[relativePath] = ScanEntry(stat, children)
+        for (child in children) {
+            scanInto(root, if (relativePath.isEmpty()) child.name else "$relativePath/${child.name}", entries, depth + 1)
         }
     }
 
@@ -79,6 +103,9 @@ class FilePorts(private val rootOf: (String) -> Path = { FileUris.toPath(it) }) 
         return try {
             val args = JsonParser.parseString(argsJson).asJsonObject
             val root = text(args, "root")
+            if (name == "source.scan") {
+                return ok(scanResult(root, texts(args, "dirs")))
+            }
             val relativePath = text(args, "relativePath")
             ok(result(name, root, relativePath))
         } catch (failure: IOException) {
@@ -89,29 +116,39 @@ class FilePorts(private val rootOf: (String) -> Path = { FileUris.toPath(it) }) 
     }
 
     private fun result(name: String, root: String, relativePath: String): JsonElement = when (name) {
-        "source.list" -> list(root, relativePath)?.let { entries ->
-            JsonArray().apply {
-                entries.forEach { entry ->
-                    add(JsonObject().apply {
-                        addProperty("name", entry.name)
-                        addProperty("kind", entry.kind)
-                    })
-                }
-            }
-        } ?: JsonNull.INSTANCE
-        "source.stat" -> stat(root, relativePath)?.let { stat ->
-            JsonObject().apply {
-                addProperty("kind", stat.kind)
-                addProperty("mtimeMs", stat.mtimeMs)
-                addProperty("size", stat.size)
-            }
-        } ?: JsonNull.INSTANCE
+        "source.list" -> list(root, relativePath)?.let { entries -> entriesJson(entries) } ?: JsonNull.INSTANCE
+        "source.stat" -> stat(root, relativePath)?.let { stat -> statJson(stat) } ?: JsonNull.INSTANCE
         "source.readBytes" -> JsonPrimitive(Base64.getEncoder().encodeToString(readBytes(root, relativePath)))
         "fs.stat" -> fsStat(root, relativePath)?.let { JsonPrimitive(it) } ?: JsonNull.INSTANCE
         "fs.readText" -> JsonPrimitive(readText(root, relativePath))
         else -> readDirectory(root, relativePath)?.let { names ->
             JsonArray().apply { names.forEach { add(it) } }
         } ?: JsonNull.INSTANCE
+    }
+
+    private fun entriesJson(entries: List<Entry>): JsonArray = JsonArray().apply {
+        entries.forEach { entry ->
+            add(JsonObject().apply {
+                addProperty("name", entry.name)
+                addProperty("kind", entry.kind)
+            })
+        }
+    }
+
+    private fun statJson(stat: Stat): JsonObject = JsonObject().apply {
+        addProperty("kind", stat.kind)
+        addProperty("mtimeMs", stat.mtimeMs)
+        addProperty("size", stat.size)
+    }
+
+    private fun scanResult(root: String, dirs: List<String>): JsonElement {
+        val entries = JsonObject()
+        scan(root, dirs).forEach { (path, entry) ->
+            entries.add(path, statJson(entry.stat).apply {
+                entry.children?.let { add("children", entriesJson(it)) }
+            })
+        }
+        return JsonObject().apply { add("entries", entries) }
     }
 
     private fun resolve(root: String, relativePath: String): Path {
@@ -153,6 +190,15 @@ class FilePorts(private val rootOf: (String) -> Path = { FileUris.toPath(it) }) 
         return member.asString
     }
 
+    private fun texts(args: JsonObject, key: String): List<String> {
+        val member = args.get(key)
+        require(member != null && member.isJsonArray) { "Missing argument: $key" }
+        return member.asJsonArray.map {
+            require(it.isJsonPrimitive) { "Invalid argument: $key" }
+            it.asString
+        }
+    }
+
     private fun ok(value: JsonElement): String = JsonObject().apply { add("ok", value) }.toString()
 
     private fun failed(failure: Exception): String = JsonObject().apply {
@@ -160,6 +206,8 @@ class FilePorts(private val rootOf: (String) -> Path = { FileUris.toPath(it) }) 
     }.toString()
 
     private companion object {
-        val NAMES = setOf("source.list", "source.stat", "source.readBytes", "fs.stat", "fs.readText", "fs.readDirectory")
+        const val MAX_SCAN_DEPTH = 32
+
+        val NAMES = setOf("source.list", "source.stat", "source.readBytes", "source.scan", "fs.stat", "fs.readText", "fs.readDirectory")
     }
 }

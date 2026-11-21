@@ -1,7 +1,7 @@
 import type { WorkspaceFolderInfo } from '../../core/ports/host';
 
 export const ASYNC_CALLS = [
-    'source.list', 'source.stat', 'source.readBytes',
+    'source.list', 'source.stat', 'source.readBytes', 'source.scan',
     'fs.stat', 'fs.readText', 'fs.readDirectory',
     'medium.open', 'medium.read', 'medium.lines', 'medium.append', 'medium.replace', 'medium.createExclusive', 'medium.remove', 'medium.list',
     'memory.set',

@@ -1,6 +1,7 @@
 package com.gregorbiswanger.featherspec.studio.ports
 
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -200,5 +201,106 @@ class FilePortsTest {
     fun answerIgnoresOtherNames() {
         assertNull(ports.answer("memory.set", "{}"))
         assertNull(ports.answer("watch.add", "{}"))
+    }
+
+    private fun scanCall(root: String, vararg dirs: String): JsonObject {
+        val list = dirs.joinToString(",") { quote(it) }
+        val reply = JsonParser.parseString(ports.answer("source.scan", """{"root":${quote(root)},"dirs":[$list]}""")!!).asJsonObject
+        if (reply.has("error")) {
+            throw AssertionError(reply.get("error").asString)
+        }
+        return reply.getAsJsonObject("ok").getAsJsonObject("entries")
+    }
+
+    private fun nested(directory: Path): String {
+        val root = project(directory)
+        Files.createDirectories(directory.resolve(".specs/active/deep/er"))
+        Files.writeString(directory.resolve(".specs/active/0001-a.md"), "# A\n")
+        Files.writeString(directory.resolve(".specs/active/deep/er/x.md"), "x")
+        Files.createDirectories(directory.resolve(".memory-bank"))
+        Files.writeString(directory.resolve(".memory-bank/activeContext.0001-T-001.md"), "n")
+        return root
+    }
+
+    @Test
+    fun scanCoversEveryListedDirectoryAndEverythingBelowIt(@TempDir directory: Path) {
+        val root = nested(directory)
+        val entries = scanCall(root, ".specs", ".memory-bank")
+        assertEquals(
+            setOf(
+                ".specs", ".specs/backlog", ".specs/backlog/a.md", ".specs/active", ".specs/active/0001-a.md",
+                ".specs/active/deep", ".specs/active/deep/er", ".specs/active/deep/er/x.md",
+                ".memory-bank", ".memory-bank/activeContext.0001-T-001.md",
+            ),
+            entries.keySet(),
+        )
+    }
+
+    @Test
+    fun scanOfMissingDirectoryIsAbsentFromEntries(@TempDir directory: Path) {
+        val root = nested(directory)
+        val entries = scanCall(root, ".specs", ".nothing")
+        assertTrue(entries.has(".specs"))
+        assertTrue(!entries.has(".nothing"))
+        assertEquals(emptySet<String>(), scanCall(root, ".nothing").keySet())
+    }
+
+    @Test
+    fun scanOfAFileCarriesItsStatAndNoChildren(@TempDir directory: Path) {
+        val root = nested(directory)
+        val file = scanCall(root, "AGENTS.md").getAsJsonObject("AGENTS.md")
+        assertEquals("file", file.get("kind").asString)
+        assertEquals(6, file.get("size").asLong)
+        assertTrue(!file.has("children"))
+        val folder = scanCall(root, ".specs/backlog").getAsJsonObject(".specs/backlog")
+        assertEquals("directory", folder.get("kind").asString)
+        assertEquals(1, folder.getAsJsonArray("children").size())
+    }
+
+    @Test
+    fun scanAnswersMatchStatAndListForEveryPath(@TempDir directory: Path) {
+        val root = nested(directory)
+        Files.setLastModifiedTime(directory.resolve(".specs/active/0001-a.md"), FileTime.fromMillis(1_700_000_000_000L))
+        val entries = scanCall(root, ".specs", ".memory-bank")
+        for ((path, element) in entries.entrySet()) {
+            val entry = element.asJsonObject
+            val stat = call(root, "source.stat", path).asJsonObject
+            assertEquals(stat.get("kind"), entry.get("kind"), path)
+            assertEquals(stat.get("mtimeMs"), entry.get("mtimeMs"), path)
+            assertEquals(stat.get("size"), entry.get("size"), path)
+            val listed = call(root, "source.list", path)
+            if (listed.isJsonNull) {
+                assertTrue(!entry.has("children"), path)
+            } else {
+                assertEquals(listed, entry.get("children"), path)
+            }
+        }
+        assertEquals(1_700_000_000_000L, entries.getAsJsonObject(".specs/active/0001-a.md").get("mtimeMs").asLong)
+    }
+
+    @Test
+    fun scanReportsASymlinkAsOneEntryWithoutDescendingInto(@TempDir directory: Path) {
+        val root = nested(directory)
+        val created = try {
+            Files.createSymbolicLink(directory.resolve(".specs/linked"), directory.resolve(".specs/active"))
+            true
+        } catch (failure: IOException) {
+            false
+        } catch (failure: UnsupportedOperationException) {
+            false
+        }
+        assumeTrue(created)
+        val entries = scanCall(root, ".specs")
+        assertEquals("symlink", entries.getAsJsonObject(".specs/linked").get("kind").asString)
+        assertTrue(!entries.getAsJsonObject(".specs/linked").has("children"))
+        assertTrue(!entries.has(".specs/linked/0001-a.md"))
+        assertEquals(call(root, "source.stat", ".specs/linked").asJsonObject.get("kind"), entries.getAsJsonObject(".specs/linked").get("kind"))
+    }
+
+    @Test
+    fun scanRejectsMissingDirsAndEscapingPaths(@TempDir directory: Path) {
+        val root = project(directory)
+        assertTrue(JsonParser.parseString(ports.answer("source.scan", """{"root":${quote(root)}}""")!!).asJsonObject.has("error"))
+        assertTrue(JsonParser.parseString(ports.answer("source.scan", """{"root":${quote(root)},"dirs":["../x"]}""")!!).asJsonObject.has("error"))
     }
 }

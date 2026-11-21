@@ -1,7 +1,7 @@
 package com.gregorbiswanger.featherspec.studio.runtime
 
 val ASYNC_CALLS: List<String> = listOf(
-    "source.list", "source.stat", "source.readBytes",
+    "source.list", "source.stat", "source.readBytes", "source.scan",
     "fs.stat", "fs.readText", "fs.readDirectory",
     "medium.open", "medium.read", "medium.lines", "medium.append", "medium.replace", "medium.createExclusive", "medium.remove", "medium.list",
     "memory.set",

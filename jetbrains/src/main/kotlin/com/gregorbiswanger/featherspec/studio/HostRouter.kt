@@ -82,7 +82,7 @@ class CallRouter(
         val DEFERRED_PREFIXES: List<String> = listOf("ui.", "clipboard.", "editor.", "actions.", "target.", "http.", "archive.")
 
         val ROUTED: Map<String, Group> = buildMap {
-            listOf("source.list", "source.stat", "source.readBytes", "fs.stat", "fs.readText", "fs.readDirectory")
+            listOf("source.list", "source.stat", "source.readBytes", "source.scan", "fs.stat", "fs.readText", "fs.readDirectory")
                 .forEach { put(it, Group.FILES) }
             listOf(
                 "medium.open", "medium.read", "medium.lines", "medium.append",
