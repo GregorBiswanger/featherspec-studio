@@ -143,7 +143,7 @@ describe('0015 AC-023, AC-024: the earlier-data removal, then the narrowed store
     });
 
     it('the composition root removes the earlier data before the runtime session starts, in every window', async () => {
-        const source = await fs.readFile(path.resolve(process.cwd(), 'src', 'extension.ts'), 'utf8');
+        const source = await fs.readFile(path.resolve(process.cwd(), 'src', 'hosts', 'compose.ts'), 'utf8');
         const removal = source.indexOf('await removeEarlierRunData(');
         const start = source.indexOf('await session.start()');
         expect(removal).toBeGreaterThan(-1);
