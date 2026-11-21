@@ -150,7 +150,11 @@ object IdeaLogScan {
     }
 
     private fun names(entry: List<String>): Boolean =
-        entry.any { it.contains("featherspec", ignoreCase = true) || it.contains(SHORT_CATEGORY) }
+        entry.filterNot { it.contains("Last Action:") }.any {
+            it.contains("com.gregorbiswanger", ignoreCase = true) ||
+                it.contains(SHORT_CATEGORY) ||
+                it.contains("Plugin to blame: FeatherSpec", ignoreCase = true)
+        }
 
     private fun entries(log: String): List<List<String>> {
         val result = ArrayList<MutableList<String>>()

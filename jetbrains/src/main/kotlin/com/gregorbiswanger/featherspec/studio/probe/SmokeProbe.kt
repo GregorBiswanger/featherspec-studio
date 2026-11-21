@@ -194,9 +194,12 @@ class SmokeProbe(private val project: Project, private val out: Path) {
         )
 
     private fun specNode(): SpecNode {
-        val view = checkNotNull(SpecTreeMapping.parse(service.host.tree.value.orEmpty())) { "the tree payload is not readable" }
-        val specs = view.groups.flatMap { it.children }.filter { !it.step && !it.plan && !it.map }
-        return specs.firstOrNull { it.stem.startsWith("0015-") } ?: checkNotNull(specs.firstOrNull()) { "the tree has no spec row" }
+        val payload = service.host.tree.value.orEmpty()
+        val view = checkNotNull(SpecTreeMapping.parse(payload)) { "the tree payload is not readable: ${payload.take(300)}" }
+        val specs = view.groups.flatMap { it.children }
+        return specs.firstOrNull { it.stem.startsWith("0015-") } ?: checkNotNull(specs.firstOrNull()) {
+            "the tree has no spec row: groups=${view.groups.map { it.label + "/" + it.children.size }} payload=${payload.take(300)}"
+        }
     }
 
     private fun invoke(command: String, args: String) {

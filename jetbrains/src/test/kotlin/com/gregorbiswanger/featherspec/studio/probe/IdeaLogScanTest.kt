@@ -15,8 +15,17 @@ class IdeaLogScanTest {
 
     @Test
     fun `a severe entry is a problem`() {
-        val log = line("SEVERE", "c.i.o.a.i.ApplicationImpl", "The featherspec plugin broke")
+        val log = line("SEVERE", "c.i.o.a.i.ApplicationImpl", "Plugin to blame: FeatherSpec Studio version: 0.1.0")
         assertEquals(1, IdeaLogScan.problems(log).size)
+    }
+
+    @Test
+    fun `another component's error that only names our last action is not a problem`() {
+        val log = listOf(
+            line("SEVERE", "c.i.p.a.c.ProfilerRunConfigurationsManager", "Last Action: featherspec.studio.setup"),
+            line("SEVERE", "c.i.o.a.i.ApplicationImpl", "The featherspec word in another plugin's text"),
+        ).joinToString("\n")
+        assertEquals(emptyList<String>(), IdeaLogScan.problems(log))
     }
 
     @Test
