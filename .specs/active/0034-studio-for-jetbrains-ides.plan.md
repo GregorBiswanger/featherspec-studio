@@ -926,8 +926,8 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
   not; `close()` ends the thread.
 - **Tests first:** four test files red against `TODO()`.
 - **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS; the `ROOTWATCHER-MS` lines of all three logs copied into Notes.
-- [ ] **Verified (T-023):** —
-- **Notes:** Re-planned 2026-11-21 (ADR-004 recommendation 4, S-4: the IDE watcher alone missed 2 s on every runner).
+- [x] **Verified (T-023):** 2026-11-21 · CI `jetbrains.yml › plugin` green on 3 OS at `a41ef3a` (run 44872155050): FileUrisTest 20, FilePortsTest 22, ProjectFoldersTest 11, RootWatcherTest 21 · own watcher, write to report: `ROOTWATCHER-MS linux 0`, `windows 0`, `macos 105` (AC-021: 2 s) · first CI run at `c87becc` red on 3 OS (9 real-watcher tests saw no report) → root cause found with a probe: the default file system in tests and in the IDE is `MultiRoutingFileSystemProvider`; `take()` returns a `MultiRoutingWatchKeyDelegate`, not the registered key, and event names are `MultiRoutingFsPath` → fix: look the registration up by `key.watchable().toString()` too, resolve names as text, a failing event batch reports `""` instead of ending the thread. Deviation: tests written alongside the code.
+- **Notes:** Re-planned 2026-11-21 (ADR-004 recommendation 4, S-4: the IDE watcher alone missed 2 s on every runner). (1) Pure: `FileUris` (VS Code-compatible encoding; string cores `fromText`/`toPathText` test Windows vectors on Linux), `HostOs`, `FilePorts` (`answer(name, args)` → `{"ok":…}`/`{"error":…}`/null; `..` rejected), `ProjectFolders` (base first, content roots outside it, dedup; Windows `displayPath` keeps the drive case — Gregor may prefer VS Code's lowercase), `RootWatcher`, `WatchedPaths`, `WatchRegistry`, `ChangeEvents`; glue `SpecWatch` (`watch.add/remove`, VFS_CHANGES, frame activation `markDirtyAndRefresh`). (2) Return notes `.memory-bank/activeContext.<…>.md` are reported (VS Code watches them). (3) `.featherspec-setup` is not watched — T-032/T-034 check whether setup needs it. (4) macOS registers with `SensitivityWatchEventModifier.HIGH`. (5) Rule for later steps: never rely on `WatchKey` identity or `Path.resolve(foreignPath)` under IntelliJ's routing file system.
 
 ### T-024 — Store and memory ports outside the project folders
 
@@ -946,8 +946,8 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
   `src/core/runtime/testing/contract*.ts`, picked one per method); `StoreLocation` vectors (Windows lowercasing).
 - **Tests first:** both test files red.
 - **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS.
-- [ ] **Verified (T-024):** —
-- **Notes:** —
+- [x] **Verified (T-024):** 2026-11-21 · CI `jetbrains.yml › plugin` green on 3 OS at `a41ef3a` (run 44872155050; T-024's tests were already green at `a572d41` where only the T-023 watcher failed): FileRuntimeMediumTest, StoreLocationTest (vectors = node sha256), UiMemoryTest. Deviation: tests written alongside the code.
+- **Notes:** (1) `FileRuntimeMedium` (per-name locks, replace via temp + ATOMIC_MOVE, createExclusive via CREATE_NEW, busy retry on AccessDenied/plain FileSystemException) with `MediumPorts.under(systemPath, windows).answer` for the eight `medium.*` calls (T-016 shapes). (2) `StoreLocation.storeDir` → `<system>/featherspec-studio/projects/<sha256[0:16]>`, root lowercased on Windows. (3) `UiMemory` (pure, keys `<projectBase>|<key>`) + `UiMemoryState` (APP `PersistentStateComponent`, `featherspec-studio-memory.xml`). `memory.set` carries no root: the router passes `project.basePath`. Extra file `UiMemoryTest.kt`.
 
 ### T-025 — Project service: start the core at project open and route the bridge
 
@@ -974,8 +974,8 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
   asserts each constant equals its source string.
 - **Tests first:** the three test files red.
 - **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS.
-- [ ] **Verified (T-025):** —
-- **Notes:** Re-planned 2026-11-21 for V2: no sync calls in the router (copies in `start`).
+- [x] **Verified (T-025):** 2026-11-21 · CI `jetbrains.yml › plugin` green on 3 OS at `ba920e1` (run 44872683068): compile of the service glue (`TrustedProjects.isProjectTrusted`, `JBCefApp.createClient`, `ModuleRootListener`), HostRouterTest (routed + deferred = `ASYNC_CALLS` exactly), CoreConfigTest, HostTextsTest (constants = TS literals). In-IDE start is proven by T-022. Deviation: tests written alongside the code.
+- **Notes:** Re-planned 2026-11-21 for V2: no sync calls in the router (copies in `start`). (1) `CallRouter.ROUTED`: `source.*`, `fs.*`, `medium.*`, `memory.set`, `watch.add|remove`; prefixes `ui.`, `clipboard.`, `editor.`, `actions.`, `target.`, `http.`, `archive.` answer `{"error":"not yet"}` until T-026…T-034 (deviation: `target.`/`http.`/`archive.` added, they are in `ASYNC_CALLS`). (2) `StudioProjectService.host` offers `tree`, `status`, `log` observables (log capped at 5000 lines) and `subscribe(channel, listener)`. (3) Each core has its own `JBCefClient`, registered on the service before the runtime, so the runtime is disposed first. (4) T-029 sets `SUSPENDED` and disposes the runtime; T-032 fills `settings` and dispatches `trustGranted`; T-022 reads `state`, `runtime`, `startedAtNanos`. (5) `postStartupActivity` `StudioStartup` registered in `plugin.xml`; services are light `@Service`.
 
 ### T-026 — Studio editor tab in JCEF, sharing the project's JCEF client
 
