@@ -30,6 +30,7 @@ class HostRouterTest {
         memory = fakePort("memory"),
         watch = fakePort("watch"),
         panel = fakePort("panel"),
+        system = fakePort("system"),
     )
 
     private fun parsed(reply: String) = JsonParser.parseString(reply).asJsonObject
@@ -71,6 +72,22 @@ class HostRouterTest {
         assertEquals("panel", parsed(router.answer("actions.reloadPanel", "{}")).get("ok").asString)
         assertEquals("""{"error":"not yet"}""", router.answer("actions.manageTrust", "{}"))
         assertEquals("""{"error":"not yet"}""", router.answer("actions.openSetupGuide", "{}"))
+    }
+
+    @Test
+    fun `clipboard write and editor open reach the system port and nothing else does`() {
+        val router = fakeRouter()
+        assertEquals(setOf("clipboard.write", "editor.open"), CallRouter.ROUTED.filterValues { it == CallRouter.Group.SYSTEM }.keys)
+        assertEquals("system", parsed(router.answer("clipboard.write", """{"text":"x"}""")).get("ok").asString)
+        assertEquals("system", parsed(router.answer("editor.open", """{"root":"r","key":"k"}""")).get("ok").asString)
+        assertEquals("unknown editor.other", parsed(router.answer("editor.other", "{}")).get("error").asString)
+    }
+
+    @Test
+    fun `a router without a system port answers an error for the system calls`() {
+        val router = CallRouter(fakePort("files"), fakePort("medium"), fakePort("memory"), fakePort("watch"))
+        assertEquals("no answer for editor.open", parsed(router.answer("editor.open", "{}")).get("error").asString)
+        assertEquals("no answer for clipboard.write", parsed(router.answer("clipboard.write", "{}")).get("error").asString)
     }
 
     @Test

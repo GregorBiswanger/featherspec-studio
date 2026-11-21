@@ -60,6 +60,8 @@ class CoreRuntime(
     private var browser: JBCefBrowser? = null
     private var query: JBCefJSQuery? = null
     private var loaded = false
+    private var coreStarted = false
+    private var config: String? = null
     @Volatile
     private var timeout: ScheduledFuture<*>? = null
 
@@ -68,6 +70,23 @@ class CoreRuntime(
     }
 
     fun start(configJson: String) {
+        open()
+        provideConfig(configJson)
+    }
+
+    fun provideConfig(configJson: String) {
+        synchronized(lock) {
+            if (config != null || disposed.get()) {
+                return
+            }
+            config = configJson
+            if (loaded) {
+                launchCore(configJson)
+            }
+        }
+    }
+
+    fun open() {
         if (!startRequested.compareAndSet(false, true)) {
             return
         }
@@ -78,7 +97,7 @@ class CoreRuntime(
         )
         ApplicationManager.getApplication().invokeLater {
             try {
-                create(configJson)
+                create()
             } catch (failure: Throwable) {
                 thisLogger().warn("The FeatherSpec core browser could not be created", failure)
                 state.set(CoreState.Failed(failure.message ?: failure.javaClass.simpleName))
@@ -144,7 +163,7 @@ class CoreRuntime(
         return future
     }
 
-    private fun create(configJson: String) {
+    private fun create() {
         if (disposed.get()) {
             return
         }
@@ -167,24 +186,32 @@ class CoreRuntime(
         client.addLoadHandler(object : CefLoadHandlerAdapter() {
             override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
                 if (frame?.url == CORE_URL) {
-                    onCoreLoaded(configJson)
+                    onCoreLoaded()
                 }
             }
         }, created.cefBrowser)
         created.loadURL(CORE_URL)
     }
 
-    private fun onCoreLoaded(configJson: String) {
+    private fun onCoreLoaded() {
         synchronized(lock) {
             if (loaded) {
                 return
             }
             loadedAtNanos = System.nanoTime()
             loaded = true
-            execute(BridgeFrames.script("start", configJson))
-            pendingScripts.forEach { execute(it) }
-            pendingScripts.clear()
+            config?.let { launchCore(it) }
         }
+    }
+
+    private fun launchCore(configJson: String) {
+        if (coreStarted) {
+            return
+        }
+        coreStarted = true
+        execute(BridgeFrames.script("start", configJson))
+        pendingScripts.forEach { execute(it) }
+        pendingScripts.clear()
     }
 
     private fun flushReplies() {
@@ -209,7 +236,7 @@ class CoreRuntime(
             if (disposed.get()) {
                 return
             }
-            if (loaded) {
+            if (coreStarted) {
                 execute(script)
             } else {
                 pendingScripts.add(script)

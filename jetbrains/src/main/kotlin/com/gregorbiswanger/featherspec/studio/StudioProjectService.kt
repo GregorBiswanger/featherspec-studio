@@ -9,6 +9,7 @@ import com.gregorbiswanger.featherspec.studio.ports.HostOs
 import com.gregorbiswanger.featherspec.studio.ports.MediumPorts
 import com.gregorbiswanger.featherspec.studio.ports.ProjectFolders
 import com.gregorbiswanger.featherspec.studio.ports.SpecWatch
+import com.gregorbiswanger.featherspec.studio.ports.SystemCalls
 import com.gregorbiswanger.featherspec.studio.panel.StudioFile
 import com.gregorbiswanger.featherspec.studio.ports.UiMemoryState
 import com.gregorbiswanger.featherspec.studio.runtime.CoreRuntime
@@ -35,6 +36,7 @@ import com.intellij.ui.jcef.JBCefApp
 import com.intellij.ui.jcef.JBCefClient
 import com.intellij.util.concurrency.AppExecutorUtil
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicBoolean
 
 private const val PLUGIN_ID = "com.gregorbiswanger.featherspec.studio"
@@ -64,6 +66,8 @@ class StudioProjectService(private val project: Project) : Disposable {
 
     private val started = AtomicBoolean(false)
 
+    private val config = CompletableFuture<String>()
+
     @Volatile
     private var lastFolders: List<Folder> = emptyList()
 
@@ -73,6 +77,8 @@ class StudioProjectService(private val project: Project) : Disposable {
         SpecWatch({ event, payload -> runtime?.dispatch(event, payload) }, this@StudioProjectService)
     }
 
+    private val systemCalls = SystemCalls(project)
+
     val host: HostRouter = HostRouter(
         router = CallRouter(
             files = FilePorts()::answer,
@@ -80,6 +86,7 @@ class StudioProjectService(private val project: Project) : Disposable {
             memory = { name, args -> UiMemoryState.getInstance().memory.answer(name, args, projectBase) },
             watch = { name, args -> specWatch.answer(name, args) },
             panel = { name, _ -> panelCall(name) },
+            system = { name, args -> systemCalls.answer(name, args) },
         ),
         resolve = { id, json -> runtime?.resolve(id, json) },
         execute = { block -> ApplicationManager.getApplication().executeOnPooledThread(Runnable { block() }) },
@@ -94,6 +101,7 @@ class StudioProjectService(private val project: Project) : Disposable {
             return
         }
         ApplicationManager.getApplication().executeOnPooledThread(Runnable { prepare() })
+        ApplicationManager.getApplication().invokeLater { launch() }
     }
 
     fun openStudio() {
@@ -135,14 +143,13 @@ class StudioProjectService(private val project: Project) : Disposable {
 
     private fun prepare() {
         try {
-            val config = configJson()
-            ApplicationManager.getApplication().invokeLater { launch(config) }
+            config.complete(configJson())
         } catch (failure: Exception) {
-            fail(failure)
+            config.completeExceptionally(failure)
         }
     }
 
-    private fun launch(config: String) {
+    private fun launch() {
         try {
             if (Disposer.isDisposed(this)) {
                 return
@@ -161,7 +168,14 @@ class StudioProjectService(private val project: Project) : Disposable {
                     }
                 },
             )
-            core.start(config)
+            core.open()
+            config.whenComplete { json, failure ->
+                if (failure != null) {
+                    fail(failure as? Exception ?: RuntimeException(failure))
+                } else {
+                    core.provideConfig(json)
+                }
+            }
             watchForSuspension(core)
         } catch (failure: Exception) {
             fail(failure)

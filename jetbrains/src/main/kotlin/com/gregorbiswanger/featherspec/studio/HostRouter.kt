@@ -53,8 +53,9 @@ class CallRouter(
     private val memory: CallPort,
     private val watch: CallPort,
     private val panel: CallPort = { _, _ -> null },
+    private val system: CallPort = { _, _ -> null },
 ) {
-    enum class Group { FILES, MEDIUM, MEMORY, WATCH, PANEL }
+    enum class Group { FILES, MEDIUM, MEMORY, WATCH, PANEL, SYSTEM }
 
     fun answer(name: String, argsJson: String): String {
         val group = ROUTED[name]
@@ -74,12 +75,13 @@ class CallRouter(
         Group.MEMORY -> memory
         Group.WATCH -> watch
         Group.PANEL -> panel
+        Group.SYSTEM -> system
     }
 
     companion object {
         const val NOT_YET = "{\"error\":\"not yet\"}"
 
-        val DEFERRED_PREFIXES: List<String> = listOf("ui.", "clipboard.", "editor.", "actions.", "target.", "http.", "archive.")
+        val DEFERRED_PREFIXES: List<String> = listOf("ui.", "actions.", "target.", "http.", "archive.")
 
         val ROUTED: Map<String, Group> = buildMap {
             listOf("source.list", "source.stat", "source.readBytes", "source.scan", "fs.stat", "fs.readText", "fs.readDirectory")
@@ -93,6 +95,8 @@ class CallRouter(
             put("watch.remove", Group.WATCH)
             put("actions.openStudio", Group.PANEL)
             put("actions.reloadPanel", Group.PANEL)
+            put("clipboard.write", Group.SYSTEM)
+            put("editor.open", Group.SYSTEM)
         }
 
         fun failed(message: String): String = JsonObject().apply { addProperty("error", message) }.toString()
