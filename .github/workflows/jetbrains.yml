@@ -163,10 +163,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ env.START_COMMIT }}
-          path: ${{ runner.temp }}/start
+      - name: Check out the start commit outside the workspace
+        shell: bash
+        run: git worktree add --detach "${{ runner.temp }}/start" "${{ env.START_COMMIT }}"
       - uses: actions/setup-node@v4
         with:
           node-version: 22
