@@ -167,7 +167,7 @@ the result JSON and `idea.log` excerpts and upload `jetbrains/build/probe-out/**
 
 **Quality gates:** local — `npx eslint src --max-warnings 0` · `npx tsc --noEmit` · `npx tsc --noEmit -p src/webview` ·
 `npm run test:unit` · `npm run compile` (steps touching wiring, adapters, `src/extension.ts`, `esbuild.js`,
-`package.json` or a bundle) · `node --test jetbrains/guards/` (from T-009) ; CI (`.github/workflows/jetbrains.yml`) —
+`package.json` or a bundle) · `node --test 'jetbrains/guards/*.test.mjs'` (from T-009) ; CI (`.github/workflows/jetbrains.yml`) —
 `plugin` (Ubuntu, Windows, macOS: Gradle `build buildPlugin verifyPluginStructure`, plain JUnit), `vscode-mirror`
 (Ubuntu, Windows: exactly `ci.yml`'s steps incl. `npm test`; `ci.yml` itself only runs on `main` and on PRs),
 `vscode-guards` (AC-037, AC-038, workflows unchanged), `shared-guard` (AC-039, AC-006, from T-020), `ide-tests`
@@ -230,7 +230,7 @@ Verifier, from T-036); `jetbrains-spikes.yml` — `spike-s1`,
    (AC-009) — no later stage starts before it.** If S-1 V1 misses R-1…R-6, the orchestrator appends T-038 (V2 hidden
    JCEF spike, same shape as T-004) before T-008. **Passed 2026-11-21: V2 (ADR-004 accepted by Gregor).**
 3. T-009 ‖ T-010, then T-011 — VS Code guards, parity generator, categorisation. **Gate G2:** local gates incl.
-   `npm run compile` and `node --test jetbrains/guards/`; CI `plugin`, `vscode-mirror`, `vscode-guards` green; `.vsix`
+   `npm run compile` and `node --test 'jetbrains/guards/*.test.mjs'`; CI `plugin`, `vscode-mirror`, `vscode-guards` green; `.vsix`
    list identical to the snapshot (AC-037); `docs/jetbrains/parity-source.json` has `"pending": []`.
 4. T-012 → T-013 — host-neutral composition and panel session (VS Code behaviour unchanged). Gate: five local gates
    incl. `npm run compile`; `git diff --exit-code <Baseline> -- src/core` empty; CI `vscode-mirror`, `vscode-guards`,
@@ -507,16 +507,16 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
   `dist/extension.js`, `dist/webview/main.js`, `dist/webview/main.css`. Tests (`node:test`): the pure functions,
   including a negative control each. Workflow: top-level `env: START_COMMIT: <Baseline hash from this plan's handoff>`;
   job `vscode-mirror` = the steps of `ci.yml`'s `build` job copied verbatim (matrix ubuntu, windows); job
-  `vscode-guards` (ubuntu, `fetch-depth: 0`): `node --test jetbrains/guards/`; `npm ci`; `npm run package`;
+  `vscode-guards` (ubuntu, `fetch-depth: 0`): `node --test 'jetbrains/guards/*.test.mjs'`; `npm ci`; `npm run package`;
   `node jetbrains/guards/vsixFiles.mjs` and `--self-test`; `git diff --exit-code $START_COMMIT --
   .github/workflows/ci.yml .github/workflows/publish.yml`; for push events with `github.event.before` set: list changed
   paths `before..sha`; if `isJetBrainsOnly`, check out `before` into `base/` (`actions/checkout` with `ref` and
   `path`), `npm ci && npm run package` there, and run `sameBundles.mjs base .` (fail on any digest difference).
-- **Tests first:** `node --test jetbrains/guards/` red (missing exports), then green.
-- **Verify:** `local: node --test jetbrains/guards/`; `CI: jetbrains.yml › vscode-mirror` (ubuntu, windows) and
+- **Tests first:** `node --test 'jetbrains/guards/*.test.mjs'` red (missing exports), then green.
+- **Verify:** `local: node --test 'jetbrains/guards/*.test.mjs'`; `CI: jetbrains.yml › vscode-mirror` (ubuntu, windows) and
   `› vscode-guards` green.
 - [ ] **Verified (T-009):** —
-- **Notes:** —
+- **Notes:** Verify uses `node --test 'jetbrains/guards/*.test.mjs'` (the directory form fails on Node 22). All-zero `github.event.before` (new branch) counts as not set. `isJetBrainsOnly([])` is false. Extra exports normaliseListing, runSelfTest, BUNDLE_PATHS. `vsce ls` matched the 11-file snapshot locally (orchestrator, 2026-11-21). Implemented in parallel with T-010.
 
 ### T-010 — Parity matrix generator and check, and the PD entries for deliberate differences
 
@@ -547,8 +547,8 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
 - **Tests first:** `parity.test.ts` red against a `Not implemented` stub of every export.
 - **Verify:** `local: npx vitest run src/adapters/node/parity.test.ts src/adapters/node/docsScan.test.ts` green, then
   the four local gates (`eslint`, `tsc` ×2, `npm run test:unit`).
-- [ ] **Verified (T-010):** —
-- **Notes:** —
+- [x] **Verified (T-010):** 2026-11-21 · local: `npx vitest run src/adapters/node/parity.test.ts` 20 passed, 28 todo (pending specs); docsScan 186; eslint, tsc ×2 green; `npm run test:unit` 3925 passed, 28 todo, timing 35 passed.
+- **Notes:** Parser note bullets that start with an AC ID are no criteria: `collectCriteria` keeps one occurrence per spec+AC, the bold `**AC-nnn**` bullet if there is one, else the first (option a; orchestrator proxy 2026-11-21, Gregor confirms) — found on 0010 AC-001, 0001 AC-022, 0004 AC-001, 0006 AC-012/015/016, 0014 AC-010, 0021 AC-025. `duplicate` flags two source rules for one spec+AC. PD-099…PD-107 wording written from the plan lines — Gregor reviews. The bold-preference test was written after the code (no red run). Implemented in parallel with T-009.
 
 ### T-011 — Categorise every criterion of 0001–0033
 
@@ -792,7 +792,7 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
   `start/dist/webview/main.js` and with `dist/webview/main.js` in JSDOM (mirror `webviewBundle.test.ts` boot and
   `send()`), compare `document.body.textContent` per area — fail on any difference.
 - **Tests first:** `sharedGuard.test.mjs` red (pure function), then green; a negative control removes one title.
-- **Verify:** `local: node --test jetbrains/guards/`; `CI: jetbrains.yml › shared-guard` green on ubuntu and windows.
+- **Verify:** `local: node --test 'jetbrains/guards/*.test.mjs'`; `CI: jetbrains.yml › shared-guard` green on ubuntu and windows.
 - [ ] **Verified (T-020):** —
 - **Notes:** —
 
@@ -1252,7 +1252,7 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
   matching `graal|truffle|polyglot|icu4j`, ADR-004); plugin.xml check of T-001 moved here; a scan of
   the repo tree for PEM headers and `PUBLISH_TOKEN=`-style assignments finds nothing. `node:test` for its pure parts.
 - **Tests first:** `pluginZip.test.mjs` red.
-- **Verify:** `local: node --test jetbrains/guards/`; `CI: jetbrains.yml › verify` (all products) and `› plugin` green.
+- **Verify:** `local: node --test 'jetbrains/guards/*.test.mjs'`; `CI: jetbrains.yml › verify` (all products) and `› plugin` green.
 - [ ] **Verified (T-036):** —
 - **Notes:** —
 

@@ -1,0 +1,11 @@
+CHANGELOG.md
+LICENSE
+README.md
+dist/extension.js
+dist/webview/main.css
+dist/webview/main.js
+media/icon.png
+media/studio-dark.svg
+media/studio-light.svg
+media/studio.svg
+package.json

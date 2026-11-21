@@ -10,6 +10,9 @@ concurrency:
   group: jetbrains-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  START_COMMIT: 3bc615cfe167ac7533ec4c13347e0ed31be6fae5
+
 jobs:
   plugin:
     strategy:
@@ -60,3 +63,89 @@ jobs:
           name: plugin-zip
           path: jetbrains/build/distributions/*.zip
           if-no-files-found: error
+  vscode-mirror:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - name: Keep line endings as committed (Windows)
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx eslint src --max-warnings 0
+      - run: npx tsc --noEmit
+      - run: npx tsc --noEmit -p src/webview
+      - run: npm run test:unit
+      - run: npm run compile
+      - name: Extension-host tests (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm test
+      - name: Extension-host tests (Windows)
+        if: runner.os != 'Linux'
+        run: npm test
+      - name: Keep the VS Code logs of a failed run
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vscode-logs-${{ matrix.os }}
+          path: .vscode-test/user-data/logs
+          if-no-files-found: ignore
+          retention-days: 3
+  vscode-guards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: node --test 'jetbrains/guards/*.test.mjs'
+      - run: npm ci
+      - run: npm run package
+      - run: node jetbrains/guards/vsixFiles.mjs
+      - run: node jetbrains/guards/vsixFiles.mjs --self-test
+      - run: git diff --exit-code $START_COMMIT -- .github/workflows/ci.yml .github/workflows/publish.yml
+      - name: Find the changed paths of this push
+        id: changed
+        if: github.event_name == 'push'
+        env:
+          BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          changed="$RUNNER_TEMP/changed.txt"
+          git diff --name-only "$BEFORE" "$SHA" > "$changed"
+          cat "$changed"
+          if node --input-type=module -e "import { readFileSync } from 'node:fs'; import { isJetBrainsOnly } from './jetbrains/guards/sameBundles.mjs'; process.exit(isJetBrainsOnly(readFileSync(process.argv[1], 'utf8').split('\n').filter(Boolean)) ? 0 : 1)" "$changed"; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.changed.outputs.run == 'true'
+        with:
+          ref: ${{ github.event.before }}
+          path: base
+          fetch-depth: 0
+      - name: Build the VS Code bundles of the parent commit
+        if: steps.changed.outputs.run == 'true'
+        working-directory: base
+        run: npm ci && npm run package
+      - name: Compare the VS Code bundles with the parent commit
+        if: steps.changed.outputs.run == 'true'
+        run: node jetbrains/guards/sameBundles.mjs base .
