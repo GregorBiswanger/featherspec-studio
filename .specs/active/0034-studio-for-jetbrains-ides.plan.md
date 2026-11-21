@@ -3,7 +3,7 @@
 **Spec:** [0034-studio-for-jetbrains-ides.md](0034-studio-for-jetbrains-ides.md)
 **Status:** In Progress
 **Last updated:** 2026-11-21
-**Current step:** T-021
+**Current step:** G4 (fix round after the independent review)
 
 ## Approach
 
@@ -241,8 +241,8 @@ Verifier, from T-036); `jetbrains-spikes.yml` — `spike-s1`,
    **Gate G3 (after T-020):** all local gates incl. `npm run compile`; CI `vscode-mirror` (incl. `npm test` on Ubuntu
    and Windows), `vscode-guards`, `shared-guard`, `plugin` green; baselines and golden file unchanged, no new
    `EXCEPTIONS`; `src/core` unchanged; **an independent `/sdd-compile` READY** (orchestrator, fresh session, another
-   model family) before stage 7 starts. **2026-11-21: the scoped compile's findings are fixed in `727f708`; CI for it and a fresh **G3 passed 2026-11-21:** independent `/sdd-compile` (fresh Opus session; first review by Fable found B1–B3, fixed in 727f708/04cb573/5af7a76) READY apart from CI at HEAD, then CI at `5af7a76` (run 44867612536) green: `plugin` 3 OS, `vscode-mirror` incl. `npm test` ubuntu+windows, `vscode-guards` incl. the AC-038 byte check on a JetBrains-only push ("bundles are identical"), `shared-guard` ubuntu+windows. Model-family note: only Claude models are available here.
-   independent compile are pending.**
+   model family) before stage 7 starts.
+   **G3 passed 2026-11-21:** independent `/sdd-compile` (fresh Opus session; first review by Fable found B1–B3, fixed in 727f708/04cb573/5af7a76) READY apart from CI at HEAD, then CI at `5af7a76` (run 44867612536) green: `plugin` 3 OS, `vscode-mirror` incl. `npm test` ubuntu+windows, `vscode-guards` incl. the AC-038 byte check on a JetBrains-only push ("bundles are identical"), `shared-guard` ubuntu+windows. Model-family note: only Claude models are available here.
 7. T-021 → T-039 → T-023 → T-024 → T-025 → T-022 — bridge parts, core runtime in a hidden JCEF browser, host ports,
    project service (core starts at project open), then conformance and budgets in a Starter IDE (T-022 runs last: it
    needs the core started by T-025). Gate: local gates; CI `plugin`, `ide-tests` (conformance + budgets on 3 OS),
@@ -255,10 +255,13 @@ Verifier, from T-036); `jetbrains-spikes.yml` — `spike-s1`,
    **Stage 9 gate passed 2026-11-21:** CI at `d08c599` (run 44884666829) green on every job incl. `ide-tests` on 3 OS; local gates green.
 10. T-031 → T-032 → T-033 → T-034 → T-041 → T-040 — notifications and log view, settings and trust, setup, setup end to
     end in an IDE, AC-030 in an IDE (T-040 last: it needs the settings page and Set up). Gate: as stage 7.
+    **Stage 10 gate passed 2026-11-21:** CI at `1fba001` (run 44887620680) green on `plugin` (after the Windows fix), `ide-tests` 3 OS incl. `SetupIdeTest`, `vscode-*`, `shared-guard`; both no-JCEF entries green at `3f4221a` (run 44890486141).
 11. T-035 — Starter smoke on 3 OS. Gate: as stage 7 (`ide-tests` incl. the smoke).
+    **Stage 11 gate: open** — the smoke runs on 3 OS; all functional checks pass (tab, freshness 262–381 ms, restore, no writes, 5 themes with 20/20 contrast pairs), the frame budgets after reopening (1 s) were missed on loaded runners (1.0–1.8 s); fix round after the independent G4 review in progress.
 12. T-036 → T-037 — Verifier and packaging checks, docs sync, spike removal, final gates. **Gate G4:** every local
     gate; every CI job (`plugin`, `vscode-mirror`, `vscode-guards`, `shared-guard`, `ide-tests`, `verify`) green on the
     same commit; parity matrix fully categorised; `/sdd-compile` READY. Then Gregor: AC-040–AC-042.
+    **G4 first independent review 2026-11-21 (fresh Opus session, HEAD `2da335c`): NOT READY** — all local checks green; blockers: T-035 not verified, no all-green CI at one head, stale traceability (fixed), AC-007 discovery budget not measured, R-5 decided by the second-start rule (Gregor's decision). Fix round in progress.
 
 Parallel: stage 3 (T-009 ‖ T-010: CI guards vs. parity tooling, disjoint files) and stage 5 (T-014 ‖ T-015). Stage 4
 and stages 6–12 stay `→`: the Kotlin steps share `plugin.xml` and the host router (`StudioProjectService`), the TS
@@ -1315,76 +1318,52 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
 | AC-001 | T-010, T-011 | `src/adapters/node/parity.ts`, `docs/jetbrains/parity-source.json`, `docs/jetbrains/parity.md` | `src/adapters/node/parity.test.ts` (`AC-001: …`) | verified (local 2026-11-21: 20 passed, 0 todo, T-011) |
 | AC-002 | T-010 | `src/adapters/node/parity.ts:checkRows`, `:renderMarkdown`, `:collectCriteria` | `src/adapters/node/parity.test.ts` (`AC-002: …`, one negative control per failure kind) | verified (local 2026-11-21, T-010/T-011; no red run against the stubs, T-010 Notes) |
 | AC-003 | T-010, T-011 | `docs/jetbrains/parity-source.json` (0008–0012 `default` n-a), `docs/product/product-decisions.md` (PD-099…PD-107) | `src/adapters/node/parity.test.ts` (`AC-003: …`, `bad-pd`, `struck-not-na`) | verified (local 2026-11-21, T-011); PD-099…PD-107 wording for Gregor's review |
-| AC-004 | T-018, T-019, T-022 | TS: `src/hosts/embedded/conformance.ts:runConformance`, `src/hosts/embedded/main.ts` (`conformance`), `src/hosts/embedded/testing/conformanceInput.ts`, `jetbrains/scripts/conformanceExpected.mjs` | `src/hosts/embedded/conformance.test.ts` (`AC-004: …`), `jetbrains/scripts/conformanceExpected.test.mjs` | open — TS oracle verified (local 2026-11-21 at 727f708: `src/hosts/` 77/77, scripts 4/4); JVM equality in a Starter IDE is T-022 |
-| AC-005 | T-018, T-019, T-022, T-033, T-034, T-041 | TS: `src/hosts/embedded/conformance.ts:runSetupConformance`, `src/hosts/embedded/main.ts` (`setupConformance`), `jetbrains/scripts/conformanceExpected.mjs` (setup pair) | `src/hosts/embedded/conformance.test.ts` (`AC-005: …`), `jetbrains/scripts/conformanceExpected.test.mjs` (`AC-005 …`) | open — TS oracle verified (local 2026-11-21 at 727f708); archive reader, setup target and the IDE run are T-022, T-033, T-034, T-041 |
-| AC-006 | T-012, T-015, T-017, T-020, T-021 | `src/hosts/compose.ts`, `src/hosts/embedded/contract.ts`, `bridge.ts`, `ports.ts`, `global.ts`, `esbuild.js` (`embeddedBuildOptions`), `.github/workflows/jetbrains.yml › shared-guard` (`git diff --exit-code $START_COMMIT -- src/core`) | `src/hosts/embedded/bundle.test.ts` (`AC-006: …`), `bridge.test.ts`, `ports.test.ts`, `jetbrains/guards/sharedGuard.test.mjs`; CI `shared-guard` | open — TS side verified (local; CI `shared-guard` at `017a790`, run 44863599799; CI for 727f708 pending); Kotlin mirror `HostContract.kt` is T-021 |
-| AC-007 | T-022, T-026, T-028, T-030, T-035 | — | — | open |
-| AC-008 | T-016, T-039, T-025, T-035 | TS: `src/hosts/embedded/main.ts:createEmbeddedHost` | `src/hosts/embedded/main.test.ts` (`AC-008: …`) | open — TS part verified (local 2026-11-21, T-016); core page, project service and smoke are T-039, T-025, T-035 |
+| AC-004 | T-018, T-019, T-022 | TS oracle `src/hosts/embedded/conformance.ts`; JVM: `probe/ConformanceProbe.kt`, `integrationTest/CoreIdeTest.kt` | `conformance.test.ts`, `conformanceExpected.test.mjs`, `CoreIdeTest` (27/27 byte-equal), `jvmNextBaseline.test.ts` (7/7, same EXCEPTIONS) | verified (CI `ide-tests` 3 OS at `e2d2b93`, run 44878649481, and every later run) |
+| AC-005 | T-018, T-019, T-022, T-033, T-034, T-041 | `setup/TarGzArchive.kt`, `SetupTarget.kt`, `ReleaseHttp.kt`, `SetupCalls.kt`, `probe/SetupProbe.kt` | `CoreIdeTest` (strict setup pair), `SetupIdeTest`, `TarGzArchiveTest`, `SetupTargetTest` | verified (setup pair strict at `87aada1`, run 44886640991; `SetupIdeTest` 3 OS at `1fba001`, run 44887620680) |
+| AC-006 | T-012, T-015, T-017, T-020, T-021 | `src/hosts/embedded/*`, `runtime/HostContract.kt`, `runtime/BridgeFrames.kt`, `.github/workflows/jetbrains.yml › shared-guard` | `bundle.test.ts`, `bridge.test.ts`, `ports.test.ts`, `HostContractTest`, `BridgeFramesTest`, `sharedGuard.test.mjs` | verified (CI `plugin` 3 OS at `48c2209`, `shared-guard` on every run) |
+| AC-007 | T-022, T-026, T-028, T-030, T-035 | `src/hosts/embedded/budgets.ts`, `probe/ConformanceProbe.kt`, `probe/SmokeProbe.kt` | `CoreIdeTest` (core ready, 0002 AC-018 read/update), `SmokeIdeTest` (loading, frame, 500 ms freshness) | open — read/update met on 3 OS (T-022); discovery of 5 roots being added; smoke frame budgets missed on loaded runners (Windows/Linux reopen 1.0–1.8 s); R-5 first cold start on Windows 7.5–27 s decided by the second-start rule (proxy; Gregor decides) |
+| AC-008 | T-016, T-039, T-025, T-035 | `StudioStartup`, `StudioProjectService`, `runtime/CoreRuntime.kt` | `main.test.ts` (`AC-008`), `CoreIdeTest` (core starts at project open), `SmokeIdeTest` (tree follows with the tab closed) | open — core start verified (T-022/T-025); status entry with the tab closed is being made a hard check (T-035) |
 | AC-009 | T-003…T-008, T-038 | `docs/decisions/ADR-004-jetbrains-host.md`, `docs/decisions/adr-004/`; spikes under `jetbrains/spikes/` (removed in T-037) | CI `jetbrains-spikes.yml` runs 44835557884, 44844442596, 44846550133; manual: Gregor's decision 2026-11-21 | verified |
-| AC-010 | T-028 | — | — | open |
-| AC-011 | T-028, T-029 | — | — | open |
-| AC-012 | T-028 | — | — | open |
-| AC-013 | T-026, T-029, T-035 | — | — | open |
-| AC-014 | T-013, T-026, T-036 | `src/hosts/panelSession.ts:createPanelSession`, `src/adapters/vscode/studioPanel.ts` | `src/hosts/panelSession.test.ts` | open — VS Code sequence preserved and verified (local; CI `vscode-mirror` at `375fdaa`, run 44857188233, T-013); JCEF tab and byte identity are T-026, T-036 |
-| AC-015 | T-021, T-026 | — | — | open |
-| AC-016 | T-030 | — | — | open |
-| AC-017 | T-029 | — | — | open |
-| AC-018 | T-032 | — | — | open |
-| AC-019 | T-014, T-016, T-025, T-032 | TS: `src/shared/protocol/vocabulary.ts`, `src/webview/hostKind.ts`, `src/webview/RestrictedNote.tsx`, `src/webview/PanelStateView.tsx`, `src/adapters/vscode/webviewHtml.ts` (`host`), `src/hosts/embedded/terms.ts`, `src/hosts/embedded/main.ts` | `src/shared/protocol/vocabulary.test.ts`, `src/webview/hostVocabulary.test.tsx`, `src/hosts/embedded/terms.test.ts`, `src/hosts/embedded/main.test.ts` (`AC-019: …`) | open — TS part verified (local 2026-11-21, T-014, T-016); project service and trust are T-025, T-032 |
-| AC-020 | T-023, T-035 | — | — | open |
-| AC-021 | T-007, T-023, T-035 | input only: `docs/decisions/ADR-004-jetbrains-host.md` (S-4 delays, T-007) | — | open |
-| AC-022 | T-033, T-034, T-041 | — | — | open |
-| AC-023 | T-016, T-031 | TS: `src/hosts/embedded/terms.ts:withTerms`, `src/hosts/embedded/main.ts` | `src/hosts/embedded/terms.test.ts` (`AC-023: …`), `src/hosts/embedded/main.test.ts` (`§6.8, AC-023: …`) | open — TS part verified (local 2026-11-21, T-016); IDE notifications and log view are T-031 |
-| AC-024 | T-030 | — | — | open |
-| AC-025 | T-024, T-035 | — | — | open |
-| AC-026 | T-027 | — | — | open |
-| AC-027 | T-027, T-035 | — | — | open |
-| AC-028 | T-027, T-035 | — | — | open |
-| AC-029 | T-035 | — | — | open |
-| AC-030 | T-014, T-029, T-030, T-032, T-040 | TS: `src/shared/protocol/vocabulary.ts:JETBRAINS_TEXTS` | `src/shared/protocol/vocabulary.test.ts` (`AC-030: …`), `src/webview/hostVocabulary.test.tsx` | open — texts verified (local 2026-11-21, T-014; wording for Gregor's review); notice, status, actions and IDE run are T-029, T-030, T-032, T-040 |
-| AC-031 | T-016, T-025, T-032 | TS: `src/hosts/embedded/ports.ts` (`assistantHost.extension` → `undefined`), `src/hosts/embedded/main.ts` | `src/hosts/embedded/main.test.ts` (`AC-031: …`) | open — TS part verified (local 2026-11-21, T-016); settings page is T-032 |
+| AC-010 | T-028 | `tree/SpecTreeMapping.kt`, `tree/SpecTreePanel.kt` | `SpecTreeMappingTest` (7 real payloads), `treeFixtures.mjs` | verified (CI `plugin` 3 OS at `9b187b3`, run 44882319738) |
+| AC-011 | T-028, T-029 | `actions/ActionTable.kt`, `actions/StudioActions.kt`, `plugin.xml` | `ActionTableTest`, `NoJcefIdeTest` (actions through `ActionUtil`) | verified (CI at `c4e430f`, run 44883094676; IDE at `3f4221a`) |
+| AC-012 | T-028 | `tree/SpecTreeMapping.kt` (empty states, welcome) | `SpecTreeMappingTest` | verified (CI `plugin` 3 OS at `9b187b3`) |
+| AC-013 | T-026, T-029, T-035 | `panel/StudioEditor.kt`, `panel/PanelModel.kt` | `PanelModelTest`, `SmokeIdeTest` (area and selection restored after reopen) | open — restore observed on Linux/Windows at `3f4221a`/`0a136dc`; final smoke run pending |
+| AC-014 | T-013, T-026, T-036 | `src/hosts/panelSession.ts`, `panel/PanelShim.kt`, `jetbrains/guards/pluginZip.mjs` | `panelSession.test.ts`, `PanelShimTest`, `pluginZip.test.mjs` (webview bytes in the jar = `dist/`) | verified (CI `plugin` with `pluginZip.mjs` at `3f4221a`, run 44890486141) |
+| AC-015 | T-021, T-026 | `runtime/CorePage.kt`, `jcef/PluginResources.kt`, `jcef/PluginRequestHandler.kt` | `CorePageTest`, `PluginResourcesTest` (allow-list, 47 refused URLs) | verified (CI `plugin` 3 OS at `6ceb027`) |
+| AC-016 | T-030 | `status/StatusEntryMapping.kt`, `status/StudioStatusWidget.kt`, `ports/EditorOpen.kt`, `ports/SystemCalls.kt` | `StatusEntryMappingTest`, `EditorOpenTest` | verified (CI 3 OS at `d08c599`, run 44884666829); open-beside split by reflection → Gregor checks |
+| AC-017 | T-029 | `actions/*`, `tree/UnavailableNotice.kt` | `ActionTableTest`, `NoticeContentTest` | verified (CI at `c4e430f`) |
+| AC-018 | T-032 | `settings/SettingsTable.kt`, `StudioSettings.kt`, `StudioConfigurable.kt` | `SettingsTableTest` (= `package.json`) | verified (CI `plugin` 3 OS at `302f3a2`, run 44885753961) |
+| AC-019 | T-014, T-016, T-025, T-032 | `vocabulary.ts`, `terms.ts`, `TrustWatch.kt`, `StudioProjectService.recheckTrust` | `vocabulary.test.ts`, `terms.test.ts`, `TrustWatchTest` | verified (CI at `302f3a2`); trust re-checked on activation/open, no listener (proxy) |
+| AC-020 | T-023, T-035 | `ports/RootWatcher.kt`, `ports/SpecWatch.kt`, `probe/SmokeProbe.kt` | `RootWatcherTest`, `SmokeIdeTest` (in-IDE change: tree/panel 262–381 ms) | open — status entry being made a hard check; final smoke run pending |
+| AC-021 | T-007, T-023, T-035 | `ports/RootWatcher.kt` (own NIO watcher), `ports/SpecWatch.kt` | `RootWatcherTest` (`ROOTWATCHER-MS` linux 0, windows 0, macos 105), `SmokeIdeTest` (external change: tree 281–366 ms) | open — status entry hard check and final run pending; the "other application focused" case cannot be driven on CI → manual (release checklist) |
+| AC-022 | T-033, T-034, T-041 | `setup/SetupTarget.kt` (`CREATE_NEW`, never deletes what it did not create) | `SetupTargetTest`, `SetupIdeTest` | verified (CI at `1fba001`, run 44887620680) |
+| AC-023 | T-016, T-031 | `terms.ts`, `ui/UiRequests.kt`, `ui/HostUi.kt`, `ui/LogView.kt` | `terms.test.ts`, `UiRequestsTest` | verified (CI 3 OS at `d08c599`) |
+| AC-024 | T-030 | `status/*` | `StatusEntryMappingTest` | verified (CI at `d08c599`) |
+| AC-025 | T-024, T-035 | `ports/FileRuntimeMedium.kt`, `ports/StoreLocation.kt` (store outside the project) | `FileRuntimeMediumTest`, `SmokeIdeTest` (only the probe's own files created/changed) | open — observed at `3f4221a`/`0a136dc`; final smoke run pending |
+| AC-026 | T-027 | `theme/ThemeMapping.kt`, `theme/ThemeBridge.kt` | `ThemeMappingTest` (59 variables = `main.css`) | verified (CI `plugin` 3 OS at `6ceb027`) |
+| AC-027 | T-027, T-035 | `theme/ThemeMapping.kt` (`ThemeKind`) | `ThemeMappingTest`, `SmokeIdeTest` (5 themes, body class) | open — 5/5 themes correct in the IDE at `3f4221a`/`0a136dc`; final smoke run pending |
+| AC-028 | T-027, T-035 | `ThemeMapping.updateScript`, `panel/StudioEditor.kt` | `ThemeMappingTest`, `SmokeIdeTest` (one complete script, 76–133 ms) | open — final smoke run pending |
+| AC-029 | T-035 | `theme/Contrast.kt`, `ThemeMapping.contrastPairs` | `ContrastTest`, `SmokeIdeTest` (20/20 pairs per theme) | open — final smoke run pending |
+| AC-030 | T-014, T-029, T-030, T-032, T-040 | `JETBRAINS_TEXTS`, `tree/UnavailableNotice.kt`, `UnavailableBalloon`, `status/*`, `settings/StudioConfigurable.kt` | `NoJcefIdeTest`, `JcefAvailabilityTest`, `NoticeContentTest` | verified for *unsupported* in a real IDE (CI at `3f4221a`, run 44890486141); *suspended* not reachable on CI (JCEF kept working) → `JcefAvailabilityTest` + AC-042 by hand |
+| AC-031 | T-016, T-025, T-032 | `ports.ts` (no assistant extension), `settings/SettingsTable.kt` (no assistant setting) | `main.test.ts` (`AC-031`), `SettingsTableTest` | verified (CI at `302f3a2`) |
 | AC-032 | — (moved to 0035, OP-024) | — | — | n-a here |
-| AC-033 | T-001, T-036 | `jetbrains/src/main/resources/META-INF/plugin.xml`, `jetbrains/build.gradle.kts` (T-001) | CI `jetbrains.yml › plugin` plugin.xml check (`6fdc067`, run 44832785218) | open — manifest part verified (T-001); Verifier and manifest checks are T-036 |
-| AC-034 | T-036 | — | — | open |
-| AC-035 | T-036 (size, no key, no GraalJS; signing → 0036) | — | — | open |
+| AC-033 | T-001, T-036 | `plugin.xml`, `build.gradle.kts`, `jetbrains/guards/pluginZip.mjs` | `pluginZip.test.mjs` (id, since-build, no until-build, two depends) | verified (CI `plugin` at `3f4221a`) |
+| AC-034 | T-036 | `build.gradle.kts` `pluginVerification` (`-Pverify.product`) | CI `verify` (idea, webstorm, rider, pycharm 2025.3.1 + 2026.3; recommended) | verified (CI at `3f4221a`, run 44890486141, and `0a136dc`) |
+| AC-035 | T-036 (size, no key, no GraalJS; signing → 0036) | `jetbrains/guards/pluginZip.mjs` | `pluginZip.test.mjs` | verified (CI at `3f4221a`; ZIP 739 KB) |
 | AC-036 | — (moved to 0036, OP-024) | — | — | n-a here |
 | AC-037 | T-001, T-009 | `.vscodeignore`, `jetbrains/guards/vsixFiles.mjs`, `jetbrains/guards/vsix-files.txt`, `.github/workflows/jetbrains.yml › vscode-guards` | `jetbrains/guards/vsixFiles.test.mjs` (`AC-037 …`, negative controls), `vsixFiles.mjs --self-test`; CI `vscode-guards` | verified (local; CI at `cb9cd22`, run 44853085024, and every later run) |
-| AC-038 | T-009, T-017 | `jetbrains/guards/sameBundles.mjs:isJetBrainsOnly`, `:compareDigests`, `.github/workflows/jetbrains.yml › vscode-guards` (byte check of the parent commit), `esbuild.js` (third target isolated) | `jetbrains/guards/sameBundles.test.mjs` (`AC-038 …`), `src/hosts/embedded/bundle.test.ts` (`AC-006: dist/extension.js equals …`); CI `vscode-guards` | built — guards green locally (2026-11-21 at 727f708: guards 35/35); no recorded CI run of the byte comparison on a JetBrains-only push yet (before 727f708 every plan tick made a push count as shared); CI for 727f708 pending |
-| AC-039 | T-009, T-012, T-013, T-014, T-020 | `jetbrains/guards/sharedGuard.mjs`, `jetbrains/guards/renderedTexts.mjs`, `.github/workflows/jetbrains.yml › shared-guard`, `› vscode-mirror`, `› vscode-guards` (`ci.yml`/`publish.yml` unchanged) | `jetbrains/guards/sharedGuard.test.mjs`, `jetbrains/guards/renderedTexts.test.mjs`, `jetbrains/guards/sameBundles.test.mjs` (`AC-039 …`), `src/shared/protocol/vocabulary.test.ts`, `src/adapters/node/vocabularySources.test.ts`; CI `shared-guard`, `vscode-mirror` incl. `npm test` (ubuntu, windows) | verified (CI at `017a790`, run 44863599799); G3 fix round 727f708 (199 areas) green locally, CI pending |
+| AC-038 | T-009, T-017 | `jetbrains/guards/sameBundles.mjs`, `.github/workflows/jetbrains.yml › vscode-guards`, `esbuild.js` | `sameBundles.test.mjs`, `bundle.test.ts` | verified (byte check on a JetBrains-only push at `5af7a76`, run 44867612536; every later run) |
+| AC-039 | T-009, T-012, T-013, T-014, T-020, T-042 | `sharedGuard.mjs`, `renderedTexts.mjs` (450 areas incl. shell states and S7), workflow guards | `sharedGuard.test.mjs`, `renderedTexts.test.mjs`, `sameBundles.test.mjs`; CI `shared-guard`, `vscode-mirror` | verified (CI on every run since `017a790`) |
 | AC-040 | manual: Gregor, Rider | — | — | open |
 | AC-041 | manual: Gregor, WebStorm | — | — | open |
 | AC-042 | T-037 (checklist section); manual: Gregor | — | — | open |
-| AC-043 | T-002, T-037 | `.architecture/jetbrains.md`, `AGENTS.md` (`jetbrains/` module line T-002, `src/hosts/embedded/global.ts` entrypoint line T-017) | `src/adapters/node/docsScan.test.ts` | open — T-002 part verified (docsScan 186); README section and final sync are T-037 |
+| AC-043 | T-002, T-037 | `.architecture/jetbrains.md` (real packages), `AGENTS.md` (14991 B, boundary line), README `## JetBrains IDEs`, release checklist | `docsScan.test.ts` (186) | verified (local at `4be646e`; CI pending at the final head) |
 
 ## Session handoff
 
-- **Done so far:** stages 1–6 done (T-001…T-020, T-038; every box ticked with `Verified:`). G1 passed 2026-11-21
-  (Gregor accepted ADR-004: runtime V2, hidden off-screen JCEF browser per IDE project; core ready ≤ 12 s; without JCEF
-  only the settings page works; Copy prompt only, Claude Code deep link → 0035; spec OP-025; plan re-planned, 41
-  steps). G2 passed 2026-11-21 (CI `vscode-mirror`, `vscode-guards`, `plugin` green at `cb9cd22`; `.vsix` list equals
-  the snapshot; `"pending": []`). Stages 4–6 verified locally and in CI (`fa60f87`, `375fdaa`, `017a790`), architecture
-  update `c11e22d` (`.architecture/hosts.md`). G3: an independent scoped `/sdd-compile` (2026-11-21) found gaps; the fix
-  round is done in `727f708` (Overview in the conformance output, synthetic `AGENTS.md` for the weak inputs, rendered-text
-  guard over 199 areas and failing on panel states, neutral paths for AC-038, `src/hosts/noNetwork.test.ts`; Notes of
-  T-009, T-018, T-019, T-020), and B3 (stale bookkeeping) is reconciled here. Local re-run at `727f708` (2026-11-21):
-  `npx vitest run src/hosts/` 77/77, `node --test 'jetbrains/guards/*.test.mjs'` 35/35,
-  `node --test 'jetbrains/scripts/*.test.mjs'` 4/4.
-- **Next action:** (1) CI for `727f708` (and the push of this reconciliation): every job of `jetbrains.yml` green —
-  pending. (2) A fresh independent `/sdd-compile` of 0034 in a new session — READY closes G3. (3) Then stage 7 in this
-  order: T-021 → T-039 → T-023 → T-024 → T-025 → T-022 (Kotlin; `CI:` verify, the orchestrator pushes).
-- **Open decisions for Gregor** (proxy decisions the orchestrator took so far; each stands until Gregor confirms or
-  overrides): (1) T-002: the `jetbrains/` snapshot line in `AGENTS.md` shortened to fit the 15000-byte cap. (2) T-010:
-  option (a) — of two bullets with the same AC ID the bold `**AC-nnn**` one is the criterion, else the first. (3) T-011:
-  the categorisation judgement calls (0001 folder set → PD-103; manifest keys with a JetBrains counterpart → host;
-  Send → PD-105; Escape → shared-test). (4) T-016: `openFolder` stays rejected in the embedded host (no
-  `actions.openFolder`; S1 is n-a). (5) PD-099…PD-107: wording written from the plan lines, to review. (6) T-014:
-  `JETBRAINS_TEXTS` wording (proposal). (7) `AGENTS.md` is at 14998 of 15000 bytes, so T-037's planned `boundaries:`
-  line no longer fits — options: raise the docsScan cap, or move more snapshot detail into the module maps. (8) "Another
-  model family" for the independent compile (G3, G4, plans.md) is not available in this environment — Claude models
-  only; accept a fresh Claude session, or run it elsewhere. Still open from before: whether to split further (41 steps
-  vs. the ~30 guideline); R-5's 12 s re-measured at AC-040/AC-041; if T-035 measures AC-021 above 2 s on macOS, native
-  watcher or a PD. Red-first not evidenced for T-004 and T-010 (Notes) — recorded, no action planned.
+- **Done so far:** stages 1–10 and 12 done; every step T-001…T-042 except T-035 ticked with `Verified:` (CI run ids in the boxes). G1 (Gregor, ADR-004 V2), G2, G3 passed; stage gates 7–10 passed (CI `e2d2b93`, `6ceb027`, `d08c599`, `1fba001`/`3f4221a`). In IDEs on 3 OS: conformance 27/27 byte-equal, strict setup pair, setup end to end, no-JCEF *unsupported*, Verifier for IDEA/WebStorm/Rider/PyCharm 2025.3.1 + 2026.3. Budgets at the latest runs: 0002 AC-018 read 92–253 ms, update 268–429 ms; core ready Linux 3.7–4.5 s, macOS 7–11 s, Windows 6.6–15 s (first start). Found and fixed on the way: IntelliJ's routing file system (watcher), JCEF bridge latency (batching + scan prefetch: 9.3 s → 0.2 s), `StudioEditor.getFile` (SEVERE), Windows `CREATE_NEW` on folders, Windows watcher races.
+- **Next action:** G4 fix round after the independent review (`2da335c`, NOT READY): (1) AC-007 discovery of 5 roots (`budget.discover`), (2) status entry a hard smoke check with a status-changing edit, (3) frame budgets best of three, (4) one all-green CI run at one head, (5) T-035 ticked, (6) a fresh independent `/sdd-compile`. Then Gregor: AC-040/041/042 on a fresh `C:\projects\test\tip-splitter` with the CI ZIP (a copy is in `C:\projects\featherspec-studio.sync\plugin-zip-0a136dc\`).
+- **Open decisions for Gregor** (proxies; each stands until Gregor confirms or overrides): (1) `AGENTS.md` cap stays at 15000 B; snapshot detail moved to `.architecture/core.md` (T-002, T-037). (2) T-010 option (a): the bold AC bullet wins. (3) T-011 categorisation judgement calls (0001 folder set → PD-103; manifest keys → host; Send → PD-105; Escape → shared-test). (4) `openFolder` rejected in the embedded host (T-016). (5) PD-099…PD-107 and `JETBRAINS_TEXTS` wording. (6) Bridge batching and the `source.scan` prefetch extend the T-015 contract; `shell` in the conformance output (T-042). (7) R-5: a first start over 12 s on a fresh runner is decided by a second IDE start (T-022 Note 3) — Windows runners varied 7.5–27 s; re-measure on Gregor's machine (AC-040/041), or amend R-5 (OP/PD), or pre-warm JCEF at IDE start (costs resources without a FeatherSpec project). (8) `actions.manageTrust` opens the help page and grants nothing; trust re-checked on activation/open, no listener (T-032). (9) Verifier `failureLevel` COMPATIBILITY_PROBLEMS only (T-036). (10) JCEF *suspended* not reachable on CI (JCEF kept working without the sysctl) → `JcefAvailabilityTest` + AC-042 by hand (T-040); the 30 s suspension watch vs. Windows page loads up to 14 s. (11) CHANGELOG entry deferred to 0036 (T-037). (12) Probe/test hooks ship in the ZIP, inert unless `featherspec.probe*` system properties are set (`SetupHooks` can swap the release routes via a VM option). (13) No other model family for G3/G4 here. (14) 42 steps vs. the ~30 guideline. (15) UI latency budgets of AC-007 (≤ 1 s loading/frame) on loaded CI runners: if best of three still misses, keep a reused panel browser (memory per project) or move these two budgets to the manual check.
 - **Baseline:** `3bc615c` (last commit before this spec's work; `START_COMMIT` in `.github/workflows/jetbrains.yml`)
-- **Environment:** every Gradle/Kotlin/JVM/IDE check runs only in GitHub Actions (`jetbrains.yml`,
-  `jetbrains-spikes.yml`); the sandbox has no Maven/Gradle/JetBrains access (proxy 403). `ci.yml` does not run on
+- **Environment:** every Gradle/Kotlin/JVM/IDE check runs only in GitHub Actions (`jetbrains.yml`; `jetbrains-spikes.yml` removed in T-037); the sandbox has no Maven/Gradle/JetBrains access (proxy 403). `ci.yml` does not run on
   branch pushes — `vscode-mirror` is its stand-in until the PR.
