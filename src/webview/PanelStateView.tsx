@@ -1,6 +1,8 @@
 import type { PanelState } from '../shared/protocol/messages';
 import { ACTION_LABELS, LOADING_TEXT, panelStateActions, panelStateLines, STATE_LABELS } from '../shared/protocol/texts';
+import { translateTerms } from '../shared/protocol/vocabulary';
 import { Glyph, type GlyphKind } from './board/icons';
+import { hostKind } from './hostKind';
 import { useShell } from './shell';
 
 const STATE_ICONS: Record<PanelState['id'], GlyphKind> = {
@@ -17,8 +19,9 @@ const STATE_ICONS: Record<PanelState['id'], GlyphKind> = {
 export function PanelStateView(props: { state: PanelState }) {
     const shell = useShell();
     const { state } = props;
+    const host = hostKind();
     return (
-        <section role="status" aria-label={STATE_LABELS[state.id]} className="panel-state" data-state={state.id}>
+        <section role="status" aria-label={translateTerms(STATE_LABELS[state.id], host)} className="panel-state" data-state={state.id}>
             <span className="panel-state-icon">
                 <Glyph kind={STATE_ICONS[state.id]} />
             </span>
@@ -27,7 +30,7 @@ export function PanelStateView(props: { state: PanelState }) {
                     {LOADING_TEXT}
                 </div>
             ) : (
-                panelStateLines(state).map((line) => <p key={line}>{line}</p>)
+                panelStateLines(state).map((line) => <p key={line}>{translateTerms(line, host)}</p>)
             )}
             {panelStateActions(state).length === 0 ? null : (
                 <div className="actions">
@@ -38,7 +41,7 @@ export function PanelStateView(props: { state: PanelState }) {
                             {...(index === 0 && (state.id === 'S2' || state.id === 'S9') ? { 'data-primary': 'true' } : {})}
                             onClick={() => shell.runAction(action)}
                         >
-                            {ACTION_LABELS[action]}
+                            {translateTerms(ACTION_LABELS[action], host)}
                         </button>
                     ))}
                 </div>

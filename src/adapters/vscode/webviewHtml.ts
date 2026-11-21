@@ -5,6 +5,7 @@ export interface WebviewHtmlInput {
     styleUri: string;
     reloaded: boolean;
     test: boolean;
+    host?: 'jetbrains';
 }
 
 export function buildWebviewHtml(input: WebviewHtmlInput): string {
@@ -15,6 +16,7 @@ export function buildWebviewHtml(input: WebviewHtmlInput): string {
         `img-src ${input.cspSource} data:`,
         `font-src ${input.cspSource}`,
     ].join('; ');
+    const host = input.host === undefined ? '' : ` data-host="${input.host}"`;
     return [
         '<!DOCTYPE html>',
         '<html lang="en">',
@@ -25,7 +27,7 @@ export function buildWebviewHtml(input: WebviewHtmlInput): string {
         '<title>FeatherSpec Studio</title>',
         `<link rel="stylesheet" href="${input.styleUri}">`,
         '</head>',
-        `<body data-reloaded="${input.reloaded}" data-test="${input.test}">`,
+        `<body data-reloaded="${input.reloaded}" data-test="${input.test}"${host}>`,
         '<div id="root"></div>',
         `<script nonce="${input.nonce}" src="${input.scriptUri}"></script>`,
         '</body>',

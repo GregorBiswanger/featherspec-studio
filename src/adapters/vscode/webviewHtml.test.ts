@@ -55,3 +55,13 @@ describe('AC-020: the panel HTML', () => {
         expect(html).toContain('<title>FeatherSpec Studio</title>');
     });
 });
+
+describe('§6.8: the host attribute of the panel HTML', () => {
+    it('adds no data-host attribute without a host', () => {
+        expect(buildWebviewHtml(input)).not.toContain('data-host');
+    });
+
+    it('puts data-host jetbrains on the body only when the JetBrains host is given', () => {
+        expect(buildWebviewHtml({ ...input, host: 'jetbrains' })).toContain('<body data-reloaded="false" data-test="false" data-host="jetbrains">');
+    });
+});

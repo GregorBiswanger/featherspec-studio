@@ -43,6 +43,20 @@ export default [{
         }],
     },
 }, {
+    files: ["src/hosts/embedded/**/*.ts"],
+    ignores: ["src/hosts/embedded/**/*.test.ts", "src/hosts/embedded/testing/**"],
+    rules: {
+        "no-restricted-imports": ["error", {
+            paths: [
+                { name: "vscode", message: "The embedded host never imports vscode." },
+                ...builtinModules.map((name) => ({ name, message: "The embedded host never imports Node.js built-ins." })),
+            ],
+            patterns: [
+                { group: ["vscode/*", "node:*"], message: "The embedded host imports neither vscode nor Node.js." },
+            ],
+        }],
+    },
+}, {
     files: ["src/webview/**/*.ts", "src/webview/**/*.tsx"],
     rules: {
         "no-restricted-imports": ["error", {
