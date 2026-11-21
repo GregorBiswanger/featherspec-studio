@@ -2,39 +2,19 @@ import { randomBytes } from 'node:crypto';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import type { OutputPort } from '../../core/ports/host';
-import { createMessageRouter, type RequestHandlers } from '../../core/shell/messageRouter';
 import type { ShellService } from '../../core/shell/shellService';
-import type { BoardView } from '../../shared/protocol/board';
-import type { DetailView, OpenFileResultPayload } from '../../shared/protocol/detail';
-import type { OverviewView } from '../../shared/protocol/overview';
-import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../../shared/protocol/envelope';
-import type { SendResultEventPayload } from '../../shared/protocol/assistant';
-import { isProbeResultPayload, type BoardRequestType, type CopyResultEventPayload, type OverviewRequestType, type ProbeOutcome } from '../../shared/protocol/messages';
+import { PROTOCOL_VERSION, type Envelope } from '../../shared/protocol/envelope';
+import type { ProbeOutcome } from '../../shared/protocol/messages';
+import { createPanelSession, type PanelBoard, type PanelOverview } from '../../hosts/panelSession';
 import { createProbeChannel } from './probeChannel';
 import { buildWebviewHtml } from './webviewHtml';
 import { PANEL_TITLE } from '../../shared/protocol/texts';
 
+export type { PanelBoard, PanelOverview } from '../../hosts/panelSession';
+
 export const VIEW_TYPE = 'featherspecStudio.main';
 const PROBE_HELLO_TIMEOUT_MS = 20_000;
 const PROBE_ANSWER_TIMEOUT_MS = 20_000;
-
-export interface PanelBoard {
-    handlers: Pick<RequestHandlers, BoardRequestType>;
-    view(): BoardView | undefined;
-    detail(): DetailView;
-    onDidChangeView(listener: (view: BoardView | undefined) => void): vscode.Disposable;
-    onDidChangeDetail(listener: (view: DetailView) => void): vscode.Disposable;
-    onDidOpenFileResult(listener: (result: OpenFileResultPayload) => void): vscode.Disposable;
-    onDidCopyResult(listener: (result: CopyResultEventPayload) => void): vscode.Disposable;
-    onDidSendResult(listener: (result: SendResultEventPayload) => void): vscode.Disposable;
-    panelClosed(): void;
-}
-
-export interface PanelOverview {
-    handlers: Pick<RequestHandlers, OverviewRequestType>;
-    view(): OverviewView | undefined;
-    onDidChangeView(listener: (view: OverviewView | undefined) => void): vscode.Disposable;
-}
 
 export interface StudioPanelDeps {
     extensionUri: vscode.Uri;
@@ -81,17 +61,29 @@ export interface StudioPanel extends vscode.Disposable {
 export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
     let panel: vscode.WebviewPanel | undefined;
     let subscriptions: vscode.Disposable[] = [];
-    let seq = 0;
     let reloaded = false;
-    let helloAt: number | undefined;
     const probeChannel = createProbeChannel({
         send: (url) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'probe', payload: { url } }),
         helloTimeoutMs: PROBE_HELLO_TIMEOUT_MS,
         answerTimeoutMs: PROBE_ANSWER_TIMEOUT_MS,
-        describe: () =>
-            `panel open: ${panel !== undefined}, visible: ${panel?.visible}, active: ${panel?.active}, last hello ${helloAt === undefined ? 'never' : `${Date.now() - helloAt} ms ago`}`,
+        describe: () => `panel open: ${panel !== undefined}, visible: ${panel?.visible}, active: ${panel?.active}, last hello ${describeHello()}`,
+    });
+    const session = createPanelSession({
+        service: deps.service,
+        board: deps.board,
+        overview: deps.overview,
+        output: deps.output,
+        post,
+        testMode: deps.testMode,
+        onHello: () => probeChannel.markReady(),
+        onProbeResult: (outcome) => probeChannel.answer(outcome),
     });
     const assets = vscode.Uri.joinPath(deps.extensionUri, 'dist', 'webview');
+
+    function describeHello(): string {
+        const at = session.lastHelloAt();
+        return at === undefined ? 'never' : `${Date.now() - at} ms ago`;
+    }
 
     function options(): vscode.WebviewOptions {
         return { enableScripts: true, enableCommandUris: false, localResourceRoots: [assets] };
@@ -114,57 +106,6 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
         void panel?.webview.postMessage(message);
     }
 
-    function pushView(floor = 0): void {
-        seq = Math.max(seq, floor) + 1;
-        post({ v: PROTOCOL_VERSION, kind: 'evt', seq, type: 'shell', payload: deps.service.shellEvent() });
-    }
-
-    function pushBoard(view: BoardView | undefined): void {
-        if (view !== undefined) {
-            post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'board', payload: { view } });
-        }
-    }
-
-    function pushOverview(view: OverviewView | undefined): void {
-        if (view !== undefined) {
-            post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'overview', payload: { view } });
-        }
-    }
-
-    function pushDetail(view: DetailView): void {
-        post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'detail', payload: { view } });
-    }
-
-    const router = createMessageRouter({
-        handlers: {
-            ...deps.board.handlers,
-            ...deps.service.handlers,
-            ...deps.overview.handlers,
-            hello: async (payload) => {
-                helloAt = Date.now();
-                deps.service.panelReady();
-                pushView(payload.lastSeq);
-                pushBoard(deps.board.view());
-                pushOverview(deps.overview.view());
-                pushDetail(deps.board.detail());
-                probeChannel.markReady();
-            },
-        },
-        output: deps.output,
-        post,
-    });
-
-    function handle(raw: unknown): void {
-        if (deps.testMode) {
-            const read = readEnvelope(raw);
-            if (read.ok && read.envelope.type === 'probeResult' && isProbeResultPayload(read.envelope.payload)) {
-                probeChannel.answer(read.envelope.payload.outcome);
-                return;
-            }
-        }
-        void router.receive(raw);
-    }
-
     function adopt(target: vscode.WebviewPanel): void {
         panel = target;
         target.iconPath = {
@@ -173,23 +114,16 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
         };
         target.webview.options = options();
         subscriptions = [
-            target.webview.onDidReceiveMessage(handle),
-            deps.service.onDidChangeView(() => pushView()),
-            deps.board.onDidChangeView(pushBoard),
-            deps.overview.onDidChangeView(pushOverview),
-            deps.board.onDidChangeDetail(pushDetail),
-            deps.board.onDidOpenFileResult((payload) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'openFileResult', payload })),
-            deps.board.onDidCopyResult((payload) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'copyResult', payload })),
-            deps.board.onDidSendResult((payload) => post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'sendResult', payload })),
+            target.webview.onDidReceiveMessage(session.receive),
             target.onDidDispose(() => {
                 subscriptions.forEach((subscription) => subscription.dispose());
                 subscriptions = [];
                 panel = undefined;
-                deps.service.panelGone();
+                session.detach();
                 probeChannel.markNotReady();
-                deps.board.panelClosed();
             }),
         ];
+        session.attach();
     }
 
     return {
@@ -212,7 +146,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
         },
         panelCount: () => (panel === undefined ? 0 : 1),
         closePanel: () => panel?.dispose(),
-        lastHelloAt: () => helloAt,
+        lastHelloAt: () => session.lastHelloAt(),
         probe(url) {
             if (!deps.testMode) {
                 return Promise.reject(new Error('The probe exists only in test mode'));
@@ -239,6 +173,7 @@ export function createStudioPanel(deps: StudioPanelDeps): StudioPanel {
         dispose() {
             subscriptions.forEach((subscription) => subscription.dispose());
             subscriptions = [];
+            session.stop();
             panel?.dispose();
             panel = undefined;
             deps.board.panelClosed();
