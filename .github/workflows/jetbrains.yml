@@ -33,6 +33,7 @@ jobs:
       - run: npm ci
       - run: npm run package
       - run: node jetbrains/scripts/conformanceExpected.mjs
+      - run: node jetbrains/guards/treeFixtures.mjs
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -41,29 +42,50 @@ jobs:
         with:
           gradle-version: 9.7.0
       - run: gradle -p jetbrains build buildPlugin verifyPluginStructure
-      - name: Check the plugin.xml of the built plugin (Linux)
+      - name: Check the plugin ZIP (Linux)
         if: runner.os == 'Linux'
-        run: |
-          set -euo pipefail
-          zip=$(ls jetbrains/build/distributions/*.zip)
-          work=$(mktemp -d)
-          unzip -q "$zip" -d "$work"
-          jar=$(ls "$work"/*/lib/featherspec-studio*.jar | head -n 1)
-          xml=$(unzip -p "$jar" META-INF/plugin.xml)
-          echo "$xml" | grep -F 'since-build="253.29346"'
-          if echo "$xml" | grep -F 'until-build'; then
-            echo "until-build must not be set" >&2
-            exit 1
-          fi
-          test "$(echo "$xml" | grep -c '<depends>')" -eq 2
-          echo "$xml" | grep -F '<depends>com.intellij.modules.platform</depends>'
-          echo "$xml" | grep -F '<depends>com.intellij.modules.jcef</depends>'
+        run: node jetbrains/guards/pluginZip.mjs "$(ls jetbrains/build/distributions/*.zip)"
       - uses: actions/upload-artifact@v4
         if: runner.os == 'Linux'
         with:
           name: plugin-zip
           path: jetbrains/build/distributions/*.zip
           if-no-files-found: error
+  verify:
+    name: verify (${{ matrix.product }})
+    strategy:
+      fail-fast: false
+      matrix:
+        product: [idea, webstorm, rider, pycharm, recommended]
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run package
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: 9.7.0
+      - run: gradle -p jetbrains verifyPlugin -Pverify.product=${{ matrix.product }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verifier-reports-${{ matrix.product }}
+          path: jetbrains/build/reports/pluginVerifier/**
+          if-no-files-found: warn
+          retention-days: 7
   vscode-mirror:
     strategy:
       fail-fast: false

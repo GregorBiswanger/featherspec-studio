@@ -1,4 +1,6 @@
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
@@ -31,6 +33,7 @@ dependencies {
         intellijIdea("2025.3.1")
         bundledPlugin("com.intellij.modules.jcef")
         testFramework(TestFrameworkType.Starter, configurationName = "integrationTestImplementation")
+        pluginVerifier()
     }
     integrationTestImplementation(kotlin("stdlib"))
     integrationTestImplementation(libs.junit.jupiter)
@@ -86,6 +89,15 @@ val integrationTest = tasks.register<Test>("integrationTest") {
     dependsOn(tasks.prepareSandbox)
 }
 
+val verifyProduct: String? = providers.gradleProperty("verify.product").orNull
+val verifyVersions = listOf("2025.3.1", "2026.3")
+val verifyProducts = mapOf(
+    "idea" to IntelliJPlatformType.IntellijIdea,
+    "webstorm" to IntelliJPlatformType.WebStorm,
+    "rider" to IntelliJPlatformType.Rider,
+    "pycharm" to IntelliJPlatformType.PyCharm,
+)
+
 intellijPlatform {
     pluginConfiguration {
         id = "com.gregorbiswanger.featherspec.studio"
@@ -97,6 +109,20 @@ intellijPlatform {
         ideaVersion {
             sinceBuild = "253.29346"
             untilBuild = provider { null }
+        }
+    }
+    pluginVerification {
+        failureLevel = listOf(VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS)
+        ides {
+            if (verifyProduct == null || verifyProduct == "recommended") {
+                recommended()
+            }
+            verifyProducts
+                .filterKeys { verifyProduct == null || it == verifyProduct }
+                .values
+                .forEach { type ->
+                    verifyVersions.forEach { version -> create(type, version) }
+                }
         }
     }
 }
