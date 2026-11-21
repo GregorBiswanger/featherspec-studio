@@ -515,7 +515,7 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
 - **Tests first:** `node --test 'jetbrains/guards/*.test.mjs'` red (missing exports), then green.
 - **Verify:** `local: node --test 'jetbrains/guards/*.test.mjs'`; `CI: jetbrains.yml › vscode-mirror` (ubuntu, windows) and
   `› vscode-guards` green.
-- [ ] **Verified (T-009):** —
+- [x] **Verified (T-009):** 2026-11-21 · local: `node --test 'jetbrains/guards/*.test.mjs'` 16 pass; `vsixFiles.mjs` matches the 11-file snapshot, `--self-test` ok. CI at `cb9cd22` (run 44853085024): `vscode-mirror` (ubuntu, windows), `vscode-guards`, `plugin` (3 OS) green.
 - **Notes:** Verify uses `node --test 'jetbrains/guards/*.test.mjs'` (the directory form fails on Node 22). All-zero `github.event.before` (new branch) counts as not set. `isJetBrainsOnly([])` is false. Extra exports normaliseListing, runSelfTest, BUNDLE_PATHS. `vsce ls` matched the 11-file snapshot locally (orchestrator, 2026-11-21). Implemented in parallel with T-010.
 
 ### T-010 — Parity matrix generator and check, and the PD entries for deliberate differences
@@ -567,8 +567,8 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
   only for exceptions. Empty `pending`; regenerate `parity.md` with `FEATHERSPEC_WRITE_PARITY=1`.
 - **Tests first:** — (data; the T-010 check decides)
 - **Verify:** `local: npx vitest run src/adapters/node/parity.test.ts` green with no `todo`; `npm run test:unit` green.
-- [ ] **Verified (T-011):** —
-- **Notes:** —
+- [x] **Verified (T-011):** 2026-11-21 · local: parity test 20 passed, 0 todo (`"pending": []`); docsScan 186; `npm run test:unit` 3925 passed.
+- **Notes:** Every AC of 0001–0007, 0013–0033 has an explicit rule (ranges per block, no `default`, so new criteria stay uncategorised); 0008–0012 keep `default` n-a. 638 criteria: shared 438, host 112, n-a 13, deliberately different 75 (PD-105 60, PD-103 9, PD-099 3, PD-100/101/104 1 each). PD-102, PD-106, PD-107 referenced by no row. Judgement calls (0001 folder set → PD-103; manifest keys with a JetBrains counterpart → host; Send → PD-105; Escape → shared-test) for Gregor's review.
 
 ### T-012 — Host-neutral composition: move the wiring out of `src/extension.ts`
 
