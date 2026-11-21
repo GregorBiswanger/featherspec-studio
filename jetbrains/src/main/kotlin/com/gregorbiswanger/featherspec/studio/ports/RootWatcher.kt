@@ -110,6 +110,7 @@ class RootWatcher(private val onChange: (root: Path, relative: String) -> Unit) 
     private val service: WatchService = FileSystems.getDefault().newWatchService()
     private val lock = Any()
     private val registrations = HashMap<WatchKey, Registration>()
+    private val byDirectory = HashMap<String, Registration>()
     private val roots = HashSet<Path>()
     private val closed = AtomicBoolean(false)
     private val thread = Thread({ pump() }, THREAD_NAME).apply { isDaemon = true }
@@ -150,6 +151,7 @@ class RootWatcher(private val onChange: (root: Path, relative: String) -> Unit) 
                     iterator.remove()
                 }
             }
+            byDirectory.values.removeIf { it.root == normal }
         }
     }
 
@@ -176,13 +178,19 @@ class RootWatcher(private val onChange: (root: Path, relative: String) -> Unit) 
             } catch (failure: InterruptedException) {
                 return
             }
-            val registration = synchronized(lock) { registrations[key] }
             val events = key.pollEvents()
+            val registration = synchronized(lock) { registrations[key] ?: byDirectory[key.watchable().toString()] }
             if (registration != null) {
-                handle(registration, events)
+                try {
+                    handle(registration, events)
+                } catch (failure: RuntimeException) {
+                    report(registration.root, "")
+                }
             }
             if (!key.reset()) {
-                synchronized(lock) { registrations.remove(key) }
+                synchronized(lock) {
+                    registrations.remove(key)?.let { byDirectory.remove(it.directory.toString()) }
+                }
             }
         }
     }
@@ -196,7 +204,7 @@ class RootWatcher(private val onChange: (root: Path, relative: String) -> Unit) 
                 continue
             }
             val name = event.context() as? Path ?: continue
-            val child = registration.directory.resolve(name)
+            val child = registration.directory.resolve(name.toString())
             val relative = relativeOf(root, child)
             val created = kind == ENTRY_CREATE &&
                 WatchedPaths.isWatchedDirectory(relative) &&
@@ -240,7 +248,9 @@ class RootWatcher(private val onChange: (root: Path, relative: String) -> Unit) 
                 return
             }
             try {
-                registrations[register(directory)] = Registration(root, directory)
+                val registration = Registration(root, directory)
+                registrations[register(directory)] = registration
+                byDirectory[directory.toString()] = registration
             } catch (failure: IOException) {
                 return
             } catch (failure: ClosedWatchServiceException) {
