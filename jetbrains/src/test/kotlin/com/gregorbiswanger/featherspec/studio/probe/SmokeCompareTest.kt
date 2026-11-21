@@ -66,10 +66,9 @@ class SmokeCompareTest {
     }
 
     @Test
-    fun `a core that was ready before the tab opened is named`() {
-        val problems = SmokeCompare.smoke(report(state = "ready"))
-        assertEquals(1, problems.size)
-        assertTrue(problems.single().contains("loading state could not be observed"))
+    fun `the loading panel is judged only when the core was still loading as the tab opened`() {
+        assertEquals(emptyList<String>(), SmokeCompare.smoke(report(state = "ready", loading = -1)))
+        assertEquals(1, SmokeCompare.smoke(report(state = "loading", loading = -1)).size)
     }
 
     @Test

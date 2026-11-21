@@ -64,10 +64,19 @@ class SmokeProbe(private val project: Project, private val out: Path) {
         val before = SmokeFiles.snapshot(Path.of(base))
 
         val firstMark = frames.mark()
-        val stateAtOpen = NoJcefState.of(service.state.value)
         val firstStart = System.nanoTime()
-        openTab()
-        val loadingMs = pollMs(firstStart, LOADING_WAIT_MS) { onEdt { loadingShown() } }
+        val opened = onEdt {
+            val start = System.nanoTime()
+            FileEditorManager.getInstance(project).openFile(service.studioFile, true)
+            val state = NoJcefState.of(service.state.value)
+            Triple(state, start, loadingShown())
+        }
+        val stateAtOpen = opened.first
+        val loadingMs = if (opened.third) {
+            Budgets.elapsedMs(opened.second, System.nanoTime())
+        } else {
+            pollMs(opened.second, LOADING_WAIT_MS) { onEdt { loadingShown() } }
+        }
         awaitReady()
         val firstFrameMs = frameMs(firstMark, firstStart, READY_WAIT_MS)
         check(firstFrameMs >= 0) { "no panel frame arrived after the core was ready" }
@@ -75,8 +84,7 @@ class SmokeProbe(private val project: Project, private val out: Path) {
 
         closeTab()
         val reopenMark = frames.mark()
-        val reopenStart = System.nanoTime()
-        openTab()
+        val reopenStart = openTab()
         val reopenFrameMs = frameMs(reopenMark, reopenStart, FRAME_WAIT_MS)
         check(reopenFrameMs >= 0) { "no panel frame arrived after reopening the tab" }
 
@@ -114,8 +122,7 @@ class SmokeProbe(private val project: Project, private val out: Path) {
         settle()
         closeTab()
         val restoreMark = frames.mark()
-        val restoreStart = System.nanoTime()
-        openTab()
+        val restoreStart = openTab()
         val restoreFrameMs = frameMs(restoreMark, restoreStart, FRAME_WAIT_MS)
         val restored = frames.after(restoreMark).firstNotNullOfOrNull { PanelFrames.shell(it.second) }
         settle()
@@ -274,8 +281,10 @@ class SmokeProbe(private val project: Project, private val out: Path) {
         }
     }
 
-    private fun openTab() {
-        onEdt { FileEditorManager.getInstance(project).openFile(service.studioFile, true) }
+    private fun openTab(): Long = onEdt {
+        val start = System.nanoTime()
+        FileEditorManager.getInstance(project).openFile(service.studioFile, true)
+        start
     }
 
     private fun closeTab() {

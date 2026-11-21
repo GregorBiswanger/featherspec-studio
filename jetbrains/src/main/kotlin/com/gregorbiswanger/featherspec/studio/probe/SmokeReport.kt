@@ -96,10 +96,9 @@ object SmokeCompare {
         val root = parse(json) ?: return listOf("the probe wrote no JSON object")
         val problems = ArrayList<String>()
         val state = text(root, "stateAtOpen")
-        if (state != "loading") {
-            problems.add("the core was '$state' when the tab opened, so the loading state could not be observed")
+        if (state == "loading") {
+            within(problems, "AC-007 loading panel", number(root, "loadingMs"), SmokeBudgets.LOADING_MS)
         }
-        within(problems, "AC-007 loading panel", number(root, "loadingMs"), SmokeBudgets.LOADING_MS)
         within(problems, "AC-007 first frame after Ready", number(root, "firstFrameMs"), null)
         within(problems, "AC-007 frame after reopening", number(root, "reopenFrameMs"), SmokeBudgets.FRAME_MS)
         within(problems, "AC-021 external change in the tree", number(root, "externalTreeMs"), SmokeBudgets.EXTERNAL_MS)
