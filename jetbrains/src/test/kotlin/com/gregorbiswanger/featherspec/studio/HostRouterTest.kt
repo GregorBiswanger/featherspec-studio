@@ -31,6 +31,7 @@ class HostRouterTest {
         watch = fakePort("watch"),
         panel = fakePort("panel"),
         system = fakePort("system"),
+        ui = fakePort("ui"),
     )
 
     private fun parsed(reply: String) = JsonParser.parseString(reply).asJsonObject
@@ -81,6 +82,25 @@ class HostRouterTest {
         assertEquals("system", parsed(router.answer("clipboard.write", """{"text":"x"}""")).get("ok").asString)
         assertEquals("system", parsed(router.answer("editor.open", """{"root":"r","key":"k"}""")).get("ok").asString)
         assertEquals("unknown editor.other", parsed(router.answer("editor.other", "{}")).get("error").asString)
+    }
+
+    @Test
+    fun `the five ui calls reach the ui port and nothing else does`() {
+        val router = fakeRouter()
+        assertEquals(
+            setOf("ui.pick", "ui.notify", "ui.confirm", "ui.progressStart", "ui.openExternal"),
+            CallRouter.ROUTED.filterValues { it == CallRouter.Group.UI }.keys,
+        )
+        for (name in CallRouter.ROUTED.filterValues { it == CallRouter.Group.UI }.keys) {
+            assertEquals("ui", parsed(router.answer(name, "{}")).get("ok").asString, name)
+        }
+        assertFalse(CallRouter.DEFERRED_PREFIXES.contains("ui."))
+    }
+
+    @Test
+    fun `a router without a ui port answers an error for the ui calls`() {
+        val router = CallRouter(fakePort("files"), fakePort("medium"), fakePort("memory"), fakePort("watch"))
+        assertEquals("no answer for ui.notify", parsed(router.answer("ui.notify", "{}")).get("error").asString)
     }
 
     @Test

@@ -1,10 +1,9 @@
 package com.gregorbiswanger.featherspec.studio
 
-import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import com.google.gson.JsonParser
 import com.gregorbiswanger.featherspec.studio.runtime.ASYNC_CALLS
 import com.gregorbiswanger.featherspec.studio.runtime.HostHandler
+import com.gregorbiswanger.featherspec.studio.ui.LogLines
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -54,8 +53,9 @@ class CallRouter(
     private val watch: CallPort,
     private val panel: CallPort = { _, _ -> null },
     private val system: CallPort = { _, _ -> null },
+    private val ui: CallPort = { _, _ -> null },
 ) {
-    enum class Group { FILES, MEDIUM, MEMORY, WATCH, PANEL, SYSTEM }
+    enum class Group { FILES, MEDIUM, MEMORY, WATCH, PANEL, SYSTEM, UI }
 
     fun answer(name: String, argsJson: String): String {
         val group = ROUTED[name]
@@ -76,12 +76,13 @@ class CallRouter(
         Group.WATCH -> watch
         Group.PANEL -> panel
         Group.SYSTEM -> system
+        Group.UI -> ui
     }
 
     companion object {
         const val NOT_YET = "{\"error\":\"not yet\"}"
 
-        val DEFERRED_PREFIXES: List<String> = listOf("ui.", "actions.", "target.", "http.", "archive.")
+        val DEFERRED_PREFIXES: List<String> = listOf("actions.", "target.", "http.", "archive.")
 
         val ROUTED: Map<String, Group> = buildMap {
             listOf("source.list", "source.stat", "source.readBytes", "source.scan", "fs.stat", "fs.readText", "fs.readDirectory")
@@ -97,6 +98,7 @@ class CallRouter(
             put("actions.reloadPanel", Group.PANEL)
             put("clipboard.write", Group.SYSTEM)
             put("editor.open", Group.SYSTEM)
+            listOf("ui.pick", "ui.notify", "ui.confirm", "ui.progressStart", "ui.openExternal").forEach { put(it, Group.UI) }
         }
 
         fun failed(message: String): String = JsonObject().apply { addProperty("error", message) }.toString()
@@ -137,12 +139,7 @@ class HostRouter(
     }
 
     private fun appendLog(payload: String) {
-        val lines = try {
-            val parsed = JsonParser.parseString(payload)
-            if (parsed is JsonArray) parsed.map { it.asString } else listOf(parsed.asString)
-        } catch (failure: RuntimeException) {
-            listOf(payload)
-        }
+        val lines = LogLines.parse(payload)
         log.update { (it + lines).takeLast(MAX_LOG_LINES) }
     }
 

@@ -16,6 +16,7 @@ import com.gregorbiswanger.featherspec.studio.runtime.CoreRuntime
 import com.gregorbiswanger.featherspec.studio.runtime.CoreState
 import com.gregorbiswanger.featherspec.studio.runtime.CoreStateHolder
 import com.gregorbiswanger.featherspec.studio.runtime.UnavailableKind
+import com.gregorbiswanger.featherspec.studio.ui.HostUi
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.Disposable
@@ -79,6 +80,8 @@ class StudioProjectService(private val project: Project) : Disposable {
 
     private val systemCalls = SystemCalls(project)
 
+    private val hostUi = HostUi(project) { event, payload -> runtime?.dispatch(event, payload) }
+
     val host: HostRouter = HostRouter(
         router = CallRouter(
             files = FilePorts()::answer,
@@ -87,10 +90,15 @@ class StudioProjectService(private val project: Project) : Disposable {
             watch = { name, args -> specWatch.answer(name, args) },
             panel = { name, _ -> panelCall(name) },
             system = { name, args -> systemCalls.answer(name, args) },
+            ui = { name, args -> hostUi.answer(name, args) },
         ),
         resolve = { id, json -> runtime?.resolve(id, json) },
         execute = { block -> ApplicationManager.getApplication().executeOnPooledThread(Runnable { block() }) },
     )
+
+    init {
+        hostUi.attach(host)
+    }
 
     fun start() {
         if (!started.compareAndSet(false, true)) {
@@ -125,6 +133,7 @@ class StudioProjectService(private val project: Project) : Disposable {
     }
 
     override fun dispose() {
+        hostUi.close()
         runtime = null
         client = null
     }
