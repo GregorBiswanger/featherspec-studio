@@ -1,0 +1,33 @@
+{
+ "badge": {
+  "tooltip": "1 spec waits for you: 1 in Review",
+  "value": 1
+ },
+ "items": [
+  {
+   "children": [
+    {
+     "accessibleLabel": "0015 Focus the Studio on Visibility: No Agent Runs, a Named Next Step, Review, Verify · /sdd-compile",
+     "color": "charts.orange",
+     "contextValue": "spec step plan map",
+     "description": "/sdd-compile",
+     "icon": "eye",
+     "id": "[\"spec\",\"memory://fixture\",\"0015-focus-on-visibility\"]",
+     "kind": "spec",
+     "label": "0015 Focus the…",
+     "line": "/sdd-compile .specs/active/0015-focus-on-visibility.md",
+     "planKey": ".specs/active/0015-focus-on-visibility.plan.md",
+     "specKey": ".specs/active/0015-focus-on-visibility.md",
+     "state": "Review",
+     "stem": "0015-focus-on-visibility",
+     "tooltip": "**0015 Focus the Studio on Visibility\\: No Agent Runs\\, a Named Next Step**\n\nReview — Plan done, waiting for review\n\nNext step: Have the result verified\n\n`/sdd-compile .specs/active/0015-focus-on-visibility.md`\n\nThen\\, after a READY verdict\\: close the spec\n\n`/sdd-lifecycle .specs/active/0015-focus-on-visibility.md`\n\nSteps 20/20 · 100% · Criteria 28/30 · 93%\n\n`.specs/active/0015-focus-on-visibility.md`"
+    }
+   ],
+   "collapsed": false,
+   "description": "1",
+   "id": "group:inProgress",
+   "kind": "group",
+   "label": "In progress"
+  }
+ ]
+}

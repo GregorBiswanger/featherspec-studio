@@ -1,0 +1,53 @@
+{
+ "items": [
+  {
+   "children": [
+    {
+     "accessibleLabel": "0001 Ready feature, Ready, Start · Set active",
+     "color": "charts.blue",
+     "contextValue": "spec step plan map",
+     "description": "Set active",
+     "icon": "pass",
+     "id": "[\"spec\",\"memory://fixture\",\"0001-ready-feature\"]",
+     "kind": "spec",
+     "label": "0001 Ready feature",
+     "line": "/sdd-lifecycle .specs/backlog/0001-ready-feature.md In Progress",
+     "planKey": ".specs/backlog/0001-ready-feature.plan.md",
+     "specKey": ".specs/backlog/0001-ready-feature.md",
+     "state": "Ready",
+     "stem": "0001-ready-feature",
+     "tooltip": "**0001 Ready feature**\n\nReady — Plan written, not started yet\n\nNext step: Start\\: move the spec and its plan to active\n\n`/sdd-lifecycle .specs/backlog/0001-ready-feature.md In Progress`\n\nSteps 0/1 · 0% · Criteria 0/1 · 0%\n\n`.specs/backlog/0001-ready-feature.md`"
+    }
+   ],
+   "collapsed": false,
+   "description": "1",
+   "id": "group:ready",
+   "kind": "group",
+   "label": "Ready"
+  },
+  {
+   "children": [
+    {
+     "accessibleLabel": "0002 Old feature, Done, Deprecated",
+     "color": "descriptionForeground",
+     "contextValue": "spec plan",
+     "description": "Deprecated",
+     "icon": "check",
+     "id": "[\"spec\",\"memory://fixture\",\"0002-old-feature\"]",
+     "kind": "spec",
+     "label": "0002 Old feature",
+     "planKey": ".specs/plan-archive/0002-old-feature.2026-11-01-2.plan.md",
+     "specKey": ".specs/done/0002-old-feature.md",
+     "state": "Done",
+     "stem": "0002-old-feature",
+     "tooltip": "**0002 Old feature**\n\nDeprecated\n\nNext step: Done — no FeatherSpec step left.\n\nSteps 1/1 · 100% · Criteria 1/1 · 100%\n\n`.specs/done/0002-old-feature.md`"
+    }
+   ],
+   "collapsed": true,
+   "description": "1",
+   "id": "group:done",
+   "kind": "group",
+   "label": "Done"
+  }
+ ]
+}

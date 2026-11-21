@@ -1,0 +1,83 @@
+{
+ "items": [
+  {
+   "accessibleLabel": "In progress: 1 spec · 1 problem",
+   "children": [
+    {
+     "accessibleLabel": "0002 invalid-utf8, Active, 1 problem",
+     "color": "problemsWarningIcon.foreground",
+     "contextValue": "spec",
+     "description": "Active",
+     "icon": "warning",
+     "id": "[\"spec\",\"memory://fixture\",\"0002-invalid-utf8\"]",
+     "kind": "spec",
+     "label": "0002 invalid-utf8",
+     "specKey": ".specs/active/0002-invalid-utf8.md",
+     "state": "Active",
+     "stem": "0002-invalid-utf8",
+     "tooltip": "**0002 invalid\\-utf8**\n\nActive\n\nNext step: Studio cannot read this spec. See the problem below.\n\nProblem: Studio cannot read this spec\n\n`.specs/active/0002-invalid-utf8.md`"
+    }
+   ],
+   "collapsed": false,
+   "color": "problemsWarningIcon.foreground",
+   "description": "1 · 1 problem",
+   "icon": "warning",
+   "id": "group:inProgress",
+   "kind": "group",
+   "label": "In progress",
+   "tooltip": "In progress: 1 spec · 1 problem"
+  },
+  {
+   "children": [
+    {
+     "accessibleLabel": "0001 Valid spec, Backlog, Add criteria · /sdd-specify",
+     "color": "descriptionForeground",
+     "contextValue": "spec step",
+     "description": "/sdd-specify",
+     "icon": "list-flat",
+     "id": "[\"spec\",\"memory://fixture\",\"0001-valid-spec\"]",
+     "kind": "spec",
+     "label": "0001 Valid spec",
+     "line": "/sdd-specify .specs/backlog/0001-valid-spec.md",
+     "specKey": ".specs/backlog/0001-valid-spec.md",
+     "state": "Backlog",
+     "stem": "0001-valid-spec",
+     "tooltip": "**0001 Valid spec**\n\nBacklog\n\nNext step: Add acceptance criteria\n\n`/sdd-specify .specs/backlog/0001-valid-spec.md`\n\n`.specs/backlog/0001-valid-spec.md`"
+    }
+   ],
+   "collapsed": false,
+   "description": "1",
+   "id": "group:backlog",
+   "kind": "group",
+   "label": "Backlog"
+  },
+  {
+   "accessibleLabel": "Done: 1 spec · 1 problem",
+   "children": [
+    {
+     "accessibleLabel": "0003 Another valid spec, Done, Move back to Ready · /sdd-lifecycle, 1 problem",
+     "color": "problemsWarningIcon.foreground",
+     "contextValue": "spec step",
+     "description": "/sdd-lifecycle",
+     "icon": "warning",
+     "id": "[\"spec\",\"memory://fixture\",\"0003-also-valid\"]",
+     "kind": "spec",
+     "label": "0003 Another…",
+     "line": "/sdd-lifecycle .specs/done/0003-also-valid.md",
+     "specKey": ".specs/done/0003-also-valid.md",
+     "state": "Done",
+     "stem": "0003-also-valid",
+     "tooltip": "**0003 Another valid spec**\n\nDone\n\nNext step: Put folder and status back in line\n\n`/sdd-lifecycle .specs/done/0003-also-valid.md`\n\nProblem: In the done folder\\, but its status is \\\"Draft\\\"\n\n`.specs/done/0003-also-valid.md`"
+    }
+   ],
+   "collapsed": true,
+   "color": "problemsWarningIcon.foreground",
+   "description": "1 · 1 problem",
+   "icon": "warning",
+   "id": "group:done",
+   "kind": "group",
+   "label": "Done",
+   "tooltip": "Done: 1 spec · 1 problem"
+  }
+ ]
+}

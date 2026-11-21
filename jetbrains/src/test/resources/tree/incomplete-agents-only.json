@@ -1,0 +1,23 @@
+{
+ "items": [
+  {
+   "action": "setUp",
+   "icon": "play",
+   "kind": "action",
+   "label": "Set up FeatherSpec"
+  },
+  {
+   "action": "openSetupGuide",
+   "icon": "play",
+   "kind": "action",
+   "label": "Open setup guide"
+  },
+  {
+   "action": "refresh",
+   "icon": "play",
+   "kind": "action",
+   "label": "Refresh"
+  }
+ ],
+ "message": "FeatherSpec project incomplete: memory://fixture has no .specs/ directory."
+}

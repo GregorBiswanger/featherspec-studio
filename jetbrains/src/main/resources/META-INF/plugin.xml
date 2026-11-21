@@ -9,5 +9,6 @@
         <fileEditorProvider implementation="com.gregorbiswanger.featherspec.studio.panel.StudioEditorProvider"/>
         <postStartupActivity implementation="com.gregorbiswanger.featherspec.studio.StudioStartup"/>
         <postStartupActivity implementation="com.gregorbiswanger.featherspec.studio.probe.ProbeAutoRun"/>
+        <toolWindow id="FeatherSpec Studio" anchor="left" icon="/icons/toolWindow.svg" factoryClass="com.gregorbiswanger.featherspec.studio.tree.StudioToolWindowFactory"/>
     </extensions>
 </idea-plugin>

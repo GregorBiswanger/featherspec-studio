@@ -1,0 +1,33 @@
+{
+ "badge": {
+  "tooltip": "1 spec waits for you: 1 Blocked",
+  "value": 1
+ },
+ "items": [
+  {
+   "children": [
+    {
+     "accessibleLabel": "0001 Parallel demo, Blocked, Find blocker · /sdd-plan",
+     "color": "charts.red",
+     "contextValue": "spec step plan map",
+     "description": "/sdd-plan",
+     "icon": "circle-slash",
+     "id": "[\"spec\",\"memory://fixture\",\"0001-parallel-demo\"]",
+     "kind": "spec",
+     "label": "0001 Parallel demo",
+     "line": "/sdd-plan .specs/active/0001-parallel-demo.md",
+     "planKey": ".specs/active/0001-parallel-demo.plan.md",
+     "specKey": ".specs/active/0001-parallel-demo.md",
+     "state": "Blocked",
+     "stem": "0001-parallel-demo",
+     "tooltip": "**0001 Parallel demo**\n\nBlocked — Plan or return note says Blocked\n\nNext step: Find out what blocks\n\n`/sdd-plan .specs/active/0001-parallel-demo.md`\n\nSteps 2/5 · 40% · Criteria 1/3 · 33%\n\n`.specs/active/0001-parallel-demo.md`"
+    }
+   ],
+   "collapsed": false,
+   "description": "1",
+   "id": "group:inProgress",
+   "kind": "group",
+   "label": "In progress"
+  }
+ ]
+}
