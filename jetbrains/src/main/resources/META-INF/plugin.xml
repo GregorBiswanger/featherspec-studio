@@ -10,5 +10,28 @@
         <postStartupActivity implementation="com.gregorbiswanger.featherspec.studio.StudioStartup"/>
         <postStartupActivity implementation="com.gregorbiswanger.featherspec.studio.probe.ProbeAutoRun"/>
         <toolWindow id="FeatherSpec Studio" anchor="left" icon="/icons/toolWindow.svg" factoryClass="com.gregorbiswanger.featherspec.studio.tree.StudioToolWindowFactory"/>
+        <notificationGroup id="FeatherSpec Studio" displayType="BALLOON"/>
     </extensions>
+    <actions>
+        <action id="featherspec.studio.open" class="com.gregorbiswanger.featherspec.studio.actions.StudioAction" text="FeatherSpec Studio: Open" icon="AllIcons.Actions.Preview"/>
+        <action id="featherspec.studio.openOverview" class="com.gregorbiswanger.featherspec.studio.actions.StudioAction" text="FeatherSpec Studio: Open Overview"/>
+        <action id="featherspec.studio.openBoard" class="com.gregorbiswanger.featherspec.studio.actions.StudioAction" text="FeatherSpec Studio: Open Board"/>
+        <action id="featherspec.studio.openPlanMap" class="com.gregorbiswanger.featherspec.studio.actions.StudioAction" text="FeatherSpec Studio: Open Plan Map"/>
+        <action id="featherspec.studio.copyNextStep" class="com.gregorbiswanger.featherspec.studio.actions.StudioAction" text="FeatherSpec Studio: Copy Next Step" icon="AllIcons.Actions.Copy"/>
+        <action id="featherspec.studio.setup" class="com.gregorbiswanger.featherspec.studio.actions.StudioAction" text="FeatherSpec Studio: Set Up FeatherSpec"/>
+        <action id="featherspec.studio.copyMergePrompt" class="com.gregorbiswanger.featherspec.studio.actions.StudioAction" text="FeatherSpec Studio: Copy Merge Prompt"/>
+        <action id="featherspec.studio.selectProject" class="com.gregorbiswanger.featherspec.studio.actions.StudioAction" text="FeatherSpec Studio: Select Project"/>
+        <action id="featherspec.studio.refresh" class="com.gregorbiswanger.featherspec.studio.actions.StudioAction" text="FeatherSpec Studio: Refresh" icon="AllIcons.Actions.Refresh"/>
+        <action id="featherspec.studio.openSettings" class="com.gregorbiswanger.featherspec.studio.actions.StudioAction" text="FeatherSpec Studio: Open Settings" icon="AllIcons.General.GearPlain"/>
+        <action id="featherspec.studio.tree.copyNextStep" class="com.gregorbiswanger.featherspec.studio.actions.StudioAction" text="Copy Next Step" icon="AllIcons.Actions.Copy"/>
+        <action id="featherspec.studio.tree.openSpec" class="com.gregorbiswanger.featherspec.studio.actions.StudioAction" text="Open Spec"/>
+        <action id="featherspec.studio.tree.openPlan" class="com.gregorbiswanger.featherspec.studio.actions.StudioAction" text="Open Plan"/>
+        <action id="featherspec.studio.tree.showInPlanMap" class="com.gregorbiswanger.featherspec.studio.actions.StudioAction" text="Show in Plan Map"/>
+        <group id="featherspec.studio.TreePopup">
+            <reference ref="featherspec.studio.tree.openSpec"/>
+            <reference ref="featherspec.studio.tree.openPlan"/>
+            <reference ref="featherspec.studio.tree.showInPlanMap"/>
+            <reference ref="featherspec.studio.tree.copyNextStep"/>
+        </group>
+    </actions>
 </idea-plugin>

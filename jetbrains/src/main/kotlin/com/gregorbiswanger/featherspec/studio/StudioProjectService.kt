@@ -1,5 +1,8 @@
 package com.gregorbiswanger.featherspec.studio
 
+import com.gregorbiswanger.featherspec.studio.actions.RowSelection
+import com.gregorbiswanger.featherspec.studio.jcef.Availability
+import com.gregorbiswanger.featherspec.studio.jcef.JcefAvailability
 import com.gregorbiswanger.featherspec.studio.ports.FilePorts
 import com.gregorbiswanger.featherspec.studio.ports.Folder
 import com.gregorbiswanger.featherspec.studio.ports.HostOs
@@ -30,6 +33,8 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.jcef.JBCefApp
 import com.intellij.ui.jcef.JBCefClient
+import com.intellij.util.concurrency.AppExecutorUtil
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 private const val PLUGIN_ID = "com.gregorbiswanger.featherspec.studio"
@@ -54,6 +59,8 @@ class StudioProjectService(private val project: Project) : Disposable {
     val studioFile: VirtualFile = StudioFile.create()
 
     val reloadRequests = Observable(0)
+
+    val selection = Observable<RowSelection?>(null)
 
     private val started = AtomicBoolean(false)
 
@@ -82,7 +89,7 @@ class StudioProjectService(private val project: Project) : Disposable {
         if (!started.compareAndSet(false, true)) {
             return
         }
-        if (!JBCefApp.isSupported()) {
+        if (JcefAvailability.decide(JBCefApp.isSupported(), null, 0L) == Availability.UNSUPPORTED) {
             state.set(CoreState.Unavailable(UnavailableKind.UNSUPPORTED))
             return
         }
@@ -95,6 +102,18 @@ class StudioProjectService(private val project: Project) : Disposable {
                 FileEditorManager.getInstance(project).openFile(studioFile, true)
             }
         }
+    }
+
+    fun invokeAsync(command: String, args: String) {
+        ApplicationManager.getApplication().executeOnPooledThread(
+            Runnable {
+                runtime?.invoke(command, args)?.whenComplete { _, failure ->
+                    if (failure != null) {
+                        thisLogger().warn("The FeatherSpec command $command failed", failure)
+                    }
+                }
+            },
+        )
     }
 
     override fun dispose() {
@@ -143,8 +162,32 @@ class StudioProjectService(private val project: Project) : Disposable {
                 },
             )
             core.start(config)
+            watchForSuspension(core)
         } catch (failure: Exception) {
             fail(failure)
+        }
+    }
+
+    private fun watchForSuspension(core: CoreRuntime) {
+        AppExecutorUtil.getAppScheduledExecutorService().schedule(
+            Runnable { checkSuspended(core) },
+            JcefAvailability.SUSPENDED_AFTER_MS,
+            TimeUnit.MILLISECONDS,
+        )
+    }
+
+    private fun checkSuspended(core: CoreRuntime) {
+        if (Disposer.isDisposed(this) || state.value != CoreState.Loading) {
+            return
+        }
+        val loadedAfterMs = if (core.loadedAtNanos == 0L) null else TimeUnit.NANOSECONDS.toMillis(core.loadedAtNanos - core.createdAtNanos)
+        if (JcefAvailability.decide(true, loadedAfterMs, JcefAvailability.SUSPENDED_AFTER_MS) != Availability.SUSPENDED) {
+            return
+        }
+        state.set(CoreState.Unavailable(UnavailableKind.SUSPENDED))
+        if (state.value is CoreState.Unavailable) {
+            runtime = null
+            core.dispose()
         }
     }
 

@@ -1,18 +1,17 @@
 package com.gregorbiswanger.featherspec.studio.tree
 
 import com.gregorbiswanger.featherspec.studio.StudioProjectService
+import com.gregorbiswanger.featherspec.studio.actions.ActionTable
+import com.gregorbiswanger.featherspec.studio.actions.NoticeContent
+import com.gregorbiswanger.featherspec.studio.actions.RowSelection
+import com.gregorbiswanger.featherspec.studio.runtime.UnavailableKind
 import com.intellij.icons.AllIcons
 import com.intellij.execution.runners.ExecutionUtil
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
-import com.intellij.openapi.actionSystem.ActionUpdateThread
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.diagnostic.thisLogger
-import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.ui.JBColor
@@ -47,6 +46,8 @@ class SpecTreePanel(
     private val root = DefaultMutableTreeNode()
     private val model = DefaultTreeModel(root)
     private val tree = TreeView(model)
+    private val scroll = ScrollPaneFactory.createScrollPane(tree)
+    private var noticeShown: UnavailableKind? = null
     private val expansion = HashMap<String, Boolean>()
     private val baseIcon: Icon = IconLoader.getIcon("/icons/toolWindow.svg", SpecTreePanel::class.java)
     private val unsubscribe = ArrayList<() -> Unit>()
@@ -81,17 +82,12 @@ class SpecTreePanel(
                 }
             }
         })
+        tree.addTreeSelectionListener { publishSelection() }
         tree.addMouseListener(object : PopupHandler() {
             override fun invokePopup(comp: Component, x: Int, y: Int) = showPopup(comp, x, y)
         })
-        setContent(ScrollPaneFactory.createScrollPane(tree))
-        toolWindow.setTitleActions(
-            listOf(
-                CoreAction("Open", AllIcons.Actions.Preview, "open", "{\"via\":\"start\"}"),
-                CoreAction("Refresh", AllIcons.Actions.Refresh, "refresh", "{}"),
-                CoreAction("Copy Next Step", AllIcons.Actions.Copy, "copyNextStep", "{}"),
-            ),
-        )
+        setContent(scroll)
+        toolWindow.setTitleActions(ActionTable.titleActionIds.mapNotNull { ActionManager.getInstance().getAction(it) })
         unsubscribe.add(service.host.tree.onChange { json -> later { accept(json) } })
         unsubscribe.add(service.state.onChange { _ -> later { render() } })
         accept(service.host.tree.value)
@@ -99,6 +95,7 @@ class SpecTreePanel(
 
     override fun dispose() {
         disposed = true
+        service.selection.set(null)
         unsubscribe.forEach { it() }
         unsubscribe.clear()
     }
@@ -149,11 +146,29 @@ class SpecTreePanel(
         } finally {
             rebuilding = false
         }
+        showContent((state as? CoreState.Unavailable)?.kind)
         showEmptyText(SpecTreeMapping.emptyContent(current, state))
         val waiting = if (shown.isEmpty()) 0 else current?.waiting ?: 0
         toolWindow.stripeTitle = SpecTreeMapping.title(waiting)
         toolWindow.setIcon(if (waiting >= 1) ExecutionUtil.getLiveIndicator(baseIcon) else baseIcon)
         toolWindow.setTitle(current?.description.orEmpty())
+        publishSelection()
+    }
+
+    private fun showContent(kind: UnavailableKind?) {
+        if (kind == noticeShown) {
+            return
+        }
+        noticeShown = kind
+        setContent(if (kind == null) scroll else UnavailableNotice(NoticeContent.of(kind)))
+    }
+
+    private fun publishSelection() {
+        if (rebuilding) {
+            return
+        }
+        val spec = selectedSpec()
+        service.selection.set(spec?.let { RowSelection(it.rowArgs(), it.step, it.plan, it.map) })
     }
 
     private fun showEmptyText(content: EmptyContent) {
@@ -216,53 +231,11 @@ class SpecTreePanel(
             return
         }
         tree.selectionPath = path
-        val group = DefaultActionGroup()
-        group.add(RowAction("Open Spec", "tree.openSpec") { true })
-        group.add(RowAction("Open Plan", "tree.openPlan") { it.plan })
-        group.add(RowAction("Show in Plan Map", "tree.showInPlanMap") { it.map })
-        group.add(RowAction("Copy Next Step", "tree.copy") { it.step })
+        val group = ActionManager.getInstance().getAction(ActionTable.TREE_POPUP_ID) as? ActionGroup ?: return
         ActionManager.getInstance().createActionPopupMenu(ActionPlaces.POPUP, group).component.show(component, x, y)
     }
 
-    private fun call(command: String, args: String) {
-        ApplicationManager.getApplication().executeOnPooledThread(
-            Runnable {
-                service.runtime?.invoke(command, args)?.whenComplete { _, failure ->
-                    if (failure != null) {
-                        thisLogger().warn("The FeatherSpec command $command failed", failure)
-                    }
-                }
-            },
-        )
-    }
-
-    private inner class CoreAction(
-        text: String,
-        icon: Icon,
-        private val command: String,
-        private val args: String,
-    ) : AnAction(text, null, icon), DumbAware {
-        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
-
-        override fun actionPerformed(event: AnActionEvent) = call(command, args)
-    }
-
-    private inner class RowAction(
-        text: String,
-        private val command: String,
-        private val enabled: (SpecNode) -> Boolean,
-    ) : AnAction(text), DumbAware {
-        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
-
-        override fun update(event: AnActionEvent) {
-            val spec = selectedSpec()
-            event.presentation.isEnabled = spec != null && enabled(spec)
-        }
-
-        override fun actionPerformed(event: AnActionEvent) {
-            selectedSpec()?.let { call(command, it.rowArgs()) }
-        }
-    }
+    private fun call(command: String, args: String) = service.invokeAsync(command, args)
 
     private class TreeView(model: TreeModel) : Tree(model) {
         override fun getToolTipText(event: MouseEvent): String? {
