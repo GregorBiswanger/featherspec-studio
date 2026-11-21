@@ -10,6 +10,7 @@ class SpikeAutoRun : ProjectActivity {
         ApplicationManager.getApplication().executeOnPooledThread {
             Thread.sleep(5000)
             if (System.getProperty("spike.vfs") == "true") runSpikeVfs(project)
+            if (System.getProperty("spike.v2") == "true") runSpikeV2(project)
             if (System.getProperty("spike.probe") != "false") runSpikeProbe(project)
         }
     }

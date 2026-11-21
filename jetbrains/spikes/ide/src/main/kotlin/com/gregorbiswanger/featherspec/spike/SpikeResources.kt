@@ -29,6 +29,8 @@ class SpikeResources(private val postRequest: String, private val themeClass: St
             "/main.js" -> file("main.js", "text/javascript")
             "/main.css" -> file("main.css", "text/css")
             "/theme.css" -> SpikeResource("text/css", SpikeTheme.css().toByteArray(Charsets.UTF_8))
+            "/core.html" -> SpikeResource("text/html", coreHtml(newNonce(), postRequest).toByteArray(Charsets.UTF_8))
+            "/core-spike.js" -> file("graal/core-spike.js", "text/javascript")
             else -> null
         }
     }

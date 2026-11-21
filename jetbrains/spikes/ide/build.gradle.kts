@@ -50,7 +50,20 @@ kotlin {
     }
 }
 
+val v2InputDir = rootProject.file("build/inputs")
+val v2Index = layout.buildDirectory.file("v2/inputs.txt")
+
+val writeV2Index = tasks.register("writeV2Index") {
+    inputs.dir(v2InputDir)
+    outputs.file(v2Index)
+    doLast {
+        val names = v2InputDir.listFiles { file -> file.extension == "json" }.orEmpty().map { it.name }.sorted()
+        v2Index.get().asFile.also { it.parentFile.mkdirs() }.writeText(names.joinToString("\n", postfix = "\n"))
+    }
+}
+
 tasks.processResources {
+    dependsOn(writeV2Index)
     from(rootProject.file("../../dist/webview"))
     from(rootProject.file("build/hello-reply.json"))
     from(rootProject.file("build/core-spike.js")) {
@@ -62,6 +75,15 @@ tasks.processResources {
     from(rootProject.file("build/node-expected/studio-0015.json")) {
         into("graal")
         rename { "studio-0015.expected.json" }
+    }
+    from(v2InputDir) {
+        into("v2/inputs")
+    }
+    from(rootProject.file("build/node-expected")) {
+        into("v2/node-expected")
+    }
+    from(v2Index) {
+        into("v2")
     }
 }
 

@@ -15,5 +15,6 @@
         </action>
         <action id="FeatherSpecSpike.Probe" class="com.gregorbiswanger.featherspec.spike.SpikeProbeAction" text="Run FeatherSpec Spike Probe"/>
         <action id="FeatherSpecSpike.Vfs" class="com.gregorbiswanger.featherspec.spike.SpikeVfsAction" text="Run FeatherSpec Spike VFS"/>
+        <action id="FeatherSpecSpike.V2" class="com.gregorbiswanger.featherspec.spike.SpikeV2Action" text="Run FeatherSpec Spike V2"/>
     </actions>
 </idea-plugin>
