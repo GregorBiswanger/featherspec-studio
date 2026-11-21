@@ -15,6 +15,7 @@ repositories {
 dependencies {
     intellijPlatform {
         intellijIdea("2025.3.1")
+        bundledPlugin("com.intellij.modules.jcef")
     }
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.platform.launcher)
@@ -25,6 +26,15 @@ kotlin {
     compilerOptions {
         languageVersion = KotlinVersion.KOTLIN_2_2
         apiVersion = KotlinVersion.KOTLIN_2_2
+    }
+}
+
+tasks.processResources {
+    from(rootProject.file("../dist/embedded/core.js")) {
+        into("embedded")
+    }
+    from(rootProject.file("../dist/webview")) {
+        into("webview")
     }
 }
 
