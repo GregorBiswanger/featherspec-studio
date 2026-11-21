@@ -185,6 +185,13 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+        nojcef: [none]
+        include:
+          - os: ubuntu-latest
+            nojcef: unsupported
+          - os: ubuntu-latest
+            nojcef: suspended
+    name: ide-tests (${{ matrix.os }}${{ matrix.nojcef != 'none' && format(', no JCEF {0}', matrix.nojcef) || '' }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 75
     steps:
@@ -210,11 +217,14 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y xvfb
       - name: Allow the JCEF sandbox (Linux, AppArmor user namespaces)
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && matrix.nojcef != 'suspended'
         run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
       - name: Run the Starter tests (Linux)
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && matrix.nojcef == 'none'
         run: xvfb-run -a gradle -p jetbrains integrationTest
+      - name: Run the no-JCEF Starter test (Linux)
+        if: matrix.nojcef != 'none'
+        run: xvfb-run -a gradle -p jetbrains integrationTest --tests '*NoJcefIdeTest' -Pfeatherspec.nojcef=${{ matrix.nojcef }}
       - name: Run the Starter tests (Windows and macOS)
         if: runner.os != 'Linux'
         run: gradle -p jetbrains integrationTest
@@ -228,7 +238,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          for f in jetbrains/build/probe-out/*.json jetbrains/build/probe-out/*.txt jetbrains/build/probe-out-setup/*.json jetbrains/build/probe-out-setup/*.txt; do echo "== $f"; cat "$f"; echo; done || true
+          for f in jetbrains/build/probe-out/*.json jetbrains/build/probe-out/*.txt jetbrains/build/probe-out-setup/*.json jetbrains/build/probe-out-setup/*.txt jetbrains/build/probe-out-nojcef-*/*.json jetbrains/build/probe-out-nojcef-*/*.txt; do echo "== $f"; cat "$f"; echo; done || true
           find . -path '*ide-tests*' -name 'idea.log' -print0 | while IFS= read -r -d '' log; do
             echo "== $log"; grep -iE 'featherspec|SEVERE|ERROR' "$log" | tail -n 120
           done || true
@@ -241,9 +251,10 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ide-tests-${{ matrix.os }}
+          name: ide-tests-${{ matrix.os }}-${{ matrix.nojcef }}
           path: |
             jetbrains/build/probe-out/**
             jetbrains/build/probe-out-setup/**
+            jetbrains/build/probe-out-nojcef-*/**
             ide-logs/**
           if-no-files-found: warn
