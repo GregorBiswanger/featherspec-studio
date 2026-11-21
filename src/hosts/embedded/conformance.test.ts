@@ -35,12 +35,14 @@ interface Frame {
     id?: string;
     name?: string;
     args?: { bytes: string; maxUnpackedBytes: number };
+    calls?: Frame[];
     ok?: unknown;
     error?: string;
 }
 
 interface EmbeddedGlobal {
     resolve(id: string, resultJson: string): void;
+    resolveMany(batchJson: string): void;
     conformance(id: string, inputJson: string): void;
     setupConformance(id: string, archiveJson: string): void;
 }
@@ -102,11 +104,18 @@ function load(text: string): Loaded {
         __featherspecNative: (raw: string): void => {
             const frame = JSON.parse(raw) as Frame;
             frames.push(frame);
-            if (frame.k === 'call' && frame.name === 'archive.read' && frame.id !== undefined && frame.args !== undefined) {
-                const id = frame.id;
-                const { bytes, maxUnpackedBytes } = frame.args;
-                void archive.read(fromBase64(bytes), maxUnpackedBytes).then((result) => loaded.host?.resolve(id, JSON.stringify({ ok: wire(result) })));
-            }
+            const calls = frame.k === 'calls' ? (frame.calls ?? []) : [frame];
+            const archived = calls.filter((call) => call.k !== 'reply' && call.name === 'archive.read' && call.id !== undefined && call.args !== undefined);
+            void Promise.all(
+                archived.map(async (call) => {
+                    const { bytes, maxUnpackedBytes } = call.args as { bytes: string; maxUnpackedBytes: number };
+                    return { id: call.id as string, ok: wire(await archive.read(fromBase64(bytes), maxUnpackedBytes)) };
+                }),
+            ).then((results) => {
+                if (results.length > 0) {
+                    loaded.host?.resolveMany(JSON.stringify(results));
+                }
+            });
         },
     });
     vm.runInContext(text, context);

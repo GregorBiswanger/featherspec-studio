@@ -19,6 +19,35 @@ class BridgeFramesTest {
     }
 
     @Test
+    fun `R-3 a calls frame parses every call in order with its raw args`() {
+        val frame = BridgeFrames.parse(
+            """{"k":"calls","calls":[{"id":"1","name":"source.stat","args":{"relativePath":"a b"}},{"id":"2","name":"actions.openStudio"},{"id":"3","name":"source.readBytes","args":["x",1]}]}""",
+        )
+        assertEquals(
+            Frame.Calls(
+                listOf(
+                    Frame.Call("1", "source.stat", """{"relativePath":"a b"}"""),
+                    Frame.Call("2", "actions.openStudio", "null"),
+                    Frame.Call("3", "source.readBytes", """["x",1]"""),
+                ),
+            ),
+            frame,
+        )
+    }
+
+    @Test
+    fun `R-3 a calls frame with no calls is an empty batch`() {
+        assertEquals(Frame.Calls(emptyList()), BridgeFrames.parse("""{"k":"calls","calls":[]}"""))
+    }
+
+    @Test
+    fun `R-3 a calls frame keeps large and escaped args intact`() {
+        val args = """{"text":"line\nnext \"q\" \u2028","n":12345678901234567890}"""
+        val frame = assertInstanceOf(Frame.Calls::class.java, BridgeFrames.parse("""{"k":"calls","calls":[{"id":"9","name":"medium.append","args":$args}]}"""))
+        assertEquals(JsonParser.parseString(args), JsonParser.parseString(frame.calls.single().args))
+    }
+
+    @Test
     fun `R-3 an emit frame parses with channel and raw payload`() {
         assertEquals(Frame.Emit("tree", """{"rows":[1,2]}"""), BridgeFrames.parse("""{"k":"emit","channel":"tree","payload":{"rows":[1,2]}}"""))
         assertEquals(Frame.Emit("status", "null"), BridgeFrames.parse("""{"k":"emit","channel":"status","payload":null}"""))
@@ -43,6 +72,7 @@ class BridgeFramesTest {
     fun `R-3 every frame kind of the contract is parsed to a frame other than Invalid`() {
         val samples = mapOf(
             "call" to """{"k":"call","id":"1","name":"x","args":null}""",
+            "calls" to """{"k":"calls","calls":[{"id":"1","name":"x","args":null},{"id":"2","name":"y","args":{"a":1}}]}""",
             "emit" to """{"k":"emit","channel":"log","payload":[]}""",
             "reply" to """{"k":"reply","id":"1","ok":1}""",
             "ready" to """{"k":"ready"}""",
@@ -70,6 +100,16 @@ class BridgeFramesTest {
             """{"k":"call","name":"x"}""",
             """{"k":"call","id":"1"}""",
             """{"k":"call","id":1,"name":"x"}""",
+            """{"k":"calls"}""",
+            """{"k":"calls","calls":null}""",
+            """{"k":"calls","calls":{"id":"1","name":"x"}}""",
+            """{"k":"calls","calls":"x"}""",
+            """{"k":"calls","calls":[{"id":"1","name":"x"},null]}""",
+            """{"k":"calls","calls":[{"id":"1","name":"x"},7]}""",
+            """{"k":"calls","calls":[{"id":"1","name":"x"},{"name":"y"}]}""",
+            """{"k":"calls","calls":[{"id":"1","name":"x"},{"id":"2"}]}""",
+            """{"k":"calls","calls":[{"id":2,"name":"x"}]}""",
+            """{"k":"calls","calls":[{"id":"1","name":5}]}""",
             """{"k":"emit","payload":1}""",
             """{"k":"reply"}""",
             """{"k":"failed"}""",

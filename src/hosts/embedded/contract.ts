@@ -33,7 +33,7 @@ export const INVOKE_COMMANDS = [
 
 export type InvokeCommand = (typeof INVOKE_COMMANDS)[number];
 
-export const FRAME_KINDS = ['call', 'emit', 'reply', 'ready', 'failed'] as const;
+export const FRAME_KINDS = ['call', 'calls', 'emit', 'reply', 'ready', 'failed'] as const;
 
 export type FrameKind = (typeof FRAME_KINDS)[number];
 

@@ -132,11 +132,23 @@ function harness(options: Options = {}): { host: EmbeddedHost; frames: Frame[]; 
     const native: NativeHost = {
         send(raw) {
             const frame = JSON.parse(raw) as Frame;
+            if (frame.k === 'calls') {
+                const calls = (frame.calls as Frame[]).map((call): Frame => ({ ...call, k: 'call' }));
+                frames.push(...calls);
+                void Promise.all(
+                    calls.map((call) =>
+                        answer(String(call.name), call.args as Args).then(
+                            (ok) => ({ id: String(call.id), ok: ok ?? null }),
+                            (error: unknown) => ({ id: String(call.id), error: error instanceof Error ? error.message : String(error) }),
+                        ),
+                    ),
+                ).then((results) => link.host?.resolveMany(JSON.stringify(results)));
+                return;
+            }
             frames.push(frame);
             if (frame.k === 'call') {
                 const id = String(frame.id);
-                const args = frame.args as Args;
-                answer(String(frame.name), args).then(
+                answer(String(frame.name), frame.args as Args).then(
                     (ok) => link.host?.resolve(id, JSON.stringify({ ok: ok ?? null })),
                     (error: unknown) => link.host?.resolve(id, JSON.stringify({ error: error instanceof Error ? error.message : String(error) })),
                 );
@@ -289,11 +301,15 @@ describe('embedded entry (AC-008: the core runs and shows the tree without the t
         await host.start(config());
         host.invoke('5', 'budget.read', JSON.stringify({ root: ROOT, version: '1.10.0' }));
         await settle(() => replyTo(frames, '5') !== undefined);
-        expect(replyTo(frames, '5')).toMatchObject({ ok: { ms: expect.any(Number) } });
+        const read = (replyTo(frames, '5') as { ok: { ms: number; calls: number; frames: number } }).ok;
+        expect(read.ms).toEqual(expect.any(Number));
+        expect(read.calls).toBeGreaterThan(0);
+        expect(read.frames).toBeGreaterThan(0);
+        expect(read.frames).toBeLessThanOrEqual(read.calls);
         specSource.setFile(ROOT, '.specs/active/0001-a-spec.md', `${SPEC}\nedited\n`);
         host.invoke('6', 'budget.update', JSON.stringify({ path: '.specs/active/0001-a-spec.md' }));
         await settle(() => replyTo(frames, '6') !== undefined, 2000);
-        expect(replyTo(frames, '6')).toMatchObject({ ok: { ms: expect.any(Number) } });
+        expect(replyTo(frames, '6')).toMatchObject({ ok: { ms: expect.any(Number), calls: expect.any(Number), frames: expect.any(Number) } });
     });
 
     it('budget.update before budget.read answers an error', async () => {

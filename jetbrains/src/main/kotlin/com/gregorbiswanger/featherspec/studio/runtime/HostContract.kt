@@ -25,4 +25,4 @@ val INVOKE_COMMANDS: List<String> = listOf(
     "budget.read", "budget.update",
 )
 
-val FRAME_KINDS: List<String> = listOf("call", "emit", "reply", "ready", "failed")
+val FRAME_KINDS: List<String> = listOf("call", "calls", "emit", "reply", "ready", "failed")

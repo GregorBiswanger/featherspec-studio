@@ -43,6 +43,29 @@ class ProbeJsonTest {
     }
 
     @Test
+    fun `traffic reads the calls and frames a core reply carries`() {
+        assertEquals(Traffic(912L, 14L), ProbeJson.traffic("{\"ms\":12,\"calls\":912,\"frames\":14}"))
+        assertEquals(Traffic(0L, 0L), ProbeJson.traffic("{\"calls\":0,\"frames\":0}"))
+    }
+
+    @Test
+    fun `traffic is null when a count is missing or not a number or the reply is no object`() {
+        assertNull(ProbeJson.traffic("{\"ms\":12}"))
+        assertNull(ProbeJson.traffic("{\"calls\":1}"))
+        assertNull(ProbeJson.traffic("{\"frames\":1}"))
+        assertNull(ProbeJson.traffic("{\"calls\":\"1\",\"frames\":2}"))
+        assertNull(ProbeJson.traffic("{\"calls\":null,\"frames\":2}"))
+        assertNull(ProbeJson.traffic("null"))
+        assertNull(ProbeJson.traffic("[1,2]"))
+        assertNull(ProbeJson.traffic("not json"))
+    }
+
+    @Test
+    fun `elapsed milliseconds still read ms from a reply with calls and frames`() {
+        assertEquals(7L, ProbeJson.elapsedMs("{\"ms\":6.2,\"calls\":3,\"frames\":1}"))
+    }
+
+    @Test
     fun `the command arguments are escaped JSON`() {
         val read = JsonParser.parseString(ProbeJson.readArgs("file:///c:/a \"b\"", "1.11.0")).asJsonObject
         assertEquals("file:///c:/a \"b\"", read.get("root").asString)

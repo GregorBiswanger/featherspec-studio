@@ -1,12 +1,19 @@
 import type { AsyncCall, EmitChannel, NativeHost } from './contract';
 
+export interface BridgeStats {
+    calls: number;
+    frames: number;
+}
+
 export interface Bridge {
     callAsync<T>(name: AsyncCall, args: unknown): Promise<T>;
     resolve(id: string, resultJson: string): void;
+    resolveMany(batchJson: string): void;
     emit(channel: EmitChannel, payload: unknown): void;
     reply(id: string, result: { ok: unknown } | { error: string }): void;
     ready(): void;
     failed(error: string): void;
+    stats(): BridgeStats;
 }
 
 interface Pending {
@@ -14,31 +21,77 @@ interface Pending {
     reject(error: Error): void;
 }
 
+interface QueuedCall {
+    id: string;
+    name: AsyncCall;
+    args: unknown;
+}
+
 export function createBridge(native: NativeHost): Bridge {
     const pending = new Map<string, Pending>();
+    let queued: QueuedCall[] = [];
     let sequence = 0;
-    const send = (frame: Record<string, unknown>): void => native.send(JSON.stringify(frame));
+    let callsSent = 0;
+    let framesSent = 0;
+    const transmit = (frame: Record<string, unknown>): void => {
+        framesSent += 1;
+        native.send(JSON.stringify(frame));
+    };
+    const flush = (): void => {
+        if (queued.length === 0) {
+            return;
+        }
+        const batch = queued;
+        queued = [];
+        callsSent += batch.length;
+        if (batch.length === 1) {
+            const [only] = batch;
+            transmit({ k: 'call', id: only.id, name: only.name, args: only.args });
+            return;
+        }
+        transmit({ k: 'calls', calls: batch.map((call) => ({ id: call.id, name: call.name, args: call.args })) });
+    };
+    const send = (frame: Record<string, unknown>): void => {
+        flush();
+        transmit(frame);
+    };
+    const settle = (id: string, parsed: unknown): void => {
+        const entry = pending.get(id);
+        if (entry === undefined) {
+            return;
+        }
+        pending.delete(id);
+        if (isRecord(parsed) && typeof parsed.error === 'string') {
+            entry.reject(new Error(parsed.error));
+            return;
+        }
+        entry.resolve(isRecord(parsed) ? parsed.ok : undefined);
+    };
     return {
         callAsync<T>(name: AsyncCall, args: unknown): Promise<T> {
             sequence += 1;
             const id = String(sequence);
             return new Promise<T>((resolve, reject) => {
                 pending.set(id, { resolve: (value) => resolve(value as T), reject });
-                send({ k: 'call', id, name, args });
+                queued.push({ id, name, args });
+                if (queued.length === 1) {
+                    queueMicrotask(flush);
+                }
             });
         },
         resolve(id, resultJson) {
-            const entry = pending.get(id);
-            const parsed: unknown = JSON.parse(resultJson);
-            if (entry === undefined) {
+            settle(id, JSON.parse(resultJson));
+        },
+        resolveMany(batchJson) {
+            const parsed: unknown = JSON.parse(batchJson);
+            if (!Array.isArray(parsed)) {
                 return;
             }
-            pending.delete(id);
-            if (isRecord(parsed) && typeof parsed.error === 'string') {
-                entry.reject(new Error(parsed.error));
-                return;
+            for (const entry of parsed as unknown[]) {
+                if (isRecord(entry) && typeof entry.id === 'string') {
+                    settle(entry.id, entry);
+                }
             }
-            entry.resolve(isRecord(parsed) ? parsed.ok : undefined);
         },
         emit(channel, payload) {
             send({ k: 'emit', channel, payload });
@@ -51,6 +104,9 @@ export function createBridge(native: NativeHost): Bridge {
         },
         failed(error) {
             send({ k: 'failed', error });
+        },
+        stats() {
+            return { calls: callsSent, frames: framesSent };
         },
     };
 }

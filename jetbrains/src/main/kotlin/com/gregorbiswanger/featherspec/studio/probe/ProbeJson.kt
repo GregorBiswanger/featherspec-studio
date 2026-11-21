@@ -9,6 +9,8 @@ import kotlin.math.ceil
 
 data class ProbeProject(val version: String, val specPath: String)
 
+data class Traffic(val calls: Long, val frames: Long)
+
 object ProbeJson {
     fun unquote(raw: String): String = JsonParser.parseString(raw).asString
 
@@ -27,6 +29,25 @@ object ProbeJson {
         val member = root.asJsonObject.get("ms")
         require(member != null && member.isJsonPrimitive && member.asJsonPrimitive.isNumber) { "the core answered no ms: $okJson" }
         return ceil(member.asDouble).toLong()
+    }
+
+    fun traffic(okJson: String): Traffic? {
+        val root = try {
+            JsonParser.parseString(okJson)
+        } catch (failure: RuntimeException) {
+            return null
+        }
+        if (!root.isJsonObject) {
+            return null
+        }
+        val calls = count(root.asJsonObject, "calls") ?: return null
+        val frames = count(root.asJsonObject, "frames") ?: return null
+        return Traffic(calls, frames)
+    }
+
+    private fun count(root: JsonObject, key: String): Long? {
+        val member = root.get(key) ?: return null
+        return if (member.isJsonPrimitive && member.asJsonPrimitive.isNumber) member.asLong else null
     }
 
     fun readArgs(root: String, version: String): String =

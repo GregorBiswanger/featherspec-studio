@@ -81,6 +81,7 @@ class ConformanceProbe(
     private fun readMs(directory: Path, project: ProbeProject): Long {
         val root = FileUris.toUri(directory, HostOs.windows)
         val reply = runtime.invoke("budget.read", ProbeJson.readArgs(root, project.version)).get(CALL_MINUTES, TimeUnit.MINUTES)
+        noteTraffic("gen-200 read", reply)
         return ProbeJson.elapsedMs(reply)
     }
 
@@ -90,10 +91,18 @@ class ConformanceProbe(
         val edit = { Files.write(target, EDIT, StandardOpenOption.APPEND) }
         edit()
         runtime.invoke("budget.update", args).get(CALL_MINUTES, TimeUnit.MINUTES)
-        return bestOfThree {
+        var last = "null"
+        val best = bestOfThree {
             edit()
-            runtime.invoke("budget.update", args).get(CALL_MINUTES, TimeUnit.MINUTES)
+            last = runtime.invoke("budget.update", args).get(CALL_MINUTES, TimeUnit.MINUTES)
         }
+        noteTraffic("gen-200 update (last of three)", last)
+        return best
+    }
+
+    private fun noteTraffic(label: String, reply: String) {
+        val traffic = ProbeJson.traffic(reply)
+        notes.add(if (traffic == null) "$label: no calls and frames in the reply" else "$label: calls=${traffic.calls} frames=${traffic.frames}")
     }
 
     private fun readGen200(): String? {

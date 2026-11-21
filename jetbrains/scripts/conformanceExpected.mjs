@@ -73,6 +73,13 @@ function wire(result) {
 }
 
 function openHost(bundle, archive) {
+    const answer = async (call) => {
+        if (call.name === 'archive.read') {
+            const { bytes, maxUnpackedBytes } = call.args;
+            return { ok: wire(await archive.read(Buffer.from(bytes, 'base64'), maxUnpackedBytes)) };
+        }
+        return { error: `The conformance run cannot answer ${call.name}.` };
+    };
     const replies = new Map();
     const state = {};
     const onFrame = (frame) => {
@@ -88,14 +95,11 @@ function openHost(bundle, archive) {
                 waiter.resolve(frame.ok);
             }
         } else if (frame.k === 'call') {
-            if (frame.name === 'archive.read') {
-                const { bytes, maxUnpackedBytes } = frame.args;
-                void archive
-                    .read(Buffer.from(bytes, 'base64'), maxUnpackedBytes)
-                    .then((result) => state.host.resolve(frame.id, JSON.stringify({ ok: wire(result) })));
-            } else {
-                state.host.resolve(frame.id, JSON.stringify({ error: `The conformance run cannot answer ${frame.name}.` }));
-            }
+            void answer(frame).then((result) => state.host.resolve(frame.id, JSON.stringify(result)));
+        } else if (frame.k === 'calls') {
+            void Promise.all(frame.calls.map((call) => answer(call).then((result) => ({ id: call.id, ...result })))).then((results) =>
+                state.host.resolveMany(JSON.stringify(results)),
+            );
         }
     };
     const context = vm.createContext({

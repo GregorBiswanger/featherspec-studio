@@ -5,15 +5,25 @@ import { createSpecRepository, type SpecRepository } from '../../core/specs/spec
 
 const UPDATE_TIMEOUT_MS = 30_000;
 
+export interface BudgetStats {
+    calls: number;
+    frames: number;
+}
+
+export interface BudgetMeasure extends BudgetStats {
+    ms: number;
+}
+
 export interface BudgetProbeOptions {
     source: SpecSourcePort;
     clock: ClockPort;
     now: () => number;
+    stats: () => BudgetStats;
 }
 
 export interface BudgetProbe {
-    read(root: string, version: string): Promise<number>;
-    update(relativePath: string): Promise<number>;
+    read(root: string, version: string): Promise<BudgetMeasure>;
+    update(relativePath: string): Promise<BudgetMeasure>;
     dispose(): void;
 }
 
@@ -46,22 +56,28 @@ export function createBudgetProbe(options: BudgetProbeOptions): BudgetProbe {
         return repository;
     };
 
-    const timed = async (measured: () => Promise<void>): Promise<number> => {
+    const timed = async (measured: () => Promise<void>): Promise<BudgetMeasure> => {
+        const before = options.stats();
         const started = options.now();
         await measured();
-        return options.now() - started;
+        const ms = options.now() - started;
+        const after = options.stats();
+        return { ms, calls: after.calls - before.calls, frames: after.frames - before.frames };
     };
 
     return {
         async read(projectRoot, version) {
             root = projectRoot;
             await fresh().open({ root: projectRoot, version });
-            let best = Number.POSITIVE_INFINITY;
+            let best: BudgetMeasure | undefined;
             for (let attempt = 0; attempt < 3; attempt += 1) {
                 const current = fresh();
-                best = Math.min(best, await timed(() => current.open({ root: projectRoot, version })));
+                const measure = await timed(() => current.open({ root: projectRoot, version }));
+                if (best === undefined || measure.ms < best.ms) {
+                    best = measure;
+                }
             }
-            return best;
+            return best ?? { ms: 0, calls: 0, frames: 0 };
         },
         update(relativePath) {
             const current = repository;
@@ -69,16 +85,19 @@ export function createBudgetProbe(options: BudgetProbeOptions): BudgetProbe {
             if (current === undefined || projectRoot === undefined) {
                 return Promise.reject(new Error('budget.update needs a budget.read first.'));
             }
-            return new Promise<number>((resolve, reject) => {
+            return new Promise<BudgetMeasure>((resolve, reject) => {
                 const guard = options.clock.setTimeout(() => {
                     subscription.dispose();
                     reject(new Error('The repository did not report the change in time.'));
                 }, UPDATE_TIMEOUT_MS);
+                const before = options.stats();
                 const started = options.now();
                 const subscription = current.onDidChange(() => {
                     subscription.dispose();
                     guard.dispose();
-                    resolve(options.now() - started);
+                    const ms = options.now() - started;
+                    const after = options.stats();
+                    resolve({ ms, calls: after.calls - before.calls, frames: after.frames - before.frames });
                 });
                 watch.fire(projectRoot, relativePath);
             });

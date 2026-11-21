@@ -5,6 +5,7 @@ import com.google.gson.JsonParser
 
 sealed interface Frame {
     data class Call(val id: String, val name: String, val args: String) : Frame
+    data class Calls(val calls: List<Call>) : Frame
     data class Emit(val channel: String, val payload: String) : Frame
     data class Reply(val id: String, val ok: String?, val error: String?) : Frame
     data object Ready : Frame
@@ -47,10 +48,20 @@ object BridgeFrames {
 
     private fun fromObject(root: JsonObject): Frame? {
         return when (root.text("k")) {
-            "call" -> {
-                val id = root.text("id") ?: return null
-                val name = root.text("name") ?: return null
-                Frame.Call(id, name, root.raw("args"))
+            "call" -> callOf(root)
+            "calls" -> {
+                val member = root.get("calls")
+                if (member == null || !member.isJsonArray) {
+                    return null
+                }
+                val calls = ArrayList<Frame.Call>()
+                for (entry in member.asJsonArray) {
+                    if (!entry.isJsonObject) {
+                        return null
+                    }
+                    calls.add(callOf(entry.asJsonObject) ?: return null)
+                }
+                Frame.Calls(calls)
             }
             "emit" -> {
                 val channel = root.text("channel") ?: return null
@@ -68,6 +79,12 @@ object BridgeFrames {
             }
             else -> null
         }
+    }
+
+    private fun callOf(root: JsonObject): Frame.Call? {
+        val id = root.text("id") ?: return null
+        val name = root.text("name") ?: return null
+        return Frame.Call(id, name, root.raw("args"))
     }
 
     private fun JsonObject.text(key: String): String? {

@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
 const val READY_TIMEOUT_MS = 60_000L
+const val REPLY_BATCH_DELAY_MS = 1L
 
 class CoreRuntime(
     private val client: JBCefClient,
@@ -46,6 +47,9 @@ class CoreRuntime(
 
     private val lock = Any()
     private val pendingScripts = ArrayList<String>()
+    private val replyLock = Any()
+    private val queuedReplies = ArrayList<QueuedReply>()
+    private val flushScheduled = AtomicBoolean(false)
     private val replies = ConcurrentHashMap<String, CompletableFuture<String>>()
     private val ids = AtomicLong(0)
     private val startRequested = AtomicBoolean(false)
@@ -81,10 +85,18 @@ class CoreRuntime(
     }
 
     fun resolve(id: String, resultJson: String) {
-        send(BridgeFrames.script("resolve", id, resultJson))
+        synchronized(replyLock) { queuedReplies.add(QueuedReply(id, resultJson)) }
+        if (flushScheduled.compareAndSet(false, true)) {
+            AppExecutorUtil.getAppScheduledExecutorService().schedule(
+                Runnable { flushReplies() },
+                REPLY_BATCH_DELAY_MS,
+                TimeUnit.MILLISECONDS,
+            )
+        }
     }
 
     fun dispatch(event: String, payloadJson: String) {
+        flushReplies()
         send(BridgeFrames.script("dispatch", event, payloadJson))
     }
 
@@ -121,6 +133,7 @@ class CoreRuntime(
             return future
         }
         replies[id] = future
+        flushReplies()
         send(script(id))
         return future
     }
@@ -168,6 +181,23 @@ class CoreRuntime(
         }
     }
 
+    private fun flushReplies() {
+        synchronized(replyLock) {
+            flushScheduled.set(false)
+            if (queuedReplies.isEmpty()) {
+                return
+            }
+            val batch = ArrayList(queuedReplies)
+            queuedReplies.clear()
+            val only = batch.singleOrNull()
+            if (only != null) {
+                send(BridgeFrames.script("resolve", only.id, only.resultJson))
+            } else {
+                send(BridgeFrames.script("resolveMany", ReplyBatch.build(batch)))
+            }
+        }
+    }
+
     private fun send(script: String) {
         synchronized(lock) {
             if (disposed.get()) {
@@ -189,6 +219,13 @@ class CoreRuntime(
         try {
             when (val frame = BridgeFrames.parse(text)) {
                 is Frame.Call -> handler.call(frame.id, frame.name, frame.args)
+                is Frame.Calls -> frame.calls.forEach { call ->
+                    try {
+                        handler.call(call.id, call.name, call.args)
+                    } catch (failure: Throwable) {
+                        thisLogger().warn("The FeatherSpec core call ${call.name} could not be handled", failure)
+                    }
+                }
                 is Frame.Emit -> handler.emit(frame.channel, frame.payload)
                 is Frame.Reply -> complete(frame)
                 is Frame.Ready -> {

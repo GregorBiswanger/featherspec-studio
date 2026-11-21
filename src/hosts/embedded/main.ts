@@ -19,6 +19,7 @@ import { jetBrainsText, translatedPorts, translateTree } from './terms';
 export interface EmbeddedHost {
     start(configJson: string): Promise<void>;
     resolve(id: string, resultJson: string): void;
+    resolveMany(batchJson: string): void;
     dispatch(event: string, payloadJson: string): void;
     invoke(id: string, command: string, argsJson: string): void;
     conformance(id: string, inputJson: string): void;
@@ -113,6 +114,9 @@ export function createEmbeddedHost(native: NativeHost): EmbeddedHost {
         resolve(id, resultJson) {
             bridge.resolve(id, resultJson);
         },
+        resolveMany(batchJson) {
+            bridge.resolveMany(batchJson);
+        },
         dispatch(event, payloadJson) {
             if (running === undefined) {
                 return;
@@ -161,7 +165,7 @@ export function createEmbeddedHost(native: NativeHost): EmbeddedHost {
             const args: unknown = JSON.parse(argsJson);
             const { ports } = running;
             const probe = (): BudgetProbe => {
-                budgets ??= createBudgetProbe({ source: ports.specSource, clock: ports.clock, now: monotonicNow });
+                budgets ??= createBudgetProbe({ source: ports.specSource, clock: ports.clock, now: monotonicNow, stats: () => bridge.stats() });
                 return budgets;
             };
             runCommand(running.studio, command, args, probe, () => budgets).then(
@@ -295,7 +299,7 @@ async function runCommand(studio: Studio<EmbeddedPanel>, command: InvokeCommand,
             if (!isRecord(args) || typeof args.root !== 'string' || typeof args.version !== 'string') {
                 throw new Error('budget.read needs root and version.');
             }
-            return { ms: await probe().read(args.root, args.version) };
+            return await probe().read(args.root, args.version);
         }
         case 'budget.update': {
             if (!isRecord(args) || typeof args.path !== 'string') {
@@ -305,7 +309,7 @@ async function runCommand(studio: Studio<EmbeddedPanel>, command: InvokeCommand,
             if (current === undefined) {
                 throw new Error('budget.update needs a budget.read first.');
             }
-            return { ms: await current.update(args.path) };
+            return await current.update(args.path);
         }
     }
 }

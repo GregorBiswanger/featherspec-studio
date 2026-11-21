@@ -73,6 +73,6 @@ class BudgetsTest {
     @Test
     fun `a missing field is reported`() {
         val failure = Assertions.assertThrows(IllegalArgumentException::class.java) { Budgets.parse("{\"coreReadyMs\":1}") }
-        assertTrue(failure.message!!.contains("gen200ReadMs"))
+        assertTrue(failure.message!!.contains("coreCreateMs"))
     }
 }
