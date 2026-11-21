@@ -78,10 +78,18 @@ class SetupTarget(
         } catch (failure: IOException) {
             throw reasoned(failure)
         }
-        try {
-            Files.newOutputStream(path, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE).use { it.write(bytes) }
+        val output = try {
+            Files.newOutputStream(path, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)
         } catch (failure: FileAlreadyExistsException) {
             return "exists"
+        } catch (failure: IOException) {
+            if (Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
+                return "exists"
+            }
+            throw reasoned(failure)
+        }
+        try {
+            output.use { it.write(bytes) }
         } catch (failure: IOException) {
             deleteQuietly(path)
             throw reasoned(failure)
