@@ -3,7 +3,8 @@ package com.gregorbiswanger.featherspec.studio.panel
 import com.gregorbiswanger.featherspec.studio.HostTexts
 import com.gregorbiswanger.featherspec.studio.StudioProjectService
 import com.gregorbiswanger.featherspec.studio.runtime.CORE_ORIGIN
-import com.intellij.ide.ui.LafManager
+import com.gregorbiswanger.featherspec.studio.theme.ThemeBridge
+import com.gregorbiswanger.featherspec.studio.theme.ThemeKind
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.fileEditor.FileEditor
@@ -35,6 +36,7 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
     private var loading: JBLoadingPanel? = null
     private var browser: JBCefBrowser? = null
     private var query: JBCefJSQuery? = null
+    private var theme: ThemeBridge? = null
     @Volatile
     private var postRequest = ""
     private var disposed = false
@@ -128,9 +130,13 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
                 null
             }
             postRequest = jsQuery.inject("request")
+            val bridge = ThemeBridge(this) { script ->
+                runLater { browser?.cefBrowser?.executeJavaScript(script, CORE_ORIGIN, 0) }
+            }
+            theme = bridge
             val documents = mapOf<String, () -> String>(
                 "index.html" to { html },
-                "theme.css" to { "" },
+                "theme.css" to { bridge.css() },
             )
             client.addRequestHandler(PluginRequestHandler(documents), created.cefBrowser)
             removers.add(
@@ -191,10 +197,7 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
         loadPage()
     }
 
-    private fun currentBodyClass(): String {
-        val theme = LafManager.getInstance().currentUIThemeLookAndFeel
-        return PanelShim.bodyClass(theme.id, theme.name, theme.isDark)
-    }
+    private fun currentBodyClass(): String = theme?.bodyClass() ?: ThemeKind.LIGHT.bodyClass
 
     override fun getComponent(): JComponent = holder
 
@@ -219,6 +222,8 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
 
     override fun dispose() {
         disposed = true
+        theme?.dispose()
+        theme = null
         removers.forEach { it() }
         removers.clear()
         if (lifecycle.dispose() == PanelStep.CLOSED) {

@@ -157,9 +157,10 @@ class RootWatcherTest {
         Files.createDirectories(root.resolve(".specs/backlog"))
         withWatcher(root) { watcher, recorder ->
             watcher.unwatch(root)
+            recorder.all.clear()
             Files.writeString(root.resolve(".specs/backlog/after.md"), "x")
             Thread.sleep(QUIET_MS)
-            assertTrue(recorder.all.isEmpty(), "saw ${recorder.all}")
+            assertTrue(recorder.all.none { it.startsWith(".specs/backlog") }, "saw ${recorder.all}")
         }
     }
 

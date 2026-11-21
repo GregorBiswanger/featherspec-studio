@@ -2,6 +2,7 @@ package com.gregorbiswanger.featherspec.studio.panel
 
 import com.gregorbiswanger.featherspec.studio.runtime.BridgeFrames
 import com.gregorbiswanger.featherspec.studio.runtime.CORE_ORIGIN
+import com.gregorbiswanger.featherspec.studio.theme.ThemeKind
 
 object PanelShim {
     const val ROOT = "<div id=\"root\"></div>"
@@ -17,11 +18,8 @@ object PanelShim {
             "document.body.className = ${BridgeFrames.jsString(bodyClass)}; " +
             "})();</script>"
 
-    fun bodyClass(themeId: String, themeName: String, isDark: Boolean): String = when {
-        themeId.contains("HighContrast", ignoreCase = true) || themeName.contains("contrast", ignoreCase = true) -> "vscode-high-contrast"
-        isDark -> "vscode-dark"
-        else -> "vscode-light"
-    }
+    fun bodyClass(themeId: String, themeName: String, isDark: Boolean): String =
+        ThemeKind.of(isDark, "$themeId $themeName").bodyClass
 
     fun insert(html: String, nonce: String, bodyClass: String, postRequest: String): String {
         val withTheme = insertThemeLink(html)
