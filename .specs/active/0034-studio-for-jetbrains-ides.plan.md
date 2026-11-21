@@ -830,8 +830,8 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
   `http:`, `..`, other host, query, fragment, `core.js?x`.
 - **Tests first:** four test files red against `TODO()` bodies (CI run 1).
 - **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS.
-- [ ] **Verified (T-021):** —
-- **Notes:** Re-planned 2026-11-21 for V2 (ADR-004): GraalJS dropped; the browser glue is T-039.
+- [x] **Verified (T-021):** 2026-11-21 · CI `jetbrains.yml › plugin` green on 3 OS at `48c2209` (run 44869730563; compile and `test` incl. HostContractTest, BridgeFramesTest, CorePageTest, PluginResourcesTest) · first CI run at `9c2602e` compiled but the test executor failed (`org/junit/runners/model/Statement`: the platform test runtime needs JUnit 4) → `testRuntimeOnly(libs.junit4)` (4.13.2) · eslint exit 0, no `src/` change. Deviation: tests written alongside the code, no red CI run against `TODO()` bodies.
+- **Notes:** Re-planned 2026-11-21 for V2 (ADR-004): GraalJS dropped; the browser glue is T-039. (1) `Reply.ok`, `Call.args`, `Emit.payload` are raw JSON text (`"null"` when absent); a string `ok` stays quoted — callers unquote (`JsonParser.parseString(ok).asString`). (2) `CORE_ORIGIN`/`CORE_URL` are top-level consts in `runtime/CorePage.kt`. (3) `PluginResources.resolve` matches the whole path after the origin exactly (query, fragment, `..` refused); T-026 extends the private map and the refused-URL table. (4) `processResources` copies `dist/embedded/core.js` → `embedded/`, `dist/webview/` → `webview/`. (5) Gson comes from the platform jars on the test classpath.
 
 ### T-039 — Core runtime, part 2: hidden JCEF browser, transport and readiness (appended 2026-11-21, split from T-021 at G1)
 
@@ -866,8 +866,8 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
 - **Tests first:** `CoreStateTest` red against `TODO()`.
 - **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS (compiles; `CoreStateTest`); the browser glue is proven inside
   an IDE by T-022.
-- [ ] **Verified (T-039):** —
-- **Notes:** —
+- [x] **Verified (T-039):** 2026-11-21 · CI `jetbrains.yml › plugin` green on 3 OS at `48c2209` (run 44869730563; compile incl. the JCEF glue, `CoreStateTest` 10 tests) · the JCEF glue itself is proven in an IDE by T-022. Deviation: tests written alongside the code.
+- **Notes:** (1) `CoreRuntime` buffers every script (`dispatch`, `invoke`, `resolve`, conformance calls) until `core.html` finished loading; `start` goes first, then the buffer in order. (2) The 60 s timer starts in `start()` and fails the core only if still `Loading`. (3) `PluginRequestHandler` takes a `core.html` supplier: fresh nonce per request, `jsQuery.inject("frame")`. (4) `UNSUPPORTED`/`SUSPENDED` are set by `StudioProjectService` (T-025) before a client is created. (5) `dispose()` is idempotent: cancels the timer, fails pending futures, disposes the query then the browser on the EDT. (6) Request/load handlers are not removed from the shared `JBCefClient` on dispose — T-025 should give each core its own client (`JBCefApp.getInstance().createClient()`) and dispose it with the core. (7) Frames are handled on a bounded (1) pool, off the EDT.
 
 ### T-022 — Conformance, core readiness and budgets inside a Starter IDE on three OS
 
@@ -1302,8 +1302,8 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
 - **Do:** (1) one pass per fixture that renders its real shell state (S1–S9 as the shell service would produce it for that fixture) with and without the S7 restricted note, compared start vs head; (2) fail when an area's rendered text equals the loading text (a view the webview rejected silently must not count as compared). Negative controls for both.
 - **Tests first:** the two negative controls red, then green.
 - **Verify:** `local: node --test 'jetbrains/guards/*.test.mjs'`; `CI: jetbrains.yml › shared-guard` green.
-- [ ] **Verified (T-042):** —
-- **Notes:** —
+- [x] **Verified (T-042):** 2026-11-21 · red first for the loading-text check (pass 7 fail 1), then green · state check and restricted variant fail when disabled (mutation, restored) · `node --test 'jetbrains/guards/*.test.mjs'` 41/41 · `node --test jetbrains/scripts/*.test.mjs` 4/4 · `npm run test:unit` exit 0 (4019) · eslint, tsc ×2 exit 0 · `renderedTexts.mjs` against `3bc615c`: identical in 450 areas (shell 52, board 38, overview 38, planMap 180, detail 142), exit 0. Deviation: part (1) code before its tests; covered by the mutation-checked negative controls.
+- **Notes:** (1) `src/hosts/embedded/conformance.ts` gains `shell: studio.service.view()` in the conformance output (orchestrator-approved scope extension; no test pins the key set; `src/core` unchanged). (2) The state check reports only a mismatch between a rendered `section.panel-state` and the shell view's state: S2 (nested-project, not-fs-*) and S9 (incomplete-*) are legitimate. (3) The loading-text check overlaps the S4 panel-state rule; it adds coverage for loading text rendered as area content.
 
 ## Traceability
 

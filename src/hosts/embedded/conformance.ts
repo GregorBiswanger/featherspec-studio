@@ -82,6 +82,7 @@ export async function runConformance(input: ConformanceInput): Promise<string> {
         details,
         tree: studio.treeService.model(),
         status: studio.entry.situation(),
+        shell: studio.service.view(),
     });
     overviewListener.dispose();
     studio.navigation.dispose();

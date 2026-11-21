@@ -9,7 +9,12 @@ import { differingAreas } from './sharedGuard.mjs';
 const PROTOCOL_VERSION = 11;
 const SETTLE_MS = 50;
 const SKIPPED = new Set(['gen-200', 'setup-expected']);
-const SHELL = { state: undefined, restricted: false, projectName: 'fixture', area: 'board', target: undefined, selection: undefined, notice: undefined, rows: [] };
+const LOADING_TEXT = 'Loading project…';
+const SHELL = { state: undefined, restricted: false, area: 'board', target: undefined, selection: undefined, notice: undefined };
+const VARIANTS = [
+    { restricted: false, suffix: '' },
+    { restricted: true, suffix: ' restricted' },
+];
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, SETTLE_MS));
 
@@ -38,12 +43,25 @@ const evt = (type, payload) => ({ v: PROTOCOL_VERSION, kind: 'evt', type, payloa
 
 const textOf = (dom) => dom.window.document.body.textContent ?? '';
 
-const PROBLEM_SELECTOR = 'section.panel-state[data-state]';
+const contentOf = (dom) => {
+    const main = dom.window.document.querySelector('main') ?? dom.window.document.body;
+    const content = main.cloneNode(true);
+    content.querySelectorAll('h1').forEach((heading) => heading.remove());
+    return (content.textContent ?? '').replace(/\s+/g, ' ').trim();
+};
 
-const problemsOf = (dom, area) =>
-    [...dom.window.document.querySelectorAll(PROBLEM_SELECTOR)].map(
-        (element) => `${area}: the webview shows the panel state ${element.getAttribute('data-state')} (S5 is the protocol error screen)`,
-    );
+const PANEL_STATE_SELECTOR = 'section.panel-state[data-state]';
+
+const stateProblem = (dom, area, expected) => {
+    const rendered = [...dom.window.document.querySelectorAll(PANEL_STATE_SELECTOR)].map((element) => element.getAttribute('data-state'));
+    if (rendered.length === 0 && expected === undefined) {
+        return [];
+    }
+    if (rendered.length === 1 && rendered[0] === expected) {
+        return [];
+    }
+    return [`${area}: the webview shows the panel state ${rendered.join(', ') || 'none'} but the shell view expects ${expected ?? 'none'}`];
+};
 
 const sendIfPresent = (dom, type, view) => {
     if (view !== undefined && view !== null) {
@@ -55,54 +73,68 @@ export const renderFixture = async (bundle, name, views) => {
     const errors = [];
     const texts = {};
     const problems = [];
-    const record = (dom, area) => {
-        texts[area] = textOf(dom);
-        problems.push(...problemsOf(dom, area));
-    };
-    let seq = 1;
-    const shell = (dom, view) => send(dom, { ...evt('shell', { view }), seq: seq++ });
-    if (views.board !== undefined) {
-        const board = boot(bundle, errors);
-        await settle();
-        shell(board, SHELL);
-        sendIfPresent(board, 'board', views.board);
-        await settle();
-        record(board, `${name} board`);
-        if (views.overview === undefined) {
-            problems.push(`${name}: missing coverage, the conformance output has a board but no overview view`);
-        } else {
-            const overview = boot(bundle, errors);
-            await settle();
-            shell(overview, { ...SHELL, area: 'overview' });
-            sendIfPresent(overview, 'overview', views.overview);
-            await settle();
-            record(overview, `${name} overview`);
-        }
-        const planMap = boot(bundle, errors);
-        await settle();
-        shell(planMap, { ...SHELL, area: 'planMap' });
-        sendIfPresent(planMap, 'board', views.board);
-        await settle();
-        record(planMap, `${name} planMap`);
+    const shellView = { ...SHELL, ...(views.shell ?? {}) };
+    if (views.board !== undefined && views.overview === undefined) {
+        problems.push(`${name}: missing coverage, the conformance output has a board but no overview view`);
     }
-    const detail = boot(bundle, errors);
-    const mapDetail = boot(bundle, errors);
-    await settle();
-    for (const [stem, view] of Object.entries(views.details ?? {})) {
-        if (view === null || view === undefined) {
-            continue;
-        }
-        shell(detail, { ...SHELL, selection: { stem, number: view.number } });
-        sendIfPresent(detail, 'board', views.board);
-        sendIfPresent(detail, 'detail', view);
+    for (const variant of VARIANTS) {
+        const base = { ...shellView, restricted: variant.restricted };
+        const label = (area) => `${name} ${area}${variant.suffix}`;
+        const record = (dom, area) => {
+            texts[label(area)] = textOf(dom);
+            problems.push(...stateProblem(dom, label(area), base.state?.id));
+            if (contentOf(dom) === LOADING_TEXT) {
+                problems.push(`${label(area)}: the area shows only the loading text (${LOADING_TEXT}), so its view was not compared`);
+            }
+        };
+        let seq = 1;
+        const shell = (dom, view) => send(dom, { ...evt('shell', { view }), seq: seq++ });
+        const shellOnly = boot(bundle, errors);
         await settle();
-        record(detail, `${name} detail ${stem}`);
+        shell(shellOnly, { ...base, area: 'board' });
+        await settle();
+        record(shellOnly, 'shell');
         if (views.board !== undefined) {
-            shell(mapDetail, { ...SHELL, area: 'planMap', selection: { stem, number: view.number } });
-            sendIfPresent(mapDetail, 'board', views.board);
-            sendIfPresent(mapDetail, 'detail', view);
+            const board = boot(bundle, errors);
             await settle();
-            record(mapDetail, `${name} planMap ${stem}`);
+            shell(board, { ...base, area: 'board' });
+            sendIfPresent(board, 'board', views.board);
+            await settle();
+            record(board, 'board');
+            if (views.overview !== undefined) {
+                const overview = boot(bundle, errors);
+                await settle();
+                shell(overview, { ...base, area: 'overview' });
+                sendIfPresent(overview, 'overview', views.overview);
+                await settle();
+                record(overview, 'overview');
+            }
+            const planMap = boot(bundle, errors);
+            await settle();
+            shell(planMap, { ...base, area: 'planMap' });
+            sendIfPresent(planMap, 'board', views.board);
+            await settle();
+            record(planMap, 'planMap');
+        }
+        const detail = boot(bundle, errors);
+        const mapDetail = boot(bundle, errors);
+        await settle();
+        for (const [stem, view] of Object.entries(views.details ?? {})) {
+            if (view === null || view === undefined) {
+                continue;
+            }
+            shell(detail, { ...base, area: 'board', selection: { stem, number: view.number } });
+            sendIfPresent(detail, 'board', views.board);
+            sendIfPresent(detail, 'detail', view);
+            await settle();
+            record(detail, `detail ${stem}`);
+            if (views.board !== undefined) {
+                shell(mapDetail, { ...base, area: 'planMap', selection: { stem, number: view.number } });
+                sendIfPresent(mapDetail, 'board', views.board);
+                sendIfPresent(mapDetail, 'detail', view);
+                await settle();
+                record(mapDetail, `planMap ${stem}`);
+            }
         }
     }
     if (errors.length > 0) {
