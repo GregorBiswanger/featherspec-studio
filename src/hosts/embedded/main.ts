@@ -11,7 +11,8 @@ import { buildWebviewHtml } from '../../adapters/vscode/webviewHtml';
 import { createBridge, isRecord, type Bridge } from './bridge';
 import { INVOKE_COMMANDS, type AsyncCall, type CoreConfig, type InvokeCommand, type NativeHost } from './contract';
 import { createMirrors, type Mirrors } from './mirrors';
-import { createEmbeddedPorts, type EmbeddedPorts } from './ports';
+import { archivePortOf, createEmbeddedPorts, type EmbeddedPorts } from './ports';
+import { parseConformanceInput, runConformance, runSetupConformance } from './conformance';
 import { jetBrainsText, translatedPorts, translateTree } from './terms';
 
 export interface EmbeddedHost {
@@ -19,6 +20,8 @@ export interface EmbeddedHost {
     resolve(id: string, resultJson: string): void;
     dispatch(event: string, payloadJson: string): void;
     invoke(id: string, command: string, argsJson: string): void;
+    conformance(id: string, inputJson: string): void;
+    setupConformance(id: string, archiveJson: string): void;
 }
 
 export interface EmbeddedPanel extends PanelPort {
@@ -44,6 +47,7 @@ interface TreeRow {
 
 export function createEmbeddedHost(native: NativeHost): EmbeddedHost {
     const bridge = createBridge(native);
+    const archive = archivePortOf(bridge);
     let running: Running | undefined;
 
     const shellActions: ShellActionsPort = {
@@ -60,6 +64,15 @@ export function createEmbeddedHost(native: NativeHost): EmbeddedHost {
         copyMergePrompt: async () => {
             await running?.studio.setup.copyMergePrompt();
         },
+    };
+
+    const settle = (id: string, work: () => Promise<string>): void => {
+        Promise.resolve()
+            .then(work)
+            .then(
+                (ok) => bridge.reply(id, { ok }),
+                (error: unknown) => bridge.reply(id, { error: describe(error) }),
+            );
     };
 
     return {
@@ -148,6 +161,12 @@ export function createEmbeddedHost(native: NativeHost): EmbeddedHost {
                 (ok) => bridge.reply(id, { ok: ok ?? null }),
                 (error: unknown) => bridge.reply(id, { error: describe(error) }),
             );
+        },
+        conformance(id, inputJson) {
+            settle(id, () => runConformance(parseConformanceInput(inputJson)));
+        },
+        setupConformance(id, archiveJson) {
+            settle(id, () => runSetupConformance(parseArchiveText(archiveJson), archive));
         },
     };
 }
@@ -266,6 +285,14 @@ async function runCommand(studio: Studio<EmbeddedPanel>, command: InvokeCommand,
         case 'diagnostics':
             return { jsHeapBytes: usedJsHeapBytes() };
     }
+}
+
+function parseArchiveText(json: string): string {
+    const value: unknown = JSON.parse(json);
+    if (typeof value !== 'string') {
+        throw new Error('The setup conformance needs the release archive as base64 text.');
+    }
+    return value;
 }
 
 function parseConfig(json: string): CoreConfig {

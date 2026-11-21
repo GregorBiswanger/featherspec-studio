@@ -108,4 +108,4 @@ if (require.main === module) {
 	});
 }
 
-module.exports = { hostBuildOptions };
+module.exports = { hostBuildOptions, embeddedBuildOptions };

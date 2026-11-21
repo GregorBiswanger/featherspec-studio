@@ -1,5 +1,5 @@
 import type { HostPorts } from '../compose';
-import type { ArchiveEntryKind, ArchiveReadResult } from '../../core/ports/releaseArchive';
+import type { ArchiveEntryKind, ArchiveReadResult, ReleaseArchivePort } from '../../core/ports/releaseArchive';
 import type { Disposable, WorkspaceFolderInfo } from '../../core/ports/host';
 import type { EntryKind, ReadOnlyFileSystem } from '../../core/ports/readOnlyFileSystem';
 import type { SourceEntry, SourceStat, SpecSourcePort } from '../../core/ports/specSource';
@@ -45,6 +45,18 @@ interface WireResponse {
     status: number;
     headers: Record<string, string>;
     body: string;
+}
+
+export function archivePortOf(bridge: Bridge): ReleaseArchivePort {
+    return {
+        read: async (bytes: Uint8Array, maxUnpackedBytes: number): Promise<ArchiveReadResult> => {
+            const result = await bridge.callAsync<WireArchiveResult>('archive.read', { bytes: toBase64(bytes), maxUnpackedBytes });
+            if (result.ok) {
+                return { ok: true, entries: result.entries.map((entry) => ({ path: entry.path, kind: entry.kind, bytes: fromBase64(entry.bytes) })) };
+            }
+            return result.failure === 'unreadable' ? { ok: false, failure: 'unreadable', detail: result.detail } : { ok: false, failure: 'too-large' };
+        },
+    };
 }
 
 export function createEmbeddedPorts(bridge: Bridge, mirrors: Mirrors, config: CoreConfig): EmbeddedPorts {
@@ -122,15 +134,7 @@ export function createEmbeddedPorts(bridge: Bridge, mirrors: Mirrors, config: Co
         },
     };
 
-    const archive = {
-        read: async (bytes: Uint8Array, maxUnpackedBytes: number): Promise<ArchiveReadResult> => {
-            const result = await bridge.callAsync<WireArchiveResult>('archive.read', { bytes: toBase64(bytes), maxUnpackedBytes });
-            if (result.ok) {
-                return { ok: true, entries: result.entries.map((entry) => ({ path: entry.path, kind: entry.kind, bytes: fromBase64(entry.bytes) })) };
-            }
-            return result.failure === 'unreadable' ? { ok: false, failure: 'unreadable', detail: result.detail } : { ok: false, failure: 'too-large' };
-        },
-    };
+    const archive = archivePortOf(bridge);
 
     const setupTarget: SetupTargetPort = {
         kind: (root, relativePath) => nullToUndefined<TargetEntryKind>(bridge.callAsync('target.kind', { root, relativePath })),
