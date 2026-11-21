@@ -79,11 +79,25 @@ jobs:
       - name: Run the Starter probe (Windows)
         if: runner.os == 'Windows'
         run: gradle -p jetbrains/spikes :ide:integrationTest
+      - name: Print spike results and IDE log excerpts
+        if: always()
+        shell: bash
+        run: |
+          for f in jetbrains/spikes/ide/build/spike-out/*.json; do echo "== $f"; cat "$f"; echo; done || true
+          find . -path '*ide-tests*' -name 'idea.log' -print0 | while IFS= read -r -d '' log; do
+            echo "== $log"; grep -iE 'featherspec|spike|graal|truffle|polyglot|SEVERE|ERROR' "$log" | tail -n 120
+          done || true
+      - name: Collect IDE logs
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p spike-logs
+          find . -path '*ide-tests*' -name '*.log' -size -20M -exec cp --parents {} spike-logs/ \; || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: spike-ide-${{ matrix.os }}
           path: |
             jetbrains/spikes/ide/build/spike-out/**
-            **/out/ide-tests/**
+            spike-logs/**
           if-no-files-found: warn
