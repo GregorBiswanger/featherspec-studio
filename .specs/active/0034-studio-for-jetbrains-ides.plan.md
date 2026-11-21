@@ -1214,8 +1214,8 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
   decide the unsupported branch.
 - **Tests first:** `NoJcefIdeTest` red on CI run 1 (no probe yet).
 - **Verify:** `CI: jetbrains.yml › ide-tests` green on both no-JCEF entries (ubuntu).
-- [ ] **Verified (T-040):** —
-- **Notes:** —
+- [x] **Verified (T-040):** 2026-11-21 · CI at `3f4221a` (run 44890486141): `ide-tests (ubuntu-latest, no JCEF unsupported)` green — `ide.browser.jcef.enabled=false` makes `JBCefApp.isSupported()` false; observed: state `unsupported`, `UnavailableNotice` with the reason and *Open help*, status `FeatherSpec unavailable`, three balloons (open, copyNextStep, setup) with the reason and *Open help*, settings component present, no ERROR/SEVERE of ours in `idea.log`; `ide-tests (ubuntu-latest, no JCEF suspended)` green via the step's fallback: without the sysctl JCEF still WORKED in IU 2025.3.1 (`NOJCEF-SUSPENDED-NOT-REACHABLE`, state `ready`), so `JcefAvailabilityTest` (T-029) and AC-042 (manual) decide the suspended branch. Runs before: the first found a real product bug — `StudioEditor` did not override `getFile` (SEVERE in the IDE log) → fixed in `f1cb3f3`; the log scan's false positive on another component's `Last Action: featherspec…` fixed in `3f4221a`. Deviation: tests written alongside the code.
+- **Notes:** (1) Pure `NoJcefReport.kt` (report, compare, unreachable rule, `IdeaLogScan`); glue `NoJcefProbe` (acts only in the Unavailable state; otherwise writes the observed state and stops). (2) Matrix dimension `nojcef: [none]` + two `include:` entries; job and artifact names carry the entry. (3) IDE logs live under `<repo>/out/ide-tests` (the Gradle working dir is `jetbrains/`). (4) The ADR-004 S-2 finding (Ubuntu suspends JCEF without the sysctl) does not hold for IU 2025.3.1 on today's runner image — record for Gregor.
 
 ### T-035 — Starter smoke on three OS
 
@@ -1263,8 +1263,8 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
   the repo tree for PEM headers and `PUBLISH_TOKEN=`-style assignments finds nothing. `node:test` for its pure parts.
 - **Tests first:** `pluginZip.test.mjs` red.
 - **Verify:** `local: node --test 'jetbrains/guards/*.test.mjs'`; `CI: jetbrains.yml › verify` (all products) and `› plugin` green.
-- [ ] **Verified (T-036):** —
-- **Notes:** —
+- [x] **Verified (T-036):** 2026-11-21 · CI at `3f4221a` (run 44890486141): `verify` green for idea, webstorm, rider, pycharm (each 2025.3.1 and 2026.3) and recommended — no compatibility problems; `plugin` 3 OS green with `pluginZip.mjs` (jar holds `embedded/core.js`, `webview/main.js`/`main.css` byte-equal to `dist/`, icons, no spike/test/Graal classes, plugin.xml id/since-build 253.29346/no until-build/two depends, ZIP ≤ 60 MB, no secrets in tracked files) and `treeFixtures.mjs` (the 7 tree fixtures equal a fresh conformance run); local `node --test 'jetbrains/guards/*.test.mjs'` 58/58. Deviation: tests written alongside the code.
+- **Notes:** (1) `pluginZip.mjs` replaces the T-001/T-005 plugin.xml shell step (Linux, needs `unzip`). (2) `treeFixtures.mjs` guards T-028 note 2 on all OS. (3) `failureLevel` is COMPATIBILITY_PROBLEMS only (AC-034); internal/override-only API usages are reported, not failed. (4) `-Pverify.product` selects one product per job; 2026.3 was released on 2026-11-05.
 
 ### T-037 — Docs sync, spike removal and the final gate run
 
@@ -1295,8 +1295,8 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
 - **Verify:** `local:` five gates incl. `npm run compile`, `node --test jetbrains/guards/ jetbrains/scripts/`,
   `npx vitest run src/adapters/node/docsScan.test.ts src/adapters/node/parity.test.ts`, the `grep` above empty; `CI:`
   every job of `jetbrains.yml` green on one commit.
-- [ ] **Verified (T-037):** —
-- **Notes:** —
+- [x] **Verified (T-037):** 2026-11-21 · local at `4be646e`: eslint, tsc ×2, `npm run compile`, `npm run test:unit` (4053 + 35 timing, incl. docsScan and parity), guards 58/58, scripts 5/5, `src/core` unchanged vs `3bc615c`, `.vsix` snapshot (11 files), graal/truffle/polyglot grep empty outside history; CI of the head: see G4. Docs step, no red test.
+- **Notes:** (1) AGENTS.md 14998 → 14991 of 15000 bytes — orchestrator proxy (Gregor confirms): the cap stays; detail moved into `.architecture/core.md`, small trims to entrypoint/module lines; the boundary line `src/hosts never imports vscode; src/hosts/embedded imports no Node.js built-in…` is in. (2) README `## JetBrains IDEs` (anchor `#jetbrains-ides`); release checklist `## JetBrains (manual) (0034)` with AC-040/041/042, no-JCEF, Windows cold start, open beside; docsScan's heading list updated accordingly. (3) CHANGELOG not touched: its first entry is the published 0.1.0 and docsScan asserts it — the JetBrains entry follows with spec 0036 (proxy, Gregor confirms). (4) `jetbrains/spikes/**` and `jetbrains-spikes.yml` removed; ADR-004 keeps them as run evidence (history). (5) Maps: `jetbrains.md` 34 lines, `core.md` 37, `hosts.md` 40.
 
 ### T-042 — Harden the rendered-text guard (G3 review findings 1–2, appended 2026-11-21)
 
