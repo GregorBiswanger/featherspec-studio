@@ -71,6 +71,8 @@ class StudioProjectService(private val project: Project) : Disposable {
 
     val selection = Observable<RowSelection?>(null)
 
+    val themeScripts = Observable<String?>(null)
+
     private val started = AtomicBoolean(false)
 
     private val config = CompletableFuture<String>()

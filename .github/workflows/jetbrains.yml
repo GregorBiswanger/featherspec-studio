@@ -193,7 +193,7 @@ jobs:
             nojcef: suspended
     name: ide-tests (${{ matrix.os }}${{ matrix.nojcef != 'none' && format(', no JCEF {0}', matrix.nojcef) || '' }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 75
+    timeout-minutes: 90
     steps:
       - name: Keep line endings as committed (Windows)
         if: runner.os == 'Windows'
@@ -238,7 +238,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          for f in jetbrains/build/probe-out/*.json jetbrains/build/probe-out/*.txt jetbrains/build/probe-out-setup/*.json jetbrains/build/probe-out-setup/*.txt jetbrains/build/probe-out-nojcef-*/*.json jetbrains/build/probe-out-nojcef-*/*.txt; do echo "== $f"; cat "$f"; echo; done || true
+          for f in jetbrains/build/probe-out/*.json jetbrains/build/probe-out/*.txt jetbrains/build/probe-out-setup/*.json jetbrains/build/probe-out-setup/*.txt jetbrains/build/probe-out-smoke/*.json jetbrains/build/probe-out-smoke/*.txt jetbrains/build/probe-out-nojcef-*/*.json jetbrains/build/probe-out-nojcef-*/*.txt; do echo "== $f"; cat "$f"; echo; done || true
           find . -path '*ide-tests*' -name 'idea.log' -print0 | while IFS= read -r -d '' log; do
             echo "== $log"; grep -iE 'featherspec|SEVERE|ERROR' "$log" | tail -n 120
           done || true
@@ -255,6 +255,7 @@ jobs:
           path: |
             jetbrains/build/probe-out/**
             jetbrains/build/probe-out-setup/**
+            jetbrains/build/probe-out-smoke/**
             jetbrains/build/probe-out-nojcef-*/**
             ide-logs/**
           if-no-files-found: warn

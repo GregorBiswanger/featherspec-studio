@@ -1,5 +1,6 @@
 package com.gregorbiswanger.featherspec.studio.probe
 
+import com.gregorbiswanger.featherspec.studio.tree.UnavailableNotice
 import com.gregorbiswanger.featherspec.studio.StudioProjectService
 import com.gregorbiswanger.featherspec.studio.actions.ActionTable
 import com.gregorbiswanger.featherspec.studio.runtime.CoreState
@@ -51,6 +52,19 @@ class NoJcefProbe(private val project: Project, private val out: Path) {
             )
             val service = project.getService(StudioProjectService::class.java)
             val state = awaitUnavailable(service.state)
+            if (state !is CoreState.Unavailable) {
+                val observed = NoJcefReport(
+                    state = NoJcefState.of(state),
+                    jcefSupported = JBCefApp.isSupported(),
+                    toolWindowContent = "",
+                    emptyText = "",
+                    status = "",
+                    balloons = emptyList(),
+                    settings = settingsComponentExists(),
+                )
+                Files.writeString(out.resolve(REPORT_FILE), observed.toJson())
+                return
+            }
             val content = toolWindowContent()
             val status = awaitStatus()
             val balloons = NoJcefCompare.ACTIONS.map { balloonAfter(it) }
@@ -100,7 +114,7 @@ class NoJcefProbe(private val project: Project, private val out: Path) {
             observed = onEdt {
                 val panel = window.contentManager.contents.firstOrNull()?.component as? SimpleToolWindowPanel
                 val inner = panel?.content
-                val empty = (inner as? JBPanelWithEmptyText)?.emptyText?.text.orEmpty()
+                val empty = (inner as? UnavailableNotice)?.lines?.joinToString("\n") ?: (inner as? JBPanelWithEmptyText)?.emptyText?.text.orEmpty()
                 (inner?.javaClass?.simpleName.orEmpty()) to empty
             }
             if (observed.first == NoJcefCompare.NOTICE_CLASS) {

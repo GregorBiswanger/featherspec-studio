@@ -8,9 +8,15 @@ import java.nio.file.Path
 class ProbeAutoRun : ProjectActivity {
     override suspend fun execute(project: Project) {
         val out = Path.of(System.getProperty(ProbeProperties.OUT) ?: return)
-        val noJcef = System.getProperty(ProbeProperties.PROBE) == NoJcefProbe.PROBE_NAME
+        val name = System.getProperty(ProbeProperties.PROBE)
         ApplicationManager.getApplication().executeOnPooledThread(
-            Runnable { if (noJcef) NoJcefProbe(project, out).run() else ProbeRun(project, out).run() },
+            Runnable {
+                when (name) {
+                    NoJcefProbe.PROBE_NAME -> NoJcefProbe(project, out).run()
+                    SmokeProbe.PROBE_NAME -> SmokeProbe(project, out).run()
+                    else -> ProbeRun(project, out).run()
+                }
+            },
         )
     }
 }

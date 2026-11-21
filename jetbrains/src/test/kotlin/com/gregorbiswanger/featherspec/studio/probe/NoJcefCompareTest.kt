@@ -90,6 +90,8 @@ class NoJcefCompareTest {
         assertTrue(NoJcefCompare.unreachable("unsupported", report("unsupported", state = "ready", supported = true)))
         assertFalse(NoJcefCompare.unreachable("unsupported", report("unsupported")))
         assertFalse(NoJcefCompare.unreachable("suspended", report("suspended", supported = true)))
+        assertTrue(NoJcefCompare.unreachable("suspended", report("suspended", state = "ready", supported = true)))
+        assertFalse(NoJcefCompare.unreachable("suspended", report("suspended", state = "failed", supported = true)))
         assertFalse(NoJcefCompare.unreachable("unsupported", "nonsense"))
     }
 

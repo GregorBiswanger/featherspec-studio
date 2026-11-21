@@ -64,9 +64,9 @@ class NoJcefIdeTest {
             println("NOJCEF-OBSERVED $kind $json")
             val unreachable = NoJcefCompare.unreachable(kind, json)
             if (unreachable) {
-                println("NOJCEF-UNSUPPORTED-NOT-REACHABLE ide.browser.jcef.enabled=false left JBCefApp.isSupported() true; observed: $json")
+                println("NOJCEF-${kind.uppercase()}-NOT-REACHABLE JCEF kept working in this run; observed: $json")
             }
-            Assumptions.assumeFalse(unreachable, "ide.browser.jcef.enabled=false does not make JCEF unsupported in this IDE; JcefAvailabilityTest and AC-042 decide")
+            Assumptions.assumeFalse(unreachable, "JCEF kept working, so the $kind branch is not reachable here; JcefAvailabilityTest and AC-042 decide")
             problems.addAll(NoJcefCompare.differences(kind, json))
         } else {
             problems.add("the probe wrote no $report")
@@ -76,7 +76,7 @@ class NoJcefIdeTest {
     }
 
     private fun logProblems(contextName: String): List<String> {
-        val root = Path.of("out", "ide-tests").toAbsolutePath()
+        val root = listOf(Path.of("out", "ide-tests"), Path.of("..", "out", "ide-tests")).map { it.toAbsolutePath().normalize() }.firstOrNull { Files.isDirectory(it) } ?: Path.of("..", "out", "ide-tests").toAbsolutePath().normalize()
         if (!Files.isDirectory(root)) {
             return listOf("no $root, so no idea.log to scan")
         }

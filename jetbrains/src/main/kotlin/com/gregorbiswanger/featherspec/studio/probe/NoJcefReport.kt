@@ -110,11 +110,14 @@ object NoJcefCompare {
     }
 
     fun unreachable(expectedKind: String, json: String): Boolean {
-        if (expectedKind != NoJcefState.UNSUPPORTED) {
-            return false
-        }
         val root = parse(json) ?: return false
-        return root.get("jcefSupported")?.takeIf { it.isJsonPrimitive }?.asBoolean == true
+        val supported = root.get("jcefSupported")?.takeIf { it.isJsonPrimitive }?.asBoolean == true
+        val state = root.get("state")?.takeIf { it.isJsonPrimitive }?.asString
+        return when (expectedKind) {
+            NoJcefState.UNSUPPORTED -> supported
+            NoJcefState.SUSPENDED -> supported && (state == "ready" || state == "loading")
+            else -> false
+        }
     }
 
     private fun parse(json: String): JsonObject? = try {

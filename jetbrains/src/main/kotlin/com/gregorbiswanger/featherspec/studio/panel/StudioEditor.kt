@@ -22,6 +22,7 @@ import java.awt.BorderLayout
 import java.awt.event.ActionListener
 import java.beans.PropertyChangeListener
 import java.util.UUID
+import com.intellij.openapi.vfs.VirtualFile
 import javax.swing.JComponent
 import javax.swing.JPanel
 
@@ -131,7 +132,13 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
             }
             postRequest = jsQuery.inject("request")
             val bridge = ThemeBridge(this) { script ->
-                runLater { browser?.cefBrowser?.executeJavaScript(script, CORE_ORIGIN, 0) }
+                runLater {
+                    val current = browser
+                    if (current != null) {
+                        current.cefBrowser.executeJavaScript(script, CORE_ORIGIN, 0)
+                        service.themeScripts.set(script)
+                    }
+                }
             }
             theme = bridge
             val documents = mapOf<String, () -> String>(
@@ -204,6 +211,8 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
     override fun getPreferredFocusedComponent(): JComponent? = holder
 
     override fun getName(): String = StudioFile.NAME
+
+    override fun getFile(): VirtualFile = service.studioFile
 
     override fun getState(level: FileEditorStateLevel): FileEditorState = FileEditorState.INSTANCE
 

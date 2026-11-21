@@ -7,6 +7,8 @@ import com.intellij.ui.components.JBPanelWithEmptyText
 import java.awt.event.ActionListener
 
 class UnavailableNotice(content: NoticeContent) : JBPanelWithEmptyText() {
+    val lines: List<String> = listOf(content.text, content.helpLabel)
+
     init {
         withEmptyText(content.text)
         emptyText.appendLine(

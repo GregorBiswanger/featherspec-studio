@@ -1,0 +1,213 @@
+package com.gregorbiswanger.featherspec.studio.probe
+
+import com.google.gson.JsonArray
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
+import com.gregorbiswanger.featherspec.studio.theme.ContrastReport
+import com.gregorbiswanger.featherspec.studio.theme.ThemeMapping
+
+object SmokeBudgets {
+    const val LOADING_MS = 1_000L
+    const val FRAME_MS = 1_000L
+    const val EXTERNAL_MS = 2_000L
+    const val IN_IDE_MS = 500L
+    const val THEME_MS = 500L
+}
+
+data class ThemeRecord(
+    val wanted: String,
+    val found: String,
+    val expectedBodyClass: String,
+    val bodyClass: String,
+    val ms: Long,
+    val scripts: Int,
+    val incompleteScripts: Int,
+    val missingVariables: List<String>,
+    val contrast: ContrastReport,
+)
+
+data class SmokeReport(
+    val os: String,
+    val stateAtOpen: String,
+    val loadingMs: Long,
+    val firstFrameMs: Long,
+    val reopenFrameMs: Long,
+    val externalTreeMs: Long,
+    val externalStatusMs: Long,
+    val inIdeTreeMs: Long,
+    val inIdeStatusMs: Long,
+    val inIdePanelMs: Long,
+    val expectedArea: String,
+    val expectedSelection: String,
+    val restoredArea: String,
+    val restoredSelection: String,
+    val restoreFrameMs: Long,
+    val themes: List<ThemeRecord>,
+    val files: FileChanges,
+    val notes: List<String>,
+) {
+    fun toJson(): String {
+        val root = JsonObject()
+        root.addProperty("os", os)
+        root.addProperty("stateAtOpen", stateAtOpen)
+        root.addProperty("loadingMs", loadingMs)
+        root.addProperty("firstFrameMs", firstFrameMs)
+        root.addProperty("reopenFrameMs", reopenFrameMs)
+        root.addProperty("externalTreeMs", externalTreeMs)
+        root.addProperty("externalStatusMs", externalStatusMs)
+        root.addProperty("inIdeTreeMs", inIdeTreeMs)
+        root.addProperty("inIdeStatusMs", inIdeStatusMs)
+        root.addProperty("inIdePanelMs", inIdePanelMs)
+        root.addProperty("expectedArea", expectedArea)
+        root.addProperty("expectedSelection", expectedSelection)
+        root.addProperty("restoredArea", restoredArea)
+        root.addProperty("restoredSelection", restoredSelection)
+        root.addProperty("restoreFrameMs", restoreFrameMs)
+        root.add("themes", JsonArray().also { array -> themes.forEach { array.add(themeJson(it)) } })
+        root.add("created", strings(files.created))
+        root.add("changed", strings(files.changed))
+        root.add("deleted", strings(files.deleted))
+        root.add("notes", strings(notes))
+        return root.toString()
+    }
+
+    private fun themeJson(theme: ThemeRecord): JsonObject {
+        val entry = JsonObject()
+        entry.addProperty("wanted", theme.wanted)
+        entry.addProperty("found", theme.found)
+        entry.addProperty("expectedBodyClass", theme.expectedBodyClass)
+        entry.addProperty("bodyClass", theme.bodyClass)
+        entry.addProperty("ms", theme.ms)
+        entry.addProperty("scripts", theme.scripts)
+        entry.addProperty("incompleteScripts", theme.incompleteScripts)
+        entry.add("missingVariables", strings(theme.missingVariables))
+        entry.addProperty("evaluated", theme.contrast.evaluated)
+        entry.add("failures", strings(theme.contrast.failures))
+        entry.add("skipped", strings(theme.contrast.skipped))
+        return entry
+    }
+
+    private fun strings(values: List<String>): JsonArray = JsonArray().also { array -> values.forEach { array.add(it) } }
+}
+
+object SmokeCompare {
+    fun smoke(json: String): List<String> {
+        val root = parse(json) ?: return listOf("the probe wrote no JSON object")
+        val problems = ArrayList<String>()
+        val state = text(root, "stateAtOpen")
+        if (state != "loading") {
+            problems.add("the core was '$state' when the tab opened, so the loading state could not be observed")
+        }
+        within(problems, "AC-007 loading panel", number(root, "loadingMs"), SmokeBudgets.LOADING_MS)
+        within(problems, "AC-007 first frame after Ready", number(root, "firstFrameMs"), null)
+        within(problems, "AC-007 frame after reopening", number(root, "reopenFrameMs"), SmokeBudgets.FRAME_MS)
+        within(problems, "AC-021 external change in the tree", number(root, "externalTreeMs"), SmokeBudgets.EXTERNAL_MS)
+        within(problems, "AC-021 external change in the status entry", number(root, "externalStatusMs"), SmokeBudgets.EXTERNAL_MS, optional = true)
+        within(problems, "AC-020 in-IDE change in the tree", number(root, "inIdeTreeMs"), SmokeBudgets.IN_IDE_MS)
+        within(problems, "AC-020 in-IDE change in the panel", number(root, "inIdePanelMs"), SmokeBudgets.IN_IDE_MS)
+        within(problems, "AC-020 in-IDE change in the status entry", number(root, "inIdeStatusMs"), SmokeBudgets.IN_IDE_MS, optional = true)
+        val expectedArea = text(root, "expectedArea")
+        val expectedSelection = text(root, "expectedSelection")
+        if (expectedArea.isEmpty() || expectedSelection.isEmpty()) {
+            problems.add("the probe set no area or selection to restore")
+        }
+        if (text(root, "restoredArea") != expectedArea) {
+            problems.add("area after reopening: expected '$expectedArea', observed '${text(root, "restoredArea")}'")
+        }
+        if (text(root, "restoredSelection") != expectedSelection) {
+            problems.add("selection after reopening: expected '$expectedSelection', observed '${text(root, "restoredSelection")}'")
+        }
+        within(problems, "frame after the restoring reopen", number(root, "restoreFrameMs"), SmokeBudgets.FRAME_MS)
+        val created = strings(root, "created")
+        if (created != listOf(SmokeFiles.EXTERNAL)) {
+            problems.add("AC-025 files created in the project: expected [${SmokeFiles.EXTERNAL}], observed $created")
+        }
+        val changed = strings(root, "changed")
+        if (changed.any { it != SmokeFiles.EDITED }) {
+            problems.add("AC-025 files changed in the project: expected at most [${SmokeFiles.EDITED}], observed $changed")
+        }
+        val deleted = strings(root, "deleted")
+        if (deleted.isNotEmpty()) {
+            problems.add("AC-025 files deleted from the project: $deleted")
+        }
+        return problems
+    }
+
+    fun themes(json: String): List<String> {
+        val root = parse(json) ?: return listOf("the probe wrote no JSON object")
+        val problems = ArrayList<String>()
+        val entries = root.get("themes")?.takeIf { it.isJsonArray }?.asJsonArray?.mapNotNull { asObject(it) } ?: emptyList()
+        if (entries.size != SmokeThemes.WANTED.size) {
+            problems.add("themes: expected ${SmokeThemes.WANTED.size} records, observed ${entries.size}")
+        }
+        SmokeThemes.WANTED.forEach { wanted ->
+            val entry = entries.firstOrNull { text(it, "wanted") == wanted.name }
+            if (entry == null) {
+                problems.add("${wanted.name}: no record")
+                return@forEach
+            }
+            themeProblems(wanted, entry, problems)
+        }
+        return problems
+    }
+
+    private fun themeProblems(wanted: ThemeWant, entry: JsonObject, problems: MutableList<String>) {
+        val name = wanted.name
+        if (text(entry, "found").isEmpty()) {
+            problems.add("$name: the IDE has no such theme")
+            return
+        }
+        if (text(entry, "bodyClass") != wanted.bodyClass) {
+            problems.add("$name: body class expected ${wanted.bodyClass}, observed '${text(entry, "bodyClass")}'")
+        }
+        within(problems, "AC-028 $name switch", number(entry, "ms"), SmokeBudgets.THEME_MS)
+        if (number(entry, "scripts") < 1) {
+            problems.add("$name: no update script reached the panel")
+        }
+        if (number(entry, "incompleteScripts") != 0L) {
+            problems.add("$name: ${number(entry, "incompleteScripts")} update script(s) lacked variables or the body class (AC-028)")
+        }
+        val missing = strings(entry, "missingVariables")
+        if (missing.isNotEmpty()) {
+            problems.add("$name: variables missing from the update: $missing (of ${ThemeMapping.names.size})")
+        }
+        strings(entry, "failures").forEach { problems.add("AC-029 $name: $it") }
+        val evaluated = number(entry, "evaluated")
+        val skipped = strings(entry, "skipped")
+        if (evaluated <= skipped.size) {
+            problems.add("AC-029 $name: only $evaluated contrast pairs evaluated, skipped $skipped")
+        }
+    }
+
+    private fun within(problems: MutableList<String>, label: String, ms: Long, max: Long?, optional: Boolean = false) {
+        if (ms < 0) {
+            if (!optional) {
+                problems.add("$label was not observed")
+            }
+            return
+        }
+        if (max != null && ms > max) {
+            problems.add("$label took $ms ms, the budget is $max ms")
+        }
+    }
+
+    private fun parse(json: String): JsonObject? = try {
+        asObject(JsonParser.parseString(json))
+    } catch (failure: RuntimeException) {
+        null
+    }
+
+    private fun asObject(element: JsonElement): JsonObject? = if (element.isJsonObject) element.asJsonObject else null
+
+    private fun text(root: JsonObject, name: String): String =
+        root.get(name)?.takeIf { it.isJsonPrimitive }?.asString.orEmpty()
+
+    private fun number(root: JsonObject, name: String): Long {
+        val member = root.get(name)
+        return if (member != null && member.isJsonPrimitive && member.asJsonPrimitive.isNumber) member.asLong else -1L
+    }
+
+    private fun strings(root: JsonObject, name: String): List<String> =
+        root.get(name)?.takeIf { it.isJsonArray }?.asJsonArray?.map { it.asString } ?: emptyList()
+}
