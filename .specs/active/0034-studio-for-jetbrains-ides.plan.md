@@ -426,7 +426,7 @@ decision in ADR-004; Marketplace vendor, certificate, secrets and first upload b
 - **Verify:** `local: npx vitest run src/adapters/node/docsScan.test.ts` green; `manual: Gregor reads ADR-004 and writes
   his decision into it` — no command can make a product decision.
 - [ ] **Verified (T-008):** —
-- **Notes:** 2026-11-21: draft `docs/decisions/ADR-004-jetbrains-host.md` written (recommends V2 hidden JCEF; Decision field open for Gregor at G1; S-2 PNGs still to add under `docs/decisions/adr-004/`).
+- **Notes:** 2026-11-21: draft `docs/decisions/ADR-004-jetbrains-host.md` written (recommends V2 hidden JCEF; Decision field open for Gregor at G1; S-2 PNGs added under `docs/decisions/adr-004/`).
 
 ### T-009 — VS Code guards in CI (`.vsix` list, JetBrains-only byte identity, workflows unchanged, mirror job)
 
