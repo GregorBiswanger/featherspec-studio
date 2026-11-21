@@ -73,6 +73,9 @@ jobs:
       - name: Install Xvfb (Linux)
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y xvfb
+      - name: Allow the JCEF sandbox (Linux, AppArmor user namespaces)
+        if: runner.os == 'Linux'
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
       - name: Run the Starter probe (Linux)
         if: runner.os == 'Linux'
         run: xvfb-run -a gradle -p jetbrains/spikes :ide:integrationTest
