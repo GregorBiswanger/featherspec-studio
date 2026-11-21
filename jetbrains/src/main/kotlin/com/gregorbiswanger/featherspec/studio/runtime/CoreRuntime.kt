@@ -19,10 +19,11 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
 const val READY_TIMEOUT_MS = 60_000L
-const val REPLY_BATCH_DELAY_MS = 1L
+const val REPLY_BATCH_DELAY_MS = 5L
 
 class CoreRuntime(
     private val client: JBCefClient,
@@ -50,6 +51,7 @@ class CoreRuntime(
     private val replyLock = Any()
     private val queuedReplies = ArrayList<QueuedReply>()
     private val flushScheduled = AtomicBoolean(false)
+    private val outstanding = AtomicInteger(0)
     private val replies = ConcurrentHashMap<String, CompletableFuture<String>>()
     private val ids = AtomicLong(0)
     private val startRequested = AtomicBoolean(false)
@@ -86,6 +88,10 @@ class CoreRuntime(
 
     fun resolve(id: String, resultJson: String) {
         synchronized(replyLock) { queuedReplies.add(QueuedReply(id, resultJson)) }
+        if (outstanding.updateAndGet { if (it > 0) it - 1 else 0 } == 0) {
+            flushReplies()
+            return
+        }
         if (flushScheduled.compareAndSet(false, true)) {
             AppExecutorUtil.getAppScheduledExecutorService().schedule(
                 Runnable { flushReplies() },
@@ -218,12 +224,18 @@ class CoreRuntime(
     private fun onFrame(text: String) {
         try {
             when (val frame = BridgeFrames.parse(text)) {
-                is Frame.Call -> handler.call(frame.id, frame.name, frame.args)
-                is Frame.Calls -> frame.calls.forEach { call ->
-                    try {
-                        handler.call(call.id, call.name, call.args)
-                    } catch (failure: Throwable) {
-                        thisLogger().warn("The FeatherSpec core call ${call.name} could not be handled", failure)
+                is Frame.Call -> {
+                    outstanding.incrementAndGet()
+                    handler.call(frame.id, frame.name, frame.args)
+                }
+                is Frame.Calls -> {
+                    outstanding.addAndGet(frame.calls.size)
+                    frame.calls.forEach { call ->
+                        try {
+                            handler.call(call.id, call.name, call.args)
+                        } catch (failure: Throwable) {
+                            thisLogger().warn("The FeatherSpec core call ${call.name} could not be handled", failure)
+                        }
                     }
                 }
                 is Frame.Emit -> handler.emit(frame.channel, frame.payload)
