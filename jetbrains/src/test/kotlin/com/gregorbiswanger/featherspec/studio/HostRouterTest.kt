@@ -29,14 +29,15 @@ class HostRouterTest {
         medium = fakePort("medium"),
         memory = fakePort("memory"),
         watch = fakePort("watch"),
+        panel = fakePort("panel"),
     )
 
     private fun parsed(reply: String) = JsonParser.parseString(reply).asJsonObject
 
     @Test
     fun `every async call is routed or deferred and never both`() {
-        val deferred = ASYNC_CALLS.filter { name -> CallRouter.DEFERRED_PREFIXES.any { name.startsWith(it) } }
         val routed = ASYNC_CALLS.filter { it in CallRouter.ROUTED }
+        val deferred = ASYNC_CALLS.filter { name -> name !in CallRouter.ROUTED && CallRouter.DEFERRED_PREFIXES.any { name.startsWith(it) } }
         assertTrue(CallRouter.ROUTED.keys.all { it in ASYNC_CALLS })
         assertEquals(emptyList<String>(), routed.filter { it in deferred })
         assertEquals(ASYNC_CALLS.toSet(), (routed + deferred).toSet())
@@ -60,6 +61,22 @@ class HostRouterTest {
             assertEquals("""{"error":"not yet"}""", router.answer(name, "{}"), name)
         }
         assertEquals(emptyList<Pair<String, String>>(), seen)
+    }
+
+    @Test
+    fun `the panel calls reach the panel port and the other actions stay deferred`() {
+        val router = fakeRouter()
+        assertEquals(setOf("actions.openStudio", "actions.reloadPanel"), CallRouter.ROUTED.filterValues { it == CallRouter.Group.PANEL }.keys)
+        assertEquals("panel", parsed(router.answer("actions.openStudio", "{}")).get("ok").asString)
+        assertEquals("panel", parsed(router.answer("actions.reloadPanel", "{}")).get("ok").asString)
+        assertEquals("""{"error":"not yet"}""", router.answer("actions.manageTrust", "{}"))
+        assertEquals("""{"error":"not yet"}""", router.answer("actions.openSetupGuide", "{}"))
+    }
+
+    @Test
+    fun `a router without a panel port answers an error for the panel calls`() {
+        val router = CallRouter(fakePort("files"), fakePort("medium"), fakePort("memory"), fakePort("watch"))
+        assertEquals("no answer for actions.openStudio", parsed(router.answer("actions.openStudio", "{}")).get("error").asString)
     }
 
     @Test

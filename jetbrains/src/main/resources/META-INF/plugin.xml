@@ -6,6 +6,7 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.jcef</depends>
     <extensions defaultExtensionNs="com.intellij">
+        <fileEditorProvider implementation="com.gregorbiswanger.featherspec.studio.panel.StudioEditorProvider"/>
         <postStartupActivity implementation="com.gregorbiswanger.featherspec.studio.StudioStartup"/>
         <postStartupActivity implementation="com.gregorbiswanger.featherspec.studio.probe.ProbeAutoRun"/>
     </extensions>

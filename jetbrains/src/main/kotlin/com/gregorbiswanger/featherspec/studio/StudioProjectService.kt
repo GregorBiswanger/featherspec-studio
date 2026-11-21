@@ -6,6 +6,7 @@ import com.gregorbiswanger.featherspec.studio.ports.HostOs
 import com.gregorbiswanger.featherspec.studio.ports.MediumPorts
 import com.gregorbiswanger.featherspec.studio.ports.ProjectFolders
 import com.gregorbiswanger.featherspec.studio.ports.SpecWatch
+import com.gregorbiswanger.featherspec.studio.panel.StudioFile
 import com.gregorbiswanger.featherspec.studio.ports.UiMemoryState
 import com.gregorbiswanger.featherspec.studio.runtime.CoreRuntime
 import com.gregorbiswanger.featherspec.studio.runtime.CoreState
@@ -20,15 +21,20 @@ import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.extensions.PluginId
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootEvent
 import com.intellij.openapi.roots.ModuleRootListener
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.jcef.JBCefApp
+import com.intellij.ui.jcef.JBCefClient
 import java.util.concurrent.atomic.AtomicBoolean
 
 private const val PLUGIN_ID = "com.gregorbiswanger.featherspec.studio"
+
+private const val OK_NULL = "{\"ok\":null}"
 
 @Service(Service.Level.PROJECT)
 class StudioProjectService(private val project: Project) : Disposable {
@@ -40,6 +46,14 @@ class StudioProjectService(private val project: Project) : Disposable {
     @Volatile
     var runtime: CoreRuntime? = null
         private set
+
+    @Volatile
+    var client: JBCefClient? = null
+        private set
+
+    val studioFile: VirtualFile = StudioFile.create()
+
+    val reloadRequests = Observable(0)
 
     private val started = AtomicBoolean(false)
 
@@ -58,6 +72,7 @@ class StudioProjectService(private val project: Project) : Disposable {
             medium = MediumPorts.under(PathManager.getSystemDir(), HostOs.windows)::answer,
             memory = { name, args -> UiMemoryState.getInstance().memory.answer(name, args, projectBase) },
             watch = { name, args -> specWatch.answer(name, args) },
+            panel = { name, _ -> panelCall(name) },
         ),
         resolve = { id, json -> runtime?.resolve(id, json) },
         execute = { block -> ApplicationManager.getApplication().executeOnPooledThread(Runnable { block() }) },
@@ -74,8 +89,29 @@ class StudioProjectService(private val project: Project) : Disposable {
         ApplicationManager.getApplication().executeOnPooledThread(Runnable { prepare() })
     }
 
+    fun openStudio() {
+        ApplicationManager.getApplication().invokeLater {
+            if (!project.isDisposed) {
+                FileEditorManager.getInstance(project).openFile(studioFile, true)
+            }
+        }
+    }
+
     override fun dispose() {
         runtime = null
+        client = null
+    }
+
+    private fun panelCall(name: String): String? = when (name) {
+        "actions.openStudio" -> {
+            openStudio()
+            OK_NULL
+        }
+        "actions.reloadPanel" -> {
+            reloadRequests.update { it + 1 }
+            OK_NULL
+        }
+        else -> null
     }
 
     private fun prepare() {
@@ -92,11 +128,12 @@ class StudioProjectService(private val project: Project) : Disposable {
             if (Disposer.isDisposed(this)) {
                 return
             }
-            val client = JBCefApp.getInstance().createClient()
-            Disposer.register(this, client)
-            val created = CoreRuntime(client, host, state, this)
-            created.startedAtNanos = startedAtNanos
-            runtime = created
+            val created = JBCefApp.getInstance().createClient()
+            Disposer.register(this, created)
+            client = created
+            val core = CoreRuntime(created, host, state, this)
+            core.startedAtNanos = startedAtNanos
+            runtime = core
             project.messageBus.connect(this).subscribe(
                 ModuleRootListener.TOPIC,
                 object : ModuleRootListener {
@@ -105,7 +142,7 @@ class StudioProjectService(private val project: Project) : Disposable {
                     }
                 },
             )
-            created.start(config)
+            core.start(config)
         } catch (failure: Exception) {
             fail(failure)
         }

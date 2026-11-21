@@ -14,9 +14,11 @@ import org.cef.misc.StringRef
 import org.cef.network.CefRequest
 import org.cef.network.CefResponse
 
-class PluginRequestHandler(private val coreHtml: () -> String) : CefRequestHandlerAdapter() {
+class PluginRequestHandler(private val documents: Map<String, () -> String>) : CefRequestHandlerAdapter() {
+    constructor(coreHtml: () -> String) : this(mapOf<String, () -> String>("core.html" to coreHtml))
+
     override fun onBeforeBrowse(browser: CefBrowser?, frame: CefFrame?, request: CefRequest?, userGesture: Boolean, isRedirect: Boolean): Boolean {
-        return isBlocked(request)
+        return isBlocked(request, documents)
     }
 
     override fun getResourceRequestHandler(
@@ -28,18 +30,19 @@ class PluginRequestHandler(private val coreHtml: () -> String) : CefRequestHandl
         requestInitiator: String?,
         disableDefaultHandling: BoolRef?,
     ): CefResourceRequestHandler? {
-        return PluginResourceRequestHandler(coreHtml)
+        return PluginResourceRequestHandler(documents)
     }
 }
 
-private fun isBlocked(request: CefRequest?): Boolean {
+private fun isBlocked(request: CefRequest?, documents: Map<String, () -> String>): Boolean {
     val url = request?.url ?: return true
-    return PluginResources.resolve(url) == null
+    val resource = PluginResources.resolve(url) ?: return true
+    return resource.path in PluginResources.documentPaths && resource.path !in documents
 }
 
-private class PluginResourceRequestHandler(private val coreHtml: () -> String) : CefResourceRequestHandlerAdapter() {
+private class PluginResourceRequestHandler(private val documents: Map<String, () -> String>) : CefResourceRequestHandlerAdapter() {
     override fun onBeforeResourceLoad(browser: CefBrowser?, frame: CefFrame?, request: CefRequest?): Boolean {
-        return isBlocked(request)
+        return isBlocked(request, documents)
     }
 
     override fun getResourceHandler(browser: CefBrowser?, frame: CefFrame?, request: CefRequest?): CefResourceHandler? {
@@ -49,8 +52,9 @@ private class PluginResourceRequestHandler(private val coreHtml: () -> String) :
     }
 
     private fun bytesOf(resource: Resource): ByteArray? {
-        if (resource.path == "core.html") {
-            return coreHtml().toByteArray(Charsets.UTF_8)
+        val document = documents[resource.path]
+        if (document != null) {
+            return document().toByteArray(Charsets.UTF_8)
         }
         return PluginRequestHandler::class.java.getResourceAsStream("/${resource.path}")?.use { it.readBytes() }
     }

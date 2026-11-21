@@ -52,8 +52,9 @@ class CallRouter(
     private val medium: CallPort,
     private val memory: CallPort,
     private val watch: CallPort,
+    private val panel: CallPort = { _, _ -> null },
 ) {
-    enum class Group { FILES, MEDIUM, MEMORY, WATCH }
+    enum class Group { FILES, MEDIUM, MEMORY, WATCH, PANEL }
 
     fun answer(name: String, argsJson: String): String {
         val group = ROUTED[name]
@@ -72,6 +73,7 @@ class CallRouter(
         Group.MEDIUM -> medium
         Group.MEMORY -> memory
         Group.WATCH -> watch
+        Group.PANEL -> panel
     }
 
     companion object {
@@ -89,6 +91,8 @@ class CallRouter(
             put("memory.set", Group.MEMORY)
             put("watch.add", Group.WATCH)
             put("watch.remove", Group.WATCH)
+            put("actions.openStudio", Group.PANEL)
+            put("actions.reloadPanel", Group.PANEL)
         }
 
         fun failed(message: String): String = JsonObject().apply { addProperty("error", message) }.toString()
