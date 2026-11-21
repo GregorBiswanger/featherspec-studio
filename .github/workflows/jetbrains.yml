@@ -149,3 +149,34 @@ jobs:
       - name: Compare the VS Code bundles with the parent commit
         if: steps.changed.outputs.run == 'true'
         run: node jetbrains/guards/sameBundles.mjs base .
+  shared-guard:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - name: Keep line endings as committed (Windows)
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.START_COMMIT }}
+          path: ${{ runner.temp }}/start
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: git diff --exit-code ${{ env.START_COMMIT }} -- src/core test/fixtures/next-step-baseline test/fixtures/read-baseline src/core/setup/mergePrompt.golden.txt .github/workflows/ci.yml .github/workflows/publish.yml
+      - run: npm ci
+        working-directory: ${{ runner.temp }}/start
+      - run: npm ci
+      - run: npm run package
+        working-directory: ${{ runner.temp }}/start
+      - run: npm run package
+      - run: node jetbrains/guards/sharedGuard.mjs "${{ runner.temp }}/start" .
+      - run: node jetbrains/guards/renderedTexts.mjs "${{ runner.temp }}/start" .
