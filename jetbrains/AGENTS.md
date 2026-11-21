@@ -4,7 +4,9 @@ Read `AGENTS.md` first. This folder is the IntelliJ Platform plugin of FeatherSp
 
 ## What lives here
 - `src/main/kotlin/com/gregorbiswanger/featherspec/studio/` — Kotlin host, root package `com.gregorbiswanger.featherspec.studio`.
-- `src/main/resources/META-INF/plugin.xml` — plugin manifest (id, `since-build`, the two `<depends>` lines).
+  Packages: `runtime/` bridge to the core page · `jcef/` · `ports/` host ports · `panel/` editor tab · `theme/` · `tree/` tool window ·
+  `actions/` · `status/` · `ui/` · `settings/` · `setup/` · `probe/` (CI probes, inert by default); inside view: `.architecture/jetbrains.md`.
+- `src/main/resources/META-INF/plugin.xml` — plugin manifest (id, the two `<depends>` lines; `since-build` is in `build.gradle.kts`).
 - `src/test/kotlin/…` — plain JUnit 5 tests; `src/integrationTest/kotlin/…` — Starter smoke and conformance.
 - `build.gradle.kts`, `settings.gradle.kts`, `gradle/libs.versions.toml` — build; versions live in the TOML.
 
@@ -16,6 +18,7 @@ Read `AGENTS.md` first. This folder is the IntelliJ Platform plugin of FeatherSp
 ## Kotlin conventions
 - Logic lives in pure classes with no `com.intellij` import, tested by plain JUnit 5.
 - Platform glue stays thin; the Starter smoke covers it.
+- Without JCEF only the settings page works; every other action shows the notice (help URL `JETBRAINS_TEXTS.helpUrl` → README `#jetbrains-ides`).
 - No comments in generated code. No new dependency without the owner's yes.
 
 ## Shared core
@@ -24,4 +27,4 @@ Read `AGENTS.md` first. This folder is the IntelliJ Platform plugin of FeatherSp
 - Host vocabulary: `src/shared/protocol/vocabulary.ts` (T-014); the webview reads it, the host does not invent UI strings.
 
 ## Context hygiene
-- Keep this file and the map `.architecture/jetbrains.md` short; the plan is `.specs/active/0034-studio-for-jetbrains-ides.plan.md`.
+- Keep this file and the map `.architecture/jetbrains.md` short; the plan is `.specs/active/0034-studio-for-jetbrains-ides.plan.md`. The spike code is gone (T-037).

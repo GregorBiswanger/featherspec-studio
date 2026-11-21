@@ -63,6 +63,8 @@
 - `jetbrains/` — Gradle (Kotlin JVM, IntelliJ Platform plugin); no local Gradle, no Gradle wrapper JAR committed.
 - Every Gradle, Kotlin and JVM check runs in CI only: `.github/workflows/jetbrains.yml`, job `plugin` (Ubuntu, Windows, macOS: `npm run package`, then `gradle -p jetbrains build buildPlugin verifyPluginStructure`, `plugin.xml` guard).
 - CI jobs `vscode-mirror`, `vscode-guards` (`node --test 'jetbrains/guards/*.test.mjs'`, VSIX file list, same bundles) and `shared-guard` (Ubuntu, Windows: `src/core` and protected paths unchanged since `3bc615c`, no test lost, rendered texts identical; T-020). `node jetbrains/scripts/conformanceExpected.mjs` writes the JVM conformance inputs and expected outputs to `jetbrains/build/conformance/` (T-019).
+- Other `jetbrains.yml` jobs: `verify` (Plugin Verifier, 2025.3.1 and 2026.3, per product: idea, webstorm, rider, pycharm, recommended), `ide-tests` (Starter IDE on 3 OS: conformance and budgets, smoke, setup, and two Linux no-JCEF entries). The ZIP is the `plugin-zip` artifact; `pluginZip.mjs` guards it. Read a run with `gh run view <id> --log-failed`; a Kotlin result exists only there.
+- Stack: Kotlin 2.2 (JVM 21), IntelliJ Platform Gradle plugin, `since-build` 253.29346 (2025.3.1), JCEF required (`com.intellij.modules.jcef`); Gradle 9.7.0 in CI. The spike code is removed (T-037).
 - Local gates stay as above; the sandbox cannot reach Maven or the Gradle portal.
 
 ## Quality gates

@@ -128,6 +128,28 @@ The settings are under **FeatherSpec Studio** in the Settings UI and apply at on
 | `featherspec-studio.modelHints` | `{}` | The names of your own models, `strong` and `fast`, for the coach line, for example `{ "strong": "my best model", "fast": "my quick model" }`. Plain text, at most 40 characters; Studio ships no model name and never switches a model. |
 | `featherspec-studio.assistant` | `none` | The AI assistant that **Send to Copilot** or **Send to Claude Code** opens: `none`, `copilot` (GitHub Copilot Chat, `GitHub.copilot-chat`) or `claudeCode` (Claude Code, `anthropic.claude-code`). Studio only fills the chat input and sends nothing; any other value acts as `none`. |
 
+## JetBrains IDEs
+
+FeatherSpec Studio also runs in JetBrains IDEs, with the same Overview, Board, Plan map and spec detail, and the same next step. It is tested in Rider and WebStorm; any IntelliJ-based IDE from version 2025.3.1 (build 253.29346) on can install it.
+
+**Install.** The plugin is not on the JetBrains Marketplace yet (a later spec, 0036, publishes it there). Until then, take the `plugin-zip` artifact of a green run of the *JetBrains* workflow on GitHub, unzip the download, and in the IDE choose **Settings | Plugins | gear | Install Plugin from Disk…** and pick the plugin ZIP. Restart the IDE when it asks.
+
+**What you get.** A **FeatherSpec Studio** tool window with the **Specs** tree (the same four groups as in VS Code, with the context actions Open Spec, Open Plan, Show in Plan Map and Copy Next Step), a count of Review and Blocked specs on its title, the Studio panel as an editor tab (**FeatherSpec Studio: Open** in Find Action), a status bar entry with the next step, and **FeatherSpec Studio: Set Up FeatherSpec**. The Studio commands are reachable through Find Action under the prefix `FeatherSpec Studio:`. The Studio takes the colours of the IDE theme, including High Contrast.
+
+**Copy prompt only.** Every step action is **Copy prompt**: it puts the prompt on your clipboard and you paste it into your assistant. There is no Send button and no `featherspec-studio.assistant` setting in the IDE; handing a prompt over to an assistant is a later spec (0035).
+
+**Settings.** **Settings | Tools | FeatherSpec Studio** holds *Show step tips* and the names of your *strong* and *fast* models. They apply to the whole IDE, not per project, and take effect at once.
+
+**Local and read-only.** As in VS Code, there is no account and no telemetry; the status history is stored on your machine outside the project, separately from VS Code's. The one network call is the download you start with **Set up FeatherSpec**, which uses the IDE's proxy settings. A project counts as trusted when the IDE trusts it; the Studio's trust action opens the IDE's help page on project security; it does not grant trust itself.
+
+**Without the embedded browser.** The panel is a web page, so the IDE needs its embedded browser (JCEF). If the IDE does not support JCEF, or the operating system's sandbox has suspended it (for example AppArmor on Ubuntu 24.04 and newer), the tool window shows a notice instead of the tree, the status bar says *FeatherSpec unavailable*, and only the settings page works. The IDE's own *Embedded Browser is suspended* notification offers the fix for the sandbox case; this section is the help page the notice opens.
+
+**Known limits in the IDE.**
+- The first start of a project needs a few seconds while the hidden browser loads the Studio's core; on Windows a cold start can take noticeably longer (up to about half a minute on a cold CI runner). The panel shows a loading state until then.
+- Opening a file *beside* the panel splits the editor through a platform call that can change between IDE versions; if it fails, the file opens in the current editor window.
+- The editor font of the panel follows a theme switch on the next theme change or when the tab is reopened.
+- A change made by another program to a FeatherSpec file shows within 2 seconds. Projects are found at the project folder and its content roots, not in subfolders.
+
 ## Privacy and stored data
 
 - Studio has no telemetry. It reads your workspace and writes only its own status history. The one exception is [Set up FeatherSpec](#set-up-featherspec): after you start it, it downloads the latest release from `github.com` and `codeload.github.com` (no account, no token, only a `User-Agent` header) and, once you confirm, writes the release files into the folder you chose. Nothing else contacts a network service on its own.

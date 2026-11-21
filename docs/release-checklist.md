@@ -343,6 +343,17 @@ Evidence for `docs/ux-audit/17-start-step-and-prompt-layout.md` §5 *Prüfen*, s
 - [x] **VSIX rebuilt** at 4304f86: 260.37 KB.
 - [ ] **Practice check** *(Gregor, 17 §5 *Prüfen*, `C:\projects\test`)*: Ready → Set active → T-001, with the new VSIX.
 
+## JetBrains (manual) (0034)
+
+Evidence for spec 0034 AC-040, AC-041 and AC-042; the plugin ZIP is the `plugin-zip` artifact of a green `JetBrains` run, installed with *Settings | Plugins | gear | Install Plugin from Disk…*. A difference to VS Code at the same commit fails a check unless `docs/jetbrains/parity.md` has a row *deliberately different* or *n-a* for it; Gregor adds such a row with its reason, then the check runs again.
+
+- [ ] **Rider** (AC-040, Gregor, `C:\projects\test\tip-splitter`): the Hands-On walkthrough from Set up FeatherSpec through the first implemented step, compared view by view with VS Code, in Light, a dark theme (Darcula or Islands Dark) and High Contrast, including a live theme switch. Record Rider's version.
+- [ ] **WebStorm** (AC-041, Gregor): the same walkthrough, comparison and pass rule; record WebStorm's version.
+- [ ] **Keyboard and screen reader** (AC-042, Gregor or a delegate, Rider and WebStorm): keyboard only into and out of the panel tab, Find Action and Escape; a screen reader reads tree rows, the status entry and the panel labels as in 0005 AC-023.
+- [ ] **Without JCEF** (AC-042): start an IDE with `ide.browser.jcef.enabled=false`; the tool window shows the notice with the reason and *Open help* (the README section *JetBrains IDEs*), the status bar says *FeatherSpec unavailable*, the settings page works.
+- [ ] **Cold start on Windows** (AC-040): the panel shows its loading state and is ready; note the seconds it took (CI runners measured up to about half a minute, the budget is 12 s).
+- [ ] **Open beside** (AC-040): a file opened from the detail with Ctrl+click opens in a split beside the panel; if it opens in the current window, note the IDE version.
+
 ## Go
 
 - [x] **Repository visibility** (public, 2026-11-20): the Marketplace page loads the README screenshots from
