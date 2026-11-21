@@ -110,8 +110,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: node --test 'jetbrains/guards/*.test.mjs'
       - run: npm ci
+      - run: node --test 'jetbrains/guards/*.test.mjs'
       - run: npm run package
       - run: node jetbrains/guards/vsixFiles.mjs
       - run: node jetbrains/guards/vsixFiles.mjs --self-test
