@@ -38,7 +38,7 @@ function text(value: unknown): string {
     return value;
 }
 
-function harness(options: Options = {}): { host: EmbeddedHost; frames: Frame[] } {
+function harness(options: Options = {}): { host: EmbeddedHost; frames: Frame[]; specSource: ReturnType<typeof createMemorySpecSource> } {
     const frames: Frame[] = [];
     const fileSystem = createMemoryFileSystem();
     const specSource = createMemorySpecSource();
@@ -145,11 +145,11 @@ function harness(options: Options = {}): { host: EmbeddedHost; frames: Frame[] }
     };
     const host = createEmbeddedHost(native);
     link.host = host;
-    return { host, frames };
+    return { host, frames, specSource };
 }
 
-async function settle(done: () => boolean): Promise<void> {
-    for (let attempt = 0; attempt < 500 && !done(); attempt += 1) {
+async function settle(done: () => boolean, attempts = 500): Promise<void> {
+    for (let attempt = 0; attempt < attempts && !done(); attempt += 1) {
         await new Promise<void>((resolve) => setTimeout(resolve, 0));
     }
 }
@@ -282,6 +282,26 @@ describe('embedded entry (AC-008: the core runs and shows the tree without the t
         host.invoke('3', 'panelHtml', JSON.stringify({ nonce: 'n1', cspSource: 'https://studio.featherspec.invalid', scriptUri: 'https://studio.featherspec.invalid/main.js', styleUri: 'https://studio.featherspec.invalid/main.css', reloaded: false }));
         await settle(() => replyTo(frames, '3') !== undefined);
         expect(replyTo(frames, '3')).toMatchObject({ ok: expect.stringContaining('data-host="jetbrains"') });
+    });
+
+    it('budget.read answers the best full-read time through the bridge ports and budget.update the update time', async () => {
+        const { host, frames, specSource } = harness();
+        await host.start(config());
+        host.invoke('5', 'budget.read', JSON.stringify({ root: ROOT, version: '1.10.0' }));
+        await settle(() => replyTo(frames, '5') !== undefined);
+        expect(replyTo(frames, '5')).toMatchObject({ ok: { ms: expect.any(Number) } });
+        specSource.setFile(ROOT, '.specs/active/0001-a-spec.md', `${SPEC}\nedited\n`);
+        host.invoke('6', 'budget.update', JSON.stringify({ path: '.specs/active/0001-a-spec.md' }));
+        await settle(() => replyTo(frames, '6') !== undefined, 2000);
+        expect(replyTo(frames, '6')).toMatchObject({ ok: { ms: expect.any(Number) } });
+    });
+
+    it('budget.update before budget.read answers an error', async () => {
+        const { host, frames } = harness();
+        await host.start(config());
+        host.invoke('7', 'budget.update', JSON.stringify({ path: 'x.md' }));
+        await settle(() => replyTo(frames, '7') !== undefined);
+        expect(replyTo(frames, '7')).toMatchObject({ error: expect.stringContaining('budget.read') });
     });
 
     it('diagnostics answers the heap field the probe reads', async () => {

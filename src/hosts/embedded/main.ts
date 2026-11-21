@@ -10,6 +10,7 @@ import { isRunActionPayload, isSelectPayload } from '../../shared/protocol/messa
 import { buildWebviewHtml } from '../../adapters/vscode/webviewHtml';
 import { createBridge, isRecord, type Bridge } from './bridge';
 import { INVOKE_COMMANDS, type AsyncCall, type CoreConfig, type InvokeCommand, type NativeHost } from './contract';
+import { createBudgetProbe, type BudgetProbe } from './budgets';
 import { createMirrors, type Mirrors } from './mirrors';
 import { archivePortOf, createEmbeddedPorts, type EmbeddedPorts } from './ports';
 import { parseConformanceInput, runConformance, runSetupConformance } from './conformance';
@@ -49,6 +50,7 @@ export function createEmbeddedHost(native: NativeHost): EmbeddedHost {
     const bridge = createBridge(native);
     const archive = archivePortOf(bridge);
     let running: Running | undefined;
+    let budgets: BudgetProbe | undefined;
 
     const shellActions: ShellActionsPort = {
         openFolder: () => Promise.reject(new Error('Opening a folder is not available in the embedded host.')),
@@ -157,7 +159,12 @@ export function createEmbeddedHost(native: NativeHost): EmbeddedHost {
                 return;
             }
             const args: unknown = JSON.parse(argsJson);
-            runCommand(running.studio, command, args).then(
+            const { ports } = running;
+            const probe = (): BudgetProbe => {
+                budgets ??= createBudgetProbe({ source: ports.specSource, clock: ports.clock, now: monotonicNow });
+                return budgets;
+            };
+            runCommand(running.studio, command, args, probe, () => budgets).then(
                 (ok) => bridge.reply(id, { ok: ok ?? null }),
                 (error: unknown) => bridge.reply(id, { error: describe(error) }),
             );
@@ -222,7 +229,7 @@ function mediumProxy(bridge: Bridge, root: string): RuntimeMedium {
     };
 }
 
-async function runCommand(studio: Studio<EmbeddedPanel>, command: InvokeCommand, args: unknown): Promise<unknown> {
+async function runCommand(studio: Studio<EmbeddedPanel>, command: InvokeCommand, args: unknown, probe: () => BudgetProbe, existing: () => BudgetProbe | undefined): Promise<unknown> {
     switch (command) {
         case 'open':
             if (!isOpenRequest(args)) {
@@ -284,6 +291,22 @@ async function runCommand(studio: Studio<EmbeddedPanel>, command: InvokeCommand,
             return panelHtml(args);
         case 'diagnostics':
             return { jsHeapBytes: usedJsHeapBytes() };
+        case 'budget.read': {
+            if (!isRecord(args) || typeof args.root !== 'string' || typeof args.version !== 'string') {
+                throw new Error('budget.read needs root and version.');
+            }
+            return { ms: await probe().read(args.root, args.version) };
+        }
+        case 'budget.update': {
+            if (!isRecord(args) || typeof args.path !== 'string') {
+                throw new Error('budget.update needs path.');
+            }
+            const current = existing();
+            if (current === undefined) {
+                throw new Error('budget.update needs a budget.read first.');
+            }
+            return { ms: await current.update(args.path) };
+        }
     }
 }
 
@@ -373,6 +396,10 @@ function panelHtml(args: unknown): string {
         throw new Error('panelHtml needs nonce, cspSource, scriptUri, styleUri and reloaded.');
     }
     return buildWebviewHtml({ nonce: args.nonce, cspSource: args.cspSource, scriptUri: args.scriptUri, styleUri: args.styleUri, reloaded: args.reloaded, test: false, host: 'jetbrains' });
+}
+
+function monotonicNow(): number {
+    return typeof globalThis.performance === 'object' ? globalThis.performance.now() : Date.now();
 }
 
 function usedJsHeapBytes(): number | null {

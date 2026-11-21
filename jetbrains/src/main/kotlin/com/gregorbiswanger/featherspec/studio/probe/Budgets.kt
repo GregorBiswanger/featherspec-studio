@@ -8,13 +8,17 @@ object BudgetLimits {
 
 data class Budgets(
     val coreReadyMs: Long,
+    val coreCreateMs: Long,
+    val coreLoadMs: Long,
     val gen200ReadMs: Long,
     val gen200UpdateMs: Long,
+    val gen200HarnessMs: Long,
     val coreReadyWarmMs: Long,
     val jsHeapBytes: Long?,
 ) {
     fun toJson(): String =
-        "{\"coreReadyMs\":$coreReadyMs,\"gen200ReadMs\":$gen200ReadMs,\"gen200UpdateMs\":$gen200UpdateMs," +
+        "{\"coreReadyMs\":$coreReadyMs,\"coreCreateMs\":$coreCreateMs,\"coreLoadMs\":$coreLoadMs," +
+            "\"gen200ReadMs\":$gen200ReadMs,\"gen200UpdateMs\":$gen200UpdateMs,\"gen200HarnessMs\":$gen200HarnessMs," +
             "\"coreReadyWarmMs\":$coreReadyWarmMs,\"jsHeapBytes\":${jsHeapBytes ?: "null"}}"
 
     fun violations(): List<String> = buildList {
@@ -36,6 +40,11 @@ data class Budgets(
     }
 
     companion object {
+        private const val NANOS_PER_MS = 1_000_000L
+
+        fun elapsedMs(startNanos: Long, endNanos: Long): Long =
+            if (startNanos == 0L || endNanos == 0L) -1L else (endNanos - startNanos) / NANOS_PER_MS
+
         fun parse(text: String): Budgets {
             fun read(name: String): String {
                 val match = Regex("\"" + name + "\"\\s*:\\s*(-?\\d+|null)").find(text)
@@ -43,8 +52,11 @@ data class Budgets(
             }
             return Budgets(
                 coreReadyMs = read("coreReadyMs").toLong(),
+                coreCreateMs = read("coreCreateMs").toLong(),
+                coreLoadMs = read("coreLoadMs").toLong(),
                 gen200ReadMs = read("gen200ReadMs").toLong(),
                 gen200UpdateMs = read("gen200UpdateMs").toLong(),
+                gen200HarnessMs = read("gen200HarnessMs").toLong(),
                 coreReadyWarmMs = read("coreReadyWarmMs").toLong(),
                 jsHeapBytes = read("jsHeapBytes").toLongOrNull(),
             )

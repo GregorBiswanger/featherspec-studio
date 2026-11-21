@@ -7,7 +7,16 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class BudgetsTest {
-    private val within = Budgets(11_999, 1_999, 999, 800, 123_456)
+    private val within = Budgets(
+        coreReadyMs = 11_999,
+        coreCreateMs = 3_000,
+        coreLoadMs = 4_000,
+        gen200ReadMs = 1_999,
+        gen200UpdateMs = 999,
+        gen200HarnessMs = 4_500,
+        coreReadyWarmMs = 800,
+        jsHeapBytes = 123_456,
+    )
 
     @Test
     fun `values at the edge of the limits pass`() {
@@ -37,8 +46,18 @@ class BudgetsTest {
     }
 
     @Test
-    fun `warm start and heap are recorded but never judged`() {
-        assertEquals(emptyList<String>(), within.copy(coreReadyWarmMs = 600_000, jsHeapBytes = null).violations())
+    fun `warm start, startup breakdown, harness time and heap are recorded but never judged`() {
+        assertEquals(
+            emptyList<String>(),
+            within.copy(coreReadyWarmMs = 600_000, coreCreateMs = -1, coreLoadMs = 600_000, gen200HarnessMs = 600_000, jsHeapBytes = null).violations(),
+        )
+    }
+
+    @Test
+    fun `elapsed milliseconds between two nanosecond marks, or minus one when a mark is missing`() {
+        assertEquals(1_500L, Budgets.elapsedMs(1_000_000_000L, 2_500_000_000L))
+        assertEquals(-1L, Budgets.elapsedMs(0L, 2_500_000_000L))
+        assertEquals(-1L, Budgets.elapsedMs(1_000_000_000L, 0L))
     }
 
     @Test
@@ -46,6 +65,8 @@ class BudgetsTest {
         assertEquals(within, Budgets.parse(within.toJson()))
         val noHeap = within.copy(jsHeapBytes = null)
         assertTrue(noHeap.toJson().contains("\"jsHeapBytes\":null"))
+        assertTrue(within.toJson().contains("\"gen200HarnessMs\":4500"))
+        assertTrue(within.toJson().contains("\"coreCreateMs\":3000"))
         assertNull(Budgets.parse(noHeap.toJson()).jsHeapBytes)
     }
 

@@ -33,6 +33,10 @@ class CoreRuntime(
     var startedAtNanos: Long = 0L
 
     @Volatile
+    var createdAtNanos: Long = 0L
+        private set
+
+    @Volatile
     var loadedAtNanos: Long = 0L
         private set
 
@@ -125,6 +129,7 @@ class CoreRuntime(
         if (disposed.get()) {
             return
         }
+        createdAtNanos = System.nanoTime()
         val created = JBCefBrowser.createBuilder()
             .setClient(client)
             .setOffScreenRendering(true)

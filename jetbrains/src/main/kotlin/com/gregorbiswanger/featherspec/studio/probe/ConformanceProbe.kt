@@ -1,8 +1,11 @@
 package com.gregorbiswanger.featherspec.studio.probe
 
+import com.gregorbiswanger.featherspec.studio.ports.FileUris
+import com.gregorbiswanger.featherspec.studio.ports.HostOs
 import com.gregorbiswanger.featherspec.studio.runtime.CoreRuntime
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import java.util.concurrent.TimeUnit
 
 const val GEN_200 = "gen-200"
@@ -48,15 +51,49 @@ class ConformanceProbe(
     }
 
     private fun measure(): Budgets {
-        val readyMs = (runtime.readyAtNanos - runtime.startedAtNanos) / NANOS_PER_MS
         val input = readGen200()
-        return Budgets(
-            coreReadyMs = readyMs,
-            gen200ReadMs = guarded("gen200ReadMs") { bestOfThree { conformance(requireNotNull(input)) } },
-            gen200UpdateMs = guarded("gen200UpdateMs") { bestOfThree { conformance(ProbeJson.touch(requireNotNull(input), it + 1)) } },
-            coreReadyWarmMs = guarded("coreReadyWarmMs") { warmReadyMs() },
-            jsHeapBytes = heap(),
-        )
+        val directory = Files.createTempDirectory("featherspec-gen200-")
+        try {
+            val project = input?.let { guardedProject(it, directory) }
+            return Budgets(
+                coreReadyMs = Budgets.elapsedMs(runtime.startedAtNanos, runtime.readyAtNanos),
+                coreCreateMs = Budgets.elapsedMs(runtime.startedAtNanos, runtime.createdAtNanos),
+                coreLoadMs = Budgets.elapsedMs(runtime.startedAtNanos, runtime.loadedAtNanos),
+                gen200ReadMs = guarded("gen200ReadMs") { readMs(directory, requireNotNull(project)) },
+                gen200UpdateMs = guarded("gen200UpdateMs") { updateMs(directory, requireNotNull(project)) },
+                gen200HarnessMs = guarded("gen200HarnessMs") { bestOfThree { conformance(requireNotNull(input)) } },
+                coreReadyWarmMs = guarded("coreReadyWarmMs") { warmReadyMs() },
+                jsHeapBytes = heap(),
+            )
+        } finally {
+            deleteTree(directory)
+        }
+    }
+
+    private fun guardedProject(input: String, directory: Path): ProbeProject? =
+        try {
+            ProbeJson.materialize(input, directory)
+        } catch (failure: Throwable) {
+            notes.add("gen-200 project could not be written: $failure")
+            null
+        }
+
+    private fun readMs(directory: Path, project: ProbeProject): Long {
+        val root = FileUris.toUri(directory, HostOs.windows)
+        val reply = runtime.invoke("budget.read", ProbeJson.readArgs(root, project.version)).get(CALL_MINUTES, TimeUnit.MINUTES)
+        return ProbeJson.elapsedMs(reply)
+    }
+
+    private fun updateMs(directory: Path, project: ProbeProject): Long {
+        val target = directory.resolve(project.specPath)
+        val args = ProbeJson.updateArgs(project.specPath)
+        val edit = { Files.write(target, EDIT, StandardOpenOption.APPEND) }
+        edit()
+        runtime.invoke("budget.update", args).get(CALL_MINUTES, TimeUnit.MINUTES)
+        return bestOfThree {
+            edit()
+            runtime.invoke("budget.update", args).get(CALL_MINUTES, TimeUnit.MINUTES)
+        }
     }
 
     private fun readGen200(): String? {
@@ -64,12 +101,22 @@ class ConformanceProbe(
         return if (Files.exists(path)) Files.readString(path) else null
     }
 
-    private fun bestOfThree(attempt: (Int) -> Unit): Long =
-        (0 until 3).minOf { index ->
+    private fun bestOfThree(attempt: () -> Unit): Long =
+        (0 until 3).minOf {
             val started = System.nanoTime()
-            attempt(index)
+            attempt()
             (System.nanoTime() - started) / NANOS_PER_MS
         }
+
+    private fun deleteTree(path: Path) {
+        try {
+            Files.walk(path).use { paths ->
+                paths.sorted(Comparator.reverseOrder<Path>()).forEach { Files.deleteIfExists(it) }
+            }
+        } catch (failure: Throwable) {
+            notes.add("temp directory $path was not removed: $failure")
+        }
+    }
 
     private fun guarded(label: String, block: () -> Long): Long =
         try {
@@ -93,5 +140,6 @@ class ConformanceProbe(
     private companion object {
         const val CALL_MINUTES = 3L
         const val NANOS_PER_MS = 1_000_000L
+        val EDIT: ByteArray = "\nedited\n".toByteArray(Charsets.UTF_8)
     }
 }
