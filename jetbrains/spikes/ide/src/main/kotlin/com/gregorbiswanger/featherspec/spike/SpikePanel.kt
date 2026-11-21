@@ -7,6 +7,7 @@ import com.intellij.openapi.fileEditor.FileEditorState
 import com.intellij.openapi.fileEditor.FileEditorStateLevel
 import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
@@ -17,7 +18,7 @@ import javax.swing.JComponent
 
 const val SPIKE_FILE_NAME = "FeatherSpec Studio spike"
 
-class SpikeEditorProvider : FileEditorProvider {
+class SpikeEditorProvider : FileEditorProvider, DumbAware {
     override fun accept(project: Project, file: VirtualFile): Boolean {
         return file.name == SPIKE_FILE_NAME
     }
