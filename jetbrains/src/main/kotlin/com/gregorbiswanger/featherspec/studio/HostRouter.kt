@@ -96,6 +96,7 @@ class CallRouter(
             put("watch.remove", Group.WATCH)
             put("actions.openStudio", Group.PANEL)
             put("actions.reloadPanel", Group.PANEL)
+            put("actions.manageTrust", Group.PANEL)
             put("clipboard.write", Group.SYSTEM)
             put("editor.open", Group.SYSTEM)
             listOf("ui.pick", "ui.notify", "ui.confirm", "ui.progressStart", "ui.openExternal").forEach { put(it, Group.UI) }

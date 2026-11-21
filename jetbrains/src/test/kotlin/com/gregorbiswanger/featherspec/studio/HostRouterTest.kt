@@ -68,10 +68,10 @@ class HostRouterTest {
     @Test
     fun `the panel calls reach the panel port and the other actions stay deferred`() {
         val router = fakeRouter()
-        assertEquals(setOf("actions.openStudio", "actions.reloadPanel"), CallRouter.ROUTED.filterValues { it == CallRouter.Group.PANEL }.keys)
+        assertEquals(setOf("actions.openStudio", "actions.reloadPanel", "actions.manageTrust"), CallRouter.ROUTED.filterValues { it == CallRouter.Group.PANEL }.keys)
         assertEquals("panel", parsed(router.answer("actions.openStudio", "{}")).get("ok").asString)
         assertEquals("panel", parsed(router.answer("actions.reloadPanel", "{}")).get("ok").asString)
-        assertEquals("""{"error":"not yet"}""", router.answer("actions.manageTrust", "{}"))
+        assertEquals("panel", parsed(router.answer("actions.manageTrust", "{}")).get("ok").asString)
         assertEquals("""{"error":"not yet"}""", router.answer("actions.openSetupGuide", "{}"))
     }
 

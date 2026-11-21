@@ -28,7 +28,6 @@ sealed interface Outcome {
 object ActionTable {
     const val ID_PREFIX = "featherspec.studio."
     const val TREE_POPUP_ID = "featherspec.studio.TreePopup"
-    const val SETTINGS_NAME = "FeatherSpec Studio"
 
     private const val NO_ARGS = "{}"
 

@@ -12,14 +12,18 @@ import com.gregorbiswanger.featherspec.studio.ports.SpecWatch
 import com.gregorbiswanger.featherspec.studio.ports.SystemCalls
 import com.gregorbiswanger.featherspec.studio.panel.StudioFile
 import com.gregorbiswanger.featherspec.studio.ports.UiMemoryState
+import com.gregorbiswanger.featherspec.studio.settings.SettingsTable
+import com.gregorbiswanger.featherspec.studio.settings.StudioSettings
 import com.gregorbiswanger.featherspec.studio.runtime.CoreRuntime
 import com.gregorbiswanger.featherspec.studio.runtime.CoreState
 import com.gregorbiswanger.featherspec.studio.runtime.CoreStateHolder
 import com.gregorbiswanger.featherspec.studio.runtime.UnavailableKind
 import com.gregorbiswanger.featherspec.studio.ui.HostUi
+import com.intellij.ide.BrowserUtil
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationActivationListener
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.application.ReadAction
@@ -33,6 +37,7 @@ import com.intellij.openapi.roots.ModuleRootListener
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.wm.IdeFrame
 import com.intellij.ui.jcef.JBCefApp
 import com.intellij.ui.jcef.JBCefClient
 import com.intellij.util.concurrency.AppExecutorUtil
@@ -71,6 +76,9 @@ class StudioProjectService(private val project: Project) : Disposable {
 
     @Volatile
     private var lastFolders: List<Folder> = emptyList()
+
+    @Volatile
+    private var trustWatch = TrustWatch(false)
 
     private val projectBase: String = project.basePath.orEmpty()
 
@@ -132,6 +140,24 @@ class StudioProjectService(private val project: Project) : Disposable {
         )
     }
 
+    fun dispatchEvent(event: String, payload: String) {
+        runtime?.dispatch(event, payload)
+    }
+
+    fun recheckTrust() {
+        ApplicationManager.getApplication().executeOnPooledThread(
+            Runnable {
+                try {
+                    if (trustWatch.grantedNow(TrustedProjects.isProjectTrusted(project))) {
+                        runtime?.dispatch(TrustWatch.EVENT, TrustWatch.PAYLOAD)
+                    }
+                } catch (failure: Exception) {
+                    thisLogger().warn("The FeatherSpec trust state could not be read", failure)
+                }
+            },
+        )
+    }
+
     override fun dispose() {
         hostUi.close()
         runtime = null
@@ -141,6 +167,12 @@ class StudioProjectService(private val project: Project) : Disposable {
     private fun panelCall(name: String): String? = when (name) {
         "actions.openStudio" -> {
             openStudio()
+            recheckTrust()
+            OK_NULL
+        }
+        "actions.manageTrust" -> {
+            BrowserUtil.browse(TrustWatch.HELP_URL)
+            recheckTrust()
             OK_NULL
         }
         "actions.reloadPanel" -> {
@@ -174,6 +206,14 @@ class StudioProjectService(private val project: Project) : Disposable {
                 object : ModuleRootListener {
                     override fun rootsChanged(event: ModuleRootEvent) {
                         ApplicationManager.getApplication().executeOnPooledThread(Runnable { sendFolders() })
+                    }
+                },
+            )
+            ApplicationManager.getApplication().messageBus.connect(this).subscribe(
+                ApplicationActivationListener.TOPIC,
+                object : ApplicationActivationListener {
+                    override fun applicationActivated(ideFrame: IdeFrame) {
+                        recheckTrust()
                     }
                 },
             )
@@ -229,11 +269,13 @@ class StudioProjectService(private val project: Project) : Disposable {
     private fun configJson(): String {
         val folders = currentFolders()
         lastFolders = folders
+        val trusted = TrustedProjects.isProjectTrusted(project)
+        trustWatch = TrustWatch(trusted)
         return CoreConfig.json(
             platform = CoreConfig.platform(HostOs.windows, HostOs.mac),
             studioVersion = PluginManagerCore.getPlugin(PluginId.getId(PLUGIN_ID))?.version ?: "0.0.0",
-            settings = emptyMap(),
-            trusted = TrustedProjects.isProjectTrusted(project),
+            settings = SettingsTable.values(StudioSettings.getInstance().model()),
+            trusted = trusted,
             folders = folders,
             memory = UiMemoryState.getInstance().memory.forProject(projectBase),
         )

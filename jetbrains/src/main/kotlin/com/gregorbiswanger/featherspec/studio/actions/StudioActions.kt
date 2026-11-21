@@ -1,6 +1,7 @@
 package com.gregorbiswanger.featherspec.studio.actions
 
 import com.gregorbiswanger.featherspec.studio.StudioProjectService
+import com.gregorbiswanger.featherspec.studio.settings.StudioConfigurable
 import com.intellij.notification.NotificationAction
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
@@ -36,7 +37,7 @@ class StudioAction : AnAction(), DumbAware {
         val service = project.getService(StudioProjectService::class.java)
         when (val outcome = ActionRules.outcome(row, service.selection.value, service.state.value)) {
             is Outcome.Notice -> UnavailableBalloon.show(project, outcome.kind)
-            Outcome.Settings -> ShowSettingsUtil.getInstance().showSettingsDialog(project, ActionTable.SETTINGS_NAME)
+            Outcome.Settings -> ShowSettingsUtil.getInstance().showSettingsDialog(project, StudioConfigurable::class.java)
             is Outcome.Invoke -> service.invokeAsync(outcome.command, outcome.args)
             Outcome.Skip -> Unit
         }

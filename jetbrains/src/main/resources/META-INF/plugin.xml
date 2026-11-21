@@ -10,6 +10,7 @@
         <postStartupActivity implementation="com.gregorbiswanger.featherspec.studio.StudioStartup"/>
         <postStartupActivity implementation="com.gregorbiswanger.featherspec.studio.probe.ProbeAutoRun"/>
         <toolWindow id="FeatherSpec Studio" anchor="left" icon="/icons/toolWindow.svg" factoryClass="com.gregorbiswanger.featherspec.studio.tree.StudioToolWindowFactory"/>
+        <applicationConfigurable parentId="tools" id="featherspec.studio.settings" displayName="FeatherSpec Studio" instance="com.gregorbiswanger.featherspec.studio.settings.StudioConfigurable"/>
         <notificationGroup id="FeatherSpec Studio" displayType="BALLOON"/>
         <statusBarWidgetFactory id="featherspec.studio.status" implementation="com.gregorbiswanger.featherspec.studio.status.StudioStatusWidgetFactory"/>
     </extensions>
