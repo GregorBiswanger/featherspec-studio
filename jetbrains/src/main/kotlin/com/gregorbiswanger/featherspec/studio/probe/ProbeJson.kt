@@ -1,5 +1,6 @@
 package com.gregorbiswanger.featherspec.studio.probe
 
+import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import java.nio.file.Files
@@ -56,6 +57,11 @@ object ProbeJson {
             addProperty("version", version)
         }.toString()
 
+    fun discoverArgs(roots: List<String>): String =
+        JsonObject().apply {
+            add("roots", JsonArray().also { array -> roots.forEach { array.add(it) } })
+        }.toString()
+
     fun updateArgs(path: String): String = JsonObject().apply { addProperty("path", path) }.toString()
 
     fun specKey(keys: Collection<String>): String? {
@@ -65,7 +71,7 @@ object ProbeJson {
             ?: specs.firstOrNull()
     }
 
-    fun materialize(inputJson: String, directory: Path): ProbeProject {
+    fun materializeFiles(inputJson: String, directory: Path): Set<String> {
         val root = JsonParser.parseString(inputJson).asJsonObject
         val files = root.getAsJsonObject("files")
         val base = directory.toAbsolutePath().normalize()
@@ -75,8 +81,13 @@ object ProbeJson {
             Files.createDirectories(target.parent)
             Files.write(target, Base64.getDecoder().decode(files.get(key).asString))
         }
-        val spec = requireNotNull(specKey(files.keySet())) { "the input has no spec file" }
-        return ProbeProject(root.get("version").asString, spec)
+        return files.keySet()
+    }
+
+    fun materialize(inputJson: String, directory: Path): ProbeProject {
+        val keys = materializeFiles(inputJson, directory)
+        val spec = requireNotNull(specKey(keys)) { "the input has no spec file" }
+        return ProbeProject(JsonParser.parseString(inputJson).asJsonObject.get("version").asString, spec)
     }
 
     private const val PREFERRED_SPEC = ".specs/active/0001-generated-spec.md"

@@ -105,4 +105,17 @@ class ProbeJsonTest {
         val input = "{\"files\":{\"AGENTS.md\":\"${b64("a")}\"},\"version\":\"1.11.0\"}"
         assertThrows(IllegalArgumentException::class.java) { ProbeJson.materialize(input, directory) }
     }
+
+    @Test
+    fun `the discover arguments carry every root as an escaped JSON array`() {
+        val roots = JsonParser.parseString(ProbeJson.discoverArgs(listOf("file:///a b", "file:///c\"d"))).asJsonObject.getAsJsonArray("roots")
+        assertEquals(listOf("file:///a b", "file:///c\"d"), roots.map { it.asString })
+    }
+
+    @Test
+    fun `materializeFiles writes the files of an input without a spec`(@TempDir directory: Path) {
+        val input = "{\"files\":{\"AGENTS.md\":\"${b64("a")}\"},\"version\":\"1.11.0\"}"
+        assertEquals(setOf("AGENTS.md"), ProbeJson.materializeFiles(input, directory))
+        assertEquals("a", Files.readString(directory.resolve("AGENTS.md")))
+    }
 }

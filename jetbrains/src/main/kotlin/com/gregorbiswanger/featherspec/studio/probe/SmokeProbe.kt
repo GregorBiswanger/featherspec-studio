@@ -82,19 +82,24 @@ class SmokeProbe(private val project: Project, private val out: Path) {
         check(firstFrameMs >= 0) { "no panel frame arrived after the core was ready" }
         settle()
 
-        closeTab()
-        val reopenMark = frames.mark()
-        val reopenStart = openTab()
-        val reopenFrameMs = frameMs(reopenMark, reopenStart, FRAME_WAIT_MS)
-        check(reopenFrameMs >= 0) { "no panel frame arrived after reopening the tab" }
+        val reopenFrameSamples = (0 until SmokeBudgets.FRAME_SAMPLES).map {
+            closeTab()
+            val reopenMark = frames.mark()
+            val reopenStart = openTab()
+            frameMs(reopenMark, reopenStart, FRAME_WAIT_MS).also { settle() }
+        }
+        check(SmokeReport.best(reopenFrameSamples) >= 0) { "no panel frame arrived after reopening the tab: $reopenFrameSamples" }
 
         closeTab()
+        val externalStatusBefore = service.host.status.value
         val externalTreeMark = trees.mark()
         val externalStatusMark = statuses.mark()
         val externalStart = System.nanoTime()
         Files.writeString(Path.of(base, ".specs", "backlog", "0099-smoke-ext.md"), SmokeFiles.EXTERNAL_TEXT)
+        val externalSpec = Path.of(base, SmokeFiles.EDITED)
+        Files.writeString(externalSpec, SmokeFiles.parkStatus(Files.readString(externalSpec)))
         val externalTreeMs = eventMs(trees, externalTreeMark, externalStart, EXTERNAL_WAIT_MS)
-        val externalStatusMs = eventMs(statuses, externalStatusMark, externalStart, EXTRA_WAIT_MS)
+        val externalStatusMs = eventMs(statuses, externalStatusMark, externalStart, EXTERNAL_WAIT_MS) { it != externalStatusBefore }
 
         val editMark = frames.mark()
         val editOpenStart = System.nanoTime()
@@ -103,7 +108,8 @@ class SmokeProbe(private val project: Project, private val out: Path) {
         settle()
         val file = LocalFileSystem.getInstance().refreshAndFindFileByPath("$base/${SmokeFiles.EDITED}")
         checkNotNull(file) { "the IDE cannot find ${SmokeFiles.EDITED}" }
-        val edited = SmokeFiles.appendToTitle(VfsUtil.loadText(file))
+        val edited = SmokeFiles.appendToTitle(SmokeFiles.resumeStatus(VfsUtil.loadText(file)))
+        val inIdeStatusBefore = service.host.status.value
         val inIdeTreeMark = trees.mark()
         val inIdeStatusMark = statuses.mark()
         val inIdeFrameMark = frames.mark()
@@ -111,7 +117,7 @@ class SmokeProbe(private val project: Project, private val out: Path) {
         onEdt { ApplicationManager.getApplication().runWriteAction { VfsUtil.saveText(file, edited) } }
         val inIdeTreeMs = eventMs(trees, inIdeTreeMark, inIdeStart, EXTERNAL_WAIT_MS)
         val inIdePanelMs = frameMs(inIdeFrameMark, inIdeStart, EXTERNAL_WAIT_MS, PANEL_UPDATES)
-        val inIdeStatusMs = eventMs(statuses, inIdeStatusMark, inIdeStart, EXTRA_WAIT_MS)
+        val inIdeStatusMs = eventMs(statuses, inIdeStatusMark, inIdeStart, EXTRA_WAIT_MS) { it != inIdeStatusBefore }
 
         val expectedArea = "board"
         val node = specNode()
@@ -120,12 +126,17 @@ class SmokeProbe(private val project: Project, private val out: Path) {
         invoke("tree.select", node.rowArgs())
         awaitShell(expectedArea, expectedSelection, SELECT_WAIT_MS)
         settle()
-        closeTab()
-        val restoreMark = frames.mark()
-        val restoreStart = openTab()
-        val restoreFrameMs = frameMs(restoreMark, restoreStart, FRAME_WAIT_MS)
-        val restored = frames.after(restoreMark).firstNotNullOfOrNull { PanelFrames.shell(it.second) }
-        settle()
+        val restoreFrameSamples = ArrayList<Long>()
+        val restoredFacts = ArrayList<ShellFacts?>()
+        repeat(SmokeBudgets.FRAME_SAMPLES) {
+            closeTab()
+            val restoreMark = frames.mark()
+            val restoreStart = openTab()
+            restoreFrameSamples.add(frameMs(restoreMark, restoreStart, FRAME_WAIT_MS))
+            restoredFacts.add(frames.after(restoreMark).firstNotNullOfOrNull { PanelFrames.shell(it.second) })
+            settle()
+        }
+        val restored = restoredFacts.firstOrNull { it == null || it.area != expectedArea || it.selection != expectedSelection } ?: restoredFacts.last()
 
         val themes = themes()
 
@@ -135,7 +146,7 @@ class SmokeProbe(private val project: Project, private val out: Path) {
             stateAtOpen = stateAtOpen,
             loadingMs = loadingMs,
             firstFrameMs = firstFrameMs,
-            reopenFrameMs = reopenFrameMs,
+            reopenFrameSamples = reopenFrameSamples,
             externalTreeMs = externalTreeMs,
             externalStatusMs = externalStatusMs,
             inIdeTreeMs = inIdeTreeMs,
@@ -145,7 +156,7 @@ class SmokeProbe(private val project: Project, private val out: Path) {
             expectedSelection = expectedSelection,
             restoredArea = restored?.area.orEmpty(),
             restoredSelection = restored?.selection.orEmpty(),
-            restoreFrameMs = restoreFrameMs,
+            restoreFrameSamples = restoreFrameSamples,
             themes = themes,
             files = changes,
             notes = notes,
@@ -254,10 +265,10 @@ class SmokeProbe(private val project: Project, private val out: Path) {
         }
     }
 
-    private fun eventMs(events: Events<String?>, mark: Int, start: Long, timeoutMs: Long): Long {
+    private fun eventMs(events: Events<String?>, mark: Int, start: Long, timeoutMs: Long, accept: (String?) -> Boolean = { true }): Long {
         val deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMs)
         while (true) {
-            val hit = events.after(mark).firstOrNull()
+            val hit = events.after(mark).firstOrNull { accept(it.second) }
             if (hit != null) {
                 return Budgets.elapsedMs(start, hit.first)
             }

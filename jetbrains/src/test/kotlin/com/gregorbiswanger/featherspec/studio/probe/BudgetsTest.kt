@@ -14,6 +14,7 @@ class BudgetsTest {
         gen200ReadMs = 1_999,
         gen200UpdateMs = 999,
         gen200HarnessMs = 4_500,
+        discover5Ms = 1_999,
         coreReadyWarmMs = 800,
         jsHeapBytes = 123_456,
     )
@@ -38,10 +39,18 @@ class BudgetsTest {
     }
 
     @Test
+    fun `discovery of five roots at 2000 is a violation and below passes`() {
+        val found = within.copy(discover5Ms = 2_000).violations()
+        assertEquals(1, found.size)
+        assertTrue(found[0].startsWith("discover5Ms 2000"))
+        assertEquals(emptyList<String>(), within.copy(discover5Ms = 0).violations())
+    }
+
+    @Test
     fun `a value that was not measured is a violation`() {
         assertEquals(
-            listOf("coreReadyMs was not measured", "gen200ReadMs was not measured", "gen200UpdateMs was not measured"),
-            within.copy(coreReadyMs = -1, gen200ReadMs = -1, gen200UpdateMs = -1).violations(),
+            listOf("coreReadyMs was not measured", "gen200ReadMs was not measured", "gen200UpdateMs was not measured", "discover5Ms was not measured"),
+            within.copy(coreReadyMs = -1, gen200ReadMs = -1, gen200UpdateMs = -1, discover5Ms = -1).violations(),
         )
     }
 
@@ -67,6 +76,7 @@ class BudgetsTest {
         assertTrue(noHeap.toJson().contains("\"jsHeapBytes\":null"))
         assertTrue(within.toJson().contains("\"gen200HarnessMs\":4500"))
         assertTrue(within.toJson().contains("\"coreCreateMs\":3000"))
+        assertTrue(within.toJson().contains("\"discover5Ms\":1999"))
         assertNull(Budgets.parse(noHeap.toJson()).jsHeapBytes)
     }
 

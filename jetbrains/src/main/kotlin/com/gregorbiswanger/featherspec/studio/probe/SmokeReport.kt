@@ -13,6 +13,7 @@ object SmokeBudgets {
     const val EXTERNAL_MS = 2_000L
     const val IN_IDE_MS = 500L
     const val THEME_MS = 500L
+    const val FRAME_SAMPLES = 3
 }
 
 data class ThemeRecord(
@@ -32,7 +33,7 @@ data class SmokeReport(
     val stateAtOpen: String,
     val loadingMs: Long,
     val firstFrameMs: Long,
-    val reopenFrameMs: Long,
+    val reopenFrameSamples: List<Long>,
     val externalTreeMs: Long,
     val externalStatusMs: Long,
     val inIdeTreeMs: Long,
@@ -42,11 +43,14 @@ data class SmokeReport(
     val expectedSelection: String,
     val restoredArea: String,
     val restoredSelection: String,
-    val restoreFrameMs: Long,
+    val restoreFrameSamples: List<Long>,
     val themes: List<ThemeRecord>,
     val files: FileChanges,
     val notes: List<String>,
 ) {
+    val reopenFrameMs: Long get() = best(reopenFrameSamples)
+    val restoreFrameMs: Long get() = best(restoreFrameSamples)
+
     fun toJson(): String {
         val root = JsonObject()
         root.addProperty("os", os)
@@ -54,6 +58,7 @@ data class SmokeReport(
         root.addProperty("loadingMs", loadingMs)
         root.addProperty("firstFrameMs", firstFrameMs)
         root.addProperty("reopenFrameMs", reopenFrameMs)
+        root.add("reopenFrameSamples", numbers(reopenFrameSamples))
         root.addProperty("externalTreeMs", externalTreeMs)
         root.addProperty("externalStatusMs", externalStatusMs)
         root.addProperty("inIdeTreeMs", inIdeTreeMs)
@@ -64,6 +69,7 @@ data class SmokeReport(
         root.addProperty("restoredArea", restoredArea)
         root.addProperty("restoredSelection", restoredSelection)
         root.addProperty("restoreFrameMs", restoreFrameMs)
+        root.add("restoreFrameSamples", numbers(restoreFrameSamples))
         root.add("themes", JsonArray().also { array -> themes.forEach { array.add(themeJson(it)) } })
         root.add("created", strings(files.created))
         root.add("changed", strings(files.changed))
@@ -89,6 +95,12 @@ data class SmokeReport(
     }
 
     private fun strings(values: List<String>): JsonArray = JsonArray().also { array -> values.forEach { array.add(it) } }
+
+    private fun numbers(values: List<Long>): JsonArray = JsonArray().also { array -> values.forEach { array.add(it) } }
+
+    companion object {
+        fun best(samples: List<Long>): Long = samples.filter { it >= 0 }.minOrNull() ?: -1L
+    }
 }
 
 object SmokeCompare {
@@ -100,12 +112,13 @@ object SmokeCompare {
             within(problems, "AC-007 loading panel", number(root, "loadingMs"), SmokeBudgets.LOADING_MS)
         }
         within(problems, "AC-007 first frame after Ready", number(root, "firstFrameMs"), null)
-        within(problems, "AC-007 frame after reopening", number(root, "reopenFrameMs"), SmokeBudgets.FRAME_MS)
+        samples(problems, "frame after reopening", root, "reopenFrameSamples")
+        within(problems, "AC-007 frame after reopening (best of ${SmokeBudgets.FRAME_SAMPLES})", number(root, "reopenFrameMs"), SmokeBudgets.FRAME_MS)
         within(problems, "AC-021 external change in the tree", number(root, "externalTreeMs"), SmokeBudgets.EXTERNAL_MS)
-        within(problems, "AC-021 external change in the status entry", number(root, "externalStatusMs"), SmokeBudgets.EXTERNAL_MS, optional = true)
+        within(problems, "AC-021 external change in the status entry", number(root, "externalStatusMs"), SmokeBudgets.EXTERNAL_MS)
         within(problems, "AC-020 in-IDE change in the tree", number(root, "inIdeTreeMs"), SmokeBudgets.IN_IDE_MS)
         within(problems, "AC-020 in-IDE change in the panel", number(root, "inIdePanelMs"), SmokeBudgets.IN_IDE_MS)
-        within(problems, "AC-020 in-IDE change in the status entry", number(root, "inIdeStatusMs"), SmokeBudgets.IN_IDE_MS, optional = true)
+        within(problems, "AC-020 in-IDE change in the status entry", number(root, "inIdeStatusMs"), SmokeBudgets.IN_IDE_MS)
         val expectedArea = text(root, "expectedArea")
         val expectedSelection = text(root, "expectedSelection")
         if (expectedArea.isEmpty() || expectedSelection.isEmpty()) {
@@ -117,14 +130,15 @@ object SmokeCompare {
         if (text(root, "restoredSelection") != expectedSelection) {
             problems.add("selection after reopening: expected '$expectedSelection', observed '${text(root, "restoredSelection")}'")
         }
-        within(problems, "frame after the restoring reopen", number(root, "restoreFrameMs"), SmokeBudgets.FRAME_MS)
+        samples(problems, "frame after the restoring reopen", root, "restoreFrameSamples")
+        within(problems, "frame after the restoring reopen (best of ${SmokeBudgets.FRAME_SAMPLES})", number(root, "restoreFrameMs"), SmokeBudgets.FRAME_MS)
         val created = strings(root, "created")
         if (created != listOf(SmokeFiles.EXTERNAL)) {
             problems.add("AC-025 files created in the project: expected [${SmokeFiles.EXTERNAL}], observed $created")
         }
         val changed = strings(root, "changed")
-        if (changed.any { it != SmokeFiles.EDITED }) {
-            problems.add("AC-025 files changed in the project: expected at most [${SmokeFiles.EDITED}], observed $changed")
+        if (changed != listOf(SmokeFiles.EDITED)) {
+            problems.add("AC-025 files changed in the project: expected [${SmokeFiles.EDITED}], observed $changed")
         }
         val deleted = strings(root, "deleted")
         if (deleted.isNotEmpty()) {
@@ -179,11 +193,16 @@ object SmokeCompare {
         }
     }
 
-    private fun within(problems: MutableList<String>, label: String, ms: Long, max: Long?, optional: Boolean = false) {
+    private fun samples(problems: MutableList<String>, label: String, root: JsonObject, name: String) {
+        val observed = numbers(root, name)
+        if (observed.size != SmokeBudgets.FRAME_SAMPLES) {
+            problems.add("$label: expected ${SmokeBudgets.FRAME_SAMPLES} samples, observed $observed")
+        }
+    }
+
+    private fun within(problems: MutableList<String>, label: String, ms: Long, max: Long?) {
         if (ms < 0) {
-            if (!optional) {
-                problems.add("$label was not observed")
-            }
+            problems.add("$label was not observed")
             return
         }
         if (max != null && ms > max) {
@@ -206,6 +225,9 @@ object SmokeCompare {
         val member = root.get(name)
         return if (member != null && member.isJsonPrimitive && member.asJsonPrimitive.isNumber) member.asLong else -1L
     }
+
+    private fun numbers(root: JsonObject, name: String): List<Long> =
+        root.get(name)?.takeIf { it.isJsonArray }?.asJsonArray?.map { it.asLong } ?: emptyList()
 
     private fun strings(root: JsonObject, name: String): List<String> =
         root.get(name)?.takeIf { it.isJsonArray }?.asJsonArray?.map { it.asString } ?: emptyList()

@@ -5,6 +5,7 @@ import com.gregorbiswanger.featherspec.studio.theme.ThemeMapping
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -124,5 +125,14 @@ class SmokeObserveTest {
         assertTrue(Regex("^\\.specs/backlog/\\d{4}-.+\\.md$").matches(SmokeFiles.EXTERNAL))
         assertTrue(SmokeFiles.EXTERNAL_TEXT.startsWith("# "))
         assertTrue(SmokeFiles.EXTERNAL_TEXT.contains("**Status:** Draft"))
+    }
+
+    @Test
+    fun `the status line is parked and resumed on its own line and nothing else changes`() {
+        val text = "# T\n\n**Status:** In Progress\n**Plan:** x\n"
+        assertEquals("# T\n\n**Status:** Draft\n**Plan:** x\n", SmokeFiles.parkStatus(text))
+        assertEquals(text, SmokeFiles.resumeStatus(SmokeFiles.parkStatus(text)))
+        assertThrows(IllegalArgumentException::class.java) { SmokeFiles.parkStatus("# T\n") }
+        assertThrows(IllegalArgumentException::class.java) { SmokeFiles.resumeStatus(text) }
     }
 }

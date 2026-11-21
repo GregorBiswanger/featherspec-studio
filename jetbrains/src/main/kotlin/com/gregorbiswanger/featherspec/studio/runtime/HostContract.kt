@@ -22,7 +22,7 @@ val DISPATCH_EVENTS: List<String> = listOf(
 val INVOKE_COMMANDS: List<String> = listOf(
     "open", "refresh", "copyNextStep", "setup", "copyMergePrompt", "selectProject", "shellAction",
     "tree.select", "tree.copy", "tree.openSpec", "tree.openPlan", "tree.showInPlanMap", "panelHtml", "diagnostics",
-    "budget.read", "budget.update",
+    "budget.read", "budget.update", "budget.discover",
 )
 
 val FRAME_KINDS: List<String> = listOf("call", "calls", "emit", "reply", "ready", "failed")

@@ -165,7 +165,7 @@ export function createEmbeddedHost(native: NativeHost): EmbeddedHost {
             const args: unknown = JSON.parse(argsJson);
             const { ports } = running;
             const probe = (): BudgetProbe => {
-                budgets ??= createBudgetProbe({ source: ports.specSource, clock: ports.clock, now: monotonicNow, stats: () => bridge.stats() });
+                budgets ??= createBudgetProbe({ source: ports.specSource, fileSystem: ports.fileSystem, sameRoot: ports.sameRoot, clock: ports.clock, now: monotonicNow, stats: () => bridge.stats() });
                 return budgets;
             };
             runCommand(running.studio, command, args, probe, () => budgets).then(
@@ -310,6 +310,12 @@ async function runCommand(studio: Studio<EmbeddedPanel>, command: InvokeCommand,
                 throw new Error('budget.update needs a budget.read first.');
             }
             return await current.update(args.path);
+        }
+        case 'budget.discover': {
+            if (!isRecord(args) || !Array.isArray(args.roots) || !args.roots.every((root): root is string => typeof root === 'string')) {
+                throw new Error('budget.discover needs roots.');
+            }
+            return await probe().discover(args.roots);
         }
     }
 }

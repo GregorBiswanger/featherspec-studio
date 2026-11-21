@@ -115,6 +115,17 @@ object SmokeFiles {
     const val EDITED = ".specs/active/0015-focus-on-visibility.md"
     const val EXTERNAL_TEXT = "# Smoke external spec\n\n**Status:** Draft\n**Plan:** _none yet_\n"
     const val TITLE_SUFFIX = " (smoke)"
+    const val STATUS_RUNNING = "**Status:** In Progress"
+    const val STATUS_PARKED = "**Status:** Draft"
+
+    fun parkStatus(text: String): String = swap(text, STATUS_RUNNING, STATUS_PARKED)
+
+    fun resumeStatus(text: String): String = swap(text, STATUS_PARKED, STATUS_RUNNING)
+
+    private fun swap(text: String, from: String, to: String): String {
+        require(text.contains(from)) { "the spec has no line '$from'" }
+        return text.replaceFirst(from, to)
+    }
 
     fun snapshot(root: Path): Map<String, String> {
         val result = LinkedHashMap<String, String>()

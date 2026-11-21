@@ -4,6 +4,7 @@ object BudgetLimits {
     const val CORE_READY_MAX_MS = 12_000L
     const val GEN200_READ_BELOW_MS = 2_000L
     const val GEN200_UPDATE_BELOW_MS = 1_000L
+    const val DISCOVER5_BELOW_MS = 2_000L
 }
 
 data class Budgets(
@@ -13,12 +14,13 @@ data class Budgets(
     val gen200ReadMs: Long,
     val gen200UpdateMs: Long,
     val gen200HarnessMs: Long,
+    val discover5Ms: Long,
     val coreReadyWarmMs: Long,
     val jsHeapBytes: Long?,
 ) {
     fun toJson(): String =
         "{\"coreReadyMs\":$coreReadyMs,\"coreCreateMs\":$coreCreateMs,\"coreLoadMs\":$coreLoadMs," +
-            "\"gen200ReadMs\":$gen200ReadMs,\"gen200UpdateMs\":$gen200UpdateMs,\"gen200HarnessMs\":$gen200HarnessMs," +
+            "\"gen200ReadMs\":$gen200ReadMs,\"gen200UpdateMs\":$gen200UpdateMs,\"gen200HarnessMs\":$gen200HarnessMs,\"discover5Ms\":$discover5Ms," +
             "\"coreReadyWarmMs\":$coreReadyWarmMs,\"jsHeapBytes\":${jsHeapBytes ?: "null"}}"
 
     fun violations(): List<String> = buildList {
@@ -36,6 +38,11 @@ data class Budgets(
             add("gen200UpdateMs was not measured")
         } else if (gen200UpdateMs >= BudgetLimits.GEN200_UPDATE_BELOW_MS) {
             add("gen200UpdateMs $gen200UpdateMs is not below ${BudgetLimits.GEN200_UPDATE_BELOW_MS} (R-2, 0002 AC-018)")
+        }
+        if (discover5Ms < 0) {
+            add("discover5Ms was not measured")
+        } else if (discover5Ms >= BudgetLimits.DISCOVER5_BELOW_MS) {
+            add("discover5Ms $discover5Ms is not below ${BudgetLimits.DISCOVER5_BELOW_MS} (0001 AC-018, 0034 AC-007)")
         }
     }
 
@@ -57,6 +64,7 @@ data class Budgets(
                 gen200ReadMs = read("gen200ReadMs").toLong(),
                 gen200UpdateMs = read("gen200UpdateMs").toLong(),
                 gen200HarnessMs = read("gen200HarnessMs").toLong(),
+                discover5Ms = read("discover5Ms").toLong(),
                 coreReadyWarmMs = read("coreReadyWarmMs").toLong(),
                 jsHeapBytes = read("jsHeapBytes").toLongOrNull(),
             )

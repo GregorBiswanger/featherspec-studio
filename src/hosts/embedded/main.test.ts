@@ -312,6 +312,25 @@ describe('embedded entry (AC-008: the core runs and shows the tree without the t
         expect(replyTo(frames, '6')).toMatchObject({ ok: { ms: expect.any(Number), calls: expect.any(Number), frames: expect.any(Number) } });
     });
 
+    it('budget.discover answers the discovery time over the given roots through the bridge ports', async () => {
+        const { host, frames } = harness();
+        await host.start(config());
+        host.invoke('8', 'budget.discover', JSON.stringify({ roots: [ROOT] }));
+        await settle(() => replyTo(frames, '8') !== undefined);
+        const measure = (replyTo(frames, '8') as { ok: { ms: number; calls: number; frames: number } }).ok;
+        expect(measure.ms).toEqual(expect.any(Number));
+        expect(measure.calls).toBeGreaterThan(0);
+        expect(measure.frames).toBeGreaterThan(0);
+    });
+
+    it('budget.discover without roots answers an error', async () => {
+        const { host, frames } = harness();
+        await host.start(config());
+        host.invoke('9', 'budget.discover', JSON.stringify({}));
+        await settle(() => replyTo(frames, '9') !== undefined);
+        expect(replyTo(frames, '9')).toMatchObject({ error: expect.stringContaining('roots') });
+    });
+
     it('budget.update before budget.read answers an error', async () => {
         const { host, frames } = harness();
         await host.start(config());

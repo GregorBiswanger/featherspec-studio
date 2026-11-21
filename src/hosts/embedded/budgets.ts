@@ -1,6 +1,8 @@
 import type { ClockPort, Disposable } from '../../core/ports/host';
 import type { FileWatchPort } from '../../core/ports/fileWatch';
+import type { ReadOnlyFileSystem } from '../../core/ports/readOnlyFileSystem';
 import type { SpecSourcePort } from '../../core/ports/specSource';
+import { discoverWorkspace } from '../../core/discovery/discoverWorkspace';
 import { createSpecRepository, type SpecRepository } from '../../core/specs/specRepository';
 
 const UPDATE_TIMEOUT_MS = 30_000;
@@ -16,6 +18,8 @@ export interface BudgetMeasure extends BudgetStats {
 
 export interface BudgetProbeOptions {
     source: SpecSourcePort;
+    fileSystem: ReadOnlyFileSystem;
+    sameRoot: (first: string, second: string) => boolean;
     clock: ClockPort;
     now: () => number;
     stats: () => BudgetStats;
@@ -24,6 +28,7 @@ export interface BudgetProbeOptions {
 export interface BudgetProbe {
     read(root: string, version: string): Promise<BudgetMeasure>;
     update(relativePath: string): Promise<BudgetMeasure>;
+    discover(roots: readonly string[]): Promise<BudgetMeasure>;
     dispose(): void;
 }
 
@@ -43,6 +48,11 @@ function createFireableWatch(): FireableWatch {
             registrations.filter((registration) => registration.root === root).forEach((registration) => registration.listener(relativePath));
         },
     };
+}
+
+function folderName(root: string): string {
+    const segments = root.split('/').filter((segment) => segment !== '');
+    return decodeURIComponent(segments[segments.length - 1] ?? root);
 }
 
 export function createBudgetProbe(options: BudgetProbeOptions): BudgetProbe {
@@ -73,6 +83,21 @@ export function createBudgetProbe(options: BudgetProbeOptions): BudgetProbe {
             for (let attempt = 0; attempt < 3; attempt += 1) {
                 const current = fresh();
                 const measure = await timed(() => current.open({ root: projectRoot, version }));
+                if (best === undefined || measure.ms < best.ms) {
+                    best = measure;
+                }
+            }
+            return best ?? { ms: 0, calls: 0, frames: 0 };
+        },
+        async discover(roots) {
+            const folders = roots.map((folderRoot) => ({ root: folderRoot, name: folderName(folderRoot) }));
+            const discovery = { sameRoot: options.sameRoot };
+            await discoverWorkspace(options.fileSystem, folders, discovery);
+            let best: BudgetMeasure | undefined;
+            for (let attempt = 0; attempt < 3; attempt += 1) {
+                const measure = await timed(async () => {
+                    await discoverWorkspace(options.fileSystem, folders, discovery);
+                });
                 if (best === undefined || measure.ms < best.ms) {
                     best = measure;
                 }

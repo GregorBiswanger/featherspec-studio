@@ -28,7 +28,7 @@ export type DispatchEvent = (typeof DISPATCH_EVENTS)[number];
 export const INVOKE_COMMANDS = [
     'open', 'refresh', 'copyNextStep', 'setup', 'copyMergePrompt', 'selectProject', 'shellAction',
     'tree.select', 'tree.copy', 'tree.openSpec', 'tree.openPlan', 'tree.showInPlanMap', 'panelHtml', 'diagnostics',
-    'budget.read', 'budget.update',
+    'budget.read', 'budget.update', 'budget.discover',
 ] as const;
 
 export type InvokeCommand = (typeof INVOKE_COMMANDS)[number];

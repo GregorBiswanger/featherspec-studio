@@ -62,6 +62,7 @@ class ConformanceProbe(
                 gen200ReadMs = guarded("gen200ReadMs") { readMs(directory, requireNotNull(project)) },
                 gen200UpdateMs = guarded("gen200UpdateMs") { updateMs(directory, requireNotNull(project)) },
                 gen200HarnessMs = guarded("gen200HarnessMs") { bestOfThree { conformance(requireNotNull(input)) } },
+                discover5Ms = guarded("discover5Ms") { discoverMs() },
                 coreReadyWarmMs = guarded("coreReadyWarmMs") { warmReadyMs() },
                 jsHeapBytes = heap(),
             )
@@ -99,6 +100,23 @@ class ConformanceProbe(
         }
         noteTraffic("gen-200 update (last of three)", last)
         return best
+    }
+
+    private fun discoverMs(): Long {
+        val directory = Files.createTempDirectory("featherspec-discover5-")
+        try {
+            val roots = DISCOVER_INPUTS.map { name ->
+                val folder = directory.resolve(name)
+                Files.createDirectories(folder)
+                ProbeJson.materializeFiles(Files.readString(inputs.resolve("$name.json")), folder)
+                FileUris.toUri(folder, HostOs.windows)
+            }
+            val reply = runtime.invoke("budget.discover", ProbeJson.discoverArgs(roots)).get(CALL_MINUTES, TimeUnit.MINUTES)
+            noteTraffic("discover 5 roots", reply)
+            return ProbeJson.elapsedMs(reply)
+        } finally {
+            deleteTree(directory)
+        }
     }
 
     private fun noteTraffic(label: String, reply: String) {
@@ -149,6 +167,7 @@ class ConformanceProbe(
 
     private companion object {
         const val CALL_MINUTES = 3L
+        val DISCOVER_INPUTS = listOf("fs110-de-active-review", "fs-legacy-unstamped", "incomplete-specs-only", "not-fs-speckit", "nested-project")
         const val NANOS_PER_MS = 1_000_000L
         val EDIT: ByteArray = "\nedited\n".toByteArray(Charsets.UTF_8)
     }
