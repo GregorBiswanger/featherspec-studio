@@ -241,7 +241,7 @@ Verifier, from T-036); `jetbrains-spikes.yml` — `spike-s1`,
    **Gate G3 (after T-020):** all local gates incl. `npm run compile`; CI `vscode-mirror` (incl. `npm test` on Ubuntu
    and Windows), `vscode-guards`, `shared-guard`, `plugin` green; baselines and golden file unchanged, no new
    `EXCEPTIONS`; `src/core` unchanged; **an independent `/sdd-compile` READY** (orchestrator, fresh session, another
-   model family) before stage 7 starts. **2026-11-21: the scoped compile's findings are fixed in `727f708`; CI for it and a fresh
+   model family) before stage 7 starts. **2026-11-21: the scoped compile's findings are fixed in `727f708`; CI for it and a fresh **G3 passed 2026-11-21:** independent `/sdd-compile` (fresh Opus session; first review by Fable found B1–B3, fixed in 727f708/04cb573/5af7a76) READY apart from CI at HEAD, then CI at `5af7a76` (run 44867612536) green: `plugin` 3 OS, `vscode-mirror` incl. `npm test` ubuntu+windows, `vscode-guards` incl. the AC-038 byte check on a JetBrains-only push ("bundles are identical"), `shared-guard` ubuntu+windows. Model-family note: only Claude models are available here.
    independent compile are pending.**
 7. T-021 → T-039 → T-023 → T-024 → T-025 → T-022 — bridge parts, core runtime in a hidden JCEF browser, host ports,
    project service (core starts at project open), then conformance and budgets in a Starter IDE (T-022 runs last: it
@@ -894,7 +894,7 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
 - **Tests first:** `CoreIdeTest` red on CI run 1 (no probe yet → no `actual/`).
 - **Verify:** `CI: jetbrains.yml › ide-tests` green on ubuntu, windows, macos; `› plugin` green.
 - [ ] **Verified (T-022):** —
-- **Notes:** Re-planned 2026-11-21 for V2: plain JUnit cannot host JCEF; runs after T-025 (stage 7 order).
+- **Notes:** Re-planned 2026-11-21 for V2: plain JUnit cannot host JCEF; runs after T-025 (stage 7 order). From the G3 review (2026-11-21): AC-004 also asks for "the same EXCEPTIONS and no other" — compare the JVM `next` outputs against `test/fixtures/next-step-baseline/*.json` with the `EXCEPTIONS` of `src/core/board/nextStepBaseline.test.ts`; the weak inputs repo-8052f9a/repo-f9cadb4/gen-200 carry a synthetic AGENTS.md (conformanceInput.ts) and are compared only against the Node expected files, not the baselines.
 
 ### T-023 — File ports: URIs, spec source, folders, own watcher, VFS events, frame activation
 
@@ -1293,6 +1293,16 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
   `npx vitest run src/adapters/node/docsScan.test.ts src/adapters/node/parity.test.ts`, the `grep` above empty; `CI:`
   every job of `jetbrains.yml` green on one commit.
 - [ ] **Verified (T-037):** —
+- **Notes:** —
+
+### T-042 — Harden the rendered-text guard (G3 review findings 1–2, appended 2026-11-21)
+
+- **Covers:** AC-039
+- **Files:** `jetbrains/guards/renderedTexts.mjs`, `jetbrains/guards/renderedTexts.test.mjs`
+- **Do:** (1) one pass per fixture that renders its real shell state (S1–S9 as the shell service would produce it for that fixture) with and without the S7 restricted note, compared start vs head; (2) fail when an area's rendered text equals the loading text (a view the webview rejected silently must not count as compared). Negative controls for both.
+- **Tests first:** the two negative controls red, then green.
+- **Verify:** `local: node --test 'jetbrains/guards/*.test.mjs'`; `CI: jetbrains.yml › shared-guard` green.
+- [ ] **Verified (T-042):** —
 - **Notes:** —
 
 ## Traceability
