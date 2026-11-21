@@ -46,9 +46,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.os == 'windows-latest' }}
+    continue-on-error: ${{ matrix.os != 'ubuntu-latest' }}
     timeout-minutes: 60
     steps:
       - name: Keep line endings as committed (Windows)
@@ -76,8 +76,8 @@ jobs:
       - name: Run the Starter probe (Linux)
         if: runner.os == 'Linux'
         run: xvfb-run -a gradle -p jetbrains/spikes :ide:integrationTest
-      - name: Run the Starter probe (Windows)
-        if: runner.os == 'Windows'
+      - name: Run the Starter probe (Windows and macOS)
+        if: runner.os != 'Linux'
         run: gradle -p jetbrains/spikes :ide:integrationTest
       - name: Print spike results and IDE log excerpts
         if: always()
