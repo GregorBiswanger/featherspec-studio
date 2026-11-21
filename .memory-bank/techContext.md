@@ -4,7 +4,7 @@
 - TypeScript (`strict`, target ES2022, module Node16), VS Code Desktop extension
   (`engines.vscode ^1.146.0`), npm.
 - No agent SDK and no runtime dependency; `external: ['vscode']` in `esbuild.js`.
-- Bundling: esbuild (`esbuild.js`), two targets: `src/extension.ts` → `dist/extension.js` (node, cjs) and `src/webview/main.tsx` → `dist/webview/main.js` + `main.css` (browser, iife, JSX automatic).
+- Bundling: esbuild (`esbuild.js`), three targets: `src/extension.ts` → `dist/extension.js` (node, cjs), `src/webview/main.tsx` → `dist/webview/main.js` + `main.css` (browser, iife, JSX automatic), and `src/hosts/embedded/global.ts` → `dist/embedded/core.js` (browser, iife, es2022, `path` → `pathPosix.ts` plugin; JetBrains only, not in the VSIX; 0034 T-017).
 - Webview: React 19.3.1 and react-dom 19.3.1 (devDependencies, bundled), jsdom 31.0.1 for tests; two tsconfigs (`tsconfig.json` excludes `src/webview`; `src/webview/tsconfig.json` has DOM lib and `jsx: react-jsx`).
 - Lint: ESLint 10 + typescript-eslint (`eslint.config.mjs`; rules at `warn` level).
 - Unit tests: Vitest 5.1 + vite 8.3 (`vitest.config.mjs`, co-located), projects `node` (`src/**/*.test.ts` outside `src/webview`) and `webview` (jsdom, `src/webview/**/*.test.{ts,tsx}`, setup `src/webview/testing/setup.ts`), plus `timing-node` and `timing-webview` for `*.timing.test.{ts,tsx}`: every test that measures wall-clock time against a budget (`src/shared/testing/timing.ts`) lives in such a file, and `npm run test:unit` runs them after the rest in one worker, one file at a time, so a loaded machine does not fail them (budgets unchanged). Their framework limit (test and hook timeout) is 120 s (`vitest.config.mjs`), so only an asserted budget can fail them, never Vitest's 5 s default (generation plus four runs per `bestOfThree` exceed it on a slow runner). The other two projects have a 30 s framework limit for the same reason (tests on the real file system take 4 to 6 s on a busy Windows machine). A plain `npx vitest run` runs all four projects in parallel; the gate is `npm run test:unit`.
@@ -62,6 +62,7 @@
 ## JetBrains host (0034)
 - `jetbrains/` — Gradle (Kotlin JVM, IntelliJ Platform plugin); no local Gradle, no Gradle wrapper JAR committed.
 - Every Gradle, Kotlin and JVM check runs in CI only: `.github/workflows/jetbrains.yml`, job `plugin` (Ubuntu, Windows, macOS: `npm run package`, then `gradle -p jetbrains build buildPlugin verifyPluginStructure`, `plugin.xml` guard).
+- CI jobs `vscode-mirror`, `vscode-guards` (`node --test 'jetbrains/guards/*.test.mjs'`, VSIX file list, same bundles) and `shared-guard` (Ubuntu, Windows: `src/core` and protected paths unchanged since `3bc615c`, no test lost, rendered texts identical; T-020). `node jetbrains/scripts/conformanceExpected.mjs` writes the JVM conformance inputs and expected outputs to `jetbrains/build/conformance/` (T-019).
 - Local gates stay as above; the sandbox cannot reach Maven or the Gradle portal.
 
 ## Quality gates

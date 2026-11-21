@@ -96,21 +96,21 @@ run the `/sdd-architecture-update` workflow yourself, in the same change set, ex
 the user had typed it (its body lives in `.claude/commands/sdd-architecture-update.md`).
 
 ```yaml
-# last reconciled: 2026-11-21 (0034) · last deep scan: never · module maps: .architecture/{core,adapters,webview}.md
+# last reconciled: 2026-11-21 (0034) · last deep scan: never · module maps: .architecture/{core,adapters,webview,hosts,jetbrains}.md
 architecture:
   style: 'Hexagonal (ports & adapters): framework-free core (domain + application) behind ports; adapters for VS Code host, storage, file system; webview as a separate UI bundle'
   entrypoints:
     - 'src/extension.ts — composition root; activates on workspaceContains:AGENTS.md, workspaceContains:.specs, onWebviewPanel:featherspecStudio.main and Studio commands and views; bundled by esbuild to dist/extension.js'
     - 'src/webview/main.tsx — Studio panel UI (React 19); bundled by esbuild to dist/webview/main.js and main.css; no Node.js or file access'
-    - 'src/hosts/embedded/global.ts — JetBrains host entry; bundled by esbuild to dist/embedded/core.js (IIFE, global FeatherSpecHost), run in a hidden JCEF browser (0034)'
+    - 'src/hosts/embedded/global.ts — JetBrains host entry; bundled by esbuild to dist/embedded/core.js, run in a hidden JCEF browser (0034)'
   modules:
     - 'src/core/<area> — one folder per spec, framework-free: discovery 0001, specs 0002, lifecycle 0003, runtime 0004, shell 0005, overview 0006, board 0007, planMap 0023, copyNextStep 0017, settings 0021, assistant 0024, setup 0014; ports/ holds every port; what each area holds: .architecture/core.md'
     - 'src/adapters — node/ (Node fs, spec source, runtime medium, IDs, release download, setup target writer, earlier run data removal), vscode/ (thin host ports, no logic) (.architecture/adapters.md)'
-    - 'src/hosts — host-neutral compose.ts, panelSession.ts; VS Code: src/extension.ts (0034)'
+    - 'src/hosts — composition and panel session of both hosts; embedded/ is the JetBrains core page (.architecture/hosts.md, 0034)'
     - 'src/webview — panel UI: protocol client, shell, area registry, three tabs (Overview, Board, Plan map; areas/<area>/), the detail as side panel (detail/), primitives in ui/; inside view: .architecture/webview.md; src/test — extension-host smoke tests (Mocha, CI only); test/fixtures — fixture projects and setup archives in test/fixtures/setup; media — packaged assets'
-    - 'jetbrains/ — IntelliJ plugin (Kotlin, built in CI): core and webview in JCEF (ADR-004, 0034); .architecture/jetbrains.md'
+    - 'jetbrains/ — IntelliJ plugin (Kotlin, built in CI): core and webview in JCEF (ADR-004, 0034)'
   shared:
-    - 'src/shared/protocol — versioned message protocol and the views and texts both sides share; imported by extension and webview, imports nothing; src/shared/testing — timing budgets for tests'
+    - 'src/shared/protocol — versioned message protocol, shared views and texts (.architecture/core.md); imported by extension and webview, imports nothing; src/shared/testing — timing budgets for tests'
   boundaries:
     - 'Domain and application code never import vscode and reach the outside only through ports; webview and extension host communicate only through typed messages, and the webview has no file-system or Node.js access'
     - 'Only the setup (0014) writes into a workspace folder or reaches the network, through SetupTargetPort and ReleaseHttpPort, after the user started it in a trusted workspace'

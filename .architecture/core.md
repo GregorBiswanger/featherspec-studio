@@ -1,10 +1,11 @@
 # Map: src/core (framework-free core)
-# last reconciled: 2026-11-20 (0030)
+# last reconciled: 2026-11-21 (0034)
 
 ## Internal pattern
 - `src/core/<area>/` — one folder per spec; `<area>Service.ts` is the application service where the
   area has one; `testing/` holds that area's worlds and fakes (imported by tests only).
 - `src/core/ports/<topic>.ts` — every port the core uses; adapters implement them.
+- `src/shared/protocol/` (moved from the `AGENTS.md` shared line, 2026-11-21) — the views and texts core and webview share: areas, board, Overview, next step, step guides and tips, step look, percentages, plan view, assistant view and send, detail picture, state look, side panel layout, UI texts; `vocabulary.ts` the host vocabulary (`HostKind`, `TERM_PAIRS`, `translateTerms`, `JETBRAINS_TEXTS`; 0034 T-014); `testing/` samples.
 - Areas and what they hold (moved from the `AGENTS.md` snapshot, 2026-11-17):
   - `ports` — read-only file system, spec source, file watch; host ports (status bar, output, state,
     UI, folders, marker watch, clock); runtime medium; shell (trust, UI memory, actions, model
