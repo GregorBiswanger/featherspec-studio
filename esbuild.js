@@ -1,4 +1,5 @@
 const esbuild = require("esbuild");
+const path = require("path");
 
 const production = process.argv.includes('--production');
 const watch = process.argv.includes('--watch');
@@ -42,6 +43,34 @@ const hostBuildOptions = {
 	],
 };
 
+const embeddedPathShimPlugin = {
+	name: 'embedded-path-shim',
+
+	setup(build) {
+		build.onResolve({ filter: /^(node:)?path$/ }, () => ({
+			path: path.join(__dirname, 'src', 'hosts', 'embedded', 'pathPosix.ts'),
+		}));
+	},
+};
+
+const embeddedBuildOptions = {
+	entryPoints: [
+		'src/hosts/embedded/global.ts'
+	],
+	bundle: true,
+	format: 'iife',
+	minify: production,
+	sourcemap: false,
+	platform: 'browser',
+	target: 'es2022',
+	outfile: 'dist/embedded/core.js',
+	logLevel: 'silent',
+	plugins: [
+		embeddedPathShimPlugin,
+		esbuildProblemMatcherPlugin,
+	],
+};
+
 async function main() {
 	const hostContext = await esbuild.context(hostBuildOptions);
 	const webviewContext = await esbuild.context({
@@ -62,7 +91,8 @@ async function main() {
 			esbuildProblemMatcherPlugin,
 		],
 	});
-	const contexts = [hostContext, webviewContext];
+	const embeddedContext = await esbuild.context(embeddedBuildOptions);
+	const contexts = [hostContext, webviewContext, embeddedContext];
 	if (watch) {
 		await Promise.all(contexts.map((ctx) => ctx.watch()));
 	} else {

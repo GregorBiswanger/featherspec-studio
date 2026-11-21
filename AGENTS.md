@@ -102,6 +102,7 @@ architecture:
   entrypoints:
     - 'src/extension.ts — composition root; activates on workspaceContains:AGENTS.md, workspaceContains:.specs, onWebviewPanel:featherspecStudio.main and Studio commands and views; bundled by esbuild to dist/extension.js'
     - 'src/webview/main.tsx — Studio panel UI (React 19); bundled by esbuild to dist/webview/main.js and main.css; no Node.js or file access'
+    - 'src/hosts/embedded/global.ts — JetBrains host entry; bundled by esbuild to dist/embedded/core.js (IIFE, global FeatherSpecHost), run in a hidden JCEF browser (0034)'
   modules:
     - 'src/core/<area> — one folder per spec, framework-free: discovery 0001, specs 0002, lifecycle 0003, runtime 0004, shell 0005, overview 0006, board 0007, planMap 0023, copyNextStep 0017, settings 0021, assistant 0024, setup 0014; ports/ holds every port; what each area holds: .architecture/core.md'
     - 'src/adapters — node/ (Node fs, spec source, runtime medium, IDs, release download, setup target writer, earlier run data removal), vscode/ (thin host ports, no logic) (.architecture/adapters.md)'
@@ -109,7 +110,7 @@ architecture:
     - 'src/webview — panel UI: protocol client, shell, area registry, three tabs (Overview, Board, Plan map; areas/<area>/), the detail as side panel (detail/), primitives in ui/; inside view: .architecture/webview.md; src/test — extension-host smoke tests (Mocha, CI only); test/fixtures — fixture projects and setup archives in test/fixtures/setup; media — packaged assets'
     - 'jetbrains/ — IntelliJ plugin (Kotlin, built in CI): core and webview in JCEF (ADR-004, 0034); .architecture/jetbrains.md'
   shared:
-    - 'src/shared/protocol — versioned message protocol and the views and texts both sides share (areas, board, Overview, next step, step guides and tips, step look, percentages, plan view, assistant view and send, detail picture, state look, side panel layout, UI texts); imported by extension and webview, imports nothing; src/shared/testing — timing budgets for tests'
+    - 'src/shared/protocol — versioned message protocol and the views and texts both sides share; imported by extension and webview, imports nothing; src/shared/testing — timing budgets for tests'
   boundaries:
     - 'Domain and application code never import vscode and reach the outside only through ports; webview and extension host communicate only through typed messages, and the webview has no file-system or Node.js access'
     - 'Only the setup (0014) writes into a workspace folder or reaches the network, through SetupTargetPort and ReleaseHttpPort, after the user started it in a trusted workspace'
