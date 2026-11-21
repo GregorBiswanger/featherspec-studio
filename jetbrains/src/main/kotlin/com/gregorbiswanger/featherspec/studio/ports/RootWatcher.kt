@@ -206,12 +206,12 @@ class RootWatcher(private val onChange: (root: Path, relative: String) -> Unit) 
             val name = event.context() as? Path ?: continue
             val child = registration.directory.resolve(name.toString())
             val relative = relativeOf(root, child)
-            val created = kind == ENTRY_CREATE &&
-                WatchedPaths.isWatchedDirectory(relative) &&
+            val directory = WatchedPaths.isWatchedDirectory(relative) &&
                 Files.isDirectory(child, LinkOption.NOFOLLOW_LINKS)
-            if (created) {
+            if (directory) {
                 registerTree(root, child, true)
-            } else if (WatchedPaths.isReported(relative)) {
+            }
+            if (!(directory && kind == ENTRY_CREATE) && WatchedPaths.isReported(relative)) {
                 report(root, relative)
             }
         }
@@ -219,17 +219,20 @@ class RootWatcher(private val onChange: (root: Path, relative: String) -> Unit) 
 
     private fun registerTree(root: Path, start: Path, reportEntries: Boolean) {
         try {
+            val fresh = HashSet<String>()
             Files.walkFileTree(start, object : SimpleFileVisitor<Path>() {
                 override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
-                    registerDirectory(root, dir)
-                    if (reportEntries) {
-                        reportIfWatched(root, dir)
+                    if (registerDirectory(root, dir)) {
+                        fresh.add(dir.toString())
+                        if (reportEntries) {
+                            reportIfWatched(root, dir)
+                        }
                     }
                     return FileVisitResult.CONTINUE
                 }
 
                 override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-                    if (reportEntries) {
+                    if (reportEntries && fresh.contains(file.parent.toString())) {
                         reportIfWatched(root, file)
                     }
                     return FileVisitResult.CONTINUE
@@ -242,19 +245,20 @@ class RootWatcher(private val onChange: (root: Path, relative: String) -> Unit) 
         }
     }
 
-    private fun registerDirectory(root: Path, directory: Path) {
+    private fun registerDirectory(root: Path, directory: Path): Boolean {
         synchronized(lock) {
-            if (closed.get()) {
-                return
+            if (closed.get() || byDirectory.containsKey(directory.toString())) {
+                return false
             }
-            try {
+            return try {
                 val registration = Registration(root, directory)
                 registrations[register(directory)] = registration
                 byDirectory[directory.toString()] = registration
+                true
             } catch (failure: IOException) {
-                return
+                false
             } catch (failure: ClosedWatchServiceException) {
-                return
+                false
             }
         }
     }
