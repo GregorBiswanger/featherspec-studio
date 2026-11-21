@@ -5,4 +5,7 @@
     <description>FeatherSpec Studio brings the spec-driven development view of a FeatherSpec project into JetBrains IDEs.</description>
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.jcef</depends>
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="com.gregorbiswanger.featherspec.studio.StudioStartup"/>
+    </extensions>
 </idea-plugin>

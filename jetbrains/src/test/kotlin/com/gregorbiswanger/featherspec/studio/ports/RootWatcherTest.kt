@@ -57,7 +57,6 @@ class RootWatcherTest {
     @Test
     fun reportsAWriteUnderSpecsAndPrintsTheDelay(@TempDir root: Path) {
         Files.createDirectories(root.resolve(".specs/backlog"))
-        println("ROOTWATCHER-FS ${root.fileSystem.provider().javaClass.name} ${System.getProperty("java.nio.file.spi.DefaultFileSystemProvider")}")
         withWatcher(root) { _, recorder ->
             val started = System.nanoTime()
             Files.writeString(root.resolve(".specs/backlog/x.md"), "# X\n")
