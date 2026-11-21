@@ -65,7 +65,7 @@ tasks.processResources {
     }
 }
 
-val integrationTest by tasks.registering(Test::class) {
+val integrationTest = tasks.register<Test>("integrationTest") {
     val integrationTestSourceSet = sourceSets.getByName("integrationTest")
     testClassesDirs = integrationTestSourceSet.output.classesDirs
     classpath = integrationTestSourceSet.runtimeClasspath

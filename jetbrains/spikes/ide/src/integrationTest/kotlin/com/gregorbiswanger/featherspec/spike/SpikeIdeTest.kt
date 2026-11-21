@@ -1,19 +1,15 @@
 package com.gregorbiswanger.featherspec.spike
 
-import com.intellij.driver.sdk.ui.components.ideFrame
 import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
-import com.intellij.ide.starter.ide.IdeInfo
+import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.plugins.PluginConfigurator
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.runner.Starter
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardCopyOption
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 class SpikeIdeTest {
@@ -22,33 +18,36 @@ class SpikeIdeTest {
     fun probeRunsGraalAndRendersThreeThemes() {
         val out = Path.of("build", "spike-out").toAbsolutePath()
         Files.createDirectories(out)
-        val project = copyFixture(
+        val projectCopy = copyFixture(
             Path.of(System.getProperty("spike.fixture")),
             Path.of("build", "ide-project", "studio-0015").toAbsolutePath(),
         )
+        val resultsFile = out.resolve("s2-results.json")
 
-        Starter.newContext(
-            "spikeIdeProbe",
-            TestCase(IdeInfo.IdeaUltimate, LocalProjectInfo(project)).withVersion("2025.3.1"),
-        ).apply {
-            PluginConfigurator(this).installPluginFromDir(Path.of(System.getProperty("path.to.build.plugin")))
-            addVMOptionsPatch {
-                addSystemProperty("idea.trust.all.projects", true)
-                addSystemProperty("ide.show.tips.on.startup.default.value", false)
-                addSystemProperty("spike.out", out.toString())
-            }
-        }.runIdeWithDriver().useDriverAndCloseIde {
+        val context = Starter.newContext(
+            "spikeIde",
+            TestCase(IdeProductProvider.IU, LocalProjectInfo(projectCopy)).withVersion("2025.3.1"),
+        )
+        context.applyVMOptionsPatch {
+            addSystemProperty("idea.trust.all.projects", true)
+            addSystemProperty("ide.show.tips.on.startup.default.value", false)
+            addSystemProperty("spike.out", out.toString())
+        }
+        PluginConfigurator(context).installPluginFromDir(Path.of(System.getProperty("path.to.build.plugin")))
+
+        context.runIdeWithDriver().useDriverAndCloseIde {
             waitForIndicators(5.minutes)
-            ideFrame {
-                invokeAction("FeatherSpecSpike.Probe")
+            val deadline = System.nanoTime() + 5.minutes.inWholeNanoseconds
+            while (!Files.exists(resultsFile) && System.nanoTime() < deadline) {
+                Thread.sleep(2000)
             }
-            awaitResults(out.resolve("s2-results.json"), 5.minutes)
         }
 
-        val results = Files.readString(out.resolve("s2-results.json"))
-        assertTrue(results.contains("\"graal\":\"ok\""), results)
+        check(Files.exists(resultsFile)) { "the probe wrote no $resultsFile" }
+        val results = Files.readString(resultsFile)
+        check(results.contains("\"graal\":\"ok\"")) { results }
         listOf("s2-light.png", "s2-darcula.png", "s2-high-contrast.png").forEach { name ->
-            assertTrue(Files.size(out.resolve(name)) > 10_000, "$name is too small")
+            check(Files.size(out.resolve(name)) > 10_000) { "$name is too small" }
         }
     }
 
@@ -60,18 +59,10 @@ class SpikeIdeTest {
                     Files.createDirectories(destination)
                 } else {
                     Files.createDirectories(destination.parent)
-                    Files.copy(path, destination, StandardCopyOption.REPLACE_EXISTING)
+                    Files.copy(path, destination, java.nio.file.StandardCopyOption.REPLACE_EXISTING)
                 }
             }
         }
         return target
-    }
-
-    private fun awaitResults(file: Path, timeout: Duration) {
-        val deadline = System.nanoTime() + timeout.inWholeNanoseconds
-        while (!Files.exists(file) && System.nanoTime() < deadline) {
-            Thread.sleep(500)
-        }
-        check(Files.exists(file)) { "the probe wrote no $file" }
     }
 }

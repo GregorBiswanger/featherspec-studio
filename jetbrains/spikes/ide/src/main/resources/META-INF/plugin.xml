@@ -7,6 +7,7 @@
     <depends>com.intellij.modules.jcef</depends>
     <extensions defaultExtensionNs="com.intellij">
         <fileEditorProvider implementation="com.gregorbiswanger.featherspec.spike.SpikeEditorProvider"/>
+        <postStartupActivity implementation="com.gregorbiswanger.featherspec.spike.SpikeAutoRun"/>
     </extensions>
     <actions>
         <action id="FeatherSpecSpike.Open" class="com.gregorbiswanger.featherspec.spike.OpenSpikeAction" text="Open FeatherSpec Spike">
