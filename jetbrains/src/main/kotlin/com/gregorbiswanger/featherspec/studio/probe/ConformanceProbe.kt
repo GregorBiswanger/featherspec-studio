@@ -82,6 +82,7 @@ class ConformanceProbe(
         val root = FileUris.toUri(directory, HostOs.windows)
         val reply = runtime.invoke("budget.read", ProbeJson.readArgs(root, project.version)).get(CALL_MINUTES, TimeUnit.MINUTES)
         noteTraffic("gen-200 read", reply)
+        notes.add("startup: configMs=${Budgets.elapsedMs(runtime.startedAtNanos, runtime.configAtNanos)} startSentMs=${Budgets.elapsedMs(runtime.startedAtNanos, runtime.startSentAtNanos)} readyMs=${Budgets.elapsedMs(runtime.startedAtNanos, runtime.readyAtNanos)}")
         return ProbeJson.elapsedMs(reply)
     }
 

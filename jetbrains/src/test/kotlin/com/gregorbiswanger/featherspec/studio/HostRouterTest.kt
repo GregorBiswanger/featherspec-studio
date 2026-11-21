@@ -32,6 +32,7 @@ class HostRouterTest {
         panel = fakePort("panel"),
         system = fakePort("system"),
         ui = fakePort("ui"),
+        setup = fakePort("setup"),
     )
 
     private fun parsed(reply: String) = JsonParser.parseString(reply).asJsonObject
@@ -95,6 +96,28 @@ class HostRouterTest {
             assertEquals("ui", parsed(router.answer(name, "{}")).get("ok").asString, name)
         }
         assertFalse(CallRouter.DEFERRED_PREFIXES.contains("ui."))
+    }
+
+    @Test
+    fun `the target http and archive calls reach the setup port and only the actions stay deferred`() {
+        val router = fakeRouter()
+        val names = setOf(
+            "target.kind", "target.readBytes", "target.listDirectory", "target.createExclusive",
+            "target.replaceIfUnchanged", "target.clearSetupFolder", "http.get", "archive.read",
+        )
+        assertEquals(names, CallRouter.ROUTED.filterValues { it == CallRouter.Group.SETUP }.keys)
+        assertEquals(listOf("actions."), CallRouter.DEFERRED_PREFIXES)
+        for (name in names) {
+            assertEquals("setup", parsed(router.answer(name, "{}")).get("ok").asString, name)
+        }
+        assertEquals("""{"error":"not yet"}""", router.answer("actions.openSetupGuide", "{}"))
+    }
+
+    @Test
+    fun `a router without a setup port answers an error for the setup calls`() {
+        val router = CallRouter(fakePort("files"), fakePort("medium"), fakePort("memory"), fakePort("watch"))
+        assertEquals("no answer for http.get", parsed(router.answer("http.get", "{}")).get("error").asString)
+        assertEquals("no answer for target.kind", parsed(router.answer("target.kind", "{}")).get("error").asString)
     }
 
     @Test

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import * as fs from 'node:fs';
 import { createRequire } from 'node:module';
 import * as os from 'node:os';
@@ -18,6 +19,7 @@ const expectedDir = path.join(outRoot, 'expected');
 const SKIPPED = new Set(['next-step-baseline', 'read-baseline', 'setup']);
 const GEN_NAME = 'gen-200';
 const GEN_COUNT = 200;
+const ARCHIVE_LIMIT = 20 * 1024 * 1024;
 
 const HELPERS = `
 export { generateProject } from ${JSON.stringify(path.join(repo, 'src', 'core', 'specs', 'testing', 'generateProject.ts'))};
@@ -159,6 +161,17 @@ async function main() {
         const setupReply = waitFor('setup');
         host.setupConformance('setup', archiveJson);
         fs.writeFileSync(path.join(expectedDir, 'setup-expected.json'), await setupReply);
+        const archiveRead = await createTarGzArchive().read(new Uint8Array(fs.readFileSync(setupArchive)), ARCHIVE_LIMIT);
+        if (!archiveRead.ok) {
+            throw new Error(`the setup archive is not readable: ${archiveRead.failure}`);
+        }
+        const archiveEntries = archiveRead.entries.map((entry) => ({
+            path: entry.path,
+            kind: entry.kind,
+            size: entry.bytes.length,
+            sha256: createHash('sha256').update(entry.bytes).digest('hex'),
+        }));
+        fs.writeFileSync(path.join(outRoot, 'archive-expected.json'), JSON.stringify({ maxUnpackedBytes: ARCHIVE_LIMIT, entries: archiveEntries }));
         console.log(`conformance expected: ${targets.length} fixtures and the setup pair written to ${outRoot}`);
     } finally {
         fs.rmSync(tmp, { recursive: true, force: true });

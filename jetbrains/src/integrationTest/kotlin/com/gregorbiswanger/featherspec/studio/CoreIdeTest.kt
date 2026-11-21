@@ -108,10 +108,6 @@ class CoreIdeTest {
         }
         val error = out.resolve("setup-error.txt")
         val reason = if (Files.exists(error)) Files.readString(error) else "no setup output"
-        if (reason.contains("not yet")) {
-            println("SETUP-PAIR deferred until the archive reader of T-033 answers archive.read: $reason")
-            return emptyList()
-        }
         return listOf("setup: $reason")
     }
 

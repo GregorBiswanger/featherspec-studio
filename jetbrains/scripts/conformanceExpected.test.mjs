@@ -68,3 +68,17 @@ test('AC-004 the weak inputs carry the synthetic AGENTS.md and every FeatherSpec
     const expected = JSON.parse(fs.readFileSync(path.join(outDir, 'expected', 'fs-version-1110.json'), 'utf8'));
     assert.ok(expected.board && expected.overview, 'fs-version-1110');
 });
+
+test('AC-005 archive-expected.json lists every entry of the setup archive with kind, size and sha256', () => {
+    const expected = JSON.parse(fs.readFileSync(path.join(outDir, 'archive-expected.json'), 'utf8'));
+    assert.equal(expected.maxUnpackedBytes, 20 * 1024 * 1024);
+    const kinds = {};
+    for (const entry of expected.entries) {
+        kinds[entry.kind] = (kinds[entry.kind] ?? 0) + 1;
+        assert.equal(typeof entry.path, 'string');
+        assert.equal(typeof entry.size, 'number');
+        assert.match(entry.sha256, /^[0-9a-f]{64}$/);
+    }
+    assert.deepEqual(kinds, { directory: 16, file: 67, metadata: 1 });
+    assert.equal(expected.entries[0].kind, 'metadata');
+});

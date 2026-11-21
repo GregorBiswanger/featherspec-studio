@@ -12,6 +12,7 @@ import com.gregorbiswanger.featherspec.studio.ports.SpecWatch
 import com.gregorbiswanger.featherspec.studio.ports.SystemCalls
 import com.gregorbiswanger.featherspec.studio.panel.StudioFile
 import com.gregorbiswanger.featherspec.studio.ports.UiMemoryState
+import com.gregorbiswanger.featherspec.studio.setup.SetupCalls
 import com.gregorbiswanger.featherspec.studio.settings.SettingsTable
 import com.gregorbiswanger.featherspec.studio.settings.StudioSettings
 import com.gregorbiswanger.featherspec.studio.runtime.CoreRuntime
@@ -99,6 +100,7 @@ class StudioProjectService(private val project: Project) : Disposable {
             panel = { name, _ -> panelCall(name) },
             system = { name, args -> systemCalls.answer(name, args) },
             ui = { name, args -> hostUi.answer(name, args) },
+            setup = SetupCalls()::answer,
         ),
         resolve = { id, json -> runtime?.resolve(id, json) },
         execute = { block -> ApplicationManager.getApplication().executeOnPooledThread(Runnable { block() }) },

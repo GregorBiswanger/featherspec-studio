@@ -43,6 +43,14 @@ class CoreRuntime(
         private set
 
     @Volatile
+    var configAtNanos: Long = 0L
+        private set
+
+    @Volatile
+    var startSentAtNanos: Long = 0L
+        private set
+
+    @Volatile
     var readyAtNanos: Long = 0L
         private set
 
@@ -80,6 +88,7 @@ class CoreRuntime(
                 return
             }
             config = configJson
+            configAtNanos = System.nanoTime()
             if (loaded) {
                 launchCore(configJson)
             }
@@ -209,6 +218,7 @@ class CoreRuntime(
             return
         }
         coreStarted = true
+        startSentAtNanos = System.nanoTime()
         execute(BridgeFrames.script("start", configJson))
         pendingScripts.forEach { execute(it) }
         pendingScripts.clear()
