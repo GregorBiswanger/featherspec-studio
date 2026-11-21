@@ -162,7 +162,7 @@ class ThemeMappingTest {
         val white = Color(255, 255, 255)
         val black = Color(0, 0, 0)
         assertEquals(black, ThemeMapping.ensureContrast(black, white, 4.5))
-        assertEquals(white, ThemeMapping.ensureContrast(Color(250, 250, 250), black, 4.5))
+        assertEquals(Color(250, 250, 250), ThemeMapping.ensureContrast(Color(250, 250, 250), black, 4.5))
         assertTrue(ThemeMapping.contrastRatio(black, white) > 20.0)
         assertEquals(1.0, ThemeMapping.contrastRatio(white, white), 0.0001)
     }
