@@ -252,6 +252,7 @@ Verifier, from T-036); `jetbrains-spikes.yml` — `spike-s1`,
    install by hand.
    **Stage 8 gate passed 2026-11-21:** CI at `6ceb027` (run 44881538602) green on every job incl. `ide-tests` on 3 OS; the `plugin-zip` artifact (Linux job) is the ZIP Gregor may install by hand.
 9. T-028 → T-029 → T-030 — tree, actions and the no-JCEF surfaces, status bar and editor. Gate: as stage 7.
+   **Stage 9 gate passed 2026-11-21:** CI at `d08c599` (run 44884666829) green on every job incl. `ide-tests` on 3 OS; local gates green.
 10. T-031 → T-032 → T-033 → T-034 → T-041 → T-040 — notifications and log view, settings and trust, setup, setup end to
     end in an IDE, AC-030 in an IDE (T-040 last: it needs the settings page and Set up). Gate: as stage 7.
 11. T-035 — Starter smoke on 3 OS. Gate: as stage 7 (`ide-tests` incl. the smoke).
@@ -1042,8 +1043,8 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
   output* link; `Unavailable` → T-029's notice. Actions referenced here are registered in T-029.
 - **Tests first:** `SpecTreeMappingTest` with the tree JSON of two conformance fixtures (`jetbrains/build/conformance/expected`) red.
 - **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS.
-- [ ] **Verified (T-028):** —
-- **Notes:** —
+- [x] **Verified (T-028):** 2026-11-21 · CI at `9b187b3` (run 44882319738) green on every job: `plugin` 3 OS (SpecTreeMappingTest 17 tests on 7 real `tree` payloads), `ide-tests` 3 OS. Visual check in Rider/WebStorm is Gregor's hands-on. Deviation: tests written alongside the code.
+- **Notes:** (1) `tree/SpecTreeMapping.kt` pure (groups, rows, flags from `contextValue`, icons, tones, empty-text lines/links, Review + Blocked count, `rowArgs`). (2) Fixtures in `jetbrains/src/test/resources/tree/` are copies of `build/conformance/expected/*.json` (that dir only exists in `ide-tests`) — drift is not guarded yet; T-036 adds a check that they equal a fresh `conformanceExpected.mjs` run. (3) Expansion/selection restored by id, not `TreeState`. (4) The S2 welcome text is hardcoded in the host (the emit carries `welcome: 'S2'` only). (5) Row tone colours the description only; `accessibleLabel` not wired into Swing accessibility (Gregor's hands-on decides).
 
 ### T-029 — Actions for Find Action and the no-JCEF case (notice instead of the tree, notifications)
 
@@ -1070,8 +1071,8 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
   available; unsupported; supported, not loaded at 30 s → suspended; not loaded at 10 s → pending).
 - **Tests first:** both tests red.
 - **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS; the IDE-level proof is T-040.
-- [ ] **Verified (T-029):** —
-- **Notes:** Re-planned 2026-11-21 (G1 decision 3): without JCEF only the settings page works.
+- [x] **Verified (T-029):** 2026-11-21 · CI at `c4e430f` (run 44883094676): `plugin` 3 OS green (ActionTableTest: table = `package.json` commands minus `shellAction`/`selectSpec`, every `plugin.xml` action has a row and a class; NoticeContentTest = `JETBRAINS_TEXTS`; JcefAvailabilityTest), `ide-tests` ubuntu/macos green (windows red on R-5 only, see T-022/T-030). Deviation: tests written alongside the code.
+- **Notes:** Re-planned 2026-11-21 (G1 decision 3): without JCEF only the settings page works. (1) One `StudioAction` class registered 14 times; its row comes from `ActionManager.getId(this)`. (2) Tree actions read the selected row from `StudioProjectService.selection` (no DataContext); from Find Action they act on the last selected row. (3) Suspension: 30 s after `core.open()` with no page load → `Unavailable(SUSPENDED)`, runtime disposed. Risk for Gregor: Windows CI page loads took up to 14 s, so 30 s leaves ~2× margin. (4) `UnavailableNotice` replaces the tree; `UnavailableBalloon` (group "FeatherSpec Studio") with *Open help* for every core action while unavailable; Open Settings always works.
 
 ### T-030 — Status bar widget, clipboard and opening files
 
@@ -1090,8 +1091,8 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
   `not-found` when the file is missing. Test: mapping vectors from the conformance `status` outputs.
 - **Tests first:** `StatusEntryMappingTest` red.
 - **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS.
-- [ ] **Verified (T-030):** —
-- **Notes:** —
+- [x] **Verified (T-030):** 2026-11-21 · CI at `d08c599` (run 44884666829) green on every job: `plugin` 3 OS (StatusEntryMappingTest, EditorOpenTest, HostRouterTest), `ide-tests` 3 OS. First run at `ed4630c` failed to compile (`FileEditorManagerEx` is in `fileEditor.ex`), fixed. Deviation: tests written alongside the code.
+- **Notes:** (1) Pure: `status/StatusEntryMapping.kt` (Hidden/Shown, markdown tooltip → plain lines, Loading/Unavailable/Failed rules — Failed hides the widget), `ports/EditorOpen.kt` (parse, resolve with path safety, `line-1`, VS Code placement rule, reply). (2) Glue: `StudioStatusWidget` (`CustomStatusBarWidget` + `JBLabel`), `ports/SystemCalls.kt` (`clipboard.write`; `editor.open` via `refreshAndFindFileByPath` + `OpenFileDescriptor.navigate`; the beside split calls `EditorWindow.split(int, boolean, VirtualFile, boolean)` by reflection with fallback to the current window — Gregor checks that beside really splits). (3) Router: Group SYSTEM; `clipboard.`/`editor.` no longer deferred. (4) Orchestrator perf change in the same commit: `CoreRuntime.open()` creates the browser at once while the config is prepared on a pooled thread (`provideConfig`); Windows `coreCreateMs` 1.7–2.7 s → 1.3 s, `coreReadyMs` 9466 at `d08c599`.
 
 ### T-031 — Notifications, popups, progress and the log view
 
@@ -1109,8 +1110,8 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
   it. Test: request/reply round trips.
 - **Tests first:** `UiRequestsTest` red.
 - **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS.
-- [ ] **Verified (T-031):** —
-- **Notes:** —
+- [x] **Verified (T-031):** 2026-11-21 · CI at `d08c599` (run 44884666829) green on every job: `plugin` 3 OS (UiRequestsTest 16, HostRouterTest), `ide-tests` 3 OS. Deviation: tests written alongside the code.
+- **Notes:** (1) Group UI routes `ui.pick`, `ui.notify`, `ui.confirm`, `ui.progressStart`, `ui.openExternal`; `ui.` no longer deferred. (2) `HostUi` blocks the router's pooled thread on a future completed from the EDT; pending futures → null on close. (3) Progress ids `progress-N`; Cancel sends `progressCancelled {id}` once. (4) `warn` → WARNING balloon; `showOutput` shows the tool window's "Output" tab (`ConsoleView`); the tree tab is "Specs". (5) `ui.openExternal` accepts http/https only. (6) A balloon that auto-hides leaves its `ui.notify` future pending until the user acts or the project closes.
 
 ### T-032 — Settings page, settings port and project trust
 
@@ -1133,8 +1134,8 @@ also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision
   (record which in Notes). Test: table equals the manifest entries.
 - **Tests first:** `SettingsTableTest` red.
 - **Verify:** `CI: jetbrains.yml › plugin` green on 3 OS.
-- [ ] **Verified (T-032):** —
-- **Notes:** —
+- [x] **Verified (T-032):** 2026-11-21 · CI at `302f3a2` (run 44885753961): `plugin` 3 OS green (SettingsTableTest: ids/types/defaults/descriptions = `package.json`, bare keys = `stepTipSettings.ts`; TrustWatchTest). Deviation: tests written alongside the code.
+- **Notes:** (1) Bare keys `showStepTips`, `modelHints` to the core; a hints change sends the whole `{strong, fast}` object, blanks omitted. (2) `StudioConfigurable` (`BoundConfigurable`, Kotlin UI DSL, `applicationConfigurable` under Tools) reads/writes `StudioSettings` only, never the runtime (AC-030). (3) Trust: no listener API (unsure of it) — `recheckTrust()` on frame activation, `actions.openStudio` and `actions.manageTrust`; `trustGranted` once per false→true. (4) `actions.manageTrust` opens the JetBrains project-security help page; it does not grant trust (proxy, Gregor confirms).
 
 ### T-033 — Setup host part 1: HTTP through the IDE proxy and the tar.gz reader
 
