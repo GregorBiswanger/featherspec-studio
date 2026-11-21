@@ -1,5 +1,7 @@
 package com.gregorbiswanger.featherspec.studio.setup
 
+import com.gregorbiswanger.featherspec.studio.probe.FakeReleaseRoutes
+import com.gregorbiswanger.featherspec.studio.probe.ProbeHooks
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -17,10 +19,14 @@ class ReleaseHttp(
     private val maxBodyBytes: Int = DEFAULT_MAX_BODY_BYTES,
     private val answerTimeout: Duration = Duration.ofSeconds(ANSWER_SECONDS),
     private val bodyTimeout: Duration = Duration.ofSeconds(BODY_SECONDS),
+    private val canned: FakeReleaseRoutes? = ProbeHooks.routes,
 ) {
     private val client: HttpClient by lazy(clientOf)
 
     fun get(url: String, headers: Map<String, String>): HttpReply {
+        if (canned != null) {
+            return canned.answer(url)
+        }
         val builder = HttpRequest.newBuilder(URI.create(url)).GET().timeout(answerTimeout)
         headers.forEach { (name, value) -> builder.header(name, value) }
         val response = client.send(builder.build(), HttpResponse.BodyHandlers.ofInputStream())

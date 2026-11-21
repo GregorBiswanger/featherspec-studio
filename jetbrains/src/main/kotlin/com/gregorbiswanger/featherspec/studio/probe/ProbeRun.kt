@@ -32,6 +32,7 @@ class ProbeRun(private val project: Project, private val out: Path) {
             }
             when (val probe = System.getProperty(ProbeProperties.PROBE).orEmpty()) {
                 "conformance" -> conformance(service)
+                SetupHooks.PROBE_NAME -> setup(service)
                 else -> fail("unknown probe '$probe'")
             }
         } catch (failure: Throwable) {
@@ -47,6 +48,16 @@ class ProbeRun(private val project: Project, private val out: Path) {
             return
         }
         ConformanceProbe(runtime, Path.of(directory).resolve("inputs"), out, WarmStart::measureMs).run()
+    }
+
+    private fun setup(service: StudioProjectService) {
+        val runtime = service.runtime
+        val base = project.basePath
+        if (runtime == null || base == null) {
+            fail("the project has no runtime or no base path")
+            return
+        }
+        SetupProbe(runtime, Path.of(base), out, ProbeHooks.routes).run()
     }
 
     private fun awaitReady(state: CoreStateHolder): String? {

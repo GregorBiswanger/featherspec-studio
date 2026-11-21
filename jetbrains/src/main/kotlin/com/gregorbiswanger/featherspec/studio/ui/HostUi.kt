@@ -1,6 +1,8 @@
 package com.gregorbiswanger.featherspec.studio.ui
 
 import com.gregorbiswanger.featherspec.studio.HostRouter
+import com.gregorbiswanger.featherspec.studio.probe.ProbeHooks
+import com.gregorbiswanger.featherspec.studio.probe.SetupUiAnswers
 import com.intellij.ide.BrowserUtil
 import com.intellij.notification.NotificationAction
 import com.intellij.notification.NotificationGroupManager
@@ -30,6 +32,7 @@ private const val POLL_MILLISECONDS = 100L
 
 class HostUi(
     private val project: Project,
+    private val scripted: SetupUiAnswers? = ProbeHooks.uiAnswers,
     private val dispatch: (String, String) -> Unit,
 ) {
     private val book = ProgressBook()
@@ -49,7 +52,12 @@ class HostUi(
         pending.toList().forEach { it() }
     }
 
-    fun answer(name: String, argsJson: String): String? = when (name) {
+    fun answer(name: String, argsJson: String): String? {
+        scripted?.answer(name, argsJson)?.let { return it }
+        return answerReal(name, argsJson)
+    }
+
+    private fun answerReal(name: String, argsJson: String): String? = when (name) {
         "ui.notify" -> {
             val request = UiRequests.notify(argsJson) ?: throw IllegalArgumentException("ui.notify needs message and actions")
             UiRequests.chosen(notify(request))
