@@ -1,0 +1,9 @@
+{
+  "icons": {
+    "expui": {
+      "toolwindow": {
+        "featherspec.svg": "icons/toolWindow.svg"
+      }
+    }
+  }
+}
