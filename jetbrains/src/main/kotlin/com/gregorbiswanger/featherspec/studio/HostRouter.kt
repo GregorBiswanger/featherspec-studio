@@ -55,8 +55,9 @@ class CallRouter(
     private val system: CallPort = { _, _ -> null },
     private val ui: CallPort = { _, _ -> null },
     private val setup: CallPort = { _, _ -> null },
+    private val assistant: CallPort = { _, _ -> null },
 ) {
-    enum class Group { FILES, MEDIUM, MEMORY, WATCH, PANEL, SYSTEM, UI, SETUP }
+    enum class Group { FILES, MEDIUM, MEMORY, WATCH, PANEL, SYSTEM, UI, SETUP, ASSISTANT }
 
     fun answer(name: String, argsJson: String): String {
         val group = ROUTED[name]
@@ -79,12 +80,13 @@ class CallRouter(
         Group.SYSTEM -> system
         Group.UI -> ui
         Group.SETUP -> setup
+        Group.ASSISTANT -> assistant
     }
 
     companion object {
         const val NOT_YET = "{\"error\":\"not yet\"}"
 
-        val DEFERRED_PREFIXES: List<String> = listOf("actions.", "assistant.")
+        val DEFERRED_PREFIXES: List<String> = listOf("actions.")
 
         val ROUTED: Map<String, Group> = buildMap {
             listOf("source.list", "source.stat", "source.readBytes", "source.scan", "fs.stat", "fs.readText", "fs.readDirectory")
@@ -105,6 +107,7 @@ class CallRouter(
                 "target.kind", "target.readBytes", "target.listDirectory", "target.createExclusive",
                 "target.replaceIfUnchanged", "target.clearSetupFolder", "http.get", "archive.read",
             ).forEach { put(it, Group.SETUP) }
+            listOf("assistant.claudeTerminal", "assistant.openChat").forEach { put(it, Group.ASSISTANT) }
             listOf("ui.pick", "ui.notify", "ui.confirm", "ui.progressStart", "ui.openExternal").forEach { put(it, Group.UI) }
         }
 

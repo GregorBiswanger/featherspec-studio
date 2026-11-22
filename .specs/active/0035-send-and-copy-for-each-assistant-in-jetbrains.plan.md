@@ -3,7 +3,7 @@
 **Spec:** [0035-send-and-copy-for-each-assistant-in-jetbrains.md](0035-send-and-copy-for-each-assistant-in-jetbrains.md)
 **Status:** In Progress
 **Last updated:** 2026-11-22
-**Current step:** T-009
+**Current step:** T-011
 
 ## Approach
 
@@ -245,7 +245,7 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
   target, text without control characters). Tests `HostRouterTest.kt`.
 - **Verify:** CI `plugin` green.
 - [ ] **Verified (T-010):** —
-- **Notes:** —
+- **Notes:** CI pending. Local, plain Kotlin only (kotlinc 2.0.21 + JUnit stubs): new `assistant/AssistantPortTest` (10 tests) and `HostRouterTest` (3 new, 2 moved: fake router gets the port, `DEFERRED_PREFIXES` is `actions.` again); 9 of the port tests red first (`Not implemented`), the router tests red as compile errors; then 34 of 34 (port + whole `HostRouterTest`) green. `assistant/AssistantPort.kt` is platform-free: `AssistantCalls` (`claudeTerminal(ClaudeRequest)`, `openChat(ChatAssistant): Boolean`), `UnavailableAssistantCalls` (send throws `the assistant calls are not available`, chat answers not found), argument checks throw `IllegalArgumentException` (the router answers the message): target `current`/`new`, non-empty text, no control character (`Character.isISOControl`, U+2028, U+2029; the message never holds the prompt), chat assistant `copilot`/`junie`. Replies: `{"ok":null}`, `{"ok":"opened"}`, `{"ok":"notFound"}`. `CallRouter` got `Group.ASSISTANT` and a last constructor parameter `assistant`; `StudioProjectService` passes `AssistantPort(assistantCalls)` with the placeholder field `assistantCalls` that T-011/T-012 replace. TypeScript untouched.
 
 ### T-011 — Send to Claude Code through the terminal (Kotlin)
 

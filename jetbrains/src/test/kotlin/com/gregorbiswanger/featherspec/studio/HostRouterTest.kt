@@ -33,6 +33,7 @@ class HostRouterTest {
         system = fakePort("system"),
         ui = fakePort("ui"),
         setup = fakePort("setup"),
+        assistant = fakePort("assistant"),
     )
 
     private fun parsed(reply: String) = JsonParser.parseString(reply).asJsonObject
@@ -106,11 +107,39 @@ class HostRouterTest {
             "target.replaceIfUnchanged", "target.clearSetupFolder", "http.get", "archive.read",
         )
         assertEquals(names, CallRouter.ROUTED.filterValues { it == CallRouter.Group.SETUP }.keys)
-        assertEquals(listOf("actions.", "assistant."), CallRouter.DEFERRED_PREFIXES)
+        assertEquals(listOf("actions."), CallRouter.DEFERRED_PREFIXES)
         for (name in names) {
             assertEquals("setup", parsed(router.answer(name, "{}")).get("ok").asString, name)
         }
         assertEquals("""{"error":"not yet"}""", router.answer("actions.openSetupGuide", "{}"))
+    }
+
+    @Test
+    fun `AC-023 the two assistant calls reach the assistant port and nothing else does`() {
+        val router = fakeRouter()
+        val names = setOf("assistant.claudeTerminal", "assistant.openChat")
+        assertEquals(names, CallRouter.ROUTED.filterValues { it == CallRouter.Group.ASSISTANT }.keys)
+        for (name in names) {
+            assertEquals("assistant", parsed(router.answer(name, "{}")).get("ok").asString, name)
+        }
+        assertFalse(CallRouter.DEFERRED_PREFIXES.contains("assistant."))
+        assertTrue(CallRouter.ROUTED.keys.none { it.startsWith("assistant.") && it !in names })
+    }
+
+    @Test
+    fun `AC-013 a router without an assistant port answers an error for the assistant calls`() {
+        val router = CallRouter(fakePort("files"), fakePort("medium"), fakePort("memory"), fakePort("watch"))
+        assertEquals("no answer for assistant.claudeTerminal", parsed(router.answer("assistant.claudeTerminal", "{}")).get("error").asString)
+        assertEquals("no answer for assistant.openChat", parsed(router.answer("assistant.openChat", "{}")).get("error").asString)
+    }
+
+    @Test
+    fun `AC-013 a failing assistant port answers its message as the error`() {
+        val router = CallRouter(
+            fakePort("files"), fakePort("medium"), fakePort("memory"), fakePort("watch"),
+            assistant = { _, _ -> throw IllegalStateException("Claude Code was not ready within 15000 ms") },
+        )
+        assertEquals("Claude Code was not ready within 15000 ms", parsed(router.answer("assistant.claudeTerminal", "{}")).get("error").asString)
     }
 
     @Test

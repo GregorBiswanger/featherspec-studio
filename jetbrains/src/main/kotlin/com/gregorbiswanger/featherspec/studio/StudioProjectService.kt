@@ -1,6 +1,9 @@
 package com.gregorbiswanger.featherspec.studio
 
 import com.gregorbiswanger.featherspec.studio.actions.RowSelection
+import com.gregorbiswanger.featherspec.studio.assistant.AssistantCalls
+import com.gregorbiswanger.featherspec.studio.assistant.AssistantPort
+import com.gregorbiswanger.featherspec.studio.assistant.UnavailableAssistantCalls
 import com.gregorbiswanger.featherspec.studio.jcef.Availability
 import com.gregorbiswanger.featherspec.studio.jcef.JcefAvailability
 import com.gregorbiswanger.featherspec.studio.ports.FilePorts
@@ -98,6 +101,8 @@ class StudioProjectService(private val project: Project) : Disposable {
 
     private val systemCalls = SystemCalls(project)
 
+    private val assistantCalls: AssistantCalls = UnavailableAssistantCalls
+
     private val hostUi = HostUi(project) { event, payload -> runtime?.dispatch(event, payload) }
 
     val host: HostRouter = HostRouter(
@@ -110,6 +115,7 @@ class StudioProjectService(private val project: Project) : Disposable {
             system = { name, args -> systemCalls.answer(name, args) },
             ui = { name, args -> hostUi.answer(name, args) },
             setup = SetupCalls()::answer,
+            assistant = AssistantPort(assistantCalls)::answer,
         ),
         resolve = { id, json -> runtime?.resolve(id, json) },
         execute = { block -> ApplicationManager.getApplication().executeOnPooledThread(Runnable { block() }) },
