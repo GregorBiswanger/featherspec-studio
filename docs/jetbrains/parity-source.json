@@ -1067,23 +1067,79 @@
         },
         "0024": {
             "ranges": {
-                "AC-001..AC-012": {
-                    "category": "deliberately different",
-                    "reference": "PD-105 (0034 AC-031, H-17)"
-                },
                 "AC-014..AC-015": {
                     "category": "shared",
                     "reference": "shared-test"
-                },
-                "AC-016..AC-019": {
-                    "category": "deliberately different",
-                    "reference": "PD-105 (0034 AC-031, H-17)"
                 }
             },
             "criteria": {
+                "AC-001": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-001, AC-002; H-17, H-8)"
+                },
+                "AC-002": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-003, AC-004; H-17)"
+                },
+                "AC-003": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-006; H-17)"
+                },
+                "AC-004": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-011, AC-012, AC-020; H-17)"
+                },
+                "AC-005": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-011, AC-012, AC-016, AC-017; H-17)"
+                },
+                "AC-006": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-013, AC-019; H-17)"
+                },
+                "AC-007": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-014, AC-023; H-17)"
+                },
+                "AC-008": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-020; H-17)"
+                },
+                "AC-009": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-006, AC-020; H-17)"
+                },
+                "AC-010": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-002, AC-003; H-17)"
+                },
+                "AC-011": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-004; H-17)"
+                },
+                "AC-012": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-023; H-17)"
+                },
                 "AC-013": {
                     "category": "host",
                     "reference": "H-3 and 0034 AC-011"
+                },
+                "AC-016": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-006; H-17)"
+                },
+                "AC-017": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-027, AC-028; H-17)"
+                },
+                "AC-018": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-001, AC-028; H-17)"
+                },
+                "AC-019": {
+                    "category": "deliberately different",
+                    "reference": "PD-105 (0034 AC-031, H-17); PD-108 leaves this check as it is"
                 }
             }
         },
@@ -1149,11 +1205,31 @@
             "criteria": {
                 "AC-001": {
                     "category": "deliberately different",
-                    "reference": "PD-105 (0034 AC-031, H-17)"
+                    "reference": "PD-108 (0035 AC-011, AC-012, AC-020; H-17)"
                 },
                 "AC-014": {
                     "category": "deliberately different",
-                    "reference": "PD-105 (0034 AC-031, H-17)"
+                    "reference": "PD-108 (0035 AC-023; H-17)"
+                },
+                "AC-018": {
+                    "category": "deliberately different",
+                    "reference": "PD-105 (0034 AC-031, H-17); PD-108 leaves this check as it is"
+                },
+                "AC-019": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-027, AC-028; H-17)"
+                },
+                "AC-020": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-016, AC-017, AC-020; H-17)"
+                },
+                "AC-021": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-022; H-17)"
+                },
+                "AC-022": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-012, AC-020; H-17)"
                 },
                 "AC-023": {
                     "category": "shared",
@@ -1180,26 +1256,88 @@
                 "AC-015..AC-017": {
                     "category": "shared",
                     "reference": "shared-test"
-                },
-                "AC-018..AC-022": {
-                    "category": "deliberately different",
-                    "reference": "PD-105 (0034 AC-031, H-17)"
                 }
             }
         },
         "0027": {
             "ranges": {
-                "AC-001..AC-013": {
-                    "category": "deliberately different",
-                    "reference": "PD-105 (0034 AC-031, H-17)"
-                },
                 "AC-014..AC-015": {
                     "category": "shared",
                     "reference": "shared-test"
-                },
-                "AC-016..AC-020": {
+                }
+            },
+            "criteria": {
+                "AC-001": {
                     "category": "deliberately different",
-                    "reference": "PD-105 (0034 AC-031, H-17)"
+                    "reference": "PD-108 (0035 AC-009; H-17)"
+                },
+                "AC-002": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-009; H-17)"
+                },
+                "AC-003": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-009, AC-020; H-17)"
+                },
+                "AC-004": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-016; H-17)"
+                },
+                "AC-005": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-011; H-17)"
+                },
+                "AC-006": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-009, AC-011; H-17)"
+                },
+                "AC-007": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-014, AC-023; H-17)"
+                },
+                "AC-008": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-013, AC-020; H-17)"
+                },
+                "AC-009": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-010; H-17)"
+                },
+                "AC-010": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-010; H-17)"
+                },
+                "AC-011": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-009; H-17)"
+                },
+                "AC-012": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-009; H-17)"
+                },
+                "AC-013": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-023; H-17)"
+                },
+                "AC-016": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-006; H-17)"
+                },
+                "AC-017": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-027, AC-028; H-17)"
+                },
+                "AC-018": {
+                    "category": "deliberately different",
+                    "reference": "PD-105 (0034 AC-031, H-17); PD-108 leaves this check as it is"
+                },
+                "AC-019": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-004, AC-009; H-17)"
+                },
+                "AC-020": {
+                    "category": "deliberately different",
+                    "reference": "PD-105 (0034 AC-031, H-17); PD-108 leaves this check as it is"
                 }
             }
         },
@@ -1255,7 +1393,7 @@
             "criteria": {
                 "AC-005": {
                     "category": "deliberately different",
-                    "reference": "PD-105 (0034 AC-031, H-17)"
+                    "reference": "PD-108 (0035 AC-006, AC-009; H-17)"
                 },
                 "AC-008": {
                     "category": "host",
@@ -1275,11 +1413,19 @@
             "criteria": {
                 "AC-001": {
                     "category": "deliberately different",
-                    "reference": "PD-105 (0034 AC-031, H-17)"
+                    "reference": "PD-108 (0035 AC-011, AC-016, AC-017; H-17)"
                 },
                 "AC-005": {
                     "category": "shared",
                     "reference": "C-views"
+                },
+                "AC-006": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-020; H-17)"
+                },
+                "AC-007": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-020; H-17)"
                 },
                 "AC-008": {
                     "category": "shared",
@@ -1295,7 +1441,7 @@
                 },
                 "AC-013": {
                     "category": "deliberately different",
-                    "reference": "PD-105 (0034 AC-031, H-17)"
+                    "reference": "PD-108 (0035 AC-027, AC-028; H-17)"
                 },
                 "AC-014": {
                     "category": "shared",
@@ -1307,10 +1453,6 @@
                     "category": "shared",
                     "reference": "C-next"
                 },
-                "AC-006..AC-007": {
-                    "category": "deliberately different",
-                    "reference": "PD-105 (0034 AC-031, H-17)"
-                },
                 "AC-011..AC-012": {
                     "category": "shared",
                     "reference": "shared-test"
@@ -1318,28 +1460,26 @@
             }
         },
         "0031": {
-            "ranges": {
-                "AC-001..AC-003": {
-                    "category": "deliberately different",
-                    "reference": "PD-105 (0034 AC-031, H-17)"
-                },
-                "AC-008..AC-009": {
-                    "category": "deliberately different",
-                    "reference": "PD-105 (0034 AC-031, H-17)"
-                },
-                "AC-011..AC-012": {
-                    "category": "deliberately different",
-                    "reference": "PD-105 (0034 AC-031, H-17)"
-                }
-            },
             "criteria": {
+                "AC-001": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-006, AC-009; H-17)"
+                },
+                "AC-002": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-009; H-17)"
+                },
+                "AC-003": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-006; H-17)"
+                },
                 "AC-004": {
                     "category": "shared",
                     "reference": "C-views"
                 },
                 "AC-005": {
                     "category": "deliberately different",
-                    "reference": "PD-105 (0034 AC-031, H-17)"
+                    "reference": "PD-108 (0035 AC-011, AC-020; H-17)"
                 },
                 "AC-006": {
                     "category": "shared",
@@ -1349,9 +1489,25 @@
                     "category": "shared",
                     "reference": "shared-test"
                 },
+                "AC-008": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-006; H-17)"
+                },
+                "AC-009": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-027, AC-028; H-17)"
+                },
                 "AC-010": {
                     "category": "shared",
                     "reference": "shared-test"
+                },
+                "AC-011": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-022; H-17)"
+                },
+                "AC-012": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-012, AC-020; H-17)"
                 },
                 "AC-013": {
                     "category": "shared",
@@ -1364,16 +1520,24 @@
                 "AC-001": {
                     "category": "shared",
                     "reference": "shared-test"
+                },
+                "AC-006": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-006, AC-020; H-17)"
+                },
+                "AC-007": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-006, AC-007; H-17)"
+                },
+                "AC-008": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-016; H-17)"
                 }
             },
             "ranges": {
                 "AC-002..AC-005": {
                     "category": "shared",
                     "reference": "C-next"
-                },
-                "AC-006..AC-008": {
-                    "category": "deliberately different",
-                    "reference": "PD-105 (0034 AC-031, H-17)"
                 }
             }
         },
@@ -1383,16 +1547,24 @@
                     "category": "shared",
                     "reference": "C-next"
                 },
-                "AC-003..AC-005": {
-                    "category": "deliberately different",
-                    "reference": "PD-105 (0034 AC-031, H-17)"
-                },
                 "AC-007..AC-008": {
                     "category": "shared",
                     "reference": "shared-test"
                 }
             },
             "criteria": {
+                "AC-003": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-009, AC-011, AC-016; H-17)"
+                },
+                "AC-004": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-009, AC-011, AC-016; H-17)"
+                },
+                "AC-005": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (0035 AC-006, AC-020; H-17)"
+                },
                 "AC-006": {
                     "category": "shared",
                     "reference": "C-views"

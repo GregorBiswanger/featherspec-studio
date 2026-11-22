@@ -162,6 +162,7 @@ filled, `# last reconciled: 2026-11-19`, `DocLanguage: English`, no spec.
   the Board, the tree and the *Copy next step* command shall render deep-equal to the same files at the commit on which
   implementation starts, `No specs yet. Start
   with /sdd-specify` with its Copy included.
+  *Amended by 0035 (PD-108): with an offered assistant the empty state also carries that host's step action for `/sdd-specify` (0035 §6.6, AC-007); without one, as stated.*
 - **AC-007** While the sign reads *setup not run* and the project has at least one spec, the Overview shall show no
   welcome; Up next without rows shall show §7's Up next line with an icon Copy of `/sdd-setup` in place of today's line;
   Up next with rows, Now, the Board, the tree and every spec's next step shall be unchanged.

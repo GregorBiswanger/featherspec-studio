@@ -62,9 +62,10 @@
 ## JetBrains host (0034)
 - `jetbrains/` — Gradle (Kotlin JVM, IntelliJ Platform plugin); no local Gradle, no Gradle wrapper JAR committed.
 - Every Gradle, Kotlin and JVM check runs in CI only: `.github/workflows/jetbrains.yml`, job `plugin` (Ubuntu, Windows, macOS: `npm run package`, then `gradle -p jetbrains build buildPlugin verifyPluginStructure`, `plugin.xml` guard).
-- CI jobs `vscode-mirror`, `vscode-guards` (`node --test 'jetbrains/guards/*.test.mjs'`, VSIX file list, same bundles) and `shared-guard` (Ubuntu, Windows: `src/core` and protected paths unchanged since `3bc615c`, no test lost, rendered texts identical; T-020). `node jetbrains/scripts/conformanceExpected.mjs` writes the JVM conformance inputs and expected outputs to `jetbrains/build/conformance/` (T-019).
+- CI jobs `vscode-mirror`, `vscode-guards` (`node --test 'jetbrains/guards/*.test.mjs'`, VSIX file list, same bundles) and `shared-guard` (Ubuntu, Windows: baselines, golden file and workflows unchanged since the start commit `1765403` of 0035, no test lost, rendered texts identical; T-020). `node jetbrains/scripts/conformanceExpected.mjs` writes the JVM conformance inputs and expected outputs to `jetbrains/build/conformance/` (T-019).
 - Other `jetbrains.yml` jobs: `verify` (Plugin Verifier, 2025.3.1 and 2026.3, per product: idea, webstorm, rider, pycharm, recommended), `ide-tests` (Starter IDE on 3 OS: conformance and budgets, smoke, setup, and two Linux no-JCEF entries). The ZIP is the `plugin-zip` artifact; `pluginZip.mjs` guards it. Read a run with `gh run view <id> --log-failed`; a Kotlin result exists only there.
 - Stack: Kotlin 2.2 (JVM 21), IntelliJ Platform Gradle plugin, `since-build` 253.29346 (2025.3.1), JCEF required (`com.intellij.modules.jcef`); Gradle 9.7.0 in CI. The spike code is removed (T-037).
+- Optional dependency (0035): the bundled Terminal plugin `org.jetbrains.plugins.terminal`, declared in `plugin.xml` with `config-file` `featherspec-terminal.xml`; the Reworked Terminal API is experimental, so only `TerminalToolWindowTabsManager` is typed, the rest reflective, every call guarded. `pluginZip.mjs` allows exactly this one optional `<depends>`. Terminal readiness markers and chat tool window IDs are unverified until K-1.
 - Local gates stay as above; the sandbox cannot reach Maven or the Gradle portal.
 
 ## Quality gates

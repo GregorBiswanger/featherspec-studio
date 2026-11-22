@@ -3,7 +3,7 @@
 **Spec:** [0035-send-and-copy-for-each-assistant-in-jetbrains.md](0035-send-and-copy-for-each-assistant-in-jetbrains.md)
 **Status:** In Progress
 **Last updated:** 2026-11-22
-**Current step:** T-013
+**Current step:** T-014 (after CI of stage 3 and K-1)
 
 ## Approach
 
@@ -284,8 +284,8 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
   sentences and both byte limits.
 - **Verify:** `npx vitest run --project node src/adapters/node/docsScan.test.ts src/adapters/node/parity.test.ts
   src/adapters/node/docs0035.test.ts`.
-- [ ] **Verified (T-013):** —
-- **Notes:** —
+- [x] **Verified (T-013):** 2026-11-22 · `src/adapters/node/docs0035.test.ts` 9 tests (1 red first: the README sentence `FeatherSpec Studio | Assistant**`; the rest green at once with two negative controls) · `FEATHERSPEC_WRITE_PARITY=1 npx vitest run --project node src/adapters/node/parity.test.ts` 20 of 20 green, `parity.md` regenerated · `npx vitest run --project node --project webview`: 4315 green, 0 red (`docsScan`, `parity`, `sourceScan` included) · `npm run -s check-types` 0 · `npx eslint src --max-warnings 0` 0 · `node --test 'jetbrains/guards/*.test.mjs'` 68/68 · `AGENTS.md` 14991 bytes (untouched), `activeContext.md` 6826 bytes.
+- **Notes:** the 60 PD-105 rows: 56 moved to `PD-108 (0035 AC-…; H-17)` with the criteria that now decide that behaviour (the 0024 to 0033 ranges split into single criteria in `parity-source.json`); 4 stay PD-105 with "PD-108 leaves this check as it is" because they are click tests or a measurement, not behaviour (0024 AC-019, 0026 AC-018, 0027 AC-018, 0027 AC-020). The 0035 rows of the matrix were already categorised and match the built code. Notes "*Amended by 0035 (PD-108)*": 0024 AC-003, 0029 AC-006, 0034 AC-018, §6.7 (with H-17), AC-031, AC-033, OP-024; `jetbrains/AGENTS.md` rule and `assistant/` package. README *JetBrains IDEs* replaces *Copy prompt only*; privacy line names the terminal tab; CHANGELOG bullets inside the 0.1.0 entry (docsScan reads that entry); `docsScan.test.ts` lists the new checklist heading and allows `Copy for Copilot`. Maps `core`, `hosts`, `jetbrains` reconciled; `systemPatterns.md` record (PD-108) and `techContext.md` optional Terminal dependency added. The `AGENTS.md` snapshot stays (its boundary line already covers host-run assistant commands); `/sdd-architecture-update` found no new module or entrypoint outside `src/hosts/embedded/assistants.ts`, `src/core/assistant/references.ts` and `jetbrains/.../assistant/`, which the maps now name. README mentions that Copilot and Junie may not read `#file:` and `@file:` as files (A-002, A-003) until AC-028.
 
 ### T-014 — Final gates
 
@@ -332,16 +332,16 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
 | AC-022 | T-006 | `src/core/assistant/sendView.ts:tipClosingOf` | `tipCopyFor0035.test.ts` | verified |
 | AC-023 | T-007, T-010 | `src/hosts/embedded/ports.ts`, `panelSession.ts`, `HostRouter.kt`, `assistant/AssistantPort.kt` | `assistant0035.test.ts`, `HostRouterTest.kt`, `AssistantPortTest.kt` | built |
 | AC-024 | T-001, T-009, T-011 | `plugin.xml` (one optional `<depends>`, `featherspec-terminal.xml`), `assistant/TerminalGlue.kt` | `pluginZip.mjs` guard; CI `verify` | built |
-| AC-025 | T-013 | — | — | open |
+| AC-025 | T-013 | `docs/jetbrains/{parity-source.json,parity.md}` | `docs0035.test.ts`, `parity.test.ts` | verified |
 | AC-026 | T-008, T-014 | `.github/workflows/jetbrains.yml`, `jetbrains/guards/{sharedGuard,renderedTexts}.mjs` | `sharedGuard.test.mjs`; CI `shared-guard` open | built |
 | AC-027 | T-015 | — | manual: Gregor, Rider | open |
 | AC-028 | T-015 | — | manual: Gregor, Rider and VS Code | open |
-| AC-029 | T-013 | — | — | open |
+| AC-029 | T-013 | `README.md`, `CHANGELOG.md`, `docs/release-checklist.md`, `jetbrains/AGENTS.md`, `.specs/active/{0024,0034}*.md`, `.specs/done/0029*.md` | `docs0035.test.ts` (notes, README, byte limits) | verified |
 
 ## Session handoff
 
-- **Done so far:** spec and plan (2026-11-22); stages 1 and 2 (T-001 probe built, T-002 to T-008), stage 3 built (T-009 to T-012, one commit each, CI pending); local gates at stage 3: node + webview 4306 green, guards 68/68, eslint and both `tsc` clean; plain Kotlin checked locally with kotlinc 2.0.21 and JUnit stubs (T-009 28, T-010 34, T-011 37, T-012 8 green); the platform glue is compile-checked here only against hand-made stubs.
-- **Next action:** CI on the branch (Gregor pushes): `plugin` (all Kotlin of stage 3 and `HostContractTest`, `HostRouterTest`, `CoreConfigTest`, `SettingsTableTest`), `verify` (experimental Terminal API only through `TerminalToolWindowTabsManager`), `shared-guard`, `vscode-guards`. Then K-1's manual probe results (tool window IDs A-008, readiness markers A-005, enabled check A-007), then T-013 (parity, docs, maps).
+- **Done so far:** spec and plan (2026-11-22); stages 1 and 2 (T-001 probe built, T-002 to T-008), stage 3 built (T-009 to T-012, one commit each, CI pending); T-013 verified (parity, notes, docs, maps, Memory Bank); local gates at stage 3: node + webview 4306 green, guards 68/68, eslint and both `tsc` clean; plain Kotlin checked locally with kotlinc 2.0.21 and JUnit stubs (T-009 28, T-010 34, T-011 37, T-012 8 green); the platform glue is compile-checked here only against hand-made stubs.
+- **Next action:** CI on the branch (Gregor pushes): `plugin` (all Kotlin of stage 3 and `HostContractTest`, `HostRouterTest`, `CoreConfigTest`, `SettingsTableTest`), `verify` (experimental Terminal API only through `TerminalToolWindowTabsManager`), `shared-guard`, `vscode-guards`. Then K-1's manual probe results (tool window IDs A-008, readiness markers A-005, enabled check A-007), then T-014 (final gates). If K-1 changes a value, README and the 0035 parity rows follow in the same change.
 - **Open decisions:** the 18 proxies of spec §14; K-1's values (A-005 to A-009); J-1 (form A or C). Not decided by a measurement: readiness markers (`ClaudeReadiness.MARKERS`), tool window IDs (`ChatWindows.*_IDS`), the active root (core memory, else IDE base path; a TypeScript `root` argument would make it exact).
 - **Kotlin must match the TypeScript:** `assistant.claudeTerminal` args `{target, text}`, answer `{"ok":null}` or `{error}`; the not-ready error text is exactly `Claude Code was not ready within 15000 ms`; `assistant.openChat` args `{assistant}`, answer `"opened"` or `"notFound"`; event `pluginsChanged {plugins: [ids]}` and `CoreConfig.plugins` carry the installed and loaded ids among `com.github.copilot`, `org.jetbrains.plugins.terminal`, `org.jetbrains.junie`, `com.intellij.ml.llm`.
 - **Baseline:** 1765403c57c02381dae9acc5f2d4caae7abf7dfb

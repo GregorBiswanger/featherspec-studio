@@ -1,5 +1,5 @@
 # Map: src/hosts (shared composition and the embedded JetBrains core)
-# last reconciled: 2026-11-21 (0034, ADR-004)
+# last reconciled: 2026-11-22 (0035, ADR-004)
 
 ## Internal pattern
 - `compose.ts` (T-012) — `composeStudio(ports: HostPorts): Studio`: every core construction and the start sequence
@@ -11,7 +11,7 @@
   `contract.ts` every bridge name (`ASYNC_CALLS`, `EMIT_CHANNELS`, `DISPATCH_EVENTS`, `INVOKE_COMMANDS`, `FRAME_KINDS`) and
   `CoreConfig`, mirrored by Kotlin `HostContract.kt` (T-021) · `bridge.ts` frames, ids, base64 · `mirrors.ts` host-pushed copies
   (settings, trust, folders, memory) behind the sync ports · `ports.ts` `createEmbeddedPorts` (`HostPorts` from bridge and
-  mirrors), `archivePortOf` · `terms.ts` host-side UI strings through `translateTerms` · `main.ts` `createEmbeddedHost`: `start`,
+  mirrors), `archivePortOf` · `assistants.ts` the JetBrains `AssistantTable` (Copilot and Junie `copyFor`, Claude Code `send` through bridge call `assistant.claudeTerminal`; `assistant.openChat`; plugin presence from the `plugins` mirror, event `pluginsChanged`; 0035) · `terms.ts` host-side UI strings through `translateTerms` · `main.ts` `createEmbeddedHost`: `start`,
   `resolve`, `dispatch`, `invoke`, `conformance`, `setupConformance` · `global.ts` sets `globalThis.FeatherSpecHost`, frames out
   via `__featherspecNative` · `pathPosix.ts` stands in for `path` · `conformance.ts` (T-018) the oracle replies ·
   `testing/browserContext.ts` a `vm` context with only the Web APIs Chromium gives the page (tests only).
@@ -35,6 +35,6 @@
 
 ## Traps
 - `embedded/**` outside tests and `testing/` imports neither `vscode` nor a Node.js built-in (ESLint block).
-- `src/core` stays identical to `3bc615c`; `dist/extension.js`, `dist/webview/*` stay byte-identical (`bundle.test.ts`,
+- `src/core` changes only as spec 0035 names (the shared-guard compares with its start commit `1765403`); `dist/extension.js`, `dist/webview/*` stay byte-identical (`bundle.test.ts`,
   `sameBundles.mjs`, CI `shared-guard`). `noNetwork.test.ts` skips `src/hosts`; `compose.test.ts` checks `compose.ts`.
 - Dispatch before `start` is ignored; a bad `CoreConfig` sends `failed`, never `ready`.

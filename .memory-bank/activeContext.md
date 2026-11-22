@@ -10,7 +10,7 @@ Current phase: act
 - 0021–0024 are implemented; their specs stay In Progress in `active/`.
 
 ## Active Spec
-- [0035](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.md) / [plan](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.plan.md): Send and Copy for in JetBrains (PD-108), T-001…T-008 verified, T-009…T-012 built (Kotlin, CI pending); next T-013; K-1 values and 18 proxies (§14) await Gregor.
+- [0035](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.md) / [plan](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.plan.md): Send and Copy for in JetBrains (PD-108), T-001…T-008, T-013 verified, T-009…T-012 built (CI pending); next T-014; K-1 values, proxies (§14) await Gregor.
 - [0034](../.specs/active/0034-studio-for-jetbrains-ides.md) / [plan](../.specs/active/0034-studio-for-jetbrains-ides.plan.md): JetBrains IDEs, T-001…T-042 verified except T-035, G4 fix round open; baseline `3bc615c`.
 - [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec for Copilot and Claude Code in every version (PD-091), T-001…T-011 verified; AC-016, AC-017, AC-020 are Gregor's or the orchestrator's.
 - [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 are Gregor's; OP-004 closed by PD-078.
@@ -31,8 +31,8 @@ Current phase: act
 - Completed 2026-11-20: [0032](../.specs/done/0032-release-polish.md), [0033](../.specs/done/0033-start-via-lifecycle-plan-attachment-prompt-layout.md); plans in `plan-archive/`.
 
 ## Changed Recently
-- 0034 T-036/T-037/T-040 (`3f4221a`, `4be646e`): Verifier, ZIP checks, no-JCEF test, README `## JetBrains IDEs`, checklist *JetBrains (manual)*, maps, `jetbrains/AGENTS.md`, Memory Bank; spikes removed; `AGENTS.md` 14991 bytes.
 - 0034 G3 fix round `727f708` (2026-11-21): Overview in conformance, synthetic `AGENTS.md` for weak inputs, rendered-text guard 199 areas, neutral paths (AC-038), `src/hosts/noNetwork.test.ts`.
+- 0035 T-013 (2026-11-22): 56 of 60 PD-105 parity rows moved to PD-108, notes in 0024, 0029, 0034, README, CHANGELOG, checklist, maps; `AGENTS.md` untouched (14991).
 - 0035 stages 2 and 3 (2026-11-22): Copy for, JetBrains table and calls, guard moved to `1765403`; Kotlin: Assistant row, plugin availability, routed calls, Claude terminal, chat windows.
 
 ## Decisions in Flight
@@ -53,4 +53,4 @@ Current phase: act
 6. 0031: AC-009 Gregor; CI on PR #2
 
 ## Validation
-- 0034 at `2da335c` (sandbox): unit 4053 + 35 timing, guards 58/58, scripts 5/5, docsScan, parity green; CI `verify`, `plugin`, no-JCEF green at `3f4221a`. Windows at 4304f86: unit 3900/8 + 35 timing, npm test 34+1+1+1.
+- 0035 T-013 (sandbox): node + webview, check-types, eslint, guards 68/68 green; 0034 at `2da335c`: scripts 5/5; CI `verify`, `plugin`, no-JCEF green at `3f4221a`. Windows at 4304f86: unit 3900/8 + 35 timing, npm test 34+1+1+1.

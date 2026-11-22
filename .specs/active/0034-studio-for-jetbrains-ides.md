@@ -183,6 +183,8 @@ then 0024, 0026, 0027 and 0033 apply to it, with the attachment only where the h
 proven by gate G1 or later, is implemented by spec 0035 (OP-010, OP-024); this spec ships none. While none is offered, the Assistant setting is
 hidden and every step action is Copy prompt; once one is, the setting lists only offered assistants.
 
+*Amended by 0035 (PD-108): offers the handovers of 0035 §6.1 — Send to Claude Code, Copy for Copilot and Junie; H-17 reads "handover per 0035 §6.1"; the setting row of 0035 §6.5 replaces "hidden".*
+
 ### 6.8 Host vocabulary
 
 No JetBrains surface shall show a VS Code-only term. Known at `3bc615c`: `Restricted Mode`, `Manage Workspace Trust`,
@@ -349,6 +351,7 @@ WebStorm by hand in AC-040 and AC-041.
 - **AC-018** Settings › Tools › FeatherSpec Studio shall show Show Step Tips and Model Hints, and Assistant only while §6.7
   offers a handover, with the defaults, labels and descriptions of 0021 AC-016 and 0024 AC-001; a change shall reach the
   panel within 500 ms (0021 AC-011); Open Settings shall open this page; the values shall apply to every IDE project.
+  *Amended by 0035 (PD-108): the Assistant row shows with the offered handovers of 0035 §6.1 (0035 §6.5, AC-001).*
 - **AC-019** While the IDE project is not trusted, discovery, tree, status entry, Copy and the settings shall work as in a
   trusted one (0001 AC-022, 0017 AC-022, 0020 AC-014, 0021 AC-018); Set up FeatherSpec shall send nothing and write nothing
   (0014 AC-004); the panel shall show the S7 note in the vocabulary of §6.8, and when the IDE project becomes trusted the note
@@ -393,11 +396,13 @@ WebStorm by hand in AC-040 and AC-041.
   2026-11-21, OP-025: the core runs in JCEF, so tree, status entry, Copy Next Step and Set up no longer work without it.)
 - **AC-031** While no handover of §6.7 is proven, every step action in the panel shall be Copy prompt, the settings page
   shall not show the Assistant setting, and no text shall name Send.
+  *Amended by 0035 (PD-108): the step actions hold while *Assistant* is `none`; the page shows the row of 0035 AC-001 and a chosen value the handovers of 0035 §6.1 (0035 AC-004).*
 - ~~**AC-032** Where a handover is offered, its Send shall put the prompt into that assistant's input and never submit it;
   every failed check, call or 5 s timeout shall fall back to Copy prompt with one warning and one log line without the
   prompt (0024 AC-005, AC-006, PD-068), and attach only as §6.7 allows.~~ — moved to spec 0035 on 2026-11-20 (OP-024).
 - **AC-033** `plugin.xml` shall carry the ID, name and vendor of §6.10, since-build of 2025.3.1, no until-build, and depend on
   exactly `com.intellij.modules.platform` and `com.intellij.modules.jcef`.
+  *Amended by 0035 (PD-108): plus the optional dependency `org.jetbrains.plugins.terminal` (0035 §6.3, AC-024).*
 - **AC-034** The Plugin Verifier shall report no compatibility problem for Rider, WebStorm, IntelliJ IDEA and PyCharm at
   since-build and at the latest stable release, nor for its recommended set; the structure check shall report no error.
 - **AC-035** The plugin ZIP shall be at most 60 MB; no key or token shall be in the repository. (Changed 2026-11-20,
@@ -499,6 +504,7 @@ None open. Each decision below stands where its ID is cited.
   Marketplace release**; both are to be specified with `/sdd-specify`. S-3 is still measured here and recorded in ADR-004.
   The plan still has 37 small steps; a further split at gate G3 is offered to Gregor in the plan (confirmed by Gregor
   2026-11-20).
+  *Amended by 0035 (PD-108): the Send handover is built there as Send to Claude Code and Copy for Copilot and Junie.*
 - OP-025 G1 decision, Gregor 2026-11-21: ADR-004 accepted with all four recommendations — runtime V2 (hidden off-screen
   JCEF browser per IDE project; GraalJS rejected); R-5 replaced by "core ready within 12 s of project open on the CI
   runners, loading state until then, re-measured at AC-040/AC-041"; without JCEF (not supported, or suspended by the OS

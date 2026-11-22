@@ -588,25 +588,25 @@ Generated from `.specs/done/` and `.specs/active/` by `src/adapters/node/parity.
 | 0023 | AC-018 | shared | shared-test |  |
 | 0023 | AC-019 | shared | shared-test |  |
 | 0023 | AC-020 | shared | shared-test |  |
-| 0024 | AC-001 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0024 | AC-002 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0024 | AC-003 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0024 | AC-004 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0024 | AC-005 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0024 | AC-006 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0024 | AC-007 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0024 | AC-008 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0024 | AC-009 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0024 | AC-010 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0024 | AC-011 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0024 | AC-012 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
+| 0024 | AC-001 | deliberately different | PD-108 (0035 AC-001, AC-002; H-17, H-8) |  |
+| 0024 | AC-002 | deliberately different | PD-108 (0035 AC-003, AC-004; H-17) |  |
+| 0024 | AC-003 | deliberately different | PD-108 (0035 AC-006; H-17) |  |
+| 0024 | AC-004 | deliberately different | PD-108 (0035 AC-011, AC-012, AC-020; H-17) |  |
+| 0024 | AC-005 | deliberately different | PD-108 (0035 AC-011, AC-012, AC-016, AC-017; H-17) |  |
+| 0024 | AC-006 | deliberately different | PD-108 (0035 AC-013, AC-019; H-17) |  |
+| 0024 | AC-007 | deliberately different | PD-108 (0035 AC-014, AC-023; H-17) |  |
+| 0024 | AC-008 | deliberately different | PD-108 (0035 AC-020; H-17) |  |
+| 0024 | AC-009 | deliberately different | PD-108 (0035 AC-006, AC-020; H-17) |  |
+| 0024 | AC-010 | deliberately different | PD-108 (0035 AC-002, AC-003; H-17) |  |
+| 0024 | AC-011 | deliberately different | PD-108 (0035 AC-004; H-17) |  |
+| 0024 | AC-012 | deliberately different | PD-108 (0035 AC-023; H-17) |  |
 | 0024 | AC-013 | host | H-3 and 0034 AC-011 |  |
 | 0024 | AC-014 | shared | shared-test |  |
 | 0024 | AC-015 | shared | shared-test |  |
-| 0024 | AC-016 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0024 | AC-017 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0024 | AC-018 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0024 | AC-019 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
+| 0024 | AC-016 | deliberately different | PD-108 (0035 AC-006; H-17) |  |
+| 0024 | AC-017 | deliberately different | PD-108 (0035 AC-027, AC-028; H-17) |  |
+| 0024 | AC-018 | deliberately different | PD-108 (0035 AC-001, AC-028; H-17) |  |
+| 0024 | AC-019 | deliberately different | PD-105 (0034 AC-031, H-17); PD-108 leaves this check as it is |  |
 | 0025 | AC-001 | host | H-15 and 0034 AC-024 |  |
 | 0025 | AC-002 | host | H-15 and 0034 AC-024 |  |
 | 0025 | AC-003 | host | H-15 and 0034 AC-024 |  |
@@ -634,7 +634,7 @@ Generated from `.specs/done/` and `.specs/active/` by `src/adapters/node/parity.
 | 0025 | AC-025 | shared | C-views |  |
 | 0025 | AC-026 | shared | C-views |  |
 | 0025 | AC-027 | shared | C-views |  |
-| 0026 | AC-001 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
+| 0026 | AC-001 | deliberately different | PD-108 (0035 AC-011, AC-012, AC-020; H-17) |  |
 | 0026 | AC-002 | shared | C-next |  |
 | 0026 | AC-003 | shared | C-next |  |
 | 0026 | AC-004 | shared | C-next |  |
@@ -647,37 +647,37 @@ Generated from `.specs/done/` and `.specs/active/` by `src/adapters/node/parity.
 | 0026 | AC-011 | shared | C-views |  |
 | 0026 | AC-012 | shared | shared-test |  |
 | 0026 | AC-013 | shared | shared-test |  |
-| 0026 | AC-014 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
+| 0026 | AC-014 | deliberately different | PD-108 (0035 AC-023; H-17) |  |
 | 0026 | AC-015 | shared | shared-test |  |
 | 0026 | AC-016 | shared | shared-test |  |
 | 0026 | AC-017 | shared | shared-test |  |
-| 0026 | AC-018 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0026 | AC-019 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0026 | AC-020 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0026 | AC-021 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0026 | AC-022 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
+| 0026 | AC-018 | deliberately different | PD-105 (0034 AC-031, H-17); PD-108 leaves this check as it is |  |
+| 0026 | AC-019 | deliberately different | PD-108 (0035 AC-027, AC-028; H-17) |  |
+| 0026 | AC-020 | deliberately different | PD-108 (0035 AC-016, AC-017, AC-020; H-17) |  |
+| 0026 | AC-021 | deliberately different | PD-108 (0035 AC-022; H-17) |  |
+| 0026 | AC-022 | deliberately different | PD-108 (0035 AC-012, AC-020; H-17) |  |
 | 0026 | AC-023 | shared | C-next |  |
 | 0026 | AC-024 | shared | C-views |  |
-| 0027 | AC-001 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0027 | AC-002 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0027 | AC-003 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0027 | AC-004 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0027 | AC-005 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0027 | AC-006 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0027 | AC-007 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0027 | AC-008 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0027 | AC-009 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0027 | AC-010 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0027 | AC-011 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0027 | AC-012 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0027 | AC-013 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
+| 0027 | AC-001 | deliberately different | PD-108 (0035 AC-009; H-17) |  |
+| 0027 | AC-002 | deliberately different | PD-108 (0035 AC-009; H-17) |  |
+| 0027 | AC-003 | deliberately different | PD-108 (0035 AC-009, AC-020; H-17) |  |
+| 0027 | AC-004 | deliberately different | PD-108 (0035 AC-016; H-17) |  |
+| 0027 | AC-005 | deliberately different | PD-108 (0035 AC-011; H-17) |  |
+| 0027 | AC-006 | deliberately different | PD-108 (0035 AC-009, AC-011; H-17) |  |
+| 0027 | AC-007 | deliberately different | PD-108 (0035 AC-014, AC-023; H-17) |  |
+| 0027 | AC-008 | deliberately different | PD-108 (0035 AC-013, AC-020; H-17) |  |
+| 0027 | AC-009 | deliberately different | PD-108 (0035 AC-010; H-17) |  |
+| 0027 | AC-010 | deliberately different | PD-108 (0035 AC-010; H-17) |  |
+| 0027 | AC-011 | deliberately different | PD-108 (0035 AC-009; H-17) |  |
+| 0027 | AC-012 | deliberately different | PD-108 (0035 AC-009; H-17) |  |
+| 0027 | AC-013 | deliberately different | PD-108 (0035 AC-023; H-17) |  |
 | 0027 | AC-014 | shared | shared-test |  |
 | 0027 | AC-015 | shared | shared-test |  |
-| 0027 | AC-016 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0027 | AC-017 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0027 | AC-018 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0027 | AC-019 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0027 | AC-020 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
+| 0027 | AC-016 | deliberately different | PD-108 (0035 AC-006; H-17) |  |
+| 0027 | AC-017 | deliberately different | PD-108 (0035 AC-027, AC-028; H-17) |  |
+| 0027 | AC-018 | deliberately different | PD-105 (0034 AC-031, H-17); PD-108 leaves this check as it is |  |
+| 0027 | AC-019 | deliberately different | PD-108 (0035 AC-004, AC-009; H-17) |  |
+| 0027 | AC-020 | deliberately different | PD-105 (0034 AC-031, H-17); PD-108 leaves this check as it is |  |
 | 0028 | AC-001 | shared | C-next |  |
 | 0028 | AC-002 | shared | C-next |  |
 | 0028 | AC-003 | shared | C-next |  |
@@ -703,7 +703,7 @@ Generated from `.specs/done/` and `.specs/active/` by `src/adapters/node/parity.
 | 0029 | AC-002 | shared | C-views |  |
 | 0029 | AC-003 | shared | C-views |  |
 | 0029 | AC-004 | shared | C-views |  |
-| 0029 | AC-005 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
+| 0029 | AC-005 | deliberately different | PD-108 (0035 AC-006, AC-009; H-17) |  |
 | 0029 | AC-006 | shared | C-views |  |
 | 0029 | AC-007 | shared | C-views |  |
 | 0029 | AC-008 | host | H-7 and 0034 AC-017 |  |
@@ -714,46 +714,46 @@ Generated from `.specs/done/` and `.specs/active/` by `src/adapters/node/parity.
 | 0029 | AC-013 | shared | shared-test |  |
 | 0029 | AC-014 | shared | shared-test |  |
 | 0029 | AC-015 | shared | shared-test |  |
-| 0030 | AC-001 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
+| 0030 | AC-001 | deliberately different | PD-108 (0035 AC-011, AC-016, AC-017; H-17) |  |
 | 0030 | AC-002 | shared | C-next |  |
 | 0030 | AC-003 | shared | C-next |  |
 | 0030 | AC-004 | shared | C-next |  |
 | 0030 | AC-005 | shared | C-views |  |
-| 0030 | AC-006 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0030 | AC-007 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
+| 0030 | AC-006 | deliberately different | PD-108 (0035 AC-020; H-17) |  |
+| 0030 | AC-007 | deliberately different | PD-108 (0035 AC-020; H-17) |  |
 | 0030 | AC-008 | shared | C-next |  |
 | 0030 | AC-009 | shared | shared-test |  |
 | 0030 | AC-010 | shared | C-next |  |
 | 0030 | AC-011 | shared | shared-test |  |
 | 0030 | AC-012 | shared | shared-test |  |
-| 0030 | AC-013 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
+| 0030 | AC-013 | deliberately different | PD-108 (0035 AC-027, AC-028; H-17) |  |
 | 0030 | AC-014 | shared | shared-test |  |
-| 0031 | AC-001 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0031 | AC-002 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0031 | AC-003 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
+| 0031 | AC-001 | deliberately different | PD-108 (0035 AC-006, AC-009; H-17) |  |
+| 0031 | AC-002 | deliberately different | PD-108 (0035 AC-009; H-17) |  |
+| 0031 | AC-003 | deliberately different | PD-108 (0035 AC-006; H-17) |  |
 | 0031 | AC-004 | shared | C-views |  |
-| 0031 | AC-005 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
+| 0031 | AC-005 | deliberately different | PD-108 (0035 AC-011, AC-020; H-17) |  |
 | 0031 | AC-006 | shared | C-next |  |
 | 0031 | AC-007 | shared | shared-test |  |
-| 0031 | AC-008 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0031 | AC-009 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
+| 0031 | AC-008 | deliberately different | PD-108 (0035 AC-006; H-17) |  |
+| 0031 | AC-009 | deliberately different | PD-108 (0035 AC-027, AC-028; H-17) |  |
 | 0031 | AC-010 | shared | shared-test |  |
-| 0031 | AC-011 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0031 | AC-012 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
+| 0031 | AC-011 | deliberately different | PD-108 (0035 AC-022; H-17) |  |
+| 0031 | AC-012 | deliberately different | PD-108 (0035 AC-012, AC-020; H-17) |  |
 | 0031 | AC-013 | shared | shared-test |  |
 | 0032 | AC-001 | shared | shared-test |  |
 | 0032 | AC-002 | shared | C-next |  |
 | 0032 | AC-003 | shared | C-next |  |
 | 0032 | AC-004 | shared | C-next |  |
 | 0032 | AC-005 | shared | C-next |  |
-| 0032 | AC-006 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0032 | AC-007 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0032 | AC-008 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
+| 0032 | AC-006 | deliberately different | PD-108 (0035 AC-006, AC-020; H-17) |  |
+| 0032 | AC-007 | deliberately different | PD-108 (0035 AC-006, AC-007; H-17) |  |
+| 0032 | AC-008 | deliberately different | PD-108 (0035 AC-016; H-17) |  |
 | 0033 | AC-001 | shared | C-next |  |
 | 0033 | AC-002 | shared | C-next |  |
-| 0033 | AC-003 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0033 | AC-004 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
-| 0033 | AC-005 | deliberately different | PD-105 (0034 AC-031, H-17) |  |
+| 0033 | AC-003 | deliberately different | PD-108 (0035 AC-009, AC-011, AC-016; H-17) |  |
+| 0033 | AC-004 | deliberately different | PD-108 (0035 AC-009, AC-011, AC-016; H-17) |  |
+| 0033 | AC-005 | deliberately different | PD-108 (0035 AC-006, AC-020; H-17) |  |
 | 0033 | AC-006 | shared | C-views |  |
 | 0033 | AC-007 | shared | shared-test |  |
 | 0033 | AC-008 | shared | shared-test |  |

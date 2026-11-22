@@ -4,9 +4,9 @@ Read `AGENTS.md` first. This folder is the IntelliJ Platform plugin of FeatherSp
 
 ## What lives here
 - `src/main/kotlin/com/gregorbiswanger/featherspec/studio/` — Kotlin host, root package `com.gregorbiswanger.featherspec.studio`.
-  Packages: `runtime/` bridge to the core page · `jcef/` · `ports/` host ports · `panel/` editor tab · `theme/` · `tree/` tool window ·
+  Packages: `runtime/` bridge to the core page · `jcef/` · `ports/` host ports · `assistant/` Send and Copy for · `panel/` editor tab · `theme/` · `tree/` tool window ·
   `actions/` · `status/` · `ui/` · `settings/` · `setup/` · `probe/` (CI probes, inert by default); inside view: `.architecture/jetbrains.md`.
-- `src/main/resources/META-INF/plugin.xml` — plugin manifest (id, the two `<depends>` lines; `since-build` is in `build.gradle.kts`).
+- `src/main/resources/META-INF/plugin.xml` — plugin manifest (id, the two `<depends>` lines plus the optional Terminal one in `featherspec-terminal.xml`; `since-build` is in `build.gradle.kts`).
 - `src/test/kotlin/…` — plain JUnit 5 tests; `src/integrationTest/kotlin/…` — Starter smoke and conformance.
 - `build.gradle.kts`, `settings.gradle.kts`, `gradle/libs.versions.toml` — build; versions live in the TOML.
 
@@ -22,7 +22,7 @@ Read `AGENTS.md` first. This folder is the IntelliJ Platform plugin of FeatherSp
 - No comments in generated code. No new dependency without the owner's yes.
 
 ## Shared core
-- Never edit `src/core`. The core runs unchanged in a hidden JCEF browser per IDE project through the JSON bridge (ADR-004).
+- `src/core` changes only through a spec that names the change (0035 §6.8); otherwise never edit it. The core runs in a hidden JCEF browser per IDE project through the JSON bridge (ADR-004).
 - Bridge contract: `src/hosts/embedded/contract.ts` (from T-016). Its Kotlin mirror is `<pkg>/runtime/HostContract.kt` (T-021).
 - Host vocabulary: `src/shared/protocol/vocabulary.ts` (T-014); the webview reads it, the host does not invent UI strings.
 

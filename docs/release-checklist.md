@@ -354,6 +354,15 @@ Evidence for spec 0034 AC-040, AC-041 and AC-042; the plugin ZIP is the `plugin-
 - [ ] **Cold start on Windows** (AC-040): the panel shows its loading state and is ready; note the seconds it took (CI runners measured up to about half a minute, the budget is 12 s).
 - [ ] **Open beside** (AC-040): a file opened from the detail with Ctrl+click opens in a split beside the panel; if it opens in the current window, note the IDE version.
 
+## Send and Copy for in JetBrains (manual) (0035)
+
+Evidence for spec 0035 AC-027 and AC-028; plugin ZIP, Rider 2026.3 and `C:\projects\test\tip-splitter` as in the 0034 section. Record the versions of Rider, the Terminal plugin, Claude Code, GitHub Copilot and Junie.
+
+- [ ] **Send to Claude Code** (AC-027): *Assistant* Claude Code; in the `NS-7-start` situation the main part puts the prompt with two `@` mentions into a running `claude` tab, and with no such tab into a new `Claude Code` tab after `claude` is ready; nothing is sent; Enter in the tab sends it with both files.
+- [ ] **Copy for Copilot and Copy for Junie** (AC-028): each opens its chat and the paste carries the references; note whether `#file:` and `@file:` become references (A-002, A-003) and the tool window IDs (A-008).
+- [ ] **Options and setting** (AC-028): the option *Junie* with and without a Junie plugin; a change of *Assistant* shows in the panel without an IDE restart.
+- [ ] **VS Code** (AC-028): the empty state with Send to Copilot on a project without specs.
+
 ## Go
 
 - [x] **Repository visibility** (public, 2026-11-20): the Marketplace page loads the README screenshots from

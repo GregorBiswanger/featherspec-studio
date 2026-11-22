@@ -10,6 +10,13 @@ First release.
 
 ### Added
 
+- JetBrains IDEs, setting *Assistant* (0035, PD-108): **Send to Claude Code** types the prompt and its `@` file mentions into
+  a Claude tab of the IDE terminal (a new tab `Claude Code` runs `claude` first) and never presses Enter; **Copy for
+  Copilot** and **Copy for Junie** copy the prompt with `#file:` or `@file:` references and open the chat for pasting,
+  because neither offers an API to fill its input. Copy prompt stays in the button's menu. The Terminal plugin is an
+  optional dependency; Junie is offered only while a Junie plugin is available.
+- With an offered assistant the empty state `No specs yet. Start with /sdd-specify` shows the step action for
+  `/sdd-specify`, in VS Code and in JetBrains IDEs; without one it keeps its Copy prompt.
 - Start via lifecycle (0033): a Ready spec offers `/sdd-lifecycle <spec> In Progress` first, under `Start: move the spec
   and its plan to active` (PD-096), and `Start implementing: T-001 …` once the pair sits in `active/`; Send attaches the
   files its prompt names, the start step spec and plan, `Implement <ID> of <plan>` the plan only (PD-097); the prompt
