@@ -1,5 +1,5 @@
 import { ASSISTANT_TARGETS, type SendView } from '../../shared/protocol/assistant';
-import { ASSISTANT_NAMES, sendTipText } from '../../shared/protocol/assistantTexts';
+import { ASSISTANT_NAMES, COPY_FOR_PLACES, copyForTipText, sendTipText } from '../../shared/protocol/assistantTexts';
 import { TIP_CLOSING, type StepCase } from '../../shared/protocol/nextStepTexts';
 import { attachmentOf, type AttachmentContext } from './attachment';
 import type { Offer } from './offer';
@@ -8,7 +8,8 @@ export function tipClosingOf(offer: Offer | undefined): readonly [string, string
     if (offer === undefined) {
         return TIP_CLOSING;
     }
-    const send = sendTipText(ASSISTANT_NAMES[offer.assistant]);
+    const name = ASSISTANT_NAMES[offer.assistant];
+    const send = offer.handover === 'copyFor' ? copyForTipText(name, offer.place ?? COPY_FOR_PLACES[offer.assistant === 'junie' ? 'junie' : 'copilot']) : sendTipText(name);
     return [send, TIP_CLOSING[1]];
 }
 

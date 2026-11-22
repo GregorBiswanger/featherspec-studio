@@ -111,3 +111,16 @@ export function copyForWithoutText(files: string, place: string, pasteKey: strin
 export function copyForMissingOutputText(name: string, path: string): string {
     return `Copy for ${name}: ${path} was not found, so it was not referenced.`;
 }
+
+export function copyForMainLabel(name: string): string {
+    return `Copy for ${name}`;
+}
+
+export function copyForMainName(name: string, line: string, files?: string): string {
+    const plain = `Copy for ${name}: ${line}`;
+    return files === undefined ? plain : `${plain}. Adds ${files} as references.`;
+}
+
+export function copyForTipText(name: string, place: string): string {
+    return `Copy for ${name} copies the prompt with file references and sends nothing: paste it into ${place}, choose the model there, check the prompt, then send it.`;
+}

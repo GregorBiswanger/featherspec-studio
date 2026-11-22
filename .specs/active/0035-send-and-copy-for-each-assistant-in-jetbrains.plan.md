@@ -193,8 +193,8 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
 - **Tests first:** rendered label, names, menu items and announcements for Copilot and Junie; VS Code views unchanged
   (existing `SendButton.test.tsx` green).
 - **Verify:** local gates + `npm run compile`.
-- [ ] **Verified (T-006):** —
-- **Notes:** —
+- [x] **Verified (T-006):** 2026-11-22 · new: `src/webview/ui/SendButton0035.test.tsx` (8), `src/core/assistant/tipCopyFor0035.test.ts` (2), `src/core/shell/protocol0035.test.ts` (3); 10 red first (label, name, tooltip, menu, feedback, §7 texts via `Not implemented`, tip sentence, version 12, mismatch), 4 green at once (existing paths and the negative control), then 13 of 13 green · full `npx vitest run --project node --project webview`: 4193 green, 0 red · eslint src 0 · `npm run check-types` 0 · `npm run compile` clean · jetbrains guards 59/59.
+- **Notes:** `PROTOCOL_VERSION` 11 to 12. Existing tests that hard-code the number moved with it (`v: 11` to `v: 12` in 8 test files; `v: 12` used as "another version" to `v: 13`; titles unchanged because the shared-guard keys tests by title; `messages.test.ts` "the protocol is version 11" now asserts `>= 11`, the exact check is `protocol0035.test.ts`). The failure label stays `Could not copy` (0021's `COPY_FAILED_LABEL`), not "Copy failed". `src/core/shell/protocol0035.test.ts` sits in core because `src/shared` may not import the router. `jetbrains/guards/renderedTexts.mjs` feeds both bundles the version 11 and must read it per bundle: done in T-008. The Kotlin `PanelModelTest` strings with `"v":11` are inert samples.
 
 ### T-007 — JetBrains assistant table and the embedded host port
 

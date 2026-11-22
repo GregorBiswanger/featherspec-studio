@@ -184,7 +184,7 @@ function panelEnvelopes(frames: Frame[]): Frame[] {
 
 function openPanel(host: EmbeddedHost): void {
     host.dispatch('panelOpened', 'null');
-    host.dispatch('panelMessage', JSON.stringify({ v: 11, kind: 'req', id: 'hello-1', type: 'hello', payload: { lastSeq: 0 } }));
+    host.dispatch('panelMessage', JSON.stringify({ v: 12, kind: 'req', id: 'hello-1', type: 'hello', payload: { lastSeq: 0 } }));
 }
 
 describe('embedded entry (AC-008: the core runs and shows the tree without the tab)', () => {
@@ -216,7 +216,7 @@ describe('embedded entry (AC-008: the core runs and shows the tree without the t
         const { host, frames } = harness();
         await host.start(config());
         openPanel(host);
-        host.dispatch('panelMessage', JSON.stringify({ v: 11, kind: 'req', id: 'select-1', type: 'select', payload: { stem: '0001-a-spec' } }));
+        host.dispatch('panelMessage', JSON.stringify({ v: 12, kind: 'req', id: 'select-1', type: 'select', payload: { stem: '0001-a-spec' } }));
         await settle(() => panelEnvelopes(frames).some((frame) => frame.type === 'detail' && JSON.stringify(frame).includes('"tips"')));
         expect(JSON.stringify(panelEnvelopes(frames).filter((frame) => frame.type === 'detail'))).toContain('"tips"');
         const detailsBefore = panelEnvelopes(frames).filter((frame) => frame.type === 'detail').length;

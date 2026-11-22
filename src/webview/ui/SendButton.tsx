@@ -1,7 +1,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import { attachesInTarget, type SendPromptPayload, type SendResultEventPayload, type SendView } from '../../shared/protocol/assistant';
-import { ASSISTANT_NAMES, MORE_ACTIONS_TITLE, moreActionsName, SEND_ITEM_TEXT, sendMainLabel, sendMainName, sendOpenedLabel, sendOpenedName } from '../../shared/protocol/assistantTexts';
+import { ASSISTANT_NAMES, copyForMainLabel, copyForMainName, MORE_ACTIONS_TITLE, moreActionsName, SEND_ITEM_TEXT, sendMainLabel, sendMainName, sendOpenedLabel, sendOpenedName } from '../../shared/protocol/assistantTexts';
 import { COPIED_LABEL, COPY_FAILED_LABEL, COPY_PROMPT_LABEL } from '../../shared/protocol/nextStepTexts';
 import { Glyph } from '../board/icons';
 import { FEEDBACK_MS, type CopyResult } from './CopyButton';
@@ -45,6 +45,7 @@ export function SendButton(props: SendButtonProps) {
     const { send, line, sendResult, copyResult } = props;
     const secondary = props.look === 'secondary';
     const name = ASSISTANT_NAMES[send.assistant];
+    const copyFor = send.handover === 'copyFor';
     const arrowId = useId();
     const open = useIsPopupOpen(arrowId);
     const root = useRef<HTMLSpanElement>(null);
@@ -137,7 +138,7 @@ export function SendButton(props: SendButtonProps) {
         [],
     );
 
-    const offerKey = `${send.assistant}|${send.targets.join(',')}`;
+    const offerKey = `${send.assistant}|${send.handover ?? 'send'}|${send.targets.join(',')}`;
     const lastOffer = useRef(offerKey);
     useLayoutEffect(() => {
         if (lastOffer.current !== offerKey) {
@@ -242,18 +243,18 @@ export function SendButton(props: SendButtonProps) {
         props.onCopy(line);
     };
 
-    const idleName = sendMainName(name, send.target, line, attachesInTarget(send.assistant, send.target) ? attachNamesOf(send) : undefined);
+    const idleName = copyFor ? copyForMainName(name, line, attachNamesOf(send)) : sendMainName(name, send.target, line, attachesInTarget(send.assistant, send.target) ? attachNamesOf(send) : undefined);
     return (
         <span ref={root} className="send-split next-step-copy" onKeyDown={onKeyDown}>
             <button type="button" className={secondary ? 'copy-button copy-secondary send-main' : 'copy-button send-main'} aria-label={shown?.name ?? idleName} title={shown?.text ?? idleName} onClick={() => activateSend(send.target)}>
-                {shown?.label ?? sendMainLabel(name)}
+                {shown?.label ?? (copyFor ? copyForMainLabel(name) : sendMainLabel(name))}
             </button>
             <button ref={arrow} type="button" id={arrowId} className={secondary ? 'send-arrow send-arrow-secondary' : 'send-arrow'} aria-label={moreActionsName(line)} title={MORE_ACTIONS_TITLE} aria-haspopup="menu" aria-expanded={open} onClick={() => (open ? closeToArrow() : openMenu('first'))}>
                 <Glyph kind="chevronDown" />
             </button>
             {open ? (
                 <div ref={menu} role="menu" aria-labelledby={arrowId} className="send-menu">
-                    {send.targets.map((target) => (
+                    {(copyFor ? [] : send.targets).map((target) => (
                         <button key={target} type="button" role="menuitemradio" aria-checked={target === send.target} tabIndex={-1} onClick={() => activateSend(target, true)}>
                             <span className="send-check">{target === send.target ? <Glyph kind="check" /> : null}</span>
                             {SEND_ITEM_TEXT[target]}
