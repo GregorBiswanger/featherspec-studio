@@ -35,6 +35,11 @@ object WatchedPaths {
             relative == BRIEF ||
             RETURN_NOTE.matches(relative)
 
+    fun hasUnsavedOverlay(relativePath: String): Boolean {
+        val relative = relativePath.split('/').filter { it.isNotEmpty() && it != "." }.joinToString("/")
+        return relative == AGENTS || relative.startsWith("$SPECS/") || relative.startsWith("$MEMORY_BANK/")
+    }
+
     fun isMarker(relative: String): Boolean = relative == AGENTS || relative == SPECS || relative == BRIEF
 
     fun isWatchedDirectory(relative: String): Boolean =

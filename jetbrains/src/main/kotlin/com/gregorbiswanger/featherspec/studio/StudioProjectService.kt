@@ -6,6 +6,7 @@ import com.gregorbiswanger.featherspec.studio.jcef.JcefAvailability
 import com.gregorbiswanger.featherspec.studio.ports.FilePorts
 import com.gregorbiswanger.featherspec.studio.ports.Folder
 import com.gregorbiswanger.featherspec.studio.ports.HostOs
+import com.gregorbiswanger.featherspec.studio.ports.IdeUnsavedDocuments
 import com.gregorbiswanger.featherspec.studio.ports.MediumPorts
 import com.gregorbiswanger.featherspec.studio.ports.ProjectFolders
 import com.gregorbiswanger.featherspec.studio.ports.SpecWatch
@@ -95,7 +96,7 @@ class StudioProjectService(private val project: Project) : Disposable {
 
     val host: HostRouter = HostRouter(
         router = CallRouter(
-            files = FilePorts()::answer,
+            files = FilePorts(unsaved = IdeUnsavedDocuments())::answer,
             medium = MediumPorts.under(PathManager.getSystemDir(), HostOs.windows)::answer,
             memory = { name, args -> UiMemoryState.getInstance().memory.answer(name, args, projectBase) },
             watch = { name, args -> specWatch.answer(name, args) },

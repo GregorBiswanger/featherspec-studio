@@ -6,6 +6,10 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationActivationListener
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.thisLogger
+import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.editor.event.DocumentEvent
+import com.intellij.openapi.editor.event.DocumentListener
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
@@ -16,6 +20,7 @@ import com.intellij.openapi.wm.IdeFrame
 import com.intellij.util.concurrency.AppExecutorUtil
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 class SpecWatch(
@@ -40,13 +45,28 @@ class SpecWatch(
             }
             val seen = HashSet<String>()
             for (event in events) {
-                val path = event.path
-                for (entry in entries.values) {
-                    val relative = WatchedPaths.relativeInside(entry.text, path, caseInsensitive) ?: continue
-                    if (relative.isNotEmpty() && seen.add(entry.uri + "\n" + relative)) {
-                        route(entry, relative)
-                    }
-                }
+                routePath(event.path, seen)
+            }
+        }
+    }
+
+    private val documentChanges = PathCoalescer(
+        DOCUMENT_DELAY_MS,
+        { delay, task -> AppExecutorUtil.getAppScheduledExecutorService().schedule(Runnable { task() }, delay, TimeUnit.MILLISECONDS) },
+    ) { path ->
+        if (!closed.get()) {
+            routePath(path, HashSet())
+        }
+    }
+
+    private val documents = object : DocumentListener {
+        override fun documentChanged(event: DocumentEvent) {
+            if (closed.get() || entries.isEmpty()) {
+                return
+            }
+            val file = FileDocumentManager.getInstance().getFile(event.document) ?: return
+            if (file.isInLocalFileSystem && isReportedPath(file.path)) {
+                documentChanges.submit(file.path)
             }
         }
     }
@@ -63,6 +83,7 @@ class SpecWatch(
         val connection = ApplicationManager.getApplication().messageBus.connect(parent)
         connection.subscribe(VirtualFileManager.VFS_CHANGES, changes)
         connection.subscribe(ApplicationActivationListener.TOPIC, activation)
+        EditorFactory.getInstance().eventMulticaster.addDocumentListener(documents, parent)
         Disposer.register(parent, Disposable { close() })
     }
 
@@ -116,6 +137,19 @@ class SpecWatch(
         val entry = byPath[root] ?: return
         route(entry, relative)
         queueRefresh(root.resolve(relative))
+    }
+
+    private fun routePath(path: String, seen: MutableSet<String>) {
+        for (entry in entries.values) {
+            val relative = WatchedPaths.relativeInside(entry.text, path, caseInsensitive) ?: continue
+            if (relative.isNotEmpty() && seen.add(entry.uri + "\n" + relative)) {
+                route(entry, relative)
+            }
+        }
+    }
+
+    private fun isReportedPath(path: String): Boolean = entries.values.any { entry ->
+        WatchedPaths.relativeInside(entry.text, path, caseInsensitive)?.let { WatchedPaths.isReported(it) } == true
     }
 
     private fun route(entry: Entry, relative: String) {
@@ -183,6 +217,7 @@ class SpecWatch(
     private fun slash(path: Path): String = path.toString().replace('\\', '/')
 
     private companion object {
+        const val DOCUMENT_DELAY_MS = 100L
         const val KIND_FILES = "files"
         const val KIND_MARKERS = "markers"
         const val OK_NULL = "{\"ok\":null}"

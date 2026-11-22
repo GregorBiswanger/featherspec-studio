@@ -18,7 +18,12 @@ import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.Base64
 
-class FilePorts(private val rootOf: (String) -> Path = { FileUris.toPath(it) }) {
+class FilePorts(
+    private val rootOf: (String) -> Path = { FileUris.toPath(it) },
+    private val unsaved: UnsavedDocuments = UnsavedDocuments.NONE,
+) {
+    private val mtimes = OverlayMtimes()
+
     data class Entry(val name: String, val kind: String)
 
     data class Stat(val kind: String, val mtimeMs: Long, val size: Long)
@@ -40,7 +45,7 @@ class FilePorts(private val rootOf: (String) -> Path = { FileUris.toPath(it) }) 
         val path = resolve(root, relativePath)
         return try {
             val attributes = Files.readAttributes(path, BasicFileAttributes::class.java, LinkOption.NOFOLLOW_LINKS)
-            Stat(kindOf(attributes), attributes.lastModifiedTime().toMillis(), attributes.size())
+            overlaid(path, relativePath, Stat(kindOf(attributes), attributes.lastModifiedTime().toMillis(), attributes.size()))
         } catch (failure: IOException) {
             if (isAbsent(failure)) null else throw failure
         }
@@ -68,7 +73,26 @@ class FilePorts(private val rootOf: (String) -> Path = { FileUris.toPath(it) }) 
         }
     }
 
-    fun readBytes(root: String, relativePath: String): ByteArray = Files.readAllBytes(resolve(root, relativePath))
+    fun readBytes(root: String, relativePath: String): ByteArray {
+        val path = resolve(root, relativePath)
+        if (WatchedPaths.hasUnsavedOverlay(relativePath)) {
+            unsaved.unsaved(path)?.let { return it.bytes }
+        }
+        return Files.readAllBytes(path)
+    }
+
+    private fun overlaid(path: Path, relativePath: String, disk: Stat): Stat {
+        if (disk.kind != "file" || !WatchedPaths.hasUnsavedOverlay(relativePath)) {
+            return disk
+        }
+        val key = path.toString()
+        val document = unsaved.unsaved(path)
+        if (document == null) {
+            mtimes.forget(key)
+            return disk
+        }
+        return Stat("file", mtimes.mtime(key, document.stamp, disk.mtimeMs), document.bytes.size.toLong())
+    }
 
     fun readText(root: String, relativePath: String): String =
         String(readBytes(root, relativePath), StandardCharsets.UTF_8)

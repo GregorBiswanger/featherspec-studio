@@ -8,7 +8,7 @@
 - `runtime/` — bridge to the hidden JCEF core page: `HostContract` (mirror of `contract.ts`), `BridgeFrames`, `ReplyBatch`,
   `CorePage`, `CoreRuntime`/`CoreState` (buffered scripts, 60 s start timer, Unsupported/Suspended/Failed).
 - `jcef/` — `JcefAvailability`, `PluginResources` (the exact URL allow-list), `PluginRequestHandler` (serves `core.html`, panel HTML).
-- `ports/` — host ports behind routed calls: `FilePorts`, `FileUris`, `ProjectFolders` (PD-103), `RootWatcher`/`SpecWatch` (own
+- `ports/` — host ports behind routed calls: `FilePorts`, `FileUris`, `ProjectFolders` (PD-103), `UnsavedDocuments` (+ `IdeUnsavedDocuments` glue: reads see unsaved editor documents; `SpecWatch` reports their edits), `RootWatcher`/`SpecWatch` (own
   watcher plus VFS events), `FileRuntimeMedium`, `StoreLocation`, `UiMemory(State)`, `EditorOpen`, `SystemCalls` (clipboard, editor).
 - `panel/` — editor tab: `StudioEditor(Provider)`, `StudioFile`, `PanelShim` (VS Code API shim), `PanelModel` (Loading/Ready/Failed/Unavailable).
 - `theme/` — `ThemeMapping` (56 colours, 3 fonts), `Contrast`, `ThemeBridge`; `tree/` — tool window, Specs tree (`SpecTreeMapping`), `UnavailableNotice`.
