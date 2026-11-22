@@ -93,7 +93,7 @@ describe('0035 T-002 / AC-004 (core): junie is an id; the VS Code table has no r
     }
 
     it('negative control: the same value offers junie once a table has the row and its presence id', () => {
-        expect(offerOf('junie', [BETA], undefined, FAKE_TABLE)).toEqual({ assistant: 'junie' });
+        expect(offerOf('junie', [BETA], undefined, FAKE_TABLE)).toEqual({ assistant: 'junie', handover: 'copyFor', place: 'Junie in AI Chat' });
         expect(offerOf('junie', [EXT_A, EXT_B], undefined, FAKE_TABLE)).toBeUndefined();
     });
 

@@ -20,8 +20,11 @@ export interface SendAttachment {
     path: string;
 }
 
+export type SendHandover = 'copyFor';
+
 export interface SendView {
     assistant: AssistantId;
+    handover?: SendHandover;
     target: AssistantTarget;
     targets: AssistantTarget[];
     attach?: SendAttachment;
@@ -52,9 +55,13 @@ export function isSendView(value: unknown): value is SendView {
     if (!isRecord(value) || !SEND_VIEW_KEYS.every((key) => key in value)) {
         return false;
     }
+    const withHandover = 'handover' in value;
     const withAttach = 'attach' in value;
     const withAlso = 'attachAlso' in value;
-    if (Object.keys(value).length !== SEND_VIEW_KEYS.length + (withAttach ? 1 : 0) + (withAlso ? 1 : 0) || (withAttach && !isSendAttachment(value.attach))) {
+    if (withHandover && value.handover !== 'copyFor') {
+        return false;
+    }
+    if (Object.keys(value).length !== SEND_VIEW_KEYS.length + (withHandover ? 1 : 0) + (withAttach ? 1 : 0) + (withAlso ? 1 : 0) || (withAttach && !isSendAttachment(value.attach))) {
         return false;
     }
     if (withAlso && (!withAttach || !Array.isArray(value.attachAlso) || value.attachAlso.length === 0 || !value.attachAlso.every(isSendAttachment))) {
@@ -63,6 +70,9 @@ export function isSendView(value: unknown): value is SendView {
     const { assistant, target, targets } = value;
     if (!isAssistantId(assistant) || !isAssistantTarget(target) || !Array.isArray(targets)) {
         return false;
+    }
+    if (withHandover) {
+        return targets.length === 1 && targets[0] === 'new' && target === 'new';
     }
     const own = ASSISTANT_TARGETS[assistant];
     return targets.length === own.length && own.every((item, index) => targets[index] === item) && own.includes(target);

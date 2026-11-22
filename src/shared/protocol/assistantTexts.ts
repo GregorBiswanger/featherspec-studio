@@ -88,3 +88,26 @@ export function sendOpenedName(name: string, line: string): string {
 export function moreActionsName(line: string): string {
     return `More actions: ${line}`;
 }
+
+export const COPY_FOR_PLACES: Record<'copilot' | 'junie', string> = {
+    'copilot': 'GitHub Copilot Chat',
+    junie: 'Junie in AI Chat',
+};
+
+export const JUNIE_WINDOW_PLACE = 'the Junie tool window';
+
+export function copyForDoneText(place: string, pasteKey: string): string {
+    return `Copied. Paste it into ${place} with ${pasteKey}.`;
+}
+
+export function copyForOpenText(place: string, pasteKey: string): string {
+    return `Copied. Open ${place} and paste it with ${pasteKey}.`;
+}
+
+export function copyForWithoutText(files: string, place: string, pasteKey: string, opened: boolean): string {
+    return `Copied without ${files}: the file was not found. ${opened ? `Paste it into ${place} with ${pasteKey}.` : `Open ${place} and paste it with ${pasteKey}.`}`;
+}
+
+export function copyForMissingOutputText(name: string, path: string): string {
+    return `Copy for ${name}: ${path} was not found, so it was not referenced.`;
+}

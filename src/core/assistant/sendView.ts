@@ -13,7 +13,7 @@ export function tipClosingOf(offer: Offer | undefined): readonly [string, string
 }
 
 export function plainSendViewOf(offer: Offer | undefined): SendView | undefined {
-    return offer === undefined ? undefined : { assistant: offer.assistant, target: 'new', targets: [...(offer.targets ?? ASSISTANT_TARGETS[offer.assistant])] };
+    return offer === undefined ? undefined : { assistant: offer.assistant, ...(offer.handover === undefined ? {} : { handover: offer.handover }), target: 'new', targets: [...(offer.targets ?? ASSISTANT_TARGETS[offer.assistant])] };
 }
 
 export function sendViewOf(offer: Offer | undefined, stepCase: StepCase, context?: AttachmentContext): SendView | undefined {

@@ -19,6 +19,7 @@ export interface AssistantSpec {
     targets: readonly AssistantTarget[];
     text?(line: string, paths: readonly string[]): string;
     timeoutMs?: number;
+    place?(): string;
     callsFor(target: AssistantTarget, line: string, attachment?: AssistantAttachment | readonly AssistantAttachment[]): AssistantCall[];
 }
 

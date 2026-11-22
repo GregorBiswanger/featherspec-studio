@@ -180,8 +180,8 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
 - **Tests first:** fake host and clipboard: exact clipboard text per assistant, open call after the write, not found,
   failing write, a left-out file, Copy prompt menu path copies the line alone; every §7 text literally.
 - **Verify:** local gates (node + webview projects) green.
-- [ ] **Verified (T-005):** —
-- **Notes:** —
+- [x] **Verified (T-005):** 2026-11-22 · `src/core/assistant/copyFor0035.test.ts` 24 tests, 16 red first (AC-010 x3, AC-016 x4, AC-017 x2, AC-019 x3, serialisation, offer/view, `isSendView`, §7 texts via `Not implemented` stubs; 8 green at once: no attachment, copyFailed opens nothing, AC-020 copyText, places, unchosen, hand-over record, negative control), then 24 of 24 green · full `npx vitest run --project node --project webview`: 4179 green, 0 red · eslint src 0 · `npm run check-types` 0 · jetbrains guards 59/59.
+- **Notes:** `AssistantSpec.place?()` (the Junie place depends on the plugin mirror: AI Chat or the Junie tool window) and `Offer.handover` / `Offer.place` (copyFor rows only; VS Code offers stay deep-equal); the views carry `handover: 'copyFor'` with `targets ['new']`. The payload `SendPromptPayload` needs no `handover` key: the host decides by the table row. Core calls `host.execute('featherspec.openChat', [assistant])` and reads the answer `'notFound'` (anything else, also no answer, counts as opened); a throw or no answer within the row budget (5000 ms default) counts as not found. Extra texts beyond §7: `Copy for <Name>: <path> was not found, so it was not referenced.` (log, AC-010) and the left-out file with a missing window (`Copied without <file>: the file was not found. Open <place> and paste it with <key>.`). `sourceScan.test.ts`: one narrow form `com.github.copilot` in `ASSISTANT_NAME_FORMS` and two narrow allowed Paste sentences (the Copy for texts); titles unchanged. T-002's own test expectation for the fake Junie offer gained `handover` and `place`.
 
 ### T-006 — Copy for split button and tip in the webview; protocol 12
 
