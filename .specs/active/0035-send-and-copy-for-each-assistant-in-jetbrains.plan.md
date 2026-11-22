@@ -3,7 +3,7 @@
 **Spec:** [0035-send-and-copy-for-each-assistant-in-jetbrains.md](0035-send-and-copy-for-each-assistant-in-jetbrains.md)
 **Status:** In Progress
 **Last updated:** 2026-11-22
-**Current step:** T-011
+**Current step:** T-012
 
 ## Approach
 
@@ -259,7 +259,7 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
 - **Verify:** CI `plugin`, `verify` (no internal API; experimental use listed in the report) and `ide-tests` green;
   AC-027 stays manual (no `claude` in CI).
 - [ ] **Verified (T-011):** —
-- **Notes:** —
+- **Notes:** CI pending. Local, plain Kotlin only (kotlinc 2.0.21 + JUnit stubs): new `assistant/ClaudeTerminalTest` (27 tests: AC-015's table, readiness, the byte record of AC-014, late readiness types nothing, the 15 000 / 19 000 ms bounds on a fake clock, last-typed memory, the active root); 26 red first (`Not implemented`; the budget test was green at once, it only asserts constants), then 37 of 37 green with `AssistantPortTest`. Pure: `assistant/ClaudeTerminal.kt` (`ClaudeTabs`, `ClaudeReadiness`, `ActiveRoot`, `LastTyped`, `ClaudeSender` over the `TerminalAccess` port). Glue, written blind (CI decides), compile-checked here only against hand-made platform stubs: `assistant/TerminalGlue.kt` (typed only `TerminalToolWindowTabsManager.getInstance/tabs/createTabBuilder` as in the probe; tab, builder, view, shell integration, blocks, output model, send-text builder by reflection in `TerminalReflect.kt`; every call hops to the EDT with `invokeLater(nonModal)` and a 5000 ms wait, an abandoned call never runs), `assistant/IdeAssistantCalls.kt` (guards the Terminal plugin, turns a `LinkageError` into an error message so the router answers it). Decisions without K-1 data: (1) *readiness* = shell integration reports `claude` executing, the screen shows one of `? for shortcuts`, `│ >`, `shift+tab to cycle`, and the text has been quiet for 1000 ms; (2) a new tab waits at most 3000 ms for shell integration (else `terminal call failed: the terminal has no shell integration`), the whole send at most 19 000 ms and checks the clock before the paste; (3) *running command* = output status `ExecutingCommand` and `executedCommand` of the active (else last) block, working directory from that block (else the view's); (4) the *active root* is read from the core memory `featherspec-studio.activeProject` (the core remembers every resolved active project) and falls back to the IDE base path, because `assistant.claudeTerminal` carries only `{target, text}`; (5) focus after the paste is best effort and never fails the send. A wrong marker only makes new tabs fall back to Copy (A-005); AC-027 stays manual.
 
 ### T-012 — Open the chat for Copy for (Kotlin)
 

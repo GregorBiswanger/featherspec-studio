@@ -1,0 +1,184 @@
+package com.gregorbiswanger.featherspec.studio.assistant
+
+import com.google.gson.JsonParser
+import com.gregorbiswanger.featherspec.studio.ports.FileUris
+import java.lang.ref.WeakReference
+
+data class TerminalTab(
+    val key: Any,
+    val shellReady: Boolean,
+    val executing: Boolean,
+    val command: String?,
+    val workingDirectory: String?,
+)
+
+data class Screen(val claudeRunning: Boolean, val text: String)
+
+interface TerminalAccess {
+    fun tabs(): List<TerminalTab>
+
+    fun openTab(root: String): Any
+
+    fun shellReady(key: Any): Boolean
+
+    fun runClaude(key: Any)
+
+    fun screen(key: Any): Screen?
+
+    fun paste(key: Any, text: String)
+
+    fun focus(key: Any)
+}
+
+object ClaudeTabs {
+    private const val COMMAND = "claude"
+
+    fun isClaudeCommand(command: String?): Boolean {
+        val text = command?.trim() ?: return false
+        return text == COMMAND || (text.startsWith(COMMAND) && text.length > COMMAND.length && text[COMMAND.length].isWhitespace())
+    }
+
+    fun samePath(first: String?, second: String?, caseInsensitive: Boolean): Boolean {
+        if (first == null || second == null) {
+            return false
+        }
+        val left = normalize(first)
+        val right = normalize(second)
+        return if (caseInsensitive) left.equals(right, ignoreCase = true) else left == right
+    }
+
+    fun choose(tabs: List<TerminalTab>, root: String, lastTyped: Any?, caseInsensitive: Boolean): TerminalTab? {
+        val claude = tabs.filter {
+            it.shellReady && it.executing && isClaudeCommand(it.command) && samePath(it.workingDirectory, root, caseInsensitive)
+        }
+        return claude.firstOrNull { lastTyped != null && it.key == lastTyped } ?: claude.firstOrNull()
+    }
+
+    private fun normalize(path: String): String {
+        var text = path.trim().replace('\\', '/')
+        while (text.length > 1 && text.endsWith("/") && !(text.length == 3 && text[1] == ':')) {
+            text = text.substring(0, text.length - 1)
+        }
+        return text
+    }
+}
+
+object ClaudeReadiness {
+    const val READY_BUDGET_MS = 15_000L
+    const val QUIET_MS = 1_000L
+    const val POLL_MS = 100L
+
+    val MARKERS: List<String> = listOf("? for shortcuts", "\u2502 >", "shift+tab to cycle")
+
+    fun notReadyMessage(): String = "Claude Code was not ready within $READY_BUDGET_MS ms"
+
+    fun hasInputBox(text: String): Boolean = MARKERS.any { text.contains(it) }
+
+    fun await(budgetMs: Long, clock: () -> Long, sleep: (Long) -> Unit, screen: () -> Screen?): Boolean {
+        val start = clock()
+        var lastText: String? = null
+        var changedAt = start
+        while (true) {
+            val now = clock()
+            val seen = screen()
+            if (seen != null) {
+                if (seen.text != lastText) {
+                    lastText = seen.text
+                    changedAt = now
+                }
+                if (seen.claudeRunning && hasInputBox(seen.text) && now - changedAt >= QUIET_MS) {
+                    return true
+                }
+            }
+            if (now - start >= budgetMs) {
+                return false
+            }
+            sleep(POLL_MS)
+        }
+    }
+}
+
+class ClaudeNotReady : IllegalStateException(ClaudeReadiness.notReadyMessage())
+
+object ActiveRoot {
+    const val MEMORY_KEY = "featherspec-studio.activeProject"
+
+    fun of(memoryJson: String?, projectBase: String?): String? {
+        val remembered = memoryJson?.let { remembered(it) }
+        if (remembered != null) {
+            return remembered
+        }
+        return projectBase?.takeIf { it.isNotBlank() }
+    }
+
+    private fun remembered(json: String): String? = try {
+        val parsed = JsonParser.parseString(json)
+        if (parsed.isJsonPrimitive && parsed.asJsonPrimitive.isString) FileUris.toPathText(parsed.asString) else null
+    } catch (failure: RuntimeException) {
+        null
+    }
+}
+
+class LastTyped {
+    @Volatile
+    private var key: WeakReference<Any>? = null
+
+    fun get(): Any? = key?.get()
+
+    fun set(key: Any) {
+        this.key = WeakReference(key)
+    }
+}
+
+class ClaudeSender(
+    private val access: TerminalAccess,
+    private val root: () -> String?,
+    private val caseInsensitive: Boolean,
+    private val lastTyped: LastTyped,
+    private val clock: () -> Long,
+    private val sleep: (Long) -> Unit,
+) {
+    fun send(request: ClaudeRequest) {
+        require(!AssistantRequests.hasControlCharacter(request.text)) { "the text holds a control character" }
+        val deadline = clock() + TOTAL_BUDGET_MS
+        val base = root() ?: throw IllegalStateException("no project folder")
+        val existing = if (request.target == ClaudeTarget.CURRENT) {
+            ClaudeTabs.choose(access.tabs(), base, lastTyped.get(), caseInsensitive)?.key
+        } else {
+            null
+        }
+        val key = existing ?: openClaude(base, deadline)
+        if (clock() >= deadline) {
+            throw IllegalStateException("the terminal was not ready in time")
+        }
+        access.paste(key, request.text)
+        lastTyped.set(key)
+        try {
+            access.focus(key)
+        } catch (failure: RuntimeException) {
+            return
+        }
+    }
+
+    private fun openClaude(base: String, deadline: Long): Any {
+        val key = access.openTab(base)
+        val shellDeadline = clock() + SHELL_WAIT_MS
+        while (!access.shellReady(key)) {
+            if (clock() >= shellDeadline) {
+                throw IllegalStateException("the terminal has no shell integration")
+            }
+            sleep(ClaudeReadiness.POLL_MS)
+        }
+        access.runClaude(key)
+        val budget = minOf(ClaudeReadiness.READY_BUDGET_MS, deadline - clock())
+        if (budget <= 0 || !ClaudeReadiness.await(budget, clock, sleep) { access.screen(key) }) {
+            throw ClaudeNotReady()
+        }
+        return key
+    }
+
+    companion object {
+        const val TOTAL_BUDGET_MS = 19_000L
+        const val SHELL_WAIT_MS = 3_000L
+    }
+}

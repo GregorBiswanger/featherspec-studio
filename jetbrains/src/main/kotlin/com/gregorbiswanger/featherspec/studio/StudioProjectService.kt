@@ -3,7 +3,7 @@ package com.gregorbiswanger.featherspec.studio
 import com.gregorbiswanger.featherspec.studio.actions.RowSelection
 import com.gregorbiswanger.featherspec.studio.assistant.AssistantCalls
 import com.gregorbiswanger.featherspec.studio.assistant.AssistantPort
-import com.gregorbiswanger.featherspec.studio.assistant.UnavailableAssistantCalls
+import com.gregorbiswanger.featherspec.studio.assistant.IdeAssistantCalls
 import com.gregorbiswanger.featherspec.studio.jcef.Availability
 import com.gregorbiswanger.featherspec.studio.jcef.JcefAvailability
 import com.gregorbiswanger.featherspec.studio.ports.FilePorts
@@ -101,7 +101,7 @@ class StudioProjectService(private val project: Project) : Disposable {
 
     private val systemCalls = SystemCalls(project)
 
-    private val assistantCalls: AssistantCalls = UnavailableAssistantCalls
+    private val assistantCalls: AssistantCalls = IdeAssistantCalls(project)
 
     private val hostUi = HostUi(project) { event, payload -> runtime?.dispatch(event, payload) }
 
