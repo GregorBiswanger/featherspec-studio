@@ -108,7 +108,10 @@ class SmokeProbe(private val project: Project, private val out: Path) {
         settle()
         val file = LocalFileSystem.getInstance().refreshAndFindFileByPath("$base/${SmokeFiles.EDITED}")
         checkNotNull(file) { "the IDE cannot find ${SmokeFiles.EDITED}" }
-        val edited = SmokeFiles.appendToTitle(SmokeFiles.resumeStatus(VfsUtil.loadText(file)))
+        // The external write above can still be missing from the VFS cache (seen on Windows): read the disk, then
+        // refresh the file synchronously so the in-IDE save below starts from what is on disk.
+        val edited = SmokeFiles.appendToTitle(SmokeFiles.resumeStatus(Files.readString(Path.of(base, SmokeFiles.EDITED))))
+        onEdt { file.refresh(false, false) }
         val inIdeStatusBefore = service.host.status.value
         val inIdeTreeMark = trees.mark()
         val inIdeStatusMark = statuses.mark()
