@@ -146,9 +146,11 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
                 "theme.css" to { bridge.css() },
             )
             client.addRequestHandler(PluginRequestHandler(documents), created.cefBrowser)
+            val nudge = RepaintNudge(created).also { it.attach() }
             removers.add(
                 service.host.subscribe("panel") { payload ->
                     created.cefBrowser.executeJavaScript(PanelMessages.postScript(payload), CORE_ORIGIN, 0)
+                    nudge.nudge()
                 },
             )
             browser = created
