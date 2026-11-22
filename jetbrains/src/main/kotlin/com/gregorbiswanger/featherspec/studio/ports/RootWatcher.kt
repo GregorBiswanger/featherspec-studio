@@ -18,6 +18,9 @@ import java.nio.file.WatchEvent
 import java.nio.file.WatchKey
 import java.nio.file.WatchService
 import java.nio.file.attribute.BasicFileAttributes
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 object WatchedPaths {
@@ -120,6 +123,12 @@ class RootWatcher(private val onChange: (root: Path, relative: String) -> Unit) 
     private val closed = AtomicBoolean(false)
     private val thread = Thread({ pump() }, THREAD_NAME).apply { isDaemon = true }
 
+    // A directory created a moment ago can receive files before the OS has armed its watch (seen on Windows):
+    // its files are listed again shortly after registration. A repeated report is harmless.
+    private val rechecks: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor { task ->
+        Thread(task, "$THREAD_NAME recheck").apply { isDaemon = true }
+    }
+
     init {
         thread.start()
     }
@@ -164,6 +173,7 @@ class RootWatcher(private val onChange: (root: Path, relative: String) -> Unit) 
         if (!closed.compareAndSet(false, true)) {
             return
         }
+        rechecks.shutdownNow()
         try {
             service.close()
         } catch (failure: IOException) {
@@ -245,8 +255,42 @@ class RootWatcher(private val onChange: (root: Path, relative: String) -> Unit) 
 
                 override fun visitFileFailed(file: Path, exc: IOException): FileVisitResult = FileVisitResult.CONTINUE
             })
+            if (reportEntries && fresh.isNotEmpty()) {
+                scheduleRecheck(root, fresh.map { Path.of(it) })
+            }
         } catch (failure: IOException) {
             return
+        }
+    }
+
+    private fun scheduleRecheck(root: Path, directories: List<Path>) {
+        for (delay in RECHECK_DELAYS_MS) {
+            try {
+                rechecks.schedule({ recheck(root, directories) }, delay, TimeUnit.MILLISECONDS)
+            } catch (failure: RuntimeException) {
+                return
+            }
+        }
+    }
+
+    private fun recheck(root: Path, directories: List<Path>) {
+        if (closed.get()) {
+            return
+        }
+        for (directory in directories) {
+            try {
+                Files.newDirectoryStream(directory).use { entries ->
+                    for (entry in entries) {
+                        if (Files.isRegularFile(entry, LinkOption.NOFOLLOW_LINKS)) {
+                            reportIfWatched(root, entry)
+                        }
+                    }
+                }
+            } catch (failure: IOException) {
+                continue
+            } catch (failure: RuntimeException) {
+                continue
+            }
         }
     }
 
@@ -304,6 +348,7 @@ class RootWatcher(private val onChange: (root: Path, relative: String) -> Unit) 
     private companion object {
         const val THREAD_NAME = "FeatherSpec watcher"
         const val JOIN_TIMEOUT_MS = 5_000L
+        val RECHECK_DELAYS_MS = listOf(150L, 600L)
         val WATCHED_ROOT_DIRECTORIES = listOf(WatchedPaths.SPECS, WatchedPaths.MEMORY_BANK)
     }
 }
