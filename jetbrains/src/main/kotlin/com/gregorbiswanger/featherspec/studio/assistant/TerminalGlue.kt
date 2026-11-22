@@ -1,16 +1,9 @@
 package com.gregorbiswanger.featherspec.studio.assistant
 
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.terminal.frontend.toolwindow.TerminalToolWindowTabsManager
 import com.intellij.ui.content.Content
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
-import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JComponent
 
 class TerminalGlue(private val project: Project) : TerminalAccess {
@@ -120,30 +113,7 @@ class TerminalGlue(private val project: Project) : TerminalAccess {
         TerminalReflect.call(builder, "send", text)
     }
 
-    private fun <T> onEdt(block: () -> T): T {
-        val done = CompletableFuture<T>()
-        val abandoned = AtomicBoolean(false)
-        ApplicationManager.getApplication().invokeLater(
-            {
-                if (!abandoned.get()) {
-                    try {
-                        done.complete(block())
-                    } catch (failure: Throwable) {
-                        done.completeExceptionally(failure)
-                    }
-                }
-            },
-            ModalityState.nonModal(),
-        )
-        try {
-            return done.get(EDT_WAIT_MS, TimeUnit.MILLISECONDS)
-        } catch (timeout: TimeoutException) {
-            abandoned.set(true)
-            throw IllegalStateException("the IDE did not run the terminal call in time")
-        } catch (failure: ExecutionException) {
-            throw failure.cause ?: failure
-        }
-    }
+    private fun <T> onEdt(block: () -> T): T = Edt.run(block)
 
     private companion object {
         const val TOOL_WINDOW_ID = "Terminal"
@@ -151,6 +121,5 @@ class TerminalGlue(private val project: Project) : TerminalAccess {
         const val COMMAND = "claude"
         const val EXECUTING = "ExecutingCommand"
         const val TEXT_TAIL = 20_000
-        const val EDT_WAIT_MS = 5_000L
     }
 }

@@ -4,6 +4,7 @@ import com.gregorbiswanger.featherspec.studio.ports.HostOs
 import com.gregorbiswanger.featherspec.studio.ports.IdePlugins
 import com.gregorbiswanger.featherspec.studio.ports.PluginIds
 import com.gregorbiswanger.featherspec.studio.ports.UiMemoryState
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 
 class IdeAssistantCalls(private val project: Project) : AssistantCalls {
@@ -20,7 +21,13 @@ class IdeAssistantCalls(private val project: Project) : AssistantCalls {
         }
     }
 
-    override fun openChat(assistant: ChatAssistant): Boolean = false
+    override fun openChat(assistant: ChatAssistant): Boolean = try {
+        val candidates = ChatWindows.candidates(assistant, IdePlugins().available(PluginIds.AI_ASSISTANT))
+        IdeChatWindows(project).open(candidates)
+    } catch (failure: RuntimeException) {
+        thisLogger().warn("The ${assistant.id} chat window could not be opened", failure)
+        false
+    }
 
     private fun sender(): ClaudeSender = ClaudeSender(
         access = TerminalGlue(project),

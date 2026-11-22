@@ -3,7 +3,7 @@
 **Spec:** [0035-send-and-copy-for-each-assistant-in-jetbrains.md](0035-send-and-copy-for-each-assistant-in-jetbrains.md)
 **Status:** In Progress
 **Last updated:** 2026-11-22
-**Current step:** T-012
+**Current step:** T-013
 
 ## Approach
 
@@ -235,7 +235,7 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
   `CoreConfig.kt` carries both. Tests `SettingsTableTest.kt`, `PluginAvailabilityTest.kt`.
 - **Verify:** CI `plugin` (JUnit 3 OS) and `verify` green; local TS gates unchanged.
 - [ ] **Verified (T-009):** —
-- **Notes:** CI pending. Local, plain Kotlin only (kotlinc 2.0.21 + JUnit stubs, `/tmp`): `SettingsTableTest` +5 tests and 3 moved (AC-031 and the manifest-id test now say the assistant is stored), `CoreConfigTest` +1 and 1 moved (key `plugins`), new `ports/PluginAvailabilityTest` (6); 16 red first (`Not implemented` stubs), then 28 of 28 green. Built blind (CI decides): `ports/IdePlugins.kt` (`PluginQuery` glue and `PluginEvents : DynamicPluginListener`, registered in `plugin.xml` `<applicationListeners>`), `StudioProjectService.sendPlugins`, `StudioSettings.State.assistant`, the combo row in `StudioConfigurable`. Availability = `PluginManagerCore.isPluginInstalled(id) && PluginManagerCore.isLoaded(id)` (both public, `getPlugin` is not used; K-1's enabled check is replaced by `isLoaded`, which is public on 253 and master); after a plain unload the id counts as absent whatever the platform still lists, an unload for an update waits for the load. Option description line under the combo is a `JBLabel` updated by an action listener (the DSL comment has no safe setter). The probe config `featherspec-handover-probe.xml` is renamed `featherspec-terminal.xml` (the one optional `<depends>`, shared with T-011).
+- **Notes:** CI pending. Local, plain Kotlin only (kotlinc 2.0.21 + JUnit stubs, `/tmp`): `SettingsTableTest` +5 tests and 3 moved (AC-031 and the manifest-id test now say the assistant is stored), `CoreConfigTest` +1 and 1 moved (key `plugins`), new `ports/PluginAvailabilityTest` (7); 16 red first (`Not implemented` stubs), then 28 of 28 green. Built blind (CI decides): `ports/IdePlugins.kt` (`PluginQuery` glue and `PluginEvents : DynamicPluginListener`, registered in `plugin.xml` `<applicationListeners>`), `StudioProjectService.sendPlugins`, `StudioSettings.State.assistant`, the combo row in `StudioConfigurable`. Availability = `PluginManagerCore.isPluginInstalled(id) && PluginManagerCore.isLoaded(id)` (both public, `getPlugin` is not used; K-1's enabled check is replaced by `isLoaded`, which is public on 253 and master); after a plain unload the id counts as absent whatever the platform still lists, an unload for an update waits for the load. Option description line under the combo is a `JBLabel` updated by an action listener (the DSL comment has no safe setter). The probe config `featherspec-handover-probe.xml` is renamed `featherspec-terminal.xml` (the one optional `<depends>`, shared with T-011).
 
 ### T-010 — Route the assistant calls (Kotlin)
 
@@ -269,7 +269,7 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
   `notFound`; wired into `AssistantCalls`. Tests `ChatWindowsTest.kt`.
 - **Verify:** CI `plugin` and `verify` green.
 - [ ] **Verified (T-012):** —
-- **Notes:** —
+- **Notes:** CI pending. Local, plain Kotlin only (kotlinc 2.0.21 + JUnit stubs): new `assistant/ChatWindowsTest` (8 tests), 8 of 8 red first (`Not implemented`), then 8 of 8 green. Pure: `assistant/ChatWindows.kt` (candidate IDs, first existing and available window opens once, a failing lookup or open counts as not found, no second window). Glue, blind, compile-checked here against hand-made stubs: `assistant/IdeChatWindows.kt` (`ToolWindowManager.getToolWindow(id)`, `isAvailable`, `activate(null)`, all on the EDT), `assistant/Edt.kt` (shared by `TerminalGlue`), `IdeAssistantCalls.openChat`. **The tool window IDs are guesses until K-1 (A-008):** Copilot `GitHub Copilot Chat`, `GitHub Copilot`; AI Chat `AIAssistant`, `AI Assistant`; Junie `Junie`. Junie opens AI Chat while `com.intellij.ml.llm` is available (no fallback to the Junie window, the core's place text says AI Chat), else the Junie window. A wrong ID only gives `Open <place> and paste …` (AC-019). The placeholder `UnavailableAssistantCalls` stays in `AssistantPort.kt` for tests and as a null object.
 
 ### T-013 — Parity, amendments, docs, maps, Memory Bank
 
@@ -308,30 +308,30 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
 
 | Acceptance criterion | Steps | Code / files | Test | State |
 | --- | --- | --- | --- | --- |
-| AC-001 | T-009 | — | — | open |
-| AC-002 | T-009 | — | — | open |
-| AC-003 | T-001, T-007, T-009 | `src/hosts/embedded/{assistants,mirrors,ports}.ts` (plugin mirror, core part) | `src/hosts/embedded/assistant0035.test.ts` | built |
+| AC-001 | T-009 | `settings/{SettingsTable,StudioSettings,StudioConfigurable}.kt` | `SettingsTableTest.kt`; combo row CI/manual | built |
+| AC-002 | T-009 | `StudioSettings.kt` (change events), `SettingsTable.changeEvents` | `SettingsTableTest.kt`; 500 ms by CI `ide-tests`/manual | built |
+| AC-003 | T-001, T-007, T-009 | `src/hosts/embedded/{assistants,mirrors,ports}.ts`, `ports/{PluginAvailability,IdePlugins}.kt`, `plugin.xml` listener | `assistant0035.test.ts`, `PluginAvailabilityTest.kt`, `CoreConfigTest.kt` | built |
 | AC-004 | T-002, T-007 | `src/core/assistant/assistants.ts`, `src/hosts/embedded/assistants.ts` | `assistantTable0035.test.ts`, `assistant0035.test.ts` (matrix) | verified |
 | AC-005 | T-002, T-008, T-014 | `src/core/assistant/{assistants,offer}.ts`, `jetbrains.yml › shared-guard` | `assistantTable0035.test.ts`; CI `shared-guard` open | built |
 | AC-006 | T-006, T-007 | `src/hosts/embedded/assistants.ts`, `src/core/assistant/sendView.ts` | `assistant0035.test.ts` (14 worlds, welcome, messages scan) | verified |
 | AC-007 | T-004 | `src/core/assistant/welcome.ts`, `overviewView.ts`, `boardService.ts` | `emptyState0035.test.ts`, `emptyState0035.test.tsx` | verified |
 | AC-008 | T-004, T-014 | same | `emptyState0035.test.*`; T-014 open | built |
 | AC-009 | T-003 | `src/core/assistant/references.ts`, `src/hosts/embedded/assistants.ts` | `references0035.test.ts`, `assistant0035.test.ts` | verified |
-| AC-010 | T-005, T-011 | `src/core/assistant/send.ts:copyFor` | `copyFor0035.test.ts` (Copy for); Claude part T-011 | built |
-| AC-011 | T-007, T-011 | `src/hosts/embedded/{assistants,ports}.ts` | `assistant0035.test.ts` (core part); Kotlin T-011 | built |
-| AC-012 | T-011 | — | — | open |
-| AC-013 | T-007, T-011 | `src/hosts/embedded/assistants.ts` (`causes`) | `assistant0035.test.ts` (core part); Kotlin T-011 | built |
-| AC-014 | T-011 | — | — | open |
-| AC-015 | T-011 | — | — | open |
-| AC-016 | T-003, T-005, T-012 | `src/core/assistant/send.ts:copyFor` | `copyFor0035.test.ts`; opener T-012 | built |
-| AC-017 | T-003, T-005, T-012 | `send.ts:copyFor`, `references.ts` | `copyFor0035.test.ts`, `assistant0035.test.ts`; opener T-012 | built |
+| AC-010 | T-005, T-011 | `src/core/assistant/send.ts:copyFor` | `copyFor0035.test.ts` (Copy for); Claude part: the byte record of `ClaudeTerminalTest.kt` | built |
+| AC-011 | T-007, T-011 | `src/hosts/embedded/{assistants,ports}.ts`, `assistant/{ClaudeTerminal,TerminalGlue,IdeAssistantCalls}.kt` | `assistant0035.test.ts`; `ClaudeTerminalTest.kt` | built |
+| AC-012 | T-011 | `assistant/ClaudeTerminal.kt` (`ClaudeSender`, `ClaudeReadiness`, `ActiveRoot`), `TerminalGlue.kt` | `ClaudeTerminalTest.kt`; real `claude` manual (AC-027) | built |
+| AC-013 | T-007, T-011 | `src/hosts/embedded/assistants.ts` (`causes`), `assistant/{ClaudeTerminal,IdeAssistantCalls}.kt` | `assistant0035.test.ts`; `ClaudeTerminalTest.kt`, `AssistantPortTest.kt` | built |
+| AC-014 | T-010, T-011 | `assistant/AssistantPort.kt` (`hasControlCharacter`), `ClaudeTerminal.kt` | `AssistantPortTest.kt`, `ClaudeTerminalTest.kt` (byte record) | built |
+| AC-015 | T-011 | `assistant/ClaudeTerminal.kt` (`ClaudeTabs`, `LastTyped`) | `ClaudeTerminalTest.kt` (fake tabs) | built |
+| AC-016 | T-003, T-005, T-012 | `src/core/assistant/send.ts:copyFor`, `assistant/{ChatWindows,IdeChatWindows}.kt` | `copyFor0035.test.ts`, `ChatWindowsTest.kt`; IDs manual (A-008) | built |
+| AC-017 | T-003, T-005, T-012 | `send.ts:copyFor`, `references.ts`, `assistant/ChatWindows.kt` | `copyFor0035.test.ts`, `assistant0035.test.ts`, `ChatWindowsTest.kt` | built |
 | AC-018 | T-003 | `src/core/assistant/references.ts` | `references0035.test.ts` | verified |
-| AC-019 | T-005, T-012 | `send.ts:copyFor` | `copyFor0035.test.ts`; opener T-012 | built |
+| AC-019 | T-005, T-012 | `send.ts:copyFor`, `assistant/ChatWindows.kt` | `copyFor0035.test.ts`, `ChatWindowsTest.kt` | built |
 | AC-020 | T-005, T-006 | `src/webview/ui/SendButton.tsx` | `SendButton0035.test.tsx`, `copyFor0035.test.ts` | verified |
 | AC-021 | T-002, T-003, T-005, T-006, T-014 | `src/shared/protocol/assistantTexts.ts` | `copyFor0035.test.ts`, `SendButton0035.test.tsx`; T-014 open | built |
 | AC-022 | T-006 | `src/core/assistant/sendView.ts:tipClosingOf` | `tipCopyFor0035.test.ts` | verified |
-| AC-023 | T-007, T-010 | `src/hosts/embedded/ports.ts`, `panelSession.ts` | `assistant0035.test.ts`; Kotlin router T-010 | built |
-| AC-024 | T-001, T-011 | — | — | open |
+| AC-023 | T-007, T-010 | `src/hosts/embedded/ports.ts`, `panelSession.ts`, `HostRouter.kt`, `assistant/AssistantPort.kt` | `assistant0035.test.ts`, `HostRouterTest.kt`, `AssistantPortTest.kt` | built |
+| AC-024 | T-001, T-009, T-011 | `plugin.xml` (one optional `<depends>`, `featherspec-terminal.xml`), `assistant/TerminalGlue.kt` | `pluginZip.mjs` guard; CI `verify` | built |
 | AC-025 | T-013 | — | — | open |
 | AC-026 | T-008, T-014 | `.github/workflows/jetbrains.yml`, `jetbrains/guards/{sharedGuard,renderedTexts}.mjs` | `sharedGuard.test.mjs`; CI `shared-guard` open | built |
 | AC-027 | T-015 | — | manual: Gregor, Rider | open |
@@ -340,9 +340,9 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
 
 ## Session handoff
 
-- **Done so far:** spec and plan (2026-11-22); stage 1 (T-001 probe built, T-002 to T-004) and stage 2 (T-005 to T-008), each its own commit; stage 2 gate: node + webview 4306 green, timing 35 green, guards 68/68, eslint and both `tsc` clean, `npm run compile` clean; the two shared guards run by hand against the baseline: no test missing, 450 rendered areas identical.
-- **Next action:** CI on the branch (Gregor pushes): `shared-guard`, `vscode-guards`, `plugin` (`HostContractTest`, `HostRouterTest`: Kotlin edits of T-007 were made blind). Then T-001's manual probe results (K-1) and T-009 (Kotlin: *Assistant* row, plugin availability, `CoreConfig.plugins`).
-- **Open decisions:** the 18 proxies of spec §14; K-1's values (A-005 to A-009); J-1 (form A or C).
-- **Kotlin must match the TypeScript:** `assistant.claudeTerminal` args `{target, text}`, answer any value or `{error}`; the not-ready error text is exactly `Claude Code was not ready within 15000 ms`; `assistant.openChat` args `{assistant}`, answer `"opened"` or `"notFound"`; event `pluginsChanged {plugins: [ids]}` and `CoreConfig.plugins` carry the installed and enabled ids among `com.github.copilot`, `org.jetbrains.plugins.terminal`, `org.jetbrains.junie`, `com.intellij.ml.llm`.
+- **Done so far:** spec and plan (2026-11-22); stages 1 and 2 (T-001 probe built, T-002 to T-008), stage 3 built (T-009 to T-012, one commit each, CI pending); local gates at stage 3: node + webview 4306 green, guards 68/68, eslint and both `tsc` clean; plain Kotlin checked locally with kotlinc 2.0.21 and JUnit stubs (T-009 28, T-010 34, T-011 37, T-012 8 green); the platform glue is compile-checked here only against hand-made stubs.
+- **Next action:** CI on the branch (Gregor pushes): `plugin` (all Kotlin of stage 3 and `HostContractTest`, `HostRouterTest`, `CoreConfigTest`, `SettingsTableTest`), `verify` (experimental Terminal API only through `TerminalToolWindowTabsManager`), `shared-guard`, `vscode-guards`. Then K-1's manual probe results (tool window IDs A-008, readiness markers A-005, enabled check A-007), then T-013 (parity, docs, maps).
+- **Open decisions:** the 18 proxies of spec §14; K-1's values (A-005 to A-009); J-1 (form A or C). Not decided by a measurement: readiness markers (`ClaudeReadiness.MARKERS`), tool window IDs (`ChatWindows.*_IDS`), the active root (core memory, else IDE base path; a TypeScript `root` argument would make it exact).
+- **Kotlin must match the TypeScript:** `assistant.claudeTerminal` args `{target, text}`, answer `{"ok":null}` or `{error}`; the not-ready error text is exactly `Claude Code was not ready within 15000 ms`; `assistant.openChat` args `{assistant}`, answer `"opened"` or `"notFound"`; event `pluginsChanged {plugins: [ids]}` and `CoreConfig.plugins` carry the installed and loaded ids among `com.github.copilot`, `org.jetbrains.plugins.terminal`, `org.jetbrains.junie`, `com.intellij.ml.llm`.
 - **Baseline:** 1765403c57c02381dae9acc5f2d4caae7abf7dfb
 - **Environment:** Kotlin only in CI; TypeScript locally (`npx vitest run --project node --project webview`). The Preview harness is not required by this plan; the Copy for button reuses the Send classes.

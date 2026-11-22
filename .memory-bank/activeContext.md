@@ -10,7 +10,7 @@ Current phase: act
 - 0021–0024 are implemented; their specs stay In Progress in `active/`.
 
 ## Active Spec
-- [0035](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.md) / [plan](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.plan.md): Send and Copy for in JetBrains (PD-108), T-001…T-008 verified (protocol 12, baseline `1765403`); next T-009 (Kotlin, CI only); 18 proxies (spec §14) await Gregor.
+- [0035](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.md) / [plan](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.plan.md): Send and Copy for in JetBrains (PD-108), T-001…T-008 verified, T-009…T-012 built (Kotlin, CI pending); next T-013; K-1 values and 18 proxies (§14) await Gregor.
 - [0034](../.specs/active/0034-studio-for-jetbrains-ides.md) / [plan](../.specs/active/0034-studio-for-jetbrains-ides.plan.md): JetBrains IDEs, T-001…T-042 verified except T-035, G4 fix round open; baseline `3bc615c`.
 - [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec for Copilot and Claude Code in every version (PD-091), T-001…T-011 verified; AC-016, AC-017, AC-020 are Gregor's or the orchestrator's.
 - [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 are Gregor's; OP-004 closed by PD-078.
@@ -33,7 +33,7 @@ Current phase: act
 ## Changed Recently
 - 0034 T-036/T-037/T-040 (`3f4221a`, `4be646e`): Verifier, ZIP checks, no-JCEF test, README `## JetBrains IDEs`, checklist *JetBrains (manual)*, maps, `jetbrains/AGENTS.md`, Memory Bank; spikes removed; `AGENTS.md` 14991 bytes.
 - 0034 G3 fix round `727f708` (2026-11-21): Overview in conformance, synthetic `AGENTS.md` for weak inputs, rendered-text guard 199 areas, neutral paths (AC-038), `src/hosts/noNetwork.test.ts`.
-- 0035 stage 2 (2026-11-22): Copy for in core and webview, JetBrains table and host calls, shared-guard moved to `1765403`.
+- 0035 stages 2 and 3 (2026-11-22): Copy for, JetBrains table and calls, guard moved to `1765403`; Kotlin: Assistant row, plugin availability, routed calls, Claude terminal, chat windows.
 
 ## Decisions in Flight
 - 0034: the orchestrator's proxy decisions await Gregor — list in the plan's *Session handoff*.
