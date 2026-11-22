@@ -1,6 +1,6 @@
 # Active Context
 
-Last updated: 2026-11-21
+Last updated: 2026-11-22
 Current branch: jetbrains-host
 Current phase: act
 
@@ -10,6 +10,7 @@ Current phase: act
 - 0021–0024 are implemented; their specs stay In Progress in `active/`.
 
 ## Active Spec
+- [0035](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.md) / [plan](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.plan.md): Send and Copy for each assistant in JetBrains (PD-108); spec + plan only, 18 proxies (spec §14) await Gregor; starts after 0034's close and spike K-1.
 - [0034](../.specs/active/0034-studio-for-jetbrains-ides.md) / [plan](../.specs/active/0034-studio-for-jetbrains-ides.plan.md): JetBrains IDEs, T-001…T-042 verified except T-035, G4 fix round open; baseline `3bc615c`.
 - [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec for Copilot and Claude Code in every version (PD-091), T-001…T-011 verified; AC-016, AC-017, AC-020 are Gregor's or the orchestrator's.
 - [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 are Gregor's; OP-004 closed by PD-078.
@@ -26,11 +27,8 @@ Current phase: act
 - Completed: 0001…0007, 0013 in `done/`; 0008…0012 are Deprecated (successor 0015); plans frozen in `plan-archive/`.
 - Completed 2026-11-19: [0025](../.specs/done/0025-plan-map-navigation-and-progress.md) ([plan](../.specs/plan-archive/0025-plan-map-navigation-and-progress.2026-11-19.plan.md)) and [0028](../.specs/done/0028-plan-state-aware-next-step.md) ([plan](../.specs/plan-archive/0028-plan-state-aware-next-step.2026-11-19.plan.md)).
 - Completed 2026-11-19: [0026](../.specs/done/0026-send-defaults-and-wording.md) ([plan](../.specs/plan-archive/0026-send-defaults-and-wording.2026-11-19.plan.md)).
-- Completed 2026-11-20: [0033](../.specs/done/0033-start-via-lifecycle-plan-attachment-prompt-layout.md) ([plan](../.specs/plan-archive/0033-start-via-lifecycle-plan-attachment-prompt-layout.2026-11-20.plan.md)).
-- Completed 2026-11-20: [0032](../.specs/done/0032-release-polish.md) ([plan](../.specs/plan-archive/0032-release-polish.2026-11-20.plan.md)).
-- Completed 2026-11-20: [0031](../.specs/done/0031-send-on-follow-up-lines.md) ([plan](../.specs/plan-archive/0031-send-on-follow-up-lines.2026-11-20.plan.md)); T-003 (preview, orchestrator), AC-009 (Gregor) and CI on PR #2 are open.
-- Completed 2026-11-20: [0030](../.specs/done/0030-clarified-step-quiet-attach-tip.md) ([plan](../.specs/plan-archive/0030-clarified-step-quiet-attach-tip.2026-11-20.plan.md)).
-- Completed 2026-11-20: [0029](../.specs/done/0029-onboarding-before-setup.md) ([plan](../.specs/plan-archive/0029-onboarding-before-setup.2026-11-20.plan.md)).
+- Completed 2026-11-20: [0029](../.specs/done/0029-onboarding-before-setup.md), [0030](../.specs/done/0030-clarified-step-quiet-attach-tip.md), [0031](../.specs/done/0031-send-on-follow-up-lines.md); plans in `plan-archive/`; 0031: T-003 (preview), AC-009 (Gregor), CI on PR #2 open.
+- Completed 2026-11-20: [0032](../.specs/done/0032-release-polish.md), [0033](../.specs/done/0033-start-via-lifecycle-plan-attachment-prompt-layout.md); plans in `plan-archive/`.
 
 ## Changed Recently
 - 0034 T-036/T-037/T-040 (`3f4221a`, `4be646e`): Verifier, ZIP checks, no-JCEF test, README `## JetBrains IDEs`, checklist *JetBrains (manual)*, maps, `jetbrains/AGENTS.md`, Memory Bank; spikes removed; `AGENTS.md` 14991 bytes.

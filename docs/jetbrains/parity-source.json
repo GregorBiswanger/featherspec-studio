@@ -1398,6 +1398,84 @@
                     "reference": "C-views"
                 }
             }
+        },
+        "0035": {
+            "ranges": {
+                "AC-007..AC-010": {
+                    "category": "shared",
+                    "reference": "shared-test"
+                },
+                "AC-011..AC-015": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (Send to Claude Code through the IDE terminal)"
+                },
+                "AC-016..AC-017": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (Copy for Copilot and Copy for Junie)"
+                },
+                "AC-019..AC-020": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (Copy for Copilot and Copy for Junie)"
+                },
+                "AC-025..AC-026": {
+                    "category": "shared",
+                    "reference": "shared-test"
+                },
+                "AC-027..AC-028": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (manual check in Rider)"
+                }
+            },
+            "criteria": {
+                "AC-001": {
+                    "category": "deliberately different",
+                    "reference": "PD-108, PD-109 (H-8, 0034 AC-018; the option Junie exists only in JetBrains)"
+                },
+                "AC-002": {
+                    "category": "host",
+                    "reference": "H-8 and 0034 AC-018"
+                },
+                "AC-003": {
+                    "category": "deliberately different",
+                    "reference": "PD-108, PD-109 (H-17; plugin availability)"
+                },
+                "AC-004": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (H-17; the JetBrains offer per assistant)"
+                },
+                "AC-005": {
+                    "category": "shared",
+                    "reference": "shared-test"
+                },
+                "AC-006": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (Copy for where VS Code shows Send)"
+                },
+                "AC-018": {
+                    "category": "shared",
+                    "reference": "shared-test"
+                },
+                "AC-021": {
+                    "category": "shared",
+                    "reference": "shared-test"
+                },
+                "AC-022": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (the Copy for sentence of the toggletip)"
+                },
+                "AC-023": {
+                    "category": "host",
+                    "reference": "H-17 and 0034 AC-025"
+                },
+                "AC-024": {
+                    "category": "host",
+                    "reference": "H-17 and 0034 AC-034"
+                },
+                "AC-029": {
+                    "category": "shared",
+                    "reference": "shared-test"
+                }
+            }
         }
     }
 }

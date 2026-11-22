@@ -757,3 +757,32 @@ Generated from `.specs/done/` and `.specs/active/` by `src/adapters/node/parity.
 | 0033 | AC-006 | shared | C-views |  |
 | 0033 | AC-007 | shared | shared-test |  |
 | 0033 | AC-008 | shared | shared-test |  |
+| 0035 | AC-001 | deliberately different | PD-108, PD-109 (H-8, 0034 AC-018; the option Junie exists only in JetBrains) |  |
+| 0035 | AC-002 | host | H-8 and 0034 AC-018 |  |
+| 0035 | AC-003 | deliberately different | PD-108, PD-109 (H-17; plugin availability) |  |
+| 0035 | AC-004 | deliberately different | PD-108 (H-17; the JetBrains offer per assistant) |  |
+| 0035 | AC-005 | shared | shared-test |  |
+| 0035 | AC-006 | deliberately different | PD-108 (Copy for where VS Code shows Send) |  |
+| 0035 | AC-007 | shared | shared-test |  |
+| 0035 | AC-008 | shared | shared-test |  |
+| 0035 | AC-009 | shared | shared-test |  |
+| 0035 | AC-010 | shared | shared-test |  |
+| 0035 | AC-011 | deliberately different | PD-108 (Send to Claude Code through the IDE terminal) |  |
+| 0035 | AC-012 | deliberately different | PD-108 (Send to Claude Code through the IDE terminal) |  |
+| 0035 | AC-013 | deliberately different | PD-108 (Send to Claude Code through the IDE terminal) |  |
+| 0035 | AC-014 | deliberately different | PD-108 (Send to Claude Code through the IDE terminal) |  |
+| 0035 | AC-015 | deliberately different | PD-108 (Send to Claude Code through the IDE terminal) |  |
+| 0035 | AC-016 | deliberately different | PD-108 (Copy for Copilot and Copy for Junie) |  |
+| 0035 | AC-017 | deliberately different | PD-108 (Copy for Copilot and Copy for Junie) |  |
+| 0035 | AC-018 | shared | shared-test |  |
+| 0035 | AC-019 | deliberately different | PD-108 (Copy for Copilot and Copy for Junie) |  |
+| 0035 | AC-020 | deliberately different | PD-108 (Copy for Copilot and Copy for Junie) |  |
+| 0035 | AC-021 | shared | shared-test |  |
+| 0035 | AC-022 | deliberately different | PD-108 (the Copy for sentence of the toggletip) |  |
+| 0035 | AC-023 | host | H-17 and 0034 AC-025 |  |
+| 0035 | AC-024 | host | H-17 and 0034 AC-034 |  |
+| 0035 | AC-025 | shared | shared-test |  |
+| 0035 | AC-026 | shared | shared-test |  |
+| 0035 | AC-027 | deliberately different | PD-108 (manual check in Rider) |  |
+| 0035 | AC-028 | deliberately different | PD-108 (manual check in Rider) |  |
+| 0035 | AC-029 | shared | shared-test |  |
