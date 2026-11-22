@@ -32,6 +32,7 @@ dependencies {
     intellijPlatform {
         intellijIdea("2025.3.1")
         bundledPlugin("com.intellij.modules.jcef")
+        bundledPlugin("org.jetbrains.plugins.terminal")
         testFramework(TestFrameworkType.Starter, configurationName = "integrationTestImplementation")
         pluginVerifier()
     }

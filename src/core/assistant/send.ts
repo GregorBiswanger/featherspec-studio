@@ -7,7 +7,7 @@ import type { ClipboardPort } from '../ports/board';
 import type { StepUiPort } from '../ports/copyNextStep';
 import type { ClockPort, OutputPort } from '../ports/host';
 import type { AssistantId } from '../../shared/protocol/assistant';
-import { ASSISTANTS } from './assistants';
+import { ASSISTANTS, type AssistantSpec, type AssistantTable } from './assistants';
 import type { AttachmentCheck, AttachmentTarget } from './attachment';
 import type { HandOverPort } from './handOver';
 
@@ -24,6 +24,7 @@ export interface SendDeps {
     attachment?: AttachmentCheck;
     attaching?: (id: AssistantId) => boolean;
     handOver?: HandOverPort;
+    table?: AssistantTable;
 }
 
 export interface Send {
@@ -37,6 +38,8 @@ function messageOf(reason: unknown): string {
 }
 
 export function createSend(deps: SendDeps): Send {
+    const table: AssistantTable = deps.table ?? ASSISTANTS;
+
     async function copied(line: string): Promise<SendOutcomeView> {
         const outcome = await copyLine(deps.clipboard, line);
         return { outcome: outcome.ok ? 'copied' : 'copyFailed', text: outcome.text };
@@ -54,8 +57,7 @@ export function createSend(deps: SendDeps): Send {
         return result;
     }
 
-    async function run(request: SendRequest, isSettled: () => boolean): Promise<string[] | undefined> {
-        const spec = ASSISTANTS[request.assistant];
+    async function run(request: SendRequest, spec: AssistantSpec, isSettled: () => boolean): Promise<string[] | undefined> {
         const plain = spec.callsFor(request.target, request.line);
         let found: ReturnType<AssistantHostPort['extension']>;
         try {
@@ -121,7 +123,8 @@ export function createSend(deps: SendDeps): Send {
         return unattached;
     }
 
-    function attempt(request: SendRequest): Promise<SendOutcomeView> {
+    function attempt(request: SendRequest, spec: AssistantSpec): Promise<SendOutcomeView> {
+        const budget = spec.timeoutMs ?? SEND_TIMEOUT_MS;
         const name = ASSISTANT_NAMES[request.assistant];
         return new Promise((resolve) => {
             let settled = false;
@@ -133,8 +136,8 @@ export function createSend(deps: SendDeps): Send {
                 timer.dispose();
                 void fallback(name, request.line, cause).then(resolve);
             };
-            const timer = deps.clock.setTimeout(() => fail(noResultCause(SEND_TIMEOUT_MS)), SEND_TIMEOUT_MS);
-            run(request, () => settled).then(
+            const timer = deps.clock.setTimeout(() => fail(noResultCause(budget)), budget);
+            run(request, spec, () => settled).then(
                 (unattached) => {
                     if (settled) {
                         return;
@@ -164,11 +167,12 @@ export function createSend(deps: SendDeps): Send {
                 }
                 return result;
             };
-            if (deps.chosen.read() !== request.assistant) {
+            const row = table[request.assistant];
+            if (row === undefined || deps.chosen.read() !== request.assistant) {
                 const result = copied(request.line);
                 return handOver === undefined ? result : result.then(settle);
             }
-            const turn = tail.then(() => attempt(request));
+            const turn = tail.then(() => attempt(request, row));
             tail = turn.catch(() => undefined);
             return handOver === undefined ? turn : turn.then(settle);
         },

@@ -180,7 +180,7 @@ describe('0027 AC-007: the open argument holds exactly its keys, and no call sub
 
 const WITHOUT = (name: string) => `The prompt is in ${name}'s chat, without 0002-x.md: the file was not found. Check it, then send it there.`;
 const OUTPUT = (name: string) => `Send to ${name}: ${KEY} was not found, so it was not attached.`;
-const NAMES: Record<AssistantId, string> = { 'copilot': 'Copilot', claudeCode: 'Claude Code' };
+const NAMES: Record<AssistantId, string> = { 'copilot': 'Copilot', claudeCode: 'Claude Code', junie: 'Junie' };
 
 function plainCalls(assistant: AssistantId): Array<{ command: string; args: unknown[] }> {
     return assistant === 'copilot' ? [{ command: NEW_CHAT, args: [] }, { command: OPEN, args: [{ query: CLARIFY, isPartialQuery: true }] }] : [{ command: CLAUDE_OPEN, args: [undefined, CLARIFY] }];

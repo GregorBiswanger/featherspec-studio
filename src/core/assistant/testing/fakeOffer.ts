@@ -1,9 +1,13 @@
 import type { SettingPort } from '../../ports/host';
 import { createSettingsSource, type SettingsSource } from '../../settings/settingsSource';
 import type { AssistantId } from '../../../shared/protocol/assistant';
-import { ASSISTANTS } from '../assistants';
+import { ASSISTANTS, type AssistantTable } from '../assistants';
 import { extensionPresence, offerOf, type Offer } from '../offer';
 import { createFakeAssistantHost, type FakeAssistantHost } from './fakeAssistantHost';
+
+function extensionOf(assistant: AssistantId): string {
+    return (ASSISTANTS as AssistantTable)[assistant]?.extensionId ?? assistant;
+}
 
 export interface FakeOffer extends SettingsSource<Offer | undefined> {
     host: FakeAssistantHost;
@@ -38,11 +42,11 @@ export function createFakeOffer(initial: Offer | undefined = undefined, options:
             [...listeners].forEach((listener) => listener());
         },
         install(assistant) {
-            host.install(ASSISTANTS[assistant].extensionId);
+            host.install(extensionOf(assistant));
             host.fireExtensionsChanged();
         },
         uninstall(assistant) {
-            host.uninstall(ASSISTANTS[assistant].extensionId);
+            host.uninstall(extensionOf(assistant));
             host.fireExtensionsChanged();
         },
         set(next) {
@@ -50,12 +54,12 @@ export function createFakeOffer(initial: Offer | undefined = undefined, options:
                 fake.choose('none');
                 return;
             }
-            host.install(ASSISTANTS[next.assistant].extensionId);
+            host.install(extensionOf(next.assistant));
             fake.choose(next.assistant);
         },
     };
     if (initial !== undefined) {
-        host.install(ASSISTANTS[initial.assistant].extensionId);
+        host.install(extensionOf(initial.assistant));
         value = initial.assistant;
     }
     return fake;

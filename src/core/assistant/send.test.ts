@@ -64,7 +64,7 @@ function offered(assistant: AssistantId, platform = 'win32', options: { commands
     return world(platform, { ...options, chosen: assistant });
 }
 
-const NAME: Record<AssistantId, string> = { 'copilot': 'Copilot', claudeCode: 'Claude Code' };
+const NAME: Record<AssistantId, string> = { 'copilot': 'Copilot', claudeCode: 'Claude Code', junie: 'Junie' };
 
 describe('0024 AC-005: Send makes exactly the calls of §6.4, in order, and leaves the clipboard alone', () => {
     it('Copilot, new chat: newChat without an argument, then open with the line and isPartialQuery true', async () => {
@@ -139,7 +139,7 @@ describe('0024 AC-005: Send makes exactly the calls of §6.4, in order, and leav
 });
 
 describe('0024 AC-006: a failed Send copies the line, warns once and writes one Output line with the cause', () => {
-    const OTHER_THAN: Record<AssistantId, string> = { 'copilot': EXTENSION_A, claudeCode: EXTENSION_B };
+    const OTHER_THAN: Record<AssistantId, string> = { 'copilot': EXTENSION_A, claudeCode: EXTENSION_B, junie: 'org.jetbrains.junie' };
 
     interface Cause {
         name: string;

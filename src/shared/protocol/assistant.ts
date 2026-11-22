@@ -1,6 +1,6 @@
 import { isRecord } from './envelope';
 
-export const ASSISTANT_IDS = ['copilot', 'claudeCode'] as const;
+export const ASSISTANT_IDS = ['copilot', 'claudeCode', 'junie'] as const;
 export type AssistantId = (typeof ASSISTANT_IDS)[number];
 
 export type AssistantTarget = 'new' | 'current';
@@ -8,6 +8,7 @@ export type AssistantTarget = 'new' | 'current';
 export const ASSISTANT_TARGETS: Record<AssistantId, readonly AssistantTarget[]> = {
     'copilot': ['new', 'current'],
     claudeCode: ['new'],
+    junie: ['new'],
 };
 
 export function attachesInTarget(assistant: AssistantId, target: AssistantTarget): boolean {

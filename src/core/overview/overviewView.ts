@@ -1,6 +1,6 @@
 import type { OverviewView } from '../../shared/protocol/overview';
 import type { Offer } from '../assistant/offer';
-import { welcomeOf } from '../assistant/welcome';
+import { emptySendOf, welcomeOf } from '../assistant/welcome';
 import type { HistoryView } from '../lifecycle/statusHistory';
 import type { ShellModel } from '../ports/shell';
 import type { StepTipSettings } from '../settings/stepTipSettings';
@@ -23,8 +23,10 @@ export function buildOverviewView(input: ViewInput): OverviewView {
     const specs = createSpecResolver(model);
     const figures = projectFigures(model);
     const welcome = figures.kind === 'empty' ? welcomeOf(model, input.offer, input.tips) : undefined;
+    const start = figures.kind === 'empty' && welcome === undefined ? emptySendOf(model, input.offer) : undefined;
     return {
         ...(welcome === undefined ? {} : { welcome }),
+        ...(start === undefined ? {} : { start }),
         now: projectNow(model, specs, input.tips, input.offer),
         upNext: projectUpNext(model, specs),
         problems: projectProblems(model, specs),

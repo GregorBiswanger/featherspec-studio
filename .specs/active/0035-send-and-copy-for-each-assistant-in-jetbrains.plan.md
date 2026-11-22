@@ -115,7 +115,14 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
   Git Bash) and pastes the JSON` — only a real IDE with the real plugins and the CLI can answer A-005–A-009. Also records
   J-1's result if Gregor has run it (19 §2).
 - [ ] **Verified (T-001):** —
-- **Notes:** results go to spec §13 (A-005–A-009, values) and *Research* above; a failed candidate is a spec change before T-002.
+- **Notes:** built (not committed): `probe/{HandoverProbe,HandoverTerminal,HandoverReflect}.kt`, `META-INF/featherspec-handover-probe.xml`
+  (two actions, only visible with `-Dfeatherspec.probe.handover=true`: *FeatherSpec Probe: Handover Inventory* and *… Handover
+  Claude Tab*), the optional `<depends optional="true" config-file=…>org.jetbrains.plugins.terminal` in `plugin.xml`, and
+  `bundledPlugin("org.jetbrains.plugins.terminal")` in `build.gradle.kts`. JSON goes to `idea.log` (one line, prefix
+  `FEATHERSPEC-HANDOVER-PROBE`), to the clipboard (pretty) and a balloon. Typed API only `TerminalToolWindowTabsManager`
+  (`getInstance`, `tabs`, `createTabBuilder`); tab, view, builder, shell integration, blocks and output models by reflection
+  (`unavailable: …` in the JSON). **Open for the owner:** `jetbrains/guards/pluginZip.mjs` demands exactly two `<depends>` and
+  would fail on the optional one (guard and its test need a change before CI is green). Results go to spec §13 (A-005–A-009, values) and *Research* above; a failed candidate is a spec change before T-002.
 
 ### T-002 — Per-host assistant table in the core; `junie` as an ID
 
@@ -131,8 +138,8 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
   table offers by its own presence IDs; the send budget per row (`timeoutMs`) is used; red via `Not implemented`.
 - **Verify:** `npx vitest run --project node --project webview` (all existing 0024/0026/0027/0031/0033 tests unchanged and
   green) + eslint + both `tsc`.
-- [ ] **Verified (T-002):** —
-- **Notes:** —
+- [x] **Verified (T-002):** 2026-11-22 · `src/core/assistant/assistantTable0035.test.ts` 36 tests, 12 red first (24 green at once: junie acts as none, VS Code calls and offers unchanged; negative control in the file), then 36 of 36 green · full `npx vitest run --project node --project webview`: 4154 green, 1 red outside T-002 (`sourceScan` 0015 AC-021 on T-003's `references.ts` and `references0035.test.ts`) · eslint src 0 · `tsc --noEmit` and `-p src/webview` 0 · `node --test 'jetbrains/guards/*.test.mjs'` 59/59.
+- **Notes:** `ASSISTANTS` is typed `Record<'copilot' | 'claudeCode', AssistantSpec>` (no junie row: junie acts as none in VS Code); `AssistantTable` is the partial type for per-host tables; `Offer` carries `targets` and `attaches` only where a row deviates from the shared constants (VS Code offers stay deep-equal). `createAssistantWiring` and `createSend` take `table?`. Type-only edits of existing tests: `Record<AssistantId, …>` gets a `junie` entry in `send.test.ts` (2) and `sendAttach.test.ts`; `assistant.test.ts` expects the three ids, targets and names; helper `testing/fakeOffer.ts` reads the row through `AssistantTable`. `ASSISTANT_TARGETS.junie` is `['new']`; `isSendView` still checks against the shared constants (JetBrains `claudeCode` targets `current`, `new` need T-007).
 
 ### T-003 — Reference texts and the Junie form
 
@@ -144,7 +151,7 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
   the path lists equal the ` @` mentions of `ASSISTANTS.claudeCode.callsFor` (today's VS Code output; the name stays in
   T-002); negative control with one path swapped.
 - **Verify:** `npx vitest run --project node src/core/assistant/references0035.test.ts` + eslint + `tsc`.
-- [ ] **Verified (T-003):** —
+- [x] **Verified (T-003):** 2026-11-22 · `npx vitest run --project node src/core/assistant/references0035.test.ts` 48 of 48 green (47 red first via `Not implemented`) · eslint src 0 · `npm run check-types` 0 · jetbrains guards 58/58. Full run: 4090 green, 14 red outside T-003 (see handoff).
 - **Notes:** —
 
 ### T-004 — Step action in the empty state *No specs yet* (both hosts)
@@ -159,7 +166,7 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
 - **Tests first:** `fs-setup-done-no-specs` with fake offers copilot and claudeCode → `Send to <Name>` with 0026's default
   target and menu, no attachment, no Tip; with none → DOM deep-equal to the start commit; `fs-setup-not-run` unchanged.
 - **Verify:** `npx vitest run --project node --project webview` + eslint + both `tsc`.
-- [ ] **Verified (T-004):** —
+- [x] **Verified (T-004):** 2026-11-22 — `emptyState0035.test.ts` (6) and `emptyState0035.test.tsx` (8) red first (12 failed, 3 negative controls green), then green; full node+webview run: only T-002/T-003 files red (see Notes); eslint src and both `tsc` clean; `node --test jetbrains/guards/*.test.mjs` 58/58.
 - **Notes:** protocol version bump waits for T-006 (one bump for both shape changes).
 
 ### T-005 — Copy for in the core

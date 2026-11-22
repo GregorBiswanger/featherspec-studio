@@ -1,4 +1,5 @@
 import { isBoardFilter, isBoardState, type BoardFilter, type BoardState } from './boardFilter';
+import { isSendView, type SendView } from './assistant';
 import { isRecord } from './envelope';
 import { isWelcomeView, type WelcomeView } from './overview';
 import { isPlanSpecView, type PlanSpecView } from './planMap';
@@ -97,6 +98,7 @@ export interface BoardView {
     sort: SortKey;
     noSpecs: boolean;
     welcome?: WelcomeView;
+    start?: SendView;
     planSpecs: PlanSpecView[];
 }
 
@@ -171,6 +173,7 @@ export function isBoardView(value: unknown): value is BoardView {
         value.sortKeys.includes(value.sort) &&
         typeof value.noSpecs === 'boolean' &&
         (value.welcome === undefined || (value.noSpecs === true && isWelcomeView(value.welcome))) &&
+        (value.start === undefined || (value.noSpecs === true && value.welcome === undefined && isSendView(value.start))) &&
         Array.isArray(value.planSpecs) &&
         value.planSpecs.every(isPlanSpecView) &&
         (value.doneToggle === undefined || value.doneToggle === 'show' || value.doneToggle === 'hide')

@@ -27,6 +27,8 @@ const EXPECTED_PLUGIN = {
     vendor: 'Gregor Biswanger',
     sinceBuild: '253.29346',
     depends: ['com.intellij.modules.platform', 'com.intellij.modules.jcef'],
+    // 0035 OP-009: the Terminal plugin is the only optional dependency (Send to Claude Code).
+    optionalDepends: ['org.jetbrains.plugins.terminal'],
 };
 
 const SECRET_PATTERNS = [
@@ -81,9 +83,19 @@ export const checkPluginXml = (xml, expected = EXPECTED_PLUGIN) => {
     if (xml.includes('until-build')) {
         problems.push('until-build must not be set');
     }
-    const depends = [...xml.matchAll(/<depends(?:\s[^>]*)?>([^<]*)<\/depends>/g)].map((match) => match[1]);
+    const all = [...xml.matchAll(/<depends(\s[^>]*)?>([^<]*)<\/depends>/g)].map((match) => ({
+        optional: /\boptional\s*=\s*"true"/.test(match[1] ?? ''),
+        id: match[2],
+    }));
+    const depends = all.filter((d) => !d.optional).map((d) => d.id);
+    const optional = all.filter((d) => d.optional).map((d) => d.id);
     if (depends.length !== expected.depends.length || !expected.depends.every((id) => depends.includes(id))) {
         problems.push(`plugin must depend on exactly ${expected.depends.join(' and ')}, found: ${depends.join(', ') || 'none'}`);
+    }
+    const allowedOptional = expected.optionalDepends ?? [];
+    const unexpected = optional.filter((id) => !allowedOptional.includes(id));
+    if (unexpected.length > 0 || new Set(optional).size !== optional.length) {
+        problems.push(`optional depends may only be ${allowedOptional.join(', ') || 'none'} (once), found: ${optional.join(', ')}`);
     }
     return problems;
 };

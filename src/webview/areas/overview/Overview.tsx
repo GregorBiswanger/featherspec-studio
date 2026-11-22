@@ -12,13 +12,13 @@ import { useOverview, useOverviewActions } from './store';
 import { EmptyState } from '../../ui/EmptyState';
 import { NO_SPECS_START_TEXT, SDD_SPECIFY_LINE } from '../../../shared/protocol/texts';
 import { useBoard } from '../../board/boardStore';
-import { CopyButton } from '../../ui/CopyButton';
+import { StepAction } from '../../ui/StepAction';
 import { Now, UpNext } from './Now';
 import { Welcome } from '../../ui/Welcome';
 
 export function Overview() {
     const view = useOverview();
-    const { copyResult, copyText } = useBoard();
+    const { copyResult, copyText, sendResult, sendPrompt } = useBoard();
     const shell = useShell();
     const actions = useOverviewActions();
     const openSpec = useOpenSpec();
@@ -53,7 +53,7 @@ export function Overview() {
             ) : view.figures.kind === 'empty' ? (
                 <EmptyState icon="Backlog" data-zero-specs>
                     {NO_SPECS_START_TEXT}
-                    <CopyButton look="primary" line={SDD_SPECIFY_LINE} copyResult={copyResult} onCopy={copyText} />
+                    <StepAction send={view.start} look="primary" line={SDD_SPECIFY_LINE} sendResult={sendResult} onSend={sendPrompt} copyResult={copyResult} onCopy={copyText} />
                 </EmptyState>
             ) : (
                 <>

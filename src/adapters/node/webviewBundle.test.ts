@@ -77,7 +77,7 @@ function inspect(dom: JSDOM, where: string): Rendered {
     const document = dom.window.document as unknown as { body: ElementLike & { innerHTML: string }; querySelectorAll(selector: string): Iterable<ElementLike> };
     const place = (element: ElementLike): string => {
         const closest = (element as unknown as { closest(selector: string): unknown }).closest.bind(element);
-        return closest('[data-plan-map]') !== null ? 'plan map' : closest('[data-card], [data-board-state]') !== null ? 'board' : closest('[data-up-next]') !== null ? 'up next' : closest('[data-now]') !== null ? 'now' : closest('.spec-detail') !== null ? 'detail' : 'other';
+        return closest('[data-plan-map]') !== null ? 'plan map' : closest('[data-card], [data-board-state]') !== null ? 'board' : closest('[data-up-next]') !== null ? 'up next' : closest('[data-now]') !== null ? 'now' : closest('.spec-detail') !== null ? 'detail' : closest('[data-zero-specs], .board-empty:not([data-welcome])') !== null ? 'empty state' : 'other';
     };
     const buttons = [...document.querySelectorAll('button')].map((button) => ({ text: button.textContent ?? '', name: button.getAttribute('aria-label') ?? '' }));
     const attributes = [...document.querySelectorAll('[title], [aria-label]')].flatMap((element) => [element.getAttribute('title'), element.getAttribute('aria-label')]).filter((value): value is string => value !== null);
@@ -487,7 +487,7 @@ describe('0024 AC-002, AC-003: Send in the rendered bundle, over the fixtures', 
         execFileSync(process.execPath, ['esbuild.js'], { cwd: root, stdio: 'pipe' });
     }, 60000);
 
-    const stray = (rendered: Rendered[]): string[] => rendered.flatMap((surface) => surface.splits.filter((place) => place !== 'detail' && place !== 'now').map((place) => `${surface.where}: ${place}`));
+    const stray = (rendered: Rendered[]): string[] => rendered.flatMap((surface) => surface.splits.filter((place) => place !== 'detail' && place !== 'now' && place !== 'empty state').map((place) => `${surface.where}: ${place}`));
 
     it.each(SWEPT_FIXTURES.flatMap((name) => OFFERS.map((offer) => [name, offer.assistant, offer] as const)))('%s with %s: split buttons sit in a detail or the first Now row only, one per surface, none open', async (name, _assistant, offer) => {
         const rendered = await renderFixture(name, undefined, offer);
@@ -497,7 +497,8 @@ describe('0024 AC-002, AC-003: Send in the rendered bundle, over the fixtures', 
             expect(surface.splits.length, surface.where).toBeLessThanOrEqual(surface.where.includes(' detail ') ? 2 : 1);
             expect(surface.menus, surface.where).toBe(0);
             if (surface.where.endsWith('board')) {
-                expect(surface.splits, surface.where).toEqual([]);
+                // 0035 AC-007 (amends 0024 AC-003): the empty state No specs yet holds the one step action.
+                expect(surface.splits.filter((place) => place !== 'empty state'), surface.where).toEqual([]);
             }
             if (surface.where.endsWith('overview')) {
                 expect(surface.splits.filter((place) => place === 'detail'), surface.where).toEqual([]);

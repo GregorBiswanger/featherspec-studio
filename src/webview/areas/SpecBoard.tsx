@@ -9,7 +9,7 @@ import { useBoard } from '../board/boardStore';
 import { Column } from '../board/Column';
 import { FilterBar } from '../board/FilterBar';
 import { fallbackFocus, moveFocus, type Direction, type Grid } from '../board/focusModel';
-import { CopyButton } from '../ui/CopyButton';
+import { StepAction } from '../ui/StepAction';
 import { EmptyState } from '../ui/EmptyState';
 import { Welcome } from '../ui/Welcome';
 
@@ -111,7 +111,7 @@ export function SpecBoard() {
             ) : board.noSpecs ? (
                 <EmptyState icon="Backlog" className="board-empty">
                     {NO_SPECS_START_TEXT}
-                    <CopyButton look="primary" line={SDD_SPECIFY_LINE} copyResult={api.copyResult} onCopy={api.copyText} />
+                    <StepAction send={board.start} look="primary" line={SDD_SPECIFY_LINE} sendResult={api.sendResult} onSend={api.sendPrompt} copyResult={api.copyResult} onCopy={api.copyText} />
                 </EmptyState>
             ) : null}
             <FilterBar board={board} setSort={api.setSort} clearFilters={api.clearFilters} />

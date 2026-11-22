@@ -73,6 +73,13 @@ test('AC-033 negative controls: until-build, extra depends, wrong since-build, w
     assert.ok(checkPluginXml(goodXml.replace('com.gregorbiswanger.featherspec.studio', 'x.y')).some((p) => p.includes('id')));
 });
 
+test('0035 OP-009 the optional Terminal dependency passes; another optional one or a required Terminal one does not', () => {
+    const withTerminal = goodXml.replace('</idea-plugin>', '<depends optional="true" config-file="t.xml">org.jetbrains.plugins.terminal</depends></idea-plugin>');
+    assert.deepEqual(checkPluginXml(withTerminal), []);
+    assert.ok(checkPluginXml(goodXml.replace('</idea-plugin>', '<depends optional="true" config-file="x.xml">com.intellij.java</depends></idea-plugin>')).some((p) => p.includes('optional')));
+    assert.ok(checkPluginXml(goodXml.replace('</idea-plugin>', '<depends>org.jetbrains.plugins.terminal</depends></idea-plugin>')).some((p) => p.includes('depend')));
+});
+
 test('AC-035 a PEM header and a token assignment are found, with file and line', () => {
     const found = findSecrets([
         { path: 'a.txt', text: `ok\n${pem('RSA PRIVATE KEY')}\n` },

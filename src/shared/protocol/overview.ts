@@ -73,6 +73,7 @@ export interface WelcomeView {
 
 export interface OverviewView {
     welcome?: WelcomeView;
+    start?: SendView;
     now: OverviewNow;
     upNext: OverviewUpNext;
     problems: OverviewProblems;
@@ -211,8 +212,9 @@ export function isWelcomeView(value: unknown): value is WelcomeView {
 export function isOverviewView(value: unknown): value is OverviewView {
     return (
         isRecord(value) &&
-        exactly(value, ['now', 'upNext', 'problems', 'figures', 'activity'], ['welcome']) &&
+        exactly(value, ['now', 'upNext', 'problems', 'figures', 'activity'], ['welcome', 'start']) &&
         (value.welcome === undefined || (isRecord(value.figures) && value.figures.kind === 'empty' && isWelcomeView(value.welcome))) &&
+        (value.start === undefined || (isRecord(value.figures) && value.figures.kind === 'empty' && value.welcome === undefined && isSendView(value.start))) &&
         isUpNext(value.now) &&
         isUpNext(value.upNext) &&
         isProblems(value.problems) &&

@@ -1,0 +1,6 @@
+<idea-plugin>
+    <actions>
+        <action id="featherspec.probe.handover.inventory" class="com.gregorbiswanger.featherspec.studio.probe.HandoverInventoryAction" text="FeatherSpec Probe: Handover Inventory"/>
+        <action id="featherspec.probe.handover.claudeTab" class="com.gregorbiswanger.featherspec.studio.probe.HandoverClaudeTabAction" text="FeatherSpec Probe: Handover Claude Tab"/>
+    </actions>
+</idea-plugin>
