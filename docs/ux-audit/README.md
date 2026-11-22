@@ -29,6 +29,8 @@ by Playwright, on five workspaces, in Dark, Light and High Contrast, at two wind
 | [screenshots-fbf8830/](screenshots-fbf8830/) | 11 screenshots of the VSIX at `3773816` (`x01`…`x15`), referenced in 15 |
 | [16-release-handoff.md](16-release-handoff.md) | **Last work order before release:** decisions PD-093–PD-095, spec 0032 "Release polish" (AC-001…AC-008), checks, release steps, clean-up |
 | [17-start-step-and-prompt-layout.md](17-start-step-and-prompt-layout.md) | Gregor's field feedback after 0032 (2026-11-20): start via `/sdd-lifecycle`, attach what the prompt names, prompt width, indentation; spec 0033 (AC-001…AC-008), PD-096/PD-097 |
+| [18-junie-bootstrap.md](18-junie-bootstrap.md) | JetBrains concept (2026-11-22, second version after Gregor's direction): when and where the Studio offers the Junie setup prompt of FeatherSpec issue #17; intent A0–A2, readiness states, surfaces, texts T-1…T-15, open decisions E-1…E-7 |
+| [19-junie-handoff.md](19-junie-handoff.md) | **Work order for spec 0037 "Prepare a project for Junie":** gate G0 (PD-108, PD-109, spike J-1), rules, readiness function and type, prompt golden draft, code anchors, AC-001…AC-022, fixtures, checks, stages |
 
 How the product acts on it: decisions PD-058 … PD-062 (audit) and PD-068, PD-069 (review) in
 [product-decisions.md](../product/product-decisions.md), the UX guidelines in
