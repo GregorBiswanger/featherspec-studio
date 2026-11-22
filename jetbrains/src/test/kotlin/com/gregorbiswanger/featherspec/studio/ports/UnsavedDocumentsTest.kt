@@ -177,7 +177,7 @@ class UnsavedDocumentsTest {
         assertEquals(listOf("a", "b"), fired)
         coalescer.submit("a")
         assertEquals(3, tasks.size)
-        tasks.last()()
+        tasks[2].invoke()
         assertEquals(listOf("a", "b", "a"), fired)
     }
 
