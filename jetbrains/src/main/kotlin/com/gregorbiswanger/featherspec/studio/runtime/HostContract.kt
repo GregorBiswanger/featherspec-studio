@@ -10,13 +10,14 @@ val ASYNC_CALLS: List<String> = listOf(
     "http.get", "archive.read",
     "ui.pick", "ui.notify", "ui.confirm", "ui.progressStart", "ui.openExternal",
     "clipboard.write", "editor.open",
+    "assistant.claudeTerminal", "assistant.openChat",
     "actions.openSetupGuide", "actions.manageTrust", "actions.openStudio", "actions.reloadPanel",
 )
 
 val EMIT_CHANNELS: List<String> = listOf("panel", "tree", "status", "log", "warn", "progressEnd", "showOutput")
 
 val DISPATCH_EVENTS: List<String> = listOf(
-    "panelMessage", "panelOpened", "panelClosed", "fileChanged", "markerChanged", "foldersChanged", "trustGranted", "settingsChanged", "progressCancelled",
+    "panelMessage", "panelOpened", "panelClosed", "fileChanged", "markerChanged", "foldersChanged", "trustGranted", "settingsChanged", "pluginsChanged", "progressCancelled",
 )
 
 val INVOKE_COMMANDS: List<String> = listOf(

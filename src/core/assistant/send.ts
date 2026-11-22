@@ -69,7 +69,7 @@ export function createSend(deps: SendDeps): Send {
             found = undefined;
         }
         if (found === undefined) {
-            throw new SendFailure(extensionNotFoundCause(spec.extensionId));
+            throw new SendFailure(spec.causes?.unavailable ?? extensionNotFoundCause(spec.extensionId));
         }
         if (!found.active) {
             try {
@@ -117,7 +117,7 @@ export function createSend(deps: SendDeps): Send {
             try {
                 await deps.host.execute(call.command, call.args);
             } catch (reason) {
-                throw new SendFailure(commandFailedCause(call.command, messageOf(reason)));
+                throw new SendFailure(spec.causes === undefined ? commandFailedCause(call.command, messageOf(reason)) : spec.causes.failed(messageOf(reason)));
             }
             if (isSettled()) {
                 return undefined;

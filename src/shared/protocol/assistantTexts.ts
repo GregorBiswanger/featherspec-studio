@@ -124,3 +124,13 @@ export function copyForMainName(name: string, line: string, files?: string): str
 export function copyForTipText(name: string, place: string): string {
     return `Copy for ${name} copies the prompt with file references and sends nothing: paste it into ${place}, choose the model there, check the prompt, then send it.`;
 }
+
+export const TERMINAL_UNAVAILABLE_CAUSE = 'the Terminal plugin is not available';
+
+export function claudeNotReadyCause(milliseconds: number): string {
+    return `Claude Code was not ready within ${milliseconds} ms`;
+}
+
+export function terminalCallFailedCause(message: string): string {
+    return `terminal call failed: ${message}`;
+}

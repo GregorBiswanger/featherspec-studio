@@ -1,4 +1,5 @@
 import type { OutputPort } from '../ports/host';
+import { isSendPromptPayload, type AssistantId, type AssistantTarget } from '../../shared/protocol/assistant';
 import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../../shared/protocol/envelope';
 import { isRequestType, REQUEST_GUARDS, type RequestPayloads, type RequestType, type ResponsePayload } from '../../shared/protocol/messages';
 import { ignoredMessageLine } from '../../shared/protocol/texts';
@@ -11,6 +12,7 @@ export interface MessageRouterDeps {
     handlers: RequestHandlers;
     output: OutputPort;
     post: (message: Envelope) => void;
+    sendTargets?: Readonly<Record<AssistantId, readonly AssistantTarget[]>>;
 }
 
 export interface MessageRouter {
@@ -58,7 +60,8 @@ export function createMessageRouter(deps: MessageRouterDeps): MessageRouter {
             }
             const type = envelope.type;
             const guard = REQUEST_GUARDS[type] as (value: unknown) => boolean;
-            if (!guard(envelope.payload)) {
+            const valid = type === 'sendPrompt' && deps.sendTargets !== undefined ? isSendPromptPayload(envelope.payload, deps.sendTargets) : guard(envelope.payload);
+            if (!valid) {
                 ignore(type, 'invalid payload');
                 return;
             }

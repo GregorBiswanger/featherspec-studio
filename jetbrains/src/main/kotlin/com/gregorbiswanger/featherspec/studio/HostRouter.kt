@@ -84,7 +84,7 @@ class CallRouter(
     companion object {
         const val NOT_YET = "{\"error\":\"not yet\"}"
 
-        val DEFERRED_PREFIXES: List<String> = listOf("actions.")
+        val DEFERRED_PREFIXES: List<String> = listOf("actions.", "assistant.")
 
         val ROUTED: Map<String, Group> = buildMap {
             listOf("source.list", "source.stat", "source.readBytes", "source.scan", "fs.stat", "fs.readText", "fs.readDirectory")

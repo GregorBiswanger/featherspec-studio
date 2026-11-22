@@ -11,6 +11,12 @@ export const ASSISTANT_TARGETS: Record<AssistantId, readonly AssistantTarget[]> 
     junie: ['new'],
 };
 
+export const ASSISTANT_TARGET_LISTS: Record<AssistantId, readonly (readonly AssistantTarget[])[]> = {
+    'copilot': [ASSISTANT_TARGETS['copilot']],
+    claudeCode: [ASSISTANT_TARGETS.claudeCode, ['current', 'new']],
+    junie: [ASSISTANT_TARGETS.junie],
+};
+
 export function attachesInTarget(assistant: AssistantId, target: AssistantTarget): boolean {
     return !(assistant === 'copilot' && target === 'current');
 }
@@ -74,8 +80,7 @@ export function isSendView(value: unknown): value is SendView {
     if (withHandover) {
         return targets.length === 1 && targets[0] === 'new' && target === 'new';
     }
-    const own = ASSISTANT_TARGETS[assistant];
-    return targets.length === own.length && own.every((item, index) => targets[index] === item) && own.includes(target);
+    return ASSISTANT_TARGET_LISTS[assistant].some((own) => targets.length === own.length && own.every((item, index) => targets[index] === item) && own.includes(target));
 }
 
 export interface SendRequest {
@@ -109,7 +114,7 @@ export function isSendToken(value: unknown): value is string {
     return typeof value === 'string' && SEND_TOKEN.test(value);
 }
 
-export function isSendPromptPayload(value: unknown): value is SendPromptPayload {
+export function isSendPromptPayload(value: unknown, targetsOf: Readonly<Record<AssistantId, readonly AssistantTarget[]>> = ASSISTANT_TARGETS): value is SendPromptPayload {
     if (!isRecord(value) || !SEND_PROMPT_KEYS.every((key) => key in value)) {
         return false;
     }
@@ -122,7 +127,7 @@ export function isSendPromptPayload(value: unknown): value is SendPromptPayload 
         return false;
     }
     const { assistant, target, line, token } = value;
-    return isAssistantId(assistant) && isAssistantTarget(target) && ASSISTANT_TARGETS[assistant].includes(target) && typeof line === 'string' && line.length > 0 && isSendToken(token);
+    return isAssistantId(assistant) && isAssistantTarget(target) && targetsOf[assistant].includes(target) && typeof line === 'string' && line.length > 0 && isSendToken(token);
 }
 
 const SEND_OUTCOMES: readonly string[] = ['opened', 'copied', 'copyFailed'];

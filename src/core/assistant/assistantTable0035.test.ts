@@ -122,7 +122,7 @@ describe('0035 T-002 / AC-004 (core): a fake two-row table offers by its own pre
     it('the offer carries the row targets and the row attaching flag; the send view lists those targets', () => {
         const offer = offerOf('claudeCode', [ALPHA], undefined, FAKE_TABLE);
         expect(offer?.targets).toEqual(['current', 'new']);
-        expect(plainSendViewOf(offer)).toEqual({ assistant: 'claudeCode', target: 'new', targets: ['current', 'new'] });
+        expect(plainSendViewOf(offer)).toEqual({ assistant: 'claudeCode', target: 'current', targets: ['current', 'new'] });
         const junie = offerOf('junie', [BETA], undefined, FAKE_TABLE);
         expect(junie === undefined ? undefined : attachesOf(junie, FAKE_TABLE)).toBe(false);
         expect(attachesOf({ assistant: 'claudeCode' }, FAKE_TABLE)).toBe(true);

@@ -11,6 +11,7 @@ import type { IdSource, RuntimeClock } from '../../core/ports/runtimeMedium';
 import type { AssistantHostPort } from '../../core/ports/assistant';
 import type { SetupPickItem, SetupUiPort } from '../../core/ports/setupUi';
 import type { StepPickItem, StepUiPort } from '../../core/ports/copyNextStep';
+import { CLAUDE_TERMINAL_COMMAND, createJetBrainsAssistants, OPEN_CHAT_COMMAND, pluginPresent } from './assistants';
 import type { CoreConfig } from './contract';
 import type { Bridge } from './bridge';
 import { fromBase64, toBase64 } from './bridge';
@@ -286,14 +287,21 @@ export function createEmbeddedPorts(bridge: Bridge, mirrors: Mirrors, config: Co
     };
 
     const assistantHost: AssistantHostPort = {
-        extension: () => undefined,
+        extension: (id) => (pluginPresent(id, mirrors.plugins()) ? { active: true } : undefined),
         activate: async () => undefined,
-        commands: async () => [],
-        execute: async () => {
-            throw new Error('Assistant commands are not available in the embedded host.');
+        commands: async () => [CLAUDE_TERMINAL_COMMAND, OPEN_CHAT_COMMAND],
+        execute: async (command, args) => {
+            const [first] = args;
+            if (command === CLAUDE_TERMINAL_COMMAND) {
+                return bridge.callAsync<unknown>('assistant.claudeTerminal', first);
+            }
+            if (command === OPEN_CHAT_COMMAND) {
+                return bridge.callAsync<unknown>('assistant.openChat', { assistant: first });
+            }
+            throw new Error(`Unknown assistant command ${command}.`);
         },
         fileUri: () => undefined,
-        onDidChangeExtensions: () => ({ dispose: () => undefined }),
+        onDidChangeExtensions: (listener) => mirrors.onPlugins(listener),
     };
 
     return {
@@ -348,6 +356,7 @@ export function createEmbeddedPorts(bridge: Bridge, mirrors: Mirrors, config: Co
         setupUi,
         setting: settingPort,
         assistantHost,
+        assistantTable: createJetBrainsAssistants(() => mirrors.plugins()),
         clipboard: {
             writeText: (text) => bridge.callAsync<void>('clipboard.write', { text }),
         },

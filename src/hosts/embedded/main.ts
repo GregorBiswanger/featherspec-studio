@@ -12,6 +12,7 @@ import { createBridge, isRecord, type Bridge } from './bridge';
 import { INVOKE_COMMANDS, type AsyncCall, type CoreConfig, type InvokeCommand, type NativeHost } from './contract';
 import { createBudgetProbe, type BudgetProbe } from './budgets';
 import { createMirrors, type Mirrors } from './mirrors';
+import { JETBRAINS_SEND_TARGETS } from './assistants';
 import { archivePortOf, createEmbeddedPorts, type EmbeddedPorts } from './ports';
 import { parseConformanceInput, runConformance, runSetupConformance } from './conformance';
 import { jetBrainsText, translatedPorts, translateTree } from './terms';
@@ -191,6 +192,7 @@ function createEmbeddedPanel(bridge: Bridge, services: PanelServices): EmbeddedP
         output: services.output,
         post: (message) => bridge.emit('panel', message),
         testMode: false,
+        sendTargets: JETBRAINS_SEND_TARGETS,
         onHello: () => undefined,
         onProbeResult: () => undefined,
     });
@@ -347,7 +349,8 @@ function isCoreConfig(value: unknown): value is CoreConfig {
         Array.isArray(value.folders) &&
         value.folders.every(isFolderInfo) &&
         isRecord(value.memory) &&
-        Object.values(value.memory).every((entry) => typeof entry === 'string')
+        Object.values(value.memory).every((entry) => typeof entry === 'string') &&
+        (value.plugins === undefined || (Array.isArray(value.plugins) && value.plugins.every((id) => typeof id === 'string')))
     );
 }
 

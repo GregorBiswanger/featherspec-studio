@@ -106,7 +106,7 @@ class HostRouterTest {
             "target.replaceIfUnchanged", "target.clearSetupFolder", "http.get", "archive.read",
         )
         assertEquals(names, CallRouter.ROUTED.filterValues { it == CallRouter.Group.SETUP }.keys)
-        assertEquals(listOf("actions."), CallRouter.DEFERRED_PREFIXES)
+        assertEquals(listOf("actions.", "assistant."), CallRouter.DEFERRED_PREFIXES)
         for (name in names) {
             assertEquals("setup", parsed(router.answer(name, "{}")).get("ok").asString, name)
         }

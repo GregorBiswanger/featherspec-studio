@@ -6,12 +6,14 @@ export interface Mirrors {
     settings(): ReadonlyMap<string, unknown>;
     trusted(): boolean;
     folders(): readonly WorkspaceFolderInfo[];
+    plugins(): readonly string[];
     memoryGet(key: string): unknown;
     memorySet(key: string, json: string | undefined): void;
     apply(event: string, payload: unknown): boolean;
     onSettings(listener: (key: string) => void): Disposable;
     onTrust(listener: () => void): Disposable;
     onFolders(listener: () => void): Disposable;
+    onPlugins(listener: () => void): Disposable;
 }
 
 export function createMirrors(config: CoreConfig): Mirrors {
@@ -19,9 +21,11 @@ export function createMirrors(config: CoreConfig): Mirrors {
     const memory = new Map<string, string>(Object.entries(config.memory));
     let trusted = config.trusted;
     let folders: readonly WorkspaceFolderInfo[] = config.folders;
+    let plugins: readonly string[] = config.plugins ?? [];
     const settingsListeners = new Set<(key: string) => void>();
     const trustListeners = new Set<() => void>();
     const folderListeners = new Set<() => void>();
+    const pluginListeners = new Set<() => void>();
 
     const subscribe = <Listener>(listeners: Set<Listener>, listener: Listener): Disposable => {
         listeners.add(listener);
@@ -32,6 +36,7 @@ export function createMirrors(config: CoreConfig): Mirrors {
         settings: () => settings,
         trusted: () => trusted,
         folders: () => folders,
+        plugins: () => plugins,
         memoryGet(key) {
             const json = memory.get(key);
             return json === undefined ? undefined : parseJson(json);
@@ -65,11 +70,19 @@ export function createMirrors(config: CoreConfig): Mirrors {
                 }
                 return true;
             }
+            if (event === 'pluginsChanged' && isRecord(payload) && Array.isArray(payload.plugins) && payload.plugins.every((id) => typeof id === 'string')) {
+                plugins = payload.plugins as string[];
+                for (const listener of [...pluginListeners]) {
+                    listener();
+                }
+                return true;
+            }
             return false;
         },
         onSettings: (listener) => subscribe(settingsListeners, listener),
         onTrust: (listener) => subscribe(trustListeners, listener),
         onFolders: (listener) => subscribe(folderListeners, listener),
+        onPlugins: (listener) => subscribe(pluginListeners, listener),
     };
 }
 

@@ -20,6 +20,7 @@ export interface AssistantSpec {
     text?(line: string, paths: readonly string[]): string;
     timeoutMs?: number;
     place?(): string;
+    causes?: { unavailable: string; failed(message: string): string };
     callsFor(target: AssistantTarget, line: string, attachment?: AssistantAttachment | readonly AssistantAttachment[]): AssistantCall[];
 }
 

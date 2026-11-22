@@ -10,6 +10,7 @@ export const ASYNC_CALLS = [
     'http.get', 'archive.read',
     'ui.pick', 'ui.notify', 'ui.confirm', 'ui.progressStart', 'ui.openExternal',
     'clipboard.write', 'editor.open',
+    'assistant.claudeTerminal', 'assistant.openChat',
     'actions.openSetupGuide', 'actions.manageTrust', 'actions.openStudio', 'actions.reloadPanel',
 ] as const;
 
@@ -20,7 +21,7 @@ export const EMIT_CHANNELS = ['panel', 'tree', 'status', 'log', 'warn', 'progres
 export type EmitChannel = (typeof EMIT_CHANNELS)[number];
 
 export const DISPATCH_EVENTS = [
-    'panelMessage', 'panelOpened', 'panelClosed', 'fileChanged', 'markerChanged', 'foldersChanged', 'trustGranted', 'settingsChanged', 'progressCancelled',
+    'panelMessage', 'panelOpened', 'panelClosed', 'fileChanged', 'markerChanged', 'foldersChanged', 'trustGranted', 'settingsChanged', 'pluginsChanged', 'progressCancelled',
 ] as const;
 
 export type DispatchEvent = (typeof DISPATCH_EVENTS)[number];
@@ -45,6 +46,7 @@ export interface CoreConfig {
     trusted: boolean;
     folders: readonly WorkspaceFolderInfo[];
     memory: Readonly<Record<string, string>>;
+    plugins?: readonly string[];
 }
 
 export interface NativeHost {

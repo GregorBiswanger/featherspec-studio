@@ -1,4 +1,5 @@
 import { createAssistantWiring } from '../core/assistant/wiring';
+import type { AssistantTable } from '../core/assistant/assistants';
 import { ASSISTANT_KEY } from '../core/assistant/offer';
 import { createHandOverMemory } from '../core/assistant/handOver';
 import { createBoardRequests, type BoardRequests } from '../core/board/boardRequests';
@@ -79,6 +80,7 @@ export interface HostPorts<Panel extends PanelPort = PanelPort> {
     setupUi: SetupUiPort;
     setting(key: string): SettingPort;
     assistantHost: AssistantHostPort;
+    assistantTable?: AssistantTable;
     clipboard: ClipboardPort;
     stepUi: StepUiPort;
     editor: EditorPort;
@@ -174,7 +176,7 @@ export function composeStudio<Panel extends PanelPort>(ports: HostPorts<Panel>):
     const assistantHost = ports.assistantHost;
     const clipboard = ports.clipboard;
     const stepUi = ports.stepUi;
-    const assistant = createAssistantWiring({ setting: ports.setting(ASSISTANT_KEY), host: assistantHost, clipboard, ui: stepUi, output: ports.output, clock: ports.clock, platform: ports.platform, source: modelSource, specs: ports.specSource, handOver: handOvers });
+    const assistant = createAssistantWiring({ setting: ports.setting(ASSISTANT_KEY), host: assistantHost, clipboard, ui: stepUi, output: ports.output, clock: ports.clock, platform: ports.platform, source: modelSource, specs: ports.specSource, handOver: handOvers, ...(ports.assistantTable === undefined ? {} : { table: ports.assistantTable }) });
     const board = createBoardService({
         source: modelSource,
         selection,

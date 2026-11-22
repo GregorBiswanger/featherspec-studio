@@ -5,7 +5,7 @@ import type { BoardView } from '../shared/protocol/board';
 import type { DetailView, OpenFileResultPayload } from '../shared/protocol/detail';
 import type { OverviewView } from '../shared/protocol/overview';
 import { PROTOCOL_VERSION, readEnvelope, type Envelope } from '../shared/protocol/envelope';
-import type { SendResultEventPayload } from '../shared/protocol/assistant';
+import type { AssistantId, AssistantTarget, SendResultEventPayload } from '../shared/protocol/assistant';
 import { isProbeResultPayload, type BoardRequestType, type CopyResultEventPayload, type OverviewRequestType, type ProbeOutcome } from '../shared/protocol/messages';
 
 export interface PanelBoard {
@@ -33,6 +33,7 @@ export interface PanelSessionDeps {
     output: OutputPort;
     post(message: Envelope): void;
     testMode: boolean;
+    sendTargets?: Readonly<Record<AssistantId, readonly AssistantTarget[]>>;
     onHello(): void;
     onProbeResult(outcome: ProbeOutcome): void;
 }
@@ -88,6 +89,7 @@ export function createPanelSession(deps: PanelSessionDeps): PanelSession {
         },
         output: deps.output,
         post: deps.post,
+        ...(deps.sendTargets === undefined ? {} : { sendTargets: deps.sendTargets }),
     });
 
     function receive(raw: unknown): void {
