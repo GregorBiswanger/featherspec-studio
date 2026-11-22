@@ -4,9 +4,10 @@ import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { JSDOM, VirtualConsole } from 'jsdom';
-import { differingAreas } from './sharedGuard.mjs';
+import { differingAreas, protocolVersionOf } from './sharedGuard.mjs';
 
-const PROTOCOL_VERSION = 11;
+const envelopeSource = (dir) => readFileSync(path.join(dir, 'src', 'shared', 'protocol', 'envelope.ts'), 'utf8');
+const HEAD_PROTOCOL_VERSION = protocolVersionOf(envelopeSource(path.resolve(import.meta.dirname, '..', '..')));
 const SETTLE_MS = 50;
 const SKIPPED = new Set(['gen-200', 'setup-expected']);
 const LOADING_TEXT = 'Loading project…';
@@ -39,7 +40,7 @@ const boot = (script, errors) => {
 
 const send = (dom, message) => dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: message }));
 
-const evt = (type, payload) => ({ v: PROTOCOL_VERSION, kind: 'evt', type, payload });
+const evt = (version, type, payload) => ({ v: version, kind: 'evt', type, payload });
 
 const textOf = (dom) => dom.window.document.body.textContent ?? '';
 
@@ -63,13 +64,13 @@ const stateProblem = (dom, area, expected) => {
     return [`${area}: the webview shows the panel state ${rendered.join(', ') || 'none'} but the shell view expects ${expected ?? 'none'}`];
 };
 
-const sendIfPresent = (dom, type, view) => {
+const sendIfPresent = (dom, version, type, view) => {
     if (view !== undefined && view !== null) {
-        send(dom, evt(type, { view }));
+        send(dom, evt(version, type, { view }));
     }
 };
 
-export const renderFixture = async (bundle, name, views) => {
+export const renderFixture = async (bundle, name, views, version = HEAD_PROTOCOL_VERSION) => {
     const errors = [];
     const texts = {};
     const problems = [];
@@ -88,7 +89,7 @@ export const renderFixture = async (bundle, name, views) => {
             }
         };
         let seq = 1;
-        const shell = (dom, view) => send(dom, { ...evt('shell', { view }), seq: seq++ });
+        const shell = (dom, view) => send(dom, { ...evt(version, 'shell', { view }), seq: seq++ });
         const shellOnly = boot(bundle, errors);
         await settle();
         shell(shellOnly, { ...base, area: 'board' });
@@ -98,21 +99,21 @@ export const renderFixture = async (bundle, name, views) => {
             const board = boot(bundle, errors);
             await settle();
             shell(board, { ...base, area: 'board' });
-            sendIfPresent(board, 'board', views.board);
+            sendIfPresent(board, version, 'board', views.board);
             await settle();
             record(board, 'board');
             if (views.overview !== undefined) {
                 const overview = boot(bundle, errors);
                 await settle();
                 shell(overview, { ...base, area: 'overview' });
-                sendIfPresent(overview, 'overview', views.overview);
+                sendIfPresent(overview, version, 'overview', views.overview);
                 await settle();
                 record(overview, 'overview');
             }
             const planMap = boot(bundle, errors);
             await settle();
             shell(planMap, { ...base, area: 'planMap' });
-            sendIfPresent(planMap, 'board', views.board);
+            sendIfPresent(planMap, version, 'board', views.board);
             await settle();
             record(planMap, 'planMap');
         }
@@ -124,14 +125,14 @@ export const renderFixture = async (bundle, name, views) => {
                 continue;
             }
             shell(detail, { ...base, area: 'board', selection: { stem, number: view.number } });
-            sendIfPresent(detail, 'board', views.board);
-            sendIfPresent(detail, 'detail', view);
+            sendIfPresent(detail, version, 'board', views.board);
+            sendIfPresent(detail, version, 'detail', view);
             await settle();
             record(detail, `detail ${stem}`);
             if (views.board !== undefined) {
                 shell(mapDetail, { ...base, area: 'planMap', selection: { stem, number: view.number } });
-                sendIfPresent(mapDetail, 'board', views.board);
-                sendIfPresent(mapDetail, 'detail', view);
+                sendIfPresent(mapDetail, version, 'board', views.board);
+                sendIfPresent(mapDetail, version, 'detail', view);
                 await settle();
                 record(mapDetail, `planMap ${stem}`);
             }
@@ -150,12 +151,13 @@ export const conformanceCommand = (headDir, outDir) => ({
 });
 
 const renderAll = async (bundleDir, expectedDir, names) => {
+    const version = protocolVersionOf(envelopeSource(bundleDir));
     const bundle = readFileSync(path.join(bundleDir, 'dist', 'webview', 'main.js'), 'utf8');
     const texts = {};
     const problems = [];
     for (const name of names) {
         const views = JSON.parse(readFileSync(path.join(expectedDir, `${name}.json`), 'utf8'));
-        const rendered = await renderFixture(bundle, name, views);
+        const rendered = await renderFixture(bundle, name, views, version);
         Object.assign(texts, rendered.texts);
         problems.push(...rendered.problems);
     }

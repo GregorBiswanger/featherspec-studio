@@ -1,9 +1,9 @@
 # Plan — Send and Copy for each assistant in JetBrains
 
 **Spec:** [0035-send-and-copy-for-each-assistant-in-jetbrains.md](0035-send-and-copy-for-each-assistant-in-jetbrains.md)
-**Status:** Not started
+**Status:** In Progress
 **Last updated:** 2026-11-22
-**Current step:** T-001
+**Current step:** T-009
 
 ## Approach
 
@@ -222,8 +222,8 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
   `vscode-guards` unchanged. Files: `.github/workflows/jetbrains.yml`, `jetbrains/guards/sharedGuard.test.mjs` (a case for
   the new start).
 - **Verify:** `node --test 'jetbrains/guards/*.test.mjs'`; CI `shared-guard` and `vscode-guards` green.
-- [ ] **Verified (T-008):** —
-- **Notes:** ask before the push (git write).
+- [x] **Verified (T-008):** 2026-11-22 · `jetbrains/guards/sharedGuard.test.mjs` +7 and `renderedTexts.test.mjs` +2 written first: both files red (import of `protocolVersionOf` missing), then `node --test 'jetbrains/guards/*.test.mjs'` 68 of 68 green (59 before) · run by hand against a worktree of the baseline (`npm run package` replaced by `node esbuild.js`): `node jetbrains/guards/renderedTexts.mjs <start> .` identical in 450 areas, `node jetbrains/guards/sharedGuard.mjs <start> .` no test missing (it found one: `assistant.test.ts` title renamed in T-002, restored) · `git diff 1765403 HEAD -- test/fixtures/next-step-baseline test/fixtures/read-baseline src/core/setup/mergePrompt.golden.txt .github/workflows/ci.yml .github/workflows/publish.yml` empty · CI `shared-guard`, `vscode-guards`, `plugin` still to run.
+- **Notes:** `START_COMMIT` is the Baseline `1765403c…` (one variable: `vscode-guards` compares `ci.yml` and `publish.yml` against it too; both are unchanged since `3bc615c`, so nothing is loosened). The shared-guard `git diff` drops `src/core`. Deviation, forced by protocol 12: `renderedTexts.mjs` fed both bundles the version 11 and would show the head bundle `versionMismatch`; it now reads `PROTOCOL_VERSION` from each side's `envelope.ts` (`protocolVersionOf` in `sharedGuard.mjs`). The guard's test inventory compares by file and title, so titles of start tests are frozen: `assistant.test.ts` "two assistants with the targets…" keeps its old title with three ids inside. Ask before the push (git write).
 
 ### T-009 — *Assistant* row and plugin availability (Kotlin)
 
@@ -310,39 +310,39 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
 | --- | --- | --- | --- | --- |
 | AC-001 | T-009 | — | — | open |
 | AC-002 | T-009 | — | — | open |
-| AC-003 | T-001, T-007, T-009 | — | — | open |
-| AC-004 | T-002, T-007 | — | — | open |
-| AC-005 | T-002, T-008, T-014 | — | — | open |
-| AC-006 | T-006, T-007 | — | — | open |
-| AC-007 | T-004 | — | — | open |
-| AC-008 | T-004, T-014 | — | — | open |
-| AC-009 | T-003 | — | — | open |
-| AC-010 | T-005, T-011 | — | — | open |
-| AC-011 | T-007, T-011 | — | — | open |
+| AC-003 | T-001, T-007, T-009 | `src/hosts/embedded/{assistants,mirrors,ports}.ts` (plugin mirror, core part) | `src/hosts/embedded/assistant0035.test.ts` | built |
+| AC-004 | T-002, T-007 | `src/core/assistant/assistants.ts`, `src/hosts/embedded/assistants.ts` | `assistantTable0035.test.ts`, `assistant0035.test.ts` (matrix) | verified |
+| AC-005 | T-002, T-008, T-014 | `src/core/assistant/{assistants,offer}.ts`, `jetbrains.yml › shared-guard` | `assistantTable0035.test.ts`; CI `shared-guard` open | built |
+| AC-006 | T-006, T-007 | `src/hosts/embedded/assistants.ts`, `src/core/assistant/sendView.ts` | `assistant0035.test.ts` (14 worlds, welcome, messages scan) | verified |
+| AC-007 | T-004 | `src/core/assistant/welcome.ts`, `overviewView.ts`, `boardService.ts` | `emptyState0035.test.ts`, `emptyState0035.test.tsx` | verified |
+| AC-008 | T-004, T-014 | same | `emptyState0035.test.*`; T-014 open | built |
+| AC-009 | T-003 | `src/core/assistant/references.ts`, `src/hosts/embedded/assistants.ts` | `references0035.test.ts`, `assistant0035.test.ts` | verified |
+| AC-010 | T-005, T-011 | `src/core/assistant/send.ts:copyFor` | `copyFor0035.test.ts` (Copy for); Claude part T-011 | built |
+| AC-011 | T-007, T-011 | `src/hosts/embedded/{assistants,ports}.ts` | `assistant0035.test.ts` (core part); Kotlin T-011 | built |
 | AC-012 | T-011 | — | — | open |
-| AC-013 | T-007, T-011 | — | — | open |
+| AC-013 | T-007, T-011 | `src/hosts/embedded/assistants.ts` (`causes`) | `assistant0035.test.ts` (core part); Kotlin T-011 | built |
 | AC-014 | T-011 | — | — | open |
 | AC-015 | T-011 | — | — | open |
-| AC-016 | T-003, T-005, T-012 | — | — | open |
-| AC-017 | T-003, T-005, T-012 | — | — | open |
-| AC-018 | T-003 | — | — | open |
-| AC-019 | T-005, T-012 | — | — | open |
-| AC-020 | T-005, T-006 | — | — | open |
-| AC-021 | T-002, T-003, T-005, T-006, T-014 | — | — | open |
-| AC-022 | T-006 | — | — | open |
-| AC-023 | T-007, T-010 | — | — | open |
+| AC-016 | T-003, T-005, T-012 | `src/core/assistant/send.ts:copyFor` | `copyFor0035.test.ts`; opener T-012 | built |
+| AC-017 | T-003, T-005, T-012 | `send.ts:copyFor`, `references.ts` | `copyFor0035.test.ts`, `assistant0035.test.ts`; opener T-012 | built |
+| AC-018 | T-003 | `src/core/assistant/references.ts` | `references0035.test.ts` | verified |
+| AC-019 | T-005, T-012 | `send.ts:copyFor` | `copyFor0035.test.ts`; opener T-012 | built |
+| AC-020 | T-005, T-006 | `src/webview/ui/SendButton.tsx` | `SendButton0035.test.tsx`, `copyFor0035.test.ts` | verified |
+| AC-021 | T-002, T-003, T-005, T-006, T-014 | `src/shared/protocol/assistantTexts.ts` | `copyFor0035.test.ts`, `SendButton0035.test.tsx`; T-014 open | built |
+| AC-022 | T-006 | `src/core/assistant/sendView.ts:tipClosingOf` | `tipCopyFor0035.test.ts` | verified |
+| AC-023 | T-007, T-010 | `src/hosts/embedded/ports.ts`, `panelSession.ts` | `assistant0035.test.ts`; Kotlin router T-010 | built |
 | AC-024 | T-001, T-011 | — | — | open |
 | AC-025 | T-013 | — | — | open |
-| AC-026 | T-008, T-014 | — | — | open |
+| AC-026 | T-008, T-014 | `.github/workflows/jetbrains.yml`, `jetbrains/guards/{sharedGuard,renderedTexts}.mjs` | `sharedGuard.test.mjs`; CI `shared-guard` open | built |
 | AC-027 | T-015 | — | manual: Gregor, Rider | open |
 | AC-028 | T-015 | — | manual: Gregor, Rider and VS Code | open |
 | AC-029 | T-013 | — | — | open |
 
 ## Session handoff
 
-- **Done so far:** spec written, clarified (proxy) and planned 2026-11-22; parity rows of 0035 seeded in
-  `docs/jetbrains/parity-source.json`.
-- **Next action:** Gregor reads spec and plan (proxies in spec §14); then 0034's close and T-001 on his start signal.
-- **Open decisions:** the 18 proxies of spec §14; K-1's values (A-005–A-009); J-1 (form A or C).
-- **Baseline:** _(commit hash before the first step commit; set when work starts)_
-- **Environment:** Kotlin only in CI; TypeScript locally (`npx vitest run --project node --project webview`).
+- **Done so far:** spec and plan (2026-11-22); stage 1 (T-001 probe built, T-002 to T-004) and stage 2 (T-005 to T-008), each its own commit; stage 2 gate: node + webview 4306 green, timing 35 green, guards 68/68, eslint and both `tsc` clean, `npm run compile` clean; the two shared guards run by hand against the baseline: no test missing, 450 rendered areas identical.
+- **Next action:** CI on the branch (Gregor pushes): `shared-guard`, `vscode-guards`, `plugin` (`HostContractTest`, `HostRouterTest`: Kotlin edits of T-007 were made blind). Then T-001's manual probe results (K-1) and T-009 (Kotlin: *Assistant* row, plugin availability, `CoreConfig.plugins`).
+- **Open decisions:** the 18 proxies of spec §14; K-1's values (A-005 to A-009); J-1 (form A or C).
+- **Kotlin must match the TypeScript:** `assistant.claudeTerminal` args `{target, text}`, answer any value or `{error}`; the not-ready error text is exactly `Claude Code was not ready within 15000 ms`; `assistant.openChat` args `{assistant}`, answer `"opened"` or `"notFound"`; event `pluginsChanged {plugins: [ids]}` and `CoreConfig.plugins` carry the installed and enabled ids among `com.github.copilot`, `org.jetbrains.plugins.terminal`, `org.jetbrains.junie`, `com.intellij.ml.llm`.
+- **Baseline:** 1765403c57c02381dae9acc5f2d4caae7abf7dfb
+- **Environment:** Kotlin only in CI; TypeScript locally (`npx vitest run --project node --project webview`). The Preview harness is not required by this plan; the Copy for button reuses the Send classes.

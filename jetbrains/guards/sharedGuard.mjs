@@ -19,6 +19,11 @@ export const vitestInventory = (json, root) =>
 export const mochaTitles = (source) =>
     [...source.matchAll(/\b(?:suite|test|it)\(\s*(['"`])((?:(?!\1)[^\\]|\\.)*)\1/g)].map((match) => match[2]);
 
+export const protocolVersionOf = (envelopeSource) => {
+    const match = /export const PROTOCOL_VERSION = (\d+);/.exec(envelopeSource);
+    return match === null ? undefined : Number(match[1]);
+};
+
 export const differingAreas = (startTexts, headTexts) =>
     [...new Set([...Object.keys(startTexts), ...Object.keys(headTexts)])]
         .filter((area) => startTexts[area] !== headTexts[area])

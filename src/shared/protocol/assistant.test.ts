@@ -3,7 +3,7 @@ import { ASSISTANT_IDS, ASSISTANT_TARGETS, isAssistantId, isSendPromptPayload, i
 import { ASSISTANT_NAMES } from './assistantTexts';
 
 describe('0024 AC-002: the assistant ids, targets and names', () => {
-    it('three assistants with the targets of §6.2 and the names of §7', () => {
+    it('two assistants with the targets of §6.2 and the names of §7', () => {
         expect([...ASSISTANT_IDS]).toEqual(['copilot', 'claudeCode', 'junie']);
         expect(ASSISTANT_TARGETS).toEqual({ 'copilot': ['new', 'current'], claudeCode: ['new'], junie: ['new'] });
         expect(ASSISTANT_NAMES).toEqual({ 'copilot': 'Copilot', claudeCode: 'Claude Code', junie: 'Junie' });

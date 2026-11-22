@@ -1,6 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { conformanceCommand, renderFixture } from './renderedTexts.mjs';
+import { protocolVersionOf } from './sharedGuard.mjs';
 
 const FAKE_BUNDLE = `
 window.addEventListener('message', (event) => {
@@ -128,4 +131,24 @@ test('AC-039 the conformance output is computed from the head tree, not the curr
     assert.equal(command.cwd, '/work/head');
     assert.ok(command.args[0].replaceAll('\\', '/').endsWith('/work/head/jetbrains/scripts/conformanceExpected.mjs'));
     assert.equal(command.args[1], '/tmp/out');
+});
+
+const VERSION_BUNDLE = `
+window.addEventListener('message', (event) => {
+    const line = document.createElement('p');
+    line.textContent = 'v' + event.data.v + ';';
+    document.body.appendChild(line);
+});
+`;
+
+test('0035 T-008 the events carry the protocol version given for the bundle', async () => {
+    const { texts } = await renderFixture(VERSION_BUNDLE, 'fx', { details: {} }, 7);
+    assert.ok(texts['fx shell'].includes('v7;'), texts['fx shell']);
+    assert.ok(!texts['fx shell'].includes('v12;'));
+});
+
+test('0035 T-008 without a version the events carry the version of the head envelope source', async () => {
+    const head = protocolVersionOf(readFileSync(path.resolve(import.meta.dirname, '..', '..', 'src', 'shared', 'protocol', 'envelope.ts'), 'utf8'));
+    const { texts } = await renderFixture(VERSION_BUNDLE, 'fx', { details: {} });
+    assert.ok(texts['fx shell'].includes(`v${head};`), texts['fx shell']);
 });
