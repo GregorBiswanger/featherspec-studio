@@ -1,13 +1,29 @@
 package com.gregorbiswanger.featherspec.studio.settings
 
+import com.gregorbiswanger.featherspec.studio.ports.IdePlugins
+import com.gregorbiswanger.featherspec.studio.ports.PluginAvailability
 import com.intellij.openapi.options.BoundConfigurable
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.ui.components.JBLabel
+import com.intellij.ui.dsl.builder.bindItem
 import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.util.ui.UIUtil
+import javax.swing.DefaultComboBoxModel
 
 class StudioConfigurable : BoundConfigurable(DISPLAY_NAME) {
     private var draft: SettingsModel? = null
+    private var assistantCombo: ComboBox<AssistantOption>? = null
+    private var assistantDescription: JBLabel? = null
+
+    private fun junieAvailable(): Boolean = PluginAvailability.junie(IdePlugins().snapshot())
+
+    private fun showAssistantDescription() {
+        val option = assistantCombo?.selectedItem as? AssistantOption ?: SettingsTable.ASSISTANT_OPTIONS.first()
+        assistantDescription?.text = "<html>" + option.description + "</html>"
+    }
 
     private fun stored(): SettingsModel = StudioSettings.getInstance().model()
 
@@ -20,6 +36,26 @@ class StudioConfigurable : BoundConfigurable(DISPLAY_NAME) {
             checkBox(SettingsTable.SHOW_STEP_TIPS_LABEL)
                 .bindSelected({ stored().showStepTips }, { value -> edit { it.copy(showStepTips = value) } })
                 .comment(SettingsTable.SHOW_STEP_TIPS_DESCRIPTION)
+        }
+        row(SettingsTable.ASSISTANT_LABEL) {
+            val combo = comboBox(SettingsTable.options(junieAvailable()))
+                .bindItem(
+                    { SettingsTable.displayed(stored().assistant, junieAvailable()) },
+                    { option ->
+                        if (option != null) {
+                            edit { it.copy(assistant = SettingsTable.storedAfterApply(it.assistant, option, junieAvailable())) }
+                        }
+                    },
+                )
+                .comment(SettingsTable.ASSISTANT_DESCRIPTION)
+            assistantCombo = combo.component
+            combo.component.addActionListener { showAssistantDescription() }
+        }
+        row {
+            val label = JBLabel("", UIUtil.ComponentStyle.SMALL, UIUtil.FontColor.BRIGHTER)
+            label.setAllowAutoWrapping(true)
+            assistantDescription = label
+            cell(label)
         }
         group(MODEL_GROUP) {
             row {
@@ -47,7 +83,9 @@ class StudioConfigurable : BoundConfigurable(DISPLAY_NAME) {
 
     override fun reset() {
         draft = null
+        assistantCombo?.model = DefaultComboBoxModel(SettingsTable.options(junieAvailable()).toTypedArray())
         super.reset()
+        showAssistantDescription()
     }
 
     companion object {

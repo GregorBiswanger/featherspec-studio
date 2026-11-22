@@ -6,6 +6,9 @@ import com.gregorbiswanger.featherspec.studio.jcef.JcefAvailability
 import com.gregorbiswanger.featherspec.studio.ports.FilePorts
 import com.gregorbiswanger.featherspec.studio.ports.Folder
 import com.gregorbiswanger.featherspec.studio.ports.HostOs
+import com.gregorbiswanger.featherspec.studio.ports.IdePlugins
+import com.gregorbiswanger.featherspec.studio.ports.PluginAvailability
+import com.gregorbiswanger.featherspec.studio.ports.PluginsWatch
 import com.gregorbiswanger.featherspec.studio.ports.IdeUnsavedDocuments
 import com.gregorbiswanger.featherspec.studio.ports.MediumPorts
 import com.gregorbiswanger.featherspec.studio.ports.ProjectFolders
@@ -83,6 +86,9 @@ class StudioProjectService(private val project: Project) : Disposable {
 
     @Volatile
     private var trustWatch = TrustWatch(false)
+
+    @Volatile
+    private var pluginsWatch = PluginsWatch(emptyList())
 
     private val projectBase: String = project.basePath.orEmpty()
 
@@ -259,6 +265,13 @@ class StudioProjectService(private val project: Project) : Disposable {
         }
     }
 
+    fun sendPlugins(plugins: List<String>) {
+        val core = runtime ?: return
+        if (pluginsWatch.changed(plugins)) {
+            core.dispatch("pluginsChanged", PluginAvailability.event(plugins))
+        }
+    }
+
     private fun sendFolders() {
         try {
             val folders = currentFolders()
@@ -276,6 +289,8 @@ class StudioProjectService(private val project: Project) : Disposable {
         lastFolders = folders
         val trusted = TrustedProjects.isProjectTrusted(project)
         trustWatch = TrustWatch(trusted)
+        val plugins = IdePlugins().snapshot()
+        pluginsWatch = PluginsWatch(plugins)
         return CoreConfig.json(
             platform = CoreConfig.platform(HostOs.windows, HostOs.mac),
             studioVersion = PluginManagerCore.getPlugin(PluginId.getId(PLUGIN_ID))?.version ?: "0.0.0",
@@ -283,6 +298,7 @@ class StudioProjectService(private val project: Project) : Disposable {
             trusted = trusted,
             folders = folders,
             memory = UiMemoryState.getInstance().memory.forProject(projectBase),
+            plugins = plugins,
         )
     }
 

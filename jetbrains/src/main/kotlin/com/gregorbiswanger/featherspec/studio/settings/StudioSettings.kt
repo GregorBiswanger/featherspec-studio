@@ -16,6 +16,7 @@ class StudioSettings : PersistentStateComponent<StudioSettings.State> {
         var showStepTips: Boolean = SettingsTable.SHOW_STEP_TIPS_DEFAULT
         var strongModel: String = ""
         var fastModel: String = ""
+        var assistant: String = SettingsTable.ASSISTANT_DEFAULT
     }
 
     private val current = State()
@@ -29,16 +30,17 @@ class StudioSettings : PersistentStateComponent<StudioSettings.State> {
     }
 
     fun model(): SettingsModel = synchronized(current) {
-        SettingsTable.fromState(current.showStepTips, current.strongModel, current.fastModel)
+        SettingsTable.fromState(current.showStepTips, current.strongModel, current.fastModel, current.assistant)
     }
 
     fun apply(next: SettingsModel) {
         val clean = SettingsTable.sanitize(next)
         val events = synchronized(current) {
-            val before = SettingsTable.fromState(current.showStepTips, current.strongModel, current.fastModel)
+            val before = SettingsTable.fromState(current.showStepTips, current.strongModel, current.fastModel, current.assistant)
             current.showStepTips = clean.showStepTips
             current.strongModel = clean.strongModel
             current.fastModel = clean.fastModel
+            current.assistant = clean.assistant
             SettingsTable.changeEvents(before, clean)
         }
         if (events.isNotEmpty()) {

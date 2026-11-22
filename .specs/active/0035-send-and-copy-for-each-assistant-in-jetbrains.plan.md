@@ -235,7 +235,7 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
   `CoreConfig.kt` carries both. Tests `SettingsTableTest.kt`, `PluginAvailabilityTest.kt`.
 - **Verify:** CI `plugin` (JUnit 3 OS) and `verify` green; local TS gates unchanged.
 - [ ] **Verified (T-009):** —
-- **Notes:** —
+- **Notes:** CI pending. Local, plain Kotlin only (kotlinc 2.0.21 + JUnit stubs, `/tmp`): `SettingsTableTest` +5 tests and 3 moved (AC-031 and the manifest-id test now say the assistant is stored), `CoreConfigTest` +1 and 1 moved (key `plugins`), new `ports/PluginAvailabilityTest` (6); 16 red first (`Not implemented` stubs), then 28 of 28 green. Built blind (CI decides): `ports/IdePlugins.kt` (`PluginQuery` glue and `PluginEvents : DynamicPluginListener`, registered in `plugin.xml` `<applicationListeners>`), `StudioProjectService.sendPlugins`, `StudioSettings.State.assistant`, the combo row in `StudioConfigurable`. Availability = `PluginManagerCore.isPluginInstalled(id) && PluginManagerCore.isLoaded(id)` (both public, `getPlugin` is not used; K-1's enabled check is replaced by `isLoaded`, which is public on 253 and master); after a plain unload the id counts as absent whatever the platform still lists, an unload for an update waits for the load. Option description line under the combo is a `JBLabel` updated by an action listener (the DSL comment has no safe setter). The probe config `featherspec-handover-probe.xml` is renamed `featherspec-terminal.xml` (the one optional `<depends>`, shared with T-011).
 
 ### T-010 — Route the assistant calls (Kotlin)
 

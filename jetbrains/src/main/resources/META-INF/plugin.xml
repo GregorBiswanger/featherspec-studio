@@ -5,7 +5,10 @@
     <description>FeatherSpec Studio brings the spec-driven development view of a FeatherSpec project into JetBrains IDEs.</description>
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.jcef</depends>
-    <depends optional="true" config-file="featherspec-handover-probe.xml">org.jetbrains.plugins.terminal</depends>
+    <depends optional="true" config-file="featherspec-terminal.xml">org.jetbrains.plugins.terminal</depends>
+    <applicationListeners>
+        <listener class="com.gregorbiswanger.featherspec.studio.ports.PluginEvents" topic="com.intellij.ide.plugins.DynamicPluginListener"/>
+    </applicationListeners>
     <extensions defaultExtensionNs="com.intellij">
         <fileEditorProvider implementation="com.gregorbiswanger.featherspec.studio.panel.StudioEditorProvider"/>
         <postStartupActivity implementation="com.gregorbiswanger.featherspec.studio.StudioStartup"/>

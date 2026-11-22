@@ -19,6 +19,7 @@ object CoreConfig {
         trusted: Boolean,
         folders: List<Folder>,
         memory: Map<String, String>,
+        plugins: List<String> = emptyList(),
     ): String = JsonObject().apply {
         addProperty("host", "jetbrains")
         addProperty("platform", platform)
@@ -27,6 +28,7 @@ object CoreConfig {
         addProperty("trusted", trusted)
         add("folders", JsonArray().apply { folders.forEach { add(it.toJson()) } })
         add("memory", JsonObject().apply { memory.forEach { (key, value) -> addProperty(key, value) } })
+        add("plugins", JsonArray().apply { plugins.forEach { add(it) } })
     }.toString()
 
     fun foldersEvent(folders: List<Folder>): String = JsonObject().apply {

@@ -21,10 +21,10 @@ class SettingsTableTest {
         manifest().getAsJsonObject("contributes").getAsJsonObject("configuration").getAsJsonObject("properties")
 
     @Test
-    fun `AC-018 the ids are the manifest ids except the assistant`() {
+    fun `AC-018 the ids are the manifest ids`() {
         val manifestIds = properties().keySet().filter { it.startsWith(SettingsTable.PREFIX) }.toSet()
-        assertEquals(manifestIds - "featherspec-studio.assistant", SettingsTable.ids.toSet())
-        assertFalse(SettingsTable.ids.any { it.contains("assistant") })
+        assertEquals(manifestIds, SettingsTable.ids.toSet())
+        assertEquals("featherspec-studio.assistant", SettingsTable.ASSISTANT_ID)
     }
 
     @Test
@@ -55,16 +55,82 @@ class SettingsTableTest {
     fun `AC-018 the bare keys are the ids without the prefix and match the core`() {
         assertEquals("showStepTips", SettingsTable.SHOW_STEP_TIPS_KEY)
         assertEquals("modelHints", SettingsTable.MODEL_HINTS_KEY)
-        assertEquals(listOf("featherspec-studio.showStepTips", "featherspec-studio.modelHints"), SettingsTable.ids)
+        assertEquals(listOf("featherspec-studio.showStepTips", "featherspec-studio.assistant", "featherspec-studio.modelHints"), SettingsTable.ids)
+        assertEquals("assistant", SettingsTable.ASSISTANT_KEY)
         val core = Files.readString(listOf(Path.of("..", "src", "core", "settings", "stepTipSettings.ts"), Path.of("src", "core", "settings", "stepTipSettings.ts")).first { Files.exists(it) })
         assertTrue(core.contains("SHOW_STEP_TIPS_KEY = 'showStepTips'"))
         assertTrue(core.contains("MODEL_HINTS_KEY = 'modelHints'"))
     }
 
     @Test
-    fun `AC-031 the assistant setting is not offered`() {
-        assertFalse(SettingsTable.values(SettingsModel()).containsKey("assistant"))
-        assertEquals(setOf("showStepTips", "modelHints"), SettingsTable.values(SettingsModel()).keys)
+    fun `AC-001 the assistant is stored as one of four values and defaults to none`() {
+        assertEquals("none", SettingsModel().assistant)
+        assertEquals(JsonPrimitive("none"), SettingsTable.values(SettingsModel())["assistant"])
+        assertEquals(listOf("showStepTips", "assistant", "modelHints"), SettingsTable.values(SettingsModel()).keys.toList())
+        for (value in listOf("none", "copilot", "claudeCode", "junie")) {
+            assertEquals(value, SettingsTable.sanitize(SettingsModel(assistant = value)).assistant)
+            assertEquals(JsonPrimitive(value), SettingsTable.values(SettingsModel(assistant = value))["assistant"])
+        }
+        for (value in listOf("", "claude", "Claude Code", "42", "copilot ", "NONE")) {
+            assertEquals("none", SettingsTable.sanitize(SettingsModel(assistant = value)).assistant, value)
+        }
+        assertEquals("none", SettingsTable.fromState(true, "", "", null).assistant)
+        assertEquals("claudeCode", SettingsTable.fromState(true, "", "", "claudeCode").assistant)
+        assertEquals("none", SettingsTable.fromState(true, "", "", "bogus").assistant)
+    }
+
+    @Test
+    fun `AC-001 the row texts are those of section 7`() {
+        assertEquals("Assistant:", SettingsTable.ASSISTANT_LABEL)
+        assertEquals(
+            "Your AI assistant for the next step. Send to Claude Code types the prompt into Claude Code in the terminal; Copy for Copilot or Junie copies it with file references and opens the chat. Nothing is sent; Copy prompt stays in the button's menu.",
+            SettingsTable.ASSISTANT_DESCRIPTION,
+        )
+        assertEquals(listOf("none", "copilot", "claudeCode", "junie"), SettingsTable.ASSISTANT_OPTIONS.map { it.value })
+        assertEquals(listOf("None: Copy prompt", "GitHub Copilot", "Claude Code", "Junie"), SettingsTable.ASSISTANT_OPTIONS.map { it.label })
+        assertEquals(
+            listOf(
+                "Copy the prompt and paste it into any assistant.",
+                "Copy for Copilot copies the prompt with #file references. Paste it into GitHub Copilot Chat. Needs the GitHub Copilot plugin.",
+                "Send to Claude Code types the prompt into Claude Code in the IDE terminal and sends nothing. Needs the claude command and the Terminal plugin.",
+                "Copy for Junie copies the prompt with @ file references. Paste it into Junie in AI Chat.",
+            ),
+            SettingsTable.ASSISTANT_OPTIONS.map { it.description },
+        )
+        assertEquals("Junie", SettingsTable.ASSISTANT_OPTIONS[3].toString())
+    }
+
+    @Test
+    fun `AC-001 the options show Junie last and only while Junie is available`() {
+        assertEquals(listOf("none", "copilot", "claudeCode"), SettingsTable.options(false).map { it.value })
+        assertEquals(listOf("none", "copilot", "claudeCode", "junie"), SettingsTable.options(true).map { it.value })
+    }
+
+    @Test
+    fun `AC-001 a stored junie without Junie shows None and the stored value stays until another is applied`() {
+        assertEquals("none", SettingsTable.displayed("junie", false).value)
+        assertEquals("junie", SettingsTable.displayed("junie", true).value)
+        assertEquals("claudeCode", SettingsTable.displayed("claudeCode", false).value)
+        assertEquals("none", SettingsTable.displayed("bogus", true).value)
+        val none = SettingsTable.ASSISTANT_OPTIONS[0]
+        val copilot = SettingsTable.ASSISTANT_OPTIONS[1]
+        assertEquals("junie", SettingsTable.storedAfterApply("junie", none, false))
+        assertEquals("copilot", SettingsTable.storedAfterApply("junie", copilot, false))
+        assertEquals("none", SettingsTable.storedAfterApply("junie", none, true))
+        assertEquals("copilot", SettingsTable.storedAfterApply("none", copilot, true))
+        assertEquals("none", SettingsTable.storedAfterApply("bogus", none, false))
+    }
+
+    @Test
+    fun `AC-002 a change of the assistant sends one event with the bare key and the value`() {
+        val events = SettingsTable.changeEvents(SettingsModel(), SettingsModel(assistant = "claudeCode"))
+        assertEquals(1, events.size)
+        val event = JsonParser.parseString(events[0]).asJsonObject
+        assertEquals(setOf("key", "value"), event.keySet())
+        assertEquals("assistant", event.get("key").asString)
+        assertEquals("claudeCode", event.get("value").asString)
+        assertEquals(emptyList<String>(), SettingsTable.changeEvents(SettingsModel(assistant = "copilot"), SettingsModel(assistant = "copilot")))
+        assertEquals(1, SettingsTable.changeEvents(SettingsModel(assistant = "junie"), SettingsModel(assistant = "bogus")).size)
     }
 
     @Test
@@ -124,7 +190,8 @@ class SettingsTableTest {
     fun `AC-018 the start config carries the settings under their bare keys`() {
         val json = CoreConfig.json("linux", "1.0.0", SettingsTable.values(SettingsModel(false, "S", "F")), true, emptyList(), emptyMap())
         val settings = JsonParser.parseString(json).asJsonObject.getAsJsonObject("settings")
-        assertEquals(setOf("showStepTips", "modelHints"), settings.keySet())
+        assertEquals(setOf("showStepTips", "assistant", "modelHints"), settings.keySet())
+        assertEquals("none", settings.get("assistant").asString)
         assertFalse(settings.get("showStepTips").asBoolean)
         assertEquals("S", settings.getAsJsonObject("modelHints").get("strong").asString)
     }

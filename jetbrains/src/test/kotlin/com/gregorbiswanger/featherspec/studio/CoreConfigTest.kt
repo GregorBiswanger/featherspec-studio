@@ -36,10 +36,18 @@ class CoreConfigTest {
     @Test
     fun `settings pass through with their bare keys and the keys are exactly those of the core config`() {
         val config = parse(CoreConfig.json("linux", "1.2.3", mapOf("showStepTips" to JsonPrimitive(false)), true, emptyList(), emptyMap()))
-        assertEquals(setOf("host", "platform", "studioVersion", "settings", "trusted", "folders", "memory"), config.keySet())
+        assertEquals(setOf("host", "platform", "studioVersion", "settings", "trusted", "folders", "memory", "plugins"), config.keySet())
+        assertEquals(0, config.getAsJsonArray("plugins").size())
         assertFalse(config.getAsJsonObject("settings").get("showStepTips").asBoolean)
         assertTrue(config.get("trusted").asBoolean)
         assertEquals(0, config.getAsJsonArray("folders").size())
+    }
+
+    @Test
+    fun `AC-003 the start config carries the available plugin ids in order`() {
+        val plugins = listOf("com.github.copilot", "org.jetbrains.plugins.terminal")
+        val config = parse(CoreConfig.json("linux", "1.2.3", emptyMap(), true, emptyList(), emptyMap(), plugins))
+        assertEquals(plugins, config.getAsJsonArray("plugins").map { it.asString })
     }
 
     @Test
