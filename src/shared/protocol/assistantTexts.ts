@@ -85,6 +85,14 @@ export function sendOpenedName(name: string, line: string): string {
     return `Opened in ${name}: ${line}`;
 }
 
+export function sendStartingLabel(name: string): string {
+    return `Starting ${name}…`;
+}
+
+export function sendStartingName(name: string, line: string): string {
+    return `Starting ${name}: ${line}`;
+}
+
 export function moreActionsName(line: string): string {
     return `More actions: ${line}`;
 }

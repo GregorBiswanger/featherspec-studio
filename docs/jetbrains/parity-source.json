@@ -1650,6 +1650,10 @@
                 "AC-030": {
                     "category": "deliberately different",
                     "reference": "PD-108 (review 20 B-1: Copy for texts say file paths until AC-028)"
+                },
+                "AC-031": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (review 20 B-2: the wait state of Send to Claude Code exists only in JetBrains)"
                 }
             }
         }

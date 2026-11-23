@@ -3,6 +3,7 @@ package com.gregorbiswanger.featherspec.studio.assistant
 import com.google.gson.JsonParser
 import com.gregorbiswanger.featherspec.studio.ports.FileUris
 import java.lang.ref.WeakReference
+import java.util.concurrent.atomic.AtomicBoolean
 
 data class TerminalTab(
     val key: Any,
@@ -119,6 +120,22 @@ object ActiveRoot {
     }
 }
 
+class ClaudeBusy : IllegalStateException("a Send to Claude Code is still starting")
+
+class SendGate {
+    private val running = AtomicBoolean(false)
+
+    fun enter() {
+        if (!running.compareAndSet(false, true)) {
+            throw ClaudeBusy()
+        }
+    }
+
+    fun leave() {
+        running.set(false)
+    }
+}
+
 class LastTyped {
     @Volatile
     private var key: WeakReference<Any>? = null
@@ -137,9 +154,19 @@ class ClaudeSender(
     private val lastTyped: LastTyped,
     private val clock: () -> Long,
     private val sleep: (Long) -> Unit,
+    private val gate: SendGate = SendGate(),
 ) {
     fun send(request: ClaudeRequest) {
         require(!AssistantRequests.hasControlCharacter(request.text)) { "the text holds a control character" }
+        gate.enter()
+        try {
+            typeInto(request)
+        } finally {
+            gate.leave()
+        }
+    }
+
+    private fun typeInto(request: ClaudeRequest) {
         val deadline = clock() + TOTAL_BUDGET_MS
         val base = root() ?: throw IllegalStateException("no project folder")
         val existing = if (request.target == ClaudeTarget.CURRENT) {

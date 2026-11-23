@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project
 
 class IdeAssistantCalls(private val project: Project) : AssistantCalls {
     private val lastTyped = LastTyped()
+    private val gate = SendGate()
 
     override fun claudeTerminal(request: ClaudeRequest) {
         if (!IdePlugins().available(PluginIds.TERMINAL)) {
@@ -36,6 +37,7 @@ class IdeAssistantCalls(private val project: Project) : AssistantCalls {
         lastTyped = lastTyped,
         clock = { System.nanoTime() / NANOS_PER_MILLI },
         sleep = { Thread.sleep(it) },
+        gate = gate,
     )
 
     private fun root(): String? {

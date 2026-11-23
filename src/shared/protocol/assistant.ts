@@ -37,6 +37,10 @@ export interface SendView {
     attachAlso?: SendAttachment[];
 }
 
+export function waitsForStart(send: SendView): boolean {
+    return send.assistant === 'claudeCode' && send.handover === undefined && send.targets.includes('current');
+}
+
 export function isAssistantId(value: unknown): value is AssistantId {
     return typeof value === 'string' && (ASSISTANT_IDS as readonly string[]).includes(value);
 }

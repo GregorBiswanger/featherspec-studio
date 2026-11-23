@@ -333,6 +333,67 @@ class ClaudeTerminalTest {
     }
 
     @Test
+    fun `AC-031 a second Send while the first waits for Claude Code types nothing and opens no tab`() {
+        val fake = Fake()
+        fake.boxAtMs = 3_000
+        val gate = SendGate()
+        var second: Throwable? = null
+        var reentered = false
+        lateinit var first: ClaudeSender
+        val sleep: (Long) -> Unit = {
+            fake.clock += it
+            if (!reentered) {
+                reentered = true
+                second = runCatching { first.send(ClaudeRequest(ClaudeTarget.CURRENT, "other line")) }.exceptionOrNull()
+            }
+        }
+        first = ClaudeSender(fake, { root }, false, LastTyped(), { fake.clock }, sleep, gate)
+        first.send(ClaudeRequest(ClaudeTarget.NEW, line))
+        assertTrue(second is ClaudeBusy, second.toString())
+        assertEquals("a Send to Claude Code is still starting", second?.message)
+        assertEquals(listOf("new-tab" to line), fake.pasted)
+        assertEquals(1, fake.calls.count { it == "open" })
+        assertEquals(1, fake.calls.count { it == "run" })
+        assertFalse(fake.calls.contains("tabs"))
+    }
+
+    @Test
+    fun `AC-031 a second Send through another sender of the same gate types nothing while the first runs`() {
+        val fake = Fake()
+        fake.boxAtMs = 3_000
+        val gate = SendGate()
+        val other = ClaudeSender(fake, { root }, false, LastTyped(), { fake.clock }, { fake.clock += it }, gate)
+        var second: Throwable? = null
+        var reentered = false
+        val first = ClaudeSender(fake, { root }, false, LastTyped(), { fake.clock }, {
+            fake.clock += it
+            if (!reentered) {
+                reentered = true
+                second = runCatching { other.send(ClaudeRequest(ClaudeTarget.NEW, line)) }.exceptionOrNull()
+            }
+        }, gate)
+        first.send(ClaudeRequest(ClaudeTarget.NEW, line))
+        assertTrue(second is ClaudeBusy)
+        assertEquals(1, fake.pasted.size)
+    }
+
+    @Test
+    fun `AC-031 the gate opens again after a Send, also after a failed one`() {
+        val fake = Fake()
+        fake.existing.add(tab("claude-tab"))
+        val gate = SendGate()
+        val sender = ClaudeSender(fake, { root }, false, LastTyped(), { fake.clock }, { fake.clock += it }, gate)
+        sender.send(ClaudeRequest(ClaudeTarget.CURRENT, line))
+        sender.send(ClaudeRequest(ClaudeTarget.CURRENT, line))
+        assertEquals(2, fake.pasted.size)
+        fake.failPaste = IllegalStateException("tab closed")
+        assertThrows(IllegalStateException::class.java) { sender.send(ClaudeRequest(ClaudeTarget.CURRENT, line)) }
+        fake.failPaste = null
+        sender.send(ClaudeRequest(ClaudeTarget.CURRENT, line))
+        assertEquals(3, fake.pasted.size)
+    }
+
+    @Test
     fun `AC-012 a new tab becomes the remembered tab`() {
         val fake = Fake()
         val memory = LastTyped()

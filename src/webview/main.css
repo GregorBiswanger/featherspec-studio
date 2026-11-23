@@ -740,6 +740,10 @@ main > h1 {
     border-bottom-right-radius: 0;
 }
 
+.send-main[aria-disabled='true'] {
+    cursor: progress;
+}
+
 .send-arrow {
     display: inline-flex;
     flex: none;

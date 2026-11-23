@@ -131,6 +131,10 @@ handovers behave as in a trusted one, as VS Code's Send does in Restricted Mode 
 - **Typing:** the text of §6.2 as one bracketed paste into the terminal's input; never a line break, carriage return or
   Enter; then the tab gets the focus. A line that holds a control character is not typed (fallback). The clipboard is left
   alone. A draft already in Claude Code's input stays; the paste lands at its cursor (proxy, OP-007).
+- **While it runs (review 20 B-2, §16):** from the activation until the answer, the control of every Send to Claude Code for the
+  same line is `aria-disabled="true"` and `aria-busy="true"` (never `disabled`; the focus stays), shows §7's waiting
+  texts and ignores clicks, the menu's Send items too, and the host types for a Send that arrives while another runs
+  nothing. The control frees itself 30 000 ms after the activation at the latest. VS Code is unaffected (AC-031).
 - **Fallback:** Terminal plugin unavailable, a terminal call fails, readiness not reached, or no result within 20 000 ms
   of the activation → copy the line as Copy prompt does, show 0024 §7's warning once and write one log line with the cause,
   never the prompt (0024 §6.5). The 5000 ms budget of 0024 stays for every other handover (proxy, OP-006).
@@ -209,6 +213,7 @@ VS Code texts are unchanged. JetBrains reuses 0024's and 0027's texts for Send t
 | Copy for, failed | 0021's `Copy failed` and its text |
 | Copy for, log, file left out | `Copy for <Name>: <path> was not found, so its path was left out.` |
 | Toggletip, Copy for offered | `Copy for <Name> copies the prompt with the file paths and sends nothing: paste it into <place>, choose the model there, check the prompt, then send it.` |
+| Send to Claude Code, waiting (JetBrains only) | label `Starting Claude Code…`; name, tooltip and announced `Starting Claude Code: <line>`; the answer then shows `Opened in Claude Code` or the warning as before |
 | Log causes (Claude Code) | `the Terminal plugin is not available` · `Claude Code was not ready within 15000 ms` · `terminal call failed: <message>` · `no result within 20000 ms` |
 
 `<key>` is `Cmd+V` on macOS, else `Ctrl+V` (0024 §6.5).
@@ -230,7 +235,8 @@ Setting and plugin changes within 500 ms (§6.5); Claude Code readiness bounded 
 - `claude` not on the PATH, a login or a folder-trust prompt of Claude Code on start → readiness not reached → fallback.
 - Claude Code busy with a turn → the paste lands in its input; nothing is sent (Claude Code queues it until Enter).
 - The Claude terminal closes between check and typing → the call fails → fallback; nothing goes to another tab.
-- Two Sends in quick succession → one after the other, as 0024 (the core queues them).
+- Two Sends in quick succession → one after the other, as 0024 (the core queues them). *Amended 2026-11-23 (review 20 B-2,
+  §16):* not for Send to Claude Code in JetBrains: while one such Send runs, a second click on the same line types nothing (§6.3, AC-031).
 - The Terminal plugin disabled, or Copilot or Junie uninstalled while selected → the offer drops to Copy prompt (§6.5).
 - Copy for with the chat tool window missing → copied, `Open <place> and paste …` (§7).
 - A path with whitespace → not referenced; the line still names it (§6.2).
@@ -365,6 +371,13 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
 - **AC-030** *(review 20 B-1)* Until AC-028 shows that a pasted `#file:` or `@file:` becomes a reference, no text of the Studio
   (text modules, the settings table, README, CHANGELOG) shall promise a "reference": the Copy for texts of §7 shall say the
   file paths, each asserted literally, and the syntaxes `#file:<path>` and `@file:<path>` shall stay unchanged.
+- **AC-031** *(review 20 B-2)* While a Send to Claude Code runs in JetBrains, the control of the same line shall show
+  `aria-disabled="true"` and `aria-busy="true"` (not `disabled`, the focus stays), the label `Starting Claude Code…` and the
+  name `Starting Claude Code: <line>`, and a second click, also on the menu's Send items and on a second control for the
+  same line, shall send and type nothing, in the webview and in the Kotlin host (a second Send during the wait types
+  nothing and opens no tab); the answer shall end the wait with `Opened in Claude Code` or the warning. VS Code and every
+  other handover shall render and behave exactly as before, shown by deep-equal DOM tests and the guards
+  `renderedTexts` and `sharedGuard`.
 
 ## 12. Technical notes for developers or AI agents
 
@@ -455,3 +468,4 @@ Source: [docs/ux-audit/20-review-0035-g0.md](../../docs/ux-audit/20-review-0035-
 | Item | Change | Statements and texts touched | New criterion |
 | --- | --- | --- | --- |
 | B-1 | `references` becomes `paths` while AC-028 is not proven; the syntax stays | §6.2, §7 (setting description, option descriptions, name and tooltip, toggletip, log line); README, CHANGELOG | AC-030 |
+| B-2 | Wait state and double-click guard for Send to Claude Code, JetBrains only | §6.3 (new bullet *While it runs*), §7 (waiting texts), §10 (quick succession) | AC-031 |

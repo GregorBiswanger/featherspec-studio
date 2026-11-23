@@ -1,11 +1,12 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { KeyboardEvent } from 'react';
-import { attachesInTarget, type SendPromptPayload, type SendResultEventPayload, type SendView } from '../../shared/protocol/assistant';
-import { ASSISTANT_NAMES, copyForMainLabel, copyForMainName, MORE_ACTIONS_TITLE, moreActionsName, SEND_ITEM_TEXT, sendMainLabel, sendMainName, sendOpenedLabel, sendOpenedName } from '../../shared/protocol/assistantTexts';
+import { attachesInTarget, waitsForStart, type SendPromptPayload, type SendResultEventPayload, type SendView } from '../../shared/protocol/assistant';
+import { ASSISTANT_NAMES, copyForMainLabel, copyForMainName, MORE_ACTIONS_TITLE, moreActionsName, SEND_ITEM_TEXT, sendMainLabel, sendMainName, sendOpenedLabel, sendOpenedName, sendStartingLabel, sendStartingName } from '../../shared/protocol/assistantTexts';
 import { COPIED_LABEL, COPY_FAILED_LABEL, COPY_PROMPT_LABEL } from '../../shared/protocol/nextStepTexts';
 import { Glyph } from '../board/icons';
 import { FEEDBACK_MS, type CopyResult } from './CopyButton';
 import { closePopup, setPopup, useIsPopupOpen } from './popup';
+import { beginBusy, busyKey, endBusy, isBusy, subscribeBusy } from './sendBusy';
 
 function attachNamesOf(send: SendView): string | undefined {
     return send.attach === undefined ? undefined : [send.attach, ...(send.attachAlso ?? [])].map((file) => file.name).join(' and ');
@@ -46,6 +47,9 @@ export function SendButton(props: SendButtonProps) {
     const secondary = props.look === 'secondary';
     const name = ASSISTANT_NAMES[send.assistant];
     const copyFor = send.handover === 'copyFor';
+    const waits = waitsForStart(send);
+    const key = busyKey(send.assistant, line);
+    const busy = useSyncExternalStore(subscribeBusy, () => waits && isBusy(key));
     const arrowId = useId();
     const open = useIsPopupOpen(arrowId);
     const root = useRef<HTMLSpanElement>(null);
@@ -85,6 +89,7 @@ export function SendButton(props: SendButtonProps) {
 
     useEffect(() => {
         if (sendResult === undefined) {
+            pendingSend.current.forEach((_, token) => endBusy(token));
             pendingSend.current.clear();
             seenSend.current = undefined;
             stopTimer();
@@ -93,6 +98,7 @@ export function SendButton(props: SendButtonProps) {
         }
         if (sendResult !== seenSend.current) {
             seenSend.current = sendResult;
+            endBusy(sendResult.token);
             const own = pendingSend.current.get(sendResult.token);
             if (own !== undefined) {
                 pendingSend.current.delete(sendResult.token);
@@ -229,8 +235,14 @@ export function SendButton(props: SendButtonProps) {
     };
 
     const activateSend = (target: SendView['target'], fromMenu = false): void => {
+        if (busy) {
+            return;
+        }
         const token = nextToken();
         pendingSend.current.set(token, { line, name });
+        if (waits) {
+            beginBusy(token, key);
+        }
         if (fromMenu) {
             closeToArrow();
         }
@@ -243,11 +255,12 @@ export function SendButton(props: SendButtonProps) {
         props.onCopy(line);
     };
 
+    const startingName = sendStartingName(name, line);
     const idleName = copyFor ? copyForMainName(name, line, attachNamesOf(send)) : sendMainName(name, send.target, line, attachesInTarget(send.assistant, send.target) ? attachNamesOf(send) : undefined);
     return (
         <span ref={root} className="send-split next-step-copy" onKeyDown={onKeyDown}>
-            <button type="button" className={secondary ? 'copy-button copy-secondary send-main' : 'copy-button send-main'} aria-label={shown?.name ?? idleName} title={shown?.text ?? idleName} onClick={() => activateSend(send.target)}>
-                {shown?.label ?? (copyFor ? copyForMainLabel(name) : sendMainLabel(name))}
+            <button type="button" className={secondary ? 'copy-button copy-secondary send-main' : 'copy-button send-main'} aria-label={busy ? startingName : (shown?.name ?? idleName)} title={busy ? startingName : (shown?.text ?? idleName)} {...(busy ? { 'aria-disabled': true, 'aria-busy': true } : {})} onClick={() => activateSend(send.target)}>
+                {busy ? sendStartingLabel(name) : (shown?.label ?? (copyFor ? copyForMainLabel(name) : sendMainLabel(name)))}
             </button>
             <button ref={arrow} type="button" id={arrowId} className={secondary ? 'send-arrow send-arrow-secondary' : 'send-arrow'} aria-label={moreActionsName(line)} title={MORE_ACTIONS_TITLE} aria-haspopup="menu" aria-expanded={open} onClick={() => (open ? closeToArrow() : openMenu('first'))}>
                 <Glyph kind="chevronDown" />
@@ -255,7 +268,7 @@ export function SendButton(props: SendButtonProps) {
             {open ? (
                 <div ref={menu} role="menu" aria-labelledby={arrowId} className="send-menu">
                     {(copyFor ? [] : send.targets).map((target) => (
-                        <button key={target} type="button" role="menuitemradio" aria-checked={target === send.target} tabIndex={-1} onClick={() => activateSend(target, true)}>
+                        <button key={target} type="button" role="menuitemradio" aria-checked={target === send.target} tabIndex={-1} {...(busy ? { 'aria-disabled': true } : {})} onClick={() => activateSend(target, true)}>
                             <span className="send-check">{target === send.target ? <Glyph kind="check" /> : null}</span>
                             {SEND_ITEM_TEXT[target]}
                         </button>
@@ -267,7 +280,7 @@ export function SendButton(props: SendButtonProps) {
                 </div>
             ) : null}
             <span className="visually-hidden" role="status" aria-live="polite" aria-atomic="true">
-                {shown === undefined ? '' : shown.text}
+                {busy ? startingName : shown === undefined ? '' : shown.text}
             </span>
         </span>
     );
