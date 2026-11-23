@@ -138,6 +138,11 @@ handovers behave as in a trusted one, as VS Code's Send does in Restricted Mode 
   folder-trust dialog and the login prompt; the trust dialog may contain `Claude Code` too). Not ready, in an existing or in a
   new tab: the Studio types nothing, focuses the tab, copies the line and shows §7's waiting text instead of the general
   warning. Every other failure keeps 0024's warning.
+- **A missing `claude` (review 20 S-2, decided by Gregor, OP-003, AC-036):** the Send is not stopped beforehand, because the PATH of
+  the IDE process can differ from the terminal's (a `claude` installed after the IDE started, a PATH set in the shell profile).
+  Only after the 15 000 ms timeout the host looks for `claude`, `claude.exe` and `claude.cmd` in the PATH of the IDE process
+  (platform-free `ClaudeOnPath`); if none is there and Claude Code is not running in the tab, the failure is *not installed* and
+  §7's text replaces the general warning. A `claude` that runs (a dialog waits) is never reported as missing.
 - **Typing:** the text of §6.2 as one bracketed paste into the terminal's input; never a line break, carriage return or
   Enter; then the tab gets the focus. A line that holds a control character is not typed (fallback). The clipboard is left
   alone. A draft already in Claude Code's input stays; the paste lands at its cursor (proxy, OP-007).
@@ -225,7 +230,8 @@ VS Code texts are unchanged. JetBrains reuses 0024's and 0027's texts for Send t
 | Toggletip, Copy for offered | `Copy for <Name> copies the prompt with the file paths and sends nothing: paste it into <place>, choose the model there, check the prompt, then send it.` (for `Junie in AI Chat`, *amended 2026-11-23, review 20 S-4*: `…paste it into AI Chat with Junie as the agent, choose the model there…`, because AI Chat opens with its recommended agent, since June 2026 Codex) |
 | Send to Claude Code, waiting (JetBrains only) | label `Starting Claude Code…`; name, tooltip and announced `Starting Claude Code: <line>`; the answer then shows `Opened in Claude Code` or the warning as before |
 | Send to Claude Code, waiting for an answer | warning, announced text and tooltip: `Claude Code is waiting for you in the terminal. Answer it there, then send again. The prompt is copied.` (the general warning of 0024 stays for every other failure) |
-| Log causes (Claude Code) | `the Terminal plugin is not available` · `Claude Code was not ready within 15000 ms` · `Claude Code was not ready for input` · `terminal call failed: <message>` · `no result within 20000 ms` |
+| Send to Claude Code, not installed | warning, announced text and tooltip: `Claude Code did not start. Is the claude command installed? The prompt is copied.` |
+| Log causes (Claude Code) | `the Terminal plugin is not available` · `Claude Code was not ready within 15000 ms` · `Claude Code was not ready for input` · `the claude command was not found on the PATH` · `terminal call failed: <message>` · `no result within 20000 ms` |
 
 `<key>` is `Cmd+V` on macOS, else `Ctrl+V` (0024 §6.5).
 
@@ -244,6 +250,7 @@ Setting and plugin changes within 500 ms (§6.5); Claude Code readiness bounded 
 ## 10. Error cases and edge cases
 
 - `claude` not on the PATH, a login or a folder-trust prompt of Claude Code on start → readiness not reached → fallback.
+  *Amended 2026-11-23 (review 20 S-2, §16):* a `claude` that is not on the IDE's PATH is told after the timeout with §7's own text.
   *Amended 2026-11-23 (review 20 B-4, §16):* the tab is focused and §7's waiting text replaces the general warning; the next
   Send finds a prompt waiting in an existing tab as well and types nothing until it is answered (AC-032).
 - Claude Code busy with a turn → the paste lands in its input; nothing is sent (Claude Code queues it until Enter).
@@ -412,6 +419,12 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
   the menu shall list both targets in the order current, new; this shall hold in the detail, the first Now row and the
   follow-up lines; the welcome and the empty state shall keep the current chat, and in VS Code every view shall stay
   deep-equal.
+- **AC-036** *(review 20 S-2)* If Claude Code is not ready after 15 000 ms in a new tab, the claude process is not running in it and none of
+  `claude`, `claude.exe` and `claude.cmd` is in a directory of the IDE process's PATH, then the host shall type nothing, focus the
+  tab and fail the send as *not installed*; the core shall copy the line, show `Claude Code did not start. Is the claude command installed? The prompt is copied.`
+  once instead of 0024's warning and write one log line with the cause `the claude command was not found on the PATH` and without
+  the prompt. The PATH shall not be read before the timeout, a `claude` found on the PATH or running in the tab shall keep the
+  waiting text, and the search shall be platform-free and tested with fake directories.
 
 ## 12. Technical notes for developers or AI agents
 
@@ -508,3 +521,4 @@ S-6; S-7 is only prepared (below). The budget rule is PD-111 and not part of thi
 | B-3 | PD-110 (Gregor, 2026-11-23): in JetBrains a click on Send to Claude Code may start `claude` in a terminal tab; the Studio sends nothing. The README promise follows | README (intro, *Local and read-only*, Privacy), CHANGELOG | AC-033 |
 | S-4 | Copy for Junie tells to choose Junie in AI Chat (AI Chat starts with its recommended agent, Codex) | §7 (done texts, toggletip), README, CHANGELOG | AC-034 |
 | S-1 | The main part of Send to Claude Code follows the session of the step's tip (OP-004, decided by Gregor); the menu offers both | §6.1, §6.3, §14 OP-004, README | AC-035 |
+| S-2 | A missing `claude` is told after the timeout, by its own text (OP-003, decided by Gregor); no early abort | §6.3 (new bullet), §7 (text, log cause), §10, §14 OP-003, README | AC-036 |

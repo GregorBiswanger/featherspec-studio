@@ -23,7 +23,7 @@ import { createBridge } from './bridge';
 import type { CoreConfig, NativeHost } from './contract';
 import { createJetBrainsAssistants, JETBRAINS_SEND_TARGETS } from './assistants';
 import { createMirrors } from './mirrors';
-import { CLAUDE_NOT_READY_NOW_CAUSE, CLAUDE_WAITING_TEXT } from '../../shared/protocol/assistantTexts';
+import { CLAUDE_NOT_INSTALLED_CAUSE, CLAUDE_NOT_INSTALLED_TEXT, CLAUDE_NOT_READY_NOW_CAUSE, CLAUDE_WAITING_TEXT } from '../../shared/protocol/assistantTexts';
 import { createEmbeddedPorts } from './ports';
 
 const GH = 'com.github.copilot';
@@ -289,10 +289,10 @@ describe('0035 amendment 2026-11-23 / AC-032: Claude Code waits for an answer in
 
     it('AC-032 the markers of the host are told apart in one place: both not-ready causes are waiting, nothing else is', () => {
         const row = createJetBrainsAssistants(() => [TERMINAL]).claudeCode!;
-        expect(row.causes?.waiting?.('Claude Code was not ready within 15000 ms')).toBe(true);
-        expect(row.causes?.waiting?.('Claude Code was not ready for input')).toBe(true);
+        expect(row.causes?.notice?.('Claude Code was not ready within 15000 ms')).toBe(WAITING);
+        expect(row.causes?.notice?.('Claude Code was not ready for input')).toBe(WAITING);
         for (const other of ['the tab closed', 'the terminal has no shell integration', 'Claude Code was not ready within 5000 ms', 'a Send to Claude Code is still starting', '']) {
-            expect(row.causes?.waiting?.(other), other).toBe(false);
+            expect(row.causes?.notice?.(other), other).toBeUndefined();
         }
         expect(row.causes?.failed('Claude Code was not ready for input')).toBe('Claude Code was not ready for input');
     });
@@ -426,5 +426,55 @@ describe('0035 T-007 / AC-011, AC-023: the JetBrains router takes the current ch
             await instance.receive({ ...request, payload });
         }
         expect(handled).toEqual([]);
+    });
+});
+
+describe('0035 review 20 S-2 / AC-036: after the timeout a missing claude command is told by its own text', () => {
+    const NOT_FOUND = 'the claude command was not found on the PATH';
+    const TEXT = 'Claude Code did not start. Is the claude command installed? The prompt is copied.';
+    const GENERAL = "Could not open Claude Code's chat. The prompt is copied: paste it there with Ctrl+V.";
+
+    it('AC-036 the texts of section 7 are literal, in one text module', () => {
+        expect(CLAUDE_NOT_INSTALLED_TEXT).toBe(TEXT);
+        expect(CLAUDE_NOT_INSTALLED_CAUSE).toBe(NOT_FOUND);
+    });
+
+    it('AC-036 the host reports the missing command: the prompt is copied, the one warning is the own text, the log names the cause and not the prompt', async () => {
+        const world = rig([TERMINAL], 'claudeCode');
+        world.answers.set('assistant.claudeTerminal', () => ({ error: NOT_FOUND }));
+        const result = await world.wiring.send.send({ assistant: 'claudeCode', target: 'new', line: LINE });
+        expect(result).toEqual<SendOutcomeView>({ outcome: 'copied', text: TEXT });
+        expect(world.written).toEqual([LINE]);
+        expect(world.warned).toEqual([TEXT]);
+        expect(world.blocks).toEqual([[`Send to Claude Code failed (${NOT_FOUND}); the prompt was copied instead.`]]);
+        expect(JSON.stringify(world.blocks)).not.toContain(LINE);
+    });
+
+    it('AC-036 a prompt that could not be copied is not announced as copied', async () => {
+        const world = rig([TERMINAL], 'claudeCode', true);
+        world.answers.set('assistant.claudeTerminal', () => ({ error: NOT_FOUND }));
+        const result = await world.wiring.send.send({ assistant: 'claudeCode', target: 'new', line: LINE });
+        expect(result.outcome).toBe('copyFailed');
+        expect(world.warned).toEqual(["Could not open Claude Code's chat, and the prompt could not be copied."]);
+    });
+
+    it('AC-036 the waiting text and the general warning keep their cases', async () => {
+        const waiting = rig([TERMINAL], 'claudeCode');
+        waiting.answers.set('assistant.claudeTerminal', () => ({ error: 'Claude Code was not ready within 15000 ms' }));
+        await waiting.wiring.send.send({ assistant: 'claudeCode', target: 'new', line: LINE });
+        expect(waiting.warned).toEqual([CLAUDE_WAITING_TEXT]);
+        const failing = rig([TERMINAL], 'claudeCode');
+        failing.answers.set('assistant.claudeTerminal', () => ({ error: 'the tab closed' }));
+        await failing.wiring.send.send({ assistant: 'claudeCode', target: 'new', line: LINE });
+        expect(failing.warned).toEqual([GENERAL]);
+    });
+
+    it('AC-036 negative control: the cause alone is told apart from every other message', () => {
+        const row = createJetBrainsAssistants(() => [TERMINAL]).claudeCode!;
+        expect(row.causes?.notice?.(NOT_FOUND)).toBe(TEXT);
+        expect(row.causes?.failed(NOT_FOUND)).toBe(NOT_FOUND);
+        for (const other of ['the claude command was not found', 'the claude command was not found on the PATH.', 'terminal call failed: x']) {
+            expect(row.causes?.notice?.(other), other).toBeUndefined();
+        }
     });
 });

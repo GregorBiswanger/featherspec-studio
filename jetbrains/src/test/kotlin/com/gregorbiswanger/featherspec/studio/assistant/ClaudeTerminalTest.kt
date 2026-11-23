@@ -531,4 +531,84 @@ class ClaudeTerminalTest {
         assertTrue(ClaudeSender.TOTAL_BUDGET_MS < 20_000L)
         assertTrue(ClaudeSender.SHELL_WAIT_MS + ClaudeReadiness.READY_BUDGET_MS < ClaudeSender.TOTAL_BUDGET_MS)
     }
+
+    private fun senderWith(fake: Fake, onPath: () -> Boolean = { true }, lastTyped: LastTyped = LastTyped()) =
+        ClaudeSender(fake, { root }, false, lastTyped, { fake.clock }, { fake.clock += it }, SendGate(), onPath)
+
+    private fun fileSystem(vararg present: String): (String, String) -> Boolean = { directory, name -> "${directory.trimEnd('/')}/$name" in present }
+
+    @Test
+    fun `AC-036 the PATH of the IDE is searched for claude, claude exe and claude cmd, in every directory`() {
+        assertEquals(listOf("claude", "claude.exe", "claude.cmd"), ClaudeOnPath.NAMES)
+        for (name in ClaudeOnPath.NAMES) {
+            assertTrue(ClaudeOnPath.found("/usr/bin:/opt/tools", ':', fileSystem("/opt/tools/$name")), name)
+            assertTrue(ClaudeOnPath.found("C:\\Windows;C:\\Tools", ';', fileSystem("C:\\Tools/$name")), name)
+        }
+        assertTrue(ClaudeOnPath.found("/first:/second", ':', fileSystem("/first/claude", "/second/claude.cmd")))
+    }
+
+    @Test
+    fun `AC-036 no claude on the PATH, an empty PATH, blank entries and a file of another name are not found`() {
+        assertFalse(ClaudeOnPath.found("/usr/bin:/opt/tools", ':', fileSystem("/usr/bin/claudex", "/opt/tools/claude-code", "/opt/tools/Claude.txt")))
+        assertFalse(ClaudeOnPath.found(null, ':', fileSystem("/claude")))
+        assertFalse(ClaudeOnPath.found("", ':', fileSystem("/claude")))
+        assertFalse(ClaudeOnPath.found(" : :: ", ':', fileSystem("/claude", "/ /claude")))
+        assertFalse(ClaudeOnPath.found("/usr/bin", ':', fileSystem()))
+    }
+
+    @Test
+    fun `AC-036 quoted Windows entries and a trailing separator are read as directories`() {
+        assertTrue(ClaudeOnPath.found("\"C:\\Program Files\\Claude\";C:\\bin;", ';', fileSystem("C:\\Program Files\\Claude/claude.exe")))
+        assertTrue(ClaudeOnPath.found("/usr/bin:/opt/tools/", ':', fileSystem("/opt/tools/claude")))
+    }
+
+    @Test
+    fun `AC-036 the PATH check runs only after the timeout, never before, and the message is the cause of the spec`() {
+        val fake = Fake()
+        fake.boxAtMs = Long.MAX_VALUE / 4
+        fake.claudeStartedAtMs = Long.MAX_VALUE / 4
+        var asked = -1L
+        val thrown = assertThrows(ClaudeNotInstalled::class.java) { senderWith(fake, onPath = { asked = fake.clock; false }).send(ClaudeRequest(ClaudeTarget.NEW, line)) }
+        assertEquals("the claude command was not found on the PATH", thrown.message)
+        assertEquals("the claude command was not found on the PATH", ClaudeReadiness.notInstalledMessage())
+        assertTrue(asked >= ClaudeReadiness.READY_BUDGET_MS, asked.toString())
+        assertEquals(emptyList<Pair<Any, String>>(), fake.pasted)
+        assertEquals(listOf("open", "run", "focus"), fake.calls)
+    }
+
+    @Test
+    fun `AC-036 no PATH check while Claude Code starts in time, in a new tab or in an existing one`() {
+        var asked = 0
+        val fresh = Fake()
+        senderWith(fresh, onPath = { asked += 1; false }).send(ClaudeRequest(ClaudeTarget.NEW, line))
+        assertEquals(listOf("new-tab" to line), fresh.pasted)
+        val existing = Fake()
+        existing.existing.add(tab("claude-tab"))
+        senderWith(existing, onPath = { asked += 1; false }).send(ClaudeRequest(ClaudeTarget.CURRENT, line))
+        existing.screens["claude-tab"] = Screen(true, trustDialog)
+        assertThrows(ClaudeNotReady::class.java) { senderWith(existing, onPath = { asked += 1; false }).send(ClaudeRequest(ClaudeTarget.CURRENT, line)) }
+        assertEquals(0, asked)
+    }
+
+    @Test
+    fun `AC-036 claude found on the PATH, or running although the PATH of the IDE lacks it, is not reported as not installed`() {
+        val onPath = Fake()
+        onPath.boxAtMs = Long.MAX_VALUE / 4
+        val general = assertThrows(ClaudeNotReady::class.java) { senderWith(onPath, onPath = { true }).send(ClaudeRequest(ClaudeTarget.NEW, line)) }
+        assertEquals("Claude Code was not ready within 15000 ms", general.message)
+        val running = Fake()
+        running.boxAtMs = Long.MAX_VALUE / 4
+        running.screens["new-tab"] = Screen(true, trustDialog)
+        val waiting = assertThrows(ClaudeNotReady::class.java) { senderWith(running, onPath = { false }).send(ClaudeRequest(ClaudeTarget.NEW, line)) }
+        assertEquals("Claude Code was not ready within 15000 ms", waiting.message)
+    }
+
+    @Test
+    fun `AC-036 the reason is not installed only when claude is not running and the PATH has none, after the whole timeout`() {
+        val fake = Fake()
+        fake.boxAtMs = Long.MAX_VALUE / 4
+        fake.claudeStartedAtMs = Long.MAX_VALUE / 4
+        assertThrows(ClaudeNotInstalled::class.java) { senderWith(fake, onPath = { false }).send(ClaudeRequest(ClaudeTarget.NEW, line)) }
+        assertTrue(fake.clock >= ClaudeReadiness.READY_BUDGET_MS, fake.clock.toString())
+    }
 }

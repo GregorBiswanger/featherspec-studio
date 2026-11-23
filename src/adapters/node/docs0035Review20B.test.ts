@@ -49,6 +49,16 @@ describe('0035 review 20 S-4 / AC-034: README and CHANGELOG tell to choose Junie
     });
 });
 
+describe('0035 review 20 S-2 / AC-036: README and CHANGELOG say what a missing claude shows', () => {
+    it('AC-036 the README section and the CHANGELOG carry the own text', async () => {
+        const [readme, changelog] = await Promise.all([read('README.md'), read('CHANGELOG.md')]);
+        for (const text of [readme, changelog]) {
+            expect(text).toContain('Claude Code did not start. Is the claude command installed? The prompt is copied.');
+        }
+        expect(readme).toContain('(`claude`, `claude.exe` or `claude.cmd`)');
+    });
+});
+
 describe('0035 review 20 S-1 / AC-035: README and CHANGELOG say what the main part does', () => {
     it('AC-035 the README section and the CHANGELOG say that the main part follows the Tip', async () => {
         const [readme, changelog] = await Promise.all([read('README.md'), read('CHANGELOG.md')]);

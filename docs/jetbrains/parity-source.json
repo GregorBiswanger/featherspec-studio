@@ -1670,6 +1670,10 @@
                 "AC-035": {
                     "category": "deliberately different",
                     "reference": "PD-108 (review 20 S-1: the main target of Send to Claude Code in the IDE terminal follows the tip's session; VS Code has one target)"
+                },
+                "AC-036": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (review 20 S-2: the not-installed text of Send to Claude Code in the IDE terminal exists only in JetBrains)"
                 }
             }
         }

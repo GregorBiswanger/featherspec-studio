@@ -3,6 +3,9 @@ package com.gregorbiswanger.featherspec.studio.assistant
 import com.google.gson.JsonParser
 import com.gregorbiswanger.featherspec.studio.ports.FileUris
 import java.lang.ref.WeakReference
+import java.nio.file.Files
+import java.nio.file.InvalidPathException
+import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicBoolean
 
 data class TerminalTab(
@@ -86,6 +89,8 @@ object ClaudeReadiness {
 
     fun waitingMessage(): String = "Claude Code was not ready for input"
 
+    fun notInstalledMessage(): String = "the claude command was not found on the PATH"
+
     fun hasInputBox(text: String): Boolean {
         val input = lastIndexOfAny(text, INPUT_MARKERS)
         return input >= 0 && input > lastIndexOfAny(text, WAITING_MARKERS)
@@ -118,6 +123,28 @@ object ClaudeReadiness {
 }
 
 class ClaudeNotReady(message: String = ClaudeReadiness.notReadyMessage()) : IllegalStateException(message)
+
+class ClaudeNotInstalled : IllegalStateException(ClaudeReadiness.notInstalledMessage())
+
+object ClaudeOnPath {
+    val NAMES: List<String> = listOf("claude", "claude.exe", "claude.cmd")
+
+    fun found(path: String?, separator: Char, exists: (String, String) -> Boolean): Boolean {
+        if (path.isNullOrBlank()) {
+            return false
+        }
+        val directories = path.split(separator).map { it.trim().removeSurrounding("\"") }.filter { it.isNotBlank() }
+        return directories.any { directory -> NAMES.any { name -> exists(directory, name) } }
+    }
+
+    fun existsOnDisk(directory: String, name: String): Boolean = try {
+        Files.isRegularFile(Paths.get(directory, name))
+    } catch (failure: InvalidPathException) {
+        false
+    } catch (failure: SecurityException) {
+        false
+    }
+}
 
 object ActiveRoot {
     const val MEMORY_KEY = "featherspec-studio.activeProject"
@@ -173,6 +200,7 @@ class ClaudeSender(
     private val clock: () -> Long,
     private val sleep: (Long) -> Unit,
     private val gate: SendGate = SendGate(),
+    private val onPath: () -> Boolean = { true },
 ) {
     fun send(request: ClaudeRequest) {
         require(!AssistantRequests.hasControlCharacter(request.text)) { "the text holds a control character" }
@@ -214,9 +242,18 @@ class ClaudeSender(
         val budget = minOf(ClaudeReadiness.READY_BUDGET_MS, deadline - clock())
         if (budget <= 0 || !ClaudeReadiness.await(budget, clock, sleep) { access.screen(key) }) {
             focusQuietly(key)
+            if (!isRunning(key) && !onPath()) {
+                throw ClaudeNotInstalled()
+            }
             throw ClaudeNotReady()
         }
         return key
+    }
+
+    private fun isRunning(key: Any): Boolean = try {
+        access.screen(key)?.claudeRunning == true
+    } catch (failure: RuntimeException) {
+        false
     }
 
     private fun requireInputBox(key: Any) {

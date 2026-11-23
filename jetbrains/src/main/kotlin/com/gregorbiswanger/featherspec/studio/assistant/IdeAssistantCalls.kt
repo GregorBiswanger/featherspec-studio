@@ -6,6 +6,7 @@ import com.gregorbiswanger.featherspec.studio.ports.PluginIds
 import com.gregorbiswanger.featherspec.studio.ports.UiMemoryState
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
+import java.io.File
 
 class IdeAssistantCalls(private val project: Project) : AssistantCalls {
     private val lastTyped = LastTyped()
@@ -38,6 +39,7 @@ class IdeAssistantCalls(private val project: Project) : AssistantCalls {
         clock = { System.nanoTime() / NANOS_PER_MILLI },
         sleep = { Thread.sleep(it) },
         gate = gate,
+        onPath = { ClaudeOnPath.found(System.getenv("PATH"), File.pathSeparatorChar, ClaudeOnPath::existsOnDisk) },
     )
 
     private fun root(): String? {

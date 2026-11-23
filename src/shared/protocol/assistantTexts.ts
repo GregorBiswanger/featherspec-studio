@@ -144,6 +144,10 @@ export const CLAUDE_WAITING_TEXT = 'Claude Code is waiting for you in the termin
 
 export const CLAUDE_NOT_READY_NOW_CAUSE = 'Claude Code was not ready for input';
 
+export const CLAUDE_NOT_INSTALLED_TEXT = 'Claude Code did not start. Is the claude command installed? The prompt is copied.';
+
+export const CLAUDE_NOT_INSTALLED_CAUSE = 'the claude command was not found on the PATH';
+
 export const TERMINAL_UNAVAILABLE_CAUSE = 'the Terminal plugin is not available';
 
 export function claudeNotReadyCause(milliseconds: number): string {
