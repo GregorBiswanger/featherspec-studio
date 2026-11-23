@@ -123,11 +123,18 @@ handovers behave as in a trusted one, as VS Code's Send does in Restricted Mode 
   project's root (compared as the file system compares names), so that its `@` paths resolve. With several, the one the
   Studio typed into last, else the first in tab order. A tab without shell integration, whose `claude` has ended, or whose
   `claude` runs in another folder is no Claude terminal (proxy, OP-005).
-- **Current chat (main part):** a Claude terminal exists → type into it. None exists → as *new chat*.
+- **Current chat (main part):** a Claude terminal exists → type into it, *if Claude Code is ready for input on the current
+  screen* (*Amended 2026-11-23, review 20 B-4, §16, AC-032*). None exists → as *new chat*.
 - **New chat:** open a new terminal tab named `Claude Code` whose working directory is the active FeatherSpec project's
   root, run
   `claude` there, and wait until Claude Code is ready for input (readiness signal decided by spike K-1, A-005); then type.
   Not ready within 15 000 ms → fallback; the Studio types nothing afterwards (proxy, OP-006).
+- **Waiting for an answer (review 20 B-4, §16, AC-032):** *ready* means the visible text of the tab shows an input marker and
+  no waiting marker after it. The markers are two named lists in the platform-free `ClaudeReadiness`
+  (`INPUT_MARKERS`, `WAITING_MARKERS`; **K-1 pending**: provisional until the K-1 probe has seen the real input box, the
+  folder-trust dialog and the login prompt; the trust dialog may contain `Claude Code` too). Not ready, in an existing or in a
+  new tab: the Studio types nothing, focuses the tab, copies the line and shows §7's waiting text instead of the general
+  warning. Every other failure keeps 0024's warning.
 - **Typing:** the text of §6.2 as one bracketed paste into the terminal's input; never a line break, carriage return or
   Enter; then the tab gets the focus. A line that holds a control character is not typed (fallback). The clipboard is left
   alone. A draft already in Claude Code's input stays; the paste lands at its cursor (proxy, OP-007).
@@ -214,7 +221,8 @@ VS Code texts are unchanged. JetBrains reuses 0024's and 0027's texts for Send t
 | Copy for, log, file left out | `Copy for <Name>: <path> was not found, so its path was left out.` |
 | Toggletip, Copy for offered | `Copy for <Name> copies the prompt with the file paths and sends nothing: paste it into <place>, choose the model there, check the prompt, then send it.` |
 | Send to Claude Code, waiting (JetBrains only) | label `Starting Claude Code…`; name, tooltip and announced `Starting Claude Code: <line>`; the answer then shows `Opened in Claude Code` or the warning as before |
-| Log causes (Claude Code) | `the Terminal plugin is not available` · `Claude Code was not ready within 15000 ms` · `terminal call failed: <message>` · `no result within 20000 ms` |
+| Send to Claude Code, waiting for an answer | warning, announced text and tooltip: `Claude Code is waiting for you in the terminal. Answer it there, then send again. The prompt is copied.` (the general warning of 0024 stays for every other failure) |
+| Log causes (Claude Code) | `the Terminal plugin is not available` · `Claude Code was not ready within 15000 ms` · `Claude Code was not ready for input` · `terminal call failed: <message>` · `no result within 20000 ms` |
 
 `<key>` is `Cmd+V` on macOS, else `Ctrl+V` (0024 §6.5).
 
@@ -233,6 +241,8 @@ Setting and plugin changes within 500 ms (§6.5); Claude Code readiness bounded 
 ## 10. Error cases and edge cases
 
 - `claude` not on the PATH, a login or a folder-trust prompt of Claude Code on start → readiness not reached → fallback.
+  *Amended 2026-11-23 (review 20 B-4, §16):* the tab is focused and §7's waiting text replaces the general warning; the next
+  Send finds a prompt waiting in an existing tab as well and types nothing until it is answered (AC-032).
 - Claude Code busy with a turn → the paste lands in its input; nothing is sent (Claude Code queues it until Enter).
 - The Claude terminal closes between check and typing → the call fails → fallback; nothing goes to another tab.
 - Two Sends in quick succession → one after the other, as 0024 (the core queues them). *Amended 2026-11-23 (review 20 B-2,
@@ -305,7 +315,8 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
   type the text of AC-011 only after Claude Code is ready for input (§6.3).
 - **AC-013** If the Terminal plugin is unavailable, a terminal call fails, Claude Code is not ready within 15 000 ms, or the
   Send has no result within 20 000 ms, then the host shall type nothing into any terminal, also after a late result, copy
-  the line alone, show 0024's warning once and write one log line with §7's cause and without the prompt.
+  the line alone, show 0024's warning once and write one log line with §7's cause and without the prompt. *Amended
+  2026-11-23 (review 20 B-4, §16): "not ready" shows §7's waiting text instead of 0024's warning (AC-032).*
 - **AC-014** The host shall never write a line break, a carriage return or an Enter key to a terminal it types a prompt
   into, and shall type no line that contains a control character; such a line shall take the fallback of AC-013.
 - **AC-015** For terminal tabs given as fakes, the Claude terminal shall be the tab whose running command reported by
@@ -378,6 +389,13 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
   nothing and opens no tab); the answer shall end the wait with `Opened in Claude Code` or the warning. VS Code and every
   other handover shall render and behave exactly as before, shown by deep-equal DOM tests and the guards
   `renderedTexts` and `sharedGuard`.
+- **AC-032** *(review 20 B-4)* If Claude Code is not ready for input when a Send to Claude Code would type — in an existing
+  Claude terminal at the check on its current screen, or in a new tab within 15 000 ms, for instance at the folder-trust
+  dialog or the login prompt — then the host shall type nothing, focus that tab and fail the send as *waiting*; the core
+  shall copy the line, show `Claude Code is waiting for you in the terminal. Answer it there, then send again. The prompt is copied.`
+  once instead of 0024's warning, and write one log line with the cause and without the prompt; every other failure shall
+  keep 0024's warning. The readiness check shall sit in the platform-free `ClaudeReadiness`, its markers shall be named
+  constants marked *K-1 pending*, and a dialog left in the scrollback above a later input box shall not count as waiting.
 
 ## 12. Technical notes for developers or AI agents
 
@@ -407,7 +425,7 @@ As-is at `aa0fe9b` (digest from the code):
 | A-002 | A pasted `#file:<path>` is useful to Copilot in JetBrains (a reference, or at least a path it reads) | VS Code Copilot's syntax; Copilot's agent reads named paths; JetBrains docs name no syntax | references become plain text; AC-028 records it and `copilotCopyText` changes in one place |
 | A-003 | A pasted `@file:<path>` is a file reference in AI Chat with Junie | AI Assistant 2026.2 docs: "To reference a file, use `@file:file_name`"; Junie: "Use `@` … to attach files" | the path stays plain text; `junieCopyText` changes in one place (AC-028) |
 | A-004 | Spike J-1 gives branch A or B, so form A stays | 18 §8 E-2 expects loaders to work; J-1 not run yet | form C: one constant changes, AC-018 already covers it |
-| A-005 | Claude Code's readiness for input can be detected from the terminal within 15 s | Claude Code shows its input box after start; spike K-1 measures the time and picks the signal | new tabs always fall back to copy; only an existing Claude terminal gets a real Send |
+| A-005 | Claude Code's readiness for input can be detected from the terminal within 15 s | Claude Code shows its input box after start; spike K-1 measures the time and picks the signal | new tabs always fall back to copy; since 2026-11-23 (AC-032) an existing Claude terminal needs the signal too, so wrong provisional markers (**K-1 pending**) turn every Send to Claude Code into copy plus the waiting text until K-1's values replace them |
 | A-006 | The documented Reworked Terminal API stays usable from 2025.3.1 to the latest release | public since 2025.3, default engine since 2025.2; the Verifier runs on both ends | it is experimental: a change breaks only Send to Claude Code, which falls back (AC-013) |
 | A-007 | "Installed and enabled" can be asked through non-internal API | `isPluginInstalled` documented; the Verifier checks the enabled check | AC-003's enabled half needs another documented API; K-1 records it |
 | A-008 | The tool windows can be found by ID: GitHub Copilot Chat, AI Chat, Junie | the IDs are not documented; probe K-1 lists the real IDs in Rider | a missing ID only gives `Open <place> and paste …` (AC-019) |
@@ -469,3 +487,4 @@ Source: [docs/ux-audit/20-review-0035-g0.md](../../docs/ux-audit/20-review-0035-
 | --- | --- | --- | --- |
 | B-1 | `references` becomes `paths` while AC-028 is not proven; the syntax stays | §6.2, §7 (setting description, option descriptions, name and tooltip, toggletip, log line); README, CHANGELOG | AC-030 |
 | B-2 | Wait state and double-click guard for Send to Claude Code, JetBrains only | §6.3 (new bullet *While it runs*), §7 (waiting texts), §10 (quick succession) | AC-031 |
+| B-4 | Claude Code waits for an answer (trust, login): readiness check also in an existing terminal, own waiting text, markers provisional | §6.3 (new bullet), §7 (waiting text, log cause), §10 (first bullet), AC-013 | AC-032 |

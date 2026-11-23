@@ -31,6 +31,7 @@ class ClaudeTerminalTest {
         var failFocus = false
         var runClaudeAt = -1L
         val roots = ArrayList<String>()
+        val screens = HashMap<Any, Screen?>()
 
         override fun tabs(): List<TerminalTab> {
             calls.add("tabs")
@@ -53,7 +54,13 @@ class ClaudeTerminalTest {
         }
 
         override fun screen(key: Any): Screen? {
-            if (key != opened || runClaudeAt < 0) {
+            if (screens.containsKey(key)) {
+                return screens[key]
+            }
+            if (key != opened) {
+                return Screen(true, box)
+            }
+            if (runClaudeAt < 0) {
                 return Screen(false, "")
             }
             val since = clock - runClaudeAt
@@ -140,6 +147,102 @@ class ClaudeTerminalTest {
         val tabs = listOf(tab("a", cwd = "C:\\Projects\\Test"))
         assertEquals("a", ClaudeTabs.choose(tabs, "c:/projects/test", null, true)?.key)
         assertNull(ClaudeTabs.choose(tabs, "c:/projects/test", null, false))
+    }
+
+    private val trustDialog = "Welcome to Claude Code\n\nDo you trust the files in this folder?\n  1. Yes, proceed\n  2. No, exit\n\nEnter to confirm \u00b7 Esc to cancel"
+    private val loginDialog = "Welcome to Claude Code\nSelect login method:\n  1. Claude account\n  2. Anthropic Console"
+
+    @Test
+    fun `AC-032 the markers are named constants of one place, so that K-1 can replace them`() {
+        assertTrue(ClaudeReadiness.INPUT_MARKERS.isNotEmpty())
+        assertTrue(ClaudeReadiness.WAITING_MARKERS.isNotEmpty())
+        for (marker in ClaudeReadiness.INPUT_MARKERS) {
+            assertTrue(ClaudeReadiness.hasInputBox("x\n$marker"), marker)
+            assertFalse(ClaudeReadiness.hasInputBox("$marker\n$trustDialog"), marker)
+        }
+        for (marker in ClaudeReadiness.WAITING_MARKERS) {
+            assertFalse(ClaudeReadiness.hasInputBox("$box\n$marker"), marker)
+            assertTrue(ClaudeReadiness.hasInputBox("$marker\n$box"), marker)
+        }
+        assertEquals("K-1 pending", ClaudeReadiness.MARKERS_STATUS)
+    }
+
+    @Test
+    fun `AC-032 a trust dialog or a login prompt is not an input box, also when it holds the words Claude Code`() {
+        assertFalse(ClaudeReadiness.hasInputBox(trustDialog))
+        assertFalse(ClaudeReadiness.hasInputBox(loginDialog))
+        assertFalse(ClaudeReadiness.hasInputBox("$box\n$trustDialog"))
+    }
+
+    @Test
+    fun `AC-032 an answered dialog that stays in the scrollback does not hide the input box below it`() {
+        assertTrue(ClaudeReadiness.hasInputBox("$trustDialog\n$box"))
+        assertTrue(ClaudeReadiness.hasInputBox("$loginDialog\nLogged in\n$box"))
+    }
+
+    @Test
+    fun `AC-032 the waiting message is the cause of the spec`() {
+        assertEquals("Claude Code was not ready for input", ClaudeReadiness.waitingMessage())
+        assertEquals("Claude Code was not ready for input", ClaudeNotReady(ClaudeReadiness.waitingMessage()).message)
+    }
+
+    @Test
+    fun `AC-032 an existing Claude terminal that waits for an answer gets nothing pasted, is focused and the send fails as waiting`() {
+        for (screen in listOf(Screen(true, trustDialog), Screen(true, loginDialog), Screen(true, ""), Screen(false, box), null)) {
+            val fake = Fake()
+            fake.existing.add(tab("claude-tab"))
+            fake.screens["claude-tab"] = screen
+            val thrown = assertThrows(ClaudeNotReady::class.java) { sender(fake).send(ClaudeRequest(ClaudeTarget.CURRENT, line)) }
+            assertEquals("Claude Code was not ready for input", thrown.message)
+            assertEquals(emptyList<Pair<Any, String>>(), fake.pasted)
+            assertEquals(listOf("tabs", "focus"), fake.calls, screen.toString())
+        }
+    }
+
+    @Test
+    fun `AC-032 a failing focus does not change the waiting answer`() {
+        val fake = Fake()
+        fake.existing.add(tab("claude-tab"))
+        fake.screens["claude-tab"] = Screen(true, trustDialog)
+        fake.failFocus = true
+        assertThrows(ClaudeNotReady::class.java) { sender(fake).send(ClaudeRequest(ClaudeTarget.CURRENT, line)) }
+        assertEquals(emptyList<Pair<Any, String>>(), fake.pasted)
+    }
+
+    @Test
+    fun `AC-032 an existing Claude terminal at the input box still gets the text, and the check does not wait for a quiet second`() {
+        val fake = Fake()
+        fake.existing.add(tab("claude-tab"))
+        fake.screens["claude-tab"] = Screen(true, box)
+        sender(fake).send(ClaudeRequest(ClaudeTarget.CURRENT, line))
+        assertEquals(listOf("claude-tab" to line), fake.pasted)
+        assertEquals(0L, fake.clock)
+    }
+
+    @Test
+    fun `AC-032 a new tab that shows the trust dialog is focused and nothing is typed, not now and not later`() {
+        val fake = Fake()
+        fake.boxAtMs = Long.MAX_VALUE / 4
+        fake.screens["new-tab"] = Screen(true, trustDialog)
+        val thrown = assertThrows(ClaudeNotReady::class.java) { sender(fake).send(ClaudeRequest(ClaudeTarget.NEW, line)) }
+        assertEquals("Claude Code was not ready within 15000 ms", thrown.message)
+        assertEquals(emptyList<Pair<Any, String>>(), fake.pasted)
+        assertEquals(listOf("open", "run", "focus"), fake.calls)
+        fake.clock += 60_000
+        assertFalse(fake.calls.contains("paste"))
+    }
+
+    @Test
+    fun `AC-032 the next Send after the developer answered finds the input box and types`() {
+        val fake = Fake()
+        fake.existing.add(tab("claude-tab"))
+        fake.screens["claude-tab"] = Screen(true, trustDialog)
+        val memory = LastTyped()
+        assertThrows(ClaudeNotReady::class.java) { sender(fake, memory).send(ClaudeRequest(ClaudeTarget.CURRENT, line)) }
+        assertEquals(null, memory.get())
+        fake.screens["claude-tab"] = Screen(true, trustDialog + "\n" + box)
+        sender(fake, memory).send(ClaudeRequest(ClaudeTarget.CURRENT, line))
+        assertEquals(listOf("claude-tab" to line), fake.pasted)
     }
 
     @Test
@@ -249,7 +352,7 @@ class ClaudeTerminalTest {
         fake.clock += 60_000
         assertEquals(emptyList<Pair<Any, String>>(), fake.pasted)
         assertFalse(fake.calls.contains("paste"))
-        assertFalse(fake.calls.contains("focus"))
+        assertEquals(listOf("open", "run", "focus"), fake.calls)
     }
 
     @Test

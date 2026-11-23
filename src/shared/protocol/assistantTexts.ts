@@ -133,6 +133,10 @@ export function copyForTipText(name: string, place: string): string {
     return `Copy for ${name} copies the prompt with the file paths and sends nothing: paste it into ${place}, choose the model there, check the prompt, then send it.`;
 }
 
+export const CLAUDE_WAITING_TEXT = 'Claude Code is waiting for you in the terminal. Answer it there, then send again. The prompt is copied.';
+
+export const CLAUDE_NOT_READY_NOW_CAUSE = 'Claude Code was not ready for input';
+
 export const TERMINAL_UNAVAILABLE_CAUSE = 'the Terminal plugin is not available';
 
 export function claudeNotReadyCause(milliseconds: number): string {

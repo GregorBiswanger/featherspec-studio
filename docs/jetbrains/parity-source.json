@@ -1654,6 +1654,10 @@
                 "AC-031": {
                     "category": "deliberately different",
                     "reference": "PD-108 (review 20 B-2: the wait state of Send to Claude Code exists only in JetBrains)"
+                },
+                "AC-032": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (review 20 B-4: the waiting check of Send to Claude Code in the IDE terminal exists only in JetBrains)"
                 }
             }
         }

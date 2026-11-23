@@ -69,11 +69,29 @@ object ClaudeReadiness {
     const val QUIET_MS = 1_000L
     const val POLL_MS = 100L
 
-    val MARKERS: List<String> = listOf("? for shortcuts", "\u2502 >", "shift+tab to cycle")
+    // K-1 pending: both marker lists are provisional until the K-1 probe has seen the real screens; replace them here only.
+    const val MARKERS_STATUS = "K-1 pending"
+
+    val INPUT_MARKERS: List<String> = listOf("? for shortcuts", "\u2502 >", "shift+tab to cycle")
+
+    val WAITING_MARKERS: List<String> = listOf(
+        "Do you trust the files in this folder",
+        "Yes, proceed",
+        "Enter to confirm",
+        "Select login method",
+        "Press Enter to continue",
+    )
 
     fun notReadyMessage(): String = "Claude Code was not ready within $READY_BUDGET_MS ms"
 
-    fun hasInputBox(text: String): Boolean = MARKERS.any { text.contains(it) }
+    fun waitingMessage(): String = "Claude Code was not ready for input"
+
+    fun hasInputBox(text: String): Boolean {
+        val input = lastIndexOfAny(text, INPUT_MARKERS)
+        return input >= 0 && input > lastIndexOfAny(text, WAITING_MARKERS)
+    }
+
+    private fun lastIndexOfAny(text: String, markers: List<String>): Int = markers.maxOf { text.lastIndexOf(it) }
 
     fun await(budgetMs: Long, clock: () -> Long, sleep: (Long) -> Unit, screen: () -> Screen?): Boolean {
         val start = clock()
@@ -99,7 +117,7 @@ object ClaudeReadiness {
     }
 }
 
-class ClaudeNotReady : IllegalStateException(ClaudeReadiness.notReadyMessage())
+class ClaudeNotReady(message: String = ClaudeReadiness.notReadyMessage()) : IllegalStateException(message)
 
 object ActiveRoot {
     const val MEMORY_KEY = "featherspec-studio.activeProject"
@@ -174,17 +192,13 @@ class ClaudeSender(
         } else {
             null
         }
-        val key = existing ?: openClaude(base, deadline)
+        val key = existing?.also { requireInputBox(it) } ?: openClaude(base, deadline)
         if (clock() >= deadline) {
             throw IllegalStateException("the terminal was not ready in time")
         }
         access.paste(key, request.text)
         lastTyped.set(key)
-        try {
-            access.focus(key)
-        } catch (failure: RuntimeException) {
-            return
-        }
+        focusQuietly(key)
     }
 
     private fun openClaude(base: String, deadline: Long): Any {
@@ -199,9 +213,26 @@ class ClaudeSender(
         access.runClaude(key)
         val budget = minOf(ClaudeReadiness.READY_BUDGET_MS, deadline - clock())
         if (budget <= 0 || !ClaudeReadiness.await(budget, clock, sleep) { access.screen(key) }) {
+            focusQuietly(key)
             throw ClaudeNotReady()
         }
         return key
+    }
+
+    private fun requireInputBox(key: Any) {
+        val seen = access.screen(key)
+        if (seen == null || !seen.claudeRunning || !ClaudeReadiness.hasInputBox(seen.text)) {
+            focusQuietly(key)
+            throw ClaudeNotReady(ClaudeReadiness.waitingMessage())
+        }
+    }
+
+    private fun focusQuietly(key: Any) {
+        try {
+            access.focus(key)
+        } catch (failure: RuntimeException) {
+            return
+        }
     }
 
     companion object {

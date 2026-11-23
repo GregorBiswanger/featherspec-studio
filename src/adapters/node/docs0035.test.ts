@@ -27,7 +27,7 @@ describe('0035 T-013: parity, amendments and docs', () => {
     it('AC-025: every criterion of 0035 has a row', async () => {
         const rows = (await read('docs/jetbrains/parity.md')).split('\n').filter((line) => line.startsWith('| 0035 |'));
         const ids = rows.map((row) => row.split('|')[2]?.trim());
-        const expected = Array.from({ length: 31 }, (_, index) => `AC-${String(index + 1).padStart(3, '0')}`);
+        const expected = Array.from({ length: 32 }, (_, index) => `AC-${String(index + 1).padStart(3, '0')}`);
         expect(ids).toEqual(expected);
     });
 
@@ -66,6 +66,8 @@ describe('0035 T-013: parity, amendments and docs', () => {
             'never presses Enter',
             'send nothing and fill no input',
             'neither assistant offers an API',
+            'waits for you to trust the folder or to log in',
+            '`Starting Claude Code…`',
         ]) {
             expect(section, sentence).toContain(sentence);
         }

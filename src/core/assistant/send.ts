@@ -1,5 +1,5 @@
 import { attachesInTarget } from '../../shared/protocol/assistant';
-import { ASSISTANT_NAMES, activatingFailedCause, attachMissingOutputText, commandFailedCause, commandNotFoundCause, copyForDoneText, copyForMissingOutputText, copyForOpenText, copyForWithoutText, extensionNotFoundCause, noResultCause, pasteKeyOf, sendOpenedText, sendOpenedWithoutText, sendOutputCopiedText, sendOutputNotCopiedText, sendWarnCopiedText, sendWarnNotCopiedText } from '../../shared/protocol/assistantTexts';
+import { ASSISTANT_NAMES, CLAUDE_WAITING_TEXT, activatingFailedCause, attachMissingOutputText, commandFailedCause, commandNotFoundCause, copyForDoneText, copyForMissingOutputText, copyForOpenText, copyForWithoutText, extensionNotFoundCause, noResultCause, pasteKeyOf, sendOpenedText, sendOpenedWithoutText, sendOutputCopiedText, sendOutputNotCopiedText, sendWarnCopiedText, sendWarnNotCopiedText } from '../../shared/protocol/assistantTexts';
 import type { SendOutcomeView, SendRequest } from '../../shared/protocol/assistant';
 import { copyLine } from '../board/copyLine';
 import type { AssistantHostPort } from '../ports/assistant';
@@ -34,7 +34,14 @@ export interface Send {
     send(request: SendRequest): Promise<SendOutcomeView>;
 }
 
-class SendFailure extends Error {}
+class SendFailure extends Error {
+    constructor(
+        message: string,
+        readonly waiting = false,
+    ) {
+        super(message);
+    }
+}
 
 function messageOf(reason: unknown): string {
     return reason instanceof Error ? reason.message : String(reason);
@@ -58,6 +65,18 @@ export function createSend(deps: SendDeps): Send {
             deps.output.appendBlock([sendOutputNotCopiedText(name, cause)]);
         }
         return result;
+    }
+
+    async function waitingFallback(name: string, line: string, cause: string): Promise<SendOutcomeView> {
+        const result = await copied(line);
+        if (result.outcome !== 'copied') {
+            deps.ui.warn(sendWarnNotCopiedText(name));
+            deps.output.appendBlock([sendOutputNotCopiedText(name, cause)]);
+            return result;
+        }
+        deps.ui.warn(CLAUDE_WAITING_TEXT);
+        deps.output.appendBlock([sendOutputCopiedText(name, cause)]);
+        return { outcome: 'copied', text: CLAUDE_WAITING_TEXT };
     }
 
     async function run(request: SendRequest, spec: AssistantSpec, isSettled: () => boolean): Promise<string[] | undefined> {
@@ -117,7 +136,8 @@ export function createSend(deps: SendDeps): Send {
             try {
                 await deps.host.execute(call.command, call.args);
             } catch (reason) {
-                throw new SendFailure(spec.causes === undefined ? commandFailedCause(call.command, messageOf(reason)) : spec.causes.failed(messageOf(reason)));
+                const message = messageOf(reason);
+                throw new SendFailure(spec.causes === undefined ? commandFailedCause(call.command, message) : spec.causes.failed(message), spec.causes?.waiting?.(message) === true);
             }
             if (isSettled()) {
                 return undefined;
@@ -131,13 +151,13 @@ export function createSend(deps: SendDeps): Send {
         const name = ASSISTANT_NAMES[request.assistant];
         return new Promise((resolve) => {
             let settled = false;
-            const fail = (cause: string): void => {
+            const fail = (cause: string, waiting = false): void => {
                 if (settled) {
                     return;
                 }
                 settled = true;
                 timer.dispose();
-                void fallback(name, request.line, cause).then(resolve);
+                void (waiting ? waitingFallback(name, request.line, cause) : fallback(name, request.line, cause)).then(resolve);
             };
             const timer = deps.clock.setTimeout(() => fail(noResultCause(budget)), budget);
             run(request, spec, () => settled).then(
@@ -154,7 +174,7 @@ export function createSend(deps: SendDeps): Send {
                     deps.output.appendBlock(unattached.map((path) => attachMissingOutputText(name, path)));
                     resolve({ outcome: 'opened', text: sendOpenedWithoutText(name, unattached.map((path) => path.slice(path.lastIndexOf('/') + 1)).join(', ')) });
                 },
-                (reason: unknown) => fail(reason instanceof SendFailure ? reason.message : messageOf(reason)),
+                (reason: unknown) => (reason instanceof SendFailure ? fail(reason.message, reason.waiting) : fail(messageOf(reason))),
             );
         });
     }
