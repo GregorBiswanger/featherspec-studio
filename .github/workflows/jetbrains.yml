@@ -260,7 +260,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          echo "Timings were written to the job summary by the tests (PD-111: Linux is the hard gate, Windows and macOS a trend up to 1.5 times the budget)."
+          echo "Timings were written to the job summary by the tests (PD-111: Linux is the hard gate and repeats a smoke run once that missed only time budgets, Windows and macOS a trend up to 1.5 times the budget)."
       - name: Print the probe results and IDE log excerpts
         if: always()
         shell: bash
