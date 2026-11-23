@@ -48,3 +48,11 @@ describe('0035 review 20 S-4 / AC-034: README and CHANGELOG tell to choose Junie
         expect(changelog).toContain('In AI Chat, choose Junie and paste it with Ctrl+V.');
     });
 });
+
+describe('0035 review 20 S-1 / AC-035: README and CHANGELOG say what the main part does', () => {
+    it('AC-035 the README section and the CHANGELOG say that the main part follows the Tip', async () => {
+        const [readme, changelog] = await Promise.all([read('README.md'), read('CHANGELOG.md')]);
+        expect(readme).toContain("The main part follows the step's Tip: where the Tip says to use a new chat (Verify and Write plan, for example) it opens a new tab, otherwise it uses the running tab if there is one;");
+        expect(changelog).toContain("The main part of Send to Claude Code follows the Tip's session");
+    });
+});

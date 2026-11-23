@@ -18,6 +18,7 @@ First release.
   the button shows `Starting Claude Code…` and ignores a second click; when Claude Code waits for an answer (folder
   trust, login) nothing is typed, the tab is focused and the prompt is copied (review 20, AC-030 to AC-032).
 - After Copy for Junie the control says `In AI Chat, choose Junie and paste it with Ctrl+V.`, because AI Chat opens with its recommended agent (review 20 S-4, AC-034).
+- The main part of Send to Claude Code follows the Tip's session: a new chat means a new terminal tab, the current chat or any chat the running tab; the menu keeps both (review 20 S-1, AC-035).
 - Gregor's decision PD-110 (review 20 B-3, AC-033): Studio itself starts no agent on its own and sends nothing. In JetBrains IDEs, Send to Claude Code may start claude in a terminal tab when you click it.
 - With an offered assistant the empty state `No specs yet. Start with /sdd-specify` shows the step action for
   `/sdd-specify`, in VS Code and in JetBrains IDEs; without one it keeps its Copy prompt.

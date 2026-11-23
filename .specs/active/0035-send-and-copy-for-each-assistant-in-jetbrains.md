@@ -95,8 +95,11 @@ register gets no new row; PD-108 already names 0035.
 | `junie` | JetBrains | Junie is available (§6.5) | `Copy for Junie` · `Copy prompt` | clipboard: `junieCopyText`; AI Chat or the Junie tool window opens (§6.4) |
 
 A value whose assistant is not offered acts as `none`: the same DOM as `none`, no Send or Copy for text (0024 AC-002).
-The main part of Send to Claude Code targets the *current chat*, the Claude terminal of §6.3 (Gregor: an existing Claude
-terminal first, else a new tab); `Send to a new chat` always opens a new tab (proxy, OP-004). Claude Code needs no
+The main part of Send to Claude Code follows the session of the step's tip (PD-093, 0026; *amended 2026-11-23, review 20 S-1,
+decided by Gregor, OP-004, AC-035*): where the tip says *a new chat* (NS-5, NS-6-plan, NS-9, NS-10) it targets a new tab,
+where it says *the current chat or a new one* or *any chat* it targets the *current chat*, the Claude terminal of §6.3 (an
+existing Claude terminal first, else a new tab). The menu offers both either way; `Send to a new chat` always opens a new tab.
+The welcome and the empty state have no tip and keep the current chat. VS Code is unaffected: its Claude Code has one target. Claude Code needs no
 Claude Code plugin: the CLI in the terminal is enough (proxy, OP-003). In an IDE project that is not trusted the
 handovers behave as in a trusted one, as VS Code's Send does in Restricted Mode (0024 AC-011, 0027 AC-013) (proxy, OP-016).
 
@@ -123,7 +126,7 @@ handovers behave as in a trusted one, as VS Code's Send does in Restricted Mode 
   project's root (compared as the file system compares names), so that its `@` paths resolve. With several, the one the
   Studio typed into last, else the first in tab order. A tab without shell integration, whose `claude` has ended, or whose
   `claude` runs in another folder is no Claude terminal (proxy, OP-005).
-- **Current chat (main part):** a Claude terminal exists → type into it, *if Claude Code is ready for input on the current
+- **Current chat (main part where the tip allows it, S-1):** a Claude terminal exists → type into it, *if Claude Code is ready for input on the current
   screen* (*Amended 2026-11-23, review 20 B-4, §16, AC-032*). None exists → as *new chat*.
 - **New chat:** open a new terminal tab named `Claude Code` whose working directory is the active FeatherSpec project's
   root, run
@@ -404,6 +407,11 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
   Junie and paste it with <key>.` (with a file left out `Copied without <file>: the file was not found. In AI Chat, choose
   Junie and paste it with <key>.`) and the toggletip shall say `…paste it into AI Chat with Junie as the agent, choose the
   model there…`; Copy for Copilot and Copy for Junie with the Junie tool window as the place shall keep their texts.
+- **AC-035** *(review 20 S-1)* In JetBrains, for each step case, the main part of Send to Claude Code shall target a new chat when the
+  case's tip names *a new chat* (`STEP_GUIDES[case].session` is `new`: NS-5, NS-6-plan, NS-9, NS-10) and the current chat otherwise;
+  the menu shall list both targets in the order current, new; this shall hold in the detail, the first Now row and the
+  follow-up lines; the welcome and the empty state shall keep the current chat, and in VS Code every view shall stay
+  deep-equal.
 
 ## 12. Technical notes for developers or AI agents
 
@@ -447,8 +455,8 @@ PD-094, PD-108, PD-109, 0024, 0034, 18, 19); Gregor may flip any of them:
 - OP-001 (proxy) Folder and status: `active/`, In Progress, plan Not started, as the orchestrator asked; a Draft in
   `active/` would be a lifecycle mismatch the Studio reports. Implementation waits for 0034's close (plan gate G0).
 - OP-002 (proxy) Stored values are VS Code's keys plus `junie`, so one core reads both hosts.
-- OP-003 (proxy) Claude Code is offered while the Terminal plugin is available; the Claude Code plugin is not required.
-- OP-004 (proxy) The menu of Send to Claude Code adds `Send to a new chat`; the main part is Gregor's current chat.
+- OP-003 (proxy; **decided by Gregor 2026-11-23, review 20 S-2**) Claude Code is offered while the Terminal plugin is available; the Claude Code plugin is not required. A missing `claude` is told after the 15 s timeout (AC-036), not before.
+- OP-004 (proxy; **decided by Gregor 2026-11-23, review 20 S-1**) The menu of Send to Claude Code adds `Send to a new chat`; the main part follows the session of the step's tip (new chat → new tab; current or any chat → the running Claude tab, else a new one).
 - OP-005 (proxy) A Claude terminal is recognised by shell integration only and must run in the active FeatherSpec
   root; otherwise the Studio opens a new tab.
 - OP-006 (proxy) Budgets: 15 000 ms readiness, 20 000 ms per Send to Claude Code; 5000 ms for every other handover.
@@ -497,5 +505,6 @@ S-6; S-7 is only prepared (below). The budget rule is PD-111 and not part of thi
 | B-1 | `references` becomes `paths` while AC-028 is not proven; the syntax stays | §6.2, §7 (setting description, option descriptions, name and tooltip, toggletip, log line); README, CHANGELOG | AC-030 |
 | B-2 | Wait state and double-click guard for Send to Claude Code, JetBrains only | §6.3 (new bullet *While it runs*), §7 (waiting texts), §10 (quick succession) | AC-031 |
 | B-4 | Claude Code waits for an answer (trust, login): readiness check also in an existing terminal, own waiting text, markers provisional | §6.3 (new bullet), §7 (waiting text, log cause), §10 (first bullet), AC-013 | AC-032 |
-| S-4 | Copy for Junie tells to choose Junie in AI Chat (AI Chat starts with its recommended agent, Codex) | §7 (done texts, toggletip), README, CHANGELOG | AC-034 |
 | B-3 | PD-110 (Gregor, 2026-11-23): in JetBrains a click on Send to Claude Code may start `claude` in a terminal tab; the Studio sends nothing. The README promise follows | README (intro, *Local and read-only*, Privacy), CHANGELOG | AC-033 |
+| S-4 | Copy for Junie tells to choose Junie in AI Chat (AI Chat starts with its recommended agent, Codex) | §7 (done texts, toggletip), README, CHANGELOG | AC-034 |
+| S-1 | The main part of Send to Claude Code follows the session of the step's tip (OP-004, decided by Gregor); the menu offers both | §6.1, §6.3, §14 OP-004, README | AC-035 |

@@ -109,7 +109,8 @@ function handoverHint(place: string, pasteKey: string): string {
 }
 
 export function copyForDoneText(place: string, pasteKey: string): string {
-    return `Copied. ${handoverHint(place, pasteKey)}`;
+    const hint = handoverHint(place, pasteKey);
+    return `Copied. ${hint}`;
 }
 
 export function copyForOpenText(place: string, pasteKey: string): string {
@@ -117,7 +118,8 @@ export function copyForOpenText(place: string, pasteKey: string): string {
 }
 
 export function copyForWithoutText(files: string, place: string, pasteKey: string, opened: boolean): string {
-    return `Copied without ${files}: the file was not found. ${opened ? handoverHint(place, pasteKey) : `Open ${place} and paste it with ${pasteKey}.`}`;
+    const hint = opened ? handoverHint(place, pasteKey) : `Open ${place} and paste it with ${pasteKey}.`;
+    return `Copied without ${files}: the file was not found. ${hint}`;
 }
 
 export function copyForMissingOutputText(name: string, path: string): string {
