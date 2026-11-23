@@ -49,6 +49,30 @@ describe('0035 review 20 S-4 / AC-034: README and CHANGELOG tell to choose Junie
     });
 });
 
+describe('0035 review 20 S-6 and S-5 / AC-038, AC-039: the settings page names one short sentence and offers only what exists', () => {
+    const TABLE = 'jetbrains/src/main/kotlin/com/gregorbiswanger/featherspec/studio/settings/SettingsTable.kt';
+
+    it('AC-038 the settings table holds the new description literally and the three-sentence one is gone', async () => {
+        const table = await read(TABLE);
+        expect(table).toContain('const val ASSISTANT_DESCRIPTION = "The assistant your next step goes to. Studio sends nothing; Copy prompt stays in the button\'s menu."');
+        expect(table).not.toContain('Your AI assistant for the next step');
+        expect(table).not.toContain('Nothing is sent;');
+    });
+
+    it('AC-039 the README says that each option appears only while its assistant is available, and the stored value stays', async () => {
+        const readme = await read('README.md');
+        expect(readme).toContain('Each assistant appears in the setting only while it is available: GitHub Copilot with its plugin, Claude Code with the Terminal plugin, Junie with a Junie plugin. A stored value whose assistant is missing shows `None: Copy prompt` and is kept.');
+        expect(readme).not.toContain('*Junie* appears in the setting only while a Junie plugin is available');
+    });
+
+    it('AC-039 the settings table offers an option through one availability function, not a list of cases in the page', async () => {
+        const [table, page] = await Promise.all([read(TABLE), read('jetbrains/src/main/kotlin/com/gregorbiswanger/featherspec/studio/settings/StudioConfigurable.kt')]);
+        expect(table).toContain('fun assistantAvailable(value: String, plugins: List<String>): Boolean');
+        expect(page).not.toContain('junieAvailable');
+        expect(page).toContain('SettingsTable.options(plugins())');
+    });
+});
+
 describe('0035 review 20 S-3 / PD-110 / AC-037: README and CHANGELOG say what Safe Mode does', () => {
     it('AC-037 the README section, the Privacy bullet and the CHANGELOG carry the own text and the rule', async () => {
         const [readme, changelog] = await Promise.all([read('README.md'), read('CHANGELOG.md')]);

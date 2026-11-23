@@ -179,9 +179,12 @@ the missing API (LLM-2340). The menu holds `Copy prompt` alone (proxy, OP-011).
 - Settings › Tools › FeatherSpec Studio, application level, one combo row after Show Step Tips and before *Model hints*
   (proxy, OP-012). Stored values `none` (default), `copilot`, `claudeCode`, `junie` — VS Code's keys plus `junie` (proxy,
   OP-002; the brief's `claude` is `claudeCode`). Labels, descriptions and the description of each option: §7.
-- Options `None: Copy prompt`, `GitHub Copilot`, `Claude Code` always (VS Code's enum, 0024 §6.1); `Junie` (T-1) only while
-  Junie is available (19 §4.1 A1). While `junie` is stored and Junie is not available, the combo shows `None: Copy prompt`
-  and the stored value stays until the developer applies another one; the offer is none (proxy, OP-013).
+- Options *(amended 2026-11-23, review 20 S-5, decided by Gregor, OP-013, AC-039)*: `None: Copy prompt` always; `GitHub Copilot`,
+  `Claude Code` and `Junie` (T-1) each only while their assistant is available, by one rule for all: Copilot ⇔ `com.github.copilot`,
+  Claude Code ⇔ the Terminal plugin, Junie ⇔ a Junie plugin (19 §4.1 A1). While a stored value's assistant is not available the
+  combo shows `None: Copy prompt` and the stored value stays until the developer applies another one; the offer is none (OP-013).
+  A plugin that comes or goes while the page is open changes the list on the IDE's plugin event (the one that also sends
+  `pluginsChanged` to the core), without reopening the page.
 - **Available:** a plugin is installed and enabled, asked through documented platform API without
   `PluginManagerCore.getPlugin`: Junie ⇔ `org.jetbrains.junie` or `com.intellij.ml.llm`; GitHub Copilot ⇔ `com.github.copilot`;
   Terminal ⇔ `org.jetbrains.plugins.terminal` (proxy, OP-014, A-007). When the IDE reports a plugin loaded or unloaded,
@@ -225,7 +228,7 @@ VS Code texts are unchanged. JetBrains reuses 0024's and 0027's texts for Send t
 | Place | Text |
 | --- | --- |
 | Setting row label | `Assistant:` |
-| Setting description | `Your AI assistant for the next step. Send to Claude Code types the prompt into Claude Code in the terminal; Copy for Copilot or Junie copies it with the file paths and opens the chat. Nothing is sent; Copy prompt stays in the button's menu.` |
+| Setting description | `The assistant your next step goes to. Studio sends nothing; Copy prompt stays in the button's menu.` (*amended 2026-11-23, review 20 S-6, AC-038*: the option descriptions below say the rest) |
 | Option labels | `None: Copy prompt` · `GitHub Copilot` · `Claude Code` · `Junie` (T-1) |
 | Option descriptions | `Copy the prompt and paste it into any assistant.` · `Copy for Copilot copies the prompt with the file paths. Paste it into GitHub Copilot Chat. Needs the GitHub Copilot plugin.` · `Send to Claude Code types the prompt into Claude Code in the IDE terminal and sends nothing. Needs the claude command and the Terminal plugin.` · `Copy for Junie copies the prompt with the file paths. Paste it into Junie in AI Chat.` (T-2) |
 | Copy for, main part | `Copy for Copilot` · `Copy for Junie` |
@@ -285,8 +288,8 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
 **Setting and offer**
 
 - **AC-001** The JetBrains settings page shall show the *Assistant* row of §6.5 with §7's label and description, the
-  options `None: Copy prompt`, `GitHub Copilot`, `Claude Code` in this order and `Junie` last only while Junie is
-  available, and under the combo the selected option's description of §7; the default shall be `none`, and only the four
+  options `None: Copy prompt`, `GitHub Copilot`, `Claude Code` in this order and `Junie` last, each except None only while its
+  assistant is available (*amended 2026-11-23, review 20 S-5, AC-039; before: Copilot and Claude Code always*), and under the combo the selected option's description of §7; the default shall be `none`, and only the four
   values of §6.5 shall be stored.
 - **AC-002** When the developer applies another *Assistant* value, every open IDE project's panel shall show the step
   action of the new value within 500 ms of Apply, without an IDE restart.
@@ -440,6 +443,14 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
   instead of 0024's warning and write one log line with the cause `the project is not trusted` and without the prompt. The
   trust shall be asked at every Send, from the check the host already uses; Copy for Copilot, Copy for Junie and Copy prompt shall
   behave as before.
+- **AC-038** *(review 20 S-6)* The settings description of the *Assistant* row shall be `The assistant your next step goes to. Studio sends
+  nothing; Copy prompt stays in the button's menu.`, repeat no option description, and be asserted literally in the settings
+  table's test.
+- **AC-039** *(review 20 S-5)* The *Assistant* combo shall list `None: Copy prompt` always and each of `GitHub Copilot`, `Claude Code` and
+  `Junie` only while its assistant is available (Copilot by `com.github.copilot`, Claude Code by the Terminal plugin, Junie by
+  `org.jetbrains.junie` or `com.intellij.ml.llm`), in the order of AC-001; a stored value whose assistant is not available shall show `None: Copy prompt`
+  and stay stored until another value is applied; and a plugin loaded or unloaded while the page is open shall change the list
+  without reopening the page. *(This amends AC-001's "`GitHub Copilot`, `Claude Code` always".)*
 
 ## 12. Technical notes for developers or AI agents
 
@@ -495,7 +506,7 @@ PD-094, PD-108, PD-109, 0024, 0034, 18, 19); Gregor may flip any of them:
 - OP-010 (proxy) Copy for Junie opens AI Chat when available, else the Junie tool window.
 - OP-011 (proxy) Copy for is a split button whose menu holds only Copy prompt.
 - OP-012 (proxy) The *Assistant* row sits between Show Step Tips and *Model hints*.
-- OP-013 (proxy) A stored `junie` without Junie shows `None: Copy prompt` and is kept until another Apply.
+- OP-013 (proxy; **decided by Gregor 2026-11-23, review 20 S-5**) A stored value whose assistant is not available (`junie` without Junie, `copilot` without the Copilot plugin, `claudeCode` without the Terminal plugin) shows `None: Copy prompt` and is kept until another Apply.
 - OP-014 (proxy) Copilot's plugin ID `com.github.copilot`; availability changes follow the IDE's plugin load events.
 - OP-015 (proxy) The empty state gets the step action without Tip line and without attachment; the tree keeps its text.
 - OP-016 (proxy; **decided by Gregor 2026-11-23, review 20 S-3, PD-110**) Copy for and Copy prompt work in Safe Mode as in a trusted project; Send to Claude Code only types into a running Claude terminal and never starts `claude` there.
@@ -538,3 +549,5 @@ S-6; S-7 is only prepared (below). The budget rule is PD-111 and not part of thi
 | S-1 | The main part of Send to Claude Code follows the session of the step's tip (OP-004, decided by Gregor); the menu offers both | §6.1, §6.3, §14 OP-004, README | AC-035 |
 | S-2 | A missing `claude` is told after the timeout, by its own text (OP-003, decided by Gregor); no early abort | §6.3 (new bullet), §7 (text, log cause), §10, §14 OP-003, README | AC-036 |
 | S-3 | Safe Mode: Send to Claude Code only types into a running Claude terminal, never starts `claude`; else copy with its own text (OP-016, PD-110, decided by Gregor); Copy for unchanged | §6.1, §6.3 (new bullet), §7 (text, log cause), §14 OP-016, README | AC-037 |
+| S-6 | The setting description is one short sentence pair, the option descriptions say the rest | §7 (setting description), README | AC-038 |
+| S-5 | One rule for the option list: every option except None only while its assistant is available; the stored value stays (OP-013, decided by Gregor); the list follows plugin events while the page is open | §6.5 (options bullet), §14 OP-013, README | AC-039 |

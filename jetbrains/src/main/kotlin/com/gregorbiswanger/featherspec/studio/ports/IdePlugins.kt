@@ -1,6 +1,7 @@
 package com.gregorbiswanger.featherspec.studio.ports
 
 import com.gregorbiswanger.featherspec.studio.StudioProjectService
+import com.gregorbiswanger.featherspec.studio.settings.PluginOptionsBus
 import com.intellij.ide.plugins.DynamicPluginListener
 import com.intellij.ide.plugins.IdeaPluginDescriptor
 import com.intellij.ide.plugins.PluginManagerCore
@@ -59,6 +60,7 @@ class PluginEvents : DynamicPluginListener {
                     project.getService(StudioProjectService::class.java).sendPlugins(plugins)
                 }
             }
+            PluginOptionsBus.shared.publish(plugins)
         } catch (cancelled: ProcessCanceledException) {
             throw cancelled
         } catch (failure: RuntimeException) {

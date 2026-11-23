@@ -83,7 +83,7 @@ class SettingsTableTest {
     fun `AC-001 the row texts are those of section 7`() {
         assertEquals("Assistant:", SettingsTable.ASSISTANT_LABEL)
         assertEquals(
-            "Your AI assistant for the next step. Send to Claude Code types the prompt into Claude Code in the terminal; Copy for Copilot or Junie copies it with the file paths and opens the chat. Nothing is sent; Copy prompt stays in the button's menu.",
+            "The assistant your next step goes to. Studio sends nothing; Copy prompt stays in the button's menu.",
             SettingsTable.ASSISTANT_DESCRIPTION,
         )
         assertEquals(listOf("none", "copilot", "claudeCode", "junie"), SettingsTable.ASSISTANT_OPTIONS.map { it.value })
@@ -101,24 +101,77 @@ class SettingsTableTest {
     }
 
     @Test
-    fun `AC-001 the options show Junie last and only while Junie is available`() {
-        assertEquals(listOf("none", "copilot", "claudeCode"), SettingsTable.options(false).map { it.value })
-        assertEquals(listOf("none", "copilot", "claudeCode", "junie"), SettingsTable.options(true).map { it.value })
+    fun `AC-038 the setting description is two short sentences that repeat no option description`() {
+        assertEquals("The assistant your next step goes to. Studio sends nothing; Copy prompt stays in the button's menu.", SettingsTable.ASSISTANT_DESCRIPTION)
+        assertEquals(2, SettingsTable.ASSISTANT_DESCRIPTION.split(". ").size)
+        for (option in SettingsTable.ASSISTANT_OPTIONS) {
+            assertFalse(SettingsTable.ASSISTANT_DESCRIPTION.contains(option.description), option.value)
+        }
+        assertFalse(SettingsTable.ASSISTANT_DESCRIPTION.contains("Send to Claude Code"))
+        assertFalse(SettingsTable.ASSISTANT_DESCRIPTION.contains("Copy for"))
+    }
+
+    private val copilot = "com.github.copilot"
+    private val terminal = "org.jetbrains.plugins.terminal"
+    private val junie = "org.jetbrains.junie"
+    private val aiAssistant = "com.intellij.ml.llm"
+
+    @Test
+    fun `AC-039 every option except None appears only while its assistant is available, in the order of the table`() {
+        assertEquals(listOf("none"), SettingsTable.options(emptyList()).map { it.value })
+        assertEquals(listOf("none", "copilot"), SettingsTable.options(listOf(copilot)).map { it.value })
+        assertEquals(listOf("none", "claudeCode"), SettingsTable.options(listOf(terminal)).map { it.value })
+        assertEquals(listOf("none", "junie"), SettingsTable.options(listOf(junie)).map { it.value })
+        assertEquals(listOf("none", "junie"), SettingsTable.options(listOf(aiAssistant)).map { it.value })
+        assertEquals(listOf("none", "copilot", "claudeCode", "junie"), SettingsTable.options(listOf(junie, terminal, copilot)).map { it.value })
+        assertEquals(listOf("none"), SettingsTable.options(listOf("org.other.plugin")).map { it.value })
     }
 
     @Test
-    fun `AC-001 a stored junie without Junie shows None and the stored value stays until another is applied`() {
-        assertEquals("none", SettingsTable.displayed("junie", false).value)
-        assertEquals("junie", SettingsTable.displayed("junie", true).value)
-        assertEquals("claudeCode", SettingsTable.displayed("claudeCode", false).value)
-        assertEquals("none", SettingsTable.displayed("bogus", true).value)
+    fun `AC-039 the availability of an assistant is the one of the offer, Copilot by its id, Claude Code by the Terminal plugin, Junie by either plugin`() {
+        assertTrue(SettingsTable.assistantAvailable("none", emptyList()))
+        assertTrue(SettingsTable.assistantAvailable("copilot", listOf(copilot)))
+        assertFalse(SettingsTable.assistantAvailable("copilot", listOf(terminal, junie)))
+        assertTrue(SettingsTable.assistantAvailable("claudeCode", listOf(terminal)))
+        assertFalse(SettingsTable.assistantAvailable("claudeCode", listOf(copilot, junie, aiAssistant)))
+        assertTrue(SettingsTable.assistantAvailable("junie", listOf(junie)))
+        assertTrue(SettingsTable.assistantAvailable("junie", listOf(aiAssistant)))
+        assertFalse(SettingsTable.assistantAvailable("junie", listOf(copilot, terminal)))
+        assertFalse(SettingsTable.assistantAvailable("bogus", listOf(copilot, terminal, junie)))
+    }
+
+    @Test
+    fun `AC-039 a stored value whose assistant is not available shows None and the stored value stays until another is applied`() {
+        assertEquals("none", SettingsTable.displayed("junie", emptyList()).value)
+        assertEquals("junie", SettingsTable.displayed("junie", listOf(junie)).value)
+        assertEquals("none", SettingsTable.displayed("claudeCode", listOf(copilot)).value)
+        assertEquals("claudeCode", SettingsTable.displayed("claudeCode", listOf(terminal)).value)
+        assertEquals("none", SettingsTable.displayed("copilot", listOf(terminal)).value)
+        assertEquals("none", SettingsTable.displayed("bogus", listOf(copilot, terminal, junie)).value)
         val none = SettingsTable.ASSISTANT_OPTIONS[0]
-        val copilot = SettingsTable.ASSISTANT_OPTIONS[1]
-        assertEquals("junie", SettingsTable.storedAfterApply("junie", none, false))
-        assertEquals("copilot", SettingsTable.storedAfterApply("junie", copilot, false))
-        assertEquals("none", SettingsTable.storedAfterApply("junie", none, true))
-        assertEquals("copilot", SettingsTable.storedAfterApply("none", copilot, true))
-        assertEquals("none", SettingsTable.storedAfterApply("bogus", none, false))
+        val copilotOption = SettingsTable.ASSISTANT_OPTIONS[1]
+        val claude = SettingsTable.ASSISTANT_OPTIONS[2]
+        assertEquals("junie", SettingsTable.storedAfterApply("junie", none, emptyList()))
+        assertEquals("claudeCode", SettingsTable.storedAfterApply("claudeCode", none, listOf(copilot)))
+        assertEquals("copilot", SettingsTable.storedAfterApply("claudeCode", copilotOption, listOf(copilot)))
+        assertEquals("none", SettingsTable.storedAfterApply("junie", none, listOf(junie)))
+        assertEquals("claudeCode", SettingsTable.storedAfterApply("none", claude, listOf(terminal)))
+        assertEquals("none", SettingsTable.storedAfterApply("bogus", none, emptyList()))
+    }
+
+    @Test
+    fun `AC-039 a plugin that comes or goes while the page is open reaches every listener once and can be unsubscribed`() {
+        val bus = PluginOptionsBus()
+        val first = ArrayList<List<String>>()
+        val second = ArrayList<List<String>>()
+        val stopFirst = bus.subscribe { first.add(it) }
+        bus.subscribe { second.add(it) }
+        bus.publish(listOf(terminal))
+        stopFirst()
+        bus.publish(listOf(terminal, copilot))
+        assertEquals(listOf(listOf(terminal)), first)
+        assertEquals(listOf(listOf(terminal), listOf(terminal, copilot)), second)
+        assertEquals(listOf("none", "copilot", "claudeCode"), SettingsTable.options(second.last()).map { it.value })
     }
 
     @Test

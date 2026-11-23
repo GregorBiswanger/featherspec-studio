@@ -3,6 +3,8 @@ package com.gregorbiswanger.featherspec.studio.settings
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
+import com.gregorbiswanger.featherspec.studio.ports.PluginAvailability
+import com.gregorbiswanger.featherspec.studio.ports.PluginIds
 
 data class SettingsModel(
     val showStepTips: Boolean = SettingsTable.SHOW_STEP_TIPS_DEFAULT,
@@ -43,10 +45,7 @@ object SettingsTable {
     const val STRONG_MODEL_DESCRIPTION = "Your strong model: for specify, clarify, writing a plan, compile and finding a block."
     const val FAST_MODEL_DESCRIPTION = "Your fast model: for one plan step, a plan report, lifecycle moves and the workflow overview."
 
-    const val ASSISTANT_DESCRIPTION =
-        "Your AI assistant for the next step. Send to Claude Code types the prompt into Claude Code in the terminal; " +
-            "Copy for Copilot or Junie copies it with the file paths and opens the chat. " +
-            "Nothing is sent; Copy prompt stays in the button's menu."
+    const val ASSISTANT_DESCRIPTION = "The assistant your next step goes to. Studio sends nothing; Copy prompt stays in the button's menu."
 
     val ASSISTANT_OPTIONS: List<AssistantOption> = listOf(
         AssistantOption(ASSISTANT_NONE, "None: Copy prompt", "Copy the prompt and paste it into any assistant."),
@@ -72,17 +71,25 @@ object SettingsTable {
 
     val ids: List<String> = listOf(SHOW_STEP_TIPS_ID, ASSISTANT_ID, MODEL_HINTS_ID)
 
-    fun options(junieAvailable: Boolean): List<AssistantOption> =
-        ASSISTANT_OPTIONS.filter { it.value != ASSISTANT_JUNIE || junieAvailable }
-
-    fun displayed(stored: String, junieAvailable: Boolean): AssistantOption {
-        val wanted = cleanAssistant(stored)
-        return options(junieAvailable).firstOrNull { it.value == wanted } ?: ASSISTANT_OPTIONS.first()
+    fun assistantAvailable(value: String, plugins: List<String>): Boolean = when (value) {
+        ASSISTANT_NONE -> true
+        ASSISTANT_COPILOT -> PluginIds.COPILOT in plugins
+        ASSISTANT_CLAUDE_CODE -> PluginIds.TERMINAL in plugins
+        ASSISTANT_JUNIE -> PluginAvailability.junie(plugins)
+        else -> false
     }
 
-    fun storedAfterApply(stored: String, selected: AssistantOption, junieAvailable: Boolean): String {
+    fun options(plugins: List<String>): List<AssistantOption> =
+        ASSISTANT_OPTIONS.filter { assistantAvailable(it.value, plugins) }
+
+    fun displayed(stored: String, plugins: List<String>): AssistantOption {
+        val wanted = cleanAssistant(stored)
+        return options(plugins).firstOrNull { it.value == wanted } ?: ASSISTANT_OPTIONS.first()
+    }
+
+    fun storedAfterApply(stored: String, selected: AssistantOption, plugins: List<String>): String {
         val kept = cleanAssistant(stored)
-        return if (selected == displayed(kept, junieAvailable)) kept else selected.value
+        return if (selected == displayed(kept, plugins)) kept else selected.value
     }
 
     fun fromState(showStepTips: Boolean?, strongModel: String?, fastModel: String?, assistant: String? = null): SettingsModel =

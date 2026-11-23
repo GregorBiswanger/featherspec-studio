@@ -37,7 +37,6 @@ describe('0035 amendment 2026-11-23 / AC-030: until AC-028 shows it, the texts c
     it('AC-030 the JetBrains settings table says file paths in the setting and in both Copy for options', async () => {
         const table = await fs.readFile(path.join(root, 'jetbrains/src/main/kotlin/com/gregorbiswanger/featherspec/studio/settings/SettingsTable.kt'), 'utf8');
         expect(table).not.toMatch(/referenc/i);
-        expect(table).toContain('copies it with the file paths and opens the chat');
         expect(table).toContain('Copy for Copilot copies the prompt with the file paths. Paste it into GitHub Copilot Chat. Needs the GitHub Copilot plugin.');
         expect(table).toContain('Copy for Junie copies the prompt with the file paths. Paste it into Junie in AI Chat.');
     });

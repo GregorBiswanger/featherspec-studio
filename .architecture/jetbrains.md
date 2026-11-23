@@ -14,7 +14,7 @@
 - `panel/` — editor tab: `StudioEditor(Provider)`, `StudioFile`, `PanelShim` (VS Code API shim), `PanelModel` (Loading/Ready/Failed/Unavailable).
 - `theme/` — `ThemeMapping` (56 colours, 3 fonts), `Contrast`, `ThemeBridge`; `tree/` — tool window, Specs tree (`SpecTreeMapping`), `UnavailableNotice`.
 - `actions/` — `ActionTable` and one `StudioAction` class registered 14 times; `NoticeContent`; `status/` — status bar widget and mapping.
-- `ui/` — `HostUi` (pick, notify, confirm, progress, open external), `LogView`; `settings/` — `StudioConfigurable`, `StudioSettings`, `SettingsTable`.
+- `ui/` — `HostUi` (pick, notify, confirm, progress, open external), `LogView`; `settings/` — `StudioConfigurable`, `StudioSettings`, `SettingsTable` (0035: `assistantAvailable` is the one rule for the option list), `PluginOptionsBus` (plugin events reach an open settings page).
 - `setup/` — `SetupTarget` (no-overwrite writes), `ReleaseHttp` (IDE proxy, no redirects), `TarGzArchive`, `SetupCalls` (wire adapter).
 - `probe/` — CI-only probes (`ProbeAutoRun`, conformance, smoke, no-JCEF, setup, budgets); inert unless `featherspec.probe` is set.
 - `src/main/resources/META-INF/plugin.xml` (id, two `<depends>` lines and the optional Terminal one in `featherspec-terminal.xml`; `since-build` is set in `build.gradle.kts`), `icons/`; tests: `src/test/kotlin/…`
