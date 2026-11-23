@@ -1696,6 +1696,12 @@
                     "reference": "PD-111 (work list 3.6; 0034 AC-007: the native loading placeholder of the IDE tab exists only in JetBrains)"
                 }
             }
+        },
+        "0036": {
+            "default": {
+                "category": "n-a",
+                "reference": "Release process of both products (0036 §1): no product behaviour to mirror in JetBrains"
+            }
         }
     }
 }

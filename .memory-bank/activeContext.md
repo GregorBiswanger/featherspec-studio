@@ -10,6 +10,7 @@ Current phase: act
 - 0021–0024 are implemented; their specs stay In Progress in `active/`.
 
 ## Active Spec
+- [0036](../.specs/active/0036-jetbrains-marketplace-release.md) / [plan](../.specs/active/0036-jetbrains-marketplace-release.plan.md): release 0034+0035, G0 first.
 - [0035](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.md) / [plan](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.plan.md): Send and Copy for in JetBrains (PD-108), T-001…T-013 built, review 20 AC-030…AC-040 built (CI pending); next T-014; **K-1 pending**, proxies (§14) await Gregor.
 - [0034](../.specs/active/0034-studio-for-jetbrains-ides.md) / [plan](../.specs/active/0034-studio-for-jetbrains-ides.plan.md): JetBrains IDEs, T-001…T-042 verified except T-035, G4 fix round open; baseline `3bc615c`.
 - [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec for Copilot and Claude Code in every version (PD-091), T-001…T-011 verified; AC-016, AC-017, AC-020 are Gregor's or the orchestrator's.
@@ -38,7 +39,6 @@ Current phase: act
 ## Decisions in Flight
 - 0034: the orchestrator's proxy decisions await Gregor — list in the plan's *Session handoff*.
 - `AGENTS.md` stays above its 200-line target: the template body alone is 200 lines; further eviction would edit template wiring, Gregor's call.
-- Publisher ID `GregorBiswanger` is confirmed (2026-11-17).
 
 ## Blockers / Questions
 - 0034: `AGENTS.md` at 14991/15000 bytes (boundary detail moved to `core.md`; proxy decision, Gregor confirms); no other model family for the compile here (Claude only).
