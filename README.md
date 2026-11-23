@@ -2,7 +2,7 @@
 
 A VS Code panel for projects that use [FeatherSpec](https://github.com/GregorBiswanger/featherspec), the lightweight spec-driven development template for AI coding agents. Studio reads your specs, plans and Memory Bank, shows where every spec stands, and names each spec's next FeatherSpec step, ready to paste into the AI assistant you work with — GitHub Copilot, Claude Code or any other.
 
-Studio reads your project and starts no agent; the work with your agent stays in your assistant's chat. The one exception to read-only is [Set up FeatherSpec](#set-up-featherspec), which you start and confirm yourself.
+Studio reads your project; the work with your agent stays in your assistant's chat. Studio starts no agent on its own and sends nothing. In JetBrains IDEs, Send to Claude Code may start claude in a terminal tab when you click it. The one exception to read-only is [Set up FeatherSpec](#set-up-featherspec), which you start and confirm yourself.
 
 ![Overview in the dark theme: Now lists five specs in Review and + 7 more, the first row with Copy prompt and its coach line, then Up next and the figures](media/screenshots/overview-dark.png)
 
@@ -14,7 +14,7 @@ Studio reads your project and starts no agent; the work with your agent stays in
 - **Always know the next step.** Studio names the exact FeatherSpec prompt for each spec — challenge it, plan it, start it, build the next step, verify it — and one sentence says which chat and which kind of model to use.
 - **One click to your agent.** With GitHub Copilot or Claude Code, **Send** opens a chat with the prompt already in it and the files that step works on attached. It never sends for you: you read the prompt and press Enter.
 - **Plans you can follow.** Progress in steps and percent, step IDs that jump to their card, returned work from parallel workers, and the ways to run a stage.
-- **Local and read-only.** No account and no telemetry. Studio reads your project files and starts no agent; its only network call is the FeatherSpec download you start yourself with **Set up FeatherSpec**.
+- **Local and read-only.** No account and no telemetry. Studio reads your project files. Studio starts no agent on its own and sends nothing. In JetBrains IDEs, Send to Claude Code may start claude in a terminal tab when you click it. Its only network call is the FeatherSpec download you start yourself with **Set up FeatherSpec**.
 
 ## Get started
 
@@ -157,7 +157,7 @@ An assistant whose plugin is missing or disabled is not offered, and the step ac
 ## Privacy and stored data
 
 - Studio has no telemetry. It reads your workspace and writes only its own status history. The one exception is [Set up FeatherSpec](#set-up-featherspec): after you start it, it downloads the latest release from `github.com` and `codeload.github.com` (no account, no token, only a `User-Agent` header) and, once you confirm, writes the release files into the folder you chose. Nothing else contacts a network service on its own.
-- Studio starts no process and no agent. The next step is a text line; it reaches your assistant only when you paste it, or when you choose Send to Copilot or Send to Claude Code, which fill the chat input and send nothing. In JetBrains IDEs, Send to Claude Code opens a terminal tab and runs `claude` there when none is running; Copy for Copilot and Junie only copy and open the chat.
+- Studio starts no agent on its own and sends nothing. In JetBrains IDEs, Send to Claude Code may start claude in a terminal tab when you click it. The next step is a text line; it reaches your assistant only when you paste it, or when you choose Send to Copilot or Send to Claude Code, which fill the chat input and send nothing. Copy for Copilot and Junie only copy and open the chat.
 - The status history (the changes of a spec's state that Studio observed while it was running) is stored on your machine in VS Code's global storage of the extension, outside your workspace, per project. Entries older than 90 days are removed when Studio starts. Earlier builds of Studio also stored agent run data; Studio removes it at the next start. Details, location and how to delete it by hand: [docs/runtime-data.md](docs/runtime-data.md).
 
 ## Known limitations

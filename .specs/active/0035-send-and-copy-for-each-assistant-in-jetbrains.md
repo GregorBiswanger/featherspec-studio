@@ -396,6 +396,10 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
   once instead of 0024's warning, and write one log line with the cause and without the prompt; every other failure shall
   keep 0024's warning. The readiness check shall sit in the platform-free `ClaudeReadiness`, its markers shall be named
   constants marked *K-1 pending*, and a dialog left in the scrollback above a later input box shall not count as waiting.
+- **AC-033** *(review 20 B-3, PD-110)* The README (the intro, the bullet *Local and read-only* and the Privacy bullet) shall say
+  literally `Studio starts no agent on its own and sends nothing. In JetBrains IDEs, Send to Claude Code may start claude in a
+  terminal tab when you click it.`, no README line shall still say that Studio starts no process or no agent without that
+  exception for JetBrains, and the CHANGELOG shall name PD-110.
 
 ## 12. Technical notes for developers or AI agents
 
@@ -481,10 +485,12 @@ option Junie and Copy for Junie.
 ## 16. Amendments after UX review 20 (2026-11-23)
 
 Source: [docs/ux-audit/20-review-0035-g0.md](../../docs/ux-audit/20-review-0035-g0.md) §2 *Muss vor dem Hands-On*, work order
-20-A items 1 to 3. Gregor's open decisions of that review (S-1 to S-7, PD-110, budgets) are not part of this amendment.
+20-A items 1 to 3 (B-1, B-2, B-4). Part B of 2026-11-23 (Gregor: "Alles ja"; work order 20-B) adds B-3 with PD-110 and S-1 to
+S-6; S-7 is only prepared (below). The budget rule is PD-111 and not part of this spec.
 
 | Item | Change | Statements and texts touched | New criterion |
 | --- | --- | --- | --- |
 | B-1 | `references` becomes `paths` while AC-028 is not proven; the syntax stays | §6.2, §7 (setting description, option descriptions, name and tooltip, toggletip, log line); README, CHANGELOG | AC-030 |
 | B-2 | Wait state and double-click guard for Send to Claude Code, JetBrains only | §6.3 (new bullet *While it runs*), §7 (waiting texts), §10 (quick succession) | AC-031 |
 | B-4 | Claude Code waits for an answer (trust, login): readiness check also in an existing terminal, own waiting text, markers provisional | §6.3 (new bullet), §7 (waiting text, log cause), §10 (first bullet), AC-013 | AC-032 |
+| B-3 | PD-110 (Gregor, 2026-11-23): in JetBrains a click on Send to Claude Code may start `claude` in a terminal tab; the Studio sends nothing. The README promise follows | README (intro, *Local and read-only*, Privacy), CHANGELOG | AC-033 |

@@ -789,3 +789,4 @@ Generated from `.specs/done/` and `.specs/active/` by `src/adapters/node/parity.
 | 0035 | AC-030 | deliberately different | PD-108 (review 20 B-1: Copy for texts say file paths until AC-028) |  |
 | 0035 | AC-031 | deliberately different | PD-108 (review 20 B-2: the wait state of Send to Claude Code exists only in JetBrains) |  |
 | 0035 | AC-032 | deliberately different | PD-108 (review 20 B-4: the waiting check of Send to Claude Code in the IDE terminal exists only in JetBrains) |  |
+| 0035 | AC-033 | deliberately different | PD-110 (review 20 B-3: the README sentence about starting claude concerns JetBrains only) |  |

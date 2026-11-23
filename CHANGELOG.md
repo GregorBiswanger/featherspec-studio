@@ -17,6 +17,7 @@ First release.
   optional dependency; Junie is offered only while a Junie plugin is available. While Send to Claude Code starts `claude`
   the button shows `Starting Claude Code…` and ignores a second click; when Claude Code waits for an answer (folder
   trust, login) nothing is typed, the tab is focused and the prompt is copied (review 20, AC-030 to AC-032).
+- Gregor's decision PD-110 (review 20 B-3, AC-033): Studio itself starts no agent on its own and sends nothing. In JetBrains IDEs, Send to Claude Code may start claude in a terminal tab when you click it.
 - With an offered assistant the empty state `No specs yet. Start with /sdd-specify` shows the step action for
   `/sdd-specify`, in VS Code and in JetBrains IDEs; without one it keeps its Copy prompt.
 - Start via lifecycle (0033): a Ready spec offers `/sdd-lifecycle <spec> In Progress` first, under `Start: move the spec
