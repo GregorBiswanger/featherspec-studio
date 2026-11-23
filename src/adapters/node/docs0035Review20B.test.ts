@@ -123,6 +123,32 @@ describe('0035 review 20 S-7 / AC-040: prepared only, K-1 pending', () => {
     });
 });
 
+describe('0035 work list 3.6 / AC-041: the tab shows a loading state at once', () => {
+    const main = 'jetbrains/src/main/kotlin/com/gregorbiswanger/featherspec/studio/';
+
+    it('AC-041 the spec names the criterion, the addendum and 0034 AC-007', async () => {
+        const spec = await read('.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.md');
+        expect(spec).toContain('- **AC-041**');
+        expect(spec).toContain('Addendum 2026-11-23 (work list 3.6');
+        expect(spec).toMatch(/AC-041\*\* [\s\S]*?within 1 s[\s\S]*?0034 AC-007/);
+    });
+
+    it('AC-041 the editor starts the browser in a later EDT turn and the smoke probe finds the placeholder', async () => {
+        const [editor, probe] = await Promise.all([read(`${main}panel/StudioEditor.kt`), read(`${main}probe/SmokeProbe.kt`)]);
+        expect(editor).toContain('DeferredStart { ApplicationManager.getApplication().invokeLater(it) }');
+        expect(editor).toContain('browserStart.request { startBrowser(covered) }');
+        expect(editor).not.toContain('JBLoadingPanel');
+        expect(probe).toContain('component is LoadingPlaceholder');
+        expect(probe).not.toContain('JBLoadingPanel');
+    });
+
+    it('AC-041 the placeholder text is the loading text and its accessible name', async () => {
+        const placeholder = await read(`${main}panel/LoadingPlaceholder.kt`);
+        expect(placeholder).toContain('LoadingPlaceholderText.accessibleName');
+        expect(placeholder).toContain('UIUtil.getPanelBackground()');
+    });
+});
+
 describe('0035 README polish: "on its own" everywhere the Studio is meant, and Send to Claude Code as a short list', () => {
     const CLAUDE_BULLET = '- **Send to Claude Code** (needs the `claude` command and the Terminal plugin)';
 

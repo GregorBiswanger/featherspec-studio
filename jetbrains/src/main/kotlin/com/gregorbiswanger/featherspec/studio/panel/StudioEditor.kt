@@ -12,7 +12,6 @@ import com.intellij.openapi.fileEditor.FileEditorState
 import com.intellij.openapi.fileEditor.FileEditorStateLevel
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.UserDataHolderBase
-import com.intellij.ui.components.JBLoadingPanel
 import com.intellij.ui.components.JBPanelWithEmptyText
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.jcef.JBCefBrowser
@@ -28,6 +27,7 @@ import java.util.UUID
 import com.intellij.openapi.vfs.VirtualFile
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.OverlayLayout
 
 private const val PANEL_URL = "$CORE_ORIGIN/index.html"
 
@@ -38,7 +38,10 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
     private val removers = ArrayList<() -> Unit>()
     private var shown: PanelView? = null
     private var localFailure: PanelView.Failed? = null
-    private var loading: JBLoadingPanel? = null
+    private val cover = LoadingCover()
+    private val browserStart = DeferredStart { ApplicationManager.getApplication().invokeLater(it) }
+    private var stack: JPanel? = null
+    private var placeholder: LoadingPlaceholder? = null
     private var browser: JBCefBrowser? = null
     private var query: JBCefJSQuery? = null
     private var theme: ThemeBridge? = null
@@ -75,10 +78,12 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
     }
 
     private fun show(view: PanelView) {
-        loading?.stopLoading()
+        browserStart.cancel()
+        cover.lift()
+        stack = null
         holder.removeAll()
         when (view) {
-            PanelView.Loading -> holder.add(loadingPanel(), BorderLayout.CENTER)
+            PanelView.Loading -> holder.add(LoadingPlaceholder(), BorderLayout.CENTER)
             PanelView.Browser -> showBrowser()
             is PanelView.Failed -> holder.add(failedPanel(view), BorderLayout.CENTER)
             is PanelView.Unavailable -> holder.add(textPanel(PanelViews.text(view).orEmpty()), BorderLayout.CENTER)
@@ -92,11 +97,8 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
         if (timed.done) {
             return
         }
-        val visible = when (shown) {
-            PanelView.Loading -> loading?.isLoading == true
-            PanelView.Browser, null -> false
-            else -> true
-        }
+        val current = shown ?: return
+        val visible = PanelViews.contentVisible(current, cover.covering)
         if (visible) {
             OpenTimingProbe.contentShown(timed)
         }
@@ -109,12 +111,19 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
         }
     }
 
-    private fun loadingPanel(): JComponent {
-        val panel = JBLoadingPanel(BorderLayout(), this)
-        panel.setLoadingText(HostTexts.LOADING)
-        panel.startLoading()
-        loading = panel
-        return panel
+    private fun liftCover(payload: String) {
+        if (cover.frame(PanelFrames.type(payload))) {
+            runLater { removePlaceholder() }
+        }
+    }
+
+    private fun removePlaceholder() {
+        val covered = stack ?: return
+        placeholder?.let { covered.remove(it) }
+        placeholder = null
+        stack = null
+        covered.revalidate()
+        covered.repaint()
     }
 
     private fun textPanel(text: String): JBPanelWithEmptyText = JBPanelWithEmptyText().withEmptyText(text)
@@ -135,15 +144,31 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
             holder.add(existing.component, BorderLayout.CENTER)
             return
         }
+        val covered = JPanel()
+        covered.layout = OverlayLayout(covered)
+        val cap = LoadingPlaceholder()
+        covered.add(cap)
+        stack = covered
+        placeholder = cap
+        cover.put()
+        holder.add(covered, BorderLayout.CENTER)
+        browserStart.request { startBrowser(covered) }
+    }
+
+    private fun startBrowser(covered: JPanel) {
+        if (disposed || stack !== covered) {
+            return
+        }
         val created = createBrowser()
         if (created == null) {
             val failure = PanelView.Failed("The FeatherSpec panel browser could not be created")
             localFailure = failure
-            shown = failure
-            holder.add(failedPanel(failure), BorderLayout.CENTER)
+            render()
             return
         }
-        holder.add(created.component, BorderLayout.CENTER)
+        covered.add(created.component)
+        covered.revalidate()
+        covered.repaint()
         loadPage()
     }
 
@@ -178,6 +203,7 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
                     created.cefBrowser.executeJavaScript(PanelMessages.postScript(payload), CORE_ORIGIN, 0)
                     nudge.nudge()
                     frameShown(payload)
+                    liftCover(payload)
                 },
             )
             browser = created
@@ -260,6 +286,7 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
 
     override fun dispose() {
         disposed = true
+        browserStart.cancel()
         OpenTimingProbe.closed(service, measure)
         theme?.dispose()
         theme = null

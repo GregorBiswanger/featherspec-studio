@@ -21,6 +21,12 @@ object PanelViews {
         is CoreState.Unavailable -> PanelView.Unavailable(state.kind)
     }
 
+    fun contentVisible(view: PanelView, covering: Boolean): Boolean = when (view) {
+        PanelView.Loading -> true
+        PanelView.Browser -> covering
+        else -> true
+    }
+
     fun text(view: PanelView): String? = when (view) {
         PanelView.Loading -> HostTexts.LOADING
         PanelView.Browser -> null

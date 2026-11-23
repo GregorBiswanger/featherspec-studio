@@ -1690,6 +1690,10 @@
                 "AC-040": {
                     "category": "deliberately different",
                     "reference": "PD-108 (H-17; review 20 S-7: the plugin-activity check of the IDE, K-1 pending)"
+                },
+                "AC-041": {
+                    "category": "deliberately different",
+                    "reference": "PD-111 (work list 3.6; 0034 AC-007: the native loading placeholder of the IDE tab exists only in JetBrains)"
                 }
             }
         }

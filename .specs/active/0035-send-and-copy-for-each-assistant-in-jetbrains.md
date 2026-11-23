@@ -457,6 +457,13 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
   (`PluginActivity.available`, with `ActivityCheck.LOADED` and `NOT_DISABLED`) whose current value is `LOADED`, so that today's
   behaviour is unchanged; only the chosen strategy shall be asked and nothing for a plugin that is not installed; the K-1 probe shall
   record `PluginManagerCore.isLoaded` beside `isDisabled`; and this spec and its plan shall name the open point *K-1 pending*.
+- **AC-041** *(work list 3.6, 0034 AC-007)* When the developer opens the Studio tab in a JetBrains IDE, the tab shall show a native placeholder with
+  the text `Loading project…` (the loading text of the shared texts, also its accessible name, in theme colours, centred) within 1 s after
+  *Open*, drawn in the pass that creates the editor and without waiting for JCEF, for the `JBCefBrowser` or for the core; the browser
+  shall be created in a later turn of the event thread and shall replace the placeholder once its first `shell` frame is handed over;
+  without JCEF the existing unavailable notice shall stay. It shall be measured by the line `FEATHERSPEC-TIMING open→first-content` on
+  Gregor's machine and by the Starter smoke on the CI runners (the smoke finds the placeholder as the loading state, its budget unchanged),
+  and it proves 0034 AC-007 (loading state within 1 s of *Open*). VS Code is unchanged.
 
 ## 12. Technical notes for developers or AI agents
 
@@ -561,3 +568,5 @@ S-6; S-7 is only prepared (below). The budget rule is PD-111 and not part of thi
 | S-6 | The setting description is one short sentence pair, the option descriptions say the rest | §7 (setting description), README | AC-038 |
 | S-5 | One rule for the option list: every option except None only while its assistant is available; the stored value stays (OP-013, decided by Gregor); the list follows plugin events while the page is open | §6.5 (options bullet), §14 OP-013, README | AC-039 |
 | S-7 | **Prepared only, K-1 pending:** the check "installed and active" is one swappable strategy (`isLoaded` today, `isDisabled` as the alternative), the probe records both; the behaviour does not change | §6.5 (Available), §13 A-007, §14 | AC-040 |
+
+Addendum 2026-11-23 (work list 3.6, Gregor brought it forward; review 20 §5 item 4: a long cold start is a product topic, the loading state): the tab no longer waits for the browser to show something. `StudioEditor` puts a native Swing placeholder (`LoadingPlaceholder`, text `Loading project…`, `UIUtil` colours, accessible name equal to the text) into the tab in the pass that creates the editor, and also while the core loads; the `JBCefBrowser` is created one event-thread turn later (`DeferredStart`, cancelled on dispose and on a view change) below the placeholder, and the placeholder goes when the first `shell` frame reaches the browser (`LoadingCover`). The timing line of 0034 AC-007 now ends at the first paint of the placeholder (the former `JBLoadingPanel.isLoading` test is the placeholder test) or at the first `shell` frame, whichever is first; the smoke probe finds `LoadingPlaceholder` instead of `JBLoadingPanel`; budgets unchanged. No bridge message changes. New criterion AC-041; parity row through the generator. VS Code unchanged.

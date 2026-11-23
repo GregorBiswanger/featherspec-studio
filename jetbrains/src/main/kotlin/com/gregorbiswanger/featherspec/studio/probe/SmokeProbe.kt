@@ -13,7 +13,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
-import com.intellij.ui.components.JBLoadingPanel
+import com.gregorbiswanger.featherspec.studio.panel.LoadingPlaceholder
 import java.awt.Component
 import java.awt.Container
 import java.nio.file.Files
@@ -312,7 +312,7 @@ class SmokeProbe(private val project: Project, private val out: Path) {
         FileEditorManager.getInstance(project).getEditors(service.studioFile).any { containsLoading(it.component) }
 
     private fun containsLoading(component: Component): Boolean =
-        component is JBLoadingPanel || (component is Container && component.components.any { containsLoading(it) })
+        component is LoadingPlaceholder || (component is Container && component.components.any { containsLoading(it) })
 
     private fun settle() {
         Thread.sleep(SETTLE_MILLISECONDS)
