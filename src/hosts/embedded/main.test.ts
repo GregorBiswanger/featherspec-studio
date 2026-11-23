@@ -256,6 +256,18 @@ describe('embedded entry (AC-008: the core runs and shows the tree without the t
         expect(types).toEqual(expect.arrayContaining(['shell', 'detail']));
     });
 
+    it('AC-042 panelOpened with resumed true sends the frames of a hello without a hello, and a plain panelOpened sends nothing', async () => {
+        const { host, frames } = harness();
+        await host.start(config());
+        host.dispatch('panelOpened', 'null');
+        host.dispatch('panelClosed', 'null');
+        await settle(() => false, 50);
+        expect(panelEnvelopes(frames)).toHaveLength(0);
+        host.dispatch('panelOpened', JSON.stringify({ resumed: true }));
+        await settle(() => panelEnvelopes(frames).some((frame) => frame.type === 'detail'));
+        expect(panelEnvelopes(frames).map((frame) => frame.type)).toEqual(['shell', 'board', 'detail']);
+    });
+
     it('AC-031: no assistant offer or send view reaches the panel', async () => {
         const { host, frames } = harness();
         await host.start(config());

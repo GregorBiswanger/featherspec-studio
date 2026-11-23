@@ -28,7 +28,7 @@ export interface EmbeddedHost {
 }
 
 export interface EmbeddedPanel extends PanelPort {
-    opened(): void;
+    opened(resumed: boolean): void;
     closed(): void;
     receive(raw: unknown): void;
 }
@@ -132,7 +132,7 @@ export function createEmbeddedHost(native: NativeHost): EmbeddedHost {
                     studio.panel.receive(payload);
                     return;
                 case 'panelOpened':
-                    studio.panel.opened();
+                    studio.panel.opened(isRecord(payload) && payload.resumed === true);
                     return;
                 case 'panelClosed':
                     studio.panel.closed();
@@ -201,10 +201,13 @@ function createEmbeddedPanel(bridge: Bridge, services: PanelServices): EmbeddedP
         show: () => {
             void bridge.callAsync<void>('actions.openStudio', {}).catch(() => undefined);
         },
-        opened: () => {
+        opened: (resumed) => {
             if (!open) {
                 open = true;
                 session.attach();
+                if (resumed) {
+                    session.resume();
+                }
             }
         },
         closed: () => {

@@ -130,6 +130,21 @@ describe('createPanelSession (T-013 characterization)', () => {
         expect(harness.session.lastHelloAt()).toEqual(expect.any(Number));
     });
 
+    it('AC-042 resume posts the shell above the last seq, then the board, the overview and the detail, marks the panel ready and answers nothing', async () => {
+        const harness = open();
+        harness.session.attach();
+        harness.session.receive(hello(0));
+        await flush();
+        harness.posts.length = 0;
+        harness.calls.length = 0;
+        harness.session.detach();
+        harness.calls.length = 0;
+        harness.session.attach();
+        harness.session.resume();
+        expect(harness.posts.map(label)).toEqual(['shell:2', 'board', 'overview', 'detail']);
+        expect(harness.calls).toEqual(['panelReady']);
+    });
+
     it('a board view change posts one board envelope and nothing else', async () => {
         const harness = open();
         harness.session.attach();

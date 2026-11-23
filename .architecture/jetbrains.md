@@ -1,5 +1,5 @@
 # Map: jetbrains (IntelliJ Platform host)
-# last reconciled: 2026-11-22 (0035, ADR-004)
+# last reconciled: 2026-11-23 (0035, ADR-004)
 
 ## Internal pattern
 - `jetbrains/src/main/kotlin/com/gregorbiswanger/featherspec/studio/` — root package: `StudioProjectService` (per project: core
@@ -11,7 +11,7 @@
 - `assistant/` (0035) — `AssistantPort` (argument checks, `AssistantCalls`), pure `ClaudeTerminal` (Claude tab choice, readiness with the provisional marker lists `INPUT_MARKERS`/`WAITING_MARKERS` (K-1 pending), the waiting check, `ClaudeOnPath` (S-2: `claude`, `claude.exe`, `claude.cmd` on the IDE's PATH, asked only after the timeout), the Safe Mode rule (S-3: `trusted` is asked at every Send; no new tab, no `claude` while untrusted), `SendGate` against a second Send during the wait, paste text) and `ChatWindows` (candidate tool window IDs); glue `TerminalGlue`/`TerminalReflect` (Reworked Terminal API, reflective, optional dependency), `IdeChatWindows`, `IdeAssistantCalls`, `Edt`.
 - `ports/` — host ports behind routed calls: `PluginAvailability` (+ `PluginActivity`, the swappable "installed and active" strategy, K-1 pending; `IdePlugins` glue, `PluginEvents` listener; pushes `plugins`, `pluginsChanged`), `FilePorts`, `FileUris`, `ProjectFolders` (PD-103), `UnsavedDocuments` (+ `IdeUnsavedDocuments` glue: reads see unsaved editor documents; `SpecWatch` reports their edits), `RootWatcher`/`SpecWatch` (own
   watcher plus VFS events), `FileRuntimeMedium`, `StoreLocation`, `UiMemory(State)`, `EditorOpen`, `SystemCalls` (clipboard, editor).
-- `panel/` — editor tab: `StudioEditor(Provider)`, `StudioFile`, `PanelShim` (VS Code API shim), `PanelModel` (Loading/Ready/Failed/Unavailable).
+- `panel/` — editor tab: `StudioEditor(Provider)`, `StudioFile`, `PanelShim` (VS Code API shim), `PanelModel` (Loading/Ready/Failed/Unavailable), `PanelBrowser` (the browser with its page, owned by the project service), `PanelParking` (one parked browser per project, 0035 AC-042).
 - `theme/` — `ThemeMapping` (56 colours, 3 fonts), `Contrast`, `ThemeBridge`; `tree/` — tool window, Specs tree (`SpecTreeMapping`), `UnavailableNotice`.
 - `actions/` — `ActionTable` and one `StudioAction` class registered 14 times; `NoticeContent`; `status/` — status bar widget and mapping.
 - `ui/` — `HostUi` (pick, notify, confirm, progress, open external), `LogView`; `settings/` — `StudioConfigurable`, `StudioSettings`, `SettingsTable` (0035: `assistantAvailable` is the one rule for the option list), `PluginOptionsBus` (plugin events reach an open settings page).

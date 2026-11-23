@@ -41,6 +41,7 @@ export interface PanelSessionDeps {
 export interface PanelSession {
     receive(raw: unknown): void;
     attach(): void;
+    resume(): void;
     stop(): void;
     detach(): void;
     lastHelloAt(): number | undefined;
@@ -72,6 +73,13 @@ export function createPanelSession(deps: PanelSessionDeps): PanelSession {
         deps.post({ v: PROTOCOL_VERSION, kind: 'evt', type: 'detail', payload: { view } });
     }
 
+    function pushAll(floor: number): void {
+        pushView(floor);
+        pushBoard(deps.board.view());
+        pushOverview(deps.overview.view());
+        pushDetail(deps.board.detail());
+    }
+
     const router = createMessageRouter({
         handlers: {
             ...deps.board.handlers,
@@ -80,10 +88,7 @@ export function createPanelSession(deps: PanelSessionDeps): PanelSession {
             hello: async (payload) => {
                 helloAt = Date.now();
                 deps.service.panelReady();
-                pushView(payload.lastSeq);
-                pushBoard(deps.board.view());
-                pushOverview(deps.overview.view());
-                pushDetail(deps.board.detail());
+                pushAll(payload.lastSeq);
                 deps.onHello();
             },
         },
@@ -115,6 +120,11 @@ export function createPanelSession(deps: PanelSessionDeps): PanelSession {
         ];
     }
 
+    function resume(): void {
+        deps.service.panelReady();
+        pushAll(0);
+    }
+
     function stop(): void {
         subscriptions.forEach((subscription) => subscription.dispose());
         subscriptions = [];
@@ -129,6 +139,7 @@ export function createPanelSession(deps: PanelSessionDeps): PanelSession {
     return {
         receive,
         attach,
+        resume,
         stop,
         detach,
         lastHelloAt: () => helloAt,

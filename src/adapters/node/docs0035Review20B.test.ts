@@ -149,6 +149,34 @@ describe('0035 work list 3.6 / AC-041: the tab shows a loading state at once', (
     });
 });
 
+describe('0035 AC-042: the reopened Studio tab takes the parked panel browser', () => {
+    const main = 'jetbrains/src/main/kotlin/com/gregorbiswanger/featherspec/studio/';
+
+    it('AC-042 the spec names the criterion, the budget and the addendum', async () => {
+        const spec = await read('.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.md');
+        expect(spec).toContain('- **AC-042**');
+        expect(spec).toMatch(/AC-042\*\* [\s\S]*?within 1,000 ms[\s\S]*?without loading the panel page again/);
+        expect(spec).toContain('Addendum 2026-11-23 (reopen of the Studio tab');
+    });
+
+    it('AC-042 the editor parks and takes through the service, the service closes the parking, and nothing disposes a parked browser', async () => {
+        const [editor, service, panelBrowser] = await Promise.all([read(`${main}panel/StudioEditor.kt`), read(`${main}StudioProjectService.kt`), read(`${main}panel/PanelBrowser.kt`)]);
+        expect(editor).toContain('service.panelParking.take()');
+        expect(editor).toContain('service.panelParking.park(');
+        expect(editor).toContain('ParkRule.parkable(');
+        expect(editor).toContain('PanelMessages.openedPayload(');
+        expect(service).toContain('val panelParking = PanelParking<PanelBrowser>');
+        expect(service).toContain('panelParking.close()');
+        expect(panelBrowser).toContain('Disposer.register(service, this)');
+    });
+
+    it('AC-042 the budgets of the smoke probe are unchanged', async () => {
+        const report = await read(`${main}probe/SmokeReport.kt`);
+        expect(report).toContain('AC-007 frame after reopening (best of');
+        expect(report).toContain('SmokeBudgets.FRAME_MS');
+    });
+});
+
 describe('0035 README polish: "on its own" everywhere the Studio is meant, and Send to Claude Code as a short list', () => {
     const CLAUDE_BULLET = '- **Send to Claude Code** (needs the `claude` command and the Terminal plugin)';
 

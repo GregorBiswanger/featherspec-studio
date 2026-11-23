@@ -798,6 +798,7 @@ Generated from `.specs/done/` and `.specs/active/` by `src/adapters/node/parity.
 | 0035 | AC-039 | deliberately different | PD-108 (H-8; review 20 S-5: the option list of the IDE's settings page follows the IDE's plugins) |  |
 | 0035 | AC-040 | deliberately different | PD-108 (H-17; review 20 S-7: the plugin-activity check of the IDE, K-1 pending) |  |
 | 0035 | AC-041 | deliberately different | PD-111 (work list 3.6; 0034 AC-007: the native loading placeholder of the IDE tab exists only in JetBrains) |  |
+| 0035 | AC-042 | deliberately different | PD-111 (work list 3.6; 0034 AC-007, R-5: the IDE parks the panel browser of the closed tab for the next open; the VS Code webview is kept by the editor itself) |  |
 | 0036 | AC-001 | n-a | Release process of both products (0036 §1): no product behaviour to mirror in JetBrains |  |
 | 0036 | AC-002 | n-a | Release process of both products (0036 §1): no product behaviour to mirror in JetBrains |  |
 | 0036 | AC-003 | n-a | Release process of both products (0036 §1): no product behaviour to mirror in JetBrains |  |

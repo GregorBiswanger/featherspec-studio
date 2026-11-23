@@ -59,6 +59,10 @@ class PanelLifecycle {
         return reload
     }
 
+    fun adopted() {
+        loads += 1
+    }
+
     fun dispose(): PanelStep? {
         if (disposed) {
             return null
@@ -76,6 +80,15 @@ object PanelMessages {
             return null
         }
         return if (parsed.isJsonObject) raw else null
+    }
+
+    fun openedPayload(resumed: Boolean): String {
+        if (!resumed) {
+            return "null"
+        }
+        val args = JsonObject()
+        args.addProperty("resumed", true)
+        return args.toString()
     }
 
     fun postScript(envelopeJson: String): String = "window.postMessage($envelopeJson,'*');"

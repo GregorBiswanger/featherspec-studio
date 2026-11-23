@@ -1694,6 +1694,10 @@
                 "AC-041": {
                     "category": "deliberately different",
                     "reference": "PD-111 (work list 3.6; 0034 AC-007: the native loading placeholder of the IDE tab exists only in JetBrains)"
+                },
+                "AC-042": {
+                    "category": "deliberately different",
+                    "reference": "PD-111 (work list 3.6; 0034 AC-007, R-5: the IDE parks the panel browser of the closed tab for the next open; the VS Code webview is kept by the editor itself)"
                 }
             }
         },

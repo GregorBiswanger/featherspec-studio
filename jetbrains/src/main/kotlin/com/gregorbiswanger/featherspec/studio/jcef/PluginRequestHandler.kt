@@ -3,6 +3,7 @@ package com.gregorbiswanger.featherspec.studio.jcef
 import org.cef.browser.CefBrowser
 import org.cef.browser.CefFrame
 import org.cef.callback.CefCallback
+import org.cef.handler.CefRequestHandler
 import org.cef.handler.CefRequestHandlerAdapter
 import org.cef.handler.CefResourceHandler
 import org.cef.handler.CefResourceHandlerAdapter
@@ -14,11 +15,18 @@ import org.cef.misc.StringRef
 import org.cef.network.CefRequest
 import org.cef.network.CefResponse
 
-class PluginRequestHandler(private val documents: Map<String, () -> String>) : CefRequestHandlerAdapter() {
+class PluginRequestHandler(
+    private val documents: Map<String, () -> String>,
+    private val onTerminated: () -> Unit = {},
+) : CefRequestHandlerAdapter() {
     constructor(coreHtml: () -> String) : this(mapOf<String, () -> String>("core.html" to coreHtml))
 
     override fun onBeforeBrowse(browser: CefBrowser?, frame: CefFrame?, request: CefRequest?, userGesture: Boolean, isRedirect: Boolean): Boolean {
         return isBlocked(request, documents)
+    }
+
+    override fun onRenderProcessTerminated(browser: CefBrowser?, status: CefRequestHandler.TerminationStatus?) {
+        onTerminated()
     }
 
     override fun getResourceRequestHandler(

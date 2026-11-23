@@ -108,4 +108,20 @@ class PanelModelTest {
         assertThrows<IllegalArgumentException> { PanelMessages.htmlFromReply("null") }
         assertThrows<IllegalArgumentException> { PanelMessages.htmlFromReply("{\"a\":1}") }
     }
+
+    @Test
+    fun `AC-042 an adopted browser makes the next page build a reload`() {
+        val fresh = PanelLifecycle()
+        assertFalse(fresh.nextLoadIsReload())
+        val adopted = PanelLifecycle()
+        adopted.adopted()
+        assertTrue(adopted.nextLoadIsReload())
+    }
+
+    @Test
+    fun `AC-042 the opened event says resumed only for a parked browser`() {
+        assertEquals("null", PanelMessages.openedPayload(false))
+        val resumed = JsonParser.parseString(PanelMessages.openedPayload(true)).asJsonObject
+        assertTrue(resumed.get("resumed").asBoolean)
+    }
 }

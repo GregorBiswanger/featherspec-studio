@@ -464,6 +464,17 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
   without JCEF the existing unavailable notice shall stay. It shall be measured by the line `FEATHERSPEC-TIMING open→first-content` on
   Gregor's machine and by the Starter smoke on the CI runners (the smoke finds the placeholder as the loading state, its budget unchanged),
   and it proves 0034 AC-007 (loading state within 1 s of *Open*). VS Code is unchanged.
+- **AC-042** *(work list 3.6 follow-up, 0034 AC-007, R-5)* When the developer closes the Studio tab and opens it again in the same IDE project,
+  the tab shall show its first `shell` frame within 1,000 ms of *Open* without loading the panel page again: closing shall detach the
+  `JBCefBrowser` with its `JBCefJSQuery` and its loaded page from the editor and park it in the project service (at most one parked
+  browser per project), and the next editor shall take it, subscribe to the panel frames and ask the core for the current frames
+  (`panelOpened` with `{"resumed":true}`; the core posts the `shell`, `board`, `overview` and `detail` frames as for a `hello`, without a
+  response). The parked browser shall be disposed when the project closes or the plugin unloads, when its JCEF browser is disposed or its
+  render process ended, and when the page never showed a `shell` frame or failed; a new browser is then created as before, with the
+  placeholder of AC-041. A second editor open at the same time (a split) shall get a new browser, and a browser that finds the slot taken
+  shall be disposed. Bridge messages, their order and the restored area and selection of 0034 AC-007 shall not change, the budget of
+  1,000 ms shall not change, and the line `FEATHERSPEC-TIMING open→first-content` shall stay true (`warm`). It shall be checked by the Starter
+  smoke (*frame after reopening*, *frame after the restoring reopen*) and by plain tests of the parking rules. VS Code is unchanged.
 
 ## 12. Technical notes for developers or AI agents
 
@@ -570,3 +581,5 @@ S-6; S-7 is only prepared (below). The budget rule is PD-111 and not part of thi
 | S-7 | **Prepared only, K-1 pending:** the check "installed and active" is one swappable strategy (`isLoaded` today, `isDisabled` as the alternative), the probe records both; the behaviour does not change | §6.5 (Available), §13 A-007, §14 | AC-040 |
 
 Addendum 2026-11-23 (work list 3.6, Gregor brought it forward; review 20 §5 item 4: a long cold start is a product topic, the loading state): the tab no longer waits for the browser to show something. `StudioEditor` puts a native Swing placeholder (`LoadingPlaceholder`, text `Loading project…`, `UIUtil` colours, accessible name equal to the text) into the tab in the pass that creates the editor, and also while the core loads; the `JBCefBrowser` is created one event-thread turn later (`DeferredStart`, cancelled on dispose and on a view change) below the placeholder, and the placeholder goes when the first `shell` frame reaches the browser (`LoadingCover`). The timing line of 0034 AC-007 now ends at the first paint of the placeholder (the former `JBLoadingPanel.isLoading` test is the placeholder test) or at the first `shell` frame, whichever is first; the smoke probe finds `LoadingPlaceholder` instead of `JBLoadingPanel`; budgets unchanged. No bridge message changes. New criterion AC-041; parity row through the generator. VS Code unchanged.
+
+Addendum 2026-11-23 (reopen of the Studio tab, 1.2 s on Linux and 1.8 s on macOS against the budget of 1,000 ms; the cause is a new `JBCefBrowser` and a new page load for each open): `StudioEditor` no longer owns the browser; `PanelBrowser` does (browser, `JBCefJSQuery`, theme bridge, repaint nudge, page), registered under the project service. On dispose the editor parks it in `PanelParking` (`ParkRule`: the core was ready, no failure, a `shell` frame was shown, not dead), the next editor takes it and the core re-posts the frames of a `hello` through the new `PanelSession.resume()` (shared code, additive; VS Code never calls it). The theme bridge stays alive while parked, so a theme change updates the parked page in place and needs no new browser. No bridge message changes; `panelOpened` carries `{"resumed":true}` only for a parked browser. New criterion AC-042; parity row through the generator. VS Code unchanged.

@@ -17,6 +17,8 @@ import com.gregorbiswanger.featherspec.studio.ports.MediumPorts
 import com.gregorbiswanger.featherspec.studio.ports.ProjectFolders
 import com.gregorbiswanger.featherspec.studio.ports.SpecWatch
 import com.gregorbiswanger.featherspec.studio.ports.SystemCalls
+import com.gregorbiswanger.featherspec.studio.panel.PanelBrowser
+import com.gregorbiswanger.featherspec.studio.panel.PanelParking
 import com.gregorbiswanger.featherspec.studio.panel.StudioFile
 import com.gregorbiswanger.featherspec.studio.ports.UiMemoryState
 import com.gregorbiswanger.featherspec.studio.probe.OpenTimingProbe
@@ -76,6 +78,8 @@ class StudioProjectService(private val project: Project) : Disposable {
         private set
 
     val studioFile: VirtualFile = StudioFile.create()
+
+    val panelParking = PanelParking<PanelBrowser>({ it.alive }, { if (!Disposer.isDisposed(it)) Disposer.dispose(it) })
 
     val reloadRequests = Observable(0)
 
@@ -182,6 +186,7 @@ class StudioProjectService(private val project: Project) : Disposable {
     }
 
     override fun dispose() {
+        panelParking.close()
         hostUi.close()
         runtime = null
         client = null

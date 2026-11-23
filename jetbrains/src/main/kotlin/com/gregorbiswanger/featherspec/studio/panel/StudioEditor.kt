@@ -3,8 +3,7 @@ package com.gregorbiswanger.featherspec.studio.panel
 import com.gregorbiswanger.featherspec.studio.HostTexts
 import com.gregorbiswanger.featherspec.studio.StudioProjectService
 import com.gregorbiswanger.featherspec.studio.runtime.CORE_ORIGIN
-import com.gregorbiswanger.featherspec.studio.theme.ThemeBridge
-import com.gregorbiswanger.featherspec.studio.theme.ThemeKind
+import com.gregorbiswanger.featherspec.studio.runtime.CoreState
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.fileEditor.FileEditor
@@ -14,9 +13,6 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.ui.components.JBPanelWithEmptyText
 import com.intellij.ui.SimpleTextAttributes
-import com.intellij.ui.jcef.JBCefBrowser
-import com.intellij.ui.jcef.JBCefJSQuery
-import com.gregorbiswanger.featherspec.studio.jcef.PluginRequestHandler
 import com.gregorbiswanger.featherspec.studio.probe.OpenMeasure
 import com.gregorbiswanger.featherspec.studio.probe.OpenTimingProbe
 import com.gregorbiswanger.featherspec.studio.probe.PanelFrames
@@ -29,8 +25,6 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.OverlayLayout
 
-private const val PANEL_URL = "$CORE_ORIGIN/index.html"
-
 class StudioEditor(private val service: StudioProjectService) : UserDataHolderBase(), FileEditor {
     private val measure: OpenMeasure? = OpenTimingProbe.begin(service)
     private val holder: JPanel = if (measure == null) JPanel(BorderLayout()) else FirstPaintPanel { contentPainted() }
@@ -42,15 +36,9 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
     private val browserStart = DeferredStart { ApplicationManager.getApplication().invokeLater(it) }
     private var stack: JPanel? = null
     private var placeholder: LoadingPlaceholder? = null
-    private var browser: JBCefBrowser? = null
-    private var query: JBCefJSQuery? = null
-    private var theme: ThemeBridge? = null
-    @Volatile
-    private var postRequest = ""
+    private var panel: PanelBrowser? = null
+    private var resumed = false
     private var disposed = false
-
-    @Volatile
-    private var html = ""
 
     init {
         removers.add(service.state.onChange { runLater { render() } })
@@ -73,7 +61,7 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
             show(view)
         }
         if (lifecycle.stateChanged(state) == PanelStep.OPENED) {
-            service.runtime?.dispatch("panelOpened", "null")
+            service.runtime?.dispatch("panelOpened", PanelMessages.openedPayload(resumed))
         }
     }
 
@@ -139,9 +127,15 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
     }
 
     private fun showBrowser() {
-        val existing = browser
+        val existing = panel
         if (existing != null) {
-            holder.add(existing.component, BorderLayout.CENTER)
+            holder.add(existing.browser.component, BorderLayout.CENTER)
+            return
+        }
+        val parked = service.panelParking.take()
+        if (parked != null) {
+            adopt(parked)
+            holder.add(parked.browser.component, BorderLayout.CENTER)
             return
         }
         val covered = JPanel()
@@ -166,68 +160,53 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
             render()
             return
         }
-        covered.add(created.component)
+        covered.add(created.browser.component)
         covered.revalidate()
         covered.repaint()
         loadPage()
     }
 
-    private fun createBrowser(): JBCefBrowser? {
+    private fun adopt(parked: PanelBrowser) {
+        panel = parked
+        resumed = true
+        lifecycle.adopted()
+        parked.attach()
+        subscribe(parked)
+    }
+
+    private fun createBrowser(): PanelBrowser? {
         val client = service.client ?: return null
-        return try {
-            val created = JBCefBrowser.createBuilder().setClient(client).build()
-            val jsQuery = JBCefJSQuery.create(created)
-            jsQuery.addHandler { raw ->
-                PanelMessages.fromPanel(raw)?.let { service.runtime?.dispatch("panelMessage", it) }
-                null
-            }
-            postRequest = jsQuery.inject("request")
-            val bridge = ThemeBridge(this) { script ->
-                runLater {
-                    val current = browser
-                    if (current != null) {
-                        current.cefBrowser.executeJavaScript(script, CORE_ORIGIN, 0)
-                        service.themeScripts.set(script)
-                    }
-                }
-            }
-            theme = bridge
-            val documents = mapOf<String, () -> String>(
-                "index.html" to { html },
-                "theme.css" to { bridge.css() },
-            )
-            client.addRequestHandler(PluginRequestHandler(documents), created.cefBrowser)
-            val nudge = RepaintNudge(created).also { it.attach() }
-            removers.add(
-                service.host.subscribe("panel") { payload ->
-                    created.cefBrowser.executeJavaScript(PanelMessages.postScript(payload), CORE_ORIGIN, 0)
-                    nudge.nudge()
-                    frameShown(payload)
-                    liftCover(payload)
-                },
-            )
-            browser = created
-            query = jsQuery
-            created
-        } catch (failure: Exception) {
-            thisLogger().warn("The FeatherSpec panel browser could not be created", failure)
-            null
-        }
+        val created = PanelBrowser.create(service, client) ?: return null
+        panel = created
+        subscribe(created)
+        return created
+    }
+
+    private fun subscribe(shown: PanelBrowser) {
+        removers.add(
+            service.host.subscribe("panel") { payload ->
+                shown.post(payload)
+                frameShown(payload)
+                liftCover(payload)
+            },
+        )
     }
 
     private fun loadPage() {
         val runtime = service.runtime ?: return
+        val loading = panel ?: return
+        loading.pageLoading()
         val nonce = UUID.randomUUID().toString().replace("-", "")
         val reloaded = lifecycle.nextLoadIsReload()
-        val bodyClass = currentBodyClass()
+        val bodyClass = loading.bodyClass()
         val request = PanelMessages.htmlArgs(nonce, CORE_ORIGIN, reloaded)
         runtime.invoke("panelHtml", request).whenComplete { reply: String?, failure: Throwable? ->
             try {
                 if (failure != null || reply == null) {
                     throw IllegalStateException(failure?.message ?: "panelHtml gave no answer")
                 }
-                val page = PanelShim.insert(PanelMessages.htmlFromReply(reply), nonce, bodyClass, postRequest)
-                html = page
+                val page = PanelShim.insert(PanelMessages.htmlFromReply(reply), nonce, bodyClass, loading.postRequest)
+                loading.html = page
                 runLater { navigate() }
             } catch (problem: Exception) {
                 thisLogger().warn("The FeatherSpec panel page could not be built", problem)
@@ -238,7 +217,7 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
 
     private fun navigate() {
         if (!disposed) {
-            browser?.loadURL(PANEL_URL)
+            panel?.navigate()
         }
     }
 
@@ -251,7 +230,7 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
     }
 
     private fun reload() {
-        if (disposed || browser == null) {
+        if (disposed || panel == null) {
             return
         }
         localFailure = null
@@ -259,7 +238,20 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
         loadPage()
     }
 
-    private fun currentBodyClass(): String = theme?.bodyClass() ?: ThemeKind.LIGHT.bodyClass
+    private fun release() {
+        val current = panel ?: return
+        panel = null
+        val ready = service.state.value == CoreState.Ready
+        if (ParkRule.parkable(ready, localFailure != null, current.shellSeen, !current.alive)) {
+            current.detach()
+            if (service.panelParking.park(current)) {
+                return
+            }
+        }
+        if (!Disposer.isDisposed(current)) {
+            Disposer.dispose(current)
+        }
+    }
 
     override fun getComponent(): JComponent = holder
 
@@ -288,16 +280,11 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
         disposed = true
         browserStart.cancel()
         OpenTimingProbe.closed(service, measure)
-        theme?.dispose()
-        theme = null
         removers.forEach { it() }
         removers.clear()
+        release()
         if (lifecycle.dispose() == PanelStep.CLOSED) {
             service.runtime?.dispatch("panelClosed", "null")
         }
-        query?.let { Disposer.dispose(it) }
-        browser?.dispose()
-        query = null
-        browser = null
     }
 }
