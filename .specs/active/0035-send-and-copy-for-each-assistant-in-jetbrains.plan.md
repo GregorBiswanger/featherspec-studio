@@ -346,3 +346,9 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
 - **Kotlin must match the TypeScript:** `assistant.claudeTerminal` args `{target, text}`, answer `{"ok":null}` or `{error}`; the not-ready error text is exactly `Claude Code was not ready within 15000 ms`; `assistant.openChat` args `{assistant}`, answer `"opened"` or `"notFound"`; event `pluginsChanged {plugins: [ids]}` and `CoreConfig.plugins` carry the installed and loaded ids among `com.github.copilot`, `org.jetbrains.plugins.terminal`, `org.jetbrains.junie`, `com.intellij.ml.llm`.
 - **Baseline:** 1765403c57c02381dae9acc5f2d4caae7abf7dfb
 - **Environment:** Kotlin only in CI; TypeScript locally (`npx vitest run --project node --project webview`). The Preview harness is not required by this plan; the Copy for button reuses the Send classes.
+
+## Amendments after UX review 20 (2026-11-23, work order 20-A items 1 to 3)
+
+Spec §16 and AC-030 to AC-032; review [20](../../docs/ux-audit/20-review-0035-g0.md) §2. Not part of this change: S-1 to S-7, PD-110, the budget rule.
+
+- **B-1 (AC-030), done:** red first, 10 TypeScript tests (4 literal text tests of Copy for, the toggletip, the main part, the log line) and the new `filePaths0035.test.ts` (4 red: texts, no `referenc`, settings table, README and CHANGELOG), 1 Kotlin test (`SettingsTableTest` AC-001 row texts); then green. Texts only in `assistantTexts.ts` and `SettingsTable.kt`; the syntaxes `#file:` and `@file:` are unchanged; README and CHANGELOG say the file paths; the other `reference` hits (release checklist AC-028 question, spec A-002 and A-003, `references.ts` identifiers) have nothing to do with Copy for wording and stay. Guards at the start commit: `sharedGuard` and `renderedTexts` identical (450 areas).

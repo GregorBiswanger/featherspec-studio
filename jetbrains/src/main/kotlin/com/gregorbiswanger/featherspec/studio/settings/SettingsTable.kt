@@ -45,7 +45,7 @@ object SettingsTable {
 
     const val ASSISTANT_DESCRIPTION =
         "Your AI assistant for the next step. Send to Claude Code types the prompt into Claude Code in the terminal; " +
-            "Copy for Copilot or Junie copies it with file references and opens the chat. " +
+            "Copy for Copilot or Junie copies it with the file paths and opens the chat. " +
             "Nothing is sent; Copy prompt stays in the button's menu."
 
     val ASSISTANT_OPTIONS: List<AssistantOption> = listOf(
@@ -53,7 +53,7 @@ object SettingsTable {
         AssistantOption(
             ASSISTANT_COPILOT,
             "GitHub Copilot",
-            "Copy for Copilot copies the prompt with #file references. Paste it into GitHub Copilot Chat. Needs the GitHub Copilot plugin.",
+            "Copy for Copilot copies the prompt with the file paths. Paste it into GitHub Copilot Chat. Needs the GitHub Copilot plugin.",
         ),
         AssistantOption(
             ASSISTANT_CLAUDE_CODE,
@@ -63,7 +63,7 @@ object SettingsTable {
         AssistantOption(
             ASSISTANT_JUNIE,
             "Junie",
-            "Copy for Junie copies the prompt with @ file references. Paste it into Junie in AI Chat.",
+            "Copy for Junie copies the prompt with the file paths. Paste it into Junie in AI Chat.",
         ),
     )
 

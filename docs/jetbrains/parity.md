@@ -786,3 +786,4 @@ Generated from `.specs/done/` and `.specs/active/` by `src/adapters/node/parity.
 | 0035 | AC-027 | deliberately different | PD-108 (manual check in Rider) |  |
 | 0035 | AC-028 | deliberately different | PD-108 (manual check in Rider) |  |
 | 0035 | AC-029 | shared | shared-test |  |
+| 0035 | AC-030 | deliberately different | PD-108 (review 20 B-1: Copy for texts say file paths until AC-028) |  |

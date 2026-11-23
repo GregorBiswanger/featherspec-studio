@@ -109,7 +109,7 @@ export function copyForWithoutText(files: string, place: string, pasteKey: strin
 }
 
 export function copyForMissingOutputText(name: string, path: string): string {
-    return `Copy for ${name}: ${path} was not found, so it was not referenced.`;
+    return `Copy for ${name}: ${path} was not found, so its path was left out.`;
 }
 
 export function copyForMainLabel(name: string): string {
@@ -118,11 +118,11 @@ export function copyForMainLabel(name: string): string {
 
 export function copyForMainName(name: string, line: string, files?: string): string {
     const plain = `Copy for ${name}: ${line}`;
-    return files === undefined ? plain : `${plain}. Adds ${files} as references.`;
+    return files === undefined ? plain : `${plain}. Adds the paths of ${files}.`;
 }
 
 export function copyForTipText(name: string, place: string): string {
-    return `Copy for ${name} copies the prompt with file references and sends nothing: paste it into ${place}, choose the model there, check the prompt, then send it.`;
+    return `Copy for ${name} copies the prompt with the file paths and sends nothing: paste it into ${place}, choose the model there, check the prompt, then send it.`;
 }
 
 export const TERMINAL_UNAVAILABLE_CAUSE = 'the Terminal plugin is not available';

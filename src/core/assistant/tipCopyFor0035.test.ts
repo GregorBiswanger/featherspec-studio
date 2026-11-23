@@ -6,11 +6,11 @@ import { tipClosingOf } from './sendView';
 describe('0035 T-006 / AC-022: the toggletip closing for Copy for', () => {
     it('AC-022 a Copy for offer gives §7 sentence with the place; the settings sentence stays', () => {
         expect(tipClosingOf({ assistant: 'copilot', handover: 'copyFor', place: 'GitHub Copilot Chat' })).toEqual([
-            'Copy for Copilot copies the prompt with file references and sends nothing: paste it into GitHub Copilot Chat, choose the model there, check the prompt, then send it.',
+            'Copy for Copilot copies the prompt with the file paths and sends nothing: paste it into GitHub Copilot Chat, choose the model there, check the prompt, then send it.',
             TIP_CLOSING[1],
         ]);
         expect(tipClosingOf({ assistant: 'junie', handover: 'copyFor', place: 'Junie in AI Chat' })[0]).toBe(
-            'Copy for Junie copies the prompt with file references and sends nothing: paste it into Junie in AI Chat, choose the model there, check the prompt, then send it.',
+            'Copy for Junie copies the prompt with the file paths and sends nothing: paste it into Junie in AI Chat, choose the model there, check the prompt, then send it.',
         );
     });
 

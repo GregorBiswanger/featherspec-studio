@@ -187,7 +187,7 @@ describe('0035 T-005 / AC-010: a file that is gone is left out of the text, name
         const result = await w.send({ ...GH_REQUEST, attachAlso: [PLAN] });
         expect(w.written).toEqual([`${LINE} #file:${SPEC}`]);
         expect(result).toEqual({ outcome: 'copied', text: 'Copied without 0001-tip-splitter.plan.md: the file was not found. Paste it into GitHub Copilot Chat with Ctrl+V.' });
-        expect(w.blocks).toEqual([[`Copy for Copilot: ${PLAN} was not found, so it was not referenced.`]]);
+        expect(w.blocks).toEqual([[`Copy for Copilot: ${PLAN} was not found, so its path was left out.`]]);
         expect(JSON.stringify(w.blocks)).not.toContain(LINE);
     });
 
@@ -196,7 +196,7 @@ describe('0035 T-005 / AC-010: a file that is gone is left out of the text, name
         const result = await w.send({ ...GH_REQUEST, attachAlso: [PLAN] });
         expect(w.written).toEqual([LINE]);
         expect(result.text).toBe('Copied without 0001-tip-splitter.md, 0001-tip-splitter.plan.md: the file was not found. Paste it into GitHub Copilot Chat with Ctrl+V.');
-        expect(w.blocks).toEqual([[`Copy for Copilot: ${SPEC} was not found, so it was not referenced.`, `Copy for Copilot: ${PLAN} was not found, so it was not referenced.`]]);
+        expect(w.blocks).toEqual([[`Copy for Copilot: ${SPEC} was not found, so its path was left out.`, `Copy for Copilot: ${PLAN} was not found, so its path was left out.`]]);
     });
 
     it('AC-010 a missing file and a missing window: the text names the file and says to open the window', async () => {
@@ -289,6 +289,6 @@ describe('0035 T-005 / AC-021 (part): the texts of section 7, literally', () => 
         expect(copyForOpenText('Junie in AI Chat', 'Cmd+V')).toBe('Copied. Open Junie in AI Chat and paste it with Cmd+V.');
         expect(copyForWithoutText('a.md', 'the Junie tool window', 'Ctrl+V', true)).toBe('Copied without a.md: the file was not found. Paste it into the Junie tool window with Ctrl+V.');
         expect(copyForWithoutText('a.md', 'the Junie tool window', 'Ctrl+V', false)).toBe('Copied without a.md: the file was not found. Open the Junie tool window and paste it with Ctrl+V.');
-        expect(copyForMissingOutputText('Junie', '.specs/a.md')).toBe('Copy for Junie: .specs/a.md was not found, so it was not referenced.');
+        expect(copyForMissingOutputText('Junie', '.specs/a.md')).toBe('Copy for Junie: .specs/a.md was not found, so its path was left out.');
     });
 });

@@ -83,7 +83,7 @@ class SettingsTableTest {
     fun `AC-001 the row texts are those of section 7`() {
         assertEquals("Assistant:", SettingsTable.ASSISTANT_LABEL)
         assertEquals(
-            "Your AI assistant for the next step. Send to Claude Code types the prompt into Claude Code in the terminal; Copy for Copilot or Junie copies it with file references and opens the chat. Nothing is sent; Copy prompt stays in the button's menu.",
+            "Your AI assistant for the next step. Send to Claude Code types the prompt into Claude Code in the terminal; Copy for Copilot or Junie copies it with the file paths and opens the chat. Nothing is sent; Copy prompt stays in the button's menu.",
             SettingsTable.ASSISTANT_DESCRIPTION,
         )
         assertEquals(listOf("none", "copilot", "claudeCode", "junie"), SettingsTable.ASSISTANT_OPTIONS.map { it.value })
@@ -91,9 +91,9 @@ class SettingsTableTest {
         assertEquals(
             listOf(
                 "Copy the prompt and paste it into any assistant.",
-                "Copy for Copilot copies the prompt with #file references. Paste it into GitHub Copilot Chat. Needs the GitHub Copilot plugin.",
+                "Copy for Copilot copies the prompt with the file paths. Paste it into GitHub Copilot Chat. Needs the GitHub Copilot plugin.",
                 "Send to Claude Code types the prompt into Claude Code in the IDE terminal and sends nothing. Needs the claude command and the Terminal plugin.",
-                "Copy for Junie copies the prompt with @ file references. Paste it into Junie in AI Chat.",
+                "Copy for Junie copies the prompt with the file paths. Paste it into Junie in AI Chat.",
             ),
             SettingsTable.ASSISTANT_OPTIONS.map { it.description },
         )

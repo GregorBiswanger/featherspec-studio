@@ -1646,6 +1646,10 @@
                 "AC-029": {
                     "category": "shared",
                     "reference": "shared-test"
+                },
+                "AC-030": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (review 20 B-1: Copy for texts say file paths until AC-028)"
                 }
             }
         }

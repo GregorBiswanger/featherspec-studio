@@ -113,6 +113,8 @@ handovers behave as in a trusted one, as VS Code's Send does in Restricted Mode 
   - Copilot: `copilotCopyText(line, paths)` = `<line>` + ` #file:<path>` per path (proxy, OP-008, A-002).
   - Junie: `junieCopyText(line, paths, form)` (§6.7), references ` @file:<path>` (AI Chat's documented form) (proxy, OP-008, A-003).
 - Copy prompt (main part without offer, or the menu item) copies the line alone, as everywhere (0027 §6.6).
+- *Amended 2026-11-23 (review 20 B-1, §16):* the syntaxes stay, but until AC-028 shows that a pasted `#file:` or `@file:` becomes
+  a reference, no text of the Studio calls them references: they are "the file paths" (§7, AC-030).
 
 ### 6.3 Send to Claude Code in the IDE terminal
 
@@ -197,15 +199,16 @@ VS Code texts are unchanged. JetBrains reuses 0024's and 0027's texts for Send t
 | Place | Text |
 | --- | --- |
 | Setting row label | `Assistant:` |
-| Setting description | `Your AI assistant for the next step. Send to Claude Code types the prompt into Claude Code in the terminal; Copy for Copilot or Junie copies it with file references and opens the chat. Nothing is sent; Copy prompt stays in the button's menu.` |
+| Setting description | `Your AI assistant for the next step. Send to Claude Code types the prompt into Claude Code in the terminal; Copy for Copilot or Junie copies it with the file paths and opens the chat. Nothing is sent; Copy prompt stays in the button's menu.` |
 | Option labels | `None: Copy prompt` · `GitHub Copilot` · `Claude Code` · `Junie` (T-1) |
-| Option descriptions | `Copy the prompt and paste it into any assistant.` · `Copy for Copilot copies the prompt with #file references. Paste it into GitHub Copilot Chat. Needs the GitHub Copilot plugin.` · `Send to Claude Code types the prompt into Claude Code in the IDE terminal and sends nothing. Needs the claude command and the Terminal plugin.` · `Copy for Junie copies the prompt with @ file references. Paste it into Junie in AI Chat.` (T-2) |
+| Option descriptions | `Copy the prompt and paste it into any assistant.` · `Copy for Copilot copies the prompt with the file paths. Paste it into GitHub Copilot Chat. Needs the GitHub Copilot plugin.` · `Send to Claude Code types the prompt into Claude Code in the IDE terminal and sends nothing. Needs the claude command and the Terminal plugin.` · `Copy for Junie copies the prompt with the file paths. Paste it into Junie in AI Chat.` (T-2) |
 | Copy for, main part | `Copy for Copilot` · `Copy for Junie` |
-| Copy for, name and tooltip | `Copy for <Name>: <line>`, plus `. Adds <files> as references.` with files (`<files>` as 0027: names joined by ` and `) |
+| Copy for, name and tooltip | `Copy for <Name>: <line>`, plus `. Adds the paths of <files>.` with files (`<files>` as 0027: names joined by ` and `) |
 | Copy for, done | label `Copied`; name `Copied: <line>`; tooltip and announced `Copied. Paste it into <place> with <key>.` · without the window `Copied. Open <place> and paste it with <key>.` · a file left out `Copied without <file>: the file was not found. Paste it into <place> with <key>.` |
 | `<place>` | `GitHub Copilot Chat` · `Junie in AI Chat` · `the Junie tool window` |
 | Copy for, failed | 0021's `Copy failed` and its text |
-| Toggletip, Copy for offered | `Copy for <Name> copies the prompt with file references and sends nothing: paste it into <place>, choose the model there, check the prompt, then send it.` |
+| Copy for, log, file left out | `Copy for <Name>: <path> was not found, so its path was left out.` |
+| Toggletip, Copy for offered | `Copy for <Name> copies the prompt with the file paths and sends nothing: paste it into <place>, choose the model there, check the prompt, then send it.` |
 | Log causes (Claude Code) | `the Terminal plugin is not available` · `Claude Code was not ready within 15000 ms` · `terminal call failed: <message>` · `no result within 20000 ms` |
 
 `<key>` is `Cmd+V` on macOS, else `Ctrl+V` (0024 §6.5).
@@ -357,6 +360,12 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
   AC-027, AC-028) shall describe the three handovers; the statements of §5 shall carry their notes; `jetbrains/AGENTS.md`
   shall carry §5's rule; `AGENTS.md` shall stay at most 15 000 bytes and `.memory-bank/activeContext.md` below 7000 bytes.
 
+**After review 20 (amendments of 2026-11-23, §16)**
+
+- **AC-030** *(review 20 B-1)* Until AC-028 shows that a pasted `#file:` or `@file:` becomes a reference, no text of the Studio
+  (text modules, the settings table, README, CHANGELOG) shall promise a "reference": the Copy for texts of §7 shall say the
+  file paths, each asserted literally, and the syntaxes `#file:<path>` and `@file:<path>` shall stay unchanged.
+
 ## 12. Technical notes for developers or AI agents
 
 As-is at `aa0fe9b` (digest from the code):
@@ -437,3 +446,12 @@ Ready: clarified 2026-11-22 (§14); the proxies wait for Gregor's read. Done per
 proven by tests and CI, AC-027 and AC-028 checked by Gregor, every parity row categorised, VS Code CI and `.vsix`
 unchanged. Next: Gregor reads the plan; spike K-1 and 0034's close come first (plan stage 0); spec 0037 builds on the
 option Junie and Copy for Junie.
+
+## 16. Amendments after UX review 20 (2026-11-23)
+
+Source: [docs/ux-audit/20-review-0035-g0.md](../../docs/ux-audit/20-review-0035-g0.md) §2 *Muss vor dem Hands-On*, work order
+20-A items 1 to 3. Gregor's open decisions of that review (S-1 to S-7, PD-110, budgets) are not part of this amendment.
+
+| Item | Change | Statements and texts touched | New criterion |
+| --- | --- | --- | --- |
+| B-1 | `references` becomes `paths` while AC-028 is not proven; the syntax stays | §6.2, §7 (setting description, option descriptions, name and tooltip, toggletip, log line); README, CHANGELOG | AC-030 |

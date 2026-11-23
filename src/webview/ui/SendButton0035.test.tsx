@@ -60,7 +60,7 @@ afterEach(() => {
 });
 
 describe('0035 T-006 / AC-020, AC-021: the Copy for split button', () => {
-    it('AC-021 the main part reads Copy for <Name>; name and tooltip are §7 literally, with the files as references', async () => {
+    it('AC-021 the main part reads Copy for <Name>; name and tooltip are §7 literally, with the paths of the files', async () => {
         const container = await show(GH_VIEW);
         expect(main(container).textContent).toBe('Copy for Copilot');
         expect(main(container).getAttribute('aria-label')).toBe(`Copy for Copilot: ${LINE}`);
@@ -68,8 +68,8 @@ describe('0035 T-006 / AC-020, AC-021: the Copy for split button', () => {
         mounted?.unmount();
         const junie = await show(JUNIE_VIEW);
         expect(main(junie).textContent).toBe('Copy for Junie');
-        expect(main(junie).getAttribute('aria-label')).toBe(`Copy for Junie: ${LINE}. Adds 0001-tip-splitter.md and 0001-tip-splitter.plan.md as references.`);
-        expect(main(junie).getAttribute('title')).toBe(`Copy for Junie: ${LINE}. Adds 0001-tip-splitter.md and 0001-tip-splitter.plan.md as references.`);
+        expect(main(junie).getAttribute('aria-label')).toBe(`Copy for Junie: ${LINE}. Adds the paths of 0001-tip-splitter.md and 0001-tip-splitter.plan.md.`);
+        expect(main(junie).getAttribute('title')).toBe(`Copy for Junie: ${LINE}. Adds the paths of 0001-tip-splitter.md and 0001-tip-splitter.plan.md.`);
     });
 
     it('AC-020 the menu holds exactly one item, Copy prompt, and no target item', async () => {
@@ -138,8 +138,8 @@ describe('0035 T-006 / AC-021, AC-022: the texts of section 7', () => {
     it('AC-021 label, name and toggletip sentence', () => {
         expect(copyForMainLabel('Copilot')).toBe('Copy for Copilot');
         expect(copyForMainName('Junie', LINE)).toBe(`Copy for Junie: ${LINE}`);
-        expect(copyForMainName('Junie', LINE, 'a.md and b.md')).toBe(`Copy for Junie: ${LINE}. Adds a.md and b.md as references.`);
-        expect(copyForTipText('Copilot', 'GitHub Copilot Chat')).toBe('Copy for Copilot copies the prompt with file references and sends nothing: paste it into GitHub Copilot Chat, choose the model there, check the prompt, then send it.');
-        expect(copyForTipText('Junie', 'the Junie tool window')).toBe('Copy for Junie copies the prompt with file references and sends nothing: paste it into the Junie tool window, choose the model there, check the prompt, then send it.');
+        expect(copyForMainName('Junie', LINE, 'a.md and b.md')).toBe(`Copy for Junie: ${LINE}. Adds the paths of a.md and b.md.`);
+        expect(copyForTipText('Copilot', 'GitHub Copilot Chat')).toBe('Copy for Copilot copies the prompt with the file paths and sends nothing: paste it into GitHub Copilot Chat, choose the model there, check the prompt, then send it.');
+        expect(copyForTipText('Junie', 'the Junie tool window')).toBe('Copy for Junie copies the prompt with the file paths and sends nothing: paste it into the Junie tool window, choose the model there, check the prompt, then send it.');
     });
 });
