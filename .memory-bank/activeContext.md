@@ -1,6 +1,6 @@
 # Active Context
 
-Last updated: 2026-11-22
+Last updated: 2026-11-23
 Current branch: jetbrains-host
 Current phase: act
 
@@ -10,7 +10,7 @@ Current phase: act
 - 0021–0024 are implemented; their specs stay In Progress in `active/`.
 
 ## Active Spec
-- [0035](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.md) / [plan](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.plan.md): Send and Copy for in JetBrains (PD-108), T-001…T-008, T-013 verified, T-009…T-012 built (CI pending); next T-014; K-1 values, proxies (§14) await Gregor.
+- [0035](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.md) / [plan](../.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.plan.md): Send and Copy for in JetBrains (PD-108), T-001…T-013 built, review 20 AC-030…AC-040 built (CI pending); next T-014; **K-1 pending**, proxies (§14) await Gregor.
 - [0034](../.specs/active/0034-studio-for-jetbrains-ides.md) / [plan](../.specs/active/0034-studio-for-jetbrains-ides.plan.md): JetBrains IDEs, T-001…T-042 verified except T-035, G4 fix round open; baseline `3bc615c`.
 - [0027](../.specs/active/0027-attach-spec-when-sending.md) / [plan](../.specs/active/0027-attach-spec-when-sending.plan.md): Send attaches the spec for Copilot and Claude Code in every version (PD-091), T-001…T-011 verified; AC-016, AC-017, AC-020 are Gregor's or the orchestrator's.
 - [0024](../.specs/active/0024-send-next-step-to-assistant.md) / [plan](../.specs/active/0024-send-next-step-to-assistant.plan.md): Send to Copilot / Claude Code, T-001…T-022 verified; AC-016…AC-019 are Gregor's; OP-004 closed by PD-078.
@@ -31,7 +31,7 @@ Current phase: act
 - Completed 2026-11-20: [0032](../.specs/done/0032-release-polish.md), [0033](../.specs/done/0033-start-via-lifecycle-plan-attachment-prompt-layout.md); plans in `plan-archive/`.
 
 ## Changed Recently
-- 0034 G3 fix round `727f708` (2026-11-21): Overview in conformance, synthetic `AGENTS.md` for weak inputs, rendered-text guard 199 areas, neutral paths (AC-038), `src/hosts/noNetwork.test.ts`.
+- 0035 review 20 (2026-11-23): B-1…B-4, S-1…S-6 built (PD-110, Gregor decided OP-003/004/013/016), S-7 prepared; Kotlin only locally compiled, CI open.
 - 0035 T-013 (2026-11-22): 56 of 60 PD-105 parity rows moved to PD-108, notes in 0024, 0029, 0034, README, CHANGELOG, checklist, maps; `AGENTS.md` untouched (14991).
 - 0035 stages 2 and 3 (2026-11-22): Copy for, JetBrains table and calls, guard moved to `1765403`; Kotlin: Assistant row, plugin availability, routed calls, Claude terminal, chat windows.
 
