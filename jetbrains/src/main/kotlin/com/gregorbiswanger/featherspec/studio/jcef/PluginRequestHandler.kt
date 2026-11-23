@@ -25,7 +25,12 @@ class PluginRequestHandler(
         return isBlocked(request, documents)
     }
 
-    override fun onRenderProcessTerminated(browser: CefBrowser?, status: CefRequestHandler.TerminationStatus?) {
+    override fun onRenderProcessTerminated(
+        browser: CefBrowser?,
+        status: CefRequestHandler.TerminationStatus?,
+        errorCode: Int,
+        errorString: String?,
+    ) {
         onTerminated()
     }
 
