@@ -436,7 +436,7 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         expect(readme).toContain('Hover a Ready, Review or Blocked column header on the Board for the rule behind a derived state');
         expect(readme).toContain('shown in five places');
         expect(readme).not.toContain('four places');
-        const places = readme.slice(readme.indexOf('shown in five places'), readme.indexOf('Studio starts no agent and changes no file'));
+        const places = readme.slice(readme.indexOf('shown in five places'), readme.indexOf('Studio starts no agent on its own and changes no file'));
         for (const place of ['Specs view', 'detail of a spec', 'Board card', 'Overview', 'status bar']) {
             expect(places, place).toContain(place);
         }

@@ -122,3 +122,58 @@ describe('0035 review 20 S-7 / AC-040: prepared only, K-1 pending', () => {
         expect(probe).toContain('"PluginManagerCore.isDisabled"');
     });
 });
+
+describe('0035 README polish: "on its own" everywhere the Studio is meant, and Send to Claude Code as a short list', () => {
+    const CLAUDE_BULLET = '- **Send to Claude Code** (needs the `claude` command and the Terminal plugin)';
+
+    it('every README sentence that says Studio starts no agent says "on its own", the Plan map and next step ones included', async () => {
+        const readme = await read('README.md');
+        expect(readme).toContain('Studio only shows and copies: it starts no agent on its own and writes no file.');
+        expect(readme).toContain('Studio starts no agent on its own and changes no file;');
+        expect(readme.match(/starts no agent(?! on its own)/g)).toBeNull();
+    });
+
+    it('negative control, the pattern finds a sentence without it', () => {
+        expect('it starts no agent and writes no file'.match(/starts no agent(?! on its own)/g)).not.toBeNull();
+    });
+
+    it('the Send to Claude Code bullet is a short list with one fact per item', async () => {
+        const lines = (await read('README.md')).split('\n');
+        const start = lines.findIndex((line) => line.startsWith(CLAUDE_BULLET));
+        expect(start).toBeGreaterThan(0);
+        const items: string[] = [];
+        for (let index = start + 1; index < lines.length && lines[index].startsWith('  - '); index++) {
+            items.push(lines[index]);
+        }
+        expect(items).toHaveLength(6);
+        const wanted = [
+            "The main part follows the step's Tip",
+            'It never presses Enter',
+            'waits for you to trust the folder or to log in',
+            '`Starting Claude Code…`',
+            'Claude Code did not start. Is the claude command installed? The prompt is copied.',
+            'This project is not trusted, so Studio does not start claude. The prompt is copied.',
+        ];
+        wanted.forEach((text, index) => expect(items[index], text).toContain(text));
+        expect(lines[start].length).toBeLessThan(260);
+        for (const item of items) {
+            expect(item.length, item.slice(0, 40)).toBeLessThan(560);
+        }
+    });
+
+    it('the list keeps the claims of the paragraph and adds none', async () => {
+        const section = (await read('README.md')).split('## JetBrains IDEs')[1];
+        for (const text of [
+            'one ` @path` per attached file',
+            'a running `claude` tab of the IDE terminal',
+            'a new tab `Claude Code` in the project root',
+            'Send to the current chat** and **Send to a new chat**',
+            'within 15 seconds',
+            '(`claude`, `claude.exe` or `claude.cmd`)',
+            'it does not stop earlier, because the IDE\'s PATH can differ from the terminal\'s',
+            'it types only into a running `claude` tab',
+        ]) {
+            expect(section, text).toContain(text);
+        }
+    });
+});
