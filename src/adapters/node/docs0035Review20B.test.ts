@@ -101,3 +101,24 @@ describe('0035 review 20 S-1 / AC-035: README and CHANGELOG say what the main pa
         expect(changelog).toContain("The main part of Send to Claude Code follows the Tip's session");
     });
 });
+
+describe('0035 review 20 S-7 / AC-040: prepared only, K-1 pending', () => {
+    it('AC-040 the spec and the plan name the open point K-1 pending and AC-040', async () => {
+        const [spec, plan] = await Promise.all([read('.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.md'), read('.specs/active/0035-send-and-copy-for-each-assistant-in-jetbrains.plan.md')]);
+        for (const text of [spec, plan]) {
+            expect(text).toContain('K-1 pending');
+            expect(text).toContain('AC-040');
+            expect(text).toContain('isDisabled');
+        }
+        expect(spec).toContain('**Open: K-1 pending**');
+    });
+
+    it('AC-040 the platform glue asks through the strategy, today isLoaded, and the probe records both values', async () => {
+        const main = 'jetbrains/src/main/kotlin/com/gregorbiswanger/featherspec/studio/';
+        const [plugins, availability, probe] = await Promise.all([read(`${main}ports/IdePlugins.kt`), read(`${main}ports/PluginAvailability.kt`), read(`${main}probe/HandoverProbe.kt`)]);
+        expect(plugins).toContain('PluginActivity.available(PluginManagerCore.isPluginInstalled(pluginId), PluginActivity.CURRENT');
+        expect(availability).toContain('val CURRENT: ActivityCheck = ActivityCheck.LOADED');
+        expect(probe).toContain('"PluginManagerCore.isLoaded"');
+        expect(probe).toContain('"PluginManagerCore.isDisabled"');
+    });
+});

@@ -71,4 +71,36 @@ class PluginAvailabilityTest {
         assertFalse(watch.changed(emptyList()))
         assertTrue(watch.changed(listOf("com.github.copilot")))
     }
+
+    @Test
+    fun `AC-040 the check that tells whether an installed plugin is active is one swappable strategy, and today it is isLoaded`() {
+        assertEquals(ActivityCheck.LOADED, PluginActivity.CURRENT)
+        assertEquals(listOf(ActivityCheck.LOADED, ActivityCheck.NOT_DISABLED), ActivityCheck.values().toList())
+        assertEquals("K-1 pending", PluginActivity.STATUS)
+    }
+
+    @Test
+    fun `AC-040 the two strategies agree where the platform is sure and differ where K-1 may find them differ`() {
+        for ((loaded, disabled) in listOf(true to false, false to true)) {
+            assertEquals(loaded, PluginActivity.available(true, ActivityCheck.LOADED, { loaded }, { disabled }))
+            assertEquals(loaded, PluginActivity.available(true, ActivityCheck.NOT_DISABLED, { loaded }, { disabled }))
+        }
+        assertTrue(PluginActivity.available(true, ActivityCheck.LOADED, { true }, { true }))
+        assertFalse(PluginActivity.available(true, ActivityCheck.NOT_DISABLED, { true }, { true }))
+        assertFalse(PluginActivity.available(true, ActivityCheck.LOADED, { false }, { false }))
+        assertTrue(PluginActivity.available(true, ActivityCheck.NOT_DISABLED, { false }, { false }))
+    }
+
+    @Test
+    fun `AC-040 only the chosen strategy is asked, and nothing is asked for a plugin that is not installed`() {
+        var loadedAsked = 0
+        var disabledAsked = 0
+        PluginActivity.available(true, ActivityCheck.LOADED, { loadedAsked++; true }, { disabledAsked++; false })
+        assertEquals(1 to 0, loadedAsked to disabledAsked)
+        PluginActivity.available(true, ActivityCheck.NOT_DISABLED, { loadedAsked++; true }, { disabledAsked++; false })
+        assertEquals(1 to 1, loadedAsked to disabledAsked)
+        assertFalse(PluginActivity.available(false, ActivityCheck.LOADED, { loadedAsked++; true }, { disabledAsked++; false }))
+        assertFalse(PluginActivity.available(false, ActivityCheck.NOT_DISABLED, { loadedAsked++; true }, { disabledAsked++; false }))
+        assertEquals(1 to 1, loadedAsked to disabledAsked)
+    }
 }

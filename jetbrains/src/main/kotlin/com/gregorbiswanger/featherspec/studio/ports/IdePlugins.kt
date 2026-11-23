@@ -10,11 +10,13 @@ import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.ProjectManager
+import java.lang.reflect.InvocationTargetException
+import java.lang.reflect.Modifier
 
 class IdePlugins : PluginQuery {
     override fun available(id: String): Boolean = try {
         val pluginId = PluginId.getId(id)
-        PluginManagerCore.isPluginInstalled(pluginId) && loaded(pluginId)
+        PluginActivity.available(PluginManagerCore.isPluginInstalled(pluginId), PluginActivity.CURRENT, { loaded(pluginId) }, { disabled(pluginId) })
     } catch (cancelled: ProcessCanceledException) {
         throw cancelled
     } catch (failure: RuntimeException) {
@@ -31,8 +33,24 @@ class IdePlugins : PluginQuery {
         true
     }
 
+    private fun disabled(pluginId: PluginId): Boolean {
+        try {
+            val type = Class.forName(PLUGIN_MANAGER_CORE)
+            val method = type.methods.first { it.name == IS_DISABLED && it.parameterCount == 1 }
+            val receiver = if (Modifier.isStatic(method.modifiers)) null else type.getField("INSTANCE").get(null)
+            return method.invoke(receiver, pluginId) as Boolean
+        } catch (failure: InvocationTargetException) {
+            throw failure.targetException
+        } catch (failure: ReflectiveOperationException) {
+            throw IllegalStateException("$PLUGIN_MANAGER_CORE.$IS_DISABLED could not be asked", failure)
+        }
+    }
+
     fun snapshot(absent: Set<String> = emptySet()): List<String> = PluginAvailability.snapshot(this, absent)
 }
+
+private const val PLUGIN_MANAGER_CORE = "com.intellij.ide.plugins.PluginManagerCore"
+private const val IS_DISABLED = "isDisabled"
 
 class PluginEvents : DynamicPluginListener {
     override fun pluginLoaded(pluginDescriptor: IdeaPluginDescriptor) {

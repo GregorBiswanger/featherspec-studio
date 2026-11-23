@@ -166,6 +166,10 @@ object HandoverInventory {
                 },
             )
             candidates.add(
+                "PluginManagerCore.isLoaded",
+                HandoverReflect.safe { HandoverReflect.callStatic("com.intellij.ide.plugins.PluginManagerCore", "isLoaded", id) },
+            )
+            candidates.add(
                 "PluginManagerCore.isDisabled",
                 HandoverReflect.safe { HandoverReflect.callStatic("com.intellij.ide.plugins.PluginManagerCore", "isDisabled", id) },
             )

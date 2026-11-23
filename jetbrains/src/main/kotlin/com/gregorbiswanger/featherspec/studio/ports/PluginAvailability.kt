@@ -12,6 +12,20 @@ object PluginIds {
     val ALL: List<String> = listOf(COPILOT, TERMINAL, JUNIE, AI_ASSISTANT)
 }
 
+enum class ActivityCheck { LOADED, NOT_DISABLED }
+
+object PluginActivity {
+    const val STATUS = "K-1 pending"
+
+    val CURRENT: ActivityCheck = ActivityCheck.LOADED
+
+    fun available(installed: Boolean, check: ActivityCheck, loaded: () -> Boolean, disabled: () -> Boolean): Boolean =
+        installed && when (check) {
+            ActivityCheck.LOADED -> loaded()
+            ActivityCheck.NOT_DISABLED -> !disabled()
+        }
+}
+
 fun interface PluginQuery {
     fun available(id: String): Boolean
 }

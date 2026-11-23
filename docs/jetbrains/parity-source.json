@@ -1686,6 +1686,10 @@
                 "AC-039": {
                     "category": "deliberately different",
                     "reference": "PD-108 (H-8; review 20 S-5: the option list of the IDE's settings page follows the IDE's plugins)"
+                },
+                "AC-040": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (H-17; review 20 S-7: the plugin-activity check of the IDE, K-1 pending)"
                 }
             }
         }

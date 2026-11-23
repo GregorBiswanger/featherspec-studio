@@ -186,7 +186,9 @@ the missing API (LLM-2340). The menu holds `Copy prompt` alone (proxy, OP-011).
   A plugin that comes or goes while the page is open changes the list on the IDE's plugin event (the one that also sends
   `pluginsChanged` to the core), without reopening the page.
 - **Available:** a plugin is installed and enabled, asked through documented platform API without
-  `PluginManagerCore.getPlugin`: Junie ⇔ `org.jetbrains.junie` or `com.intellij.ml.llm`; GitHub Copilot ⇔ `com.github.copilot`;
+  `PluginManagerCore.getPlugin` (*review 20 S-7, prepared only, **K-1 pending**, AC-040:* "enabled" is asked by one swappable strategy
+  of the platform-free `PluginActivity`, today `isLoaded`; K-1 compares it with `isDisabled`, and a difference switches one
+  constant to `NOT_DISABLED`, or, if neither holds, to the optional dependency): Junie ⇔ `org.jetbrains.junie` or `com.intellij.ml.llm`; GitHub Copilot ⇔ `com.github.copilot`;
   Terminal ⇔ `org.jetbrains.plugins.terminal` (proxy, OP-014, A-007). When the IDE reports a plugin loaded or unloaded,
   options and offer follow within 500 ms of the report.
 - A change of the setting reaches every open IDE project's panel within 500 ms (0021 AC-011), without restart.
@@ -451,6 +453,10 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
   `org.jetbrains.junie` or `com.intellij.ml.llm`), in the order of AC-001; a stored value whose assistant is not available shall show `None: Copy prompt`
   and stay stored until another value is applied; and a plugin loaded or unloaded while the page is open shall change the list
   without reopening the page. *(This amends AC-001's "`GitHub Copilot`, `Claude Code` always".)*
+- **AC-040** *(review 20 S-7, **K-1 pending**)* The plugin-activity check of the platform glue shall be decided by one platform-free strategy
+  (`PluginActivity.available`, with `ActivityCheck.LOADED` and `NOT_DISABLED`) whose current value is `LOADED`, so that today's
+  behaviour is unchanged; only the chosen strategy shall be asked and nothing for a plugin that is not installed; the K-1 probe shall
+  record `PluginManagerCore.isLoaded` beside `isDisabled`; and this spec and its plan shall name the open point *K-1 pending*.
 
 ## 12. Technical notes for developers or AI agents
 
@@ -482,13 +488,16 @@ As-is at `aa0fe9b` (digest from the code):
 | A-004 | Spike J-1 gives branch A or B, so form A stays | 18 §8 E-2 expects loaders to work; J-1 not run yet | form C: one constant changes, AC-018 already covers it |
 | A-005 | Claude Code's readiness for input can be detected from the terminal within 15 s | Claude Code shows its input box after start; spike K-1 measures the time and picks the signal | new tabs always fall back to copy; since 2026-11-23 (AC-032) an existing Claude terminal needs the signal too, so wrong provisional markers (**K-1 pending**) turn every Send to Claude Code into copy plus the waiting text until K-1's values replace them |
 | A-006 | The documented Reworked Terminal API stays usable from 2025.3.1 to the latest release | public since 2025.3, default engine since 2025.2; the Verifier runs on both ends | it is experimental: a change breaks only Send to Claude Code, which falls back (AC-013) |
-| A-007 | "Installed and enabled" can be asked through non-internal API | `isPluginInstalled` documented; the Verifier checks the enabled check | AC-003's enabled half needs another documented API; K-1 records it |
+| A-007 | "Installed and enabled" can be asked through non-internal API | `isPluginInstalled` documented; the Verifier checks the enabled check | AC-003's enabled half needs another documented API; K-1 records it; **K-1 pending** (review 20 S-7): forum notes say `isLoaded` may be unreliable from 2025.3 (not confirmed by JetBrains); the strategy is swappable (AC-040) |
 | A-008 | The tool windows can be found by ID: GitHub Copilot Chat, AI Chat, Junie | the IDs are not documented; probe K-1 lists the real IDs in Rider | a missing ID only gives `Open <place> and paste …` (AC-019) |
 | A-009 | GitHub Copilot's plugin ID is `com.github.copilot` | its Marketplace listing; not in GitHub's docs; probe K-1 confirms it | Copy for Copilot is never offered; one constant changes |
 
 ## 14. Open points
 
-None open. Proxy decisions of the clarify pass (2026-11-22, orchestrator's agent as product-owner proxy, from PD-068,
+**Open: K-1 pending** (review 20 S-7, B-4): the values of the K-1 probe decide (a) whether `PluginManagerCore.isLoaded` and
+`isDisabled` agree for the four plugin IDs (`PluginActivity.CURRENT`, AC-040; a difference switches the strategy, or moves the
+check to the optional dependency), and (b) the real input, trust-dialog and login markers of `ClaudeReadiness` (AC-032). The probe
+now records `PluginManagerCore.isLoaded` next to `isDisabled`. Nothing else is open. Proxy decisions of the clarify pass (2026-11-22, orchestrator's agent as product-owner proxy, from PD-068,
 PD-094, PD-108, PD-109, 0024, 0034, 18, 19); Gregor may flip any of them:
 
 - OP-001 (proxy) Folder and status: `active/`, In Progress, plan Not started, as the orchestrator asked; a Draft in
@@ -551,3 +560,4 @@ S-6; S-7 is only prepared (below). The budget rule is PD-111 and not part of thi
 | S-3 | Safe Mode: Send to Claude Code only types into a running Claude terminal, never starts `claude`; else copy with its own text (OP-016, PD-110, decided by Gregor); Copy for unchanged | §6.1, §6.3 (new bullet), §7 (text, log cause), §14 OP-016, README | AC-037 |
 | S-6 | The setting description is one short sentence pair, the option descriptions say the rest | §7 (setting description), README | AC-038 |
 | S-5 | One rule for the option list: every option except None only while its assistant is available; the stored value stays (OP-013, decided by Gregor); the list follows plugin events while the page is open | §6.5 (options bullet), §14 OP-013, README | AC-039 |
+| S-7 | **Prepared only, K-1 pending:** the check "installed and active" is one swappable strategy (`isLoaded` today, `isDisabled` as the alternative), the probe records both; the behaviour does not change | §6.5 (Available), §13 A-007, §14 | AC-040 |
