@@ -269,6 +269,8 @@ entry steps share `src/hosts/embedded/main.ts`.
 
 Amendment 2026-11-23 (PD-111): `CoreIdeTest` and `SmokeIdeTest` judge the timing budgets through `probe/BudgetVerdict.kt` (Linux hard; Windows and macOS trend, failure from 1.5 times the budget, core ready the best of two starts) and write all values to `$GITHUB_STEP_SUMMARY`; the user budget is a gate of `docs/release-checklist.md` ("Cold start on Windows"). No step added.
 
+Amendment 2026-11-23 (cold-start line): with `-Dfeatherspec.probe.handover=true` the editor writes `FEATHERSPEC-TIMING open→first-content <ms> (cold|warm)` to `idea.log` for each Open (`probe/OpenTiming.kt` plain and unit-tested, `OpenTimingProbe.kt` glue, `panel/FirstPaintPanel.kt`, hooks in `StudioEditor` and `StudioProjectService.invokeAsync`); endpoint in the 0034 AC-007 note. No step added. Not compiled here (CI decides): `JBLoadingPanel.isLoading`, `Logger.info`. Not measured: the row double-click starts at `tree.select`; if the core opens the tab only after that command ran, the core round trip is inside the time, if the tab is already open the request is ignored.
+
 Manual-only, not implementer steps (last open evidence): AC-040 (Rider), AC-041 (WebStorm), AC-042 (keyboard, screen
 reader, JCEF off) by Gregor on a fresh `C:\projects\test\tip-splitter` with the ZIP from the CI artifact (AC-040/AC-041
 also re-measure R-5's core-ready time on Gregor's machine); Gregor's G1 decision in ADR-004 (given 2026-11-21); Marketplace vendor, certificate, secrets and first upload belong to 0036.

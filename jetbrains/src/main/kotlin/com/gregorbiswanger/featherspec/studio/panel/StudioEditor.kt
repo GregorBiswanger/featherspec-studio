@@ -18,6 +18,9 @@ import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.jcef.JBCefBrowser
 import com.intellij.ui.jcef.JBCefJSQuery
 import com.gregorbiswanger.featherspec.studio.jcef.PluginRequestHandler
+import com.gregorbiswanger.featherspec.studio.probe.OpenMeasure
+import com.gregorbiswanger.featherspec.studio.probe.OpenTimingProbe
+import com.gregorbiswanger.featherspec.studio.probe.PanelFrames
 import java.awt.BorderLayout
 import java.awt.event.ActionListener
 import java.beans.PropertyChangeListener
@@ -29,7 +32,8 @@ import javax.swing.JPanel
 private const val PANEL_URL = "$CORE_ORIGIN/index.html"
 
 class StudioEditor(private val service: StudioProjectService) : UserDataHolderBase(), FileEditor {
-    private val holder = JPanel(BorderLayout())
+    private val measure: OpenMeasure? = OpenTimingProbe.begin(service)
+    private val holder: JPanel = if (measure == null) JPanel(BorderLayout()) else FirstPaintPanel { contentPainted() }
     private val lifecycle = PanelLifecycle()
     private val removers = ArrayList<() -> Unit>()
     private var shown: PanelView? = null
@@ -81,6 +85,28 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
         }
         holder.revalidate()
         holder.repaint()
+    }
+
+    private fun contentPainted() {
+        val timed = measure ?: return
+        if (timed.done) {
+            return
+        }
+        val visible = when (shown) {
+            PanelView.Loading -> loading?.isLoading == true
+            PanelView.Browser, null -> false
+            else -> true
+        }
+        if (visible) {
+            OpenTimingProbe.contentShown(timed)
+        }
+    }
+
+    private fun frameShown(payload: String) {
+        val timed = measure ?: return
+        if (!timed.done && PanelFrames.type(payload) == "shell") {
+            OpenTimingProbe.contentShown(timed)
+        }
     }
 
     private fun loadingPanel(): JComponent {
@@ -151,6 +177,7 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
                 service.host.subscribe("panel") { payload ->
                     created.cefBrowser.executeJavaScript(PanelMessages.postScript(payload), CORE_ORIGIN, 0)
                     nudge.nudge()
+                    frameShown(payload)
                 },
             )
             browser = created
@@ -233,6 +260,7 @@ class StudioEditor(private val service: StudioProjectService) : UserDataHolderBa
 
     override fun dispose() {
         disposed = true
+        OpenTimingProbe.closed(service, measure)
         theme?.dispose()
         theme = null
         removers.forEach { it() }

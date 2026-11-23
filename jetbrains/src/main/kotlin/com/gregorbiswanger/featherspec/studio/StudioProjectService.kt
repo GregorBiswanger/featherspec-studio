@@ -19,6 +19,7 @@ import com.gregorbiswanger.featherspec.studio.ports.SpecWatch
 import com.gregorbiswanger.featherspec.studio.ports.SystemCalls
 import com.gregorbiswanger.featherspec.studio.panel.StudioFile
 import com.gregorbiswanger.featherspec.studio.ports.UiMemoryState
+import com.gregorbiswanger.featherspec.studio.probe.OpenTimingProbe
 import com.gregorbiswanger.featherspec.studio.setup.SetupCalls
 import com.gregorbiswanger.featherspec.studio.settings.SettingsTable
 import com.gregorbiswanger.featherspec.studio.settings.StudioSettings
@@ -56,6 +57,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 private const val PLUGIN_ID = "com.gregorbiswanger.featherspec.studio"
 
 private const val OK_NULL = "{\"ok\":null}"
+
+private val OPENING_COMMANDS = setOf("open", "tree.select", "tree.showInPlanMap")
 
 @Service(Service.Level.PROJECT)
 class StudioProjectService(private val project: Project) : Disposable {
@@ -146,6 +149,9 @@ class StudioProjectService(private val project: Project) : Disposable {
     }
 
     fun invokeAsync(command: String, args: String) {
+        if (command in OPENING_COMMANDS) {
+            OpenTimingProbe.requested(this)
+        }
         ApplicationManager.getApplication().executeOnPooledThread(
             Runnable {
                 runtime?.invoke(command, args)?.whenComplete { _, failure ->

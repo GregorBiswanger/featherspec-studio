@@ -31,9 +31,9 @@ Current phase: act
 - Completed 2026-11-20: [0032](../.specs/done/0032-release-polish.md), [0033](../.specs/done/0033-start-via-lifecycle-plan-attachment-prompt-layout.md); plans in `plan-archive/`.
 
 ## Changed Recently
+- 0034 (2026-11-23): `-Dfeatherspec.probe.handover=true` writes `FEATHERSPEC-TIMING open→first-content <ms> (cold|warm)` to `idea.log` per Open (AC-007 note); CI open.
 - 0035 review 20 (2026-11-23): B-1…B-4, S-1…S-6 built (PD-110, Gregor decided OP-003/004/013/016), S-7 prepared; Kotlin only locally compiled, CI open.
 - 0035 T-013 (2026-11-22): 56 of 60 PD-105 parity rows moved to PD-108, notes in 0024, 0029, 0034, README, CHANGELOG, checklist, maps; `AGENTS.md` untouched (14991).
-- 0035 stages 2 and 3 (2026-11-22): Copy for, JetBrains table and calls, guard moved to `1765403`; Kotlin: Assistant row, plugin availability, routed calls, Claude terminal, chat windows.
 
 ## Decisions in Flight
 - 0034: the orchestrator's proxy decisions await Gregor — list in the plan's *Session handoff*.
