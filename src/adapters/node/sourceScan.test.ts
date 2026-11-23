@@ -450,7 +450,7 @@ describe('0026 AC-021: Send, not Paste, in the text modules', () => {
         'Paste it once every worker you started is back.',
         'before you paste.',
         'paste it there with',
-        'paste it into ${place}, choose',
+        'paste it into ${target}, choose',
         'Paste it into ${place} with ${pasteKey}.',
         'and paste it with ${pasteKey}.',
     ];

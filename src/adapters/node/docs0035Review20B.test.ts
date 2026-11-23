@@ -40,3 +40,11 @@ describe('0035 review 20 B-3 / PD-110 / AC-033: the README keeps its promise hon
         expect('Studio starts no process and no agent.'.includes('starts no process')).toBe(true);
     });
 });
+
+describe('0035 review 20 S-4 / AC-034: README and CHANGELOG tell to choose Junie in AI Chat', () => {
+    it('AC-034 the README section and the CHANGELOG say it', async () => {
+        const [readme, changelog] = await Promise.all([read('README.md'), read('CHANGELOG.md')]);
+        expect(readme).toContain('AI Chat opens with its recommended agent, so for Junie choose Junie in AI Chat before you paste.');
+        expect(changelog).toContain('In AI Chat, choose Junie and paste it with Ctrl+V.');
+    });
+});

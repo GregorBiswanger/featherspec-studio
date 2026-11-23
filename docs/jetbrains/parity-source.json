@@ -1662,6 +1662,10 @@
                 "AC-033": {
                     "category": "deliberately different",
                     "reference": "PD-110 (review 20 B-3: the README sentence about starting claude concerns JetBrains only)"
+                },
+                "AC-034": {
+                    "category": "deliberately different",
+                    "reference": "PD-108 (review 20 S-4: the Copy for Junie texts exist only in JetBrains)"
                 }
             }
         }

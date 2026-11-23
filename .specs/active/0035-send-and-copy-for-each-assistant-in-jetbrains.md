@@ -215,11 +215,11 @@ VS Code texts are unchanged. JetBrains reuses 0024's and 0027's texts for Send t
 | Option descriptions | `Copy the prompt and paste it into any assistant.` · `Copy for Copilot copies the prompt with the file paths. Paste it into GitHub Copilot Chat. Needs the GitHub Copilot plugin.` · `Send to Claude Code types the prompt into Claude Code in the IDE terminal and sends nothing. Needs the claude command and the Terminal plugin.` · `Copy for Junie copies the prompt with the file paths. Paste it into Junie in AI Chat.` (T-2) |
 | Copy for, main part | `Copy for Copilot` · `Copy for Junie` |
 | Copy for, name and tooltip | `Copy for <Name>: <line>`, plus `. Adds the paths of <files>.` with files (`<files>` as 0027: names joined by ` and `) |
-| Copy for, done | label `Copied`; name `Copied: <line>`; tooltip and announced `Copied. Paste it into <place> with <key>.` · without the window `Copied. Open <place> and paste it with <key>.` · a file left out `Copied without <file>: the file was not found. Paste it into <place> with <key>.` |
+| Copy for, done | label `Copied`; name `Copied: <line>`; tooltip and announced `Copied. Paste it into <place> with <key>.` (for `Junie in AI Chat`: `Copied. In AI Chat, choose Junie and paste it with <key>.`, *amended 2026-11-23, review 20 S-4, AC-034*) · without the window `Copied. Open <place> and paste it with <key>.` · a file left out `Copied without <file>: the file was not found. Paste it into <place> with <key>.` (the same exception for `Junie in AI Chat`) |
 | `<place>` | `GitHub Copilot Chat` · `Junie in AI Chat` · `the Junie tool window` |
 | Copy for, failed | 0021's `Copy failed` and its text |
 | Copy for, log, file left out | `Copy for <Name>: <path> was not found, so its path was left out.` |
-| Toggletip, Copy for offered | `Copy for <Name> copies the prompt with the file paths and sends nothing: paste it into <place>, choose the model there, check the prompt, then send it.` |
+| Toggletip, Copy for offered | `Copy for <Name> copies the prompt with the file paths and sends nothing: paste it into <place>, choose the model there, check the prompt, then send it.` (for `Junie in AI Chat`, *amended 2026-11-23, review 20 S-4*: `…paste it into AI Chat with Junie as the agent, choose the model there…`, because AI Chat opens with its recommended agent, since June 2026 Codex) |
 | Send to Claude Code, waiting (JetBrains only) | label `Starting Claude Code…`; name, tooltip and announced `Starting Claude Code: <line>`; the answer then shows `Opened in Claude Code` or the warning as before |
 | Send to Claude Code, waiting for an answer | warning, announced text and tooltip: `Claude Code is waiting for you in the terminal. Answer it there, then send again. The prompt is copied.` (the general warning of 0024 stays for every other failure) |
 | Log causes (Claude Code) | `the Terminal plugin is not available` · `Claude Code was not ready within 15000 ms` · `Claude Code was not ready for input` · `terminal call failed: <message>` · `no result within 20000 ms` |
@@ -400,6 +400,10 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
   literally `Studio starts no agent on its own and sends nothing. In JetBrains IDEs, Send to Claude Code may start claude in a
   terminal tab when you click it.`, no README line shall still say that Studio starts no process or no agent without that
   exception for JetBrains, and the CHANGELOG shall name PD-110.
+- **AC-034** *(review 20 S-4)* After Copy for Junie with AI Chat as the place, the control shall show `Copied. In AI Chat, choose
+  Junie and paste it with <key>.` (with a file left out `Copied without <file>: the file was not found. In AI Chat, choose
+  Junie and paste it with <key>.`) and the toggletip shall say `…paste it into AI Chat with Junie as the agent, choose the
+  model there…`; Copy for Copilot and Copy for Junie with the Junie tool window as the place shall keep their texts.
 
 ## 12. Technical notes for developers or AI agents
 
@@ -493,4 +497,5 @@ S-6; S-7 is only prepared (below). The budget rule is PD-111 and not part of thi
 | B-1 | `references` becomes `paths` while AC-028 is not proven; the syntax stays | §6.2, §7 (setting description, option descriptions, name and tooltip, toggletip, log line); README, CHANGELOG | AC-030 |
 | B-2 | Wait state and double-click guard for Send to Claude Code, JetBrains only | §6.3 (new bullet *While it runs*), §7 (waiting texts), §10 (quick succession) | AC-031 |
 | B-4 | Claude Code waits for an answer (trust, login): readiness check also in an existing terminal, own waiting text, markers provisional | §6.3 (new bullet), §7 (waiting text, log cause), §10 (first bullet), AC-013 | AC-032 |
+| S-4 | Copy for Junie tells to choose Junie in AI Chat (AI Chat starts with its recommended agent, Codex) | §7 (done texts, toggletip), README, CHANGELOG | AC-034 |
 | B-3 | PD-110 (Gregor, 2026-11-23): in JetBrains a click on Send to Claude Code may start `claude` in a terminal tab; the Studio sends nothing. The README promise follows | README (intro, *Local and read-only*, Privacy), CHANGELOG | AC-033 |

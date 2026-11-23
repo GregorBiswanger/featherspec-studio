@@ -311,7 +311,7 @@ describe('0035 T-007 / AC-016, AC-017, AC-019 (core part): Copy for through assi
     it('AC-017 Copy for Junie names AI Chat with the AI Assistant plugin, the Junie tool window without it', async () => {
         const withChat = rig([JUNIE, AI_CHAT], 'junie');
         withChat.answers.set('assistant.openChat', () => ({ ok: 'opened' }));
-        expect((await withChat.wiring.send.send({ assistant: 'junie', target: 'new', line: LINE })).text).toBe('Copied. Paste it into Junie in AI Chat with Ctrl+V.');
+        expect((await withChat.wiring.send.send({ assistant: 'junie', target: 'new', line: LINE })).text).toBe('Copied. In AI Chat, choose Junie and paste it with Ctrl+V.');
         const without = rig([JUNIE], 'junie');
         without.answers.set('assistant.openChat', () => ({ ok: 'opened' }));
         expect((await without.wiring.send.send({ assistant: 'junie', target: 'new', line: LINE })).text).toBe('Copied. Paste it into the Junie tool window with Ctrl+V.');

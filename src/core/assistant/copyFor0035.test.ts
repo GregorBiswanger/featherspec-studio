@@ -134,7 +134,7 @@ describe('0035 T-005 / AC-017: Copy for Junie writes the Junie text and names it
         const result = await w.send(JUNIE_REQUEST);
         expect(w.written).toEqual([`${LINE} @file:${SPEC} @file:${PLAN}`]);
         expect(w.events).toEqual(['write', `execute ${OPEN_CHAT} ["junie"]`]);
-        expect(result).toEqual({ outcome: 'copied', text: 'Copied. Paste it into Junie in AI Chat with Ctrl+V.' });
+        expect(result).toEqual({ outcome: 'copied', text: 'Copied. In AI Chat, choose Junie and paste it with Ctrl+V.' });
     });
 
     it('AC-017 the place follows the row: the Junie tool window without AI Chat', async () => {

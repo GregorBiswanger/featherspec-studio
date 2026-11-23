@@ -104,8 +104,12 @@ export const COPY_FOR_PLACES: Record<'copilot' | 'junie', string> = {
 
 export const JUNIE_WINDOW_PLACE = 'the Junie tool window';
 
+function handoverHint(place: string, pasteKey: string): string {
+    return place === COPY_FOR_PLACES.junie ? `In AI Chat, choose Junie and paste it with ${pasteKey}.` : `Paste it into ${place} with ${pasteKey}.`;
+}
+
 export function copyForDoneText(place: string, pasteKey: string): string {
-    return `Copied. Paste it into ${place} with ${pasteKey}.`;
+    return `Copied. ${handoverHint(place, pasteKey)}`;
 }
 
 export function copyForOpenText(place: string, pasteKey: string): string {
@@ -113,7 +117,7 @@ export function copyForOpenText(place: string, pasteKey: string): string {
 }
 
 export function copyForWithoutText(files: string, place: string, pasteKey: string, opened: boolean): string {
-    return `Copied without ${files}: the file was not found. ${opened ? `Paste it into ${place} with ${pasteKey}.` : `Open ${place} and paste it with ${pasteKey}.`}`;
+    return `Copied without ${files}: the file was not found. ${opened ? handoverHint(place, pasteKey) : `Open ${place} and paste it with ${pasteKey}.`}`;
 }
 
 export function copyForMissingOutputText(name: string, path: string): string {
@@ -130,7 +134,8 @@ export function copyForMainName(name: string, line: string, files?: string): str
 }
 
 export function copyForTipText(name: string, place: string): string {
-    return `Copy for ${name} copies the prompt with the file paths and sends nothing: paste it into ${place}, choose the model there, check the prompt, then send it.`;
+    const target = place === COPY_FOR_PLACES.junie ? 'AI Chat with Junie as the agent' : place;
+    return `Copy for ${name} copies the prompt with the file paths and sends nothing: paste it into ${target}, choose the model there, check the prompt, then send it.`;
 }
 
 export const CLAUDE_WAITING_TEXT = 'Claude Code is waiting for you in the terminal. Answer it there, then send again. The prompt is copied.';
