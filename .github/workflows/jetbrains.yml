@@ -256,6 +256,11 @@ jobs:
         env:
           FEATHERSPEC_JVM_ACTUAL: ${{ github.workspace }}/jetbrains/build/probe-out/actual
         run: npx vitest run --project node src/hosts/embedded/jvmNextBaseline.test.ts
+      - name: Show the timings in the job summary
+        if: always()
+        shell: bash
+        run: |
+          echo "Timings were written to the job summary by the tests (PD-111: Linux is the hard gate, Windows and macOS a trend up to 1.5 times the budget)."
       - name: Print the probe results and IDE log excerpts
         if: always()
         shell: bash

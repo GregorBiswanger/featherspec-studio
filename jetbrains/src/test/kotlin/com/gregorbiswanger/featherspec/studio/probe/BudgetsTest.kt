@@ -26,6 +26,20 @@ class BudgetsTest {
     }
 
     @Test
+    fun `on Windows and macOS the budgets are a trend and every value reaches the rows`() {
+        val rows = ArrayList<BudgetRow>()
+        val slow = within.copy(coreReadyMs = 17_880, gen200ReadMs = 2_999, gen200UpdateMs = 1_499, discover5Ms = 2_000)
+        assertEquals(emptyList<String>(), slow.violations("Windows 11", rows))
+        assertEquals(4, rows.size)
+        assertEquals(listOf(Verdict.TREND, Verdict.TREND, Verdict.TREND, Verdict.TREND), rows.map { it.verdict })
+        assertEquals(1, within.copy(coreReadyMs = 18_000).violations("Mac OS X").size)
+        assertEquals(1, within.copy(gen200ReadMs = 3_000).violations("Windows 11").size)
+        assertEquals(1, within.copy(gen200UpdateMs = 1_500).violations("Windows 11").size)
+        assertEquals(4, within.copy(coreReadyMs = -1, gen200ReadMs = -1, gen200UpdateMs = -1, discover5Ms = -1).violations("Windows 11").size)
+        assertEquals(1, within.copy(coreReadyMs = 12_001).violations("Linux").size)
+    }
+
+    @Test
     fun `core ready above 12000 is a violation`() {
         val found = within.copy(coreReadyMs = 12_001).violations()
         assertEquals(1, found.size)

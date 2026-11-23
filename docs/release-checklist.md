@@ -351,7 +351,7 @@ Evidence for spec 0034 AC-040, AC-041 and AC-042; the plugin ZIP is the `plugin-
 - [ ] **WebStorm** (AC-041, Gregor): the same walkthrough, comparison and pass rule; record WebStorm's version.
 - [ ] **Keyboard and screen reader** (AC-042, Gregor or a delegate, Rider and WebStorm): keyboard only into and out of the panel tab, Find Action and Escape; a screen reader reads tree rows, the status entry and the panel labels as in 0005 AC-023.
 - [ ] **Without JCEF** (AC-042): start an IDE with `ide.browser.jcef.enabled=false`; the tool window shows the notice with the reason and *Open help* (the README section *JetBrains IDEs*), the status bar says *FeatherSpec unavailable*, the settings page works.
-- [ ] **Cold start on Windows** (AC-040): the panel shows its loading state and is ready; note the seconds it took (CI runners measured up to about half a minute, the budget is 12 s).
+- [ ] **Cold start on Windows** (AC-040, gate, PD-111): on Gregor's Windows machine, open the project with the ZIP installed. Enter the measured seconds until *core ready* (limit 12 s, R-5) and until the first panel frame after *Open* (limit 1 s, AC-007): core ready ___ s, first panel frame ___ s. The CI runners only run these budgets as a trend (Windows and macOS, a failure from 1.5 times the budget); this is the check of the user budgets. Over 12 s is a product topic (loading state, warming up after the project start), not a CI topic.
 - [ ] **Open beside** (AC-040): a file opened from the detail with Ctrl+click opens in a split beside the panel; if it opens in the current window, note the IDE version.
 
 ## Send and Copy for in JetBrains (manual) (0035)

@@ -1,5 +1,6 @@
 package com.gregorbiswanger.featherspec.studio
 
+import com.gregorbiswanger.featherspec.studio.probe.BudgetRow
 import com.gregorbiswanger.featherspec.studio.probe.Budgets
 import com.gregorbiswanger.featherspec.studio.probe.ConformanceCompare
 import com.intellij.driver.sdk.waitForIndicators
@@ -46,19 +47,22 @@ class CoreIdeTest {
         if (Files.exists(budgetsFile)) {
             val json = Files.readString(budgetsFile)
             println("BUDGETS ${System.getProperty("os.name")} $json")
-            val violations = Budgets.parse(json).violations()
+            val os = System.getProperty("os.name").orEmpty()
+            val rows = ArrayList<BudgetRow>()
+            val violations = Budgets.parse(json).violations(os, rows)
             if (violations.isNotEmpty() && violations.all { it.startsWith("coreReadyMs") }) {
-                problems.addAll(secondStartViolations(conformance, violations))
+                problems.addAll(secondStartViolations(conformance, violations, os, rows))
             } else {
                 problems.addAll(violations)
             }
+            StepSummary.publish("Core start and reads (${os})", rows)
         } else {
             problems.add("the probe wrote no $budgetsFile")
         }
         check(problems.isEmpty()) { "core conformance and budgets:\n" + problems.joinToString("\n") }
     }
 
-    private fun secondStartViolations(conformance: Path, first: List<String>): List<String> {
+    private fun secondStartViolations(conformance: Path, first: List<String>, os: String, rows: MutableList<BudgetRow>): List<String> {
         val out = Path.of("build", "probe-out-second").toAbsolutePath()
         runProbe("coreConformanceSecondStart", conformance, out)
         val budgetsFile = out.resolve("budgets.json")
@@ -67,7 +71,19 @@ class CoreIdeTest {
         }
         val json = Files.readString(budgetsFile)
         println("COLD-START-RETRY ${System.getProperty("os.name")} first: ${first.joinToString("; ")} second: $json")
-        return Budgets.parse(json).violations().filter { it.startsWith("coreReadyMs") }
+        // The best of the two starts counts (PD-111).
+        val second = ArrayList<BudgetRow>()
+        val violations = Budgets.parse(json).violations(os, second).filter { it.startsWith("coreReadyMs") }
+        val retry = second.firstOrNull { it.name.startsWith("R-5") } ?: return first
+        val index = rows.indexOfFirst { it.name == retry.name }
+        val firstMs = if (index >= 0) rows[index].measured else -1L
+        if (index < 0 || (retry.measured >= 0 && (firstMs < 0 || retry.measured < firstMs))) {
+            if (index >= 0) {
+                rows[index] = retry.copy(name = retry.name + " (second start)")
+            }
+            return violations
+        }
+        return first
     }
 
     private fun runProbe(name: String, conformance: Path, out: Path) {

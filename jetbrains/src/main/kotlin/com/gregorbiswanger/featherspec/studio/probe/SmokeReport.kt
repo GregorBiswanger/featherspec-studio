@@ -104,21 +104,22 @@ data class SmokeReport(
 }
 
 object SmokeCompare {
-    fun smoke(json: String): List<String> {
+    fun smoke(json: String, rows: MutableList<BudgetRow>? = null): List<String> {
         val root = parse(json) ?: return listOf("the probe wrote no JSON object")
         val problems = ArrayList<String>()
+        val timing = Timing(text(root, "os"), rows)
         val state = text(root, "stateAtOpen")
         if (state == "loading") {
-            within(problems, "AC-007 loading panel", number(root, "loadingMs"), SmokeBudgets.LOADING_MS)
+            within(problems, timing, "AC-007 loading panel", number(root, "loadingMs"), SmokeBudgets.LOADING_MS)
         }
-        within(problems, "AC-007 first frame after Ready", number(root, "firstFrameMs"), null)
+        within(problems, timing, "AC-007 first frame after Ready", number(root, "firstFrameMs"), null)
         samples(problems, "frame after reopening", root, "reopenFrameSamples")
-        within(problems, "AC-007 frame after reopening (best of ${SmokeBudgets.FRAME_SAMPLES})", number(root, "reopenFrameMs"), SmokeBudgets.FRAME_MS)
-        within(problems, "AC-021 external change in the tree", number(root, "externalTreeMs"), SmokeBudgets.EXTERNAL_MS)
-        within(problems, "AC-021 external change in the status entry", number(root, "externalStatusMs"), SmokeBudgets.EXTERNAL_MS)
-        within(problems, "AC-020 in-IDE change in the tree", number(root, "inIdeTreeMs"), SmokeBudgets.IN_IDE_MS)
-        within(problems, "AC-020 in-IDE change in the panel", number(root, "inIdePanelMs"), SmokeBudgets.IN_IDE_MS)
-        within(problems, "AC-020 in-IDE change in the status entry", number(root, "inIdeStatusMs"), SmokeBudgets.IN_IDE_MS)
+        within(problems, timing, "AC-007 frame after reopening (best of ${SmokeBudgets.FRAME_SAMPLES})", number(root, "reopenFrameMs"), SmokeBudgets.FRAME_MS)
+        within(problems, timing, "AC-021 external change in the tree", number(root, "externalTreeMs"), SmokeBudgets.EXTERNAL_MS)
+        within(problems, timing, "AC-021 external change in the status entry", number(root, "externalStatusMs"), SmokeBudgets.EXTERNAL_MS)
+        within(problems, timing, "AC-020 in-IDE change in the tree", number(root, "inIdeTreeMs"), SmokeBudgets.IN_IDE_MS)
+        within(problems, timing, "AC-020 in-IDE change in the panel", number(root, "inIdePanelMs"), SmokeBudgets.IN_IDE_MS)
+        within(problems, timing, "AC-020 in-IDE change in the status entry", number(root, "inIdeStatusMs"), SmokeBudgets.IN_IDE_MS)
         val expectedArea = text(root, "expectedArea")
         val expectedSelection = text(root, "expectedSelection")
         if (expectedArea.isEmpty() || expectedSelection.isEmpty()) {
@@ -131,7 +132,7 @@ object SmokeCompare {
             problems.add("selection after reopening: expected '$expectedSelection', observed '${text(root, "restoredSelection")}'")
         }
         samples(problems, "frame after the restoring reopen", root, "restoreFrameSamples")
-        within(problems, "frame after the restoring reopen (best of ${SmokeBudgets.FRAME_SAMPLES})", number(root, "restoreFrameMs"), SmokeBudgets.FRAME_MS)
+        within(problems, timing, "frame after the restoring reopen (best of ${SmokeBudgets.FRAME_SAMPLES})", number(root, "restoreFrameMs"), SmokeBudgets.FRAME_MS)
         val created = strings(root, "created")
         if (created != listOf(SmokeFiles.EXTERNAL)) {
             problems.add("AC-025 files created in the project: expected [${SmokeFiles.EXTERNAL}], observed $created")
@@ -147,9 +148,10 @@ object SmokeCompare {
         return problems
     }
 
-    fun themes(json: String): List<String> {
+    fun themes(json: String, rows: MutableList<BudgetRow>? = null): List<String> {
         val root = parse(json) ?: return listOf("the probe wrote no JSON object")
         val problems = ArrayList<String>()
+        val timing = Timing(text(root, "os"), rows)
         val entries = root.get("themes")?.takeIf { it.isJsonArray }?.asJsonArray?.mapNotNull { asObject(it) } ?: emptyList()
         if (entries.size != SmokeThemes.WANTED.size) {
             problems.add("themes: expected ${SmokeThemes.WANTED.size} records, observed ${entries.size}")
@@ -160,12 +162,12 @@ object SmokeCompare {
                 problems.add("${wanted.name}: no record")
                 return@forEach
             }
-            themeProblems(wanted, entry, problems)
+            themeProblems(wanted, entry, problems, timing)
         }
         return problems
     }
 
-    private fun themeProblems(wanted: ThemeWant, entry: JsonObject, problems: MutableList<String>) {
+    private fun themeProblems(wanted: ThemeWant, entry: JsonObject, problems: MutableList<String>, timing: Timing) {
         val name = wanted.name
         if (text(entry, "found").isEmpty()) {
             problems.add("$name: the IDE has no such theme")
@@ -174,7 +176,7 @@ object SmokeCompare {
         if (text(entry, "bodyClass") != wanted.bodyClass) {
             problems.add("$name: body class expected ${wanted.bodyClass}, observed '${text(entry, "bodyClass")}'")
         }
-        within(problems, "AC-028 $name switch", number(entry, "ms"), SmokeBudgets.THEME_MS)
+        within(problems, timing, "AC-028 $name switch", number(entry, "ms"), SmokeBudgets.THEME_MS)
         if (number(entry, "scripts") < 1) {
             problems.add("$name: no update script reached the panel")
         }
@@ -200,14 +202,18 @@ object SmokeCompare {
         }
     }
 
-    private fun within(problems: MutableList<String>, label: String, ms: Long, max: Long?) {
-        if (ms < 0) {
-            problems.add("$label was not observed")
+    private class Timing(val os: String, val rows: MutableList<BudgetRow>?)
+
+    private fun within(problems: MutableList<String>, timing: Timing, label: String, ms: Long, max: Long?) {
+        if (max == null) {
+            if (ms < 0) {
+                problems.add("$label was not observed")
+            }
             return
         }
-        if (max != null && ms > max) {
-            problems.add("$label took $ms ms, the budget is $max ms")
-        }
+        val row = BudgetVerdict.judge(label, ms, max, timing.os)
+        timing.rows?.add(row)
+        BudgetVerdict.problem(row)?.let { problems.add(it) }
     }
 
     private fun parse(json: String): JsonObject? = try {

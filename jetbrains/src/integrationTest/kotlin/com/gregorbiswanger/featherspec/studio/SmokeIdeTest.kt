@@ -1,5 +1,6 @@
 package com.gregorbiswanger.featherspec.studio
 
+import com.gregorbiswanger.featherspec.studio.probe.BudgetRow
 import com.gregorbiswanger.featherspec.studio.probe.IdeaLogScan
 import com.gregorbiswanger.featherspec.studio.probe.SmokeCompare
 import com.gregorbiswanger.featherspec.studio.probe.SmokeProbe
@@ -28,7 +29,9 @@ class SmokeIdeTest {
     @Test
     fun theTabOpensFastFollowsChangesRestoresItsPlaceAndWritesNothingToTheProject() {
         val problems = ArrayList(run.problems)
-        run.json?.let { problems.addAll(SmokeCompare.smoke(it)) }
+        val rows = ArrayList<BudgetRow>()
+        run.json?.let { problems.addAll(SmokeCompare.smoke(it, rows)) }
+        StepSummary.publish("Panel and change timings (${System.getProperty("os.name")})", rows)
         problems.addAll(logProblems())
         check(problems.isEmpty()) { "smoke:\n" + problems.joinToString("\n") }
     }
@@ -36,7 +39,9 @@ class SmokeIdeTest {
     @Test
     fun aThemeSwitchShowsTheNewValuesAtOnceAndEveryThemeKeepsItsContrast() {
         val problems = ArrayList(run.problems)
-        run.json?.let { problems.addAll(SmokeCompare.themes(it)) }
+        val rows = ArrayList<BudgetRow>()
+        run.json?.let { problems.addAll(SmokeCompare.themes(it, rows)) }
+        StepSummary.publish("Theme switch timings (${System.getProperty("os.name")})", rows)
         check(problems.isEmpty()) { "theme switch and contrast:\n" + problems.joinToString("\n") }
     }
 

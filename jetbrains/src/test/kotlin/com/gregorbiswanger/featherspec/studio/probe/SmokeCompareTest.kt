@@ -11,6 +11,7 @@ class SmokeCompareTest {
         ThemeRecord(want.name, want.name, want.bodyClass, body, ms, 1, 0, emptyList(), contrast)
 
     private fun report(
+        os: String = "Linux",
         state: String = "loading",
         loading: Long = 40,
         first: Long = 9000,
@@ -27,7 +28,7 @@ class SmokeCompareTest {
         files: FileChanges = FileChanges(listOf(SmokeFiles.EXTERNAL), listOf(SmokeFiles.EDITED), emptyList()),
     ): String =
         SmokeReport(
-            "Linux", state, loading, first, reopen, externalTree, externalStatus, inIdeTree, inIdeStatus, inIdePanel,
+            os, state, loading, first, reopen, externalTree, externalStatus, inIdeTree, inIdeStatus, inIdePanel,
             "board", "0015-x", restoredArea, restoredSelection, restore, themes, files, emptyList(),
         ).toJson()
 
@@ -56,6 +57,35 @@ class SmokeCompareTest {
             report(loading = 1001, reopen = listOf(1001, 1001, 1001), externalTree = 2001, externalStatus = 2001, inIdeTree = 501, inIdeStatus = 501, inIdePanel = 501, restore = listOf(1001, 1001, 1001)),
         )
         assertEquals(8, over.size, over.toString())
+    }
+
+    @Test
+    fun `on Windows the timings are a trend up to 1,49 times and every value reaches the rows`() {
+        val rows = ArrayList<BudgetRow>()
+        val trend = report(os = "Windows 11", loading = 1490, reopen = listOf(1490, 2000, 3000), externalTree = 2980, externalStatus = 100, inIdeTree = 745, inIdeStatus = 100, inIdePanel = 100, restore = listOf(1490, 1490, 1490))
+        assertEquals(emptyList<String>(), SmokeCompare.smoke(trend, rows))
+        assertEquals(8, rows.size)
+        assertTrue(rows.all { it.os == "Windows 11" })
+        assertEquals(Verdict.TREND, rows.first { it.name.startsWith("AC-007 loading") }.verdict)
+        assertEquals(Verdict.PASSED, rows.first { it.name.contains("external change in the status") }.verdict)
+        val red = SmokeCompare.smoke(report(os = "Mac OS X", loading = 1500, inIdePanel = 750))
+        assertEquals(2, red.size, red.toString())
+        assertEquals(emptyList<String>(), SmokeCompare.smoke(report(os = "Linux", loading = 1000), ArrayList()))
+        assertEquals(1, SmokeCompare.smoke(report(os = "Linux", loading = 1001)).size)
+    }
+
+    @Test
+    fun `on Windows the functional checks stay hard`() {
+        assertEquals(1, SmokeCompare.smoke(report(os = "Windows 11", state = "loading", loading = -1)).size)
+        assertEquals(1, SmokeCompare.smoke(report(os = "Windows 11", restoredArea = "overview")).size)
+        assertEquals(1, SmokeCompare.smoke(report(os = "Windows 11", files = FileChanges(listOf(SmokeFiles.EXTERNAL), listOf(SmokeFiles.EDITED), listOf("AGENTS.md")))).size)
+        assertEquals(1, SmokeCompare.smoke(report(os = "Windows 11", externalStatus = -1)).size)
+        val themes = SmokeThemes.WANTED.map { theme(it, ms = 749) }
+        assertEquals(emptyList<String>(), SmokeCompare.themes(report(os = "Windows 11", themes = themes)))
+        val broken = listOf(theme(SmokeThemes.WANTED[0], body = "wrong", ms = 749)) + SmokeThemes.WANTED.drop(1).map { theme(it, ms = 749) }
+        assertEquals(1, SmokeCompare.themes(report(os = "Windows 11", themes = broken)).size)
+        val slow = SmokeThemes.WANTED.map { theme(it, ms = 750) }
+        assertEquals(SmokeThemes.WANTED.size, SmokeCompare.themes(report(os = "Windows 11", themes = slow)).size)
     }
 
     @Test

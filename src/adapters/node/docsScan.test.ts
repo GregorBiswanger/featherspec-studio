@@ -350,6 +350,14 @@ describe('product docs after 0020 (AC-018, AC-020)', () => {
         expect(go).toContain('set the date of the 0.1.0 entry in CHANGELOG.md');
     });
 
+    it('the Cold start on Windows item is a gate with the measured values and the limits (PD-111)', async () => {
+        const text = await read('docs/release-checklist.md');
+        const item = text.split('\n').find((line) => line.startsWith('- [ ] **Cold start on Windows**')) ?? '';
+        for (const part of ['PD-111', 'gate', 'core ready ___ s', 'first panel frame ___ s', '12 s', '1 s', 'a product topic', 'not a CI topic']) {
+            expect(item, part).toContain(part);
+        }
+    });
+
     it('the release checklist runs in spec order, ends with Go and checks no UI that is gone', async () => {
         const text = await read('docs/release-checklist.md');
         const headings = text.match(/^## .*$/gm) ?? [];

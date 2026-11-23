@@ -23,27 +23,26 @@ data class Budgets(
             "\"gen200ReadMs\":$gen200ReadMs,\"gen200UpdateMs\":$gen200UpdateMs,\"gen200HarnessMs\":$gen200HarnessMs,\"discover5Ms\":$discover5Ms," +
             "\"coreReadyWarmMs\":$coreReadyWarmMs,\"jsHeapBytes\":${jsHeapBytes ?: "null"}}"
 
-    fun violations(): List<String> = buildList {
-        if (coreReadyMs < 0) {
-            add("coreReadyMs was not measured")
-        } else if (coreReadyMs > BudgetLimits.CORE_READY_MAX_MS) {
-            add("coreReadyMs $coreReadyMs is above ${BudgetLimits.CORE_READY_MAX_MS} (R-5)")
+    fun violations(os: String = "Linux", rows: MutableList<BudgetRow>? = null): List<String> = buildList {
+        fun check(key: String, label: String, measured: Long, budget: Long, exclusive: Boolean, reference: String) {
+            val row = BudgetVerdict.judge(label, measured, budget, os, exclusive)
+            rows?.add(row)
+            if (row.verdict != Verdict.FAILED) {
+                return
+            }
+            add(
+                when {
+                    measured < 0 -> "$key was not measured"
+                    BudgetVerdict.isTrendOs(os) -> "$key $measured is not below the limit ${row.limit} (1.5 times the budget $budget; $reference)"
+                    exclusive -> "$key $measured is not below $budget ($reference)"
+                    else -> "$key $measured is above $budget ($reference)"
+                },
+            )
         }
-        if (gen200ReadMs < 0) {
-            add("gen200ReadMs was not measured")
-        } else if (gen200ReadMs >= BudgetLimits.GEN200_READ_BELOW_MS) {
-            add("gen200ReadMs $gen200ReadMs is not below ${BudgetLimits.GEN200_READ_BELOW_MS} (R-2)")
-        }
-        if (gen200UpdateMs < 0) {
-            add("gen200UpdateMs was not measured")
-        } else if (gen200UpdateMs >= BudgetLimits.GEN200_UPDATE_BELOW_MS) {
-            add("gen200UpdateMs $gen200UpdateMs is not below ${BudgetLimits.GEN200_UPDATE_BELOW_MS} (R-2, 0002 AC-018)")
-        }
-        if (discover5Ms < 0) {
-            add("discover5Ms was not measured")
-        } else if (discover5Ms >= BudgetLimits.DISCOVER5_BELOW_MS) {
-            add("discover5Ms $discover5Ms is not below ${BudgetLimits.DISCOVER5_BELOW_MS} (0001 AC-018, 0034 AC-007)")
-        }
+        check("coreReadyMs", "R-5 core ready", coreReadyMs, BudgetLimits.CORE_READY_MAX_MS, false, "R-5")
+        check("gen200ReadMs", "R-2 read of 200 specs", gen200ReadMs, BudgetLimits.GEN200_READ_BELOW_MS, true, "R-2")
+        check("gen200UpdateMs", "R-2 update of 200 specs", gen200UpdateMs, BudgetLimits.GEN200_UPDATE_BELOW_MS, true, "R-2, 0002 AC-018")
+        check("discover5Ms", "AC-007 discovery of five roots", discover5Ms, BudgetLimits.DISCOVER5_BELOW_MS, true, "0001 AC-018, 0034 AC-007")
     }
 
     companion object {

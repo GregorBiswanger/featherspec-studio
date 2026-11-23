@@ -158,6 +158,7 @@ Requirements (R) the runtime must meet (R-4, R-5, R-6 changed 2026-11-21, OP-025
 - R-5 The core starts when the IDE project opens, off the EDT, and is ready within 12 s of the project opening on the CI
   runners (§6.11); until then tab, tree and status entry show their loading state; re-measured on Gregor's machine at
   AC-040/AC-041. The plugin ZIP is at most 60 MB (OP-002).
+  *Amended 2026-11-23 (PD-111): on the CI runners the 12 s hold as a hard gate on Linux only; on Windows and macOS they are a trend (best of the runs, a failure from 1.5 times the budget, every value in the job summary). The user budget of 12 s stays and is checked on Gregor's Windows machine (release checklist, "Cold start on Windows").*
 - R-6 Testable in CI: conformance and budgets inside an IDE started by Starter (Xvfb on Linux); plain JUnit only for pure Kotlin.
 
 Decided at gate G1 (`docs/decisions/ADR-004-jetbrains-host.md`, accepted by Gregor 2026-11-21, OP-025): the core runs in a
@@ -316,6 +317,7 @@ WebStorm by hand in AC-040 and AC-041.
   frame shown within 1 s of *Open* once the core is ready and, before that, the loading state within 1 s of *Open*, and
   tree, status entry and panel showing a model change within 500 ms after the change event reaches the plugin; measured
   on the Windows, macOS and Linux CI runners (§6.11). (Changed 2026-11-21, OP-025: core-ready budget and loading state.)
+  *Amended 2026-11-23 (PD-111): the budgets of this criterion are a hard gate on the Linux CI runner; on the Windows and macOS CI runners the timing budgets are a trend (best of three samples where the probe takes them, a failure from 1.5 times the budget, all values in the job summary). The functional checks stay hard on every system. The budgets for users are unchanged and are proven on Gregor's Windows machine.*
 - **AC-008** While the Studio tab is closed, tree and status entry shall follow a model change as 0020 AC-013 and 0017
   AC-018 state.
 - **AC-009** `docs/decisions/ADR-004-jetbrains-host.md` shall record the measured R-1–R-6 values of spike S-1 per candidate
