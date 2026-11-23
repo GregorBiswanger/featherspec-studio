@@ -1674,6 +1674,10 @@
                 "AC-036": {
                     "category": "deliberately different",
                     "reference": "PD-108 (review 20 S-2: the not-installed text of Send to Claude Code in the IDE terminal exists only in JetBrains)"
+                },
+                "AC-037": {
+                    "category": "deliberately different",
+                    "reference": "PD-110 (review 20 S-3: Send to Claude Code starts claude in the IDE terminal only in JetBrains, never in Safe Mode)"
                 }
             }
         }

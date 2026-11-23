@@ -793,3 +793,4 @@ Generated from `.specs/done/` and `.specs/active/` by `src/adapters/node/parity.
 | 0035 | AC-034 | deliberately different | PD-108 (review 20 S-4: the Copy for Junie texts exist only in JetBrains) |  |
 | 0035 | AC-035 | deliberately different | PD-108 (review 20 S-1: the main target of Send to Claude Code in the IDE terminal follows the tip's session; VS Code has one target) |  |
 | 0035 | AC-036 | deliberately different | PD-108 (review 20 S-2: the not-installed text of Send to Claude Code in the IDE terminal exists only in JetBrains) |  |
+| 0035 | AC-037 | deliberately different | PD-110 (review 20 S-3: Send to Claude Code starts claude in the IDE terminal only in JetBrains, never in Safe Mode) |  |

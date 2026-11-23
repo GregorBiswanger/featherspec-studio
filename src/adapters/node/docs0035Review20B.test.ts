@@ -49,6 +49,17 @@ describe('0035 review 20 S-4 / AC-034: README and CHANGELOG tell to choose Junie
     });
 });
 
+describe('0035 review 20 S-3 / PD-110 / AC-037: README and CHANGELOG say what Safe Mode does', () => {
+    it('AC-037 the README section, the Privacy bullet and the CHANGELOG carry the own text and the rule', async () => {
+        const [readme, changelog] = await Promise.all([read('README.md'), read('CHANGELOG.md')]);
+        for (const text of [readme, changelog]) {
+            expect(text).toContain('This project is not trusted, so Studio does not start claude. The prompt is copied.');
+        }
+        expect(readme).toContain('In a project that is not trusted (Safe Mode) Send to Claude Code never starts `claude`.');
+        expect(readme).toContain('it types only into a running `claude` tab');
+    });
+});
+
 describe('0035 review 20 S-2 / AC-036: README and CHANGELOG say what a missing claude shows', () => {
     it('AC-036 the README section and the CHANGELOG carry the own text', async () => {
         const [readme, changelog] = await Promise.all([read('README.md'), read('CHANGELOG.md')]);

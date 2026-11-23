@@ -91,6 +91,8 @@ object ClaudeReadiness {
 
     fun notInstalledMessage(): String = "the claude command was not found on the PATH"
 
+    fun untrustedMessage(): String = "the project is not trusted"
+
     fun hasInputBox(text: String): Boolean {
         val input = lastIndexOfAny(text, INPUT_MARKERS)
         return input >= 0 && input > lastIndexOfAny(text, WAITING_MARKERS)
@@ -125,6 +127,8 @@ object ClaudeReadiness {
 class ClaudeNotReady(message: String = ClaudeReadiness.notReadyMessage()) : IllegalStateException(message)
 
 class ClaudeNotInstalled : IllegalStateException(ClaudeReadiness.notInstalledMessage())
+
+class ClaudeUntrusted : IllegalStateException(ClaudeReadiness.untrustedMessage())
 
 object ClaudeOnPath {
     val NAMES: List<String> = listOf("claude", "claude.exe", "claude.cmd")
@@ -201,6 +205,7 @@ class ClaudeSender(
     private val sleep: (Long) -> Unit,
     private val gate: SendGate = SendGate(),
     private val onPath: () -> Boolean = { true },
+    private val trusted: () -> Boolean = { true },
 ) {
     fun send(request: ClaudeRequest) {
         require(!AssistantRequests.hasControlCharacter(request.text)) { "the text holds a control character" }
@@ -215,10 +220,17 @@ class ClaudeSender(
     private fun typeInto(request: ClaudeRequest) {
         val deadline = clock() + TOTAL_BUDGET_MS
         val base = root() ?: throw IllegalStateException("no project folder")
+        val safeMode = !trusted()
+        if (safeMode && request.target == ClaudeTarget.NEW) {
+            throw ClaudeUntrusted()
+        }
         val existing = if (request.target == ClaudeTarget.CURRENT) {
             ClaudeTabs.choose(access.tabs(), base, lastTyped.get(), caseInsensitive)?.key
         } else {
             null
+        }
+        if (safeMode && existing == null) {
+            throw ClaudeUntrusted()
         }
         val key = existing?.also { requireInputBox(it) } ?: openClaude(base, deadline)
         if (clock() >= deadline) {

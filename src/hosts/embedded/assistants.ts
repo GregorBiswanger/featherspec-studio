@@ -1,7 +1,7 @@
 import { OPEN_CHAT_COMMAND } from '../../core/assistant/send';
 import type { AssistantTable } from '../../core/assistant/assistants';
 import { claudeText, copilotCopyText, JUNIE_FORM, junieCopyText } from '../../core/assistant/references';
-import { CLAUDE_NOT_INSTALLED_CAUSE, CLAUDE_NOT_INSTALLED_TEXT, CLAUDE_NOT_READY_NOW_CAUSE, CLAUDE_WAITING_TEXT, claudeNotReadyCause, COPY_FOR_PLACES, JUNIE_WINDOW_PLACE, TERMINAL_UNAVAILABLE_CAUSE, terminalCallFailedCause } from '../../shared/protocol/assistantTexts';
+import { CLAUDE_NOT_INSTALLED_CAUSE, CLAUDE_NOT_INSTALLED_TEXT, CLAUDE_NOT_READY_NOW_CAUSE, CLAUDE_UNTRUSTED_CAUSE, CLAUDE_UNTRUSTED_TEXT, CLAUDE_WAITING_TEXT, claudeNotReadyCause, COPY_FOR_PLACES, JUNIE_WINDOW_PLACE, TERMINAL_UNAVAILABLE_CAUSE, terminalCallFailedCause } from '../../shared/protocol/assistantTexts';
 
 export const GITHUB_PLUGIN = 'com.github.copilot';
 export const TERMINAL_PLUGIN = 'org.jetbrains.plugins.terminal';
@@ -21,7 +21,10 @@ function noticeOf(message: string): string | undefined {
     if (message === claudeNotReadyCause(CLAUDE_READY_BUDGET_MS) || message === CLAUDE_NOT_READY_NOW_CAUSE) {
         return CLAUDE_WAITING_TEXT;
     }
-    return message === CLAUDE_NOT_INSTALLED_CAUSE ? CLAUDE_NOT_INSTALLED_TEXT : undefined;
+    if (message === CLAUDE_NOT_INSTALLED_CAUSE) {
+        return CLAUDE_NOT_INSTALLED_TEXT;
+    }
+    return message === CLAUDE_UNTRUSTED_CAUSE ? CLAUDE_UNTRUSTED_TEXT : undefined;
 }
 
 export function createJetBrainsAssistants(plugins: () => readonly string[]): AssistantTable {

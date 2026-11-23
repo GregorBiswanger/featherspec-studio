@@ -23,7 +23,7 @@ import { createBridge } from './bridge';
 import type { CoreConfig, NativeHost } from './contract';
 import { createJetBrainsAssistants, JETBRAINS_SEND_TARGETS } from './assistants';
 import { createMirrors } from './mirrors';
-import { CLAUDE_NOT_INSTALLED_CAUSE, CLAUDE_NOT_INSTALLED_TEXT, CLAUDE_NOT_READY_NOW_CAUSE, CLAUDE_WAITING_TEXT } from '../../shared/protocol/assistantTexts';
+import { CLAUDE_NOT_INSTALLED_CAUSE, CLAUDE_NOT_INSTALLED_TEXT, CLAUDE_NOT_READY_NOW_CAUSE, CLAUDE_UNTRUSTED_CAUSE, CLAUDE_UNTRUSTED_TEXT, CLAUDE_WAITING_TEXT } from '../../shared/protocol/assistantTexts';
 import { createEmbeddedPorts } from './ports';
 
 const GH = 'com.github.copilot';
@@ -476,5 +476,51 @@ describe('0035 review 20 S-2 / AC-036: after the timeout a missing claude comman
         for (const other of ['the claude command was not found', 'the claude command was not found on the PATH.', 'terminal call failed: x']) {
             expect(row.causes?.notice?.(other), other).toBeUndefined();
         }
+    });
+});
+
+describe('0035 review 20 S-3 / PD-110 / AC-037: in a project that is not trusted Send never starts claude', () => {
+    const UNTRUSTED = 'the project is not trusted';
+    const TEXT = 'This project is not trusted, so Studio does not start claude. The prompt is copied.';
+
+    it('AC-037 the texts of section 7 are literal, in one text module', () => {
+        expect(CLAUDE_UNTRUSTED_TEXT).toBe(TEXT);
+        expect(CLAUDE_UNTRUSTED_CAUSE).toBe(UNTRUSTED);
+    });
+
+    it('AC-037 the host reports the untrusted project: the prompt is copied, the one warning is the own text, the log names the cause and not the prompt', async () => {
+        const world = rig([TERMINAL], 'claudeCode');
+        world.answers.set('assistant.claudeTerminal', () => ({ error: UNTRUSTED }));
+        const result = await world.wiring.send.send({ assistant: 'claudeCode', target: 'current', line: LINE });
+        expect(result).toEqual<SendOutcomeView>({ outcome: 'copied', text: TEXT });
+        expect(world.written).toEqual([LINE]);
+        expect(world.warned).toEqual([TEXT]);
+        expect(world.blocks).toEqual([[`Send to Claude Code failed (${UNTRUSTED}); the prompt was copied instead.`]]);
+        expect(JSON.stringify(world.blocks)).not.toContain(LINE);
+    });
+
+    it('AC-037 a prompt that could not be copied is not announced as copied', async () => {
+        const world = rig([TERMINAL], 'claudeCode', true);
+        world.answers.set('assistant.claudeTerminal', () => ({ error: UNTRUSTED }));
+        const result = await world.wiring.send.send({ assistant: 'claudeCode', target: 'new', line: LINE });
+        expect(result.outcome).toBe('copyFailed');
+        expect(world.warned).toEqual(["Could not open Claude Code's chat, and the prompt could not be copied."]);
+    });
+
+    it('AC-037 negative control: the three own texts are told apart, every other message keeps the general warning', () => {
+        const row = createJetBrainsAssistants(() => [TERMINAL]).claudeCode!;
+        expect(row.causes?.notice?.(UNTRUSTED)).toBe(TEXT);
+        expect(row.causes?.notice?.('the claude command was not found on the PATH')).toBe(CLAUDE_NOT_INSTALLED_TEXT);
+        expect(row.causes?.notice?.('Claude Code was not ready for input')).toBe(CLAUDE_WAITING_TEXT);
+        expect(row.causes?.failed(UNTRUSTED)).toBe(UNTRUSTED);
+        for (const other of ['the project is trusted', 'the project is not trusted.', 'untrusted']) {
+            expect(row.causes?.notice?.(other), other).toBeUndefined();
+        }
+    });
+
+    it('AC-037 Copy for stays as it was: the Copilot and Junie handovers know no trust', () => {
+        const table = createJetBrainsAssistants(() => []);
+        expect(table['copilot']?.causes).toBeUndefined();
+        expect(table.junie?.causes).toBeUndefined();
     });
 });

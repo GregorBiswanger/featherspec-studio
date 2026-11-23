@@ -148,6 +148,10 @@ export const CLAUDE_NOT_INSTALLED_TEXT = 'Claude Code did not start. Is the clau
 
 export const CLAUDE_NOT_INSTALLED_CAUSE = 'the claude command was not found on the PATH';
 
+export const CLAUDE_UNTRUSTED_TEXT = 'This project is not trusted, so Studio does not start claude. The prompt is copied.';
+
+export const CLAUDE_UNTRUSTED_CAUSE = 'the project is not trusted';
+
 export const TERMINAL_UNAVAILABLE_CAUSE = 'the Terminal plugin is not available';
 
 export function claudeNotReadyCause(milliseconds: number): string {

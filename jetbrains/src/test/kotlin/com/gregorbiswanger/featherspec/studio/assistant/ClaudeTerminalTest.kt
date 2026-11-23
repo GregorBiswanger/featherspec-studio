@@ -532,8 +532,8 @@ class ClaudeTerminalTest {
         assertTrue(ClaudeSender.SHELL_WAIT_MS + ClaudeReadiness.READY_BUDGET_MS < ClaudeSender.TOTAL_BUDGET_MS)
     }
 
-    private fun senderWith(fake: Fake, onPath: () -> Boolean = { true }, lastTyped: LastTyped = LastTyped()) =
-        ClaudeSender(fake, { root }, false, lastTyped, { fake.clock }, { fake.clock += it }, SendGate(), onPath)
+    private fun senderWith(fake: Fake, onPath: () -> Boolean = { true }, lastTyped: LastTyped = LastTyped(), trusted: () -> Boolean = { true }) =
+        ClaudeSender(fake, { root }, false, lastTyped, { fake.clock }, { fake.clock += it }, SendGate(), onPath, trusted)
 
     private fun fileSystem(vararg present: String): (String, String) -> Boolean = { directory, name -> "${directory.trimEnd('/')}/$name" in present }
 
@@ -610,5 +610,65 @@ class ClaudeTerminalTest {
         fake.claudeStartedAtMs = Long.MAX_VALUE / 4
         assertThrows(ClaudeNotInstalled::class.java) { senderWith(fake, onPath = { false }).send(ClaudeRequest(ClaudeTarget.NEW, line)) }
         assertTrue(fake.clock >= ClaudeReadiness.READY_BUDGET_MS, fake.clock.toString())
+    }
+
+    @Test
+    fun `AC-037 in a project that is not trusted a running Claude terminal still gets the text, as in a trusted one`() {
+        val fake = Fake()
+        fake.existing.add(tab("claude-tab"))
+        senderWith(fake, trusted = { false }).send(ClaudeRequest(ClaudeTarget.CURRENT, line))
+        assertEquals(listOf("claude-tab" to line), fake.pasted)
+        assertEquals(listOf("tabs", "paste", "focus"), fake.calls)
+        assertEquals(emptyList<Pair<Any, String>>(), fake.commands)
+    }
+
+    @Test
+    fun `AC-037 in a project that is not trusted no claude is started when no Claude terminal runs, and the cause is the text of the spec`() {
+        assertEquals("the project is not trusted", ClaudeReadiness.untrustedMessage())
+        val none = Fake()
+        none.existing.add(tab("other", command = "npm test"))
+        val thrown = assertThrows(ClaudeUntrusted::class.java) { senderWith(none, trusted = { false }).send(ClaudeRequest(ClaudeTarget.CURRENT, line)) }
+        assertEquals("the project is not trusted", thrown.message)
+        assertEquals(listOf("tabs"), none.calls)
+        assertEquals(emptyList<Pair<Any, String>>(), none.commands)
+        assertEquals(emptyList<Pair<Any, String>>(), none.pasted)
+    }
+
+    @Test
+    fun `AC-037 in a project that is not trusted a new chat never opens a tab nor runs claude, even while a Claude terminal runs`() {
+        val fake = Fake()
+        fake.existing.add(tab("claude-tab"))
+        assertThrows(ClaudeUntrusted::class.java) { senderWith(fake, trusted = { false }).send(ClaudeRequest(ClaudeTarget.NEW, line)) }
+        assertEquals(emptyList<String>(), fake.calls)
+    }
+
+    @Test
+    fun `AC-037 in a project that is not trusted a running claude that waits for an answer is still waiting, not untrusted`() {
+        val fake = Fake()
+        fake.existing.add(tab("claude-tab"))
+        fake.screens["claude-tab"] = Screen(true, trustDialog)
+        val thrown = assertThrows(ClaudeNotReady::class.java) { senderWith(fake, trusted = { false }).send(ClaudeRequest(ClaudeTarget.CURRENT, line)) }
+        assertEquals("Claude Code was not ready for input", thrown.message)
+        assertEquals(emptyList<Pair<Any, String>>(), fake.pasted)
+    }
+
+    @Test
+    fun `AC-037 the trust is asked at every Send, so that a granted trust opens the way without a restart`() {
+        val fake = Fake()
+        var trusted = false
+        val sender = senderWith(fake, trusted = { trusted })
+        assertThrows(ClaudeUntrusted::class.java) { sender.send(ClaudeRequest(ClaudeTarget.CURRENT, line)) }
+        assertEquals(emptyList<Pair<Any, String>>(), fake.commands)
+        trusted = true
+        sender.send(ClaudeRequest(ClaudeTarget.CURRENT, line))
+        assertEquals(listOf("claude"), fake.commands.map { it.second })
+        assertEquals(listOf("new-tab" to line), fake.pasted)
+    }
+
+    @Test
+    fun `AC-037 a trusted project behaves as before, also for the default sender`() {
+        val fake = Fake()
+        sender(fake).send(ClaudeRequest(ClaudeTarget.NEW, line))
+        assertEquals(listOf("open", "run", "paste", "focus"), fake.calls)
     }
 }

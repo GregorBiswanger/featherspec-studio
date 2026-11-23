@@ -100,8 +100,10 @@ decided by Gregor, OP-004, AC-035*): where the tip says *a new chat* (NS-5, NS-6
 where it says *the current chat or a new one* or *any chat* it targets the *current chat*, the Claude terminal of §6.3 (an
 existing Claude terminal first, else a new tab). The menu offers both either way; `Send to a new chat` always opens a new tab.
 The welcome and the empty state have no tip and keep the current chat. VS Code is unaffected: its Claude Code has one target. Claude Code needs no
-Claude Code plugin: the CLI in the terminal is enough (proxy, OP-003). In an IDE project that is not trusted the
-handovers behave as in a trusted one, as VS Code's Send does in Restricted Mode (0024 AC-011, 0027 AC-013) (proxy, OP-016).
+Claude Code plugin: the CLI in the terminal is enough (proxy, OP-003). Copy for and Copy prompt behave in an
+IDE project that is not trusted as in a trusted one, as VS Code's Send does in Restricted Mode (0024 AC-011, 0027 AC-013).
+*Amended 2026-11-23 (review 20 S-3, PD-110, decided by Gregor, OP-016, AC-037):* Send to Claude Code in a project that is not
+trusted (Safe Mode) only types into a running Claude terminal and never starts `claude` (§6.3).
 
 ### 6.2 Attached files and references (0027, 0031, 0033, PD-091, PD-097)
 
@@ -138,6 +140,11 @@ handovers behave as in a trusted one, as VS Code's Send does in Restricted Mode 
   folder-trust dialog and the login prompt; the trust dialog may contain `Claude Code` too). Not ready, in an existing or in a
   new tab: the Studio types nothing, focuses the tab, copies the line and shows §7's waiting text instead of the general
   warning. Every other failure keeps 0024's warning.
+- **Safe Mode (review 20 S-3, PD-110, AC-037):** while the IDE does not trust the project (`TrustedProjects.isProjectTrusted`, the
+  check the host already uses for the core's `trusted` mirror), the Studio types only into a running Claude terminal that is
+  ready (the current chat, as above); the menu item `Send to a new chat`, and the main part without a running Claude
+  terminal, open no tab and run no `claude`: the send fails as *untrusted*, the core copies the line and shows §7's text.
+  The trust is asked at every Send.
 - **A missing `claude` (review 20 S-2, decided by Gregor, OP-003, AC-036):** the Send is not stopped beforehand, because the PATH of
   the IDE process can differ from the terminal's (a `claude` installed after the IDE started, a PATH set in the shell profile).
   Only after the 15 000 ms timeout the host looks for `claude`, `claude.exe` and `claude.cmd` in the PATH of the IDE process
@@ -230,8 +237,9 @@ VS Code texts are unchanged. JetBrains reuses 0024's and 0027's texts for Send t
 | Toggletip, Copy for offered | `Copy for <Name> copies the prompt with the file paths and sends nothing: paste it into <place>, choose the model there, check the prompt, then send it.` (for `Junie in AI Chat`, *amended 2026-11-23, review 20 S-4*: `…paste it into AI Chat with Junie as the agent, choose the model there…`, because AI Chat opens with its recommended agent, since June 2026 Codex) |
 | Send to Claude Code, waiting (JetBrains only) | label `Starting Claude Code…`; name, tooltip and announced `Starting Claude Code: <line>`; the answer then shows `Opened in Claude Code` or the warning as before |
 | Send to Claude Code, waiting for an answer | warning, announced text and tooltip: `Claude Code is waiting for you in the terminal. Answer it there, then send again. The prompt is copied.` (the general warning of 0024 stays for every other failure) |
+| Send to Claude Code, project not trusted | warning, announced text and tooltip: `This project is not trusted, so Studio does not start claude. The prompt is copied.` |
 | Send to Claude Code, not installed | warning, announced text and tooltip: `Claude Code did not start. Is the claude command installed? The prompt is copied.` |
-| Log causes (Claude Code) | `the Terminal plugin is not available` · `Claude Code was not ready within 15000 ms` · `Claude Code was not ready for input` · `the claude command was not found on the PATH` · `terminal call failed: <message>` · `no result within 20000 ms` |
+| Log causes (Claude Code) | `the Terminal plugin is not available` · `Claude Code was not ready within 15000 ms` · `Claude Code was not ready for input` · `the claude command was not found on the PATH` · `the project is not trusted` · `terminal call failed: <message>` · `no result within 20000 ms` |
 
 `<key>` is `Cmd+V` on macOS, else `Ctrl+V` (0024 §6.5).
 
@@ -239,7 +247,7 @@ VS Code texts are unchanged. JetBrains reuses 0024's and 0027's texts for Send t
 
 The Studio types into a terminal and opens a tool window only after the developer activated a Send or Copy for in this
 panel; no webview message names a command, terminal or tool window (0024 §6.6). It types only into a Claude terminal or a
-tab it opened for `claude`, and runs no other command. It writes no project file and no setting, reaches no network, and
+tab it opened for `claude`, and runs no other command; in a project that the IDE does not trust (Safe Mode) it opens no tab and starts no `claude` (§6.3, PD-110). It writes no project file and no setting, reaches no network, and
 puts no prompt into a log or notification. The clipboard is written only by Copy prompt and Copy for.
 
 ## 9. Non-functional requirements
@@ -425,6 +433,13 @@ step case), `test/fixtures/fs-setup-not-run`, `test/fixtures/fs-setup-done-no-sp
   once instead of 0024's warning and write one log line with the cause `the claude command was not found on the PATH` and without
   the prompt. The PATH shall not be read before the timeout, a `claude` found on the PATH or running in the tab shall keep the
   waiting text, and the search shall be platform-free and tested with fake directories.
+- **AC-037** *(review 20 S-3, PD-110)* While the IDE does not trust the project, a Send to Claude Code shall type into a running,
+  ready Claude terminal as in a trusted project, and shall otherwise (the menu item `Send to a new chat`, or the main part with no
+  running Claude terminal) open no terminal tab, run no `claude` and type nothing; the host shall fail the send as *untrusted*,
+  the core shall copy the line, show `This project is not trusted, so Studio does not start claude. The prompt is copied.` once
+  instead of 0024's warning and write one log line with the cause `the project is not trusted` and without the prompt. The
+  trust shall be asked at every Send, from the check the host already uses; Copy for Copilot, Copy for Junie and Copy prompt shall
+  behave as before.
 
 ## 12. Technical notes for developers or AI agents
 
@@ -483,7 +498,7 @@ PD-094, PD-108, PD-109, 0024, 0034, 18, 19); Gregor may flip any of them:
 - OP-013 (proxy) A stored `junie` without Junie shows `None: Copy prompt` and is kept until another Apply.
 - OP-014 (proxy) Copilot's plugin ID `com.github.copilot`; availability changes follow the IDE's plugin load events.
 - OP-015 (proxy) The empty state gets the step action without Tip line and without attachment; the tree keeps its text.
-- OP-016 (proxy) The handovers work in Safe Mode as in a trusted project (VS Code parity).
+- OP-016 (proxy; **decided by Gregor 2026-11-23, review 20 S-3, PD-110**) Copy for and Copy prompt work in Safe Mode as in a trusted project; Send to Claude Code only types into a running Claude terminal and never starts `claude` there.
 - OP-017 (proxy) The shared-guard moves to 0035's start commit; "`src/core` unchanged" gives way to §6.8's checks.
 - OP-018 (proxy) The JetBrains-only texts of §7 except T-1 and T-2.
 - OP-019 `/sdd-clarify` 2026-11-22 (stranger pass, role-played; no subagent available): 9 findings, 2 blocking; all
@@ -522,3 +537,4 @@ S-6; S-7 is only prepared (below). The budget rule is PD-111 and not part of thi
 | S-4 | Copy for Junie tells to choose Junie in AI Chat (AI Chat starts with its recommended agent, Codex) | §7 (done texts, toggletip), README, CHANGELOG | AC-034 |
 | S-1 | The main part of Send to Claude Code follows the session of the step's tip (OP-004, decided by Gregor); the menu offers both | §6.1, §6.3, §14 OP-004, README | AC-035 |
 | S-2 | A missing `claude` is told after the timeout, by its own text (OP-003, decided by Gregor); no early abort | §6.3 (new bullet), §7 (text, log cause), §10, §14 OP-003, README | AC-036 |
+| S-3 | Safe Mode: Send to Claude Code only types into a running Claude terminal, never starts `claude`; else copy with its own text (OP-016, PD-110, decided by Gregor); Copy for unchanged | §6.1, §6.3 (new bullet), §7 (text, log cause), §14 OP-016, README | AC-037 |

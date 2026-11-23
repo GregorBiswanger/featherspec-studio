@@ -4,6 +4,7 @@ import com.gregorbiswanger.featherspec.studio.ports.HostOs
 import com.gregorbiswanger.featherspec.studio.ports.IdePlugins
 import com.gregorbiswanger.featherspec.studio.ports.PluginIds
 import com.gregorbiswanger.featherspec.studio.ports.UiMemoryState
+import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import java.io.File
@@ -40,6 +41,7 @@ class IdeAssistantCalls(private val project: Project) : AssistantCalls {
         sleep = { Thread.sleep(it) },
         gate = gate,
         onPath = { ClaudeOnPath.found(System.getenv("PATH"), File.pathSeparatorChar, ClaudeOnPath::existsOnDisk) },
+        trusted = { TrustedProjects.isProjectTrusted(project) },
     )
 
     private fun root(): String? {
