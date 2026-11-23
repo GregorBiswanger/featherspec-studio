@@ -2,6 +2,9 @@ package com.gregorbiswanger.featherspec.studio.probe
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import com.gregorbiswanger.featherspec.studio.assistant.Screen
+import com.gregorbiswanger.featherspec.studio.assistant.TerminalGlue
+import com.gregorbiswanger.featherspec.studio.assistant.TerminalTab
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.terminal.frontend.toolwindow.TerminalToolWindowTabsManager
@@ -16,7 +19,6 @@ object HandoverTerminal {
     private const val QUIET_MS = 1_000L
     private const val AFTER_PASTE_MS = 2_000L
     private const val POLL_MS = 100L
-    private const val TAIL_CHARS = 1_500
     private val MARKERS = listOf("Claude Code", "? for shortcuts", "Welcome", "Tip:", "bypass permissions", "╭", "│ >")
 
     private class Snapshot(val text: String, val altLength: Long, val blockRunning: Boolean, val blockSeen: Boolean, val status: String)
@@ -30,6 +32,37 @@ object HandoverTerminal {
             }
             array
         }
+    }
+
+    fun screens(project: Project): JsonObject {
+        val result = JsonObject()
+        val home = System.getProperty("user.home")
+        val glue = TerminalGlue(project)
+        result.add(
+            "screens",
+            HandoverReflect.safe {
+                val array = JsonArray()
+                for (tab in glue.tabs()) {
+                    array.add(HandoverReflect.safe { screenOf(glue, tab, home) })
+                }
+                array
+            },
+        )
+        return result
+    }
+
+    private fun screenOf(glue: TerminalGlue, tab: TerminalTab, home: String?): JsonObject {
+        val name = runCatching {
+            HandoverReflect.onEdt { HandoverReflect.call(HandoverReflect.call(tab.key, "getContent")!!, "getDisplayName")?.toString() }
+        }.getOrNull()
+        var screen: Screen? = null
+        var failure: String? = null
+        try {
+            screen = glue.screen(tab.key)
+        } catch (error: Throwable) {
+            failure = HandoverReflect.unavailable(error)
+        }
+        return HandoverScreen.tab(tab, name, screen, failure, home)
     }
 
     fun claudeTab(project: Project): JsonObject {
@@ -269,5 +302,5 @@ object HandoverTerminal {
         HandoverReflect.call(builder, "send", text)
     }
 
-    private fun tail(text: String): String = text.trimEnd().takeLast(TAIL_CHARS)
+    private fun tail(text: String): String = Redaction.tail(text, System.getProperty("user.home"))
 }

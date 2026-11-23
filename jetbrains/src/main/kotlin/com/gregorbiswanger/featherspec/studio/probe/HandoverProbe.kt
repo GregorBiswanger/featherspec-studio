@@ -54,6 +54,10 @@ class HandoverClaudeTabAction : HandoverAction("claudeTab") {
     override fun body(project: Project): JsonObject = HandoverTerminal.claudeTab(project)
 }
 
+class HandoverScreenAction : HandoverAction("screen") {
+    override fun body(project: Project): JsonObject = HandoverTerminal.screens(project)
+}
+
 object HandoverRunner {
     private val LOG = Logger.getInstance(HandoverRunner::class.java)
 
