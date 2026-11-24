@@ -48,6 +48,10 @@ export function shortTitle(text: string, id: string): string {
     if (bold?.[2] !== undefined) {
         return cut(plainText(bold[2]));
     }
+    const heading = new RegExp(`^\\s*#{1,6}\\s+(?:~~)?\\s*(?:\\[Uncertain\\]\\s*)?${escaped(id)}\\s*(?:~~)?\\s*[—–:|-]\\s*(\\S.*)$`).exec(text.split('\n')[0] ?? '');
+    if (heading?.[1] !== undefined && plainText(heading[1]) !== '') {
+        return cut(plainText(heading[1]));
+    }
     const rest = plainText(withoutLeadingId(text, id));
     return cut(SENTENCE.exec(rest)?.[1] ?? rest);
 }

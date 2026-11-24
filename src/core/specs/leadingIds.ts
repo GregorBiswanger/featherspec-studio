@@ -24,6 +24,9 @@ export interface LocatedIds {
 const FENCE = /^ {0,3}(`{3,}|~{3,})/;
 const LIST_ITEM = /^(\s*)([-*+]|\d+[.)])(\s+)(.*)$/;
 const HEADING = /^ {0,3}#{1,6}(?:\s|$)/;
+const HEADING_LEVEL = /^ {0,3}(#{1,6})\s+(.*)$/;
+const ORDERED_MARKER = /^\s*\d+[.)]/;
+const HEADING_SEPARATOR = /^\s*(?:\*{1,3}|_{1,3}|~~)*\s*(?:[—–:|-]|$)/;
 const BOLD_PARAGRAPH = /^\s*(?:~~)?(?:\*\*|__)/;
 const PREFIX = /^(?:\s+|\*{1,3}|_{1,3}|~~|\[Uncertain\])*/;
 const AC_ID = /^AC-\d+(?![A-Za-z0-9-]|\.\d)/;
@@ -80,6 +83,19 @@ function leadingId(content: string): Leading | undefined {
     return { kind: ac !== null ? 'AC' : 'FR', id: hit[0], uncertain: prefix.includes('[Uncertain]'), struck: prefix.includes('~~') };
 }
 
+function headingId(line: string): { level: number; found: Leading } | undefined {
+    const heading = HEADING_LEVEL.exec(line);
+    if (heading === null) {
+        return undefined;
+    }
+    const found = leadingId(heading[2]);
+    if (found?.kind !== 'AC') {
+        return undefined;
+    }
+    const prefix = PREFIX.exec(heading[2])?.[0] ?? '';
+    return HEADING_SEPARATOR.test(heading[2].slice(prefix.length + found.id.length)) ? { level: heading[1].length, found } : undefined;
+}
+
 function firstCell(line: string): string | undefined {
     const trimmed = line.trim();
     if (!trimmed.includes('|')) {
@@ -92,6 +108,7 @@ function firstCell(line: string): string | undefined {
 export function locateLeadingIds(lines: readonly string[], fenced: readonly boolean[], key: string): LocatedIds {
     const criteria: AcceptanceCriterion[] = [];
     const requirements: Requirement[] = [];
+    const described = new Set<string>();
 
     const blockEnd = (start: number, listIndent: number | undefined): number => {
         let end = start;
@@ -120,6 +137,20 @@ export function locateLeadingIds(lines: readonly string[], fenced: readonly bool
                     break;
                 }
                 if (item !== null && (listIndent === undefined || indentOf(line) <= listIndent)) {
+                    break;
+                }
+            }
+            end = next;
+        }
+        return end;
+    };
+
+    const headingEnd = (start: number, level: number): number => {
+        let end = start;
+        for (let next = start + 1; next < lines.length; next += 1) {
+            if (!fenced[next]) {
+                const heading = HEADING_LEVEL.exec(lines[next]);
+                if (heading !== null && heading[1].length <= level) {
                     break;
                 }
             }
@@ -159,11 +190,18 @@ export function locateLeadingIds(lines: readonly string[], fenced: readonly bool
         let found: Leading | undefined;
         let listIndent: number | undefined;
         let tableRow = false;
+        let headingLevel: number | undefined;
+        let ordered = false;
         if (item !== null) {
             found = leadingId(item[4]);
             listIndent = indentOf(line);
+            ordered = ORDERED_MARKER.test(line);
         } else if (BOLD_PARAGRAPH.test(line) && (index === 0 || isBlank(lines[index - 1]) || HEADING.test(lines[index - 1]))) {
             found = leadingId(line);
+        } else if (headingId(line) !== undefined) {
+            const heading = headingId(line);
+            found = heading?.found;
+            headingLevel = heading?.level;
         } else {
             const cell = firstCell(line);
             const candidate = cell === undefined ? undefined : leadingId(cell);
@@ -175,10 +213,16 @@ export function locateLeadingIds(lines: readonly string[], fenced: readonly bool
         if (found === undefined) {
             continue;
         }
-        const end = tableRow ? index : blockEnd(index, listIndent);
+        if (ordered && found.kind === 'AC' && described.has(found.id)) {
+            continue;
+        }
+        const end = tableRow ? index : headingLevel !== undefined ? headingEnd(index, headingLevel) : blockEnd(index, listIndent);
         if (found.kind === 'FR') {
             requirements.push({ id: found.id, text: textOf(index, end), line: index + 1 });
         } else {
+            if (!ordered) {
+                described.add(found.id);
+            }
             criteria.push({
                 id: found.id,
                 text: textOf(index, end),

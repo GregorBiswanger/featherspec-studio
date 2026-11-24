@@ -51,6 +51,7 @@ Generated from `.specs/done/` and `.specs/active/` by `src/adapters/node/parity.
 | 0002 | AC-021 | shared | C-read |  |
 | 0002 | AC-022 | shared | C-read |  |
 | 0002 | AC-023 | shared | C-read |  |
+| 0002 | AC-024 | shared | C-read |  |
 | 0003 | AC-001 | shared | C-read |  |
 | 0003 | AC-002 | shared | C-read |  |
 | 0003 | AC-003 | shared | C-read |  |

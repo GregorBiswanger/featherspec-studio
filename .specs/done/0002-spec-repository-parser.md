@@ -125,7 +125,7 @@ the files reaches the model without a manual reload.
 | FR-02 | Parse spec metadata and content | FR-002.2 | AC-003, AC-004, AC-005, AC-020 |
 | FR-03 | Provide one normalised model with stable references and source paths | FR-002.3 | AC-002, AC-019, AC-023 |
 | FR-04 | Detect plans and link them to specs | FR-002.4 | AC-006 |
-| FR-05 | Extract steps and acceptance criteria where present | FR-002.5 | AC-004, AC-007, AC-008 |
+| FR-05 | Extract steps and acceptance criteria where present | FR-002.5 | AC-004, AC-007, AC-008, AC-024 |
 | FR-06 | Detect existing verification information | FR-002.6 | AC-009 |
 | FR-07 | Provide diagnostics for invalid or unknown content | FR-002.7 | AC-011, AC-014, AC-015, AC-016, AC-017 |
 | FR-08 | Detect changes to relevant files and update affected data | FR-002.8 | AC-012, AC-018, AC-022 |
@@ -263,6 +263,7 @@ Handoff references in brackets (PD-017).
   in format §3.4, with its ID, the full text of that list item or paragraph, and a directly
   following blockquote as its illustration. It shall return no criterion for an AC ID in any
   other position (`Covers:`, a table cell, running prose). [AC-002.3; PD-034]
+  *Amended 2026-11-24 (AC-024): a heading is a further rendering.*
 - **AC-005** When an acceptance-criterion definition carries the `[Uncertain]` marker, the
   system shall return that criterion flagged *uncertain*. It shall not derive the flag from
   the section the definition stands in. [AC-002.3; PD-034]
@@ -358,6 +359,16 @@ Handoff references in brackets (PD-017).
   beside its content. If a file cannot be read (AC-011), then the system shall return its
   modification time when the file system reported one, and shall mark it absent otherwise
   (AC-019). [PD-043]
+- **AC-024** (added 2026-11-24, Gregor's hands-on) The system shall return an acceptance
+  criterion for every heading `#`…`######` whose text begins with an `AC-NNN` ID followed by
+  `—`, `–`, `-`, `:` or `|` or by nothing, with the optional `~~` and `[Uncertain]` markers
+  before the ID as in the other renderings. The criterion's text shall be the heading line and
+  its body up to the next heading of the same or a higher level, and its line shall be the
+  heading's. When an ID has a heading, bold-paragraph or unordered-list definition, the system
+  shall return no criterion, and no duplicate diagnostic, for a later ordered list item
+  (`1.`, `2)`) that begins with the same ID: it is a mention, as in a clarification log.
+  Without such a definition, an ordered list item that begins with an AC ID is a definition as
+  before.
 
 ## 14. Technical notes for developers or AI agents
 
@@ -386,6 +397,10 @@ Handoff references in brackets (PD-017).
   integration test for the watcher adapter (handoff §14; ADR-001 §12). Put the AC ID into test
   names.
 - The model's exact shape and the diagnostic identifiers are decided in `/sdd-plan`.
+- **Heading criteria (2026-11-24):** no rule or lint reports a heading criterion as a form
+  error, and none is added: it is a shape agents write (Junie's `/sdd-specify`), so Studio
+  shows it as written. Before AC-024 such a spec raised only readiness `R-2` ("No acceptance
+  criterion found"), which was untrue; that is gone. Both hosts share the parser.
 
 ## 15. Assumptions
 
@@ -482,7 +497,7 @@ are visible, none blocking.
 
 ## 18. Definition of Done
 
-All FR-01 to FR-10 are built, and AC-001 to AC-023 pass with automated tests (fixture tests
+All FR-01 to FR-10 are built, and AC-001 to AC-024 pass with automated tests (fixture tests
 for the parser, one extension-host test for the watcher adapter; commands in
 `techContext.md`). No out-of-scope behaviour was added (no file writes). Assumptions are
 verified or documented. The architecture snapshot and Memory Bank are updated for the new
@@ -495,3 +510,4 @@ core modules. Gregor accepts the result.
 ## Plan history
 
 - 2026-11-17 — [0002-spec-repository-parser.2026-11-17.plan.md](../plan-archive/0002-spec-repository-parser.2026-11-17.plan.md) — T-001…T-011 done; `/sdd-compile` READY (host suite green on Windows at e6f0c85).
+- 2026-11-24 — Addendum after Gregor's hands-on (a spec written by Junie with `### AC-NNN — Title` headings and a numbered clarification log): Detail → Progress → *Not verified yet* showed log lines instead of titles. Fixed by AC-024 in `src/core/specs/leadingIds.ts`; fixture `test/fixtures/studio-heading-acs`.

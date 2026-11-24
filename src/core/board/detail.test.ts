@@ -332,6 +332,31 @@ describe('0019: the situation picture', () => {
         open.forEach((item) => expect(item.open.key).toBe('.specs/active/0015-focus-on-visibility.md'));
     });
 
+    it('AC-024: studio-heading-acs lists every open criterion with its heading title, not a protocol line', async () => {
+        const { view } = await fixtureDetail('studio-heading-acs', '0001-trinkgeld-aufteilen');
+        const criteria = view.progress?.criteria;
+        expect(criteria).toMatchObject({ kind: 'criteria', verified: 1, total: 6 });
+        const open = criteria?.kind === 'criteria' ? criteria.open : [];
+        expect(open.map((item) => [item.id, item.text, item.built, item.open.line])).toEqual([
+            ['AC-002', 'Geldbeträge runden', false, 14],
+            ['AC-003', 'Ungültige Eingabe ablehnen', true, 20],
+            ['AC-004', 'Trinkgeld wählen', false, 28],
+            ['AC-005', 'Alte Regel', false, 32],
+            ['AC-006', 'Das System soll die Eingabe speichern.', false, 36],
+        ]);
+    });
+
+    it('AC-024: a spec that defines its criteria only as a numbered list keeps listing them from that list', async () => {
+        const spec1 = ['# Board', '', '**Status:** In Progress', '', '## Kriterien', '', '1. AC-001 Das Board soll Karten zeigen.', '2. AC-002 Das Board soll sortieren.', ''].join('\n');
+        const plan = planText({ status: 'In Progress', rows: [row('AC-001', 'open'), row('AC-002', 'open')] });
+        const view = spec(await detailOf({ '.specs/active/0001-a.md': spec1, '.specs/active/0001-a.plan.md': plan }, { stem: '0001-a' }));
+        const open = view.progress?.criteria?.kind === 'criteria' ? view.progress.criteria.open : [];
+        expect(open.map((item) => [item.id, item.text, item.open.line])).toEqual([
+            ['AC-001', 'Das Board soll Karten zeigen.', 7],
+            ['AC-002', 'Das Board soll sortieren.', 8],
+        ]);
+    });
+
     it('AC-012: a built row is marked built, a cell with several IDs shows its text and links to its plan row; an undefined ID too', async () => {
         const spec1 = `${SPEC_TEXT}\n**AC-009** The ninth shall hold. More text.\n`;
         const plan = `${planText({ status: 'In Progress', rows: [row('AC-001', 'built'), row('M-01, M-02', 'open'), row('AC-077', 'open'), row('AC-009', 'verified')] })}`;

@@ -267,3 +267,103 @@ describe('through parseSpec and the fixtures', () => {
         expect(spec.criteria.some((c) => c.text.startsWith('1. Der Teilnehmer'))).toBe(false);
     });
 });
+
+describe('AC-024: criteria defined by headings', () => {
+    const HEADING_SPEC = [
+        '# T',
+        '',
+        '### AC-001 — Gültige Rechnung aufteilen',
+        '',
+        'Text eins.',
+        '',
+        'Absatz zwei.',
+        '',
+        '> **Given** x',
+        '',
+        '#### Detail',
+        '',
+        'Unterpunkt.',
+        '',
+        '### AC-002: Geldbeträge runden',
+        'Text.',
+        '### ~~AC-003 | Alt~~',
+        '### [Uncertain] AC-004',
+        '',
+        '### AC-005 – Ende',
+        '',
+        '## Klärungsprotokoll',
+        '',
+        '1. AC-002 ohne Beispiel → ergänzt.',
+        '2) AC-001/AC-003 wörtlich → wörtlich.',
+        '',
+    ].join('\n');
+
+    it('AC-024: recognises #-headings with every separator, with or without a title, with the markers', () => {
+        const { criteria } = locate(HEADING_SPEC);
+        expect(criteria.map((c) => [c.id, c.line, c.uncertain, c.struck])).toEqual([
+            ['AC-001', 3, false, false],
+            ['AC-002', 15, false, false],
+            ['AC-003', 17, false, true],
+            ['AC-004', 18, true, false],
+            ['AC-005', 20, false, false],
+        ]);
+    });
+
+    it('AC-024: the block is the heading line and its body up to the next heading of the same or a higher level', () => {
+        const { criteria } = locate(HEADING_SPEC);
+        expect(criteria[0].text).toBe('### AC-001 — Gültige Rechnung aufteilen\n\nText eins.\n\nAbsatz zwei.\n\n> **Given** x\n\n#### Detail\n\nUnterpunkt.');
+        expect(criteria[1].text).toBe('### AC-002: Geldbeträge runden\nText.');
+        expect(criteria[3].text).toBe('### [Uncertain] AC-004');
+        expect(criteria[4].text).toBe('### AC-005 – Ende');
+    });
+
+    it('AC-024: a higher-level heading definition contains its sub-headings, a deeper one ends at the next sibling', () => {
+        const { criteria } = locate('## AC-001 — A\n\n### Unter\n\nx\n\n#### AC-002 — B\n\ny\n\n### Nächste\n');
+        expect(criteria.map((c) => [c.id, c.text.split('\n').length])).toEqual([['AC-001', 11], ['AC-002', 3]]);
+    });
+
+    it('AC-024: a heading without an ID separator, an ID inside a fence and a non-AC heading are no definition', () => {
+        const { criteria } = locate('### AC-001abc x\n\n### AC-0011 y\n\n```\n### AC-002 — x\n```\n\n### Titel AC-003\n\n### AC-004.1 z\n');
+        expect(criteria).toEqual([]);
+    });
+
+    it('AC-024: later numbered mentions of a heading-defined ID are neither a definition nor a duplicate', () => {
+        const { criteria, diagnostics } = locate(HEADING_SPEC);
+        expect(criteria.filter((c) => c.text.startsWith('1.') || c.text.startsWith('2)'))).toEqual([]);
+        expect(criteria.map((c) => c.id)).toEqual(['AC-001', 'AC-002', 'AC-003', 'AC-004', 'AC-005']);
+        expect(diagnostics).toEqual([]);
+    });
+
+    it('AC-024: a bold or bulleted definition also keeps a later numbered mention out', () => {
+        const bold = locate('**AC-001** Text.\n\n1. AC-001 geklärt.\n');
+        expect(bold.criteria.map((c) => c.line)).toEqual([1]);
+        expect(bold.diagnostics).toEqual([]);
+        const bullet = locate('- AC-001 Text.\n\n1. AC-001 geklärt.\n');
+        expect(bullet.criteria.map((c) => c.line)).toEqual([1]);
+        expect(bullet.diagnostics).toEqual([]);
+    });
+
+    it('AC-024: a second heading or bullet definition of the same ID is still a duplicate', () => {
+        const { criteria, diagnostics } = locate('### AC-001 — A\n\n### AC-001 — B\n\n- AC-001 C\n');
+        expect(criteria).toHaveLength(3);
+        expect(diagnostics.filter((d) => d.kind === 'duplicate')).toHaveLength(3);
+    });
+
+    it('AC-024: without any non-numbered definition, numbered AC items stay definitions (unchanged)', () => {
+        const { criteria, diagnostics } = locate('## Kriterien\n\n1. AC-001 Erstes.\n2. AC-002 Zweites.\n\n3. AC-001 nochmal.\n');
+        expect(criteria.map((c) => [c.id, c.line])).toEqual([['AC-001', 3], ['AC-002', 4], ['AC-001', 6]]);
+        expect(diagnostics.filter((d) => d.kind === 'duplicate')).toHaveLength(2);
+    });
+
+    it('AC-024: a numbered mention before the heading definition stays a definition (only later ones are mentions)', () => {
+        const { criteria } = locate('1. AC-001 früh.\n\n### AC-001 — Titel\n');
+        expect(criteria.map((c) => c.line)).toEqual([1, 3]);
+    });
+
+    it('AC-024: the fixture mirrors Gregor\'s hands-on: six heading criteria, three protocol mentions, no diagnostics', () => {
+        const spec = parseSpec(fixtureSpec('studio-heading-acs', '.specs/active/0001-trinkgeld-aufteilen.md'), KEY);
+        expect(spec.criteria.map((c) => [c.id, c.line])).toEqual([['AC-001', 8], ['AC-002', 14], ['AC-003', 20], ['AC-004', 28], ['AC-005', 32], ['AC-006', 36]]);
+        expect(spec.criteria[0].illustration).toBeUndefined();
+        expect(spec.diagnostics.filter((d) => d.kind === 'duplicate')).toEqual([]);
+    });
+});

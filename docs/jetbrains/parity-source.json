@@ -81,7 +81,7 @@
         },
         "0002": {
             "ranges": {
-                "AC-001..AC-023": {
+                "AC-001..AC-024": {
                     "category": "shared",
                     "reference": "C-read"
                 }

@@ -1,0 +1,37 @@
+{
+  ".specs/active/0001-trinkgeld-aufteilen.md": {
+    "state": "Active",
+    "rule": "S-ACTIVE",
+    "persistence": "persisted",
+    "nextStep": {
+      "rule": "NS-6",
+      "case": "NS-6-resume",
+      "lines": [
+        {
+          "intent": "Let the agent report where the plan stands",
+          "text": "/sdd-plan .specs/active/0001-trinkgeld-aufteilen.md"
+        }
+      ]
+    },
+    "stepView": {
+      "intent": "Report",
+      "short": "/sdd-plan",
+      "line": "/sdd-plan .specs/active/0001-trinkgeld-aufteilen.md",
+      "lines": [
+        {
+          "text": "/sdd-plan .specs/active/0001-trinkgeld-aufteilen.md",
+          "intent": "Let the agent report where the plan stands"
+        }
+      ]
+    },
+    "tips": {
+      "coach": "Tip: Use any chat with a fast model.",
+      "about": [
+        "The agent checks the plan against the code and reports where it stands. The spec then shows its next step.",
+        "Any chat: the step reads everything it needs from the files. Fast model: one small, well-described step.",
+        "Choose the chat and the model in your AI assistant before you paste.",
+        "Settings (gear in the Specs view): Show Step Tips hides these tips; Model Hints names your models; Assistant opens your AI assistant's chat with the prompt."
+      ]
+    }
+  }
+}

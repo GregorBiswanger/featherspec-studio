@@ -1,4 +1,4 @@
-const LIST_MARKER = /^\s*(?:[-*+]|\d+[.)])\s+/;
+const LIST_MARKER = /^\s*(?:[-*+]|\d+[.)]|#{1,6})\s+/;
 const OPENING = /^(?:\s+|\*{1,3}|_{1,3}|~~|\[Uncertain\]|\|)*/;
 const AFTER_ID = /^[\s*_~:|.—–-]*/;
 const TRAILING_PIPE = /\s*\|\s*$/;
