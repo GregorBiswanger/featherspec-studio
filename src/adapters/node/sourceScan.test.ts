@@ -27,7 +27,7 @@ function isTestFile(name: string): boolean {
     return /\.test\.tsx?$/.test(name) || name.includes('/testing/');
 }
 
-const ASSISTANT_NAME_FORMS: readonly RegExp[] = [/GitHub\.copilot-chat/g, /com\.github\.copilot\b/g, /\bcopilotCopyText\b/g, /GitHub Copilot/g, /'copilot'/g, /"copilot"/g, /\bCopilot(?![A-Za-z0-9.-])/g];
+const ASSISTANT_NAME_FORMS: readonly RegExp[] = [/GitHub\.copilot-chat/g, /com\.github\.copilot\b/g, /\bcopilotCopyText\b/g, /['"]cli:copilot['"]/g, /GitHub Copilot/g, /'copilot'/g, /"copilot"/g, /\bCopilot(?![A-Za-z0-9.-])/g];
 
 export function maskAssistantNames(text: string): string {
     return ASSISTANT_NAME_FORMS.reduce((rest, form) => rest.replace(form, ''), text);
@@ -155,6 +155,13 @@ describe("0024 §5: 0015 AC-021 excepts 0024's own names of GitHub Copilot", () 
         const sample = "const id = 'GitHub.copilot-chat'; const v = 'copilot'; const w = \"copilot\"; // GitHub Copilot, Copilot's chat, Copilot";
         expect(hits(maskAssistantNames(sample), REMOVED_TERMS, true)).toEqual([]);
         expect(hits(sample, REMOVED_TERMS, true)).toEqual(['copilot']);
+    });
+
+    it('0035 PD-112: the quoted presence id of the Copilot CLI is masked, every other cli form is not', () => {
+        expect(hits(maskAssistantNames("const id = 'cli:copilot'; const other = \"cli:copilot\";"), REMOVED_TERMS, true)).toEqual([]);
+        for (const sample of ['cli:copilot-agent', "'cli:copilot-agent'", 'cli:copilotProvider', 'cli:copilot', "'xcli:copilotx'"]) {
+            expect(hits(maskAssistantNames(sample), REMOVED_TERMS, true), sample).toEqual(['copilot']);
+        }
     });
 
     it('negative control: every other form is still found', () => {

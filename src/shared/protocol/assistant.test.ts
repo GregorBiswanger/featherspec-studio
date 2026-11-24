@@ -43,7 +43,8 @@ describe('0024 AC-004: the send view guard', () => {
         expect(isSendView({ ...claude, target: 'current' })).toBe(false);
         expect(isSendView({ ...claude, targets: ['new', 'current'] })).toBe(false);
         expect(isSendView({ ...viewA, targets: ['new'] })).toBe(false);
-        expect(isSendView({ ...viewA, targets: ['current', 'new'] })).toBe(false);
+        expect(isSendView({ ...viewA, targets: ['current'] })).toBe(false);
+        expect(isSendView({ ...viewA, targets: ['current', 'new'] })).toBe(true);
         expect(isSendView({ ...viewA, targets: ['new', 'other'] })).toBe(false);
     });
 });

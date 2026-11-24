@@ -12,7 +12,7 @@ describe('0035 amendment 2026-11-23 / AC-031: only the JetBrains terminal handov
     });
 
     it('AC-031 the JetBrains table offers it for Claude Code alone', () => {
-        const table = createJetBrainsAssistants(() => []);
+        const table = createJetBrainsAssistants();
         const waits = Object.entries(table).filter(([assistant, row]) => waitsForStart({ assistant: assistant as 'copilot' | 'claudeCode' | 'junie', ...(row.handover === 'copyFor' ? { handover: 'copyFor' as const } : {}), target: row.targets[0] ?? 'new', targets: [...row.targets] })).map(([assistant]) => assistant);
         expect(waits).toEqual(['claudeCode']);
     });

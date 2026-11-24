@@ -12,9 +12,9 @@ export const ASSISTANT_TARGETS: Record<AssistantId, readonly AssistantTarget[]> 
 };
 
 export const ASSISTANT_TARGET_LISTS: Record<AssistantId, readonly (readonly AssistantTarget[])[]> = {
-    'copilot': [ASSISTANT_TARGETS['copilot']],
+    'copilot': [ASSISTANT_TARGETS['copilot'], ['current', 'new']],
     claudeCode: [ASSISTANT_TARGETS.claudeCode, ['current', 'new']],
-    junie: [ASSISTANT_TARGETS.junie],
+    junie: [ASSISTANT_TARGETS.junie, ['current', 'new']],
 };
 
 export function attachesInTarget(assistant: AssistantId, target: AssistantTarget): boolean {

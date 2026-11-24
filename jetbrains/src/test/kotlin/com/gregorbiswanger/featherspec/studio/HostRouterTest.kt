@@ -117,7 +117,7 @@ class HostRouterTest {
     @Test
     fun `AC-023 the two assistant calls reach the assistant port and nothing else does`() {
         val router = fakeRouter()
-        val names = setOf("assistant.claudeTerminal", "assistant.openChat")
+        val names = setOf("assistant.terminal", "assistant.openChat")
         assertEquals(names, CallRouter.ROUTED.filterValues { it == CallRouter.Group.ASSISTANT }.keys)
         for (name in names) {
             assertEquals("assistant", parsed(router.answer(name, "{}")).get("ok").asString, name)
@@ -129,7 +129,7 @@ class HostRouterTest {
     @Test
     fun `AC-013 a router without an assistant port answers an error for the assistant calls`() {
         val router = CallRouter(fakePort("files"), fakePort("medium"), fakePort("memory"), fakePort("watch"))
-        assertEquals("no answer for assistant.claudeTerminal", parsed(router.answer("assistant.claudeTerminal", "{}")).get("error").asString)
+        assertEquals("no answer for assistant.terminal", parsed(router.answer("assistant.terminal", "{}")).get("error").asString)
         assertEquals("no answer for assistant.openChat", parsed(router.answer("assistant.openChat", "{}")).get("error").asString)
     }
 
@@ -139,7 +139,7 @@ class HostRouterTest {
             fakePort("files"), fakePort("medium"), fakePort("memory"), fakePort("watch"),
             assistant = { _, _ -> throw IllegalStateException("Claude Code was not ready within 15000 ms") },
         )
-        assertEquals("Claude Code was not ready within 15000 ms", parsed(router.answer("assistant.claudeTerminal", "{}")).get("error").asString)
+        assertEquals("Claude Code was not ready within 15000 ms", parsed(router.answer("assistant.terminal", "{}")).get("error").asString)
     }
 
     @Test

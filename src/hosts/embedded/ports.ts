@@ -11,7 +11,7 @@ import type { IdSource, RuntimeClock } from '../../core/ports/runtimeMedium';
 import type { AssistantHostPort } from '../../core/ports/assistant';
 import type { SetupPickItem, SetupUiPort } from '../../core/ports/setupUi';
 import type { StepPickItem, StepUiPort } from '../../core/ports/copyNextStep';
-import { CLAUDE_TERMINAL_COMMAND, createJetBrainsAssistants, OPEN_CHAT_COMMAND, pluginPresent } from './assistants';
+import { createJetBrainsAssistants, OPEN_CHAT_COMMAND, pluginPresent, TERMINAL_COMMAND, UNSET_ASSISTANT } from './assistants';
 import type { CoreConfig } from './contract';
 import type { Bridge } from './bridge';
 import { fromBase64, toBase64 } from './bridge';
@@ -129,7 +129,10 @@ export function createEmbeddedPorts(bridge: Bridge, mirrors: Mirrors, config: Co
     };
 
     const settingPort = (key: string) => ({
-        read: (): unknown => mirrors.settings().get(key),
+        read: (): unknown => {
+            const value = mirrors.settings().get(key);
+            return key === 'assistant' && (value === undefined || value === null) ? UNSET_ASSISTANT : value;
+        },
         onDidChange: (listener: () => void): Disposable => mirrors.onSettings((changed) => {
             if (changed === key) {
                 listener();
@@ -289,11 +292,11 @@ export function createEmbeddedPorts(bridge: Bridge, mirrors: Mirrors, config: Co
     const assistantHost: AssistantHostPort = {
         extension: (id) => (pluginPresent(id, mirrors.plugins()) ? { active: true } : undefined),
         activate: async () => undefined,
-        commands: async () => [CLAUDE_TERMINAL_COMMAND, OPEN_CHAT_COMMAND],
+        commands: async () => [TERMINAL_COMMAND, OPEN_CHAT_COMMAND],
         execute: async (command, args) => {
             const [first] = args;
-            if (command === CLAUDE_TERMINAL_COMMAND) {
-                return bridge.callAsync<unknown>('assistant.claudeTerminal', first);
+            if (command === TERMINAL_COMMAND) {
+                return bridge.callAsync<unknown>('assistant.terminal', first);
             }
             if (command === OPEN_CHAT_COMMAND) {
                 return bridge.callAsync<unknown>('assistant.openChat', { assistant: first });
@@ -356,7 +359,7 @@ export function createEmbeddedPorts(bridge: Bridge, mirrors: Mirrors, config: Co
         setupUi,
         setting: settingPort,
         assistantHost,
-        assistantTable: createJetBrainsAssistants(() => mirrors.plugins()),
+        assistantTable: createJetBrainsAssistants(),
         clipboard: {
             writeText: (text) => bridge.callAsync<void>('clipboard.write', { text }),
         },

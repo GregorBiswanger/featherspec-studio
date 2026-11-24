@@ -1,68 +1,69 @@
 import { OPEN_CHAT_COMMAND } from '../../core/assistant/send';
-import type { AssistantTable } from '../../core/assistant/assistants';
-import { claudeText, copilotCopyText, JUNIE_FORM, junieCopyText } from '../../core/assistant/references';
-import { CLAUDE_NOT_INSTALLED_CAUSE, CLAUDE_NOT_INSTALLED_TEXT, CLAUDE_NOT_READY_NOW_CAUSE, CLAUDE_UNTRUSTED_CAUSE, CLAUDE_UNTRUSTED_TEXT, CLAUDE_WAITING_TEXT, claudeNotReadyCause, COPY_FOR_PLACES, JUNIE_WINDOW_PLACE, TERMINAL_UNAVAILABLE_CAUSE, terminalCallFailedCause } from '../../shared/protocol/assistantTexts';
+import type { AssistantAttachment, AssistantSpec, AssistantTable } from '../../core/assistant/assistants';
+import { CLI_FORMS, cliText } from '../../core/assistant/references';
+import type { AssistantId } from '../../shared/protocol/assistant';
+import { AGENT_UNTRUSTED_CAUSE, agentNotInstalledCause, agentNotInstalledText, agentNotReadyCause, agentNotReadyNowCause, agentUntrustedText, agentWaitingText, TERMINAL_UNAVAILABLE_CAUSE, terminalCallFailedCause } from '../../shared/protocol/assistantTexts';
 
-export const GITHUB_PLUGIN = 'com.github.copilot';
 export const TERMINAL_PLUGIN = 'org.jetbrains.plugins.terminal';
-export const JUNIE_PLUGIN = 'org.jetbrains.junie';
-export const AI_ASSISTANT_PLUGIN = 'com.intellij.ml.llm';
-export const JUNIE_PRESENCE = 'junie';
 export { OPEN_CHAT_COMMAND };
-export const CLAUDE_TERMINAL_COMMAND = 'featherspec.claudeTerminal';
-export const CLAUDE_TERMINAL_BUDGET_MS = 20000;
-export const CLAUDE_READY_BUDGET_MS = 15000;
+export const TERMINAL_COMMAND = 'featherspec.terminal';
+export const TERMINAL_BUDGET_MS = 20000;
+export const READY_BUDGET_MS = 15000;
+export const UNSET_ASSISTANT = 'junie';
+
+export interface CliAgent {
+    id: AssistantId;
+    name: string;
+    command: string;
+    presence: string;
+}
+
+export const CLI_AGENTS: readonly CliAgent[] = [
+    { id: 'junie', name: 'Junie', command: 'junie', presence: 'cli:junie' },
+    { id: 'claudeCode', name: 'Claude Code', command: 'claude', presence: 'cli:claude' },
+    { id: 'copilot', name: 'Copilot', command: 'copilot', presence: 'cli:copilot' },
+];
+
+const CLI_PRESENCE = 'cli:';
 
 export function pluginPresent(id: string, plugins: readonly string[]): boolean {
-    return id === JUNIE_PRESENCE ? plugins.includes(JUNIE_PLUGIN) || plugins.includes(AI_ASSISTANT_PLUGIN) : plugins.includes(id);
+    return id.startsWith(CLI_PRESENCE) ? plugins.includes(TERMINAL_PLUGIN) && plugins.includes(id) : plugins.includes(id);
 }
 
-function noticeOf(message: string): string | undefined {
-    if (message === claudeNotReadyCause(CLAUDE_READY_BUDGET_MS) || message === CLAUDE_NOT_READY_NOW_CAUSE) {
-        return CLAUDE_WAITING_TEXT;
-    }
-    if (message === CLAUDE_NOT_INSTALLED_CAUSE) {
-        return CLAUDE_NOT_INSTALLED_TEXT;
-    }
-    return message === CLAUDE_UNTRUSTED_CAUSE ? CLAUDE_UNTRUSTED_TEXT : undefined;
+function noticeOf(agent: CliAgent): (message: string) => string | undefined {
+    return (message) => {
+        if (message === agentNotReadyCause(agent.name, READY_BUDGET_MS) || message === agentNotReadyNowCause(agent.name)) {
+            return agentWaitingText(agent.name);
+        }
+        if (message === agentNotInstalledCause(agent.command)) {
+            return agentNotInstalledText(agent.name, agent.command);
+        }
+        return message === AGENT_UNTRUSTED_CAUSE ? agentUntrustedText(agent.command) : undefined;
+    };
 }
 
-export function createJetBrainsAssistants(plugins: () => readonly string[]): AssistantTable {
+function cliRow(agent: CliAgent): AssistantSpec {
+    const notice = noticeOf(agent);
     return {
-        'copilot': {
-            extensionId: GITHUB_PLUGIN,
-            handover: 'copyFor',
-            attachesSpec: true,
-            targets: ['new'],
-            text: copilotCopyText,
-            callsFor: () => [],
+        extensionId: agent.presence,
+        handover: 'send',
+        attachesSpec: true,
+        targets: ['current', 'new'],
+        timeoutMs: TERMINAL_BUDGET_MS,
+        causes: {
+            unavailable: TERMINAL_UNAVAILABLE_CAUSE,
+            failed: (message) => (notice(message) === undefined ? terminalCallFailedCause(message) : message),
+            notice,
         },
-        claudeCode: {
-            extensionId: TERMINAL_PLUGIN,
-            handover: 'send',
-            attachesSpec: true,
-            targets: ['current', 'new'],
-            timeoutMs: CLAUDE_TERMINAL_BUDGET_MS,
-            causes: {
-                unavailable: TERMINAL_UNAVAILABLE_CAUSE,
-                failed: (message) => (noticeOf(message) === undefined ? terminalCallFailedCause(message) : message),
-                notice: noticeOf,
-            },
-            callsFor: (target, line, attachment) => {
-                const files = attachment === undefined ? [] : 'path' in attachment ? [attachment] : attachment;
-                return [{ command: CLAUDE_TERMINAL_COMMAND, args: [{ target, text: claudeText(line, files.map((file) => file.path)) }] }];
-            },
-        },
-        junie: {
-            extensionId: JUNIE_PRESENCE,
-            handover: 'copyFor',
-            attachesSpec: true,
-            targets: ['new'],
-            text: (line, paths) => junieCopyText(line, paths, JUNIE_FORM),
-            place: () => (plugins().includes(AI_ASSISTANT_PLUGIN) ? COPY_FOR_PLACES.junie : JUNIE_WINDOW_PLACE),
-            callsFor: () => [],
+        callsFor: (target, line, attachment) => {
+            const files: readonly AssistantAttachment[] = attachment === undefined ? [] : 'path' in attachment ? [attachment] : attachment;
+            return [{ command: TERMINAL_COMMAND, args: [{ assistant: agent.id, target, text: cliText(line, files.map((file) => file.path), CLI_FORMS[agent.id]) }] }];
         },
     };
 }
 
-export const JETBRAINS_SEND_TARGETS = { 'copilot': ['new'], claudeCode: ['current', 'new'], junie: ['new'] } as const;
+export function createJetBrainsAssistants(): AssistantTable {
+    return Object.fromEntries(CLI_AGENTS.map((agent) => [agent.id, cliRow(agent)]));
+}
+
+export const JETBRAINS_SEND_TARGETS = { 'copilot': ['current', 'new'], claudeCode: ['current', 'new'], junie: ['current', 'new'] } as const;

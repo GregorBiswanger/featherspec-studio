@@ -140,22 +140,48 @@ export function copyForTipText(name: string, place: string): string {
     return `Copy for ${name} copies the prompt with the file paths and sends nothing: paste it into ${target}, choose the model there, check the prompt, then send it.`;
 }
 
-export const CLAUDE_WAITING_TEXT = 'Claude Code is waiting for you in the terminal. Answer it there, then send again. The prompt is copied.';
+export function agentWaitingText(name: string): string {
+    return `${name} is waiting for you in the terminal. Answer it there, then send again. The prompt is copied.`;
+}
 
-export const CLAUDE_NOT_READY_NOW_CAUSE = 'Claude Code was not ready for input';
+export function agentUntrustedText(command: string): string {
+    return `This project is not trusted, so Studio does not start ${command}. The prompt is copied.`;
+}
 
-export const CLAUDE_NOT_INSTALLED_TEXT = 'Claude Code did not start. Is the claude command installed? The prompt is copied.';
+export function agentNotInstalledText(name: string, command: string): string {
+    return `${name} did not start. Is the ${command} command installed? The prompt is copied.`;
+}
 
-export const CLAUDE_NOT_INSTALLED_CAUSE = 'the claude command was not found on the PATH';
+export function agentNotReadyCause(name: string, milliseconds: number): string {
+    return `${name} was not ready within ${milliseconds} ms`;
+}
 
-export const CLAUDE_UNTRUSTED_TEXT = 'This project is not trusted, so Studio does not start claude. The prompt is copied.';
+export function agentNotReadyNowCause(name: string): string {
+    return `${name} was not ready for input`;
+}
 
-export const CLAUDE_UNTRUSTED_CAUSE = 'the project is not trusted';
+export function agentNotInstalledCause(command: string): string {
+    return `the ${command} command was not found on the PATH`;
+}
+
+export const AGENT_UNTRUSTED_CAUSE = 'the project is not trusted';
+
+export const CLAUDE_WAITING_TEXT = agentWaitingText('Claude Code');
+
+export const CLAUDE_NOT_READY_NOW_CAUSE = agentNotReadyNowCause('Claude Code');
+
+export const CLAUDE_NOT_INSTALLED_TEXT = agentNotInstalledText('Claude Code', 'claude');
+
+export const CLAUDE_NOT_INSTALLED_CAUSE = agentNotInstalledCause('claude');
+
+export const CLAUDE_UNTRUSTED_TEXT = agentUntrustedText('claude');
+
+export const CLAUDE_UNTRUSTED_CAUSE = AGENT_UNTRUSTED_CAUSE;
 
 export const TERMINAL_UNAVAILABLE_CAUSE = 'the Terminal plugin is not available';
 
 export function claudeNotReadyCause(milliseconds: number): string {
-    return `Claude Code was not ready within ${milliseconds} ms`;
+    return agentNotReadyCause('Claude Code', milliseconds);
 }
 
 export function terminalCallFailedCause(message: string): string {

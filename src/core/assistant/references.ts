@@ -13,8 +13,20 @@ function withReferences(line: string, paths: readonly string[], reference: (path
     return `${line}${referenced(paths).map((path) => ` ${reference(path)}`).join('')}`;
 }
 
+export type CliForm = 'slash' | 'follow';
+
+export const CLI_FORMS: Record<'claudeCode' | 'junie' | 'copilot', CliForm> = {
+    claudeCode: 'slash',
+    junie: 'follow',
+    'copilot': 'follow',
+};
+
+export function cliText(line: string, paths: readonly string[], form: CliForm): string {
+    return withReferences(form === 'follow' ? followLine(line) : line, paths, (path) => `@${path}`);
+}
+
 export function claudeText(line: string, paths: readonly string[]): string {
-    return withReferences(line, paths, (path) => `@${path}`);
+    return cliText(line, paths, 'slash');
 }
 
 export function copilotCopyText(line: string, paths: readonly string[]): string {

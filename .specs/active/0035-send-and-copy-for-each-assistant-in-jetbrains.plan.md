@@ -406,9 +406,9 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
   matrix (7 values × 16 subsets); the texts of spec §16 literally per agent and the Claude texts byte-identical; a webview message
   names no command; negative control with one path swapped.
 - **Verify:** local gates + `npm run compile`; CI `plugin` (`HostContractTest`).
-- [ ] **Verified (T-017):** —
+- [x] **Verified (T-017):** 2026-11-24 · red first: `cliText0035PD112.test.ts` 29 of 29 red (no `cliText`, no `CLI_FORMS`), `agents0035PD112.test.ts` red at import (no `CLI_AGENTS`, `TERMINAL_COMMAND`, agent texts); then green: both files 184 tests (AC-045 matrix 7 values × 16 subsets through the real `setting` port incl. unset, null and retired values `copyForJunie`; AC-046 table for both forms and the 14 `CASE_WORLDS`; AC-047 once per agent: row, call `featherspec.terminal {assistant,target,text}`, Opened, 20 000 ms, waiting, not installed, untrusted, copy failed; Claude texts byte-identical) · `npx vitest run --project node --project webview`: 4535 green, 3 red = the three known T-024 tests (`parity` AC-001/AC-002, `docs0035` AC-025) · `tsc` both 0 · `eslint src --max-warnings 0` 0 · Kotlin `HostContractTest`, `HostRouterTest`, `AssistantPortTest` 36 of 36 with the contract renamed to `assistant.terminal` (**CI pending**).
 - **Notes:** until T-019 routes `assistant.terminal`, every JetBrains Send falls back to Copy prompt (as before T-010); the repo
-  keeps working.
+  keeps working. *Done in this step beyond *Files*, so that the commit stays green:* the replaced JetBrains rows broke the Copy for era tests of `assistant0035.test.ts` (AC-004 offer, `assistant.openChat`, Copy for stays) and `sessionTarget0035.test.ts` (the one-target test): those sections were rewritten or removed (all created by 0035 after the start commit; Gregor's brief asks for Copy for to be removed everywhere). `HostContract.kt`, `HostRouter.kt` and `HostRouterTest.kt` carry the new name `assistant.terminal`; `sourceScan` masks only the quoted `'cli:copilot'`. Unset: the embedded `setting('assistant')` reads `junie` for a missing or null value (`UNSET_ASSISTANT`), so the offer follows the Junie CLI; the host passes the effective value from T-020 on.
 
 ### T-018 — Remove Copy for from core, protocol and webview; protocol 13 (TypeScript)
 

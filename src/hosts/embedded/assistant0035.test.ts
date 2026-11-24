@@ -26,10 +26,8 @@ import { createMirrors } from './mirrors';
 import { CLAUDE_NOT_INSTALLED_CAUSE, CLAUDE_NOT_INSTALLED_TEXT, CLAUDE_NOT_READY_NOW_CAUSE, CLAUDE_UNTRUSTED_CAUSE, CLAUDE_UNTRUSTED_TEXT, CLAUDE_WAITING_TEXT } from '../../shared/protocol/assistantTexts';
 import { createEmbeddedPorts } from './ports';
 
-const GH = 'com.github.copilot';
 const TERMINAL = 'org.jetbrains.plugins.terminal';
-const JUNIE = 'org.jetbrains.junie';
-const AI_CHAT = 'com.intellij.ml.llm';
+const CLAUDE_CLI = 'cli:claude';
 const LINE = '/sdd-plan .specs/active/0001-tip-splitter.md';
 const SPEC = '.specs/active/0001-tip-splitter.md';
 const PLAN = '.specs/active/0001-tip-splitter.plan.md';
@@ -95,70 +93,12 @@ function rig(plugins: readonly string[], stored: unknown = 'none', failClipboard
 
 const settle = (): Promise<void> => new Promise((resolve) => setImmediate(resolve));
 
-const SUBSETS: string[][] = [[], [GH], [TERMINAL], [JUNIE], [GH, TERMINAL], [GH, JUNIE], [TERMINAL, JUNIE], [GH, TERMINAL, JUNIE], [AI_CHAT], [GH, TERMINAL, AI_CHAT], ['org.other.plugin', TERMINAL]];
-
-function expectedView(value: unknown, plugins: readonly string[]) {
-    if (value === 'copilot' && plugins.includes(GH)) {
-        return { assistant: 'copilot', handover: 'copyFor', target: 'new', targets: ['new'] };
-    }
-    if (value === 'claudeCode' && plugins.includes(TERMINAL)) {
-        return { assistant: 'claudeCode', target: 'current', targets: ['current', 'new'] };
-    }
-    if (value === 'junie' && (plugins.includes(JUNIE) || plugins.includes(AI_CHAT))) {
-        return { assistant: 'junie', handover: 'copyFor', target: 'new', targets: ['new'] };
-    }
-    return undefined;
-}
-
-describe('0035 T-007 / AC-004: the JetBrains offer by value and available plugins', () => {
-    for (const value of ['none', 'copilot', 'claudeCode', 'junie', '', 42, undefined]) {
-        for (const plugins of SUBSETS) {
-            it(`AC-004 the value ${JSON.stringify(value) ?? 'unset'} with ${plugins.join(' + ') || 'no plugin'}`, () => {
-                const world = rig(plugins, value);
-                expect(plainSendViewOf(world.wiring.offer.read())).toEqual(expectedView(value, plugins));
-            });
-        }
-    }
-
-    it('AC-004 negative control: the same rig offers once the plugin is there, and the VS Code table never offers junie', () => {
-        expect(plainSendViewOf(rig([GH], 'copilot').wiring.offer.read())).not.toBeUndefined();
-        expect(offerOf('junie', [JUNIE, AI_CHAT, GH, TERMINAL], undefined, ASSISTANTS)).toBeUndefined();
-    });
-
-    it('AC-003 (core part) a pluginsChanged event moves the offer and tells the listeners', () => {
-        const world = rig([], 'claudeCode');
-        let seen = 0;
-        world.wiring.offer.onDidChange(() => (seen += 1));
-        expect(world.wiring.offer.read()).toBeUndefined();
-        expect(world.mirrors.apply('pluginsChanged', { plugins: [TERMINAL] })).toBe(true);
-        expect(seen).toBe(1);
-        expect(plainSendViewOf(world.wiring.offer.read())?.assistant).toBe('claudeCode');
-        world.mirrors.apply('pluginsChanged', { plugins: [] });
-        expect(seen).toBe(2);
-        expect(world.wiring.offer.read()).toBeUndefined();
-    });
-
-    it('a pluginsChanged event of another shape is refused and changes nothing', () => {
-        const world = rig([TERMINAL], 'claudeCode');
-        expect(world.mirrors.apply('pluginsChanged', { plugins: 'x' })).toBe(false);
-        expect(world.mirrors.apply('pluginsChanged', { plugins: [1] })).toBe(false);
-        expect(plainSendViewOf(world.wiring.offer.read())?.assistant).toBe('claudeCode');
-    });
-
-    it('AC-017 (place) Junie is offered with AI Chat while com.intellij.ml.llm is available, else with the Junie tool window', () => {
-        const offerOfJunie = (plugins: string[]): Offer | undefined => rig(plugins, 'junie').wiring.offer.read();
-        expect(offerOfJunie([JUNIE, AI_CHAT])?.place).toBe('Junie in AI Chat');
-        expect(offerOfJunie([AI_CHAT])?.place).toBe('Junie in AI Chat');
-        expect(offerOfJunie([JUNIE])?.place).toBe('the Junie tool window');
-    });
-});
-
 describe('0035 T-007 / AC-011, AC-013 (core part): Send to Claude Code through the host', () => {
-    const table = createJetBrainsAssistants(() => [TERMINAL]);
+    const table = createJetBrainsAssistants();
 
     it('AC-011 the row: Terminal presence, targets current and new, the 20000 ms budget, attaching', () => {
         const row = table.claudeCode!;
-        expect(row.extensionId).toBe(TERMINAL);
+        expect(row.extensionId).toBe(CLAUDE_CLI);
         expect(row.handover).toBe('send');
         expect(row.targets).toEqual(['current', 'new']);
         expect(row.timeoutMs).toBe(20000);
@@ -167,21 +107,21 @@ describe('0035 T-007 / AC-011, AC-013 (core part): Send to Claude Code through t
 
     it('AC-009, AC-011 the call carries the target and the text of §6.2 with one @ mention per path, in order', () => {
         const calls = table.claudeCode!.callsFor('current', LINE, [{ uri: undefined, path: SPEC }, { uri: undefined, path: PLAN }]);
-        expect(calls).toEqual([{ command: 'featherspec.claudeTerminal', args: [{ target: 'current', text: `${LINE} @${SPEC} @${PLAN}` }] }]);
-        expect(table.claudeCode!.callsFor('new', LINE)).toEqual([{ command: 'featherspec.claudeTerminal', args: [{ target: 'new', text: LINE }] }]);
+        expect(calls).toEqual([{ command: 'featherspec.terminal', args: [{ assistant: 'claudeCode', target: 'current', text: `${LINE} @${SPEC} @${PLAN}` }] }]);
+        expect(table.claudeCode!.callsFor('new', LINE)).toEqual([{ command: 'featherspec.terminal', args: [{ assistant: 'claudeCode', target: 'new', text: LINE }] }]);
     });
 
     it('AC-009 a path that contains whitespace is left out of the text', () => {
         const calls = table.claudeCode!.callsFor('new', LINE, [{ uri: undefined, path: '.specs/active/0002 odd.md' }, { uri: undefined, path: PLAN }]);
-        expect(calls[0]?.args).toEqual([{ target: 'new', text: `${LINE} @${PLAN}` }]);
+        expect(calls[0]?.args).toEqual([{ assistant: 'claudeCode', target: 'new', text: `${LINE} @${PLAN}` }]);
     });
 
-    it('AC-011 the main part types through assistant.claudeTerminal and reports Opened; the clipboard stays unchanged', async () => {
-        const world = rig([TERMINAL], 'claudeCode');
-        world.answers.set('assistant.claudeTerminal', () => ({ ok: 'typed' }));
+    it('AC-011 the main part types through assistant.terminal and reports Opened; the clipboard stays unchanged', async () => {
+        const world = rig([TERMINAL, CLAUDE_CLI], 'claudeCode');
+        world.answers.set('assistant.terminal', () => ({ ok: 'typed' }));
         const result = await world.wiring.send.send({ assistant: 'claudeCode', target: 'current', line: LINE });
         expect(result).toEqual<SendOutcomeView>({ outcome: 'opened', text: "The prompt is in Claude Code's chat. Check it, then send it there." });
-        expect(world.frames.filter((frame) => frame.k === 'call').map((frame) => [frame.name, frame.args])).toEqual([['assistant.claudeTerminal', { target: 'current', text: LINE }]]);
+        expect(world.frames.filter((frame) => frame.k === 'call').map((frame) => [frame.name, frame.args])).toEqual([['assistant.terminal', { assistant: 'claudeCode', target: 'current', text: LINE }]]);
         expect(world.written).toEqual([]);
         expect(world.warned).toEqual([]);
     });
@@ -196,23 +136,23 @@ describe('0035 T-007 / AC-011, AC-013 (core part): Send to Claude Code through t
     });
 
     it('AC-013 a failing terminal call: the cause is terminal call failed with the host message', async () => {
-        const world = rig([TERMINAL], 'claudeCode');
-        world.answers.set('assistant.claudeTerminal', () => ({ error: 'the tab closed' }));
+        const world = rig([TERMINAL, CLAUDE_CLI], 'claudeCode');
+        world.answers.set('assistant.terminal', () => ({ error: 'the tab closed' }));
         const result = await world.wiring.send.send({ assistant: 'claudeCode', target: 'new', line: LINE });
         expect(result.outcome).toBe('copied');
         expect(world.blocks).toEqual([['Send to Claude Code failed (terminal call failed: the tab closed); the prompt was copied instead.']]);
     });
 
     it('AC-013 the host reports that Claude Code was not ready: that is the cause, as written in §7', async () => {
-        const world = rig([TERMINAL], 'claudeCode');
-        world.answers.set('assistant.claudeTerminal', () => ({ error: 'Claude Code was not ready within 15000 ms' }));
+        const world = rig([TERMINAL, CLAUDE_CLI], 'claudeCode');
+        world.answers.set('assistant.terminal', () => ({ error: 'Claude Code was not ready within 15000 ms' }));
         await world.wiring.send.send({ assistant: 'claudeCode', target: 'new', line: LINE });
         expect(world.blocks).toEqual([['Send to Claude Code failed (Claude Code was not ready within 15000 ms); the prompt was copied instead.']]);
     });
 
     it('AC-013 a call that never answers falls back after 20000 ms, not after 5000, and says so', async () => {
-        const world = rig([TERMINAL], 'claudeCode');
-        world.answers.set('assistant.claudeTerminal', () => 'never');
+        const world = rig([TERMINAL, CLAUDE_CLI], 'claudeCode');
+        world.answers.set('assistant.terminal', () => 'never');
         let result: SendOutcomeView | undefined;
         void world.wiring.send.send({ assistant: 'claudeCode', target: 'current', line: LINE }).then((value) => (result = value));
         await settle();
@@ -226,8 +166,8 @@ describe('0035 T-007 / AC-011, AC-013 (core part): Send to Claude Code through t
     });
 
     it('AC-013 (late result) nothing is typed again after the fallback: one call only', async () => {
-        const world = rig([TERMINAL], 'claudeCode');
-        world.answers.set('assistant.claudeTerminal', () => 'never');
+        const world = rig([TERMINAL, CLAUDE_CLI], 'claudeCode');
+        world.answers.set('assistant.terminal', () => 'never');
         void world.wiring.send.send({ assistant: 'claudeCode', target: 'current', line: LINE });
         await settle();
         world.clock.advance(20000);
@@ -250,8 +190,8 @@ describe('0035 amendment 2026-11-23 / AC-032: Claude Code waits for an answer in
         ['an existing tab, not ready now', 'Claude Code was not ready for input', 'Claude Code was not ready for input'],
     ] as const) {
         it(`AC-032 ${place}: the prompt is copied, the one warning is the waiting text, the control shows it, the log names the cause`, async () => {
-            const world = rig([TERMINAL], 'claudeCode');
-            world.answers.set('assistant.claudeTerminal', () => ({ error: message }));
+            const world = rig([TERMINAL, CLAUDE_CLI], 'claudeCode');
+            world.answers.set('assistant.terminal', () => ({ error: message }));
             const result = await world.wiring.send.send({ assistant: 'claudeCode', target: 'current', line: LINE });
             expect(result).toEqual<SendOutcomeView>({ outcome: 'copied', text: WAITING });
             expect(world.written).toEqual([LINE]);
@@ -262,15 +202,15 @@ describe('0035 amendment 2026-11-23 / AC-032: Claude Code waits for an answer in
     }
 
     it('AC-032 every other failure keeps the general warning: a failing call, the Terminal plugin gone, no result in time', async () => {
-        const failing = rig([TERMINAL], 'claudeCode');
-        failing.answers.set('assistant.claudeTerminal', () => ({ error: 'the tab closed' }));
+        const failing = rig([TERMINAL, CLAUDE_CLI], 'claudeCode');
+        failing.answers.set('assistant.terminal', () => ({ error: 'the tab closed' }));
         await failing.wiring.send.send({ assistant: 'claudeCode', target: 'new', line: LINE });
         expect(failing.warned).toEqual([GENERAL]);
         const gone = rig([], 'claudeCode');
         await gone.wiring.send.send({ assistant: 'claudeCode', target: 'new', line: LINE });
         expect(gone.warned).toEqual([GENERAL]);
-        const silent = rig([TERMINAL], 'claudeCode');
-        silent.answers.set('assistant.claudeTerminal', () => 'never');
+        const silent = rig([TERMINAL, CLAUDE_CLI], 'claudeCode');
+        silent.answers.set('assistant.terminal', () => 'never');
         void silent.wiring.send.send({ assistant: 'claudeCode', target: 'current', line: LINE });
         await settle();
         silent.clock.advance(20000);
@@ -279,8 +219,8 @@ describe('0035 amendment 2026-11-23 / AC-032: Claude Code waits for an answer in
     });
 
     it('AC-032 a prompt that could not be copied is not announced as copied: the general warning, outcome copyFailed', async () => {
-        const world = rig([TERMINAL], 'claudeCode', true);
-        world.answers.set('assistant.claudeTerminal', () => ({ error: 'Claude Code was not ready for input' }));
+        const world = rig([TERMINAL, CLAUDE_CLI], 'claudeCode', true);
+        world.answers.set('assistant.terminal', () => ({ error: 'Claude Code was not ready for input' }));
         const result = await world.wiring.send.send({ assistant: 'claudeCode', target: 'current', line: LINE });
         expect(result.outcome).toBe('copyFailed');
         expect(result.text).not.toBe(WAITING);
@@ -288,7 +228,7 @@ describe('0035 amendment 2026-11-23 / AC-032: Claude Code waits for an answer in
     });
 
     it('AC-032 the markers of the host are told apart in one place: both not-ready causes are waiting, nothing else is', () => {
-        const row = createJetBrainsAssistants(() => [TERMINAL]).claudeCode!;
+        const row = createJetBrainsAssistants().claudeCode!;
         expect(row.causes?.notice?.('Claude Code was not ready within 15000 ms')).toBe(WAITING);
         expect(row.causes?.notice?.('Claude Code was not ready for input')).toBe(WAITING);
         for (const other of ['the tab closed', 'the terminal has no shell integration', 'Claude Code was not ready within 5000 ms', 'a Send to Claude Code is still starting', '']) {
@@ -298,49 +238,13 @@ describe('0035 amendment 2026-11-23 / AC-032: Claude Code waits for an answer in
     });
 });
 
-describe('0035 T-007 / AC-016, AC-017, AC-019 (core part): Copy for through assistant.openChat', () => {
-    it('AC-016 Copy for Copilot writes the references text, then calls assistant.openChat with the assistant', async () => {
-        const world = rig([GH], 'copilot');
-        world.answers.set('assistant.openChat', () => ({ ok: 'opened' }));
-        const result = await world.wiring.send.send({ assistant: 'copilot', target: 'new', line: LINE });
-        expect(world.written).toEqual([LINE]);
-        expect(world.frames.filter((frame) => frame.k === 'call').map((frame) => [frame.name, frame.args])).toEqual([['assistant.openChat', { assistant: 'copilot' }]]);
-        expect(result).toEqual({ outcome: 'copied', text: 'Copied. Paste it into GitHub Copilot Chat with Ctrl+V.' });
-    });
-
-    it('AC-017 Copy for Junie names AI Chat with the AI Assistant plugin, the Junie tool window without it', async () => {
-        const withChat = rig([JUNIE, AI_CHAT], 'junie');
-        withChat.answers.set('assistant.openChat', () => ({ ok: 'opened' }));
-        expect((await withChat.wiring.send.send({ assistant: 'junie', target: 'new', line: LINE })).text).toBe('Copied. In AI Chat, choose Junie and paste it with Ctrl+V.');
-        const without = rig([JUNIE], 'junie');
-        without.answers.set('assistant.openChat', () => ({ ok: 'opened' }));
-        expect((await without.wiring.send.send({ assistant: 'junie', target: 'new', line: LINE })).text).toBe('Copied. Paste it into the Junie tool window with Ctrl+V.');
-    });
-
-    it('AC-019 the host answers notFound: copied, open and paste', async () => {
-        const world = rig([GH], 'copilot');
-        world.answers.set('assistant.openChat', () => ({ ok: 'notFound' }));
-        const result = await world.wiring.send.send({ assistant: 'copilot', target: 'new', line: LINE });
-        expect(result.text).toBe('Copied. Open GitHub Copilot Chat and paste it with Ctrl+V.');
-        expect(world.written).toEqual([LINE]);
-    });
-
-    it('AC-019 the host call fails: the same, and nothing is warned', async () => {
-        const world = rig([GH], 'copilot');
-        world.answers.set('assistant.openChat', () => ({ error: 'not yet' }));
-        const result = await world.wiring.send.send({ assistant: 'copilot', target: 'new', line: LINE });
-        expect(result.text).toBe('Copied. Open GitHub Copilot Chat and paste it with Ctrl+V.');
-        expect(world.warned).toEqual([]);
-    });
-});
-
 const SHOW = parseStepTipSettings(true, {});
 const NO_HISTORY = { available: true, entries: [], label: '' } as never;
 const CASES = Object.keys(STEP_GUIDES) as StepCase[];
 const VS_CODE_OFFER: Offer = { assistant: 'claudeCode' };
 
 function jetBrainsOffer(assistant: 'copilot' | 'claudeCode' | 'junie'): Offer {
-    const offer = rig([GH, TERMINAL, JUNIE, AI_CHAT], assistant).wiring.offer.read();
+    const offer = rig([TERMINAL, 'cli:junie', CLAUDE_CLI, 'cli:copilot'], assistant).wiring.offer.read();
     if (offer === undefined) {
         throw new Error('no offer');
     }
@@ -422,7 +326,7 @@ describe('0035 T-007 / AC-011, AC-023: the JetBrains router takes the current ch
 
     it('AC-023 an unknown assistant, a target of no list and an extra key stay refused with the JetBrains targets', async () => {
         const { instance, handled } = router(true);
-        for (const payload of [{ ...request.payload, assistant: 'codex' }, { ...request.payload, target: 'later' }, { ...request.payload, command: 'x' }, { ...request.payload, assistant: 'copilot', target: 'current' }]) {
+        for (const payload of [{ ...request.payload, assistant: 'codex' }, { ...request.payload, target: 'later' }, { ...request.payload, command: 'x' }, { ...request.payload, assistant: 'copilot', target: 'sometime' }]) {
             await instance.receive({ ...request, payload });
         }
         expect(handled).toEqual([]);
@@ -440,8 +344,8 @@ describe('0035 review 20 S-2 / AC-036: after the timeout a missing claude comman
     });
 
     it('AC-036 the host reports the missing command: the prompt is copied, the one warning is the own text, the log names the cause and not the prompt', async () => {
-        const world = rig([TERMINAL], 'claudeCode');
-        world.answers.set('assistant.claudeTerminal', () => ({ error: NOT_FOUND }));
+        const world = rig([TERMINAL, CLAUDE_CLI], 'claudeCode');
+        world.answers.set('assistant.terminal', () => ({ error: NOT_FOUND }));
         const result = await world.wiring.send.send({ assistant: 'claudeCode', target: 'new', line: LINE });
         expect(result).toEqual<SendOutcomeView>({ outcome: 'copied', text: TEXT });
         expect(world.written).toEqual([LINE]);
@@ -451,26 +355,26 @@ describe('0035 review 20 S-2 / AC-036: after the timeout a missing claude comman
     });
 
     it('AC-036 a prompt that could not be copied is not announced as copied', async () => {
-        const world = rig([TERMINAL], 'claudeCode', true);
-        world.answers.set('assistant.claudeTerminal', () => ({ error: NOT_FOUND }));
+        const world = rig([TERMINAL, CLAUDE_CLI], 'claudeCode', true);
+        world.answers.set('assistant.terminal', () => ({ error: NOT_FOUND }));
         const result = await world.wiring.send.send({ assistant: 'claudeCode', target: 'new', line: LINE });
         expect(result.outcome).toBe('copyFailed');
         expect(world.warned).toEqual(["Could not open Claude Code's chat, and the prompt could not be copied."]);
     });
 
     it('AC-036 the waiting text and the general warning keep their cases', async () => {
-        const waiting = rig([TERMINAL], 'claudeCode');
-        waiting.answers.set('assistant.claudeTerminal', () => ({ error: 'Claude Code was not ready within 15000 ms' }));
+        const waiting = rig([TERMINAL, CLAUDE_CLI], 'claudeCode');
+        waiting.answers.set('assistant.terminal', () => ({ error: 'Claude Code was not ready within 15000 ms' }));
         await waiting.wiring.send.send({ assistant: 'claudeCode', target: 'new', line: LINE });
         expect(waiting.warned).toEqual([CLAUDE_WAITING_TEXT]);
-        const failing = rig([TERMINAL], 'claudeCode');
-        failing.answers.set('assistant.claudeTerminal', () => ({ error: 'the tab closed' }));
+        const failing = rig([TERMINAL, CLAUDE_CLI], 'claudeCode');
+        failing.answers.set('assistant.terminal', () => ({ error: 'the tab closed' }));
         await failing.wiring.send.send({ assistant: 'claudeCode', target: 'new', line: LINE });
         expect(failing.warned).toEqual([GENERAL]);
     });
 
     it('AC-036 negative control: the cause alone is told apart from every other message', () => {
-        const row = createJetBrainsAssistants(() => [TERMINAL]).claudeCode!;
+        const row = createJetBrainsAssistants().claudeCode!;
         expect(row.causes?.notice?.(NOT_FOUND)).toBe(TEXT);
         expect(row.causes?.failed(NOT_FOUND)).toBe(NOT_FOUND);
         for (const other of ['the claude command was not found', 'the claude command was not found on the PATH.', 'terminal call failed: x']) {
@@ -489,8 +393,8 @@ describe('0035 review 20 S-3 / PD-110 / AC-037: in a project that is not trusted
     });
 
     it('AC-037 the host reports the untrusted project: the prompt is copied, the one warning is the own text, the log names the cause and not the prompt', async () => {
-        const world = rig([TERMINAL], 'claudeCode');
-        world.answers.set('assistant.claudeTerminal', () => ({ error: UNTRUSTED }));
+        const world = rig([TERMINAL, CLAUDE_CLI], 'claudeCode');
+        world.answers.set('assistant.terminal', () => ({ error: UNTRUSTED }));
         const result = await world.wiring.send.send({ assistant: 'claudeCode', target: 'current', line: LINE });
         expect(result).toEqual<SendOutcomeView>({ outcome: 'copied', text: TEXT });
         expect(world.written).toEqual([LINE]);
@@ -500,15 +404,15 @@ describe('0035 review 20 S-3 / PD-110 / AC-037: in a project that is not trusted
     });
 
     it('AC-037 a prompt that could not be copied is not announced as copied', async () => {
-        const world = rig([TERMINAL], 'claudeCode', true);
-        world.answers.set('assistant.claudeTerminal', () => ({ error: UNTRUSTED }));
+        const world = rig([TERMINAL, CLAUDE_CLI], 'claudeCode', true);
+        world.answers.set('assistant.terminal', () => ({ error: UNTRUSTED }));
         const result = await world.wiring.send.send({ assistant: 'claudeCode', target: 'new', line: LINE });
         expect(result.outcome).toBe('copyFailed');
         expect(world.warned).toEqual(["Could not open Claude Code's chat, and the prompt could not be copied."]);
     });
 
     it('AC-037 negative control: the three own texts are told apart, every other message keeps the general warning', () => {
-        const row = createJetBrainsAssistants(() => [TERMINAL]).claudeCode!;
+        const row = createJetBrainsAssistants().claudeCode!;
         expect(row.causes?.notice?.(UNTRUSTED)).toBe(TEXT);
         expect(row.causes?.notice?.('the claude command was not found on the PATH')).toBe(CLAUDE_NOT_INSTALLED_TEXT);
         expect(row.causes?.notice?.('Claude Code was not ready for input')).toBe(CLAUDE_WAITING_TEXT);
@@ -516,11 +420,5 @@ describe('0035 review 20 S-3 / PD-110 / AC-037: in a project that is not trusted
         for (const other of ['the project is trusted', 'the project is not trusted.', 'untrusted']) {
             expect(row.causes?.notice?.(other), other).toBeUndefined();
         }
-    });
-
-    it('AC-037 Copy for stays as it was: the Copilot and Junie handovers know no trust', () => {
-        const table = createJetBrainsAssistants(() => []);
-        expect(table['copilot']?.causes).toBeUndefined();
-        expect(table.junie?.causes).toBeUndefined();
     });
 });

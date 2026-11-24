@@ -9,7 +9,7 @@ import { projectNow } from '../../core/overview/rows';
 import { parseStepTipSettings } from '../../core/settings/stepTipSettings';
 import { isSendView } from '../../shared/protocol/assistant';
 import { SESSION_PHRASES, STEP_GUIDES, type StepCase } from '../../shared/protocol/nextStepTexts';
-import { createJetBrainsAssistants, TERMINAL_PLUGIN } from './assistants';
+import { createJetBrainsAssistants } from './assistants';
 
 const CASES = Object.keys(STEP_GUIDES) as StepCase[];
 const NEW_SESSION: StepCase[] = ['NS-5', 'NS-6-plan', 'NS-9', 'NS-10'];
@@ -18,7 +18,7 @@ const NO_HISTORY = { available: true, entries: [], label: '' } as never;
 const NOW_SPECS = { forEntry: (entry: { key: string }) => ({ key: entry.key }) } as never;
 
 function claudeOffer(): Offer {
-    const offer = offerOf('claudeCode', [TERMINAL_PLUGIN], undefined, createJetBrainsAssistants(() => []));
+    const offer = offerOf('claudeCode', ['cli:claude'], undefined, createJetBrainsAssistants());
     if (offer === undefined) {
         throw new Error('no offer');
     }
@@ -84,10 +84,15 @@ describe('0035 review 20 S-1 / AC-035: the main part of Send to Claude Code foll
         expect(sendViewOf({ assistant: 'copilot' }, 'NS-6-open')?.target).toBe('new');
     });
 
-    it('AC-035 negative control: the other JetBrains handovers have one target and keep it', () => {
-        for (const stepCase of CASES) {
-            expect(sendViewOf({ assistant: 'junie', handover: 'copyFor', place: 'Junie in AI Chat' }, stepCase)?.target).toBe('new');
-            expect(sendViewOf({ assistant: 'copilot', handover: 'copyFor', place: 'GitHub Copilot Chat' }, stepCase)?.target).toBe('new');
+    it('AC-035 the main part of Send to Junie and Send to Copilot follows the session of the tip as Claude Code does', () => {
+        for (const [assistant, presence] of [['junie', 'cli:junie'], ['copilot', 'cli:copilot']] as const) {
+            const offer = offerOf(assistant, [presence], undefined, createJetBrainsAssistants())!;
+            for (const stepCase of CASES) {
+                const view = sendViewOf(offer, stepCase);
+                expect(view?.target, `${assistant} ${stepCase}`).toBe(NEW_SESSION.includes(stepCase) ? 'new' : 'current');
+                expect(view?.targets).toEqual(['current', 'new']);
+                expect(isSendView(view)).toBe(true);
+            }
         }
     });
 });

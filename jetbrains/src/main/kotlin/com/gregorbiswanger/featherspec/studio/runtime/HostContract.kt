@@ -10,7 +10,7 @@ val ASYNC_CALLS: List<String> = listOf(
     "http.get", "archive.read",
     "ui.pick", "ui.notify", "ui.confirm", "ui.progressStart", "ui.openExternal",
     "clipboard.write", "editor.open",
-    "assistant.claudeTerminal", "assistant.openChat",
+    "assistant.terminal", "assistant.openChat",
     "actions.openSetupGuide", "actions.manageTrust", "actions.openStudio", "actions.reloadPanel",
 )
 
