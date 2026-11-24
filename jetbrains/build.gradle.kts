@@ -80,6 +80,7 @@ val integrationTest = tasks.register<Test>("integrationTest") {
     systemProperty("featherspec.conformance", rootProject.file("build/conformance").absolutePath)
     systemProperty("featherspec.fixture", rootProject.file("../test/fixtures/studio-0015").absolutePath)
     systemProperty("featherspec.nojcef", providers.gradleProperty("featherspec.nojcef").getOrElse(""))
+    systemProperty("featherspec.ide", providers.gradleProperty("featherspec.ide").getOrElse(""))
     useJUnitPlatform()
     testLogging {
         events("failed")

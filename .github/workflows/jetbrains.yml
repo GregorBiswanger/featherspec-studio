@@ -208,12 +208,21 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         nojcef: [none]
+        ide: ['2025.3.1']
         include:
           - os: ubuntu-latest
             nojcef: unsupported
+            ide: '2025.3.1'
           - os: ubuntu-latest
             nojcef: suspended
-    name: ide-tests (${{ matrix.os }}${{ matrix.nojcef != 'none' && format(', no JCEF {0}', matrix.nojcef) || '' }})
+            ide: '2025.3.1'
+          - os: ubuntu-latest
+            nojcef: none
+            ide: '2026.3'
+          - os: windows-latest
+            nojcef: none
+            ide: '2026.3'
+    name: ide-tests (${{ matrix.os }}${{ matrix.nojcef != 'none' && format(', no JCEF {0}', matrix.nojcef) || '' }}${{ matrix.ide != '2025.3.1' && format(', IDEA {0}', matrix.ide) || '' }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
     steps:
@@ -243,13 +252,13 @@ jobs:
         run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
       - name: Run the Starter tests (Linux)
         if: runner.os == 'Linux' && matrix.nojcef == 'none'
-        run: xvfb-run -a gradle -p jetbrains integrationTest
+        run: xvfb-run -a gradle -p jetbrains integrationTest -Pfeatherspec.ide=${{ matrix.ide }}
       - name: Run the no-JCEF Starter test (Linux)
         if: matrix.nojcef != 'none'
-        run: xvfb-run -a gradle -p jetbrains integrationTest --tests '*NoJcefIdeTest' -Pfeatherspec.nojcef=${{ matrix.nojcef }}
+        run: xvfb-run -a gradle -p jetbrains integrationTest --tests '*NoJcefIdeTest' -Pfeatherspec.nojcef=${{ matrix.nojcef }} -Pfeatherspec.ide=${{ matrix.ide }}
       - name: Run the Starter tests (Windows and macOS)
         if: runner.os != 'Linux'
-        run: gradle -p jetbrains integrationTest
+        run: gradle -p jetbrains integrationTest -Pfeatherspec.ide=${{ matrix.ide }}
       - name: Compare the JVM next steps with the Baseline
         if: always() && hashFiles('jetbrains/build/probe-out/actual/*.json') != ''
         shell: bash
@@ -278,7 +287,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ide-tests-${{ matrix.os }}-${{ matrix.nojcef }}
+          name: ide-tests-${{ matrix.os }}-${{ matrix.nojcef }}-${{ matrix.ide }}
           path: |
             jetbrains/build/probe-out/**
             jetbrains/build/probe-out-setup/**

@@ -33,7 +33,7 @@ class SetupIdeTest {
         val errorFile = out.resolve("probe-error.txt")
         val context = Starter.newContext(
             "setupEndToEnd",
-            TestCase(IdeProductProvider.IU, LocalProjectInfo(project)).withVersion("2025.3.1"),
+            TestCase(IdeProductProvider.IU, LocalProjectInfo(project)).withVersion(IdeUnderTest.version),
         )
         context.applyVMOptionsPatch {
             addSystemProperty("idea.trust.all.projects", true)

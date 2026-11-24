@@ -97,7 +97,7 @@ class CoreIdeTest {
         val errorFile = out.resolve("probe-error.txt")
         val context = Starter.newContext(
             name,
-            TestCase(IdeProductProvider.IU, LocalProjectInfo(projectCopy)).withVersion("2025.3.1"),
+            TestCase(IdeProductProvider.IU, LocalProjectInfo(projectCopy)).withVersion(IdeUnderTest.version),
         )
         context.applyVMOptionsPatch {
             addSystemProperty("idea.trust.all.projects", true)
