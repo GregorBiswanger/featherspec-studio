@@ -1,7 +1,3 @@
-export type JunieForm = 'slash' | 'follow';
-
-export const JUNIE_FORM: JunieForm = 'slash';
-
 const WHITESPACE = /\s/;
 const SLASH_LINE = /^\/sdd-([A-Za-z0-9-]+)(?: (.+))?$/s;
 
@@ -29,10 +25,6 @@ export function claudeText(line: string, paths: readonly string[]): string {
     return cliText(line, paths, 'slash');
 }
 
-export function copilotCopyText(line: string, paths: readonly string[]): string {
-    return withReferences(line, paths, (path) => `#file:${path}`);
-}
-
 function followLine(line: string): string {
     const match = SLASH_LINE.exec(line);
     if (match === null) {
@@ -40,8 +32,4 @@ function followLine(line: string): string {
     }
     const [, name, rest] = match;
     return `Follow .claude/commands/sdd-${name}.md${rest === undefined ? '' : ` for ${rest}`}`;
-}
-
-export function junieCopyText(line: string, paths: readonly string[], form: JunieForm): string {
-    return withReferences(form === 'follow' ? followLine(line) : line, paths, (path) => `@file:${path}`);
 }

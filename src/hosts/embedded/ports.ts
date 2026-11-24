@@ -11,7 +11,7 @@ import type { IdSource, RuntimeClock } from '../../core/ports/runtimeMedium';
 import type { AssistantHostPort } from '../../core/ports/assistant';
 import type { SetupPickItem, SetupUiPort } from '../../core/ports/setupUi';
 import type { StepPickItem, StepUiPort } from '../../core/ports/copyNextStep';
-import { createJetBrainsAssistants, OPEN_CHAT_COMMAND, pluginPresent, TERMINAL_COMMAND, UNSET_ASSISTANT } from './assistants';
+import { createJetBrainsAssistants, pluginPresent, TERMINAL_COMMAND, UNSET_ASSISTANT } from './assistants';
 import type { CoreConfig } from './contract';
 import type { Bridge } from './bridge';
 import { fromBase64, toBase64 } from './bridge';
@@ -292,14 +292,11 @@ export function createEmbeddedPorts(bridge: Bridge, mirrors: Mirrors, config: Co
     const assistantHost: AssistantHostPort = {
         extension: (id) => (pluginPresent(id, mirrors.plugins()) ? { active: true } : undefined),
         activate: async () => undefined,
-        commands: async () => [TERMINAL_COMMAND, OPEN_CHAT_COMMAND],
+        commands: async () => [TERMINAL_COMMAND],
         execute: async (command, args) => {
             const [first] = args;
             if (command === TERMINAL_COMMAND) {
                 return bridge.callAsync<unknown>('assistant.terminal', first);
-            }
-            if (command === OPEN_CHAT_COMMAND) {
-                return bridge.callAsync<unknown>('assistant.openChat', { assistant: first });
             }
             throw new Error(`Unknown assistant command ${command}.`);
         },

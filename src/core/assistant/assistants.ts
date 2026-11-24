@@ -10,16 +10,12 @@ export interface AssistantAttachment {
     path: string;
 }
 
-export type AssistantHandover = 'send' | 'copyFor';
-
 export interface AssistantSpec {
     extensionId: string;
-    handover: AssistantHandover;
     attachesSpec: boolean;
     targets: readonly AssistantTarget[];
-    text?(line: string, paths: readonly string[]): string;
     timeoutMs?: number;
-    place?(): string;
+    terminal?: true;
     causes?: { unavailable: string; failed(message: string): string; notice?(message: string): string | undefined };
     callsFor(target: AssistantTarget, line: string, attachment?: AssistantAttachment | readonly AssistantAttachment[]): AssistantCall[];
 }
@@ -33,7 +29,6 @@ export type AssistantTable = Partial<Record<AssistantId, AssistantSpec>>;
 export const ASSISTANTS: Record<'copilot' | 'claudeCode', AssistantSpec> = {
     'copilot': {
         extensionId: 'GitHub.copilot-chat',
-        handover: 'send',
         attachesSpec: true,
         targets: ASSISTANT_TARGETS['copilot'],
         callsFor(target, line, attachment) {
@@ -44,7 +39,6 @@ export const ASSISTANTS: Record<'copilot' | 'claudeCode', AssistantSpec> = {
     },
     claudeCode: {
         extensionId: 'anthropic.claude-code',
-        handover: 'send',
         attachesSpec: true,
         targets: ASSISTANT_TARGETS.claudeCode,
         callsFor(_target, line, attachment) {

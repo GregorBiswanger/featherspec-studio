@@ -1,11 +1,9 @@
-import { OPEN_CHAT_COMMAND } from '../../core/assistant/send';
 import type { AssistantAttachment, AssistantSpec, AssistantTable } from '../../core/assistant/assistants';
 import { CLI_FORMS, cliText } from '../../core/assistant/references';
 import type { AssistantId } from '../../shared/protocol/assistant';
 import { AGENT_UNTRUSTED_CAUSE, agentNotInstalledCause, agentNotInstalledText, agentNotReadyCause, agentNotReadyNowCause, agentUntrustedText, agentWaitingText, TERMINAL_UNAVAILABLE_CAUSE, terminalCallFailedCause } from '../../shared/protocol/assistantTexts';
 
 export const TERMINAL_PLUGIN = 'org.jetbrains.plugins.terminal';
-export { OPEN_CHAT_COMMAND };
 export const TERMINAL_COMMAND = 'featherspec.terminal';
 export const TERMINAL_BUDGET_MS = 20000;
 export const READY_BUDGET_MS = 15000;
@@ -46,7 +44,7 @@ function cliRow(agent: CliAgent): AssistantSpec {
     const notice = noticeOf(agent);
     return {
         extensionId: agent.presence,
-        handover: 'send',
+        terminal: true,
         attachesSpec: true,
         targets: ['current', 'new'],
         timeoutMs: TERMINAL_BUDGET_MS,

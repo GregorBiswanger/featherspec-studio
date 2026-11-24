@@ -1,5 +1,5 @@
 import { attachesInTarget } from '../../shared/protocol/assistant';
-import { ASSISTANT_NAMES, activatingFailedCause, attachMissingOutputText, commandFailedCause, commandNotFoundCause, copyForDoneText, copyForMissingOutputText, copyForOpenText, copyForWithoutText, extensionNotFoundCause, noResultCause, pasteKeyOf, sendOpenedText, sendOpenedWithoutText, sendOutputCopiedText, sendOutputNotCopiedText, sendWarnCopiedText, sendWarnNotCopiedText } from '../../shared/protocol/assistantTexts';
+import { ASSISTANT_NAMES, activatingFailedCause, attachMissingOutputText, commandFailedCause, commandNotFoundCause, extensionNotFoundCause, noResultCause, pasteKeyOf, sendOpenedText, sendOpenedWithoutText, sendOutputCopiedText, sendOutputNotCopiedText, sendWarnCopiedText, sendWarnNotCopiedText } from '../../shared/protocol/assistantTexts';
 import type { SendOutcomeView, SendRequest } from '../../shared/protocol/assistant';
 import { copyLine } from '../board/copyLine';
 import type { AssistantHostPort } from '../ports/assistant';
@@ -10,11 +10,8 @@ import type { AssistantId } from '../../shared/protocol/assistant';
 import { ASSISTANTS, type AssistantSpec, type AssistantTable } from './assistants';
 import type { AttachmentCheck, AttachmentTarget } from './attachment';
 import type { HandOverPort } from './handOver';
-import { placeOf } from './offer';
 
 export const SEND_TIMEOUT_MS = 5000;
-
-export const OPEN_CHAT_COMMAND = 'featherspec.openChat';
 
 export interface SendDeps {
     host: AssistantHostPort;
@@ -115,7 +112,7 @@ export function createSend(deps: SendDeps): Send {
         }
         let calls = plain;
         const unattached: string[] = [];
-        if (request.attach !== undefined && attachesInTarget(request.assistant, request.target) && (deps.attaching?.(request.assistant) ?? spec.attachesSpec)) {
+        if (request.attach !== undefined && attachesInTarget(request.assistant, request.target, spec.terminal === true) && (deps.attaching?.(request.assistant) ?? spec.attachesSpec)) {
             const found: AttachmentTarget[] = [];
             for (const path of [request.attach, ...(request.attachAlso ?? [])]) {
                 const target = deps.attachment === undefined ? undefined : await deps.attachment(path);
@@ -179,52 +176,6 @@ export function createSend(deps: SendDeps): Send {
         });
     }
 
-    function openChat(assistant: AssistantId, spec: AssistantSpec): Promise<boolean> {
-        return new Promise((resolve) => {
-            const timer = deps.clock.setTimeout(() => resolve(false), spec.timeoutMs ?? SEND_TIMEOUT_MS);
-            deps.host.execute(OPEN_CHAT_COMMAND, [assistant]).then(
-                (answer) => {
-                    timer.dispose();
-                    resolve(answer !== 'notFound');
-                },
-                () => {
-                    timer.dispose();
-                    resolve(false);
-                },
-            );
-        });
-    }
-
-    async function copyFor(request: SendRequest, spec: AssistantSpec): Promise<SendOutcomeView> {
-        const name = ASSISTANT_NAMES[request.assistant];
-        const paths: string[] = [];
-        const unattached: string[] = [];
-        if (request.attach !== undefined && attachesInTarget(request.assistant, request.target) && (deps.attaching?.(request.assistant) ?? spec.attachesSpec)) {
-            for (const path of [request.attach, ...(request.attachAlso ?? [])]) {
-                const target = deps.attachment === undefined ? undefined : await deps.attachment(path);
-                if (target === undefined) {
-                    unattached.push(path);
-                } else {
-                    paths.push(target.path);
-                }
-            }
-        }
-        if (unattached.length > 0) {
-            deps.output.appendBlock(unattached.map((path) => copyForMissingOutputText(name, path)));
-        }
-        const written = await copyLine(deps.clipboard, spec.text === undefined ? request.line : spec.text(request.line, paths));
-        if (!written.ok) {
-            return { outcome: 'copyFailed', text: written.text };
-        }
-        const place = placeOf(request.assistant, spec);
-        const key = pasteKeyOf(deps.platform);
-        const opened = await openChat(request.assistant, spec);
-        if (unattached.length > 0) {
-            return { outcome: 'copied', text: copyForWithoutText(unattached.map((path) => path.slice(path.lastIndexOf('/') + 1)).join(', '), place, key, opened) };
-        }
-        return { outcome: 'copied', text: opened ? copyForDoneText(place, key) : copyForOpenText(place, key) };
-    }
-
     let tail: Promise<unknown> = Promise.resolve();
 
     return {
@@ -241,7 +192,7 @@ export function createSend(deps: SendDeps): Send {
                 const result = copied(request.line);
                 return handOver === undefined ? result : result.then(settle);
             }
-            const turn = tail.then(() => (row.handover === 'copyFor' ? copyFor(request, row) : attempt(request, row)));
+            const turn = tail.then(() => attempt(request, row));
             tail = turn.catch(() => undefined);
             return handOver === undefined ? turn : turn.then(settle);
         },

@@ -1,8 +1,7 @@
 import type { AssistantHostPort } from '../ports/assistant';
 import type { SettingPort } from '../ports/host';
-import { COPY_FOR_PLACES } from '../../shared/protocol/assistantTexts';
 import { ASSISTANT_IDS, ASSISTANT_TARGETS, type AssistantId, type AssistantTarget } from '../../shared/protocol/assistant';
-import { ASSISTANTS, type AssistantSpec, type AssistantTable } from './assistants';
+import { ASSISTANTS, type AssistantTable } from './assistants';
 
 export const ASSISTANT_KEY = 'assistant';
 
@@ -10,8 +9,7 @@ export interface Offer {
     assistant: AssistantId;
     attaches?: boolean;
     targets?: AssistantTarget[];
-    handover?: 'copyFor';
-    place?: string;
+    terminal?: true;
 }
 
 export function attachesOf(offer: Offer, table: AssistantTable = ASSISTANTS): boolean {
@@ -20,10 +18,6 @@ export function attachesOf(offer: Offer, table: AssistantTable = ASSISTANTS): bo
 
 function sameTargets(first: readonly AssistantTarget[], second: readonly AssistantTarget[]): boolean {
     return first.length === second.length && first.every((target, index) => target === second[index]);
-}
-
-export function placeOf(assistant: AssistantId, row: AssistantSpec): string {
-    return row.place?.() ?? (assistant === 'junie' ? COPY_FOR_PLACES.junie : COPY_FOR_PLACES['copilot']);
 }
 
 export function offerOf(value: unknown, present: readonly string[], attaching?: (id: AssistantId) => boolean, table: AssistantTable = ASSISTANTS): Offer | undefined {
@@ -36,7 +30,7 @@ export function offerOf(value: unknown, present: readonly string[], attaching?: 
     return {
         assistant,
         ...(attaches === undefined ? {} : { attaches }),
-        ...(row.handover === 'copyFor' ? { handover: 'copyFor' as const, place: placeOf(assistant, row) } : {}),
+        ...(row.terminal === true ? { terminal: true as const } : {}),
         ...(sameTargets(row.targets, ASSISTANT_TARGETS[assistant]) ? {} : { targets: [...row.targets] }),
     };
 }

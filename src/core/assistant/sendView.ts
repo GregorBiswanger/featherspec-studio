@@ -1,5 +1,5 @@
 import { ASSISTANT_TARGETS, type SendView } from '../../shared/protocol/assistant';
-import { ASSISTANT_NAMES, COPY_FOR_PLACES, copyForTipText, sendTipText } from '../../shared/protocol/assistantTexts';
+import { ASSISTANT_NAMES, sendTipText } from '../../shared/protocol/assistantTexts';
 import { STEP_GUIDES, TIP_CLOSING, type StepCase } from '../../shared/protocol/nextStepTexts';
 import { attachmentOf, type AttachmentContext } from './attachment';
 import type { Offer } from './offer';
@@ -9,12 +9,11 @@ export function tipClosingOf(offer: Offer | undefined): readonly [string, string
         return TIP_CLOSING;
     }
     const name = ASSISTANT_NAMES[offer.assistant];
-    const send = offer.handover === 'copyFor' ? copyForTipText(name, offer.place ?? COPY_FOR_PLACES[offer.assistant === 'junie' ? 'junie' : 'copilot']) : sendTipText(name);
-    return [send, TIP_CLOSING[1]];
+    return [sendTipText(name), TIP_CLOSING[1]];
 }
 
 export function plainSendViewOf(offer: Offer | undefined): SendView | undefined {
-    return offer === undefined ? undefined : { assistant: offer.assistant, ...(offer.handover === undefined ? {} : { handover: offer.handover }), target: offer.targets?.[0] ?? 'new', targets: [...(offer.targets ?? ASSISTANT_TARGETS[offer.assistant])] };
+    return offer === undefined ? undefined : { assistant: offer.assistant, ...(offer.terminal === true ? { terminal: true as const } : {}), target: offer.targets?.[0] ?? 'new', targets: [...(offer.targets ?? ASSISTANT_TARGETS[offer.assistant])] };
 }
 
 function followsSession(view: SendView, stepCase: StepCase): boolean {

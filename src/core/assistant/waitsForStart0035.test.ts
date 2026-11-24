@@ -11,9 +11,9 @@ describe('0035 amendment 2026-11-23 / AC-031: only the JetBrains terminal handov
         }
     });
 
-    it('AC-031 the JetBrains table offers it for Claude Code alone', () => {
+    it('AC-031 the JetBrains table marks all three terminal rows, and only those wait', () => {
         const table = createJetBrainsAssistants();
-        const waits = Object.entries(table).filter(([assistant, row]) => waitsForStart({ assistant: assistant as 'copilot' | 'claudeCode' | 'junie', ...(row.handover === 'copyFor' ? { handover: 'copyFor' as const } : {}), target: row.targets[0] ?? 'new', targets: [...row.targets] })).map(([assistant]) => assistant);
-        expect(waits).toEqual(['claudeCode']);
+        const waits = Object.entries(table).filter(([assistant, row]) => waitsForStart({ assistant: assistant as 'copilot' | 'claudeCode' | 'junie', ...(row.terminal === true ? { terminal: true as const } : {}), target: row.targets[0] ?? 'new', targets: [...row.targets] })).map(([assistant]) => assistant);
+        expect(waits).toEqual(['junie', 'claudeCode', 'copilot']);
     });
 });

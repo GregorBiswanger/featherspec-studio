@@ -99,7 +99,7 @@ describe('0035 T-007 / AC-011, AC-013 (core part): Send to Claude Code through t
     it('AC-011 the row: Terminal presence, targets current and new, the 20000 ms budget, attaching', () => {
         const row = table.claudeCode!;
         expect(row.extensionId).toBe(CLAUDE_CLI);
-        expect(row.handover).toBe('send');
+        expect(row.terminal).toBe(true);
         expect(row.targets).toEqual(['current', 'new']);
         expect(row.timeoutMs).toBe(20000);
         expect(row.attachesSpec).toBe(true);

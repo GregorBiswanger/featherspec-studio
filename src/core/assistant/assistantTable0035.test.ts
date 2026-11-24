@@ -29,7 +29,6 @@ const VS_CODE_SETS: Array<[string, string[]]> = [
 const FAKE_TABLE: AssistantTable = {
     claudeCode: {
         extensionId: ALPHA,
-        handover: 'send',
         attachesSpec: true,
         targets: ['current', 'new'],
         timeoutMs: 20000,
@@ -37,10 +36,8 @@ const FAKE_TABLE: AssistantTable = {
     },
     junie: {
         extensionId: BETA,
-        handover: 'copyFor',
         attachesSpec: false,
         targets: ['new'],
-        text: (line, paths) => `${line}${paths.map((path) => ` @file:${path}`).join('')}`,
         callsFor: () => [],
     },
 };
@@ -66,8 +63,8 @@ describe('0035 T-002 / AC-004 (core): junie is an id; the VS Code table has no r
 
     it('the VS Code table holds exactly the two rows, as sends, with the targets of the shared constants', () => {
         expect(Object.keys(ASSISTANTS)).toEqual(['copilot', 'claudeCode']);
-        expect(ASSISTANTS['copilot'].handover).toBe('send');
-        expect(ASSISTANTS.claudeCode.handover).toBe('send');
+        expect(ASSISTANTS['copilot']).not.toHaveProperty('handover');
+        expect(ASSISTANTS.claudeCode).not.toHaveProperty('handover');
         expect(ASSISTANTS['copilot'].targets).toEqual(ASSISTANT_TARGETS['copilot']);
         expect(ASSISTANTS.claudeCode.targets).toEqual(ASSISTANT_TARGETS.claudeCode);
         expect(ASSISTANTS['copilot'].timeoutMs).toBeUndefined();
@@ -93,7 +90,7 @@ describe('0035 T-002 / AC-004 (core): junie is an id; the VS Code table has no r
     }
 
     it('negative control: the same value offers junie once a table has the row and its presence id', () => {
-        expect(offerOf('junie', [BETA], undefined, FAKE_TABLE)).toEqual({ assistant: 'junie', handover: 'copyFor', place: 'Junie in AI Chat' });
+        expect(offerOf('junie', [BETA], undefined, FAKE_TABLE)).toEqual({ assistant: 'junie' });
         expect(offerOf('junie', [EXT_A, EXT_B], undefined, FAKE_TABLE)).toBeUndefined();
     });
 

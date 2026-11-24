@@ -69,7 +69,7 @@ describe('0035 review 20 S-1 / AC-035: the main part of Send to Claude Code foll
     }
 
     it('AC-035 the welcome and the empty state have no tip and keep the current chat', () => {
-        expect(plainSendViewOf(claudeOffer())).toEqual({ assistant: 'claudeCode', target: 'current', targets: ['current', 'new'] });
+        expect(plainSendViewOf(claudeOffer())).toEqual({ assistant: 'claudeCode', terminal: true, target: 'current', targets: ['current', 'new'] });
     });
 
     it('AC-035 negative control: VS Code offers get the very same view as before for every case', () => {

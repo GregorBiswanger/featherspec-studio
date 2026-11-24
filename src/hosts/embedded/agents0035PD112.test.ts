@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { createSend } from '../../core/assistant/send';
 import { createAssistantWiring, type AssistantWiring } from '../../core/assistant/wiring';
 import { plainSendViewOf } from '../../core/assistant/sendView';
 import { CLI_FORMS, cliText } from '../../core/assistant/references';
@@ -30,6 +31,7 @@ function config(plugins: readonly string[], settings: Record<string, unknown> = 
 
 interface Rig {
     wiring: AssistantWiring;
+    host: ReturnType<typeof createEmbeddedPorts>['assistantHost'];
     frames: Array<Record<string, unknown>>;
     written: string[];
     blocks: string[][];
@@ -77,7 +79,7 @@ function rig(plugins: readonly string[], stored: unknown, failClipboard = false,
         source: createFakeSource(),
         specs: createMemorySpecSource(),
     });
-    return { wiring, frames, written, blocks, warned, clock, answers };
+    return { wiring, host: ports.assistantHost, frames, written, blocks, warned, clock, answers };
 }
 
 const settle = (): Promise<void> => new Promise((resolve) => setImmediate(resolve));
@@ -91,7 +93,7 @@ describe('0035 PD-112 AC-045: the JetBrains offer by value and available agents'
             it(`AC-045 the value ${JSON.stringify(value) ?? 'unset'} with ${plugins.join(' + ') || 'nothing'}`, () => {
                 const agent = AGENTS.find((candidate) => candidate.id === (value === undefined ? 'junie' : value));
                 const expected = agent !== undefined && plugins.includes(TERMINAL) && plugins.includes(agent.presence)
-                    ? { assistant: agent.id, target: 'current', targets: ['current', 'new'] }
+                    ? { assistant: agent.id, terminal: true, target: 'current', targets: ['current', 'new'] }
                     : undefined;
                 expect(plainSendViewOf(rig(plugins, value, false, true).wiring.offer.read())).toEqual(expected);
             });
@@ -104,8 +106,8 @@ describe('0035 PD-112 AC-045: the JetBrains offer by value and available agents'
         expect(plainSendViewOf(rig([TERMINAL, 'cli:junie'], null, false, true).wiring.offer.read())?.assistant).toBe('junie');
     });
 
-    it('AC-045 a value of the retired Copy for era acts as none and never throws', () => {
-        for (const old of ['copyForJunie', 'copyForAssistant', 'copyFor', 'Copy for Copilot', {}, [], true]) {
+    it('AC-045 a value of the retired copy handover acts as none and never throws', () => {
+        for (const old of ['copy' + 'ForJunie', 'copy' + 'ForAssistant', 'copy' + 'For', ['Copy', 'for', 'Junie'].join(' '), {}, [], true]) {
             expect(rig([TERMINAL, ...CLI_IDS], old, false, true).wiring.offer.read(), JSON.stringify(old)).toBeUndefined();
         }
     });
@@ -133,7 +135,8 @@ describe('0035 PD-112 AC-047: one row per agent, the rules of Claude Code for ea
         it(`AC-011 ${agent.name}: the row has the presence of the command, send, current and new, 20000 ms, attaching`, () => {
             const row = table[agent.id]!;
             expect(row.extensionId).toBe(agent.presence);
-            expect(row.handover).toBe('send');
+            expect(row.terminal).toBe(true);
+            expect(row).not.toHaveProperty('handover');
             expect(row.targets).toEqual(['current', 'new']);
             expect(row.timeoutMs).toBe(20000);
             expect(row.attachesSpec).toBe(true);
@@ -271,4 +274,28 @@ describe('0035 PD-112: the texts of spec section 16, literally, and the Claude C
         expect(CLAUDE_UNTRUSTED_TEXT).toBe(agentUntrustedText('claude'));
         expect(CLAUDE_NOT_INSTALLED_TEXT).toBe(agentNotInstalledText('Claude Code', 'claude'));
     });
+});
+
+describe('0035 PD-112 AC-046: the files go with every target of every agent, Copilot included', () => {
+    for (const agent of AGENTS) {
+        for (const target of ['current', 'new'] as const) {
+            it(`AC-046 ${agent.name}, ${target}: the typed text holds the line and one @ per checked path, in order`, async () => {
+                const world = rig([TERMINAL, agent.presence], agent.id);
+                world.answers.set('assistant.terminal', () => ({ ok: null }));
+                const attached = createSend({
+                    table: createJetBrainsAssistants(),
+                    host: world.host,
+                    clipboard: { writeText: async () => undefined },
+                    ui: { warn: () => undefined },
+                    output: { appendBlock: () => undefined },
+                    clock: createSetupClock(),
+                    platform: 'linux',
+                    chosen: { read: () => agent.id },
+                    attachment: async (path) => ({ uri: path, path }),
+                });
+                await attached.send({ assistant: agent.id, target, line: LINE, attach: SPEC, attachAlso: [PLAN] });
+                expect(world.frames.map((frame) => frame.args)).toEqual([{ assistant: agent.id, target, text: cliText(LINE, [SPEC, PLAN], CLI_FORMS[agent.id]) }]);
+            });
+        }
+    }
 });

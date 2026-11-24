@@ -9,10 +9,10 @@ import { SendButton } from './SendButton';
 const LINE = '/sdd-plan .specs/active/0001-tip-splitter.md';
 const OTHER = 'Implement T-002 of .specs/active/0001-tip-splitter.plan.md';
 const SPEC = { name: '0001-tip-splitter.md', path: '.specs/active/0001-tip-splitter.md' };
-const TERMINAL_VIEW: SendView = { assistant: 'claudeCode', target: 'current', targets: ['current', 'new'], attach: SPEC };
+const TERMINAL_VIEW: SendView = { assistant: 'claudeCode', terminal: true, target: 'current', targets: ['current', 'new'], attach: SPEC };
 const VS_CODE_CLAUDE: SendView = { assistant: 'claudeCode', target: 'new', targets: ['new'], attach: SPEC };
 const VS_CODE_SEND_TO_OTHER: SendView = { assistant: 'copilot', target: 'new', targets: ['new', 'current'], attach: SPEC };
-const COPY_FOR: SendView = { assistant: 'junie', handover: 'copyFor', target: 'new', targets: ['new'] };
+const COPY_FOR: SendView = { assistant: 'junie', target: 'new', targets: ['new'] };
 const IDLE_NAME = `Send to Claude Code (current chat): ${LINE}. Attaches ${SPEC.name}.`;
 
 let mounted: Mounted | undefined;
@@ -69,14 +69,13 @@ describe('0035 amendment 2026-11-23 / AC-031: Send to Claude Code in JetBrains w
         expect(sendStartingName('Claude Code', LINE)).toBe(`Starting Claude Code: ${LINE}`);
     });
 
-    it('AC-031 only the JetBrains terminal handover waits: Send to Claude Code with the target current', () => {
+    it('AC-031 only the JetBrains terminal handover waits: a view with terminal true', () => {
         expect(waitsForStart(TERMINAL_VIEW)).toBe(true);
+        expect(waitsForStart({ ...TERMINAL_VIEW, assistant: 'junie' })).toBe(true);
+        expect(waitsForStart({ ...TERMINAL_VIEW, assistant: 'copilot' })).toBe(true);
         for (const view of [VS_CODE_CLAUDE, VS_CODE_SEND_TO_OTHER, COPY_FOR, { assistant: 'claudeCode', target: 'new', targets: ['current', 'new'] } as SendView]) {
-            expect(waitsForStart(view), JSON.stringify(view)).toBe(view.targets.includes('current') && view.assistant === 'claudeCode' && view.handover === undefined);
+            expect(waitsForStart(view), JSON.stringify(view)).toBe(false);
         }
-        expect(waitsForStart(VS_CODE_CLAUDE)).toBe(false);
-        expect(waitsForStart(VS_CODE_SEND_TO_OTHER)).toBe(false);
-        expect(waitsForStart(COPY_FOR)).toBe(false);
     });
 
     it('AC-031 while the Send runs the main part is aria-disabled and aria-busy, never disabled, and keeps the focus', async () => {

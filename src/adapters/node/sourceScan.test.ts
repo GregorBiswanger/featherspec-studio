@@ -27,7 +27,7 @@ function isTestFile(name: string): boolean {
     return /\.test\.tsx?$/.test(name) || name.includes('/testing/');
 }
 
-const ASSISTANT_NAME_FORMS: readonly RegExp[] = [/GitHub\.copilot-chat/g, /com\.github\.copilot\b/g, /\bcopilotCopyText\b/g, /['"]cli:copilot['"]/g, /GitHub Copilot/g, /'copilot'/g, /"copilot"/g, /\bCopilot(?![A-Za-z0-9.-])/g];
+const ASSISTANT_NAME_FORMS: readonly RegExp[] = [/GitHub\.copilot-chat/g, /com\.github\.copilot\b/g, /['"]cli:copilot['"]/g, /GitHub Copilot/g, /'copilot'/g, /"copilot"/g, /\bCopilot(?![A-Za-z0-9.-])/g];
 
 export function maskAssistantNames(text: string): string {
     return ASSISTANT_NAME_FORMS.reduce((rest, form) => rest.replace(form, ''), text);
@@ -457,9 +457,6 @@ describe('0026 AC-021: Send, not Paste, in the text modules', () => {
         'Paste it once every worker you started is back.',
         'before you paste.',
         'paste it there with',
-        'paste it into ${target}, choose',
-        'Paste it into ${place} with ${pasteKey}.',
-        'and paste it with ${pasteKey}.',
     ];
 
     function offenders(text: string): string[] {

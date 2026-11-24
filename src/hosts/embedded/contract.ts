@@ -10,7 +10,7 @@ export const ASYNC_CALLS = [
     'http.get', 'archive.read',
     'ui.pick', 'ui.notify', 'ui.confirm', 'ui.progressStart', 'ui.openExternal',
     'clipboard.write', 'editor.open',
-    'assistant.terminal', 'assistant.openChat',
+    'assistant.terminal',
     'actions.openSetupGuide', 'actions.manageTrust', 'actions.openStudio', 'actions.reloadPanel',
 ] as const;
 

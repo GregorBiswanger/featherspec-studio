@@ -97,15 +97,15 @@ async function renderFixture(name: string, tips?: StepTipSettings, offer?: Offer
     const board = { columns: arrangeBoard(cards, {}, 'number'), banner: buildBanner(project, lifecycle), filter: {}, sort: 'number', sortKeys: ['number', 'title', 'lastChange'], noSpecs: cards.length === 0, planSpecs: [] };
     const boardDom = boot(readFileSync(bundlePath, 'utf8'));
     await settle();
-    send(boardDom.dom, { v: 12, kind: 'evt', seq: 1, type: 'shell', payload: { view: SHELL_BOARD } });
-    send(boardDom.dom, { v: 12, kind: 'evt', type: 'board', payload: { view: board } });
+    send(boardDom.dom, { v: 13, kind: 'evt', seq: 1, type: 'shell', payload: { view: SHELL_BOARD } });
+    send(boardDom.dom, { v: 13, kind: 'evt', type: 'board', payload: { view: board } });
     await settle();
     rendered.push(inspect(boardDom.dom, `${name} board`));
     expect(boardDom.errors).toEqual([]);
     const overviewDom = boot(readFileSync(bundlePath, 'utf8'));
     await settle();
-    send(overviewDom.dom, { v: 12, kind: 'evt', seq: 1, type: 'shell', payload: { view: { ...SHELL_BOARD, area: 'overview' } } });
-    send(overviewDom.dom, { v: 12, kind: 'evt', type: 'overview', payload: { view: buildOverviewView({ model, history, ...(tips === undefined ? {} : { tips }), ...(offer === undefined ? {} : { offer }) }) } });
+    send(overviewDom.dom, { v: 13, kind: 'evt', seq: 1, type: 'shell', payload: { view: { ...SHELL_BOARD, area: 'overview' } } });
+    send(overviewDom.dom, { v: 13, kind: 'evt', type: 'overview', payload: { view: buildOverviewView({ model, history, ...(tips === undefined ? {} : { tips }), ...(offer === undefined ? {} : { offer }) }) } });
     await settle();
     rendered.push(inspect(overviewDom.dom, `${name} overview`));
     expect(overviewDom.errors).toEqual([]);
@@ -113,9 +113,9 @@ async function renderFixture(name: string, tips?: StepTipSettings, offer?: Offer
     await settle();
     for (const entry of lifecycle.entries) {
         const selection = { stem: entry.stem, number: entry.number };
-        send(detailDom.dom, { v: 12, kind: 'evt', seq: rendered.length + 1, type: 'shell', payload: { view: { ...SHELL_BOARD, selection } } });
-        send(detailDom.dom, { v: 12, kind: 'evt', type: 'board', payload: { view: board } });
-        send(detailDom.dom, { v: 12, kind: 'evt', type: 'detail', payload: { view: buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history, ...(tips === undefined ? {} : { tips }), ...(offer === undefined ? {} : { offer }) }) } });
+        send(detailDom.dom, { v: 13, kind: 'evt', seq: rendered.length + 1, type: 'shell', payload: { view: { ...SHELL_BOARD, selection } } });
+        send(detailDom.dom, { v: 13, kind: 'evt', type: 'board', payload: { view: board } });
+        send(detailDom.dom, { v: 13, kind: 'evt', type: 'detail', payload: { view: buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history, ...(tips === undefined ? {} : { tips }), ...(offer === undefined ? {} : { offer }) }) } });
         await settle();
         rendered.push(inspect(detailDom.dom, `${name} detail ${entry.key}`));
     }
@@ -244,14 +244,14 @@ async function renderMap(name: string, offer?: Offer): Promise<MapRendered[]> {
     for (const entry of lifecycle.entries) {
         seq += 1;
         const selection = { stem: entry.stem, number: entry.number };
-        send(dom.dom, { v: 12, kind: 'evt', seq, type: 'shell', payload: { view: { ...SHELL_BOARD, area: 'planMap', selection } } });
-        send(dom.dom, { v: 12, kind: 'evt', type: 'board', payload: { view: board } });
-        send(dom.dom, { v: 12, kind: 'evt', type: 'detail', payload: { view: buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history, ...(offer === undefined ? {} : { offer }) }) } });
+        send(dom.dom, { v: 13, kind: 'evt', seq, type: 'shell', payload: { view: { ...SHELL_BOARD, area: 'planMap', selection } } });
+        send(dom.dom, { v: 13, kind: 'evt', type: 'board', payload: { view: board } });
+        send(dom.dom, { v: 13, kind: 'evt', type: 'detail', payload: { view: buildDetail({ selection: { stem: entry.stem, path: entry.key }, model, history, ...(offer === undefined ? {} : { offer }) }) } });
         await settle();
         look(`${name} map ${entry.key}`);
     }
     seq += 1;
-    send(dom.dom, { v: 12, kind: 'evt', seq, type: 'shell', payload: { view: { ...SHELL_BOARD, area: 'planMap' } } });
+    send(dom.dom, { v: 13, kind: 'evt', seq, type: 'shell', payload: { view: { ...SHELL_BOARD, area: 'planMap' } } });
     await settle();
     look(`${name} map without selection`);
     expect(dom.errors).toEqual([]);
@@ -320,7 +320,7 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
             'Plan map',
         ]);
         expect(document.body.textContent).toContain('Loading project…');
-        expect(posted[0]).toMatchObject({ v: 12, kind: 'req', type: 'hello' });
+        expect(posted[0]).toMatchObject({ v: 13, kind: 'req', type: 'hello' });
         expect(errors).toEqual([]);
     });
 
@@ -337,7 +337,7 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
             notice: undefined,
             rows: [],
         };
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 12, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 13, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
         await settle();
         expect(dom.window.document.body.textContent).not.toContain('Loading project…');
         expect(dom.window.document.querySelector('h1')?.textContent).toBe('Board');
@@ -352,8 +352,8 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
         await settle();
         const view = { state: undefined, restricted: false, projectName: 'demo', area: 'board', target: undefined, selection: undefined, notice: undefined, rows: [] };
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 12, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 12, kind: 'evt', type: 'board', payload: { view: board } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 13, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 13, kind: 'evt', type: 'board', payload: { view: board } } }));
         await settle();
         const document = dom.window.document;
         expect(document.querySelector('h1')?.textContent).toBe('Board');
@@ -377,8 +377,8 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
         await settle();
         const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'overview', target: undefined, selection: undefined, notice: undefined, rows: [] };
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 12, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 12, kind: 'evt', type: 'overview', payload: { view: mission } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 13, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 13, kind: 'evt', type: 'overview', payload: { view: mission } } }));
         await settle();
         const document = dom.window.document;
         expect(document.querySelector('h1')?.textContent).toBe('Overview');
@@ -402,8 +402,8 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
         await settle();
         const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'overview', target: undefined, selection: undefined, notice: undefined, rows: [] };
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 12, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 12, kind: 'evt', type: 'overview', payload: { view: { header: {}, extra: 1 } } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 13, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 13, kind: 'evt', type: 'overview', payload: { view: { header: {}, extra: 1 } } } }));
         await settle();
         expect(dom.window.document.querySelector('[data-overview]')).toBeNull();
         expect(dom.window.document.querySelector('[data-overview-empty]')).not.toBeNull();
@@ -423,8 +423,8 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
         await settle();
         const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'board', target: undefined, selection: { stem: '0015-focus-on-visibility', number: '0015' }, notice: undefined, rows: [] };
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 12, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 12, kind: 'evt', type: 'detail', payload: { view: detail } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 13, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 13, kind: 'evt', type: 'detail', payload: { view: detail } } }));
         await settle();
         const section = dom.window.document.querySelector('.spec-detail') as unknown as QueryRoot | null;
         expect(section).not.toBeNull();
@@ -461,8 +461,8 @@ describe('built webview bundle in jsdom (a broken bundle or a start-up error tur
         const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
         await settle();
         const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'board', target: undefined, selection: { stem: '0015-focus-on-visibility', number: '0015' }, notice: undefined, rows: [] };
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 12, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
-        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 12, kind: 'evt', type: 'detail', payload: { view: detail } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 13, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+        dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 13, kind: 'evt', type: 'detail', payload: { view: detail } } }));
         await settle();
         const section = dom.window.document.querySelector('.spec-detail') as unknown as QueryRoot | null;
         expect(section).not.toBeNull();
@@ -544,8 +544,8 @@ describe('0024 AC-002, AC-003: Send in the rendered bundle, over the fixtures', 
             const { dom, errors } = boot(readFileSync(bundlePath, 'utf8'));
             await settle();
             const view = { state: undefined, restricted: false, projectName: 'fixture', area: 'board', target: undefined, selection: { stem: '0015-focus-on-visibility', number: '0015' }, notice: undefined, rows: [] };
-            dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 12, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
-            dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 12, kind: 'evt', type: 'detail', payload: { view: detail } } }));
+            dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 13, kind: 'evt', seq: 1, type: 'shell', payload: { view } } }));
+            dom.window.dispatchEvent(new dom.window.MessageEvent('message', { data: { v: 13, kind: 'evt', type: 'detail', payload: { view: detail } } }));
             await settle();
             const section = dom.window.document.querySelector('.spec-detail') as unknown as QueryRoot | null;
             expect(section).not.toBeNull();

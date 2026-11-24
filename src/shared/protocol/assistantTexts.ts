@@ -97,49 +97,6 @@ export function moreActionsName(line: string): string {
     return `More actions: ${line}`;
 }
 
-export const COPY_FOR_PLACES: Record<'copilot' | 'junie', string> = {
-    'copilot': 'GitHub Copilot Chat',
-    junie: 'Junie in AI Chat',
-};
-
-export const JUNIE_WINDOW_PLACE = 'the Junie tool window';
-
-function handoverHint(place: string, pasteKey: string): string {
-    return place === COPY_FOR_PLACES.junie ? `In AI Chat, choose Junie and paste it with ${pasteKey}.` : `Paste it into ${place} with ${pasteKey}.`;
-}
-
-export function copyForDoneText(place: string, pasteKey: string): string {
-    const hint = handoverHint(place, pasteKey);
-    return `Copied. ${hint}`;
-}
-
-export function copyForOpenText(place: string, pasteKey: string): string {
-    return `Copied. Open ${place} and paste it with ${pasteKey}.`;
-}
-
-export function copyForWithoutText(files: string, place: string, pasteKey: string, opened: boolean): string {
-    const hint = opened ? handoverHint(place, pasteKey) : `Open ${place} and paste it with ${pasteKey}.`;
-    return `Copied without ${files}: the file was not found. ${hint}`;
-}
-
-export function copyForMissingOutputText(name: string, path: string): string {
-    return `Copy for ${name}: ${path} was not found, so its path was left out.`;
-}
-
-export function copyForMainLabel(name: string): string {
-    return `Copy for ${name}`;
-}
-
-export function copyForMainName(name: string, line: string, files?: string): string {
-    const plain = `Copy for ${name}: ${line}`;
-    return files === undefined ? plain : `${plain}. Adds the paths of ${files}.`;
-}
-
-export function copyForTipText(name: string, place: string): string {
-    const target = place === COPY_FOR_PLACES.junie ? 'AI Chat with Junie as the agent' : place;
-    return `Copy for ${name} copies the prompt with the file paths and sends nothing: paste it into ${target}, choose the model there, check the prompt, then send it.`;
-}
-
 export function agentWaitingText(name: string): string {
     return `${name} is waiting for you in the terminal. Answer it there, then send again. The prompt is copied.`;
 }
