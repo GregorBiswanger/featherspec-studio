@@ -5,6 +5,7 @@ import type { ShellClient } from './client';
 import { AREA_COMPONENTS } from './areas/registry';
 import { Placeholder } from './areas/Placeholder';
 import { useNarrow } from './detail/narrow';
+import { showDetail, useListFirst } from './detail/listFirst';
 import { requestHeadingFocus } from './detail/focus';
 import { Divider } from './detail/Divider';
 import { requestMapFocus } from './areas/planMap/focus';
@@ -27,7 +28,13 @@ function Frame() {
     const narrow = useNarrow();
     const detailArea = shell.area === 'overview' || shell.area === 'board' ? shell.area : undefined;
     const sideSelection = detailArea !== undefined || (shell.area === 'planMap' && !narrow) ? shell.view?.selection : undefined;
-    const detailAlone = narrow && detailArea !== undefined && sideSelection !== undefined;
+    const listFirst = useListFirst();
+    const selectionKey = shell.view?.selection === undefined ? undefined : `${shell.view.selection.stem}|${shell.view.selection.path ?? ''}`;
+    useEffect(() => {
+        showDetail();
+    }, [selectionKey]);
+    const listShown = narrow && detailArea !== undefined && listFirst;
+    const detailAlone = narrow && detailArea !== undefined && sideSelection !== undefined && !listShown;
     const [frameElement, setFrameElement] = useState<HTMLDivElement | null>(null);
     const side = useSideWidth(frameElement, shell.view?.sideWidth, { set: shell.setSideWidth, reset: shell.resetSideWidth });
     const beside = !narrow && sideSelection !== undefined && side.frame > 0;
@@ -72,7 +79,7 @@ function Frame() {
                             <AreaContent area={shell.area} />
                         </div>
                         {beside ? <Divider side={side} panelId={SIDE_PANEL_ID} onLeaveWithFocus={leaveDivider} /> : null}
-                        {sideSelection === undefined ? null : <SidePanel selection={sideSelection} {...(narrow && detailArea !== undefined ? { back: detailArea } : {})} {...(beside ? { width: side.width } : {})} />}
+                        {sideSelection === undefined || listShown ? null : <SidePanel selection={sideSelection} {...(narrow && detailArea !== undefined ? { back: detailArea } : {})} {...(beside ? { width: side.width } : {})} />}
                     </div>
                 ) : (
                     <PanelStateView state={shell.state} />

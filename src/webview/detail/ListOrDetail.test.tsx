@@ -309,3 +309,91 @@ describe('0024 AC-008: Escape with the Send menu open below 900 px', () => {
         expect(requests('clearSelection')).toEqual([{}]);
     });
 });
+
+function tab(container: HTMLElement, title: string): HTMLButtonElement {
+    return [...container.querySelectorAll<HTMLButtonElement>('nav button.nav-item')].find((node) => node.textContent === title)!;
+}
+
+describe('0022 AC-030: a tab click below 900 px shows the list, an entry shows the detail', () => {
+    it('with a selection a click on the Board tab shows the board alone: no side panel, the area not set aside, the card stays marked', async () => {
+        const container = await board(SELECTED);
+        expect(frame(container).getAttribute('data-layout')).toBe('detail');
+        await click(tab(container, 'Board'));
+        await shell('board', SELECTED);
+        expect(frame(container).hasAttribute('data-layout')).toBe(false);
+        expect(content(container).hasAttribute('inert')).toBe(false);
+        expect(container.querySelector('aside.side-panel')).toBeNull();
+        expect(cardOf(container, '0007').getAttribute('aria-current')).toBe('true');
+        expect(requests('clearSelection')).toEqual([]);
+    });
+
+    it('with a selection a click on the Overview tab shows the list alone', async () => {
+        const container = await board(SELECTED);
+        await click(tab(container, 'Overview'));
+        await shell('overview', SELECTED);
+        await send(overviewEvent(sharedSpecView()));
+        expect(frame(container).hasAttribute('data-layout')).toBe(false);
+        expect(container.querySelector('aside.side-panel')).toBeNull();
+    });
+
+    it('a click on the current tab shows the list as well', async () => {
+        const container = await board(SELECTED);
+        await click(tab(container, 'Board'));
+        expect(container.querySelector('aside.side-panel')).toBeNull();
+    });
+
+    it('choosing an entry afterwards shows the detail alone again', async () => {
+        const container = await board(SELECTED);
+        await click(tab(container, 'Board'));
+        await act(async () => cardOf(container, '0003').click());
+        await shell('board', { stem: '0003-x', number: '0003' });
+        await send(detailEvent(detailView()));
+        expect(frame(container).getAttribute('data-layout')).toBe('detail');
+        expect(back(container)?.textContent).toBe('Back to Board');
+    });
+
+    it('choosing the entry that is already selected shows its detail', async () => {
+        const container = await board(SELECTED);
+        await click(tab(container, 'Board'));
+        await act(async () => cardOf(container, '0007').click());
+        expect(frame(container).getAttribute('data-layout')).toBe('detail');
+        expect(back(container)).not.toBeNull();
+    });
+
+    it('a selection that arrives from the host shows the detail', async () => {
+        const container = await board(SELECTED);
+        await click(tab(container, 'Board'));
+        await shell('board', { stem: '0003-x', number: '0003' });
+        expect(frame(container).getAttribute('data-layout')).toBe('detail');
+    });
+
+    it('wide: a tab click keeps the area and the detail side by side', async () => {
+        narrow = false;
+        const container = await board(SELECTED);
+        await click(tab(container, 'Board'));
+        await shell('board', SELECTED);
+        expect(container.querySelector('aside.side-panel')).not.toBeNull();
+        expect(frame(container).hasAttribute('data-layout')).toBe(false);
+        expect(back(container)).toBeNull();
+    });
+
+    it('a click on a tab while narrow does not show the detail after widening and narrowing again', async () => {
+        const container = await board(SELECTED);
+        await click(tab(container, 'Board'));
+        await setNarrow(false);
+        expect(container.querySelector('aside.side-panel')).not.toBeNull();
+        await setNarrow(true);
+        expect(container.querySelector('aside.side-panel')).toBeNull();
+    });
+});
+
+describe('0022 AC-030: the back link', () => {
+    it('is a button of the detail’s own line before the title row, on the left edge of the title row', async () => {
+        const container = await board(SELECTED);
+        const link = back(container)!;
+        expect(link.tagName).toBe('BUTTON');
+        expect(link.getAttribute('type')).toBe('button');
+        expect(link.classList.contains('detail-back')).toBe(true);
+        expect(link.nextElementSibling?.classList.contains('detail-title')).toBe(true);
+    });
+});

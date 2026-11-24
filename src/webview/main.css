@@ -11,6 +11,9 @@ body,
     --fs-surface: var(--vscode-editor-background);
     --fs-muted: var(--vscode-descriptionForeground);
     --fs-focus: var(--vscode-contrastActiveBorder, var(--vscode-focusBorder));
+    --fs-space-1: 4px;
+    --fs-space-2: 8px;
+    --fs-space-3: 12px;
 }
 
 [data-tint="descriptionForeground"] {
@@ -1479,7 +1482,7 @@ blockquote.illustration {
         grid-template-columns: auto auto minmax(0, 1fr) auto auto;
         grid-template-areas:
             "state number title title problem"
-            "step step step step copy";
+            ". step step step copy";
     }
 
     .ov-row .ov-title {
@@ -1514,7 +1517,7 @@ blockquote.illustration {
         grid-template-columns: auto auto minmax(0, 1fr) auto auto;
         grid-template-areas:
             "state number title title problem"
-            "step step step step copy";
+            ". step step step copy";
     }
 
     .ov-row .ov-title {
@@ -1546,11 +1549,7 @@ blockquote.illustration {
         grid-template-columns: auto auto minmax(0, 1fr) auto auto;
         grid-template-areas:
             "state number title title problem"
-            "step step step step copy";
-    }
-
-    .ov-row-item > .step-text {
-        padding-left: 12px;
+            ". step step step copy";
     }
 
     .ov-row .ov-title {
@@ -1669,8 +1668,10 @@ blockquote.illustration {
 }
 
 .detail-back {
-    margin: 10px 0 0 20px;
-    padding: 2px 8px;
+    display: block;
+    width: fit-content;
+    margin: 0 0 var(--fs-space-3);
+    padding: var(--fs-space-1) 0;
     color: var(--vscode-textLink-foreground);
     background: transparent;
     border: 0;

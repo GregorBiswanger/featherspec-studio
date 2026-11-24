@@ -1,6 +1,7 @@
 import { AREAS } from '../shared/protocol/areas';
 import { NAVIGATION_LABEL } from '../shared/protocol/texts';
 import { AreaIcon } from './board/icons';
+import { showList } from './detail/listFirst';
 import { useShell } from './shell';
 
 export function Navigation() {
@@ -16,7 +17,10 @@ export function Navigation() {
                                 type="button"
                                 className={current ? 'nav-item current' : 'nav-item'}
                                 aria-current={current ? 'page' : undefined}
-                                onClick={() => shell.navigate({ area: area.id })}
+                                onClick={() => {
+                                    showList();
+                                    shell.navigate({ area: area.id });
+                                }}
                             >
                                 <AreaIcon area={area.id} />
                                 {area.title}

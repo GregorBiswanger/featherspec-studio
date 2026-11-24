@@ -192,6 +192,7 @@ side at the right edge — the side panel's and `main`'s — and a fixed 400 px 
   focus where it is while that stays shown, else on the detail's heading (A-016).
   *Amended by 0023 (PD-069): G-4 "a selected spec's detail shows alone in its place" — not in the Plan map: below 900 px the map shows alone, with no detail or back button (0023 §5.3).*
   *Amended by 0024 (PD-068): G-4 — an Escape in an open Send menu closes only the menu; the detail stays shown (0024 AC-008).*
+  *Amended 2026-11-24 (Gregor's hands-on in Rider, also VS Code, AC-030): G-4 — below 900 px a click on an area tab shows that area's list or board, also with a spec selected; the selection stays marked and the detail shows only when an entry is chosen, or the host selects a spec. The back button stands on the title row's left edge with its own space below it, from the spacing tokens of the stylesheet.*
 
 ### 4.8 State at a glance (Gregor's click test, PD-073)
 
@@ -348,6 +349,9 @@ Decided by unit tests (core, no `vscode`), component tests (jsdom) and styleshee
   *Amended by 0033 (AC-008): in the two-line layouts the status glyph, number, title and Problem badge share the first line; the narrow layout has two lines.*
 - **AC-029** While the Studio panel is narrower than 900 px (query stubbed), the webview shall show the area alone with no spec selected and, with one selected, the detail alone with X-27 for the current area at its top left and no close button or divider; when the developer activates the back button or presses Escape inside the detail, the system shall clear the selection, show the area with its earlier scroll position and move focus as 0019 AC-003; when the width crosses 900 px, the selection shall stay, side by side from 900 px and the detail alone below, focus where it was while that stays shown, else on the detail's heading. (component tests)
   *Amended by 0024 (PD-068): AC-029 — Escape inside the detail does not leave it while 0024's Send menu is open (0024 AC-008).*
+- **AC-030** *(amended 2026-11-24)* While the Studio panel is narrower than 900 px (query stubbed) and a spec is selected, when the developer activates an area tab (also the current one), the webview shall show that area alone with the selected entry still marked, without clearing the selection; when the developer then chooses an entry, or the host selects a spec, the detail shall show alone again; at 900 px and wider nothing changes. The back button shall be a button of its own line before the title row, on the title row's left edge, with a space below it from the spacing tokens. (component tests, preview)
+- **AC-031** *(amended 2026-11-24, Gregor's hands-on in Rider)* Where the step line of an Overview row (Up next, Problems, Now) takes its own line below the row, in the two narrower row layouts and in the wide Problems layout, it shall begin on the left edge of the spec number and end in the Copy column; no layout gives it a left padding of its own. 0025 AC-027's "left inset in the narrow layout" is replaced by this. Texts unchanged. (stylesheet test, preview)
+  *Amended by AC-031: 0025 AC-027 — the narrow layout's `padding-left: 12px` of the step text; the step area starts in the number column instead.*
 
 ## 9. Technical notes for developers or AI agents
 
@@ -389,6 +393,6 @@ Decided by unit tests (core, no `vscode`), component tests (jsdom) and styleshee
 
 ## 12. Definition of Ready / Done
 
-Ready: §4–§6 literal, §5 complete, the draft click test held (PD-073). Done: AC-001–AC-018, AC-022–AC-024, AC-026–AC-029
+Ready: §4–§6 literal, §5 complete, the draft click test held (PD-073). Done: AC-001–AC-018, AC-022–AC-024, AC-026–AC-031
 green with evidence in the plan, AC-019–AC-021 and AC-025 checked, §5 applied, docs, architecture and Memory Bank synced,
 `/sdd-compile` READY. Next: `/sdd-plan`.

@@ -568,6 +568,8 @@ Generated from `.specs/done/` and `.specs/active/` by `src/adapters/node/parity.
 | 0022 | AC-027 | shared | C-views |  |
 | 0022 | AC-028 | shared | shared-test |  |
 | 0022 | AC-029 | shared | shared-test |  |
+| 0022 | AC-030 | shared | shared-test |  |
+| 0022 | AC-031 | shared | shared-test |  |
 | 0023 | AC-001 | shared | C-views |  |
 | 0023 | AC-002 | shared | C-next |  |
 | 0023 | AC-003 | shared | C-views |  |

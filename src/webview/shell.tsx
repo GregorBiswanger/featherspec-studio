@@ -1,6 +1,7 @@
 import { createContext, useContext, useSyncExternalStore, type ReactNode } from 'react';
 import type { AreaId } from '../shared/protocol/areas';
 import type { ActionId, NavigationRequest, NavigationTarget, PanelState, ShellFocus, ShellView } from '../shared/protocol/messages';
+import { showDetail } from './detail/listFirst';
 import type { ClientSnapshot, ShellClient, SpecReference } from './client';
 
 export interface Shell {
@@ -37,7 +38,10 @@ export function useShell(): Shell {
         target: snapshot.view?.target,
         focus: snapshot.focus,
         navigate: client.navigate,
-        select: client.select,
+        select: (reference) => {
+            showDetail();
+            client.select(reference);
+        },
         clearSelection: client.clearSelection,
         setSideWidth: client.setSideWidth,
         resetSideWidth: client.resetSideWidth,

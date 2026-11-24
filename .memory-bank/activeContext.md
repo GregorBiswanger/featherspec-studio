@@ -32,9 +32,9 @@ Current phase: act
 - Completed 2026-11-20: [0032](../.specs/done/0032-release-polish.md), [0033](../.specs/done/0033-start-via-lifecycle-plan-attachment-prompt-layout.md); plans in `plan-archive/`.
 
 ## Changed Recently
-- 0034 (2026-11-23): `-Dfeatherspec.probe.handover=true` logs `FEATHERSPEC-TIMING open→first-content` per Open (AC-007); Linux repeats a smoke run once that missed only time budgets (PD-111); CI open.
 - 0035 review 20 (2026-11-23): B-1…B-4, S-1…S-6 built (PD-110, Gregor decided OP-003/004/013/016), S-7 prepared; Kotlin only locally compiled, CI open.
 - 0035 (2026-11-24): `Failed` is logged with its reason (idea.log, Output tab); `ide-tests` also run on IDEA 2026.3; Rider 263.330 shows `Failed`, cause open.
+- 0022 AC-030, AC-031 (2026-11-24, Gregor's Rider test): below 900 px a tab click shows the list; back link on the title edge; step line starts at the number column.
 
 ## Decisions in Flight
 - 0034: the orchestrator's proxy decisions await Gregor — list in the plan's *Session handoff*.

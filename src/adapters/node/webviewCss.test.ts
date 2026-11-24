@@ -149,6 +149,10 @@ describe('0013 AC-001, AC-002, AC-003: the Studio stylesheet stays native to the
         expect(definitions.length).toBeGreaterThan(0);
         for (const entry of definitions) {
             expect(entry.property, entry.property).toMatch(/^--fs-[\w-]+$/);
+            if (/^--fs-space-[1-3]$/.test(entry.property)) {
+                expect(entry.value, entry.property).toMatch(/^\d+px$/);
+                continue;
+            }
             expect(isVscodeChain(entry.value), `${entry.property}: ${entry.value}`).toBe(true);
         }
         const defined = new Set(definitions.map((entry) => entry.property));
@@ -724,7 +728,7 @@ describe('0022 AC-001, AC-003, AC-027, AC-028: Overview rows follow the list wid
         expect(rule).toMatch(/grid-area:\s*step/);
         expect(rule).toMatch(/pointer-events:\s*none/);
         expect(rulesFor(css, '.ov-row-item > .step-text .file-link').map((entry) => entry.body).join(';')).toMatch(/pointer-events:\s*auto/);
-        expect(rulesFor(css, '.ov-row-item > .step-text').some((entry) => entry.container === NARROW && /padding-left:\s*12px/.test(entry.body))).toBe(true);
+        expect(areasOf(NARROW, '.ov-row-item')[1]!.slice(0, 2)).toEqual(['.', 'step']);
         for (const condition of [WIDE, MIDDLE, NARROW]) {
             expect(areasOf(condition, '.ov-row-item').flat(), condition).toContain('step');
         }
@@ -1141,6 +1145,49 @@ describe('0033: prompt column and Next step indent', () => {
         for (const condition of ['ov-list (420px <= width <= 686px)', 'ov-list (width < 420px)']) {
             const first = /"([^"]+)"/.exec(container(condition))![1]!.trim().split(/\s+/);
             expect(first.slice(0, 3), condition).toEqual(['state', 'number', 'title']);
+        }
+    });
+});
+
+describe('0022 AC-030: the back link stands on the title edge with its own space from the spacing tokens', () => {
+    const css = readFileSync(path.join(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const back = rulesFor(css, '.detail-back').map((rule) => rule.body).join(';');
+
+    it('takes no left margin or padding of its own and no pixel margin', () => {
+        expect(back).not.toMatch(/margin(?:-left|-inline-start)?:[^;]*\d+px/);
+        expect(back).toMatch(/padding:\s*var\(--fs-space-1\) 0/);
+        expect(back).toMatch(/margin:\s*0 0 var\(--fs-space-3\)/);
+    });
+
+    it('declares the spacing tokens once on the root', () => {
+        const root = rulesFor(css, ':root').map((rule) => rule.body).join(';');
+        expect(root).toMatch(/--fs-space-1:\s*4px/);
+        expect(root).toMatch(/--fs-space-3:\s*12px/);
+    });
+});
+
+describe('0022 AC-031: the step line of an Overview row starts on the left edge of the spec number', () => {
+    const css = readFileSync(path.join(__dirname, '..', '..', 'webview', 'main.css'), 'utf8');
+    const container = (condition: string, selector: string) => parseRules(css).filter((rule) => rule.container === condition && rule.selectors.includes(selector)).map((rule) => rule.body).join(';');
+
+    it('in every layout where the step takes its own line, its area begins in the number column and spans to the copy column', () => {
+        for (const [condition, selector] of [
+            ['ov-list (width > 686px)', '.ov-problems .ov-row-item'],
+            ['ov-list (420px <= width <= 686px)', '.ov-row-item'],
+            ['ov-list (width < 420px)', '.ov-row-item'],
+        ] as const) {
+            const areas = [...container(condition, selector).matchAll(/"([^"]+)"/g)].map((match) => match[1]!.trim().split(/\s+/));
+            expect(areas[0]!.slice(0, 2), condition).toEqual(['state', 'number']);
+            expect(areas[1], condition).toEqual(['.', 'step', 'step', 'step', 'copy']);
+        }
+    });
+
+    it('the step text takes no left padding of its own in any layout', () => {
+        const rules = parseRules(css).filter((rule) => rule.selectors.includes('.ov-row-item > .step-text'));
+        expect(rules.length).toBeGreaterThan(0);
+        for (const rule of rules) {
+            expect(rule.body).not.toMatch(/padding(?:-left|-inline-start)?:[^;]*\d+px[^;]*\d+px[^;]*\d+px\s+\d+px/);
+            expect(rule.body).not.toMatch(/padding-left/);
         }
     });
 });
