@@ -3,8 +3,6 @@ package com.gregorbiswanger.featherspec.studio.settings
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
-import com.gregorbiswanger.featherspec.studio.ports.PluginAvailability
-import com.gregorbiswanger.featherspec.studio.ports.PluginIds
 
 data class SettingsModel(
     val showStepTips: Boolean = SettingsTable.SHOW_STEP_TIPS_DEFAULT,
@@ -29,7 +27,8 @@ object SettingsTable {
     const val ASSISTANT_ID = PREFIX + ASSISTANT_KEY
 
     const val SHOW_STEP_TIPS_DEFAULT = true
-    const val ASSISTANT_DEFAULT = "none"
+    const val ASSISTANT_UNSET = ""
+    const val ASSISTANT_DEFAULT = ASSISTANT_UNSET
     const val ASSISTANT_NONE = "none"
     const val ASSISTANT_COPILOT = "copilot"
     const val ASSISTANT_CLAUDE_CODE = "claudeCode"
@@ -47,12 +46,14 @@ object SettingsTable {
 
     const val ASSISTANT_DESCRIPTION = "The assistant your next step goes to. Studio sends nothing; Copy prompt stays in the button's menu."
 
+    const val ASSISTANT_HINT =
+        "Junie, Claude Code and GitHub Copilot appear here once their command is on the IDE's PATH. Installed one just now? Restart the IDE."
+
     val ASSISTANT_OPTIONS: List<AssistantOption> = listOf(
-        AssistantOption(ASSISTANT_NONE, "None: Copy prompt", "Copy the prompt and paste it into any assistant."),
         AssistantOption(
-            ASSISTANT_COPILOT,
-            "GitHub Copilot",
-            "Copy for Copilot copies the prompt with the file paths. Paste it into GitHub Copilot Chat. Needs the GitHub Copilot plugin.",
+            ASSISTANT_JUNIE,
+            "Junie",
+            "Send to Junie types the prompt into the Junie CLI in the IDE terminal and sends nothing. Needs the junie command and the Terminal plugin.",
         ),
         AssistantOption(
             ASSISTANT_CLAUDE_CODE,
@@ -60,10 +61,11 @@ object SettingsTable {
             "Send to Claude Code types the prompt into Claude Code in the IDE terminal and sends nothing. Needs the claude command and the Terminal plugin.",
         ),
         AssistantOption(
-            ASSISTANT_JUNIE,
-            "Junie",
-            "Copy for Junie copies the prompt with the file paths. Paste it into Junie in AI Chat.",
+            ASSISTANT_COPILOT,
+            "GitHub Copilot",
+            "Send to Copilot types the prompt into the GitHub Copilot CLI in the IDE terminal and sends nothing. Needs the copilot command and the Terminal plugin.",
         ),
+        AssistantOption(ASSISTANT_NONE, "None: Copy prompt", "Copy the prompt and paste it into any assistant."),
     )
 
     const val STRONG_HINT_KEY = "strong"
@@ -71,20 +73,18 @@ object SettingsTable {
 
     val ids: List<String> = listOf(SHOW_STEP_TIPS_ID, ASSISTANT_ID, MODEL_HINTS_ID)
 
-    fun assistantAvailable(value: String, plugins: List<String>): Boolean = when (value) {
-        ASSISTANT_NONE -> true
-        ASSISTANT_COPILOT -> PluginIds.COPILOT in plugins
-        ASSISTANT_CLAUDE_CODE -> PluginIds.TERMINAL in plugins
-        ASSISTANT_JUNIE -> PluginAvailability.junie(plugins)
-        else -> false
-    }
+    fun assistantAvailable(value: String, plugins: List<String>): Boolean =
+        value == ASSISTANT_NONE || EffectiveAssistant.available(value, plugins)
 
     fun options(plugins: List<String>): List<AssistantOption> =
         ASSISTANT_OPTIONS.filter { assistantAvailable(it.value, plugins) }
 
+    fun assistantHint(plugins: List<String>): String? =
+        if (ASSISTANT_OPTIONS.any { !assistantAvailable(it.value, plugins) }) ASSISTANT_HINT else null
+
     fun displayed(stored: String, plugins: List<String>): AssistantOption {
-        val wanted = cleanAssistant(stored)
-        return options(plugins).firstOrNull { it.value == wanted } ?: ASSISTANT_OPTIONS.first()
+        val shown = EffectiveAssistant.of(cleanAssistant(stored), plugins)
+        return ASSISTANT_OPTIONS.first { it.value == shown }
     }
 
     fun storedAfterApply(stored: String, selected: AssistantOption, plugins: List<String>): String {
@@ -126,7 +126,7 @@ object SettingsTable {
     }.toString()
 
     private fun cleanAssistant(value: String): String =
-        if (ASSISTANT_OPTIONS.any { it.value == value }) value else ASSISTANT_DEFAULT
+        if (ASSISTANT_OPTIONS.any { it.value == value }) value else ASSISTANT_UNSET
 
     private fun hints(model: SettingsModel): JsonObject = JsonObject().apply {
         if (model.strongModel.isNotEmpty()) {

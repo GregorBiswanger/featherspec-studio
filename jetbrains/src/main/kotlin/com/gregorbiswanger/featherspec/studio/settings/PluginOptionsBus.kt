@@ -5,12 +5,17 @@ import java.util.concurrent.CopyOnWriteArrayList
 class PluginOptionsBus {
     private val listeners = CopyOnWriteArrayList<(List<String>) -> Unit>()
 
+    @Volatile
+    var last: List<String> = emptyList()
+        private set
+
     fun subscribe(listener: (List<String>) -> Unit): () -> Unit {
         listeners.add(listener)
         return { listeners.remove(listener) }
     }
 
     fun publish(plugins: List<String>) {
+        last = plugins
         listeners.forEach { it(plugins) }
     }
 

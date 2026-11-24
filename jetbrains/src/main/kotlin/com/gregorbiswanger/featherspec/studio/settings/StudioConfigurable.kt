@@ -2,6 +2,7 @@ package com.gregorbiswanger.featherspec.studio.settings
 
 import com.gregorbiswanger.featherspec.studio.ports.IdePlugins
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
@@ -17,9 +18,30 @@ class StudioConfigurable : BoundConfigurable(DISPLAY_NAME) {
     private var draft: SettingsModel? = null
     private var assistantCombo: ComboBox<AssistantOption>? = null
     private var assistantDescription: JBLabel? = null
+    private var assistantHint: JBLabel? = null
     private var unsubscribe: (() -> Unit)? = null
 
-    private fun plugins(): List<String> = IdePlugins().snapshot()
+    private fun plugins(): List<String> = PluginOptionsBus.shared.last
+
+    private fun recompute() {
+        ApplicationManager.getApplication().executeOnPooledThread(
+            Runnable {
+                try {
+                    PluginOptionsBus.shared.publish(IdePlugins().snapshot())
+                } catch (failure: Exception) {
+                    thisLogger().warn("The FeatherSpec agent availability could not be read for the settings page", failure)
+                } catch (failure: LinkageError) {
+                    thisLogger().warn("The FeatherSpec agent availability could not be read for the settings page", failure)
+                }
+            },
+        )
+    }
+
+    private fun showAssistantHint(available: List<String>) {
+        val hint = SettingsTable.assistantHint(available)
+        assistantHint?.text = if (hint == null) "" else "<html>$hint</html>"
+        assistantHint?.isVisible = hint != null
+    }
 
     private fun showAssistantDescription() {
         val option = assistantCombo?.selectedItem as? AssistantOption ?: SettingsTable.ASSISTANT_OPTIONS.first()
@@ -62,6 +84,12 @@ class StudioConfigurable : BoundConfigurable(DISPLAY_NAME) {
             assistantDescription = label
             cell(label)
         }
+        row {
+            val label = JBLabel("", UIUtil.ComponentStyle.SMALL, UIUtil.FontColor.BRIGHTER)
+            label.setAllowAutoWrapping(true)
+            assistantHint = label
+            cell(label)
+        }
         group(MODEL_GROUP) {
             row {
                 comment(SettingsTable.MODEL_HINTS_DESCRIPTION)
@@ -91,6 +119,8 @@ class StudioConfigurable : BoundConfigurable(DISPLAY_NAME) {
         assistantCombo?.model = DefaultComboBoxModel(SettingsTable.options(plugins()).toTypedArray())
         super.reset()
         showAssistantDescription()
+        showAssistantHint(plugins())
+        recompute()
     }
 
     override fun disposeUIResources() {
@@ -106,6 +136,7 @@ class StudioConfigurable : BoundConfigurable(DISPLAY_NAME) {
         combo.model = DefaultComboBoxModel(options.toTypedArray())
         combo.selectedItem = options.firstOrNull { it == chosen } ?: SettingsTable.displayed((draft ?: stored()).assistant, available)
         showAssistantDescription()
+        showAssistantHint(available)
     }
 
     companion object {

@@ -62,42 +62,61 @@ class SettingsTableTest {
         assertTrue(core.contains("MODEL_HINTS_KEY = 'modelHints'"))
     }
 
+    private val terminal = "org.jetbrains.plugins.terminal"
+    private val everything = listOf(terminal, "cli:junie", "cli:claude", "cli:copilot")
+
     @Test
-    fun `AC-001 the assistant is stored as one of four values and defaults to none`() {
-        assertEquals("none", SettingsModel().assistant)
-        assertEquals(JsonPrimitive("none"), SettingsTable.values(SettingsModel())["assistant"])
+    fun `AC-043 the assistant is stored as none, copilot, claudeCode, junie or nothing, and nothing is the default`() {
+        assertEquals("", SettingsTable.ASSISTANT_UNSET)
+        assertEquals(SettingsTable.ASSISTANT_UNSET, SettingsTable.ASSISTANT_DEFAULT)
+        assertEquals("", SettingsModel().assistant)
+        assertEquals(JsonPrimitive(""), SettingsTable.values(SettingsModel())["assistant"])
         assertEquals(listOf("showStepTips", "assistant", "modelHints"), SettingsTable.values(SettingsModel()).keys.toList())
-        for (value in listOf("none", "copilot", "claudeCode", "junie")) {
+        for (value in listOf("none", "copilot", "claudeCode", "junie", "")) {
             assertEquals(value, SettingsTable.sanitize(SettingsModel(assistant = value)).assistant)
             assertEquals(JsonPrimitive(value), SettingsTable.values(SettingsModel(assistant = value))["assistant"])
         }
-        for (value in listOf("", "claude", "Claude Code", "42", "copilot ", "NONE")) {
-            assertEquals("none", SettingsTable.sanitize(SettingsModel(assistant = value)).assistant, value)
-        }
-        assertEquals("none", SettingsTable.fromState(true, "", "", null).assistant)
+        assertEquals("", SettingsTable.fromState(true, "", "", null).assistant)
         assertEquals("claudeCode", SettingsTable.fromState(true, "", "", "claudeCode").assistant)
-        assertEquals("none", SettingsTable.fromState(true, "", "", "bogus").assistant)
     }
 
     @Test
-    fun `AC-001 the row texts are those of section 7`() {
+    fun `AC-043 a stored value of an older release or an unknown one migrates to unset and never fails`() {
+        for (old in listOf("copyForCopilot", "copyForJunie", "copyFor", "claude", "Claude Code", "42", "copilot ", "NONE", "bogus", " junie")) {
+            assertEquals("", SettingsTable.sanitize(SettingsModel(assistant = old)).assistant, old)
+            assertEquals("", SettingsTable.fromState(true, "", "", old).assistant, old)
+            assertEquals(JsonPrimitive(""), SettingsTable.values(SettingsModel(assistant = old))["assistant"], old)
+            assertEquals(SettingsTable.displayed("", everything), SettingsTable.displayed(old, everything), old)
+            assertEquals("", SettingsTable.storedAfterApply(old, SettingsTable.displayed(old, everything), everything), old)
+        }
+        for (kept in listOf("junie", "claudeCode", "copilot", "none")) {
+            assertEquals(kept, SettingsTable.fromState(true, "", "", kept).assistant)
+        }
+    }
+
+    @Test
+    fun `AC-043 the row texts are those of section 16`() {
         assertEquals("Assistant:", SettingsTable.ASSISTANT_LABEL)
         assertEquals(
             "The assistant your next step goes to. Studio sends nothing; Copy prompt stays in the button's menu.",
             SettingsTable.ASSISTANT_DESCRIPTION,
         )
-        assertEquals(listOf("none", "copilot", "claudeCode", "junie"), SettingsTable.ASSISTANT_OPTIONS.map { it.value })
-        assertEquals(listOf("None: Copy prompt", "GitHub Copilot", "Claude Code", "Junie"), SettingsTable.ASSISTANT_OPTIONS.map { it.label })
+        assertEquals(listOf("junie", "claudeCode", "copilot", "none"), SettingsTable.ASSISTANT_OPTIONS.map { it.value })
+        assertEquals(listOf("Junie", "Claude Code", "GitHub Copilot", "None: Copy prompt"), SettingsTable.ASSISTANT_OPTIONS.map { it.label })
         assertEquals(
             listOf(
-                "Copy the prompt and paste it into any assistant.",
-                "Copy for Copilot copies the prompt with the file paths. Paste it into GitHub Copilot Chat. Needs the GitHub Copilot plugin.",
+                "Send to Junie types the prompt into the Junie CLI in the IDE terminal and sends nothing. Needs the junie command and the Terminal plugin.",
                 "Send to Claude Code types the prompt into Claude Code in the IDE terminal and sends nothing. Needs the claude command and the Terminal plugin.",
-                "Copy for Junie copies the prompt with the file paths. Paste it into Junie in AI Chat.",
+                "Send to Copilot types the prompt into the GitHub Copilot CLI in the IDE terminal and sends nothing. Needs the copilot command and the Terminal plugin.",
+                "Copy the prompt and paste it into any assistant.",
             ),
             SettingsTable.ASSISTANT_OPTIONS.map { it.description },
         )
-        assertEquals("Junie", SettingsTable.ASSISTANT_OPTIONS[3].toString())
+        assertEquals("Junie", SettingsTable.ASSISTANT_OPTIONS[0].toString())
+        assertEquals(
+            "Junie, Claude Code and GitHub Copilot appear here once their command is on the IDE's PATH. Installed one just now? Restart the IDE.",
+            SettingsTable.ASSISTANT_HINT,
+        )
     }
 
     @Test
@@ -108,59 +127,72 @@ class SettingsTableTest {
             assertFalse(SettingsTable.ASSISTANT_DESCRIPTION.contains(option.description), option.value)
         }
         assertFalse(SettingsTable.ASSISTANT_DESCRIPTION.contains("Send to Claude Code"))
-        assertFalse(SettingsTable.ASSISTANT_DESCRIPTION.contains("Copy for"))
     }
 
-    private val copilot = "com.github.copilot"
-    private val terminal = "org.jetbrains.plugins.terminal"
-    private val junie = "org.jetbrains.junie"
-    private val aiAssistant = "com.intellij.ml.llm"
-
     @Test
-    fun `AC-039 every option except None appears only while its assistant is available, in the order of the table`() {
+    fun `AC-043 every agent appears only while its command and the Terminal plugin are there, None always, in the order of the table`() {
         assertEquals(listOf("none"), SettingsTable.options(emptyList()).map { it.value })
-        assertEquals(listOf("none", "copilot"), SettingsTable.options(listOf(copilot)).map { it.value })
-        assertEquals(listOf("none", "claudeCode"), SettingsTable.options(listOf(terminal)).map { it.value })
-        assertEquals(listOf("none", "junie"), SettingsTable.options(listOf(junie)).map { it.value })
-        assertEquals(listOf("none", "junie"), SettingsTable.options(listOf(aiAssistant)).map { it.value })
-        assertEquals(listOf("none", "copilot", "claudeCode", "junie"), SettingsTable.options(listOf(junie, terminal, copilot)).map { it.value })
-        assertEquals(listOf("none"), SettingsTable.options(listOf("org.other.plugin")).map { it.value })
+        assertEquals(listOf("none"), SettingsTable.options(listOf("cli:junie", "cli:claude", "cli:copilot")).map { it.value })
+        assertEquals(listOf("none"), SettingsTable.options(listOf(terminal)).map { it.value })
+        assertEquals(listOf("junie", "none"), SettingsTable.options(listOf(terminal, "cli:junie")).map { it.value })
+        assertEquals(listOf("claudeCode", "none"), SettingsTable.options(listOf(terminal, "cli:claude")).map { it.value })
+        assertEquals(listOf("copilot", "none"), SettingsTable.options(listOf(terminal, "cli:copilot")).map { it.value })
+        assertEquals(listOf("junie", "claudeCode", "copilot", "none"), SettingsTable.options(everything).map { it.value })
+        assertEquals(listOf("none"), SettingsTable.options(listOf("org.jetbrains.junie", "com.github.copilot", "com.intellij.ml.llm")).map { it.value })
     }
 
     @Test
-    fun `AC-039 the availability of an assistant is the one of the offer, Copilot by its id, Claude Code by the Terminal plugin, Junie by either plugin`() {
+    fun `AC-043 an agent is available by its cli id and the Terminal plugin, the Junie and Copilot plugins are not asked`() {
         assertTrue(SettingsTable.assistantAvailable("none", emptyList()))
-        assertTrue(SettingsTable.assistantAvailable("copilot", listOf(copilot)))
-        assertFalse(SettingsTable.assistantAvailable("copilot", listOf(terminal, junie)))
-        assertTrue(SettingsTable.assistantAvailable("claudeCode", listOf(terminal)))
-        assertFalse(SettingsTable.assistantAvailable("claudeCode", listOf(copilot, junie, aiAssistant)))
-        assertTrue(SettingsTable.assistantAvailable("junie", listOf(junie)))
-        assertTrue(SettingsTable.assistantAvailable("junie", listOf(aiAssistant)))
-        assertFalse(SettingsTable.assistantAvailable("junie", listOf(copilot, terminal)))
-        assertFalse(SettingsTable.assistantAvailable("bogus", listOf(copilot, terminal, junie)))
+        assertTrue(SettingsTable.assistantAvailable("copilot", listOf(terminal, "cli:copilot")))
+        assertFalse(SettingsTable.assistantAvailable("copilot", listOf(terminal, "com.github.copilot")))
+        assertFalse(SettingsTable.assistantAvailable("junie", listOf(terminal, "org.jetbrains.junie", "com.intellij.ml.llm")))
+        assertFalse(SettingsTable.assistantAvailable("claudeCode", listOf("cli:claude")))
+        assertFalse(SettingsTable.assistantAvailable("bogus", everything))
+        assertFalse(SettingsTable.assistantAvailable("", everything))
     }
 
     @Test
-    fun `AC-039 a stored value whose assistant is not available shows None and the stored value stays until another is applied`() {
+    fun `AC-043 the hint shows while one of the three agents is not available`() {
+        assertEquals(SettingsTable.ASSISTANT_HINT, SettingsTable.assistantHint(emptyList()))
+        assertEquals(SettingsTable.ASSISTANT_HINT, SettingsTable.assistantHint(listOf(terminal, "cli:junie", "cli:claude")))
+        assertEquals(SettingsTable.ASSISTANT_HINT, SettingsTable.assistantHint(listOf("cli:junie", "cli:claude", "cli:copilot")))
+        assertEquals(null, SettingsTable.assistantHint(everything))
+    }
+
+    @Test
+    fun `AC-043 unset shows Junie while it is available and None otherwise, a stored agent that is missing shows None`() {
+        assertEquals("junie", SettingsTable.displayed("", everything).value)
+        assertEquals("none", SettingsTable.displayed("", listOf(terminal, "cli:claude")).value)
+        assertEquals("none", SettingsTable.displayed("", emptyList()).value)
+        assertEquals("junie", SettingsTable.displayed("junie", everything).value)
         assertEquals("none", SettingsTable.displayed("junie", emptyList()).value)
-        assertEquals("junie", SettingsTable.displayed("junie", listOf(junie)).value)
-        assertEquals("none", SettingsTable.displayed("claudeCode", listOf(copilot)).value)
-        assertEquals("claudeCode", SettingsTable.displayed("claudeCode", listOf(terminal)).value)
+        assertEquals("none", SettingsTable.displayed("claudeCode", listOf(terminal, "cli:copilot")).value)
+        assertEquals("claudeCode", SettingsTable.displayed("claudeCode", listOf(terminal, "cli:claude")).value)
         assertEquals("none", SettingsTable.displayed("copilot", listOf(terminal)).value)
-        assertEquals("none", SettingsTable.displayed("bogus", listOf(copilot, terminal, junie)).value)
-        val none = SettingsTable.ASSISTANT_OPTIONS[0]
-        val copilotOption = SettingsTable.ASSISTANT_OPTIONS[1]
-        val claude = SettingsTable.ASSISTANT_OPTIONS[2]
-        assertEquals("junie", SettingsTable.storedAfterApply("junie", none, emptyList()))
-        assertEquals("claudeCode", SettingsTable.storedAfterApply("claudeCode", none, listOf(copilot)))
-        assertEquals("copilot", SettingsTable.storedAfterApply("claudeCode", copilotOption, listOf(copilot)))
-        assertEquals("none", SettingsTable.storedAfterApply("junie", none, listOf(junie)))
-        assertEquals("claudeCode", SettingsTable.storedAfterApply("none", claude, listOf(terminal)))
-        assertEquals("none", SettingsTable.storedAfterApply("bogus", none, emptyList()))
+        assertEquals("none", SettingsTable.displayed("none", everything).value)
     }
 
     @Test
-    fun `AC-039 a plugin that comes or goes while the page is open reaches every listener once and can be unsubscribed`() {
+    fun `AC-043 applying the shown option keeps an unset value unset, a stored value stays until another is applied`() {
+        val junie = SettingsTable.ASSISTANT_OPTIONS[0]
+        val claude = SettingsTable.ASSISTANT_OPTIONS[1]
+        val copilot = SettingsTable.ASSISTANT_OPTIONS[2]
+        val none = SettingsTable.ASSISTANT_OPTIONS[3]
+        assertEquals("", SettingsTable.storedAfterApply("", junie, everything))
+        assertEquals("", SettingsTable.storedAfterApply("", none, listOf(terminal, "cli:claude")))
+        assertEquals("none", SettingsTable.storedAfterApply("", none, everything))
+        assertEquals("claudeCode", SettingsTable.storedAfterApply("", claude, everything))
+        assertEquals("junie", SettingsTable.storedAfterApply("junie", none, emptyList()))
+        assertEquals("claudeCode", SettingsTable.storedAfterApply("claudeCode", none, listOf(terminal, "cli:copilot")))
+        assertEquals("copilot", SettingsTable.storedAfterApply("claudeCode", copilot, everything))
+        assertEquals("none", SettingsTable.storedAfterApply("junie", none, everything))
+        assertEquals("junie", SettingsTable.storedAfterApply("none", junie, everything))
+        assertEquals("none", SettingsTable.storedAfterApply("none", none, everything))
+    }
+
+    @Test
+    fun `AC-043 a change of the availability while the page is open reaches every listener once and changes the list`() {
         val bus = PluginOptionsBus()
         val first = ArrayList<List<String>>()
         val second = ArrayList<List<String>>()
@@ -168,15 +200,16 @@ class SettingsTableTest {
         bus.subscribe { second.add(it) }
         bus.publish(listOf(terminal))
         stopFirst()
-        bus.publish(listOf(terminal, copilot))
+        bus.publish(listOf(terminal, "cli:copilot"))
         assertEquals(listOf(listOf(terminal)), first)
-        assertEquals(listOf(listOf(terminal), listOf(terminal, copilot)), second)
-        assertEquals(listOf("none", "copilot", "claudeCode"), SettingsTable.options(second.last()).map { it.value })
+        assertEquals(listOf(listOf(terminal), listOf(terminal, "cli:copilot")), second)
+        assertEquals(listOf("copilot", "none"), SettingsTable.options(second.last()).map { it.value })
+        assertEquals(listOf(terminal, "cli:copilot"), bus.last)
     }
 
     @Test
     fun `AC-002 a change of the assistant sends one event with the bare key and the value`() {
-        val events = SettingsTable.changeEvents(SettingsModel(), SettingsModel(assistant = "claudeCode"))
+        val events = SettingsTable.changeEvents(SettingsModel(assistant = "none"), SettingsModel(assistant = "claudeCode"))
         assertEquals(1, events.size)
         val event = JsonParser.parseString(events[0]).asJsonObject
         assertEquals(setOf("key", "value"), event.keySet())
@@ -184,6 +217,7 @@ class SettingsTableTest {
         assertEquals("claudeCode", event.get("value").asString)
         assertEquals(emptyList<String>(), SettingsTable.changeEvents(SettingsModel(assistant = "copilot"), SettingsModel(assistant = "copilot")))
         assertEquals(1, SettingsTable.changeEvents(SettingsModel(assistant = "junie"), SettingsModel(assistant = "bogus")).size)
+        assertEquals(emptyList<String>(), SettingsTable.changeEvents(SettingsModel(assistant = ""), SettingsModel(assistant = "copyForJunie")))
     }
 
     @Test
@@ -244,7 +278,7 @@ class SettingsTableTest {
         val json = CoreConfig.json("linux", "1.0.0", SettingsTable.values(SettingsModel(false, "S", "F")), true, emptyList(), emptyMap())
         val settings = JsonParser.parseString(json).asJsonObject.getAsJsonObject("settings")
         assertEquals(setOf("showStepTips", "assistant", "modelHints"), settings.keySet())
-        assertEquals("none", settings.get("assistant").asString)
+        assertEquals("", settings.get("assistant").asString)
         assertFalse(settings.get("showStepTips").asBoolean)
         assertEquals("S", settings.getAsJsonObject("modelHints").get("strong").asString)
     }
