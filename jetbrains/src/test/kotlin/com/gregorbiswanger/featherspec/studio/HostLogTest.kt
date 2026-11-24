@@ -52,4 +52,18 @@ class HostLogTest {
         host.note("reason \"x\"\\y")
         assertEquals(listOf("reason \"x\"\\y"), host.log.value)
     }
+
+    @Test
+    fun `a port that fails with a linkage error still answers its call`() {
+        val resolved = ArrayList<Pair<String, String>>()
+        val router = CallRouter(
+            files = { _, _ -> throw NoSuchMethodError("PluginManagerCore.gone") },
+            medium = { _, _ -> null },
+            memory = { _, _ -> null },
+            watch = { _, _ -> null },
+        )
+        val host = HostRouter(router, { id, json -> resolved.add(id to json) }, { it() })
+        host.call("c-1", "fs.stat", "{}")
+        assertEquals(listOf("c-1" to """{"error":"PluginManagerCore.gone"}"""), resolved)
+    }
 }

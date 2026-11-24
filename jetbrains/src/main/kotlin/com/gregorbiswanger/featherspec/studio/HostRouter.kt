@@ -68,6 +68,8 @@ class CallRouter(
             portOf(group)(name, argsJson) ?: failed("no answer for $name")
         } catch (failure: Exception) {
             failed(failure.message ?: failure.javaClass.simpleName)
+        } catch (failure: LinkageError) {
+            failed(failure.message ?: failure.javaClass.simpleName)
         }
     }
 

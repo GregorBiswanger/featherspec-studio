@@ -214,7 +214,7 @@ class StudioProjectService(private val project: Project) : Disposable {
     private fun prepare() {
         try {
             config.complete(configJson())
-        } catch (failure: Exception) {
+        } catch (failure: Throwable) {
             config.completeExceptionally(failure)
         }
     }
@@ -249,13 +249,13 @@ class StudioProjectService(private val project: Project) : Disposable {
             core.open()
             config.whenComplete { json, failure ->
                 if (failure != null) {
-                    fail(failure as? Exception ?: RuntimeException(failure))
+                    fail(failure)
                 } else {
                     core.provideConfig(json)
                 }
             }
             watchForSuspension(core)
-        } catch (failure: Exception) {
+        } catch (failure: Throwable) {
             fail(failure)
         }
     }
@@ -307,7 +307,15 @@ class StudioProjectService(private val project: Project) : Disposable {
         lastFolders = folders
         val trusted = TrustedProjects.isProjectTrusted(project)
         trustWatch = TrustWatch(trusted)
-        val plugins = IdePlugins().snapshot()
+        val plugins = try {
+            IdePlugins().snapshot()
+        } catch (failure: Exception) {
+            thisLogger().warn("The FeatherSpec plugin availability could not be read; the core starts without it", failure)
+            emptyList()
+        } catch (failure: LinkageError) {
+            thisLogger().warn("The FeatherSpec plugin availability could not be read; the core starts without it", failure)
+            emptyList()
+        }
         pluginsWatch = PluginsWatch(plugins)
         return CoreConfig.json(
             platform = CoreConfig.platform(HostOs.windows, HostOs.mac),
@@ -327,7 +335,7 @@ class StudioProjectService(private val project: Project) : Disposable {
         return ProjectFolders.folders(project.basePath, roots)
     }
 
-    private fun fail(failure: Exception) {
+    private fun fail(failure: Throwable) {
         val reason = failure.message ?: failure.javaClass.simpleName
         thisLogger().warn("FeatherSpec core failed: $reason", failure)
         host.note("FeatherSpec core failed: $reason")
