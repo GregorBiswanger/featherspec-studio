@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Test
 
 class AssistantPortTest {
     private class Recording(var chat: Boolean = true, var failure: RuntimeException? = null) : AssistantCalls {
-        val terminal = ArrayList<ClaudeRequest>()
+        val terminal = ArrayList<AgentRequest>()
         val chats = ArrayList<ChatAssistant>()
 
-        override fun claudeTerminal(request: ClaudeRequest) {
+        override fun terminal(request: AgentRequest) {
             terminal.add(request)
             failure?.let { throw it }
         }
@@ -40,14 +40,14 @@ class AssistantPortTest {
     fun `AC-011 a send reaches the terminal call with its target and its text untouched and answers ok null`() {
         val calls = Recording()
         val port = AssistantPort(calls)
-        val current = reply(port.answer("assistant.claudeTerminal", """{"target":"current","text":"/sdd-plan .specs/active/0035-x.md @a"}"""))
+        val current = reply(port.answer("assistant.terminal", """{"assistant":"claudeCode","target":"current","text":"/sdd-plan .specs/active/0035-x.md @a"}"""))
         assertTrue(current.has("ok") && current.get("ok").isJsonNull)
         assertEquals(setOf("ok"), current.keySet())
-        port.answer("assistant.claudeTerminal", """{"target":"new","text":"Implement T-003 of .specs/a.plan.md @b @c"}""")
+        port.answer("assistant.terminal", """{"assistant":"claudeCode","target":"new","text":"Implement T-003 of .specs/a.plan.md @b @c"}""")
         assertEquals(
             listOf(
-                ClaudeRequest(ClaudeTarget.CURRENT, "/sdd-plan .specs/active/0035-x.md @a"),
-                ClaudeRequest(ClaudeTarget.NEW, "Implement T-003 of .specs/a.plan.md @b @c"),
+                AgentRequest(CliAgents.CLAUDE_CODE, AgentTarget.CURRENT, "/sdd-plan .specs/active/0035-x.md @a"),
+                AgentRequest(CliAgents.CLAUDE_CODE, AgentTarget.NEW, "Implement T-003 of .specs/a.plan.md @b @c"),
             ),
             calls.terminal,
         )
@@ -59,9 +59,9 @@ class AssistantPortTest {
         val port = AssistantPort(calls)
         val texts = listOf("a\\nb", "a\\rb", "a\\tb", "a\\u001bb", "a\\u0000b", "a\\u007fb", "a\\u0085b", "a\\u2028b", "a\\u2029b", "\\n", "a\\u001b[201~b")
         for (text in texts) {
-            assertEquals("the text holds a control character", refusal(port, "assistant.claudeTerminal", """{"target":"current","text":"$text"}"""), text)
+            assertEquals("the text holds a control character", refusal(port, "assistant.terminal", """{"assistant":"claudeCode","target":"current","text":"$text"}"""), text)
         }
-        assertEquals(emptyList<ClaudeRequest>(), calls.terminal)
+        assertEquals(emptyList<AgentRequest>(), calls.terminal)
     }
 
     @Test
@@ -76,7 +76,7 @@ class AssistantPortTest {
 
     @Test
     fun `AC-013 a refused text never echoes the prompt in its message`() {
-        val message = refusal(AssistantPort(Recording()), "assistant.claudeTerminal", """{"target":"current","text":"secret\nprompt"}""")
+        val message = refusal(AssistantPort(Recording()), "assistant.terminal", """{"assistant":"claudeCode","target":"current","text":"secret\nprompt"}""")
         assertFalse(message.contains("secret"))
         assertFalse(message.contains("prompt"))
     }
@@ -87,28 +87,28 @@ class AssistantPortTest {
         val port = AssistantPort(calls)
         val bad = listOf(
             "{}",
-            """{"target":"current"}""",
+            """{"assistant":"claudeCode","target":"current"}""",
             """{"text":"x"}""",
-            """{"target":"other","text":"x"}""",
-            """{"target":"Current","text":"x"}""",
-            """{"target":1,"text":"x"}""",
-            """{"target":"current","text":1}""",
-            """{"target":"current","text":""}""",
-            """{"target":"current","text":null}""",
+            """{"assistant":"claudeCode","target":"other","text":"x"}""",
+            """{"assistant":"claudeCode","target":"Current","text":"x"}""",
+            """{"assistant":"claudeCode","target":1,"text":"x"}""",
+            """{"assistant":"claudeCode","target":"current","text":1}""",
+            """{"assistant":"claudeCode","target":"current","text":""}""",
+            """{"assistant":"claudeCode","target":"current","text":null}""",
             "[]",
             "not json",
             "",
         )
         for (args in bad) {
-            assertTrue(refusal(port, "assistant.claudeTerminal", args).startsWith("assistant.claudeTerminal needs"), args)
+            assertTrue(refusal(port, "assistant.terminal", args).startsWith("assistant.terminal needs"), args)
         }
-        assertEquals(emptyList<ClaudeRequest>(), calls.terminal)
+        assertEquals(emptyList<AgentRequest>(), calls.terminal)
     }
 
     @Test
     fun `AC-013 a failing terminal call is not caught here so that the router answers its message`() {
         val port = AssistantPort(Recording(failure = IllegalStateException("tab closed")))
-        val thrown = assertThrows(IllegalStateException::class.java) { port.answer("assistant.claudeTerminal", """{"target":"current","text":"x"}""") }
+        val thrown = assertThrows(IllegalStateException::class.java) { port.answer("assistant.terminal", """{"assistant":"claudeCode","target":"current","text":"x"}""") }
         assertEquals("tab closed", thrown.message)
     }
 

@@ -438,7 +438,7 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
 - **Tests first:** red as compile errors on the new types; `ClaudeTerminalTest`'s assertions unchanged (negative control: the
   Claude instance is byte-identical).
 - **Verify:** CI `plugin`, `verify`, `ide-tests` green.
-- [ ] **Verified (T-019):** —
+- [x] **Verified (T-019):** 2026-11-24 · CI pending (Kotlin). Red first: the three test files did not compile against the old types (new API `AgentSender`, `AgentTabs`, `AgentReadiness`, `AgentRequest`, `assistant.terminal`): 12 new tests in `AgentsSendTest.kt` plus the 3 files below. Local (kotlinc 2.0.21, JUnit stubs): `AgentsSendTest` 12 + `AgentTerminalTest` (the former `ClaudeTerminalTest`, every assertion unchanged, only constructed through `AgentSender`/`CliAgents.CLAUDE_CODE`, so the Claude instance is byte-identical) + `AssistantPortTest` + `CliAgentsTest` 90/90; `HostRouterTest` + `AssistantPortTest` 34/34; `HandoverScreenTest` 25/25; `TerminalGlue.kt` compiles against the pstub. *Done beyond Files:* `ClaudeTerminalTest.kt` was renamed to `AgentTerminalTest.kt` (`git mv`; the new three-agent cases are in `AgentsSendTest.kt`); `assistant.openChat` left the router group now (it is no longer in `ASYNC_CALLS` since T-018, so `HostRouterTest` "every routed name is a contract call" would be red); `AssistantPort` still answers it until T-022. The busy message names the agent of the second Send (`a Send to <Name> is still starting`).
 - **Notes:** —
 
 ### T-020 — Availability by the PATH and the effective value (Kotlin)
@@ -543,8 +543,8 @@ previous one's types. No parallel stage 3: T-011 and T-012 both wire into `Studi
 | AC-044 | T-016, T-020 | `assistant/CliAgents.kt` (`CliOnPath`), `ports/{CliAvailability,IdePlugins}.kt`, `StudioProjectService.kt` | `CliAgentsTest.kt`, `CliAvailabilityTest.kt` | open |
 | AC-045 | T-017 | `src/hosts/embedded/assistants.ts` | `agents0035PD112.test.ts` (matrix) | open |
 | AC-046 | T-017, T-023 | `src/core/assistant/references.ts` (`cliText`, `CLI_FORMS`) | `cliText0035PD112.test.ts` | open |
-| AC-047 | T-017, T-019 | `src/hosts/embedded/assistants.ts`, `assistantTexts.ts`, `assistant/{ClaudeTerminal,TerminalGlue,IdeAssistantCalls}.kt` | `agents0035PD112.test.ts`, `AgentTerminalTest.kt`, `ClaudeTerminalTest.kt` | open |
-| AC-048 | T-019 | `assistant/ClaudeTerminal.kt` (`AgentTabs`), `TerminalGlue.kt` | `AgentTerminalTest.kt` (byte record) | open |
+| AC-047 | T-017, T-019 | `src/hosts/embedded/assistants.ts`, `assistantTexts.ts`, `assistant/{AgentTerminal,TerminalGlue,IdeAssistantCalls}.kt` | `agents0035PD112.test.ts`, `AgentsSendTest.kt`, `AgentTerminalTest.kt` | open |
+| AC-048 | T-019 | `assistant/AgentTerminal.kt` (`AgentTabs`), `TerminalGlue.kt` | `AgentsSendTest.kt` (byte record) | open |
 | AC-049 | T-016, T-019, T-023 | `assistant/CliAgents.kt`, `probe/HandoverScreen.kt` | `CliAgentsTest.kt`, `HandoverScreenTest.kt`, `AgentReplayTest.kt`; K-1 manual | open |
 | AC-050 | T-018, T-022 | `src/core/assistant/*`, `src/shared/protocol/*`, `src/webview/ui/SendButton.tsx`, `AssistantPort.kt`, `HostContract.kt` | `copyForRemoved0035PD112.test.ts` | open |
 | AC-051 | T-020 | `settings/EffectiveAssistant.kt`, `StudioSettings.kt`, `StudioProjectService.kt` | `EffectiveAssistantTest.kt`; VS Code `assistantTable0035.test.ts` | open |

@@ -13,7 +13,7 @@ class IdeAssistantCalls(private val project: Project) : AssistantCalls {
     private val lastTyped = LastTyped()
     private val gate = SendGate()
 
-    override fun claudeTerminal(request: ClaudeRequest) {
+    override fun terminal(request: AgentRequest) {
         if (!IdePlugins().available(PluginIds.TERMINAL)) {
             throw IllegalStateException(TERMINAL_UNAVAILABLE)
         }
@@ -32,7 +32,7 @@ class IdeAssistantCalls(private val project: Project) : AssistantCalls {
         false
     }
 
-    private fun sender(): ClaudeSender = ClaudeSender(
+    private fun sender(): AgentSender = AgentSender(
         access = TerminalGlue(project),
         root = { root() },
         caseInsensitive = HostOs.caseInsensitive,
@@ -40,7 +40,7 @@ class IdeAssistantCalls(private val project: Project) : AssistantCalls {
         clock = { System.nanoTime() / NANOS_PER_MILLI },
         sleep = { Thread.sleep(it) },
         gate = gate,
-        onPath = { ClaudeOnPath.found(System.getenv("PATH"), File.pathSeparatorChar, ClaudeOnPath::existsOnDisk) },
+        onPath = { agent -> CliOnPath.found(agent.pathNames, System.getenv("PATH"), File.pathSeparatorChar, CliOnPath::existsOnDisk) },
         trusted = { TrustedProjects.isProjectTrusted(project) },
     )
 

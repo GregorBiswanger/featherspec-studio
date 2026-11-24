@@ -19,10 +19,10 @@ class TerminalGlue(private val project: Project) : TerminalAccess {
         listed
     }
 
-    override fun openTab(root: String): Any = onEdt {
+    override fun openTab(root: String, agent: CliAgent): Any = onEdt {
         var builder: Any = TerminalToolWindowTabsManager.getInstance(project).createTabBuilder()
         builder = TerminalReflect.call(builder, "workingDirectory", root) ?: builder
-        builder = TerminalReflect.callOrNull(builder, "tabName", TAB_NAME) ?: builder
+        builder = TerminalReflect.callOrNull(builder, "tabName", agent.tabName) ?: builder
         builder = TerminalReflect.callOrNull(builder, "requestFocus", true) ?: builder
         val tab = TerminalReflect.call(builder, "createTab") ?: throw IllegalStateException("the terminal tab was not created")
         ToolWindowManager.getInstance(project).getToolWindow(TOOL_WINDOW_ID)?.activate(null)
@@ -31,18 +31,18 @@ class TerminalGlue(private val project: Project) : TerminalAccess {
 
     override fun shellReady(key: Any): Boolean = onEdt { shellIntegration(viewOf(key)) != null }
 
-    override fun runClaude(key: Any) {
-        onEdt { send(viewOf(key), COMMAND, execute = true, bracketed = false) }
+    override fun runAgent(key: Any, agent: CliAgent) {
+        onEdt { send(viewOf(key), agent.command, execute = true, bracketed = false) }
     }
 
-    override fun screen(key: Any): Screen? = onEdt {
+    override fun screen(key: Any, agent: CliAgent): Screen? = onEdt {
         val view = viewOf(key)
         val state = commandState(view)
-        Screen(state.executing && ClaudeTabs.isClaudeCommand(state.command), regularText(view))
+        Screen(state.executing && agent.isCommand(state.command), regularText(view))
     }
 
-    override fun paste(key: Any, text: String) {
-        onEdt { send(viewOf(key), text, execute = false, bracketed = true) }
+    override fun paste(key: Any, text: String, agent: CliAgent) {
+        onEdt { send(viewOf(key), text, execute = false, bracketed = agent.pasteMode == PasteMode.BRACKETED) }
     }
 
     override fun focus(key: Any) {
@@ -117,8 +117,6 @@ class TerminalGlue(private val project: Project) : TerminalAccess {
 
     private companion object {
         const val TOOL_WINDOW_ID = "Terminal"
-        const val TAB_NAME = "Claude Code"
-        const val COMMAND = "claude"
         const val EXECUTING = "ExecutingCommand"
         const val TEXT_TAIL = 20_000
     }

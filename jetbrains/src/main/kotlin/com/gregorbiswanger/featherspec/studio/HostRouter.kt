@@ -109,7 +109,7 @@ class CallRouter(
                 "target.kind", "target.readBytes", "target.listDirectory", "target.createExclusive",
                 "target.replaceIfUnchanged", "target.clearSetupFolder", "http.get", "archive.read",
             ).forEach { put(it, Group.SETUP) }
-            listOf("assistant.terminal", "assistant.openChat").forEach { put(it, Group.ASSISTANT) }
+            listOf("assistant.terminal").forEach { put(it, Group.ASSISTANT) }
             listOf("ui.pick", "ui.notify", "ui.confirm", "ui.progressStart", "ui.openExternal").forEach { put(it, Group.UI) }
         }
 

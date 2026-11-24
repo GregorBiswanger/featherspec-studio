@@ -1,6 +1,5 @@
 package com.gregorbiswanger.featherspec.studio.probe
 
-import com.gregorbiswanger.featherspec.studio.assistant.ClaudeReadiness
 import com.gregorbiswanger.featherspec.studio.assistant.CliAgents
 import com.gregorbiswanger.featherspec.studio.assistant.Screen
 import com.gregorbiswanger.featherspec.studio.assistant.TerminalTab
@@ -83,7 +82,7 @@ class HandoverScreenTest {
     fun theVerdictIsReadyOnlyWhenClaudeRunsAndTheInputBoxIsLast() {
         assertEquals("ready", HandoverScreen.verdict(CliAgents.CLAUDE_CODE, true, ready))
         assertEquals("ready", HandoverScreen.verdict(CliAgents.CLAUDE_CODE, true, trust + "\n" + ready))
-        assertTrue(ClaudeReadiness.hasInputBox(ready))
+        assertTrue(CliAgents.CLAUDE_CODE.hasInputBox(ready))
     }
 
     @Test
@@ -164,7 +163,7 @@ class HandoverScreenTest {
     fun theVerdictIsTheOneOfTheProductLogic() {
         for (text in listOf(ready, trust, ready + trust, trust + ready, "", "x")) {
             for (running in listOf(true, false)) {
-                val product = running && ClaudeReadiness.hasInputBox(text)
+                val product = running && CliAgents.CLAUDE_CODE.hasInputBox(text)
                 assertEquals(product, HandoverScreen.verdict(CliAgents.CLAUDE_CODE, running, text) == "ready")
             }
         }
